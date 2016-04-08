@@ -69,7 +69,7 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
     // ExtensionsBrowserClient setup in BrowserProcessImpl.
     mock_remote_service_ = new ::testing::NiceMock<MockRemoteFileSyncService>;
     SyncFileSystemServiceFactory::GetInstance()->set_mock_remote_file_service(
-        scoped_ptr<RemoteFileSyncService>(mock_remote_service_));
+        std::unique_ptr<RemoteFileSyncService>(mock_remote_service_));
     ExtensionApiTest::SetUpOnMainThread();
   }
 

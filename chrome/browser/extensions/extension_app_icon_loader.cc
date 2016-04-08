@@ -54,13 +54,9 @@ void ExtensionAppIconLoader::FetchImage(const std::string& id) {
   if (!extension)
     return;
 
-  scoped_ptr<extensions::IconImage> image(new extensions::IconImage(
-      profile(),
-      extension,
-      extensions::IconsInfo::GetIcons(extension),
-      icon_size(),
-      extensions::util::GetDefaultAppIcon(),
-      this));
+  std::unique_ptr<extensions::IconImage> image(new extensions::IconImage(
+      profile(), extension, extensions::IconsInfo::GetIcons(extension),
+      icon_size(), extensions::util::GetDefaultAppIcon(), this));
 
   // Triggers image loading now instead of depending on paint message. This
   // makes the temp blank image be shown for shorter time and improves user

@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "extensions/browser/api/bluetooth/bluetooth_extension_function.h"
 #include "extensions/browser/api/bluetooth_socket/bluetooth_socket_api.h"
@@ -65,9 +65,9 @@ class EasyUnlockPrivateAPI : public BrowserContextKeyedAPI {
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "EasyUnlockPrivate"; }
 
-  scoped_ptr<EasyUnlockPrivateCryptoDelegate> crypto_delegate_;
+  std::unique_ptr<EasyUnlockPrivateCryptoDelegate> crypto_delegate_;
 
-  scoped_ptr<EasyUnlockPrivateConnectionManager> connection_manager_;
+  std::unique_ptr<EasyUnlockPrivateConnectionManager> connection_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateAPI);
 };
@@ -333,10 +333,11 @@ class EasyUnlockPrivateGetRemoteDevicesFunction
   size_t expected_devices_count_;
 
   // Working list of the devices to return. Used for the native experiment.
-  scoped_ptr<base::ListValue> remote_devices_;
+  std::unique_ptr<base::ListValue> remote_devices_;
 
   // Used to derive devices' PSK. Used for the native experiment.
-  scoped_ptr<proximity_auth::SecureMessageDelegate> secure_message_delegate_;
+  std::unique_ptr<proximity_auth::SecureMessageDelegate>
+      secure_message_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateGetRemoteDevicesFunction);
 };
@@ -471,20 +472,21 @@ class EasyUnlockPrivateFindSetupConnectionFunction
 
   // Called when the connection with the remote device advertising the setup
   // service was found.
-  void OnConnectionFound(scoped_ptr<proximity_auth::Connection> connection);
+  void OnConnectionFound(
+      std::unique_ptr<proximity_auth::Connection> connection);
 
   // Callback when waiting for |connection_finder_| to return.
   void OnConnectionFinderTimedOut();
 
   // The BLE connection finder instance.
-  scoped_ptr<proximity_auth::BluetoothLowEnergyConnectionFinder>
+  std::unique_ptr<proximity_auth::BluetoothLowEnergyConnectionFinder>
       connection_finder_;
 
   // The connection throttler passed to the BLE connection finder.
-  scoped_ptr<proximity_auth::BluetoothThrottler> bluetooth_throttler_;
+  std::unique_ptr<proximity_auth::BluetoothThrottler> bluetooth_throttler_;
 
   // Used for timing out when waiting for the connection finder to return.
-  scoped_ptr<base::Timer> timer_;
+  std::unique_ptr<base::Timer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateFindSetupConnectionFunction);
 };

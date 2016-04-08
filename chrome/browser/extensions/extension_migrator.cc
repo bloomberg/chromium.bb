@@ -29,7 +29,7 @@ void ExtensionMigrator::StartLoading() {
   const bool should_have_extension =
       IsAppPresent(old_id_) || IsAppPresent(new_id_);
   if (should_have_extension) {
-    scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
     entry->SetStringWithoutPathExpansion(
         ExternalProviderImpl::kExternalUpdateUrl,
         extension_urls::GetWebstoreUpdateUrl().spec());

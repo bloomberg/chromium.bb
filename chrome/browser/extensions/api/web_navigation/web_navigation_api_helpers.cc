@@ -44,7 +44,7 @@ double MilliSecondsFromTime(const base::Time& time) {
 
 // Dispatches events to the extension message service.
 void DispatchEvent(content::BrowserContext* browser_context,
-                   scoped_ptr<Event> event,
+                   std::unique_ptr<Event> event,
                    const GURL& url) {
   EventFilteringInfo info;
   info.SetURL(url);
@@ -76,7 +76,7 @@ void DispatchOnBeforeNavigate(content::NavigationHandle* navigation_handle) {
       ExtensionApiFrameIdMap::GetParentFrameId(navigation_handle);
   details.time_stamp = MilliSecondsFromTime(base::Time::Now());
 
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::WEB_NAVIGATION_ON_BEFORE_NAVIGATE,
                 web_navigation::OnBeforeNavigate::kEventName,
                 web_navigation::OnBeforeNavigate::Create(details)));
@@ -98,7 +98,7 @@ void DispatchOnCommitted(events::HistogramValue histogram_value,
   if (navigation_handle->IsSrcdoc())
     url = GURL(content::kAboutSrcDocURL);
 
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger(keys::kTabIdKey, ExtensionTabUtil::GetTabId(web_contents));
   dict->SetString(keys::kUrlKey, url.spec());
@@ -132,7 +132,7 @@ void DispatchOnCommitted(events::HistogramValue histogram_value,
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args->Append(dict);
 
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(histogram_value, event_name, std::move(args)));
   DispatchEvent(navigation_handle->GetWebContents()->GetBrowserContext(),
                 std::move(event), url);
@@ -149,7 +149,7 @@ void DispatchOnDOMContentLoaded(content::WebContents* web_contents,
   details.frame_id = ExtensionApiFrameIdMap::GetFrameId(frame_host);
   details.time_stamp = MilliSecondsFromTime(base::Time::Now());
 
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::WEB_NAVIGATION_ON_DOM_CONTENT_LOADED,
                 web_navigation::OnDOMContentLoaded::kEventName,
                 web_navigation::OnDOMContentLoaded::Create(details)));
@@ -167,7 +167,7 @@ void DispatchOnCompleted(content::WebContents* web_contents,
   details.frame_id = ExtensionApiFrameIdMap::GetFrameId(frame_host);
   details.time_stamp = MilliSecondsFromTime(base::Time::Now());
 
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::WEB_NAVIGATION_ON_COMPLETED,
                 web_navigation::OnCompleted::kEventName,
                 web_navigation::OnCompleted::Create(details)));
@@ -197,7 +197,7 @@ void DispatchOnCreatedNavigationTarget(
   details.tab_id = ExtensionTabUtil::GetTabId(target_web_contents);
   details.time_stamp = MilliSecondsFromTime(base::Time::Now());
 
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::WEB_NAVIGATION_ON_CREATED_NAVIGATION_TARGET,
                 web_navigation::OnCreatedNavigationTarget::kEventName,
                 web_navigation::OnCreatedNavigationTarget::Create(details)));
@@ -217,7 +217,7 @@ void DispatchOnErrorOccurred(content::WebContents* web_contents,
   details.error = net::ErrorToString(error_code);
   details.time_stamp = MilliSecondsFromTime(base::Time::Now());
 
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::WEB_NAVIGATION_ON_ERROR_OCCURRED,
                 web_navigation::OnErrorOccurred::kEventName,
                 web_navigation::OnErrorOccurred::Create(details)));
@@ -236,7 +236,7 @@ void DispatchOnErrorOccurred(content::NavigationHandle* navigation_handle) {
                       : net::ErrorToString(net::ERR_ABORTED);
   details.time_stamp = MilliSecondsFromTime(base::Time::Now());
 
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::WEB_NAVIGATION_ON_ERROR_OCCURRED,
                 web_navigation::OnErrorOccurred::kEventName,
                 web_navigation::OnErrorOccurred::Create(details)));
@@ -254,7 +254,7 @@ void DispatchOnTabReplaced(
   details.tab_id = ExtensionTabUtil::GetTabId(new_web_contents);
   details.time_stamp = MilliSecondsFromTime(base::Time::Now());
 
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::WEB_NAVIGATION_ON_TAB_REPLACED,
                 web_navigation::OnTabReplaced::kEventName,
                 web_navigation::OnTabReplaced::Create(details)));

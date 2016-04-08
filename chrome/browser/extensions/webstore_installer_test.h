@@ -71,7 +71,8 @@ class WebstoreInstallerTest : public ExtensionBrowserTest {
 
   base::ScopedTempDir download_directory_;
 
-  scoped_ptr<extensions::ScopedTestDialogAutoConfirm> install_auto_confirm_;
+  std::unique_ptr<extensions::ScopedTestDialogAutoConfirm>
+      install_auto_confirm_;
 
   DISALLOW_COPY_AND_ASSIGN(WebstoreInstallerTest);
 };

@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_MESSAGING_NATIVE_PROCESS_LAUNCHER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_MESSAGING_NATIVE_PROCESS_LAUNCHER_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -42,7 +43,7 @@ class NativeProcessLauncher {
   // Creates default launcher for the current OS. |native_view| refers to the
   // window that contains calling page. Can be nullptr, e.g. for background
   // pages.
-  static scoped_ptr<NativeProcessLauncher> CreateDefault(
+  static std::unique_ptr<NativeProcessLauncher> CreateDefault(
       bool allow_user_level_hosts,
       gfx::NativeView native_view);
 

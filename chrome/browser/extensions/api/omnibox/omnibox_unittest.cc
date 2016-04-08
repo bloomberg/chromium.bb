@@ -45,7 +45,7 @@ void CompareClassification(const ACMatchClassifications& expected,
 // +       ddd
 // = nmmmmndddn
 TEST(ExtensionOmniboxTest, DescriptionStylesSimple) {
-  scoped_ptr<base::ListValue> list =
+  std::unique_ptr<base::ListValue> list =
       ListBuilder()
           .Append(42)
           .Append(ListBuilder()
@@ -76,7 +76,7 @@ TEST(ExtensionOmniboxTest, DescriptionStylesSimple) {
   styles_expected.push_back(ACMatchClassification(6, kDim));
   styles_expected.push_back(ACMatchClassification(9, kNone));
 
-  scoped_ptr<SendSuggestions::Params> params(
+  std::unique_ptr<SendSuggestions::Params> params(
       SendSuggestions::Params::Create(*list));
   EXPECT_TRUE(params);
   ASSERT_FALSE(params->suggest_results.empty());
@@ -84,7 +84,7 @@ TEST(ExtensionOmniboxTest, DescriptionStylesSimple) {
                                              params->suggest_results[0]));
 
   // Same input, but swap the order. Ensure it still works.
-  scoped_ptr<base::ListValue> swap_list =
+  std::unique_ptr<base::ListValue> swap_list =
       ListBuilder()
           .Append(42)
           .Append(ListBuilder()
@@ -108,7 +108,7 @@ TEST(ExtensionOmniboxTest, DescriptionStylesSimple) {
                       .Build())
           .Build();
 
-  scoped_ptr<SendSuggestions::Params> swapped_params(
+  std::unique_ptr<SendSuggestions::Params> swapped_params(
       SendSuggestions::Params::Create(*swap_list));
   EXPECT_TRUE(swapped_params);
   ASSERT_FALSE(swapped_params->suggest_results.empty());
@@ -125,7 +125,7 @@ TEST(ExtensionOmniboxTest, DescriptionStylesSimple) {
 // +  dd
 // = 3773unnnn66
 TEST(ExtensionOmniboxTest, DescriptionStylesCombine) {
-  scoped_ptr<base::ListValue> list =
+  std::unique_ptr<base::ListValue> list =
       ListBuilder()
           .Append(42)
           .Append(ListBuilder()
@@ -172,7 +172,7 @@ TEST(ExtensionOmniboxTest, DescriptionStylesCombine) {
   styles_expected.push_back(ACMatchClassification(5, kNone));
   styles_expected.push_back(ACMatchClassification(9, kMatch | kDim));
 
-  scoped_ptr<SendSuggestions::Params> params(
+  std::unique_ptr<SendSuggestions::Params> params(
       SendSuggestions::Params::Create(*list));
   EXPECT_TRUE(params);
   ASSERT_FALSE(params->suggest_results.empty());
@@ -181,7 +181,7 @@ TEST(ExtensionOmniboxTest, DescriptionStylesCombine) {
 
   // Try moving the "dim/match" style pair at offset 9. Output should be the
   // same.
-  scoped_ptr<base::ListValue> moved_list =
+  std::unique_ptr<base::ListValue> moved_list =
       ListBuilder()
           .Append(42)
           .Append(ListBuilder()
@@ -220,7 +220,7 @@ TEST(ExtensionOmniboxTest, DescriptionStylesCombine) {
                       .Build())
           .Build();
 
-  scoped_ptr<SendSuggestions::Params> moved_params(
+  std::unique_ptr<SendSuggestions::Params> moved_params(
       SendSuggestions::Params::Create(*moved_list));
   EXPECT_TRUE(moved_params);
   ASSERT_FALSE(moved_params->suggest_results.empty());
@@ -236,7 +236,7 @@ TEST(ExtensionOmniboxTest, DescriptionStylesCombine) {
 // + ddd
 // = 77777nnnnn
 TEST(ExtensionOmniboxTest, DescriptionStylesCombine2) {
-  scoped_ptr<base::ListValue> list =
+  std::unique_ptr<base::ListValue> list =
       ListBuilder()
           .Append(42)
           .Append(ListBuilder()
@@ -279,7 +279,7 @@ TEST(ExtensionOmniboxTest, DescriptionStylesCombine2) {
   styles_expected.push_back(ACMatchClassification(0, kUrl | kMatch | kDim));
   styles_expected.push_back(ACMatchClassification(5, kNone));
 
-  scoped_ptr<SendSuggestions::Params> params(
+  std::unique_ptr<SendSuggestions::Params> params(
       SendSuggestions::Params::Create(*list));
   EXPECT_TRUE(params);
   ASSERT_FALSE(params->suggest_results.empty());
@@ -296,7 +296,7 @@ TEST(ExtensionOmniboxTest, DescriptionStylesCombine2) {
 // = 77777nnnnn
 TEST(ExtensionOmniboxTest, DefaultSuggestResult) {
   // Default suggestions should not have a content parameter.
-  scoped_ptr<base::ListValue> list =
+  std::unique_ptr<base::ListValue> list =
       ListBuilder()
           .Append(DictionaryBuilder()
                       .Set("description", "description")
@@ -331,7 +331,7 @@ TEST(ExtensionOmniboxTest, DefaultSuggestResult) {
                       .Build())
           .Build();
 
-  scoped_ptr<SetDefaultSuggestion::Params> params(
+  std::unique_ptr<SetDefaultSuggestion::Params> params(
       SetDefaultSuggestion::Params::Create(*list));
   EXPECT_TRUE(params);
 }

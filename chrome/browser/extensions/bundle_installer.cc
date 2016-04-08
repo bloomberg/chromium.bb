@@ -11,6 +11,7 @@
 
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -175,11 +176,10 @@ void BundleInstaller::CompleteInstall(content::WebContents* web_contents,
 
     // Since we've already confirmed the permissions, create an approval that
     // lets CrxInstaller bypass the prompt.
-    scoped_ptr<WebstoreInstaller::Approval> approval(
+    std::unique_ptr<WebstoreInstaller::Approval> approval(
         WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
-            profile_,
-            entry.first,
-            make_scoped_ptr(parsed_manifests_[entry.first]->DeepCopy()),
+            profile_, entry.first,
+            base::WrapUnique(parsed_manifests_[entry.first]->DeepCopy()),
             true));
     approval->use_app_installed_bubble = false;
     approval->skip_post_install_ui = true;
@@ -261,7 +261,7 @@ void BundleInstaller::ShowPrompt() {
     return;
   }
 
-  scoped_ptr<const PermissionSet> permissions;
+  std::unique_ptr<const PermissionSet> permissions;
   PermissionSet empty;
   for (size_t i = 0; i < dummy_extensions_.size(); ++i) {
     // Using "permissions ? *permissions : PermissionSet()" tries to do a copy,
@@ -286,7 +286,7 @@ void BundleInstaller::ShowPrompt() {
     if (browser)
       web_contents = browser->tab_strip_model()->GetActiveWebContents();
     install_ui_.reset(new ExtensionInstallPrompt(web_contents));
-    scoped_ptr<ExtensionInstallPrompt::Prompt> prompt;
+    std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt;
     if (delegated_username_.empty()) {
       prompt.reset(new ExtensionInstallPrompt::Prompt(
           ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT));

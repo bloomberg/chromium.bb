@@ -210,7 +210,7 @@ class WebNavigationAPI : public BrowserContextKeyedAPI,
   static const bool kServiceIsNULLWhileTesting = true;
 
   // Created lazily upon OnListenerAdded.
-  scoped_ptr<WebNavigationEventRouter> web_navigation_event_router_;
+  std::unique_ptr<WebNavigationEventRouter> web_navigation_event_router_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNavigationAPI);
 };

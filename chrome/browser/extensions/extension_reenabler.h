@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_REENABLER_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_REENABLER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -48,7 +49,7 @@ class ExtensionReenabler : public ExtensionRegistryObserver,
   // upon completion.
   // If |referrer_url| is non-empty, then this will also check to make sure
   // that the referrer_url is listed as a trusted url by the extension.
-  static scoped_ptr<ExtensionReenabler> PromptForReenable(
+  static std::unique_ptr<ExtensionReenabler> PromptForReenable(
       const scoped_refptr<const Extension>& extension,
       content::BrowserContext* browser_context,
       content::WebContents* web_contents,
@@ -57,7 +58,8 @@ class ExtensionReenabler : public ExtensionRegistryObserver,
 
   // Like PromptForReenable, but allows tests to inject the
   // ExtensionInstallPrompt.
-  static scoped_ptr<ExtensionReenabler> PromptForReenableWithCallbackForTest(
+  static std::unique_ptr<ExtensionReenabler>
+  PromptForReenableWithCallbackForTest(
       const scoped_refptr<const Extension>& extension,
       content::BrowserContext* browser_context,
       const Callback& callback,
@@ -84,7 +86,7 @@ class ExtensionReenabler : public ExtensionRegistryObserver,
   // WebstoreDataFetcherDelegate:
   void OnWebstoreRequestFailure() override;
   void OnWebstoreResponseParseSuccess(
-      scoped_ptr<base::DictionaryValue> webstore_data) override;
+      std::unique_ptr<base::DictionaryValue> webstore_data) override;
   void OnWebstoreResponseParseFailure(const std::string& error) override;
 
   // Sets the |finished_| bit and runs |callback_| with the given |result|.
@@ -107,13 +109,13 @@ class ExtensionReenabler : public ExtensionRegistryObserver,
   ExtensionInstallPrompt::ShowDialogCallback show_dialog_callback_;
 
   // The re-enable prompt.
-  scoped_ptr<ExtensionInstallPrompt> install_prompt_;
+  std::unique_ptr<ExtensionInstallPrompt> install_prompt_;
 
   // Indicates whether the re-enable process finished.
   bool finished_;
 
   // The data fetcher for retrieving webstore data.
-  scoped_ptr<WebstoreDataFetcher> webstore_data_fetcher_;
+  std::unique_ptr<WebstoreDataFetcher> webstore_data_fetcher_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observer_;

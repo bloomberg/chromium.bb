@@ -525,14 +525,15 @@ void DialServiceImpl::DiscoverOnAddresses(
 }
 
 void DialServiceImpl::BindAndAddSocket(const IPAddress& bind_ip_address) {
-  scoped_ptr<DialServiceImpl::DialSocket> dial_socket(CreateDialSocket());
+  std::unique_ptr<DialServiceImpl::DialSocket> dial_socket(CreateDialSocket());
   if (dial_socket->CreateAndBindSocket(bind_ip_address, net_log_,
                                        net_log_source_))
     dial_sockets_.push_back(std::move(dial_socket));
 }
 
-scoped_ptr<DialServiceImpl::DialSocket> DialServiceImpl::CreateDialSocket() {
-  scoped_ptr<DialServiceImpl::DialSocket> dial_socket(
+std::unique_ptr<DialServiceImpl::DialSocket>
+DialServiceImpl::CreateDialSocket() {
+  std::unique_ptr<DialServiceImpl::DialSocket> dial_socket(
       new DialServiceImpl::DialSocket(
           base::Bind(&DialServiceImpl::NotifyOnDiscoveryRequest, AsWeakPtr()),
           base::Bind(&DialServiceImpl::NotifyOnDeviceDiscovered, AsWeakPtr()),

@@ -17,7 +17,7 @@ class NativeMessagePort : public MessageService::MessagePort {
  public:
   NativeMessagePort(base::WeakPtr<MessageService> message_service,
                     int port_id,
-                    scoped_ptr<NativeMessageHost> native_message_host);
+                    std::unique_ptr<NativeMessageHost> native_message_host);
   ~NativeMessagePort() override;
 
   // MessageService::MessagePort implementation.
@@ -33,7 +33,7 @@ class NativeMessagePort : public MessageService::MessagePort {
   base::WeakPtr<MessageService> weak_message_service_;
   scoped_refptr<base::SingleThreadTaskRunner> host_task_runner_;
   int port_id_;
-  scoped_ptr<Core> core_;
+  std::unique_ptr<Core> core_;
 
   base::WeakPtrFactory<NativeMessagePort> weak_factory_;
 };

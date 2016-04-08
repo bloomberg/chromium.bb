@@ -40,28 +40,28 @@ bool NativeMessagingHostManifest::IsValidName(const std::string& name) {
 }
 
 // static
-scoped_ptr<NativeMessagingHostManifest> NativeMessagingHostManifest::Load(
+std::unique_ptr<NativeMessagingHostManifest> NativeMessagingHostManifest::Load(
     const base::FilePath& file_path,
     std::string* error_message) {
   DCHECK(error_message);
 
   JSONFileValueDeserializer deserializer(file_path);
-  scoped_ptr<base::Value> parsed =
+  std::unique_ptr<base::Value> parsed =
       deserializer.Deserialize(NULL, error_message);
   if (!parsed) {
-    return scoped_ptr<NativeMessagingHostManifest>();
+    return std::unique_ptr<NativeMessagingHostManifest>();
   }
 
   base::DictionaryValue* dictionary;
   if (!parsed->GetAsDictionary(&dictionary)) {
     *error_message = "Invalid manifest file.";
-    return scoped_ptr<NativeMessagingHostManifest>();
+    return std::unique_ptr<NativeMessagingHostManifest>();
   }
 
-  scoped_ptr<NativeMessagingHostManifest> result(
+  std::unique_ptr<NativeMessagingHostManifest> result(
       new NativeMessagingHostManifest());
   if (!result->Parse(dictionary, error_message)) {
-    return scoped_ptr<NativeMessagingHostManifest>();
+    return std::unique_ptr<NativeMessagingHostManifest>();
   }
 
   return result;

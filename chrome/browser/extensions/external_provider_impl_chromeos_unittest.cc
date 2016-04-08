@@ -4,9 +4,10 @@
 
 #include "chrome/browser/extensions/external_provider_impl.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
@@ -87,7 +88,7 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
   }
 
  private:
-  scoped_ptr<base::ScopedPathOverride> external_externsions_overrides_;
+  std::unique_ptr<base::ScopedPathOverride> external_externsions_overrides_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   user_manager::FakeUserManager* fake_user_manager_;
   chromeos::ScopedUserManagerEnabler scoped_user_manager_;
@@ -199,9 +200,9 @@ TEST_F(ExternalProviderImplChromeOSTest, PriorityCompleted) {
       ->GetSyncableService(syncer::PRIORITY_PREFERENCES)
       ->MergeDataAndStartSyncing(syncer::PRIORITY_PREFERENCES,
                                  syncer::SyncDataList(),
-                                 scoped_ptr<syncer::SyncChangeProcessor>(
+                                 std::unique_ptr<syncer::SyncChangeProcessor>(
                                      new syncer::FakeSyncChangeProcessor),
-                                 scoped_ptr<syncer::SyncErrorFactory>(
+                                 std::unique_ptr<syncer::SyncErrorFactory>(
                                      new syncer::SyncErrorFactoryMock()));
 
   content::WindowedNotificationObserver(

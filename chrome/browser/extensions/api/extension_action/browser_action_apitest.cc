@@ -123,7 +123,7 @@ class BrowserActionApiTest : public ExtensionApiTest {
   }
 
  private:
-  scoped_ptr<BrowserActionTestUtil> browser_action_test_util_;
+  std::unique_ptr<BrowserActionTestUtil> browser_action_test_util_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionApiTest);
 };

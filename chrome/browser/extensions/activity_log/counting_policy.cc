@@ -41,6 +41,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/chrome_constants.h"
@@ -421,7 +422,7 @@ bool CountingPolicy::FlushDatabase(sql::Connection* db) {
   return true;
 }
 
-scoped_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
+std::unique_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
     const std::string& extension_id,
     const Action::ActionType type,
     const std::string& api_name,
@@ -431,7 +432,7 @@ scoped_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
   // Ensure data is flushed to the database first so that we query over all
   // data.
   activity_database()->AdviseFlush(ActivityDatabase::kFlushImmediately);
-  scoped_ptr<Action::ActionVector> actions(new Action::ActionVector());
+  std::unique_ptr<Action::ActionVector> actions(new Action::ActionVector());
 
   sql::Connection* db = GetDatabaseConnection();
   if (!db)
@@ -499,10 +500,10 @@ scoped_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
                    query.ColumnString(3), query.ColumnInt64(10));
 
     if (query.ColumnType(4) != sql::COLUMN_TYPE_NULL) {
-      scoped_ptr<base::Value> parsed_value =
+      std::unique_ptr<base::Value> parsed_value =
           base::JSONReader::Read(query.ColumnString(4));
       if (parsed_value && parsed_value->IsType(base::Value::TYPE_LIST)) {
-        action->set_args(make_scoped_ptr(
+        action->set_args(base::WrapUnique(
             static_cast<base::ListValue*>(parsed_value.release())));
       }
     }
@@ -512,10 +513,10 @@ scoped_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
     action->ParseArgUrl(query.ColumnString(7));
 
     if (query.ColumnType(8) != sql::COLUMN_TYPE_NULL) {
-      scoped_ptr<base::Value> parsed_value =
+      std::unique_ptr<base::Value> parsed_value =
           base::JSONReader::Read(query.ColumnString(8));
       if (parsed_value && parsed_value->IsType(base::Value::TYPE_DICTIONARY)) {
-        action->set_other(make_scoped_ptr(
+        action->set_other(base::WrapUnique(
             static_cast<base::DictionaryValue*>(parsed_value.release())));
       }
     }
@@ -724,8 +725,8 @@ void CountingPolicy::ReadFilteredData(
     const std::string& page_url,
     const std::string& arg_url,
     const int days_ago,
-    const base::Callback
-        <void(scoped_ptr<Action::ActionVector>)>& callback) {
+    const base::Callback<void(std::unique_ptr<Action::ActionVector>)>&
+        callback) {
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB,
       FROM_HERE,

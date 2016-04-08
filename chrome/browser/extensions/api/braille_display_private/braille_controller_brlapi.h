@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_BRAILLE_DISPLAY_PRIVATE_BRAILLE_CONTROLLER_BRLAPI_H_
 #define CHROME_BROWSER_EXTENSIONS_API_BRAILLE_DISPLAY_PRIVATE_BRAILLE_CONTROLLER_BRLAPI_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
@@ -23,7 +24,7 @@ namespace braille_display_private {
 class BrailleControllerImpl : public BrailleController {
  public:
   static BrailleControllerImpl* GetInstance();
-  scoped_ptr<DisplayState> GetDisplayState() override;
+  std::unique_ptr<DisplayState> GetDisplayState() override;
   void WriteDots(const std::vector<char>& cells) override;
   void AddObserver(BrailleObserver* observer) override;
   void RemoveObserver(BrailleObserver* observer) override;
@@ -37,7 +38,7 @@ class BrailleControllerImpl : public BrailleController {
   ~BrailleControllerImpl() override;
   void TryLoadLibBrlApi();
 
-  typedef base::Callback<scoped_ptr<BrlapiConnection>()>
+  typedef base::Callback<std::unique_ptr<BrlapiConnection>()>
       CreateBrlapiConnectionFunction;
 
   // For dependency injection in tests.  Sets the function used to create
@@ -59,16 +60,16 @@ class BrailleControllerImpl : public BrailleController {
   void ResetRetryConnectHorizon();
   void ScheduleTryToConnect();
   void Disconnect();
-  scoped_ptr<BrlapiConnection> CreateBrlapiConnection();
+  std::unique_ptr<BrlapiConnection> CreateBrlapiConnection();
   void DispatchKeys();
-  void DispatchKeyEvent(scoped_ptr<KeyEvent> event);
-  void DispatchOnDisplayStateChanged(scoped_ptr<DisplayState> new_state);
+  void DispatchKeyEvent(std::unique_ptr<KeyEvent> event);
+  void DispatchOnDisplayStateChanged(std::unique_ptr<DisplayState> new_state);
 
   CreateBrlapiConnectionFunction create_brlapi_connection_function_;
 
   // Manipulated on the IO thread.
   LibBrlapiLoader libbrlapi_loader_;
-  scoped_ptr<BrlapiConnection> connection_;
+  std::unique_ptr<BrlapiConnection> connection_;
   bool started_connecting_;
   bool connect_scheduled_;
   base::Time retry_connect_horizon_;

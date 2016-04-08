@@ -132,7 +132,7 @@ ExtensionAction* ExtensionActionManager::GetBrowserAction(
                            profile_);
 }
 
-scoped_ptr<ExtensionAction> ExtensionActionManager::GetBestFitAction(
+std::unique_ptr<ExtensionAction> ExtensionActionManager::GetBestFitAction(
     const Extension& extension,
     ActionInfo::Type type) const {
   const ActionInfo* info = ActionInfo::GetBrowserActionInfo(&extension);
@@ -143,8 +143,8 @@ scoped_ptr<ExtensionAction> ExtensionActionManager::GetBestFitAction(
   // If no ActionInfo exists for |extension|, create and return a new action
   // with a blank ActionInfo.
   // Populate any missing values from |extension|'s manifest.
-  scoped_ptr<ExtensionAction> new_action(new ExtensionAction(
-      extension, type, info ? *info : ActionInfo()));
+  std::unique_ptr<ExtensionAction> new_action(
+      new ExtensionAction(extension, type, info ? *info : ActionInfo()));
   return new_action;
 }
 

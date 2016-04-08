@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -194,7 +195,7 @@ void WindowsEventRouter::OnWindowControllerAdded(
   if (!profile_->IsSameProfile(window_controller->profile()))
     return;
 
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   base::DictionaryValue* window_dictionary =
       window_controller->CreateWindowValue();
   args->Append(window_dictionary);
@@ -210,7 +211,7 @@ void WindowsEventRouter::OnWindowControllerRemoved(
     return;
 
   int window_id = window_controller->GetWindowId();
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Append(new base::FundamentalValue(window_id));
   DispatchEvent(events::WINDOWS_ON_REMOVED, windows::OnRemoved::kEventName,
                 window_controller, std::move(args));
@@ -256,9 +257,9 @@ void WindowsEventRouter::OnActiveWindowChanged(
   if (!HasEventListener(windows::OnFocusChanged::kEventName))
     return;
 
-  scoped_ptr<Event> event(new Event(events::WINDOWS_ON_FOCUS_CHANGED,
-                                    windows::OnFocusChanged::kEventName,
-                                    make_scoped_ptr(new base::ListValue())));
+  std::unique_ptr<Event> event(new Event(
+      events::WINDOWS_ON_FOCUS_CHANGED, windows::OnFocusChanged::kEventName,
+      base::WrapUnique(new base::ListValue())));
   event->will_dispatch_callback =
       base::Bind(&WillDispatchWindowFocusedEvent, window_controller);
   EventRouter::Get(profile_)->BroadcastEvent(std::move(event));
@@ -267,8 +268,8 @@ void WindowsEventRouter::OnActiveWindowChanged(
 void WindowsEventRouter::DispatchEvent(events::HistogramValue histogram_value,
                                        const std::string& event_name,
                                        WindowController* window_controller,
-                                       scoped_ptr<base::ListValue> args) {
-  scoped_ptr<Event> event(
+                                       std::unique_ptr<base::ListValue> args) {
+  std::unique_ptr<Event> event(
       new Event(histogram_value, event_name, std::move(args)));
   event->restrict_to_browser_context = window_controller->profile();
   event->will_dispatch_callback =
@@ -281,8 +282,8 @@ bool WindowsEventRouter::HasEventListener(const std::string& event_name) {
 }
 
 void WindowsEventRouter::AddAppWindow(extensions::AppWindow* app_window) {
-  scoped_ptr<AppWindowController> controller(new AppWindowController(
-      app_window, make_scoped_ptr(new AppBaseWindow(app_window)), profile_));
+  std::unique_ptr<AppWindowController> controller(new AppWindowController(
+      app_window, base::WrapUnique(new AppBaseWindow(app_window)), profile_));
   app_windows_[app_window->session_id().id()] = std::move(controller);
 }
 

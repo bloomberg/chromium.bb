@@ -395,7 +395,7 @@ ContentVerifier* ExtensionSystemImpl::content_verifier() {
   return shared_->content_verifier();
 }
 
-scoped_ptr<ExtensionSet> ExtensionSystemImpl::GetDependentExtensions(
+std::unique_ptr<ExtensionSet> ExtensionSystemImpl::GetDependentExtensions(
     const Extension* extension) {
   return extension_service()->shared_module_service()->GetDependentExtensions(
       extension);

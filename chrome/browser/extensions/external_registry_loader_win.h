@@ -24,7 +24,7 @@ class ExternalRegistryLoader : public ExternalLoader {
 
   ~ExternalRegistryLoader() override {}
 
-  scoped_ptr<base::DictionaryValue> LoadPrefsOnFileThread();
+  std::unique_ptr<base::DictionaryValue> LoadPrefsOnFileThread();
   void LoadOnFileThread();
   void CompleteLoadAndStartWatchingRegistry();
   void UpdatePrefsOnFileThread();

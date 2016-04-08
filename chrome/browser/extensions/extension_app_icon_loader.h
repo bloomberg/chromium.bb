@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_APP_ICON_LOADER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_icon_loader.h"
 #include "extensions/browser/extension_icon_image.h"
 
@@ -38,7 +38,7 @@ class ExtensionAppIconLoader : public AppIconLoader,
 
  private:
   using ExtensionIDToImageMap =
-      std::map<std::string, scoped_ptr<extensions::IconImage>>;
+      std::map<std::string, std::unique_ptr<extensions::IconImage>>;
 
   // Builds image for given |id| and |icon|.
   void BuildImage(const std::string& id, const gfx::ImageSkia& icon);

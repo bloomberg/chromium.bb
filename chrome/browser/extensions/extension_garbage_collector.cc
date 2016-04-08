@@ -5,6 +5,8 @@
 #include "chrome/browser/extensions/extension_garbage_collector.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -12,7 +14,6 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -184,7 +185,7 @@ void ExtensionGarbageCollector::GarbageCollectExtensions() {
     return;
   }
 
-  scoped_ptr<ExtensionPrefs::ExtensionsInfo> info(
+  std::unique_ptr<ExtensionPrefs::ExtensionsInfo> info(
       extension_prefs->GetInstalledExtensionsInfo());
   std::multimap<std::string, base::FilePath> extension_paths;
   for (size_t i = 0; i < info->size(); ++i) {
@@ -218,9 +219,9 @@ void ExtensionGarbageCollector::GarbageCollectIsolatedStorageIfNeeded() {
     return;
   extension_prefs->SetNeedsStorageGarbageCollection(false);
 
-  scoped_ptr<base::hash_set<base::FilePath> > active_paths(
+  std::unique_ptr<base::hash_set<base::FilePath>> active_paths(
       new base::hash_set<base::FilePath>());
-  scoped_ptr<ExtensionSet> extensions =
+  std::unique_ptr<ExtensionSet> extensions =
       ExtensionRegistry::Get(context_)->GenerateInstalledExtensionsSet();
   for (ExtensionSet::const_iterator iter = extensions->begin();
        iter != extensions->end();

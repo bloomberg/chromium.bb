@@ -45,10 +45,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_GetLastFocusedWindow) {
   scoped_refptr<extensions::Extension> extension(
       extensions::test_util::CreateEmptyExtension());
   function->set_extension(extension.get());
-  scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
-      utils::RunFunctionAndReturnSingleResult(function.get(),
-                                              "[]",
-                                              new_browser)));
+  std::unique_ptr<base::DictionaryValue> result(
+      utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
+          function.get(), "[]", new_browser)));
 
   // The id should always match the last focused window and does not depend
   // on what was passed to RunFunctionAndReturnSingleResult.
@@ -96,10 +95,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DISABLED_QueryLastFocusedWindowTabs) {
   // Get tabs in the 'last focused' window called from non-focused browser.
   scoped_refptr<extensions::TabsQueryFunction> function =
       new extensions::TabsQueryFunction();
-  scoped_ptr<base::ListValue> result(utils::ToList(
-      utils::RunFunctionAndReturnSingleResult(function.get(),
-                                              "[{\"lastFocusedWindow\":true}]",
-                                              browser())));
+  std::unique_ptr<base::ListValue> result(
+      utils::ToList(utils::RunFunctionAndReturnSingleResult(
+          function.get(), "[{\"lastFocusedWindow\":true}]", browser())));
 
   base::ListValue* result_tabs = result.get();
   // We should have one initial tab and one added tab.

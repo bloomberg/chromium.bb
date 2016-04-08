@@ -43,7 +43,7 @@ bool ExtensionListPolicyHandler::CheckPolicySettings(
 void ExtensionListPolicyHandler::ApplyPolicySettings(
     const policy::PolicyMap& policies,
     PrefValueMap* prefs) {
-  scoped_ptr<base::ListValue> list;
+  std::unique_ptr<base::ListValue> list;
   policy::PolicyErrorMap errors;
   if (CheckAndGetList(policies, &errors, &list) && list)
     prefs->SetValue(pref_path(), std::move(list));
@@ -56,7 +56,7 @@ const char* ExtensionListPolicyHandler::pref_path() const {
 bool ExtensionListPolicyHandler::CheckAndGetList(
     const policy::PolicyMap& policies,
     policy::PolicyErrorMap* errors,
-    scoped_ptr<base::ListValue>* extension_ids) {
+    std::unique_ptr<base::ListValue>* extension_ids) {
   if (extension_ids)
     extension_ids->reset();
 
@@ -74,7 +74,7 @@ bool ExtensionListPolicyHandler::CheckAndGetList(
   }
 
   // Filter the list, rejecting any invalid extension IDs.
-  scoped_ptr<base::ListValue> filtered_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> filtered_list(new base::ListValue());
   for (base::ListValue::const_iterator entry(list_value->begin());
        entry != list_value->end(); ++entry) {
     std::string id;
@@ -121,7 +121,7 @@ void ExtensionInstallForcelistPolicyHandler::ApplyPolicySettings(
     const policy::PolicyMap& policies,
     PrefValueMap* prefs) {
   const base::Value* value = NULL;
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   if (CheckAndGetValue(policies, NULL, &value) &&
       value &&
       ParseList(value, dict.get(), NULL)) {
@@ -266,7 +266,7 @@ ExtensionSettingsPolicyHandler::~ExtensionSettingsPolicyHandler() {
 bool ExtensionSettingsPolicyHandler::CheckPolicySettings(
     const policy::PolicyMap& policies,
     policy::PolicyErrorMap* errors) {
-  scoped_ptr<base::Value> policy_value;
+  std::unique_ptr<base::Value> policy_value;
   if (!CheckAndGetValue(policies, errors, &policy_value))
     return false;
   if (!policy_value)
@@ -320,7 +320,7 @@ bool ExtensionSettingsPolicyHandler::CheckPolicySettings(
 void ExtensionSettingsPolicyHandler::ApplyPolicySettings(
     const policy::PolicyMap& policies,
     PrefValueMap* prefs) {
-  scoped_ptr<base::Value> policy_value;
+  std::unique_ptr<base::Value> policy_value;
   if (!CheckAndGetValue(policies, NULL, &policy_value) || !policy_value)
     return;
   prefs->SetValue(pref_names::kExtensionManagement, std::move(policy_value));

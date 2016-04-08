@@ -160,7 +160,7 @@ class TabCapturePerformanceTest
     page += "&fps=60";
     ASSERT_TRUE(RunExtensionSubtest("tab_capture", page)) << message_;
     ASSERT_TRUE(tracing::EndTracing(&json_events));
-    scoped_ptr<trace_analyzer::TraceAnalyzer> analyzer;
+    std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer;
     analyzer.reset(trace_analyzer::TraceAnalyzer::Create(json_events));
 
     // The printed result will be the average time between frames in the

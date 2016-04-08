@@ -108,9 +108,9 @@ SharedModuleService::ImportStatus SharedModuleService::SatisfyImports(
   return status;
 }
 
-scoped_ptr<ExtensionSet> SharedModuleService::GetDependentExtensions(
+std::unique_ptr<ExtensionSet> SharedModuleService::GetDependentExtensions(
     const Extension* extension) {
-  scoped_ptr<ExtensionSet> dependents(new ExtensionSet());
+  std::unique_ptr<ExtensionSet> dependents(new ExtensionSet());
 
   if (SharedModuleInfo::IsSharedModule(extension)) {
     ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);

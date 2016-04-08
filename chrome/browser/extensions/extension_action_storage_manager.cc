@@ -5,11 +5,12 @@
 #include "chrome/browser/extensions/extension_action_storage_manager.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_action.h"
@@ -159,9 +160,10 @@ void SetDefaultsFromValue(const base::DictionaryValue* dict,
 
 // Store |action|'s default values in a DictionaryValue for use in storing to
 // disk.
-scoped_ptr<base::DictionaryValue> DefaultsToValue(ExtensionAction* action) {
+std::unique_ptr<base::DictionaryValue> DefaultsToValue(
+    ExtensionAction* action) {
   const int kDefaultTabId = ExtensionAction::kDefaultTabId;
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetString(kPopupUrlStorageKey,
                   action->GetPopupUrl(kDefaultTabId).spec());
@@ -178,7 +180,8 @@ scoped_ptr<base::DictionaryValue> DefaultsToValue(ExtensionAction* action) {
   gfx::ImageSkia icon =
       action->GetExplicitlySetIcon(kDefaultTabId).AsImageSkia();
   if (!icon.isNull()) {
-    scoped_ptr<base::DictionaryValue> icon_value(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> icon_value(
+        new base::DictionaryValue());
     std::vector<gfx::ImageSkiaRep> image_reps = icon.image_reps();
     for (const gfx::ImageSkiaRep& rep : image_reps) {
       int size = static_cast<int>(rep.scale() * icon.width());
@@ -244,7 +247,7 @@ void ExtensionActionStorageManager::WriteToStorage(
     ExtensionAction* extension_action) {
   StateStore* store = GetStateStore();
   if (store) {
-    scoped_ptr<base::DictionaryValue> defaults =
+    std::unique_ptr<base::DictionaryValue> defaults =
         DefaultsToValue(extension_action);
     store->SetExtensionValue(extension_action->extension_id(),
                              kBrowserActionStorageKey, std::move(defaults));
@@ -252,7 +255,8 @@ void ExtensionActionStorageManager::WriteToStorage(
 }
 
 void ExtensionActionStorageManager::ReadFromStorage(
-    const std::string& extension_id, scoped_ptr<base::Value> value) {
+    const std::string& extension_id,
+    std::unique_ptr<base::Value> value) {
   const Extension* extension = ExtensionRegistry::Get(browser_context_)->
       enabled_extensions().GetByID(extension_id);
   if (!extension)

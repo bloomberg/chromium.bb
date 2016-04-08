@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/signed_in_devices/signed_in_devices_manager.h"
+
+#include <memory>
+
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/extensions/api/signed_in_devices.h"
@@ -22,7 +24,7 @@ namespace extensions {
 // Adds a listener and removes it.
 TEST(SignedInDevicesManager, UpdateListener) {
   content::TestBrowserThreadBundle thread_bundle;
-  scoped_ptr<TestingProfile> profile(new TestingProfile());
+  std::unique_ptr<TestingProfile> profile(new TestingProfile());
   SigninManagerFactory::GetForProfile(profile.get())->
       SetAuthenticatedAccountInfo("gaia_id", "foo");
   ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(profile.get(),

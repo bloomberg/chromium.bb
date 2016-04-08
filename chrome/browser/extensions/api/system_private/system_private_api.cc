@@ -54,7 +54,7 @@ const char kUpdatingState[] = "Updating";
 void DispatchEvent(extensions::events::HistogramValue histogram_value,
                    const std::string& event_name,
                    base::Value* argument) {
-  scoped_ptr<base::ListValue> list_args(new base::ListValue());
+  std::unique_ptr<base::ListValue> list_args(new base::ListValue());
   if (argument) {
     list_args->Append(argument);
   }

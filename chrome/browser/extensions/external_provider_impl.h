@@ -64,9 +64,10 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   void ServiceShutdown() override;
   void VisitRegisteredExtension() override;
   bool HasExtension(const std::string& id) const override;
-  bool GetExtensionDetails(const std::string& id,
-                           Manifest::Location* location,
-                           scoped_ptr<base::Version>* version) const override;
+  bool GetExtensionDetails(
+      const std::string& id,
+      Manifest::Location* location,
+      std::unique_ptr<base::Version>* version) const override;
 
   bool IsReady() const override;
 
@@ -120,7 +121,7 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   VisitorInterface* service_;  // weak
 
   // Dictionary of the external extensions that are provided by this provider.
-  scoped_ptr<base::DictionaryValue> prefs_;
+  std::unique_ptr<base::DictionaryValue> prefs_;
 
   // Indicates that the extensions provided by this provider are loaded
   // entirely.

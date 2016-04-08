@@ -548,7 +548,7 @@ bool ExtensionAssetsManagerChromeOS::CleanUpExtension(
         if (!extension_prefs || extension_prefs->pref_service()->ReadOnly())
           return false;
 
-        scoped_ptr<ExtensionInfo> info =
+        std::unique_ptr<ExtensionInfo> info =
             extension_prefs->GetInstalledExtensionInfo(id);
         if (!info || info->extension_path != base::FilePath(shared_path)) {
           info = extension_prefs->GetDelayedInstallInfo(id);

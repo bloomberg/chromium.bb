@@ -61,7 +61,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
   const OneShotEvent& ready() const override;
   ContentVerifier* content_verifier() override;  // shared
-  scoped_ptr<ExtensionSet> GetDependentExtensions(
+  std::unique_ptr<ExtensionSet> GetDependentExtensions(
       const Extension* extension) override;
   void InstallUpdate(const std::string& extension_id,
                      const base::FilePath& temp_dir) override;
@@ -104,32 +104,32 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
     // The services that are shared between normal and incognito profiles.
 
-    scoped_ptr<StateStore> state_store_;
-    scoped_ptr<StateStoreNotificationObserver>
+    std::unique_ptr<StateStore> state_store_;
+    std::unique_ptr<StateStoreNotificationObserver>
         state_store_notification_observer_;
-    scoped_ptr<StateStore> rules_store_;
+    std::unique_ptr<StateStore> rules_store_;
     scoped_refptr<ValueStoreFactoryImpl> store_factory_;
-    scoped_ptr<NavigationObserver> navigation_observer_;
-    scoped_ptr<ServiceWorkerManager> service_worker_manager_;
+    std::unique_ptr<NavigationObserver> navigation_observer_;
+    std::unique_ptr<ServiceWorkerManager> service_worker_manager_;
     // Shared memory region manager for scripts statically declared in extension
     // manifests. This region is shared between all extensions.
-    scoped_ptr<SharedUserScriptMaster> shared_user_script_master_;
-    scoped_ptr<RuntimeData> runtime_data_;
+    std::unique_ptr<SharedUserScriptMaster> shared_user_script_master_;
+    std::unique_ptr<RuntimeData> runtime_data_;
     // ExtensionService depends on StateStore, Blacklist and RuntimeData.
-    scoped_ptr<ExtensionService> extension_service_;
-    scoped_ptr<ManagementPolicy> management_policy_;
+    std::unique_ptr<ExtensionService> extension_service_;
+    std::unique_ptr<ManagementPolicy> management_policy_;
     // extension_info_map_ needs to outlive process_manager_.
     scoped_refptr<InfoMap> extension_info_map_;
-    scoped_ptr<QuotaService> quota_service_;
-    scoped_ptr<AppSorting> app_sorting_;
+    std::unique_ptr<QuotaService> quota_service_;
+    std::unique_ptr<AppSorting> app_sorting_;
 
     // For verifying the contents of extensions read from disk.
     scoped_refptr<ContentVerifier> content_verifier_;
 
-    scoped_ptr<UninstallPingSender> uninstall_ping_sender_;
+    std::unique_ptr<UninstallPingSender> uninstall_ping_sender_;
 
 #if defined(OS_CHROMEOS)
-    scoped_ptr<chromeos::DeviceLocalAccountManagementPolicyProvider>
+    std::unique_ptr<chromeos::DeviceLocalAccountManagementPolicyProvider>
         device_local_account_management_policy_provider_;
 #endif
 

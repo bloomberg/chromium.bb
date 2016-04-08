@@ -8,10 +8,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_FONT_SETTINGS_FONT_SETTINGS_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_FONT_SETTINGS_FONT_SETTINGS_API_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -95,7 +95,7 @@ class FontSettingsAPI : public BrowserContextKeyedAPI {
   }
   static const bool kServiceIsNULLWhileTesting = true;
 
-  scoped_ptr<FontSettingsEventRouter> font_settings_event_router_;
+  std::unique_ptr<FontSettingsEventRouter> font_settings_event_router_;
 };
 
 // fontSettings.clearFont API function.
@@ -149,7 +149,7 @@ class FontSettingsGetFontListFunction : public ChromeAsyncExtensionFunction {
   bool RunAsync() override;
 
  private:
-  void FontListHasLoaded(scoped_ptr<base::ListValue> list);
+  void FontListHasLoaded(std::unique_ptr<base::ListValue> list);
   bool CopyFontsToResult(base::ListValue* fonts);
 };
 

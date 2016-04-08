@@ -22,7 +22,7 @@ ApiResourceManager<EasyUnlockPrivateConnection>::GetFactoryInstance() {
 EasyUnlockPrivateConnection::EasyUnlockPrivateConnection(
     bool persistent,
     const std::string& owner_extension_id,
-    scoped_ptr<proximity_auth::Connection> connection)
+    std::unique_ptr<proximity_auth::Connection> connection)
     : ApiResource(owner_extension_id),
       persistent_(persistent),
       connection_(connection.release()) {}

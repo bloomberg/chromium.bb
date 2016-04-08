@@ -8,6 +8,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -593,7 +594,7 @@ scoped_refptr<Extension>
     const std::string& localized_name,
     const std::string& localized_description,
     std::string* error) {
-  scoped_ptr<base::DictionaryValue> localized_manifest;
+  std::unique_ptr<base::DictionaryValue> localized_manifest;
   if (!localized_name.empty() || !localized_description.empty()) {
     localized_manifest.reset(manifest->DeepCopy());
     if (!localized_name.empty()) {
@@ -647,14 +648,15 @@ void ExtensionInstallPrompt::ShowDialog(
     const SkBitmap* icon,
     const ShowDialogCallback& show_dialog_callback) {
   ShowDialog(done_callback, extension, icon,
-             make_scoped_ptr(new Prompt(INSTALL_PROMPT)), show_dialog_callback);
+             base::WrapUnique(new Prompt(INSTALL_PROMPT)),
+             show_dialog_callback);
 }
 
 void ExtensionInstallPrompt::ShowDialog(
     const DoneCallback& done_callback,
     const Extension* extension,
     const SkBitmap* icon,
-    scoped_ptr<Prompt> prompt,
+    std::unique_ptr<Prompt> prompt,
     const ShowDialogCallback& show_dialog_callback) {
   ShowDialog(done_callback, extension, icon, std::move(prompt), nullptr,
              show_dialog_callback);
@@ -664,8 +666,8 @@ void ExtensionInstallPrompt::ShowDialog(
     const DoneCallback& done_callback,
     const Extension* extension,
     const SkBitmap* icon,
-    scoped_ptr<Prompt> prompt,
-    scoped_ptr<const PermissionSet> custom_permissions,
+    std::unique_ptr<Prompt> prompt,
+    std::unique_ptr<const PermissionSet> custom_permissions,
     const ShowDialogCallback& show_dialog_callback) {
   DCHECK(ui_loop_ == base::MessageLoop::current());
   DCHECK(prompt);
@@ -757,7 +759,7 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
 }
 
 void ExtensionInstallPrompt::ShowConfirmation() {
-  scoped_ptr<const PermissionSet> permissions_wrapper;
+  std::unique_ptr<const PermissionSet> permissions_wrapper;
   const PermissionSet* permissions_to_display = nullptr;
   if (custom_permissions_.get()) {
     permissions_to_display = custom_permissions_.get();

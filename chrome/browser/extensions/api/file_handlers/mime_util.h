@@ -9,12 +9,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 class Profile;
@@ -43,7 +43,7 @@ void GetMimeTypeForLocalPath(
 // available, then an empty string is returned in the result vector.
 class MimeTypeCollector {
  public:
-  typedef base::Callback<void(scoped_ptr<std::vector<std::string> >)>
+  typedef base::Callback<void(std::unique_ptr<std::vector<std::string>>)>
       CompletionCallback;
 
   explicit MimeTypeCollector(Profile* profile);
@@ -64,7 +64,7 @@ class MimeTypeCollector {
   void OnMimeTypeCollected(size_t index, const std::string& mime_type);
 
   Profile* profile_;
-  scoped_ptr<std::vector<std::string> > result_;
+  std::unique_ptr<std::vector<std::string>> result_;
   size_t left_;
   CompletionCallback callback_;
   base::WeakPtrFactory<MimeTypeCollector> weak_ptr_factory_;

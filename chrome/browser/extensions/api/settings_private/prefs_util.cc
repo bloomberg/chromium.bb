@@ -292,9 +292,9 @@ settings_private::PrefType PrefsUtil::GetType(const std::string& name,
   }
 }
 
-scoped_ptr<settings_private::PrefObject> PrefsUtil::GetCrosSettingsPref(
+std::unique_ptr<settings_private::PrefObject> PrefsUtil::GetCrosSettingsPref(
     const std::string& name) {
-  scoped_ptr<settings_private::PrefObject> pref_object(
+  std::unique_ptr<settings_private::PrefObject> pref_object(
       new settings_private::PrefObject());
 
 #if defined(OS_CHROMEOS)
@@ -308,10 +308,10 @@ scoped_ptr<settings_private::PrefObject> PrefsUtil::GetCrosSettingsPref(
   return pref_object;
 }
 
-scoped_ptr<settings_private::PrefObject> PrefsUtil::GetPref(
+std::unique_ptr<settings_private::PrefObject> PrefsUtil::GetPref(
     const std::string& name) {
   const PrefService::Preference* pref = nullptr;
-  scoped_ptr<settings_private::PrefObject> pref_object;
+  std::unique_ptr<settings_private::PrefObject> pref_object;
   if (IsCrosSetting(name)) {
     pref_object = GetCrosSettingsPref(name);
   } else {

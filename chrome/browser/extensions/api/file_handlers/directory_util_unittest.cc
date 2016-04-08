@@ -4,13 +4,13 @@
 
 #include "chrome/browser/extensions/api/file_handlers/directory_util.h"
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -26,7 +26,7 @@ const char kRandomPath[] = "/random/path";
 
 void OnCollectForEntriesPath(
     std::set<base::FilePath>* output,
-    scoped_ptr<std::set<base::FilePath>> path_directory_set) {
+    std::unique_ptr<std::set<base::FilePath>> path_directory_set) {
   *output = *path_directory_set;
 }
 

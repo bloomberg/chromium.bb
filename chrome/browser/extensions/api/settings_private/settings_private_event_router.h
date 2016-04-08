@@ -65,7 +65,7 @@ class SettingsPrivateEventRouter : public KeyedService,
   content::BrowserContext* context_;
   bool listening_;
 
-  scoped_ptr<PrefsUtil> prefs_util_;
+  std::unique_ptr<PrefsUtil> prefs_util_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsPrivateEventRouter);
 };

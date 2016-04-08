@@ -82,7 +82,7 @@ class DevicePermissionsManagerTest : public testing::Test {
 
   void TearDown() override { env_.reset(nullptr); }
 
-  scoped_ptr<extensions::TestExtensionEnvironment> env_;
+  std::unique_ptr<extensions::TestExtensionEnvironment> env_;
   const extensions::Extension* extension_;
   device::MockDeviceClient device_client_;
   scoped_refptr<MockUsbDevice> device0_;
@@ -282,7 +282,7 @@ TEST_F(DevicePermissionsManagerTest, UpdateLastUsed) {
 }
 
 TEST_F(DevicePermissionsManagerTest, LoadPrefs) {
-  scoped_ptr<base::Value> prefs_value = base::test::ParseJson(
+  std::unique_ptr<base::Value> prefs_value = base::test::ParseJson(
       "["
       "  {"
       "    \"manufacturer_string\": \"Test Manufacturer\","

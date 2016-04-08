@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTERNAL_PREF_LOADER_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTERNAL_PREF_LOADER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/external_loader.h"
@@ -135,7 +135,7 @@ class ExternalTestingLoader : public ExternalLoader {
   ~ExternalTestingLoader() override;
 
   base::FilePath fake_base_path_;
-  scoped_ptr<base::DictionaryValue> testing_prefs_;
+  std::unique_ptr<base::DictionaryValue> testing_prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalTestingLoader);
 };

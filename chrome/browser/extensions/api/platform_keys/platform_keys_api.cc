@@ -124,7 +124,7 @@ PlatformKeysInternalGetPublicKeyFunction::
 
 ExtensionFunction::ResponseAction
 PlatformKeysInternalGetPublicKeyFunction::Run() {
-  scoped_ptr<api_pki::GetPublicKey::Params> params(
+  std::unique_ptr<api_pki::GetPublicKey::Params> params(
       api_pki::GetPublicKey::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -168,7 +168,7 @@ PlatformKeysInternalSelectClientCertificatesFunction::
 
 ExtensionFunction::ResponseAction
 PlatformKeysInternalSelectClientCertificatesFunction::Run() {
-  scoped_ptr<api_pki::SelectClientCertificates::Params> params(
+  std::unique_ptr<api_pki::SelectClientCertificates::Params> params(
       api_pki::SelectClientCertificates::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -199,7 +199,7 @@ PlatformKeysInternalSelectClientCertificatesFunction::Run() {
     }
   }
 
-  scoped_ptr<net::CertificateList> client_certs;
+  std::unique_ptr<net::CertificateList> client_certs;
   if (params->details.client_certs) {
     client_certs.reset(new net::CertificateList);
     for (const std::vector<char>& client_cert_der :
@@ -239,7 +239,7 @@ PlatformKeysInternalSelectClientCertificatesFunction::Run() {
 }
 
 void PlatformKeysInternalSelectClientCertificatesFunction::
-    OnSelectedCertificates(scoped_ptr<net::CertificateList> matches,
+    OnSelectedCertificates(std::unique_ptr<net::CertificateList> matches,
                            const std::string& error_message) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -282,7 +282,7 @@ PlatformKeysInternalSignFunction::~PlatformKeysInternalSignFunction() {
 }
 
 ExtensionFunction::ResponseAction PlatformKeysInternalSignFunction::Run() {
-  scoped_ptr<api_pki::Sign::Params> params(
+  std::unique_ptr<api_pki::Sign::Params> params(
       api_pki::Sign::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   std::string platform_keys_token_id;
@@ -348,7 +348,7 @@ ExtensionFunction::ResponseAction
 PlatformKeysVerifyTLSServerCertificateFunction::Run() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  scoped_ptr<api_pk::VerifyTLSServerCertificate::Params> params(
+  std::unique_ptr<api_pk::VerifyTLSServerCertificate::Params> params(
       api_pk::VerifyTLSServerCertificate::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

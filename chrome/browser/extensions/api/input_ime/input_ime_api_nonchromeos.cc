@@ -78,7 +78,7 @@ class ImeObserverNonChromeOS : public ui::ImeObserver {
       bounds_list.push_back(std::move(bounds_value));
     }
 
-    scoped_ptr<base::ListValue> args(
+    std::unique_ptr<base::ListValue> args(
         OnCompositionBoundsChanged::Create(bounds_list));
 
     DispatchEventToExtension(
@@ -91,12 +91,12 @@ class ImeObserverNonChromeOS : public ui::ImeObserver {
   void DispatchEventToExtension(
       extensions::events::HistogramValue histogram_value,
       const std::string& event_name,
-      scoped_ptr<base::ListValue> args) override {
+      std::unique_ptr<base::ListValue> args) override {
     if (!IsInputImeEnabled()) {
       return;
     }
 
-    scoped_ptr<extensions::Event> event(
+    std::unique_ptr<extensions::Event> event(
         new extensions::Event(histogram_value, event_name, std::move(args)));
     event->restrict_to_browser_context = profile_;
     extensions::EventRouter::Get(profile_)
@@ -171,9 +171,9 @@ void InputImeEventRouter::SetActiveEngine(const std::string& extension_id) {
     DeleteInputMethodEngine(active_engine_->GetExtensionId());
   }
 
-  scoped_ptr<input_method::InputMethodEngine> engine(
+  std::unique_ptr<input_method::InputMethodEngine> engine(
       new input_method::InputMethodEngine());
-  scoped_ptr<InputMethodEngineBase::Observer> observer(
+  std::unique_ptr<InputMethodEngineBase::Observer> observer(
       new ImeObserverNonChromeOS(extension_id, GetProfile()));
   engine->Initialize(std::move(observer), extension_id.c_str(), GetProfile());
   engine->Enable(std::string());
@@ -339,7 +339,7 @@ ExtensionFunction::ResponseAction InputImeCreateWindowFunction::Run() {
   if (!frame_id)
     return RespondNow(Error(error_));
 
-  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   result->Set("frameId", new base::FundamentalValue(frame_id));
 
   return RespondNow(OneArgument(std::move(result)));
@@ -354,7 +354,7 @@ ExtensionFunction::ResponseAction InputImeShowWindowFunction::Run() {
   if (!engine)
     return RespondNow(Error(kErrorNoActiveEngine));
 
-  scoped_ptr<api::input_ime::ShowWindow::Params> params(
+  std::unique_ptr<api::input_ime::ShowWindow::Params> params(
       api::input_ime::ShowWindow::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   engine->ShowImeWindow(params->window_id);
@@ -370,7 +370,7 @@ ExtensionFunction::ResponseAction InputImeHideWindowFunction::Run() {
   if (!engine)
     return RespondNow(Error(kErrorNoActiveEngine));
 
-  scoped_ptr<api::input_ime::HideWindow::Params> params(
+  std::unique_ptr<api::input_ime::HideWindow::Params> params(
       api::input_ime::HideWindow::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   engine->HideImeWindow(params->window_id);

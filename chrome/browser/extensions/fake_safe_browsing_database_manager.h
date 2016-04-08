@@ -51,7 +51,7 @@ class FakeSafeBrowsingDatabaseManager
   ~FakeSafeBrowsingDatabaseManager() override;
 
   // Runs result->SafeBrowsingResult().
-  void OnSafeBrowsingResult(scoped_ptr<SafeBrowsingCheck> result);
+  void OnSafeBrowsingResult(std::unique_ptr<SafeBrowsingCheck> result);
 
   // Whether to respond to CheckExtensionIDs immediately with true (indicating
   // that there is definitely no extension ID match).

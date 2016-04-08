@@ -102,7 +102,7 @@ SkBitmap GetDefaultIcon() {
 
 // Tests loading an icon for an extension, removing it, then re-loading it.
 TEST_F(ExtensionIconManagerTest, LoadRemoveLoad) {
-  scoped_ptr<Profile> profile(new TestingProfile());
+  std::unique_ptr<Profile> profile(new TestingProfile());
   SkBitmap default_icon = GetDefaultIcon();
 
   base::FilePath test_dir;
@@ -111,7 +111,7 @@ TEST_F(ExtensionIconManagerTest, LoadRemoveLoad) {
       "extensions/image_loading_tracker/app.json");
 
   JSONFileValueDeserializer deserializer(manifest_path);
-  scoped_ptr<base::DictionaryValue> manifest =
+  std::unique_ptr<base::DictionaryValue> manifest =
       base::DictionaryValue::From(deserializer.Deserialize(NULL, NULL));
   ASSERT_TRUE(manifest.get() != NULL);
 
@@ -144,7 +144,7 @@ TEST_F(ExtensionIconManagerTest, LoadRemoveLoad) {
 #if defined(OS_CHROMEOS)
 // Tests loading an icon for a component extension.
 TEST_F(ExtensionIconManagerTest, LoadComponentExtensionResource) {
-  scoped_ptr<Profile> profile(new TestingProfile());
+  std::unique_ptr<Profile> profile(new TestingProfile());
   SkBitmap default_icon = GetDefaultIcon();
 
   base::FilePath test_dir;
@@ -153,7 +153,7 @@ TEST_F(ExtensionIconManagerTest, LoadComponentExtensionResource) {
       "extensions/file_manager/app.json");
 
   JSONFileValueDeserializer deserializer(manifest_path);
-  scoped_ptr<base::DictionaryValue> manifest =
+  std::unique_ptr<base::DictionaryValue> manifest =
       base::DictionaryValue::From(deserializer.Deserialize(NULL, NULL));
   ASSERT_TRUE(manifest.get() != NULL);
 

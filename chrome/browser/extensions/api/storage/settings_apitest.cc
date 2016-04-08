@@ -128,7 +128,7 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
   }
 
   void SetPolicies(const base::DictionaryValue& policies) {
-    scoped_ptr<policy::PolicyBundle> bundle(new policy::PolicyBundle());
+    std::unique_ptr<policy::PolicyBundle> bundle(new policy::PolicyBundle());
     policy::PolicyMap& policy_map = bundle->Get(policy::PolicyNamespace(
         policy::POLICY_DOMAIN_EXTENSIONS, kManagedStorageExtensionId));
     policy_map.LoadFrom(&policies, policy::POLICY_LEVEL_MANDATORY,
@@ -182,17 +182,16 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
   void InitSyncWithSyncableService(
       syncer::SyncChangeProcessor* sync_processor,
       syncer::SyncableService* settings_service) {
-    EXPECT_FALSE(
-        settings_service->MergeDataAndStartSyncing(
-                              kModelType,
-                              syncer::SyncDataList(),
-                              scoped_ptr<syncer::SyncChangeProcessor>(
-                                  new syncer::SyncChangeProcessorWrapperForTest(
-                                      sync_processor)),
-                              scoped_ptr<syncer::SyncErrorFactory>(
-                                  new syncer::SyncErrorFactoryMock()))
-            .error()
-            .IsSet());
+    EXPECT_FALSE(settings_service
+                     ->MergeDataAndStartSyncing(
+                         kModelType, syncer::SyncDataList(),
+                         std::unique_ptr<syncer::SyncChangeProcessor>(
+                             new syncer::SyncChangeProcessorWrapperForTest(
+                                 sync_processor)),
+                         std::unique_ptr<syncer::SyncErrorFactory>(
+                             new syncer::SyncErrorFactoryMock()))
+                     .error()
+                     .IsSet());
   }
 
   void SendChangesToSyncableService(
@@ -478,7 +477,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ExtensionsSchemas) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorage) {
   // Set policies for the test extension.
-  scoped_ptr<base::DictionaryValue> policy =
+  std::unique_ptr<base::DictionaryValue> policy =
       extensions::DictionaryBuilder()
           .Set("string-policy", "value")
           .Set("int-policy", -123)
@@ -516,11 +515,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   message_.clear();
 
   // Set policies for the test extension.
-  scoped_ptr<base::DictionaryValue> policy = extensions::DictionaryBuilder()
-      .Set("constant-policy", "aaa")
-      .Set("changes-policy", "bbb")
-      .Set("deleted-policy", "ccc")
-      .Build();
+  std::unique_ptr<base::DictionaryValue> policy =
+      extensions::DictionaryBuilder()
+          .Set("constant-policy", "aaa")
+          .Set("changes-policy", "bbb")
+          .Set("deleted-policy", "ccc")
+          .Build();
   SetPolicies(*policy);
 
   ExtensionTestMessageListener ready_listener("ready", false);

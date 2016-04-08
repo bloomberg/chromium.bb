@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/socket/udp_socket.h"
-
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "extensions/browser/api/socket/udp_socket.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "testing/gtest/include/gtest/gtest.h"

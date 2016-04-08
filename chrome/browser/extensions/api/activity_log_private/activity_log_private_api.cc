@@ -87,10 +87,10 @@ void ActivityLogAPI::OnListenerRemoved(const EventListenerInfo& details) {
 }
 
 void ActivityLogAPI::OnExtensionActivity(scoped_refptr<Action> activity) {
-  scoped_ptr<base::ListValue> value(new base::ListValue());
+  std::unique_ptr<base::ListValue> value(new base::ListValue());
   ExtensionActivity activity_arg = activity->ConvertToExtensionActivity();
   value->Append(activity_arg.ToValue());
-  scoped_ptr<Event> event(new Event(
+  std::unique_ptr<Event> event(new Event(
       events::ACTIVITY_LOG_PRIVATE_ON_EXTENSION_ACTIVITY,
       activity_log_private::OnExtensionActivity::kEventName, std::move(value)));
   event->restrict_to_browser_context = browser_context_;
@@ -98,12 +98,12 @@ void ActivityLogAPI::OnExtensionActivity(scoped_refptr<Action> activity) {
 }
 
 bool ActivityLogPrivateGetExtensionActivitiesFunction::RunAsync() {
-  scoped_ptr<activity_log_private::GetExtensionActivities::Params> params(
+  std::unique_ptr<activity_log_private::GetExtensionActivities::Params> params(
       activity_log_private::GetExtensionActivities::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // Get the arguments in the right format.
-  scoped_ptr<Filter> filter;
+  std::unique_ptr<Filter> filter;
   filter.reset(&params.release()->filter);
   Action::ActionType action_type = Action::ACTION_API_CALL;
   switch (filter->activity_type) {
@@ -159,14 +159,14 @@ bool ActivityLogPrivateGetExtensionActivitiesFunction::RunAsync() {
 }
 
 void ActivityLogPrivateGetExtensionActivitiesFunction::OnLookupCompleted(
-    scoped_ptr<std::vector<scoped_refptr<Action> > > activities) {
+    std::unique_ptr<std::vector<scoped_refptr<Action>>> activities) {
   // Convert Actions to ExtensionActivities.
   std::vector<ExtensionActivity> result_arr;
   for (const auto& activity : *activities)
     result_arr.push_back(activity->ConvertToExtensionActivity());
 
   // Populate the return object.
-  scoped_ptr<ActivityResultSet> result_set(new ActivityResultSet);
+  std::unique_ptr<ActivityResultSet> result_set(new ActivityResultSet);
   result_set->activities = std::move(result_arr);
   results_ = activity_log_private::GetExtensionActivities::Results::Create(
       *result_set);
@@ -175,7 +175,7 @@ void ActivityLogPrivateGetExtensionActivitiesFunction::OnLookupCompleted(
 }
 
 bool ActivityLogPrivateDeleteActivitiesFunction::RunAsync() {
-  scoped_ptr<activity_log_private::DeleteActivities::Params> params(
+  std::unique_ptr<activity_log_private::DeleteActivities::Params> params(
       activity_log_private::DeleteActivities::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -201,7 +201,7 @@ bool ActivityLogPrivateDeleteDatabaseFunction::RunAsync() {
 }
 
 bool ActivityLogPrivateDeleteUrlsFunction::RunAsync() {
-  scoped_ptr<activity_log_private::DeleteUrls::Params> params(
+  std::unique_ptr<activity_log_private::DeleteUrls::Params> params(
       activity_log_private::DeleteUrls::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

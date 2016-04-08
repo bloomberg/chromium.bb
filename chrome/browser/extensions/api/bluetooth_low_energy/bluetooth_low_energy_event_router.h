@@ -298,7 +298,7 @@ class BluetoothLowEnergyEventRouter
       const std::string& event_name,
       const device::BluetoothUUID& uuid,
       const std::string& characteristic_id,
-      scoped_ptr<base::ListValue> args);
+      std::unique_ptr<base::ListValue> args);
 
   // Returns a BluetoothGattService by its instance ID |instance_id|. Returns
   // NULL, if the service cannot be found.
@@ -326,7 +326,7 @@ class BluetoothLowEnergyEventRouter
       const std::string& extension_id,
       const std::string& device_address,
       const base::Closure& callback,
-      scoped_ptr<device::BluetoothGattConnection> connection);
+      std::unique_ptr<device::BluetoothGattConnection> connection);
 
   // Called by BluetoothGattCharacteristic and BluetoothGattDescriptor in
   // case of an error during the read/write operations.
@@ -346,7 +346,7 @@ class BluetoothLowEnergyEventRouter
       const std::string& extension_id,
       const std::string& characteristic_id,
       const base::Closure& callback,
-      scoped_ptr<device::BluetoothGattNotifySession> session);
+      std::unique_ptr<device::BluetoothGattNotifySession> session);
 
   // Called by BluetoothGattCharacteristic in response to a call to
   // StartNotifySession.

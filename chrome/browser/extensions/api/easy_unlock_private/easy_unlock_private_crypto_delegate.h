@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_EASY_UNLOCK_PRIVATE_EASY_UNLOCK_PRIVATE_CRYPTO_DELEGATE_H_
 #define CHROME_BROWSER_EXTENSIONS_API_EASY_UNLOCK_PRIVATE_EASY_UNLOCK_PRIVATE_CRYPTO_DELEGATE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 
 namespace extensions {
@@ -28,7 +28,7 @@ class EasyUnlockPrivateCryptoDelegate {
 
   // Creates platform specific delegate instance. Non Chrome OS implementations
   // currently do nothing but invoke callbacks with empty data.
-  static scoped_ptr<EasyUnlockPrivateCryptoDelegate> Create();
+  static std::unique_ptr<EasyUnlockPrivateCryptoDelegate> Create();
 
   // See chromeos/dbus/easy_unlock_client.h for info on these methods.
   virtual void GenerateEcP256KeyPair(const KeyPairCallback& callback) = 0;

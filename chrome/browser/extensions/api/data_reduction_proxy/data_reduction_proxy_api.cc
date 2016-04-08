@@ -40,16 +40,19 @@ DataReductionProxyGetDataUsageFunction::Run() {
 }
 
 void DataReductionProxyGetDataUsageFunction::ReplyWithDataUsage(
-    scoped_ptr<std::vector<data_reduction_proxy::DataUsageBucket>> data_usage) {
+    std::unique_ptr<std::vector<data_reduction_proxy::DataUsageBucket>>
+        data_usage) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  scoped_ptr<base::ListValue> data_usage_buckets(new base::ListValue());
+  std::unique_ptr<base::ListValue> data_usage_buckets(new base::ListValue());
   for (const auto& data_usage_bucket : *data_usage) {
-    scoped_ptr<base::ListValue> connection_usage_list(new base::ListValue());
+    std::unique_ptr<base::ListValue> connection_usage_list(
+        new base::ListValue());
     for (auto connection_usage : data_usage_bucket.connection_usage()) {
-      scoped_ptr<base::ListValue> site_usage_list(new base::ListValue());
+      std::unique_ptr<base::ListValue> site_usage_list(new base::ListValue());
       for (auto site_usage : connection_usage.site_usage()) {
-        scoped_ptr<base::DictionaryValue> usage(new base::DictionaryValue());
+        std::unique_ptr<base::DictionaryValue> usage(
+            new base::DictionaryValue());
         usage->SetString("hostname", site_usage.hostname());
         usage->SetDouble("data_used", site_usage.data_used());
         usage->SetDouble("original_size", site_usage.original_size());

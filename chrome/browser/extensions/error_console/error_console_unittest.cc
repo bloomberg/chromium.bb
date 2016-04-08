@@ -6,9 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/pref_names.h"
@@ -50,14 +51,14 @@ class ErrorConsoleUnitTest : public testing::Test {
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
   ErrorConsole* error_console_;
 };
 
 // Test that the error console is enabled/disabled appropriately.
 TEST_F(ErrorConsoleUnitTest, EnableAndDisableErrorConsole) {
   // Start in Dev Channel, without the feature switch.
-  scoped_ptr<ScopedCurrentChannel> channel_override(
+  std::unique_ptr<ScopedCurrentChannel> channel_override(
       new ScopedCurrentChannel(version_info::Channel::DEV));
   ASSERT_EQ(version_info::Channel::DEV, GetCurrentChannel());
   FeatureSwitch::error_console()->SetOverrideValue(

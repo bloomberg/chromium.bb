@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_ZIPFILE_INSTALLER_H_
 #define CHROME_BROWSER_EXTENSIONS_ZIPFILE_INSTALLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/utility_process_host_client.h"
 

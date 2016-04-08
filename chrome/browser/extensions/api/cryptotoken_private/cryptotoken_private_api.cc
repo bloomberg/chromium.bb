@@ -25,7 +25,7 @@ CryptotokenPrivateCanOriginAssertAppIdFunction::
 
 ExtensionFunction::ResponseAction
 CryptotokenPrivateCanOriginAssertAppIdFunction::Run() {
-  scoped_ptr<cryptotoken_private::CanOriginAssertAppId::Params> params =
+  std::unique_ptr<cryptotoken_private::CanOriginAssertAppId::Params> params =
       cryptotoken_private::CanOriginAssertAppId::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 

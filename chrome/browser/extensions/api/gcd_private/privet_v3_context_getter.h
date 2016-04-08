@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_GCD_PRIVATE_PRIVET_V3_CONTEXT_GETTER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_GCD_PRIVATE_PRIVET_V3_CONTEXT_GETTER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -50,7 +51,7 @@ class PrivetV3ContextGetter : public net::URLRequestContextGetter {
 
   // Owned by context_
   CertVerifier* cert_verifier_ = nullptr;
-  scoped_ptr<net::URLRequestContext> context_;
+  std::unique_ptr<net::URLRequestContext> context_;
 
   scoped_refptr<base::SingleThreadTaskRunner> net_task_runner_;
 

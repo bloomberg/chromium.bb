@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/extension_action_runner.h"
+
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_action.h"
-#include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -98,7 +100,7 @@ class ExtensionActionRunnerBrowserTest : public ExtensionBrowserTest {
                                    InjectionType injection_type);
 
  private:
-  std::vector<scoped_ptr<TestExtensionDir>> test_extension_dirs_;
+  std::vector<std::unique_ptr<TestExtensionDir>> test_extension_dirs_;
   std::vector<const Extension*> extensions_;
 };
 
@@ -155,7 +157,7 @@ const Extension* ExtensionActionRunnerBrowserTest::CreateExtension(
       "}",
       name.c_str(), permissions.c_str(), scripts.c_str());
 
-  scoped_ptr<TestExtensionDir> dir(new TestExtensionDir);
+  std::unique_ptr<TestExtensionDir> dir(new TestExtensionDir);
   dir->WriteManifest(manifest);
   dir->WriteFile(FILE_PATH_LITERAL("script.js"),
                  injection_type == CONTENT_SCRIPT ? kContentScriptSource
@@ -470,7 +472,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
   // Wire up the runner to automatically accept the bubble to prompt for page
   // refresh.
   runner->set_default_bubble_close_action_for_testing(
-      make_scoped_ptr(new ToolbarActionsBarBubbleDelegate::CloseAction(
+      base::WrapUnique(new ToolbarActionsBarBubbleDelegate::CloseAction(
           ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE)));
 
   content::NavigationEntry* entry =
@@ -506,7 +508,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
   const int next_nav_id =
       web_contents->GetController().GetLastCommittedEntry()->GetUniqueID();
   runner->set_default_bubble_close_action_for_testing(
-      make_scoped_ptr(new ToolbarActionsBarBubbleDelegate::CloseAction(
+      base::WrapUnique(new ToolbarActionsBarBubbleDelegate::CloseAction(
           ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION)));
 
   // Try running the extension. Nothing should happen, because the user
@@ -521,7 +523,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
 
   // Repeat with a dismissal from bubble deactivation - same story.
   runner->set_default_bubble_close_action_for_testing(
-      make_scoped_ptr(new ToolbarActionsBarBubbleDelegate::CloseAction(
+      base::WrapUnique(new ToolbarActionsBarBubbleDelegate::CloseAction(
           ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_DEACTIVATION)));
   runner->RunAction(extension, true);
   base::RunLoop().RunUntilIdle();

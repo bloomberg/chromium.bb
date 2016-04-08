@@ -91,13 +91,13 @@ class GcdPrivateAPITest : public ExtensionApiTest {
         "ddchlicdkolnonkihahngkmmmjnjlkkf");
   }
 
-  scoped_ptr<net::FakeURLFetcher> CreateFakeURLFetcher(
+  std::unique_ptr<net::FakeURLFetcher> CreateFakeURLFetcher(
       const GURL& url,
       net::URLFetcherDelegate* fetcher_delegate,
       const std::string& response_data,
       net::HttpStatusCode response_code,
       net::URLRequestStatus::Status status) {
-    scoped_ptr<net::FakeURLFetcher> fetcher(new net::FakeURLFetcher(
+    std::unique_ptr<net::FakeURLFetcher> fetcher(new net::FakeURLFetcher(
         url, fetcher_delegate, response_data, response_code, status));
     scoped_refptr<net::HttpResponseHeaders> headers =
         new net::HttpResponseHeaders("");

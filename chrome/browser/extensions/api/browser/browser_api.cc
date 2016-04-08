@@ -13,7 +13,7 @@ BrowserOpenTabFunction::~BrowserOpenTabFunction() {
 }
 
 bool BrowserOpenTabFunction::RunSync() {
-  scoped_ptr<browser::OpenTab::Params> params(
+  std::unique_ptr<browser::OpenTab::Params> params(
       browser::OpenTab::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -22,7 +22,7 @@ bool BrowserOpenTabFunction::RunSync() {
   options.url.reset(new std::string(params->options.url));
 
   std::string error;
-  scoped_ptr<base::DictionaryValue> result(
+  std::unique_ptr<base::DictionaryValue> result(
       ExtensionTabUtil::OpenTab(this, options, &error));
   if (!result) {
     SetError(error);

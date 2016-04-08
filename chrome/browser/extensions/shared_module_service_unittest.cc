@@ -4,10 +4,10 @@
 
 #include "chrome/browser/extensions/shared_module_service.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -51,7 +51,7 @@ scoped_refptr<Extension> CreateExtensionImportingModules(
 }
 
 scoped_refptr<Extension> CreateSharedModule(const std::string& module_id) {
-  scoped_ptr<base::DictionaryValue> manifest =
+  std::unique_ptr<base::DictionaryValue> manifest =
       DictionaryBuilder()
           .Set("name", "Shared Module")
           .Set("version", "1.0")
@@ -177,7 +177,7 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUpdate) {
       CreateSharedModule("shared_module_1");
   EXPECT_TRUE(InstallExtension(shared_module_1.get(), false));
 
-  scoped_ptr<base::DictionaryValue> manifest_2 =
+  std::unique_ptr<base::DictionaryValue> manifest_2 =
       DictionaryBuilder()
           .Set("name", "Shared Module 2")
           .Set("version", "1.0")
@@ -236,7 +236,7 @@ TEST_F(SharedModuleServiceUnitTest, WhitelistedImports) {
   std::string nonwhitelisted_id =
       crx_file::id_util::GenerateId("nonwhitelisted");
   // Create a module which exports to a restricted whitelist.
-  scoped_ptr<base::DictionaryValue> manifest =
+  std::unique_ptr<base::DictionaryValue> manifest =
       DictionaryBuilder()
           .Set("name", "Shared Module")
           .Set("version", "1.0")

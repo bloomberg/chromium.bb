@@ -7,7 +7,9 @@
 #include "chrome/browser/extensions/api/debugger/debugger_api.h"
 
 #include <stddef.h>
+
 #include <map>
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -17,7 +19,6 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
@@ -212,7 +213,7 @@ ExtensionDevToolsInfoBar::ExtensionDevToolsInfoBar(
   g_extension_info_bars.Get()[extension_id] = this;
 
   // This class closes the |infobar_|, so it's safe to pass Unretained(this).
-  scoped_ptr<ExtensionDevToolsInfoBarDelegate> delegate(
+  std::unique_ptr<ExtensionDevToolsInfoBarDelegate> delegate(
       new ExtensionDevToolsInfoBarDelegate(
           base::Bind(&ExtensionDevToolsInfoBar::InfoBarDismissed,
                      base::Unretained(this)),
@@ -399,10 +400,10 @@ void ExtensionDevToolsClientHost::SendDetachedEvent() {
   if (!EventRouter::Get(profile_))
     return;
 
-  scoped_ptr<base::ListValue> args(OnDetach::Create(debuggee_,
-                                                    detach_reason_));
-  scoped_ptr<Event> event(new Event(events::DEBUGGER_ON_DETACH,
-                                    OnDetach::kEventName, std::move(args)));
+  std::unique_ptr<base::ListValue> args(
+      OnDetach::Create(debuggee_, detach_reason_));
+  std::unique_ptr<Event> event(new Event(
+      events::DEBUGGER_ON_DETACH, OnDetach::kEventName, std::move(args)));
   event->restrict_to_browser_context = profile_;
   EventRouter::Get(profile_)
       ->DispatchEventToExtension(extension_id_, std::move(event));
@@ -430,7 +431,7 @@ void ExtensionDevToolsClientHost::DispatchProtocolMessage(
   if (!EventRouter::Get(profile_))
     return;
 
-  scoped_ptr<base::Value> result = base::JSONReader::Read(message);
+  std::unique_ptr<base::Value> result = base::JSONReader::Read(message);
   if (!result->IsType(base::Value::TYPE_DICTIONARY))
     return;
   base::DictionaryValue* dictionary =
@@ -447,10 +448,10 @@ void ExtensionDevToolsClientHost::DispatchProtocolMessage(
     if (dictionary->GetDictionary("params", &params_value))
       params.additional_properties.Swap(params_value);
 
-    scoped_ptr<base::ListValue> args(
+    std::unique_ptr<base::ListValue> args(
         OnEvent::Create(debuggee_, method_name, params));
-    scoped_ptr<Event> event(new Event(events::DEBUGGER_ON_EVENT,
-                                      OnEvent::kEventName, std::move(args)));
+    std::unique_ptr<Event> event(new Event(
+        events::DEBUGGER_ON_EVENT, OnEvent::kEventName, std::move(args)));
     event->restrict_to_browser_context = profile_;
     EventRouter::Get(profile_)
         ->DispatchEventToExtension(extension_id_, std::move(event));
@@ -571,7 +572,7 @@ DebuggerAttachFunction::~DebuggerAttachFunction() {
 }
 
 bool DebuggerAttachFunction::RunAsync() {
-  scoped_ptr<Attach::Params> params(Attach::Params::Create(*args_));
+  std::unique_ptr<Attach::Params> params(Attach::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   CopyDebuggee(&debuggee_, params->target);
@@ -608,7 +609,7 @@ DebuggerDetachFunction::~DebuggerDetachFunction() {
 }
 
 bool DebuggerDetachFunction::RunAsync() {
-  scoped_ptr<Detach::Params> params(Detach::Params::Create(*args_));
+  std::unique_ptr<Detach::Params> params(Detach::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   CopyDebuggee(&debuggee_, params->target);
@@ -630,7 +631,8 @@ DebuggerSendCommandFunction::~DebuggerSendCommandFunction() {
 }
 
 bool DebuggerSendCommandFunction::RunAsync() {
-  scoped_ptr<SendCommand::Params> params(SendCommand::Params::Create(*args_));
+  std::unique_ptr<SendCommand::Params> params(
+      SendCommand::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   CopyDebuggee(&debuggee_, params->target);
@@ -723,7 +725,7 @@ bool DebuggerGetTargetsFunction::RunAsync() {
 
 void DebuggerGetTargetsFunction::SendTargetList(
     const std::vector<DevToolsTargetImpl*>& target_list) {
-  scoped_ptr<base::ListValue> result(new base::ListValue());
+  std::unique_ptr<base::ListValue> result(new base::ListValue());
   for (size_t i = 0; i < target_list.size(); ++i)
     result->Append(SerializeTarget(*target_list[i]));
   STLDeleteContainerPointers(target_list.begin(), target_list.end());

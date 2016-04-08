@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGEMENT_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGEMENT_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
@@ -93,10 +93,10 @@ class ExtensionManagement : public KeyedService {
 
   // Returns the force install list, in format specified by
   // ExternalPolicyLoader::AddExtension().
-  scoped_ptr<base::DictionaryValue> GetForceInstallList() const;
+  std::unique_ptr<base::DictionaryValue> GetForceInstallList() const;
 
   // Like GetForceInstallList(), but returns recommended install list instead.
-  scoped_ptr<base::DictionaryValue> GetRecommendedInstallList() const;
+  std::unique_ptr<base::DictionaryValue> GetRecommendedInstallList() const;
 
   // Returns if an extension with id |id| is explicitly allowed by enterprise
   // policy or not.
@@ -114,7 +114,7 @@ class ExtensionManagement : public KeyedService {
   APIPermissionSet GetBlockedAPIPermissions(const Extension* extension) const;
 
   // Returns blocked permission set for |extension|.
-  scoped_ptr<const PermissionSet> GetBlockedPermissions(
+  std::unique_ptr<const PermissionSet> GetBlockedPermissions(
       const Extension* extension) const;
 
   // Returns true if every permission in |perms| is allowed for |extension|.
@@ -130,10 +130,10 @@ class ExtensionManagement : public KeyedService {
 
  private:
   typedef base::ScopedPtrHashMap<ExtensionId,
-                                 scoped_ptr<internal::IndividualSettings>>
+                                 std::unique_ptr<internal::IndividualSettings>>
       SettingsIdMap;
   typedef base::ScopedPtrHashMap<std::string,
-                                 scoped_ptr<internal::IndividualSettings>>
+                                 std::unique_ptr<internal::IndividualSettings>>
       SettingsUpdateUrlMap;
   friend class ExtensionManagementServiceTest;
 
@@ -177,10 +177,10 @@ class ExtensionManagement : public KeyedService {
   // URL), all unspecified part will take value from |default_settings_|.
   // For all other extensions, all settings from |default_settings_| will be
   // enforced.
-  scoped_ptr<internal::IndividualSettings> default_settings_;
+  std::unique_ptr<internal::IndividualSettings> default_settings_;
 
   // Extension settings applicable to all extensions.
-  scoped_ptr<internal::GlobalSettings> global_settings_;
+  std::unique_ptr<internal::GlobalSettings> global_settings_;
 
   PrefService* pref_service_;
 

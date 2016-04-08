@@ -56,7 +56,7 @@ class PageCaptureSaveAsMHTMLFunction : public ChromeAsyncExtensionFunction {
   // Returns the WebContents we are associated with, NULL if it's been closed.
   content::WebContents* GetWebContents();
 
-  scoped_ptr<extensions::api::page_capture::SaveAsMHTML::Params> params_;
+  std::unique_ptr<extensions::api::page_capture::SaveAsMHTML::Params> params_;
 
   // The path to the temporary file containing the MHTML data.
   base::FilePath mhtml_path_;

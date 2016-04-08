@@ -35,7 +35,7 @@ class TemplateURLServiceObserver {
     runner_->Quit();
   }
   base::RunLoop* runner_;
-  scoped_ptr<TemplateURLService::Subscription> template_url_sub_;
+  std::unique_ptr<TemplateURLService::Subscription> template_url_sub_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceObserver);
 };

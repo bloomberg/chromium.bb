@@ -143,7 +143,7 @@ class ExtensionStorageMonitor : public KeyedService,
   scoped_refptr<StorageEventObserver> storage_observer_;
 
   // Modal dialog used to confirm removal of an extension.
-  scoped_ptr<ExtensionUninstallDialog> uninstall_dialog_;
+  std::unique_ptr<ExtensionUninstallDialog> uninstall_dialog_;
 
   // The ID of the extension that is the subject of the uninstall confirmation
   // dialog.

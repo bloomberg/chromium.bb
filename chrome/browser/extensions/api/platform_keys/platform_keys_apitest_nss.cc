@@ -4,9 +4,11 @@
 
 #include <cryptohi.h>
 
+#include <memory>
+
 #include "base/json/json_writer.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
@@ -190,7 +192,7 @@ class PlatformKeysTest : public ExtensionApiTest {
     // corporate keys.
     base::DictionaryValue key_permissions_policy;
     {
-      scoped_ptr<base::DictionaryValue> cert1_key_permission(
+      std::unique_ptr<base::DictionaryValue> cert1_key_permission(
           new base::DictionaryValue);
       cert1_key_permission->SetBooleanWithoutPathExpansion(
           "allowCorporateKeyUsage", true);
@@ -214,7 +216,7 @@ class PlatformKeysTest : public ExtensionApiTest {
 
   void GotPermissionsForExtension(
       const base::Closure& done_callback,
-      scoped_ptr<chromeos::KeyPermissions::PermissionsForExtension>
+      std::unique_ptr<chromeos::KeyPermissions::PermissionsForExtension>
           permissions_for_ext) {
     std::string client_cert1_spki =
         chromeos::platform_keys::GetSubjectPublicKeyInfo(client_cert1_);
@@ -271,9 +273,9 @@ class PlatformKeysTest : public ExtensionApiTest {
   }
 
   const bool key_permission_policy_;
-  scoped_ptr<policy::UserPolicyTestHelper> policy_helper_;
+  std::unique_ptr<policy::UserPolicyTestHelper> policy_helper_;
   policy::DevicePolicyCrosTestHelper device_policy_test_helper_;
-  scoped_ptr<crypto::ScopedTestSystemNSSKeySlot> test_system_slot_;
+  std::unique_ptr<crypto::ScopedTestSystemNSSKeySlot> test_system_slot_;
 };
 
 class TestSelectDelegate
@@ -367,7 +369,7 @@ IN_PROC_BROWSER_TEST_P(UnmanagedPlatformKeysTest, Basic) {
   certs.push_back(client_cert1_);
 
   GetPlatformKeysService()->SetSelectDelegate(
-      make_scoped_ptr(new TestSelectDelegate(certs)));
+      base::WrapUnique(new TestSelectDelegate(certs)));
 
   ASSERT_TRUE(RunExtensionTest("basicTests")) << message_;
 }
@@ -379,7 +381,7 @@ IN_PROC_BROWSER_TEST_P(UnmanagedPlatformKeysTest, Permissions) {
   certs.push_back(client_cert1_);
 
   GetPlatformKeysService()->SetSelectDelegate(
-      make_scoped_ptr(new TestSelectDelegate(certs)));
+      base::WrapUnique(new TestSelectDelegate(certs)));
 
   ASSERT_TRUE(RunExtensionTest("permissionTests")) << message_;
 }
@@ -394,7 +396,7 @@ IN_PROC_BROWSER_TEST_P(ManagedWithoutPermissionPlatformKeysTest,
   // To verify that the user is not prompted for any certificate selection,
   // set up a delegate that fails on any invocation.
   GetPlatformKeysService()->SetSelectDelegate(
-      make_scoped_ptr(new TestSelectDelegate(net::CertificateList())));
+      base::WrapUnique(new TestSelectDelegate(net::CertificateList())));
 
   ASSERT_TRUE(RunExtensionTest("managedProfile")) << message_;
 }
@@ -407,7 +409,7 @@ IN_PROC_BROWSER_TEST_P(ManagedWithoutPermissionPlatformKeysTest,
   // To verify that the user is not prompted for any certificate selection,
   // set up a delegate that fails on any invocation.
   GetPlatformKeysService()->SetSelectDelegate(
-      make_scoped_ptr(new TestSelectDelegate(net::CertificateList())));
+      base::WrapUnique(new TestSelectDelegate(net::CertificateList())));
 
   ASSERT_TRUE(RunExtensionTest("corporateKeyWithoutPermissionTests"))
       << message_;
@@ -431,7 +433,7 @@ IN_PROC_BROWSER_TEST_P(ManagedWithPermissionPlatformKeysTest,
   certs.push_back(client_cert1_);
 
   GetPlatformKeysService()->SetSelectDelegate(
-      make_scoped_ptr(new TestSelectDelegate(certs)));
+      base::WrapUnique(new TestSelectDelegate(certs)));
 
   ASSERT_TRUE(RunExtensionTest("corporateKeyWithPermissionTests")) << message_;
 }
@@ -442,7 +444,7 @@ IN_PROC_BROWSER_TEST_P(ManagedWithPermissionPlatformKeysTest,
   // As the profile is managed, the user must not be able to grant any
   // certificate permission. Set up a delegate that fails on any invocation.
   GetPlatformKeysService()->SetSelectDelegate(
-      make_scoped_ptr(new TestSelectDelegate(net::CertificateList())));
+      base::WrapUnique(new TestSelectDelegate(net::CertificateList())));
 
   ASSERT_TRUE(RunExtensionTest("policyDoesGrantAccessToNonCorporateKey"))
       << message_;

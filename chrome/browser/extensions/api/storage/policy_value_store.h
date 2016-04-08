@@ -7,13 +7,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/browser/api/storage/settings_observer.h"
 #include "extensions/browser/value_store/value_store.h"
 
@@ -32,7 +32,7 @@ class PolicyValueStore : public ValueStore {
  public:
   PolicyValueStore(const std::string& extension_id,
                    const scoped_refptr<SettingsObserverList>& observers,
-                   scoped_ptr<ValueStore> delegate);
+                   std::unique_ptr<ValueStore> delegate);
   ~PolicyValueStore() override;
 
   // Stores |policy| in the persistent database represented by the |delegate_|
@@ -64,7 +64,7 @@ class PolicyValueStore : public ValueStore {
  private:
   std::string extension_id_;
   scoped_refptr<SettingsObserverList> observers_;
-  scoped_ptr<ValueStore> delegate_;
+  std::unique_ptr<ValueStore> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyValueStore);
 };

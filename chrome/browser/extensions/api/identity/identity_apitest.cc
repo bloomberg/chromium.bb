@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -112,7 +113,7 @@ class SendResponseDelegate
   }
 
  private:
-  scoped_ptr<bool> response_;
+  std::unique_ptr<bool> response_;
   bool should_post_quit_;
 };
 
@@ -125,7 +126,7 @@ class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
       const std::string& args) {
     response_delegate_.reset(new SendResponseDelegate);
     function->set_test_delegate(response_delegate_.get());
-    scoped_ptr<base::ListValue> parsed_args(utils::ParseList(args));
+    std::unique_ptr<base::ListValue> parsed_args(utils::ParseList(args));
     EXPECT_TRUE(parsed_args.get()) <<
         "Could not parse extension function arguments: " << args;
     function->SetArgs(parsed_args.get());
@@ -170,7 +171,7 @@ class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
     EXPECT_TRUE(response_delegate_->HasResponse());
   }
 
-  scoped_ptr<SendResponseDelegate> response_delegate_;
+  std::unique_ptr<SendResponseDelegate> response_delegate_;
 };
 
 class TestHangOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
@@ -306,13 +307,13 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
 
   void set_login_ui_result(bool result) { login_ui_result_ = result; }
 
-  void set_mint_token_flow(scoped_ptr<OAuth2MintTokenFlow> flow) {
+  void set_mint_token_flow(std::unique_ptr<OAuth2MintTokenFlow> flow) {
     flow_ = std::move(flow);
   }
 
   void set_mint_token_result(TestOAuth2MintTokenFlow::ResultType result_type) {
     set_mint_token_flow(
-        make_scoped_ptr(new TestOAuth2MintTokenFlow(result_type, this)));
+        base::WrapUnique(new TestOAuth2MintTokenFlow(result_type, this)));
   }
 
   void set_scope_ui_failure(GaiaWebAuthFlow::Failure failure) {
@@ -402,7 +403,7 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
   bool login_ui_shown_;
   bool scope_ui_shown_;
 
-  scoped_ptr<OAuth2MintTokenFlow> flow_;
+  std::unique_ptr<OAuth2MintTokenFlow> flow_;
 
   std::string login_access_token_;
 };
@@ -459,7 +460,7 @@ class IdentityGetAccountsFunctionTest : public ExtensionBrowserTest {
     for (base::ListValue::const_iterator it = results->begin();
          it != results->end();
          ++it) {
-      scoped_ptr<api::identity::AccountInfo> info =
+      std::unique_ptr<api::identity::AccountInfo> info =
           api::identity::AccountInfo::FromValue(**it);
       if (info.get())
         result_ids.insert(info->id);
@@ -493,7 +494,7 @@ class IdentityGetAccountsFunctionTest : public ExtensionBrowserTest {
       for (base::ListValue::const_iterator it = results->begin();
            it != results->end();
            ++it) {
-        scoped_ptr<api::identity::AccountInfo> info =
+        std::unique_ptr<api::identity::AccountInfo> info =
             api::identity::AccountInfo::FromValue(**it);
         if (info.get())
           msg << info->id << " ";
@@ -614,33 +615,35 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
   FakeSigninManagerForTesting* signin_manager_;
   FakeProfileOAuth2TokenService* token_service_;
 
-  scoped_ptr<base::CallbackList<void(content::BrowserContext*)>::Subscription>
+  std::unique_ptr<
+      base::CallbackList<void(content::BrowserContext*)>::Subscription>
       will_create_browser_context_services_subscription_;
 };
 
 class IdentityGetProfileUserInfoFunctionTest : public IdentityTestWithSignin {
  protected:
-  scoped_ptr<api::identity::ProfileUserInfo> RunGetProfileUserInfo() {
+  std::unique_ptr<api::identity::ProfileUserInfo> RunGetProfileUserInfo() {
     scoped_refptr<IdentityGetProfileUserInfoFunction> func(
         new IdentityGetProfileUserInfoFunction);
     func->set_extension(test_util::CreateEmptyExtension(kExtensionId).get());
-    scoped_ptr<base::Value> value(
+    std::unique_ptr<base::Value> value(
         utils::RunFunctionAndReturnSingleResult(func.get(), "[]", browser()));
     return api::identity::ProfileUserInfo::FromValue(*value.get());
   }
 
-  scoped_ptr<api::identity::ProfileUserInfo> RunGetProfileUserInfoWithEmail() {
+  std::unique_ptr<api::identity::ProfileUserInfo>
+  RunGetProfileUserInfoWithEmail() {
     scoped_refptr<IdentityGetProfileUserInfoFunction> func(
         new IdentityGetProfileUserInfoFunction);
     func->set_extension(CreateExtensionWithEmailPermission());
-    scoped_ptr<base::Value> value(
+    std::unique_ptr<base::Value> value(
         utils::RunFunctionAndReturnSingleResult(func.get(), "[]", browser()));
     return api::identity::ProfileUserInfo::FromValue(*value.get());
   }
 
  private:
   scoped_refptr<Extension> CreateExtensionWithEmailPermission() {
-    scoped_ptr<base::DictionaryValue> test_extension_value(
+    std::unique_ptr<base::DictionaryValue> test_extension_value(
         api_test_utils::ParseDictionary(
             "{\"name\": \"Test\", \"version\": \"1.0\", "
             "\"permissions\": [\"identity.email\"]}"));
@@ -649,7 +652,7 @@ class IdentityGetProfileUserInfoFunctionTest : public IdentityTestWithSignin {
 };
 
 IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest, NotSignedIn) {
-  scoped_ptr<api::identity::ProfileUserInfo> info =
+  std::unique_ptr<api::identity::ProfileUserInfo> info =
       RunGetProfileUserInfoWithEmail();
   EXPECT_TRUE(info->email.empty());
   EXPECT_TRUE(info->id.empty());
@@ -657,7 +660,7 @@ IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest, NotSignedIn) {
 
 IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest, SignedIn) {
   SignIn("president@example.com", "12345");
-  scoped_ptr<api::identity::ProfileUserInfo> info =
+  std::unique_ptr<api::identity::ProfileUserInfo> info =
       RunGetProfileUserInfoWithEmail();
   EXPECT_EQ("president@example.com", info->email);
   EXPECT_EQ("12345", info->id);
@@ -665,7 +668,8 @@ IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest, SignedIn) {
 
 IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest,
                        NotSignedInNoEmail) {
-  scoped_ptr<api::identity::ProfileUserInfo> info = RunGetProfileUserInfo();
+  std::unique_ptr<api::identity::ProfileUserInfo> info =
+      RunGetProfileUserInfo();
   EXPECT_TRUE(info->email.empty());
   EXPECT_TRUE(info->id.empty());
 }
@@ -673,7 +677,8 @@ IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest,
 IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest,
                        SignedInNoEmail) {
   SignIn("president@example.com", "12345");
-  scoped_ptr<api::identity::ProfileUserInfo> info = RunGetProfileUserInfo();
+  std::unique_ptr<api::identity::ProfileUserInfo> info =
+      RunGetProfileUserInfo();
   EXPECT_TRUE(info->email.empty());
   EXPECT_TRUE(info->id.empty());
 }
@@ -897,7 +902,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
   func->set_extension(extension.get());
   func->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
-  scoped_ptr<base::Value> value(
+  std::unique_ptr<base::Value> value(
       utils::RunFunctionAndReturnSingleResult(func.get(), "[]", browser()));
   std::string access_token;
   EXPECT_TRUE(value->GetAsString(&access_token));
@@ -922,8 +927,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
   func->set_extension(extension.get());
   func->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
-  scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
-      func.get(), "[{}]", browser()));
+  std::unique_ptr<base::Value> value(
+      utils::RunFunctionAndReturnSingleResult(func.get(), "[{}]", browser()));
   std::string access_token;
   EXPECT_TRUE(value->GetAsString(&access_token));
   EXPECT_EQ(std::string(kAccessToken), access_token);
@@ -1008,7 +1013,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
   func->set_login_ui_result(true);
   func->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
-  scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
       func.get(), "[{\"interactive\": true}]", browser()));
   std::string access_token;
   EXPECT_TRUE(value->GetAsString(&access_token));
@@ -1039,7 +1044,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_login_ui_result(true);
   func->set_mint_token_result(TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS);
 
-  scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
       func.get(), "[{\"interactive\": true}]", browser()));
   std::string access_token;
   EXPECT_TRUE(value->GetAsString(&access_token));
@@ -1144,7 +1149,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_extension(extension.get());
   func->set_mint_token_result(TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS);
 
-  scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
       func.get(), "[{\"interactive\": true}]", browser()));
   std::string access_token;
   EXPECT_TRUE(value->GetAsString(&access_token));
@@ -1181,7 +1186,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoninteractiveQueue) {
 
   QueueRequestComplete(type, &queued_request);
 
-  scoped_ptr<base::Value> value(WaitForSingleResult(func.get()));
+  std::unique_ptr<base::Value> value(WaitForSingleResult(func.get()));
   std::string access_token;
   EXPECT_TRUE(value->GetAsString(&access_token));
   EXPECT_EQ(std::string(kAccessToken), access_token);
@@ -1215,7 +1220,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveQueue) {
   // queued request clears.
   QueueRequestComplete(type, &queued_request);
 
-  scoped_ptr<base::Value> value(WaitForSingleResult(func.get()));
+  std::unique_ptr<base::Value> value(WaitForSingleResult(func.get()));
   std::string access_token;
   EXPECT_TRUE(value->GetAsString(&access_token));
   EXPECT_EQ(std::string(kAccessToken), access_token);
@@ -1260,7 +1265,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoninteractiveShutdown) {
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
   func->set_extension(extension.get());
 
-  func->set_mint_token_flow(make_scoped_ptr(new TestHangOAuth2MintTokenFlow()));
+  func->set_mint_token_flow(
+      base::WrapUnique(new TestHangOAuth2MintTokenFlow()));
   RunFunctionAsync(func.get(), "[{\"interactive\": false}]");
 
   // After the request is canceled, the function will complete.
@@ -1307,8 +1313,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   SetCachedToken(token);
 
   // Get a token. Should not require a GAIA request.
-  scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
-      func.get(), "[{}]", browser()));
+  std::unique_ptr<base::Value> value(
+      utils::RunFunctionAndReturnSingleResult(func.get(), "[{}]", browser()));
   std::string access_token;
   EXPECT_TRUE(value->GetAsString(&access_token));
   EXPECT_EQ(std::string(kAccessToken), access_token);
@@ -1366,7 +1372,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 
   QueueRequestComplete(type, &queued_request);
 
-  scoped_ptr<base::Value> value(WaitForSingleResult(func.get()));
+  std::unique_ptr<base::Value> value(WaitForSingleResult(func.get()));
   std::string access_token;
   EXPECT_TRUE(value->GetAsString(&access_token));
   EXPECT_EQ(std::string(kAccessToken), access_token);
@@ -1390,7 +1396,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_login_ui_result(true);
   func->set_mint_token_result(TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS);
 
-  scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
       func.get(), "[{\"interactive\": true}]", browser()));
   std::string access_token;
   EXPECT_TRUE(value->GetAsString(&access_token));
@@ -1435,7 +1441,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, MultiDefaultUser) {
 
   IssueLoginAccessTokenForAccount("primary@example.com");
 
-  scoped_ptr<base::Value> value(WaitForSingleResult(func.get()));
+  std::unique_ptr<base::Value> value(WaitForSingleResult(func.get()));
   std::string access_token;
   EXPECT_TRUE(value->GetAsString(&access_token));
   EXPECT_EQ(std::string(kAccessToken), access_token);
@@ -1460,7 +1466,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, MultiPrimaryUser) {
 
   IssueLoginAccessTokenForAccount("primary@example.com");
 
-  scoped_ptr<base::Value> value(WaitForSingleResult(func.get()));
+  std::unique_ptr<base::Value> value(WaitForSingleResult(func.get()));
   std::string access_token;
   EXPECT_TRUE(value->GetAsString(&access_token));
   EXPECT_EQ(std::string(kAccessToken), access_token);
@@ -1485,7 +1491,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, MultiSecondaryUser) {
 
   IssueLoginAccessTokenForAccount("secondary@example.com");
 
-  scoped_ptr<base::Value> value(WaitForSingleResult(func.get()));
+  std::unique_ptr<base::Value> value(WaitForSingleResult(func.get()));
   std::string access_token;
   EXPECT_TRUE(value->GetAsString(&access_token));
   EXPECT_EQ(std::string(kAccessToken), access_token);
@@ -1570,7 +1576,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesDefault) {
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
   func->set_extension(extension.get());
   func->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
-  scoped_ptr<base::Value> value(
+  std::unique_ptr<base::Value> value(
       utils::RunFunctionAndReturnSingleResult(func.get(), "[{}]", browser()));
   std::string access_token;
   EXPECT_TRUE(value->GetAsString(&access_token));
@@ -1599,7 +1605,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmail) {
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
   func->set_extension(extension.get());
   func->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
-  scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
       func.get(), "[{\"scopes\": [\"email\"]}]", browser()));
   std::string access_token;
   EXPECT_TRUE(value->GetAsString(&access_token));
@@ -1616,7 +1622,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmailFooBar) {
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
   func->set_extension(extension.get());
   func->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
-  scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
       func.get(), "[{\"scopes\": [\"email\", \"foo\", \"bar\"]}]", browser()));
   std::string access_token;
   EXPECT_TRUE(value->GetAsString(&access_token));
@@ -1648,12 +1654,12 @@ class GetAuthTokenFunctionPublicSessionTest : public GetAuthTokenFunctionTest {
 
     // Set up fake install attributes to make the device appeared as
     // enterprise-managed.
-    scoped_ptr<policy::StubEnterpriseInstallAttributes> attributes(
-        new policy::StubEnterpriseInstallAttributes());
-    attributes->SetDomain("example.com");
-    attributes->SetRegistrationUser("user@example.com");
-    policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
-        attributes.release());
+     std::unique_ptr<policy::StubEnterpriseInstallAttributes> attributes(
+         new policy::StubEnterpriseInstallAttributes());
+     attributes->SetDomain("example.com");
+     attributes->SetRegistrationUser("user@example.com");
+     policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
+         attributes.release());
   }
 
   scoped_refptr<Extension> CreateTestExtension(const std::string& id) {
@@ -1696,7 +1702,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionPublicSessionTest, Whitelisted) {
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
   func->set_extension(CreateTestExtension("ljacajndfccfgnfohlgkdphmbnpkjflk"));
   func->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
-  scoped_ptr<base::Value> value(
+  std::unique_ptr<base::Value> value(
       utils::RunFunctionAndReturnSingleResult(func.get(), "[{}]", browser()));
   std::string access_token;
   EXPECT_TRUE(value->GetAsString(&access_token));
@@ -1858,7 +1864,7 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, NonInteractiveSuccess) {
   function->set_extension(empty_extension.get());
 
   function->InitFinalRedirectURLPrefixForTest("abcdefghij");
-  scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
       function.get(),
       "[{\"interactive\": false,"
       "\"url\": \"https://abcdefghij.chromiumapp.org/callback#test\"}]",
@@ -1885,7 +1891,7 @@ IN_PROC_BROWSER_TEST_F(
   function->set_extension(empty_extension.get());
 
   function->InitFinalRedirectURLPrefixForTest("abcdefghij");
-  scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
       function.get(),
       "[{\"interactive\": true,"
       "\"url\": \"https://abcdefghij.chromiumapp.org/callback#test\"}]",
@@ -1913,7 +1919,7 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest,
   function->InitFinalRedirectURLPrefixForTest("abcdefghij");
   std::string args = "[{\"interactive\": true, \"url\": \"" +
       auth_url.spec() + "\"}]";
-  scoped_ptr<base::Value> value(
+  std::unique_ptr<base::Value> value(
       utils::RunFunctionAndReturnSingleResult(function.get(), args, browser()));
 
   std::string url;

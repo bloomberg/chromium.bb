@@ -7,13 +7,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -203,7 +203,7 @@ class BundleInstaller : public WebstoreInstallHelper::Delegate,
   Profile* profile_;
 
   // The UI that shows the confirmation prompt.
-  scoped_ptr<ExtensionInstallPrompt> install_ui_;
+  std::unique_ptr<ExtensionInstallPrompt> install_ui_;
 
   ApprovalCallback approval_callback_;
   base::Closure install_callback_;

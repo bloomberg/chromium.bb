@@ -26,7 +26,7 @@ const char kBrowserActionStorageKey[] = "browser_action";
 const char kExtensionName[] = "Default Persistence Test Extension";
 
 void QuitMessageLoop(content::MessageLoopRunner* runner,
-                     scoped_ptr<base::Value> value) {
+                     std::unique_ptr<base::Value> value) {
   runner->Quit();
 }
 

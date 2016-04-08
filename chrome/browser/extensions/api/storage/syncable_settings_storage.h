@@ -7,13 +7,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/storage/setting_sync_data.h"
@@ -65,8 +65,8 @@ class SyncableSettingsStorage : public ValueStore {
   // |sync_processor| is used to write out any changes.
   // Returns any error when trying to sync, or an empty error on success.
   syncer::SyncError StartSyncing(
-      scoped_ptr<base::DictionaryValue> sync_state,
-      scoped_ptr<SettingsSyncProcessor> sync_processor);
+      std::unique_ptr<base::DictionaryValue> sync_state,
+      std::unique_ptr<SettingsSyncProcessor> sync_processor);
 
   // Stops syncing this storage area. May be called at any time (idempotent).
   void StopSyncing();
@@ -75,7 +75,7 @@ class SyncableSettingsStorage : public ValueStore {
   // time, changes will be ignored if sync isn't active.
   // Returns any error when trying to sync, or an empty error on success.
   syncer::SyncError ProcessSyncChanges(
-      scoped_ptr<SettingSyncDataList> sync_changes);
+      std::unique_ptr<SettingSyncDataList> sync_changes);
 
  private:
   // Sends the changes from |result| to sync if it's enabled.
@@ -90,13 +90,13 @@ class SyncableSettingsStorage : public ValueStore {
   // in sync yet.
   // Returns any error when trying to sync, or an empty error on success.
   syncer::SyncError SendLocalSettingsToSync(
-      scoped_ptr<base::DictionaryValue> local_state);
+      std::unique_ptr<base::DictionaryValue> local_state);
 
   // Overwrites local state with sync state.
   // Returns any error when trying to sync, or an empty error on success.
   syncer::SyncError OverwriteLocalSettingsWithSync(
-      scoped_ptr<base::DictionaryValue> sync_state,
-      scoped_ptr<base::DictionaryValue> local_state);
+      std::unique_ptr<base::DictionaryValue> sync_state,
+      std::unique_ptr<base::DictionaryValue> local_state);
 
   // Called when an Add/Update/Remove comes from sync. Ownership of Value*s
   // are taken.
@@ -121,10 +121,10 @@ class SyncableSettingsStorage : public ValueStore {
   std::string const extension_id_;
 
   // Storage area to sync.
-  const scoped_ptr<ValueStore> delegate_;
+  const std::unique_ptr<ValueStore> delegate_;
 
   // Object which sends changes to sync.
-  scoped_ptr<SettingsSyncProcessor> sync_processor_;
+  std::unique_ptr<SettingsSyncProcessor> sync_processor_;
 
   const syncer::ModelType sync_type_;
   const syncer::SyncableService::StartSyncFlare flare_;

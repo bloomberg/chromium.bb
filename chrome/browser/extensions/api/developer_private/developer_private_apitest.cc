@@ -45,12 +45,12 @@ IN_PROC_BROWSER_TEST_F(DeveloperPrivateApiTest, InspectAppWindowView) {
   // Get the info about the app, including the inspectable views.
   scoped_refptr<UIThreadExtensionFunction> function(
       new api::DeveloperPrivateGetExtensionInfoFunction());
-  scoped_ptr<base::Value> result(
+  std::unique_ptr<base::Value> result(
       extension_function_test_utils::RunFunctionAndReturnSingleResult(
           function.get(), base::StringPrintf("[\"%s\"]", app->id().c_str()),
           browser()));
   ASSERT_TRUE(result);
-  scoped_ptr<api::developer_private::ExtensionInfo> info =
+  std::unique_ptr<api::developer_private::ExtensionInfo> info =
       api::developer_private::ExtensionInfo::FromValue(*result);
   ASSERT_TRUE(info);
 
@@ -99,12 +99,12 @@ IN_PROC_BROWSER_TEST_F(DeveloperPrivateApiTest, InspectEmbeddedOptionsPage) {
   // Get the info about the extension, including the inspectable views.
   scoped_refptr<UIThreadExtensionFunction> function(
       new api::DeveloperPrivateGetExtensionInfoFunction());
-  scoped_ptr<base::Value> result(
+  std::unique_ptr<base::Value> result(
       extension_function_test_utils::RunFunctionAndReturnSingleResult(
           function.get(),
           base::StringPrintf("[\"%s\"]", extension->id().c_str()), browser()));
   ASSERT_TRUE(result);
-  scoped_ptr<api::developer_private::ExtensionInfo> info =
+  std::unique_ptr<api::developer_private::ExtensionInfo> info =
       api::developer_private::ExtensionInfo::FromValue(*result);
   ASSERT_TRUE(info);
 

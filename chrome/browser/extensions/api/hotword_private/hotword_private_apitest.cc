@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/api/hotword_private/hotword_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -85,7 +87,7 @@ class MockAudioHistoryHandler : public HotwordAudioHistoryHandler {
   }
 
  private:
-  scoped_ptr<history::WebHistoryService> web_history_;
+  std::unique_ptr<history::WebHistoryService> web_history_;
 };
 
 class MockHotwordService : public HotwordService {
@@ -100,8 +102,8 @@ class MockHotwordService : public HotwordService {
     service_available_ = available;
   }
 
-  static scoped_ptr<KeyedService> Build(content::BrowserContext* profile) {
-    return make_scoped_ptr(
+  static std::unique_ptr<KeyedService> Build(content::BrowserContext* profile) {
+    return base::WrapUnique(
         new MockHotwordService(static_cast<Profile*>(profile)));
   }
 

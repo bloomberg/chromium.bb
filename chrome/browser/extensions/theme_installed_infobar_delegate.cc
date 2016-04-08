@@ -51,9 +51,10 @@ void ThemeInstalledInfoBarDelegate::Create(
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile);
-  scoped_ptr<infobars::InfoBar> new_infobar(
+  std::unique_ptr<infobars::InfoBar> new_infobar(
       infobar_service->CreateConfirmInfoBar(
-          scoped_ptr<ConfirmInfoBarDelegate>(new ThemeInstalledInfoBarDelegate(
+          std::unique_ptr<
+              ConfirmInfoBarDelegate>(new ThemeInstalledInfoBarDelegate(
               extensions::ExtensionSystem::Get(profile)->extension_service(),
               theme_service, new_theme, previous_theme_id,
               previous_using_system_theme))));

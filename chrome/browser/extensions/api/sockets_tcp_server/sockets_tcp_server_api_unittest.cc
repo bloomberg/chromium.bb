@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
@@ -19,14 +21,14 @@
 namespace extensions {
 namespace api {
 
-static scoped_ptr<KeyedService> ApiResourceManagerTestFactory(
+static std::unique_ptr<KeyedService> ApiResourceManagerTestFactory(
     content::BrowserContext* context) {
-  return make_scoped_ptr(new ApiResourceManager<ResumableTCPSocket>(context));
+  return base::WrapUnique(new ApiResourceManager<ResumableTCPSocket>(context));
 }
 
-static scoped_ptr<KeyedService> ApiResourceManagerTestServerFactory(
+static std::unique_ptr<KeyedService> ApiResourceManagerTestServerFactory(
     content::BrowserContext* context) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new ApiResourceManager<ResumableTCPServerSocket>(context));
 }
 
@@ -56,7 +58,7 @@ TEST_F(SocketsTcpServerUnitTest, Create) {
   function->set_work_thread_id(id);
 
   // Run tests
-  scoped_ptr<base::DictionaryValue> result(RunFunctionAndReturnDictionary(
+  std::unique_ptr<base::DictionaryValue> result(RunFunctionAndReturnDictionary(
       function, "[{\"persistent\": true, \"name\": \"foo\"}]"));
   ASSERT_TRUE(result.get());
 }

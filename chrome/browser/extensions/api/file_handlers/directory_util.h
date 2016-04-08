@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_FILE_HANDLERS_DIRECTORY_UTIL_H_
 #define CHROME_BROWSER_EXTENSIONS_API_FILE_HANDLERS_DIRECTORY_UTIL_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 class Profile;
@@ -29,7 +29,7 @@ namespace app_file_handler_util {
 
 class IsDirectoryCollector {
  public:
-  typedef base::Callback<void(scoped_ptr<std::set<base::FilePath>>)>
+  typedef base::Callback<void(std::unique_ptr<std::set<base::FilePath>>)>
       CompletionCallback;
 
   explicit IsDirectoryCollector(Profile* profile);
@@ -45,7 +45,7 @@ class IsDirectoryCollector {
 
   Profile* profile_;
   std::vector<base::FilePath> paths_;
-  scoped_ptr<std::set<base::FilePath>> result_;
+  std::unique_ptr<std::set<base::FilePath>> result_;
   size_t left_;
   CompletionCallback callback_;
   base::WeakPtrFactory<IsDirectoryCollector> weak_ptr_factory_;

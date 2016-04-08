@@ -49,7 +49,7 @@ void MessagePropertyProvider::GetChannelID(Profile* profile,
 // ChannelIDService::GetChannelID to the callback provided to
 // MessagePropertyProvider::GetChannelID.
 struct MessagePropertyProvider::GetChannelIDOutput {
-  scoped_ptr<crypto::ECPrivateKey> channel_id_key;
+  std::unique_ptr<crypto::ECPrivateKey> channel_id_key;
   net::ChannelIDService::Request request;
 };
 

@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_IDENTITY_IDENTITY_SIGNIN_FLOW_H_
 #define CHROME_BROWSER_EXTENSIONS_API_IDENTITY_IDENTITY_SIGNIN_FLOW_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 class Profile;

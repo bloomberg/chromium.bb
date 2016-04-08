@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/permissions_based_management_policy_provider.h"
+
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
-#include "chrome/browser/extensions/permissions_based_management_policy_provider.h"
 #include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -83,8 +84,8 @@ class PermissionsBasedManagementPolicyProviderTest : public testing::Test {
  protected:
   std::vector<APIPermissionInfo*> perm_list_;
 
-  scoped_ptr<TestingPrefServiceSimple> pref_service_;
-  scoped_ptr<ExtensionManagement> settings_;
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<ExtensionManagement> settings_;
 
   PermissionsBasedManagementPolicyProvider provider_;
 };

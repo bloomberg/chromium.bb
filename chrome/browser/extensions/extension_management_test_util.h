@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGEMENT_TEST_UTIL_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGEMENT_TEST_UTIL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
 #include "extensions/browser/pref_names.h"
@@ -88,7 +88,7 @@ class ExtensionManagementPrefUpdaterBase {
   // Take the preference. Caller takes ownership of it as well.
   // This function must be called after accessing publicly exposed functions,
   // for example in destructor of subclass.
-  scoped_ptr<base::DictionaryValue> TakePref();
+  std::unique_ptr<base::DictionaryValue> TakePref();
 
  private:
   // Helper functions for manipulating sub properties like list of strings.
@@ -96,7 +96,7 @@ class ExtensionManagementPrefUpdaterBase {
   void AddStringToList(const std::string& path, const std::string& str);
   void RemoveStringFromList(const std::string& path, const std::string& str);
 
-  scoped_ptr<base::DictionaryValue> pref_;
+  std::unique_ptr<base::DictionaryValue> pref_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionManagementPrefUpdaterBase);
 };
@@ -140,7 +140,7 @@ class ExtensionManagementPolicyUpdater
 
  private:
   policy::MockConfigurationPolicyProvider* provider_;
-  scoped_ptr<policy::PolicyBundle> policies_;
+  std::unique_ptr<policy::PolicyBundle> policies_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionManagementPolicyUpdater);
 };

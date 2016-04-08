@@ -27,12 +27,12 @@ const char kUnknownConditionAttribute[] = "Unknown condition attribute '%s'";
 }  // namespace
 
 ContentCondition::ContentCondition(
-    std::vector<scoped_ptr<const ContentPredicate>> predicates)
+    std::vector<std::unique_ptr<const ContentPredicate>> predicates)
     : predicates(std::move(predicates)) {}
 
 ContentCondition::~ContentCondition() {}
 
-scoped_ptr<ContentCondition> CreateContentCondition(
+std::unique_ptr<ContentCondition> CreateContentCondition(
     const Extension* extension,
     const std::map<std::string, ContentPredicateFactory*>& predicate_factories,
     const base::Value& api_condition,
@@ -40,7 +40,7 @@ scoped_ptr<ContentCondition> CreateContentCondition(
   const base::DictionaryValue* api_condition_dict = nullptr;
   if (!api_condition.GetAsDictionary(&api_condition_dict)) {
     *error = kExpectedDictionary;
-    return scoped_ptr<ContentCondition>();
+    return std::unique_ptr<ContentCondition>();
   }
 
   // Verify that we are dealing with a Condition whose type we understand.
@@ -48,14 +48,14 @@ scoped_ptr<ContentCondition> CreateContentCondition(
   if (!api_condition_dict->GetString(
           declarative_content_constants::kInstanceType, &instance_type)) {
     *error = kConditionWithoutInstanceType;
-    return scoped_ptr<ContentCondition>();
+    return std::unique_ptr<ContentCondition>();
   }
   if (instance_type != declarative_content_constants::kPageStateMatcherType) {
     *error = kExpectedOtherConditionType;
-    return scoped_ptr<ContentCondition>();
+    return std::unique_ptr<ContentCondition>();
   }
 
-  std::vector<scoped_ptr<const ContentPredicate>> predicates;
+  std::vector<std::unique_ptr<const ContentPredicate>> predicates;
   for (base::DictionaryValue::Iterator iter(*api_condition_dict);
        !iter.IsAtEnd(); iter.Advance()) {
     const std::string& predicate_name = iter.key();
@@ -73,10 +73,10 @@ scoped_ptr<ContentCondition> CreateContentCondition(
                                   predicate_name.c_str());
 
     if (!error->empty())
-      return scoped_ptr<ContentCondition>();
+      return std::unique_ptr<ContentCondition>();
   }
 
-  return scoped_ptr<ContentCondition>(
+  return std::unique_ptr<ContentCondition>(
       new ContentCondition(std::move(predicates)));
 }
 

@@ -44,8 +44,8 @@ class ExtensionActionStorageManager : public ExtensionActionAPI::Observer,
 
   // Reads/Writes the ExtensionAction's default values to/from storage.
   void WriteToStorage(ExtensionAction* extension_action);
-  void ReadFromStorage(
-      const std::string& extension_id, scoped_ptr<base::Value> value);
+  void ReadFromStorage(const std::string& extension_id,
+                       std::unique_ptr<base::Value> value);
 
   // Returns the Extensions StateStore for the |browser_context_|.
   // May return NULL.

@@ -82,7 +82,7 @@ class DialRegistry : public DialService::Observer,
 
  protected:
   // The DIAL service. Periodic discovery is active when this is not NULL.
-  scoped_ptr<DialService> dial_;
+  std::unique_ptr<DialService> dial_;
 
  private:
   typedef base::hash_map<std::string, linked_ptr<DialDeviceData> >

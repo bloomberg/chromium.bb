@@ -92,7 +92,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest, WithholdAllHosts) {
   InitializeEmptyExtensionService();
 
   // Permissions are only withheld with the appropriate switch turned on.
-  scoped_ptr<FeatureSwitch::ScopedOverride> switch_override(
+  std::unique_ptr<FeatureSwitch::ScopedOverride> switch_override(
       new FeatureSwitch::ScopedOverride(FeatureSwitch::scripts_require_action(),
                                         FeatureSwitch::OVERRIDE_ENABLED));
 
@@ -242,7 +242,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
   EXPECT_TRUE(util::AllowedScriptingOnAllUrls(extension_a->id(), profile()));
 
   // Enable the switch, and re-init permission for the extension.
-  scoped_ptr<FeatureSwitch::ScopedOverride> switch_override(
+  std::unique_ptr<FeatureSwitch::ScopedOverride> switch_override(
       new FeatureSwitch::ScopedOverride(FeatureSwitch::scripts_require_action(),
                                         FeatureSwitch::OVERRIDE_ENABLED));
   updater.InitializePermissions(extension_a.get());
@@ -289,7 +289,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantHostPermission) {
   InitializeEmptyExtensionService();
 
   // Permissions are only withheld with the appropriate switch turned on.
-  scoped_ptr<FeatureSwitch::ScopedOverride> switch_override(
+  std::unique_ptr<FeatureSwitch::ScopedOverride> switch_override(
       new FeatureSwitch::ScopedOverride(FeatureSwitch::scripts_require_action(),
                                         FeatureSwitch::OVERRIDE_ENABLED));
 

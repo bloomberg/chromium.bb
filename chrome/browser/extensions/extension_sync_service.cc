@@ -185,8 +185,8 @@ bool ExtensionSyncService::HasPendingReenable(
 syncer::SyncMergeResult ExtensionSyncService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
-    scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-    scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) {
+    std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+    std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory) {
   CHECK(sync_processor.get());
   LOG_IF(FATAL, type != syncer::EXTENSIONS && type != syncer::APPS)
       << "Got " << type << " ModelType";
@@ -197,7 +197,7 @@ syncer::SyncMergeResult ExtensionSyncService::MergeDataAndStartSyncing(
   // Apply the initial sync data, filtering out any items where we have more
   // recent local changes. Also tell the SyncBundle the extension IDs.
   for (const syncer::SyncData& sync_data : initial_sync_data) {
-    scoped_ptr<ExtensionSyncData> extension_sync_data(
+    std::unique_ptr<ExtensionSyncData> extension_sync_data(
         ExtensionSyncData::CreateFromSyncData(sync_data));
     // If the extension has local state that needs to be synced, ignore this
     // change (we assume the local state is more recent).
@@ -251,7 +251,7 @@ syncer::SyncError ExtensionSyncService::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   for (const syncer::SyncChange& sync_change : change_list) {
-    scoped_ptr<ExtensionSyncData> extension_sync_data(
+    std::unique_ptr<ExtensionSyncData> extension_sync_data(
         ExtensionSyncData::CreateFromSyncChange(sync_change));
     if (extension_sync_data)
       ApplySyncData(*extension_sync_data);

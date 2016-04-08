@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/extension_management.h"
@@ -124,7 +125,7 @@ ContentVerifier* TestExtensionSystem::content_verifier() {
   return NULL;
 }
 
-scoped_ptr<ExtensionSet> TestExtensionSystem::GetDependentExtensions(
+std::unique_ptr<ExtensionSet> TestExtensionSystem::GetDependentExtensions(
     const Extension* extension) {
   return extension_service()->shared_module_service()->GetDependentExtensions(
       extension);
@@ -142,9 +143,9 @@ TestingValueStore* TestExtensionSystem::value_store() {
 }
 
 // static
-scoped_ptr<KeyedService> TestExtensionSystem::Build(
+std::unique_ptr<KeyedService> TestExtensionSystem::Build(
     content::BrowserContext* profile) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new TestExtensionSystem(static_cast<Profile*>(profile)));
 }
 

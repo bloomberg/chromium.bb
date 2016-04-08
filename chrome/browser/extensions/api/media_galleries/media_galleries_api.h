@@ -10,12 +10,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager_observer.h"
@@ -66,7 +66,7 @@ class MediaGalleriesEventRouter : public BrowserContextKeyedAPI,
   void DispatchEventToExtension(const std::string& extension_id,
                                 events::HistogramValue histogram_value,
                                 const std::string& event_name,
-                                scoped_ptr<base::ListValue> event_args);
+                                std::unique_ptr<base::ListValue> event_args);
 
   explicit MediaGalleriesEventRouter(content::BrowserContext* context);
   ~MediaGalleriesEventRouter() override;
@@ -180,18 +180,19 @@ class MediaGalleriesGetMetadataFunction : public ChromeAsyncExtensionFunction {
 
   void GetMetadata(MediaGalleries::GetMetadataType metadata_type,
                    const std::string& blob_uuid,
-                   scoped_ptr<std::string> blob_header,
+                   std::unique_ptr<std::string> blob_header,
                    int64_t total_blob_length);
 
   void OnSafeMediaMetadataParserDone(
-      bool parse_success, scoped_ptr<base::DictionaryValue> result_dictionary,
-      scoped_ptr<std::vector<metadata::AttachedImage> > attached_images);
+      bool parse_success,
+      std::unique_ptr<base::DictionaryValue> result_dictionary,
+      std::unique_ptr<std::vector<metadata::AttachedImage>> attached_images);
 
   void ConstructNextBlob(
-      scoped_ptr<base::DictionaryValue> result_dictionary,
-      scoped_ptr<std::vector<metadata::AttachedImage> > attached_images,
-      scoped_ptr<std::vector<std::string> > blob_uuids,
-      scoped_ptr<content::BlobHandle> current_blob);
+      std::unique_ptr<base::DictionaryValue> result_dictionary,
+      std::unique_ptr<std::vector<metadata::AttachedImage>> attached_images,
+      std::unique_ptr<std::vector<std::string>> blob_uuids,
+      std::unique_ptr<content::BlobHandle> current_blob);
 };
 
 class MediaGalleriesAddGalleryWatchFunction

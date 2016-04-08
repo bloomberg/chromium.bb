@@ -236,7 +236,7 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
 
  private:
   // Invoked by InProcessReceiver for each received audio frame.
-  void OnAudioFrame(scoped_ptr<media::AudioBus> audio_frame,
+  void OnAudioFrame(std::unique_ptr<media::AudioBus> audio_frame,
                     const base::TimeTicks& playout_time,
                     bool is_continuous) override {
     CHECK(cast_env()->CurrentlyOn(media::cast::CastEnvironment::MAIN));
@@ -335,7 +335,7 @@ class CastV2PerformanceTest
     // Determine a unused UDP port for the in-process receiver to listen on.
     // Method: Bind a UDP socket on port 0, and then check which port the
     // operating system assigned to it.
-    scoped_ptr<net::UDPServerSocket> receive_socket(
+    std::unique_ptr<net::UDPServerSocket> receive_socket(
         new net::UDPServerSocket(NULL, net::NetLog::Source()));
     receive_socket->AllowAddressReuse();
     CHECK_EQ(net::OK, receive_socket->Listen(
@@ -585,7 +585,7 @@ class CastV2PerformanceTest
         new TestPatternReceiver(cast_environment, receiver_end_point);
     receiver->Start();
 
-    scoped_ptr<media::cast::test::UDPProxy> udp_proxy;
+    std::unique_ptr<media::cast::test::UDPProxy> udp_proxy;
     if (HasFlag(kProxyWifi) || HasFlag(kProxyBad)) {
       net::IPEndPoint proxy_end_point = GetFreeLocalPort();
       if (HasFlag(kProxyWifi)) {
@@ -616,7 +616,7 @@ class CastV2PerformanceTest
     // Stop all threads, removes the need for synchronization when analyzing
     // the data.
     cast_environment->Shutdown();
-    scoped_ptr<trace_analyzer::TraceAnalyzer> analyzer;
+    std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer;
     analyzer.reset(trace_analyzer::TraceAnalyzer::Create(json_events));
     analyzer->AssociateAsyncBeginEndEvents();
 

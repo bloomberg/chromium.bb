@@ -101,9 +101,9 @@ const GURL& WebstoreInlineInstaller::GetRequestorURL() const {
   return requestor_url_;
 }
 
-scoped_ptr<ExtensionInstallPrompt::Prompt>
+std::unique_ptr<ExtensionInstallPrompt::Prompt>
 WebstoreInlineInstaller::CreateInstallPrompt() const {
-  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt(
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt(
       new ExtensionInstallPrompt::Prompt(
           ExtensionInstallPrompt::INLINE_INSTALL_PROMPT));
 

@@ -90,7 +90,7 @@ void PasswordsPrivateEventRouter::SendSavedPasswordListToListeners() {
     // If there is nothing to send, return early.
     return;
 
-  scoped_ptr<Event> extension_event(
+  std::unique_ptr<Event> extension_event(
       new Event(events::PASSWORDS_PRIVATE_ON_SAVED_PASSWORDS_LIST_CHANGED,
                 api::passwords_private::OnSavedPasswordsListChanged::kEventName,
                 cached_saved_password_parameters_->CreateDeepCopy()));
@@ -110,7 +110,7 @@ void PasswordsPrivateEventRouter::SendPasswordExceptionListToListeners() {
     // If there is nothing to send, return early.
     return;
 
-  scoped_ptr<Event> extension_event(new Event(
+  std::unique_ptr<Event> extension_event(new Event(
       events::PASSWORDS_PRIVATE_ON_PASSWORD_EXCEPTIONS_LIST_CHANGED,
       api::passwords_private::OnPasswordExceptionsListChanged::kEventName,
       cached_password_exception_parameters_->CreateDeepCopy()));
@@ -126,10 +126,10 @@ void PasswordsPrivateEventRouter::OnPlaintextPasswordFetched(
   params.login_pair.username = username;
   params.plaintext_password = plaintext_password;
 
-  scoped_ptr<base::ListValue> event_value(new base::ListValue);
+  std::unique_ptr<base::ListValue> event_value(new base::ListValue);
   event_value->Append(params.ToValue());
 
-  scoped_ptr<Event> extension_event(new Event(
+  std::unique_ptr<Event> extension_event(new Event(
       events::PASSWORDS_PRIVATE_ON_PLAINTEXT_PASSWORD_RETRIEVED,
       api::passwords_private::OnPlaintextPasswordRetrieved::kEventName,
       std::move(event_value)));

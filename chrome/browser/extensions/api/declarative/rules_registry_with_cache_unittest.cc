@@ -231,7 +231,8 @@ TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
   const std::string rules_stored_key(
       RulesCacheDelegate::GetRulesStoredKey(
           event_name, profile()->IsOffTheRecord()));
-  scoped_ptr<RulesCacheDelegate> cache_delegate(new RulesCacheDelegate(false));
+  std::unique_ptr<RulesCacheDelegate> cache_delegate(
+      new RulesCacheDelegate(false));
   scoped_refptr<RulesRegistry> registry(
       new TestRulesRegistry(profile(), event_name, content::BrowserThread::UI,
                             cache_delegate.get(), kRulesRegistryID));
@@ -255,7 +256,7 @@ TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
   // No write yet so no store should have been created.
   ASSERT_FALSE(store);
 
-  scoped_ptr<base::ListValue> value(new base::ListValue);
+  std::unique_ptr<base::ListValue> value(new base::ListValue);
   value->AppendBoolean(true);
   cache_delegate->WriteToStorage(extension1_->id(), std::move(value));
   EXPECT_TRUE(cache_delegate->GetDeclarativeRulesStored(extension1_->id()));
@@ -306,12 +307,14 @@ TEST_F(RulesRegistryWithCacheTest, RulesStoredFlagMultipleRegistries) {
   const std::string rules_stored_key2(
       RulesCacheDelegate::GetRulesStoredKey(
           event_name2, profile()->IsOffTheRecord()));
-  scoped_ptr<RulesCacheDelegate> cache_delegate1(new RulesCacheDelegate(false));
+  std::unique_ptr<RulesCacheDelegate> cache_delegate1(
+      new RulesCacheDelegate(false));
   scoped_refptr<RulesRegistry> registry1(
       new TestRulesRegistry(profile(), event_name1, content::BrowserThread::UI,
                             cache_delegate1.get(), kRulesRegistryID));
 
-  scoped_ptr<RulesCacheDelegate> cache_delegate2(new RulesCacheDelegate(false));
+  std::unique_ptr<RulesCacheDelegate> cache_delegate2(
+      new RulesCacheDelegate(false));
   scoped_refptr<RulesRegistry> registry2(
       new TestRulesRegistry(profile(), event_name2, content::BrowserThread::UI,
                             cache_delegate2.get(), kRulesRegistryID));
@@ -356,7 +359,8 @@ TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
   env_.GetExtensionSystem()->SetReady();
 
   // 2. First run, adding a rule for the extension.
-  scoped_ptr<RulesCacheDelegate> cache_delegate(new RulesCacheDelegate(false));
+  std::unique_ptr<RulesCacheDelegate> cache_delegate(
+      new RulesCacheDelegate(false));
   scoped_refptr<TestRulesRegistry> registry(
       new TestRulesRegistry(profile(), "testEvent", content::BrowserThread::UI,
                             cache_delegate.get(), kRulesRegistryID));

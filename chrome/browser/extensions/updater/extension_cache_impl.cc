@@ -27,7 +27,7 @@
 namespace extensions {
 
 ExtensionCacheImpl::ExtensionCacheImpl(
-    scoped_ptr<ExtensionCacheDelegate> delegate)
+    std::unique_ptr<ExtensionCacheDelegate> delegate)
     : cache_(new LocalExtensionCache(
           delegate->GetCacheDir(),
           delegate->GetMaximumCacheSize(),

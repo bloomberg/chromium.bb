@@ -5,6 +5,8 @@
 #include "chrome/browser/extensions/api/bookmarks/bookmarks_api.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -12,7 +14,7 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/i18n/time_formatting.h"
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"
@@ -257,10 +259,10 @@ BookmarkEventRouter::~BookmarkEventRouter() {
 void BookmarkEventRouter::DispatchEvent(
     events::HistogramValue histogram_value,
     const std::string& event_name,
-    scoped_ptr<base::ListValue> event_args) {
+    std::unique_ptr<base::ListValue> event_args) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (event_router) {
-    event_router->BroadcastEvent(make_scoped_ptr(new extensions::Event(
+    event_router->BroadcastEvent(base::WrapUnique(new extensions::Event(
         histogram_value, event_name, std::move(event_args))));
   }
 }
@@ -416,7 +418,7 @@ void BookmarksAPI::OnListenerAdded(const EventListenerInfo& details) {
 }
 
 bool BookmarksGetFunction::RunOnReady() {
-  scoped_ptr<bookmarks::Get::Params> params(
+  std::unique_ptr<bookmarks::Get::Params> params(
       bookmarks::Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -445,7 +447,7 @@ bool BookmarksGetFunction::RunOnReady() {
 }
 
 bool BookmarksGetChildrenFunction::RunOnReady() {
-  scoped_ptr<bookmarks::GetChildren::Params> params(
+  std::unique_ptr<bookmarks::GetChildren::Params> params(
       bookmarks::GetChildren::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -466,7 +468,7 @@ bool BookmarksGetChildrenFunction::RunOnReady() {
 }
 
 bool BookmarksGetRecentFunction::RunOnReady() {
-  scoped_ptr<bookmarks::GetRecent::Params> params(
+  std::unique_ptr<bookmarks::GetRecent::Params> params(
       bookmarks::GetRecent::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   if (params->number_of_items < 1)
@@ -499,7 +501,7 @@ bool BookmarksGetTreeFunction::RunOnReady() {
 }
 
 bool BookmarksGetSubTreeFunction::RunOnReady() {
-  scoped_ptr<bookmarks::GetSubTree::Params> params(
+  std::unique_ptr<bookmarks::GetSubTree::Params> params(
       bookmarks::GetSubTree::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -515,7 +517,7 @@ bool BookmarksGetSubTreeFunction::RunOnReady() {
 }
 
 bool BookmarksSearchFunction::RunOnReady() {
-  scoped_ptr<bookmarks::Search::Params> params(
+  std::unique_ptr<bookmarks::Search::Params> params(
       bookmarks::Search::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -577,7 +579,7 @@ bool BookmarksRemoveFunction::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
 
-  scoped_ptr<bookmarks::Remove::Params> params(
+  std::unique_ptr<bookmarks::Remove::Params> params(
       bookmarks::Remove::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -601,7 +603,7 @@ bool BookmarksCreateFunction::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
 
-  scoped_ptr<bookmarks::Create::Params> params(
+  std::unique_ptr<bookmarks::Create::Params> params(
       bookmarks::Create::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -629,7 +631,7 @@ bool BookmarksMoveFunction::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
 
-  scoped_ptr<bookmarks::Move::Params> params(
+  std::unique_ptr<bookmarks::Move::Params> params(
       bookmarks::Move::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -689,7 +691,7 @@ bool BookmarksUpdateFunction::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
 
-  scoped_ptr<bookmarks::Update::Params> params(
+  std::unique_ptr<bookmarks::Update::Params> params(
       bookmarks::Update::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

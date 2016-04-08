@@ -4,7 +4,8 @@
 
 #include "chrome/browser/extensions/api/signed_in_devices/id_mapping_helper.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/memory/scoped_vector.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -84,7 +85,7 @@ void CreateMappingForUnmappedDevices(
   }
 }
 
-scoped_ptr<DeviceInfo> GetDeviceInfoForClientId(
+std::unique_ptr<DeviceInfo> GetDeviceInfoForClientId(
     const std::string& client_id,
     const std::string& extension_id,
     Profile* profile) {
@@ -96,12 +97,12 @@ scoped_ptr<DeviceInfo> GetDeviceInfoForClientId(
        it != devices.end();
        ++it) {
     if ((*it)->guid() == client_id) {
-      scoped_ptr<DeviceInfo> device(*it);
+      std::unique_ptr<DeviceInfo> device(*it);
       devices.weak_erase(it);
       return device;
     }
   }
-  return scoped_ptr<DeviceInfo>();
+  return std::unique_ptr<DeviceInfo>();
 }
 
 }  // namespace  extensions

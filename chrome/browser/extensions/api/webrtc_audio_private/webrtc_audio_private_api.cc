@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
@@ -92,9 +93,9 @@ void WebrtcAudioPrivateEventService::SignalEvent() {
     const std::string& extension_id = extension->id();
     if (router->ExtensionHasEventListener(extension_id, kEventName) &&
         extension->permissions_data()->HasAPIPermission("webrtcAudioPrivate")) {
-      scoped_ptr<Event> event(
+      std::unique_ptr<Event> event(
           new Event(events::WEBRTC_AUDIO_PRIVATE_ON_SINKS_CHANGED, kEventName,
-                    make_scoped_ptr(new base::ListValue())));
+                    base::WrapUnique(new base::ListValue())));
       router->DispatchEventToExtension(extension_id, std::move(event));
     }
   }
@@ -116,7 +117,7 @@ void WebrtcAudioPrivateFunction::GetOutputDeviceNames() {
     return;
   }
 
-  scoped_ptr<AudioDeviceNames> device_names(new AudioDeviceNames);
+  std::unique_ptr<AudioDeviceNames> device_names(new AudioDeviceNames);
   AudioManager::Get()->GetAudioOutputDeviceNames(device_names.get());
 
   BrowserThread::PostTask(
@@ -126,7 +127,7 @@ void WebrtcAudioPrivateFunction::GetOutputDeviceNames() {
 }
 
 void WebrtcAudioPrivateFunction::OnOutputDeviceNames(
-    scoped_ptr<AudioDeviceNames> device_names) {
+    std::unique_ptr<AudioDeviceNames> device_names) {
   NOTREACHED();
 }
 
@@ -222,7 +223,7 @@ bool WebrtcAudioPrivateGetSinksFunction::RunAsync() {
 }
 
 void WebrtcAudioPrivateGetSinksFunction::OnOutputDeviceNames(
-    scoped_ptr<AudioDeviceNames> raw_ids) {
+    std::unique_ptr<AudioDeviceNames> raw_ids) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::vector<wap::SinkInfo> results;
@@ -258,7 +259,7 @@ bool WebrtcAudioPrivateGetActiveSinkFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   InitDeviceIDSalt();
 
-  scoped_ptr<wap::GetActiveSink::Params> params(
+  std::unique_ptr<wap::GetActiveSink::Params> params(
       wap::GetActiveSink::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -313,7 +314,7 @@ WebrtcAudioPrivateSetActiveSinkFunction::
 
 bool WebrtcAudioPrivateSetActiveSinkFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_ptr<wap::SetActiveSink::Params> params(
+  std::unique_ptr<wap::SetActiveSink::Params> params(
       wap::SetActiveSink::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -363,7 +364,7 @@ void WebrtcAudioPrivateSetActiveSinkFunction::OnControllerList(
 }
 
 void WebrtcAudioPrivateSetActiveSinkFunction::OnOutputDeviceNames(
-    scoped_ptr<AudioDeviceNames> device_names) {
+    std::unique_ptr<AudioDeviceNames> device_names) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::string raw_sink_id;

@@ -234,7 +234,7 @@ void InstallVerifier::Init() {
 
   const base::DictionaryValue* pref = prefs_->GetInstallSignature();
   if (pref) {
-    scoped_ptr<InstallSignature> signature_from_prefs =
+    std::unique_ptr<InstallSignature> signature_from_prefs =
         InstallSignature::FromValue(*pref);
     if (!signature_from_prefs.get()) {
       LogInitResultHistogram(INIT_UNPARSEABLE_PREF);
@@ -452,7 +452,7 @@ InstallVerifier::PendingOperation::~PendingOperation() {
 
 ExtensionIdSet InstallVerifier::GetExtensionsToVerify() const {
   ExtensionIdSet result;
-  scoped_ptr<ExtensionSet> extensions =
+  std::unique_ptr<ExtensionSet> extensions =
       ExtensionRegistry::Get(context_)->GenerateInstalledExtensionsSet();
   for (ExtensionSet::const_iterator iter = extensions->begin();
        iter != extensions->end();
@@ -593,7 +593,7 @@ void InstallVerifier::SaveToPrefs() {
       DVLOG(1) << "SaveToPrefs - saving";
 
       DCHECK(InstallSigner::VerifySignature(*signature_.get()));
-      scoped_ptr<InstallSignature> rehydrated =
+      std::unique_ptr<InstallSignature> rehydrated =
           InstallSignature::FromValue(pref);
       DCHECK(InstallSigner::VerifySignature(*rehydrated.get()));
     }
@@ -622,8 +622,7 @@ void GetSignatureResultHistogram(CallbackResult result) {
 }  // namespace
 
 void InstallVerifier::SignatureCallback(
-    scoped_ptr<InstallSignature> signature) {
-
+    std::unique_ptr<InstallSignature> signature) {
   linked_ptr<PendingOperation> operation = operation_queue_.front();
   operation_queue_.pop();
 

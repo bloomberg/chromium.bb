@@ -56,7 +56,7 @@ class FakeDesktopMediaPicker : public DesktopMediaPicker {
             gfx::NativeWindow parent,
             const base::string16& app_name,
             const base::string16& target_name,
-            scoped_ptr<DesktopMediaList> model,
+            std::unique_ptr<DesktopMediaList> model,
             bool request_audio,
             const DoneCallback& done_callback) override {
     if (!expectation_->cancelled) {
@@ -98,26 +98,26 @@ class FakeDesktopMediaPickerFactory :
   }
 
   // DesktopCaptureChooseDesktopMediaFunction::PickerFactory interface.
-  scoped_ptr<DesktopMediaList> CreateModel(bool show_screens,
-                                           bool show_windows,
-                                           bool show_tabs,
-                                           bool show_audio) override {
+  std::unique_ptr<DesktopMediaList> CreateModel(bool show_screens,
+                                                bool show_windows,
+                                                bool show_tabs,
+                                                bool show_audio) override {
     EXPECT_LE(current_test_, tests_count_);
     if (current_test_ >= tests_count_)
-      return scoped_ptr<DesktopMediaList>();
+      return std::unique_ptr<DesktopMediaList>();
     EXPECT_EQ(test_flags_[current_test_].expect_screens, show_screens);
     EXPECT_EQ(test_flags_[current_test_].expect_windows, show_windows);
     EXPECT_EQ(test_flags_[current_test_].expect_tabs, show_tabs);
     EXPECT_EQ(test_flags_[current_test_].expect_audio, show_audio);
-    return scoped_ptr<DesktopMediaList>(new FakeDesktopMediaList());
+    return std::unique_ptr<DesktopMediaList>(new FakeDesktopMediaList());
   }
 
-  scoped_ptr<DesktopMediaPicker> CreatePicker() override {
+  std::unique_ptr<DesktopMediaPicker> CreatePicker() override {
     EXPECT_LE(current_test_, tests_count_);
     if (current_test_ >= tests_count_)
-      return scoped_ptr<DesktopMediaPicker>();
+      return std::unique_ptr<DesktopMediaPicker>();
     ++current_test_;
-    return scoped_ptr<DesktopMediaPicker>(
+    return std::unique_ptr<DesktopMediaPicker>(
         new FakeDesktopMediaPicker(test_flags_ + current_test_ - 1));
   }
 

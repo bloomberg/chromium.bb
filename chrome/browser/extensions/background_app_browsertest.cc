@@ -50,11 +50,10 @@ class BackgroundAppBrowserTest: public ExtensionBrowserTest {};
 // telling us that a new background app has been installed.
 IN_PROC_BROWSER_TEST_F(BackgroundAppBrowserTest, ReloadBackgroundApp) {
   // Pass this in to the browser test.
-  scoped_ptr<BackgroundModeManager> test_background_mode_manager(
-      new TestBackgroundModeManager(
-          *base::CommandLine::ForCurrentProcess(),
-          &(g_browser_process->profile_manager()->
-              GetProfileAttributesStorage())));
+  std::unique_ptr<BackgroundModeManager> test_background_mode_manager(
+      new TestBackgroundModeManager(*base::CommandLine::ForCurrentProcess(),
+                                    &(g_browser_process->profile_manager()
+                                          ->GetProfileAttributesStorage())));
   g_browser_process->set_background_mode_manager_for_test(
       std::move(test_background_mode_manager));
   TestBackgroundModeManager* manager =

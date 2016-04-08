@@ -364,7 +364,7 @@ base::DictionaryValue* CreateProxyRulesDict(
   ProxyPrefs::ProxyMode mode;
   CHECK(proxy_config.GetMode(&mode) && mode == ProxyPrefs::MODE_FIXED_SERVERS);
 
-  scoped_ptr<base::DictionaryValue> extension_proxy_rules(
+  std::unique_ptr<base::DictionaryValue> extension_proxy_rules(
       new base::DictionaryValue);
 
   std::string proxy_servers;
@@ -430,7 +430,7 @@ base::DictionaryValue* CreateProxyRulesDict(
 }
 
 base::DictionaryValue* CreateProxyServerDict(const net::ProxyServer& proxy) {
-  scoped_ptr<base::DictionaryValue> out(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> out(new base::DictionaryValue);
   switch (proxy.scheme()) {
     case net::ProxyServer::SCHEME_HTTP:
       out->SetString(keys::kProxyConfigRuleScheme, "http");
@@ -462,7 +462,8 @@ base::DictionaryValue* CreatePacScriptDict(
   ProxyPrefs::ProxyMode mode;
   CHECK(proxy_config.GetMode(&mode) && mode == ProxyPrefs::MODE_PAC_SCRIPT);
 
-  scoped_ptr<base::DictionaryValue> pac_script_dict(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> pac_script_dict(
+      new base::DictionaryValue);
   std::string pac_url;
   if (!proxy_config.GetPacUrl(&pac_url)) {
     LOG(ERROR) << "Invalid proxy configuration. Missing PAC URL.";

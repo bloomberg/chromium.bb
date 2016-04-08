@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/extensions/api/gcd_private.h"
@@ -116,7 +116,7 @@ class PrivetV3Session {
   std::string commitment_;
 
   // Key exchange algorithm for pairing.
-  scoped_ptr<crypto::P224EncryptedKeyExchange> spake_;
+  std::unique_ptr<crypto::P224EncryptedKeyExchange> spake_;
 
   // HTTPS port of the device.
   uint16_t https_port_ = 0;

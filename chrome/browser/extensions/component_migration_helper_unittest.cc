@@ -96,8 +96,8 @@ class ComponentMigrationHelperTest : public ExtensionServiceTestBase {
   }
 
   StrictMock<MockComponentActionDelegate> mock_delegate_;
-  scoped_ptr<StrictMock<MockComponentMigrationHelper>> mock_helper_;
-  scoped_ptr<FeatureSwitch::ScopedOverride> extension_action_redesign_;
+  std::unique_ptr<StrictMock<MockComponentMigrationHelper>> mock_helper_;
+  std::unique_ptr<FeatureSwitch::ScopedOverride> extension_action_redesign_;
 
   // Migrated extensions with browser actions.
   scoped_refptr<const Extension> migrated_extension_a_;

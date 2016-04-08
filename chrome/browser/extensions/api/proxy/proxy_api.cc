@@ -39,7 +39,7 @@ void ProxyEventRouter::OnProxyError(
     EventRouterForwarder* event_router,
     void* profile,
     int error_code) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetBoolean(keys::kProxyEventFatal, true);
   dict->SetString(keys::kProxyEventError, net::ErrorToString(error_code));
@@ -62,7 +62,7 @@ void ProxyEventRouter::OnPACScriptError(
     void* profile,
     int line_number,
     const base::string16& error) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetBoolean(keys::kProxyEventFatal, false);
   dict->SetString(keys::kProxyEventError,
@@ -153,7 +153,8 @@ base::Value* ProxyPrefTransformer::BrowserToExtensionPref(
   }
 
   // Build a new ProxyConfig instance as defined in the extension API.
-  scoped_ptr<base::DictionaryValue> extension_pref(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> extension_pref(
+      new base::DictionaryValue);
 
   extension_pref->SetString(keys::kProxyConfigMode,
                             ProxyPrefs::ProxyModeToString(mode));

@@ -26,11 +26,12 @@ class DesktopCaptureChooseDesktopMediaFunctionBase
   // Used for tests to supply fake picker.
   class PickerFactory {
    public:
-    virtual scoped_ptr<DesktopMediaList> CreateModel(bool show_screens,
-                                                     bool show_windows,
-                                                     bool show_tabs,
-                                                     bool show_audio) = 0;
-    virtual scoped_ptr<DesktopMediaPicker> CreatePicker() = 0;
+    virtual std::unique_ptr<DesktopMediaList> CreateModel(bool show_screens,
+                                                          bool show_windows,
+                                                          bool show_tabs,
+                                                          bool show_audio) = 0;
+    virtual std::unique_ptr<DesktopMediaPicker> CreatePicker() = 0;
+
    protected:
     virtual ~PickerFactory() {}
   };
@@ -69,7 +70,7 @@ class DesktopCaptureChooseDesktopMediaFunctionBase
   // URL of page that desktop capture was requested for.
   GURL origin_;
 
-  scoped_ptr<DesktopMediaPicker> picker_;
+  std::unique_ptr<DesktopMediaPicker> picker_;
 };
 
 class DesktopCaptureCancelChooseDesktopMediaFunctionBase

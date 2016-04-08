@@ -248,16 +248,16 @@ WebstoreInstaller::Approval::Approval()
       manifest_check_level(MANIFEST_CHECK_LEVEL_STRICT) {
 }
 
-scoped_ptr<WebstoreInstaller::Approval>
+std::unique_ptr<WebstoreInstaller::Approval>
 WebstoreInstaller::Approval::CreateWithInstallPrompt(Profile* profile) {
-  scoped_ptr<Approval> result(new Approval());
+  std::unique_ptr<Approval> result(new Approval());
   result->profile = profile;
   return result;
 }
 
-scoped_ptr<WebstoreInstaller::Approval>
+std::unique_ptr<WebstoreInstaller::Approval>
 WebstoreInstaller::Approval::CreateForSharedModule(Profile* profile) {
-  scoped_ptr<Approval> result(new Approval());
+  std::unique_ptr<Approval> result(new Approval());
   result->profile = profile;
   result->skip_install_dialog = true;
   result->skip_post_install_ui = true;
@@ -265,19 +265,18 @@ WebstoreInstaller::Approval::CreateForSharedModule(Profile* profile) {
   return result;
 }
 
-scoped_ptr<WebstoreInstaller::Approval>
+std::unique_ptr<WebstoreInstaller::Approval>
 WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
     Profile* profile,
     const std::string& extension_id,
-    scoped_ptr<base::DictionaryValue> parsed_manifest,
+    std::unique_ptr<base::DictionaryValue> parsed_manifest,
     bool strict_manifest_check) {
-  scoped_ptr<Approval> result(new Approval());
+  std::unique_ptr<Approval> result(new Approval());
   result->extension_id = extension_id;
   result->profile = profile;
-  result->manifest = scoped_ptr<Manifest>(
-      new Manifest(Manifest::INVALID_LOCATION,
-                   scoped_ptr<base::DictionaryValue>(
-                       parsed_manifest->DeepCopy())));
+  result->manifest = std::unique_ptr<Manifest>(new Manifest(
+      Manifest::INVALID_LOCATION,
+      std::unique_ptr<base::DictionaryValue>(parsed_manifest->DeepCopy())));
   result->skip_install_dialog = true;
   result->manifest_check_level = strict_manifest_check ?
     MANIFEST_CHECK_LEVEL_STRICT : MANIFEST_CHECK_LEVEL_LOOSE;
@@ -295,7 +294,7 @@ WebstoreInstaller::WebstoreInstaller(Profile* profile,
                                      Delegate* delegate,
                                      content::WebContents* web_contents,
                                      const std::string& id,
-                                     scoped_ptr<Approval> approval,
+                                     std::unique_ptr<Approval> approval,
                                      InstallSource source)
     : content::WebContentsObserver(web_contents),
       extension_registry_observer_(this),
@@ -491,7 +490,8 @@ void WebstoreInstaller::OnDownloadStarted(
   download_item_->AddObserver(this);
   if (pending_modules_.size() > 1) {
     // We are downloading a shared module. We need create an approval for it.
-    scoped_ptr<Approval> approval = Approval::CreateForSharedModule(profile_);
+    std::unique_ptr<Approval> approval =
+        Approval::CreateForSharedModule(profile_);
     const SharedModuleInfo::ImportInfo& info = pending_modules_.front();
     approval->extension_id = info.extension_id;
     const Version version_required(info.minimum_version);
@@ -667,12 +667,9 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
       contents->GetRenderViewHost()->GetRoutingID();
   content::ResourceContext* resource_context =
       controller.GetBrowserContext()->GetResourceContext();
-  scoped_ptr<DownloadUrlParameters> params(new DownloadUrlParameters(
-      download_url_,
-      render_process_host_id,
-      render_view_host_routing_id,
-      contents->GetMainFrame()->GetRoutingID(),
-      resource_context));
+  std::unique_ptr<DownloadUrlParameters> params(new DownloadUrlParameters(
+      download_url_, render_process_host_id, render_view_host_routing_id,
+      contents->GetMainFrame()->GetRoutingID(), resource_context));
   params->set_file_path(file);
   if (controller.GetVisibleEntry())
     params->set_referrer(content::Referrer::SanitizeForRequest(

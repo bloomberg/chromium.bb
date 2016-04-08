@@ -59,7 +59,7 @@ class SimpleExtensionLoadPrompt {
 
   void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
 
-  scoped_ptr<ExtensionInstallPrompt> install_ui_;
+  std::unique_ptr<ExtensionInstallPrompt> install_ui_;
   scoped_refptr<const Extension> extension_;
   base::Closure callback_;
 
@@ -71,7 +71,7 @@ SimpleExtensionLoadPrompt::SimpleExtensionLoadPrompt(
     Profile* profile,
     const base::Closure& callback)
     : extension_(extension), callback_(callback) {
-  scoped_ptr<extensions::ExtensionInstallUI> ui(
+  std::unique_ptr<extensions::ExtensionInstallUI> ui(
       extensions::CreateExtensionInstallUI(profile));
   install_ui_.reset(new ExtensionInstallPrompt(
       profile, ui->GetDefaultInstallDialogParent()));

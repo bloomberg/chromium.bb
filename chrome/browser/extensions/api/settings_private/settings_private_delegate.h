@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_EXTENSIONS_API_SETTINGS_PRIVATE_SETTINGS_PRIVATE_DELEGATE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 #include "chrome/common/extensions/api/settings_private.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -39,20 +39,20 @@ class SettingsPrivateDelegate : public KeyedService {
       const std::string& name, const base::Value* value);
 
   // Gets the value of the pref with the given |name|.
-  virtual scoped_ptr<base::Value> GetPref(const std::string& name);
+  virtual std::unique_ptr<base::Value> GetPref(const std::string& name);
 
   // Gets the values of all whitelisted prefs.
-  virtual scoped_ptr<base::Value> GetAllPrefs();
+  virtual std::unique_ptr<base::Value> GetAllPrefs();
 
   // Gets the value.
-  virtual scoped_ptr<base::Value> GetDefaultZoomPercent();
+  virtual std::unique_ptr<base::Value> GetDefaultZoomPercent();
 
   // Sets the pref.
   virtual PrefsUtil::SetPrefResult SetDefaultZoomPercent(int percent);
 
  protected:
   Profile* profile_;  // weak; not owned by us
-  scoped_ptr<PrefsUtil> prefs_util_;
+  std::unique_ptr<PrefsUtil> prefs_util_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SettingsPrivateDelegate);

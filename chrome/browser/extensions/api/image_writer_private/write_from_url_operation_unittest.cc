@@ -102,7 +102,7 @@ class ImageWriterWriteFromUrlOperationTest : public ImageWriterUnitTestBase {
   }
 
   TestingProfile test_profile_;
-  scoped_ptr<GetInterceptor> get_interceptor_;
+  std::unique_ptr<GetInterceptor> get_interceptor_;
 
   MockOperationManager manager_;
 };
@@ -174,7 +174,7 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, DownloadFile) {
 }
 
 TEST_F(ImageWriterWriteFromUrlOperationTest, VerifyFile) {
-  scoped_ptr<char[]> data_buffer(new char[kTestFileSize]);
+  std::unique_ptr<char[]> data_buffer(new char[kTestFileSize]);
   base::ReadFile(test_utils_.GetImagePath(), data_buffer.get(), kTestFileSize);
   base::MD5Digest expected_digest;
   base::MD5Sum(data_buffer.get(), kTestFileSize, &expected_digest);

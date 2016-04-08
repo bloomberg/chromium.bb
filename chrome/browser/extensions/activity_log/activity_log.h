@@ -84,8 +84,8 @@ class ActivityLog : public BrowserContextKeyedAPI,
       const std::string& page_url,
       const std::string& arg_url,
       const int days_ago,
-      const base::Callback
-          <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>& callback);
+      const base::Callback<
+          void(std::unique_ptr<std::vector<scoped_refptr<Action>>>)>& callback);
 
   // ExtensionRegistryObserver.
   // We keep track of whether the whitelisted extension is installed; if it is,
@@ -100,12 +100,14 @@ class ActivityLog : public BrowserContextKeyedAPI,
                               extensions::UninstallReason reason) override;
 
   // ApiActivityMonitor.
-  void OnApiEventDispatched(const std::string& extension_id,
-                            const std::string& event_name,
-                            scoped_ptr<base::ListValue> event_args) override;
-  void OnApiFunctionCalled(const std::string& extension_id,
-                           const std::string& api_name,
-                           scoped_ptr<base::ListValue> event_args) override;
+  void OnApiEventDispatched(
+      const std::string& extension_id,
+      const std::string& event_name,
+      std::unique_ptr<base::ListValue> event_args) override;
+  void OnApiFunctionCalled(
+      const std::string& extension_id,
+      const std::string& api_name,
+      std::unique_ptr<base::ListValue> event_args) override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 

@@ -152,8 +152,8 @@ void MapCommand(brlapi_keyCode_t code, KeyEvent* event) {
 
 }  // namespace
 
-scoped_ptr<KeyEvent> BrlapiKeyCodeToEvent(brlapi_keyCode_t code) {
-  scoped_ptr<KeyEvent> result(new KeyEvent);
+std::unique_ptr<KeyEvent> BrlapiKeyCodeToEvent(brlapi_keyCode_t code) {
+  std::unique_ptr<KeyEvent> result(new KeyEvent);
   result->command = KEY_COMMAND_NONE;
   switch (code & BRLAPI_KEY_TYPE_MASK) {
     case BRLAPI_KEY_TYPE_SYM:

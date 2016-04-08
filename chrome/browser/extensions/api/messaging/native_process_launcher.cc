@@ -140,7 +140,7 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
     return;
   }
 
-  scoped_ptr<NativeMessagingHostManifest> manifest =
+  std::unique_ptr<NativeMessagingHostManifest> manifest =
       NativeMessagingHostManifest::Load(manifest_path, &error_message);
 
   if (!manifest) {
@@ -266,7 +266,7 @@ void NativeProcessLauncherImpl::Launch(const GURL& origin,
 }  // namespace
 
 // static
-scoped_ptr<NativeProcessLauncher> NativeProcessLauncher::CreateDefault(
+std::unique_ptr<NativeProcessLauncher> NativeProcessLauncher::CreateDefault(
     bool allow_user_level_hosts,
     gfx::NativeView native_view) {
   intptr_t window_handle = 0;
@@ -274,7 +274,7 @@ scoped_ptr<NativeProcessLauncher> NativeProcessLauncher::CreateDefault(
   window_handle = reinterpret_cast<intptr_t>(
       views::HWNDForNativeView(native_view));
 #endif
-  return scoped_ptr<NativeProcessLauncher>(
+  return std::unique_ptr<NativeProcessLauncher>(
       new NativeProcessLauncherImpl(allow_user_level_hosts, window_handle));
 }
 

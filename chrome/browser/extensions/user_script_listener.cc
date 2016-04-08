@@ -61,7 +61,7 @@ class UserScriptListener::Throttle
  private:
   bool should_defer_;
   bool did_defer_;
-  scoped_ptr<base::ElapsedTimer> timer_;
+  std::unique_ptr<base::ElapsedTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(Throttle);
 };

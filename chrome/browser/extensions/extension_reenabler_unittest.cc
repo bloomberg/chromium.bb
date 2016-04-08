@@ -81,7 +81,7 @@ class CallbackHelper {
   // The callback to run when a test ExtensionInstallPrompt is ready to show.
   void OnShow(ExtensionInstallPromptShowParams* show_params,
               const ExtensionInstallPrompt::DoneCallback& done_callback,
-              scoped_ptr<ExtensionInstallPrompt::Prompt> prompt) {
+              std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt) {
     DCHECK(!quit_closure_.is_null());
     quit_closure_.Run();
     quit_closure_ = base::Closure();
@@ -92,7 +92,7 @@ class CallbackHelper {
   base::Closure quit_closure_;
 
   // The result of the reenable process, or null if the process hasn't finished.
-  scoped_ptr<ExtensionReenabler::ReenableResult> result_;
+  std::unique_ptr<ExtensionReenabler::ReenableResult> result_;
 
   DISALLOW_COPY_AND_ASSIGN(CallbackHelper);
 };
@@ -108,7 +108,7 @@ class ExtensionReenablerUnitTest : public ExtensionServiceTestBase {
   void SetUp() override;
   void TearDown() override;
 
-  scoped_ptr<TestExtensionsBrowserClient> test_browser_client_;
+  std::unique_ptr<TestExtensionsBrowserClient> test_browser_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionReenablerUnitTest);
 };
@@ -163,11 +163,10 @@ TEST_F(ExtensionReenablerUnitTest, TestReenablingDisabledExtension) {
         ScopedTestDialogAutoConfirm::ACCEPT);
 
     // Run the ExtensionReenabler.
-    scoped_ptr<ExtensionReenabler> extension_reenabler =
-        ExtensionReenabler::PromptForReenable(extension,
-                                              profile(),
+    std::unique_ptr<ExtensionReenabler> extension_reenabler =
+        ExtensionReenabler::PromptForReenable(extension, profile(),
                                               nullptr,  // No web contents.
-                                              GURL(),  // No referrer.
+                                              GURL(),   // No referrer.
                                               callback_helper.GetCallback());
     base::RunLoop().RunUntilIdle();
 
@@ -191,11 +190,10 @@ TEST_F(ExtensionReenablerUnitTest, TestReenablingDisabledExtension) {
     service()->DisableExtension(extension->id(),
                                 Extension::DISABLE_PERMISSIONS_INCREASE);
 
-    scoped_ptr<ExtensionReenabler> extension_reenabler =
-        ExtensionReenabler::PromptForReenable(extension,
-                                              profile(),
+    std::unique_ptr<ExtensionReenabler> extension_reenabler =
+        ExtensionReenabler::PromptForReenable(extension, profile(),
                                               nullptr,  // No web contents.
-                                              GURL(),  // No referrer.
+                                              GURL(),   // No referrer.
                                               callback_helper.GetCallback());
     base::RunLoop().RunUntilIdle();
 
@@ -214,11 +212,10 @@ TEST_F(ExtensionReenablerUnitTest, TestReenablingDisabledExtension) {
                                 Extension::DISABLE_PERMISSIONS_INCREASE);
     ScopedTestDialogAutoConfirm auto_confirm(
         ScopedTestDialogAutoConfirm::CANCEL);
-    scoped_ptr<ExtensionReenabler> extension_reenabler =
-        ExtensionReenabler::PromptForReenable(extension,
-                                              profile(),
+    std::unique_ptr<ExtensionReenabler> extension_reenabler =
+        ExtensionReenabler::PromptForReenable(extension, profile(),
                                               nullptr,  // No web contents.
-                                              GURL(),  // No referrer.
+                                              GURL(),   // No referrer.
                                               callback_helper.GetCallback());
     base::RunLoop().RunUntilIdle();
 
@@ -232,7 +229,7 @@ TEST_F(ExtensionReenablerUnitTest, TestReenablingDisabledExtension) {
   // prompt exits and reports success.
   {
     base::RunLoop run_loop;
-    scoped_ptr<ExtensionReenabler> extension_reenabler =
+    std::unique_ptr<ExtensionReenabler> extension_reenabler =
         ExtensionReenabler::PromptForReenableWithCallbackForTest(
             extension, profile(), callback_helper.GetCallback(),
             callback_helper.CreateShowCallback(run_loop.QuitClosure()));
@@ -254,7 +251,7 @@ TEST_F(ExtensionReenablerUnitTest, TestReenablingDisabledExtension) {
     service()->DisableExtension(extension->id(),
                                 Extension::DISABLE_PERMISSIONS_INCREASE);
     base::RunLoop run_loop;
-    scoped_ptr<ExtensionReenabler> extension_reenabler =
+    std::unique_ptr<ExtensionReenabler> extension_reenabler =
         ExtensionReenabler::PromptForReenableWithCallbackForTest(
             extension, profile(), callback_helper.GetCallback(),
             callback_helper.CreateShowCallback(run_loop.QuitClosure()));

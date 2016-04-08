@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -133,10 +134,10 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
   }
   ~PasswordsPrivateApiTest() override {}
 
-  static scoped_ptr<KeyedService> GetPasswordsPrivateDelegate(
+  static std::unique_ptr<KeyedService> GetPasswordsPrivateDelegate(
       content::BrowserContext* profile) {
     CHECK(s_test_delegate_);
-    return make_scoped_ptr(s_test_delegate_);
+    return base::WrapUnique(s_test_delegate_);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

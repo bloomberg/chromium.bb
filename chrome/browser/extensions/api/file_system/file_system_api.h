@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_FILE_SYSTEM_FILE_SYSTEM_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_FILE_SYSTEM_FILE_SYSTEM_API_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
@@ -297,7 +297,7 @@ class FileSystemRetainEntryFunction : public ChromeAsyncExtensionFunction {
   // be obtained.
   void RetainFileEntry(const std::string& entry_id,
                        const base::FilePath& path,
-                       scoped_ptr<base::File::Info> file_info);
+                       std::unique_ptr<base::File::Info> file_info);
 };
 
 class FileSystemIsRestorableFunction : public ChromeSyncExtensionFunction {

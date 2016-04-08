@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_GCD_PRIVATE_GCD_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_GCD_PRIVATE_GCD_PRIVATE_API_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/gcd_private.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -29,7 +30,7 @@ class GcdPrivateAPI : public BrowserContextKeyedAPI {
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "GcdPrivateAPI"; }
 
-  scoped_ptr<GcdPrivateAPIImpl> impl_;
+  std::unique_ptr<GcdPrivateAPIImpl> impl_;
 };
 
 class GcdPrivateGetDeviceInfoFunction : public ChromeAsyncExtensionFunction {

@@ -57,7 +57,7 @@ class BrlapiConnectionImpl : public BrlapiConnection,
   ConnectResult ConnectResultForError();
 
   LibBrlapiLoader* libbrlapi_loader_;
-  scoped_ptr<brlapi_handle_t, base::FreeDeleter> handle_;
+  std::unique_ptr<brlapi_handle_t, base::FreeDeleter> handle_;
   MessageLoopForIO::FileDescriptorWatcher fd_controller_;
   OnDataReadyCallback on_data_ready_;
 
@@ -70,10 +70,10 @@ BrlapiConnection::BrlapiConnection() {
 BrlapiConnection::~BrlapiConnection() {
 }
 
-scoped_ptr<BrlapiConnection> BrlapiConnection::Create(
+std::unique_ptr<BrlapiConnection> BrlapiConnection::Create(
     LibBrlapiLoader* loader) {
   DCHECK(loader->loaded());
-  return scoped_ptr<BrlapiConnection>(new BrlapiConnectionImpl(loader));
+  return std::unique_ptr<BrlapiConnection>(new BrlapiConnectionImpl(loader));
 }
 
 BrlapiConnection::ConnectResult BrlapiConnectionImpl::Connect(

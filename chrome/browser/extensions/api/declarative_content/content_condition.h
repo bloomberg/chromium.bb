@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_CONTENT_CONDITION_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
 
 namespace base {
@@ -31,10 +31,10 @@ class Extension;
 struct ContentCondition {
  public:
   explicit ContentCondition(
-      std::vector<scoped_ptr<const ContentPredicate>> predicates);
+      std::vector<std::unique_ptr<const ContentPredicate>> predicates);
   ~ContentCondition();
 
-  std::vector<scoped_ptr<const ContentPredicate>> predicates;
+  std::vector<std::unique_ptr<const ContentPredicate>> predicates;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentCondition);
@@ -45,7 +45,7 @@ struct ContentCondition {
 // declarativeContent.PageStateMatcher from the Declarative Content
 // API. |predicate_factories| maps attribute names in the API to factories that
 // create the corresponding predicate.
-scoped_ptr<ContentCondition> CreateContentCondition(
+std::unique_ptr<ContentCondition> CreateContentCondition(
     const Extension* extension,
     const std::map<std::string, ContentPredicateFactory*>& predicate_factories,
     const base::Value& condition,

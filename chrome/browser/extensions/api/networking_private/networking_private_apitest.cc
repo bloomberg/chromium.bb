@@ -3,14 +3,16 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+
 #include <map>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -38,7 +40,7 @@ const char kGuid[] = "SOME_GUID";
 
 class TestDelegate : public NetworkingPrivateDelegate {
  public:
-  explicit TestDelegate(scoped_ptr<VerifyDelegate> verify_delegate)
+  explicit TestDelegate(std::unique_ptr<VerifyDelegate> verify_delegate)
       : NetworkingPrivateDelegate(std::move(verify_delegate)), fail_(false) {}
 
   ~TestDelegate() override {}
@@ -63,14 +65,14 @@ class TestDelegate : public NetworkingPrivateDelegate {
   }
 
   void SetProperties(const std::string& guid,
-                     scoped_ptr<base::DictionaryValue> properties,
+                     std::unique_ptr<base::DictionaryValue> properties,
                      const VoidCallback& success_callback,
                      const FailureCallback& failure_callback) override {
     VoidResult(success_callback, failure_callback);
   }
 
   void CreateNetwork(bool shared,
-                     scoped_ptr<base::DictionaryValue> properties,
+                     std::unique_ptr<base::DictionaryValue> properties,
                      const StringCallback& success_callback,
                      const FailureCallback& failure_callback) override {
     StringResult(success_callback, failure_callback);
@@ -91,8 +93,8 @@ class TestDelegate : public NetworkingPrivateDelegate {
     if (fail_) {
       failure_callback.Run(kFailure);
     } else {
-      scoped_ptr<base::ListValue> result(new base::ListValue);
-      scoped_ptr<base::DictionaryValue> network(new base::DictionaryValue);
+      std::unique_ptr<base::ListValue> result(new base::ListValue);
+      std::unique_ptr<base::DictionaryValue> network(new base::DictionaryValue);
       network->SetString(::onc::network_config::kType,
                          ::onc::network_config::kEthernet);
       network->SetString(::onc::network_config::kGUID, kGuid);
@@ -159,8 +161,8 @@ class TestDelegate : public NetworkingPrivateDelegate {
   }
 
   // Synchronous methods
-  scoped_ptr<base::ListValue> GetEnabledNetworkTypes() override {
-    scoped_ptr<base::ListValue> result;
+  std::unique_ptr<base::ListValue> GetEnabledNetworkTypes() override {
+    std::unique_ptr<base::ListValue> result;
     if (!fail_) {
       result.reset(new base::ListValue);
       result->AppendString(::onc::network_config::kEthernet);
@@ -168,12 +170,12 @@ class TestDelegate : public NetworkingPrivateDelegate {
     return result;
   }
 
-  scoped_ptr<DeviceStateList> GetDeviceStateList() override {
-    scoped_ptr<DeviceStateList> result;
+  std::unique_ptr<DeviceStateList> GetDeviceStateList() override {
+    std::unique_ptr<DeviceStateList> result;
     if (fail_)
       return result;
     result.reset(new DeviceStateList);
-    scoped_ptr<api::networking_private::DeviceStateProperties> properties(
+    std::unique_ptr<api::networking_private::DeviceStateProperties> properties(
         new api::networking_private::DeviceStateProperties);
     properties->type = api::networking_private::NETWORK_TYPE_ETHERNET;
     properties->state = api::networking_private::DEVICE_STATE_TYPE_ENABLED;
@@ -207,7 +209,7 @@ class TestDelegate : public NetworkingPrivateDelegate {
     if (fail_) {
       failure_callback.Run(kFailure);
     } else {
-      scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
+      std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
       result->SetString(::onc::network_config::kGUID, guid);
       result->SetString(::onc::network_config::kType,
                         ::onc::network_config::kWiFi);
@@ -291,17 +293,17 @@ class NetworkingPrivateApiTest : public ExtensionApiTest {
   NetworkingPrivateApiTest() {
     if (!s_test_delegate_) {
       TestVerifyDelegate* verify_delegate = new TestVerifyDelegate;
-      scoped_ptr<NetworkingPrivateDelegate::VerifyDelegate> verify_delegate_ptr(
-          verify_delegate);
+      std::unique_ptr<NetworkingPrivateDelegate::VerifyDelegate>
+          verify_delegate_ptr(verify_delegate);
       s_test_delegate_ = new TestDelegate(std::move(verify_delegate_ptr));
       verify_delegate->set_owner(s_test_delegate_);
     }
   }
 
-  static scoped_ptr<KeyedService> GetNetworkingPrivateDelegate(
+  static std::unique_ptr<KeyedService> GetNetworkingPrivateDelegate(
       content::BrowserContext* profile) {
     CHECK(s_test_delegate_);
-    return make_scoped_ptr(s_test_delegate_);
+    return base::WrapUnique(s_test_delegate_);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

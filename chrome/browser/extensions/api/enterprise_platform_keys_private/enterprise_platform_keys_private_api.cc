@@ -84,7 +84,7 @@ EPKPChallengeKeyBase::EPKPChallengeKeyBase()
       install_attributes_(g_browser_process->platform_part()
                               ->browser_policy_connector_chromeos()
                               ->GetInstallAttributes()) {
-  scoped_ptr<chromeos::attestation::ServerProxy> ca_client(
+  std::unique_ptr<chromeos::attestation::ServerProxy> ca_client(
       new chromeos::attestation::AttestationCAClient());
   default_attestation_flow_.reset(new chromeos::attestation::AttestationFlow(
       async_caller_, cryptohome_client_, std::move(ca_client)));
@@ -566,7 +566,7 @@ EnterprisePlatformKeysPrivateChallengeMachineKeyFunction::
 
 ExtensionFunction::ResponseAction
 EnterprisePlatformKeysPrivateChallengeMachineKeyFunction::Run() {
-  scoped_ptr<api_epkp::ChallengeMachineKey::Params> params(
+  std::unique_ptr<api_epkp::ChallengeMachineKey::Params> params(
       api_epkp::ChallengeMachineKey::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   ChallengeKeyCallback callback =
@@ -610,7 +610,7 @@ EnterprisePlatformKeysPrivateChallengeUserKeyFunction::
 
 ExtensionFunction::ResponseAction
 EnterprisePlatformKeysPrivateChallengeUserKeyFunction::Run() {
-  scoped_ptr<api_epkp::ChallengeUserKey::Params> params(
+  std::unique_ptr<api_epkp::ChallengeUserKey::Params> params(
       api_epkp::ChallengeUserKey::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   ChallengeKeyCallback callback = base::Bind(

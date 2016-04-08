@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_STORAGE_SETTING_SYNC_DATA_H_
 #define CHROME_BROWSER_EXTENSIONS_API_STORAGE_SETTING_SYNC_DATA_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "sync/api/sync_change.h"
@@ -34,11 +34,10 @@ class SettingSyncData {
   explicit SettingSyncData(const syncer::SyncData& sync_data);
 
   // Creates explicitly.
-  SettingSyncData(
-      syncer::SyncChange::SyncChangeType change_type,
-      const std::string& extension_id,
-      const std::string& key,
-      scoped_ptr<base::Value> value);
+  SettingSyncData(syncer::SyncChange::SyncChangeType change_type,
+                  const std::string& extension_id,
+                  const std::string& key,
+                  std::unique_ptr<base::Value> value);
 
   ~SettingSyncData();
 
@@ -54,7 +53,7 @@ class SettingSyncData {
 
   // Releases ownership of the value to the caller. Neither value() nor
   // PassValue() can be after this.
-  scoped_ptr<base::Value> PassValue();
+  std::unique_ptr<base::Value> PassValue();
 
  private:
   // Populates the extension ID, key, and value from |sync_data|. This will be
@@ -64,7 +63,7 @@ class SettingSyncData {
   syncer::SyncChange::SyncChangeType change_type_;
   std::string extension_id_;
   std::string key_;
-  scoped_ptr<base::Value> value_;
+  std::unique_ptr<base::Value> value_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingSyncData);
 };

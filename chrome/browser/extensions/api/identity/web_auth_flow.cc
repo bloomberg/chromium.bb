@@ -82,7 +82,7 @@ void WebAuthFlow::Start() {
   base::Base64Encode(random_bytes, &app_window_key_);
 
   // identityPrivate.onWebFlowRequest(app_window_key, provider_url_, mode_)
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->AppendString(app_window_key_);
   args->AppendString(provider_url_.spec());
   if (mode_ == WebAuthFlow::INTERACTIVE)
@@ -90,7 +90,7 @@ void WebAuthFlow::Start() {
   else
     args->AppendString("silent");
 
-  scoped_ptr<Event> event(new Event(
+  std::unique_ptr<Event> event(new Event(
       events::IDENTITY_PRIVATE_ON_WEB_FLOW_REQUEST,
       identity_private::OnWebFlowRequest::kEventName, std::move(args)));
   event->restrict_to_browser_context = profile_;

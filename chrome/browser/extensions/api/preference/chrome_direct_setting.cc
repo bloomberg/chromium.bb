@@ -36,7 +36,7 @@ bool GetDirectSettingFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(preference);
   const base::Value* value = preference->GetValue();
 
-  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   result->Set(preference_api_constants::kValue, value->DeepCopy());
   SetResult(result.release());
 

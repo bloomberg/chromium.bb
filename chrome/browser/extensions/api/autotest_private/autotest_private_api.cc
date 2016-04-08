@@ -82,7 +82,7 @@ bool AutotestPrivateRestartFunction::RunSync() {
 }
 
 bool AutotestPrivateShutdownFunction::RunSync() {
-  scoped_ptr<api::autotest_private::Shutdown::Params> params(
+  std::unique_ptr<api::autotest_private::Shutdown::Params> params(
       api::autotest_private::Shutdown::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -227,7 +227,7 @@ bool AutotestPrivateSimulateAsanMemoryBugFunction::RunSync() {
 }
 
 bool AutotestPrivateSetTouchpadSensitivityFunction::RunSync() {
-  scoped_ptr<api::autotest_private::SetTouchpadSensitivity::Params> params(
+  std::unique_ptr<api::autotest_private::SetTouchpadSensitivity::Params> params(
       api::autotest_private::SetTouchpadSensitivity::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -241,7 +241,7 @@ bool AutotestPrivateSetTouchpadSensitivityFunction::RunSync() {
 }
 
 bool AutotestPrivateSetTapToClickFunction::RunSync() {
-  scoped_ptr<api::autotest_private::SetTapToClick::Params> params(
+  std::unique_ptr<api::autotest_private::SetTapToClick::Params> params(
       api::autotest_private::SetTapToClick::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -254,7 +254,7 @@ bool AutotestPrivateSetTapToClickFunction::RunSync() {
 }
 
 bool AutotestPrivateSetThreeFingerClickFunction::RunSync() {
-  scoped_ptr<api::autotest_private::SetThreeFingerClick::Params> params(
+  std::unique_ptr<api::autotest_private::SetThreeFingerClick::Params> params(
       api::autotest_private::SetThreeFingerClick::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -268,7 +268,7 @@ bool AutotestPrivateSetThreeFingerClickFunction::RunSync() {
 }
 
 bool AutotestPrivateSetTapDraggingFunction::RunSync() {
-  scoped_ptr<api::autotest_private::SetTapDragging::Params> params(
+  std::unique_ptr<api::autotest_private::SetTapDragging::Params> params(
       api::autotest_private::SetTapDragging::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -281,7 +281,7 @@ bool AutotestPrivateSetTapDraggingFunction::RunSync() {
 }
 
 bool AutotestPrivateSetNaturalScrollFunction::RunSync() {
-  scoped_ptr<api::autotest_private::SetNaturalScroll::Params> params(
+  std::unique_ptr<api::autotest_private::SetNaturalScroll::Params> params(
       api::autotest_private::SetNaturalScroll::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -295,7 +295,7 @@ bool AutotestPrivateSetNaturalScrollFunction::RunSync() {
 }
 
 bool AutotestPrivateSetMouseSensitivityFunction::RunSync() {
-  scoped_ptr<api::autotest_private::SetMouseSensitivity::Params> params(
+  std::unique_ptr<api::autotest_private::SetMouseSensitivity::Params> params(
       api::autotest_private::SetMouseSensitivity::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -309,7 +309,7 @@ bool AutotestPrivateSetMouseSensitivityFunction::RunSync() {
 }
 
 bool AutotestPrivateSetPrimaryButtonRightFunction::RunSync() {
-  scoped_ptr<api::autotest_private::SetPrimaryButtonRight::Params> params(
+  std::unique_ptr<api::autotest_private::SetPrimaryButtonRight::Params> params(
       api::autotest_private::SetPrimaryButtonRight::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

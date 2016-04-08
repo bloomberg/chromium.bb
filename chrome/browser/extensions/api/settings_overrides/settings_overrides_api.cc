@@ -188,7 +188,7 @@ void SettingsOverridesAPI::OnExtensionLoaded(
                        kManyStartupPagesWarning,
                        manifest_keys::kSettingsOverride);
       }
-      scoped_ptr<base::ListValue> url_list(new base::ListValue);
+      std::unique_ptr<base::ListValue> url_list(new base::ListValue);
       url_list->Append(new base::StringValue(SubstituteInstallParam(
           settings->startup_pages[0].spec(), install_parameter)));
       SetPref(
@@ -267,7 +267,7 @@ void SettingsOverridesAPI::RegisterSearchProvider(
   const SettingsOverrides* settings = SettingsOverrides::Get(extension);
   DCHECK(settings);
   DCHECK(settings->search_engine);
-  scoped_ptr<TemplateURL::AssociatedExtensionInfo> info(
+  std::unique_ptr<TemplateURL::AssociatedExtensionInfo> info(
       new TemplateURL::AssociatedExtensionInfo(
           TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, extension->id()));
   info->wants_to_be_default_engine = settings->search_engine->is_default;

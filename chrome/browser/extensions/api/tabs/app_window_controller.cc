@@ -21,9 +21,10 @@
 
 namespace extensions {
 
-AppWindowController::AppWindowController(AppWindow* app_window,
-                                         scoped_ptr<AppBaseWindow> base_window,
-                                         Profile* profile)
+AppWindowController::AppWindowController(
+    AppWindow* app_window,
+    std::unique_ptr<AppBaseWindow> base_window,
+    Profile* profile)
     : WindowController(base_window.get(), profile),
       app_window_(app_window),
       base_window_(std::move(base_window)) {
@@ -65,7 +66,7 @@ base::DictionaryValue* AppWindowController::CreateTabValue(
   return CreateTabObject(extension, tab_index)->ToValue().release();
 }
 
-scoped_ptr<api::tabs::Tab> AppWindowController::CreateTabObject(
+std::unique_ptr<api::tabs::Tab> AppWindowController::CreateTabObject(
     const extensions::Extension* extension,
     int tab_index) const {
   if (tab_index > 0)
@@ -75,7 +76,7 @@ scoped_ptr<api::tabs::Tab> AppWindowController::CreateTabObject(
   if (!web_contents)
     return nullptr;
 
-  scoped_ptr<api::tabs::Tab> tab_object(new api::tabs::Tab);
+  std::unique_ptr<api::tabs::Tab> tab_object(new api::tabs::Tab);
   tab_object->id.reset(new int(SessionTabHelper::IdForTab(web_contents)));
   tab_object->index = 0;
   tab_object->window_id =

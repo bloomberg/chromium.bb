@@ -704,7 +704,7 @@ class ShowPageActionWithoutPageActionTest : public DeclarativeContentApiTest {
   }
 
   bool enable_redesign_;
-  scoped_ptr<FeatureSwitch::ScopedOverride> override_toolbar_redesign_;
+  std::unique_ptr<FeatureSwitch::ScopedOverride> override_toolbar_redesign_;
   DISALLOW_COPY_AND_ASSIGN(ShowPageActionWithoutPageActionTest);
 };
 
@@ -837,7 +837,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
       browser()->tab_strip_model()->GetWebContentsAt(0);
 
   AddTabAtIndex(1, GURL("http://test2/"), ui::PAGE_TRANSITION_LINK);
-  scoped_ptr<content::WebContents> tab2(
+  std::unique_ptr<content::WebContents> tab2(
       browser()->tab_strip_model()->GetWebContentsAt(1));
 
   // Add a rule matching the second tab.

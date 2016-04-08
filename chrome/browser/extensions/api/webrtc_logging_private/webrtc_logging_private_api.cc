@@ -151,7 +151,8 @@ void WebrtcLoggingPrivateFunctionWithAudioDebugRecordingsCallback::FireCallback(
 }
 
 bool WebrtcLoggingPrivateSetMetaDataFunction::RunAsync() {
-  scoped_ptr<SetMetaData::Params> params(SetMetaData::Params::Create(*args_));
+  std::unique_ptr<SetMetaData::Params> params(
+      SetMetaData::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   WebRtcLoggingHandlerHost::GenericDoneCallback callback;
@@ -160,7 +161,7 @@ bool WebrtcLoggingPrivateSetMetaDataFunction::RunAsync() {
   if (!webrtc_logging_handler_host.get())
     return false;
 
-  scoped_ptr<MetaDataMap> meta_data(new MetaDataMap());
+  std::unique_ptr<MetaDataMap> meta_data(new MetaDataMap());
   for (const MetaDataEntry& entry : params->meta_data)
     (*meta_data.get())[entry.key] = entry.value;
 
@@ -172,7 +173,7 @@ bool WebrtcLoggingPrivateSetMetaDataFunction::RunAsync() {
 }
 
 bool WebrtcLoggingPrivateStartFunction::RunAsync() {
-  scoped_ptr<Start::Params> params(Start::Params::Create(*args_));
+  std::unique_ptr<Start::Params> params(Start::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   WebRtcLoggingHandlerHost::GenericDoneCallback callback;
@@ -189,7 +190,7 @@ bool WebrtcLoggingPrivateStartFunction::RunAsync() {
 }
 
 bool WebrtcLoggingPrivateSetUploadOnRenderCloseFunction::RunAsync() {
-  scoped_ptr<SetUploadOnRenderClose::Params> params(
+  std::unique_ptr<SetUploadOnRenderClose::Params> params(
       SetUploadOnRenderClose::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -205,7 +206,7 @@ bool WebrtcLoggingPrivateSetUploadOnRenderCloseFunction::RunAsync() {
 }
 
 bool WebrtcLoggingPrivateStopFunction::RunAsync() {
-  scoped_ptr<Stop::Params> params(Stop::Params::Create(*args_));
+  std::unique_ptr<Stop::Params> params(Stop::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   WebRtcLoggingHandlerHost::GenericDoneCallback callback;
@@ -222,7 +223,7 @@ bool WebrtcLoggingPrivateStopFunction::RunAsync() {
 }
 
 bool WebrtcLoggingPrivateStoreFunction::RunAsync() {
-  scoped_ptr<Store::Params> params(Store::Params::Create(*args_));
+  std::unique_ptr<Store::Params> params(Store::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   WebRtcLoggingHandlerHost::GenericDoneCallback callback;
@@ -242,7 +243,8 @@ bool WebrtcLoggingPrivateStoreFunction::RunAsync() {
 }
 
 bool WebrtcLoggingPrivateUploadStoredFunction::RunAsync() {
-  scoped_ptr<UploadStored::Params> params(UploadStored::Params::Create(*args_));
+  std::unique_ptr<UploadStored::Params> params(
+      UploadStored::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   scoped_refptr<WebRtcLoggingHandlerHost> logging_handler(
@@ -264,7 +266,7 @@ bool WebrtcLoggingPrivateUploadStoredFunction::RunAsync() {
 }
 
 bool WebrtcLoggingPrivateUploadFunction::RunAsync() {
-  scoped_ptr<Upload::Params> params(Upload::Params::Create(*args_));
+  std::unique_ptr<Upload::Params> params(Upload::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   scoped_refptr<WebRtcLoggingHandlerHost> logging_handler(
@@ -282,7 +284,7 @@ bool WebrtcLoggingPrivateUploadFunction::RunAsync() {
 }
 
 bool WebrtcLoggingPrivateDiscardFunction::RunAsync() {
-  scoped_ptr<Discard::Params> params(Discard::Params::Create(*args_));
+  std::unique_ptr<Discard::Params> params(Discard::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   WebRtcLoggingHandlerHost::GenericDoneCallback callback;
@@ -299,7 +301,8 @@ bool WebrtcLoggingPrivateDiscardFunction::RunAsync() {
 }
 
 bool WebrtcLoggingPrivateStartRtpDumpFunction::RunAsync() {
-  scoped_ptr<StartRtpDump::Params> params(StartRtpDump::Params::Create(*args_));
+  std::unique_ptr<StartRtpDump::Params> params(
+      StartRtpDump::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   if (!params->incoming && !params->outgoing) {
@@ -341,7 +344,8 @@ bool WebrtcLoggingPrivateStartRtpDumpFunction::RunAsync() {
 }
 
 bool WebrtcLoggingPrivateStopRtpDumpFunction::RunAsync() {
-  scoped_ptr<StopRtpDump::Params> params(StopRtpDump::Params::Create(*args_));
+  std::unique_ptr<StopRtpDump::Params> params(
+      StopRtpDump::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   if (!params->incoming && !params->outgoing) {
@@ -380,7 +384,7 @@ bool WebrtcLoggingPrivateStartAudioDebugRecordingsFunction::RunAsync() {
     return false;
   }
 
-  scoped_ptr<StartAudioDebugRecordings::Params> params(
+  std::unique_ptr<StartAudioDebugRecordings::Params> params(
       StartAudioDebugRecordings::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -414,7 +418,7 @@ bool WebrtcLoggingPrivateStopAudioDebugRecordingsFunction::RunAsync() {
     return false;
   }
 
-  scoped_ptr<StopAudioDebugRecordings::Params> params(
+  std::unique_ptr<StopAudioDebugRecordings::Params> params(
       StopAudioDebugRecordings::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

@@ -4,8 +4,9 @@
 
 #include "chrome/browser/extensions/api/content_settings/content_settings_helpers.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "content/public/common/url_constants.h"
@@ -44,7 +45,7 @@ ContentSettingsPattern ParseExtensionPattern(const std::string& pattern_str,
     *error = URLPattern::GetParseResultString(result);
     return ContentSettingsPattern();
   } else {
-    scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
+    std::unique_ptr<ContentSettingsPattern::BuilderInterface> builder(
         ContentSettingsPattern::CreateBuilder(false));
     builder->WithHost(url_pattern.host());
     if (url_pattern.match_subdomains())

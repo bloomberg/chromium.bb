@@ -8,12 +8,12 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
@@ -55,10 +55,11 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
       const std::string& origin_url,
       const std::string& username,
       const base::string16& plaintext_password) override;
-  void SetPasswordList(const std::vector<scoped_ptr<autofill::PasswordForm>>&
-                           password_list) override;
+  void SetPasswordList(
+      const std::vector<std::unique_ptr<autofill::PasswordForm>>& password_list)
+      override;
   void SetPasswordExceptionList(
-      const std::vector<scoped_ptr<autofill::PasswordForm>>&
+      const std::vector<std::unique_ptr<autofill::PasswordForm>>&
           password_exception_list) override;
 #if !defined(OS_ANDROID)
   gfx::NativeWindow GetNativeWindow() const override;
@@ -90,7 +91,7 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   Profile* profile_;
 
   // Used to communicate with the password store.
-  scoped_ptr<PasswordManagerPresenter> password_manager_presenter_;
+  std::unique_ptr<PasswordManagerPresenter> password_manager_presenter_;
 
   // The current list of entries/exceptions. Cached here so that when new
   // observers are added, this delegate can send the current lists without

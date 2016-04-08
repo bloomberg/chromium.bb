@@ -6,10 +6,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -121,11 +121,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetWindow) {
 
   function = new WindowsGetFunction();
   function->set_extension(extension.get());
-  scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
-      utils::RunFunctionAndReturnSingleResult(
-          function.get(),
-          base::StringPrintf("[%u]", window_id),
-          browser())));
+  std::unique_ptr<base::DictionaryValue> result(
+      utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
+          function.get(), base::StringPrintf("[%u]", window_id), browser())));
   EXPECT_EQ(window_id, GetWindowId(result.get()));
   EXPECT_FALSE(api_test_utils::GetBoolean(result.get(), "incognito"));
   EXPECT_EQ("normal", api_test_utils::GetString(result.get(), "type"));
@@ -226,10 +224,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetCurrentWindow) {
       new WindowsGetCurrentFunction();
   scoped_refptr<Extension> extension(test_util::CreateEmptyExtension());
   function->set_extension(extension.get());
-  scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
-      utils::RunFunctionAndReturnSingleResult(function.get(),
-                                              "[]",
-                                              new_browser)));
+  std::unique_ptr<base::DictionaryValue> result(
+      utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
+          function.get(), "[]", new_browser)));
 
   // The id should match the window id of the browser instance that was passed
   // to RunFunctionAndReturnSingleResult.
@@ -280,10 +277,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindows) {
   scoped_refptr<WindowsGetAllFunction> function = new WindowsGetAllFunction();
   scoped_refptr<Extension> extension(test_util::CreateEmptyExtension());
   function->set_extension(extension.get());
-  scoped_ptr<base::ListValue> result(utils::ToList(
-      utils::RunFunctionAndReturnSingleResult(function.get(),
-                                              "[]",
-                                              browser())));
+  std::unique_ptr<base::ListValue> result(
+      utils::ToList(utils::RunFunctionAndReturnSingleResult(function.get(),
+                                                            "[]", browser())));
 
   base::ListValue* windows = result.get();
   EXPECT_EQ(window_ids.size(), windows->GetSize());
@@ -351,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindowsAllTypes) {
   scoped_refptr<WindowsGetAllFunction> function = new WindowsGetAllFunction();
   scoped_refptr<Extension> extension(test_util::CreateEmptyExtension());
   function->set_extension(extension.get());
-  scoped_ptr<base::ListValue> result(
+  std::unique_ptr<base::ListValue> result(
       utils::ToList(utils::RunFunctionAndReturnSingleResult(
           function.get(),
           "[{\"windowTypes\": [\"app\", \"devtools\", \"normal\", \"panel\", "
@@ -412,11 +408,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, UpdateNoPermissions) {
   // Without a callback the function will not generate a result.
   update_tab_function->set_has_callback(true);
 
-  scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
-      utils::RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::DictionaryValue> result(
+      utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
           update_tab_function.get(),
-          "[null, {\"url\": \"about:blank\", \"pinned\": true}]",
-          browser())));
+          "[null, {\"url\": \"about:blank\", \"pinned\": true}]", browser())));
   // The url is stripped since the extension does not have tab permissions.
   EXPECT_FALSE(result->HasKey("url"));
   EXPECT_TRUE(api_test_utils::GetBoolean(result.get(), "pinned"));
@@ -435,11 +430,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
       browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
   scoped_refptr<Extension> extension(test_util::CreateEmptyExtension());
   function->set_extension(extension.get());
-  scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
-      utils::RunFunctionAndReturnSingleResult(
-          function.get(),
-          kArgsWithoutExplicitIncognitoParam,
-          browser(),
+  std::unique_ptr<base::DictionaryValue> result(
+      utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
+          function.get(), kArgsWithoutExplicitIncognitoParam, browser(),
           utils::INCLUDE_INCOGNITO)));
 
   // Make sure it is a new(different) window.
@@ -478,11 +471,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
   scoped_refptr<WindowsCreateFunction> function = new WindowsCreateFunction();
   scoped_refptr<Extension> extension(test_util::CreateEmptyExtension());
   function->set_extension(extension.get());
-  scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
-      utils::RunFunctionAndReturnSingleResult(function.get(),
-                                              kEmptyArgs,
-                                              browser(),
-                                              utils::INCLUDE_INCOGNITO)));
+  std::unique_ptr<base::DictionaryValue> result(
+      utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
+          function.get(), kEmptyArgs, browser(), utils::INCLUDE_INCOGNITO)));
 
   // Make sure it is a new(different) window.
   EXPECT_NE(ExtensionTabUtil::GetWindowId(browser()),
@@ -572,10 +563,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryCurrentWindowTabs) {
   // Get tabs in the 'current' window called from non-focused browser.
   scoped_refptr<TabsQueryFunction> function = new TabsQueryFunction();
   function->set_extension(test_util::CreateEmptyExtension().get());
-  scoped_ptr<base::ListValue> result(utils::ToList(
-      utils::RunFunctionAndReturnSingleResult(function.get(),
-                                              "[{\"currentWindow\":true}]",
-                                              browser())));
+  std::unique_ptr<base::ListValue> result(
+      utils::ToList(utils::RunFunctionAndReturnSingleResult(
+          function.get(), "[{\"currentWindow\":true}]", browser())));
 
   base::ListValue* result_tabs = result.get();
   // We should have one initial tab and one added tab.
@@ -620,10 +610,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryAllTabsWithDevTools) {
   // Get tabs in the 'current' window called from non-focused browser.
   scoped_refptr<TabsQueryFunction> function = new TabsQueryFunction();
   function->set_extension(test_util::CreateEmptyExtension().get());
-  scoped_ptr<base::ListValue> result(utils::ToList(
-      utils::RunFunctionAndReturnSingleResult(function.get(),
-                                              "[{}]",
-                                              browser())));
+  std::unique_ptr<base::ListValue> result(
+      utils::ToList(utils::RunFunctionAndReturnSingleResult(
+          function.get(), "[{}]", browser())));
 
   std::set<int> result_ids;
   base::ListValue* result_tabs = result.get();
@@ -657,11 +646,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DontCreateTabInClosingPopupWindow) {
   static const char kNewBlankTabArgs[] =
       "[{\"url\": \"about:blank\", \"windowId\": %u}]";
 
-  scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
-      utils::RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::DictionaryValue> result(
+      utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
           create_tab_function.get(),
-          base::StringPrintf(kNewBlankTabArgs, window_id),
-          browser())));
+          base::StringPrintf(kNewBlankTabArgs, window_id), browser())));
 
   EXPECT_NE(window_id, GetTabWindowId(result.get()));
 }
@@ -721,7 +709,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, UpdateAppWindowSizeConstraint) {
   scoped_refptr<WindowsGetFunction> get_function = new WindowsGetFunction();
   scoped_refptr<Extension> extension(test_util::CreateEmptyExtension().get());
   get_function->set_extension(extension.get());
-  scoped_ptr<base::DictionaryValue> result(
+  std::unique_ptr<base::DictionaryValue> result(
       utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
           get_function.get(),
           base::StringPrintf("[%u, {\"windowTypes\": [\"app\"]}]",
@@ -767,7 +755,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, UpdateDevToolsWindow) {
   scoped_refptr<WindowsGetFunction> get_function = new WindowsGetFunction();
   scoped_refptr<Extension> extension(test_util::CreateEmptyExtension().get());
   get_function->set_extension(extension.get());
-  scoped_ptr<base::DictionaryValue> result(
+  std::unique_ptr<base::DictionaryValue> result(
       utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
           get_function.get(),
           base::StringPrintf(
@@ -954,7 +942,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowLastFocusedTest,
 
     scoped_refptr<WindowsGetLastFocusedFunction> function =
         new WindowsGetLastFocusedFunction();
-    scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
+    std::unique_ptr<base::DictionaryValue> result(utils::ToDictionary(
         RunFunction(function.get(), "[{\"populate\": true}]")));
     EXPECT_NE(devtools_window_id,
               api_test_utils::GetInteger(result.get(), "id"));
@@ -970,7 +958,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowLastFocusedTest,
 
     scoped_refptr<WindowsGetLastFocusedFunction> get_current_app_function =
         new WindowsGetLastFocusedFunction();
-    scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
+    std::unique_ptr<base::DictionaryValue> result(utils::ToDictionary(
         RunFunction(get_current_app_function.get(), "[{\"populate\": true}]")));
     int app_window_id = app_window->session_id().id();
     EXPECT_NE(app_window_id, api_test_utils::GetInteger(result.get(), "id"));
@@ -988,7 +976,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowLastFocusedTest,
 
     scoped_refptr<WindowsGetLastFocusedFunction> function =
         new WindowsGetLastFocusedFunction();
-    scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
+    std::unique_ptr<base::DictionaryValue> result(utils::ToDictionary(
         RunFunction(function.get(), "[{\"populate\": true}]")));
     int normal_browser_window_id =
         ExtensionTabUtil::GetWindowId(normal_browser);
@@ -1004,7 +992,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowLastFocusedTest,
 
     scoped_refptr<WindowsGetLastFocusedFunction> function =
         new WindowsGetLastFocusedFunction();
-    scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
+    std::unique_ptr<base::DictionaryValue> result(utils::ToDictionary(
         RunFunction(function.get(), "[{\"populate\": true}]")));
     int popup_browser_window_id = ExtensionTabUtil::GetWindowId(popup_browser);
     EXPECT_EQ(popup_browser_window_id,
@@ -1020,9 +1008,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowLastFocusedTest,
 
     scoped_refptr<WindowsGetLastFocusedFunction> function =
         new WindowsGetLastFocusedFunction();
-    scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(RunFunction(
-        function.get(),
-        "[{\"populate\": true, \"windowTypes\": [ \"devtools\" ]}]")));
+    std::unique_ptr<base::DictionaryValue> result(
+        utils::ToDictionary(RunFunction(
+            function.get(),
+            "[{\"populate\": true, \"windowTypes\": [ \"devtools\" ]}]")));
     int devtools_window_id = ExtensionTabUtil::GetWindowId(
         DevToolsWindowTesting::Get(devtools)->browser());
     EXPECT_EQ(devtools_window_id,
@@ -1041,7 +1030,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowLastFocusedTest,
 
     scoped_refptr<WindowsGetLastFocusedFunction> get_current_app_function =
         new WindowsGetLastFocusedFunction();
-    scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
+    std::unique_ptr<base::DictionaryValue> result(utils::ToDictionary(
         RunFunction(get_current_app_function.get(),
                     "[{\"populate\": true, \"windowTypes\": [ \"app\" ]}]")));
     int app_window_id = app_window->session_id().id();
@@ -1066,7 +1055,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, AcceptState) {
   scoped_refptr<Extension> extension(test_util::CreateEmptyExtension());
   function->set_extension(extension.get());
 
-  scoped_ptr<base::DictionaryValue> result(
+  std::unique_ptr<base::DictionaryValue> result(
       utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
           function.get(), "[{\"state\": \"minimized\"}]", browser(),
           utils::INCLUDE_INCOGNITO)));
@@ -1150,7 +1139,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTab) {
 
   scoped_refptr<TabsDuplicateFunction> duplicate_tab_function(
       new TabsDuplicateFunction());
-  scoped_ptr<base::DictionaryValue> test_extension_value(
+  std::unique_ptr<base::DictionaryValue> test_extension_value(
       api_test_utils::ParseDictionary(
           "{\"name\": \"Test\", \"version\": \"1.0\", \"permissions\": "
           "[\"tabs\"]}"));
@@ -1159,8 +1148,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTab) {
   duplicate_tab_function->set_extension(empty_tab_extension.get());
   duplicate_tab_function->set_has_callback(true);
 
-  scoped_ptr<base::DictionaryValue> duplicate_result(utils::ToDictionary(
-      utils::RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::DictionaryValue> duplicate_result(
+      utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
           duplicate_tab_function.get(), base::StringPrintf("[%u]", tab_id),
           browser())));
 
@@ -1198,8 +1187,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTabNoPermission) {
   duplicate_tab_function->set_extension(empty_extension.get());
   duplicate_tab_function->set_has_callback(true);
 
-  scoped_ptr<base::DictionaryValue> duplicate_result(utils::ToDictionary(
-      utils::RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::DictionaryValue> duplicate_result(
+      utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
           duplicate_tab_function.get(), base::StringPrintf("[%u]", tab_id),
           browser())));
 
@@ -1293,7 +1282,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, FilteredEvents) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, ExecuteScriptOnDevTools) {
-  scoped_ptr<base::DictionaryValue> test_extension_value(
+  std::unique_ptr<base::DictionaryValue> test_extension_value(
       api_test_utils::ParseDictionary(
           "{\"name\": \"Test\", \"version\": \"1.0\", \"permissions\": "
           "[\"tabs\"]}"));
@@ -1380,10 +1369,9 @@ testing::AssertionResult ExtensionTabsZoomTest::RunGetZoom(
   get_zoom_function->set_extension(extension_.get());
   get_zoom_function->set_has_callback(true);
 
-  scoped_ptr<base::Value> get_zoom_result(
+  std::unique_ptr<base::Value> get_zoom_result(
       utils::RunFunctionAndReturnSingleResult(
-          get_zoom_function.get(),
-          base::StringPrintf("[%u]", tab_id),
+          get_zoom_function.get(), base::StringPrintf("[%u]", tab_id),
           browser()));
 
   if (!get_zoom_result)
@@ -1426,10 +1414,9 @@ testing::AssertionResult ExtensionTabsZoomTest::RunGetZoomSettings(
   get_zoom_settings_function->set_extension(extension_.get());
   get_zoom_settings_function->set_has_callback(true);
 
-  scoped_ptr<base::DictionaryValue> get_zoom_settings_result(
+  std::unique_ptr<base::DictionaryValue> get_zoom_settings_result(
       utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
-          get_zoom_settings_function.get(),
-          base::StringPrintf("[%u]", tab_id),
+          get_zoom_settings_function.get(), base::StringPrintf("[%u]", tab_id),
           browser())));
 
   if (!get_zoom_settings_result)
@@ -1450,10 +1437,9 @@ testing::AssertionResult ExtensionTabsZoomTest::RunGetDefaultZoom(
   get_zoom_settings_function->set_extension(extension_.get());
   get_zoom_settings_function->set_has_callback(true);
 
-  scoped_ptr<base::DictionaryValue> get_zoom_settings_result(
+  std::unique_ptr<base::DictionaryValue> get_zoom_settings_result(
       utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
-          get_zoom_settings_function.get(),
-          base::StringPrintf("[%u]", tab_id),
+          get_zoom_settings_function.get(), base::StringPrintf("[%u]", tab_id),
           browser())));
 
   if (!get_zoom_settings_result)

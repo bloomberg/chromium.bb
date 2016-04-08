@@ -51,8 +51,9 @@ class ExtensionActionManager : public KeyedService,
   // Gets the best fit ExtensionAction for the given |extension|. This takes
   // into account |extension|'s browser or page actions, if any, along with its
   // name and any declared icons.
-  scoped_ptr<ExtensionAction> GetBestFitAction(
-      const Extension& extension, ActionInfo::Type type) const;
+  std::unique_ptr<ExtensionAction> GetBestFitAction(
+      const Extension& extension,
+      ActionInfo::Type type) const;
 
  private:
   // Implement ExtensionRegistryObserver.

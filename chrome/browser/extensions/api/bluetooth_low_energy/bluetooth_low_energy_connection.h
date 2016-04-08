@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_CONNECTION_H_
 #define CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_CONNECTION_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
@@ -19,7 +20,7 @@ class BluetoothLowEnergyConnection : public ApiResource {
   explicit BluetoothLowEnergyConnection(
       bool persistent,
       const std::string& owner_extension_id,
-      scoped_ptr<device::BluetoothGattConnection> connection);
+      std::unique_ptr<device::BluetoothGattConnection> connection);
   ~BluetoothLowEnergyConnection() override;
 
   // Returns a pointer to the underlying connection object.
@@ -43,7 +44,7 @@ class BluetoothLowEnergyConnection : public ApiResource {
 
   // The connection is owned by this instance and will automatically disconnect
   // when deleted.
-  scoped_ptr<device::BluetoothGattConnection> connection_;
+  std::unique_ptr<device::BluetoothGattConnection> connection_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyConnection);
 };

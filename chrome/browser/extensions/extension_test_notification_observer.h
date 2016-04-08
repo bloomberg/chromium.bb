@@ -108,7 +108,7 @@ class ExtensionTestNotificationObserver
   Profile* profile_;
 
   content::NotificationRegistrar registrar_;
-  scoped_ptr<content::WindowedNotificationObserver> observer_;
+  std::unique_ptr<content::WindowedNotificationObserver> observer_;
 
   std::string last_loaded_extension_id_;
   int extension_installs_observed_;

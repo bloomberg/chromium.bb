@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_EXTENSIONS_API_SETTINGS_PRIVATE_PREFS_UTIL_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/common/extensions/api/settings_private.h"
 
@@ -43,7 +43,7 @@ class PrefsUtil {
 
   // Gets the value of the pref with the given |name|. Returns a pointer to an
   // empty PrefObject if no pref is found for |name|.
-  virtual scoped_ptr<api::settings_private::PrefObject> GetPref(
+  virtual std::unique_ptr<api::settings_private::PrefObject> GetPref(
       const std::string& name);
 
   // Sets the pref with the given name and value in the proper PrefService.
@@ -96,7 +96,7 @@ class PrefsUtil {
   api::settings_private::PrefType GetType(const std::string& name,
                                           base::Value::Type type);
 
-  scoped_ptr<api::settings_private::PrefObject> GetCrosSettingsPref(
+  std::unique_ptr<api::settings_private::PrefObject> GetCrosSettingsPref(
       const std::string& name);
 
   SetPrefResult SetCrosSettingsPref(const std::string& name,

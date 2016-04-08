@@ -295,7 +295,7 @@ class DownloadsGetFileIconFunction : public ChromeAsyncExtensionFunction {
  private:
   void OnIconURLExtracted(const std::string& url);
   base::FilePath path_;
-  scoped_ptr<DownloadFileIconExtractor> icon_extractor_;
+  std::unique_ptr<DownloadFileIconExtractor> icon_extractor_;
   DISALLOW_COPY_AND_ASSIGN(DownloadsGetFileIconFunction);
 };
 

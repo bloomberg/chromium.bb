@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -189,9 +190,10 @@ ChromeExtensionsBrowserClient::GetProcessManagerDelegate() const {
   return process_manager_delegate_.get();
 }
 
-scoped_ptr<ExtensionHostDelegate>
+std::unique_ptr<ExtensionHostDelegate>
 ChromeExtensionsBrowserClient::CreateExtensionHostDelegate() {
-  return scoped_ptr<ExtensionHostDelegate>(new ChromeExtensionHostDelegate);
+  return std::unique_ptr<ExtensionHostDelegate>(
+      new ChromeExtensionHostDelegate);
 }
 
 bool ChromeExtensionsBrowserClient::DidVersionUpdate(
@@ -282,10 +284,11 @@ void ChromeExtensionsBrowserClient::RegisterMojoServices(
   RegisterChromeServicesForFrame(render_frame_host, extension);
 }
 
-scoped_ptr<RuntimeAPIDelegate>
+std::unique_ptr<RuntimeAPIDelegate>
 ChromeExtensionsBrowserClient::CreateRuntimeAPIDelegate(
     content::BrowserContext* context) const {
-  return scoped_ptr<RuntimeAPIDelegate>(new ChromeRuntimeAPIDelegate(context));
+  return std::unique_ptr<RuntimeAPIDelegate>(
+      new ChromeRuntimeAPIDelegate(context));
 }
 
 const ComponentExtensionResourceManager*
@@ -296,7 +299,7 @@ ChromeExtensionsBrowserClient::GetComponentExtensionResourceManager() {
 void ChromeExtensionsBrowserClient::BroadcastEventToRenderers(
     events::HistogramValue histogram_value,
     const std::string& event_name,
-    scoped_ptr<base::ListValue> args) {
+    std::unique_ptr<base::ListValue> args) {
   g_browser_process->extension_event_router_forwarder()
       ->BroadcastEventToRenderers(histogram_value, event_name, std::move(args),
                                   GURL());
@@ -310,7 +313,7 @@ ExtensionCache* ChromeExtensionsBrowserClient::GetExtensionCache() {
   if (!extension_cache_.get()) {
 #if defined(OS_CHROMEOS)
     extension_cache_.reset(new ExtensionCacheImpl(
-        make_scoped_ptr(new ChromeOSExtensionCacheDelegate())));
+        base::WrapUnique(new ChromeOSExtensionCacheDelegate())));
 #else
     extension_cache_.reset(new NullExtensionCache());
 #endif
@@ -343,7 +346,7 @@ ChromeExtensionsBrowserClient::GetExtensionWebContentsObserver(
 
 void ChromeExtensionsBrowserClient::ReportError(
     content::BrowserContext* context,
-    scoped_ptr<ExtensionError> error) {
+    std::unique_ptr<ExtensionError> error) {
   ErrorConsole::Get(context)->ReportError(std::move(error));
 }
 
@@ -402,7 +405,7 @@ ChromeExtensionsBrowserClient::CreateUpdateClient(
 std::unique_ptr<ExtensionApiFrameIdMapHelper>
 ChromeExtensionsBrowserClient::CreateExtensionApiFrameIdMapHelper(
     ExtensionApiFrameIdMap* map) {
-  return make_scoped_ptr(new ChromeExtensionApiFrameIdMapHelper(map));
+  return base::WrapUnique(new ChromeExtensionApiFrameIdMapHelper(map));
 }
 
 }  // namespace extensions

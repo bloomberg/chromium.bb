@@ -4,7 +4,8 @@
 
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/memory/singleton.h"
 #include "chrome/browser/extensions/api/braille_display_private/stub_braille_controller.h"
 #include "chrome/common/extensions/api/braille_display_private.h"

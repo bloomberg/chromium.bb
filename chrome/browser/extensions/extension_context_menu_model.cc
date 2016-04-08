@@ -142,7 +142,7 @@ class UninstallDialogHelper : public ExtensionUninstallDialog::Delegate {
     delete this;
   }
 
-  scoped_ptr<ExtensionUninstallDialog> uninstall_dialog_;
+  std::unique_ptr<ExtensionUninstallDialog> uninstall_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(UninstallDialogHelper);
 };

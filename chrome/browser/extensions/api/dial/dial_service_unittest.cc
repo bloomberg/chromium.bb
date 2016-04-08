@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/api/dial/dial_service.h"
+
 #include <stddef.h>
+
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/extensions/api/dial/dial_device_data.h"
-#include "chrome/browser/extensions/api/dial/dial_service.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/network_interfaces.h"
@@ -57,7 +59,7 @@ class DialServiceTest : public testing::Test {
   net::TestNetLog test_net_log_;
   net::IPAddress mock_ip_;
   DialServiceImpl dial_service_;
-  scoped_ptr<DialServiceImpl::DialSocket> dial_socket_;
+  std::unique_ptr<DialServiceImpl::DialSocket> dial_socket_;
   MockObserver mock_observer_;
 };
 

@@ -42,8 +42,8 @@ class TestGaiaWebAuthFlow : public GaiaWebAuthFlow {
   }
 
  private:
-  scoped_ptr<WebAuthFlow> CreateWebAuthFlow(GURL url) override {
-    return scoped_ptr<WebAuthFlow>(new FakeWebAuthFlow(this));
+  std::unique_ptr<WebAuthFlow> CreateWebAuthFlow(GURL url) override {
+    return std::unique_ptr<WebAuthFlow>(new FakeWebAuthFlow(this));
   }
 
   GoogleServiceAuthError ubertoken_error_;
@@ -72,10 +72,10 @@ class IdentityGaiaWebAuthFlowTest : public testing::Test {
     loop.RunUntilIdle();  // Run tasks so FakeWebAuthFlows get deleted.
   }
 
-  scoped_ptr<TestGaiaWebAuthFlow> CreateTestFlow() {
+  std::unique_ptr<TestGaiaWebAuthFlow> CreateTestFlow() {
     ExtensionTokenKey token_key(
         "extension_id", "account_id", std::set<std::string>());
-    return scoped_ptr<TestGaiaWebAuthFlow>(new TestGaiaWebAuthFlow(
+    return std::unique_ptr<TestGaiaWebAuthFlow>(new TestGaiaWebAuthFlow(
         &delegate_, &token_key, "fake.client.id", ubertoken_error_state_));
   }
 
@@ -100,7 +100,7 @@ class IdentityGaiaWebAuthFlowTest : public testing::Test {
 };
 
 TEST_F(IdentityGaiaWebAuthFlowTest, OAuthError) {
-  scoped_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
+  std::unique_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
   flow->Start();
   EXPECT_CALL(delegate_, OnGaiaFlowFailure(
           GaiaWebAuthFlow::OAUTH_ERROR,
@@ -110,14 +110,14 @@ TEST_F(IdentityGaiaWebAuthFlowTest, OAuthError) {
 }
 
 TEST_F(IdentityGaiaWebAuthFlowTest, Token) {
-  scoped_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
+  std::unique_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
   flow->Start();
   EXPECT_CALL(delegate_, OnGaiaFlowCompleted("fake_access_token", ""));
   flow->OnAuthFlowTitleChange(GetFinalTitle("access_token=fake_access_token"));
 }
 
 TEST_F(IdentityGaiaWebAuthFlowTest, TokenAndExpiration) {
-  scoped_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
+  std::unique_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
   flow->Start();
   EXPECT_CALL(delegate_, OnGaiaFlowCompleted("fake_access_token", "3600"));
   flow->OnAuthFlowTitleChange(
@@ -125,7 +125,7 @@ TEST_F(IdentityGaiaWebAuthFlowTest, TokenAndExpiration) {
 }
 
 TEST_F(IdentityGaiaWebAuthFlowTest, ExtraFragmentParametersSuccess) {
-  scoped_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
+  std::unique_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
   flow->Start();
   EXPECT_CALL(delegate_,
               OnGaiaFlowCompleted("fake_access_token", "3600"));
@@ -139,7 +139,7 @@ TEST_F(IdentityGaiaWebAuthFlowTest, ExtraFragmentParametersSuccess) {
 }
 
 TEST_F(IdentityGaiaWebAuthFlowTest, ExtraFragmentParametersError) {
-  scoped_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
+  std::unique_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
   flow->Start();
   EXPECT_CALL(delegate_, OnGaiaFlowFailure(
           GaiaWebAuthFlow::OAUTH_ERROR,
@@ -155,7 +155,7 @@ TEST_F(IdentityGaiaWebAuthFlowTest, ExtraFragmentParametersError) {
 }
 
 TEST_F(IdentityGaiaWebAuthFlowTest, TitleSpam) {
-  scoped_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
+  std::unique_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
   flow->Start();
   flow->OnAuthFlowTitleChange(
       "Loading https://extension_id.chromiumapp.org/#error=non_final_title");
@@ -170,7 +170,7 @@ TEST_F(IdentityGaiaWebAuthFlowTest, TitleSpam) {
 }
 
 TEST_F(IdentityGaiaWebAuthFlowTest, EmptyFragment) {
-  scoped_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
+  std::unique_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
   flow->Start();
   EXPECT_CALL(
       delegate_,
@@ -182,7 +182,7 @@ TEST_F(IdentityGaiaWebAuthFlowTest, EmptyFragment) {
 }
 
 TEST_F(IdentityGaiaWebAuthFlowTest, JunkFragment) {
-  scoped_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
+  std::unique_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
   flow->Start();
   EXPECT_CALL(
       delegate_,
@@ -194,14 +194,14 @@ TEST_F(IdentityGaiaWebAuthFlowTest, JunkFragment) {
 }
 
 TEST_F(IdentityGaiaWebAuthFlowTest, NoFragment) {
-  scoped_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
+  std::unique_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
   flow->Start();
   // This won't be recognized as an interesting title.
   flow->OnAuthFlowTitleChange("Loading id.client.fake:/extension_id");
 }
 
 TEST_F(IdentityGaiaWebAuthFlowTest, Host) {
-  scoped_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
+  std::unique_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
   flow->Start();
   // These won't be recognized as interesting titles.
   flow->OnAuthFlowTitleChange(
@@ -215,7 +215,7 @@ TEST_F(IdentityGaiaWebAuthFlowTest, Host) {
 
 TEST_F(IdentityGaiaWebAuthFlowTest, UbertokenFailure) {
   set_ubertoken_error(GoogleServiceAuthError::CONNECTION_FAILED);
-  scoped_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
+  std::unique_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
   EXPECT_CALL(
       delegate_,
       OnGaiaFlowFailure(
@@ -226,7 +226,7 @@ TEST_F(IdentityGaiaWebAuthFlowTest, UbertokenFailure) {
 }
 
 TEST_F(IdentityGaiaWebAuthFlowTest, AuthFlowFailure) {
-  scoped_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
+  std::unique_ptr<TestGaiaWebAuthFlow> flow = CreateTestFlow();
   flow->Start();
   EXPECT_CALL(
       delegate_,

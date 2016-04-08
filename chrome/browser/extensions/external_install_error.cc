@@ -383,7 +383,7 @@ void ExternalInstallError::OnWebstoreRequestFailure() {
 }
 
 void ExternalInstallError::OnWebstoreResponseParseSuccess(
-    scoped_ptr<base::DictionaryValue> webstore_data) {
+    std::unique_ptr<base::DictionaryValue> webstore_data) {
   std::string localized_user_count;
   double average_rating = 0;
   int rating_count = 0;
@@ -429,7 +429,7 @@ void ExternalInstallError::OnFetchComplete() {
 void ExternalInstallError::OnDialogReady(
     ExtensionInstallPromptShowParams* show_params,
     const ExtensionInstallPrompt::DoneCallback& callback,
-    scoped_ptr<ExtensionInstallPrompt::Prompt> prompt) {
+    std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt) {
   prompt_ = std::move(prompt);
 
   if (alert_type_ == BUBBLE_ALERT) {

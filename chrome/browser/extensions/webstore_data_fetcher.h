@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_WEBSTORE_DATA_FETCHER_H_
 #define CHROME_BROWSER_EXTENSIONS_WEBSTORE_DATA_FETCHER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
@@ -44,7 +44,7 @@ class WebstoreDataFetcher : public base::SupportsWeakPtr<WebstoreDataFetcher>,
   }
 
  private:
-  void OnJsonParseSuccess(scoped_ptr<base::Value> parsed_json);
+  void OnJsonParseSuccess(std::unique_ptr<base::Value> parsed_json);
   void OnJsonParseFailure(const std::string& error);
 
   // net::URLFetcherDelegate overrides:
@@ -56,7 +56,7 @@ class WebstoreDataFetcher : public base::SupportsWeakPtr<WebstoreDataFetcher>,
   std::string id_;
 
   // For fetching webstore JSON data.
-  scoped_ptr<net::URLFetcher> webstore_data_url_fetcher_;
+  std::unique_ptr<net::URLFetcher> webstore_data_url_fetcher_;
 
   // Maximum auto retry times on server 5xx error or ERR_NETWORK_CHANGED.
   // Default is 0 which means to use the URLFetcher default behavior.

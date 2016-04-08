@@ -22,7 +22,7 @@ namespace extensions {
 class NativeMessagePort::Core : public NativeMessageHost::Client {
  public:
   Core(
-      scoped_ptr<NativeMessageHost> host,
+      std::unique_ptr<NativeMessageHost> host,
       base::WeakPtr<NativeMessagePort> port,
       scoped_refptr<base::SingleThreadTaskRunner> message_service_task_runner_);
   ~Core() override;
@@ -34,7 +34,7 @@ class NativeMessagePort::Core : public NativeMessageHost::Client {
   void CloseChannel(const std::string& error_message) override;
 
  private:
-  scoped_ptr<NativeMessageHost> host_;
+  std::unique_ptr<NativeMessageHost> host_;
   base::WeakPtr<NativeMessagePort> port_;
 
   scoped_refptr<base::SingleThreadTaskRunner> message_service_task_runner_;
@@ -42,7 +42,7 @@ class NativeMessagePort::Core : public NativeMessageHost::Client {
 };
 
 NativeMessagePort::Core::Core(
-    scoped_ptr<NativeMessageHost> host,
+    std::unique_ptr<NativeMessageHost> host,
     base::WeakPtr<NativeMessagePort> port,
     scoped_refptr<base::SingleThreadTaskRunner> message_service_task_runner)
     : host_(std::move(host)),
@@ -87,7 +87,7 @@ void NativeMessagePort::Core::CloseChannel(const std::string& error_message) {
 NativeMessagePort::NativeMessagePort(
     base::WeakPtr<MessageService> message_service,
     int port_id,
-    scoped_ptr<NativeMessageHost> native_message_host)
+    std::unique_ptr<NativeMessageHost> native_message_host)
     : weak_message_service_(message_service),
       host_task_runner_(native_message_host->task_runner()),
       port_id_(port_id),

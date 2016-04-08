@@ -196,11 +196,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestGetPermissionLevel) {
     notification_function->set_extension(empty_extension.get());
     notification_function->set_has_callback(true);
 
-    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-        notification_function.get(),
-        "[]",
-        browser(),
-        utils::NONE));
+    std::unique_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        notification_function.get(), "[]", browser(), utils::NONE));
 
     EXPECT_EQ(base::Value::TYPE_STRING, result->GetType());
     std::string permission_level;
@@ -224,11 +221,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestGetPermissionLevel) {
     g_browser_process->message_center()->GetNotifierSettingsProvider()->
         SetNotifierEnabled(notifier, false);
 
-    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-        notification_function.get(),
-        "[]",
-        browser(),
-        utils::NONE));
+    std::unique_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        notification_function.get(), "[]", browser(), utils::NONE));
 
     EXPECT_EQ(base::Value::TYPE_STRING, result->GetType());
     std::string permission_level;

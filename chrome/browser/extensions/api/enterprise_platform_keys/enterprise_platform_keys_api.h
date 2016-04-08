@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_ENTERPRISE_PLATFORM_KEYS_ENTERPRISE_PLATFORM_KEYS_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_ENTERPRISE_PLATFORM_KEYS_ENTERPRISE_PLATFORM_KEYS_API_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.h"
 #include "extensions/browser/extension_function.h"
 
@@ -43,7 +43,7 @@ class EnterprisePlatformKeysGetCertificatesFunction
 
   // Called when the list of certificates was determined. If an error occurred,
   // |certs| will be NULL and instead |error_message| be set.
-  void OnGotCertificates(scoped_ptr<net::CertificateList> certs,
+  void OnGotCertificates(std::unique_ptr<net::CertificateList> certs,
                          const std::string& error_message);
 
   DECLARE_EXTENSION_FUNCTION("enterprise.platformKeys.getCertificates",
@@ -86,7 +86,7 @@ class EnterprisePlatformKeysInternalGetTokensFunction
 
   // Called when the list of tokens was determined. If an error occurred,
   // |token_ids| will be NULL and instead |error_message| be set.
-  void OnGotTokens(scoped_ptr<std::vector<std::string> > token_ids,
+  void OnGotTokens(std::unique_ptr<std::vector<std::string>> token_ids,
                    const std::string& error_message);
 
   DECLARE_EXTENSION_FUNCTION("enterprise.platformKeysInternal.getTokens",
@@ -109,7 +109,7 @@ class EnterprisePlatformKeysChallengeMachineKeyFunction
   // Otherwise |success| will be false and |data| is an error message.
   void OnChallengedKey(bool success, const std::string& data);
 
-  scoped_ptr<EPKPChallengeMachineKey> default_impl_;
+  std::unique_ptr<EPKPChallengeMachineKey> default_impl_;
   EPKPChallengeMachineKey* impl_;
 
   DECLARE_EXTENSION_FUNCTION("enterprise.platformKeys.challengeMachineKey",
@@ -132,7 +132,7 @@ class EnterprisePlatformKeysChallengeUserKeyFunction
   // Otherwise |success| will be false and |data| is an error message.
   void OnChallengedKey(bool success, const std::string& data);
 
-  scoped_ptr<EPKPChallengeUserKey> default_impl_;
+  std::unique_ptr<EPKPChallengeUserKey> default_impl_;
   EPKPChallengeUserKey* impl_;
 
   DECLARE_EXTENSION_FUNCTION("enterprise.platformKeys.challengeUserKey",

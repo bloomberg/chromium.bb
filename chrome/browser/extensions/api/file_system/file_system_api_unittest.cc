@@ -177,10 +177,11 @@ class FileSystemApiConsentProviderTest : public testing::Test {
 
  protected:
   base::WeakPtr<Volume> volume_;
-  scoped_ptr<TestingPrefServiceSimple> testing_pref_service_;
+  std::unique_ptr<TestingPrefServiceSimple> testing_pref_service_;
   chromeos::FakeChromeUserManager*
       user_manager_;  // Owned by the scope enabler.
-  scoped_ptr<chromeos::ScopedUserManagerEnabler> scoped_user_manager_enabler_;
+  std::unique_ptr<chromeos::ScopedUserManagerEnabler>
+      scoped_user_manager_enabler_;
   content::TestBrowserThreadBundle thread_bundle_;
 };
 #endif

@@ -306,7 +306,7 @@ void LocalExtensionCache::BackendCheckCacheContents(
     base::WeakPtr<LocalExtensionCache> local_cache,
     const base::FilePath& cache_dir,
     const base::Closure& callback) {
-  scoped_ptr<CacheMap> cache_content(new CacheMap);
+  std::unique_ptr<CacheMap> cache_content(new CacheMap);
   BackendCheckCacheContentsInternal(cache_dir, cache_content.get());
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
@@ -465,7 +465,7 @@ void LocalExtensionCache::BackendCheckCacheContentsInternal(
 }
 
 void LocalExtensionCache::OnCacheContentsChecked(
-    scoped_ptr<CacheMap> cache_content,
+    std::unique_ptr<CacheMap> cache_content,
     const base::Closure& callback) {
   cache_content->swap(cached_extensions_);
   state_ = kReady;

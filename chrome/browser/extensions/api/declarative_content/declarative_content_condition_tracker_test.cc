@@ -26,9 +26,9 @@ DeclarativeContentConditionTrackerTest::
   base::RunLoop().RunUntilIdle();
 }
 
-scoped_ptr<content::WebContents>
+std::unique_ptr<content::WebContents>
 DeclarativeContentConditionTrackerTest::MakeTab() {
-  scoped_ptr<content::WebContents> tab(
+  std::unique_ptr<content::WebContents> tab(
       content::WebContentsTester::CreateTestWebContents(profile_.get(),
                                                         nullptr));
   content::RenderFrameHostTester::For(tab->GetMainFrame())

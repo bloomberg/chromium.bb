@@ -35,7 +35,7 @@ bool AddDeviceInfo(HANDLE interface_enumerator,
     return false;
   }
 
-  scoped_ptr<char[]> interface_detail_data_buffer(
+  std::unique_ptr<char[]> interface_detail_data_buffer(
       new char[interface_detail_data_size]);
 
   SP_DEVICE_INTERFACE_DETAIL_DATA* interface_detail_data =
@@ -101,7 +101,7 @@ bool AddDeviceInfo(HANDLE interface_enumerator,
   query.PropertyId = StorageDeviceProperty;
   query.QueryType = PropertyStandardQuery;
 
-  scoped_ptr<char[]> output_buf(new char[1024]);
+  std::unique_ptr<char[]> output_buf(new char[1024]);
   status = DeviceIoControl(
       device_handle.Get(),            // Device handle.
       IOCTL_STORAGE_QUERY_PROPERTY,   // Flag to request device properties.

@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_EXTENSIONS_WEBSTORE_INSTALLER_H_
 
 #include <list>
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/supports_user_data.h"
 #include "base/timer/timer.h"
@@ -102,20 +102,20 @@ class WebstoreInstaller : public content::NotificationObserver,
   // download was initiated by WebstoreInstaller. The Approval instance should
   // be checked further for additional details.
   struct Approval : public base::SupportsUserData::Data {
-    static scoped_ptr<Approval> CreateWithInstallPrompt(Profile* profile);
+    static std::unique_ptr<Approval> CreateWithInstallPrompt(Profile* profile);
 
     // Creates an Approval for installing a shared module.
-    static scoped_ptr<Approval> CreateForSharedModule(Profile* profile);
+    static std::unique_ptr<Approval> CreateForSharedModule(Profile* profile);
 
     // Creates an Approval that will skip putting up an install confirmation
     // prompt if the actual manifest from the extension to be installed matches
     // |parsed_manifest|. The |strict_manifest_check| controls whether we want
     // to require an exact manifest match, or are willing to tolerate a looser
     // check just that the effective permissions are the same.
-    static scoped_ptr<Approval> CreateWithNoInstallPrompt(
+    static std::unique_ptr<Approval> CreateWithNoInstallPrompt(
         Profile* profile,
         const std::string& extension_id,
-        scoped_ptr<base::DictionaryValue> parsed_manifest,
+        std::unique_ptr<base::DictionaryValue> parsed_manifest,
         bool strict_manifest_check);
 
     ~Approval() override;
@@ -127,7 +127,7 @@ class WebstoreInstaller : public content::NotificationObserver,
     Profile* profile;
 
     // The expected manifest, before localization.
-    scoped_ptr<Manifest> manifest;
+    std::unique_ptr<Manifest> manifest;
 
     // Whether to use a bubble notification when an app is installed, instead of
     // the default behavior of transitioning to the new tab page.
@@ -159,7 +159,7 @@ class WebstoreInstaller : public content::NotificationObserver,
     scoped_refptr<Extension> dummy_extension;
 
     // Required minimum version.
-    scoped_ptr<Version> minimum_version;
+    std::unique_ptr<Version> minimum_version;
 
     // The authuser index required to download the item being installed. May be
     // the empty string, in which case no authuser parameter is used.
@@ -185,7 +185,7 @@ class WebstoreInstaller : public content::NotificationObserver,
                     Delegate* delegate,
                     content::WebContents* web_contents,
                     const std::string& id,
-                    scoped_ptr<Approval> approval,
+                    std::unique_ptr<Approval> approval,
                     InstallSource source);
 
   // Starts downloading and installing the extension.
@@ -275,7 +275,7 @@ class WebstoreInstaller : public content::NotificationObserver,
   // trigger at least every second, though sometimes more frequently (depending
   // on number of modules, etc).
   base::OneShotTimer download_progress_timer_;
-  scoped_ptr<Approval> approval_;
+  std::unique_ptr<Approval> approval_;
   GURL download_url_;
   scoped_refptr<CrxInstaller> crx_installer_;
 

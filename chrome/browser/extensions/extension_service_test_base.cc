@@ -44,7 +44,7 @@ namespace {
 const int kThreadOptions = content::TestBrowserThreadBundle::IO_MAINLOOP;
 
 // Create a testing profile according to |params|.
-scoped_ptr<TestingProfile> BuildTestingProfile(
+std::unique_ptr<TestingProfile> BuildTestingProfile(
     const ExtensionServiceTestBase::ExtensionServiceInitParams& params) {
   TestingProfile::Builder profile_builder;
   // Create a PrefService that only contains user defined preference values.
@@ -56,7 +56,7 @@ scoped_ptr<TestingProfile> BuildTestingProfile(
                              base::ThreadTaskRunnerHandle::Get().get());
     scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
         new user_prefs::PrefRegistrySyncable);
-    scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs(
+    std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs(
         factory.CreateSyncable(registry.get()));
     chrome::RegisterUserProfilePrefs(registry.get());
     profile_builder.SetPrefService(std::move(prefs));

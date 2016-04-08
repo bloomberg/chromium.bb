@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
@@ -17,9 +19,9 @@
 
 namespace extensions {
 
-scoped_ptr<KeyedService> ApiResourceManagerTestFactory(
+std::unique_ptr<KeyedService> ApiResourceManagerTestFactory(
     content::BrowserContext* context) {
-  return make_scoped_ptr(new ApiResourceManager<Socket>(context));
+  return base::WrapUnique(new ApiResourceManager<Socket>(context));
 }
 
 class SocketUnitTest : public ExtensionApiUnittest {
@@ -42,7 +44,7 @@ TEST_F(SocketUnitTest, Create) {
   function->set_work_thread_id(id);
 
   // Run tests
-  scoped_ptr<base::DictionaryValue> result(
+  std::unique_ptr<base::DictionaryValue> result(
       RunFunctionAndReturnDictionary(function, "[\"tcp\"]"));
   ASSERT_TRUE(result.get());
 }

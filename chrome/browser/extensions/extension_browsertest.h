@@ -318,7 +318,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // test_data/extensions.
   base::FilePath test_data_dir_;
 
-  scoped_ptr<ExtensionTestNotificationObserver> observer_;
+  std::unique_ptr<ExtensionTestNotificationObserver> observer_;
 
  private:
   // Temporary directory for testing.
@@ -381,7 +381,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   Profile* profile_;
 
   // Cache cache implementation.
-  scoped_ptr<extensions::ExtensionCacheFake> test_extension_cache_;
+  std::unique_ptr<extensions::ExtensionCacheFake> test_extension_cache_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_BROWSERTEST_H_

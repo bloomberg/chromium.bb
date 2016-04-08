@@ -9,12 +9,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 
@@ -208,7 +208,7 @@ class LocalExtensionCache {
 
   // Invoked when the cache content on disk has been checked. |cache_content|
   // contains all the currently valid crx files in the cache.
-  void OnCacheContentsChecked(scoped_ptr<CacheMap> cache_content,
+  void OnCacheContentsChecked(std::unique_ptr<CacheMap> cache_content,
                               const base::Closure& callback);
 
   // Update timestamp for the file to mark it as "used". This method is invoked

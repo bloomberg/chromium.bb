@@ -4,10 +4,12 @@
 
 #include "chrome/browser/extensions/extension_action_runner.h"
 
+#include <memory>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
@@ -352,7 +354,7 @@ void ExtensionActionRunner::ShowBlockedActionBubble(
           FROM_HERE,
           base::Bind(callback, *default_bubble_close_action_for_testing_));
     } else {
-      toolbar_actions_bar->ShowToolbarActionBubble(make_scoped_ptr(
+      toolbar_actions_bar->ShowToolbarActionBubble(base::WrapUnique(
           new BlockedActionBubbleDelegate(callback, extension->id())));
     }
   }

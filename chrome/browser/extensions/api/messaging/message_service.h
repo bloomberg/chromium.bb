@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_EXTENSIONS_API_MESSAGING_MESSAGE_SERVICE_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/messaging/message_property_provider.h"
@@ -76,15 +76,16 @@ class MessageService : public BrowserContextKeyedAPI {
     virtual bool IsValidPort() = 0;
 
     // Notify the port that the channel has been opened.
-    virtual void DispatchOnConnect(const std::string& channel_name,
-                                   scoped_ptr<base::DictionaryValue> source_tab,
-                                   int source_frame_id,
-                                   int guest_process_id,
-                                   int guest_render_frame_routing_id,
-                                   const std::string& source_extension_id,
-                                   const std::string& target_extension_id,
-                                   const GURL& source_url,
-                                   const std::string& tls_channel_id) {}
+    virtual void DispatchOnConnect(
+        const std::string& channel_name,
+        std::unique_ptr<base::DictionaryValue> source_tab,
+        int source_frame_id,
+        int guest_process_id,
+        int guest_render_frame_routing_id,
+        const std::string& source_extension_id,
+        const std::string& target_extension_id,
+        const GURL& source_url,
+        const std::string& tls_channel_id) {}
 
     // Notify the port that the channel has been closed. If |error_message| is
     // non-empty, it indicates an error occurred while opening the connection.
@@ -209,7 +210,7 @@ class MessageService : public BrowserContextKeyedAPI {
   // |did_enqueue| will be true if the channel opening was delayed while
   // waiting for an event page to start, false otherwise.
   void OpenChannelImpl(content::BrowserContext* browser_context,
-                       scoped_ptr<OpenChannelParams> params,
+                       std::unique_ptr<OpenChannelParams> params,
                        const Extension* target_extension,
                        bool did_enqueue);
 
@@ -230,8 +231,9 @@ class MessageService : public BrowserContextKeyedAPI {
 
   // If the channel is being opened from an incognito tab the user must allow
   // the connection.
-  void OnOpenChannelAllowed(scoped_ptr<OpenChannelParams> params, bool allowed);
-  void GotChannelID(scoped_ptr<OpenChannelParams> params,
+  void OnOpenChannelAllowed(std::unique_ptr<OpenChannelParams> params,
+                            bool allowed);
+  void GotChannelID(std::unique_ptr<OpenChannelParams> params,
                     const std::string& tls_channel_id);
 
   // Enqueues a message on a pending channel.
@@ -253,14 +255,14 @@ class MessageService : public BrowserContextKeyedAPI {
   bool MaybeAddPendingLazyBackgroundPageOpenChannelTask(
       content::BrowserContext* context,
       const Extension* extension,
-      scoped_ptr<OpenChannelParams>* params,
+      std::unique_ptr<OpenChannelParams>* params,
       const PendingMessagesQueue& pending_messages);
 
   // Callbacks for LazyBackgroundTaskQueue tasks. The queue passes in an
   // ExtensionHost to its task callbacks, though some of our callbacks don't
   // use that argument.
   void PendingLazyBackgroundPageOpenChannel(
-      scoped_ptr<OpenChannelParams> params,
+      std::unique_ptr<OpenChannelParams> params,
       int source_process_id,
       extensions::ExtensionHost* host);
   void PendingLazyBackgroundPageClosePort(int port_id,

@@ -46,7 +46,7 @@ class MockEventRouterForwarder : public EventRouterForwarder {
                                const std::string& extension_id,
                                events::HistogramValue histogram_value,
                                const std::string& event_name,
-                               scoped_ptr<base::ListValue> event_args,
+                               std::unique_ptr<base::ListValue> event_args,
                                Profile* restrict_to_profile,
                                const GURL& event_url) {
     CallEventRouter(profile, extension_id, histogram_value, event_name,
@@ -61,7 +61,7 @@ static void BroadcastEventToRenderers(EventRouterForwarder* event_router,
                                       events::HistogramValue histogram_value,
                                       const std::string& event_name,
                                       const GURL& url) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   event_router->BroadcastEventToRenderers(histogram_value, event_name,
                                           std::move(args), url);
 }
@@ -72,7 +72,7 @@ static void DispatchEventToRenderers(EventRouterForwarder* event_router,
                                      void* profile,
                                      bool use_profile_to_restrict_events,
                                      const GURL& url) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   event_router->DispatchEventToRenderers(histogram_value, event_name,
                                          std::move(args), profile,
                                          use_profile_to_restrict_events, url);
@@ -83,7 +83,7 @@ static void BroadcastEventToExtension(EventRouterForwarder* event_router,
                                       events::HistogramValue histogram_value,
                                       const std::string& event_name,
                                       const GURL& url) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   event_router->BroadcastEventToExtension(extension, histogram_value,
                                           event_name, std::move(args), url);
 }
@@ -95,7 +95,7 @@ static void DispatchEventToExtension(EventRouterForwarder* event_router,
                                      void* profile,
                                      bool use_profile_to_restrict_events,
                                      const GURL& url) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   event_router->DispatchEventToExtension(extension, histogram_value, event_name,
                                          std::move(args), profile,
                                          use_profile_to_restrict_events, url);
@@ -112,8 +112,8 @@ class EventRouterForwarderTest : public testing::Test {
 #if defined(OS_MACOSX)
     base::PowerMonitorDeviceSource::AllocateSystemIOPorts();
 #endif
-    scoped_ptr<base::PowerMonitorSource> power_monitor_source(
-      new base::PowerMonitorDeviceSource());
+    std::unique_ptr<base::PowerMonitorSource> power_monitor_source(
+        new base::PowerMonitorDeviceSource());
     dummy.reset(new base::PowerMonitor(std::move(power_monitor_source)));
   }
 
@@ -127,7 +127,7 @@ class EventRouterForwarderTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager profile_manager_;
-  scoped_ptr<base::PowerMonitor> dummy;
+  std::unique_ptr<base::PowerMonitor> dummy;
   // Profiles are weak pointers, owned by ProfileManager in |browser_process_|.
   TestingProfile* profile1_;
   TestingProfile* profile2_;

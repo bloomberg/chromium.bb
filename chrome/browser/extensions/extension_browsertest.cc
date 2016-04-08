@@ -365,7 +365,7 @@ base::FilePath ExtensionBrowserTest::PackExtensionWithOptions(
     return base::FilePath();
   }
 
-  scoped_ptr<ExtensionCreator> creator(new ExtensionCreator());
+  std::unique_ptr<ExtensionCreator> creator(new ExtensionCreator());
   if (!creator->Run(dir_path,
                     crx_path,
                     pem_path,
@@ -469,7 +469,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
   size_t num_before = registry->enabled_extensions().size();
 
   {
-    scoped_ptr<ScopedTestDialogAutoConfirm> prompt_auto_confirm;
+    std::unique_ptr<ScopedTestDialogAutoConfirm> prompt_auto_confirm;
     if (ui_type == INSTALL_UI_TYPE_CANCEL) {
       prompt_auto_confirm.reset(new ScopedTestDialogAutoConfirm(
           ScopedTestDialogAutoConfirm::CANCEL));
@@ -490,7 +490,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     if (crx_path.empty())
       return NULL;
 
-    scoped_ptr<ExtensionInstallPrompt> install_ui;
+    std::unique_ptr<ExtensionInstallPrompt> install_ui;
     if (prompt_auto_confirm) {
       install_ui.reset(new ExtensionInstallPrompt(
          browser->tab_strip_model()->GetActiveWebContents()));

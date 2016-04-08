@@ -364,7 +364,7 @@ class WebNavigationApiTest : public ExtensionApiTest {
 
  private:
   scoped_refptr<TestNavigationListener> test_navigation_listener_;
-  scoped_ptr<TestResourceDispatcherHostDelegate>
+  std::unique_ptr<TestResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNavigationApiTest);

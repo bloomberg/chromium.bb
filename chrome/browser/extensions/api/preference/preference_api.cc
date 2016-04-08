@@ -342,7 +342,7 @@ class PrefMapping {
   // Mapping from browser pref keys to transformers.
   std::map<std::string, PrefTransformerInterface*> transformers_;
 
-  scoped_ptr<PrefTransformerInterface> identity_transformer_;
+  std::unique_ptr<PrefTransformerInterface> identity_transformer_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefMapping);
 };
@@ -638,7 +638,7 @@ bool GetPreferenceFunction::RunSync() {
       prefs->FindPreference(browser_pref.c_str());
   CHECK(pref);
 
-  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
 
   // Retrieve level of control.
   std::string level_of_control = helpers::GetLevelOfControl(
@@ -730,7 +730,7 @@ bool SetPreferenceFunction::RunSync() {
       PrefMapping::GetInstance()->FindTransformerForBrowserPref(browser_pref);
   std::string error;
   bool bad_message = false;
-  scoped_ptr<base::Value> browser_pref_value(
+  std::unique_ptr<base::Value> browser_pref_value(
       transformer->ExtensionToBrowserPref(value, &error, &bad_message));
   if (!browser_pref_value) {
     error_ = error;
@@ -741,7 +741,7 @@ bool SetPreferenceFunction::RunSync() {
 
   // Validate also that the stored value can be converted back by the
   // transformer.
-  scoped_ptr<base::Value> extensionPrefValue(
+  std::unique_ptr<base::Value> extensionPrefValue(
       transformer->BrowserToExtensionPref(browser_pref_value.get()));
   if (!extensionPrefValue) {
     error_ =  ErrorUtils::FormatErrorMessage(kConversionErrorMessage,

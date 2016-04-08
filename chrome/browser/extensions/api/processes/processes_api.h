@@ -44,7 +44,7 @@ class ProcessesEventRouter : public task_management::TaskManagerObserver {
 
   void DispatchEvent(events::HistogramValue histogram_value,
                      const std::string& event_name,
-                     scoped_ptr<base::ListValue> event_args) const;
+                     std::unique_ptr<base::ListValue> event_args) const;
 
   // Determines whether there is a registered listener for the specified event.
   // It helps to avoid collecting data if no one is interested in it.
@@ -102,7 +102,7 @@ class ProcessesAPI : public BrowserContextKeyedAPI,
   content::BrowserContext* browser_context_;
 
   // Created lazily on first access.
-  scoped_ptr<ProcessesEventRouter> processes_event_router_;
+  std::unique_ptr<ProcessesEventRouter> processes_event_router_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessesAPI);
 };

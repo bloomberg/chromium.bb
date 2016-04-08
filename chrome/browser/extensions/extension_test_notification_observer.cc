@@ -284,7 +284,7 @@ void ExtensionTestNotificationObserver::WaitForCondition(
       new content::MessageLoopRunner);
   quit_closure_ = runner->QuitClosure();
 
-  scoped_ptr<base::CallbackList<void()>::Subscription> subscription;
+  std::unique_ptr<base::CallbackList<void()>::Subscription> subscription;
   if (notification_set) {
     subscription = notification_set->callback_list().Add(
         base::Bind(&ExtensionTestNotificationObserver::MaybeQuit,

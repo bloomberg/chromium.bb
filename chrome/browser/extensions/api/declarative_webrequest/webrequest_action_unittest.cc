@@ -6,11 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
@@ -43,8 +44,8 @@ namespace {
 
 const char kUnknownActionType[] = "unknownType";
 
-scoped_ptr<WebRequestActionSet> CreateSetOfActions(const char* json) {
-  scoped_ptr<base::Value> parsed_value(base::test::ParseJson(json));
+std::unique_ptr<WebRequestActionSet> CreateSetOfActions(const char* json) {
+  std::unique_ptr<base::Value> parsed_value(base::test::ParseJson(json));
   const base::ListValue* parsed_list;
   CHECK(parsed_value->GetAsList(&parsed_list));
 
@@ -60,7 +61,7 @@ scoped_ptr<WebRequestActionSet> CreateSetOfActions(const char* json) {
   std::string error;
   bool bad_message = false;
 
-  scoped_ptr<WebRequestActionSet> action_set(
+  std::unique_ptr<WebRequestActionSet> action_set(
       WebRequestActionSet::Create(NULL, NULL, actions, &error, &bad_message));
   EXPECT_EQ("", error);
   EXPECT_FALSE(bad_message);
@@ -144,8 +145,8 @@ bool WebRequestActionWithThreadsTest::ActionWorksOnRequest(
     const std::string& extension_id,
     const WebRequestActionSet* action_set,
     RequestStage stage) {
-  scoped_ptr<net::URLRequest> regular_request(context_.CreateRequest(
-      GURL(url_string), net::DEFAULT_PRIORITY, NULL));
+  std::unique_ptr<net::URLRequest> regular_request(
+      context_.CreateRequest(GURL(url_string), net::DEFAULT_PRIORITY, NULL));
   std::list<LinkedPtrEventResponseDelta> deltas;
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders(""));
@@ -162,7 +163,7 @@ bool WebRequestActionWithThreadsTest::ActionWorksOnRequest(
 void WebRequestActionWithThreadsTest::CheckActionNeedsAllUrls(
     const char* action,
     RequestStage stage) {
-  scoped_ptr<WebRequestActionSet> action_set(CreateSetOfActions(action));
+  std::unique_ptr<WebRequestActionSet> action_set(CreateSetOfActions(action));
 
   // Although |extension_| has matching *.com host permission, |action|
   // is intentionally forbidden -- in Declarative WR, host permission
@@ -222,7 +223,7 @@ TEST(WebRequestActionTest, CreateAction) {
 TEST(WebRequestActionTest, CreateActionSet) {
   std::string error;
   bool bad_message = false;
-  scoped_ptr<WebRequestActionSet> result;
+  std::unique_ptr<WebRequestActionSet> result;
 
   WebRequestActionSet::Values input;
 
@@ -341,7 +342,7 @@ TEST_F(WebRequestActionWithThreadsTest, PermissionsToSendMessageToExtension) {
       " \"instanceType\": \"declarativeWebRequest.SendMessageToExtension\","
       " \"message\": \"testtext\""
       "}]";
-  scoped_ptr<WebRequestActionSet> action_set(CreateSetOfActions(kAction));
+  std::unique_ptr<WebRequestActionSet> action_set(CreateSetOfActions(kAction));
 
   // For sending messages, specific host permissions actually matter.
   EXPECT_TRUE(ActionWorksOnRequest("http://test.com",
@@ -426,7 +427,7 @@ TEST_F(WebRequestActionWithThreadsTest, PermissionsToCancel) {
       "[{"
       " \"instanceType\": \"declarativeWebRequest.CancelRequest\""
       "}]";
-  scoped_ptr<WebRequestActionSet> action_set(CreateSetOfActions(kAction));
+  std::unique_ptr<WebRequestActionSet> action_set(CreateSetOfActions(kAction));
 
   // Cancelling requests works without full host permissions.
   EXPECT_TRUE(ActionWorksOnRequest("http://test.org",
@@ -441,7 +442,7 @@ TEST_F(WebRequestActionWithThreadsTest,
       "[{"
       " \"instanceType\": \"declarativeWebRequest.RedirectToTransparentImage\""
       "}]";
-  scoped_ptr<WebRequestActionSet> action_set(CreateSetOfActions(kAction));
+  std::unique_ptr<WebRequestActionSet> action_set(CreateSetOfActions(kAction));
 
   // Redirecting to transparent images works without full host permissions.
   EXPECT_TRUE(ActionWorksOnRequest("http://test.org",
@@ -459,7 +460,7 @@ TEST_F(WebRequestActionWithThreadsTest, PermissionsToRedirectToEmptyDocument) {
       "[{"
       " \"instanceType\": \"declarativeWebRequest.RedirectToEmptyDocument\""
       "}]";
-  scoped_ptr<WebRequestActionSet> action_set(CreateSetOfActions(kAction));
+  std::unique_ptr<WebRequestActionSet> action_set(CreateSetOfActions(kAction));
 
   // Redirecting to the empty document works without full host permissions.
   EXPECT_TRUE(ActionWorksOnRequest("http://test.org",
@@ -479,7 +480,7 @@ TEST_F(WebRequestActionWithThreadsTest, PermissionsToIgnore) {
       " \"lowerPriorityThan\": 123,"
       " \"hasTag\": \"some_tag\""
       "}]";
-  scoped_ptr<WebRequestActionSet> action_set(CreateSetOfActions(kAction));
+  std::unique_ptr<WebRequestActionSet> action_set(CreateSetOfActions(kAction));
 
   // Ignoring rules works without full host permissions.
   EXPECT_TRUE(ActionWorksOnRequest("http://test.org",
@@ -580,7 +581,7 @@ TEST(WebRequestActionTest, GetName) {
     "declarativeWebRequest.RedirectToEmptyDocument",
     "declarativeWebRequest.IgnoreRules",
   };
-  scoped_ptr<WebRequestActionSet> action_set(CreateSetOfActions(kActions));
+  std::unique_ptr<WebRequestActionSet> action_set(CreateSetOfActions(kActions));
   ASSERT_EQ(arraysize(kExpectedNames), action_set->actions().size());
   size_t index = 0;
   for (WebRequestActionSet::Actions::const_iterator it =

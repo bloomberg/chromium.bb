@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_is_bookmarked_condition_tracker.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -43,7 +44,7 @@ bool DeclarativeContentIsBookmarkedPredicate::IsIgnored() const {
 }
 
 // static
-scoped_ptr<DeclarativeContentIsBookmarkedPredicate>
+std::unique_ptr<DeclarativeContentIsBookmarkedPredicate>
 DeclarativeContentIsBookmarkedPredicate::Create(
     ContentPredicateEvaluator* evaluator,
     const Extension* extension,
@@ -53,16 +54,15 @@ DeclarativeContentIsBookmarkedPredicate::Create(
   if (value.GetAsBoolean(&is_bookmarked)) {
     if (!HasBookmarkAPIPermission(extension)) {
       *error = kIsBookmarkedRequiresBookmarkPermission;
-      return scoped_ptr<DeclarativeContentIsBookmarkedPredicate>();
+      return std::unique_ptr<DeclarativeContentIsBookmarkedPredicate>();
     } else {
-      return make_scoped_ptr(
-          new DeclarativeContentIsBookmarkedPredicate(evaluator, extension,
-                                                      is_bookmarked));
+      return base::WrapUnique(new DeclarativeContentIsBookmarkedPredicate(
+          evaluator, extension, is_bookmarked));
     }
   } else {
     *error = base::StringPrintf(kInvalidTypeOfParameter,
                                 declarative_content_constants::kIsBookmarked);
-    return scoped_ptr<DeclarativeContentIsBookmarkedPredicate>();
+    return std::unique_ptr<DeclarativeContentIsBookmarkedPredicate>();
   }
 }
 
@@ -168,7 +168,7 @@ GetPredicateApiAttributeName() const {
   return declarative_content_constants::kIsBookmarked;
 }
 
-scoped_ptr<const ContentPredicate>
+std::unique_ptr<const ContentPredicate>
 DeclarativeContentIsBookmarkedConditionTracker::CreatePredicate(
     const Extension* extension,
     const base::Value& value,

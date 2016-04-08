@@ -132,11 +132,11 @@ void DoWorkCallback(const base::Callback<bool()>& callback) {
   callback.Run();
 }
 
-scoped_ptr<device::BluetoothAdvertisement::ManufacturerData>
+std::unique_ptr<device::BluetoothAdvertisement::ManufacturerData>
 CreateManufacturerData(
     std::vector<apibtle::ManufacturerData>* manufacturer_data) {
-  scoped_ptr<device::BluetoothAdvertisement::ManufacturerData> created_data(
-      new device::BluetoothAdvertisement::ManufacturerData());
+  std::unique_ptr<device::BluetoothAdvertisement::ManufacturerData>
+      created_data(new device::BluetoothAdvertisement::ManufacturerData());
   for (const auto& it : *manufacturer_data) {
     std::vector<uint8_t> data(it.data.size());
     std::copy(it.data.begin(), it.data.end(), data.begin());
@@ -145,9 +145,9 @@ CreateManufacturerData(
   return created_data;
 }
 
-scoped_ptr<device::BluetoothAdvertisement::ServiceData> CreateServiceData(
+std::unique_ptr<device::BluetoothAdvertisement::ServiceData> CreateServiceData(
     std::vector<apibtle::ServiceData>* service_data) {
-  scoped_ptr<device::BluetoothAdvertisement::ServiceData> created_data(
+  std::unique_ptr<device::BluetoothAdvertisement::ServiceData> created_data(
       new device::BluetoothAdvertisement::ServiceData());
   for (const auto& it : *service_data) {
     std::vector<uint8_t> data(it.data.size());
@@ -235,7 +235,7 @@ bool BluetoothLowEnergyConnectFunction::DoWork() {
     return false;
   }
 
-  scoped_ptr<apibtle::Connect::Params> params(
+  std::unique_ptr<apibtle::Connect::Params> params(
       apibtle::Connect::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
@@ -278,7 +278,7 @@ bool BluetoothLowEnergyDisconnectFunction::DoWork() {
     return false;
   }
 
-  scoped_ptr<apibtle::Disconnect::Params> params(
+  std::unique_ptr<apibtle::Disconnect::Params> params(
       apibtle::Disconnect::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
@@ -315,7 +315,7 @@ bool BluetoothLowEnergyGetServiceFunction::DoWork() {
     return false;
   }
 
-  scoped_ptr<apibtle::GetService::Params> params(
+  std::unique_ptr<apibtle::GetService::Params> params(
       apibtle::GetService::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
@@ -348,7 +348,7 @@ bool BluetoothLowEnergyGetServicesFunction::DoWork() {
     return false;
   }
 
-  scoped_ptr<apibtle::GetServices::Params> params(
+  std::unique_ptr<apibtle::GetServices::Params> params(
       apibtle::GetServices::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
@@ -379,7 +379,7 @@ bool BluetoothLowEnergyGetCharacteristicFunction::DoWork() {
     return false;
   }
 
-  scoped_ptr<apibtle::GetCharacteristic::Params> params(
+  std::unique_ptr<apibtle::GetCharacteristic::Params> params(
       apibtle::GetCharacteristic::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
@@ -416,7 +416,7 @@ bool BluetoothLowEnergyGetCharacteristicsFunction::DoWork() {
     return false;
   }
 
-  scoped_ptr<apibtle::GetCharacteristics::Params> params(
+  std::unique_ptr<apibtle::GetCharacteristics::Params> params(
       apibtle::GetCharacteristics::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
@@ -433,7 +433,7 @@ bool BluetoothLowEnergyGetCharacteristicsFunction::DoWork() {
   // Manually construct the result instead of using
   // apibtle::GetCharacteristics::Result::Create as it doesn't convert lists of
   // enums correctly.
-  scoped_ptr<base::ListValue> result(new base::ListValue());
+  std::unique_ptr<base::ListValue> result(new base::ListValue());
   for (apibtle::Characteristic& characteristic : characteristic_list)
     result->Append(apibtle::CharacteristicToValue(&characteristic));
 
@@ -457,7 +457,7 @@ bool BluetoothLowEnergyGetIncludedServicesFunction::DoWork() {
     return false;
   }
 
-  scoped_ptr<apibtle::GetIncludedServices::Params> params(
+  std::unique_ptr<apibtle::GetIncludedServices::Params> params(
       apibtle::GetIncludedServices::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
@@ -490,7 +490,7 @@ bool BluetoothLowEnergyGetDescriptorFunction::DoWork() {
     return false;
   }
 
-  scoped_ptr<apibtle::GetDescriptor::Params> params(
+  std::unique_ptr<apibtle::GetDescriptor::Params> params(
       apibtle::GetDescriptor::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
@@ -526,7 +526,7 @@ bool BluetoothLowEnergyGetDescriptorsFunction::DoWork() {
     return false;
   }
 
-  scoped_ptr<apibtle::GetDescriptors::Params> params(
+  std::unique_ptr<apibtle::GetDescriptors::Params> params(
       apibtle::GetDescriptors::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
@@ -542,7 +542,7 @@ bool BluetoothLowEnergyGetDescriptorsFunction::DoWork() {
   // Manually construct the result instead of using
   // apibtle::GetDescriptors::Result::Create as it doesn't convert lists of
   // enums correctly.
-  scoped_ptr<base::ListValue> result(new base::ListValue());
+  std::unique_ptr<base::ListValue> result(new base::ListValue());
   for (apibtle::Descriptor& descriptor : descriptor_list)
     result->Append(apibtle::DescriptorToValue(&descriptor));
 
@@ -566,7 +566,7 @@ bool BluetoothLowEnergyReadCharacteristicValueFunction::DoWork() {
     return false;
   }
 
-  scoped_ptr<apibtle::ReadCharacteristicValue::Params> params(
+  std::unique_ptr<apibtle::ReadCharacteristicValue::Params> params(
       apibtle::ReadCharacteristicValue::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
@@ -624,7 +624,7 @@ bool BluetoothLowEnergyWriteCharacteristicValueFunction::DoWork() {
     return false;
   }
 
-  scoped_ptr<apibtle::WriteCharacteristicValue::Params> params(
+  std::unique_ptr<apibtle::WriteCharacteristicValue::Params> params(
       apibtle::WriteCharacteristicValue::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
@@ -668,7 +668,7 @@ bool BluetoothLowEnergyStartCharacteristicNotificationsFunction::DoWork() {
     return false;
   }
 
-  scoped_ptr<apibtle::StartCharacteristicNotifications::Params> params(
+  std::unique_ptr<apibtle::StartCharacteristicNotifications::Params> params(
       apibtle::StartCharacteristicNotifications::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
@@ -716,7 +716,7 @@ bool BluetoothLowEnergyStopCharacteristicNotificationsFunction::DoWork() {
     return false;
   }
 
-  scoped_ptr<apibtle::StopCharacteristicNotifications::Params> params(
+  std::unique_ptr<apibtle::StopCharacteristicNotifications::Params> params(
       apibtle::StopCharacteristicNotifications::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
@@ -758,7 +758,7 @@ bool BluetoothLowEnergyReadDescriptorValueFunction::DoWork() {
     return false;
   }
 
-  scoped_ptr<apibtle::ReadDescriptorValue::Params> params(
+  std::unique_ptr<apibtle::ReadDescriptorValue::Params> params(
       apibtle::ReadDescriptorValue::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
@@ -815,7 +815,7 @@ bool BluetoothLowEnergyWriteDescriptorValueFunction::DoWork() {
     return false;
   }
 
-  scoped_ptr<apibtle::WriteDescriptorValue::Params> params(
+  std::unique_ptr<apibtle::WriteDescriptorValue::Params> params(
       apibtle::WriteDescriptorValue::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
@@ -930,11 +930,11 @@ bool BluetoothLowEnergyRegisterAdvertisementFunction::DoWork() {
     return false;
   }
 
-  scoped_ptr<apibtle::RegisterAdvertisement::Params> params(
+  std::unique_ptr<apibtle::RegisterAdvertisement::Params> params(
       apibtle::RegisterAdvertisement::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
-  scoped_ptr<device::BluetoothAdvertisement::Data> advertisement_data(
+  std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement_data(
       new device::BluetoothAdvertisement::Data(
           params->advertisement.type ==
                   apibtle::AdvertisementType::ADVERTISEMENT_TYPE_BROADCAST
@@ -1021,7 +1021,7 @@ bool BluetoothLowEnergyUnregisterAdvertisementFunction::DoWork() {
   if (!event_router->HasAdapter())
     return true;
 
-  scoped_ptr<apibtle::UnregisterAdvertisement::Params> params(
+  std::unique_ptr<apibtle::UnregisterAdvertisement::Params> params(
       apibtle::UnregisterAdvertisement::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 

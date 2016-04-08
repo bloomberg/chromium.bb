@@ -37,8 +37,8 @@ class FullStreamUIPolicy : public ActivityLogDatabasePolicy {
       const std::string& page_url,
       const std::string& arg_url,
       const int days_ago,
-      const base::Callback<void(scoped_ptr<Action::ActionVector>)>& callback)
-      override;
+      const base::Callback<void(std::unique_ptr<Action::ActionVector>)>&
+          callback) override;
 
   void Close() override;
 
@@ -105,7 +105,7 @@ class FullStreamUIPolicy : public ActivityLogDatabasePolicy {
 
   // Internal method to read data from the database; called on the database
   // thread.
-  scoped_ptr<Action::ActionVector> DoReadFilteredData(
+  std::unique_ptr<Action::ActionVector> DoReadFilteredData(
       const std::string& extension_id,
       const Action::ActionType type,
       const std::string& api_name,

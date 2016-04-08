@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -16,7 +17,6 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
@@ -144,8 +144,8 @@ class MenuItem {
       value_ |= context;
     }
 
-    scoped_ptr<base::Value> ToValue() const {
-      return scoped_ptr<base::Value>(
+    std::unique_ptr<base::Value> ToValue() const {
+      return std::unique_ptr<base::Value>(
           new base::FundamentalValue(static_cast<int>(value_)));
     }
 
@@ -211,7 +211,7 @@ class MenuItem {
   bool SetChecked(bool checked);
 
   // Converts to Value for serialization to preferences.
-  scoped_ptr<base::DictionaryValue> ToValue() const;
+  std::unique_ptr<base::DictionaryValue> ToValue() const;
 
   // Returns a new MenuItem created from |value|, or NULL if there is
   // an error. The caller takes ownership of the MenuItem.
@@ -262,7 +262,7 @@ class MenuItem {
 
   // If this item is a child of another item, the unique id of its parent. If
   // this is a top-level item with no parent, this will be NULL.
-  scoped_ptr<Id> parent_id_;
+  std::unique_ptr<Id> parent_id_;
 
   // Patterns for restricting what documents this item will appear for. This
   // applies to the frame where the click took place.
@@ -369,7 +369,7 @@ class MenuManager : public content::NotificationObserver,
   // Reads menu items for the extension from the state storage. Any invalid
   // items are ignored.
   void ReadFromStorage(const std::string& extension_id,
-                       scoped_ptr<base::Value> value);
+                       std::unique_ptr<base::Value> value);
 
   // Removes all "incognito" "split" mode context items.
   void RemoveAllIncognitoContextItems();

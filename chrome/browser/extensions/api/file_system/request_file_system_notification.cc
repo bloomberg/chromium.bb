@@ -29,7 +29,7 @@ namespace {
 // Extension icon size for the notification.
 const int kIconSize = 48;
 
-scoped_ptr<Notification> CreateAutoGrantedNotification(
+std::unique_ptr<Notification> CreateAutoGrantedNotification(
     const extensions::Extension& extension,
     const base::WeakPtr<Volume>& volume,
     bool writable,
@@ -38,7 +38,7 @@ scoped_ptr<Notification> CreateAutoGrantedNotification(
 
   // If the volume is gone, then do not show the notification.
   if (!volume.get())
-    return scoped_ptr<Notification>(nullptr);
+    return std::unique_ptr<Notification>(nullptr);
 
   const std::string notification_id =
       extension.id() + "-" + volume->volume_id();
@@ -55,7 +55,7 @@ scoped_ptr<Notification> CreateAutoGrantedNotification(
           : IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_NOTIFICATION_MESSAGE,
       display_name);
 
-  scoped_ptr<Notification> notification(new Notification(
+  std::unique_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
       base::UTF8ToUTF16(extension.name()), message,
       gfx::Image(),      // Updated asynchronously later.
@@ -80,7 +80,7 @@ void RequestFileSystemNotification::ShowAutoGrantedNotification(
   scoped_refptr<RequestFileSystemNotification>
       request_file_system_notification = make_scoped_refptr(
           new RequestFileSystemNotification(profile, extension));
-  scoped_ptr<message_center::Notification> notification(
+  std::unique_ptr<message_center::Notification> notification(
       CreateAutoGrantedNotification(
           extension, volume, writable,
           request_file_system_notification.get() /* delegate */));
@@ -112,7 +112,7 @@ RequestFileSystemNotification::~RequestFileSystemNotification() {
 }
 
 void RequestFileSystemNotification::Show(
-    scoped_ptr<Notification> notification) {
+    std::unique_ptr<Notification> notification) {
   pending_notification_.reset(notification.release());
   // If the extension icon is not known yet, then defer showing the notification
   // until it is (from SetAppImage).

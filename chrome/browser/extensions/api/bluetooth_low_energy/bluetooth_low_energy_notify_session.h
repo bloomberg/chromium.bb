@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_NOTIFY_SESSION_H_
 #define CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_NOTIFY_SESSION_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
@@ -21,7 +21,7 @@ class BluetoothLowEnergyNotifySession : public ApiResource {
   explicit BluetoothLowEnergyNotifySession(
       bool persistent,
       const std::string& owner_extension_id,
-      scoped_ptr<device::BluetoothGattNotifySession> session);
+      std::unique_ptr<device::BluetoothGattNotifySession> session);
   ~BluetoothLowEnergyNotifySession() override;
 
   // Returns a pointer to the underlying session object.
@@ -45,7 +45,7 @@ class BluetoothLowEnergyNotifySession : public ApiResource {
 
   // The session is owned by this instance and will automatically stop when
   // deleted.
-  scoped_ptr<device::BluetoothGattNotifySession> session_;
+  std::unique_ptr<device::BluetoothGattNotifySession> session_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyNotifySession);
 };

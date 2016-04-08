@@ -16,7 +16,8 @@ class NetworkingPrivateUIDelegateFactoryImpl
   NetworkingPrivateUIDelegateFactoryImpl();
   ~NetworkingPrivateUIDelegateFactoryImpl() override;
 
-  scoped_ptr<NetworkingPrivateDelegate::UIDelegate> CreateDelegate() override;
+  std::unique_ptr<NetworkingPrivateDelegate::UIDelegate> CreateDelegate()
+      override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateUIDelegateFactoryImpl);

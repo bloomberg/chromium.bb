@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_WEBSTORE_STANDALONE_INSTALLER_H_
 #define CHROME_BROWSER_EXTENSIONS_WEBSTORE_STANDALONE_INSTALLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/active_install_data.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/webstore_data_fetcher_delegate.h"
@@ -120,7 +120,7 @@ class WebstoreStandaloneInstaller
 
   // Should return an installation prompt with desired properties or NULL if
   // no prompt should be shown.
-  virtual scoped_ptr<ExtensionInstallPrompt::Prompt> CreateInstallPrompt()
+  virtual std::unique_ptr<ExtensionInstallPrompt::Prompt> CreateInstallPrompt()
       const = 0;
 
   // Perform all necessary checks to make sure inline install is permitted,
@@ -146,10 +146,10 @@ class WebstoreStandaloneInstaller
 
   // Returns an install UI to be shown. By default, this returns an install UI
   // that is a transient child of the host window for GetWebContents().
-  virtual scoped_ptr<ExtensionInstallPrompt> CreateInstallUI();
+  virtual std::unique_ptr<ExtensionInstallPrompt> CreateInstallUI();
 
   // Create an approval to pass installation parameters to the CrxInstaller.
-  virtual scoped_ptr<WebstoreInstaller::Approval> CreateApproval() const;
+  virtual std::unique_ptr<WebstoreInstaller::Approval> CreateApproval() const;
 
   // Called once the install prompt has finished.
   virtual void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
@@ -194,7 +194,7 @@ class WebstoreStandaloneInstaller
   void OnWebstoreRequestFailure() override;
 
   void OnWebstoreResponseParseSuccess(
-      scoped_ptr<base::DictionaryValue> webstore_data) override;
+      std::unique_ptr<base::DictionaryValue> webstore_data) override;
 
   void OnWebstoreResponseParseFailure(const std::string& error) override;
 
@@ -223,11 +223,11 @@ class WebstoreStandaloneInstaller
   WebstoreInstaller::InstallSource install_source_;
 
   // Installation dialog and its underlying prompt.
-  scoped_ptr<ExtensionInstallPrompt> install_ui_;
-  scoped_ptr<ExtensionInstallPrompt::Prompt> install_prompt_;
+  std::unique_ptr<ExtensionInstallPrompt> install_ui_;
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> install_prompt_;
 
   // For fetching webstore JSON data.
-  scoped_ptr<WebstoreDataFetcher> webstore_data_fetcher_;
+  std::unique_ptr<WebstoreDataFetcher> webstore_data_fetcher_;
 
   // Extracted from the webstore JSON data response.
   std::string localized_name_;
@@ -236,12 +236,12 @@ class WebstoreStandaloneInstaller
   std::string localized_user_count_;
   double average_rating_;
   int rating_count_;
-  scoped_ptr<base::DictionaryValue> webstore_data_;
-  scoped_ptr<base::DictionaryValue> manifest_;
+  std::unique_ptr<base::DictionaryValue> webstore_data_;
+  std::unique_ptr<base::DictionaryValue> manifest_;
   SkBitmap icon_;
 
   // Active install registered with the InstallTracker.
-  scoped_ptr<ScopedActiveInstall> scoped_active_install_;
+  std::unique_ptr<ScopedActiveInstall> scoped_active_install_;
 
   // Created by ShowInstallUI() when a prompt is shown (if
   // the implementor returns a non-NULL in CreateInstallPrompt()).

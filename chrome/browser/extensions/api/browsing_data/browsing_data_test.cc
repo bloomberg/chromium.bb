@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -136,7 +136,7 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
     scoped_refptr<BrowsingDataSettingsFunction> function =
         new BrowsingDataSettingsFunction();
     SCOPED_TRACE("settings");
-    scoped_ptr<base::Value> result_value(RunFunctionAndReturnSingleResult(
+    std::unique_ptr<base::Value> result_value(RunFunctionAndReturnSingleResult(
         function.get(), std::string("[]"), browser()));
 
     base::DictionaryValue* result;
@@ -185,7 +185,7 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
     scoped_refptr<BrowsingDataSettingsFunction> function =
         new BrowsingDataSettingsFunction();
     SCOPED_TRACE("settings");
-    scoped_ptr<base::Value> result_value(RunFunctionAndReturnSingleResult(
+    std::unique_ptr<base::Value> result_value(RunFunctionAndReturnSingleResult(
         function.get(), std::string("[]"), browser()));
 
     base::DictionaryValue* result;
@@ -257,7 +257,8 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
   }
 
  private:
-  scoped_ptr<BrowsingDataRemover::NotificationDetails> called_with_details_;
+  std::unique_ptr<BrowsingDataRemover::NotificationDetails>
+      called_with_details_;
 
   BrowsingDataRemover::CallbackSubscription callback_subscription_;
 };
@@ -424,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest,
     scoped_refptr<BrowsingDataSettingsFunction> settings_function =
         new BrowsingDataSettingsFunction();
     SCOPED_TRACE("settings_json");
-    scoped_ptr<base::Value> result_value(RunFunctionAndReturnSingleResult(
+    std::unique_ptr<base::Value> result_value(RunFunctionAndReturnSingleResult(
         settings_function.get(), std::string("[]"), browser()));
 
     base::DictionaryValue* result;

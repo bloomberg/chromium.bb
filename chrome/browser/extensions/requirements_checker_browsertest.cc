@@ -76,7 +76,7 @@ class RequirementsCheckerBrowserTest : public ExtensionBrowserTest {
   }
 
  protected:
-  scoped_ptr<RequirementsChecker> checker_;
+  std::unique_ptr<RequirementsChecker> checker_;
 };
 
 IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, CheckEmptyExtension) {

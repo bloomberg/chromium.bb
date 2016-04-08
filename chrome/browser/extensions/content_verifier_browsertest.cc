@@ -306,7 +306,7 @@ class ContentVerifierTest : public ExtensionBrowserTest {
 
  protected:
   JobDelegate delegate_;
-  scoped_ptr<UnloadObserver> unload_observer_;
+  std::unique_ptr<UnloadObserver> unload_observer_;
   GURL page_url_;
 };
 

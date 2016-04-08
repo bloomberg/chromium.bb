@@ -6,6 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
@@ -60,7 +61,7 @@ class ManagementSetEnabledFunctionInstallPromptDelegate
                        OnInstallPromptDone,
                    weak_factory_.GetWeakPtr()),
         extension, nullptr,
-        make_scoped_ptr(new ExtensionInstallPrompt::Prompt(type)),
+        base::WrapUnique(new ExtensionInstallPrompt::Prompt(type)),
         ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
   ~ManagementSetEnabledFunctionInstallPromptDelegate() override {}
@@ -72,7 +73,7 @@ class ManagementSetEnabledFunctionInstallPromptDelegate
   }
 
   // Used for prompting to re-enable items with permissions escalation updates.
-  scoped_ptr<ExtensionInstallPrompt> install_prompt_;
+  std::unique_ptr<ExtensionInstallPrompt> install_prompt_;
 
   base::Callback<void(bool)> callback_;
 
@@ -119,7 +120,8 @@ class ManagementUninstallFunctionUninstallDialogDelegate
 
  private:
   extensions::ManagementUninstallFunctionBase* function_;
-  scoped_ptr<extensions::ExtensionUninstallDialog> extension_uninstall_dialog_;
+  std::unique_ptr<extensions::ExtensionUninstallDialog>
+      extension_uninstall_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagementUninstallFunctionUninstallDialogDelegate);
 };
@@ -155,7 +157,7 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
                    function));
   }
 
-  scoped_ptr<extensions::BookmarkAppHelper> bookmark_app_helper_;
+  std::unique_ptr<extensions::BookmarkAppHelper> bookmark_app_helper_;
 
   // Used for favicon loading tasks.
   base::CancelableTaskTracker cancelable_task_tracker_;
@@ -213,28 +215,28 @@ void ChromeManagementAPIDelegate::
           function));
 }
 
-scoped_ptr<extensions::InstallPromptDelegate>
+std::unique_ptr<extensions::InstallPromptDelegate>
 ChromeManagementAPIDelegate::SetEnabledFunctionDelegate(
     content::WebContents* web_contents,
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     const base::Callback<void(bool)>& callback) const {
-  return scoped_ptr<ManagementSetEnabledFunctionInstallPromptDelegate>(
+  return std::unique_ptr<ManagementSetEnabledFunctionInstallPromptDelegate>(
       new ManagementSetEnabledFunctionInstallPromptDelegate(
           web_contents, browser_context, extension, callback));
 }
 
-scoped_ptr<extensions::RequirementsChecker>
+std::unique_ptr<extensions::RequirementsChecker>
 ChromeManagementAPIDelegate::CreateRequirementsChecker() const {
-  return make_scoped_ptr(new extensions::ChromeRequirementsChecker());
+  return base::WrapUnique(new extensions::ChromeRequirementsChecker());
 }
 
-scoped_ptr<extensions::UninstallDialogDelegate>
+std::unique_ptr<extensions::UninstallDialogDelegate>
 ChromeManagementAPIDelegate::UninstallFunctionDelegate(
     extensions::ManagementUninstallFunctionBase* function,
     const extensions::Extension* target_extension,
     bool show_programmatic_uninstall_ui) const {
-  return scoped_ptr<extensions::UninstallDialogDelegate>(
+  return std::unique_ptr<extensions::UninstallDialogDelegate>(
       new ManagementUninstallFunctionUninstallDialogDelegate(
           function, target_extension, show_programmatic_uninstall_ui));
 }
@@ -260,7 +262,7 @@ bool ChromeManagementAPIDelegate::CreateAppShortcutFunctionDelegate(
   return true;
 }
 
-scoped_ptr<extensions::AppForLinkDelegate>
+std::unique_ptr<extensions::AppForLinkDelegate>
 ChromeManagementAPIDelegate::GenerateAppForLinkFunctionDelegate(
     extensions::ManagementGenerateAppForLinkFunction* function,
     content::BrowserContext* context,
@@ -280,7 +282,7 @@ ChromeManagementAPIDelegate::GenerateAppForLinkFunctionDelegate(
                  context, title, launch_url),
       &delegate->cancelable_task_tracker_);
 
-  return scoped_ptr<extensions::AppForLinkDelegate>(delegate);
+  return std::unique_ptr<extensions::AppForLinkDelegate>(delegate);
 }
 
 bool ChromeManagementAPIDelegate::CanHostedAppsOpenInWindows() const {

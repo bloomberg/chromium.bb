@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTERNAL_LOADER_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTERNAL_LOADER_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class DictionaryValue;
@@ -59,7 +60,7 @@ class ExternalLoader : public base::RefCountedThreadSafe<ExternalLoader> {
   virtual void LoadFinished();
 
   // Notifies the provider that the list of extensions has been updated.
-  virtual void OnUpdated(scoped_ptr<base::DictionaryValue> updated_prefs);
+  virtual void OnUpdated(std::unique_ptr<base::DictionaryValue> updated_prefs);
 
   // Used for passing the list of extensions from the method that loads them
   // to |LoadFinished|. To ensure thread safety, the rules are the following:
@@ -68,7 +69,7 @@ class ExternalLoader : public base::RefCountedThreadSafe<ExternalLoader> {
   // this task should invoke |LoadFinished| with a PostTask. This scheme of
   // posting tasks will avoid concurrent access and imply the necessary memory
   // barriers.
-  scoped_ptr<base::DictionaryValue> prefs_;
+  std::unique_ptr<base::DictionaryValue> prefs_;
 
  private:
   friend class base::RefCountedThreadSafe<ExternalLoader>;

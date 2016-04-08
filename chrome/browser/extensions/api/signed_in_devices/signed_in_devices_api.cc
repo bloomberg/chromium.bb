@@ -4,7 +4,8 @@
 
 #include "chrome/browser/extensions/api/signed_in_devices/signed_in_devices_api.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/signed_in_devices/id_mapping_helper.h"
@@ -37,7 +38,8 @@ const base::DictionaryValue* GetIdMappingDictionary(
           &out_value) || out_value == NULL) {
     // Looks like this is the first call to get the dictionary. Let us create
     // a dictionary and set it in to |extension_prefs|.
-    scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> dictionary(
+        new base::DictionaryValue());
     out_value = dictionary.get();
     extension_prefs->UpdateExtensionPref(
         extension_id,
@@ -64,7 +66,7 @@ ScopedVector<DeviceInfo> GetAllSignedInDevices(
   CHECK(mapping_dictionary);
 
   // |mapping_dictionary| is const. So make an editable copy.
-  scoped_ptr<base::DictionaryValue> editable_mapping_dictionary(
+  std::unique_ptr<base::DictionaryValue> editable_mapping_dictionary(
       mapping_dictionary->DeepCopy());
 
   CreateMappingForUnmappedDevices(&(devices.get()),
@@ -95,31 +97,30 @@ ScopedVector<DeviceInfo> GetAllSignedInDevices(
   return GetAllSignedInDevices(extension_id, device_tracker, extension_prefs);
 }
 
-scoped_ptr<DeviceInfo> GetLocalDeviceInfo(const std::string& extension_id,
-                                          Profile* profile) {
+std::unique_ptr<DeviceInfo> GetLocalDeviceInfo(const std::string& extension_id,
+                                               Profile* profile) {
   ProfileSyncService* pss = ProfileSyncServiceFactory::GetForProfile(profile);
   if (!pss) {
-    return scoped_ptr<DeviceInfo>();
+    return std::unique_ptr<DeviceInfo>();
   }
 
   LocalDeviceInfoProvider* local_device = pss->GetLocalDeviceInfoProvider();
   DCHECK(local_device);
   std::string guid = local_device->GetLocalSyncCacheGUID();
-  scoped_ptr<DeviceInfo> device = GetDeviceInfoForClientId(guid,
-                                                           extension_id,
-                                                           profile);
+  std::unique_ptr<DeviceInfo> device =
+      GetDeviceInfoForClientId(guid, extension_id, profile);
   return device;
 }
 
 bool SignedInDevicesGetFunction::RunSync() {
-  scoped_ptr<api::signed_in_devices::Get::Params> params(
+  std::unique_ptr<api::signed_in_devices::Get::Params> params(
       api::signed_in_devices::Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   bool is_local = params->is_local.get() ? *params->is_local : false;
 
   if (is_local) {
-    scoped_ptr<DeviceInfo> device =
+    std::unique_ptr<DeviceInfo> device =
         GetLocalDeviceInfo(extension_id(), GetProfile());
     base::ListValue* result = new base::ListValue();
     if (device.get()) {
@@ -132,7 +133,7 @@ bool SignedInDevicesGetFunction::RunSync() {
   ScopedVector<DeviceInfo> devices =
       GetAllSignedInDevices(extension_id(), GetProfile());
 
-  scoped_ptr<base::ListValue> result(new base::ListValue());
+  std::unique_ptr<base::ListValue> result(new base::ListValue());
 
   for (ScopedVector<DeviceInfo>::const_iterator it = devices.begin();
        it != devices.end();

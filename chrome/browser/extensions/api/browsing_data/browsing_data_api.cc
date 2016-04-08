@@ -130,7 +130,8 @@ bool BrowsingDataSettingsFunction::RunSync() {
   // REMOVE_SITE_DATA in browsing_data_remover.h, the former for the unprotected
   // web, the latter for  protected web data. There is no UI control for
   // extension data.
-  scoped_ptr<base::DictionaryValue> origin_types(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> origin_types(
+      new base::DictionaryValue);
   origin_types->SetBoolean(
       extension_browsing_data_api_constants::kUnprotectedWebKey,
       prefs->GetBoolean(prefs::kDeleteCookies));
@@ -150,14 +151,14 @@ bool BrowsingDataSettingsFunction::RunSync() {
     since = time.ToJsTime();
   }
 
-  scoped_ptr<base::DictionaryValue> options(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> options(new base::DictionaryValue);
   options->Set(extension_browsing_data_api_constants::kOriginTypesKey,
                origin_types.release());
   options->SetDouble(extension_browsing_data_api_constants::kSinceKey, since);
 
   // Fill dataToRemove and dataRemovalPermitted.
-  scoped_ptr<base::DictionaryValue> selected(new base::DictionaryValue);
-  scoped_ptr<base::DictionaryValue> permitted(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> selected(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> permitted(new base::DictionaryValue);
 
   bool delete_site_data = prefs->GetBoolean(prefs::kDeleteCookies) ||
                           prefs->GetBoolean(prefs::kDeleteHostedAppsData);
@@ -210,7 +211,7 @@ bool BrowsingDataSettingsFunction::RunSync() {
              extension_browsing_data_api_constants::kPasswordsKey,
              prefs->GetBoolean(prefs::kDeletePasswords));
 
-  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   result->Set(extension_browsing_data_api_constants::kOptionsKey,
               options.release());
   result->Set(extension_browsing_data_api_constants::kDataToRemoveKey,

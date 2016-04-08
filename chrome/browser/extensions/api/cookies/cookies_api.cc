@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/api/cookies/cookies_api.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -13,7 +14,6 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -139,7 +139,7 @@ void CookiesEventRouter::Observe(
 void CookiesEventRouter::CookieChanged(
     Profile* profile,
     ChromeCookieDetails* details) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetBoolean(keys::kRemovedKey, details->removed);
 
@@ -183,15 +183,16 @@ void CookiesEventRouter::CookieChanged(
                 cookies::OnChanged::kEventName, std::move(args), cookie_domain);
 }
 
-void CookiesEventRouter::DispatchEvent(content::BrowserContext* context,
-                                       events::HistogramValue histogram_value,
-                                       const std::string& event_name,
-                                       scoped_ptr<base::ListValue> event_args,
-                                       GURL& cookie_domain) {
+void CookiesEventRouter::DispatchEvent(
+    content::BrowserContext* context,
+    events::HistogramValue histogram_value,
+    const std::string& event_name,
+    std::unique_ptr<base::ListValue> event_args,
+    GURL& cookie_domain) {
   EventRouter* router = context ? EventRouter::Get(context) : NULL;
   if (!router)
     return;
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(histogram_value, event_name, std::move(event_args)));
   event->restrict_to_browser_context = context;
   event->event_url = cookie_domain;
@@ -535,9 +536,9 @@ void CookiesRemoveFunction::RespondOnUIThread() {
 bool CookiesGetAllCookieStoresFunction::RunSync() {
   Profile* original_profile = GetProfile();
   DCHECK(original_profile);
-  scoped_ptr<base::ListValue> original_tab_ids(new base::ListValue());
+  std::unique_ptr<base::ListValue> original_tab_ids(new base::ListValue());
   Profile* incognito_profile = NULL;
-  scoped_ptr<base::ListValue> incognito_tab_ids;
+  std::unique_ptr<base::ListValue> incognito_tab_ids;
   if (include_incognito() && GetProfile()->HasOffTheRecordProfile()) {
     incognito_profile = GetProfile()->GetOffTheRecordProfile();
     if (incognito_profile)

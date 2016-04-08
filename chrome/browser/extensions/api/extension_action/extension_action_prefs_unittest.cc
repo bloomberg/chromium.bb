@@ -55,7 +55,7 @@ class ExtensionPrefsHidingBrowserActions : public ExtensionPrefsTest {
   }
 
  private:
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
   ExtensionList extensions_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPrefsHidingBrowserActions);

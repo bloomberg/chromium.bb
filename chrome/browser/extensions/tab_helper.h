@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_TAB_HELPER_H_
 #define CHROME_BROWSER_EXTENSIONS_TAB_HELPER_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
@@ -242,21 +242,22 @@ class TabHelper : public content::WebContentsObserver,
 
   content::NotificationRegistrar registrar_;
 
-  scoped_ptr<ScriptExecutor> script_executor_;
+  std::unique_ptr<ScriptExecutor> script_executor_;
 
-  scoped_ptr<LocationBarController> location_bar_controller_;
+  std::unique_ptr<LocationBarController> location_bar_controller_;
 
-  scoped_ptr<ExtensionActionRunner> extension_action_runner_;
+  std::unique_ptr<ExtensionActionRunner> extension_action_runner_;
 
-  scoped_ptr<ActiveTabPermissionGranter> active_tab_permission_granter_;
+  std::unique_ptr<ActiveTabPermissionGranter> active_tab_permission_granter_;
 
-  scoped_ptr<BookmarkAppHelper> bookmark_app_helper_;
+  std::unique_ptr<BookmarkAppHelper> bookmark_app_helper_;
 
   // Creates WebstoreInlineInstaller instances for inline install triggers.
-  scoped_ptr<WebstoreInlineInstallerFactory> webstore_inline_installer_factory_;
+  std::unique_ptr<WebstoreInlineInstallerFactory>
+      webstore_inline_installer_factory_;
 
   // The reenable prompt for disabled extensions, if any.
-  scoped_ptr<ExtensionReenabler> extension_reenabler_;
+  std::unique_ptr<ExtensionReenabler> extension_reenabler_;
 
   // Vend weak pointers that can be invalidated to stop in-progress loads.
   base::WeakPtrFactory<TabHelper> image_loader_ptr_factory_;

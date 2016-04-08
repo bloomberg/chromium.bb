@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -168,7 +169,7 @@ DialogHelper::DialogHelper(content::WebContents* web_contents)
   DCHECK_EQ(dialog_manager_impl, dialog_manager_);
 
   client_ = new DialogClient(this);
-  dialog_manager_impl->SetExtensionsClient(make_scoped_ptr(client_));
+  dialog_manager_impl->SetExtensionsClient(base::WrapUnique(client_));
 }
 
 DialogHelper::~DialogHelper() {

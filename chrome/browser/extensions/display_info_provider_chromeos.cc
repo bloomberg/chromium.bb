@@ -168,7 +168,7 @@ void UpdateDisplayLayout(const gfx::Rect& primary_display_bounds,
   placement.display_id = target_display_id;
   placement.parent_display_id = primary_display_id;
 
-  scoped_ptr<display::DisplayLayout> layout(new display::DisplayLayout);
+  std::unique_ptr<display::DisplayLayout> layout(new display::DisplayLayout);
   layout->placement_list.push_back(placement);
   layout->primary_id = primary_display_id;
 

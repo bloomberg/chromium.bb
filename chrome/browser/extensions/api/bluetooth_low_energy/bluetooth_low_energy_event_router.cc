@@ -835,9 +835,9 @@ void BluetoothLowEnergyEventRouter::GattServiceRemoved(
   apibtle::Service api_service;
   PopulateService(service, &api_service);
 
-  scoped_ptr<base::ListValue> args =
+  std::unique_ptr<base::ListValue> args =
       apibtle::OnServiceRemoved::Create(api_service);
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::BLUETOOTH_LOW_ENERGY_ON_SERVICE_REMOVED,
                 apibtle::OnServiceRemoved::kEventName, std::move(args)));
   EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
@@ -857,9 +857,9 @@ void BluetoothLowEnergyEventRouter::GattDiscoveryCompleteForService(
   apibtle::Service api_service;
   PopulateService(service, &api_service);
 
-  scoped_ptr<base::ListValue> args =
+  std::unique_ptr<base::ListValue> args =
       apibtle::OnServiceAdded::Create(api_service);
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::BLUETOOTH_LOW_ENERGY_ON_SERVICE_ADDED,
                 apibtle::OnServiceAdded::kEventName, std::move(args)));
   EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
@@ -993,7 +993,7 @@ void BluetoothLowEnergyEventRouter::GattCharacteristicValueChanged(
   // lists of enums correctly.
   apibtle::Characteristic api_characteristic;
   PopulateCharacteristic(characteristic, &api_characteristic);
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Append(apibtle::CharacteristicToValue(&api_characteristic).release());
 
   DispatchEventToExtensionsWithPermission(
@@ -1023,7 +1023,7 @@ void BluetoothLowEnergyEventRouter::GattDescriptorValueChanged(
   // lists of enums correctly.
   apibtle::Descriptor api_descriptor;
   PopulateDescriptor(descriptor, &api_descriptor);
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Append(apibtle::DescriptorToValue(&api_descriptor).release());
 
   DispatchEventToExtensionsWithPermission(
@@ -1102,7 +1102,7 @@ void BluetoothLowEnergyEventRouter::DispatchEventToExtensionsWithPermission(
     const std::string& event_name,
     const device::BluetoothUUID& uuid,
     const std::string& characteristic_id,
-    scoped_ptr<base::ListValue> args) {
+    std::unique_ptr<base::ListValue> args) {
   // Obtain the listeners of |event_name|. The list can contain multiple
   // entries for the same extension, so we keep track of the extensions that we
   // already sent the event to, since we want the send an event to an extension
@@ -1142,8 +1142,8 @@ void BluetoothLowEnergyEventRouter::DispatchEventToExtensionsWithPermission(
       continue;
 
     // Send the event.
-    scoped_ptr<base::ListValue> args_copy(args->DeepCopy());
-    scoped_ptr<Event> event(
+    std::unique_ptr<base::ListValue> args_copy(args->DeepCopy());
+    std::unique_ptr<Event> event(
         new Event(histogram_value, event_name, std::move(args_copy)));
     EventRouter::Get(browser_context_)
         ->DispatchEventToExtension(extension_id, std::move(event));
@@ -1243,7 +1243,7 @@ void BluetoothLowEnergyEventRouter::OnCreateGattConnection(
     const std::string& extension_id,
     const std::string& device_address,
     const base::Closure& callback,
-    scoped_ptr<BluetoothGattConnection> connection) {
+    std::unique_ptr<BluetoothGattConnection> connection) {
   VLOG(2) << "GATT connection created.";
   DCHECK(connection.get());
   DCHECK(!FindConnection(extension_id, device_address));
@@ -1342,7 +1342,7 @@ void BluetoothLowEnergyEventRouter::OnStartNotifySession(
     const std::string& extension_id,
     const std::string& characteristic_id,
     const base::Closure& callback,
-    scoped_ptr<device::BluetoothGattNotifySession> session) {
+    std::unique_ptr<device::BluetoothGattNotifySession> session) {
   VLOG(2) << "Value update session created for characteristic: "
           << characteristic_id;
   DCHECK(session.get());

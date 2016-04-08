@@ -67,7 +67,7 @@ InfoBar* IncognitoConnectabilityInfoBarDelegate::Create(
     const base::string16& message,
     const IncognitoConnectabilityInfoBarDelegate::InfoBarCallback& callback) {
   return infobar_manager->AddInfoBar(infobar_manager->CreateConfirmInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(
+      std::unique_ptr<ConfirmInfoBarDelegate>(
           new IncognitoConnectabilityInfoBarDelegate(message, callback))));
 }
 

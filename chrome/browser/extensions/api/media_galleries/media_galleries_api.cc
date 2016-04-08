@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/api/media_galleries/media_galleries_api.h"
 
 #include <stddef.h>
+
 #include <set>
 #include <string>
 #include <utility>
@@ -15,6 +16,7 @@
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -157,9 +159,9 @@ base::ListValue* ConstructFileSystemList(
       APIPermission::kMediaGalleries, &delete_param);
 
   const int child_id = rfh->GetProcess()->GetID();
-  scoped_ptr<base::ListValue> list(new base::ListValue());
+  std::unique_ptr<base::ListValue> list(new base::ListValue());
   for (size_t i = 0; i < filesystems.size(); ++i) {
-    scoped_ptr<base::DictionaryValue> file_system_dict_value(
+    std::unique_ptr<base::DictionaryValue> file_system_dict_value(
         new base::DictionaryValue());
 
     // Send the file system id so the renderer can create a valid FileSystem
@@ -314,14 +316,14 @@ void MediaGalleriesEventRouter::DispatchEventToExtension(
     const std::string& extension_id,
     events::HistogramValue histogram_value,
     const std::string& event_name,
-    scoped_ptr<base::ListValue> event_args) {
+    std::unique_ptr<base::ListValue> event_args) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   EventRouter* router = EventRouter::Get(profile_);
   if (!router->ExtensionHasEventListener(extension_id, event_name))
     return;
 
-  scoped_ptr<extensions::Event> event(new extensions::Event(
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
       histogram_value, event_name, std::move(event_args)));
   router->DispatchEventToExtension(extension_id, std::move(event));
 }
@@ -364,7 +366,7 @@ MediaGalleriesGetMediaFileSystemsFunction::
 
 bool MediaGalleriesGetMediaFileSystemsFunction::RunAsync() {
   media_galleries::UsageCount(media_galleries::GET_MEDIA_FILE_SYSTEMS);
-  scoped_ptr<GetMediaFileSystems::Params> params(
+  std::unique_ptr<GetMediaFileSystems::Params> params(
       GetMediaFileSystems::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   MediaGalleries::GetMediaFileSystemsInteractivity interactive =
@@ -427,7 +429,7 @@ void MediaGalleriesGetMediaFileSystemsFunction::GetAndReturnGalleries() {
 
 void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
     const std::vector<MediaFileSystemInfo>& filesystems) {
-  scoped_ptr<base::ListValue> list(
+  std::unique_ptr<base::ListValue> list(
       ConstructFileSystemList(render_frame_host(), extension(), filesystems));
   if (!list.get()) {
     SendResponse(false);
@@ -535,7 +537,7 @@ void MediaGalleriesAddUserSelectedFolderFunction::OnDirectorySelected(
 void MediaGalleriesAddUserSelectedFolderFunction::ReturnGalleriesAndId(
     MediaGalleryPrefId pref_id,
     const std::vector<MediaFileSystemInfo>& filesystems) {
-  scoped_ptr<base::ListValue> list(
+  std::unique_ptr<base::ListValue> list(
       ConstructFileSystemList(render_frame_host(), extension(), filesystems));
   if (!list.get()) {
     SendResponse(false);
@@ -584,7 +586,7 @@ bool MediaGalleriesGetMetadataFunction::RunAsync() {
   const base::Value* options_value = NULL;
   if (!args_->Get(1, &options_value))
     return false;
-  scoped_ptr<MediaGalleries::MediaMetadataOptions> options =
+  std::unique_ptr<MediaGalleries::MediaMetadataOptions> options =
       MediaGalleries::MediaMetadataOptions::FromValue(*options_value);
   if (!options)
     return false;
@@ -612,7 +614,7 @@ void MediaGalleriesGetMetadataFunction::OnPreferencesInit(
 void MediaGalleriesGetMetadataFunction::GetMetadata(
     MediaGalleries::GetMetadataType metadata_type,
     const std::string& blob_uuid,
-    scoped_ptr<std::string> blob_header,
+    std::unique_ptr<std::string> blob_header,
     int64_t total_blob_length) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -651,8 +653,9 @@ void MediaGalleriesGetMetadataFunction::GetMetadata(
 }
 
 void MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone(
-    bool parse_success, scoped_ptr<base::DictionaryValue> metadata_dictionary,
-    scoped_ptr<std::vector<metadata::AttachedImage> > attached_images) {
+    bool parse_success,
+    std::unique_ptr<base::DictionaryValue> metadata_dictionary,
+    std::unique_ptr<std::vector<metadata::AttachedImage>> attached_images) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!parse_success) {
@@ -663,7 +666,7 @@ void MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone(
   DCHECK(metadata_dictionary.get());
   DCHECK(attached_images.get());
 
-  scoped_ptr<base::DictionaryValue> result_dictionary(
+  std::unique_ptr<base::DictionaryValue> result_dictionary(
       new base::DictionaryValue);
   result_dictionary->Set(kMetadataKey, metadata_dictionary.release());
 
@@ -676,20 +679,18 @@ void MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone(
   result_dictionary->Set(kAttachedImagesBlobInfoKey, new base::ListValue);
   metadata::AttachedImage* first_image = &attached_images->front();
   content::BrowserContext::CreateMemoryBackedBlob(
-      GetProfile(),
-      first_image->data.c_str(),
-      first_image->data.size(),
-      base::Bind(&MediaGalleriesGetMetadataFunction::ConstructNextBlob,
-                 this, base::Passed(&result_dictionary),
+      GetProfile(), first_image->data.c_str(), first_image->data.size(),
+      base::Bind(&MediaGalleriesGetMetadataFunction::ConstructNextBlob, this,
+                 base::Passed(&result_dictionary),
                  base::Passed(&attached_images),
-                 base::Passed(make_scoped_ptr(new std::vector<std::string>))));
+                 base::Passed(base::WrapUnique(new std::vector<std::string>))));
 }
 
 void MediaGalleriesGetMetadataFunction::ConstructNextBlob(
-    scoped_ptr<base::DictionaryValue> result_dictionary,
-    scoped_ptr<std::vector<metadata::AttachedImage> > attached_images,
-    scoped_ptr<std::vector<std::string> > blob_uuids,
-    scoped_ptr<content::BlobHandle> current_blob) {
+    std::unique_ptr<base::DictionaryValue> result_dictionary,
+    std::unique_ptr<std::vector<metadata::AttachedImage>> attached_images,
+    std::unique_ptr<std::vector<std::string>> blob_uuids,
+    std::unique_ptr<content::BlobHandle> current_blob) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   DCHECK(result_dictionary.get());
@@ -756,7 +757,7 @@ bool MediaGalleriesAddGalleryWatchFunction::RunAsync() {
   if (!render_frame_host() || !render_frame_host()->GetProcess())
     return false;
 
-  scoped_ptr<AddGalleryWatch::Params> params(
+  std::unique_ptr<AddGalleryWatch::Params> params(
       AddGalleryWatch::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -840,7 +841,7 @@ bool MediaGalleriesRemoveGalleryWatchFunction::RunAsync() {
   if (!render_frame_host() || !render_frame_host()->GetProcess())
     return false;
 
-  scoped_ptr<RemoveGalleryWatch::Params> params(
+  std::unique_ptr<RemoveGalleryWatch::Params> params(
       RemoveGalleryWatch::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

@@ -4,9 +4,10 @@
 
 #include "chrome/browser/extensions/api/messaging/native_messaging_test_util.h"
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -27,13 +28,13 @@ void WriteTestNativeHostManifest(const base::FilePath& target_dir,
                                  const std::string& host_name,
                                  const base::FilePath& host_path,
                                  bool user_level) {
-  scoped_ptr<base::DictionaryValue> manifest(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> manifest(new base::DictionaryValue());
   manifest->SetString("name", host_name);
   manifest->SetString("description", "Native Messaging Echo Test");
   manifest->SetString("type", "stdio");
   manifest->SetString("path", host_path.AsUTF8Unsafe());
 
-  scoped_ptr<base::ListValue> origins(new base::ListValue());
+  std::unique_ptr<base::ListValue> origins(new base::ListValue());
   origins->AppendString(base::StringPrintf(
       "chrome-extension://%s/", ScopedTestNativeMessagingHost::kExtensionId));
   manifest->Set("allowed_origins", origins.release());

@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_CONTENT_PREDICATE_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_CONTENT_PREDICATE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class Value;
@@ -59,7 +59,7 @@ class ContentPredicateFactory {
 
   // Creates a new predicate from |value|, as specified in the declarative
   // API. Sets *|error| and returns null if creation failed for any reason.
-  virtual scoped_ptr<const ContentPredicate> CreatePredicate(
+  virtual std::unique_ptr<const ContentPredicate> CreatePredicate(
       const Extension* extension,
       const base::Value& value,
       std::string* error) = 0;

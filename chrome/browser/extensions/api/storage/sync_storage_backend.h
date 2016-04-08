@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_STORAGE_SYNC_STORAGE_BACKEND_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
@@ -14,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/browser/api/storage/settings_observer.h"
 #include "extensions/browser/api/storage/settings_storage_quota_enforcer.h"
 #include "extensions/browser/value_store/value_store_factory.h"
@@ -53,8 +53,8 @@ class SyncStorageBackend : public syncer::SyncableService {
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
-      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) override;
+      std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+      std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory) override;
   syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
@@ -65,7 +65,7 @@ class SyncStorageBackend : public syncer::SyncableService {
   // initializing sync with some initial data if sync enabled.
   SyncableSettingsStorage* GetOrCreateStorageWithSyncData(
       const std::string& extension_id,
-      scoped_ptr<base::DictionaryValue> sync_data) const;
+      std::unique_ptr<base::DictionaryValue> sync_data) const;
 
   // Gets all extension IDs known to extension settings.  This may not be all
   // installed extensions.
@@ -73,7 +73,7 @@ class SyncStorageBackend : public syncer::SyncableService {
       ValueStoreFactory::ModelType model_type) const;
 
   // Creates a new SettingsSyncProcessor for an extension.
-  scoped_ptr<SettingsSyncProcessor> CreateSettingsSyncProcessor(
+  std::unique_ptr<SettingsSyncProcessor> CreateSettingsSyncProcessor(
       const std::string& extension_id) const;
 
   // The Factory to use for creating new ValueStores.
@@ -95,10 +95,10 @@ class SyncStorageBackend : public syncer::SyncableService {
   syncer::ModelType sync_type_;
 
   // Current sync processor, if any.
-  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
+  std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
 
   // Current sync error handler if any.
-  scoped_ptr<syncer::SyncErrorFactory> sync_error_factory_;
+  std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory_;
 
   syncer::SyncableService::StartSyncFlare flare_;
 

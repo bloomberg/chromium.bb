@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop.h"
 #include "chrome/browser/extensions/extension_action.h"
+
+#include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "extensions/common/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -13,10 +15,10 @@ namespace extensions {
 
 namespace {
 
-scoped_ptr<ExtensionAction> CreateAction(ActionInfo::Type type,
-                                         const ActionInfo& action_info) {
+std::unique_ptr<ExtensionAction> CreateAction(ActionInfo::Type type,
+                                              const ActionInfo& action_info) {
   scoped_refptr<const Extension> extension = test_util::CreateEmptyExtension();
-  return make_scoped_ptr(new ExtensionAction(*extension, type, action_info));
+  return base::WrapUnique(new ExtensionAction(*extension, type, action_info));
 }
 
 }  // namespace
@@ -24,7 +26,7 @@ scoped_ptr<ExtensionAction> CreateAction(ActionInfo::Type type,
 TEST(ExtensionActionTest, Title) {
   ActionInfo action_info;
   action_info.default_title = "Initial Title";
-  scoped_ptr<ExtensionAction> action =
+  std::unique_ptr<ExtensionAction> action =
       CreateAction(ActionInfo::TYPE_PAGE, action_info);
 
   ASSERT_EQ("Initial Title", action->GetTitle(1));
@@ -41,7 +43,7 @@ TEST(ExtensionActionTest, Title) {
 }
 
 TEST(ExtensionActionTest, Visibility) {
-  scoped_ptr<ExtensionAction> action =
+  std::unique_ptr<ExtensionAction> action =
       CreateAction(ActionInfo::TYPE_PAGE, ActionInfo());
 
   ASSERT_FALSE(action->GetIsVisible(1));
@@ -60,7 +62,7 @@ TEST(ExtensionActionTest, Visibility) {
   ASSERT_FALSE(action->GetIsVisible(1));
   ASSERT_FALSE(action->GetIsVisible(100));
 
-  scoped_ptr<ExtensionAction> browser_action =
+  std::unique_ptr<ExtensionAction> browser_action =
       CreateAction(ActionInfo::TYPE_BROWSER, ActionInfo());
   ASSERT_TRUE(browser_action->GetIsVisible(1));
 }
@@ -68,7 +70,7 @@ TEST(ExtensionActionTest, Visibility) {
 TEST(ExtensionActionTest, Icon) {
   ActionInfo action_info;
   action_info.default_icon.Add(16, "icon16.png");
-  scoped_ptr<ExtensionAction> page_action =
+  std::unique_ptr<ExtensionAction> page_action =
       CreateAction(ActionInfo::TYPE_PAGE, action_info);
   ASSERT_TRUE(page_action->default_icon());
   EXPECT_EQ("icon16.png",
@@ -80,7 +82,7 @@ TEST(ExtensionActionTest, Icon) {
 }
 
 TEST(ExtensionActionTest, Badge) {
-  scoped_ptr<ExtensionAction> action =
+  std::unique_ptr<ExtensionAction> action =
       CreateAction(ActionInfo::TYPE_PAGE, ActionInfo());
   ASSERT_EQ("", action->GetBadgeText(1));
   action->SetBadgeText(ExtensionAction::kDefaultTabId, "foo");
@@ -96,7 +98,7 @@ TEST(ExtensionActionTest, Badge) {
 }
 
 TEST(ExtensionActionTest, BadgeTextColor) {
-  scoped_ptr<ExtensionAction> action =
+  std::unique_ptr<ExtensionAction> action =
       CreateAction(ActionInfo::TYPE_PAGE, ActionInfo());
   ASSERT_EQ(0x00000000u, action->GetBadgeTextColor(1));
   action->SetBadgeTextColor(ExtensionAction::kDefaultTabId, 0xFFFF0000u);
@@ -112,7 +114,7 @@ TEST(ExtensionActionTest, BadgeTextColor) {
 }
 
 TEST(ExtensionActionTest, BadgeBackgroundColor) {
-  scoped_ptr<ExtensionAction> action =
+  std::unique_ptr<ExtensionAction> action =
       CreateAction(ActionInfo::TYPE_PAGE, ActionInfo());
   ASSERT_EQ(0x00000000u, action->GetBadgeBackgroundColor(1));
   action->SetBadgeBackgroundColor(ExtensionAction::kDefaultTabId,
@@ -137,7 +139,7 @@ TEST(ExtensionActionTest, PopupUrl) {
 
   ActionInfo action_info;
   action_info.default_popup_url = url_foo;
-  scoped_ptr<ExtensionAction> action =
+  std::unique_ptr<ExtensionAction> action =
       CreateAction(ActionInfo::TYPE_PAGE, action_info);
 
   ASSERT_EQ(url_foo, action->GetPopupUrl(1));

@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_TABS_TABS_WINDOWS_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_TABS_TABS_WINDOWS_API_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
@@ -46,8 +47,8 @@ class TabsWindowsAPI : public BrowserContextKeyedAPI,
   }
   static const bool kServiceIsNULLWhileTesting = true;
 
-  scoped_ptr<TabsEventRouter> tabs_event_router_;
-  scoped_ptr<WindowsEventRouter> windows_event_router_;
+  std::unique_ptr<TabsEventRouter> tabs_event_router_;
+  std::unique_ptr<WindowsEventRouter> windows_event_router_;
 };
 
 }  // namespace extensions

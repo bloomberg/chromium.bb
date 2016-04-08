@@ -136,7 +136,7 @@ class PreferenceAPI : public PreferenceAPIBase,
   static const bool kServiceRedirectedInIncognito = true;
 
   // Created lazily upon OnListenerAdded.
-  scoped_ptr<PreferenceEventRouter> preference_event_router_;
+  std::unique_ptr<PreferenceEventRouter> preference_event_router_;
 
   DISALLOW_COPY_AND_ASSIGN(PreferenceAPI);
 };

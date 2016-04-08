@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_EASY_UNLOCK_PRIVATE_EASY_UNLOCK_PRIVATE_CONNECTION_MANAGER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_EASY_UNLOCK_PRIVATE_EASY_UNLOCK_PRIVATE_CONNECTION_MANAGER_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_connection.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "components/proximity_auth/connection.h"
@@ -35,7 +35,7 @@ class EasyUnlockPrivateConnectionManager
   // Stores |connection| in the API connection manager. Returns the
   // |connection_id|.
   int AddConnection(const Extension* extension,
-                    scoped_ptr<proximity_auth::Connection> connection,
+                    std::unique_ptr<proximity_auth::Connection> connection,
                     bool persistent);
 
   // Returns the status of the connection with |connection_id|.
@@ -76,7 +76,7 @@ class EasyUnlockPrivateConnectionManager
   void DispatchConnectionEvent(const std::string& event_name,
                                events::HistogramValue histogram_value,
                                const proximity_auth::Connection* connection,
-                               scoped_ptr<base::ListValue> args);
+                               std::unique_ptr<base::ListValue> args);
 
   // Convenience method to get the API resource manager.
   ApiResourceManager<EasyUnlockPrivateConnection>* GetResourceManager() const;

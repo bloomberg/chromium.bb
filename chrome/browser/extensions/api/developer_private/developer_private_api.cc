@@ -137,10 +137,9 @@ bool UserCanModifyExtensionConfiguration(
 // Runs the install verifier for all extensions that are enabled, disabled, or
 // terminated.
 void PerformVerificationCheck(content::BrowserContext* context) {
-  scoped_ptr<ExtensionSet> extensions =
+  std::unique_ptr<ExtensionSet> extensions =
       ExtensionRegistry::Get(context)->GenerateInstalledExtensionsSet(
-          ExtensionRegistry::ENABLED |
-          ExtensionRegistry::DISABLED |
+          ExtensionRegistry::ENABLED | ExtensionRegistry::DISABLED |
           ExtensionRegistry::TERMINATED);
   ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
   bool should_do_verification_check = false;
@@ -159,8 +158,8 @@ void PerformVerificationCheck(content::BrowserContext* context) {
     InstallVerifier::Get(context)->VerifyAllExtensions();
 }
 
-scoped_ptr<developer::ProfileInfo> CreateProfileInfo(Profile* profile) {
-  scoped_ptr<developer::ProfileInfo> info(new developer::ProfileInfo());
+std::unique_ptr<developer::ProfileInfo> CreateProfileInfo(Profile* profile) {
+  std::unique_ptr<developer::ProfileInfo> info(new developer::ProfileInfo());
   info->is_supervised = profile->IsSupervised();
   PrefService* prefs = profile->GetPrefs();
   info->is_incognito_available =
@@ -348,9 +347,9 @@ void DeveloperPrivateEventRouter::OnExtensionDisableReasonsChanged(
 }
 
 void DeveloperPrivateEventRouter::OnExtensionManagementSettingsChanged() {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Append(CreateProfileInfo(profile_)->ToValue());
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::DEVELOPER_PRIVATE_ON_PROFILE_STATE_CHANGED,
                 developer::OnProfileStateChanged::kEventName, std::move(args)));
   event_router_->BroadcastEvent(std::move(event));
@@ -363,9 +362,9 @@ void DeveloperPrivateEventRouter::ExtensionWarningsChanged(
 }
 
 void DeveloperPrivateEventRouter::OnProfilePrefChanged() {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Append(CreateProfileInfo(profile_)->ToValue());
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::DEVELOPER_PRIVATE_ON_PROFILE_STATE_CHANGED,
                 developer::OnProfileStateChanged::kEventName, std::move(args)));
   event_router_->BroadcastEvent(std::move(event));
@@ -374,7 +373,7 @@ void DeveloperPrivateEventRouter::OnProfilePrefChanged() {
 void DeveloperPrivateEventRouter::BroadcastItemStateChanged(
     developer::EventType event_type,
     const std::string& extension_id) {
-  scoped_ptr<ExtensionInfoGenerator> info_generator(
+  std::unique_ptr<ExtensionInfoGenerator> info_generator(
       new ExtensionInfoGenerator(profile_));
   ExtensionInfoGenerator* info_generator_weak = info_generator.get();
   info_generator_weak->CreateExtensionInfo(
@@ -387,7 +386,7 @@ void DeveloperPrivateEventRouter::BroadcastItemStateChanged(
 void DeveloperPrivateEventRouter::BroadcastItemStateChangedHelper(
     developer::EventType event_type,
     const std::string& extension_id,
-    scoped_ptr<ExtensionInfoGenerator> info_generator,
+    std::unique_ptr<ExtensionInfoGenerator> info_generator,
     ExtensionInfoGenerator::ExtensionInfoList infos) {
   DCHECK_LE(infos.size(), 1u);
 
@@ -399,9 +398,9 @@ void DeveloperPrivateEventRouter::BroadcastItemStateChangedHelper(
         new developer::ExtensionInfo(std::move(infos[0])));
   }
 
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Append(event_data.ToValue());
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::DEVELOPER_PRIVATE_ON_ITEM_STATE_CHANGED,
                 developer::OnItemStateChanged::kEventName, std::move(args)));
   event_router_->BroadcastEvent(std::move(event));
@@ -480,7 +479,7 @@ DeveloperPrivateGetExtensionsInfoFunction::
 
 ExtensionFunction::ResponseAction
 DeveloperPrivateGetExtensionsInfoFunction::Run() {
-  scoped_ptr<developer::GetExtensionsInfo::Params> params(
+  std::unique_ptr<developer::GetExtensionsInfo::Params> params(
       developer::GetExtensionsInfo::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -518,7 +517,7 @@ DeveloperPrivateGetExtensionInfoFunction::
 
 ExtensionFunction::ResponseAction
 DeveloperPrivateGetExtensionInfoFunction::Run() {
-  scoped_ptr<developer::GetExtensionInfo::Params> params(
+  std::unique_ptr<developer::GetExtensionInfo::Params> params(
       developer::GetExtensionInfo::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -542,7 +541,7 @@ DeveloperPrivateGetItemsInfoFunction::DeveloperPrivateGetItemsInfoFunction() {}
 DeveloperPrivateGetItemsInfoFunction::~DeveloperPrivateGetItemsInfoFunction() {}
 
 ExtensionFunction::ResponseAction DeveloperPrivateGetItemsInfoFunction::Run() {
-  scoped_ptr<developer::GetItemsInfo::Params> params(
+  std::unique_ptr<developer::GetItemsInfo::Params> params(
       developer::GetItemsInfo::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -571,7 +570,8 @@ DeveloperPrivateGetProfileConfigurationFunction::
 
 ExtensionFunction::ResponseAction
 DeveloperPrivateGetProfileConfigurationFunction::Run() {
-  scoped_ptr<developer::ProfileInfo> info = CreateProfileInfo(GetProfile());
+  std::unique_ptr<developer::ProfileInfo> info =
+      CreateProfileInfo(GetProfile());
 
   // If this is called from the chrome://extensions page, we use this as a
   // heuristic that it's a good time to verify installs. We do this on startup,
@@ -589,7 +589,7 @@ DeveloperPrivateUpdateProfileConfigurationFunction::
 
 ExtensionFunction::ResponseAction
 DeveloperPrivateUpdateProfileConfigurationFunction::Run() {
-  scoped_ptr<developer::UpdateProfileConfiguration::Params> params(
+  std::unique_ptr<developer::UpdateProfileConfiguration::Params> params(
       developer::UpdateProfileConfiguration::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -610,7 +610,7 @@ DeveloperPrivateUpdateExtensionConfigurationFunction::
 
 ExtensionFunction::ResponseAction
 DeveloperPrivateUpdateExtensionConfigurationFunction::Run() {
-  scoped_ptr<developer::UpdateExtensionConfiguration::Params> params(
+  std::unique_ptr<developer::UpdateExtensionConfiguration::Params> params(
       developer::UpdateExtensionConfiguration::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -656,7 +656,7 @@ DeveloperPrivateUpdateExtensionConfigurationFunction::Run() {
 DeveloperPrivateReloadFunction::~DeveloperPrivateReloadFunction() {}
 
 ExtensionFunction::ResponseAction DeveloperPrivateReloadFunction::Run() {
-  scoped_ptr<Reload::Params> params(Reload::Params::Create(*args_));
+  std::unique_ptr<Reload::Params> params(Reload::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   const Extension* extension = GetExtensionById(params->extension_id);
@@ -686,7 +686,7 @@ DeveloperPrivateShowPermissionsDialogFunction::
 
 ExtensionFunction::ResponseAction
 DeveloperPrivateShowPermissionsDialogFunction::Run() {
-  scoped_ptr<developer::ShowPermissionsDialog::Params> params(
+  std::unique_ptr<developer::ShowPermissionsDialog::Params> params(
       developer::ShowPermissionsDialog::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -716,7 +716,7 @@ DeveloperPrivateLoadUnpackedFunction::DeveloperPrivateLoadUnpackedFunction()
 }
 
 ExtensionFunction::ResponseAction DeveloperPrivateLoadUnpackedFunction::Run() {
-  scoped_ptr<developer::LoadUnpacked::Params> params(
+  std::unique_ptr<developer::LoadUnpacked::Params> params(
       developer::LoadUnpacked::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -819,7 +819,7 @@ void DeveloperPrivatePackDirectoryFunction::OnPackFailure(
 }
 
 ExtensionFunction::ResponseAction DeveloperPrivatePackDirectoryFunction::Run() {
-  scoped_ptr<PackDirectory::Params> params(
+  std::unique_ptr<PackDirectory::Params> params(
       PackDirectory::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -1099,7 +1099,7 @@ DeveloperPrivateLoadDirectoryFunction::~DeveloperPrivateLoadDirectoryFunction()
     {}
 
 ExtensionFunction::ResponseAction DeveloperPrivateChoosePathFunction::Run() {
-  scoped_ptr<developer::ChoosePath::Params> params(
+  std::unique_ptr<developer::ChoosePath::Params> params(
       developer::ChoosePath::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -1218,7 +1218,7 @@ void DeveloperPrivateRequestFileSourceFunction::Finish(
                                       path.BaseName().AsUTF8Unsafe().c_str());
   response.message = properties.message;
 
-  scoped_ptr<FileHighlighter> highlighter;
+  std::unique_ptr<FileHighlighter> highlighter;
   if (properties.path_suffix == kManifestFile) {
     highlighter.reset(new ManifestHighlighter(
         file_contents,
@@ -1243,7 +1243,7 @@ DeveloperPrivateOpenDevToolsFunction::~DeveloperPrivateOpenDevToolsFunction() {}
 
 ExtensionFunction::ResponseAction
 DeveloperPrivateOpenDevToolsFunction::Run() {
-  scoped_ptr<developer::OpenDevTools::Params> params(
+  std::unique_ptr<developer::OpenDevTools::Params> params(
       developer::OpenDevTools::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   const developer::OpenDevToolsProperties& properties = params->properties;
@@ -1312,7 +1312,7 @@ DeveloperPrivateDeleteExtensionErrorsFunction::
 
 ExtensionFunction::ResponseAction
 DeveloperPrivateDeleteExtensionErrorsFunction::Run() {
-  scoped_ptr<developer::DeleteExtensionErrors::Params> params(
+  std::unique_ptr<developer::DeleteExtensionErrors::Params> params(
       developer::DeleteExtensionErrors::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   const developer::DeleteExtensionErrorsProperties& properties =
@@ -1340,7 +1340,7 @@ DeveloperPrivateRepairExtensionFunction::
 
 ExtensionFunction::ResponseAction
 DeveloperPrivateRepairExtensionFunction::Run() {
-  scoped_ptr<developer::RepairExtension::Params> params(
+  std::unique_ptr<developer::RepairExtension::Params> params(
       developer::RepairExtension::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   const Extension* extension = GetExtensionById(params->extension_id);
@@ -1371,7 +1371,7 @@ void DeveloperPrivateRepairExtensionFunction::OnReinstallComplete(
 DeveloperPrivateShowOptionsFunction::~DeveloperPrivateShowOptionsFunction() {}
 
 ExtensionFunction::ResponseAction DeveloperPrivateShowOptionsFunction::Run() {
-  scoped_ptr<developer::ShowOptions::Params> params(
+  std::unique_ptr<developer::ShowOptions::Params> params(
       developer::ShowOptions::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   const Extension* extension = GetEnabledExtensionById(params->extension_id);
@@ -1394,7 +1394,7 @@ ExtensionFunction::ResponseAction DeveloperPrivateShowOptionsFunction::Run() {
 DeveloperPrivateShowPathFunction::~DeveloperPrivateShowPathFunction() {}
 
 ExtensionFunction::ResponseAction DeveloperPrivateShowPathFunction::Run() {
-  scoped_ptr<developer::ShowPath::Params> params(
+  std::unique_ptr<developer::ShowPath::Params> params(
       developer::ShowPath::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   const Extension* extension = GetExtensionById(params->extension_id);
@@ -1413,7 +1413,7 @@ DeveloperPrivateSetShortcutHandlingSuspendedFunction::
 
 ExtensionFunction::ResponseAction
 DeveloperPrivateSetShortcutHandlingSuspendedFunction::Run() {
-  scoped_ptr<developer::SetShortcutHandlingSuspended::Params> params(
+  std::unique_ptr<developer::SetShortcutHandlingSuspended::Params> params(
       developer::SetShortcutHandlingSuspended::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   ExtensionCommandsGlobalRegistry::Get(GetProfile())->
@@ -1426,7 +1426,7 @@ DeveloperPrivateUpdateExtensionCommandFunction::
 
 ExtensionFunction::ResponseAction
 DeveloperPrivateUpdateExtensionCommandFunction::Run() {
-  scoped_ptr<developer::UpdateExtensionCommand::Params> params(
+  std::unique_ptr<developer::UpdateExtensionCommand::Params> params(
       developer::UpdateExtensionCommand::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   const developer::ExtensionCommandUpdate& update = params->update;

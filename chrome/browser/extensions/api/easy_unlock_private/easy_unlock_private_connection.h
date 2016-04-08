@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_EASY_UNLOCK_PRIVATE_EASY_UNLOCK_PRIVATE_CONNECTION_H_
 #define CHROME_BROWSER_EXTENSIONS_API_EASY_UNLOCK_PRIVATE_EASY_UNLOCK_PRIVATE_CONNECTION_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
 
@@ -21,7 +22,7 @@ class EasyUnlockPrivateConnection : public ApiResource {
   EasyUnlockPrivateConnection(
       bool persistent,
       const std::string& owner_extension_id,
-      scoped_ptr<proximity_auth::Connection> connection);
+      std::unique_ptr<proximity_auth::Connection> connection);
   ~EasyUnlockPrivateConnection() override;
 
   // Returns a pointer to the underlying connection object.
@@ -45,7 +46,7 @@ class EasyUnlockPrivateConnection : public ApiResource {
 
   // The connection is owned by this instance and will automatically disconnect
   // when deleted.
-  scoped_ptr<proximity_auth::Connection> connection_;
+  std::unique_ptr<proximity_auth::Connection> connection_;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateConnection);
 };

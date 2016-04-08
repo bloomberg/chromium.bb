@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_ACTION_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "extensions/common/constants.h"
@@ -201,7 +201,7 @@ class ExtensionAction {
   bool HasIsVisible(int tab_id) const;
   bool HasIcon(int tab_id) const;
 
-  void SetDefaultIconForTest(scoped_ptr<ExtensionIconSet> default_icon);
+  void SetDefaultIconForTest(std::unique_ptr<ExtensionIconSet> default_icon);
 
  private:
   // Populates the action from the |extension| and |manifest_data|, filling in
@@ -283,11 +283,11 @@ class ExtensionAction {
 
   // ExtensionIconSet containing paths to bitmaps from which default icon's
   // image representations will be selected.
-  scoped_ptr<ExtensionIconSet> default_icon_;
+  std::unique_ptr<ExtensionIconSet> default_icon_;
 
   // The default icon image, if |default_icon_| exists.
   // Lazily initialized via LoadDefaultIconImage().
-  scoped_ptr<extensions::IconImage> default_icon_image_;
+  std::unique_ptr<extensions::IconImage> default_icon_image_;
 
   // The lazily-initialized image for a placeholder icon, in the event that the
   // extension doesn't have its own icon. (Mutable to allow lazy init in

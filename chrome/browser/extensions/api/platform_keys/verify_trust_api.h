@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_PLATFORM_KEYS_VERIFY_TRUST_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_PLATFORM_KEYS_VERIFY_TRUST_API_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "content/public/browser/browser_thread.h"
@@ -57,7 +57,7 @@ class VerifyTrustAPI : public BrowserContextKeyedAPI,
   // Note: It is safe to delete this object while there are still
   // outstanding operations. However, if this happens, |callback|
   // will NOT be called.
-  void Verify(scoped_ptr<Params> params,
+  void Verify(std::unique_ptr<Params> params,
               const std::string& extension_id,
               const VerifyCallback& callback);
 
@@ -95,7 +95,7 @@ class VerifyTrustAPI : public BrowserContextKeyedAPI,
 
   // Created on the UIThread but must be used and destroyed only on the
   // IOThread.
-  scoped_ptr<IOPart, content::BrowserThread::DeleteOnIOThread> io_part_;
+  std::unique_ptr<IOPart, content::BrowserThread::DeleteOnIOThread> io_part_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observer_;

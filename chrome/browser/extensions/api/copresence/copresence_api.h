@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_EXTENSIONS_API_COPRESENCE_COPRESENCE_API_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/copresence/copresence_translations.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/copresence.h"
@@ -69,7 +69,7 @@ class CopresenceService final : public BrowserContextKeyedAPI,
 
   // Manager override for testing.
   void set_manager_for_testing(
-      scoped_ptr<copresence::CopresenceManager> manager);
+      std::unique_ptr<copresence::CopresenceManager> manager);
 
   // Registers the preference for saving our device IDs.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -106,8 +106,8 @@ class CopresenceService final : public BrowserContextKeyedAPI,
   std::map<std::string, std::string> api_keys_by_app_;
   std::map<std::string, std::string> auth_tokens_by_app_;
 
-  scoped_ptr<audio_modem::WhispernetClient> whispernet_client_;
-  scoped_ptr<copresence::CopresenceManager> manager_;
+  std::unique_ptr<audio_modem::WhispernetClient> whispernet_client_;
+  std::unique_ptr<copresence::CopresenceManager> manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CopresenceService);
 };

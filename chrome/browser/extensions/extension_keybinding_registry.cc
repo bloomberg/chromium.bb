@@ -119,11 +119,11 @@ void ExtensionKeybindingRegistry::CommandExecuted(
   if (granter)
     granter->GrantIfRequested(extension);
 
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Append(new base::StringValue(command));
 
-  scoped_ptr<Event> event(new Event(events::COMMANDS_ON_COMMAND,
-                                    kOnCommandEventName, std::move(args)));
+  std::unique_ptr<Event> event(new Event(events::COMMANDS_ON_COMMAND,
+                                         kOnCommandEventName, std::move(args)));
   event->restrict_to_browser_context = browser_context_;
   event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
   EventRouter::Get(browser_context_)

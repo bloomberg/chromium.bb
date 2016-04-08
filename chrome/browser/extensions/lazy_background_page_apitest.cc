@@ -82,8 +82,8 @@ class LoadedIncognitoObserver : public ExtensionRegistryObserver {
   Profile* profile_;
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
-  scoped_ptr<LazyBackgroundObserver> original_complete_;
-  scoped_ptr<LazyBackgroundObserver> incognito_complete_;
+  std::unique_ptr<LazyBackgroundObserver> original_complete_;
+  std::unique_ptr<LazyBackgroundObserver> incognito_complete_;
 };
 
 }  // namespace

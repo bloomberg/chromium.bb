@@ -56,9 +56,9 @@ int64_t GetRefreshTypesForProcessOptionalData() {
       task_management::REFRESH_TYPE_WEBCACHE_STATS;
 }
 
-scoped_ptr<api::processes::Cache> CreateCacheData(
+std::unique_ptr<api::processes::Cache> CreateCacheData(
     const blink::WebCache::ResourceTypeStat& stat) {
-  scoped_ptr<api::processes::Cache> cache(new api::processes::Cache());
+  std::unique_ptr<api::processes::Cache> cache(new api::processes::Cache());
   cache->size = static_cast<double>(stat.size);
   cache->live_size = static_cast<double>(stat.liveSize);
   return cache;
@@ -325,10 +325,10 @@ void ProcessesEventRouter::OnTaskUnresponsive(task_management::TaskId id) {
 void ProcessesEventRouter::DispatchEvent(
     events::HistogramValue histogram_value,
     const std::string& event_name,
-    scoped_ptr<base::ListValue> event_args) const {
+    std::unique_ptr<base::ListValue> event_args) const {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (event_router) {
-    scoped_ptr<Event> event(
+    std::unique_ptr<Event> event(
         new Event(histogram_value, event_name, std::move(event_args)));
     event_router->BroadcastEvent(std::move(event));
   }
@@ -440,7 +440,7 @@ ProcessesEventRouter* ProcessesAPI::processes_event_router() {
 
 ExtensionFunction::ResponseAction ProcessesGetProcessIdForTabFunction::Run() {
   // For this function, the task manager doesn't even need to be running.
-  scoped_ptr<api::processes::GetProcessIdForTab::Params> params(
+  std::unique_ptr<api::processes::GetProcessIdForTab::Params> params(
       api::processes::GetProcessIdForTab::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -472,7 +472,7 @@ ExtensionFunction::ResponseAction ProcessesTerminateFunction::Run() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // For this function, the task manager doesn't even need to be running.
-  scoped_ptr<api::processes::Terminate::Params> params(
+  std::unique_ptr<api::processes::Terminate::Params> params(
       api::processes::Terminate::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -564,7 +564,7 @@ ProcessesGetProcessInfoFunction::ProcessesGetProcessInfoFunction()
 }
 
 ExtensionFunction::ResponseAction ProcessesGetProcessInfoFunction::Run() {
-  scoped_ptr<api::processes::GetProcessInfo::Params> params(
+  std::unique_ptr<api::processes::GetProcessInfo::Params> params(
       api::processes::GetProcessInfo::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   if (params->process_ids.as_integer)

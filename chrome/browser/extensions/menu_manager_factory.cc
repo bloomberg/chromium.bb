@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/menu_manager_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -26,9 +27,10 @@ MenuManagerFactory* MenuManagerFactory::GetInstance() {
 }
 
 // static
-scoped_ptr<KeyedService> MenuManagerFactory::BuildServiceInstanceForTesting(
+std::unique_ptr<KeyedService>
+MenuManagerFactory::BuildServiceInstanceForTesting(
     content::BrowserContext* context) {
-  return make_scoped_ptr(GetInstance()->BuildServiceInstanceFor(context));
+  return base::WrapUnique(GetInstance()->BuildServiceInstanceFor(context));
 }
 
 MenuManagerFactory::MenuManagerFactory()

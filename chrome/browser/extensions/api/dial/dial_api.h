@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DIAL_DIAL_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DIAL_DIAL_API_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/dial/dial_device_data.h"
 #include "chrome/browser/extensions/api/dial/dial_registry.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
@@ -62,7 +63,7 @@ class DialAPI : public RefcountedKeyedService,
   Profile* profile_;
 
   // Created lazily on first access on the IO thread.
-  scoped_ptr<DialRegistry> dial_registry_;
+  std::unique_ptr<DialRegistry> dial_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(DialAPI);
 };

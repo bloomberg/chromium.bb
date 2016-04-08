@@ -91,14 +91,15 @@ class ManagedValueStoreCache::ExtensionTracker
   void OnExtensionsReady();
 
   // Starts a schema load for all extensions that use managed storage.
-  void LoadSchemas(scoped_ptr<ExtensionSet> added);
+  void LoadSchemas(std::unique_ptr<ExtensionSet> added);
 
   bool UsesManagedStorage(const Extension* extension) const;
 
   // Loads the schemas of the |extensions| and passes a ComponentMap to
   // Register().
-  static void LoadSchemasOnBlockingPool(scoped_ptr<ExtensionSet> extensions,
-                                        base::WeakPtr<ExtensionTracker> self);
+  static void LoadSchemasOnBlockingPool(
+      std::unique_ptr<ExtensionSet> extensions,
+      base::WeakPtr<ExtensionTracker> self);
   void Register(const policy::ComponentMap* components);
 
   Profile* profile_;
@@ -135,7 +136,7 @@ void ManagedValueStoreCache::ExtensionTracker::OnExtensionWillBeInstalled(
   // most once.
   if (!ExtensionSystem::Get(profile_)->ready().is_signaled())
     return;
-  scoped_ptr<ExtensionSet> added(new ExtensionSet);
+  std::unique_ptr<ExtensionSet> added(new ExtensionSet);
   added->Insert(extension);
   LoadSchemas(std::move(added));
 }
@@ -159,7 +160,7 @@ void ManagedValueStoreCache::ExtensionTracker::OnExtensionsReady() {
 }
 
 void ManagedValueStoreCache::ExtensionTracker::LoadSchemas(
-    scoped_ptr<ExtensionSet> added) {
+    std::unique_ptr<ExtensionSet> added) {
   // Filter out extensions that don't use managed storage.
   ExtensionSet::const_iterator it = added->begin();
   while (it != added->end()) {
@@ -190,10 +191,10 @@ bool ManagedValueStoreCache::ExtensionTracker::UsesManagedStorage(
 
 // static
 void ManagedValueStoreCache::ExtensionTracker::LoadSchemasOnBlockingPool(
-    scoped_ptr<ExtensionSet> extensions,
+    std::unique_ptr<ExtensionSet> extensions,
     base::WeakPtr<ExtensionTracker> self) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-  scoped_ptr<policy::ComponentMap> components(new policy::ComponentMap);
+  std::unique_ptr<policy::ComponentMap> components(new policy::ComponentMap);
 
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
@@ -339,7 +340,7 @@ void ManagedValueStoreCache::OnPolicyUpdated(const policy::PolicyNamespace& ns,
 
 void ManagedValueStoreCache::UpdatePolicyOnFILE(
     const std::string& extension_id,
-    scoped_ptr<policy::PolicyMap> current_policy) {
+    std::unique_ptr<policy::PolicyMap> current_policy) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   if (!HasStore(extension_id) && current_policy->empty()) {

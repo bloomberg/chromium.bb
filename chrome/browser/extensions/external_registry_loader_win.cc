@@ -61,10 +61,10 @@ void ExternalRegistryLoader::StartLoading() {
       base::Bind(&ExternalRegistryLoader::LoadOnFileThread, this));
 }
 
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 ExternalRegistryLoader::LoadPrefsOnFileThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  scoped_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
 
   // A map of IDs, to weed out duplicates between HKCU and HKLM.
   std::set<base::string16> keys;
@@ -187,7 +187,8 @@ ExternalRegistryLoader::LoadPrefsOnFileThread() {
 
 void ExternalRegistryLoader::LoadOnFileThread() {
   base::TimeTicks start_time = base::TimeTicks::Now();
-  scoped_ptr<base::DictionaryValue> initial_prefs = LoadPrefsOnFileThread();
+  std::unique_ptr<base::DictionaryValue> initial_prefs =
+      LoadPrefsOnFileThread();
   prefs_.reset(initial_prefs.release());
   LOCAL_HISTOGRAM_TIMES("Extensions.ExternalRegistryLoaderWin",
                         base::TimeTicks::Now() - start_time);
@@ -237,7 +238,7 @@ void ExternalRegistryLoader::OnRegistryKeyChanged(base::win::RegKey* key) {
 void ExternalRegistryLoader::UpdatePrefsOnFileThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::TimeTicks start_time = base::TimeTicks::Now();
-  scoped_ptr<base::DictionaryValue> prefs = LoadPrefsOnFileThread();
+  std::unique_ptr<base::DictionaryValue> prefs = LoadPrefsOnFileThread();
   LOCAL_HISTOGRAM_TIMES("Extensions.ExternalRegistryLoaderWinUpdate",
                         base::TimeTicks::Now() - start_time);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,

@@ -71,8 +71,8 @@ class PermissionsRequestFunction : public ChromeAsyncExtensionFunction {
  private:
   void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
 
-  scoped_ptr<ExtensionInstallPrompt> install_ui_;
-  scoped_ptr<const PermissionSet> requested_permissions_;
+  std::unique_ptr<ExtensionInstallPrompt> install_ui_;
+  std::unique_ptr<const PermissionSet> requested_permissions_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionsRequestFunction);
 };

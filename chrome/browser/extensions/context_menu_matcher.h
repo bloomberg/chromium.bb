@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "ui/base/models/simple_menu_model.h"
 
@@ -107,7 +107,7 @@ class ContextMenuMatcher {
   std::map<int, extensions::MenuItem::Id> extension_item_map_;
 
   // Keep track of and clean up menu models for submenus.
-  std::vector<scoped_ptr<ui::SimpleMenuModel>> extension_menu_models_;
+  std::vector<std::unique_ptr<ui::SimpleMenuModel>> extension_menu_models_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuMatcher);
 };

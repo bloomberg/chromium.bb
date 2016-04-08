@@ -29,11 +29,11 @@ namespace {
 const char kTestRequestParam[] = "extension-updater-test-request";
 }  // namespace
 
-scoped_ptr<ExtensionDownloader>
+std::unique_ptr<ExtensionDownloader>
 ChromeExtensionDownloaderFactory::CreateForRequestContext(
     net::URLRequestContextGetter* request_context,
     ExtensionDownloaderDelegate* delegate) {
-  scoped_ptr<ExtensionDownloader> downloader(
+  std::unique_ptr<ExtensionDownloader> downloader(
       new ExtensionDownloader(delegate, request_context));
 #if defined(GOOGLE_CHROME_BUILD)
   std::string brand;
@@ -55,15 +55,16 @@ ChromeExtensionDownloaderFactory::CreateForRequestContext(
   return downloader;
 }
 
-scoped_ptr<ExtensionDownloader>
+std::unique_ptr<ExtensionDownloader>
 ChromeExtensionDownloaderFactory::CreateForProfile(
     Profile* profile,
     ExtensionDownloaderDelegate* delegate) {
-  scoped_ptr<IdentityProvider> identity_provider(new ProfileIdentityProvider(
-      SigninManagerFactory::GetForProfile(profile),
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(profile)));
-  scoped_ptr<ExtensionDownloader> downloader =
+  std::unique_ptr<IdentityProvider> identity_provider(
+      new ProfileIdentityProvider(
+          SigninManagerFactory::GetForProfile(profile),
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+          LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(profile)));
+  std::unique_ptr<ExtensionDownloader> downloader =
       CreateForRequestContext(profile->GetRequestContext(), delegate);
   downloader->SetWebstoreIdentityProvider(std::move(identity_provider));
   return downloader;

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/webstore_install_with_prompt.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
@@ -54,17 +55,18 @@ const GURL& WebstoreInstallWithPrompt::GetRequestorURL() const {
   return dummy_requestor_url_;
 }
 
-scoped_ptr<ExtensionInstallPrompt::Prompt>
+std::unique_ptr<ExtensionInstallPrompt::Prompt>
 WebstoreInstallWithPrompt::CreateInstallPrompt() const {
-  return make_scoped_ptr(new ExtensionInstallPrompt::Prompt(
+  return base::WrapUnique(new ExtensionInstallPrompt::Prompt(
       ExtensionInstallPrompt::INSTALL_PROMPT));
 }
 
-scoped_ptr<ExtensionInstallPrompt>
+std::unique_ptr<ExtensionInstallPrompt>
 WebstoreInstallWithPrompt::CreateInstallUI() {
   // Create an ExtensionInstallPrompt. If the parent window is NULL, the dialog
   // will be placed in the middle of the screen.
-  return make_scoped_ptr(new ExtensionInstallPrompt(profile(), parent_window_));
+  return base::WrapUnique(
+      new ExtensionInstallPrompt(profile(), parent_window_));
 }
 
 bool WebstoreInstallWithPrompt::ShouldShowPostInstallUI() const {

@@ -23,7 +23,7 @@ namespace extensions {
 class Extension;
 }
 
-// TODO(ckehoe): Accept args as scoped_ptr<base::Value>,
+// TODO(ckehoe): Accept args as std::unique_ptr<base::Value>,
 // and migrate existing users to the new API.
 // This file is DEPRECATED. New tests should use the versions in
 // extensions/browser/api_test_utils.h.
@@ -88,7 +88,7 @@ bool RunFunction(UIThreadExtensionFunction* function,
                  Browser* browser,
                  RunFunctionFlags flags);
 bool RunFunction(UIThreadExtensionFunction* function,
-                 scoped_ptr<base::ListValue> args,
+                 std::unique_ptr<base::ListValue> args,
                  Browser* browser,
                  RunFunctionFlags flags);
 

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
@@ -66,8 +67,8 @@ class MenuBuilder {
         cur_id_(0) {}
   ~MenuBuilder() {}
 
-  scoped_ptr<ExtensionContextMenuModel> BuildMenu() {
-    return make_scoped_ptr(new ExtensionContextMenuModel(
+  std::unique_ptr<ExtensionContextMenuModel> BuildMenu() {
+    return base::WrapUnique(new ExtensionContextMenuModel(
         extension_.get(), browser_, ExtensionContextMenuModel::VISIBLE,
         nullptr));
   }
@@ -134,8 +135,8 @@ class ExtensionContextMenuModelTest : public ExtensionServiceTestBase {
   Browser* GetBrowser();
 
  private:
-  scoped_ptr<TestBrowserWindow> test_window_;
-  scoped_ptr<Browser> browser_;
+  std::unique_ptr<TestBrowserWindow> test_window_;
+  std::unique_ptr<Browser> browser_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionContextMenuModelTest);
 };
@@ -227,7 +228,7 @@ TEST_F(ExtensionContextMenuModelTest, ComponentExtensionContextMenu) {
   InitializeEmptyExtensionService();
 
   std::string name("component");
-  scoped_ptr<base::DictionaryValue> manifest =
+  std::unique_ptr<base::DictionaryValue> manifest =
       DictionaryBuilder()
           .Set("name", name)
           .Set("version", "1")
@@ -238,7 +239,7 @@ TEST_F(ExtensionContextMenuModelTest, ComponentExtensionContextMenu) {
   {
     scoped_refptr<const Extension> extension =
         ExtensionBuilder()
-            .SetManifest(make_scoped_ptr(manifest->DeepCopy()))
+            .SetManifest(base::WrapUnique(manifest->DeepCopy()))
             .SetID(crx_file::id_util::GenerateId("component"))
             .SetLocation(Manifest::COMPONENT)
             .Build();
@@ -324,7 +325,7 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionItemTest) {
 // context menu without the toolbar redesign.
 TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHideLegacy) {
   // Start with the toolbar redesign disabled.
-  scoped_ptr<FeatureSwitch::ScopedOverride> toolbar_redesign_override(
+  std::unique_ptr<FeatureSwitch::ScopedOverride> toolbar_redesign_override(
       new FeatureSwitch::ScopedOverride(
           FeatureSwitch::extension_action_redesign(), false));
 
@@ -391,7 +392,7 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHideLegacy) {
 // context menu with the toolbar redesign.
 TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHideRedesign) {
   // Start with the toolbar redesign disabled.
-  scoped_ptr<FeatureSwitch::ScopedOverride> toolbar_redesign_override(
+  std::unique_ptr<FeatureSwitch::ScopedOverride> toolbar_redesign_override(
       new FeatureSwitch::ScopedOverride(
           FeatureSwitch::extension_action_redesign(), true));
 
@@ -489,7 +490,7 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextUninstall) {
 
 TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   // This test relies on the click-to-script feature.
-  scoped_ptr<FeatureSwitch::ScopedOverride> enable_scripts_require_action(
+  std::unique_ptr<FeatureSwitch::ScopedOverride> enable_scripts_require_action(
       new FeatureSwitch::ScopedOverride(FeatureSwitch::scripts_require_action(),
                                         true));
   InitializeEmptyExtensionService();

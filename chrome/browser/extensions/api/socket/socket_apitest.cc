@@ -55,7 +55,7 @@ class SocketApiTest : public ExtensionApiTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPExtension) {
-  scoped_ptr<net::SpawnedTestServer> test_server(
+  std::unique_ptr<net::SpawnedTestServer> test_server(
       new net::SpawnedTestServer(
           net::SpawnedTestServer::TYPE_UDP_ECHO,
           net::SpawnedTestServer::kLocalhost,
@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPExtension) {
 }
 
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPExtension) {
-  scoped_ptr<net::SpawnedTestServer> test_server(
+  std::unique_ptr<net::SpawnedTestServer> test_server(
       new net::SpawnedTestServer(
           net::SpawnedTestServer::TYPE_TCP_ECHO,
           net::SpawnedTestServer::kLocalhost,

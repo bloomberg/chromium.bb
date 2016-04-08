@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_INSTALL_VERIFIER_H_
 #define CHROME_BROWSER_EXTENSIONS_INSTALL_VERIFIER_H_
 
+#include <memory>
 #include <queue>
 #include <set>
 #include <string>
@@ -12,7 +13,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/management_policy.h"
@@ -152,7 +152,7 @@ class InstallVerifier : public KeyedService,
   void SaveToPrefs();
 
   // Called with the result of a signature request, or NULL on failure.
-  void SignatureCallback(scoped_ptr<InstallSignature> signature);
+  void SignatureCallback(std::unique_ptr<InstallSignature> signature);
 
   ExtensionPrefs* prefs_;
 
@@ -164,10 +164,10 @@ class InstallVerifier : public KeyedService,
 
   // This is the most up-to-date signature, read out of |prefs_| during
   // initialization and updated anytime we get new id's added.
-  scoped_ptr<InstallSignature> signature_;
+  std::unique_ptr<InstallSignature> signature_;
 
   // The current InstallSigner, if we have a signature request running.
-  scoped_ptr<InstallSigner> signer_;
+  std::unique_ptr<InstallSigner> signer_;
 
   // A queue of operations to apply to the current set of allowed ids.
   std::queue<linked_ptr<PendingOperation> > operation_queue_;

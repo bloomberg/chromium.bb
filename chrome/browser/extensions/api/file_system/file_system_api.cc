@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -213,14 +214,15 @@ const int kGraylistedPaths[] = {
 #endif
 };
 
-typedef base::Callback<void(scoped_ptr<base::File::Info>)> FileInfoOptCallback;
+typedef base::Callback<void(std::unique_ptr<base::File::Info>)>
+    FileInfoOptCallback;
 
 // Passes optional file info to the UI thread depending on |result| and |info|.
 void PassFileInfoToUIThread(const FileInfoOptCallback& callback,
                             base::File::Error result,
                             const base::File::Info& info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  scoped_ptr<base::File::Info> file_info(
+  std::unique_ptr<base::File::Info> file_info(
       result == base::File::FILE_OK ? new base::File::Info(info) : NULL);
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
@@ -316,7 +318,7 @@ void DispatchVolumeListChangeEvent(Profile* profile) {
       continue;
     event_router->DispatchEventToExtension(
         extension->id(),
-        make_scoped_ptr(new Event(
+        base::WrapUnique(new Event(
             events::FILE_SYSTEM_ON_VOLUME_LIST_CHANGED,
             api::file_system::OnVolumeListChanged::kEventName,
             api::file_system::OnVolumeListChanged::Create(event_args))));
@@ -1044,7 +1046,8 @@ void FileSystemChooseEntryFunction::SetInitialPathAndShowPicker(
 }
 
 bool FileSystemChooseEntryFunction::RunAsync() {
-  scoped_ptr<ChooseEntry::Params> params(ChooseEntry::Params::Create(*args_));
+  std::unique_ptr<ChooseEntry::Params> params(
+      ChooseEntry::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   base::FilePath suggested_name;
@@ -1182,7 +1185,7 @@ bool FileSystemRetainEntryFunction::RunAsync() {
 void FileSystemRetainEntryFunction::RetainFileEntry(
     const std::string& entry_id,
     const base::FilePath& path,
-    scoped_ptr<base::File::Info> file_info) {
+    std::unique_ptr<base::File::Info> file_info) {
   if (!file_info) {
     SendResponse(false);
     return;
@@ -1251,7 +1254,7 @@ bool FileSystemGetObservedEntriesFunction::RunSync() {
 #if !defined(OS_CHROMEOS)
 ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
   using api::file_system::RequestFileSystem::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   NOTIMPLEMENTED();
@@ -1273,7 +1276,7 @@ FileSystemRequestFileSystemFunction::~FileSystemRequestFileSystemFunction() {
 
 ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
   using api::file_system::RequestFileSystem::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // Only kiosk apps in kiosk sessions can use this API.

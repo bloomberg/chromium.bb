@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_INLINE_INSTALL_PRIVATE_INLINE_INSTALL_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_INLINE_INSTALL_PRIVATE_INLINE_INSTALL_PRIVATE_API_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "extensions/browser/extension_function.h"
 

@@ -171,7 +171,7 @@ AutofillPrivateSaveAddressFunction::AutofillPrivateSaveAddressFunction()
 AutofillPrivateSaveAddressFunction::~AutofillPrivateSaveAddressFunction() {}
 
 ExtensionFunction::ResponseAction AutofillPrivateSaveAddressFunction::Run() {
-  scoped_ptr<api::autofill_private::SaveAddress::Params> parameters =
+  std::unique_ptr<api::autofill_private::SaveAddress::Params> parameters =
       api::autofill_private::SaveAddress::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -285,8 +285,9 @@ AutofillPrivateGetAddressComponentsFunction::
 
 ExtensionFunction::ResponseAction
     AutofillPrivateGetAddressComponentsFunction::Run() {
-  scoped_ptr<api::autofill_private::GetAddressComponents::Params> parameters =
-      api::autofill_private::GetAddressComponents::Params::Create(*args_);
+  std::unique_ptr<api::autofill_private::GetAddressComponents::Params>
+      parameters =
+          api::autofill_private::GetAddressComponents::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
   autofill_private::AddressComponents components;
@@ -308,7 +309,7 @@ AutofillPrivateSaveCreditCardFunction::
     ~AutofillPrivateSaveCreditCardFunction() {}
 
 ExtensionFunction::ResponseAction AutofillPrivateSaveCreditCardFunction::Run() {
-  scoped_ptr<api::autofill_private::SaveCreditCard::Params> parameters =
+  std::unique_ptr<api::autofill_private::SaveCreditCard::Params> parameters =
       api::autofill_private::SaveCreditCard::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -367,7 +368,7 @@ AutofillPrivateRemoveEntryFunction::AutofillPrivateRemoveEntryFunction()
 AutofillPrivateRemoveEntryFunction::~AutofillPrivateRemoveEntryFunction() {}
 
 ExtensionFunction::ResponseAction AutofillPrivateRemoveEntryFunction::Run() {
-  scoped_ptr<api::autofill_private::RemoveEntry::Params> parameters =
+  std::unique_ptr<api::autofill_private::RemoveEntry::Params> parameters =
       api::autofill_private::RemoveEntry::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -392,14 +393,15 @@ AutofillPrivateValidatePhoneNumbersFunction::
 
 ExtensionFunction::ResponseAction
     AutofillPrivateValidatePhoneNumbersFunction::Run() {
-  scoped_ptr<api::autofill_private::ValidatePhoneNumbers::Params> parameters =
-      api::autofill_private::ValidatePhoneNumbers::Params::Create(*args_);
+  std::unique_ptr<api::autofill_private::ValidatePhoneNumbers::Params>
+      parameters =
+          api::autofill_private::ValidatePhoneNumbers::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
   api::autofill_private::ValidatePhoneParams* params = &parameters->params;
 
   // Extract the phone numbers into a ListValue.
-  scoped_ptr<base::ListValue> phoneNumbers(new base::ListValue);
+  std::unique_ptr<base::ListValue> phoneNumbers(new base::ListValue);
   phoneNumbers->AppendStrings(params->phone_numbers);
 
   RemoveDuplicatePhoneNumberAtIndex(
@@ -418,7 +420,7 @@ AutofillPrivateMaskCreditCardFunction::
     ~AutofillPrivateMaskCreditCardFunction() {}
 
 ExtensionFunction::ResponseAction AutofillPrivateMaskCreditCardFunction::Run() {
-  scoped_ptr<api::autofill_private::MaskCreditCard::Params> parameters =
+  std::unique_ptr<api::autofill_private::MaskCreditCard::Params> parameters =
       api::autofill_private::MaskCreditCard::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 

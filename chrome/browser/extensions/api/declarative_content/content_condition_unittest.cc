@@ -35,12 +35,12 @@ class TestPredicateFactoryGeneratingError : public ContentPredicateFactory {
       : error_(error) {
   }
 
-  scoped_ptr<const ContentPredicate> CreatePredicate(
+  std::unique_ptr<const ContentPredicate> CreatePredicate(
       const Extension* extension,
       const base::Value& value,
       std::string* error) override {
     *error = error_;
-    return scoped_ptr<const ContentPredicate>();
+    return std::unique_ptr<const ContentPredicate>();
   }
 
  private:
@@ -53,11 +53,11 @@ class TestPredicateFactoryGeneratingPredicate : public ContentPredicateFactory {
  public:
   TestPredicateFactoryGeneratingPredicate() {}
 
-  scoped_ptr<const ContentPredicate> CreatePredicate(
+  std::unique_ptr<const ContentPredicate> CreatePredicate(
       const Extension* extension,
       const base::Value& value,
       std::string* error) override {
-    scoped_ptr<const ContentPredicate> predicate(new TestPredicate);
+    std::unique_ptr<const ContentPredicate> predicate(new TestPredicate);
     created_predicates_.push_back(predicate.get());
     return predicate;
   }
@@ -79,14 +79,13 @@ using testing::UnorderedElementsAre;
 
 TEST(DeclarativeContentConditionTest, UnknownPredicateName) {
   std::string error;
-  scoped_ptr<ContentCondition> condition = CreateContentCondition(
-      nullptr,
-      std::map<std::string, ContentPredicateFactory*>(),
+  std::unique_ptr<ContentCondition> condition = CreateContentCondition(
+      nullptr, std::map<std::string, ContentPredicateFactory*>(),
       *base::test::ParseJson(
-           "{\n"
-           "  \"invalid\": \"foobar\",\n"
-           "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
-           "}"),
+          "{\n"
+          "  \"invalid\": \"foobar\",\n"
+          "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
+          "}"),
       &error);
   EXPECT_THAT(error, HasSubstr("Unknown condition attribute"));
   EXPECT_FALSE(condition);
@@ -98,14 +97,13 @@ TEST(DeclarativeContentConditionTest,
   std::map<std::string, ContentPredicateFactory*> predicate_factories;
   predicate_factories["test_predicate"] = &factory;
   std::string error;
-  scoped_ptr<ContentCondition> condition = CreateContentCondition(
-      nullptr,
-      predicate_factories,
+  std::unique_ptr<ContentCondition> condition = CreateContentCondition(
+      nullptr, predicate_factories,
       *base::test::ParseJson(
-           "{\n"
-           "  \"test_predicate\": \"\",\n"
-           "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
-           "}"),
+          "{\n"
+          "  \"test_predicate\": \"\",\n"
+          "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
+          "}"),
       &error);
   EXPECT_EQ("error message", error);
   EXPECT_FALSE(condition);
@@ -117,15 +115,14 @@ TEST(DeclarativeContentConditionTest, AllSpecifiedPredicatesCreated) {
   predicate_factories["test_predicate1"] = &factory1;
   predicate_factories["test_predicate2"] = &factory2;
   std::string error;
-  scoped_ptr<ContentCondition> condition = CreateContentCondition(
-      nullptr,
-      predicate_factories,
+  std::unique_ptr<ContentCondition> condition = CreateContentCondition(
+      nullptr, predicate_factories,
       *base::test::ParseJson(
-           "{\n"
-           "  \"test_predicate1\": {},\n"
-           "  \"test_predicate2\": [],\n"
-           "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
-           "}"),
+          "{\n"
+          "  \"test_predicate1\": {},\n"
+          "  \"test_predicate2\": [],\n"
+          "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
+          "}"),
       &error);
   ASSERT_TRUE(condition);
   ASSERT_EQ(1u, factory1.created_predicates().size());

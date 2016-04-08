@@ -143,7 +143,7 @@ class ExtensionGarbageCollectorChromeOSUnitTest
   }
 
  private:
-  scoped_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
   base::ScopedTempDir cache_dir_;
 };
 

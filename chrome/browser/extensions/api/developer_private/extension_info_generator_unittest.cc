@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/api/developer_private/extension_info_generator.h"
+
 #include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/api/developer_private/extension_info_generator.h"
 #include "chrome/browser/extensions/api/developer_private/inspectable_views_finder.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -38,9 +40,9 @@ namespace {
 
 const char kAllHostsPermission[] = "*://*/*";
 
-scoped_ptr<base::DictionaryValue> DeserializeJSONTestData(
+std::unique_ptr<base::DictionaryValue> DeserializeJSONTestData(
     const base::FilePath& path,
-    std::string *error) {
+    std::string* error) {
   JSONFileValueDeserializer deserializer(path);
   return base::DictionaryValue::From(deserializer.Deserialize(nullptr, error));
 }
@@ -58,7 +60,7 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
     InitializeEmptyExtensionService();
   }
 
-  void OnInfosGenerated(scoped_ptr<developer::ExtensionInfo>* info_out,
+  void OnInfosGenerated(std::unique_ptr<developer::ExtensionInfo>* info_out,
                         ExtensionInfoGenerator::ExtensionInfoList list) {
     EXPECT_EQ(1u, list.size());
     if (!list.empty())
@@ -66,12 +68,12 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
     base::ResetAndReturn(&quit_closure_).Run();
   }
 
-  scoped_ptr<developer::ExtensionInfo> GenerateExtensionInfo(
+  std::unique_ptr<developer::ExtensionInfo> GenerateExtensionInfo(
       const std::string& extension_id) {
-    scoped_ptr<developer::ExtensionInfo> info;
+    std::unique_ptr<developer::ExtensionInfo> info;
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
-    scoped_ptr<ExtensionInfoGenerator> generator(
+    std::unique_ptr<ExtensionInfoGenerator> generator(
         new ExtensionInfoGenerator(browser_context()));
     generator->CreateExtensionInfo(
         extension_id,
@@ -84,7 +86,7 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
 
   const scoped_refptr<const Extension> CreateExtension(
       const std::string& name,
-      scoped_ptr<base::ListValue> permissions) {
+      std::unique_ptr<base::ListValue> permissions) {
     const std::string kId = crx_file::id_util::GenerateId(name);
     scoped_refptr<const Extension> extension =
         ExtensionBuilder()
@@ -104,13 +106,13 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
     return extension;
   }
 
-  scoped_ptr<developer::ExtensionInfo> CreateExtensionInfoFromPath(
+  std::unique_ptr<developer::ExtensionInfo> CreateExtensionInfoFromPath(
       const base::FilePath& extension_path,
       Manifest::Location location) {
     std::string error;
 
     base::FilePath manifest_path = extension_path.Append(kManifestFilename);
-    scoped_ptr<base::DictionaryValue> extension_data =
+    std::unique_ptr<base::DictionaryValue> extension_data =
         DeserializeJSONTestData(manifest_path, &error);
     EXPECT_EQ(std::string(), error);
 
@@ -129,15 +131,15 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
       InspectableViewsFinder::ViewList views,
       const base::FilePath& expected_output_path) {
     std::string error;
-    scoped_ptr<base::DictionaryValue> expected_output_data(
+    std::unique_ptr<base::DictionaryValue> expected_output_data(
         DeserializeJSONTestData(expected_output_path, &error));
     EXPECT_EQ(std::string(), error);
 
     // Produce test output.
-    scoped_ptr<developer::ExtensionInfo> info =
+    std::unique_ptr<developer::ExtensionInfo> info =
         CreateExtensionInfoFromPath(extension_path, Manifest::INVALID_LOCATION);
     info->views = std::move(views);
-    scoped_ptr<base::DictionaryValue> actual_output_data = info->ToValue();
+    std::unique_ptr<base::DictionaryValue> actual_output_data = info->ToValue();
     ASSERT_TRUE(actual_output_data);
 
     // Compare the outputs.
@@ -181,7 +183,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   const char kName[] = "extension name";
   const char kVersion[] = "1.0.0.1";
   std::string id = crx_file::id_util::GenerateId("alpha");
-  scoped_ptr<base::DictionaryValue> manifest =
+  std::unique_ptr<base::DictionaryValue> manifest =
       DictionaryBuilder()
           .Set("name", kName)
           .Set("version", kVersion)
@@ -189,7 +191,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
           .Set("description", "an extension")
           .Set("permissions", ListBuilder().Append("file://*/*").Build())
           .Build();
-  scoped_ptr<base::DictionaryValue> manifest_copy(manifest->DeepCopy());
+  std::unique_ptr<base::DictionaryValue> manifest_copy(manifest->DeepCopy());
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(std::move(manifest))
@@ -199,44 +201,26 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
           .Build();
   service()->AddExtension(extension.get());
   ErrorConsole* error_console = ErrorConsole::Get(profile());
-  error_console->ReportError(
-      make_scoped_ptr(new RuntimeError(
-          extension->id(),
-          false,
-          base::UTF8ToUTF16("source"),
-          base::UTF8ToUTF16("message"),
-          StackTrace(1, StackFrame(1,
-                                   1,
-                                   base::UTF8ToUTF16("source"),
-                                   base::UTF8ToUTF16("function"))),
-          GURL("url"),
-          logging::LOG_ERROR,
-          1,
-          1)));
-  error_console->ReportError(
-      make_scoped_ptr(new ManifestError(extension->id(),
-                                        base::UTF8ToUTF16("message"),
-                                        base::UTF8ToUTF16("key"),
-                                        base::string16())));
-  error_console->ReportError(
-      make_scoped_ptr(new RuntimeError(
-          extension->id(),
-          false,
-          base::UTF8ToUTF16("source"),
-          base::UTF8ToUTF16("message"),
-          StackTrace(1, StackFrame(1,
-                                   1,
-                                   base::UTF8ToUTF16("source"),
-                                   base::UTF8ToUTF16("function"))),
-          GURL("url"),
-          logging::LOG_VERBOSE,
-          1,
-          1)));
+  error_console->ReportError(base::WrapUnique(new RuntimeError(
+      extension->id(), false, base::UTF8ToUTF16("source"),
+      base::UTF8ToUTF16("message"),
+      StackTrace(1, StackFrame(1, 1, base::UTF8ToUTF16("source"),
+                               base::UTF8ToUTF16("function"))),
+      GURL("url"), logging::LOG_ERROR, 1, 1)));
+  error_console->ReportError(base::WrapUnique(
+      new ManifestError(extension->id(), base::UTF8ToUTF16("message"),
+                        base::UTF8ToUTF16("key"), base::string16())));
+  error_console->ReportError(base::WrapUnique(new RuntimeError(
+      extension->id(), false, base::UTF8ToUTF16("source"),
+      base::UTF8ToUTF16("message"),
+      StackTrace(1, StackFrame(1, 1, base::UTF8ToUTF16("source"),
+                               base::UTF8ToUTF16("function"))),
+      GURL("url"), logging::LOG_VERBOSE, 1, 1)));
 
   // It's not feasible to validate every field here, because that would be
   // a duplication of the logic in the method itself. Instead, test a handful
   // of fields for sanity.
-  scoped_ptr<api::developer_private::ExtensionInfo> info =
+  std::unique_ptr<api::developer_private::ExtensionInfo> info =
       GenerateExtensionInfo(extension->id());
   ASSERT_TRUE(info.get());
   EXPECT_EQ(kName, info->name);
@@ -351,16 +335,16 @@ TEST_F(ExtensionInfoGeneratorUnitTest, GenerateExtensionsJSONData) {
 // urls, and only when the switch is on.
 TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoRunOnAllUrls) {
   // Start with the switch enabled.
-  scoped_ptr<FeatureSwitch::ScopedOverride> enable_scripts_switch(
-      new FeatureSwitch::ScopedOverride(
-          FeatureSwitch::scripts_require_action(), true));
+  std::unique_ptr<FeatureSwitch::ScopedOverride> enable_scripts_switch(
+      new FeatureSwitch::ScopedOverride(FeatureSwitch::scripts_require_action(),
+                                        true));
   // Two extensions - one with all urls, one without.
   scoped_refptr<const Extension> all_urls_extension = CreateExtension(
       "all_urls", ListBuilder().Append(kAllHostsPermission).Build());
   scoped_refptr<const Extension> no_urls_extension =
       CreateExtension("no urls", ListBuilder().Build());
 
-  scoped_ptr<developer::ExtensionInfo> info =
+  std::unique_ptr<developer::ExtensionInfo> info =
       GenerateExtensionInfo(all_urls_extension->id());
 
   // The extension should want all urls, but not currently have it.

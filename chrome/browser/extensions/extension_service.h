@@ -642,7 +642,7 @@ class ExtensionService
   extensions::OneShotEvent* const ready_;
 
   // Our extension updater, if updates are turned on.
-  scoped_ptr<extensions::ExtensionUpdater> updater_;
+  std::unique_ptr<extensions::ExtensionUpdater> updater_;
 
   // Map unloaded extensions' ids to their paths. When a temporarily loaded
   // extension is unloaded, we lose the information about it and don't have
@@ -659,7 +659,7 @@ class ExtensionService
   content::NotificationRegistrar registrar_;
 
   // Keeps track of loading and unloading component extensions.
-  scoped_ptr<extensions::ComponentLoader> component_loader_;
+  std::unique_ptr<extensions::ComponentLoader> component_loader_;
 
   // A collection of external extension providers.  Each provider reads
   // a source of external extension information.  Examples include the
@@ -707,25 +707,25 @@ class ExtensionService
 
   // The controller for the UI that alerts the user about any blacklisted
   // extensions.
-  scoped_ptr<extensions::ExtensionErrorController> error_controller_;
+  std::unique_ptr<extensions::ExtensionErrorController> error_controller_;
 
   // The manager for extensions that were externally installed that is
   // responsible for prompting the user about suspicious extensions.
-  scoped_ptr<extensions::ExternalInstallManager> external_install_manager_;
+  std::unique_ptr<extensions::ExternalInstallManager> external_install_manager_;
 
   // Sequenced task runner for extension related file operations.
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
-  scoped_ptr<extensions::ExtensionActionStorageManager>
+  std::unique_ptr<extensions::ExtensionActionStorageManager>
       extension_action_storage_manager_;
 
   // The SharedModuleService used to check for import dependencies.
-  scoped_ptr<extensions::SharedModuleService> shared_module_service_;
+  std::unique_ptr<extensions::SharedModuleService> shared_module_service_;
 
   base::ObserverList<extensions::UpdateObserver, true> update_observers_;
 
   // Migrates app data when upgrading a legacy packaged app to a platform app
-  scoped_ptr<extensions::AppDataMigrator> app_data_migrator_;
+  std::unique_ptr<extensions::AppDataMigrator> app_data_migrator_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            DestroyingProfileClearsExtensions);

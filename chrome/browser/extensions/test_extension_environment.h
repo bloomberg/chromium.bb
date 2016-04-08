@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_ENVIRONMENT_H_
 #define CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_ENVIRONMENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 
@@ -79,7 +80,7 @@ class TestExtensionEnvironment {
   scoped_refptr<Extension> MakePackagedApp(const std::string& id, bool install);
 
   // Returns a test web contents that has a tab id.
-  scoped_ptr<content::WebContents> MakeTab() const;
+  std::unique_ptr<content::WebContents> MakeTab() const;
 
   // Deletes the testing profile to test profile teardown.
   void DeleteProfile();
@@ -89,13 +90,13 @@ class TestExtensionEnvironment {
 
   void Init();
 
-  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
-  scoped_ptr<ChromeOSEnv> chromeos_env_;
+  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<ChromeOSEnv> chromeos_env_;
 
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;
 #endif
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;
 
   DISALLOW_COPY_AND_ASSIGN(TestExtensionEnvironment);

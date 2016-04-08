@@ -4,11 +4,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -160,10 +160,9 @@ class ExtensionProtocolTest : public testing::Test {
                                         false,   // incognito_enabled
                                         false);  // notifications_disabled
     }
-    scoped_ptr<net::URLRequest> request(
+    std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
-            extension.GetResourceURL(relative_path),
-            net::DEFAULT_PRIORITY,
+            extension.GetResourceURL(relative_path), net::DEFAULT_PRIORITY,
             &test_delegate_));
     StartRequest(request.get(), content::RESOURCE_TYPE_MAIN_FRAME);
     return request->status().status();
@@ -214,10 +213,9 @@ TEST_F(ExtensionProtocolTest, IncognitoRequest) {
       // It doesn't matter that the resource doesn't exist. If the resource
       // is blocked, we should see ADDRESS_UNREACHABLE. Otherwise, the request
       // should just fail because the file doesn't exist.
-      scoped_ptr<net::URLRequest> request(
+      std::unique_ptr<net::URLRequest> request(
           resource_context_.GetRequestContext()->CreateRequest(
-              extension->GetResourceURL("404.html"),
-              net::DEFAULT_PRIORITY,
+              extension->GetResourceURL("404.html"), net::DEFAULT_PRIORITY,
               &test_delegate_));
       StartRequest(request.get(), content::RESOURCE_TYPE_MAIN_FRAME);
       EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
@@ -233,10 +231,9 @@ TEST_F(ExtensionProtocolTest, IncognitoRequest) {
 
     // Now do a subframe request.
     {
-      scoped_ptr<net::URLRequest> request(
+      std::unique_ptr<net::URLRequest> request(
           resource_context_.GetRequestContext()->CreateRequest(
-              extension->GetResourceURL("404.html"),
-              net::DEFAULT_PRIORITY,
+              extension->GetResourceURL("404.html"), net::DEFAULT_PRIORITY,
               &test_delegate_));
       StartRequest(request.get(), content::RESOURCE_TYPE_SUB_FRAME);
       EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
@@ -276,11 +273,10 @@ TEST_F(ExtensionProtocolTest, ComponentResourceRequest) {
 
   // First test it with the extension enabled.
   {
-    scoped_ptr<net::URLRequest> request(
+    std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
             extension->GetResourceURL("webstore_icon_16.png"),
-            net::DEFAULT_PRIORITY,
-            &test_delegate_));
+            net::DEFAULT_PRIORITY, &test_delegate_));
     StartRequest(request.get(), content::RESOURCE_TYPE_MEDIA);
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
     CheckForContentLengthHeader(request.get());
@@ -290,11 +286,10 @@ TEST_F(ExtensionProtocolTest, ComponentResourceRequest) {
   extension_info_map_->RemoveExtension(extension->id(),
                                        UnloadedExtensionInfo::REASON_DISABLE);
   {
-    scoped_ptr<net::URLRequest> request(
+    std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
             extension->GetResourceURL("webstore_icon_16.png"),
-            net::DEFAULT_PRIORITY,
-            &test_delegate_));
+            net::DEFAULT_PRIORITY, &test_delegate_));
     StartRequest(request.get(), content::RESOURCE_TYPE_MEDIA);
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
     CheckForContentLengthHeader(request.get());
@@ -314,10 +309,9 @@ TEST_F(ExtensionProtocolTest, ResourceRequestResponseHeaders) {
                                     false);
 
   {
-    scoped_ptr<net::URLRequest> request(
+    std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
-            extension->GetResourceURL("test.dat"),
-            net::DEFAULT_PRIORITY,
+            extension->GetResourceURL("test.dat"), net::DEFAULT_PRIORITY,
             &test_delegate_));
     StartRequest(request.get(), content::RESOURCE_TYPE_MEDIA);
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
@@ -354,19 +348,17 @@ TEST_F(ExtensionProtocolTest, AllowFrameRequests) {
 
   // All MAIN_FRAME and SUB_FRAME requests should succeed.
   {
-    scoped_ptr<net::URLRequest> request(
+    std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
-            extension->GetResourceURL("test.dat"),
-            net::DEFAULT_PRIORITY,
+            extension->GetResourceURL("test.dat"), net::DEFAULT_PRIORITY,
             &test_delegate_));
     StartRequest(request.get(), content::RESOURCE_TYPE_MAIN_FRAME);
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
   }
   {
-    scoped_ptr<net::URLRequest> request(
+    std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
-            extension->GetResourceURL("test.dat"),
-            net::DEFAULT_PRIORITY,
+            extension->GetResourceURL("test.dat"), net::DEFAULT_PRIORITY,
             &test_delegate_));
     StartRequest(request.get(), content::RESOURCE_TYPE_SUB_FRAME);
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
@@ -374,10 +366,9 @@ TEST_F(ExtensionProtocolTest, AllowFrameRequests) {
 
   // And subresource types, such as media, should fail.
   {
-    scoped_ptr<net::URLRequest> request(
+    std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
-            extension->GetResourceURL("test.dat"),
-            net::DEFAULT_PRIORITY,
+            extension->GetResourceURL("test.dat"), net::DEFAULT_PRIORITY,
             &test_delegate_));
     StartRequest(request.get(), content::RESOURCE_TYPE_MEDIA);
     EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());

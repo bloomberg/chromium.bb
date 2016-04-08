@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_DECLARATIVE_CONTENT_CSS_CONDITION_TRACKER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -14,7 +15,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -44,7 +44,7 @@ class DeclarativeContentCssPredicate : public ContentPredicate {
     return css_selectors_;
   }
 
-  static scoped_ptr<DeclarativeContentCssPredicate> Create(
+  static std::unique_ptr<DeclarativeContentCssPredicate> Create(
       ContentPredicateEvaluator* evaluator,
       const base::Value& value,
       std::string* error);
@@ -74,7 +74,7 @@ class DeclarativeContentCssConditionTracker
 
   // ContentPredicateEvaluator:
   std::string GetPredicateApiAttributeName() const override;
-  scoped_ptr<const ContentPredicate> CreatePredicate(
+  std::unique_ptr<const ContentPredicate> CreatePredicate(
       const Extension* extension,
       const base::Value& value,
       std::string* error) override;

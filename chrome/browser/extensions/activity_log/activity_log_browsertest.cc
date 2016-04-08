@@ -41,7 +41,7 @@ class ActivityLogPrerenderTest : public ExtensionApiTest {
   static void Prerender_Arguments(
       const std::string& extension_id,
       uint16_t port,
-      scoped_ptr<std::vector<scoped_refptr<Action>>> i) {
+      std::unique_ptr<std::vector<scoped_refptr<Action>>> i) {
     // This is to exit RunLoop (base::MessageLoop::current()->Run()) below
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
@@ -105,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(ActivityLogPrerenderTest, TestScriptInjected) {
       port));
 
   const gfx::Size kSize(640, 480);
-  scoped_ptr<prerender::PrerenderHandle> prerender_handle(
+  std::unique_ptr<prerender::PrerenderHandle> prerender_handle(
       prerender_manager->AddPrerenderFromOmnibox(
           url,
           web_contents->GetController().GetDefaultSessionStorageNamespace(),

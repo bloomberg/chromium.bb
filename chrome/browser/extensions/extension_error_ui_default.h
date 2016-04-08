@@ -57,7 +57,7 @@ class ExtensionErrorUIDefault : public ExtensionErrorUI {
   // The browser the bubble view was shown into.
   Browser* browser_;
 
-  scoped_ptr<ExtensionGlobalError> global_error_;
+  std::unique_ptr<ExtensionGlobalError> global_error_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionErrorUIDefault);
 };

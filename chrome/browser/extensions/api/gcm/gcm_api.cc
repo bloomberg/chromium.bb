@@ -112,7 +112,7 @@ GcmRegisterFunction::GcmRegisterFunction() {}
 GcmRegisterFunction::~GcmRegisterFunction() {}
 
 bool GcmRegisterFunction::DoWork() {
-  scoped_ptr<api::gcm::Register::Params> params(
+  std::unique_ptr<api::gcm::Register::Params> params(
       api::gcm::Register::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -157,7 +157,7 @@ GcmSendFunction::GcmSendFunction() {}
 GcmSendFunction::~GcmSendFunction() {}
 
 bool GcmSendFunction::DoWork() {
-  scoped_ptr<api::gcm::Send::Params> params(
+  std::unique_ptr<api::gcm::Send::Params> params(
       api::gcm::Send::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   EXTENSION_FUNCTION_VALIDATE(
@@ -217,7 +217,7 @@ void GcmJsEventRouter::OnMessage(const std::string& app_id,
   if (!message.collapse_key.empty())
     message_arg.collapse_key.reset(new std::string(message.collapse_key));
 
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::GCM_ON_MESSAGE, api::gcm::OnMessage::kEventName,
                 api::gcm::OnMessage::Create(message_arg), profile_));
   EventRouter::Get(profile_)
@@ -225,7 +225,7 @@ void GcmJsEventRouter::OnMessage(const std::string& app_id,
 }
 
 void GcmJsEventRouter::OnMessagesDeleted(const std::string& app_id) {
-  scoped_ptr<Event> event(new Event(
+  std::unique_ptr<Event> event(new Event(
       events::GCM_ON_MESSAGES_DELETED, api::gcm::OnMessagesDeleted::kEventName,
       api::gcm::OnMessagesDeleted::Create(), profile_));
   EventRouter::Get(profile_)
@@ -240,7 +240,7 @@ void GcmJsEventRouter::OnSendError(
   error.error_message = GcmResultToError(send_error_details.result);
   error.details.additional_properties = send_error_details.additional_data;
 
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::GCM_ON_SEND_ERROR, api::gcm::OnSendError::kEventName,
                 api::gcm::OnSendError::Create(error), profile_));
   EventRouter::Get(profile_)

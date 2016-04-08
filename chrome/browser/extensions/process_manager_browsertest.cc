@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/process_manager.h"
-
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -25,6 +24,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/test/background_page_watcher.h"
 #include "net/dns/mock_host_resolver.h"
@@ -96,7 +96,7 @@ class ProcessManagerBrowserTest : public ExtensionBrowserTest {
   // page.
   const Extension* CreateExtension(const std::string& name,
                                    bool has_background_process) {
-    scoped_ptr<TestExtensionDir> dir(new TestExtensionDir());
+    std::unique_ptr<TestExtensionDir> dir(new TestExtensionDir());
 
     DictionaryBuilder manifest;
     manifest.Set("name", name)
@@ -165,7 +165,7 @@ class ProcessManagerBrowserTest : public ExtensionBrowserTest {
   }
 
  private:
-  std::vector<scoped_ptr<TestExtensionDir>> temp_dirs_;
+  std::vector<std::unique_ptr<TestExtensionDir>> temp_dirs_;
 };
 
 // Test that basic extension loading creates the appropriate ExtensionHosts

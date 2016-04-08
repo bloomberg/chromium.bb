@@ -44,14 +44,14 @@ std::string WrapForJavascriptAndExtract(const char* javascript_expression) {
       javascript_expression + ")";
 }
 
-scoped_ptr<net::test_server::HttpResponse> HandleExpectAndSetCookieRequest(
+std::unique_ptr<net::test_server::HttpResponse> HandleExpectAndSetCookieRequest(
     const net::EmbeddedTestServer* test_server,
     const net::test_server::HttpRequest& request) {
   if (!base::StartsWith(request.relative_url, "/expect-and-set-cookie?",
                         base::CompareCase::SENSITIVE))
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return std::unique_ptr<net::test_server::HttpResponse>();
 
-  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_OK);
 

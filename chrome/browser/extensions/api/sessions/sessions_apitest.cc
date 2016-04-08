@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
@@ -96,7 +98,7 @@ class ExtensionSessionsTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override;
 
  protected:
-  static scoped_ptr<KeyedService> BuildProfileSyncService(
+  static std::unique_ptr<KeyedService> BuildProfileSyncService(
       content::BrowserContext* profile);
 
   void CreateTestProfileSyncService();
@@ -127,29 +129,25 @@ void ExtensionSessionsTest::SetUpOnMainThread() {
   CreateTestExtension();
 }
 
-scoped_ptr<KeyedService> ExtensionSessionsTest::BuildProfileSyncService(
+std::unique_ptr<KeyedService> ExtensionSessionsTest::BuildProfileSyncService(
     content::BrowserContext* context) {
-  scoped_ptr<SyncApiComponentFactoryMock> factory(
+  std::unique_ptr<SyncApiComponentFactoryMock> factory(
       new SyncApiComponentFactoryMock());
 
   factory->SetLocalDeviceInfoProvider(
-      scoped_ptr<sync_driver::LocalDeviceInfoProvider>(
+      std::unique_ptr<sync_driver::LocalDeviceInfoProvider>(
           new sync_driver::LocalDeviceInfoProviderMock(
-              kSessionTags[0],
-              "machine name",
-              "Chromium 10k",
-              "Chrome 10k",
-              sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-              "device_id")));
+              kSessionTags[0], "machine name", "Chromium 10k", "Chrome 10k",
+              sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id")));
 
   Profile* profile = static_cast<Profile*>(context);
   ProfileSyncServiceMock* sync_service =
       new ProfileSyncServiceMock(CreateProfileSyncServiceParamsForTest(
-          make_scoped_ptr(new browser_sync::ChromeSyncClient(profile)),
+          base::WrapUnique(new browser_sync::ChromeSyncClient(profile)),
           profile));
   static_cast<browser_sync::ChromeSyncClient*>(sync_service->GetSyncClient())
       ->SetSyncApiComponentFactoryForTesting(std::move(factory));
-  return make_scoped_ptr(sync_service);
+  return base::WrapUnique(sync_service);
 }
 
 void ExtensionSessionsTest::CreateTestProfileSyncService() {
@@ -189,7 +187,7 @@ void ExtensionSessionsTest::CreateTestProfileSyncService() {
 }
 
 void ExtensionSessionsTest::CreateTestExtension() {
-  scoped_ptr<base::DictionaryValue> test_extension_value(
+  std::unique_ptr<base::DictionaryValue> test_extension_value(
       api_test_utils::ParseDictionary(
           "{\"name\": \"Test\", \"version\": \"1.0\", "
           "\"permissions\": [\"sessions\", \"tabs\"]}"));
@@ -230,13 +228,13 @@ void ExtensionSessionsTest::CreateSessionModels() {
     }
   }
 
-  ProfileSyncServiceFactory::GetForProfile(browser_->profile())->
-      GetSessionsSyncableService()->
-          MergeDataAndStartSyncing(syncer::SESSIONS, initial_data,
-      scoped_ptr<syncer::SyncChangeProcessor>(
-          new syncer::FakeSyncChangeProcessor()),
-      scoped_ptr<syncer::SyncErrorFactory>(
-          new syncer::SyncErrorFactoryMock()));
+  ProfileSyncServiceFactory::GetForProfile(browser_->profile())
+      ->GetSessionsSyncableService()
+      ->MergeDataAndStartSyncing(syncer::SESSIONS, initial_data,
+                                 std::unique_ptr<syncer::SyncChangeProcessor>(
+                                     new syncer::FakeSyncChangeProcessor()),
+                                 std::unique_ptr<syncer::SyncErrorFactory>(
+                                     new syncer::SyncErrorFactoryMock()));
 }
 
 testing::AssertionResult CheckSessionModels(const base::ListValue& devices,
@@ -290,31 +288,28 @@ testing::AssertionResult CheckSessionModels(const base::ListValue& devices,
 
 IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetDevices) {
   CreateSessionModels();
-  scoped_ptr<base::ListValue> result(utils::ToList(
-      utils::RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::ListValue> result(
+      utils::ToList(utils::RunFunctionAndReturnSingleResult(
           CreateFunction<SessionsGetDevicesFunction>(true).get(),
-          "[{\"maxResults\": 0}]",
-          browser_)));
+          "[{\"maxResults\": 0}]", browser_)));
   ASSERT_TRUE(result);
   EXPECT_TRUE(CheckSessionModels(*result, 0u));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetDevicesMaxResults) {
   CreateSessionModels();
-  scoped_ptr<base::ListValue> result(utils::ToList(
-      utils::RunFunctionAndReturnSingleResult(
-          CreateFunction<SessionsGetDevicesFunction>(true).get(),
-          "[]",
+  std::unique_ptr<base::ListValue> result(
+      utils::ToList(utils::RunFunctionAndReturnSingleResult(
+          CreateFunction<SessionsGetDevicesFunction>(true).get(), "[]",
           browser_)));
   ASSERT_TRUE(result);
   EXPECT_TRUE(CheckSessionModels(*result, 1u));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetDevicesListEmpty) {
-  scoped_ptr<base::ListValue> result(utils::ToList(
-      utils::RunFunctionAndReturnSingleResult(
-          CreateFunction<SessionsGetDevicesFunction>(true).get(),
-          "[]",
+  std::unique_ptr<base::ListValue> result(
+      utils::ToList(utils::RunFunctionAndReturnSingleResult(
+          CreateFunction<SessionsGetDevicesFunction>(true).get(), "[]",
           browser_)));
 
   ASSERT_TRUE(result);
@@ -327,19 +322,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest,
                        DISABLED_RestoreForeignSessionWindow) {
   CreateSessionModels();
 
-  scoped_ptr<base::DictionaryValue> restored_window_session(utils::ToDictionary(
-      utils::RunFunctionAndReturnSingleResult(
-          CreateFunction<SessionsRestoreFunction>(true).get(),
-          "[\"tag3.3\"]",
-          browser_,
-          utils::INCLUDE_INCOGNITO)));
+  std::unique_ptr<base::DictionaryValue> restored_window_session(
+      utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
+          CreateFunction<SessionsRestoreFunction>(true).get(), "[\"tag3.3\"]",
+          browser_, utils::INCLUDE_INCOGNITO)));
   ASSERT_TRUE(restored_window_session);
 
-  scoped_ptr<base::ListValue> result(utils::ToList(
-      utils::RunFunctionAndReturnSingleResult(
-          CreateFunction<WindowsGetAllFunction>(true).get(),
-          "[]",
-          browser_)));
+  std::unique_ptr<base::ListValue> result(
+      utils::ToList(utils::RunFunctionAndReturnSingleResult(
+          CreateFunction<WindowsGetAllFunction>(true).get(), "[]", browser_)));
   ASSERT_TRUE(result);
 
   base::ListValue* windows = result.get();
@@ -377,10 +368,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, RestoreInIncognito) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetRecentlyClosedIncognito) {
-  scoped_ptr<base::ListValue> result(utils::ToList(
-      utils::RunFunctionAndReturnSingleResult(
-          CreateFunction<SessionsGetRecentlyClosedFunction>(true).get(),
-          "[]",
+  std::unique_ptr<base::ListValue> result(
+      utils::ToList(utils::RunFunctionAndReturnSingleResult(
+          CreateFunction<SessionsGetRecentlyClosedFunction>(true).get(), "[]",
           CreateIncognitoBrowser())));
   ASSERT_TRUE(result);
   base::ListValue* sessions = result.get();

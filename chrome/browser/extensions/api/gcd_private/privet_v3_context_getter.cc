@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/common/chrome_content_client.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verifier.h"
@@ -30,7 +31,7 @@ class PrivetV3ContextGetter::CertVerifier : public net::CertVerifier {
              net::CRLSet* crl_set,
              net::CertVerifyResult* verify_result,
              const net::CompletionCallback& callback,
-             scoped_ptr<Request>* out_req,
+             std::unique_ptr<Request>* out_req,
              const net::BoundNetLog& net_log) override {
     verify_result->Reset();
     verify_result->verified_cert = cert;
@@ -108,7 +109,7 @@ void PrivetV3ContextGetter::InitOnNetThread() {
     builder.SetSpdyAndQuicEnabled(false, false);
     builder.DisableHttpCache();
     cert_verifier_ = new CertVerifier();
-    builder.SetCertVerifier(make_scoped_ptr(cert_verifier_));
+    builder.SetCertVerifier(base::WrapUnique(cert_verifier_));
     builder.set_user_agent(::GetUserAgent());
     context_ = builder.Build();
   }

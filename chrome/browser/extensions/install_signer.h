@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_INSTALL_SIGNER_H_
 #define CHROME_BROWSER_EXTENSIONS_INSTALL_SIGNER_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/common/extension.h"
 
 namespace base {
@@ -53,7 +53,7 @@ struct InstallSignature {
   // Helper methods for serialization to/from a base::DictionaryValue.
   void ToValue(base::DictionaryValue* value) const;
 
-  static scoped_ptr<InstallSignature> FromValue(
+  static std::unique_ptr<InstallSignature> FromValue(
       const base::DictionaryValue& value);
 };
 
@@ -61,7 +61,8 @@ struct InstallSignature {
 // that a set of ids are hosted in the webstore.
 class InstallSigner {
  public:
-  typedef base::Callback<void(scoped_ptr<InstallSignature>)> SignatureCallback;
+  typedef base::Callback<void(std::unique_ptr<InstallSignature>)>
+      SignatureCallback;
 
   // IMPORTANT NOTE: It is possible that only some, but not all, of the entries
   // in |ids| will be successfully signed by the backend. Callers should always
@@ -115,8 +116,8 @@ class InstallSigner {
 
   // These are used to make the call to a backend server for a signature.
   net::URLRequestContextGetter* context_getter_;
-  scoped_ptr<net::URLFetcher> url_fetcher_;
-  scoped_ptr<FetcherDelegate> delegate_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<FetcherDelegate> delegate_;
 
   // The time the request to the server was started.
   base::Time request_start_time_;

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_UPDATER_CHROME_EXTENSION_DOWNLOADER_FACTORY_H_
 #define CHROME_BROWSER_EXTENSIONS_UPDATER_CHROME_EXTENSION_DOWNLOADER_FACTORY_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 class Profile;
 
@@ -24,14 +24,14 @@ class ChromeExtensionDownloaderFactory {
  public:
   // Creates a downloader with the given request context. No profile identity
   // is associated with this downloader.
-  static scoped_ptr<extensions::ExtensionDownloader> CreateForRequestContext(
-      net::URLRequestContextGetter* request_context,
-      extensions::ExtensionDownloaderDelegate* delegate);
+  static std::unique_ptr<extensions::ExtensionDownloader>
+  CreateForRequestContext(net::URLRequestContextGetter* request_context,
+                          extensions::ExtensionDownloaderDelegate* delegate);
 
   // Creates a downloader for a given Profile. This downloader will be able
   // to authenticate as the signed-in user in the event that it's asked to
   // fetch a protected download.
-  static scoped_ptr<extensions::ExtensionDownloader> CreateForProfile(
+  static std::unique_ptr<extensions::ExtensionDownloader> CreateForProfile(
       Profile* profile,
       extensions::ExtensionDownloaderDelegate* delegate);
 };

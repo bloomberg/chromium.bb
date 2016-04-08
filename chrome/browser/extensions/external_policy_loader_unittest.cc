@@ -85,7 +85,7 @@ class MockExternalPolicyProviderVisitor
 
     // Provider returns the correct location when asked.
     Manifest::Location location1;
-    scoped_ptr<Version> version1;
+    std::unique_ptr<Version> version1;
     provider_->GetExtensionDetails(info.extension_id, &location1, &version1);
     EXPECT_EQ(Manifest::EXTERNAL_POLICY_DOWNLOAD, location1);
     EXPECT_FALSE(version1.get());
@@ -112,9 +112,9 @@ class MockExternalPolicyProviderVisitor
  private:
   std::set<std::string> expected_extensions_;
 
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
 
-  scoped_ptr<ExternalProviderImpl> provider_;
+  std::unique_ptr<ExternalProviderImpl> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(MockExternalPolicyProviderVisitor);
 };

@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_WEBSTORE_INLINE_INSTALLER_FACTORY_H_
 #define CHROME_BROWSER_EXTENSIONS_WEBSTORE_INLINE_INSTALLER_FACTORY_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/webstore_standalone_installer.h"
 

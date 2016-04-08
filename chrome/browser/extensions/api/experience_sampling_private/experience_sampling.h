@@ -36,12 +36,12 @@ class ExperienceSamplingEvent {
   // The Create() functions can return an empty scoped_ptr if they cannot find
   // the BrowserContext. Code using them should check the scoped pointer using
   // scoped_ptr::get().
-  static scoped_ptr<ExperienceSamplingEvent> Create(
+  static std::unique_ptr<ExperienceSamplingEvent> Create(
       const std::string& element_name,
       const GURL& destination,
       const GURL& referrer);
 
-  static scoped_ptr<ExperienceSamplingEvent> Create(
+  static std::unique_ptr<ExperienceSamplingEvent> Create(
       const std::string& element_name);
 
   ExperienceSamplingEvent(const std::string& element_name,

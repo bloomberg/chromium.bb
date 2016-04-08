@@ -63,7 +63,7 @@ BrowserContextKeyedAPIFactory<MDnsAPI>* MDnsAPI::GetFactoryInstance() {
 }
 
 void MDnsAPI::SetDnsSdRegistryForTesting(
-    scoped_ptr<DnsSdRegistry> dns_sd_registry) {
+    std::unique_ptr<DnsSdRegistry> dns_sd_registry) {
   dns_sd_registry_ = std::move(dns_sd_registry);
   if (dns_sd_registry_.get())
     dns_sd_registry_.get()->AddObserver(this);
@@ -170,10 +170,10 @@ void MDnsAPI::OnDnsSdEvent(const std::string& service_type,
     args.push_back(std::move(mdns_service));
   }
 
-  scoped_ptr<base::ListValue> results = mdns::OnServiceList::Create(args);
-  scoped_ptr<Event> event(new Event(events::MDNS_ON_SERVICE_LIST,
-                                    mdns::OnServiceList::kEventName,
-                                    std::move(results)));
+  std::unique_ptr<base::ListValue> results = mdns::OnServiceList::Create(args);
+  std::unique_ptr<Event> event(new Event(events::MDNS_ON_SERVICE_LIST,
+                                         mdns::OnServiceList::kEventName,
+                                         std::move(results)));
   event->restrict_to_browser_context = browser_context_;
   event->filter_info.SetServiceType(service_type);
 

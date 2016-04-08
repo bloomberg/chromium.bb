@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -12,7 +13,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/test/mock_entropy_provider.h"
@@ -108,13 +109,13 @@ class StatefulChangeProcessor : public syncer::FakeSyncChangeProcessor {
       syncer::SyncData sync_data = change.sync_data();
       EXPECT_EQ(expected_type_, sync_data.GetDataType());
 
-      scoped_ptr<ExtensionSyncData> modified =
+      std::unique_ptr<ExtensionSyncData> modified =
           ExtensionSyncData::CreateFromSyncData(sync_data);
 
       // Start by removing any existing entry for this extension id.
       syncer::SyncDataList& data_list = data();
       for (auto iter = data_list.begin(); iter != data_list.end(); ++iter) {
-        scoped_ptr<ExtensionSyncData> existing =
+        std::unique_ptr<ExtensionSyncData> existing =
             ExtensionSyncData::CreateFromSyncData(*iter);
         if (existing->id() == modified->id()) {
           data_list.erase(iter);
@@ -143,10 +144,12 @@ class StatefulChangeProcessor : public syncer::FakeSyncChangeProcessor {
 
   // This is a helper to vend a wrapped version of this object suitable for
   // passing in to MergeDataAndStartSyncing, which takes a
-  // scoped_ptr<SyncChangeProcessor>, since in tests we typically don't want to
+  // std::unique_ptr<SyncChangeProcessor>, since in tests we typically don't
+  // want to
   // give up ownership of a local change processor.
-  scoped_ptr<syncer::SyncChangeProcessor> GetWrapped() {
-    return make_scoped_ptr(new syncer::SyncChangeProcessorWrapperForTest(this));
+  std::unique_ptr<syncer::SyncChangeProcessor> GetWrapped() {
+    return base::WrapUnique(
+        new syncer::SyncChangeProcessorWrapperForTest(this));
   }
 
  protected:
@@ -174,8 +177,8 @@ class ExtensionServiceSyncTest
     ASSERT_TRUE(type == syncer::EXTENSIONS || type == syncer::APPS);
     extension_sync_service()->MergeDataAndStartSyncing(
         type, syncer::SyncDataList(),
-        make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-        make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+        base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+        base::WrapUnique(new syncer::SyncErrorFactoryMock()));
   }
 
  protected:
@@ -268,8 +271,8 @@ TEST_F(ExtensionServiceSyncTest, DeferredSyncStartupOnInstall) {
   // Once sync starts, flare should no longer be invoked.
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
   path = data_dir().AppendASCII("page_action.crx");
   InstallCRX(path, INSTALL_NEW);
   EXPECT_FALSE(flare_was_called);
@@ -303,8 +306,8 @@ TEST_F(ExtensionServiceSyncTest, DisableExtensionFromSync) {
   // Sync starts up.
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   // Then sync data arrives telling us to disable |good0|.
   ExtensionSyncData disable_good_crx(*extension, false,
@@ -366,10 +369,9 @@ TEST_F(ExtensionServiceSyncTest, IgnoreSyncChangesWhenLocalStateIsMoreRecent) {
   sync_data.push_back(disable_good0.GetSyncData());
   sync_data.push_back(enable_good2.GetSyncData());
   extension_sync_service()->MergeDataAndStartSyncing(
-      syncer::EXTENSIONS,
-      sync_data,
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      syncer::EXTENSIONS, sync_data,
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   // Both sync changes should be ignored, since the local state was changed
   // before sync started, and so the local state is considered more recent.
@@ -399,10 +401,8 @@ TEST_F(ExtensionServiceSyncTest, DontSelfNotify) {
   syncer::FakeSyncChangeProcessor* processor =
       new syncer::FakeSyncChangeProcessor;
   extension_sync_service()->MergeDataAndStartSyncing(
-      syncer::EXTENSIONS,
-      syncer::SyncDataList(),
-      make_scoped_ptr(processor),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      syncer::EXTENSIONS, syncer::SyncDataList(), base::WrapUnique(processor),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   processor->changes().clear();
 
@@ -478,13 +478,13 @@ TEST_F(ExtensionServiceSyncTest, GetSyncData) {
 
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   syncer::SyncDataList list =
       extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
   ASSERT_EQ(list.size(), 1U);
-  scoped_ptr<ExtensionSyncData> data =
+  std::unique_ptr<ExtensionSyncData> data =
       ExtensionSyncData::CreateFromSyncData(list[0]);
   ASSERT_TRUE(data.get());
   EXPECT_EQ(extension->id(), data->id());
@@ -507,14 +507,14 @@ TEST_F(ExtensionServiceSyncTest, GetSyncDataDisableReasons) {
 
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   {
     syncer::SyncDataList list =
         extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
-    scoped_ptr<ExtensionSyncData> data =
+    std::unique_ptr<ExtensionSyncData> data =
         ExtensionSyncData::CreateFromSyncData(list[0]);
     ASSERT_TRUE(data.get());
     EXPECT_TRUE(data->enabled());
@@ -528,7 +528,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncDataDisableReasons) {
     syncer::SyncDataList list =
         extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
-    scoped_ptr<ExtensionSyncData> data =
+    std::unique_ptr<ExtensionSyncData> data =
         ExtensionSyncData::CreateFromSyncData(list[0]);
     ASSERT_TRUE(data.get());
     EXPECT_FALSE(data->enabled());
@@ -543,7 +543,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncDataDisableReasons) {
     syncer::SyncDataList list =
         extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
-    scoped_ptr<ExtensionSyncData> data =
+    std::unique_ptr<ExtensionSyncData> data =
         ExtensionSyncData::CreateFromSyncData(list[0]);
     ASSERT_TRUE(data.get());
     EXPECT_TRUE(data->enabled());
@@ -560,7 +560,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncDataDisableReasons) {
     syncer::SyncDataList list =
         extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
-    scoped_ptr<ExtensionSyncData> data =
+    std::unique_ptr<ExtensionSyncData> data =
         ExtensionSyncData::CreateFromSyncData(list[0]);
     ASSERT_TRUE(data.get());
     EXPECT_FALSE(data->enabled());
@@ -579,13 +579,13 @@ TEST_F(ExtensionServiceSyncTest, GetSyncDataTerminated) {
 
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   syncer::SyncDataList list =
       extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
   ASSERT_EQ(list.size(), 1U);
-  scoped_ptr<ExtensionSyncData> data =
+  std::unique_ptr<ExtensionSyncData> data =
       ExtensionSyncData::CreateFromSyncData(list[0]);
   ASSERT_TRUE(data.get());
   EXPECT_EQ(extension->id(), data->id());
@@ -608,8 +608,8 @@ TEST_F(ExtensionServiceSyncTest, GetSyncDataFilter) {
 
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::APPS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   syncer::SyncDataList list =
       extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
@@ -624,14 +624,14 @@ TEST_F(ExtensionServiceSyncTest, GetSyncExtensionDataUserSettings) {
 
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   {
     syncer::SyncDataList list =
         extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
-    scoped_ptr<ExtensionSyncData> data =
+    std::unique_ptr<ExtensionSyncData> data =
         ExtensionSyncData::CreateFromSyncData(list[0]);
     ASSERT_TRUE(data.get());
     EXPECT_TRUE(data->enabled());
@@ -644,7 +644,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncExtensionDataUserSettings) {
     syncer::SyncDataList list =
         extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
-    scoped_ptr<ExtensionSyncData> data =
+    std::unique_ptr<ExtensionSyncData> data =
         ExtensionSyncData::CreateFromSyncData(list[0]);
     ASSERT_TRUE(data.get());
     EXPECT_FALSE(data->enabled());
@@ -659,7 +659,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncExtensionDataUserSettings) {
     syncer::SyncDataList list =
         extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
-    scoped_ptr<ExtensionSyncData> data =
+    std::unique_ptr<ExtensionSyncData> data =
         ExtensionSyncData::CreateFromSyncData(list[0]);
     ASSERT_TRUE(data.get());
     EXPECT_FALSE(data->enabled());
@@ -674,7 +674,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncExtensionDataUserSettings) {
     syncer::SyncDataList list =
         extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
-    scoped_ptr<ExtensionSyncData> data =
+    std::unique_ptr<ExtensionSyncData> data =
         ExtensionSyncData::CreateFromSyncData(list[0]);
     ASSERT_TRUE(data.get());
     EXPECT_TRUE(data->enabled());
@@ -692,8 +692,8 @@ TEST_F(ExtensionServiceSyncTest, SyncForUninstalledExternalExtension) {
 
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
   StartSyncing(syncer::APPS);
 
   UninstallExtension(good_crx, false);
@@ -725,8 +725,8 @@ TEST_F(ExtensionServiceSyncTest, GetSyncAppDataUserSettings) {
 
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::APPS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   syncer::StringOrdinal initial_ordinal =
       syncer::StringOrdinal::CreateInitialOrdinal();
@@ -735,7 +735,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncAppDataUserSettings) {
         extension_sync_service()->GetAllSyncData(syncer::APPS);
     ASSERT_EQ(list.size(), 1U);
 
-    scoped_ptr<ExtensionSyncData> app_sync_data =
+    std::unique_ptr<ExtensionSyncData> app_sync_data =
         ExtensionSyncData::CreateFromSyncData(list[0]);
     EXPECT_TRUE(initial_ordinal.Equals(app_sync_data->app_launch_ordinal()));
     EXPECT_TRUE(initial_ordinal.Equals(app_sync_data->page_ordinal()));
@@ -748,7 +748,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncAppDataUserSettings) {
         extension_sync_service()->GetAllSyncData(syncer::APPS);
     ASSERT_EQ(list.size(), 1U);
 
-    scoped_ptr<ExtensionSyncData> app_sync_data =
+    std::unique_ptr<ExtensionSyncData> app_sync_data =
         ExtensionSyncData::CreateFromSyncData(list[0]);
     ASSERT_TRUE(app_sync_data.get());
     EXPECT_TRUE(initial_ordinal.LessThan(app_sync_data->app_launch_ordinal()));
@@ -761,7 +761,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncAppDataUserSettings) {
         extension_sync_service()->GetAllSyncData(syncer::APPS);
     ASSERT_EQ(list.size(), 1U);
 
-    scoped_ptr<ExtensionSyncData> app_sync_data =
+    std::unique_ptr<ExtensionSyncData> app_sync_data =
         ExtensionSyncData::CreateFromSyncData(list[0]);
     ASSERT_TRUE(app_sync_data.get());
     EXPECT_TRUE(initial_ordinal.LessThan(app_sync_data->app_launch_ordinal()));
@@ -787,8 +787,8 @@ TEST_F(ExtensionServiceSyncTest, GetSyncAppDataUserSettingsOnExtensionMoved) {
 
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::APPS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   ExtensionSystem::Get(service()->GetBrowserContext())
       ->app_sorting()
@@ -798,7 +798,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncAppDataUserSettingsOnExtensionMoved) {
         extension_sync_service()->GetAllSyncData(syncer::APPS);
     ASSERT_EQ(list.size(), 3U);
 
-    scoped_ptr<ExtensionSyncData> data[kAppCount];
+    std::unique_ptr<ExtensionSyncData> data[kAppCount];
     for (size_t i = 0; i < kAppCount; ++i) {
       data[i] = ExtensionSyncData::CreateFromSyncData(list[i]);
       ASSERT_TRUE(data[i].get());
@@ -829,12 +829,12 @@ TEST_F(ExtensionServiceSyncTest, GetSyncDataList) {
 
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::APPS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   service()->DisableExtension(page_action, Extension::DISABLE_USER_ACTION);
   TerminateExtension(theme2_crx);
@@ -848,8 +848,8 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataUninstall) {
   InitializeEmptyExtensionService();
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   sync_pb::EntitySpecifics specifics;
   sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
@@ -922,8 +922,8 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataSettings) {
   InitializeEmptyExtensionService();
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
   EXPECT_TRUE(service()->IsExtensionEnabled(good_crx));
@@ -1015,8 +1015,8 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataNewExtension) {
   InitializeEmptyExtensionService();
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   const base::FilePath path = data_dir().AppendASCII("good.crx");
   const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
@@ -1073,7 +1073,7 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataNewExtension) {
                                                            : DISABLED);
     EXPECT_EQ(test_case.expect_disable_reasons,
               prefs->GetDisableReasons(good_crx));
-    scoped_ptr<const PermissionSet> permissions =
+    std::unique_ptr<const PermissionSet> permissions =
         prefs->GetGrantedPermissions(good_crx);
     EXPECT_EQ(test_case.expect_permissions_granted, !permissions->IsEmpty());
     ASSERT_FALSE(service()->pending_extension_manager()->IsIdPending(good_crx));
@@ -1089,8 +1089,8 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataTerminatedExtension) {
   InitializeExtensionServiceWithUpdater();
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
   TerminateExtension(good_crx);
@@ -1119,8 +1119,8 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataVersionCheck) {
   InitializeExtensionServiceWithUpdater();
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
   EXPECT_TRUE(service()->IsExtensionEnabled(good_crx));
@@ -1147,7 +1147,7 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataVersionCheck) {
     syncer::SyncDataList data =
         extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
     ASSERT_EQ(1u, data.size());
-    scoped_ptr<ExtensionSyncData> extension_data =
+    std::unique_ptr<ExtensionSyncData> extension_data =
         ExtensionSyncData::CreateFromSyncData(data[0]);
     ASSERT_TRUE(extension_data);
     EXPECT_EQ(installed_version, extension_data->version());
@@ -1166,7 +1166,7 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataVersionCheck) {
     syncer::SyncDataList data =
         extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
     ASSERT_EQ(1u, data.size());
-    scoped_ptr<ExtensionSyncData> extension_data =
+    std::unique_ptr<ExtensionSyncData> extension_data =
         ExtensionSyncData::CreateFromSyncData(data[0]);
     ASSERT_TRUE(extension_data);
     EXPECT_EQ(installed_version, extension_data->version());
@@ -1188,7 +1188,7 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataVersionCheck) {
     syncer::SyncDataList data =
         extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
     ASSERT_EQ(1u, data.size());
-    scoped_ptr<ExtensionSyncData> extension_data =
+    std::unique_ptr<ExtensionSyncData> extension_data =
         ExtensionSyncData::CreateFromSyncData(data[0]);
     ASSERT_TRUE(extension_data);
     EXPECT_EQ(new_version, extension_data->version());
@@ -1201,8 +1201,8 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataNotInstalled) {
   InitializeExtensionServiceWithUpdater();
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   sync_pb::EntitySpecifics specifics;
   sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
@@ -1235,8 +1235,8 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataEnableDisable) {
   InitializeEmptyExtensionService();
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
 
@@ -1337,8 +1337,8 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataDeferredEnable) {
   InitializeEmptyExtensionService();
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   base::FilePath base_path = data_dir().AppendASCII("permissions_increase");
   base::FilePath pem_path = base_path.AppendASCII("permissions.pem");
@@ -1387,8 +1387,8 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataPermissionApproval) {
   InitializeEmptyExtensionService();
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   const base::FilePath base_path =
       data_dir().AppendASCII("permissions_increase");
@@ -1446,7 +1446,7 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataPermissionApproval) {
     }
     ASSERT_TRUE(registry()->enabled_extensions().Contains(id));
 
-    scoped_ptr<const PermissionSet> granted_permissions_v1 =
+    std::unique_ptr<const PermissionSet> granted_permissions_v1 =
         prefs->GetGrantedPermissions(id);
 
     // Update to a new version with increased permissions.
@@ -1463,7 +1463,7 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataPermissionApproval) {
         id, Extension::DISABLE_PERMISSIONS_INCREASE));
 
     // No new permissions should have been granted.
-    scoped_ptr<const PermissionSet> granted_permissions_v2 =
+    std::unique_ptr<const PermissionSet> granted_permissions_v2 =
         prefs->GetGrantedPermissions(id);
     ASSERT_EQ(*granted_permissions_v1, *granted_permissions_v2);
 
@@ -1485,10 +1485,10 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataPermissionApproval) {
     const bool expect_enabled = !test_case.expect_disable_reasons;
     EXPECT_EQ(expect_enabled, service()->IsExtensionEnabled(id));
     EXPECT_EQ(test_case.expect_disable_reasons, prefs->GetDisableReasons(id));
-    scoped_ptr<const PermissionSet> granted_permissions =
+    std::unique_ptr<const PermissionSet> granted_permissions =
         prefs->GetGrantedPermissions(id);
     if (test_case.expect_permissions_granted) {
-      scoped_ptr<const PermissionSet> active_permissions =
+      std::unique_ptr<const PermissionSet> active_permissions =
           prefs->GetActivePermissions(id);
       EXPECT_EQ(*granted_permissions, *active_permissions);
     } else {
@@ -1516,10 +1516,8 @@ TEST_F(ExtensionServiceSyncTest, DontSyncThemes) {
   syncer::FakeSyncChangeProcessor* processor =
       new syncer::FakeSyncChangeProcessor;
   extension_sync_service()->MergeDataAndStartSyncing(
-      syncer::EXTENSIONS,
-      syncer::SyncDataList(),
-      make_scoped_ptr(processor),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock));
+      syncer::EXTENSIONS, syncer::SyncDataList(), base::WrapUnique(processor),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock));
 
   processor->changes().clear();
 
@@ -1721,7 +1719,7 @@ TEST_F(ExtensionServiceTestSupervised, UpdateWithPermissionIncreaseNoApproval) {
 
   MockPermissionRequestCreator* creator = new MockPermissionRequestCreator;
   supervised_user_service()->AddPermissionRequestCreator(
-      make_scoped_ptr(creator));
+      base::WrapUnique(creator));
 
   std::string id = InstallPermissionsTestExtension();
 
@@ -1743,7 +1741,7 @@ TEST_F(ExtensionServiceTestSupervised,
 
   MockPermissionRequestCreator* creator = new MockPermissionRequestCreator;
   supervised_user_service()->AddPermissionRequestCreator(
-      make_scoped_ptr(creator));
+      base::WrapUnique(creator));
 
   const std::string version1("1");
   const std::string version2("2");
@@ -1791,7 +1789,7 @@ TEST_F(ExtensionServiceTestSupervised,
 
   MockPermissionRequestCreator* creator = new MockPermissionRequestCreator;
   supervised_user_service()->AddPermissionRequestCreator(
-      make_scoped_ptr(creator));
+      base::WrapUnique(creator));
 
   std::string id = InstallPermissionsTestExtension();
 
@@ -1827,7 +1825,7 @@ TEST_F(ExtensionServiceTestSupervised,
 
   MockPermissionRequestCreator* creator = new MockPermissionRequestCreator;
   supervised_user_service()->AddPermissionRequestCreator(
-      make_scoped_ptr(creator));
+      base::WrapUnique(creator));
 
   std::string id = InstallPermissionsTestExtension();
 
@@ -1871,8 +1869,8 @@ TEST_F(ExtensionServiceSyncTest, SyncUninstallByCustodianSkipsPolicy) {
   InitializeEmptyExtensionService();
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   // Install two extensions.
   base::FilePath path1 = data_dir().AppendASCII("good.crx");
@@ -1991,10 +1989,10 @@ TEST_F(ExtensionServiceSyncTest, AppToExtension) {
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
       extensions_processor.GetWrapped(),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::APPS, syncer::SyncDataList(), apps_processor.GetWrapped(),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   // Check the app/extension change processors to be sure the right data was
   // added.
@@ -2004,7 +2002,7 @@ TEST_F(ExtensionServiceSyncTest, AppToExtension) {
   ASSERT_EQ(1u, apps_processor.changes().size());
   const SyncChange& app_change = apps_processor.changes()[0];
   EXPECT_EQ(SyncChange::ACTION_ADD, app_change.change_type());
-  scoped_ptr<ExtensionSyncData> app_data =
+  std::unique_ptr<ExtensionSyncData> app_data =
       ExtensionSyncData::CreateFromSyncData(app_change.sync_data());
   EXPECT_TRUE(app_data->is_app());
   EXPECT_EQ(id, app_data->id());
@@ -2022,7 +2020,7 @@ TEST_F(ExtensionServiceSyncTest, AppToExtension) {
   ASSERT_EQ(1u, extensions_processor.changes().size());
   const SyncChange& extension_change = extensions_processor.changes()[0];
   EXPECT_EQ(SyncChange::ACTION_ADD, extension_change.change_type());
-  scoped_ptr<ExtensionSyncData> extension_data =
+  std::unique_ptr<ExtensionSyncData> extension_data =
       ExtensionSyncData::CreateFromSyncData(extension_change.sync_data());
   EXPECT_FALSE(extension_data->is_app());
   EXPECT_EQ(id, extension_data->id());
@@ -2040,16 +2038,16 @@ TEST_F(ExtensionServiceSyncTest, AppToExtension) {
   extension_sync_service()->StopSyncing(syncer::APPS);
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, extensions_data, extensions_processor.GetWrapped(),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::APPS, apps_data, apps_processor.GetWrapped(),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   // Make sure we saw an app item deleted.
   bool found_delete = false;
   for (const auto& change : apps_processor.changes()) {
     if (change.change_type() == SyncChange::ACTION_DELETE) {
-      scoped_ptr<ExtensionSyncData> data =
+      std::unique_ptr<ExtensionSyncData> data =
           ExtensionSyncData::CreateFromSyncChange(change);
       if (data->id() == id) {
         found_delete = true;

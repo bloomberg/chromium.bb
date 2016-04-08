@@ -34,7 +34,7 @@ bool TopSitesGetFunction::RunAsync() {
 
 void TopSitesGetFunction::OnMostVisitedURLsAvailable(
     const history::MostVisitedURLList& data) {
-  scoped_ptr<base::ListValue> pages_value(new base::ListValue);
+  std::unique_ptr<base::ListValue> pages_value(new base::ListValue);
   for (size_t i = 0; i < data.size(); i++) {
     const history::MostVisitedURL& url = data[i];
     if (!url.url.is_empty()) {

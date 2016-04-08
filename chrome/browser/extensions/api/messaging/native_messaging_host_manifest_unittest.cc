@@ -74,7 +74,7 @@ TEST_F(NativeMessagingHostManifestTest, LoadValid) {
   ASSERT_TRUE(WriteManifest(kTestHostName, kTestHostPath, kTestOrigin));
 
   std::string error_message;
-  scoped_ptr<NativeMessagingHostManifest> manifest =
+  std::unique_ptr<NativeMessagingHostManifest> manifest =
       NativeMessagingHostManifest::Load(manifest_path_, &error_message);
   ASSERT_TRUE(manifest) << "Failed to load manifest: " << error_message;
   EXPECT_TRUE(error_message.empty());
@@ -95,7 +95,7 @@ TEST_F(NativeMessagingHostManifestTest, InvalidName) {
                             kTestHostPath, kTestOrigin));
 
   std::string error_message;
-  scoped_ptr<NativeMessagingHostManifest> manifest =
+  std::unique_ptr<NativeMessagingHostManifest> manifest =
       NativeMessagingHostManifest::Load(manifest_path_, &error_message);
   ASSERT_FALSE(manifest);
   EXPECT_FALSE(error_message.empty());
@@ -107,7 +107,7 @@ TEST_F(NativeMessagingHostManifestTest, MatchAllOrigin) {
                             "chrome-extension://*/"));
 
   std::string error_message;
-  scoped_ptr<NativeMessagingHostManifest> manifest =
+  std::unique_ptr<NativeMessagingHostManifest> manifest =
       NativeMessagingHostManifest::Load(manifest_path_, &error_message);
   ASSERT_FALSE(manifest);
   EXPECT_FALSE(error_message.empty());

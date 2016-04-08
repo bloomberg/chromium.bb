@@ -28,7 +28,7 @@ void GetIsDirectoryFromFileInfo(const base::FilePath& path,
 }
 
 void OnGetIsDirectoryFromFileInfoCompleted(
-    scoped_ptr<bool> is_directory,
+    std::unique_ptr<bool> is_directory,
     const base::Callback<void(bool)>& callback) {
   callback.Run(*is_directory);
 }
@@ -46,7 +46,7 @@ void EntryIsDirectory(Profile* profile,
   }
 #endif
 
-  scoped_ptr<bool> is_directory(new bool);
+  std::unique_ptr<bool> is_directory(new bool);
   bool* const is_directory_ptr = is_directory.get();
 
   content::BrowserThread::PostBlockingPoolTaskAndReply(

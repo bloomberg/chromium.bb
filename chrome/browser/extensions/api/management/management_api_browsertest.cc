@@ -156,8 +156,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
   // The management API should list this extension.
   scoped_refptr<ManagementGetAllFunction> function =
       new ManagementGetAllFunction();
-  scoped_ptr<base::Value> result(util::RunFunctionAndReturnSingleResult(
-      function.get(), "[]", browser()));
+  std::unique_ptr<base::Value> result(
+      util::RunFunctionAndReturnSingleResult(function.get(), "[]", browser()));
   base::ListValue* list;
   ASSERT_TRUE(result->GetAsList(&list));
   EXPECT_EQ(1U, list->GetSize());
@@ -242,10 +242,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
                        DisabledReason) {
   scoped_refptr<ManagementGetFunction> function =
       new ManagementGetFunction();
-  scoped_ptr<base::Value> result(util::RunFunctionAndReturnSingleResult(
-      function.get(),
-      base::StringPrintf("[\"%s\"]", kId),
-      browser()));
+  std::unique_ptr<base::Value> result(util::RunFunctionAndReturnSingleResult(
+      function.get(), base::StringPrintf("[\"%s\"]", kId), browser()));
   ASSERT_TRUE(result.get() != NULL);
   ASSERT_TRUE(result->IsType(base::Value::TYPE_DICTIONARY));
   base::DictionaryValue* dict =

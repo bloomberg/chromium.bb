@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
 #include "chrome/browser/extensions/api/declarative_content/chrome_content_rules_registry.h"
@@ -76,9 +77,8 @@ void ChromeExtensionsAPIClient::AttachWebContentsHelpers(
 #endif  // defined(ENABLE_PRINT_PREVIEW)
 #endif  // defined(ENABLE_PRINTING)
   pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
-      web_contents,
-      scoped_ptr<pdf::PDFWebContentsHelperClient>(
-          new ChromePDFWebContentsHelperClient()));
+      web_contents, std::unique_ptr<pdf::PDFWebContentsHelperClient>(
+                        new ChromePDFWebContentsHelperClient()));
 
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
@@ -95,16 +95,16 @@ ChromeExtensionsAPIClient::CreateExtensionOptionsGuestDelegate(
   return new ChromeExtensionOptionsGuestDelegate(guest);
 }
 
-scoped_ptr<guest_view::GuestViewManagerDelegate>
+std::unique_ptr<guest_view::GuestViewManagerDelegate>
 ChromeExtensionsAPIClient::CreateGuestViewManagerDelegate(
     content::BrowserContext* context) const {
-  return make_scoped_ptr(new ChromeGuestViewManagerDelegate(context));
+  return base::WrapUnique(new ChromeGuestViewManagerDelegate(context));
 }
 
-scoped_ptr<MimeHandlerViewGuestDelegate>
+std::unique_ptr<MimeHandlerViewGuestDelegate>
 ChromeExtensionsAPIClient::CreateMimeHandlerViewGuestDelegate(
     MimeHandlerViewGuest* guest) const {
-  return make_scoped_ptr(new ChromeMimeHandlerViewGuestDelegate());
+  return base::WrapUnique(new ChromeMimeHandlerViewGuestDelegate());
 }
 
 WebViewGuestDelegate* ChromeExtensionsAPIClient::CreateWebViewGuestDelegate(
@@ -135,16 +135,16 @@ ChromeExtensionsAPIClient::CreateContentRulesRegistry(
                      base::Unretained(browser_context))));
 }
 
-scoped_ptr<DevicePermissionsPrompt>
+std::unique_ptr<DevicePermissionsPrompt>
 ChromeExtensionsAPIClient::CreateDevicePermissionsPrompt(
     content::WebContents* web_contents) const {
-  return make_scoped_ptr(new ChromeDevicePermissionsPrompt(web_contents));
+  return base::WrapUnique(new ChromeDevicePermissionsPrompt(web_contents));
 }
 
-scoped_ptr<VirtualKeyboardDelegate>
+std::unique_ptr<VirtualKeyboardDelegate>
 ChromeExtensionsAPIClient::CreateVirtualKeyboardDelegate() const {
 #if defined(OS_CHROMEOS)
-  return make_scoped_ptr(new ChromeVirtualKeyboardDelegate());
+  return base::WrapUnique(new ChromeVirtualKeyboardDelegate());
 #else
   return nullptr;
 #endif

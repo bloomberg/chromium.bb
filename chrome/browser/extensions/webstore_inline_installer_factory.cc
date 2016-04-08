@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/extensions/webstore_inline_installer_factory.h"
+
+#include <memory>
+
+#include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "content/public/browser/web_contents.h"
 
 namespace extensions {

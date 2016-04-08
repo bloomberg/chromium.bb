@@ -303,7 +303,8 @@ void ExtensionInfoGenerator::CreateExtensionsInfo(
 void ExtensionInfoGenerator::CreateExtensionInfoHelper(
     const Extension& extension,
     developer::ExtensionState state) {
-  scoped_ptr<developer::ExtensionInfo> info(new developer::ExtensionInfo());
+  std::unique_ptr<developer::ExtensionInfo> info(
+      new developer::ExtensionInfo());
 
   // Don't consider the button hidden with the redesign, because "hidden"
   // buttons are now just hidden in the wrench menu.
@@ -361,9 +362,10 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
 
   // Dependent extensions.
   if (extension.is_shared_module()) {
-    scoped_ptr<ExtensionSet> dependent_extensions =
-        extension_system_->extension_service()->
-            shared_module_service()->GetDependentExtensions(&extension);
+    std::unique_ptr<ExtensionSet> dependent_extensions =
+        extension_system_->extension_service()
+            ->shared_module_service()
+            ->GetDependentExtensions(&extension);
     for (const scoped_refptr<const Extension>& dependent :
              *dependent_extensions)
       info->dependent_extensions.push_back(dependent->id());
@@ -597,7 +599,7 @@ std::string ExtensionInfoGenerator::GetIconUrlFromImage(
 }
 
 void ExtensionInfoGenerator::OnImageLoaded(
-    scoped_ptr<developer::ExtensionInfo> info,
+    std::unique_ptr<developer::ExtensionInfo> info,
     const gfx::Image& icon) {
   if (!icon.IsEmpty()) {
     info->icon_url = GetIconUrlFromImage(

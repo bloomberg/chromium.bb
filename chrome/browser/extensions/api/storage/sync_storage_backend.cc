@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_processor.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
 #include "chrome/browser/extensions/api/storage/syncable_settings_storage.h"
@@ -29,8 +30,8 @@ void AddAllSyncData(const std::string& extension_id,
   }
 }
 
-scoped_ptr<base::DictionaryValue> EmptyDictionaryValue() {
-  return make_scoped_ptr(new base::DictionaryValue());
+std::unique_ptr<base::DictionaryValue> EmptyDictionaryValue() {
+  return base::WrapUnique(new base::DictionaryValue());
 }
 
 ValueStoreFactory::ModelType ToFactoryModelType(syncer::ModelType sync_type) {
@@ -72,7 +73,7 @@ ValueStore* SyncStorageBackend::GetStorage(const std::string& extension_id) {
 
 SyncableSettingsStorage* SyncStorageBackend::GetOrCreateStorageWithSyncData(
     const std::string& extension_id,
-    scoped_ptr<base::DictionaryValue> sync_data) const {
+    std::unique_ptr<base::DictionaryValue> sync_data) const {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   StorageObjMap::iterator maybe_storage = storage_objs_.find(extension_id);
@@ -80,7 +81,7 @@ SyncableSettingsStorage* SyncStorageBackend::GetOrCreateStorageWithSyncData(
     return maybe_storage->second.get();
   }
 
-  scoped_ptr<SettingsStorageQuotaEnforcer> storage(
+  std::unique_ptr<SettingsStorageQuotaEnforcer> storage(
       new SettingsStorageQuotaEnforcer(
           quota_, storage_factory_->CreateSettingsStore(
                       settings_namespace::SYNC, ToFactoryModelType(sync_type_),
@@ -166,8 +167,8 @@ syncer::SyncDataList SyncStorageBackend::GetAllSyncData(syncer::ModelType type)
 syncer::SyncMergeResult SyncStorageBackend::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
-    scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-    scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) {
+    std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+    std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK_EQ(sync_type_, type);
   DCHECK(!sync_processor_.get());
@@ -203,7 +204,7 @@ syncer::SyncMergeResult SyncStorageBackend::MergeDataAndStartSyncing(
     auto group = grouped_sync_data.find(extension_id);
     syncer::SyncError error;
     if (group != grouped_sync_data.end()) {
-      error = storage->StartSyncing(make_scoped_ptr(group->second),
+      error = storage->StartSyncing(base::WrapUnique(group->second),
                                     CreateSettingsSyncProcessor(extension_id));
       grouped_sync_data.erase(group);
     } else {
@@ -219,7 +220,7 @@ syncer::SyncMergeResult SyncStorageBackend::MergeDataAndStartSyncing(
   // Under normal circumstances (i.e. not first-time sync) this will be all of
   // them.
   for (const auto& group : grouped_sync_data) {
-    GetOrCreateStorageWithSyncData(group.first, make_scoped_ptr(group.second));
+    GetOrCreateStorageWithSyncData(group.first, base::WrapUnique(group.second));
   }
 
   return syncer::SyncMergeResult(type);
@@ -237,7 +238,7 @@ syncer::SyncError SyncStorageBackend::ProcessSyncChanges(
   std::map<std::string, SettingSyncDataList*> grouped_sync_data;
 
   for (const syncer::SyncChange& change : sync_changes) {
-    scoped_ptr<SettingSyncData> data(new SettingSyncData(change));
+    std::unique_ptr<SettingSyncData> data(new SettingSyncData(change));
     SettingSyncDataList*& group = grouped_sync_data[data->extension_id()];
     if (!group)
       group = new SettingSyncDataList();
@@ -249,7 +250,7 @@ syncer::SyncError SyncStorageBackend::ProcessSyncChanges(
     SyncableSettingsStorage* storage =
         GetOrCreateStorageWithSyncData(group.first, EmptyDictionaryValue());
     syncer::SyncError error =
-        storage->ProcessSyncChanges(make_scoped_ptr(group.second));
+        storage->ProcessSyncChanges(base::WrapUnique(group.second));
     if (error.IsSet())
       storage->StopSyncing();
   }
@@ -272,11 +273,11 @@ void SyncStorageBackend::StopSyncing(syncer::ModelType type) {
   sync_error_factory_.reset();
 }
 
-scoped_ptr<SettingsSyncProcessor>
-SyncStorageBackend::CreateSettingsSyncProcessor(const std::string& extension_id)
-    const {
+std::unique_ptr<SettingsSyncProcessor>
+SyncStorageBackend::CreateSettingsSyncProcessor(
+    const std::string& extension_id) const {
   CHECK(sync_processor_.get());
-  return scoped_ptr<SettingsSyncProcessor>(new SettingsSyncProcessor(
+  return std::unique_ptr<SettingsSyncProcessor>(new SettingsSyncProcessor(
       extension_id, sync_type_, sync_processor_.get()));
 }
 

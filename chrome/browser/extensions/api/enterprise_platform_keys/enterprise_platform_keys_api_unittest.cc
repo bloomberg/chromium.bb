@@ -208,7 +208,7 @@ class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {
   // Like extension_function_test_utils::RunFunctionAndReturnError but with an
   // explicit ListValue.
   std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
-                                        scoped_ptr<base::ListValue> args,
+                                        std::unique_ptr<base::ListValue> args,
                                         Browser* browser) {
     scoped_refptr<ExtensionFunction> function_owner(function);
     // Without a callback the function will not generate a result.
@@ -222,7 +222,7 @@ class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {
   // with an explicit ListValue.
   base::Value* RunFunctionAndReturnSingleResult(
       UIThreadExtensionFunction* function,
-      scoped_ptr<base::ListValue> args,
+      std::unique_ptr<base::ListValue> args,
       Browser* browser) {
     scoped_refptr<ExtensionFunction> function_owner(function);
     // Without a callback the function will not generate a result.
@@ -268,8 +268,8 @@ class EPKChallengeMachineKeyTest : public EPKChallengeKeyTestBase {
         EPKPChallengeMachineKey::kGetCertificateFailedError, error_code);
   }
 
-  scoped_ptr<base::ListValue> CreateArgs() {
-    scoped_ptr<base::ListValue> args(new base::ListValue);
+  std::unique_ptr<base::ListValue> CreateArgs() {
+    std::unique_ptr<base::ListValue> args(new base::ListValue);
     args->Append(base::BinaryValue::CreateWithCopiedBuffer("challenge", 9));
     return args;
   }
@@ -353,7 +353,7 @@ TEST_F(EPKChallengeMachineKeyTest, Success) {
           "attest-ent-machine", "google.com", "device_id", _, "challenge", _))
       .Times(1);
 
-  scoped_ptr<base::Value> value(
+  std::unique_ptr<base::Value> value(
       RunFunctionAndReturnSingleResult(func_.get(), CreateArgs(), browser()));
 
   const base::BinaryValue* response;
@@ -404,14 +404,16 @@ class EPKChallengeUserKeyTest : public EPKChallengeKeyTestBase {
                               error_code);
   }
 
-  scoped_ptr<base::ListValue> CreateArgs() { return CreateArgsInternal(true); }
+  std::unique_ptr<base::ListValue> CreateArgs() {
+    return CreateArgsInternal(true);
+  }
 
-  scoped_ptr<base::ListValue> CreateArgsNoRegister() {
+  std::unique_ptr<base::ListValue> CreateArgsNoRegister() {
     return CreateArgsInternal(false);
   }
 
-  scoped_ptr<base::ListValue> CreateArgsInternal(bool register_key) {
-    scoped_ptr<base::ListValue> args(new base::ListValue);
+  std::unique_ptr<base::ListValue> CreateArgsInternal(bool register_key) {
+    std::unique_ptr<base::ListValue> args(new base::ListValue);
     args->Append(base::BinaryValue::CreateWithCopiedBuffer("challenge", 9));
     args->Append(new base::FundamentalValue(register_key));
     return args;
@@ -526,7 +528,7 @@ TEST_F(EPKChallengeUserKeyTest, Success) {
                                         cryptohome_id, "attest-ent-user", _))
       .Times(1);
 
-  scoped_ptr<base::Value> value(
+  std::unique_ptr<base::Value> value(
       RunFunctionAndReturnSingleResult(func_.get(), CreateArgs(), browser()));
 
   const base::BinaryValue* response;

@@ -108,11 +108,11 @@ class ZipFileInstallerTest : public testing::Test {
  protected:
   scoped_refptr<ZipFileInstaller> zipfile_installer_;
 
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;
 
   content::TestBrowserThreadBundle browser_threads_;
-  scoped_ptr<content::InProcessUtilityThreadHelper>
+  std::unique_ptr<content::InProcessUtilityThreadHelper>
       in_process_utility_thread_helper_;
   MockExtensionRegistryObserver observer_;
 

@@ -11,8 +11,8 @@ namespace braille_display_private {
 StubBrailleController::StubBrailleController() {
 }
 
-scoped_ptr<DisplayState> StubBrailleController::GetDisplayState() {
-  return scoped_ptr<DisplayState>(new DisplayState);
+std::unique_ptr<DisplayState> StubBrailleController::GetDisplayState() {
+  return std::unique_ptr<DisplayState>(new DisplayState);
 }
 
 void StubBrailleController::WriteDots(const std::vector<char>& cells) {

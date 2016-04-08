@@ -84,8 +84,8 @@ class ExtensionUserScriptLoaderTest : public testing::Test,
   // MessageLoop used in tests.
   base::MessageLoopForUI message_loop_;
 
-  scoped_ptr<content::TestBrowserThread> file_thread_;
-  scoped_ptr<content::TestBrowserThread> ui_thread_;
+  std::unique_ptr<content::TestBrowserThread> file_thread_;
+  std::unique_ptr<content::TestBrowserThread> ui_thread_;
 
   // Updated to the script shared memory when we get notified.
   base::SharedMemory* shared_memory_;

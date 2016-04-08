@@ -129,7 +129,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
   void SetUpOnMainThread() override {
     PlatformAppBrowserTest::SetUpOnMainThread();
 
-    scoped_ptr<drive::ResourceEntry> entry;
+    std::unique_ptr<drive::ResourceEntry> entry;
     drive::FileError error = drive::FILE_ERROR_FAILED;
     integration_service_->file_system()->GetResourceEntry(
         base::FilePath::FromUTF8Unsafe("drive/root"),  // whatever
@@ -178,7 +178,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
   bool AddTestFile(const std::string& title,
                    const std::string& data,
                    const std::string& parent_id) {
-    scoped_ptr<google_apis::FileResource> entry;
+    std::unique_ptr<google_apis::FileResource> entry;
     google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
     fake_drive_service_->AddNewFile(
         "text/plain", data, parent_id, title, false,
@@ -189,7 +189,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
 
   std::string AddTestDirectory(const std::string& title,
                                const std::string& parent_id) {
-    scoped_ptr<google_apis::FileResource> entry;
+    std::unique_ptr<google_apis::FileResource> entry;
     google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
     fake_drive_service_->AddNewDirectory(
         parent_id, title, drive::AddNewDirectoryOptions(),
@@ -203,7 +203,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
   drive::DriveIntegrationService* integration_service_;
   drive::DriveIntegrationServiceFactory::FactoryCallback
       create_drive_integration_service_;
-  scoped_ptr<drive::DriveIntegrationServiceFactory::ScopedFactoryForTest>
+  std::unique_ptr<drive::DriveIntegrationServiceFactory::ScopedFactoryForTest>
       service_factory_for_test_;
 };
 
@@ -238,7 +238,7 @@ class FileSystemApiTestForRequestFileSystem : public PlatformAppBrowserTest {
  protected:
   base::ScopedTempDir temp_dir_;
   chromeos::FakeChromeUserManager* fake_user_manager_;
-  scoped_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
 
   // Creates a testing file system in a testing directory.
   void CreateTestingFileSystem(const std::string& mount_point_name,

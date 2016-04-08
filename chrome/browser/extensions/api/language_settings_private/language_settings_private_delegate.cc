@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/language_settings_private/language_settings_private_delegate.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -11,7 +12,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -158,10 +158,10 @@ void LanguageSettingsPrivateDelegate::OnCustomDictionaryChanged(
                                   change.to_add().end());
   std::vector<std::string> to_remove(change.to_remove().begin(),
                                      change.to_remove().end());
-  scoped_ptr<base::ListValue> args(
-      language_settings_private::OnCustomDictionaryChanged::Create(
-          to_add, to_remove));
-  scoped_ptr<Event> extension_event(new Event(
+  std::unique_ptr<base::ListValue> args(
+      language_settings_private::OnCustomDictionaryChanged::Create(to_add,
+                                                                   to_remove));
+  std::unique_ptr<Event> extension_event(new Event(
       events::LANGUAGE_SETTINGS_PRIVATE_ON_CUSTOM_DICTIONARY_CHANGED,
       language_settings_private::OnCustomDictionaryChanged::kEventName,
       std::move(args)));
@@ -237,10 +237,10 @@ void LanguageSettingsPrivateDelegate::BroadcastDictionariesChangedEvent() {
   std::vector<language_settings_private::SpellcheckDictionaryStatus> statuses =
       GetHunspellDictionaryStatuses();
 
-  scoped_ptr<base::ListValue> args(
+  std::unique_ptr<base::ListValue> args(
       language_settings_private::OnSpellcheckDictionariesChanged::Create(
           statuses));
-  scoped_ptr<extensions::Event> extension_event(new extensions::Event(
+  std::unique_ptr<extensions::Event> extension_event(new extensions::Event(
       events::LANGUAGE_SETTINGS_PRIVATE_ON_SPELLCHECK_DICTIONARIES_CHANGED,
       language_settings_private::OnSpellcheckDictionariesChanged::kEventName,
       std::move(args)));

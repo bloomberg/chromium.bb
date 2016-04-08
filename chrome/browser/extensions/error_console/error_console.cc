@@ -136,7 +136,7 @@ void ErrorConsole::UseDefaultReportingForExtension(
   prefs_->UpdateExtensionPref(extension_id, kStoreExtensionErrorsPref, NULL);
 }
 
-void ErrorConsole::ReportError(scoped_ptr<ExtensionError> error) {
+void ErrorConsole::ReportError(std::unique_ptr<ExtensionError> error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!enabled_ || !crx_file::id_util::IdIsValid(error->extension_id()))
     return;
@@ -263,11 +263,9 @@ void ErrorConsole::AddManifestErrorsForExtension(const Extension* extension) {
       extension->install_warnings();
   for (std::vector<InstallWarning>::const_iterator iter = warnings.begin();
        iter != warnings.end(); ++iter) {
-    ReportError(scoped_ptr<ExtensionError>(new ManifestError(
-        extension->id(),
-        base::UTF8ToUTF16(iter->message),
-        base::UTF8ToUTF16(iter->key),
-        base::UTF8ToUTF16(iter->specific))));
+    ReportError(std::unique_ptr<ExtensionError>(new ManifestError(
+        extension->id(), base::UTF8ToUTF16(iter->message),
+        base::UTF8ToUTF16(iter->key), base::UTF8ToUTF16(iter->specific))));
   }
 }
 

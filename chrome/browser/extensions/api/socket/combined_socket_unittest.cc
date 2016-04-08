@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/api/socket/mock_tcp_client_socket.h"
 #include "extensions/browser/api/socket/socket.h"
 #include "extensions/browser/api/socket/tcp_socket.h"
@@ -16,17 +18,20 @@ namespace extensions {
 const int kBufferLength = 10;
 
 template <typename T>
-scoped_ptr<T> CreateTestSocket(scoped_ptr<MockTCPClientSocket> stream);
+std::unique_ptr<T> CreateTestSocket(
+    std::unique_ptr<MockTCPClientSocket> stream);
 
 template <>
-scoped_ptr<TCPSocket> CreateTestSocket(scoped_ptr<MockTCPClientSocket> stream) {
-  return make_scoped_ptr(new TCPSocket(std::move(stream), "fake id",
-                         true /* is_connected */));
+std::unique_ptr<TCPSocket> CreateTestSocket(
+    std::unique_ptr<MockTCPClientSocket> stream) {
+  return base::WrapUnique(
+      new TCPSocket(std::move(stream), "fake id", true /* is_connected */));
 }
 
 template <>
-scoped_ptr<TLSSocket> CreateTestSocket(scoped_ptr<MockTCPClientSocket> stream) {
-  return make_scoped_ptr(new TLSSocket(std::move(stream), "fake id"));
+std::unique_ptr<TLSSocket> CreateTestSocket(
+    std::unique_ptr<MockTCPClientSocket> stream) {
+  return base::WrapUnique(new TLSSocket(std::move(stream), "fake id"));
 }
 
 class CombinedSocketTest : public testing::Test {
@@ -38,14 +43,14 @@ class CombinedSocketTest : public testing::Test {
   void TestRead() {
     net::IOBuffer* buffer = nullptr;
 
-    scoped_ptr<MockTCPClientSocket> stream(
+    std::unique_ptr<MockTCPClientSocket> stream(
         new testing::StrictMock<MockTCPClientSocket>());
     EXPECT_CALL(*stream, Read(testing::NotNull(), kBufferLength, testing::_))
         .WillOnce(DoAll(testing::SaveArg<0>(&buffer),
                         testing::Return(kBufferLength)));
     EXPECT_CALL(*stream, Disconnect());
 
-    scoped_ptr<T> socket = CreateTestSocket<T>(std::move(stream));
+    std::unique_ptr<T> socket = CreateTestSocket<T>(std::move(stream));
     ReadCompletionCallback read_callback =
         base::Bind(&CombinedSocketTest::OnRead, base::Unretained(this));
     socket->Read(kBufferLength, read_callback);
@@ -60,7 +65,7 @@ class CombinedSocketTest : public testing::Test {
     net::IOBuffer* buffer = nullptr;
     net::CompletionCallback socket_cb;
 
-    scoped_ptr<MockTCPClientSocket> stream(
+    std::unique_ptr<MockTCPClientSocket> stream(
         new testing::StrictMock<MockTCPClientSocket>());
     EXPECT_CALL(*stream, Read(testing::NotNull(), kBufferLength, testing::_))
         .WillOnce(DoAll(testing::SaveArg<0>(&buffer),
@@ -68,7 +73,7 @@ class CombinedSocketTest : public testing::Test {
                         testing::Return(net::ERR_IO_PENDING)));
     EXPECT_CALL(*stream, Disconnect());
 
-    scoped_ptr<T> socket = CreateTestSocket<T>(std::move(stream));
+    std::unique_ptr<T> socket = CreateTestSocket<T>(std::move(stream));
     ReadCompletionCallback read_callback =
         base::Bind(&CombinedSocketTest::OnRead, base::Unretained(this));
     socket->Read(kBufferLength, read_callback);
@@ -85,7 +90,7 @@ class CombinedSocketTest : public testing::Test {
   void TestReadAfterDisconnect() {
     net::IOBuffer* buffer = nullptr;
 
-    scoped_ptr<MockTCPClientSocket> stream(
+    std::unique_ptr<MockTCPClientSocket> stream(
         new testing::NiceMock<MockTCPClientSocket>());
     EXPECT_CALL(*stream, Read(testing::NotNull(), kBufferLength, testing::_))
         .WillOnce(DoAll(testing::SaveArg<0>(&buffer),
@@ -93,7 +98,7 @@ class CombinedSocketTest : public testing::Test {
     ON_CALL(*stream, IsConnected()).WillByDefault(testing::Return(false));
     EXPECT_CALL(*stream, Disconnect());
 
-    scoped_ptr<T> socket = CreateTestSocket<T>(std::move(stream));
+    std::unique_ptr<T> socket = CreateTestSocket<T>(std::move(stream));
     ReadCompletionCallback read_callback =
         base::Bind(&CombinedSocketTest::OnRead, base::Unretained(this));
     socket->Read(kBufferLength, read_callback);

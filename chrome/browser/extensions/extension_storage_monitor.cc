@@ -432,7 +432,7 @@ void ExtensionStorageMonitor::OnImageLoaded(const std::string& extension_id,
                             : gfx::Image(util::GetDefaultExtensionIcon());
   }
 
-  scoped_ptr<message_center::Notification> notification;
+  std::unique_ptr<message_center::Notification> notification;
   notification.reset(new message_center::Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
       l10n_util::GetStringUTF16(IDS_EXTENSION_STORAGE_MONITOR_TITLE),

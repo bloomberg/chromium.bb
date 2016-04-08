@@ -77,7 +77,7 @@ void ExtensionSyncEventObserver::OnSyncStateUpdated(
   api::sync_file_system::ServiceInfo service_info;
   service_info.state = SyncServiceStateToExtensionEnum(state);
   service_info.description = description;
-  scoped_ptr<base::ListValue> params(
+  std::unique_ptr<base::ListValue> params(
       api::sync_file_system::OnServiceStatusChanged::Create(service_info));
 
   BroadcastOrDispatchEvent(
@@ -92,9 +92,9 @@ void ExtensionSyncEventObserver::OnFileSynced(
     sync_file_system::SyncFileStatus status,
     sync_file_system::SyncAction action,
     sync_file_system::SyncDirection direction) {
-  scoped_ptr<base::ListValue> params(new base::ListValue());
+  std::unique_ptr<base::ListValue> params(new base::ListValue());
 
-  scoped_ptr<base::DictionaryValue> entry(
+  std::unique_ptr<base::DictionaryValue> entry(
       CreateDictionaryValueForFileSystemEntry(url, file_type));
   if (!entry)
     return;
@@ -121,14 +121,14 @@ void ExtensionSyncEventObserver::BroadcastOrDispatchEvent(
     const GURL& app_origin,
     events::HistogramValue histogram_value,
     const std::string& event_name,
-    scoped_ptr<base::ListValue> values) {
+    std::unique_ptr<base::ListValue> values) {
   // Check to see whether the event should be broadcasted to all listening
   // extensions or sent to a specific extension ID.
   bool broadcast_mode = app_origin.is_empty();
   EventRouter* event_router = EventRouter::Get(browser_context_);
   DCHECK(event_router);
 
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(histogram_value, event_name, std::move(values)));
   event->restrict_to_browser_context = browser_context_;
 

@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_CONTEXT_MENU_MODEL_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_CONTEXT_MENU_MODEL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/base/models/simple_menu_model.h"
 
 class Browser;
@@ -133,9 +133,9 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
   ButtonVisibility button_visibility_;
 
   // Menu matcher for context menu items specified by the extension.
-  scoped_ptr<ContextMenuMatcher> extension_items_;
+  std::unique_ptr<ContextMenuMatcher> extension_items_;
 
-  scoped_ptr<ui::SimpleMenuModel> page_access_submenu_;
+  std::unique_ptr<ui::SimpleMenuModel> page_access_submenu_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionContextMenuModel);
 };

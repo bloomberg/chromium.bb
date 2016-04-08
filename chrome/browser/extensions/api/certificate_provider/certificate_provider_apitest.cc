@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -15,7 +16,6 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -140,7 +140,7 @@ class CertificateProviderApiTest : public ExtensionApiTest {
     const std::string autoselect_pattern =
         "{\"pattern\": \"*\", \"filter\": {\"ISSUER\": {\"CN\": \"root\"}}}";
 
-    scoped_ptr<base::ListValue> autoselect_policy(new base::ListValue);
+    std::unique_ptr<base::ListValue> autoselect_policy(new base::ListValue);
     autoselect_policy->AppendString(autoselect_pattern);
 
     policy::PolicyMap policy;
@@ -213,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, Basic) {
 
   const uint8_t* const key_pk8_begin =
       reinterpret_cast<const uint8_t*>(key_pk8.data());
-  scoped_ptr<crypto::RSAPrivateKey> key(
+  std::unique_ptr<crypto::RSAPrivateKey> key(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(
           std::vector<uint8_t>(key_pk8_begin, key_pk8_begin + key_pk8.size())));
   ASSERT_TRUE(key);

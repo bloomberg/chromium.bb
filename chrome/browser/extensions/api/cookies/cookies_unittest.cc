@@ -46,7 +46,7 @@ class ExtensionCookiesTest : public testing::Test {
 
 TEST_F(ExtensionCookiesTest, StoreIdProfileConversion) {
   TestingProfile::Builder profile_builder;
-  scoped_ptr<TestingProfile> profile = profile_builder.Build();
+  std::unique_ptr<TestingProfile> profile = profile_builder.Build();
   // Trigger early creation of off-the-record profile.
   EXPECT_TRUE(profile->GetOffTheRecordProfile());
 
@@ -167,7 +167,7 @@ TEST_F(ExtensionCookiesTest, DomainMatching) {
     base::DictionaryValue* dict = new base::DictionaryValue();
     dict->SetString(keys::kDomainKey, std::string(tests[i].filter));
     args.Set(0, dict);
-    scoped_ptr<GetAll::Params> params(GetAll::Params::Create(args));
+    std::unique_ptr<GetAll::Params> params(GetAll::Params::Create(args));
 
     cookies_helpers::MatchFilter filter(&params->details);
     net::CanonicalCookie cookie(

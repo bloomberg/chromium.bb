@@ -4,9 +4,9 @@
 
 #include "chrome/browser/extensions/api/identity/identity_mint_queue.h"
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,10 +20,10 @@ class MockRequest : public extensions::IdentityMintRequestQueue::Request {
   MOCK_METHOD1(StartMintToken, void(IdentityMintRequestQueue::MintType));
 };
 
-scoped_ptr<ExtensionTokenKey> ExtensionIdToKey(
+std::unique_ptr<ExtensionTokenKey> ExtensionIdToKey(
     const std::string& extension_id) {
-  return scoped_ptr<ExtensionTokenKey>(new ExtensionTokenKey(
-      extension_id, "user_id", std::set<std::string>()));
+  return std::unique_ptr<ExtensionTokenKey>(
+      new ExtensionTokenKey(extension_id, "user_id", std::set<std::string>()));
 }
 
 }  // namespace
@@ -32,7 +32,7 @@ TEST(IdentityMintQueueTest, SerialRequests) {
   IdentityMintRequestQueue::MintType type =
       IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE;
   IdentityMintRequestQueue queue;
-  scoped_ptr<ExtensionTokenKey> key(ExtensionIdToKey("ext_id"));
+  std::unique_ptr<ExtensionTokenKey> key(ExtensionIdToKey("ext_id"));
   MockRequest request1;
   MockRequest request2;
 
@@ -49,7 +49,7 @@ TEST(IdentityMintQueueTest, InteractiveType) {
   IdentityMintRequestQueue::MintType type =
       IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE;
   IdentityMintRequestQueue queue;
-  scoped_ptr<ExtensionTokenKey> key(ExtensionIdToKey("ext_id"));
+  std::unique_ptr<ExtensionTokenKey> key(ExtensionIdToKey("ext_id"));
   MockRequest request1;
 
   EXPECT_CALL(request1, StartMintToken(type)).Times(1);
@@ -61,7 +61,7 @@ TEST(IdentityMintQueueTest, ParallelRequests) {
   IdentityMintRequestQueue::MintType type =
       IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE;
   IdentityMintRequestQueue queue;
-  scoped_ptr<ExtensionTokenKey> key(ExtensionIdToKey("ext_id"));
+  std::unique_ptr<ExtensionTokenKey> key(ExtensionIdToKey("ext_id"));
   MockRequest request1;
   MockRequest request2;
   MockRequest request3;
@@ -84,8 +84,8 @@ TEST(IdentityMintQueueTest, ParallelRequestsFromTwoKeys) {
   IdentityMintRequestQueue::MintType type =
       IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE;
   IdentityMintRequestQueue queue;
-  scoped_ptr<ExtensionTokenKey> key1(ExtensionIdToKey("ext_id_1"));
-  scoped_ptr<ExtensionTokenKey> key2(ExtensionIdToKey("ext_id_2"));
+  std::unique_ptr<ExtensionTokenKey> key1(ExtensionIdToKey("ext_id_1"));
+  std::unique_ptr<ExtensionTokenKey> key2(ExtensionIdToKey("ext_id_2"));
   MockRequest request1;
   MockRequest request2;
 
@@ -102,7 +102,7 @@ TEST(IdentityMintQueueTest, Empty) {
   IdentityMintRequestQueue::MintType type =
       IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE;
   IdentityMintRequestQueue queue;
-  scoped_ptr<ExtensionTokenKey> key(ExtensionIdToKey("ext_id"));
+  std::unique_ptr<ExtensionTokenKey> key(ExtensionIdToKey("ext_id"));
   MockRequest request1;
 
   EXPECT_TRUE(queue.empty(type, *key));
@@ -117,7 +117,7 @@ TEST(IdentityMintQueueTest, Cancel) {
   IdentityMintRequestQueue::MintType type =
       IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE;
   IdentityMintRequestQueue queue;
-  scoped_ptr<ExtensionTokenKey> key(ExtensionIdToKey("ext_id"));
+  std::unique_ptr<ExtensionTokenKey> key(ExtensionIdToKey("ext_id"));
   MockRequest request1;
   MockRequest request2;
   MockRequest request3;

@@ -5,11 +5,13 @@
 #include "chrome/browser/extensions/api/sessions/sessions_api.h"
 
 #include <stddef.h>
+
 #include <utility>
 #include <vector>
 
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -106,12 +108,12 @@ tabs::Tab CreateTabModelHelper(
   return tab_struct;
 }
 
-scoped_ptr<windows::Window> CreateWindowModelHelper(
-    scoped_ptr<std::vector<tabs::Tab>> tabs,
+std::unique_ptr<windows::Window> CreateWindowModelHelper(
+    std::unique_ptr<std::vector<tabs::Tab>> tabs,
     const std::string& session_id,
     const windows::WindowType& type,
     const windows::WindowState& state) {
-  scoped_ptr<windows::Window> window_struct(new windows::Window);
+  std::unique_ptr<windows::Window> window_struct(new windows::Window);
   window_struct->tabs = std::move(tabs);
   window_struct->session_id.reset(new std::string(session_id));
   window_struct->incognito = false;
@@ -122,11 +124,11 @@ scoped_ptr<windows::Window> CreateWindowModelHelper(
   return window_struct;
 }
 
-scoped_ptr<api::sessions::Session> CreateSessionModelHelper(
+std::unique_ptr<api::sessions::Session> CreateSessionModelHelper(
     int last_modified,
-    scoped_ptr<tabs::Tab> tab,
-    scoped_ptr<windows::Window> window) {
-  scoped_ptr<api::sessions::Session> session_struct(
+    std::unique_ptr<tabs::Tab> tab,
+    std::unique_ptr<windows::Window> window) {
+  std::unique_ptr<api::sessions::Session> session_struct(
       new api::sessions::Session());
   session_struct->last_modified = last_modified;
   if (tab)
@@ -159,13 +161,13 @@ tabs::Tab SessionsGetRecentlyClosedFunction::CreateTabModel(
                               extension());
 }
 
-scoped_ptr<windows::Window>
+std::unique_ptr<windows::Window>
 SessionsGetRecentlyClosedFunction::CreateWindowModel(
     const sessions::TabRestoreService::Window& window,
     int session_id) {
   DCHECK(!window.tabs.empty());
 
-  scoped_ptr<std::vector<tabs::Tab>> tabs(new std::vector<tabs::Tab>());
+  std::unique_ptr<std::vector<tabs::Tab>> tabs(new std::vector<tabs::Tab>());
   for (size_t i = 0; i < window.tabs.size(); ++i) {
     tabs->push_back(CreateTabModel(window.tabs[i], window.tabs[i].id,
                                    window.selected_tab_index));
@@ -176,11 +178,11 @@ SessionsGetRecentlyClosedFunction::CreateWindowModel(
                                  windows::WINDOW_STATE_NORMAL);
 }
 
-scoped_ptr<api::sessions::Session>
+std::unique_ptr<api::sessions::Session>
 SessionsGetRecentlyClosedFunction::CreateSessionModel(
     const sessions::TabRestoreService::Entry* entry) {
-  scoped_ptr<tabs::Tab> tab;
-  scoped_ptr<windows::Window> window;
+  std::unique_ptr<tabs::Tab> tab;
+  std::unique_ptr<windows::Window> window;
   switch (entry->type) {
     case sessions::TabRestoreService::TAB:
       tab.reset(new tabs::Tab(CreateTabModel(
@@ -200,7 +202,7 @@ SessionsGetRecentlyClosedFunction::CreateSessionModel(
 }
 
 bool SessionsGetRecentlyClosedFunction::RunSync() {
-  scoped_ptr<GetRecentlyClosed::Params> params(
+  std::unique_ptr<GetRecentlyClosed::Params> params(
       GetRecentlyClosed::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   int max_results = api::sessions::MAX_SESSION_RESULTS;
@@ -250,8 +252,9 @@ tabs::Tab SessionsGetDevicesFunction::CreateTabModel(
       extension());
 }
 
-scoped_ptr<windows::Window> SessionsGetDevicesFunction::CreateWindowModel(
-        const sessions::SessionWindow& window, const std::string& session_tag) {
+std::unique_ptr<windows::Window> SessionsGetDevicesFunction::CreateWindowModel(
+    const sessions::SessionWindow& window,
+    const std::string& session_tag) {
   DCHECK(!window.tabs.empty());
 
   // Prune tabs that are not syncable or are NewTabPage. Then, sort the tabs
@@ -269,10 +272,10 @@ scoped_ptr<windows::Window> SessionsGetDevicesFunction::CreateWindowModel(
     tabs_in_window.push_back(tab);
   }
   if (tabs_in_window.empty())
-    return scoped_ptr<windows::Window>();
+    return std::unique_ptr<windows::Window>();
   std::sort(tabs_in_window.begin(), tabs_in_window.end(), SortTabsByRecency);
 
-  scoped_ptr<std::vector<tabs::Tab>> tabs(new std::vector<tabs::Tab>());
+  std::unique_ptr<std::vector<tabs::Tab>> tabs(new std::vector<tabs::Tab>());
   for (size_t i = 0; i < tabs_in_window.size(); ++i) {
     tabs->push_back(CreateTabModel(session_tag, *tabs_in_window[i], i,
                                    window.selected_tab_index));
@@ -312,7 +315,7 @@ scoped_ptr<windows::Window> SessionsGetDevicesFunction::CreateWindowModel(
       break;
   }
 
-  scoped_ptr<windows::Window> window_struct(
+  std::unique_ptr<windows::Window> window_struct(
       CreateWindowModelHelper(std::move(tabs), session_id, type, state));
   // TODO(dwankri): Dig deeper to resolve bounds not being optional, so closed
   // windows in GetRecentlyClosed can have set values in Window helper.
@@ -324,16 +327,17 @@ scoped_ptr<windows::Window> SessionsGetDevicesFunction::CreateWindowModel(
   return window_struct;
 }
 
-scoped_ptr<api::sessions::Session>
+std::unique_ptr<api::sessions::Session>
 SessionsGetDevicesFunction::CreateSessionModel(
-    const sessions::SessionWindow& window, const std::string& session_tag) {
-  scoped_ptr<windows::Window> window_model(
+    const sessions::SessionWindow& window,
+    const std::string& session_tag) {
+  std::unique_ptr<windows::Window> window_model(
       CreateWindowModel(window, session_tag));
   // There is a chance that after pruning uninteresting tabs the window will be
   // empty.
-  return !window_model ? scoped_ptr<api::sessions::Session>()
+  return !window_model ? std::unique_ptr<api::sessions::Session>()
                        : CreateSessionModelHelper(window.timestamp.ToTimeT(),
-                                                  scoped_ptr<tabs::Tab>(),
+                                                  std::unique_ptr<tabs::Tab>(),
                                                   std::move(window_model));
 }
 
@@ -341,7 +345,8 @@ api::sessions::Device SessionsGetDevicesFunction::CreateDeviceModel(
     const sync_driver::SyncedSession* session) {
   int max_results = api::sessions::MAX_SESSION_RESULTS;
   // Already validated in RunAsync().
-  scoped_ptr<GetDevices::Params> params(GetDevices::Params::Create(*args_));
+  std::unique_ptr<GetDevices::Params> params(
+      GetDevices::Params::Create(*args_));
   if (params->filter && params->filter->max_results)
     max_results = *params->filter->max_results;
 
@@ -354,8 +359,8 @@ api::sessions::Device SessionsGetDevicesFunction::CreateDeviceModel(
        it != session->windows.end() &&
        static_cast<int>(device_struct.sessions.size()) < max_results;
        ++it) {
-    scoped_ptr<api::sessions::Session> session_model(CreateSessionModel(
-        *it->second, session->session_tag));
+    std::unique_ptr<api::sessions::Session> session_model(
+        CreateSessionModel(*it->second, session->session_tag));
     if (session_model)
       device_struct.sessions.push_back(std::move(*session_model));
   }
@@ -380,7 +385,8 @@ bool SessionsGetDevicesFunction::RunSync() {
     return true;
   }
 
-  scoped_ptr<GetDevices::Params> params(GetDevices::Params::Create(*args_));
+  std::unique_ptr<GetDevices::Params> params(
+      GetDevices::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   if (params->filter && params->filter->max_results) {
     EXTENSION_FUNCTION_VALIDATE(*params->filter->max_results >= 0 &&
@@ -404,11 +410,11 @@ void SessionsRestoreFunction::SetInvalidIdError(const std::string& invalid_id) {
 
 void SessionsRestoreFunction::SetResultRestoredTab(
     content::WebContents* contents) {
-  scoped_ptr<tabs::Tab> tab(
+  std::unique_ptr<tabs::Tab> tab(
       ExtensionTabUtil::CreateTabObject(contents, extension()));
-  scoped_ptr<api::sessions::Session> restored_session(
+  std::unique_ptr<api::sessions::Session> restored_session(
       CreateSessionModelHelper(base::Time::Now().ToTimeT(), std::move(tab),
-                               scoped_ptr<windows::Window>()));
+                               std::unique_ptr<windows::Window>()));
   results_ = Restore::Results::Create(*restored_session);
 }
 
@@ -418,12 +424,13 @@ bool SessionsRestoreFunction::SetResultRestoredWindow(int window_id) {
     // error_ is set by GetWindowFromWindowId function call.
     return false;
   }
-  scoped_ptr<base::DictionaryValue> window_value(
+  std::unique_ptr<base::DictionaryValue> window_value(
       controller->CreateWindowValueWithTabs(extension()));
-  scoped_ptr<windows::Window> window(windows::Window::FromValue(
-      *window_value));
+  std::unique_ptr<windows::Window> window(
+      windows::Window::FromValue(*window_value));
   results_ = Restore::Results::Create(*CreateSessionModelHelper(
-      base::Time::Now().ToTimeT(), scoped_ptr<tabs::Tab>(), std::move(window)));
+      base::Time::Now().ToTimeT(), std::unique_ptr<tabs::Tab>(),
+      std::move(window)));
   return true;
 }
 
@@ -558,7 +565,7 @@ bool SessionsRestoreFunction::RestoreForeignSession(const SessionId& session_id,
 }
 
 bool SessionsRestoreFunction::RunSync() {
-  scoped_ptr<Restore::Params> params(Restore::Params::Create(*args_));
+  std::unique_ptr<Restore::Params> params(Restore::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Browser* browser = chrome::FindBrowserWithProfile(GetProfile());
@@ -575,7 +582,7 @@ bool SessionsRestoreFunction::RunSync() {
   if (!params->session_id)
     return RestoreMostRecentlyClosed(browser);
 
-  scoped_ptr<SessionId> session_id(SessionId::Parse(*params->session_id));
+  std::unique_ptr<SessionId> session_id(SessionId::Parse(*params->session_id));
   if (!session_id) {
     SetInvalidIdError(*params->session_id);
     return false;
@@ -604,8 +611,8 @@ SessionsEventRouter::~SessionsEventRouter() {
 
 void SessionsEventRouter::TabRestoreServiceChanged(
     sessions::TabRestoreService* service) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  EventRouter::Get(profile_)->BroadcastEvent(make_scoped_ptr(
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
+  EventRouter::Get(profile_)->BroadcastEvent(base::WrapUnique(
       new Event(events::SESSIONS_ON_CHANGED,
                 api::sessions::OnChanged::kEventName, std::move(args))));
 }

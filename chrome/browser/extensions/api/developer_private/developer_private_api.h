@@ -131,7 +131,7 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
   void BroadcastItemStateChangedHelper(
       api::developer_private::EventType event_type,
       const std::string& extension_id,
-      scoped_ptr<ExtensionInfoGenerator> info_generator,
+      std::unique_ptr<ExtensionInfoGenerator> info_generator,
       std::vector<api::developer_private::ExtensionInfo> infos);
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
@@ -218,7 +218,7 @@ class DeveloperPrivateAPI : public BrowserContextKeyedAPI,
   base::FilePath last_unpacked_directory_;
 
   // Created lazily upon OnListenerAdded.
-  scoped_ptr<DeveloperPrivateEventRouter> developer_private_event_router_;
+  std::unique_ptr<DeveloperPrivateEventRouter> developer_private_event_router_;
 
   DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateAPI);
 };
@@ -262,7 +262,7 @@ class DeveloperPrivateGetItemsInfoFunction
   void OnInfosGenerated(
       std::vector<api::developer_private::ExtensionInfo> infos);
 
-  scoped_ptr<ExtensionInfoGenerator> info_generator_;
+  std::unique_ptr<ExtensionInfoGenerator> info_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateGetItemsInfoFunction);
 };
@@ -281,7 +281,7 @@ class DeveloperPrivateGetExtensionsInfoFunction
   void OnInfosGenerated(
       std::vector<api::developer_private::ExtensionInfo> infos);
 
-  scoped_ptr<ExtensionInfoGenerator> info_generator_;
+  std::unique_ptr<ExtensionInfoGenerator> info_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateGetExtensionsInfoFunction);
 };
@@ -300,7 +300,7 @@ class DeveloperPrivateGetExtensionInfoFunction
   void OnInfosGenerated(
       std::vector<api::developer_private::ExtensionInfo> infos);
 
-  scoped_ptr<ExtensionInfoGenerator> info_generator_;
+  std::unique_ptr<ExtensionInfoGenerator> info_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateGetExtensionInfoFunction);
 };
@@ -527,7 +527,7 @@ class DeveloperPrivateRequestFileSourceFunction
  private:
   void Finish(const std::string& file_contents);
 
-  scoped_ptr<api::developer_private::RequestFileSource::Params> params_;
+  std::unique_ptr<api::developer_private::RequestFileSource::Params> params_;
 };
 
 class DeveloperPrivateOpenDevToolsFunction

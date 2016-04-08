@@ -45,13 +45,13 @@ class ActivityLogEnabledTest : public ChromeRenderViewHostTestHarness {
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
-  scoped_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
+  std::unique_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
 #endif
 };
 
 TEST_F(ActivityLogEnabledTest, NoSwitch) {
-  scoped_ptr<TestingProfile> profile(
-    static_cast<TestingProfile*>(CreateBrowserContext()));
+  std::unique_ptr<TestingProfile> profile(
+      static_cast<TestingProfile*>(CreateBrowserContext()));
   EXPECT_FALSE(
       profile->GetPrefs()->GetInteger(prefs::kWatchdogExtensionActive));
 
@@ -64,10 +64,10 @@ TEST_F(ActivityLogEnabledTest, NoSwitch) {
 }
 
 TEST_F(ActivityLogEnabledTest, CommandLineSwitch) {
-  scoped_ptr<TestingProfile> profile1(
-    static_cast<TestingProfile*>(CreateBrowserContext()));
-  scoped_ptr<TestingProfile> profile2(
-    static_cast<TestingProfile*>(CreateBrowserContext()));
+  std::unique_ptr<TestingProfile> profile1(
+      static_cast<TestingProfile*>(CreateBrowserContext()));
+  std::unique_ptr<TestingProfile> profile2(
+      static_cast<TestingProfile*>(CreateBrowserContext()));
 
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   base::CommandLine saved_cmdline_ = *base::CommandLine::ForCurrentProcess();
@@ -88,12 +88,12 @@ TEST_F(ActivityLogEnabledTest, CommandLineSwitch) {
 }
 
 TEST_F(ActivityLogEnabledTest, PrefSwitch) {
-  scoped_ptr<TestingProfile> profile1(
-    static_cast<TestingProfile*>(CreateBrowserContext()));
-  scoped_ptr<TestingProfile> profile2(
-    static_cast<TestingProfile*>(CreateBrowserContext()));
-  scoped_ptr<TestingProfile> profile3(
-    static_cast<TestingProfile*>(CreateBrowserContext()));
+  std::unique_ptr<TestingProfile> profile1(
+      static_cast<TestingProfile*>(CreateBrowserContext()));
+  std::unique_ptr<TestingProfile> profile2(
+      static_cast<TestingProfile*>(CreateBrowserContext()));
+  std::unique_ptr<TestingProfile> profile3(
+      static_cast<TestingProfile*>(CreateBrowserContext()));
 
   EXPECT_EQ(0,
       profile1->GetPrefs()->GetInteger(prefs::kWatchdogExtensionActive));
@@ -124,10 +124,10 @@ TEST_F(ActivityLogEnabledTest, PrefSwitch) {
 
 TEST_F(ActivityLogEnabledTest, WatchdogSwitch) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  scoped_ptr<TestingProfile> profile1(
-    static_cast<TestingProfile*>(CreateBrowserContext()));
-  scoped_ptr<TestingProfile> profile2(
-    static_cast<TestingProfile*>(CreateBrowserContext()));
+  std::unique_ptr<TestingProfile> profile1(
+      static_cast<TestingProfile*>(CreateBrowserContext()));
+  std::unique_ptr<TestingProfile> profile2(
+      static_cast<TestingProfile*>(CreateBrowserContext()));
   // Extension service is destroyed by the profile.
   ExtensionService* extension_service1 =
     static_cast<TestExtensionSystem*>(
@@ -235,8 +235,8 @@ TEST_F(ActivityLogEnabledTest, AppAndCommandLine) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExtensionActivityLogging);
 
-  scoped_ptr<TestingProfile> profile(
-    static_cast<TestingProfile*>(CreateBrowserContext()));
+  std::unique_ptr<TestingProfile> profile(
+      static_cast<TestingProfile*>(CreateBrowserContext()));
   // Extension service is destroyed by the profile.
   ExtensionService* extension_service =
     static_cast<TestExtensionSystem*>(

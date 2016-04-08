@@ -139,18 +139,18 @@ ExtensionSyncData::ExtensionSyncData(const ExtensionSyncData& other) = default;
 ExtensionSyncData::~ExtensionSyncData() {}
 
 // static
-scoped_ptr<ExtensionSyncData> ExtensionSyncData::CreateFromSyncData(
+std::unique_ptr<ExtensionSyncData> ExtensionSyncData::CreateFromSyncData(
     const syncer::SyncData& sync_data) {
-  scoped_ptr<ExtensionSyncData> data(new ExtensionSyncData);
+  std::unique_ptr<ExtensionSyncData> data(new ExtensionSyncData);
   if (data->PopulateFromSyncData(sync_data))
     return data;
   return nullptr;
 }
 
 // static
-scoped_ptr<ExtensionSyncData> ExtensionSyncData::CreateFromSyncChange(
+std::unique_ptr<ExtensionSyncData> ExtensionSyncData::CreateFromSyncChange(
     const syncer::SyncChange& sync_change) {
-  scoped_ptr<ExtensionSyncData> data(
+  std::unique_ptr<ExtensionSyncData> data(
       CreateFromSyncData(sync_change.sync_data()));
   if (!data.get())
     return nullptr;

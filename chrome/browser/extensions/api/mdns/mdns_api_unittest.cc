@@ -5,11 +5,13 @@
 #include "chrome/browser/extensions/api/mdns/mdns_api.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -40,7 +42,7 @@ void AddEventListener(
     const std::string& extension_id,
     const std::string& service_type,
     extensions::EventListenerMap::ListenerList* listener_list) {
-  scoped_ptr<base::DictionaryValue> filter(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> filter(new base::DictionaryValue);
   filter->SetString(kEventFilterServiceTypeKey, service_type);
   listener_list->push_back(make_linked_ptr(
       EventListener::ForExtension(kEventFilterServiceTypeKey, extension_id,
@@ -69,18 +71,19 @@ class MockedMDnsAPI : public MDnsAPI {
                const extensions::EventListenerMap::ListenerList&());
 };
 
-scoped_ptr<KeyedService> MockedMDnsAPITestingFactoryFunction(
+std::unique_ptr<KeyedService> MockedMDnsAPITestingFactoryFunction(
     content::BrowserContext* context) {
-  return make_scoped_ptr(new MockedMDnsAPI(context));
+  return base::WrapUnique(new MockedMDnsAPI(context));
 }
 
-scoped_ptr<KeyedService> MDnsAPITestingFactoryFunction(
+std::unique_ptr<KeyedService> MDnsAPITestingFactoryFunction(
     content::BrowserContext* context) {
-  return make_scoped_ptr(new MDnsAPI(context));
+  return base::WrapUnique(new MDnsAPI(context));
 }
 
-scoped_ptr<KeyedService> BuildEventRouter(content::BrowserContext* context) {
-  return make_scoped_ptr(
+std::unique_ptr<KeyedService> BuildEventRouter(
+    content::BrowserContext* context) {
+  return base::WrapUnique(
       new extensions::EventRouter(context, ExtensionPrefs::Get(context)));
 }
 
@@ -118,15 +121,15 @@ class MockEventRouter : public EventRouter {
       : EventRouter(browser_context, extension_prefs) {}
   virtual ~MockEventRouter() {}
 
-  virtual void BroadcastEvent(scoped_ptr<Event> event) {
+  virtual void BroadcastEvent(std::unique_ptr<Event> event) {
     BroadcastEventPtr(event.get());
   }
   MOCK_METHOD1(BroadcastEventPtr, void(Event* event));
 };
 
-scoped_ptr<KeyedService> MockEventRouterFactoryFunction(
+std::unique_ptr<KeyedService> MockEventRouterFactoryFunction(
     content::BrowserContext* context) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new MockEventRouter(context, ExtensionPrefs::Get(context)));
 }
 
@@ -207,8 +210,8 @@ class MDnsAPITest : public extensions::ExtensionServiceTestBase {
     EXPECT_CALL(*dns_sd_registry(),
                 AddObserver(MDnsAPI::Get(browser_context())))
         .Times(1);
-    MDnsAPI::Get(browser_context())->SetDnsSdRegistryForTesting(
-        scoped_ptr<DnsSdRegistry>(registry_));
+    MDnsAPI::Get(browser_context())
+        ->SetDnsSdRegistryForTesting(std::unique_ptr<DnsSdRegistry>(registry_));
 
     render_process_host_.reset(
         new content::MockRenderProcessHost(browser_context()));
@@ -267,7 +270,7 @@ class MDnsAPITest : public extensions::ExtensionServiceTestBase {
   // for it, so use a private member.
   MockDnsSdRegistry* registry_;
 
-  scoped_ptr<content::RenderProcessHost> render_process_host_;
+  std::unique_ptr<content::RenderProcessHost> render_process_host_;
 };
 
 class MDnsAPIMaxServicesTest : public MDnsAPITest {

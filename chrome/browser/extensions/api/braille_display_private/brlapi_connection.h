@@ -7,9 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "library_loaders/libbrlapi.h"
 
 namespace extensions {
@@ -28,7 +29,7 @@ class BrlapiConnection {
     CONNECT_SUCCESS,
   };
 
-  static scoped_ptr<BrlapiConnection> Create(LibBrlapiLoader* loader);
+  static std::unique_ptr<BrlapiConnection> Create(LibBrlapiLoader* loader);
 
   virtual ~BrlapiConnection();
 

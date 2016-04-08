@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_SYNC_DATA_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SYNC_DATA_H_
 
+#include <memory>
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/version.h"
 #include "extensions/common/constants.h"
 #include "sync/api/string_ordinal.h"
@@ -69,9 +69,9 @@ class ExtensionSyncData {
 
   // For constructing an ExtensionSyncData from received sync data.
   // May return null if the sync data was invalid.
-  static scoped_ptr<ExtensionSyncData> CreateFromSyncData(
+  static std::unique_ptr<ExtensionSyncData> CreateFromSyncData(
       const syncer::SyncData& sync_data);
-  static scoped_ptr<ExtensionSyncData> CreateFromSyncChange(
+  static std::unique_ptr<ExtensionSyncData> CreateFromSyncChange(
       const syncer::SyncChange& sync_change);
 
   // Retrieve sync data from this class.

@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_UTIL_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_UTIL_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -112,7 +112,8 @@ GURL GetSiteForExtensionId(const std::string& extension_id,
 
 // Sets the name, id, and icon resource path of the given extension into the
 // returned dictionary.
-scoped_ptr<base::DictionaryValue> GetExtensionInfo(const Extension* extension);
+std::unique_ptr<base::DictionaryValue> GetExtensionInfo(
+    const Extension* extension);
 
 // Returns the default extension/app icon (for extensions or apps that don't
 // have one).

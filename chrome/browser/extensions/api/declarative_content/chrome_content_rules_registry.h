@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -16,7 +17,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/declarative_content/content_action.h"
 #include "chrome/browser/extensions/api/declarative_content/content_condition.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
@@ -56,7 +56,7 @@ class ChromeContentRulesRegistry
       public ContentPredicateEvaluator::Delegate {
  public:
   using PredicateEvaluatorsFactory =
-      base::Callback<std::vector<scoped_ptr<ContentPredicateEvaluator>>(
+      base::Callback<std::vector<std::unique_ptr<ContentPredicateEvaluator>>(
           ContentPredicateEvaluator::Delegate*)>;
 
   // For testing, |cache_delegate| can be NULL. In that case it constructs the
@@ -105,14 +105,14 @@ class ChromeContentRulesRegistry
   struct ContentRule {
    public:
     ContentRule(const Extension* extension,
-                std::vector<scoped_ptr<const ContentCondition>> conditions,
-                std::vector<scoped_ptr<const ContentAction>> actions,
+                std::vector<std::unique_ptr<const ContentCondition>> conditions,
+                std::vector<std::unique_ptr<const ContentAction>> actions,
                 int priority);
     ~ContentRule();
 
     const Extension* extension;
-    std::vector<scoped_ptr<const ContentCondition>> conditions;
-    std::vector<scoped_ptr<const ContentAction>> actions;
+    std::vector<std::unique_ptr<const ContentCondition>> conditions;
+    std::vector<std::unique_ptr<const ContentAction>> actions;
     int priority;
 
    private:
@@ -135,7 +135,7 @@ class ChromeContentRulesRegistry
   // and ContentAction.  |extension| may be NULL in tests.  If |error| is empty,
   // the translation was successful and the returned rule is internally
   // consistent.
-  scoped_ptr<const ContentRule> CreateRule(
+  std::unique_ptr<const ContentRule> CreateRule(
       const Extension* extension,
       const std::map<std::string, ContentPredicateFactory*>&
           predicate_factories,
@@ -175,7 +175,7 @@ class ChromeContentRulesRegistry
 
   // The evaluators responsible for creating predicates and tracking
   // predicate-related state.
-  std::vector<scoped_ptr<ContentPredicateEvaluator>> evaluators_;
+  std::vector<std::unique_ptr<ContentPredicateEvaluator>> evaluators_;
 
   // Specifies what to do with evaluation requests.
   EvaluationDisposition evaluation_disposition_;

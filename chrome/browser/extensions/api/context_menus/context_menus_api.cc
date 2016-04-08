@@ -35,7 +35,7 @@ namespace Update = api::context_menus::Update;
 bool ContextMenusCreateFunction::RunSync() {
   MenuItem::Id id(GetProfile()->IsOffTheRecord(),
                   MenuItem::ExtensionKey(extension_id()));
-  scoped_ptr<Create::Params> params(Create::Params::Create(*args_));
+  std::unique_ptr<Create::Params> params(Create::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   if (params->create_properties.id.get()) {
@@ -60,7 +60,7 @@ bool ContextMenusCreateFunction::RunSync() {
 bool ContextMenusUpdateFunction::RunSync() {
   MenuItem::Id item_id(GetProfile()->IsOffTheRecord(),
                        MenuItem::ExtensionKey(extension_id()));
-  scoped_ptr<Update::Params> params(Update::Params::Create(*args_));
+  std::unique_ptr<Update::Params> params(Update::Params::Create(*args_));
 
   EXTENSION_FUNCTION_VALIDATE(params.get());
   if (params->id.as_string)
@@ -75,7 +75,7 @@ bool ContextMenusUpdateFunction::RunSync() {
 }
 
 bool ContextMenusRemoveFunction::RunSync() {
-  scoped_ptr<Remove::Params> params(Remove::Params::Create(*args_));
+  std::unique_ptr<Remove::Params> params(Remove::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   MenuManager* manager = MenuManager::Get(GetProfile());

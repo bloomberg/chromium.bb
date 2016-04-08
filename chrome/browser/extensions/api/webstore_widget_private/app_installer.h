@@ -41,7 +41,7 @@ class AppInstaller : public extensions::WebstoreStandaloneInstaller {
   bool ShouldShowPostInstallUI() const override;
   bool ShouldShowAppInstalledBubble() const override;
   content::WebContents* GetWebContents() const override;
-  scoped_ptr<ExtensionInstallPrompt::Prompt> CreateInstallPrompt()
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> CreateInstallPrompt()
       const override;
   bool CheckInlineInstallPermitted(const base::DictionaryValue& webstore_data,
                                    std::string* error) const override;
@@ -54,7 +54,7 @@ class AppInstaller : public extensions::WebstoreStandaloneInstaller {
   bool silent_installation_;
   Callback callback_;
   content::WebContents* web_contents_;
-  scoped_ptr<WebContentsObserver> web_contents_observer_;
+  std::unique_ptr<WebContentsObserver> web_contents_observer_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AppInstaller);
 };

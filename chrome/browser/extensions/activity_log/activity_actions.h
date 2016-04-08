@@ -78,7 +78,7 @@ class Action : public base::RefCountedThreadSafe<Action> {
   // can be modified in place; if the list was null an empty list is created
   // first.
   const base::ListValue* args() const { return args_.get(); }
-  void set_args(scoped_ptr<base::ListValue> args);
+  void set_args(std::unique_ptr<base::ListValue> args);
   base::ListValue* mutable_args();
 
   // The URL of the page which was modified or accessed.
@@ -102,7 +102,7 @@ class Action : public base::RefCountedThreadSafe<Action> {
 
   // A dictionary where any additional data can be stored.
   const base::DictionaryValue* other() const { return other_.get(); }
-  void set_other(scoped_ptr<base::DictionaryValue> other);
+  void set_other(std::unique_ptr<base::DictionaryValue> other);
   base::DictionaryValue* mutable_other();
 
   // An ID that identifies an action stored in the Activity Log database. If the
@@ -138,13 +138,13 @@ class Action : public base::RefCountedThreadSafe<Action> {
   base::Time time_;
   ActionType action_type_;
   std::string api_name_;
-  scoped_ptr<base::ListValue> args_;
+  std::unique_ptr<base::ListValue> args_;
   GURL page_url_;
   std::string page_title_;
   bool page_incognito_;
   GURL arg_url_;
   bool arg_incognito_;
-  scoped_ptr<base::DictionaryValue> other_;
+  std::unique_ptr<base::DictionaryValue> other_;
   int count_;
   int64_t action_id_;
 

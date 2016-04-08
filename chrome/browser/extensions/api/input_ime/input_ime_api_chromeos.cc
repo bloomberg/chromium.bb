@@ -97,7 +97,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
     context_value.type =
         input_ime::ParseInputContextType(ConvertInputContextType(context));
 
-    scoped_ptr<base::ListValue> args(
+    std::unique_ptr<base::ListValue> args(
         input_ime::OnInputContextUpdate::Create(context_value));
 
     DispatchEventToExtension(
@@ -130,7 +130,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
         break;
     }
 
-    scoped_ptr<base::ListValue> args(input_ime::OnCandidateClicked::Create(
+    std::unique_ptr<base::ListValue> args(input_ime::OnCandidateClicked::Create(
         component_id, candidate_id, button_enum));
 
     DispatchEventToExtension(extensions::events::INPUT_IME_ON_CANDIDATE_CLICKED,
@@ -144,7 +144,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
         !HasListener(input_ime::OnMenuItemActivated::kEventName))
       return;
 
-    scoped_ptr<base::ListValue> args(
+    std::unique_ptr<base::ListValue> args(
         input_ime::OnMenuItemActivated::Create(component_id, menu_id));
 
     DispatchEventToExtension(
@@ -171,7 +171,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
 
     if (bounds_list->GetSize() <= 0)
       return;
-    scoped_ptr<base::ListValue> args(new base::ListValue());
+    std::unique_ptr<base::ListValue> args(new base::ListValue());
 
     // The old extension code uses the first parameter to get the bounds of the
     // first composition character, so for backward compatibility, add it here.
@@ -190,7 +190,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
   void DispatchEventToExtension(
       extensions::events::HistogramValue histogram_value,
       const std::string& event_name,
-      scoped_ptr<base::ListValue> args) override {
+      std::unique_ptr<base::ListValue> args) override {
     if (event_name != input_ime::OnActivate::kEventName) {
       // For suspended IME extension (e.g. XKB extension), don't awake it by IME
       // events except onActivate. The IME extension should be awake by other
@@ -214,7 +214,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
       }
     }
 
-    scoped_ptr<extensions::Event> event(
+    std::unique_ptr<extensions::Event> event(
         new extensions::Event(histogram_value, event_name, std::move(args)));
     event->restrict_to_browser_context = profile_;
     extensions::EventRouter::Get(profile_)
@@ -316,7 +316,7 @@ bool InputImeEventRouter::RegisterImeExtension(
     profile = profile->GetOffTheRecordProfile();
   }
 
-  scoped_ptr<InputMethodEngineBase::Observer> observer(
+  std::unique_ptr<InputMethodEngineBase::Observer> observer(
       new ImeObserverChromeOS(extension_id, profile));
   chromeos::InputMethodEngine* engine = new chromeos::InputMethodEngine();
   engine->Initialize(std::move(observer), extension_id.c_str(), profile);
@@ -364,7 +364,7 @@ bool InputImeClearCompositionFunction::RunSync() {
     return true;
   }
 
-  scoped_ptr<ClearComposition::Params> parent_params(
+  std::unique_ptr<ClearComposition::Params> parent_params(
       ClearComposition::Params::Create(*args_));
   const ClearComposition::Params::Parameters& params =
       parent_params->parameters;
@@ -385,7 +385,7 @@ bool InputImeHideInputViewFunction::RunAsync() {
 }
 
 bool InputImeSetCandidateWindowPropertiesFunction::RunSync() {
-  scoped_ptr<SetCandidateWindowProperties::Params> parent_params(
+  std::unique_ptr<SetCandidateWindowProperties::Params> parent_params(
       SetCandidateWindowProperties::Params::Create(*args_));
   const SetCandidateWindowProperties::Params::Parameters&
       params = parent_params->parameters;
@@ -464,7 +464,7 @@ bool InputImeSetCandidatesFunction::RunSync() {
     return true;
   }
 
-  scoped_ptr<SetCandidates::Params> parent_params(
+  std::unique_ptr<SetCandidates::Params> parent_params(
       SetCandidates::Params::Create(*args_));
   const SetCandidates::Params::Parameters& params =
       parent_params->parameters;
@@ -497,7 +497,7 @@ bool InputImeSetCursorPositionFunction::RunSync() {
     return true;
   }
 
-  scoped_ptr<SetCursorPosition::Params> parent_params(
+  std::unique_ptr<SetCursorPosition::Params> parent_params(
       SetCursorPosition::Params::Create(*args_));
   const SetCursorPosition::Params::Parameters& params =
       parent_params->parameters;
@@ -509,7 +509,7 @@ bool InputImeSetCursorPositionFunction::RunSync() {
 }
 
 bool InputImeSetMenuItemsFunction::RunSync() {
-  scoped_ptr<SetMenuItems::Params> parent_params(
+  std::unique_ptr<SetMenuItems::Params> parent_params(
       SetMenuItems::Params::Create(*args_));
   const SetMenuItems::Params::Parameters& params =
       parent_params->parameters;
@@ -536,7 +536,7 @@ bool InputImeSetMenuItemsFunction::RunSync() {
 }
 
 bool InputImeUpdateMenuItemsFunction::RunSync() {
-  scoped_ptr<UpdateMenuItems::Params> parent_params(
+  std::unique_ptr<UpdateMenuItems::Params> parent_params(
       UpdateMenuItems::Params::Create(*args_));
   const UpdateMenuItems::Params::Parameters& params =
       parent_params->parameters;
@@ -563,7 +563,7 @@ bool InputImeUpdateMenuItemsFunction::RunSync() {
 }
 
 bool InputImeDeleteSurroundingTextFunction::RunSync() {
-  scoped_ptr<DeleteSurroundingText::Params> parent_params(
+  std::unique_ptr<DeleteSurroundingText::Params> parent_params(
       DeleteSurroundingText::Params::Create(*args_));
   const DeleteSurroundingText::Params::Parameters& params =
       parent_params->parameters;
@@ -597,7 +597,7 @@ InputMethodPrivateNotifyImeMenuItemActivatedFunction::Run() {
   if (!engine)
     return RespondNow(Error(kErrorEngineNotAvailable));
 
-  scoped_ptr<NotifyImeMenuItemActivated::Params> params(
+  std::unique_ptr<NotifyImeMenuItemActivated::Params> params(
       NotifyImeMenuItemActivated::Params::Create(*args_));
   if (params->engine_id != engine->GetActiveComponentId())
     return RespondNow(Error(kErrorEngineNotActive));

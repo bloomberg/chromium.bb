@@ -16,7 +16,7 @@ class MockBrailleController : public StubBrailleController {
  public:
   MockBrailleController();
 
-  scoped_ptr<DisplayState> GetDisplayState() override;
+  std::unique_ptr<DisplayState> GetDisplayState() override;
   void AddObserver(BrailleObserver* observer) override;
   void RemoveObserver(BrailleObserver* observer) override;
 

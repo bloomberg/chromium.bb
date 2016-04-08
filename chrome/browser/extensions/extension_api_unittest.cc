@@ -29,16 +29,18 @@ void ExtensionApiUnittest::SetUp() {
       Manifest::UNPACKED);
 }
 
-scoped_ptr<base::Value> ExtensionApiUnittest::RunFunctionAndReturnValue(
-    UIThreadExtensionFunction* function, const std::string& args) {
+std::unique_ptr<base::Value> ExtensionApiUnittest::RunFunctionAndReturnValue(
+    UIThreadExtensionFunction* function,
+    const std::string& args) {
   function->set_extension(extension());
-  return scoped_ptr<base::Value>(
+  return std::unique_ptr<base::Value>(
       utils::RunFunctionAndReturnSingleResult(function, args, browser()));
 }
 
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 ExtensionApiUnittest::RunFunctionAndReturnDictionary(
-    UIThreadExtensionFunction* function, const std::string& args) {
+    UIThreadExtensionFunction* function,
+    const std::string& args) {
   base::Value* value = RunFunctionAndReturnValue(function, args).release();
   base::DictionaryValue* dict = NULL;
 
@@ -48,11 +50,12 @@ ExtensionApiUnittest::RunFunctionAndReturnDictionary(
   // We expect to either have successfuly retrieved a dictionary from the value,
   // or the value to have been NULL.
   EXPECT_TRUE(dict || !value);
-  return scoped_ptr<base::DictionaryValue>(dict);
+  return std::unique_ptr<base::DictionaryValue>(dict);
 }
 
-scoped_ptr<base::ListValue> ExtensionApiUnittest::RunFunctionAndReturnList(
-    UIThreadExtensionFunction* function, const std::string& args) {
+std::unique_ptr<base::ListValue> ExtensionApiUnittest::RunFunctionAndReturnList(
+    UIThreadExtensionFunction* function,
+    const std::string& args) {
   base::Value* value = RunFunctionAndReturnValue(function, args).release();
   base::ListValue* list = NULL;
 
@@ -62,7 +65,7 @@ scoped_ptr<base::ListValue> ExtensionApiUnittest::RunFunctionAndReturnList(
   // We expect to either have successfuly retrieved a list from the value,
   // or the value to have been NULL.
   EXPECT_TRUE(list);
-  return scoped_ptr<base::ListValue>(list);
+  return std::unique_ptr<base::ListValue>(list);
 }
 
 std::string ExtensionApiUnittest::RunFunctionAndReturnError(

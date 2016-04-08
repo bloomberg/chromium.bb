@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -217,8 +218,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
 
   sync_service->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
   extensions::TestExtensionRegistryObserver install_observer(registry_);
   sync_service->ProcessSyncChanges(
       FROM_HERE,
@@ -274,8 +275,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, RemoteInstall) {
   ExtensionSyncService* sync_service = ExtensionSyncService::Get(profile());
   sync_service->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
-      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
-      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+      base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
+      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
   extensions::TestExtensionRegistryObserver install_observer(registry_);
   sync_service->ProcessSyncChanges(
       FROM_HERE,

@@ -20,7 +20,7 @@ typedef extensions::api::downloads_internal::DetermineFilename::Params
     DetermineFilenameParams;
 
 bool DownloadsInternalDetermineFilenameFunction::RunAsync() {
-  scoped_ptr<DetermineFilenameParams> params(
+  std::unique_ptr<DetermineFilenameParams> params(
       DetermineFilenameParams::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   base::FilePath::StringType filename;

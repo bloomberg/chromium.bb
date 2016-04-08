@@ -76,10 +76,10 @@ void AutofillPrivateEventRouter::OnPersonalDataChanged() {
 
   autofill_util::AddressEntryList addressList =
       extensions::autofill_util::GenerateAddressList(*personal_data_);
-  scoped_ptr<base::ListValue> args(
+  std::unique_ptr<base::ListValue> args(
       api::autofill_private::OnAddressListChanged::Create(addressList)
           .release());
-  scoped_ptr<Event> extension_event(
+  std::unique_ptr<Event> extension_event(
       new Event(events::AUTOFILL_PRIVATE_ON_ADDRESS_LIST_CHANGED,
                 api::autofill_private::OnAddressListChanged::kEventName,
                 std::move(args)));

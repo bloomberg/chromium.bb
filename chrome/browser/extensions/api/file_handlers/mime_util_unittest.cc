@@ -4,12 +4,12 @@
 
 #include "chrome/browser/extensions/api/file_handlers/mime_util.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -32,8 +32,9 @@ void OnMimeTypeResult(std::string* output, const std::string& mime_type) {
 }
 
 // Saves returned mime types to a vector.
-void OnMimeTypesCollected(std::vector<std::string>* output,
-                          scoped_ptr<std::vector<std::string> > mime_types) {
+void OnMimeTypesCollected(
+    std::vector<std::string>* output,
+    std::unique_ptr<std::vector<std::string>> mime_types) {
   *output = *mime_types;
 }
 

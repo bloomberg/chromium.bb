@@ -11,9 +11,9 @@ namespace bluetooth_low_energy {
 namespace {
 
 // Converts a list of CharacteristicProperty to a base::ListValue of strings.
-scoped_ptr<base::ListValue> CharacteristicPropertiesToValue(
+std::unique_ptr<base::ListValue> CharacteristicPropertiesToValue(
     const std::vector<CharacteristicProperty> properties) {
-  scoped_ptr<base::ListValue> property_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> property_list(new base::ListValue());
   for (std::vector<CharacteristicProperty>::const_iterator iter =
            properties.begin();
        iter != properties.end();
@@ -24,24 +24,25 @@ scoped_ptr<base::ListValue> CharacteristicPropertiesToValue(
 
 }  // namespace
 
-scoped_ptr<base::DictionaryValue> CharacteristicToValue(Characteristic* from) {
+std::unique_ptr<base::DictionaryValue> CharacteristicToValue(
+    Characteristic* from) {
   // Copy the properties. Use Characteristic::ToValue to generate the result
   // dictionary without the properties, to prevent json_schema_compiler from
   // failing.
   std::vector<CharacteristicProperty> properties = from->properties;
   from->properties.clear();
-  scoped_ptr<base::DictionaryValue> to = from->ToValue();
+  std::unique_ptr<base::DictionaryValue> to = from->ToValue();
   to->SetWithoutPathExpansion(
       "properties", CharacteristicPropertiesToValue(properties).release());
   return to;
 }
 
-scoped_ptr<base::DictionaryValue> DescriptorToValue(Descriptor* from) {
+std::unique_ptr<base::DictionaryValue> DescriptorToValue(Descriptor* from) {
   // Copy the characteristic properties and set them later manually.
   std::vector<CharacteristicProperty> properties =
       from->characteristic.properties;
   from->characteristic.properties.clear();
-  scoped_ptr<base::DictionaryValue> to = from->ToValue();
+  std::unique_ptr<base::DictionaryValue> to = from->ToValue();
 
   base::DictionaryValue* chrc_value = NULL;
   to->GetDictionaryWithoutPathExpansion("characteristic", &chrc_value);

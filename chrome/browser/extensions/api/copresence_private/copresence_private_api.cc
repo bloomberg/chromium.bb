@@ -92,7 +92,7 @@ void BrowserContextKeyedAPIFactory<CopresencePrivateService>
 
 // CopresenceSendFoundFunction implementation:
 ExtensionFunction::ResponseAction CopresencePrivateSendFoundFunction::Run() {
-  scoped_ptr<SendFound::Params> params(SendFound::Params::Create(*args_));
+  std::unique_ptr<SendFound::Params> params(SendFound::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   WhispernetClient* whispernet_client =
@@ -112,7 +112,8 @@ ExtensionFunction::ResponseAction CopresencePrivateSendFoundFunction::Run() {
 
 // CopresenceSendEncodedFunction implementation:
 ExtensionFunction::ResponseAction CopresencePrivateSendSamplesFunction::Run() {
-  scoped_ptr<SendSamples::Params> params(SendSamples::Params::Create(*args_));
+  std::unique_ptr<SendSamples::Params> params(
+      SendSamples::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   WhispernetClient* whispernet_client =
@@ -136,7 +137,7 @@ ExtensionFunction::ResponseAction CopresencePrivateSendSamplesFunction::Run() {
 // CopresenceSendInitializedFunction implementation:
 ExtensionFunction::ResponseAction
 CopresencePrivateSendInitializedFunction::Run() {
-  scoped_ptr<SendInitialized::Params> params(
+  std::unique_ptr<SendInitialized::Params> params(
       SendInitialized::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

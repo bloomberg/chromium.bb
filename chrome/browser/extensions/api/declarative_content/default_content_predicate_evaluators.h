@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_DEFAULT_CONTENT_PREDICATE_EVALUATORS_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_DEFAULT_CONTENT_PREDICATE_EVALUATORS_H_
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
 
 namespace content {
@@ -16,7 +16,7 @@ class BrowserContext;
 
 namespace extensions {
 
-std::vector<scoped_ptr<ContentPredicateEvaluator>>
+std::vector<std::unique_ptr<ContentPredicateEvaluator>>
 CreateDefaultContentPredicateEvaluators(
     content::BrowserContext* browser_context,
     ContentPredicateEvaluator::Delegate* delegate);

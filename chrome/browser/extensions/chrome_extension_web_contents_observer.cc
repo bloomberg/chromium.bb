@@ -119,7 +119,7 @@ void ChromeExtensionWebContentsObserver::OnDetailedConsoleMessageAdded(
     extension_id = GURL(source).host();
 
   ErrorConsole::Get(browser_context())
-      ->ReportError(scoped_ptr<ExtensionError>(new RuntimeError(
+      ->ReportError(std::unique_ptr<ExtensionError>(new RuntimeError(
           extension_id, browser_context()->IsOffTheRecord(), source, message,
           stack_trace, web_contents()->GetLastCommittedURL(),
           static_cast<logging::LogSeverity>(severity_level),

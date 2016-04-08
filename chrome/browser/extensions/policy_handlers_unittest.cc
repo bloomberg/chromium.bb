@@ -321,9 +321,10 @@ TEST(ExtensionURLPatternListPolicyHandlerTest, ApplyPolicySettings) {
 
 TEST(ExtensionSettingsPolicyHandlerTest, CheckPolicySettings) {
   std::string error;
-  scoped_ptr<base::Value> policy_value = base::JSONReader::ReadAndReturnError(
-      kTestManagementPolicy1,
-      base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS, NULL, &error);
+  std::unique_ptr<base::Value> policy_value =
+      base::JSONReader::ReadAndReturnError(
+          kTestManagementPolicy1,
+          base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS, NULL, &error);
   ASSERT_TRUE(policy_value.get()) << error;
 
   policy::Schema chrome_schema =
@@ -345,9 +346,10 @@ TEST(ExtensionSettingsPolicyHandlerTest, CheckPolicySettings) {
 
 TEST(ExtensionSettingsPolicyHandlerTest, ApplyPolicySettings) {
   std::string error;
-  scoped_ptr<base::Value> policy_value = base::JSONReader::ReadAndReturnError(
-      kTestManagementPolicy2,
-      base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS, NULL, &error);
+  std::unique_ptr<base::Value> policy_value =
+      base::JSONReader::ReadAndReturnError(
+          kTestManagementPolicy2,
+          base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS, NULL, &error);
   ASSERT_TRUE(policy_value.get()) << error;
 
   policy::Schema chrome_schema =

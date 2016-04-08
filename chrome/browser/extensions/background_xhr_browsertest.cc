@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,7 +23,7 @@
 
 namespace {
 
-scoped_ptr<net::ClientCertStore> CreateNullCertStore() {
+std::unique_ptr<net::ClientCertStore> CreateNullCertStore() {
   return nullptr;
 }
 

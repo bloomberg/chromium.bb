@@ -31,8 +31,8 @@ class ExtensionActionManagerTest : public testing::Test {
   // Build an extension, populating |action_type| key with |action|, and
   // "icons" key with |extension_icons|.
   scoped_refptr<Extension> BuildExtension(
-      scoped_ptr<base::DictionaryValue> extension_icons,
-      scoped_ptr<base::DictionaryValue> action,
+      std::unique_ptr<base::DictionaryValue> extension_icons,
+      std::unique_ptr<base::DictionaryValue> action,
       const char* action_type);
 
   // Returns true if |action|'s title matches |extension|'s name.
@@ -61,7 +61,7 @@ class ExtensionActionManagerTest : public testing::Test {
   ExtensionRegistry* registry_;
   int curr_id_;
   ExtensionActionManager* manager_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
 };
 
 ExtensionActionManagerTest::ExtensionActionManagerTest()
@@ -72,8 +72,8 @@ ExtensionActionManagerTest::ExtensionActionManagerTest()
 }
 
 scoped_refptr<Extension> ExtensionActionManagerTest::BuildExtension(
-    scoped_ptr<base::DictionaryValue> extension_icons,
-    scoped_ptr<base::DictionaryValue> action,
+    std::unique_ptr<base::DictionaryValue> extension_icons,
+    std::unique_ptr<base::DictionaryValue> action,
     const char* action_type) {
   std::string id = base::IntToString(curr_id_++);
   scoped_refptr<Extension> extension =
@@ -207,7 +207,7 @@ TEST_F(ExtensionActionManagerTest, GetBestFitActionTest) {
   ASSERT_TRUE(extension.get());
 
   // Get a "best fit" browser action for |extension|.
-  scoped_ptr<ExtensionAction> action =
+  std::unique_ptr<ExtensionAction> action =
       manager()->GetBestFitAction(*extension.get(), ActionInfo::TYPE_BROWSER);
   ASSERT_TRUE(action.get());
   ASSERT_EQ(action->action_type(), ActionInfo::TYPE_BROWSER);

@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_PREFS_H_
 #define CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_PREFS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/common/manifest.h"
 
@@ -98,8 +98,8 @@ class TestExtensionPrefs {
   base::FilePath preferences_file_;
   base::FilePath extensions_dir_;
   scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry_;
-  scoped_ptr<syncable_prefs::PrefServiceSyncable> pref_service_;
-  scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
+  std::unique_ptr<syncable_prefs::PrefServiceSyncable> pref_service_;
+  std::unique_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
  private:

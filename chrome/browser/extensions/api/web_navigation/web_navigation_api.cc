@@ -448,7 +448,7 @@ bool WebNavigationTabObserver::IsReferenceFragmentNavigation(
 }
 
 bool WebNavigationGetFrameFunction::RunSync() {
-  scoped_ptr<GetFrame::Params> params(GetFrame::Params::Create(*args_));
+  std::unique_ptr<GetFrame::Params> params(GetFrame::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   int tab_id = params->details.tab_id;
   int frame_id = params->details.frame_id;
@@ -495,7 +495,8 @@ bool WebNavigationGetFrameFunction::RunSync() {
 }
 
 bool WebNavigationGetAllFramesFunction::RunSync() {
-  scoped_ptr<GetAllFrames::Params> params(GetAllFrames::Params::Create(*args_));
+  std::unique_ptr<GetAllFrames::Params> params(
+      GetAllFrames::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   int tab_id = params->details.tab_id;
 

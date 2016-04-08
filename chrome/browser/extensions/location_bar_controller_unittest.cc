@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/location_bar_controller.h"
+
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
@@ -14,7 +16,6 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -101,15 +102,15 @@ class LocationBarControllerUnitTest : public ChromeRenderViewHostTestHarness {
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
-  scoped_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
+  std::unique_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
 #endif
 
   // Since we also test that we show page actions for pending script requests,
   // we need to enable that feature.
-  scoped_ptr<FeatureSwitch::ScopedOverride> active_script_override_;
+  std::unique_ptr<FeatureSwitch::ScopedOverride> active_script_override_;
 
   // This tests legacy page actions.
-  scoped_ptr<FeatureSwitch::ScopedOverride> extension_action_override_;
+  std::unique_ptr<FeatureSwitch::ScopedOverride> extension_action_override_;
 };
 
 // Test that the location bar gets the proper current actions.

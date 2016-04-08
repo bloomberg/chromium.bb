@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/log_private/log_private_api.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,7 +14,6 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -68,13 +68,13 @@ bool IsRunningOnSequenceThread() {
       pool->GetNamedSequenceToken(FileResource::kSequenceToken));
 }
 
-scoped_ptr<LogParser> CreateLogParser(const std::string& log_type) {
+std::unique_ptr<LogParser> CreateLogParser(const std::string& log_type) {
   if (log_type == "syslog")
-    return scoped_ptr<LogParser>(new SyslogParser());
+    return std::unique_ptr<LogParser>(new SyslogParser());
   // TODO(shinfan): Add more parser here
 
   NOTREACHED() << "Invalid log type: " << log_type;
-  return  scoped_ptr<LogParser>();
+  return std::unique_ptr<LogParser>();
 }
 
 void CollectLogInfo(FilterHandler* filter_handler,
@@ -85,7 +85,7 @@ void CollectLogInfo(FilterHandler* filter_handler,
     if (!filter_handler->IsValidSource(request_it->first)) {
       continue;
     }
-    scoped_ptr<LogParser> parser(CreateLogParser(request_it->first));
+    std::unique_ptr<LogParser> parser(CreateLogParser(request_it->first));
     if (parser) {
       parser->Parse(request_it->second, output, filter_handler);
     }
@@ -241,15 +241,15 @@ void LogPrivateAPI::PostPendingEntries() {
                  base::Passed(&pending_entries_)));
 }
 
-void LogPrivateAPI::AddEntriesOnUI(scoped_ptr<base::ListValue> value) {
+void LogPrivateAPI::AddEntriesOnUI(std::unique_ptr<base::ListValue> value) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (std::set<std::string>::iterator ix = net_internal_watches_.begin();
        ix != net_internal_watches_.end(); ++ix) {
     // Create the event's arguments value.
-    scoped_ptr<base::ListValue> event_args(new base::ListValue());
+    std::unique_ptr<base::ListValue> event_args(new base::ListValue());
     event_args->Append(value->DeepCopy());
-    scoped_ptr<Event> event(
+    std::unique_ptr<Event> event(
         new Event(::extensions::events::LOG_PRIVATE_ON_CAPTURED_EVENTS,
                   ::events::kOnCapturedEvents, std::move(event_args)));
     EventRouter::Get(browser_context_)
@@ -403,7 +403,7 @@ LogPrivateGetHistoricalFunction::~LogPrivateGetHistoricalFunction() {
 
 bool LogPrivateGetHistoricalFunction::RunAsync() {
   // Get parameters
-  scoped_ptr<api::log_private::GetHistorical::Params> params(
+  std::unique_ptr<api::log_private::GetHistorical::Params> params(
       api::log_private::GetHistorical::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   filter_handler_.reset(new FilterHandler(params->filter));
@@ -421,8 +421,7 @@ bool LogPrivateGetHistoricalFunction::RunAsync() {
 }
 
 void LogPrivateGetHistoricalFunction::OnSystemLogsLoaded(
-    scoped_ptr<system_logs::SystemLogsResponse> sys_info) {
-
+    std::unique_ptr<system_logs::SystemLogsResponse> sys_info) {
   // Prepare result
   api::log_private::Result result;
   CollectLogInfo(filter_handler_.get(), sys_info.get(), &result.data);
@@ -439,7 +438,7 @@ LogPrivateStartEventRecorderFunction::~LogPrivateStartEventRecorderFunction() {
 }
 
 bool LogPrivateStartEventRecorderFunction::RunAsync() {
-  scoped_ptr<api::log_private::StartEventRecorder::Params> params(
+  std::unique_ptr<api::log_private::StartEventRecorder::Params> params(
       api::log_private::StartEventRecorder::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   switch (params->event_type) {
@@ -471,7 +470,7 @@ LogPrivateStopEventRecorderFunction::~LogPrivateStopEventRecorderFunction() {
 }
 
 bool LogPrivateStopEventRecorderFunction::RunAsync() {
-  scoped_ptr<api::log_private::StopEventRecorder::Params> params(
+  std::unique_ptr<api::log_private::StopEventRecorder::Params> params(
       api::log_private::StopEventRecorder::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   switch (params->event_type) {
@@ -523,7 +522,7 @@ void LogPrivateDumpLogsFunction::OnStoreLogsCompleted(
         ->RegisterTempFile(extension_id(), log_path);
   }
 
-  scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> response(new base::DictionaryValue());
   extensions::GrantedFileEntry file_entry =
       extensions::app_file_handler_util::CreateFileEntry(
           Profile::FromBrowserContext(browser_context()),

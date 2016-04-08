@@ -27,7 +27,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionViewHostFactoryTest, CreateExtensionHosts) {
   content::BrowserContext* browser_context = browser()->profile();
   {
     // Popup hosts are created with the correct type and profile.
-    scoped_ptr<ExtensionViewHost> host(
+    std::unique_ptr<ExtensionViewHost> host(
         ExtensionViewHostFactory::CreatePopupHost(extension->url(), browser()));
     EXPECT_EQ(extension.get(), host->extension());
     EXPECT_EQ(browser_context, host->browser_context());
@@ -37,7 +37,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionViewHostFactoryTest, CreateExtensionHosts) {
 
   {
     // Dialog hosts are created with the correct type and profile.
-    scoped_ptr<ExtensionViewHost> host(
+    std::unique_ptr<ExtensionViewHost> host(
         ExtensionViewHostFactory::CreateDialogHost(extension->url(),
                                                    browser()->profile()));
     EXPECT_EQ(extension.get(), host->extension());
@@ -65,9 +65,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionViewHostFactoryTest,
 
   // The ExtensionHost for a regular extension in an incognito window is
   // associated with the original window's profile.
-  scoped_ptr<ExtensionHost> regular_host(
-      ExtensionViewHostFactory::CreatePopupHost(
-            regular_extension->url(), incognito_browser));
+  std::unique_ptr<ExtensionHost> regular_host(
+      ExtensionViewHostFactory::CreatePopupHost(regular_extension->url(),
+                                                incognito_browser));
   content::BrowserContext* browser_context = browser()->profile();
   EXPECT_EQ(browser_context, regular_host->browser_context());
 
@@ -80,9 +80,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionViewHostFactoryTest,
 
   // The ExtensionHost for a split-mode extension is associated with the
   // incognito profile.
-  scoped_ptr<ExtensionHost> split_mode_host(
-      ExtensionViewHostFactory::CreatePopupHost(
-          split_mode_extension->url(), incognito_browser));
+  std::unique_ptr<ExtensionHost> split_mode_host(
+      ExtensionViewHostFactory::CreatePopupHost(split_mode_extension->url(),
+                                                incognito_browser));
   content::BrowserContext* incognito_context = incognito_browser->profile();
   EXPECT_EQ(incognito_context, split_mode_host->browser_context());
 }

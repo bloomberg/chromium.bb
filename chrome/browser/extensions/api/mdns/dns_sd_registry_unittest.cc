@@ -79,7 +79,7 @@ class DnsSdRegistryTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<TestDnsSdRegistry> registry_;
+  std::unique_ptr<TestDnsSdRegistry> registry_;
   MockDnsSdObserver observer_;
 };
 

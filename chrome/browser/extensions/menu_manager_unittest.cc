@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/menu_manager.h"
+
+#include <memory>
 #include <vector>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
-#include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/chrome_paths.h"
@@ -93,7 +95,7 @@ class MenuManagerTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
 
   MenuManager manager_;
   ExtensionList extensions_;
@@ -144,7 +146,7 @@ TEST_F(MenuManagerTest, AddGetRemoveItems) {
   ASSERT_FALSE(manager_.RemoveContextMenuItem(id));
 
   // Make sure adding an item with the same string ID returns false.
-  scoped_ptr<MenuItem> item2too(CreateTestItemWithID(extension, "id2"));
+  std::unique_ptr<MenuItem> item2too(CreateTestItemWithID(extension, "id2"));
   ASSERT_FALSE(manager_.AddContextItem(extension, item2too.get()));
 
   // But the same string ID should not collide with another extension.
@@ -166,7 +168,7 @@ TEST_F(MenuManagerTest, ChildFunctions) {
 
   // This third item we expect to fail inserting, so we use a scoped_ptr to make
   // sure it gets deleted.
-  scoped_ptr<MenuItem> item3(CreateTestItem(extension3));
+  std::unique_ptr<MenuItem> item3(CreateTestItem(extension3));
 
   // Add in the first two items.
   ASSERT_TRUE(manager_.AddContextItem(extension1, item1));
@@ -246,7 +248,8 @@ TEST_F(MenuManagerTest, PopulateFromValue) {
   value.Set("target_url_patterns", target_url_patterns);
 
   std::string error;
-  scoped_ptr<MenuItem> item(MenuItem::Populate(extension->id(), value, &error));
+  std::unique_ptr<MenuItem> item(
+      MenuItem::Populate(extension->id(), value, &error));
   ASSERT_TRUE(item.get());
 
   EXPECT_EQ(extension->id(), item->extension_id());
@@ -469,7 +472,7 @@ class MockEventRouter : public EventRouter {
                     EventRouter::UserGestureState state));
 
   virtual void DispatchEventToExtension(const std::string& extension_id,
-                                        scoped_ptr<Event> event) {
+                                        std::unique_ptr<Event> event) {
     DispatchEventToExtensionMock(extension_id,
                                  event->event_name,
                                  event->event_args.release(),
@@ -483,9 +486,9 @@ class MockEventRouter : public EventRouter {
 };
 
 // MockEventRouter factory function
-scoped_ptr<KeyedService> MockEventRouterFactoryFunction(
+std::unique_ptr<KeyedService> MockEventRouterFactoryFunction(
     content::BrowserContext* context) {
-  return make_scoped_ptr(new MockEventRouter(static_cast<Profile*>(context)));
+  return base::WrapUnique(new MockEventRouter(static_cast<Profile*>(context)));
 }
 
 }  // namespace

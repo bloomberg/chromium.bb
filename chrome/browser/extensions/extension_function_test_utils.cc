@@ -50,7 +50,7 @@ class TestFunctionDispatcherDelegate
 namespace extension_function_test_utils {
 
 base::ListValue* ParseList(const std::string& data) {
-  scoped_ptr<base::Value> result = base::JSONReader::Read(data);
+  std::unique_ptr<base::Value> result = base::JSONReader::Read(data);
   base::ListValue* list = NULL;
   result->GetAsList(&list);
   ignore_result(result.release());
@@ -155,7 +155,7 @@ class SendResponseDelegate
   }
 
  private:
-  scoped_ptr<bool> response_;
+  std::unique_ptr<bool> response_;
   bool should_post_quit_;
 };
 
@@ -163,18 +163,18 @@ bool RunFunction(UIThreadExtensionFunction* function,
                  const std::string& args,
                  Browser* browser,
                  RunFunctionFlags flags) {
-  scoped_ptr<base::ListValue> parsed_args(ParseList(args));
+  std::unique_ptr<base::ListValue> parsed_args(ParseList(args));
   EXPECT_TRUE(parsed_args.get())
       << "Could not parse extension function arguments: " << args;
   return RunFunction(function, std::move(parsed_args), browser, flags);
 }
 
 bool RunFunction(UIThreadExtensionFunction* function,
-                 scoped_ptr<base::ListValue> args,
+                 std::unique_ptr<base::ListValue> args,
                  Browser* browser,
                  RunFunctionFlags flags) {
   TestFunctionDispatcherDelegate dispatcher_delegate(browser);
-  scoped_ptr<extensions::ExtensionFunctionDispatcher> dispatcher(
+  std::unique_ptr<extensions::ExtensionFunctionDispatcher> dispatcher(
       new extensions::ExtensionFunctionDispatcher(browser->profile()));
   dispatcher->set_delegate(&dispatcher_delegate);
   // TODO(yoz): The cast is a hack; these flags should be defined in

@@ -44,7 +44,7 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
 
   args_->Remove(0, NULL);
 
-  scoped_ptr<api::desktop_capture::ChooseDesktopMedia::Params> params =
+  std::unique_ptr<api::desktop_capture::ChooseDesktopMedia::Params> params =
       api::desktop_capture::ChooseDesktopMedia::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

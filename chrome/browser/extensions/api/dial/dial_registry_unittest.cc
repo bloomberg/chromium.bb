@@ -94,7 +94,7 @@ class DialRegistryTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<MockDialRegistry> registry_;
+  std::unique_ptr<MockDialRegistry> registry_;
   MockDialObserver mock_observer_;
   const DialDeviceData first_device_;
   const DialDeviceData second_device_;

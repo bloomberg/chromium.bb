@@ -457,7 +457,7 @@ void ExtensionService::MaybeFinishShutdownDelayed() {
   TRACE_EVENT0("browser,startup",
                "ExtensionService::MaybeFinishShutdownDelayed");
 
-  scoped_ptr<extensions::ExtensionPrefs::ExtensionsInfo> delayed_info(
+  std::unique_ptr<extensions::ExtensionPrefs::ExtensionsInfo> delayed_info(
       extension_prefs_->GetAllDelayedInstallInfo());
   for (size_t i = 0; i < delayed_info->size(); ++i) {
     ExtensionInfo* info = delayed_info->at(i).get();
@@ -474,7 +474,7 @@ void ExtensionService::MaybeFinishShutdownDelayed() {
     }
   }
   MaybeFinishDelayedInstallations();
-  scoped_ptr<extensions::ExtensionPrefs::ExtensionsInfo> delayed_info2(
+  std::unique_ptr<extensions::ExtensionPrefs::ExtensionsInfo> delayed_info2(
       extension_prefs_->GetAllDelayedInstallInfo());
   UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateOnLoad",
                            delayed_info2->size() - delayed_info->size());
@@ -483,7 +483,7 @@ void ExtensionService::MaybeFinishShutdownDelayed() {
 void ExtensionService::LoadGreylistFromPrefs() {
   TRACE_EVENT0("browser,startup", "ExtensionService::LoadGreylistFromPrefs");
 
-  scoped_ptr<ExtensionSet> all_extensions =
+  std::unique_ptr<ExtensionSet> all_extensions =
       registry_->GenerateInstalledExtensionsSet();
 
   for (const auto& extension : *all_extensions) {
@@ -674,7 +674,7 @@ void ExtensionService::ReloadExtensionImpl(
 
   // Check the installed extensions to see if what we're reloading was already
   // installed.
-  scoped_ptr<ExtensionInfo> installed_extension(
+  std::unique_ptr<ExtensionInfo> installed_extension(
       extension_prefs_->GetInstalledExtensionInfo(extension_id));
   if (installed_extension.get() &&
       installed_extension->extension_manifest.get()) {
@@ -941,7 +941,7 @@ void ExtensionService::BlockAllExtensions() {
   block_extensions_ = true;
 
   // Blacklisted extensions are already unloaded, need not be blocked.
-  scoped_ptr<ExtensionSet> extensions =
+  std::unique_ptr<ExtensionSet> extensions =
       registry_->GenerateInstalledExtensionsSet(ExtensionRegistry::ENABLED |
                                                 ExtensionRegistry::DISABLED |
                                                 ExtensionRegistry::TERMINATED);
@@ -965,7 +965,7 @@ void ExtensionService::BlockAllExtensions() {
 // as appropriate.
 void ExtensionService::UnblockAllExtensions() {
   block_extensions_ = false;
-  scoped_ptr<ExtensionSet> to_unblock =
+  std::unique_ptr<ExtensionSet> to_unblock =
       registry_->GenerateInstalledExtensionsSet(ExtensionRegistry::BLOCKED);
 
   for (const auto& extension : *to_unblock) {
@@ -1320,7 +1320,7 @@ void ExtensionService::OnAllExternalProvidersReady() {
   }
 
   // Uninstall all the unclaimed extensions.
-  scoped_ptr<extensions::ExtensionPrefs::ExtensionsInfo> extensions_info(
+  std::unique_ptr<extensions::ExtensionPrefs::ExtensionsInfo> extensions_info(
       extension_prefs_->GetInstalledExtensionsInfo());
   for (size_t i = 0; i < extensions_info->size(); ++i) {
     ExtensionInfo* info = extensions_info->at(i).get();
@@ -1587,7 +1587,7 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
   if (extension->location() == Manifest::INTERNAL && !auto_grant_permission) {
     // Add all the recognized permissions if the granted permissions list
     // hasn't been initialized yet.
-    scoped_ptr<const PermissionSet> granted_permissions =
+    std::unique_ptr<const PermissionSet> granted_permissions =
         extension_prefs_->GetGrantedPermissions(extension->id());
     CHECK(granted_permissions.get());
 
@@ -1828,7 +1828,7 @@ void ExtensionService::OnExtensionManagementSettingsChanged() {
   extensions::ExtensionManagement* settings =
       extensions::ExtensionManagementFactory::GetForBrowserContext(profile());
   CHECK(settings);
-  scoped_ptr<ExtensionSet> all_extensions(
+  std::unique_ptr<ExtensionSet> all_extensions(
       registry_->GenerateInstalledExtensionsSet());
   for (const auto& extension : *all_extensions) {
     if (!settings->IsPermissionSetAllowed(
@@ -1956,15 +1956,15 @@ void ExtensionService::RegisterContentSettings(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   host_content_settings_map->RegisterProvider(
       HostContentSettingsMap::INTERNAL_EXTENSION_PROVIDER,
-      scoped_ptr<content_settings::ObservableProvider>(
+      std::unique_ptr<content_settings::ObservableProvider>(
           new content_settings::InternalExtensionProvider(profile_)));
 
   host_content_settings_map->RegisterProvider(
       HostContentSettingsMap::CUSTOM_EXTENSION_PROVIDER,
-      scoped_ptr<content_settings::ObservableProvider>(
+      std::unique_ptr<content_settings::ObservableProvider>(
           new content_settings::CustomExtensionProvider(
-              extensions::ContentSettingsService::Get(
-                  profile_)->content_settings_store(),
+              extensions::ContentSettingsService::Get(profile_)
+                  ->content_settings_store(),
               profile_->GetOriginalProfile() != profile_)));
 }
 

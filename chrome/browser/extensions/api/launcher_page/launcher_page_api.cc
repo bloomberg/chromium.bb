@@ -73,7 +73,7 @@ LauncherPageSetEnabledFunction::LauncherPageSetEnabledFunction() {
 }
 
 ExtensionFunction::ResponseAction LauncherPageSetEnabledFunction::Run() {
-  scoped_ptr<api::launcher_page::SetEnabled::Params> params(
+  std::unique_ptr<api::launcher_page::SetEnabled::Params> params(
       api::launcher_page::SetEnabled::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

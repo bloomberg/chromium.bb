@@ -244,7 +244,7 @@ void ExtensionMessageBubbleController::AcknowledgeExtensions() {
 ExtensionIdList* ExtensionMessageBubbleController::GetOrCreateExtensionList() {
   if (!initialized_) {
     ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
-    scoped_ptr<const ExtensionSet> all_extensions;
+    std::unique_ptr<const ExtensionSet> all_extensions;
     if (!delegate_->ShouldLimitToEnabledExtensions())
       all_extensions = registry->GenerateInstalledExtensionsSet();
     const ExtensionSet& extensions_to_check =

@@ -87,8 +87,8 @@ bool ScriptingPermissionsModifier::HasGrantedHostPermission(
            .effective_hosts()
            .MatchesURL(origin))
     return false;
-  scoped_ptr<const PermissionSet> granted_permissions;
-  scoped_ptr<const PermissionSet> withheld_permissions;
+  std::unique_ptr<const PermissionSet> granted_permissions;
+  std::unique_ptr<const PermissionSet> withheld_permissions;
   WithholdPermissions(required_permissions, &granted_permissions,
                       &withheld_permissions, true);
   if (!granted_permissions->effective_hosts().MatchesURL(origin) &&
@@ -122,8 +122,8 @@ void ScriptingPermissionsModifier::RemoveGrantedHostPermission(
 
 void ScriptingPermissionsModifier::WithholdPermissions(
     const PermissionSet& permissions,
-    scoped_ptr<const PermissionSet>* granted_permissions_out,
-    scoped_ptr<const PermissionSet>* withheld_permissions_out,
+    std::unique_ptr<const PermissionSet>* granted_permissions_out,
+    std::unique_ptr<const PermissionSet>* withheld_permissions_out,
     bool use_initial_state) const {
   bool should_withhold = false;
   if (CanAffectExtension(permissions)) {

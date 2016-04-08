@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -15,7 +17,6 @@
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
@@ -56,20 +57,21 @@ class FakeLauncher : public NativeProcessLauncher {
   FakeLauncher(base::File read_file, base::File write_file)
       : read_file_(std::move(read_file)), write_file_(std::move(write_file)) {}
 
-  static scoped_ptr<NativeProcessLauncher> Create(base::FilePath read_file,
-                                                  base::FilePath write_file) {
+  static std::unique_ptr<NativeProcessLauncher> Create(
+      base::FilePath read_file,
+      base::FilePath write_file) {
     int read_flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
     int write_flags = base::File::FLAG_CREATE | base::File::FLAG_WRITE;
 #if !defined(OS_POSIX)
     read_flags |= base::File::FLAG_ASYNC;
     write_flags |= base::File::FLAG_ASYNC;
 #endif
-    return scoped_ptr<NativeProcessLauncher>(new FakeLauncher(
-        base::File(read_file, read_flags),
-        base::File(write_file, write_flags)));
+    return std::unique_ptr<NativeProcessLauncher>(
+        new FakeLauncher(base::File(read_file, read_flags),
+                         base::File(write_file, write_flags)));
   }
 
-  static scoped_ptr<NativeProcessLauncher> CreateWithPipeInput(
+  static std::unique_ptr<NativeProcessLauncher> CreateWithPipeInput(
       base::File read_pipe,
       base::FilePath write_file) {
     int write_flags = base::File::FLAG_CREATE | base::File::FLAG_WRITE;
@@ -77,7 +79,7 @@ class FakeLauncher : public NativeProcessLauncher {
     write_flags |= base::File::FLAG_ASYNC;
 #endif
 
-    return scoped_ptr<NativeProcessLauncher>(new FakeLauncher(
+    return std::unique_ptr<NativeProcessLauncher>(new FakeLauncher(
         std::move(read_pipe), base::File(write_file, write_flags)));
   }
 
@@ -116,7 +118,7 @@ class NativeMessagingTest : public ::testing::Test,
     last_message_ = message;
 
     // Parse the message.
-    scoped_ptr<base::DictionaryValue> dict_value =
+    std::unique_ptr<base::DictionaryValue> dict_value =
         base::DictionaryValue::From(base::JSONReader::Read(message));
     if (dict_value) {
       last_message_parsed_ = std::move(dict_value);
@@ -159,11 +161,11 @@ class NativeMessagingTest : public ::testing::Test,
   base::ScopedTempDir temp_dir_;
   // Force the channel to be dev.
   ScopedCurrentChannel current_channel_;
-  scoped_ptr<NativeMessageHost> native_message_host_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<NativeMessageHost> native_message_host_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   content::TestBrowserThreadBundle thread_bundle_;
   std::string last_message_;
-  scoped_ptr<base::DictionaryValue> last_message_parsed_;
+  std::unique_ptr<base::DictionaryValue> last_message_parsed_;
   bool channel_closed_;
 };
 
@@ -173,7 +175,7 @@ TEST_F(NativeMessagingTest, SingleSendMessageRead) {
   base::FilePath temp_input_file = CreateTempFileWithMessage(kTestMessage);
   ASSERT_FALSE(temp_input_file.empty());
 
-  scoped_ptr<NativeProcessLauncher> launcher =
+  std::unique_ptr<NativeProcessLauncher> launcher =
       FakeLauncher::Create(temp_input_file, temp_output_file);
   native_message_host_ = NativeMessageProcessHost::CreateWithLauncher(
       ScopedTestNativeMessagingHost::kExtensionId, "empty_app.py",
@@ -185,7 +187,7 @@ TEST_F(NativeMessagingTest, SingleSendMessageRead) {
 
   if (last_message_.empty()) {
     run_loop_.reset(new base::RunLoop());
-    scoped_ptr<NativeMessageProcessHost> native_message_process_host_(
+    std::unique_ptr<NativeMessageProcessHost> native_message_process_host_(
         static_cast<NativeMessageProcessHost*>(native_message_host_.release()));
     native_message_process_host_->ReadNowForTesting();
     run_loop_->Run();
@@ -221,7 +223,7 @@ TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
   base::File write_file(pipe_handles[1]);
 #endif  // !defined(OS_WIN)
 
-  scoped_ptr<NativeProcessLauncher> launcher =
+  std::unique_ptr<NativeProcessLauncher> launcher =
       FakeLauncher::CreateWithPipeInput(std::move(read_file), temp_output_file);
   native_message_host_ = NativeMessageProcessHost::CreateWithLauncher(
       ScopedTestNativeMessagingHost::kExtensionId, "empty_app.py",

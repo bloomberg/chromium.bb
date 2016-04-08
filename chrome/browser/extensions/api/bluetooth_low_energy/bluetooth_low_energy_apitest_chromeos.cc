@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -46,10 +47,10 @@ class BluetoothLowEnergyApiTestChromeOs : public PlatformAppBrowserTest {
 
  protected:
   chromeos::FakeChromeUserManager* fake_user_manager_;
-  scoped_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
 
   chromeos::ScopedCrosSettingsTestHelper settings_helper_;
-  scoped_ptr<chromeos::FakeOwnerSettingsService> owner_settings_service_;
+  std::unique_ptr<chromeos::FakeOwnerSettingsService> owner_settings_service_;
 
   void EnterKioskSession() {
     fake_user_manager_ = new chromeos::FakeChromeUserManager();

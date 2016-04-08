@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
+
+#include <memory>
+
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
-#include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
@@ -30,16 +33,17 @@ class FakeEventRouter : public extensions::EventRouter {
  public:
   explicit FakeEventRouter(Profile* profile) : EventRouter(profile, NULL) {}
 
-  void DispatchEventToExtension(const std::string& extension_id,
-                                scoped_ptr<extensions::Event> event) override {
+  void DispatchEventToExtension(
+      const std::string& extension_id,
+      std::unique_ptr<extensions::Event> event) override {
     // Do nothing with the event as no tests currently care.
   }
 };
 
 // FakeEventRouter factory function
-scoped_ptr<KeyedService> FakeEventRouterFactoryFunction(
+std::unique_ptr<KeyedService> FakeEventRouterFactoryFunction(
     content::BrowserContext* context) {
-  return make_scoped_ptr(new FakeEventRouter(static_cast<Profile*>(context)));
+  return base::WrapUnique(new FakeEventRouter(static_cast<Profile*>(context)));
 }
 
 namespace {

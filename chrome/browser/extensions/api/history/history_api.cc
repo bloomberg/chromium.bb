@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/history/history_api.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -13,7 +14,6 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -143,7 +143,8 @@ void HistoryEventRouter::OnURLVisited(history::HistoryService* history_service,
                                       const history::URLRow& row,
                                       const history::RedirectList& redirects,
                                       base::Time visit_time) {
-  scoped_ptr<base::ListValue> args = OnVisited::Create(GetHistoryItem(row));
+  std::unique_ptr<base::ListValue> args =
+      OnVisited::Create(GetHistoryItem(row));
   DispatchEvent(profile_, events::HISTORY_ON_VISITED,
                 api::history::OnVisited::kEventName, std::move(args));
 }
@@ -161,17 +162,18 @@ void HistoryEventRouter::OnURLsDeleted(history::HistoryService* history_service,
     urls->push_back(row.url().spec());
   removed.urls.reset(urls);
 
-  scoped_ptr<base::ListValue> args = OnVisitRemoved::Create(removed);
+  std::unique_ptr<base::ListValue> args = OnVisitRemoved::Create(removed);
   DispatchEvent(profile_, events::HISTORY_ON_VISIT_REMOVED,
                 api::history::OnVisitRemoved::kEventName, std::move(args));
 }
 
-void HistoryEventRouter::DispatchEvent(Profile* profile,
-                                       events::HistogramValue histogram_value,
-                                       const std::string& event_name,
-                                       scoped_ptr<base::ListValue> event_args) {
+void HistoryEventRouter::DispatchEvent(
+    Profile* profile,
+    events::HistogramValue histogram_value,
+    const std::string& event_name,
+    std::unique_ptr<base::ListValue> event_args) {
   if (profile && EventRouter::Get(profile)) {
-    scoped_ptr<Event> event(
+    std::unique_ptr<Event> event(
         new Event(histogram_value, event_name, std::move(event_args)));
     event->restrict_to_browser_context = profile;
     EventRouter::Get(profile)->BroadcastEvent(std::move(event));
@@ -272,7 +274,7 @@ void HistoryFunctionWithCallback::SendResponseToCallback() {
 }
 
 bool HistoryGetVisitsFunction::RunAsyncImpl() {
-  scoped_ptr<GetVisits::Params> params(GetVisits::Params::Create(*args_));
+  std::unique_ptr<GetVisits::Params> params(GetVisits::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   GURL url;
@@ -304,7 +306,7 @@ void HistoryGetVisitsFunction::QueryComplete(
 }
 
 bool HistorySearchFunction::RunAsyncImpl() {
-  scoped_ptr<Search::Params> params(Search::Params::Create(*args_));
+  std::unique_ptr<Search::Params> params(Search::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   base::string16 search_text = base::UTF8ToUTF16(params->query.text);
@@ -342,7 +344,7 @@ void HistorySearchFunction::SearchComplete(history::QueryResults* results) {
 }
 
 bool HistoryAddUrlFunction::RunAsync() {
-  scoped_ptr<AddUrl::Params> params(AddUrl::Params::Create(*args_));
+  std::unique_ptr<AddUrl::Params> params(AddUrl::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   GURL url;
@@ -358,7 +360,7 @@ bool HistoryAddUrlFunction::RunAsync() {
 }
 
 bool HistoryDeleteUrlFunction::RunAsync() {
-  scoped_ptr<DeleteUrl::Params> params(DeleteUrl::Params::Create(*args_));
+  std::unique_ptr<DeleteUrl::Params> params(DeleteUrl::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   if (!VerifyDeleteAllowed())
@@ -387,7 +389,8 @@ bool HistoryDeleteUrlFunction::RunAsync() {
 }
 
 bool HistoryDeleteRangeFunction::RunAsyncImpl() {
-  scoped_ptr<DeleteRange::Params> params(DeleteRange::Params::Create(*args_));
+  std::unique_ptr<DeleteRange::Params> params(
+      DeleteRange::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   if (!VerifyDeleteAllowed())

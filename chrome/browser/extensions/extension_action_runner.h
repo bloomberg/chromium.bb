@@ -85,7 +85,7 @@ class ExtensionActionRunner : public content::WebContentsObserver,
   int num_page_requests() const { return num_page_requests_; }
 
   void set_default_bubble_close_action_for_testing(
-      scoped_ptr<ToolbarActionsBarBubbleDelegate::CloseAction> action) {
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate::CloseAction> action) {
     default_bubble_close_action_for_testing_ = std::move(action);
   }
 
@@ -202,7 +202,7 @@ class ExtensionActionRunner : public content::WebContentsObserver,
   bool ignore_active_tab_granted_;
 
   // If non-null, the bubble action to simulate for testing.
-  scoped_ptr<ToolbarActionsBarBubbleDelegate::CloseAction>
+  std::unique_ptr<ToolbarActionsBarBubbleDelegate::CloseAction>
       default_bubble_close_action_for_testing_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>

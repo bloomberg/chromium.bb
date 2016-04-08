@@ -115,8 +115,9 @@ class ExtensionActionIconFactoryTest
     std::string error;
     JSONFileValueDeserializer deserializer(
         test_file.AppendASCII("manifest.json"));
-    scoped_ptr<base::DictionaryValue> valid_value = base::DictionaryValue::From(
-        deserializer.Deserialize(&error_code, &error));
+    std::unique_ptr<base::DictionaryValue> valid_value =
+        base::DictionaryValue::From(
+            deserializer.Deserialize(&error_code, &error));
     EXPECT_EQ(0, error_code) << error;
     if (error_code != 0)
       return NULL;
@@ -179,7 +180,7 @@ class ExtensionActionIconFactoryTest
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;
 
 #if defined OS_CHROMEOS
@@ -280,7 +281,7 @@ TEST_P(ExtensionActionIconFactoryTest, DefaultIcon) {
       EnsureImageSize(LoadIcon("browser_action/no_icon/icon.png"), icon_size);
   ASSERT_FALSE(default_icon.IsEmpty());
 
-  scoped_ptr<ExtensionIconSet> default_icon_set(new ExtensionIconSet());
+  std::unique_ptr<ExtensionIconSet> default_icon_set(new ExtensionIconSet());
   default_icon_set->Add(icon_size, "icon.png");
 
   browser_action->SetDefaultIconForTest(std::move(default_icon_set));

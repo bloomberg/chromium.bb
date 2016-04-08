@@ -7,13 +7,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/at_exit.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -134,7 +134,7 @@ class ExtensionServiceTestBase : public testing::Test {
   // after thread_bundle_ in the destruction order.
   base::ShadowingAtExitManager at_exit_manager_;
 
-  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
 
  protected:
   // It's unfortunate that these are exposed to subclasses (rather than used
@@ -142,7 +142,7 @@ class ExtensionServiceTestBase : public testing::Test {
   // directly.
 
   // The associated testing profile.
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
 
   // The ExtensionService, whose lifetime is managed by |profile|'s
   // ExtensionSystem.

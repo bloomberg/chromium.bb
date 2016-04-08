@@ -13,6 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
@@ -89,27 +90,26 @@ enum OffStoreInstallDecision {
 scoped_refptr<CrxInstaller> CrxInstaller::CreateSilent(
     ExtensionService* frontend) {
   return new CrxInstaller(frontend->AsWeakPtr(),
-                          scoped_ptr<ExtensionInstallPrompt>(),
-                          NULL);
+                          std::unique_ptr<ExtensionInstallPrompt>(), NULL);
 }
 
 // static
 scoped_refptr<CrxInstaller> CrxInstaller::Create(
     ExtensionService* frontend,
-    scoped_ptr<ExtensionInstallPrompt> client) {
+    std::unique_ptr<ExtensionInstallPrompt> client) {
   return new CrxInstaller(frontend->AsWeakPtr(), std::move(client), NULL);
 }
 
 // static
 scoped_refptr<CrxInstaller> CrxInstaller::Create(
     ExtensionService* service,
-    scoped_ptr<ExtensionInstallPrompt> client,
+    std::unique_ptr<ExtensionInstallPrompt> client,
     const WebstoreInstaller::Approval* approval) {
   return new CrxInstaller(service->AsWeakPtr(), std::move(client), approval);
 }
 
 CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
-                           scoped_ptr<ExtensionInstallPrompt> client,
+                           std::unique_ptr<ExtensionInstallPrompt> client,
                            const WebstoreInstaller::Approval* approval)
     : install_directory_(service_weak->install_directory()),
       install_source_(Manifest::INTERNAL),
@@ -448,7 +448,7 @@ void CrxInstaller::OnUnpackSuccess(
   if (original_manifest)
     original_manifest_.reset(new Manifest(
         Manifest::INVALID_LOCATION,
-        scoped_ptr<base::DictionaryValue>(original_manifest->DeepCopy())));
+        std::unique_ptr<base::DictionaryValue>(original_manifest->DeepCopy())));
 
   // We don't have to delete the unpack dir explicity since it is a child of
   // the temp dir.
@@ -918,7 +918,7 @@ void CrxInstaller::ConfirmReEnable() {
             service->profile(), extension());
     client_->ShowDialog(
         base::Bind(&CrxInstaller::OnInstallPromptDone, this), extension(),
-        nullptr, make_scoped_ptr(new ExtensionInstallPrompt::Prompt(type)),
+        nullptr, base::WrapUnique(new ExtensionInstallPrompt::Prompt(type)),
         ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
 }

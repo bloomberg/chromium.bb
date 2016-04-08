@@ -91,7 +91,7 @@ struct IndividualSettings {
   // Minimum version required for an extensions, applies to per-extension
   // settings only. Extension (with specified extension ID) with version older
   // than the specified minimum version will be disabled.
-  scoped_ptr<base::Version> minimum_version_required;
+  std::unique_ptr<base::Version> minimum_version_required;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IndividualSettings);

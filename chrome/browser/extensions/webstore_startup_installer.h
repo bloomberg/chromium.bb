@@ -32,7 +32,7 @@ class WebstoreStartupInstaller : public WebstoreInstallWithPrompt {
   ~WebstoreStartupInstaller() override;
 
   // Implementations of WebstoreStandaloneInstaller Template Method's hooks.
-  scoped_ptr<ExtensionInstallPrompt::Prompt> CreateInstallPrompt()
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> CreateInstallPrompt()
       const override;
 
  private:

@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/user_script_listener.h"
+
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
-#include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
@@ -56,7 +58,7 @@ class ThrottleController : public base::SupportsUserData::Data,
 
  private:
   net::URLRequest* request_;
-  scoped_ptr<ResourceThrottle> throttle_;
+  std::unique_ptr<ResourceThrottle> throttle_;
 };
 
 // A simple test net::URLRequestJob. We don't care what it does, only that
@@ -75,8 +77,9 @@ class SimpleTestJob : public net::URLRequestTestJob {
 };
 
 // Yoinked from extension_manifest_unittest.cc.
-scoped_ptr<base::DictionaryValue> LoadManifestFile(const base::FilePath path,
-                                                   std::string* error) {
+std::unique_ptr<base::DictionaryValue> LoadManifestFile(
+    const base::FilePath path,
+    std::string* error) {
   EXPECT_TRUE(base::PathExists(path));
   JSONFileValueDeserializer deserializer(path);
   return base::DictionaryValue::From(deserializer.Deserialize(NULL, error));
@@ -90,7 +93,7 @@ scoped_refptr<Extension> LoadExtension(const std::string& filename,
       AppendASCII("extensions").
       AppendASCII("manifest_tests").
       AppendASCII(filename.c_str());
-  scoped_ptr<base::DictionaryValue> value = LoadManifestFile(path, error);
+  std::unique_ptr<base::DictionaryValue> value = LoadManifestFile(path, error);
   if (!value)
     return NULL;
   return Extension::Create(path.DirName(), Manifest::UNPACKED, *value,
@@ -120,13 +123,11 @@ class UserScriptListenerTest : public ExtensionServiceTestBase {
  public:
   UserScriptListenerTest() {
     net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
-        "http", "google.com",
-        scoped_ptr<net::URLRequestInterceptor>(
-            new SimpleTestJobURLRequestInterceptor()));
+        "http", "google.com", std::unique_ptr<net::URLRequestInterceptor>(
+                                  new SimpleTestJobURLRequestInterceptor()));
     net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
-        "http", "example.com",
-        scoped_ptr<net::URLRequestInterceptor>(
-            new SimpleTestJobURLRequestInterceptor()));
+        "http", "example.com", std::unique_ptr<net::URLRequestInterceptor>(
+                                   new SimpleTestJobURLRequestInterceptor()));
   }
 
   ~UserScriptListenerTest() override {
@@ -153,13 +154,13 @@ class UserScriptListenerTest : public ExtensionServiceTestBase {
   }
 
  protected:
-  scoped_ptr<net::URLRequest> StartTestRequest(
+  std::unique_ptr<net::URLRequest> StartTestRequest(
       net::URLRequest::Delegate* delegate,
       const std::string& url_string,
       net::TestURLRequestContext* context) {
     GURL url(url_string);
-    scoped_ptr<net::URLRequest> request(context->CreateRequest(
-        url, net::DEFAULT_PRIORITY, delegate));
+    std::unique_ptr<net::URLRequest> request(
+        context->CreateRequest(url, net::DEFAULT_PRIORITY, delegate));
 
     ResourceThrottle* throttle = listener_->CreateResourceThrottle(
         url, content::RESOURCE_TYPE_MAIN_FRAME);
@@ -209,7 +210,7 @@ TEST_F(UserScriptListenerTest, DelayAndUpdate) {
 
   net::TestDelegate delegate;
   net::TestURLRequestContext context;
-  scoped_ptr<net::URLRequest> request(
+  std::unique_ptr<net::URLRequest> request(
       StartTestRequest(&delegate, kMatchingUrl, &context));
   ASSERT_FALSE(request->is_pending());
 
@@ -227,7 +228,7 @@ TEST_F(UserScriptListenerTest, DelayAndUnload) {
 
   net::TestDelegate delegate;
   net::TestURLRequestContext context;
-  scoped_ptr<net::URLRequest> request(
+  std::unique_ptr<net::URLRequest> request(
       StartTestRequest(&delegate, kMatchingUrl, &context));
   ASSERT_FALSE(request->is_pending());
 
@@ -249,7 +250,7 @@ TEST_F(UserScriptListenerTest, DelayAndUnload) {
 TEST_F(UserScriptListenerTest, NoDelayNoExtension) {
   net::TestDelegate delegate;
   net::TestURLRequestContext context;
-  scoped_ptr<net::URLRequest> request(
+  std::unique_ptr<net::URLRequest> request(
       StartTestRequest(&delegate, kMatchingUrl, &context));
 
   // The request should be started immediately.
@@ -265,7 +266,7 @@ TEST_F(UserScriptListenerTest, NoDelayNotMatching) {
 
   net::TestDelegate delegate;
   net::TestURLRequestContext context;
-  scoped_ptr<net::URLRequest> request(
+  std::unique_ptr<net::URLRequest> request(
       StartTestRequest(&delegate, kNotMatchingUrl, &context));
 
   // The request should be started immediately.
@@ -296,7 +297,7 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
 
   net::TestDelegate delegate;
   net::TestURLRequestContext context;
-  scoped_ptr<net::URLRequest> request(
+  std::unique_ptr<net::URLRequest> request(
       StartTestRequest(&delegate, kMatchingUrl, &context));
   ASSERT_FALSE(request->is_pending());
 
@@ -328,8 +329,8 @@ TEST_F(UserScriptListenerTest, ResumeBeforeStart) {
   net::TestDelegate delegate;
   net::TestURLRequestContext context;
   GURL url(kMatchingUrl);
-  scoped_ptr<net::URLRequest> request(context.CreateRequest(
-      url, net::DEFAULT_PRIORITY, &delegate));
+  std::unique_ptr<net::URLRequest> request(
+      context.CreateRequest(url, net::DEFAULT_PRIORITY, &delegate));
 
   ResourceThrottle* throttle =
       listener_->CreateResourceThrottle(url, content::RESOURCE_TYPE_MAIN_FRAME);

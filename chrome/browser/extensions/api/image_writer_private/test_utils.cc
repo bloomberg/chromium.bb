@@ -165,10 +165,10 @@ void ImageWriterTestUtils::SetUp(bool is_browser_test) {
 
 #if defined(OS_CHROMEOS)
   if (!chromeos::DBusThreadManager::IsInitialized()) {
-    scoped_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
+    std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
-    scoped_ptr<chromeos::ImageBurnerClient>
-        image_burner_fake(new ImageWriterFakeImageBurnerClient());
+    std::unique_ptr<chromeos::ImageBurnerClient> image_burner_fake(
+        new ImageWriterFakeImageBurnerClient());
     dbus_setter->SetImageBurnerClient(std::move(image_burner_fake));
   }
 
@@ -230,8 +230,8 @@ FakeImageWriterClient* ImageWriterTestUtils::GetUtilityClient() {
 #endif
 
 bool ImageWriterTestUtils::ImageWrittenToDevice() {
-  scoped_ptr<char[]> image_buffer(new char[kTestFileSize]);
-  scoped_ptr<char[]> device_buffer(new char[kTestFileSize]);
+  std::unique_ptr<char[]> image_buffer(new char[kTestFileSize]);
+  std::unique_ptr<char[]> device_buffer(new char[kTestFileSize]);
 
   int image_bytes_read =
       ReadFile(test_image_path_, image_buffer.get(), kTestFileSize);
@@ -251,7 +251,7 @@ bool ImageWriterTestUtils::ImageWrittenToDevice() {
 bool ImageWriterTestUtils::FillFile(const base::FilePath& file,
                                     const int pattern,
                                     const int length) {
-  scoped_ptr<char[]> buffer(new char[length]);
+  std::unique_ptr<char[]> buffer(new char[length]);
   memset(buffer.get(), pattern, length);
 
   return base::WriteFile(file, buffer.get(), length) == length;

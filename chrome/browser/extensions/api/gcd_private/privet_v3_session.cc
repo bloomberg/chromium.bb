@@ -86,7 +86,7 @@ bool ContainsString(const base::DictionaryValue& dictionary,
   return false;
 }
 
-scoped_ptr<base::DictionaryValue> GetJson(const net::URLFetcher* source) {
+std::unique_ptr<base::DictionaryValue> GetJson(const net::URLFetcher* source) {
   if (!source->GetStatus().is_success())
     return nullptr;
 
@@ -128,7 +128,7 @@ class PrivetV3Session::FetcherDelegate : public net::URLFetcherDelegate {
   void ReplyAndDestroyItself(Result result, const base::DictionaryValue& value);
   void OnTimeout();
 
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
   base::WeakPtr<PrivetV3Session> session_;
   MessageCallback callback_;
 
@@ -152,7 +152,7 @@ void PrivetV3Session::FetcherDelegate::OnURLFetchComplete(
           << ", error: " << source->GetStatus().error()
           << ", response code: " << source->GetResponseCode();
 
-  scoped_ptr<base::DictionaryValue> value = GetJson(source);
+  std::unique_ptr<base::DictionaryValue> value = GetJson(source);
   if (!value) {
     return ReplyAndDestroyItself(Result::STATUS_CONNECTIONERROR,
                                  base::DictionaryValue());

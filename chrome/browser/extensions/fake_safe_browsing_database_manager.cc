@@ -103,7 +103,7 @@ bool FakeSafeBrowsingDatabaseManager::CheckExtensionIDs(
                  std::back_inserter(extension_id_hashes),
                  safe_browsing::StringToSBFullHash);
 
-  scoped_ptr<SafeBrowsingCheck> safe_browsing_check(
+  std::unique_ptr<SafeBrowsingCheck> safe_browsing_check(
       new SafeBrowsingCheck(std::vector<GURL>(), extension_id_hashes, client,
                             safe_browsing::EXTENSIONBLACKLIST,
                             std::vector<safe_browsing::SBThreatType>(
@@ -124,7 +124,7 @@ bool FakeSafeBrowsingDatabaseManager::CheckExtensionIDs(
 }
 
 void FakeSafeBrowsingDatabaseManager::OnSafeBrowsingResult(
-    scoped_ptr<SafeBrowsingCheck> result) {
+    std::unique_ptr<SafeBrowsingCheck> result) {
   result->OnSafeBrowsingResult();
 }
 

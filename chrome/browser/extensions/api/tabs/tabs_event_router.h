@@ -107,14 +107,14 @@ class TabsEventRouter : public TabStripModelObserver,
   void DispatchEvent(Profile* profile,
                      events::HistogramValue histogram_value,
                      const std::string& event_name,
-                     scoped_ptr<base::ListValue> args,
+                     std::unique_ptr<base::ListValue> args,
                      EventRouter::UserGestureState user_gesture);
 
   void DispatchEventsAcrossIncognito(
       Profile* profile,
       const std::string& event_name,
-      scoped_ptr<base::ListValue> event_args,
-      scoped_ptr<base::ListValue> cross_incognito_args);
+      std::unique_ptr<base::ListValue> event_args,
+      std::unique_ptr<base::ListValue> cross_incognito_args);
 
   // Packages |changed_property_names| as a tab updated event for the tab
   // |contents| and dispatches the event to the extension.
@@ -185,7 +185,7 @@ class TabsEventRouter : public TabStripModelObserver,
   // nullptr if not.
   TabEntry* GetTabEntry(content::WebContents* contents);
 
-  using TabEntryMap = std::map<int, scoped_ptr<TabEntry>>;
+  using TabEntryMap = std::map<int, std::unique_ptr<TabEntry>>;
   TabEntryMap tab_entries_;
 
   // The main profile that owns this event router.

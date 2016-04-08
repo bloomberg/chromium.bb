@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_API_UNITTEST_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_API_UNITTEST_H_
 
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 
 namespace base {
@@ -53,18 +53,21 @@ class ExtensionApiUnittest : public BrowserWithTestWindowTest {
   // See also the RunFunction* methods in extension_function_test_utils.h.
 
   // Return the function result as a base::Value.
-  scoped_ptr<base::Value> RunFunctionAndReturnValue(
-      UIThreadExtensionFunction* function, const std::string& args);
+  std::unique_ptr<base::Value> RunFunctionAndReturnValue(
+      UIThreadExtensionFunction* function,
+      const std::string& args);
 
   // Return the function result as a base::DictionaryValue, or NULL.
   // This will EXPECT-fail if the result is not a DictionaryValue.
-  scoped_ptr<base::DictionaryValue> RunFunctionAndReturnDictionary(
-      UIThreadExtensionFunction* function, const std::string& args);
+  std::unique_ptr<base::DictionaryValue> RunFunctionAndReturnDictionary(
+      UIThreadExtensionFunction* function,
+      const std::string& args);
 
   // Return the function result as a base::ListValue, or NULL.
   // This will EXPECT-fail if the result is not a ListValue.
-  scoped_ptr<base::ListValue> RunFunctionAndReturnList(
-      UIThreadExtensionFunction* function, const std::string& args);
+  std::unique_ptr<base::ListValue> RunFunctionAndReturnList(
+      UIThreadExtensionFunction* function,
+      const std::string& args);
 
   // Return an error thrown from the function, if one exists.
   // This will EXPECT-fail if any result is returned from the function.

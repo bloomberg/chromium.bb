@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_MESSAGING_NATIVE_MESSAGE_PROCESS_HOST_H_
 #define CHROME_BROWSER_EXTENSIONS_API_MESSAGING_NATIVE_MESSAGE_PROCESS_HOST_H_
 
+#include <memory>
 #include <queue>
 #include <string>
 
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
@@ -44,10 +44,10 @@ class NativeMessageProcessHost :
   ~NativeMessageProcessHost() override;
 
   // Create using specified |launcher|. Used in tests.
-  static scoped_ptr<NativeMessageHost> CreateWithLauncher(
+  static std::unique_ptr<NativeMessageHost> CreateWithLauncher(
       const std::string& source_extension_id,
       const std::string& native_host_name,
-      scoped_ptr<NativeProcessLauncher> launcher);
+      std::unique_ptr<NativeProcessLauncher> launcher);
 
   // extensions::NativeMessageHost implementation.
   void OnMessage(const std::string& message) override;
@@ -67,7 +67,7 @@ class NativeMessageProcessHost :
  private:
   NativeMessageProcessHost(const std::string& source_extension_id,
                            const std::string& native_host_name,
-                           scoped_ptr<NativeProcessLauncher> launcher);
+                           std::unique_ptr<NativeProcessLauncher> launcher);
 
   // Starts the host process.
   void LaunchHostProcess();
@@ -104,7 +104,7 @@ class NativeMessageProcessHost :
   std::string native_host_name_;
 
   // Launcher used to launch the native process.
-  scoped_ptr<NativeProcessLauncher> launcher_;
+  std::unique_ptr<NativeProcessLauncher> launcher_;
 
   // Set to true after the native messaging connection has been stopped, e.g.
   // due to an error.
@@ -113,7 +113,7 @@ class NativeMessageProcessHost :
   base::Process process_;
 
   // Input stream reader.
-  scoped_ptr<net::FileStream> read_stream_;
+  std::unique_ptr<net::FileStream> read_stream_;
 
 #if defined(OS_POSIX)
   base::PlatformFile read_file_;
@@ -121,7 +121,7 @@ class NativeMessageProcessHost :
 #endif  // !defined(OS_POSIX)
 
   // Write stream.
-  scoped_ptr<net::FileStream> write_stream_;
+  std::unique_ptr<net::FileStream> write_stream_;
 
   // Read buffer passed to FileStream::Read().
   scoped_refptr<net::IOBuffer> read_buffer_;

@@ -30,21 +30,23 @@ class ChromeManagementAPIDelegate : public extensions::ManagementAPIDelegate {
   void GetPermissionWarningsByManifestFunctionDelegate(
       extensions::ManagementGetPermissionWarningsByManifestFunction* function,
       const std::string& manifest_str) const override;
-  scoped_ptr<extensions::InstallPromptDelegate> SetEnabledFunctionDelegate(
+  std::unique_ptr<extensions::InstallPromptDelegate> SetEnabledFunctionDelegate(
       content::WebContents* web_contents,
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
       const base::Callback<void(bool)>& callback) const override;
-  scoped_ptr<extensions::RequirementsChecker> CreateRequirementsChecker()
+  std::unique_ptr<extensions::RequirementsChecker> CreateRequirementsChecker()
       const override;
-  scoped_ptr<extensions::UninstallDialogDelegate> UninstallFunctionDelegate(
+  std::unique_ptr<extensions::UninstallDialogDelegate>
+  UninstallFunctionDelegate(
       extensions::ManagementUninstallFunctionBase* function,
       const extensions::Extension* target_extension,
       bool show_programmatic_uninstall_ui) const override;
   bool CreateAppShortcutFunctionDelegate(
       extensions::ManagementCreateAppShortcutFunction* function,
       const extensions::Extension* extension) const override;
-  scoped_ptr<extensions::AppForLinkDelegate> GenerateAppForLinkFunctionDelegate(
+  std::unique_ptr<extensions::AppForLinkDelegate>
+  GenerateAppForLinkFunctionDelegate(
       extensions::ManagementGenerateAppForLinkFunction* function,
       content::BrowserContext* context,
       const std::string& title,

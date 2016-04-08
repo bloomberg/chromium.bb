@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -170,18 +171,17 @@ void WebstoreStandaloneInstaller::OnManifestParsed() {
   ProceedWithInstallPrompt();
 }
 
-scoped_ptr<ExtensionInstallPrompt>
+std::unique_ptr<ExtensionInstallPrompt>
 WebstoreStandaloneInstaller::CreateInstallUI() {
-  return make_scoped_ptr(new ExtensionInstallPrompt(GetWebContents()));
+  return base::WrapUnique(new ExtensionInstallPrompt(GetWebContents()));
 }
 
-scoped_ptr<WebstoreInstaller::Approval>
+std::unique_ptr<WebstoreInstaller::Approval>
 WebstoreStandaloneInstaller::CreateApproval() const {
-  scoped_ptr<WebstoreInstaller::Approval> approval(
+  std::unique_ptr<WebstoreInstaller::Approval> approval(
       WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
-          profile_,
-          id_,
-          scoped_ptr<base::DictionaryValue>(manifest_.get()->DeepCopy()),
+          profile_, id_,
+          std::unique_ptr<base::DictionaryValue>(manifest_.get()->DeepCopy()),
           true));
   approval->skip_post_install_ui = !ShouldShowPostInstallUI();
   approval->use_app_installed_bubble = ShouldShowAppInstalledBubble();
@@ -204,7 +204,7 @@ void WebstoreStandaloneInstaller::OnInstallPromptDone(
 
   DCHECK(result == ExtensionInstallPrompt::Result::ACCEPTED);
 
-  scoped_ptr<WebstoreInstaller::Approval> approval = CreateApproval();
+  std::unique_ptr<WebstoreInstaller::Approval> approval = CreateApproval();
 
   ExtensionService* extension_service =
       ExtensionSystem::Get(profile_)->extension_service();
@@ -244,7 +244,7 @@ void WebstoreStandaloneInstaller::OnWebstoreRequestFailure() {
 }
 
 void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
-    scoped_ptr<base::DictionaryValue> webstore_data) {
+    std::unique_ptr<base::DictionaryValue> webstore_data) {
   OnWebStoreDataFetcherDone();
 
   if (!CheckRequestorAlive()) {

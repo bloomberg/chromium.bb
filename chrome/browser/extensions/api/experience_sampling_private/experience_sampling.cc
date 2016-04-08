@@ -34,7 +34,7 @@ const char ExperienceSamplingEvent::kExtensionInstallDialog[] =
     "extension_install_dialog_";
 
 // static
-scoped_ptr<ExperienceSamplingEvent> ExperienceSamplingEvent::Create(
+std::unique_ptr<ExperienceSamplingEvent> ExperienceSamplingEvent::Create(
     const std::string& element_name,
     const GURL& destination,
     const GURL& referrer) {
@@ -42,13 +42,13 @@ scoped_ptr<ExperienceSamplingEvent> ExperienceSamplingEvent::Create(
   if (g_browser_process->profile_manager())
      profile = g_browser_process->profile_manager()->GetLastUsedProfile();
   if (!profile)
-    return scoped_ptr<ExperienceSamplingEvent>();
-  return scoped_ptr<ExperienceSamplingEvent>(new ExperienceSamplingEvent(
+    return std::unique_ptr<ExperienceSamplingEvent>();
+  return std::unique_ptr<ExperienceSamplingEvent>(new ExperienceSamplingEvent(
       element_name, destination, referrer, profile));
 }
 
 // static
-scoped_ptr<ExperienceSamplingEvent> ExperienceSamplingEvent::Create(
+std::unique_ptr<ExperienceSamplingEvent> ExperienceSamplingEvent::Create(
     const std::string& element_name) {
   return ExperienceSamplingEvent::Create(element_name, GURL(), GURL());
 }
@@ -82,10 +82,10 @@ void ExperienceSamplingEvent::CreateUserDecisionEvent(
   decision.details = has_viewed_details();
   decision.time = base::Time::Now().ToJsTime();
 
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Append(ui_element_.ToValue().release());
   args->Append(decision.ToValue().release());
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::EXPERIENCE_SAMPLING_PRIVATE_ON_DECISION,
                 api::experience_sampling_private::OnDecision::kEventName,
                 std::move(args)));
@@ -99,9 +99,9 @@ void ExperienceSamplingEvent::CreateOnDisplayedEvent() {
   // any events.
   if (browser_context_ && browser_context_->IsOffTheRecord())
     return;
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Append(ui_element_.ToValue().release());
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::EXPERIENCE_SAMPLING_PRIVATE_ON_DISPLAYED,
                 api::experience_sampling_private::OnDisplayed::kEventName,
                 std::move(args)));

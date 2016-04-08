@@ -56,12 +56,12 @@ const GURL& AppInstaller::GetRequestorURL() const {
   return GURL::EmptyGURL();
 }
 
-scoped_ptr<ExtensionInstallPrompt::Prompt> AppInstaller::CreateInstallPrompt()
-    const {
+std::unique_ptr<ExtensionInstallPrompt::Prompt>
+AppInstaller::CreateInstallPrompt() const {
   if (silent_installation_)
     return nullptr;
 
-  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt(
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt(
       new ExtensionInstallPrompt::Prompt(
           ExtensionInstallPrompt::INLINE_INSTALL_PROMPT));
 

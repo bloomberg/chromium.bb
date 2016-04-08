@@ -37,13 +37,14 @@ using content::BrowserThread;
 
 namespace {
 
-scoped_ptr<base::DictionaryValue> MakeExtensionManifest(
+std::unique_ptr<base::DictionaryValue> MakeExtensionManifest(
     const base::Value& manifest_extra) {
-  scoped_ptr<base::DictionaryValue> manifest = DictionaryBuilder()
-                                                   .Set("name", "Extension")
-                                                   .Set("version", "1.0")
-                                                   .Set("manifest_version", 2)
-                                                   .Build();
+  std::unique_ptr<base::DictionaryValue> manifest =
+      DictionaryBuilder()
+          .Set("name", "Extension")
+          .Set("version", "1.0")
+          .Set("manifest_version", 2)
+          .Build();
   const base::DictionaryValue* manifest_extra_dict;
   if (manifest_extra.GetAsDictionary(&manifest_extra_dict)) {
     manifest->MergeDictionary(manifest_extra_dict);
@@ -55,7 +56,7 @@ scoped_ptr<base::DictionaryValue> MakeExtensionManifest(
   return manifest;
 }
 
-scoped_ptr<base::DictionaryValue> MakePackagedAppManifest() {
+std::unique_ptr<base::DictionaryValue> MakePackagedAppManifest() {
   return extensions::DictionaryBuilder()
       .Set("name", "Test App Name")
       .Set("version", "2.0")
@@ -140,7 +141,7 @@ ExtensionPrefs* TestExtensionEnvironment::GetExtensionPrefs() {
 
 const Extension* TestExtensionEnvironment::MakeExtension(
     const base::Value& manifest_extra) {
-  scoped_ptr<base::DictionaryValue> manifest =
+  std::unique_ptr<base::DictionaryValue> manifest =
       MakeExtensionManifest(manifest_extra);
   scoped_refptr<Extension> result =
       ExtensionBuilder().SetManifest(std::move(manifest)).Build();
@@ -151,7 +152,7 @@ const Extension* TestExtensionEnvironment::MakeExtension(
 const Extension* TestExtensionEnvironment::MakeExtension(
     const base::Value& manifest_extra,
     const std::string& id) {
-  scoped_ptr<base::DictionaryValue> manifest =
+  std::unique_ptr<base::DictionaryValue> manifest =
       MakeExtensionManifest(manifest_extra);
   scoped_refptr<Extension> result =
       ExtensionBuilder().SetManifest(std::move(manifest)).SetID(id).Build();
@@ -172,8 +173,9 @@ scoped_refptr<Extension> TestExtensionEnvironment::MakePackagedApp(
   return result;
 }
 
-scoped_ptr<content::WebContents> TestExtensionEnvironment::MakeTab() const {
-  scoped_ptr<content::WebContents> contents(
+std::unique_ptr<content::WebContents> TestExtensionEnvironment::MakeTab()
+    const {
+  std::unique_ptr<content::WebContents> contents(
       content::WebContentsTester::CreateTestWebContents(profile(), NULL));
   // Create a tab id.
   SessionTabHelper::CreateForWebContents(contents.get());

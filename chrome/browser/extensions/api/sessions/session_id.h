@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SESSIONS_SESSION_ID_H__
 #define CHROME_BROWSER_EXTENSIONS_API_SESSIONS_SESSION_ID_H__
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace extensions {
 
@@ -17,7 +17,7 @@ class SessionId {
   // Returns a SessionId, representing either a local or a foreign session.
   // In the case that the session is local, |session_tag_| will be empty string.
   // |session_string| should be in the format that ToString() would produce.
-  static scoped_ptr<SessionId> Parse(const std::string& session_string);
+  static std::unique_ptr<SessionId> Parse(const std::string& session_string);
 
   // Constructs a SessionId object for the given session information.
   // |session_tag| is the string used to uniquely identify a synced foreign

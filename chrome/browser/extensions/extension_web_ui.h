@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_UI_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_UI_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
 #include "components/favicon_base/favicon_callback.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -94,7 +94,7 @@ class ExtensionWebUI : public content::WebUIController {
 
   // TODO(aa): This seems out of place. Why is it not with the event routers for
   // the other extension APIs?
-  scoped_ptr<extensions::BookmarkManagerPrivateDragEventRouter>
+  std::unique_ptr<extensions::BookmarkManagerPrivateDragEventRouter>
       bookmark_manager_private_drag_event_router_;
 
   // The URL this WebUI was created for.

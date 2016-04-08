@@ -10,16 +10,16 @@
 
 namespace extensions {
 
-std::vector<scoped_ptr<ContentPredicateEvaluator>>
+std::vector<std::unique_ptr<ContentPredicateEvaluator>>
 CreateDefaultContentPredicateEvaluators(
     content::BrowserContext* browser_context,
     ContentPredicateEvaluator::Delegate* delegate) {
-  std::vector<scoped_ptr<ContentPredicateEvaluator>> evaluators;
-  evaluators.push_back(scoped_ptr<ContentPredicateEvaluator>(
+  std::vector<std::unique_ptr<ContentPredicateEvaluator>> evaluators;
+  evaluators.push_back(std::unique_ptr<ContentPredicateEvaluator>(
       new DeclarativeContentPageUrlConditionTracker(delegate)));
-  evaluators.push_back(scoped_ptr<ContentPredicateEvaluator>(
+  evaluators.push_back(std::unique_ptr<ContentPredicateEvaluator>(
       new DeclarativeContentCssConditionTracker(delegate)));
-  evaluators.push_back(scoped_ptr<ContentPredicateEvaluator>(
+  evaluators.push_back(std::unique_ptr<ContentPredicateEvaluator>(
       new DeclarativeContentIsBookmarkedConditionTracker(browser_context,
                                                          delegate)));
   return evaluators;

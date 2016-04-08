@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_VIEW_HOST_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_VIEW_HOST_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/notification_observer.h"
@@ -110,18 +111,20 @@ class ExtensionViewHost
 
  private:
   // Implemented per-platform. Create the platform-specific ExtensionView.
-  static scoped_ptr<ExtensionView> CreateExtensionView(ExtensionViewHost* host,
-                                                       Browser* browser);
+  static std::unique_ptr<ExtensionView> CreateExtensionView(
+      ExtensionViewHost* host,
+      Browser* browser);
 
   // Optional view that shows the rendered content in the UI.
-  scoped_ptr<ExtensionView> view_;
+  std::unique_ptr<ExtensionView> view_;
 
   // The relevant WebContents associated with this ExtensionViewHost, if any.
   content::WebContents* associated_web_contents_;
 
   // Observer to detect when the associated web contents is destroyed.
   class AssociatedWebContentsObserver;
-  scoped_ptr<AssociatedWebContentsObserver> associated_web_contents_observer_;
+  std::unique_ptr<AssociatedWebContentsObserver>
+      associated_web_contents_observer_;
 
   content::NotificationRegistrar registrar_;
 

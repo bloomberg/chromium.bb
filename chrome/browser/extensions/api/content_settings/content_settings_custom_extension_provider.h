@@ -25,7 +25,7 @@ class CustomExtensionProvider : public ObservableProvider,
   ~CustomExtensionProvider() override;
 
   // ProviderInterface methods:
-  scoped_ptr<RuleIterator> GetRuleIterator(
+  std::unique_ptr<RuleIterator> GetRuleIterator(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       bool incognito) const override;

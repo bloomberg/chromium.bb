@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/ash/launcher/launcher_favicon_loader.h"
 #include "extensions/browser/app_window/app_window.h"
 
@@ -59,8 +59,8 @@ class AshPanelContents
  private:
   extensions::AppWindow* host_;
   GURL url_;
-  scoped_ptr<content::WebContents> web_contents_;
-  scoped_ptr<LauncherFaviconLoader> launcher_favicon_loader_;
+  std::unique_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<LauncherFaviconLoader> launcher_favicon_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(AshPanelContents);
 };

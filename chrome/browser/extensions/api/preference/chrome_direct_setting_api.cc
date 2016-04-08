@@ -136,7 +136,7 @@ void ChromeDirectSettingAPI::OnPrefChanged(
         profile_->GetPrefs()->FindPreference(pref_key.c_str());
     const base::Value* value = preference->GetValue();
 
-    scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
     result->Set(preference_api_constants::kValue, value->DeepCopy());
     base::ListValue args;
     args.Append(result.release());
@@ -145,7 +145,7 @@ void ChromeDirectSettingAPI::OnPrefChanged(
          ExtensionRegistry::Get(profile_)->enabled_extensions()) {
       const std::string& extension_id = extension->id();
       if (router->ExtensionHasEventListener(extension_id, event_name)) {
-        scoped_ptr<base::ListValue> args_copy(args.DeepCopy());
+        std::unique_ptr<base::ListValue> args_copy(args.DeepCopy());
         // TODO(kalman): Have a histogram value for each pref type.
         // This isn't so important for the current use case of these
         // histograms, which is to track which event types are waking up event
@@ -157,7 +157,7 @@ void ChromeDirectSettingAPI::OnPrefChanged(
         // to change.
         events::HistogramValue histogram_value =
             events::TYPES_PRIVATE_CHROME_DIRECT_SETTING_ON_CHANGE;
-        scoped_ptr<Event> event(
+        std::unique_ptr<Event> event(
             new Event(histogram_value, event_name, std::move(args_copy)));
         router->DispatchEventToExtension(extension_id, std::move(event));
       }

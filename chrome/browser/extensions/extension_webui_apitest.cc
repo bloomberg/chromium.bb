@@ -4,6 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -137,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, SanityCheckUnavailableAPIs) {
 // Tests chrome.test.sendMessage, which exercises WebUI making a
 // function call and receiving a response.
 IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, SendMessage) {
-  scoped_ptr<ExtensionTestMessageListener> listener(
+  std::unique_ptr<ExtensionTestMessageListener> listener(
       new ExtensionTestMessageListener("ping", true));
 
   ASSERT_TRUE(RunTestOnExtensionsFrame("send_message.js"));
@@ -158,11 +159,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, OnMessage) {
   OnMessage::Info info;
   info.data = "hi";
   info.last_message = true;
-  EventRouter::Get(profile())->BroadcastEvent(make_scoped_ptr(
+  EventRouter::Get(profile())->BroadcastEvent(base::WrapUnique(
       new Event(events::RUNTIME_ON_MESSAGE, OnMessage::kEventName,
                 OnMessage::Create(info))));
 
-  scoped_ptr<ExtensionTestMessageListener> listener(
+  std::unique_ptr<ExtensionTestMessageListener> listener(
       new ExtensionTestMessageListener(false));
   ASSERT_TRUE(listener->WaitUntilSatisfied());
   EXPECT_EQ("true", listener->message());
@@ -171,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, OnMessage) {
 // Tests chrome.runtime.lastError, which exercises WebUI accessing a property
 // on an API which it doesn't actually have access to. A bindings test really.
 IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, RuntimeLastError) {
-  scoped_ptr<ExtensionTestMessageListener> listener(
+  std::unique_ptr<ExtensionTestMessageListener> listener(
       new ExtensionTestMessageListener("ping", true));
 
   ASSERT_TRUE(RunTestOnExtensionsFrame("runtime_last_error.js"));
@@ -185,7 +186,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, RuntimeLastError) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, CanEmbedExtensionOptions) {
-  scoped_ptr<ExtensionTestMessageListener> listener(
+  std::unique_ptr<ExtensionTestMessageListener> listener(
       new ExtensionTestMessageListener("ready", true));
 
   const Extension* extension =
@@ -202,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, CanEmbedExtensionOptions) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, ReceivesExtensionOptionsOnClose) {
-  scoped_ptr<ExtensionTestMessageListener> listener(
+  std::unique_ptr<ExtensionTestMessageListener> listener(
       new ExtensionTestMessageListener("ready", true));
 
   const Extension* extension =
@@ -224,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, ReceivesExtensionOptionsOnClose) {
 // Same setup as CanEmbedExtensionOptions but disable the extension before
 // embedding.
 IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, EmbedDisabledExtension) {
-  scoped_ptr<ExtensionTestMessageListener> listener(
+  std::unique_ptr<ExtensionTestMessageListener> listener(
       new ExtensionTestMessageListener("ready", true));
 
   std::string extension_id;

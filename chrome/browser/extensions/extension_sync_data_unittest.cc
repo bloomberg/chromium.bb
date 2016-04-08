@@ -4,8 +4,9 @@
 
 #include "chrome/browser/extensions/extension_sync_data.h"
 
+#include <memory>
+
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/version.h"
 #include "extensions/common/extension.h"
 #include "sync/api/string_ordinal.h"
@@ -31,7 +32,7 @@ const char kName[] = "MyExtension";
 void ProtobufToSyncDataEqual(const sync_pb::EntitySpecifics& entity) {
   syncer::SyncData sync_data =
       syncer::SyncData::CreateLocalData("sync_tag", "non_unique_title", entity);
-  scoped_ptr<ExtensionSyncData> extension_sync_data =
+  std::unique_ptr<ExtensionSyncData> extension_sync_data =
       ExtensionSyncData::CreateFromSyncData(sync_data);
   ASSERT_TRUE(extension_sync_data.get());
   syncer::SyncData output_sync_data = extension_sync_data->GetSyncData();
@@ -59,7 +60,7 @@ void ProtobufToSyncDataEqual(const sync_pb::EntitySpecifics& entity) {
 // confirms that the input is the same as the output.
 void SyncDataToProtobufEqual(const ExtensionSyncData& input) {
   syncer::SyncData sync_data = input.GetSyncData();
-  scoped_ptr<ExtensionSyncData> output =
+  std::unique_ptr<ExtensionSyncData> output =
       ExtensionSyncData::CreateFromSyncData(sync_data);
   ASSERT_TRUE(output.get());
 
@@ -174,7 +175,7 @@ TEST_F(AppSyncDataTest, SyncDataToExtensionSyncDataForApp) {
   syncer::SyncData sync_data =
       syncer::SyncData::CreateLocalData("sync_tag", "non_unique_title", entity);
 
-  scoped_ptr<ExtensionSyncData> app_sync_data =
+  std::unique_ptr<ExtensionSyncData> app_sync_data =
       ExtensionSyncData::CreateFromSyncData(sync_data);
   ASSERT_TRUE(app_sync_data.get());
   EXPECT_EQ(app_specifics->app_launch_ordinal(),
@@ -195,7 +196,7 @@ TEST_F(AppSyncDataTest, ExtensionSyncDataToSyncDataForApp) {
 
   syncer::SyncData sync_data =
       syncer::SyncData::CreateLocalData("sync_tag", "non_unique_title", entity);
-  scoped_ptr<ExtensionSyncData> app_sync_data =
+  std::unique_ptr<ExtensionSyncData> app_sync_data =
       ExtensionSyncData::CreateFromSyncData(sync_data);
   ASSERT_TRUE(app_sync_data.get());
 
@@ -221,7 +222,7 @@ TEST_F(AppSyncDataTest, ExtensionSyncDataInvalidOrdinal) {
       syncer::SyncData::CreateLocalData("sync_tag", "non_unique_title", entity);
 
   // There should be no issue loading the sync data.
-  scoped_ptr<ExtensionSyncData> app_sync_data =
+  std::unique_ptr<ExtensionSyncData> app_sync_data =
       ExtensionSyncData::CreateFromSyncData(sync_data);
   ASSERT_TRUE(app_sync_data.get());
   app_sync_data->GetSyncData();

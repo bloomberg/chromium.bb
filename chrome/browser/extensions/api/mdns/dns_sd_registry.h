@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_EXTENSIONS_API_MDNS_DNS_SD_REGISTRY_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/api/mdns/dns_sd_delegate.h"
 
@@ -65,7 +65,7 @@ class DnsSdRegistry : public DnsSdDelegate {
   // particular service type.
   class ServiceTypeData {
    public:
-    explicit ServiceTypeData(scoped_ptr<DnsSdDeviceLister> lister);
+    explicit ServiceTypeData(std::unique_ptr<DnsSdDeviceLister> lister);
     virtual ~ServiceTypeData();
 
     // Notify the data class of listeners so that it can be reference counted.
@@ -89,7 +89,7 @@ class DnsSdRegistry : public DnsSdDelegate {
 
    private:
     int ref_count;
-    scoped_ptr<DnsSdDeviceLister> lister_;
+    std::unique_ptr<DnsSdDeviceLister> lister_;
     DnsSdRegistry::DnsSdServiceList service_list_;
     DISALLOW_COPY_AND_ASSIGN(ServiceTypeData);
   };

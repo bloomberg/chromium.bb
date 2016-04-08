@@ -4,12 +4,14 @@
 
 #include "chrome/browser/extensions/api/storage/policy_value_store.h"
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
@@ -48,7 +50,7 @@ class MutablePolicyValueStore : public PolicyValueStore {
       : PolicyValueStore(
             kTestExtensionId,
             make_scoped_refptr(new SettingsObserverList()),
-            make_scoped_ptr(
+            base::WrapUnique(
                 new LeveldbValueStore(kDatabaseUMAClientName, path))) {}
   ~MutablePolicyValueStore() override {}
 
@@ -100,8 +102,8 @@ class PolicyValueStoreTest : public testing::Test {
     observers_->AddObserver(&observer_);
     store_.reset(new PolicyValueStore(
         kTestExtensionId, observers_,
-        make_scoped_ptr(new LeveldbValueStore(kDatabaseUMAClientName,
-                                              scoped_temp_dir_.path()))));
+        base::WrapUnique(new LeveldbValueStore(kDatabaseUMAClientName,
+                                               scoped_temp_dir_.path()))));
   }
 
   void TearDown() override {
@@ -113,7 +115,7 @@ class PolicyValueStoreTest : public testing::Test {
   base::ScopedTempDir scoped_temp_dir_;
   base::MessageLoop loop_;
   content::TestBrowserThread file_thread_;
-  scoped_ptr<PolicyValueStore> store_;
+  std::unique_ptr<PolicyValueStore> store_;
   MockSettingsObserver observer_;
   scoped_refptr<SettingsObserverList> observers_;
 };

@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -95,7 +96,7 @@ ExtensionResourceProtocolHandler::MaybeCreateJob(
 
 }  // namespace
 
-scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>
 CreateExtensionResourceProtocolHandler() {
-  return make_scoped_ptr(new ExtensionResourceProtocolHandler());
+  return base::WrapUnique(new ExtensionResourceProtocolHandler());
 }

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_UNPACKED_INSTALLER_H_
 #define CHROME_BROWSER_EXTENSIONS_UNPACKED_INSTALLER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/extension_install_checker.h"
 

@@ -578,9 +578,10 @@ void ActivityLog::OnScriptsExecuted(
   }
 }
 
-void ActivityLog::OnApiEventDispatched(const std::string& extension_id,
-                                       const std::string& event_name,
-                                       scoped_ptr<base::ListValue> event_args) {
+void ActivityLog::OnApiEventDispatched(
+    const std::string& extension_id,
+    const std::string& event_name,
+    std::unique_ptr<base::ListValue> event_args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_refptr<Action> action = new Action(extension_id,
                                             base::Time::Now(),
@@ -592,7 +593,7 @@ void ActivityLog::OnApiEventDispatched(const std::string& extension_id,
 
 void ActivityLog::OnApiFunctionCalled(const std::string& extension_id,
                                       const std::string& api_name,
-                                      scoped_ptr<base::ListValue> args) {
+                                      std::unique_ptr<base::ListValue> args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_refptr<Action> action = new Action(extension_id,
                                             base::Time::Now(),
@@ -611,8 +612,8 @@ void ActivityLog::GetFilteredActions(
     const std::string& page_url,
     const std::string& arg_url,
     const int daysAgo,
-    const base::Callback
-        <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>& callback) {
+    const base::Callback<
+        void(std::unique_ptr<std::vector<scoped_refptr<Action>>>)>& callback) {
   if (database_policy_) {
     database_policy_->ReadFilteredData(
         extension_id, type, api_name, page_url, arg_url, daysAgo, callback);

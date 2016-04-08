@@ -103,21 +103,19 @@ class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
     scoped_refptr<WebrtcAudioPrivateGetActiveSinkFunction> function =
         new WebrtcAudioPrivateGetActiveSinkFunction();
     function->set_source_url(source_url_);
-    scoped_ptr<base::Value> result(
-        RunFunctionAndReturnSingleResult(function.get(),
-                                         parameter_string,
-                                         browser()));
+    std::unique_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
+        function.get(), parameter_string, browser()));
     std::string device_id;
     result->GetAsString(&device_id);
     return device_id;
   }
 
-  scoped_ptr<base::Value> InvokeGetSinks(base::ListValue** sink_list) {
+  std::unique_ptr<base::Value> InvokeGetSinks(base::ListValue** sink_list) {
     scoped_refptr<WebrtcAudioPrivateGetSinksFunction> function =
         new WebrtcAudioPrivateGetSinksFunction();
     function->set_source_url(source_url_);
 
-    scoped_ptr<base::Value> result(
+    std::unique_ptr<base::Value> result(
         RunFunctionAndReturnSingleResult(function.get(), "[]", browser()));
     result->GetAsList(sink_list);
     return result;
@@ -181,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetSinks) {
   GetAudioDeviceNames(&AudioManager::GetAudioOutputDeviceNames, &devices);
 
   base::ListValue* sink_list = NULL;
-  scoped_ptr<base::Value> result = InvokeGetSinks(&sink_list);
+  std::unique_ptr<base::Value> result = InvokeGetSinks(&sink_list);
 
   std::string result_string;
   JSONWriter::Write(*result, &result_string);
@@ -238,10 +236,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetActiveSinkNoMediaStream) {
   scoped_refptr<WebrtcAudioPrivateGetActiveSinkFunction> function =
       new WebrtcAudioPrivateGetActiveSinkFunction();
   function->set_source_url(source_url_);
-  scoped_ptr<base::Value> result(
-      RunFunctionAndReturnSingleResult(function.get(),
-                                       parameter_string,
-                                       browser()));
+  std::unique_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
+      function.get(), parameter_string, browser()));
 
   std::string result_string;
   JSONWriter::Write(*result, &result_string);
@@ -280,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAndSetWithMediaStream) {
   // where we set the active sink to each of the different available
   // sinks in turn.
   base::ListValue* sink_list = NULL;
-  scoped_ptr<base::Value> result = InvokeGetSinks(&sink_list);
+  std::unique_ptr<base::Value> result = InvokeGetSinks(&sink_list);
 
   ASSERT_TRUE(StartEmbeddedTestServer());
 
@@ -314,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAndSetWithMediaStream) {
     scoped_refptr<WebrtcAudioPrivateSetActiveSinkFunction> function =
       new WebrtcAudioPrivateSetActiveSinkFunction();
     function->set_source_url(source_url_);
-    scoped_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
+    std::unique_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
         function.get(), parameter_string, browser()));
     // The function was successful if the above invocation doesn't
     // fail. Just for kicks, also check that it returns no result.
@@ -357,10 +353,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAssociatedSink) {
     std::string parameter_string;
     JSONWriter::Write(parameters, &parameter_string);
 
-    scoped_ptr<base::Value> result(
-        RunFunctionAndReturnSingleResult(function.get(),
-                                         parameter_string,
-                                         browser()));
+    std::unique_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
+        function.get(), parameter_string, browser()));
     std::string result_string;
     JSONWriter::Write(*result, &result_string);
     VLOG(2) << "Results: " << result_string;

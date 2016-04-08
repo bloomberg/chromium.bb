@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_WEBSTORE_DATA_FETCHER_DELEGATE_H_
 #define CHROME_BROWSER_EXTENSIONS_WEBSTORE_DATA_FETCHER_DELEGATE_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class DictionaryValue;
@@ -23,7 +23,7 @@ class WebstoreDataFetcherDelegate {
   // Invoked when the web store response parsing is successful. Delegate takes
   // ownership of |webstore_data|.
   virtual void OnWebstoreResponseParseSuccess(
-      scoped_ptr<base::DictionaryValue> webstore_data) = 0;
+      std::unique_ptr<base::DictionaryValue> webstore_data) = 0;
 
   // Invoked when the web store response parsing is failed.
   virtual void OnWebstoreResponseParseFailure(const std::string& error) = 0;

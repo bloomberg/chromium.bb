@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/messaging/extension_message_port.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/interstitial_page.h"
@@ -180,7 +181,7 @@ bool ExtensionMessagePort::IsValidPort() {
 
 void ExtensionMessagePort::DispatchOnConnect(
     const std::string& channel_name,
-    scoped_ptr<base::DictionaryValue> source_tab,
+    std::unique_ptr<base::DictionaryValue> source_tab,
     int source_frame_id,
     int guest_process_id,
     int guest_render_frame_routing_id,
@@ -200,19 +201,19 @@ void ExtensionMessagePort::DispatchOnConnect(
   info.guest_process_id = guest_process_id;
   info.guest_render_frame_routing_id = guest_render_frame_routing_id;
 
-  SendToPort(make_scoped_ptr(new ExtensionMsg_DispatchOnConnect(
+  SendToPort(base::WrapUnique(new ExtensionMsg_DispatchOnConnect(
       MSG_ROUTING_NONE, port_id_, channel_name, source, info, tls_channel_id)));
 }
 
 void ExtensionMessagePort::DispatchOnDisconnect(
     const std::string& error_message) {
-  SendToPort(make_scoped_ptr(new ExtensionMsg_DispatchOnDisconnect(
+  SendToPort(base::WrapUnique(new ExtensionMsg_DispatchOnDisconnect(
       MSG_ROUTING_NONE, port_id_, error_message)));
 }
 
 void ExtensionMessagePort::DispatchOnMessage(const Message& message) {
-  SendToPort(make_scoped_ptr(new ExtensionMsg_DeliverMessage(
-      MSG_ROUTING_NONE, port_id_, message)));
+  SendToPort(base::WrapUnique(
+      new ExtensionMsg_DeliverMessage(MSG_ROUTING_NONE, port_id_, message)));
 }
 
 void ExtensionMessagePort::IncrementLazyKeepaliveCount() {
@@ -276,7 +277,7 @@ void ExtensionMessagePort::UnregisterFrame(content::RenderFrameHost* rfh) {
     CloseChannel();
 }
 
-void ExtensionMessagePort::SendToPort(scoped_ptr<IPC::Message> msg) {
+void ExtensionMessagePort::SendToPort(std::unique_ptr<IPC::Message> msg) {
   DCHECK_GT(frames_.size(), 0UL);
   if (extension_process_) {
     // All extension frames reside in the same process, so we can just send a

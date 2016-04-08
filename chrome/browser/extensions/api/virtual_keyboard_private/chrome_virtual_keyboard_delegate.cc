@@ -77,7 +77,7 @@ bool ChromeVirtualKeyboardDelegate::GetKeyboardConfig(
   // crbug.com/529474.
   results->SetBoolean("a11ymode", keyboard::GetAccessibilityKeyboardEnabled());
   results->SetBoolean("hotrodmode", keyboard::GetHotrodKeyboardEnabled());
-  scoped_ptr<base::ListValue> features(new base::ListValue());
+  std::unique_ptr<base::ListValue> features(new base::ListValue());
   features->AppendString(GenerateFeatureFlag(
       "floatingvirtualkeyboard", keyboard::IsFloatingVirtualKeyboardEnabled()));
   features->AppendString(

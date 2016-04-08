@@ -16,7 +16,7 @@ class NetworkingPrivateVerifyDelegateFactoryImpl
   NetworkingPrivateVerifyDelegateFactoryImpl();
   ~NetworkingPrivateVerifyDelegateFactoryImpl() override;
 
-  scoped_ptr<NetworkingPrivateDelegate::VerifyDelegate> CreateDelegate()
+  std::unique_ptr<NetworkingPrivateDelegate::VerifyDelegate> CreateDelegate()
       override;
 
  private:

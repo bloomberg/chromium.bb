@@ -5,8 +5,10 @@
 #include "chrome/browser/extensions/api/autofill_private/autofill_util.h"
 
 #include <stddef.h>
+
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -29,9 +31,10 @@ namespace {
 // Get the multi-valued element for |type| and return it as a |vector|.
 // TODO(khorimoto): remove this function since multi-valued types are
 // deprecated.
-scoped_ptr<std::vector<std::string>> GetValueList(
-    const autofill::AutofillProfile& profile, autofill::ServerFieldType type) {
-  scoped_ptr<std::vector<std::string>> list(new std::vector<std::string>);
+std::unique_ptr<std::vector<std::string>> GetValueList(
+    const autofill::AutofillProfile& profile,
+    autofill::ServerFieldType type) {
+  std::unique_ptr<std::vector<std::string>> list(new std::vector<std::string>);
 
   std::vector<base::string16> values;
   if (autofill::AutofillType(type).group() == autofill::NAME) {
@@ -54,10 +57,10 @@ scoped_ptr<std::vector<std::string>> GetValueList(
 }
 
 // Gets the string corresponding to |type| from |profile|.
-scoped_ptr<std::string> GetStringFromProfile(
+std::unique_ptr<std::string> GetStringFromProfile(
     const autofill::AutofillProfile& profile,
     const autofill::ServerFieldType& type) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new std::string(base::UTF16ToUTF8(profile.GetRawInfo(type))));
 }
 
@@ -100,8 +103,8 @@ autofill_private::AddressEntry ProfileToAddressEntry(
   base::SplitStringUsingSubstr(label, separator, &label_pieces);
 
   // Create address metadata and add it to |address|.
-  scoped_ptr<autofill_private::AutofillMetadata>
-      metadata(new autofill_private::AutofillMetadata);
+  std::unique_ptr<autofill_private::AutofillMetadata> metadata(
+      new autofill_private::AutofillMetadata);
   metadata->summary_label = base::UTF16ToUTF8(label_pieces[0]);
   metadata->summary_sublabel.reset(new std::string(base::UTF16ToUTF8(
       label.substr(label_pieces[0].size()))));
@@ -128,8 +131,8 @@ autofill_private::CreditCardEntry CreditCardToCreditCardEntry(
       credit_card.GetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR))));
 
   // Create address metadata and add it to |address|.
-  scoped_ptr<autofill_private::AutofillMetadata>
-      metadata(new autofill_private::AutofillMetadata);
+  std::unique_ptr<autofill_private::AutofillMetadata> metadata(
+      new autofill_private::AutofillMetadata);
   std::pair<base::string16, base::string16> label_pieces =
       credit_card.LabelPieces();
   metadata->summary_label = base::UTF16ToUTF8(label_pieces.first);

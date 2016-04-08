@@ -44,7 +44,7 @@ const char kIsolateExtensions[] = "isolateExtensions";
 const char kFtpServerPort[] = "ftpServer.port";
 const char kEmbeddedTestServerPort[] = "testServer.port";
 
-scoped_ptr<net::test_server::HttpResponse> HandleServerRedirectRequest(
+std::unique_ptr<net::test_server::HttpResponse> HandleServerRedirectRequest(
     const net::test_server::HttpRequest& request) {
   if (!base::StartsWith(request.relative_url, "/server-redirect?",
                         base::CompareCase::SENSITIVE))
@@ -54,14 +54,14 @@ scoped_ptr<net::test_server::HttpResponse> HandleServerRedirectRequest(
   std::string redirect_target =
       request.relative_url.substr(query_string_pos + 1);
 
-  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
   http_response->AddCustomHeader("Location", redirect_target);
   return std::move(http_response);
 }
 
-scoped_ptr<net::test_server::HttpResponse> HandleEchoHeaderRequest(
+std::unique_ptr<net::test_server::HttpResponse> HandleEchoHeaderRequest(
     const net::test_server::HttpRequest& request) {
   if (!base::StartsWith(request.relative_url, "/echoheader?",
                         base::CompareCase::SENSITIVE))
@@ -76,20 +76,20 @@ scoped_ptr<net::test_server::HttpResponse> HandleEchoHeaderRequest(
   if (it != request.headers.end())
     header_value = it->second;
 
-  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_OK);
   http_response->set_content(header_value);
   return std::move(http_response);
 }
 
-scoped_ptr<net::test_server::HttpResponse> HandleSetCookieRequest(
+std::unique_ptr<net::test_server::HttpResponse> HandleSetCookieRequest(
     const net::test_server::HttpRequest& request) {
   if (!base::StartsWith(request.relative_url, "/set-cookie?",
                         base::CompareCase::SENSITIVE))
     return nullptr;
 
-  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_OK);
 
@@ -104,7 +104,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleSetCookieRequest(
   return std::move(http_response);
 }
 
-scoped_ptr<net::test_server::HttpResponse> HandleSetHeaderRequest(
+std::unique_ptr<net::test_server::HttpResponse> HandleSetHeaderRequest(
     const net::test_server::HttpRequest& request) {
   if (!base::StartsWith(request.relative_url, "/set-header?",
                         base::CompareCase::SENSITIVE))
@@ -122,13 +122,13 @@ scoped_ptr<net::test_server::HttpResponse> HandleSetHeaderRequest(
 
   size_t colon_pos = header.find(':');
   if (colon_pos == std::string::npos)
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return std::unique_ptr<net::test_server::HttpResponse>();
 
   std::string header_name = header.substr(0, colon_pos);
   // Skip space after colon.
   std::string header_value = header.substr(colon_pos + 2);
 
-  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_OK);
   http_response->AddCustomHeader(header_name, header_value);

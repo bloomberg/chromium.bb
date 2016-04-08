@@ -53,7 +53,7 @@ class BrailleDisplayPrivateAPI : public BrowserContextKeyedAPI,
   class EventDelegate {
    public:
     virtual ~EventDelegate() {}
-    virtual void BroadcastEvent(scoped_ptr<Event> event) = 0;
+    virtual void BroadcastEvent(std::unique_ptr<Event> event) = 0;
     virtual bool HasListener() = 0;
   };
 
@@ -63,12 +63,12 @@ class BrailleDisplayPrivateAPI : public BrowserContextKeyedAPI,
   // the active profile.
   bool IsProfileActive();
 
-  void SetEventDelegateForTest(scoped_ptr<EventDelegate> delegate);
+  void SetEventDelegateForTest(std::unique_ptr<EventDelegate> delegate);
 
   Profile* profile_;
   ScopedObserver<api::braille_display_private::BrailleController,
                  BrailleObserver> scoped_observer_;
-  scoped_ptr<EventDelegate> event_delegate_;
+  std::unique_ptr<EventDelegate> event_delegate_;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
@@ -103,7 +103,7 @@ class BrailleDisplayPrivateWriteDotsFunction : public AsyncApiFunction {
   bool Respond() override;
 
  private:
-  scoped_ptr<braille_display_private::WriteDots::Params> params_;
+  std::unique_ptr<braille_display_private::WriteDots::Params> params_;
 };
 
 }  // namespace api

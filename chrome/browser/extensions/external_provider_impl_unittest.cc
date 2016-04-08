@@ -4,13 +4,13 @@
 
 #include "chrome/browser/extensions/external_provider_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_path_override.h"
@@ -115,10 +115,10 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
   }
 
  private:
-  scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
+  std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
     GURL url = test_server_->GetURL(request.relative_url);
     if (url.path() == kManifestPath) {
-      scoped_ptr<BasicHttpResponse> response(new BasicHttpResponse);
+      std::unique_ptr<BasicHttpResponse> response(new BasicHttpResponse);
       response->set_code(net::HTTP_OK);
       response->set_content(base::StringPrintf(
           "<?xml version='1.0' encoding='UTF-8'?>\n"
@@ -140,7 +140,7 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
       base::ReadFileToString(
           test_data_dir.AppendASCII("extensions/dummyiap.crx"),
           &contents);
-      scoped_ptr<BasicHttpResponse> response(new BasicHttpResponse);
+      std::unique_ptr<BasicHttpResponse> response(new BasicHttpResponse);
       response->set_code(net::HTTP_OK);
       response->set_content(contents);
       return std::move(response);
@@ -149,8 +149,8 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
     return nullptr;
   }
 
-  scoped_ptr<EmbeddedTestServer> test_server_;
-  scoped_ptr<ExtensionCacheFake> test_extension_cache_;
+  std::unique_ptr<EmbeddedTestServer> test_server_;
+  std::unique_ptr<ExtensionCacheFake> test_extension_cache_;
 
 #if defined(OS_CHROMEOS)
   // chromeos::ServicesCustomizationExternalLoader is hooked up as an

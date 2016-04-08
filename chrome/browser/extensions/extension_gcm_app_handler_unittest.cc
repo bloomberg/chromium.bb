@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_gcm_app_handler.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -15,8 +16,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -129,7 +130,7 @@ class Waiter {
         base::Bind(&Waiter::PumpIOLoopCompleted, base::Unretained(this)));
   }
 
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(Waiter);
 };
@@ -195,7 +196,7 @@ class FakeExtensionGCMAppHandler : public ExtensionGCMAppHandler {
 
 class ExtensionGCMAppHandlerTest : public testing::Test {
  public:
-  static scoped_ptr<KeyedService> BuildGCMProfileService(
+  static std::unique_ptr<KeyedService> BuildGCMProfileService(
       content::BrowserContext* context) {
     Profile* profile = Profile::FromBrowserContext(context);
     scoped_refptr<base::SequencedTaskRunner> ui_thread =
@@ -210,15 +211,15 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
         worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
             worker_pool->GetSequenceToken(),
             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
-    return make_scoped_ptr(new gcm::GCMProfileService(
+    return base::WrapUnique(new gcm::GCMProfileService(
         profile->GetPrefs(), profile->GetPath(), profile->GetRequestContext(),
         chrome::GetChannel(),
-        scoped_ptr<ProfileIdentityProvider>(new ProfileIdentityProvider(
+        std::unique_ptr<ProfileIdentityProvider>(new ProfileIdentityProvider(
             SigninManagerFactory::GetForProfile(profile),
             ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
             LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(
                 profile))),
-        make_scoped_ptr(new gcm::FakeGCMClientFactory(ui_thread, io_thread)),
+        base::WrapUnique(new gcm::FakeGCMClientFactory(ui_thread, io_thread)),
         ui_thread, io_thread, blocking_task_runner));
   }
 
@@ -396,10 +397,10 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
-  scoped_ptr<content::InProcessUtilityThreadHelper>
+  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<content::InProcessUtilityThreadHelper>
       in_process_utility_thread_helper_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;  // Not owned.
   base::ScopedTempDir temp_dir_;
 
@@ -407,11 +408,11 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
 #if defined(OS_CHROMEOS)
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
-  scoped_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
+  std::unique_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
 #endif
 
   Waiter waiter_;
-  scoped_ptr<FakeExtensionGCMAppHandler> gcm_app_handler_;
+  std::unique_ptr<FakeExtensionGCMAppHandler> gcm_app_handler_;
   gcm::GCMClient::Result registration_result_;
   gcm::GCMClient::Result unregistration_result_;
 

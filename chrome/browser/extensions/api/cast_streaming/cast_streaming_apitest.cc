@@ -7,12 +7,12 @@
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 #include <vector>
 
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -156,7 +156,7 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
   }
 
   // Invoked by InProcessReceiver for each received audio frame.
-  void OnAudioFrame(scoped_ptr<media::AudioBus> audio_frame,
+  void OnAudioFrame(std::unique_ptr<media::AudioBus> audio_frame,
                     const base::TimeTicks& playout_time,
                     bool is_continuous) override {
     DCHECK(cast_env()->CurrentlyOn(media::cast::CastEnvironment::MAIN));
@@ -296,7 +296,7 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     if (region.IsEmpty())
       return 0;
     const size_t num_values = region.size().GetArea();
-    scoped_ptr<uint8_t[]> values(new uint8_t[num_values]);
+    std::unique_ptr<uint8_t[]> values(new uint8_t[num_values]);
     for (int y = 0; y < region.height(); ++y) {
       memcpy(values.get() + y * region.width(),
              data + (region.y() + y) * stride + region.x(),
@@ -344,7 +344,7 @@ class CastStreamingApiTestWithPixelOutput : public CastStreamingApiTest {
 #define MAYBE_EndToEnd DISABLED_EndToEnd
 #endif
 IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, MAYBE_EndToEnd) {
-  scoped_ptr<net::UDPServerSocket> receive_socket(
+  std::unique_ptr<net::UDPServerSocket> receive_socket(
       new net::UDPServerSocket(NULL, net::NetLog::Source()));
   receive_socket->AllowAddressReuse();
   ASSERT_EQ(net::OK, receive_socket->Listen(GetFreeLocalPort()));

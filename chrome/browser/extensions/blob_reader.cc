@@ -60,7 +60,7 @@ void BlobReader::Start() {
 // Overridden from net::URLFetcherDelegate.
 void BlobReader::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  scoped_ptr<std::string> response(new std::string);
+  std::unique_ptr<std::string> response(new std::string);
   int64_t first = 0, last = 0, length = 0;
   source->GetResponseAsString(response.get());
   source->GetResponseHeaders()->GetContentRange(&first, &last, &length);

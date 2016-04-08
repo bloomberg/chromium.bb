@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_DECLARATIVE_CONTENT_PAGE_URL_CONDITION_TRACKER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_DECLARATIVE_CONTENT_PAGE_URL_CONDITION_TRACKER_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -40,7 +40,7 @@ class DeclarativeContentPageUrlPredicate : public ContentPredicate {
     return url_matcher_condition_set_.get();
   }
 
-  static scoped_ptr<DeclarativeContentPageUrlPredicate> Create(
+  static std::unique_ptr<DeclarativeContentPageUrlPredicate> Create(
       ContentPredicateEvaluator* evaluator,
       url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
       const base::Value& value,
@@ -73,7 +73,7 @@ class DeclarativeContentPageUrlConditionTracker
 
   // ContentPredicateEvaluator:
   std::string GetPredicateApiAttributeName() const override;
-  scoped_ptr<const ContentPredicate> CreatePredicate(
+  std::unique_ptr<const ContentPredicate> CreatePredicate(
       const Extension* extension,
       const base::Value& value,
       std::string* error) override;

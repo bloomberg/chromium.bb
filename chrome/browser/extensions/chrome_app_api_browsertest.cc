@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, IsInstalled) {
           browser()->tab_strip_model()->GetActiveWebContents(),
           kGetAppDetails,
           &result));
-  scoped_ptr<base::DictionaryValue> app_details(
+  std::unique_ptr<base::DictionaryValue> app_details(
       static_cast<base::DictionaryValue*>(
           base::JSONReader::Read(result).release()));
   // extension->manifest() does not contain the id.

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/language_settings_private/language_settings_private_api.h"
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -12,7 +13,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -71,8 +71,8 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
 
   // Collator used to sort display names in the current locale.
   UErrorCode error = U_ZERO_ERROR;
-  scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(
-      icu::Locale(app_locale.c_str()), error));
+  std::unique_ptr<icu::Collator> collator(
+      icu::Collator::createInstance(icu::Locale(app_locale.c_str()), error));
   if (U_FAILURE(error))
     collator.reset();
   LanguageMap language_map(
@@ -106,7 +106,7 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
       translate_languages.begin(), translate_languages.end());
 
   // Build the language list from the language map.
-  scoped_ptr<base::ListValue> language_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> language_list(new base::ListValue);
   for (const auto& entry : language_map) {
     const base::string16& display_name = entry.first;
     const LanguagePair& pair = entry.second;
@@ -149,11 +149,12 @@ LanguageSettingsPrivateSetLanguageListFunction::
 
 ExtensionFunction::ResponseAction
 LanguageSettingsPrivateSetLanguageListFunction::Run() {
-  scoped_ptr<language_settings_private::SetLanguageList::Params> parameters =
-      language_settings_private::SetLanguageList::Params::Create(*args_);
+  std::unique_ptr<language_settings_private::SetLanguageList::Params>
+      parameters =
+          language_settings_private::SetLanguageList::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
-  scoped_ptr<translate::TranslatePrefs> translate_prefs =
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs =
       ChromeTranslateClient::CreateTranslatePrefs(
           chrome_details_.GetProfile()->GetPrefs());
   translate_prefs->UpdateLanguageList(parameters->language_codes);
@@ -219,7 +220,7 @@ LanguageSettingsPrivateGetSpellcheckWordsFunction::OnCustomDictionaryChanged(
                   "OnCustomDictionaryLoaded()";
 }
 
-scoped_ptr<base::ListValue>
+std::unique_ptr<base::ListValue>
 LanguageSettingsPrivateGetSpellcheckWordsFunction::GetSpellcheckWords() const {
   SpellcheckService* service =
       SpellcheckServiceFactory::GetForContext(browser_context());
@@ -227,7 +228,7 @@ LanguageSettingsPrivateGetSpellcheckWordsFunction::GetSpellcheckWords() const {
   DCHECK(dictionary->IsLoaded());
 
   // TODO(michaelpg): Sort using app locale.
-  scoped_ptr<base::ListValue> word_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> word_list(new base::ListValue());
   const std::set<std::string>& words = dictionary->GetWords();
   for (const std::string& word : words)
     word_list->AppendString(word);
@@ -244,7 +245,7 @@ LanguageSettingsPrivateAddSpellcheckWordFunction::
 
 ExtensionFunction::ResponseAction
 LanguageSettingsPrivateAddSpellcheckWordFunction::Run() {
-  scoped_ptr<language_settings_private::AddSpellcheckWord::Params> params =
+  std::unique_ptr<language_settings_private::AddSpellcheckWord::Params> params =
       language_settings_private::AddSpellcheckWord::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -265,8 +266,9 @@ LanguageSettingsPrivateRemoveSpellcheckWordFunction::
 
 ExtensionFunction::ResponseAction
 LanguageSettingsPrivateRemoveSpellcheckWordFunction::Run() {
-  scoped_ptr<language_settings_private::RemoveSpellcheckWord::Params> params =
-      language_settings_private::RemoveSpellcheckWord::Params::Create(*args_);
+  std::unique_ptr<language_settings_private::RemoveSpellcheckWord::Params>
+      params = language_settings_private::RemoveSpellcheckWord::Params::Create(
+          *args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   SpellcheckService* service =

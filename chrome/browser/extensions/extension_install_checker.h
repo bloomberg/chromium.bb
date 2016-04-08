@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_CHECKER_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_CHECKER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "extensions/browser/blacklist_state.h"
@@ -96,7 +96,7 @@ class ExtensionInstallChecker {
  private:
   void MaybeInvokeCallback();
 
-  scoped_ptr<RequirementsChecker> requirements_checker_;
+  std::unique_ptr<RequirementsChecker> requirements_checker_;
 
   // The Profile where the extension is being installed in.
   Profile* profile_;

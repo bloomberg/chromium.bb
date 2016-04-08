@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_UPDATER_EXTENSION_CACHE_IMPL_H_
 #define CHROME_BROWSER_EXTENSIONS_UPDATER_EXTENSION_CACHE_IMPL_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -12,7 +13,6 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -32,7 +32,7 @@ class LocalExtensionCache;
 class ExtensionCacheImpl : public ExtensionCache,
                            public content::NotificationObserver {
  public:
-  explicit ExtensionCacheImpl(scoped_ptr<ExtensionCacheDelegate> delegate);
+  explicit ExtensionCacheImpl(std::unique_ptr<ExtensionCacheDelegate> delegate);
   ~ExtensionCacheImpl() override;
 
   // Implementation of ExtensionCache.
@@ -62,7 +62,7 @@ class ExtensionCacheImpl : public ExtensionCache,
   bool CachingAllowed(const std::string& id);
 
   // Cache implementation that uses local cache dir.
-  scoped_ptr<LocalExtensionCache> cache_;
+  std::unique_ptr<LocalExtensionCache> cache_;
 
   // Set of extensions that can be cached.
   std::set<std::string> allowed_extensions_;

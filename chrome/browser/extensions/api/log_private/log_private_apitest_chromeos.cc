@@ -72,13 +72,13 @@ class LogPrivateApiTest : public ExtensionApiTest {
     base::FilePath tar_file_path =
         test_data_dir_.Append("log_private/dump_logs/system_logs.tar");
     chromeos::DBusThreadManager::GetSetterForTesting()->SetDebugDaemonClient(
-        scoped_ptr<chromeos::DebugDaemonClient>(
+        std::unique_ptr<chromeos::DebugDaemonClient>(
             new TestDebugDaemonClient(tar_file_path)));
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
   }
 
-  scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
-    scoped_ptr<BasicHttpResponse> response(new BasicHttpResponse);
+  std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
+    std::unique_ptr<BasicHttpResponse> response(new BasicHttpResponse);
     response->set_code(net::HTTP_OK);
     response->set_content(
         "<html><head><title>LogPrivateTest</title>"

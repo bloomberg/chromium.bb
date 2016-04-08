@@ -243,7 +243,7 @@ void InstalledLoader::LoadAllExtensions() {
   base::TimeTicks start_time = base::TimeTicks::Now();
 
   Profile* profile = extension_service_->profile();
-  scoped_ptr<ExtensionPrefs::ExtensionsInfo> extensions_info(
+  std::unique_ptr<ExtensionPrefs::ExtensionsInfo> extensions_info(
       extension_prefs_->GetInstalledExtensionsInfo());
 
   std::vector<int> reload_reason_counts(NUM_MANIFEST_RELOAD_REASONS, 0);
@@ -556,7 +556,7 @@ void InstalledLoader::RecordExtensionsMetrics() {
     }
   }
 
-  scoped_ptr<ExtensionPrefs::ExtensionsInfo> uninstalled_extensions_info(
+  std::unique_ptr<ExtensionPrefs::ExtensionsInfo> uninstalled_extensions_info(
       extension_prefs_->GetUninstalledExtensionsInfo());
   for (size_t i = 0; i < uninstalled_extensions_info->size(); ++i) {
     ExtensionInfo* info = uninstalled_extensions_info->at(i).get();

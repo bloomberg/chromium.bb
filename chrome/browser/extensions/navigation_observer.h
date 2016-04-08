@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_NAVIGATION_OBSERVER_H_
 #define CHROME_BROWSER_EXTENSIONS_NAVIGATION_OBSERVER_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "content/public/browser/notification_observer.h"
@@ -54,7 +54,7 @@ class NavigationObserver : public content::NotificationObserver {
   Profile* profile_;
 
   // The UI used to confirm enabling extensions.
-  scoped_ptr<ExtensionInstallPrompt> extension_install_prompt_;
+  std::unique_ptr<ExtensionInstallPrompt> extension_install_prompt_;
 
   // The data we keep track of when prompting to enable extensions.
   std::string in_progress_prompt_extension_id_;

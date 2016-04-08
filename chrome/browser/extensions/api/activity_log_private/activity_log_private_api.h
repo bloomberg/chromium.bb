@@ -76,7 +76,7 @@ class ActivityLogPrivateGetExtensionActivitiesFunction
 
  private:
   void OnLookupCompleted(
-      scoped_ptr<std::vector<scoped_refptr<Action> > > activities);
+      std::unique_ptr<std::vector<scoped_refptr<Action>>> activities);
 };
 
 // The implementation of activityLogPrivate.deleteActivities

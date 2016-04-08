@@ -86,13 +86,13 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // Same as above, but use |client| to generate a confirmation prompt.
   static scoped_refptr<CrxInstaller> Create(
       ExtensionService* service,
-      scoped_ptr<ExtensionInstallPrompt> client);
+      std::unique_ptr<ExtensionInstallPrompt> client);
 
   // Same as the previous method, except use the |approval| to bypass the
   // prompt. Note that the caller retains ownership of |approval|.
   static scoped_refptr<CrxInstaller> Create(
       ExtensionService* service,
-      scoped_ptr<ExtensionInstallPrompt> client,
+      std::unique_ptr<ExtensionInstallPrompt> client,
       const WebstoreInstaller::Approval* approval);
 
   // Install the crx in |source_file|.
@@ -215,7 +215,7 @@ class CrxInstaller : public SandboxedUnpackerClient {
   friend class ExtensionCrxInstallerTest;
 
   CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
-               scoped_ptr<ExtensionInstallPrompt> client,
+               std::unique_ptr<ExtensionInstallPrompt> client,
                const WebstoreInstaller::Approval* approval);
   ~CrxInstaller() override;
 
@@ -321,7 +321,7 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // A parsed copy of the expected manifest, before any transformations like
   // localization have taken place. If |approved_| is true, then the
   // extension's manifest must match this for the install to proceed.
-  scoped_ptr<Manifest> expected_manifest_;
+  std::unique_ptr<Manifest> expected_manifest_;
 
   // The level of checking when comparing the actual manifest against
   // the |expected_manifest_|.
@@ -361,14 +361,14 @@ class CrxInstaller : public SandboxedUnpackerClient {
 
   // A parsed copy of the unmodified original manifest, before any
   // transformations like localization have taken place.
-  scoped_ptr<Manifest> original_manifest_;
+  std::unique_ptr<Manifest> original_manifest_;
 
   // If valid, contains the current version of the extension we're
   // installing (for upgrades).
   base::Version current_version_;
 
   // The icon we will display in the installation UI, if any.
-  scoped_ptr<SkBitmap> install_icon_;
+  std::unique_ptr<SkBitmap> install_icon_;
 
   // The temp directory extension resources were unpacked to. We own this and
   // must delete it when we are done with it.
@@ -379,7 +379,7 @@ class CrxInstaller : public SandboxedUnpackerClient {
 
   // The client we will work with to do the installation. This can be NULL, in
   // which case the install is silent.
-  scoped_ptr<ExtensionInstallPrompt> client_;
+  std::unique_ptr<ExtensionInstallPrompt> client_;
 
   // The root of the unpacked extension directory. This is a subdirectory of
   // temp_dir_, so we don't have to delete it explicitly.

@@ -50,16 +50,16 @@ class FeedbackService : public base::SupportsWeakPtr<FeedbackService> {
   // Callbacks to receive blob data.
   void AttachedFileCallback(scoped_refptr<feedback::FeedbackData> feedback_data,
                             const SendFeedbackCallback& callback,
-                            scoped_ptr<std::string> data,
+                            std::unique_ptr<std::string> data,
                             int64_t total_blob_length);
   void ScreenshotCallback(scoped_refptr<feedback::FeedbackData> feedback_data,
                           const SendFeedbackCallback& callback,
-                          scoped_ptr<std::string> data,
+                          std::unique_ptr<std::string> data,
                           int64_t total_blob_length);
 
   void OnSystemLogsFetchComplete(
       const GetSystemInformationCallback& callback,
-      scoped_ptr<system_logs::SystemLogsResponse> sys_info);
+      std::unique_ptr<system_logs::SystemLogsResponse> sys_info);
 
   // Checks if we have read all the blobs we need to; signals the feedback
   // data object once all the requisite data has been populated.

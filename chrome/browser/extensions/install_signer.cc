@@ -92,7 +92,7 @@ bool HashWithMachineId(const std::string& salt, std::string* result) {
   machine_id = "unknown";
 #endif
 
-  scoped_ptr<crypto::SecureHash> hash(
+  std::unique_ptr<crypto::SecureHash> hash(
       crypto::SecureHash::Create(crypto::SecureHash::SHA256));
 
   hash->Update(machine_id.data(), machine_id.size());
@@ -181,10 +181,9 @@ void InstallSignature::ToValue(base::DictionaryValue* value) const {
 }
 
 // static
-scoped_ptr<InstallSignature> InstallSignature::FromValue(
+std::unique_ptr<InstallSignature> InstallSignature::FromValue(
     const base::DictionaryValue& value) {
-
-  scoped_ptr<InstallSignature> result(new InstallSignature);
+  std::unique_ptr<InstallSignature> result(new InstallSignature);
 
   // For now we don't want to support any backwards compability, but in the
   // future if we do, we would want to put the migration code here.
@@ -351,7 +350,7 @@ void InstallSigner::GetSignature(const SignatureCallback& callback) {
   // call to the server.
   if (ids_.empty()) {
     if (!callback_.is_null())
-      callback_.Run(scoped_ptr<InstallSignature>(new InstallSignature()));
+      callback_.Run(std::unique_ptr<InstallSignature>(new InstallSignature()));
     return;
   }
 
@@ -387,7 +386,7 @@ void InstallSigner::GetSignature(const SignatureCallback& callback) {
   base::DictionaryValue dictionary;
   dictionary.SetInteger(kProtocolVersionKey, 1);
   dictionary.SetString(kHashKey, hash_base64);
-  scoped_ptr<base::ListValue> id_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> id_list(new base::ListValue);
   for (ExtensionIdSet::const_iterator i = ids_.begin(); i != ids_.end(); ++i) {
     id_list->AppendString(*i);
   }
@@ -408,7 +407,7 @@ void InstallSigner::GetSignature(const SignatureCallback& callback) {
 void InstallSigner::ReportErrorViaCallback() {
   InstallSignature* null_signature = NULL;
   if (!callback_.is_null())
-    callback_.Run(scoped_ptr<InstallSignature>(null_signature));
+    callback_.Run(std::unique_ptr<InstallSignature>(null_signature));
 }
 
 void InstallSigner::ParseFetchResponse() {
@@ -439,7 +438,7 @@ void InstallSigner::ParseFetchResponse() {
   // could not be verified to be in the webstore.
 
   base::DictionaryValue* dictionary = NULL;
-  scoped_ptr<base::Value> parsed = base::JSONReader::Read(response);
+  std::unique_ptr<base::Value> parsed = base::JSONReader::Read(response);
   bool json_success = parsed.get() && parsed->GetAsDictionary(&dictionary);
   UMA_HISTOGRAM_BOOLEAN("ExtensionInstallSigner.ParseJsonSuccess",
                         json_success);
@@ -490,7 +489,7 @@ void InstallSigner::HandleSignatureResult(const std::string& signature,
   ExtensionIdSet valid_ids =
       base::STLSetDifference<ExtensionIdSet>(ids_, invalid_ids);
 
-  scoped_ptr<InstallSignature> result;
+  std::unique_ptr<InstallSignature> result;
   if (!signature.empty()) {
     result.reset(new InstallSignature);
     result->ids = valid_ids;

@@ -28,7 +28,7 @@ SettingsPrivateSetPrefFunction::~SettingsPrivateSetPrefFunction() {
 }
 
 ExtensionFunction::ResponseAction SettingsPrivateSetPrefFunction::Run() {
-  scoped_ptr<api::settings_private::SetPref::Params> parameters =
+  std::unique_ptr<api::settings_private::SetPref::Params> parameters =
       api::settings_private::SetPref::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -83,7 +83,7 @@ SettingsPrivateGetPrefFunction::~SettingsPrivateGetPrefFunction() {
 }
 
 ExtensionFunction::ResponseAction SettingsPrivateGetPrefFunction::Run() {
-  scoped_ptr<api::settings_private::GetPref::Params> parameters =
+  std::unique_ptr<api::settings_private::GetPref::Params> parameters =
       api::settings_private::GetPref::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -92,7 +92,7 @@ ExtensionFunction::ResponseAction SettingsPrivateGetPrefFunction::Run() {
   if (delegate == nullptr)
     return RespondNow(Error(kDelegateIsNull));
 
-  scoped_ptr<base::Value> value = delegate->GetPref(parameters->name);
+  std::unique_ptr<base::Value> value = delegate->GetPref(parameters->name);
   if (value->IsType(base::Value::TYPE_NULL))
     return RespondNow(Error("Pref * does not exist", parameters->name));
   else
@@ -128,8 +128,9 @@ SettingsPrivateSetDefaultZoomPercentFunction::
 
 ExtensionFunction::ResponseAction
     SettingsPrivateSetDefaultZoomPercentFunction::Run() {
-  scoped_ptr<api::settings_private::SetDefaultZoomPercent::Params> parameters =
-      api::settings_private::SetDefaultZoomPercent::Params::Create(*args_);
+  std::unique_ptr<api::settings_private::SetDefaultZoomPercent::Params>
+      parameters =
+          api::settings_private::SetDefaultZoomPercent::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
   SettingsPrivateDelegate* delegate =

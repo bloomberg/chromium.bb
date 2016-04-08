@@ -35,7 +35,7 @@ class GetUpdateStatusApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     fake_update_engine_client_ = new chromeos::FakeUpdateEngineClient;
     chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
-        scoped_ptr<UpdateEngineClient>(fake_update_engine_client_));
+        std::unique_ptr<UpdateEngineClient>(fake_update_engine_client_));
   }
 
   void TearDownInProcessBrowserTestFixture() override {

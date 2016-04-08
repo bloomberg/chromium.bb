@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_DECLARATIVE_CONTENT_CONDITION_TRACKER_TEST_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_DECLARATIVE_CONTENT_CONDITION_TRACKER_TEST_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_view_host.h"
@@ -33,7 +34,7 @@ class DeclarativeContentConditionTrackerTest : public testing::Test {
 
  protected:
   // Creates a new WebContents and retains ownership.
-  scoped_ptr<content::WebContents> MakeTab();
+  std::unique_ptr<content::WebContents> MakeTab();
 
   // Gets the MockRenderProcessHost associated with a WebContents.
   content::MockRenderProcessHost* GetMockRenderProcessHost(
@@ -49,7 +50,7 @@ class DeclarativeContentConditionTrackerTest : public testing::Test {
   // Enables MockRenderProcessHosts.
   content::RenderViewHostTestEnabler render_view_host_test_enabler_;
 
-  const scoped_ptr<TestingProfile> profile_;
+  const std::unique_ptr<TestingProfile> profile_;
 
   uintptr_t next_predicate_group_id_;
 

@@ -54,7 +54,7 @@ class HotwordPrivateEventService : public BrowserContextKeyedAPI {
                    const std::string& event_name);
   void SignalEvent(events::HistogramValue histogram_value,
                    const std::string& event_name,
-                   scoped_ptr<base::ListValue> args);
+                   std::unique_ptr<base::ListValue> args);
 
   Profile* profile_;
   PrefChangeRegistrar pref_change_registrar_;

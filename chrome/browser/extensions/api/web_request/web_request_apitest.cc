@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -528,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   // receive the event.
   EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST, runner->GetBlockedActions(extension));
   runner->set_default_bubble_close_action_for_testing(
-      make_scoped_ptr(new ToolbarActionsBarBubbleDelegate::CloseAction(
+      base::WrapUnique(new ToolbarActionsBarBubbleDelegate::CloseAction(
           ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE)));
   runner->RunAction(extension, true);
   base::RunLoop().RunUntilIdle();

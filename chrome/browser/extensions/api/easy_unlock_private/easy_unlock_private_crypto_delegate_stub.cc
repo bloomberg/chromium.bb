@@ -48,9 +48,9 @@ class EasyUnlockPrivateCryptoDelegateStub
 }  // namespace
 
 // static
-scoped_ptr<EasyUnlockPrivateCryptoDelegate>
-    EasyUnlockPrivateCryptoDelegate::Create() {
-  return scoped_ptr<EasyUnlockPrivateCryptoDelegate>(
+std::unique_ptr<EasyUnlockPrivateCryptoDelegate>
+EasyUnlockPrivateCryptoDelegate::Create() {
+  return std::unique_ptr<EasyUnlockPrivateCryptoDelegate>(
       new EasyUnlockPrivateCryptoDelegateStub());
 }
 

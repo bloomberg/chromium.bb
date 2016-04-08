@@ -82,10 +82,10 @@ void BrailleControllerImpl::TryLoadLibBrlApi() {
   LOG(WARNING) << "Couldn't load libbrlapi: " << strerror(errno);
 }
 
-scoped_ptr<DisplayState> BrailleControllerImpl::GetDisplayState() {
+std::unique_ptr<DisplayState> BrailleControllerImpl::GetDisplayState() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   StartConnecting();
-  scoped_ptr<DisplayState> display_state(new DisplayState);
+  std::unique_ptr<DisplayState> display_state(new DisplayState);
   if (connection_.get() && connection_->Connected()) {
     size_t size;
     if (!connection_->GetDisplaySize(&size)) {
@@ -261,10 +261,12 @@ void BrailleControllerImpl::Disconnect() {
   if (!connection_ || !connection_->Connected())
     return;
   connection_->Disconnect();
-  DispatchOnDisplayStateChanged(scoped_ptr<DisplayState>(new DisplayState()));
+  DispatchOnDisplayStateChanged(
+      std::unique_ptr<DisplayState>(new DisplayState()));
 }
 
-scoped_ptr<BrlapiConnection> BrailleControllerImpl::CreateBrlapiConnection() {
+std::unique_ptr<BrlapiConnection>
+BrailleControllerImpl::CreateBrlapiConnection() {
   DCHECK(libbrlapi_loader_.loaded());
   return BrlapiConnection::Create(&libbrlapi_loader_);
 }
@@ -285,13 +287,13 @@ void BrailleControllerImpl::DispatchKeys() {
     } else if (result == 0) {  // No more data.
       return;
     }
-    scoped_ptr<KeyEvent> event = BrlapiKeyCodeToEvent(code);
+    std::unique_ptr<KeyEvent> event = BrlapiKeyCodeToEvent(code);
     if (event)
       DispatchKeyEvent(std::move(event));
   }
 }
 
-void BrailleControllerImpl::DispatchKeyEvent(scoped_ptr<KeyEvent> event) {
+void BrailleControllerImpl::DispatchKeyEvent(std::unique_ptr<KeyEvent> event) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(
@@ -305,7 +307,7 @@ void BrailleControllerImpl::DispatchKeyEvent(scoped_ptr<KeyEvent> event) {
 }
 
 void BrailleControllerImpl::DispatchOnDisplayStateChanged(
-    scoped_ptr<DisplayState> new_state) {
+    std::unique_ptr<DisplayState> new_state) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     if (!BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,

@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_SCRIPTING_PERMISSIONS_MODIFIER_H_
 #define CHROME_BROWSER_EXTENSIONS_SCRIPTING_PERMISSIONS_MODIFIER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 class GURL;
 
@@ -57,8 +58,8 @@ class ScriptingPermissionsModifier {
   // was just installed, not taking into account extra granted preferences.
   void WithholdPermissions(
       const PermissionSet& permissions,
-      scoped_ptr<const PermissionSet>* granted_permissions_out,
-      scoped_ptr<const PermissionSet>* withheld_permissions_out,
+      std::unique_ptr<const PermissionSet>* granted_permissions_out,
+      std::unique_ptr<const PermissionSet>* withheld_permissions_out,
       bool use_initial_state) const;
 
   // Grants any withheld all-hosts (or all-hosts-like) permissions.

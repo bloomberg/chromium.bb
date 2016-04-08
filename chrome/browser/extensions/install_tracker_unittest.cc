@@ -65,8 +65,8 @@ class InstallTrackerTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<InstallTracker> tracker_;
+  std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<InstallTracker> tracker_;
 };
 
 // Verifies that active installs are registered and deregistered correctly.
@@ -104,7 +104,7 @@ TEST_F(InstallTrackerTest, ScopedActiveInstallDeregister) {
   // Verify the constructor that registers the install.
   ActiveInstallData install_data(kExtensionId1);
   install_data.percent_downloaded = 6;
-  scoped_ptr<ScopedActiveInstall> scoped_active_install(
+  std::unique_ptr<ScopedActiveInstall> scoped_active_install(
       new ScopedActiveInstall(tracker(), install_data));
 
   const ActiveInstallData* retrieved_data =
@@ -132,7 +132,7 @@ TEST_F(InstallTrackerTest, ScopedActiveInstallDeregister) {
 TEST_F(InstallTrackerTest, ScopedActiveInstallCancelled) {
   ActiveInstallData install_data(kExtensionId1);
   install_data.percent_downloaded = 87;
-  scoped_ptr<ScopedActiveInstall> scoped_active_install(
+  std::unique_ptr<ScopedActiveInstall> scoped_active_install(
       new ScopedActiveInstall(tracker(), install_data));
 
   const ActiveInstallData* retrieved_data =

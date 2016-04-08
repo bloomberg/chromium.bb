@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_BRAILLE_DISPLAY_PRIVATE_BRAILLE_CONTROLLER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_BRAILLE_DISPLAY_PRIVATE_BRAILLE_CONTROLLER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/braille_display_private.h"
 
@@ -23,7 +23,7 @@ class BrailleController {
  public:
   static BrailleController* GetInstance();
 
-  virtual scoped_ptr<DisplayState> GetDisplayState() = 0;
+  virtual std::unique_ptr<DisplayState> GetDisplayState() = 0;
   virtual void WriteDots(const std::vector<char>& cells) = 0;
   virtual void AddObserver(BrailleObserver* observer) = 0;
   virtual void RemoveObserver(BrailleObserver* observer) = 0;

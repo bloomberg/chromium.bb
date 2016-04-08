@@ -294,7 +294,7 @@ bool IsExtensionIdle(const std::string& extension_id,
     SharedModuleService* service = ExtensionSystem::Get(context)
                                        ->extension_service()
                                        ->shared_module_service();
-    scoped_ptr<ExtensionSet> dependents =
+    std::unique_ptr<ExtensionSet> dependents =
         service->GetDependentExtensions(extension);
     for (ExtensionSet::const_iterator i = dependents->begin();
          i != dependents->end();
@@ -330,9 +330,10 @@ GURL GetSiteForExtensionId(const std::string& extension_id,
       context, Extension::GetBaseURLFromExtensionId(extension_id));
 }
 
-scoped_ptr<base::DictionaryValue> GetExtensionInfo(const Extension* extension) {
+std::unique_ptr<base::DictionaryValue> GetExtensionInfo(
+    const Extension* extension) {
   DCHECK(extension);
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
 
   dict->SetString("id", extension->id());
   dict->SetString("name", extension->name());

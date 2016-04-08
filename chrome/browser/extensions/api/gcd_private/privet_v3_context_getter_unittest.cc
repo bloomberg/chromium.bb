@@ -85,8 +85,8 @@ class PrivetV3ContextGetterTest : public testing::Test,
   net::URLRequestStatus status_ = net::URLRequestStatus();
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<extensions::PrivetV3ContextGetter> context_getter_;
-  scoped_ptr<EmbeddedTestServer> server_;
-  scoped_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<EmbeddedTestServer> server_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
 
   base::Closure quit_;
 };

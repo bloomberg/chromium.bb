@@ -39,7 +39,7 @@ class TestWebstoreInstaller : public WebstoreInstaller {
                         Delegate* delegate,
                         content::WebContents* web_contents,
                         const std::string& id,
-                        scoped_ptr<Approval> approval,
+                        std::unique_ptr<Approval> approval,
                         InstallSource source)
       : WebstoreInstaller(profile,
                           delegate,
@@ -117,7 +117,7 @@ void WebstoreInstallerBrowserTest::OnExtensionInstallFailure(
 }
 
 IN_PROC_BROWSER_TEST_F(WebstoreInstallerBrowserTest, WebstoreInstall) {
-  scoped_ptr<base::DictionaryValue> manifest(
+  std::unique_ptr<base::DictionaryValue> manifest(
       DictionaryBuilder()
           .Set("name", kExtensionName)
           .Set("description", "Foo")
@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInstallerBrowserTest, WebstoreInstall) {
   ASSERT_TRUE(active_web_contents);
 
   // Create an approval.
-  scoped_ptr<WebstoreInstaller::Approval> approval =
+  std::unique_ptr<WebstoreInstaller::Approval> approval =
       WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
           browser()->profile(), kTestExtensionId, std::move(manifest), false);
 
@@ -150,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInstallerBrowserTest, WebstoreInstall) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebstoreInstallerBrowserTest, SimultaneousInstall) {
-  scoped_ptr<base::DictionaryValue> manifest(
+  std::unique_ptr<base::DictionaryValue> manifest(
       DictionaryBuilder()
           .Set("name", kExtensionName)
           .Set("description", "Foo")
@@ -164,12 +164,10 @@ IN_PROC_BROWSER_TEST_F(WebstoreInstallerBrowserTest, SimultaneousInstall) {
   ASSERT_TRUE(active_web_contents);
 
   // Create an approval.
-  scoped_ptr<WebstoreInstaller::Approval> approval =
+  std::unique_ptr<WebstoreInstaller::Approval> approval =
       WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
-          browser()->profile(),
-          kTestExtensionId,
-          scoped_ptr<base::DictionaryValue>(manifest->DeepCopy()),
-          false);
+          browser()->profile(), kTestExtensionId,
+          std::unique_ptr<base::DictionaryValue>(manifest->DeepCopy()), false);
 
   // Create and run a WebstoreInstaller.
   base::RunLoop run_loop;

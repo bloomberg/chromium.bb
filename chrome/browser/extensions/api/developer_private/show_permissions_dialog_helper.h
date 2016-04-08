@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DEVELOPER_PRIVATE_SHOW_PERMISSIONS_DIALOG_HELPER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DEVELOPER_PRIVATE_SHOW_PERMISSIONS_DIALOG_HELPER_H_
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 
 class Profile;
@@ -42,7 +43,7 @@ class ShowPermissionsDialogHelper {
 
   void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
 
-  scoped_ptr<ExtensionInstallPrompt> prompt_;
+  std::unique_ptr<ExtensionInstallPrompt> prompt_;
 
   Profile* profile_;
 

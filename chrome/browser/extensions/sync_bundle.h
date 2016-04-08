@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_SYNC_BUNDLE_H_
 #define CHROME_BROWSER_EXTENSIONS_SYNC_BUNDLE_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_data.h"
@@ -25,7 +25,8 @@ class SyncBundle {
   SyncBundle();
   ~SyncBundle();
 
-  void StartSyncing(scoped_ptr<syncer::SyncChangeProcessor> sync_processor);
+  void StartSyncing(
+      std::unique_ptr<syncer::SyncChangeProcessor> sync_processor);
 
   // Resets this class back to its default values, which will disable all
   // syncing until StartSyncing is called again.
@@ -78,7 +79,7 @@ class SyncBundle {
   void RemoveSyncedExtension(const std::string& id);
   bool HasSyncedExtension(const std::string& id) const;
 
-  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
+  std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
 
   // Stores the set of extensions we know about. Used to decide if a sync change
   // should be ACTION_ADD or ACTION_UPDATE.

@@ -115,7 +115,7 @@ void BlacklistStateFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
-  scoped_ptr<const net::URLFetcher> fetcher;
+  std::unique_ptr<const net::URLFetcher> fetcher;
 
   fetcher.reset(it->first);
   std::string id = it->second;

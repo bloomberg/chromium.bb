@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_WEBSTORE_INSTALL_HELPER_H_
 #define CHROME_BROWSER_EXTENSIONS_WEBSTORE_INSTALL_HELPER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
@@ -79,7 +79,7 @@ class WebstoreInstallHelper : public base::RefCounted<WebstoreInstallHelper>,
   ~WebstoreInstallHelper() override;
 
   // Callbacks for the SafeJsonParser.
-  void OnJSONParseSucceeded(scoped_ptr<base::Value> result);
+  void OnJSONParseSucceeded(std::unique_ptr<base::Value> result);
   void OnJSONParseFailed(const std::string& error_message);
 
   // Implementing the chrome::BitmapFetcherDelegate interface.
@@ -100,7 +100,7 @@ class WebstoreInstallHelper : public base::RefCounted<WebstoreInstallHelper>,
   // SkBitmap.
   GURL icon_url_;
   net::URLRequestContextGetter* context_getter_; // Only usable on UI thread.
-  scoped_ptr<chrome::BitmapFetcher> icon_fetcher_;
+  std::unique_ptr<chrome::BitmapFetcher> icon_fetcher_;
 
   // Flags for whether we're done doing icon decoding and manifest parsing.
   bool icon_decode_complete_;
@@ -108,7 +108,7 @@ class WebstoreInstallHelper : public base::RefCounted<WebstoreInstallHelper>,
 
   // The results of successful decoding/parsing.
   SkBitmap icon_;
-  scoped_ptr<base::DictionaryValue> parsed_manifest_;
+  std::unique_ptr<base::DictionaryValue> parsed_manifest_;
 
   // A details string for keeping track of any errors.
   std::string error_;

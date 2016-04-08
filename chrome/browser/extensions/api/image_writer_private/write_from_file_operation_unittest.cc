@@ -20,7 +20,7 @@ class ImageWriterFromFileTest : public ImageWriterUnitTestBase {
  protected:
   ImageWriterFromFileTest()
       : profile_(new TestingProfile), manager_(profile_.get()) {}
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
   MockOperationManager manager_;
 };
 

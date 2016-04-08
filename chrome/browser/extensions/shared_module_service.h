@@ -53,7 +53,8 @@ class SharedModuleService : public ExtensionRegistryObserver {
   ImportStatus SatisfyImports(const Extension* extension);
 
   // Returns a set of extensions that import a given extension.
-  scoped_ptr<ExtensionSet> GetDependentExtensions(const Extension* extension);
+  std::unique_ptr<ExtensionSet> GetDependentExtensions(
+      const Extension* extension);
 
  private:
   // Uninstall shared modules which are not used by other extensions.

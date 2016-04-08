@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
@@ -267,12 +267,12 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
                               state, true /* add_to_visible */);
   }
 
-  static scoped_ptr<KeyedService> CreateNetworkingPrivateServiceClient(
+  static std::unique_ptr<KeyedService> CreateNetworkingPrivateServiceClient(
       content::BrowserContext* context) {
-    scoped_ptr<CryptoVerifyStub> crypto_verify(new CryptoVerifyStub);
-    scoped_ptr<NetworkingPrivateDelegate> result(
+    std::unique_ptr<CryptoVerifyStub> crypto_verify(new CryptoVerifyStub);
+    std::unique_ptr<NetworkingPrivateDelegate> result(
         new NetworkingPrivateChromeOS(context, std::move(crypto_verify)));
-    scoped_ptr<NetworkingPrivateDelegate::UIDelegate> ui_delegate(
+    std::unique_ptr<NetworkingPrivateDelegate::UIDelegate> ui_delegate(
         new UIDelegateStub);
     result->set_ui_delegate(std::move(ui_delegate));
     return std::move(result);

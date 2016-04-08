@@ -46,12 +46,12 @@ class ExtensionTabUtil {
     ~OpenTabParams();
 
     bool create_browser_if_needed;
-    scoped_ptr<int> window_id;
-    scoped_ptr<int> opener_tab_id;
-    scoped_ptr<std::string> url;
-    scoped_ptr<bool> active;
-    scoped_ptr<bool> pinned;
-    scoped_ptr<int> index;
+    std::unique_ptr<int> window_id;
+    std::unique_ptr<int> opener_tab_id;
+    std::unique_ptr<std::string> url;
+    std::unique_ptr<bool> active;
+    std::unique_ptr<bool> pinned;
+    std::unique_ptr<int> index;
   };
 
   // Opens a new tab given an extension function |function| and creation
@@ -87,12 +87,12 @@ class ExtensionTabUtil {
   // information about the state of a browser tab.  Depending on the
   // permissions of the extension, the object may or may not include sensitive
   // data such as the tab's URL.
-  static scoped_ptr<api::tabs::Tab> CreateTabObject(
+  static std::unique_ptr<api::tabs::Tab> CreateTabObject(
       content::WebContents* web_contents,
       const Extension* extension) {
     return CreateTabObject(web_contents, nullptr, -1, extension);
   }
-  static scoped_ptr<api::tabs::Tab> CreateTabObject(
+  static std::unique_ptr<api::tabs::Tab> CreateTabObject(
       content::WebContents* web_contents,
       TabStripModel* tab_strip,
       int tab_index,
@@ -100,18 +100,18 @@ class ExtensionTabUtil {
 
   // Creates a Tab object but performs no extension permissions checks; the
   // returned object will contain privacy-sensitive data.
-  static scoped_ptr<api::tabs::Tab> CreateTabObject(
+  static std::unique_ptr<api::tabs::Tab> CreateTabObject(
       content::WebContents* web_contents) {
     return CreateTabObject(web_contents, nullptr, -1);
   }
-  static scoped_ptr<api::tabs::Tab> CreateTabObject(
+  static std::unique_ptr<api::tabs::Tab> CreateTabObject(
       content::WebContents* web_contents,
       TabStripModel* tab_strip,
       int tab_index);
 
   // Creates a tab MutedInfo object (see chrome/common/extensions/api/tabs.json)
   // with information about the mute state of a browser tab.
-  static scoped_ptr<api::tabs::MutedInfo> CreateMutedInfo(
+  static std::unique_ptr<api::tabs::MutedInfo> CreateMutedInfo(
       content::WebContents* contents);
 
   // Removes any privacy-sensitive fields from a Tab object if appropriate,

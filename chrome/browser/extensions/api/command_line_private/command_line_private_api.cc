@@ -4,10 +4,10 @@
 
 #include "chrome/browser/extensions/api/command_line_private/command_line_private_api.h"
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/command_line_private.h"
 
@@ -22,7 +22,7 @@ namespace extensions {
 namespace command_line_private = api::command_line_private;
 
 bool CommandLinePrivateHasSwitchFunction::RunSync() {
-  scoped_ptr<command_line_private::HasSwitch::Params> params(
+  std::unique_ptr<command_line_private::HasSwitch::Params> params(
       command_line_private::HasSwitch::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 

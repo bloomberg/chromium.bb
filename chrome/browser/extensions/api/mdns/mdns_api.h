@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_EXTENSIONS_API_MDNS_MDNS_API_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/extensions/api/mdns/dns_sd_registry.h"
 #include "chrome/common/extensions/api/mdns.h"
@@ -45,7 +45,7 @@ class MDnsAPI : public BrowserContextKeyedAPI,
   static BrowserContextKeyedAPIFactory<MDnsAPI>* GetFactoryInstance();
 
   // Used to mock out the DnsSdRegistry for testing.
-  void SetDnsSdRegistryForTesting(scoped_ptr<DnsSdRegistry> registry);
+  void SetDnsSdRegistryForTesting(std::unique_ptr<DnsSdRegistry> registry);
 
   // Immediately issues a multicast DNS query for all service types.
   // NOTE: Discovery queries are sent to all event handlers associated with
@@ -110,7 +110,7 @@ class MDnsAPI : public BrowserContextKeyedAPI,
   base::ThreadChecker thread_checker_;
   content::BrowserContext* const browser_context_;
   // Lazily created on first access and destroyed with this API class.
-  scoped_ptr<DnsSdRegistry> dns_sd_registry_;
+  std::unique_ptr<DnsSdRegistry> dns_sd_registry_;
   // Count of active listeners per service type, saved from the previous
   // invocation of UpdateMDnsListeners().
   ServiceTypeCounts prev_service_counts_;

@@ -4,11 +4,12 @@
 
 #include "chrome/browser/extensions/api/feedback_private/feedback_private_api.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -92,8 +93,8 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
   if (browser_context_ && EventRouter::Get(browser_context_)) {
     FeedbackInfo info;
     info.description = description_template;
-    info.category_tag = make_scoped_ptr(new std::string(category_tag));
-    info.page_url = make_scoped_ptr(new std::string(page_url.spec()));
+    info.category_tag = base::WrapUnique(new std::string(category_tag));
+    info.page_url = base::WrapUnique(new std::string(page_url.spec()));
     info.system_information.reset(new SystemInformationList);
     // The manager is only available if tracing is enabled.
     if (TracingManager* manager = TracingManager::Get()) {
@@ -101,10 +102,10 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
     }
     info.flow = flow;
 
-    scoped_ptr<base::ListValue> args =
+    std::unique_ptr<base::ListValue> args =
         feedback_private::OnFeedbackRequested::Create(info);
 
-    scoped_ptr<Event> event(new Event(
+    std::unique_ptr<Event> event(new Event(
         events::FEEDBACK_PRIVATE_ON_FEEDBACK_REQUESTED,
         feedback_private::OnFeedbackRequested::kEventName, std::move(args)));
     event->restrict_to_browser_context = browser_context_;
@@ -191,7 +192,7 @@ void FeedbackPrivateGetSystemInformationFunction::OnCompleted(
 }
 
 bool FeedbackPrivateSendFeedbackFunction::RunAsync() {
-  scoped_ptr<feedback_private::SendFeedback::Params> params(
+  std::unique_ptr<feedback_private::SendFeedback::Params> params(
       feedback_private::SendFeedback::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -232,7 +233,7 @@ bool FeedbackPrivateSendFeedbackFunction::RunAsync() {
     feedback_data->set_trace_id(*feedback_info.trace_id.get());
   }
 
-  scoped_ptr<FeedbackData::SystemLogsMap> sys_logs(
+  std::unique_ptr<FeedbackData::SystemLogsMap> sys_logs(
       new FeedbackData::SystemLogsMap);
   SystemInformationList* sys_info = feedback_info.system_information.get();
   if (sys_info) {
@@ -246,7 +247,7 @@ bool FeedbackPrivateSendFeedbackFunction::RunAsync() {
   DCHECK(service);
 
   if (feedback_info.send_histograms) {
-    scoped_ptr<std::string> histograms(new std::string);
+    std::unique_ptr<std::string> histograms(new std::string);
     *histograms = base::StatisticsRecorder::ToJSON(std::string());
     if (!histograms->empty())
       feedback_data->SetAndCompressHistograms(std::move(histograms));

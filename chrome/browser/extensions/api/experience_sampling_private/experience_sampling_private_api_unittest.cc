@@ -18,8 +18,9 @@ typedef ExtensionApiUnittest ExperienceSamplingPrivateTest;
 // field trials and groups.
 TEST_F(ExperienceSamplingPrivateTest, GetBrowserInfoTest) {
   // Start with an empty FieldTrialList.
-  scoped_ptr<base::FieldTrialList> trial_list(new base::FieldTrialList(NULL));
-  scoped_ptr<base::DictionaryValue> result(RunFunctionAndReturnDictionary(
+  std::unique_ptr<base::FieldTrialList> trial_list(
+      new base::FieldTrialList(NULL));
+  std::unique_ptr<base::DictionaryValue> result(RunFunctionAndReturnDictionary(
       new ExperienceSamplingPrivateGetBrowserInfoFunction(), "[]"));
   ASSERT_TRUE(result->HasKey("variations"));
   std::string trials_string;

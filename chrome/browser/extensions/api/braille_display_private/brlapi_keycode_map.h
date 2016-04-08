@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_BRAILLE_DISPLAY_PRIVATE_BRLAPI_KEYCODE_MAP_H_
 #define CHROME_BROWSER_EXTENSIONS_API_BRAILLE_DISPLAY_PRIVATE_BRLAPI_KEYCODE_MAP_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "chrome/common/extensions/api/braille_display_private.h"
 #include "library_loaders/libbrlapi.h"
 
@@ -14,7 +15,7 @@ namespace api {
 namespace braille_display_private {
 
 // Maps a 64 bit BrlAPI keycode to a braille |KeyEvent| object.
-scoped_ptr<KeyEvent> BrlapiKeyCodeToEvent(brlapi_keyCode_t code);
+std::unique_ptr<KeyEvent> BrlapiKeyCodeToEvent(brlapi_keyCode_t code);
 
 }  // namespace braille_display_private
 }  // namespace api

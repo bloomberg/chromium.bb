@@ -138,7 +138,7 @@ bool DoVerifyAndEncryptCredentials(
   // Start getting credentials. CredentialsGetterCompleted will be called on
   // completion. On Windows it will be called from a different thread after
   // |credentials_getter| is deleted.
-  scoped_ptr<NetworkingPrivateCredentialsGetter> credentials_getter(
+  std::unique_ptr<NetworkingPrivateCredentialsGetter> credentials_getter(
       NetworkingPrivateCredentialsGetter::Create());
   credentials_getter->Start(guid, decoded_public_key,
                             base::Bind(&CredentialsGetterCompleted,

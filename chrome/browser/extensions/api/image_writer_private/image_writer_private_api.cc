@@ -24,7 +24,7 @@ ImageWriterPrivateWriteFromUrlFunction::
 }
 
 bool ImageWriterPrivateWriteFromUrlFunction::RunAsync() {
-  scoped_ptr<image_writer_api::WriteFromUrl::Params> params(
+  std::unique_ptr<image_writer_api::WriteFromUrl::Params> params(
       image_writer_api::WriteFromUrl::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -134,7 +134,7 @@ ImageWriterPrivateDestroyPartitionsFunction::
 }
 
 bool ImageWriterPrivateDestroyPartitionsFunction::RunAsync() {
-  scoped_ptr<image_writer_api::DestroyPartitions::Params> params(
+  std::unique_ptr<image_writer_api::DestroyPartitions::Params> params(
       image_writer_api::DestroyPartitions::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

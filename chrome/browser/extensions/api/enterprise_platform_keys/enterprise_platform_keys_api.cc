@@ -47,7 +47,7 @@ EnterprisePlatformKeysInternalGenerateKeyFunction::
 
 ExtensionFunction::ResponseAction
 EnterprisePlatformKeysInternalGenerateKeyFunction::Run() {
-  scoped_ptr<api_epki::GenerateKey::Params> params(
+  std::unique_ptr<api_epki::GenerateKey::Params> params(
       api_epki::GenerateKey::Params::Create(*args_));
   // TODO(pneubeck): Add support for unsigned integers to IDL.
   EXTENSION_FUNCTION_VALIDATE(params && params->modulus_length >= 0);
@@ -88,7 +88,7 @@ EnterprisePlatformKeysGetCertificatesFunction::
 
 ExtensionFunction::ResponseAction
 EnterprisePlatformKeysGetCertificatesFunction::Run() {
-  scoped_ptr<api_epk::GetCertificates::Params> params(
+  std::unique_ptr<api_epk::GetCertificates::Params> params(
       api_epk::GetCertificates::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   std::string platform_keys_token_id;
@@ -105,7 +105,7 @@ EnterprisePlatformKeysGetCertificatesFunction::Run() {
 }
 
 void EnterprisePlatformKeysGetCertificatesFunction::OnGotCertificates(
-    scoped_ptr<net::CertificateList> certs,
+    std::unique_ptr<net::CertificateList> certs,
     const std::string& error_message) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!error_message.empty()) {
@@ -113,7 +113,7 @@ void EnterprisePlatformKeysGetCertificatesFunction::OnGotCertificates(
     return;
   }
 
-  scoped_ptr<base::ListValue> client_certs(new base::ListValue());
+  std::unique_ptr<base::ListValue> client_certs(new base::ListValue());
   for (net::CertificateList::const_iterator it = certs->begin();
        it != certs->end();
        ++it) {
@@ -123,7 +123,7 @@ void EnterprisePlatformKeysGetCertificatesFunction::OnGotCertificates(
         der_encoding.data(), der_encoding.size()));
   }
 
-  scoped_ptr<base::ListValue> results(new base::ListValue());
+  std::unique_ptr<base::ListValue> results(new base::ListValue());
   results->Append(client_certs.release());
   Respond(ArgumentList(std::move(results)));
 }
@@ -134,7 +134,7 @@ EnterprisePlatformKeysImportCertificateFunction::
 
 ExtensionFunction::ResponseAction
 EnterprisePlatformKeysImportCertificateFunction::Run() {
-  scoped_ptr<api_epk::ImportCertificate::Params> params(
+  std::unique_ptr<api_epk::ImportCertificate::Params> params(
       api_epk::ImportCertificate::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   std::string platform_keys_token_id;
@@ -172,7 +172,7 @@ EnterprisePlatformKeysRemoveCertificateFunction::
 
 ExtensionFunction::ResponseAction
 EnterprisePlatformKeysRemoveCertificateFunction::Run() {
-  scoped_ptr<api_epk::RemoveCertificate::Params> params(
+  std::unique_ptr<api_epk::RemoveCertificate::Params> params(
       api_epk::RemoveCertificate::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   std::string platform_keys_token_id;
@@ -220,7 +220,7 @@ EnterprisePlatformKeysInternalGetTokensFunction::Run() {
 }
 
 void EnterprisePlatformKeysInternalGetTokensFunction::OnGotTokens(
-    scoped_ptr<std::vector<std::string> > platform_keys_token_ids,
+    std::unique_ptr<std::vector<std::string>> platform_keys_token_ids,
     const std::string& error_message) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!error_message.empty()) {
@@ -258,7 +258,7 @@ EnterprisePlatformKeysChallengeMachineKeyFunction::
 
 ExtensionFunction::ResponseAction
 EnterprisePlatformKeysChallengeMachineKeyFunction::Run() {
-  scoped_ptr<api_epk::ChallengeMachineKey::Params> params(
+  std::unique_ptr<api_epk::ChallengeMachineKey::Params> params(
       api_epk::ChallengeMachineKey::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   ChallengeKeyCallback callback = base::Bind(
@@ -299,7 +299,7 @@ EnterprisePlatformKeysChallengeUserKeyFunction::
 
 ExtensionFunction::ResponseAction
 EnterprisePlatformKeysChallengeUserKeyFunction::Run() {
-  scoped_ptr<api_epk::ChallengeUserKey::Params> params(
+  std::unique_ptr<api_epk::ChallengeUserKey::Params> params(
       api_epk::ChallengeUserKey::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   ChallengeKeyCallback callback = base::Bind(

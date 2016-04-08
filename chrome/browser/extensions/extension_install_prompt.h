@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "extensions/common/permissions/permission_message.h"
@@ -263,7 +263,7 @@ class ExtensionInstallPrompt {
 
   typedef base::Callback<void(ExtensionInstallPromptShowParams*,
                               const DoneCallback&,
-                              scoped_ptr<ExtensionInstallPrompt::Prompt>)>
+                              std::unique_ptr<ExtensionInstallPrompt::Prompt>)>
       ShowDialogCallback;
 
   // Callback to show the default extension install dialog.
@@ -320,7 +320,7 @@ class ExtensionInstallPrompt {
   void ShowDialog(const DoneCallback& install_callback,
                   const extensions::Extension* extension,
                   const SkBitmap* icon,
-                  scoped_ptr<Prompt> prompt,
+                  std::unique_ptr<Prompt> prompt,
                   const ShowDialogCallback& show_dialog_callback);
   // Declared virtual for testing purposes.
   // Note: if all you want to do is automatically confirm or cancel, prefer
@@ -329,8 +329,8 @@ class ExtensionInstallPrompt {
       const DoneCallback& install_callback,
       const extensions::Extension* extension,
       const SkBitmap* icon,
-      scoped_ptr<Prompt> prompt,
-      scoped_ptr<const extensions::PermissionSet> custom_permissions,
+      std::unique_ptr<Prompt> prompt,
+      std::unique_ptr<const extensions::PermissionSet> custom_permissions,
       const ShowDialogCallback& show_dialog_callback);
 
   // Installation was successful. This is declared virtual for testing.
@@ -371,19 +371,19 @@ class ExtensionInstallPrompt {
 
   // A custom set of permissions to show in the install prompt instead of the
   // extension's active permissions.
-  scoped_ptr<const extensions::PermissionSet> custom_permissions_;
+  std::unique_ptr<const extensions::PermissionSet> custom_permissions_;
 
   // The object responsible for doing the UI specific actions.
-  scoped_ptr<extensions::ExtensionInstallUI> install_ui_;
+  std::unique_ptr<extensions::ExtensionInstallUI> install_ui_;
 
   // Parameters to show the confirmation UI.
-  scoped_ptr<ExtensionInstallPromptShowParams> show_params_;
+  std::unique_ptr<ExtensionInstallPromptShowParams> show_params_;
 
   // The callback to run with the result.
   DoneCallback done_callback_;
 
   // A pre-filled prompt.
-  scoped_ptr<Prompt> prompt_;
+  std::unique_ptr<Prompt> prompt_;
 
   // Used to show the confirm dialog.
   ShowDialogCallback show_dialog_callback_;

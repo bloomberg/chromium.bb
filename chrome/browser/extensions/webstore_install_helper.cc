@@ -83,7 +83,7 @@ void WebstoreInstallHelper::OnFetchComplete(const GURL& url,
 }
 
 void WebstoreInstallHelper::OnJSONParseSucceeded(
-    scoped_ptr<base::Value> result) {
+    std::unique_ptr<base::Value> result) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   manifest_parse_complete_ = true;
   const base::DictionaryValue* value;

@@ -36,7 +36,7 @@ bool NativeMessagingHostListPolicyHandler::CheckPolicySettings(
 void NativeMessagingHostListPolicyHandler::ApplyPolicySettings(
     const policy::PolicyMap& policies,
     PrefValueMap* prefs) {
-  scoped_ptr<base::ListValue> list;
+  std::unique_ptr<base::ListValue> list;
   policy::PolicyErrorMap errors;
   if (CheckAndGetList(policies, &errors, &list) && list)
     prefs->SetValue(pref_path(), std::move(list));
@@ -49,7 +49,7 @@ const char* NativeMessagingHostListPolicyHandler::pref_path() const {
 bool NativeMessagingHostListPolicyHandler::CheckAndGetList(
     const policy::PolicyMap& policies,
     policy::PolicyErrorMap* errors,
-    scoped_ptr<base::ListValue>* names) {
+    std::unique_ptr<base::ListValue>* names) {
   const base::Value* value = NULL;
   if (!CheckAndGetValue(policies, errors, &value))
     return false;
@@ -64,7 +64,7 @@ bool NativeMessagingHostListPolicyHandler::CheckAndGetList(
   }
 
   // Filter the list, rejecting any invalid native messaging host names.
-  scoped_ptr<base::ListValue> filtered_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> filtered_list(new base::ListValue());
   for (base::ListValue::const_iterator entry(list_value->begin());
        entry != list_value->end(); ++entry) {
     std::string name;

@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -10,7 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
@@ -166,13 +168,14 @@ class MockSyncChangeProcessor : public syncer::SyncChangeProcessor {
   bool fail_all_requests_;
 };
 
-scoped_ptr<KeyedService> MockExtensionSystemFactoryFunction(
+std::unique_ptr<KeyedService> MockExtensionSystemFactoryFunction(
     content::BrowserContext* context) {
-  return make_scoped_ptr(new MockExtensionSystem(context));
+  return base::WrapUnique(new MockExtensionSystem(context));
 }
 
-scoped_ptr<KeyedService> BuildEventRouter(content::BrowserContext* profile) {
-  return make_scoped_ptr(new extensions::EventRouter(profile, nullptr));
+std::unique_ptr<KeyedService> BuildEventRouter(
+    content::BrowserContext* profile) {
+  return base::WrapUnique(new extensions::EventRouter(profile, nullptr));
 }
 
 }  // namespace
@@ -259,11 +262,12 @@ class ExtensionSettingsSyncTest : public testing::Test {
   content::TestBrowserThread file_thread_;
 
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<StorageFrontend> frontend_;
+  std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<StorageFrontend> frontend_;
   scoped_refptr<TestValueStoreFactory> storage_factory_;
-  scoped_ptr<MockSyncChangeProcessor> sync_processor_;
-  scoped_ptr<syncer::SyncChangeProcessorWrapperForTest> sync_processor_wrapper_;
+  std::unique_ptr<MockSyncChangeProcessor> sync_processor_;
+  std::unique_ptr<syncer::SyncChangeProcessorWrapperForTest>
+      sync_processor_wrapper_;
 };
 
 // Get a semblance of coverage for both EXTENSION_SETTINGS and APP_SETTINGS
@@ -283,7 +287,7 @@ TEST_F(ExtensionSettingsSyncTest, NoDataDoesNotInvokeSync) {
       ->MergeDataAndStartSyncing(
           model_type, syncer::SyncDataList(),
           std::move(sync_processor_wrapper_),
-          make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+          base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   AddExtensionAndGetStorage("s2", type);
   EXPECT_EQ(0u, GetAllSyncData(model_type).size());
@@ -324,7 +328,7 @@ TEST_F(ExtensionSettingsSyncTest, InSyncDataDoesNotInvokeSync) {
   GetSyncableService(model_type)
       ->MergeDataAndStartSyncing(
           model_type, sync_data, std::move(sync_processor_wrapper_),
-          make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+          base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   // Already in sync, so no changes.
   EXPECT_EQ(0u, sync_processor_->changes().size());
@@ -361,7 +365,7 @@ TEST_F(ExtensionSettingsSyncTest, LocalDataWithNoSyncDataIsPushedToSync) {
       ->MergeDataAndStartSyncing(
           model_type, syncer::SyncDataList(),
           std::move(sync_processor_wrapper_),
-          make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+          base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   // All settings should have been pushed to sync.
   EXPECT_EQ(2u, sync_processor_->changes().size());
@@ -399,7 +403,7 @@ TEST_F(ExtensionSettingsSyncTest, AnySyncDataOverwritesLocalData) {
   GetSyncableService(model_type)
       ->MergeDataAndStartSyncing(
           model_type, sync_data, std::move(sync_processor_wrapper_),
-          make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+          base::WrapUnique(new syncer::SyncErrorFactoryMock()));
   expected1.Set("foo", value1.DeepCopy());
   expected2.Set("bar", value2.DeepCopy());
 
@@ -441,7 +445,7 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
   GetSyncableService(model_type)
       ->MergeDataAndStartSyncing(
           model_type, sync_data, std::move(sync_processor_wrapper_),
-          make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+          base::WrapUnique(new syncer::SyncErrorFactoryMock()));
   expected2.Set("bar", value2.DeepCopy());
 
   // Make sync add some settings.
@@ -515,7 +519,7 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
   GetSyncableService(model_type)
       ->MergeDataAndStartSyncing(
           model_type, sync_data, std::move(sync_processor_wrapper_),
-          make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+          base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   // Add something locally.
   storage1->Set(DEFAULTS, "bar", value2);
@@ -653,7 +657,7 @@ TEST_F(ExtensionSettingsSyncTest, ExtensionAndAppSettingsSyncSeparately) {
       ->MergeDataAndStartSyncing(
           syncer::EXTENSION_SETTINGS, sync_data,
           std::move(sync_processor_wrapper_),
-          make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+          base::WrapUnique(new syncer::SyncErrorFactoryMock()));
   GetSyncableService(syncer::EXTENSION_SETTINGS)->
       StopSyncing(syncer::EXTENSION_SETTINGS);
   EXPECT_EQ(0u, sync_processor_->changes().size());
@@ -662,12 +666,13 @@ TEST_F(ExtensionSettingsSyncTest, ExtensionAndAppSettingsSyncSeparately) {
   sync_data.push_back(settings_sync_util::CreateData(
       "s2", "bar", value2, syncer::APP_SETTINGS));
 
-  scoped_ptr<syncer::SyncChangeProcessorWrapperForTest> app_settings_delegate_(
-      new syncer::SyncChangeProcessorWrapperForTest(sync_processor_.get()));
+  std::unique_ptr<syncer::SyncChangeProcessorWrapperForTest>
+      app_settings_delegate_(
+          new syncer::SyncChangeProcessorWrapperForTest(sync_processor_.get()));
   GetSyncableService(syncer::APP_SETTINGS)
       ->MergeDataAndStartSyncing(
           syncer::APP_SETTINGS, sync_data, std::move(app_settings_delegate_),
-          make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+          base::WrapUnique(new syncer::SyncErrorFactoryMock()));
   GetSyncableService(syncer::APP_SETTINGS)->
       StopSyncing(syncer::APP_SETTINGS);
   EXPECT_EQ(0u, sync_processor_->changes().size());
@@ -698,7 +703,7 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
     GetSyncableService(model_type)
         ->MergeDataAndStartSyncing(
             model_type, sync_data, std::move(sync_processor_wrapper_),
-            make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+            base::WrapUnique(new syncer::SyncErrorFactoryMock()));
   }
   GetExisting("bad")->set_status_code(ValueStore::OK);
 
@@ -814,7 +819,7 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
       ->MergeDataAndStartSyncing(
           model_type, syncer::SyncDataList(),
           std::move(sync_processor_wrapper_),
-          make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+          base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   // Local settings will have been pushed to sync, since it's empty (in this
   // test; presumably it wouldn't be live, since we've been getting changes).
@@ -882,7 +887,7 @@ TEST_F(ExtensionSettingsSyncTest, FailingProcessChangesDisablesSync) {
     GetSyncableService(model_type)
         ->MergeDataAndStartSyncing(
             model_type, sync_data, std::move(sync_processor_wrapper_),
-            make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+            base::WrapUnique(new syncer::SyncErrorFactoryMock()));
   }
 
   EXPECT_EQ(0u, sync_processor_->changes().size());
@@ -983,7 +988,7 @@ TEST_F(ExtensionSettingsSyncTest, FailingGetAllSyncDataDoesntStopSync) {
       ->MergeDataAndStartSyncing(
           model_type, syncer::SyncDataList(),
           std::move(sync_processor_wrapper_),
-          make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+          base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   EXPECT_EQ(syncer::SyncChange::ACTION_ADD,
             sync_processor_->GetOnlyChange("good", "foo")->change_type());
@@ -1022,7 +1027,7 @@ TEST_F(ExtensionSettingsSyncTest, FailureToReadChangesToPushDisablesSync) {
       ->MergeDataAndStartSyncing(
           model_type, syncer::SyncDataList(),
           std::move(sync_processor_wrapper_),
-          make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+          base::WrapUnique(new syncer::SyncErrorFactoryMock()));
   GetExisting("bad")->set_status_code(ValueStore::OK);
 
   EXPECT_EQ(syncer::SyncChange::ACTION_ADD,
@@ -1072,7 +1077,7 @@ TEST_F(ExtensionSettingsSyncTest, FailureToReadChangesToPushDisablesSync) {
       ->MergeDataAndStartSyncing(
           model_type, syncer::SyncDataList(),
           std::move(sync_processor_wrapper_),
-          make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+          base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   EXPECT_EQ(syncer::SyncChange::ACTION_ADD,
             sync_processor_->GetOnlyChange("good", "foo")->change_type());
@@ -1113,7 +1118,7 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalStateDisablesSync) {
       ->MergeDataAndStartSyncing(
           model_type, syncer::SyncDataList(),
           std::move(sync_processor_wrapper_),
-          make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+          base::WrapUnique(new syncer::SyncErrorFactoryMock()));
   sync_processor_->set_fail_all_requests(false);
 
   // Changes from good will be send to sync, changes from bad won't.
@@ -1156,7 +1161,7 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalStateDisablesSync) {
       ->MergeDataAndStartSyncing(
           model_type, syncer::SyncDataList(),
           std::move(sync_processor_wrapper_),
-          make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+          base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   EXPECT_EQ(syncer::SyncChange::ACTION_ADD,
             sync_processor_->GetOnlyChange("good", "foo")->change_type());
@@ -1191,7 +1196,7 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalChangeDisablesSync) {
       ->MergeDataAndStartSyncing(
           model_type, syncer::SyncDataList(),
           std::move(sync_processor_wrapper_),
-          make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+          base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   // bad will fail to send changes.
   good->Set(DEFAULTS, "foo", fooValue);
@@ -1243,7 +1248,7 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalChangeDisablesSync) {
       ->MergeDataAndStartSyncing(
           model_type, syncer::SyncDataList(),
           std::move(sync_processor_wrapper_),
-          make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+          base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   EXPECT_EQ(syncer::SyncChange::ACTION_ADD,
             sync_processor_->GetOnlyChange("good", "foo")->change_type());
@@ -1280,7 +1285,7 @@ TEST_F(ExtensionSettingsSyncTest,
       ->MergeDataAndStartSyncing(
           model_type, syncer::SyncDataList(),
           std::move(sync_processor_wrapper_),
-          make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+          base::WrapUnique(new syncer::SyncErrorFactoryMock()));
 
   // Large local change rejected and doesn't get sent out.
   ValueStore* storage1 = AddExtensionAndGetStorage("s1", type);
@@ -1316,14 +1321,14 @@ TEST_F(ExtensionSettingsSyncTest, Dots) {
 
   {
     syncer::SyncDataList sync_data_list;
-    scoped_ptr<base::Value> string_value(new base::StringValue("value"));
+    std::unique_ptr<base::Value> string_value(new base::StringValue("value"));
     sync_data_list.push_back(settings_sync_util::CreateData(
         "ext", "key.with.dot", *string_value, model_type));
 
     GetSyncableService(model_type)
         ->MergeDataAndStartSyncing(
             model_type, sync_data_list, std::move(sync_processor_wrapper_),
-            make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+            base::WrapUnique(new syncer::SyncErrorFactoryMock()));
   }
 
   // Test dots in keys that come from sync.
@@ -1340,7 +1345,7 @@ TEST_F(ExtensionSettingsSyncTest, Dots) {
 
   // Test dots in keys going to sync.
   {
-    scoped_ptr<base::Value> string_value(new base::StringValue("spot"));
+    std::unique_ptr<base::Value> string_value(new base::StringValue("spot"));
     storage->Set(DEFAULTS, "key.with.spot", *string_value);
 
     ASSERT_EQ(1u, sync_processor_->changes().size());
@@ -1363,7 +1368,7 @@ namespace {
 static void UnlimitedSyncStorageTestCallback(ValueStore* sync_storage) {
   // Sync storage should still run out after ~100K; the unlimitedStorage
   // permission can't apply to sync.
-  scoped_ptr<base::Value> kilobyte = util::CreateKilobyte();
+  std::unique_ptr<base::Value> kilobyte = util::CreateKilobyte();
   for (int i = 0; i < 100; ++i) {
     sync_storage->Set(ValueStore::DEFAULTS, base::IntToString(i), *kilobyte);
   }
@@ -1374,7 +1379,7 @@ static void UnlimitedSyncStorageTestCallback(ValueStore* sync_storage) {
 
 static void UnlimitedLocalStorageTestCallback(ValueStore* local_storage) {
   // Local storage should never run out.
-  scoped_ptr<base::Value> megabyte = util::CreateMegabyte();
+  std::unique_ptr<base::Value> megabyte = util::CreateMegabyte();
   for (int i = 0; i < 7; ++i) {
     local_storage->Set(ValueStore::DEFAULTS, base::IntToString(i), *megabyte);
   }

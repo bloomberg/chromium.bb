@@ -22,11 +22,10 @@ ApiResourceManager<BluetoothLowEnergyConnection>::GetFactoryInstance() {
 BluetoothLowEnergyConnection::BluetoothLowEnergyConnection(
     bool persistent,
     const std::string& owner_extension_id,
-    scoped_ptr<device::BluetoothGattConnection> connection)
+    std::unique_ptr<device::BluetoothGattConnection> connection)
     : ApiResource(owner_extension_id),
       persistent_(persistent),
-      connection_(connection.release()) {
-}
+      connection_(connection.release()) {}
 
 BluetoothLowEnergyConnection::~BluetoothLowEnergyConnection() {
 }

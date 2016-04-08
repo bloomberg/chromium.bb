@@ -40,7 +40,7 @@ class PlatformKeysInternalSelectClientCertificatesFunction
 
   // Called when the certificates were selected. If an error occurred, |certs|
   // will be null and instead |error_message| be set.
-  void OnSelectedCertificates(scoped_ptr<net::CertificateList> matches,
+  void OnSelectedCertificates(std::unique_ptr<net::CertificateList> matches,
                               const std::string& error_message);
 
   DECLARE_EXTENSION_FUNCTION("platformKeysInternal.selectClientCertificates",

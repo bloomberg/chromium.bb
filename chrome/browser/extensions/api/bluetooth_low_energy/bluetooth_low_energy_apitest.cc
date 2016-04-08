@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_event_router.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -213,15 +214,15 @@ class BluetoothLowEnergyApiTest : public ExtensionApiTest {
   }
 
   testing::StrictMock<MockBluetoothAdapter>* mock_adapter_;
-  scoped_ptr<testing::NiceMock<MockBluetoothDevice> > device0_;
-  scoped_ptr<testing::NiceMock<MockBluetoothDevice> > device1_;
-  scoped_ptr<testing::NiceMock<MockBluetoothGattService> > service0_;
-  scoped_ptr<testing::NiceMock<MockBluetoothGattService> > service1_;
-  scoped_ptr<testing::NiceMock<MockBluetoothGattCharacteristic> > chrc0_;
-  scoped_ptr<testing::NiceMock<MockBluetoothGattCharacteristic> > chrc1_;
-  scoped_ptr<testing::NiceMock<MockBluetoothGattCharacteristic> > chrc2_;
-  scoped_ptr<testing::NiceMock<MockBluetoothGattDescriptor> > desc0_;
-  scoped_ptr<testing::NiceMock<MockBluetoothGattDescriptor> > desc1_;
+  std::unique_ptr<testing::NiceMock<MockBluetoothDevice>> device0_;
+  std::unique_ptr<testing::NiceMock<MockBluetoothDevice>> device1_;
+  std::unique_ptr<testing::NiceMock<MockBluetoothGattService>> service0_;
+  std::unique_ptr<testing::NiceMock<MockBluetoothGattService>> service1_;
+  std::unique_ptr<testing::NiceMock<MockBluetoothGattCharacteristic>> chrc0_;
+  std::unique_ptr<testing::NiceMock<MockBluetoothGattCharacteristic>> chrc1_;
+  std::unique_ptr<testing::NiceMock<MockBluetoothGattCharacteristic>> chrc2_;
+  std::unique_ptr<testing::NiceMock<MockBluetoothGattDescriptor>> desc0_;
+  std::unique_ptr<testing::NiceMock<MockBluetoothGattDescriptor>> desc1_;
 
  private:
   scoped_refptr<extensions::Extension> empty_extension_;
@@ -242,7 +243,7 @@ ACTION_TEMPLATE(InvokeCallbackArgument,
 ACTION_TEMPLATE(InvokeCallbackWithScopedPtrArg,
                 HAS_2_TEMPLATE_PARAMS(int, k, typename, T),
                 AND_1_VALUE_PARAMS(p0)) {
-  ::std::tr1::get<k>(args).Run(scoped_ptr<T>(p0));
+  ::std::tr1::get<k>(args).Run(std::unique_ptr<T>(p0));
 }
 
 BluetoothGattConnection* CreateGattConnection(
@@ -1231,7 +1232,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ConnectInProgress) {
   testing::NiceMock<MockBluetoothGattConnection>* conn =
       new testing::NiceMock<MockBluetoothGattConnection>(mock_adapter_,
                                                          kTestLeDeviceAddress0);
-  scoped_ptr<BluetoothGattConnection> conn_ptr(conn);
+  std::unique_ptr<BluetoothGattConnection> conn_ptr(conn);
   EXPECT_CALL(*conn, Disconnect()).Times(1);
 
   EXPECT_CALL(*device0_, CreateGattConnection(_, _))

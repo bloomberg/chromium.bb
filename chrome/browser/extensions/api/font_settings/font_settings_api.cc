@@ -230,7 +230,7 @@ bool FontSettingsClearFontFunction::RunSync() {
     return false;
   }
 
-  scoped_ptr<fonts::ClearFont::Params> params(
+  std::unique_ptr<fonts::ClearFont::Params> params(
       fonts::ClearFont::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -247,7 +247,7 @@ bool FontSettingsClearFontFunction::RunSync() {
 }
 
 bool FontSettingsGetFontFunction::RunSync() {
-  scoped_ptr<fonts::GetFont::Params> params(
+  std::unique_ptr<fonts::GetFont::Params> params(
       fonts::GetFont::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -283,7 +283,7 @@ bool FontSettingsSetFontFunction::RunSync() {
     return false;
   }
 
-  scoped_ptr<fonts::SetFont::Params> params(
+  std::unique_ptr<fonts::SetFont::Params> params(
       fonts::SetFont::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -309,14 +309,14 @@ bool FontSettingsGetFontListFunction::RunAsync() {
 }
 
 void FontSettingsGetFontListFunction::FontListHasLoaded(
-    scoped_ptr<base::ListValue> list) {
+    std::unique_ptr<base::ListValue> list) {
   bool success = CopyFontsToResult(list.get());
   SendResponse(success);
 }
 
 bool FontSettingsGetFontListFunction::CopyFontsToResult(
     base::ListValue* fonts) {
-  scoped_ptr<base::ListValue> result(new base::ListValue());
+  std::unique_ptr<base::ListValue> result(new base::ListValue());
   for (base::ListValue::iterator it = fonts->begin();
        it != fonts->end(); ++it) {
     base::ListValue* font_list_value;

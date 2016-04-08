@@ -91,7 +91,7 @@ class WebrtcLoggingPrivateApiTest : public ExtensionApiTest {
   bool RunFunction(UIThreadExtensionFunction* function,
                    const base::ListValue& parameters,
                    bool expect_results) {
-    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+    std::unique_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
         function, ParamsToString(parameters), browser()));
     if (expect_results) {
       EXPECT_TRUE(result.get());

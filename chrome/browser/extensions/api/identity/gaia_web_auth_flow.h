@@ -81,7 +81,7 @@ class GaiaWebAuthFlow : public UbertokenConsumer, public WebAuthFlow::Delegate {
  private:
   // Creates a WebAuthFlow, which will navigate to |url|. Can override
   // for testing. Used to kick off the MergeSession (step #2).
-  virtual scoped_ptr<WebAuthFlow> CreateWebAuthFlow(GURL url);
+  virtual std::unique_ptr<WebAuthFlow> CreateWebAuthFlow(GURL url);
 
   Delegate* delegate_;
   Profile* profile_;
@@ -89,8 +89,8 @@ class GaiaWebAuthFlow : public UbertokenConsumer, public WebAuthFlow::Delegate {
   std::string redirect_scheme_;
   std::string redirect_path_prefix_;
   GURL auth_url_;
-  scoped_ptr<UbertokenFetcher> ubertoken_fetcher_;
-  scoped_ptr<WebAuthFlow> web_flow_;
+  std::unique_ptr<UbertokenFetcher> ubertoken_fetcher_;
+  std::unique_ptr<WebAuthFlow> web_flow_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaWebAuthFlow);
 };

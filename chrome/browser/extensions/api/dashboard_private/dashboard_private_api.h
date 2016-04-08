@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DASHBOARD_PRIVATE_DASHBOARD_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DASHBOARD_PRIVATE_DASHBOARD_PRIVATE_API_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
@@ -60,18 +60,18 @@ class DashboardPrivateShowPermissionPromptForDelegatedInstallFunction
   ExtensionFunction::ResponseValue BuildResponse(
       api::dashboard_private::Result result,
       const std::string& error);
-  scoped_ptr<base::ListValue> CreateResults(
+  std::unique_ptr<base::ListValue> CreateResults(
       api::dashboard_private::Result result) const;
 
   const Params::Details& details() const { return params_->details; }
 
-  scoped_ptr<Params> params_;
+  std::unique_ptr<Params> params_;
 
   // A dummy Extension object we create for the purposes of using
   // ExtensionInstallPrompt to prompt for confirmation of the install.
   scoped_refptr<Extension> dummy_extension_;
 
-  scoped_ptr<ExtensionInstallPrompt> install_prompt_;
+  std::unique_ptr<ExtensionInstallPrompt> install_prompt_;
 
   DISALLOW_COPY_AND_ASSIGN(
       DashboardPrivateShowPermissionPromptForDelegatedInstallFunction);
@@ -106,10 +106,10 @@ class DashboardPrivateShowPermissionPromptForDelegatedBundleInstallFunction
 
   ChromeExtensionFunctionDetails chrome_details_;
 
-  scoped_ptr<Params> params_;
+  std::unique_ptr<Params> params_;
 
-  scoped_ptr<extensions::BundleInstaller> bundle_;
-  scoped_ptr<chrome::BitmapFetcher> icon_fetcher_;
+  std::unique_ptr<extensions::BundleInstaller> bundle_;
+  std::unique_ptr<chrome::BitmapFetcher> icon_fetcher_;
 };
 
 }  // namespace extensions

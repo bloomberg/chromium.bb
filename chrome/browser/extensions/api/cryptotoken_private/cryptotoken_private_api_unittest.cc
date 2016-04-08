@@ -52,7 +52,7 @@ class CryptoTokenPrivateApiTest : public extensions::ExtensionApiUnittest {
         new api::CryptotokenPrivateCanOriginAssertAppIdFunction());
     function->set_has_callback(true);
 
-    scoped_ptr<base::ListValue> args(new base::ListValue);
+    std::unique_ptr<base::ListValue> args(new base::ListValue);
     args->AppendString(origin);
     args->AppendString(appId);
 

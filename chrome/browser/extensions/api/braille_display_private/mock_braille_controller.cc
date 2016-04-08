@@ -11,8 +11,8 @@ namespace braille_display_private {
 MockBrailleController::MockBrailleController()
     : available_(false), observer_(NULL) {}
 
-scoped_ptr<DisplayState> MockBrailleController::GetDisplayState() {
-  scoped_ptr<DisplayState> state(new DisplayState());
+std::unique_ptr<DisplayState> MockBrailleController::GetDisplayState() {
+  std::unique_ptr<DisplayState> state(new DisplayState());
   state->available = available_;
   if (available_)
     state->text_cell_count.reset(new int(18));

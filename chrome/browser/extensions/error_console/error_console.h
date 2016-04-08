@@ -8,8 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "base/threading/thread_checker.h"
@@ -87,7 +88,7 @@ class ErrorConsole : public KeyedService,
   void UseDefaultReportingForExtension(const std::string& extension_id);
 
   // Report an extension error, and add it to the list.
-  void ReportError(scoped_ptr<ExtensionError> error);
+  void ReportError(std::unique_ptr<ExtensionError> error);
 
   // Removes errors from the map according to the given |filter|.
   void RemoveErrors(const ErrorMap::Filter& filter);

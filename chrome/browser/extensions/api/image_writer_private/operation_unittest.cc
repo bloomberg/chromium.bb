@@ -99,7 +99,7 @@ class ImageWriterOperationTest : public ImageWriterUnitTestBase {
   base::FilePath image_path_;
   base::FilePath zip_file_;
 
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
 
   MockOperationManager manager_;
   scoped_refptr<OperationForTest> operation_;

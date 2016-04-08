@@ -156,14 +156,14 @@ class NotificationsApiDelegate : public NotificationDelegate {
     EventRouter::UserGestureState gesture =
         by_user ? EventRouter::USER_GESTURE_ENABLED
                 : EventRouter::USER_GESTURE_NOT_ENABLED;
-    scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
+    std::unique_ptr<base::ListValue> args(CreateBaseEventArgs());
     args->Append(new base::FundamentalValue(by_user));
     SendEvent(events::NOTIFICATIONS_ON_CLOSED,
               notifications::OnClosed::kEventName, gesture, std::move(args));
   }
 
   void Click() override {
-    scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
+    std::unique_ptr<base::ListValue> args(CreateBaseEventArgs());
     SendEvent(events::NOTIFICATIONS_ON_CLICKED,
               notifications::OnClicked::kEventName,
               EventRouter::USER_GESTURE_ENABLED, std::move(args));
@@ -178,7 +178,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
   }
 
   void ButtonClick(int index) override {
-    scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
+    std::unique_ptr<base::ListValue> args(CreateBaseEventArgs());
     args->Append(new base::FundamentalValue(index));
     SendEvent(events::NOTIFICATIONS_ON_BUTTON_CLICKED,
               notifications::OnButtonClicked::kEventName,
@@ -193,11 +193,12 @@ class NotificationsApiDelegate : public NotificationDelegate {
   void SendEvent(events::HistogramValue histogram_value,
                  const std::string& name,
                  EventRouter::UserGestureState user_gesture,
-                 scoped_ptr<base::ListValue> args) {
+                 std::unique_ptr<base::ListValue> args) {
     if (!event_router_)
       return;
 
-    scoped_ptr<Event> event(new Event(histogram_value, name, std::move(args)));
+    std::unique_ptr<Event> event(
+        new Event(histogram_value, name, std::move(args)));
     event->user_gesture = user_gesture;
     event_router_->DispatchEventToExtension(extension_id_, std::move(event));
   }
@@ -207,8 +208,8 @@ class NotificationsApiDelegate : public NotificationDelegate {
     shutdown_notifier_subscription_.reset();
   }
 
-  scoped_ptr<base::ListValue> CreateBaseEventArgs() {
-    scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> CreateBaseEventArgs() {
+    std::unique_ptr<base::ListValue> args(new base::ListValue());
     args->Append(new base::StringValue(id_));
     return args;
   }
@@ -224,7 +225,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
   const std::string id_;
   const std::string scoped_id_;
 
-  scoped_ptr<KeyedServiceShutdownNotifier::Subscription>
+  std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
       shutdown_notifier_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationsApiDelegate);
@@ -688,7 +689,7 @@ bool NotificationsGetAllFunction::RunNotificationsApi() {
       notification_ui_manager->GetAllIdsByProfileAndSourceOrigin(
           NotificationUIManager::GetProfileID(GetProfile()), extension_->url());
 
-  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
 
   for (std::set<std::string>::iterator iter = notification_ids.begin();
        iter != notification_ids.end(); iter++) {

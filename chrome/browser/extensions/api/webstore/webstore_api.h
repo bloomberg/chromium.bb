@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_EXTENSIONS_API_WEBSTORE_WEBSTORE_API_H_
 
 #include <list>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/install_observer.h"
 #include "chrome/common/extensions/api/webstore/webstore_api_constants.h"
@@ -93,7 +93,7 @@ class WebstoreAPI : public BrowserContextKeyedAPI,
   ObservedInstallInfoList download_progress_listeners_;
   ObservedInstallInfoList install_stage_listeners_;
   content::BrowserContext* browser_context_;
-  scoped_ptr<ScopedObserver<InstallTracker, InstallObserver> >
+  std::unique_ptr<ScopedObserver<InstallTracker, InstallObserver>>
       install_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebstoreAPI);

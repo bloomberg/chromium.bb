@@ -178,7 +178,7 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
   // directory for testing.
   base::FilePath webstore_install_dir_copy_;
 
-  scoped_ptr<ScopedTestDialogAutoConfirm> auto_confirm_install_;
+  std::unique_ptr<ScopedTestDialogAutoConfirm> auto_confirm_install_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebstorePrivateApiTest);
 };
@@ -308,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MAYBE_BeginInstall) {
   std::string extensionId = "enfkhcelefdadlmkffamgdlgplcionje";
   ASSERT_TRUE(RunInstallTest("begin_install.html", "extension.crx"));
 
-  scoped_ptr<WebstoreInstaller::Approval> approval =
+  std::unique_ptr<WebstoreInstaller::Approval> approval =
       WebstorePrivateApi::PopApprovalForTesting(browser()->profile(), appId);
   EXPECT_EQ(appId, approval->extension_id);
   EXPECT_TRUE(approval->use_app_installed_bubble);
@@ -358,8 +358,8 @@ class ExtensionWebstoreGetWebGLStatusTest : public InProcessBrowserTest {
     static const char kWebGLStatusBlocked[] = "webgl_blocked";
     scoped_refptr<WebstorePrivateGetWebGLStatusFunction> function =
         new WebstorePrivateGetWebGLStatusFunction();
-    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-            function.get(), kEmptyArgs, browser()));
+    std::unique_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        function.get(), kEmptyArgs, browser()));
     ASSERT_TRUE(result);
     EXPECT_EQ(base::Value::TYPE_STRING, result->GetType());
     std::string webgl_status;

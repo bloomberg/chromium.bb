@@ -71,7 +71,7 @@ class WriteFromUrlOperation : public Operation, public net::URLFetcherDelegate {
   const std::string hash_;
 
   // Local state
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
   base::Closure download_continuation_;
 };
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/context_menu_matcher.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -113,7 +114,7 @@ void ContextMenuMatcher::AppendExtensionItems(
       menu_model_->AddItem(menu_id, title);
     } else {
       ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(delegate_);
-      extension_menu_models_.push_back(make_scoped_ptr(submenu));
+      extension_menu_models_.push_back(base::WrapUnique(submenu));
       menu_model_->AddSubMenu(menu_id, title, submenu);
       RecursivelyAppendExtensionItems(submenu_items, can_cross_incognito,
                                       selection_text, submenu, index,
@@ -266,7 +267,7 @@ void ContextMenuMatcher::RecursivelyAppendExtensionItems(
         menu_model->AddItem(menu_id, title);
       } else {
         ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(delegate_);
-        extension_menu_models_.push_back(make_scoped_ptr(submenu));
+        extension_menu_models_.push_back(base::WrapUnique(submenu));
         menu_model->AddSubMenu(menu_id, title, submenu);
         RecursivelyAppendExtensionItems(children, can_cross_incognito,
                                         selection_text, submenu, index,

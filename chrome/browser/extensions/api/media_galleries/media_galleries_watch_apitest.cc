@@ -172,7 +172,8 @@ class MediaGalleriesGalleryWatchApiTest : public ExtensionApiTest {
     EXPECT_TRUE(get_media_systems_finished.WaitUntilSatisfied());
   }
 
-  scoped_ptr<EnsureMediaDirectoriesExists> ensure_media_directories_exists_;
+  std::unique_ptr<EnsureMediaDirectoriesExists>
+      ensure_media_directories_exists_;
 
   base::ScopedTempDir test_gallery_;
 

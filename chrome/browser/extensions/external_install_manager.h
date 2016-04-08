@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTERNAL_INSTALL_MANAGER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -95,7 +95,7 @@ class ExternalInstallManager : public ExtensionRegistryObserver,
   ExtensionPrefs* extension_prefs_;
 
   // The collection of ExternalInstallErrors.
-  std::map<std::string, scoped_ptr<ExternalInstallError>> errors_;
+  std::map<std::string, std::unique_ptr<ExternalInstallError>> errors_;
 
   std::set<std::string> shown_ids_;
 

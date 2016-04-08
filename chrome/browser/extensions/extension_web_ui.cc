@@ -66,7 +66,8 @@ void InitializeOverridesList(base::ListValue* list) {
   base::ListValue migrated;
   std::set<std::string> seen_entries;
   for (base::Value* val : *list) {
-    scoped_ptr<base::DictionaryValue> new_dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> new_dict(
+        new base::DictionaryValue());
     std::string entry_name;
     base::DictionaryValue* existing_dict = nullptr;
     if (val->GetAsDictionary(&existing_dict)) {
@@ -108,7 +109,7 @@ void AddOverridesToList(base::ListValue* list,
     }
   }
 
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString(kEntry, override);
   dict->SetBoolean(kActive, true);
   // Add the entry to the front of the list.
@@ -127,7 +128,8 @@ void ValidateOverridesList(const extensions::ExtensionSet* all_extensions,
       NOTREACHED();
       continue;
     }
-    scoped_ptr<base::DictionaryValue> new_dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> new_dict(
+        new base::DictionaryValue());
     new_dict->Swap(dict);
     GURL override_url(entry);
     if (!override_url.is_valid())
@@ -483,9 +485,9 @@ void ExtensionWebUI::InitializeChromeURLOverrides(Profile* profile) {
 
 // static
 void ExtensionWebUI::ValidateChromeURLOverrides(Profile* profile) {
-  scoped_ptr<extensions::ExtensionSet> all_extensions =
-      extensions::ExtensionRegistry::Get(profile)->
-          GenerateInstalledExtensionsSet();
+  std::unique_ptr<extensions::ExtensionSet> all_extensions =
+      extensions::ExtensionRegistry::Get(profile)
+          ->GenerateInstalledExtensionsSet();
 
   ForEachOverrideList(profile,
                       base::Bind(&ValidateOverridesList, all_extensions.get()));

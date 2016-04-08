@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_DECLARATIVE_CONTENT_IS_BOOKMARKED_CONDITION_TRACKER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
@@ -40,7 +40,7 @@ class DeclarativeContentIsBookmarkedPredicate : public ContentPredicate {
 
   bool is_bookmarked() const { return is_bookmarked_; }
 
-  static scoped_ptr<DeclarativeContentIsBookmarkedPredicate> Create(
+  static std::unique_ptr<DeclarativeContentIsBookmarkedPredicate> Create(
       ContentPredicateEvaluator* evaluator,
       const Extension* extension,
       const base::Value& value,
@@ -77,7 +77,7 @@ class DeclarativeContentIsBookmarkedConditionTracker
 
   // ContentPredicateEvaluator:
   std::string GetPredicateApiAttributeName() const override;
-  scoped_ptr<const ContentPredicate> CreatePredicate(
+  std::unique_ptr<const ContentPredicate> CreatePredicate(
       const Extension* extension,
       const base::Value& value,
       std::string* error) override;

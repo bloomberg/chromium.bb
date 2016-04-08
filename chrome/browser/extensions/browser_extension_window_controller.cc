@@ -70,7 +70,7 @@ base::DictionaryValue* BrowserExtensionWindowController::CreateTabValue(
   return result;
 }
 
-scoped_ptr<extensions::api::tabs::Tab>
+std::unique_ptr<extensions::api::tabs::Tab>
 BrowserExtensionWindowController::CreateTabObject(
     const extensions::Extension* extension,
     int tab_index) const {

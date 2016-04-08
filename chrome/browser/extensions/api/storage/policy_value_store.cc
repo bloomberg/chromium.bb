@@ -30,7 +30,7 @@ ValueStore::Status ReadOnlyError() {
 PolicyValueStore::PolicyValueStore(
     const std::string& extension_id,
     const scoped_refptr<SettingsObserverList>& observers,
-    scoped_ptr<ValueStore> delegate)
+    std::unique_ptr<ValueStore> delegate)
     : extension_id_(extension_id),
       observers_(observers),
       delegate_(std::move(delegate)) {}

@@ -22,11 +22,10 @@ ApiResourceManager<BluetoothLowEnergyNotifySession>::GetFactoryInstance() {
 BluetoothLowEnergyNotifySession::BluetoothLowEnergyNotifySession(
     bool persistent,
     const std::string& owner_extension_id,
-    scoped_ptr<device::BluetoothGattNotifySession> session)
+    std::unique_ptr<device::BluetoothGattNotifySession> session)
     : ApiResource(owner_extension_id),
       persistent_(persistent),
-      session_(session.release()) {
-}
+      session_(session.release()) {}
 
 BluetoothLowEnergyNotifySession::~BluetoothLowEnergyNotifySession() {
 }

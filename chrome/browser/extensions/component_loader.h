@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -194,7 +194,7 @@ class ComponentLoader {
       const base::FilePath& root_directory,
       const char* extension_id,
       const base::Closure& done_cb,
-      scoped_ptr<base::DictionaryValue> manifest);
+      std::unique_ptr<base::DictionaryValue> manifest);
 #endif
 
   PrefService* profile_prefs_;

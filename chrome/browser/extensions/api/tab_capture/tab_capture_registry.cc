@@ -324,13 +324,13 @@ void TabCaptureRegistry::DispatchStatusChangeEvent(
   if (!router)
     return;
 
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   tab_capture::CaptureInfo info;
   request->GetCaptureInfo(&info);
   args->Append(info.ToValue().release());
-  scoped_ptr<Event> event(new Event(events::TAB_CAPTURE_ON_STATUS_CHANGED,
-                                    tab_capture::OnStatusChanged::kEventName,
-                                    std::move(args)));
+  std::unique_ptr<Event> event(
+      new Event(events::TAB_CAPTURE_ON_STATUS_CHANGED,
+                tab_capture::OnStatusChanged::kEventName, std::move(args)));
   event->restrict_to_browser_context = browser_context_;
 
   router->DispatchEventToExtension(request->extension_id(), std::move(event));

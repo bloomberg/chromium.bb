@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_MESSAGING_NATIVE_MESSAGING_HOST_MANIFEST_H_
 #define CHROME_BROWSER_EXTENSIONS_API_MESSAGING_NATIVE_MESSAGING_HOST_MANIFEST_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/common/url_pattern_set.h"
 
 namespace base {
@@ -31,7 +31,7 @@ class NativeMessagingHostManifest {
   static bool IsValidName(const std::string& name);
 
   // Load manifest file from |file_path|.
-  static scoped_ptr<NativeMessagingHostManifest> Load(
+  static std::unique_ptr<NativeMessagingHostManifest> Load(
       const base::FilePath& file_path,
       std::string* error_message);
 

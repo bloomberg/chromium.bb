@@ -62,22 +62,23 @@ class MessageSender : public content::NotificationObserver {
   }
 
  private:
-  static scoped_ptr<base::ListValue> BuildEventArguments(
+  static std::unique_ptr<base::ListValue> BuildEventArguments(
       const bool last_message,
       const std::string& data) {
     base::DictionaryValue* event = new base::DictionaryValue();
     event->SetBoolean("lastMessage", last_message);
     event->SetString("data", data);
-    scoped_ptr<base::ListValue> arguments(new base::ListValue());
+    std::unique_ptr<base::ListValue> arguments(new base::ListValue());
     arguments->Append(event);
     return arguments;
   }
 
-  static scoped_ptr<Event> BuildEvent(scoped_ptr<base::ListValue> event_args,
-                                      Profile* profile,
-                                      GURL event_url) {
-    scoped_ptr<Event> event(new Event(events::TEST_ON_MESSAGE, "test.onMessage",
-                                      std::move(event_args)));
+  static std::unique_ptr<Event> BuildEvent(
+      std::unique_ptr<base::ListValue> event_args,
+      Profile* profile,
+      GURL event_url) {
+    std::unique_ptr<Event> event(new Event(
+        events::TEST_ON_MESSAGE, "test.onMessage", std::move(event_args)));
     event->restrict_to_browser_context = profile;
     event->event_url = event_url;
     return event;
@@ -1027,7 +1028,7 @@ class ExternallyConnectableMessagingWithTlsChannelIdTest :
   std::string CreateTlsChannelId() {
     scoped_refptr<net::URLRequestContextGetter> request_context_getter(
         profile()->GetRequestContext());
-    scoped_ptr<crypto::ECPrivateKey> channel_id_key;
+    std::unique_ptr<crypto::ECPrivateKey> channel_id_key;
     net::ChannelIDService::Request request;
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
@@ -1051,7 +1052,7 @@ class ExternallyConnectableMessagingWithTlsChannelIdTest :
 
  private:
   void CreateDomainBoundCertOnIOThread(
-      scoped_ptr<crypto::ECPrivateKey>* channel_id_key,
+      std::unique_ptr<crypto::ECPrivateKey>* channel_id_key,
       net::ChannelIDService::Request* request,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);

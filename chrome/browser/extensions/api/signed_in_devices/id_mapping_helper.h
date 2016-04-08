@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SIGNED_IN_DEVICES_ID_MAPPING_HELPER_H__
 #define CHROME_BROWSER_EXTENSIONS_API_SIGNED_IN_DEVICES_ID_MAPPING_HELPER_H__
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class DictionaryValue;
@@ -50,7 +50,7 @@ void CreateMappingForUnmappedDevices(
 
 // Gets the device info for a given client id. If the device is not found
 // the returned pointer would be null.
-scoped_ptr<sync_driver::DeviceInfo> GetDeviceInfoForClientId(
+std::unique_ptr<sync_driver::DeviceInfo> GetDeviceInfoForClientId(
     const std::string& client_id,
     const std::string& extension_id,
     Profile* profile);

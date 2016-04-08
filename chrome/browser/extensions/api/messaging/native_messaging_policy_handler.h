@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_MESSAGING_NATIVE_MESSAGING_POLICY_HANDLER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_MESSAGING_NATIVE_MESSAGING_POLICY_HANDLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 
@@ -39,7 +40,7 @@ class NativeMessagingHostListPolicyHandler
   // Runs sanity checks on the policy value and returns it in |extension_ids|.
   bool CheckAndGetList(const policy::PolicyMap& policies,
                        policy::PolicyErrorMap* errors,
-                       scoped_ptr<base::ListValue>* extension_ids);
+                       std::unique_ptr<base::ListValue>* extension_ids);
 
  private:
   const char* pref_path_;

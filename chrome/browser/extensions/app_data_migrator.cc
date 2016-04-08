@@ -41,7 +41,7 @@ void MigrateOnFileSystemThread(FileSystemContext* old_fs_context,
   GURL extension_url =
       extensions::Extension::GetBaseURLFromExtensionId(extension->id());
 
-  scoped_ptr<storage::SandboxFileSystemBackendDelegate::OriginEnumerator>
+  std::unique_ptr<storage::SandboxFileSystemBackendDelegate::OriginEnumerator>
       enumerator(old_sandbox_delegate->CreateOriginEnumerator());
 
   // Find out if there is a file system that needs migration.

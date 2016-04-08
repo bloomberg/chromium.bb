@@ -4,10 +4,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/permissions_updater.h"
@@ -54,8 +54,8 @@ class PermissionMessagesUnittest : public testing::Test {
 
  protected:
   void CreateAndInstallExtensionWithPermissions(
-      scoped_ptr<base::ListValue> required_permissions,
-      scoped_ptr<base::ListValue> optional_permissions) {
+      std::unique_ptr<base::ListValue> required_permissions,
+      std::unique_ptr<base::ListValue> optional_permissions) {
     app_ = test_util::BuildExtension(ExtensionBuilder())
                .MergeManifest(
                    DictionaryBuilder()
@@ -72,11 +72,11 @@ class PermissionMessagesUnittest : public testing::Test {
   // Returns the permission messages that would display in the prompt that
   // requests all the optional permissions for the current |app_|.
   std::vector<base::string16> GetOptionalPermissionMessages() {
-    scoped_ptr<const PermissionSet> granted_permissions =
+    std::unique_ptr<const PermissionSet> granted_permissions =
         env_.GetExtensionPrefs()->GetGrantedPermissions(app_->id());
     const PermissionSet& optional_permissions =
         PermissionsParser::GetOptionalPermissions(app_.get());
-    scoped_ptr<const PermissionSet> requested_permissions =
+    std::unique_ptr<const PermissionSet> requested_permissions =
         PermissionSet::CreateDifference(optional_permissions,
                                         *granted_permissions);
     return GetMessages(*requested_permissions);
@@ -113,7 +113,7 @@ class PermissionMessagesUnittest : public testing::Test {
   }
 
   extensions::TestExtensionEnvironment env_;
-  scoped_ptr<ChromePermissionMessageProvider> message_provider_;
+  std::unique_ptr<ChromePermissionMessageProvider> message_provider_;
   scoped_refptr<const Extension> app_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionMessagesUnittest);
@@ -256,7 +256,7 @@ class USBDevicePermissionMessagesTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<ChromePermissionMessageProvider> message_provider_;
+  std::unique_ptr<ChromePermissionMessageProvider> message_provider_;
 };
 
 TEST_F(USBDevicePermissionMessagesTest, SingleDevice) {
@@ -264,7 +264,7 @@ TEST_F(USBDevicePermissionMessagesTest, SingleDevice) {
     const char kMessage[] =
         "Access any PVR Mass Storage from HUMAX Co., Ltd. via USB";
 
-    scoped_ptr<base::ListValue> permission_list(new base::ListValue());
+    std::unique_ptr<base::ListValue> permission_list(new base::ListValue());
     permission_list->Append(
         UsbDevicePermissionData(0x02ad, 0x138c, -1).ToValue().release());
 
@@ -279,7 +279,7 @@ TEST_F(USBDevicePermissionMessagesTest, SingleDevice) {
   {
     const char kMessage[] = "Access USB devices from HUMAX Co., Ltd.";
 
-    scoped_ptr<base::ListValue> permission_list(new base::ListValue());
+    std::unique_ptr<base::ListValue> permission_list(new base::ListValue());
     permission_list->Append(
         UsbDevicePermissionData(0x02ad, 0x138d, -1).ToValue().release());
 
@@ -294,7 +294,7 @@ TEST_F(USBDevicePermissionMessagesTest, SingleDevice) {
   {
     const char kMessage[] = "Access USB devices from an unknown vendor";
 
-    scoped_ptr<base::ListValue> permission_list(new base::ListValue());
+    std::unique_ptr<base::ListValue> permission_list(new base::ListValue());
     permission_list->Append(
         UsbDevicePermissionData(0x02ae, 0x138d, -1).ToValue().release());
 
@@ -317,7 +317,7 @@ TEST_F(USBDevicePermissionMessagesTest, MultipleDevice) {
   };
 
   // Prepare data set
-  scoped_ptr<base::ListValue> permission_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> permission_list(new base::ListValue());
   permission_list->Append(
       UsbDevicePermissionData(0x02ad, 0x138c, -1).ToValue().release());
   // This device's product ID is not in Chrome's database.

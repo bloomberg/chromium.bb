@@ -264,7 +264,8 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
   std::string device_id_;
   base::ScopedTempDir fake_gallery_temp_dir_;
   int test_jpg_size_;
-  scoped_ptr<EnsureMediaDirectoriesExists> ensure_media_directories_exists_;
+  std::unique_ptr<EnsureMediaDirectoriesExists>
+      ensure_media_directories_exists_;
 };
 
 #if !defined(DISABLE_NACL)

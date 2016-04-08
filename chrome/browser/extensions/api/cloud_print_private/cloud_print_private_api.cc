@@ -40,7 +40,7 @@ CloudPrintPrivateSetupConnectorFunction::
 bool CloudPrintPrivateSetupConnectorFunction::RunAsync() {
 #if defined(ENABLE_PRINT_PREVIEW)
   using api::cloud_print_private::SetupConnector::Params;
-  scoped_ptr<Params> params(Params::Create(*args_));
+  std::unique_ptr<Params> params(Params::Create(*args_));
   if (CloudPrintTestsDelegate::instance()) {
     CloudPrintTestsDelegate::instance()->SetupConnector(
         params->user_email,
@@ -52,7 +52,7 @@ bool CloudPrintPrivateSetupConnectorFunction::RunAsync() {
         CloudPrintProxyServiceFactory::GetForProfile(GetProfile());
     if (!service)
       return false;
-    scoped_ptr<base::DictionaryValue> user_setings(
+    std::unique_ptr<base::DictionaryValue> user_setings(
         params->user_settings.ToValue());
     service->EnableForUserWithRobot(params->credentials,
                                     params->robot_email,

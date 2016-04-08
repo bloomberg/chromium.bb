@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_API_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_event_router.h"
 #include "chrome/browser/extensions/browser_context_keyed_service_factories.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
@@ -46,7 +47,7 @@ class BluetoothLowEnergyAPI : public BrowserContextKeyedAPI {
  private:
   friend class BrowserContextKeyedAPIFactory<BluetoothLowEnergyAPI>;
 
-  scoped_ptr<BluetoothLowEnergyEventRouter> event_router_;
+  std::unique_ptr<BluetoothLowEnergyEventRouter> event_router_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyAPI);
 };

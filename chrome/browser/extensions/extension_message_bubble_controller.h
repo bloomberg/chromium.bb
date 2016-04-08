@@ -183,7 +183,7 @@ class ExtensionMessageBubbleController {
   BubbleAction user_action_;
 
   // Our delegate supplying information about what to show in the dialog.
-  scoped_ptr<Delegate> delegate_;
+  std::unique_ptr<Delegate> delegate_;
 
   // Whether this class has initialized.
   bool initialized_;

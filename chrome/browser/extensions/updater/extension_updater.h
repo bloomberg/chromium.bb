@@ -7,6 +7,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
 #include <stack>
 #include <string>
@@ -15,7 +16,6 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
@@ -240,7 +240,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   const ExtensionDownloader::Factory downloader_factory_;
 
   // Fetches the crx files for the extensions that have an available update.
-  scoped_ptr<ExtensionDownloader> downloader_;
+  std::unique_ptr<ExtensionDownloader> downloader_;
 
   base::OneShotTimer timer_;
   int frequency_seconds_;

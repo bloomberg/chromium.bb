@@ -19,14 +19,14 @@ namespace context_menus_api_helpers {
 namespace {
 
 template <typename PropertyWithEnumT>
-scoped_ptr<extensions::MenuItem::Id> GetParentId(
+std::unique_ptr<extensions::MenuItem::Id> GetParentId(
     const PropertyWithEnumT& property,
     bool is_off_the_record,
     const MenuItem::ExtensionKey& key) {
   if (!property.parent_id)
-    return scoped_ptr<extensions::MenuItem::Id>();
+    return std::unique_ptr<extensions::MenuItem::Id>();
 
-  scoped_ptr<extensions::MenuItem::Id> parent_id(
+  std::unique_ptr<extensions::MenuItem::Id> parent_id(
       new extensions::MenuItem::Id(is_off_the_record, key));
   if (property.parent_id->as_integer)
     parent_id->uid = *property.parent_id->as_integer;
@@ -128,7 +128,7 @@ bool CreateMenuItem(const PropertyWithEnumT& create_properties,
   if (create_properties.enabled.get())
     enabled = *create_properties.enabled;
 
-  scoped_ptr<MenuItem> item(
+  std::unique_ptr<MenuItem> item(
       new MenuItem(item_id, title, checked, enabled, type, contexts));
 
   // URL Patterns.
@@ -141,7 +141,7 @@ bool CreateMenuItem(const PropertyWithEnumT& create_properties,
 
   // Parent id.
   bool success = true;
-  scoped_ptr<MenuItem::Id> parent_id(GetParentId(
+  std::unique_ptr<MenuItem::Id> parent_id(GetParentId(
       create_properties, profile->IsOffTheRecord(), item_id.extension_key));
   if (parent_id.get()) {
     MenuItem* parent = GetParent(*parent_id, menu_manager, error);
@@ -237,7 +237,7 @@ bool UpdateMenuItem(const PropertyWithEnumT& update_properties,
 
   // Parent id.
   MenuItem* parent = NULL;
-  scoped_ptr<MenuItem::Id> parent_id(GetParentId(
+  std::unique_ptr<MenuItem::Id> parent_id(GetParentId(
       update_properties, profile->IsOffTheRecord(), item_id.extension_key));
   if (parent_id.get()) {
     MenuItem* parent = GetParent(*parent_id, menu_manager, error);

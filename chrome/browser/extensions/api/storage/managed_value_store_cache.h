@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_STORAGE_MANAGED_VALUE_STORE_CACHE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -13,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/policy/core/common/policy_service.h"
 #include "extensions/browser/api/storage/settings_observer.h"
 #include "extensions/browser/api/storage/value_store_cache.h"
@@ -71,7 +71,7 @@ class ManagedValueStoreCache : public ValueStoreCache,
   // Posted by OnPolicyUpdated() to update a PolicyValueStore on the FILE
   // thread.
   void UpdatePolicyOnFILE(const std::string& extension_id,
-                          scoped_ptr<policy::PolicyMap> current_policy);
+                          std::unique_ptr<policy::PolicyMap> current_policy);
 
   // Returns an existing PolicyValueStore for |extension_id|, or NULL.
   PolicyValueStore* GetStoreFor(const std::string& extension_id);
@@ -88,7 +88,7 @@ class ManagedValueStoreCache : public ValueStoreCache,
 
   // Observes extension loading and unloading, and keeps the Profile's
   // PolicyService aware of the current list of extensions.
-  scoped_ptr<ExtensionTracker> extension_tracker_;
+  std::unique_ptr<ExtensionTracker> extension_tracker_;
 
   // These live on the FILE thread.
   scoped_refptr<ValueStoreFactory> storage_factory_;

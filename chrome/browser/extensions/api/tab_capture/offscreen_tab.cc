@@ -388,11 +388,9 @@ void OffscreenTab::RequestMediaAccessPermission(
   DVLOG(2) << "Allowing " << devices.size()
            << " capture devices for OffscreenTab content.";
 
-  callback.Run(
-    devices,
-    devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE :
-                      content::MEDIA_DEVICE_OK,
-    scoped_ptr<content::MediaStreamUI>(nullptr));
+  callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE
+                                        : content::MEDIA_DEVICE_OK,
+               std::unique_ptr<content::MediaStreamUI>(nullptr));
 }
 
 bool OffscreenTab::CheckMediaAccessPermission(

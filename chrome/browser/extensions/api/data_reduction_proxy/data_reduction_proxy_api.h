@@ -35,7 +35,7 @@ class DataReductionProxyGetDataUsageFunction
   ResponseAction Run() override;
 
   void ReplyWithDataUsage(
-      scoped_ptr<std::vector<data_reduction_proxy::DataUsageBucket>>
+      std::unique_ptr<std::vector<data_reduction_proxy::DataUsageBucket>>
           data_usage);
 };
 

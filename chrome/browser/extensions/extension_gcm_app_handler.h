@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_GCM_APP_HANDLER_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_GCM_APP_HANDLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "components/gcm_driver/common/gcm_messages.h"
@@ -100,7 +100,7 @@ class ExtensionGCMAppHandler : public gcm::GCMAppHandler,
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  scoped_ptr<extensions::GcmJsEventRouter> js_event_router_;
+  std::unique_ptr<extensions::GcmJsEventRouter> js_event_router_;
 
   base::WeakPtrFactory<ExtensionGCMAppHandler> weak_factory_;
 

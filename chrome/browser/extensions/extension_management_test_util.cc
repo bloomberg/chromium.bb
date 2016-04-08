@@ -215,7 +215,7 @@ void ExtensionManagementPrefUpdaterBase::SetPref(base::DictionaryValue* pref) {
   pref_.reset(pref);
 }
 
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 ExtensionManagementPrefUpdaterBase::TakePref() {
   return std::move(pref_);
 }

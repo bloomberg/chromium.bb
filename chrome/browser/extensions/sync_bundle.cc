@@ -17,7 +17,7 @@ SyncBundle::SyncBundle() {}
 SyncBundle::~SyncBundle() {}
 
 void SyncBundle::StartSyncing(
-    scoped_ptr<syncer::SyncChangeProcessor> sync_processor) {
+    std::unique_ptr<syncer::SyncChangeProcessor> sync_processor) {
   sync_processor_.reset(sync_processor.release());
 }
 

@@ -8,6 +8,7 @@
 
 #include "base/format_macros.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -64,18 +65,18 @@ scoped_refptr<Action> Action::Clone() const {
       new Action(
           extension_id(), time(), action_type(), api_name(), action_id()));
   if (args())
-    clone->set_args(make_scoped_ptr(args()->DeepCopy()));
+    clone->set_args(base::WrapUnique(args()->DeepCopy()));
   clone->set_page_url(page_url());
   clone->set_page_title(page_title());
   clone->set_page_incognito(page_incognito());
   clone->set_arg_url(arg_url());
   clone->set_arg_incognito(arg_incognito());
   if (other())
-    clone->set_other(make_scoped_ptr(other()->DeepCopy()));
+    clone->set_other(base::WrapUnique(other()->DeepCopy()));
   return clone;
 }
 
-void Action::set_args(scoped_ptr<base::ListValue> args) {
+void Action::set_args(std::unique_ptr<base::ListValue> args) {
   args_.reset(args.release());
 }
 
@@ -94,7 +95,7 @@ void Action::set_arg_url(const GURL& arg_url) {
   arg_url_ = arg_url;
 }
 
-void Action::set_other(scoped_ptr<base::DictionaryValue> other) {
+void Action::set_other(std::unique_ptr<base::DictionaryValue> other) {
   other_.reset(other.release());
 }
 
@@ -183,7 +184,7 @@ ExtensionActivity Action::ConvertToExtensionActivity() {
     result.arg_url.reset(new std::string(SerializeArgUrl()));
 
   if (other()) {
-    scoped_ptr<ExtensionActivity::Other> other_field(
+    std::unique_ptr<ExtensionActivity::Other> other_field(
         new ExtensionActivity::Other);
     bool prerender;
     if (other()->GetBooleanWithoutPathExpansion(constants::kActionPrerender,

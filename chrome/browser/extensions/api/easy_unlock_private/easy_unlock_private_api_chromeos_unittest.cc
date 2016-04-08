@@ -4,13 +4,14 @@
 
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_api.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -228,7 +229,7 @@ TEST_F(EasyUnlockPrivateApiTest, PerformECDHKeyAgreement) {
       base::Bind(&CopyData, &expected_result));
   ASSERT_GT(expected_result.length(), 0u);
 
-  scoped_ptr<base::ListValue> args(new base::ListValue);
+  std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->Append(StringToBinaryValue(private_key_1));
   args->Append(StringToBinaryValue(public_key_2));
 
@@ -260,7 +261,7 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage) {
       base::Bind(&CopyData, &expected_result));
   ASSERT_GT(expected_result.length(), 0u);
 
-  scoped_ptr<base::ListValue> args(new base::ListValue);
+  std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->Append(StringToBinaryValue("PAYLOAD"));
   args->Append(StringToBinaryValue("KEY"));
   base::DictionaryValue* options = new base::DictionaryValue();
@@ -302,7 +303,7 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage_EmptyOptions) {
       base::Bind(&CopyData, &expected_result));
   ASSERT_GT(expected_result.length(), 0u);
 
-  scoped_ptr<base::ListValue> args(new base::ListValue);
+  std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->Append(StringToBinaryValue("PAYLOAD"));
   args->Append(StringToBinaryValue("KEY"));
   base::DictionaryValue* options = new base::DictionaryValue();
@@ -334,7 +335,7 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage_AsymmetricSign) {
       base::Bind(&CopyData, &expected_result));
   ASSERT_GT(expected_result.length(), 0u);
 
-  scoped_ptr<base::ListValue> args(new base::ListValue);
+  std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->Append(StringToBinaryValue("PAYLOAD"));
   args->Append(StringToBinaryValue("KEY"));
   base::DictionaryValue* options = new base::DictionaryValue();
@@ -372,7 +373,7 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage) {
       base::Bind(&CopyData, &expected_result));
   ASSERT_GT(expected_result.length(), 0u);
 
-  scoped_ptr<base::ListValue> args(new base::ListValue);
+  std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->Append(StringToBinaryValue("MESSAGE"));
   args->Append(StringToBinaryValue("KEY"));
   base::DictionaryValue* options = new base::DictionaryValue();
@@ -409,7 +410,7 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage_EmptyOptions) {
       base::Bind(&CopyData, &expected_result));
   ASSERT_GT(expected_result.length(), 0u);
 
-  scoped_ptr<base::ListValue> args(new base::ListValue);
+  std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->Append(StringToBinaryValue("MESSAGE"));
   args->Append(StringToBinaryValue("KEY"));
   base::DictionaryValue* options = new base::DictionaryValue();
@@ -440,7 +441,7 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage_AsymmetricSign) {
       base::Bind(&CopyData, &expected_result));
   ASSERT_GT(expected_result.length(), 0u);
 
-  scoped_ptr<base::ListValue> args(new base::ListValue);
+  std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->Append(StringToBinaryValue("MESSAGE"));
   args->Append(StringToBinaryValue("KEY"));
   base::DictionaryValue* options = new base::DictionaryValue();
@@ -471,9 +472,9 @@ struct AutoPairingResult {
 };
 
 // Test factory to register EasyUnlockService.
-scoped_ptr<KeyedService> BuildTestEasyUnlockService(
+std::unique_ptr<KeyedService> BuildTestEasyUnlockService(
     content::BrowserContext* context) {
-  scoped_ptr<EasyUnlockServiceRegular> service(
+  std::unique_ptr<EasyUnlockServiceRegular> service(
       new EasyUnlockServiceRegular(Profile::FromBrowserContext(context)));
   service->Initialize(
       EasyUnlockAppManager::Create(extensions::ExtensionSystem::Get(context),
@@ -484,14 +485,16 @@ scoped_ptr<KeyedService> BuildTestEasyUnlockService(
 // A fake EventRouter that logs event it dispatches for testing.
 class FakeEventRouter : public extensions::EventRouter {
  public:
-  FakeEventRouter(Profile* profile,
-                  scoped_ptr<extensions::TestExtensionPrefs> extension_prefs)
+  FakeEventRouter(
+      Profile* profile,
+      std::unique_ptr<extensions::TestExtensionPrefs> extension_prefs)
       : EventRouter(profile, extension_prefs->prefs()),
         extension_prefs_(std::move(extension_prefs)),
         event_count_(0) {}
 
-  void DispatchEventToExtension(const std::string& extension_id,
-                                scoped_ptr<extensions::Event> event) override {
+  void DispatchEventToExtension(
+      const std::string& extension_id,
+      std::unique_ptr<extensions::Event> event) override {
     ++event_count_;
     last_extension_id_ = extension_id;
     last_event_name_ = event ? event->event_name : std::string();
@@ -502,19 +505,19 @@ class FakeEventRouter : public extensions::EventRouter {
   const std::string& last_event_name() const { return last_event_name_; }
 
  private:
-  scoped_ptr<extensions::TestExtensionPrefs> extension_prefs_;
+  std::unique_ptr<extensions::TestExtensionPrefs> extension_prefs_;
   int event_count_;
   std::string last_extension_id_;
   std::string last_event_name_;
 };
 
 // FakeEventRouter factory function
-scoped_ptr<KeyedService> FakeEventRouterFactoryFunction(
+std::unique_ptr<KeyedService> FakeEventRouterFactoryFunction(
     content::BrowserContext* profile) {
-  scoped_ptr<extensions::TestExtensionPrefs> extension_prefs(
+  std::unique_ptr<extensions::TestExtensionPrefs> extension_prefs(
       new extensions::TestExtensionPrefs(base::ThreadTaskRunnerHandle::Get()));
-  return make_scoped_ptr(new FakeEventRouter(static_cast<Profile*>(profile),
-                                             std::move(extension_prefs)));
+  return base::WrapUnique(new FakeEventRouter(static_cast<Profile*>(profile),
+                                              std::move(extension_prefs)));
 }
 
 TEST_F(EasyUnlockPrivateApiTest, AutoPairing) {
@@ -573,7 +576,7 @@ TEST_F(EasyUnlockPrivateApiTest, GetRemoteDevicesExperimental) {
 
   scoped_refptr<TestableGetRemoteDevicesFunction> function(
       new TestableGetRemoteDevicesFunction());
-  scoped_ptr<base::Value> value(
+  std::unique_ptr<base::Value> value(
       extensions::api_test_utils::RunFunctionAndReturnSingleResult(
           function.get(), "[]", profile()));
   ASSERT_TRUE(value.get());
@@ -607,7 +610,7 @@ TEST_F(EasyUnlockPrivateApiTest, GetRemoteDevicesNonExperimental) {
 
   scoped_refptr<TestableGetRemoteDevicesFunction> function(
       new TestableGetRemoteDevicesFunction());
-  scoped_ptr<base::Value> value(
+  std::unique_ptr<base::Value> value(
       extensions::api_test_utils::RunFunctionAndReturnSingleResult(
           function.get(), "[]", profile()));
   ASSERT_TRUE(value.get());
@@ -628,7 +631,7 @@ TEST_F(EasyUnlockPrivateApiTest, GetPermitAccessExperimental) {
 
   scoped_refptr<TestableGetPermitAccessFunction> function(
       new TestableGetPermitAccessFunction());
-  scoped_ptr<base::Value> value(
+  std::unique_ptr<base::Value> value(
       extensions::api_test_utils::RunFunctionAndReturnSingleResult(
           function.get(), "[]", profile()));
   ASSERT_TRUE(value);
@@ -651,7 +654,7 @@ TEST_F(EasyUnlockPrivateApiTest, GetPermitAccessNonExperimental) {
 
   scoped_refptr<TestableGetPermitAccessFunction> function(
       new TestableGetPermitAccessFunction());
-  scoped_ptr<base::Value> value(
+  std::unique_ptr<base::Value> value(
       extensions::api_test_utils::RunFunctionAndReturnSingleResult(
           function.get(), "[]", profile()));
   EXPECT_FALSE(value);

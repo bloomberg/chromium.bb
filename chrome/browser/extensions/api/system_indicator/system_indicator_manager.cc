@@ -61,7 +61,7 @@ ExtensionIndicatorIcon* ExtensionIndicatorIcon::Create(
     ExtensionAction* action,
     Profile* profile,
     StatusTray* status_tray) {
-  scoped_ptr<ExtensionIndicatorIcon> extension_icon(
+  std::unique_ptr<ExtensionIndicatorIcon> extension_icon(
       new ExtensionIndicatorIcon(extension, action, profile, status_tray));
 
   // Check if a status icon was successfully created.
@@ -80,13 +80,13 @@ ExtensionIndicatorIcon::~ExtensionIndicatorIcon() {
 }
 
 void ExtensionIndicatorIcon::OnStatusIconClicked() {
-  scoped_ptr<base::ListValue> params(
+  std::unique_ptr<base::ListValue> params(
       api::system_indicator::OnClicked::Create());
 
   EventRouter* event_router = EventRouter::Get(profile_);
-  scoped_ptr<Event> event(new Event(events::SYSTEM_INDICATOR_ON_CLICKED,
-                                    system_indicator::OnClicked::kEventName,
-                                    std::move(params), profile_));
+  std::unique_ptr<Event> event(new Event(
+      events::SYSTEM_INDICATOR_ON_CLICKED,
+      system_indicator::OnClicked::kEventName, std::move(params), profile_));
   event_router->DispatchEventToExtension(extension_->id(), std::move(event));
 }
 

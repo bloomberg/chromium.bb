@@ -27,7 +27,7 @@ class ExtensionInstallPromptTestHelper {
  private:
   void HandleResult(ExtensionInstallPrompt::Result result);
 
-  scoped_ptr<ExtensionInstallPrompt::Result> result_;
+  std::unique_ptr<ExtensionInstallPrompt::Result> result_;
 
   // A closure to run once HandleResult() has been called; used for exiting
   // run loops in tests.

@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_WEBSTORE_INSTALL_WITH_PROMPT_H_
 #define CHROME_BROWSER_EXTENSIONS_WEBSTORE_INSTALL_WITH_PROMPT_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/webstore_standalone_installer.h"
 #include "chrome/browser/ui/native_window_tracker.h"
 #include "ui/gfx/native_widget_types.h"
@@ -55,9 +56,9 @@ class WebstoreInstallWithPrompt : public WebstoreStandaloneInstaller {
   bool ShouldShowPostInstallUI() const override;
   bool ShouldShowAppInstalledBubble() const override;
   content::WebContents* GetWebContents() const override;
-  scoped_ptr<ExtensionInstallPrompt::Prompt> CreateInstallPrompt()
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> CreateInstallPrompt()
       const override;
-  scoped_ptr<ExtensionInstallPrompt> CreateInstallUI() override;
+  std::unique_ptr<ExtensionInstallPrompt> CreateInstallUI() override;
   bool CheckInlineInstallPermitted(const base::DictionaryValue& webstore_data,
                                    std::string* error) const override;
   bool CheckRequestorPermitted(const base::DictionaryValue& webstore_data,
@@ -69,10 +70,10 @@ class WebstoreInstallWithPrompt : public WebstoreStandaloneInstaller {
   GURL dummy_requestor_url_;
 
   // A non-visible WebContents used to download data from the webstore.
-  scoped_ptr<content::WebContents> dummy_web_contents_;
+  std::unique_ptr<content::WebContents> dummy_web_contents_;
 
   gfx::NativeWindow parent_window_;
-  scoped_ptr<NativeWindowTracker> parent_window_tracker_;
+  std::unique_ptr<NativeWindowTracker> parent_window_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(WebstoreInstallWithPrompt);
 };

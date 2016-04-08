@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_EXTENSIONS_API_TABS_WINDOWS_EVENT_ROUTER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/window_controller_list_observer.h"
@@ -73,7 +73,7 @@ class WindowsEventRouter : public AppWindowRegistry::Observer,
   void DispatchEvent(events::HistogramValue histogram_value,
                      const std::string& event_name,
                      WindowController* window_controller,
-                     scoped_ptr<base::ListValue> args);
+                     std::unique_ptr<base::ListValue> args);
   bool HasEventListener(const std::string& event_name);
   void AddAppWindow(extensions::AppWindow* app_window);
 
@@ -91,7 +91,7 @@ class WindowsEventRouter : public AppWindowRegistry::Observer,
   // windows.onFocusChanged events with the same windowId.
   int focused_window_id_;
 
-  using AppWindowMap = std::map<int, scoped_ptr<AppWindowController>>;
+  using AppWindowMap = std::map<int, std::unique_ptr<AppWindowController>>;
   // Map of application windows, the key to the session of the app window.
   AppWindowMap app_windows_;
 

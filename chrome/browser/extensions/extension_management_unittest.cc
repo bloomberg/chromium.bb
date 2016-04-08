@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/extension_management.h"
+
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/json/json_parser.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_management_internal.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
@@ -149,7 +150,7 @@ class ExtensionManagementServiceTest : public testing::Test {
 
   void SetExampleDictPref() {
     std::string error_msg;
-    scoped_ptr<base::Value> parsed = base::JSONReader::ReadAndReturnError(
+    std::unique_ptr<base::Value> parsed = base::JSONReader::ReadAndReturnError(
         kExampleDictPreference,
         base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS, NULL, &error_msg);
     ASSERT_TRUE(parsed && parsed->IsType(base::Value::TYPE_DICTIONARY))
@@ -191,8 +192,8 @@ class ExtensionManagementServiceTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<TestingPrefServiceSimple> pref_service_;
-  scoped_ptr<ExtensionManagement> extension_management_;
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<ExtensionManagement> extension_management_;
 
  private:
   // Create an extension with specified |location|, |version|, |id| and
@@ -260,7 +261,7 @@ class ExtensionAdminPolicyTest : public ExtensionManagementServiceTest {
   bool MustRemainEnabled(const Extension* extension, base::string16* error);
 
  protected:
-  scoped_ptr<StandardManagementPolicyProvider> provider_;
+  std::unique_ptr<StandardManagementPolicyProvider> provider_;
   scoped_refptr<Extension> extension_;
 };
 

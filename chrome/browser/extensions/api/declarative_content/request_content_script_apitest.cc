@@ -107,7 +107,7 @@ class RequestContentScriptAPITest : public ExtensionBrowserTest {
       PermissionOrMatcherType manifest_permission,
       PermissionOrMatcherType script_matcher);
 
-  scoped_ptr<TestExtensionDir> test_extension_dir_;
+  std::unique_ptr<TestExtensionDir> test_extension_dir_;
   const Extension* extension_;
 };
 
@@ -171,7 +171,7 @@ testing::AssertionResult RequestContentScriptAPITest::CreateAndLoadExtension(
       kBackgroundScriptSource,
       kScriptMatchers[script_matcher]);
 
-  scoped_ptr<TestExtensionDir> dir(new TestExtensionDir);
+  std::unique_ptr<TestExtensionDir> dir(new TestExtensionDir);
   dir->WriteManifest(manifest);
   dir->WriteFile(FILE_PATH_LITERAL("background.js"), background_src);
   dir->WriteFile(FILE_PATH_LITERAL("script.js"),

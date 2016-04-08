@@ -4,10 +4,10 @@
 
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_css_condition_tracker.h"
 
+#include <memory>
 #include <tuple>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_test.h"
@@ -53,8 +53,9 @@ class DeclarativeContentCssConditionTrackerTest
   };
 
   // Creates a predicate with appropriate expectations of success.
-  scoped_ptr<const ContentPredicate> CreatePredicate(const std::string& value) {
-    scoped_ptr<const ContentPredicate> predicate;
+  std::unique_ptr<const ContentPredicate> CreatePredicate(
+      const std::string& value) {
+    std::unique_ptr<const ContentPredicate> predicate;
     CreatePredicateImpl(value, &predicate);
     return predicate;
   }
@@ -102,9 +103,8 @@ class DeclarativeContentCssConditionTrackerTest
  private:
   // This function exists to work around the gtest limitation that functions
   // with fatal assertions must return void.
-  void CreatePredicateImpl(
-      const std::string& value,
-      scoped_ptr<const ContentPredicate>* predicate) {
+  void CreatePredicateImpl(const std::string& value,
+                           std::unique_ptr<const ContentPredicate>* predicate) {
     std::string error;
     *predicate = tracker_.CreatePredicate(
         nullptr,
@@ -119,22 +119,18 @@ class DeclarativeContentCssConditionTrackerTest
 
 TEST(DeclarativeContentCssPredicateTest, WrongCssDatatype) {
   std::string error;
-  scoped_ptr<DeclarativeContentCssPredicate> predicate =
+  std::unique_ptr<DeclarativeContentCssPredicate> predicate =
       DeclarativeContentCssPredicate::Create(
-          nullptr,
-          *base::test::ParseJson("\"selector\""),
-          &error);
+          nullptr, *base::test::ParseJson("\"selector\""), &error);
   EXPECT_THAT(error, HasSubstr("invalid type"));
   EXPECT_FALSE(predicate);
 }
 
 TEST(DeclarativeContentCssPredicateTest, CssPredicate) {
   std::string error;
-  scoped_ptr<DeclarativeContentCssPredicate> predicate =
+  std::unique_ptr<DeclarativeContentCssPredicate> predicate =
       DeclarativeContentCssPredicate::Create(
-          nullptr,
-          *base::test::ParseJson("[\"input\", \"a\"]"),
-          &error);
+          nullptr, *base::test::ParseJson("[\"input\", \"a\"]"), &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(predicate);
 
@@ -144,13 +140,13 @@ TEST(DeclarativeContentCssPredicateTest, CssPredicate) {
 // Tests that adding and removing predicates causes a WatchPages message to be
 // sent.
 TEST_F(DeclarativeContentCssConditionTrackerTest, AddAndRemovePredicates) {
-  const scoped_ptr<content::WebContents> tab = MakeTab();
+  const std::unique_ptr<content::WebContents> tab = MakeTab();
   tracker_.TrackForWebContents(tab.get());
   EXPECT_EQ(0, delegate_.evaluation_requests());
 
   // Check that adding predicates sends a WatchPages message with the
   // corresponding selectors to the tab's RenderProcessHost.
-  std::vector<scoped_ptr<const ContentPredicate>> predicates;
+  std::vector<std::unique_ptr<const ContentPredicate>> predicates;
   predicates.push_back(CreatePredicate("[\"a\", \"div\"]"));
   predicates.push_back(CreatePredicate("[\"b\"]"));
   predicates.push_back(CreatePredicate("[\"input\"]"));
@@ -195,13 +191,14 @@ TEST_F(DeclarativeContentCssConditionTrackerTest, AddAndRemovePredicates) {
 // as an existing predicate does not cause a WatchPages message to be sent.
 TEST_F(DeclarativeContentCssConditionTrackerTest,
        AddAndRemovePredicatesWithSameSelectors) {
-  const scoped_ptr<content::WebContents> tab = MakeTab();
+  const std::unique_ptr<content::WebContents> tab = MakeTab();
   tracker_.TrackForWebContents(tab.get());
   EXPECT_EQ(0, delegate_.evaluation_requests());
 
   // Add the first predicate and expect a WatchPages message.
   std::string error;
-  scoped_ptr<const ContentPredicate> predicate1 = CreatePredicate("[\"a\"]");
+  std::unique_ptr<const ContentPredicate> predicate1 =
+      CreatePredicate("[\"a\"]");
 
   std::map<const void*, std::vector<const ContentPredicate*>> predicate_groups1;
   const void* const group1 = GeneratePredicateGroupID();
@@ -217,7 +214,8 @@ TEST_F(DeclarativeContentCssConditionTrackerTest,
 
   // Add the second predicate specifying the same selector and expect no
   // WatchPages message.
-  scoped_ptr<const ContentPredicate> predicate2 = CreatePredicate("[\"a\"]");
+  std::unique_ptr<const ContentPredicate> predicate2 =
+      CreatePredicate("[\"a\"]");
 
   std::map<const void*, std::vector<const ContentPredicate*>> predicate_groups2;
   const void* const group2 = GeneratePredicateGroupID();
@@ -247,13 +245,14 @@ TEST_F(DeclarativeContentCssConditionTrackerTest,
 TEST_F(DeclarativeContentCssConditionTrackerTest, WatchedPageChange) {
   int expected_evaluation_requests = 0;
 
-  const scoped_ptr<content::WebContents> tab = MakeTab();
+  const std::unique_ptr<content::WebContents> tab = MakeTab();
   tracker_.TrackForWebContents(tab.get());
   EXPECT_EQ(expected_evaluation_requests, delegate_.evaluation_requests());
 
-  scoped_ptr<const ContentPredicate> div_predicate =
+  std::unique_ptr<const ContentPredicate> div_predicate =
       CreatePredicate("[\"div\"]");
-  scoped_ptr<const ContentPredicate> a_predicate = CreatePredicate("[\"a\"]");
+  std::unique_ptr<const ContentPredicate> a_predicate =
+      CreatePredicate("[\"a\"]");
 
   std::map<const void*, std::vector<const ContentPredicate*>> predicate_groups;
   const void* const group = GeneratePredicateGroupID();
@@ -283,11 +282,12 @@ TEST_F(DeclarativeContentCssConditionTrackerTest, Navigation) {
 
   int expected_evaluation_requests = 0;
 
-  const scoped_ptr<content::WebContents> tab = MakeTab();
+  const std::unique_ptr<content::WebContents> tab = MakeTab();
   tracker_.TrackForWebContents(tab.get());
   EXPECT_EQ(expected_evaluation_requests, delegate_.evaluation_requests());
 
-  scoped_ptr<const ContentPredicate> predicate = CreatePredicate("[\"div\"]");
+  std::unique_ptr<const ContentPredicate> predicate =
+      CreatePredicate("[\"div\"]");
   std::map<const void*, std::vector<const ContentPredicate*>> predicate_groups;
   const void* const group = GeneratePredicateGroupID();
   predicate_groups[group].push_back(predicate.get());
@@ -323,7 +323,7 @@ TEST_F(DeclarativeContentCssConditionTrackerTest, Navigation) {
 
 // https://crbug.com/497586
 TEST_F(DeclarativeContentCssConditionTrackerTest, WebContentsOutlivesTracker) {
-  const scoped_ptr<content::WebContents> tab = MakeTab();
+  const std::unique_ptr<content::WebContents> tab = MakeTab();
 
   {
     DeclarativeContentCssConditionTracker tracker(&delegate_);

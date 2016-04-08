@@ -137,7 +137,7 @@ bool IndividualSettings::Parse(const base::DictionaryValue* dict,
       dict->GetStringWithoutPathExpansion(
           schema_constants::kMinimumVersionRequired,
           &minimum_version_required_str)) {
-    scoped_ptr<base::Version> version(
+    std::unique_ptr<base::Version> version(
         new Version(minimum_version_required_str));
     // We accept a general version string here. Note that count of components in
     // version string of extensions is limited to 4.

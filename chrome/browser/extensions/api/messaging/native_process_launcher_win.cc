@@ -140,7 +140,7 @@ bool NativeProcessLauncher::LaunchNativeProcess(
     LOG(ERROR) << "COMSPEC is not set";
     return false;
   }
-  scoped_ptr<wchar_t[]> comspec(new wchar_t[comspec_length]);
+  std::unique_ptr<wchar_t[]> comspec(new wchar_t[comspec_length]);
   ::GetEnvironmentVariable(L"COMSPEC", comspec.get(), comspec_length);
 
   base::string16 command_line_string = command_line.GetCommandLineString();

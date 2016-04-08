@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -37,11 +38,10 @@ DeclarativeContentCssPredicate::~DeclarativeContentCssPredicate() {
 }
 
 // static
-scoped_ptr<DeclarativeContentCssPredicate>
-DeclarativeContentCssPredicate::Create(
-    ContentPredicateEvaluator* evaluator,
-    const base::Value& value,
-    std::string* error) {
+std::unique_ptr<DeclarativeContentCssPredicate>
+DeclarativeContentCssPredicate::Create(ContentPredicateEvaluator* evaluator,
+                                       const base::Value& value,
+                                       std::string* error) {
   std::vector<std::string> css_rules;
   const base::ListValue* css_rules_value = nullptr;
   if (value.GetAsList(&css_rules_value)) {
@@ -50,20 +50,20 @@ DeclarativeContentCssPredicate::Create(
       if (!css_rules_value->GetString(i, &css_rule)) {
         *error = base::StringPrintf(kInvalidTypeOfParameter,
                                     declarative_content_constants::kCss);
-        return scoped_ptr<DeclarativeContentCssPredicate>();
+        return std::unique_ptr<DeclarativeContentCssPredicate>();
       }
       css_rules.push_back(css_rule);
     }
   } else {
     *error = base::StringPrintf(kInvalidTypeOfParameter,
                                 declarative_content_constants::kCss);
-    return scoped_ptr<DeclarativeContentCssPredicate>();
+    return std::unique_ptr<DeclarativeContentCssPredicate>();
   }
 
-  return !css_rules.empty() ?
-      make_scoped_ptr(
-          new DeclarativeContentCssPredicate(evaluator, css_rules)) :
-      scoped_ptr<DeclarativeContentCssPredicate>();
+  return !css_rules.empty()
+             ? base::WrapUnique(
+                   new DeclarativeContentCssPredicate(evaluator, css_rules))
+             : std::unique_ptr<DeclarativeContentCssPredicate>();
 }
 
 ContentPredicateEvaluator*
@@ -162,10 +162,11 @@ GetPredicateApiAttributeName() const {
   return declarative_content_constants::kCss;
 }
 
-scoped_ptr<const ContentPredicate> DeclarativeContentCssConditionTracker::
-CreatePredicate(const Extension* extension,
-                const base::Value& value,
-                std::string* error) {
+std::unique_ptr<const ContentPredicate>
+DeclarativeContentCssConditionTracker::CreatePredicate(
+    const Extension* extension,
+    const base::Value& value,
+    std::string* error) {
   return DeclarativeContentCssPredicate::Create(this, value, error);
 }
 

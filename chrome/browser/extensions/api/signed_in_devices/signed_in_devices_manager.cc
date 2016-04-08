@@ -4,13 +4,13 @@
 
 #include "chrome/browser/extensions/api/signed_in_devices/signed_in_devices_manager.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/signed_in_devices/signed_in_devices_api.h"
@@ -72,9 +72,9 @@ void SignedInDevicesChangeObserver::OnDeviceInfoChange() {
     args.push_back(std::move(api_device));
   }
 
-  scoped_ptr<base::ListValue> result =
+  std::unique_ptr<base::ListValue> result =
       api::signed_in_devices::OnDeviceInfoChange::Create(args);
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(events::SIGNED_IN_DEVICES_ON_DEVICE_INFO_CHANGE,
                 api::signed_in_devices::OnDeviceInfoChange::kEventName,
                 std::move(result)));

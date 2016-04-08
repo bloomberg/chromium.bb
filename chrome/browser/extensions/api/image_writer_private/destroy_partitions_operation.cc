@@ -31,7 +31,7 @@ void DestroyPartitionsOperation::StartImpl() {
     return;
   }
 
-  scoped_ptr<char[]> buffer(new char[kPartitionTableSize]);
+  std::unique_ptr<char[]> buffer(new char[kPartitionTableSize]);
   memset(buffer.get(), 0, kPartitionTableSize);
 
   if (base::WriteFile(image_path_, buffer.get(), kPartitionTableSize) !=

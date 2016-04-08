@@ -4,7 +4,8 @@
 
 #include "chrome/browser/extensions/api/dial/dial_registry.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"

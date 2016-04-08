@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
@@ -51,12 +52,12 @@ class TestPredicateEvaluator : public ContentPredicateEvaluator {
     return "test_predicate";
   }
 
-  scoped_ptr<const ContentPredicate> CreatePredicate(
+  std::unique_ptr<const ContentPredicate> CreatePredicate(
       const Extension* extension,
       const base::Value& value,
       std::string* error) override {
     RequestEvaluationIfSpecified();
-    return make_scoped_ptr(new TestPredicate(this));
+    return base::WrapUnique(new TestPredicate(this));
   }
 
   void TrackPredicates(
@@ -115,12 +116,12 @@ class TestPredicateEvaluator : public ContentPredicateEvaluator {
 };
 
 // Create the test evaluator and set |evaluator| to its pointer.
-std::vector<scoped_ptr<ContentPredicateEvaluator>> CreateTestEvaluator(
+std::vector<std::unique_ptr<ContentPredicateEvaluator>> CreateTestEvaluator(
     TestPredicateEvaluator** evaluator,
     ContentPredicateEvaluator::Delegate* delegate) {
-  std::vector<scoped_ptr<ContentPredicateEvaluator>> evaluators;
+  std::vector<std::unique_ptr<ContentPredicateEvaluator>> evaluators;
   *evaluator = new TestPredicateEvaluator(delegate);
-  evaluators.push_back(scoped_ptr<ContentPredicateEvaluator>(*evaluator));
+  evaluators.push_back(std::unique_ptr<ContentPredicateEvaluator>(*evaluator));
   return evaluators;
 }
 
@@ -148,7 +149,7 @@ TEST_F(DeclarativeChromeContentRulesRegistryTest, ActiveRulesDoesntGrow) {
 
   EXPECT_EQ(0u, registry->GetActiveRulesCountForTesting());
 
-  scoped_ptr<content::WebContents> tab = env()->MakeTab();
+  std::unique_ptr<content::WebContents> tab = env()->MakeTab();
   registry->MonitorWebContentsForRuleEvaluation(tab.get());
   registry->DidNavigateMainFrame(tab.get(), content::LoadCommittedDetails(),
                                  content::FrameNavigateParams());

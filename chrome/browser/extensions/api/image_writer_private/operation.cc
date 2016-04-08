@@ -330,7 +330,7 @@ void Operation::MD5Chunk(
 
   CHECK_LE(bytes_processed, bytes_total);
 
-  scoped_ptr<char[]> buffer(new char[kMD5BufferSize]);
+  std::unique_ptr<char[]> buffer(new char[kMD5BufferSize]);
   int read_size = std::min(bytes_total - bytes_processed,
                            static_cast<int64_t>(kMD5BufferSize));
 

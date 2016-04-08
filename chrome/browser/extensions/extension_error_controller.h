@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_ERROR_CONTROLLER_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_ERROR_CONTROLLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_error_ui.h"
 #include "extensions/common/extension_set.h"
 
@@ -52,7 +53,7 @@ class ExtensionErrorController : public ExtensionErrorUI::Delegate {
   ExtensionSet blacklisted_extensions_;
 
   // The UI component of this controller.
-  scoped_ptr<ExtensionErrorUI> error_ui_;
+  std::unique_ptr<ExtensionErrorUI> error_ui_;
 
   // The BrowserContext with which we are associated.
   content::BrowserContext* browser_context_;

@@ -13,6 +13,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
@@ -75,19 +76,19 @@ std::set<base::FilePath> GetPrefsCandidateFilesFromFolder(
 // occurs). An empty dictionary is returned in case of failure (e.g. invalid
 // path or json content).
 // Caller takes ownership of the returned dictionary.
-scoped_ptr<base::DictionaryValue> ExtractExtensionPrefs(
+std::unique_ptr<base::DictionaryValue> ExtractExtensionPrefs(
     base::ValueDeserializer* deserializer,
     const base::FilePath& path) {
   std::string error_msg;
-  scoped_ptr<base::Value> extensions =
+  std::unique_ptr<base::Value> extensions =
       deserializer->Deserialize(NULL, &error_msg);
   if (!extensions) {
     LOG(WARNING) << "Unable to deserialize json data: " << error_msg
                  << " in file " << path.value() << ".";
-    return make_scoped_ptr(new base::DictionaryValue);
+    return base::WrapUnique(new base::DictionaryValue);
   }
 
-  scoped_ptr<base::DictionaryValue> ext_dictionary =
+  std::unique_ptr<base::DictionaryValue> ext_dictionary =
       base::DictionaryValue::From(std::move(extensions));
   if (ext_dictionary) {
     return ext_dictionary;
@@ -95,8 +96,7 @@ scoped_ptr<base::DictionaryValue> ExtractExtensionPrefs(
 
   LOG(WARNING) << "Expected a JSON dictionary in file " << path.value()
                  << ".";
-  return make_scoped_ptr(new base::DictionaryValue);
-
+  return base::WrapUnique(new base::DictionaryValue);
 }
 
 }  // namespace
@@ -197,7 +197,7 @@ void ExternalPrefLoader::PostLoadAndRemoveObservers() {
 void ExternalPrefLoader::LoadOnFileThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  scoped_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
 
   // TODO(skerner): Some values of base_path_id_ will cause
   // PathService::Get() to return false, because the path does
@@ -267,7 +267,7 @@ void ExternalPrefLoader::ReadExternalExtensionPrefFile(
   }
 
   JSONFileValueDeserializer deserializer(json_file);
-  scoped_ptr<base::DictionaryValue> ext_prefs =
+  std::unique_ptr<base::DictionaryValue> ext_prefs =
       ExtractExtensionPrefs(&deserializer, json_file);
   if (ext_prefs)
     prefs->MergeDictionary(ext_prefs.get());
@@ -305,7 +305,7 @@ void ExternalPrefLoader::ReadStandaloneExtensionPrefFiles(
              << extension_candidate_path.LossyDisplayName();
 
     JSONFileValueDeserializer deserializer(extension_candidate_path);
-    scoped_ptr<base::DictionaryValue> ext_prefs =
+    std::unique_ptr<base::DictionaryValue> ext_prefs =
         ExtractExtensionPrefs(&deserializer, extension_candidate_path);
     if (ext_prefs) {
       DVLOG(1) << "Adding extension with id: " << id;

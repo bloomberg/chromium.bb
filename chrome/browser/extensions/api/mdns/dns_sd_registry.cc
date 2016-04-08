@@ -30,7 +30,7 @@ class IsSameServiceName {
 }  // namespace
 
 DnsSdRegistry::ServiceTypeData::ServiceTypeData(
-    scoped_ptr<DnsSdDeviceLister> lister)
+    std::unique_ptr<DnsSdDeviceLister> lister)
     : ref_count(1), lister_(std::move(lister)) {}
 
 DnsSdRegistry::ServiceTypeData::~ServiceTypeData() {}
@@ -155,8 +155,9 @@ void DnsSdRegistry::RegisterDnsSdListener(const std::string& service_type) {
     return;
   }
 
-  scoped_ptr<DnsSdDeviceLister> dns_sd_device_lister(CreateDnsSdDeviceLister(
-      this, service_type, service_discovery_client_.get()));
+  std::unique_ptr<DnsSdDeviceLister> dns_sd_device_lister(
+      CreateDnsSdDeviceLister(this, service_type,
+                              service_discovery_client_.get()));
   dns_sd_device_lister->Discover(false);
   linked_ptr<ServiceTypeData> service_type_data(
       new ServiceTypeData(std::move(dns_sd_device_lister)));

@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SYNC_FILE_SYSTEM_EXTENSION_SYNC_EVENT_OBSERVER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SYNC_FILE_SYSTEM_EXTENSION_SYNC_EVENT_OBSERVER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/sync_file_system/sync_event_observer.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -69,7 +70,7 @@ class ExtensionSyncEventObserver : public sync_file_system::SyncEventObserver,
   void BroadcastOrDispatchEvent(const GURL& app_origin,
                                 events::HistogramValue histogram_value,
                                 const std::string& event_name,
-                                scoped_ptr<base::ListValue> value);
+                                std::unique_ptr<base::ListValue> value);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSyncEventObserver);
 };

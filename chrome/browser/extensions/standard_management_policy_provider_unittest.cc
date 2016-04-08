@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/standard_management_policy_provider.h"
+
+#include <memory>
+
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/extension_management.h"
-#include "chrome/browser/extensions/standard_management_policy_provider.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/extension_prefs.h"
@@ -48,7 +50,7 @@ class StandardManagementPolicyProviderTest : public testing::Test {
   content::TestBrowserThread file_thread_;
 
   TestExtensionPrefs prefs_;
-  scoped_ptr<ExtensionManagement> settings_;
+  std::unique_ptr<ExtensionManagement> settings_;
 
   StandardManagementPolicyProvider provider_;
 };

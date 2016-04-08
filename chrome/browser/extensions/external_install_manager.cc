@@ -87,7 +87,7 @@ void ExternalInstallManager::AddExternalInstallError(const Extension* extension,
           ? ExternalInstallError::BUBBLE_ALERT
           : ExternalInstallError::MENU_ALERT;
 
-  scoped_ptr<ExternalInstallError> error(new ExternalInstallError(
+  std::unique_ptr<ExternalInstallError> error(new ExternalInstallError(
       browser_context_, extension->id(), alert_type, this));
   shown_ids_.insert(extension->id());
   errors_.insert(std::make_pair(extension->id(), std::move(error)));
@@ -95,7 +95,7 @@ void ExternalInstallManager::AddExternalInstallError(const Extension* extension,
 
 void ExternalInstallManager::RemoveExternalInstallError(
     const std::string& extension_id) {
-  std::map<std::string, scoped_ptr<ExternalInstallError>>::iterator iter =
+  std::map<std::string, std::unique_ptr<ExternalInstallError>>::iterator iter =
       errors_.find(extension_id);
   if (iter != errors_.end()) {
     if (iter->second.get() == currently_visible_install_alert_)

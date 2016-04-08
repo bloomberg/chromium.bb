@@ -61,8 +61,9 @@ class ExtensionInfoGenerator {
                                  api::developer_private::ExtensionState state);
 
   // Callback for the asynchronous image loading.
-  void OnImageLoaded(scoped_ptr<api::developer_private::ExtensionInfo> info,
-                     const gfx::Image& image);
+  void OnImageLoaded(
+      std::unique_ptr<api::developer_private::ExtensionInfo> info,
+      const gfx::Image& image);
 
   // Returns the icon url for the default icon to use.
   const std::string& GetDefaultIconUrl(bool is_app, bool is_disabled);

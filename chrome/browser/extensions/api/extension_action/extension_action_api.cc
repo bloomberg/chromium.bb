@@ -234,7 +234,7 @@ void ExtensionActionAPI::DispatchExtensionActionClicked(
   }
 
   if (event_name) {
-    scoped_ptr<base::ListValue> args(new base::ListValue());
+    std::unique_ptr<base::ListValue> args(new base::ListValue());
     args->Append(
         ExtensionTabUtil::CreateTabObject(web_contents)->ToValue().release());
 
@@ -279,11 +279,11 @@ void ExtensionActionAPI::DispatchEventToExtension(
     const std::string& extension_id,
     events::HistogramValue histogram_value,
     const std::string& event_name,
-    scoped_ptr<base::ListValue> event_args) {
+    std::unique_ptr<base::ListValue> event_args) {
   if (!EventRouter::Get(context))
     return;
 
-  scoped_ptr<Event> event(
+  std::unique_ptr<Event> event(
       new Event(histogram_value, event_name, std::move(event_args)));
   event->restrict_to_browser_context = context;
   event->user_gesture = EventRouter::USER_GESTURE_ENABLED;

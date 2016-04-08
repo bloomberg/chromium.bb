@@ -82,7 +82,7 @@ void FeedbackService::GetSystemInformation(
 void FeedbackService::AttachedFileCallback(
     scoped_refptr<feedback::FeedbackData> feedback_data,
     const SendFeedbackCallback& callback,
-    scoped_ptr<std::string> data,
+    std::unique_ptr<std::string> data,
     int64_t /* total_blob_length */) {
   feedback_data->set_attached_file_uuid(std::string());
   if (data)
@@ -94,7 +94,7 @@ void FeedbackService::AttachedFileCallback(
 void FeedbackService::ScreenshotCallback(
     scoped_refptr<feedback::FeedbackData> feedback_data,
     const SendFeedbackCallback& callback,
-    scoped_ptr<std::string> data,
+    std::unique_ptr<std::string> data,
     int64_t /* total_blob_length */) {
   feedback_data->set_screenshot_uuid(std::string());
   if (data)
@@ -105,7 +105,7 @@ void FeedbackService::ScreenshotCallback(
 
 void FeedbackService::OnSystemLogsFetchComplete(
     const GetSystemInformationCallback& callback,
-    scoped_ptr<system_logs::SystemLogsResponse> sys_info_map) {
+    std::unique_ptr<system_logs::SystemLogsResponse> sys_info_map) {
   SystemInformationList sys_info_list;
   if (sys_info_map.get()) {
     for (const auto& itr : *sys_info_map)

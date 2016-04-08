@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/declarative_content/content_constants.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -130,7 +131,8 @@ void ChromeContentRulesRegistry::MonitorWebContentsForRuleEvaluation(
   active_rules_[contents] = std::set<const ContentRule*>();
 
   EvaluationScope evaluation_scope(this);
-  for (const scoped_ptr<ContentPredicateEvaluator>& evaluator : evaluators_)
+  for (const std::unique_ptr<ContentPredicateEvaluator>& evaluator :
+       evaluators_)
     evaluator->TrackForWebContents(contents);
 }
 
@@ -140,15 +142,16 @@ void ChromeContentRulesRegistry::DidNavigateMainFrame(
     const content::FrameNavigateParams& params) {
   if (ContainsKey(active_rules_, contents)) {
     EvaluationScope evaluation_scope(this);
-    for (const scoped_ptr<ContentPredicateEvaluator>& evaluator : evaluators_)
+    for (const std::unique_ptr<ContentPredicateEvaluator>& evaluator :
+         evaluators_)
       evaluator->OnWebContentsNavigation(contents, details, params);
   }
 }
 
 ChromeContentRulesRegistry::ContentRule::ContentRule(
     const Extension* extension,
-    std::vector<scoped_ptr<const ContentCondition>> conditions,
-    std::vector<scoped_ptr<const ContentAction>> actions,
+    std::vector<std::unique_ptr<const ContentCondition>> conditions,
+    std::vector<std::unique_ptr<const ContentAction>> actions,
     int priority)
     : extension(extension),
       conditions(std::move(conditions)),
@@ -157,33 +160,33 @@ ChromeContentRulesRegistry::ContentRule::ContentRule(
 
 ChromeContentRulesRegistry::ContentRule::~ContentRule() {}
 
-scoped_ptr<const ChromeContentRulesRegistry::ContentRule>
+std::unique_ptr<const ChromeContentRulesRegistry::ContentRule>
 ChromeContentRulesRegistry::CreateRule(
     const Extension* extension,
     const std::map<std::string, ContentPredicateFactory*>& predicate_factories,
     const api::events::Rule& api_rule,
     std::string* error) {
-  std::vector<scoped_ptr<const ContentCondition>> conditions;
-  for (const scoped_ptr<base::Value>& value : api_rule.conditions) {
+  std::vector<std::unique_ptr<const ContentCondition>> conditions;
+  for (const std::unique_ptr<base::Value>& value : api_rule.conditions) {
     conditions.push_back(
         CreateContentCondition(extension, predicate_factories, *value, error));
     if (!error->empty())
-      return scoped_ptr<ContentRule>();
+      return std::unique_ptr<ContentRule>();
   }
 
-  std::vector<scoped_ptr<const ContentAction>> actions;
-  for (const scoped_ptr<base::Value>& value : api_rule.actions) {
+  std::vector<std::unique_ptr<const ContentAction>> actions;
+  for (const std::unique_ptr<base::Value>& value : api_rule.actions) {
     actions.push_back(ContentAction::Create(browser_context(), extension,
                                             *value, error));
     if (!error->empty())
-      return scoped_ptr<ContentRule>();
+      return std::unique_ptr<ContentRule>();
   }
 
   // Note: |api_rule| may contain tags, but these are ignored.
 
-  return make_scoped_ptr(new ContentRule(extension, std::move(conditions),
-                                         std::move(actions),
-                                         *api_rule.priority));
+  return base::WrapUnique(new ContentRule(extension, std::move(conditions),
+                                          std::move(actions),
+                                          *api_rule.priority));
 }
 
 bool ChromeContentRulesRegistry::ManagingRulesForBrowserContext(
@@ -197,7 +200,7 @@ bool ChromeContentRulesRegistry::ManagingRulesForBrowserContext(
 bool ChromeContentRulesRegistry::EvaluateConditionForTab(
     const ContentCondition* condition,
     content::WebContents* tab) {
-  for (const scoped_ptr<const ContentPredicate>& predicate :
+  for (const std::unique_ptr<const ContentPredicate>& predicate :
        condition->predicates) {
     if (predicate && !predicate->IsIgnored() &&
         !predicate->GetEvaluator()->EvaluatePredicate(predicate.get(), tab)) {
@@ -218,7 +221,7 @@ ChromeContentRulesRegistry::GetMatchingRules(content::WebContents* tab) const {
         !ShouldEvaluateExtensionRulesForIncognitoRenderer(rule->extension))
       continue;
 
-    for (const scoped_ptr<const ContentCondition>& condition :
+    for (const std::unique_ptr<const ContentCondition>& condition :
          rule->conditions) {
       if (EvaluateConditionForTab(condition.get(), tab))
         matching_rules.insert(rule);
@@ -242,7 +245,8 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
       new_predicates;
 
   std::map<std::string, ContentPredicateFactory*> predicate_factories;
-  for (const scoped_ptr<ContentPredicateEvaluator>& evaluator : evaluators_) {
+  for (const std::unique_ptr<ContentPredicateEvaluator>& evaluator :
+       evaluators_) {
     predicate_factories[evaluator->GetPredicateApiAttributeName()] =
         evaluator.get();
   }
@@ -251,12 +255,12 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
     ExtensionIdRuleIdPair rule_id(extension_id, *api_rule->id);
     DCHECK(content_rules_.find(rule_id) == content_rules_.end());
 
-    scoped_ptr<const ContentRule> rule(
+    std::unique_ptr<const ContentRule> rule(
         CreateRule(extension, predicate_factories, *api_rule, &error));
     if (!error.empty()) {
       // Notify evaluators that none of the created predicates will be tracked
       // after all.
-      for (const scoped_ptr<ContentPredicateEvaluator>& evaluator :
+      for (const std::unique_ptr<ContentPredicateEvaluator>& evaluator :
            evaluators_) {
         if (!new_predicates[evaluator.get()].empty()) {
           evaluator->TrackPredicates(
@@ -270,9 +274,9 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
 
     // Group predicates by evaluator and rule, so we can later notify the
     // evaluators that they have new predicates to manage.
-    for (const scoped_ptr<const ContentCondition>& condition :
+    for (const std::unique_ptr<const ContentCondition>& condition :
          rule->conditions) {
-      for (const scoped_ptr<const ContentPredicate>& predicate :
+      for (const std::unique_ptr<const ContentPredicate>& predicate :
            condition->predicates) {
         if (predicate.get()) {
           new_predicates[predicate->GetEvaluator()][rule.get()].push_back(
@@ -285,7 +289,8 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
   }
 
   // Notify the evaluators about their new predicates.
-  for (const scoped_ptr<ContentPredicateEvaluator>& evaluator : evaluators_)
+  for (const std::unique_ptr<ContentPredicateEvaluator>& evaluator :
+       evaluators_)
     evaluator->TrackPredicates(new_predicates[evaluator.get()]);
 
   // Wohoo, everything worked fine.
@@ -335,7 +340,8 @@ std::string ChromeContentRulesRegistry::RemoveRulesImpl(
   }
 
   // Notify the evaluators to stop tracking the predicates that will be removed.
-  for (const scoped_ptr<ContentPredicateEvaluator>& evaluator : evaluators_)
+  for (const std::unique_ptr<ContentPredicateEvaluator>& evaluator :
+       evaluators_)
     evaluator->StopTrackingPredicates(predicate_groups_to_stop_tracking);
 
   // Remove the rules.
@@ -369,10 +375,10 @@ void ChromeContentRulesRegistry::EvaluateConditionsForTab(
     ContentAction::ApplyInfo apply_info =
         {rule->extension, browser_context(), tab, rule->priority};
     if (!ContainsKey(prev_matching_rules, rule)) {
-      for (const scoped_ptr<const ContentAction>& action : rule->actions)
+      for (const std::unique_ptr<const ContentAction>& action : rule->actions)
         action->Apply(apply_info);
     } else {
-      for (const scoped_ptr<const ContentAction>& action : rule->actions)
+      for (const std::unique_ptr<const ContentAction>& action : rule->actions)
         action->Reapply(apply_info);
     }
   }
@@ -380,7 +386,7 @@ void ChromeContentRulesRegistry::EvaluateConditionsForTab(
     if (!ContainsKey(matching_rules, rule)) {
       ContentAction::ApplyInfo apply_info =
           {rule->extension, browser_context(), tab, rule->priority};
-      for (const scoped_ptr<const ContentAction>& action : rule->actions)
+      for (const std::unique_ptr<const ContentAction>& action : rule->actions)
         action->Revert(apply_info);
     }
   }

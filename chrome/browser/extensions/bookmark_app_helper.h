@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_EXTENSIONS_BOOKMARK_APP_HELPER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/notification_observer.h"
@@ -149,7 +149,7 @@ class BookmarkAppHelper : public content::NotificationObserver {
 
   // Downloads icons from the given WebApplicationInfo using the given
   // WebContents.
-  scoped_ptr<FaviconDownloader> favicon_downloader_;
+  std::unique_ptr<FaviconDownloader> favicon_downloader_;
 
   // Used to install the created bookmark app.
   scoped_refptr<extensions::CrxInstaller> crx_installer_;

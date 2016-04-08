@@ -43,7 +43,7 @@ class VerifyTrustAPI::IOPart {
   // with the result (see the declaration of VerifyCallback).
   // Will not call back after this object is destructed or the verifier for this
   // extension is deleted (see OnExtensionUnloaded).
-  void Verify(scoped_ptr<Params> params,
+  void Verify(std::unique_ptr<Params> params,
               const std::string& extension_id,
               const VerifyCallback& callback);
 
@@ -56,7 +56,7 @@ class VerifyTrustAPI::IOPart {
   struct RequestState {
     RequestState() {}
 
-    scoped_ptr<net::CertVerifier::Request> request;
+    std::unique_ptr<net::CertVerifier::Request> request;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(RequestState);
@@ -64,7 +64,7 @@ class VerifyTrustAPI::IOPart {
 
   // Calls back |callback| with the result and no error.
   void CallBackWithResult(const VerifyCallback& callback,
-                          scoped_ptr<net::CertVerifyResult> verify_result,
+                          std::unique_ptr<net::CertVerifyResult> verify_result,
                           RequestState* request_state,
                           int return_value);
 
@@ -97,7 +97,7 @@ VerifyTrustAPI::~VerifyTrustAPI() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-void VerifyTrustAPI::Verify(scoped_ptr<Params> params,
+void VerifyTrustAPI::Verify(std::unique_ptr<Params> params,
                             const std::string& extension_id,
                             const VerifyCallback& ui_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -148,7 +148,7 @@ VerifyTrustAPI::IOPart::~IOPart() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 
-void VerifyTrustAPI::IOPart::Verify(scoped_ptr<Params> params,
+void VerifyTrustAPI::IOPart::Verify(std::unique_ptr<Params> params,
                                     const std::string& extension_id,
                                     const VerifyCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -182,8 +182,9 @@ void VerifyTrustAPI::IOPart::Verify(scoped_ptr<Params> params,
   }
   net::CertVerifier* verifier = extension_to_verifier_[extension_id].get();
 
-  scoped_ptr<net::CertVerifyResult> verify_result(new net::CertVerifyResult);
-  scoped_ptr<net::BoundNetLog> net_log(new net::BoundNetLog);
+  std::unique_ptr<net::CertVerifyResult> verify_result(
+      new net::CertVerifyResult);
+  std::unique_ptr<net::BoundNetLog> net_log(new net::BoundNetLog);
   const int flags = 0;
 
   std::string ocsp_response;
@@ -212,7 +213,7 @@ void VerifyTrustAPI::IOPart::OnExtensionUnloaded(
 
 void VerifyTrustAPI::IOPart::CallBackWithResult(
     const VerifyCallback& callback,
-    scoped_ptr<net::CertVerifyResult> verify_result,
+    std::unique_ptr<net::CertVerifyResult> verify_result,
     RequestState* request_state,
     int return_value) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);

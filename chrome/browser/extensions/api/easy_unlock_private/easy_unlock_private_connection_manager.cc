@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_connection.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "components/proximity_auth/connection.h"
@@ -52,7 +53,7 @@ EasyUnlockPrivateConnectionManager::~EasyUnlockPrivateConnectionManager() {
 
 int EasyUnlockPrivateConnectionManager::AddConnection(
     const Extension* extension,
-    scoped_ptr<Connection> connection,
+    std::unique_ptr<Connection> connection,
     bool persistent) {
   DCHECK(connection);
   connection->AddObserver(this);
@@ -97,7 +98,7 @@ bool EasyUnlockPrivateConnectionManager::SendMessage(
     const std::string& payload) {
   Connection* connection = GetConnection(extension->id(), connection_id);
   if (connection && connection->IsConnected()) {
-    connection->SendMessage(make_scoped_ptr(new WireMessage(payload)));
+    connection->SendMessage(base::WrapUnique(new WireMessage(payload)));
     return true;
   }
   return false;
@@ -111,7 +112,7 @@ void EasyUnlockPrivateConnectionManager::OnConnectionStatusChanged(
       api::easy_unlock_private::OnConnectionStatusChanged::kEventName;
   events::HistogramValue histogram_value =
       events::EASY_UNLOCK_PRIVATE_ON_CONNECTION_STATUS_CHANGED;
-  scoped_ptr<base::ListValue> args =
+  std::unique_ptr<base::ListValue> args =
       api::easy_unlock_private::OnConnectionStatusChanged::Create(
           0, ToApiConnectionStatus(old_status),
           ToApiConnectionStatus(new_status));
@@ -126,7 +127,7 @@ void EasyUnlockPrivateConnectionManager::OnMessageReceived(
   events::HistogramValue histogram_value =
       events::EASY_UNLOCK_PRIVATE_ON_DATA_RECEIVED;
   std::vector<char> data(message.payload().begin(), message.payload().end());
-  scoped_ptr<base::ListValue> args =
+  std::unique_ptr<base::ListValue> args =
       api::easy_unlock_private::OnDataReceived::Create(0, data);
   DispatchConnectionEvent(event_name, histogram_value, &connection,
                           std::move(args));
@@ -141,7 +142,7 @@ void EasyUnlockPrivateConnectionManager::OnSendCompleted(
   events::HistogramValue histogram_value =
       events::EASY_UNLOCK_PRIVATE_ON_SEND_COMPLETED;
   std::vector<char> data(message.payload().begin(), message.payload().end());
-  scoped_ptr<base::ListValue> args =
+  std::unique_ptr<base::ListValue> args =
       api::easy_unlock_private::OnSendCompleted::Create(0, data, success);
   DispatchConnectionEvent(event_name, histogram_value, &connection,
                           std::move(args));
@@ -151,7 +152,7 @@ void EasyUnlockPrivateConnectionManager::DispatchConnectionEvent(
     const std::string& event_name,
     events::HistogramValue histogram_value,
     const Connection* connection,
-    scoped_ptr<base::ListValue> args) {
+    std::unique_ptr<base::ListValue> args) {
   const EventListenerMap::ListenerList listeners =
       EventRouter::Get(browser_context_)
           ->listeners()
@@ -159,11 +160,11 @@ void EasyUnlockPrivateConnectionManager::DispatchConnectionEvent(
   for (const auto& listener : listeners) {
     std::string extension_id = listener->extension_id();
     int connection_id = FindConnectionId(extension_id, connection);
-    scoped_ptr<base::ListValue> args_copy(args->DeepCopy());
+    std::unique_ptr<base::ListValue> args_copy(args->DeepCopy());
     int connection_index = 0;
     args_copy->Set(connection_index,
-                   make_scoped_ptr(new base::FundamentalValue(connection_id)));
-    scoped_ptr<Event> event(
+                   base::WrapUnique(new base::FundamentalValue(connection_id)));
+    std::unique_ptr<Event> event(
         new Event(histogram_value, event_name, std::move(args_copy)));
     EventRouter::Get(browser_context_)
         ->DispatchEventToExtension(extension_id, std::move(event));

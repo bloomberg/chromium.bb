@@ -228,7 +228,7 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   // Exposed for testing.
   virtual OAuth2MintTokenFlow* CreateMintTokenFlow();
 
-  scoped_ptr<OAuth2TokenService::Request> login_token_request_;
+  std::unique_ptr<OAuth2TokenService::Request> login_token_request_;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(GetAuthTokenFunctionTest,
@@ -290,17 +290,17 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   bool interactive_;
   bool should_prompt_for_scopes_;
   IdentityMintRequestQueue::MintType mint_token_flow_type_;
-  scoped_ptr<OAuth2MintTokenFlow> mint_token_flow_;
+  std::unique_ptr<OAuth2MintTokenFlow> mint_token_flow_;
   OAuth2MintTokenFlow::Mode gaia_mint_token_mode_;
   bool should_prompt_for_signin_;
 
-  scoped_ptr<ExtensionTokenKey> token_key_;
+  std::unique_ptr<ExtensionTokenKey> token_key_;
   std::string oauth2_client_id_;
   // When launched in interactive mode, and if there is no existing grant,
   // a permissions prompt will be popped up to the user.
   IssueAdviceInfo issue_advice_;
-  scoped_ptr<GaiaWebAuthFlow> gaia_web_auth_flow_;
-  scoped_ptr<IdentitySigninFlow> signin_flow_;
+  std::unique_ptr<GaiaWebAuthFlow> gaia_web_auth_flow_;
+  std::unique_ptr<IdentitySigninFlow> signin_flow_;
 };
 
 class IdentityGetProfileUserInfoFunction
@@ -355,7 +355,7 @@ class IdentityLaunchWebAuthFlowFunction : public ChromeAsyncExtensionFunction,
   // Helper to initialize final URL prefix.
   void InitFinalRedirectURLPrefix(const std::string& extension_id);
 
-  scoped_ptr<WebAuthFlow> auth_flow_;
+  std::unique_ptr<WebAuthFlow> auth_flow_;
   GURL final_url_prefix_;
 };
 

@@ -247,11 +247,12 @@ void IdentityAPI::OnAccountSignInChanged(const gaia::AccountIds& ids,
   api::identity::AccountInfo account_info;
   account_info.id = ids.gaia;
 
-  scoped_ptr<base::ListValue> args =
+  std::unique_ptr<base::ListValue> args =
       api::identity::OnSignInChanged::Create(account_info, is_signed_in);
-  scoped_ptr<Event> event(new Event(events::IDENTITY_ON_SIGN_IN_CHANGED,
-                                    api::identity::OnSignInChanged::kEventName,
-                                    std::move(args), browser_context_));
+  std::unique_ptr<Event> event(
+      new Event(events::IDENTITY_ON_SIGN_IN_CHANGED,
+                api::identity::OnSignInChanged::kEventName, std::move(args),
+                browser_context_));
 
   EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
 }
@@ -326,7 +327,7 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
     return false;
   }
 
-  scoped_ptr<identity::GetAuthToken::Params> params(
+  std::unique_ptr<identity::GetAuthToken::Params> params(
       identity::GetAuthToken::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   interactive_ = params->details.get() &&
@@ -932,7 +933,7 @@ bool IdentityRemoveCachedAuthTokenFunction::RunSync() {
     return false;
   }
 
-  scoped_ptr<identity::RemoveCachedAuthToken::Params> params(
+  std::unique_ptr<identity::RemoveCachedAuthToken::Params> params(
       identity::RemoveCachedAuthToken::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   IdentityAPI::GetFactoryInstance()->Get(GetProfile())->EraseCachedToken(
@@ -953,7 +954,7 @@ bool IdentityLaunchWebAuthFlowFunction::RunAsync() {
     return false;
   }
 
-  scoped_ptr<identity::LaunchWebAuthFlow::Params> params(
+  std::unique_ptr<identity::LaunchWebAuthFlow::Params> params(
       identity::LaunchWebAuthFlow::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

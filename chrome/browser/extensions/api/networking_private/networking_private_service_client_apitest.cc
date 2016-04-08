@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_credentials_getter.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -86,11 +86,12 @@ class NetworkingPrivateServiceClientApiTest : public ExtensionApiTest {
         "epcifkihnkjgphfkloaaleeakhpmgdmn");
   }
 
-  static scoped_ptr<KeyedService> CreateNetworkingPrivateServiceClient(
+  static std::unique_ptr<KeyedService> CreateNetworkingPrivateServiceClient(
       content::BrowserContext* context) {
-    scoped_ptr<wifi::FakeWiFiService> wifi_service(new wifi::FakeWiFiService());
-    scoped_ptr<CryptoVerifyStub> crypto_verify(new CryptoVerifyStub);
-    return scoped_ptr<KeyedService>(new NetworkingPrivateServiceClient(
+    std::unique_ptr<wifi::FakeWiFiService> wifi_service(
+        new wifi::FakeWiFiService());
+    std::unique_ptr<CryptoVerifyStub> crypto_verify(new CryptoVerifyStub);
+    return std::unique_ptr<KeyedService>(new NetworkingPrivateServiceClient(
         std::move(wifi_service), std::move(crypto_verify)));
   }
 

@@ -94,7 +94,7 @@ void SettingsPrivateEventRouter::StartOrStopListeningForPrefsChanges() {
       std::string pref_name = it.first;
       if (prefs_util_->IsCrosSetting(pref_name)) {
 #if defined(OS_CHROMEOS)
-        scoped_ptr<chromeos::CrosSettings::ObserverSubscription> observer =
+        std::unique_ptr<chromeos::CrosSettings::ObserverSubscription> observer =
             chromeos::CrosSettings::Get()->AddSettingsObserver(
                 pref_name.c_str(),
                 base::Bind(&SettingsPrivateEventRouter::OnPreferenceChanged,
@@ -131,17 +131,17 @@ void SettingsPrivateEventRouter::OnPreferenceChanged(
     return;
   }
 
-  scoped_ptr<api::settings_private::PrefObject> pref_object =
+  std::unique_ptr<api::settings_private::PrefObject> pref_object =
       prefs_util_->GetPref(pref_name);
 
   std::vector<api::settings_private::PrefObject> prefs;
   if (pref_object)
     prefs.push_back(std::move(*pref_object));
 
-  scoped_ptr<base::ListValue> args(
+  std::unique_ptr<base::ListValue> args(
       api::settings_private::OnPrefsChanged::Create(prefs));
 
-  scoped_ptr<Event> extension_event(new Event(
+  std::unique_ptr<Event> extension_event(new Event(
       events::SETTINGS_PRIVATE_ON_PREFS_CHANGED,
       api::settings_private::OnPrefsChanged::kEventName, std::move(args)));
   event_router->BroadcastEvent(std::move(extension_event));

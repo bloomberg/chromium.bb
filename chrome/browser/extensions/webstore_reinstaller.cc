@@ -44,9 +44,9 @@ const GURL& WebstoreReinstaller::GetRequestorURL() const {
   return GURL::EmptyGURL();
 }
 
-scoped_ptr<ExtensionInstallPrompt::Prompt>
+std::unique_ptr<ExtensionInstallPrompt::Prompt>
 WebstoreReinstaller::CreateInstallPrompt() const {
-  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt(
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt(
       new ExtensionInstallPrompt::Prompt(
           ExtensionInstallPrompt::REPAIR_PROMPT));
   prompt->SetWebstoreData(localized_user_count(),

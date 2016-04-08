@@ -38,7 +38,7 @@ ActivityLogPolicy::ActivityLogPolicy(Profile* profile) {}
 
 ActivityLogPolicy::~ActivityLogPolicy() {}
 
-void ActivityLogPolicy::SetClockForTesting(scoped_ptr<base::Clock> clock) {
+void ActivityLogPolicy::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
   testing_clock_.reset(clock.release());
 }
 
@@ -134,7 +134,7 @@ void ActivityLogPolicy::Util::StripArguments(const ApiSet& api_whitelist,
   if (api_whitelist.find(
           std::make_pair(action->action_type(), action->api_name())) ==
       api_whitelist.end()) {
-    action->set_args(scoped_ptr<base::ListValue>());
+    action->set_args(std::unique_ptr<base::ListValue>());
   }
 }
 

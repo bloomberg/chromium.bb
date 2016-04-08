@@ -4,7 +4,8 @@
 
 #include "chrome/browser/extensions/api/webstore_widget_private/webstore_widget_private_api.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -70,8 +71,9 @@ WebstoreWidgetPrivateInstallWebstoreItemFunction::
 
 ExtensionFunction::ResponseAction
 WebstoreWidgetPrivateInstallWebstoreItemFunction::Run() {
-  const scoped_ptr<webstore_widget_private::InstallWebstoreItem::Params> params(
-      webstore_widget_private::InstallWebstoreItem::Params::Create(*args_));
+  const std::unique_ptr<webstore_widget_private::InstallWebstoreItem::Params>
+      params(
+          webstore_widget_private::InstallWebstoreItem::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   if (params->item_id.empty())

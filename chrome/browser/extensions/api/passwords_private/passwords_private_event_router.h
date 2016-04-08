@@ -64,8 +64,8 @@ class PasswordsPrivateEventRouter :
 
   // Cached parameters which are saved so that when new listeners are added, the
   // most up-to-date lists can be sent to them immediately.
-  scoped_ptr<base::ListValue> cached_saved_password_parameters_;
-  scoped_ptr<base::ListValue> cached_password_exception_parameters_;
+  std::unique_ptr<base::ListValue> cached_saved_password_parameters_;
+  std::unique_ptr<base::ListValue> cached_password_exception_parameters_;
 
   // Whether this class is currently listening for changes to password changes.
   bool listening_;

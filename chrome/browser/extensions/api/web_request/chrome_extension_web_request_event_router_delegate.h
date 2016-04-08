@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_CHROME_EXTENSION_WEB_REQUEST_EVENT_ROUTER_DELEGATE_H_
 #define CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_CHROME_EXTENSION_WEB_REQUEST_EVENT_ROUTER_DELEGATE_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "extensions/browser/api/web_request/web_request_event_router_delegate.h"
 
 class ChromeExtensionWebRequestEventRouterDelegate
@@ -15,12 +16,13 @@ class ChromeExtensionWebRequestEventRouterDelegate
   ~ChromeExtensionWebRequestEventRouterDelegate() override;
 
   // WebRequestEventRouterDelegate implementation.
-  void LogExtensionActivity(content::BrowserContext* browser_context,
-                            bool is_incognito,
-                            const std::string& extension_id,
-                            const GURL& url,
-                            const std::string& api_call,
-                            scoped_ptr<base::DictionaryValue> details) override;
+  void LogExtensionActivity(
+      content::BrowserContext* browser_context,
+      bool is_incognito,
+      const std::string& extension_id,
+      const GURL& url,
+      const std::string& api_call,
+      std::unique_ptr<base::DictionaryValue> details) override;
   void NotifyWebRequestWithheld(int render_process_id,
                                 int render_frame_id,
                                 const std::string& extension_id) override;

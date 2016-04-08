@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/messaging/native_message_host.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -13,7 +14,6 @@
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -44,8 +44,8 @@ const char* const kEchoHostOrigins[] = {
 
 class EchoHost : public NativeMessageHost {
  public:
-  static scoped_ptr<NativeMessageHost> Create() {
-    return scoped_ptr<NativeMessageHost>(new EchoHost());
+  static std::unique_ptr<NativeMessageHost> Create() {
+    return std::unique_ptr<NativeMessageHost>(new EchoHost());
   }
 
   EchoHost() : message_number_(0), client_(NULL) {}
@@ -53,10 +53,10 @@ class EchoHost : public NativeMessageHost {
   void Start(Client* client) override { client_ = client; }
 
   void OnMessage(const std::string& request_string) override {
-    scoped_ptr<base::Value> request_value =
+    std::unique_ptr<base::Value> request_value =
         base::JSONReader::Read(request_string);
-    scoped_ptr<base::DictionaryValue> request(
-      static_cast<base::DictionaryValue*>(request_value.release()));
+    std::unique_ptr<base::DictionaryValue> request(
+        static_cast<base::DictionaryValue*>(request_value.release()));
     if (request_string.find("stopHostTest") != std::string::npos) {
       client_->CloseChannel(kNativeHostExited);
     } else if (request_string.find("bigMessageTest") != std::string::npos) {
@@ -91,14 +91,14 @@ struct BuiltInHost {
   const char* const name;
   const char* const* const allowed_origins;
   int allowed_origins_count;
-  scoped_ptr<NativeMessageHost>(*create_function)();
+  std::unique_ptr<NativeMessageHost> (*create_function)();
 };
 
-scoped_ptr<NativeMessageHost> CreateIt2MeHost() {
-  scoped_ptr<remoting::It2MeHostFactory> host_factory(
+std::unique_ptr<NativeMessageHost> CreateIt2MeHost() {
+  std::unique_ptr<remoting::It2MeHostFactory> host_factory(
       new remoting::It2MeHostFactory());
   host_factory->set_policy_service(g_browser_process->policy_service());
-  scoped_ptr<remoting::ChromotingHostContext> context =
+  std::unique_ptr<remoting::ChromotingHostContext> context =
       remoting::ChromotingHostContext::CreateForChromeOS(
           make_scoped_refptr(g_browser_process->system_request_context()),
           content::BrowserThread::GetMessageLoopProxyForThread(
@@ -107,8 +107,9 @@ scoped_ptr<NativeMessageHost> CreateIt2MeHost() {
               content::BrowserThread::UI),
           content::BrowserThread::GetMessageLoopProxyForThread(
               content::BrowserThread::FILE));
-  scoped_ptr<NativeMessageHost> host(new remoting::It2MeNativeMessagingHost(
-      std::move(context), std::move(host_factory)));
+  std::unique_ptr<NativeMessageHost> host(
+      new remoting::It2MeNativeMessagingHost(std::move(context),
+                                             std::move(host_factory)));
   return host;
 }
 
@@ -156,7 +157,7 @@ bool MatchesSecurityOrigin(const BuiltInHost& host,
 
 }  // namespace
 
-scoped_ptr<NativeMessageHost> NativeMessageHost::Create(
+std::unique_ptr<NativeMessageHost> NativeMessageHost::Create(
     gfx::NativeView native_view,
     const std::string& source_extension_id,
     const std::string& native_host_name,

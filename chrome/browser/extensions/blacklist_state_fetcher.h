@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_BLACKLIST_STATE_FETCHER_H_
 #define CHROME_BROWSER_EXTENSIONS_BLACKLIST_STATE_FETCHER_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/safe_browsing/protocol_manager_helper.h"
 #include "extensions/browser/blacklist_state.h"
@@ -53,7 +53,8 @@ class BlacklistStateFetcher : public net::URLFetcherDelegate {
   // ID for URLFetchers for testing.
   int url_fetcher_id_;
 
-  scoped_ptr<safe_browsing::SafeBrowsingProtocolConfig> safe_browsing_config_;
+  std::unique_ptr<safe_browsing::SafeBrowsingProtocolConfig>
+      safe_browsing_config_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<net::URLRequestContextGetter> parent_request_context_for_test_;
 

@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_CONTENT_ACTION_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_CONTENT_ACTION_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/browser/declarative_user_script_master.h"
 #include "extensions/common/user_script.h"
 
@@ -54,7 +54,7 @@ class ContentAction {
   // according to |json_action|, the representation of the ContentAction as
   // received from the extension API.  Sets |error| and returns NULL in case of
   // an error.
-  static scoped_ptr<ContentAction> Create(
+  static std::unique_ptr<ContentAction> Create(
       content::BrowserContext* browser_context,
       const Extension* extension,
       const base::Value& json_action,
@@ -78,13 +78,13 @@ class RequestContentScript : public ContentAction {
 
   ~RequestContentScript() override;
 
-  static scoped_ptr<ContentAction> Create(
+  static std::unique_ptr<ContentAction> Create(
       content::BrowserContext* browser_context,
       const Extension* extension,
       const base::DictionaryValue* dict,
       std::string* error);
 
-  static scoped_ptr<ContentAction> CreateForTest(
+  static std::unique_ptr<ContentAction> CreateForTest(
       DeclarativeUserScriptMaster* master,
       const Extension* extension,
       const base::Value& json_action,

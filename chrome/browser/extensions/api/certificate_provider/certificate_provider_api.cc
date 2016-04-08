@@ -7,10 +7,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/common/extensions/api/certificate_provider.h"
@@ -40,7 +40,7 @@ CertificateProviderInternalReportCertificatesFunction::
 
 ExtensionFunction::ResponseAction
 CertificateProviderInternalReportCertificatesFunction::Run() {
-  scoped_ptr<api_cpi::ReportCertificates::Params> params(
+  std::unique_ptr<api_cpi::ReportCertificates::Params> params(
       api_cpi::ReportCertificates::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -153,7 +153,7 @@ CertificateProviderInternalReportSignatureFunction::
 
 ExtensionFunction::ResponseAction
 CertificateProviderInternalReportSignatureFunction::Run() {
-  scoped_ptr<api_cpi::ReportSignature::Params> params(
+  std::unique_ptr<api_cpi::ReportSignature::Params> params(
       api_cpi::ReportSignature::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
