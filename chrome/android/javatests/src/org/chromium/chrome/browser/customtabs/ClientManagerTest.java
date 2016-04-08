@@ -8,14 +8,12 @@ import android.content.Context;
 import android.os.IBinder;
 import android.os.Process;
 import android.support.customtabs.ICustomTabsCallback;
-import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 
 /** Tests for ClientManager. */
-public class ClientManagerTest extends InstrumentationTestCase {
+public class ClientManagerTest extends NativeLibraryTestBase {
     private static final String URL = "https://www.android.com";
     private ClientManager mClientManager;
     private ICustomTabsCallback mCallback = new CustomTabsTestUtils.DummyCallback();
@@ -26,8 +24,7 @@ public class ClientManagerTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
-        // UrlUtilities used in ClientManager#getPredictionOutcome() needs the native library.
-        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized(context);
+        loadNativeLibraryNoBrowserProcess();
         RequestThrottler.purgeAllEntriesForTesting(context);
         mClientManager = new ClientManager(context);
     }
