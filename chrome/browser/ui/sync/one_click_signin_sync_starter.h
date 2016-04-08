@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_UI_SYNC_ONE_CLICK_SIGNIN_SYNC_STARTER_H_
 #define CHROME_BROWSER_UI_SYNC_ONE_CLICK_SIGNIN_SYNC_STARTER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -219,7 +219,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
 
   Profile* profile_;
   Browser* browser_;
-  scoped_ptr<SigninTracker> signin_tracker_;
+  std::unique_ptr<SigninTracker> signin_tracker_;
   StartSyncMode start_mode_;
   ConfirmationRequired confirmation_required_;
   GURL current_url_;

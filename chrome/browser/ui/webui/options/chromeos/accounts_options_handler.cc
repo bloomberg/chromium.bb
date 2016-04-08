@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -142,7 +142,7 @@ void AccountsOptionsHandler::HandleUpdateWhitelist(
   // Creates one list to set. This is needed because user white list update is
   // asynchronous and sequential. Before previous write comes back, cached list
   // is stale and should not be used for appending. See http://crbug.com/127215
-  scoped_ptr<base::ListValue> new_list;
+  std::unique_ptr<base::ListValue> new_list;
 
   CrosSettings* cros_settings = CrosSettings::Get();
   const base::ListValue* existing = NULL;

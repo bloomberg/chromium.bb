@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_VIEW_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
@@ -33,10 +33,11 @@ class PermissionBubbleView {
     virtual void Closing() = 0;
   };
 
-  typedef base::Callback<scoped_ptr<PermissionBubbleView>(Browser*)> Factory;
+  typedef base::Callback<std::unique_ptr<PermissionBubbleView>(Browser*)>
+      Factory;
 
   // Create a platform specific instance.
-  static scoped_ptr<PermissionBubbleView> Create(Browser* browser);
+  static std::unique_ptr<PermissionBubbleView> Create(Browser* browser);
   virtual ~PermissionBubbleView() {}
 
   // Sets the delegate which will receive UI events forwarded from the bubble.

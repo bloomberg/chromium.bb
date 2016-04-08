@@ -7,7 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 
 class ToolbarActionsBarBubbleDelegate;
@@ -33,13 +34,13 @@ class ToolbarActionsBarBubbleDelegate;
   NSButton* learnMoreButton_;
 
   // This bubble's delegate.
-  scoped_ptr<ToolbarActionsBarBubbleDelegate> delegate_;
+  std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate_;
 }
 
 // Creates the bubble for a parent window but does not show it.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                anchorPoint:(NSPoint)anchorPoint
-                  delegate:(scoped_ptr<ToolbarActionsBarBubbleDelegate>)
+                  delegate:(std::unique_ptr<ToolbarActionsBarBubbleDelegate>)
                                delegate;
 
 // Toggles animation for testing purposes.

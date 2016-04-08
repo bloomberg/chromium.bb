@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_TABS_TAB_UTILS_H_
 #define CHROME_BROWSER_UI_TABS_TAB_UTILS_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -97,7 +97,7 @@ gfx::Image GetTabAlertIndicatorAffordanceImage(TabAlertState alert_state,
 // appropriate for the given |next_alert_state|.  This is used by the tab alert
 // indicator to alert the user that recording, tab capture, or audio playback
 // has started/stopped.
-scoped_ptr<gfx::Animation> CreateTabAlertIndicatorFadeAnimation(
+std::unique_ptr<gfx::Animation> CreateTabAlertIndicatorFadeAnimation(
     TabAlertState next_alert_state);
 
 // Returns the text to show in a tab's tooltip: The contents |title|, followed

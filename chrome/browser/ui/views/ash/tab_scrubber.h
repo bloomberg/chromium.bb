@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_ASH_TAB_SCRUBBER_H_
 #define CHROME_BROWSER_UI_VIEWS_ASH_TAB_SCRUBBER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
@@ -107,7 +108,7 @@ class TabScrubber : public ui::EventHandler,
   // Set if activation_delay had been explicitly set.
   bool use_default_activation_delay_;
   // Forces the tabs to be revealed if we are in immersive fullscreen.
-  scoped_ptr<ImmersiveRevealedLock> immersive_reveal_lock_;
+  std::unique_ptr<ImmersiveRevealedLock> immersive_reveal_lock_;
 
   content::NotificationRegistrar registrar_;
   base::WeakPtrFactory<TabScrubber> weak_ptr_factory_;

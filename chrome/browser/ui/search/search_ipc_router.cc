@@ -33,7 +33,7 @@ bool IsProviderValid(const base::string16& provider) {
 
 SearchIPCRouter::SearchIPCRouter(content::WebContents* web_contents,
                                  Delegate* delegate,
-                                 scoped_ptr<Policy> policy)
+                                 std::unique_ptr<Policy> policy)
     : WebContentsObserver(web_contents),
       delegate_(delegate),
       policy_(std::move(policy)),
@@ -336,7 +336,7 @@ void SearchIPCRouter::set_delegate_for_testing(Delegate* delegate) {
   delegate_ = delegate;
 }
 
-void SearchIPCRouter::set_policy_for_testing(scoped_ptr<Policy> policy) {
+void SearchIPCRouter::set_policy_for_testing(std::unique_ptr<Policy> policy) {
   DCHECK(policy.get());
   policy_.reset(policy.release());
 }

@@ -79,7 +79,8 @@ class FakeAppListControllerDelegate :
   DISALLOW_COPY_AND_ASSIGN(FakeAppListControllerDelegate);
 };
 
-scoped_ptr<KeyedService> MenuManagerFactory(content::BrowserContext* context) {
+std::unique_ptr<KeyedService> MenuManagerFactory(
+    content::BrowserContext* context) {
   return extensions::MenuManagerFactory::BuildServiceInstanceForTesting(
               context);
 }
@@ -275,9 +276,9 @@ class AppContextMenuTest : public AppListTestBase {
   }
 
  private:
-  scoped_ptr<KeyedService> menu_manager_;
-  scoped_ptr<FakeAppListControllerDelegate> controller_;
-  scoped_ptr<FakeAppContextMenuDelegate> menu_delegate_;
+  std::unique_ptr<KeyedService> menu_manager_;
+  std::unique_ptr<FakeAppListControllerDelegate> controller_;
+  std::unique_ptr<FakeAppContextMenuDelegate> menu_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppContextMenuTest);
 };

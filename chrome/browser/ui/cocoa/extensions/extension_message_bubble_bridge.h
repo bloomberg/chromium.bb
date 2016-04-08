@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_MESSAGE_BUBBLE_BRIDGE_H_
 #define CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_MESSAGE_BUBBLE_BRIDGE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
 
 @class ToolbarActionsBarBubbleMac;
@@ -20,7 +21,7 @@ class ExtensionMessageBubbleController;
 class ExtensionMessageBubbleBridge : public ToolbarActionsBarBubbleDelegate {
  public:
   ExtensionMessageBubbleBridge(
-      scoped_ptr<extensions::ExtensionMessageBubbleController> controller,
+      std::unique_ptr<extensions::ExtensionMessageBubbleController> controller,
       bool anchored_to_extension);
   ~ExtensionMessageBubbleBridge() override;
 
@@ -36,7 +37,7 @@ class ExtensionMessageBubbleBridge : public ToolbarActionsBarBubbleDelegate {
   void OnBubbleShown() override;
   void OnBubbleClosed(CloseAction action) override;
 
-  scoped_ptr<extensions::ExtensionMessageBubbleController> controller_;
+  std::unique_ptr<extensions::ExtensionMessageBubbleController> controller_;
 
   // True if the bubble is anchored to an extension action.
   bool anchored_to_extension_;

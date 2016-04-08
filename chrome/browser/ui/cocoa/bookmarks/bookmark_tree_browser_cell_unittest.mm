@@ -21,7 +21,7 @@ class BookmarkTreeBrowserCellTest : public PlatformTest {
     targetMock_.reset([[NSObject alloc] init]);
   }
 
-  scoped_ptr<BookmarkNode> bookmarkNodeMock_;
+  std::unique_ptr<BookmarkNode> bookmarkNodeMock_;
   base::scoped_nsobject<NSMatrix> matrixMock_;
   base::scoped_nsobject<NSObject> targetMock_;
 };

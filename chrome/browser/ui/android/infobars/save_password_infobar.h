@@ -14,7 +14,7 @@
 class SavePasswordInfoBar : public ConfirmInfoBar {
  public:
   explicit SavePasswordInfoBar(
-      scoped_ptr<SavePasswordInfoBarDelegate> delegate);
+      std::unique_ptr<SavePasswordInfoBarDelegate> delegate);
 
   ~SavePasswordInfoBar() override;
 

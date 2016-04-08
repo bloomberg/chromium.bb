@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_COCOA_PASSWORDS_PASSWORD_PROMPT_VIEW_BRIDGE_H_
 #define CHROME_BROWSER_UI_COCOA_PASSWORDS_PASSWORD_PROMPT_VIEW_BRIDGE_H_
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/passwords/password_prompt_bridge_interface.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
@@ -43,7 +44,7 @@ class PasswordPromptViewBridge : public AccountChooserPrompt,
   PasswordDialogController* controller_;
   content::WebContents* web_contents_;
 
-  scoped_ptr<ConstrainedWindowMac> constrained_window_;
+  std::unique_ptr<ConstrainedWindowMac> constrained_window_;
   base::scoped_nsobject<NSViewController<PasswordPromptViewInterface>>
       view_controller_;
 };

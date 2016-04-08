@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/app_list/app_list_positioner.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -115,7 +116,7 @@ class AppListPositionerUnitTest : public testing::Test {
 
  private:
   gfx::Display display_;
-  scoped_ptr<AppListPositioner> positioner_;
+  std::unique_ptr<AppListPositioner> positioner_;
   gfx::Point cursor_;
 };
 

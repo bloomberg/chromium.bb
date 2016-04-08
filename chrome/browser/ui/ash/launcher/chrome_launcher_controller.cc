@@ -459,7 +459,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
         new ChromeLauncherControllerUserSwitchObserver(this));
   }
 
-  scoped_ptr<AppWindowLauncherController> extension_app_window_controller;
+  std::unique_ptr<AppWindowLauncherController> extension_app_window_controller;
   // Create our v1/v2 application / browser monitors which will inform the
   // launcher of status changes.
   if (chrome::MultiUserWindowManager::GetMultiProfileMode() ==
@@ -478,14 +478,14 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   }
   app_window_controllers_.push_back(std::move(extension_app_window_controller));
 
-  scoped_ptr<AppWindowLauncherController> arc_app_window_controller;
+  std::unique_ptr<AppWindowLauncherController> arc_app_window_controller;
   arc_app_window_controller.reset(new ArcAppWindowLauncherController(this));
   app_window_controllers_.push_back(std::move(arc_app_window_controller));
 #else
   // Create our v1/v2 application / browser monitors which will inform the
   // launcher of status changes.
   browser_status_monitor_.reset(new BrowserStatusMonitor(this));
-  scoped_ptr<AppWindowLauncherController> extension_app_window_controller;
+  std::unique_ptr<AppWindowLauncherController> extension_app_window_controller;
   extension_app_window_controller.reset(
       new ExtensionAppWindowLauncherController(this));
   app_window_controllers_.push_back(std::move(extension_app_window_controller));
@@ -818,7 +818,7 @@ void ChromeLauncherController::ActivateApp(const std::string& app_id,
 
   // Create a temporary application launcher item and use it to see if there are
   // running instances.
-  scoped_ptr<AppShortcutLauncherItemController> app_controller(
+  std::unique_ptr<AppShortcutLauncherItemController> app_controller(
       new AppShortcutLauncherItemController(app_id, this));
   if (!app_controller->GetRunningApplications().empty())
     app_controller->Activate(source);
@@ -975,7 +975,7 @@ void ChromeLauncherController::PersistPinnedState() {
   // listener.
   pref_change_registrar_.Remove(prefs::kPinnedLauncherApps);
   {
-    scoped_ptr<const base::ListValue> pinned_apps_pref =
+    std::unique_ptr<const base::ListValue> pinned_apps_pref =
         profile_->GetPrefs()
             ->GetList(prefs::kPinnedLauncherApps)
             ->CreateDeepCopy();
@@ -1465,7 +1465,7 @@ void ChromeLauncherController::SetAppTabHelperForTest(AppTabHelper* helper) {
 }
 
 void ChromeLauncherController::SetAppIconLoadersForTest(
-    std::vector<scoped_ptr<AppIconLoader>>& loaders) {
+    std::vector<std::unique_ptr<AppIconLoader>>& loaders) {
   app_icon_loaders_.clear();
   for (auto& loader : loaders)
     app_icon_loaders_.push_back(std::move(loader));
@@ -2148,7 +2148,7 @@ void ChromeLauncherController::SetShelfItemDelegate(
   DCHECK(item_delegate);
   DCHECK(item_delegate_manager_);
   item_delegate_manager_->SetShelfItemDelegate(
-      id, scoped_ptr<ash::ShelfItemDelegate>(item_delegate));
+      id, std::unique_ptr<ash::ShelfItemDelegate>(item_delegate));
 }
 
 void ChromeLauncherController::AttachProfile(Profile* profile) {
@@ -2164,13 +2164,13 @@ void ChromeLauncherController::AttachProfile(Profile* profile) {
   // Since icon size changes are possible, the icon could be requested to be
   // reloaded. However - having it not multi profile aware would cause problems
   // if the icon cache gets deleted upon user switch.
-  scoped_ptr<AppIconLoader> extension_app_icon_loader(
+  std::unique_ptr<AppIconLoader> extension_app_icon_loader(
       new extensions::ExtensionAppIconLoader(
           profile_, extension_misc::EXTENSION_ICON_SMALL, this));
   app_icon_loaders_.push_back(std::move(extension_app_icon_loader));
 
 #if defined(OS_CHROMEOS)
-  scoped_ptr<AppIconLoader> arc_app_icon_loader(new ArcAppIconLoader(
+  std::unique_ptr<AppIconLoader> arc_app_icon_loader(new ArcAppIconLoader(
       profile_, extension_misc::EXTENSION_ICON_SMALL, this));
   app_icon_loaders_.push_back(std::move(arc_app_icon_loader));
 #endif
@@ -2204,12 +2204,12 @@ void ChromeLauncherController::AttachProfile(Profile* profile) {
                  base::Unretained(this)));
 #endif  // defined(OS_CHROMEOS)
 
-  scoped_ptr<LauncherAppUpdater> extension_app_updater(
+  std::unique_ptr<LauncherAppUpdater> extension_app_updater(
       new LauncherExtensionAppUpdater(this, profile_));
   app_updaters_.push_back(std::move(extension_app_updater));
 
 #if defined(OS_CHROMEOS)
-  scoped_ptr<LauncherAppUpdater> arc_app_updater(
+  std::unique_ptr<LauncherAppUpdater> arc_app_updater(
       new LauncherArcAppUpdater(this, profile_));
   app_updaters_.push_back(std::move(arc_app_updater));
 #endif

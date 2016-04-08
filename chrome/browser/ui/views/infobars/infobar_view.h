@@ -37,7 +37,7 @@ class InfoBarView : public infobars::InfoBar,
                     public views::ExternalFocusTracker,
                     public views::ViewTargeterDelegate {
  public:
-  explicit InfoBarView(scoped_ptr<infobars::InfoBarDelegate> delegate);
+  explicit InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate);
 
   const infobars::InfoBarContainer::Delegate* container_delegate() const;
   const SkPath& fill_path() const { return fill_path_; }
@@ -149,7 +149,7 @@ class InfoBarView : public infobars::InfoBar,
   SkPath stroke_path_;
 
   // Used to run the menu.
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarView);
 };

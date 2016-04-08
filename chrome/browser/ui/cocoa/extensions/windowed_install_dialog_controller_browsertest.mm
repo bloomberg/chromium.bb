@@ -25,7 +25,7 @@ void TestingShowAppListInstallDialogController(
     WindowedInstallDialogController** controller,
     ExtensionInstallPromptShowParams* show_params,
     const ExtensionInstallPrompt::DoneCallback& done_callback,
-    scoped_ptr<ExtensionInstallPrompt::Prompt> prompt) {
+    std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt) {
   *controller =
       new WindowedInstallDialogController(show_params, done_callback,
                                           std::move(prompt));
@@ -40,7 +40,7 @@ IN_PROC_BROWSER_TEST_F(WindowedInstallDialogControllerBrowserTest,
                        ShowInstallDialog) {
   // Construct a prompt with a NULL parent window, the way ExtensionEnableFlow
   // will for the Mac app list. For testing, sets a NULL PageNavigator as well.
-  scoped_ptr<ExtensionInstallPrompt> prompt(
+  std::unique_ptr<ExtensionInstallPrompt> prompt(
       new ExtensionInstallPrompt(browser()->profile(), NULL));
 
   WindowedInstallDialogController* controller = NULL;

@@ -24,13 +24,13 @@ TEST_F(ConfirmBubbleViewsTest, CreateAndClose) {
   // Create parent widget, as confirm bubble must have an owner.
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  scoped_ptr<views::Widget> parent_widget(new Widget);
+  std::unique_ptr<views::Widget> parent_widget(new Widget);
   parent_widget->Init(params);
   parent_widget->Show();
 
   // Bubble owns the model.
   bool model_deleted = false;
-  scoped_ptr<TestConfirmBubbleModel> model(
+  std::unique_ptr<TestConfirmBubbleModel> model(
       new TestConfirmBubbleModel(&model_deleted, NULL, NULL, NULL));
   ConfirmBubbleViews* bubble = new ConfirmBubbleViews(std::move(model));
   gfx::NativeWindow parent = parent_widget->GetNativeWindow();

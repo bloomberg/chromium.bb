@@ -223,7 +223,7 @@ void ChromeNativeAppWindowViewsAuraAsh::ShowContextMenuForView(
     views::View* source,
     const gfx::Point& p,
     ui::MenuSourceType source_type) {
-  scoped_ptr<ui::MenuModel> model =
+  std::unique_ptr<ui::MenuModel> model =
       CreateMultiUserContextMenu(app_window()->GetNativeWindow());
   if (!model.get())
     return;
@@ -253,8 +253,8 @@ ChromeNativeAppWindowViewsAuraAsh::CreateNonClientFrameView(
   // Set the delegate now because CustomFrameViewAsh sets the
   // WindowStateDelegate if one is not already set.
   ash::wm::GetWindowState(GetNativeWindow())
-    ->SetDelegate(scoped_ptr<ash::wm::WindowStateDelegate>(
-        new NativeAppWindowStateDelegate(app_window(), this)));
+      ->SetDelegate(std::unique_ptr<ash::wm::WindowStateDelegate>(
+          new NativeAppWindowStateDelegate(app_window(), this)));
 
   if (IsFrameless())
     return CreateNonStandardAppFrame();

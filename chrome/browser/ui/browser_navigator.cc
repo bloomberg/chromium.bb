@@ -330,7 +330,7 @@ class ScopedTargetContentsOwner {
 
  private:
   chrome::NavigateParams* params_;
-  scoped_ptr<WebContents> target_contents_owner_;
+  std::unique_ptr<WebContents> target_contents_owner_;
   DISALLOW_COPY_AND_ASSIGN(ScopedTargetContentsOwner);
 };
 

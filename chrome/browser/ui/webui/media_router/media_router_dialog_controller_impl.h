@@ -60,7 +60,7 @@ class MediaRouterDialogControllerImpl :
 
   void PopulateDialog(content::WebContents* media_router_dialog);
 
-  scoped_ptr<DialogWebContentsObserver> dialog_observer_;
+  std::unique_ptr<DialogWebContentsObserver> dialog_observer_;
 
   // True if the controller is waiting for a new media router dialog to be
   // created.

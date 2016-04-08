@@ -15,7 +15,7 @@
 #include "ui/app_list/views/contents_view.h"
 
 AppListServiceViews::AppListServiceViews(
-    scoped_ptr<AppListControllerDelegate> controller_delegate)
+    std::unique_ptr<AppListControllerDelegate> controller_delegate)
     : shower_(this),
       can_dismiss_(true),
       controller_delegate_(std::move(controller_delegate)) {}

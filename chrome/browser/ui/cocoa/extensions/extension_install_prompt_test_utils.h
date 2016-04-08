@@ -22,10 +22,10 @@ scoped_refptr<extensions::Extension> LoadInstallPromptExtension();
 gfx::Image LoadInstallPromptIcon();
 
 // Builds a prompt using the given extension.
-scoped_ptr<ExtensionInstallPrompt::Prompt> BuildExtensionInstallPrompt(
+std::unique_ptr<ExtensionInstallPrompt::Prompt> BuildExtensionInstallPrompt(
     extensions::Extension* extension);
 
-scoped_ptr<ExtensionInstallPrompt::Prompt>
+std::unique_ptr<ExtensionInstallPrompt::Prompt>
 BuildExtensionPostInstallPermissionsPrompt(extensions::Extension* extension);
 
 }  // namespace chrome

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/ui/app_modal/chrome_javascript_native_dialog_factory.h"
@@ -471,7 +472,6 @@ class ChromeJavaScriptNativeDialogCocoaFactory
 }  // namespace
 
 void InstallChromeJavaScriptNativeDialogFactory() {
-  app_modal::JavaScriptDialogManager::GetInstance()->
-      SetNativeDialogFactory(
-          make_scoped_ptr(new ChromeJavaScriptNativeDialogCocoaFactory));
+  app_modal::JavaScriptDialogManager::GetInstance()->SetNativeDialogFactory(
+      base::WrapUnique(new ChromeJavaScriptNativeDialogCocoaFactory));
 }

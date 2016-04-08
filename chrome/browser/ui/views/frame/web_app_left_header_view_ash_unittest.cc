@@ -40,7 +40,7 @@ class WebAppLeftHeaderViewTest : public TestWithBrowserView {
 
     // Setup a fake toolbar to enable testing.
     test_toolbar_model_ = new TestToolbarModel();
-    scoped_ptr<ToolbarModel> toolbar_model(test_toolbar_model_);
+    std::unique_ptr<ToolbarModel> toolbar_model(test_toolbar_model_);
     browser()->swap_toolbar_models(&toolbar_model);
     test_toolbar_model_->set_icon(gfx::VectorIconId::LOCATION_BAR_HTTP);
 

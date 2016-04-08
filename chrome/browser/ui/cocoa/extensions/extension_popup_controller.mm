@@ -57,7 +57,7 @@ BOOL gAnimationsEnabled = true;
                    devMode:(BOOL)devMode;
 
 // Set the ExtensionViewHost, taking ownership.
-- (void)setExtensionViewHost:(scoped_ptr<ExtensionViewHost>)host;
+- (void)setExtensionViewHost:(std::unique_ptr<ExtensionViewHost>)host;
 
 // Called when the extension's hosted NSView has been resized.
 - (void)extensionViewFrameChanged;
@@ -254,11 +254,11 @@ class ExtensionPopupNotificationBridge : public content::NotificationObserver {
   beingInspected_ = beingInspected;
 }
 
-+ (ExtensionPopupController*)host:(scoped_ptr<ExtensionViewHost>)host
++ (ExtensionPopupController*)host:(std::unique_ptr<ExtensionViewHost>)host
                         inBrowser:(Browser*)browser
                        anchoredAt:(NSPoint)anchoredAt
-                    arrowLocation:(info_bubble::BubbleArrowLocation)
-                                      arrowLocation
+                    arrowLocation:
+                        (info_bubble::BubbleArrowLocation)arrowLocation
                           devMode:(BOOL)devMode {
   DCHECK([NSThread isMainThread]);
   DCHECK(browser);
@@ -283,7 +283,7 @@ class ExtensionPopupNotificationBridge : public content::NotificationObserver {
   return gPopup;
 }
 
-- (void)setExtensionViewHost:(scoped_ptr<ExtensionViewHost>)host {
+- (void)setExtensionViewHost:(std::unique_ptr<ExtensionViewHost>)host {
   DCHECK(!host_);
   DCHECK(host);
   host_.swap(host);

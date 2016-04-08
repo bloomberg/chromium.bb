@@ -32,10 +32,10 @@ namespace {
 // Fixed width of the bubble.
 const int kBubbleWidth = 395;
 
-scoped_ptr<views::StyledLabel> CreateLegalMessageLineLabel(
+std::unique_ptr<views::StyledLabel> CreateLegalMessageLineLabel(
     const LegalMessageLine& line,
     views::StyledLabelListener* listener) {
-  scoped_ptr<views::StyledLabel> label(
+  std::unique_ptr<views::StyledLabel> label(
       new views::StyledLabel(line.text(), listener));
   for (const LegalMessageLine::Link& link : line.links()) {
     label->AddStyleRange(link.range,
@@ -167,8 +167,8 @@ void SaveCardBubbleViews::StyledLabelLinkClicked(views::StyledLabel* label,
 }
 
 // Create view containing everything except for the footnote.
-scoped_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
-  scoped_ptr<View> view(new View());
+std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
+  std::unique_ptr<View> view(new View());
   view->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
                            views::kUnrelatedControlVerticalSpacing));

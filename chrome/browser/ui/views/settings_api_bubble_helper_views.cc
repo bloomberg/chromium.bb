@@ -30,7 +30,7 @@ void ShowSettingsApiBubble(SettingsApiOverrideType type,
                            Browser* browser,
                            views::View* anchor_view,
                            views::BubbleBorder::Arrow arrow) {
-  scoped_ptr<ExtensionMessageBubbleController> settings_api_bubble(
+  std::unique_ptr<ExtensionMessageBubbleController> settings_api_bubble(
       new ExtensionMessageBubbleController(
           new SettingsApiBubbleDelegate(browser->profile(), type), browser));
   if (!settings_api_bubble->ShouldShow())
@@ -101,7 +101,7 @@ void MaybeShowExtensionControlledNewTabPage(
   if (ntp_url != active_url)
     return;  // Not being overridden by an extension.
 
-  scoped_ptr<ExtensionMessageBubbleController> ntp_overridden_bubble(
+  std::unique_ptr<ExtensionMessageBubbleController> ntp_overridden_bubble(
       new ExtensionMessageBubbleController(
           new NtpOverriddenBubbleDelegate(browser->profile()), browser));
   if (!ntp_overridden_bubble->ShouldShow())

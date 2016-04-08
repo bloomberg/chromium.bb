@@ -63,8 +63,8 @@ std::string GetTargetValue(const base::DictionaryValue& dict,
 namespace app_list {
 
 // static
-scoped_ptr<Person> Person::Create(const base::DictionaryValue& dict) {
-  scoped_ptr<Person> person(new Person());
+std::unique_ptr<Person> Person::Create(const base::DictionaryValue& dict) {
+  std::unique_ptr<Person> person(new Person());
 
   // Person id's.
   if (!dict.GetString(kKeyId, &person->id) ||
@@ -105,8 +105,8 @@ Person::Person() : interaction_rank(0.0) {
 Person::~Person() {
 }
 
-scoped_ptr<Person> Person::Duplicate() {
-  scoped_ptr<Person> person(new Person());
+std::unique_ptr<Person> Person::Duplicate() {
+  std::unique_ptr<Person> person(new Person());
   *person = *this;
   return person;
 }

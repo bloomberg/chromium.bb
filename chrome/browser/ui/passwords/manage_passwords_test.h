@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_TEST_H_
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_TEST_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/test/histogram_tester.h"
@@ -49,7 +50,7 @@ class ManagePasswordsTest : public InProcessBrowserTest {
       ScopedVector<autofill::PasswordForm> local_credentials);
 
   // Get samples for |histogram|.
-  scoped_ptr<base::HistogramSamples> GetSamples(const char* histogram);
+  std::unique_ptr<base::HistogramSamples> GetSamples(const char* histogram);
 
   autofill::PasswordForm* test_form() { return &test_form_; }
 

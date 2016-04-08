@@ -148,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, WebNotifications) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, WebNotificationPopupBubble) {
-  scoped_ptr<WebNotificationTray> tray(new WebNotificationTray());
+  std::unique_ptr<WebNotificationTray> tray(new WebNotificationTray());
   tray->message_center();
 
   // Adding a notification should show the popup bubble.
@@ -172,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, WebNotificationPopupBubble) {
 using message_center::NotificationList;
 
 IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {
-  scoped_ptr<WebNotificationTray> tray(new WebNotificationTray());
+  std::unique_ptr<WebNotificationTray> tray(new WebNotificationTray());
   message_center::MessageCenter* message_center = tray->message_center();
 
   // Add the max visible popup notifications +1, ensure the correct num visible.

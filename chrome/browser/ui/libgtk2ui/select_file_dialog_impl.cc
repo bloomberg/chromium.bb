@@ -41,7 +41,7 @@ ui::SelectFileDialog* SelectFileDialogImpl::Create(
     use_kde_ = NO_KDE;
 
     // Check to see if KDE is the desktop environment.
-    scoped_ptr<base::Environment> env(base::Environment::Create());
+    std::unique_ptr<base::Environment> env(base::Environment::Create());
     base::nix::DesktopEnvironment desktop =
         base::nix::GetDesktopEnvironment(env.get());
     if (desktop == base::nix::DESKTOP_ENVIRONMENT_KDE3 ||
@@ -60,7 +60,7 @@ ui::SelectFileDialog* SelectFileDialogImpl::Create(
   if (use_kde_ == NO_KDE)
     return SelectFileDialogImpl::NewSelectFileDialogImplGTK(listener, policy);
 
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   base::nix::DesktopEnvironment desktop =
       base::nix::GetDesktopEnvironment(env.get());
   return SelectFileDialogImpl::NewSelectFileDialogImplKDE(

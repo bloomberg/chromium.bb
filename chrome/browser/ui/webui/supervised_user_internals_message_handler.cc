@@ -37,8 +37,8 @@ namespace {
 // |parent_list|, not the caller, owns the newly added section.
 base::ListValue* AddSection(base::ListValue* parent_list,
                             const std::string& title) {
-  scoped_ptr<base::DictionaryValue> section(new base::DictionaryValue);
-  scoped_ptr<base::ListValue> section_contents(new base::ListValue);
+  std::unique_ptr<base::DictionaryValue> section(new base::DictionaryValue);
+  std::unique_ptr<base::ListValue> section_contents(new base::ListValue);
   section->SetString("title", title);
   // Grab a raw pointer to the result before |Pass()|ing it on.
   base::ListValue* result = section_contents.get();
@@ -51,7 +51,7 @@ base::ListValue* AddSection(base::ListValue* parent_list,
 void AddSectionEntry(base::ListValue* section_list,
                      const std::string& name,
                      bool value) {
-  scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
   entry->SetString("stat_name", name);
   entry->SetBoolean("stat_value", value);
   entry->SetBoolean("is_valid", true);
@@ -62,7 +62,7 @@ void AddSectionEntry(base::ListValue* section_list,
 void AddSectionEntry(base::ListValue* section_list,
                      const std::string& name,
                      const std::string& value) {
-  scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
   entry->SetString("stat_name", name);
   entry->SetString("stat_value", value);
   entry->SetBoolean("is_valid", true);
@@ -237,7 +237,7 @@ void SupervisedUserInternalsMessageHandler::HandleTryURL(
 }
 
 void SupervisedUserInternalsMessageHandler::SendBasicInfo() {
-  scoped_ptr<base::ListValue> section_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> section_list(new base::ListValue);
 
   base::ListValue* section_general = AddSection(section_list.get(), "General");
   AddSectionEntry(section_general, "Chrome version",

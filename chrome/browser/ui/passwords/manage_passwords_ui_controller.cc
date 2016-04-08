@@ -44,9 +44,9 @@ password_manager::PasswordStore* GetPasswordStore(
              ServiceAccessType::EXPLICIT_ACCESS).get();
 }
 
-std::vector<scoped_ptr<autofill::PasswordForm>> CopyFormVector(
+std::vector<std::unique_ptr<autofill::PasswordForm>> CopyFormVector(
     const ScopedVector<autofill::PasswordForm>& forms) {
-  std::vector<scoped_ptr<autofill::PasswordForm>> result(forms.size());
+  std::vector<std::unique_ptr<autofill::PasswordForm>> result(forms.size());
   for (size_t i = 0; i < forms.size(); ++i)
     result[i].reset(new autofill::PasswordForm(*forms[i]));
   return result;
@@ -71,7 +71,7 @@ ManagePasswordsUIController::ManagePasswordsUIController(
 ManagePasswordsUIController::~ManagePasswordsUIController() {}
 
 void ManagePasswordsUIController::OnPasswordSubmitted(
-    scoped_ptr<PasswordFormManager> form_manager) {
+    std::unique_ptr<PasswordFormManager> form_manager) {
   bool show_bubble = !form_manager->IsBlacklisted();
   DestroyAccountChooser();
   passwords_data_.OnPendingPassword(std::move(form_manager));
@@ -88,7 +88,7 @@ void ManagePasswordsUIController::OnPasswordSubmitted(
 }
 
 void ManagePasswordsUIController::OnUpdatePasswordSubmitted(
-    scoped_ptr<PasswordFormManager> form_manager) {
+    std::unique_ptr<PasswordFormManager> form_manager) {
   DestroyAccountChooser();
   passwords_data_.OnUpdatePassword(std::move(form_manager));
   bubble_status_ = SHOULD_POP_UP;
@@ -140,7 +140,7 @@ void ManagePasswordsUIController::OnPromptEnableAutoSignin() {
 }
 
 void ManagePasswordsUIController::OnAutomaticPasswordSave(
-    scoped_ptr<PasswordFormManager> form_manager) {
+    std::unique_ptr<PasswordFormManager> form_manager) {
   DestroyAccountChooser();
   passwords_data_.OnAutomaticPasswordSave(std::move(form_manager));
   bubble_status_ = SHOULD_POP_UP;
@@ -150,7 +150,8 @@ void ManagePasswordsUIController::OnAutomaticPasswordSave(
 void ManagePasswordsUIController::OnPasswordAutofilled(
     const autofill::PasswordFormMap& password_form_map,
     const GURL& origin,
-    const std::vector<scoped_ptr<autofill::PasswordForm>>* federated_matches) {
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>*
+        federated_matches) {
   // To change to managed state only when the managed state is more important
   // for the user that the current state.
   if (passwords_data_.state() == password_manager::ui::INACTIVE_STATE ||

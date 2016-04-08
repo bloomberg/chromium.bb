@@ -156,7 +156,7 @@ class PermissionBubbleControllerTest : public CocoaProfileTest,
 
  protected:
   PermissionBubbleController* controller_;  // Weak;  it deletes itself.
-  scoped_ptr<PermissionBubbleCocoa> bridge_;
+  std::unique_ptr<PermissionBubbleCocoa> bridge_;
   std::vector<PermissionBubbleRequest*> requests_;
   std::vector<bool> accept_states_;
 };

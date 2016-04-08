@@ -5,13 +5,14 @@
 #include "chrome/browser/ui/app_list/search/people/people_provider.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -219,8 +220,8 @@ class PeopleProviderTest : public InProcessBrowserTest {
   PeopleProvider* people_provider() { return people_provider_.get(); }
 
  private:
-  scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
-    scoped_ptr<BasicHttpResponse> response(new BasicHttpResponse);
+  std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
+    std::unique_ptr<BasicHttpResponse> response(new BasicHttpResponse);
     response->set_code(net::HTTP_OK);
     response->set_content(mock_server_response_);
 
@@ -232,11 +233,11 @@ class PeopleProviderTest : public InProcessBrowserTest {
       run_loop_->Quit();
   }
 
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   std::string mock_server_response_;
 
-  scoped_ptr<PeopleProvider> people_provider_;
+  std::unique_ptr<PeopleProvider> people_provider_;
   ::test::TestAppListControllerDelegate test_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(PeopleProviderTest);

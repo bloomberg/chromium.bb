@@ -6,8 +6,9 @@
 
 #import <Foundation/Foundation.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_mac.h"
 
 // This class is scheduled with a delayed selector to quit the message pump.
@@ -38,7 +39,7 @@ namespace chrome {
 namespace testing {
 
 void NSRunLoopRunAllPending() {
-  scoped_ptr<base::MessagePumpNSRunLoop> message_pump(
+  std::unique_ptr<base::MessagePumpNSRunLoop> message_pump(
       new base::MessagePumpNSRunLoop);
 
   // Put a delayed selector on the queue. All other pending delayed selectors

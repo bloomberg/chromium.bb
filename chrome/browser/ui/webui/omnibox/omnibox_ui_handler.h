@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/mojo_web_ui_handler.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox.mojom.h"
@@ -57,7 +58,7 @@ class OmniboxUIHandler : public AutocompleteControllerDelegate,
 
   // The omnibox AutocompleteController that collects/sorts/dup-
   // eliminates the results as they come in.
-  scoped_ptr<AutocompleteController> controller_;
+  std::unique_ptr<AutocompleteController> controller_;
 
   // Time the user's input was sent to the omnibox to start searching.
   // Needed because we also pass timing information in the object we

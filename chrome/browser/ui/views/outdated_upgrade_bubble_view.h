@@ -81,7 +81,7 @@ class OutdatedUpgradeBubbleView : public views::BubbleDelegateView,
   // The PageNavigator to use for opening the Download Chrome URL.
   content::PageNavigator* navigator_;
 
-  scoped_ptr<ElevationIconSetter> elevation_icon_setter_;
+  std::unique_ptr<ElevationIconSetter> elevation_icon_setter_;
 
   DISALLOW_COPY_AND_ASSIGN(OutdatedUpgradeBubbleView);
 };

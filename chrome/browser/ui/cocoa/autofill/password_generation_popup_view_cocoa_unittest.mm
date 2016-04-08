@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "components/autofill/core/browser/suggestion.h"
@@ -95,7 +96,7 @@ class PasswordGenerationPopupViewCocoaTest : public CocoaTest {
   }
 
   base::string16 password_;
-  scoped_ptr<MockPasswordGenerationPopupController> mock_controller_;
+  std::unique_ptr<MockPasswordGenerationPopupController> mock_controller_;
   base::scoped_nsobject<PasswordGenerationPopupViewCocoa> view_;
 };
 

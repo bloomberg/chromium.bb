@@ -80,7 +80,7 @@ class AppSearchProvider::DataSource {
 
   virtual void AddApps(Apps* apps) = 0;
 
-  virtual scoped_ptr<AppResult> CreateResult(
+  virtual std::unique_ptr<AppResult> CreateResult(
       const std::string& app_id,
       AppListControllerDelegate* list_controller,
       AppListItemList* top_level_item_list,
@@ -118,15 +118,13 @@ class ExtensionDataSource : public AppSearchProvider::DataSource,
     AddApps(apps, registry->terminated_extensions());
   }
 
-  scoped_ptr<AppResult> CreateResult(
+  std::unique_ptr<AppResult> CreateResult(
       const std::string& app_id,
       AppListControllerDelegate* list_controller,
       AppListItemList* top_level_item_list,
       bool is_recommended) override {
-    return scoped_ptr<AppResult>(new ExtensionAppResult(profile(),
-                                                        app_id,
-                                                        list_controller,
-                                                        is_recommended));
+    return std::unique_ptr<AppResult>(new ExtensionAppResult(
+        profile(), app_id, list_controller, is_recommended));
   }
 
   // extensions::ExtensionRegistryObserver overrides:
@@ -159,12 +157,9 @@ class ExtensionDataSource : public AppSearchProvider::DataSource,
         continue;
       }
 
-      scoped_ptr<AppSearchProvider::App> app(
-          new AppSearchProvider::App(
-              this,
-              extension->id(),
-              extension->short_name(),
-              prefs->GetLastLaunchTime(extension->id())));
+      std::unique_ptr<AppSearchProvider::App> app(new AppSearchProvider::App(
+          this, extension->id(), extension->short_name(),
+          prefs->GetLastLaunchTime(extension->id())));
       apps->push_back(std::move(app));
     }
   }
@@ -196,30 +191,26 @@ class ArcDataSource : public AppSearchProvider::DataSource,
 
     const std::vector<std::string> app_ids = arc_prefs->GetAppIds();
     for (const auto& app_id : app_ids) {
-      scoped_ptr<ArcAppListPrefs::AppInfo> app_info = arc_prefs->GetApp(app_id);
+      std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+          arc_prefs->GetApp(app_id);
       if (!app_info) {
         NOTREACHED();
         continue;
       }
 
-      scoped_ptr<AppSearchProvider::App> app(
-          new AppSearchProvider::App(this,
-                                     app_id,
-                                     app_info->name,
-                                     app_info->last_launch_time));
+      std::unique_ptr<AppSearchProvider::App> app(new AppSearchProvider::App(
+          this, app_id, app_info->name, app_info->last_launch_time));
       apps->push_back(std::move(app));
     }
   }
 
-  scoped_ptr<AppResult> CreateResult(
+  std::unique_ptr<AppResult> CreateResult(
       const std::string& app_id,
       AppListControllerDelegate* list_controller,
       AppListItemList* top_level_item_list,
       bool is_recommended) override {
-    return scoped_ptr<AppResult>(new ArcAppResult(profile(),
-                                                  app_id,
-                                                  list_controller,
-                                                  is_recommended));
+    return std::unique_ptr<AppResult>(
+        new ArcAppResult(profile(), app_id, list_controller, is_recommended));
   }
 
   // ArcAppListPrefs::Observer overrides:
@@ -246,18 +237,18 @@ class ArcDataSource : public AppSearchProvider::DataSource,
 
 AppSearchProvider::AppSearchProvider(Profile* profile,
                                      AppListControllerDelegate* list_controller,
-                                     scoped_ptr<base::Clock> clock,
+                                     std::unique_ptr<base::Clock> clock,
                                      AppListItemList* top_level_item_list)
     : profile_(profile),
       list_controller_(list_controller),
       top_level_item_list_(top_level_item_list),
       clock_(std::move(clock)),
       update_results_factory_(this) {
-  data_sources_.push_back(scoped_ptr<DataSource>(
-      new ExtensionDataSource(profile, this)));
+  data_sources_.push_back(
+      std::unique_ptr<DataSource>(new ExtensionDataSource(profile, this)));
 #if defined(OS_CHROMEOS)
-  data_sources_.push_back(scoped_ptr<DataSource>(
-      new ArcDataSource(profile, this)));
+  data_sources_.push_back(
+      std::unique_ptr<DataSource>(new ArcDataSource(profile, this)));
 #endif
 
   RefreshApps();
@@ -305,7 +296,7 @@ void AppSearchProvider::UpdateResults() {
     }
 
     for (auto& app : apps_) {
-      scoped_ptr<AppResult> result = app->data_source()->CreateResult(
+      std::unique_ptr<AppResult> result = app->data_source()->CreateResult(
           app->id(), list_controller_, top_level_item_list_, true);
       result->set_title(app->indexed_name().text());
 
@@ -328,7 +319,7 @@ void AppSearchProvider::UpdateResults() {
     }
   } else {
     for (auto& app : apps_) {
-      scoped_ptr<AppResult> result = app->data_source()->CreateResult(
+      std::unique_ptr<AppResult> result = app->data_source()->CreateResult(
           app->id(), list_controller_, top_level_item_list_, false);
       TokenizedStringMatch match;
       if (!match.Calculate(query_terms, app->indexed_name()))

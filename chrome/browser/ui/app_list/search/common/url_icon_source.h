@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_COMMON_URL_ICON_SOURCE_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_COMMON_URL_ICON_SOURCE_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/image_decoder.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "ui/gfx/image/image_skia.h"
@@ -61,7 +62,7 @@ class UrlIconSource : public gfx::ImageSkiaSource,
   const int default_icon_resource_id_;
 
   bool icon_fetch_attempted_;
-  scoped_ptr<net::URLFetcher> icon_fetcher_;
+  std::unique_ptr<net::URLFetcher> icon_fetcher_;
 
   gfx::ImageSkia icon_;
 

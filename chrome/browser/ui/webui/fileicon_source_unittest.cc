@@ -113,7 +113,7 @@ TEST_F(FileIconSourceTest, FileIconSource_Parse) {
       supported_scale_factors);
 
   for (unsigned i = 0; i < arraysize(kBasicExpectations); i++) {
-    scoped_ptr<TestFileIconSource> source(CreateFileIconSource());
+    std::unique_ptr<TestFileIconSource> source(CreateFileIconSource());
     content::URLDataSource::GotDataCallback callback;
     EXPECT_CALL(*source.get(),
                 FetchFileIcon(

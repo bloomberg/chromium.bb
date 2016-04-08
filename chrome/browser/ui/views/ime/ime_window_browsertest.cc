@@ -56,7 +56,7 @@ class ImeWindowBrowserTest : public InProcessBrowserTest,
 
   ImeWindow* ime_window_;
 
-  scoped_ptr<base::RunLoop> message_loop_runner_;
+  std::unique_ptr<base::RunLoop> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeWindowBrowserTest);
 };

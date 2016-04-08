@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_OMNIBOX_PROVIDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_OMNIBOX_PROVIDER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/omnibox/browser/autocomplete_controller_delegate.h"
 #include "ui/app_list/search_provider.h"
 
@@ -41,7 +42,7 @@ class OmniboxProvider : public SearchProvider,
 
   // The omnibox AutocompleteController that collects/sorts/dup-
   // eliminates the results as they come in.
-  scoped_ptr<AutocompleteController> controller_;
+  std::unique_ptr<AutocompleteController> controller_;
 
   // Whether the current query is a voice query.
   bool is_voice_query_;

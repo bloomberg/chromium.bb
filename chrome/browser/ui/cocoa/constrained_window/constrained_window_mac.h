@@ -25,13 +25,13 @@ class ConstrainedWindowMacDelegate {
 };
 
 // Creates a ConstrainedWindowMac, shows the dialog, and returns it.
-scoped_ptr<ConstrainedWindowMac> CreateAndShowWebModalDialogMac(
+std::unique_ptr<ConstrainedWindowMac> CreateAndShowWebModalDialogMac(
     ConstrainedWindowMacDelegate* delegate,
     content::WebContents* web_contents,
     id<ConstrainedWindowSheet> sheet);
 
 // Creates a ConstrainedWindowMac and returns it.
-scoped_ptr<ConstrainedWindowMac> CreateWebModalDialogMac(
+std::unique_ptr<ConstrainedWindowMac> CreateWebModalDialogMac(
     ConstrainedWindowMacDelegate* delegate,
     content::WebContents* web_contents,
     id<ConstrainedWindowSheet> sheet);
@@ -73,7 +73,7 @@ class ConstrainedWindowMac {
   SingleWebContentsDialogManagerCocoa* manager_;  // weak, owned by WCMDM.
   content::WebContents* web_contents_;  // weak, owned by dialog initiator.
   base::scoped_nsprotocol<id<ConstrainedWindowSheet>> sheet_;
-  scoped_ptr<SingleWebContentsDialogManagerCocoa> native_manager_;
+  std::unique_ptr<SingleWebContentsDialogManagerCocoa> native_manager_;
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_CONSTRAINED_WINDOW_CONSTRAINED_WINDOW_MAC_

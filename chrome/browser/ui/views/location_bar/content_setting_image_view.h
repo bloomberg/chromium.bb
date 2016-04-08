@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_CONTENT_SETTING_IMAGE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_CONTENT_SETTING_IMAGE_VIEW_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -91,7 +92,7 @@ class ContentSettingImageView : public IconLabelBubbleView,
   void UpdateImage();
 
   LocationBarView* parent_;  // Weak, owns us.
-  scoped_ptr<ContentSettingImageModel> content_setting_image_model_;
+  std::unique_ptr<ContentSettingImageModel> content_setting_image_model_;
   gfx::SlideAnimation slide_animator_;
   bool pause_animation_;
   double pause_animation_state_;
@@ -103,7 +104,7 @@ class ContentSettingImageView : public IconLabelBubbleView,
   bool suppress_mouse_released_action_;
 
   // Animation delegate for the ink drop ripple effect.
-  scoped_ptr<views::InkDropDelegate> ink_drop_delegate_;
+  std::unique_ptr<views::InkDropDelegate> ink_drop_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingImageView);
 };

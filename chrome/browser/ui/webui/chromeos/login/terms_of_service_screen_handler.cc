@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"

@@ -84,7 +84,7 @@ double ChromeZoomLevelPrefs::GetDefaultZoomLevelPref() const {
   return default_zoom_level;
 }
 
-scoped_ptr<ChromeZoomLevelPrefs::DefaultZoomLevelSubscription>
+std::unique_ptr<ChromeZoomLevelPrefs::DefaultZoomLevelSubscription>
 ChromeZoomLevelPrefs::RegisterDefaultZoomLevelCallback(
     const base::Closure& callback) {
   return default_zoom_changed_callbacks_.Add(callback);
@@ -128,7 +128,7 @@ void ChromeZoomLevelPrefs::ExtractPerHostZoomLevels(
     const base::DictionaryValue* host_zoom_dictionary,
     bool sanitize_partition_host_zoom_levels) {
   std::vector<std::string> keys_to_remove;
-  scoped_ptr<base::DictionaryValue> host_zoom_dictionary_copy =
+  std::unique_ptr<base::DictionaryValue> host_zoom_dictionary_copy =
       host_zoom_dictionary->DeepCopyWithoutEmptyChildren();
   for (base::DictionaryValue::Iterator i(*host_zoom_dictionary_copy);
        !i.IsAtEnd();

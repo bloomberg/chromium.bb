@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_APP_CONTEXT_MENU_H_
 #define CHROME_BROWSER_UI_APP_LIST_APP_CONTEXT_MENU_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/base/models/simple_menu_model.h"
 
 class AppListControllerDelegate;
@@ -76,7 +76,7 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
   const std::string app_id_;
   AppListControllerDelegate* controller_;
 
-  scoped_ptr<ui::SimpleMenuModel> menu_model_;
+  std::unique_ptr<ui::SimpleMenuModel> menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(AppContextMenu);
 };

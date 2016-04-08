@@ -67,7 +67,7 @@ class TabRecordingIndicatorAnimation : public gfx::MultiAnimation {
   // Overridden to provide alternating "towards in" and "towards out" behavior.
   double GetCurrentValue() const override;
 
-  static scoped_ptr<TabRecordingIndicatorAnimation> Create();
+  static std::unique_ptr<TabRecordingIndicatorAnimation> Create();
 
  private:
   TabRecordingIndicatorAnimation(const gfx::MultiAnimation::Parts& parts,
@@ -85,7 +85,7 @@ double TabRecordingIndicatorAnimation::GetCurrentValue() const {
       MultiAnimation::GetCurrentValue();
 }
 
-scoped_ptr<TabRecordingIndicatorAnimation>
+std::unique_ptr<TabRecordingIndicatorAnimation>
 TabRecordingIndicatorAnimation::Create() {
   MultiAnimation::Parts parts;
   static_assert(kCaptureIndicatorThrobCycles % 2 != 0,
@@ -97,7 +97,7 @@ TabRecordingIndicatorAnimation::Create() {
   }
   const base::TimeDelta interval =
       base::TimeDelta::FromMilliseconds(kIndicatorFrameIntervalMs);
-  scoped_ptr<TabRecordingIndicatorAnimation> animation(
+  std::unique_ptr<TabRecordingIndicatorAnimation> animation(
       new TabRecordingIndicatorAnimation(parts, interval));
   animation->set_continuous(false);
   return animation;
@@ -233,7 +233,7 @@ gfx::Image GetTabAlertIndicatorAffordanceImage(TabAlertState alert_state,
   return GetTabAlertIndicatorImage(alert_state, button_color);
 }
 
-scoped_ptr<gfx::Animation> CreateTabAlertIndicatorFadeAnimation(
+std::unique_ptr<gfx::Animation> CreateTabAlertIndicatorFadeAnimation(
     TabAlertState alert_state) {
   if (alert_state == TabAlertState::MEDIA_RECORDING ||
       alert_state == TabAlertState::TAB_CAPTURING) {
@@ -249,7 +249,7 @@ scoped_ptr<gfx::Animation> CreateTabAlertIndicatorFadeAnimation(
       gfx::Tween::EASE_IN));
   const base::TimeDelta interval =
       base::TimeDelta::FromMilliseconds(kIndicatorFrameIntervalMs);
-  scoped_ptr<gfx::MultiAnimation> animation(
+  std::unique_ptr<gfx::MultiAnimation> animation(
       new gfx::MultiAnimation(parts, interval));
   animation->set_continuous(false);
   return std::move(animation);

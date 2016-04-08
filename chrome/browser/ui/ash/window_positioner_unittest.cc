@@ -45,12 +45,12 @@ class WindowPositionerTest : public AshTestBase {
   const int grid_size_;
 
  private:
-  scoped_ptr<WindowPositioner> window_positioner_;
+  std::unique_ptr<WindowPositioner> window_positioner_;
 
   TestingProfile profile_;
 
-  scoped_ptr<Browser> browser_;
-  scoped_ptr<Browser> browser_popup_;
+  std::unique_ptr<Browser> browser_;
+  std::unique_ptr<Browser> browser_popup_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowPositionerTest);
 };
@@ -61,9 +61,9 @@ WindowPositionerTest::WindowPositionerTest()
 void WindowPositionerTest::SetUp() {
   AshTestBase::SetUp();
   // Create some default dummy windows.
-  scoped_ptr<aura::Window> dummy_window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> dummy_window(CreateTestWindowInShellWithId(0));
   dummy_window->SetBounds(gfx::Rect(16, 32, 640, 320));
-  scoped_ptr<aura::Window> dummy_popup(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<aura::Window> dummy_popup(CreateTestWindowInShellWithId(1));
   dummy_popup->SetBounds(gfx::Rect(16, 32, 128, 256));
 
   // Create a browser for the window.

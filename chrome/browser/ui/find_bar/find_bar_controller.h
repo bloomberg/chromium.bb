@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_CONTROLLER_H_
 #define CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_CONTROLLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -89,7 +90,7 @@ class FindBarController : public content::NotificationObserver {
 
   content::NotificationRegistrar registrar_;
 
-  scoped_ptr<FindBar> find_bar_;
+  std::unique_ptr<FindBar> find_bar_;
 
   // The WebContents we are currently associated with.  Can be NULL.
   content::WebContents* web_contents_;

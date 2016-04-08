@@ -5,13 +5,14 @@
 #ifndef CHROME_BROWSER_UI_COCOA_DOWNLOAD_DOWNLOAD_SHOW_ALL_CELL_H_
 #define CHROME_BROWSER_UI_COCOA_DOWNLOAD_DOWNLOAD_SHOW_ALL_CELL_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #import "chrome/browser/ui/cocoa/gradient_button_cell.h"
 
 // The cell of the "Show All" button on the download shelf.
 @interface DownloadShowAllCell : GradientButtonCell<NSAnimationDelegate> {
  @private
-  scoped_ptr<ui::ThemeProvider> themeProvider_;
+  std::unique_ptr<ui::ThemeProvider> themeProvider_;
 }
 
 @end

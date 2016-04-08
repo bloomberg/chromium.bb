@@ -80,7 +80,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 // multiple permissions in the bubble.
 @interface AllowBlockMenuButton : NSPopUpButton {
  @private
-  scoped_ptr<PermissionMenuModel> menuModel_;
+  std::unique_ptr<PermissionMenuModel> menuModel_;
   base::scoped_nsobject<MenuController> menuController_;
 }
 

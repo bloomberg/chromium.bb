@@ -282,7 +282,7 @@ void BasePanelBrowserTest::WaitForPanelActiveState(
          expected_state == SHOW_AS_INACTIVE);
 
 #if defined(OS_MACOSX)
-  scoped_ptr<NativePanelTesting> panel_testing(
+  std::unique_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
   ASSERT_TRUE(panel_testing->EnsureApplicationRunOnForeground()) <<
       "Failed to bring application to foreground. Bail out.";
@@ -293,7 +293,7 @@ void BasePanelBrowserTest::WaitForPanelActiveState(
 }
 
 void BasePanelBrowserTest::WaitForBoundsAnimationFinished(Panel* panel) {
-  scoped_ptr<NativePanelTesting> panel_testing(
+  std::unique_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
   // Sometimes there are several animations in sequence due to content
   // auto resizing. Wait for all animations to finish.
@@ -524,7 +524,7 @@ scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(
       extensions::ExtensionPrefs::Get(browser()->profile());
   base::FilePath full_path = extension_prefs->install_directory().Append(path);
 
-  scoped_ptr<base::DictionaryValue> input_value(extra_value.DeepCopy());
+  std::unique_ptr<base::DictionaryValue> input_value(extra_value.DeepCopy());
   input_value->SetString(extensions::manifest_keys::kVersion, "1.0.0.0");
   input_value->SetString(extensions::manifest_keys::kName, "Sample Extension");
 

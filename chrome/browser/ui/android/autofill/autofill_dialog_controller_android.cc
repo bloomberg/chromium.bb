@@ -465,7 +465,7 @@ void AutofillDialogControllerAndroid::DialogContinue(
   const std::string last_used_card =
       base::android::ConvertJavaStringToUTF8(env, jlast_used_card);
 
-  scoped_ptr<FullWallet> full_wallet =
+  std::unique_ptr<FullWallet> full_wallet =
       AutofillDialogResult::ConvertFromJava(env, wallet);
   FillOutputForSection(SECTION_BILLING, form_structure_, full_wallet.get(),
                        email);

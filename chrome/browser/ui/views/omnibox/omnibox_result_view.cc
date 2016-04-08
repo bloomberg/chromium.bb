@@ -455,7 +455,7 @@ int OmniboxResultView::DrawRenderText(
     const int offset =
         GetDisplayOffset(match, is_ui_rtl, is_match_contents_rtl);
 
-    scoped_ptr<gfx::RenderText> prefix_render_text(
+    std::unique_ptr<gfx::RenderText> prefix_render_text(
         CreateRenderText(base::UTF8ToUTF16(
             match.GetAdditionalInfo(kACMatchPropertyContentsPrefix))));
     const int prefix_width = prefix_render_text->GetContentWidth();
@@ -510,9 +510,10 @@ int OmniboxResultView::DrawRenderText(
   return right_x;
 }
 
-scoped_ptr<gfx::RenderText> OmniboxResultView::CreateRenderText(
+std::unique_ptr<gfx::RenderText> OmniboxResultView::CreateRenderText(
     const base::string16& text) const {
-  scoped_ptr<gfx::RenderText> render_text(gfx::RenderText::CreateInstance());
+  std::unique_ptr<gfx::RenderText> render_text(
+      gfx::RenderText::CreateInstance());
   render_text->SetDisplayRect(gfx::Rect(gfx::Size(INT_MAX, 0)));
   render_text->SetCursorEnabled(false);
   render_text->SetElideBehavior(gfx::ELIDE_TAIL);
@@ -521,11 +522,11 @@ scoped_ptr<gfx::RenderText> OmniboxResultView::CreateRenderText(
   return render_text;
 }
 
-scoped_ptr<gfx::RenderText> OmniboxResultView::CreateClassifiedRenderText(
+std::unique_ptr<gfx::RenderText> OmniboxResultView::CreateClassifiedRenderText(
     const base::string16& text,
     const ACMatchClassifications& classifications,
     bool force_dim) const {
-  scoped_ptr<gfx::RenderText> render_text(CreateRenderText(text));
+  std::unique_ptr<gfx::RenderText> render_text(CreateRenderText(text));
   const size_t text_length = render_text->text().length();
   for (size_t i = 0; i < classifications.size(); ++i) {
     const size_t text_start = classifications[i].offset;
@@ -591,7 +592,8 @@ int OmniboxResultView::GetDisplayOffset(
   base::StringToInt(match.GetAdditionalInfo(kACMatchPropertyContentsStartIndex),
                     &contents_start_index);
 
-  scoped_ptr<gfx::RenderText> input_render_text(CreateRenderText(input_text));
+  std::unique_ptr<gfx::RenderText> input_render_text(
+      CreateRenderText(input_text));
   const gfx::Range& glyph_bounds =
       input_render_text->GetGlyphBounds(contents_start_index);
   const int start_padding = is_match_contents_rtl ?
@@ -795,10 +797,11 @@ int OmniboxResultView::GetContentLineHeight() const {
       GetTextHeight() + GetLayoutInsets(OMNIBOX_DROPDOWN_TEXT).height());
 }
 
-scoped_ptr<gfx::RenderText> OmniboxResultView::CreateAnswerLine(
+std::unique_ptr<gfx::RenderText> OmniboxResultView::CreateAnswerLine(
     const SuggestionAnswer::ImageLine& line,
     gfx::FontList font_list) {
-  scoped_ptr<gfx::RenderText> destination = CreateRenderText(base::string16());
+  std::unique_ptr<gfx::RenderText> destination =
+      CreateRenderText(base::string16());
   destination->SetFontList(font_list);
 
   for (const SuggestionAnswer::TextField& text_field : line.text_fields())

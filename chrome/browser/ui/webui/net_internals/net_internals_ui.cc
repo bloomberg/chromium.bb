@@ -367,7 +367,7 @@ class NetInternalsMessageHandler::IOThreadImpl
   // Log entries that have yet to be passed along to Javascript page.  Non-NULL
   // when and only when there is a pending delayed task to call
   // PostPendingEntries.  Read and written to exclusively on the IO Thread.
-  scoped_ptr<base::ListValue> pending_entries_;
+  std::unique_ptr<base::ListValue> pending_entries_;
 
   // Used for getting current status of URLRequests when net-internals is
   // opened.  |main_context_getter_| is automatically added on construction.
@@ -507,8 +507,8 @@ void NetInternalsMessageHandler::RegisterMessages() {
 void NetInternalsMessageHandler::SendJavascriptCommand(
     const std::string& command,
     base::Value* arg) {
-  scoped_ptr<base::Value> command_value(new base::StringValue(command));
-  scoped_ptr<base::Value> value(arg);
+  std::unique_ptr<base::Value> command_value(new base::StringValue(command));
+  std::unique_ptr<base::Value> value(arg);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (value.get()) {
     web_ui()->CallJavascriptFunction("g_browser.receive",
@@ -580,7 +580,7 @@ void NetInternalsMessageHandler::OnGetExtensionInfo(
   if (extension_system) {
     ExtensionService* extension_service = extension_system->extension_service();
     if (extension_service) {
-      scoped_ptr<const extensions::ExtensionSet> extensions(
+      std::unique_ptr<const extensions::ExtensionSet> extensions(
           extensions::ExtensionRegistry::Get(profile)
               ->GenerateInstalledExtensionsSet());
       for (extensions::ExtensionSet::const_iterator it = extensions->begin();

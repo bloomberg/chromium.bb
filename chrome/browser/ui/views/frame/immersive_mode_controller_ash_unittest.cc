@@ -53,7 +53,7 @@ class ImmersiveModeControllerAshTest : public TestWithBrowserView {
     // is used to trigger changes in whether the shelf is auto hidden and
     // whether a "light bar" version of the tab strip is used when the
     // top-of-window views are hidden.
-    scoped_ptr<FullscreenNotificationObserver> waiter(
+    std::unique_ptr<FullscreenNotificationObserver> waiter(
         new FullscreenNotificationObserver());
     chrome::ToggleFullscreenMode(browser());
     waiter->Wait();
@@ -63,7 +63,7 @@ class ImmersiveModeControllerAshTest : public TestWithBrowserView {
   void SetTabFullscreen(bool tab_fullscreen) {
     content::WebContents* web_contents =
         browser_view()->GetContentsWebViewForTest()->GetWebContents();
-    scoped_ptr<FullscreenNotificationObserver> waiter(
+    std::unique_ptr<FullscreenNotificationObserver> waiter(
         new FullscreenNotificationObserver());
     if (tab_fullscreen) {
       browser()
@@ -98,7 +98,7 @@ class ImmersiveModeControllerAshTest : public TestWithBrowserView {
   // Not owned.
   ImmersiveModeController* controller_;
 
-  scoped_ptr<ImmersiveRevealedLock> revealed_lock_;
+  std::unique_ptr<ImmersiveRevealedLock> revealed_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerAshTest);
 };

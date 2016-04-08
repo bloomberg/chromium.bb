@@ -4,10 +4,12 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/callback_list.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
@@ -62,9 +64,9 @@ class MockTriggeredProfileResetter : public TriggeredProfileResetter {
 
 bool MockTriggeredProfileResetter::has_reset_trigger_ = false;
 
-scoped_ptr<KeyedService> BuildMockTriggeredProfileResetter(
+std::unique_ptr<KeyedService> BuildMockTriggeredProfileResetter(
     content::BrowserContext* context) {
-  return make_scoped_ptr(new MockTriggeredProfileResetter);
+  return base::WrapUnique(new MockTriggeredProfileResetter);
 }
 
 }  // namespace
@@ -89,7 +91,8 @@ class StartupBrowserCreatorTriggeredResetTest : public InProcessBrowserTest {
         context, &BuildMockTriggeredProfileResetter);
   }
 
-  scoped_ptr<base::CallbackList<void(content::BrowserContext*)>::Subscription>
+  std::unique_ptr<
+      base::CallbackList<void(content::BrowserContext*)>::Subscription>
       will_create_browser_context_services_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(StartupBrowserCreatorTriggeredResetTest);

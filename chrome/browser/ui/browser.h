@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -15,7 +16,6 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
@@ -246,7 +246,7 @@ class Browser : public TabStripModelObserver,
   ToolbarModel* toolbar_model() { return toolbar_model_.get(); }
   const ToolbarModel* toolbar_model() const { return toolbar_model_.get(); }
 #if defined(UNIT_TEST)
-  void swap_toolbar_models(scoped_ptr<ToolbarModel>* toolbar_model) {
+  void swap_toolbar_models(std::unique_ptr<ToolbarModel>* toolbar_model) {
     toolbar_model->swap(toolbar_model_);
   }
 #endif
@@ -480,7 +480,7 @@ class Browser : public TabStripModelObserver,
   void ShowCertificateViewerInDevTools(
       content::WebContents* web_contents,
       int cert_id) override;
-  scoped_ptr<content::BluetoothChooser> RunBluetoothChooser(
+  std::unique_ptr<content::BluetoothChooser> RunBluetoothChooser(
       content::RenderFrameHost* frame,
       const content::BluetoothChooser::EventHandler& event_handler) override;
   void RequestAppBannerFromDevTools(
@@ -887,8 +887,8 @@ class Browser : public TabStripModelObserver,
   // This Browser's window.
   BrowserWindow* window_;
 
-  scoped_ptr<TabStripModelDelegate> tab_strip_model_delegate_;
-  scoped_ptr<TabStripModel> tab_strip_model_;
+  std::unique_ptr<TabStripModelDelegate> tab_strip_model_delegate_;
+  std::unique_ptr<TabStripModel> tab_strip_model_;
 
   // The application name that is also the name of the window to the shell.
   // This name should be set when:
@@ -907,14 +907,14 @@ class Browser : public TabStripModelObserver,
   const SessionID session_id_;
 
   // The model for the toolbar view.
-  scoped_ptr<ToolbarModel> toolbar_model_;
+  std::unique_ptr<ToolbarModel> toolbar_model_;
 
   // The model for the "active" search state.  There are per-tab search models
   // as well.  When a tab is active its model is kept in sync with this one.
   // When a new tab is activated its model state is propagated to this active
   // model.  This way, observers only have to attach to this single model for
   // updates, and don't have to worry about active tab changes directly.
-  scoped_ptr<SearchModel> search_model_;
+  std::unique_ptr<SearchModel> search_model_;
 
   // UI update coalescing and handling ////////////////////////////////////////
 
@@ -953,14 +953,14 @@ class Browser : public TabStripModelObserver,
   // Tracks when this browser is being created by session restore.
   bool is_session_restore_;
 
-  scoped_ptr<chrome::UnloadController> unload_controller_;
-  scoped_ptr<chrome::FastUnloadController> fast_unload_controller_;
+  std::unique_ptr<chrome::UnloadController> unload_controller_;
+  std::unique_ptr<chrome::FastUnloadController> fast_unload_controller_;
 
-  scoped_ptr<ChromeBubbleManager> bubble_manager_;
+  std::unique_ptr<ChromeBubbleManager> bubble_manager_;
 
   // The Find Bar. This may be NULL if there is no Find Bar, and if it is
   // non-NULL, it may or may not be visible.
-  scoped_ptr<FindBarController> find_bar_controller_;
+  std::unique_ptr<FindBarController> find_bar_controller_;
 
   // Dialog box used for opening and saving files.
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
@@ -969,43 +969,44 @@ class Browser : public TabStripModelObserver,
   BooleanPrefMember encoding_auto_detect_;
 
   // Helper which implements the ContentSettingBubbleModel interface.
-  scoped_ptr<BrowserContentSettingBubbleModelDelegate>
+  std::unique_ptr<BrowserContentSettingBubbleModelDelegate>
       content_setting_bubble_model_delegate_;
 
   // Helper which implements the ToolbarModelDelegate interface.
-  scoped_ptr<BrowserToolbarModelDelegate> toolbar_model_delegate_;
+  std::unique_ptr<BrowserToolbarModelDelegate> toolbar_model_delegate_;
 
   // A delegate that handles the details of updating the "active"
   // |search_model_| state with the tab's state.
-  scoped_ptr<SearchDelegate> search_delegate_;
+  std::unique_ptr<SearchDelegate> search_delegate_;
 
   // Helper which implements the LiveTabContext interface.
-  scoped_ptr<BrowserLiveTabContext> live_tab_context_;
+  std::unique_ptr<BrowserLiveTabContext> live_tab_context_;
 
   // Helper which implements the SyncedWindowDelegate interface.
-  scoped_ptr<BrowserSyncedWindowDelegate> synced_window_delegate_;
+  std::unique_ptr<BrowserSyncedWindowDelegate> synced_window_delegate_;
 
-  scoped_ptr<BrowserInstantController> instant_controller_;
+  std::unique_ptr<BrowserInstantController> instant_controller_;
 
   // Helper which handles bookmark app specific browser configuration.
-  scoped_ptr<extensions::HostedAppBrowserController> hosted_app_controller_;
+  std::unique_ptr<extensions::HostedAppBrowserController>
+      hosted_app_controller_;
 
   BookmarkBar::State bookmark_bar_state_;
 
-  scoped_ptr<ExclusiveAccessManager> exclusive_access_manager_;
+  std::unique_ptr<ExclusiveAccessManager> exclusive_access_manager_;
 
-  scoped_ptr<extensions::WindowController> extension_window_controller_;
+  std::unique_ptr<extensions::WindowController> extension_window_controller_;
 
-  scoped_ptr<chrome::BrowserCommandController> command_controller_;
+  std::unique_ptr<chrome::BrowserCommandController> command_controller_;
 
   // True if the browser window has been shown at least once.
   bool window_has_shown_;
 
-  scoped_ptr<ValidationMessageBubble> validation_message_bubble_;
+  std::unique_ptr<ValidationMessageBubble> validation_message_bubble_;
 
   SigninViewController signin_view_controller_;
 
-  scoped_ptr<ScopedKeepAlive> keep_alive_;
+  std::unique_ptr<ScopedKeepAlive> keep_alive_;
 
   // The following factory is used for chrome update coalescing.
   base::WeakPtrFactory<Browser> chrome_updater_factory_;

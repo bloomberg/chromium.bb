@@ -78,7 +78,7 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
   void DidExecuteCommand(int command_id) override;
 
  private:
-  scoped_ptr<BookmarkContextMenuController> controller_;
+  std::unique_ptr<BookmarkContextMenuController> controller_;
 
   // The parent of dialog boxes opened from the context menu.
   views::Widget* parent_widget_;
@@ -87,7 +87,7 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
   views::MenuItemView* menu_;
 
   // Responsible for running the menu.
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   BookmarkContextMenuObserver* observer_;
 

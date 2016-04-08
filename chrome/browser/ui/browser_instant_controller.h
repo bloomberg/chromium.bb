@@ -56,7 +56,7 @@ class BrowserInstantController : public SearchModelObserver,
   // Replaces the contents at tab |index| with |new_contents| and deletes the
   // existing contents.
   void ReplaceWebContentsAt(int index,
-                            scoped_ptr<content::WebContents> new_contents);
+                            std::unique_ptr<content::WebContents> new_contents);
 
   Browser* const browser_;
 

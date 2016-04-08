@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_DECORATED_TEXTFIELD_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_DECORATED_TEXTFIELD_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -68,7 +69,7 @@ class DecoratedTextfield : public views::Textfield,
   void IconChanged();
 
   // The view that holds the icon at the end of the textfield.
-  scoped_ptr<views::ImageView> icon_view_;
+  std::unique_ptr<views::ImageView> icon_view_;
 
   // Whether the text contents are "invalid" (i.e. should special markers be
   // shown to indicate invalidness).

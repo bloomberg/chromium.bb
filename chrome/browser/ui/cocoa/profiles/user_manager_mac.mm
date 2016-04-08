@@ -107,7 +107,7 @@ class UserManagerModalManagerDelegate :
 
    ~UserManagerModalManagerDelegate() override {}
  protected:
-  scoped_ptr<UserManagerModalHost> modal_host_;
+  std::unique_ptr<UserManagerModalHost> modal_host_;
 };
 
 // Custom WebContentsDelegate that allows handling of hotkeys.
@@ -164,9 +164,9 @@ class ReauthDialogDelegate : public UserManager::ReauthDialogObserver,
  @private
   std::string emailAddress_;
   content::WebContents* webContents_;
-  scoped_ptr<ReauthDialogDelegate> webContentsDelegate_;
-  scoped_ptr<ConstrainedWindowMac> constrained_window_;
-  scoped_ptr<content::WebContents> reauthWebContents_;
+  std::unique_ptr<ReauthDialogDelegate> webContentsDelegate_;
+  std::unique_ptr<ConstrainedWindowMac> constrained_window_;
+  std::unique_ptr<content::WebContents> reauthWebContents_;
 }
 - (id)initWithProfile:(Profile*)profile
                 email:(std::string)email
@@ -245,10 +245,10 @@ class ReauthDialogDelegate : public UserManager::ReauthDialogObserver,
 // Window controller for the User Manager view.
 @interface UserManagerWindowController : NSWindowController <NSWindowDelegate> {
  @private
-  scoped_ptr<content::WebContents> webContents_;
-  scoped_ptr<UserManagerWebContentsDelegate> webContentsDelegate_;
+  std::unique_ptr<content::WebContents> webContents_;
+  std::unique_ptr<UserManagerWebContentsDelegate> webContentsDelegate_;
   UserManagerMac* userManagerObserver_;  // Weak.
-  scoped_ptr<UserManagerModalManagerDelegate> modal_manager_delegate_;
+  std::unique_ptr<UserManagerModalManagerDelegate> modal_manager_delegate_;
   base::scoped_nsobject<ReauthDialogWindowController> reauth_window_controller_;
 }
 - (void)windowWillClose:(NSNotification*)notification;

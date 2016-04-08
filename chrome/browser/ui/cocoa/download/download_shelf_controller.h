@@ -4,8 +4,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/has_weak_browser_pointer.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
 #include "ui/base/cocoa/tracking_area.h"
@@ -60,7 +61,7 @@ class PageNavigator;
   // YES if the mouse is currently over the download shelf.
   BOOL isMouseInsideView_;
 
-  scoped_ptr<DownloadShelf> bridge_;
+  std::unique_ptr<DownloadShelf> bridge_;
 
   // Height of the shelf when it's fully visible.
   CGFloat maxShelfHeight_;

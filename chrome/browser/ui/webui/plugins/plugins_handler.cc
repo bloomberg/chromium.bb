@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/webui/plugins/plugins_handler.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -223,7 +223,7 @@ mojo::Array<mojom::PluginDataPtr> PluginsHandler::GeneratePluginsData(
   // the plugins in UI in a grouped fashion.
   PluginGroups groups;
   for (size_t i = 0; i < plugins.size(); ++i) {
-    scoped_ptr<PluginMetadata> plugin(
+    std::unique_ptr<PluginMetadata> plugin(
         plugin_finder->GetPluginMetadata(plugins[i]));
     groups[plugin->identifier()].push_back(&plugins[i]);
   }
@@ -235,7 +235,7 @@ mojo::Array<mojom::PluginDataPtr> PluginsHandler::GeneratePluginsData(
     mojom::PluginDataPtr plugin_data(mojom::PluginData::New());
     const std::vector<const WebPluginInfo*>& group_plugins = it->second;
 
-    scoped_ptr<PluginMetadata> plugin_metadata(
+    std::unique_ptr<PluginMetadata> plugin_metadata(
         plugin_finder->GetPluginMetadata(*group_plugins[0]));
     std::string group_identifier = plugin_metadata->identifier();
     plugin_data->id = mojo::String::From(group_identifier);

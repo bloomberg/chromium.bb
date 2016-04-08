@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/webui/print_preview/extension_printer_handler.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 #include <string>
 
@@ -13,7 +16,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
@@ -22,7 +25,6 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/browser/printing/pwg_raster_converter.h"
-#include "chrome/browser/ui/webui/print_preview/extension_printer_handler.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/version_info/version_info.h"
 #include "device/core/device_client.h"
@@ -188,7 +190,7 @@ const char kPrintRequestSuccess[] = "OK";
 // Used as a callback to StartGetPrinters in tests.
 // Increases |*call_count| and records values returned by StartGetPrinters.
 void RecordPrinterList(size_t* call_count,
-                       scoped_ptr<base::ListValue>* printers_out,
+                       std::unique_ptr<base::ListValue>* printers_out,
                        bool* is_done_out,
                        const base::ListValue& printers,
                        bool is_done) {
@@ -201,7 +203,7 @@ void RecordPrinterList(size_t* call_count,
 // Increases |*call_count| and records values returned by StartGetCapability.
 void RecordCapability(size_t* call_count,
                       std::string* destination_id_out,
-                      scoped_ptr<base::DictionaryValue>* capability_out,
+                      std::unique_ptr<base::DictionaryValue>* capability_out,
                       const std::string& destination_id,
                       const base::DictionaryValue& capability) {
   ++(*call_count);
@@ -224,7 +226,7 @@ void RecordPrintResult(size_t* call_count,
 // Used as a callback to StartGrantPrinterAccess in tests.
 // Increases |*call_count| and records the value returned.
 void RecordPrinterInfo(size_t* call_count,
-                       scoped_ptr<base::DictionaryValue>* printer_info_out,
+                       std::unique_ptr<base::DictionaryValue>* printer_info_out,
                        const base::DictionaryValue& printer_info) {
   ++(*call_count);
   printer_info_out->reset(printer_info.DeepCopy());
@@ -232,35 +234,35 @@ void RecordPrinterInfo(size_t* call_count,
 
 // Converts JSON string to base::ListValue object.
 // On failure, returns NULL and fills |*error| string.
-scoped_ptr<base::ListValue> GetJSONAsListValue(const std::string& json,
-                                               std::string* error) {
-  scoped_ptr<base::Value> deserialized(
+std::unique_ptr<base::ListValue> GetJSONAsListValue(const std::string& json,
+                                                    std::string* error) {
+  std::unique_ptr<base::Value> deserialized(
       JSONStringValueDeserializer(json).Deserialize(NULL, error));
   if (!deserialized)
-    return scoped_ptr<base::ListValue>();
+    return std::unique_ptr<base::ListValue>();
   base::ListValue* list = nullptr;
   if (!deserialized->GetAsList(&list)) {
     *error = "Value is not a list.";
-    return scoped_ptr<base::ListValue>();
+    return std::unique_ptr<base::ListValue>();
   }
-  return scoped_ptr<base::ListValue>(list->DeepCopy());
+  return std::unique_ptr<base::ListValue>(list->DeepCopy());
 }
 
 // Converts JSON string to base::DictionaryValue object.
 // On failure, returns NULL and fills |*error| string.
-scoped_ptr<base::DictionaryValue> GetJSONAsDictionaryValue(
+std::unique_ptr<base::DictionaryValue> GetJSONAsDictionaryValue(
     const std::string& json,
     std::string* error) {
-  scoped_ptr<base::Value> deserialized(
+  std::unique_ptr<base::Value> deserialized(
       JSONStringValueDeserializer(json).Deserialize(NULL, error));
   if (!deserialized)
-    return scoped_ptr<base::DictionaryValue>();
+    return std::unique_ptr<base::DictionaryValue>();
   base::DictionaryValue* dictionary;
   if (!deserialized->GetAsDictionary(&dictionary)) {
     *error = "Value is not a dictionary.";
-    return scoped_ptr<base::DictionaryValue>();
+    return std::unique_ptr<base::DictionaryValue>();
   }
-  return scoped_ptr<base::DictionaryValue>(dictionary->DeepCopy());
+  return std::unique_ptr<base::DictionaryValue>(dictionary->DeepCopy());
 }
 
 std::string RefCountedMemoryToString(
@@ -444,9 +446,9 @@ class FakePrinterProviderAPI : public PrinterProviderAPI {
   DISALLOW_COPY_AND_ASSIGN(FakePrinterProviderAPI);
 };
 
-scoped_ptr<KeyedService> BuildTestingPrinterProviderAPI(
+std::unique_ptr<KeyedService> BuildTestingPrinterProviderAPI(
     content::BrowserContext* context) {
-  return make_scoped_ptr(new FakePrinterProviderAPI());
+  return base::WrapUnique(new FakePrinterProviderAPI());
 }
 
 class FakeDeviceClient : public device::DeviceClient {
@@ -480,7 +482,7 @@ class ExtensionPrinterHandlerTest : public testing::Test {
 
     pwg_raster_converter_ = new FakePWGRasterConverter();
     extension_printer_handler_->SetPWGRasterConverterForTesting(
-        scoped_ptr<PWGRasterConverter>(pwg_raster_converter_));
+        std::unique_ptr<PWGRasterConverter>(pwg_raster_converter_));
     device_client_.set_usb_service(&usb_service_);
   }
 
@@ -493,7 +495,7 @@ class ExtensionPrinterHandlerTest : public testing::Test {
 
   MockUsbService usb_service_;
   TestExtensionEnvironment env_;
-  scoped_ptr<ExtensionPrinterHandler> extension_printer_handler_;
+  std::unique_ptr<ExtensionPrinterHandler> extension_printer_handler_;
 
   FakePWGRasterConverter* pwg_raster_converter_;
 
@@ -505,7 +507,7 @@ class ExtensionPrinterHandlerTest : public testing::Test {
 
 TEST_F(ExtensionPrinterHandlerTest, GetPrinters) {
   size_t call_count = 0;
-  scoped_ptr<base::ListValue> printers;
+  std::unique_ptr<base::ListValue> printers;
   bool is_done = false;
 
   extension_printer_handler_->StartGetPrinters(
@@ -517,7 +519,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetPrinters) {
   ASSERT_EQ(1u, fake_api->pending_get_printers_count());
 
   std::string error;
-  scoped_ptr<base::ListValue> original_printers(
+  std::unique_ptr<base::ListValue> original_printers(
       GetJSONAsListValue(kPrinterDescriptionList, &error));
   ASSERT_TRUE(original_printers) << "Failed to deserialize printers: " << error;
 
@@ -532,7 +534,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetPrinters) {
 
 TEST_F(ExtensionPrinterHandlerTest, GetPrinters_Reset) {
   size_t call_count = 0;
-  scoped_ptr<base::ListValue> printers;
+  std::unique_ptr<base::ListValue> printers;
   bool is_done = false;
 
   extension_printer_handler_->StartGetPrinters(
@@ -546,7 +548,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetPrinters_Reset) {
   extension_printer_handler_->Reset();
 
   std::string error;
-  scoped_ptr<base::ListValue> original_printers(
+  std::unique_ptr<base::ListValue> original_printers(
       GetJSONAsListValue(kPrinterDescriptionList, &error));
   ASSERT_TRUE(original_printers) << "Error deserializing printers: " << error;
 
@@ -573,7 +575,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
   permissions_manager->AllowUsbDevice(extension_2->id(), device0);
 
   size_t call_count = 0;
-  scoped_ptr<base::ListValue> printers;
+  std::unique_ptr<base::ListValue> printers;
   bool is_done = false;
   extension_printer_handler_->StartGetPrinters(
       base::Bind(&RecordPrinterList, &call_count, &printers, &is_done));
@@ -586,7 +588,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
   EXPECT_FALSE(is_done);
   EXPECT_TRUE(printers.get());
   EXPECT_EQ(2u, printers->GetSize());
-  scoped_ptr<base::DictionaryValue> extension_1_entry(
+  std::unique_ptr<base::DictionaryValue> extension_1_entry(
       DictionaryBuilder()
           .Set("id", base::StringPrintf("provisional-usb:%s:%s",
                                         extension_1->id().c_str(),
@@ -596,7 +598,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
           .Set("extensionId", extension_1->id())
           .Set("provisional", true)
           .Build());
-  scoped_ptr<base::DictionaryValue> extension_2_entry(
+  std::unique_ptr<base::DictionaryValue> extension_2_entry(
       DictionaryBuilder()
           .Set("id", base::StringPrintf("provisional-usb:%s:%s",
                                         extension_2->id().c_str(),
@@ -620,7 +622,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
 TEST_F(ExtensionPrinterHandlerTest, GetCapability) {
   size_t call_count = 0;
   std::string destination_id;
-  scoped_ptr<base::DictionaryValue> capability;
+  std::unique_ptr<base::DictionaryValue> capability;
 
   extension_printer_handler_->StartGetCapability(
       kPrinterId,
@@ -633,7 +635,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetCapability) {
   ASSERT_EQ(1u, fake_api->pending_get_capability_count());
 
   std::string error;
-  scoped_ptr<base::DictionaryValue> original_capability(
+  std::unique_ptr<base::DictionaryValue> original_capability(
       GetJSONAsDictionaryValue(kPWGRasterOnlyPrinterSimpleDescription, &error));
   ASSERT_TRUE(original_capability)
       << "Error deserializing capability: " << error;
@@ -650,7 +652,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetCapability) {
 TEST_F(ExtensionPrinterHandlerTest, GetCapability_Reset) {
   size_t call_count = 0;
   std::string destination_id;
-  scoped_ptr<base::DictionaryValue> capability;
+  std::unique_ptr<base::DictionaryValue> capability;
 
   extension_printer_handler_->StartGetCapability(
       kPrinterId,
@@ -665,7 +667,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetCapability_Reset) {
   extension_printer_handler_->Reset();
 
   std::string error;
-  scoped_ptr<base::DictionaryValue> original_capability(
+  std::unique_ptr<base::DictionaryValue> original_capability(
       GetJSONAsDictionaryValue(kPWGRasterOnlyPrinterSimpleDescription, &error));
   ASSERT_TRUE(original_capability)
       << "Error deserializing capability: " << error;
@@ -969,7 +971,7 @@ TEST_F(ExtensionPrinterHandlerTest, GrantUsbPrinterAccess) {
   usb_service_.AddDevice(device);
 
   size_t call_count = 0;
-  scoped_ptr<base::DictionaryValue> printer_info;
+  std::unique_ptr<base::DictionaryValue> printer_info;
 
   std::string printer_id = base::StringPrintf(
       "provisional-usb:fake extension id:%s", device->guid().c_str());
@@ -981,7 +983,7 @@ TEST_F(ExtensionPrinterHandlerTest, GrantUsbPrinterAccess) {
   ASSERT_TRUE(fake_api);
   ASSERT_EQ(1u, fake_api->pending_usb_info_count());
 
-  scoped_ptr<base::DictionaryValue> original_printer_info(
+  std::unique_ptr<base::DictionaryValue> original_printer_info(
       DictionaryBuilder()
           .Set("id", "printer1")
           .Set("name", "Printer 1")
@@ -1001,7 +1003,7 @@ TEST_F(ExtensionPrinterHandlerTest, GrantUsbPrinterAccess_Reset) {
   usb_service_.AddDevice(device);
 
   size_t call_count = 0;
-  scoped_ptr<base::DictionaryValue> printer_info;
+  std::unique_ptr<base::DictionaryValue> printer_info;
 
   extension_printer_handler_->StartGrantPrinterAccess(
       base::StringPrintf("provisional-usb:fake extension id:%s",
@@ -1015,7 +1017,7 @@ TEST_F(ExtensionPrinterHandlerTest, GrantUsbPrinterAccess_Reset) {
 
   extension_printer_handler_->Reset();
 
-  scoped_ptr<base::DictionaryValue> original_printer_info(
+  std::unique_ptr<base::DictionaryValue> original_printer_info(
       DictionaryBuilder()
           .Set("id", "printer1")
           .Set("name", "Printer 1")

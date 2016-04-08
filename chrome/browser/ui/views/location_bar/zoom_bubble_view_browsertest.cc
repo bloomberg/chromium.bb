@@ -37,7 +37,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, MAYBE_NonImmersiveFullscreen) {
   {
     // NOTIFICATION_FULLSCREEN_CHANGED is sent asynchronously. Wait for the
     // notification before testing the zoom bubble visibility.
-    scoped_ptr<FullscreenNotificationObserver> waiter(
+    std::unique_ptr<FullscreenNotificationObserver> waiter(
         new FullscreenNotificationObserver());
     browser()
         ->exclusive_access_manager()
@@ -57,7 +57,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, MAYBE_NonImmersiveFullscreen) {
 
   // Exit fullscreen before ending the test for the sake of sanity.
   {
-    scoped_ptr<FullscreenNotificationObserver> waiter(
+    std::unique_ptr<FullscreenNotificationObserver> waiter(
         new FullscreenNotificationObserver());
     chrome::ToggleFullscreenMode(browser());
     waiter->Wait();
@@ -78,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, ImmersiveFullscreen) {
 
   // Enter immersive fullscreen.
   {
-    scoped_ptr<FullscreenNotificationObserver> waiter(
+    std::unique_ptr<FullscreenNotificationObserver> waiter(
         new FullscreenNotificationObserver());
     chrome::ToggleFullscreenMode(browser());
     waiter->Wait();
@@ -94,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, ImmersiveFullscreen) {
   EXPECT_FALSE(zoom_bubble->GetAnchorView());
 
   // An immersive reveal should hide the zoom bubble.
-  scoped_ptr<ImmersiveRevealedLock> immersive_reveal_lock(
+  std::unique_ptr<ImmersiveRevealedLock> immersive_reveal_lock(
       immersive_controller->GetRevealedLock(
           ImmersiveModeController::ANIMATE_REVEAL_NO));
   ASSERT_TRUE(immersive_controller->IsRevealed());
@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, ImmersiveFullscreen) {
 
   // Exit fullscreen before ending the test for the sake of sanity.
   {
-    scoped_ptr<FullscreenNotificationObserver> waiter(
+    std::unique_ptr<FullscreenNotificationObserver> waiter(
         new FullscreenNotificationObserver());
     chrome::ToggleFullscreenMode(browser());
     waiter->Wait();

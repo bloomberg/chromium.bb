@@ -42,7 +42,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesDialogBrowserTest, Close) {
   EXPECT_CALL(controller, GetSectionEntries(_)).
       Times(AnyNumber());
 
-  scoped_ptr<MediaGalleriesDialogCocoa> dialog(
+  std::unique_ptr<MediaGalleriesDialogCocoa> dialog(
       static_cast<MediaGalleriesDialogCocoa*>(
           MediaGalleriesDialog::Create(&controller)));
   base::scoped_nsobject<NSWindow> window([[dialog->alert_ window] retain]);

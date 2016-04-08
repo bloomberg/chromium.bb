@@ -101,7 +101,7 @@ class ManagePasswordsBubbleView : public LocationBarBubbleDelegateView {
   views::View* initially_focused_view_;
 
   // A helper to intercept mouse click events on the web contents.
-  scoped_ptr<WebContentMouseHandler> mouse_handler_;
+  std::unique_ptr<WebContentMouseHandler> mouse_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleView);
 };

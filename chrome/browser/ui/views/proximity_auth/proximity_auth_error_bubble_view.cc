@@ -88,7 +88,7 @@ ProximityAuthErrorBubbleView::ProximityAuthErrorBubbleView(
   // ----------------------------
   // | icon | padding | message |
   // ----------------------------
-  scoped_ptr<views::GridLayout> layout(new views::GridLayout(this));
+  std::unique_ptr<views::GridLayout> layout(new views::GridLayout(this));
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
                      views::GridLayout::USE_PREF, 0, 0);
@@ -97,11 +97,12 @@ ProximityAuthErrorBubbleView::ProximityAuthErrorBubbleView(
                      views::GridLayout::USE_PREF, 0, 0);
 
   // Construct the views.
-  scoped_ptr<views::ImageView> warning_icon(new views::ImageView());
+  std::unique_ptr<views::ImageView> warning_icon(new views::ImageView());
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   warning_icon->SetImage(*bundle.GetImageSkiaNamed(IDR_WARNING));
 
-  scoped_ptr<views::StyledLabel> label(new views::StyledLabel(message, this));
+  std::unique_ptr<views::StyledLabel> label(
+      new views::StyledLabel(message, this));
   if (!link_range.is_empty()) {
     label->AddStyleRange(link_range,
                          views::StyledLabel::RangeStyleInfo::CreateForLink());

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_CONTEXT_MENU_H_
 #define CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_CONTEXT_MENU_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace aura {
 class Window;
@@ -16,7 +16,7 @@ class MenuModel;
 }
 
 // The multi user context menu factory.
-scoped_ptr<ui::MenuModel> CreateMultiUserContextMenu(aura::Window* window);
+std::unique_ptr<ui::MenuModel> CreateMultiUserContextMenu(aura::Window* window);
 
 // Executes move of a |window| to another profile.
 // |command_id| defines a user whose desktop is being visited.

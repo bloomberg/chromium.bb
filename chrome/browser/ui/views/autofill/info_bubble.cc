@@ -123,7 +123,7 @@ views::NonClientFrameView* InfoBubble::CreateNonClientFrameView(
   DCHECK(!frame_);
   frame_ = new InfoBubbleFrame(margins());
   frame_->set_available_bounds(anchor_widget()->GetWindowBoundsInScreen());
-  frame_->SetBubbleBorder(scoped_ptr<views::BubbleBorder>(
+  frame_->SetBubbleBorder(std::unique_ptr<views::BubbleBorder>(
       new views::BubbleBorder(arrow(), shadow(), color())));
   return frame_;
 }

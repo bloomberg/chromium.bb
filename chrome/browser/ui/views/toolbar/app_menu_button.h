@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_APP_MENU_BUTTON_H_
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_APP_MENU_BUTTON_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_painter.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -71,7 +72,8 @@ class AppMenuButton : public views::MenuButton,
  private:
   // views::MenuButton:
   const char* GetClassName() const override;
-  scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
+  std::unique_ptr<views::LabelButtonBorder> CreateDefaultBorder()
+      const override;
   gfx::Rect GetThemePaintRect() const override;
   bool GetDropFormats(
       int* formats,
@@ -85,7 +87,7 @@ class AppMenuButton : public views::MenuButton,
   void OnPaint(gfx::Canvas* canvas) override;
 
   // Only used in pre-MD.
-  scoped_ptr<AppMenuIconPainter> icon_painter_;
+  std::unique_ptr<AppMenuIconPainter> icon_painter_;
 
   // Only used in MD.
   AppMenuIconPainter::Severity severity_;
@@ -103,16 +105,15 @@ class AppMenuButton : public views::MenuButton,
   // App model and menu.
   // Note that the menu should be destroyed before the model it uses, so the
   // menu should be listed later.
-  scoped_ptr<AppMenuModel> menu_model_;
-  scoped_ptr<AppMenu> menu_;
-
+  std::unique_ptr<AppMenuModel> menu_model_;
+  std::unique_ptr<AppMenu> menu_;
 
   // Any trailing margin to be applied. Used when the browser is in
   // a maximized state to extend to the full window width.
   int margin_trailing_;
 
   // Controls the visual feedback for the button state.
-  scoped_ptr<views::InkDropDelegate> ink_drop_delegate_;
+  std::unique_ptr<views::InkDropDelegate> ink_drop_delegate_;
 
   // Used to spawn weak pointers for delayed tasks to open the overflow menu.
   base::WeakPtrFactory<AppMenuButton> weak_factory_;

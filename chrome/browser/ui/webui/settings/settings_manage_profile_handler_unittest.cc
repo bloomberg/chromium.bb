@@ -65,7 +65,7 @@ class ManageProfileHandlerTest : public testing::Test {
   content::TestWebUI web_ui_;
 
   Profile* profile_;
-  scoped_ptr<TestManageProfileHandler> handler_;
+  std::unique_ptr<TestManageProfileHandler> handler_;
 };
 
 TEST_F(ManageProfileHandlerTest, HandleSetProfileIconAndName) {

@@ -30,7 +30,7 @@ LauncherSearchIconImageLoader::LauncherSearchIconImageLoader(
     Profile* profile,
     const extensions::Extension* extension,
     const int icon_dimension,
-    scoped_ptr<chromeos::launcher_search_provider::ErrorReporter>
+    std::unique_ptr<chromeos::launcher_search_provider::ErrorReporter>
         error_reporter)
     : profile_(profile),
       extension_(extension),

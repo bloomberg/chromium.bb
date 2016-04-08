@@ -44,13 +44,14 @@ namespace {
 
 const char kSequenceToken[] = "chromeos_login_l10n_util";
 
-scoped_ptr<base::DictionaryValue> CreateInputMethodsEntry(
+std::unique_ptr<base::DictionaryValue> CreateInputMethodsEntry(
     const input_method::InputMethodDescriptor& method,
     const std::string selected) {
   input_method::InputMethodUtil* util =
       input_method::InputMethodManager::Get()->GetInputMethodUtil();
   const std::string& ime_id = method.id();
-  scoped_ptr<base::DictionaryValue> input_method(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> input_method(
+      new base::DictionaryValue);
   input_method->SetString("value", ime_id);
   input_method->SetString(
       "title", util->GetInputMethodLongNameStripped(method));
@@ -66,7 +67,7 @@ bool InsertString(const std::string& str, std::set<std::string>* to) {
 }
 
 void AddOptgroupOtherLayouts(base::ListValue* input_methods_list) {
-  scoped_ptr<base::DictionaryValue> optgroup(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> optgroup(new base::DictionaryValue);
   optgroup->SetString(
       "optionGroupName",
       l10n_util::GetStringUTF16(IDS_OOBE_OTHER_KEYBOARD_LAYOUTS));
@@ -86,7 +87,8 @@ base::DictionaryValue* CreateLanguageEntry(
       base::i18n::StringContainsStrongRTLChars(display_name);
   const std::string directionality = has_rtl_chars ? "rtl" : "ltr";
 
-  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dictionary(
+      new base::DictionaryValue());
   dictionary->SetString("code", language_code);
   dictionary->SetString("displayName", language_display_name);
   dictionary->SetString("textDirection", directionality);
@@ -99,7 +101,7 @@ base::DictionaryValue* CreateLanguageEntry(
 // |insert_divider| is true, an entry with its "code" attribute set to
 // kMostRelevantLanguagesDivider is placed between the most relevant languages
 // and all others.
-scoped_ptr<base::ListValue> GetLanguageList(
+std::unique_ptr<base::ListValue> GetLanguageList(
     const input_method::InputMethodDescriptors& descriptors,
     const std::vector<std::string>& base_language_codes,
     const std::vector<std::string>& most_relevant_language_codes,
@@ -260,7 +262,7 @@ scoped_ptr<base::ListValue> GetLanguageList(
             std::back_inserter(out_display_names));
 
   // Build the language list from the language map.
-  scoped_ptr<base::ListValue> language_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> language_list(new base::ListValue());
   for (size_t i = 0; i < out_display_names.size(); ++i) {
     // Sets the directionality of the display language name.
     base::string16 display_name(out_display_names[i]);
@@ -302,7 +304,7 @@ void GetKeyboardLayoutsForResolvedLocale(
         util->GetInputMethodDescriptorFromId(layouts_from_locale[0])->id();
   }
 
-  scoped_ptr<base::ListValue> input_methods_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> input_methods_list(new base::ListValue);
   std::set<std::string> input_methods_added;
   for (std::vector<std::string>::const_iterator it = layouts.begin();
        it != layouts.end(); ++it) {
@@ -334,7 +336,7 @@ std::string CalculateSelectedLanguage(const std::string& requested_locale,
 }
 
 void ResolveLanguageListOnBlockingPool(
-    scoped_ptr<chromeos::locale_util::LanguageSwitchResult>
+    std::unique_ptr<chromeos::locale_util::LanguageSwitchResult>
         language_switch_result,
     const scoped_refptr<base::TaskRunner> task_runner,
     const UILanguageListResolvedCallback& resolved_callback) {
@@ -365,7 +367,7 @@ void ResolveLanguageListOnBlockingPool(
   const std::string list_locale =
       language_switch_result ? language_switch_result->loaded_locale
                              : g_browser_process->GetApplicationLocale();
-  scoped_ptr<base::ListValue> language_list(
+  std::unique_ptr<base::ListValue> language_list(
       chromeos::GetUILanguageList(nullptr, selected_code));
 
   task_runner->PostTask(
@@ -409,7 +411,7 @@ void AdjustUILanguageList(const std::string& selected,
 }  // namespace
 
 void ResolveUILanguageList(
-    scoped_ptr<chromeos::locale_util::LanguageSwitchResult>
+    std::unique_ptr<chromeos::locale_util::LanguageSwitchResult>
         language_switch_result,
     const UILanguageListResolvedCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -420,14 +422,14 @@ void ResolveUILanguageList(
                             base::ThreadTaskRunnerHandle::Get(), callback));
 }
 
-scoped_ptr<base::ListValue> GetMinimalUILanguageList() {
+std::unique_ptr<base::ListValue> GetMinimalUILanguageList() {
   const std::string application_locale =
       g_browser_process->GetApplicationLocale();
   base::string16 language_native_display_name =
       l10n_util::GetDisplayNameForLocale(
           application_locale, application_locale, true);
 
-  scoped_ptr<base::ListValue> language_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> language_list(new base::ListValue());
   language_list->Append(CreateLanguageEntry(application_locale,
                                             language_native_display_name,
                                             language_native_display_name));
@@ -435,7 +437,7 @@ scoped_ptr<base::ListValue> GetMinimalUILanguageList() {
   return language_list;
 }
 
-scoped_ptr<base::ListValue> GetUILanguageList(
+std::unique_ptr<base::ListValue> GetUILanguageList(
     const std::vector<std::string>* most_relevant_language_codes,
     const std::string& selected) {
   ComponentExtensionIMEManager* manager =
@@ -443,9 +445,8 @@ scoped_ptr<base::ListValue> GetUILanguageList(
           ->GetComponentExtensionIMEManager();
   input_method::InputMethodDescriptors descriptors =
       manager->GetXkbIMEAsInputMethodDescriptor();
-  scoped_ptr<base::ListValue> languages_list(GetLanguageList(
-      descriptors,
-      l10n_util::GetAvailableLocales(),
+  std::unique_ptr<base::ListValue> languages_list(GetLanguageList(
+      descriptors, l10n_util::GetAvailableLocales(),
       most_relevant_language_codes
           ? *most_relevant_language_codes
           : StartupCustomizationDocument::GetInstance()->configured_locales(),
@@ -480,7 +481,7 @@ std::string FindMostRelevantLocale(
   return fallback_locale;
 }
 
-scoped_ptr<base::ListValue> GetAcceptLanguageList() {
+std::unique_ptr<base::ListValue> GetAcceptLanguageList() {
   // Collect the language codes from the supported accept-languages.
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   std::vector<std::string> accept_language_codes;
@@ -492,11 +493,11 @@ scoped_ptr<base::ListValue> GetAcceptLanguageList() {
       false);
 }
 
-scoped_ptr<base::ListValue> GetAndActivateLoginKeyboardLayouts(
+std::unique_ptr<base::ListValue> GetAndActivateLoginKeyboardLayouts(
     const std::string& locale,
     const std::string& selected,
     bool activate_keyboards) {
-  scoped_ptr<base::ListValue> input_methods_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> input_methods_list(new base::ListValue);
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
   input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
@@ -511,7 +512,7 @@ scoped_ptr<base::ListValue> GetAndActivateLoginKeyboardLayouts(
         locale, hardware_login_input_methods);
   }
 
-  scoped_ptr<input_method::InputMethodDescriptors> input_methods(
+  std::unique_ptr<input_method::InputMethodDescriptors> input_methods(
       manager->GetActiveIMEState()->GetActiveInputMethods());
   std::set<std::string> input_methods_added;
 
@@ -584,7 +585,7 @@ void GetKeyboardLayoutsForLocale(
       base::Bind(&GetKeyboardLayoutsForResolvedLocale, callback));
 }
 
-scoped_ptr<base::DictionaryValue> GetCurrentKeyboardLayout() {
+std::unique_ptr<base::DictionaryValue> GetCurrentKeyboardLayout() {
   const input_method::InputMethodDescriptor current_input_method =
       input_method::InputMethodManager::Get()
           ->GetActiveIMEState()

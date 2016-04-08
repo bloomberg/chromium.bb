@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_LAUNCHER_PAGE_EVENT_DISPATCHER_H_
 #define CHROME_BROWSER_UI_APP_LIST_LAUNCHER_PAGE_EVENT_DISPATCHER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 
@@ -32,7 +32,7 @@ class LauncherPageEventDispatcher {
 
  private:
   // Dispatches |event| to |extension_id_|.
-  void DispatchEvent(scoped_ptr<extensions::Event> event);
+  void DispatchEvent(std::unique_ptr<extensions::Event> event);
 
   Profile* profile_;
   std::string extension_id_;

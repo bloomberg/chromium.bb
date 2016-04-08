@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/launcher_search_provider/error_reporter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/common/extension.h"
@@ -40,7 +41,7 @@ class LauncherSearchIconImageLoader {
       Profile* profile,
       const extensions::Extension* extension,
       const int icon_dimension,
-      scoped_ptr<chromeos::launcher_search_provider::ErrorReporter>
+      std::unique_ptr<chromeos::launcher_search_provider::ErrorReporter>
           error_reporter);
   virtual ~LauncherSearchIconImageLoader();
 
@@ -90,7 +91,8 @@ class LauncherSearchIconImageLoader {
   // be larger than 3.
   std::string GetTruncatedIconUrl(const uint32_t max_size);
 
-  scoped_ptr<chromeos::launcher_search_provider::ErrorReporter> error_reporter_;
+  std::unique_ptr<chromeos::launcher_search_provider::ErrorReporter>
+      error_reporter_;
 
   gfx::ImageSkia extension_icon_image_;
   gfx::ImageSkia custom_icon_image_;

@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_UI_CONFIRM_BUBBLE_H_
 #define CHROME_BROWSER_UI_CONFIRM_BUBBLE_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/gfx/native_widget_types.h"
 
 class ConfirmBubbleModel;
@@ -22,7 +23,7 @@ namespace chrome {
 void ShowConfirmBubble(gfx::NativeWindow window,
                        gfx::NativeView anchor_view,
                        const gfx::Point& origin,
-                       scoped_ptr<ConfirmBubbleModel> model);
+                       std::unique_ptr<ConfirmBubbleModel> model);
 
 }  // namespace chrome
 

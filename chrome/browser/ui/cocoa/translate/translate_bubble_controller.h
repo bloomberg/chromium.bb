@@ -4,8 +4,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "components/translate/core/common/translate_errors.h"
@@ -27,7 +28,7 @@ class WebContents;
 @interface TranslateBubbleController : BaseBubbleController {
  @private
   content::WebContents* webContents_;
-  scoped_ptr<TranslateBubbleModel> model_;
+  std::unique_ptr<TranslateBubbleModel> model_;
 
   // The views of each state. The keys are TranslateBubbleModel::ViewState,
   // and the values are NSView*.
@@ -45,13 +46,13 @@ class WebContents;
 
   // The combobox model which is used to deny translation at the view before
   // translate.
-  scoped_ptr<TranslateDenialComboboxModel> translateDenialComboboxModel_;
+  std::unique_ptr<TranslateDenialComboboxModel> translateDenialComboboxModel_;
 
   // The combobox model for source languages on the advanced (option) panel.
-  scoped_ptr<LanguageComboboxModel> sourceLanguageComboboxModel_;
+  std::unique_ptr<LanguageComboboxModel> sourceLanguageComboboxModel_;
 
   // The combobox model for target languages on the advanced (option) panel.
-  scoped_ptr<LanguageComboboxModel> targetLanguageComboboxModel_;
+  std::unique_ptr<LanguageComboboxModel> targetLanguageComboboxModel_;
 
   // Whether the translation is actually executed once at least.
   BOOL translateExecuted_;
@@ -61,7 +62,7 @@ class WebContents;
 @property(readonly, nonatomic) const TranslateBubbleModel* model;
 
 - (id)initWithParentWindow:(BrowserWindowController*)controller
-                     model:(scoped_ptr<TranslateBubbleModel>)model
+                     model:(std::unique_ptr<TranslateBubbleModel>)model
                webContents:(content::WebContents*)webContents;
 - (void)switchView:(TranslateBubbleModel::ViewState)viewState;
 - (void)switchToErrorView:(translate::TranslateErrors::Type)errorType;

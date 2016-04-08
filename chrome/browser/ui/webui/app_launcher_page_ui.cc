@@ -59,7 +59,7 @@ AppLauncherPageUI::AppLauncherPageUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(new ThemeHandler());
 #endif
 
-  scoped_ptr<HTMLSource> html_source(
+  std::unique_ptr<HTMLSource> html_source(
       new HTMLSource(GetProfile()->GetOriginalProfile()));
   content::URLDataSource::Add(GetProfile(), html_source.release());
 }

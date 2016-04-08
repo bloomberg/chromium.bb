@@ -94,8 +94,8 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
 // static
 void DefaultBrowserInfoBarDelegate::Create(InfoBarService* infobar_service,
                                            Profile* profile) {
-  infobar_service->AddInfoBar(
-      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
+  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
+      std::unique_ptr<ConfirmInfoBarDelegate>(
           new DefaultBrowserInfoBarDelegate(profile))));
 }
 

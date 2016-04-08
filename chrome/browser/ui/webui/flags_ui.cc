@@ -142,7 +142,7 @@ class FlagsDOMHandler : public WebUIMessageHandler {
   void HandleResetAllFlags(const base::ListValue* args);
 
  private:
-  scoped_ptr<flags_ui::FlagsStorage> flags_storage_;
+  std::unique_ptr<flags_ui::FlagsStorage> flags_storage_;
   flags_ui::FlagAccess access_;
   bool experimental_features_requested_;
 
@@ -187,8 +187,8 @@ void FlagsDOMHandler::HandleRequestExperimentalFeatures(
 
   base::DictionaryValue results;
 
-  scoped_ptr<base::ListValue> supported_features(new base::ListValue);
-  scoped_ptr<base::ListValue> unsupported_features(new base::ListValue);
+  std::unique_ptr<base::ListValue> supported_features(new base::ListValue);
+  std::unique_ptr<base::ListValue> unsupported_features(new base::ListValue);
   about_flags::GetFlagFeatureEntries(flags_storage_.get(),
                                      access_,
                                      supported_features.get(),

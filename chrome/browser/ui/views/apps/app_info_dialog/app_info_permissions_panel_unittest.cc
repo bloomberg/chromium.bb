@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_panel.h"
 
+#include <memory>
 #include <utility>
 
 #include "apps/saved_files_service.h"
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -39,7 +39,7 @@ class AppInfoPermissionsPanelTest : public testing::Test {
  protected:
   AppInfoPermissionsPanelTest() {}
 
-  scoped_ptr<base::DictionaryValue> ValidAppManifest() {
+  std::unique_ptr<base::DictionaryValue> ValidAppManifest() {
     return extensions::DictionaryBuilder()
         .Set("name", "Test App Name")
         .Set("version", "2.0")

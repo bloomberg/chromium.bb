@@ -306,7 +306,7 @@ int BrowserActionsContainer::GetChevronWidth() const {
 }
 
 void BrowserActionsContainer::ShowToolbarActionBubble(
-    scoped_ptr<ToolbarActionsBarBubbleDelegate> controller) {
+    std::unique_ptr<ToolbarActionsBarBubbleDelegate> controller) {
   // The container shouldn't be asked to show a bubble if it's animating.
   DCHECK(!animating());
   views::View* anchor_view = nullptr;
@@ -325,7 +325,7 @@ void BrowserActionsContainer::ShowToolbarActionBubble(
 }
 
 void BrowserActionsContainer::ShowExtensionMessageBubble(
-    scoped_ptr<extensions::ExtensionMessageBubbleController> controller,
+    std::unique_ptr<extensions::ExtensionMessageBubbleController> controller,
     ToolbarActionViewController* anchor_action) {
   // The container shouldn't be asked to show a bubble if it's animating.
   DCHECK(!animating());

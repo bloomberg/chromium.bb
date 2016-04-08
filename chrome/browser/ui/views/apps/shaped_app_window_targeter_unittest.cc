@@ -56,7 +56,7 @@ class ShapedAppWindowTargeterTest : public aura::test::AuraTestBase {
 
  private:
   views::WebView web_view_;
-  scoped_ptr<views::Widget> widget_;
+  std::unique_ptr<views::Widget> widget_;
   ChromeNativeAppWindowViewsAura app_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ShapedAppWindowTargeterTest);
@@ -76,7 +76,7 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestBasic) {
     EXPECT_EQ(window, move.target());
   }
 
-  scoped_ptr<SkRegion> region(new SkRegion);
+  std::unique_ptr<SkRegion> region(new SkRegion);
   region->op(SkIRect::MakeXYWH(0, 0, 0, 0), SkRegion::kUnion_Op);
   app_window()->UpdateShape(std::move(region));
   {
@@ -130,7 +130,7 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestOnlyForShapedWindow) {
   // receive events outside of its bounds. Verify that this window-targeter is
   // active unless the window has a custom shape.
   gfx::Insets inset(-30);
-  root_window()->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
+  root_window()->SetEventTargeter(std::unique_ptr<ui::EventTargeter>(
       new wm::EasyResizeWindowTargeter(root_window(), inset, inset)));
 
   aura::Window* window = widget()->GetNativeWindow();
@@ -158,7 +158,7 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestOnlyForShapedWindow) {
     EXPECT_EQ(window, move.target());
   }
 
-  scoped_ptr<SkRegion> region(new SkRegion);
+  std::unique_ptr<SkRegion> region(new SkRegion);
   region->op(SkIRect::MakeXYWH(40, 0, 20, 100), SkRegion::kUnion_Op);
   region->op(SkIRect::MakeXYWH(0, 40, 100, 20), SkRegion::kUnion_Op);
   app_window()->UpdateShape(std::move(region));
@@ -176,7 +176,7 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestOnlyForShapedWindow) {
 
   // Remove the custom shape. This should restore the behaviour of targeting the
   // app window for events just outside its bounds.
-  app_window()->UpdateShape(scoped_ptr<SkRegion>());
+  app_window()->UpdateShape(std::unique_ptr<SkRegion>());
   {
     ui::MouseEvent move(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
                         gfx::Point(10, 10), ui::EventTimeForNow(), ui::EF_NONE,
@@ -218,7 +218,7 @@ TEST_F(ShapedAppWindowTargeterTest, ResizeInsetsWithinBounds) {
 
 #if !defined(OS_CHROMEOS)
   // The non standard app frame has a easy resize targetter installed.
-  scoped_ptr<views::NonClientFrameView> frame(
+  std::unique_ptr<views::NonClientFrameView> frame(
       app_window_views()->CreateNonStandardAppFrame());
   {
     // Ensure that the window has an event targeter (there should be an

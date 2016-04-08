@@ -50,7 +50,7 @@ class PermissionMenuButton : public views::MenuButton,
                            const ui::Event* event) override;
 
   PermissionMenuModel* menu_model_;  // Owned by |PermissionSelectorView|.
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   bool is_rtl_display_;
 

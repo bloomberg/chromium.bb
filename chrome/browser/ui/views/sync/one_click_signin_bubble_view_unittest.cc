@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/views/sync/one_click_signin_bubble_view.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/sync/one_click_signin_bubble_delegate.h"
 #include "content/public/test/test_utils.h"
 #include "ui/events/event_utils.h"
@@ -43,8 +43,7 @@ class OneClickSigninBubbleViewTest : public views::ViewsTestBase,
  protected:
   OneClickSigninBubbleView* ShowOneClickSigninBubble(
     BrowserWindow::OneClickSigninBubbleType bubble_type) {
-
-    scoped_ptr<OneClickSigninBubbleDelegate> delegate;
+    std::unique_ptr<OneClickSigninBubbleDelegate> delegate;
     delegate.reset(new OneClickSigninBubbleTestDelegate(this));
 
     OneClickSigninBubbleView::ShowBubble(

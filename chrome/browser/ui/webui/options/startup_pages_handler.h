@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_STARTUP_PAGES_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_STARTUP_PAGES_HANDLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "components/omnibox/browser/autocomplete_controller_delegate.h"
@@ -78,14 +79,14 @@ class StartupPagesHandler : public OptionsPageUIHandler,
   // Writes the current set of startup pages to prefs.
   void SaveStartupPagesPref();
 
-  scoped_ptr<AutocompleteController> autocomplete_controller_;
+  std::unique_ptr<AutocompleteController> autocomplete_controller_;
 
   // Used to observe updates to the preference of the list of URLs to load
   // on startup, which can be updated via sync.
   PrefChangeRegistrar pref_change_registrar_;
 
   // The set of pages to launch on startup.
-  scoped_ptr<CustomHomePagesTableModel> startup_custom_pages_table_model_;
+  std::unique_ptr<CustomHomePagesTableModel> startup_custom_pages_table_model_;
 
   DISALLOW_COPY_AND_ASSIGN(StartupPagesHandler);
 };

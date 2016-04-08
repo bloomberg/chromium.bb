@@ -7,9 +7,10 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 
@@ -48,8 +49,8 @@ class TabModalConfirmDialogMac : public TabModalConfirmDialog,
 
   bool closing_;
 
-  scoped_ptr<ConstrainedWindowMac> window_;
-  scoped_ptr<TabModalConfirmDialogDelegate> delegate_;
+  std::unique_ptr<ConstrainedWindowMac> window_;
+  std::unique_ptr<TabModalConfirmDialogDelegate> delegate_;
   base::scoped_nsobject<ConstrainedWindowAlert> alert_;
   base::scoped_nsobject<TabModalConfirmDialogMacBridge> bridge_;
 

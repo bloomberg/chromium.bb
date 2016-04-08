@@ -35,7 +35,7 @@ class ChromeZoomLevelOTRDelegate : public content::ZoomLevelDelegate {
 
   base::WeakPtr<ui_zoom::ZoomEventManager> zoom_event_manager_;
   content::HostZoomMap* host_zoom_map_;
-  scoped_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
+  std::unique_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeZoomLevelOTRDelegate);
 };

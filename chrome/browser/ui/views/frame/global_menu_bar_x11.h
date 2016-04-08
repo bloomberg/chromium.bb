@@ -179,7 +179,7 @@ class GlobalMenuBarX11 : public AvatarMenuObserver,
 
   sessions::TabRestoreService* tab_restore_service_;  // weak
 
-  scoped_ptr<AvatarMenu> avatar_menu_;
+  std::unique_ptr<AvatarMenu> avatar_menu_;
 
   ScopedObserver<history::TopSites, history::TopSitesObserver> scoped_observer_;
 

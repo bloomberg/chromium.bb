@@ -4,14 +4,15 @@
 
 #include "chrome/browser/ui/views/toolbar/media_router_action_platform_delegate_views.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 
 // static
-scoped_ptr<MediaRouterActionPlatformDelegate>
+std::unique_ptr<MediaRouterActionPlatformDelegate>
 MediaRouterActionPlatformDelegate::Create(Browser* browser) {
-  return make_scoped_ptr(new MediaRouterActionPlatformDelegateViews(browser));
+  return base::WrapUnique(new MediaRouterActionPlatformDelegateViews(browser));
 }
 
 MediaRouterActionPlatformDelegateViews::MediaRouterActionPlatformDelegateViews(

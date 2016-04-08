@@ -49,7 +49,7 @@ class SSLClientAuthObserverCocoaBridge : public SSLClientAuthObserver,
   SSLClientAuthObserverCocoaBridge(
       const content::BrowserContext* browser_context,
       net::SSLCertRequestInfo* cert_request_info,
-      scoped_ptr<content::ClientCertificateDelegate> delegate,
+      std::unique_ptr<content::ClientCertificateDelegate> delegate,
       SSLClientCertificateSelectorCocoa* controller)
       : SSLClientAuthObserver(browser_context,
                               cert_request_info,
@@ -80,7 +80,7 @@ namespace chrome {
 void ShowSSLClientCertificateSelector(
     content::WebContents* contents,
     net::SSLCertRequestInfo* cert_request_info,
-    scoped_ptr<content::ClientCertificateDelegate> delegate) {
+    std::unique_ptr<content::ClientCertificateDelegate> delegate) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Not all WebContentses can show modal dialogs.
@@ -109,8 +109,9 @@ void ShowSSLClientCertificateSelector(
 
 - (id)initWithBrowserContext:(const content::BrowserContext*)browserContext
              certRequestInfo:(net::SSLCertRequestInfo*)certRequestInfo
-                    delegate:(scoped_ptr<content::ClientCertificateDelegate>)
-                                 delegate {
+                    delegate:
+                        (std::unique_ptr<content::ClientCertificateDelegate>)
+                            delegate {
   DCHECK(browserContext);
   DCHECK(certRequestInfo);
   if ((self = [super init])) {

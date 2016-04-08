@@ -6,11 +6,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <tuple>
 
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -153,11 +153,10 @@ TEST_F(SearchTabHelperTest, DetermineIfPageSupportsInstant_NonLocal) {
   search_tab_helper->DetermineIfPageSupportsInstant();
   ASSERT_TRUE(MessageWasSent(ChromeViewMsg_DetermineIfPageSupportsInstant::ID));
 
-  scoped_ptr<IPC::Message> response(
+  std::unique_ptr<IPC::Message> response(
       new ChromeViewHostMsg_InstantSupportDetermined(
           web_contents()->GetRoutingID(),
-          search_tab_helper->ipc_router().page_seq_no_for_testing(),
-          true));
+          search_tab_helper->ipc_router().page_seq_no_for_testing(), true));
   search_tab_helper->ipc_router().OnMessageReceived(*response);
 }
 

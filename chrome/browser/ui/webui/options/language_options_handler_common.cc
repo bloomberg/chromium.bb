@@ -289,7 +289,7 @@ void LanguageOptionsHandlerCommon::UpdateLanguageListCallback(
   }
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  scoped_ptr<translate::TranslatePrefs> translate_prefs =
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs =
       ChromeTranslateClient::CreateTranslatePrefs(profile->GetPrefs());
   translate_prefs->UpdateLanguageList(languages);
 }

@@ -172,11 +172,11 @@ ScopedVector<ToolbarActionViewController> ToolbarActionsModel::CreateActions(
   return action_list;
 }
 
-scoped_ptr<ToolbarActionViewController>
+std::unique_ptr<ToolbarActionViewController>
 ToolbarActionsModel::CreateActionForItem(Browser* browser,
                                          ToolbarActionsBar* bar,
                                          const ToolbarItem& item) {
-  scoped_ptr<ToolbarActionViewController> result;
+  std::unique_ptr<ToolbarActionViewController> result;
   switch (item.type) {
     case EXTENSION_ACTION: {
       // Get the extension.

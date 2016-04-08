@@ -8,9 +8,10 @@
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "ui/base/cocoa/tracking_area.h"
 
@@ -22,7 +23,7 @@ class Browser;
 @interface AvatarMenuBubbleController : BaseBubbleController {
  @private
   // The menu that contains the data from the backend.
-  scoped_ptr<AvatarMenu> menu_;
+  std::unique_ptr<AvatarMenu> menu_;
 
   // Array of the below view controllers.
   base::scoped_nsobject<NSMutableArray> items_;

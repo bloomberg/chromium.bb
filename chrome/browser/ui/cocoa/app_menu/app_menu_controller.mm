@@ -113,7 +113,7 @@ class ZoomLevelObserver {
     [[controller_ zoomDisplay] setTitle:SysUTF16ToNSString(level)];
   }
 
-  scoped_ptr<content::HostZoomMap::Subscription> subscription_;
+  std::unique_ptr<content::HostZoomMap::Subscription> subscription_;
 
   AppMenuController* controller_;  // Weak; owns this.
 

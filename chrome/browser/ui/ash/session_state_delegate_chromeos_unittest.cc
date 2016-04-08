@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/ash/session_state_delegate_chromeos.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
@@ -36,7 +36,7 @@ const char* kUser = "user@test.com";
 // we've ensured the profile has been shut down.
 policy::PolicyCertVerifier* g_policy_cert_verifier_for_factory = NULL;
 
-scoped_ptr<KeyedService> CreateTestPolicyCertService(
+std::unique_ptr<KeyedService> CreateTestPolicyCertService(
     content::BrowserContext* context) {
   return policy::PolicyCertService::CreateForTesting(
       kUser, g_policy_cert_verifier_for_factory,
@@ -115,13 +115,13 @@ class SessionStateDelegateChromeOSTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle threads_;
-  scoped_ptr<policy::PolicyCertVerifier> cert_verifier_;
-  scoped_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<policy::PolicyCertVerifier> cert_verifier_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* user_profile_;
 
  private:
-  scoped_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
-  scoped_ptr<SessionStateDelegateChromeos> session_state_delegate_;
+  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<SessionStateDelegateChromeos> session_state_delegate_;
 
   // Not owned.
   FakeChromeUserManager* user_manager_;

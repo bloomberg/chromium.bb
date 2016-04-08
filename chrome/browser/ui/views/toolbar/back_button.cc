@@ -33,8 +33,9 @@ const char* BackButton::GetClassName() const {
   return "BackButton";
 }
 
-scoped_ptr<views::LabelButtonBorder> BackButton::CreateDefaultBorder() const {
-  scoped_ptr<views::LabelButtonBorder> border =
+std::unique_ptr<views::LabelButtonBorder> BackButton::CreateDefaultBorder()
+    const {
+  std::unique_ptr<views::LabelButtonBorder> border =
       ToolbarButton::CreateDefaultBorder();
 
   // Adjust border insets to follow the margin change,

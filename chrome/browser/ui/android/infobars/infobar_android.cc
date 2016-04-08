@@ -18,7 +18,8 @@
 
 // InfoBarAndroid -------------------------------------------------------------
 
-InfoBarAndroid::InfoBarAndroid(scoped_ptr<infobars::InfoBarDelegate> delegate)
+InfoBarAndroid::InfoBarAndroid(
+    std::unique_ptr<infobars::InfoBarDelegate> delegate)
     : infobars::InfoBar(std::move(delegate)) {}
 
 InfoBarAndroid::~InfoBarAndroid() {

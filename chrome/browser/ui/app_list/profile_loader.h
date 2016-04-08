@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_PROFILE_LOADER_H_
 #define CHROME_BROWSER_UI_APP_LIST_PROFILE_LOADER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 namespace base {
@@ -48,7 +49,7 @@ class ProfileLoader {
   void DecrementPendingProfileLoads();
 
   ProfileStore* profile_store_;
-  scoped_ptr<ScopedKeepAlive> keep_alive_;
+  std::unique_ptr<ScopedKeepAlive> keep_alive_;
   int profile_load_sequence_id_;
   int pending_profile_loads_;
 

@@ -205,7 +205,7 @@ TEST_F(ProfileMenuControllerTest, SetActiveAndRemove) {
 
   // Create a browser and "show" it.
   Browser::CreateParams profile2_params(profile2);
-  scoped_ptr<Browser> p2_browser(
+  std::unique_ptr<Browser> p2_browser(
       chrome::CreateBrowserWithTestWindowForParams(&profile2_params));
   BrowserList::SetLastActive(p2_browser.get());
   VerifyProfileNamedIsActive(@"Profile 2", __LINE__);
@@ -216,7 +216,7 @@ TEST_F(ProfileMenuControllerTest, SetActiveAndRemove) {
 
   // Open a new browser and make sure it takes effect.
   Browser::CreateParams profile3_params(profile3);
-  scoped_ptr<Browser> p3_browser(
+  std::unique_ptr<Browser> p3_browser(
       chrome::CreateBrowserWithTestWindowForParams(&profile3_params));
   BrowserList::SetLastActive(p3_browser.get());
   VerifyProfileNamedIsActive(@"Profile 3", __LINE__);
@@ -251,7 +251,7 @@ TEST_F(ProfileMenuControllerTest, DeleteActiveProfile) {
 TEST_F(ProfileMenuControllerTest, SupervisedProfile) {
   TestingProfileManager* manager = testing_profile_manager();
   TestingProfile* supervised_profile = manager->CreateTestingProfile(
-      "test1", scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
+      "test1", std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
       base::ASCIIToUTF16("Supervised User"), 0, "TEST_ID",
       TestingProfile::TestingFactories());
   // The supervised profile is initially marked as omitted from the avatar menu
@@ -283,7 +283,7 @@ TEST_F(ProfileMenuControllerTest, SupervisedProfile) {
 
   // Open a new browser for the supervised user and switch to it.
   Browser::CreateParams supervised_profile_params(supervised_profile);
-  scoped_ptr<Browser> supervised_browser(
+  std::unique_ptr<Browser> supervised_browser(
       chrome::CreateBrowserWithTestWindowForParams(&supervised_profile_params));
   BrowserList::SetLastActive(supervised_browser.get());
 

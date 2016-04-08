@@ -122,10 +122,10 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
   }
 
 private:
-  scoped_ptr<content::TestWebUI> web_ui_;
-  scoped_ptr<SyncConfirmationUI> sync_confirmation_ui_;
-  TestingSyncConfirmationHandler* handler_;  // Not owned.
-  base::UserActionTester user_action_tester_;
+ std::unique_ptr<content::TestWebUI> web_ui_;
+ std::unique_ptr<SyncConfirmationUI> sync_confirmation_ui_;
+ TestingSyncConfirmationHandler* handler_;  // Not owned.
+ base::UserActionTester user_action_tester_;
 };
 
 TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {

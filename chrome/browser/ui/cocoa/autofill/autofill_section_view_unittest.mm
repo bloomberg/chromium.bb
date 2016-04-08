@@ -4,8 +4,9 @@
 
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_view.h"
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -77,7 +78,7 @@ class AutofillSectionViewTest : public ui::CocoaTest {
  protected:
   base::scoped_nsobject<AutofillSectionView> view_;
   base::scoped_nsobject<NSBitmapImageRep> bitmap_;
-  scoped_ptr<gfx::ScopedNSGraphicsContextSaveGState> saved_context_;
+  std::unique_ptr<gfx::ScopedNSGraphicsContextSaveGState> saved_context_;
   NSGraphicsContext* context_;
 };
 

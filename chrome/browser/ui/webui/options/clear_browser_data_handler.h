@@ -49,10 +49,10 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   virtual void OnBrowsingHistoryPrefChanged();
 
   // Adds a |counter| for browsing data.
-  void AddCounter(scoped_ptr<BrowsingDataCounter> counter);
+  void AddCounter(std::unique_ptr<BrowsingDataCounter> counter);
 
   // Updates a counter in the UI according to the |result|.
-  void UpdateCounterText(scoped_ptr<BrowsingDataCounter::Result> result);
+  void UpdateCounterText(std::unique_ptr<BrowsingDataCounter::Result> result);
 
   // Implementation of SyncServiceObserver. Updates the support string at the
   // bottom of the dialog.

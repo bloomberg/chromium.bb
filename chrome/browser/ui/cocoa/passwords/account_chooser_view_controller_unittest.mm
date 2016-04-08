@@ -46,8 +46,9 @@ namespace {
 const char kDialogTitle[] = "Choose an account";
 
 // Returns a PasswordForm with only a username.
-scoped_ptr<autofill::PasswordForm> Credential(const char* username) {
-  scoped_ptr<autofill::PasswordForm> credential(new autofill::PasswordForm);
+std::unique_ptr<autofill::PasswordForm> Credential(const char* username) {
+  std::unique_ptr<autofill::PasswordForm> credential(
+      new autofill::PasswordForm);
   credential->username_value = base::ASCIIToUTF16(username);
   return credential;
 }
@@ -175,7 +176,7 @@ TEST_F(AccountChooserViewControllerTest, ConfiguresFederatedCredential) {
 
 TEST_F(AccountChooserViewControllerTest, ForwardsAvatarFetchToManager) {
   PasswordDialogController::FormsVector local_forms;
-  scoped_ptr<autofill::PasswordForm> form = Credential("taco");
+  std::unique_ptr<autofill::PasswordForm> form = Credential("taco");
   form->icon_url = GURL("http://foo.com");
   local_forms.push_back(std::move(form));
   SetUpAccountChooser(&local_forms);

@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_FONT_SETTINGS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_FONT_SETTINGS_HANDLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
@@ -50,7 +51,7 @@ class FontSettingsHandler : public OptionsPageUIHandler,
  private:
   void HandleFetchFontsData(const base::ListValue* args);
 
-  void FontsListHasLoaded(scoped_ptr<base::ListValue> list);
+  void FontsListHasLoaded(std::unique_ptr<base::ListValue> list);
 
   void SetUpStandardFontSample();
   void SetUpSerifFontSample();

@@ -116,9 +116,9 @@ class NewTaskManagerView
   // Restores saved "always on top" state from a previous session.
   void RetriveSavedAlwaysOnTopState();
 
-  scoped_ptr<TaskManagerTableModel> table_model_;
+  std::unique_ptr<TaskManagerTableModel> table_model_;
 
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   // We need to own the text of the menu, the Windows API does not copy it.
   base::string16 always_on_top_menu_text_;

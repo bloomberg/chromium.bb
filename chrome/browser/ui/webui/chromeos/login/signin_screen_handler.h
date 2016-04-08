@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_SIGNIN_SCREEN_HANDLER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
@@ -14,7 +15,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/screens/network_error_model.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
@@ -372,7 +372,7 @@ class SigninScreenHandler
   void SendPublicSessionKeyboardLayouts(
       const AccountId& account_id,
       const std::string& locale,
-      scoped_ptr<base::ListValue> keyboard_layouts);
+      std::unique_ptr<base::ListValue> keyboard_layouts);
 
   // Returns true iff
   // (i)   log in is restricted to some user list,
@@ -468,7 +468,7 @@ class SigninScreenHandler
   GaiaScreenHandler* gaia_screen_handler_ = nullptr;
 
   // Maximized mode controller delegate.
-  scoped_ptr<TouchViewControllerDelegate> max_mode_delegate_;
+  std::unique_ptr<TouchViewControllerDelegate> max_mode_delegate_;
 
   // Input Method Engine state used at signin screen.
   scoped_refptr<input_method::InputMethodManager::State> ime_state_;
@@ -481,9 +481,9 @@ class SigninScreenHandler
 
   bool zero_offline_timeout_for_test_ = false;
 
-  scoped_ptr<ErrorScreensHistogramHelper> histogram_helper_;
+  std::unique_ptr<ErrorScreensHistogramHelper> histogram_helper_;
 
-  scoped_ptr<LoginFeedback> login_feedback_;
+  std::unique_ptr<LoginFeedback> login_feedback_;
 
   base::WeakPtrFactory<SigninScreenHandler> weak_factory_;
 

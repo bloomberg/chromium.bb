@@ -35,13 +35,13 @@ MockComponentToolbarActionsFactory::GetInitialComponentIds(Profile* profile) {
   return ids;
 }
 
-scoped_ptr<ToolbarActionViewController>
+std::unique_ptr<ToolbarActionViewController>
 MockComponentToolbarActionsFactory::GetComponentToolbarActionForId(
     const std::string& id,
     Browser* browser,
     ToolbarActionsBar* bar) {
   DCHECK_EQ(kActionIdForTesting, id);
-  return scoped_ptr<ToolbarActionViewController>(
+  return std::unique_ptr<ToolbarActionViewController>(
       new TestToolbarActionViewController(
           MockComponentToolbarActionsFactory::kActionIdForTesting));
 }

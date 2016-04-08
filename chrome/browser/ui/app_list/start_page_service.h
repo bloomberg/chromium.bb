@@ -6,13 +6,14 @@
 #define CHROME_BROWSER_UI_APP_LIST_START_PAGE_SERVICE_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -165,9 +166,9 @@ class StartPageService : public KeyedService,
   bool ShouldEnableSpeechRecognition() const;
 
   Profile* profile_;
-  scoped_ptr<content::WebContents> contents_;
-  scoped_ptr<StartPageWebContentsDelegate> contents_delegate_;
-  scoped_ptr<ProfileDestroyObserver> profile_destroy_observer_;
+  std::unique_ptr<content::WebContents> contents_;
+  std::unique_ptr<StartPageWebContentsDelegate> contents_delegate_;
+  std::unique_ptr<ProfileDestroyObserver> profile_destroy_observer_;
   SpeechRecognitionState state_;
   base::ObserverList<StartPageObserver> observers_;
   bool speech_button_toggled_manually_;
@@ -177,18 +178,18 @@ class StartPageService : public KeyedService,
   std::vector<base::Closure> pending_webui_callbacks_;
 
   base::DefaultClock clock_;
-  scoped_ptr<SpeechRecognizer> speech_recognizer_;
-  scoped_ptr<SpeechAuthHelper> speech_auth_helper_;
+  std::unique_ptr<SpeechRecognizer> speech_recognizer_;
+  std::unique_ptr<SpeechAuthHelper> speech_auth_helper_;
 
   bool network_available_;
   bool microphone_available_;
 #if defined(OS_CHROMEOS)
-  scoped_ptr<AudioStatus> audio_status_;
+  std::unique_ptr<AudioStatus> audio_status_;
 #endif
-  scoped_ptr<NetworkChangeObserver> network_change_observer_;
+  std::unique_ptr<NetworkChangeObserver> network_change_observer_;
 
   bool search_engine_is_google_;
-  scoped_ptr<net::URLFetcher> doodle_fetcher_;
+  std::unique_ptr<net::URLFetcher> doodle_fetcher_;
   net::BackoffEntry backoff_entry_;
 
   base::WeakPtrFactory<StartPageService> weak_factory_;

@@ -29,7 +29,7 @@ AppListPrefsFactory* AppListPrefsFactory::GetInstance() {
 
 void AppListPrefsFactory::SetInstanceForTesting(
     content::BrowserContext* context,
-    scoped_ptr<AppListPrefs> prefs) {
+    std::unique_ptr<AppListPrefs> prefs) {
   Associate(context, std::move(prefs));
 }
 

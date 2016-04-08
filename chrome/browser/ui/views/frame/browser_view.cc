@@ -5,7 +5,9 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
 #include <stdint.h>
+
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -13,7 +15,6 @@
 #include "base/i18n/rtl.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
@@ -1044,7 +1045,7 @@ void BrowserView::SetFocusToLocationBar(bool select_all) {
   // that the location bar view is visible and is considered focusable. If the
   // location bar view gains focus, |immersive_mode_controller_| will keep the
   // top-of-window views revealed.
-  scoped_ptr<ImmersiveRevealedLock> focus_reveal_lock(
+  std::unique_ptr<ImmersiveRevealedLock> focus_reveal_lock(
       immersive_mode_controller_->GetRevealedLock(
           ImmersiveModeController::ANIMATE_REVEAL_YES));
 
@@ -1086,7 +1087,7 @@ void BrowserView::FocusToolbar() {
   // that the toolbar is visible and is considered focusable. If the
   // toolbar gains focus, |immersive_mode_controller_| will keep the
   // top-of-window views revealed.
-  scoped_ptr<ImmersiveRevealedLock> focus_reveal_lock(
+  std::unique_ptr<ImmersiveRevealedLock> focus_reveal_lock(
       immersive_mode_controller_->GetRevealedLock(
           ImmersiveModeController::ANIMATE_REVEAL_YES));
 
@@ -1236,7 +1237,7 @@ void BrowserView::ShowUpdateChromeDialog() {
 }
 
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
-  scoped_ptr<BubbleSyncPromoDelegate> delegate;
+  std::unique_ptr<BubbleSyncPromoDelegate> delegate;
   delegate.reset(new BookmarkBubbleSignInDelegate(browser_.get()));
 
   views::View* anchor_view = GetToolbarView()->GetBookmarkBubbleAnchor();
@@ -1300,7 +1301,7 @@ void BrowserView::ShowOneClickSigninBubble(
     const base::string16& email,
     const base::string16& error_message,
     const StartSyncCallback& start_sync_callback) {
-  scoped_ptr<OneClickSigninBubbleDelegate> delegate;
+  std::unique_ptr<OneClickSigninBubbleDelegate> delegate;
   delegate.reset(new OneClickSigninBubbleLinksDelegate(browser()));
 
   views::View* anchor_view = nullptr;
@@ -1374,7 +1375,7 @@ void BrowserView::ShowAppMenu() {
     return;
 
   // Keep the top-of-window views revealed as long as the app menu is visible.
-  scoped_ptr<ImmersiveRevealedLock> revealed_lock(
+  std::unique_ptr<ImmersiveRevealedLock> revealed_lock(
       immersive_mode_controller_->GetRevealedLock(
           ImmersiveModeController::ANIMATE_REVEAL_NO));
 

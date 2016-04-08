@@ -14,7 +14,7 @@
 #include "ui/views/layout/grid_layout.h"
 
 ChosenObjectView::ChosenObjectView(
-    scoped_ptr<WebsiteSettingsUI::ChosenObjectInfo> info)
+    std::unique_ptr<WebsiteSettingsUI::ChosenObjectInfo> info)
     : info_(std::move(info)) {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);

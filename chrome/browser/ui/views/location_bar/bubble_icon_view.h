@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_BUBBLE_ICON_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_BUBBLE_ICON_VIEW_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/views/animation/ink_drop_host_view.h"
@@ -67,7 +68,7 @@ class BubbleIconView : public views::InkDropHostView,
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
-  scoped_ptr<views::InkDropHover> CreateInkDropHover() const override;
+  std::unique_ptr<views::InkDropHover> CreateInkDropHover() const override;
   SkColor GetInkDropBaseColor() const override;
 
   // ui::EventHandler:
@@ -127,7 +128,7 @@ class BubbleIconView : public views::InkDropHostView,
   bool suppress_mouse_released_action_;
 
   // Animation delegate for the ink drop ripple effect.
-  scoped_ptr<views::InkDropDelegate> ink_drop_delegate_;
+  std::unique_ptr<views::InkDropDelegate> ink_drop_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleIconView);
 };

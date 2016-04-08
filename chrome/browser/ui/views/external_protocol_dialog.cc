@@ -35,9 +35,8 @@ const int kMessageWidth = 400;
 void ExternalProtocolHandler::RunExternalProtocolDialog(
     const GURL& url, int render_process_host_id, int routing_id,
     ui::PageTransition page_transition, bool has_user_gesture) {
-  scoped_ptr<ExternalProtocolDialogDelegate> delegate(
-      new ExternalProtocolDialogDelegate(url,
-                                         render_process_host_id,
+  std::unique_ptr<ExternalProtocolDialogDelegate> delegate(
+      new ExternalProtocolDialogDelegate(url, render_process_host_id,
                                          routing_id));
   if (delegate->program_name().empty()) {
     // ShellExecute won't do anything. Don't bother warning the user.
@@ -124,7 +123,7 @@ ui::ModalType ExternalProtocolDialog::GetModalType() const {
 // ExternalProtocolDialog, private:
 
 ExternalProtocolDialog::ExternalProtocolDialog(
-    scoped_ptr<const ProtocolDialogDelegate> delegate,
+    std::unique_ptr<const ProtocolDialogDelegate> delegate,
     int render_process_host_id,
     int routing_id)
     : delegate_(std::move(delegate)),

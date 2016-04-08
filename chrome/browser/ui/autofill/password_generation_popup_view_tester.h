@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_PASSWORD_GENERATION_POPUP_VIEW_TESTER_H_
 #define CHROME_BROWSER_UI_AUTOFILL_PASSWORD_GENERATION_POPUP_VIEW_TESTER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/gfx/geometry/point.h"
 
 namespace autofill {
@@ -15,7 +16,7 @@ class PasswordGenerationPopupView;
 // Helps test a PasswordGenerationPopupView.
 class PasswordGenerationPopupViewTester {
  public:
-  static scoped_ptr<PasswordGenerationPopupViewTester> For(
+  static std::unique_ptr<PasswordGenerationPopupViewTester> For(
       PasswordGenerationPopupView* view);
 
   virtual ~PasswordGenerationPopupViewTester() {}

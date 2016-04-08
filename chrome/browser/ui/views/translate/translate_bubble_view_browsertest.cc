@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/cld_data_harness.h"
@@ -35,7 +36,7 @@ class TranslateBubbleViewBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  scoped_ptr<test::CldDataHarness> cld_data_harness;
+  std::unique_ptr<test::CldDataHarness> cld_data_harness;
   DISALLOW_COPY_AND_ASSIGN(TranslateBubbleViewBrowserTest);
 };
 

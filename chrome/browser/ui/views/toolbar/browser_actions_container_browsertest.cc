@@ -291,7 +291,7 @@ class BrowserActionsContainerOverflowTest
   BrowserActionsContainer* main_bar_;
 
   // A parent view for the overflow menu.
-  scoped_ptr<views::View> overflow_parent_;
+  std::unique_ptr<views::View> overflow_parent_;
 
   // The overflow BrowserActionsContainer. We manufacture this so that we don't
   // have to open the app menu.

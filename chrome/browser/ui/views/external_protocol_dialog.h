@@ -20,7 +20,7 @@ class MessageBoxView;
 class ExternalProtocolDialog : public views::DialogDelegate {
  public:
   // RunExternalProtocolDialog calls this private constructor.
-  ExternalProtocolDialog(scoped_ptr<const ProtocolDialogDelegate> delegate,
+  ExternalProtocolDialog(std::unique_ptr<const ProtocolDialogDelegate> delegate,
                          int render_process_host_id,
                          int routing_id);
 
@@ -39,7 +39,7 @@ class ExternalProtocolDialog : public views::DialogDelegate {
   ui::ModalType GetModalType() const override;
 
  private:
-  const scoped_ptr<const ProtocolDialogDelegate> delegate_;
+  const std::unique_ptr<const ProtocolDialogDelegate> delegate_;
 
   // The message box view whose commands we handle.
   views::MessageBoxView* message_box_view_;

@@ -7,8 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 
@@ -41,8 +42,8 @@ class AlternateNavInfoBarDelegate : public infobars::InfoBarDelegate {
                               const GURL& search_url);
 
   // Returns an alternate nav infobar that owns |delegate|.
-  static scoped_ptr<infobars::InfoBar> CreateInfoBar(
-      scoped_ptr<AlternateNavInfoBarDelegate> delegate);
+  static std::unique_ptr<infobars::InfoBar> CreateInfoBar(
+      std::unique_ptr<AlternateNavInfoBarDelegate> delegate);
 
   // InfoBarDelegate:
   Type GetInfoBarType() const override;

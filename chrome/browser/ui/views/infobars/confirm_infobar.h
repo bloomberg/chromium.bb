@@ -25,7 +25,7 @@ class LabelButton;
 class ConfirmInfoBar : public InfoBarView,
                        public views::LinkListener {
  public:
-  explicit ConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate> delegate);
+  explicit ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate);
   ~ConfirmInfoBar() override;
 
  private:
@@ -49,7 +49,7 @@ class ConfirmInfoBar : public InfoBarView,
   views::LabelButton* ok_button_;
   views::Button* cancel_button_;
   views::Link* link_;
-  scoped_ptr<ElevationIconSetter> elevation_icon_setter_;
+  std::unique_ptr<ElevationIconSetter> elevation_icon_setter_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfirmInfoBar);
 };

@@ -94,7 +94,8 @@ TEST_F(ChromeSelectFilePolicyTest, MAYBE_ExpectAsynchronousListenerCall) {
   ScopedTestingLocalState local_state(
       TestingBrowserProcess::GetGlobal());
 
-  scoped_ptr<FileSelectionUser> file_selection_user(new FileSelectionUser());
+  std::unique_ptr<FileSelectionUser> file_selection_user(
+      new FileSelectionUser());
 
   // Disallow file-selection dialogs.
   local_state.Get()->SetManagedPref(prefs::kAllowFileSelectionDialogs,

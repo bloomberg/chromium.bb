@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_WINDOW_STATE_H_
 #define CHROME_BROWSER_UI_BROWSER_WINDOW_STATE_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "ui/base/ui_base_types.h"
 
@@ -30,7 +30,7 @@ std::string GetWindowName(const Browser* browser);
 // of the window that is stored in the given PrefService. If the window_name
 // isn't the name of a registered preference it is assumed to be the name of an
 // app and the AppWindowPlacement key is used to find the app's dictionary.
-scoped_ptr<DictionaryPrefUpdate> GetWindowPlacementDictionaryReadWrite(
+std::unique_ptr<DictionaryPrefUpdate> GetWindowPlacementDictionaryReadWrite(
     const std::string& window_name,
     PrefService* prefs);
 // Returns NULL if the window corresponds to an app that doesn't have placement

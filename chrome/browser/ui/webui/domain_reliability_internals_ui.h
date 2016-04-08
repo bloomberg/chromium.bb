@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_DOMAIN_RELIABILITY_INTERNALS_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_DOMAIN_RELIABILITY_INTERNALS_UI_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_ui_controller.h"
 
 namespace base {
@@ -22,7 +23,7 @@ class DomainReliabilityInternalsUI : public content::WebUIController {
 
  private:
   void UpdateData(const base::ListValue* args) const;
-  void OnDataUpdated(scoped_ptr<base::Value> data) const;
+  void OnDataUpdated(std::unique_ptr<base::Value> data) const;
 
   DISALLOW_COPY_AND_ASSIGN(DomainReliabilityInternalsUI);
 };

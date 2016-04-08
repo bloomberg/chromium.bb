@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/tab_dialogs_cocoa.h"
 
+#include "base/memory/ptr_util.h"
 #import "chrome/browser/ui/cocoa/content_settings/collected_cookies_mac.h"
 #import "chrome/browser/ui/cocoa/hung_renderer_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_bubble_cocoa.h"
@@ -67,10 +68,10 @@ void TabDialogsCocoa::HideManagePasswordsBubble() {
   // The bubble is closed when it loses the focus.
 }
 
-scoped_ptr<ValidationMessageBubble> TabDialogsCocoa::ShowValidationMessage(
+std::unique_ptr<ValidationMessageBubble> TabDialogsCocoa::ShowValidationMessage(
     const gfx::Rect& anchor_in_root_view,
     const base::string16& main_text,
     const base::string16& sub_text) {
-  return make_scoped_ptr(new ValidationMessageBubbleCocoa(
+  return base::WrapUnique(new ValidationMessageBubbleCocoa(
       web_contents_, anchor_in_root_view, main_text, sub_text));
 }

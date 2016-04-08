@@ -557,7 +557,7 @@ bool CreateChromeApplicationShortcutView::Cancel() {
 }
 
 void CreateChromeApplicationShortcutView::OnAppInfoLoaded(
-    scoped_ptr<web_app::ShortcutInfo> shortcut_info,
+    std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   shortcut_info_ = std::move(shortcut_info);
   file_handlers_info_ = file_handlers_info;

@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+
 #include <stddef.h>
+
+#include <memory>
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
@@ -26,7 +29,6 @@
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/mock_component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_action_view_controller.h"
-#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
@@ -222,7 +224,7 @@ class ToolbarActionsModelUnitTest
 
   // The test observer to track events. Must come after toolbar_model_ so that
   // it is destroyed and removes itself as an observer first.
-  scoped_ptr<ToolbarActionsModelTestObserver> model_observer_;
+  std::unique_ptr<ToolbarActionsModelTestObserver> model_observer_;
 
   // Sample extensions with only browser actions.
   scoped_refptr<const extensions::Extension> browser_action_a_;
@@ -235,7 +237,7 @@ class ToolbarActionsModelUnitTest
   scoped_refptr<const extensions::Extension> page_action_extension_;
   scoped_refptr<const extensions::Extension> no_action_extension_;
 
-  scoped_ptr<MockComponentToolbarActionsFactory> mock_actions_factory_;
+  std::unique_ptr<MockComponentToolbarActionsFactory> mock_actions_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionsModelUnitTest);
 };

@@ -6,10 +6,11 @@
 #define CHROME_BROWSER_UI_COCOA_PROFILES_PROFILE_CHOOSER_CONTROLLER_H_
 
 #import <Cocoa/Cocoa.h>
+
 #include <map>
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
@@ -35,11 +36,11 @@ class GaiaWebContentsDelegate;
 @interface ProfileChooserController : BaseBubbleController<NSTextViewDelegate> {
  @private
   // The menu that contains the data from the backend.
-  scoped_ptr<AvatarMenu> avatarMenu_;
+  std::unique_ptr<AvatarMenu> avatarMenu_;
 
   // An observer to be notified when the OAuth2 tokens change or the avatar
   // menu model updates for the active profile.
-  scoped_ptr<ActiveProfileObserverBridge> observer_;
+  std::unique_ptr<ActiveProfileObserverBridge> observer_;
 
   // The browser that launched the bubble. Not owned.
   Browser* browser_;
@@ -61,8 +62,8 @@ class GaiaWebContentsDelegate;
   std::map<int, std::string> currentProfileAccounts_;
 
   // Web contents used by the inline signin view.
-  scoped_ptr<content::WebContents> webContents_;
-  scoped_ptr<GaiaWebContentsDelegate> webContentsDelegate_;
+  std::unique_ptr<content::WebContents> webContents_;
+  std::unique_ptr<GaiaWebContentsDelegate> webContentsDelegate_;
 
   // Whether the bubble is displayed for an active guest profile.
   BOOL isGuestSession_;

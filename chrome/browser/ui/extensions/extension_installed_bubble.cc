@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
@@ -47,7 +48,7 @@ class ExtensionInstalledBubbleObserver
       public extensions::ExtensionRegistryObserver {
  public:
   explicit ExtensionInstalledBubbleObserver(
-      scoped_ptr<ExtensionInstalledBubble> bubble)
+      std::unique_ptr<ExtensionInstalledBubble> bubble)
       : bubble_(std::move(bubble)),
         extension_registry_observer_(this),
         animation_wait_retries_(0),
@@ -133,7 +134,7 @@ class ExtensionInstalledBubbleObserver
   }
 
   // The bubble that will be shown when the extension has finished installing.
-  scoped_ptr<ExtensionInstalledBubble> bubble_;
+  std::unique_ptr<ExtensionInstalledBubble> bubble_;
 
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
@@ -151,11 +152,11 @@ class ExtensionInstalledBubbleObserver
 };
 
 // Returns the keybinding for an extension command, or a null if none exists.
-scoped_ptr<extensions::Command> GetCommand(
+std::unique_ptr<extensions::Command> GetCommand(
     const std::string& extension_id,
     Profile* profile,
     ExtensionInstalledBubble::BubbleType type) {
-  scoped_ptr<extensions::Command> result;
+  std::unique_ptr<extensions::Command> result;
   extensions::Command command;
   extensions::CommandService* command_service =
       extensions::CommandService::Get(profile);
@@ -182,7 +183,7 @@ void ExtensionInstalledBubble::ShowBubble(
   // The ExtensionInstalledBubbleObserver will delete itself when the
   // ExtensionInstalledBubble is shown or when it can't be shown anymore.
   auto x = new ExtensionInstalledBubbleObserver(
-      make_scoped_ptr(new ExtensionInstalledBubble(extension, browser, icon)));
+      base::WrapUnique(new ExtensionInstalledBubble(extension, browser, icon)));
   extensions::ExtensionRegistry* reg =
       extensions::ExtensionRegistry::Get(browser->profile());
   if (reg->enabled_extensions().GetByID(extension->id())) {

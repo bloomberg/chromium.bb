@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/at_exit.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -153,7 +154,7 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
     last_chosen_object_info_.clear();
     for (WebsiteSettingsUI::ChosenObjectInfo* chosen_object_info :
          chosen_object_info_list)
-      last_chosen_object_info_.push_back(make_scoped_ptr(chosen_object_info));
+      last_chosen_object_info_.push_back(base::WrapUnique(chosen_object_info));
   }
 
   const GURL& url() const { return url_; }
@@ -163,7 +164,7 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
   const SecurityStateModel::SecurityInfo& security_info() {
     return security_info_;
   }
-  const std::vector<scoped_ptr<WebsiteSettingsUI::ChosenObjectInfo>>&
+  const std::vector<std::unique_ptr<WebsiteSettingsUI::ChosenObjectInfo>>&
   last_chosen_object_info() {
     return last_chosen_object_info_;
   }
@@ -189,13 +190,13 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
 
  private:
   TestDeviceClient device_client_;
-  scoped_ptr<WebsiteSettings> website_settings_;
-  scoped_ptr<MockWebsiteSettingsUI> mock_ui_;
+  std::unique_ptr<WebsiteSettings> website_settings_;
+  std::unique_ptr<MockWebsiteSettingsUI> mock_ui_;
   int cert_id_;
   scoped_refptr<net::X509Certificate> cert_;
   MockCertStore cert_store_;
   GURL url_;
-  std::vector<scoped_ptr<WebsiteSettingsUI::ChosenObjectInfo>>
+  std::vector<std::unique_ptr<WebsiteSettingsUI::ChosenObjectInfo>>
       last_chosen_object_info_;
 };
 

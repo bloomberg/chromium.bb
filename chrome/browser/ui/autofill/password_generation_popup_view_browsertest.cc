@@ -49,7 +49,7 @@ class PasswordGenerationPopupViewTest : public InProcessBrowserTest {
     return GetWebContents()->GetNativeView();
   }
 
-  scoped_ptr<PasswordGenerationPopupViewTester> GetViewTester() {
+  std::unique_ptr<PasswordGenerationPopupViewTester> GetViewTester() {
     return PasswordGenerationPopupViewTester::For(controller_->view());
   }
 

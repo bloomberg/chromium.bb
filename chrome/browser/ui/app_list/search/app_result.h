@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_APP_RESULT_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_APP_RESULT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "ui/app_list/search_result.h"
 

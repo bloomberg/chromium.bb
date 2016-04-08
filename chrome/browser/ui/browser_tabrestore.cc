@@ -71,7 +71,7 @@ WebContents* CreateRestoredTab(
   extensions::TabHelper::CreateForWebContents(web_contents);
   extensions::TabHelper::FromWebContents(web_contents)->
       SetExtensionAppById(extension_app_id);
-  std::vector<scoped_ptr<NavigationEntry>> entries =
+  std::vector<std::unique_ptr<NavigationEntry>> entries =
       ContentSerializedNavigationBuilder::ToNavigationEntries(
           navigations, browser->profile());
   web_contents->SetUserAgentOverride(user_agent_override);

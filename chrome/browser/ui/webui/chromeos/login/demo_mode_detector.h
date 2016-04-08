@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_DEMO_MODE_DETECTOR_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_DEMO_MODE_DETECTOR_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -42,7 +42,7 @@ class DemoModeDetector {
   // Total time this machine has spent on OOBE.
   base::TimeDelta time_on_oobe_;
 
-  scoped_ptr<IdleDetector> idle_detector_;
+  std::unique_ptr<IdleDetector> idle_detector_;
 
   base::RepeatingTimer oobe_timer_;
 

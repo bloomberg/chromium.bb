@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -70,7 +70,7 @@ class DownloadsListTracker : public AllDownloadItemNotifier::Observer {
                        base::Callback<bool(const content::DownloadItem&)>);
 
   // Creates a dictionary value that's sent to the page as JSON.
-  virtual scoped_ptr<base::DictionaryValue> CreateDownloadItemValue(
+  virtual std::unique_ptr<base::DictionaryValue> CreateDownloadItemValue(
       content::DownloadItem* item) const;
 
   // Exposed for testing.
@@ -110,7 +110,7 @@ class DownloadsListTracker : public AllDownloadItemNotifier::Observer {
   void RemoveItem(const SortedSet::iterator& remove);
 
   AllDownloadItemNotifier main_notifier_;
-  scoped_ptr<AllDownloadItemNotifier> original_notifier_;
+  std::unique_ptr<AllDownloadItemNotifier> original_notifier_;
 
   // The WebUI object corresponding to the page we care about.
   content::WebUI* const web_ui_;

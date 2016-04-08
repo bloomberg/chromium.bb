@@ -8,8 +8,9 @@
 #include <stddef.h>
 #include <string.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
@@ -109,8 +110,8 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   // Providers that supply status dictionaries for user and device policy,
   // respectively. These are created on initialization time as appropriate for
   // the platform (Chrome OS / desktop) and type of policy that is in effect.
-  scoped_ptr<CloudPolicyStatusProvider> user_status_provider_;
-  scoped_ptr<CloudPolicyStatusProvider> device_status_provider_;
+  std::unique_ptr<CloudPolicyStatusProvider> user_status_provider_;
+  std::unique_ptr<CloudPolicyStatusProvider> device_status_provider_;
 
   base::WeakPtrFactory<PolicyUIHandler> weak_factory_;
 

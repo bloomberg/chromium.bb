@@ -7,8 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace ui {
 struct NinePartImageIds;
@@ -98,7 +99,7 @@ class BrowserActionsContainerViewSizeDelegate {
   BOOL grippyPinned_;
 
   // The nine-grid of the highlight to paint, if any.
-  scoped_ptr<ui::NinePartImageIds> highlight_;
+  std::unique_ptr<ui::NinePartImageIds> highlight_;
 
   // The size delegate, if any.
   // Weak; delegate is responsible for adding/removing itself.
@@ -111,7 +112,7 @@ class BrowserActionsContainerViewSizeDelegate {
 - (void)setIsOverflow:(BOOL)isOverflow;
 
 // Sets whether or not the container is highlighting.
-- (void)setHighlight:(scoped_ptr<ui::NinePartImageIds>)highlight;
+- (void)setHighlight:(std::unique_ptr<ui::NinePartImageIds>)highlight;
 
 // Reeturns true if the container is currently highlighting.
 - (BOOL)isHighlighting;

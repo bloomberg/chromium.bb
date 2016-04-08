@@ -43,8 +43,8 @@ PasswordDialogControllerImpl::~PasswordDialogControllerImpl() {
 
 void PasswordDialogControllerImpl::ShowAccountChooser(
     AccountChooserPrompt* dialog,
-    std::vector<scoped_ptr<autofill::PasswordForm>> locals,
-    std::vector<scoped_ptr<autofill::PasswordForm>> federations) {
+    std::vector<std::unique_ptr<autofill::PasswordForm>> locals,
+    std::vector<std::unique_ptr<autofill::PasswordForm>> federations) {
   DCHECK(!account_chooser_dialog_);
   DCHECK(!autosignin_dialog_);
   DCHECK(dialog);

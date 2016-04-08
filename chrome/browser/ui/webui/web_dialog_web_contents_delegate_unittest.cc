@@ -4,11 +4,11 @@
 
 #include "ui/web_dialogs/web_dialog_web_contents_delegate.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -58,7 +58,7 @@ class WebDialogWebContentsDelegateTest : public BrowserWithTestWindowTest {
   }
 
  protected:
-  scoped_ptr<TestWebContentsDelegate> test_web_contents_delegate_;
+  std::unique_ptr<TestWebContentsDelegate> test_web_contents_delegate_;
 };
 
 TEST_F(WebDialogWebContentsDelegateTest, DoNothingMethodsTest) {

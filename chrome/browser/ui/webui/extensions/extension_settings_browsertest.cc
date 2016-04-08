@@ -151,7 +151,7 @@ const Extension* ExtensionSettingsUIBrowserTest::InstallExtension(
   {
     extensions::ScopedTestDialogAutoConfirm auto_confirm(
         extensions::ScopedTestDialogAutoConfirm::ACCEPT);
-    scoped_ptr<ExtensionInstallPrompt> install_ui(
+    std::unique_ptr<ExtensionInstallPrompt> install_ui(
         new ExtensionInstallPrompt(
             browser()->tab_strip_model()->GetActiveWebContents()));
 

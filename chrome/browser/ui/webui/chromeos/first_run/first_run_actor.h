@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_FIRST_RUN_FIRST_RUN_ACTOR_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_FIRST_RUN_FIRST_RUN_ACTOR_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class DictionaryValue;
@@ -55,7 +55,7 @@ class FirstRunActor {
     StepPosition& SetLeft(int left);
 
     // Returns DictionaryValue containing set properties.
-    scoped_ptr<base::DictionaryValue> AsValue() const;
+    std::unique_ptr<base::DictionaryValue> AsValue() const;
 
    private:
     int top_;

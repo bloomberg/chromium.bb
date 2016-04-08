@@ -175,9 +175,11 @@ void AddTitleRowWithLink(views::GridLayout* layout,
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 }
 
-scoped_ptr<views::LabelButton> GenerateButton(views::ButtonListener* listener,
-                                              const base::string16& text) {
-  scoped_ptr<views::LabelButton> button(new views::LabelButton(listener, text));
+std::unique_ptr<views::LabelButton> GenerateButton(
+    views::ButtonListener* listener,
+    const base::string16& text) {
+  std::unique_ptr<views::LabelButton> button(
+      new views::LabelButton(listener, text));
   button->SetStyle(views::Button::STYLE_BUTTON);
   return button;
 }
@@ -570,7 +572,7 @@ class ManagePasswordsBubbleView::WebContentMouseHandler
 
  private:
   ManagePasswordsBubbleView* bubble_;
-  scoped_ptr<views::EventMonitor> event_monitor_;
+  std::unique_ptr<views::EventMonitor> event_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentMouseHandler);
 };

@@ -107,7 +107,7 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   // True if the user has pressed accept.
   bool accepted_;
 
-  scoped_ptr<views::MenuRunner> context_menu_runner_;
+  std::unique_ptr<views::MenuRunner> context_menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesDialogViews);
 };

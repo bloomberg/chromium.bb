@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 namespace {
@@ -42,7 +43,8 @@ FirstRunActor::StepPosition& FirstRunActor::StepPosition::SetLeft(int left) {
   return *this;
 }
 
-scoped_ptr<base::DictionaryValue> FirstRunActor::StepPosition::AsValue() const {
+std::unique_ptr<base::DictionaryValue> FirstRunActor::StepPosition::AsValue()
+    const {
   base::DictionaryValue* result = new base::DictionaryValue();
   if (top_ != kNoneValue)
     result->SetInteger("top", top_);
@@ -52,7 +54,7 @@ scoped_ptr<base::DictionaryValue> FirstRunActor::StepPosition::AsValue() const {
     result->SetInteger("bottom", bottom_);
   if (left_ != kNoneValue)
     result->SetInteger("left", left_);
-  return make_scoped_ptr(result);
+  return base::WrapUnique(result);
 }
 
 FirstRunActor::FirstRunActor()

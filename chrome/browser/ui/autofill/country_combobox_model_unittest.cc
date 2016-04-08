@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/autofill/country_combobox_model.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -41,7 +42,7 @@ class CountryComboboxModelTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   TestPersonalDataManager manager_;
-  scoped_ptr<CountryComboboxModel> model_;
+  std::unique_ptr<CountryComboboxModel> model_;
 };
 
 TEST_F(CountryComboboxModelTest, DefaultCountryCode) {

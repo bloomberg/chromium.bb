@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_SEARCH_IPC_ROUTER_H_
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_IPC_ROUTER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/ntp_logging_events.h"
@@ -116,8 +116,9 @@ class SearchIPCRouter : public content::WebContentsObserver {
     virtual bool ShouldSubmitQuery() = 0;
   };
 
-  SearchIPCRouter(content::WebContents* web_contents, Delegate* delegate,
-                  scoped_ptr<Policy> policy);
+  SearchIPCRouter(content::WebContents* web_contents,
+                  Delegate* delegate,
+                  std::unique_ptr<Policy> policy);
   ~SearchIPCRouter() override;
 
   // Tells the SearchIPCRouter that a new page in an Instant process committed.
@@ -212,7 +213,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
   void set_delegate_for_testing(Delegate* delegate);
 
   // Used by unit tests.
-  void set_policy_for_testing(scoped_ptr<Policy> policy);
+  void set_policy_for_testing(std::unique_ptr<Policy> policy);
 
   // Used by unit tests.
   Policy* policy_for_testing() const { return policy_.get(); }
@@ -221,7 +222,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
   int page_seq_no_for_testing() const { return commit_counter_; }
 
   Delegate* delegate_;
-  scoped_ptr<Policy> policy_;
+  std::unique_ptr<Policy> policy_;
 
   // Holds the number of main frame commits executed in this tab. Used by the
   // SearchIPCRouter to ensure that delayed IPC replies are ignored.

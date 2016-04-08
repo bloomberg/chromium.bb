@@ -5,12 +5,13 @@
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -344,14 +345,14 @@ void CoreOptionsHandler::ProcessUserMetric(const base::Value* value,
 void CoreOptionsHandler::NotifyPrefChanged(
     const std::string& pref_name,
     const std::string& controlling_pref_name) {
-  scoped_ptr<base::Value> value(
+  std::unique_ptr<base::Value> value(
       CreateValueForPref(pref_name, controlling_pref_name));
   DispatchPrefChangeNotification(pref_name, std::move(value));
 }
 
 void CoreOptionsHandler::DispatchPrefChangeNotification(
     const std::string& name,
-    scoped_ptr<base::Value> value) {
+    std::unique_ptr<base::Value> value) {
   std::pair<PreferenceCallbackMap::const_iterator,
             PreferenceCallbackMap::const_iterator> range =
       pref_callback_map_.equal_range(name);
@@ -540,7 +541,7 @@ void CoreOptionsHandler::HandleSetPref(const base::ListValue* args,
   if (!args->Get(1, &value))
     return;
 
-  scoped_ptr<base::Value> temp_value;
+  std::unique_ptr<base::Value> temp_value;
 
   switch (type) {
     case TYPE_BOOLEAN:

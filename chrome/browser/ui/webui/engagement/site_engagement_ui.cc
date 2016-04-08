@@ -84,7 +84,7 @@ SiteEngagementUI::SiteEngagementUI(content::WebUI* web_ui)
     return;
 
   // Set up the chrome://site-engagement/ source.
-  scoped_ptr<content::WebUIDataSource> source(
+  std::unique_ptr<content::WebUIDataSource> source(
       content::WebUIDataSource::Create(chrome::kChromeUISiteEngagementHost));
   source->AddResourcePath("site_engagement.js", IDR_SITE_ENGAGEMENT_JS);
   source->AddResourcePath(

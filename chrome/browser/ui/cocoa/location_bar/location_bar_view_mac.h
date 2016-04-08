@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_UI_COCOA_LOCATION_BAR_LOCATION_BAR_VIEW_MAC_H_
 #define CHROME_BROWSER_UI_COCOA_LOCATION_BAR_LOCATION_BAR_VIEW_MAC_H_
 
-#include <string>
-
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
 
+#include <memory>
+#include <string>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/browser.h"
@@ -236,32 +236,32 @@ class LocationBarViewMac : public LocationBar,
   // Returns whether any updates were made.
   bool UpdateZoomDecoration(bool default_zoom_changed);
 
-  scoped_ptr<OmniboxViewMac> omnibox_view_;
+  std::unique_ptr<OmniboxViewMac> omnibox_view_;
 
   AutocompleteTextField* field_;  // owned by tab controller
 
   // A decoration that shows an icon to the left of the address.
-  scoped_ptr<LocationIconDecoration> location_icon_decoration_;
+  std::unique_ptr<LocationIconDecoration> location_icon_decoration_;
 
   // A decoration that shows the keyword-search bubble on the left.
-  scoped_ptr<SelectedKeywordDecoration> selected_keyword_decoration_;
+  std::unique_ptr<SelectedKeywordDecoration> selected_keyword_decoration_;
 
   // A decoration that shows a lock icon and ev-cert label in a bubble
   // on the left.
-  scoped_ptr<EVBubbleDecoration> ev_bubble_decoration_;
+  std::unique_ptr<EVBubbleDecoration> ev_bubble_decoration_;
 
   // Save credit card icon on the right side of the omnibox.
-  scoped_ptr<SaveCreditCardDecoration> save_credit_card_decoration_;
+  std::unique_ptr<SaveCreditCardDecoration> save_credit_card_decoration_;
 
   // Bookmark star right of page actions.
-  scoped_ptr<StarDecoration> star_decoration_;
+  std::unique_ptr<StarDecoration> star_decoration_;
 
   // Translate icon at the end of the ominibox.
-  scoped_ptr<TranslateDecoration> translate_decoration_;
+  std::unique_ptr<TranslateDecoration> translate_decoration_;
 
   // A zoom icon at the end of the omnibox, which shows at non-standard zoom
   // levels.
-  scoped_ptr<ZoomDecoration> zoom_decoration_;
+  std::unique_ptr<ZoomDecoration> zoom_decoration_;
 
   // Decorations for the installed Page Actions.
   ScopedVector<PageActionDecoration> page_action_decorations_;
@@ -270,10 +270,10 @@ class LocationBarViewMac : public LocationBar,
   ScopedVector<ContentSettingDecoration> content_setting_decorations_;
 
   // Keyword hint decoration displayed on the right-hand side.
-  scoped_ptr<KeywordHintDecoration> keyword_hint_decoration_;
+  std::unique_ptr<KeywordHintDecoration> keyword_hint_decoration_;
 
   // The right-hand-side button to manage passwords associated with a page.
-  scoped_ptr<ManagePasswordsDecoration> manage_passwords_decoration_;
+  std::unique_ptr<ManagePasswordsDecoration> manage_passwords_decoration_;
 
   Browser* browser_;
 

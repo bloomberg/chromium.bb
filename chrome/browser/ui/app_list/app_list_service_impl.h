@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_SERVICE_IMPL_H_
 #define CHROME_BROWSER_UI_APP_LIST_APP_LIST_SERVICE_IMPL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -37,7 +37,7 @@ class AppListServiceImpl : public AppListService,
   // Constructor used for testing.
   AppListServiceImpl(const base::CommandLine& command_line,
                      PrefService* local_state,
-                     scoped_ptr<ProfileStore> profile_store);
+                     std::unique_ptr<ProfileStore> profile_store);
 
   // Lazily create the Chrome AppListViewDelegate and ensure it is set to the
   // given |profile|.
@@ -92,11 +92,11 @@ class AppListServiceImpl : public AppListService,
   // ProfileAttributesStorage::Observer overrides:
   void OnProfileWillBeRemoved(const base::FilePath& profile_path) override;
 
-  scoped_ptr<ProfileStore> profile_store_;
+  std::unique_ptr<ProfileStore> profile_store_;
   base::CommandLine command_line_;
   PrefService* local_state_;
-  scoped_ptr<ProfileLoader> profile_loader_;
-  scoped_ptr<AppListViewDelegate> view_delegate_;
+  std::unique_ptr<ProfileLoader> profile_loader_;
+  std::unique_ptr<AppListViewDelegate> view_delegate_;
 
   base::WeakPtrFactory<AppListServiceImpl> weak_factory_;
 

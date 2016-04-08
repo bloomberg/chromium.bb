@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -208,10 +209,11 @@ ToolbarActionsBar* BrowserActionTestUtil::GetToolbarActionsBar() {
   return GetContainer(browser_, test_helper_.get())->toolbar_actions_bar();
 }
 
-scoped_ptr<BrowserActionTestUtil> BrowserActionTestUtil::CreateOverflowBar() {
+std::unique_ptr<BrowserActionTestUtil>
+BrowserActionTestUtil::CreateOverflowBar() {
   CHECK(!GetToolbarActionsBar()->in_overflow_mode())
       << "Only a main bar can create an overflow bar!";
-  return make_scoped_ptr(new BrowserActionTestUtil(browser_, this));
+  return base::WrapUnique(new BrowserActionTestUtil(browser_, this));
 }
 
 // static

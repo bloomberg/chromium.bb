@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <vector>
 
 #include "ash/accessibility_delegate.h"
 #include "ash/ash_switches.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
@@ -89,7 +89,7 @@ class VolumeControllerTest : public InProcessBrowserTest {
   chromeos::CrasAudioHandler* audio_handler_;  // Not owned.
 
  private:
-  scoped_ptr<VolumeController> volume_controller_;
+  std::unique_ptr<VolumeController> volume_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(VolumeControllerTest);
 };

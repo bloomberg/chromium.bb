@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/test_extension_service.h"
@@ -59,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest, OnSignInLinkClicked) {
   ReplaceBlank(browser());
   int starting_tab_count = browser()->tab_strip_model()->count();
 
-  scoped_ptr<BubbleSyncPromoDelegate> delegate;
+  std::unique_ptr<BubbleSyncPromoDelegate> delegate;
   delegate.reset(new BookmarkBubbleSignInDelegate(browser()));
 
   delegate->OnSignInLinkClicked();
@@ -76,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest,
                        OnSignInLinkClickedReusesBlank) {
   int starting_tab_count = browser()->tab_strip_model()->count();
 
-  scoped_ptr<BubbleSyncPromoDelegate> delegate;
+  std::unique_ptr<BubbleSyncPromoDelegate> delegate;
   delegate.reset(new BookmarkBubbleSignInDelegate(browser()));
 
   delegate->OnSignInLinkClicked();
@@ -98,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest,
   int starting_tab_count_incognito =
       incognito_browser->tab_strip_model()->count();
 
-  scoped_ptr<BubbleSyncPromoDelegate> delegate;
+  std::unique_ptr<BubbleSyncPromoDelegate> delegate;
   delegate.reset(new BookmarkBubbleSignInDelegate(incognito_browser));
 
   delegate->OnSignInLinkClicked();
@@ -126,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest, BrowserRemoved) {
 
   int starting_tab_count = extra_browser->tab_strip_model()->count();
 
-  scoped_ptr<BubbleSyncPromoDelegate> delegate;
+  std::unique_ptr<BubbleSyncPromoDelegate> delegate;
   delegate.reset(new BookmarkBubbleSignInDelegate(browser()));
 
   BrowserList::SetLastActive(extra_browser);

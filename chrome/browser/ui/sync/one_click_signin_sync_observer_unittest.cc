@@ -4,13 +4,14 @@
 
 #include "chrome/browser/ui/sync/one_click_signin_sync_observer.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -53,8 +54,8 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
 
   // Helper routine to be used in conjunction with
   // BrowserContextKeyedServiceFactory::SetTestingFactory().
-  static scoped_ptr<KeyedService> Build(content::BrowserContext* profile) {
-    return make_scoped_ptr(new OneClickTestProfileSyncService(
+  static std::unique_ptr<KeyedService> Build(content::BrowserContext* profile) {
+    return base::WrapUnique(new OneClickTestProfileSyncService(
         CreateProfileSyncServiceParamsForTest(
             Profile::FromBrowserContext(profile))));
   }
@@ -107,7 +108,8 @@ class TestOneClickSigninSyncObserver : public OneClickSigninSyncObserver {
 };
 
 // A trivial factory to build a null service.
-scoped_ptr<KeyedService> BuildNullService(content::BrowserContext* context) {
+std::unique_ptr<KeyedService> BuildNullService(
+    content::BrowserContext* context) {
   return nullptr;
 }
 
@@ -151,7 +153,7 @@ class OneClickSigninSyncObserverTest : public ChromeRenderViewHostTestHarness {
   }
 
   OneClickTestProfileSyncService* sync_service_;
-  scoped_ptr<MockWebContentsObserver> web_contents_observer_;
+  std::unique_ptr<MockWebContentsObserver> web_contents_observer_;
 
  private:
   void OnSyncObserverDestroyed(TestOneClickSigninSyncObserver* observer) {

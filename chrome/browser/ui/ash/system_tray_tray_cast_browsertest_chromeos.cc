@@ -9,6 +9,7 @@
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/test/tray_cast_test_api.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -20,7 +21,7 @@ namespace {
 
 // Execute JavaScript within the context of the extension. Returns the result
 // of the execution.
-scoped_ptr<base::Value> ExecuteJavaScript(
+std::unique_ptr<base::Value> ExecuteJavaScript(
     const extensions::Extension* extension,
     const std::string& javascript) {
   extensions::ProcessManager* pm =
@@ -31,7 +32,7 @@ scoped_ptr<base::Value> ExecuteJavaScript(
 }
 
 // Returns the current value within a global JavaScript variable.
-scoped_ptr<base::Value> GetJavaScriptVariable(
+std::unique_ptr<base::Value> GetJavaScriptVariable(
     const extensions::Extension* extension,
     const std::string& variable) {
   return ExecuteJavaScript(extension,
@@ -41,14 +42,16 @@ scoped_ptr<base::Value> GetJavaScriptVariable(
 bool GetJavaScriptStringVariable(const extensions::Extension* extension,
                                  const std::string& variable,
                                  std::string* result) {
-  scoped_ptr<base::Value> value = GetJavaScriptVariable(extension, variable);
+  std::unique_ptr<base::Value> value =
+      GetJavaScriptVariable(extension, variable);
   return value->GetAsString(result);
 }
 
 bool GetJavaScriptBooleanVariable(const extensions::Extension* extension,
                                   const std::string& variable,
                                   bool* result) {
-  scoped_ptr<base::Value> value = GetJavaScriptVariable(extension, variable);
+  std::unique_ptr<base::Value> value =
+      GetJavaScriptVariable(extension, variable);
   return value->GetAsBoolean(result);
 }
 
@@ -68,8 +71,8 @@ bool StartCastWithVerification(const extensions::Extension* extension,
 
   // We will simulate a button click in the detail view to begin the cast, so we
   // need to make a detail view available.
-  scoped_ptr<views::View> detailed_view =
-      make_scoped_ptr(system_tray_item->CreateDetailedView(
+  std::unique_ptr<views::View> detailed_view =
+      base::WrapUnique(system_tray_item->CreateDetailedView(
           ash::user::LoginStatus::LOGGED_IN_USER));
 
   // Clear out any old state and execute any pending JS calls created from the

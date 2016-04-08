@@ -46,7 +46,7 @@ class InfoBarContainerControllerTest : public CocoaProfileTest {
  public:
   base::scoped_nsobject<ViewResizerPong> resizeDelegate_;
   base::scoped_nsobject<InfoBarContainerController> controller_;
-  scoped_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<content::WebContents> web_contents_;
 };
 
 TEST_VIEW(InfoBarContainerControllerTest, [controller_ view])
@@ -62,9 +62,9 @@ TEST_F(InfoBarContainerControllerTest, BWCPong) {
 TEST_F(InfoBarContainerControllerTest, AddAndRemoveInfoBars) {
   NSView* view = [controller_ view];
 
-  scoped_ptr<infobars::InfoBarDelegate> confirm_delegate(
+  std::unique_ptr<infobars::InfoBarDelegate> confirm_delegate(
       new MockConfirmInfoBarDelegate(NULL));
-  scoped_ptr<InfoBarCocoa> infobar(
+  std::unique_ptr<InfoBarCocoa> infobar(
       new InfoBarCocoa(std::move(confirm_delegate)));
   base::scoped_nsobject<ConfirmInfoBarController> controller(
       [[ConfirmInfoBarController alloc] initWithInfoBar:infobar.get()]);

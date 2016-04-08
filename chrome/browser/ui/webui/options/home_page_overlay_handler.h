@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_HOME_PAGE_OVERLAY_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_HOME_PAGE_OVERLAY_HANDLER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "components/omnibox/browser/autocomplete_controller_delegate.h"
 
@@ -37,7 +38,7 @@ class HomePageOverlayHandler : public OptionsPageUIHandler,
  private:
   void RequestAutocompleteSuggestions(const base::ListValue* args);
 
-  scoped_ptr<AutocompleteController> autocomplete_controller_;
+  std::unique_ptr<AutocompleteController> autocomplete_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(HomePageOverlayHandler);
 };

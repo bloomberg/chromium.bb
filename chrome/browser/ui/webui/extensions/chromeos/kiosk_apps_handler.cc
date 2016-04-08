@@ -7,13 +7,13 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/values.h"
@@ -252,11 +252,11 @@ void KioskAppsHandler::SendKioskAppSettings() {
   KioskAppManager::Apps apps;
   kiosk_app_manager_->GetApps(&apps);
 
-  scoped_ptr<base::ListValue> apps_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> apps_list(new base::ListValue);
   for (size_t i = 0; i < apps.size(); ++i) {
     const KioskAppManager::App& app_data = apps[i];
 
-    scoped_ptr<base::DictionaryValue> app_info(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> app_info(new base::DictionaryValue);
     PopulateAppDict(app_data, app_info.get());
     apps_list->Append(app_info.release());
   }

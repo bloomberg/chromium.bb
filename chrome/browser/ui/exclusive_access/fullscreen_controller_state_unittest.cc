@@ -485,7 +485,7 @@ TEST_F(FullscreenControllerStateUnitTest, ExitTabFullscreenViaDetachingTab) {
   ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
   ASSERT_TRUE(browser()->window()->IsFullscreen());
 
-  scoped_ptr<content::WebContents> web_contents(
+  std::unique_ptr<content::WebContents> web_contents(
       browser()->tab_strip_model()->DetachWebContentsAt(0));
   ChangeWindowFullscreenState();
   EXPECT_FALSE(browser()->window()->IsFullscreen());
@@ -502,9 +502,8 @@ TEST_F(FullscreenControllerStateUnitTest, ExitTabFullscreenViaReplacingTab) {
 
   content::WebContents* new_web_contents = content::WebContents::Create(
       content::WebContents::CreateParams(profile()));
-  scoped_ptr<content::WebContents> old_web_contents(
-      browser()->tab_strip_model()->ReplaceWebContentsAt(
-          0, new_web_contents));
+  std::unique_ptr<content::WebContents> old_web_contents(
+      browser()->tab_strip_model()->ReplaceWebContentsAt(0, new_web_contents));
   ChangeWindowFullscreenState();
   EXPECT_FALSE(browser()->window()->IsFullscreen());
 }
@@ -830,8 +829,9 @@ TEST_F(FullscreenControllerStateUnitTest,
   EXPECT_FALSE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
 
   // Create the second browser window.
-  const scoped_ptr<BrowserWindow> second_browser_window(CreateBrowserWindow());
-  const scoped_ptr<Browser> second_browser(
+  const std::unique_ptr<BrowserWindow> second_browser_window(
+      CreateBrowserWindow());
+  const std::unique_ptr<Browser> second_browser(
       CreateBrowser(browser()->profile(), browser()->type(), false,
                     second_browser_window.get()));
   AddTab(second_browser.get(), GURL(url::kAboutBlankURL));

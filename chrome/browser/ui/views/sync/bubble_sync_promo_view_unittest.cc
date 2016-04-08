@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/views/sync/bubble_sync_promo_view.h"
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/grit/chromium_strings.h"
@@ -33,7 +34,7 @@ class BubbleSyncPromoViewTest : public BubbleSyncPromoDelegate,
 };
 
 TEST_F(BubbleSyncPromoViewTest, SignInLink) {
-  scoped_ptr<BubbleSyncPromoView> sync_promo;
+  std::unique_ptr<BubbleSyncPromoView> sync_promo;
   sync_promo.reset(new BubbleSyncPromoView(this, IDS_BOOKMARK_SYNC_PROMO_LINK,
                                            IDS_BOOKMARK_SYNC_PROMO_MESSAGE));
 

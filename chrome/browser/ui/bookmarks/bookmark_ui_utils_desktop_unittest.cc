@@ -22,7 +22,8 @@ class BookmarkUIUtilsTest : public testing::Test {
 };
 
 TEST_F(BookmarkUIUtilsTest, HasBookmarkURLs) {
-  scoped_ptr<BookmarkModel> model(bookmarks::TestBookmarkClient::CreateModel());
+  std::unique_ptr<BookmarkModel> model(
+      bookmarks::TestBookmarkClient::CreateModel());
 
   std::vector<const BookmarkNode*> nodes;
 
@@ -63,7 +64,8 @@ TEST_F(BookmarkUIUtilsTest, HasBookmarkURLs) {
 }
 
 TEST_F(BookmarkUIUtilsTest, HasBookmarkURLsAllowedInIncognitoMode) {
-  scoped_ptr<BookmarkModel> model(bookmarks::TestBookmarkClient::CreateModel());
+  std::unique_ptr<BookmarkModel> model(
+      bookmarks::TestBookmarkClient::CreateModel());
   TestingProfile profile;
 
   std::vector<const BookmarkNode*> nodes;

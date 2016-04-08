@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_panel.h"
 #include "extensions/common/constants.h"
@@ -82,7 +83,7 @@ class AppInfoSummaryPanel : public AppInfoPanel,
   views::Link* homepage_link_;
   views::Link* licenses_link_;
 
-  scoped_ptr<LaunchOptionsComboboxModel> launch_options_combobox_model_;
+  std::unique_ptr<LaunchOptionsComboboxModel> launch_options_combobox_model_;
   views::Combobox* launch_options_combobox_;
 
   base::WeakPtrFactory<AppInfoSummaryPanel> weak_ptr_factory_;

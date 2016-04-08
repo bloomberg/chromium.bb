@@ -34,8 +34,8 @@
 
 namespace {
 
-scoped_ptr<base::ListValue> GetAvatarIcons() {
-  scoped_ptr<base::ListValue> avatar_icons(new base::ListValue);
+std::unique_ptr<base::ListValue> GetAvatarIcons() {
+  std::unique_ptr<base::ListValue> avatar_icons(new base::ListValue);
   for (size_t i = 0; i < profiles::GetDefaultAvatarIconCount(); ++i) {
     std::string avatar_url = profiles::GetDefaultAvatarIconUrl(i);
     avatar_icons->Append(new base::StringValue(avatar_url));

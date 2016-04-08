@@ -7,7 +7,8 @@
 
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -69,12 +70,12 @@ class ToolbarActionsBarDelegate {
   // anchored to |anchor_action|. If |anchor_action| is null, it should be
   // anchored to the hotdog menu.
   virtual void ShowExtensionMessageBubble(
-      scoped_ptr<extensions::ExtensionMessageBubbleController> controller,
+      std::unique_ptr<extensions::ExtensionMessageBubbleController> controller,
       ToolbarActionViewController* anchor_action) = 0;
 
   // Shows the given |bubble| if no other bubbles are showing.
   virtual void ShowToolbarActionBubble(
-      scoped_ptr<ToolbarActionsBarBubbleDelegate> bubble) = 0;
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_BAR_DELEGATE_H_

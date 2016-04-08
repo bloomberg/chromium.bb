@@ -4,8 +4,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -64,7 +65,7 @@ class MockAutofillClient : public autofill::TestAutofillClient {
   PrefService* GetPrefs() override { return prefs_.get(); }
 
  private:
-  scoped_ptr<PrefService> prefs_;
+  std::unique_ptr<PrefService> prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAutofillClient);
 };
@@ -161,8 +162,8 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
-  scoped_ptr<MockAutofillClient> autofill_client_;
-  scoped_ptr<NiceMock<MockAutofillExternalDelegate> > external_delegate_;
+  std::unique_ptr<MockAutofillClient> autofill_client_;
+  std::unique_ptr<NiceMock<MockAutofillExternalDelegate>> external_delegate_;
   testing::NiceMock<TestAutofillPopupController>* autofill_popup_controller_;
 };
 

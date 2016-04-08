@@ -87,9 +87,9 @@ std::string ConvertStatus(const ReceivedToken& token) {
   }
 }
 
-template<class T>
-scoped_ptr<DictionaryValue> FormatToken(const T& token) {
-  scoped_ptr<DictionaryValue> js_token(new DictionaryValue);
+template <class T>
+std::unique_ptr<DictionaryValue> FormatToken(const T& token) {
+  std::unique_ptr<DictionaryValue> js_token(new DictionaryValue);
 
   js_token->SetString("id", token.id);
   js_token->SetString("statuses", ConvertStatus(token));
@@ -157,7 +157,7 @@ void CopresenceUIHandler::RegisterMessages() {
 void CopresenceUIHandler::DirectivesUpdated() {
   ListValue js_directives;
   for (const Directive& directive : state_->active_directives()) {
-    scoped_ptr<DictionaryValue> js_directive(new DictionaryValue);
+    std::unique_ptr<DictionaryValue> js_directive(new DictionaryValue);
 
     js_directive->SetString("type", FormatInstructionType(
         directive.token_instruction().token_instruction_type()));

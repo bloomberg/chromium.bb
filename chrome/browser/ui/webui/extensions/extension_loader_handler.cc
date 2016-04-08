@@ -186,13 +186,14 @@ void ExtensionLoaderHandler::AddFailure(
   failed_paths_.push_back(file_path);
   base::FilePath prettified_path = path_util::PrettifyPath(file_path);
 
-  scoped_ptr<base::DictionaryValue> manifest_value(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> manifest_value(
+      new base::DictionaryValue());
   SourceHighlighter highlighter(manifest, line_number);
   // If the line number is 0, this highlights no regions, but still adds the
   // full manifest.
   highlighter.SetHighlightedRegions(manifest_value.get());
 
-  scoped_ptr<base::DictionaryValue> failure(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> failure(new base::DictionaryValue());
   failure->Set("path",
                new base::StringValue(prettified_path.LossyDisplayName()));
   failure->Set("error", new base::StringValue(base::UTF8ToUTF16(error)));

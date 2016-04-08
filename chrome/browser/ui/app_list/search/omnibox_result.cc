@@ -159,10 +159,10 @@ void OmniboxResult::Open(int event_flags) {
                             ui::DispositionFromEventFlags(event_flags));
 }
 
-scoped_ptr<SearchResult> OmniboxResult::Duplicate() const {
-  return scoped_ptr<SearchResult>(new OmniboxResult(profile_, list_controller_,
-                                                    autocomplete_controller_,
-                                                    is_voice_query_, match_));
+std::unique_ptr<SearchResult> OmniboxResult::Duplicate() const {
+  return std::unique_ptr<SearchResult>(
+      new OmniboxResult(profile_, list_controller_, autocomplete_controller_,
+                        is_voice_query_, match_));
 }
 
 void OmniboxResult::UpdateIcon() {

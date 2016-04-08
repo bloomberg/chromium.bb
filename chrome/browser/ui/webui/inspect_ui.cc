@@ -490,7 +490,7 @@ const base::Value* InspectUI::GetPrefValue(const char* name) {
 }
 
 void InspectUI::AddTargetUIHandler(
-    scoped_ptr<DevToolsTargetsUIHandler> handler) {
+    std::unique_ptr<DevToolsTargetsUIHandler> handler) {
   DevToolsTargetsUIHandler* handler_ptr = handler.release();
   target_handlers_[handler_ptr->source_id()] = handler_ptr;
 }

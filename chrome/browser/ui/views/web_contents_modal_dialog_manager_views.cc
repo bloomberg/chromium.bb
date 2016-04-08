@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/platform_util.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/web_modal/single_web_contents_dialog_manager.h"
@@ -102,7 +102,7 @@ class NativeWebContentsModalDialogManagerViews
 
     views::Widget* widget = GetWidget(dialog());
 #if defined(USE_AURA)
-    scoped_ptr<wm::SuspendChildWindowVisibilityAnimations> suspend;
+    std::unique_ptr<wm::SuspendChildWindowVisibilityAnimations> suspend;
     if (shown_widgets_.find(widget) != shown_widgets_.end()) {
       suspend.reset(new wm::SuspendChildWindowVisibilityAnimations(
           widget->GetNativeWindow()->parent()));
@@ -125,7 +125,7 @@ class NativeWebContentsModalDialogManagerViews
   void Hide() override {
     views::Widget* widget = GetWidget(dialog());
 #if defined(USE_AURA)
-    scoped_ptr<wm::SuspendChildWindowVisibilityAnimations> suspend;
+    std::unique_ptr<wm::SuspendChildWindowVisibilityAnimations> suspend;
     suspend.reset(new wm::SuspendChildWindowVisibilityAnimations(
         widget->GetNativeWindow()->parent()));
 #endif

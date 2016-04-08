@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_EXTENSION_PRINTER_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_EXTENSION_PRINTER_HANDLER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
@@ -46,8 +46,8 @@ class PWGRasterConverter;
 // extension API.
 class ExtensionPrinterHandler : public PrinterHandler {
  public:
-  using PrintJobCallback =
-      base::Callback<void(scoped_ptr<extensions::PrinterProviderPrintJob>)>;
+  using PrintJobCallback = base::Callback<void(
+      std::unique_ptr<extensions::PrinterProviderPrintJob>)>;
 
   ExtensionPrinterHandler(
       content::BrowserContext* browser_context,
@@ -78,7 +78,7 @@ class ExtensionPrinterHandler : public PrinterHandler {
   friend class ExtensionPrinterHandlerTest;
 
   void SetPWGRasterConverterForTesting(
-      scoped_ptr<printing::PWGRasterConverter> pwg_raster_converter);
+      std::unique_ptr<printing::PWGRasterConverter> pwg_raster_converter);
 
   // Converts |data| to PWG raster format (from PDF) for a printer described
   // by |printer_description|.
@@ -88,13 +88,13 @@ class ExtensionPrinterHandler : public PrinterHandler {
       const cloud_devices::CloudDeviceDescription& printer_description,
       const cloud_devices::CloudDeviceDescription& ticket,
       const gfx::Size& page_size,
-      scoped_ptr<extensions::PrinterProviderPrintJob> job,
+      std::unique_ptr<extensions::PrinterProviderPrintJob> job,
       const PrintJobCallback& callback);
 
   // Sets print job document data and dispatches it using printerProvider API.
   void DispatchPrintJob(
       const PrinterHandler::PrintCallback& callback,
-      scoped_ptr<extensions::PrinterProviderPrintJob> print_job);
+      std::unique_ptr<extensions::PrinterProviderPrintJob> print_job);
 
   // Methods used as wrappers to callbacks for extensions::PrinterProviderAPI
   // methods, primarily so the callbacks can be bound to this class' weak ptr.
@@ -119,7 +119,7 @@ class ExtensionPrinterHandler : public PrinterHandler {
 
   content::BrowserContext* browser_context_;
 
-  scoped_ptr<printing::PWGRasterConverter> pwg_raster_converter_;
+  std::unique_ptr<printing::PWGRasterConverter> pwg_raster_converter_;
   int pending_enumeration_count_ = 0;
 
   scoped_refptr<base::TaskRunner> slow_task_runner_;

@@ -101,7 +101,7 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   void UpdateMenuButtonSizes();
 
   // Provides data for this bubble.
-  scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model_;
+  std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model_;
 
   // Some of our controls, so we can tell what's been clicked when we get a
   // message.
@@ -112,7 +112,7 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   views::Link* manage_link_;
   views::Link* learn_more_link_;
   views::LabelButton* close_button_;
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
   MediaMenuPartsMap media_menus_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingBubbleContents);

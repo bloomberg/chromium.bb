@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_APP_MENU_ICON_PAINTER_H_
 #define CHROME_BROWSER_UI_TOOLBAR_APP_MENU_ICON_PAINTER_H_
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -72,7 +73,7 @@ class AppMenuIconPainter : gfx::AnimationDelegate {
   Delegate* delegate_;
   Severity severity_;
   gfx::ImageSkia badge_;
-  scoped_ptr<gfx::MultiAnimation> animation_;
+  std::unique_ptr<gfx::MultiAnimation> animation_;
 
   DISALLOW_COPY_AND_ASSIGN(AppMenuIconPainter);
 };

@@ -716,7 +716,8 @@ class AppMenu::ZoomView : public AppMenuView {
   // Index of the fullscreen menu item in the model.
   const int fullscreen_index_;
 
-  scoped_ptr<content::HostZoomMap::Subscription> browser_zoom_subscription_;
+  std::unique_ptr<content::HostZoomMap::Subscription>
+      browser_zoom_subscription_;
   content::NotificationRegistrar registrar_;
 
   // Button for incrementing the zoom.
@@ -1152,7 +1153,7 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
 
     switch (model->GetCommandIdAt(i)) {
       case IDC_EXTENSIONS_OVERFLOW_MENU: {
-        scoped_ptr<ExtensionToolbarMenuView> extension_toolbar(
+        std::unique_ptr<ExtensionToolbarMenuView> extension_toolbar(
             new ExtensionToolbarMenuView(browser_, this, item));
         if (ui::MaterialDesignController::IsModeMaterial()) {
           for (int i = 0; i < extension_toolbar->contents()->child_count();

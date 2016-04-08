@@ -46,7 +46,7 @@ void RecordClientCertificateKey(
 void StartClientCertificateRequest(
     const net::SSLCertRequestInfo* cert_request_info,
     ui::WindowAndroid* window,
-    scoped_ptr<content::ClientCertificateDelegate> delegate) {
+    std::unique_ptr<content::ClientCertificateDelegate> delegate) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Build the |key_types| JNI parameter, as a String[]
@@ -131,7 +131,7 @@ static void OnSystemRequestCompletion(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Take back ownership of the delegate object.
-  scoped_ptr<content::ClientCertificateDelegate> delegate(
+  std::unique_ptr<content::ClientCertificateDelegate> delegate(
       reinterpret_cast<content::ClientCertificateDelegate*>(request_id));
 
   if (encoded_chain_ref == NULL || private_key_ref == NULL) {
@@ -205,7 +205,7 @@ bool RegisterSSLClientCertificateRequestAndroid(JNIEnv* env) {
 void ShowSSLClientCertificateSelector(
     content::WebContents* contents,
     net::SSLCertRequestInfo* cert_request_info,
-    scoped_ptr<content::ClientCertificateDelegate> delegate) {
+    std::unique_ptr<content::ClientCertificateDelegate> delegate) {
   ui::WindowAndroid* window = ViewAndroidHelper::FromWebContents(contents)
       ->GetViewAndroid()->GetWindowAndroid();
   DCHECK(window);

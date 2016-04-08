@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_OOBE_UI_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/settings/shutdown_policy_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
@@ -217,7 +217,7 @@ class OobeUI : public content::WebUIController,
   KioskAppMenuHandler* kiosk_app_menu_handler_ =
       nullptr;  // Non-owning pointers.
 
-  scoped_ptr<ErrorScreen> error_screen_;
+  std::unique_ptr<ErrorScreen> error_screen_;
 
   // Id of the current oobe/login screen.
   OobeScreen current_screen_ = OobeScreen::SCREEN_UNKNOWN;
@@ -236,7 +236,7 @@ class OobeUI : public content::WebUIController,
   base::ObserverList<Observer> observer_list_;
 
   // Observer of CrosSettings watching the kRebootOnShutdown policy.
-  scoped_ptr<ShutdownPolicyHandler> shutdown_policy_handler_;
+  std::unique_ptr<ShutdownPolicyHandler> shutdown_policy_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(OobeUI);
 };

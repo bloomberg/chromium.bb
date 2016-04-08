@@ -7,8 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/has_weak_browser_pointer.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
@@ -62,21 +63,23 @@ class NotificationBridge;
   CommandUpdater* commands_;  // weak, one per window
   Profile* profile_;  // weak, one per window
   Browser* browser_;  // weak, one per window
-  scoped_ptr<ToolbarControllerInternal::CommandObserverBridge> commandObserver_;
-  scoped_ptr<LocationBarViewMac> locationBarView_;
+  std::unique_ptr<ToolbarControllerInternal::CommandObserverBridge>
+      commandObserver_;
+  std::unique_ptr<LocationBarViewMac> locationBarView_;
   base::scoped_nsobject<AutocompleteTextFieldEditor>
       autocompleteTextFieldEditor_;
   base::scoped_nsobject<BackForwardMenuController> backMenuController_;
   base::scoped_nsobject<BackForwardMenuController> forwardMenuController_;
   base::scoped_nsobject<BrowserActionsController> browserActionsController_;
-  scoped_ptr<BrowserActionsContainerViewSizeDelegate>
+  std::unique_ptr<BrowserActionsContainerViewSizeDelegate>
       browserActionsContainerDelegate_;
 
   // Lazily-instantiated menu controller.
   base::scoped_nsobject<AppMenuController> appMenuController_;
 
   // Used for monitoring the optional toolbar button prefs.
-  scoped_ptr<ToolbarControllerInternal::NotificationBridge> notificationBridge_;
+  std::unique_ptr<ToolbarControllerInternal::NotificationBridge>
+      notificationBridge_;
   BooleanPrefMember showHomeButton_;
   BOOL hasToolbar_;  // If NO, we may have only the location bar.
   BOOL hasLocationBar_;  // If |hasToolbar_| is YES, this must also be YES.

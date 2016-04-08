@@ -173,9 +173,9 @@ const char* AppMenuButton::GetClassName() const {
   return "AppMenuButton";
 }
 
-scoped_ptr<views::LabelButtonBorder> AppMenuButton::CreateDefaultBorder()
+std::unique_ptr<views::LabelButtonBorder> AppMenuButton::CreateDefaultBorder()
     const {
-  scoped_ptr<views::LabelButtonBorder> border =
+  std::unique_ptr<views::LabelButtonBorder> border =
       MenuButton::CreateDefaultBorder();
 
   // Adjust border insets to follow the margin change,

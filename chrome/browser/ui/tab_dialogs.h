@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_TAB_DIALOGS_H_
 #define CHROME_BROWSER_UI_TAB_DIALOGS_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/ui/validation_message_bubble.h"
@@ -63,7 +63,7 @@ class TabDialogs : public base::SupportsUserData::Data {
   virtual void ShowManagePasswordsBubble(bool user_action) = 0;
   virtual void HideManagePasswordsBubble() = 0;
 
-  virtual scoped_ptr<ValidationMessageBubble> ShowValidationMessage(
+  virtual std::unique_ptr<ValidationMessageBubble> ShowValidationMessage(
       const gfx::Rect& anchor_in_root_view,
       const base::string16& main_text,
       const base::string16& sub_text) = 0;

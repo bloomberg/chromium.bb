@@ -8,13 +8,13 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/search/instant_page.h"
 #include "chrome/common/search_types.h"
@@ -141,7 +141,7 @@ class InstantController : public InstantPage::Delegate {
   BrowserInstantController* const browser_;
 
   // The instance of InstantPage maintained by InstantController.
-  scoped_ptr<InstantTab> instant_tab_;
+  std::unique_ptr<InstantTab> instant_tab_;
 
   // The search model mode for the active tab.
   SearchMode search_mode_;

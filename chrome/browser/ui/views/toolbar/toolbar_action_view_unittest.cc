@@ -155,7 +155,7 @@ TEST_F(ToolbarActionViewUnitTest,
   TestToolbarActionViewDelegate action_view_delegate;
 
   // Create a new toolbar action view.
-  scoped_ptr<ToolbarActionView> view(
+  std::unique_ptr<ToolbarActionView> view(
       new ToolbarActionView(&controller, &action_view_delegate));
   view->set_owned_by_client();
   view->SetBoundsRect(gfx::Rect(0, 0, 200, 20));

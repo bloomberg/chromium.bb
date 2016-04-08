@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_COCOA_DOWNLOAD_DOWNLOAD_ITEM_CELL_H_
 #define CHROME_BROWSER_UI_COCOA_DOWNLOAD_DOWNLOAD_ITEM_CELL_H_
 
-#include "base/memory/scoped_ptr.h"
-#import "chrome/browser/ui/cocoa/gradient_button_cell.h"
+#include <memory>
 
 #include "base/files/file_path.h"
 #include "base/time/time.h"
+#import "chrome/browser/ui/cocoa/gradient_button_cell.h"
 
 class DownloadItemModel;
 @class IndeterminateProgressTimer;
@@ -48,7 +48,7 @@ enum DownloadItemMousePosition {
   CGFloat statusAlpha_;
   base::scoped_nsobject<NSAnimation> toggleStatusVisibilityAnimation_;
 
-  scoped_ptr<ui::ThemeProvider> themeProvider_;
+  std::unique_ptr<ui::ThemeProvider> themeProvider_;
 }
 
 @property(nonatomic, copy) NSString* secondaryTitle;

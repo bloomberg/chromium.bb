@@ -222,7 +222,7 @@ class HostView : public views::View {
 
   // The title itself and the overlaped widget that contains it.
   views::View* title_view_ = nullptr;  // Not owned.
-  scoped_ptr<views::Widget> title_widget_;
+  std::unique_ptr<views::Widget> title_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(HostView);
 };

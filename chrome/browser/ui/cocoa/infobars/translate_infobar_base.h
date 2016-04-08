@@ -7,8 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #include "components/translate/core/browser/options_menu_model.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
@@ -42,7 +43,7 @@
   // Space between controls in pixels - read from the NIB.
   CGFloat spaceBetweenControls_;
 
-  scoped_ptr<translate::OptionsMenuModel> optionsMenuModel_;
+  std::unique_ptr<translate::OptionsMenuModel> optionsMenuModel_;
 }
 
 // Returns the delegate as a TranslateInfoBarDelegate.  The return

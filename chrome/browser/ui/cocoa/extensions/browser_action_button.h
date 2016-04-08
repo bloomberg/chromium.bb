@@ -7,8 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_button_cocoa.h"
 
@@ -32,7 +33,7 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
   ToolbarActionViewController* viewController_;
 
   // The bridge between the view controller and this object.
-  scoped_ptr<ToolbarActionViewDelegateBridge> viewControllerDelegate_;
+  std::unique_ptr<ToolbarActionViewDelegateBridge> viewControllerDelegate_;
 
   // The context menu controller.
   base::scoped_nsobject<MenuController> contextMenuController_;

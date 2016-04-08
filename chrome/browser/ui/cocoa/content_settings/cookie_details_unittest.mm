@@ -30,7 +30,7 @@ TEST_F(CookiesDetailsTest, CreateForCookie) {
   GURL url("http://chromium.org");
   std::string cookieLine(
       "PHPSESSID=0123456789abcdef0123456789abcdef; path=/");
-  scoped_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
+  std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
       url, cookieLine, base::Time::Now(), net::CookieOptions()));
   details.reset([[CocoaCookieDetails alloc] initWithCookie:cookie.get()
                                          canEditExpiration:NO]);

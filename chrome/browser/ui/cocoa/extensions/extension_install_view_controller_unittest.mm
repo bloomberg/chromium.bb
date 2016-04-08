@@ -75,7 +75,7 @@ class ExtensionInstallViewControllerTest : public CocoaProfileTest {
 TEST_F(ExtensionInstallViewControllerTest, BasicsNormalCancel) {
   MockExtensionInstallViewDelegate delegate;
 
-  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt(
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt(
       chrome::BuildExtensionInstallPrompt(extension_.get()));
   ExtensionInstallPrompt::PermissionsType type =
       ExtensionInstallPrompt::PermissionsType::REGULAR_PERMISSIONS;
@@ -133,7 +133,7 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsNormalCancel) {
 TEST_F(ExtensionInstallViewControllerTest, BasicsNormalOK) {
   MockExtensionInstallViewDelegate delegate;
 
-  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt(
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt(
       chrome::BuildExtensionInstallPrompt(extension_.get()));
   ExtensionInstallPrompt::PermissionsType type =
       ExtensionInstallPrompt::PermissionsType::REGULAR_PERMISSIONS;
@@ -163,7 +163,7 @@ TEST_F(ExtensionInstallViewControllerTest, MultipleWarnings) {
   MockExtensionInstallViewDelegate delegate1;
   MockExtensionInstallViewDelegate delegate2;
 
-  scoped_ptr<ExtensionInstallPrompt::Prompt> one_warning_prompt(
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> one_warning_prompt(
       chrome::BuildExtensionInstallPrompt(extension_.get()));
   ExtensionInstallPrompt::PermissionsType type =
       ExtensionInstallPrompt::PermissionsType::REGULAR_PERMISSIONS;
@@ -173,7 +173,7 @@ TEST_F(ExtensionInstallViewControllerTest, MultipleWarnings) {
                                           PermissionIDSet()));
   one_warning_prompt->SetPermissions(permissions, type);
 
-  scoped_ptr<ExtensionInstallPrompt::Prompt> two_warnings_prompt(
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> two_warnings_prompt(
       chrome::BuildExtensionInstallPrompt(extension_.get()));
   permissions.push_back(PermissionMessage(base::UTF8ToUTF16("warning 2"),
                                           PermissionIDSet()));
@@ -213,7 +213,7 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsSkinny) {
   MockExtensionInstallViewDelegate delegate;
 
   // No warnings should trigger skinny prompt.
-  scoped_ptr<ExtensionInstallPrompt::Prompt> no_warnings_prompt(
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> no_warnings_prompt(
       chrome::BuildExtensionInstallPrompt(extension_.get()));
 
   base::scoped_nsobject<ExtensionInstallViewController> controller(
@@ -255,7 +255,7 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsInline) {
   MockExtensionInstallViewDelegate delegate;
 
   // No warnings should trigger skinny prompt.
-  scoped_ptr<ExtensionInstallPrompt::Prompt> inline_prompt(
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> inline_prompt(
       new ExtensionInstallPrompt::Prompt(
           ExtensionInstallPrompt::INLINE_INSTALL_PROMPT));
   inline_prompt->SetWebstoreData("1,000", true, 3.5, 200);
@@ -314,7 +314,7 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsInline) {
 TEST_F(ExtensionInstallViewControllerTest, PostInstallPermissionsPrompt) {
   MockExtensionInstallViewDelegate delegate;
 
-  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt(
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt(
       chrome::BuildExtensionPostInstallPermissionsPrompt(extension_.get()));
   ExtensionInstallPrompt::PermissionsType type =
       ExtensionInstallPrompt::PermissionsType::REGULAR_PERMISSIONS;
@@ -345,7 +345,7 @@ TEST_F(ExtensionInstallViewControllerTest, PostInstallPermissionsPrompt) {
 TEST_F(ExtensionInstallViewControllerTest, PermissionsDetails) {
   MockExtensionInstallViewDelegate delegate;
 
-  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt(
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt(
       chrome::BuildExtensionInstallPrompt(extension_.get()));
   ExtensionInstallPrompt::PermissionsType type =
       ExtensionInstallPrompt::PermissionsType::REGULAR_PERMISSIONS;

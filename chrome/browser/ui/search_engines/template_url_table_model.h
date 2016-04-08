@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_ENGINES_TEMPLATE_URL_TABLE_MODEL_H_
 #define CHROME_BROWSER_UI_SEARCH_ENGINES_TEMPLATE_URL_TABLE_MODEL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "ui/base/models/table_model.h"
@@ -113,10 +113,10 @@ class TemplateURLTableModel : public ui::TableModel,
   void OnTemplateURLServiceChanged() override;
 
   // Removes the entry at |index| from |entries_| and returns the removed item.
-  scoped_ptr<ModelEntry> RemoveEntry(int index);
+  std::unique_ptr<ModelEntry> RemoveEntry(int index);
 
   // Adds |entry| to |entries_| at |index| and takes ownership.
-  void AddEntry(int index, scoped_ptr<ModelEntry> entry);
+  void AddEntry(int index, std::unique_ptr<ModelEntry> entry);
 
   ui::TableModelObserver* observer_;
 

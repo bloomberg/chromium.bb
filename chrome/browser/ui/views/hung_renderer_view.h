@@ -161,7 +161,7 @@ class HungRendererDialogView : public views::DialogDelegateView,
 
   // The model that provides the contents of the table that shows a list of
   // pages affected by the hang.
-  scoped_ptr<HungPagesTableModel> hung_pages_table_model_;
+  std::unique_ptr<HungPagesTableModel> hung_pages_table_model_;
 
   // Whether or not we've created controls for ourself.
   bool initialized_;

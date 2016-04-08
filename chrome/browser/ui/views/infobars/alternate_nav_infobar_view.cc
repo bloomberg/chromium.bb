@@ -5,9 +5,11 @@
 #include "chrome/browser/ui/views/infobars/alternate_nav_infobar_view.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/text_elider.h"
@@ -18,16 +20,16 @@
 // AlternateNavInfoBarDelegate -------------------------------------------------
 
 // static
-scoped_ptr<infobars::InfoBar> AlternateNavInfoBarDelegate::CreateInfoBar(
-    scoped_ptr<AlternateNavInfoBarDelegate> delegate) {
-  return make_scoped_ptr(new AlternateNavInfoBarView(std::move(delegate)));
+std::unique_ptr<infobars::InfoBar> AlternateNavInfoBarDelegate::CreateInfoBar(
+    std::unique_ptr<AlternateNavInfoBarDelegate> delegate) {
+  return base::WrapUnique(new AlternateNavInfoBarView(std::move(delegate)));
 }
 
 
 // AlternateNavInfoBarView -----------------------------------------------------
 
 AlternateNavInfoBarView::AlternateNavInfoBarView(
-    scoped_ptr<AlternateNavInfoBarDelegate> delegate)
+    std::unique_ptr<AlternateNavInfoBarDelegate> delegate)
     : InfoBarView(std::move(delegate)),
       label_1_(NULL),
       link_(NULL),

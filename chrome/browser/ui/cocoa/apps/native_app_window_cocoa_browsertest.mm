@@ -183,7 +183,8 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest,
       g_browser_process->platform_part()->app_shim_host_manager());
   MockExtensionAppShimHandler* mock = new MockExtensionAppShimHandler();
   test_api.SetExtensionAppShimHandler(
-      scoped_ptr<apps::ExtensionAppShimHandler>(mock));  // Takes ownership.
+      std::unique_ptr<apps::ExtensionAppShimHandler>(
+          mock));  // Takes ownership.
   MockAppShimHost mock_host;
 
   SetUpAppWithWindows(1);

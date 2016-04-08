@@ -105,7 +105,7 @@ void InstallExtensionHandler::HandleInstallMessage(
     ZipFileInstaller::Create(ExtensionSystem::Get(profile)->extension_service())
         ->LoadFromZipFile(file_to_install_);
   } else {
-    scoped_ptr<ExtensionInstallPrompt> prompt(
+    std::unique_ptr<ExtensionInstallPrompt> prompt(
         new ExtensionInstallPrompt(web_ui()->GetWebContents()));
     scoped_refptr<CrxInstaller> crx_installer(CrxInstaller::Create(
         ExtensionSystem::Get(profile)->extension_service(), std::move(prompt)));

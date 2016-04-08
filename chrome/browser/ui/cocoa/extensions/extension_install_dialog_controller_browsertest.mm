@@ -35,7 +35,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogControllerTest, BasicTest) {
   ExtensionInstallPromptShowParams show_params(tab);
 
   ExtensionInstallPromptTestHelper test_helper;
-  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt =
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt =
       chrome::BuildExtensionInstallPrompt(extension_.get());
 
   ExtensionInstallDialogController* controller =
@@ -62,7 +62,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogControllerTest,
   ExtensionInstallPromptShowParams show_params(tab);
 
   ExtensionInstallPromptTestHelper test_helper;
-  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt =
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt =
       chrome::BuildExtensionPostInstallPermissionsPrompt(extension_.get());
 
   ExtensionInstallDialogController* controller =

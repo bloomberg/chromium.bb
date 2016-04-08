@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -119,19 +121,20 @@ class BookmarkBarViewTest : public BrowserWithTestWindowTest {
     return profile;
   }
 
-  scoped_ptr<BookmarkBarViewTestHelper> test_helper_;
-  scoped_ptr<BookmarkBarView> bookmark_bar_view_;
+  std::unique_ptr<BookmarkBarViewTestHelper> test_helper_;
+  std::unique_ptr<BookmarkBarView> bookmark_bar_view_;
 
  private:
-  static scoped_ptr<KeyedService> CreateTemplateURLService(
+  static std::unique_ptr<KeyedService> CreateTemplateURLService(
       content::BrowserContext* profile) {
-    return make_scoped_ptr(new TemplateURLService(
-        static_cast<Profile*>(profile)->GetPrefs(),
-        make_scoped_ptr(new SearchTermsData), NULL,
-        scoped_ptr<TemplateURLServiceClient>(), NULL, NULL, base::Closure()));
+    return base::WrapUnique(
+        new TemplateURLService(static_cast<Profile*>(profile)->GetPrefs(),
+                               base::WrapUnique(new SearchTermsData), NULL,
+                               std::unique_ptr<TemplateURLServiceClient>(),
+                               NULL, NULL, base::Closure()));
   }
 
-  scoped_ptr<ScopedTestingLocalState> local_state_;
+  std::unique_ptr<ScopedTestingLocalState> local_state_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarViewTest);
 };

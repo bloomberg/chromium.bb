@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 class AvatarMenu;
 class Browser;
@@ -22,11 +22,11 @@ class Observer;
 @interface ProfileMenuController : NSObject {
  @private
   // The controller for the profile submenu.
-  scoped_ptr<AvatarMenu> avatarMenu_;
+  std::unique_ptr<AvatarMenu> avatarMenu_;
 
   // An observer to be notified when the active browser changes and when the
   // menu model changes.
-  scoped_ptr<ProfileMenuControllerInternal::Observer> observer_;
+  std::unique_ptr<ProfileMenuControllerInternal::Observer> observer_;
 
   // The main menu item to which the profile menu is attached.
   NSMenuItem* mainMenuItem_;  // weak

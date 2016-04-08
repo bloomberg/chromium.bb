@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/cocoa/extensions/toolbar_actions_bar_bubble_mac.h"
 
 ExtensionMessageBubbleBridge::ExtensionMessageBubbleBridge(
-    scoped_ptr<extensions::ExtensionMessageBubbleController> controller,
+    std::unique_ptr<extensions::ExtensionMessageBubbleController> controller,
     bool anchored_to_extension)
     : controller_(std::move(controller)),
       anchored_to_extension_(anchored_to_extension) {}

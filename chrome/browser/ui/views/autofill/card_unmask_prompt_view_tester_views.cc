@@ -9,9 +9,9 @@
 namespace autofill {
 
 // static
-scoped_ptr<CardUnmaskPromptViewTester> CardUnmaskPromptViewTester::For(
+std::unique_ptr<CardUnmaskPromptViewTester> CardUnmaskPromptViewTester::For(
     CardUnmaskPromptView* view) {
-  return scoped_ptr<CardUnmaskPromptViewTester>(
+  return std::unique_ptr<CardUnmaskPromptViewTester>(
       new CardUnmaskPromptViewTesterViews(
           static_cast<CardUnmaskPromptViews*>(view)));
 }

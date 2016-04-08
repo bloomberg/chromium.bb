@@ -34,7 +34,7 @@ class ExtensionUninstaller
   Profile* profile_;
   std::string app_id_;
   AppListControllerDelegate* controller_;
-  scoped_ptr<extensions::ExtensionUninstallDialog> dialog_;
+  std::unique_ptr<extensions::ExtensionUninstallDialog> dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUninstaller);
 };

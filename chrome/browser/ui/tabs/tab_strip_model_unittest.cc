@@ -7,11 +7,11 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -2477,7 +2477,8 @@ TEST_F(TabStripModelTest, TabBlockedState) {
           reinterpret_cast<gfx::NativeWindow>(0), modal_dialog_manager);
   modal_dialog_manager->ShowDialogWithManager(
       reinterpret_cast<gfx::NativeWindow>(0),
-      scoped_ptr<web_modal::SingleWebContentsDialogManager>(native_manager));
+      std::unique_ptr<web_modal::SingleWebContentsDialogManager>(
+          native_manager));
   EXPECT_TRUE(strip_src.IsTabBlocked(1));
 
   // Detach the tab.

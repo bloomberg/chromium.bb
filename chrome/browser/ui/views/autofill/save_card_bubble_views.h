@@ -69,7 +69,7 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
  private:
   ~SaveCardBubbleViews() override;
 
-  scoped_ptr<views::View> CreateMainContentView();
+  std::unique_ptr<views::View> CreateMainContentView();
 
   // views::BubbleDelegateView
   void Init() override;

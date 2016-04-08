@@ -32,7 +32,7 @@ bool DataReductionProxyInfoBar::Register(JNIEnv* env) {
 }
 
 DataReductionProxyInfoBar::DataReductionProxyInfoBar(
-    scoped_ptr<DataReductionProxyInfoBarDelegateAndroid> delegate)
+    std::unique_ptr<DataReductionProxyInfoBarDelegateAndroid> delegate)
     : ConfirmInfoBar(std::move(delegate)),
       java_data_reduction_proxy_delegate_() {}
 
@@ -56,11 +56,11 @@ DataReductionProxyInfoBar::GetDelegate() {
 // DataReductionProxyInfoBarDelegate:
 
 // static
-scoped_ptr<infobars::InfoBar>
+std::unique_ptr<infobars::InfoBar>
 DataReductionProxyInfoBarDelegateAndroid::CreateInfoBar(
     infobars::InfoBarManager* infobar_manager,
-    scoped_ptr<DataReductionProxyInfoBarDelegateAndroid> delegate) {
-  return scoped_ptr<infobars::InfoBar>(
+    std::unique_ptr<DataReductionProxyInfoBarDelegateAndroid> delegate) {
+  return std::unique_ptr<infobars::InfoBar>(
       new DataReductionProxyInfoBar(std::move(delegate)));
 }
 

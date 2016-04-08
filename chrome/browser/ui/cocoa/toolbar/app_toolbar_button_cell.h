@@ -7,7 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #import "chrome/browser/ui/cocoa/clickhold_button_cell.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_painter.h"
 
@@ -17,8 +18,8 @@ class AppMenuIconPainterDelegateMac;
 // and paint severity levels.
 @interface AppToolbarButtonCell : ClickHoldButtonCell {
  @private
-  scoped_ptr<AppMenuIconPainter> iconPainter_;
-  scoped_ptr<AppMenuIconPainterDelegateMac> delegate_;
+  std::unique_ptr<AppMenuIconPainter> iconPainter_;
+  std::unique_ptr<AppMenuIconPainterDelegateMac> delegate_;
 }
 
 - (void)setSeverity:(AppMenuIconPainter::Severity)severity

@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_RESET_SETTINGS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_RESET_SETTINGS_HANDLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
@@ -90,12 +90,12 @@ class ResetSettingsHandler : public SettingsPageUIHandler {
 
   Profile* const profile_;
 
-  scoped_ptr<ProfileResetter> resetter_;
+  std::unique_ptr<ProfileResetter> resetter_;
 
-  scoped_ptr<BrandcodeConfigFetcher> config_fetcher_;
+  std::unique_ptr<BrandcodeConfigFetcher> config_fetcher_;
 
   // Snapshot of settings before profile was reseted.
-  scoped_ptr<ResettableSettingsSnapshot> setting_snapshot_;
+  std::unique_ptr<ResettableSettingsSnapshot> setting_snapshot_;
 
   // Contains Chrome brand code; empty for organic Chrome.
   std::string brandcode_;

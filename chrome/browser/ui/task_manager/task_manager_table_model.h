@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/task_management/task_manager_observer.h"
 #include "ui/base/models/table_model.h"
@@ -118,7 +119,7 @@ class TaskManagerTableModel
   // exists, or the default column settings.
   // The columns settings are the visible columns and the last sorted column
   // and the direction of the sort.
-  scoped_ptr<base::DictionaryValue> columns_settings_;
+  std::unique_ptr<base::DictionaryValue> columns_settings_;
 
   // The table model observer that will be set by the table view of the task
   // manager.
@@ -129,7 +130,7 @@ class TaskManagerTableModel
 
   // The owned task manager values stringifier that will be used to convert the
   // values to string16.
-  scoped_ptr<TaskManagerValuesStringifier> stringifier_;
+  std::unique_ptr<TaskManagerValuesStringifier> stringifier_;
 
   // The status of the flag #enable-nacl-debug.
   bool is_nacl_debugging_flag_enabled_;

@@ -7,8 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/has_weak_browser_pointer.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
@@ -72,7 +73,7 @@ class WebContents;
 
   // Tracks the newTabButton_ for rollovers.
   base::scoped_nsobject<CrTrackingArea> newTabTrackingArea_;
-  scoped_ptr<TabStripModelObserverBridge> bridge_;
+  std::unique_ptr<TabStripModelObserverBridge> bridge_;
   Browser* browser_;  // weak
   TabStripModel* tabStripModel_;  // weak
   // Delegate that is informed about tab state changes.
@@ -145,7 +146,7 @@ class WebContents;
   BOOL mouseInside_;
 
   // Helper for performing tab selection as a result of dragging over a tab.
-  scoped_ptr<HoverTabSelector> hoverTabSelector_;
+  std::unique_ptr<HoverTabSelector> hoverTabSelector_;
 
   // A container view for custom traffic light buttons, which must be manually
   // added in fullscreen in 10.10+.

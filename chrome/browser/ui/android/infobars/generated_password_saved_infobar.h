@@ -19,7 +19,7 @@
 class GeneratedPasswordSavedInfoBar : public InfoBarAndroid {
  public:
   explicit GeneratedPasswordSavedInfoBar(
-      scoped_ptr<GeneratedPasswordSavedInfoBarDelegateAndroid> delegate);
+      std::unique_ptr<GeneratedPasswordSavedInfoBarDelegateAndroid> delegate);
   ~GeneratedPasswordSavedInfoBar() override;
 
  private:

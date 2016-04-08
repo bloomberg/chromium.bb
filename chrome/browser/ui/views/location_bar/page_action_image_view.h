@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_PAGE_ACTION_IMAGE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_PAGE_ACTION_IMAGE_VIEW_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
 #include "ui/views/context_menu_controller.h"
@@ -77,7 +77,7 @@ class PageActionImageView : public ToolbarActionViewDelegateViews,
                               ui::MenuSourceType source_type) override;
 
   // The controller for this ExtensionAction view.
-  scoped_ptr<ExtensionActionViewController> view_controller_;
+  std::unique_ptr<ExtensionActionViewController> view_controller_;
 
   // The location bar view that owns us.
   LocationBarView* owner_;
@@ -90,7 +90,7 @@ class PageActionImageView : public ToolbarActionViewDelegateViews,
   bool preview_enabled_;
 
   // Responsible for running the menu.
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PageActionImageView);
 };

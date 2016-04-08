@@ -106,7 +106,7 @@ class ExtensionEnableFlow : public content::NotificationObserver,
   // who only want to create a window if it is required.
   base::Callback<gfx::NativeWindow(void)> window_getter_;
 
-  scoped_ptr<ExtensionInstallPrompt> prompt_;
+  std::unique_ptr<ExtensionInstallPrompt> prompt_;
   content::NotificationRegistrar registrar_;
 
   // Listen to extension load notification.

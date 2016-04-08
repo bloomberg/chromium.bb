@@ -369,7 +369,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   virtual bool CreateBigMenu() { return false; }
 
   BookmarkModel* model_;
-  scoped_ptr<BookmarkBarView> bb_view_;
+  std::unique_ptr<BookmarkBarView> bb_view_;
   TestingPageNavigator navigator_;
 
  private:
@@ -406,11 +406,11 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     model_->AddURL(of2, 1, ASCIIToUTF16("of2b"), GURL(test_base + "of2b"));
   }
 
-  scoped_ptr<ChromeContentClient> content_client_;
-  scoped_ptr<ChromeContentBrowserClient> browser_content_client_;
-  scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<Browser> browser_;
-  scoped_ptr<ScopedTestingLocalState> local_state_;
+  std::unique_ptr<ChromeContentClient> content_client_;
+  std::unique_ptr<ChromeContentBrowserClient> browser_content_client_;
+  std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<Browser> browser_;
+  std::unique_ptr<ScopedTestingLocalState> local_state_;
 };
 
 // Clicks on first menu, makes sure button is depressed. Moves mouse to first
@@ -1339,7 +1339,7 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(child_menu != NULL);
 
     // Click and wait until the dialog box appears.
-    scoped_ptr<DialogWaiter> dialog_waiter(new DialogWaiter());
+    std::unique_ptr<DialogWaiter> dialog_waiter(new DialogWaiter());
     ui_test_utils::MoveMouseToCenterAndPress(
         child_menu,
         ui_controls::LEFT,
@@ -1348,7 +1348,7 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
             &BookmarkBarViewTest12::Step4, this, base::Passed(&dialog_waiter)));
   }
 
-  void Step4(scoped_ptr<DialogWaiter> waiter) {
+  void Step4(std::unique_ptr<DialogWaiter> waiter) {
     views::Widget* dialog = waiter->WaitForDialog();
     waiter.reset();
 

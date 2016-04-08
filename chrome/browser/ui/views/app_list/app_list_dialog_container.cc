@@ -220,7 +220,7 @@ class NativeDialogContainer : public BaseDialogContainer {
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
     FullSizeBubbleFrameView* frame = new FullSizeBubbleFrameView();
-    scoped_ptr<views::BubbleBorder> border(new views::BubbleBorder(
+    std::unique_ptr<views::BubbleBorder> border(new views::BubbleBorder(
         views::BubbleBorder::FLOAT, kShadowType, gfx::kPlaceholderColor));
     border->set_use_theme_background_color(true);
     frame->SetBubbleBorder(std::move(border));

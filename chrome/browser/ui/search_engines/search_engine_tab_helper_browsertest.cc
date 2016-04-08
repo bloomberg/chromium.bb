@@ -39,7 +39,7 @@ class TemplateURLServiceObserver {
  private:
   void StopLoop() { runner_->Quit(); }
   base::RunLoop* runner_;
-  scoped_ptr<TemplateURLService::Subscription> template_url_sub_;
+  std::unique_ptr<TemplateURLService::Subscription> template_url_sub_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceObserver);
 };
@@ -64,8 +64,8 @@ class SearchEngineTabHelperBrowserTest : public InProcessBrowserTest {
   ~SearchEngineTabHelperBrowserTest() override {}
 
  private:
-  scoped_ptr<HttpResponse> HandleRequest(const GURL& osdd_xml_url,
-                                         const HttpRequest& request) {
+  std::unique_ptr<HttpResponse> HandleRequest(const GURL& osdd_xml_url,
+                                              const HttpRequest& request) {
     std::string html = base::StringPrintf(
         "<html>"
         "<head>"
@@ -76,7 +76,7 @@ class SearchEngineTabHelperBrowserTest : public InProcessBrowserTest {
         "</html>",
         osdd_xml_url.spec().c_str());
 
-    scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
+    std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
     http_response->set_code(net::HTTP_OK);
     http_response->set_content(html);
     http_response->set_content_type("text/html");

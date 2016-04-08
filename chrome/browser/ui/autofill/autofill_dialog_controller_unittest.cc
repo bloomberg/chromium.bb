@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -13,7 +14,6 @@
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -507,7 +507,7 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
   // Returned when the dialog closes successfully.
   const FormStructure* form_structure_;
 
-  scoped_ptr<ScopedTestingLocalState> scoped_local_state_;
+  std::unique_ptr<ScopedTestingLocalState> scoped_local_state_;
 };
 
 }  // namespace

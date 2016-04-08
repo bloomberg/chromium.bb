@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_ALERT_INDICATOR_BUTTON_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_ALERT_INDICATOR_BUTTON_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/view_targeter_delegate.h"
@@ -91,8 +92,8 @@ class AlertIndicatorButton : public views::ImageButton,
 
   // Alert indicator fade-in/out animation (i.e., only on show/hide, not a
   // continuous animation).
-  scoped_ptr<gfx::AnimationDelegate> fade_animation_delegate_;
-  scoped_ptr<gfx::Animation> fade_animation_;
+  std::unique_ptr<gfx::AnimationDelegate> fade_animation_delegate_;
+  std::unique_ptr<gfx::Animation> fade_animation_;
   TabAlertState showing_alert_state_;
 
   DISALLOW_COPY_AND_ASSIGN(AlertIndicatorButton);

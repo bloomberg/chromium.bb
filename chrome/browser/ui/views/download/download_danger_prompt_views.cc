@@ -74,7 +74,7 @@ class DownloadDangerPromptViews : public DownloadDangerPrompt,
   bool show_context_;
   OnDone done_;
 
-  scoped_ptr<ExperienceSamplingEvent> sampling_event_;
+  std::unique_ptr<ExperienceSamplingEvent> sampling_event_;
 
   views::View* contents_view_;
 };

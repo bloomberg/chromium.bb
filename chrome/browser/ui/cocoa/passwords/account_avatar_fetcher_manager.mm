@@ -67,7 +67,7 @@ void AccountAvatarFetcherBridge::UpdateAvatar(const gfx::ImageSkia& image) {
 }
 
 - (void)fetchAvatar:(const GURL&)avatarURL forView:(CredentialItemButton*)view {
-  scoped_ptr<AccountAvatarFetcherBridge> bridge(
+  std::unique_ptr<AccountAvatarFetcherBridge> bridge(
       new AccountAvatarFetcherBridge(self, view));
   AccountAvatarFetcher* fetcher =
       new AccountAvatarFetcher(avatarURL, bridge->AsWeakPtr());

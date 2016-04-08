@@ -4,11 +4,12 @@
 
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
@@ -139,7 +140,7 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
   void CheckJavascriptErrors() {
     content::RenderFrameHost* host =
         dialog_->GetRenderViewHost()->GetMainFrame();
-    scoped_ptr<base::Value> value =
+    std::unique_ptr<base::Value> value =
         content::ExecuteScriptAndGetValue(host, "window.JSErrorCount");
     int js_error_count = 0;
     ASSERT_TRUE(value->GetAsInteger(&js_error_count));
@@ -154,7 +155,7 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
     // via chrome.test.sendMessage() in the extension JavaScript.
     ExtensionTestMessageListener init_listener("ready", false /* will_reply */);
 
-    scoped_ptr<ExtensionTestMessageListener> additional_listener;
+    std::unique_ptr<ExtensionTestMessageListener> additional_listener;
     if (!additional_message.empty()) {
       additional_listener.reset(
           new ExtensionTestMessageListener(additional_message, false));
@@ -222,10 +223,10 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
     ASSERT_FALSE(dialog_->IsRunning(owning_window));
   }
 
-  scoped_ptr<MockSelectFileDialogListener> listener_;
+  std::unique_ptr<MockSelectFileDialogListener> listener_;
   scoped_refptr<SelectFileDialogExtension> dialog_;
 
-  scoped_ptr<MockSelectFileDialogListener> second_listener_;
+  std::unique_ptr<MockSelectFileDialogListener> second_listener_;
   scoped_refptr<SelectFileDialogExtension> second_dialog_;
 
   base::ScopedTempDir tmp_dir_;

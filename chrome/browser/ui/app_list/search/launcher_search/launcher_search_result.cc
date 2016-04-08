@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/launcher_search_provider/launcher_search_provider_service.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader_impl.h"
@@ -27,7 +28,7 @@ LauncherSearchResult::LauncherSearchResult(
     const int discrete_value_relevance,
     Profile* profile,
     const extensions::Extension* extension,
-    scoped_ptr<chromeos::launcher_search_provider::ErrorReporter>
+    std::unique_ptr<chromeos::launcher_search_provider::ErrorReporter>
         error_reporter)
     : item_id_(item_id),
       discrete_value_relevance_(discrete_value_relevance),
@@ -50,12 +51,12 @@ LauncherSearchResult::~LauncherSearchResult() {
     icon_image_loader_->RemoveObserver(this);
 }
 
-scoped_ptr<SearchResult> LauncherSearchResult::Duplicate() const {
+std::unique_ptr<SearchResult> LauncherSearchResult::Duplicate() const {
   LauncherSearchResult* duplicated_result =
       new LauncherSearchResult(item_id_, discrete_value_relevance_, profile_,
                                extension_, icon_image_loader_);
   duplicated_result->set_title(title());
-  return make_scoped_ptr(duplicated_result);
+  return base::WrapUnique(duplicated_result);
 }
 
 void LauncherSearchResult::Open(int event_flags) {

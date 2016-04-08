@@ -38,15 +38,15 @@ const char kDisplayDispositionMetric[] = "PasswordBubble.DisplayDisposition";
 // A helper class that will create FakeURLFetcher and record the requested URLs.
 class TestURLFetcherCallback {
  public:
-  scoped_ptr<net::FakeURLFetcher> CreateURLFetcher(
+  std::unique_ptr<net::FakeURLFetcher> CreateURLFetcher(
       const GURL& url,
       net::URLFetcherDelegate* d,
       const std::string& response_data,
       net::HttpStatusCode response_code,
       net::URLRequestStatus::Status status) {
     OnRequestDone(url);
-    return scoped_ptr<net::FakeURLFetcher>(new net::FakeURLFetcher(
-        url, d, response_data, response_code, status));
+    return std::unique_ptr<net::FakeURLFetcher>(
+        new net::FakeURLFetcher(url, d, response_data, response_code, status));
   }
 
   MOCK_METHOD1(OnRequestDone, void(const GURL&));
@@ -132,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
   ExecuteManagePasswordsCommand();
   EXPECT_TRUE(IsBubbleShowing());
 
-  scoped_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> samples(
       GetSamples(kDisplayDispositionMetric));
   EXPECT_EQ(
       0,
@@ -159,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
   EXPECT_TRUE(ManagePasswordsBubbleView::manage_password_bubble()->
       CanActivate());
 
-  scoped_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> samples(
       GetSamples(kDisplayDispositionMetric));
   EXPECT_EQ(
       1,
@@ -183,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
   ExecuteManagePasswordsCommand();
   EXPECT_TRUE(IsBubbleShowing());
 
-  scoped_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> samples(
       GetSamples(kDisplayDispositionMetric));
   EXPECT_EQ(
       1,
@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
   ExecuteManagePasswordsCommand();
   EXPECT_TRUE(IsBubbleShowing());
 
-  scoped_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> samples(
       GetSamples(kDisplayDispositionMetric));
   EXPECT_EQ(
       1,
@@ -284,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, TwoTabsWithBubble) {
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
   base::FeatureList::ClearInstanceForTesting();
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   feature_list->InitializeFromCommandLine(
       features::kCredentialManagementAPI.name, std::string());
   base::FeatureList::SetInstance(std::move(feature_list));

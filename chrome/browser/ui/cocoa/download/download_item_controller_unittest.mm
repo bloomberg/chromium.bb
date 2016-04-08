@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/ui/cocoa/download/download_item_controller.h"
+
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/download/download_item_button.h"
-#import "chrome/browser/ui/cocoa/download/download_item_controller.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 #include "content/public/test/mock_download_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -96,7 +98,7 @@ class DownloadItemControllerTest : public CocoaProfileTest {
   }
 
  protected:
-  scoped_ptr<content::MockDownloadItem> download_item_;
+  std::unique_ptr<content::MockDownloadItem> download_item_;
   base::scoped_nsobject<DownloadShelfController> shelf_;
 };
 

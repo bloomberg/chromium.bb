@@ -98,7 +98,7 @@ void InvalidationsMessageHandler::OnUpdateIds(
   for (syncer::ObjectIdCountMap::const_iterator it = ids.begin();
        it != ids.end();
        ++it) {
-    scoped_ptr<base::DictionaryValue> dic(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> dic(new base::DictionaryValue());
     dic->SetString("name", (it->first).name());
     dic->SetInteger("source", (it->first).source());
     dic->SetInteger("totalCount", it->second);
@@ -113,7 +113,8 @@ void InvalidationsMessageHandler::OnDebugMessage(
 
 void InvalidationsMessageHandler::OnInvalidation(
     const syncer::ObjectIdInvalidationMap& new_invalidations) {
-  scoped_ptr<base::ListValue> invalidations_list = new_invalidations.ToValue();
+  std::unique_ptr<base::ListValue> invalidations_list =
+      new_invalidations.ToValue();
   web_ui()->CallJavascriptFunction("chrome.invalidations.logInvalidations",
                                    *invalidations_list);
 }

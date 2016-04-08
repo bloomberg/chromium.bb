@@ -530,11 +530,10 @@ void AutofillDialogControllerImpl::Show() {
   acceptable_cc_types_ = form_structure_.PossibleValues(CREDIT_CARD_TYPE);
 
   validator_.reset(new AddressValidator(
-      scoped_ptr< ::i18n::addressinput::Source>(
+      std::unique_ptr<::i18n::addressinput::Source>(
           new autofill::ChromeMetadataSource(I18N_ADDRESS_VALIDATION_DATA_URL,
                                              profile_->GetRequestContext())),
-      ValidationRulesStorageFactory::CreateStorage(),
-      this));
+      ValidationRulesStorageFactory::CreateStorage(), this));
 
   SuggestionsUpdated();
   SubmitButtonDelayBegin();
@@ -636,7 +635,7 @@ void AutofillDialogControllerImpl::ShowEditUiIfBadSuggestion(
     DialogSection section) {
   // |CreateWrapper()| returns an empty wrapper if |IsEditingExistingData()|, so
   // get the wrapper before this potentially happens below.
-  scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
+  std::unique_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
 
   // If the chosen item in |model| yields an empty suggestion text, it is
   // invalid. In this case, show the edit UI and highlight invalid fields.
@@ -849,7 +848,7 @@ bool AutofillDialogControllerImpl::SuggestionTextForSection(
       return false;
   }
 
-  scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
+  std::unique_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
   return wrapper->GetDisplayText(vertically_compact, horizontally_compact);
 }
 
@@ -861,33 +860,33 @@ base::string16 AutofillDialogControllerImpl::ExtraSuggestionTextForSection(
   return base::string16();
 }
 
-scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
+std::unique_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
     DialogSection section) {
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
   std::string item_key = model->GetItemKeyForCheckedItem();
   if (!IsASuggestionItemKey(item_key) || IsManuallyEditingSection(section))
-    return scoped_ptr<DataModelWrapper>();
+    return std::unique_ptr<DataModelWrapper>();
 
   if (section == SECTION_CC) {
     CreditCard* card = GetManager()->GetCreditCardByGUID(item_key);
     DCHECK(card);
-    return scoped_ptr<DataModelWrapper>(new AutofillCreditCardWrapper(card));
+    return std::unique_ptr<DataModelWrapper>(
+        new AutofillCreditCardWrapper(card));
   }
 
   AutofillProfile* profile = GetManager()->GetProfileByGUID(item_key);
   DCHECK(profile);
   if (section == SECTION_SHIPPING) {
-    return scoped_ptr<DataModelWrapper>(
+    return std::unique_ptr<DataModelWrapper>(
         new AutofillShippingAddressWrapper(profile));
   }
   DCHECK_EQ(SECTION_BILLING, section);
-  return scoped_ptr<DataModelWrapper>(
-      new AutofillProfileWrapper(profile));
+  return std::unique_ptr<DataModelWrapper>(new AutofillProfileWrapper(profile));
 }
 
 gfx::Image AutofillDialogControllerImpl::SuggestionIconForSection(
     DialogSection section) {
-  scoped_ptr<DataModelWrapper> model = CreateWrapper(section);
+  std::unique_ptr<DataModelWrapper> model = CreateWrapper(section);
   if (!model.get())
     return gfx::Image();
 
@@ -899,7 +898,7 @@ gfx::Image AutofillDialogControllerImpl::ExtraSuggestionIconForSection(
   if (section != SECTION_CC)
     return gfx::Image();
 
-  scoped_ptr<DataModelWrapper> model = CreateWrapper(section);
+  std::unique_ptr<DataModelWrapper> model = CreateWrapper(section);
   if (!model.get())
     return gfx::Image();
 
@@ -1023,7 +1022,7 @@ ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
   if (section != SECTION_CC) {
     AutofillProfile profile;
     FillFormGroupFromOutputs(inputs, &profile);
-    scoped_ptr<AddressData> address_data =
+    std::unique_ptr<AddressData> address_data =
         i18n::CreateAddressDataFromAutofillProfile(
             profile, g_browser_process->GetApplicationLocale());
     address_data->language_code = AddressLanguageCodeForSection(section);
@@ -1301,7 +1300,7 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(
   const ServerFieldType popup_input_type = popup_input_type_;
 
   ScopedViewUpdates updates(view_.get());
-  scoped_ptr<DataModelWrapper> wrapper;
+  std::unique_ptr<DataModelWrapper> wrapper;
 
   if (static_cast<size_t>(identifier) < popup_suggestion_ids_.size()) {
     const std::string& guid = popup_suggestion_ids_[identifier];
@@ -1651,7 +1650,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
                         MutableAddressLanguageCodeForSection(section));
   std::vector<ServerFieldType> types = TypesFromInputs(inputs);
 
-  scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
+  std::unique_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
   if (wrapper) {
     // Only fill in data that is associated with this section.
     wrapper->FillFormStructure(types, compare, &form_structure_);
@@ -1732,7 +1731,7 @@ base::string16 AutofillDialogControllerImpl::GetValueFromSection(
     ServerFieldType type) {
   DCHECK(SectionIsActive(section));
 
-  scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
+  std::unique_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
   if (wrapper)
     return wrapper->GetInfo(AutofillType(type));
 
@@ -1821,7 +1820,7 @@ void AutofillDialogControllerImpl::GetI18nValidatorSuggestions(
   AutofillProfile profile;
   FillFormGroupFromOutputs(inputs, &profile);
 
-  scoped_ptr<AddressData> user_input =
+  std::unique_ptr<AddressData> user_input =
       i18n::CreateAddressDataFromAutofillProfile(
           profile, g_browser_process->GetApplicationLocale());
   user_input->language_code = AddressLanguageCodeForSection(section);
@@ -1888,7 +1887,7 @@ std::string AutofillDialogControllerImpl::CountryCodeForSection(
     DialogSection section) {
   base::string16 country;
 
-  scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
+  std::unique_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
   if (wrapper) {
     country = wrapper->GetInfo(AutofillType(CountryTypeForSection(section)));
   } else {
@@ -2036,7 +2035,7 @@ bool AutofillDialogControllerImpl::ShouldDisallowCcType(
 
 bool AutofillDialogControllerImpl::HasInvalidAddress(
     const AutofillProfile& profile) {
-  scoped_ptr<AddressData> address_data =
+  std::unique_ptr<AddressData> address_data =
       i18n::CreateAddressDataFromAutofillProfile(
           profile, g_browser_process->GetApplicationLocale());
 
@@ -2138,7 +2137,7 @@ void AutofillDialogControllerImpl::PersistAutofillChoice(
     DialogSection section,
     const std::string& guid) {
   DCHECK(ShouldOfferToSaveInChrome());
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetString(kGuidPrefKey, guid);
 
   DictionaryPrefUpdate updater(profile()->GetPrefs(),

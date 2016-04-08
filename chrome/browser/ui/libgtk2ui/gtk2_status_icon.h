@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_LIBGTK2UI_GTK2_STATUS_ICON_H_
 #define CHROME_BROWSER_UI_LIBGTK2UI_GTK2_STATUS_ICON_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal.h"
 #include "ui/base/glib/glib_integers.h"
@@ -51,7 +52,7 @@ class Gtk2StatusIcon : public views::StatusIconLinux {
 
   GtkStatusIcon* gtk_status_icon_;
 
-  scoped_ptr<AppIndicatorIconMenu> menu_;
+  std::unique_ptr<AppIndicatorIconMenu> menu_;
 
   DISALLOW_COPY_AND_ASSIGN(Gtk2StatusIcon);
 };

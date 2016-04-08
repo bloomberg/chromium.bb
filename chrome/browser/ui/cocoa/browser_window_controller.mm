@@ -1582,13 +1582,12 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
   ChromeTranslateClient::GetTranslateLanguages(
       contents, &sourceLanguage, &targetLanguage);
 
-  scoped_ptr<translate::TranslateUIDelegate> uiDelegate(
+  std::unique_ptr<translate::TranslateUIDelegate> uiDelegate(
       new translate::TranslateUIDelegate(
           ChromeTranslateClient::GetManagerFromWebContents(contents)
               ->GetWeakPtr(),
-          sourceLanguage,
-          targetLanguage));
-  scoped_ptr<TranslateBubbleModel> model(
+          sourceLanguage, targetLanguage));
+  std::unique_ptr<TranslateBubbleModel> model(
       new TranslateBubbleModelImpl(step, std::move(uiDelegate)));
   translateBubbleController_ =
       [[TranslateBubbleController alloc] initWithParentWindow:self

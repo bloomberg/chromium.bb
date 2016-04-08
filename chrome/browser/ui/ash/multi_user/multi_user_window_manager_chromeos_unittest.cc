@@ -264,12 +264,12 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
 
   chromeos::FakeChromeUserManager* fake_user_manager_;  // Not owned.
 
-  scoped_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
 
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
 
   // The maximized window manager (if enabled).
-  scoped_ptr<MaximizeModeWindowManager> maximize_mode_window_manager_;
+  std::unique_ptr<MaximizeModeWindowManager> maximize_mode_window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerChromeOSTest);
 };

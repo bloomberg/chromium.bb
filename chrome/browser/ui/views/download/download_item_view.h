@@ -16,10 +16,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_ITEM_VIEW_H__
 #define CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_ITEM_VIEW_H__
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -307,11 +307,11 @@ class DownloadItemView : public views::ButtonListener,
   DownloadItemModel model_;
 
   // Hover animations for our body and drop buttons.
-  scoped_ptr<gfx::SlideAnimation> body_hover_animation_;
-  scoped_ptr<gfx::SlideAnimation> drop_hover_animation_;
+  std::unique_ptr<gfx::SlideAnimation> body_hover_animation_;
+  std::unique_ptr<gfx::SlideAnimation> drop_hover_animation_;
 
   // Animation for download complete.
-  scoped_ptr<gfx::SlideAnimation> complete_animation_;
+  std::unique_ptr<gfx::SlideAnimation> complete_animation_;
 
   // Progress animation
   base::RepeatingTimer progress_timer_;
@@ -336,7 +336,7 @@ class DownloadItemView : public views::ButtonListener,
   base::Time time_download_warning_shown_;
 
   // The currently running download context menu.
-  scoped_ptr<DownloadShelfContextMenuView> context_menu_;
+  std::unique_ptr<DownloadShelfContextMenuView> context_menu_;
 
   // The name of this view as reported to assistive technology.
   base::string16 accessible_name_;
@@ -348,7 +348,7 @@ class DownloadItemView : public views::ButtonListener,
 
   // ExperienceSampling: This tracks dangerous/malicious downloads warning UI
   // and the user's decisions about it.
-  scoped_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
+  std::unique_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
 
   // Method factory used to delay reenabling of the item when opening the
   // downloaded file.

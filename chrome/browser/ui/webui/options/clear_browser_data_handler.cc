@@ -5,11 +5,13 @@
 #include "chrome/browser/ui/webui/options/clear_browser_data_handler.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string16.h"
@@ -88,10 +90,10 @@ void ClearBrowserDataHandler::InitializeHandler() {
                  base::Unretained(this)));
 
   if (AreCountersEnabled()) {
-    AddCounter(make_scoped_ptr(new PasswordsCounter()));
-    AddCounter(make_scoped_ptr(new HistoryCounter()));
-    AddCounter(make_scoped_ptr(new CacheCounter()));
-    AddCounter(make_scoped_ptr(new AutofillCounter()));
+    AddCounter(base::WrapUnique(new PasswordsCounter()));
+    AddCounter(base::WrapUnique(new HistoryCounter()));
+    AddCounter(base::WrapUnique(new CacheCounter()));
+    AddCounter(base::WrapUnique(new AutofillCounter()));
 
     sync_service_ =
         ProfileSyncServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
@@ -358,7 +360,7 @@ void ClearBrowserDataHandler::OnBrowsingHistoryPrefChanged() {
 }
 
 void ClearBrowserDataHandler::AddCounter(
-    scoped_ptr<BrowsingDataCounter> counter) {
+    std::unique_ptr<BrowsingDataCounter> counter) {
   DCHECK(AreCountersEnabled());
 
   counter->Init(
@@ -369,7 +371,7 @@ void ClearBrowserDataHandler::AddCounter(
 }
 
 void ClearBrowserDataHandler::UpdateCounterText(
-    scoped_ptr<BrowsingDataCounter::Result> result) {
+    std::unique_ptr<BrowsingDataCounter::Result> result) {
   DCHECK(AreCountersEnabled());
   web_ui()->CallJavascriptFunction(
       "ClearBrowserDataOverlay.updateCounter",

@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_COCOA_LOCATION_BAR_CONTENT_SETTING_DECORATION_H_
 #define CHROME_BROWSER_UI_COCOA_LOCATION_BAR_CONTENT_SETTING_DECORATION_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/location_bar/image_decoration.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 
@@ -57,7 +58,7 @@ class ContentSettingDecoration : public ImageDecoration {
   // Measure the width of the animated text.
   CGFloat MeasureTextWidth();
 
-  scoped_ptr<ContentSettingImageModel> content_setting_image_model_;
+  std::unique_ptr<ContentSettingImageModel> content_setting_image_model_;
 
   LocationBarViewMac* owner_;  // weak
   Profile* profile_;  // weak

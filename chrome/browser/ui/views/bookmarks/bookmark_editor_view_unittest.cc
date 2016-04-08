@@ -105,7 +105,7 @@ class BookmarkEditorViewTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
 
   BookmarkModel* model_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
 
  private:
   // Creates the following structure:
@@ -138,7 +138,7 @@ class BookmarkEditorViewTest : public testing::Test {
     model_->AddURL(of1, 0, ASCIIToUTF16("of1a"), GURL(test_base + "of1a"));
   }
 
-  scoped_ptr<BookmarkEditorView> editor_;
+  std::unique_ptr<BookmarkEditorView> editor_;
 };
 
 // Makes sure the tree model matches that of the bookmark bar model.

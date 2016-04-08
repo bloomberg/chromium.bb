@@ -42,7 +42,7 @@ const int kSyncConfirmationDialogHeight = 351;
 
 SigninViewControllerDelegateMac::SigninViewControllerDelegateMac(
     SigninViewController* signin_view_controller,
-    scoped_ptr<content::WebContents> web_contents,
+    std::unique_ptr<content::WebContents> web_contents,
     content::WebContents* host_web_contents,
     NSRect frame,
     bool wait_for_size)
@@ -64,7 +64,7 @@ void SigninViewControllerDelegateMac::OnConstrainedWindowClosed(
 }
 
 // static
-scoped_ptr<content::WebContents>
+std::unique_ptr<content::WebContents>
 SigninViewControllerDelegateMac::CreateGaiaWebContents(
     content::WebContentsDelegate* delegate,
     profiles::BubbleViewMode mode,
@@ -73,8 +73,9 @@ SigninViewControllerDelegateMac::CreateGaiaWebContents(
   GURL url =
       signin::GetSigninURLFromBubbleViewMode(profile, mode, access_point);
 
-  scoped_ptr<content::WebContents> web_contents(content::WebContents::Create(
-      content::WebContents::CreateParams(profile)));
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContents::Create(
+          content::WebContents::CreateParams(profile)));
 
   if (delegate)
     web_contents->SetDelegate(delegate);
@@ -97,11 +98,12 @@ SigninViewControllerDelegateMac::CreateGaiaWebContents(
 }
 
 // static
-scoped_ptr<content::WebContents>
+std::unique_ptr<content::WebContents>
 SigninViewControllerDelegateMac::CreateSyncConfirmationWebContents(
     Profile* profile) {
-  scoped_ptr<content::WebContents> web_contents(content::WebContents::Create(
-      content::WebContents::CreateParams(profile)));
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContents::Create(
+          content::WebContents::CreateParams(profile)));
   web_contents->GetController().LoadURL(
       GURL(chrome::kChromeUISyncConfirmationURL), content::Referrer(),
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());

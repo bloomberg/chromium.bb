@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/webui/translate_internals/translate_internals_ui.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"

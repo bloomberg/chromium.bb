@@ -21,7 +21,7 @@ class SiteEngagementUI
   void BindUIHandler(
       mojo::InterfaceRequest<mojom::SiteEngagementUIHandler> request) override;
 
-  scoped_ptr<mojom::SiteEngagementUIHandler> ui_handler_;
+  std::unique_ptr<mojom::SiteEngagementUIHandler> ui_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteEngagementUI);
 };

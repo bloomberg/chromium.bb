@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/location_bar/location_bar.h"
+
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
@@ -15,7 +18,6 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -54,8 +56,8 @@ class LocationBarBrowserTest : public ExtensionBrowserTest {
       extensions::TestExtensionDir* dir);
 
  private:
-  scoped_ptr<extensions::FeatureSwitch::ScopedOverride> enable_override_;
-  scoped_ptr<extensions::FeatureSwitch::ScopedOverride> enable_redesign_;
+  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride> enable_override_;
+  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride> enable_redesign_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarBrowserTest);
 };
@@ -174,7 +176,7 @@ class LocationBarBrowserTestWithRedesign : public LocationBarBrowserTest {
  private:
   void SetUpCommandLine(base::CommandLine* command_line) override;
 
-  scoped_ptr<extensions::FeatureSwitch::ScopedOverride> enable_redesign_;
+  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride> enable_redesign_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarBrowserTestWithRedesign);
 };

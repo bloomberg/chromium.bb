@@ -14,16 +14,17 @@ using content::BrowserThread;
 
 namespace {
 
-void CreateWithSlot(chrome::CryptoModulePasswordReason reason,
-                    const net::HostPortPair& server,
-                    const base::Callback<void(
-                        scoped_ptr<ChromeNSSCryptoModuleDelegate>)>& callback,
-                    crypto::ScopedPK11Slot slot) {
+void CreateWithSlot(
+    chrome::CryptoModulePasswordReason reason,
+    const net::HostPortPair& server,
+    const base::Callback<void(std::unique_ptr<ChromeNSSCryptoModuleDelegate>)>&
+        callback,
+    crypto::ScopedPK11Slot slot) {
   if (!slot) {
-    callback.Run(scoped_ptr<ChromeNSSCryptoModuleDelegate>());
+    callback.Run(std::unique_ptr<ChromeNSSCryptoModuleDelegate>());
     return;
   }
-  callback.Run(scoped_ptr<ChromeNSSCryptoModuleDelegate>(
+  callback.Run(std::unique_ptr<ChromeNSSCryptoModuleDelegate>(
       new ChromeNSSCryptoModuleDelegate(reason, server, std::move(slot))));
 }
 
@@ -46,7 +47,7 @@ void ChromeNSSCryptoModuleDelegate::CreateForResourceContext(
     chrome::CryptoModulePasswordReason reason,
     const net::HostPortPair& server,
     content::ResourceContext* context,
-    const base::Callback<void(scoped_ptr<ChromeNSSCryptoModuleDelegate>)>&
+    const base::Callback<void(std::unique_ptr<ChromeNSSCryptoModuleDelegate>)>&
         callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());

@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_tracker.h"
@@ -203,17 +204,14 @@ void ExtensionAppModelBuilder::OnShutdown(
   extension_registry_ = nullptr;
 }
 
-scoped_ptr<ExtensionAppItem> ExtensionAppModelBuilder::CreateAppItem(
+std::unique_ptr<ExtensionAppItem> ExtensionAppModelBuilder::CreateAppItem(
     const std::string& extension_id,
     const std::string& extension_name,
     const gfx::ImageSkia& installing_icon,
     bool is_platform_app) {
-  return make_scoped_ptr(new ExtensionAppItem(profile(),
-                                              GetSyncItem(extension_id),
-                                              extension_id,
-                                              extension_name,
-                                              installing_icon,
-                                              is_platform_app));
+  return base::WrapUnique(
+      new ExtensionAppItem(profile(), GetSyncItem(extension_id), extension_id,
+                           extension_name, installing_icon, is_platform_app));
 }
 
 void ExtensionAppModelBuilder::BuildModel() {

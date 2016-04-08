@@ -115,7 +115,7 @@ class HelpHandler : public content::WebUIMessageHandler,
 #endif
 
   // Specialized instance of the VersionUpdater used to update the browser.
-  scoped_ptr<VersionUpdater> version_updater_;
+  std::unique_ptr<VersionUpdater> version_updater_;
 
   // Used to observe notifications.
   content::NotificationRegistrar registrar_;

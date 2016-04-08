@@ -58,7 +58,7 @@ class ChooserBubbleController : public BubbleDelegate {
 
   // BubbleDelegate:
   std::string GetName() const override;
-  scoped_ptr<BubbleUi> BuildBubbleUi() override;
+  std::unique_ptr<BubbleUi> BuildBubbleUi() override;
   const content::RenderFrameHost* OwningFrame() const override;
 
   // The number of options users can pick from. For example, it can be

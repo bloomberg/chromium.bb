@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_STICKY_SETTINGS_H_
 #define CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_STICKY_SETTINGS_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "printing/print_job_constants.h"
 
 class PrefService;
@@ -44,8 +44,8 @@ class StickySettings {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
-  scoped_ptr<base::FilePath> save_path_;
-  scoped_ptr<std::string> printer_app_state_;
+  std::unique_ptr<base::FilePath> save_path_;
+  std::unique_ptr<std::string> printer_app_state_;
 };
 
 }  // namespace printing

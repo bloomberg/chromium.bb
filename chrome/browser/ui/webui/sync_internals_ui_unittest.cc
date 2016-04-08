@@ -104,7 +104,7 @@ class SyncInternalsUITestWithService : public ChromeRenderViewHostTestHarness {
   }
 
   StrictMock<browser_sync::MockJsController> mock_js_controller_;
-  scoped_ptr<TestSyncWebUI> web_ui_;
+  std::unique_ptr<TestSyncWebUI> web_ui_;
   SyncInternalsUI* sync_internals_ui_;
 };
 
@@ -170,7 +170,7 @@ class SyncInternalsUITestWithoutService
     Mock::VerifyAndClearExpectations(profile_mock);
   }
 
-  scoped_ptr<TestSyncWebUI> web_ui_;
+  std::unique_ptr<TestSyncWebUI> web_ui_;
   SyncInternalsUI* sync_internals_ui_;
 };
 

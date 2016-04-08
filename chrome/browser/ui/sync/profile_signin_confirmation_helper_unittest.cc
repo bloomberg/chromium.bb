@@ -4,13 +4,15 @@
 
 #include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
@@ -137,7 +139,7 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
             new user_prefs::PrefRegistrySyncable(), new PrefNotifierImpl());
     chrome::RegisterUserProfilePrefs(pref_service->registry());
     builder.SetPrefService(
-        make_scoped_ptr<syncable_prefs::PrefServiceSyncable>(pref_service));
+        base::WrapUnique<syncable_prefs::PrefServiceSyncable>(pref_service));
     profile_ = builder.Build();
 
     // Initialize the services we check.
@@ -165,7 +167,7 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
   TestingPrefStoreWithCustomReadError* user_prefs_;
   BookmarkModel* model_;
 

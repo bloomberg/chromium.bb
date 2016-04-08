@@ -60,7 +60,7 @@ void UrlIconSource::OnURLFetchComplete(
     const net::URLFetcher* source) {
   CHECK_EQ(icon_fetcher_.get(), source);
 
-  scoped_ptr<net::URLFetcher> fetcher(std::move(icon_fetcher_));
+  std::unique_ptr<net::URLFetcher> fetcher(std::move(icon_fetcher_));
 
   if (!fetcher->GetStatus().is_success() ||
       fetcher->GetResponseCode() != 200) {

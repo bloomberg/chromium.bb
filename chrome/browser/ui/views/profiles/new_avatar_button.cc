@@ -27,10 +27,10 @@
 
 namespace {
 
-scoped_ptr<views::Border> CreateBorder(const int normal_image_set[],
-                                       const int hot_image_set[],
-                                       const int pushed_image_set[]) {
-  scoped_ptr<views::LabelButtonAssetBorder> border(
+std::unique_ptr<views::Border> CreateBorder(const int normal_image_set[],
+                                            const int hot_image_set[],
+                                            const int pushed_image_set[]) {
+  std::unique_ptr<views::LabelButtonAssetBorder> border(
       new views::LabelButtonAssetBorder(views::Button::STYLE_TEXTBUTTON));
   border->SetPainter(false, views::Button::STATE_NORMAL,
       views::Painter::CreateImageGridPainter(normal_image_set));

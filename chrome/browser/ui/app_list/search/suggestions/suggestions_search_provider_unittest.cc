@@ -7,11 +7,11 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
@@ -93,11 +93,11 @@ class SuggestionsSearchProviderTest : public AppListTestBase {
 
  protected:
   // Used to store fake suggestions data.
-  scoped_ptr<SuggestionsStore> suggestions_store_;
+  std::unique_ptr<SuggestionsStore> suggestions_store_;
 
  private:
   // Under test.
-  scoped_ptr<SuggestionsSearchProvider> suggestions_search_;
+  std::unique_ptr<SuggestionsSearchProvider> suggestions_search_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsSearchProviderTest);
 };

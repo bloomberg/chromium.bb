@@ -409,7 +409,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
 
   // If non-NULL we're showing a context menu for one of the items on the
   // bookmark bar.
-  scoped_ptr<BookmarkContextMenu> context_menu_;
+  std::unique_ptr<BookmarkContextMenu> context_menu_;
 
   // Shows the "Other Bookmarks" folder button.
   views::MenuButton* other_bookmarks_button_;
@@ -424,7 +424,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
   views::LabelButton* apps_page_shortcut_;
 
   // Used to track drops on the bookmark bar view.
-  scoped_ptr<DropInfo> drop_info_;
+  std::unique_ptr<DropInfo> drop_info_;
 
   // Visible if not all the bookmark buttons fit.
   views::MenuButton* overflow_button_;

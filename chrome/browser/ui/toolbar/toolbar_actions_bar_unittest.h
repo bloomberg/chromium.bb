@@ -7,8 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -94,16 +95,16 @@ class ToolbarActionsBarUnitTest :
 
   // A BrowserActionTestUtil object constructed with the associated
   // ToolbarActionsBar.
-  scoped_ptr<BrowserActionTestUtil> browser_action_test_util_;
+  std::unique_ptr<BrowserActionTestUtil> browser_action_test_util_;
 
   // The overflow container's BrowserActionTestUtil (only non-null if
   // |use_redesign| is true).
-  scoped_ptr<BrowserActionTestUtil> overflow_browser_action_test_util_;
+  std::unique_ptr<BrowserActionTestUtil> overflow_browser_action_test_util_;
 
   // True if the extension action redesign switch should be enabled.
   bool use_redesign_;
 
-  scoped_ptr<extensions::FeatureSwitch::ScopedOverride> redesign_switch_;
+  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride> redesign_switch_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarUnitTest);
 };

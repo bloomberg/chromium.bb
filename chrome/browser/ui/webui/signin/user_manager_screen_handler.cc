@@ -303,7 +303,8 @@ void UserManagerScreenHandler::ShowUserPodCustomIcon(
     const AccountId& account_id,
     const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions&
         icon_options) {
-  scoped_ptr<base::DictionaryValue> icon = icon_options.ToDictionaryValue();
+  std::unique_ptr<base::DictionaryValue> icon =
+      icon_options.ToDictionaryValue();
   if (!icon || icon->empty())
     return;
   web_ui()->CallJavascriptFunction(
@@ -569,7 +570,7 @@ void UserManagerScreenHandler::HandleRemoveUserWarningLoadStats(
             profile_path);
     bool stats_success = true;
     for (const auto& item : stats) {
-      scoped_ptr<base::DictionaryValue> stat(new base::DictionaryValue);
+      std::unique_ptr<base::DictionaryValue> stat(new base::DictionaryValue);
       stat->SetIntegerWithoutPathExpansion("count", item.count);
       stat->SetBooleanWithoutPathExpansion("success", item.success);
       return_value.SetWithoutPathExpansion(item.category, std::move(stat));
@@ -595,7 +596,7 @@ void UserManagerScreenHandler::RemoveUserDialogLoadStatsCallback(
   // Copy result into return_value.
   base::DictionaryValue return_value;
   for (const auto& item : result) {
-    scoped_ptr<base::DictionaryValue> stat(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> stat(new base::DictionaryValue);
     stat->SetIntegerWithoutPathExpansion("count", item.count);
     stat->SetBooleanWithoutPathExpansion("success", item.success);
     return_value.SetWithoutPathExpansion(item.category, std::move(stat));
@@ -640,7 +641,7 @@ void UserManagerScreenHandler::HandleGetRemoveWarningDialogMessage(
 }
 
 void UserManagerScreenHandler::OnGetTokenInfoResponse(
-    scoped_ptr<base::DictionaryValue> token_info) {
+    std::unique_ptr<base::DictionaryValue> token_info) {
   // Password is unchanged so user just mistyped it.  Ask again.
   ReportAuthenticationResult(false, ProfileMetrics::AUTH_FAILED);
 }
@@ -872,9 +873,10 @@ void UserManagerScreenHandler::SendUserList() {
     profiles::ProfileCategoryStats stats =
         ProfileStatistics::GetProfileStatisticsFromAttributesStorage(
             profile_path);
-    scoped_ptr<base::DictionaryValue> stats_dict(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> stats_dict(
+        new base::DictionaryValue);
     for (const auto& item : stats) {
-      scoped_ptr<base::DictionaryValue> stat(new base::DictionaryValue);
+      std::unique_ptr<base::DictionaryValue> stat(new base::DictionaryValue);
       stat->SetIntegerWithoutPathExpansion("count", item.count);
       stat->SetBooleanWithoutPathExpansion("success", item.success);
       stats_dict->SetWithoutPathExpansion(item.category, std::move(stat));

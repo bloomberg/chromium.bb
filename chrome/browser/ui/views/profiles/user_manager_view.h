@@ -9,7 +9,6 @@
 
 #include "base/auto_reset.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -28,7 +27,7 @@ class UserManagerView : public views::DialogDelegateView {
 
   // Creates a new UserManagerView instance for the |system_profile| and shows
   // the |url|.
-  static void OnSystemProfileCreated(scoped_ptr<UserManagerView> instance,
+  static void OnSystemProfileCreated(std::unique_ptr<UserManagerView> instance,
                                      base::AutoReset<bool>* pending,
                                      Profile* system_profile,
                                      const std::string& url);
@@ -64,7 +63,7 @@ class UserManagerView : public views::DialogDelegateView {
 
   views::WebView* web_view_;
 
-  scoped_ptr<ScopedKeepAlive> keep_alive_;
+  std::unique_ptr<ScopedKeepAlive> keep_alive_;
   base::Time user_manager_started_showing_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerView);

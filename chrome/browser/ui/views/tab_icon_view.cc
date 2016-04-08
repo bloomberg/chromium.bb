@@ -4,13 +4,14 @@
 
 #include "chrome/browser/ui/views/tab_icon_view.h"
 
+#include <memory>
+
 #if defined(OS_WIN)
 #include <windows.h>
 #include <shellapi.h>
 #endif
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
@@ -44,7 +45,7 @@ void TabIconView::InitializeIfNeeded() {
     // The default window icon is the application icon, not the default
     // favicon.
     HICON app_icon = GetAppIcon();
-    scoped_ptr<SkBitmap> bitmap(
+    std::unique_ptr<SkBitmap> bitmap(
         IconUtil::CreateSkBitmapFromHICON(app_icon, gfx::Size(16, 16)));
     g_default_favicon = new gfx::ImageSkia(gfx::ImageSkiaRep(*bitmap, 1.0f));
     DestroyIcon(app_icon);

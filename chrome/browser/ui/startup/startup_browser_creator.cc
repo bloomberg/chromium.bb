@@ -6,7 +6,8 @@
 
 #include <stddef.h>
 
-#include <algorithm>   // For max().
+#include <algorithm>  // For max().
+#include <memory>
 #include <set>
 
 #include "apps/app_load_service.h"
@@ -21,7 +22,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/metrics/user_metrics.h"

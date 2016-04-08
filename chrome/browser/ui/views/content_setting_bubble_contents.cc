@@ -118,7 +118,7 @@ struct ContentSettingBubbleContents::MediaMenuParts {
   ~MediaMenuParts();
 
   content::MediaStreamType type;
-  scoped_ptr<ui::SimpleMenuModel> menu_model;
+  std::unique_ptr<ui::SimpleMenuModel> menu_model;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaMenuParts);

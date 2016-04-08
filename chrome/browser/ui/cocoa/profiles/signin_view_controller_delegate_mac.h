@@ -38,25 +38,26 @@ class SigninViewControllerDelegateMac : public ConstrainedWindowMacDelegate,
   // wait for ResizeNativeView() to be called by the base class before
   // displaying the constrained window. Otherwise, the window's dimensions will
   // be |frame|.
-  SigninViewControllerDelegateMac(SigninViewController* signin_view_controller,
-                                  scoped_ptr<content::WebContents> web_contents,
-                                  content::WebContents* host_web_contents,
-                                  NSRect frame,
-                                  bool wait_for_size);
+  SigninViewControllerDelegateMac(
+      SigninViewController* signin_view_controller,
+      std::unique_ptr<content::WebContents> web_contents,
+      content::WebContents* host_web_contents,
+      NSRect frame,
+      bool wait_for_size);
 
   void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override;
 
   // Creates the web view that contains the signin flow in |mode| using
   // |profile| as the web content's profile, then sets |delegate| as the created
   // web content's delegate.
-  static scoped_ptr<content::WebContents> CreateGaiaWebContents(
+  static std::unique_ptr<content::WebContents> CreateGaiaWebContents(
       content::WebContentsDelegate* delegate,
       profiles::BubbleViewMode mode,
       Profile* profile,
       signin_metrics::AccessPoint access_point);
 
-  static scoped_ptr<content::WebContents> CreateSyncConfirmationWebContents(
-      Profile* profile);
+  static std::unique_ptr<content::WebContents>
+  CreateSyncConfirmationWebContents(Profile* profile);
 
  private:
   void PerformClose() override;
@@ -72,10 +73,10 @@ class SigninViewControllerDelegateMac : public ConstrainedWindowMacDelegate,
 
   // The constrained window opened by this delegate to display signin flow
   // content.
-  scoped_ptr<ConstrainedWindowMac> constrained_window_;
+  std::unique_ptr<ConstrainedWindowMac> constrained_window_;
 
   // The web contents displayed in the constrained window.
-  scoped_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<content::WebContents> web_contents_;
   base::scoped_nsobject<ConstrainedWindowCustomWindow> window_;
 
   // wait_for_size_ stores whether the dialog should only be shown after its

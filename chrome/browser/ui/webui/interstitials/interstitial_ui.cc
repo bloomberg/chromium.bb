@@ -280,7 +280,7 @@ CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
 
 InterstitialUI::InterstitialUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  scoped_ptr<InterstitialHTMLSource> html_source(
+  std::unique_ptr<InterstitialHTMLSource> html_source(
       new InterstitialHTMLSource(web_ui->GetWebContents()));
   Profile* profile = Profile::FromWebUI(web_ui);
   content::URLDataSource::Add(profile, html_source.release());
@@ -318,7 +318,7 @@ void InterstitialHTMLSource::StartDataRequest(
     int render_process_id,
     int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
-  scoped_ptr<content::InterstitialPageDelegate> interstitial_delegate;
+  std::unique_ptr<content::InterstitialPageDelegate> interstitial_delegate;
   if (base::StartsWith(path, "ssl", base::CompareCase::SENSITIVE)) {
     interstitial_delegate.reset(CreateSSLBlockingPage(web_contents_));
   } else if (base::StartsWith(path, "safebrowsing",

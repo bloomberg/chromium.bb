@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/risk_util.h"
@@ -175,10 +176,10 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
     const base::Closure& callback) {
 #if defined(OS_ANDROID)
-  InfoBarService::FromWebContents(web_contents())->AddInfoBar(
-      CreateSaveCardInfoBarMobile(
-          make_scoped_ptr(new AutofillSaveCardInfoBarDelegateMobile(
-              false, card, scoped_ptr<base::DictionaryValue>(nullptr),
+  InfoBarService::FromWebContents(web_contents())
+      ->AddInfoBar(CreateSaveCardInfoBarMobile(
+          base::WrapUnique(new AutofillSaveCardInfoBarDelegateMobile(
+              false, card, std::unique_ptr<base::DictionaryValue>(nullptr),
               callback))));
 #else
   // Do lazy initialization of SaveCardBubbleControllerImpl.
@@ -192,12 +193,12 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
 
 void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
-    scoped_ptr<base::DictionaryValue> legal_message,
+    std::unique_ptr<base::DictionaryValue> legal_message,
     const base::Closure& callback) {
 #if defined(OS_ANDROID)
-  InfoBarService::FromWebContents(web_contents())->AddInfoBar(
-      CreateSaveCardInfoBarMobile(
-          make_scoped_ptr(new AutofillSaveCardInfoBarDelegateMobile(
+  InfoBarService::FromWebContents(web_contents())
+      ->AddInfoBar(CreateSaveCardInfoBarMobile(
+          base::WrapUnique(new AutofillSaveCardInfoBarDelegateMobile(
               true, card, std::move(legal_message), callback))));
 #else
   // Do lazy initialization of SaveCardBubbleControllerImpl.

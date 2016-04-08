@@ -55,7 +55,8 @@ TestToolbarActionsBarBubbleDelegate::~TestToolbarActionsBarBubbleDelegate() {
   CHECK(close_action_);
 }
 
-scoped_ptr<ToolbarActionsBarBubbleDelegate>
+std::unique_ptr<ToolbarActionsBarBubbleDelegate>
 TestToolbarActionsBarBubbleDelegate::GetDelegate() {
-  return scoped_ptr<ToolbarActionsBarBubbleDelegate>(new DelegateImpl(this));
+  return std::unique_ptr<ToolbarActionsBarBubbleDelegate>(
+      new DelegateImpl(this));
 }

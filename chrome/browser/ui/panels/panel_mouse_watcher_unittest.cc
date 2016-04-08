@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
+
+#include <memory>
+
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/point.h"
@@ -25,11 +27,11 @@ class PanelMouseWatcherTest : public testing::Test {
 TEST_F(PanelMouseWatcherTest, StartStopWatching) {
   base::MessageLoopForUI loop;
 
-  scoped_ptr<PanelMouseWatcher> watcher(PanelMouseWatcher::Create());
+  std::unique_ptr<PanelMouseWatcher> watcher(PanelMouseWatcher::Create());
   EXPECT_FALSE(watcher->IsActive());
 
-  scoped_ptr<TestMouseObserver> user1(new TestMouseObserver());
-  scoped_ptr<TestMouseObserver> user2(new TestMouseObserver());
+  std::unique_ptr<TestMouseObserver> user1(new TestMouseObserver());
+  std::unique_ptr<TestMouseObserver> user2(new TestMouseObserver());
 
   // No observers.
   watcher->NotifyMouseMovement(gfx::Point(42, 101));

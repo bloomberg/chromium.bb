@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_IME_IME_WINDOW_H_
 #define CHROME_BROWSER_UI_IME_IME_WINDOW_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -133,10 +133,10 @@ class ImeWindow : public content::NotificationObserver,
   std::string title_;
 
   // The window icon which is shown in the non client view.
-  scoped_ptr<extensions::IconImage> icon_;
+  std::unique_ptr<extensions::IconImage> icon_;
 
   // The web contents for the IME window page web UI.
-  scoped_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<content::WebContents> web_contents_;
 
   ImeNativeWindow* native_window_;  // Weak, it does self-destruction.
 

@@ -72,7 +72,7 @@ PolicyMaterialDesignUIHandler::~PolicyMaterialDesignUIHandler() {
 
 void PolicyMaterialDesignUIHandler::AddPolicyName(
     const std::string& name, base::DictionaryValue* names) const {
-  scoped_ptr<base::ListValue> list(new base::ListValue());
+  std::unique_ptr<base::ListValue> list(new base::ListValue());
   const policy::RiskTag* tags = policy::GetChromePolicyDetails(name)->risk_tags;
   for (size_t i = 0; i < policy::kMaxRiskTagCount; ++i) {
     if (tags[i] != policy::RISK_TAG_NONE)

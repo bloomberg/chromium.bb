@@ -29,7 +29,7 @@ const int kAutoSigninToastTimeoutSeconds = 3;
 @interface AutoSigninViewController () {
   base::scoped_nsobject<CredentialItemButton> credentialView_;
   base::scoped_nsobject<AccountAvatarFetcherManager> avatarManager_;
-  scoped_ptr<base::Timer> timer_;
+  std::unique_ptr<base::Timer> timer_;
 }
 - (instancetype)
 initWithAvatarManager:(AccountAvatarFetcherManager*)avatarManager

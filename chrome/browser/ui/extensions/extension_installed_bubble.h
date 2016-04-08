@@ -79,7 +79,7 @@ class ExtensionInstalledBubble : public BubbleDelegate {
   AnchorPosition anchor_position() const { return anchor_position_; }
 
   // BubbleDelegate:
-  scoped_ptr<BubbleUi> BuildBubbleUi() override;
+  std::unique_ptr<BubbleUi> BuildBubbleUi() override;
   bool ShouldClose(BubbleCloseReason reason) const override;
   std::string GetName() const override;
   const content::RenderFrameHost* OwningFrame() const override;
@@ -109,7 +109,7 @@ class ExtensionInstalledBubble : public BubbleDelegate {
   AnchorPosition anchor_position_;
 
   // The command to execute the extension action, if one exists.
-  scoped_ptr<extensions::Command> action_command_;
+  std::unique_ptr<extensions::Command> action_command_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstalledBubble);
 };

@@ -95,7 +95,7 @@ void DrawBezel(id<ConstrainedWindowButtonDrawableCell>cell,
  @private
   BOOL isMouseInside_;
   base::scoped_nsobject<MenuController> menuController_;
-  scoped_ptr<ui::SimpleMenuModel> menuModel_;
+  std::unique_ptr<ui::SimpleMenuModel> menuModel_;
 }
 
 // Designated initializer.

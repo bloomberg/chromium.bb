@@ -96,13 +96,13 @@ TEST_F(MultiUserContextMenuChromeOSTest, OwnedWindow) {
   // After adding another user a menu should get created.
   {
     SetNumberOfUsers(2);
-    scoped_ptr<ui::MenuModel> menu = CreateMultiUserContextMenu(window());
+    std::unique_ptr<ui::MenuModel> menu = CreateMultiUserContextMenu(window());
     ASSERT_TRUE(menu.get());
     EXPECT_EQ(1, menu.get()->GetItemCount());
   }
   {
     SetNumberOfUsers(3);
-    scoped_ptr<ui::MenuModel> menu = CreateMultiUserContextMenu(window());
+    std::unique_ptr<ui::MenuModel> menu = CreateMultiUserContextMenu(window());
     ASSERT_TRUE(menu.get());
     EXPECT_EQ(2, menu.get()->GetItemCount());
   }

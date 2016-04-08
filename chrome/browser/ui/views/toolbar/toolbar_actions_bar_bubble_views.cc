@@ -14,7 +14,7 @@
 
 ToolbarActionsBarBubbleViews::ToolbarActionsBarBubbleViews(
     views::View* anchor_view,
-    scoped_ptr<ToolbarActionsBarBubbleDelegate> delegate)
+    std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate)
     : views::BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       delegate_(std::move(delegate)),
       heading_label_(nullptr),

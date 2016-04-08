@@ -16,10 +16,10 @@ bool CreditCardScannerView::CanShow() {
 }
 
 // static
-scoped_ptr<CreditCardScannerView> CreditCardScannerView::Create(
+std::unique_ptr<CreditCardScannerView> CreditCardScannerView::Create(
     const base::WeakPtr<CreditCardScannerViewDelegate>& delegate,
     content::WebContents* web_contents) {
-  return scoped_ptr<CreditCardScannerView>();
+  return std::unique_ptr<CreditCardScannerView>();
 }
 #endif  // !defined(OS_ANDROID)
 

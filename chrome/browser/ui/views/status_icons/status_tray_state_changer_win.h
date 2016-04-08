@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_STATUS_ICONS_STATUS_TRAY_STATE_CHANGER_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_STATUS_ICONS_STATUS_TRAY_STATE_CHANGER_WIN_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/win/iunknown_impl.h"
@@ -94,7 +95,7 @@ class StatusTrayStateChangerWin : public INotificationCB,
   // Returns the NOTIFYITEM that corresponds to this executable and the
   // HWND/ID pair that were used to create the StatusTrayStateChangerWin.
   // Internally it calls the appropriate RegisterCallback{Win8,Legacy}.
-  scoped_ptr<NOTIFYITEM> RegisterCallback();
+  std::unique_ptr<NOTIFYITEM> RegisterCallback();
 
   // Calls RegisterCallback with the appropriate interface required by
   // different versions of Windows.  This will result in |notify_item_| being
@@ -104,7 +105,7 @@ class StatusTrayStateChangerWin : public INotificationCB,
   bool RegisterCallbackLegacy();
 
   // Sends an update to Explorer with the passed NOTIFYITEM.
-  void SendNotifyItemUpdate(scoped_ptr<NOTIFYITEM> notify_item);
+  void SendNotifyItemUpdate(std::unique_ptr<NOTIFYITEM> notify_item);
 
   // Storing IUnknown since we will need to use different interfaces
   // for different versions of Windows.
@@ -126,7 +127,7 @@ class StatusTrayStateChangerWin : public INotificationCB,
   //      ... other COM stack frames ..
   //   StatusTrayStateChangerWin->Notify(NOTIFYITEM);
   // so we can't just return the notifyitem we're looking for.
-  scoped_ptr<NOTIFYITEM> notify_item_;
+  std::unique_ptr<NOTIFYITEM> notify_item_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusTrayStateChangerWin);
 };

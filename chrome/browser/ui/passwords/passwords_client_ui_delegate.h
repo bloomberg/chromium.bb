@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_PASSWORDS_CLIENT_UI_DELEGATE_H_
 #define CHROME_BROWSER_UI_PASSWORDS_PASSWORDS_CLIENT_UI_DELEGATE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/autofill/core/common/password_form.h"
 
@@ -29,13 +29,13 @@ class PasswordsClientUIDelegate {
   // This stores the provided object and triggers the UI to prompt the user
   // about whether they would like to save the password.
   virtual void OnPasswordSubmitted(
-      scoped_ptr<password_manager::PasswordFormManager> form_manager) = 0;
+      std::unique_ptr<password_manager::PasswordFormManager> form_manager) = 0;
 
   // Called when the user submits a new password for an existing credential.
   // This stores the provided object and triggers the UI to prompt the user
   // about whether they would like to update the password.
   virtual void OnUpdatePasswordSubmitted(
-      scoped_ptr<password_manager::PasswordFormManager> form_manager) = 0;
+      std::unique_ptr<password_manager::PasswordFormManager> form_manager) = 0;
 
   // Called when the site asks user to choose from credentials. This triggers
   // the UI to prompt the user. |local_credentials| and |federated_credentials|
@@ -62,7 +62,7 @@ class PasswordsClientUIDelegate {
   // Called when the password will be saved automatically, but we still wish to
   // visually inform the user that the save has occured.
   virtual void OnAutomaticPasswordSave(
-      scoped_ptr<password_manager::PasswordFormManager> form_manager) = 0;
+      std::unique_ptr<password_manager::PasswordFormManager> form_manager) = 0;
 
   // Called when a form is autofilled with login information, so we can manage
   // password credentials for the current site which are stored in
@@ -72,7 +72,7 @@ class PasswordsClientUIDelegate {
   virtual void OnPasswordAutofilled(
       const autofill::PasswordFormMap& password_form_map,
       const GURL& origin,
-      const std::vector<scoped_ptr<autofill::PasswordForm>>*
+      const std::vector<std::unique_ptr<autofill::PasswordForm>>*
           federated_matches) = 0;
 
  protected:

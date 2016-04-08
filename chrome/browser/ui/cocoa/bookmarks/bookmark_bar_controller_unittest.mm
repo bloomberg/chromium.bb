@@ -732,7 +732,7 @@ TEST_F(BookmarkBarControllerTest, MenuForFolderNode) {
 // Confirm openBookmark: forwards the request to the controller's delegate
 TEST_F(BookmarkBarControllerTest, OpenBookmark) {
   GURL gurl("http://walla.walla.ding.dong.com");
-  scoped_ptr<BookmarkNode> node(new BookmarkNode(gurl));
+  std::unique_ptr<BookmarkNode> node(new BookmarkNode(gurl));
 
   base::scoped_nsobject<BookmarkButtonCell> cell(
       [[BookmarkButtonCell alloc] init]);

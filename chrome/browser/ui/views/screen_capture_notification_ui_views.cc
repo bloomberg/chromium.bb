@@ -285,10 +285,9 @@ ScreenCaptureNotificationUIViews::CreateNonClientFrameView(
                                  kPaddingVertical, kPaddingHorizontal));
   SkColor color = widget->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground);
-  frame->SetBubbleBorder(scoped_ptr<views::BubbleBorder>(
+  frame->SetBubbleBorder(std::unique_ptr<views::BubbleBorder>(
       new views::BubbleBorder(views::BubbleBorder::NONE,
-                              views::BubbleBorder::SMALL_SHADOW,
-                              color)));
+                              views::BubbleBorder::SMALL_SHADOW, color)));
   return frame;
 }
 
@@ -331,8 +330,8 @@ void ScreenCaptureNotificationUIViews::NotifyStopped() {
 
 }  // namespace
 
-scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
-    const base::string16& text) {
-  return scoped_ptr<ScreenCaptureNotificationUI>(
+std::unique_ptr<ScreenCaptureNotificationUI>
+ScreenCaptureNotificationUI::Create(const base::string16& text) {
+  return std::unique_ptr<ScreenCaptureNotificationUI>(
       new ScreenCaptureNotificationUIViews(text));
 }

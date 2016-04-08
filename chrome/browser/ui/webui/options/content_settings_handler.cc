@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
 
 #include <stddef.h>
+
 #include <algorithm>
 #include <utility>
 #include <vector>
@@ -14,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -293,7 +295,7 @@ const ContentSettingsHandler::ChooserTypeNameEntry* ChooserTypeFromGroupName(
 
 // Create a DictionaryValue* that will act as a data source for a single row
 // in the Geolocation exceptions table.
-scoped_ptr<base::DictionaryValue> GetGeolocationExceptionForPage(
+std::unique_ptr<base::DictionaryValue> GetGeolocationExceptionForPage(
     const ContentSettingsPattern& origin,
     const ContentSettingsPattern& embedding_origin,
     ContentSetting setting) {
@@ -307,12 +309,12 @@ scoped_ptr<base::DictionaryValue> GetGeolocationExceptionForPage(
   exception->SetString(site_settings::kOrigin, origin.ToString());
   exception->SetString(
       site_settings::kEmbeddingOrigin, embedding_origin.ToString());
-  return make_scoped_ptr(exception);
+  return base::WrapUnique(exception);
 }
 
 // Create a DictionaryValue* that will act as a data source for a single row
 // in the desktop notifications exceptions table.
-scoped_ptr<base::DictionaryValue> GetNotificationExceptionForPage(
+std::unique_ptr<base::DictionaryValue> GetNotificationExceptionForPage(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSetting setting,
@@ -331,18 +333,18 @@ scoped_ptr<base::DictionaryValue> GetNotificationExceptionForPage(
   exception->SetString(site_settings::kOrigin, primary_pattern.ToString());
   exception->SetString(site_settings::kEmbeddingOrigin, embedding_origin);
   exception->SetString(site_settings::kSource, provider_name);
-  return make_scoped_ptr(exception);
+  return base::WrapUnique(exception);
 }
 
 // Create a DictionaryValue* that will act as a data source for a single row
 // in a chooser permission exceptions table.
-scoped_ptr<base::DictionaryValue> GetChooserExceptionForPage(
+std::unique_ptr<base::DictionaryValue> GetChooserExceptionForPage(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     const std::string& provider_name,
     const std::string& name,
     const base::DictionaryValue* object) {
-  scoped_ptr<base::DictionaryValue> exception(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> exception(new base::DictionaryValue());
 
   std::string setting_string =
       content_settings::ContentSettingToString(CONTENT_SETTING_DEFAULT);
@@ -1154,7 +1156,7 @@ void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
            zoom_levels.begin();
        i != zoom_levels.end();
        ++i) {
-    scoped_ptr<base::DictionaryValue> exception(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> exception(new base::DictionaryValue);
     switch (i->mode) {
       case content::HostZoomMap::ZOOM_CHANGED_FOR_HOST: {
         exception->SetString(site_settings::kOrigin, i->host);
@@ -1254,7 +1256,7 @@ void ContentSettingsHandler::GetChooserExceptionsFromProfile(
   }
 
   ChooserContextBase* chooser_context = chooser_type.get_context(profile);
-  std::vector<scoped_ptr<ChooserContextBase::Object>> objects =
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
       chooser_context->GetAllGrantedObjects();
   AllOriginObjects all_origin_objects;
   for (const auto& object : objects) {
@@ -1270,7 +1272,7 @@ void ContentSettingsHandler::GetChooserExceptionsFromProfile(
 
   // Keep the exceptions sorted by provider so they will be displayed in
   // precedence order.
-  std::vector<scoped_ptr<base::DictionaryValue>>
+  std::vector<std::unique_ptr<base::DictionaryValue>>
       all_provider_exceptions[HostContentSettingsMap::NUM_PROVIDER_TYPES];
 
   for (const auto& all_origin_objects_entry : all_origin_objects) {

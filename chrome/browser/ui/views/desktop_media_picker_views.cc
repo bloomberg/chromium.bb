@@ -209,7 +209,7 @@ void DesktopMediaSourceView::OnGestureEvent(ui::GestureEvent* event) {
 
 DesktopMediaListView::DesktopMediaListView(
     DesktopMediaPickerDialogView* parent,
-    scoped_ptr<DesktopMediaList> media_list)
+    std::unique_ptr<DesktopMediaList> media_list)
     : parent_(parent), media_list_(std::move(media_list)), weak_factory_(this) {
   media_list_->SetThumbnailSize(gfx::Size(kThumbnailWidth, kThumbnailHeight));
   SetFocusable(true);
@@ -395,7 +395,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     DesktopMediaPickerViews* parent,
     const base::string16& app_name,
     const base::string16& target_name,
-    scoped_ptr<DesktopMediaList> media_list,
+    std::unique_ptr<DesktopMediaList> media_list,
     bool request_audio)
     : parent_(parent),
       app_name_(app_name),
@@ -612,7 +612,7 @@ void DesktopMediaPickerViews::Show(content::WebContents* web_contents,
                                    gfx::NativeWindow parent,
                                    const base::string16& app_name,
                                    const base::string16& target_name,
-                                   scoped_ptr<DesktopMediaList> media_list,
+                                   std::unique_ptr<DesktopMediaList> media_list,
                                    bool request_audio,
                                    const DoneCallback& done_callback) {
   callback_ = done_callback;
@@ -637,6 +637,6 @@ void DesktopMediaPickerViews::NotifyDialogResult(DesktopMediaID source) {
 }
 
 // static
-scoped_ptr<DesktopMediaPicker> DesktopMediaPicker::Create() {
-  return scoped_ptr<DesktopMediaPicker>(new DesktopMediaPickerViews());
+std::unique_ptr<DesktopMediaPicker> DesktopMediaPicker::Create() {
+  return std::unique_ptr<DesktopMediaPicker>(new DesktopMediaPickerViews());
 }

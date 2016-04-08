@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/ash/networking_config_delegate_chromeos.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/network/network_state.h"
@@ -24,7 +24,7 @@ NetworkingConfigDelegateChromeos::NetworkingConfigDelegateChromeos() {
 NetworkingConfigDelegateChromeos::~NetworkingConfigDelegateChromeos() {
 }
 
-scoped_ptr<const ash::NetworkingConfigDelegate::ExtensionInfo>
+std::unique_ptr<const ash::NetworkingConfigDelegate::ExtensionInfo>
 NetworkingConfigDelegateChromeos::LookUpExtensionForNetwork(
     const std::string& service_path) {
   chromeos::NetworkStateHandler* handler =
@@ -43,10 +43,11 @@ NetworkingConfigDelegateChromeos::LookUpExtensionForNetwork(
     return nullptr;
   std::string extension_name = LookUpExtensionName(profile, extension_id);
   if (extension_name.empty())
-    return scoped_ptr<const ash::NetworkingConfigDelegate::ExtensionInfo>();
-  scoped_ptr<const ash::NetworkingConfigDelegate::ExtensionInfo> extension_info(
-      new const ash::NetworkingConfigDelegate::ExtensionInfo(extension_id,
-                                                             extension_name));
+    return std::unique_ptr<
+        const ash::NetworkingConfigDelegate::ExtensionInfo>();
+  std::unique_ptr<const ash::NetworkingConfigDelegate::ExtensionInfo>
+  extension_info(new const ash::NetworkingConfigDelegate::ExtensionInfo(
+      extension_id, extension_name));
   return extension_info;
 }
 

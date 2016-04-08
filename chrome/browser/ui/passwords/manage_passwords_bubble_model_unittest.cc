@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/strings/utf_string_conversions.h"
@@ -75,9 +76,9 @@ class TestSyncService : public ProfileSyncServiceMock {
   bool smartlock_enabled_;
 };
 
-scoped_ptr<KeyedService> TestingSyncFactoryFunction(
+std::unique_ptr<KeyedService> TestingSyncFactoryFunction(
     content::BrowserContext* context) {
-  return make_scoped_ptr(new TestSyncService(static_cast<Profile*>(context)));
+  return base::WrapUnique(new TestSyncService(static_cast<Profile*>(context)));
 }
 
 }  // namespace
@@ -144,9 +145,9 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
-  scoped_ptr<content::WebContents> test_web_contents_;
+  std::unique_ptr<content::WebContents> test_web_contents_;
   base::FieldTrialList field_trials_;
-  scoped_ptr<ManagePasswordsBubbleModel> model_;
+  std::unique_ptr<ManagePasswordsBubbleModel> model_;
 };
 
 void ManagePasswordsBubbleModelTest::SetUpWithState(
@@ -244,7 +245,7 @@ TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutInteraction) {
   EXPECT_EQ(model()->dismissal_reason(),
             password_manager::metrics_util::NO_DIRECT_INTERACTION);
   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE, model()->state());
-  scoped_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock);
+  std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock);
   base::Time now = base::Time::Now();
   clock->SetNow(now);
   model()->set_clock(std::move(clock));

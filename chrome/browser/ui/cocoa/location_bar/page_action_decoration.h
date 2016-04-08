@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_COCOA_LOCATION_BAR_PAGE_ACTION_DECORATION_H_
 #define CHROME_BROWSER_UI_COCOA_LOCATION_BAR_PAGE_ACTION_DECORATION_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #import "chrome/browser/ui/cocoa/location_bar/image_decoration.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
@@ -76,7 +77,7 @@ class PageActionDecoration : public ImageDecoration,
   LocationBarViewMac* owner_;
 
   // The view controller for this page action.
-  scoped_ptr<ExtensionActionViewController> viewController_;
+  std::unique_ptr<ExtensionActionViewController> viewController_;
 
   // The string to show for a tooltip.
   base::scoped_nsobject<NSString> tooltip_;

@@ -21,7 +21,7 @@ MessageCenterFrameView::MessageCenterFrameView() {
       kBorderWidth, message_center::kMessageCenterBorderColor));
 #else
   const int kShadowBlur = 8;
-  SetBorder(scoped_ptr<views::Border>(new views::ShadowBorder(
+  SetBorder(std::unique_ptr<views::Border>(new views::ShadowBorder(
       gfx::ShadowValue(gfx::Vector2d(0, 0), kShadowBlur,
                        message_center::kMessageCenterShadowColor))));
 #endif

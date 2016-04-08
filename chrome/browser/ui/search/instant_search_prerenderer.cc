@@ -67,7 +67,7 @@ void InstantSearchPrerenderer::Init(
 
   // Only cancel the old prerender after starting the new one, so if the URLs
   // are the same, the underlying prerender will be reused.
-  scoped_ptr<prerender::PrerenderHandle> old_prerender_handle(
+  std::unique_ptr<prerender::PrerenderHandle> old_prerender_handle(
       prerender_handle_.release());
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(profile_);

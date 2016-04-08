@@ -89,7 +89,7 @@ void EnsureMethodsLoaded() {
 
   // Only use libappindicator where it is needed to support dbus based status
   // icons. In particular, libappindicator does not support a click action.
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   base::nix::DesktopEnvironment environment =
       base::nix::GetDesktopEnvironment(env.get());
   if (environment != base::nix::DESKTOP_ENVIRONMENT_KDE4 &&
@@ -181,7 +181,7 @@ AppIndicatorIcon::AppIndicatorIcon(std::string id,
       menu_model_(NULL),
       icon_change_count_(0),
       weak_factory_(this) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   desktop_env_ = base::nix::GetDesktopEnvironment(env.get());
 
   EnsureMethodsLoaded();

@@ -33,7 +33,7 @@ class ExtensionInstallDialogController :
   ExtensionInstallDialogController(
       ExtensionInstallPromptShowParams* show_params,
       const ExtensionInstallPrompt::DoneCallback& done_callback,
-      scoped_ptr<ExtensionInstallPrompt::Prompt> prompt);
+      std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt);
   ~ExtensionInstallDialogController() override;
 
   // ExtensionInstallViewDelegate implementation.
@@ -57,8 +57,8 @@ class ExtensionInstallDialogController :
 
   ExtensionInstallPrompt::DoneCallback done_callback_;
   base::scoped_nsobject<ExtensionInstallViewController> view_controller_;
-  scoped_ptr<ConstrainedWindowMac> constrained_window_;
-  scoped_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
+  std::unique_ptr<ConstrainedWindowMac> constrained_window_;
+  std::unique_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogController);
 };

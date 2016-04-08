@@ -88,7 +88,7 @@ class BookmarkMenuDelegateTest : public BrowserWithTestWindowTest {
 
   BookmarkModel* model_;
 
-  scoped_ptr<BookmarkMenuDelegate> bookmark_menu_delegate_;
+  std::unique_ptr<BookmarkMenuDelegate> bookmark_menu_delegate_;
 
  private:
   void LoadAllMenus(views::MenuItemView* menu) {

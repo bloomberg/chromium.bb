@@ -25,7 +25,7 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDelegateView,
  public:
   ToolbarActionsBarBubbleViews(
       views::View* anchor_view,
-      scoped_ptr<ToolbarActionsBarBubbleDelegate> delegate);
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate);
   ~ToolbarActionsBarBubbleViews() override;
 
   void Show();
@@ -43,7 +43,7 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDelegateView,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  scoped_ptr<ToolbarActionsBarBubbleDelegate> delegate_;
+  std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate_;
 
   views::Label* heading_label_;
   views::Label* content_label_;

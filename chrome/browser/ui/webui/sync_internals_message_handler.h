@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SYNC_INTERNALS_MESSAGE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SYNC_INTERNALS_MESSAGE_HANDLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/values.h"
@@ -32,7 +32,7 @@ class AboutSyncDataExtractor {
  public:
   // Given state about sync, extracts various interesting fields and populates
   // a tree of base::Value objects.
-  virtual scoped_ptr<base::DictionaryValue> ConstructAboutInformation(
+  virtual std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
       sync_driver::SyncService* service,
       SigninManagerBase* signin) = 0;
   virtual ~AboutSyncDataExtractor() {}
@@ -70,7 +70,8 @@ class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
                      const syncer::JsEventDetails& details) override;
 
   // Callback used in GetAllNodes.
-  void OnReceivedAllNodes(int request_id, scoped_ptr<base::ListValue> nodes);
+  void OnReceivedAllNodes(int request_id,
+                          std::unique_ptr<base::ListValue> nodes);
 
   // sync_driver::SyncServiceObserver implementation.
   void OnStateChanged() override;
@@ -93,12 +94,12 @@ class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
   // counter type.
   void EmitCounterUpdate(syncer::ModelType type,
                          const std::string& counter_type,
-                         scoped_ptr<base::DictionaryValue> value);
+                         std::unique_ptr<base::DictionaryValue> value);
 
  protected:
   // Constructor used for unit testing to override the about sync info.
   SyncInternalsMessageHandler(
-      scoped_ptr<AboutSyncDataExtractor> about_sync_data_extractor);
+      std::unique_ptr<AboutSyncDataExtractor> about_sync_data_extractor);
 
  private:
   // Fetches updated aboutInfo and sends it to the page in the form of an
@@ -117,7 +118,7 @@ class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
   bool is_registered_for_counters_ = false;
 
   // An abstraction of who creates the about sync info value map.
-  scoped_ptr<AboutSyncDataExtractor> about_sync_data_extractor_;
+  std::unique_ptr<AboutSyncDataExtractor> about_sync_data_extractor_;
 
   base::WeakPtrFactory<SyncInternalsMessageHandler> weak_ptr_factory_;
 

@@ -60,7 +60,7 @@ class TabModalConfirmDialogViews : public TabModalConfirmDialog,
   // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
 
-  scoped_ptr<TabModalConfirmDialogDelegate> delegate_;
+  std::unique_ptr<TabModalConfirmDialogDelegate> delegate_;
 
   // The message box view whose commands we handle.
   views::MessageBoxView* message_box_view_;

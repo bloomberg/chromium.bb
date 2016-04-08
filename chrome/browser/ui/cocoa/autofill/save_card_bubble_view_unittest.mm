@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <Carbon/Carbon.h>  // For the kVK_* constants.
+
+#include <memory>
+
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/save_card_bubble_view_bridge.h"
@@ -12,8 +15,6 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
-
-#include <Carbon/Carbon.h>  // For the kVK_* constants.
 
 namespace autofill {
 
@@ -92,7 +93,7 @@ class TestSaveCardBubbleController : public SaveCardBubbleController {
         "    }"
         "  ]"
         "}";
-    scoped_ptr<base::Value> value(base::JSONReader::Read(message_json));
+    std::unique_ptr<base::Value> value(base::JSONReader::Read(message_json));
     ASSERT_TRUE(value);
     base::DictionaryValue* dictionary = nullptr;
     ASSERT_TRUE(value->GetAsDictionary(&dictionary));
@@ -133,7 +134,7 @@ class SaveCardBubbleViewTest : public CocoaProfileTest {
 
  protected:
   BrowserWindowController* browser_window_controller_;
-  scoped_ptr<TestSaveCardBubbleController> bubble_controller_;
+  std::unique_ptr<TestSaveCardBubbleController> bubble_controller_;
   SaveCardBubbleViewBridge* bridge_;
 };
 

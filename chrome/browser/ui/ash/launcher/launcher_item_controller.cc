@@ -44,7 +44,8 @@ base::string16 LauncherItemController::GetAppTitle() const {
       ArcAppListPrefs::Get(launcher_controller_->profile());
   DCHECK(arc_prefs);
   if (arc_prefs->IsRegistered(app_id_)) {
-    scoped_ptr<ArcAppListPrefs::AppInfo> app_info = arc_prefs->GetApp(app_id_);
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+        arc_prefs->GetApp(app_id_);
     DCHECK(app_info.get());
     if (app_info)
       title = base::UTF8ToUTF16(app_info->name);

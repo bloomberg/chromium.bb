@@ -273,7 +273,7 @@ class MenuModelAdapterTest : public ViewEventTestBase,
   TopMenuModel top_menu_model_;
   views::MenuModelAdapter menu_model_adapter_;
   views::MenuItemView* menu_;
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 };
 
 // If this flakes, disable and log details in http://crbug.com/523255.

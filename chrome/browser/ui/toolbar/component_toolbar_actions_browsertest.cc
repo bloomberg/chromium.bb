@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
@@ -32,8 +33,8 @@ class ComponentToolbarActionsBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  scoped_ptr<extensions::FeatureSwitch::ScopedOverride> enable_redesign_;
-  scoped_ptr<MockComponentToolbarActionsFactory> mock_actions_factory_;
+  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride> enable_redesign_;
+  std::unique_ptr<MockComponentToolbarActionsFactory> mock_actions_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentToolbarActionsBrowserTest);
 };

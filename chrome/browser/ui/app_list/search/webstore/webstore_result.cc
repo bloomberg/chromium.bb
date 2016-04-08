@@ -96,8 +96,8 @@ void WebstoreResult::InvokeAction(int action_index, int event_flags) {
   StartInstall();
 }
 
-scoped_ptr<SearchResult> WebstoreResult::Duplicate() const {
-  scoped_ptr<SearchResult> copy(new WebstoreResult(
+std::unique_ptr<SearchResult> WebstoreResult::Duplicate() const {
+  std::unique_ptr<SearchResult> copy(new WebstoreResult(
       profile_, app_id_, icon_url_, is_paid_, item_type_, controller_));
   copy->set_title(title());
   copy->set_title_tags(title_tags());

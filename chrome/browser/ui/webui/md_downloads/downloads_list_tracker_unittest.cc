@@ -7,10 +7,10 @@
 #include <limits.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/download_item_model.h"
@@ -85,9 +85,9 @@ class TestDownloadsListTracker : public DownloadsListTracker {
   using DownloadsListTracker::SetChunkSizeForTesting;
 
  protected:
-  scoped_ptr<base::DictionaryValue> CreateDownloadItemValue(
+  std::unique_ptr<base::DictionaryValue> CreateDownloadItemValue(
       content::DownloadItem* item) const override {
-    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
     CHECK_LE(item->GetId(), static_cast<uint64_t>(INT_MAX));
     dict->SetInteger("id", item->GetId());
     return dict;
@@ -148,7 +148,7 @@ class DownloadsListTrackerTest : public testing::Test {
 
   testing::NiceMock<content::MockDownloadManager> manager_;
   content::TestWebUI web_ui_;
-  scoped_ptr<TestDownloadsListTracker> tracker_;
+  std::unique_ptr<TestDownloadsListTracker> tracker_;
 
   std::vector<MockDownloadItem*> mock_items_;
 };

@@ -201,7 +201,7 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
   views::Widget::InitParams params;
   params.delegate = new MaximizableWidgetDelegate();
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  scoped_ptr<views::Widget> widget(new views::Widget);
+  std::unique_ptr<views::Widget> widget(new views::Widget);
   widget->Init(params);
   widget->Show();
 

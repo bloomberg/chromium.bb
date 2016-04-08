@@ -49,7 +49,7 @@ class GlobalErrorBubbleView : public views::BubbleDialogDelegateView,
   Browser* browser_;
   base::WeakPtr<GlobalErrorWithStandardBubble> error_;
 
-  scoped_ptr<ElevationIconSetter> elevation_icon_setter_;
+  std::unique_ptr<ElevationIconSetter> elevation_icon_setter_;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalErrorBubbleView);
 };

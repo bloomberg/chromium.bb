@@ -36,7 +36,8 @@ void ArcAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
 bool ArcAppContextMenu::IsCommandIdEnabled(int command_id) const {
   if (command_id == LAUNCH_NEW) {
     ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
-    scoped_ptr<ArcAppListPrefs::AppInfo> app_info = arc_prefs->GetApp(app_id());
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+        arc_prefs->GetApp(app_id());
     return app_info && app_info->ready;
   }
   return AppContextMenu::IsCommandIdEnabled(command_id);
@@ -57,7 +58,8 @@ void ArcAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
 
 void ArcAppContextMenu::UninstallPackage() {
   ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
-  scoped_ptr<ArcAppListPrefs::AppInfo> app_info = arc_prefs->GetApp(app_id());
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      arc_prefs->GetApp(app_id());
   if (!app_info) {
     LOG(ERROR) << "Package being uninstalling does not exist";
     return;
@@ -67,6 +69,7 @@ void ArcAppContextMenu::UninstallPackage() {
 
 bool ArcAppContextMenu::CanBeUninstalled() const {
   ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
-  scoped_ptr<ArcAppListPrefs::AppInfo> app_info = arc_prefs->GetApp(app_id());
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      arc_prefs->GetApp(app_id());
   return app_info && app_info->ready && !app_info->sticky;
 }

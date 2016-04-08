@@ -38,8 +38,8 @@ class ManagePasswordsControllerTest : public CocoaProfileTest {
 
  private:
   ManagePasswordsUIControllerMock* ui_controller_;
-  scoped_ptr<content::WebContents> test_web_contents_;
-  scoped_ptr<ManagePasswordsBubbleModel> model_;
+  std::unique_ptr<content::WebContents> test_web_contents_;
+  std::unique_ptr<ManagePasswordsBubbleModel> model_;
 };
 
 // Helper delegate for testing the views of the password management bubble.

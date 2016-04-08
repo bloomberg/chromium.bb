@@ -16,10 +16,11 @@
 
 namespace autofill {
 
-scoped_ptr<AutofillDialogViewTester> AutofillDialogViewTester::For(
+std::unique_ptr<AutofillDialogViewTester> AutofillDialogViewTester::For(
     AutofillDialogView* view) {
-  return scoped_ptr<AutofillDialogViewTester>(new
-      AutofillDialogViewTesterViews(static_cast<AutofillDialogViews*>(view)));
+  return std::unique_ptr<AutofillDialogViewTester>(
+      new AutofillDialogViewTesterViews(
+          static_cast<AutofillDialogViews*>(view)));
 }
 
 AutofillDialogViewTesterViews::AutofillDialogViewTesterViews(

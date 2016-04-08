@@ -178,7 +178,7 @@ class StatusBubbleViews::StatusView : public views::View {
   BubbleState state_;
   BubbleStyle style_;
 
-  scoped_ptr<StatusViewAnimation> animation_;
+  std::unique_ptr<StatusViewAnimation> animation_;
 
   // Handle to the widget that contains us.
   views::Widget* popup_;

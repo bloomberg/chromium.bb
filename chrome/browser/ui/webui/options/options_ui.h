@@ -7,13 +7,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_list.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/public/browser/notification_registrar.h"
@@ -124,8 +124,8 @@ class OptionsUI : public content::WebUIController,
 
   // Registers a callback to be called once the settings frame has finished
   // loading on the HTML/JS side.
-  scoped_ptr<OnFinishedLoadingCallbackList::Subscription>
-      RegisterOnFinishedLoadingCallback(const base::Closure& callback);
+  std::unique_ptr<OnFinishedLoadingCallbackList::Subscription>
+  RegisterOnFinishedLoadingCallback(const base::Closure& callback);
 
   // Takes the suggestions from |result| and adds them to |suggestions| so that
   // they can be passed to a JavaScript function.
@@ -161,7 +161,7 @@ class OptionsUI : public content::WebUIController,
   OnFinishedLoadingCallbackList on_finished_loading_callbacks_;
 
 #if defined(OS_CHROMEOS)
-  scoped_ptr<chromeos::system::PointerDeviceObserver>
+  std::unique_ptr<chromeos::system::PointerDeviceObserver>
       pointer_device_observer_;
 #endif
 

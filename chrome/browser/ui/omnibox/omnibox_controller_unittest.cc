@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
@@ -26,11 +27,11 @@ class TestOmniboxClient : public OmniboxClient {
   ~TestOmniboxClient() override {}
 
   // OmniboxClient:
-  scoped_ptr<AutocompleteProviderClient> CreateAutocompleteProviderClient()
+  std::unique_ptr<AutocompleteProviderClient> CreateAutocompleteProviderClient()
       override {
-    return make_scoped_ptr(new ChromeAutocompleteProviderClient(profile_));
+    return base::WrapUnique(new ChromeAutocompleteProviderClient(profile_));
   }
-  scoped_ptr<OmniboxNavigationObserver> CreateOmniboxNavigationObserver(
+  std::unique_ptr<OmniboxNavigationObserver> CreateOmniboxNavigationObserver(
       const base::string16& text,
       const AutocompleteMatch& match,
       const AutocompleteMatch& alternate_nav_match) override {
@@ -116,8 +117,8 @@ class OmniboxControllerTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
-  scoped_ptr<TestOmniboxClient> omnibox_client_;
-  scoped_ptr<OmniboxController> omnibox_controller_;
+  std::unique_ptr<TestOmniboxClient> omnibox_client_;
+  std::unique_ptr<OmniboxController> omnibox_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxControllerTest);
 };

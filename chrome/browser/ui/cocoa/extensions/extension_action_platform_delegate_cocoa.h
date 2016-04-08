@@ -28,7 +28,7 @@ class ExtensionActionPlatformDelegateCocoa
   void RegisterCommand() override;
   void OnDelegateSet() override;
   void ShowPopup(
-      scoped_ptr<extensions::ExtensionViewHost> host,
+      std::unique_ptr<extensions::ExtensionViewHost> host,
       bool grant_tab_permissions,
       ExtensionActionViewController::PopupShowAction show_action) override;
   void CloseOverflowMenu() override;

@@ -19,7 +19,7 @@ void DesktopMediaPickerCocoa::Show(content::WebContents* web_contents,
                                    gfx::NativeWindow parent,
                                    const base::string16& app_name,
                                    const base::string16& target_name,
-                                   scoped_ptr<DesktopMediaList> media_list,
+                                   std::unique_ptr<DesktopMediaList> media_list,
                                    bool request_audio,
                                    const DoneCallback& done_callback) {
   controller_.reset([[DesktopMediaPickerController alloc]
@@ -33,6 +33,6 @@ void DesktopMediaPickerCocoa::Show(content::WebContents* web_contents,
 }
 
 // static
-scoped_ptr<DesktopMediaPicker> DesktopMediaPicker::Create() {
-  return scoped_ptr<DesktopMediaPicker>(new DesktopMediaPickerCocoa());
+std::unique_ptr<DesktopMediaPicker> DesktopMediaPicker::Create() {
+  return std::unique_ptr<DesktopMediaPicker>(new DesktopMediaPickerCocoa());
 }

@@ -85,7 +85,7 @@ void PowerMessageHandler::OnGetBatteryChargeData(const base::ListValue* value) {
   base::ListValue js_power_supply_data;
   for (size_t i = 0; i < power_supply.size(); ++i) {
     const PowerDataCollector::PowerSupplySample& sample = power_supply[i];
-    scoped_ptr<base::DictionaryValue> element(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> element(new base::DictionaryValue);
     element->SetDouble("batteryPercent", sample.battery_percent);
     element->SetDouble("batteryDischargeRate", sample.battery_discharge_rate);
     element->SetBoolean("externalPower", sample.external_power);
@@ -147,7 +147,7 @@ void PowerMessageHandler::GetJsSystemResumedData(base::ListValue *data) {
       PowerDataCollector::Get()->system_resumed_data();
   for (size_t i = 0; i < system_resumed.size(); ++i) {
     const PowerDataCollector::SystemResumedSample& sample = system_resumed[i];
-    scoped_ptr<base::DictionaryValue> element(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> element(new base::DictionaryValue);
     element->SetDouble("sleepDuration",
                        sample.sleep_duration.InMillisecondsF());
     element->SetDouble("time", sample.time.ToJsTime());
@@ -162,14 +162,16 @@ void PowerMessageHandler::GetJsStateOccupancyData(
     base::ListValue *js_data) {
   for (unsigned int cpu = 0; cpu < data.size(); ++cpu) {
     const CpuDataCollector::StateOccupancySampleDeque& sample_deque = data[cpu];
-    scoped_ptr<base::ListValue> js_sample_list(new base::ListValue);
+    std::unique_ptr<base::ListValue> js_sample_list(new base::ListValue);
     for (unsigned int i = 0; i < sample_deque.size(); ++i) {
       const CpuDataCollector::StateOccupancySample& sample = sample_deque[i];
-      scoped_ptr<base::DictionaryValue> js_sample(new base::DictionaryValue);
+      std::unique_ptr<base::DictionaryValue> js_sample(
+          new base::DictionaryValue);
       js_sample->SetDouble("time", sample.time.ToJsTime());
       js_sample->SetBoolean("cpuOnline", sample.cpu_online);
 
-      scoped_ptr<base::DictionaryValue> state_dict(new base::DictionaryValue);
+      std::unique_ptr<base::DictionaryValue> state_dict(
+          new base::DictionaryValue);
       for (size_t index = 0; index < sample.time_in_state.size(); ++index) {
         state_dict->SetDouble(state_names[index],
                               static_cast<double>(sample.time_in_state[index]));

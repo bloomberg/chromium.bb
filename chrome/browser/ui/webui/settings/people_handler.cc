@@ -97,7 +97,7 @@ SyncConfigInfo::SyncConfigInfo()
 SyncConfigInfo::~SyncConfigInfo() {}
 
 bool GetConfiguration(const std::string& json, SyncConfigInfo* config) {
-  scoped_ptr<base::Value> parsed_value = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> parsed_value = base::JSONReader::Read(json);
   base::DictionaryValue* result;
   if (!parsed_value || !parsed_value->GetAsDictionary(&result)) {
     DLOG(ERROR) << "GetConfiguration() not passed a Dictionary";
@@ -820,11 +820,11 @@ void PeopleHandler::OnProfileAvatarChanged(
   HandleGetProfileInfo(nullptr);
 }
 
-scoped_ptr<base::DictionaryValue> PeopleHandler::GetSyncStateDictionary() {
+std::unique_ptr<base::DictionaryValue> PeopleHandler::GetSyncStateDictionary() {
   // The items which are to be written into |sync_status| are also described in
   // chrome/browser/resources/options/browser_options.js in @typedef
   // for SyncStatus. Please update it whenever you add or remove any keys here.
-  scoped_ptr<base::DictionaryValue> sync_status(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> sync_status(new base::DictionaryValue);
   if (profile_->IsGuestSession()) {
     // Cannot display signin status when running in guest mode on chromeos
     // because there is no SigninManager.

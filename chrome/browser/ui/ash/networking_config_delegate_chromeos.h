@@ -21,7 +21,7 @@ class NetworkingConfigDelegateChromeos : public ash::NetworkingConfigDelegate {
   NetworkingConfigDelegateChromeos();
   ~NetworkingConfigDelegateChromeos() override;
 
-  scoped_ptr<const ExtensionInfo> LookUpExtensionForNetwork(
+  std::unique_ptr<const ExtensionInfo> LookUpExtensionForNetwork(
       const std::string& service_path) override;
 
  private:

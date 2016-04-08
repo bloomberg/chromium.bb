@@ -293,10 +293,11 @@ void PasswordManagerPresenter::SetPasswordExceptionList() {
 }
 
 void PasswordManagerPresenter::SortEntriesAndHideDuplicates(
-    std::vector<scoped_ptr<autofill::PasswordForm>>* list,
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* list,
     DuplicatesMap* duplicates,
     bool username_and_password_in_key) {
-  std::vector<std::pair<std::string, scoped_ptr<autofill::PasswordForm>>> pairs;
+  std::vector<std::pair<std::string, std::unique_ptr<autofill::PasswordForm>>>
+      pairs;
   pairs.reserve(list->size());
   for (auto& form : *list) {
     pairs.push_back(std::make_pair(
@@ -305,8 +306,9 @@ void PasswordManagerPresenter::SortEntriesAndHideDuplicates(
 
   std::sort(
       pairs.begin(), pairs.end(),
-      [](const std::pair<std::string, scoped_ptr<autofill::PasswordForm>>& left,
-         const std::pair<std::string, scoped_ptr<autofill::PasswordForm>>&
+      [](const std::pair<std::string, std::unique_ptr<autofill::PasswordForm>>&
+             left,
+         const std::pair<std::string, std::unique_ptr<autofill::PasswordForm>>&
              right) { return left.first < right.first; });
 
   list->clear();

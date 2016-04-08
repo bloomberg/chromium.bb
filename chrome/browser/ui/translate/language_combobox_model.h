@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_TRANSLATE_LANGUAGE_COMBOBOX_MODEL_H_
 #define CHROME_BROWSER_UI_TRANSLATE_LANGUAGE_COMBOBOX_MODEL_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/base/models/combobox_model.h"
 

@@ -156,7 +156,7 @@ class CreateProfileHandler: public OptionsPageUIHandler {
   bool IsValidExistingSupervisedUserId(
       const std::string& existing_supervised_user_id) const;
 
-  scoped_ptr<SupervisedUserRegistrationUtility>
+  std::unique_ptr<SupervisedUserRegistrationUtility>
       supervised_user_registration_utility_;
 #endif
 

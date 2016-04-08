@@ -144,7 +144,7 @@ class OptionsUIHTMLSource : public content::URLDataSource {
   ~OptionsUIHTMLSource() override;
 
   // Localized strings collection.
-  scoped_ptr<base::DictionaryValue> localized_strings_;
+  std::unique_ptr<base::DictionaryValue> localized_strings_;
 
   DISALLOW_COPY_AND_ASSIGN(OptionsUIHTMLSource);
 };
@@ -391,7 +391,7 @@ OptionsUI::~OptionsUI() {
     handlers_[i]->Uninitialize();
 }
 
-scoped_ptr<OptionsUI::OnFinishedLoadingCallbackList::Subscription>
+std::unique_ptr<OptionsUI::OnFinishedLoadingCallbackList::Subscription>
 OptionsUI::RegisterOnFinishedLoadingCallback(const base::Closure& callback) {
   return on_finished_loading_callbacks_.Add(callback);
 }
@@ -487,7 +487,7 @@ void OptionsUI::OnFinishedLoading() {
 void OptionsUI::AddOptionsPageUIHandler(
     base::DictionaryValue* localized_strings,
     OptionsPageUIHandler* handler_raw) {
-  scoped_ptr<OptionsPageUIHandler> handler(handler_raw);
+  std::unique_ptr<OptionsPageUIHandler> handler(handler_raw);
   DCHECK(handler.get());
   // Add only if handler's service is enabled.
   if (handler->IsEnabled()) {

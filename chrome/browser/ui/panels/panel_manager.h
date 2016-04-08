@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_UI_PANELS_PANEL_MANAGER_H_
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/panels/display_settings_provider.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_collection.h"
@@ -226,19 +226,19 @@ class PanelManager : public DisplaySettingsProvider::DisplayObserver,
   // Tests may want to shorten time intervals to reduce running time.
   static bool shorten_time_intervals_;
 
-  scoped_ptr<DetachedPanelCollection> detached_collection_;
-  scoped_ptr<DockedPanelCollection> docked_collection_;
+  std::unique_ptr<DetachedPanelCollection> detached_collection_;
+  std::unique_ptr<DockedPanelCollection> docked_collection_;
   Stacks stacks_;
 
-  scoped_ptr<PanelDragController> drag_controller_;
-  scoped_ptr<PanelResizeController> resize_controller_;
+  std::unique_ptr<PanelDragController> drag_controller_;
+  std::unique_ptr<PanelResizeController> resize_controller_;
 
   // Use a mouse watcher to know when to bring up titlebars to "peek" at
   // minimized panels. Mouse movement is only tracked when there is a minimized
   // panel.
-  scoped_ptr<PanelMouseWatcher> panel_mouse_watcher_;
+  std::unique_ptr<PanelMouseWatcher> panel_mouse_watcher_;
 
-  scoped_ptr<DisplaySettingsProvider> display_settings_provider_;
+  std::unique_ptr<DisplaySettingsProvider> display_settings_provider_;
 
   // Whether or not bounds will be updated when the preferred content size is
   // changed. The testing code could set this flag to false so that other tests

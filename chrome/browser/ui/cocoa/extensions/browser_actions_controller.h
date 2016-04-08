@@ -7,8 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/has_weak_browser_pointer.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -43,10 +44,10 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
   base::scoped_nsobject<NSMutableArray> buttons_;
 
   // The delegate for the ToolbarActionsBar.
-  scoped_ptr<ToolbarActionsBarDelegate> toolbarActionsBarBridge_;
+  std::unique_ptr<ToolbarActionsBarDelegate> toolbarActionsBarBridge_;
 
   // The controlling ToolbarActionsBar.
-  scoped_ptr<ToolbarActionsBar> toolbarActionsBar_;
+  std::unique_ptr<ToolbarActionsBar> toolbarActionsBar_;
 
   // True if we should supppress the chevron (we do this during drag
   // animations).

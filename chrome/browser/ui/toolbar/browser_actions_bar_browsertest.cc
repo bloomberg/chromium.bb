@@ -405,7 +405,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
                        OverflowedBrowserActionPopupTest) {
-  scoped_ptr<BrowserActionTestUtil> overflow_bar =
+  std::unique_ptr<BrowserActionTestUtil> overflow_bar =
       browser_actions_bar()->CreateOverflowBar();
 
   // Load up two extensions that have browser action popups.

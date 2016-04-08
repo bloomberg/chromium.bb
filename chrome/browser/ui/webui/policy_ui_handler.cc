@@ -13,6 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -165,23 +166,23 @@ void ExtractDomainFromUsername(base::DictionaryValue* dict) {
 }
 
 // Utility function that returns a JSON serialization of the given |dict|.
-scoped_ptr<base::StringValue> DictionaryToJSONString(
+std::unique_ptr<base::StringValue> DictionaryToJSONString(
     const base::DictionaryValue& dict) {
   std::string json_string;
   base::JSONWriter::WriteWithOptions(dict,
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &json_string);
-  return make_scoped_ptr(new base::StringValue(json_string));
+  return base::WrapUnique(new base::StringValue(json_string));
 }
 
 // Returns a copy of |value| with some values converted to a representation that
 // i18n_template.js will display in a nicer way.
-scoped_ptr<base::Value> CopyAndConvert(const base::Value* value) {
+std::unique_ptr<base::Value> CopyAndConvert(const base::Value* value) {
   const base::DictionaryValue* dict = NULL;
   if (value->GetAsDictionary(&dict))
     return DictionaryToJSONString(*dict);
 
-  scoped_ptr<base::Value> copy(value->DeepCopy());
+  std::unique_ptr<base::Value> copy(value->DeepCopy());
   base::ListValue* list = NULL;
   if (copy->GetAsList(&list)) {
     for (size_t i = 0; i < list->GetSize(); ++i) {
@@ -693,11 +694,12 @@ void PolicyUIHandler::GetChromePolicyValues(
 }
 
 void PolicyUIHandler::SendStatus() const {
-  scoped_ptr<base::DictionaryValue> device_status(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> device_status(
+      new base::DictionaryValue);
   device_status_provider_->GetStatus(device_status.get());
   if (!device_domain_.empty())
     device_status->SetString("domain", device_domain_);
-  scoped_ptr<base::DictionaryValue> user_status(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> user_status(new base::DictionaryValue);
   user_status_provider_->GetStatus(user_status.get());
   std::string username;
   user_status->GetString("username", &username);

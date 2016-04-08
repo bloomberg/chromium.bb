@@ -218,8 +218,8 @@ void SupervisedUserCreationScreenHandler::RegisterMessages() {
 void SupervisedUserCreationScreenHandler::PrepareToShow() {}
 
 void SupervisedUserCreationScreenHandler::Show() {
-  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
-  scoped_ptr<base::ListValue> users_list(new base::ListValue());
+  std::unique_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+  std::unique_ptr<base::ListValue> users_list(new base::ListValue());
   const user_manager::UserList& users =
       ChromeUserManager::Get()->GetUsersAllowedForSupervisedUsersCreation();
   std::string owner;
@@ -408,7 +408,8 @@ void SupervisedUserCreationScreenHandler::HandleGetImages() {
   base::ListValue image_urls;
   for (int i = default_user_image::kFirstDefaultImageIndex;
        i < default_user_image::kDefaultImagesCount; ++i) {
-    scoped_ptr<base::DictionaryValue> image_data(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> image_data(
+        new base::DictionaryValue);
     image_data->SetString("url", default_user_image::GetDefaultImageUrl(i));
     image_data->SetString("author",
                           l10n_util::GetStringUTF16(

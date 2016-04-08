@@ -2,18 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/cocoa/history_menu_bridge.h"
+
 #import <Cocoa/Cocoa.h>
+
+#include <memory>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/sessions/chrome_tab_restore_service_client.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
-#include "chrome/browser/ui/cocoa/history_menu_bridge.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/sessions/core/persistent_tab_restore_service.h"
@@ -30,7 +33,7 @@ class MockTRS : public sessions::PersistentTabRestoreService {
  public:
   MockTRS(Profile* profile)
       : sessions::PersistentTabRestoreService(
-            make_scoped_ptr(new ChromeTabRestoreServiceClient(profile)),
+            base::WrapUnique(new ChromeTabRestoreServiceClient(profile)),
             nullptr) {}
   MOCK_CONST_METHOD0(entries, const sessions::TabRestoreService::Entries&());
 };
@@ -112,7 +115,7 @@ class HistoryMenuBridgeTest : public CocoaProfileTest {
     bridge_->GotFaviconData(item, image_result);
   }
 
-  scoped_ptr<MockBridge> bridge_;
+  std::unique_ptr<MockBridge> bridge_;
 };
 
 // Edge case test for clearing until the end of a menu.
@@ -209,7 +212,7 @@ TEST_F(HistoryMenuBridgeTest, AddItemToMenu) {
 
 // Test that the menu is created for a set of simple tabs.
 TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabs) {
-  scoped_ptr<MockTRS> trs(new MockTRS(profile()));
+  std::unique_ptr<MockTRS> trs(new MockTRS(profile()));
   MockTRS::Entries entries;
 
   MockTRS::Tab tab1 = CreateSessionTab("http://google.com", "Google");
@@ -243,7 +246,7 @@ TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabs) {
 
 // Test that the menu is created for a mix of windows and tabs.
 TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabsAndWindows) {
-  scoped_ptr<MockTRS> trs(new MockTRS(profile()));
+  std::unique_ptr<MockTRS> trs(new MockTRS(profile()));
   MockTRS::Entries entries;
 
   MockTRS::Tab tab1 = CreateSessionTab("http://google.com", "Google");

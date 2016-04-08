@@ -7,18 +7,18 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 class SimpleGridLayout;
 
 // A view that carries its own layout manager. Re-layouts on setFrame:.
 @interface LayoutView : NSView {
  @private
-  scoped_ptr<SimpleGridLayout> layout_;
+  std::unique_ptr<SimpleGridLayout> layout_;
 }
 
 // Sets a layout manager and takes ownership of it.
-- (void)setLayoutManager:(scoped_ptr<SimpleGridLayout>)layout;
+- (void)setLayoutManager:(std::unique_ptr<SimpleGridLayout>)layout;
 
 // Return a pointer to layout manager, still owned by the view.
 - (SimpleGridLayout*)layoutManager;

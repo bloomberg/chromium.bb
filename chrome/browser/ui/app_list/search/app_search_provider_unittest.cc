@@ -5,11 +5,12 @@
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_clock.h"
@@ -61,7 +62,7 @@ class AppSearchProviderTest : public AppListTestBase {
   }
 
   void CreateSearch() {
-    scoped_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock());
+    std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock());
     clock->SetNow(kTestCurrentTime);
     app_search_.reset(new AppSearchProvider(profile_.get(), nullptr,
                                             std::move(clock),
@@ -92,10 +93,10 @@ class AppSearchProviderTest : public AppListTestBase {
   const SearchProvider::Results& results() { return app_search_->results(); }
 
  private:
-  scoped_ptr<app_list::AppListModel> model_;
-  scoped_ptr<AppSearchProvider> app_search_;
-  scoped_ptr<ExtensionAppModelBuilder> builder_;
-  scoped_ptr<::test::TestAppListControllerDelegate> controller_;
+  std::unique_ptr<app_list::AppListModel> model_;
+  std::unique_ptr<AppSearchProvider> app_search_;
+  std::unique_ptr<ExtensionAppModelBuilder> builder_;
+  std::unique_ptr<::test::TestAppListControllerDelegate> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AppSearchProviderTest);
 };
@@ -260,7 +261,7 @@ TEST_F(AppSearchProviderTest, FetchUnlaunchedRecommendations) {
   EXPECT_EQ("Hosted App,Packaged App 2,Packaged App 1", RunQuery(""));
 
   // Moving an app into a folder deprioritizes it.
-  model()->AddItem(scoped_ptr<AppListFolderItem>(
+  model()->AddItem(std::unique_ptr<AppListFolderItem>(
       new AppListFolderItem(kFolderId, AppListFolderItem::FOLDER_TYPE_NORMAL)));
   model()->MoveItemToFolder(model()->FindItem(kPackagedApp2Id), kFolderId);
   EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2", RunQuery(""));

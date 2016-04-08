@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_CREATE_APPLICATION_SHORTCUT_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_CREATE_APPLICATION_SHORTCUT_VIEW_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "extensions/common/manifest_handlers/file_handler_info.h"
 #include "ui/views/controls/button/button.h"
@@ -87,7 +87,7 @@ class CreateApplicationShortcutView : public views::DialogDelegateView,
   views::Checkbox* quick_launch_check_box_;
 
   // Target shortcut and file handler info.
-  scoped_ptr<web_app::ShortcutInfo> shortcut_info_;
+  std::unique_ptr<web_app::ShortcutInfo> shortcut_info_;
   extensions::FileHandlersInfo file_handlers_info_;
   // If false, the shortcut will be created in the root level of the Start Menu.
   bool create_in_chrome_apps_subdir_;
@@ -146,7 +146,7 @@ class CreateChromeApplicationShortcutView
  private:
   // Called when the app's ShortcutInfo (with icon) and FileHandlersInfo is
   // loaded.
-  void OnAppInfoLoaded(scoped_ptr<web_app::ShortcutInfo> shortcut_info,
+  void OnAppInfoLoaded(std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
                        const extensions::FileHandlersInfo& file_handlers_info);
 
   base::Callback<void(bool)> close_callback_;

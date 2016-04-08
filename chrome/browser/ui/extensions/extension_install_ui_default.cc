@@ -99,7 +99,8 @@ class ErrorInfoBarDelegate : public ConfirmInfoBarDelegate {
 void ErrorInfoBarDelegate::Create(InfoBarService* infobar_service,
                                   const extensions::CrxInstallError& error) {
   infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(new ErrorInfoBarDelegate(error))));
+      std::unique_ptr<ConfirmInfoBarDelegate>(
+          new ErrorInfoBarDelegate(error))));
 }
 
 ErrorInfoBarDelegate::ErrorInfoBarDelegate(

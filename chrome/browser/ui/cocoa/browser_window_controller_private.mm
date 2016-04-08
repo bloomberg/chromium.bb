@@ -167,7 +167,7 @@ void RecordFullscreenStyle(FullscreenStyle style) {
   gfx::Rect workArea(NSRectToCGRect([windowScreen visibleFrame]));
   workArea.set_y(monitorFrame.size.height - workArea.y() - workArea.height());
 
-  scoped_ptr<DictionaryPrefUpdate> update =
+  std::unique_ptr<DictionaryPrefUpdate> update =
       chrome::GetWindowPlacementDictionaryReadWrite(
           chrome::GetWindowName(browser_.get()),
           browser_->profile()->GetPrefs());

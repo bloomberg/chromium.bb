@@ -84,7 +84,7 @@ class IconLabelBubbleView : public views::InkDropHostView {
   void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
-  scoped_ptr<views::InkDropHover> CreateInkDropHover() const override;
+  std::unique_ptr<views::InkDropHover> CreateInkDropHover() const override;
   SkColor GetInkDropBaseColor() const override;
 
   const gfx::FontList& font_list() const { return label_->font_list(); }
@@ -115,7 +115,7 @@ class IconLabelBubbleView : public views::InkDropHostView {
   void OnPaint(gfx::Canvas* canvas) override;
 
   // For painting the background. TODO(estade): remove post MD launch.
-  scoped_ptr<views::Painter> background_painter_;
+  std::unique_ptr<views::Painter> background_painter_;
 
   // The contents of the bubble.
   views::ImageView* image_;

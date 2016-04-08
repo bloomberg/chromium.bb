@@ -73,7 +73,7 @@ class PermissionBubbleManagerBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  scoped_ptr<MockPermissionBubbleFactory> mock_permission_bubble_factory_;
+  std::unique_ptr<MockPermissionBubbleFactory> mock_permission_bubble_factory_;
 };
 
 // Requests before the load event should be bundled into one bubble.

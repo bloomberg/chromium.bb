@@ -8,13 +8,13 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -102,7 +102,7 @@ class ArcAppListPrefs : public KeyedService,
 
   // Extracts attributes of an app based on its id. Returns NULL if the app is
   // not found.
-  scoped_ptr<AppInfo> GetApp(const std::string& app_id) const;
+  std::unique_ptr<AppInfo> GetApp(const std::string& app_id) const;
 
   // Constructs path to app local data.
   base::FilePath GetAppPath(const std::string& app_id) const;

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/cocoa/toolbar/media_router_action_platform_delegate_cocoa.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
@@ -12,9 +13,9 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 
 // static
-scoped_ptr<MediaRouterActionPlatformDelegate>
+std::unique_ptr<MediaRouterActionPlatformDelegate>
 MediaRouterActionPlatformDelegate::Create(Browser* browser) {
-  return make_scoped_ptr(new MediaRouterActionPlatformDelegateCocoa(browser));
+  return base::WrapUnique(new MediaRouterActionPlatformDelegateCocoa(browser));
 }
 
 MediaRouterActionPlatformDelegateCocoa::MediaRouterActionPlatformDelegateCocoa(

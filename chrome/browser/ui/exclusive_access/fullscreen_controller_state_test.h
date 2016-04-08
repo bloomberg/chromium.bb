@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_FULLSCREEN_CONTROLLER_STATE_TEST_H_
 #define CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_FULLSCREEN_CONTROLLER_STATE_TEST_H_
 
+#include <memory>
 #include <sstream>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 
 class Browser;
@@ -191,7 +191,8 @@ class FullscreenControllerStateTest {
   State last_notification_received_state_;
 
   // Listens for the NOTIFICATION_FULLSCREEN_CHANGED notification.
-  scoped_ptr<FullscreenNotificationObserver> fullscreen_notification_observer_;
+  std::unique_ptr<FullscreenNotificationObserver>
+      fullscreen_notification_observer_;
 
   // Human defined |State| that results given each [state][event] pair.
   State transition_table_[NUM_STATES][NUM_EVENTS];

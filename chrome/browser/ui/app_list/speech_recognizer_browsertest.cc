@@ -73,9 +73,9 @@ class AppListSpeechRecognizerBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  scoped_ptr<content::FakeSpeechRecognitionManager>
+  std::unique_ptr<content::FakeSpeechRecognitionManager>
       fake_speech_recognition_manager_;
-  scoped_ptr<MockSpeechRecognizerDelegate> mock_speech_delegate_;
+  std::unique_ptr<MockSpeechRecognizerDelegate> mock_speech_delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListSpeechRecognizerBrowserTest);

@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_VIEW_TESTER_H_
 #define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_VIEW_TESTER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "components/autofill/core/browser/dialog_section.h"
@@ -24,7 +25,8 @@ class AutofillDialogView;
 class AutofillDialogViewTester {
  public:
   // Gets a AutofillDialogViewTester for |view|.
-  static scoped_ptr<AutofillDialogViewTester> For(AutofillDialogView* view);
+  static std::unique_ptr<AutofillDialogViewTester> For(
+      AutofillDialogView* view);
 
   virtual ~AutofillDialogViewTester() {}
 

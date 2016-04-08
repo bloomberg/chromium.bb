@@ -4,10 +4,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -52,7 +53,7 @@ class HistoryDataLoadWaiter : public HistoryDataObserver {
   void OnHistoryDataLoadedFromStore() override { run_loop_->Quit(); }
 
   HistoryData* data_;  // Not owned.
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryDataLoadWaiter);
 };
@@ -80,7 +81,7 @@ class StoreFlushWaiter {
   }
 
   HistoryDataStore* store_;  // Not owned.
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(StoreFlushWaiter);
 };
@@ -145,10 +146,10 @@ class SearchHistoryTest : public testing::Test {
  private:
   base::MessageLoopForUI message_loop_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<base::SequencedWorkerPoolOwner> worker_pool_owner_;
+  std::unique_ptr<base::SequencedWorkerPoolOwner> worker_pool_owner_;
 
-  scoped_ptr<History> history_;
-  scoped_ptr<KnownResults> known_results_;
+  std::unique_ptr<History> history_;
+  std::unique_ptr<KnownResults> known_results_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchHistoryTest);
 };

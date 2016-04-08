@@ -33,7 +33,7 @@ TEST_P(ToolbarActionsBarUnitTest, ExtensionActionNormalAppearance) {
   ExtensionActionViewController* action =
       static_cast<ExtensionActionViewController*>(
           toolbar_actions_bar()->GetActions()[0]);
-  scoped_ptr<IconWithBadgeImageSource> image_source =
+  std::unique_ptr<IconWithBadgeImageSource> image_source =
       action->GetIconImageSourceForTesting(web_contents, size);
   EXPECT_FALSE(image_source->grayscale());
   EXPECT_FALSE(image_source->paint_page_action_decoration());
@@ -75,7 +75,7 @@ TEST_P(ToolbarActionsBarRedesignUnitTest, ExtensionActionWantsToRunAppearance) {
   ExtensionActionViewController* action =
       static_cast<ExtensionActionViewController*>(
           toolbar_actions_bar()->GetActions()[0]);
-  scoped_ptr<IconWithBadgeImageSource> image_source =
+  std::unique_ptr<IconWithBadgeImageSource> image_source =
       action->GetIconImageSourceForTesting(web_contents, size);
   EXPECT_TRUE(image_source->grayscale());
   EXPECT_FALSE(image_source->paint_page_action_decoration());
@@ -123,7 +123,7 @@ TEST_P(ToolbarActionsBarRedesignUnitTest, ExtensionActionBlockedActions) {
   ASSERT_TRUE(web_contents);
   const gfx::Size kSize(ToolbarActionsBar::IconWidth(false),
                         ToolbarActionsBar::IconHeight());
-  scoped_ptr<IconWithBadgeImageSource> image_source =
+  std::unique_ptr<IconWithBadgeImageSource> image_source =
       browser_action->GetIconImageSourceForTesting(web_contents, kSize);
   EXPECT_FALSE(image_source->grayscale());
   EXPECT_FALSE(image_source->paint_page_action_decoration());

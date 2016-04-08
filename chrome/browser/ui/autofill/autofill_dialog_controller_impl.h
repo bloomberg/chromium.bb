@@ -7,12 +7,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -264,7 +264,7 @@ class AutofillDialogControllerImpl
   // Creates a DataModelWrapper item for the item that's checked in the
   // suggestion model for |section|. This may represent Autofill
   // data or Wallet data, depending on whether Wallet is currently enabled.
-  scoped_ptr<DataModelWrapper> CreateWrapper(DialogSection section);
+  std::unique_ptr<DataModelWrapper> CreateWrapper(DialogSection section);
 
   // Fills in |section|-related fields in |output_| according to the state of
   // |view_|.
@@ -463,7 +463,7 @@ class AutofillDialogControllerImpl
   AutofillClient::ResultCallback callback_;
 
   // A helper to validate international address input.
-  scoped_ptr<AddressValidator> validator_;
+  std::unique_ptr<AddressValidator> validator_;
 
   // The default active instrument and shipping address object IDs as of the
   // last time Wallet items were fetched. These variables are only set
@@ -508,8 +508,8 @@ class AutofillDialogControllerImpl
   YearComboboxModel cc_exp_year_combobox_model_;
 
   // Models for country input.
-  scoped_ptr<CountryComboboxModel> billing_country_combobox_model_;
-  scoped_ptr<CountryComboboxModel> shipping_country_combobox_model_;
+  std::unique_ptr<CountryComboboxModel> billing_country_combobox_model_;
+  std::unique_ptr<CountryComboboxModel> shipping_country_combobox_model_;
 
   // Models for the suggestion views.
   SuggestionsMenuModel suggested_cc_;
@@ -554,7 +554,7 @@ class AutofillDialogControllerImpl
   // is showing.
   DialogSection popup_section_;
 
-  scoped_ptr<AutofillDialogView> view_;
+  std::unique_ptr<AutofillDialogView> view_;
 
   // A NotificationRegistrar for tracking the completion of sign-in.
   content::NotificationRegistrar signin_registrar_;

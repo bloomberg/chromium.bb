@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -220,29 +221,30 @@ void ArcAppIcon::RequestIcon(ui::ScaleFactor scale_factor) {
 }
 
 // static
-scoped_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadOnFileThread(
+std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadOnFileThread(
     ui::ScaleFactor scale_factor,
     const base::FilePath& path) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   DCHECK(!path.empty());
 
   if (!base::PathExists(path))
-    return make_scoped_ptr(new ArcAppIcon::ReadResult(
+    return base::WrapUnique(new ArcAppIcon::ReadResult(
         ArcAppIcon::ReadResult::Status::REQUEST_TO_INSTALL, scale_factor));
 
   // Read the file from disk.
   std::string unsafe_icon_data;
   if (!base::ReadFileToString(path, &unsafe_icon_data)) {
     VLOG(2) << "Failed to read an ARC icon from file " << path.MaybeAsASCII();
-    return make_scoped_ptr(new ArcAppIcon::ReadResult(
+    return base::WrapUnique(new ArcAppIcon::ReadResult(
         ArcAppIcon::ReadResult::Status::FAIL, scale_factor));
   }
 
-  return make_scoped_ptr(new ArcAppIcon::ReadResult(scale_factor,
-                                                    unsafe_icon_data));
+  return base::WrapUnique(
+      new ArcAppIcon::ReadResult(scale_factor, unsafe_icon_data));
 }
 
-void ArcAppIcon::OnIconRead(scoped_ptr<ArcAppIcon::ReadResult> read_result) {
+void ArcAppIcon::OnIconRead(
+    std::unique_ptr<ArcAppIcon::ReadResult> read_result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   switch (read_result->status) {

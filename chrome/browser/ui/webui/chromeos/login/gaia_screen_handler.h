@@ -235,7 +235,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
   NetworkPortalDetector::CaptivePortalStatus captive_portal_status_ =
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
 
-  scoped_ptr<NetworkPortalDetector> network_portal_detector_;
+  std::unique_ptr<NetworkPortalDetector> network_portal_detector_;
   bool disable_restrictive_proxy_check_for_test_ = false;
 
   // Non-owning ptr to SigninScreenHandler instance. Should not be used

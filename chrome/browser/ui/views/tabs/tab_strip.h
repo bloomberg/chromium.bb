@@ -569,7 +569,7 @@ class TabStrip : public views::View,
   views::ViewModelT<Tab> tabs_;
   TabsClosingMap tabs_closing_map_;
 
-  scoped_ptr<TabStripController> controller_;
+  std::unique_ptr<TabStripController> controller_;
 
   // The "New Tab" button.
   NewTabButton* newtab_button_;
@@ -596,7 +596,7 @@ class TabStrip : public views::View,
   bool in_tab_close_;
 
   // Valid for the lifetime of a drag over us.
-  scoped_ptr<DropInfo> drop_info_;
+  std::unique_ptr<DropInfo> drop_info_;
 
   // To ensure all tabs pulse at the same time they share the same animation
   // container. This is that animation container.
@@ -606,11 +606,11 @@ class TabStrip : public views::View,
   // . When a tab is closed to reset the layout.
   // . When a mouse is used and the layout dynamically adjusts and is currently
   //   stacked (|stacked_layout_| is true).
-  scoped_ptr<views::MouseWatcher> mouse_watcher_;
+  std::unique_ptr<views::MouseWatcher> mouse_watcher_;
 
   // The controller for a drag initiated from a Tab. Valid for the lifetime of
   // the drag session.
-  scoped_ptr<TabDragController> drag_controller_;
+  std::unique_ptr<TabDragController> drag_controller_;
 
   views::BoundsAnimator bounds_animator_;
 
@@ -624,7 +624,7 @@ class TabStrip : public views::View,
   bool adjust_layout_;
 
   // Only used while in touch mode.
-  scoped_ptr<StackedTabStripLayout> touch_layout_;
+  std::unique_ptr<StackedTabStripLayout> touch_layout_;
 
   // If true the |stacked_layout_| is set to false when the mouse exits the
   // tabstrip (as determined using MouseWatcher).

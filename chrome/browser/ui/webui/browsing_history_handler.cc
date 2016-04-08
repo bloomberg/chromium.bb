@@ -136,7 +136,7 @@ void GetDeviceNameAndType(const ProfileSyncService* sync_service,
   DCHECK(sync_service->GetDeviceInfoTracker());
   DCHECK(sync_service->GetDeviceInfoTracker()->IsSyncing());
 
-  scoped_ptr<sync_driver::DeviceInfo> device_info =
+  std::unique_ptr<sync_driver::DeviceInfo> device_info =
       sync_service->GetDeviceInfoTracker()->GetDeviceInfo(client_id);
   if (device_info.get()) {
     *name = device_info->client_name();
@@ -209,11 +209,12 @@ void BrowsingHistoryHandler::HistoryEntry::SetUrlAndTitle(
   result->SetString("title", title_to_set);
 }
 
-scoped_ptr<base::DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
+std::unique_ptr<base::DictionaryValue>
+BrowsingHistoryHandler::HistoryEntry::ToValue(
     BookmarkModel* bookmark_model,
     SupervisedUserService* supervised_user_service,
     const ProfileSyncService* sync_service) const {
-  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   SetUrlAndTitle(result.get());
 
   base::string16 domain = url_formatter::IDNToUnicode(url.host());
@@ -234,7 +235,7 @@ scoped_ptr<base::DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
   result->SetDouble("time", time.ToJsTime());
 
   // Pass the timestamps in a list.
-  scoped_ptr<base::ListValue> timestamps(new base::ListValue);
+  std::unique_ptr<base::ListValue> timestamps(new base::ListValue);
   for (std::set<int64_t>::const_iterator it = all_timestamps.begin();
        it != all_timestamps.end(); ++it) {
     timestamps->AppendDouble(base::Time::FromInternalValue(*it).ToJsTime());
@@ -693,7 +694,7 @@ void BrowsingHistoryHandler::ReturnResultsToFrontEnd() {
   base::ListValue results_value;
   for (std::vector<BrowsingHistoryHandler::HistoryEntry>::iterator it =
            query_results_.begin(); it != query_results_.end(); ++it) {
-    scoped_ptr<base::Value> value(
+    std::unique_ptr<base::Value> value(
         it->ToValue(bookmark_model, supervised_user_service, sync_service));
     results_value.Append(value.release());
   }

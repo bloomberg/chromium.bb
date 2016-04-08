@@ -20,7 +20,7 @@ class StatusIconMacTest : public CocoaTest {
 
 TEST_F(StatusIconMacTest, Create) {
   // Create an icon, set the tool tip, then shut it down (checks for leaks).
-  scoped_ptr<StatusIcon> icon(new StatusIconMac());
+  std::unique_ptr<StatusIcon> icon(new StatusIconMac());
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
   icon->SetImage(*image);
@@ -30,10 +30,10 @@ TEST_F(StatusIconMacTest, Create) {
 TEST_F(StatusIconMacTest, CreateMenu) {
   // Create a menu and verify by getting the title of the first menu item.
   const char* menu_title = "Menu Title";
-  scoped_ptr<StatusIconMenuModel> model(new StatusIconMenuModel(NULL));
+  std::unique_ptr<StatusIconMenuModel> model(new StatusIconMenuModel(NULL));
   model->AddItem(0, base::ASCIIToUTF16(menu_title));
 
-  scoped_ptr<StatusIconMac> icon(new StatusIconMac());
+  std::unique_ptr<StatusIconMac> icon(new StatusIconMac());
   icon->UpdatePlatformContextMenu(model.get());
   EXPECT_EQ(1, [[icon->item() menu] numberOfItems]);
 
@@ -46,10 +46,10 @@ TEST_F(StatusIconMacTest, MenuToolTip) {
   // first menu item.
   const char* menu_title = "Menu Title";
   const char* tool_tip = "Tool tip";
-  scoped_ptr<StatusIconMenuModel> model(new StatusIconMenuModel(NULL));
+  std::unique_ptr<StatusIconMenuModel> model(new StatusIconMenuModel(NULL));
   model->AddItem(0, base::ASCIIToUTF16(menu_title));
 
-  scoped_ptr<StatusIconMac> icon(new StatusIconMac());
+  std::unique_ptr<StatusIconMac> icon(new StatusIconMac());
   icon->UpdatePlatformContextMenu(model.get());
   icon->SetToolTip(base::ASCIIToUTF16(tool_tip));
   EXPECT_EQ(2, [[icon->item() menu] numberOfItems]);

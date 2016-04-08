@@ -168,7 +168,7 @@ class TabStripTest : public views::ViewsTestBase {
   // Owns |tab_strip_|.
   views::View parent_;
   TabStrip* tab_strip_;
-  scoped_ptr<views::Widget> widget_;
+  std::unique_ptr<views::Widget> widget_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabStripTest);

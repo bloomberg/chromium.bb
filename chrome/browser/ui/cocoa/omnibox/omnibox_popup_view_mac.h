@@ -8,9 +8,10 @@
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_popup_matrix.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
@@ -74,7 +75,7 @@ class OmniboxPopupViewMac : public OmniboxPopupView,
   void OpenURLForRow(size_t row, WindowOpenDisposition disposition);
 
   OmniboxView* omnibox_view_;
-  scoped_ptr<OmniboxPopupModel> model_;
+  std::unique_ptr<OmniboxPopupModel> model_;
   NSTextField* field_;  // owned by tab controller
 
   // Child window containing a matrix which implements the popup.

@@ -44,7 +44,7 @@ class BrowserDesktopWindowTreeHostX11
   // Each browser frame maintains its own menu bar object because the lower
   // level dbus protocol associates a xid to a menu bar; we can't map multiple
   // xids to the same menu bar.
-  scoped_ptr<GlobalMenuBarX11> global_menu_bar_x11_;
+  std::unique_ptr<GlobalMenuBarX11> global_menu_bar_x11_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserDesktopWindowTreeHostX11);
 };

@@ -238,7 +238,7 @@ void LoginHandler::SetAuth(const base::string16& username,
                            const base::string16& password) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  scoped_ptr<password_manager::BrowserSavePasswordProgressLogger> logger;
+  std::unique_ptr<password_manager::BrowserSavePasswordProgressLogger> logger;
   if (password_manager_ &&
       password_manager_->client()->GetLogManager()->IsLoggingActive()) {
     logger.reset(new password_manager::BrowserSavePasswordProgressLogger(

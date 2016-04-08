@@ -231,7 +231,7 @@ UINT StatusTrayWin::NextIconId() {
 }
 
 void StatusTrayWin::SetStatusTrayStateChangerProxyForTest(
-    scoped_ptr<StatusTrayStateChangerProxy> proxy) {
+    std::unique_ptr<StatusTrayStateChangerProxy> proxy) {
   state_changer_proxy_ = std::move(proxy);
 }
 

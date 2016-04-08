@@ -66,7 +66,7 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
 
     // An image of the extension's icon, which appears in the zoom bubble as an
     // image button.
-    scoped_ptr<const extensions::IconImage> icon_image;
+    std::unique_ptr<const extensions::IconImage> icon_image;
   };
 
   ZoomBubbleView(views::View* anchor_view,

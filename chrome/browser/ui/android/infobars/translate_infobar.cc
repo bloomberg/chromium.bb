@@ -5,12 +5,14 @@
 #include "chrome/browser/ui/android/infobars/translate_infobar.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "jni/TranslateInfoBar_jni.h"
@@ -18,16 +20,16 @@
 // ChromeTranslateClient
 // ----------------------------------------------------------
 
-scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
-    scoped_ptr<translate::TranslateInfoBarDelegate> delegate) const {
-  return make_scoped_ptr(new TranslateInfoBar(std::move(delegate)));
+std::unique_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
+    std::unique_ptr<translate::TranslateInfoBarDelegate> delegate) const {
+  return base::WrapUnique(new TranslateInfoBar(std::move(delegate)));
 }
 
 
 // TranslateInfoBar -----------------------------------------------------------
 
 TranslateInfoBar::TranslateInfoBar(
-    scoped_ptr<translate::TranslateInfoBarDelegate> delegate)
+    std::unique_ptr<translate::TranslateInfoBarDelegate> delegate)
     : InfoBarAndroid(std::move(delegate)) {}
 
 TranslateInfoBar::~TranslateInfoBar() {

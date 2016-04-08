@@ -52,7 +52,7 @@ StatusIconLinuxWrapper* StatusIconLinuxWrapper::CreateWrappedStatusIcon(
     const base::string16& tool_tip) {
   const views::LinuxUI* linux_ui = views::LinuxUI::instance();
   if (linux_ui) {
-    scoped_ptr<views::StatusIconLinux> status_icon =
+    std::unique_ptr<views::StatusIconLinux> status_icon =
         linux_ui->CreateLinuxStatusIcon(image, tool_tip);
     if (status_icon.get())
       return new StatusIconLinuxWrapper(status_icon.release());

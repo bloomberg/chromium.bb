@@ -7,9 +7,10 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/cocoa/location_bar/image_decoration.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon.h"
 
@@ -70,7 +71,7 @@ class ManagePasswordsDecoration : public ImageDecoration {
   LocationBarViewMac* location_bar_;  // Weak, owns us.
 
   // The platform-independent interface.
-  scoped_ptr<ManagePasswordsIconCocoa> icon_;
+  std::unique_ptr<ManagePasswordsIconCocoa> icon_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsDecoration);
 };

@@ -91,8 +91,9 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
 
  private:
   scoped_refptr<net::RuleBasedHostResolverProc> host_resolver_proc_;
-  scoped_ptr<net::ScopedDefaultHostResolverProc> scoped_host_resolver_proc_;
-  scoped_ptr<net::NetworkChangeNotifier::DisableForTest>
+  std::unique_ptr<net::ScopedDefaultHostResolverProc>
+      scoped_host_resolver_proc_;
+  std::unique_ptr<net::NetworkChangeNotifier::DisableForTest>
       disable_network_change_notifier_;
 };
 

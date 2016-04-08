@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_COOKIES_VIEW_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_COOKIES_VIEW_HANDLER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
@@ -65,12 +66,12 @@ class CookiesViewHandler : public OptionsPageUIHandler,
   void ReloadCookies(const base::ListValue* args);
 
   // The Cookies Tree model
-  scoped_ptr<CookiesTreeModel> cookies_tree_model_;
+  std::unique_ptr<CookiesTreeModel> cookies_tree_model_;
 
   // Flag to indicate whether there is a batch update in progress.
   bool batch_update_;
 
-  scoped_ptr<CookiesTreeModelUtil> model_util_;
+  std::unique_ptr<CookiesTreeModelUtil> model_util_;
 
   DISALLOW_COPY_AND_ASSIGN(CookiesViewHandler);
 };

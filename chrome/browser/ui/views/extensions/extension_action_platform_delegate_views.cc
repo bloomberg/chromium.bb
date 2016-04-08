@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,10 +30,10 @@
 using extensions::ActionInfo;
 
 // static
-scoped_ptr<ExtensionActionPlatformDelegate>
+std::unique_ptr<ExtensionActionPlatformDelegate>
 ExtensionActionPlatformDelegate::Create(
     ExtensionActionViewController* controller) {
-  return make_scoped_ptr(new ExtensionActionPlatformDelegateViews(controller));
+  return base::WrapUnique(new ExtensionActionPlatformDelegateViews(controller));
 }
 
 ExtensionActionPlatformDelegateViews::ExtensionActionPlatformDelegateViews(
@@ -72,7 +73,7 @@ void ExtensionActionPlatformDelegateViews::RegisterCommand() {
 }
 
 void ExtensionActionPlatformDelegateViews::ShowPopup(
-    scoped_ptr<extensions::ExtensionViewHost> host,
+    std::unique_ptr<extensions::ExtensionViewHost> host,
     bool grant_tab_permissions,
     ExtensionActionViewController::PopupShowAction show_action) {
   // TOP_RIGHT is correct for both RTL and LTR, because the views platform

@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/webui/copresence_ui.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "chrome/browser/ui/webui/copresence_ui_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -17,8 +18,8 @@ using content::WebUIDataSource;
 
 namespace {
 
-scoped_ptr<WebUIDataSource> CreateDataSource() {
-  scoped_ptr<WebUIDataSource> data_source(
+std::unique_ptr<WebUIDataSource> CreateDataSource() {
+  std::unique_ptr<WebUIDataSource> data_source(
       WebUIDataSource::Create(chrome::kChromeUICopresenceHost));
 
   data_source->AddLocalizedString("title", IDS_COPRESENCE_TITLE);

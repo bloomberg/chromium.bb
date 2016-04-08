@@ -672,9 +672,8 @@ void WebsiteSettings::PresentSitePermissions() {
       continue;
 
     content_settings::SettingInfo info;
-    scoped_ptr<base::Value> value =
-        content_settings_->GetWebsiteSetting(
-            site_url_, site_url_, permission_info.type, std::string(), &info);
+    std::unique_ptr<base::Value> value = content_settings_->GetWebsiteSetting(
+        site_url_, site_url_, permission_info.type, std::string(), &info);
     DCHECK(value.get());
     if (value->GetType() == base::Value::TYPE_INTEGER) {
       permission_info.setting =
@@ -710,7 +709,7 @@ void WebsiteSettings::PresentSitePermissions() {
     ChooserContextBase* context = ui_info.get_context(profile_);
     const GURL origin = site_url_.GetOrigin();
     auto chosen_objects = context->GetGrantedObjects(origin, origin);
-    for (scoped_ptr<base::DictionaryValue>& object : chosen_objects) {
+    for (std::unique_ptr<base::DictionaryValue>& object : chosen_objects) {
       chosen_object_info_list.push_back(
           new WebsiteSettingsUI::ChosenObjectInfo(ui_info, std::move(object)));
     }

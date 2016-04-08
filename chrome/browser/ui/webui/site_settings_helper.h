@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_WEBUI_SITE_SETTINGS_HELPER_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -50,7 +50,7 @@ void GetExceptionsFromHostContentSettingsMap(
 // for the content settings |type| mic or camera.
 void GetPolicyAllowedUrls(
     ContentSettingsType type,
-    std::vector<scoped_ptr<base::DictionaryValue>>* exceptions,
+    std::vector<std::unique_ptr<base::DictionaryValue>>* exceptions,
     content::WebUI* web_ui);
 
 }  // namespace site_settings

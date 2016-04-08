@@ -66,7 +66,7 @@ class PanelExtensionWindowController : public extensions::WindowController {
       const extensions::Extension* extension) const override;
   base::DictionaryValue* CreateTabValue(const extensions::Extension* extension,
                                         int tab_index) const override;
-  scoped_ptr<extensions::api::tabs::Tab> CreateTabObject(
+  std::unique_ptr<extensions::api::tabs::Tab> CreateTabObject(
       const extensions::Extension* extension,
       int tab_index) const override;
   bool CanClose(Reason* reason) const override;
@@ -118,7 +118,7 @@ base::DictionaryValue* PanelExtensionWindowController::CreateTabValue(
   return CreateTabObject(extension, tab_index)->ToValue().release();
 }
 
-scoped_ptr<extensions::api::tabs::Tab>
+std::unique_ptr<extensions::api::tabs::Tab>
 PanelExtensionWindowController::CreateTabObject(
     const extensions::Extension* extension,
     int tab_index) const {
@@ -129,7 +129,7 @@ PanelExtensionWindowController::CreateTabObject(
   if (!web_contents)
     return nullptr;
 
-  scoped_ptr<extensions::api::tabs::Tab> tab_object(
+  std::unique_ptr<extensions::api::tabs::Tab> tab_object(
       new extensions::api::tabs::Tab);
   tab_object->id.reset(new int(SessionTabHelper::IdForTab(web_contents)));
   tab_object->index = 0;

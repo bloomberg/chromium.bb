@@ -26,7 +26,7 @@ class WindowedInstallDialogController : public ExtensionInstallViewDelegate {
   WindowedInstallDialogController(
       ExtensionInstallPromptShowParams* show_params,
       const ExtensionInstallPrompt::DoneCallback& callback,
-      scoped_ptr<ExtensionInstallPrompt::Prompt> prompt);
+      std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt);
   ~WindowedInstallDialogController() override;
 
   // Invoked by the -[NSWindow windowWillClose:] notification after a dialog

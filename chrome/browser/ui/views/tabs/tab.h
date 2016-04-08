@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_H_
 
 #include <list>
+#include <memory>
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -346,12 +346,12 @@ class Tab : public gfx::AnimationDelegate,
   bool should_display_crashed_favicon_;
 
   // Whole-tab throbbing "pulse" animation.
-  scoped_ptr<gfx::ThrobAnimation> pulse_animation_;
+  std::unique_ptr<gfx::ThrobAnimation> pulse_animation_;
 
-  scoped_ptr<gfx::MultiAnimation> pinned_title_change_animation_;
+  std::unique_ptr<gfx::MultiAnimation> pinned_title_change_animation_;
 
   // Crash icon animation (in place of favicon).
-  scoped_ptr<gfx::LinearAnimation> crash_icon_animation_;
+  std::unique_ptr<gfx::LinearAnimation> crash_icon_animation_;
 
   scoped_refptr<gfx::AnimationContainer> animation_container_;
 

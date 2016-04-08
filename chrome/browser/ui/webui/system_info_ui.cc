@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ui/webui/system_info_ui.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_piece.h"
@@ -64,7 +64,7 @@ class SystemInfoUIHTMLSource : public content::URLDataSource{
  private:
   ~SystemInfoUIHTMLSource() override {}
 
-  void SysInfoComplete(scoped_ptr<SystemLogsResponse> response);
+  void SysInfoComplete(std::unique_ptr<SystemLogsResponse> response);
   void RequestComplete();
   void WaitForData();
 
@@ -72,7 +72,7 @@ class SystemInfoUIHTMLSource : public content::URLDataSource{
   std::string path_;
   content::URLDataSource::GotDataCallback callback_;
 
-  scoped_ptr<SystemLogsResponse> response_;
+  std::unique_ptr<SystemLogsResponse> response_;
   base::WeakPtrFactory<SystemInfoUIHTMLSource> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(SystemInfoUIHTMLSource);
 };
@@ -116,9 +116,8 @@ void SystemInfoUIHTMLSource::StartDataRequest(
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-
 void SystemInfoUIHTMLSource::SysInfoComplete(
-    scoped_ptr<SystemLogsResponse> sys_info) {
+    std::unique_ptr<SystemLogsResponse> sys_info) {
   response_ = std::move(sys_info);
   RequestComplete();
 }

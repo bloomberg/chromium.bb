@@ -5,11 +5,12 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_CHROME_CONSTRAINED_WINDOW_VIEWS_CLIENT_H_
 #define CHROME_BROWSER_UI_VIEWS_CHROME_CONSTRAINED_WINDOW_VIEWS_CLIENT_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/constrained_window/constrained_window_views_client.h"
 
 // Creates a ConstrainedWindowViewsClient for the Chrome environment.
-scoped_ptr<constrained_window::ConstrainedWindowViewsClient>
+std::unique_ptr<constrained_window::ConstrainedWindowViewsClient>
 CreateChromeConstrainedWindowViewsClient();
 
 #endif  // CHROME_BROWSER_UI_VIEWS_CHROME_CONSTRAINED_WINDOW_VIEWS_CLIENT_H_

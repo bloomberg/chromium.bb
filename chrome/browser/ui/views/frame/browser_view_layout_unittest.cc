@@ -189,9 +189,9 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
   }
 
  private:
-  scoped_ptr<BrowserViewLayout> layout_;
+  std::unique_ptr<BrowserViewLayout> layout_;
   MockBrowserViewLayoutDelegate* delegate_;  // Owned by |layout_|.
-  scoped_ptr<MockView> root_view_;
+  std::unique_ptr<MockView> root_view_;
 
   // Views owned by |root_view_|.
   MockView* top_container_;
@@ -202,7 +202,7 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
   MockView* contents_web_view_;
   MockView* devtools_web_view_;
 
-  scoped_ptr<MockImmersiveModeController> immersive_mode_controller_;
+  std::unique_ptr<MockImmersiveModeController> immersive_mode_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserViewLayoutTest);
 };
@@ -243,7 +243,7 @@ TEST_F(BrowserViewLayoutTest, Layout) {
 }
 
 TEST_F(BrowserViewLayoutTest, LayoutDownloadShelf) {
-  scoped_ptr<MockView> download_shelf(new MockView(gfx::Size(800, 50)));
+  std::unique_ptr<MockView> download_shelf(new MockView(gfx::Size(800, 50)));
   layout()->set_download_shelf(download_shelf.get());
 
   // If download shelf doesn't need layout, it doesn't move the bottom edge.

@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_APP_MENU_MODEL_H_
 #define CHROME_BROWSER_UI_TOOLBAR_APP_MENU_MODEL_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -116,7 +117,7 @@ class ToolsMenuModel : public ui::SimpleMenuModel {
  private:
   void Build(Browser* browser);
 
-  scoped_ptr<EncodingMenuModel> encoding_menu_model_;
+  std::unique_ptr<EncodingMenuModel> encoding_menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolsMenuModel);
 };
@@ -221,31 +222,32 @@ class AppMenuModel : public ui::SimpleMenuModel,
   bool uma_action_recorded_;
 
   // Models for the special menu items with buttons.
-  scoped_ptr<ui::ButtonMenuItemModel> edit_menu_item_model_;
-  scoped_ptr<ui::ButtonMenuItemModel> zoom_menu_item_model_;
+  std::unique_ptr<ui::ButtonMenuItemModel> edit_menu_item_model_;
+  std::unique_ptr<ui::ButtonMenuItemModel> zoom_menu_item_model_;
 
   // Label of the zoom label in the zoom menu item.
   base::string16 zoom_label_;
 
 #if defined(GOOGLE_CHROME_BUILD)
   // Help menu.
-  scoped_ptr<HelpMenuModel> help_menu_model_;
+  std::unique_ptr<HelpMenuModel> help_menu_model_;
 #endif
 
   // Tools menu.
-  scoped_ptr<ToolsMenuModel> tools_menu_model_;
+  std::unique_ptr<ToolsMenuModel> tools_menu_model_;
 
   // Bookmark submenu.
-  scoped_ptr<BookmarkSubMenuModel> bookmark_sub_menu_model_;
+  std::unique_ptr<BookmarkSubMenuModel> bookmark_sub_menu_model_;
 
   // Recent Tabs submenu.
-  scoped_ptr<RecentTabsSubMenuModel> recent_tabs_sub_menu_model_;
+  std::unique_ptr<RecentTabsSubMenuModel> recent_tabs_sub_menu_model_;
 
   ui::AcceleratorProvider* provider_;  // weak
 
   Browser* browser_;  // weak
 
-  scoped_ptr<content::HostZoomMap::Subscription> browser_zoom_subscription_;
+  std::unique_ptr<content::HostZoomMap::Subscription>
+      browser_zoom_subscription_;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AppMenuModel);

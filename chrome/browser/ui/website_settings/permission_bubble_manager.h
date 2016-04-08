@@ -167,7 +167,7 @@ class PermissionBubbleManager
   PermissionBubbleView::Factory view_factory_;
 
   // The UI surface to be used to display the permissions requests.
-  scoped_ptr<PermissionBubbleView> view_;
+  std::unique_ptr<PermissionBubbleView> view_;
 
   std::vector<PermissionBubbleRequest*> requests_;
   std::vector<PermissionBubbleRequest*> queued_requests_;

@@ -56,7 +56,7 @@ namespace app_list {
 
 PeopleResult::PeopleResult(Profile* profile,
                            AppListControllerDelegate* controller,
-                           scoped_ptr<Person> person)
+                           std::unique_ptr<Person> person)
     : profile_(profile),
       controller_(controller),
       person_(std::move(person)),
@@ -110,8 +110,8 @@ void PeopleResult::InvokeAction(int action_index, int event_flags) {
   }
 }
 
-scoped_ptr<SearchResult> PeopleResult::Duplicate() const {
-  return scoped_ptr<SearchResult>(
+std::unique_ptr<SearchResult> PeopleResult::Duplicate() const {
+  return std::unique_ptr<SearchResult>(
       new PeopleResult(profile_, controller_, person_->Duplicate()));
 }
 
@@ -160,7 +160,7 @@ void PeopleResult::OpenChat() {
   target.id = person_->owner_id;
   request.to.push_back(std::move(target));
 
-  scoped_ptr<extensions::Event> event(new extensions::Event(
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::HANGOUTS_PRIVATE_ON_HANGOUT_REQUESTED,
       OnHangoutRequested::kEventName, OnHangoutRequested::Create(request)));
 

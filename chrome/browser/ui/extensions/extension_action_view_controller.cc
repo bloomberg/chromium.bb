@@ -282,7 +282,7 @@ bool ExtensionActionViewController::GetExtensionCommand(
       extension_->id(), CommandService::ACTIVE, command, NULL);
 }
 
-scoped_ptr<IconWithBadgeImageSource>
+std::unique_ptr<IconWithBadgeImageSource>
 ExtensionActionViewController::GetIconImageSourceForTesting(
     content::WebContents* web_contents,
     const gfx::Size& size) {
@@ -318,7 +318,7 @@ bool ExtensionActionViewController::TriggerPopupWithUrl(
   if (already_showing)
     return false;
 
-  scoped_ptr<extensions::ExtensionViewHost> host(
+  std::unique_ptr<extensions::ExtensionViewHost> host(
       extensions::ExtensionViewHostFactory::CreatePopupHost(popup_url,
                                                             browser_));
   if (!host)
@@ -347,7 +347,7 @@ bool ExtensionActionViewController::TriggerPopupWithUrl(
 }
 
 void ExtensionActionViewController::ShowPopup(
-    scoped_ptr<extensions::ExtensionViewHost> popup_host,
+    std::unique_ptr<extensions::ExtensionViewHost> popup_host,
     bool grant_tab_permissions,
     PopupShowAction show_action) {
   // It's possible that the popup should be closed before it finishes opening
@@ -371,17 +371,17 @@ void ExtensionActionViewController::OnPopupClosed() {
   view_delegate_->OnPopupClosed();
 }
 
-scoped_ptr<IconWithBadgeImageSource>
+std::unique_ptr<IconWithBadgeImageSource>
 ExtensionActionViewController::GetIconImageSource(
     content::WebContents* web_contents,
     const gfx::Size& size) {
   int tab_id = SessionTabHelper::IdForTab(web_contents);
-  scoped_ptr<IconWithBadgeImageSource> image_source(
+  std::unique_ptr<IconWithBadgeImageSource> image_source(
       new IconWithBadgeImageSource(size));
 
   image_source->SetIcon(icon_factory_.GetIcon(tab_id));
 
-  scoped_ptr<IconWithBadgeImageSource::Badge> badge;
+  std::unique_ptr<IconWithBadgeImageSource::Badge> badge;
   std::string badge_text = extension_action_->GetBadgeText(tab_id);
   if (!badge_text.empty()) {
     badge.reset(new IconWithBadgeImageSource::Badge(

@@ -16,8 +16,8 @@
 
 // static
 void CollectedCookiesInfoBarDelegate::Create(InfoBarService* infobar_service) {
-  infobar_service->AddInfoBar(
-      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
+  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
+      std::unique_ptr<ConfirmInfoBarDelegate>(
           new CollectedCookiesInfoBarDelegate())));
 }
 

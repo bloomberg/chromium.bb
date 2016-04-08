@@ -27,15 +27,15 @@ namespace {
 // A helper class that will create FakeURLFetcher and record the requested URLs.
 class TestURLFetcherCallback {
  public:
-  scoped_ptr<net::FakeURLFetcher> CreateURLFetcher(
+  std::unique_ptr<net::FakeURLFetcher> CreateURLFetcher(
       const GURL& url,
       net::URLFetcherDelegate* d,
       const std::string& response_data,
       net::HttpStatusCode response_code,
       net::URLRequestStatus::Status status) {
     OnRequestDone(url);
-    return scoped_ptr<net::FakeURLFetcher>(new net::FakeURLFetcher(
-        url, d, response_data, response_code, status));
+    return std::unique_ptr<net::FakeURLFetcher>(
+        new net::FakeURLFetcher(url, d, response_data, response_code, status));
   }
 
   MOCK_METHOD1(OnRequestDone, void(const GURL&));
@@ -385,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   ASSERT_FALSE(controller()->current_autosignin_prompt());
 
   // Blocked automatic sign-in will not prompt:
-  scoped_ptr<autofill::PasswordForm> blocked_form(
+  std::unique_ptr<autofill::PasswordForm> blocked_form(
       new autofill::PasswordForm(form));
   client()->NotifyUserCouldBeAutoSignedIn(std::move(blocked_form));
   ASSERT_FALSE(controller()->current_autosignin_prompt());

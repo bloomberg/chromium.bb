@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_APP_LAUNCHER_LOGIN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_APP_LAUNCHER_LOGIN_HANDLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 class Profile;
@@ -65,7 +66,7 @@ class AppLauncherLoginHandler : public content::WebUIMessageHandler {
 
   // Watches this web UI's profile for info changes (e.g. authenticated username
   // changes).
-  scoped_ptr<ProfileInfoWatcher> profile_info_watcher_;
+  std::unique_ptr<ProfileInfoWatcher> profile_info_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLauncherLoginHandler);
 };

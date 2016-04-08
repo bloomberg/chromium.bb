@@ -6,9 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/bundle_installer.h"
@@ -122,7 +124,7 @@ bool ExtensionInstalledBubble::ShouldShow() {
 }
 
 // Implemented here to create the platform specific instance of the BubbleUi.
-scoped_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
+std::unique_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
   // |controller| is owned by the parent window.
   ExtensionInstalledBubbleController* controller =
       [[ExtensionInstalledBubbleController alloc]
@@ -131,7 +133,7 @@ scoped_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
 
   // The bridge to the C++ object that performs shared logic across platforms.
   // This tells the controller when to show the bubble.
-  return make_scoped_ptr(new ExtensionInstalledBubbleBridge(controller));
+  return base::WrapUnique(new ExtensionInstalledBubbleBridge(controller));
 }
 
 @implementation ExtensionInstalledBubbleController
@@ -605,7 +607,7 @@ scoped_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
 }
 
 - (IBAction)onAppShortcutClicked:(id)sender {
-  scoped_ptr<extensions::ExtensionInstallUI> install_ui(
+  std::unique_ptr<extensions::ExtensionInstallUI> install_ui(
       extensions::CreateExtensionInstallUI(browser_->profile()));
   install_ui->OpenAppInstalledUI([self extension]->id());
 }

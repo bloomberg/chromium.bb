@@ -18,9 +18,9 @@ MockInputMethodManagerWithInputMethods::
     ~MockInputMethodManagerWithInputMethods() {
 }
 
-scoped_ptr<input_method::InputMethodDescriptors>
+std::unique_ptr<input_method::InputMethodDescriptors>
 MockInputMethodManagerWithInputMethods::GetSupportedInputMethods() const {
-  return scoped_ptr<input_method::InputMethodDescriptors>(
+  return std::unique_ptr<input_method::InputMethodDescriptors>(
       new input_method::InputMethodDescriptors(descriptors_));
 }
 

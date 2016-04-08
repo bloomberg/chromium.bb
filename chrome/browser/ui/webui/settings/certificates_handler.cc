@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <stddef.h>
 #include <stdint.h>
+
 #include <algorithm>
 #include <map>
 #include <utility>
@@ -17,6 +18,7 @@
 #include "base/i18n/string_compare.h"
 #include "base/id_map.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/posix/safe_strerror.h"
 #include "base/strings/string_number_conversions.h"
@@ -494,7 +496,8 @@ void CertificatesHandler::HandleGetCATrust(const base::ListValue* args) {
 
   net::NSSCertDatabase::TrustBits trust_bits =
       certificate_manager_model_->cert_db()->GetCertTrust(cert, net::CA_CERT);
-  scoped_ptr<base::DictionaryValue> ca_trust_info(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> ca_trust_info(
+      new base::DictionaryValue);
   ca_trust_info->SetBoolean(
       kSslField,
       static_cast<bool>(trust_bits & net::NSSCertDatabase::TRUSTED_SSL));
@@ -972,7 +975,7 @@ void CertificatesHandler::HandleDeleteCertificate(const base::ListValue* args) {
 }
 
 void CertificatesHandler::OnCertificateManagerModelCreated(
-    scoped_ptr<CertificateManagerModel> model) {
+    std::unique_ptr<CertificateManagerModel> model) {
   certificate_manager_model_ = std::move(model);
   CertificateManagerModelReady();
 }
@@ -1015,7 +1018,7 @@ void CertificatesHandler::PopulateTree(
     const std::string& tab_name,
     net::CertType type,
     const net::CertificateList& web_trust_certs) {
-  scoped_ptr<icu::Collator> collator;
+  std::unique_ptr<icu::Collator> collator;
   UErrorCode error = U_ZERO_ERROR;
   collator.reset(icu::Collator::createInstance(
       icu::Locale(g_browser_process->GetApplicationLocale().c_str()), error));
@@ -1027,7 +1030,8 @@ void CertificatesHandler::PopulateTree(
   certificate_manager_model_->FilterAndBuildOrgGroupingMap(type, &map);
 
   {
-    scoped_ptr<base::ListValue> nodes = make_scoped_ptr(new base::ListValue());
+    std::unique_ptr<base::ListValue> nodes =
+        base::WrapUnique(new base::ListValue());
     for (CertificateManagerModel::OrgGroupingMap::iterator i = map.begin();
          i != map.end(); ++i) {
       // Populate first level (org name).
@@ -1092,7 +1096,7 @@ void CertificatesHandler::RejectCallback(const base::Value& response) {
 
 void CertificatesHandler::RejectCallbackWithError(const std::string& title,
                                                   const std::string& error) {
-  scoped_ptr<base::DictionaryValue> error_info(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> error_info(new base::DictionaryValue);
   error_info->SetString(kErrorTitle, title);
   error_info->SetString(kErrorDescription, error);
   RejectCallback(*error_info);
@@ -1112,8 +1116,8 @@ void CertificatesHandler::RejectCallbackWithImportError(
     error = l10n_util::GetStringUTF8(
         IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_SOME_NOT_IMPORTED);
 
-  scoped_ptr<base::ListValue> cert_error_list =
-      make_scoped_ptr(new base::ListValue());
+  std::unique_ptr<base::ListValue> cert_error_list =
+      base::WrapUnique(new base::ListValue());
   for (size_t i = 0; i < not_imported.size(); ++i) {
     const net::NSSCertDatabase::ImportCertFailure& failure = not_imported[i];
     base::DictionaryValue* dict = new base::DictionaryValue;
@@ -1123,11 +1127,11 @@ void CertificatesHandler::RejectCallbackWithImportError(
     cert_error_list->Append(dict);
   }
 
-  scoped_ptr<base::DictionaryValue> error_info(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> error_info(new base::DictionaryValue);
   error_info->SetString(kErrorTitle, title);
   error_info->SetString(kErrorDescription, error);
   error_info->Set(kCertificateErrors,
-                  make_scoped_ptr(cert_error_list.release()));
+                  base::WrapUnique(cert_error_list.release()));
   RejectCallback(*error_info);
 }
 

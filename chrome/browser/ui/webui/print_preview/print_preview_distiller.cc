@@ -42,9 +42,10 @@ class PrintPreviewDistiller::WebContentsDelegateImpl
       public content::NotificationObserver,
       public content::WebContentsObserver {
  public:
-  explicit WebContentsDelegateImpl(WebContents* web_contents,
-                                   scoped_ptr<base::DictionaryValue> settings,
-                                   const base::Closure on_failed_callback)
+  explicit WebContentsDelegateImpl(
+      WebContents* web_contents,
+      std::unique_ptr<base::DictionaryValue> settings,
+      const base::Closure on_failed_callback)
       : content::WebContentsObserver(web_contents),
         settings_(std::move(settings)),
         on_failed_callback_(on_failed_callback) {
@@ -202,7 +203,7 @@ class PrintPreviewDistiller::WebContentsDelegateImpl
   }
 
  private:
-  scoped_ptr<base::DictionaryValue> settings_;
+  std::unique_ptr<base::DictionaryValue> settings_;
   content::NotificationRegistrar notification_registrar_;
 
   // The callback called when the preview failed.
@@ -220,7 +221,7 @@ bool PrintPreviewDistiller::IsEnabled() {
 PrintPreviewDistiller::PrintPreviewDistiller(
     WebContents* source_web_contents,
     const base::Closure on_failed_callback,
-    scoped_ptr<base::DictionaryValue> settings) {
+    std::unique_ptr<base::DictionaryValue> settings) {
   content::SessionStorageNamespace* session_storage_namespace =
       source_web_contents->GetController().GetDefaultSessionStorageNamespace();
   CreateDestinationWebContents(session_storage_namespace, source_web_contents,
@@ -233,7 +234,7 @@ PrintPreviewDistiller::PrintPreviewDistiller(
 void PrintPreviewDistiller::CreateDestinationWebContents(
     SessionStorageNamespace* session_storage_namespace,
     WebContents* source_web_contents,
-    scoped_ptr<base::DictionaryValue> settings,
+    std::unique_ptr<base::DictionaryValue> settings,
     const base::Closure on_failed_callback) {
   DCHECK(!web_contents_);
 

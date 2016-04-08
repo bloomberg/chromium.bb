@@ -55,8 +55,8 @@ void ArcAppResult::Open(int event_flags) {
   controller()->DismissView();
 }
 
-scoped_ptr<SearchResult> ArcAppResult::Duplicate() const {
-  scoped_ptr<SearchResult> copy(
+std::unique_ptr<SearchResult> ArcAppResult::Duplicate() const {
+  std::unique_ptr<SearchResult> copy(
       new ArcAppResult(profile(), app_id(), controller(),
                        display_type() == DISPLAY_RECOMMENDATION));
   copy->set_title(title());

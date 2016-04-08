@@ -7,7 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_painter.h"
 
@@ -16,7 +17,7 @@ class AppMenuButtonIconPainterDelegateMac;
 // Button for the app toolbar button.
 @interface AppToolbarButton : MenuButton {
  @private
-  scoped_ptr<AppMenuButtonIconPainterDelegateMac> delegate_;
+  std::unique_ptr<AppMenuButtonIconPainterDelegateMac> delegate_;
   AppMenuIconPainter::Severity severity_;
 }
 

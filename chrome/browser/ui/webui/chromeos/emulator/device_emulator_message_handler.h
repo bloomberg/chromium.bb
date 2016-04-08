@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_EMULATOR_DEVICE_EMULATOR_MESSAGE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_EMULATOR_DEVICE_EMULATOR_MESSAGE_HANDLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -102,17 +103,17 @@ class DeviceEmulatorMessageHandler
 
   // Builds a dictionary with each key representing a property of the device
   // with path |object_path|.
-  scoped_ptr<base::DictionaryValue> GetDeviceInfo(
+  std::unique_ptr<base::DictionaryValue> GetDeviceInfo(
       const dbus::ObjectPath& object_path);
 
   bluez::FakeBluetoothDeviceClient* fake_bluetooth_device_client_;
-  scoped_ptr<BluetoothObserver> bluetooth_observer_;
+  std::unique_ptr<BluetoothObserver> bluetooth_observer_;
 
   FakeCrasAudioClient* fake_cras_audio_client_;
-  scoped_ptr<CrasAudioObserver> cras_audio_observer_;
+  std::unique_ptr<CrasAudioObserver> cras_audio_observer_;
 
   FakePowerManagerClient* fake_power_manager_client_;
-  scoped_ptr<PowerObserver> power_observer_;
+  std::unique_ptr<PowerObserver> power_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceEmulatorMessageHandler);
 };

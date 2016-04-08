@@ -7,10 +7,11 @@
 
 #include <windows.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/status_icons/status_tray.h"
 
 class StatusIconWin;
@@ -54,7 +55,7 @@ class StatusTrayWin : public StatusTray {
   UINT NextIconId();
 
   void SetStatusTrayStateChangerProxyForTest(
-      scoped_ptr<StatusTrayStateChangerProxy> proxy);
+      std::unique_ptr<StatusTrayStateChangerProxy> proxy);
 
   // The unique icon ID we will assign to the next icon.
   UINT next_icon_id_;
@@ -74,7 +75,7 @@ class StatusTrayWin : public StatusTray {
 
   // Manages changes performed on a background thread to manipulate visibility
   // of notification icons.
-  scoped_ptr<StatusTrayStateChangerProxy> state_changer_proxy_;
+  std::unique_ptr<StatusTrayStateChangerProxy> state_changer_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusTrayWin);
 };

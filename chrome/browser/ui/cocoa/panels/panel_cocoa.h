@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_UI_COCOA_PANELS_PANEL_COCOA_H_
 
 #import <Foundation/Foundation.h>
+
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -92,7 +94,7 @@ class PanelCocoa : public NativePanel {
 
   void setBoundsInternal(const gfx::Rect& bounds, bool animate);
 
-  scoped_ptr<Panel> panel_;
+  std::unique_ptr<Panel> panel_;
   PanelWindowControllerCocoa* controller_;  // Weak, owns us.
 
   // These use platform-independent screen coordinates, with (0,0) at

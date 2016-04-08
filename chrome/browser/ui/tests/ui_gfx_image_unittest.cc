@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
@@ -19,11 +20,11 @@ namespace {
 TEST(UiGfxImageTest, ViewsImageView) {
   gfx::Image image(gfx::test::CreatePlatformImage());
 
-  scoped_ptr<views::View> container(new views::View());
+  std::unique_ptr<views::View> container(new views::View());
   container->SetBounds(0, 0, 200, 200);
   container->SetVisible(true);
 
-  scoped_ptr<views::ImageView> image_view(new views::ImageView());
+  std::unique_ptr<views::ImageView> image_view(new views::ImageView());
   image_view->SetImage(*image.ToImageSkia());
   container->AddChildView(image_view.get());
 }

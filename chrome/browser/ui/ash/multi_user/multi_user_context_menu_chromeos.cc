@@ -65,8 +65,9 @@ void MultiUserContextMenuChromeos::ExecuteCommand(int command_id,
 }  // namespace
 }  // namespace chromeos
 
-scoped_ptr<ui::MenuModel> CreateMultiUserContextMenu(aura::Window* window) {
-  scoped_ptr<ui::MenuModel> model;
+std::unique_ptr<ui::MenuModel> CreateMultiUserContextMenu(
+    aura::Window* window) {
+  std::unique_ptr<ui::MenuModel> model;
   ash::SessionStateDelegate* delegate =
       ash::Shell::GetInstance()->session_state_delegate();
   if (!delegate)

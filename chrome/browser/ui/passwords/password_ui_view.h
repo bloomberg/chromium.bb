@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -45,12 +45,13 @@ class PasswordUIView {
   // |password_list| the list of saved password entries.
   // |show_passwords| true if the passwords should be shown in the UI.
   virtual void SetPasswordList(
-      const std::vector<scoped_ptr<autofill::PasswordForm>>& password_list) = 0;
+      const std::vector<std::unique_ptr<autofill::PasswordForm>>&
+          password_list) = 0;
 
   // Updates the list of password exceptions in the UI.
   // |password_exception_list| The list of saved password exceptions.
   virtual void SetPasswordExceptionList(
-      const std::vector<scoped_ptr<autofill::PasswordForm>>&
+      const std::vector<std::unique_ptr<autofill::PasswordForm>>&
           password_exception_list) = 0;
 #if !defined(OS_ANDROID)
   // Returns the top level NativeWindow for the view.

@@ -263,7 +263,7 @@ const ContentTypeToNibPath kNibPaths[] = {
        parentWindow:(NSWindow*)parentWindow
          anchoredAt:(NSPoint)anchoredAt {
   // This method takes ownership of |contentSettingBubbleModel| in all cases.
-  scoped_ptr<ContentSettingBubbleModel> model(contentSettingBubbleModel);
+  std::unique_ptr<ContentSettingBubbleModel> model(contentSettingBubbleModel);
   DCHECK(model.get());
   observerBridge_.reset(
     new ContentSettingBubbleWebContentsObserverBridge(webContents, self));

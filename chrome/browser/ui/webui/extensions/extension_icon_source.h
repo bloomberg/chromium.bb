@@ -152,9 +152,9 @@ class ExtensionIconSource : public content::URLDataSource,
   // Maps request_ids to ExtensionIconRequests.
   std::map<int, ExtensionIconRequest*> request_map_;
 
-  scoped_ptr<SkBitmap> default_app_data_;
+  std::unique_ptr<SkBitmap> default_app_data_;
 
-  scoped_ptr<SkBitmap> default_extension_data_;
+  std::unique_ptr<SkBitmap> default_extension_data_;
 
   base::CancelableTaskTracker cancelable_task_tracker_;
 

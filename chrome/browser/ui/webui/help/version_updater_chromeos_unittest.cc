@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/webui/help/version_updater_chromeos.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -47,10 +48,10 @@ class VersionUpdaterCrosTest : public ::testing::Test {
 
   void SetUp() override {
     fake_update_engine_client_ = new FakeUpdateEngineClient();
-    scoped_ptr<DBusThreadManagerSetter> dbus_setter =
+    std::unique_ptr<DBusThreadManagerSetter> dbus_setter =
         DBusThreadManager::GetSetterForTesting();
     dbus_setter->SetUpdateEngineClient(
-        scoped_ptr<UpdateEngineClient>(fake_update_engine_client_));
+        std::unique_ptr<UpdateEngineClient>(fake_update_engine_client_));
 
     EXPECT_CALL(*mock_user_manager_, IsCurrentUserOwner())
         .WillRepeatedly(Return(false));
@@ -78,7 +79,7 @@ class VersionUpdaterCrosTest : public ::testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<VersionUpdater> version_updater_;
+  std::unique_ptr<VersionUpdater> version_updater_;
   FakeUpdateEngineClient* fake_update_engine_client_;  // Not owned.
 
   MockUserManager* mock_user_manager_;  // Not owned.

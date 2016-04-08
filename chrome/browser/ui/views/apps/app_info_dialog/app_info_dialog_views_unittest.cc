@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_dialog_views.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
@@ -154,7 +155,7 @@ TEST_F(AppInfoDialogViewsTest, DestroyedProfileClosesDialog) {
 
 // Tests that the dialog does not close when a different profile is destroyed.
 TEST_F(AppInfoDialogViewsTest, DestroyedOtherProfileDoesNotCloseDialog) {
-  scoped_ptr<TestingProfile> other_profile(new TestingProfile);
+  std::unique_ptr<TestingProfile> other_profile(new TestingProfile);
   extension_environment_.CreateExtensionServiceForProfile(other_profile.get());
 
   scoped_refptr<const extensions::Extension> other_app =

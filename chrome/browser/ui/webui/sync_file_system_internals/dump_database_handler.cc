@@ -26,7 +26,7 @@ void DumpDatabaseHandler::RegisterMessages() {
 }
 
 void DumpDatabaseHandler::GetDatabaseDump(const base::ListValue*) {
-  scoped_ptr<base::ListValue> list;
+  std::unique_ptr<base::ListValue> list;
   sync_file_system::SyncFileSystemService* sync_service =
       SyncFileSystemServiceFactory::GetForProfile(profile_);
   if (sync_service) {

@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/passwords/password_dialog_controller_impl.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
@@ -79,7 +80,7 @@ class PasswordDialogControllerTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
-  scoped_ptr<content::WebContents> test_web_contents_;
+  std::unique_ptr<content::WebContents> test_web_contents_;
   // Owned by |test_web_contents_|.
   ManagePasswordsUIControllerMock* ui_controller_mock_;
   PasswordDialogControllerImpl controller_;
@@ -90,11 +91,11 @@ TEST_F(PasswordDialogControllerTest, ShowAccountChooser) {
   StrictMock<MockPasswordPrompt> prompt;
   autofill::PasswordForm local_form = GetLocalForm();
   autofill::PasswordForm idp_form = GetFederationProviderForm();
-  std::vector<scoped_ptr<autofill::PasswordForm>> locals;
-  locals.push_back(make_scoped_ptr(new autofill::PasswordForm(local_form)));
+  std::vector<std::unique_ptr<autofill::PasswordForm>> locals;
+  locals.push_back(base::WrapUnique(new autofill::PasswordForm(local_form)));
   autofill::PasswordForm* local_form_ptr = locals[0].get();
-  std::vector<scoped_ptr<autofill::PasswordForm>> federations;
-  federations.push_back(make_scoped_ptr(new autofill::PasswordForm(idp_form)));
+  std::vector<std::unique_ptr<autofill::PasswordForm>> federations;
+  federations.push_back(base::WrapUnique(new autofill::PasswordForm(idp_form)));
 
   EXPECT_CALL(prompt, ShowAccountChooser());
   controller().ShowAccountChooser(&prompt,

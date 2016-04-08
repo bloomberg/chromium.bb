@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/app_list/profile_loader.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/profile_loader.h"
 #include "chrome/browser/ui/app_list/test/fake_profile.h"
 #include "chrome/browser/ui/app_list/test/fake_profile_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,10 +47,10 @@ class ProfileLoaderUnittest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<ProfileLoader> loader_;
-  scoped_ptr<FakeProfileStore> profile_store_;
-  scoped_ptr<FakeProfile> profile1_;
-  scoped_ptr<FakeProfile> profile2_;
+  std::unique_ptr<ProfileLoader> loader_;
+  std::unique_ptr<FakeProfileStore> profile_store_;
+  std::unique_ptr<FakeProfile> profile1_;
+  std::unique_ptr<FakeProfile> profile2_;
   Profile* last_callback_result_;
 };
 

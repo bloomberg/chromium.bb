@@ -1421,12 +1421,12 @@ void Browser::ShowCertificateViewerInDevTools(
     devtools_window->ShowCertificateViewer(cert_id);
 }
 
-scoped_ptr<content::BluetoothChooser> Browser::RunBluetoothChooser(
+std::unique_ptr<content::BluetoothChooser> Browser::RunBluetoothChooser(
     content::RenderFrameHost* frame,
     const content::BluetoothChooser::EventHandler& event_handler) {
-  scoped_ptr<BluetoothChooserDesktop> bluetooth_chooser_desktop(
+  std::unique_ptr<BluetoothChooserDesktop> bluetooth_chooser_desktop(
       new BluetoothChooserDesktop(event_handler));
-  scoped_ptr<BluetoothChooserBubbleController> bubble_controller(
+  std::unique_ptr<BluetoothChooserBubbleController> bubble_controller(
       new BluetoothChooserBubbleController(frame));
   BluetoothChooserBubbleController* bubble_controller_ptr =
       bubble_controller.get();

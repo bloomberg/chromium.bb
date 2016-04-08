@@ -10,6 +10,7 @@
 #include <cmath>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
@@ -53,8 +54,8 @@ const CGFloat kVerticalPadding = 10.0f;
 
 }  // namespace
 
-scoped_ptr<BubbleUi> ChooserBubbleController::BuildBubbleUi() {
-  return make_scoped_ptr(new ChooserBubbleUiCocoa(browser_, this));
+std::unique_ptr<BubbleUi> ChooserBubbleController::BuildBubbleUi() {
+  return base::WrapUnique(new ChooserBubbleUiCocoa(browser_, this));
 }
 
 @interface ChooserBubbleUiController

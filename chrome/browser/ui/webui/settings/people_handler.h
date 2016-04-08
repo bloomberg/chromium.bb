@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_PEOPLE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_PEOPLE_HANDLER_H_
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
@@ -99,7 +100,7 @@ class PeopleHandler : public SettingsPageUIHandler,
 
   // Returns a newly created dictionary with a number of properties that
   // correspond to the status of sync.
-  scoped_ptr<base::DictionaryValue> GetSyncStateDictionary();
+  std::unique_ptr<base::DictionaryValue> GetSyncStateDictionary();
 
  protected:
   friend class PeopleHandlerTest;
@@ -199,7 +200,7 @@ class PeopleHandler : public SettingsPageUIHandler,
   Profile* profile_;
 
   // Helper object used to wait for the sync backend to startup.
-  scoped_ptr<SyncStartupTracker> sync_startup_tracker_;
+  std::unique_ptr<SyncStartupTracker> sync_startup_tracker_;
 
   // Set to true whenever the sync configure UI is visible. This is used to tell
   // what stage of the setup wizard the user was in and to update the UMA
@@ -208,7 +209,7 @@ class PeopleHandler : public SettingsPageUIHandler,
 
   // The OneShotTimer object used to timeout of starting the sync backend
   // service.
-  scoped_ptr<base::OneShotTimer> backend_start_timer_;
+  std::unique_ptr<base::OneShotTimer> backend_start_timer_;
 
   // Used to listen for pref changes to allow or disallow signin.
   PrefChangeRegistrar profile_pref_registrar_;

@@ -7,7 +7,7 @@
 
 #include <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 class FullscreenObserver;
 
@@ -36,7 +36,7 @@ class WebContents;
    content::WebContents* contents_;  // weak
    // When |fullscreenObserver_| is not-NULL, TabContentsController monitors for
    // and auto-embeds fullscreen widgets as a subview.
-   scoped_ptr<FullscreenObserver> fullscreenObserver_;
+   std::unique_ptr<FullscreenObserver> fullscreenObserver_;
    // Set to true while TabContentsController is embedding a fullscreen widget
    // view as a subview instead of the normal WebContentsView render view.
    // Note: This will be false in the case of non-Flash fullscreen.

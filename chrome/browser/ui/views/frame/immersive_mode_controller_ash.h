@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_IMMERSIVE_MODE_CONTROLLER_ASH_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_IMMERSIVE_MODE_CONTROLLER_ASH_H_
 
-#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
+#include <memory>
 
 #include "ash/wm/immersive_fullscreen_controller.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/geometry/rect.h"
@@ -71,7 +71,7 @@ class ImmersiveModeControllerAsh
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  scoped_ptr<ash::ImmersiveFullscreenController> controller_;
+  std::unique_ptr<ash::ImmersiveFullscreenController> controller_;
 
   // Not owned.
   BrowserView* browser_view_;

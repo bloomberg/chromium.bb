@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/components/native_app_window/native_app_window_views.h"
 
 namespace apps {
@@ -63,7 +64,7 @@ class ChromeNativeAppWindowViews
   // NativeAppWindow implementation.
   void SetFullscreen(int fullscreen_types) override;
   bool IsFullscreenOrPending() const override;
-  void UpdateShape(scoped_ptr<SkRegion> region) override;
+  void UpdateShape(std::unique_ptr<SkRegion> region) override;
   bool HasFrameColor() const override;
   SkColor ActiveFrameColor() const override;
   SkColor InactiveFrameColor() const override;
@@ -76,7 +77,7 @@ class ChromeNativeAppWindowViews
  private:
   // Custom shape of the window. If this is not set then the window has a
   // default shape, usually rectangular.
-  scoped_ptr<SkRegion> shape_;
+  std::unique_ptr<SkRegion> shape_;
 
   bool has_frame_color_;
   SkColor active_frame_color_;
@@ -84,7 +85,8 @@ class ChromeNativeAppWindowViews
   gfx::Size preferred_size_;
 
   // The class that registers for keyboard shortcuts for extension commands.
-  scoped_ptr<ExtensionKeybindingRegistryViews> extension_keybinding_registry_;
+  std::unique_ptr<ExtensionKeybindingRegistryViews>
+      extension_keybinding_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNativeAppWindowViews);
 };

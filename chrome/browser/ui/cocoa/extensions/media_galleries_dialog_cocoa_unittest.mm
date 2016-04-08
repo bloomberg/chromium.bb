@@ -83,7 +83,7 @@ class MediaGalleriesDialogTest : public testing::Test {
  private:
   NiceMock<MediaGalleriesDialogControllerMock> controller_;
 
-  scoped_ptr<MediaGalleriesDialogCocoa> dialog_;
+  std::unique_ptr<MediaGalleriesDialogCocoa> dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesDialogTest);
 };

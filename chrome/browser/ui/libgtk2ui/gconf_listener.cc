@@ -6,10 +6,11 @@
 
 #include <gtk/gtk.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/environment.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/nix/xdg_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
@@ -44,7 +45,7 @@ namespace libgtk2ui {
 GConfListener::GConfListener(Gtk2UI* delegate)
     : delegate_(delegate),
       client_(NULL) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   base::nix::DesktopEnvironment de =
       base::nix::GetDesktopEnvironment(env.get());
   if (de == base::nix::DESKTOP_ENVIRONMENT_GNOME ||

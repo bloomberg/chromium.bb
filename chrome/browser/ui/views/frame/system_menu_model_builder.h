@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_SYSTEM_MENU_MODEL_BUILDER_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_SYSTEM_MENU_MODEL_BUILDER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/frame/system_menu_model_delegate.h"
 
 class Browser;
@@ -47,9 +48,9 @@ class SystemMenuModelBuilder {
   void AppendTeleportMenu(ui::SimpleMenuModel* model);
 
   SystemMenuModelDelegate menu_delegate_;
-  scoped_ptr<ui::MenuModel> menu_model_;
-  scoped_ptr<ZoomMenuModel> zoom_menu_contents_;
-  scoped_ptr<EncodingMenuModel> encoding_menu_contents_;
+  std::unique_ptr<ui::MenuModel> menu_model_;
+  std::unique_ptr<ZoomMenuModel> zoom_menu_contents_;
+  std::unique_ptr<EncodingMenuModel> encoding_menu_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemMenuModelBuilder);
 };

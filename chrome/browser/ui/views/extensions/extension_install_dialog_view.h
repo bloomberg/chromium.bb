@@ -43,7 +43,7 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
       Profile* profile,
       content::PageNavigator* navigator,
       const ExtensionInstallPrompt::DoneCallback& done_callback,
-      scoped_ptr<ExtensionInstallPrompt::Prompt> prompt);
+      std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt);
   ~ExtensionInstallDialogView() override;
 
   // Returns the interior ScrollView of the dialog. This allows us to inspect
@@ -93,7 +93,7 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   Profile* profile_;
   content::PageNavigator* navigator_;
   ExtensionInstallPrompt::DoneCallback done_callback_;
-  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt_;
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt_;
 
   // The container view that contains all children (heading, icon, webstore
   // data, and the scroll view with permissions etc.), excluding the buttons,
@@ -108,7 +108,7 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   gfx::Size dialog_size_;
 
   // ExperienceSampling: Track this UI event.
-  scoped_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
+  std::unique_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
 
   // Set to true once the user's selection has been received and the callback
   // has been run.

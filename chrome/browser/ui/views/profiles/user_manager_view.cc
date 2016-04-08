@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/profiles/user_manager_view.h"
 
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -186,11 +187,9 @@ void UserManager::Show(
   UserManagerView* user_manager = new UserManagerView();
   user_manager->set_user_manager_started_showing(base::Time::Now());
   profiles::CreateSystemProfileForUserManager(
-      profile_path_to_focus,
-      tutorial_mode,
-      profile_open_action,
+      profile_path_to_focus, tutorial_mode, profile_open_action,
       base::Bind(&UserManagerView::OnSystemProfileCreated,
-                 base::Passed(make_scoped_ptr(user_manager)),
+                 base::Passed(base::WrapUnique(user_manager)),
                  base::Owned(new base::AutoReset<bool>(
                      &instance_under_construction_, true))));
 }
@@ -259,7 +258,7 @@ UserManagerView::~UserManagerView() {
 
 // static
 void UserManagerView::OnSystemProfileCreated(
-    scoped_ptr<UserManagerView> instance,
+    std::unique_ptr<UserManagerView> instance,
     base::AutoReset<bool>* pending,
     Profile* system_profile,
     const std::string& url) {

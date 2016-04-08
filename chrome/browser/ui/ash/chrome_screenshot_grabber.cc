@@ -90,9 +90,10 @@ void ReadFileAndCopyToClipboardLocal(const base::FilePath& screenshot_path) {
 }
 
 #if defined(OS_CHROMEOS)
-void ReadFileAndCopyToClipboardDrive(drive::FileError error,
-                                     const base::FilePath& file_path,
-                                     scoped_ptr<drive::ResourceEntry> entry) {
+void ReadFileAndCopyToClipboardDrive(
+    drive::FileError error,
+    const base::FilePath& file_path,
+    std::unique_ptr<drive::ResourceEntry> entry) {
   if (error != drive::FILE_ERROR_OK) {
     LOG(ERROR) << "Failed to read the screenshot path on drive: "
                << drive::FileErrorToString(error);
@@ -387,7 +388,7 @@ void ChromeScreenshotGrabber::OnScreenshotCompleted(
   if (notifier_state_tracker->IsNotifierEnabled(message_center::NotifierId(
           message_center::NotifierId::SYSTEM_COMPONENT,
           ash::system_notifier::kNotifierScreenshot))) {
-    scoped_ptr<Notification> notification(
+    std::unique_ptr<Notification> notification(
         CreateNotification(result, screenshot_path));
     g_browser_process->notification_ui_manager()->Add(*notification,
                                                       GetProfile());

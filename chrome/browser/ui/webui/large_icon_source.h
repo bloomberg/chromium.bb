@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_LARGE_ICON_SOURCE_H_
 #define CHROME_BROWSER_UI_WEBUI_LARGE_ICON_SOURCE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon/core/fallback_icon_service.h"
 #include "content/public/browser/url_data_source.h"

@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/ui/cocoa/extensions/extension_installed_bubble_controller.h"
+
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
+
+#include <memory>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
@@ -17,7 +20,6 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/cocoa_profile_test.h"
-#import "chrome/browser/ui/cocoa/extensions/extension_installed_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/extensions/extension_installed_bubble.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
@@ -176,7 +178,7 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
   scoped_refptr<Extension> extension_;
 
   // The bubble that tests are run on.
-  scoped_ptr<ExtensionInstalledBubble> extensionBubble_;
+  std::unique_ptr<ExtensionInstalledBubble> extensionBubble_;
 
   // The icon_ to be loaded into the bubble window.
   SkBitmap icon_;

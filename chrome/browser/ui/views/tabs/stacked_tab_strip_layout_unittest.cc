@@ -134,7 +134,7 @@ class StackedTabStripLayoutTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<StackedTabStripLayout> layout_;
+  std::unique_ptr<StackedTabStripLayout> layout_;
   views::ViewModel view_model_;
 
  private:

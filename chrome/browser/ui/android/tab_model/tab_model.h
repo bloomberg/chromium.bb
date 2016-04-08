@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_ANDROID_TAB_MODEL_TAB_MODEL_H_
 #define CHROME_BROWSER_UI_ANDROID_TAB_MODEL_TAB_MODEL_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sync_sessions/synced_window_delegate.h"
 #include "components/toolbar/toolbar_model.h"
@@ -81,7 +82,8 @@ class TabModel : public content::NotificationObserver {
   bool is_off_the_record_;
 
   // The SyncedWindowDelegate associated with this TabModel.
-  scoped_ptr<browser_sync::SyncedWindowDelegateAndroid> synced_window_delegate_;
+  std::unique_ptr<browser_sync::SyncedWindowDelegateAndroid>
+      synced_window_delegate_;
 
   // Unique identifier of this TabModel for session restore. This id is only
   // unique within the current session, and is not guaranteed to be unique

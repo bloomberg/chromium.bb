@@ -274,11 +274,11 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CheckDockedPanelProperties) {
   EXPECT_EQ(Panel::TITLE_ONLY, panel2->expansion_state());
   panel3->SetExpansionState(Panel::MINIMIZED);
   EXPECT_EQ(Panel::MINIMIZED, panel3->expansion_state());
-  scoped_ptr<NativePanelTesting> panel1_testing(
+  std::unique_ptr<NativePanelTesting> panel1_testing(
       CreateNativePanelTesting(panel1));
-  scoped_ptr<NativePanelTesting> panel2_testing(
+  std::unique_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
-  scoped_ptr<NativePanelTesting> panel3_testing(
+  std::unique_ptr<NativePanelTesting> panel3_testing(
       CreateNativePanelTesting(panel3));
 
   // Ensure that the layout message can get a chance to be processed so that
@@ -514,7 +514,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AnimateBounds) {
   // Create a detached panel, instead of docked panel because it cannot be
   // moved to any location.
   Panel* panel = CreateDetachedPanel("1", gfx::Rect(200, 100, 100, 100));
-  scoped_ptr<NativePanelTesting> panel_testing(
+  std::unique_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
 
   // Validates that no animation should be triggered when the panel is being
@@ -688,11 +688,11 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_RestoreAllWithTitlebarClick) {
   EXPECT_FALSE(panel2->IsMinimized());
   EXPECT_FALSE(panel3->IsMinimized());
 
-  scoped_ptr<NativePanelTesting> test_panel1(
+  std::unique_ptr<NativePanelTesting> test_panel1(
       CreateNativePanelTesting(panel1));
-  scoped_ptr<NativePanelTesting> test_panel2(
+  std::unique_ptr<NativePanelTesting> test_panel2(
       CreateNativePanelTesting(panel2));
-  scoped_ptr<NativePanelTesting> test_panel3(
+  std::unique_ptr<NativePanelTesting> test_panel3(
       CreateNativePanelTesting(panel3));
 
   // Click on an expanded panel's titlebar using the apply-all modifier.
@@ -999,7 +999,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateBasic) {
 
   // Create an active panel.
   Panel* panel = CreatePanel("PanelTest");
-  scoped_ptr<NativePanelTesting> native_panel_testing(
+  std::unique_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));
 
   WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);  // doublecheck active state
@@ -1057,7 +1057,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ActivateDeactivateMultiple) {
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionBasic) {
   Panel* panel = CreateInactivePanel("P1");
-  scoped_ptr<NativePanelTesting> native_panel_testing(
+  std::unique_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));
 
   // Test that the attention is drawn when the expanded panel is not in focus.
@@ -1093,7 +1093,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhileMinimized) {
   Panel* panel1 = CreateInactivePanel("P1");
   Panel* panel2 = CreateInactivePanel("P2");
 
-  scoped_ptr<NativePanelTesting> native_panel1_testing(
+  std::unique_ptr<NativePanelTesting> native_panel1_testing(
       CreateNativePanelTesting(panel1));
 
   // Test that the attention is drawn and the title-bar is brought up when the
@@ -1202,7 +1202,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, StopDrawingAttentionWhileMinimized) {
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhenActive) {
   // Create an active panel.
   Panel* panel = CreatePanel("P1");
-  scoped_ptr<NativePanelTesting> native_panel_testing(
+  std::unique_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));
 
   // Test that the attention should not be drawn if the expanded panel is in
@@ -1216,7 +1216,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhenActive) {
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnActivate) {
   Panel* panel = CreateInactivePanel("P1");
-  scoped_ptr<NativePanelTesting> native_panel_testing(
+  std::unique_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));
 
   panel->FlashFrame(true);
@@ -1260,7 +1260,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnClick) {
   Panel* panel = CreateInactivePanel("P1");
-  scoped_ptr<NativePanelTesting> native_panel_testing(
+  std::unique_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));
 
   panel->FlashFrame(true);
@@ -1290,7 +1290,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
                        MAYBE_MinimizeImmediatelyAfterRestore) {
   CreatePanelParams params("Panel Test", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel = CreatePanelWithParams(params);
-  scoped_ptr<NativePanelTesting> native_panel_testing(
+  std::unique_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));
 
   PanelActiveStateObserver signal(panel, false);
@@ -1705,7 +1705,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
                        HideDockedPanelCreatedBeforeFullScreenMode) {
   // Create a docked panel.
   Panel* panel = CreatePanel("PanelTest");
-  scoped_ptr<NativePanelTesting> panel_testing(CreateNativePanelTesting(panel));
+  std::unique_ptr<NativePanelTesting> panel_testing(
+      CreateNativePanelTesting(panel));
 
   // Panel should be visible at first.
   EXPECT_TRUE(panel_testing->IsWindowVisible());
@@ -1731,7 +1732,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   CreatePanelParams params("1", gfx::Rect(0, 0, 250, 200), SHOW_AS_ACTIVE);
   params.wait_for_fully_created = false;
   Panel* panel = CreatePanelWithParams(params);
-  scoped_ptr<NativePanelTesting> panel_testing(
+  std::unique_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
 
   // Panel should not be shown on full-screen mode.

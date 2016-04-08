@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_CONTROLLER_FACTORY_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_CONTROLLER_FACTORY_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/app_list/app_list_model.h"
 
 class AppListControllerDelegate;
@@ -17,7 +18,7 @@ class SearchBoxModel;
 class SearchController;
 
 // Build a SearchController instance with the profile.
-scoped_ptr<SearchController> CreateSearchController(
+std::unique_ptr<SearchController> CreateSearchController(
     Profile* profile,
     AppListModel* model,
     AppListControllerDelegate* list_controller);

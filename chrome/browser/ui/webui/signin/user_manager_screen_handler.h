@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_UI_WEBUI_SIGNIN_USER_MANAGER_SCREEN_HANDLER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/profiles/profile.h"
@@ -94,7 +94,7 @@ class UserManagerScreenHandler
 
   // Handle GAIA auth results.
   void OnGetTokenInfoResponse(
-      scoped_ptr<base::DictionaryValue> token_info) override;
+      std::unique_ptr<base::DictionaryValue> token_info) override;
   void OnOAuthError() override;
   void OnNetworkError(int response_code) override;
 
@@ -114,10 +114,10 @@ class UserManagerScreenHandler
 
   // Observes the ProfileAttributesStorage and gets notified when a profile has
   // been modified, so that the displayed user pods can be updated.
-  scoped_ptr<ProfileUpdateObserver> profile_attributes_storage_observer_;
+  std::unique_ptr<ProfileUpdateObserver> profile_attributes_storage_observer_;
 
   // Authenticator used when local-auth fails.
-  scoped_ptr<gaia::GaiaOAuthClient> oauth_client_;
+  std::unique_ptr<gaia::GaiaOAuthClient> oauth_client_;
 
   // The path of the profile currently being authenticated.
   base::FilePath authenticating_profile_path_;

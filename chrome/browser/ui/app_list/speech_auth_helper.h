@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SPEECH_AUTH_HELPER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SPEECH_AUTH_HELPER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 
@@ -55,7 +55,7 @@ class SpeechAuthHelper : public OAuth2TokenService::Consumer,
   ProfileOAuth2TokenService* token_service_;
   std::string authenticated_account_id_;
   std::string auth_token_;
-  scoped_ptr<OAuth2TokenService::Request> auth_token_request_;
+  std::unique_ptr<OAuth2TokenService::Request> auth_token_request_;
 
   base::WeakPtrFactory<SpeechAuthHelper> weak_factory_;
 

@@ -6,9 +6,10 @@
 #define CHROME_BROWSER_UI_INPUT_METHOD_INPUT_METHOD_ENGINE_BASE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
-#include "base/memory/scoped_ptr.h"
+
 #include "base/time/time.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/composition_text.h"
@@ -125,7 +126,7 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
 
   ~InputMethodEngineBase() override;
 
-  void Initialize(scoped_ptr<InputMethodEngineBase::Observer> observer,
+  void Initialize(std::unique_ptr<InputMethodEngineBase::Observer> observer,
                   const char* extension_id,
                   Profile* profile);
 
@@ -206,10 +207,10 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   std::string extension_id_;
 
   // The observer object recieving events for this IME.
-  scoped_ptr<InputMethodEngineBase::Observer> observer_;
+  std::unique_ptr<InputMethodEngineBase::Observer> observer_;
 
   // The current preedit text, and it's cursor position.
-  scoped_ptr<ui::CompositionText> composition_text_;
+  std::unique_ptr<ui::CompositionText> composition_text_;
   int composition_cursor_;
 
   // Used with SendKeyEvents and ProcessKeyEvent to check if the key event

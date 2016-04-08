@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_USER_BOARD_SCREEN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_USER_BOARD_SCREEN_HANDLER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/ui/views/user_board_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
@@ -41,7 +42,7 @@ class UserBoardScreenHandler : public BaseScreenHandler, public UserBoardView {
   void SetPublicSessionDisplayName(const AccountId& account_id,
                                    const std::string& display_name) override;
   void SetPublicSessionLocales(const AccountId& account_id,
-                               scoped_ptr<base::ListValue> locales,
+                               std::unique_ptr<base::ListValue> locales,
                                const std::string& default_locale,
                                bool multiple_recommended_locales) override;
   void ShowBannerMessage(const base::string16& message) override;

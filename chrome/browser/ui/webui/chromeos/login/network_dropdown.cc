@@ -64,7 +64,7 @@ NetworkMenuWebUI::NetworkMenuWebUI(NetworkMenu::Delegate* delegate,
 void NetworkMenuWebUI::UpdateMenu() {
   NetworkMenu::UpdateMenu();
   if (web_ui_) {
-    scoped_ptr<base::ListValue> list(ConvertMenuModel(GetMenuModel()));
+    std::unique_ptr<base::ListValue> list(ConvertMenuModel(GetMenuModel()));
     web_ui_->CallJavascriptFunction("cr.ui.DropDown.updateNetworks", *list);
   }
 }

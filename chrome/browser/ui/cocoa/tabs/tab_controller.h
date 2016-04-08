@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_UI_COCOA_TABS_TAB_CONTROLLER_H_
 
 #import <Cocoa/Cocoa.h>
-#include "base/memory/scoped_ptr.h"
+
+#include <memory>
+
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_drag_controller.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
@@ -57,8 +59,8 @@ class MenuDelegate;
   TabLoadingState loadingState_;
   id<TabControllerTarget> target_;  // weak, where actions are sent
   SEL action_;  // selector sent when tab is selected by clicking
-  scoped_ptr<ui::SimpleMenuModel> contextMenuModel_;
-  scoped_ptr<TabControllerInternal::MenuDelegate> contextMenuDelegate_;
+  std::unique_ptr<ui::SimpleMenuModel> contextMenuModel_;
+  std::unique_ptr<TabControllerInternal::MenuDelegate> contextMenuDelegate_;
   base::scoped_nsobject<MenuController> contextMenuController_;
 }
 

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/app_list/speech_auth_helper.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
@@ -46,12 +46,8 @@ class SpeechAuthHelperTest : public testing::Test {
 
     ASSERT_TRUE(testing_profile_manager_->SetUp());
     profile_ = testing_profile_manager_->CreateTestingProfile(
-        kTestUser,
-        scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
-        base::UTF8ToUTF16(kTestUser),
-        0,
-        std::string(),
-        factories);
+        kTestUser, std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
+        base::UTF8ToUTF16(kTestUser), 0, std::string(), factories);
 
     // Set up the authenticated user name and ID.
     SigninManagerFactory::GetForProfile(profile_)->SetAuthenticatedAccountInfo(
@@ -73,9 +69,9 @@ class SpeechAuthHelperTest : public testing::Test {
 
   base::SimpleTestClock test_clock_;
   content::TestBrowserThreadBundle thread_bundle;
-  scoped_ptr<TestingProfileManager> testing_profile_manager_;
+  std::unique_ptr<TestingProfileManager> testing_profile_manager_;
   Profile* profile_;
-  scoped_ptr<SpeechAuthHelper> auth_helper_;
+  std::unique_ptr<SpeechAuthHelper> auth_helper_;
 };
 
 TEST_F(SpeechAuthHelperTest, TokenFetch) {

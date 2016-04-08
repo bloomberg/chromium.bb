@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet.h"
 #import "chrome/browser/ui/cocoa/single_web_contents_dialog_manager_cocoa.h"
 #include "components/guest_view/browser/guest_view_base.h"
@@ -15,21 +15,21 @@
 
 using web_modal::WebContentsModalDialogManager;
 
-scoped_ptr<ConstrainedWindowMac> CreateAndShowWebModalDialogMac(
+std::unique_ptr<ConstrainedWindowMac> CreateAndShowWebModalDialogMac(
     ConstrainedWindowMacDelegate* delegate,
     content::WebContents* web_contents,
     id<ConstrainedWindowSheet> sheet) {
   ConstrainedWindowMac* window =
       new ConstrainedWindowMac(delegate, web_contents, sheet);
   window->ShowWebContentsModalDialog();
-  return scoped_ptr<ConstrainedWindowMac>(window);
+  return std::unique_ptr<ConstrainedWindowMac>(window);
 }
 
-scoped_ptr<ConstrainedWindowMac> CreateWebModalDialogMac(
+std::unique_ptr<ConstrainedWindowMac> CreateWebModalDialogMac(
     ConstrainedWindowMacDelegate* delegate,
     content::WebContents* web_contents,
     id<ConstrainedWindowSheet> sheet) {
-  return scoped_ptr<ConstrainedWindowMac>(
+  return std::unique_ptr<ConstrainedWindowMac>(
       new ConstrainedWindowMac(delegate, web_contents, sheet));
 }
 
@@ -58,7 +58,7 @@ ConstrainedWindowMac::~ConstrainedWindowMac() {
 }
 
 void ConstrainedWindowMac::ShowWebContentsModalDialog() {
-  scoped_ptr<SingleWebContentsDialogManagerCocoa> dialog_manager;
+  std::unique_ptr<SingleWebContentsDialogManagerCocoa> dialog_manager;
   dialog_manager.reset(native_manager_.release());
   GetDialogManager()->ShowDialogWithManager(
       [sheet_.get() sheetWindow], std::move(dialog_manager));

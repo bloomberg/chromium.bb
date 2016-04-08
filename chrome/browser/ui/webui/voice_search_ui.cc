@@ -79,7 +79,7 @@ content::WebUIDataSource* CreateVoiceSearchUiHtmlSource() {
 void AddPair16(base::ListValue* list,
                const base::string16& key,
                const base::string16& value) {
-  scoped_ptr<base::DictionaryValue> results(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue());
   results->SetString("key", key);
   results->SetString("value", value);
   list->Append(results.release());
@@ -158,7 +158,7 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     PopulatePageInformation();
   }
 
-  void ReturnVoiceSearchInfo(scoped_ptr<base::ListValue> info) {
+  void ReturnVoiceSearchInfo(std::unique_ptr<base::ListValue> info) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     DCHECK(info);
     base::DictionaryValue voiceSearchInfo;
@@ -169,7 +169,7 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
   // Fill in the data to be displayed on the page.
   void PopulatePageInformation() {
     // Store Key-Value pairs of about-information.
-    scoped_ptr<base::ListValue> list(new base::ListValue());
+    std::unique_ptr<base::ListValue> list(new base::ListValue());
 
     // Populate information.
     AddOperatingSystemInfo(list.get());

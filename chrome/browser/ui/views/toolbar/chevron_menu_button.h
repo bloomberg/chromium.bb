@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_CHEVRON_MENU_BUTTON_H_
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_CHEVRON_MENU_BUTTON_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -29,7 +30,8 @@ class ChevronMenuButton : public views::MenuButton,
   class MenuController;
 
   // views::MenuButton:
-  scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
+  std::unique_ptr<views::LabelButtonBorder> CreateDefaultBorder()
+      const override;
   bool GetDropFormats(
       int* formats,
       std::set<ui::Clipboard::FormatType>* format_types) override;
@@ -55,7 +57,7 @@ class ChevronMenuButton : public views::MenuButton,
   BrowserActionsContainer* browser_actions_container_;
 
   // The overflow menu controller.
-  scoped_ptr<MenuController> menu_controller_;
+  std::unique_ptr<MenuController> menu_controller_;
 
   base::WeakPtrFactory<ChevronMenuButton> weak_factory_;
 

@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/values.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util_test_util.h"
@@ -37,8 +38,8 @@ class CrosLanguageOptionsHandlerTest : public testing::Test {
 };
 
 TEST_F(CrosLanguageOptionsHandlerTest, GetInputMethodList) {
-  scoped_ptr<base::ListValue> list(
-    CrosLanguageOptionsHandler::GetInputMethodList());
+  std::unique_ptr<base::ListValue> list(
+      CrosLanguageOptionsHandler::GetInputMethodList());
   ASSERT_EQ(4U, list->GetSize());
 
   base::DictionaryValue* entry = NULL;

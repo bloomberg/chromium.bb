@@ -19,12 +19,12 @@ class AppBannerInfoBarAndroid : public ConfirmInfoBar {
  public:
   // Constructs an AppBannerInfoBarAndroid promoting a native app.
   AppBannerInfoBarAndroid(
-      scoped_ptr<banners::AppBannerInfoBarDelegateAndroid> delegate,
+      std::unique_ptr<banners::AppBannerInfoBarDelegateAndroid> delegate,
       const base::android::ScopedJavaGlobalRef<jobject>& japp_data);
 
   // Constructs an AppBannerInfoBarAndroid promoting a web app.
   AppBannerInfoBarAndroid(
-      scoped_ptr<banners::AppBannerInfoBarDelegateAndroid> delegate,
+      std::unique_ptr<banners::AppBannerInfoBarDelegateAndroid> delegate,
       const GURL& app_url);
 
   ~AppBannerInfoBarAndroid() override;

@@ -170,7 +170,7 @@ MediaRouterUI::MediaRouterUI(content::WebUI* web_ui)
       weak_factory_(this) {
   // Create a WebUIDataSource containing the chrome://media-router page's
   // content.
-  scoped_ptr<content::WebUIDataSource> html_source(
+  std::unique_ptr<content::WebUIDataSource> html_source(
       content::WebUIDataSource::Create(chrome::kChromeUIMediaRouterHost));
 
   content::WebContents* wc = web_ui->GetWebContents();
@@ -232,7 +232,8 @@ void MediaRouterUI::InitWithDefaultMediaSource(
 void MediaRouterUI::InitWithPresentationSessionRequest(
     content::WebContents* initiator,
     const base::WeakPtr<PresentationServiceDelegateImpl>& delegate,
-    scoped_ptr<CreatePresentationConnectionRequest> create_session_request) {
+    std::unique_ptr<CreatePresentationConnectionRequest>
+        create_session_request) {
   DCHECK(initiator);
   DCHECK(create_session_request);
   DCHECK(!create_session_request_);

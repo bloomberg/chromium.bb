@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/webui/net_export_ui.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -242,7 +242,7 @@ void NetExportMessageHandler::SendEmail(const base::FilePath& file_to_send) {
 }
 
 void NetExportMessageHandler::OnExportNetLogInfoChanged(base::Value* arg) {
-  scoped_ptr<base::Value> value(arg);
+  std::unique_ptr<base::Value> value(arg);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   web_ui()->CallJavascriptFunction(net_log::kOnExportNetLogInfoChanged, *arg);
 }

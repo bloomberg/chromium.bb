@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -143,7 +143,7 @@ class TranslateBubbleViewTest : public views::ViewsTestBase {
 
     mock_model_ = new MockTranslateBubbleModel(
         TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE);
-    scoped_ptr<TranslateBubbleModel> model(mock_model_);
+    std::unique_ptr<TranslateBubbleModel> model(mock_model_);
     bubble_ = new TranslateBubbleView(anchor_widget_->GetContentsView(),
                                       std::move(model),
                                       translate::TranslateErrors::NONE, NULL);
@@ -160,7 +160,7 @@ class TranslateBubbleViewTest : public views::ViewsTestBase {
   views::Combobox* denial_combobox() { return bubble_->denial_combobox_; }
   bool denial_button_clicked() { return mock_model_->translation_declined_; }
 
-  scoped_ptr<views::Widget> anchor_widget_;
+  std::unique_ptr<views::Widget> anchor_widget_;
   MockTranslateBubbleModel* mock_model_;
   TranslateBubbleView* bubble_;
 };

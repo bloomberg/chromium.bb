@@ -94,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, PanelAppIcon) {
 
   // Then verify on the native panel level.
 #if !defined(OS_WIN) || !defined(USE_AURA)
-  scoped_ptr<NativePanelTesting> native_panel_testing(
+  std::unique_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));
   EXPECT_TRUE(native_panel_testing->VerifyAppIcon());
 #endif
@@ -155,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {
     // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
     EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
 
-    scoped_ptr<PanelContextMenu> menu(
+    std::unique_ptr<PanelContextMenu> menu(
         new PanelContextMenu(web_contents->GetMainFrame(), params));
     menu->Init();
 
@@ -176,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {
     // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
     EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
 
-    scoped_ptr<PanelContextMenu> menu(
+    std::unique_ptr<PanelContextMenu> menu(
         new PanelContextMenu(web_contents->GetMainFrame(), params));
     menu->Init();
 
@@ -197,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {
     // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
     EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
 
-    scoped_ptr<PanelContextMenu> menu(
+    std::unique_ptr<PanelContextMenu> menu(
         new PanelContextMenu(web_contents->GetMainFrame(), params));
     menu->Init();
 
@@ -218,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {
     // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
     EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
 
-    scoped_ptr<PanelContextMenu> menu(
+    std::unique_ptr<PanelContextMenu> menu(
         new PanelContextMenu(web_contents->GetMainFrame(), params));
     menu->Init();
 
@@ -256,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, CustomContextMenu) {
   EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
 
   // Verify menu contents contains the custom item added by their own extension.
-  scoped_ptr<PanelContextMenu> menu;
+  std::unique_ptr<PanelContextMenu> menu;
   menu.reset(new PanelContextMenu(web_contents->GetMainFrame(), params));
   menu->Init();
   EXPECT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));

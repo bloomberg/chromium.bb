@@ -4,8 +4,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h"
 #import "chrome/browser/ui/cocoa/has_weak_browser_pointer.h"
@@ -39,7 +40,7 @@ class ManagedBookmarkService;
   BOOL alreadyBookmarked_;
 
   // Ping me when the bookmark model changes out from under us.
-  scoped_ptr<BookmarkModelObserverForCocoa> bookmarkObserver_;
+  std::unique_ptr<BookmarkModelObserverForCocoa> bookmarkObserver_;
 
   // Sync promo controller, if the sync promo is displayed.
   base::scoped_nsobject<BubbleSyncPromoController> syncPromoController_;

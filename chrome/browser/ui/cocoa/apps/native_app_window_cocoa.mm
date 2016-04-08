@@ -80,9 +80,9 @@ std::vector<gfx::Rect> CalculateNonDraggableRegions(
   if (regions.empty()) {
     result.push_back(gfx::Rect(0, 0, width, height));
   } else {
-    scoped_ptr<SkRegion> draggable(
+    std::unique_ptr<SkRegion> draggable(
         AppWindow::RawDraggableRegionsToSkRegion(regions));
-    scoped_ptr<SkRegion> non_draggable(new SkRegion);
+    std::unique_ptr<SkRegion> non_draggable(new SkRegion);
     non_draggable->op(0, 0, width, height, SkRegion::kUnion_Op);
     non_draggable->op(*draggable, SkRegion::kDifference_Op);
     for (SkRegion::Iterator it(*non_draggable); !it.done(); it.next()) {
@@ -539,7 +539,7 @@ void NativeAppWindowCocoa::UpdateWindowTitle() {
   [window() setTitle:base::SysUTF16ToNSString(title)];
 }
 
-void NativeAppWindowCocoa::UpdateShape(scoped_ptr<SkRegion> region) {
+void NativeAppWindowCocoa::UpdateShape(std::unique_ptr<SkRegion> region) {
   NOTIMPLEMENTED();
 }
 

@@ -88,15 +88,16 @@ class AshKeyboardControllerObserver
       return;
     }
 
-    scoped_ptr<base::ListValue> event_args(new base::ListValue());
-    scoped_ptr<base::DictionaryValue> new_bounds(new base::DictionaryValue());
+    std::unique_ptr<base::ListValue> event_args(new base::ListValue());
+    std::unique_ptr<base::DictionaryValue> new_bounds(
+        new base::DictionaryValue());
     new_bounds->SetInteger("left", bounds.x());
     new_bounds->SetInteger("top", bounds.y());
     new_bounds->SetInteger("width", bounds.width());
     new_bounds->SetInteger("height", bounds.height());
     event_args->Append(new_bounds.release());
 
-    scoped_ptr<extensions::Event> event(new extensions::Event(
+    std::unique_ptr<extensions::Event> event(new extensions::Event(
         extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_BOUNDS_CHANGED,
         virtual_keyboard_private::OnBoundsChanged::kEventName,
         std::move(event_args)));
@@ -210,14 +211,15 @@ void ChromeKeyboardUI::SetUpdateInputType(ui::TextInputType type) {
     return;
   }
 
-  scoped_ptr<base::ListValue> event_args(new base::ListValue());
-  scoped_ptr<base::DictionaryValue> input_context(new base::DictionaryValue());
+  std::unique_ptr<base::ListValue> event_args(new base::ListValue());
+  std::unique_ptr<base::DictionaryValue> input_context(
+      new base::DictionaryValue());
   input_context->SetString("type",
                            virtual_keyboard_private::ToString(
                                TextInputTypeToGeneratedInputTypeEnum(type)));
   event_args->Append(input_context.release());
 
-  scoped_ptr<extensions::Event> event(new extensions::Event(
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_TEXT_INPUT_BOX_FOCUSED,
       virtual_keyboard_private::OnTextInputBoxFocused::kEventName,
       std::move(event_args)));

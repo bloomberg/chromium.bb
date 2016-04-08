@@ -54,7 +54,7 @@ void OneClickSigninBubbleView::ShowBubble(
     BrowserWindow::OneClickSigninBubbleType type,
     const base::string16& email,
     const base::string16& error_message,
-    scoped_ptr<OneClickSigninBubbleDelegate> delegate,
+    std::unique_ptr<OneClickSigninBubbleDelegate> delegate,
     views::View* anchor_view,
     const BrowserWindow::StartSyncCallback& start_sync) {
   if (IsShowing())
@@ -95,7 +95,7 @@ void OneClickSigninBubbleView::Hide() {
 OneClickSigninBubbleView::OneClickSigninBubbleView(
     const base::string16& error_message,
     const base::string16& email,
-    scoped_ptr<OneClickSigninBubbleDelegate> delegate,
+    std::unique_ptr<OneClickSigninBubbleDelegate> delegate,
     views::View* anchor_view,
     const BrowserWindow::StartSyncCallback& start_sync_callback,
     bool is_sync_dialog)

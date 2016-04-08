@@ -6,10 +6,11 @@
 #define CHROME_BROWSER_UI_ANDROID_AUTOFILL_AUTOFILL_DIALOG_RESULT_H_
 
 #include <jni.h>
+
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 
 namespace autofill {
@@ -27,8 +28,8 @@ class AutofillDialogResult {
   // Converts the requested information to wallet::FullWallet.
   // The dialog stores the requested information in the same format
   // regardless if the information was obtained from Autofill or Google Wallet.
-  static scoped_ptr<wallet::FullWallet> ConvertFromJava(
-      JNIEnv* env, jobject wallet);
+  static std::unique_ptr<wallet::FullWallet> ConvertFromJava(JNIEnv* env,
+                                                             jobject wallet);
 
   // Returns the email address to be associated with this request,
   // or an empty string.

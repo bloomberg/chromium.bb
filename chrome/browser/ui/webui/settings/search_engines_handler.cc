@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/settings/search_engines_handler.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -85,7 +86,8 @@ void SearchEnginesHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-scoped_ptr<base::DictionaryValue> SearchEnginesHandler::GetSearchEnginesList() {
+std::unique_ptr<base::DictionaryValue>
+SearchEnginesHandler::GetSearchEnginesList() {
   DCHECK(list_controller_.get());
   // Find the default engine.
   const TemplateURL* default_engine =
@@ -94,7 +96,8 @@ scoped_ptr<base::DictionaryValue> SearchEnginesHandler::GetSearchEnginesList() {
       list_controller_->table_model()->IndexOfTemplateURL(default_engine);
 
   // Build the first list (default search engines).
-  scoped_ptr<base::ListValue> defaults = make_scoped_ptr(new base::ListValue());
+  std::unique_ptr<base::ListValue> defaults =
+      base::WrapUnique(new base::ListValue());
   int last_default_engine_index =
       list_controller_->table_model()->last_search_engine_index();
   for (int i = 0; i < last_default_engine_index; ++i) {
@@ -103,7 +106,8 @@ scoped_ptr<base::DictionaryValue> SearchEnginesHandler::GetSearchEnginesList() {
   }
 
   // Build the second list (other search engines).
-  scoped_ptr<base::ListValue> others = make_scoped_ptr(new base::ListValue());
+  std::unique_ptr<base::ListValue> others =
+      base::WrapUnique(new base::ListValue());
   int last_other_engine_index =
       list_controller_->table_model()->last_other_engine_index();
   for (int i = std::max(last_default_engine_index, 0);
@@ -112,18 +116,19 @@ scoped_ptr<base::DictionaryValue> SearchEnginesHandler::GetSearchEnginesList() {
   }
 
   // Build the third list (omnibox extensions).
-  scoped_ptr<base::ListValue> extensions =
-      make_scoped_ptr(new base::ListValue());
+  std::unique_ptr<base::ListValue> extensions =
+      base::WrapUnique(new base::ListValue());
   int engine_count = list_controller_->table_model()->RowCount();
   for (int i = std::max(last_other_engine_index, 0); i < engine_count; ++i) {
     extensions->Append(CreateDictionaryForEngine(i, i == default_index));
   }
 
-  scoped_ptr<base::DictionaryValue> search_engines_info(
+  std::unique_ptr<base::DictionaryValue> search_engines_info(
       new base::DictionaryValue);
-  search_engines_info->Set("defaults", make_scoped_ptr(defaults.release()));
-  search_engines_info->Set("others", make_scoped_ptr(others.release()));
-  search_engines_info->Set("extensions", make_scoped_ptr(extensions.release()));
+  search_engines_info->Set("defaults", base::WrapUnique(defaults.release()));
+  search_engines_info->Set("others", base::WrapUnique(others.release()));
+  search_engines_info->Set("extensions",
+                           base::WrapUnique(extensions.release()));
   return search_engines_info;
 }
 

@@ -154,7 +154,7 @@ void PeopleProvider::StartQuery() {
 }
 
 void PeopleProvider::OnPeopleSearchFetched(
-    scoped_ptr<base::DictionaryValue> json) {
+    std::unique_ptr<base::DictionaryValue> json) {
   ProcessPeopleSearchResults(json.get());
   cache_->Put(WebserviceCache::PEOPLE, query_, std::move(json));
 
@@ -180,7 +180,7 @@ void PeopleProvider::ProcessPeopleSearchResults(
     if (!(*it)->GetAsDictionary(&dict))
       continue;
 
-    scoped_ptr<SearchResult> result(CreateResult(*dict));
+    std::unique_ptr<SearchResult> result(CreateResult(*dict));
     if (!result)
       continue;
 
@@ -188,11 +188,11 @@ void PeopleProvider::ProcessPeopleSearchResults(
   }
 }
 
-scoped_ptr<SearchResult> PeopleProvider::CreateResult(
+std::unique_ptr<SearchResult> PeopleProvider::CreateResult(
     const base::DictionaryValue& dict) {
-  scoped_ptr<SearchResult> result;
+  std::unique_ptr<SearchResult> result;
 
-  scoped_ptr<Person> person = Person::Create(dict);
+  std::unique_ptr<Person> person = Person::Create(dict);
   if (!person)
     return result;
 

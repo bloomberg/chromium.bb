@@ -34,7 +34,7 @@ RenderViewContextMenuViews::RenderViewContextMenuViews(
     const content::ContextMenuParams& params)
     : RenderViewContextMenu(render_frame_host, params),
       bidi_submenu_model_(this) {
-  scoped_ptr<ToolkitDelegate> delegate(new ToolkitDelegateViews);
+  std::unique_ptr<ToolkitDelegate> delegate(new ToolkitDelegateViews);
   set_toolkit_delegate(std::move(delegate));
 }
 

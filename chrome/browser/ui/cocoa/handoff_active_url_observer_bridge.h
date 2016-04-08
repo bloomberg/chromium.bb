@@ -7,8 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/cocoa/handoff_active_url_observer_delegate.h"
 
 namespace content {
@@ -39,7 +40,7 @@ class HandoffActiveURLObserverBridge : public HandoffActiveURLObserverDelegate {
   NSObject<HandoffActiveURLObserverBridgeDelegate>* delegate_;
 
   // The C++ object that this class acts as a bridge for.
-  scoped_ptr<HandoffActiveURLObserver> observer_;
+  std::unique_ptr<HandoffActiveURLObserver> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(HandoffActiveURLObserverBridge);
 };

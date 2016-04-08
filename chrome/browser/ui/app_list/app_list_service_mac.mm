@@ -91,9 +91,10 @@ const NSTimeInterval kAnimationDuration = 0.2;
 // Distance towards the screen edge that the app list moves from when showing.
 const CGFloat kDistanceMovedOnShow = 20;
 
-scoped_ptr<web_app::ShortcutInfo> GetAppListShortcutInfo(
+std::unique_ptr<web_app::ShortcutInfo> GetAppListShortcutInfo(
     const base::FilePath& profile_path) {
-  scoped_ptr<web_app::ShortcutInfo> shortcut_info(new web_app::ShortcutInfo);
+  std::unique_ptr<web_app::ShortcutInfo> shortcut_info(
+      new web_app::ShortcutInfo);
   version_info::Channel channel = chrome::GetChannel();
   if (channel == version_info::Channel::CANARY) {
     shortcut_info->title =
@@ -113,7 +114,7 @@ scoped_ptr<web_app::ShortcutInfo> GetAppListShortcutInfo(
 void CreateAppListShim(const base::FilePath& profile_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   WebApplicationInfo web_app_info;
-  scoped_ptr<web_app::ShortcutInfo> shortcut_info =
+  std::unique_ptr<web_app::ShortcutInfo> shortcut_info =
       GetAppListShortcutInfo(profile_path);
 
   ResourceBundle& resource_bundle = ResourceBundle::GetSharedInstance();

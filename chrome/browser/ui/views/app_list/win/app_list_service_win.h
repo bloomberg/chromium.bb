@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APP_LIST_WIN_APP_LIST_SERVICE_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_APP_LIST_WIN_APP_LIST_SERVICE_WIN_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_list/app_list_service_views.h"
 
 class ActivationTrackerWin;
@@ -51,7 +52,7 @@ class AppListServiceWin : public AppListServiceViews {
   void LoadProfileForWarmup();
   void OnLoadProfileForWarmup(Profile* initial_profile);
 
-  scoped_ptr<ActivationTrackerWin> activation_tracker_;
+  std::unique_ptr<ActivationTrackerWin> activation_tracker_;
 
   base::Closure next_paint_callback_;
 

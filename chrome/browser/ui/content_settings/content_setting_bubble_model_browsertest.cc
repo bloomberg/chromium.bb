@@ -36,7 +36,7 @@ class ContentSettingBubbleModelMixedScriptTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents());
   }
 
-  scoped_ptr<net::EmbeddedTestServer> https_server_;
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
 };
 
 // Tests that a MIXEDSCRIPT type ContentSettingBubbleModel sends appropriate
@@ -53,12 +53,11 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMixedScriptTest, MainFrame) {
       CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
 
   // Emulate link clicking on the mixed script bubble.
-  scoped_ptr<ContentSettingBubbleModel> model(
+  std::unique_ptr<ContentSettingBubbleModel> model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           browser()->content_setting_bubble_model_delegate(),
           browser()->tab_strip_model()->GetActiveWebContents(),
-          browser()->profile(),
-          CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+          browser()->profile(), CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
   model->OnCustomLinkClicked();
 
   // Wait for reload
@@ -102,10 +101,9 @@ class ContentSettingBubbleModelMediaStreamTest : public InProcessBrowserTest {
         OnMediaStreamPermissionSet(
             original_tab->GetLastCommittedURL(),
             state, std::string(), std::string(), std::string(), std::string());
-    scoped_ptr<ContentSettingBubbleModel> bubble(
+    std::unique_ptr<ContentSettingBubbleModel> bubble(
         new ContentSettingMediaStreamBubbleModel(
-            browser()->content_setting_bubble_model_delegate(),
-            original_tab,
+            browser()->content_setting_bubble_model_delegate(), original_tab,
             browser()->profile()));
 
     // Click the management link, which opens in a new tab or window.

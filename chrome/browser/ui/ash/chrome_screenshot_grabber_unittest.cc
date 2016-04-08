@@ -90,12 +90,12 @@ class ChromeScreenshotGrabberTest : public AshTestBase,
     return chrome_screenshot_grabber_->screenshot_grabber_.get();
   }
 
-  scoped_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;
   bool running_;
   bool screenshot_complete_;
   ScreenshotGrabberObserver::Result screenshot_result_;
-  scoped_ptr<ChromeScreenshotGrabber> chrome_screenshot_grabber_;
+  std::unique_ptr<ChromeScreenshotGrabber> chrome_screenshot_grabber_;
   base::FilePath screenshot_path_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 

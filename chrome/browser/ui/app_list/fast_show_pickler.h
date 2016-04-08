@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_FAST_SHOW_PICKLER_H_
 #define CHROME_BROWSER_UI_APP_LIST_FAST_SHOW_PICKLER_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "ui/app_list/app_list_model.h"
 
@@ -21,13 +21,13 @@ class FastShowPickler {
 
   // Pickles a subset of the data in |model| that is useful for doing a fast
   // show of the app list.
-  static scoped_ptr<base::Pickle> PickleAppListModelForFastShow(
+  static std::unique_ptr<base::Pickle> PickleAppListModelForFastShow(
       app_list::AppListModel* model);
 
   // Given a Pickle created by PickleAppListModelForFastShow(), this creates an
   // AppListModel that represents it.
-  static scoped_ptr<app_list::AppListModel> UnpickleAppListModelForFastShow(
-      base::Pickle* pickle);
+  static std::unique_ptr<app_list::AppListModel>
+  UnpickleAppListModelForFastShow(base::Pickle* pickle);
 
   // Copies parts that are needed to show the app list quickly on startup from
   // |src| to |dest|.
@@ -36,7 +36,7 @@ class FastShowPickler {
 
  private:
   // Private static methods allow friend access to AppListItem methods.
-  static scoped_ptr<app_list::AppListItem> UnpickleAppListItem(
+  static std::unique_ptr<app_list::AppListItem> UnpickleAppListItem(
       base::PickleIterator* it);
   static bool PickleAppListItem(base::Pickle* pickle,
                                 app_list::AppListItem* item);

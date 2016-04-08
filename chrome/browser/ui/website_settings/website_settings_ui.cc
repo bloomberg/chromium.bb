@@ -130,7 +130,7 @@ WebsiteSettingsUI::PermissionInfo::PermissionInfo()
 
 WebsiteSettingsUI::ChosenObjectInfo::ChosenObjectInfo(
     const WebsiteSettings::ChooserUIInfo& ui_info,
-    scoped_ptr<base::DictionaryValue> object)
+    std::unique_ptr<base::DictionaryValue> object)
     : ui_info(ui_info), object(std::move(object)) {}
 
 WebsiteSettingsUI::ChosenObjectInfo::~ChosenObjectInfo() {}

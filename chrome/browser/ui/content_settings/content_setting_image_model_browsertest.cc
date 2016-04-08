@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/content_settings/content_setting_image_model.h"
+
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
@@ -38,7 +40,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingImageModelBrowserTest, CreateBubbleModel) {
 
   Profile* profile = browser()->profile();
   for (ContentSettingsType type : content_settings_to_test) {
-    scoped_ptr<ContentSettingBubbleModel> bubble(
+    std::unique_ptr<ContentSettingBubbleModel> bubble(
         ContentSettingSimpleImageModel::CreateForContentTypeForTesting(type)
             ->CreateBubbleModel(nullptr, web_contents, profile));
 
@@ -55,7 +57,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingImageModelBrowserTest, CreateBubbleModel) {
   ScopedVector<ContentSettingImageModel> models =
       ContentSettingImageModel::GenerateContentSettingImageModels();
   for (ContentSettingImageModel* model : models) {
-    EXPECT_TRUE(make_scoped_ptr(
+    EXPECT_TRUE(base::WrapUnique(
                     model->CreateBubbleModel(nullptr, web_contents, profile))
                     .get());
   }
@@ -68,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingImageModelBrowserTest,
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  scoped_ptr<ContentSettingImageModel> model =
+  std::unique_ptr<ContentSettingImageModel> model =
       ContentSettingSimpleImageModel::CreateForContentTypeForTesting(
           CONTENT_SETTINGS_TYPE_IMAGES);
 

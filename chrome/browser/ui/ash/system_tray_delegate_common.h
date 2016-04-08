@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_DELEGATE_COMMON_H_
 #define CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_DELEGATE_COMMON_H_
 
+#include <memory>
 #include <string>
 
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -45,7 +45,7 @@ class SystemTrayDelegateCommon : public ash::SystemTrayDelegate,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  scoped_ptr<content::NotificationRegistrar> registrar_;
+  std::unique_ptr<content::NotificationRegistrar> registrar_;
   base::HourClockType clock_type_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegateCommon);

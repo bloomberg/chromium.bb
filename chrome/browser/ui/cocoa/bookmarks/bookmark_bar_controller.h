@@ -7,11 +7,12 @@
 
 #import <Cocoa/Cocoa.h>
 #include <stdint.h>
+
 #include <map>
+#include <memory>
 
 #import "base/mac/cocoa_protocols.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_bridge.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_state.h"
@@ -204,7 +205,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
   // Bridge from Chrome-style C++ notifications (e.g. derived from
   // BookmarkModelObserver)
-  scoped_ptr<BookmarkBarBridge> bridge_;
+  std::unique_ptr<BookmarkBarBridge> bridge_;
 
   // Delegate that is informed about state changes in the bookmark bar.
   id<BookmarkBarControllerDelegate> delegate_;  // weak
@@ -293,7 +294,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
   // Specifically watch the currently pulsing node. This lets us stop pulsing
   // when anything happens to the node. Null if there is no pulsing node.
-  scoped_ptr<BookmarkModelObserverForCocoa> pulsingBookmarkObserver_;
+  std::unique_ptr<BookmarkModelObserverForCocoa> pulsingBookmarkObserver_;
 }
 
 @property(readonly, nonatomic) BookmarkBar::State currentState;

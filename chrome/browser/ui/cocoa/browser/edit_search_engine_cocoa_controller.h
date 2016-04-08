@@ -7,7 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"
 
 class TemplateURL;
@@ -32,7 +33,7 @@ class TemplateURL;
 
   Profile* profile_;  // weak
   TemplateURL* templateURL_;  // weak
-  scoped_ptr<EditSearchEngineController> controller_;
+  std::unique_ptr<EditSearchEngineController> controller_;
 }
 
 - (id)initWithProfile:(Profile*)profile

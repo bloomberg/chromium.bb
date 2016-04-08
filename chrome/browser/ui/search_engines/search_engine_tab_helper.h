@@ -45,7 +45,7 @@ class SearchEngineTabHelper
                      const search_provider::OSDDType& msg_provider_type);
 
   // Handles when an OSDD is downloaded.
-  void OnDownloadedOSDD(scoped_ptr<TemplateURL> template_url);
+  void OnDownloadedOSDD(std::unique_ptr<TemplateURL> template_url);
 
   // If params has a searchable form, this tries to create a new keyword.
   void GenerateKeywordIfNecessary(

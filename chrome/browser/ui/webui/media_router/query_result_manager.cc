@@ -87,7 +87,7 @@ void QueryResultManager::StartSinksQuery(MediaCastMode cast_mode,
   RemoveObserverForCastMode(cast_mode);
   UpdateWithSinksQueryResult(cast_mode, std::vector<MediaSink>());
 
-  scoped_ptr<CastModeMediaSinksObserver> observer(
+  std::unique_ptr<CastModeMediaSinksObserver> observer(
       new CastModeMediaSinksObserver(cast_mode, source, origin, router_, this));
   observer->Init();
   auto result =

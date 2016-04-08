@@ -4,7 +4,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/time/time.h"
 
 @class ChromeUILocalizer;
@@ -93,8 +94,8 @@ class MenuModel;
 
   IBOutlet NSImageView* image_;
 
-  scoped_ptr<DownloadItemMac> bridge_;
-  scoped_ptr<DownloadShelfContextMenuMac> menuBridge_;
+  std::unique_ptr<DownloadItemMac> bridge_;
+  std::unique_ptr<DownloadShelfContextMenuMac> menuBridge_;
 
   // Weak pointer to the shelf that owns us.
   DownloadShelfController* shelf_;
@@ -103,7 +104,7 @@ class MenuModel;
   base::Time creationTime_;
 
   // Default font list to use for text metrics.
-  scoped_ptr<gfx::FontList> font_list_;
+  std::unique_ptr<gfx::FontList> font_list_;
 
   // The state of this item.
   enum DownloadItemState {
@@ -113,7 +114,7 @@ class MenuModel;
 
   // ExperienceSampling: This tracks dangerous/malicious downloads warning UI
   // and the user's decisions about it.
-  scoped_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
+  std::unique_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
 };
 
 // Initialize controller for |downloadItem|.

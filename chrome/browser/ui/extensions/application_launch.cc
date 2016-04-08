@@ -107,7 +107,7 @@ class EnableViaDialogFlow : public ExtensionEnableFlowDelegate {
   std::string extension_id_;
   base::Callback<gfx::NativeWindow(void)> parent_window_getter_;
   base::Closure callback_;
-  scoped_ptr<ExtensionEnableFlow> flow_;
+  std::unique_ptr<ExtensionEnableFlow> flow_;
 
   DISALLOW_COPY_AND_ASSIGN(EnableViaDialogFlow);
 };

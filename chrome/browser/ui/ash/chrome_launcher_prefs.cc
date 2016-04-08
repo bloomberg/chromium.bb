@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -23,7 +24,7 @@ const char* kDefaultPinnedApps[] = {
 };
 
 base::ListValue* CreateDefaultPinnedAppsList() {
-  scoped_ptr<base::ListValue> apps(new base::ListValue);
+  std::unique_ptr<base::ListValue> apps(new base::ListValue);
   for (size_t i = 0; i < arraysize(kDefaultPinnedApps); ++i)
     apps->Append(ash::CreateAppDict(kDefaultPinnedApps[i]));
 
@@ -71,7 +72,7 @@ void RegisterChromeLauncherUserPrefs(
 }
 
 base::DictionaryValue* CreateAppDict(const std::string& app_id) {
-  scoped_ptr<base::DictionaryValue> app_value(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> app_value(new base::DictionaryValue);
   app_value->SetString(kPinnedAppsPrefAppIDPath, app_id);
   return app_value.release();
 }

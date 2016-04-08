@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -24,7 +24,7 @@ struct PasswordForm;
 
 // Multimap from sort key to password forms.
 using DuplicatesMap =
-    std::multimap<std::string, scoped_ptr<autofill::PasswordForm>>;
+    std::multimap<std::string, std::unique_ptr<autofill::PasswordForm>>;
 
 class PasswordUIView;
 
@@ -84,7 +84,7 @@ class PasswordManagerPresenter
   // forms with the same key, all such forms but the first one are
   // stored in |duplicates| instead of |list|.
   void SortEntriesAndHideDuplicates(
-      std::vector<scoped_ptr<autofill::PasswordForm>>* list,
+      std::vector<std::unique_ptr<autofill::PasswordForm>>* list,
       DuplicatesMap* duplicates,
       bool username_and_password_in_key);
 
@@ -131,8 +131,8 @@ class PasswordManagerPresenter
   PasswordListPopulater populater_;
   PasswordExceptionListPopulater exception_populater_;
 
-  std::vector<scoped_ptr<autofill::PasswordForm>> password_list_;
-  std::vector<scoped_ptr<autofill::PasswordForm>> password_exception_list_;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> password_list_;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> password_exception_list_;
   DuplicatesMap password_duplicates_;
   DuplicatesMap password_exception_duplicates_;
 

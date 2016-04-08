@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewBrowserTest,
 
   base::RunLoop run_loop;
   TestExtensionUninstallDialogDelegate delegate(run_loop.QuitClosure());
-  scoped_ptr<extensions::ExtensionUninstallDialog> dialog(
+  std::unique_ptr<extensions::ExtensionUninstallDialog> dialog(
       extensions::ExtensionUninstallDialog::Create(
           browser()->profile(), browser()->window()->GetNativeWindow(),
           &delegate));

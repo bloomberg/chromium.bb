@@ -7,6 +7,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -19,7 +20,6 @@
 #include "ash/shelf/shelf_types.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/app_icon_loader.h"
@@ -393,7 +393,7 @@ class ChromeLauncherController
   // These are intended for testing.
   void SetAppTabHelperForTest(AppTabHelper* helper);
   void SetAppIconLoadersForTest(
-      std::vector<scoped_ptr<AppIconLoader>>& loaders);
+      std::vector<std::unique_ptr<AppIconLoader>>& loaders);
   const std::string& GetAppIdFromShelfIdForTest(ash::ShelfID id);
 
   // Sets the ash::ShelfItemDelegateManager only for unittests and doesn't
@@ -543,29 +543,31 @@ class ChromeLauncherController
   WebContentsToAppIDMap web_contents_to_app_id_;
 
   // Used to track app windows.
-  std::vector<scoped_ptr<AppWindowLauncherController>> app_window_controllers_;
+  std::vector<std::unique_ptr<AppWindowLauncherController>>
+      app_window_controllers_;
 
   // Used to get app info for tabs.
-  scoped_ptr<AppTabHelper> app_tab_helper_;
+  std::unique_ptr<AppTabHelper> app_tab_helper_;
 
   // Used to load the image for an extension app item.
-  std::vector<scoped_ptr<AppIconLoader>> app_icon_loaders_;
+  std::vector<std::unique_ptr<AppIconLoader>> app_icon_loaders_;
 
   // Used to handle app load/unload events.
-  std::vector<scoped_ptr<LauncherAppUpdater>> app_updaters_;
+  std::vector<std::unique_ptr<LauncherAppUpdater>> app_updaters_;
 
   PrefChangeRegistrar pref_change_registrar_;
 
   AppSyncUIState* app_sync_ui_state_;
 
-  scoped_ptr<ExtensionEnableFlow> extension_enable_flow_;
+  std::unique_ptr<ExtensionEnableFlow> extension_enable_flow_;
 
   // The owned browser status monitor.
-  scoped_ptr<BrowserStatusMonitor> browser_status_monitor_;
+  std::unique_ptr<BrowserStatusMonitor> browser_status_monitor_;
 
 #if defined(OS_CHROMEOS)
   // A special observer class to detect user switches.
-  scoped_ptr<ChromeLauncherControllerUserSwitchObserver> user_switch_observer_;
+  std::unique_ptr<ChromeLauncherControllerUserSwitchObserver>
+      user_switch_observer_;
 #endif
 
   // If true, incoming pinned state changes should be ignored.

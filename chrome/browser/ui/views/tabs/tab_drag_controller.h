@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/timer/timer.h"
@@ -605,9 +605,9 @@ class TabDragController : public content::NotificationObserver,
   int attach_x_;
   int attach_index_;
 
-  scoped_ptr<ui::EventHandler> escape_tracker_;
+  std::unique_ptr<ui::EventHandler> escape_tracker_;
 
-  scoped_ptr<WindowFinder> window_finder_;
+  std::unique_ptr<WindowFinder> window_finder_;
 
   base::WeakPtrFactory<TabDragController> weak_factory_;
 

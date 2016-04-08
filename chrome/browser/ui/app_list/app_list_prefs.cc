@@ -32,9 +32,9 @@ AppListPrefs::AppListInfo::AppListInfo(const AppListInfo& other) = default;
 AppListPrefs::AppListInfo::~AppListInfo() {
 }
 
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 AppListPrefs::AppListInfo::CreateDictFromAppListInfo() const {
-  scoped_ptr<base::DictionaryValue> item_dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> item_dict(new base::DictionaryValue());
   item_dict->SetString(kModelItemPosition, position.ToInternalValue());
   item_dict->SetString(kModelItemParentId, parent_id);
   item_dict->SetString(kModelItemName, name);
@@ -43,11 +43,11 @@ AppListPrefs::AppListInfo::CreateDictFromAppListInfo() const {
 }
 
 // static
-scoped_ptr<AppListPrefs::AppListInfo>
+std::unique_ptr<AppListPrefs::AppListInfo>
 AppListPrefs::AppListInfo::CreateAppListInfoFromDict(
     const base::DictionaryValue* item_dict) {
   std::string item_ordinal_string;
-  scoped_ptr<AppListInfo> info(new AppListPrefs::AppListInfo());
+  std::unique_ptr<AppListInfo> info(new AppListPrefs::AppListInfo());
   int item_type_int = -1;
   if (!item_dict ||
       !item_dict->GetString(kModelItemPosition, &item_ordinal_string) ||
@@ -55,7 +55,7 @@ AppListPrefs::AppListInfo::CreateAppListInfoFromDict(
       !item_dict->GetString(kModelItemName, &info->name) ||
       !item_dict->GetInteger(kModelItemType, &item_type_int) ||
       item_type_int < ITEM_TYPE_BEGIN || item_type_int > ITEM_TYPE_END) {
-    return scoped_ptr<AppListInfo>();
+    return std::unique_ptr<AppListInfo>();
   }
 
   info->position = syncer::StringOrdinal(item_ordinal_string);
@@ -94,14 +94,14 @@ void AppListPrefs::SetAppListInfo(const std::string& id,
   update->Set(id, info.CreateDictFromAppListInfo().release());
 }
 
-scoped_ptr<AppListPrefs::AppListInfo> AppListPrefs::GetAppListInfo(
+std::unique_ptr<AppListPrefs::AppListInfo> AppListPrefs::GetAppListInfo(
     const std::string& id) const {
   const base::DictionaryValue* model_dict =
       pref_service_->GetDictionary(kPrefModel);
   DCHECK(model_dict);
   const base::DictionaryValue* item_dict = NULL;
   if (!model_dict->GetDictionary(id, &item_dict))
-    return scoped_ptr<AppListInfo>();
+    return std::unique_ptr<AppListInfo>();
 
   return AppListInfo::CreateAppListInfoFromDict(item_dict);
 }

@@ -4,12 +4,13 @@
 
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -133,14 +134,14 @@ class RecentTabsSubMenuModelTest
     manager_.reset(new browser_sync::SessionsSyncManager(
         sync_service_.GetSyncClient()->GetSyncSessionsClient(),
         sync_prefs_.get(), local_device_.get(),
-        scoped_ptr<browser_sync::LocalSessionEventRouter>(new DummyRouter()),
+        std::unique_ptr<browser_sync::LocalSessionEventRouter>(
+            new DummyRouter()),
         base::Closure(), base::Closure()));
     manager_->MergeDataAndStartSyncing(
-        syncer::SESSIONS,
-        syncer::SyncDataList(),
-        scoped_ptr<syncer::SyncChangeProcessor>(
-          new syncer::FakeSyncChangeProcessor),
-        scoped_ptr<syncer::SyncErrorFactory>(
+        syncer::SESSIONS, syncer::SyncDataList(),
+        std::unique_ptr<syncer::SyncChangeProcessor>(
+            new syncer::FakeSyncChangeProcessor),
+        std::unique_ptr<syncer::SyncErrorFactory>(
             new syncer::SyncErrorFactoryMock));
   }
 
@@ -148,10 +149,10 @@ class RecentTabsSubMenuModelTest
     content::RunAllBlockingPoolTasksUntilIdle();
   }
 
-  static scoped_ptr<KeyedService> GetTabRestoreService(
+  static std::unique_ptr<KeyedService> GetTabRestoreService(
       content::BrowserContext* browser_context) {
-    return make_scoped_ptr(new sessions::PersistentTabRestoreService(
-        make_scoped_ptr(new ChromeTabRestoreServiceClient(
+    return base::WrapUnique(new sessions::PersistentTabRestoreService(
+        base::WrapUnique(new ChromeTabRestoreServiceClient(
             Profile::FromBrowserContext(browser_context))),
         nullptr));
   }
@@ -167,9 +168,9 @@ class RecentTabsSubMenuModelTest
  private:
   TestingProfile testing_profile_;
   ProfileSyncServiceMock sync_service_;
-  scoped_ptr<sync_driver::SyncPrefs> sync_prefs_;
-  scoped_ptr<browser_sync::SessionsSyncManager> manager_;
-  scoped_ptr<sync_driver::LocalDeviceInfoProviderMock> local_device_;
+  std::unique_ptr<sync_driver::SyncPrefs> sync_prefs_;
+  std::unique_ptr<browser_sync::SessionsSyncManager> manager_;
+  std::unique_ptr<sync_driver::LocalDeviceInfoProviderMock> local_device_;
 };
 
 // Test disabled "Recently closed" header with no foreign tabs.
@@ -283,7 +284,7 @@ TEST_F(RecentTabsSubMenuModelTest,
   // a window with a tab to this session.
   SessionService* session_service = new SessionService(profile());
   SessionServiceFactory::SetForTestProfile(profile(),
-                                           make_scoped_ptr(session_service));
+                                           base::WrapUnique(session_service));
   SessionID tab_id;
   SessionID window_id;
   session_service->SetWindowType(window_id,

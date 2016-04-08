@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/webui/app_list/start_page_handler.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "base/version.h"

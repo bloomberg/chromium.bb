@@ -63,7 +63,7 @@ CGFloat kMinWidth = 320.0;
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                anchorPoint:(NSPoint)anchorPoint
-                  delegate:(scoped_ptr<ToolbarActionsBarBubbleDelegate>)
+                  delegate:(std::unique_ptr<ToolbarActionsBarBubbleDelegate>)
                                delegate {
   base::scoped_nsobject<InfoBubbleWindow> window(
       [[InfoBubbleWindow alloc]

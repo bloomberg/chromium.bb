@@ -30,7 +30,7 @@ class DesktopMediaPickerViewsTest : public testing::Test {
 
   void SetUp() override {
     media_list_ = new FakeDesktopMediaList();
-    scoped_ptr<FakeDesktopMediaList> media_list(media_list_);
+    std::unique_ptr<FakeDesktopMediaList> media_list(media_list_);
 
     base::string16 app_name = base::ASCIIToUTF16("foo");
 
@@ -58,7 +58,7 @@ class DesktopMediaPickerViewsTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   views::ScopedViewsTestHelper test_helper_;
   FakeDesktopMediaList* media_list_;
-  scoped_ptr<DesktopMediaPickerViews> picker_views_;
+  std::unique_ptr<DesktopMediaPickerViews> picker_views_;
 };
 
 TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledWhenWindowClosed) {

@@ -7,8 +7,9 @@
 
 #include <jni.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 
 namespace autofill {
@@ -19,7 +20,8 @@ class AutofillSaveCardInfoBarDelegateMobile;
 class AutofillSaveCardInfoBar : public ConfirmInfoBar {
  public:
   explicit AutofillSaveCardInfoBar(
-      scoped_ptr<autofill::AutofillSaveCardInfoBarDelegateMobile> delegate);
+      std::unique_ptr<autofill::AutofillSaveCardInfoBarDelegateMobile>
+          delegate);
   ~AutofillSaveCardInfoBar() override;
 
   // Called when a link in the legal message text was clicked.

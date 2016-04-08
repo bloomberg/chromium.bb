@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/easy_unlock_settings_handler.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
@@ -92,9 +94,9 @@ class TestEasyUnlockSettingsHandler : public EasyUnlockSettingsHandler {
   using EasyUnlockSettingsHandler::set_web_ui;
 };
 
-scoped_ptr<KeyedService> CreateEasyUnlockServiceForTest(
+std::unique_ptr<KeyedService> CreateEasyUnlockServiceForTest(
     content::BrowserContext* context) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new FakeEasyUnlockService(Profile::FromBrowserContext(context)));
 }
 
@@ -171,12 +173,12 @@ class EasyUnlockSettingsHandlerTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
   content::TestWebUI web_ui_;
 };
 
 TEST_F(EasyUnlockSettingsHandlerTest, OnlyCreatedWhenEasyUnlockAllowed) {
-  scoped_ptr<EasyUnlockSettingsHandler> handler;
+  std::unique_ptr<EasyUnlockSettingsHandler> handler;
   content::WebUIDataSource* data_source =
       content::WebUIDataSource::Create("test-data-source");
   content::WebUIDataSource::Add(profile(), data_source);
@@ -190,7 +192,7 @@ TEST_F(EasyUnlockSettingsHandlerTest, OnlyCreatedWhenEasyUnlockAllowed) {
 }
 
 TEST_F(EasyUnlockSettingsHandlerTest, EnabledStatus) {
-  scoped_ptr<EasyUnlockSettingsHandler> handler;
+  std::unique_ptr<EasyUnlockSettingsHandler> handler;
   handler.reset(new TestEasyUnlockSettingsHandler(profile()));
   handler->set_web_ui(web_ui());
 
@@ -222,7 +224,7 @@ TEST_F(EasyUnlockSettingsHandlerTest, EnabledStatus) {
 }
 
 TEST_F(EasyUnlockSettingsHandlerTest, TurnOffFlowStatus) {
-  scoped_ptr<EasyUnlockSettingsHandler> handler;
+  std::unique_ptr<EasyUnlockSettingsHandler> handler;
   handler.reset(new TestEasyUnlockSettingsHandler(profile()));
   handler->set_web_ui(web_ui());
 

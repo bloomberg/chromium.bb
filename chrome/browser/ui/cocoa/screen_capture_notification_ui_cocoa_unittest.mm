@@ -47,7 +47,7 @@ class ScreenCaptureNotificationUICocoaTest : public CocoaTest {
     return target_->windowController_.get();
   }
 
-  scoped_ptr<ScreenCaptureNotificationUICocoa> target_;
+  std::unique_ptr<ScreenCaptureNotificationUICocoa> target_;
   int callback_called_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenCaptureNotificationUICocoaTest);

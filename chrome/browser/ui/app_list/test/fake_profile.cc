@@ -28,8 +28,8 @@ base::FilePath FakeProfile::GetPath() const {
   return path_;
 }
 
-scoped_ptr<content::ZoomLevelDelegate> FakeProfile::CreateZoomLevelDelegate(
-    const base::FilePath& partition_path) {
+std::unique_ptr<content::ZoomLevelDelegate>
+FakeProfile::CreateZoomLevelDelegate(const base::FilePath& partition_path) {
   return nullptr;
 }
 

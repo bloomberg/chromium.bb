@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_MENU_TEST_BASE_H_
 #define CHROME_BROWSER_UI_VIEWS_MENU_TEST_BASE_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/view_event_test_base.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -83,7 +84,7 @@ class MenuTestBase : public ViewEventTestBase,
  private:
   views::MenuButton* button_;
   views::MenuItemView* menu_;
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   // The command id of the last pressed menu item since the menu was opened.
   int last_command_;

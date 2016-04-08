@@ -689,7 +689,7 @@ TabStrip::TabStrip(TabStripController* controller)
       immersive_style_(false) {
   Init();
   SetEventTargeter(
-      scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
+      std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 }
 
 TabStrip::~TabStrip() {
@@ -1708,8 +1708,8 @@ void TabStrip::Init() {
       l10n_util::GetStringUTF16(IDS_ACCNAME_NEWTAB));
   newtab_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
                                     views::ImageButton::ALIGN_BOTTOM);
-  newtab_button_->SetEventTargeter(
-      scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(newtab_button_)));
+  newtab_button_->SetEventTargeter(std::unique_ptr<views::ViewTargeter>(
+      new views::ViewTargeter(newtab_button_)));
   AddChildView(newtab_button_);
 
   if (drop_indicator_width == 0) {
@@ -1770,9 +1770,9 @@ void TabStrip::ScheduleRemoveTabAnimation(Tab* tab) {
   gfx::Rect tab_bounds = tab->bounds();
   tab_bounds.set_width(0);
   bounds_animator_.AnimateViewTo(tab, tab_bounds);
-  bounds_animator_.SetAnimationDelegate(
-      tab,
-      scoped_ptr<gfx::AnimationDelegate>(new RemoveTabDelegate(this, tab)));
+  bounds_animator_.SetAnimationDelegate(tab,
+                                        std::unique_ptr<gfx::AnimationDelegate>(
+                                            new RemoveTabDelegate(this, tab)));
 
   // Don't animate the new tab button when dragging tabs. Otherwise it looks
   // like the new tab button magically appears from beyond the end of the tab
@@ -1789,9 +1789,8 @@ void TabStrip::AnimateToIdealBounds() {
     if (!tab->dragging()) {
       bounds_animator_.AnimateViewTo(tab, ideal_bounds(i));
       bounds_animator_.SetAnimationDelegate(
-          tab,
-          scoped_ptr<gfx::AnimationDelegate>(
-              new TabAnimationDelegate(this, tab)));
+          tab, std::unique_ptr<gfx::AnimationDelegate>(
+                   new TabAnimationDelegate(this, tab)));
     }
   }
 
@@ -2030,7 +2029,7 @@ void TabStrip::RemoveTabFromViewModel(int index) {
 }
 
 void TabStrip::RemoveAndDeleteTab(Tab* tab) {
-  scoped_ptr<Tab> deleter(tab);
+  std::unique_ptr<Tab> deleter(tab);
   FindClosingTabResult res(FindClosingTab(tab));
   res.first->second.erase(res.second);
   if (res.first->second.empty())
@@ -2138,9 +2137,8 @@ void TabStrip::StoppedDraggingTab(Tab* tab, bool* is_first_tab) {
   // Install a delegate to reset the dragging state when done. We have to leave
   // dragging true for the tab otherwise it'll draw beneath the new tab button.
   bounds_animator_.SetAnimationDelegate(
-      tab,
-      scoped_ptr<gfx::AnimationDelegate>(
-          new ResetDraggingStateDelegate(this, tab)));
+      tab, std::unique_ptr<gfx::AnimationDelegate>(
+               new ResetDraggingStateDelegate(this, tab)));
 }
 
 void TabStrip::OwnDragController(TabDragController* controller) {
@@ -2592,9 +2590,8 @@ void TabStrip::StartMouseInitiatedRemoveTabAnimation(int model_index) {
   // Register delegate to do cleanup when done, BoundsAnimator takes
   // ownership of RemoveTabDelegate.
   bounds_animator_.SetAnimationDelegate(
-      tab_closing,
-      scoped_ptr<gfx::AnimationDelegate>(
-          new RemoveTabDelegate(this, tab_closing)));
+      tab_closing, std::unique_ptr<gfx::AnimationDelegate>(
+                       new RemoveTabDelegate(this, tab_closing)));
 }
 
 bool TabStrip::IsPointInTab(Tab* tab,

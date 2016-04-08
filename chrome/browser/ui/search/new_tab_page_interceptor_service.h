@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_NEW_TAB_PAGE_INTERCEPTOR_SERVICE_H_
 #define CHROME_BROWSER_UI_SEARCH_NEW_TAB_PAGE_INTERCEPTOR_SERVICE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/search_engines/template_url_service_observer.h"
@@ -29,7 +30,7 @@ class NewTabPageInterceptorService : public KeyedService,
   // TemplateURLServiceObserver override.
   void OnTemplateURLServiceChanged() override;
 
-  scoped_ptr<net::URLRequestInterceptor> CreateInterceptor();
+  std::unique_ptr<net::URLRequestInterceptor> CreateInterceptor();
 
  private:
   Profile* profile_;

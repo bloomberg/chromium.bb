@@ -192,7 +192,7 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
     return;
   }
 
-  scoped_ptr<AppInfo> app_info = GetApp(app_id);
+  std::unique_ptr<AppInfo> app_info = GetApp(app_id);
   if (!app_info) {
     VLOG(2) << "Failed to get app info: " <<  app_id << ".";
     return;
@@ -226,12 +226,12 @@ std::vector<std::string> ArcAppListPrefs::GetAppIds() const {
   return ids;
 }
 
-scoped_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
+std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
     const std::string& app_id) const {
   const base::DictionaryValue* app = nullptr;
   const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
   if (!apps || !apps->GetDictionaryWithoutPathExpansion(app_id, &app))
-    return scoped_ptr<AppInfo>();
+    return std::unique_ptr<AppInfo>();
 
   std::string name;
   std::string package_name;
@@ -253,12 +253,9 @@ scoped_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
     }
   }
 
-  scoped_ptr<AppInfo> app_info(new AppInfo(name,
-                                           package_name,
-                                           activity,
-                                           last_launch_time,
-                                           sticky,
-                                           ready_apps_.count(app_id) > 0));
+  std::unique_ptr<AppInfo> app_info(new AppInfo(name, package_name, activity,
+                                                last_launch_time, sticky,
+                                                ready_apps_.count(app_id) > 0));
   return app_info;
 }
 
@@ -325,7 +322,7 @@ void ArcAppListPrefs::AddApp(const arc::AppInfo& app) {
   bool was_registered = IsRegistered(app_id);
 
   if (was_registered) {
-    scoped_ptr<ArcAppListPrefs::AppInfo> app_old_info = GetApp(app_id);
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_old_info = GetApp(app_id);
     if (app.name != app_old_info->name) {
       FOR_EACH_OBSERVER(Observer, observer_list_,
                         OnAppNameUpdated(app_id, app.name));

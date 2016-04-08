@@ -110,13 +110,12 @@ views::Widget* TranslateBubbleView::ShowBubble(
   ChromeTranslateClient::GetTranslateLanguages(
       web_contents, &source_language, &target_language);
 
-  scoped_ptr<translate::TranslateUIDelegate> ui_delegate(
+  std::unique_ptr<translate::TranslateUIDelegate> ui_delegate(
       new translate::TranslateUIDelegate(
           ChromeTranslateClient::GetManagerFromWebContents(web_contents)
               ->GetWeakPtr(),
-          source_language,
-          target_language));
-  scoped_ptr<TranslateBubbleModel> model(
+          source_language, target_language));
+  std::unique_ptr<TranslateBubbleModel> model(
       new TranslateBubbleModelImpl(step, std::move(ui_delegate)));
   TranslateBubbleView* view = new TranslateBubbleView(
       anchor_view, std::move(model), error_type, web_contents);
@@ -243,7 +242,7 @@ TranslateBubbleModel::ViewState TranslateBubbleView::GetViewState() const {
 
 TranslateBubbleView::TranslateBubbleView(
     views::View* anchor_view,
-    scoped_ptr<TranslateBubbleModel> model,
+    std::unique_ptr<TranslateBubbleModel> model,
     translate::TranslateErrors::Type error_type,
     content::WebContents* web_contents)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),

@@ -17,7 +17,7 @@ class TranslateInfoBarDelegate;
 class TranslateInfoBar : public InfoBarAndroid {
  public:
   explicit TranslateInfoBar(
-      scoped_ptr<translate::TranslateInfoBarDelegate> delegate);
+      std::unique_ptr<translate::TranslateInfoBarDelegate> delegate);
   ~TranslateInfoBar() override;
 
   // JNI methods specific to translate.

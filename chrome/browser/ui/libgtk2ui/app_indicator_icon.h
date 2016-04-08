@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_LIBGTK2UI_APP_INDICATOR_ICON_H_
 #define CHROME_BROWSER_UI_LIBGTK2UI_APP_INDICATOR_ICON_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/nix/xdg_util.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal.h"
@@ -93,7 +94,7 @@ class AppIndicatorIcon : public views::StatusIconLinux {
   // Gtk status icon wrapper
   AppIndicator* icon_;
 
-  scoped_ptr<AppIndicatorIconMenu> menu_;
+  std::unique_ptr<AppIndicatorIconMenu> menu_;
   ui::MenuModel* menu_model_;
 
   base::FilePath temp_dir_;

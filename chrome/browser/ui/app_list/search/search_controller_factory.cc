@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
@@ -59,11 +60,11 @@ bool IsSuggestionsSearchProviderEnabled() {
 
 }  // namespace
 
-scoped_ptr<SearchController> CreateSearchController(
+std::unique_ptr<SearchController> CreateSearchController(
     Profile* profile,
     AppListModel* model,
     AppListControllerDelegate* list_controller) {
-  scoped_ptr<SearchController> controller(
+  std::unique_ptr<SearchController> controller(
       new SearchController(model->search_box(), model->results(),
                            HistoryFactory::GetForBrowserContext(profile)));
 
@@ -85,24 +86,24 @@ scoped_ptr<SearchController> CreateSearchController(
   // Add search providers.
   controller->AddProvider(
       apps_group_id,
-      scoped_ptr<SearchProvider>(new AppSearchProvider(
-          profile, list_controller, make_scoped_ptr(new base::DefaultClock()),
+      std::unique_ptr<SearchProvider>(new AppSearchProvider(
+          profile, list_controller, base::WrapUnique(new base::DefaultClock()),
           model->top_level_item_list())));
   controller->AddProvider(omnibox_group_id,
-                          scoped_ptr<SearchProvider>(
+                          std::unique_ptr<SearchProvider>(
                               new OmniboxProvider(profile, list_controller)));
   controller->AddProvider(webstore_group_id,
-                          scoped_ptr<SearchProvider>(
+                          std::unique_ptr<SearchProvider>(
                               new WebstoreProvider(profile, list_controller)));
-  controller->AddProvider(
-      people_group_id,
-      scoped_ptr<SearchProvider>(new PeopleProvider(profile, list_controller)));
+  controller->AddProvider(people_group_id,
+                          std::unique_ptr<SearchProvider>(
+                              new PeopleProvider(profile, list_controller)));
   if (IsSuggestionsSearchProviderEnabled()) {
     size_t suggestions_group_id =
         controller->AddGroup(kMaxSuggestionsResults, 3.0, 1.0);
     controller->AddProvider(
         suggestions_group_id,
-        scoped_ptr<SearchProvider>(
+        std::unique_ptr<SearchProvider>(
             new SuggestionsSearchProvider(profile, list_controller)));
   }
 
@@ -115,7 +116,7 @@ scoped_ptr<SearchController> CreateSearchController(
         controller->AddGroup(kMaxLauncherSearchResults, 0.0, 1.0);
     controller->AddProvider(
         search_api_group_id,
-        scoped_ptr<SearchProvider>(new LauncherSearchProvider(profile)));
+        std::unique_ptr<SearchProvider>(new LauncherSearchProvider(profile)));
   }
 #endif
 

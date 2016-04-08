@@ -7,6 +7,7 @@
 #include <Carbon/Carbon.h>  // kVK_Return
 
 #include "base/mac/foundation_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -15,9 +16,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_service.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_popup_view_mac.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
@@ -173,7 +174,7 @@ OmniboxViewMac::OmniboxViewMac(OmniboxEditController* controller,
                                AutocompleteTextField* field)
     : OmniboxView(
           controller,
-          make_scoped_ptr(new ChromeOmniboxClient(controller, profile))),
+          base::WrapUnique(new ChromeOmniboxClient(controller, profile))),
       profile_(profile),
       popup_view_(new OmniboxPopupViewMac(this, model(), field)),
       field_(field),

@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -18,7 +19,6 @@
 #undef RootWindow
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -186,7 +186,7 @@ void SelectFileDialogImplGTK::AddFilters(GtkFileChooser* chooser) {
       if (!current_extension.empty()) {
         if (!filter)
           filter = gtk_file_filter_new();
-        scoped_ptr<std::string> file_extension(
+        std::unique_ptr<std::string> file_extension(
             new std::string("." + current_extension));
         fallback_labels.insert(std::string("*").append(*file_extension));
         gtk_file_filter_add_custom(

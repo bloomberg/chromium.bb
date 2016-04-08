@@ -135,7 +135,7 @@ class ChevronMenuButton::MenuController : public views::MenuDelegate {
   views::MenuItemView* menu_;
 
   // Resposible for running the menu.
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   // The index into the ToolbarActionView vector, indicating where to start
   // picking browser actions to draw.
@@ -230,7 +230,7 @@ bool ChevronMenuButton::MenuController::ShowContextMenu(
   if (!view_controller->extension()->ShowConfigureContextMenus())
     return false;
 
-  scoped_ptr<extensions::ExtensionContextMenuModel> context_menu_contents(
+  std::unique_ptr<extensions::ExtensionContextMenuModel> context_menu_contents(
       new extensions::ExtensionContextMenuModel(
           view_controller->extension(), view_controller->browser(),
           extensions::ExtensionContextMenuModel::OVERFLOWED, view_controller));
@@ -377,10 +377,10 @@ void ChevronMenuButton::CloseMenu() {
     menu_controller_->CloseMenu();
 }
 
-scoped_ptr<views::LabelButtonBorder> ChevronMenuButton::CreateDefaultBorder()
-    const {
+std::unique_ptr<views::LabelButtonBorder>
+ChevronMenuButton::CreateDefaultBorder() const {
   // The chevron resource was designed to not have any insets.
-  scoped_ptr<views::LabelButtonBorder> border =
+  std::unique_ptr<views::LabelButtonBorder> border =
       views::MenuButton::CreateDefaultBorder();
   border->set_insets(gfx::Insets());
   return border;

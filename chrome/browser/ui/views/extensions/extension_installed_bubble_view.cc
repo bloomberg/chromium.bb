@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -389,8 +390,8 @@ class ExtensionInstalledBubbleUi : public BubbleUi {
 };
 
 // Implemented here to create the platform specific instance of the BubbleUi.
-scoped_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
-  return make_scoped_ptr(new ExtensionInstalledBubbleUi(this));
+std::unique_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
+  return base::WrapUnique(new ExtensionInstalledBubbleUi(this));
 }
 
 ExtensionInstalledBubbleUi::ExtensionInstalledBubbleUi(

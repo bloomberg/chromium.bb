@@ -7,8 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 
 class BookmarkModelObserverForCocoa;
 class Profile;
@@ -38,7 +39,7 @@ class BookmarkNode;
   base::scoped_nsobject<NSString> initialName_;
 
   // Ping me when things change out from under us.
-  scoped_ptr<BookmarkModelObserverForCocoa> observer_;
+  std::unique_ptr<BookmarkModelObserverForCocoa> observer_;
 }
 
 // Use the 1st initializer for a "rename existing folder" request.

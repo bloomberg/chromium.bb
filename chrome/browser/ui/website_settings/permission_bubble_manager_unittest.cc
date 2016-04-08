@@ -80,8 +80,8 @@ class PermissionBubbleManagerTest : public ChromeRenderViewHostTestHarness {
   MockPermissionBubbleRequest request2_;
   MockPermissionBubbleRequest iframe_request_same_domain_;
   MockPermissionBubbleRequest iframe_request_other_domain_;
-  scoped_ptr<PermissionBubbleManager> manager_;
-  scoped_ptr<MockPermissionBubbleFactory> view_factory_;
+  std::unique_ptr<PermissionBubbleManager> manager_;
+  std::unique_ptr<MockPermissionBubbleFactory> view_factory_;
 };
 
 TEST_F(PermissionBubbleManagerTest, SingleRequest) {

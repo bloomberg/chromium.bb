@@ -70,7 +70,8 @@ class ToolbarActionView : public views::MenuButton,
 
   // views::MenuButton:
   void GetAccessibleState(ui::AXViewState* state) override;
-  scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
+  std::unique_ptr<views::LabelButtonBorder> CreateDefaultBorder()
+      const override;
   bool IsTriggerableEvent(const ui::Event& event) override;
   SkColor GetInkDropBaseColor() const override;
   bool ShouldShowInkDropHover() const override;
@@ -135,7 +136,7 @@ class ToolbarActionView : public views::MenuButton,
   void OnMenuClosed();
 
   // A lock to keep the MenuButton pressed when a menu or popup is visible.
-  scoped_ptr<views::MenuButton::PressedLock> pressed_lock_;
+  std::unique_ptr<views::MenuButton::PressedLock> pressed_lock_;
 
   // The controller for this toolbar action view.
   ToolbarActionViewController* view_controller_;
@@ -151,10 +152,10 @@ class ToolbarActionView : public views::MenuButton,
   bool wants_to_run_;
 
   // Responsible for converting the context menu model into |menu_|.
-  scoped_ptr<views::MenuModelAdapter> menu_adapter_;
+  std::unique_ptr<views::MenuModelAdapter> menu_adapter_;
 
   // Responsible for running the menu.
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   // The root MenuItemView for the context menu, or null if no menu is being
   // shown.
@@ -163,7 +164,7 @@ class ToolbarActionView : public views::MenuButton,
   // The time the popup was last closed.
   base::TimeTicks popup_closed_time_;
 
-  scoped_ptr<views::InkDropDelegate> ink_drop_delegate_;
+  std::unique_ptr<views::InkDropDelegate> ink_drop_delegate_;
 
   base::WeakPtrFactory<ToolbarActionView> weak_factory_;
 

@@ -48,10 +48,12 @@ class MockPasswordUIView : public PasswordUIView {
 #endif
   MOCK_METHOD4(ShowPassword, void(
       size_t, const std::string&, const std::string&, const base::string16&));
-  MOCK_METHOD1(SetPasswordList,
-               void(const std::vector<scoped_ptr<autofill::PasswordForm>>&));
-  MOCK_METHOD1(SetPasswordExceptionList,
-               void(const std::vector<scoped_ptr<autofill::PasswordForm>>&));
+  MOCK_METHOD1(
+      SetPasswordList,
+      void(const std::vector<std::unique_ptr<autofill::PasswordForm>>&));
+  MOCK_METHOD1(
+      SetPasswordExceptionList,
+      void(const std::vector<std::unique_ptr<autofill::PasswordForm>>&));
   PasswordManagerPresenter* GetPasswordManagerPresenter() {
     return &password_manager_presenter_;
   }
@@ -93,7 +95,7 @@ class PasswordManagerPresenterTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
-  scoped_ptr<MockPasswordUIView> mock_controller_;
+  std::unique_ptr<MockPasswordUIView> mock_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerPresenterTest);
 };
@@ -102,7 +104,7 @@ void PasswordManagerPresenterTest::AddPasswordEntry(
     const GURL& origin,
     const std::string& user_name,
     const std::string& password) {
-  scoped_ptr<autofill::PasswordForm> form(new autofill::PasswordForm());
+  std::unique_ptr<autofill::PasswordForm> form(new autofill::PasswordForm());
   form->origin = origin;
   form->username_element = base::ASCIIToUTF16("Email");
   form->username_value = base::ASCIIToUTF16(user_name);
@@ -113,7 +115,7 @@ void PasswordManagerPresenterTest::AddPasswordEntry(
 }
 
 void PasswordManagerPresenterTest::AddPasswordException(const GURL& origin) {
-  scoped_ptr<autofill::PasswordForm> form(new autofill::PasswordForm());
+  std::unique_ptr<autofill::PasswordForm> form(new autofill::PasswordForm());
   form->origin = origin;
   mock_controller_->GetPasswordManagerPresenter()
       ->password_exception_list_.push_back(std::move(form));
@@ -128,11 +130,11 @@ void PasswordManagerPresenterTest::SortAndCheckPositions(
     const SortEntry test_entries[],
     size_t number_of_entries,
     bool username_and_password_in_key) {
-  std::vector<scoped_ptr<autofill::PasswordForm>> list;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> list;
   size_t expected_number_of_unique_entries = 0;
   for (size_t i = 0; i < number_of_entries; i++) {
     const SortEntry& entry = test_entries[i];
-    scoped_ptr<autofill::PasswordForm> form(new autofill::PasswordForm());
+    std::unique_ptr<autofill::PasswordForm> form(new autofill::PasswordForm());
     form->signon_realm = entry.origin;
     form->origin = GURL(base::ASCIIToUTF16(entry.origin));
     if (username_and_password_in_key) {
@@ -173,47 +175,47 @@ void PasswordManagerPresenterTest::SortAndCheckPositions(
 namespace {
 
 TEST_F(PasswordManagerPresenterTest, UIControllerIsCalled) {
-  EXPECT_CALL(
-      *GetUIController(),
-      SetPasswordList(Property(
-          &std::vector<scoped_ptr<autofill::PasswordForm>>::size, Eq(0u))));
-  EXPECT_CALL(
-      *GetUIController(),
-      SetPasswordExceptionList(Property(
-          &std::vector<scoped_ptr<autofill::PasswordForm>>::size, Eq(0u))));
+  EXPECT_CALL(*GetUIController(),
+              SetPasswordList(Property(
+                  &std::vector<std::unique_ptr<autofill::PasswordForm>>::size,
+                  Eq(0u))));
+  EXPECT_CALL(*GetUIController(),
+              SetPasswordExceptionList(Property(
+                  &std::vector<std::unique_ptr<autofill::PasswordForm>>::size,
+                  Eq(0u))));
   UpdateLists();
   GURL pass_origin("http://abc1.com");
   AddPasswordEntry(pass_origin, "test@gmail.com", "test");
-  EXPECT_CALL(
-      *GetUIController(),
-      SetPasswordList(Property(
-          &std::vector<scoped_ptr<autofill::PasswordForm>>::size, Eq(1u))));
-  EXPECT_CALL(
-      *GetUIController(),
-      SetPasswordExceptionList(Property(
-          &std::vector<scoped_ptr<autofill::PasswordForm>>::size, Eq(0u))));
+  EXPECT_CALL(*GetUIController(),
+              SetPasswordList(Property(
+                  &std::vector<std::unique_ptr<autofill::PasswordForm>>::size,
+                  Eq(1u))));
+  EXPECT_CALL(*GetUIController(),
+              SetPasswordExceptionList(Property(
+                  &std::vector<std::unique_ptr<autofill::PasswordForm>>::size,
+                  Eq(0u))));
   UpdateLists();
   GURL except_origin("http://abc2.com");
   AddPasswordException(except_origin);
-  EXPECT_CALL(
-      *GetUIController(),
-      SetPasswordList(Property(
-          &std::vector<scoped_ptr<autofill::PasswordForm>>::size, Eq(1u))));
-  EXPECT_CALL(
-      *GetUIController(),
-      SetPasswordExceptionList(Property(
-          &std::vector<scoped_ptr<autofill::PasswordForm>>::size, Eq(1u))));
+  EXPECT_CALL(*GetUIController(),
+              SetPasswordList(Property(
+                  &std::vector<std::unique_ptr<autofill::PasswordForm>>::size,
+                  Eq(1u))));
+  EXPECT_CALL(*GetUIController(),
+              SetPasswordExceptionList(Property(
+                  &std::vector<std::unique_ptr<autofill::PasswordForm>>::size,
+                  Eq(1u))));
   UpdateLists();
   GURL pass_origin2("http://example.com");
   AddPasswordEntry(pass_origin2, "test@gmail.com", "test");
-  EXPECT_CALL(
-      *GetUIController(),
-      SetPasswordList(Property(
-          &std::vector<scoped_ptr<autofill::PasswordForm>>::size, Eq(2u))));
-  EXPECT_CALL(
-      *GetUIController(),
-      SetPasswordExceptionList(Property(
-          &std::vector<scoped_ptr<autofill::PasswordForm>>::size, Eq(1u))));
+  EXPECT_CALL(*GetUIController(),
+              SetPasswordList(Property(
+                  &std::vector<std::unique_ptr<autofill::PasswordForm>>::size,
+                  Eq(2u))));
+  EXPECT_CALL(*GetUIController(),
+              SetPasswordExceptionList(Property(
+                  &std::vector<std::unique_ptr<autofill::PasswordForm>>::size,
+                  Eq(1u))));
   UpdateLists();
 }
 

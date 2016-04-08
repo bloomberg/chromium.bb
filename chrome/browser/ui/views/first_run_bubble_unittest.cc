@@ -89,7 +89,7 @@ void FirstRunBubbleTest::CreateAndCloseBubbleOnEventTest(ui::Event* event) {
   views::Widget::InitParams params =
       CreateParams(views::Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  scoped_ptr<views::Widget> anchor_widget(new views::Widget);
+  std::unique_ptr<views::Widget> anchor_widget(new views::Widget);
   anchor_widget->Init(params);
   anchor_widget->SetBounds(gfx::Rect(10, 10, 500, 500));
   anchor_widget->Show();
@@ -101,7 +101,7 @@ void FirstRunBubbleTest::CreateAndCloseBubbleOnEventTest(ui::Event* event) {
   anchor_widget->GetFocusManager()->SetFocusedView(
       anchor_widget->GetContentsView());
 
-  scoped_ptr<WidgetClosingObserver> widget_observer(
+  std::unique_ptr<WidgetClosingObserver> widget_observer(
       new WidgetClosingObserver(delegate->GetWidget()));
 
   ui::EventDispatchDetails details =
@@ -117,7 +117,7 @@ TEST_F(FirstRunBubbleTest, CreateAndClose) {
   views::Widget::InitParams params =
       CreateParams(views::Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  scoped_ptr<views::Widget> anchor_widget(new views::Widget);
+  std::unique_ptr<views::Widget> anchor_widget(new views::Widget);
   anchor_widget->Init(params);
   anchor_widget->Show();
 

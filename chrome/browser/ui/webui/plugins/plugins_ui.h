@@ -34,7 +34,7 @@ class PluginsUI : public MojoWebUIController<mojom::PluginsHandlerMojo> {
   void BindUIHandler(
       mojo::InterfaceRequest<mojom::PluginsHandlerMojo> request) override;
 
-  scoped_ptr<PluginsHandler> plugins_handler_;
+  std::unique_ptr<PluginsHandler> plugins_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginsUI);
 };

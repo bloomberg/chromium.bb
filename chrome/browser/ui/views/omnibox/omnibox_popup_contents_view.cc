@@ -83,7 +83,7 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
   }
 
   SetEventTargeter(
-      scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
+      std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 }
 
 void OmniboxPopupContentsView::Init() {

@@ -260,12 +260,13 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   // Called when GetResourceEntryByPath() is complete.
   void OnGetResourceEntryByPath(const base::FilePath& path,
                                 drive::FileError error,
-                                scoped_ptr<drive::ResourceEntry> entry);
+                                std::unique_ptr<drive::ResourceEntry> entry);
 
   // Called when ReadDirectoryByPath() is complete.
-  void OnReadDirectoryByPath(const base::FilePath& parent_path,
-                             drive::FileError error,
-                             scoped_ptr<drive::ResourceEntryVector> entries);
+  void OnReadDirectoryByPath(
+      const base::FilePath& parent_path,
+      drive::FileError error,
+      std::unique_ptr<drive::ResourceEntryVector> entries);
 
   // Called as the iterator for DebugInfoCollector::IterateFileCache().
   void UpdateCacheEntry(const std::string& local_id,
@@ -277,12 +278,11 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   // Called when GetAboutResource() call to DriveService is complete.
   void OnGetAboutResource(
       google_apis::DriveApiErrorCode status,
-      scoped_ptr<google_apis::AboutResource> about_resource);
+      std::unique_ptr<google_apis::AboutResource> about_resource);
 
   // Called when GetAppList() call to DriveService is complete.
-  void OnGetAppList(
-      google_apis::DriveApiErrorCode status,
-      scoped_ptr<google_apis::AppList> app_list);
+  void OnGetAppList(google_apis::DriveApiErrorCode status,
+                    std::unique_ptr<google_apis::AppList> app_list);
 
   // Callback for DebugInfoCollector::GetMetadata for local update.
   void OnGetFilesystemMetadataForLocal(
@@ -313,7 +313,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
 
 void DriveInternalsWebUIHandler::OnGetAboutResource(
     google_apis::DriveApiErrorCode status,
-    scoped_ptr<google_apis::AboutResource> parsed_about_resource) {
+    std::unique_ptr<google_apis::AboutResource> parsed_about_resource) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (status != google_apis::HTTP_SUCCESS) {
@@ -337,7 +337,7 @@ void DriveInternalsWebUIHandler::OnGetAboutResource(
 
 void DriveInternalsWebUIHandler::OnGetAppList(
     google_apis::DriveApiErrorCode status,
-    scoped_ptr<google_apis::AppList> parsed_app_list) {
+    std::unique_ptr<google_apis::AppList> parsed_app_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (status != google_apis::HTTP_SUCCESS) {
@@ -804,7 +804,7 @@ void DriveInternalsWebUIHandler::OnGetGCacheContents(
 void DriveInternalsWebUIHandler::OnGetResourceEntryByPath(
     const base::FilePath& path,
     drive::FileError error,
-    scoped_ptr<drive::ResourceEntry> entry) {
+    std::unique_ptr<drive::ResourceEntry> entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (error == drive::FILE_ERROR_OK) {
@@ -817,7 +817,7 @@ void DriveInternalsWebUIHandler::OnGetResourceEntryByPath(
 void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
     const base::FilePath& parent_path,
     drive::FileError error,
-    scoped_ptr<drive::ResourceEntryVector> entries) {
+    std::unique_ptr<drive::ResourceEntryVector> entries) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (error == drive::FILE_ERROR_OK) {

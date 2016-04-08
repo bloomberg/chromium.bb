@@ -82,14 +82,14 @@ class AppMenuControllerTest : public CocoaProfileTest {
             ->GetSyncClient()
             ->GetSyncSessionsClient(),
         sync_prefs_.get(), local_device_.get(),
-        scoped_ptr<browser_sync::LocalSessionEventRouter>(new DummyRouter()),
+        std::unique_ptr<browser_sync::LocalSessionEventRouter>(
+            new DummyRouter()),
         base::Closure(), base::Closure()));
     manager_->MergeDataAndStartSyncing(
-        syncer::SESSIONS,
-        syncer::SyncDataList(),
-        scoped_ptr<syncer::SyncChangeProcessor>(
+        syncer::SESSIONS, syncer::SyncDataList(),
+        std::unique_ptr<syncer::SyncChangeProcessor>(
             new syncer::FakeSyncChangeProcessor),
-        scoped_ptr<syncer::SyncErrorFactory>(
+        std::unique_ptr<syncer::SyncErrorFactory>(
             new syncer::SyncErrorFactoryMock));
   }
 
@@ -114,12 +114,12 @@ class AppMenuControllerTest : public CocoaProfileTest {
 
   base::scoped_nsobject<AppMenuController> controller_;
 
-  scoped_ptr<MockAppMenuModel> fake_model_;
+  std::unique_ptr<MockAppMenuModel> fake_model_;
 
  private:
-  scoped_ptr<sync_driver::SyncPrefs> sync_prefs_;
-  scoped_ptr<browser_sync::SessionsSyncManager> manager_;
-  scoped_ptr<sync_driver::LocalDeviceInfoProviderMock> local_device_;
+  std::unique_ptr<sync_driver::SyncPrefs> sync_prefs_;
+  std::unique_ptr<browser_sync::SessionsSyncManager> manager_;
+  std::unique_ptr<sync_driver::LocalDeviceInfoProviderMock> local_device_;
 };
 
 TEST_F(AppMenuControllerTest, Initialized) {

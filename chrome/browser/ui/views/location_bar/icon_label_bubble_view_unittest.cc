@@ -196,7 +196,7 @@ class IconLabelBubbleViewTest : public views::ViewsTestBase {
     return view_->GetImageView()->bounds();
   }
 
-  scoped_ptr<TestIconLabelBubbleView> view_;
+  std::unique_ptr<TestIconLabelBubbleView> view_;
 
   bool steady_reached_;
   bool shrinking_reached_;

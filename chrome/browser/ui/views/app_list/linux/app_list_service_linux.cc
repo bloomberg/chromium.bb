@@ -68,7 +68,7 @@ void AppListServiceLinux::OnActivationChanged(views::Widget* /*widget*/,
 }
 
 AppListServiceLinux::AppListServiceLinux()
-    : AppListServiceViews(scoped_ptr<AppListControllerDelegate>(
+    : AppListServiceViews(std::unique_ptr<AppListControllerDelegate>(
           new AppListControllerDelegateViews(this))) {}
 
 void AppListServiceLinux::OnViewCreated() {

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
@@ -38,7 +39,7 @@ class ChromeConstrainedWindowViewsClient
 
 }  // namespace
 
-scoped_ptr<constrained_window::ConstrainedWindowViewsClient>
+std::unique_ptr<constrained_window::ConstrainedWindowViewsClient>
 CreateChromeConstrainedWindowViewsClient() {
-  return make_scoped_ptr(new ChromeConstrainedWindowViewsClient);
+  return base::WrapUnique(new ChromeConstrainedWindowViewsClient);
 }

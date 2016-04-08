@@ -227,11 +227,11 @@ void PasswordManagerHandler::HandleUpdatePasswordLists(
 }
 
 void PasswordManagerHandler::SetPasswordList(
-    const std::vector<scoped_ptr<autofill::PasswordForm>>& password_list) {
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>& password_list) {
   base::ListValue entries;
   base::string16 placeholder(base::ASCIIToUTF16("        "));
   for (const auto& saved_password : password_list) {
-    scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
     CopyOriginInfoOfPasswordForm(*saved_password, entry.get());
 
     entry->SetString(kUsernameField, saved_password->username_value);
@@ -255,11 +255,11 @@ void PasswordManagerHandler::SetPasswordList(
 }
 
 void PasswordManagerHandler::SetPasswordExceptionList(
-    const std::vector<scoped_ptr<autofill::PasswordForm>>&
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>&
         password_exception_list) {
   base::ListValue entries;
   for (const auto& exception : password_exception_list) {
-    scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
     CopyOriginInfoOfPasswordForm(*exception,  entry.get());
     entries.Append(entry.release());
   }

@@ -14,7 +14,7 @@ typedef ChromeRenderViewHostTestHarness ChromeWebContentsViewDelegateViewsTest;
 // Test that makes sure ShowContextMenu does not crash if web_contents() does
 // not have a focused frame.
 TEST_F(ChromeWebContentsViewDelegateViewsTest, ContextMenuNoFocusedFrame) {
-  scoped_ptr<content::WebContentsViewDelegate> delegate_view(
+  std::unique_ptr<content::WebContentsViewDelegate> delegate_view(
       chrome::CreateWebContentsViewDelegate(web_contents()));
   EXPECT_FALSE(web_contents()->GetFocusedFrame());
   const content::ContextMenuParams params;

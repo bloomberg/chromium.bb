@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_L10N_UTIL_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_L10N_UTIL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 
@@ -20,9 +20,10 @@ class ListValue;
 
 namespace chromeos {
 
-typedef base::Callback<void(scoped_ptr<base::ListValue> /* new_language_list */,
-                            const std::string& /* new_language_list_locale */,
-                            const std::string& /* new_selected_language */)>
+typedef base::Callback<void(
+    std::unique_ptr<base::ListValue> /* new_language_list */,
+    const std::string& /* new_language_list_locale */,
+    const std::string& /* new_selected_language */)>
     UILanguageListResolvedCallback;
 
 // GetUILanguageList() returns a concatenated list of the most relevant
@@ -40,7 +41,7 @@ extern const char kMostRelevantLanguagesDivider[];
 // |most_relevant_language_codes| is NULL, the most relevant languages are read
 // from initial_locale in VPD. If |selected| matches the locale code of any
 // entry in the resulting list, that entry will be marked as selected.
-scoped_ptr<base::ListValue> GetUILanguageList(
+std::unique_ptr<base::ListValue> GetUILanguageList(
     const std::vector<std::string>* most_relevant_language_codes,
     const std::string& selected);
 
@@ -49,13 +50,13 @@ scoped_ptr<base::ListValue> GetUILanguageList(
 // If |language_switch_result| is null, assume current browser locale is already
 // correct and has been successfully loaded.
 void ResolveUILanguageList(
-    scoped_ptr<locale_util::LanguageSwitchResult> language_switch_result,
+    std::unique_ptr<locale_util::LanguageSwitchResult> language_switch_result,
     const UILanguageListResolvedCallback& callback);
 
 // Returns a minimal list of UI languages, which consists of active language
 // only. It is used as a placeholder until ResolveUILanguageList() finishes
 // on BlockingPool.
-scoped_ptr<base::ListValue> GetMinimalUILanguageList();
+std::unique_ptr<base::ListValue> GetMinimalUILanguageList();
 
 // Returns the most first entry of |most_relevant_language_codes| that is
 // actually available (present in |available_locales|). If none of the entries
@@ -70,7 +71,7 @@ std::string FindMostRelevantLocale(
 // [{'code': 'fi', 'displayName': 'Finnish', 'nativeDisplayName': 'suomi'}, ...]
 // The most relevant languages, read from initial_locale in VPD, will be first
 // in the list.
-scoped_ptr<base::ListValue> GetAcceptLanguageList();
+std::unique_ptr<base::ListValue> GetAcceptLanguageList();
 
 // Return a list of keyboard layouts that can be used for |locale| on the login
 // screen. Each list entry is a dictionary that contains data such as an ID and
@@ -82,7 +83,7 @@ scoped_ptr<base::ListValue> GetAcceptLanguageList();
 // activates them if |activate_keyboards| is true, so that they can be selected
 // by the user (e.g. by cycling through keyboard layouts via keyboard
 // shortcuts).
-scoped_ptr<base::ListValue> GetAndActivateLoginKeyboardLayouts(
+std::unique_ptr<base::ListValue> GetAndActivateLoginKeyboardLayouts(
     const std::string& locale,
     const std::string& selected,
     bool activate_keyboards);
@@ -93,7 +94,7 @@ scoped_ptr<base::ListValue> GetAndActivateLoginKeyboardLayouts(
 // followed by a divider and locale-specific keyboard layouts, if any. All
 // layouts supported for |locale| are returned, including those that produce
 // non-Latin characters by default.
-typedef base::Callback<void(scoped_ptr<base::ListValue>)>
+typedef base::Callback<void(std::unique_ptr<base::ListValue>)>
     GetKeyboardLayoutsForLocaleCallback;
 void GetKeyboardLayoutsForLocale(
     const GetKeyboardLayoutsForLocaleCallback& callback,
@@ -101,7 +102,7 @@ void GetKeyboardLayoutsForLocale(
 
 // Returns the current keyboard layout, expressed as a dictionary that contains
 // data such as an ID and a display name.
-scoped_ptr<base::DictionaryValue> GetCurrentKeyboardLayout();
+std::unique_ptr<base::DictionaryValue> GetCurrentKeyboardLayout();
 
 }  // namespace chromeos
 

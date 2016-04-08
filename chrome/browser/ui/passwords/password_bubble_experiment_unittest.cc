@@ -31,8 +31,8 @@ class PasswordBubbleExperimentTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 };
 
 // TODO(vasilii): add tests once there is a smart bubble.

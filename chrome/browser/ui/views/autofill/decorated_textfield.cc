@@ -41,7 +41,7 @@ DecoratedTextfield::DecoratedTextfield(
   set_controller(controller);
 
   SetEventTargeter(
-      scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
+      std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 }
 
 DecoratedTextfield::~DecoratedTextfield() {}
@@ -149,7 +149,7 @@ void DecoratedTextfield::UpdateBackground() {
 }
 
 void DecoratedTextfield::UpdateBorder() {
-  scoped_ptr<views::FocusableBorder> border(new views::FocusableBorder());
+  std::unique_ptr<views::FocusableBorder> border(new views::FocusableBorder());
   if (invalid_)
     border->SetColor(kWarningColor);
   else if (!editable_)

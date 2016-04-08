@@ -6,7 +6,8 @@
 
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
@@ -73,8 +74,8 @@ class AutofillPopupLayoutModelTest : public ChromeRenderViewHostTestHarness {
   AutofillPopupLayoutModel* layout_model() { return layout_model_.get(); }
 
  private:
-  scoped_ptr<TestAutofillPopupViewDelegate> delegate_;
-  scoped_ptr<AutofillPopupLayoutModel> layout_model_;
+  std::unique_ptr<TestAutofillPopupViewDelegate> delegate_;
+  std::unique_ptr<AutofillPopupLayoutModel> layout_model_;
 };
 
 }  // namespace

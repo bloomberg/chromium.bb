@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_ARC_APP_WINDOW_LAUNCHER_CONTROLLER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -41,7 +41,7 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
  private:
   class AppWindow;
 
-  using WindowToAppWindow = std::map<aura::Window*, scoped_ptr<AppWindow>>;
+  using WindowToAppWindow = std::map<aura::Window*, std::unique_ptr<AppWindow>>;
   using AppControllerMap =
       std::map<std::string, ArcAppWindowLauncherItemController*>;
 

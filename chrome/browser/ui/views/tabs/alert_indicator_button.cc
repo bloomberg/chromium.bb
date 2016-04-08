@@ -69,7 +69,7 @@ AlertIndicatorButton::AlertIndicatorButton(Tab* parent_tab)
       showing_alert_state_(TabAlertState::NONE) {
   DCHECK(parent_tab_);
   SetEventTargeter(
-      scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
+      std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 }
 
 AlertIndicatorButton::~AlertIndicatorButton() {}

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_INSTALL_UI_FACTORY_H_
 #define CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_INSTALL_UI_FACTORY_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace content {
 class BrowserContext;
@@ -14,7 +14,7 @@ class BrowserContext;
 namespace extensions {
 class ExtensionInstallUI;
 
-scoped_ptr<extensions::ExtensionInstallUI> CreateExtensionInstallUI(
+std::unique_ptr<extensions::ExtensionInstallUI> CreateExtensionInstallUI(
     content::BrowserContext* context);
 
 }  // namespace extensions

@@ -6,11 +6,11 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
 #include <utility>
 
 #import "base/mac/scoped_block.h"
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/download/download_item_controller.h"
@@ -29,15 +29,16 @@ using ::testing::AnyNumber;
 // DownloadItemController.
 @interface WrappedMockDownloadItem : NSObject {
  @private
-  scoped_ptr<content::MockDownloadItem> download_;
+  std::unique_ptr<content::MockDownloadItem> download_;
 }
-- (id)initWithMockDownload:(scoped_ptr<content::MockDownloadItem>)download;
+- (id)initWithMockDownload:(std::unique_ptr<content::MockDownloadItem>)download;
 - (content::DownloadItem*)download;
 - (content::MockDownloadItem*)mockDownload;
 @end
 
 @implementation WrappedMockDownloadItem
-- (id)initWithMockDownload:(scoped_ptr<content::MockDownloadItem>)download {
+- (id)initWithMockDownload:
+    (std::unique_ptr<content::MockDownloadItem>)download {
   if ((self = [super init])) {
     download_ = std::move(download);
   }
@@ -138,7 +139,7 @@ class DownloadShelfControllerTest : public CocoaProfileTest {
 };
 
 id DownloadShelfControllerTest::CreateItemController() {
-  scoped_ptr<content::MockDownloadItem> download(
+  std::unique_ptr<content::MockDownloadItem> download(
       new ::testing::NiceMock<content::MockDownloadItem>);
   ON_CALL(*download.get(), GetOpened())
       .WillByDefault(Return(false));

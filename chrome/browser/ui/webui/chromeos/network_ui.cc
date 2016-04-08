@@ -48,12 +48,12 @@ void SetDeviceProperties(base::DictionaryValue* dictionary) {
   if (!device_state)
     return;
 
-  scoped_ptr<base::DictionaryValue> device_dictionary(
+  std::unique_ptr<base::DictionaryValue> device_dictionary(
       device_state->properties().DeepCopy());
 
   if (!device_state->ip_configs().empty()) {
     // Convert IPConfig dictionary to a ListValue.
-    scoped_ptr<base::ListValue> ip_configs(new base::ListValue);
+    std::unique_ptr<base::ListValue> ip_configs(new base::ListValue);
     for (base::DictionaryValue::Iterator iter(device_state->ip_configs());
          !iter.IsAtEnd(); iter.Advance()) {
       ip_configs->Append(iter.value().DeepCopy());
@@ -102,7 +102,8 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
   void GetShillPropertiesSuccess(
       const std::string& service_path,
       const base::DictionaryValue& dictionary) const {
-    scoped_ptr<base::DictionaryValue> dictionary_copy(dictionary.DeepCopy());
+    std::unique_ptr<base::DictionaryValue> dictionary_copy(
+        dictionary.DeepCopy());
 
     // Set the 'ServicePath' property for debugging.
     dictionary_copy->SetStringWithoutPathExpansion("ServicePath", service_path);
@@ -118,10 +119,10 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
   void ErrorCallback(
       const std::string& guid,
       const std::string& error_name,
-      scoped_ptr<base::DictionaryValue> /* error_data */) const {
+      std::unique_ptr<base::DictionaryValue> /* error_data */) const {
     NET_LOG(ERROR) << "Shill Error: " << error_name << " guid=" << guid;
     base::ListValue return_arg_list;
-    scoped_ptr<base::DictionaryValue> dictionary;
+    std::unique_ptr<base::DictionaryValue> dictionary;
     dictionary->SetStringWithoutPathExpansion(shill::kGuidProperty, guid);
     dictionary->SetStringWithoutPathExpansion("ShillError", error_name);
     return_arg_list.Append(dictionary.release());

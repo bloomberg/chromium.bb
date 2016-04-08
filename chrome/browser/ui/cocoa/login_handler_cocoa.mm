@@ -126,7 +126,7 @@ class LoginHandlerMac : public LoginHandler,
   // The Cocoa controller of the GUI.
   base::scoped_nsobject<LoginHandlerSheet> sheet_controller_;
 
-  scoped_ptr<ConstrainedWindowMac> constrained_window_;
+  std::unique_ptr<ConstrainedWindowMac> constrained_window_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginHandlerMac);
 };

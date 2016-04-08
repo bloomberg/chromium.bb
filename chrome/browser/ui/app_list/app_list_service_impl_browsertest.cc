@@ -53,7 +53,7 @@ class AppListServiceImplBrowserTest : public InProcessBrowserTest {
 
  protected:
   AppListServiceImpl* service_;
-  scoped_ptr<test::AppListServiceImplTestApi> test_api_;
+  std::unique_ptr<test::AppListServiceImplTestApi> test_api_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListServiceImplBrowserTest);

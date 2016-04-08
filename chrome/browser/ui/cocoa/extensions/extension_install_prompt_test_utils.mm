@@ -28,7 +28,7 @@ scoped_refptr<extensions::Extension> LoadInstallPromptExtension(
 
   std::string error;
   JSONFileValueDeserializer deserializer(path);
-  scoped_ptr<base::DictionaryValue> value =
+  std::unique_ptr<base::DictionaryValue> value =
       base::DictionaryValue::From(deserializer.Deserialize(NULL, &error));
   if (!value.get()) {
     LOG(ERROR) << error;
@@ -63,9 +63,9 @@ gfx::Image LoadInstallPromptIcon() {
       file_contents.length());
 }
 
-scoped_ptr<ExtensionInstallPrompt::Prompt> BuildExtensionInstallPrompt(
+std::unique_ptr<ExtensionInstallPrompt::Prompt> BuildExtensionInstallPrompt(
     Extension* extension) {
-  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt(
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt(
       new ExtensionInstallPrompt::Prompt(
           ExtensionInstallPrompt::INSTALL_PROMPT));
   prompt->set_extension(extension);
@@ -73,9 +73,9 @@ scoped_ptr<ExtensionInstallPrompt::Prompt> BuildExtensionInstallPrompt(
   return prompt;
 }
 
-scoped_ptr<ExtensionInstallPrompt::Prompt>
+std::unique_ptr<ExtensionInstallPrompt::Prompt>
 BuildExtensionPostInstallPermissionsPrompt(Extension* extension) {
-  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt(
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt(
       new ExtensionInstallPrompt::Prompt(
           ExtensionInstallPrompt::POST_INSTALL_PERMISSIONS_PROMPT));
   prompt->set_extension(extension);

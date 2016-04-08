@@ -141,7 +141,7 @@ const CGFloat kMinimumContainerWidth = 3.0;
   [super keyDown:theEvent];
 }
 
-- (void)setHighlight:(scoped_ptr<ui::NinePartImageIds>)highlight {
+- (void)setHighlight:(std::unique_ptr<ui::NinePartImageIds>)highlight {
   if (highlight || highlight_) {
     highlight_ = std::move(highlight);
     // We don't allow resizing when the container is highlighting.

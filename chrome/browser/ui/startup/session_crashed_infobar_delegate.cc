@@ -39,8 +39,8 @@ void SessionCrashedInfoBarDelegate::Create(Browser* browser) {
 
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
-  infobar_service->AddInfoBar(
-      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
+  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
+      std::unique_ptr<ConfirmInfoBarDelegate>(
           new SessionCrashedInfoBarDelegate(profile))));
 }
 

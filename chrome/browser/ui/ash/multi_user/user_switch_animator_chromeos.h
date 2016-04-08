@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_UI_ASH_MULTI_USER_USER_SWITCH_ANIMATOR_CHROMEOS_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "ui/aura/window.h"
@@ -116,7 +116,7 @@ class UserSwitchAnimatorChromeOS {
 
   // A timer which watches to executes the second part of a "user changed"
   // animation. Note that this timer exists only during such an animation.
-  scoped_ptr<base::Timer> user_changed_animation_timer_;
+  std::unique_ptr<base::Timer> user_changed_animation_timer_;
 
   // For unit tests: Check which wallpaper was set.
   std::string wallpaper_user_id_for_test_;

@@ -55,8 +55,8 @@ class WebUISourcesTest : public testing::Test {
   base::MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
 
-  scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<ThemeSource> theme_source_;
+  std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<ThemeSource> theme_source_;
 };
 
 TEST_F(WebUISourcesTest, ThemeSourceMimeTypes) {

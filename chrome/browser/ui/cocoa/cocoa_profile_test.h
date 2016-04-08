@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_UI_COCOA_PROFILE_TEST_H_
 #define CHROME_BROWSER_UI_COCOA_PROFILE_TEST_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/test/base/testing_profile_manager.h"
 
@@ -71,9 +72,9 @@ class CocoaProfileTest : public CocoaTest {
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;  // Weak; owned by profile_manager_.
   TestingProfile::TestingFactories testing_factories_;
-  scoped_ptr<Browser> browser_;
+  std::unique_ptr<Browser> browser_;
 
-  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_PROFILE_TEST_H_

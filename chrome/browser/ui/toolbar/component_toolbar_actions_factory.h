@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_COMPONENT_TOOLBAR_ACTIONS_FACTORY_H_
 #define CHROME_BROWSER_UI_TOOLBAR_COMPONENT_TOOLBAR_ACTIONS_FACTORY_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 
 class Browser;
@@ -38,8 +38,9 @@ class ComponentToolbarActionsFactory {
 
   // Returns a collection of controllers for component actions. Declared
   // virtual for testing.
-  virtual scoped_ptr<ToolbarActionViewController>
-  GetComponentToolbarActionForId(const std::string& id, Browser* browser,
+  virtual std::unique_ptr<ToolbarActionViewController>
+  GetComponentToolbarActionForId(const std::string& id,
+                                 Browser* browser,
                                  ToolbarActionsBar* bar);
 
   // Registers component actions that are migrating from extensions.

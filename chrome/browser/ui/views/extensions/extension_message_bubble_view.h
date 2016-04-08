@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_MESSAGE_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_MESSAGE_BUBBLE_VIEW_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
@@ -32,7 +33,7 @@ class ExtensionMessageBubbleView : public views::BubbleDelegateView,
   ExtensionMessageBubbleView(
       views::View* anchor_view,
       views::BubbleBorder::Arrow arrow_location,
-      scoped_ptr<ExtensionMessageBubbleController> controller);
+      std::unique_ptr<ExtensionMessageBubbleController> controller);
 
   // Shows the bubble after a five-second delay.
   void Show();
@@ -62,7 +63,7 @@ class ExtensionMessageBubbleView : public views::BubbleDelegateView,
       const ViewHierarchyChangedDetails& details) override;
 
   // The controller for this bubble.
-  scoped_ptr<ExtensionMessageBubbleController> controller_;
+  std::unique_ptr<ExtensionMessageBubbleController> controller_;
 
   // The view this bubble is anchored against.
   views::View* anchor_view_;

@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EXCLUSIVE_ACCESS_BUBBLE_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_EXCLUSIVE_ACCESS_BUBBLE_VIEWS_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -93,7 +94,7 @@ class ExclusiveAccessBubbleViews : public ExclusiveAccessBubble,
   views::Widget* popup_;
 
   // Animation controlling showing/hiding of the exit bubble.
-  scoped_ptr<gfx::SlideAnimation> animation_;
+  std::unique_ptr<gfx::SlideAnimation> animation_;
 
   // Attribute animated by |animation_|.
   AnimatedAttribute animated_attribute_;

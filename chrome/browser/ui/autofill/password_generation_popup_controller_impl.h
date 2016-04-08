@@ -139,7 +139,7 @@ class PasswordGenerationPopupControllerImpl
   PasswordGenerationPopupObserver* observer_;
 
   // Controls how passwords are generated.
-  scoped_ptr<PasswordGenerator> generator_;
+  std::unique_ptr<PasswordGenerator> generator_;
 
   // Contains common popup functionality.
   PopupControllerCommon controller_common_;

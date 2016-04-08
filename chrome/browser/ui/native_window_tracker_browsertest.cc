@@ -16,7 +16,7 @@ IN_PROC_BROWSER_TEST_F(NativeWindowTrackerTest, Basic) {
   // closed.
   CreateBrowser(browser()->profile());
 
-  scoped_ptr<NativeWindowTracker> tracker =
+  std::unique_ptr<NativeWindowTracker> tracker =
       NativeWindowTracker::Create(browser()->window()->GetNativeWindow());
   EXPECT_FALSE(tracker->WasNativeWindowClosed());
 

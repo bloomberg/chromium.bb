@@ -153,8 +153,9 @@ bool SessionCrashedBubble::Show(Browser* browser) {
     return true;
 
   // Observes browser removal event and will be deallocated in ShowForReal.
-  scoped_ptr<SessionCrashedBubbleView::BrowserRemovalObserver> browser_observer(
-      new SessionCrashedBubbleView::BrowserRemovalObserver(browser));
+  std::unique_ptr<SessionCrashedBubbleView::BrowserRemovalObserver>
+      browser_observer(
+          new SessionCrashedBubbleView::BrowserRemovalObserver(browser));
 
 // Stats collection only applies to Google Chrome builds.
 #if defined(GOOGLE_CHROME_BUILD)
@@ -176,7 +177,7 @@ bool SessionCrashedBubble::Show(Browser* browser) {
 
 // static
 void SessionCrashedBubbleView::ShowForReal(
-    scoped_ptr<BrowserRemovalObserver> browser_observer,
+    std::unique_ptr<BrowserRemovalObserver> browser_observer,
     bool uma_opted_in_already) {
   // Determine whether or not the UMA opt-in option should be offered. It is
   // offered only when it is a Google chrome build, user hasn't opted in yet,

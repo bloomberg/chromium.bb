@@ -148,7 +148,7 @@ class CoreOobeHandler : public BaseScreenHandler,
 
   Delegate* delegate_;
 
-  scoped_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
+  std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
 
   DemoModeDetector demo_mode_detector_;
 

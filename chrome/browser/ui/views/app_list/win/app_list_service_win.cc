@@ -245,9 +245,8 @@ AppListServiceWin* AppListServiceWin::GetInstance() {
 }
 
 AppListServiceWin::AppListServiceWin()
-    : AppListServiceViews(scoped_ptr<AppListControllerDelegate>(
-          new AppListControllerDelegateWin(this))) {
-}
+    : AppListServiceViews(std::unique_ptr<AppListControllerDelegate>(
+          new AppListControllerDelegateWin(this))) {}
 
 AppListServiceWin::~AppListServiceWin() {
 }

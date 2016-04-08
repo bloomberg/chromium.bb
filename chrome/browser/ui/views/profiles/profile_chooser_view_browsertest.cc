@@ -196,7 +196,7 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
   }
 
  private:
-  scoped_ptr<content::WindowedNotificationObserver> window_close_observer_;
+  std::unique_ptr<content::WindowedNotificationObserver> window_close_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserViewExtensionsTest);
 };

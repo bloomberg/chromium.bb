@@ -195,7 +195,7 @@ class Tab::TabCloseButton : public views::ImageButton,
       : views::ImageButton(tab),
         tab_(tab) {
     SetEventTargeter(
-        scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
+        std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
   }
 
   ~TabCloseButton() override {}
@@ -522,7 +522,7 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
   AddChildView(title_);
 
   SetEventTargeter(
-      scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
+      std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 
   throbber_ = new ThrobberView(this);
   throbber_->SetVisible(false);

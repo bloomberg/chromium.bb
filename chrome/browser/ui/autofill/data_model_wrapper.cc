@@ -56,7 +56,7 @@ bool DataModelWrapper::GetDisplayText(
     return false;
 
   // Format the address.
-  scoped_ptr< ::i18n::addressinput::AddressData> address_data =
+  std::unique_ptr<::i18n::addressinput::AddressData> address_data =
       i18n::CreateAddressData(
           base::Bind(&DataModelWrapper::GetInfo, base::Unretained(this)));
   address_data->language_code = GetLanguageCode();

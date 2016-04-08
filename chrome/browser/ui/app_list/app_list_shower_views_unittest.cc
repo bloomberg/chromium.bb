@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_shower_delegate.h"
 #include "chrome/browser/ui/app_list/test/fake_profile.h"
@@ -69,8 +70,8 @@ class AppListShowerUnitTest : public testing::Test,
 
   void TearDown() override {}
 
-  scoped_ptr<FakeProfile> CreateProfile(const std::string& name) {
-    return make_scoped_ptr(new FakeProfile(name));
+  std::unique_ptr<FakeProfile> CreateProfile(const std::string& name) {
+    return base::WrapUnique(new FakeProfile(name));
   }
 
   // AppListShowerDelegate:
@@ -85,9 +86,9 @@ class AppListShowerUnitTest : public testing::Test,
   void MoveNearCursor(app_list::AppListView* view) override {}
 
  protected:
-  scoped_ptr<FakeAppListShower> shower_;
-  scoped_ptr<FakeProfile> profile1_;
-  scoped_ptr<FakeProfile> profile2_;
+  std::unique_ptr<FakeAppListShower> shower_;
+  std::unique_ptr<FakeProfile> profile1_;
+  std::unique_ptr<FakeProfile> profile2_;
 
   int views_created_;
   int views_dismissed_;

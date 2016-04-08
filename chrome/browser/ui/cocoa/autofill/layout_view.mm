@@ -10,7 +10,7 @@
 
 @implementation LayoutView
 
-- (void)setLayoutManager:(scoped_ptr<SimpleGridLayout>)layout {
+- (void)setLayoutManager:(std::unique_ptr<SimpleGridLayout>)layout {
   layout_ = std::move(layout);
 }
 

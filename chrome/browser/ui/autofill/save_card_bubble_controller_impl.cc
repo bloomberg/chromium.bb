@@ -58,7 +58,7 @@ void SaveCardBubbleControllerImpl::ShowBubbleForLocalSave(
 
 void SaveCardBubbleControllerImpl::ShowBubbleForUpload(
     const CreditCard& card,
-    scoped_ptr<base::DictionaryValue> legal_message,
+    std::unique_ptr<base::DictionaryValue> legal_message,
     const base::Closure& save_card_callback) {
   is_uploading_ = true;
   is_reshow_ = false;

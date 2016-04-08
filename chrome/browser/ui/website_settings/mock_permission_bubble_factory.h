@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_MOCK_PERMISSION_BUBBLE_FACTORY_H_
 #define CHROME_BROWSER_UI_WEBSITE_SETTINGS_MOCK_PERMISSION_BUBBLE_FACTORY_H_
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 
 class Browser;
@@ -28,7 +28,7 @@ class MockPermissionBubbleFactory {
   ~MockPermissionBubbleFactory();
 
   // Create method called by the PBM to show a bubble.
-  scoped_ptr<PermissionBubbleView> Create(Browser* browser);
+  std::unique_ptr<PermissionBubbleView> Create(Browser* browser);
 
   void SetCanUpdateUi(bool can_update_ui);
 
@@ -54,7 +54,7 @@ class MockPermissionBubbleFactory {
 
   // This shouldn't be called. Is here to fail tests that try to create a bubble
   // after the factory has been destroyed.
-  static scoped_ptr<PermissionBubbleView> DoNotCreate(Browser* browser);
+  static std::unique_ptr<PermissionBubbleView> DoNotCreate(Browser* browser);
 
   void UpdateResponseType();
   void ShowView(MockPermissionBubbleView* view);

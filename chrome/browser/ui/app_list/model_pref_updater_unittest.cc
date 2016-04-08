@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/app_list/model_pref_updater.h"
+
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_list/app_list_prefs.h"
 #include "chrome/browser/ui/app_list/extension_app_item.h"
-#include "chrome/browser/ui/app_list/model_pref_updater.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_folder_item.h"
@@ -46,7 +48,7 @@ class ModelPrefUpdaterTest : public testing::Test {
   AppListPrefs* prefs() { return prefs_.get(); }
 
   bool AppListItemMatchesPrefs(AppListItem* item) {
-    scoped_ptr<AppListPrefs::AppListInfo> info =
+    std::unique_ptr<AppListPrefs::AppListInfo> info =
         prefs_->GetAppListInfo(item->id());
     AppListPrefs::AppListInfo::ItemType expected_type =
         AppListPrefs::AppListInfo::ITEM_TYPE_INVALID;
@@ -62,9 +64,9 @@ class ModelPrefUpdaterTest : public testing::Test {
 
  private:
   user_prefs::TestingPrefServiceSyncable pref_service_;
-  scoped_ptr<AppListTestModel> model_;
-  scoped_ptr<AppListPrefs> prefs_;
-  scoped_ptr<ModelPrefUpdater> pref_updater_;
+  std::unique_ptr<AppListTestModel> model_;
+  std::unique_ptr<AppListPrefs> prefs_;
+  std::unique_ptr<ModelPrefUpdater> pref_updater_;
 
   DISALLOW_COPY_AND_ASSIGN(ModelPrefUpdaterTest);
 };

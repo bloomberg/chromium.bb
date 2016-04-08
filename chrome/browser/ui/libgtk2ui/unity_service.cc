@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/libgtk2ui/unity_service.h"
 
 #include <dlfcn.h>
-#include <string>
-
 #include <gtk/gtk.h>
 
+#include <memory>
+#include <string>
+
 #include "base/environment.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/nix/xdg_util.h"
 #include "chrome/browser/shell_integration_linux.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_util.h"
@@ -59,7 +59,7 @@ void EnsureMethodsLoaded() {
     return;
   attempted_load = true;
 
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   base::nix::DesktopEnvironment desktop_env =
       GetDesktopEnvironment(env.get());
 

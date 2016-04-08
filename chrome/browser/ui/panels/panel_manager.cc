@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/panels/panel_manager.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -155,7 +156,7 @@ bool PanelManager::CanUseSystemMinimize() {
   static base::nix::DesktopEnvironment desktop_env =
       base::nix::DESKTOP_ENVIRONMENT_OTHER;
   if (desktop_env == base::nix::DESKTOP_ENVIRONMENT_OTHER) {
-    scoped_ptr<base::Environment> env(base::Environment::Create());
+    std::unique_ptr<base::Environment> env(base::Environment::Create());
     desktop_env = base::nix::GetDesktopEnvironment(env.get());
   }
   return desktop_env != base::nix::DESKTOP_ENVIRONMENT_UNITY;

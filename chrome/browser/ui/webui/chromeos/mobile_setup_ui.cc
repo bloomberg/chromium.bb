@@ -169,7 +169,7 @@ class MobileSetupUIHTMLSource : public content::URLDataSource {
       const content::URLDataSource::GotDataCallback& callback,
       const std::string& service_path,
       const std::string& error_name,
-      scoped_ptr<base::DictionaryValue> error_data);
+      std::unique_ptr<base::DictionaryValue> error_data);
 
   base::WeakPtrFactory<MobileSetupUIHTMLSource> weak_ptr_factory_;
 
@@ -216,11 +216,10 @@ class MobileSetupHandler
   void GetPropertiesAndCallGetDeviceInfo(
       const std::string& service_path,
       const base::DictionaryValue& properties);
-  void GetPropertiesFailure(
-      const std::string& service_path,
-      const std::string& callback_name,
-      const std::string& error_name,
-      scoped_ptr<base::DictionaryValue> error_data);
+  void GetPropertiesFailure(const std::string& service_path,
+                            const std::string& callback_name,
+                            const std::string& error_name,
+                            std::unique_ptr<base::DictionaryValue> error_data);
 
   // Handlers for JS WebUI messages.
   void HandleSetTransactionStatus(const base::ListValue* args);
@@ -359,7 +358,7 @@ void MobileSetupUIHTMLSource::GetPropertiesFailure(
     const content::URLDataSource::GotDataCallback& callback,
     const std::string& service_path,
     const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) {
+    std::unique_ptr<base::DictionaryValue> error_data) {
   DataRequestFailed(service_path, callback);
 }
 
@@ -548,7 +547,7 @@ void MobileSetupHandler::GetPropertiesFailure(
     const std::string& service_path,
     const std::string& callback_name,
     const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) {
+    std::unique_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("MobileActivator GetProperties Failed: " + error_name,
                 service_path);
   // Invoke |callback_name| with an empty dictionary.

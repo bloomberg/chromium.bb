@@ -127,7 +127,7 @@ class OmniboxPopupContentsView : public views::View,
 
   OmniboxResultView* result_view_at(size_t i);
 
-  scoped_ptr<OmniboxPopupModel> model_;
+  std::unique_ptr<OmniboxPopupModel> model_;
 
   // The popup that contains this view.  We create this, but it deletes itself
   // when its window is destroyed.  This is a WeakPtr because it's possible for

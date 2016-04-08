@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APPS_APP_INFO_DIALOG_APP_INFO_FOOTER_PANEL_H_
 #define CHROME_BROWSER_UI_VIEWS_APPS_APP_INFO_DIALOG_APP_INFO_FOOTER_PANEL_H_
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_panel.h"
@@ -82,7 +83,8 @@ class AppInfoFooterPanel
   views::LabelButton* unpin_from_shelf_button_;
   views::LabelButton* remove_button_;
 
-  scoped_ptr<extensions::ExtensionUninstallDialog> extension_uninstall_dialog_;
+  std::unique_ptr<extensions::ExtensionUninstallDialog>
+      extension_uninstall_dialog_;
 
   base::WeakPtrFactory<AppInfoFooterPanel> weak_ptr_factory_;
 

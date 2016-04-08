@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_APP_SEARCH_PROVIDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_APP_SEARCH_PROVIDER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "ui/app_list/search_provider.h"
@@ -32,11 +32,11 @@ class AppSearchProvider : public SearchProvider {
  public:
   class App;
   class DataSource;
-  typedef std::vector<scoped_ptr<App>> Apps;
+  typedef std::vector<std::unique_ptr<App>> Apps;
 
   AppSearchProvider(Profile* profile,
                     AppListControllerDelegate* list_controller,
-                    scoped_ptr<base::Clock> clock,
+                    std::unique_ptr<base::Clock> clock,
                     AppListItemList* top_level_item_list);
   ~AppSearchProvider() override;
 
@@ -59,8 +59,8 @@ class AppSearchProvider : public SearchProvider {
   base::string16 query_;
   Apps apps_;
   AppListItemList* top_level_item_list_;
-  scoped_ptr<base::Clock> clock_;
-  std::vector<scoped_ptr<DataSource>> data_sources_;
+  std::unique_ptr<base::Clock> clock_;
+  std::vector<std::unique_ptr<DataSource>> data_sources_;
   base::WeakPtrFactory<AppSearchProvider> update_results_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppSearchProvider);

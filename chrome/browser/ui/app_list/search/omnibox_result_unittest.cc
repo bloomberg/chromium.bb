@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ui/app_list/search/omnibox_result.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
@@ -52,7 +53,7 @@ class OmniboxResultTest : public AppListTestBase {
         new ::test::TestAppListControllerDelegate);
   }
 
-  scoped_ptr<OmniboxResult> CreateOmniboxResult(
+  std::unique_ptr<OmniboxResult> CreateOmniboxResult(
       const std::string& original_query,
       int relevance,
       const std::string& destination_url,
@@ -72,7 +73,7 @@ class OmniboxResultTest : public AppListTestBase {
     match.type = type;
     match.keyword = base::UTF8ToUTF16(keyword);
 
-    return scoped_ptr<OmniboxResult>(
+    return std::unique_ptr<OmniboxResult>(
         new OmniboxResult(profile_.get(), app_list_controller_delegate_.get(),
                           nullptr, is_voice_query, match));
   }
@@ -82,14 +83,14 @@ class OmniboxResultTest : public AppListTestBase {
   }
 
  private:
-  scoped_ptr<::test::TestAppListControllerDelegate>
+  std::unique_ptr<::test::TestAppListControllerDelegate>
       app_list_controller_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxResultTest);
 };
 
 TEST_F(OmniboxResultTest, Basic) {
-  scoped_ptr<OmniboxResult> result = CreateOmniboxResult(
+  std::unique_ptr<OmniboxResult> result = CreateOmniboxResult(
       kFullQuery, kRelevance, kExampleUrl, kFullQuery, kExampleDescription,
       AutocompleteMatchType::HISTORY_URL, kExampleKeyword, false);
 
@@ -107,7 +108,7 @@ TEST_F(OmniboxResultTest, VoiceResult) {
   // exact string in the title. Should not be automatically launchable as a
   // voice result (because it is not a web search type result).
   {
-    scoped_ptr<OmniboxResult> result = CreateOmniboxResult(
+    std::unique_ptr<OmniboxResult> result = CreateOmniboxResult(
         kPartialQuery, kRelevance, kExampleUrl, kPartialQuery,
         kExampleDescription, AutocompleteMatchType::HISTORY_URL,
         kExampleKeyword, false);
@@ -117,7 +118,7 @@ TEST_F(OmniboxResultTest, VoiceResult) {
   // Searching for part of a word, and getting a SEARCH_WHAT_YOU_TYPED result.
   // Such a result should be promoted as a voice result.
   {
-    scoped_ptr<OmniboxResult> result = CreateOmniboxResult(
+    std::unique_ptr<OmniboxResult> result = CreateOmniboxResult(
         kPartialQuery, kRelevance, kExampleUrl, kPartialQuery,
         kExampleDescription, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
         kExampleKeyword, false);
@@ -127,7 +128,7 @@ TEST_F(OmniboxResultTest, VoiceResult) {
   // Searching for part of a word, and getting a SEARCH_HISTORY result for that
   // exact string. Such a result should be promoted as a voice result.
   {
-    scoped_ptr<OmniboxResult> result = CreateOmniboxResult(
+    std::unique_ptr<OmniboxResult> result = CreateOmniboxResult(
         kPartialQuery, kRelevance, kExampleUrl, kPartialQuery,
         kExampleDescription, AutocompleteMatchType::SEARCH_HISTORY,
         kExampleKeyword, false);
@@ -138,7 +139,7 @@ TEST_F(OmniboxResultTest, VoiceResult) {
   // different string. Should not be automatically launchable as a voice result
   // (because it does not exactly match what you typed).
   {
-    scoped_ptr<OmniboxResult> result = CreateOmniboxResult(
+    std::unique_ptr<OmniboxResult> result = CreateOmniboxResult(
         kPartialQuery, kRelevance, kExampleUrl, kFullQuery, kExampleDescription,
         AutocompleteMatchType::SEARCH_HISTORY, kExampleKeyword, false);
     EXPECT_FALSE(result->voice_result());
@@ -148,7 +149,7 @@ TEST_F(OmniboxResultTest, VoiceResult) {
 TEST_F(OmniboxResultTest, VoiceQuery) {
   // A voice query to a random domain. URL should not change.
   {
-    scoped_ptr<OmniboxResult> result = CreateOmniboxResult(
+    std::unique_ptr<OmniboxResult> result = CreateOmniboxResult(
         kWeatherQuery, kRelevance, kExampleWeatherUrl, kWeatherQuery,
         kExampleDescription, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
         kExampleKeyword, true);
@@ -159,7 +160,7 @@ TEST_F(OmniboxResultTest, VoiceQuery) {
   // A voice query to a Google domain. URL should have magic "speak back" query
   // parameter appended.
   {
-    scoped_ptr<OmniboxResult> result = CreateOmniboxResult(
+    std::unique_ptr<OmniboxResult> result = CreateOmniboxResult(
         kWeatherQuery, kRelevance, kGoogleWeatherUrl, kWeatherQuery,
         kGoogleDescription, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
         kGoogleKeyword, true);
@@ -171,7 +172,7 @@ TEST_F(OmniboxResultTest, VoiceQuery) {
   // A voice query to a Google international domain. URL should have magic
   // "speak back" query parameter appended.
   {
-    scoped_ptr<OmniboxResult> result = CreateOmniboxResult(
+    std::unique_ptr<OmniboxResult> result = CreateOmniboxResult(
         kWeatherQuery, kRelevance, kGoogleInternationalWeatherUrl,
         kWeatherQuery, kGoogleDescription,
         AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, kGoogleKeyword, true);
@@ -182,7 +183,7 @@ TEST_F(OmniboxResultTest, VoiceQuery) {
 
   // A non-voice query to a Google domain. URL should not change.
   {
-    scoped_ptr<OmniboxResult> result = CreateOmniboxResult(
+    std::unique_ptr<OmniboxResult> result = CreateOmniboxResult(
         kWeatherQuery, kRelevance, kGoogleWeatherUrl, kWeatherQuery,
         kGoogleDescription, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
         kGoogleKeyword, false);

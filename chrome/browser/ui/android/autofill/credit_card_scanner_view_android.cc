@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/android/autofill/credit_card_scanner_view_android.h"
 
+#include <memory>
+
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/ui/autofill/credit_card_scanner_view_delegate.h"
 #include "content/public/browser/android/content_view_core.h"
@@ -27,10 +29,10 @@ bool CreditCardScannerView::CanShow() {
 }
 
 // static
-scoped_ptr<CreditCardScannerView> CreditCardScannerView::Create(
+std::unique_ptr<CreditCardScannerView> CreditCardScannerView::Create(
     const base::WeakPtr<CreditCardScannerViewDelegate>& delegate,
     content::WebContents* web_contents) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new CreditCardScannerViewAndroid(delegate, web_contents));
 }
 

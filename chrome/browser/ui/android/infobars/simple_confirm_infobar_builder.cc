@@ -4,11 +4,13 @@
 
 #include "chrome/browser/ui/android/infobars/simple_confirm_infobar_builder.h"
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
@@ -159,14 +161,9 @@ void Create(JNIEnv* env,
   InfoBarService* service = InfoBarService::FromWebContents(
       TabAndroid::GetNativeTab(env, j_tab)->web_contents());
   service->AddInfoBar(service->CreateConfirmInfoBar(
-      make_scoped_ptr(new SimpleConfirmInfoBarDelegate(
-          j_listener,
-          infobar_identifier,
-          icon_bitmap,
-          message_str,
-          primary_str,
-          secondary_str,
-          auto_expire))));
+      base::WrapUnique(new SimpleConfirmInfoBarDelegate(
+          j_listener, infobar_identifier, icon_bitmap, message_str, primary_str,
+          secondary_str, auto_expire))));
 }
 
 bool RegisterSimpleConfirmInfoBarBuilder(JNIEnv* env) {

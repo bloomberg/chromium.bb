@@ -199,7 +199,7 @@ void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {
 
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
-  scoped_ptr<base::ListValue> exceptions(new base::ListValue);
+  std::unique_ptr<base::ListValue> exceptions(new base::ListValue);
   site_settings::GetExceptionsFromHostContentSettingsMap(
       map, content_type, web_ui(), exceptions.get());
   ResolveJavascriptCallback(*callback_id, *exceptions.get());

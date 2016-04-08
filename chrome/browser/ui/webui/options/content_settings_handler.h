@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/values.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
@@ -273,10 +273,11 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
 
   content::NotificationRegistrar notification_registrar_;
   PrefChangeRegistrar pref_change_registrar_;
-  scoped_ptr<PepperFlashSettingsManager> flash_settings_manager_;
-  scoped_ptr<MediaSettingsInfo> media_settings_;
-  scoped_ptr<content::HostZoomMap::Subscription> host_zoom_map_subscription_;
-  scoped_ptr<content::HostZoomMap::Subscription>
+  std::unique_ptr<PepperFlashSettingsManager> flash_settings_manager_;
+  std::unique_ptr<MediaSettingsInfo> media_settings_;
+  std::unique_ptr<content::HostZoomMap::Subscription>
+      host_zoom_map_subscription_;
+  std::unique_ptr<content::HostZoomMap::Subscription>
       signin_host_zoom_map_subscription_;
   ScopedObserver<HostContentSettingsMap, content_settings::Observer> observer_;
 

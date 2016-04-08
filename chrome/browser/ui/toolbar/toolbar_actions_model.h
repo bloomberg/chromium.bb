@@ -156,7 +156,7 @@ class ToolbarActionsModel
   ScopedVector<ToolbarActionViewController> CreateActions(
       Browser* browser,
       ToolbarActionsBar* bar);
-  scoped_ptr<ToolbarActionViewController> CreateActionForItem(
+  std::unique_ptr<ToolbarActionViewController> CreateActionForItem(
       Browser* browser,
       ToolbarActionsBar* bar,
       const ToolbarItem& item);
@@ -285,7 +285,8 @@ class ToolbarActionsModel
   extensions::ExtensionActionManager* extension_action_manager_;
 
   // The ComponentMigrationHelper.
-  scoped_ptr<extensions::ComponentMigrationHelper> component_migration_helper_;
+  std::unique_ptr<extensions::ComponentMigrationHelper>
+      component_migration_helper_;
 
   // True if we've handled the initial EXTENSIONS_READY notification.
   bool actions_initialized_;

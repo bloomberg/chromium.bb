@@ -73,10 +73,10 @@ const char kSetCastModeList[] = "media_router.ui.setCastModeList";
 const char kUpdateMaxHeight[] = "media_router.ui.updateMaxHeight";
 const char kWindowOpen[] = "window.open";
 
-scoped_ptr<base::DictionaryValue> SinksAndIdentityToValue(
+std::unique_ptr<base::DictionaryValue> SinksAndIdentityToValue(
     const std::vector<MediaSinkWithCastModes>& sinks,
     const AccountInfo& account_info) {
-  scoped_ptr<base::DictionaryValue> sink_list_and_identity(
+  std::unique_ptr<base::DictionaryValue> sink_list_and_identity(
       new base::DictionaryValue);
   bool show_email = false;
   bool show_domain = false;
@@ -87,10 +87,10 @@ scoped_ptr<base::DictionaryValue> SinksAndIdentityToValue(
     sink_list_and_identity->SetString("userDomain", user_domain);
   }
 
-  scoped_ptr<base::ListValue> sinks_val(new base::ListValue);
+  std::unique_ptr<base::ListValue> sinks_val(new base::ListValue);
 
   for (const MediaSinkWithCastModes& sink_with_cast_modes : sinks) {
-    scoped_ptr<base::DictionaryValue> sink_val(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> sink_val(new base::DictionaryValue);
 
     const MediaSink& sink = sink_with_cast_modes.sink;
     sink_val->SetString("id", sink.id());
@@ -131,9 +131,11 @@ scoped_ptr<base::DictionaryValue> SinksAndIdentityToValue(
   return sink_list_and_identity;
 }
 
-scoped_ptr<base::DictionaryValue> RouteToValue(
-    const MediaRoute& route, bool canJoin, const std::string& extension_id) {
-  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
+std::unique_ptr<base::DictionaryValue> RouteToValue(
+    const MediaRoute& route,
+    bool canJoin,
+    const std::string& extension_id) {
+  std::unique_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
   dictionary->SetString("id", route.media_route_id());
   dictionary->SetString("sinkId", route.media_sink_id());
   dictionary->SetString("description", route.description());
@@ -154,28 +156,30 @@ scoped_ptr<base::DictionaryValue> RouteToValue(
   return dictionary;
 }
 
-scoped_ptr<base::ListValue> RoutesToValue(
+std::unique_ptr<base::ListValue> RoutesToValue(
     const std::vector<MediaRoute>& routes,
     const std::vector<MediaRoute::Id>& joinable_route_ids,
     const std::string& extension_id) {
-  scoped_ptr<base::ListValue> value(new base::ListValue);
+  std::unique_ptr<base::ListValue> value(new base::ListValue);
 
   for (const MediaRoute& route : routes) {
     bool canJoin = ContainsValue(joinable_route_ids, route.media_route_id());
-    scoped_ptr<base::DictionaryValue> route_val(RouteToValue(route,
-        canJoin, extension_id));
+    std::unique_ptr<base::DictionaryValue> route_val(
+        RouteToValue(route, canJoin, extension_id));
     value->Append(route_val.release());
   }
 
   return value;
 }
 
-scoped_ptr<base::ListValue> CastModesToValue(const CastModeSet& cast_modes,
-                                             const std::string& source_host) {
-  scoped_ptr<base::ListValue> value(new base::ListValue);
+std::unique_ptr<base::ListValue> CastModesToValue(
+    const CastModeSet& cast_modes,
+    const std::string& source_host) {
+  std::unique_ptr<base::ListValue> value(new base::ListValue);
 
   for (const MediaCastMode& cast_mode : cast_modes) {
-    scoped_ptr<base::DictionaryValue> cast_mode_val(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> cast_mode_val(
+        new base::DictionaryValue);
     cast_mode_val->SetInteger("type", cast_mode);
     cast_mode_val->SetString(
         "description", MediaCastModeToDescription(cast_mode, source_host));
@@ -187,8 +191,8 @@ scoped_ptr<base::ListValue> CastModesToValue(const CastModeSet& cast_modes,
 }
 
 // Returns an Issue dictionary created from |issue| that can be used in WebUI.
-scoped_ptr<base::DictionaryValue> IssueToValue(const Issue& issue) {
-  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
+std::unique_ptr<base::DictionaryValue> IssueToValue(const Issue& issue) {
+  std::unique_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
   dictionary->SetString("id", issue.id());
   dictionary->SetString("title", issue.title());
   dictionary->SetString("message", issue.message());
@@ -243,7 +247,7 @@ MediaRouterWebUIMessageHandler::~MediaRouterWebUIMessageHandler() {
 void MediaRouterWebUIMessageHandler::UpdateSinks(
     const std::vector<MediaSinkWithCastModes>& sinks) {
   DVLOG(2) << "UpdateSinks";
-  scoped_ptr<base::DictionaryValue> sinks_and_identity_val(
+  std::unique_ptr<base::DictionaryValue> sinks_and_identity_val(
       SinksAndIdentityToValue(sinks, GetAccountInfo()));
   web_ui()->CallJavascriptFunction(kSetSinkListAndIdentity,
                                    *sinks_and_identity_val);
@@ -252,9 +256,9 @@ void MediaRouterWebUIMessageHandler::UpdateSinks(
 void MediaRouterWebUIMessageHandler::UpdateRoutes(
     const std::vector<MediaRoute>& routes,
     const std::vector<MediaRoute::Id>& joinable_route_ids) {
-  scoped_ptr<base::ListValue> routes_val(RoutesToValue(routes,
-      joinable_route_ids,
-      media_router_ui_->GetRouteProviderExtensionId()));
+  std::unique_ptr<base::ListValue> routes_val(
+      RoutesToValue(routes, joinable_route_ids,
+                    media_router_ui_->GetRouteProviderExtensionId()));
   web_ui()->CallJavascriptFunction(kSetRouteList, *routes_val);
 }
 
@@ -262,7 +266,7 @@ void MediaRouterWebUIMessageHandler::UpdateCastModes(
     const CastModeSet& cast_modes,
     const std::string& source_host) {
   DVLOG(2) << "UpdateCastModes";
-  scoped_ptr<base::ListValue> cast_modes_val(
+  std::unique_ptr<base::ListValue> cast_modes_val(
       CastModesToValue(cast_modes, source_host));
   web_ui()->CallJavascriptFunction(kSetCastModeList, *cast_modes_val);
 }
@@ -272,8 +276,8 @@ void MediaRouterWebUIMessageHandler::OnCreateRouteResponseReceived(
     const MediaRoute* route) {
   DVLOG(2) << "OnCreateRouteResponseReceived";
   if (route) {
-    scoped_ptr<base::DictionaryValue> route_value(RouteToValue(*route, false,
-        media_router_ui_->GetRouteProviderExtensionId()));
+    std::unique_ptr<base::DictionaryValue> route_value(RouteToValue(
+        *route, false, media_router_ui_->GetRouteProviderExtensionId()));
     web_ui()->CallJavascriptFunction(
         kOnCreateRouteResponseReceived,
         base::StringValue(sink_id), *route_value,
@@ -392,19 +396,18 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
   initial_data.SetString("deviceMissingUrl",
       base::StringPrintf(kHelpPageUrlPrefix, 3249268));
 
-  scoped_ptr<base::DictionaryValue> sinks_and_identity(
+  std::unique_ptr<base::DictionaryValue> sinks_and_identity(
       SinksAndIdentityToValue(media_router_ui_->sinks(), GetAccountInfo()));
   initial_data.Set("sinksAndIdentity", sinks_and_identity.release());
 
-  scoped_ptr<base::ListValue> routes(RoutesToValue(media_router_ui_->routes(),
-      media_router_ui_->joinable_route_ids(),
+  std::unique_ptr<base::ListValue> routes(RoutesToValue(
+      media_router_ui_->routes(), media_router_ui_->joinable_route_ids(),
       media_router_ui_->GetRouteProviderExtensionId()));
   initial_data.Set("routes", routes.release());
 
   const std::set<MediaCastMode> cast_modes = media_router_ui_->cast_modes();
-  scoped_ptr<base::ListValue> cast_modes_list(
-      CastModesToValue(cast_modes,
-                       media_router_ui_->GetPresentationRequestSourceName()));
+  std::unique_ptr<base::ListValue> cast_modes_list(CastModesToValue(
+      cast_modes, media_router_ui_->GetPresentationRequestSourceName()));
   initial_data.Set("castModes", cast_modes_list.release());
 
   web_ui()->CallJavascriptFunction(kSetInitialData, initial_data);
@@ -743,7 +746,7 @@ bool MediaRouterWebUIMessageHandler::ActOnIssueType(
     std::string learn_more_url = GetLearnMoreUrl(args);
     if (learn_more_url.empty())
       return false;
-    scoped_ptr<base::ListValue> open_args(new base::ListValue);
+    std::unique_ptr<base::ListValue> open_args(new base::ListValue);
     open_args->AppendString(learn_more_url);
     web_ui()->CallJavascriptFunction(kWindowOpen, *open_args);
     return true;

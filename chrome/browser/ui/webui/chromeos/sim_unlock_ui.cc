@@ -205,9 +205,10 @@ class SimUnlockHandler : public WebUIMessageHandler,
   void ChangePin(const std::string& old_pin, const std::string& new_pin);
   void UnblockPin(const std::string& puk, const std::string& new_pin);
   void PinOperationSuccessCallback(const std::string& operation_name);
-  void PinOperationErrorCallback(const std::string& operation_name,
-                                 const std::string& error_name,
-                                 scoped_ptr<base::DictionaryValue> error_data);
+  void PinOperationErrorCallback(
+      const std::string& operation_name,
+      const std::string& error_name,
+      std::unique_ptr<base::DictionaryValue> error_data);
 
   // Called when an asynchronous PIN operation has completed.
   void OnPinOperationCompleted(PinOperationError error);
@@ -552,7 +553,7 @@ void SimUnlockHandler::PinOperationSuccessCallback(
 void SimUnlockHandler::PinOperationErrorCallback(
     const std::string& operation_name,
     const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) {
+    std::unique_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("Pin operation failed: " + error_name, operation_name);
   PinOperationError pin_error;
   if (error_name == NetworkDeviceHandler::kErrorIncorrectPin ||

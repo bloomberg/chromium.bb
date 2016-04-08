@@ -375,7 +375,7 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
   // NOTIFICATION_FULLSCREEN_CHANGED is sent asynchronously.
   // This method toggles fullscreen and waits for the notification.
   void ToggleFullscreenAndWaitForNotification() {
-    scoped_ptr<FullscreenNotificationObserver> waiter(
+    std::unique_ptr<FullscreenNotificationObserver> waiter(
         new FullscreenNotificationObserver());
     browser()
         ->exclusive_access_manager()

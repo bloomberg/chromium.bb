@@ -41,7 +41,7 @@ class ZoomControllerTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
-  scoped_ptr<ZoomController> zoom_controller_;
+  std::unique_ptr<ZoomController> zoom_controller_;
 };
 
 TEST_F(ZoomControllerTest, DidNavigateMainFrame) {

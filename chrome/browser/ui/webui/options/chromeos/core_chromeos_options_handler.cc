@@ -410,7 +410,7 @@ void CoreChromeOSOptionsHandler::OnPreferenceChanged(
 void CoreChromeOSOptionsHandler::NotifySettingsChanged(
     const std::string& setting_name) {
   DCHECK(CrosSettings::Get()->IsCrosSettings(setting_name));
-  scoped_ptr<base::Value> value(FetchPref(setting_name));
+  std::unique_ptr<base::Value> value(FetchPref(setting_name));
   if (!value.get())
     NOTREACHED();
   DispatchPrefChangeNotification(setting_name, std::move(value));
@@ -423,7 +423,7 @@ void CoreChromeOSOptionsHandler::NotifyProxyPrefsChanged() {
     proxy_cros_settings_parser::GetProxyPrefValue(
         proxy_config_service_, kProxySettings[i], &value);
     DCHECK(value);
-    scoped_ptr<base::Value> ptr(value);
+    std::unique_ptr<base::Value> ptr(value);
     DispatchPrefChangeNotification(kProxySettings[i], std::move(ptr));
   }
 }

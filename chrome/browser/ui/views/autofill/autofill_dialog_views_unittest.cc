@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/views/autofill/autofill_dialog_views.h"
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/autofill/mock_autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/autofill/decorated_textfield.h"
@@ -97,12 +98,12 @@ class AutofillDialogViewsTest : public TestWithBrowserView {
  private:
   // Fake dialog delegate and host to isolate test behavior.
   web_modal::TestWebContentsModalDialogManagerDelegate dialog_delegate_;
-  scoped_ptr<web_modal::TestWebContentsModalDialogHost> dialog_host_;
+  std::unique_ptr<web_modal::TestWebContentsModalDialogHost> dialog_host_;
 
   // Mock view delegate as this file only tests the view.
   testing::NiceMock<MockAutofillDialogViewDelegate> view_delegate_;
 
-  scoped_ptr<TestAutofillDialogViews> dialog_;
+  std::unique_ptr<TestAutofillDialogViews> dialog_;
 };
 
 TEST_F(AutofillDialogViewsTest, InitialFocus) {

@@ -45,8 +45,8 @@ class SearchEngineManagerHandler : public OptionsPageUIHandler,
   void RegisterMessages() override;
 
  private:
-  scoped_ptr<KeywordEditorController> list_controller_;
-  scoped_ptr<EditSearchEngineController> edit_controller_;
+  std::unique_ptr<KeywordEditorController> list_controller_;
+  std::unique_ptr<EditSearchEngineController> edit_controller_;
 
   // Removes the search engine at the given index. Called from WebUI.
   void RemoveSearchEngine(const base::ListValue* args);

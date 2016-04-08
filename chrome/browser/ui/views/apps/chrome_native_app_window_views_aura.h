@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_AURA_H_
 #define CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_AURA_H_
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views.h"
 
@@ -39,7 +40,7 @@ class ChromeNativeAppWindowViewsAura : public ChromeNativeAppWindowViews {
   bool IsAlwaysOnTop() const override;
 
   // NativeAppWindow implementation.
-  void UpdateShape(scoped_ptr<SkRegion> region) override;
+  void UpdateShape(std::unique_ptr<SkRegion> region) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ShapedAppWindowTargeterTest,

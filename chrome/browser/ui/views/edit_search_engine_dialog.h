@@ -83,7 +83,7 @@ class EditSearchEngineDialog : public views::TextfieldController,
   views::ImageView* keyword_iv_;
   views::ImageView* url_iv_;
 
-  scoped_ptr<EditSearchEngineController> controller_;
+  std::unique_ptr<EditSearchEngineController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(EditSearchEngineDialog);
 };

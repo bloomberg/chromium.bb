@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_SAVE_CARD_BUBBLE_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_UI_AUTOFILL_SAVE_CARD_BUBBLE_CONTROLLER_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -32,7 +33,7 @@ class SaveCardBubbleControllerImpl
   // |save_card_callback| will be invoked if and when the Save button is
   // pressed. The contents of |legal_message| will be displayed in the bubble.
   void ShowBubbleForUpload(const CreditCard& card,
-                           scoped_ptr<base::DictionaryValue> legal_message,
+                           std::unique_ptr<base::DictionaryValue> legal_message,
                            const base::Closure& save_card_callback);
 
   void HideBubble();
@@ -101,7 +102,7 @@ class SaveCardBubbleControllerImpl
 
   // Used to measure the amount of time on a page; if it's less than some
   // reasonable limit, then don't close the bubble upon navigation.
-  scoped_ptr<base::ElapsedTimer> timer_;
+  std::unique_ptr<base::ElapsedTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleControllerImpl);
 };

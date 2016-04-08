@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_POPULAR_SITES_INTERNALS_MESSAGE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_POPULAR_SITES_INTERNALS_MESSAGE_HANDLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -39,7 +39,7 @@ class PopularSitesInternalsMessageHandler
 
   void OnPopularSitesAvailable(bool explicit_request, bool success);
 
-  scoped_ptr<PopularSites> popular_sites_;
+  std::unique_ptr<PopularSites> popular_sites_;
 
   base::WeakPtrFactory<PopularSitesInternalsMessageHandler> weak_ptr_factory_;
 

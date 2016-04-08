@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
@@ -190,11 +190,11 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
 
   // Note: order ensures |search_resource_manager_| is destroyed before
   // |speech_ui_|.
-  scoped_ptr<app_list::SpeechUIModel> speech_ui_;
-  scoped_ptr<app_list::SearchResourceManager> search_resource_manager_;
-  scoped_ptr<app_list::SearchController> search_controller_;
+  std::unique_ptr<app_list::SpeechUIModel> speech_ui_;
+  std::unique_ptr<app_list::SearchResourceManager> search_resource_manager_;
+  std::unique_ptr<app_list::SearchController> search_controller_;
 
-  scoped_ptr<app_list::LauncherPageEventDispatcher>
+  std::unique_ptr<app_list::LauncherPageEventDispatcher>
       launcher_page_event_dispatcher_;
 
   base::TimeDelta auto_launch_timeout_;
@@ -204,7 +204,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   Users users_;
 
 #if defined(USE_ASH)
-  scoped_ptr<AppSyncUIStateWatcher> app_sync_ui_state_watcher_;
+  std::unique_ptr<AppSyncUIStateWatcher> app_sync_ui_state_watcher_;
 #endif
 
   base::ObserverList<app_list::AppListViewDelegateObserver> observers_;

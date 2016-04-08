@@ -60,7 +60,8 @@ bool NativeWindowTrackerCocoa::WasNativeWindowClosed() const {
 }
 
 // static
-scoped_ptr<NativeWindowTracker> NativeWindowTracker::Create(
+std::unique_ptr<NativeWindowTracker> NativeWindowTracker::Create(
     gfx::NativeWindow window) {
-  return scoped_ptr<NativeWindowTracker>(new NativeWindowTrackerCocoa(window));
+  return std::unique_ptr<NativeWindowTracker>(
+      new NativeWindowTrackerCocoa(window));
 }

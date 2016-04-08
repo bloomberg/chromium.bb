@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_PANELS_PANEL_H_
 #define CHROME_BROWSER_UI_PANELS_PANEL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/command_updater.h"
@@ -406,13 +406,13 @@ class Panel : public ui::BaseWindow,
   content::NotificationRegistrar registrar_;
   extensions::ExtensionRegistry* extension_registry_;
   const SessionID session_id_;
-  scoped_ptr<extensions::WindowController> extension_window_controller_;
-  scoped_ptr<PanelHost> panel_host_;
+  std::unique_ptr<extensions::WindowController> extension_window_controller_;
+  std::unique_ptr<PanelHost> panel_host_;
 
   // Icon showed in the task bar.
   gfx::Image app_icon_;
 
-  scoped_ptr<ScopedKeepAlive> keep_alive_;
+  std::unique_ptr<ScopedKeepAlive> keep_alive_;
 
   base::WeakPtrFactory<Panel> image_loader_ptr_factory_;
 

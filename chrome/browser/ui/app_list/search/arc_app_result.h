@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_ARC_APP_RESULT_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_ARC_APP_RESULT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/search/app_result.h"
 
@@ -30,7 +30,7 @@ class ArcAppResult : public AppResult,
 
   // SearchResult overrides:
   void Open(int event_flags) override;
-  scoped_ptr<SearchResult> Duplicate() const override;
+  std::unique_ptr<SearchResult> Duplicate() const override;
   ui::MenuModel* GetContextMenuModel() override;
 
   // AppContextMenuDelegate overrides:
@@ -41,8 +41,8 @@ class ArcAppResult : public AppResult,
                          const gfx::ImageSkia& image) override;
 
  private:
-  scoped_ptr<ArcAppIconLoader> icon_loader_;
-  scoped_ptr<ArcAppContextMenu> context_menu_;
+  std::unique_ptr<ArcAppIconLoader> icon_loader_;
+  std::unique_ptr<ArcAppContextMenu> context_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppResult);
 };

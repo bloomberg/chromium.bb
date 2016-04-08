@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -21,7 +22,7 @@ const char kPreferencesSource[] = "preference";
 
 // Create a DictionaryValue* that will act as a data source for a single row
 // in a HostContentSettingsMap-controlled exceptions table (e.g., cookies).
-scoped_ptr<base::DictionaryValue> GetExceptionForPage(
+std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
     const ContentSettingsPattern& pattern,
     const ContentSettingsPattern& secondary_pattern,
     const ContentSetting& setting,
@@ -39,7 +40,7 @@ scoped_ptr<base::DictionaryValue> GetExceptionForPage(
 
   exception->SetString(kSetting, setting_string);
   exception->SetString(kSource, provider_name);
-  return make_scoped_ptr(exception);
+  return base::WrapUnique(exception);
 }
 
 void GetExceptionsFromHostContentSettingsMap(const HostContentSettingsMap* map,
@@ -71,7 +72,7 @@ void GetExceptionsFromHostContentSettingsMap(const HostContentSettingsMap* map,
 
   // Keep the exceptions sorted by provider so they will be displayed in
   // precedence order.
-  std::vector<scoped_ptr<base::DictionaryValue>>
+  std::vector<std::unique_ptr<base::DictionaryValue>>
       all_provider_exceptions[HostContentSettingsMap::NUM_PROVIDER_TYPES];
 
   // |all_patterns_settings| is sorted from the lowest precedence pattern to
@@ -135,7 +136,7 @@ void GetExceptionsFromHostContentSettingsMap(const HostContentSettingsMap* map,
 
 void GetPolicyAllowedUrls(
     ContentSettingsType type,
-    std::vector<scoped_ptr<base::DictionaryValue>>* exceptions,
+    std::vector<std::unique_ptr<base::DictionaryValue>>* exceptions,
     content::WebUI* web_ui) {
   DCHECK(type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
          type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);

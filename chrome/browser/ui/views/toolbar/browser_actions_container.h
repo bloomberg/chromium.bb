@@ -238,9 +238,9 @@ class BrowserActionsContainer : public views::View,
   void StopAnimating() override;
   int GetChevronWidth() const override;
   void ShowToolbarActionBubble(
-      scoped_ptr<ToolbarActionsBarBubbleDelegate> controller) override;
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate> controller) override;
   void ShowExtensionMessageBubble(
-      scoped_ptr<extensions::ExtensionMessageBubbleController> controller,
+      std::unique_ptr<extensions::ExtensionMessageBubbleController> controller,
       ToolbarActionViewController* anchor_action) override;
 
   // views::WidgetObserver:
@@ -278,7 +278,7 @@ class BrowserActionsContainer : public views::View,
   bool in_overflow_mode() const { return main_container_ != NULL; }
 
   // The controlling ToolbarActionsBar, which handles most non-view logic.
-  scoped_ptr<ToolbarActionsBar> toolbar_actions_bar_;
+  std::unique_ptr<ToolbarActionsBar> toolbar_actions_bar_;
 
   // The vector of toolbar actions (icons/image buttons for each action).
   ToolbarActionViews toolbar_action_views_;
@@ -299,11 +299,11 @@ class BrowserActionsContainer : public views::View,
   ChevronMenuButton* chevron_;
 
   // The painter used when we are highlighting a subset of extensions.
-  scoped_ptr<views::Painter> info_highlight_painter_;
-  scoped_ptr<views::Painter> warning_highlight_painter_;
+  std::unique_ptr<views::Painter> info_highlight_painter_;
+  std::unique_ptr<views::Painter> warning_highlight_painter_;
 
   // The animation that happens when the container snaps to place.
-  scoped_ptr<gfx::SlideAnimation> resize_animation_;
+  std::unique_ptr<gfx::SlideAnimation> resize_animation_;
 
   // Don't show the chevron while animating.
   bool suppress_chevron_;
@@ -326,7 +326,7 @@ class BrowserActionsContainer : public views::View,
 
   // The DropPosition for the current drag-and-drop operation, or NULL if there
   // is none.
-  scoped_ptr<DropPosition> drop_position_;
+  std::unique_ptr<DropPosition> drop_position_;
 
   // The extension bubble that is actively showing, if any.
   views::BubbleDelegateView* active_bubble_;

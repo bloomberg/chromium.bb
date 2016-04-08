@@ -40,8 +40,8 @@ class ChromeNSSCryptoModuleDelegate
       chrome::CryptoModulePasswordReason reason,
       const net::HostPortPair& server,
       content::ResourceContext* context,
-      const base::Callback<void(scoped_ptr<ChromeNSSCryptoModuleDelegate>)>&
-          callback);
+      const base::Callback<
+          void(std::unique_ptr<ChromeNSSCryptoModuleDelegate>)>& callback);
 
   // crypto::NSSCryptoModuleDelegate implementation.
   crypto::ScopedPK11Slot RequestSlot() override;

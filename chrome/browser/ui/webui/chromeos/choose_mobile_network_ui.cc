@@ -88,7 +88,7 @@ chromeos::NetworkStateHandler* GetNetworkStateHandler() {
 void NetworkOperationErrorCallback(
     const std::string& operation_name,
     const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) {
+    std::unique_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("Operation failed: " + error_name, operation_name);
 }
 

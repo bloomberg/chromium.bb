@@ -109,8 +109,8 @@ class ContentSettingSimpleImageModel : public ContentSettingImageModel {
   void SetAnimationHasRun(content::WebContents* web_contents) override;
 
   // Factory method. Used only for testing.
-  static scoped_ptr<ContentSettingImageModel> CreateForContentTypeForTesting(
-      ContentSettingsType content_type);
+  static std::unique_ptr<ContentSettingImageModel>
+  CreateForContentTypeForTesting(ContentSettingsType content_type);
 
  protected:
   ContentSettingsType content_type() { return content_type_; }

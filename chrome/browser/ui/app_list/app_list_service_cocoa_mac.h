@@ -49,7 +49,7 @@ class AppListServiceCocoaMac : public AppListServiceMac {
 
   Profile* profile_;
   base::scoped_nsobject<AppListWindowController> window_controller_;
-  scoped_ptr<AppListControllerDelegateImpl> controller_delegate_;
+  std::unique_ptr<AppListControllerDelegateImpl> controller_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceCocoaMac);
 };

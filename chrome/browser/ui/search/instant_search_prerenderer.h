@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_INSTANT_SEARCH_PRERENDERER_H_
 #define CHROME_BROWSER_UI_SEARCH_INSTANT_SEARCH_PRERENDERER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/common/instant_types.h"
 #include "content/public/browser/navigation_controller.h"
@@ -97,7 +98,7 @@ class InstantSearchPrerenderer {
   // Instant search base page URL.
   const GURL prerender_url_;
 
-  scoped_ptr<prerender::PrerenderHandle> prerender_handle_;
+  std::unique_ptr<prerender::PrerenderHandle> prerender_handle_;
 
   InstantSuggestion last_instant_suggestion_;
 

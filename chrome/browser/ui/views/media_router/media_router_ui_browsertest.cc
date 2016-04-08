@@ -94,8 +94,8 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
 
  protected:
   // Must be initialized after |InProcessBrowserTest::SetUpOnMainThread|.
-  scoped_ptr<BrowserActionTestUtil> browser_action_test_util_;
-  scoped_ptr<MediaRouterAction> media_router_action_;
+  std::unique_ptr<BrowserActionTestUtil> browser_action_test_util_;
+  std::unique_ptr<MediaRouterAction> media_router_action_;
 
   // ToolbarActionView constructed to set the delegate on
   // |media_router_action_|.

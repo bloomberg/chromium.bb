@@ -127,7 +127,7 @@ class ConfirmBubbleControllerTest : public CocoaTest {
 
  private:
   ConfirmBubbleController* controller_;  // weak; owns self
-  scoped_ptr<TestConfirmBubbleModel> model_;
+  std::unique_ptr<TestConfirmBubbleModel> model_;
   bool model_deleted_;
   bool accept_clicked_;
   bool cancel_clicked_;

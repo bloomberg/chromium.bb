@@ -5,11 +5,12 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_SYNC_ONE_CLICK_SIGNIN_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_SYNC_ONE_CLICK_SIGNIN_BUBBLE_VIEW_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/sync/one_click_signin_bubble_delegate.h"
@@ -37,7 +38,7 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   static void ShowBubble(BrowserWindow::OneClickSigninBubbleType type,
                          const base::string16& email,
                          const base::string16& error_message,
-                         scoped_ptr<OneClickSigninBubbleDelegate> delegate,
+                         std::unique_ptr<OneClickSigninBubbleDelegate> delegate,
                          views::View* anchor_view,
                          const BrowserWindow::StartSyncCallback& start_sync);
 
@@ -54,7 +55,7 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   OneClickSigninBubbleView(
       const base::string16& error_message,
       const base::string16& email,
-      scoped_ptr<OneClickSigninBubbleDelegate> delegate,
+      std::unique_ptr<OneClickSigninBubbleDelegate> delegate,
       views::View* anchor_view,
       const BrowserWindow::StartSyncCallback& start_sync_callback,
       bool is_sync_dialog);
@@ -106,7 +107,7 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   void InitAdvancedLink();
 
   // Delegate to handle clicking on links in the bubble.
-  scoped_ptr<OneClickSigninBubbleDelegate> delegate_;
+  std::unique_ptr<OneClickSigninBubbleDelegate> delegate_;
 
   // Alternate error message to be displayed.
   const base::string16 error_message_;

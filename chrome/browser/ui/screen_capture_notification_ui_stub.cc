@@ -19,8 +19,8 @@ class ScreenCaptureNotificationUIStub : public ScreenCaptureNotificationUI {
 };
 
 // static
-scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
-    const base::string16& title) {
-  return scoped_ptr<ScreenCaptureNotificationUI>(
+std::unique_ptr<ScreenCaptureNotificationUI>
+ScreenCaptureNotificationUI::Create(const base::string16& title) {
+  return std::unique_ptr<ScreenCaptureNotificationUI>(
       new ScreenCaptureNotificationUIStub());
 }

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -113,7 +113,8 @@ void ChromeAppDelegate::RelinquishKeepAliveAfterTimeout(
   // ChromeAppDelegate which also resets the ScopedKeepAlive. To avoid this,
   // move the ScopedKeepAlive out to here and let it fall out of scope.
   if (chrome_app_delegate.get() && chrome_app_delegate->is_hidden_)
-    scoped_ptr<ScopedKeepAlive>(std::move(chrome_app_delegate->keep_alive_));
+    std::unique_ptr<ScopedKeepAlive>(
+        std::move(chrome_app_delegate->keep_alive_));
 }
 
 class ChromeAppDelegate::NewWindowContentsDelegate

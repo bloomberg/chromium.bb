@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_CONFIRM_BUBBLE_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_CONFIRM_BUBBLE_VIEWS_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -25,7 +26,7 @@ class ConfirmBubbleModel;
 class ConfirmBubbleViews : public views::DialogDelegateView,
                            public views::LinkListener {
  public:
-  explicit ConfirmBubbleViews(scoped_ptr<ConfirmBubbleModel> model);
+  explicit ConfirmBubbleViews(std::unique_ptr<ConfirmBubbleModel> model);
 
  protected:
   ~ConfirmBubbleViews() override;
@@ -46,7 +47,7 @@ class ConfirmBubbleViews : public views::DialogDelegateView,
 
  private:
   // The model to customize this bubble view.
-  scoped_ptr<ConfirmBubbleModel> model_;
+  std::unique_ptr<ConfirmBubbleModel> model_;
 
   views::Link* link_;
 

@@ -11,22 +11,23 @@
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/android/download/download_overwrite_infobar_delegate.h"
 #include "jni/DownloadOverwriteInfoBar_jni.h"
 
 using chrome::android::DownloadOverwriteInfoBarDelegate;
 
 // static
-scoped_ptr<infobars::InfoBar> DownloadOverwriteInfoBar::CreateInfoBar(
-    scoped_ptr<DownloadOverwriteInfoBarDelegate> delegate) {
-  return make_scoped_ptr(new DownloadOverwriteInfoBar(std::move(delegate)));
+std::unique_ptr<infobars::InfoBar> DownloadOverwriteInfoBar::CreateInfoBar(
+    std::unique_ptr<DownloadOverwriteInfoBarDelegate> delegate) {
+  return base::WrapUnique(new DownloadOverwriteInfoBar(std::move(delegate)));
 }
 
 DownloadOverwriteInfoBar::~DownloadOverwriteInfoBar() {
 }
 
 DownloadOverwriteInfoBar::DownloadOverwriteInfoBar(
-    scoped_ptr<DownloadOverwriteInfoBarDelegate> delegate)
+    std::unique_ptr<DownloadOverwriteInfoBarDelegate> delegate)
     : InfoBarAndroid(std::move(delegate)) {}
 
 base::android::ScopedJavaLocalRef<jobject>

@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_LAUNCHER_SEARCH_LAUNCHER_SEARCH_PROVIDER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -43,7 +43,8 @@ class LauncherSearchProvider : public SearchProvider {
 
   // The search results of each extension.
   std::map<extensions::ExtensionId,
-           scoped_ptr<ScopedVector<LauncherSearchResult>>> extension_results_;
+           std::unique_ptr<ScopedVector<LauncherSearchResult>>>
+      extension_results_;
 
   // A timer to delay query.
   base::OneShotTimer query_timer_;

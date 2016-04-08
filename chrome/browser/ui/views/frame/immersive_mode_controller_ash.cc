@@ -49,7 +49,7 @@ class ImmersiveRevealedLockAsh : public ImmersiveRevealedLock {
       : lock_(lock) {}
 
  private:
-  scoped_ptr<ash::ImmersiveRevealedLock> lock_;
+  std::unique_ptr<ash::ImmersiveRevealedLock> lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ImmersiveRevealedLockAsh);
 };

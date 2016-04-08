@@ -282,9 +282,9 @@ struct GtkIconInfoDeleter {
     G_GNUC_END_IGNORE_DEPRECATIONS
   }
 };
-typedef scoped_ptr<GIcon, GObjectDeleter> ScopedGIcon;
-typedef scoped_ptr<GtkIconInfo, GtkIconInfoDeleter> ScopedGtkIconInfo;
-typedef scoped_ptr<GdkPixbuf, GObjectDeleter> ScopedGdkPixbuf;
+typedef std::unique_ptr<GIcon, GObjectDeleter> ScopedGIcon;
+typedef std::unique_ptr<GtkIconInfo, GtkIconInfoDeleter> ScopedGtkIconInfo;
+typedef std::unique_ptr<GdkPixbuf, GObjectDeleter> ScopedGdkPixbuf;
 
 // Prefix for app indicator ids
 const char kAppIndicatorIdPrefix[] = "chrome_app_indicator_";
@@ -454,7 +454,7 @@ double GetPixelsInPoint(float device_scale_factor) {
 }
 
 views::LinuxUI::NonClientMiddleClickAction GetDefaultMiddleClickAction() {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   switch (base::nix::GetDesktopEnvironment(env.get())) {
     case base::nix::DESKTOP_ENVIRONMENT_KDE4:
     case base::nix::DESKTOP_ENVIRONMENT_KDE5:
@@ -635,7 +635,7 @@ void Gtk2UI::SetNativeThemeOverride(const NativeThemeGetter& callback) {
 }
 
 bool Gtk2UI::GetDefaultUsesSystemTheme() const {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
 
   switch (base::nix::GetDesktopEnvironment(env.get())) {
     case base::nix::DESKTOP_ENVIRONMENT_GNOME:
@@ -667,18 +667,17 @@ bool Gtk2UI::IsStatusIconSupported() const {
   return true;
 }
 
-scoped_ptr<views::StatusIconLinux> Gtk2UI::CreateLinuxStatusIcon(
+std::unique_ptr<views::StatusIconLinux> Gtk2UI::CreateLinuxStatusIcon(
     const gfx::ImageSkia& image,
     const base::string16& tool_tip) const {
   if (AppIndicatorIcon::CouldOpen()) {
     ++indicators_count;
-    return scoped_ptr<views::StatusIconLinux>(new AppIndicatorIcon(
+    return std::unique_ptr<views::StatusIconLinux>(new AppIndicatorIcon(
         base::StringPrintf("%s%d", kAppIndicatorIdPrefix, indicators_count),
-        image,
-        tool_tip));
-  } else {
-    return scoped_ptr<views::StatusIconLinux>(new Gtk2StatusIcon(
         image, tool_tip));
+  } else {
+    return std::unique_ptr<views::StatusIconLinux>(
+        new Gtk2StatusIcon(image, tool_tip));
   }
 }
 
@@ -714,13 +713,13 @@ gfx::Image Gtk2UI::GetIconForContentType(
   return gfx::Image();
 }
 
-scoped_ptr<views::Border> Gtk2UI::CreateNativeBorder(
+std::unique_ptr<views::Border> Gtk2UI::CreateNativeBorder(
     views::LabelButton* owning_button,
-    scoped_ptr<views::LabelButtonBorder> border) {
+    std::unique_ptr<views::LabelButtonBorder> border) {
   if (owning_button->GetNativeTheme() != NativeThemeGtk2::instance())
     return std::move(border);
 
-  scoped_ptr<views::LabelButtonAssetBorder> gtk_border(
+  std::unique_ptr<views::LabelButtonAssetBorder> gtk_border(
       new views::LabelButtonAssetBorder(owning_button->style()));
 
   gtk_border->set_insets(border->GetInsets());
@@ -805,10 +804,10 @@ void Gtk2UI::SetNonClientMiddleClickAction(NonClientMiddleClickAction action) {
   middle_click_action_ = action;
 }
 
-scoped_ptr<ui::LinuxInputMethodContext> Gtk2UI::CreateInputMethodContext(
+std::unique_ptr<ui::LinuxInputMethodContext> Gtk2UI::CreateInputMethodContext(
     ui::LinuxInputMethodContextDelegate* delegate,
     bool is_simple) const {
-  return scoped_ptr<ui::LinuxInputMethodContext>(
+  return std::unique_ptr<ui::LinuxInputMethodContext>(
       new X11InputMethodContextImplGtk2(delegate, is_simple));
 }
 

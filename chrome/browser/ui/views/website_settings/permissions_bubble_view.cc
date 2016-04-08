@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -86,8 +87,8 @@ class PermissionCombobox : public views::MenuButton,
  private:
   int index_;
   Listener* listener_;
-  scoped_ptr<PermissionMenuModel> model_;
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<PermissionMenuModel> model_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 };
 
 PermissionCombobox::PermissionCombobox(Listener* listener,
@@ -182,7 +183,7 @@ class PermissionsBubbleDialogDelegateView
   PermissionBubbleViewViews* owner_;
   bool multiple_requests_;
   base::string16 display_origin_;
-  scoped_ptr<PermissionMenuModel> menu_button_model_;
+  std::unique_ptr<PermissionMenuModel> menu_button_model_;
   std::vector<PermissionCombobox*> customize_comboboxes_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionsBubbleDialogDelegateView);
@@ -363,7 +364,7 @@ void PermissionsBubbleDialogDelegateView::UpdateAnchor(
   views::BubbleBorder::Arrow adjusted_arrow = anchor_arrow;
   if (base::i18n::IsRTL())
     adjusted_arrow = views::BubbleBorder::horizontal_mirror(adjusted_arrow);
-  frame->SetBubbleBorder(scoped_ptr<views::BubbleBorder>(
+  frame->SetBubbleBorder(std::unique_ptr<views::BubbleBorder>(
       new views::BubbleBorder(adjusted_arrow, shadow(), color())));
 
   // Reposition the bubble based on the updated arrow and view.
@@ -384,9 +385,9 @@ PermissionBubbleViewViews::~PermissionBubbleViewViews() {
 }
 
 // static
-scoped_ptr<PermissionBubbleView> PermissionBubbleView::Create(
+std::unique_ptr<PermissionBubbleView> PermissionBubbleView::Create(
     Browser* browser) {
-  return make_scoped_ptr(new PermissionBubbleViewViews(browser));
+  return base::WrapUnique(new PermissionBubbleViewViews(browser));
 }
 
 views::View* PermissionBubbleViewViews::GetAnchorView() {

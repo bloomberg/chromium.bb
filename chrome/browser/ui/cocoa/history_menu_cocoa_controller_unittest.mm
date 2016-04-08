@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/cocoa/history_menu_cocoa_controller.h"
+
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
-#include "chrome/browser/ui/cocoa/history_menu_cocoa_controller.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -68,7 +70,7 @@ class HistoryMenuCocoaControllerTest : public CocoaProfileTest {
   }
 
  private:
-  scoped_ptr<HistoryMenuBridge> bridge_;
+  std::unique_ptr<HistoryMenuBridge> bridge_;
 };
 
 TEST_F(HistoryMenuCocoaControllerTest, OpenURLForItem) {

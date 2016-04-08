@@ -24,7 +24,7 @@ class ChromeBubbleManagerTest : public BrowserWithTestWindowTest {
   void TearDown() override;
 
  protected:
-  scoped_ptr<ChromeBubbleManager> manager_;
+  std::unique_ptr<ChromeBubbleManager> manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBubbleManagerTest);
@@ -60,7 +60,7 @@ TEST_F(ChromeBubbleManagerTest, CloseMockBubbleForTwoDifferentReasons) {
 TEST_F(ChromeBubbleManagerTest, CloseMockBubbleOnNavigate) {
   AddTab(browser(), GURL("https://foo/0"));
 
-  scoped_ptr<MockBubbleDelegate> delegate(new MockBubbleDelegate);
+  std::unique_ptr<MockBubbleDelegate> delegate(new MockBubbleDelegate);
   EXPECT_CALL(*delegate, ShouldClose(BUBBLE_CLOSE_NAVIGATED))
       .WillOnce(testing::Return(true));
   EXPECT_CALL(*delegate, DidClose(BUBBLE_CLOSE_NAVIGATED));
@@ -88,7 +88,7 @@ TEST_F(ChromeBubbleManagerTest, CloseMockBubbleOnOwningFrameDestroy) {
   content::RenderFrameHostTester* subframe1_tester =
       content::RenderFrameHostTester::For(subframe1);
 
-  scoped_ptr<MockBubbleDelegate> delegate(new MockBubbleDelegate);
+  std::unique_ptr<MockBubbleDelegate> delegate(new MockBubbleDelegate);
   EXPECT_CALL(*delegate, OwningFrame())
       .WillRepeatedly(testing::Return(subframe0));
   EXPECT_CALL(*delegate, ShouldClose(BUBBLE_CLOSE_FRAME_DESTROYED))

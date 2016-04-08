@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_QUERY_RESULT_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
@@ -128,7 +128,7 @@ class QueryResultManager {
   // MediaSinksObservers that listens for compatible MediaSink updates.
   // Each observer is associated with a MediaCastMode. Results received by
   // observers are propagated back to this class.
-  std::map<MediaCastMode, scoped_ptr<MediaSinksObserver>> sinks_observers_;
+  std::map<MediaCastMode, std::unique_ptr<MediaSinksObserver>> sinks_observers_;
 
   // Holds registrations of MediaSources for cast modes.
   std::map<MediaCastMode, MediaSource> cast_mode_sources_;

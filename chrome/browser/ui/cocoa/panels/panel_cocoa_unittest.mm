@@ -2,19 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/ui/cocoa/panels/panel_cocoa.h"
+
 #include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
+
+#include <memory>
 
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #include "chrome/browser/chrome_notification_types.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/cocoa_profile_test.h"
-#import "chrome/browser/ui/cocoa/panels/panel_cocoa.h"
 #import "chrome/browser/ui/cocoa/panels/panel_titlebar_view_cocoa.h"
 #import "chrome/browser/ui/cocoa/panels/panel_window_controller_cocoa.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"

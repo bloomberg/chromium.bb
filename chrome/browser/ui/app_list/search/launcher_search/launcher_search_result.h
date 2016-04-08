@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_LAUNCHER_SEARCH_LAUNCHER_SEARCH_RESULT_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_LAUNCHER_SEARCH_LAUNCHER_SEARCH_RESULT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader.h"
 #include "extensions/common/extension.h"
@@ -26,10 +26,10 @@ class LauncherSearchResult : public SearchResult,
       const int discrete_value_relevance,
       Profile* profile,
       const extensions::Extension* extension,
-      scoped_ptr<chromeos::launcher_search_provider::ErrorReporter>
+      std::unique_ptr<chromeos::launcher_search_provider::ErrorReporter>
           error_reporter);
   ~LauncherSearchResult() override;
-  scoped_ptr<SearchResult> Duplicate() const override;
+  std::unique_ptr<SearchResult> Duplicate() const override;
   void Open(int event_flags) override;
 
   void OnIconImageChanged(LauncherSearchIconImageLoader* image_loader) override;

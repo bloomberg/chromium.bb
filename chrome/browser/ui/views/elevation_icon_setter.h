@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_ELEVATION_ICON_SETTER_H_
 #define CHROME_BROWSER_UI_VIEWS_ELEVATION_ICON_SETTER_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 class SkBitmap;
@@ -30,7 +31,8 @@ class ElevationIconSetter {
   ~ElevationIconSetter();
 
  private:
-  void SetButtonIcon(const base::Closure& callback, scoped_ptr<SkBitmap> icon);
+  void SetButtonIcon(const base::Closure& callback,
+                     std::unique_ptr<SkBitmap> icon);
 
   views::LabelButton* button_;
   base::WeakPtrFactory<ElevationIconSetter> weak_factory_;

@@ -146,7 +146,7 @@ void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,
   CookiesTreeModel* tree_model = static_cast<CookiesTreeModel*>(model);
   CookieTreeNode* parent_node = tree_model->AsNode(parent);
 
-  scoped_ptr<base::ListValue> children(new base::ListValue);
+  std::unique_ptr<base::ListValue> children(new base::ListValue);
   model_util_->GetChildNodeList(parent_node, start, count, children.get());
 
   base::ListValue args;
@@ -266,7 +266,7 @@ void CookiesViewHandler::LoadChildren(const base::ListValue* args) {
 }
 
 void CookiesViewHandler::SendChildren(const CookieTreeNode* parent) {
-  scoped_ptr<base::ListValue> children(new base::ListValue);
+  std::unique_ptr<base::ListValue> children(new base::ListValue);
   model_util_->GetChildNodeList(parent, 0, parent->child_count(),
                                 children.get());
 

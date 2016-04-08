@@ -5,11 +5,12 @@
 #include "chrome/browser/ui/ash/cast_config_delegate_chromeos.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/cast_devices_private/cast_devices_private_api.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_api.h"
@@ -66,9 +67,9 @@ bool CastConfigDelegateChromeos::HasCastExtension() const {
 }
 
 void CastConfigDelegateChromeos::RequestDeviceRefresh() {
-  scoped_ptr<base::ListValue> args =
+  std::unique_ptr<base::ListValue> args =
       extensions::api::cast_devices_private::UpdateDevicesRequested::Create();
-  scoped_ptr<extensions::Event> event(new extensions::Event(
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::CAST_DEVICES_PRIVATE_ON_UPDATE_DEVICES_REQUESTED,
       extensions::api::cast_devices_private::UpdateDevicesRequested::kEventName,
       std::move(args)));
@@ -78,9 +79,9 @@ void CastConfigDelegateChromeos::RequestDeviceRefresh() {
 
 void CastConfigDelegateChromeos::CastToReceiver(
     const std::string& receiver_id) {
-  scoped_ptr<base::ListValue> args =
+  std::unique_ptr<base::ListValue> args =
       extensions::api::cast_devices_private::StartCast::Create(receiver_id);
-  scoped_ptr<extensions::Event> event(new extensions::Event(
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::CAST_DEVICES_PRIVATE_ON_START_CAST,
       extensions::api::cast_devices_private::StartCast::kEventName,
       std::move(args)));
@@ -89,9 +90,9 @@ void CastConfigDelegateChromeos::CastToReceiver(
 }
 
 void CastConfigDelegateChromeos::StopCasting(const std::string& activity_id) {
-  scoped_ptr<base::ListValue> args =
+  std::unique_ptr<base::ListValue> args =
       extensions::api::cast_devices_private::StopCast::Create("user-stop");
-  scoped_ptr<extensions::Event> event(new extensions::Event(
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::CAST_DEVICES_PRIVATE_ON_STOP_CAST,
       extensions::api::cast_devices_private::StopCast::kEventName,
       std::move(args)));

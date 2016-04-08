@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/app_list/app_list_service.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
@@ -28,7 +28,7 @@ class TestingAppListServiceImpl : public AppListServiceImpl {
  public:
   TestingAppListServiceImpl(const base::CommandLine& command_line,
                             PrefService* local_state,
-                            scoped_ptr<ProfileStore> profile_store)
+                            std::unique_ptr<ProfileStore> profile_store)
       : AppListServiceImpl(command_line, local_state, std::move(profile_store)),
         showing_for_profile_(NULL),
         destroy_app_list_call_count_(0) {}
@@ -106,9 +106,8 @@ class AppListServiceUnitTest : public testing::Test {
 
     profile_store_ = new FakeProfileStore(user_data_dir_, local_state_.get());
     service_.reset(new TestingAppListServiceImpl(
-        command_line,
-        local_state_.get(),
-        scoped_ptr<ProfileStore>(profile_store_)));
+        command_line, local_state_.get(),
+        std::unique_ptr<ProfileStore>(profile_store_)));
   }
 
   void EnableAppList() {
@@ -117,11 +116,11 @@ class AppListServiceUnitTest : public testing::Test {
   }
 
   base::FilePath user_data_dir_;
-  scoped_ptr<PrefService> local_state_;
+  std::unique_ptr<PrefService> local_state_;
   FakeProfileStore* profile_store_;
-  scoped_ptr<TestingAppListServiceImpl> service_;
-  scoped_ptr<FakeProfile> profile1_;
-  scoped_ptr<FakeProfile> profile2_;
+  std::unique_ptr<TestingAppListServiceImpl> service_;
+  std::unique_ptr<FakeProfile> profile1_;
+  std::unique_ptr<FakeProfile> profile2_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceUnitTest);
 };

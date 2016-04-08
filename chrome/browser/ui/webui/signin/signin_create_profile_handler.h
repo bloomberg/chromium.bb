@@ -192,7 +192,7 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler {
                                  Profile* custodian_profile,
                                  const base::DictionaryValue* dict);
 
-  scoped_ptr<SupervisedUserRegistrationUtility>
+  std::unique_ptr<SupervisedUserRegistrationUtility>
       supervised_user_registration_utility_;
 #endif
 

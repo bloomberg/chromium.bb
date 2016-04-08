@@ -23,7 +23,7 @@ class ChosenObjectViewObserver;
 class ChosenObjectView : public views::View, public views::ButtonListener {
  public:
   explicit ChosenObjectView(
-      scoped_ptr<WebsiteSettingsUI::ChosenObjectInfo> info);
+      std::unique_ptr<WebsiteSettingsUI::ChosenObjectInfo> info);
 
   void AddObserver(ChosenObjectViewObserver* observer);
 
@@ -37,7 +37,7 @@ class ChosenObjectView : public views::View, public views::ButtonListener {
   views::ImageButton* delete_button_;  // Owned by the views hierarchy.
 
   base::ObserverList<ChosenObjectViewObserver> observer_list_;
-  scoped_ptr<WebsiteSettingsUI::ChosenObjectInfo> info_;
+  std::unique_ptr<WebsiteSettingsUI::ChosenObjectInfo> info_;
 
   DISALLOW_COPY_AND_ASSIGN(ChosenObjectView);
 };

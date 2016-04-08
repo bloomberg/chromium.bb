@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -540,13 +541,13 @@ void FindBarView::InitViewsForNonMaterial() {
 
 void FindBarView::InitViewsForMaterial() {
   // The background color is not used since there's no arrow.
-  SetBorder(make_scoped_ptr(new views::BubbleBorder(
+  SetBorder(base::WrapUnique(new views::BubbleBorder(
       views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
       SK_ColorGREEN)));
 
   match_count_text_ = new MatchCountLabel();
   match_count_text_->SetEventTargeter(
-      make_scoped_ptr(new views::ViewTargeter(this)));
+      base::WrapUnique(new views::ViewTargeter(this)));
   AddChildViewAt(match_count_text_, 1);
 
   separator_ = new views::Separator(views::Separator::VERTICAL);

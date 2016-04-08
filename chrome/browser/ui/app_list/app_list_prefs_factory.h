@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_PREFS_FACTORY_H_
 #define CHROME_BROWSER_UI_APP_LIST_APP_LIST_PREFS_FACTORY_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
@@ -20,7 +21,7 @@ class AppListPrefsFactory : public BrowserContextKeyedServiceFactory {
   static AppListPrefsFactory* GetInstance();
 
   void SetInstanceForTesting(content::BrowserContext* context,
-                             scoped_ptr<AppListPrefs> prefs);
+                             std::unique_ptr<AppListPrefs> prefs);
 
  private:
   friend struct base::DefaultSingletonTraits<AppListPrefsFactory>;

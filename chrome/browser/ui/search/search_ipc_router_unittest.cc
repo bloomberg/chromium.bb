@@ -6,11 +6,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <tuple>
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -142,7 +143,7 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
     ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
     search_tab_helper->ipc_router().set_delegate_for_testing(mock_delegate());
     search_tab_helper->ipc_router().set_policy_for_testing(
-        make_scoped_ptr(new MockSearchIPCRouterPolicy));
+        base::WrapUnique(new MockSearchIPCRouterPolicy));
   }
 
   bool MessageWasSent(uint32_t id) {

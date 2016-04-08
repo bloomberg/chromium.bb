@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_UI_ASH_CHROME_SHELL_DELEGATE_H_
 #define CHROME_BROWSER_UI_ASH_CHROME_SHELL_DELEGATE_H_
 
+#include <memory>
 #include <string>
 
 #include "ash/shell_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/ash/metrics/chrome_user_metrics_recorder.h"
@@ -85,10 +85,10 @@ class ChromeShellDelegate : public ash::ShellDelegate,
       keyboard_state_observer_list_;
 
   // Proxies events from chrome/browser to ash::UserMetricsRecorder.
-  scoped_ptr<ChromeUserMetricsRecorder> chrome_user_metrics_recorder_;
+  std::unique_ptr<ChromeUserMetricsRecorder> chrome_user_metrics_recorder_;
 
 #if defined(OS_CHROMEOS)
-  scoped_ptr<chromeos::DisplayConfigurationObserver>
+  std::unique_ptr<chromeos::DisplayConfigurationObserver>
       display_configuration_observer_;
 #endif
 

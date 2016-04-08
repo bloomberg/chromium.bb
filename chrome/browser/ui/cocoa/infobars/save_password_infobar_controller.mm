@@ -31,9 +31,9 @@
   }
 }
 
-scoped_ptr<infobars::InfoBar> CreateSavePasswordInfoBar
-    (scoped_ptr<SavePasswordInfoBarDelegate> delegate) {
-  scoped_ptr<InfoBarCocoa> infobar(new InfoBarCocoa(std::move(delegate)));
+std::unique_ptr<infobars::InfoBar> CreateSavePasswordInfoBar(
+    std::unique_ptr<SavePasswordInfoBarDelegate> delegate) {
+  std::unique_ptr<InfoBarCocoa> infobar(new InfoBarCocoa(std::move(delegate)));
   base::scoped_nsobject<SavePasswordInfobarController> controller(
       [[SavePasswordInfobarController alloc] initWithInfoBar:infobar.get()]);
   infobar->set_controller(controller);

@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WINDOW_SIZER_WINDOW_SIZER_H_
 #define CHROME_BROWSER_UI_WINDOW_SIZER_WINDOW_SIZER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -35,14 +36,14 @@ class WindowSizer {
 
   // WindowSizer owns |state_provider| and |target_display_provider|,
   // and will use the platforms's gfx::Screen.
-  WindowSizer(scoped_ptr<StateProvider> state_provider,
-              scoped_ptr<TargetDisplayProvider> target_display_provider,
+  WindowSizer(std::unique_ptr<StateProvider> state_provider,
+              std::unique_ptr<TargetDisplayProvider> target_display_provider,
               const Browser* browser);
 
   // WindowSizer owns |state_provider| and |target_display_provider|,
   // and will use the supplied |screen|. Used only for testing.
-  WindowSizer(scoped_ptr<StateProvider> state_provider,
-              scoped_ptr<TargetDisplayProvider> target_display_provider,
+  WindowSizer(std::unique_ptr<StateProvider> state_provider,
+              std::unique_ptr<TargetDisplayProvider> target_display_provider,
               gfx::Screen* screen,
               const Browser* browser);
 
@@ -180,8 +181,8 @@ class WindowSizer {
   ui::WindowShowState GetWindowDefaultShowState() const;
 
   // Providers for persistent storage and monitor metrics.
-  scoped_ptr<StateProvider> state_provider_;
-  scoped_ptr<TargetDisplayProvider> target_display_provider_;
+  std::unique_ptr<StateProvider> state_provider_;
+  std::unique_ptr<TargetDisplayProvider> target_display_provider_;
   gfx::Screen* screen_;  // not owned.
 
   // Note that this browser handle might be NULL.

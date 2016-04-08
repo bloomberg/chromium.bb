@@ -42,7 +42,7 @@ TEST_F(TabModelListTest, TestGetTabModelForWebContents) {
   TestTabModel tab_model(profile());
   TabModelList::AddTabModel(&tab_model);
 
-  scoped_ptr<content::WebContents> contents(CreateTestWebContents());
+  std::unique_ptr<content::WebContents> contents(CreateTestWebContents());
 
   // Should not crash when there are no tabs.
   EXPECT_EQ(NULL, TabModelList::GetTabModelForWebContents(contents.get()));

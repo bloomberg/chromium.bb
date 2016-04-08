@@ -391,7 +391,7 @@ void ToolbarActionsBar::CreateActions() {
     checked_extension_bubble_ = true;
     // CreateActions() can be called as part of the browser window set up, which
     // we need to let finish before showing the actions.
-    scoped_ptr<extensions::ExtensionMessageBubbleController> controller =
+    std::unique_ptr<extensions::ExtensionMessageBubbleController> controller =
         ExtensionMessageBubbleFactory(browser_).GetController();
     if (controller) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -580,7 +580,7 @@ void ToolbarActionsBar::RemoveObserver(ToolbarActionsBarObserver* observer) {
 }
 
 void ToolbarActionsBar::ShowToolbarActionBubble(
-    scoped_ptr<ToolbarActionsBarBubbleDelegate> bubble) {
+    std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) {
   DCHECK(bubble->GetAnchorActionId().empty() ||
          GetActionForId(bubble->GetAnchorActionId()));
   if (delegate_->IsAnimating())
@@ -590,7 +590,7 @@ void ToolbarActionsBar::ShowToolbarActionBubble(
 }
 
 void ToolbarActionsBar::MaybeShowExtensionBubble(
-    scoped_ptr<extensions::ExtensionMessageBubbleController> controller) {
+    std::unique_ptr<extensions::ExtensionMessageBubbleController> controller) {
   controller->HighlightExtensionsIfNecessary();  // Safe to call multiple times.
   if (delegate_->IsAnimating()) {
     // If the toolbar is animating, we can't effectively anchor the bubble,
@@ -648,7 +648,7 @@ void ToolbarActionsBar::OnToolbarActionRemoved(const std::string& action_id) {
   // The action should outlive the UI element (which is owned by the delegate),
   // so we can't delete it just yet. But we should remove it from the list of
   // actions so that any width calculations are correct.
-  scoped_ptr<ToolbarActionViewController> removed_action(*iter);
+  std::unique_ptr<ToolbarActionViewController> removed_action(*iter);
   toolbar_actions_.weak_erase(iter);
   delegate_->RemoveViewForAction(removed_action.get());
   removed_action.reset();

@@ -32,9 +32,9 @@ using InfoBarUtilities::VerifyControlOrderAndSpacing;
 using InfoBarUtilities::CreateLabel;
 using InfoBarUtilities::AddMenuItem;
 
-scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
-    scoped_ptr<translate::TranslateInfoBarDelegate> delegate) const {
-  scoped_ptr<InfoBarCocoa> infobar(new InfoBarCocoa(std::move(delegate)));
+std::unique_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
+    std::unique_ptr<translate::TranslateInfoBarDelegate> delegate) const {
+  std::unique_ptr<InfoBarCocoa> infobar(new InfoBarCocoa(std::move(delegate)));
   base::scoped_nsobject<TranslateInfoBarControllerBase> infobar_controller;
   switch (infobar->delegate()->AsTranslateInfoBarDelegate()->translate_step()) {
     case translate::TRANSLATE_STEP_BEFORE_TRANSLATE:

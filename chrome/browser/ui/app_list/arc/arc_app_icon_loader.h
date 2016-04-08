@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_ICON_LOADER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -40,7 +40,7 @@ class ArcAppIconLoader : public AppIconLoader,
   void OnIconUpdated(ArcAppIcon* icon) override;
 
  private:
-  using AppIDToIconMap = std::map<std::string, scoped_ptr<ArcAppIcon>>;
+  using AppIDToIconMap = std::map<std::string, std::unique_ptr<ArcAppIcon>>;
 
   // Unowned pointer.
   ArcAppListPrefs* arc_prefs_;

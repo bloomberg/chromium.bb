@@ -124,7 +124,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
   }
 
  protected:
-  scoped_ptr<net::URLRequest> MakeURLRequest(
+  std::unique_ptr<net::URLRequest> MakeURLRequest(
       net::URLRequestContextGetter* context_getter) {
     return context_getter->GetURLRequestContext()->CreateRequest(
         GURL("https://example"), net::DEFAULT_PRIORITY, NULL);

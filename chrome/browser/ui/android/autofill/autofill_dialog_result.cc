@@ -38,10 +38,10 @@ base::string16 ConvertNullOrJavaStringToUTF16(JNIEnv* env, jstring str) {
     (ConvertNullOrJavaStringTo##utf( \
         (env), FETCH_JFIELD((env), (jobj), cls, getter).obj()))
 
-scoped_ptr<wallet::Address> ParseJavaWalletAddress(
-    JNIEnv* env, jobject address) {
+std::unique_ptr<wallet::Address> ParseJavaWalletAddress(JNIEnv* env,
+                                                        jobject address) {
   if (!address)
-    return scoped_ptr<wallet::Address>();
+    return std::unique_ptr<wallet::Address>();
 
   const base::string16 recipient_name =
       FETCH_JSTRING(UTF16, env, address, ResultAddress, Name);
@@ -70,21 +70,14 @@ scoped_ptr<wallet::Address> ParseJavaWalletAddress(
   const std::string language_code =
       FETCH_JSTRING(UTF8, env, address, ResultAddress, LanguageCode);
 
-  return scoped_ptr<wallet::Address>(new wallet::Address(
-      country_name_code,
-      recipient_name,
-      address_lines,
-      locality_name,
-      dependent_locality_name,
-      administrative_area_name,
-      postal_code_number,
-      sorting_code,
-      phone_number,
-      std::string(),
-      language_code));
+  return std::unique_ptr<wallet::Address>(new wallet::Address(
+      country_name_code, recipient_name, address_lines, locality_name,
+      dependent_locality_name, administrative_area_name, postal_code_number,
+      sorting_code, phone_number, std::string(), language_code));
 }
 
-scoped_ptr<wallet::FullWallet> ParseJavaWallet(JNIEnv* env, jobject wallet) {
+std::unique_ptr<wallet::FullWallet> ParseJavaWallet(JNIEnv* env,
+                                                    jobject wallet) {
   const ScopedJavaLocalRef<jobject> billing_address(
       FETCH_JFIELD(env, wallet, ResultWallet, BillingAddress));
   const ScopedJavaLocalRef<jobject> shipping_address(
@@ -124,8 +117,9 @@ std::string ParseGoogleTransactionId(JNIEnv* env, jobject wallet) {
 }  // namespace
 
 // static
-scoped_ptr<wallet::FullWallet> AutofillDialogResult::ConvertFromJava(
-    JNIEnv* env, jobject wallet) {
+std::unique_ptr<wallet::FullWallet> AutofillDialogResult::ConvertFromJava(
+    JNIEnv* env,
+    jobject wallet) {
   return ParseJavaWallet(env, wallet);
 }
 

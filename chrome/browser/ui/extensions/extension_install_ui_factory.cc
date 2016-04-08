@@ -8,9 +8,10 @@
 
 namespace extensions {
 
-scoped_ptr<ExtensionInstallUI> CreateExtensionInstallUI(
+std::unique_ptr<ExtensionInstallUI> CreateExtensionInstallUI(
     content::BrowserContext* context) {
-  return scoped_ptr<ExtensionInstallUI>(new ExtensionInstallUIDefault(context));
+  return std::unique_ptr<ExtensionInstallUI>(
+      new ExtensionInstallUIDefault(context));
 }
 
 }  // namespace extensions

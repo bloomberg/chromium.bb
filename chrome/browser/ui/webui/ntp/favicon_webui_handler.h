@@ -59,7 +59,7 @@ class FaviconWebUIHandler : public content::WebUIMessageHandler {
   scoped_refptr<base::RefCountedMemory> default_favicon_;
 
   // Manage retrieval of icons from apps.
-  scoped_ptr<ExtensionIconColorManager> app_icon_color_manager_;
+  std::unique_ptr<ExtensionIconColorManager> app_icon_color_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconWebUIHandler);
 };

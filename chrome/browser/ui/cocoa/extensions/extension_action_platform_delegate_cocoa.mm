@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/ui/browser.h"
@@ -43,10 +44,10 @@ int GetNotificationTypeForAction(const ExtensionAction& extension_action) {
 }  // namespace
 
 // static
-scoped_ptr<ExtensionActionPlatformDelegate>
+std::unique_ptr<ExtensionActionPlatformDelegate>
 ExtensionActionPlatformDelegate::Create(
     ExtensionActionViewController* controller) {
-  return make_scoped_ptr(new ExtensionActionPlatformDelegateCocoa(controller));
+  return base::WrapUnique(new ExtensionActionPlatformDelegateCocoa(controller));
 }
 
 ExtensionActionPlatformDelegateCocoa::ExtensionActionPlatformDelegateCocoa(
@@ -69,7 +70,7 @@ void ExtensionActionPlatformDelegateCocoa::OnDelegateSet() {
 }
 
 void ExtensionActionPlatformDelegateCocoa::ShowPopup(
-    scoped_ptr<extensions::ExtensionViewHost> host,
+    std::unique_ptr<extensions::ExtensionViewHost> host,
     bool grant_tab_permissions,
     ExtensionActionViewController::PopupShowAction show_action) {
   BOOL devMode =

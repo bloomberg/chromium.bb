@@ -31,9 +31,10 @@ void AlternateNavInfoBarDelegate::Create(
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   infobar_service->AddInfoBar(AlternateNavInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<AlternateNavInfoBarDelegate>(new AlternateNavInfoBarDelegate(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()), text,
-          match, search_url))));
+      std::unique_ptr<AlternateNavInfoBarDelegate>(
+          new AlternateNavInfoBarDelegate(
+              Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+              text, match, search_url))));
 }
 
 AlternateNavInfoBarDelegate::AlternateNavInfoBarDelegate(

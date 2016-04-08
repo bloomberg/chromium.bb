@@ -86,7 +86,7 @@ class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
   }
 
   TestingProfile* second_profile_;
-  scoped_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
   chrome::MultiUserWindowManagerChromeOS* multi_user_window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFinderChromeOSTest);
@@ -101,7 +101,7 @@ TEST_F(BrowserFinderChromeOSTest, IncognitoBrowserMatchTest) {
 
   // Create an incognito browser.
   Browser::CreateParams params(profile()->GetOffTheRecordProfile());
-  scoped_ptr<Browser> incognito_browser(
+  std::unique_ptr<Browser> incognito_browser(
       chrome::CreateBrowserWithAuraTestWindowForParams(nullptr, &params));
   // Incognito windows are excluded in GetBrowserCount() because kMatchAll
   // doesn't match original profile of the browser with the given profile.
@@ -114,7 +114,7 @@ TEST_F(BrowserFinderChromeOSTest, FindBrowserOwnedByAnotherProfile) {
   set_browser(nullptr);
 
   Browser::CreateParams params(profile()->GetOriginalProfile());
-  scoped_ptr<Browser> browser(
+  std::unique_ptr<Browser> browser(
       chrome::CreateBrowserWithAuraTestWindowForParams(nullptr, &params));
   GetUserWindowManager()->SetWindowOwner(browser->window()->GetNativeWindow(),
                                          test_account_id1_);

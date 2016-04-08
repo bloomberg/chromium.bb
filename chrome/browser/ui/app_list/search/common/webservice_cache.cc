@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "content/public/browser/browser_context.h"
@@ -57,10 +58,10 @@ const CacheResult WebserviceCache::Get(QueryType type,
 
 void WebserviceCache::Put(QueryType type,
                           const std::string& query,
-                          scoped_ptr<base::DictionaryValue> result) {
+                          std::unique_ptr<base::DictionaryValue> result) {
   if (result) {
     std::string typed_query = PrependType(type, query);
-    scoped_ptr<Payload> scoped_payload(
+    std::unique_ptr<Payload> scoped_payload(
         new Payload(base::Time::Now(), std::move(result)));
     Payload* payload = scoped_payload.get();
 
@@ -78,7 +79,7 @@ void WebserviceCache::Put(QueryType type,
   }
 }
 
-void WebserviceCache::OnCacheLoaded(scoped_ptr<base::DictionaryValue>) {
+void WebserviceCache::OnCacheLoaded(std::unique_ptr<base::DictionaryValue>) {
   if (!data_store_->cached_dict())
     return;
 
@@ -87,7 +88,7 @@ void WebserviceCache::OnCacheLoaded(scoped_ptr<base::DictionaryValue>) {
       !it.IsAtEnd();
       it.Advance()) {
     const base::DictionaryValue* payload_dict;
-    scoped_ptr<Payload> payload(new Payload);
+    std::unique_ptr<Payload> payload(new Payload);
     if (!it.value().GetAsDictionary(&payload_dict) ||
         !payload_dict ||
         !PayloadFromDict(payload_dict, payload.get())) {
@@ -123,7 +124,7 @@ bool WebserviceCache::PayloadFromDict(const base::DictionaryValue* dict,
   // instead of returning the original reference. The new dictionary will be
   // owned by our MRU cache.
   *payload = Payload(base::Time::FromInternalValue(time_val),
-                     make_scoped_ptr(result->DeepCopy()));
+                     base::WrapUnique(result->DeepCopy()));
   return true;
 }
 
@@ -162,7 +163,7 @@ std::string WebserviceCache::PrependType(
 }
 
 WebserviceCache::Payload::Payload(const base::Time& time,
-                                  scoped_ptr<base::DictionaryValue> result)
+                                  std::unique_ptr<base::DictionaryValue> result)
     : time(time), result(std::move(result)) {}
 
 WebserviceCache::Payload::Payload() = default;

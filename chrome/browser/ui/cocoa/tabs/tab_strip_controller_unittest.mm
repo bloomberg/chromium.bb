@@ -189,7 +189,7 @@ class TabStripControllerTest : public CocoaProfileTest {
     [NSApp postEvent:event atStart:NO];
   }
 
-  scoped_ptr<TestTabStripModelDelegate> delegate_;
+  std::unique_ptr<TestTabStripModelDelegate> delegate_;
   TabStripModel* model_;
   base::scoped_nsobject<TestTabStripControllerDelegate> controller_delegate_;
   base::scoped_nsobject<TabStripController> controller_;
@@ -295,7 +295,7 @@ TEST_F(TabStripControllerTest, CorrectTitleAndToolTipTextFromSetTabTitle) {
           GetMediaStreamCaptureIndicator();
   const MediaStreamDevice dummyVideoCaptureDevice(
       content::MEDIA_TAB_VIDEO_CAPTURE, "dummy_id", "dummy name");
-  scoped_ptr<MediaStreamUI> streamUi(indicator->RegisterMediaStream(
+  std::unique_ptr<MediaStreamUI> streamUi(indicator->RegisterMediaStream(
       contents, MediaStreamDevices(1, dummyVideoCaptureDevice)));
   streamUi->OnStarted(base::Bind(&base::DoNothing));
   EXPECT_EQ(TabAlertState::TAB_CAPTURING,

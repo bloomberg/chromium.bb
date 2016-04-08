@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_VIEWS_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/renderer_context_menu/context_menu_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 
@@ -58,10 +59,10 @@ class ChromeWebContentsViewDelegateViews
   void HideDisambiguationPopup() override;
 
   // Overridden from ContextMenuDelegate.
-  scoped_ptr<RenderViewContextMenuBase> BuildMenu(
+  std::unique_ptr<RenderViewContextMenuBase> BuildMenu(
       content::WebContents* web_contents,
       const content::ContextMenuParams& params) override;
-  void ShowMenu(scoped_ptr<RenderViewContextMenuBase> menu) override;
+  void ShowMenu(std::unique_ptr<RenderViewContextMenuBase> menu) override;
 
  private:
   aura::Window* GetActiveNativeView();
@@ -74,14 +75,14 @@ class ChromeWebContentsViewDelegateViews
 
   // The context menu is reset every time we show it, but we keep a pointer to
   // between uses so that it won't go out of scope before we're done with it.
-  scoped_ptr<RenderViewContextMenuBase> context_menu_;
+  std::unique_ptr<RenderViewContextMenuBase> context_menu_;
 
   // The chrome specific delegate that receives events from WebDragDest.
-  scoped_ptr<content::WebDragDestDelegate> bookmark_handler_;
+  std::unique_ptr<content::WebDragDestDelegate> bookmark_handler_;
 
   content::WebContents* web_contents_;
 
-  scoped_ptr<LinkDisambiguationPopup> link_disambiguation_popup_;
+  std::unique_ptr<LinkDisambiguationPopup> link_disambiguation_popup_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebContentsViewDelegateViews);
 };

@@ -21,7 +21,8 @@ base::string16 ArcAppWindowLauncherItemController::GetTitle() {
   ArcAppListPrefs* arc_prefs =
       ArcAppListPrefs::Get(launcher_controller()->profile());
   DCHECK(arc_prefs);
-  scoped_ptr<ArcAppListPrefs::AppInfo> app_info = arc_prefs->GetApp(app_id());
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      arc_prefs->GetApp(app_id());
   if (!app_info) {
     NOTREACHED();
     return base::string16();

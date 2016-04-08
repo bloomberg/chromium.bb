@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_uninstall_dialog.h"
+#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/native_window_tracker.h"
 #include "chrome/grit/generated_resources.h"
@@ -60,7 +60,7 @@ class ExtensionUninstallDialogViews
   gfx::NativeWindow parent_;
 
   // Tracks whether |parent_| got destroyed.
-  scoped_ptr<NativeWindowTracker> parent_window_tracker_;
+  std::unique_ptr<NativeWindowTracker> parent_window_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUninstallDialogViews);
 };

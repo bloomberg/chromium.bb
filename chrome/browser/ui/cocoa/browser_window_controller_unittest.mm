@@ -4,9 +4,10 @@
 
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 
+#include <memory>
+
 #include "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -228,9 +229,9 @@ TEST_F(BrowserWindowControllerTest, BookmarkBarToggleRespectMinWindowHeight) {
 // TODO(jrg): This crashes trying to create the BookmarkBarController, adding
 // an observer to the BookmarkModel.
 TEST_F(BrowserWindowControllerTest, TestIncognitoWidthSpace) {
-  scoped_ptr<TestingProfile> incognito_profile(new TestingProfile());
+  std::unique_ptr<TestingProfile> incognito_profile(new TestingProfile());
   incognito_profile->set_off_the_record(true);
-  scoped_ptr<Browser> browser(
+  std::unique_ptr<Browser> browser(
       new Browser(Browser::CreateParams(incognito_profile.get())));
   controller_.reset([[BrowserWindowController alloc]
                               initWithBrowser:browser.get()

@@ -8,9 +8,10 @@
 #include <windows.h>
 #include <shellapi.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_gdi_object.h"
 #include "chrome/browser/status_icons/status_icon.h"
 
@@ -83,7 +84,7 @@ class StatusIconWin : public StatusIcon {
   ui::MenuModel* menu_model_;
 
   // Context menu associated with this icon (if any).
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusIconWin);
 };

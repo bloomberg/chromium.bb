@@ -6,10 +6,11 @@
 #define CHROME_BROWSER_UI_COCOA_CONSTRAINED_WINDOW_CONSTRAINED_WINDOW_SHEET_CONTROLLER_H_
 
 #import <Cocoa/Cocoa.h>
+
+#include <memory>
 #include <vector>
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace web_modal {
 class WebContentsModalDialogHost;
@@ -34,7 +35,7 @@ class WebContentsModalDialogHostCocoa;
 
   // Class that bridges the cross-platform web_modal APIs to the Cocoa sheet
   // controller.
-  scoped_ptr<WebContentsModalDialogHostCocoa> dialogHost_;
+  std::unique_ptr<WebContentsModalDialogHostCocoa> dialogHost_;
 }
 
 @property(readonly, nonatomic)

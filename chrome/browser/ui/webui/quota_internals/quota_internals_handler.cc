@@ -38,7 +38,7 @@ void QuotaInternalsHandler::ReportAvailableSpace(int64_t available_space) {
 }
 
 void QuotaInternalsHandler::ReportGlobalInfo(const GlobalStorageInfo& data) {
-  scoped_ptr<base::Value> value(data.NewValue());
+  std::unique_ptr<base::Value> value(data.NewValue());
   SendMessage("GlobalInfoUpdated", *value);
 }
 

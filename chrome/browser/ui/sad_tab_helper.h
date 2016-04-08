@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_SAD_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_SAD_TAB_HELPER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -34,7 +35,7 @@ class SadTabHelper : public content::WebContentsObserver,
   void RenderViewReady() override;
   void RenderProcessGone(base::TerminationStatus status) override;
 
-  scoped_ptr<chrome::SadTab> sad_tab_;
+  std::unique_ptr<chrome::SadTab> sad_tab_;
 
   DISALLOW_COPY_AND_ASSIGN(SadTabHelper);
 };

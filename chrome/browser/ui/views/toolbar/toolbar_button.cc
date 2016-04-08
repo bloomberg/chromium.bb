@@ -155,9 +155,9 @@ void ToolbarButton::GetAccessibleState(ui::AXViewState* state) {
   state->AddStateFlag(ui::AX_STATE_HASPOPUP);
 }
 
-scoped_ptr<views::LabelButtonBorder>
-ToolbarButton::CreateDefaultBorder() const {
-  scoped_ptr<views::LabelButtonBorder> border =
+std::unique_ptr<views::LabelButtonBorder> ToolbarButton::CreateDefaultBorder()
+    const {
+  std::unique_ptr<views::LabelButtonBorder> border =
       views::LabelButton::CreateDefaultBorder();
 
   if (ThemeServiceFactory::GetForProfile(profile_)->UsingSystemTheme())

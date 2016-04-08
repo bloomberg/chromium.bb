@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_TEST_H_
 #define CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_TEST_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace arc {
 class AppInfo;
@@ -42,8 +42,8 @@ class ArcAppTest {
   // Unowned pointer.
   content::BrowserContext* browser_context_ = nullptr;
 
-  scoped_ptr<arc::FakeArcBridgeService> bridge_service_;
-  scoped_ptr<arc::FakeAppInstance> app_instance_;
+  std::unique_ptr<arc::FakeArcBridgeService> bridge_service_;
+  std::unique_ptr<arc::FakeAppInstance> app_instance_;
   std::vector<arc::AppInfo> fake_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppTest);

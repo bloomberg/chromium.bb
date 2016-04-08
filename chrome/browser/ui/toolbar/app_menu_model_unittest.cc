@@ -81,8 +81,8 @@ class AppMenuModelTest : public BrowserWithTestWindowTest,
   }
 
  private:
-  scoped_ptr<TestingPrefServiceSimple> prefs_;
-  scoped_ptr<chrome::TestingIOThreadState> testing_io_thread_state_;
+  std::unique_ptr<TestingPrefServiceSimple> prefs_;
+  std::unique_ptr<chrome::TestingIOThreadState> testing_io_thread_state_;
 };
 
 // Copies parts of MenuModelTest::Delegate and combines them with the

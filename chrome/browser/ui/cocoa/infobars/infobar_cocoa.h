@@ -16,7 +16,7 @@
 // actually in InfoBarController.
 class InfoBarCocoa : public infobars::InfoBar {
  public:
-  explicit InfoBarCocoa(scoped_ptr<infobars::InfoBarDelegate> delegate);
+  explicit InfoBarCocoa(std::unique_ptr<infobars::InfoBarDelegate> delegate);
 
   ~InfoBarCocoa() override;
 

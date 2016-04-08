@@ -6,8 +6,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
@@ -57,7 +58,7 @@ class InstantPageTest : public ChromeRenderViewHostTestHarness {
     return process()->sink().GetFirstMessageMatching(id) != NULL;
   }
 
-  scoped_ptr<InstantPage> page;
+  std::unique_ptr<InstantPage> page;
   FakePageDelegate delegate;
 };
 

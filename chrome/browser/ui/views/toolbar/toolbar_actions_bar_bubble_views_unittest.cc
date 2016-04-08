@@ -26,8 +26,8 @@ gfx::Point GetCenterInScreenCoordinates(const views::View* view) {
 
 class ToolbarActionsBarBubbleViewsTest : public views::ViewsTestBase {
  protected:
-  scoped_ptr<views::Widget> CreateAnchorWidget() {
-    scoped_ptr<views::Widget> anchor_widget(new views::Widget());
+  std::unique_ptr<views::Widget> CreateAnchorWidget() {
+    std::unique_ptr<views::Widget> anchor_widget(new views::Widget());
     views::Widget::InitParams params =
         CreateParams(views::Widget::InitParams::TYPE_WINDOW);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -42,7 +42,7 @@ class ToolbarActionsBarBubbleViewsTest : public views::ViewsTestBase {
 };
 
 TEST_F(ToolbarActionsBarBubbleViewsTest, TestBubbleLayoutActionButton) {
-  scoped_ptr<views::Widget> anchor_widget = CreateAnchorWidget();
+  std::unique_ptr<views::Widget> anchor_widget = CreateAnchorWidget();
   TestToolbarActionsBarBubbleDelegate delegate(HeadingString(), BodyString(),
                                                ActionString());
   ToolbarActionsBarBubbleViews* bubble = new ToolbarActionsBarBubbleViews(
@@ -64,7 +64,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestBubbleLayoutActionButton) {
 
 TEST_F(ToolbarActionsBarBubbleViewsTest,
        TestBubbleLayoutActionAndDismissButton) {
-  scoped_ptr<views::Widget> anchor_widget = CreateAnchorWidget();
+  std::unique_ptr<views::Widget> anchor_widget = CreateAnchorWidget();
   TestToolbarActionsBarBubbleDelegate delegate(HeadingString(), BodyString(),
                                                ActionString());
   delegate.set_dismiss_button_text(DismissString());
@@ -87,7 +87,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest,
 }
 
 TEST_F(ToolbarActionsBarBubbleViewsTest, TestShowAndCloseBubble) {
-  scoped_ptr<views::Widget> anchor_widget = CreateAnchorWidget();
+  std::unique_ptr<views::Widget> anchor_widget = CreateAnchorWidget();
   TestToolbarActionsBarBubbleDelegate delegate(HeadingString(), BodyString(),
                                                ActionString());
   delegate.set_dismiss_button_text(DismissString());
@@ -112,7 +112,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestShowAndCloseBubble) {
 }
 
 TEST_F(ToolbarActionsBarBubbleViewsTest, TestClickActionButton) {
-  scoped_ptr<views::Widget> anchor_widget = CreateAnchorWidget();
+  std::unique_ptr<views::Widget> anchor_widget = CreateAnchorWidget();
   TestToolbarActionsBarBubbleDelegate delegate(HeadingString(), BodyString(),
                                                ActionString());
   delegate.set_dismiss_button_text(DismissString());
@@ -136,7 +136,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestClickActionButton) {
 }
 
 TEST_F(ToolbarActionsBarBubbleViewsTest, TestCloseOnDeactivation) {
-  scoped_ptr<views::Widget> anchor_widget = CreateAnchorWidget();
+  std::unique_ptr<views::Widget> anchor_widget = CreateAnchorWidget();
   TestToolbarActionsBarBubbleDelegate delegate(HeadingString(), BodyString(),
                                                ActionString());
   delegate.set_dismiss_button_text(DismissString());

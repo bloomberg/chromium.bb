@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_EXTENSION_APP_RESULT_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_EXTENSION_APP_RESULT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_list/search/app_result.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "extensions/browser/extension_icon_image.h"
@@ -39,7 +39,7 @@ class ExtensionAppResult : public AppResult,
 
   // SearchResult overrides:
   void Open(int event_flags) override;
-  scoped_ptr<SearchResult> Duplicate() const override;
+  std::unique_ptr<SearchResult> Duplicate() const override;
   ui::MenuModel* GetContextMenuModel() override;
 
  private:
@@ -71,9 +71,9 @@ class ExtensionAppResult : public AppResult,
   void OnShutdown(extensions::ExtensionRegistry* registry) override;
 
   bool is_platform_app_;
-  scoped_ptr<extensions::IconImage> icon_;
-  scoped_ptr<ExtensionAppContextMenu> context_menu_;
-  scoped_ptr<ExtensionEnableFlow> extension_enable_flow_;
+  std::unique_ptr<extensions::IconImage> icon_;
+  std::unique_ptr<ExtensionAppContextMenu> context_menu_;
+  std::unique_ptr<ExtensionEnableFlow> extension_enable_flow_;
 
   extensions::ExtensionRegistry* extension_registry_ = nullptr;
 

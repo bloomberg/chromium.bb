@@ -137,7 +137,7 @@ base::ListValue* CrosLanguageOptionsHandler::GetInputMethodList() {
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
   // GetSupportedInputMethods() never return NULL.
-  scoped_ptr<input_method::InputMethodDescriptors> descriptors(
+  std::unique_ptr<input_method::InputMethodDescriptors> descriptors(
       manager->GetSupportedInputMethods());
 
   base::ListValue* input_method_list = new base::ListValue();
@@ -171,15 +171,16 @@ base::ListValue*
         const input_method::InputMethodDescriptors& descriptors) {
   input_method::InputMethodUtil* util =
       input_method::InputMethodManager::Get()->GetInputMethodUtil();
-  scoped_ptr<base::ListValue> ime_ids_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> ime_ids_list(new base::ListValue());
   for (size_t i = 0; i < descriptors.size(); ++i) {
     const input_method::InputMethodDescriptor& descriptor = descriptors[i];
-    scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> dictionary(
+        new base::DictionaryValue());
     dictionary->SetString("id", descriptor.id());
     dictionary->SetString(
         "displayName", util->GetLocalizedDisplayName(descriptor));
     dictionary->SetString("optionsPage", descriptor.options_page_url().spec());
-    scoped_ptr<base::DictionaryValue> language_codes(
+    std::unique_ptr<base::DictionaryValue> language_codes(
         new base::DictionaryValue());
     for (size_t i = 0; i < descriptor.language_codes().size(); ++i)
       language_codes->SetBoolean(descriptor.language_codes().at(i), true);

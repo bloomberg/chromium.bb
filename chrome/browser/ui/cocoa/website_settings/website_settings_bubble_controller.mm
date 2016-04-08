@@ -4,12 +4,13 @@
 
 #import "chrome/browser/ui/cocoa/website_settings/website_settings_bubble_controller.h"
 
-#include <cmath>
-
 #import <AppKit/AppKit.h>
+
+#include <cmath>
 
 #include "base/i18n/rtl.h"
 #include "base/mac/bind_objc_block.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/certificate_viewer.h"
@@ -51,7 +52,8 @@
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/resources/grit/ui_resources.h"
 
-using ChosenObjectInfoPtr = scoped_ptr<WebsiteSettingsUI::ChosenObjectInfo>;
+using ChosenObjectInfoPtr =
+    std::unique_ptr<WebsiteSettingsUI::ChosenObjectInfo>;
 using ChosenObjectDeleteCallback =
     base::Callback<void(const WebsiteSettingsUI::ChosenObjectInfo&)>;
 
@@ -1070,7 +1072,7 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
 
     for (auto object : chosenObjectInfoList) {
       controlOrigin.y += kPermissionsTabSpacing;
-      NSPoint rowBottomRight = [self addChosenObject:make_scoped_ptr(object)
+      NSPoint rowBottomRight = [self addChosenObject:base::WrapUnique(object)
                                               toView:permissionsView_
                                              atPoint:controlOrigin];
       controlOrigin.y = rowBottomRight.y;

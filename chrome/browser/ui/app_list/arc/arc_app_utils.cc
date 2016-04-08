@@ -126,7 +126,7 @@ bool LaunchAppWithRect(content::BrowserContext* context,
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context);
   CHECK(prefs);
 
-  scoped_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
   if (!app_info) {
     VLOG(2) << "Cannot launch unavailable app: " << app_id << ".";
     return false;
@@ -172,7 +172,7 @@ bool CanHandleResolution(content::BrowserContext* context,
     const gfx::Rect& rect,
     const CanHandleResolutionCallback& callback) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context);
-  scoped_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
   if (!app_info) {
     VLOG(2) << "Cannot test resolution capability of unavailable app:" << app_id
             << ".";

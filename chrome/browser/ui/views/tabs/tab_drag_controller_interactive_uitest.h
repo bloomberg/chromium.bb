@@ -47,7 +47,7 @@ class TabDragControllerTest : public InProcessBrowserTest {
   Browser* CreateAnotherWindowBrowserAndRelayout();
 
   void SetWindowFinderForTabStrip(TabStrip* tab_strip,
-                                  scoped_ptr<WindowFinder> window_finder);
+                                  std::unique_ptr<WindowFinder> window_finder);
 
   const BrowserList* browser_list;
 

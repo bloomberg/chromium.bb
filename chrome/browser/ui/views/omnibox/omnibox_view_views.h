@@ -7,12 +7,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/omnibox_view.h"
@@ -211,7 +211,7 @@ class OmniboxViewViews
   // different presentation (smaller font size). This is used for popups.
   bool popup_window_mode_;
 
-  scoped_ptr<OmniboxPopupView> popup_view_;
+  std::unique_ptr<OmniboxPopupView> popup_view_;
 
   security_state::SecurityStateModel::SecurityLevel security_level_;
 

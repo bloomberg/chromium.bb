@@ -198,7 +198,7 @@ void FontSettingsHandler::HandleFetchFontsData(const base::ListValue* args) {
 }
 
 void FontSettingsHandler::FontsListHasLoaded(
-    scoped_ptr<base::ListValue> list) {
+    std::unique_ptr<base::ListValue> list) {
   // Selects the directionality for the fonts in the given list.
   for (size_t i = 0; i < list->GetSize(); i++) {
     base::ListValue* font;

@@ -5,9 +5,10 @@
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/infobar_container_delegate.h"
 #include "chrome/browser/ui/views/bar_control_button.h"
@@ -76,7 +77,7 @@ SkColor GetInfobarTextColor() {
 const int InfoBarView::kButtonButtonSpacing = views::kRelatedButtonHSpacing;
 const int InfoBarView::kEndOfLabelSpacing = views::kItemLabelSpacing;
 
-InfoBarView::InfoBarView(scoped_ptr<infobars::InfoBarDelegate> delegate)
+InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
     : infobars::InfoBar(std::move(delegate)),
       views::ExternalFocusTracker(this, nullptr),
       child_container_(new views::View()),
@@ -85,7 +86,7 @@ InfoBarView::InfoBarView(scoped_ptr<infobars::InfoBarDelegate> delegate)
   set_owned_by_client();  // InfoBar deletes itself at the appropriate time.
   set_background(
       new InfoBarBackground(infobars::InfoBar::delegate()->GetInfoBarType()));
-  SetEventTargeter(make_scoped_ptr(new views::ViewTargeter(this)));
+  SetEventTargeter(base::WrapUnique(new views::ViewTargeter(this)));
 
   AddChildView(child_container_);
 
@@ -141,7 +142,7 @@ views::LabelButton* InfoBarView::CreateTextButton(
     const base::string16& text) {
   DCHECK(!ui::MaterialDesignController::IsModeMaterial());
   views::LabelButton* button = new views::LabelButton(listener, text);
-  scoped_ptr<views::LabelButtonAssetBorder> button_border(
+  std::unique_ptr<views::LabelButtonAssetBorder> button_border(
       new views::LabelButtonAssetBorder(views::Button::STYLE_TEXTBUTTON));
   const int kNormalImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_NORMAL);
   button_border->SetPainter(

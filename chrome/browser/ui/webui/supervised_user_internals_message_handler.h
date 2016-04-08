@@ -56,8 +56,9 @@ class SupervisedUserInternalsMessageHandler
                     supervised_user_error_page::FilteringBehaviorReason reason,
                     bool uncertain);
 
-  scoped_ptr<base::CallbackList<void(
-      const base::DictionaryValue*)>::Subscription> user_settings_subscription_;
+  std::unique_ptr<
+      base::CallbackList<void(const base::DictionaryValue*)>::Subscription>
+      user_settings_subscription_;
 
   scoped_refptr<IOThreadHelper> io_thread_helper_;
 

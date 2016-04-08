@@ -58,8 +58,8 @@ void SearchWebstoreResult::Open(int event_flags) {
                        ui::DispositionFromEventFlags(event_flags));
 }
 
-scoped_ptr<SearchResult> SearchWebstoreResult::Duplicate() const {
-  return scoped_ptr<SearchResult>(
+std::unique_ptr<SearchResult> SearchWebstoreResult::Duplicate() const {
+  return std::unique_ptr<SearchResult>(
       new SearchWebstoreResult(profile_, controller_, query_));
 }
 

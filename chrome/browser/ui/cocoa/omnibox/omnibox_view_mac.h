@@ -8,8 +8,9 @@
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #include "components/omnibox/browser/omnibox_view.h"
@@ -193,7 +194,7 @@ class OmniboxViewMac : public OmniboxView,
 
   Profile* profile_;
 
-  scoped_ptr<OmniboxPopupView> popup_view_;
+  std::unique_ptr<OmniboxPopupView> popup_view_;
 
   AutocompleteTextField* field_;  // owned by tab controller
 

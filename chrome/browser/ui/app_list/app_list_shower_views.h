@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_SHOWER_VIEWS_H_
 #define CHROME_BROWSER_UI_APP_LIST_APP_LIST_SHOWER_VIEWS_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace app_list {
@@ -65,7 +66,7 @@ class AppListShower {
   app_list::AppListView* app_list_;
 
   // Used to keep the browser process alive while the app list is visible.
-  scoped_ptr<ScopedKeepAlive> keep_alive_;
+  std::unique_ptr<ScopedKeepAlive> keep_alive_;
 
   bool window_icon_updated_;
 

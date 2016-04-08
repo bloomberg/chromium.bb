@@ -22,7 +22,7 @@ class MockComponentToolbarActionsFactory
 
   // ComponentToolbarActionsFactory:
   std::set<std::string> GetInitialComponentIds(Profile* profile) override;
-  scoped_ptr<ToolbarActionViewController> GetComponentToolbarActionForId(
+  std::unique_ptr<ToolbarActionViewController> GetComponentToolbarActionForId(
       const std::string& id,
       Browser* browser,
       ToolbarActionsBar* bar) override;

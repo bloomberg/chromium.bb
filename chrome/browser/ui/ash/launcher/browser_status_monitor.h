@@ -147,7 +147,7 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
 
   BrowserToAppIDMap browser_to_app_id_map_;
   WebContentsToObserverMap webcontents_to_observer_map_;
-  scoped_ptr<SettingsWindowObserver> settings_window_observer_;
+  std::unique_ptr<SettingsWindowObserver> settings_window_observer_;
 
   BrowserTabStripTracker browser_tab_strip_tracker_;
 

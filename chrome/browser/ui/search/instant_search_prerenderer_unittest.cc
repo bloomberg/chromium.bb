@@ -5,11 +5,12 @@
 #include "chrome/browser/ui/search/instant_search_prerenderer.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <tuple>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"

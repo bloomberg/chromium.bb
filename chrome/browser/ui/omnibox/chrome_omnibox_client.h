@@ -26,9 +26,9 @@ class ChromeOmniboxClient : public OmniboxClient {
   ~ChromeOmniboxClient() override;
 
   // OmniboxClient.
-  scoped_ptr<AutocompleteProviderClient>
-      CreateAutocompleteProviderClient() override;
-  scoped_ptr<OmniboxNavigationObserver> CreateOmniboxNavigationObserver(
+  std::unique_ptr<AutocompleteProviderClient> CreateAutocompleteProviderClient()
+      override;
+  std::unique_ptr<OmniboxNavigationObserver> CreateOmniboxNavigationObserver(
       const base::string16& text,
       const AutocompleteMatch& match,
       const AutocompleteMatch& alternate_nav_match) override;

@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/search/search_tab_helper.h"
 
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -148,9 +149,10 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
       is_search_enabled_(search::IsInstantExtendedAPIEnabled()),
       web_contents_(web_contents),
-      ipc_router_(web_contents,
-                  this,
-                  make_scoped_ptr(new SearchIPCRouterPolicyImpl(web_contents))),
+      ipc_router_(
+          web_contents,
+          this,
+          base::WrapUnique(new SearchIPCRouterPolicyImpl(web_contents))),
       instant_service_(NULL),
       delegate_(NULL),
       omnibox_has_focus_fn_(&OmniboxHasFocus) {

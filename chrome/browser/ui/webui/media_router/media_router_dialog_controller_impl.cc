@@ -311,8 +311,8 @@ void MediaRouterDialogControllerImpl::PopulateDialog(
       media_router_dialog->GetWebUI()->GetController());
   DCHECK(media_router_ui);
 
-  scoped_ptr<CreatePresentationConnectionRequest> create_connection_request(
-      TakeCreateConnectionRequest());
+  std::unique_ptr<CreatePresentationConnectionRequest>
+      create_connection_request(TakeCreateConnectionRequest());
   // TODO(imcheng): Don't create PresentationServiceDelegateImpl if it doesn't
   // exist (crbug.com/508695).
   base::WeakPtr<PresentationServiceDelegateImpl> delegate =

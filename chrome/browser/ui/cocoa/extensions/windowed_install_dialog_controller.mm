@@ -28,14 +28,14 @@
 - (id)initWithProfile:(Profile*)profile
             navigator:(content::PageNavigator*)navigator
              delegate:(WindowedInstallDialogController*)delegate
-               prompt:(scoped_ptr<ExtensionInstallPrompt::Prompt>)prompt;
+               prompt:(std::unique_ptr<ExtensionInstallPrompt::Prompt>)prompt;
 
 @end
 
 WindowedInstallDialogController::WindowedInstallDialogController(
     ExtensionInstallPromptShowParams* show_params,
     const ExtensionInstallPrompt::DoneCallback& done_callback,
-    scoped_ptr<ExtensionInstallPrompt::Prompt> prompt)
+    std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt)
     : done_callback_(done_callback) {
   install_controller_.reset([[WindowedInstallController alloc]
       initWithProfile:show_params->profile()
@@ -87,7 +87,7 @@ void WindowedInstallDialogController::OnStoreLinkClicked() {
 - (id)initWithProfile:(Profile*)profile
             navigator:(content::PageNavigator*)navigator
              delegate:(WindowedInstallDialogController*)delegate
-               prompt:(scoped_ptr<ExtensionInstallPrompt::Prompt>)prompt {
+               prompt:(std::unique_ptr<ExtensionInstallPrompt::Prompt>)prompt {
   base::scoped_nsobject<NSWindow> controlledPanel(
       [[NSPanel alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
                                  styleMask:NSTitledWindowMask

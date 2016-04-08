@@ -70,7 +70,7 @@ views::Widget* BookmarkBubbleView::ShowBubble(
     const gfx::Rect& anchor_rect,
     gfx::NativeView parent_window,
     bookmarks::BookmarkBubbleObserver* observer,
-    scoped_ptr<BubbleSyncPromoDelegate> delegate,
+    std::unique_ptr<BubbleSyncPromoDelegate> delegate,
     Profile* profile,
     const GURL& url,
     bool already_bookmarked) {
@@ -253,7 +253,7 @@ views::View* BookmarkBubbleView::CreateFootnoteView() {
 BookmarkBubbleView::BookmarkBubbleView(
     views::View* anchor_view,
     bookmarks::BookmarkBubbleObserver* observer,
-    scoped_ptr<BubbleSyncPromoDelegate> delegate,
+    std::unique_ptr<BubbleSyncPromoDelegate> delegate,
     Profile* profile,
     const GURL& url,
     bool newly_bookmarked)
@@ -272,8 +272,7 @@ BookmarkBubbleView::BookmarkBubbleView(
       title_tf_(NULL),
       parent_combobox_(NULL),
       remove_bookmark_(false),
-      apply_edits_(true) {
-}
+      apply_edits_(true) {}
 
 base::string16 BookmarkBubbleView::GetTitle() {
   BookmarkModel* bookmark_model =

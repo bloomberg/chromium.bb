@@ -6,12 +6,13 @@
 
 #include <QuartzCore/QuartzCore.h>
 
+#include <memory>
+
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_background_view.h"
@@ -136,7 +137,7 @@ class FrameAndStyleLock {
       fullscreenTabStripBackgroundView_;
 
   // Locks and unlocks the FullSizeContentWindow.
-  scoped_ptr<FrameAndStyleLock> lock_;
+  std::unique_ptr<FrameAndStyleLock> lock_;
 
   // Flag that indicates if the animation was completed. Sets to true at the
   // end of the animation.

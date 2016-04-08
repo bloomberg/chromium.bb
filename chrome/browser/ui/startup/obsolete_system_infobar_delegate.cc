@@ -26,7 +26,8 @@ void ObsoleteSystemInfoBarDelegate::Create(InfoBarService* infobar_service) {
   if (!ObsoleteSystem::IsObsoleteNowOrSoon())
     return;
   infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(new ObsoleteSystemInfoBarDelegate())));
+      std::unique_ptr<ConfirmInfoBarDelegate>(
+          new ObsoleteSystemInfoBarDelegate())));
 }
 
 ObsoleteSystemInfoBarDelegate::ObsoleteSystemInfoBarDelegate()

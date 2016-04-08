@@ -174,7 +174,7 @@ class ChromeOSOnlineTermsHandler : public net::URLFetcherDelegate {
   FetchCallback fetch_callback_;
 
   // Helper to fetch online eula.
-  scoped_ptr<net::URLFetcher> eula_fetcher_;
+  std::unique_ptr<net::URLFetcher> eula_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOSOnlineTermsHandler);
 };

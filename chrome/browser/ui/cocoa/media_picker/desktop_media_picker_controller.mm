@@ -63,7 +63,7 @@ const int kExcessButtonPadding = 6;
 
 @implementation DesktopMediaPickerController
 
-- (id)initWithMediaList:(scoped_ptr<DesktopMediaList>)media_list
+- (id)initWithMediaList:(std::unique_ptr<DesktopMediaList>)media_list
                  parent:(NSWindow*)parent
                callback:(const DesktopMediaPicker::DoneCallback&)callback
                 appName:(const base::string16&)appName

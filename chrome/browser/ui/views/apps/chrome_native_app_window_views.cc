@@ -343,7 +343,7 @@ bool ChromeNativeAppWindowViews::IsFullscreenOrPending() const {
   return widget()->IsFullscreen();
 }
 
-void ChromeNativeAppWindowViews::UpdateShape(scoped_ptr<SkRegion> region) {
+void ChromeNativeAppWindowViews::UpdateShape(std::unique_ptr<SkRegion> region) {
   shape_ = std::move(region);
   widget()->SetShape(shape() ? new SkRegion(*shape()) : nullptr);
   widget()->OnSizeConstraintsChanged();

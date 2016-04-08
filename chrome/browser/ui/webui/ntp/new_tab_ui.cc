@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 
+#include <memory>
 #include <set>
 
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
@@ -83,7 +83,7 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
     web_ui->AddMessageHandler(new ThemeHandler());
 #endif
 
-  scoped_ptr<NewTabHTMLSource> html_source(
+  std::unique_ptr<NewTabHTMLSource> html_source(
       new NewTabHTMLSource(profile->GetOriginalProfile()));
 
   // content::URLDataSource assumes the ownership of the html_source.

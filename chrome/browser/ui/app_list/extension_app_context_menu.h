@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_EXTENSION_APP_CONTEXT_MENU_H_
 #define CHROME_BROWSER_UI_APP_LIST_EXTENSION_APP_CONTEXT_MENU_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 
 class AppListControllerDelegate;
@@ -50,7 +50,7 @@ class ExtensionAppContextMenu : public AppContextMenu {
  private:
   bool is_platform_app_ = false;
 
-  scoped_ptr<extensions::ContextMenuMatcher> extension_menu_items_;
+  std::unique_ptr<extensions::ContextMenuMatcher> extension_menu_items_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppContextMenu);
 };

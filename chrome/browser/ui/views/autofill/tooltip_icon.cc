@@ -125,7 +125,7 @@ void TooltipIcon::ShowBubble() {
 
   if (mouse_inside_) {
     views::View* frame = bubble_->GetWidget()->non_client_view()->frame_view();
-    scoped_ptr<views::MouseWatcherHost> host(
+    std::unique_ptr<views::MouseWatcherHost> host(
         new views::MouseWatcherViewHost(frame, gfx::Insets()));
     mouse_watcher_.reset(new views::MouseWatcher(host.release(), this));
     mouse_watcher_->Start();

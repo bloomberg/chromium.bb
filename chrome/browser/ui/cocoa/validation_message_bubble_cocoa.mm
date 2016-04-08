@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ui/cocoa/validation_message_bubble_cocoa.h"
 
+#include <memory>
+
 #include "base/mac/foundation_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"

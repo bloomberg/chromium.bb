@@ -54,7 +54,7 @@ void StartupPagesHandler::OnModelChanged() {
   int page_count = startup_custom_pages_table_model_.RowCount();
   std::vector<GURL> urls = startup_custom_pages_table_model_.GetURLs();
   for (int i = 0; i < page_count; ++i) {
-    scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue());
     entry->SetString("title", startup_custom_pages_table_model_.GetText(i, 0));
     entry->SetString("url", urls[i].spec());
     entry->SetString("tooltip",

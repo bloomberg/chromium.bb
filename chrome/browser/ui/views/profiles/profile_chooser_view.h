@@ -219,7 +219,7 @@ class ProfileChooserView : public content::WebContentsDelegate,
   // Clean-up done after an action was performed in the ProfileChooser.
   void PostActionPerformed(ProfileMetrics::ProfileDesktopMenu action_performed);
 
-  scoped_ptr<AvatarMenu> avatar_menu_;
+  std::unique_ptr<AvatarMenu> avatar_menu_;
   Browser* browser_;
 
   // Other profiles used in the "fast profile switcher" view.

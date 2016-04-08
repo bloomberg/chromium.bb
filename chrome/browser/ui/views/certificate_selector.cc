@@ -175,7 +175,8 @@ void CertificateSelector::Show() {
   table_->Select(0);
 }
 
-void CertificateSelector::InitWithText(scoped_ptr<views::View> text_label) {
+void CertificateSelector::InitWithText(
+    std::unique_ptr<views::View> text_label) {
   views::GridLayout* const layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
@@ -236,7 +237,7 @@ views::View* CertificateSelector::GetInitiallyFocusedView() {
 
 views::View* CertificateSelector::CreateExtraView() {
   DCHECK(!view_cert_button_);
-  scoped_ptr<views::LabelButton> button(new views::LabelButton(
+  std::unique_ptr<views::LabelButton> button(new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON)));
   button->SetStyle(views::Button::STYLE_BUTTON);
   view_cert_button_ = button.get();

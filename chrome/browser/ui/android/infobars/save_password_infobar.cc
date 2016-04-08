@@ -8,10 +8,11 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/memory/ptr_util.h"
 #include "jni/SavePasswordInfoBar_jni.h"
 
 SavePasswordInfoBar::SavePasswordInfoBar(
-    scoped_ptr<SavePasswordInfoBarDelegate> delegate)
+    std::unique_ptr<SavePasswordInfoBarDelegate> delegate)
     : ConfirmInfoBar(std::move(delegate)) {}
 
 SavePasswordInfoBar::~SavePasswordInfoBar() {
@@ -49,7 +50,7 @@ bool SavePasswordInfoBar::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-scoped_ptr<infobars::InfoBar> CreateSavePasswordInfoBar(
-    scoped_ptr<SavePasswordInfoBarDelegate> delegate) {
-  return make_scoped_ptr(new SavePasswordInfoBar(std::move(delegate)));
+std::unique_ptr<infobars::InfoBar> CreateSavePasswordInfoBar(
+    std::unique_ptr<SavePasswordInfoBarDelegate> delegate) {
+  return base::WrapUnique(new SavePasswordInfoBar(std::move(delegate)));
 }

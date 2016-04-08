@@ -28,7 +28,8 @@ void NativeWindowTrackerAura::OnWindowDestroying(
 }
 
 // static
-scoped_ptr<NativeWindowTracker> NativeWindowTracker::Create(
+std::unique_ptr<NativeWindowTracker> NativeWindowTracker::Create(
     gfx::NativeWindow window) {
-  return scoped_ptr<NativeWindowTracker>(new NativeWindowTrackerAura(window));
+  return std::unique_ptr<NativeWindowTracker>(
+      new NativeWindowTrackerAura(window));
 }

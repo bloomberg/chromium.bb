@@ -64,7 +64,7 @@ void UserBoardScreenHandler::SetPublicSessionDisplayName(
 
 void UserBoardScreenHandler::SetPublicSessionLocales(
     const AccountId& account_id,
-    scoped_ptr<base::ListValue> locales,
+    std::unique_ptr<base::ListValue> locales,
     const std::string& default_locale,
     bool multiple_recommended_locales) {
   CallJS("login.AccountPickerScreen.setPublicSessionLocales", account_id,

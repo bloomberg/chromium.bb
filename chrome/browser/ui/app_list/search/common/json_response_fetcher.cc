@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "net/base/load_flags.h"
@@ -45,25 +46,25 @@ void JSONResponseFetcher::Stop() {
 }
 
 void JSONResponseFetcher::OnJsonParseSuccess(
-    scoped_ptr<base::Value> parsed_json) {
+    std::unique_ptr<base::Value> parsed_json) {
   if (!parsed_json->IsType(base::Value::TYPE_DICTIONARY)) {
     OnJsonParseError(kBadResponse);
     return;
   }
 
-  callback_.Run(make_scoped_ptr(
+  callback_.Run(base::WrapUnique(
       static_cast<base::DictionaryValue*>(parsed_json.release())));
 }
 
 void JSONResponseFetcher::OnJsonParseError(const std::string& error) {
-  callback_.Run(scoped_ptr<base::DictionaryValue>());
+  callback_.Run(std::unique_ptr<base::DictionaryValue>());
 }
 
 void JSONResponseFetcher::OnURLFetchComplete(
     const net::URLFetcher* source) {
   CHECK_EQ(fetcher_.get(), source);
 
-  scoped_ptr<net::URLFetcher> fetcher(std::move(fetcher_));
+  std::unique_ptr<net::URLFetcher> fetcher(std::move(fetcher_));
 
   if (!fetcher->GetStatus().is_success() ||
       fetcher->GetResponseCode() != 200) {

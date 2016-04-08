@@ -40,7 +40,7 @@ ScopedPtrMapToVector(const Map& map) {
 }
 
 void AddRawPtrFromOwningVector(
-    const std::vector<scoped_ptr<autofill::PasswordForm>>& owning_vector,
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>& owning_vector,
     std::vector<const autofill::PasswordForm*>* destination) {
   destination->reserve(destination->size() + owning_vector.size());
   for (const auto& owning_ptr : owning_vector) {
@@ -105,7 +105,7 @@ ManagePasswordsState::ManagePasswordsState()
 ManagePasswordsState::~ManagePasswordsState() {}
 
 void ManagePasswordsState::OnPendingPassword(
-      scoped_ptr<password_manager::PasswordFormManager> form_manager) {
+    std::unique_ptr<password_manager::PasswordFormManager> form_manager) {
   ClearData();
   form_manager_ = std::move(form_manager);
   current_forms_weak_ = ScopedPtrMapToVector(form_manager_->best_matches());
@@ -116,7 +116,7 @@ void ManagePasswordsState::OnPendingPassword(
 }
 
 void ManagePasswordsState::OnUpdatePassword(
-    scoped_ptr<password_manager::PasswordFormManager> form_manager) {
+    std::unique_ptr<password_manager::PasswordFormManager> form_manager) {
   ClearData();
   form_manager_ = std::move(form_manager);
   current_forms_weak_ = ScopedPtrMapToVector(form_manager_->best_matches());
@@ -147,7 +147,7 @@ void ManagePasswordsState::OnAutoSignin(
 }
 
 void ManagePasswordsState::OnAutomaticPasswordSave(
-    scoped_ptr<PasswordFormManager> form_manager) {
+    std::unique_ptr<PasswordFormManager> form_manager) {
   ClearData();
   form_manager_ = std::move(form_manager);
   autofill::ConstPasswordFormMap current_forms;
@@ -166,13 +166,14 @@ void ManagePasswordsState::OnAutomaticPasswordSave(
 void ManagePasswordsState::OnPasswordAutofilled(
     const PasswordFormMap& password_form_map,
     const GURL& origin,
-    const std::vector<scoped_ptr<autofill::PasswordForm>>* federated_matches) {
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>*
+        federated_matches) {
   DCHECK(!password_form_map.empty());
   ClearData();
   bool only_PSL_matches =
       find_if(password_form_map.begin(), password_form_map.end(),
               [](const std::pair<const base::string16,
-                                 scoped_ptr<autofill::PasswordForm>>& p) {
+                                 std::unique_ptr<autofill::PasswordForm>>& p) {
                 return !p.second->is_public_suffix_match;
               }) == password_form_map.end();
   if (only_PSL_matches) {

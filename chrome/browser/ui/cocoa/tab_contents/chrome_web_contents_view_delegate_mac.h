@@ -7,8 +7,9 @@
 
 #if defined(__OBJC__)
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/renderer_context_menu/context_menu_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 
@@ -38,19 +39,19 @@ class ChromeWebContentsViewDelegateMac
                        const content::ContextMenuParams& params) override;
 
   // Overridden from ContextMenuDelegate.
-  scoped_ptr<RenderViewContextMenuBase> BuildMenu(
+  std::unique_ptr<RenderViewContextMenuBase> BuildMenu(
       content::WebContents* web_contents,
       const content::ContextMenuParams& params) override;
-  void ShowMenu(scoped_ptr<RenderViewContextMenuBase> menu) override;
+  void ShowMenu(std::unique_ptr<RenderViewContextMenuBase> menu) override;
 
  private:
   content::RenderWidgetHostView* GetActiveRenderWidgetHostView();
 
   // The context menu. Callbacks are asynchronous so we need to keep it around.
-  scoped_ptr<RenderViewContextMenuBase> context_menu_;
+  std::unique_ptr<RenderViewContextMenuBase> context_menu_;
 
   // The chrome specific delegate that receives events from WebDragDestMac.
-  scoped_ptr<WebDragBookmarkHandlerMac> bookmark_handler_;
+  std::unique_ptr<WebDragBookmarkHandlerMac> bookmark_handler_;
 
   // The WebContents that owns the view.
   content::WebContents* web_contents_;

@@ -174,7 +174,7 @@ void NetworkScreenHandler::GetAdditionalParameters(
           ->GetCurrentInputMethod()
           .id();
 
-  scoped_ptr<base::ListValue> language_list;
+  std::unique_ptr<base::ListValue> language_list;
   if (model_) {
     if (model_->GetLanguageList() &&
         model_->GetLanguageListLocale() == application_locale) {
@@ -243,8 +243,8 @@ base::ListValue* NetworkScreenHandler::GetTimezoneList() {
   std::string current_timezone_id;
   CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
 
-  scoped_ptr<base::ListValue> timezone_list(new base::ListValue);
-  scoped_ptr<base::ListValue> timezones = system::GetTimezoneList();
+  std::unique_ptr<base::ListValue> timezone_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> timezones = system::GetTimezoneList();
   for (size_t i = 0; i < timezones->GetSize(); ++i) {
     const base::ListValue* timezone = NULL;
     CHECK(timezones->GetList(i, &timezone));
@@ -255,7 +255,7 @@ base::ListValue* NetworkScreenHandler::GetTimezoneList() {
     std::string timezone_name;
     CHECK(timezone->GetString(1, &timezone_name));
 
-    scoped_ptr<base::DictionaryValue> timezone_option(
+    std::unique_ptr<base::DictionaryValue> timezone_option(
         new base::DictionaryValue);
     timezone_option->SetString("value", timezone_id);
     timezone_option->SetString("title", timezone_name);

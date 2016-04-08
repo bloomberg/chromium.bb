@@ -33,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(InputImeApiTest, CreateWindowTest) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   ui::InputMethod* input_method =
       browser_view->GetNativeWindow()->GetHost()->GetInputMethod();
-  scoped_ptr<ui::DummyTextInputClient> client(
+  std::unique_ptr<ui::DummyTextInputClient> client(
       new ui::DummyTextInputClient(ui::TEXT_INPUT_TYPE_TEXT));
   input_method->SetFocusedTextInputClient(client.get());
   ExtensionFunction::ScopedUserGestureForTests scoped_user_gesture;

@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/aura/accessibility/ax_root_obj_wrapper.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/ax_tree_source.h"
@@ -57,7 +57,7 @@ class AXTreeSourceAura
   std::string ToString(views::AXAuraObjWrapper* root, std::string prefix);
 
  private:
-  scoped_ptr<AXRootObjWrapper> root_;
+  std::unique_ptr<AXRootObjWrapper> root_;
 
   DISALLOW_COPY_AND_ASSIGN(AXTreeSourceAura);
 };

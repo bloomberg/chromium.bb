@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/drive/drive_app_provider.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -37,7 +38,7 @@ AppListSyncableServiceFactory* AppListSyncableServiceFactory::GetInstance() {
 }
 
 // static
-scoped_ptr<KeyedService> AppListSyncableServiceFactory::BuildInstanceFor(
+std::unique_ptr<KeyedService> AppListSyncableServiceFactory::BuildInstanceFor(
     content::BrowserContext* browser_context) {
   Profile* profile = static_cast<Profile*>(browser_context);
 #if defined(OS_CHROMEOS)
@@ -46,7 +47,7 @@ scoped_ptr<KeyedService> AppListSyncableServiceFactory::BuildInstanceFor(
 #endif
   VLOG(1) << "BuildInstanceFor: " << profile->GetDebugName()
           << " (" << profile << ")";
-  return make_scoped_ptr(new AppListSyncableService(
+  return base::WrapUnique(new AppListSyncableService(
       profile, extensions::ExtensionSystem::Get(profile)));
 }
 

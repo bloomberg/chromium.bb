@@ -60,7 +60,7 @@ class ExtensionSettingsUIBrowserTest : public WebUIBrowserTest {
       const base::FilePath& path);
   const extensions::Extension* InstallExtension(const base::FilePath& path);
 
-  scoped_ptr<ExtensionTestNotificationObserver> observer_;
+  std::unique_ptr<ExtensionTestNotificationObserver> observer_;
 
   // The default profile to be used.
   Profile* profile_;
@@ -71,9 +71,11 @@ class ExtensionSettingsUIBrowserTest : public WebUIBrowserTest {
   base::FilePath test_data_dir_;
 
   // Used to enable the error console.
-  scoped_ptr<extensions::FeatureSwitch::ScopedOverride> error_console_override_;
+  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride>
+      error_console_override_;
 
-  scoped_ptr<extensions::ScopedTestDialogAutoConfirm> uninstall_auto_confirm_;
+  std::unique_ptr<extensions::ScopedTestDialogAutoConfirm>
+      uninstall_auto_confirm_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSettingsUIBrowserTest);
 };

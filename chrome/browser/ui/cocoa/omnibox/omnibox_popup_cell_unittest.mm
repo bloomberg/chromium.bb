@@ -73,7 +73,7 @@ TEST_F(OmniboxPopupCellTest, AnswerStyle) {
       "\"t\": \"°F\",\"tt\": 3} ]}} ]}";
   NSString* finalString = @"46°F Thu";
 
-  scoped_ptr<base::Value> root(base::JSONReader::Read(weatherJson));
+  std::unique_ptr<base::Value> root(base::JSONReader::Read(weatherJson));
   ASSERT_NE(root, nullptr);
   base::DictionaryValue* dictionary;
   root->GetAsDictionary(&dictionary);

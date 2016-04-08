@@ -312,7 +312,7 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     return GetActiveWebContents()->GetRenderViewHost();
   }
 
-  scoped_ptr<AutofillDialogViewTester> GetViewTester() {
+  std::unique_ptr<AutofillDialogViewTester> GetViewTester() {
     return AutofillDialogViewTester::For(controller()->view());
   }
 
@@ -510,7 +510,7 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
 
   TestAutofillDialogController* controller_;  // Weak reference.
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-  scoped_ptr<content::DOMMessageQueue> dom_message_queue_;
+  std::unique_ptr<content::DOMMessageQueue> dom_message_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerTest);
 };
@@ -522,8 +522,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Submit) {
                          test::GetVerifiedCreditCard());
   AddAutofillProfileToProfile(controller()->profile(),
                               test::GetVerifiedProfile());
-  scoped_ptr<AutofillDialogViewTester> view = AutofillDialogViewTester::For(
-      controller()->view());
+  std::unique_ptr<AutofillDialogViewTester> view =
+      AutofillDialogViewTester::For(controller()->view());
   view->SetTextContentsOfSuggestionInput(SECTION_CC, ASCIIToUTF16("123"));
   GetViewTester()->SubmitForTesting();
   RunMessageLoop();
@@ -635,7 +635,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
       controller()->RequestedFieldsForSection(SECTION_SHIPPING);
   const ServerFieldType triggering_type = inputs[0].type;
   base::string16 value = full_profile.GetRawInfo(triggering_type);
-  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
+  std::unique_ptr<AutofillDialogViewTester> view = GetViewTester();
   view->SetTextContentsOfInput(triggering_type,
                                value.substr(0, value.size() / 2));
   view->ActivateInput(triggering_type);
@@ -730,7 +730,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
       controller()->RequestedFieldsForSection(SECTION_CC);
   const ServerFieldType triggering_type = inputs[0].type;
   base::string16 value = card1.GetRawInfo(triggering_type);
-  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
+  std::unique_ptr<AutofillDialogViewTester> view = GetViewTester();
   view->SetTextContentsOfInput(triggering_type,
                                value.substr(0, value.size() / 2));
   view->ActivateInput(triggering_type);
@@ -807,7 +807,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, ShouldShowErrorBubble) {
   controller()->GetTestingManager()->AddTestingCreditCard(&card);
 
   EXPECT_TRUE(controller()->IsManuallyEditingSection(SECTION_CC));
-  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
+  std::unique_ptr<AutofillDialogViewTester> view = GetViewTester();
   view->SetTextContentsOfInput(
       CREDIT_CARD_NUMBER,
       card.GetRawInfo(CREDIT_CARD_NUMBER).substr(0, 1));
@@ -885,7 +885,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocompleteEvent) {
   AddAutofillProfileToProfile(controller->profile(),
                               test::GetVerifiedProfile());
 
-  scoped_ptr<AutofillDialogViewTester> view =
+  std::unique_ptr<AutofillDialogViewTester> view =
       AutofillDialogViewTester::For(controller->view());
   view->SetTextContentsOfSuggestionInput(SECTION_CC, ASCIIToUTF16("123"));
   view->SubmitForTesting();
@@ -905,7 +905,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   AddAutofillProfileToProfile(controller->profile(),
                               test::GetVerifiedProfile());
 
-  scoped_ptr<AutofillDialogViewTester> view =
+  std::unique_ptr<AutofillDialogViewTester> view =
       AutofillDialogViewTester::For(controller->view());
   view->SetTextContentsOfSuggestionInput(SECTION_CC, ASCIIToUTF16("123"));
   view->SubmitForTesting();
@@ -979,7 +979,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   AddAutofillProfileToProfile(controller->profile(),
                               test::GetVerifiedProfile());
 
-  scoped_ptr<AutofillDialogViewTester> view =
+  std::unique_ptr<AutofillDialogViewTester> view =
       AutofillDialogViewTester::For(controller->view());
   view->SetTextContentsOfSuggestionInput(SECTION_CC, ASCIIToUTF16("123"));
   view->SubmitForTesting();
@@ -1007,7 +1007,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AddNewClearsComboboxes) {
   EXPECT_TRUE(controller()->IsEditingExistingData(SECTION_CC));
 
   // Get the contents of the combobox of the credit card's expiration month.
-  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
+  std::unique_ptr<AutofillDialogViewTester> view = GetViewTester();
   base::string16 cc_exp_month_text =
       view->GetTextContentsOfInput(CREDIT_CARD_EXP_MONTH);
 
@@ -1130,7 +1130,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(1);
 
   // Add some valid user input that should be preserved when country changes.
-  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
+  std::unique_ptr<AutofillDialogViewTester> view = GetViewTester();
   view->SetTextContentsOfInput(NAME_FULL, ASCIIToUTF16("B. Loblaw"));
 
   // Change both sections' countries.
@@ -1154,7 +1154,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AddNewResetsCountry) {
   controller()->MenuModelForSection(SECTION_BILLING)->ActivatedAt(1);
   controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(2);
 
-  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
+  std::unique_ptr<AutofillDialogViewTester> view = GetViewTester();
   ASSERT_EQ(ASCIIToUTF16("United States"),
             view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
   ASSERT_EQ(ASCIIToUTF16("United States"),
@@ -1185,7 +1185,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   // Select "Add new shipping address...".
   controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(1);
 
-  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
+  std::unique_ptr<AutofillDialogViewTester> view = GetViewTester();
   ASSERT_EQ(ASCIIToUTF16("United States"),
             view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
   ASSERT_EQ(ASCIIToUTF16("United States"),
@@ -1213,7 +1213,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   // Select "Add new shipping address...".
   controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(1);
 
-  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
+  std::unique_ptr<AutofillDialogViewTester> view = GetViewTester();
   view->SetTextContentsOfInput(ADDRESS_BILLING_COUNTRY, ASCIIToUTF16("France"));
   view->ActivateInput(ADDRESS_BILLING_COUNTRY);
   view->SetTextContentsOfInput(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("Belarus"));
@@ -1241,7 +1241,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, RulesLoaded) {
               WillOnce(Return(AddressValidator::RULES_NOT_READY));
 
   // Validation should occur on country change and see the rules haven't loaded.
-  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
+  std::unique_ptr<AutofillDialogViewTester> view = GetViewTester();
   view->SetTextContentsOfInput(ADDRESS_HOME_ZIP, ASCIIToUTF16("123"));
   view->SetTextContentsOfInput(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("Germany"));
   view->ActivateInput(ADDRESS_HOME_COUNTRY);

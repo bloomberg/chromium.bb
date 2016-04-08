@@ -105,7 +105,7 @@ base::string16 PrepareForDisplay(const base::string16& message,
 void ShowExtensionInstallDialogImpl(
     ExtensionInstallPromptShowParams* show_params,
     const ExtensionInstallPrompt::DoneCallback& done_callback,
-    scoped_ptr<ExtensionInstallPrompt::Prompt> prompt) {
+    std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   bool use_tab_modal_dialog = prompt->ShouldUseTabModalDialog();
   ExtensionInstallDialogView* dialog = new ExtensionInstallDialogView(
@@ -200,7 +200,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     Profile* profile,
     content::PageNavigator* navigator,
     const ExtensionInstallPrompt::DoneCallback& done_callback,
-    scoped_ptr<ExtensionInstallPrompt::Prompt> prompt)
+    std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt)
     : profile_(profile),
       navigator_(navigator),
       done_callback_(done_callback),

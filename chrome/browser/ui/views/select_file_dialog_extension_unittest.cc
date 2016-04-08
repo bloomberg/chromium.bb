@@ -89,7 +89,7 @@ class SelfDeletingClient : public ui::SelectFileDialog::Listener {
 
 TEST_F(SelectFileDialogExtensionTest, FileSelected) {
   const int kFileIndex = 5;
-  scoped_ptr<TestListener> listener(new TestListener);
+  std::unique_ptr<TestListener> listener(new TestListener);
   scoped_refptr<SelectFileDialogExtension> dialog =
       CreateDialog(listener.get());
   // Simulate selecting a file.
@@ -103,7 +103,7 @@ TEST_F(SelectFileDialogExtensionTest, FileSelected) {
 }
 
 TEST_F(SelectFileDialogExtensionTest, FileSelectionCanceled) {
-  scoped_ptr<TestListener> listener(new TestListener);
+  std::unique_ptr<TestListener> listener(new TestListener);
   scoped_refptr<SelectFileDialogExtension> dialog =
       CreateDialog(listener.get());
   // Simulate cancelling the dialog.

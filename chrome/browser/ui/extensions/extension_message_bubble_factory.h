@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_MESSAGE_BUBBLE_FACTORY_H_
 #define CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_MESSAGE_BUBBLE_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 class Browser;
 
@@ -30,7 +31,7 @@ class ExtensionMessageBubbleFactory {
   ~ExtensionMessageBubbleFactory();
 
   // Returns the controller for the bubble that should be shown, if any.
-  scoped_ptr<extensions::ExtensionMessageBubbleController> GetController();
+  std::unique_ptr<extensions::ExtensionMessageBubbleController> GetController();
 
   // Overrides the default behavior for testing.
   static void set_override_for_tests(OverrideForTesting override);

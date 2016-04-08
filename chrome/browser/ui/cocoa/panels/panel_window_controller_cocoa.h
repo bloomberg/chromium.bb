@@ -11,8 +11,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/chrome_browser_window.h"
 #include "chrome/browser/ui/panels/panel.h"
 #import "ui/base/cocoa/tracking_area.h"
@@ -29,7 +30,7 @@ class PanelCocoa;
                                              NSAnimationDelegate> {
  @private
   IBOutlet PanelTitlebarViewCocoa* titlebar_view_;
-  scoped_ptr<PanelCocoa> windowShim_;
+  std::unique_ptr<PanelCocoa> windowShim_;
   base::scoped_nsobject<NSString> pendingWindowTitle_;
   NSViewAnimation* boundsAnimation_;  // Lifetime controlled manually, needs
                                       // more then just |release| to terminate.

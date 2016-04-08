@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/tab_dialogs_views.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 #include "chrome/browser/ui/views/hung_renderer_view.h"
@@ -73,10 +74,10 @@ void TabDialogsViews::HideManagePasswordsBubble() {
     ManagePasswordsBubbleView::CloseCurrentBubble();
 }
 
-scoped_ptr<ValidationMessageBubble> TabDialogsViews::ShowValidationMessage(
+std::unique_ptr<ValidationMessageBubble> TabDialogsViews::ShowValidationMessage(
     const gfx::Rect& anchor_in_root_view,
     const base::string16& main_text,
     const base::string16& sub_text) {
-  return make_scoped_ptr(new ValidationMessageBubbleView(
+  return base::WrapUnique(new ValidationMessageBubbleView(
       web_contents_, anchor_in_root_view, main_text, sub_text));
 }

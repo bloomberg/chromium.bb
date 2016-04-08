@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "ui/gfx/display_observer.h"
 
@@ -50,7 +51,7 @@ class DisplayOverscanHandler : public ::options::OptionsPageUIHandler,
   void HandleMove(const base::ListValue* args);
   void HandleResize(const base::ListValue* args);
 
-  scoped_ptr<OverscanCalibrator> overscan_calibrator_;
+  std::unique_ptr<OverscanCalibrator> overscan_calibrator_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayOverscanHandler);
 };

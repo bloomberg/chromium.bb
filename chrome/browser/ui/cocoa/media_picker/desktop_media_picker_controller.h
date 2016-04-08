@@ -8,9 +8,10 @@
 #import <Cocoa/Cocoa.h>
 #import <Quartz/Quartz.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/media/desktop_media_list.h"
 #include "chrome/browser/media/desktop_media_picker.h"
@@ -36,7 +37,7 @@
 
   // Provides source information (including thumbnails) to fill up |items_| and
   // to render in |sourceBrowser_|.
-  scoped_ptr<DesktopMediaList> media_list_;
+  std::unique_ptr<DesktopMediaList> media_list_;
 
   // To be called with the user selection.
   DesktopMediaPicker::DoneCallback doneCallback_;
@@ -46,7 +47,7 @@
 
   // C++ bridge to use as an observer to |media_list_|, that forwards obj-c
   // notifications to this object.
-  scoped_ptr<DesktopMediaPickerBridge> bridge_;
+  std::unique_ptr<DesktopMediaPickerBridge> bridge_;
 
   // Used to create |DesktopMediaPickerItem|s with unique IDs.
   int lastImageUID_;
@@ -59,7 +60,7 @@
 // appears as the initiator of the request.
 // |targetName| will be used to format the dialog's label and appear as the
 // consumer of the requested stream.
-- (id)initWithMediaList:(scoped_ptr<DesktopMediaList>)media_list
+- (id)initWithMediaList:(std::unique_ptr<DesktopMediaList>)media_list
                  parent:(NSWindow*)parent
                callback:(const DesktopMediaPicker::DoneCallback&)callback
                 appName:(const base::string16&)appName

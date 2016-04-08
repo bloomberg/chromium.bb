@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/password_manager/save_password_infobar_delegate.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/views/infobars/confirm_infobar.h"
@@ -13,13 +14,13 @@
 // elsewhere for OS_MACOSX, but aren't otherwise needed for a views browser.
 // TODO(tapted): Delete this file when Mac uses the bubbles by default.
 
-scoped_ptr<infobars::InfoBar> CreateSavePasswordInfoBar(
-    scoped_ptr<SavePasswordInfoBarDelegate> delegate) {
-  return make_scoped_ptr(new ConfirmInfoBar(std::move(delegate)));
+std::unique_ptr<infobars::InfoBar> CreateSavePasswordInfoBar(
+    std::unique_ptr<SavePasswordInfoBarDelegate> delegate) {
+  return base::WrapUnique(new ConfirmInfoBar(std::move(delegate)));
 }
 
-scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
-    scoped_ptr<translate::TranslateInfoBarDelegate> delegate) const {
+std::unique_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
+    std::unique_ptr<translate::TranslateInfoBarDelegate> delegate) const {
   NOTREACHED();
   return nullptr;
 }

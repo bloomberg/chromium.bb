@@ -7,9 +7,10 @@
 
 #include <jni.h>
 
+#include <memory>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 
 namespace content {
@@ -52,7 +53,7 @@ class WebsiteSettingsPopupAndroid : public WebsiteSettingsUI {
 
  private:
   // The presenter that controlls the Website Settings UI.
-  scoped_ptr<WebsiteSettings> presenter_;
+  std::unique_ptr<WebsiteSettings> presenter_;
 
   // The java prompt implementation.
   base::android::ScopedJavaGlobalRef<jobject> popup_jobject_;

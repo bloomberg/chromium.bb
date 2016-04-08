@@ -5,11 +5,13 @@
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui_handler.h"
 
 #include <stddef.h>
+
 #include <string>
 #include <utility>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -208,6 +210,6 @@ void OmniboxUIHandler::StartOmniboxQuery(const mojo::String& input_string,
 
 void OmniboxUIHandler::ResetController() {
   controller_.reset(new AutocompleteController(
-      make_scoped_ptr(new ChromeAutocompleteProviderClient(profile_)), this,
+      base::WrapUnique(new ChromeAutocompleteProviderClient(profile_)), this,
       AutocompleteClassifier::kDefaultOmniboxProviders));
 }

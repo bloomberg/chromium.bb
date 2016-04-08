@@ -6,9 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "ash/shelf/shelf_constants.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -122,8 +123,8 @@ class LauncherFaviconLoaderBrowsertest
   }
 
   bool favicon_updated_;
-  scoped_ptr<ContentsObserver> contents_observer_;
-  scoped_ptr<LauncherFaviconLoader> favicon_loader_;
+  std::unique_ptr<ContentsObserver> contents_observer_;
+  std::unique_ptr<LauncherFaviconLoader> favicon_loader_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LauncherFaviconLoaderBrowsertest);

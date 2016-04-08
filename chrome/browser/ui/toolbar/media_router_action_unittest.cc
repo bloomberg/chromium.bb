@@ -170,9 +170,9 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
  private:
   // A BrowserActionTestUtil object constructed with the associated
   // ToolbarActionsBar.
-  scoped_ptr<BrowserActionTestUtil> browser_action_test_util_;
+  std::unique_ptr<BrowserActionTestUtil> browser_action_test_util_;
 
-  scoped_ptr<TestMediaRouterAction> action_;
+  std::unique_ptr<TestMediaRouterAction> action_;
 
   // The associated ToolbarActionsModel (owned by the keyed service setup).
   ToolbarActionsModel* toolbar_model_;
@@ -336,7 +336,7 @@ TEST_F(MediaRouterActionUnitTest, IconPressedState) {
   action()->SetMediaRouterDialogController(dialog_controller_);
 
   // Create a ToolbarActionViewDelegate to use for MediaRouterAction.
-  scoped_ptr<MockToolbarActionViewDelegate> mock_delegate(
+  std::unique_ptr<MockToolbarActionViewDelegate> mock_delegate(
       new MockToolbarActionViewDelegate());
 
   EXPECT_CALL(*mock_delegate, GetCurrentWebContents()).WillOnce(

@@ -139,7 +139,7 @@ void ResetSettingsHandler::OnResetProfileSettingsDone(
     int difference = setting_snapshot_->FindDifferentFields(current_snapshot);
     if (difference) {
       setting_snapshot_->Subtract(current_snapshot);
-      scoped_ptr<reset_report::ChromeResetReport> report_proto =
+      std::unique_ptr<reset_report::ChromeResetReport> report_proto =
           SerializeSettingsReportToProto(*setting_snapshot_, difference);
       if (report_proto)
         SendSettingsFeedbackProto(*report_proto, profile_);
@@ -188,7 +188,7 @@ void ResetSettingsHandler::ResetProfile(std::string callback_id,
                                         bool send_settings) {
   DCHECK(!GetResetter()->IsActive());
 
-  scoped_ptr<BrandcodedDefaultSettings> default_settings;
+  std::unique_ptr<BrandcodedDefaultSettings> default_settings;
   if (config_fetcher_) {
     DCHECK(!config_fetcher_->IsActive());
     default_settings = config_fetcher_->GetSettings();
@@ -215,8 +215,8 @@ void ResetSettingsHandler::ResetProfile(std::string callback_id,
 void ResetSettingsHandler::UpdateFeedbackUI() {
   if (!setting_snapshot_)
     return;
-  scoped_ptr<base::ListValue> list = GetReadableFeedbackForSnapshot(
-      profile_, *setting_snapshot_);
+  std::unique_ptr<base::ListValue> list =
+      GetReadableFeedbackForSnapshot(profile_, *setting_snapshot_);
   web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
                                    base::StringValue("feedback-info-changed"),
                                    *list.release());

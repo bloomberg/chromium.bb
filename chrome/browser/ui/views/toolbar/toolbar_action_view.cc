@@ -95,8 +95,10 @@ void ToolbarActionView::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_BUTTON;
 }
 
-scoped_ptr<LabelButtonBorder> ToolbarActionView::CreateDefaultBorder() const {
-  scoped_ptr<LabelButtonBorder> border = LabelButton::CreateDefaultBorder();
+std::unique_ptr<LabelButtonBorder> ToolbarActionView::CreateDefaultBorder()
+    const {
+  std::unique_ptr<LabelButtonBorder> border =
+      LabelButton::CreateDefaultBorder();
   border->set_insets(gfx::Insets(kBorderInset, kBorderInset,
                                  kBorderInset, kBorderInset));
   return border;

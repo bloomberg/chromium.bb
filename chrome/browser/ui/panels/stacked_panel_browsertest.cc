@@ -30,11 +30,11 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, CheckStackedPanelProperties) {
   gfx::Rect panel3_initial_bounds = gfx::Rect(0, 0, 120, 110);
   Panel* panel3 = CreateStackedPanel("3", panel3_initial_bounds, stack);
 
-  scoped_ptr<NativePanelTesting> panel1_testing(
+  std::unique_ptr<NativePanelTesting> panel1_testing(
       CreateNativePanelTesting(panel1));
-  scoped_ptr<NativePanelTesting> panel2_testing(
+  std::unique_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
-  scoped_ptr<NativePanelTesting> panel3_testing(
+  std::unique_ptr<NativePanelTesting> panel3_testing(
       CreateNativePanelTesting(panel3));
 
   // Check that all 3 panels are in a stack.
@@ -124,11 +124,11 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   gfx::Rect panel3_initial_bounds = gfx::Rect(0, 0, 120, 110);
   Panel* panel3 = CreateStackedPanel("3", panel3_initial_bounds, stack);
 
-  scoped_ptr<NativePanelTesting> panel1_testing(
+  std::unique_ptr<NativePanelTesting> panel1_testing(
       CreateNativePanelTesting(panel1));
-  scoped_ptr<NativePanelTesting> panel2_testing(
+  std::unique_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
-  scoped_ptr<NativePanelTesting> panel3_testing(
+  std::unique_ptr<NativePanelTesting> panel3_testing(
       CreateNativePanelTesting(panel3));
 
   // Minimize these 2 panels.
@@ -220,9 +220,9 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ClickTitlebar) {
   Panel* panel2 = CreateStackedPanel("2", panel2_initial_bounds, stack);
   ASSERT_EQ(1, panel_manager->num_stacks());
 
-  scoped_ptr<NativePanelTesting> panel1_testing(
+  std::unique_ptr<NativePanelTesting> panel1_testing(
       CreateNativePanelTesting(panel1));
-  scoped_ptr<NativePanelTesting> panel2_testing(
+  std::unique_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
 
   gfx::Point panel1_origin = panel2->GetBounds().origin();
@@ -456,7 +456,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ExpandAllToFitWithinScreen) {
   Panel* panel3 = CreateStackedPanel("3", gfx::Rect(0, 0, 150, 120), stack);
   ASSERT_EQ(3, stack->num_panels());
 
-  scoped_ptr<NativePanelTesting> panel2_testing(
+  std::unique_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
 
   // Collapse all panels by clicking on P2's titlebar with APPLY_TO_ALL
@@ -508,11 +508,11 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, MinimizeButtonVisibility) {
   ASSERT_EQ(1, panel_manager->num_stacks());
   ASSERT_EQ(3, stack->num_panels());
 
-  scoped_ptr<NativePanelTesting> panel1_testing(
+  std::unique_ptr<NativePanelTesting> panel1_testing(
       CreateNativePanelTesting(panel1));
-  scoped_ptr<NativePanelTesting> panel2_testing(
+  std::unique_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
-  scoped_ptr<NativePanelTesting> panel3_testing(
+  std::unique_ptr<NativePanelTesting> panel3_testing(
       CreateNativePanelTesting(panel3));
 
   // Only P1 shows minimize button.
@@ -580,7 +580,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, DISABLED_ClickMinimizeButton) {
   Panel* panel2 = CreateStackedPanel("2", panel2_initial_bounds, stack);
   ASSERT_EQ(1, panel_manager->num_stacks());
 
-  scoped_ptr<NativePanelTesting> panel1_testing(
+  std::unique_ptr<NativePanelTesting> panel1_testing(
       CreateNativePanelTesting(panel1));
 
   EXPECT_FALSE(panel1->IsMinimized());
@@ -609,9 +609,9 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, UngroupMinimizedPanels) {
   ASSERT_EQ(1, panel_manager->num_stacks());
   ASSERT_EQ(3, stack->num_panels());
 
-  scoped_ptr<NativePanelTesting> panel2_testing(
+  std::unique_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
-  scoped_ptr<NativePanelTesting> panel3_testing(
+  std::unique_ptr<NativePanelTesting> panel3_testing(
       CreateNativePanelTesting(panel3));
 
   // Minimize these 3 panels.
@@ -1049,7 +1049,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
 
   // Create a new profile.
   Profile* profile1 = browser()->profile();
-  scoped_ptr<TestingProfile> profile2(new TestingProfile());
+  std::unique_ptr<TestingProfile> profile2(new TestingProfile());
 
   // Create 2 panels from profile1. Expect that these 2 panels stack together.
   CreatePanelParams params1(
@@ -1445,9 +1445,9 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   StackedPanelCollection* stack = panel_manager->CreateStack();
   Panel* panel1 = CreateStackedPanel("1", gfx::Rect(100, 50, 200, 150), stack);
   Panel* panel2 = CreateStackedPanel("2", gfx::Rect(0, 0, 150, 100), stack);
-  scoped_ptr<NativePanelTesting> panel1_testing(
+  std::unique_ptr<NativePanelTesting> panel1_testing(
       CreateNativePanelTesting(panel1));
-  scoped_ptr<NativePanelTesting> panel2_testing(
+  std::unique_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
 
   // Panels should be visible at first.

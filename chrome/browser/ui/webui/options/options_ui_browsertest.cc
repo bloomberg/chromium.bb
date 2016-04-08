@@ -134,7 +134,7 @@ void OptionsUIBrowserTest::NavigateToSettingsSubpage(
   // However, it is safe to subscribe afterwards, because the event will always
   // be posted asynchronously to the message loop.
   scoped_refptr<MessageLoopRunner> message_loop_runner(new MessageLoopRunner);
-  scoped_ptr<OptionsUI::OnFinishedLoadingCallbackList::Subscription>
+  std::unique_ptr<OptionsUI::OnFinishedLoadingCallbackList::Subscription>
       subscription = options_ui->RegisterOnFinishedLoadingCallback(
           message_loop_runner->QuitClosure());
   message_loop_runner->Run();

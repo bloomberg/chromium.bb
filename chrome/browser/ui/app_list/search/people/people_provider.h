@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_PEOPLE_PEOPLE_PROVIDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_PEOPLE_PEOPLE_PROVIDER_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_list/search/common/webservice_search_provider.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "url/gurl.h"
@@ -63,20 +64,20 @@ class PeopleProvider : public WebserviceSearchProvider,
   void StartQuery();
 
   // Callback for people search results being fetched.
-  void OnPeopleSearchFetched(scoped_ptr<base::DictionaryValue> json);
+  void OnPeopleSearchFetched(std::unique_ptr<base::DictionaryValue> json);
   void ProcessPeopleSearchResults(const base::DictionaryValue* json);
-  scoped_ptr<SearchResult> CreateResult(const base::DictionaryValue& dict);
+  std::unique_ptr<SearchResult> CreateResult(const base::DictionaryValue& dict);
 
   // Setup the various variables that we override for testing.
   void SetupForTest(const base::Closure& people_search_fetched_callback,
                     const GURL& people_search_url);
 
   AppListControllerDelegate* controller_;
-  scoped_ptr<JSONResponseFetcher> people_search_;
+  std::unique_ptr<JSONResponseFetcher> people_search_;
   base::Closure people_search_fetched_callback_;
 
   std::string access_token_;
-  scoped_ptr<OAuth2TokenService::Request> access_token_request_;
+  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
   OAuth2TokenService::ScopeSet oauth2_scope_;
 
   // The current query.

@@ -11,6 +11,7 @@
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -31,13 +32,13 @@ typedef ash::test::AshTestBase WindowSizerAshTest;
 
 namespace {
 
-scoped_ptr<Browser> CreateTestBrowser(aura::Window* window,
-                                      const gfx::Rect& bounds,
-                                      Browser::CreateParams* params) {
+std::unique_ptr<Browser> CreateTestBrowser(aura::Window* window,
+                                           const gfx::Rect& bounds,
+                                           Browser::CreateParams* params) {
   if (!bounds.IsEmpty())
     window->SetBounds(bounds);
-  scoped_ptr<Browser> browser =
-      chrome::CreateBrowserWithAuraTestWindowForParams(make_scoped_ptr(window),
+  std::unique_ptr<Browser> browser =
+      chrome::CreateBrowserWithAuraTestWindowForParams(base::WrapUnique(window),
                                                        params);
   if (browser->is_type_tabbed() || browser->is_app()) {
     ash::wm::GetWindowState(browser->window()->GetNativeWindow())
@@ -426,29 +427,29 @@ TEST_F(WindowSizerAshTest, LastWindowOffscreenWithNonAggressiveRepositioning) {
 // Test the placement of newly created windows.
 TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindows) {
   // Create a browser to pass into the GetWindowBounds function.
-  scoped_ptr<TestingProfile> profile(new TestingProfile());
+  std::unique_ptr<TestingProfile> profile(new TestingProfile());
   // Creating a popup handler here to make sure it does not interfere with the
   // existing windows.
   Browser::CreateParams native_params(profile.get());
-  scoped_ptr<Browser> browser(
+  std::unique_ptr<Browser> browser(
       chrome::CreateBrowserWithTestWindowForParams(&native_params));
 
   // Creating a popup handler here to make sure it does not interfere with the
   // existing windows.
   Browser::CreateParams params2(profile.get());
-  scoped_ptr<Browser> browser2(CreateTestBrowser(
+  std::unique_ptr<Browser> browser2(CreateTestBrowser(
       CreateTestWindowInShellWithId(0), gfx::Rect(16, 32, 640, 320), &params2));
   BrowserWindow* browser_window = browser2->window();
 
   // Creating a popup to make sure it does not interfere with the positioning.
   Browser::CreateParams params_popup(Browser::TYPE_POPUP, profile.get());
-  scoped_ptr<Browser> browser_popup(
+  std::unique_ptr<Browser> browser_popup(
       CreateTestBrowser(CreateTestWindowInShellWithId(1),
                         gfx::Rect(16, 32, 128, 256), &params_popup));
 
   // Creating a panel to make sure it does not interfere with the positioning.
   Browser::CreateParams params_panel(Browser::TYPE_POPUP, profile.get());
-  scoped_ptr<Browser> browser_panel(
+  std::unique_ptr<Browser> browser_panel(
       CreateTestBrowser(CreateTestWindowInShellWithId(2),
                         gfx::Rect(32, 48, 256, 512), &params_panel));
 
@@ -502,9 +503,9 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindows) {
 // created browser window on an empty desktop.
 TEST_F(WindowSizerAshTest, MAYBE_PlaceNewBrowserWindowOnEmptyDesktop) {
   // Create a browser to pass into the GetWindowBoundsAndShowState function.
-  scoped_ptr<TestingProfile> profile(new TestingProfile());
+  std::unique_ptr<TestingProfile> profile(new TestingProfile());
   Browser::CreateParams native_params(profile.get());
-  scoped_ptr<Browser> browser(
+  std::unique_ptr<Browser> browser(
       chrome::CreateBrowserWithTestWindowForParams(&native_params));
 
   // A common screen size for Chrome OS devices where this behavior is
@@ -587,11 +588,11 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
   ash::Shell::GetInstance()->set_target_root_window(
       ash::Shell::GetPrimaryRootWindow());
 
-  scoped_ptr<TestingProfile> profile(new TestingProfile());
+  std::unique_ptr<TestingProfile> profile(new TestingProfile());
 
   // Create browser windows that are used as reference.
   Browser::CreateParams params(profile.get());
-  scoped_ptr<Browser> browser(CreateTestBrowser(
+  std::unique_ptr<Browser> browser(CreateTestBrowser(
       CreateTestWindowInShellWithId(0), gfx::Rect(10, 10, 200, 200), &params));
   BrowserWindow* browser_window = browser->window();
   gfx::NativeWindow native_window = browser_window->GetNativeWindow();
@@ -599,7 +600,7 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
   EXPECT_EQ(native_window->GetRootWindow(), ash::Shell::GetTargetRootWindow());
 
   Browser::CreateParams another_params(profile.get());
-  scoped_ptr<Browser> another_browser(
+  std::unique_ptr<Browser> another_browser(
       CreateTestBrowser(CreateTestWindowInShellWithId(1),
                         gfx::Rect(400, 10, 300, 300), &another_params));
   BrowserWindow* another_browser_window = another_browser->window();
@@ -609,7 +610,7 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
 
   // Creating a new window to verify the new placement.
   Browser::CreateParams new_params(profile.get());
-  scoped_ptr<Browser> new_browser(CreateTestBrowser(
+  std::unique_ptr<Browser> new_browser(CreateTestBrowser(
       CreateTestWindowInShellWithId(0), gfx::Rect(), &new_params));
 
   // Make sure the primary root is active.
@@ -680,16 +681,16 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
 
 // Test that the show state is properly returned for non default cases.
 TEST_F(WindowSizerAshTest, MAYBE_TestShowState) {
-  scoped_ptr<TestingProfile> profile(new TestingProfile());
+  std::unique_ptr<TestingProfile> profile(new TestingProfile());
 
   // Creating a browser & window to play with.
   Browser::CreateParams params(Browser::TYPE_TABBED, profile.get());
-  scoped_ptr<Browser> browser(CreateTestBrowser(
+  std::unique_ptr<Browser> browser(CreateTestBrowser(
       CreateTestWindowInShellWithId(0), gfx::Rect(16, 32, 640, 320), &params));
 
   // Create also a popup browser since that behaves different.
   Browser::CreateParams params_popup(Browser::TYPE_POPUP, profile.get());
-  scoped_ptr<Browser> browser_popup(
+  std::unique_ptr<Browser> browser_popup(
       CreateTestBrowser(CreateTestWindowInShellWithId(1),
                         gfx::Rect(16, 32, 640, 320), &params_popup));
 
@@ -721,7 +722,7 @@ TEST_F(WindowSizerAshTest, MAYBE_TestShowState) {
   // window should follow the top level window's state.
   // Creating a browser & window to play with.
   Browser::CreateParams params2(Browser::TYPE_TABBED, profile.get());
-  scoped_ptr<Browser> browser2(CreateTestBrowser(
+  std::unique_ptr<Browser> browser2(CreateTestBrowser(
       CreateTestWindowInShellWithId(3), gfx::Rect(16, 32, 640, 320), &params2));
 
   // A tabbed window should now take the top level window state.
@@ -754,16 +755,16 @@ TEST_F(WindowSizerAshTest, MAYBE_TestShowState) {
 // Test that the default show state override behavior is properly handled.
 TEST_F(WindowSizerAshTest, TestShowStateDefaults) {
   // Creating a browser & window to play with.
-  scoped_ptr<TestingProfile> profile(new TestingProfile());
+  std::unique_ptr<TestingProfile> profile(new TestingProfile());
 
   Browser::CreateParams params(Browser::TYPE_TABBED, profile.get());
-  scoped_ptr<Browser> browser(CreateTestBrowser(
+  std::unique_ptr<Browser> browser(CreateTestBrowser(
       CreateTestWindowInShellWithId(0), gfx::Rect(16, 32, 640, 320), &params));
 
   // Create also a popup browser since that behaves slightly different for
   // defaults.
   Browser::CreateParams params_popup(Browser::TYPE_POPUP, profile.get());
-  scoped_ptr<Browser> browser_popup(
+  std::unique_ptr<Browser> browser_popup(
       CreateTestBrowser(CreateTestWindowInShellWithId(1),
                         gfx::Rect(16, 32, 128, 256), &params_popup));
 
@@ -812,9 +813,9 @@ TEST_F(WindowSizerAshTest, TestShowStateDefaults) {
 
 TEST_F(WindowSizerAshTest, DefaultStateBecomesMaximized) {
   // Create a browser to pass into the GetWindowBounds function.
-  scoped_ptr<TestingProfile> profile(new TestingProfile());
+  std::unique_ptr<TestingProfile> profile(new TestingProfile());
   Browser::CreateParams native_params(profile.get());
-  scoped_ptr<Browser> browser(
+  std::unique_ptr<Browser> browser(
       chrome::CreateBrowserWithTestWindowForParams(&native_params));
 
   gfx::Rect display_bounds =
@@ -881,12 +882,12 @@ TEST_F(WindowSizerAshTest, DefaultBoundsInTargetDisplay) {
 }
 
 TEST_F(WindowSizerAshTest, TrustedPopupBehavior) {
-  scoped_ptr<TestingProfile> profile(new TestingProfile());
+  std::unique_ptr<TestingProfile> profile(new TestingProfile());
   Browser::CreateParams trusted_popup_create_params(Browser::TYPE_POPUP,
                                                     profile.get());
   trusted_popup_create_params.trusted_source = true;
 
-  scoped_ptr<Browser> trusted_popup(CreateTestBrowser(
+  std::unique_ptr<Browser> trusted_popup(CreateTestBrowser(
       CreateTestWindowInShellWithId(1), gfx::Rect(16, 32, 640, 320),
       &trusted_popup_create_params));
   // Trusted popup windows should follow the saved show state and ignore the

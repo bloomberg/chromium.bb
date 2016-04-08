@@ -104,7 +104,7 @@ class KeywordEditorControllerTest : public testing::Test,
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
-  scoped_ptr<KeywordEditorController> controller_;
+  std::unique_ptr<KeywordEditorController> controller_;
   TemplateURLServiceFactoryTestUtil util_;
   bool simulate_load_failure_;
 

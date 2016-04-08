@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "ui/base/models/list_selection_model.h"
@@ -541,7 +541,7 @@ class TabStripModel {
 
   // An object that determines where new Tabs should be inserted and where
   // selection should move when a Tab is closed.
-  scoped_ptr<TabStripModelOrderController> order_controller_;
+  std::unique_ptr<TabStripModelOrderController> order_controller_;
 
   // Our observers.
   typedef base::ObserverList<TabStripModelObserver> TabStripModelObservers;

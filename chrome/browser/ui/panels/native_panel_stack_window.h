@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_STACK_WINDOW_H_
 #define CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_STACK_WINDOW_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string16.h"
 #include "ui/gfx/image/image.h"
 

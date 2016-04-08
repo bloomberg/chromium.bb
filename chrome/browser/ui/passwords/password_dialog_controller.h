@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_PASSWORD_DIALOG_CONTROLLER_H_
 #define CHROME_BROWSER_UI_PASSWORDS_PASSWORD_DIALOG_CONTROLLER_H_
 
+#include <memory>
 #include <utility>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "ui/gfx/range/range.h"
@@ -21,7 +21,7 @@ struct PasswordForm;
 // and retrieving the state.
 class PasswordDialogController {
  public:
-  using FormsVector = std::vector<scoped_ptr<autofill::PasswordForm>>;
+  using FormsVector = std::vector<std::unique_ptr<autofill::PasswordForm>>;
 
   // Returns forms from the password database for the current site.
   virtual const FormsVector& GetLocalForms() const = 0;

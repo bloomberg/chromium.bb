@@ -47,9 +47,8 @@ void FontHandler::HandleFetchFontsData(const base::ListValue* args) {
                                        callback_id));
 }
 
-void FontHandler::FontListHasLoaded(
-    std::string callback_id,
-    scoped_ptr<base::ListValue> list) {
+void FontHandler::FontListHasLoaded(std::string callback_id,
+                                    std::unique_ptr<base::ListValue> list) {
   // Font list. Selects the directionality for the fonts in the given list.
   for (size_t i = 0; i < list->GetSize(); i++) {
     base::ListValue* font;
@@ -73,9 +72,9 @@ void FontHandler::FontListHasLoaded(
       pref_service->GetString(prefs::kRecentlySelectedEncoding));
   DCHECK(!encodings->empty());
 
-  scoped_ptr<base::ListValue> encoding_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> encoding_list(new base::ListValue());
   for (const auto& it : *encodings) {
-    scoped_ptr<base::ListValue> option(new base::ListValue());
+    std::unique_ptr<base::ListValue> option(new base::ListValue());
     if (it.encoding_id) {
       option->AppendString(
           CharacterEncoding::GetCanonicalEncodingNameByCommandId(

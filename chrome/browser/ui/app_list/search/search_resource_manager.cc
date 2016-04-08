@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/search/search_resource_manager.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
 #include "grit/components_scaled_resources.h"
 #include "grit/generated_resources.h"
@@ -17,13 +18,13 @@ namespace app_list {
 
 namespace {
 
-scoped_ptr<SearchBoxModel::SpeechButtonProperty> CreateNewProperty(
+std::unique_ptr<SearchBoxModel::SpeechButtonProperty> CreateNewProperty(
     SpeechRecognitionState state) {
   if (state == SPEECH_RECOGNITION_OFF)
     return nullptr;
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  return make_scoped_ptr(new SearchBoxModel::SpeechButtonProperty(
+  return base::WrapUnique(new SearchBoxModel::SpeechButtonProperty(
       *bundle.GetImageSkiaNamed(IDR_APP_LIST_MIC_HOTWORD_ON),
       l10n_util::GetStringUTF16(IDS_APP_LIST_HOTWORD_LISTENING),
       *bundle.GetImageSkiaNamed(IDR_APP_LIST_MIC_HOTWORD_OFF),

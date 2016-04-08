@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -37,7 +38,7 @@ class SyncPromoUITest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncPromoUITest);

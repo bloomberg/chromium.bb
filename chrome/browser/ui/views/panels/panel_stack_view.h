@@ -7,8 +7,9 @@
 
 #include <list>
 #include <map>
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/panels/native_panel_stack_window.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -129,7 +130,7 @@ class PanelStackView : public NativePanelStackWindow,
   // The custom live preview snapshot is always provided for the stack window.
   // This is because the system might not show the snapshot correctly for
   // a small window, like collapsed panel.
-  scoped_ptr<TaskbarWindowThumbnailerWin> thumbnailer_;
+  std::unique_ptr<TaskbarWindowThumbnailerWin> thumbnailer_;
 #endif
 
   // For batch bounds update.
@@ -138,7 +139,7 @@ class PanelStackView : public NativePanelStackWindow,
   BoundsUpdates bounds_updates_;
 
   // Used to animate the bounds changes at a synchronized pace.
-  scoped_ptr<gfx::LinearAnimation> bounds_animator_;
+  std::unique_ptr<gfx::LinearAnimation> bounds_animator_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelStackView);
 };

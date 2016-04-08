@@ -44,7 +44,7 @@ namespace {
 const size_t kMaxSessionsToShow = 10;
 
 // Helper method to create JSON compatible objects from Session objects.
-scoped_ptr<base::DictionaryValue> SessionTabToValue(
+std::unique_ptr<base::DictionaryValue> SessionTabToValue(
     const ::sessions::SessionTab& tab) {
   if (tab.navigations.empty())
     return nullptr;
@@ -59,7 +59,8 @@ scoped_ptr<base::DictionaryValue> SessionTabToValue(
     return nullptr;
   }
 
-  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dictionary(
+      new base::DictionaryValue());
   NewTabUI::SetUrlTitleAndDirection(dictionary.get(),
                                     current_navigation.title(), tab_url);
   dictionary->SetString("type", "tab");
@@ -73,10 +74,11 @@ scoped_ptr<base::DictionaryValue> SessionTabToValue(
 }
 
 // Helper for initializing a boilerplate SessionWindow JSON compatible object.
-scoped_ptr<base::DictionaryValue> BuildWindowData(
+std::unique_ptr<base::DictionaryValue> BuildWindowData(
     base::Time modification_time,
     SessionID::id_type window_id) {
-  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dictionary(
+      new base::DictionaryValue());
   // The items which are to be written into |dictionary| are also described in
   // chrome/browser/resources/ntp4/other_sessions.js in @typedef for WindowData.
   // Please update it whenever you add or remove any keys here.
@@ -97,15 +99,15 @@ scoped_ptr<base::DictionaryValue> BuildWindowData(
 }
 
 // Helper method to create JSON compatible objects from SessionWindow objects.
-scoped_ptr<base::DictionaryValue> SessionWindowToValue(
+std::unique_ptr<base::DictionaryValue> SessionWindowToValue(
     const ::sessions::SessionWindow& window) {
   if (window.tabs.empty())
     return nullptr;
-  scoped_ptr<base::ListValue> tab_values(new base::ListValue());
+  std::unique_ptr<base::ListValue> tab_values(new base::ListValue());
   // Calculate the last |modification_time| for all entries within a window.
   base::Time modification_time = window.timestamp;
   for (const ::sessions::SessionTab* tab : window.tabs) {
-    scoped_ptr<base::DictionaryValue> tab_value(SessionTabToValue(*tab));
+    std::unique_ptr<base::DictionaryValue> tab_value(SessionTabToValue(*tab));
     if (tab_value.get()) {
       modification_time = std::max(modification_time,
                                    tab->timestamp);
@@ -114,8 +116,8 @@ scoped_ptr<base::DictionaryValue> SessionWindowToValue(
   }
   if (tab_values->GetSize() == 0)
     return nullptr;
-  scoped_ptr<base::DictionaryValue> dictionary(
-    BuildWindowData(window.timestamp, window.window_id.id()));
+  std::unique_ptr<base::DictionaryValue> dictionary(
+      BuildWindowData(window.timestamp, window.window_id.id()));
   dictionary->Set("tabs", tab_values.release());
   return dictionary;
 }
@@ -268,7 +270,7 @@ void ForeignSessionHandler::HandleGetForeignSessions(
     DictionaryPrefUpdate pref_update(Profile::FromWebUI(web_ui())->GetPrefs(),
                                      prefs::kNtpCollapsedForeignSessions);
     base::DictionaryValue* current_collapsed_sessions = pref_update.Get();
-    scoped_ptr<base::DictionaryValue> collapsed_sessions(
+    std::unique_ptr<base::DictionaryValue> collapsed_sessions(
         current_collapsed_sessions->DeepCopy());
     current_collapsed_sessions->Clear();
 
@@ -276,7 +278,7 @@ void ForeignSessionHandler::HandleGetForeignSessions(
     for (size_t i = 0; i < sessions.size() && i < kMaxSessionsToShow; ++i) {
       const sync_driver::SyncedSession* session = sessions[i];
       const std::string& session_tag = session->session_tag;
-      scoped_ptr<base::DictionaryValue> session_data(
+      std::unique_ptr<base::DictionaryValue> session_data(
           new base::DictionaryValue());
       // The items which are to be written into |session_data| are also
       // described in chrome/browser/resources/history/externs.js
@@ -294,13 +296,13 @@ void ForeignSessionHandler::HandleGetForeignSessions(
       if (is_collapsed)
         current_collapsed_sessions->SetBoolean(session_tag, true);
 
-      scoped_ptr<base::ListValue> window_list(new base::ListValue());
+      std::unique_ptr<base::ListValue> window_list(new base::ListValue());
       const std::string group_name =
           base::FieldTrialList::FindFullName("TabSyncByRecency");
       if (group_name != "Enabled") {
         // Order tabs by visual order within window.
         for (auto map_iter : session->windows) {
-          scoped_ptr<base::DictionaryValue> window_data(
+          std::unique_ptr<base::DictionaryValue> window_data(
               SessionWindowToValue(*map_iter.second));
           if (window_data.get())
             window_list->Append(window_data.release());
@@ -311,16 +313,17 @@ void ForeignSessionHandler::HandleGetForeignSessions(
         base::Time modification_time;
         std::vector<const ::sessions::SessionTab*> tabs;
         open_tabs->GetForeignSessionTabs(session_tag, &tabs);
-        scoped_ptr<base::ListValue> tab_values(new base::ListValue());
+        std::unique_ptr<base::ListValue> tab_values(new base::ListValue());
         for (const ::sessions::SessionTab* tab : tabs) {
-          scoped_ptr<base::DictionaryValue> tab_value(SessionTabToValue(*tab));
+          std::unique_ptr<base::DictionaryValue> tab_value(
+              SessionTabToValue(*tab));
           if (tab_value.get()) {
             modification_time = std::max(modification_time, tab->timestamp);
             tab_values->Append(tab_value.release());
           }
         }
         if (tab_values->GetSize() != 0) {
-          scoped_ptr<base::DictionaryValue> window_data(
+          std::unique_ptr<base::DictionaryValue> window_data(
               BuildWindowData(modification_time, 1));
           window_data->Set("tabs", tab_values.release());
           window_list->Append(window_data.release());

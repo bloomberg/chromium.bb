@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -133,17 +134,17 @@ ChromeOmniboxClient::~ChromeOmniboxClient() {
     image_service->CancelRequest(request_id_);
 }
 
-scoped_ptr<AutocompleteProviderClient>
+std::unique_ptr<AutocompleteProviderClient>
 ChromeOmniboxClient::CreateAutocompleteProviderClient() {
-  return make_scoped_ptr(new ChromeAutocompleteProviderClient(profile_));
+  return base::WrapUnique(new ChromeAutocompleteProviderClient(profile_));
 }
 
-scoped_ptr<OmniboxNavigationObserver>
+std::unique_ptr<OmniboxNavigationObserver>
 ChromeOmniboxClient::CreateOmniboxNavigationObserver(
     const base::string16& text,
     const AutocompleteMatch& match,
     const AutocompleteMatch& alternate_nav_match) {
-  return make_scoped_ptr(new ChromeOmniboxNavigationObserver(
+  return base::WrapUnique(new ChromeOmniboxNavigationObserver(
       profile_, text, match, alternate_nav_match));
 }
 

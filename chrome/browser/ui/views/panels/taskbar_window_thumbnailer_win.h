@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PANELS_TASKBAR_WINDOW_THUMBNAILER_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_PANELS_TASKBAR_WINDOW_THUMBNAILER_WIN_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/base/win/hwnd_subclass.h"
 
 class SkBitmap;
@@ -66,7 +66,7 @@ class TaskbarWindowThumbnailerWin : public ui::HWNDMessageFilter {
 
   HWND hwnd_;
   TaskbarWindowThumbnailerDelegateWin* delegate_;  // Weak, owns us.
-  scoped_ptr<SkBitmap> capture_bitmap_;
+  std::unique_ptr<SkBitmap> capture_bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskbarWindowThumbnailerWin);
 };

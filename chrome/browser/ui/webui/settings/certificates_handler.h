@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CERTIFICATES_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CERTIFICATES_HANDLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/certificate_manager_model.h"
@@ -130,7 +130,7 @@ class CertificatesHandler
 
   // Model initialization methods.
   void OnCertificateManagerModelCreated(
-      scoped_ptr<CertificateManagerModel> model);
+      std::unique_ptr<CertificateManagerModel> model);
   void CertificateManagerModelReady();
 
   // Populate the trees in all the tabs.
@@ -169,7 +169,7 @@ class CertificatesHandler
   bool show_certs_in_modal_dialog_;
   // The Certificates Manager model
   bool requested_certificate_manager_model_;
-  scoped_ptr<CertificateManagerModel> certificate_manager_model_;
+  std::unique_ptr<CertificateManagerModel> certificate_manager_model_;
 
   // For multi-step import or export processes, we need to store the path,
   // password, etc the user chose while we wait for them to enter a password,
@@ -189,7 +189,7 @@ class CertificatesHandler
   base::CancelableTaskTracker tracker_;
   scoped_refptr<FileAccessProvider> file_access_provider_;
 
-  scoped_ptr<CertIdMap> cert_id_map_;
+  std::unique_ptr<CertIdMap> cert_id_map_;
 
   base::WeakPtrFactory<CertificatesHandler> weak_ptr_factory_;
 

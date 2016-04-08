@@ -55,14 +55,10 @@ void EnsureSearchTermsAreSet(content::WebContents* contents,
     return;
 
   const content::NavigationEntry* entry = controller->GetLastCommittedEntry();
-  scoped_ptr<content::NavigationEntry> transient =
+  std::unique_ptr<content::NavigationEntry> transient =
       controller->CreateNavigationEntry(
-          entry->GetURL(),
-          entry->GetReferrer(),
-          entry->GetTransitionType(),
-          false,
-          std::string(),
-          contents->GetBrowserContext());
+          entry->GetURL(), entry->GetReferrer(), entry->GetTransitionType(),
+          false, std::string(), contents->GetBrowserContext());
   transient->SetExtraData(sessions::kSearchTermsKey, search_terms);
   controller->SetTransientEntry(std::move(transient));
 

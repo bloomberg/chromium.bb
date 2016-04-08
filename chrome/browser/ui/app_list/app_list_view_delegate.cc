@@ -103,7 +103,7 @@ const int kAutoLaunchDefaultTimeoutMilliSec = 50;
 void CreateShortcutInWebAppDir(
     const base::FilePath& app_data_dir,
     base::Callback<void(const base::FilePath&)> callback,
-    scoped_ptr<web_app::ShortcutInfo> info) {
+    std::unique_ptr<web_app::ShortcutInfo> info) {
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(web_app::CreateShortcutInWebAppDir, app_data_dir,
@@ -353,7 +353,8 @@ void AppListViewDelegate::SetUpCustomLauncherPages() {
     std::string extension_id = it->host();
     apps::CustomLauncherPageContents* page_contents =
         new apps::CustomLauncherPageContents(
-            scoped_ptr<extensions::AppDelegate>(new ChromeAppDelegate(false)),
+            std::unique_ptr<extensions::AppDelegate>(
+                new ChromeAppDelegate(false)),
             extension_id);
     page_contents->Initialize(profile_, *it);
     custom_page_contents_.push_back(page_contents);

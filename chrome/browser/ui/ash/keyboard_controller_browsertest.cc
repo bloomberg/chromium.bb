@@ -79,7 +79,7 @@ class VirtualKeyboardWebContentTest : public InProcessBrowserTest {
   }
 
  private:
-  scoped_ptr<ui::DummyTextInputClient> client;
+  std::unique_ptr<ui::DummyTextInputClient> client;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardWebContentTest);
 };

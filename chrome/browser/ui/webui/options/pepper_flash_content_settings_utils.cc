@@ -5,8 +5,7 @@
 #include "chrome/browser/ui/webui/options/pepper_flash_content_settings_utils.h"
 
 #include <algorithm>
-
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace options {
 
@@ -58,7 +57,7 @@ void PepperFlashContentSettingsUtils::FlashSiteSettingsToMediaExceptions(
     MediaExceptions* media_exceptions) {
   media_exceptions->clear();
 
-  scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
+  std::unique_ptr<ContentSettingsPattern::BuilderInterface> builder(
       ContentSettingsPattern::CreateBuilder(false));
   builder->WithSchemeWildcard()->WithPortWildcard();
   for (ppapi::FlashSiteSettings::const_iterator iter = site_settings.begin();

@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_LAUNCHER_SEARCH_LAUNCHER_SEARCH_ICON_IMAGE_LOADER_IMPL_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_LAUNCHER_SEARCH_LAUNCHER_SEARCH_ICON_IMAGE_LOADER_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader.h"
 #include "extensions/browser/extension_icon_image.h"
@@ -23,7 +24,7 @@ class LauncherSearchIconImageLoaderImpl : public LauncherSearchIconImageLoader,
       Profile* profile,
       const extensions::Extension* extension,
       const int icon_dimension,
-      scoped_ptr<chromeos::launcher_search_provider::ErrorReporter>
+      std::unique_ptr<chromeos::launcher_search_provider::ErrorReporter>
           error_reporter);
   ~LauncherSearchIconImageLoaderImpl() override;
   const gfx::ImageSkia& LoadExtensionIcon() override;
@@ -36,7 +37,7 @@ class LauncherSearchIconImageLoaderImpl : public LauncherSearchIconImageLoader,
   void OnCustomIconImageLoaded(const gfx::Image& image);
 
  private:
-  scoped_ptr<extensions::IconImage> extension_icon_image_;
+  std::unique_ptr<extensions::IconImage> extension_icon_image_;
 
   base::WeakPtrFactory<LauncherSearchIconImageLoaderImpl> weak_ptr_factory_;
 

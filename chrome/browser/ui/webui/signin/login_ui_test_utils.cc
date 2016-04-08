@@ -209,7 +209,7 @@ bool SignInWithUI(Browser* browser,
                   signin_metrics::AccessPoint access_point,
                   signin_metrics::Reason signin_reason) {
   SignInObserver signin_observer(wait_for_account_cookies);
-  scoped_ptr<SigninTracker> tracker =
+  std::unique_ptr<SigninTracker> tracker =
       SigninTrackerFactory::CreateForProfile(browser->profile(),
                                              &signin_observer);
 

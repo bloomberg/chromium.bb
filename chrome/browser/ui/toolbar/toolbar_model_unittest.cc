@@ -160,7 +160,7 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
   void NavigateAndCheckElided(const GURL& https_url);
 
  private:
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarModelTest);
 };

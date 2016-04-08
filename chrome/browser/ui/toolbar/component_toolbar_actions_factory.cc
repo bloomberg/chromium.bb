@@ -47,7 +47,7 @@ std::set<std::string> ComponentToolbarActionsFactory::GetInitialComponentIds(
   return component_ids;
 }
 
-scoped_ptr<ToolbarActionViewController>
+std::unique_ptr<ToolbarActionViewController>
 ComponentToolbarActionsFactory::GetComponentToolbarActionForId(
     const std::string& id,
     Browser* browser,
@@ -64,12 +64,12 @@ ComponentToolbarActionsFactory::GetComponentToolbarActionForId(
   // e.g., RegisterChromeAction().
 #if defined(ENABLE_MEDIA_ROUTER)
   if (id == kMediaRouterActionId)
-    return scoped_ptr<ToolbarActionViewController>(
+    return std::unique_ptr<ToolbarActionViewController>(
         new MediaRouterAction(browser, bar));
 #endif  // defined(ENABLE_MEDIA_ROUTER)
 
   NOTREACHED();
-  return scoped_ptr<ToolbarActionViewController>();
+  return std::unique_ptr<ToolbarActionViewController>();
 }
 
 // static

@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_TRANSLATE_INTERNALS_TRANSLATE_INTERNALS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_TRANSLATE_INTERNALS_TRANSLATE_INTERNALS_HANDLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_list.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/translate/core/browser/translate_language_list.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -77,11 +77,12 @@ class TranslateInternalsHandler : public content::WebUIMessageHandler,
   void SendSupportedLanguagesToJs();
 
   // Subscription for translate events coming from the translate language list.
-  scoped_ptr<translate::TranslateLanguageList::EventCallbackList::Subscription>
+  std::unique_ptr<
+      translate::TranslateLanguageList::EventCallbackList::Subscription>
       event_subscription_;
 
   // Subscription for translate errors coming from the translate manager.
-  scoped_ptr<
+  std::unique_ptr<
       translate::TranslateManager::TranslateErrorCallbackList::Subscription>
       error_subscription_;
 

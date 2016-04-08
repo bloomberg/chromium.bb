@@ -20,7 +20,7 @@ class DataReductionProxyInfoBar : public ConfirmInfoBar {
   static bool Register(JNIEnv* env);
 
   explicit DataReductionProxyInfoBar(
-      scoped_ptr<DataReductionProxyInfoBarDelegateAndroid> delegate);
+      std::unique_ptr<DataReductionProxyInfoBarDelegateAndroid> delegate);
 
   ~DataReductionProxyInfoBar() override;
 

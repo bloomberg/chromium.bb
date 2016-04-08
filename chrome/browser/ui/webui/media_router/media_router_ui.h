@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_UI_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/media/router/issue.h"
@@ -88,7 +88,8 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   void InitWithPresentationSessionRequest(
       content::WebContents* initiator,
       const base::WeakPtr<PresentationServiceDelegateImpl>& delegate,
-      scoped_ptr<CreatePresentationConnectionRequest> presentation_request);
+      std::unique_ptr<CreatePresentationConnectionRequest>
+          presentation_request);
 
   // Closes the media router UI.
   void Close();
@@ -243,8 +244,8 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
 
   // These are non-null while this instance is registered to receive
   // updates from them.
-  scoped_ptr<IssuesObserver> issues_observer_;
-  scoped_ptr<MediaRoutesObserver> routes_observer_;
+  std::unique_ptr<IssuesObserver> issues_observer_;
+  std::unique_ptr<MediaRoutesObserver> routes_observer_;
 
   // Set to true by |handler_| when the UI has been initialized.
   bool ui_initialized_;
@@ -258,22 +259,22 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
 
   // Used for locale-aware sorting of sinks by name. Set during |InitCommon()|
   // using the current locale. Set to null
-  scoped_ptr<icu::Collator> collator_;
+  std::unique_ptr<icu::Collator> collator_;
 
   std::vector<MediaSinkWithCastModes> sinks_;
   std::vector<MediaRoute> routes_;
   std::vector<MediaRoute::Id> joinable_route_ids_;
   CastModeSet cast_modes_;
 
-  scoped_ptr<QueryResultManager> query_result_manager_;
+  std::unique_ptr<QueryResultManager> query_result_manager_;
 
   // If set, then the result of the next presentation route request will
   // be handled by this object.
-  scoped_ptr<CreatePresentationConnectionRequest> create_session_request_;
+  std::unique_ptr<CreatePresentationConnectionRequest> create_session_request_;
 
   // Set to the presentation request corresponding to the presentation cast
   // mode, if supported. Otherwise set to nullptr.
-  scoped_ptr<PresentationRequest> presentation_request_;
+  std::unique_ptr<PresentationRequest> presentation_request_;
 
   // It's possible for PresentationServiceDelegateImpl to be destroyed before
   // this class.

@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_ENGINES_KEYWORD_EDITOR_CONTROLLER_H_
 #define CHROME_BROWSER_UI_SEARCH_ENGINES_KEYWORD_EDITOR_CONTROLLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 
 class PrefRegistrySimple;
@@ -69,7 +69,7 @@ class KeywordEditorController {
   TemplateURLService* url_model_;
 
   // Model for the TableView.
-  scoped_ptr<TemplateURLTableModel> table_model_;
+  std::unique_ptr<TemplateURLTableModel> table_model_;
 
   DISALLOW_COPY_AND_ASSIGN(KeywordEditorController);
 };

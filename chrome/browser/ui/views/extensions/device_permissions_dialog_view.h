@@ -35,7 +35,7 @@ class DevicePermissionsDialogView : public views::DialogDelegateView {
 
   // Displays the list of devices.
   views::TableView* table_view_;
-  scoped_ptr<DevicePermissionsTableModel> table_model_;
+  std::unique_ptr<DevicePermissionsTableModel> table_model_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_DEVICE_PERMISSIONS_DIALOG_VIEW_H_

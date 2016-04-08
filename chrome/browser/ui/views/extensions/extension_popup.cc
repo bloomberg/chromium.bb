@@ -186,7 +186,7 @@ void ExtensionPopup::OnAnchorWindowActivation() {
 
 // static
 ExtensionPopup* ExtensionPopup::ShowPopup(
-    scoped_ptr<extensions::ExtensionViewHost> host,
+    std::unique_ptr<extensions::ExtensionViewHost> host,
     views::View* anchor_view,
     views::BubbleBorder::Arrow arrow,
     ShowAction show_action) {

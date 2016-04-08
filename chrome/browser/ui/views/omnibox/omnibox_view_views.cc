@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -142,7 +143,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
                                    const gfx::FontList& font_list)
     : OmniboxView(
           controller,
-          make_scoped_ptr(new ChromeOmniboxClient(controller, profile))),
+          base::WrapUnique(new ChromeOmniboxClient(controller, profile))),
       profile_(profile),
       popup_window_mode_(popup_window_mode),
       security_level_(security_state::SecurityStateModel::NONE),

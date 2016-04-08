@@ -49,7 +49,7 @@ class TeleportWarningView : public views::DialogDelegateView {
  private:
   void InitDialog();
 
-  scoped_ptr<views::Checkbox> no_show_checkbox_;
+  std::unique_ptr<views::Checkbox> no_show_checkbox_;
   const base::Callback<void(bool)> on_accept_;
 
   DISALLOW_COPY_AND_ASSIGN(TeleportWarningView);

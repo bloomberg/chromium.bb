@@ -70,10 +70,10 @@ class AvatarMenuButton : public views::MenuButton,
 
   BrowserView* browser_view_;
   bool enabled_;
-  scoped_ptr<ui::MenuModel> menu_model_;
+  std::unique_ptr<ui::MenuModel> menu_model_;
 
   // Use a scoped ptr because gfx::Image doesn't have a default constructor.
-  scoped_ptr<gfx::Image> icon_;
+  std::unique_ptr<gfx::Image> icon_;
   gfx::ImageSkia button_icon_;
   bool is_rectangle_;
   int old_height_;

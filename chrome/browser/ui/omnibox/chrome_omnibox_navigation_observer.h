@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_OMNIBOX_CHROME_OMNIBOX_NAVIGATION_OBSERVER_H_
 #define CHROME_BROWSER_UI_OMNIBOX_CHROME_OMNIBOX_NAVIGATION_OBSERVER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_navigation_observer.h"
 #include "content/public/browser/notification_observer.h"
@@ -102,7 +102,7 @@ class ChromeOmniboxNavigationObserver : public OmniboxNavigationObserver,
   const AutocompleteMatch match_;
   const AutocompleteMatch alternate_nav_match_;
   scoped_refptr<ShortcutsBackend> shortcuts_backend_;  // NULL in incognito.
-  scoped_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
   LoadState load_state_;
   FetchState fetch_state_;
 

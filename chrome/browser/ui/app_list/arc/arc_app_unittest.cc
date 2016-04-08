@@ -148,7 +148,7 @@ class ArcAppModelBuilderTest : public AppListTestBase {
     for (auto& app : apps) {
       const std::string id = ArcAppTest::GetAppId(app);
       EXPECT_NE(std::find(ids.begin(), ids.end(), id), ids.end());
-      scoped_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id);
+      std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id);
       ASSERT_NE(nullptr, app_info.get());
       EXPECT_EQ(app.name, app_info->name);
       EXPECT_EQ(app.package_name, app_info->package_name);
@@ -178,7 +178,7 @@ class ArcAppModelBuilderTest : public AppListTestBase {
       ASSERT_NE(it_id, ids.end());
       ids.erase(it_id);
 
-      scoped_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id);
+      std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id);
       ASSERT_NE(nullptr, app_info.get());
       EXPECT_EQ(ready, app_info->ready);
       const ArcAppItem* app_item = FindArcItem(id);
@@ -188,7 +188,7 @@ class ArcAppModelBuilderTest : public AppListTestBase {
 
     // Process the rest of the apps.
     for (auto& id : ids) {
-      scoped_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id);
+      std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id);
       ASSERT_NE(nullptr, app_info.get());
       EXPECT_NE(ready, app_info->ready);
       const ArcAppItem* app_item = FindArcItem(id);
@@ -234,9 +234,9 @@ class ArcAppModelBuilderTest : public AppListTestBase {
 
  private:
   ArcAppTest arc_test_;
-  scoped_ptr<app_list::AppListModel> model_;
-  scoped_ptr<test::TestAppListControllerDelegate> controller_;
-  scoped_ptr<ArcAppModelBuilder> builder_;
+  std::unique_ptr<app_list::AppListModel> model_;
+  std::unique_ptr<test::TestAppListControllerDelegate> controller_;
+  std::unique_ptr<ArcAppModelBuilder> builder_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppModelBuilderTest);
 };
@@ -544,7 +544,7 @@ TEST_F(ArcAppModelBuilderTest, LastLaunchTime) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);
 
-  scoped_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id1);
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id1);
   ASSERT_NE(nullptr, app_info.get());
 
   EXPECT_EQ(base::Time(), app_info->last_launch_time);

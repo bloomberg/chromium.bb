@@ -95,7 +95,7 @@ void WebstoreProvider::Start(bool /*is_voice_query*/,
 
   // Add a placeholder result which when clicked will run the user's query in a
   // browser. This placeholder is removed when the search results arrive.
-  Add(scoped_ptr<SearchResult>(
+  Add(std::unique_ptr<SearchResult>(
       new SearchWebstoreResult(profile_, controller_, query_)));
 }
 
@@ -114,7 +114,7 @@ void WebstoreProvider::StartQuery() {
 }
 
 void WebstoreProvider::OnWebstoreSearchFetched(
-    scoped_ptr<base::DictionaryValue> json) {
+    std::unique_ptr<base::DictionaryValue> json) {
   ProcessWebstoreSearchResults(json.get());
   cache_->Put(WebserviceCache::WEBSTORE, query_, std::move(json));
   query_pending_ = false;
@@ -142,7 +142,7 @@ void WebstoreProvider::ProcessWebstoreSearchResults(
     if (!(*it)->GetAsDictionary(&dict))
       continue;
 
-    scoped_ptr<SearchResult> result(CreateResult(query, *dict));
+    std::unique_ptr<SearchResult> result(CreateResult(query, *dict));
     if (!result)
       continue;
 
@@ -156,7 +156,7 @@ void WebstoreProvider::ProcessWebstoreSearchResults(
   }
 }
 
-scoped_ptr<SearchResult> WebstoreProvider::CreateResult(
+std::unique_ptr<SearchResult> WebstoreProvider::CreateResult(
     const TokenizedString& query,
     const base::DictionaryValue& dict) {
   std::string app_id;
@@ -167,12 +167,12 @@ scoped_ptr<SearchResult> WebstoreProvider::CreateResult(
       !dict.GetString(kKeyLocalizedName, &localized_name) ||
       !dict.GetString(kKeyIconUrl, &icon_url_string) ||
       !dict.GetBoolean(kKeyIsPaid, &is_paid)) {
-    return scoped_ptr<SearchResult>();
+    return std::unique_ptr<SearchResult>();
   }
 
   GURL icon_url(icon_url_string);
   if (!icon_url.is_valid())
-    return scoped_ptr<SearchResult>();
+    return std::unique_ptr<SearchResult>();
 
   std::string item_type_string;
   dict.GetString(kKeyItemType, &item_type_string);
@@ -185,9 +185,9 @@ scoped_ptr<SearchResult> WebstoreProvider::CreateResult(
   TokenizedString title(base::UTF8ToUTF16(localized_name));
   TokenizedStringMatch match;
   if (!match.Calculate(query, title))
-    return scoped_ptr<SearchResult>();
+    return std::unique_ptr<SearchResult>();
 
-  scoped_ptr<SearchResult> result(new WebstoreResult(
+  std::unique_ptr<SearchResult> result(new WebstoreResult(
       profile_, app_id, icon_url, is_paid, item_type, controller_));
   result->UpdateFromMatch(title, match);
   return result;

@@ -167,7 +167,8 @@ void ChangePictureOptionsHandler::SendDefaultImages() {
   base::ListValue image_urls;
   for (int i = default_user_image::kFirstDefaultImageIndex;
        i < default_user_image::kDefaultImagesCount; ++i) {
-    scoped_ptr<base::DictionaryValue> image_data(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> image_data(
+        new base::DictionaryValue);
     image_data->SetString("url", default_user_image::GetDefaultImageUrl(i));
     image_data->SetString("author",
                           l10n_util::GetStringUTF16(

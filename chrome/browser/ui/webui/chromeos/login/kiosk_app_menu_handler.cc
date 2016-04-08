@@ -101,7 +101,7 @@ void KioskAppMenuHandler::SendKioskApps() {
   for (size_t i = 0; i < apps.size(); ++i) {
     const KioskAppManager::App& app_data = apps[i];
 
-    scoped_ptr<base::DictionaryValue> app_info(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> app_info(new base::DictionaryValue);
     app_info->SetBoolean("isApp", true);
     app_info->SetString("id", app_data.app_id);
     app_info->SetString("label", app_data.name);

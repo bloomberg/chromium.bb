@@ -19,13 +19,15 @@ class DownloadOverwriteInfoBarDelegate;
 // an existing file with a new download.
 class DownloadOverwriteInfoBar : public InfoBarAndroid {
  public:
-  static scoped_ptr<infobars::InfoBar> CreateInfoBar(
-      scoped_ptr<chrome::android::DownloadOverwriteInfoBarDelegate> delegate);
+  static std::unique_ptr<infobars::InfoBar> CreateInfoBar(
+      std::unique_ptr<chrome::android::DownloadOverwriteInfoBarDelegate>
+          delegate);
   ~DownloadOverwriteInfoBar() override;
 
  private:
   explicit DownloadOverwriteInfoBar(
-      scoped_ptr<chrome::android::DownloadOverwriteInfoBarDelegate> delegate);
+      std::unique_ptr<chrome::android::DownloadOverwriteInfoBarDelegate>
+          delegate);
 
   // InfoBarAndroid:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -62,9 +63,10 @@ int g_num_visible = 0;
 
 const int kCloudDevicesPrivetVersion = 3;
 
-scoped_ptr<base::DictionaryValue> CreateDeviceInfo(
+std::unique_ptr<base::DictionaryValue> CreateDeviceInfo(
     const CloudPrintPrinterList::Device& description) {
-  scoped_ptr<base::DictionaryValue> return_value(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> return_value(
+      new base::DictionaryValue);
 
   return_value->SetString(kDictionaryKeyID, description.id);
   return_value->SetString(kDictionaryKeyDisplayName, description.display_name);
@@ -242,7 +244,7 @@ void LocalDiscoveryUIHandler::HandleRequestDeviceList(
 
   if (cloud_print_printer_list_) {
     cloud_print_printer_list_->Start(
-        make_scoped_ptr<GCDApiFlow::Request>(new CloudPrintPrinterList(this)));
+        base::WrapUnique<GCDApiFlow::Request>(new CloudPrintPrinterList(this)));
   }
 
   CheckListingDone();
@@ -273,7 +275,7 @@ void LocalDiscoveryUIHandler::HandleShowSyncUI(
 }
 
 void LocalDiscoveryUIHandler::StartRegisterHTTP(
-    scoped_ptr<cloud_print::PrivetHTTPClient> http_client) {
+    std::unique_ptr<cloud_print::PrivetHTTPClient> http_client) {
   current_http_client_ =
       cloud_print::PrivetV1HTTPClient::CreateDefault(std::move(http_client));
 
@@ -305,12 +307,10 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
     SendRegisterError();
     return;
   }
-  confirm_api_call_flow_->Start(
-      make_scoped_ptr<GCDApiFlow::Request>(
-          new cloud_print::PrivetConfirmApiCallFlow(
-              token,
-              base::Bind(&LocalDiscoveryUIHandler::OnConfirmDone,
-                         base::Unretained(this)))));
+  confirm_api_call_flow_->Start(base::WrapUnique<GCDApiFlow::Request>(
+      new cloud_print::PrivetConfirmApiCallFlow(
+          token, base::Bind(&LocalDiscoveryUIHandler::OnConfirmDone,
+                            base::Unretained(this)))));
 }
 
 void LocalDiscoveryUIHandler::OnPrivetRegisterError(
@@ -380,7 +380,7 @@ void LocalDiscoveryUIHandler::DeviceChanged(
     web_ui()->CallJavascriptFunction(
         "local_discovery.onUnregisteredDeviceUpdate", service_key, info);
   } else {
-    scoped_ptr<base::Value> null_value = base::Value::CreateNullValue();
+    std::unique_ptr<base::Value> null_value = base::Value::CreateNullValue();
 
     web_ui()->CallJavascriptFunction(
         "local_discovery.onUnregisteredDeviceUpdate", service_key, *null_value);
@@ -389,7 +389,7 @@ void LocalDiscoveryUIHandler::DeviceChanged(
 
 void LocalDiscoveryUIHandler::DeviceRemoved(const std::string& name) {
   device_descriptions_.erase(name);
-  scoped_ptr<base::Value> null_value = base::Value::CreateNullValue();
+  std::unique_ptr<base::Value> null_value = base::Value::CreateNullValue();
   base::StringValue name_value(kKeyPrefixMDns + name);
 
   web_ui()->CallJavascriptFunction("local_discovery.onUnregisteredDeviceUpdate",
@@ -525,18 +525,18 @@ void LocalDiscoveryUIHandler::CheckListingDone() {
   cloud_print_printer_list_.reset();
 }
 
-scoped_ptr<GCDApiFlow> LocalDiscoveryUIHandler::CreateApiFlow() {
+std::unique_ptr<GCDApiFlow> LocalDiscoveryUIHandler::CreateApiFlow() {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!profile)
-    return scoped_ptr<GCDApiFlow>();
+    return std::unique_ptr<GCDApiFlow>();
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   if (!token_service)
-    return scoped_ptr<GCDApiFlow>();
+    return std::unique_ptr<GCDApiFlow>();
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetInstance()->GetForProfile(profile);
   if (!signin_manager)
-    return scoped_ptr<GCDApiFlow>();
+    return std::unique_ptr<GCDApiFlow>();
   return GCDApiFlow::Create(profile->GetRequestContext(),
                             token_service,
                             signin_manager->GetAuthenticatedAccountId());

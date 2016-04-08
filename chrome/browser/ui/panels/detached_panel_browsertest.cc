@@ -23,7 +23,7 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CheckDetachedPanelProperties) {
   CreatePanelParams params("1", bounds, SHOW_AS_ACTIVE);
   params.create_mode = PanelManager::CREATE_AS_DETACHED;
   Panel* panel = CreatePanelWithParams(params);
-  scoped_ptr<NativePanelTesting> panel_testing(
+  std::unique_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
 
   EXPECT_EQ(1, panel_manager->num_panels());
@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CheckDetachedPanelProperties) {
 IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, DrawAttentionOnActive) {
   // Create a detached panel that is initially active.
   Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
-  scoped_ptr<NativePanelTesting> native_panel_testing(
+  std::unique_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));
 
   // Test that the attention should not be drawn if the detached panel is in
@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, DrawAttentionOnInactive) {
   // Create an inactive detached panel.
   Panel* panel =
       CreateInactiveDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
-  scoped_ptr<NativePanelTesting> native_panel_testing(
+  std::unique_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));
 
   // Test that the attention is drawn when the detached panel is not in focus.
@@ -103,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, DrawAttentionResetOnActivate) {
   // Create an inactive detached panel.
   Panel* panel =
       CreateInactiveDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
-  scoped_ptr<NativePanelTesting> native_panel_testing(
+  std::unique_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));
 
   // Test that the attention is drawn when the detached panel is not in focus.
@@ -126,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, ClickTitlebar) {
 
   // Clicking on an active detached panel's titlebar has no effect, regardless
   // of modifier.
-  scoped_ptr<NativePanelTesting> test_panel(
+  std::unique_ptr<NativePanelTesting> test_panel(
       CreateNativePanelTesting(panel));
   test_panel->PressLeftMouseButtonTitlebar(panel->GetBounds().origin());
   test_panel->ReleaseMouseButtonTitlebar();
@@ -216,7 +216,8 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
   CreatePanelParams params("1", gfx::Rect(300, 200, 250, 200), SHOW_AS_ACTIVE);
   params.create_mode = PanelManager::CREATE_AS_DETACHED;
   Panel* panel = CreatePanelWithParams(params);
-  scoped_ptr<NativePanelTesting> panel_testing(CreateNativePanelTesting(panel));
+  std::unique_ptr<NativePanelTesting> panel_testing(
+      CreateNativePanelTesting(panel));
 
   // Panel should be visible at first.
   EXPECT_TRUE(panel_testing->IsWindowVisible());
@@ -243,7 +244,8 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
   params.create_mode = PanelManager::CREATE_AS_DETACHED;
   params.wait_for_fully_created = false;
   Panel* panel = CreatePanelWithParams(params);
-  scoped_ptr<NativePanelTesting> panel_testing(CreateNativePanelTesting(panel));
+  std::unique_ptr<NativePanelTesting> panel_testing(
+      CreateNativePanelTesting(panel));
 
   // Panel should not be shown on full-screen mode.
   EXPECT_FALSE(panel_testing->IsWindowVisible());

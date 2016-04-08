@@ -119,11 +119,11 @@ void ChromeWebContentsViewDelegateViews::RestoreFocus() {
   }
 }
 
-scoped_ptr<RenderViewContextMenuBase>
+std::unique_ptr<RenderViewContextMenuBase>
 ChromeWebContentsViewDelegateViews::BuildMenu(
     content::WebContents* web_contents,
     const content::ContextMenuParams& params) {
-  scoped_ptr<RenderViewContextMenuBase> menu;
+  std::unique_ptr<RenderViewContextMenuBase> menu;
   content::RenderFrameHost* focused_frame = web_contents->GetFocusedFrame();
   // If the frame tree does not have a focused frame at this point, do not
   // bother creating RenderViewContextMenuViews.
@@ -137,7 +137,7 @@ ChromeWebContentsViewDelegateViews::BuildMenu(
 }
 
 void ChromeWebContentsViewDelegateViews::ShowMenu(
-    scoped_ptr<RenderViewContextMenuBase> menu) {
+    std::unique_ptr<RenderViewContextMenuBase> menu) {
   context_menu_ = std::move(menu);
   if (!context_menu_)
     return;

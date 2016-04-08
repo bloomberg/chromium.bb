@@ -44,7 +44,7 @@ namespace extensions {
 ExtensionMessageBubbleView::ExtensionMessageBubbleView(
     views::View* anchor_view,
     views::BubbleBorder::Arrow arrow_location,
-    scoped_ptr<extensions::ExtensionMessageBubbleController> controller)
+    std::unique_ptr<extensions::ExtensionMessageBubbleController> controller)
     : BubbleDelegateView(anchor_view, arrow_location),
       controller_(std::move(controller)),
       anchor_view_(anchor_view),

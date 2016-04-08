@@ -60,7 +60,7 @@ class TestingDownloadService : public DownloadService {
   void CancelDownloads() override {}
 
   void SetDownloadManagerDelegateForTesting(
-      scoped_ptr<ChromeDownloadManagerDelegate> delegate) override {
+      std::unique_ptr<ChromeDownloadManagerDelegate> delegate) override {
     ADD_FAILURE();
   }
 
@@ -77,9 +77,9 @@ class TestingDownloadService : public DownloadService {
   DISALLOW_COPY_AND_ASSIGN(TestingDownloadService);
 };
 
-static scoped_ptr<KeyedService> CreateTestingDownloadService(
+static std::unique_ptr<KeyedService> CreateTestingDownloadService(
     content::BrowserContext* browser_context) {
-  return scoped_ptr<KeyedService>(new TestingDownloadService());
+  return std::unique_ptr<KeyedService>(new TestingDownloadService());
 }
 
 class BrowserCloseTest : public testing::Test {

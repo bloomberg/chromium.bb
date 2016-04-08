@@ -247,7 +247,7 @@ void TemplateURLTableModel::Remove(int index) {
   template_url_service_->RemoveObserver(this);
   TemplateURL* template_url = GetTemplateURL(index);
 
-  scoped_ptr<ModelEntry> entry(RemoveEntry(index));
+  std::unique_ptr<ModelEntry> entry(RemoveEntry(index));
 
   // Make sure to remove from the table model first, otherwise the
   // TemplateURL would be freed.
@@ -268,7 +268,7 @@ void TemplateURLTableModel::Add(int index,
   data.SetURL(url);
   TemplateURL* turl = new TemplateURL(data);
   template_url_service_->Add(turl);
-  scoped_ptr<ModelEntry> entry(new ModelEntry(this, turl));
+  std::unique_ptr<ModelEntry> entry(new ModelEntry(this, turl));
   template_url_service_->AddObserver(this);
   AddEntry(index, std::move(entry));
 }
@@ -317,7 +317,7 @@ int TemplateURLTableModel::MoveToMainGroup(int index) {
   if (index < last_search_engine_index_)
     return index;  // Already in the main group.
 
-  scoped_ptr<ModelEntry> current_entry(RemoveEntry(index));
+  std::unique_ptr<ModelEntry> current_entry(RemoveEntry(index));
   const int new_index = last_search_engine_index_++;
   AddEntry(new_index, std::move(current_entry));
   return new_index;
@@ -373,9 +373,9 @@ void TemplateURLTableModel::OnTemplateURLServiceChanged() {
   Reload();
 }
 
-scoped_ptr<TemplateURLTableModel::ModelEntry>
+std::unique_ptr<TemplateURLTableModel::ModelEntry>
 TemplateURLTableModel::RemoveEntry(int index) {
-  scoped_ptr<ModelEntry> entry(entries_[index]);
+  std::unique_ptr<ModelEntry> entry(entries_[index]);
   entries_.erase(index + entries_.begin());
   if (index < last_search_engine_index_)
     --last_search_engine_index_;
@@ -386,7 +386,8 @@ TemplateURLTableModel::RemoveEntry(int index) {
   return entry;
 }
 
-void TemplateURLTableModel::AddEntry(int index, scoped_ptr<ModelEntry> entry) {
+void TemplateURLTableModel::AddEntry(int index,
+                                     std::unique_ptr<ModelEntry> entry) {
   entries_.insert(entries_.begin() + index, entry.release());
   if (index <= last_other_engine_index_)
     ++last_other_engine_index_;

@@ -339,7 +339,7 @@ void AppLauncherHandler::OnExtensionLoaded(
   if (!ShouldShow(extension))
     return;
 
-  scoped_ptr<base::DictionaryValue> app_info(GetAppInfo(extension));
+  std::unique_ptr<base::DictionaryValue> app_info(GetAppInfo(extension));
   if (!app_info.get())
     return;
 
@@ -719,7 +719,7 @@ void AppLauncherHandler::HandleGenerateAppForLink(const base::ListValue* args) {
     return;
   }
 
-  scoped_ptr<AppInstallInfo> install_info(new AppInstallInfo());
+  std::unique_ptr<AppInstallInfo> install_info(new AppInstallInfo());
   install_info->title = title;
   install_info->app_url = launch_url;
   install_info->page_ordinal = page_ordinal;
@@ -755,9 +755,9 @@ void AppLauncherHandler::HandlePageSelected(const base::ListValue* args) {
 }
 
 void AppLauncherHandler::OnFaviconForApp(
-    scoped_ptr<AppInstallInfo> install_info,
+    std::unique_ptr<AppInstallInfo> install_info,
     const favicon_base::FaviconImageResult& image_result) {
-  scoped_ptr<WebApplicationInfo> web_app(new WebApplicationInfo());
+  std::unique_ptr<WebApplicationInfo> web_app(new WebApplicationInfo());
   web_app->title = install_info->title;
   web_app->app_url = install_info->app_url;
 
@@ -870,7 +870,7 @@ void AppLauncherHandler::AppRemoved(const Extension* extension,
   if (!ShouldShow(extension))
     return;
 
-  scoped_ptr<base::DictionaryValue> app_info(GetAppInfo(extension));
+  std::unique_ptr<base::DictionaryValue> app_info(GetAppInfo(extension));
   if (!app_info.get())
     return;
 

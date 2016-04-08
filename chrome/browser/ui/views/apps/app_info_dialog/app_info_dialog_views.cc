@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_dialog_views.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"

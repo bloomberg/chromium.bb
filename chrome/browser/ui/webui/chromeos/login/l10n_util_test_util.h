@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_L10N_UTIL_TEST_UTIL_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_L10N_UTIL_TEST_UTIL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
@@ -23,8 +23,8 @@ class MockInputMethodManagerWithInputMethods
   ~MockInputMethodManagerWithInputMethods() override;
 
   // input_method::MockInputMethodManager:
-  scoped_ptr<input_method::InputMethodDescriptors> GetSupportedInputMethods()
-      const override;
+  std::unique_ptr<input_method::InputMethodDescriptors>
+  GetSupportedInputMethods() const override;
 
   void AddInputMethod(const std::string& id,
                       const std::string& raw_layout,

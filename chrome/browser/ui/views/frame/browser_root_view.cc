@@ -63,7 +63,7 @@ bool BrowserRootView::CanDrop(const ui::OSExchangeData& data) {
 void BrowserRootView::OnDragEntered(const ui::DropTargetEvent& event) {
   if (ShouldForwardToTabStrip(event)) {
     forwarding_to_tab_strip_ = true;
-    scoped_ptr<ui::DropTargetEvent> mapped_event(
+    std::unique_ptr<ui::DropTargetEvent> mapped_event(
         MapEventToTabStrip(event, event.data()));
     tabstrip()->OnDragEntered(*mapped_event.get());
   }
@@ -71,7 +71,7 @@ void BrowserRootView::OnDragEntered(const ui::DropTargetEvent& event) {
 
 int BrowserRootView::OnDragUpdated(const ui::DropTargetEvent& event) {
   if (ShouldForwardToTabStrip(event)) {
-    scoped_ptr<ui::DropTargetEvent> mapped_event(
+    std::unique_ptr<ui::DropTargetEvent> mapped_event(
         MapEventToTabStrip(event, event.data()));
     if (!forwarding_to_tab_strip_) {
       tabstrip()->OnDragEntered(*mapped_event.get());
@@ -115,7 +115,7 @@ int BrowserRootView::OnPerformDrop(const ui::DropTargetEvent& event) {
     mapped_data.SetURL(url, base::string16());
   }
   forwarding_to_tab_strip_ = false;
-  scoped_ptr<ui::DropTargetEvent> mapped_event(
+  std::unique_ptr<ui::DropTargetEvent> mapped_event(
       MapEventToTabStrip(event, mapped_data));
   return tabstrip()->OnPerformDrop(*mapped_event);
 }

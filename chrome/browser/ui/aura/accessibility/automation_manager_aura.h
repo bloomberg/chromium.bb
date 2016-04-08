@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_action_adapter.h"
 #include "chrome/browser/ui/aura/accessibility/ax_tree_source_aura.h"
 #include "ui/accessibility/ax_tree_serializer.h"
@@ -80,11 +81,11 @@ class AutomationManagerAura : public extensions::AutomationActionAdapter {
   // Holds the active views-based accessibility tree. A tree currently consists
   // of all views descendant to a |Widget| (see |AXTreeSourceViews|).
   // A tree becomes active when an event is fired on a descendant view.
-  scoped_ptr<AXTreeSourceAura> current_tree_;
+  std::unique_ptr<AXTreeSourceAura> current_tree_;
 
   // Serializes incremental updates on the currently active tree
   // |current_tree_|.
-  scoped_ptr<AuraAXTreeSerializer> current_tree_serializer_;
+  std::unique_ptr<AuraAXTreeSerializer> current_tree_serializer_;
 
   bool processing_events_;
 

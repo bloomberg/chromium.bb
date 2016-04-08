@@ -86,7 +86,7 @@ ChromeNativeAppWindowViewsAura::CreateNonStandardAppFrame() {
   // window. The root window does not have a delegate, which is needed to
   // handle the event in Linux.
   window->SetEventTargeter(
-      scoped_ptr<ui::EventTargeter>(new AppWindowEasyResizeWindowTargeter(
+      std::unique_ptr<ui::EventTargeter>(new AppWindowEasyResizeWindowTargeter(
           window, gfx::Insets(frame->resize_inside_bounds_size()), this)));
 
   return frame;
@@ -118,16 +118,17 @@ bool ChromeNativeAppWindowViewsAura::IsAlwaysOnTop() const {
   return widget()->IsAlwaysOnTop();
 }
 
-void ChromeNativeAppWindowViewsAura::UpdateShape(scoped_ptr<SkRegion> region) {
+void ChromeNativeAppWindowViewsAura::UpdateShape(
+    std::unique_ptr<SkRegion> region) {
   bool had_shape = !!shape();
 
   ChromeNativeAppWindowViews::UpdateShape(std::move(region));
 
   aura::Window* native_window = widget()->GetNativeWindow();
   if (shape() && !had_shape) {
-    native_window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
+    native_window->SetEventTargeter(std::unique_ptr<ui::EventTargeter>(
         new ShapedAppWindowTargeter(native_window, this)));
   } else if (!shape() && had_shape) {
-    native_window->SetEventTargeter(scoped_ptr<ui::EventTargeter>());
+    native_window->SetEventTargeter(std::unique_ptr<ui::EventTargeter>());
   }
 }

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <map>
-
 #import <Cocoa/Cocoa.h>
 
+#include <map>
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "content/public/common/media_stream_request.h"
 
@@ -33,7 +33,7 @@ struct MediaMenuParts {
 
   content::MediaStreamType type;
   NSTextField* label;  // Weak.
-  scoped_ptr<ContentSettingMediaMenuModel> model;
+  std::unique_ptr<ContentSettingMediaMenuModel> model;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaMenuParts);
@@ -64,8 +64,9 @@ typedef std::map<NSPopUpButton*, MediaMenuParts*, compare_button>
 
   IBOutlet NSTextField* blockedResourcesField_;
 
-  scoped_ptr<ContentSettingBubbleModel> contentSettingBubbleModel_;
-  scoped_ptr<ContentSettingBubbleWebContentsObserverBridge> observerBridge_;
+  std::unique_ptr<ContentSettingBubbleModel> contentSettingBubbleModel_;
+  std::unique_ptr<ContentSettingBubbleWebContentsObserverBridge>
+      observerBridge_;
   content_setting_bubble::PopupLinks popupLinks_;
   content_setting_bubble::MediaMenuPartsMap mediaMenus_;
 }

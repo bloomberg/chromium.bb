@@ -113,7 +113,7 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
 @synthesize webContents = webContents_;
 
 - (id)initWithParentWindow:(BrowserWindowController*)controller
-                     model:(scoped_ptr<TranslateBubbleModel>)model
+                     model:(std::unique_ptr<TranslateBubbleModel>)model
                webContents:(content::WebContents*)webContents {
   NSWindow* parentWindow = [controller window];
 

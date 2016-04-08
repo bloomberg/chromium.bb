@@ -101,8 +101,8 @@ class DeviceEmulatorMessageHandler::BluetoothObserver
 
 void DeviceEmulatorMessageHandler::BluetoothObserver::DeviceAdded(
     const dbus::ObjectPath& object_path) {
-  scoped_ptr<base::DictionaryValue> device = owner_->GetDeviceInfo(
-      object_path);
+  std::unique_ptr<base::DictionaryValue> device =
+      owner_->GetDeviceInfo(object_path);
 
   // Request to add the device to the view's list of devices.
   owner_->web_ui()->CallJavascriptFunction(kAddBluetoothDeviceJSCallback,
@@ -239,11 +239,11 @@ void DeviceEmulatorMessageHandler::HandleRequestBluetoothInfo(
   base::ListValue devices;
   // Get each device's properties.
   for (const dbus::ObjectPath& path : paths) {
-    scoped_ptr<base::DictionaryValue> device = GetDeviceInfo(path);
+    std::unique_ptr<base::DictionaryValue> device = GetDeviceInfo(path);
     devices.Append(std::move(device));
   }
 
-  scoped_ptr<base::ListValue> predefined_devices =
+  std::unique_ptr<base::ListValue> predefined_devices =
       fake_bluetooth_device_client_->GetBluetoothDevicesAsDictionaries();
 
   base::ListValue pairing_method_options;
@@ -293,7 +293,8 @@ void DeviceEmulatorMessageHandler::HandleRequestAudioNodes(
   // send it to JavaScript.
   base::ListValue audio_nodes;
   for (const AudioNode& node : fake_cras_audio_client_->node_list()) {
-    scoped_ptr<base::DictionaryValue> audio_node(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> audio_node(
+        new base::DictionaryValue());
 
     audio_node->SetBoolean("isInput", node.is_input);
     audio_node->SetString("id", base::Uint64ToString(node.id));
@@ -531,13 +532,14 @@ std::string DeviceEmulatorMessageHandler::CreateBluetoothDeviceFromListValue(
   return props.device_path;
 }
 
-scoped_ptr<base::DictionaryValue> DeviceEmulatorMessageHandler::GetDeviceInfo(
+std::unique_ptr<base::DictionaryValue>
+DeviceEmulatorMessageHandler::GetDeviceInfo(
     const dbus::ObjectPath& object_path) {
   // Get the device's properties.
   bluez::FakeBluetoothDeviceClient::Properties* props =
       fake_bluetooth_device_client_->GetProperties(object_path);
-  scoped_ptr<base::DictionaryValue> device(new base::DictionaryValue());
-  scoped_ptr<base::ListValue> uuids(new base::ListValue);
+  std::unique_ptr<base::DictionaryValue> device(new base::DictionaryValue());
+  std::unique_ptr<base::ListValue> uuids(new base::ListValue);
   bluez::FakeBluetoothDeviceClient::SimulatedPairingOptions* options =
       fake_bluetooth_device_client_->GetPairingOptions(object_path);
 

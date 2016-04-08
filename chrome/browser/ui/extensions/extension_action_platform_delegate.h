@@ -19,7 +19,7 @@ class ExtensionActionPlatformDelegate {
 
   // Returns a created ExtensionActionPlatformDelegate. This is defined in the
   // platform-specific implementation for the class.
-  static scoped_ptr<ExtensionActionPlatformDelegate> Create(
+  static std::unique_ptr<ExtensionActionPlatformDelegate> Create(
       ExtensionActionViewController* controller);
 
   // The following are forwarded from ToolbarActionViewController. See that
@@ -33,7 +33,7 @@ class ExtensionActionPlatformDelegate {
   // permissions should be given to the extension; this is only true if the
   // popup is opened through a user action.
   virtual void ShowPopup(
-      scoped_ptr<extensions::ExtensionViewHost> host,
+      std::unique_ptr<extensions::ExtensionViewHost> host,
       bool grant_tab_permissions,
       ExtensionActionViewController::PopupShowAction show_action) = 0;
 

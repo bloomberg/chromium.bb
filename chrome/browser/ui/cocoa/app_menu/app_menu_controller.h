@@ -7,9 +7,10 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/mac/objc_property_releaser.h"
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #import "chrome/browser/ui/cocoa/has_weak_browser_pointer.h"
 #import "ui/base/cocoa/menu_controller.h"
@@ -47,15 +48,15 @@ class ZoomLevelObserver;
     : MenuController<NSMenuDelegate, HasWeakBrowserPointer> {
  @private
   // Used to provide accelerators for the menu.
-  scoped_ptr<AppMenuControllerInternal::AcceleratorDelegate>
+  std::unique_ptr<AppMenuControllerInternal::AcceleratorDelegate>
       acceleratorDelegate_;
 
   // The model, rebuilt each time the |-menuNeedsUpdate:|.
-  scoped_ptr<AppMenuModel> appMenuModel_;
+  std::unique_ptr<AppMenuModel> appMenuModel_;
 
   // Used to update icons in the recent tabs menu. This must be declared after
   // |appMenuModel_| so that it gets deleted first.
-  scoped_ptr<RecentTabsMenuModelDelegate> recentTabsMenuModelDelegate_;
+  std::unique_ptr<RecentTabsMenuModelDelegate> recentTabsMenuModelDelegate_;
 
   // A shim NSViewController that loads the buttons from the NIB because ObjC
   // doesn't have multiple inheritance as this class is a MenuController.
@@ -65,14 +66,14 @@ class ZoomLevelObserver;
   Browser* browser_;  // weak
 
   // Used to build the bookmark submenu.
-  scoped_ptr<BookmarkMenuBridge> bookmarkMenuBridge_;
+  std::unique_ptr<BookmarkMenuBridge> bookmarkMenuBridge_;
 
   // Observer for page zoom level change notifications.
-  scoped_ptr<AppMenuControllerInternal::ZoomLevelObserver>
+  std::unique_ptr<AppMenuControllerInternal::ZoomLevelObserver>
       zoom_level_observer_;
 
   // Observer for the main window's ToolbarActionsBar changing size.
-  scoped_ptr<AppMenuControllerInternal::ToolbarActionsBarObserverHelper>
+  std::unique_ptr<AppMenuControllerInternal::ToolbarActionsBarObserverHelper>
       toolbar_actions_bar_observer_;
 
   // The controller for the toolbar actions overflow that is stored in the

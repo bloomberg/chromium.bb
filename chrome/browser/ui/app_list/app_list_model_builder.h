@@ -47,7 +47,7 @@ class AppListModelBuilder : public app_list::AppListItemListObserver {
   app_list::AppListModel* model() { return model_; }
 
   // Inserts an app based on app ordinal prefs.
-  void InsertApp(scoped_ptr<app_list::AppListItem> app);
+  void InsertApp(std::unique_ptr<app_list::AppListItem> app);
 
   // Removes an app based on app id.
   void RemoveApp(const std::string& id);

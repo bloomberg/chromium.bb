@@ -106,9 +106,9 @@ void PopularSitesInternalsMessageHandler::SendDownloadResult(bool success) {
 }
 
 void PopularSitesInternalsMessageHandler::SendSites() {
-  scoped_ptr<base::ListValue> sites_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> sites_list(new base::ListValue);
   for (const PopularSites::Site& site : popular_sites_->sites()) {
-    scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
     entry->SetString("title", site.title);
     entry->SetString("url", site.url.spec());
     sites_list->Append(std::move(entry));

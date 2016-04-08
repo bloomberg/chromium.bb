@@ -35,7 +35,7 @@ const char* kWhitelistedDirectories[] = {
 // Callback for user_manager::UserImageLoader.
 void ImageLoaded(
     const content::URLDataSource::GotDataCallback& got_data_callback,
-    scoped_ptr<user_manager::UserImage> user_image) {
+    std::unique_ptr<user_manager::UserImage> user_image) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // TODO(crbug.com/593251): Remove the data copy.

@@ -132,15 +132,15 @@ class BrowserFrame
   // The BrowserView is our ClientView. This is a pointer to it.
   BrowserView* browser_view_;
 
-  scoped_ptr<SystemMenuModelBuilder> menu_model_builder_;
+  std::unique_ptr<SystemMenuModelBuilder> menu_model_builder_;
 
   // Used to show the system menu. Only used if
   // NativeBrowserFrame::UsesNativeSystemMenu() returns false.
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   const ThemeService* theme_service_;
 
-  scoped_ptr<ui::EventHandler> browser_command_handler_;
+  std::unique_ptr<ui::EventHandler> browser_command_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFrame);
 };

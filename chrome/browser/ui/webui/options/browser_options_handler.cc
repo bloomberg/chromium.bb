@@ -165,7 +165,7 @@ namespace {
 void AppendExtensionData(const std::string& key,
                          const Extension* extension,
                          base::DictionaryValue* dict) {
-  scoped_ptr<base::DictionaryValue> details(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> details(new base::DictionaryValue);
   details->SetString("id", extension ? extension->id() : std::string());
   details->SetString("name", extension ? extension->name() : std::string());
   dict->Set(key, details.release());
@@ -621,15 +621,15 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
                     chrome::kAttestationForContentProtectionLearnMoreURL);
 
   // Creates magnifierList.
-  scoped_ptr<base::ListValue> magnifier_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> magnifier_list(new base::ListValue);
 
-  scoped_ptr<base::ListValue> option_full(new base::ListValue);
+  std::unique_ptr<base::ListValue> option_full(new base::ListValue);
   option_full->AppendInteger(ui::MAGNIFIER_FULL);
   option_full->AppendString(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_FULL));
   magnifier_list->Append(option_full.release());
 
-  scoped_ptr<base::ListValue> option_partial(new base::ListValue);
+  std::unique_ptr<base::ListValue> option_partial(new base::ListValue);
   option_partial->AppendInteger(ui::MAGNIFIER_PARTIAL);
   option_partial->Append(new base::StringValue(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_PARTIAL)));
@@ -1320,11 +1320,11 @@ void BrowserOptionsHandler::OnProfileAvatarChanged(
   SendProfilesInfo();
 }
 
-scoped_ptr<base::ListValue> BrowserOptionsHandler::GetProfilesInfoList() {
+std::unique_ptr<base::ListValue> BrowserOptionsHandler::GetProfilesInfoList() {
   std::vector<ProfileAttributesEntry*> entries =
       g_browser_process->profile_manager()->
       GetProfileAttributesStorage().GetAllProfilesAttributesSortedByName();
-  scoped_ptr<base::ListValue> profile_info_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> profile_info_list(new base::ListValue);
   base::FilePath current_profile_path =
       web_ui()->GetWebContents()->GetBrowserContext()->GetPath();
 
@@ -1465,12 +1465,12 @@ void BrowserOptionsHandler::OnSystemTimezoneAutomaticDetectionPolicyChanged() {
 }
 #endif
 
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 BrowserOptionsHandler::GetSyncStateDictionary() {
   // The items which are to be written into |sync_status| are also described in
   // chrome/browser/resources/options/browser_options.js in @typedef
   // for SyncStatus. Please update it whenever you add or remove any keys here.
-  scoped_ptr<base::DictionaryValue> sync_status(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> sync_status(new base::DictionaryValue);
   Profile* profile = Profile::FromWebUI(web_ui());
   if (profile->IsGuestSession()) {
     // Cannot display signin status when running in guest mode on chromeos

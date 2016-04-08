@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -52,8 +53,8 @@ const int kChooserPermissionBubbleHeight = 200;
 
 }  // namespace
 
-scoped_ptr<BubbleUi> ChooserBubbleController::BuildBubbleUi() {
-  return make_scoped_ptr(new ChooserBubbleUiView(browser_, this));
+std::unique_ptr<BubbleUi> ChooserBubbleController::BuildBubbleUi() {
+  return base::WrapUnique(new ChooserBubbleUiView(browser_, this));
 }
 
 class ChooserTableModel;
@@ -308,7 +309,7 @@ void ChooserBubbleUiViewDelegate::UpdateAnchor(
   views::BubbleBorder::Arrow adjusted_arrow = anchor_arrow;
   if (base::i18n::IsRTL())
     adjusted_arrow = views::BubbleBorder::horizontal_mirror(adjusted_arrow);
-  frame->SetBubbleBorder(scoped_ptr<views::BubbleBorder>(
+  frame->SetBubbleBorder(std::unique_ptr<views::BubbleBorder>(
       new views::BubbleBorder(adjusted_arrow, shadow(), color())));
 
   // Reposition the bubble based on the updated arrow and view.

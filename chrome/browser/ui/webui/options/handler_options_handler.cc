@@ -138,7 +138,7 @@ void HandlerOptionsHandler::UpdateHandlerList() {
     handlers.Append(handler_value);
   }
 
-  scoped_ptr<base::ListValue> ignored_handlers(new base::ListValue());
+  std::unique_ptr<base::ListValue> ignored_handlers(new base::ListValue());
   GetIgnoredHandlers(ignored_handlers.get());
   web_ui()->CallJavascriptFunction("HandlerOptions.setHandlers", handlers);
   web_ui()->CallJavascriptFunction("HandlerOptions.setIgnoredHandlers",

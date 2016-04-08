@@ -17,7 +17,7 @@
 
 - (id)initWithParent:(NSView*)parent
               origin:(CGPoint)origin
-               model:(scoped_ptr<ConfirmBubbleModel>)model {
+               model:(std::unique_ptr<ConfirmBubbleModel>)model {
   if ((self = [super initWithNibName:nil bundle:nil])) {
     parent_ = parent;
     origin_ = origin;

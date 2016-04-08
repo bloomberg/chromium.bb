@@ -64,10 +64,11 @@ class BrowserDesktopWindowTreeHostWin : public BrowserDesktopWindowTreeHost,
 
   MinimizeButtonMetrics minimize_button_metrics_;
 
-  scoped_ptr<BrowserWindowPropertyManager> browser_window_property_manager_;
+  std::unique_ptr<BrowserWindowPropertyManager>
+      browser_window_property_manager_;
 
   // The wrapped system menu itself.
-  scoped_ptr<views::NativeMenuWin> system_menu_;
+  std::unique_ptr<views::NativeMenuWin> system_menu_;
 
   // Necessary to avoid corruption on NC paint in Aero mode.
   bool did_gdi_clear_;

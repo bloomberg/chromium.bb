@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 class ConfirmBubbleModel;
 
@@ -19,14 +19,14 @@ class ConfirmBubbleModel;
  @private
   NSView* parent_;  // weak
   CGPoint origin_;
-  scoped_ptr<ConfirmBubbleModel> model_;
+  std::unique_ptr<ConfirmBubbleModel> model_;
 }
 
 // Creates a ConfirmBubbleController object. The ConfirmBubbleController
 // controller takes the ownership of the passed-in ConfirmBubbleModel.
 - (id)initWithParent:(NSView*)parent
               origin:(CGPoint)origin
-               model:(scoped_ptr<ConfirmBubbleModel>)model;
+               model:(std::unique_ptr<ConfirmBubbleModel>)model;
 
 // Access to the properties of the ConfirmBubbleModel object. These functions
 // also converts C++ types returned by the ConfirmBubbleModel object to

@@ -337,7 +337,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
   views::Widget* widget_;
   views::View* root_view_;
   OBFVL* layout_manager_;
-  scoped_ptr<TestLayoutDelegate> delegate_;
+  std::unique_ptr<TestLayoutDelegate> delegate_;
 
   // Widgets:
   views::ImageButton* minimize_button_;

@@ -198,7 +198,7 @@ void NetInternalsTest::MessageHandler::GetTestServerURL(
   std::string path;
   ASSERT_TRUE(list_value->GetString(0, &path));
   GURL url = net_internals_test_->embedded_test_server()->GetURL(path);
-  scoped_ptr<base::Value> url_value(new base::StringValue(url.spec()));
+  std::unique_ptr<base::Value> url_value(new base::StringValue(url.spec()));
   RunJavascriptCallback(url_value.get());
 }
 
@@ -286,10 +286,10 @@ void NetInternalsTest::MessageHandler::GetNetLogFileContents(
   base::ScopedFILE temp_file_handle(base::OpenFile(temp_file, "w"));
   ASSERT_TRUE(temp_file_handle);
 
-  scoped_ptr<base::Value> constants(net_log::ChromeNetLog::GetConstants(
+  std::unique_ptr<base::Value> constants(net_log::ChromeNetLog::GetConstants(
       base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
       chrome::GetChannelString()));
-  scoped_ptr<net::WriteToFileNetLogObserver> net_log_logger(
+  std::unique_ptr<net::WriteToFileNetLogObserver> net_log_logger(
       new net::WriteToFileNetLogObserver());
   net_log_logger->StartObserving(g_browser_process->net_log(),
                                  std::move(temp_file_handle), constants.get(),
@@ -307,7 +307,7 @@ void NetInternalsTest::MessageHandler::GetNetLogFileContents(
   ASSERT_TRUE(base::ReadFileToString(temp_file, &log_contents));
   ASSERT_GT(log_contents.length(), 0u);
 
-  scoped_ptr<base::Value> log_contents_value(
+  std::unique_ptr<base::Value> log_contents_value(
       new base::StringValue(log_contents));
   RunJavascriptCallback(log_contents_value.get());
 }

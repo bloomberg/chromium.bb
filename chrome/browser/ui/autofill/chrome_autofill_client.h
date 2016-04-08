@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_CHROME_AUTOFILL_CLIENT_H_
 #define CHROME_BROWSER_UI_AUTOFILL_CHROME_AUTOFILL_CLIENT_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
@@ -60,7 +60,7 @@ class ChromeAutofillClient
                                     const base::Closure& callback) override;
   void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
-      scoped_ptr<base::DictionaryValue> legal_message,
+      std::unique_ptr<base::DictionaryValue> legal_message,
       const base::Closure& callback) override;
   void LoadRiskData(
       const base::Callback<void(const std::string&)>& callback) override;
@@ -122,7 +122,7 @@ class ChromeAutofillClient
   content::RenderFrameHost* last_rfh_to_rac_;
 
   // The identity provider, used for Payments integration.
-  scoped_ptr<IdentityProvider> identity_provider_;
+  std::unique_ptr<IdentityProvider> identity_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAutofillClient);
 };

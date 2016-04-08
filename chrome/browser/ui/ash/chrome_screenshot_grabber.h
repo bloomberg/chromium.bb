@@ -58,7 +58,7 @@ class ChromeScreenshotGrabber : public ash::ScreenshotDelegate,
   void SetProfileForTest(Profile* profile);
   Profile* GetProfile();
 
-  scoped_ptr<ui::ScreenshotGrabber> screenshot_grabber_;
+  std::unique_ptr<ui::ScreenshotGrabber> screenshot_grabber_;
   Profile* profile_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeScreenshotGrabber);

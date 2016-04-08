@@ -34,7 +34,7 @@ bool HasDefaultNetworkProxyConfigured() {
   if (!network)
     return false;
   onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
-  scoped_ptr<ProxyConfigDictionary> proxy_dict =
+  std::unique_ptr<ProxyConfigDictionary> proxy_dict =
       proxy_config::GetProxyConfigForNetwork(
           NULL, g_browser_process->local_state(), *network, &onc_source);
   ProxyPrefs::ProxyMode mode;

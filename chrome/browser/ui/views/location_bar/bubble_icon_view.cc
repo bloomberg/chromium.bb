@@ -129,7 +129,8 @@ void BubbleIconView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   image_->SetPaintToLayer(false);
 }
 
-scoped_ptr<views::InkDropHover> BubbleIconView::CreateInkDropHover() const {
+std::unique_ptr<views::InkDropHover> BubbleIconView::CreateInkDropHover()
+    const {
   // BubbleIconView views don't show hover effect.
   return nullptr;
 }

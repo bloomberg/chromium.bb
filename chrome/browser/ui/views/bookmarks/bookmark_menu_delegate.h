@@ -201,7 +201,7 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
   bookmarks::BookmarkNodeData drop_data_;
 
   // Used when a context menu is shown.
-  scoped_ptr<BookmarkContextMenu> context_menu_;
+  std::unique_ptr<BookmarkContextMenu> context_menu_;
 
   // If non-NULL this is the |parent| passed to Init and is NOT owned by us.
   views::MenuItemView* parent_menu_item_;

@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_UI_LIBGTK2UI_GTK2_UI_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal.h"
 #include "chrome/browser/ui/libgtk2ui/libgtk2ui_export.h"
@@ -54,7 +54,7 @@ class Gtk2UI : public views::LinuxUI {
   void ResetStyle();
 
   // ui::LinuxInputMethodContextFactory:
-  scoped_ptr<ui::LinuxInputMethodContext> CreateInputMethodContext(
+  std::unique_ptr<ui::LinuxInputMethodContext> CreateInputMethodContext(
       ui::LinuxInputMethodContextDelegate* delegate,
       bool is_simple) const override;
 
@@ -92,14 +92,14 @@ class Gtk2UI : public views::LinuxUI {
   void SetDownloadCount(int count) const override;
   void SetProgressFraction(float percentage) const override;
   bool IsStatusIconSupported() const override;
-  scoped_ptr<views::StatusIconLinux> CreateLinuxStatusIcon(
+  std::unique_ptr<views::StatusIconLinux> CreateLinuxStatusIcon(
       const gfx::ImageSkia& image,
       const base::string16& tool_tip) const override;
   gfx::Image GetIconForContentType(const std::string& content_type,
                                    int size) const override;
-  scoped_ptr<views::Border> CreateNativeBorder(
+  std::unique_ptr<views::Border> CreateNativeBorder(
       views::LabelButton* owning_button,
-      scoped_ptr<views::LabelButtonBorder> border) override;
+      std::unique_ptr<views::LabelButtonBorder> border) override;
   void AddWindowButtonOrderObserver(
       views::WindowButtonOrderObserver* observer) override;
   void RemoveWindowButtonOrderObserver(
@@ -204,7 +204,7 @@ class Gtk2UI : public views::LinuxUI {
 #if defined(USE_GCONF)
   // Currently, the only source of window button configuration. This will
   // change if we ever have to support XFCE's configuration system or KDE's.
-  scoped_ptr<GConfListener> gconf_listener_;
+  std::unique_ptr<GConfListener> gconf_listener_;
 #endif  // defined(USE_GCONF)
 
   // If either of these vectors are non-empty, they represent the current
@@ -212,7 +212,7 @@ class Gtk2UI : public views::LinuxUI {
   std::vector<views::FrameButton> leading_buttons_;
   std::vector<views::FrameButton> trailing_buttons_;
 
-  scoped_ptr<Gtk2KeyBindingsHandler> key_bindings_handler_;
+  std::unique_ptr<Gtk2KeyBindingsHandler> key_bindings_handler_;
 
   // Objects to notify when the window frame button order changes.
   base::ObserverList<views::WindowButtonOrderObserver> observer_list_;

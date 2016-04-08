@@ -180,8 +180,8 @@ class ConstrainedWebDialogDelegateViewMac :
     return !max_size_.IsEmpty();
   }
 
-  scoped_ptr<ConstrainedWebDialogDelegateMac> impl_;
-  scoped_ptr<ConstrainedWindowMac> constrained_window_;
+  std::unique_ptr<ConstrainedWebDialogDelegateMac> impl_;
+  std::unique_ptr<ConstrainedWindowMac> constrained_window_;
   base::scoped_nsobject<NSWindow> window_;
 
   // Minimum and maximum sizes to determine dialog bounds for auto-resizing.

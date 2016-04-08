@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FIND_BAR_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_FIND_BAR_VIEW_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/dropdown_bar_view.h"
 #include "ui/views/controls/button/button.h"
@@ -132,7 +133,7 @@ class FindBarView : public DropdownBarView,
 
   // The controls in the window.
   views::Textfield* find_text_;
-  scoped_ptr<views::Painter> find_text_border_;
+  std::unique_ptr<views::Painter> find_text_border_;
   views::Label* match_count_text_;
   views::View* focus_forwarder_view_;
   views::Separator* separator_;

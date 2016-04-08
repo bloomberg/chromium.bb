@@ -42,7 +42,7 @@ class WebContents;
   content::WebContents* hungContents_;
 
   // Observes |hungContents_| in case it closes while the panel is up.
-  scoped_ptr<HungRendererWebContentsObserverBridge> hungContentsObserver_;
+  std::unique_ptr<HungRendererWebContentsObserverBridge> hungContentsObserver_;
 
   // Backing data for |tableView_|.  Titles of each WebContents that
   // shares a renderer process with |hungContents_|.

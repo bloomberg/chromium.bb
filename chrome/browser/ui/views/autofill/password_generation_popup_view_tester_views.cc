@@ -9,9 +9,9 @@
 
 namespace autofill {
 
-scoped_ptr<PasswordGenerationPopupViewTester>
+std::unique_ptr<PasswordGenerationPopupViewTester>
 PasswordGenerationPopupViewTester::For(PasswordGenerationPopupView* view) {
-  return scoped_ptr<PasswordGenerationPopupViewTester>(
+  return std::unique_ptr<PasswordGenerationPopupViewTester>(
       new PasswordGenerationPopupViewTesterViews(
           static_cast<PasswordGenerationPopupViewViews*>(view)));
 }

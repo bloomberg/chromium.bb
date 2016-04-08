@@ -175,7 +175,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 - (void)hideAllWindowsForApplication:(NSApplication*)app
                         withDuration:(NSTimeInterval)duration;
 // Returns the Accelerator for the Quit menu item.
-+ (scoped_ptr<ui::PlatformAcceleratorCocoa>)quitAccelerator;
++ (std::unique_ptr<ui::PlatformAcceleratorCocoa>)quitAccelerator;
 @end
 
 ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
@@ -226,7 +226,7 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
   ui::PlatformAcceleratorCocoa eventAccelerator(
       [event charactersIgnoringModifiers],
       [event modifierFlags] & NSDeviceIndependentModifierFlagsMask);
-  scoped_ptr<ui::PlatformAcceleratorCocoa> quitAccelerator(
+  std::unique_ptr<ui::PlatformAcceleratorCocoa> quitAccelerator(
       [self quitAccelerator]);
   return quitAccelerator->Equals(eventAccelerator);
 }
@@ -363,7 +363,8 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
 // key combination for quit. It then gets the modifiers and builds a string
 // to display them.
 + (NSString*)keyCommandString {
-  scoped_ptr<ui::PlatformAcceleratorCocoa> accelerator([self quitAccelerator]);
+  std::unique_ptr<ui::PlatformAcceleratorCocoa> accelerator(
+      [self quitAccelerator]);
   return [[self class] keyCombinationForAccelerator:*accelerator];
 }
 
@@ -388,20 +389,20 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
 // This looks at the Main Menu and determines what the user has set as the
 // key combination for quit. It then gets the modifiers and builds an object
 // to hold the data.
-+ (scoped_ptr<ui::PlatformAcceleratorCocoa>)quitAccelerator {
++ (std::unique_ptr<ui::PlatformAcceleratorCocoa>)quitAccelerator {
   NSMenu* mainMenu = [NSApp mainMenu];
   // Get the application menu (i.e. Chromium).
   NSMenu* appMenu = [[mainMenu itemAtIndex:0] submenu];
   for (NSMenuItem* item in [appMenu itemArray]) {
     // Find the Quit item.
     if ([item action] == @selector(terminate:)) {
-      return scoped_ptr<ui::PlatformAcceleratorCocoa>(
+      return std::unique_ptr<ui::PlatformAcceleratorCocoa>(
           new ui::PlatformAcceleratorCocoa([item keyEquivalent],
                                            [item keyEquivalentModifierMask]));
     }
   }
   // Default to Cmd+Q.
-  return scoped_ptr<ui::PlatformAcceleratorCocoa>(
+  return std::unique_ptr<ui::PlatformAcceleratorCocoa>(
       new ui::PlatformAcceleratorCocoa(@"q", NSCommandKeyMask));
 }
 

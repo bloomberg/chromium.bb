@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/certificate_selector.h"
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/views/certificate_selector.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
@@ -32,7 +34,7 @@ class TestCertificateSelector : public chrome::CertificateSelector {
   }
 
   void Init() {
-    InitWithText(make_scoped_ptr(
+    InitWithText(base::WrapUnique(
         new views::Label(base::ASCIIToUTF16("some arbitrary text"))));
   }
 

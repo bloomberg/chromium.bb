@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/screens/update_model.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"

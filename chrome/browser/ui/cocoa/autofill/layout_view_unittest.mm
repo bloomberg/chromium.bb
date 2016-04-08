@@ -17,8 +17,8 @@ class LayoutViewTest : public ui::CocoaTest {
   LayoutViewTest() {
     CocoaTest::SetUp();
     view_.reset([[LayoutView alloc] initWithFrame:NSZeroRect]);
-    [view_ setLayoutManager:
-        scoped_ptr<SimpleGridLayout>(new SimpleGridLayout(view_))];
+    [view_ setLayoutManager:std::unique_ptr<SimpleGridLayout>(
+                                new SimpleGridLayout(view_))];
     layout_ = [view_ layoutManager];
     [[test_window() contentView] addSubview:view_];
   }

@@ -598,8 +598,8 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
   }
 
   base::scoped_nsobject<LayoutView> view([[LayoutView alloc] init]);
-  [view setLayoutManager:
-      scoped_ptr<SimpleGridLayout>(new SimpleGridLayout(view))];
+  [view setLayoutManager:std::unique_ptr<SimpleGridLayout>(
+                             new SimpleGridLayout(view))];
   SimpleGridLayout* layout = [view layoutManager];
 
   int column_set_id = 0;

@@ -22,7 +22,7 @@ class BluetoothPairingUITest : public WebUIBrowserTest {
 
  private:
   scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
-  scoped_ptr<device::MockBluetoothDevice> mock_device_;
+  std::unique_ptr<device::MockBluetoothDevice> mock_device_;
 };
 
 BluetoothPairingUITest::BluetoothPairingUITest() {}

@@ -6,12 +6,13 @@
 #define CHROME_BROWSER_UI_COCOA_SSL_CLIENT_CERTIFICATE_SELECTOR_COCOA_H_
 
 #import <Cocoa/Cocoa.h>
+
+#include <memory>
 #include <vector>
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
@@ -33,9 +34,9 @@ class SSLClientAuthObserverCocoaBridge;
   // The corresponding list of certificates.
   std::vector<scoped_refptr<net::X509Certificate> > certificates_;
   // A C++ object to bridge SSLClientAuthObserver notifications to us.
-  scoped_ptr<SSLClientAuthObserverCocoaBridge> observer_;
+  std::unique_ptr<SSLClientAuthObserverCocoaBridge> observer_;
   base::scoped_nsobject<SFChooseIdentityPanel> panel_;
-  scoped_ptr<ConstrainedWindowMac> constrainedWindow_;
+  std::unique_ptr<ConstrainedWindowMac> constrainedWindow_;
   base::scoped_nsobject<NSWindow> overlayWindow_;
   BOOL closePending_;
   // A copy of the sheet's frame used to restore on show.
@@ -52,8 +53,9 @@ class SSLClientAuthObserverCocoaBridge;
 
 - (id)initWithBrowserContext:(const content::BrowserContext*)browserContext
              certRequestInfo:(net::SSLCertRequestInfo*)certRequestInfo
-                    delegate:(scoped_ptr<content::ClientCertificateDelegate>)
-                                 delegate;
+                    delegate:
+                        (std::unique_ptr<content::ClientCertificateDelegate>)
+                            delegate;
 - (void)displayForWebContents:(content::WebContents*)webContents;
 - (void)closeWebContentsModalDialog;
 

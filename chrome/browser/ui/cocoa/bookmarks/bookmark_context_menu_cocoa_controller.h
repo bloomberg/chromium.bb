@@ -7,8 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 
 @class BookmarkBarController;
 class BookmarkContextMenuController;
@@ -30,7 +31,7 @@ class BookmarkNode;
   BookmarkBarController* bookmarkBarController_;
 
   // Helper for receiving C++ callbacks.
-  scoped_ptr<BookmarkContextMenuDelegateBridge> bridge_;
+  std::unique_ptr<BookmarkContextMenuDelegateBridge> bridge_;
 
   // The current |bookmarkNode_| for which |bookmarkContextMenuController_| and
   // |menuController_| are initialized. Weak, owned by the BookmarkModel.
@@ -38,7 +39,7 @@ class BookmarkNode;
 
   // The cross-platform BookmarkContextMenuController, containing the logic for
   // which items and corresponding actions exist in the menu.
-  scoped_ptr<BookmarkContextMenuController> bookmarkContextMenuController_;
+  std::unique_ptr<BookmarkContextMenuController> bookmarkContextMenuController_;
 
   // Controller responsible for creating a Cocoa NSMenu from the cross-platform
   // SimpleMenuModel owned by the |bookmarkContextMenuController_|.

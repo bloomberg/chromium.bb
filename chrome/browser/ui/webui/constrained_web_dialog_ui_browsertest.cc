@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
   ConstrainedWebDialogDelegate* dialog_delegate =
       ShowConstrainedWebDialog(browser()->profile(), delegate, web_contents);
   ASSERT_TRUE(dialog_delegate);
-  scoped_ptr<WebContents> new_tab(dialog_delegate->GetWebContents());
+  std::unique_ptr<WebContents> new_tab(dialog_delegate->GetWebContents());
   ASSERT_TRUE(new_tab.get());
   ASSERT_TRUE(IsShowingWebContentsModalDialog(web_contents));
 

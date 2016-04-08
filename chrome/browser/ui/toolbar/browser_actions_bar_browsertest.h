@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_BROWSER_ACTIONS_BAR_BROWSERTEST_H_
 #define CHROME_BROWSER_UI_TOOLBAR_BROWSER_ACTIONS_BAR_BROWSERTEST_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "extensions/common/feature_switch.h"
 
@@ -50,10 +51,10 @@ class BrowserActionsBarBrowserTest : public ExtensionBrowserTest {
 
  protected:
   // Enable or disable the feature redesign switch.
-  scoped_ptr<extensions::FeatureSwitch::ScopedOverride> override_redesign_;
+  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride> override_redesign_;
 
  private:
-  scoped_ptr<BrowserActionTestUtil> browser_actions_bar_;
+  std::unique_ptr<BrowserActionTestUtil> browser_actions_bar_;
 
   // The associated toolbar model, weak.
   ToolbarActionsModel* toolbar_model_;

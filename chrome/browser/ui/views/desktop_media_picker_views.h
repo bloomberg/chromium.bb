@@ -26,7 +26,7 @@ class DesktopMediaListView : public views::View,
                              public DesktopMediaListObserver {
  public:
   DesktopMediaListView(DesktopMediaPickerDialogView* parent,
-                       scoped_ptr<DesktopMediaList> media_list);
+                       std::unique_ptr<DesktopMediaList> media_list);
   ~DesktopMediaListView() override;
 
   void StartUpdating(content::DesktopMediaID dialog_window_id);
@@ -59,7 +59,7 @@ class DesktopMediaListView : public views::View,
   void AcceptSelection();
 
   DesktopMediaPickerDialogView* parent_;
-  scoped_ptr<DesktopMediaList> media_list_;
+  std::unique_ptr<DesktopMediaList> media_list_;
   base::WeakPtrFactory<DesktopMediaListView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopMediaListView);
@@ -119,7 +119,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView {
                                DesktopMediaPickerViews* parent,
                                const base::string16& app_name,
                                const base::string16& target_name,
-                               scoped_ptr<DesktopMediaList> media_list,
+                               std::unique_ptr<DesktopMediaList> media_list,
                                bool request_audio);
   ~DesktopMediaPickerDialogView() override;
 
@@ -173,7 +173,7 @@ class DesktopMediaPickerViews : public DesktopMediaPicker {
             gfx::NativeWindow parent,
             const base::string16& app_name,
             const base::string16& target_name,
-            scoped_ptr<DesktopMediaList> media_list,
+            std::unique_ptr<DesktopMediaList> media_list,
             bool request_audio,
             const DoneCallback& done_callback) override;
 

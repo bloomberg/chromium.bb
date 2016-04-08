@@ -150,7 +150,7 @@ void PowerHandler::UpdatePowerSources() {
 
   base::ListValue sources_list;
   for (const auto& source : status->GetPowerSources()) {
-    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetString("id", source.id);
     dict->SetInteger("type", source.type);
     dict->SetString("description",

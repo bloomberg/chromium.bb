@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_INLINE_LOGIN_HANDLER_CHROMEOS_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_INLINE_LOGIN_HANDLER_CHROMEOS_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
 
 namespace chromeos {
@@ -25,8 +26,8 @@ class InlineLoginHandlerChromeOS : public ::InlineLoginHandler {
   // InlineLoginHandler overrides:
   void CompleteLogin(const base::ListValue* args) override;
 
-  scoped_ptr<InlineLoginUIOAuth2Delegate> oauth2_delegate_;
-  scoped_ptr<chromeos::OAuth2TokenFetcher> oauth2_token_fetcher_;
+  std::unique_ptr<InlineLoginUIOAuth2Delegate> oauth2_delegate_;
+  std::unique_ptr<chromeos::OAuth2TokenFetcher> oauth2_token_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(InlineLoginHandlerChromeOS);
 };

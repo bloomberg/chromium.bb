@@ -145,7 +145,7 @@ InstructionView::InstructionView(const base::string16& text,
   key_name_->SetLayoutManager(key_name_layout);
   key_name_->AddChildView(key_name_label_);
   // The key name has a border around it.
-  scoped_ptr<views::Border> border(views::Border::CreateRoundedRectBorder(
+  std::unique_ptr<views::Border> border(views::Border::CreateRoundedRectBorder(
       kKeyNameBorderPx, kKeyNameCornerRadius, foreground_color));
   key_name_->SetBorder(std::move(border));
   AddChildView(key_name_);
@@ -253,7 +253,7 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
           ? SK_ColorWHITE
           : theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor);
 
-  scoped_ptr<views::BubbleBorder> bubble_border(new views::BubbleBorder(
+  std::unique_ptr<views::BubbleBorder> bubble_border(new views::BubbleBorder(
       views::BubbleBorder::NONE, shadow_type, background_color));
   set_background(new views::BubbleBackground(bubble_border.get()));
   SetBorder(std::move(bubble_border));

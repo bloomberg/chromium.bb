@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ui/webui/settings/people_handler.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -294,13 +294,13 @@ class PeopleHandlerTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
   Profile* profile_;
   ProfileSyncServiceMock* mock_pss_;
   GoogleServiceAuthError error_;
   SigninManagerBase* mock_signin_;
   content::TestWebUI web_ui_;
-  scoped_ptr<TestingPeopleHandler> handler_;
+  std::unique_ptr<TestingPeopleHandler> handler_;
 };
 
 class PeopleHandlerFirstSigninTest : public PeopleHandlerTest {

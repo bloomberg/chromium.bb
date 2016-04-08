@@ -115,12 +115,12 @@ class OmniboxResultView : public views::View,
                      int max_width) const;
 
   // Creates a RenderText with given |text| and rendering defaults.
-  scoped_ptr<gfx::RenderText> CreateRenderText(
+  std::unique_ptr<gfx::RenderText> CreateRenderText(
       const base::string16& text) const;
 
   // Creates a RenderText with default rendering for the given |text|. The
   // |classifications| and |force_dim| are used to style the text.
-  scoped_ptr<gfx::RenderText> CreateClassifiedRenderText(
+  std::unique_ptr<gfx::RenderText> CreateClassifiedRenderText(
       const base::string16& text,
       const ACMatchClassifications& classifications,
       bool force_dim) const;
@@ -169,7 +169,7 @@ class OmniboxResultView : public views::View,
   int GetContentLineHeight() const;
 
   // Creates a RenderText with text and styling from the image line.
-  scoped_ptr<gfx::RenderText> CreateAnswerLine(
+  std::unique_ptr<gfx::RenderText> CreateAnswerLine(
       const SuggestionAnswer::ImageLine& line,
       gfx::FontList font_list);
 
@@ -208,7 +208,7 @@ class OmniboxResultView : public views::View,
 
   // A context used for mirroring regions.
   class MirroringContext;
-  scoped_ptr<MirroringContext> mirroring_context_;
+  std::unique_ptr<MirroringContext> mirroring_context_;
 
   AutocompleteMatch match_;
 
@@ -216,20 +216,20 @@ class OmniboxResultView : public views::View,
   gfx::Rect icon_bounds_;
 
   gfx::Rect keyword_text_bounds_;
-  scoped_ptr<views::ImageView> keyword_icon_;
+  std::unique_ptr<views::ImageView> keyword_icon_;
 
-  scoped_ptr<gfx::SlideAnimation> animation_;
+  std::unique_ptr<gfx::SlideAnimation> animation_;
 
   // If the answer has an icon, cache the image.
   gfx::ImageSkia answer_image_;
 
   // We preserve these RenderTexts so that we won't recreate them on every call
   // to GetMatchContentsWidth() or OnPaint().
-  mutable scoped_ptr<gfx::RenderText> contents_rendertext_;
-  mutable scoped_ptr<gfx::RenderText> description_rendertext_;
-  mutable scoped_ptr<gfx::RenderText> separator_rendertext_;
-  mutable scoped_ptr<gfx::RenderText> keyword_contents_rendertext_;
-  mutable scoped_ptr<gfx::RenderText> keyword_description_rendertext_;
+  mutable std::unique_ptr<gfx::RenderText> contents_rendertext_;
+  mutable std::unique_ptr<gfx::RenderText> description_rendertext_;
+  mutable std::unique_ptr<gfx::RenderText> separator_rendertext_;
+  mutable std::unique_ptr<gfx::RenderText> keyword_contents_rendertext_;
+  mutable std::unique_ptr<gfx::RenderText> keyword_description_rendertext_;
 
   mutable int separator_width_;
 

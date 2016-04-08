@@ -7,8 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "components/bookmarks/browser/bookmark_expanded_state_tracker.h"
 
@@ -49,7 +50,7 @@ class BookmarkModel;
   // there should only ever be one.
   base::scoped_nsobject<NSArray> tableSelectionPaths_;
   // C++ bridge object that observes the BookmarkModel for me.
-  scoped_ptr<BookmarkEditorBaseControllerBridge> observer_;
+  std::unique_ptr<BookmarkEditorBaseControllerBridge> observer_;
 }
 
 @property(nonatomic, copy) NSString* initialName;

@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_MESSAGE_BUBBLE_BROWSERTEST_H_
 #define CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_MESSAGE_BUBBLE_BROWSERTEST_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/toolbar/browser_actions_bar_browsertest.h"
 
 class ExtensionMessageBubbleBrowserTest
@@ -63,7 +64,7 @@ class ExtensionMessageBubbleBrowserTest
   void TestBubbleShowsOnStartup();
 
  private:
-  scoped_ptr<extensions::FeatureSwitch::ScopedOverride>
+  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride>
       dev_mode_bubble_override_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleBrowserTest);

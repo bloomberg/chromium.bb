@@ -160,8 +160,8 @@ class BrowserTabStripController::TabContextMenuContents
   }
 
  private:
-  scoped_ptr<TabMenuModel> model_;
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<TabMenuModel> model_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   // The tab we're showing a menu for.
   Tab* tab_;

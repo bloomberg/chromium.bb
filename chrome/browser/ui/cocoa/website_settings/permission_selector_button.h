@@ -7,8 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
 #include "components/content_settings/core/common/content_settings.h"
 
@@ -16,7 +17,7 @@
 
 @interface PermissionSelectorButton : NSPopUpButton {
  @private
-  scoped_ptr<PermissionMenuModel> menuModel_;
+  std::unique_ptr<PermissionMenuModel> menuModel_;
   base::scoped_nsobject<MenuController> menuController_;
 }
 

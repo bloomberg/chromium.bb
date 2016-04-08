@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,12 +25,11 @@ OmniboxProvider::OmniboxProvider(Profile* profile,
     : profile_(profile),
       list_controller_(list_controller),
       controller_(new AutocompleteController(
-          make_scoped_ptr(new ChromeAutocompleteProviderClient(profile)),
+          base::WrapUnique(new ChromeAutocompleteProviderClient(profile)),
           this,
           AutocompleteClassifier::kDefaultOmniboxProviders &
               ~AutocompleteProvider::TYPE_ZERO_SUGGEST)),
-      is_voice_query_(false) {
-}
+      is_voice_query_(false) {}
 
 OmniboxProvider::~OmniboxProvider() {}
 
@@ -54,7 +54,7 @@ void OmniboxProvider::PopulateFromACResult(const AutocompleteResult& result) {
     if (!it->destination_url.is_valid())
       continue;
 
-    Add(scoped_ptr<SearchResult>(new OmniboxResult(
+    Add(std::unique_ptr<SearchResult>(new OmniboxResult(
         profile_, list_controller_, controller_.get(), is_voice_query_, *it)));
   }
 }

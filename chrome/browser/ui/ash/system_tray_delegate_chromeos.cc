@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
 
 #include <stddef.h>
+
 #include <algorithm>
 #include <set>
 #include <string>
@@ -37,6 +38,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -167,10 +169,10 @@ void BluetoothDeviceConnectError(
     device::BluetoothDevice::ConnectErrorCode error_code) {
 }
 
-scoped_ptr<ash::CastConfigDelegate> CreateCastConfigDelegate() {
+std::unique_ptr<ash::CastConfigDelegate> CreateCastConfigDelegate() {
   if (CastConfigDelegateMediaRouter::IsEnabled())
-    return make_scoped_ptr(new CastConfigDelegateMediaRouter());
-  return make_scoped_ptr(new CastConfigDelegateChromeos());
+    return base::WrapUnique(new CastConfigDelegateMediaRouter());
+  return base::WrapUnique(new CastConfigDelegateChromeos());
 }
 
 void ShowSettingsSubPageForActiveUser(const std::string& sub_page) {
@@ -699,7 +701,7 @@ void SystemTrayDelegateChromeOS::GetAvailableIMEList(ash::IMEInfoList* list) {
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
   input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
-  scoped_ptr<input_method::InputMethodDescriptors> ime_descriptors(
+  std::unique_ptr<input_method::InputMethodDescriptors> ime_descriptors(
       manager->GetActiveIMEState()->GetActiveInputMethods());
   std::string current =
       manager->GetActiveIMEState()->GetCurrentInputMethod().id();
@@ -796,7 +798,7 @@ SystemTrayDelegateChromeOS::GetVolumeControlDelegate() const {
 }
 
 void SystemTrayDelegateChromeOS::SetVolumeControlDelegate(
-    scoped_ptr<ash::VolumeControlDelegate> delegate) {
+    std::unique_ptr<ash::VolumeControlDelegate> delegate) {
   volume_control_delegate_.swap(delegate);
 }
 
@@ -1213,7 +1215,7 @@ void SystemTrayDelegateChromeOS::DeviceRemoved(
 }
 
 void SystemTrayDelegateChromeOS::OnStartBluetoothDiscoverySession(
-    scoped_ptr<device::BluetoothDiscoverySession> discovery_session) {
+    std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
   // If the discovery session was returned after a request to stop discovery
   // (e.g. the user dismissed the Bluetooth detailed view before the call
   // returned), don't claim the discovery session and let it clean up.

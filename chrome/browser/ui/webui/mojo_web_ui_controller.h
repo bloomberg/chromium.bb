@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_MOJO_WEB_UI_CONTROLLER_H_
 #define CHROME_BROWSER_UI_WEBUI_MOJO_WEB_UI_CONTROLLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/mojo_web_ui_handler.h"
 #include "content/public/browser/render_frame_host.h"

@@ -72,7 +72,7 @@ class ExtensionAppModelBuilder : public AppListModelBuilder,
                        size_t to_index,
                        app_list::AppListItem* item) override;
 
-  scoped_ptr<ExtensionAppItem> CreateAppItem(
+  std::unique_ptr<ExtensionAppItem> CreateAppItem(
       const std::string& extension_id,
       const std::string& extension_name,
       const gfx::ImageSkia& installing_icon,

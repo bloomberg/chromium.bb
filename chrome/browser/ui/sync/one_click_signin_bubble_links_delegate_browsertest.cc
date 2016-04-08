@@ -12,7 +12,7 @@ typedef InProcessBrowserTest OneClickSigninBubbleLinksDelegateBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleLinksDelegateBrowserTest,
                        AdvancedLink) {
-  scoped_ptr<OneClickSigninBubbleDelegate> delegate_;
+  std::unique_ptr<OneClickSigninBubbleDelegate> delegate_;
   delegate_.reset(new OneClickSigninBubbleLinksDelegate(browser()));
 
   int starting_tab_count = browser()->tab_strip_model()->count();
@@ -26,7 +26,7 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleLinksDelegateBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleLinksDelegateBrowserTest,
                        LearnMoreLink) {
-  scoped_ptr<OneClickSigninBubbleDelegate> delegate_;
+  std::unique_ptr<OneClickSigninBubbleDelegate> delegate_;
   delegate_.reset(new OneClickSigninBubbleLinksDelegate(browser()));
 
   int starting_tab_count = browser()->tab_strip_model()->count();

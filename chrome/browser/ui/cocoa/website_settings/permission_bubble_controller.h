@@ -27,7 +27,7 @@ class PermissionBubbleRequest;
   Browser* browser_;  // Weak.
 
   // Delegate that receives menu events on behalf of this.
-  scoped_ptr<ui::SimpleMenuModel::Delegate> menuDelegate_;
+  std::unique_ptr<ui::SimpleMenuModel::Delegate> menuDelegate_;
 
   // Bridge to the C++ class that created this object.
   PermissionBubbleCocoa* bridge_;  // Weak.

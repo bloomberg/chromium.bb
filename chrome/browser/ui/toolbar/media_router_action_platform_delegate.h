@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_MEDIA_ROUTER_ACTION_PLATFORM_DELEGATE_H_
 #define CHROME_BROWSER_UI_TOOLBAR_MEDIA_ROUTER_ACTION_PLATFORM_DELEGATE_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 class Browser;
 
@@ -16,7 +16,8 @@ class MediaRouterActionPlatformDelegate {
 
   // Returns a created MediaRouterActionPlatformDelegate. This is defined in the
   // platform-specific implementation for the class.
-  static scoped_ptr<MediaRouterActionPlatformDelegate> Create(Browser* browser);
+  static std::unique_ptr<MediaRouterActionPlatformDelegate> Create(
+      Browser* browser);
 
   // Closes the overflow menu, if it was open. Returns whether or not the
   // overflow menu was closed.

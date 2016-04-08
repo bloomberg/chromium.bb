@@ -164,7 +164,7 @@ class ToolbarActionViewInteractiveUITest : public ExtensionBrowserTest {
 
  private:
   // Override the extensions-action-redesign switch.
-  scoped_ptr<extensions::FeatureSwitch::ScopedOverride> feature_override_;
+  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride> feature_override_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionViewInteractiveUITest);
 };

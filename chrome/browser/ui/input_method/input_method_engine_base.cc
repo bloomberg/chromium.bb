@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/input_method/input_method_engine_base.h"
 
+#include <memory>
+
 #undef FocusIn
 #undef FocusOut
 #undef RootWindow
@@ -11,7 +13,6 @@
 #include <map>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -168,7 +169,7 @@ InputMethodEngineBase::InputMethodEngineBase()
 InputMethodEngineBase::~InputMethodEngineBase() {}
 
 void InputMethodEngineBase::Initialize(
-    scoped_ptr<InputMethodEngineBase::Observer> observer,
+    std::unique_ptr<InputMethodEngineBase::Observer> observer,
     const char* extension_id,
     Profile* profile) {
   DCHECK(observer) << "Observer must not be null.";

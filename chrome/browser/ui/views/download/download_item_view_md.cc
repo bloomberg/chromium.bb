@@ -16,6 +16,7 @@
 #include "base/i18n/rtl.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -472,19 +473,20 @@ void DownloadItemViewMd::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   layer()->SetMasksToBounds(true);
 }
 
-scoped_ptr<views::InkDropAnimation> DownloadItemViewMd::CreateInkDropAnimation()
-    const {
-  return make_scoped_ptr(new views::FloodFillInkDropAnimation(
+std::unique_ptr<views::InkDropAnimation>
+DownloadItemViewMd::CreateInkDropAnimation() const {
+  return base::WrapUnique(new views::FloodFillInkDropAnimation(
       size(), ink_drop_delegate_.last_ink_drop_location(),
       color_utils::DeriveDefaultIconColor(GetTextColor())));
 }
 
-scoped_ptr<views::InkDropHover> DownloadItemViewMd::CreateInkDropHover() const {
+std::unique_ptr<views::InkDropHover> DownloadItemViewMd::CreateInkDropHover()
+    const {
   if (IsShowingWarningDialog())
     return nullptr;
 
   gfx::Size size = GetPreferredSize();
-  return make_scoped_ptr(new views::InkDropHover(
+  return base::WrapUnique(new views::InkDropHover(
       size, kInkDropSmallCornerRadius, gfx::Rect(size).CenterPoint(),
       color_utils::DeriveDefaultIconColor(GetTextColor())));
 }
@@ -793,9 +795,8 @@ void DownloadItemViewMd::UpdateColorsFromTheme() {
 
   if (dangerous_download_label_)
     dangerous_download_label_->SetEnabledColor(GetTextColor());
-  SetBorder(make_scoped_ptr(new SeparatorBorder(
-      GetThemeProvider()->GetColor(
-          ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR))));
+  SetBorder(base::WrapUnique(new SeparatorBorder(GetThemeProvider()->GetColor(
+      ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR))));
 }
 
 void DownloadItemViewMd::ShowContextMenuImpl(const gfx::Rect& rect,

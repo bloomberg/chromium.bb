@@ -165,9 +165,9 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 
 // Creates a message bubble with the given |delegate| that is anchored to the
 // given |anchorView|.
-- (ToolbarActionsBarBubbleMac*)createMessageBubble:
-    (scoped_ptr<ToolbarActionsBarBubbleDelegate>)delegate
-    anchorView:(NSView*)anchorView;
+- (ToolbarActionsBarBubbleMac*)
+createMessageBubble:(std::unique_ptr<ToolbarActionsBarBubbleDelegate>)delegate
+         anchorView:(NSView*)anchorView;
 
 // Called when the window for the active bubble is closing, and sets the active
 // bubble to nil.
@@ -217,10 +217,10 @@ class ToolbarActionsBarBridge : public ToolbarActionsBarDelegate {
   void StopAnimating() override;
   int GetChevronWidth() const override;
   void ShowExtensionMessageBubble(
-      scoped_ptr<extensions::ExtensionMessageBubbleController> controller,
+      std::unique_ptr<extensions::ExtensionMessageBubbleController> controller,
       ToolbarActionViewController* anchor_action) override;
   void ShowToolbarActionBubble(
-      scoped_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
 
   // The owning BrowserActionsController; weak.
   BrowserActionsController* controller_;
@@ -293,7 +293,8 @@ int ToolbarActionsBarBridge::GetChevronWidth() const {
 }
 
 void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
-    scoped_ptr<extensions::ExtensionMessageBubbleController> bubble_controller,
+    std::unique_ptr<extensions::ExtensionMessageBubbleController>
+        bubble_controller,
     ToolbarActionViewController* anchor_action) {
   NSView* anchorView = nil;
   BOOL anchoredToAction = NO;
@@ -314,7 +315,7 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
   // okay (but if we ever need to expand, it might need to be reconsidered).
   extensions::ExtensionMessageBubbleController* weak_controller =
       bubble_controller.get();
-  scoped_ptr<ExtensionMessageBubbleBridge> bridge(
+  std::unique_ptr<ExtensionMessageBubbleBridge> bridge(
       new ExtensionMessageBubbleBridge(std::move(bubble_controller),
                                        anchoredToAction));
   ToolbarActionsBarBubbleMac* bubble =
@@ -325,7 +326,7 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 }
 
 void ToolbarActionsBarBridge::ShowToolbarActionBubble(
-      scoped_ptr<ToolbarActionsBarBubbleDelegate> bubble) {
+    std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) {
   NSView* anchorView = nil;
   if (!bubble->GetAnchorActionId().empty()) {
     BrowserActionButton* button =
@@ -595,7 +596,7 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
   if (![self updateContainerVisibility])
     return;  // Container is hidden; no need to update.
 
-  scoped_ptr<ui::NinePartImageIds> highlight;
+  std::unique_ptr<ui::NinePartImageIds> highlight;
   if (toolbarActionsBar_->is_highlighting()) {
     if (toolbarActionsBar_->highlight_type() ==
         ToolbarActionsModel::HIGHLIGHT_INFO)
@@ -1044,9 +1045,9 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
              browser_->window()->GetNativeWindow()] toolbarController];
 }
 
-- (ToolbarActionsBarBubbleMac*)createMessageBubble:
-    (scoped_ptr<ToolbarActionsBarBubbleDelegate>)delegate
-    anchorView:(NSView*)anchorView {
+- (ToolbarActionsBarBubbleMac*)
+createMessageBubble:(std::unique_ptr<ToolbarActionsBarBubbleDelegate>)delegate
+         anchorView:(NSView*)anchorView {
   DCHECK(anchorView);
   DCHECK_GE([buttons_ count], 0u);
   NSPoint anchor = [self popupPointForView:anchorView

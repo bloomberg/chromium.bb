@@ -508,7 +508,8 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
   net::TestURLFetcherFactory url_fetcher_factory_;
   FakeSigninManagerForTesting* signin_manager_;
   FakeProfileOAuth2TokenService* token_service_;
-  scoped_ptr<base::CallbackList<void(content::BrowserContext*)>::Subscription>
+  std::unique_ptr<
+      base::CallbackList<void(content::BrowserContext*)>::Subscription>
       will_create_browser_context_services_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(InlineLoginHelperBrowserTest);
@@ -797,7 +798,7 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
   }
 
   FooWebUIProvider foo_provider_;
-  scoped_ptr<TestChromeWebUIControllerFactory> test_factory_;
+  std::unique_ptr<TestChromeWebUIControllerFactory> test_factory_;
 };
 
 // Make sure that the foo webui handler is working properly and that it gets

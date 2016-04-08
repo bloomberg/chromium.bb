@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_SEARCH_ENGINES_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_SEARCH_ENGINES_HANDLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "ui/base/models/table_model_observer.h"
@@ -42,13 +43,13 @@ class SearchEnginesHandler : public SettingsPageUIHandler,
   void RegisterMessages() override;
 
  private:
-  scoped_ptr<KeywordEditorController> list_controller_;
-  scoped_ptr<EditSearchEngineController> edit_controller_;
+  std::unique_ptr<KeywordEditorController> list_controller_;
+  std::unique_ptr<EditSearchEngineController> edit_controller_;
 
   // Retrieves all search engines and returns the to WebUI.
   void HandleGetSearchEnginesList(const base::ListValue* args);
 
-  scoped_ptr<base::DictionaryValue> GetSearchEnginesList();
+  std::unique_ptr<base::DictionaryValue> GetSearchEnginesList();
 
   // Removes the search engine at the given index. Called from WebUI.
   void HandleRemoveSearchEngine(const base::ListValue* args);

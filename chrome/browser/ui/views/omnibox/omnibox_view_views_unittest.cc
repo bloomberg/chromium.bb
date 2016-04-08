@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
@@ -115,7 +116,7 @@ class OmniboxViewViewsTest : public testing::Test {
   TestingProfile profile_;
   CommandUpdater command_updater_;
   TestingOmniboxEditController omnibox_edit_controller_;
-  scoped_ptr<TestingOmniboxViewViews> omnibox_view_;
+  std::unique_ptr<TestingOmniboxViewViews> omnibox_view_;
 };
 
 // Checks that a single change of the text in the omnibox invokes

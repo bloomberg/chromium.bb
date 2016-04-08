@@ -32,7 +32,7 @@ class PanelDragBrowserTest : public BasePanelBrowserTest {
 
   // Drag |panel| from its origin by the offset |delta|.
   void DragPanelByDelta(Panel* panel, const gfx::Vector2d& delta) {
-    scoped_ptr<NativePanelTesting> panel_testing(
+    std::unique_ptr<NativePanelTesting> panel_testing(
         CreateNativePanelTesting(panel));
     gfx::Point mouse_location(panel->GetBounds().origin());
     panel_testing->PressLeftMouseButtonTitlebar(mouse_location);
@@ -43,7 +43,7 @@ class PanelDragBrowserTest : public BasePanelBrowserTest {
   // Drag |panel| from its origin to |new_mouse_location|.
   void DragPanelToMouseLocation(Panel* panel,
                                 const gfx::Point& new_mouse_location) {
-    scoped_ptr<NativePanelTesting> panel_testing(
+    std::unique_ptr<NativePanelTesting> panel_testing(
         CreateNativePanelTesting(panel));
     gfx::Point mouse_location(panel->GetBounds().origin());
     panel_testing->PressLeftMouseButtonTitlebar(panel->GetBounds().origin());
@@ -187,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragOneDockedPanel) {
   static const int big_delta_y = 30;  // Do not exceed the threshold to detach.
 
   Panel* panel = CreateDockedPanel("1", gfx::Rect(0, 0, 100, 100));
-  scoped_ptr<NativePanelTesting> panel_testing(
+  std::unique_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
   gfx::Rect panel_old_bounds = panel->GetBounds();
 
@@ -279,9 +279,9 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragTwoDockedPanels) {
 
   Panel* panel1 = CreateDockedPanel("1", gfx::Rect(0, 0, 100, 100));
   Panel* panel2 = CreateDockedPanel("2", gfx::Rect(0, 0, 100, 100));
-  scoped_ptr<NativePanelTesting> panel1_testing(
+  std::unique_ptr<NativePanelTesting> panel1_testing(
       CreateNativePanelTesting(panel1));
-  scoped_ptr<NativePanelTesting> panel2_testing(
+  std::unique_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
   gfx::Point position1 = panel1->GetBounds().origin();
   gfx::Point position2 = panel2->GetBounds().origin();
@@ -374,9 +374,9 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragThreeDockedPanels) {
   Panel* panel1 = CreateDockedPanel("1", gfx::Rect(0, 0, 100, 100));
   Panel* panel2 = CreateDockedPanel("2", gfx::Rect(0, 0, 100, 100));
   Panel* panel3 = CreateDockedPanel("3", gfx::Rect(0, 0, 100, 100));
-  scoped_ptr<NativePanelTesting> panel2_testing(
+  std::unique_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
-  scoped_ptr<NativePanelTesting> panel3_testing(
+  std::unique_ptr<NativePanelTesting> panel3_testing(
       CreateNativePanelTesting(panel3));
   gfx::Point position1 = panel1->GetBounds().origin();
   gfx::Point position2 = panel2->GetBounds().origin();
@@ -505,7 +505,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragThreeDockedPanels) {
 
 IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragMinimizedPanel) {
   Panel* panel = CreatePanel("panel1");
-  scoped_ptr<NativePanelTesting> panel_testing(
+  std::unique_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
 
   panel->Minimize();
@@ -544,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragMinimizedPanel) {
 IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest,
                        DragMinimizedPanelWhileDrawingAttention) {
   Panel* panel = CreatePanel("panel1");
-  scoped_ptr<NativePanelTesting> panel_testing(
+  std::unique_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
   CreatePanel("panel2");
 
@@ -603,7 +603,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
   Panel* panel4 = CreatePanelWithBounds("Panel4", gfx::Rect(0, 0, 100, 100));
   ASSERT_EQ(4, docked_collection->num_panels());
 
-  scoped_ptr<NativePanelTesting> panel1_testing(
+  std::unique_ptr<NativePanelTesting> panel1_testing(
       CreateNativePanelTesting(panel1));
   gfx::Point position1 = panel1->GetBounds().origin();
   gfx::Point position2 = panel2->GetBounds().origin();
@@ -774,7 +774,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_DragOneDetachedPanel) {
 
   // Test that the detached panel can be dragged almost anywhere except getting
   // close to the bottom of the docked area to trigger the attach.
-  scoped_ptr<NativePanelTesting> panel_testing(
+  std::unique_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
   gfx::Point origin = panel->GetBounds().origin();
 
@@ -825,7 +825,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
   Panel* panel1 = CreateDetachedPanel("1", gfx::Rect(100, 200, 100, 100));
   ASSERT_EQ(1, detached_collection->num_panels());
 
-  scoped_ptr<NativePanelTesting> panel1_testing(
+  std::unique_ptr<NativePanelTesting> panel1_testing(
       CreateNativePanelTesting(panel1));
   gfx::Point panel1_old_position = panel1->GetBounds().origin();
 
@@ -943,7 +943,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, Detach) {
   gfx::Rect panel_old_bounds = panel->GetBounds();
 
   // Press on title-bar.
-  scoped_ptr<NativePanelTesting> panel_testing(
+  std::unique_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
   gfx::Point mouse_location(panel->GetBounds().origin());
   panel_testing->PressLeftMouseButtonTitlebar(mouse_location);
@@ -1005,7 +1005,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_DetachAndCancel) {
   gfx::Rect panel_old_bounds = panel->GetBounds();
 
   // Press on title-bar.
-  scoped_ptr<NativePanelTesting> panel_testing(
+  std::unique_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
   gfx::Point mouse_location(panel->GetBounds().origin());
   panel_testing->PressLeftMouseButtonTitlebar(mouse_location);
@@ -1068,7 +1068,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_Attach) {
   gfx::Rect panel_old_bounds = panel->GetBounds();
 
   // Press on title-bar.
-  scoped_ptr<NativePanelTesting> panel_testing(
+  std::unique_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
   gfx::Point mouse_location(panel->GetBounds().origin());
   panel_testing->PressLeftMouseButtonTitlebar(mouse_location);
@@ -1134,7 +1134,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_AttachAndCancel) {
   gfx::Rect panel_old_bounds = panel->GetBounds();
 
   // Press on title-bar.
-  scoped_ptr<NativePanelTesting> panel_testing(
+  std::unique_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
   gfx::Point mouse_location(panel->GetBounds().origin());
   panel_testing->PressLeftMouseButtonTitlebar(mouse_location);
@@ -1189,7 +1189,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAttachAndCancel) {
   gfx::Rect panel_old_bounds = panel->GetBounds();
 
   // Press on title-bar.
-  scoped_ptr<NativePanelTesting> panel_testing(
+  std::unique_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
   gfx::Point mouse_location(panel->GetBounds().origin());
   panel_testing->PressLeftMouseButtonTitlebar(mouse_location);
@@ -1542,7 +1542,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupPanelAndPanelFromBottom) {
   gfx::Rect panel2_old_bounds = panel2->GetBounds();
 
   // Press on title-bar of P2.
-  scoped_ptr<NativePanelTesting> panel2_testing(
+  std::unique_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
   gfx::Point mouse_location(panel2->GetBounds().origin());
   gfx::Point original_mouse_location = mouse_location;
@@ -1649,7 +1649,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupPanelAndPanelFromTop) {
   gfx::Rect panel2_old_bounds = panel2->GetBounds();
 
   // Press on title-bar of P2.
-  scoped_ptr<NativePanelTesting> panel2_testing(
+  std::unique_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
   gfx::Point mouse_location(panel2->GetBounds().origin());
   gfx::Point original_mouse_location = mouse_location;
@@ -1757,7 +1757,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupAndCancel) {
   gfx::Rect panel2_old_bounds = panel2->GetBounds();
 
   // Press on title-bar.
-  scoped_ptr<NativePanelTesting> panel2_testing(
+  std::unique_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
   gfx::Point mouse_location(panel2->GetBounds().origin());
   gfx::Point original_mouse_location = mouse_location;
@@ -2200,7 +2200,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, UngroupTwoPanelStack) {
   gfx::Rect panel2_old_bounds = panel2_expected_bounds;
 
   // Press on title-bar.
-  scoped_ptr<NativePanelTesting> panel2_testing(
+  std::unique_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
   gfx::Point mouse_location(panel2->GetBounds().origin());
   gfx::Point original_mouse_location = mouse_location;
@@ -2289,7 +2289,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, UngroupAndCancel) {
   gfx::Rect panel2_old_bounds = panel2->GetBounds();
 
   // Press on title-bar.
-  scoped_ptr<NativePanelTesting> panel2_testing(
+  std::unique_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
   gfx::Point mouse_location(panel2->GetBounds().origin());
   gfx::Point original_mouse_location = mouse_location;
@@ -2606,7 +2606,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, SnapPanelToPanelLeft) {
   EXPECT_EQ(panel2_expected_bounds, panel2->GetBounds());
 
   // Press on title-bar.
-  scoped_ptr<NativePanelTesting> panel2_testing(
+  std::unique_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
   gfx::Point mouse_location(panel2->GetBounds().origin());
   gfx::Point original_mouse_location = mouse_location;
@@ -2682,7 +2682,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, SnapPanelToPanelRight) {
   EXPECT_EQ(panel2_expected_bounds, panel2->GetBounds());
 
   // Press on title-bar.
-  scoped_ptr<NativePanelTesting> panel2_testing(
+  std::unique_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
   gfx::Point mouse_location(panel2->GetBounds().origin());
   gfx::Point original_mouse_location = mouse_location;
@@ -2756,7 +2756,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, SnapAndCancel) {
   EXPECT_EQ(panel2_expected_bounds, panel2->GetBounds());
 
   // Press on title-bar.
-  scoped_ptr<NativePanelTesting> panel2_testing(
+  std::unique_ptr<NativePanelTesting> panel2_testing(
       CreateNativePanelTesting(panel2));
   gfx::Point mouse_location(panel2->GetBounds().origin());
   gfx::Point original_mouse_location = mouse_location;

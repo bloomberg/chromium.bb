@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_AURA_ASH_H_
 #define CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_AURA_ASH_H_
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_aura.h"
 #include "ui/views/context_menu_controller.h"
 
@@ -66,11 +67,11 @@ class ChromeNativeAppWindowViewsAuraAsh : public ChromeNativeAppWindowViewsAura,
   // immersive fullscreen, the window header (title bar and window controls)
   // slides onscreen as an overlay when the mouse is hovered at the top of the
   // screen.
-  scoped_ptr<ash::ImmersiveFullscreenController>
+  std::unique_ptr<ash::ImmersiveFullscreenController>
       immersive_fullscreen_controller_;
 
   // Used to show the system menu.
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNativeAppWindowViewsAuraAsh);
 };

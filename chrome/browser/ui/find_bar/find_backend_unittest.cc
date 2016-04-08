@@ -44,7 +44,7 @@ TEST_F(FindBackendTest, InternalState) {
   EXPECT_EQ(base::string16(), find_tab_helper->find_text());
 
   // Get another WebContents object ready.
-  scoped_ptr<WebContents> contents2(
+  std::unique_ptr<WebContents> contents2(
       WebContentsTester::CreateTestWebContents(profile(), NULL));
   FindTabHelper::CreateForWebContents(contents2.get());
   FindTabHelper* find_tab_helper2 =

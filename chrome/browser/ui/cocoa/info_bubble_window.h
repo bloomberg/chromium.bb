@@ -4,7 +4,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 
 class AppNotificationBridge;
@@ -41,7 +42,7 @@ typedef NSUInteger AllowedAnimations;
   BOOL allowShareParentKeyState_;
 
   // Bridge to proxy Chrome notifications to the window.
-  scoped_ptr<AppNotificationBridge> notificationBridge_;
+  std::unique_ptr<AppNotificationBridge> notificationBridge_;
 }
 
 @property(nonatomic) info_bubble::AllowedAnimations allowedAnimations;

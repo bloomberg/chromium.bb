@@ -64,11 +64,11 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
   }
 
   void SetLegalMessage(const std::string& message_json) {
-    scoped_ptr<base::Value> value(base::JSONReader::Read(message_json));
+    std::unique_ptr<base::Value> value(base::JSONReader::Read(message_json));
     ASSERT_TRUE(value);
     base::DictionaryValue* dictionary;
     ASSERT_TRUE(value->GetAsDictionary(&dictionary));
-    scoped_ptr<base::DictionaryValue> legal_message =
+    std::unique_ptr<base::DictionaryValue> legal_message =
         dictionary->CreateDeepCopy();
     controller()->ShowBubbleForUpload(CreditCard(), std::move(legal_message),
                                       base::Bind(&SaveCardCallback));
@@ -117,7 +117,7 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
     }
 
    private:
-    scoped_ptr<TestSaveCardBubbleView> save_card_bubble_view_;
+    std::unique_ptr<TestSaveCardBubbleView> save_card_bubble_view_;
   };
 
   static void SaveCardCallback() {}

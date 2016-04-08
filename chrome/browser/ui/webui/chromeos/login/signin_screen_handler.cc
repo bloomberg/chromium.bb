@@ -1276,7 +1276,7 @@ void SigninScreenHandler::HandleGetPublicSessionKeyboardLayouts(
 void SigninScreenHandler::SendPublicSessionKeyboardLayouts(
     const AccountId& account_id,
     const std::string& locale,
-    scoped_ptr<base::ListValue> keyboard_layouts) {
+    std::unique_ptr<base::ListValue> keyboard_layouts) {
   CallJS("login.AccountPickerScreen.setPublicSessionKeyboardLayouts",
          account_id, locale, *keyboard_layouts);
 }

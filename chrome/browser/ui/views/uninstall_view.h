@@ -57,7 +57,7 @@ class UninstallView : public views::ButtonListener,
   views::Checkbox* delete_profile_;
   views::Checkbox* change_default_browser_;
   views::Combobox* browsers_combo_;
-  scoped_ptr<BrowsersMap> browsers_;
+  std::unique_ptr<BrowsersMap> browsers_;
   int& user_selection_;
   base::Closure quit_closure_;
 

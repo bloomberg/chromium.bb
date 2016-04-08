@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_SERVICE_VIEWS_H_
 #define CHROME_BROWSER_UI_APP_LIST_APP_LIST_SERVICE_VIEWS_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/app_list/app_list_shower_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_shower_views.h"
@@ -19,7 +20,7 @@ class AppListServiceViews : public AppListServiceImpl,
                             public AppListShowerDelegate {
  public:
   explicit AppListServiceViews(
-      scoped_ptr<AppListControllerDelegate> controller_delegate);
+      std::unique_ptr<AppListControllerDelegate> controller_delegate);
   ~AppListServiceViews() override;
 
   // Set |can_dismiss| to prevent the app list dismissing when losing focus. For
@@ -63,7 +64,7 @@ class AppListServiceViews : public AppListServiceImpl,
   AppListShower shower_;
 
   bool can_dismiss_;
-  scoped_ptr<AppListControllerDelegate> controller_delegate_;
+  std::unique_ptr<AppListControllerDelegate> controller_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceViews);
 };

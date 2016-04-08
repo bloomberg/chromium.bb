@@ -4,9 +4,10 @@
 
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_view_controller.h"
 
+#include <memory>
+
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/cocoa/passwords/base_passwords_controller_test.h"
 #import "chrome/browser/ui/cocoa/passwords/password_item_views.h"

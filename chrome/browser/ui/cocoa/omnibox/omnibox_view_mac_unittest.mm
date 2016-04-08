@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
@@ -31,7 +32,7 @@ class MockOmniboxEditModel : public OmniboxEditModel {
       : OmniboxEditModel(
             view,
             controller,
-            make_scoped_ptr(new ChromeOmniboxClient(controller, profile))),
+            base::WrapUnique(new ChromeOmniboxClient(controller, profile))),
         up_or_down_count_(0) {}
 
   void OnUpOrDownKeyPressed(int count) override { up_or_down_count_ = count; }

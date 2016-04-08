@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ui/bookmarks/recently_used_folders_combo_model.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -64,7 +65,8 @@ RecentlyUsedFoldersComboModelTest::RecentlyUsedFoldersComboModelTest()
 
 // Verifies there are no duplicate nodes in the model.
 TEST_F(RecentlyUsedFoldersComboModelTest, NoDups) {
-  scoped_ptr<BookmarkModel> bookmark_model(TestBookmarkClient::CreateModel());
+  std::unique_ptr<BookmarkModel> bookmark_model(
+      TestBookmarkClient::CreateModel());
   const BookmarkNode* new_node = bookmark_model->AddURL(
       bookmark_model->bookmark_bar_node(), 0, base::ASCIIToUTF16("a"),
       GURL("http://a"));
@@ -78,7 +80,8 @@ TEST_F(RecentlyUsedFoldersComboModelTest, NoDups) {
 
 // Verifies that observers are notified on changes.
 TEST_F(RecentlyUsedFoldersComboModelTest, NotifyObserver) {
-  scoped_ptr<BookmarkModel> bookmark_model(TestBookmarkClient::CreateModel());
+  std::unique_ptr<BookmarkModel> bookmark_model(
+      TestBookmarkClient::CreateModel());
   const BookmarkNode* folder = bookmark_model->AddFolder(
       bookmark_model->bookmark_bar_node(), 0, base::ASCIIToUTF16("a"));
   const BookmarkNode* sub_folder = bookmark_model->AddFolder(

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/webui/cookies_tree_model_util.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/i18n/time_formatting.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -325,7 +325,7 @@ void CookiesTreeModelUtil::GetChildNodeList(const CookieTreeNode* parent,
                                             int count,
                                             base::ListValue* nodes) {
   for (int i = 0; i < count; ++i) {
-    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
     const CookieTreeNode* child = parent->GetChild(start + i);
     if (GetCookieTreeNodeDictionary(*child, dict.get()))
       nodes->Append(dict.release());

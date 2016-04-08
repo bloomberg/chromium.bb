@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_WEBSTORE_WEBSTORE_PROVIDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_WEBSTORE_WEBSTORE_PROVIDER_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_list/search/common/webservice_search_provider.h"
 
 class AppListControllerDelegate;
@@ -44,17 +45,17 @@ class WebstoreProvider : public WebserviceSearchProvider{
   // Start the search request with |query_|.
   void StartQuery();
 
-  void OnWebstoreSearchFetched(scoped_ptr<base::DictionaryValue> json);
+  void OnWebstoreSearchFetched(std::unique_ptr<base::DictionaryValue> json);
   void ProcessWebstoreSearchResults(const base::DictionaryValue* json);
-  scoped_ptr<SearchResult> CreateResult(const TokenizedString& query,
-                                        const base::DictionaryValue& dict);
+  std::unique_ptr<SearchResult> CreateResult(const TokenizedString& query,
+                                             const base::DictionaryValue& dict);
 
   void set_webstore_search_fetched_callback(const base::Closure& callback) {
     webstore_search_fetched_callback_ = callback;
   }
 
   AppListControllerDelegate* controller_;
-  scoped_ptr<JSONResponseFetcher> webstore_search_;
+  std::unique_ptr<JSONResponseFetcher> webstore_search_;
   base::Closure webstore_search_fetched_callback_;
 
   // The current query.

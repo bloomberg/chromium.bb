@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_MESSAGE_CENTER_WEB_NOTIFICATION_TRAY_H_
 #define CHROME_BROWSER_UI_VIEWS_MESSAGE_CENTER_WEB_NOTIFICATION_TRAY_H_
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -47,10 +48,10 @@ class WebNotificationTray : public message_center::MessageCenterTrayDelegate {
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, ManyPopupNotifications);
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, ManuallyCloseMessageCenter);
 
-  scoped_ptr<MessagePopupCollection> popup_collection_;
-  scoped_ptr<DesktopPopupAlignmentDelegate> alignment_delegate_;
+  std::unique_ptr<MessagePopupCollection> popup_collection_;
+  std::unique_ptr<DesktopPopupAlignmentDelegate> alignment_delegate_;
 
-  scoped_ptr<MessageCenterTray> message_center_tray_;
+  std::unique_ptr<MessageCenterTray> message_center_tray_;
   DISALLOW_COPY_AND_ASSIGN(WebNotificationTray);
 };
 

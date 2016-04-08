@@ -78,7 +78,7 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   views::Widget::InitParams::WindowOpacity GetOpacityForInitParams(
       const views::Widget::InitParams& params);
 
-  scoped_ptr<ScopedKeepAlive> keep_alive_;
+  std::unique_ptr<ScopedKeepAlive> keep_alive_;
 
 #if defined(OS_WIN)
   AppbarAutohideEdgeMap appbar_autohide_edge_map_;

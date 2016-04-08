@@ -83,7 +83,7 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   // preference. |value| is the new value for |name|.  Called from
   // Notify*Changed methods to fire off the notifications.
   void DispatchPrefChangeNotification(const std::string& name,
-                                      scoped_ptr<base::Value> value);
+                                      std::unique_ptr<base::Value> value);
 
   // Creates dictionary value for the pref described by |pref_name|.
   // If |controlling_pref| is not empty, it describes the pref that manages

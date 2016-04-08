@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PANELS_PANEL_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_PANELS_PANEL_VIEW_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -177,7 +178,7 @@ class PanelView : public NativePanel,
                              bool update_frame);
 #endif
 
-  scoped_ptr<Panel> panel_;
+  std::unique_ptr<Panel> panel_;
   gfx::Rect bounds_;
 
   // The window that holds all panel views. Lifetime managed by native widget.
@@ -226,7 +227,7 @@ class PanelView : public NativePanel,
   MouseDraggingState mouse_dragging_state_;
 
   // Used to animate the bounds change.
-  scoped_ptr<PanelBoundsAnimation> bounds_animator_;
+  std::unique_ptr<PanelBoundsAnimation> bounds_animator_;
   gfx::Rect animation_start_bounds_;
 
   // Is the panel in highlighted state to draw people's attention?
@@ -240,11 +241,11 @@ class PanelView : public NativePanel,
   // be restored properly when a drag ends.
   views::View* old_focused_view_;
 
-  scoped_ptr<ScopedKeepAlive> keep_alive_;
+  std::unique_ptr<ScopedKeepAlive> keep_alive_;
 
 #if defined(OS_WIN)
   // Used to provide custom taskbar thumbnail for Windows 7 and later.
-  scoped_ptr<TaskbarWindowThumbnailerWin> thumbnailer_;
+  std::unique_ptr<TaskbarWindowThumbnailerWin> thumbnailer_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PanelView);

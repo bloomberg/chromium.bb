@@ -16,10 +16,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_ITEM_VIEW_MD_H_
 #define CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_ITEM_VIEW_MD_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -106,8 +106,9 @@ class DownloadItemViewMd : public views::InkDropHostView,
 
   // Overridden from view::InkDropHostView:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
-  scoped_ptr<views::InkDropAnimation> CreateInkDropAnimation() const override;
-  scoped_ptr<views::InkDropHover> CreateInkDropHover() const override;
+  std::unique_ptr<views::InkDropAnimation> CreateInkDropAnimation()
+      const override;
+  std::unique_ptr<views::InkDropHover> CreateInkDropHover() const override;
 
   // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -276,7 +277,7 @@ class DownloadItemViewMd : public views::InkDropHostView,
   DownloadItemModel model_;
 
   // Animation for download complete.
-  scoped_ptr<gfx::SlideAnimation> complete_animation_;
+  std::unique_ptr<gfx::SlideAnimation> complete_animation_;
 
   views::ButtonInkDropDelegate ink_drop_delegate_;
 
@@ -306,7 +307,7 @@ class DownloadItemViewMd : public views::InkDropHostView,
   base::Time time_download_warning_shown_;
 
   // The currently running download context menu.
-  scoped_ptr<DownloadShelfContextMenuView> context_menu_;
+  std::unique_ptr<DownloadShelfContextMenuView> context_menu_;
 
   // The name of this view as reported to assistive technology.
   base::string16 accessible_name_;
@@ -318,7 +319,7 @@ class DownloadItemViewMd : public views::InkDropHostView,
 
   // ExperienceSampling: This tracks dangerous/malicious downloads warning UI
   // and the user's decisions about it.
-  scoped_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
+  std::unique_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
 
   // Method factory used to delay reenabling of the item when opening the
   // downloaded file.

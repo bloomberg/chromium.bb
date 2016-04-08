@@ -58,7 +58,7 @@ class DesktopMediaPickerControllerTest : public CocoaTest {
                    base::Unretained(this));
 
     controller_.reset([[DesktopMediaPickerController alloc]
-        initWithMediaList:scoped_ptr<DesktopMediaList>(media_list_)
+        initWithMediaList:std::unique_ptr<DesktopMediaList>(media_list_)
                    parent:nil
                  callback:callback
                   appName:base::ASCIIToUTF16("Screenshare Test")

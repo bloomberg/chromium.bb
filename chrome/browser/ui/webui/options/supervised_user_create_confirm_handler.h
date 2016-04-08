@@ -39,7 +39,7 @@ class SupervisedUserCreateConfirmHandler : public OptionsPageUIHandler {
 
   // Observes the ProfileAttributesStorage and gets notified when a profile has
   // been modified, so that the dialog can be updated or closed.
-  scoped_ptr<ProfileUpdateObserver> profile_update_observer_;
+  std::unique_ptr<ProfileUpdateObserver> profile_update_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserCreateConfirmHandler);
 };

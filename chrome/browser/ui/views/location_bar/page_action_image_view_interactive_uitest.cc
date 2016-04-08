@@ -36,7 +36,7 @@ class PageActionImageViewInteractiveUITest : public ExtensionBrowserTest {
   }
 
  private:
-  scoped_ptr<extensions::FeatureSwitch::ScopedOverride> disable_redesign_;
+  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride> disable_redesign_;
 
   DISALLOW_COPY_AND_ASSIGN(PageActionImageViewInteractiveUITest);
 };

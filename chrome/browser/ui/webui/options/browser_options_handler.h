@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_BROWSER_OPTIONS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_BROWSER_OPTIONS_HANDLER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
@@ -192,7 +192,7 @@ class BrowserOptionsHandler
   //     filePath: "/path/to/profile/data/on/disk",
   //     isCurrentProfile: false
   //   };
-  scoped_ptr<base::ListValue> GetProfilesInfoList();
+  std::unique_ptr<base::ListValue> GetProfilesInfoList();
 
   // Sends an array of Profile objects to javascript.
   void SendProfilesInfo();
@@ -375,7 +375,7 @@ class BrowserOptionsHandler
 
   // Returns a newly created dictionary with a number of properties that
   // correspond to the status of sync.
-  scoped_ptr<base::DictionaryValue> GetSyncStateDictionary();
+  std::unique_ptr<base::DictionaryValue> GetSyncStateDictionary();
 
   // Checks whether on Chrome OS the current user is the device owner. Returns
   // true on other platforms.
@@ -399,12 +399,12 @@ class BrowserOptionsHandler
 
   StringPrefMember auto_open_files_;
 
-  scoped_ptr<ChromeZoomLevelPrefs::DefaultZoomLevelSubscription>
+  std::unique_ptr<ChromeZoomLevelPrefs::DefaultZoomLevelSubscription>
       default_zoom_level_subscription_;
 
   PrefChangeRegistrar profile_pref_registrar_;
 #if defined(OS_CHROMEOS)
-  scoped_ptr<policy::PolicyChangeRegistrar> policy_registrar_;
+  std::unique_ptr<policy::PolicyChangeRegistrar> policy_registrar_;
 
   // Whether factory reset can be performed.
   bool enable_factory_reset_;

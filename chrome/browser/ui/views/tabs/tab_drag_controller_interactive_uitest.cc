@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
@@ -194,7 +195,7 @@ Browser* TabDragControllerTest::CreateAnotherWindowBrowserAndRelayout() {
 
 void TabDragControllerTest::SetWindowFinderForTabStrip(
     TabStrip* tab_strip,
-    scoped_ptr<WindowFinder> window_finder) {
+    std::unique_ptr<WindowFinder> window_finder) {
   ASSERT_TRUE(tab_strip->drag_controller_.get());
   tab_strip->drag_controller_->window_finder_ = std::move(window_finder);
 }
@@ -538,7 +539,7 @@ class DetachToBrowserTabDragControllerTest
 
  private:
 #if defined(OS_CHROMEOS)
-  scoped_ptr<ui::test::EventGenerator> event_generator_;
+  std::unique_ptr<ui::test::EventGenerator> event_generator_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DetachToBrowserTabDragControllerTest);
@@ -610,11 +611,11 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
       gfx::Rect(bounds.width() - 10, 0, 10, bounds.height()));
   gfx::Rect test(bounds);
   masked_window_delegate.set_can_focus(false);
-  scoped_ptr<aura::Window> masked_window(
+  std::unique_ptr<aura::Window> masked_window(
       aura::test::CreateTestWindowWithDelegate(&masked_window_delegate, 10,
                                                test, browser_window->parent()));
   masked_window->SetEventTargeter(
-      scoped_ptr<ui::EventTargeter>(new MaskedWindowTargeter()));
+      std::unique_ptr<ui::EventTargeter>(new MaskedWindowTargeter()));
 
   ASSERT_FALSE(masked_window->GetEventHandlerForPoint(
       gfx::Point(bounds.width() - 11, 0)));
@@ -756,7 +757,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(0))));
   ASSERT_TRUE(tab_strip->IsDragSessionActive());
   SetWindowFinderForTabStrip(
-      tab_strip, make_scoped_ptr(new CaptureLoseWindowFinder(tab_strip)));
+      tab_strip, base::WrapUnique(new CaptureLoseWindowFinder(tab_strip)));
   ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(1))));
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
 }

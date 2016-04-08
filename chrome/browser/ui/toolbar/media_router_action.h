@@ -110,7 +110,7 @@ class MediaRouterAction : public ToolbarActionViewController,
 
   // The current issue shown in the Media Router WebUI. Can be null. It is set
   // in OnIssueUpdated(), which is called by the IssueManager.
-  scoped_ptr<media_router::Issue> issue_;
+  std::unique_ptr<media_router::Issue> issue_;
 
   // Whether a local displayable active route exists.
   bool has_local_display_route_;
@@ -121,7 +121,7 @@ class MediaRouterAction : public ToolbarActionViewController,
   ToolbarActionsBar* const toolbar_actions_bar_;
 
   // The delegate to handle platform-specific implementations.
-  scoped_ptr<MediaRouterActionPlatformDelegate> platform_delegate_;
+  std::unique_ptr<MediaRouterActionPlatformDelegate> platform_delegate_;
 
   MediaRouterContextualMenu contextual_menu_;
 

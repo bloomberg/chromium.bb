@@ -22,7 +22,7 @@ class OmniboxUI : public MojoWebUIController<mojom::OmniboxUIHandlerMojo> {
   void BindUIHandler(
       mojo::InterfaceRequest<mojom::OmniboxUIHandlerMojo> request) override;
 
-  scoped_ptr<OmniboxUIHandler> omnibox_ui_handler_;
+  std::unique_ptr<OmniboxUIHandler> omnibox_ui_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxUI);
 };

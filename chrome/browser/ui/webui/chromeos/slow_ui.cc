@@ -72,7 +72,7 @@ class SlowHandler : public WebUIMessageHandler {
   void LoadComplete(const base::ListValue* args);
 
   Profile* profile_;
-  scoped_ptr<PrefChangeRegistrar> user_pref_registrar_;
+  std::unique_ptr<PrefChangeRegistrar> user_pref_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SlowHandler);
 };

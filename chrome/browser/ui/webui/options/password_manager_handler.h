@@ -39,10 +39,10 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
       const std::string& username,
       const base::string16& password_value) override;
   void SetPasswordList(
-      const std::vector<scoped_ptr<autofill::PasswordForm>>& password_list)
-          override;
+      const std::vector<std::unique_ptr<autofill::PasswordForm>>& password_list)
+      override;
   void SetPasswordExceptionList(
-      const std::vector<scoped_ptr<autofill::PasswordForm>>&
+      const std::vector<std::unique_ptr<autofill::PasswordForm>>&
           password_exception_list) override;
 #if !defined(OS_ANDROID)
   gfx::NativeWindow GetNativeWindow() const override;

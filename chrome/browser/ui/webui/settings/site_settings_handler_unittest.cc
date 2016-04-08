@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/webui/settings/site_settings_handler.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/common/content_settings.h"

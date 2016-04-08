@@ -1077,7 +1077,7 @@ void CertificateManagerHandler::Delete(const base::ListValue* args) {
 }
 
 void CertificateManagerHandler::OnCertificateManagerModelCreated(
-    scoped_ptr<CertificateManagerModel> model) {
+    std::unique_ptr<CertificateManagerModel> model) {
   certificate_manager_model_ = std::move(model);
   CertificateManagerModelReady();
 }
@@ -1122,7 +1122,7 @@ void CertificateManagerHandler::PopulateTree(
     const net::CertificateList& web_trust_certs) {
   const std::string tree_name = tab_name + "-tree";
 
-  scoped_ptr<icu::Collator> collator;
+  std::unique_ptr<icu::Collator> collator;
   UErrorCode error = U_ZERO_ERROR;
   collator.reset(
       icu::Collator::createInstance(

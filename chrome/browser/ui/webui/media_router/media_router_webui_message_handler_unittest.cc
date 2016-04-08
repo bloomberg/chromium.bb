@@ -94,9 +94,9 @@ class MediaRouterWebUIMessageHandlerTest : public MediaRouterTest {
   }
 
  protected:
-  scoped_ptr<content::TestWebUI> web_ui_;
-  scoped_ptr<MockMediaRouterUI> mock_media_router_ui_;
-  scoped_ptr<TestMediaRouterWebUIMessageHandler> handler_;
+  std::unique_ptr<content::TestWebUI> web_ui_;
+  std::unique_ptr<MockMediaRouterUI> mock_media_router_ui_;
+  std::unique_ptr<TestMediaRouterWebUIMessageHandler> handler_;
   const std::string provider_extension_id_;
 };
 

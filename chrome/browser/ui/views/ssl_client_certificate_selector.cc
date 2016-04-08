@@ -27,7 +27,7 @@
 SSLClientCertificateSelector::SSLClientCertificateSelector(
     content::WebContents* web_contents,
     const scoped_refptr<net::SSLCertRequestInfo>& cert_request_info,
-    scoped_ptr<content::ClientCertificateDelegate> delegate)
+    std::unique_ptr<content::ClientCertificateDelegate> delegate)
     : CertificateSelector(cert_request_info->client_certs, web_contents),
       SSLClientAuthObserver(web_contents->GetBrowserContext(),
                             cert_request_info,
@@ -38,7 +38,7 @@ SSLClientCertificateSelector::~SSLClientCertificateSelector() {
 
 void SSLClientCertificateSelector::Init() {
   StartObserving();
-  scoped_ptr<views::Label> text_label(
+  std::unique_ptr<views::Label> text_label(
       new views::Label(l10n_util::GetStringFUTF16(
           IDS_CLIENT_CERT_DIALOG_TEXT,
           base::ASCIIToUTF16(cert_request_info()->host_and_port.ToString()))));
@@ -99,7 +99,7 @@ namespace chrome {
 void ShowSSLClientCertificateSelector(
     content::WebContents* contents,
     net::SSLCertRequestInfo* cert_request_info,
-    scoped_ptr<content::ClientCertificateDelegate> delegate) {
+    std::unique_ptr<content::ClientCertificateDelegate> delegate) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Not all WebContentses can show modal dialogs.

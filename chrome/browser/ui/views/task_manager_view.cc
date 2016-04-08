@@ -220,7 +220,7 @@ class TaskManagerView : public views::ButtonListener,
   // all possible columns, not necessarily visible
   std::vector<ui::TableColumn> columns_;
 
-  scoped_ptr<TaskManagerTableModel> table_model_;
+  std::unique_ptr<TaskManagerTableModel> table_model_;
 
   // True when the Task Manager window should be shown on top of other windows.
   bool is_always_on_top_;
@@ -232,7 +232,7 @@ class TaskManagerView : public views::ButtonListener,
   // is reset to NULL when the window is closed.
   static TaskManagerView* instance_;
 
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerView);
 };

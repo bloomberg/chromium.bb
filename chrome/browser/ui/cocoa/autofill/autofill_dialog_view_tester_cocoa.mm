@@ -61,9 +61,9 @@
 
 namespace autofill {
 
-scoped_ptr<AutofillDialogViewTester> AutofillDialogViewTester::For(
+std::unique_ptr<AutofillDialogViewTester> AutofillDialogViewTester::For(
     AutofillDialogView* dialog) {
-  return scoped_ptr<AutofillDialogViewTester>(
+  return std::unique_ptr<AutofillDialogViewTester>(
       new AutofillDialogViewTesterCocoa(
           static_cast<AutofillDialogCocoa*>(dialog)));
 }

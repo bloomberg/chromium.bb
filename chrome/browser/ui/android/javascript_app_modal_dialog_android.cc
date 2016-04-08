@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/app_modal/chrome_javascript_native_dialog_factory.h"
 #include "components/app_modal/app_modal_dialog_queue.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
@@ -195,8 +196,7 @@ class ChromeJavaScriptNativeDialogAndroidFactory
 }  // namespace
 
 void InstallChromeJavaScriptNativeDialogFactory() {
-  app_modal::JavaScriptDialogManager::GetInstance()->
-      SetNativeDialogFactory(
-          make_scoped_ptr(new ChromeJavaScriptNativeDialogAndroidFactory));
+  app_modal::JavaScriptDialogManager::GetInstance()->SetNativeDialogFactory(
+      base::WrapUnique(new ChromeJavaScriptNativeDialogAndroidFactory));
 }
 

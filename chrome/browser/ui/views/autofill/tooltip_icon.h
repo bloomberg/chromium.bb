@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_TOOLTIP_ICON_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_TOOLTIP_ICON_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
@@ -74,7 +75,7 @@ class TooltipIcon : public views::ImageView,
   base::OneShotTimer show_timer_;
 
   // A watcher that keeps |bubble_| open if the user's mouse enters it.
-  scoped_ptr<views::MouseWatcher> mouse_watcher_;
+  std::unique_ptr<views::MouseWatcher> mouse_watcher_;
 
   ScopedObserver<views::Widget, TooltipIcon> observer_;
 

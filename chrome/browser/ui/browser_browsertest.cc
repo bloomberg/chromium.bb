@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/browser.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -13,7 +16,6 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -40,7 +42,6 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/cld_data_harness.h"
 #include "chrome/browser/translate/cld_data_harness_factory.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -1954,9 +1955,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageZoom) {
         new content::MessageLoopRunner);
     content::HostZoomMap::ZoomLevelChangedCallback callback(
         base::Bind(&OnZoomLevelChanged, loop_runner->QuitClosure()));
-    scoped_ptr<content::HostZoomMap::Subscription> sub =
-        content::HostZoomMap::GetDefaultForBrowserContext(
-            browser()->profile())->AddZoomLevelChangedCallback(callback);
+    std::unique_ptr<content::HostZoomMap::Subscription> sub =
+        content::HostZoomMap::GetDefaultForBrowserContext(browser()->profile())
+            ->AddZoomLevelChangedCallback(callback);
     chrome::Zoom(browser(), content::PAGE_ZOOM_IN);
     loop_runner->Run();
     sub.reset();
@@ -1970,9 +1971,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageZoom) {
         new content::MessageLoopRunner);
     content::HostZoomMap::ZoomLevelChangedCallback callback(
         base::Bind(&OnZoomLevelChanged, loop_runner->QuitClosure()));
-    scoped_ptr<content::HostZoomMap::Subscription> sub =
-        content::HostZoomMap::GetDefaultForBrowserContext(
-            browser()->profile())->AddZoomLevelChangedCallback(callback);
+    std::unique_ptr<content::HostZoomMap::Subscription> sub =
+        content::HostZoomMap::GetDefaultForBrowserContext(browser()->profile())
+            ->AddZoomLevelChangedCallback(callback);
     chrome::Zoom(browser(), content::PAGE_ZOOM_RESET);
     loop_runner->Run();
     sub.reset();
@@ -1986,9 +1987,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageZoom) {
         new content::MessageLoopRunner);
     content::HostZoomMap::ZoomLevelChangedCallback callback(
         base::Bind(&OnZoomLevelChanged, loop_runner->QuitClosure()));
-    scoped_ptr<content::HostZoomMap::Subscription> sub =
-        content::HostZoomMap::GetDefaultForBrowserContext(
-            browser()->profile())->AddZoomLevelChangedCallback(callback);
+    std::unique_ptr<content::HostZoomMap::Subscription> sub =
+        content::HostZoomMap::GetDefaultForBrowserContext(browser()->profile())
+            ->AddZoomLevelChangedCallback(callback);
     chrome::Zoom(browser(), content::PAGE_ZOOM_OUT);
     loop_runner->Run();
     sub.reset();
@@ -3166,7 +3167,7 @@ class JSBooleanResultGetter {
   }
 
  private:
-  scoped_ptr<base::Value> js_result_;
+  std::unique_ptr<base::Value> js_result_;
   DISALLOW_COPY_AND_ASSIGN(JSBooleanResultGetter);
 };
 

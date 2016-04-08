@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_app_model_builder.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
 
@@ -20,7 +21,7 @@ void ArcAppModelBuilder::BuildModel() {
 
   std::vector<std::string> app_ids = prefs_->GetAppIds();
   for (auto& app_id : app_ids) {
-    scoped_ptr<ArcAppListPrefs::AppInfo> app_info = prefs_->GetApp(app_id);
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs_->GetApp(app_id);
     if (!app_info)
       continue;
 
@@ -34,14 +35,11 @@ ArcAppItem* ArcAppModelBuilder::GetArcAppItem(const std::string& app_id) {
   return static_cast<ArcAppItem*>(GetAppItem(app_id));
 }
 
-scoped_ptr<ArcAppItem> ArcAppModelBuilder::CreateApp(
+std::unique_ptr<ArcAppItem> ArcAppModelBuilder::CreateApp(
     const std::string& app_id,
     const ArcAppListPrefs::AppInfo& app_info) {
-  return make_scoped_ptr(new ArcAppItem(profile(),
-                                        GetSyncItem(app_id),
-                                        app_id,
-                                        app_info.name,
-                                        app_info.ready));
+  return base::WrapUnique(new ArcAppItem(profile(), GetSyncItem(app_id), app_id,
+                                         app_info.name, app_info.ready));
 }
 
 void ArcAppModelBuilder::OnAppRegistered(

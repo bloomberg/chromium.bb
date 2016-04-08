@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_COCOA_APPS_QUIT_WITH_APPS_CONTROLLER_MAC_H_
 #define CHROME_BROWSER_UI_COCOA_APPS_QUIT_WITH_APPS_CONTROLLER_MAC_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/notifications/notification.h"
 
 class PrefRegistrySimple;
@@ -37,7 +38,7 @@ class QuitWithAppsController : public NotificationDelegate {
  private:
   ~QuitWithAppsController() override;
 
-  scoped_ptr<Notification> notification_;
+  std::unique_ptr<Notification> notification_;
   // The Profile instance associated with the notification_. We need to cache
   // the instance here because when we want to cancel the notification we need
   // to provide the profile which was used to add the notification previously.

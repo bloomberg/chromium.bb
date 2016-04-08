@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h"
+
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#import "chrome/browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h"
 #import "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/test/base/testing_profile.h"
 
@@ -33,9 +35,8 @@ TEST_F(BookmarkModelObserverForCocoaTest, TestCallback) {
     ++pings;
   };
 
-  scoped_ptr<BookmarkModelObserverForCocoa>
-      observer(new BookmarkModelObserverForCocoa(model,
-                                                 callback));
+  std::unique_ptr<BookmarkModelObserverForCocoa> observer(
+      new BookmarkModelObserverForCocoa(model, callback));
   observer->StartObservingNode(node);
 
   EXPECT_EQ(0U, pings);

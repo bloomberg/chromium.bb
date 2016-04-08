@@ -39,7 +39,7 @@ class DevicePermissionsDialogController
  private:
   scoped_refptr<extensions::DevicePermissionsPrompt::Prompt> prompt_;
   base::scoped_nsobject<DevicePermissionsViewController> view_controller_;
-  scoped_ptr<ConstrainedWindowMac> constrained_window_;
+  std::unique_ptr<ConstrainedWindowMac> constrained_window_;
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_EXTENSIONS_DEVICE_PERMISSIONS_DIALOG_CONTROLER_H_

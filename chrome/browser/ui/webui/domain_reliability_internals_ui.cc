@@ -49,7 +49,7 @@ void DomainReliabilityInternalsUI::UpdateData(
   if (!service) {
     base::DictionaryValue* data = new base::DictionaryValue();
     data->SetString("error", "no_service");
-    OnDataUpdated(scoped_ptr<base::Value>(data));
+    OnDataUpdated(std::unique_ptr<base::Value>(data));
     return;
   }
 
@@ -59,7 +59,7 @@ void DomainReliabilityInternalsUI::UpdateData(
 }
 
 void DomainReliabilityInternalsUI::OnDataUpdated(
-    scoped_ptr<base::Value> data) const {
+    std::unique_ptr<base::Value> data) const {
   web_ui()->CallJavascriptFunction(
       "DomainReliabilityInternals.onDataUpdated", *data);
 }

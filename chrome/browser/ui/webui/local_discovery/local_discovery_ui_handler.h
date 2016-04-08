@@ -113,7 +113,8 @@ class LocalDiscoveryUIHandler
   void HandleShowSyncUI(const base::ListValue* args);
 
   // For when the IP address of the printer has been resolved for registration.
-  void StartRegisterHTTP(scoped_ptr<cloud_print::PrivetHTTPClient> http_client);
+  void StartRegisterHTTP(
+      std::unique_ptr<cloud_print::PrivetHTTPClient> http_client);
 
   // For when the confirm operation on the cloudprint server has finished
   // executing.
@@ -134,7 +135,7 @@ class LocalDiscoveryUIHandler
   // Reset and cancel the current registration.
   void ResetCurrentRegistration();
 
-  scoped_ptr<cloud_print::GCDApiFlow> CreateApiFlow();
+  std::unique_ptr<cloud_print::GCDApiFlow> CreateApiFlow();
   void OnSetupError();
 
   // Announcement hasn't been sent for a certain time after registration
@@ -165,28 +166,30 @@ class LocalDiscoveryUIHandler
   scoped_refptr<ServiceDiscoverySharedClient> service_discovery_client_;
 
   // A factory for creating the privet HTTP Client.
-  scoped_ptr<cloud_print::PrivetHTTPAsynchronousFactory> privet_http_factory_;
+  std::unique_ptr<cloud_print::PrivetHTTPAsynchronousFactory>
+      privet_http_factory_;
 
   // An object representing the resolution process for the privet_http_factory.
-  scoped_ptr<cloud_print::PrivetHTTPResolution> privet_resolution_;
+  std::unique_ptr<cloud_print::PrivetHTTPResolution> privet_resolution_;
 
   // The current HTTP client (used for the current operation).
-  scoped_ptr<cloud_print::PrivetV1HTTPClient> current_http_client_;
+  std::unique_ptr<cloud_print::PrivetV1HTTPClient> current_http_client_;
 
   // The current register operation. Only one allowed at any time.
-  scoped_ptr<cloud_print::PrivetRegisterOperation> current_register_operation_;
+  std::unique_ptr<cloud_print::PrivetRegisterOperation>
+      current_register_operation_;
 
   // The current confirm call used during the registration flow.
-  scoped_ptr<cloud_print::GCDApiFlow> confirm_api_call_flow_;
+  std::unique_ptr<cloud_print::GCDApiFlow> confirm_api_call_flow_;
 
   // The device lister used to list devices on the local network.
-  scoped_ptr<cloud_print::PrivetDeviceLister> privet_lister_;
+  std::unique_ptr<cloud_print::PrivetDeviceLister> privet_lister_;
 
   // Whether or not the page is marked as visible.
   bool is_visible_;
 
   // List of printers from cloud print.
-  scoped_ptr<cloud_print::GCDApiFlow> cloud_print_printer_list_;
+  std::unique_ptr<cloud_print::GCDApiFlow> cloud_print_printer_list_;
   std::vector<cloud_print::CloudPrintPrinterList::Device> cloud_devices_;
   int failed_list_count_;
   int succeded_list_count_;

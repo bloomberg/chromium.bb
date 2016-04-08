@@ -8,7 +8,7 @@
 
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 
-InfoBarCocoa::InfoBarCocoa(scoped_ptr<infobars::InfoBarDelegate> delegate)
+InfoBarCocoa::InfoBarCocoa(std::unique_ptr<infobars::InfoBarDelegate> delegate)
     : infobars::InfoBar(std::move(delegate)), weak_ptr_factory_(this) {}
 
 InfoBarCocoa::~InfoBarCocoa() {

@@ -4,8 +4,9 @@
 
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"

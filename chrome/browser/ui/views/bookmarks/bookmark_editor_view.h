@@ -229,13 +229,13 @@ class BookmarkEditorView : public BookmarkEditor,
   Profile* profile_;
 
   // Model driving the TreeView.
-  scoped_ptr<EditorTreeModel> tree_model_;
+  std::unique_ptr<EditorTreeModel> tree_model_;
 
   // Displays star folder.
   views::TreeView* tree_view_;
 
   // Used to create a new folder.
-  scoped_ptr<views::LabelButton> new_folder_button_;
+  std::unique_ptr<views::LabelButton> new_folder_button_;
 
   // The label for the url text field.
   views::Label* url_label_;
@@ -256,8 +256,8 @@ class BookmarkEditorView : public BookmarkEditor,
   const EditDetails details_;
 
   // The context menu.
-  scoped_ptr<ui::SimpleMenuModel> context_menu_model_;
-  scoped_ptr<views::MenuRunner> context_menu_runner_;
+  std::unique_ptr<ui::SimpleMenuModel> context_menu_model_;
+  std::unique_ptr<views::MenuRunner> context_menu_runner_;
 
   // Mode used to create nodes from.
   bookmarks::BookmarkModel* bb_model_;

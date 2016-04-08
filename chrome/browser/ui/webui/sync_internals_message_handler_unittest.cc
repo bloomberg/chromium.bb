@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/webui/sync_internals_message_handler.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/common/browser_sync_switches.h"
 #include "components/sync_driver/about_sync_util.h"
@@ -25,7 +25,7 @@ class TestableSyncInternalsMessageHandler : public SyncInternalsMessageHandler {
  public:
   explicit TestableSyncInternalsMessageHandler(
       content::WebUI* web_ui,
-      scoped_ptr<AboutSyncDataExtractor> about_sync_data_extractor)
+      std::unique_ptr<AboutSyncDataExtractor> about_sync_data_extractor)
       : SyncInternalsMessageHandler(std::move(about_sync_data_extractor)) {
     set_web_ui(web_ui);
   }
@@ -33,13 +33,14 @@ class TestableSyncInternalsMessageHandler : public SyncInternalsMessageHandler {
 
 class FakeExtractor : public AboutSyncDataExtractor {
  public:
-  scoped_ptr<base::DictionaryValue> ConstructAboutInformation(
+  std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
       sync_driver::SyncService* service,
       SigninManagerBase* signin) override {
     call_count_++;
     last_service_ = service;
     last_signin_ = signin;
-    scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> dictionary(
+        new base::DictionaryValue());
     dictionary->SetString("fake_key", "fake_value");
     return dictionary;
   }
@@ -63,7 +64,7 @@ class SyncInternalsMessageHandlerTest : public ::testing::Test {
     web_ui_.set_web_contents(web_contents_.get());
     fake_extractor_ = new FakeExtractor();
     handler_.reset(new TestableSyncInternalsMessageHandler(
-        &web_ui_, scoped_ptr<FakeExtractor>(fake_extractor_)));
+        &web_ui_, std::unique_ptr<FakeExtractor>(fake_extractor_)));
   }
 
   void ValidateAboutInfoCall() {
@@ -102,8 +103,8 @@ class SyncInternalsMessageHandlerTest : public ::testing::Test {
   TestingProfile profile_;
   content::TestWebUI web_ui_;
   scoped_refptr<content::SiteInstance> site_instance_;
-  scoped_ptr<content::WebContents> web_contents_;
-  scoped_ptr<SyncInternalsMessageHandler> handler_;
+  std::unique_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<SyncInternalsMessageHandler> handler_;
 
   // Non-owning pointer to the about information the handler uses. This
   // extractor is owned by the handler.

@@ -176,7 +176,7 @@ class LanguageDictionaryWebUITest : public InProcessBrowserTest {
   }
 
  private:
-  scoped_ptr<content::DOMMessageQueue> dom_message_queue_;
+  std::unique_ptr<content::DOMMessageQueue> dom_message_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageDictionaryWebUITest);
 };

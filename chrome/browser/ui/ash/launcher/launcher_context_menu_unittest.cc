@@ -69,9 +69,9 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
   Profile* profile() { return profile_.get(); }
 
  private:
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
   ash::ShelfModel shelf_model_;
-  scoped_ptr<ChromeLauncherController> controller_;
+  std::unique_ptr<ChromeLauncherController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherContextMenuTest);
 };
@@ -81,7 +81,7 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
 TEST_F(LauncherContextMenuTest,
        NewIncognitoWindowMenuIsDisabledWhenIncognitoModeOff) {
   // Initially, "New Incognito window" should be enabled.
-  scoped_ptr<LauncherContextMenu> menu(
+  std::unique_ptr<LauncherContextMenu> menu(
       CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT));
   ASSERT_TRUE(IsItemPresentInMenu(
       menu.get(), LauncherContextMenu::MENU_NEW_INCOGNITO_WINDOW));
@@ -104,7 +104,7 @@ TEST_F(LauncherContextMenuTest,
 TEST_F(LauncherContextMenuTest,
        NewWindowMenuIsDisabledWhenIncognitoModeForced) {
   // Initially, "New window" should be enabled.
-  scoped_ptr<LauncherContextMenu> menu(
+  std::unique_ptr<LauncherContextMenu> menu(
       CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT));
   ASSERT_TRUE(IsItemPresentInMenu(
       menu.get(), LauncherContextMenu::MENU_NEW_WINDOW));
@@ -121,7 +121,7 @@ TEST_F(LauncherContextMenuTest,
 
 // Verifies status of contextmenu items for desktop shell.
 TEST_F(LauncherContextMenuTest, DesktopShellLauncherContextMenuItemCheck) {
-  scoped_ptr<LauncherContextMenu> menu(
+  std::unique_ptr<LauncherContextMenu> menu(
       CreateLauncherContextMenuForDesktopShell());
   EXPECT_FALSE(
       IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));

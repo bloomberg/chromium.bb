@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
@@ -49,7 +50,7 @@ void ManagePasswordsTest::SetupManagingPasswords() {
   autofill::PasswordFormMap map;
   map.insert(std::make_pair(
       kTestUsername,
-      make_scoped_ptr(new autofill::PasswordForm(*test_form()))));
+      base::WrapUnique(new autofill::PasswordForm(*test_form()))));
   GetController()->OnPasswordAutofilled(map, map.begin()->second->origin,
                                         nullptr);
 }
@@ -59,7 +60,7 @@ void ManagePasswordsTest::SetupPendingPassword() {
   password_manager::StubLogManager log_manager;
   password_manager::StubPasswordManagerDriver driver;
 
-  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
+  std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
           nullptr, &client, driver.AsWeakPtr(), *test_form(), false));
   test_form_manager->SimulateFetchMatchingLoginsFromPasswordStore();
@@ -73,7 +74,7 @@ void ManagePasswordsTest::SetupAutomaticPassword() {
   password_manager::StubLogManager log_manager;
   password_manager::StubPasswordManagerDriver driver;
 
-  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
+  std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
           nullptr, &client, driver.AsWeakPtr(), *test_form(), false));
   GetController()->OnAutomaticPasswordSave(std::move(test_form_manager));
@@ -86,7 +87,7 @@ void ManagePasswordsTest::SetupAutoSignin(
   GetController()->OnAutoSignin(std::move(local_credentials), origin);
 }
 
-scoped_ptr<base::HistogramSamples> ManagePasswordsTest::GetSamples(
+std::unique_ptr<base::HistogramSamples> ManagePasswordsTest::GetSamples(
     const char* histogram) {
   // Ensure that everything has been properly recorded before pulling samples.
   content::RunAllPendingInMessageLoop();

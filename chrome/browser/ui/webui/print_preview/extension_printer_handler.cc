@@ -58,9 +58,10 @@ const char kProvisionalUsbLabel[] = "provisional-usb";
 
 // Updates |job| with raster file path, size and last modification time.
 // Returns the updated print job.
-scoped_ptr<extensions::PrinterProviderPrintJob> UpdateJobFileInfoOnWorkerThread(
+std::unique_ptr<extensions::PrinterProviderPrintJob>
+UpdateJobFileInfoOnWorkerThread(
     const base::FilePath& raster_path,
-    scoped_ptr<extensions::PrinterProviderPrintJob> job) {
+    std::unique_ptr<extensions::PrinterProviderPrintJob> job) {
   if (base::GetFileInfo(raster_path, &job->file_info))
     job->document_path = raster_path;
   return job;
@@ -70,7 +71,7 @@ scoped_ptr<extensions::PrinterProviderPrintJob> UpdateJobFileInfoOnWorkerThread(
 // Posts a task to update print job with info about file containing converted
 // PWG raster data. The task is posted to |slow_task_runner|.
 void UpdateJobFileInfo(
-    scoped_ptr<extensions::PrinterProviderPrintJob> job,
+    std::unique_ptr<extensions::PrinterProviderPrintJob> job,
     const scoped_refptr<base::TaskRunner>& slow_task_runner,
     const ExtensionPrinterHandler::PrintJobCallback& callback,
     bool success,
@@ -188,7 +189,7 @@ void ExtensionPrinterHandler::StartPrint(
     const gfx::Size& page_size,
     const scoped_refptr<base::RefCountedMemory>& print_data,
     const PrinterHandler::PrintCallback& callback) {
-  scoped_ptr<extensions::PrinterProviderPrintJob> print_job(
+  std::unique_ptr<extensions::PrinterProviderPrintJob> print_job(
       new extensions::PrinterProviderPrintJob());
   print_job->printer_id = destination_id;
   print_job->job_title = job_title;
@@ -255,7 +256,7 @@ void ExtensionPrinterHandler::StartGrantPrinterAccess(
 }
 
 void ExtensionPrinterHandler::SetPWGRasterConverterForTesting(
-    scoped_ptr<PWGRasterConverter> pwg_raster_converter) {
+    std::unique_ptr<PWGRasterConverter> pwg_raster_converter) {
   pwg_raster_converter_ = std::move(pwg_raster_converter);
 }
 
@@ -264,7 +265,7 @@ void ExtensionPrinterHandler::ConvertToPWGRaster(
     const cloud_devices::CloudDeviceDescription& printer_description,
     const cloud_devices::CloudDeviceDescription& ticket,
     const gfx::Size& page_size,
-    scoped_ptr<extensions::PrinterProviderPrintJob> job,
+    std::unique_ptr<extensions::PrinterProviderPrintJob> job,
     const ExtensionPrinterHandler::PrintJobCallback& callback) {
   if (!pwg_raster_converter_) {
     pwg_raster_converter_ = PWGRasterConverter::CreateDefault();
@@ -279,7 +280,7 @@ void ExtensionPrinterHandler::ConvertToPWGRaster(
 
 void ExtensionPrinterHandler::DispatchPrintJob(
     const PrinterHandler::PrintCallback& callback,
-    scoped_ptr<extensions::PrinterProviderPrintJob> print_job) {
+    std::unique_ptr<extensions::PrinterProviderPrintJob> print_job) {
   if (print_job->document_path.empty() && !print_job->document_bytes) {
     WrapPrintCallback(callback, false, kInvalidDataPrintError);
     return;

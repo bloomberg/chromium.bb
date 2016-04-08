@@ -16,12 +16,12 @@
 #include "ui/gfx/image/image.h"
 
 AppBannerInfoBarAndroid::AppBannerInfoBarAndroid(
-    scoped_ptr<banners::AppBannerInfoBarDelegateAndroid> delegate,
+    std::unique_ptr<banners::AppBannerInfoBarDelegateAndroid> delegate,
     const base::android::ScopedJavaGlobalRef<jobject>& japp_data)
     : ConfirmInfoBar(std::move(delegate)), japp_data_(japp_data) {}
 
 AppBannerInfoBarAndroid::AppBannerInfoBarAndroid(
-    scoped_ptr<banners::AppBannerInfoBarDelegateAndroid> delegate,
+    std::unique_ptr<banners::AppBannerInfoBarDelegateAndroid> delegate,
     const GURL& app_url)
     : ConfirmInfoBar(std::move(delegate)), app_url_(app_url) {}
 

@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_HEADER_PAINTER_ASH_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_HEADER_PAINTER_ASH_H_
 
+#include <memory>
+
 #include "ash/frame/header_painter.h"
 #include "base/compiler_specific.h"  // override
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_delegate.h"
 
@@ -99,7 +100,7 @@ class BrowserHeaderPainterAsh : public ash::HeaderPainter,
   // Whether the header should be painted as active.
   Mode mode_;
 
-  scoped_ptr<gfx::SlideAnimation> activation_animation_;
+  std::unique_ptr<gfx::SlideAnimation> activation_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserHeaderPainterAsh);
 };

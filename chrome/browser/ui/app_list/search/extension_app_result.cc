@@ -85,8 +85,8 @@ void ExtensionAppResult::Open(int event_flags) {
       event_flags);
 }
 
-scoped_ptr<SearchResult> ExtensionAppResult::Duplicate() const {
-  scoped_ptr<SearchResult> copy(
+std::unique_ptr<SearchResult> ExtensionAppResult::Duplicate() const {
+  std::unique_ptr<SearchResult> copy(
       new ExtensionAppResult(profile(), app_id(), controller(),
                              display_type() == DISPLAY_RECOMMENDATION));
   copy->set_title(title());

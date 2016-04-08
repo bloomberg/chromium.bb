@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_UI_ASH_CHROME_NEW_WINDOW_DELEGATE_H_
 #define CHROME_BROWSER_UI_ASH_CHROME_NEW_WINDOW_DELEGATE_H_
 
+#include <memory>
+
 #include "ash/new_window_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 class Browser;
 
@@ -27,7 +28,7 @@ class ChromeNewWindowDelegate : public ash::NewWindowDelegate {
  private:
   class TabRestoreHelper;
 
-  scoped_ptr<TabRestoreHelper> tab_restore_helper_;
+  std::unique_ptr<TabRestoreHelper> tab_restore_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNewWindowDelegate);
 };

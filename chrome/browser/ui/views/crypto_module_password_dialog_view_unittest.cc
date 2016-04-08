@@ -29,7 +29,7 @@ class CryptoModulePasswordDialogViewTest : public testing::Test {
   }
 
   std::string text_;
-  scoped_ptr<CryptoModulePasswordDialogView> dialog_;
+  std::unique_ptr<CryptoModulePasswordDialogView> dialog_;
 };
 
 TEST_F(CryptoModulePasswordDialogViewTest, TestAccept) {

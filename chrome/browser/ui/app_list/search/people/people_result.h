@@ -23,13 +23,13 @@ class PeopleResult : public SearchResult {
  public:
   PeopleResult(Profile* profile,
                AppListControllerDelegate* controller,
-               scoped_ptr<Person> person);
+               std::unique_ptr<Person> person);
   ~PeopleResult() override;
 
   // SearchResult overrides:
   void Open(int event_flags) override;
   void InvokeAction(int action_index, int event_flags) override;
-  scoped_ptr<SearchResult> Duplicate() const override;
+  std::unique_ptr<SearchResult> Duplicate() const override;
 
  private:
   void OnIconLoaded();
@@ -46,7 +46,7 @@ class PeopleResult : public SearchResult {
 
   Profile* profile_;
   AppListControllerDelegate* controller_;
-  scoped_ptr<Person> person_;
+  std::unique_ptr<Person> person_;
 
   gfx::ImageSkia image_;
 

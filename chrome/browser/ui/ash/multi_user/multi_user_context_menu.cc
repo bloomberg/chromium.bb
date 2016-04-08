@@ -6,8 +6,9 @@
 
 #include "ui/base/models/menu_model.h"
 
-scoped_ptr<ui::MenuModel> CreateMultiUserContextMenu(aura::Window* window) {
-  scoped_ptr<ui::MenuModel> menu_model;
+std::unique_ptr<ui::MenuModel> CreateMultiUserContextMenu(
+    aura::Window* window) {
+  std::unique_ptr<ui::MenuModel> menu_model;
   return menu_model;
 }
 

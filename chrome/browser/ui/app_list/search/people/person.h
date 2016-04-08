@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_PEOPLE_PERSON_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_PEOPLE_PERSON_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -21,12 +21,12 @@ namespace app_list {
 struct Person {
   // Parses the dictionary from the people search result and creates a person
   // object.
-  static scoped_ptr<Person> Create(const base::DictionaryValue& dict);
+  static std::unique_ptr<Person> Create(const base::DictionaryValue& dict);
 
   Person();
   ~Person();
 
-  scoped_ptr<Person> Duplicate();
+  std::unique_ptr<Person> Duplicate();
 
   // This is a unique id for this person. In the case of a result with an
   // associated Google account, this will always be the same as the owner id.

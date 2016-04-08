@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_PRINTER_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_PRINTER_HANDLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 
 namespace base {
@@ -43,7 +43,7 @@ class PrinterHandler {
       base::Callback<void(const base::DictionaryValue& printer_info)>;
 
   // Creates an instance of an PrinterHandler for extension printers.
-  static scoped_ptr<PrinterHandler> CreateForExtensionPrinters(
+  static std::unique_ptr<PrinterHandler> CreateForExtensionPrinters(
       content::BrowserContext* browser_context);
 
   virtual ~PrinterHandler() {}

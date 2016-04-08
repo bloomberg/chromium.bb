@@ -79,7 +79,7 @@ class RoundedCornersImageSource : public gfx::CanvasImageSource {
 
     canvas->DrawImageInt(icon_, 0, 0);
 
-    scoped_ptr<gfx::Canvas> masking_canvas(
+    std::unique_ptr<gfx::Canvas> masking_canvas(
         new gfx::Canvas(gfx::Size(icon_.width(), icon_.height()), 1.0f, false));
     DCHECK(masking_canvas);
 

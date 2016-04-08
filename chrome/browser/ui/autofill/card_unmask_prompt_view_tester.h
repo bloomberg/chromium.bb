@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_VIEW_TESTER_H_
 #define CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_VIEW_TESTER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace content {
 class WebContents;
@@ -19,7 +19,8 @@ class CardUnmaskPromptView;
 class CardUnmaskPromptViewTester {
  public:
   // Gets a AutofillCardUnmaskPromptViewTester for |view|.
-  static scoped_ptr<CardUnmaskPromptViewTester> For(CardUnmaskPromptView* view);
+  static std::unique_ptr<CardUnmaskPromptViewTester> For(
+      CardUnmaskPromptView* view);
 
   virtual ~CardUnmaskPromptViewTester() {}
 

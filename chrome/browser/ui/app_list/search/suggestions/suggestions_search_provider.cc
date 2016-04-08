@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/app_list/search/suggestions/suggestions_search_provider.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -51,9 +51,9 @@ void SuggestionsSearchProvider::Start(bool /*is_voice_query*/,
         suggestions_profile.suggestions(i);
 
     // TODO(mathp): If it's an app, create an AppResult.
-    scoped_ptr<URLSuggestionResult> result(new URLSuggestionResult(
-        profile_, list_controller_, favicon_service_, suggestions_service_,
-        suggestion));
+    std::unique_ptr<URLSuggestionResult> result(
+        new URLSuggestionResult(profile_, list_controller_, favicon_service_,
+                                suggestions_service_, suggestion));
     result->set_relevance(1.0 / (i + 1));
     Add(std::move(result));
   }

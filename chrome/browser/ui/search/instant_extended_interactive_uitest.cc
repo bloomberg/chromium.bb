@@ -228,8 +228,7 @@ class InstantExtendedTest : public InProcessBrowserTest,
 
     base::CancelableTaskTracker tracker;
     history->ScheduleDBTask(
-        scoped_ptr<history::HistoryDBTask>(
-            new QuittingHistoryDBTask()),
+        std::unique_ptr<history::HistoryDBTask>(new QuittingHistoryDBTask()),
         &tracker);
     base::MessageLoop::current()->Run();
   }
@@ -279,10 +278,10 @@ class InstantExtendedPrefetchTest : public InstantExtendedTest {
 
  private:
   // Used to instantiate FakeURLFetcherFactory.
-  scoped_ptr<net::URLFetcherImplFactory> factory_;
+  std::unique_ptr<net::URLFetcherImplFactory> factory_;
 
   // Used to mock default search provider suggest response.
-  scoped_ptr<net::FakeURLFetcherFactory> fake_factory_;
+  std::unique_ptr<net::FakeURLFetcherFactory> fake_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantExtendedPrefetchTest);
 };
@@ -306,8 +305,8 @@ class InstantExtendedNetworkTest : public InstantExtendedTest {
   }
 
  private:
-  scoped_ptr<net::NetworkChangeNotifier::DisableForTest> disable_for_test_;
-  scoped_ptr<FakeNetworkChangeNotifier> fake_network_change_notifier_;
+  std::unique_ptr<net::NetworkChangeNotifier::DisableForTest> disable_for_test_;
+  std::unique_ptr<FakeNetworkChangeNotifier> fake_network_change_notifier_;
 };
 
 // Test class used to verify chrome-search: scheme and access policy from the

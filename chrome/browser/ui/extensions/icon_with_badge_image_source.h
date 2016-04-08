@@ -38,7 +38,7 @@ class IconWithBadgeImageSource : public gfx::CanvasImageSource {
   ~IconWithBadgeImageSource() override;
 
   void SetIcon(const gfx::Image& icon);
-  void SetBadge(scoped_ptr<Badge> badge);
+  void SetBadge(std::unique_ptr<Badge> badge);
   void set_grayscale(bool grayscale) { grayscale_ = grayscale; }
   void set_paint_page_action_decoration(bool should_paint) {
     paint_page_action_decoration_ = should_paint;
@@ -74,7 +74,7 @@ class IconWithBadgeImageSource : public gfx::CanvasImageSource {
   gfx::Image icon_;
 
   // An optional badge to draw over the base icon.
-  scoped_ptr<Badge> badge_;
+  std::unique_ptr<Badge> badge_;
 
   // Whether or not the icon should be grayscaled (e.g., to show it is
   // disabled).

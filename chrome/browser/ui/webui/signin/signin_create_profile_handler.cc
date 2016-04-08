@@ -170,7 +170,8 @@ void SigninCreateProfileHandler::RequestSignedInProfiles(
     if (username.empty())
       continue;
     base::string16 profile_path = entry->GetPath().AsUTF16Unsafe();
-    scoped_ptr<base::DictionaryValue> user_info(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> user_info(
+        new base::DictionaryValue());
     user_info->SetString("username", username);
     user_info->SetString("profilePath", profile_path);
 

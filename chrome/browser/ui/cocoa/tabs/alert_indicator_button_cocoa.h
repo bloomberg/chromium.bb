@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_COCOA_TABS_ALERT_INDICATOR_BUTTON_COCOA_H_
 #define CHROME_BROWSER_UI_COCOA_TABS_ALERT_INDICATOR_BUTTON_COCOA_H_
 
+#include <memory>
+
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #import "ui/base/cocoa/hover_button.h"
 
@@ -36,8 +37,8 @@ class AnimationDelegate;
 
   // Alert indicator fade-in/out animation (i.e., only on show/hide, not a
   // continuous animation).
-  scoped_ptr<gfx::AnimationDelegate> fadeAnimationDelegate_;
-  scoped_ptr<gfx::Animation> fadeAnimation_;
+  std::unique_ptr<gfx::AnimationDelegate> fadeAnimationDelegate_;
+  std::unique_ptr<gfx::Animation> fadeAnimation_;
   TabAlertState showingAlertState_;
 
   // Target and action invoked whenever a fade-in/out animation completes.  This

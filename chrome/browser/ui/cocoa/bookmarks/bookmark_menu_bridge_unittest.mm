@@ -88,7 +88,7 @@ class BookmarkMenuBridgeTest : public CocoaProfileTest {
     [menu addItem:item];
     return item;
   }
-  scoped_ptr<TestBookmarkMenuBridge> bridge_;
+  std::unique_ptr<TestBookmarkMenuBridge> bridge_;
 };
 
 TEST_F(BookmarkMenuBridgeTest, TestBookmarkMenuAutoSeparator) {

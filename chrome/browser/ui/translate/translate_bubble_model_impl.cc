@@ -12,7 +12,7 @@
 
 TranslateBubbleModelImpl::TranslateBubbleModelImpl(
     translate::TranslateStep step,
-    scoped_ptr<translate::TranslateUIDelegate> ui_delegate)
+    std::unique_ptr<translate::TranslateUIDelegate> ui_delegate)
     : ui_delegate_(std::move(ui_delegate)),
       view_state_transition_(TranslateStepToViewState(step)),
       translation_declined_(false),

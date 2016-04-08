@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #import "base/mac/mac_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector_test.h"
 #include "chrome/browser/ui/browser.h"
@@ -75,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, DISABLED_Basic) {
       [SSLClientCertificateSelectorCocoa alloc]
       initWithBrowserContext:web_contents->GetBrowserContext()
              certRequestInfo:auth_requestor_->cert_request_info_.get()
-                    delegate:make_scoped_ptr(new TestClientCertificateDelegate(
+                    delegate:base::WrapUnique(new TestClientCertificateDelegate(
                                  &destroyed))];
   [selector displayForWebContents:web_contents];
   content::RunAllPendingInMessageLoop();
@@ -99,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, HideShow) {
       [SSLClientCertificateSelectorCocoa alloc]
       initWithBrowserContext:web_contents->GetBrowserContext()
              certRequestInfo:auth_requestor_->cert_request_info_.get()
-                    delegate:make_scoped_ptr(
+                    delegate:base::WrapUnique(
                                  new TestClientCertificateDelegate(nullptr))];
   [selector displayForWebContents:web_contents];
   content::RunAllPendingInMessageLoop();

@@ -7,13 +7,13 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "chrome/grit/generated_resources.h"

@@ -70,7 +70,7 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
 
   ash::Shell* shell = ash::Shell::CreateInstance(shell_init_params);
   shell->accelerator_controller()->SetScreenshotDelegate(
-      scoped_ptr<ash::ScreenshotDelegate>(new ChromeScreenshotGrabber));
+      std::unique_ptr<ash::ScreenshotDelegate>(new ChromeScreenshotGrabber));
 #if defined(OS_CHROMEOS)
   // TODO(flackr): Investigate exposing a blocking pool task runner to chromeos.
   chromeos::AccelerometerReader::GetInstance()->Initialize(
@@ -79,7 +79,7 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
               content::BrowserThread::GetBlockingPool()->GetSequenceToken(),
               base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
   shell->accelerator_controller()->SetImeControlDelegate(
-      scoped_ptr<ash::ImeControlDelegate>(new ImeController));
+      std::unique_ptr<ash::ImeControlDelegate>(new ImeController));
   shell->high_contrast_controller()->SetEnabled(
       chromeos::AccessibilityManager::Get()->IsHighContrastEnabled());
 

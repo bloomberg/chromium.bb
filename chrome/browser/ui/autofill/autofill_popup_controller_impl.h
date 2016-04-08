@@ -138,7 +138,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   // Contains common popup functionality such as popup layout. Protected for
   // testing.
-  scoped_ptr<PopupControllerCommon> controller_common_;
+  std::unique_ptr<PopupControllerCommon> controller_common_;
 
  private:
 #if !defined(OS_ANDROID)

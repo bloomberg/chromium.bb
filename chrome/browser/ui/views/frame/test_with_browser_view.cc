@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
@@ -33,29 +34,31 @@
 
 namespace {
 
-scoped_ptr<KeyedService> CreateTemplateURLService(
+std::unique_ptr<KeyedService> CreateTemplateURLService(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  return make_scoped_ptr(new TemplateURLService(
+  return base::WrapUnique(new TemplateURLService(
       profile->GetPrefs(),
-      scoped_ptr<SearchTermsData>(new UIThreadSearchTermsData(profile)),
+      std::unique_ptr<SearchTermsData>(new UIThreadSearchTermsData(profile)),
       WebDataServiceFactory::GetKeywordWebDataForProfile(
           profile, ServiceAccessType::EXPLICIT_ACCESS),
-      scoped_ptr<TemplateURLServiceClient>(new ChromeTemplateURLServiceClient(
-          HistoryServiceFactory::GetForProfile(
-              profile, ServiceAccessType::EXPLICIT_ACCESS))),
+      std::unique_ptr<TemplateURLServiceClient>(
+          new ChromeTemplateURLServiceClient(
+              HistoryServiceFactory::GetForProfile(
+                  profile, ServiceAccessType::EXPLICIT_ACCESS))),
       nullptr, nullptr, base::Closure()));
 }
 
-scoped_ptr<KeyedService> CreateAutocompleteClassifier(
+std::unique_ptr<KeyedService> CreateAutocompleteClassifier(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  return make_scoped_ptr(new AutocompleteClassifier(
-      make_scoped_ptr(new AutocompleteController(
-          make_scoped_ptr(new ChromeAutocompleteProviderClient(profile)),
+  return base::WrapUnique(new AutocompleteClassifier(
+      base::WrapUnique(new AutocompleteController(
+          base::WrapUnique(new ChromeAutocompleteProviderClient(profile)),
 
           nullptr, AutocompleteClassifier::kDefaultOmniboxProviders)),
-      scoped_ptr<AutocompleteSchemeClassifier>(new TestSchemeClassifier())));
+      std::unique_ptr<AutocompleteSchemeClassifier>(
+          new TestSchemeClassifier())));
 }
 
 }  // namespace

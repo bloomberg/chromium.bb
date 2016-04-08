@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_SHELF_CONTEXT_MENU_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_SHELF_CONTEXT_MENU_VIEW_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/download_shelf_context_menu.h"
 #include "ui/base/ui_base_types.h"
@@ -40,7 +41,7 @@ class DownloadShelfContextMenuView : public DownloadShelfContextMenu {
            ui::MenuSourceType source_type);
 
  private:
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   // Time the menu was closed.
   base::TimeTicks close_time_;

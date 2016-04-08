@@ -123,7 +123,7 @@ void IconWithBadgeImageSource::SetIcon(const gfx::Image& icon) {
   icon_ = icon;
 }
 
-void IconWithBadgeImageSource::SetBadge(scoped_ptr<Badge> badge) {
+void IconWithBadgeImageSource::SetBadge(std::unique_ptr<Badge> badge) {
   badge_ = std::move(badge);
 }
 

@@ -38,7 +38,7 @@ class InfoBarAndroid : public infobars::InfoBar {
     ACTION_CREATE_NEW_FILE = 6,
   };
 
-  explicit InfoBarAndroid(scoped_ptr<infobars::InfoBarDelegate> delegate);
+  explicit InfoBarAndroid(std::unique_ptr<infobars::InfoBarDelegate> delegate);
   ~InfoBarAndroid() override;
 
   // InfoBar:

@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_NTP_APP_LAUNCHER_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_NTP_APP_LAUNCHER_HANDLER_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "apps/metrics_names.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
@@ -169,7 +169,7 @@ class AppLauncherHandler
   extensions::ExtensionUninstallDialog* GetExtensionUninstallDialog();
 
   // Continuation for installing a bookmark app after favicon lookup.
-  void OnFaviconForApp(scoped_ptr<AppInstallInfo> install_info,
+  void OnFaviconForApp(std::unique_ptr<AppInstallInfo> install_info,
                        const favicon_base::FaviconImageResult& image_result);
 
   // Sends |highlight_app_id_| to the js.
@@ -200,10 +200,11 @@ class AppLauncherHandler
   PrefChangeRegistrar local_state_pref_change_registrar_;
 
   // Used to show confirmation UI for uninstalling extensions in incognito mode.
-  scoped_ptr<extensions::ExtensionUninstallDialog> extension_uninstall_dialog_;
+  std::unique_ptr<extensions::ExtensionUninstallDialog>
+      extension_uninstall_dialog_;
 
   // Used to show confirmation UI for enabling extensions.
-  scoped_ptr<ExtensionEnableFlow> extension_enable_flow_;
+  std::unique_ptr<ExtensionEnableFlow> extension_enable_flow_;
 
   // The ids of apps to show on the NTP.
   std::set<std::string> visible_apps_;

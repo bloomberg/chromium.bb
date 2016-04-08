@@ -304,7 +304,7 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
   base::FundamentalValue mode(static_cast<int>(display_mode));
 
   int64_t primary_id = gfx::Screen::GetScreen()->GetPrimaryDisplay().id();
-  scoped_ptr<base::ListValue> js_displays(new base::ListValue);
+  std::unique_ptr<base::ListValue> js_displays(new base::ListValue);
   for (const gfx::Display& display : displays) {
     const ash::DisplayInfo& display_info =
         display_manager->GetDisplayInfo(display.id());
@@ -439,7 +439,7 @@ void DisplayOptionsHandler::HandleSetDisplayLayout(
         display_id, parent_id,
         static_cast<display::DisplayPlacement::Position>(position), offset);
   }
-  scoped_ptr<display::DisplayLayout> layout = builder.Build();
+  std::unique_ptr<display::DisplayLayout> layout = builder.Build();
   if (!display::DisplayLayout::Validate(
           display_manager->GetCurrentDisplayIdList(), *layout)) {
     LOG(ERROR) << "Invalid layout: " << layout->ToString();

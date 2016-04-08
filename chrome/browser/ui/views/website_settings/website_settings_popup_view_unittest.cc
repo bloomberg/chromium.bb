@@ -149,7 +149,7 @@ class WebsiteSettingsPopupViewTest : public testing::Test {
   views::ScopedViewsTestHelper views_helper_;
 
   views::Widget* parent_window_ = nullptr;  // Weak. Owned by the NativeWidget.
-  scoped_ptr<test::WebsiteSettingsPopupViewTestApi> api_;
+  std::unique_ptr<test::WebsiteSettingsPopupViewTestApi> api_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebsiteSettingsPopupViewTest);

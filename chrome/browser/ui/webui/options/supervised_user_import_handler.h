@@ -97,7 +97,7 @@ class SupervisedUserImportHandler : public OptionsPageUIHandler,
   void OnSharedSettingChanged(const std::string& supervised_user_id,
                               const std::string& key);
 
-  scoped_ptr<CallbackList::Subscription> subscription_;
+  std::unique_ptr<CallbackList::Subscription> subscription_;
 
   ScopedObserver<ProfileAttributesStorage, SupervisedUserImportHandler>
       profile_observer_;

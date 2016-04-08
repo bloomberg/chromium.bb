@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_CREDIT_CARD_SCANNER_VIEW_H_
 #define CHROME_BROWSER_UI_AUTOFILL_CREDIT_CARD_SCANNER_VIEW_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/memory/weak_ptr.h"
 
 namespace content {
@@ -26,7 +27,7 @@ class CreditCardScannerView {
   // Creates a view for the credit card scanner UI. The view is associated with
   // the |web_contents| and notifies the |delegate| when a scan is cancelled or
   // completed. Should be called only if CanShow() returns true.
-  static scoped_ptr<CreditCardScannerView> Create(
+  static std::unique_ptr<CreditCardScannerView> Create(
       const base::WeakPtr<CreditCardScannerViewDelegate>& delegate,
       content::WebContents* web_contents);
 

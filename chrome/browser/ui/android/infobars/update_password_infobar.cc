@@ -14,7 +14,7 @@
 #include "jni/UpdatePasswordInfoBar_jni.h"
 
 UpdatePasswordInfoBar::UpdatePasswordInfoBar(
-    scoped_ptr<UpdatePasswordInfoBarDelegate> delegate)
+    std::unique_ptr<UpdatePasswordInfoBarDelegate> delegate)
     : ConfirmInfoBar(std::move(delegate)) {}
 
 UpdatePasswordInfoBar::~UpdatePasswordInfoBar() {}

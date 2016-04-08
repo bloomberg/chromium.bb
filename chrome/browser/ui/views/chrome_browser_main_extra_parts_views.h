@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_CHROME_BROWSER_MAIN_EXTRA_PARTS_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_CHROME_BROWSER_MAIN_EXTRA_PARTS_VIEWS_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 
 namespace views {
@@ -29,10 +30,10 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
   void PreCreateThreads() override;
 
  private:
-  scoped_ptr<views::ViewsDelegate> views_delegate_;
+  std::unique_ptr<views::ViewsDelegate> views_delegate_;
 
 #if defined(USE_AURA)
-  scoped_ptr<wm::WMState> wm_state_;
+  std::unique_ptr<wm::WMState> wm_state_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsViews);

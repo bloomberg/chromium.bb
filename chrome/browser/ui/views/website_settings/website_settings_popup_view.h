@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_WEBSITE_SETTINGS_POPUP_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_WEBSITE_SETTINGS_POPUP_VIEW_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/website_settings/chosen_object_view_observer.h"
@@ -145,7 +146,7 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
   content::WebContents* web_contents_;
 
   // The presenter that controls the Website Settings UI.
-  scoped_ptr<WebsiteSettings> presenter_;
+  std::unique_ptr<WebsiteSettings> presenter_;
 
   // The header section (containing security-related information).
   PopupHeaderView* header_;

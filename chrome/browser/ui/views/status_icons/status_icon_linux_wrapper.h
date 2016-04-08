@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_STATUS_ICONS_STATUS_ICON_LINUX_WRAPPER_H_
 #define CHROME_BROWSER_UI_VIEWS_STATUS_ICONS_STATUS_ICON_LINUX_WRAPPER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/status_icons/desktop_notification_balloon.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "ui/views/linux_ui/status_icon_linux.h"
@@ -53,7 +54,7 @@ class StatusIconLinuxWrapper : public StatusIcon,
   // Notification balloon.
   DesktopNotificationBalloon notification_;
 
-  scoped_ptr<views::StatusIconLinux> status_icon_;
+  std::unique_ptr<views::StatusIconLinux> status_icon_;
 
   StatusIconMenuModel* menu_model_;
 

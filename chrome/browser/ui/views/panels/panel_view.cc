@@ -181,7 +181,7 @@ bool NativePanelTestingViews::VerifyAppIcon() const {
       ::SendMessage(native_window, WM_GETICON, ICON_BIG, 0L));
   if (!app_icon)
     return false;
-  scoped_ptr<SkBitmap> bitmap(IconUtil::CreateSkBitmapFromHICON(app_icon));
+  std::unique_ptr<SkBitmap> bitmap(IconUtil::CreateSkBitmapFromHICON(app_icon));
   return bitmap.get() &&
          bitmap->width() == panel::kPanelAppIconSize &&
          bitmap->height() == panel::kPanelAppIconSize;
@@ -336,7 +336,7 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds, bool always_on_top)
   views::DesktopWindowTreeHostX11* host =
       views::DesktopWindowTreeHostX11::GetHostForXID(
           window_->GetNativeView()->GetHost()->GetAcceleratedWidget());
-  scoped_ptr<ui::EventHandler> resizer(
+  std::unique_ptr<ui::EventHandler> resizer(
       new X11PanelResizer(panel_.get(), window_->GetNativeWindow()));
   host->SwapNonClientEventHandler(std::move(resizer));
 #endif

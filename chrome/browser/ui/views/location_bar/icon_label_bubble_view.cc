@@ -189,7 +189,7 @@ void IconLabelBubbleView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   image()->SetPaintToLayer(false);
 }
 
-scoped_ptr<views::InkDropHover> IconLabelBubbleView::CreateInkDropHover()
+std::unique_ptr<views::InkDropHover> IconLabelBubbleView::CreateInkDropHover()
     const {
   // Location bar views don't show hover effect.
   return nullptr;

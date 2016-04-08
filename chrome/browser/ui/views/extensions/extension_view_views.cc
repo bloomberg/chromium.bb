@@ -135,10 +135,11 @@ void ExtensionViewViews::OnWebContentsAttached() {
 namespace extensions {
 
 // static
-scoped_ptr<ExtensionView> ExtensionViewHost::CreateExtensionView(
+std::unique_ptr<ExtensionView> ExtensionViewHost::CreateExtensionView(
     ExtensionViewHost* host,
     Browser* browser) {
-  scoped_ptr<ExtensionViewViews> view(new ExtensionViewViews(host, browser));
+  std::unique_ptr<ExtensionViewViews> view(
+      new ExtensionViewViews(host, browser));
   // We own |view_|, so don't auto delete when it's removed from the view
   // hierarchy.
   view->set_owned_by_client();

@@ -134,7 +134,7 @@ class SystemTrayDelegateChromeOS
   ash::NetworkingConfigDelegate* GetNetworkingConfigDelegate() const override;
   ash::VolumeControlDelegate* GetVolumeControlDelegate() const override;
   void SetVolumeControlDelegate(
-      scoped_ptr<ash::VolumeControlDelegate> delegate) override;
+      std::unique_ptr<ash::VolumeControlDelegate> delegate) override;
   bool GetSessionStartTime(base::TimeTicks* session_start_time) override;
   bool GetSessionLengthLimit(base::TimeDelta* session_length_limit) override;
   int GetSystemTrayMenuWidth() override;
@@ -243,7 +243,7 @@ class SystemTrayDelegateChromeOS
                      device::BluetoothDevice* device) override;
 
   void OnStartBluetoothDiscoverySession(
-      scoped_ptr<device::BluetoothDiscoverySession> discovery_session);
+      std::unique_ptr<device::BluetoothDiscoverySession> discovery_session);
 
   void UpdateEnterpriseDomain();
 
@@ -282,9 +282,9 @@ class SystemTrayDelegateChromeOS
   const base::string16 GetLegacySupervisedUserMessage() const;
   const base::string16 GetChildUserMessage() const;
 
-  scoped_ptr<content::NotificationRegistrar> registrar_;
-  scoped_ptr<PrefChangeRegistrar> local_state_registrar_;
-  scoped_ptr<PrefChangeRegistrar> user_pref_registrar_;
+  std::unique_ptr<content::NotificationRegistrar> registrar_;
+  std::unique_ptr<PrefChangeRegistrar> local_state_registrar_;
+  std::unique_ptr<PrefChangeRegistrar> user_pref_registrar_;
   Profile* user_profile_;
   base::HourClockType clock_type_;
   int search_key_mapped_to_;
@@ -298,13 +298,14 @@ class SystemTrayDelegateChromeOS
   bool session_started_;
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
-  scoped_ptr<device::BluetoothDiscoverySession> bluetooth_discovery_session_;
-  scoped_ptr<ash::CastConfigDelegate> cast_config_delegate_;
-  scoped_ptr<ash::NetworkingConfigDelegate> networking_config_delegate_;
-  scoped_ptr<ash::VolumeControlDelegate> volume_control_delegate_;
-  scoped_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
-  scoped_ptr<ShutdownPolicyHandler> shutdown_policy_handler_;
-  scoped_ptr<ash::VPNDelegate> vpn_delegate_;
+  std::unique_ptr<device::BluetoothDiscoverySession>
+      bluetooth_discovery_session_;
+  std::unique_ptr<ash::CastConfigDelegate> cast_config_delegate_;
+  std::unique_ptr<ash::NetworkingConfigDelegate> networking_config_delegate_;
+  std::unique_ptr<ash::VolumeControlDelegate> volume_control_delegate_;
+  std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
+  std::unique_ptr<ShutdownPolicyHandler> shutdown_policy_handler_;
+  std::unique_ptr<ash::VPNDelegate> vpn_delegate_;
 
   base::ObserverList<ash::CustodianInfoTrayObserver>
       custodian_info_changed_observers_;

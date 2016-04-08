@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_EXTENSION_LAUNCHER_CONTEXT_MENU_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_EXTENSION_LAUNCHER_CONTEXT_MENU_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 
 class ChromeLauncherController;
@@ -39,7 +40,7 @@ class ExtensionLauncherContextMenu : public LauncherContextMenu {
  private:
   void Init();
 
-  scoped_ptr<extensions::ContextMenuMatcher> extension_items_;
+  std::unique_ptr<extensions::ContextMenuMatcher> extension_items_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionLauncherContextMenu);
 };

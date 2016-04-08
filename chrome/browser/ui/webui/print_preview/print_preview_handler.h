@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_PRINT_PREVIEW_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_PRINT_PREVIEW_HANDLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_distiller.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
@@ -269,14 +269,14 @@ class PrintPreviewHandler
       local_discovery::ServiceDiscoverySharedClient>& client);
   void OnPrivetCapabilities(const base::DictionaryValue* capabilities);
   void PrivetCapabilitiesUpdateClient(
-      scoped_ptr<cloud_print::PrivetHTTPClient> http_client);
+      std::unique_ptr<cloud_print::PrivetHTTPClient> http_client);
   void PrivetLocalPrintUpdateClient(
       std::string print_ticket,
       std::string capabilities,
       gfx::Size page_size,
-      scoped_ptr<cloud_print::PrivetHTTPClient> http_client);
+      std::unique_ptr<cloud_print::PrivetHTTPClient> http_client);
   bool PrivetUpdateClient(
-      scoped_ptr<cloud_print::PrivetHTTPClient> http_client);
+      std::unique_ptr<cloud_print::PrivetHTTPClient> http_client);
   void StartPrivetLocalPrint(const std::string& print_ticket,
                              const std::string& capabilities,
                              const gfx::Size& page_size);
@@ -354,7 +354,7 @@ class PrintPreviewHandler
   base::FilePath print_to_pdf_path_;
 
   // Holds token service to get OAuth2 access tokens.
-  scoped_ptr<AccessTokenService> token_service_;
+  std::unique_ptr<AccessTokenService> token_service_;
 
   // Pointer to cookie manager service so that print preview can listen for GAIA
   // cookie changes.
@@ -363,21 +363,21 @@ class PrintPreviewHandler
 #if defined(ENABLE_SERVICE_DISCOVERY)
   scoped_refptr<local_discovery::ServiceDiscoverySharedClient>
       service_discovery_client_;
-  scoped_ptr<cloud_print::PrivetLocalPrinterLister> printer_lister_;
+  std::unique_ptr<cloud_print::PrivetLocalPrinterLister> printer_lister_;
 
-  scoped_ptr<cloud_print::PrivetHTTPAsynchronousFactory>
+  std::unique_ptr<cloud_print::PrivetHTTPAsynchronousFactory>
       privet_http_factory_;
-  scoped_ptr<cloud_print::PrivetHTTPResolution> privet_http_resolution_;
-  scoped_ptr<cloud_print::PrivetV1HTTPClient> privet_http_client_;
-  scoped_ptr<cloud_print::PrivetJSONOperation>
+  std::unique_ptr<cloud_print::PrivetHTTPResolution> privet_http_resolution_;
+  std::unique_ptr<cloud_print::PrivetV1HTTPClient> privet_http_client_;
+  std::unique_ptr<cloud_print::PrivetJSONOperation>
       privet_capabilities_operation_;
-  scoped_ptr<cloud_print::PrivetLocalPrintOperation>
+  std::unique_ptr<cloud_print::PrivetLocalPrintOperation>
       privet_local_print_operation_;
 #endif  // defined(ENABLE_SERVICE_DISCOVERY)
 
   // Handles requests for extension printers. Created lazily by calling
   // |EnsureExtensionPrinterHandlerSet|.
-  scoped_ptr<PrinterHandler> extension_printer_handler_;
+  std::unique_ptr<PrinterHandler> extension_printer_handler_;
 
   // Notifies tests that want to know if the PDF has been saved. This doesn't
   // notify the test if it was a successful save, only that it was attempted.
@@ -385,7 +385,7 @@ class PrintPreviewHandler
 
   // A print preview that is responsible for rendering the page after
   // being processed by the DOM Distiller.
-  scoped_ptr<PrintPreviewDistiller> print_preview_distiller_;
+  std::unique_ptr<PrintPreviewDistiller> print_preview_distiller_;
 
   base::WeakPtrFactory<PrintPreviewHandler> weak_factory_;
 

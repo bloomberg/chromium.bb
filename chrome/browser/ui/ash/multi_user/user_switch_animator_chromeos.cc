@@ -79,7 +79,7 @@ class MaximizedWindowAnimationWatcher : public ui::LayerAnimationObserver {
 
  private:
   ui::LayerAnimator* animator_;
-  scoped_ptr<ui::LayerTreeOwner> old_layer_;
+  std::unique_ptr<ui::LayerTreeOwner> old_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(MaximizedWindowAnimationWatcher);
 };

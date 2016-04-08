@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_IME_IME_WINDOW_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_IME_IME_WINDOW_VIEW_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/ime/ime_native_window.h"
 #include "chrome/browser/ui/ime/ime_window.h"

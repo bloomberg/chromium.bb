@@ -15,7 +15,7 @@ class UpdatePasswordInfoBarDelegate;
 class UpdatePasswordInfoBar : public ConfirmInfoBar {
  public:
   explicit UpdatePasswordInfoBar(
-      scoped_ptr<UpdatePasswordInfoBarDelegate> delegate);
+      std::unique_ptr<UpdatePasswordInfoBarDelegate> delegate);
   ~UpdatePasswordInfoBar() override;
 
   static bool Register(JNIEnv* env);

@@ -97,7 +97,7 @@ class ExtensionDialog : public views::DialogDelegate,
   base::string16 window_title_;
 
   // The contained host for the view.
-  scoped_ptr<extensions::ExtensionViewHost> host_;
+  std::unique_ptr<extensions::ExtensionViewHost> host_;
 
   content::NotificationRegistrar registrar_;
 

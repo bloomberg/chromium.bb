@@ -50,7 +50,7 @@ namespace {
 // Show the proxy config URL in the given tab.
 void ShowLinuxProxyConfigUrl(int render_process_id, int render_view_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   const char* name = base::nix::GetDesktopEnvironmentName(env.get());
   if (name)
     LOG(ERROR) << "Could not find " << name << " network settings in $PATH";
@@ -75,7 +75,7 @@ bool StartProxyConfigUtil(const char* command[]) {
   // TODO(mdm): this is a useful check, and is very similar to some
   // code in proxy_config_service_linux.cc. It should probably be in
   // base:: somewhere.
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   std::string path;
   if (!env->GetVar("PATH", &path)) {
     LOG(ERROR) << "No $PATH variable. Assuming no " << command[0] << ".";
@@ -112,7 +112,7 @@ bool StartProxyConfigUtil(const char* command[]) {
 void DetectAndStartProxyConfigUtil(int render_process_id,
                                    int render_view_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
 
   bool launched = false;
   switch (base::nix::GetDesktopEnvironment(env.get())) {

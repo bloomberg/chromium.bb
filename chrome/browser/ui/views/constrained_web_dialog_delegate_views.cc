@@ -254,7 +254,7 @@ class ConstrainedWebDialogDelegateViewViews
 
   InitiatorWebContentsObserver initiator_observer_;
 
-  scoped_ptr<ConstrainedWebDialogDelegateViews> impl_;
+  std::unique_ptr<ConstrainedWebDialogDelegateViews> impl_;
 
   // Minimum and maximum sizes to determine dialog bounds for auto-resizing.
   const gfx::Size min_size_;

@@ -74,7 +74,7 @@ class ZoomDecorationTest : public InProcessBrowserTest {
 
  private:
   bool should_quit_on_zoom_;
-  scoped_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
+  std::unique_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomDecorationTest);
 };
@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(ZoomDecorationTest, HideOnInputProgress) {
   Zoom(content::PAGE_ZOOM_IN);
   EXPECT_TRUE(zoom_decoration->IsVisible());
 
-  scoped_ptr<ToolbarModel> toolbar_model(new TestToolbarModel);
+  std::unique_ptr<ToolbarModel> toolbar_model(new TestToolbarModel);
   toolbar_model->set_input_in_progress(true);
   browser()->swap_toolbar_models(&toolbar_model);
   GetLocationBar()->ZoomChangedForActiveTab(false);

@@ -81,7 +81,7 @@ AdobeReaderPluginInfo GetReaderPlugin(
     if (std::find_if(plugin.mime_types.begin(), plugin.mime_types.end(),
                      IsPdfMimeType) == plugin.mime_types.end())
       continue;
-    scoped_ptr<PluginMetadata> plugin_metadata(
+    std::unique_ptr<PluginMetadata> plugin_metadata(
         plugin_finder->GetPluginMetadata(plugins[i]));
     if (plugin_metadata->identifier() != kAdobeReaderIdentifier)
       continue;
@@ -170,7 +170,7 @@ bool IsAdobeReaderUpToDate() {
   if (!is_default)
     return false;
 
-  scoped_ptr<FileVersionInfo> file_version_info(
+  std::unique_ptr<FileVersionInfo> file_version_info(
       FileVersionInfo::CreateFileVersionInfo(install_path));
   if (!file_version_info)
     return false;

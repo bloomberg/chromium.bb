@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_TEST_WITH_BROWSER_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_TEST_WITH_BROWSER_VIEW_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 
 namespace chrome {
@@ -39,9 +40,9 @@ class TestWithBrowserView : public BrowserWithTestWindowTest {
 
  private:
   BrowserView* browser_view_;  // Not owned.
-  scoped_ptr<ScopedTestingLocalState> local_state_;
-  scoped_ptr<predictors::PredictorDatabase> predictor_db_;
-  scoped_ptr<chrome::TestingIOThreadState> testing_io_thread_state_;
+  std::unique_ptr<ScopedTestingLocalState> local_state_;
+  std::unique_ptr<predictors::PredictorDatabase> predictor_db_;
+  std::unique_ptr<chrome::TestingIOThreadState> testing_io_thread_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWithBrowserView);
 };

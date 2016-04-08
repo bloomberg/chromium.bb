@@ -37,7 +37,8 @@ class BackButton : public ToolbarButton {
  private:
   // ToolbarButton:
   const char* GetClassName() const override;
-  scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
+  std::unique_ptr<views::LabelButtonBorder> CreateDefaultBorder()
+      const override;
   gfx::Rect GetThemePaintRect() const override;
 
   // Any leading margin to be applied. Used when the back button is in

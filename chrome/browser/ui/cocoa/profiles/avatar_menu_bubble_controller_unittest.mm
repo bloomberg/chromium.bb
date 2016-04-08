@@ -4,9 +4,10 @@
 
 #import "chrome/browser/ui/cocoa/profiles/avatar_menu_bubble_controller.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_mac.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/avatar_menu.h"
@@ -32,11 +33,11 @@ class AvatarMenuBubbleControllerTest : public CocoaTest {
     ASSERT_TRUE(manager_.SetUp());
 
     manager_.CreateTestingProfile(
-        "test1", scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
+        "test1", std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
         base::ASCIIToUTF16("Test 1"), 1, std::string(),
         TestingProfile::TestingFactories());
     manager_.CreateTestingProfile(
-        "test2", scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
+        "test2", std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
         base::ASCIIToUTF16("Test 2"), 0, std::string(),
         TestingProfile::TestingFactories());
 
@@ -129,7 +130,7 @@ TEST_F(AvatarMenuBubbleControllerTest, PerformLayout) {
 
   // Now create a new profile and notify the delegate.
   manager()->CreateTestingProfile(
-      "test3", scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
+      "test3", std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
       base::ASCIIToUTF16("Test 3"), 0, std::string(),
       TestingProfile::TestingFactories());
 
@@ -153,7 +154,7 @@ TEST_F(AvatarMenuBubbleControllerTest, PerformLayout) {
 @interface TestingAvatarMenuItemController : AvatarMenuItemController
                                                  <NSAnimationDelegate> {
  @private
-  scoped_ptr<base::MessagePumpNSRunLoop> pump_;
+  std::unique_ptr<base::MessagePumpNSRunLoop> pump_;
 }
 // After calling |-highlightForEventType:| an animation will possibly be
 // started. Since the animation is non-blocking, the run loop will need to be

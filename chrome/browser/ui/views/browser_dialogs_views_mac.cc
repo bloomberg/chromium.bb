@@ -37,7 +37,7 @@ void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
                                     const GURL& url,
                                     bool already_bookmarked) {
   // The Views dialog may prompt for sign in.
-  scoped_ptr<BubbleSyncPromoDelegate> delegate(
+  std::unique_ptr<BubbleSyncPromoDelegate> delegate(
       new BookmarkBubbleSignInDelegate(browser));
 
   BookmarkBubbleView::ShowBubble(nullptr, gfx::Rect(anchor_point, gfx::Size()),

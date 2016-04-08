@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_UI_COCOA_JAVASCRIPT_APP_MODAL_DIALOG_COCOA_H_
 #define CHROME_BROWSER_UI_COCOA_JAVASCRIPT_APP_MODAL_DIALOG_COCOA_H_
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/app_modal/native_app_modal_dialog.h"
 
 class AppModalDialogHelper;
@@ -44,8 +45,8 @@ class JavaScriptAppModalDialogCocoa : public app_modal::NativeAppModalDialog {
   // Returns the NSAlert associated with the modal dialog.
   NSAlert* GetAlert() const;
 
-  scoped_ptr<app_modal::JavaScriptAppModalDialog> dialog_;
-  scoped_ptr<AppModalDialogHelper> popup_helper_;
+  std::unique_ptr<app_modal::JavaScriptAppModalDialog> dialog_;
+  std::unique_ptr<AppModalDialogHelper> popup_helper_;
 
   // Created in the constructor and destroyed in the destructor.
   base::scoped_nsobject<JavaScriptAppModalDialogHelper> helper_;

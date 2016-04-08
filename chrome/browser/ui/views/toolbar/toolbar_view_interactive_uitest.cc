@@ -59,10 +59,10 @@ class ToolbarViewInteractiveUITest : public ExtensionBrowserTest {
   BrowserActionsContainer* browser_actions_;
 
   // The drag-and-drop background thread.
-  scoped_ptr<base::Thread> dnd_thread_;
+  std::unique_ptr<base::Thread> dnd_thread_;
 
   // Override the extensions-action-redesign switch.
-  scoped_ptr<extensions::FeatureSwitch::ScopedOverride> feature_override_;
+  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride> feature_override_;
 };
 
 ToolbarViewInteractiveUITest::ToolbarViewInteractiveUITest()

@@ -90,7 +90,7 @@ class ExtensionActionViewController
     icon_observer_ = icon_observer;
   }
 
-  scoped_ptr<IconWithBadgeImageSource> GetIconImageSourceForTesting(
+  std::unique_ptr<IconWithBadgeImageSource> GetIconImageSourceForTesting(
       content::WebContents* web_contents,
       const gfx::Size& size);
 
@@ -130,7 +130,7 @@ class ExtensionActionViewController
                            bool grant_tab_permissions);
 
   // Shows the popup with the given |host|.
-  void ShowPopup(scoped_ptr<extensions::ExtensionViewHost> host,
+  void ShowPopup(std::unique_ptr<extensions::ExtensionViewHost> host,
                  bool grant_tab_permissions,
                  PopupShowAction show_action);
 
@@ -138,7 +138,7 @@ class ExtensionActionViewController
   void OnPopupClosed();
 
   // Returns the image source for the icon.
-  scoped_ptr<IconWithBadgeImageSource> GetIconImageSource(
+  std::unique_ptr<IconWithBadgeImageSource> GetIconImageSource(
       content::WebContents* web_contents,
       const gfx::Size& size);
 
@@ -171,13 +171,13 @@ class ExtensionActionViewController
   extensions::ExtensionViewHost* popup_host_;
 
   // The context menu model for the extension.
-  scoped_ptr<extensions::ExtensionContextMenuModel> context_menu_model_;
+  std::unique_ptr<extensions::ExtensionContextMenuModel> context_menu_model_;
 
   // Our view delegate.
   ToolbarActionViewDelegate* view_delegate_;
 
   // The delegate to handle platform-specific implementations.
-  scoped_ptr<ExtensionActionPlatformDelegate> platform_delegate_;
+  std::unique_ptr<ExtensionActionPlatformDelegate> platform_delegate_;
 
   // The object that will be used to get the browser action icon for us.
   // It may load the icon asynchronously (in which case the initial icon

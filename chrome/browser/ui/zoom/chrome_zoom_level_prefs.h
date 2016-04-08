@@ -52,8 +52,8 @@ class ChromeZoomLevelPrefs : public content::ZoomLevelDelegate {
 
   void SetDefaultZoomLevelPref(double level);
   double GetDefaultZoomLevelPref() const;
-  scoped_ptr<DefaultZoomLevelSubscription> RegisterDefaultZoomLevelCallback(
-      const base::Closure& callback);
+  std::unique_ptr<DefaultZoomLevelSubscription>
+  RegisterDefaultZoomLevelCallback(const base::Closure& callback);
 
   void ExtractPerHostZoomLevels(
       const base::DictionaryValue* host_zoom_dictionary,
@@ -71,7 +71,7 @@ class ChromeZoomLevelPrefs : public content::ZoomLevelDelegate {
   PrefService* pref_service_;
   base::WeakPtr<ui_zoom::ZoomEventManager> zoom_event_manager_;
   content::HostZoomMap* host_zoom_map_;
-  scoped_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
+  std::unique_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
   std::string partition_key_;
   base::CallbackList<void(void)> default_zoom_changed_callbacks_;
 

@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/hung_plugin_tab_helper.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "base/rand_util.h"
 #include "build/build_config.h"
@@ -168,7 +169,7 @@ infobars::InfoBar* HungPluginInfoBarDelegate::Create(
     int plugin_child_id,
     const base::string16& plugin_name) {
   return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(new HungPluginInfoBarDelegate(
+      std::unique_ptr<ConfirmInfoBarDelegate>(new HungPluginInfoBarDelegate(
           helper, plugin_child_id, plugin_name))));
 }
 
@@ -365,7 +366,8 @@ void HungPluginTabHelper::KillPlugin(int child_id) {
   if (base::RandInt(0, 100) < 20) {
     version_info::Channel channel = chrome::GetChannel();
     if (channel == version_info::Channel::CANARY) {
-      scoped_ptr<OwnedHandleVector> renderer_handles(new OwnedHandleVector);
+      std::unique_ptr<OwnedHandleVector> renderer_handles(
+          new OwnedHandleVector);
       HANDLE current_process = ::GetCurrentProcess();
       content::RenderProcessHost::iterator renderer_iter =
           content::RenderProcessHost::AllHostsIterator();

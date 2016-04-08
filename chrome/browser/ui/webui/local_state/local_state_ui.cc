@@ -52,7 +52,7 @@ void LocalStateUIHandler::RegisterMessages() {
 
 void LocalStateUIHandler::HandleRequestJson(const base::ListValue* args) {
 #if !defined(OS_CHROMEOS)
-  scoped_ptr<base::DictionaryValue> local_state_values(
+  std::unique_ptr<base::DictionaryValue> local_state_values(
       g_browser_process->local_state()->GetPreferenceValuesOmitDefaults());
 
   std::string json;

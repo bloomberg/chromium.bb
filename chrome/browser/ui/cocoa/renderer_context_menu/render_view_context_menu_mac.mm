@@ -186,7 +186,7 @@ RenderViewContextMenuMac::RenderViewContextMenuMac(
       speech_submenu_model_(this),
       bidi_submenu_model_(this),
       parent_view_(parent_view) {
-  scoped_ptr<ToolkitDelegate> delegate(new ToolkitDelegateMac(this));
+  std::unique_ptr<ToolkitDelegate> delegate(new ToolkitDelegateMac(this));
   set_toolkit_delegate(std::move(delegate));
 }
 

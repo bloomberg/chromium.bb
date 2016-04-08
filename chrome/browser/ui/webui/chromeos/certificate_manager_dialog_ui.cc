@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/webui/chromeos/certificate_manager_dialog_ui.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
@@ -53,7 +54,7 @@ class CertificateManagerDialogHTMLSource : public content::URLDataSource {
   ~CertificateManagerDialogHTMLSource() override {}
 
  private:
-  scoped_ptr<base::DictionaryValue> localized_strings_;
+  std::unique_ptr<base::DictionaryValue> localized_strings_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateManagerDialogHTMLSource);
 };

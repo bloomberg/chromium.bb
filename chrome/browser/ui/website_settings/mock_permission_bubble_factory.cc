@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/website_settings/mock_permission_bubble_factory.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/website_settings/mock_permission_bubble_view.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 
@@ -31,12 +32,12 @@ MockPermissionBubbleFactory::~MockPermissionBubbleFactory() {
   }
 }
 
-scoped_ptr<PermissionBubbleView> MockPermissionBubbleFactory::Create(
+std::unique_ptr<PermissionBubbleView> MockPermissionBubbleFactory::Create(
     Browser* browser) {
   MockPermissionBubbleView* view =
       new MockPermissionBubbleView(this, manager_, is_browser_test_);
   view->can_update_ui_ = can_update_ui_;
-  return make_scoped_ptr(view);
+  return base::WrapUnique(view);
 }
 
 void MockPermissionBubbleFactory::SetCanUpdateUi(bool can_update_ui) {
@@ -64,10 +65,11 @@ bool MockPermissionBubbleFactory::is_visible() {
 }
 
 // static
-scoped_ptr<PermissionBubbleView> MockPermissionBubbleFactory::DoNotCreate(
+std::unique_ptr<PermissionBubbleView> MockPermissionBubbleFactory::DoNotCreate(
     Browser* browser) {
   NOTREACHED();
-  return make_scoped_ptr(new MockPermissionBubbleView(nullptr, nullptr, false));
+  return base::WrapUnique(
+      new MockPermissionBubbleView(nullptr, nullptr, false));
 }
 
 void MockPermissionBubbleFactory::UpdateResponseType() {

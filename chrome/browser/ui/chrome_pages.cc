@@ -118,7 +118,7 @@ void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
     default:
       NOTREACHED() << "Unhandled help source " << source;
   }
-  scoped_ptr<ScopedTabbedBrowserDisplayer> displayer;
+  std::unique_ptr<ScopedTabbedBrowserDisplayer> displayer;
   if (!browser) {
     displayer.reset(new ScopedTabbedBrowserDisplayer(profile));
     browser = displayer->browser();
@@ -353,7 +353,7 @@ void ShowBrowserSignin(Browser* browser,
   // a browser window from the original profile.  The user cannot sign in
   // from an incognito window.
   bool switched_browser = false;
-  scoped_ptr<ScopedTabbedBrowserDisplayer> displayer;
+  std::unique_ptr<ScopedTabbedBrowserDisplayer> displayer;
   if (browser->profile()->IsOffTheRecord()) {
     switched_browser = true;
     displayer.reset(new ScopedTabbedBrowserDisplayer(original_profile));

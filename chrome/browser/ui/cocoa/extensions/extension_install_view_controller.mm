@@ -228,7 +228,7 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
 - (id)initWithProfile:(Profile*)profile
             navigator:(content::PageNavigator*)navigator
              delegate:(ExtensionInstallViewDelegate*)delegate
-               prompt:(scoped_ptr<ExtensionInstallPrompt::Prompt>)prompt {
+               prompt:(std::unique_ptr<ExtensionInstallPrompt::Prompt>)prompt {
   // We use a different XIB in the case of bundle installs, installs with
   // webstore data, or no permission warnings. These are laid out nicely for
   // the data they display.

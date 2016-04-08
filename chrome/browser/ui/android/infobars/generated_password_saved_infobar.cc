@@ -8,6 +8,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/GeneratedPasswordSavedInfoBarDelegate_jni.h"
@@ -16,13 +17,13 @@
 void GeneratedPasswordSavedInfoBarDelegateAndroid::Create(
     content::WebContents* web_contents) {
   InfoBarService::FromWebContents(web_contents)
-      ->AddInfoBar(make_scoped_ptr(new GeneratedPasswordSavedInfoBar(
-          make_scoped_ptr(new GeneratedPasswordSavedInfoBarDelegateAndroid(
+      ->AddInfoBar(base::WrapUnique(new GeneratedPasswordSavedInfoBar(
+          base::WrapUnique(new GeneratedPasswordSavedInfoBarDelegateAndroid(
               web_contents)))));
 }
 
 GeneratedPasswordSavedInfoBar::GeneratedPasswordSavedInfoBar(
-    scoped_ptr<GeneratedPasswordSavedInfoBarDelegateAndroid> delegate)
+    std::unique_ptr<GeneratedPasswordSavedInfoBarDelegateAndroid> delegate)
     : InfoBarAndroid(std::move(delegate)) {}
 
 GeneratedPasswordSavedInfoBar::~GeneratedPasswordSavedInfoBar() {

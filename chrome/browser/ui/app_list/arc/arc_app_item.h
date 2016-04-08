@@ -58,8 +58,8 @@ class ArcAppItem : public ChromeAppListItem,
   void UpdatePositionFromOrdering();
 
   bool ready_;
-  scoped_ptr<ArcAppIcon> arc_app_icon_;
-  scoped_ptr<ArcAppContextMenu> context_menu_;
+  std::unique_ptr<ArcAppIcon> arc_app_icon_;
+  std::unique_ptr<ArcAppContextMenu> context_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppItem);
 };

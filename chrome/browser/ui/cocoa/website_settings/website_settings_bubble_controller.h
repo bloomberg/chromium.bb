@@ -4,9 +4,10 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "components/security_state/security_state_model.h"
@@ -73,11 +74,11 @@ class WebContents;
 
   // The UI translates user actions to specific events and forwards them to the
   // |presenter_|. The |presenter_| handles these events and updates the UI.
-  scoped_ptr<WebsiteSettings> presenter_;
+  std::unique_ptr<WebsiteSettings> presenter_;
 
   // Bridge which implements the WebsiteSettingsUI interface and forwards
   // methods on to this class.
-  scoped_ptr<WebsiteSettingsUIBridge> bridge_;
+  std::unique_ptr<WebsiteSettingsUIBridge> bridge_;
 }
 
 // Designated initializer. The controller will release itself when the bubble

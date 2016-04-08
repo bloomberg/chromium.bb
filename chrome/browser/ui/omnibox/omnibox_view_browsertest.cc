@@ -1606,7 +1606,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CopyURLToClipboard) {
   // Set permanent text thus making sure that omnibox treats 'google.com'
   // as URL (not as ordinary user input).
   TestToolbarModel* test_toolbar_model = new TestToolbarModel;
-  scoped_ptr<ToolbarModel> toolbar_model(test_toolbar_model);
+  std::unique_ptr<ToolbarModel> toolbar_model(test_toolbar_model);
   test_toolbar_model->set_text(ASCIIToUTF16("http://www.google.com/"));
   browser()->swap_toolbar_models(&toolbar_model);
   OmniboxView* omnibox_view = NULL;
@@ -1652,7 +1652,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CutURLToClipboard) {
   // Set permanent text thus making sure that omnibox treats 'google.com'
   // as URL (not as ordinary user input).
   TestToolbarModel* test_toolbar_model = new TestToolbarModel;
-  scoped_ptr<ToolbarModel> toolbar_model(test_toolbar_model);
+  std::unique_ptr<ToolbarModel> toolbar_model(test_toolbar_model);
   test_toolbar_model->set_text(ASCIIToUTF16("http://www.google.com/"));
   browser()->swap_toolbar_models(&toolbar_model);
   OmniboxView* omnibox_view = NULL;
@@ -1830,7 +1830,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   TestToolbarModel* test_toolbar_model = new TestToolbarModel;
-  scoped_ptr<ToolbarModel> toolbar_model(test_toolbar_model);
+  std::unique_ptr<ToolbarModel> toolbar_model(test_toolbar_model);
   browser()->swap_toolbar_models(&toolbar_model);
 
   base::string16 url_a(ASCIIToUTF16("http://www.a.com/"));
@@ -1891,7 +1891,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, SelectAllStaysAfterUpdate) {
   OmniboxView* omnibox_view = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   TestToolbarModel* test_toolbar_model = new TestToolbarModel;
-  scoped_ptr<ToolbarModel> toolbar_model(test_toolbar_model);
+  std::unique_ptr<ToolbarModel> toolbar_model(test_toolbar_model);
   browser()->swap_toolbar_models(&toolbar_model);
 
   base::string16 url_a(ASCIIToUTF16("http://www.a.com/"));
