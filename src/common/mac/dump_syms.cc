@@ -328,6 +328,65 @@ class DumpSymbols::DumperLineToModule:
   dwarf2reader::ByteReader *byte_reader_;  // WEAK
 };
 
+bool DumpSymbols::CreateEmptyModule(scoped_ptr<Module>& module) {
+  // Select an object file, if SetArchitecture hasn't been called to set one
+  // explicitly.
+  if (!selected_object_file_) {
+    // If there's only one architecture, that's the one.
+    if (object_files_.size() == 1)
+      selected_object_file_ = &object_files_[0];
+    else {
+      // Look for an object file whose architecture matches our own.
+      const NXArchInfo *local_arch = NXGetLocalArchInfo();
+      if (!SetArchitecture(local_arch->cputype, local_arch->cpusubtype)) {
+        fprintf(stderr, "%s: object file contains more than one"
+                " architecture, none of which match the current"
+                " architecture; specify an architecture explicitly"
+                " with '-a ARCH' to resolve the ambiguity\n",
+                object_filename_.c_str());
+        return false;
+      }
+    }
+  }
+
+  assert(selected_object_file_);
+
+  // Find the name of the selected file's architecture, to appear in
+  // the MODULE record and in error messages.
+  const NXArchInfo *selected_arch_info =
+      google_breakpad::BreakpadGetArchInfoFromCpuType(
+          selected_object_file_->cputype, selected_object_file_->cpusubtype);
+
+  const char *selected_arch_name = selected_arch_info->name;
+  if (strcmp(selected_arch_name, "i386") == 0)
+    selected_arch_name = "x86";
+
+  // Produce a name to use in error messages that includes the
+  // filename, and the architecture, if there is more than one.
+  selected_object_name_ = object_filename_;
+  if (object_files_.size() > 1) {
+    selected_object_name_ += ", architecture ";
+    selected_object_name_ + selected_arch_name;
+  }
+
+  // Compute a module name, to appear in the MODULE record.
+  string module_name = object_filename_;
+  module_name = basename(&module_name[0]);
+
+  // Choose an identifier string, to appear in the MODULE record.
+  string identifier = Identifier();
+  if (identifier.empty())
+    return false;
+  identifier += "0";
+
+  // Create a module to hold the debugging information.
+  module.reset(new Module(module_name,
+                          "mac",
+                          selected_arch_name,
+                          identifier));
+  return true;
+}
+
 bool DumpSymbols::ReadDwarf(google_breakpad::Module *module,
                             const mach_o::Reader &macho_reader,
                             const mach_o::SectionMap &dwarf_sections,
@@ -535,61 +594,9 @@ bool DumpSymbols::LoadCommandDumper::SymtabCommand(const ByteBuffer &entries,
 }
 
 bool DumpSymbols::ReadSymbolData(Module** out_module) {
-  // Select an object file, if SetArchitecture hasn't been called to set one
-  // explicitly.
-  if (!selected_object_file_) {
-    // If there's only one architecture, that's the one.
-    if (object_files_.size() == 1)
-      selected_object_file_ = &object_files_[0];
-    else {
-      // Look for an object file whose architecture matches our own.
-      const NXArchInfo *local_arch = NXGetLocalArchInfo();
-      if (!SetArchitecture(local_arch->cputype, local_arch->cpusubtype)) {
-        fprintf(stderr, "%s: object file contains more than one"
-                " architecture, none of which match the current"
-                " architecture; specify an architecture explicitly"
-                " with '-a ARCH' to resolve the ambiguity\n",
-                object_filename_.c_str());
-        return false;
-      }
-    }
-  }
-
-  assert(selected_object_file_);
-
-  // Find the name of the selected file's architecture, to appear in
-  // the MODULE record and in error messages.
-  const NXArchInfo *selected_arch_info =
-      google_breakpad::BreakpadGetArchInfoFromCpuType(
-          selected_object_file_->cputype, selected_object_file_->cpusubtype);
-
-  const char *selected_arch_name = selected_arch_info->name;
-  if (strcmp(selected_arch_name, "i386") == 0)
-    selected_arch_name = "x86";
-
-  // Produce a name to use in error messages that includes the
-  // filename, and the architecture, if there is more than one.
-  selected_object_name_ = object_filename_;
-  if (object_files_.size() > 1) {
-    selected_object_name_ += ", architecture ";
-    selected_object_name_ + selected_arch_name;
-  }
-
-  // Compute a module name, to appear in the MODULE record.
-  string module_name = object_filename_;
-  module_name = basename(&module_name[0]);
-
-  // Choose an identifier string, to appear in the MODULE record.
-  string identifier = Identifier();
-  if (identifier.empty())
+  scoped_ptr<Module> module;
+  if (!CreateEmptyModule(module))
     return false;
-  identifier += "0";
-
-  // Create a module to hold the debugging information.
-  scoped_ptr<Module> module(new Module(module_name,
-                                       "mac",
-                                       selected_arch_name,
-                                       identifier));
 
   // Parse the selected object file.
   mach_o::Reader::Reporter reporter(selected_object_name_);
@@ -622,6 +629,17 @@ bool DumpSymbols::WriteSymbolFile(std::ostream &stream) {
   }
 
   return false;
+}
+
+// Read the selected object file's debugging information, and write out the
+// header only to |stream|. Return true on success; if an error occurs, report
+// it and return false.
+bool DumpSymbols::WriteSymbolFileHeader(std::ostream &stream) {
+  scoped_ptr<Module> module;
+  if (!CreateEmptyModule(module))
+    return false;
+
+  return module->Write(stream, symbol_data_);
 }
 
 }  // namespace google_breakpad

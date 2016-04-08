@@ -901,19 +901,12 @@ bool SanitizeDebugFile(const typename ElfClass::Ehdr* debug_elf_header,
 }
 
 template<typename ElfClass>
-bool ReadSymbolDataElfClass(const typename ElfClass::Ehdr* elf_header,
-                            const string& obj_filename,
-                            const std::vector<string>& debug_dirs,
-                            const DumpOptions& options,
-                            Module** out_module) {
-  typedef typename ElfClass::Ehdr Ehdr;
-
-  *out_module = NULL;
-
+bool InitModuleForElfClass(const typename ElfClass::Ehdr* elf_header,
+                           const string& obj_filename,
+                           scoped_ptr<Module>& module) {
   PageAllocator allocator;
   wasteful_vector<uint8_t> identifier(&allocator, kDefaultBuildIdSize);
-  if (!FileID::ElfFileIdentifierFromMappedFile(elf_header,
-                                               identifier)) {
+  if (!FileID::ElfFileIdentifierFromMappedFile(elf_header, identifier)) {
     fprintf(stderr, "%s: unable to generate file identifier\n",
             obj_filename.c_str());
     return false;
@@ -926,11 +919,6 @@ bool ReadSymbolDataElfClass(const typename ElfClass::Ehdr* elf_header,
     return false;
   }
 
-  // Figure out what endianness this file is.
-  bool big_endian;
-  if (!ElfEndianness<ElfClass>(elf_header, &big_endian))
-    return false;
-
   string name = BaseFileName(obj_filename);
   string os = "Linux";
   // Add an extra "0" at the end.  PDB files on Windows have an 'age'
@@ -938,8 +926,32 @@ bool ReadSymbolDataElfClass(const typename ElfClass::Ehdr* elf_header,
   // really used or necessary on other platforms, but be consistent.
   string id = FileID::ConvertIdentifierToUUIDString(identifier) + "0";
 
+  module.reset(new Module(name, os, architecture, id));
+
+  return true;
+}
+
+template<typename ElfClass>
+bool ReadSymbolDataElfClass(const typename ElfClass::Ehdr* elf_header,
+                            const string& obj_filename,
+                            const std::vector<string>& debug_dirs,
+                            const DumpOptions& options,
+                            Module** out_module) {
+  typedef typename ElfClass::Ehdr Ehdr;
+
+  *out_module = NULL;
+
+  scoped_ptr<Module> module;
+  if (!InitModuleForElfClass<ElfClass>(elf_header, obj_filename, module)) {
+    return false;
+  }
+
+  // Figure out what endianness this file is.
+  bool big_endian;
+  if (!ElfEndianness<ElfClass>(elf_header, &big_endian))
+    return false;
+
   LoadSymbolsInfo<ElfClass> info(debug_dirs);
-  scoped_ptr<Module> module(new Module(name, os, architecture, id));
   if (!LoadSymbols<ElfClass>(obj_filename, big_endian, elf_header,
                              !debug_dirs.empty(), &info,
                              options, module.get())) {
@@ -954,7 +966,9 @@ bool ReadSymbolDataElfClass(const typename ElfClass::Ehdr* elf_header,
     if (!LoadELF(debuglink_file, &debug_map_wrapper,
                  reinterpret_cast<void**>(&debug_elf_header)) ||
         !SanitizeDebugFile<ElfClass>(debug_elf_header, debuglink_file,
-                                     obj_filename, architecture, big_endian)) {
+                                     obj_filename,
+                                     module->architecture().c_str(),
+                                     big_endian)) {
       return false;
     }
 
@@ -1010,6 +1024,45 @@ bool WriteSymbolFile(const string &obj_file,
   bool result = module->Write(sym_stream, options.symbol_data);
   delete module;
   return result;
+}
+
+// Read the selected object file's debugging information, and write out the
+// header only to |stream|. Return true on success; if an error occurs, report
+// it and return false.
+bool WriteSymbolFileHeader(const string& obj_file,
+                           std::ostream &sym_stream) {
+  MmapWrapper map_wrapper;
+  void* elf_header = NULL;
+  if (!LoadELF(obj_file, &map_wrapper, &elf_header)) {
+    fprintf(stderr, "Could not load ELF file: %s\n", obj_file.c_str());
+    return false;
+  }
+
+  if (!IsValidElf(elf_header)) {
+    fprintf(stderr, "Not a valid ELF file: %s\n", obj_file.c_str());
+    return false;
+  }
+
+  int elfclass = ElfClass(elf_header);
+  scoped_ptr<Module> module;
+  if (elfclass == ELFCLASS32) {
+    if (!InitModuleForElfClass<ElfClass32>(
+        reinterpret_cast<const Elf32_Ehdr*>(elf_header), obj_file, module)) {
+      fprintf(stderr, "Failed to load ELF module: %s\n", obj_file.c_str());
+      return false;
+    }
+  } else if (elfclass == ELFCLASS64) {
+    if (!InitModuleForElfClass<ElfClass64>(
+        reinterpret_cast<const Elf64_Ehdr*>(elf_header), obj_file, module)) {
+      fprintf(stderr, "Failed to load ELF module: %s\n", obj_file.c_str());
+      return false;
+    }
+  } else {
+    fprintf(stderr, "Unsupported module file: %s\n", obj_file.c_str());
+    return false;
+  }
+
+  return module->Write(sym_stream, ALL_SYMBOL_DATA);
 }
 
 bool ReadSymbolData(const string& obj_file,
