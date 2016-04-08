@@ -164,6 +164,7 @@ inline EncryptionScheme AesCtrEncryptionScheme() {
 // determine if the configuration is still valid or not.
 struct AudioConfig {
   AudioConfig();
+  AudioConfig(const AudioConfig& other);
   ~AudioConfig();
 
   bool is_encrypted() const { return encryption_scheme.is_encrypted(); }
@@ -194,7 +195,7 @@ inline AudioConfig::AudioConfig()
       channel_number(0),
       samples_per_second(0) {
 }
-
+inline AudioConfig::AudioConfig(const AudioConfig& other) = default;
 inline AudioConfig::~AudioConfig() {
 }
 
@@ -203,6 +204,7 @@ inline AudioConfig::~AudioConfig() {
 // determine if the configuration is still valid or not.
 struct VideoConfig {
   VideoConfig();
+  VideoConfig(const VideoConfig& other);
   ~VideoConfig();
 
   bool is_encrypted() const { return encryption_scheme.is_encrypted(); }
@@ -229,6 +231,8 @@ inline VideoConfig::VideoConfig()
       profile(kVideoProfileUnknown),
       additional_config(nullptr) {
 }
+
+inline VideoConfig::VideoConfig(const VideoConfig& other) = default;
 
 inline VideoConfig::~VideoConfig() {
 }

@@ -302,6 +302,8 @@ class FakeDemuxerHost : public ::media::DemuxerHost {
 DemuxResult::DemuxResult() {
 }
 
+DemuxResult::DemuxResult(const DemuxResult& other) = default;
+
 DemuxResult::~DemuxResult() {
 }
 

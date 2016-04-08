@@ -10,6 +10,9 @@ namespace media {
 VideoPipelineClient::VideoPipelineClient() {
 }
 
+VideoPipelineClient::VideoPipelineClient(const VideoPipelineClient& other) =
+    default;
+
 VideoPipelineClient::~VideoPipelineClient() {
 }
 

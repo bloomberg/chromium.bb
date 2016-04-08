@@ -56,6 +56,7 @@ class BufferingFrameProvider : public CodedFrameProvider {
         const scoped_refptr<DecoderBufferBase>& buffer,
         const ::media::AudioDecoderConfig& audio_config,
         const ::media::VideoDecoderConfig& video_config);
+    BufferWithConfig(const BufferWithConfig& other);
     ~BufferWithConfig();
 
     const scoped_refptr<DecoderBufferBase>& buffer() const { return buffer_; }

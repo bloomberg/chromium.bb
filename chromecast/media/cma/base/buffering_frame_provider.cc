@@ -24,6 +24,9 @@ BufferingFrameProvider::BufferWithConfig::BufferWithConfig(
       video_config_(video_config) {
 }
 
+BufferingFrameProvider::BufferWithConfig::BufferWithConfig(
+    const BufferWithConfig& other) = default;
+
 BufferingFrameProvider::BufferWithConfig::~BufferWithConfig() {
 }
 

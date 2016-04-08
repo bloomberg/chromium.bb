@@ -20,6 +20,7 @@ struct VideoPipelineClient {
       const gfx::Size& natural_size)> NaturalSizeChangedCB;
 
   VideoPipelineClient();
+  VideoPipelineClient(const VideoPipelineClient& other);
   ~VideoPipelineClient();
 
   // All the default callbacks.

@@ -17,6 +17,7 @@ struct AvPipelineClient {
       base::TimeDelta, base::TimeDelta, base::TimeTicks)> TimeUpdateCB;
 
   AvPipelineClient();
+  AvPipelineClient(const AvPipelineClient& other);
   ~AvPipelineClient();
 
   // Decryption key status notification.

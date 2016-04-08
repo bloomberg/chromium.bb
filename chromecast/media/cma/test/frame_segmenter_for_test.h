@@ -30,6 +30,7 @@ BufferList H264SegmenterForTest(const uint8_t* data, size_t data_size);
 
 struct DemuxResult {
   DemuxResult();
+  DemuxResult(const DemuxResult& other);
   ~DemuxResult();
 
   ::media::AudioDecoderConfig audio_config;

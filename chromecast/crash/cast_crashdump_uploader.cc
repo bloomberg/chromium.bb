@@ -28,6 +28,8 @@ const char kCommentsKey[] = "comments";
 CastCrashdumpData::CastCrashdumpData() {
 }
 
+CastCrashdumpData::CastCrashdumpData(const CastCrashdumpData& other) = default;
+
 CastCrashdumpData::~CastCrashdumpData() {
 }
 

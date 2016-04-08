@@ -18,6 +18,7 @@ struct MediaPipelineClient {
       void(base::TimeDelta, base::TimeDelta, base::TimeTicks)> TimeUpdateCB;
 
   MediaPipelineClient();
+  MediaPipelineClient(const MediaPipelineClient& other);
   ~MediaPipelineClient();
 
   // Callback used to report a playback error as a ::media::PipelineStatus.

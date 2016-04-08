@@ -18,6 +18,7 @@ namespace chromecast {
 
 struct CastCrashdumpData {
   CastCrashdumpData();
+  CastCrashdumpData(const CastCrashdumpData& other);
   ~CastCrashdumpData();
 
   std::string product;
@@ -38,7 +39,7 @@ class CastCrashdumpUploader {
   // Does not take ownership of |http_layer|.
   CastCrashdumpUploader(const CastCrashdumpData& data,
                         google_breakpad::LibcurlWrapper* http_layer);
-  CastCrashdumpUploader(const CastCrashdumpData& data);
+  explicit CastCrashdumpUploader(const CastCrashdumpData& data);
   ~CastCrashdumpUploader();
 
   bool AddAttachment(const std::string& label, const std::string& filename);
