@@ -38,7 +38,6 @@
 
 namespace blink {
 
-PLATFORM_EXPORT extern WTFLogChannel LogFileAPI;
 PLATFORM_EXPORT extern WTFLogChannel LogMedia;
 PLATFORM_EXPORT extern WTFLogChannel LogNetwork;
 PLATFORM_EXPORT extern WTFLogChannel LogResourceLoading;

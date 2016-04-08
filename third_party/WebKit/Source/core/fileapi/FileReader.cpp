@@ -51,7 +51,6 @@ namespace blink {
 
 namespace {
 
-#if !LOG_DISABLED
 const CString utf8BlobUUID(Blob* blob)
 {
     return blob->uuid().utf8();
@@ -61,7 +60,6 @@ const CString utf8FilePath(Blob* blob)
 {
     return blob->hasBackingFile() ? toFile(blob)->path().utf8() : "";
 }
-#endif
 
 } // namespace
 
@@ -237,7 +235,7 @@ bool FileReader::hasPendingActivity() const
 void FileReader::readAsArrayBuffer(Blob* blob, ExceptionState& exceptionState)
 {
     ASSERT(blob);
-    WTF_LOG(FileAPI, "FileReader: reading as array buffer: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
+    DVLOG(1) << "reading as array buffer: " << utf8BlobUUID(blob).data() << " " << utf8FilePath(blob).data();
 
     readInternal(blob, FileReaderLoader::ReadAsArrayBuffer, exceptionState);
 }
@@ -245,7 +243,7 @@ void FileReader::readAsArrayBuffer(Blob* blob, ExceptionState& exceptionState)
 void FileReader::readAsBinaryString(Blob* blob, ExceptionState& exceptionState)
 {
     ASSERT(blob);
-    WTF_LOG(FileAPI, "FileReader: reading as binary: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
+    DVLOG(1) << "reading as binary: " << utf8BlobUUID(blob).data() << " " << utf8FilePath(blob).data();
 
     readInternal(blob, FileReaderLoader::ReadAsBinaryString, exceptionState);
 }
@@ -253,7 +251,7 @@ void FileReader::readAsBinaryString(Blob* blob, ExceptionState& exceptionState)
 void FileReader::readAsText(Blob* blob, const String& encoding, ExceptionState& exceptionState)
 {
     ASSERT(blob);
-    WTF_LOG(FileAPI, "FileReader: reading as text: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
+    DVLOG(1) << "reading as text: " << utf8BlobUUID(blob).data() << " " << utf8FilePath(blob).data();
 
     m_encoding = encoding;
     readInternal(blob, FileReaderLoader::ReadAsText, exceptionState);
@@ -267,7 +265,7 @@ void FileReader::readAsText(Blob* blob, ExceptionState& exceptionState)
 void FileReader::readAsDataURL(Blob* blob, ExceptionState& exceptionState)
 {
     ASSERT(blob);
-    WTF_LOG(FileAPI, "FileReader: reading as data URL: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
+    DVLOG(1) << "reading as data URL: " << utf8BlobUUID(blob).data() << " " << utf8FilePath(blob).data();
 
     readInternal(blob, FileReaderLoader::ReadAsDataURL, exceptionState);
 }
@@ -329,7 +327,7 @@ static void delayedAbort(FileReader* reader)
 
 void FileReader::abort()
 {
-    WTF_LOG(FileAPI, "FileReader: aborting\n");
+    DVLOG(1) << "aborting";
 
     if (m_loadingState != LoadingStateLoading
         && m_loadingState != LoadingStatePending) {

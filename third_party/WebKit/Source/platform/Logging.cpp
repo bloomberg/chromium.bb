@@ -31,7 +31,6 @@
 
 namespace blink {
 
-WTFLogChannel LogFileAPI =            { WTFLogChannelOff };
 WTFLogChannel LogMedia =              { WTFLogChannelOff };
 WTFLogChannel LogNetwork =            { WTFLogChannelOff };
 WTFLogChannel LogResourceLoading =    { WTFLogChannelOff };
@@ -58,9 +57,6 @@ WTFLogChannel* getChannelFromName(const String& channelName)
 
     if (equalIgnoringCase(channelName, String("StorageAPI")))
         return &LogStorageAPI;
-
-    if (equalIgnoringCase(channelName, String("FileAPI")))
-        return &LogFileAPI;
 
     if (equalIgnoringCase(channelName, String("Timers")))
         return &LogTimers;
