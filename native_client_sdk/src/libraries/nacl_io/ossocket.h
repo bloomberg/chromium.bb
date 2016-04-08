@@ -15,6 +15,14 @@
 #include <poll.h>
 #include <sys/socket.h>
 #include <sys/select.h>
+
+#if defined(_NEWLIB_VERSION)
+struct iovec {
+  void  *iov_base;
+  size_t iov_len;
+};
+#endif
+
 #define PROVIDES_SOCKET_API
 #endif
 

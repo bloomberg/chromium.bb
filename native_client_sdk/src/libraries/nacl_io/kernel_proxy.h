@@ -200,6 +200,7 @@ class KernelProxy : protected KernelObject {
                            int flags,
                            struct sockaddr* addr,
                            socklen_t* addrlen);
+  // recvmsg ignores ancillary data.
   virtual ssize_t recvmsg(int fd, struct msghdr* msg, int flags);
   virtual ssize_t send(int fd, const void* buf, size_t len, int flags);
   virtual ssize_t sendto(int fd,
@@ -208,6 +209,7 @@ class KernelProxy : protected KernelObject {
                          int flags,
                          const struct sockaddr* addr,
                          socklen_t addrlen);
+  // sendmsg ignores ancillary data.
   virtual ssize_t sendmsg(int fd, const struct msghdr* msg, int flags);
   virtual int setsockopt(int fd,
                          int lvl,

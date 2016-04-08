@@ -300,6 +300,59 @@ TEST_F(SocketTestUDP, SendRecvUnbound) {
   EXPECT_EQ(0, memcmp(outbuf, inbuf, sizeof(outbuf)));
 }
 
+TEST_F(SocketTestUDP, SendmsgRecvmsg) {
+  char outbuf[256];
+  char inbuf[512];
+
+  memset(outbuf, 1, sizeof(outbuf));
+  memset(inbuf, 0, sizeof(inbuf));
+
+  struct iovec outvec[1];
+  outvec[0].iov_base = &outbuf;
+  outvec[0].iov_len = sizeof(outbuf);
+
+  EXPECT_EQ(0, Bind(sock1_, LOCAL_HOST, PORT1));
+  EXPECT_EQ(0, Bind(sock2_, LOCAL_HOST, PORT2));
+
+  sockaddr_in outaddr;
+  socklen_t outaddrlen = sizeof(outaddr);
+  IP4ToSockAddr(LOCAL_HOST, PORT2, &outaddr);
+
+  struct msghdr outmsg;
+  outmsg.msg_name = &outaddr;
+  outmsg.msg_namelen = outaddrlen;
+  outmsg.msg_iov = outvec;
+  outmsg.msg_iovlen = 1;
+
+  int len1 = ki_sendmsg(sock1_, &outmsg, 0);
+  EXPECT_EQ(sizeof(outbuf), len1);
+
+  // Ensure the buffers are different
+  EXPECT_NE(0, memcmp(outbuf, inbuf, sizeof(outbuf)));
+  memset(&outaddr, 0, sizeof(outaddr));
+
+  // Try to receive the previously sent packet
+  sockaddr_in inaddr;
+  socklen_t inaddrlen = sizeof(inaddr);
+
+  struct iovec invec[1];
+  invec[0].iov_base = &inbuf;
+  invec[0].iov_len = sizeof(inbuf);
+
+  struct msghdr inmsg;
+  inmsg.msg_name = &inaddr;
+  inmsg.msg_namelen = inaddrlen;
+  inmsg.msg_iov = invec;
+  inmsg.msg_iovlen = 1;
+
+  int len2 = ki_recvmsg(sock2_, &inmsg, 0);
+  EXPECT_EQ(sizeof(outbuf), len2);
+  EXPECT_EQ(PORT1, htons(static_cast<sockaddr_in *>(inmsg.msg_name)->sin_port));
+
+  // Now they should be the same
+  EXPECT_EQ(0, memcmp(outbuf, inbuf, sizeof(outbuf)));
+}
+
 const size_t kQueueSize = 65536 * 8;
 TEST_F(SocketTestUDP, FullFifo) {
   char outbuf[16 * 1024];
