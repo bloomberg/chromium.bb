@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/threading/thread_checker.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/auth.mojom.h"
@@ -171,7 +170,6 @@ class ArcAuthService : public ArcService,
   PrefChangeRegistrar pref_change_registrar_;
 
   mojo::Binding<AuthHost> binding_;
-  base::ThreadChecker thread_checker_;
   State state_ = State::STOPPED;
   base::ObserverList<Observer> observer_list_;
   std::unique_ptr<GaiaAuthFetcher> merger_fetcher_;

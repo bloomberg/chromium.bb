@@ -9,7 +9,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -47,6 +49,9 @@ namespace {
 // Weak pointer.  This class is owned by ArcServiceManager.
 ArcAuthService* arc_auth_service = nullptr;
 
+base::LazyInstance<base::ThreadChecker> thread_checker =
+    LAZY_INSTANCE_INITIALIZER;
+
 const char kArcSupportExtensionId[] = "cnbgggchhmkkdmeppjobngjoejnihlei";
 const char kArcSupportStorageId[] = "arc_support";
 
@@ -61,23 +66,26 @@ const char kStateActive[] = "ACTIVE";
 ArcAuthService::ArcAuthService(ArcBridgeService* bridge_service)
     : ArcService(bridge_service), binding_(this) {
   DCHECK(!arc_auth_service);
+  DCHECK(thread_checker.Get().CalledOnValidThread());
+
   arc_auth_service = this;
 
   arc_bridge_service()->AddObserver(this);
 }
 
 ArcAuthService::~ArcAuthService() {
-  DCHECK(!profile_);
+  DCHECK(thread_checker.Get().CalledOnValidThread());
+  DCHECK(arc_auth_service == this);
+
+  Shutdown();
   arc_bridge_service()->RemoveObserver(this);
 
-  DCHECK(arc_auth_service == this);
   arc_auth_service = nullptr;
 }
 
 // static
 ArcAuthService* ArcAuthService::Get() {
-  DCHECK(arc_auth_service);
-  DCHECK(arc_auth_service->thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
   return arc_auth_service;
 }
 
@@ -107,7 +115,7 @@ void ArcAuthService::OnAuthInstanceReady() {
 }
 
 std::string ArcAuthService::GetAndResetAuthCode() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
   std::string auth_code;
   auth_code_.swap(auth_code);
   return auth_code;
@@ -115,13 +123,13 @@ std::string ArcAuthService::GetAndResetAuthCode() {
 
 void ArcAuthService::GetAuthCodeDeprecated(
     const GetAuthCodeDeprecatedCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
   DCHECK(!IsOptInVerificationDisabled());
   callback.Run(mojo::String(GetAndResetAuthCode()));
 }
 
 void ArcAuthService::GetAuthCode(const GetAuthCodeCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
 
   const std::string auth_code = GetAndResetAuthCode();
   const bool verification_disabled = IsOptInVerificationDisabled();
@@ -136,7 +144,7 @@ void ArcAuthService::GetAuthCode(const GetAuthCodeCallback& callback) {
 }
 
 void ArcAuthService::OnSignInComplete() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
   DCHECK_EQ(state_, State::ACTIVE);
 
   profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
@@ -144,7 +152,7 @@ void ArcAuthService::OnSignInComplete() {
 }
 
 void ArcAuthService::OnSignInFailed(arc::ArcSignInFailureReason reason) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
   DCHECK_EQ(state_, State::ACTIVE);
 
   int error_message_id;
@@ -181,7 +189,7 @@ void ArcAuthService::OnSignInFailed(arc::ArcSignInFailureReason reason) {
 
 void ArcAuthService::GetIsAccountManaged(
     const GetIsAccountManagedCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
 
   const user_manager::User* const primary_user =
       user_manager::UserManager::Get()->GetPrimaryUser();
@@ -202,7 +210,7 @@ void ArcAuthService::SetState(State state) {
 
 void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
   DCHECK(profile && profile != profile_);
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
 
   Shutdown();
 
@@ -294,7 +302,7 @@ void ArcAuthService::ShowUI(UIPage page, const base::string16& status) {
 }
 
 void ArcAuthService::OnMergeSessionSuccess(const std::string& data) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
 
   DCHECK(!initial_opt_in_);
   context_prepared_ = true;
@@ -303,13 +311,13 @@ void ArcAuthService::OnMergeSessionSuccess(const std::string& data) {
 
 void ArcAuthService::OnMergeSessionFailure(
     const GoogleServiceAuthError& error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
   VLOG(2) << "Failed to merge gaia session " << error.ToString() << ".";
   OnPrepareContextFailed();
 }
 
 void ArcAuthService::OnUbertokenSuccess(const std::string& token) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
   merger_fetcher_.reset(
       new GaiaAuthFetcher(this, GaiaConstants::kChromeOSSource,
                           storage_partition_->GetURLRequestContext()));
@@ -317,14 +325,14 @@ void ArcAuthService::OnUbertokenSuccess(const std::string& token) {
 }
 
 void ArcAuthService::OnUbertokenFailure(const GoogleServiceAuthError& error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
   VLOG(2) << "Failed to get ubertoken " << error.ToString() << ".";
   OnPrepareContextFailed();
 }
 
 void ArcAuthService::OnSyncedPrefChanged(const std::string& path,
                                          bool from_sync) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
 
   // Update UMA only for local changes
   if (!from_sync) {
@@ -335,7 +343,7 @@ void ArcAuthService::OnSyncedPrefChanged(const std::string& path,
 }
 
 void ArcAuthService::OnOptInPreferenceChanged() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
   DCHECK(profile_);
 
   if (profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
@@ -365,7 +373,7 @@ void ArcAuthService::ShutdownBridge() {
   auth_callback_.reset();
   ubertoken_fethcher_.reset();
   merger_fetcher_.reset();
-  ArcBridgeService::Get()->Shutdown();
+  arc_bridge_service()->Shutdown();
   SetState(State::STOPPED);
 }
 
@@ -381,17 +389,19 @@ void ArcAuthService::ShutdownBridgeAndShowUI(UIPage page,
 }
 
 void ArcAuthService::AddObserver(Observer* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
   observer_list_.AddObserver(observer);
 }
 
 void ArcAuthService::RemoveObserver(Observer* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
   observer_list_.RemoveObserver(observer);
 }
 
 void ArcAuthService::CloseUI() {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnOptInUIClose());
+  if (!disable_ui_for_testing)
+    ArcAuthNotification::Hide();
 }
 
 void ArcAuthService::SetUIPage(UIPage page, const base::string16& status) {
@@ -402,13 +412,13 @@ void ArcAuthService::SetUIPage(UIPage page, const base::string16& status) {
 }
 
 void ArcAuthService::StartArc() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ArcBridgeService::Get()->HandleStartup();
+  DCHECK(thread_checker.Get().CalledOnValidThread());
+  arc_bridge_service()->HandleStartup();
   SetState(State::ACTIVE);
 }
 
 void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
   DCHECK(!auth_code.empty());
 
   if (!auth_callback_.is_null()) {
@@ -432,7 +442,7 @@ void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
 }
 
 void ArcAuthService::StartLso() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
 
   // Update UMA only if error is currently shown.
   if (ui_page_ == UIPage::ERROR)
@@ -443,7 +453,7 @@ void ArcAuthService::StartLso() {
 }
 
 void ArcAuthService::CancelAuthCode() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
 
   if (state_ != State::FETCHING_CODE)
     return;
@@ -456,17 +466,17 @@ void ArcAuthService::CancelAuthCode() {
 }
 
 void ArcAuthService::EnableArc() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
   profile_->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
 }
 
 void ArcAuthService::DisableArc() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
   profile_->GetPrefs()->SetBoolean(prefs::kArcEnabled, false);
 }
 
 void ArcAuthService::PrepareContext() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
 
   // Get auth token to continue.
   ProfileOAuth2TokenService* token_service =
@@ -482,7 +492,7 @@ void ArcAuthService::PrepareContext() {
 }
 
 void ArcAuthService::StartUI() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker.Get().CalledOnValidThread());
 
   SetState(State::FETCHING_CODE);
 

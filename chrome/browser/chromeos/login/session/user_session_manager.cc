@@ -1158,7 +1158,9 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
       DCHECK(arc::ArcServiceManager::Get());
       arc::ArcServiceManager::Get()->OnPrimaryUserProfilePrepared(
           multi_user_util::GetAccountIdFromProfile(profile));
-      arc::ArcAuthService::Get()->OnPrimaryUserProfilePrepared(profile);
+      arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
+      DCHECK(arc_auth_service);
+      arc_auth_service->OnPrimaryUserProfilePrepared(profile);
     }
   }
 
@@ -1812,7 +1814,9 @@ void UserSessionManager::Shutdown() {
   if (arc::ArcBridgeService::GetEnabled(
           base::CommandLine::ForCurrentProcess())) {
     DCHECK(arc::ArcServiceManager::Get());
-    arc::ArcAuthService::Get()->Shutdown();
+    arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
+    if (arc_auth_service)
+      arc_auth_service->Shutdown();
   }
   token_handle_fetcher_.reset();
   token_handle_util_.reset();

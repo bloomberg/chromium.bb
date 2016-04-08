@@ -41,11 +41,15 @@ std::unique_ptr<extensions::NativeMessageHost> ArcSupportHost::Create() {
 }
 
 ArcSupportHost::ArcSupportHost() {
-  arc::ArcAuthService::Get()->AddObserver(this);
+  arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
+  DCHECK(arc_auth_service);
+  arc_auth_service->AddObserver(this);
 }
 
 ArcSupportHost::~ArcSupportHost() {
-  arc::ArcAuthService::Get()->RemoveObserver(this);
+  arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
+  if (arc_auth_service)
+    arc_auth_service->RemoveObserver(this);
 }
 
 void ArcSupportHost::Start(Client* client) {
@@ -55,6 +59,7 @@ void ArcSupportHost::Start(Client* client) {
   SendLocalization();
 
   arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
+  DCHECK(arc_auth_service);
   OnOptInUIShowPage(arc_auth_service->ui_page(),
                     arc_auth_service->ui_page_status());
 }
@@ -141,17 +146,20 @@ void ArcSupportHost::OnMessage(const std::string& request_string) {
     return;
   }
 
+  arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
+  DCHECK(arc_auth_service);
+
   if (action == kActionStartLso) {
-    arc::ArcAuthService::Get()->StartLso();
+    arc_auth_service->StartLso();
   } else if (action == kActionSetAuthCode) {
     std::string code;
     if (!request->GetString(kCode, &code)) {
       NOTREACHED();
       return;
     }
-    arc::ArcAuthService::Get()->SetAuthCodeAndStartArc(code);
+    arc_auth_service->SetAuthCodeAndStartArc(code);
   } else if (action == kActionCancelAuthCode) {
-    arc::ArcAuthService::Get()->CancelAuthCode();
+    arc_auth_service->CancelAuthCode();
   } else {
     NOTREACHED();
   }
