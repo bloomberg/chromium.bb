@@ -42,18 +42,15 @@ std::string GetUpdatesResponseEvent::GetDetails() const {
   }
 }
 
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 GetUpdatesResponseEvent::GetProtoMessage() const {
-  return scoped_ptr<base::DictionaryValue>(
+  return std::unique_ptr<base::DictionaryValue>(
       ClientToServerResponseToValue(response_, false));
 }
 
-scoped_ptr<ProtocolEvent> GetUpdatesResponseEvent::Clone() const {
-  return scoped_ptr<ProtocolEvent>(
-      new GetUpdatesResponseEvent(
-          timestamp_,
-          response_,
-          error_));
+std::unique_ptr<ProtocolEvent> GetUpdatesResponseEvent::Clone() const {
+  return std::unique_ptr<ProtocolEvent>(
+      new GetUpdatesResponseEvent(timestamp_, response_, error_));
 }
 
 }  // namespace syncer

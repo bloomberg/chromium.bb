@@ -4,9 +4,9 @@
 
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,8 +36,9 @@ TEST_F(SyncSessionSnapshotTest, SyncSessionSnapshotToValue) {
   ProgressMarkerMap download_progress_markers;
   download_progress_markers[BOOKMARKS] = "\xef\xb7\xa4";
   download_progress_markers[APPS] = "apps";
-  scoped_ptr<base::DictionaryValue> expected_download_progress_markers_value(
-      ProgressMarkerMapToValue(download_progress_markers));
+  std::unique_ptr<base::DictionaryValue>
+      expected_download_progress_markers_value(
+          ProgressMarkerMapToValue(download_progress_markers));
 
   const bool kIsSilenced = true;
   const int kNumEncryptionConflicts = 1054;
@@ -51,7 +52,7 @@ TEST_F(SyncSessionSnapshotTest, SyncSessionSnapshotToValue) {
                                std::vector<int>(MODEL_TYPE_COUNT, 0),
                                std::vector<int>(MODEL_TYPE_COUNT, 0),
                                sync_pb::GetUpdatesCallerInfo::UNKNOWN);
-  scoped_ptr<base::DictionaryValue> value(snapshot.ToValue());
+  std::unique_ptr<base::DictionaryValue> value(snapshot.ToValue());
   EXPECT_EQ(16u, value->size());
   ExpectDictIntegerValue(model_neutral.num_successful_commits,
                          *value, "numSuccessfulCommits");

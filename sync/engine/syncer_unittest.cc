@@ -5,6 +5,8 @@
 // Syncer unit tests. Unfortunately a lot of these tests
 // are outdated and need to be reworked and updated.
 
+#include "sync/engine/syncer.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -12,6 +14,7 @@
 #include <limits>
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
@@ -21,7 +24,6 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
@@ -31,7 +33,6 @@
 #include "sync/engine/get_commit_ids.h"
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/engine/sync_scheduler_impl.h"
-#include "sync/engine/syncer.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -584,17 +585,17 @@ class SyncerTest : public testing::Test,
   TestDirectorySetterUpper dir_maker_;
   FakeEncryptor encryptor_;
   scoped_refptr<ExtensionsActivity> extensions_activity_;
-  scoped_ptr<MockConnectionManager> mock_server_;
+  std::unique_ptr<MockConnectionManager> mock_server_;
   CancelationSignal cancelation_signal_;
 
   Syncer* syncer_;
 
-  scoped_ptr<SyncSession> session_;
+  std::unique_ptr<SyncSession> session_;
   TypeDebugInfoCache debug_info_cache_;
   MockNudgeHandler mock_nudge_handler_;
-  scoped_ptr<ModelTypeRegistry> model_type_registry_;
-  scoped_ptr<SyncSchedulerImpl> scheduler_;
-  scoped_ptr<SyncSessionContext> context_;
+  std::unique_ptr<ModelTypeRegistry> model_type_registry_;
+  std::unique_ptr<SyncSchedulerImpl> scheduler_;
+  std::unique_ptr<SyncSessionContext> context_;
   base::TimeDelta last_short_poll_interval_received_;
   base::TimeDelta last_long_poll_interval_received_;
   base::TimeDelta last_sessions_commit_delay_;
@@ -604,7 +605,7 @@ class SyncerTest : public testing::Test,
 
   ModelTypeSet enabled_datatypes_;
   sessions::NudgeTracker nudge_tracker_;
-  scoped_ptr<MockDebugInfoGetter> debug_info_getter_;
+  std::unique_ptr<MockDebugInfoGetter> debug_info_getter_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncerTest);

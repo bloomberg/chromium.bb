@@ -7,7 +7,8 @@
 
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/time/time.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
@@ -76,7 +77,7 @@ class WorkerEntityTrackerTest : public ::testing::Test {
   const base::Time kCtime;
   const base::Time kMtime;
   sync_pb::EntitySpecifics specifics;
-  scoped_ptr<WorkerEntityTracker> entity_;
+  std::unique_ptr<WorkerEntityTracker> entity_;
 };
 
 // Construct a new entity from a server update.  Then receive another update.

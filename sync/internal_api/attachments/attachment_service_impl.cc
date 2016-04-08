@@ -54,7 +54,7 @@ class AttachmentServiceImpl::GetOrDownloadState
   AttachmentIdSet in_progress_attachments_;
 
   AttachmentIdSet unavailable_attachments_;
-  scoped_ptr<AttachmentMap> retrieved_attachments_;
+  std::unique_ptr<AttachmentMap> retrieved_attachments_;
 
   DISALLOW_COPY_AND_ASSIGN(GetOrDownloadState);
 };
@@ -112,9 +112,9 @@ AttachmentServiceImpl::GetOrDownloadState::PostResultIfAllRequestsCompleted() {
 }
 
 AttachmentServiceImpl::AttachmentServiceImpl(
-    scoped_ptr<AttachmentStoreForSync> attachment_store,
-    scoped_ptr<AttachmentUploader> attachment_uploader,
-    scoped_ptr<AttachmentDownloader> attachment_downloader,
+    std::unique_ptr<AttachmentStoreForSync> attachment_store,
+    std::unique_ptr<AttachmentUploader> attachment_uploader,
+    std::unique_ptr<AttachmentDownloader> attachment_downloader,
     Delegate* delegate,
     const base::TimeDelta& initial_backoff_delay,
     const base::TimeDelta& max_backoff_delay)
@@ -145,14 +145,15 @@ AttachmentServiceImpl::~AttachmentServiceImpl() {
 }
 
 // Static.
-scoped_ptr<syncer::AttachmentService> AttachmentServiceImpl::CreateForTest() {
-  scoped_ptr<syncer::AttachmentStore> attachment_store =
+std::unique_ptr<syncer::AttachmentService>
+AttachmentServiceImpl::CreateForTest() {
+  std::unique_ptr<syncer::AttachmentStore> attachment_store =
       AttachmentStore::CreateInMemoryStore();
-  scoped_ptr<AttachmentUploader> attachment_uploader(
+  std::unique_ptr<AttachmentUploader> attachment_uploader(
       new FakeAttachmentUploader);
-  scoped_ptr<AttachmentDownloader> attachment_downloader(
+  std::unique_ptr<AttachmentDownloader> attachment_downloader(
       new FakeAttachmentDownloader());
-  scoped_ptr<syncer::AttachmentService> attachment_service(
+  std::unique_ptr<syncer::AttachmentService> attachment_service(
       new syncer::AttachmentServiceImpl(
           attachment_store->CreateAttachmentStoreForSync(),
           std::move(attachment_uploader), std::move(attachment_downloader),
@@ -178,8 +179,8 @@ void AttachmentServiceImpl::GetOrDownloadAttachments(
 void AttachmentServiceImpl::ReadDone(
     const scoped_refptr<GetOrDownloadState>& state,
     const AttachmentStore::Result& result,
-    scoped_ptr<AttachmentMap> attachments,
-    scoped_ptr<AttachmentIdList> unavailable_attachment_ids) {
+    std::unique_ptr<AttachmentMap> attachments,
+    std::unique_ptr<AttachmentIdList> unavailable_attachment_ids) {
   // Add read attachments to result.
   for (AttachmentMap::const_iterator iter = attachments->begin();
        iter != attachments->end();
@@ -253,7 +254,7 @@ void AttachmentServiceImpl::DownloadDone(
     const scoped_refptr<GetOrDownloadState>& state,
     const AttachmentId& attachment_id,
     const AttachmentDownloader::DownloadResult& result,
-    scoped_ptr<Attachment> attachment) {
+    std::unique_ptr<Attachment> attachment) {
   switch (result) {
     case AttachmentDownloader::DOWNLOAD_SUCCESS: {
       AttachmentList attachment_list;
@@ -303,8 +304,8 @@ void AttachmentServiceImpl::OnNetworkChanged(
 
 void AttachmentServiceImpl::ReadDoneNowUpload(
     const AttachmentStore::Result& result,
-    scoped_ptr<AttachmentMap> attachments,
-    scoped_ptr<AttachmentIdList> unavailable_attachment_ids) {
+    std::unique_ptr<AttachmentMap> attachments,
+    std::unique_ptr<AttachmentIdList> unavailable_attachment_ids) {
   DCHECK(CalledOnValidThread());
   if (!unavailable_attachment_ids->empty()) {
     // TODO(maniscalco): We failed to read some attachments. What should we do
@@ -327,7 +328,8 @@ void AttachmentServiceImpl::ReadDoneNowUpload(
   }
 }
 
-void AttachmentServiceImpl::SetTimerForTest(scoped_ptr<base::Timer> timer) {
+void AttachmentServiceImpl::SetTimerForTest(
+    std::unique_ptr<base::Timer> timer) {
   upload_task_queue_->SetTimerForTest(std::move(timer));
 }
 

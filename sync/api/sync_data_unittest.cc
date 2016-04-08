@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted_memory.h"
@@ -41,7 +42,7 @@ class SyncDataTest : public testing::Test {
             attachment_service_weak_ptr_factory.GetWeakPtr()) {}
   base::MessageLoop loop;
   sync_pb::EntitySpecifics specifics;
-  scoped_ptr<AttachmentService> attachment_service;
+  std::unique_ptr<AttachmentService> attachment_service;
   base::WeakPtrFactory<AttachmentService> attachment_service_weak_ptr_factory;
   AttachmentServiceProxy attachment_service_proxy;
 };

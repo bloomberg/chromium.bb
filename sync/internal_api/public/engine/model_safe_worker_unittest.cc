@@ -4,7 +4,8 @@
 
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,7 +26,7 @@ TEST_F(ModelSafeWorkerTest, ModelSafeRoutingInfoToValue) {
   expected_value.SetString("Bookmarks", "GROUP_PASSIVE");
   expected_value.SetString("Encryption keys", "GROUP_UI");
   expected_value.SetString("Preferences", "GROUP_DB");
-  scoped_ptr<base::DictionaryValue> value(
+  std::unique_ptr<base::DictionaryValue> value(
       ModelSafeRoutingInfoToValue(routing_info));
   EXPECT_TRUE(value->Equals(&expected_value));
 }

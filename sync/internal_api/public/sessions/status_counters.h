@@ -7,9 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "sync/base/sync_export.h"
 
@@ -20,7 +20,7 @@ struct SYNC_EXPORT StatusCounters {
   StatusCounters();
   ~StatusCounters();
 
-  scoped_ptr<base::DictionaryValue> ToValue() const;
+  std::unique_ptr<base::DictionaryValue> ToValue() const;
   std::string ToString() const;
 
   size_t num_entries;

@@ -186,7 +186,7 @@ class AttachmentDownloaderImplTest : public testing::Test {
 
   void DownloadDone(const AttachmentId& attachment_id,
                     const AttachmentDownloader::DownloadResult& result,
-                    scoped_ptr<Attachment> attachment);
+                    std::unique_ptr<Attachment> attachment);
 
   void VerifyDownloadResult(const AttachmentId& attachment_id,
                             const AttachmentDownloader::DownloadResult& result);
@@ -200,8 +200,8 @@ class AttachmentDownloaderImplTest : public testing::Test {
   base::MessageLoopForIO message_loop_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   net::TestURLFetcherFactory url_fetcher_factory_;
-  scoped_ptr<MockOAuth2TokenService> token_service_;
-  scoped_ptr<AttachmentDownloader> attachment_downloader_;
+  std::unique_ptr<MockOAuth2TokenService> token_service_;
+  std::unique_ptr<AttachmentDownloader> attachment_downloader_;
   ResultsMap download_results_;
   int num_completed_downloads_;
   const AttachmentId attachment_id_;
@@ -253,7 +253,7 @@ void AttachmentDownloaderImplTest::CompleteDownload(
 void AttachmentDownloaderImplTest::DownloadDone(
     const AttachmentId& attachment_id,
     const AttachmentDownloader::DownloadResult& result,
-    scoped_ptr<Attachment> attachment) {
+    std::unique_ptr<Attachment> attachment) {
   download_results_.insert(std::make_pair(attachment_id, result));
   if (result == AttachmentDownloader::DOWNLOAD_SUCCESS) {
     // Successful download should be accompanied by valid attachment with

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_LOGIN_LOGIN_HANDLER_H_
 #define CHROME_BROWSER_UI_LOGIN_LOGIN_HANDLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -198,7 +199,7 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
 
   // Observes other login handlers so this login handler can respond.
   // This is only accessed on the UI thread.
-  scoped_ptr<content::NotificationRegistrar> registrar_;
+  std::unique_ptr<content::NotificationRegistrar> registrar_;
 
   base::WeakPtr<LoginInterstitialDelegate> interstitial_delegate_;
 };

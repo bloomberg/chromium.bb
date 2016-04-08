@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -12,7 +13,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/synchronization/condition_variable.h"
@@ -139,7 +139,7 @@ TEST(OnDiskSyncableDirectory, MAYBE_FailInitialWrite) {
   std::string name = "user@x.com";
   NullDirectoryChangeDelegate delegate;
 
-  scoped_ptr<TestDirectory> test_dir(TestDirectory::Create(
+  std::unique_ptr<TestDirectory> test_dir(TestDirectory::Create(
       &encryptor, MakeWeakHandle(handler.GetWeakPtr()), name, file_path));
 
   test_dir->StartFailingSaveChanges();
@@ -193,7 +193,7 @@ class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
     test_directory_->StartFailingSaveChanges();
   }
 
-  TestDirectory* test_directory_;  // mirrors scoped_ptr<Directory> dir_
+  TestDirectory* test_directory_;  // mirrors std::unique_ptr<Directory> dir_
   base::ScopedTempDir temp_dir_;
   base::FilePath file_path_;
 };

@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/test/fake_server/fake_server_entity.h"
 
@@ -39,12 +39,12 @@ class UniqueClientEntity : public FakeServerEntity {
   ~UniqueClientEntity() override;
 
   // Factory function for creating a UniqueClientEntity.
-  static scoped_ptr<FakeServerEntity> Create(
+  static std::unique_ptr<FakeServerEntity> Create(
       const sync_pb::SyncEntity& client_entity);
 
   // Factory function for creating a UniqueClientEntity for use in the
   // FakeServer injection API.
-  static scoped_ptr<FakeServerEntity> CreateForInjection(
+  static std::unique_ptr<FakeServerEntity> CreateForInjection(
       const std::string& name,
       const sync_pb::EntitySpecifics& entity_specifics);
 

@@ -5,10 +5,10 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_DOWNLOADER_H_
 #define SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_DOWNLOADER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "google_apis/gaia/oauth2_token_service_request.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/base/sync_export.h"
@@ -31,7 +31,8 @@ class SYNC_EXPORT AttachmentDownloader {
     DOWNLOAD_UNSPECIFIED_ERROR,  // An unspecified error occurred.
   };
 
-  typedef base::Callback<void(const DownloadResult&, scoped_ptr<Attachment>)>
+  typedef base::Callback<void(const DownloadResult&,
+                              std::unique_ptr<Attachment>)>
       DownloadCallback;
 
   virtual ~AttachmentDownloader();
@@ -58,7 +59,7 @@ class SYNC_EXPORT AttachmentDownloader {
   // |store_birthday| is the raw, sync store birthday.
   //
   // |model_type| is the model type this downloader is used with.
-  static scoped_ptr<AttachmentDownloader> Create(
+  static std::unique_ptr<AttachmentDownloader> Create(
       const GURL& sync_service_url,
       const scoped_refptr<net::URLRequestContextGetter>&
           url_request_context_getter,

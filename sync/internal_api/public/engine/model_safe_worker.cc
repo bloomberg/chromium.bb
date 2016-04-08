@@ -4,16 +4,17 @@
 
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/json/json_writer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
 namespace syncer {
 
-scoped_ptr<base::DictionaryValue> ModelSafeRoutingInfoToValue(
+std::unique_ptr<base::DictionaryValue> ModelSafeRoutingInfoToValue(
     const ModelSafeRoutingInfo& routing_info) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   for (ModelSafeRoutingInfo::const_iterator it = routing_info.begin();
        it != routing_info.end(); ++it) {
     dict->SetString(ModelTypeToString(it->first),

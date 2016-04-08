@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/guid.h"
-#include "base/memory/scoped_ptr.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/syncable_util.h"
@@ -54,35 +54,29 @@ UniqueClientEntity::UniqueClientEntity(
 UniqueClientEntity::~UniqueClientEntity() { }
 
 // static
-scoped_ptr<FakeServerEntity> UniqueClientEntity::Create(
+std::unique_ptr<FakeServerEntity> UniqueClientEntity::Create(
     const sync_pb::SyncEntity& client_entity) {
   CHECK(client_entity.has_client_defined_unique_tag())
       << "A UniqueClientEntity must have a client-defined unique tag.";
   ModelType model_type =
       syncer::GetModelTypeFromSpecifics(client_entity.specifics());
   string id = EffectiveIdForClientTaggedEntity(client_entity);
-  return scoped_ptr<FakeServerEntity>(new UniqueClientEntity(
+  return std::unique_ptr<FakeServerEntity>(new UniqueClientEntity(
       id, model_type, client_entity.version(), client_entity.name(),
       client_entity.client_defined_unique_tag(), client_entity.specifics(),
       client_entity.ctime(), client_entity.mtime()));
 }
 
 // static
-scoped_ptr<FakeServerEntity> UniqueClientEntity::CreateForInjection(
+std::unique_ptr<FakeServerEntity> UniqueClientEntity::CreateForInjection(
     const string& name,
     const sync_pb::EntitySpecifics& entity_specifics) {
   ModelType model_type = GetModelTypeFromSpecifics(entity_specifics);
   string client_defined_unique_tag = GenerateSyncableHash(model_type, name);
   string id = FakeServerEntity::CreateId(model_type, client_defined_unique_tag);
-  return scoped_ptr<FakeServerEntity>(
-      new UniqueClientEntity(id,
-                             model_type,
-                             kUnusedVersion,
-                             name,
-                             client_defined_unique_tag,
-                             entity_specifics,
-                             kDefaultTime,
-                             kDefaultTime));
+  return std::unique_ptr<FakeServerEntity>(new UniqueClientEntity(
+      id, model_type, kUnusedVersion, name, client_defined_unique_tag,
+      entity_specifics, kDefaultTime, kDefaultTime));
 }
 
 // static

@@ -423,9 +423,8 @@ class SYNC_EXPORT Directory {
                                std::vector<int>* num_to_delete_entries_by_type);
 
   // Returns a ListValue serialization of all nodes for the given type.
-  scoped_ptr<base::ListValue> GetNodeDetailsForType(
-      BaseTransaction* trans,
-      ModelType type);
+  std::unique_ptr<base::ListValue> GetNodeDetailsForType(BaseTransaction* trans,
+                                                         ModelType type);
 
   // Sets the level of invariant checking performed after transactions.
   void SetInvariantCheckLevel(InvariantCheckLevel check_level);
@@ -636,7 +635,7 @@ class SYNC_EXPORT Directory {
 
   Kernel* kernel_;
 
-  scoped_ptr<DirectoryBackingStore> store_;
+  std::unique_ptr<DirectoryBackingStore> store_;
 
   const WeakHandle<UnrecoverableErrorHandler> unrecoverable_error_handler_;
   base::Closure report_unrecoverable_error_function_;
@@ -650,7 +649,7 @@ class SYNC_EXPORT Directory {
 
   // Maintain deleted entries not in |kernel_| until it's verified that they
   // are deleted in native models as well.
-  scoped_ptr<DeleteJournal> delete_journal_;
+  std::unique_ptr<DeleteJournal> delete_journal_;
 
   base::WeakPtrFactory<Directory> weak_ptr_factory_;
 

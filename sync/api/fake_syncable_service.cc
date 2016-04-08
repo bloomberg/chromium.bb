@@ -28,7 +28,7 @@ void FakeSyncableService::set_process_sync_changes_error(
 }
 
 void FakeSyncableService::set_attachment_store(
-    scoped_ptr<AttachmentStore> attachment_store) {
+    std::unique_ptr<AttachmentStore> attachment_store) {
   attachment_store_ = std::move(attachment_store);
 }
 
@@ -44,8 +44,8 @@ bool FakeSyncableService::syncing() const {
 SyncMergeResult FakeSyncableService::MergeDataAndStartSyncing(
     ModelType type,
     const SyncDataList& initial_sync_data,
-    scoped_ptr<SyncChangeProcessor> sync_processor,
-    scoped_ptr<SyncErrorFactory> sync_error_factory) {
+    std::unique_ptr<SyncChangeProcessor> sync_processor,
+    std::unique_ptr<SyncErrorFactory> sync_error_factory) {
   SyncMergeResult merge_result(type);
   sync_processor_ = std::move(sync_processor);
   type_ = type;
@@ -72,14 +72,14 @@ SyncError FakeSyncableService::ProcessSyncChanges(
   return process_sync_changes_error_;
 }
 
-scoped_ptr<AttachmentStoreForSync>
+std::unique_ptr<AttachmentStoreForSync>
 FakeSyncableService::GetAttachmentStoreForSync() {
   return attachment_store_ ? attachment_store_->CreateAttachmentStoreForSync()
-                           : scoped_ptr<AttachmentStoreForSync>();
+                           : std::unique_ptr<AttachmentStoreForSync>();
 }
 
 void FakeSyncableService::SetAttachmentService(
-    scoped_ptr<AttachmentService> attachment_service) {
+    std::unique_ptr<AttachmentService> attachment_service) {
   attachment_service_ = std::move(attachment_service);
 }
 

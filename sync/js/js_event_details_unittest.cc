@@ -4,7 +4,8 @@
 
 #include "sync/js/js_event_details.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -23,7 +24,7 @@ TEST_F(JsEventDetailsTest, FromDictionary) {
   dict.SetString("foo", "bar");
   dict.Set("baz", new base::ListValue());
 
-  scoped_ptr<base::DictionaryValue> dict_copy(dict.DeepCopy());
+  std::unique_ptr<base::DictionaryValue> dict_copy(dict.DeepCopy());
 
   JsEventDetails details(&dict);
 

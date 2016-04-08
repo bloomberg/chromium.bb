@@ -18,13 +18,12 @@ namespace {
 
 // NoOp is needed to bind base::Passed(backend) in AttachmentStoreFrontend dtor.
 // It doesn't need to do anything.
-void NoOp(scoped_ptr<AttachmentStoreBackend> backend) {
-}
+void NoOp(std::unique_ptr<AttachmentStoreBackend> backend) {}
 
 }  // namespace
 
 AttachmentStoreFrontend::AttachmentStoreFrontend(
-    scoped_ptr<AttachmentStoreBackend> backend,
+    std::unique_ptr<AttachmentStoreBackend> backend,
     const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner)
     : backend_(std::move(backend)), backend_task_runner_(backend_task_runner) {
   DCHECK(backend_);

@@ -74,10 +74,8 @@ bool Nigori::InitByDerivation(const std::string& hostname,
   salt_password << username << hostname;
 
   // Suser = PBKDF2(Username || Servername, "saltsalt", Nsalt, 8)
-  scoped_ptr<SymmetricKey> user_salt(SymmetricKey::DeriveKeyFromPassword(
-      SymmetricKey::HMAC_SHA1, salt_password.str(),
-      kSaltSalt,
-      kSaltIterations,
+  std::unique_ptr<SymmetricKey> user_salt(SymmetricKey::DeriveKeyFromPassword(
+      SymmetricKey::HMAC_SHA1, salt_password.str(), kSaltSalt, kSaltIterations,
       kSaltKeySizeInBits));
   DCHECK(user_salt.get());
 

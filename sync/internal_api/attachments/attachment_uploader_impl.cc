@@ -106,7 +106,7 @@ class AttachmentUploaderImpl::UploadState : public net::URLFetcherDelegate,
       url_request_context_getter_;
   Attachment attachment_;
   UploadCallbackList user_callbacks_;
-  scoped_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
   std::string account_id_;
   OAuth2TokenService::ScopeSet scopes_;
   std::string access_token_;
@@ -114,7 +114,7 @@ class AttachmentUploaderImpl::UploadState : public net::URLFetcherDelegate,
   OAuth2TokenServiceRequest::TokenServiceProvider* token_service_provider_;
   // Pointer to the AttachmentUploaderImpl that owns this object.
   base::WeakPtr<AttachmentUploaderImpl> owner_;
-  scoped_ptr<OAuth2TokenServiceRequest> access_token_request_;
+  std::unique_ptr<OAuth2TokenServiceRequest> access_token_request_;
   ModelType model_type_;
 
   DISALLOW_COPY_AND_ASSIGN(UploadState);
@@ -325,7 +325,7 @@ void AttachmentUploaderImpl::UploadAttachment(const Attachment& attachment,
   }
 
   const GURL url = GetURLForAttachmentId(sync_service_url_, attachment_id);
-  scoped_ptr<UploadState> upload_state(new UploadState(
+  std::unique_ptr<UploadState> upload_state(new UploadState(
       url, url_request_context_getter_, attachment, callback, account_id_,
       scopes_, token_service_provider_.get(), raw_store_birthday_,
       weak_ptr_factory_.GetWeakPtr(), model_type_));

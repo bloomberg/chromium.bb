@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/test/fake_server/fake_server_entity.h"
@@ -24,7 +25,7 @@ namespace fake_server {
 PermanentEntity::~PermanentEntity() { }
 
 // static
-scoped_ptr<FakeServerEntity> PermanentEntity::Create(
+std::unique_ptr<FakeServerEntity> PermanentEntity::Create(
     const ModelType& model_type,
     const string& server_tag,
     const string& name,
@@ -42,12 +43,12 @@ scoped_ptr<FakeServerEntity> PermanentEntity::Create(
   string parent_id = FakeServerEntity::CreateId(model_type, parent_server_tag);
   sync_pb::EntitySpecifics entity_specifics;
   AddDefaultFieldValue(model_type, &entity_specifics);
-  return scoped_ptr<FakeServerEntity>(new PermanentEntity(
+  return std::unique_ptr<FakeServerEntity>(new PermanentEntity(
       id, model_type, name, parent_id, server_tag, entity_specifics));
 }
 
 // static
-scoped_ptr<FakeServerEntity> PermanentEntity::CreateTopLevel(
+std::unique_ptr<FakeServerEntity> PermanentEntity::CreateTopLevel(
     const ModelType& model_type) {
   CHECK(model_type != syncer::UNSPECIFIED) << "The entity's ModelType is "
                                            << "invalid.";
@@ -56,19 +57,19 @@ scoped_ptr<FakeServerEntity> PermanentEntity::CreateTopLevel(
   string id = FakeServerEntity::GetTopLevelId(model_type);
   sync_pb::EntitySpecifics entity_specifics;
   AddDefaultFieldValue(model_type, &entity_specifics);
-  return scoped_ptr<FakeServerEntity>(new PermanentEntity(
+  return std::unique_ptr<FakeServerEntity>(new PermanentEntity(
       id, model_type, name, kRootParentTag, server_tag, entity_specifics));
 }
 
 // static
-scoped_ptr<FakeServerEntity> PermanentEntity::CreateUpdatedNigoriEntity(
+std::unique_ptr<FakeServerEntity> PermanentEntity::CreateUpdatedNigoriEntity(
     const sync_pb::SyncEntity& client_entity,
     const FakeServerEntity& current_server_entity) {
   ModelType model_type = current_server_entity.GetModelType();
   CHECK(model_type == syncer::NIGORI) << "This factory only supports NIGORI "
                                       << "entities.";
 
-  return make_scoped_ptr<FakeServerEntity>(new PermanentEntity(
+  return base::WrapUnique<FakeServerEntity>(new PermanentEntity(
       current_server_entity.GetId(), model_type,
       current_server_entity.GetName(), current_server_entity.GetParentId(),
       syncer::ModelTypeToRootTag(model_type), client_entity.specifics()));

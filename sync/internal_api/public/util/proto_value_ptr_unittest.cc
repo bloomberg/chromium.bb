@@ -4,10 +4,10 @@
 
 #include "sync/internal_api/public/util/proto_value_ptr.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -99,7 +99,7 @@ class TestValue {
   static int g_parse_count;
   static int g_delete_count;
 
-  scoped_ptr<IntValue> value_;
+  std::unique_ptr<IntValue> value_;
   bool is_default_;
 
   DISALLOW_COPY_AND_ASSIGN(TestValue);

@@ -8,13 +8,12 @@ namespace syncer {
 
 SyncableService::~SyncableService() {}
 
-scoped_ptr<AttachmentStoreForSync>
+std::unique_ptr<AttachmentStoreForSync>
 SyncableService::GetAttachmentStoreForSync() {
-  return scoped_ptr<AttachmentStoreForSync>();
+  return std::unique_ptr<AttachmentStoreForSync>();
 }
 
 void SyncableService::SetAttachmentService(
-    scoped_ptr<AttachmentService> attachment_service) {
-}
+    std::unique_ptr<AttachmentService> attachment_service) {}
 
 }  // namespace syncer

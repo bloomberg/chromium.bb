@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -87,8 +88,8 @@ class MockAttachmentStoreBackend
     read_callbacks.pop_back();
     read_ids.pop_back();
 
-    scoped_ptr<AttachmentMap> attachments(new AttachmentMap());
-    scoped_ptr<AttachmentIdList> unavailable_attachments(
+    std::unique_ptr<AttachmentMap> attachments(new AttachmentMap());
+    std::unique_ptr<AttachmentIdList> unavailable_attachments(
         new AttachmentIdList());
     for (AttachmentIdList::const_iterator iter = ids.begin(); iter != ids.end();
          ++iter) {
@@ -148,7 +149,7 @@ class MockAttachmentDownloader
   // RespondToDownload should respond to only one of them.
   void RespondToDownload(const AttachmentId& id, const DownloadResult& result) {
     ASSERT_TRUE(download_requests.find(id) != download_requests.end());
-    scoped_ptr<Attachment> attachment;
+    std::unique_ptr<Attachment> attachment;
     if (result == DOWNLOAD_SUCCESS) {
       scoped_refptr<base::RefCountedString> data = new base::RefCountedString();
       attachment.reset(new Attachment(Attachment::CreateFromParts(id, data)));
@@ -202,9 +203,9 @@ class AttachmentServiceImplTest : public testing::Test,
 
   void SetUp() override {
     network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
-    InitializeAttachmentService(make_scoped_ptr(new MockAttachmentUploader()),
-                                make_scoped_ptr(new MockAttachmentDownloader()),
-                                this);
+    InitializeAttachmentService(
+        base::WrapUnique(new MockAttachmentUploader()),
+        base::WrapUnique(new MockAttachmentDownloader()), this);
   }
 
   void TearDown() override {
@@ -221,16 +222,16 @@ class AttachmentServiceImplTest : public testing::Test,
   }
 
   void InitializeAttachmentService(
-      scoped_ptr<MockAttachmentUploader> uploader,
-      scoped_ptr<MockAttachmentDownloader> downloader,
+      std::unique_ptr<MockAttachmentUploader> uploader,
+      std::unique_ptr<MockAttachmentDownloader> downloader,
       AttachmentService::Delegate* delegate) {
     // Initialize mock attachment store
     scoped_refptr<base::SingleThreadTaskRunner> runner =
         base::ThreadTaskRunnerHandle::Get();
-    scoped_ptr<MockAttachmentStoreBackend> attachment_store_backend(
+    std::unique_ptr<MockAttachmentStoreBackend> attachment_store_backend(
         new MockAttachmentStoreBackend(runner));
     attachment_store_backend_ = attachment_store_backend->AsWeakPtr();
-    scoped_ptr<AttachmentStore> attachment_store =
+    std::unique_ptr<AttachmentStore> attachment_store =
         AttachmentStore::CreateMockStoreForTest(
             std::move(attachment_store_backend));
 
@@ -245,7 +246,7 @@ class AttachmentServiceImplTest : public testing::Test,
         std::move(downloader), delegate, base::TimeDelta::FromMinutes(1),
         base::TimeDelta::FromMinutes(8)));
 
-    scoped_ptr<base::MockTimer> timer_to_pass(
+    std::unique_ptr<base::MockTimer> timer_to_pass(
         new base::MockTimer(false, false));
     mock_timer_ = timer_to_pass.get();
     attachment_service_->SetTimerForTest(std::move(timer_to_pass));
@@ -261,7 +262,7 @@ class AttachmentServiceImplTest : public testing::Test,
   }
 
   void DownloadDone(const AttachmentService::GetOrDownloadResult& result,
-                    scoped_ptr<AttachmentMap> attachments) {
+                    std::unique_ptr<AttachmentMap> attachments) {
     download_results_.push_back(result);
     last_download_attachments_ = std::move(attachments);
   }
@@ -318,15 +319,15 @@ class AttachmentServiceImplTest : public testing::Test,
 
  private:
   base::MessageLoop message_loop_;
-  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   base::WeakPtr<MockAttachmentStoreBackend> attachment_store_backend_;
   base::WeakPtr<MockAttachmentDownloader> attachment_downloader_;
   base::WeakPtr<MockAttachmentUploader> attachment_uploader_;
-  scoped_ptr<AttachmentServiceImpl> attachment_service_;
+  std::unique_ptr<AttachmentServiceImpl> attachment_service_;
   base::MockTimer* mock_timer_;  // not owned
 
   std::vector<AttachmentService::GetOrDownloadResult> download_results_;
-  scoped_ptr<AttachmentMap> last_download_attachments_;
+  std::unique_ptr<AttachmentMap> last_download_attachments_;
   std::vector<AttachmentId> on_attachment_uploaded_list_;
 };
 
@@ -429,9 +430,8 @@ TEST_F(AttachmentServiceImplTest, GetOrDownload_LocalRemoteUnavailable) {
 TEST_F(AttachmentServiceImplTest, GetOrDownload_NoDownloader) {
   // No downloader.
   InitializeAttachmentService(
-      make_scoped_ptr<MockAttachmentUploader>(new MockAttachmentUploader()),
-      make_scoped_ptr<MockAttachmentDownloader>(NULL),
-      this);
+      base::WrapUnique<MockAttachmentUploader>(new MockAttachmentUploader()),
+      base::WrapUnique<MockAttachmentDownloader>(NULL), this);
 
   AttachmentIdList attachment_ids;
   attachment_ids.push_back(AttachmentId::Create(0, 0));
@@ -483,8 +483,8 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_Success) {
 }
 
 TEST_F(AttachmentServiceImplTest, UploadAttachments_Success_NoDelegate) {
-  InitializeAttachmentService(make_scoped_ptr(new MockAttachmentUploader()),
-                              make_scoped_ptr(new MockAttachmentDownloader()),
+  InitializeAttachmentService(base::WrapUnique(new MockAttachmentUploader()),
+                              base::WrapUnique(new MockAttachmentDownloader()),
                               NULL);  // No delegate.
 
   AttachmentIdList attachment_ids;
@@ -553,8 +553,8 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_AllMissingFromStore) {
 }
 
 TEST_F(AttachmentServiceImplTest, UploadAttachments_NoUploader) {
-  InitializeAttachmentService(make_scoped_ptr<MockAttachmentUploader>(NULL),
-                              make_scoped_ptr(new MockAttachmentDownloader()),
+  InitializeAttachmentService(base::WrapUnique<MockAttachmentUploader>(NULL),
+                              base::WrapUnique(new MockAttachmentDownloader()),
                               this);
 
   AttachmentIdList attachment_ids;

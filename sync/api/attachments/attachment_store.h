@@ -5,10 +5,11 @@
 #ifndef SYNC_API_ATTACHMENTS_ATTACHMENT_STORE_H_
 #define SYNC_API_ATTACHMENTS_ATTACHMENT_STORE_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/api/attachments/attachment_metadata.h"
@@ -59,12 +60,13 @@ class SYNC_EXPORT AttachmentStore {
 
   typedef base::Callback<void(const Result&)> InitCallback;
   typedef base::Callback<void(const Result&,
-                              scoped_ptr<AttachmentMap>,
-                              scoped_ptr<AttachmentIdList>)> ReadCallback;
+                              std::unique_ptr<AttachmentMap>,
+                              std::unique_ptr<AttachmentIdList>)>
+      ReadCallback;
   typedef base::Callback<void(const Result&)> WriteCallback;
   typedef base::Callback<void(const Result&)> DropCallback;
   typedef base::Callback<void(const Result&,
-                              scoped_ptr<AttachmentMetadataList>)>
+                              std::unique_ptr<AttachmentMetadataList>)>
       ReadMetadataCallback;
 
   ~AttachmentStore();
@@ -124,11 +126,11 @@ class SYNC_EXPORT AttachmentStore {
   // Given current AttachmentStore (this) creates separate AttachmentStore that
   // will be used by sync components (AttachmentService). Resulting
   // AttachmentStore is backed by the same frontend/backend.
-  scoped_ptr<AttachmentStoreForSync> CreateAttachmentStoreForSync() const;
+  std::unique_ptr<AttachmentStoreForSync> CreateAttachmentStoreForSync() const;
 
   // Creates an AttachmentStore backed by in-memory implementation of attachment
   // store. For now frontend lives on the same thread as backend.
-  static scoped_ptr<AttachmentStore> CreateInMemoryStore();
+  static std::unique_ptr<AttachmentStore> CreateInMemoryStore();
 
   // Creates an AttachmentStore backed by on-disk implementation of attachment
   // store. Opens corresponding leveldb database located at |path|. All backend
@@ -137,7 +139,7 @@ class SYNC_EXPORT AttachmentStore {
   // that called CreateOnDiskStore. Calling Read/Write/Drop before
   // initialization completed is allowed.  Later if initialization fails these
   // operations will fail with STORE_INITIALIZATION_FAILED error.
-  static scoped_ptr<AttachmentStore> CreateOnDiskStore(
+  static std::unique_ptr<AttachmentStore> CreateOnDiskStore(
       const base::FilePath& path,
       const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner,
       const InitCallback& callback);
@@ -145,8 +147,8 @@ class SYNC_EXPORT AttachmentStore {
   // Creates set of AttachmentStore/AttachmentStoreFrontend instances for tests
   // that provide their own implementation of AttachmentstoreBackend for
   // mocking.
-  static scoped_ptr<AttachmentStore> CreateMockStoreForTest(
-      scoped_ptr<AttachmentStoreBackend> backend);
+  static std::unique_ptr<AttachmentStore> CreateMockStoreForTest(
+      std::unique_ptr<AttachmentStoreBackend> backend);
 
  protected:
   AttachmentStore(const scoped_refptr<AttachmentStoreFrontend>& frontend,

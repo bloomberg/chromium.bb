@@ -11,10 +11,10 @@
 
 #include <list>
 #include <map>
+#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/invalidation_interface.h"
@@ -68,7 +68,7 @@ class SYNC_EXPORT NudgeTracker {
   // Returns the current nudge delay for a remote invalidation.
   base::TimeDelta RecordRemoteInvalidation(
       syncer::ModelType type,
-      scoped_ptr<InvalidationInterface> invalidation);
+      std::unique_ptr<InvalidationInterface> invalidation);
 
   // Take note that an initial sync is pending for this type.
   void RecordInitialSyncRequired(syncer::ModelType type);
@@ -161,7 +161,7 @@ class SYNC_EXPORT NudgeTracker {
   void SetDefaultNudgeDelay(base::TimeDelta nudge_delay);
 
  private:
-  using TypeTrackerMap = std::map<ModelType, scoped_ptr<DataTypeTracker>>;
+  using TypeTrackerMap = std::map<ModelType, std::unique_ptr<DataTypeTracker>>;
 
   TypeTrackerMap type_trackers_;
 

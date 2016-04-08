@@ -19,7 +19,7 @@ class TombstoneEntity : public FakeServerEntity {
   ~TombstoneEntity() override;
 
   // Factory function for TombstoneEntity.
-  static scoped_ptr<FakeServerEntity> Create(const std::string& id);
+  static std::unique_ptr<FakeServerEntity> Create(const std::string& id);
 
   // FakeServerEntity implementation.
   bool RequiresParentId() const override;

@@ -6,6 +6,7 @@
 #ifndef SYNC_ENGINE_SYNC_SCHEDULER_H_
 #define SYNC_ENGINE_SYNC_SCHEDULER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -132,7 +133,7 @@ class SYNC_EXPORT SyncScheduler : public sessions::SyncSession::Delegate {
   // order to fetch the update.
   virtual void ScheduleInvalidationNudge(
       syncer::ModelType type,
-      scoped_ptr<InvalidationInterface> invalidation,
+      std::unique_ptr<InvalidationInterface> invalidation,
       const tracked_objects::Location& nudge_location) = 0;
 
   // Requests a non-blocking initial sync request for the specified type.

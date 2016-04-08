@@ -200,7 +200,7 @@ bool SyncableDirectoryTest::IsInMetahandlesToPurge(int64_t metahandle) {
   return 1 == dir_->kernel()->metahandles_to_purge.count(metahandle);
 }
 
-scoped_ptr<Directory>& SyncableDirectoryTest::dir() {
+std::unique_ptr<Directory>& SyncableDirectoryTest::dir() {
   return dir_;
 }
 
@@ -1628,7 +1628,7 @@ TEST_F(SyncableDirectoryTest, ToValue) {
     Entry e(&rtrans, GET_BY_ID, id);
     EXPECT_FALSE(e.good());  // Hasn't been written yet.
 
-    scoped_ptr<base::DictionaryValue> value(e.ToValue(NULL));
+    std::unique_ptr<base::DictionaryValue> value(e.ToValue(NULL));
     ExpectDictBooleanValue(false, *value, "good");
     EXPECT_EQ(1u, value->size());
   }
@@ -1641,7 +1641,7 @@ TEST_F(SyncableDirectoryTest, ToValue) {
     me.PutId(id);
     me.PutBaseVersion(1);
 
-    scoped_ptr<base::DictionaryValue> value(me.ToValue(NULL));
+    std::unique_ptr<base::DictionaryValue> value(me.ToValue(NULL));
     ExpectDictBooleanValue(true, *value, "good");
     EXPECT_TRUE(value->HasKey("kernel"));
     ExpectDictStringValue("Bookmarks", *value, "modelType");
@@ -1699,7 +1699,7 @@ class StressTransactionsDelegate : public base::PlatformThread::Delegate {
 TEST_F(SyncableDirectoryTest, StressTransactions) {
   const int kThreadCount = 7;
   base::PlatformThreadHandle threads[kThreadCount];
-  scoped_ptr<StressTransactionsDelegate> thread_delegates[kThreadCount];
+  std::unique_ptr<StressTransactionsDelegate> thread_delegates[kThreadCount];
 
   for (int i = 0; i < kThreadCount; ++i) {
     thread_delegates[i].reset(new StressTransactionsDelegate(dir().get(), i));

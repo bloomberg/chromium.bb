@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "sync/internal_api/public/base/invalidation_interface.h"
 
 namespace syncer {
@@ -19,9 +19,9 @@ namespace syncer {
 class MockInvalidation : public InvalidationInterface {
  public:
   // Helpers to build new MockInvalidations.
-  static scoped_ptr<MockInvalidation> BuildUnknownVersion();
-  static scoped_ptr<MockInvalidation> Build(int64_t version,
-                                            const std::string& payload);
+  static std::unique_ptr<MockInvalidation> BuildUnknownVersion();
+  static std::unique_ptr<MockInvalidation> Build(int64_t version,
+                                                 const std::string& payload);
 
   ~MockInvalidation() override;
 

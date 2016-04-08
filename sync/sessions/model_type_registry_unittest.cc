@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/deferred_sequenced_task_runner.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "sync/internal_api/public/activation_context.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -37,20 +38,21 @@ class ModelTypeRegistryTest : public ::testing::Test,
     return state;
   }
 
-  static scoped_ptr<syncer_v2::ActivationContext> MakeActivationContext(
+  static std::unique_ptr<syncer_v2::ActivationContext> MakeActivationContext(
       const sync_pb::DataTypeState& data_type_state,
-      scoped_ptr<syncer_v2::ModelTypeProcessor> type_processor) {
-    scoped_ptr<syncer_v2::ActivationContext> context =
-        make_scoped_ptr(new syncer_v2::ActivationContext);
+      std::unique_ptr<syncer_v2::ModelTypeProcessor> type_processor) {
+    std::unique_ptr<syncer_v2::ActivationContext> context =
+        base::WrapUnique(new syncer_v2::ActivationContext);
     context->data_type_state = data_type_state;
     context->type_processor = std::move(type_processor);
     return context;
   }
 
  protected:
-  scoped_ptr<syncer_v2::SharedModelTypeProcessor> MakeModelTypeProcessor(
+  std::unique_ptr<syncer_v2::SharedModelTypeProcessor> MakeModelTypeProcessor(
       ModelType type) {
-    return make_scoped_ptr(new syncer_v2::SharedModelTypeProcessor(type, this));
+    return base::WrapUnique(
+        new syncer_v2::SharedModelTypeProcessor(type, this));
   }
 
  private:
@@ -60,7 +62,7 @@ class ModelTypeRegistryTest : public ::testing::Test,
 
   TestDirectorySetterUpper dir_maker_;
   std::vector<scoped_refptr<ModelSafeWorker> > workers_;
-  scoped_ptr<ModelTypeRegistry> registry_;
+  std::unique_ptr<ModelTypeRegistry> registry_;
   MockNudgeHandler mock_nudge_handler_;
 };
 
@@ -174,9 +176,9 @@ TEST_F(ModelTypeRegistryTest, SetEnabledDirectoryTypes_OffAndOn) {
 }
 
 TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {
-  scoped_ptr<syncer_v2::SharedModelTypeProcessor> themes_sync_processor =
+  std::unique_ptr<syncer_v2::SharedModelTypeProcessor> themes_sync_processor =
       MakeModelTypeProcessor(syncer::THEMES);
-  scoped_ptr<syncer_v2::SharedModelTypeProcessor> sessions_sync_processor =
+  std::unique_ptr<syncer_v2::SharedModelTypeProcessor> sessions_sync_processor =
       MakeModelTypeProcessor(syncer::SESSIONS);
 
   EXPECT_TRUE(registry()->GetEnabledTypes().Empty());
@@ -203,9 +205,9 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {
 }
 
 TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
-  scoped_ptr<syncer_v2::SharedModelTypeProcessor> themes_sync_processor =
+  std::unique_ptr<syncer_v2::SharedModelTypeProcessor> themes_sync_processor =
       MakeModelTypeProcessor(syncer::THEMES);
-  scoped_ptr<syncer_v2::SharedModelTypeProcessor> sessions_sync_processor =
+  std::unique_ptr<syncer_v2::SharedModelTypeProcessor> sessions_sync_processor =
       MakeModelTypeProcessor(syncer::SESSIONS);
 
   ModelSafeRoutingInfo routing_info1;

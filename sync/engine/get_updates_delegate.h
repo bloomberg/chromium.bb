@@ -5,6 +5,8 @@
 #ifndef SYNC_ENGINE_GET_UPDATES_DELEGATE_H_
 #define SYNC_ENGINE_GET_UPDATES_DELEGATE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "sync/internal_api/public/events/protocol_event.h"
 #include "sync/protocol/sync.pb.h"
@@ -35,7 +37,7 @@ class SYNC_EXPORT GetUpdatesDelegate {
       sessions::StatusController* status,
       UpdateHandlerMap* update_handler_map) const = 0;
 
-  virtual scoped_ptr<ProtocolEvent> GetNetworkRequestEvent(
+  virtual std::unique_ptr<ProtocolEvent> GetNetworkRequestEvent(
       base::Time timestamp,
       const sync_pb::ClientToServerMessage& request) const = 0;
 };
@@ -56,7 +58,7 @@ class SYNC_EXPORT NormalGetUpdatesDelegate : public GetUpdatesDelegate {
                     sessions::StatusController* status,
                     UpdateHandlerMap* update_handler_map) const override;
 
-  scoped_ptr<ProtocolEvent> GetNetworkRequestEvent(
+  std::unique_ptr<ProtocolEvent> GetNetworkRequestEvent(
       base::Time timestamp,
       const sync_pb::ClientToServerMessage& request) const override;
 
@@ -85,7 +87,7 @@ class SYNC_EXPORT ConfigureGetUpdatesDelegate : public GetUpdatesDelegate {
                     sessions::StatusController* status,
                     UpdateHandlerMap* update_handler_map) const override;
 
-  scoped_ptr<ProtocolEvent> GetNetworkRequestEvent(
+  std::unique_ptr<ProtocolEvent> GetNetworkRequestEvent(
       base::Time timestamp,
       const sync_pb::ClientToServerMessage& request) const override;
 
@@ -113,7 +115,7 @@ class SYNC_EXPORT PollGetUpdatesDelegate : public GetUpdatesDelegate {
                     sessions::StatusController* status,
                     UpdateHandlerMap* update_handler_map) const override;
 
-  scoped_ptr<ProtocolEvent> GetNetworkRequestEvent(
+  std::unique_ptr<ProtocolEvent> GetNetworkRequestEvent(
       base::Time timestamp,
       const sync_pb::ClientToServerMessage& request) const override;
 

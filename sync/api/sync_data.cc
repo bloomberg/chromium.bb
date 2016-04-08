@@ -10,7 +10,6 @@
 #include <ostream>
 
 #include "base/json/json_writer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "sync/internal_api/public/attachments/attachment_service_proxy.h"

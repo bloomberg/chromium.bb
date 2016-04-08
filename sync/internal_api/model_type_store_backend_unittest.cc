@@ -23,8 +23,8 @@ class ModelTypeStoreBackendTest : public testing::Test {
 
   void TearDown() override { in_memory_env_.reset(); }
 
-  scoped_ptr<ModelTypeStoreBackend> CreateBackend() {
-    scoped_ptr<ModelTypeStoreBackend> backend(new ModelTypeStoreBackend());
+  std::unique_ptr<ModelTypeStoreBackend> CreateBackend() {
+    std::unique_ptr<ModelTypeStoreBackend> backend(new ModelTypeStoreBackend());
     std::string path;
     in_memory_env_->GetTestDirectory(&path);
     path += "/test_db";
@@ -34,16 +34,16 @@ class ModelTypeStoreBackendTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<leveldb::Env> in_memory_env_;
+  std::unique_ptr<leveldb::Env> in_memory_env_;
 };
 
 // Test that after record is written to backend it can be read back even after
 // backend is destroyed and recreated in the same environment.
 TEST_F(ModelTypeStoreBackendTest, WriteThenRead) {
-  scoped_ptr<ModelTypeStoreBackend> backend = CreateBackend();
+  std::unique_ptr<ModelTypeStoreBackend> backend = CreateBackend();
 
   // Write record.
-  scoped_ptr<leveldb::WriteBatch> write_batch(new leveldb::WriteBatch());
+  std::unique_ptr<leveldb::WriteBatch> write_batch(new leveldb::WriteBatch());
   write_batch->Put("prefix:id1", "data1");
   ModelTypeStore::Result result =
       backend->WriteModifications(std::move(write_batch));
@@ -69,9 +69,9 @@ TEST_F(ModelTypeStoreBackendTest, WriteThenRead) {
 
 // Test that ReadAllRecordsWithPrefix correclty filters records by prefix.
 TEST_F(ModelTypeStoreBackendTest, ReadAllRecordsWithPrefix) {
-  scoped_ptr<ModelTypeStoreBackend> backend = CreateBackend();
+  std::unique_ptr<ModelTypeStoreBackend> backend = CreateBackend();
 
-  scoped_ptr<leveldb::WriteBatch> write_batch(new leveldb::WriteBatch());
+  std::unique_ptr<leveldb::WriteBatch> write_batch(new leveldb::WriteBatch());
   write_batch->Put("prefix1:id1", "data1");
   write_batch->Put("prefix2:id2", "data2");
   ModelTypeStore::Result result =
@@ -89,10 +89,10 @@ TEST_F(ModelTypeStoreBackendTest, ReadAllRecordsWithPrefix) {
 // Test that deleted records are correctly marked as milling in results of
 // ReadRecordsWithPrefix.
 TEST_F(ModelTypeStoreBackendTest, ReadDeletedRecord) {
-  scoped_ptr<ModelTypeStoreBackend> backend = CreateBackend();
+  std::unique_ptr<ModelTypeStoreBackend> backend = CreateBackend();
 
   // Create records, ensure they are returned by ReadRecordsWithPrefix.
-  scoped_ptr<leveldb::WriteBatch> write_batch(new leveldb::WriteBatch());
+  std::unique_ptr<leveldb::WriteBatch> write_batch(new leveldb::WriteBatch());
   write_batch->Put("prefix:id1", "data1");
   write_batch->Put("prefix:id2", "data2");
   ModelTypeStore::Result result =

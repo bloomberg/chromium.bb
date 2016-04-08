@@ -4,7 +4,9 @@
 
 #include "sync/internal_api/public/http_bridge_network_resources.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/http_bridge.h"
@@ -15,15 +17,14 @@ namespace syncer {
 
 HttpBridgeNetworkResources::~HttpBridgeNetworkResources() {}
 
-scoped_ptr<HttpPostProviderFactory>
+std::unique_ptr<HttpPostProviderFactory>
 HttpBridgeNetworkResources::GetHttpPostProviderFactory(
     const scoped_refptr<net::URLRequestContextGetter>& baseline_context_getter,
     const NetworkTimeUpdateCallback& network_time_update_callback,
     CancelationSignal* cancelation_signal) {
-  return make_scoped_ptr<HttpPostProviderFactory>(
+  return base::WrapUnique<HttpPostProviderFactory>(
       new HttpBridgeFactory(baseline_context_getter,
-                            network_time_update_callback,
-                            cancelation_signal));
+                            network_time_update_callback, cancelation_signal));
 }
 
 }  // namespace syncer

@@ -5,7 +5,8 @@
 #ifndef SYNC_TEST_FAKE_SERVER_FAKE_SERVER_NETWORK_RESOURCES_H_
 #define SYNC_TEST_FAKE_SERVER_FAKE_SERVER_NETWORK_RESOURCES_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/memory/weak_ptr.h"
 #include "sync/internal_api/public/network_resources.h"
 #include "sync/internal_api/public/network_time_update_callback.h"
@@ -26,7 +27,7 @@ class FakeServerNetworkResources : public syncer::NetworkResources {
   ~FakeServerNetworkResources() override;
 
   // NetworkResources
-  scoped_ptr<syncer::HttpPostProviderFactory> GetHttpPostProviderFactory(
+  std::unique_ptr<syncer::HttpPostProviderFactory> GetHttpPostProviderFactory(
       const scoped_refptr<net::URLRequestContextGetter>&
           baseline_context_getter,
       const syncer::NetworkTimeUpdateCallback& network_time_update_callback,

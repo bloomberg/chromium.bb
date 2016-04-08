@@ -23,14 +23,14 @@ class FakeModelTypeService : public ModelTypeService {
   FakeModelTypeService();
   ~FakeModelTypeService() override;
 
-  scoped_ptr<MetadataChangeList> CreateMetadataChangeList() override;
+  std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;
 
   syncer::SyncError MergeSyncData(
-      scoped_ptr<MetadataChangeList> metadata_change_list,
+      std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityDataMap entity_data_map) override;
 
   syncer::SyncError ApplySyncChanges(
-      scoped_ptr<MetadataChangeList> metadata_change_list,
+      std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_changes) override;
 
   void GetData(ClientTagList client_tags, DataCallback callback) override;
@@ -51,7 +51,7 @@ class FakeModelTypeService : public ModelTypeService {
       ModelTypeService* service);
 
  private:
-  scoped_ptr<ModelTypeChangeProcessor> CreateProcessorForTestWrapper(
+  std::unique_ptr<ModelTypeChangeProcessor> CreateProcessorForTestWrapper(
       syncer::ModelType type,
       ModelTypeService* service);
 

@@ -24,7 +24,7 @@ class BookmarkEntity : public FakeServerEntity {
 
   // Factory function for BookmarkEntity. This factory should be used only for
   // the first time that a specific bookmark is seen by the server.
-  static scoped_ptr<FakeServerEntity> CreateNew(
+  static std::unique_ptr<FakeServerEntity> CreateNew(
       const sync_pb::SyncEntity& client_entity,
       const std::string& parent_id,
       const std::string& client_guid);
@@ -33,7 +33,7 @@ class BookmarkEntity : public FakeServerEntity {
   // ID, |current_server_entity|, is passed here because the client does not
   // always send the complete entity over the wire. This requires copying of
   // some of the existing entity when creating a new entity.
-  static scoped_ptr<FakeServerEntity> CreateUpdatedVersion(
+  static std::unique_ptr<FakeServerEntity> CreateUpdatedVersion(
       const sync_pb::SyncEntity& client_entity,
       const FakeServerEntity& current_server_entity,
       const std::string& parent_id);

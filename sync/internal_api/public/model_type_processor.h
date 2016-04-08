@@ -5,7 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_MODEL_TYPE_PROCESSOR_H_
 #define SYNC_INTERNAL_API_PUBLIC_MODEL_TYPE_PROCESSOR_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/protocol/data_type_state.pb.h"
@@ -23,7 +24,7 @@ class SYNC_EXPORT ModelTypeProcessor {
   // the processor will send any pending and future commits via this channel.
   // This can only be called multiple times if the processor is disconnected
   // (via the DataTypeController) in between.
-  virtual void ConnectSync(scoped_ptr<CommitQueue> commit_queue) = 0;
+  virtual void ConnectSync(std::unique_ptr<CommitQueue> commit_queue) = 0;
 
   // Disconnect this processor from the sync engine. Change metadata will
   // continue being processed and persisted, but no commits can be made until

@@ -5,9 +5,9 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_SESSIONS_UPDATE_COUNTERS_H_
 #define SYNC_INTERNAL_API_PUBLIC_SESSIONS_UPDATE_COUNTERS_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "sync/base/sync_export.h"
 
@@ -19,7 +19,7 @@ struct SYNC_EXPORT UpdateCounters {
   UpdateCounters();
   ~UpdateCounters();
 
-  scoped_ptr<base::DictionaryValue> ToValue() const;
+  std::unique_ptr<base::DictionaryValue> ToValue() const;
   std::string ToString() const;
 
   int num_updates_received;

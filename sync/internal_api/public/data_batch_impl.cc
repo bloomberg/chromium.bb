@@ -11,7 +11,7 @@ DataBatchImpl::DataBatchImpl() {}
 DataBatchImpl::~DataBatchImpl() {}
 
 void DataBatchImpl::Put(const std::string& client_tag,
-                        scoped_ptr<EntityData> specifics) {
+                        std::unique_ptr<EntityData> specifics) {
   tag_data_pairs_.push_back(TagAndData(client_tag, std::move(specifics)));
 }
 

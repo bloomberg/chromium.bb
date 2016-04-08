@@ -9,8 +9,10 @@
 #include "sync/internal_api/sync_manager_impl.h"
 
 #include <stdint.h>
+
 #include <cstddef>
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
@@ -18,7 +20,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -910,8 +911,8 @@ class SyncManagerTest : public testing::Test,
     SyncManager::InitArgs args;
     args.database_location = temp_dir_.path();
     args.service_url = GURL("https://example.com/");
-    args.post_factory =
-        scoped_ptr<HttpPostProviderFactory>(new TestHttpPostProviderFactory());
+    args.post_factory = std::unique_ptr<HttpPostProviderFactory>(
+        new TestHttpPostProviderFactory());
     args.workers = workers;
     args.extensions_activity = extensions_activity_.get(),
     args.change_delegate = this;
@@ -1144,7 +1145,7 @@ TEST_F(SyncManagerTest, GetAllNodesForTypeTest) {
   GetModelSafeRoutingInfo(&routing_info);
   sync_manager_.StartSyncingNormally(routing_info, base::Time());
 
-  scoped_ptr<base::ListValue> node_list(
+  std::unique_ptr<base::ListValue> node_list(
       sync_manager_.GetAllNodesForType(syncer::PREFERENCES));
 
   // Should have one node: the type root node.
@@ -2545,7 +2546,7 @@ class ComponentsFactory : public TestInternalComponentsFactory {
         session_context_(session_context) {}
   ~ComponentsFactory() override {}
 
-  scoped_ptr<SyncScheduler> BuildScheduler(
+  std::unique_ptr<SyncScheduler> BuildScheduler(
       const std::string& name,
       sessions::SyncSessionContext* context,
       CancelationSignal* stop_handle) override {
@@ -2554,7 +2555,7 @@ class ComponentsFactory : public TestInternalComponentsFactory {
   }
 
  private:
-  scoped_ptr<SyncScheduler> scheduler_to_use_;
+  std::unique_ptr<SyncScheduler> scheduler_to_use_;
   sessions::SyncSessionContext** session_context_;
 };
 

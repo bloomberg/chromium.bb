@@ -24,7 +24,7 @@ static void PrintUsage() {
 // the sync HTTP and XMPP sever functionality respectively.
 static bool RunSyncTest(
     const base::FilePath::StringType& sync_test_script_name) {
-  scoped_ptr<syncer::LocalSyncTestServer> test_server(
+  std::unique_ptr<syncer::LocalSyncTestServer> test_server(
       new syncer::LocalSyncTestServer());
   if (!test_server->SetPythonPath()) {
     LOG(ERROR) << "Error trying to set python path. Exiting.";
@@ -106,7 +106,7 @@ int main(int argc, const char* argv[]) {
   uint16_t xmpp_port = 0;
   GetPortFromSwitch("xmpp-port", &xmpp_port);
 
-  scoped_ptr<syncer::LocalSyncTestServer> test_server(
+  std::unique_ptr<syncer::LocalSyncTestServer> test_server(
       new syncer::LocalSyncTestServer(port, xmpp_port));
   if (!test_server->Start()) {
     printf("Error: failed to start python sync test server. Exiting.\n");

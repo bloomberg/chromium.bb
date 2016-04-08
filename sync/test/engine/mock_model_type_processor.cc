@@ -16,7 +16,8 @@ MockModelTypeProcessor::MockModelTypeProcessor() : is_synchronous_(true) {}
 
 MockModelTypeProcessor::~MockModelTypeProcessor() {}
 
-void MockModelTypeProcessor::ConnectSync(scoped_ptr<CommitQueue> commit_queue) {
+void MockModelTypeProcessor::ConnectSync(
+    std::unique_ptr<CommitQueue> commit_queue) {
   NOTREACHED();
 }
 

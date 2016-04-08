@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+
 #include <cstddef>
 #include <cstdio>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -15,8 +17,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
@@ -78,7 +80,7 @@ class MyTestURLRequestContext : public net::TestURLRequestContext {
     context_storage_.set_host_resolver(
         net::HostResolver::CreateDefaultResolver(NULL));
     context_storage_.set_transport_security_state(
-        make_scoped_ptr(new net::TransportSecurityState()));
+        base::WrapUnique(new net::TransportSecurityState()));
     Init();
   }
 
@@ -102,7 +104,7 @@ class MyTestURLRequestContextGetter : public net::TestURLRequestContextGetter {
  private:
   ~MyTestURLRequestContextGetter() override {}
 
-  scoped_ptr<MyTestURLRequestContext> context_;
+  std::unique_ptr<MyTestURLRequestContext> context_;
 };
 
 // TODO(akalin): Use system encryptor once it's moved to sync/.
@@ -143,13 +145,13 @@ class LoggingChangeDelegate : public SyncManager::ChangeDelegate {
     size_t change_count = changes.Get().size();
     for (ChangeRecordList::const_iterator it =
              changes.Get().begin(); it != changes.Get().end(); ++it) {
-      scoped_ptr<base::DictionaryValue> change_value(it->ToValue());
+      std::unique_ptr<base::DictionaryValue> change_value(it->ToValue());
       LOG(INFO) << "Change (" << i << "/" << change_count << "): "
                 << ValueToString(*change_value);
       if (it->action != ChangeRecord::ACTION_DELETE) {
         ReadNode node(trans);
         CHECK_EQ(node.InitByIdLookup(it->id), BaseNode::INIT_OK);
-        scoped_ptr<base::DictionaryValue> details(node.ToValue());
+        std::unique_ptr<base::DictionaryValue> details(node.ToValue());
         VLOG(1) << "Details: " << ValueToString(*details);
       }
       ++i;
@@ -239,7 +241,7 @@ class InvalidatorShim : public InvalidationHandler {
                  invalidation_set.begin();
              inv_it != invalidation_set.end();
              ++inv_it) {
-          scoped_ptr<syncer::InvalidationInterface> inv_adapter(
+          std::unique_ptr<syncer::InvalidationInterface> inv_adapter(
               new InvalidationAdapter(*inv_it));
           sync_manager_->OnIncomingInvalidation(type, std::move(inv_adapter));
         }
@@ -330,7 +332,7 @@ int SyncClientMain(int argc, char* argv[]) {
   }
 
   // Set up objects that monitor the network.
-  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier(
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier(
       net::NetworkChangeNotifier::Create());
 
   // Set up sync notifier factory.
@@ -344,13 +346,11 @@ int SyncClientMain(int argc, char* argv[]) {
   const char kClientInfo[] = "standalone_sync_client";
   std::string invalidator_id = base::RandBytesAsString(8);
   NullInvalidationStateTracker null_invalidation_state_tracker;
-  scoped_ptr<Invalidator> invalidator(new NonBlockingInvalidator(
-      network_channel_creator,
-      invalidator_id,
+  std::unique_ptr<Invalidator> invalidator(new NonBlockingInvalidator(
+      network_channel_creator, invalidator_id,
       null_invalidation_state_tracker.GetSavedInvalidations(),
       null_invalidation_state_tracker.GetBootstrapData(),
-      &null_invalidation_state_tracker,
-      kClientInfo,
+      &null_invalidation_state_tracker, kClientInfo,
       notifier_options.request_context_getter));
 
   // Set up database directory for the syncer.
@@ -397,7 +397,7 @@ int SyncClientMain(int argc, char* argv[]) {
 
   // Set up sync manager.
   SyncManagerFactory sync_manager_factory;
-  scoped_ptr<SyncManager> sync_manager =
+  std::unique_ptr<SyncManager> sync_manager =
       sync_manager_factory.CreateSyncManager("sync_client manager");
   LoggingJsEventHandler js_event_handler;
   // Used only by InitialProcessMetadata(), so it's okay to leave this as NULL.
@@ -406,10 +406,9 @@ int SyncClientMain(int argc, char* argv[]) {
   // TODO(akalin): Replace this with just the context getter once
   // HttpPostProviderFactory is removed.
   CancelationSignal factory_cancelation_signal;
-  scoped_ptr<HttpPostProviderFactory> post_factory(
-      new HttpBridgeFactory(context_getter.get(),
-                            base::Bind(&StubNetworkTimeUpdateCallback),
-                            &factory_cancelation_signal));
+  std::unique_ptr<HttpPostProviderFactory> post_factory(new HttpBridgeFactory(
+      context_getter.get(), base::Bind(&StubNetworkTimeUpdateCallback),
+      &factory_cancelation_signal));
   post_factory->Init(kUserAgent, BindToTrackerCallback());
   // Used only when committing bookmarks, so it's okay to leave this
   // as NULL.
@@ -448,7 +447,8 @@ int SyncClientMain(int argc, char* argv[]) {
   // TODO(akalin): Avoid passing in model parameters multiple times by
   // organizing handling of model types.
   invalidator->UpdateCredentials(credentials.email, credentials.sync_token);
-  scoped_ptr<InvalidatorShim> shim(new InvalidatorShim(sync_manager.get()));
+  std::unique_ptr<InvalidatorShim> shim(
+      new InvalidatorShim(sync_manager.get()));
   invalidator->RegisterHandler(shim.get());
   CHECK(invalidator->UpdateRegisteredIds(
       shim.get(), ModelTypeSetToObjectIdSet(model_types)));

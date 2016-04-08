@@ -5,7 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_TEST_MODEL_TYPE_STORE_TEST_UTIL_H_
 #define SYNC_INTERNAL_API_PUBLIC_TEST_MODEL_TYPE_STORE_TEST_UTIL_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "sync/api/model_type_store.h"
 
 namespace syncer_v2 {
@@ -16,11 +17,11 @@ class ModelTypeStoreTestUtil {
  public:
   // Creates an in memory store syncronously. Be aware that to do this all
   // outstanding tasks will be run as the current message loop is pumped.
-  static scoped_ptr<ModelTypeStore> CreateInMemoryStoreForTest();
+  static std::unique_ptr<ModelTypeStore> CreateInMemoryStoreForTest();
 
   // Can be curried with an owned store object to allow passing an already
   // created store to a service constructor in a unit test.
-  static void MoveStoreToCallback(scoped_ptr<ModelTypeStore> store,
+  static void MoveStoreToCallback(std::unique_ptr<ModelTypeStore> store,
                                   const ModelTypeStore::InitCallback& callback);
 };
 

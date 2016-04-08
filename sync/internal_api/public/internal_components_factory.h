@@ -9,6 +9,7 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_INTERNAL_COMPONENTS_FACTORY_H_
 #define SYNC_INTERNAL_API_PUBLIC_INTERNAL_COMPONENTS_FACTORY_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -86,12 +87,12 @@ class SYNC_EXPORT InternalComponentsFactory {
 
   virtual ~InternalComponentsFactory() {}
 
-  virtual scoped_ptr<SyncScheduler> BuildScheduler(
+  virtual std::unique_ptr<SyncScheduler> BuildScheduler(
       const std::string& name,
       sessions::SyncSessionContext* context,
       CancelationSignal* cancelation_signal) = 0;
 
-  virtual scoped_ptr<sessions::SyncSessionContext> BuildContext(
+  virtual std::unique_ptr<sessions::SyncSessionContext> BuildContext(
       ServerConnectionManager* connection_manager,
       syncable::Directory* directory,
       ExtensionsActivity* extensions_activity,
@@ -100,11 +101,10 @@ class SYNC_EXPORT InternalComponentsFactory {
       ModelTypeRegistry* model_type_registry,
       const std::string& invalidator_client_id) = 0;
 
-  virtual scoped_ptr<syncable::DirectoryBackingStore>
-  BuildDirectoryBackingStore(
-      StorageOption storage,
-      const std::string& dir_name,
-      const base::FilePath& backing_filepath) = 0;
+  virtual std::unique_ptr<syncable::DirectoryBackingStore>
+  BuildDirectoryBackingStore(StorageOption storage,
+                             const std::string& dir_name,
+                             const base::FilePath& backing_filepath) = 0;
 
   // Returns the Switches struct that this object is using as configuration, if
   // the implementation is making use of one.

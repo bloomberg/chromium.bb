@@ -6,11 +6,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/base64.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/tracked_objects.h"
 #include "sync/internal_api/public/base/model_type_test_util.h"
@@ -368,7 +368,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
  protected:
   TestUserShare test_user_share_;
   FakeEncryptor encryptor_;
-  scoped_ptr<SyncEncryptionHandlerImpl> encryption_handler_;
+  std::unique_ptr<SyncEncryptionHandlerImpl> encryption_handler_;
   StrictMock<SyncEncryptionHandlerObserverMock> observer_;
   TestIdFactory ids_;
   base::MessageLoop message_loop_;
@@ -699,7 +699,7 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreMigratesAndUpdatesBootstrap) {
       GetCryptographer()->encryptor()->DecryptString(decoded_bootstrap,
                                                      &decrypted_bootstrap));
   JSONStringValueDeserializer json(decrypted_bootstrap);
-  scoped_ptr<base::Value> deserialized_keystore_keys(
+  std::unique_ptr<base::Value> deserialized_keystore_keys(
       json.Deserialize(NULL, NULL));
   ASSERT_TRUE(deserialized_keystore_keys.get());
   base::ListValue* keystore_list = NULL;

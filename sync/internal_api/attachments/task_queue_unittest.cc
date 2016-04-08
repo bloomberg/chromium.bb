@@ -41,7 +41,7 @@ class TaskQueueTest : public testing::Test {
   void Process(const int& task) { dispatched_.push_back(task); }
 
   base::MessageLoop message_loop_;
-  scoped_ptr<TaskQueue<int> > queue_;
+  std::unique_ptr<TaskQueue<int>> queue_;
   std::vector<int> dispatched_;
   base::WeakPtrFactory<TaskQueueTest> weak_ptr_factory_;
 };
@@ -99,7 +99,8 @@ TEST_F(TaskQueueTest, AddToQueue_NoDuplicates) {
 
 // See that Retry works as expected.
 TEST_F(TaskQueueTest, Retry) {
-  scoped_ptr<base::MockTimer> timer_to_pass(new base::MockTimer(false, false));
+  std::unique_ptr<base::MockTimer> timer_to_pass(
+      new base::MockTimer(false, false));
   base::MockTimer* mock_timer = timer_to_pass.get();
   queue_->SetTimerForTest(std::move(timer_to_pass));
 
@@ -197,7 +198,8 @@ TEST_F(TaskQueueTest, Cancel) {
 
 // See that ResetBackoff resets the backoff delay.
 TEST_F(TaskQueueTest, ResetBackoff) {
-  scoped_ptr<base::MockTimer> timer_to_pass(new base::MockTimer(false, false));
+  std::unique_ptr<base::MockTimer> timer_to_pass(
+      new base::MockTimer(false, false));
   base::MockTimer* mock_timer = timer_to_pass.get();
   queue_->SetTimerForTest(std::move(timer_to_pass));
 

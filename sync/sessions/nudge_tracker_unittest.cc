@@ -71,13 +71,14 @@ class NudgeTrackerTest : public ::testing::Test {
     nudge_tracker_.RecordSuccessfulSyncCycle();
   }
 
-  scoped_ptr<InvalidationInterface> BuildInvalidation(
+  std::unique_ptr<InvalidationInterface> BuildInvalidation(
       int64_t version,
       const std::string& payload) {
     return MockInvalidation::Build(version, payload);
   }
 
-  static scoped_ptr<InvalidationInterface> BuildUnknownVersionInvalidation() {
+  static std::unique_ptr<InvalidationInterface>
+  BuildUnknownVersionInvalidation() {
     return MockInvalidation::BuildUnknownVersion();
   }
 
@@ -836,7 +837,7 @@ class NudgeTrackerAckTrackingTest : public NudgeTrackerTest {
 
   int SendInvalidation(ModelType type, int version, const std::string& hint) {
     // Build and register the invalidation.
-    scoped_ptr<TrackableMockInvalidation> inv =
+    std::unique_ptr<TrackableMockInvalidation> inv =
         tracker_.IssueInvalidation(version, hint);
     int id = inv->GetTrackingId();
 
@@ -849,7 +850,7 @@ class NudgeTrackerAckTrackingTest : public NudgeTrackerTest {
 
   int SendUnknownVersionInvalidation(ModelType type) {
     // Build and register the invalidation.
-    scoped_ptr<TrackableMockInvalidation> inv =
+    std::unique_ptr<TrackableMockInvalidation> inv =
         tracker_.IssueUnknownVersionInvalidation();
     int id = inv->GetTrackingId();
 

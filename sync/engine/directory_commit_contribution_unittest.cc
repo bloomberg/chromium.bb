@@ -129,7 +129,7 @@ TEST_F(DirectoryCommitContributionTest, GatherByTypes) {
   }
 
   DirectoryTypeDebugInfoEmitter emitter(PREFERENCES, &type_observers_);
-  scoped_ptr<DirectoryCommitContribution> cc(
+  std::unique_ptr<DirectoryCommitContribution> cc(
       DirectoryCommitContribution::Build(dir(), PREFERENCES, 5, &emitter));
   ASSERT_EQ(2U, cc->GetNumEntries());
 
@@ -155,7 +155,7 @@ TEST_F(DirectoryCommitContributionTest, GatherAndTruncate) {
   }
 
   DirectoryTypeDebugInfoEmitter emitter(PREFERENCES, &type_observers_);
-  scoped_ptr<DirectoryCommitContribution> cc(
+  std::unique_ptr<DirectoryCommitContribution> cc(
       DirectoryCommitContribution::Build(dir(), PREFERENCES, 1, &emitter));
   ASSERT_EQ(1U, cc->GetNumEntries());
 
@@ -179,9 +179,9 @@ TEST_F(DirectoryCommitContributionTest, PrepareCommit) {
 
   DirectoryTypeDebugInfoEmitter emitter1(PREFERENCES, &type_observers_);
   DirectoryTypeDebugInfoEmitter emitter2(EXTENSIONS, &type_observers_);
-  scoped_ptr<DirectoryCommitContribution> pref_cc(
+  std::unique_ptr<DirectoryCommitContribution> pref_cc(
       DirectoryCommitContribution::Build(dir(), PREFERENCES, 25, &emitter1));
-  scoped_ptr<DirectoryCommitContribution> ext_cc(
+  std::unique_ptr<DirectoryCommitContribution> ext_cc(
       DirectoryCommitContribution::Build(dir(), EXTENSIONS, 25, &emitter2));
 
   sync_pb::ClientToServerMessage message;
@@ -232,7 +232,7 @@ TEST_F(DirectoryCommitContributionTest, DeletedItemsWithSpecifics) {
   }
 
   DirectoryTypeDebugInfoEmitter emitter(PREFERENCES, &type_observers_);
-  scoped_ptr<DirectoryCommitContribution> pref_cc(
+  std::unique_ptr<DirectoryCommitContribution> pref_cc(
       DirectoryCommitContribution::Build(dir(), PREFERENCES, 25, &emitter));
   ASSERT_TRUE(pref_cc);
 
@@ -274,7 +274,7 @@ TEST_F(DirectoryCommitContributionTest, DeletedBookmarksWithSpecifics) {
   }
 
   DirectoryTypeDebugInfoEmitter emitter(BOOKMARKS, &type_observers_);
-  scoped_ptr<DirectoryCommitContribution> bm_cc(
+  std::unique_ptr<DirectoryCommitContribution> bm_cc(
       DirectoryCommitContribution::Build(dir(), BOOKMARKS, 25, &emitter));
   ASSERT_TRUE(bm_cc);
 
@@ -316,7 +316,7 @@ TEST_F(DirectoryCommitContributionTest, HierarchySupport_Bookmark) {
   }
 
   DirectoryTypeDebugInfoEmitter emitter(BOOKMARKS, &type_observers_);
-  scoped_ptr<DirectoryCommitContribution> bm_cc(
+  std::unique_ptr<DirectoryCommitContribution> bm_cc(
       DirectoryCommitContribution::Build(dir(), BOOKMARKS, 25, &emitter));
 
   sync_pb::ClientToServerMessage message;
@@ -342,7 +342,7 @@ TEST_F(DirectoryCommitContributionTest, HierarchySupport_Preferences) {
   }
 
   DirectoryTypeDebugInfoEmitter emitter(PREFERENCES, &type_observers_);
-  scoped_ptr<DirectoryCommitContribution> pref_cc(
+  std::unique_ptr<DirectoryCommitContribution> pref_cc(
       DirectoryCommitContribution::Build(dir(), PREFERENCES, 25, &emitter));
 
   sync_pb::ClientToServerMessage message;
@@ -378,9 +378,9 @@ TEST_F(DirectoryCommitContributionTest, ProcessCommitResponse) {
 
   DirectoryTypeDebugInfoEmitter emitter1(PREFERENCES, &type_observers_);
   DirectoryTypeDebugInfoEmitter emitter2(EXTENSIONS, &type_observers_);
-  scoped_ptr<DirectoryCommitContribution> pref_cc(
+  std::unique_ptr<DirectoryCommitContribution> pref_cc(
       DirectoryCommitContribution::Build(dir(), PREFERENCES, 25, &emitter1));
-  scoped_ptr<DirectoryCommitContribution> ext_cc(
+  std::unique_ptr<DirectoryCommitContribution> ext_cc(
       DirectoryCommitContribution::Build(dir(), EXTENSIONS, 25, &emitter2));
 
   sync_pb::ClientToServerMessage message;
@@ -465,7 +465,7 @@ TEST_F(DirectoryCommitContributionTest, ProcessCommitResponseWithAttachments) {
   }
 
   DirectoryTypeDebugInfoEmitter emitter(ARTICLES, &type_observers_);
-  scoped_ptr<DirectoryCommitContribution> art_cc(
+  std::unique_ptr<DirectoryCommitContribution> art_cc(
       DirectoryCommitContribution::Build(dir(), ARTICLES, 25, &emitter));
 
   // Only art1 is ready.

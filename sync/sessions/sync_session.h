@@ -11,13 +11,13 @@
 #define SYNC_SESSIONS_SYNC_SESSION_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/sync_cycle_event.h"
@@ -132,7 +132,7 @@ class SYNC_EXPORT SyncSession {
   Delegate* const delegate_;
 
   // Our controller for various status and error counters.
-  scoped_ptr<StatusController> status_controller_;
+  std::unique_ptr<StatusController> status_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSession);
 };

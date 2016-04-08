@@ -8,9 +8,9 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "sync/engine/commit_contributor.h"
 #include "sync/engine/directory_commit_contribution.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -37,7 +37,8 @@ class DirectoryCommitContributor : public CommitContributor {
                              DirectoryTypeDebugInfoEmitter* debug_info_emitter);
   ~DirectoryCommitContributor() override;
 
-  scoped_ptr<CommitContribution> GetContribution(size_t max_entries) override;
+  std::unique_ptr<CommitContribution> GetContribution(
+      size_t max_entries) override;
 
  private:
   syncable::Directory* dir_;

@@ -67,21 +67,16 @@ std::string NormalGetUpdatesRequestEvent::GetDetails() const {
   return details;
 }
 
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 NormalGetUpdatesRequestEvent::GetProtoMessage() const {
-  return scoped_ptr<base::DictionaryValue>(
-    ClientToServerMessageToValue(request_, false));
+  return std::unique_ptr<base::DictionaryValue>(
+      ClientToServerMessageToValue(request_, false));
 }
 
-scoped_ptr<ProtocolEvent> NormalGetUpdatesRequestEvent::Clone() const {
-  return scoped_ptr<ProtocolEvent>(
-      new NormalGetUpdatesRequestEvent(
-          timestamp_,
-          nudged_types_,
-          notified_types_,
-          refresh_requested_types_,
-          is_retry_,
-          request_));
+std::unique_ptr<ProtocolEvent> NormalGetUpdatesRequestEvent::Clone() const {
+  return std::unique_ptr<ProtocolEvent>(new NormalGetUpdatesRequestEvent(
+      timestamp_, nudged_types_, notified_types_, refresh_requested_types_,
+      is_retry_, request_));
 }
 
 NormalGetUpdatesRequestEvent::NormalGetUpdatesRequestEvent(

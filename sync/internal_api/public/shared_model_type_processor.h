@@ -6,9 +6,9 @@
 #define SYNC_INTERNAL_API_PUBLIC_SHARED_MODEL_TYPE_PROCESSOR_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "sync/api/data_batch.h"
@@ -39,7 +39,7 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   ~SharedModelTypeProcessor() override;
 
   // An easily bound function that constructs a SharedModelTypeProcessor.
-  static scoped_ptr<ModelTypeChangeProcessor> CreateAsChangeProcessor(
+  static std::unique_ptr<ModelTypeChangeProcessor> CreateAsChangeProcessor(
       syncer::ModelType type,
       ModelTypeService* service);
 
@@ -58,15 +58,15 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
 
   // ModelTypeChangeProcessor implementation.
   void Put(const std::string& client_tag,
-           scoped_ptr<EntityData> entity_data,
+           std::unique_ptr<EntityData> entity_data,
            MetadataChangeList* metadata_change_list) override;
   void Delete(const std::string& client_tag,
               MetadataChangeList* metadata_change_list) override;
-  void OnMetadataLoaded(scoped_ptr<MetadataBatch> batch) override;
+  void OnMetadataLoaded(std::unique_ptr<MetadataBatch> batch) override;
   void OnSyncStarting(const StartCallback& callback) override;
 
   // ModelTypeProcessor implementation.
-  void ConnectSync(scoped_ptr<CommitQueue> worker) override;
+  void ConnectSync(std::unique_ptr<CommitQueue> worker) override;
   void DisconnectSync() override;
   void OnCommitCompleted(const sync_pb::DataTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
@@ -76,12 +76,14 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
  private:
   friend class SharedModelTypeProcessorTest;
 
-  using EntityMap = std::map<std::string, scoped_ptr<ProcessorEntityTracker>>;
-  using UpdateMap = std::map<std::string, scoped_ptr<UpdateResponseData>>;
+  using EntityMap =
+      std::map<std::string, std::unique_ptr<ProcessorEntityTracker>>;
+  using UpdateMap = std::map<std::string, std::unique_ptr<UpdateResponseData>>;
 
   // Callback for ModelTypeService::GetData(). Used when we need to load data
   // for pending commits during the initialization process.
-  void OnDataLoaded(syncer::SyncError error, scoped_ptr<DataBatch> data_batch);
+  void OnDataLoaded(syncer::SyncError error,
+                    std::unique_ptr<DataBatch> data_batch);
 
   // Check conditions, and if met inform sync that we are ready to connect.
   void ConnectIfReady();
@@ -132,7 +134,7 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   // The interface hides the posting of tasks across threads as well as the
   // CommitQueue's implementation.  Both of these features are
   // useful in tests.
-  scoped_ptr<CommitQueue> worker_;
+  std::unique_ptr<CommitQueue> worker_;
 
   // The set of sync entities known to this object.
   EntityMap entities_;

@@ -158,7 +158,7 @@ class ImmutableCore
 //     ...
 //    private:
 //     struct ImmutableSomeOtherTypeTraits {
-//       // scoped_ptr<SomeOtherType> won't work here, either.
+//       // std::unique_ptr<SomeOtherType> won't work here, either.
 //       typedef SomeOtherType* Wrapper;
 //
 //       static void InitializeWrapper(Wrapper* wrapper);

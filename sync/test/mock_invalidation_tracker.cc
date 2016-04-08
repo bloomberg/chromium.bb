@@ -11,16 +11,16 @@
 
 namespace syncer {
 
-scoped_ptr<TrackableMockInvalidation>
+std::unique_ptr<TrackableMockInvalidation>
 MockInvalidationTracker::IssueUnknownVersionInvalidation() {
-  return scoped_ptr<TrackableMockInvalidation>(
+  return std::unique_ptr<TrackableMockInvalidation>(
       new TrackableMockInvalidation(true, -1, std::string(), this, next_id_++));
 }
 
-scoped_ptr<TrackableMockInvalidation>
+std::unique_ptr<TrackableMockInvalidation>
 MockInvalidationTracker::IssueInvalidation(int64_t version,
                                            const std::string& payload) {
-  return scoped_ptr<TrackableMockInvalidation>(
+  return std::unique_ptr<TrackableMockInvalidation>(
       new TrackableMockInvalidation(false, version, payload, this, next_id_++));
 }
 

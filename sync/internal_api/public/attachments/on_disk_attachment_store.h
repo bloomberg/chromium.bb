@@ -71,7 +71,7 @@ class SYNC_EXPORT OnDiskAttachmentStore : public AttachmentStoreBackend,
   // result is UNSPECIFIED_ERROR.
   AttachmentStore::Result OpenOrCreate(const base::FilePath& path);
   // Reads single attachment from store. Returns nullptr in case of errors.
-  scoped_ptr<Attachment> ReadSingleAttachment(
+  std::unique_ptr<Attachment> ReadSingleAttachment(
       const AttachmentId& attachment_id,
       AttachmentStore::Component component);
   // Writes single attachment to store. Returns false in case of errors.
@@ -97,7 +97,7 @@ class SYNC_EXPORT OnDiskAttachmentStore : public AttachmentStoreBackend,
       const attachment_store_pb::RecordMetadata& record_metadata);
 
   const base::FilePath path_;
-  scoped_ptr<leveldb::DB> db_;
+  std::unique_ptr<leveldb::DB> db_;
 
   DISALLOW_COPY_AND_ASSIGN(OnDiskAttachmentStore);
 };

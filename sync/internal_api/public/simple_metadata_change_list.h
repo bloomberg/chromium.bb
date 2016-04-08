@@ -58,7 +58,7 @@ class SYNC_EXPORT SimpleMetadataChangeList : public MetadataChangeList {
 
  private:
   MetadataChanges metadata_changes_;
-  scoped_ptr<DataTypeStateChange> state_change_;
+  std::unique_ptr<DataTypeStateChange> state_change_;
 };
 
 }  // namespace syncer_v2

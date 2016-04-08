@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
@@ -231,7 +231,7 @@ class SYNC_EXPORT SyncManager {
     GURL service_url;
 
     // Used to communicate with the sync server.
-    scoped_ptr<HttpPostProviderFactory> post_factory;
+    std::unique_ptr<HttpPostProviderFactory> post_factory;
 
     std::vector<scoped_refptr<ModelSafeWorker> > workers;
 
@@ -251,7 +251,7 @@ class SYNC_EXPORT SyncManager {
     std::string restored_key_for_bootstrapping;
     std::string restored_keystore_key_for_bootstrapping;
 
-    scoped_ptr<InternalComponentsFactory> internal_components_factory;
+    std::unique_ptr<InternalComponentsFactory> internal_components_factory;
 
     // Must outlive SyncManager.
     Encryptor* encryptor;
@@ -266,7 +266,7 @@ class SYNC_EXPORT SyncManager {
     CancelationSignal* cancelation_signal;
 
     // Optional nigori state to be restored.
-    scoped_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state;
+    std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state;
 
     // Whether sync should clear server data when transitioning to passphrase
     // encryption.
@@ -333,7 +333,7 @@ class SYNC_EXPORT SyncManager {
   // Inform the syncer that its cached information about a type is obsolete.
   virtual void OnIncomingInvalidation(
       syncer::ModelType type,
-      scoped_ptr<syncer::InvalidationInterface> invalidation) = 0;
+      std::unique_ptr<syncer::InvalidationInterface> invalidation) = 0;
 
   // Adds a listener to be notified of sync events.
   // NOTE: It is OK (in fact, it's probably a good idea) to call this before
@@ -377,7 +377,7 @@ class SYNC_EXPORT SyncManager {
   // Returns the SyncManager's encryption handler.
   virtual SyncEncryptionHandler* GetEncryptionHandler() = 0;
 
-  virtual scoped_ptr<base::ListValue> GetAllNodesForType(
+  virtual std::unique_ptr<base::ListValue> GetAllNodesForType(
       syncer::ModelType type) = 0;
 
   // Ask the SyncManager to fetch updates for the given types.

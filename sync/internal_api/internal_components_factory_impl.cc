@@ -23,24 +23,21 @@ InternalComponentsFactoryImpl::InternalComponentsFactoryImpl(
 
 InternalComponentsFactoryImpl::~InternalComponentsFactoryImpl() { }
 
-scoped_ptr<SyncScheduler> InternalComponentsFactoryImpl::BuildScheduler(
+std::unique_ptr<SyncScheduler> InternalComponentsFactoryImpl::BuildScheduler(
     const std::string& name,
     sessions::SyncSessionContext* context,
     CancelationSignal* cancelation_signal) {
-
-  scoped_ptr<BackoffDelayProvider> delay(BackoffDelayProvider::FromDefaults());
+  std::unique_ptr<BackoffDelayProvider> delay(
+      BackoffDelayProvider::FromDefaults());
 
   if (switches_.backoff_override == BACKOFF_SHORT_INITIAL_RETRY_OVERRIDE)
     delay.reset(BackoffDelayProvider::WithShortInitialRetryOverride());
 
-  return scoped_ptr<SyncScheduler>(new SyncSchedulerImpl(
-          name,
-          delay.release(),
-          context,
-          new Syncer(cancelation_signal)));
+  return std::unique_ptr<SyncScheduler>(new SyncSchedulerImpl(
+      name, delay.release(), context, new Syncer(cancelation_signal)));
 }
 
-scoped_ptr<sessions::SyncSessionContext>
+std::unique_ptr<sessions::SyncSessionContext>
 InternalComponentsFactoryImpl::BuildContext(
     ServerConnectionManager* connection_manager,
     syncable::Directory* directory,
@@ -49,27 +46,27 @@ InternalComponentsFactoryImpl::BuildContext(
     sessions::DebugInfoGetter* debug_info_getter,
     ModelTypeRegistry* model_type_registry,
     const std::string& invalidation_client_id) {
-  return scoped_ptr<sessions::SyncSessionContext>(
+  return std::unique_ptr<sessions::SyncSessionContext>(
       new sessions::SyncSessionContext(
-          connection_manager, directory, extensions_activity,
-          listeners, debug_info_getter,
-          model_type_registry,
+          connection_manager, directory, extensions_activity, listeners,
+          debug_info_getter, model_type_registry,
           switches_.encryption_method == ENCRYPTION_KEYSTORE,
           switches_.pre_commit_updates_policy ==
               FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE,
           invalidation_client_id));
 }
 
-scoped_ptr<syncable::DirectoryBackingStore>
+std::unique_ptr<syncable::DirectoryBackingStore>
 InternalComponentsFactoryImpl::BuildDirectoryBackingStore(
-    StorageOption storage, const std::string& dir_name,
+    StorageOption storage,
+    const std::string& dir_name,
     const base::FilePath& backing_filepath) {
   if (storage == STORAGE_ON_DISK) {
-    return scoped_ptr<syncable::DirectoryBackingStore>(
+    return std::unique_ptr<syncable::DirectoryBackingStore>(
         new syncable::OnDiskDirectoryBackingStore(dir_name, backing_filepath));
   } else {
     NOTREACHED();
-    return scoped_ptr<syncable::DirectoryBackingStore>();
+    return std::unique_ptr<syncable::DirectoryBackingStore>();
   }
 }
 

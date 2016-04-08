@@ -11,15 +11,15 @@
 
 namespace syncer {
 
-scoped_ptr<MockInvalidation> MockInvalidation::BuildUnknownVersion() {
-  return scoped_ptr<MockInvalidation>(
+std::unique_ptr<MockInvalidation> MockInvalidation::BuildUnknownVersion() {
+  return std::unique_ptr<MockInvalidation>(
       new MockInvalidation(true, -1, std::string()));
 }
 
-scoped_ptr<MockInvalidation> MockInvalidation::Build(
+std::unique_ptr<MockInvalidation> MockInvalidation::Build(
     int64_t version,
     const std::string& payload) {
-  return scoped_ptr<MockInvalidation>(
+  return std::unique_ptr<MockInvalidation>(
       new MockInvalidation(false, version, payload));
 }
 

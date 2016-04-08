@@ -5,10 +5,11 @@
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/json/json_writer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "sync/protocol/proto_enum_conversions.h"
 
@@ -62,8 +63,8 @@ SyncSessionSnapshot::SyncSessionSnapshot(const SyncSessionSnapshot& other) =
 
 SyncSessionSnapshot::~SyncSessionSnapshot() {}
 
-scoped_ptr<base::DictionaryValue> SyncSessionSnapshot::ToValue() const {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+std::unique_ptr<base::DictionaryValue> SyncSessionSnapshot::ToValue() const {
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetInteger("numSuccessfulCommits",
                     model_neutral_state_.num_successful_commits);
   value->SetInteger("numSuccessfulBookmarkCommits",
@@ -93,10 +94,11 @@ scoped_ptr<base::DictionaryValue> SyncSessionSnapshot::ToValue() const {
                    GetUpdatesSourceString(legacy_updates_source_));
   value->SetBoolean("notificationsEnabled", notifications_enabled_);
 
-  scoped_ptr<base::DictionaryValue> counter_entries(
+  std::unique_ptr<base::DictionaryValue> counter_entries(
       new base::DictionaryValue());
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; i++) {
-    scoped_ptr<base::DictionaryValue> type_entries(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> type_entries(
+        new base::DictionaryValue());
     type_entries->SetInteger("numEntries", num_entries_by_type_[i]);
     type_entries->SetInteger("numToDeleteEntries",
                              num_to_delete_entries_by_type_[i]);

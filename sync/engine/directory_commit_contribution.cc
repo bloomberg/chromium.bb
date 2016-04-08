@@ -27,7 +27,7 @@ DirectoryCommitContribution::~DirectoryCommitContribution() {
 }
 
 // static.
-scoped_ptr<DirectoryCommitContribution> DirectoryCommitContribution::Build(
+std::unique_ptr<DirectoryCommitContribution> DirectoryCommitContribution::Build(
     syncable::Directory* dir,
     ModelType type,
     size_t max_entries,
@@ -40,7 +40,7 @@ scoped_ptr<DirectoryCommitContribution> DirectoryCommitContribution::Build(
   GetCommitIdsForType(&trans, type, max_entries, &metahandles);
 
   if (metahandles.empty())
-    return scoped_ptr<DirectoryCommitContribution>();
+    return std::unique_ptr<DirectoryCommitContribution>();
 
   google::protobuf::RepeatedPtrField<sync_pb::SyncEntity> entities;
   for (std::vector<int64_t>::iterator it = metahandles.begin();
@@ -54,13 +54,9 @@ scoped_ptr<DirectoryCommitContribution> DirectoryCommitContribution::Build(
   sync_pb::DataTypeContext context;
   dir->GetDataTypeContext(&trans, type, &context);
 
-  return scoped_ptr<DirectoryCommitContribution>(
-      new DirectoryCommitContribution(
-          metahandles,
-          entities,
-          context,
-          dir,
-          debug_info_emitter));
+  return std::unique_ptr<DirectoryCommitContribution>(
+      new DirectoryCommitContribution(metahandles, entities, context, dir,
+                                      debug_info_emitter));
 }
 
 void DirectoryCommitContribution::AddToCommitMessage(

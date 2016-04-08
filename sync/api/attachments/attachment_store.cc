@@ -57,14 +57,14 @@ void AttachmentStore::ReadMetadata(const ReadMetadataCallback& callback) {
   frontend_->ReadMetadata(component_, callback);
 }
 
-scoped_ptr<AttachmentStoreForSync>
+std::unique_ptr<AttachmentStoreForSync>
 AttachmentStore::CreateAttachmentStoreForSync() const {
-  scoped_ptr<AttachmentStoreForSync> attachment_store_for_sync(
+  std::unique_ptr<AttachmentStoreForSync> attachment_store_for_sync(
       new AttachmentStoreForSync(frontend_, component_, SYNC));
   return attachment_store_for_sync;
 }
 
-scoped_ptr<AttachmentStore> AttachmentStore::CreateInMemoryStore() {
+std::unique_ptr<AttachmentStore> AttachmentStore::CreateInMemoryStore() {
   // Both frontend and backend of attachment store will live on current thread.
   scoped_refptr<base::SingleThreadTaskRunner> runner;
   if (base::ThreadTaskRunnerHandle::IsSet()) {
@@ -75,38 +75,38 @@ scoped_ptr<AttachmentStore> AttachmentStore::CreateInMemoryStore() {
     // This works because |runner| takes a ref to the proxy.
     runner = base::ThreadTaskRunnerHandle::Get();
   }
-  scoped_ptr<AttachmentStoreBackend> backend(
+  std::unique_ptr<AttachmentStoreBackend> backend(
       new InMemoryAttachmentStore(runner));
   scoped_refptr<AttachmentStoreFrontend> frontend(
       new AttachmentStoreFrontend(std::move(backend), runner));
-  scoped_ptr<AttachmentStore> attachment_store(
+  std::unique_ptr<AttachmentStore> attachment_store(
       new AttachmentStore(frontend, MODEL_TYPE));
   return attachment_store;
 }
 
-scoped_ptr<AttachmentStore> AttachmentStore::CreateOnDiskStore(
+std::unique_ptr<AttachmentStore> AttachmentStore::CreateOnDiskStore(
     const base::FilePath& path,
     const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner,
     const InitCallback& callback) {
-  scoped_ptr<OnDiskAttachmentStore> backend(
+  std::unique_ptr<OnDiskAttachmentStore> backend(
       new OnDiskAttachmentStore(base::ThreadTaskRunnerHandle::Get(), path));
 
   scoped_refptr<AttachmentStoreFrontend> frontend =
       new AttachmentStoreFrontend(std::move(backend), backend_task_runner);
-  scoped_ptr<AttachmentStore> attachment_store(
+  std::unique_ptr<AttachmentStore> attachment_store(
       new AttachmentStore(frontend, MODEL_TYPE));
   frontend->Init(callback);
 
   return attachment_store;
 }
 
-scoped_ptr<AttachmentStore> AttachmentStore::CreateMockStoreForTest(
-    scoped_ptr<AttachmentStoreBackend> backend) {
+std::unique_ptr<AttachmentStore> AttachmentStore::CreateMockStoreForTest(
+    std::unique_ptr<AttachmentStoreBackend> backend) {
   scoped_refptr<base::SingleThreadTaskRunner> runner =
       base::ThreadTaskRunnerHandle::Get();
   scoped_refptr<AttachmentStoreFrontend> attachment_store_frontend(
       new AttachmentStoreFrontend(std::move(backend), runner));
-  scoped_ptr<AttachmentStore> attachment_store(
+  std::unique_ptr<AttachmentStore> attachment_store(
       new AttachmentStore(attachment_store_frontend, MODEL_TYPE));
   return attachment_store;
 }

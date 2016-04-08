@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sync/internal_api/protocol_event_buffer.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
-#include "sync/internal_api/protocol_event_buffer.h"
 #include "sync/internal_api/public/events/poll_get_updates_request_event.h"
 #include "sync/internal_api/public/events/protocol_event.h"
 #include "sync/protocol/sync.pb.h"
@@ -21,7 +23,7 @@ class ProtocolEventBufferTest : public ::testing::Test {
   ProtocolEventBufferTest();
   ~ProtocolEventBufferTest() override;
 
-  static scoped_ptr<ProtocolEvent> MakeTestEvent(int64_t id);
+  static std::unique_ptr<ProtocolEvent> MakeTestEvent(int64_t id);
   static bool HasId(const ProtocolEvent& event, int64_t id);
 
  protected:
@@ -32,12 +34,11 @@ ProtocolEventBufferTest::ProtocolEventBufferTest() {}
 
 ProtocolEventBufferTest::~ProtocolEventBufferTest() {}
 
-scoped_ptr<ProtocolEvent> ProtocolEventBufferTest::MakeTestEvent(int64_t id) {
+std::unique_ptr<ProtocolEvent> ProtocolEventBufferTest::MakeTestEvent(
+    int64_t id) {
   sync_pb::ClientToServerMessage message;
-  return scoped_ptr<ProtocolEvent>(
-      new PollGetUpdatesRequestEvent(
-          base::Time::FromInternalValue(id),
-          message));
+  return std::unique_ptr<ProtocolEvent>(new PollGetUpdatesRequestEvent(
+      base::Time::FromInternalValue(id), message));
 }
 
 bool ProtocolEventBufferTest::HasId(const ProtocolEvent& event, int64_t id) {
@@ -45,8 +46,8 @@ bool ProtocolEventBufferTest::HasId(const ProtocolEvent& event, int64_t id) {
 }
 
 TEST_F(ProtocolEventBufferTest, AddThenReturnEvents) {
-  scoped_ptr<ProtocolEvent> e1(MakeTestEvent(1));
-  scoped_ptr<ProtocolEvent> e2(MakeTestEvent(2));
+  std::unique_ptr<ProtocolEvent> e1(MakeTestEvent(1));
+  std::unique_ptr<ProtocolEvent> e2(MakeTestEvent(2));
 
   buffer_.RecordProtocolEvent(*e1);
   buffer_.RecordProtocolEvent(*e2);
@@ -61,7 +62,7 @@ TEST_F(ProtocolEventBufferTest, AddThenReturnEvents) {
 
 TEST_F(ProtocolEventBufferTest, AddThenOverflowThenReturnEvents) {
   for (size_t i = 0; i < ProtocolEventBuffer::kBufferSize+1; ++i) {
-    scoped_ptr<ProtocolEvent> e(MakeTestEvent(static_cast<int64_t>(i)));
+    std::unique_ptr<ProtocolEvent> e(MakeTestEvent(static_cast<int64_t>(i)));
     buffer_.RecordProtocolEvent(*e);
   }
 

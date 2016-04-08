@@ -331,7 +331,7 @@ WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreationImpl(
   string dummy(kDefaultNameForNewNodes);
 
   // Check if we have this locally and need to undelete it.
-  scoped_ptr<syncable::MutableEntry> existing_entry(
+  std::unique_ptr<syncable::MutableEntry> existing_entry(
       new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
                                  syncable::GET_BY_CLIENT_TAG, hash));
 

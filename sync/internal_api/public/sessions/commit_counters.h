@@ -5,9 +5,9 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_SESSIONS_COMMIT_COUNTERS_H_
 #define SYNC_INTERNAL_API_PUBLIC_SESSIONS_COMMIT_COUNTERS_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "sync/base/sync_export.h"
 
@@ -18,7 +18,7 @@ struct SYNC_EXPORT CommitCounters {
   CommitCounters();
   ~CommitCounters();
 
-  scoped_ptr<base::DictionaryValue> ToValue() const;
+  std::unique_ptr<base::DictionaryValue> ToValue() const;
   std::string ToString() const;
 
   int num_commits_attempted;

@@ -28,17 +28,15 @@ std::string PollGetUpdatesRequestEvent::GetDetails() const {
   return std::string();
 }
 
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 PollGetUpdatesRequestEvent::GetProtoMessage() const {
-  return scoped_ptr<base::DictionaryValue>(
-    ClientToServerMessageToValue(request_, false));
+  return std::unique_ptr<base::DictionaryValue>(
+      ClientToServerMessageToValue(request_, false));
 }
 
-scoped_ptr<ProtocolEvent> PollGetUpdatesRequestEvent::Clone() const {
-  return scoped_ptr<ProtocolEvent>(
-      new PollGetUpdatesRequestEvent(
-          timestamp_,
-          request_));
+std::unique_ptr<ProtocolEvent> PollGetUpdatesRequestEvent::Clone() const {
+  return std::unique_ptr<ProtocolEvent>(
+      new PollGetUpdatesRequestEvent(timestamp_, request_));
 }
 
 }  // namespace syncer

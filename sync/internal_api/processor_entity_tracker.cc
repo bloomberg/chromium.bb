@@ -24,7 +24,7 @@ void HashSpecifics(const sync_pb::EntitySpecifics& specifics,
 
 }  // namespace
 
-scoped_ptr<ProcessorEntityTracker> ProcessorEntityTracker::CreateNew(
+std::unique_ptr<ProcessorEntityTracker> ProcessorEntityTracker::CreateNew(
     const std::string& client_tag,
     const std::string& client_tag_hash,
     const std::string& id,
@@ -39,14 +39,14 @@ scoped_ptr<ProcessorEntityTracker> ProcessorEntityTracker::CreateNew(
   metadata.set_server_version(kUncommittedVersion);
   metadata.set_creation_time(syncer::TimeToProtoTime(creation_time));
 
-  return scoped_ptr<ProcessorEntityTracker>(
+  return std::unique_ptr<ProcessorEntityTracker>(
       new ProcessorEntityTracker(client_tag, &metadata));
 }
 
-scoped_ptr<ProcessorEntityTracker> ProcessorEntityTracker::CreateFromMetadata(
-    const std::string& client_tag,
-    sync_pb::EntityMetadata* metadata) {
-  return scoped_ptr<ProcessorEntityTracker>(
+std::unique_ptr<ProcessorEntityTracker>
+ProcessorEntityTracker::CreateFromMetadata(const std::string& client_tag,
+                                           sync_pb::EntityMetadata* metadata) {
+  return std::unique_ptr<ProcessorEntityTracker>(
       new ProcessorEntityTracker(client_tag, metadata));
 }
 
@@ -139,7 +139,7 @@ void ProcessorEntityTracker::RecordForcedUpdate(
   RecordAcceptedUpdate(update);
 }
 
-void ProcessorEntityTracker::MakeLocalChange(scoped_ptr<EntityData> data) {
+void ProcessorEntityTracker::MakeLocalChange(std::unique_ptr<EntityData> data) {
   DCHECK(!metadata_.client_tag_hash().empty());
   DCHECK_EQ(metadata_.client_tag_hash(), data->client_tag_hash);
 

@@ -5,8 +5,9 @@
 #ifndef SYNC_SESSIONS_DIRECTORY_TYPE_DEBUG_INFO_EMITTER_H_
 #define SYNC_SESSIONS_DIRECTORY_TYPE_DEBUG_INFO_EMITTER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "sync/base/sync_export.h"
@@ -53,7 +54,7 @@ class SYNC_EXPORT DirectoryTypeDebugInfoEmitter {
   virtual ~DirectoryTypeDebugInfoEmitter();
 
   // Returns a ListValue representation of all known nodes of this type.
-  scoped_ptr<base::ListValue> GetAllNodes();
+  std::unique_ptr<base::ListValue> GetAllNodes();
 
   // Returns a reference to the current commit counters.
   const CommitCounters& GetCommitCounters() const;

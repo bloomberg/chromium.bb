@@ -258,7 +258,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
   base::FilePath absolute_db_path = database_path_;
   DCHECK(absolute_db_path.IsAbsolute());
 
-  scoped_ptr<syncable::DirectoryBackingStore> backing_store =
+  std::unique_ptr<syncable::DirectoryBackingStore> backing_store =
       args->internal_components_factory->BuildDirectoryBackingStore(
           InternalComponentsFactory::STORAGE_ON_DISK,
           args->credentials.account_id, absolute_db_path);
@@ -723,7 +723,7 @@ void SyncManagerImpl::SetExtraChangeRecordData(
     sync_pb::EntitySpecifics original_specifics(original.ref(SPECIFICS));
     if (type == PASSWORDS) {
       // Passwords must use their own legacy ExtraPasswordChangeRecordData.
-      scoped_ptr<sync_pb::PasswordSpecificsData> data(
+      std::unique_ptr<sync_pb::PasswordSpecificsData> data(
           DecryptPasswordSpecifics(original_specifics, cryptographer));
       if (!data) {
         NOTREACHED();
@@ -869,7 +869,7 @@ void SyncManagerImpl::SetJsEventHandler(
   js_sync_encryption_handler_observer_.SetJsEventHandler(event_handler);
 }
 
-scoped_ptr<base::ListValue> SyncManagerImpl::GetAllNodesForType(
+std::unique_ptr<base::ListValue> SyncManagerImpl::GetAllNodesForType(
     syncer::ModelType type) {
   DirectoryTypeDebugInfoEmitterMap* emitter_map =
       model_type_registry_->directory_type_debug_info_emitter_map();
@@ -880,7 +880,7 @@ scoped_ptr<base::ListValue> SyncManagerImpl::GetAllNodesForType(
     // when it doesn't really know which types are enabled or disabled.
     DLOG(WARNING) << "Asked to return debug info for invalid type "
                   << ModelTypeToString(type);
-    return scoped_ptr<base::ListValue>(new base::ListValue());
+    return std::unique_ptr<base::ListValue>(new base::ListValue());
   }
 
   return it->second->GetAllNodes();
@@ -896,7 +896,7 @@ void SyncManagerImpl::SetInvalidatorEnabled(bool invalidator_enabled) {
 
 void SyncManagerImpl::OnIncomingInvalidation(
     syncer::ModelType type,
-    scoped_ptr<InvalidationInterface> invalidation) {
+    std::unique_ptr<InvalidationInterface> invalidation) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   allstatus_.IncrementNotificationsReceived();

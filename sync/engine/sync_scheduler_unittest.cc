@@ -240,7 +240,7 @@ class SyncSchedulerTest : public testing::Test {
     return scheduler_->retry_timer_.GetCurrentDelay();
   }
 
-  static scoped_ptr<InvalidationInterface> BuildInvalidation(
+  static std::unique_ptr<InvalidationInterface> BuildInvalidation(
       int64_t version,
       const std::string& payload) {
     return MockInvalidation::Build(version, payload);
@@ -254,10 +254,10 @@ class SyncSchedulerTest : public testing::Test {
   base::MessageLoop loop_;
   TestDirectorySetterUpper dir_maker_;
   CancelationSignal cancelation_signal_;
-  scoped_ptr<MockConnectionManager> connection_;
-  scoped_ptr<ModelTypeRegistry> model_type_registry_;
-  scoped_ptr<SyncSessionContext> context_;
-  scoped_ptr<SyncSchedulerImpl> scheduler_;
+  std::unique_ptr<MockConnectionManager> connection_;
+  std::unique_ptr<ModelTypeRegistry> model_type_registry_;
+  std::unique_ptr<SyncSessionContext> context_;
+  std::unique_ptr<SyncSchedulerImpl> scheduler_;
   MockNudgeHandler mock_nudge_handler_;
   MockSyncer* syncer_;
   MockDelayProvider* delay_;

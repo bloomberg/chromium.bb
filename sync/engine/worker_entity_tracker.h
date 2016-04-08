@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "sync/base/sync_export.h"
 #include "sync/protocol/sync.pb.h"
@@ -113,12 +113,12 @@ class SYNC_EXPORT WorkerEntityTracker {
   int64_t base_version_;
 
   // A commit for this entity waiting for a sync cycle to be committed.
-  scoped_ptr<CommitRequestData> pending_commit_;
+  std::unique_ptr<CommitRequestData> pending_commit_;
 
   // An update for this entity which can't be applied right now. The presence
   // of an pending update prevents commits.  As of this writing, the only
   // source of pending updates is updates that can't currently be decrypted.
-  scoped_ptr<UpdateResponseData> encrypted_update_;
+  std::unique_ptr<UpdateResponseData> encrypted_update_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerEntityTracker);
 };

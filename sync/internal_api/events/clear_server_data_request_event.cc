@@ -28,14 +28,14 @@ std::string ClearServerDataRequestEvent::GetDetails() const {
   return std::string();
 }
 
-scoped_ptr<base::DictionaryValue> ClearServerDataRequestEvent::GetProtoMessage()
-    const {
-  return scoped_ptr<base::DictionaryValue>(
+std::unique_ptr<base::DictionaryValue>
+ClearServerDataRequestEvent::GetProtoMessage() const {
+  return std::unique_ptr<base::DictionaryValue>(
       ClientToServerMessageToValue(request_, false));
 }
 
-scoped_ptr<ProtocolEvent> ClearServerDataRequestEvent::Clone() const {
-  return scoped_ptr<ProtocolEvent>(
+std::unique_ptr<ProtocolEvent> ClearServerDataRequestEvent::Clone() const {
+  return std::unique_ptr<ProtocolEvent>(
       new ClearServerDataRequestEvent(timestamp_, request_));
 }
 

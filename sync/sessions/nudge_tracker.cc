@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "sync/internal_api/public/engine/polling_constants.h"
 #include "sync/protocol/sync.pb.h"
 
@@ -64,7 +65,7 @@ NudgeTracker::NudgeTracker()
   for (ModelTypeSet::Iterator it = protocol_types.First(); it.Good();
        it.Inc()) {
     type_trackers_.insert(
-        std::make_pair(it.Get(), make_scoped_ptr(new DataTypeTracker())));
+        std::make_pair(it.Get(), base::WrapUnique(new DataTypeTracker())));
   }
 }
 
@@ -158,7 +159,7 @@ base::TimeDelta NudgeTracker::RecordLocalRefreshRequest(ModelTypeSet types) {
 
 base::TimeDelta NudgeTracker::RecordRemoteInvalidation(
     syncer::ModelType type,
-    scoped_ptr<InvalidationInterface> invalidation) {
+    std::unique_ptr<InvalidationInterface> invalidation) {
   // Forward the invalidations to the proper recipient.
   TypeTrackerMap::const_iterator tracker_it = type_trackers_.find(type);
   DCHECK(tracker_it != type_trackers_.end());

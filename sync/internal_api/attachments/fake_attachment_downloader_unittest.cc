@@ -42,7 +42,7 @@ class FakeAttachmentDownloaderTest : public testing::Test {
 
  private:
   void DownloadDone(const AttachmentDownloader::DownloadResult& result,
-                    scoped_ptr<Attachment> attachment) {
+                    std::unique_ptr<Attachment> attachment) {
     download_results_.push_back(result);
   }
 

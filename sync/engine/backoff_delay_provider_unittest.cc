@@ -4,7 +4,8 @@
 
 #include "sync/engine/backoff_delay_provider.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/time/time.h"
 #include "sync/internal_api/public/engine/polling_constants.h"
 #include "sync/internal_api/public/sessions/model_neutral_state.h"
@@ -18,7 +19,8 @@ namespace syncer {
 class BackoffDelayProviderTest : public testing::Test {};
 
 TEST_F(BackoffDelayProviderTest, GetRecommendedDelay) {
-  scoped_ptr<BackoffDelayProvider> delay(BackoffDelayProvider::FromDefaults());
+  std::unique_ptr<BackoffDelayProvider> delay(
+      BackoffDelayProvider::FromDefaults());
   EXPECT_EQ(TimeDelta::FromSeconds(1),
             delay->GetDelay(TimeDelta::FromSeconds(0)));
   EXPECT_LE(TimeDelta::FromSeconds(1),
@@ -34,7 +36,8 @@ TEST_F(BackoffDelayProviderTest, GetRecommendedDelay) {
 }
 
 TEST_F(BackoffDelayProviderTest, GetInitialDelay) {
-  scoped_ptr<BackoffDelayProvider> delay(BackoffDelayProvider::FromDefaults());
+  std::unique_ptr<BackoffDelayProvider> delay(
+      BackoffDelayProvider::FromDefaults());
   sessions::ModelNeutralState state;
   state.last_get_key_result = SYNC_SERVER_ERROR;
   EXPECT_EQ(kInitialBackoffRetrySeconds,
@@ -83,7 +86,7 @@ TEST_F(BackoffDelayProviderTest, GetInitialDelay) {
 }
 
 TEST_F(BackoffDelayProviderTest, GetInitialDelayWithOverride) {
-  scoped_ptr<BackoffDelayProvider> delay(
+  std::unique_ptr<BackoffDelayProvider> delay(
       BackoffDelayProvider::WithShortInitialRetryOverride());
   sessions::ModelNeutralState state;
   state.last_get_key_result = SYNC_SERVER_ERROR;

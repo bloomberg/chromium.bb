@@ -5,13 +5,14 @@
 #include "sync/internal_api/public/attachments/on_disk_attachment_store.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "sync/internal_api/attachments/proto/attachment_store.pb.h"
@@ -172,8 +173,9 @@ void OnDiskAttachmentStore::Read(
     const AttachmentIdList& ids,
     const AttachmentStore::ReadCallback& callback) {
   DCHECK(CalledOnValidThread());
-  scoped_ptr<AttachmentMap> result_map(new AttachmentMap());
-  scoped_ptr<AttachmentIdList> unavailable_attachments(new AttachmentIdList());
+  std::unique_ptr<AttachmentMap> result_map(new AttachmentMap());
+  std::unique_ptr<AttachmentIdList> unavailable_attachments(
+      new AttachmentIdList());
 
   AttachmentStore::Result result_code =
       AttachmentStore::STORE_INITIALIZATION_FAILED;
@@ -181,7 +183,7 @@ void OnDiskAttachmentStore::Read(
   if (db_) {
     result_code = AttachmentStore::SUCCESS;
     for (const auto& id : ids) {
-      scoped_ptr<Attachment> attachment;
+      std::unique_ptr<Attachment> attachment;
       attachment = ReadSingleAttachment(id, component);
       if (attachment) {
         result_map->insert(std::make_pair(id, *attachment));
@@ -283,7 +285,7 @@ void OnDiskAttachmentStore::ReadMetadataById(
   DCHECK(CalledOnValidThread());
   AttachmentStore::Result result_code =
       AttachmentStore::STORE_INITIALIZATION_FAILED;
-  scoped_ptr<AttachmentMetadataList> metadata_list(
+  std::unique_ptr<AttachmentMetadataList> metadata_list(
       new AttachmentMetadataList());
   if (db_) {
     result_code = AttachmentStore::SUCCESS;
@@ -310,14 +312,14 @@ void OnDiskAttachmentStore::ReadMetadata(
   DCHECK(CalledOnValidThread());
   AttachmentStore::Result result_code =
       AttachmentStore::STORE_INITIALIZATION_FAILED;
-  scoped_ptr<AttachmentMetadataList> metadata_list(
+  std::unique_ptr<AttachmentMetadataList> metadata_list(
       new AttachmentMetadataList());
 
   if (db_) {
     attachment_store_pb::RecordMetadata::Component proto_component =
         ComponentToProto(component);
     result_code = AttachmentStore::SUCCESS;
-    scoped_ptr<leveldb::Iterator> db_iterator(
+    std::unique_ptr<leveldb::Iterator> db_iterator(
         db_->NewIterator(MakeNonCachingReadOptions()));
     DCHECK(db_iterator);
     for (db_iterator->Seek(kMetadataPrefix); db_iterator->Valid();
@@ -359,7 +361,7 @@ AttachmentStore::Result OnDiskAttachmentStore::OpenOrCreate(
   base::FilePath leveldb_path = path.Append(kLeveldbDirectory);
 
   leveldb::DB* db_raw;
-  scoped_ptr<leveldb::DB> db;
+  std::unique_ptr<leveldb::DB> db;
   leveldb::Options options;
   options.create_if_missing = true;
   options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
@@ -403,10 +405,10 @@ AttachmentStore::Result OnDiskAttachmentStore::OpenOrCreate(
   return AttachmentStore::SUCCESS;
 }
 
-scoped_ptr<Attachment> OnDiskAttachmentStore::ReadSingleAttachment(
+std::unique_ptr<Attachment> OnDiskAttachmentStore::ReadSingleAttachment(
     const AttachmentId& attachment_id,
     AttachmentStore::Component component) {
-  scoped_ptr<Attachment> attachment;
+  std::unique_ptr<Attachment> attachment;
   attachment_store_pb::RecordMetadata record_metadata;
   if (!ReadSingleRecordMetadata(attachment_id, &record_metadata)) {
     return attachment;

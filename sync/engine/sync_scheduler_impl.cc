@@ -279,7 +279,8 @@ ModelTypeSet SyncSchedulerImpl::GetEnabledAndUnthrottledTypes() {
 
 void SyncSchedulerImpl::SendInitialSnapshot() {
   DCHECK(CalledOnValidThread());
-  scoped_ptr<SyncSession> dummy(SyncSession::Build(session_context_, this));
+  std::unique_ptr<SyncSession> dummy(
+      SyncSession::Build(session_context_, this));
   SyncCycleEvent event(SyncCycleEvent::STATUS_CHANGED);
   event.snapshot = dummy->TakeSnapshot();
   FOR_EACH_OBSERVER(SyncEngineEventListener,
@@ -417,7 +418,7 @@ void SyncSchedulerImpl::ScheduleLocalRefreshRequest(
 
 void SyncSchedulerImpl::ScheduleInvalidationNudge(
     syncer::ModelType model_type,
-    scoped_ptr<InvalidationInterface> invalidation,
+    std::unique_ptr<InvalidationInterface> invalidation,
     const tracked_objects::Location& nudge_location) {
   DCHECK(CalledOnValidThread());
 
@@ -500,7 +501,8 @@ void SyncSchedulerImpl::DoNudgeSyncSessionJob(JobPriority priority) {
 
   DVLOG(2) << "Will run normal mode sync cycle with types "
            << ModelTypeSetToString(session_context_->GetEnabledTypes());
-  scoped_ptr<SyncSession> session(SyncSession::Build(session_context_, this));
+  std::unique_ptr<SyncSession> session(
+      SyncSession::Build(session_context_, this));
   bool success = syncer_->NormalSyncShare(
       GetEnabledAndUnthrottledTypes(), &nudge_tracker_, session.get());
 
@@ -536,7 +538,8 @@ void SyncSchedulerImpl::DoConfigurationSyncSessionJob(JobPriority priority) {
 
   SDVLOG(2) << "Will run configure SyncShare with types "
             << ModelTypeSetToString(session_context_->GetEnabledTypes());
-  scoped_ptr<SyncSession> session(SyncSession::Build(session_context_, this));
+  std::unique_ptr<SyncSession> session(
+      SyncSession::Build(session_context_, this));
   bool success = syncer_->ConfigureSyncShare(
       pending_configure_params_->types_to_download,
       pending_configure_params_->source,
@@ -566,7 +569,8 @@ void SyncSchedulerImpl::DoClearServerDataSyncSessionJob(JobPriority priority) {
     return;
   }
 
-  scoped_ptr<SyncSession> session(SyncSession::Build(session_context_, this));
+  std::unique_ptr<SyncSession> session(
+      SyncSession::Build(session_context_, this));
   const bool success = syncer_->PostClearServerData(session.get());
   if (!success) {
     HandleFailure(session->status_controller().model_neutral_state());
@@ -611,7 +615,8 @@ void SyncSchedulerImpl::HandleFailure(
 void SyncSchedulerImpl::DoPollSyncSessionJob() {
   SDVLOG(2) << "Polling with types "
             << ModelTypeSetToString(GetEnabledAndUnthrottledTypes());
-  scoped_ptr<SyncSession> session(SyncSession::Build(session_context_, this));
+  std::unique_ptr<SyncSession> session(
+      SyncSession::Build(session_context_, this));
   bool success = syncer_->PollSyncShare(
       GetEnabledAndUnthrottledTypes(),
       session.get());

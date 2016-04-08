@@ -11,9 +11,9 @@
 
 namespace syncer {
 
-scoped_ptr<base::DictionaryValue> ProgressMarkerMapToValue(
+std::unique_ptr<base::DictionaryValue> ProgressMarkerMapToValue(
     const ProgressMarkerMap& marker_map) {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   for (ProgressMarkerMap::const_iterator it = marker_map.begin();
        it != marker_map.end(); ++it) {
     std::string printable_payload;

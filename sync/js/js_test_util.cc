@@ -4,8 +4,9 @@
 
 #include "sync/js/js_test_util.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "sync/js/js_event_details.h"
 
 namespace syncer {
@@ -55,7 +56,7 @@ class HasDetailsMatcher
 
 ::testing::Matcher<const JsEventDetails&> HasDetailsAsDictionary(
     const base::DictionaryValue& expected_details) {
-  scoped_ptr<base::DictionaryValue> expected_details_copy(
+  std::unique_ptr<base::DictionaryValue> expected_details_copy(
       expected_details.DeepCopy());
   return HasDetails(JsEventDetails(expected_details_copy.get()));
 }

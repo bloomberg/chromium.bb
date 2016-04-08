@@ -35,7 +35,7 @@ void DataTypeTracker::RecordLocalRefreshRequest() {
 }
 
 void DataTypeTracker::RecordRemoteInvalidation(
-    scoped_ptr<InvalidationInterface> incoming) {
+    std::unique_ptr<InvalidationInterface> incoming) {
   DCHECK(incoming);
 
   // Merge the incoming invalidation into our list of pending invalidations.

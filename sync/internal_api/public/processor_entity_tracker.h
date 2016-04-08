@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "sync/api/entity_data.h"
 #include "sync/base/sync_export.h"
@@ -26,7 +26,7 @@ struct UpdateResponseData;
 class SYNC_EXPORT ProcessorEntityTracker {
  public:
   // Construct an instance representing a new locally-created item.
-  static scoped_ptr<ProcessorEntityTracker> CreateNew(
+  static std::unique_ptr<ProcessorEntityTracker> CreateNew(
       const std::string& client_tag,
       const std::string& client_tag_hash,
       const std::string& id,
@@ -34,7 +34,7 @@ class SYNC_EXPORT ProcessorEntityTracker {
 
   // Construct an instance representing an item loaded from storage on init.
   // This method swaps out the contents of |metadata|.
-  static scoped_ptr<ProcessorEntityTracker> CreateFromMetadata(
+  static std::unique_ptr<ProcessorEntityTracker> CreateFromMetadata(
       const std::string& client_tag,
       sync_pb::EntityMetadata* metadata);
 
@@ -78,7 +78,7 @@ class SYNC_EXPORT ProcessorEntityTracker {
   void RecordForcedUpdate(const UpdateResponseData& response_data);
 
   // Applies a local change to this item.
-  void MakeLocalChange(scoped_ptr<EntityData> data);
+  void MakeLocalChange(std::unique_ptr<EntityData> data);
 
   // Schedule a commit if the |name| does not match this item's last known
   // encryption key.  The worker that performs the commit is expected to

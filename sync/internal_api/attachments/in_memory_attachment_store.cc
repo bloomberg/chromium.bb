@@ -4,10 +4,11 @@
 
 #include "sync/internal_api/public/attachments/in_memory_attachment_store.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 
 namespace syncer {
@@ -44,8 +45,9 @@ void InMemoryAttachmentStore::Read(
     const AttachmentStore::ReadCallback& callback) {
   DCHECK(CalledOnValidThread());
   AttachmentStore::Result result_code = AttachmentStore::SUCCESS;
-  scoped_ptr<AttachmentMap> result_map(new AttachmentMap);
-  scoped_ptr<AttachmentIdList> unavailable_attachments(new AttachmentIdList);
+  std::unique_ptr<AttachmentMap> result_map(new AttachmentMap);
+  std::unique_ptr<AttachmentIdList> unavailable_attachments(
+      new AttachmentIdList);
 
   for (const auto& id : ids) {
     AttachmentEntryMap::iterator iter = attachments_.find(id);
@@ -112,7 +114,7 @@ void InMemoryAttachmentStore::ReadMetadataById(
     const AttachmentStore::ReadMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
   AttachmentStore::Result result_code = AttachmentStore::SUCCESS;
-  scoped_ptr<AttachmentMetadataList> metadata_list(
+  std::unique_ptr<AttachmentMetadataList> metadata_list(
       new AttachmentMetadataList());
 
   for (const auto& id : ids) {
@@ -136,7 +138,7 @@ void InMemoryAttachmentStore::ReadMetadata(
     const AttachmentStore::ReadMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
   AttachmentStore::Result result_code = AttachmentStore::SUCCESS;
-  scoped_ptr<AttachmentMetadataList> metadata_list(
+  std::unique_ptr<AttachmentMetadataList> metadata_list(
       new AttachmentMetadataList());
 
   for (AttachmentEntryMap::const_iterator iter = attachments_.begin();

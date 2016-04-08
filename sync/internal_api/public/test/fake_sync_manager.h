@@ -90,7 +90,7 @@ class FakeSyncManager : public SyncManager {
                        const base::Closure& retry_task) override;
   void OnIncomingInvalidation(
       syncer::ModelType type,
-      scoped_ptr<InvalidationInterface> interface) override;
+      std::unique_ptr<InvalidationInterface> interface) override;
   void SetInvalidatorEnabled(bool invalidator_enabled) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
@@ -104,7 +104,7 @@ class FakeSyncManager : public SyncManager {
   bool HasUnsyncedItems() override;
   SyncEncryptionHandler* GetEncryptionHandler() override;
   ScopedVector<syncer::ProtocolEvent> GetBufferedProtocolEvents() override;
-  scoped_ptr<base::ListValue> GetAllNodesForType(
+  std::unique_ptr<base::ListValue> GetAllNodesForType(
       syncer::ModelType type) override;
   void RefreshTypes(ModelTypeSet types) override;
   void RegisterDirectoryTypeDebugInfoObserver(
@@ -143,7 +143,7 @@ class FakeSyncManager : public SyncManager {
   // The most recent configure reason.
   ConfigureReason last_configure_reason_;
 
-  scoped_ptr<FakeSyncEncryptionHandler> fake_encryption_handler_;
+  std::unique_ptr<FakeSyncEncryptionHandler> fake_encryption_handler_;
 
   TestUserShare test_user_share_;
 

@@ -14,7 +14,7 @@ class EntryKernelTest : public testing::Test {};
 
 TEST_F(EntryKernelTest, ToValue) {
   EntryKernel kernel;
-  scoped_ptr<base::DictionaryValue> value(kernel.ToValue(NULL));
+  std::unique_ptr<base::DictionaryValue> value(kernel.ToValue(NULL));
   if (value) {
     // Not much to check without repeating the ToValue() code.
     EXPECT_TRUE(value->HasKey("isDirty"));

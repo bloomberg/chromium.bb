@@ -8,9 +8,9 @@
 #define SYNC_INTERNAL_API_PUBLIC_BASE_PROGRESS_MARKER_MAP_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 
@@ -27,7 +27,7 @@ namespace syncer {
 // DataTypeProgressMarkers.
 typedef std::map<ModelType, std::string> ProgressMarkerMap;
 
-SYNC_EXPORT scoped_ptr<base::DictionaryValue> ProgressMarkerMapToValue(
+SYNC_EXPORT std::unique_ptr<base::DictionaryValue> ProgressMarkerMapToValue(
     const ProgressMarkerMap& marker_map);
 
 }  // namespace syncer

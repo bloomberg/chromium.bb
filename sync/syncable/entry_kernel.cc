@@ -102,7 +102,7 @@ void SetEncryptableProtoValues(
     ProtoField field = static_cast<ProtoField>(i);
     const std::string& key = GetProtoFieldString(field);
 
-    scoped_ptr<base::DictionaryValue> value;
+    std::unique_ptr<base::DictionaryValue> value;
     sync_pb::EntitySpecifics decrypted;
     const sync_pb::EncryptedData& encrypted = kernel.ref(field).encrypted();
     if (cryptographer &&

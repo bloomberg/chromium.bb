@@ -7,12 +7,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "sync/api/data_batch.h"
 #include "sync/api/entity_data.h"
 
@@ -31,7 +31,8 @@ class SYNC_EXPORT DataBatchImpl : public DataBatch {
   // Takes ownership of the data tied to a given tag used for storage. Put
   // should be called at most once for any given client_tag. Data will be
   // readable in the same order that they are put into the batch.
-  void Put(const std::string& client_tag, scoped_ptr<EntityData> entity_data);
+  void Put(const std::string& client_tag,
+           std::unique_ptr<EntityData> entity_data);
 
   // DataBatch implementation.
   bool HasNext() const override;

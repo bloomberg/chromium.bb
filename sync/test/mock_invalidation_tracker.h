@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "sync/test/trackable_mock_invalidation.h"
 
 namespace syncer {
@@ -21,8 +21,8 @@ class MockInvalidationTracker {
  public:
   // Builers to return new TrackableMockInvalidations associated with this
   // object.
-  scoped_ptr<TrackableMockInvalidation> IssueUnknownVersionInvalidation();
-  scoped_ptr<TrackableMockInvalidation> IssueInvalidation(
+  std::unique_ptr<TrackableMockInvalidation> IssueUnknownVersionInvalidation();
+  std::unique_ptr<TrackableMockInvalidation> IssueInvalidation(
       int64_t version,
       const std::string& payload);
 

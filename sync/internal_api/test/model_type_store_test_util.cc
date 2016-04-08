@@ -16,9 +16,9 @@ using Result = ModelTypeStore::Result;
 
 namespace {
 
-void MoveStoreToScopedPtr(scoped_ptr<ModelTypeStore>* out_store,
+void MoveStoreToScopedPtr(std::unique_ptr<ModelTypeStore>* out_store,
                           Result result,
-                          scoped_ptr<ModelTypeStore> in_store) {
+                          std::unique_ptr<ModelTypeStore> in_store) {
   ASSERT_EQ(Result::SUCCESS, result);
   std::swap(*out_store, in_store);
 }
@@ -26,9 +26,9 @@ void MoveStoreToScopedPtr(scoped_ptr<ModelTypeStore>* out_store,
 }  // namespace
 
 // static
-scoped_ptr<ModelTypeStore>
+std::unique_ptr<ModelTypeStore>
 ModelTypeStoreTestUtil::CreateInMemoryStoreForTest() {
-  scoped_ptr<ModelTypeStore> store;
+  std::unique_ptr<ModelTypeStore> store;
   ModelTypeStore::CreateInMemoryStoreForTest(
       base::Bind(&MoveStoreToScopedPtr, &store));
 
@@ -41,7 +41,7 @@ ModelTypeStoreTestUtil::CreateInMemoryStoreForTest() {
 
 // static
 void ModelTypeStoreTestUtil::MoveStoreToCallback(
-    scoped_ptr<ModelTypeStore> store,
+    std::unique_ptr<ModelTypeStore> store,
     const ModelTypeStore::InitCallback& callback) {
   ASSERT_TRUE(store);
   callback.Run(Result::SUCCESS, std::move(store));

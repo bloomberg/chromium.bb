@@ -6,13 +6,14 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/internal_api/public/base/attachment_id_proto.h"
@@ -63,10 +64,9 @@ class DirectoryUpdateHandlerProcessUpdateTest : public ::testing::Test {
   }
 
  protected:
-  scoped_ptr<sync_pb::SyncEntity> CreateUpdate(
-      const std::string& id,
-      const std::string& parent,
-      const ModelType& type);
+  std::unique_ptr<sync_pb::SyncEntity> CreateUpdate(const std::string& id,
+                                                    const std::string& parent,
+                                                    const ModelType& type);
 
   // This exists mostly to give tests access to the protected member function.
   // Warning: This takes the syncable directory lock.
@@ -105,12 +105,11 @@ class DirectoryUpdateHandlerProcessUpdateTest : public ::testing::Test {
   scoped_refptr<FakeModelWorker> ui_worker_;
 };
 
-scoped_ptr<sync_pb::SyncEntity>
-DirectoryUpdateHandlerProcessUpdateTest::CreateUpdate(
-    const std::string& id,
-    const std::string& parent,
-    const ModelType& type) {
-  scoped_ptr<sync_pb::SyncEntity> e(new sync_pb::SyncEntity());
+std::unique_ptr<sync_pb::SyncEntity>
+DirectoryUpdateHandlerProcessUpdateTest::CreateUpdate(const std::string& id,
+                                                      const std::string& parent,
+                                                      const ModelType& type) {
+  std::unique_ptr<sync_pb::SyncEntity> e(new sync_pb::SyncEntity());
   e->set_id_string(id);
   e->set_parent_id_string(parent);
   e->set_non_unique_name(id);
@@ -146,7 +145,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, NewBookmarkTag) {
   // Add a bookmark item to the update message.
   std::string root = Id::GetRoot().GetServerId();
   Id server_id = Id::CreateFromServerId("b1");
-  scoped_ptr<sync_pb::SyncEntity> e =
+  std::unique_ptr<sync_pb::SyncEntity> e =
       CreateUpdate(SyncableIdToProto(server_id), root, BOOKMARKS);
   e->set_originator_cache_guid(
       std::string(kCacheGuid, arraysize(kCacheGuid)-1));
@@ -185,7 +184,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest,
   // Create an update that mimics the bookmark root.
   Id server_id = Id::CreateFromServerId("xyz");
   std::string root = Id::GetRoot().GetServerId();
-  scoped_ptr<sync_pb::SyncEntity> e =
+  std::unique_ptr<sync_pb::SyncEntity> e =
       CreateUpdate(SyncableIdToProto(server_id), root, BOOKMARKS);
   e->set_server_defined_unique_tag("google_chrome_bookmarks");
   e->set_folder(true);
@@ -219,7 +218,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ReceiveNonBookmarkItem) {
 
   std::string root = Id::GetRoot().GetServerId();
   Id server_id = Id::CreateFromServerId("xyz");
-  scoped_ptr<sync_pb::SyncEntity> e =
+  std::unique_ptr<sync_pb::SyncEntity> e =
       CreateUpdate(SyncableIdToProto(server_id), root, AUTOFILL);
   e->set_server_defined_unique_tag("9PGRuKdX5sHyGMB17CvYTXuC43I=");
 
@@ -278,11 +277,11 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByVersion) {
   context.set_context("context");
   context.set_version(1);
 
-  scoped_ptr<sync_pb::SyncEntity> e1 =
+  std::unique_ptr<sync_pb::SyncEntity> e1 =
       CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e1")), "",
                    SYNCED_NOTIFICATIONS);
 
-  scoped_ptr<sync_pb::SyncEntity> e2 =
+  std::unique_ptr<sync_pb::SyncEntity> e2 =
       CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e2")), "",
                    SYNCED_NOTIFICATIONS);
   e2->set_version(kDefaultVersion + 100);
@@ -330,7 +329,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ContextVersion) {
   old_context.set_context("data");
   old_context.set_data_type_id(field_number);
 
-  scoped_ptr<sync_pb::SyncEntity> e1 =
+  std::unique_ptr<sync_pb::SyncEntity> e1 =
       CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e1")), "",
                    SYNCED_NOTIFICATIONS);
 
@@ -361,7 +360,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ContextVersion) {
   new_context.set_context("old");
   new_context.set_data_type_id(field_number);
 
-  scoped_ptr<sync_pb::SyncEntity> e2 =
+  std::unique_ptr<sync_pb::SyncEntity> e2 =
       CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e2")), "",
                    SYNCED_NOTIFICATIONS);
   updates.clear();
@@ -403,7 +402,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest,
   context.set_context("context");
   context.set_version(1);
 
-  scoped_ptr<sync_pb::SyncEntity> e1 = CreateUpdate(
+  std::unique_ptr<sync_pb::SyncEntity> e1 = CreateUpdate(
       SyncableIdToProto(Id::CreateFromServerId("e1")), "", ARTICLES);
   sync_pb::AttachmentIdProto* attachment_id = e1->add_attachment_id();
   *attachment_id = CreateAttachmentIdProto(0, 0);
@@ -469,14 +468,14 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
 
     update_handler_map_.insert(std::make_pair(
         BOOKMARKS,
-        make_scoped_ptr(new DirectoryUpdateHandler(
+        base::WrapUnique(new DirectoryUpdateHandler(
             directory(), BOOKMARKS, ui_worker_, &bookmarks_emitter_))));
     update_handler_map_.insert(std::make_pair(
         PASSWORDS,
-        make_scoped_ptr(new DirectoryUpdateHandler(
+        base::WrapUnique(new DirectoryUpdateHandler(
             directory(), PASSWORDS, password_worker_, &passwords_emitter_))));
     update_handler_map_.insert(std::make_pair(
-        ARTICLES, make_scoped_ptr(new DirectoryUpdateHandler(
+        ARTICLES, base::WrapUnique(new DirectoryUpdateHandler(
                       directory(), ARTICLES, ui_worker_, &articles_emitter_))));
   }
 
@@ -518,7 +517,7 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
  private:
   base::MessageLoop loop_;  // Needed to initialize the directory.
   TestDirectorySetterUpper dir_maker_;
-  scoped_ptr<TestEntryFactory> entry_factory_;
+  std::unique_ptr<TestEntryFactory> entry_factory_;
 
   scoped_refptr<FakeModelWorker> ui_worker_;
   scoped_refptr<FakeModelWorker> password_worker_;
@@ -529,7 +528,7 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
   DirectoryTypeDebugInfoEmitter passwords_emitter_;
   DirectoryTypeDebugInfoEmitter articles_emitter_;
 
-  std::map<ModelType, scoped_ptr<UpdateHandler>> update_handler_map_;
+  std::map<ModelType, std::unique_ptr<UpdateHandler>> update_handler_map_;
 };
 
 namespace {

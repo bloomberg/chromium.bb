@@ -21,8 +21,8 @@ UpdateCounters::UpdateCounters()
 
 UpdateCounters::~UpdateCounters() {}
 
-scoped_ptr<base::DictionaryValue> UpdateCounters::ToValue() const {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+std::unique_ptr<base::DictionaryValue> UpdateCounters::ToValue() const {
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
 
   value->SetInteger("numUpdatesReceived", num_updates_received);
   value->SetInteger("numReflectedUpdatesReceived",
@@ -44,7 +44,7 @@ scoped_ptr<base::DictionaryValue> UpdateCounters::ToValue() const {
 
 std::string UpdateCounters::ToString() const {
   std::string result;
-  scoped_ptr<base::DictionaryValue> value = ToValue();
+  std::unique_ptr<base::DictionaryValue> value = ToValue();
   JSONStringValueSerializer serializer(&result);
   serializer.Serialize(*value);
   return result;

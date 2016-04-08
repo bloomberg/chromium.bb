@@ -6,6 +6,7 @@
 #define SYNC_ENGINE_SYNC_SCHEDULER_IMPL_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -14,7 +15,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
@@ -63,7 +63,7 @@ class SYNC_EXPORT SyncSchedulerImpl : public SyncScheduler,
       const tracked_objects::Location& nudge_location) override;
   void ScheduleInvalidationNudge(
       syncer::ModelType type,
-      scoped_ptr<InvalidationInterface> invalidation,
+      std::unique_ptr<InvalidationInterface> invalidation,
       const tracked_objects::Location& nudge_location) override;
   void ScheduleInitialSyncNudge(syncer::ModelType model_type) override;
   void SetNotificationsEnabled(bool notifications_enabled) override;
@@ -261,9 +261,9 @@ class SYNC_EXPORT SyncSchedulerImpl : public SyncScheduler,
   Mode mode_;
 
   // Current wait state.  Null if we're not in backoff and not throttled.
-  scoped_ptr<WaitInterval> wait_interval_;
+  std::unique_ptr<WaitInterval> wait_interval_;
 
-  scoped_ptr<BackoffDelayProvider> delay_provider_;
+  std::unique_ptr<BackoffDelayProvider> delay_provider_;
 
   // The event that will wake us up.
   base::OneShotTimer pending_wakeup_timer_;
@@ -273,9 +273,9 @@ class SYNC_EXPORT SyncSchedulerImpl : public SyncScheduler,
 
   // Storage for variables related to an in-progress configure request.  Note
   // that (mode_ != CONFIGURATION_MODE) \implies !pending_configure_params_.
-  scoped_ptr<ConfigurationParams> pending_configure_params_;
+  std::unique_ptr<ConfigurationParams> pending_configure_params_;
 
-  scoped_ptr<ClearParams> pending_clear_params_;
+  std::unique_ptr<ClearParams> pending_clear_params_;
 
   // If we have a nudge pending to run soon, it will be listed here.
   base::TimeTicks scheduled_nudge_time_;
@@ -284,7 +284,7 @@ class SYNC_EXPORT SyncSchedulerImpl : public SyncScheduler,
   sessions::NudgeTracker nudge_tracker_;
 
   // Invoked to run through the sync cycle.
-  scoped_ptr<Syncer> syncer_;
+  std::unique_ptr<Syncer> syncer_;
 
   sessions::SyncSessionContext* session_context_;
 

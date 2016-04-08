@@ -5,10 +5,10 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_TEST_SYNC_MANAGER_FACTORY_FOR_PROFILE_SYNC_TEST_H_
 #define SYNC_INTERNAL_API_PUBLIC_TEST_SYNC_MANAGER_FACTORY_FOR_PROFILE_SYNC_TEST_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
 
 namespace syncer {
@@ -17,7 +17,7 @@ class SyncManagerFactoryForProfileSyncTest : public syncer::SyncManagerFactory {
  public:
   explicit SyncManagerFactoryForProfileSyncTest(base::Closure init_callback);
   ~SyncManagerFactoryForProfileSyncTest() override;
-  scoped_ptr<syncer::SyncManager> CreateSyncManager(
+  std::unique_ptr<syncer::SyncManager> CreateSyncManager(
       const std::string& name) override;
 
  private:

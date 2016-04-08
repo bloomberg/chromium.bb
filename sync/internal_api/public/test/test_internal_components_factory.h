@@ -20,12 +20,12 @@ class TestInternalComponentsFactory : public InternalComponentsFactory {
                                          StorageOption* storage_used);
   ~TestInternalComponentsFactory() override;
 
-  scoped_ptr<SyncScheduler> BuildScheduler(
+  std::unique_ptr<SyncScheduler> BuildScheduler(
       const std::string& name,
       sessions::SyncSessionContext* context,
       syncer::CancelationSignal* cancelation_signal) override;
 
-  scoped_ptr<sessions::SyncSessionContext> BuildContext(
+  std::unique_ptr<sessions::SyncSessionContext> BuildContext(
       ServerConnectionManager* connection_manager,
       syncable::Directory* directory,
       ExtensionsActivity* monitor,
@@ -34,7 +34,7 @@ class TestInternalComponentsFactory : public InternalComponentsFactory {
       ModelTypeRegistry* model_type_registry,
       const std::string& invalidator_client_id) override;
 
-  scoped_ptr<syncable::DirectoryBackingStore> BuildDirectoryBackingStore(
+  std::unique_ptr<syncable::DirectoryBackingStore> BuildDirectoryBackingStore(
       StorageOption storage,
       const std::string& dir_name,
       const base::FilePath& backing_filepath) override;

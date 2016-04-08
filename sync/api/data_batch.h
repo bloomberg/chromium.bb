@@ -6,16 +6,16 @@
 #define SYNC_API_DATA_BATCH_H_
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "sync/api/entity_data.h"
 #include "sync/base/sync_export.h"
 
 namespace syncer_v2 {
 
-typedef std::pair<std::string, scoped_ptr<EntityData>> TagAndData;
+typedef std::pair<std::string, std::unique_ptr<EntityData>> TagAndData;
 
 // Interface used by the processor to read data requested from the service.
 class SYNC_EXPORT DataBatch {

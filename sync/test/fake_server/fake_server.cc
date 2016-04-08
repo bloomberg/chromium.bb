@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -15,7 +16,6 @@
 
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -67,7 +67,7 @@ class UpdateSieve {
   ~UpdateSieve() { }
 
   // Factory method for creating an UpdateSieve.
-  static scoped_ptr<UpdateSieve> Create(
+  static std::unique_ptr<UpdateSieve> Create(
       const sync_pb::GetUpdatesMessage& get_updates_message);
 
   // Sets the progress markers in |get_updates_response| given the progress
@@ -124,7 +124,7 @@ class UpdateSieve {
   const int min_version_;
 };
 
-scoped_ptr<UpdateSieve> UpdateSieve::Create(
+std::unique_ptr<UpdateSieve> UpdateSieve::Create(
     const sync_pb::GetUpdatesMessage& get_updates_message) {
   CHECK_GT(get_updates_message.from_progress_marker_size(), 0)
       << "A GetUpdates request must have at least one progress marker.";
@@ -151,7 +151,7 @@ scoped_ptr<UpdateSieve> UpdateSieve::Create(
       min_version = version;
   }
 
-  return scoped_ptr<UpdateSieve>(
+  return std::unique_ptr<UpdateSieve>(
       new UpdateSieve(request_from_version, min_version));
 }
 
@@ -185,7 +185,7 @@ void FakeServer::Init() {
 bool FakeServer::CreatePermanentBookmarkFolder(const std::string& server_tag,
                                                const std::string& name) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  scoped_ptr<FakeServerEntity> entity =
+  std::unique_ptr<FakeServerEntity> entity =
       PermanentEntity::Create(syncer::BOOKMARKS, server_tag, name,
                               ModelTypeToRootTag(syncer::BOOKMARKS));
   if (!entity)
@@ -205,7 +205,7 @@ bool FakeServer::CreateDefaultPermanentItems() {
        it.Inc()) {
     ModelType model_type = it.Get();
 
-    scoped_ptr<FakeServerEntity> top_level_entity =
+    std::unique_ptr<FakeServerEntity> top_level_entity =
         PermanentEntity::CreateTopLevel(model_type);
     if (!top_level_entity) {
       return false;
@@ -229,7 +229,7 @@ void FakeServer::UpdateEntityVersion(FakeServerEntity* entity) {
   entity->SetVersion(++version_);
 }
 
-void FakeServer::SaveEntity(scoped_ptr<FakeServerEntity> entity) {
+void FakeServer::SaveEntity(std::unique_ptr<FakeServerEntity> entity) {
   UpdateEntityVersion(entity.get());
   entities_[entity->GetId()] = std::move(entity);
 }
@@ -346,7 +346,7 @@ bool FakeServer::HandleGetUpdatesRequest(
   // at once.
   response->set_changes_remaining(0);
 
-  scoped_ptr<UpdateSieve> sieve = UpdateSieve::Create(get_updates);
+  std::unique_ptr<UpdateSieve> sieve = UpdateSieve::Create(get_updates);
 
   // This folder is called "Synced Bookmarks" by sync and is renamed
   // "Mobile Bookmarks" by the mobile client UIs.
@@ -397,7 +397,7 @@ string FakeServer::CommitEntity(
     return string();
   }
 
-  scoped_ptr<FakeServerEntity> entity;
+  std::unique_ptr<FakeServerEntity> entity;
   if (client_entity.deleted()) {
     entity = TombstoneEntity::Create(client_entity.id_string());
     DeleteChildren(client_entity.id_string());
@@ -521,9 +521,11 @@ bool FakeServer::HandleCommitRequest(const sync_pb::CommitMessage& commit,
   return true;
 }
 
-scoped_ptr<base::DictionaryValue> FakeServer::GetEntitiesAsDictionaryValue() {
+std::unique_ptr<base::DictionaryValue>
+FakeServer::GetEntitiesAsDictionaryValue() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dictionary(
+      new base::DictionaryValue());
 
   // Initialize an empty ListValue for all ModelTypes.
   ModelTypeSet all_types = ModelTypeSet::All();
@@ -543,7 +545,7 @@ scoped_ptr<base::DictionaryValue> FakeServer::GetEntitiesAsDictionaryValue() {
     base::ListValue* list_value;
     if (!dictionary->GetList(ModelTypeToString(entity.GetModelType()),
                              &list_value)) {
-      return scoped_ptr<base::DictionaryValue>();
+      return std::unique_ptr<base::DictionaryValue>();
     }
     // TODO(pvalenzuela): Store more data for each entity so additional
     // verification can be performed. One example of additional verification
@@ -570,7 +572,7 @@ std::vector<sync_pb::SyncEntity> FakeServer::GetSyncEntitiesByModelType(
   return sync_entities;
 }
 
-void FakeServer::InjectEntity(scoped_ptr<FakeServerEntity> entity) {
+void FakeServer::InjectEntity(std::unique_ptr<FakeServerEntity> entity) {
   DCHECK(thread_checker_.CalledOnValidThread());
   SaveEntity(std::move(entity));
 }

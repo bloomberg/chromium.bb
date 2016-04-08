@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "sync/protocol/attachments.pb.h"
 #include "sync/protocol/password_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
@@ -31,7 +32,7 @@ sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
   if (!password_specifics.has_encrypted())
     return NULL;
   const sync_pb::EncryptedData& encrypted = password_specifics.encrypted();
-  scoped_ptr<sync_pb::PasswordSpecificsData> data(
+  std::unique_ptr<sync_pb::PasswordSpecificsData> data(
       new sync_pb::PasswordSpecificsData);
   if (!crypto->CanDecrypt(encrypted))
     return NULL;

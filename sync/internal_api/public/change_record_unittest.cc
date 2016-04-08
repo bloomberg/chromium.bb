@@ -6,10 +6,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
@@ -56,7 +57,7 @@ void CheckChangeRecordValue(
   ExpectChangeRecordActionValue(record.action, value, "action");
   ExpectDictStringValue(base::Int64ToString(record.id), value, "id");
   if (record.action == ChangeRecord::ACTION_DELETE) {
-    scoped_ptr<base::DictionaryValue> expected_extra_value;
+    std::unique_ptr<base::DictionaryValue> expected_extra_value;
     if (record.extra.get()) {
       expected_extra_value = record.extra->ToValue();
     }
@@ -65,7 +66,7 @@ void CheckChangeRecordValue(
               value.Get("extra", &extra_value));
     EXPECT_TRUE(base::Value::Equals(extra_value, expected_extra_value.get()));
 
-    scoped_ptr<base::DictionaryValue> expected_specifics_value(
+    std::unique_ptr<base::DictionaryValue> expected_specifics_value(
         EntitySpecificsToValue(record.specifics));
     ExpectDictDictionaryValue(*expected_specifics_value,
                               value, "specifics");
@@ -81,12 +82,12 @@ class TestExtraChangeRecordData : public ExtraPasswordChangeRecordData {
     EXPECT_EQ(expected_to_value_calls_, to_value_calls_);
   }
 
-  scoped_ptr<base::DictionaryValue> ToValue() const override {
+  std::unique_ptr<base::DictionaryValue> ToValue() const override {
     const_cast<TestExtraChangeRecordData*>(this)->to_value_calls_++;
     return dict_->CreateDeepCopy();
   }
 
-  void set_dictionary_value(scoped_ptr<base::DictionaryValue> dict) {
+  void set_dictionary_value(std::unique_ptr<base::DictionaryValue> dict) {
     dict_ = std::move(dict);
   }
 
@@ -95,7 +96,7 @@ class TestExtraChangeRecordData : public ExtraPasswordChangeRecordData {
   }
 
  private:
-  scoped_ptr<base::DictionaryValue> dict_;
+  std::unique_ptr<base::DictionaryValue> dict_;
   size_t to_value_calls_;
   size_t expected_to_value_calls_;
 };
@@ -115,7 +116,7 @@ TEST_F(ChangeRecordTest, ChangeRecordToValue) {
     record.id = kTestId;
     record.specifics = old_specifics;
     record.extra.reset(new TestExtraChangeRecordData());
-    scoped_ptr<base::DictionaryValue> value(record.ToValue());
+    std::unique_ptr<base::DictionaryValue> value(record.ToValue());
     CheckChangeRecordValue(record, *value);
   }
 
@@ -126,7 +127,7 @@ TEST_F(ChangeRecordTest, ChangeRecordToValue) {
     record.id = kTestId;
     record.specifics = old_specifics;
     record.extra.reset(new TestExtraChangeRecordData());
-    scoped_ptr<base::DictionaryValue> value(record.ToValue());
+    std::unique_ptr<base::DictionaryValue> value(record.ToValue());
     CheckChangeRecordValue(record, *value);
   }
 
@@ -136,7 +137,7 @@ TEST_F(ChangeRecordTest, ChangeRecordToValue) {
     record.action = ChangeRecord::ACTION_DELETE;
     record.id = kTestId;
     record.specifics = old_specifics;
-    scoped_ptr<base::DictionaryValue> value(record.ToValue());
+    std::unique_ptr<base::DictionaryValue> value(record.ToValue());
     CheckChangeRecordValue(record, *value);
   }
 
@@ -147,15 +148,16 @@ TEST_F(ChangeRecordTest, ChangeRecordToValue) {
     record.id = kTestId;
     record.specifics = old_specifics;
 
-    scoped_ptr<base::DictionaryValue> extra_value(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> extra_value(
+        new base::DictionaryValue());
     extra_value->SetString("foo", "bar");
-    scoped_ptr<TestExtraChangeRecordData> extra(
+    std::unique_ptr<TestExtraChangeRecordData> extra(
         new TestExtraChangeRecordData());
     extra->set_dictionary_value(std::move(extra_value));
     extra->set_expected_to_value_calls(2U);
 
     record.extra.reset(extra.release());
-    scoped_ptr<base::DictionaryValue> value(record.ToValue());
+    std::unique_ptr<base::DictionaryValue> value(record.ToValue());
     CheckChangeRecordValue(record, *value);
   }
 }

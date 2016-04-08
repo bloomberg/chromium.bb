@@ -227,9 +227,9 @@ FakeSyncManager::GetBufferedProtocolEvents() {
   return ScopedVector<syncer::ProtocolEvent>();
 }
 
-scoped_ptr<base::ListValue> FakeSyncManager::GetAllNodesForType(
+std::unique_ptr<base::ListValue> FakeSyncManager::GetAllNodesForType(
     syncer::ModelType type) {
-  return scoped_ptr<base::ListValue>(new base::ListValue());
+  return std::unique_ptr<base::ListValue>(new base::ListValue());
 }
 
 void FakeSyncManager::RefreshTypes(ModelTypeSet types) {
@@ -251,7 +251,7 @@ void FakeSyncManager::RequestEmitDebugInfo() {}
 
 void FakeSyncManager::OnIncomingInvalidation(
     syncer::ModelType type,
-    scoped_ptr<InvalidationInterface> invalidation) {
+    std::unique_ptr<InvalidationInterface> invalidation) {
   num_invalidations_received_++;
 }
 

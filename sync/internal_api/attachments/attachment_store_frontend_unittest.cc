@@ -4,12 +4,12 @@
 
 #include "sync/internal_api/public/attachments/attachment_store_frontend.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -109,7 +109,7 @@ class AttachmentStoreFrontendTest : public testing::Test {
         dtor_call_count_(0) {}
 
   void SetUp() override {
-    scoped_ptr<AttachmentStoreBackend> backend(new MockAttachmentStore(
+    std::unique_ptr<AttachmentStoreBackend> backend(new MockAttachmentStore(
         base::Bind(&AttachmentStoreFrontendTest::InitCalled,
                    base::Unretained(this)),
         base::Bind(&AttachmentStoreFrontendTest::ReadCalled,
@@ -134,14 +134,16 @@ class AttachmentStoreFrontendTest : public testing::Test {
     NOTREACHED();
   }
 
-  static void ReadDone(const AttachmentStore::Result& result,
-                       scoped_ptr<AttachmentMap> attachments,
-                       scoped_ptr<AttachmentIdList> unavailable_attachments) {
+  static void ReadDone(
+      const AttachmentStore::Result& result,
+      std::unique_ptr<AttachmentMap> attachments,
+      std::unique_ptr<AttachmentIdList> unavailable_attachments) {
     NOTREACHED();
   }
 
-  static void ReadMetadataDone(const AttachmentStore::Result& result,
-                               scoped_ptr<AttachmentMetadataList> metadata) {
+  static void ReadMetadataDone(
+      const AttachmentStore::Result& result,
+      std::unique_ptr<AttachmentMetadataList> metadata) {
     NOTREACHED();
   }
 

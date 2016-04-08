@@ -5,7 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_HTTP_BRIDGE_NETWORK_RESOURCES_H_
 #define SYNC_INTERNAL_API_PUBLIC_HTTP_BRIDGE_NETWORK_RESOURCES_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/network_resources.h"
 #include "sync/internal_api/public/network_time_update_callback.h"
@@ -24,7 +25,7 @@ class SYNC_EXPORT HttpBridgeNetworkResources : public NetworkResources {
   ~HttpBridgeNetworkResources() override;
 
   // NetworkResources
-  scoped_ptr<HttpPostProviderFactory> GetHttpPostProviderFactory(
+  std::unique_ptr<HttpPostProviderFactory> GetHttpPostProviderFactory(
       const scoped_refptr<net::URLRequestContextGetter>&
           baseline_context_getter,
       const NetworkTimeUpdateCallback& network_time_update_callback,

@@ -31,7 +31,7 @@ ModelNeutralMutableEntry::ModelNeutralMutableEntry(BaseWriteTransaction* trans,
   if (same_id.good()) {
     return;  // already have an item with this ID.
   }
-  scoped_ptr<EntryKernel> kernel(new EntryKernel());
+  std::unique_ptr<EntryKernel> kernel(new EntryKernel());
 
   kernel->put(ID, id);
   kernel->put(META_HANDLE, trans->directory()->NextMetahandle());
@@ -61,7 +61,7 @@ ModelNeutralMutableEntry::ModelNeutralMutableEntry(BaseWriteTransaction* trans,
     return;  // already have a type root for the given type
   }
 
-  scoped_ptr<EntryKernel> kernel(new EntryKernel());
+  std::unique_ptr<EntryKernel> kernel(new EntryKernel());
 
   sync_pb::EntitySpecifics specifics;
   AddDefaultFieldValue(type, &specifics);

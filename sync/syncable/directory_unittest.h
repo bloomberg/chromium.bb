@@ -86,7 +86,7 @@ class SyncableDirectoryTest : public testing::Test {
   bool IsInDirtyMetahandles(int64_t metahandle);
   bool IsInMetahandlesToPurge(int64_t metahandle);
 
-  scoped_ptr<Directory>& dir();
+  std::unique_ptr<Directory>& dir();
   DirectoryChangeDelegate* directory_change_delegate();
   Encryptor* encryptor();
   TestUnrecoverableErrorHandler* unrecoverable_error_handler();
@@ -101,7 +101,7 @@ class SyncableDirectoryTest : public testing::Test {
                      bool is_del);
 
   base::MessageLoop message_loop_;
-  scoped_ptr<Directory> dir_;
+  std::unique_ptr<Directory> dir_;
   NullDirectoryChangeDelegate delegate_;
   FakeEncryptor encryptor_;
   TestUnrecoverableErrorHandler handler_;

@@ -394,8 +394,8 @@ class MockConnectionManager : public ServerConnectionManager {
   // True if we are only accepting GetUpdatesCallerInfo::PERIODIC requests.
   bool fail_non_periodic_get_updates_;
 
-  scoped_ptr<sync_pb::ClientCommand> gu_client_command_;
-  scoped_ptr<sync_pb::ClientCommand> commit_client_command_;
+  std::unique_ptr<sync_pb::ClientCommand> gu_client_command_;
+  std::unique_ptr<sync_pb::ClientCommand> commit_client_command_;
 
   // The next value to use for the position_in_parent property.
   int64_t next_position_in_parent_;

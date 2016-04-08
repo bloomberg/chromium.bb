@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/thread_task_runner_handle.h"
 #include "sync/engine/commit_queue.h"
@@ -27,7 +28,7 @@ class ModelTypeProcessorProxy : public ModelTypeProcessor {
       const scoped_refptr<base::SequencedTaskRunner>& processor_task_runner);
   ~ModelTypeProcessorProxy() override;
 
-  void ConnectSync(scoped_ptr<CommitQueue> worker) override;
+  void ConnectSync(std::unique_ptr<CommitQueue> worker) override;
   void DisconnectSync() override;
   void OnCommitCompleted(const sync_pb::DataTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
@@ -46,7 +47,7 @@ ModelTypeProcessorProxy::ModelTypeProcessorProxy(
 
 ModelTypeProcessorProxy::~ModelTypeProcessorProxy() {}
 
-void ModelTypeProcessorProxy::ConnectSync(scoped_ptr<CommitQueue> worker) {
+void ModelTypeProcessorProxy::ConnectSync(std::unique_ptr<CommitQueue> worker) {
   processor_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ModelTypeProcessor::ConnectSync, processor_,
                             base::Passed(std::move(worker))));
@@ -87,10 +88,10 @@ SharedModelTypeProcessor::SharedModelTypeProcessor(syncer::ModelType type,
 SharedModelTypeProcessor::~SharedModelTypeProcessor() {}
 
 // static
-scoped_ptr<ModelTypeChangeProcessor>
+std::unique_ptr<ModelTypeChangeProcessor>
 SharedModelTypeProcessor::CreateAsChangeProcessor(syncer::ModelType type,
                                                   ModelTypeService* service) {
-  return scoped_ptr<ModelTypeChangeProcessor>(
+  return std::unique_ptr<ModelTypeChangeProcessor>(
       new SharedModelTypeProcessor(type, service));
 }
 
@@ -106,7 +107,7 @@ void SharedModelTypeProcessor::OnSyncStarting(
 }
 
 void SharedModelTypeProcessor::OnMetadataLoaded(
-    scoped_ptr<MetadataBatch> batch) {
+    std::unique_ptr<MetadataBatch> batch) {
   DCHECK(CalledOnValidThread());
   DCHECK(entities_.empty());
   DCHECK(!is_metadata_loaded_);
@@ -120,7 +121,7 @@ void SharedModelTypeProcessor::OnMetadataLoaded(
     std::vector<std::string> entities_to_commit;
 
     for (auto it = metadata_map.begin(); it != metadata_map.end(); it++) {
-      scoped_ptr<ProcessorEntityTracker> entity =
+      std::unique_ptr<ProcessorEntityTracker> entity =
           ProcessorEntityTracker::CreateFromMetadata(it->first, &it->second);
       if (entity->RequiresCommitData()) {
         entities_to_commit.push_back(entity->client_tag());
@@ -144,8 +145,9 @@ void SharedModelTypeProcessor::OnMetadataLoaded(
   ConnectIfReady();
 }
 
-void SharedModelTypeProcessor::OnDataLoaded(syncer::SyncError error,
-                                            scoped_ptr<DataBatch> data_batch) {
+void SharedModelTypeProcessor::OnDataLoaded(
+    syncer::SyncError error,
+    std::unique_ptr<DataBatch> data_batch) {
   while (data_batch->HasNext()) {
     TagAndData data = data_batch->Next();
     ProcessorEntityTracker* entity = GetEntityForTag(data.first);
@@ -164,11 +166,11 @@ void SharedModelTypeProcessor::ConnectIfReady() {
     return;
   }
 
-  scoped_ptr<ActivationContext> activation_context =
-      make_scoped_ptr(new ActivationContext);
+  std::unique_ptr<ActivationContext> activation_context =
+      base::WrapUnique(new ActivationContext);
   activation_context->data_type_state = data_type_state_;
   activation_context->type_processor =
-      make_scoped_ptr(new ModelTypeProcessorProxy(
+      base::WrapUnique(new ModelTypeProcessorProxy(
           weak_ptr_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get()));
 
   start_callback_.Run(syncer::SyncError(), std::move(activation_context));
@@ -186,7 +188,7 @@ bool SharedModelTypeProcessor::IsConnected() const {
 
 void SharedModelTypeProcessor::Disable() {
   DCHECK(CalledOnValidThread());
-  scoped_ptr<MetadataChangeList> change_list =
+  std::unique_ptr<MetadataChangeList> change_list =
       service_->CreateMetadataChangeList();
   for (auto it = entities_.begin(); it != entities_.end(); ++it) {
     change_list->ClearMetadata(it->second->client_tag());
@@ -200,7 +202,8 @@ void SharedModelTypeProcessor::Disable() {
   service_->clear_change_processor();
 }
 
-void SharedModelTypeProcessor::ConnectSync(scoped_ptr<CommitQueue> worker) {
+void SharedModelTypeProcessor::ConnectSync(
+    std::unique_ptr<CommitQueue> worker) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "Successfully connected " << ModelTypeToString(type_);
 
@@ -223,7 +226,7 @@ void SharedModelTypeProcessor::DisconnectSync() {
 }
 
 void SharedModelTypeProcessor::Put(const std::string& tag,
-                                   scoped_ptr<EntityData> data,
+                                   std::unique_ptr<EntityData> data,
                                    MetadataChangeList* metadata_change_list) {
   DCHECK(IsAllowingChanges());
   DCHECK(data.get());
@@ -319,7 +322,7 @@ void SharedModelTypeProcessor::FlushPendingCommitRequests() {
 void SharedModelTypeProcessor::OnCommitCompleted(
     const sync_pb::DataTypeState& type_state,
     const CommitResponseDataList& response_list) {
-  scoped_ptr<MetadataChangeList> change_list =
+  std::unique_ptr<MetadataChangeList> change_list =
       service_->CreateMetadataChangeList();
 
   data_type_state_ = type_state;
@@ -358,7 +361,7 @@ void SharedModelTypeProcessor::OnUpdateReceived(
     return;
   }
 
-  scoped_ptr<MetadataChangeList> metadata_changes =
+  std::unique_ptr<MetadataChangeList> metadata_changes =
       service_->CreateMetadataChangeList();
   EntityChangeList entity_changes;
 
@@ -504,7 +507,7 @@ void SharedModelTypeProcessor::OnInitialUpdateReceived(
   DCHECK(!data_type_state_.initial_sync_done());
   DCHECK(data_type_state.initial_sync_done());
 
-  scoped_ptr<MetadataChangeList> metadata_changes =
+  std::unique_ptr<MetadataChangeList> metadata_changes =
       service_->CreateMetadataChangeList();
   EntityDataMap data_map;
 
@@ -546,8 +549,9 @@ ProcessorEntityTracker* SharedModelTypeProcessor::CreateEntity(
     const std::string& tag,
     const EntityData& data) {
   DCHECK(entities_.find(data.client_tag_hash) == entities_.end());
-  scoped_ptr<ProcessorEntityTracker> entity = ProcessorEntityTracker::CreateNew(
-      tag, data.client_tag_hash, data.id, data.creation_time);
+  std::unique_ptr<ProcessorEntityTracker> entity =
+      ProcessorEntityTracker::CreateNew(tag, data.client_tag_hash, data.id,
+                                        data.creation_time);
   ProcessorEntityTracker* entity_ptr = entity.get();
   entities_[data.client_tag_hash] = std::move(entity);
   return entity_ptr;

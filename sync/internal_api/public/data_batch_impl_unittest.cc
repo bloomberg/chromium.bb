@@ -4,6 +4,7 @@
 
 #include "sync/internal_api/public/data_batch_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer_v2 {
@@ -15,7 +16,7 @@ TEST(DataBatchImplTest, PutAndNextWithReuse) {
   DataBatchImpl batch;
   EXPECT_FALSE(batch.HasNext());
 
-  batch.Put("one", make_scoped_ptr(entity1));
+  batch.Put("one", base::WrapUnique(entity1));
   EXPECT_TRUE(batch.HasNext());
 
   const TagAndData& pair1 = batch.Next();
@@ -23,7 +24,7 @@ TEST(DataBatchImplTest, PutAndNextWithReuse) {
   EXPECT_EQ("one", pair1.first);
   EXPECT_EQ(entity1, pair1.second.get());
 
-  batch.Put("two", make_scoped_ptr(entity2));
+  batch.Put("two", base::WrapUnique(entity2));
   EXPECT_TRUE(batch.HasNext());
 
   const TagAndData& pair2 = batch.Next();
@@ -40,9 +41,9 @@ TEST(DataBatchImplTest, PutAndNextInterleaved) {
   DataBatchImpl batch;
   EXPECT_FALSE(batch.HasNext());
 
-  batch.Put("one", make_scoped_ptr(entity1));
+  batch.Put("one", base::WrapUnique(entity1));
   EXPECT_TRUE(batch.HasNext());
-  batch.Put("two", make_scoped_ptr(entity2));
+  batch.Put("two", base::WrapUnique(entity2));
   EXPECT_TRUE(batch.HasNext());
 
   const TagAndData& pair1 = batch.Next();
@@ -50,7 +51,7 @@ TEST(DataBatchImplTest, PutAndNextInterleaved) {
   EXPECT_EQ("one", pair1.first);
   EXPECT_EQ(entity1, pair1.second.get());
 
-  batch.Put("three", make_scoped_ptr(entity3));
+  batch.Put("three", base::WrapUnique(entity3));
   EXPECT_TRUE(batch.HasNext());
 
   const TagAndData& pair2 = batch.Next();
@@ -71,9 +72,9 @@ TEST(DataBatchImplTest, PutAndNextSharedTag) {
   DataBatchImpl batch;
   EXPECT_FALSE(batch.HasNext());
 
-  batch.Put("same", make_scoped_ptr(entity1));
+  batch.Put("same", base::WrapUnique(entity1));
   EXPECT_TRUE(batch.HasNext());
-  batch.Put("same", make_scoped_ptr(entity2));
+  batch.Put("same", base::WrapUnique(entity2));
   EXPECT_TRUE(batch.HasNext());
 
   const TagAndData& pair1 = batch.Next();

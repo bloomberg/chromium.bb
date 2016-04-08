@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -25,11 +26,12 @@ ModelTypeStoreBackend::ModelTypeStoreBackend() {
 ModelTypeStoreBackend::~ModelTypeStoreBackend() {
 }
 
-scoped_ptr<leveldb::Env> ModelTypeStoreBackend::CreateInMemoryEnv() {
-  return make_scoped_ptr(leveldb::NewMemEnv(leveldb::Env::Default()));
+std::unique_ptr<leveldb::Env> ModelTypeStoreBackend::CreateInMemoryEnv() {
+  return base::WrapUnique(leveldb::NewMemEnv(leveldb::Env::Default()));
 }
 
-void ModelTypeStoreBackend::TakeEnvOwnership(scoped_ptr<leveldb::Env> env) {
+void ModelTypeStoreBackend::TakeEnvOwnership(
+    std::unique_ptr<leveldb::Env> env) {
   env_ = std::move(env);
 }
 
@@ -87,7 +89,7 @@ ModelTypeStore::Result ModelTypeStoreBackend::ReadAllRecordsWithPrefix(
   DCHECK(db_);
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
-  scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
+  std::unique_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
   const leveldb::Slice prefix_slice(prefix);
   for (iter->Seek(prefix_slice); iter->Valid(); iter->Next()) {
     leveldb::Slice key = iter->key();
@@ -103,7 +105,7 @@ ModelTypeStore::Result ModelTypeStoreBackend::ReadAllRecordsWithPrefix(
 }
 
 ModelTypeStore::Result ModelTypeStoreBackend::WriteModifications(
-    scoped_ptr<leveldb::WriteBatch> write_batch) {
+    std::unique_ptr<leveldb::WriteBatch> write_batch) {
   DFAKE_SCOPED_LOCK(push_pop_);
   DCHECK(db_);
   leveldb::Status status =

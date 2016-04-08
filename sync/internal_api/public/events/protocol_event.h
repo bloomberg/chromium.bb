@@ -5,9 +5,9 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_EVENTS_PROTOCOL_EVENT_H_
 #define SYNC_INTERNAL_API_PUBLIC_EVENTS_PROTOCOL_EVENT_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "sync/base/sync_export.h"
@@ -45,14 +45,14 @@ class SYNC_EXPORT ProtocolEvent {
 
   // Returns a DictionaryValue representing the protobuf message associated with
   // this event.
-  virtual scoped_ptr<base::DictionaryValue> GetProtoMessage() const = 0;
+  virtual std::unique_ptr<base::DictionaryValue> GetProtoMessage() const = 0;
 
   // Need a virtual copy contructor to copy this object across threads.
-  virtual scoped_ptr<ProtocolEvent> Clone() const = 0;
+  virtual std::unique_ptr<ProtocolEvent> Clone() const = 0;
 
   // A static function that assembles the data exposed through the
   // ProtocolEvent's interface into a single DictionaryValue.
-  static scoped_ptr<base::DictionaryValue> ToValue(
+  static std::unique_ptr<base::DictionaryValue> ToValue(
       const ProtocolEvent& event);
 };
 

@@ -6,11 +6,11 @@
 #define SYNC_SESSIONS_MODEL_TYPE_REGISTRY_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "sync/base/sync_export.h"
@@ -62,9 +62,9 @@ class SYNC_EXPORT ModelTypeRegistry : public syncer_v2::SyncContext,
   // and its task_runner to the newly created worker.
   //
   // Expects that the proxy's ModelType is not currently enabled.
-  void ConnectType(
-      syncer::ModelType type,
-      scoped_ptr<syncer_v2::ActivationContext> activation_context) override;
+  void ConnectType(syncer::ModelType type,
+                   std::unique_ptr<syncer_v2::ActivationContext>
+                       activation_context) override;
 
   // Disables the syncing of an off-thread type.
   //
@@ -137,7 +137,7 @@ class SYNC_EXPORT ModelTypeRegistry : public syncer_v2::SyncContext,
   syncable::Directory* directory_;
 
   // A copy of the directory's most recent cryptographer.
-  scoped_ptr<Cryptographer> cryptographer_;
+  std::unique_ptr<Cryptographer> cryptographer_;
 
   // The set of encrypted types.
   ModelTypeSet encrypted_types_;

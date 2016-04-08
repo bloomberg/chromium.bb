@@ -17,7 +17,8 @@ ConflictResolution ConflictResolution::UseRemote() {
 }
 
 // static
-ConflictResolution ConflictResolution::UseNew(scoped_ptr<EntityData> data) {
+ConflictResolution ConflictResolution::UseNew(
+    std::unique_ptr<EntityData> data) {
   DCHECK(data);
   return ConflictResolution(USE_NEW, std::move(data));
 }
@@ -27,13 +28,14 @@ ConflictResolution::ConflictResolution(ConflictResolution&& other)
 
 ConflictResolution::~ConflictResolution() {}
 
-scoped_ptr<EntityData> ConflictResolution::ExtractData() {
+std::unique_ptr<EntityData> ConflictResolution::ExtractData() {
   // Has data if and only if type is USE_NEW.
   DCHECK((type_ == USE_NEW) == !!data_);
   return std::move(data_);
 };
 
-ConflictResolution::ConflictResolution(Type type, scoped_ptr<EntityData> data)
+ConflictResolution::ConflictResolution(Type type,
+                                       std::unique_ptr<EntityData> data)
     : type_(type), data_(std::move(data)) {}
 
 }  // namespace syncer_v2

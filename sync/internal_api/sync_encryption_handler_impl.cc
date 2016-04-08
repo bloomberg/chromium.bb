@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 #include <string>
 
@@ -177,7 +178,7 @@ bool UnpackKeystoreBootstrapToken(
   }
 
   JSONStringValueDeserializer json(decrypted_keystore_bootstrap);
-  scoped_ptr<base::Value> deserialized_keystore_keys(
+  std::unique_ptr<base::Value> deserialized_keystore_keys(
       json.Deserialize(NULL, NULL));
   if (!deserialized_keystore_keys)
     return false;

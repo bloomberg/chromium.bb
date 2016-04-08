@@ -26,7 +26,7 @@ class ModelTypeStoreImplTest : public testing::Test {
   ModelTypeStore* store() { return store_.get(); }
 
   void OnInitDone(ModelTypeStore::Result result,
-                  scoped_ptr<ModelTypeStore> store) {
+                  std::unique_ptr<ModelTypeStore> store) {
     ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
     store_ = std::move(store);
   }
@@ -43,7 +43,7 @@ class ModelTypeStoreImplTest : public testing::Test {
   }
 
   void WriteTestData() {
-    scoped_ptr<ModelTypeStore::WriteBatch> write_batch =
+    std::unique_ptr<ModelTypeStore::WriteBatch> write_batch =
         store()->CreateWriteBatch();
     store()->WriteData(write_batch.get(), "id1", "data1");
     store()->WriteMetadata(write_batch.get(), "id1", "metadata1");
@@ -66,19 +66,19 @@ class ModelTypeStoreImplTest : public testing::Test {
 
   static void CaptureResultWithRecords(
       ModelTypeStore::Result* dst_result,
-      scoped_ptr<ModelTypeStore::RecordList>* dst_records,
+      std::unique_ptr<ModelTypeStore::RecordList>* dst_records,
       ModelTypeStore::Result result,
-      scoped_ptr<ModelTypeStore::RecordList> records) {
+      std::unique_ptr<ModelTypeStore::RecordList> records) {
     *dst_result = result;
     *dst_records = std::move(records);
   }
 
   static void CaptureResutRecordsAndString(
       ModelTypeStore::Result* dst_result,
-      scoped_ptr<ModelTypeStore::RecordList>* dst_records,
+      std::unique_ptr<ModelTypeStore::RecordList>* dst_records,
       std::string* dst_value,
       ModelTypeStore::Result result,
-      scoped_ptr<ModelTypeStore::RecordList> records,
+      std::unique_ptr<ModelTypeStore::RecordList> records,
       const std::string& value) {
     *dst_result = result;
     *dst_records = std::move(records);
@@ -87,11 +87,11 @@ class ModelTypeStoreImplTest : public testing::Test {
 
   static void CaptureResutRecordsAndIdList(
       ModelTypeStore::Result* dst_result,
-      scoped_ptr<ModelTypeStore::RecordList>* dst_records,
-      scoped_ptr<ModelTypeStore::IdList>* dst_id_list,
+      std::unique_ptr<ModelTypeStore::RecordList>* dst_records,
+      std::unique_ptr<ModelTypeStore::IdList>* dst_id_list,
       ModelTypeStore::Result result,
-      scoped_ptr<ModelTypeStore::RecordList> records,
-      scoped_ptr<ModelTypeStore::IdList> missing_id_list) {
+      std::unique_ptr<ModelTypeStore::RecordList> records,
+      std::unique_ptr<ModelTypeStore::IdList> missing_id_list) {
     *dst_result = result;
     *dst_records = std::move(records);
     *dst_id_list = std::move(missing_id_list);
@@ -99,7 +99,7 @@ class ModelTypeStoreImplTest : public testing::Test {
 
  private:
   base::MessageLoop message_loop_;
-  scoped_ptr<ModelTypeStore> store_;
+  std::unique_ptr<ModelTypeStore> store_;
 };
 
 // Matcher to verify contents of returned RecordList .
@@ -118,7 +118,7 @@ TEST_F(ModelTypeStoreImplTest, CreateInMemoryStore) {
   ASSERT_NE(nullptr, store());
 
   ModelTypeStore::Result result;
-  scoped_ptr<ModelTypeStore::RecordList> records;
+  std::unique_ptr<ModelTypeStore::RecordList> records;
   store()->ReadAllData(
       base::Bind(&CaptureResultWithRecords, &result, &records));
   PumpLoop();
@@ -140,7 +140,7 @@ TEST_F(ModelTypeStoreImplTest, WriteThenRead) {
   WriteTestData();
 
   ModelTypeStore::Result result;
-  scoped_ptr<ModelTypeStore::RecordList> records;
+  std::unique_ptr<ModelTypeStore::RecordList> records;
   store()->ReadAllData(
       base::Bind(&CaptureResultWithRecords, &result, &records));
   PumpLoop();
@@ -167,7 +167,7 @@ TEST_F(ModelTypeStoreImplTest, MissingGlobalMetadata) {
 
   ModelTypeStore::Result result;
 
-  scoped_ptr<ModelTypeStore::WriteBatch> write_batch =
+  std::unique_ptr<ModelTypeStore::WriteBatch> write_batch =
       store()->CreateWriteBatch();
   store()->DeleteGlobalMetadata(write_batch.get());
   store()->CommitWriteBatch(std::move(write_batch),
@@ -175,7 +175,7 @@ TEST_F(ModelTypeStoreImplTest, MissingGlobalMetadata) {
   PumpLoop();
   ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
 
-  scoped_ptr<ModelTypeStore::RecordList> records;
+  std::unique_ptr<ModelTypeStore::RecordList> records;
   std::string global_metadata;
   store()->ReadAllMetadata(base::Bind(&CaptureResutRecordsAndString, &result,
                                       &records, &global_metadata));
@@ -198,8 +198,8 @@ TEST_F(ModelTypeStoreImplTest, ReadMissingDataRecords) {
   id_list.push_back("id1");
   id_list.push_back("id3");
 
-  scoped_ptr<ModelTypeStore::RecordList> records;
-  scoped_ptr<ModelTypeStore::IdList> missing_id_list;
+  std::unique_ptr<ModelTypeStore::RecordList> records;
+  std::unique_ptr<ModelTypeStore::IdList> missing_id_list;
 
   store()->ReadData(id_list, base::Bind(&CaptureResutRecordsAndIdList, &result,
                                         &records, &missing_id_list));

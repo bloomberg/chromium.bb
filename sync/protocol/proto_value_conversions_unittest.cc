@@ -6,9 +6,9 @@
 
 #include "sync/protocol/proto_value_conversions.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -48,9 +48,10 @@ class ProtoValueConversionsTest : public testing::Test {
  protected:
   template <class T>
   void TestSpecificsToValue(
-      scoped_ptr<base::DictionaryValue>(*specifics_to_value)(const T&)) {
+      std::unique_ptr<base::DictionaryValue> (*specifics_to_value)(const T&)) {
     const T& specifics(T::default_instance());
-    scoped_ptr<base::DictionaryValue> value = specifics_to_value(specifics);
+    std::unique_ptr<base::DictionaryValue> value =
+        specifics_to_value(specifics);
     // We can't do much but make sure that this doesn't crash.
   }
 };
@@ -95,7 +96,7 @@ TEST_F(ProtoValueConversionsTest, NavigationRedirectToValue) {
 TEST_F(ProtoValueConversionsTest, PasswordSpecificsData) {
   sync_pb::PasswordSpecificsData specifics;
   specifics.set_password_value("secret");
-  scoped_ptr<base::DictionaryValue> value(
+  std::unique_ptr<base::DictionaryValue> value(
       PasswordSpecificsDataToValue(specifics));
   EXPECT_FALSE(value->empty());
   std::string password_value;
@@ -115,7 +116,7 @@ TEST_F(ProtoValueConversionsTest, AppSettingSpecificsToValue) {
   sync_pb::AppNotificationSettings specifics;
   specifics.set_disabled(true);
   specifics.set_oauth_client_id("some_id_value");
-  scoped_ptr<base::DictionaryValue> value(AppSettingsToValue(specifics));
+  std::unique_ptr<base::DictionaryValue> value(AppSettingsToValue(specifics));
   EXPECT_FALSE(value->empty());
   bool disabled_value = false;
   std::string oauth_client_id_value;
@@ -162,7 +163,8 @@ TEST_F(ProtoValueConversionsTest, BookmarkSpecificsData) {
   meta_2->set_key("key2");
   meta_2->set_value("value2");
 
-  scoped_ptr<base::DictionaryValue> value(BookmarkSpecificsToValue(specifics));
+  std::unique_ptr<base::DictionaryValue> value(
+      BookmarkSpecificsToValue(specifics));
   EXPECT_FALSE(value->empty());
   std::string encoded_time;
   EXPECT_TRUE(value->GetString("creation_time_us", &encoded_time));
@@ -332,7 +334,8 @@ TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
 
 #undef SET_FIELD
 
-  scoped_ptr<base::DictionaryValue> value(EntitySpecificsToValue(specifics));
+  std::unique_ptr<base::DictionaryValue> value(
+      EntitySpecificsToValue(specifics));
   EXPECT_EQ(MODEL_TYPE_COUNT - FIRST_REAL_MODEL_TYPE -
             (LAST_PROXY_TYPE - FIRST_PROXY_TYPE + 1),
             static_cast<int>(value->size()));
@@ -366,13 +369,13 @@ TEST_F(ProtoValueConversionsTest, ClientToServerMessageToValue) {
   sync_pb::SyncEntity* entity = commit_message->add_entries();
   entity->mutable_specifics();
 
-  scoped_ptr<base::DictionaryValue> value_with_specifics(
+  std::unique_ptr<base::DictionaryValue> value_with_specifics(
       ClientToServerMessageToValue(message, true /* include_specifics */));
   EXPECT_FALSE(value_with_specifics->empty());
   EXPECT_TRUE(ValueHasSpecifics(*(value_with_specifics.get()),
                                 "commit.entries"));
 
-  scoped_ptr<base::DictionaryValue> value_without_specifics(
+  std::unique_ptr<base::DictionaryValue> value_without_specifics(
       ClientToServerMessageToValue(message, false /* include_specifics */));
   EXPECT_FALSE(value_without_specifics->empty());
   EXPECT_FALSE(ValueHasSpecifics(*(value_without_specifics.get()),
@@ -387,13 +390,13 @@ TEST_F(ProtoValueConversionsTest, ClientToServerResponseToValue) {
   sync_pb::SyncEntity* entity = response->add_entries();
   entity->mutable_specifics();
 
-  scoped_ptr<base::DictionaryValue> value_with_specifics(
+  std::unique_ptr<base::DictionaryValue> value_with_specifics(
       ClientToServerResponseToValue(message, true /* include_specifics */));
   EXPECT_FALSE(value_with_specifics->empty());
   EXPECT_TRUE(ValueHasSpecifics(*(value_with_specifics.get()),
                                 "get_updates.entries"));
 
-  scoped_ptr<base::DictionaryValue> value_without_specifics(
+  std::unique_ptr<base::DictionaryValue> value_without_specifics(
       ClientToServerResponseToValue(message, false /* include_specifics */));
   EXPECT_FALSE(value_without_specifics->empty());
   EXPECT_FALSE(ValueHasSpecifics(*(value_without_specifics.get()),

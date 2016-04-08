@@ -6,10 +6,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <map>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "sync/engine/commit_queue.h"
@@ -51,9 +53,9 @@ sync_pb::EntitySpecifics GenerateSpecifics(const std::string& tag,
   return specifics;
 }
 
-scoped_ptr<EntityData> GenerateEntityData(const std::string& tag,
-                                          const std::string& value) {
-  scoped_ptr<EntityData> entity_data = make_scoped_ptr(new EntityData());
+std::unique_ptr<EntityData> GenerateEntityData(const std::string& tag,
+                                               const std::string& value) {
+  std::unique_ptr<EntityData> entity_data = base::WrapUnique(new EntityData());
   entity_data->client_tag_hash = GenerateTagHash(tag);
   entity_data->specifics = GenerateSpecifics(tag, value);
   entity_data->non_unique_name = tag;
@@ -63,8 +65,8 @@ scoped_ptr<EntityData> GenerateEntityData(const std::string& tag,
 // It is intentionally very difficult to copy an EntityData, as in normal code
 // we never want to. However, since we store the data as an EntityData for the
 // test code here, this function is needed to manually copy it.
-scoped_ptr<EntityData> CopyEntityData(const EntityData& old_data) {
-  scoped_ptr<EntityData> new_data(new EntityData());
+std::unique_ptr<EntityData> CopyEntityData(const EntityData& old_data) {
+  std::unique_ptr<EntityData> new_data(new EntityData());
   new_data->id = old_data.id;
   new_data->client_tag_hash = old_data.client_tag_hash;
   new_data->non_unique_name = old_data.non_unique_name;
@@ -108,7 +110,7 @@ class SimpleStore {
     return metadata_store_.find(tag) != metadata_store_.end();
   }
 
-  const std::map<std::string, scoped_ptr<EntityData>>& GetAllData() const {
+  const std::map<std::string, std::unique_ptr<EntityData>>& GetAllData() const {
     return data_store_;
   }
 
@@ -138,8 +140,8 @@ class SimpleStore {
     data_type_state_ = data_type_state;
   }
 
-  scoped_ptr<MetadataBatch> CreateMetadataBatch() const {
-    scoped_ptr<MetadataBatch> metadata_batch(new MetadataBatch());
+  std::unique_ptr<MetadataBatch> CreateMetadataBatch() const {
+    std::unique_ptr<MetadataBatch> metadata_batch(new MetadataBatch());
     metadata_batch->SetDataTypeState(data_type_state_);
     for (auto it = metadata_store_.begin(); it != metadata_store_.end(); it++) {
       metadata_batch->AddMetadata(it->first, it->second);
@@ -158,7 +160,7 @@ class SimpleStore {
  private:
   size_t data_change_count_ = 0;
   size_t metadata_change_count_ = 0;
-  std::map<std::string, scoped_ptr<EntityData>> data_store_;
+  std::map<std::string, std::unique_ptr<EntityData>> data_store_;
   std::map<std::string, sync_pb::EntityMetadata> metadata_store_;
   sync_pb::DataTypeState data_type_state_;
 };
@@ -238,10 +240,11 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   }
 
   // Overloaded form to allow passing of custom entity data.
-  void WriteItem(const std::string& tag, scoped_ptr<EntityData> entity_data) {
+  void WriteItem(const std::string& tag,
+                 std::unique_ptr<EntityData> entity_data) {
     db_.PutData(tag, *entity_data);
     if (type_processor()) {
-      scoped_ptr<MetadataChangeList> change_list(
+      std::unique_ptr<MetadataChangeList> change_list(
           new SimpleMetadataChangeList());
       type_processor()->Put(tag, std::move(entity_data), change_list.get());
       ApplyMetadataChangeList(std::move(change_list));
@@ -258,7 +261,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   void DeleteItem(const std::string& tag) {
     db_.RemoveData(tag);
     if (type_processor()) {
-      scoped_ptr<MetadataChangeList> change_list(
+      std::unique_ptr<MetadataChangeList> change_list(
           new SimpleMetadataChangeList());
       type_processor()->Delete(tag, change_list.get());
       ApplyMetadataChangeList(std::move(change_list));
@@ -441,8 +444,8 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
 
  private:
   void OnReadyToConnect(syncer::SyncError error,
-                        scoped_ptr<ActivationContext> context) {
-    scoped_ptr<MockCommitQueue> commit_queue(new MockCommitQueue());
+                        std::unique_ptr<ActivationContext> context) {
+    std::unique_ptr<MockCommitQueue> commit_queue(new MockCommitQueue());
     // Keep an unsafe pointer to the commit queue the processor will use.
     mock_queue_ = commit_queue.get();
     context->type_processor->ConnectSync(std::move(commit_queue));
@@ -457,12 +460,12 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     return entity_data.specifics.preference().name();
   }
 
-  scoped_ptr<MetadataChangeList> CreateMetadataChangeList() override {
-    return scoped_ptr<MetadataChangeList>(new SimpleMetadataChangeList());
+  std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override {
+    return std::unique_ptr<MetadataChangeList>(new SimpleMetadataChangeList());
   }
 
   syncer::SyncError MergeSyncData(
-      scoped_ptr<MetadataChangeList> metadata_changes,
+      std::unique_ptr<MetadataChangeList> metadata_changes,
       EntityDataMap data_map) override {
     // Commit any local entities that aren't being overwritten by the server.
     const auto& local_data = db_.GetAllData();
@@ -481,7 +484,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   }
 
   syncer::SyncError ApplySyncChanges(
-      scoped_ptr<MetadataChangeList> metadata_changes,
+      std::unique_ptr<MetadataChangeList> metadata_changes,
       EntityChangeList entity_changes) override {
     for (const EntityChange& change : entity_changes) {
       switch (change.type()) {
@@ -503,7 +506,8 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     return syncer::SyncError();
   }
 
-  void ApplyMetadataChangeList(scoped_ptr<MetadataChangeList> change_list) {
+  void ApplyMetadataChangeList(
+      std::unique_ptr<MetadataChangeList> change_list) {
     DCHECK(change_list);
     SimpleMetadataChangeList* changes =
         static_cast<SimpleMetadataChangeList*>(change_list.get());
@@ -535,7 +539,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   }
 
   void GetData(ClientTagList tags, DataCallback callback) override {
-    scoped_ptr<DataBatchImpl> batch(new DataBatchImpl());
+    std::unique_ptr<DataBatchImpl> batch(new DataBatchImpl());
     for (const std::string& tag : tags) {
       batch->Put(tag, CopyEntityData(db_.GetData(tag)));
     }
@@ -550,7 +554,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     return std::move(*conflict_resolution_);
   }
 
-  scoped_ptr<ConflictResolution> conflict_resolution_;
+  std::unique_ptr<ConflictResolution> conflict_resolution_;
 
   // This sets ThreadTaskRunnerHandle on the current thread, which the type
   // processor will pick up as the sync task runner.
@@ -854,7 +858,7 @@ TEST_F(SharedModelTypeProcessorTest, LocalUpdateItemWithOverrides) {
   InitializeToReadyState();
   EXPECT_EQ(0U, GetNumCommitRequestLists());
 
-  scoped_ptr<EntityData> entity_data = make_scoped_ptr(new EntityData());
+  std::unique_ptr<EntityData> entity_data = base::WrapUnique(new EntityData());
   entity_data->specifics.mutable_preference()->set_name(kName1);
   entity_data->specifics.mutable_preference()->set_value(kValue1);
 

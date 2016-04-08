@@ -126,9 +126,9 @@ void UnpackProtoFields(sql::Statement* statement,
 // The caller owns the returned EntryKernel*.  Assumes the statement currently
 // points to a valid row in the metas table. Returns NULL to indicate that
 // it detected a corruption in the data on unpacking.
-scoped_ptr<EntryKernel> UnpackEntry(sql::Statement* statement,
-                                    int* total_specifics_copies) {
-  scoped_ptr<EntryKernel> kernel(new EntryKernel());
+std::unique_ptr<EntryKernel> UnpackEntry(sql::Statement* statement,
+                                         int* total_specifics_copies) {
+  std::unique_ptr<EntryKernel> kernel(new EntryKernel());
   DCHECK_EQ(statement->ColumnCount(), static_cast<int>(FIELD_COUNT));
   int i = 0;
   for (i = BEGIN_FIELDS; i < INT64_FIELDS_END; ++i) {
@@ -158,7 +158,7 @@ scoped_ptr<EntryKernel> UnpackEntry(sql::Statement* statement,
     sync_pb::UniquePosition proto;
     if (!proto.ParseFromString(temp)) {
       DVLOG(1) << "Unpacked invalid position.  Assuming the DB is corrupt";
-      return scoped_ptr<EntryKernel>();
+      return std::unique_ptr<EntryKernel>();
     }
 
     kernel->mutable_ref(static_cast<UniquePositionField>(i)) =
@@ -175,7 +175,7 @@ scoped_ptr<EntryKernel> UnpackEntry(sql::Statement* statement,
       !kernel->ref(UNIQUE_POSITION).IsValid()) {
     DVLOG(1) << "Unpacked invalid position on an entity that should have a "
              << "valid position.  Assuming the DB is corrupt.";
-    return scoped_ptr<EntryKernel>();
+    return std::unique_ptr<EntryKernel>();
   }
 
   return kernel;
@@ -664,7 +664,8 @@ bool DirectoryBackingStore::LoadEntries(Directory::MetahandlesMap* handles_map,
   sql::Statement s(db_->GetUniqueStatement(select.c_str()));
 
   while (s.Step()) {
-    scoped_ptr<EntryKernel> kernel = UnpackEntry(&s, &total_specifics_copies);
+    std::unique_ptr<EntryKernel> kernel =
+        UnpackEntry(&s, &total_specifics_copies);
     // A null kernel is evidence of external data corruption.
     if (!kernel)
       return false;
@@ -710,7 +711,7 @@ bool DirectoryBackingStore::LoadDeleteJournals(
 
   while (s.Step()) {
     int total_entry_copies;
-    scoped_ptr<EntryKernel> kernel = UnpackEntry(&s, &total_entry_copies);
+    std::unique_ptr<EntryKernel> kernel = UnpackEntry(&s, &total_entry_copies);
     // A null kernel is evidence of external data corruption.
     if (!kernel)
       return false;

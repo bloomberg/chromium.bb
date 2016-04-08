@@ -23,14 +23,14 @@ TestInternalComponentsFactory::TestInternalComponentsFactory(
 
 TestInternalComponentsFactory::~TestInternalComponentsFactory() { }
 
-scoped_ptr<SyncScheduler> TestInternalComponentsFactory::BuildScheduler(
+std::unique_ptr<SyncScheduler> TestInternalComponentsFactory::BuildScheduler(
     const std::string& name,
     sessions::SyncSessionContext* context,
     syncer::CancelationSignal* cancelation_signal) {
-  return scoped_ptr<SyncScheduler>(new FakeSyncScheduler());
+  return std::unique_ptr<SyncScheduler>(new FakeSyncScheduler());
 }
 
-scoped_ptr<sessions::SyncSessionContext>
+std::unique_ptr<sessions::SyncSessionContext>
 TestInternalComponentsFactory::BuildContext(
     ServerConnectionManager* connection_manager,
     syncable::Directory* directory,
@@ -39,41 +39,40 @@ TestInternalComponentsFactory::BuildContext(
     sessions::DebugInfoGetter* debug_info_getter,
     ModelTypeRegistry* model_type_registry,
     const std::string& invalidator_client_id) {
-
   // Tests don't wire up listeners.
   std::vector<SyncEngineEventListener*> empty_listeners;
-  return scoped_ptr<sessions::SyncSessionContext>(
+  return std::unique_ptr<sessions::SyncSessionContext>(
       new sessions::SyncSessionContext(
-          connection_manager, directory, monitor,
-          empty_listeners, debug_info_getter,
-          model_type_registry,
+          connection_manager, directory, monitor, empty_listeners,
+          debug_info_getter, model_type_registry,
           switches_.encryption_method == ENCRYPTION_KEYSTORE,
           switches_.pre_commit_updates_policy ==
               FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE,
           invalidator_client_id));
 }
 
-scoped_ptr<syncable::DirectoryBackingStore>
+std::unique_ptr<syncable::DirectoryBackingStore>
 TestInternalComponentsFactory::BuildDirectoryBackingStore(
-    StorageOption storage, const std::string& dir_name,
+    StorageOption storage,
+    const std::string& dir_name,
     const base::FilePath& backing_filepath) {
   if (storage_used_)
     *storage_used_ = storage;
 
   switch (storage_override_) {
     case STORAGE_IN_MEMORY:
-      return scoped_ptr<syncable::DirectoryBackingStore>(
+      return std::unique_ptr<syncable::DirectoryBackingStore>(
           new syncable::InMemoryDirectoryBackingStore(dir_name));
     case STORAGE_ON_DISK:
-      return scoped_ptr<syncable::DirectoryBackingStore>(
+      return std::unique_ptr<syncable::DirectoryBackingStore>(
           new syncable::OnDiskDirectoryBackingStore(dir_name,
                                                     backing_filepath));
     case STORAGE_INVALID:
-      return scoped_ptr<syncable::DirectoryBackingStore>(
+      return std::unique_ptr<syncable::DirectoryBackingStore>(
           new syncable::InvalidDirectoryBackingStore());
   }
   NOTREACHED();
-  return scoped_ptr<syncable::DirectoryBackingStore>();
+  return std::unique_ptr<syncable::DirectoryBackingStore>();
 }
 
 InternalComponentsFactory::Switches

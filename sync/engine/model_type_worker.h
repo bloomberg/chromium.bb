@@ -8,9 +8,9 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "sync/base/sync_export.h"
@@ -61,15 +61,16 @@ class SYNC_EXPORT ModelTypeWorker : public syncer::UpdateHandler,
  public:
   ModelTypeWorker(syncer::ModelType type,
                   const sync_pb::DataTypeState& initial_state,
-                  scoped_ptr<syncer::Cryptographer> cryptographer,
+                  std::unique_ptr<syncer::Cryptographer> cryptographer,
                   syncer::NudgeHandler* nudge_handler,
-                  scoped_ptr<ModelTypeProcessor> model_type_processor);
+                  std::unique_ptr<ModelTypeProcessor> model_type_processor);
   ~ModelTypeWorker() override;
 
   syncer::ModelType GetModelType() const;
 
   bool IsEncryptionRequired() const;
-  void UpdateCryptographer(scoped_ptr<syncer::Cryptographer> cryptographer);
+  void UpdateCryptographer(
+      std::unique_ptr<syncer::Cryptographer> cryptographer);
 
   // UpdateHandler implementation.
   void GetDownloadProgress(
@@ -87,7 +88,7 @@ class SYNC_EXPORT ModelTypeWorker : public syncer::UpdateHandler,
   void EnqueueForCommit(const CommitRequestDataList& request_list) override;
 
   // CommitContributor implementation.
-  scoped_ptr<syncer::CommitContribution> GetContribution(
+  std::unique_ptr<syncer::CommitContribution> GetContribution(
       size_t max_entries) override;
 
   // Callback for when our contribution gets a response.
@@ -96,7 +97,7 @@ class SYNC_EXPORT ModelTypeWorker : public syncer::UpdateHandler,
   base::WeakPtr<ModelTypeWorker> AsWeakPtr();
 
  private:
-  using EntityMap = std::map<std::string, scoped_ptr<WorkerEntityTracker>>;
+  using EntityMap = std::map<std::string, std::unique_ptr<WorkerEntityTracker>>;
 
   // Helper function to actually send |pending_updates_| to the processor.
   void ApplyPendingUpdates();
@@ -152,12 +153,12 @@ class SYNC_EXPORT ModelTypeWorker : public syncer::UpdateHandler,
   sync_pb::DataTypeState data_type_state_;
 
   // Pointer to the ModelTypeProcessor associated with this worker. Never null.
-  scoped_ptr<ModelTypeProcessor> model_type_processor_;
+  std::unique_ptr<ModelTypeProcessor> model_type_processor_;
 
   // A private copy of the most recent cryptographer known to sync.
   // Initialized at construction time and updated with UpdateCryptographer().
   // NULL if encryption is not enabled for this type.
-  scoped_ptr<syncer::Cryptographer> cryptographer_;
+  std::unique_ptr<syncer::Cryptographer> cryptographer_;
 
   // Interface used to access and send nudges to the sync scheduler. Not owned.
   syncer::NudgeHandler* nudge_handler_;

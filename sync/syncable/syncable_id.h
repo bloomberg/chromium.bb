@@ -7,11 +7,11 @@
 
 #include <iosfwd>
 #include <limits>
+#include <memory>
 #include <sstream>
 #include <string>
 
 #include "base/containers/hash_tables.h"
-#include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
 
 namespace base {
@@ -106,8 +106,8 @@ class SYNC_EXPORT Id {
   static Id GetRoot();
 
  private:
-  friend scoped_ptr<EntryKernel> UnpackEntry(sql::Statement* statement,
-                                             int* total_created_entries);
+  friend std::unique_ptr<EntryKernel> UnpackEntry(sql::Statement* statement,
+                                                  int* total_created_entries);
   friend void BindFields(const EntryKernel& entry,
                          sql::Statement* statement);
   SYNC_EXPORT friend std::ostream& operator<<(std::ostream& out, const Id& id);

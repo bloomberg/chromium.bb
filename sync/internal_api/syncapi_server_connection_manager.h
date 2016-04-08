@@ -5,12 +5,12 @@
 #ifndef SYNC_INTERNAL_API_SYNCAPI_SERVER_CONNECTION_MANAGER_H_
 #define SYNC_INTERNAL_API_SYNCAPI_SERVER_CONNECTION_MANAGER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/net/server_connection_manager.h"
 
@@ -72,7 +72,7 @@ class SYNC_EXPORT SyncAPIServerConnectionManager
 
   // A factory creating concrete HttpPostProviders for use whenever we need to
   // issue a POST to sync servers.
-  scoped_ptr<HttpPostProviderFactory> post_provider_factory_;
+  std::unique_ptr<HttpPostProviderFactory> post_provider_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncAPIServerConnectionManager);
 };

@@ -5,10 +5,10 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_EVENTS_POLL_GET_UPDATES_REQUEST_EVENT_H_
 #define SYNC_INTERNAL_API_PUBLIC_EVENTS_POLL_GET_UPDATES_REQUEST_EVENT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "sync/base/sync_export.h"
@@ -33,8 +33,8 @@ class SYNC_EXPORT PollGetUpdatesRequestEvent : public ProtocolEvent {
   base::Time GetTimestamp() const override;
   std::string GetType() const override;
   std::string GetDetails() const override;
-  scoped_ptr<base::DictionaryValue> GetProtoMessage() const override;
-  scoped_ptr<ProtocolEvent> Clone() const override;
+  std::unique_ptr<base::DictionaryValue> GetProtoMessage() const override;
+  std::unique_ptr<ProtocolEvent> Clone() const override;
 
  private:
   const base::Time timestamp_;

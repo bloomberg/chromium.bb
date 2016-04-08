@@ -4,11 +4,11 @@
 
 #include "sync/engine/traffic_logger.h"
 
+#include <memory>
 #include <string>
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "sync/protocol/proto_value_conversions.h"
 #include "sync/protocol/sync.pb.h"
@@ -18,11 +18,11 @@ namespace syncer {
 namespace {
 template <class T>
 void LogData(const T& data,
-             scoped_ptr<base::DictionaryValue>(*to_dictionary_value)(const T&,
-                                                                     bool),
+             std::unique_ptr<base::DictionaryValue> (
+                 *to_dictionary_value)(const T&, bool),
              const std::string& description) {
   if (::logging::DEBUG_MODE && VLOG_IS_ON(1)) {
-    scoped_ptr<base::DictionaryValue> value =
+    std::unique_ptr<base::DictionaryValue> value =
         (*to_dictionary_value)(data, true /* include_specifics */);
     std::string message;
     base::JSONWriter::WriteWithOptions(

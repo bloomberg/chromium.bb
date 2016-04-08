@@ -5,11 +5,11 @@
 #ifndef SYNC_API_MODEL_TYPE_SERVICE_H_
 #define SYNC_API_MODEL_TYPE_SERVICE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "sync/api/conflict_resolution.h"
 #include "sync/api/entity_change.h"
 #include "sync/api/entity_data.h"
@@ -28,10 +28,10 @@ class MetadataChangeList;
 // metadata for entities, as well as the model type state.
 class SYNC_EXPORT ModelTypeService {
  public:
-  typedef base::Callback<void(syncer::SyncError, scoped_ptr<DataBatch>)>
+  typedef base::Callback<void(syncer::SyncError, std::unique_ptr<DataBatch>)>
       DataCallback;
   typedef std::vector<std::string> ClientTagList;
-  typedef base::Callback<scoped_ptr<ModelTypeChangeProcessor>(
+  typedef base::Callback<std::unique_ptr<ModelTypeChangeProcessor>(
       syncer::ModelType type,
       ModelTypeService* service)>
       ChangeProcessorFactory;
@@ -43,7 +43,7 @@ class SYNC_EXPORT ModelTypeService {
 
   // Creates an object used to communicate changes in the sync metadata to the
   // model type store.
-  virtual scoped_ptr<MetadataChangeList> CreateMetadataChangeList() = 0;
+  virtual std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() = 0;
 
   // Perform the initial merge between local and sync data. This should only be
   // called when a data type is first enabled to start syncing, and there is no
@@ -59,7 +59,7 @@ class SYNC_EXPORT ModelTypeService {
   // changes, so that this merge will be re-driven by sync if is not completely
   // saved during the current run.
   virtual syncer::SyncError MergeSyncData(
-      scoped_ptr<MetadataChangeList> metadata_change_list,
+      std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityDataMap entity_data_map) = 0;
 
   // Apply changes from the sync server locally.
@@ -68,7 +68,7 @@ class SYNC_EXPORT ModelTypeService {
   // out, or even be empty in case when a commit confirmation is processed and
   // only the metadata needs to persisted.
   virtual syncer::SyncError ApplySyncChanges(
-      scoped_ptr<MetadataChangeList> metadata_change_list,
+      std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_changes) = 0;
 
   // Asynchronously retrieve the corresponding sync data for |client_tags|.
@@ -106,7 +106,7 @@ class SYNC_EXPORT ModelTypeService {
   syncer::ModelType type() const;
 
  private:
-  scoped_ptr<ModelTypeChangeProcessor> change_processor_;
+  std::unique_ptr<ModelTypeChangeProcessor> change_processor_;
 
   ChangeProcessorFactory change_processor_factory_;
 

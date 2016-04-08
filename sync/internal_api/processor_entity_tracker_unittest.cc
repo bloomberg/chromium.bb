@@ -5,9 +5,11 @@
 #include "sync/internal_api/public/processor_entity_tracker.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
@@ -44,22 +46,24 @@ class ProcessorEntityTrackerTest : public ::testing::Test {
     return syncer::syncable::GenerateSyncableHash(syncer::PREFERENCES, tag);
   }
 
-  scoped_ptr<ProcessorEntityTracker> NewLocalItem(const std::string& tag) {
-    return scoped_ptr<ProcessorEntityTracker>(ProcessorEntityTracker::CreateNew(
-        tag, GetSyncableHash(tag), "", kCtime));
+  std::unique_ptr<ProcessorEntityTracker> NewLocalItem(const std::string& tag) {
+    return std::unique_ptr<ProcessorEntityTracker>(
+        ProcessorEntityTracker::CreateNew(tag, GetSyncableHash(tag), "",
+                                          kCtime));
   }
 
-  scoped_ptr<ProcessorEntityTracker> NewLocalItem(
+  std::unique_ptr<ProcessorEntityTracker> NewLocalItem(
       const std::string& tag,
       const sync_pb::EntitySpecifics& specifics) {
-    scoped_ptr<ProcessorEntityTracker> entity(NewLocalItem(tag));
+    std::unique_ptr<ProcessorEntityTracker> entity(NewLocalItem(tag));
     MakeLocalChange(entity.get(), specifics);
     return entity;
   }
 
   void MakeLocalChange(ProcessorEntityTracker* entity,
                        const sync_pb::EntitySpecifics& specifics) {
-    scoped_ptr<EntityData> entity_data = make_scoped_ptr(new EntityData());
+    std::unique_ptr<EntityData> entity_data =
+        base::WrapUnique(new EntityData());
     entity_data->client_tag_hash = entity->metadata().client_tag_hash();
     entity_data->specifics = specifics;
     entity_data->non_unique_name = "foo";
@@ -67,15 +71,16 @@ class ProcessorEntityTrackerTest : public ::testing::Test {
     entity->MakeLocalChange(std::move(entity_data));
   }
 
-  scoped_ptr<ProcessorEntityTracker> NewServerItem() {
-    return scoped_ptr<ProcessorEntityTracker>(ProcessorEntityTracker::CreateNew(
-        kClientTag, kClientTagHash, kServerId, kCtime));
+  std::unique_ptr<ProcessorEntityTracker> NewServerItem() {
+    return std::unique_ptr<ProcessorEntityTracker>(
+        ProcessorEntityTracker::CreateNew(kClientTag, kClientTagHash, kServerId,
+                                          kCtime));
   }
 
-  scoped_ptr<ProcessorEntityTracker> NewServerItem(
+  std::unique_ptr<ProcessorEntityTracker> NewServerItem(
       int64_t version,
       const sync_pb::EntitySpecifics& specifics) {
-    scoped_ptr<ProcessorEntityTracker> entity(NewServerItem());
+    std::unique_ptr<ProcessorEntityTracker> entity(NewServerItem());
     RecordAcceptedUpdate(entity.get(), version, specifics);
     return entity;
   }
@@ -104,7 +109,7 @@ class ProcessorEntityTrackerTest : public ::testing::Test {
   }
 
   bool HasSpecificsHash(
-      const scoped_ptr<ProcessorEntityTracker>& entity) const {
+      const std::unique_ptr<ProcessorEntityTracker>& entity) const {
     return !entity->metadata().specifics_hash().empty();
   }
 
@@ -117,7 +122,7 @@ class ProcessorEntityTrackerTest : public ::testing::Test {
 };
 
 TEST_F(ProcessorEntityTrackerTest, NewItem) {
-  scoped_ptr<ProcessorEntityTracker> entity(NewLocalItem("asdf"));
+  std::unique_ptr<ProcessorEntityTracker> entity(NewLocalItem("asdf"));
 
   EXPECT_EQ(entity->client_tag(), "asdf");
   EXPECT_EQ(entity->metadata().client_tag_hash(), GetSyncableHash("asdf"));
@@ -130,7 +135,8 @@ TEST_F(ProcessorEntityTrackerTest, NewItem) {
 }
 
 TEST_F(ProcessorEntityTrackerTest, NewLocalItem) {
-  scoped_ptr<ProcessorEntityTracker> entity(NewLocalItem("asdf", specifics));
+  std::unique_ptr<ProcessorEntityTracker> entity(
+      NewLocalItem("asdf", specifics));
 
   EXPECT_EQ(1, entity->metadata().sequence_number());
   EXPECT_TRUE(entity->HasCommitData());
@@ -147,7 +153,7 @@ TEST_F(ProcessorEntityTrackerTest, NewLocalItem) {
 }
 
 TEST_F(ProcessorEntityTrackerTest, FromServerUpdate) {
-  scoped_ptr<ProcessorEntityTracker> entity(NewServerItem());
+  std::unique_ptr<ProcessorEntityTracker> entity(NewServerItem());
 
   EXPECT_EQ(entity->client_tag(), kClientTag);
   EXPECT_EQ(entity->metadata().client_tag_hash(), kClientTagHash);
@@ -170,7 +176,7 @@ TEST_F(ProcessorEntityTrackerTest, FromServerUpdate) {
 // received updates.
 TEST_F(ProcessorEntityTrackerTest, TombstoneUpdate) {
   // Empty EntitySpecifics indicates tombstone update.
-  scoped_ptr<ProcessorEntityTracker> entity(
+  std::unique_ptr<ProcessorEntityTracker> entity(
       NewServerItem(10, sync_pb::EntitySpecifics()));
 
   EXPECT_EQ(kClientTagHash, entity->metadata().client_tag_hash());
@@ -185,7 +191,7 @@ TEST_F(ProcessorEntityTrackerTest, TombstoneUpdate) {
 // Apply a deletion update.
 TEST_F(ProcessorEntityTrackerTest, ApplyUpdate) {
   // Start with a non-deleted state with version 10.
-  scoped_ptr<ProcessorEntityTracker> entity(NewServerItem(10, specifics));
+  std::unique_ptr<ProcessorEntityTracker> entity(NewServerItem(10, specifics));
 
   EXPECT_TRUE(HasSpecificsHash(entity));
 
@@ -201,7 +207,7 @@ TEST_F(ProcessorEntityTrackerTest, ApplyUpdate) {
 
 TEST_F(ProcessorEntityTrackerTest, LocalChange) {
   // Start with a non-deleted state with version 10.
-  scoped_ptr<ProcessorEntityTracker> entity(NewServerItem(10, specifics));
+  std::unique_ptr<ProcessorEntityTracker> entity(NewServerItem(10, specifics));
 
   std::string specifics_hash = entity->metadata().specifics_hash();
 
@@ -220,7 +226,7 @@ TEST_F(ProcessorEntityTrackerTest, LocalChange) {
 
 TEST_F(ProcessorEntityTrackerTest, LocalDeletion) {
   // Start with a non-deleted state with version 10.
-  scoped_ptr<ProcessorEntityTracker> entity(NewServerItem(10, specifics));
+  std::unique_ptr<ProcessorEntityTracker> entity(NewServerItem(10, specifics));
   EXPECT_TRUE(HasSpecificsHash(entity));
 
   // Make a local delete.
@@ -237,7 +243,7 @@ TEST_F(ProcessorEntityTrackerTest, LocalDeletion) {
 // Verify generation of CommitRequestData from ProcessorEntityTracker.
 // Verify that the sequence number increments on local changes.
 TEST_F(ProcessorEntityTrackerTest, InitializeCommitRequestData) {
-  scoped_ptr<ProcessorEntityTracker> entity(NewLocalItem(kClientTag));
+  std::unique_ptr<ProcessorEntityTracker> entity(NewLocalItem(kClientTag));
   MakeLocalChange(entity.get(), specifics);
 
   CommitRequestData commit_request;

@@ -8,11 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/commit_contribution.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -48,7 +48,7 @@ class SYNC_EXPORT DirectoryCommitContribution : public CommitContribution {
   // This function may return NULL if this type has no items ready for and
   // requiring commit.  This function may make model neutral changes to the
   // directory.
-  static scoped_ptr<DirectoryCommitContribution> Build(
+  static std::unique_ptr<DirectoryCommitContribution> Build(
       syncable::Directory* dir,
       ModelType type,
       size_t max_items,

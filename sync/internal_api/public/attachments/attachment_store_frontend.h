@@ -5,9 +5,10 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_STORE_FRONTEND_H_
 #define SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_STORE_FRONTEND_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "sync/api/attachments/attachment_store.h"
 
@@ -33,7 +34,7 @@ class SYNC_EXPORT AttachmentStoreFrontend
       public base::NonThreadSafe {
  public:
   AttachmentStoreFrontend(
-      scoped_ptr<AttachmentStoreBackend> backend,
+      std::unique_ptr<AttachmentStoreBackend> backend,
       const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner);
 
   void Init(const AttachmentStore::InitCallback& callback);
@@ -62,7 +63,7 @@ class SYNC_EXPORT AttachmentStoreFrontend
   friend class base::RefCounted<AttachmentStoreFrontend>;
   virtual ~AttachmentStoreFrontend();
 
-  scoped_ptr<AttachmentStoreBackend> backend_;
+  std::unique_ptr<AttachmentStoreBackend> backend_;
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AttachmentStoreFrontend);

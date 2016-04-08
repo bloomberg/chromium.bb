@@ -5,7 +5,8 @@
 #ifndef SYNC_API_CONFLICT_RESOLUTION_H_
 #define SYNC_API_CONFLICT_RESOLUTION_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "sync/api/entity_data.h"
 
 namespace syncer_v2 {
@@ -29,7 +30,7 @@ class SYNC_EXPORT ConflictResolution {
   // Convenience functions for brevity.
   static ConflictResolution UseLocal();
   static ConflictResolution UseRemote();
-  static ConflictResolution UseNew(scoped_ptr<EntityData> data);
+  static ConflictResolution UseNew(std::unique_ptr<EntityData> data);
 
   // Move constructor since we can't copy a scoped_ptr.
   ConflictResolution(ConflictResolution&& other);
@@ -38,13 +39,13 @@ class SYNC_EXPORT ConflictResolution {
   Type type() const { return type_; }
 
   // Get the data for USE_NEW, or nullptr. Can only be called once.
-  scoped_ptr<EntityData> ExtractData();
+  std::unique_ptr<EntityData> ExtractData();
 
  private:
-  ConflictResolution(Type type, scoped_ptr<EntityData> data);
+  ConflictResolution(Type type, std::unique_ptr<EntityData> data);
 
   const Type type_;
-  scoped_ptr<EntityData> data_;
+  std::unique_ptr<EntityData> data_;
 
   DISALLOW_COPY_AND_ASSIGN(ConflictResolution);
 };

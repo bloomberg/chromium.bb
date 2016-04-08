@@ -10,11 +10,11 @@
 #define SYNC_INTERNAL_API_PUBLIC_BASE_MODEL_TYPE_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/enum_set.h"
 
@@ -300,7 +300,7 @@ SYNC_EXPORT std::string ModelTypeSetToString(ModelTypeSet model_types);
 SYNC_EXPORT ModelTypeSet ModelTypeSetFromString(
     const std::string& model_type_string);
 
-SYNC_EXPORT scoped_ptr<base::ListValue> ModelTypeSetToValue(
+SYNC_EXPORT std::unique_ptr<base::ListValue> ModelTypeSetToValue(
     ModelTypeSet model_types);
 
 SYNC_EXPORT ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value);

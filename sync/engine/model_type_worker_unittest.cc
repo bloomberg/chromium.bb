@@ -6,9 +6,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "sync/engine/commit_contribution.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -217,7 +219,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
   syncer::FakeEncryptor fake_encryptor_;
 
   // The cryptographer itself.  NULL if we're not encrypting the type.
-  scoped_ptr<Cryptographer> cryptographer_;
+  std::unique_ptr<Cryptographer> cryptographer_;
 
   // The number of the most recent foreign encryption key known to our
   // cryptographer.  Note that not all of these will be decryptable.
@@ -228,7 +230,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
   int update_encryption_filter_index_;
 
   // The ModelTypeWorker being tested.
-  scoped_ptr<ModelTypeWorker> worker_;
+  std::unique_ptr<ModelTypeWorker> worker_;
 
   // Non-owned, possibly NULL pointer.  This object belongs to the
   // ModelTypeWorker under test.
@@ -291,9 +293,9 @@ void ModelTypeWorkerTest::InitializeWithState(
   mock_type_processor_ = new MockModelTypeProcessor();
   mock_type_processor_->SetDisconnectCallback(base::Bind(
       &ModelTypeWorkerTest::DisconnectProcessor, base::Unretained(this)));
-  scoped_ptr<ModelTypeProcessor> proxy(mock_type_processor_);
+  std::unique_ptr<ModelTypeProcessor> proxy(mock_type_processor_);
 
-  scoped_ptr<Cryptographer> cryptographer_copy;
+  std::unique_ptr<Cryptographer> cryptographer_copy;
   if (cryptographer_) {
     cryptographer_copy.reset(new Cryptographer(*cryptographer_));
   }
@@ -345,7 +347,7 @@ void ModelTypeWorkerTest::NewForeignEncryptionKey() {
   // Update the worker with the latest cryptographer.
   if (worker_) {
     worker_->UpdateCryptographer(
-        make_scoped_ptr(new Cryptographer(*cryptographer_)));
+        base::WrapUnique(new Cryptographer(*cryptographer_)));
   }
 }
 
@@ -361,7 +363,7 @@ void ModelTypeWorkerTest::UpdateLocalCryptographer() {
   // Update the worker with the latest cryptographer.
   if (worker_) {
     worker_->UpdateCryptographer(
-        make_scoped_ptr(new Cryptographer(*cryptographer_)));
+        base::WrapUnique(new Cryptographer(*cryptographer_)));
   }
 }
 
@@ -468,7 +470,7 @@ void ModelTypeWorkerTest::PumpModelThread() {
 }
 
 bool ModelTypeWorkerTest::WillCommit() {
-  scoped_ptr<CommitContribution> contribution(
+  std::unique_ptr<CommitContribution> contribution(
       worker_->GetContribution(INT_MAX));
 
   if (contribution) {
@@ -485,7 +487,7 @@ bool ModelTypeWorkerTest::WillCommit() {
 // issued and the time when the commit response is received.
 void ModelTypeWorkerTest::DoSuccessfulCommit() {
   DCHECK(WillCommit());
-  scoped_ptr<CommitContribution> contribution(
+  std::unique_ptr<CommitContribution> contribution(
       worker_->GetContribution(INT_MAX));
 
   sync_pb::ClientToServerMessage message;

@@ -32,9 +32,9 @@ DirectoryTypeDebugInfoEmitter::DirectoryTypeDebugInfoEmitter(
 
 DirectoryTypeDebugInfoEmitter::~DirectoryTypeDebugInfoEmitter() {}
 
-scoped_ptr<base::ListValue> DirectoryTypeDebugInfoEmitter::GetAllNodes() {
+std::unique_ptr<base::ListValue> DirectoryTypeDebugInfoEmitter::GetAllNodes() {
   syncable::ReadTransaction trans(FROM_HERE, directory_);
-  scoped_ptr<base::ListValue> nodes(
+  std::unique_ptr<base::ListValue> nodes(
       directory_->GetNodeDetailsForType(&trans, type_));
   return nodes;
 }

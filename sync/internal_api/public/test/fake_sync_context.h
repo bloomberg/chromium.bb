@@ -5,6 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_TEST_FAKE_SYNC_CONTEXT_H_
 #define SYNC_INTERNAL_API_PUBLIC_TEST_FAKE_SYNC_CONTEXT_H_
 
+#include <memory>
+
 #include "sync/internal_api/public/sync_context.h"
 
 namespace syncer_v2 {
@@ -15,8 +17,9 @@ class FakeSyncContext : public SyncContext {
   FakeSyncContext();
   ~FakeSyncContext() override;
 
-  void ConnectType(syncer::ModelType type,
-                   scoped_ptr<ActivationContext> activation_context) override;
+  void ConnectType(
+      syncer::ModelType type,
+      std::unique_ptr<ActivationContext> activation_context) override;
   void DisconnectType(syncer::ModelType type) override;
 };
 

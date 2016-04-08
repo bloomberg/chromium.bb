@@ -5,12 +5,12 @@
 #ifndef SYNC_INTERNAL_API_ATTACHMENTS_ATTACHMENT_STORE_TEST_TEMPLATE_H_
 #define SYNC_INTERNAL_API_ATTACHMENTS_ATTACHMENT_STORE_TEST_TEMPLATE_H_
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "sync/api/attachments/attachment.h"
@@ -48,12 +48,12 @@ class AttachmentStoreTest : public testing::Test {
  protected:
   AttachmentStoreFactory attachment_store_factory;
   base::MessageLoop message_loop;
-  scoped_ptr<AttachmentStore> store;
-  scoped_ptr<AttachmentStoreForSync> store_for_sync;
+  std::unique_ptr<AttachmentStore> store;
+  std::unique_ptr<AttachmentStoreForSync> store_for_sync;
   AttachmentStore::Result result;
-  scoped_ptr<AttachmentMap> attachments;
-  scoped_ptr<AttachmentIdList> failed_attachment_ids;
-  scoped_ptr<AttachmentMetadataList> attachment_metadata;
+  std::unique_ptr<AttachmentMap> attachments;
+  std::unique_ptr<AttachmentIdList> failed_attachment_ids;
+  std::unique_ptr<AttachmentMetadataList> attachment_metadata;
 
   AttachmentStore::ReadCallback read_callback;
   AttachmentStore::WriteCallback write_callback;
@@ -109,11 +109,11 @@ class AttachmentStoreTest : public testing::Test {
 
   void CopyResultAttachments(
       AttachmentStore::Result* destination_result,
-      scoped_ptr<AttachmentMap>* destination_attachments,
-      scoped_ptr<AttachmentIdList>* destination_failed_attachment_ids,
+      std::unique_ptr<AttachmentMap>* destination_attachments,
+      std::unique_ptr<AttachmentIdList>* destination_failed_attachment_ids,
       const AttachmentStore::Result& source_result,
-      scoped_ptr<AttachmentMap> source_attachments,
-      scoped_ptr<AttachmentIdList> source_failed_attachment_ids) {
+      std::unique_ptr<AttachmentMap> source_attachments,
+      std::unique_ptr<AttachmentIdList> source_failed_attachment_ids) {
     CopyResult(destination_result, source_result);
     *destination_attachments = std::move(source_attachments);
     *destination_failed_attachment_ids =
@@ -122,9 +122,9 @@ class AttachmentStoreTest : public testing::Test {
 
   void CopyResultMetadata(
       AttachmentStore::Result* destination_result,
-      scoped_ptr<AttachmentMetadataList>* destination_metadata,
+      std::unique_ptr<AttachmentMetadataList>* destination_metadata,
       const AttachmentStore::Result& source_result,
-      scoped_ptr<AttachmentMetadataList> source_metadata) {
+      std::unique_ptr<AttachmentMetadataList> source_metadata) {
     CopyResult(destination_result, source_result);
     *destination_metadata = std::move(source_metadata);
   }
@@ -134,7 +134,7 @@ TYPED_TEST_CASE_P(AttachmentStoreTest);
 
 // Verify that CreateAttachmentStoreForSync() creates valid object.
 TYPED_TEST_P(AttachmentStoreTest, CreateAttachmentStoreForSync) {
-  scoped_ptr<AttachmentStoreForSync> attachment_store_for_sync =
+  std::unique_ptr<AttachmentStoreForSync> attachment_store_for_sync =
       this->store->CreateAttachmentStoreForSync();
   EXPECT_NE(nullptr, attachment_store_for_sync);
 }

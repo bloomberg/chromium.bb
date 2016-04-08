@@ -14,7 +14,7 @@ FakeSyncContext::~FakeSyncContext() {}
 
 void FakeSyncContext::ConnectType(
     syncer::ModelType type,
-    scoped_ptr<ActivationContext> activation_context) {
+    std::unique_ptr<ActivationContext> activation_context) {
   NOTREACHED() << "FakeSyncContext is not meant to be used";
 }
 

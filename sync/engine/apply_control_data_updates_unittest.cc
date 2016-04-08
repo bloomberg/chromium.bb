@@ -7,12 +7,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "sync/engine/syncer.h"
@@ -56,7 +56,8 @@ class ApplyControlDataUpdatesTest : public ::testing::Test {
   }
 
   TestIdFactory id_factory_;
-  scoped_ptr<TestEntryFactory> entry_factory_;
+  std::unique_ptr<TestEntryFactory> entry_factory_;
+
  private:
   base::MessageLoop loop_;  // Needed for directory init.
   TestDirectorySetterUpper dir_maker_;

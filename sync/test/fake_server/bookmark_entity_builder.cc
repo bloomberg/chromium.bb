@@ -6,10 +6,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/guid.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/unique_position.h"
@@ -52,10 +53,10 @@ void BookmarkEntityBuilder::SetParentId(const std::string& parent_id) {
   parent_id_ = parent_id;
 }
 
-scoped_ptr<FakeServerEntity> BookmarkEntityBuilder::BuildBookmark(
+std::unique_ptr<FakeServerEntity> BookmarkEntityBuilder::BuildBookmark(
     const GURL& url) {
   if (!url.is_valid()) {
-    return make_scoped_ptr<FakeServerEntity>(NULL);
+    return base::WrapUnique<FakeServerEntity>(NULL);
   }
 
   sync_pb::EntitySpecifics entity_specifics = CreateBaseEntitySpecifics();
@@ -64,7 +65,7 @@ scoped_ptr<FakeServerEntity> BookmarkEntityBuilder::BuildBookmark(
   return Build(entity_specifics, kIsNotFolder);
 }
 
-scoped_ptr<FakeServerEntity> BookmarkEntityBuilder::BuildFolder() {
+std::unique_ptr<FakeServerEntity> BookmarkEntityBuilder::BuildFolder() {
   const bool kIsFolder = true;
   return Build(CreateBaseEntitySpecifics(), kIsFolder);
 }
@@ -79,7 +80,7 @@ sync_pb::EntitySpecifics BookmarkEntityBuilder::CreateBaseEntitySpecifics()
   return entity_specifics;
 }
 
-scoped_ptr<FakeServerEntity> BookmarkEntityBuilder::Build(
+std::unique_ptr<FakeServerEntity> BookmarkEntityBuilder::Build(
     const sync_pb::EntitySpecifics& entity_specifics,
     bool is_folder) {
   sync_pb::UniquePosition unique_position;
@@ -96,18 +97,10 @@ scoped_ptr<FakeServerEntity> BookmarkEntityBuilder::Build(
   const string id = FakeServerEntity::CreateId(syncer::BOOKMARKS,
                                                base::GenerateGUID());
 
-  return make_scoped_ptr<FakeServerEntity>(
-      new BookmarkEntity(id,
-                         kUnusedVersion,
-                         title_,
-                         originator_cache_guid_,
-                         originator_client_item_id_,
-                         unique_position,
-                         entity_specifics,
-                         is_folder,
-                         parent_id_,
-                         kDefaultTime,
-                         kDefaultTime));
+  return base::WrapUnique<FakeServerEntity>(new BookmarkEntity(
+      id, kUnusedVersion, title_, originator_cache_guid_,
+      originator_client_item_id_, unique_position, entity_specifics, is_folder,
+      parent_id_, kDefaultTime, kDefaultTime));
 }
 
 }  // namespace fake_server

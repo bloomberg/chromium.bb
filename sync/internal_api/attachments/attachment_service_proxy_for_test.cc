@@ -13,8 +13,8 @@
 namespace syncer {
 
 AttachmentServiceProxyForTest::OwningCore::OwningCore(
-    scoped_ptr<AttachmentService> wrapped,
-    scoped_ptr<base::WeakPtrFactory<AttachmentService>> weak_ptr_factory)
+    std::unique_ptr<AttachmentService> wrapped,
+    std::unique_ptr<base::WeakPtrFactory<AttachmentService>> weak_ptr_factory)
     : Core(weak_ptr_factory->GetWeakPtr()),
       wrapped_(std::move(wrapped)),
       weak_ptr_factory_(std::move(weak_ptr_factory)) {
@@ -26,7 +26,8 @@ AttachmentServiceProxyForTest::OwningCore::~OwningCore() {
 
 // Static.
 AttachmentServiceProxy AttachmentServiceProxyForTest::Create() {
-  scoped_ptr<AttachmentService> wrapped(AttachmentServiceImpl::CreateForTest());
+  std::unique_ptr<AttachmentService> wrapped(
+      AttachmentServiceImpl::CreateForTest());
   // This class's base class, AttachmentServiceProxy, must be initialized with a
   // WeakPtr to an AttachmentService.  Because the base class ctor must be
   // invoked before any of this class's members are initialized, we create the
@@ -34,7 +35,7 @@ AttachmentServiceProxy AttachmentServiceProxyForTest::Create() {
   // base class and own the WeakPtrFactory.
   //
   // We must pass by scoped_ptr because WeakPtrFactory has no copy constructor.
-  scoped_ptr<base::WeakPtrFactory<AttachmentService> > weak_ptr_factory(
+  std::unique_ptr<base::WeakPtrFactory<AttachmentService>> weak_ptr_factory(
       new base::WeakPtrFactory<AttachmentService>(wrapped.get()));
 
   scoped_refptr<Core> core_for_test(

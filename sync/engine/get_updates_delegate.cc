@@ -88,10 +88,10 @@ void NormalGetUpdatesDelegate::ApplyUpdates(
   NonPassiveApplyUpdates(gu_types, status_controller, update_handler_map);
 }
 
-scoped_ptr<ProtocolEvent> NormalGetUpdatesDelegate::GetNetworkRequestEvent(
+std::unique_ptr<ProtocolEvent> NormalGetUpdatesDelegate::GetNetworkRequestEvent(
     base::Time timestamp,
     const sync_pb::ClientToServerMessage& request) const {
-  return scoped_ptr<ProtocolEvent>(
+  return std::unique_ptr<ProtocolEvent>(
       new NormalGetUpdatesRequestEvent(timestamp, nudge_tracker_, request));
 }
 
@@ -113,14 +113,12 @@ void ConfigureGetUpdatesDelegate::ApplyUpdates(
   PassiveApplyUpdates(gu_types, status_controller, update_handler_map);
 }
 
-scoped_ptr<ProtocolEvent> ConfigureGetUpdatesDelegate::GetNetworkRequestEvent(
+std::unique_ptr<ProtocolEvent>
+ConfigureGetUpdatesDelegate::GetNetworkRequestEvent(
     base::Time timestamp,
     const sync_pb::ClientToServerMessage& request) const {
-  return scoped_ptr<ProtocolEvent>(
-      new ConfigureGetUpdatesRequestEvent(
-          timestamp,
-          ConvertConfigureSourceToOrigin(source_),
-          request));
+  return std::unique_ptr<ProtocolEvent>(new ConfigureGetUpdatesRequestEvent(
+      timestamp, ConvertConfigureSourceToOrigin(source_), request));
 }
 
 sync_pb::SyncEnums::GetUpdatesOrigin
@@ -165,10 +163,10 @@ void PollGetUpdatesDelegate::ApplyUpdates(
   NonPassiveApplyUpdates(gu_types, status_controller, update_handler_map);
 }
 
-scoped_ptr<ProtocolEvent> PollGetUpdatesDelegate::GetNetworkRequestEvent(
+std::unique_ptr<ProtocolEvent> PollGetUpdatesDelegate::GetNetworkRequestEvent(
     base::Time timestamp,
     const sync_pb::ClientToServerMessage& request) const {
-  return scoped_ptr<ProtocolEvent>(
+  return std::unique_ptr<ProtocolEvent>(
       new PollGetUpdatesRequestEvent(timestamp, request));
 }
 

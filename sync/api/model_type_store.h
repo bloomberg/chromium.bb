@@ -5,12 +5,12 @@
 #ifndef SYNC_API_MODEL_TYPE_STORE_H_
 #define SYNC_API_MODEL_TYPE_STORE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
 
 namespace base {
@@ -75,18 +75,19 @@ class SYNC_EXPORT ModelTypeStore {
   typedef std::vector<Record> RecordList;
   typedef std::vector<std::string> IdList;
 
-  typedef base::Callback<void(Result result, scoped_ptr<ModelTypeStore> store)>
+  typedef base::Callback<void(Result result,
+                              std::unique_ptr<ModelTypeStore> store)>
       InitCallback;
   typedef base::Callback<void(Result result)> CallbackWithResult;
   typedef base::Callback<void(Result result,
-                              scoped_ptr<RecordList> data_records,
-                              scoped_ptr<IdList> missing_id_list)>
+                              std::unique_ptr<RecordList> data_records,
+                              std::unique_ptr<IdList> missing_id_list)>
       ReadDataCallback;
   typedef base::Callback<void(Result result,
-                              scoped_ptr<RecordList> data_records)>
+                              std::unique_ptr<RecordList> data_records)>
       ReadAllDataCallback;
   typedef base::Callback<void(Result result,
-                              scoped_ptr<RecordList> metadata_records,
+                              std::unique_ptr<RecordList> metadata_records,
                               const std::string& global_metadata)>
       ReadMetadataCallback;
 
@@ -127,12 +128,12 @@ class SYNC_EXPORT ModelTypeStore {
   virtual void ReadAllMetadata(const ReadMetadataCallback& callback) = 0;
 
   // Creates write batch for write operations.
-  virtual scoped_ptr<WriteBatch> CreateWriteBatch() = 0;
+  virtual std::unique_ptr<WriteBatch> CreateWriteBatch() = 0;
 
   // Commits write operations accumulated in write batch. If write operation
   // fails result is UNSPECIFIED_ERROR and write operations will not be
   // reflected in the store.
-  virtual void CommitWriteBatch(scoped_ptr<WriteBatch> write_batch,
+  virtual void CommitWriteBatch(std::unique_ptr<WriteBatch> write_batch,
                                 const CallbackWithResult& callback) = 0;
 
   // Write operations.

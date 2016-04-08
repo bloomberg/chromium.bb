@@ -37,7 +37,7 @@ void CommitProcessor::GatherCommitContributions(
       continue;
     }
     size_t spaces_remaining = max_entries - num_entries;
-    scoped_ptr<CommitContribution> contribution =
+    std::unique_ptr<CommitContribution> contribution =
         cm_it->second->GetContribution(spaces_remaining);
     if (contribution) {
       num_entries += contribution->GetNumEntries();

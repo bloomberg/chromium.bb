@@ -5,7 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_SYNC_CONTEXT_H_
 #define SYNC_INTERNAL_API_PUBLIC_SYNC_CONTEXT_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace syncer_v2 {
@@ -30,7 +31,7 @@ class SYNC_EXPORT SyncContext {
   // from the sync thread.
   virtual void ConnectType(
       syncer::ModelType type,
-      scoped_ptr<ActivationContext> activation_context) = 0;
+      std::unique_ptr<ActivationContext> activation_context) = 0;
 
   // Disconnects the worker from |type|'s processor and stop syncing the type.
   //

@@ -6,11 +6,11 @@
 #define SYNC_UTIL_CRYPTOGRAPHER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/util/nigori.h"
@@ -198,7 +198,7 @@ class SYNC_EXPORT Cryptographer {
 
   // Helper method to add a nigori to the keybag, optionally making it the
   // default as well.
-  bool AddKeyImpl(scoped_ptr<Nigori> nigori, bool set_as_default);
+  bool AddKeyImpl(std::unique_ptr<Nigori> nigori, bool set_as_default);
 
   // Helper to unencrypt a bootstrap token into a serialized sync_pb::NigoriKey.
   std::string UnpackBootstrapToken(const std::string& token) const;
@@ -212,7 +212,7 @@ class SYNC_EXPORT Cryptographer {
   // correspond to a nigori within |nigoris_|.
   std::string default_nigori_name_;
 
-  scoped_ptr<sync_pb::EncryptedData> pending_keys_;
+  std::unique_ptr<sync_pb::EncryptedData> pending_keys_;
 
   DISALLOW_ASSIGN(Cryptographer);
 };

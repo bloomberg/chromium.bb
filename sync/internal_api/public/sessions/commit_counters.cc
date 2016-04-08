@@ -17,8 +17,8 @@ CommitCounters::CommitCounters()
 
 CommitCounters::~CommitCounters() {}
 
-scoped_ptr<base::DictionaryValue> CommitCounters::ToValue() const {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+std::unique_ptr<base::DictionaryValue> CommitCounters::ToValue() const {
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetInteger("numCommitsAttempted", num_commits_attempted);
   value->SetInteger("numCommitsSuccess", num_commits_success);
   value->SetInteger("numCommitsConflict", num_commits_conflict);
@@ -28,7 +28,7 @@ scoped_ptr<base::DictionaryValue> CommitCounters::ToValue() const {
 
 std::string CommitCounters::ToString() const {
   std::string result;
-  scoped_ptr<base::DictionaryValue> value = ToValue();
+  std::unique_ptr<base::DictionaryValue> value = ToValue();
   JSONStringValueSerializer serializer(&result);
   serializer.Serialize(*value);
   return result;

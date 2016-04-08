@@ -20,7 +20,7 @@ class PermanentEntity : public FakeServerEntity {
 
   // Factory function for PermanentEntity. |server_tag| should be a globally
   // unique identifier.
-  static scoped_ptr<FakeServerEntity> Create(
+  static std::unique_ptr<FakeServerEntity> Create(
       const syncer::ModelType& model_type,
       const std::string& server_tag,
       const std::string& name,
@@ -28,12 +28,12 @@ class PermanentEntity : public FakeServerEntity {
 
   // Factory function for a top level PermanentEntity. Top level means that the
   // entity's parent is the root entity (no PermanentEntity exists for root).
-  static scoped_ptr<FakeServerEntity> CreateTopLevel(
+  static std::unique_ptr<FakeServerEntity> CreateTopLevel(
       const syncer::ModelType& model_type);
 
   // Factory function for creating an updated version of a PermanentEntity.
   // This function should only be called for the Nigori entity.
-  static scoped_ptr<FakeServerEntity> CreateUpdatedNigoriEntity(
+  static std::unique_ptr<FakeServerEntity> CreateUpdatedNigoriEntity(
       const sync_pb::SyncEntity& client_entity,
       const FakeServerEntity& current_server_entity);
 

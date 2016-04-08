@@ -23,7 +23,7 @@ class FakeSyncableService : public SyncableService {
   void set_process_sync_changes_error(const SyncError& error);
 
   // Setter for AttachmentStore.
-  void set_attachment_store(scoped_ptr<AttachmentStore> attachment_store);
+  void set_attachment_store(std::unique_ptr<AttachmentStore> attachment_store);
 
   // AttachmentService should be set when this syncable service is connected,
   // just before MergeDataAndStartSyncing. NULL is returned by default.
@@ -37,24 +37,24 @@ class FakeSyncableService : public SyncableService {
   SyncMergeResult MergeDataAndStartSyncing(
       ModelType type,
       const SyncDataList& initial_sync_data,
-      scoped_ptr<SyncChangeProcessor> sync_processor,
-      scoped_ptr<SyncErrorFactory> sync_error_factory) override;
+      std::unique_ptr<SyncChangeProcessor> sync_processor,
+      std::unique_ptr<SyncErrorFactory> sync_error_factory) override;
   void StopSyncing(ModelType type) override;
   SyncDataList GetAllSyncData(ModelType type) const override;
   SyncError ProcessSyncChanges(const tracked_objects::Location& from_here,
                                const SyncChangeList& change_list) override;
-  scoped_ptr<AttachmentStoreForSync> GetAttachmentStoreForSync() override;
+  std::unique_ptr<AttachmentStoreForSync> GetAttachmentStoreForSync() override;
   void SetAttachmentService(
-      scoped_ptr<AttachmentService> attachment_service) override;
+      std::unique_ptr<AttachmentService> attachment_service) override;
 
  private:
-  scoped_ptr<SyncChangeProcessor> sync_processor_;
+  std::unique_ptr<SyncChangeProcessor> sync_processor_;
   SyncError merge_data_and_start_syncing_error_;
   SyncError process_sync_changes_error_;
   bool syncing_;
   ModelType type_;
-  scoped_ptr<AttachmentStore> attachment_store_;
-  scoped_ptr<AttachmentService> attachment_service_;
+  std::unique_ptr<AttachmentStore> attachment_store_;
+  std::unique_ptr<AttachmentService> attachment_service_;
 };
 
 }  // namespace syncer

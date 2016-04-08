@@ -48,7 +48,7 @@ class SYNC_EXPORT SyncSessionSnapshot {
   SyncSessionSnapshot(const SyncSessionSnapshot& other);
   ~SyncSessionSnapshot();
 
-  scoped_ptr<base::DictionaryValue> ToValue() const;
+  std::unique_ptr<base::DictionaryValue> ToValue() const;
 
   std::string ToString() const;
 

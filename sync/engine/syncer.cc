@@ -4,6 +4,8 @@
 
 #include "sync/engine/syncer.h"
 
+#include <memory>
+
 #include "base/auto_reset.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -177,16 +179,13 @@ SyncerError Syncer::BuildAndPostCommits(ModelTypeSet requested_types,
   // errors from the ServerConnectionManager if an exist has been requested.
   // However, it doesn't hurt to check it anyway.
   while (!ExitRequested()) {
-    scoped_ptr<Commit> commit(
-        Commit::Init(
-            requested_types,
-            session->context()->GetEnabledTypes(),
-            session->context()->max_commit_batch_size(),
-            session->context()->account_name(),
-            session->context()->directory()->cache_guid(),
-            session->context()->cookie_jar_mismatch(),
-            commit_processor,
-            session->context()->extensions_activity()));
+    std::unique_ptr<Commit> commit(Commit::Init(
+        requested_types, session->context()->GetEnabledTypes(),
+        session->context()->max_commit_batch_size(),
+        session->context()->account_name(),
+        session->context()->directory()->cache_guid(),
+        session->context()->cookie_jar_mismatch(), commit_processor,
+        session->context()->extensions_activity()));
     if (!commit) {
       break;
     }

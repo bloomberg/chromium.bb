@@ -40,17 +40,15 @@ std::string CommitRequestEvent::GetDetails() const {
       ModelTypeSetToString(contributing_types_).c_str());
 }
 
-scoped_ptr<base::DictionaryValue> CommitRequestEvent::GetProtoMessage() const {
-  return scoped_ptr<base::DictionaryValue>(
+std::unique_ptr<base::DictionaryValue> CommitRequestEvent::GetProtoMessage()
+    const {
+  return std::unique_ptr<base::DictionaryValue>(
       ClientToServerMessageToValue(request_, false));
 }
 
-scoped_ptr<ProtocolEvent> CommitRequestEvent::Clone() const {
-  return scoped_ptr<ProtocolEvent>(
-      new CommitRequestEvent(timestamp_,
-                             num_items_,
-                             contributing_types_,
-                             request_));
+std::unique_ptr<ProtocolEvent> CommitRequestEvent::Clone() const {
+  return std::unique_ptr<ProtocolEvent>(new CommitRequestEvent(
+      timestamp_, num_items_, contributing_types_, request_));
 }
 
 }  // namespace syncer

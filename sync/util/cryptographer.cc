@@ -164,7 +164,7 @@ bool Cryptographer::GetKeys(sync_pb::EncryptedData* encrypted) const {
 
 bool Cryptographer::AddKey(const KeyParams& params) {
   // Create the new Nigori and make it the default encryptor.
-  scoped_ptr<Nigori> nigori(new Nigori);
+  std::unique_ptr<Nigori> nigori(new Nigori);
   if (!nigori->InitByDerivation(params.hostname,
                                 params.username,
                                 params.password)) {
@@ -177,7 +177,7 @@ bool Cryptographer::AddKey(const KeyParams& params) {
 bool Cryptographer::AddNonDefaultKey(const KeyParams& params) {
   DCHECK(is_initialized());
   // Create the new Nigori and add it to the keybag.
-  scoped_ptr<Nigori> nigori(new Nigori);
+  std::unique_ptr<Nigori> nigori(new Nigori);
   if (!nigori->InitByDerivation(params.hostname,
                                 params.username,
                                 params.password)) {
@@ -195,7 +195,7 @@ bool Cryptographer::AddKeyFromBootstrapToken(
   return ImportNigoriKey(serialized_nigori_key);
 }
 
-bool Cryptographer::AddKeyImpl(scoped_ptr<Nigori> initialized_nigori,
+bool Cryptographer::AddKeyImpl(std::unique_ptr<Nigori> initialized_nigori,
                                bool set_as_default) {
   std::string name;
   if (!initialized_nigori->Permute(Nigori::Password, kNigoriKeyName, &name)) {
@@ -311,7 +311,7 @@ void Cryptographer::InstallKeyBag(const sync_pb::NigoriKeyBag& bag) {
     const sync_pb::NigoriKey key = bag.key(i);
     // Only use this key if we don't already know about it.
     if (nigoris_.end() == nigoris_.find(key.name())) {
-      scoped_ptr<Nigori> new_nigori(new Nigori);
+      std::unique_ptr<Nigori> new_nigori(new Nigori);
       if (!new_nigori->InitByImport(key.user_key(),
                                     key.encryption_key(),
                                     key.mac_key())) {
@@ -370,7 +370,7 @@ bool Cryptographer::ImportNigoriKey(const std::string& serialized_nigori_key) {
   if (!key.ParseFromString(serialized_nigori_key))
     return false;
 
-  scoped_ptr<Nigori> nigori(new Nigori);
+  std::unique_ptr<Nigori> nigori(new Nigori);
   if (!nigori->InitByImport(key.user_key(), key.encryption_key(),
                             key.mac_key())) {
     NOTREACHED();

@@ -29,14 +29,14 @@ std::string ClearServerDataResponseEvent::GetDetails() const {
   return base::StringPrintf("Result: %s", GetSyncerErrorString(result_));
 }
 
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 ClearServerDataResponseEvent::GetProtoMessage() const {
-  return scoped_ptr<base::DictionaryValue>(
+  return std::unique_ptr<base::DictionaryValue>(
       ClientToServerResponseToValue(response_, false));
 }
 
-scoped_ptr<ProtocolEvent> ClearServerDataResponseEvent::Clone() const {
-  return scoped_ptr<ProtocolEvent>(
+std::unique_ptr<ProtocolEvent> ClearServerDataResponseEvent::Clone() const {
+  return std::unique_ptr<ProtocolEvent>(
       new ClearServerDataResponseEvent(timestamp_, result_, response_));
 }
 

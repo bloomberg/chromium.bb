@@ -29,7 +29,7 @@ bool IsBookmark(const sync_pb::SyncEntity& client_entity) {
 BookmarkEntity::~BookmarkEntity() { }
 
 // static
-scoped_ptr<FakeServerEntity> BookmarkEntity::CreateNew(
+std::unique_ptr<FakeServerEntity> BookmarkEntity::CreateNew(
     const sync_pb::SyncEntity& client_entity,
     const string& parent_id,
     const string& client_guid) {
@@ -41,7 +41,7 @@ scoped_ptr<FakeServerEntity> BookmarkEntity::CreateNew(
   const string originator_cache_guid = client_guid;
   const string originator_client_item_id = client_entity.id_string();
 
-  return scoped_ptr<FakeServerEntity>(new BookmarkEntity(
+  return std::unique_ptr<FakeServerEntity>(new BookmarkEntity(
       id, client_entity.version(), client_entity.name(), originator_cache_guid,
       originator_client_item_id, client_entity.unique_position(),
       client_entity.specifics(), client_entity.folder(), parent_id,
@@ -49,7 +49,7 @@ scoped_ptr<FakeServerEntity> BookmarkEntity::CreateNew(
 }
 
 // static
-scoped_ptr<FakeServerEntity> BookmarkEntity::CreateUpdatedVersion(
+std::unique_ptr<FakeServerEntity> BookmarkEntity::CreateUpdatedVersion(
     const sync_pb::SyncEntity& client_entity,
     const FakeServerEntity& current_server_entity,
     const string& parent_id) {
@@ -64,7 +64,7 @@ scoped_ptr<FakeServerEntity> BookmarkEntity::CreateUpdatedVersion(
   const string originator_client_item_id =
       current_bookmark_entity.originator_client_item_id_;
 
-  return scoped_ptr<FakeServerEntity>(new BookmarkEntity(
+  return std::unique_ptr<FakeServerEntity>(new BookmarkEntity(
       client_entity.id_string(), client_entity.version(), client_entity.name(),
       originator_cache_guid, originator_client_item_id,
       client_entity.unique_position(), client_entity.specifics(),

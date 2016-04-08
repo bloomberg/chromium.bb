@@ -4,9 +4,9 @@
 
 #include "sync/api/sync_change.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -54,9 +54,10 @@ TEST_F(SyncChangeTest, LocalUpdate) {
   EXPECT_EQ(tag, SyncDataLocal(e.sync_data()).GetTag());
   EXPECT_EQ(title, e.sync_data().GetTitle());
   EXPECT_EQ(PREFERENCES, e.sync_data().GetDataType());
-  scoped_ptr<base::DictionaryValue> ref_spec(EntitySpecificsToValue(specifics));
-  scoped_ptr<base::DictionaryValue> e_spec(EntitySpecificsToValue(
-      e.sync_data().GetSpecifics()));
+  std::unique_ptr<base::DictionaryValue> ref_spec(
+      EntitySpecificsToValue(specifics));
+  std::unique_ptr<base::DictionaryValue> e_spec(
+      EntitySpecificsToValue(e.sync_data().GetSpecifics()));
   EXPECT_TRUE(ref_spec->Equals(e_spec.get()));
 }
 
@@ -74,9 +75,10 @@ TEST_F(SyncChangeTest, LocalAdd) {
   EXPECT_EQ(tag, SyncDataLocal(e.sync_data()).GetTag());
   EXPECT_EQ(title, e.sync_data().GetTitle());
   EXPECT_EQ(PREFERENCES, e.sync_data().GetDataType());
-  scoped_ptr<base::DictionaryValue> ref_spec(EntitySpecificsToValue(specifics));
-  scoped_ptr<base::DictionaryValue> e_spec(EntitySpecificsToValue(
-      e.sync_data().GetSpecifics()));
+  std::unique_ptr<base::DictionaryValue> ref_spec(
+      EntitySpecificsToValue(specifics));
+  std::unique_ptr<base::DictionaryValue> e_spec(
+      EntitySpecificsToValue(e.sync_data().GetSpecifics()));
   EXPECT_TRUE(ref_spec->Equals(e_spec.get()));
 }
 
@@ -132,10 +134,10 @@ TEST_F(SyncChangeTest, SyncerChanges) {
   SyncChange e = change_list[0];
   EXPECT_EQ(SyncChange::ACTION_UPDATE, e.change_type());
   EXPECT_EQ(PREFERENCES, e.sync_data().GetDataType());
-  scoped_ptr<base::DictionaryValue> ref_spec(EntitySpecificsToValue(
-      update_specifics));
-  scoped_ptr<base::DictionaryValue> e_spec(EntitySpecificsToValue(
-      e.sync_data().GetSpecifics()));
+  std::unique_ptr<base::DictionaryValue> ref_spec(
+      EntitySpecificsToValue(update_specifics));
+  std::unique_ptr<base::DictionaryValue> e_spec(
+      EntitySpecificsToValue(e.sync_data().GetSpecifics()));
   EXPECT_TRUE(ref_spec->Equals(e_spec.get()));
 
   // Verify add.

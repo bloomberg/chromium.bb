@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "sync/internal_api/public/base/invalidation_interface.h"
@@ -40,7 +40,8 @@ class DataTypeTracker {
   void RecordLocalRefreshRequest();
 
   // Tracks that we received invalidation notifications for this type.
-  void RecordRemoteInvalidation(scoped_ptr<InvalidationInterface> incoming);
+  void RecordRemoteInvalidation(
+      std::unique_ptr<InvalidationInterface> incoming);
 
   // Takes note that initial sync is pending for this type.
   void RecordInitialSyncRequired();
@@ -139,7 +140,7 @@ class DataTypeTracker {
   base::TimeTicks unthrottle_time_;
 
   // A helper to keep track invalidations we dropped due to overflow.
-  scoped_ptr<InvalidationInterface> last_dropped_invalidation_;
+  std::unique_ptr<InvalidationInterface> last_dropped_invalidation_;
 
   // The amount of time to delay a sync cycle by when a local change for this
   // type occurs.

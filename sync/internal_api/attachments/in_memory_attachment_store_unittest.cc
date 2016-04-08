@@ -13,7 +13,7 @@ class InMemoryAttachmentStoreFactory {
   InMemoryAttachmentStoreFactory() {}
   ~InMemoryAttachmentStoreFactory() {}
 
-  scoped_ptr<AttachmentStore> CreateAttachmentStore() {
+  std::unique_ptr<AttachmentStore> CreateAttachmentStore() {
     return AttachmentStore::CreateInMemoryStore();
   }
 };

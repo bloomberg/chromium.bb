@@ -32,18 +32,15 @@ std::string ConfigureGetUpdatesRequestEvent::GetDetails() const {
   return base::StringPrintf("Reason: %s", GetUpdatesOriginString(origin_));
 }
 
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 ConfigureGetUpdatesRequestEvent::GetProtoMessage() const {
-  return scoped_ptr<base::DictionaryValue>(
-    ClientToServerMessageToValue(request_, false));
+  return std::unique_ptr<base::DictionaryValue>(
+      ClientToServerMessageToValue(request_, false));
 }
 
-scoped_ptr<ProtocolEvent> ConfigureGetUpdatesRequestEvent::Clone() const {
-  return scoped_ptr<ProtocolEvent>(
-      new ConfigureGetUpdatesRequestEvent(
-          timestamp_,
-          origin_,
-          request_));
+std::unique_ptr<ProtocolEvent> ConfigureGetUpdatesRequestEvent::Clone() const {
+  return std::unique_ptr<ProtocolEvent>(
+      new ConfigureGetUpdatesRequestEvent(timestamp_, origin_, request_));
 }
 
 }  // namespace syncer

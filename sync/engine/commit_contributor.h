@@ -6,8 +6,8 @@
 #define SYNC_ENGINE_COMMIT_CONTRIBUTOR_H_
 
 #include <cstddef>
+#include <memory>
 
-#include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
 
 namespace syncer {
@@ -30,7 +30,7 @@ class SYNC_EXPORT CommitContributor {
   // Gathers up to |max_entries| unsynced items from this contributor into a
   // CommitContribution.  Returns NULL when the contributor has nothing to
   // contribute.
-  virtual scoped_ptr<CommitContribution> GetContribution(
+  virtual std::unique_ptr<CommitContribution> GetContribution(
       size_t max_entries) = 0;
 };
 

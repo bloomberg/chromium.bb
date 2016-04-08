@@ -7,9 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
 
 namespace crypto {
@@ -78,9 +78,9 @@ class SYNC_EXPORT Nigori {
   static const size_t kSigningIterations = 1004;
 
  private:
-  scoped_ptr<crypto::SymmetricKey> user_key_;
-  scoped_ptr<crypto::SymmetricKey> encryption_key_;
-  scoped_ptr<crypto::SymmetricKey> mac_key_;
+  std::unique_ptr<crypto::SymmetricKey> user_key_;
+  std::unique_ptr<crypto::SymmetricKey> encryption_key_;
+  std::unique_ptr<crypto::SymmetricKey> mac_key_;
 };
 
 }  // namespace syncer

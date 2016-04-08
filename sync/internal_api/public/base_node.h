@@ -8,12 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/base/sync_export.h"
@@ -235,7 +235,7 @@ class SYNC_EXPORT BaseNode {
   sync_pb::EntitySpecifics unencrypted_data_;
 
   // Same as |unencrypted_data_|, but for legacy password encryption.
-  scoped_ptr<sync_pb::PasswordSpecificsData> password_data_;
+  std::unique_ptr<sync_pb::PasswordSpecificsData> password_data_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseNode);
 };

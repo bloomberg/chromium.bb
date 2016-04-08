@@ -14,6 +14,7 @@
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "sync/engine/commit_contribution.h"
 #include "sync/engine/non_blocking_type_commit_contribution.h"
@@ -34,9 +35,9 @@ using syncer::SyncerError;
 ModelTypeWorker::ModelTypeWorker(
     ModelType type,
     const sync_pb::DataTypeState& initial_state,
-    scoped_ptr<Cryptographer> cryptographer,
+    std::unique_ptr<Cryptographer> cryptographer,
     NudgeHandler* nudge_handler,
-    scoped_ptr<ModelTypeProcessor> model_type_processor)
+    std::unique_ptr<ModelTypeProcessor> model_type_processor)
     : type_(type),
       data_type_state_(initial_state),
       model_type_processor_(std::move(model_type_processor)),
@@ -71,7 +72,7 @@ bool ModelTypeWorker::IsEncryptionRequired() const {
 }
 
 void ModelTypeWorker::UpdateCryptographer(
-    scoped_ptr<Cryptographer> cryptographer) {
+    std::unique_ptr<Cryptographer> cryptographer) {
   DCHECK(cryptographer);
   cryptographer_ = std::move(cryptographer);
 
@@ -211,7 +212,7 @@ void ModelTypeWorker::EnqueueForCommit(const CommitRequestDataList& list) {
 }
 
 // CommitContributor implementation.
-scoped_ptr<CommitContribution> ModelTypeWorker::GetContribution(
+std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
     size_t max_entries) {
   DCHECK(CalledOnValidThread());
   // There shouldn't be a GetUpdates in progress when a commit is triggered.
@@ -222,7 +223,7 @@ scoped_ptr<CommitContribution> ModelTypeWorker::GetContribution(
   google::protobuf::RepeatedPtrField<sync_pb::SyncEntity> commit_entities;
 
   if (!CanCommitItems())
-    return scoped_ptr<CommitContribution>();
+    return std::unique_ptr<CommitContribution>();
 
   // TODO(rlarocque): Avoid iterating here.
   for (EntityMap::const_iterator it = entities_.begin();
@@ -241,11 +242,12 @@ scoped_ptr<CommitContribution> ModelTypeWorker::GetContribution(
   }
 
   if (commit_entities.size() == 0)
-    return scoped_ptr<CommitContribution>();
+    return std::unique_ptr<CommitContribution>();
 
-  return scoped_ptr<CommitContribution>(new NonBlockingTypeCommitContribution(
-      data_type_state_.type_context(), commit_entities, sequence_numbers,
-      this));
+  return std::unique_ptr<CommitContribution>(
+      new NonBlockingTypeCommitContribution(data_type_state_.type_context(),
+                                            commit_entities, sequence_numbers,
+                                            this));
 }
 
 void ModelTypeWorker::OnCommitResponse(
@@ -424,8 +426,8 @@ WorkerEntityTracker* ModelTypeWorker::GetEntityTracker(
 WorkerEntityTracker* ModelTypeWorker::CreateEntityTracker(
     const EntityData& data) {
   DCHECK(entities_.find(data.client_tag_hash) == entities_.end());
-  scoped_ptr<WorkerEntityTracker> entity =
-      make_scoped_ptr(new WorkerEntityTracker(data.id, data.client_tag_hash));
+  std::unique_ptr<WorkerEntityTracker> entity =
+      base::WrapUnique(new WorkerEntityTracker(data.id, data.client_tag_hash));
   WorkerEntityTracker* entity_ptr = entity.get();
   entities_[data.client_tag_hash] = std::move(entity);
   return entity_ptr;

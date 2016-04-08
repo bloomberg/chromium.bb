@@ -652,8 +652,8 @@ ModelTypeSet ModelTypeSetFromString(const std::string& model_types_string) {
   return model_types;
 }
 
-scoped_ptr<base::ListValue> ModelTypeSetToValue(ModelTypeSet model_types) {
-  scoped_ptr<base::ListValue> value(new base::ListValue());
+std::unique_ptr<base::ListValue> ModelTypeSetToValue(ModelTypeSet model_types) {
+  std::unique_ptr<base::ListValue> value(new base::ListValue());
   for (ModelTypeSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
     value->AppendString(ModelTypeToString(it.Get()));
   }

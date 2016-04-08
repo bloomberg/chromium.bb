@@ -6,7 +6,8 @@
 
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "sync/internal_api/public/base/unique_position.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/scoped_kernel_lock.h"
@@ -25,7 +26,7 @@ void MutableEntry::Init(WriteTransaction* trans,
                         ModelType model_type,
                         const Id& parent_id,
                         const string& name) {
-  scoped_ptr<EntryKernel> kernel(new EntryKernel);
+  std::unique_ptr<EntryKernel> kernel(new EntryKernel);
   kernel_ = NULL;
 
   kernel->put(ID, trans->directory_->NextId());

@@ -6,13 +6,14 @@
 
 #include <jni.h>
 #include <stddef.h>
+
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "jni/FakeServerHelper_jni.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/network_resources.h"
@@ -224,7 +225,7 @@ void FakeServerHelperAndroid::ModifyBookmarkEntity(
     const JavaParamRef<jstring>& parent_id) {
   fake_server::FakeServer* fake_server_ptr =
       reinterpret_cast<fake_server::FakeServer*>(fake_server);
-  scoped_ptr<fake_server::FakeServerEntity> bookmark =
+  std::unique_ptr<fake_server::FakeServerEntity> bookmark =
       CreateBookmarkEntity(env, title, url, parent_id);
   sync_pb::SyncEntity proto;
   bookmark->SerializeAsProto(&proto);
@@ -259,7 +260,7 @@ void FakeServerHelperAndroid::ModifyBookmarkFolderEntity(
       proto.specifics());
 }
 
-scoped_ptr<fake_server::FakeServerEntity>
+std::unique_ptr<fake_server::FakeServerEntity>
 FakeServerHelperAndroid::CreateBookmarkEntity(JNIEnv* env,
                                               jstring title,
                                               jstring url,

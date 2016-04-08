@@ -10,9 +10,9 @@ ProtocolEvent::ProtocolEvent() {}
 
 ProtocolEvent::~ProtocolEvent() {}
 
-scoped_ptr<base::DictionaryValue> ProtocolEvent::ToValue(
+std::unique_ptr<base::DictionaryValue> ProtocolEvent::ToValue(
     const ProtocolEvent& event) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetDouble("time", event.GetTimestamp().ToJsTime());
   dict->SetString("type", event.GetType());

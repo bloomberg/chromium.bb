@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/rand_util.h"
 #include "sync/internal_api/public/base/unique_position.h"
 #include "sync/internal_api/public/test/test_entry_factory.h"
@@ -72,7 +74,7 @@ class GetUpdatePositionTest : public ::testing::Test {
   UniquePosition test_position;
   base::MessageLoop message_loop_;
   TestDirectorySetterUpper dir_maker_;
-  scoped_ptr<TestEntryFactory> entry_factory_;
+  std::unique_ptr<TestEntryFactory> entry_factory_;
 };
 
 // Generate a suffix from originator client GUID and client-assigned ID.  These

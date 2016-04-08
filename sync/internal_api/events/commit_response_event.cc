@@ -31,17 +31,15 @@ std::string CommitResponseEvent::GetDetails() const {
   return base::StringPrintf("Result: %s", GetSyncerErrorString(result_));
 }
 
-scoped_ptr<base::DictionaryValue> CommitResponseEvent::GetProtoMessage() const {
-  return scoped_ptr<base::DictionaryValue>(
+std::unique_ptr<base::DictionaryValue> CommitResponseEvent::GetProtoMessage()
+    const {
+  return std::unique_ptr<base::DictionaryValue>(
       ClientToServerResponseToValue(response_, false));
 }
 
-scoped_ptr<ProtocolEvent> CommitResponseEvent::Clone() const {
-  return scoped_ptr<ProtocolEvent>(
-      new CommitResponseEvent(
-          timestamp_,
-          result_,
-          response_));
+std::unique_ptr<ProtocolEvent> CommitResponseEvent::Clone() const {
+  return std::unique_ptr<ProtocolEvent>(
+      new CommitResponseEvent(timestamp_, result_, response_));
 }
 
 }  // namespace syncer

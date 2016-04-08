@@ -5,10 +5,10 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_MODEL_TYPE_STORE_BACKEND_H_
 #define SYNC_INTERNAL_API_PUBLIC_MODEL_TYPE_STORE_BACKEND_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_collision_warner.h"
 #include "sync/api/model_type_store.h"
 #include "sync/base/sync_export.h"
@@ -30,12 +30,12 @@ class SYNC_EXPORT ModelTypeStoreBackend {
   ~ModelTypeStoreBackend();
 
   // Helper function to create in memory environment for leveldb.
-  static scoped_ptr<leveldb::Env> CreateInMemoryEnv();
+  static std::unique_ptr<leveldb::Env> CreateInMemoryEnv();
 
   // Take ownership of env from consumer of ModelTypeStoreBackend object. env
   // will be deleted right after db_ is deleted. This function allows tests to
   // create in-memory store without requiring them to manage env ownership.
-  void TakeEnvOwnership(scoped_ptr<leveldb::Env> env);
+  void TakeEnvOwnership(std::unique_ptr<leveldb::Env> env);
 
   // Init opens database at |path|. If database doesn't exist it creates one.
   // Normally |env| should be nullptr, this causes leveldb to use default disk
@@ -63,7 +63,7 @@ class SYNC_EXPORT ModelTypeStoreBackend {
 
   // Writes modifications accumulated in |write_batch| to database.
   ModelTypeStore::Result WriteModifications(
-      scoped_ptr<leveldb::WriteBatch> write_batch);
+      std::unique_ptr<leveldb::WriteBatch> write_batch);
 
  private:
   // In some scenarios ModelTypeStoreBackend holds ownership of env. Typical
@@ -73,9 +73,9 @@ class SYNC_EXPORT ModelTypeStoreBackend {
   //
   // env_ declaration should appear before declaration of db_ because
   // environment object should still be valid when db_'s destructor is called.
-  scoped_ptr<leveldb::Env> env_;
+  std::unique_ptr<leveldb::Env> env_;
 
-  scoped_ptr<leveldb::DB> db_;
+  std::unique_ptr<leveldb::DB> db_;
 
   // Macro wrapped mutex to guard against concurrent calls in debug builds.
   DFAKE_MUTEX(push_pop_);

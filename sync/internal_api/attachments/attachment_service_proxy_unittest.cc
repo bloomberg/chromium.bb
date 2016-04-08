@@ -4,9 +4,10 @@
 
 #include "sync/internal_api/public/attachments/attachment_service_proxy.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -38,7 +39,7 @@ class StubAttachmentService : public AttachmentService,
       const GetOrDownloadCallback& callback) override {
     CalledOnValidThread();
     Increment();
-    scoped_ptr<AttachmentMap> attachments(new AttachmentMap());
+    std::unique_ptr<AttachmentMap> attachments(new AttachmentMap());
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback,
@@ -106,7 +107,7 @@ class AttachmentServiceProxyTest : public testing::Test,
 
   // a GetOrDownloadCallback
   void IncrementGetOrDownload(const AttachmentService::GetOrDownloadResult&,
-                              scoped_ptr<AttachmentMap>) {
+                              std::unique_ptr<AttachmentMap>) {
     CalledOnValidThread();
     ++count_callback_get_or_download;
   }
@@ -120,9 +121,9 @@ class AttachmentServiceProxyTest : public testing::Test,
   }
 
   base::MessageLoop loop;
-  scoped_ptr<base::Thread> stub_thread;
-  scoped_ptr<StubAttachmentService> stub;
-  scoped_ptr<AttachmentServiceProxy> proxy;
+  std::unique_ptr<base::Thread> stub_thread;
+  std::unique_ptr<StubAttachmentService> stub;
+  std::unique_ptr<AttachmentServiceProxy> proxy;
 
   AttachmentService::GetOrDownloadCallback callback_get_or_download;
 

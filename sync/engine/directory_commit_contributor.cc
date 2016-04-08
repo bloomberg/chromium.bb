@@ -21,8 +21,8 @@ DirectoryCommitContributor::DirectoryCommitContributor(
 
 DirectoryCommitContributor::~DirectoryCommitContributor() {}
 
-scoped_ptr<CommitContribution>
-DirectoryCommitContributor::GetContribution(size_t max_entries) {
+std::unique_ptr<CommitContribution> DirectoryCommitContributor::GetContribution(
+    size_t max_entries) {
   return DirectoryCommitContribution::Build(
       dir_, type_, max_entries, debug_info_emitter_);
 }

@@ -5,8 +5,9 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_SERVICE_PROXY_FOR_TEST_H_
 #define SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_SERVICE_PROXY_FOR_TEST_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/attachments/attachment_service_proxy.h"
@@ -28,16 +29,16 @@ class SYNC_EXPORT AttachmentServiceProxyForTest
   // A Core that owns the wrapped AttachmentService.
   class OwningCore : public AttachmentServiceProxy::Core {
    public:
-    OwningCore(
-        scoped_ptr<AttachmentService>,
-        scoped_ptr<base::WeakPtrFactory<AttachmentService> > weak_ptr_factory);
+    OwningCore(std::unique_ptr<AttachmentService>,
+               std::unique_ptr<base::WeakPtrFactory<AttachmentService>>
+                   weak_ptr_factory);
 
    private:
     ~OwningCore() override;
 
-    scoped_ptr<AttachmentService> wrapped_;
+    std::unique_ptr<AttachmentService> wrapped_;
     // WeakPtrFactory for wrapped_.  See Create() for why this is a scoped_ptr.
-    scoped_ptr<base::WeakPtrFactory<AttachmentService> > weak_ptr_factory_;
+    std::unique_ptr<base::WeakPtrFactory<AttachmentService>> weak_ptr_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(OwningCore);
   };

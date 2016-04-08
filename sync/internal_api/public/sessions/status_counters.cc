@@ -15,8 +15,8 @@ StatusCounters::StatusCounters()
 
 StatusCounters::~StatusCounters() {}
 
-scoped_ptr<base::DictionaryValue> StatusCounters::ToValue() const {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+std::unique_ptr<base::DictionaryValue> StatusCounters::ToValue() const {
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetInteger("numEntries", num_entries);
   value->SetInteger("numEntriesAndTombstones", num_entries_and_tombstones);
   return value;
@@ -24,7 +24,7 @@ scoped_ptr<base::DictionaryValue> StatusCounters::ToValue() const {
 
 std::string StatusCounters::ToString() const {
   std::string result;
-  scoped_ptr<base::DictionaryValue> value = ToValue();
+  std::unique_ptr<base::DictionaryValue> value = ToValue();
   JSONStringValueSerializer serializer(&result);
   serializer.Serialize(*value);
   return result;

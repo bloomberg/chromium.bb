@@ -5,10 +5,10 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_SYNC_MANAGER_FACTORY_H_
 #define SYNC_INTERNAL_API_PUBLIC_SYNC_MANAGER_FACTORY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
 
 namespace syncer {
@@ -21,7 +21,8 @@ class SYNC_EXPORT SyncManagerFactory {
   SyncManagerFactory();
   virtual ~SyncManagerFactory();
 
-  virtual scoped_ptr<SyncManager> CreateSyncManager(const std::string& name);
+  virtual std::unique_ptr<SyncManager> CreateSyncManager(
+      const std::string& name);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncManagerFactory);

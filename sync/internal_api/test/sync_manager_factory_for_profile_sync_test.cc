@@ -16,10 +16,10 @@ SyncManagerFactoryForProfileSyncTest::SyncManagerFactoryForProfileSyncTest(
 
 SyncManagerFactoryForProfileSyncTest::~SyncManagerFactoryForProfileSyncTest() {}
 
-scoped_ptr<syncer::SyncManager>
+std::unique_ptr<syncer::SyncManager>
 SyncManagerFactoryForProfileSyncTest::CreateSyncManager(
     const std::string& name) {
-  return scoped_ptr<syncer::SyncManager>(
+  return std::unique_ptr<syncer::SyncManager>(
       new SyncManagerForProfileSyncTest(name, init_callback_));
 }
 

@@ -38,7 +38,7 @@ struct AttachmentDownloaderImpl::DownloadState {
   // |access_token| needed to invalidate if downloading attachment fails with
   // HTTP_UNAUTHORIZED.
   std::string access_token;
-  scoped_ptr<net::URLFetcher> url_fetcher;
+  std::unique_ptr<net::URLFetcher> url_fetcher;
   std::vector<DownloadCallback> user_callbacks;
   base::TimeTicks start_time;
 };
@@ -89,7 +89,7 @@ void AttachmentDownloaderImpl::DownloadAttachment(
   if (iter == state_map_.end()) {
     // There is no request started for this attachment id. Let's create
     // DownloadState and request access token for it.
-    scoped_ptr<DownloadState> new_download_state(
+    std::unique_ptr<DownloadState> new_download_state(
         new DownloadState(attachment_id, url));
     iter = state_map_.add(url, std::move(new_download_state)).first;
     RequestAccessToken(iter->second);
@@ -206,10 +206,10 @@ void AttachmentDownloaderImpl::OnURLFetchComplete(
   state_map_.erase(iter);
 }
 
-scoped_ptr<net::URLFetcher> AttachmentDownloaderImpl::CreateFetcher(
+std::unique_ptr<net::URLFetcher> AttachmentDownloaderImpl::CreateFetcher(
     const AttachmentUrl& url,
     const std::string& access_token) {
-  scoped_ptr<net::URLFetcher> url_fetcher =
+  std::unique_ptr<net::URLFetcher> url_fetcher =
       net::URLFetcher::Create(GURL(url), net::URLFetcher::GET, this);
   AttachmentUploaderImpl::ConfigureURLFetcherCommon(
       url_fetcher.get(), access_token, raw_store_birthday_, model_type_,
@@ -235,7 +235,7 @@ void AttachmentDownloaderImpl::ReportResult(
   for (iter = download_state.user_callbacks.begin();
        iter != download_state.user_callbacks.end();
        ++iter) {
-    scoped_ptr<Attachment> attachment;
+    std::unique_ptr<Attachment> attachment;
     if (result == DOWNLOAD_SUCCESS) {
       attachment.reset(new Attachment(Attachment::CreateFromParts(
           download_state.attachment_id, attachment_data)));

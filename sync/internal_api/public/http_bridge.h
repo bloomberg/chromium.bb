@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -165,7 +166,7 @@ class SYNC_EXPORT HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
 
     // Timer to ensure http requests aren't stalled. Reset every time upload or
     // download progress is made.
-    scoped_ptr<base::Timer> http_request_timeout_timer;
+    std::unique_ptr<base::Timer> http_request_timeout_timer;
   };
 
   // This lock synchronizes use of state involved in the flow to fetch a URL

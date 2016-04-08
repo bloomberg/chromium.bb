@@ -5,9 +5,9 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_USER_SHARE_H_
 #define SYNC_INTERNAL_API_PUBLIC_USER_SHARE_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/sync_manager.h"
 
@@ -26,7 +26,7 @@ struct SYNC_EXPORT UserShare {
   ~UserShare();
 
   // The Directory itself, which is the parent of Transactions.
-  scoped_ptr<syncable::Directory> directory;
+  std::unique_ptr<syncable::Directory> directory;
 
   // The credentials used by sync when talking to the sync server.
   //

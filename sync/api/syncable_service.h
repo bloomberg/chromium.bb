@@ -5,11 +5,11 @@
 #ifndef SYNC_API_SYNCABLE_SERVICE_H_
 #define SYNC_API_SYNCABLE_SERVICE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "sync/api/attachments/attachment_store.h"
 #include "sync/api/sync_change_processor.h"
@@ -52,8 +52,8 @@ class SYNC_EXPORT SyncableService
   virtual SyncMergeResult MergeDataAndStartSyncing(
       ModelType type,
       const SyncDataList& initial_sync_data,
-      scoped_ptr<SyncChangeProcessor> sync_processor,
-      scoped_ptr<SyncErrorFactory> error_handler) = 0;
+      std::unique_ptr<SyncChangeProcessor> sync_processor,
+      std::unique_ptr<SyncErrorFactory> error_handler) = 0;
 
   // Stop syncing the specified type and reset state.
   virtual void StopSyncing(ModelType type) = 0;
@@ -76,7 +76,7 @@ class SYNC_EXPORT SyncableService
   // GetAttachmentStoreForSync to return result of
   // AttachmentStore::CreateAttachmentStoreForSync() from attachment store
   // object.
-  virtual scoped_ptr<AttachmentStoreForSync> GetAttachmentStoreForSync();
+  virtual std::unique_ptr<AttachmentStoreForSync> GetAttachmentStoreForSync();
 
   // Called by sync to provide AttachmentService to be used to download
   // attachments.
@@ -86,7 +86,7 @@ class SYNC_EXPORT SyncableService
   // Datatype that uses attachments must take ownerhip of the provided
   // AttachmentService instance.
   virtual void SetAttachmentService(
-      scoped_ptr<AttachmentService> attachment_service);
+      std::unique_ptr<AttachmentService> attachment_service);
 
  protected:
   ~SyncableService() override;

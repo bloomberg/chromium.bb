@@ -6,10 +6,10 @@
 #define SYNC_INTERNAL_API_PUBLIC_EVENTS_COMMIT_REQUEST_EVENT_H_
 
 #include <cstddef>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "sync/base/sync_export.h"
@@ -32,10 +32,10 @@ class SYNC_EXPORT CommitRequestEvent : public ProtocolEvent {
   base::Time GetTimestamp() const override;
   std::string GetType() const override;
   std::string GetDetails() const override;
-  scoped_ptr<base::DictionaryValue> GetProtoMessage() const override;
-  scoped_ptr<ProtocolEvent> Clone() const override;
+  std::unique_ptr<base::DictionaryValue> GetProtoMessage() const override;
+  std::unique_ptr<ProtocolEvent> Clone() const override;
 
-  static scoped_ptr<base::DictionaryValue> ToValue(
+  static std::unique_ptr<base::DictionaryValue> ToValue(
       const ProtocolEvent& event);
 
  private:

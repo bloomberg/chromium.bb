@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <iosfwd>
+#include <memory>
 #include <string>
 
 #include "base/atomicops.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
@@ -303,7 +303,7 @@ class SYNC_EXPORT ServerConnectionManager : public CancelationObserver {
     Connection* get();
    private:
     ServerConnectionManager* manager_;
-    scoped_ptr<Connection> connection_;
+    std::unique_ptr<Connection> connection_;
     DISALLOW_COPY_AND_ASSIGN(ScopedConnectionHelper);
   };
 

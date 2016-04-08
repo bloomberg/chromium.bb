@@ -13,9 +13,9 @@ SyncManagerFactory::SyncManagerFactory() {}
 SyncManagerFactory::~SyncManagerFactory() {
 }
 
-scoped_ptr<SyncManager> SyncManagerFactory::CreateSyncManager(
+std::unique_ptr<SyncManager> SyncManagerFactory::CreateSyncManager(
     const std::string& name) {
-  return scoped_ptr<SyncManager>(new SyncManagerImpl(name));
+  return std::unique_ptr<SyncManager>(new SyncManagerImpl(name));
 }
 
 }  // namespace syncer

@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/util/immutable.h"
 #include "sync/protocol/password_specifics.pb.h"
@@ -31,7 +31,7 @@ class SYNC_EXPORT ExtraPasswordChangeRecordData {
       const sync_pb::PasswordSpecificsData& data);
   virtual ~ExtraPasswordChangeRecordData();
 
-  virtual scoped_ptr<base::DictionaryValue> ToValue() const;
+  virtual std::unique_ptr<base::DictionaryValue> ToValue() const;
 
   const sync_pb::PasswordSpecificsData& unencrypted() const;
  private:
@@ -52,7 +52,7 @@ struct SYNC_EXPORT ChangeRecord {
   ChangeRecord(const ChangeRecord& other);
   ~ChangeRecord();
 
-  scoped_ptr<base::DictionaryValue> ToValue() const;
+  std::unique_ptr<base::DictionaryValue> ToValue() const;
 
   int64_t id;
   Action action;

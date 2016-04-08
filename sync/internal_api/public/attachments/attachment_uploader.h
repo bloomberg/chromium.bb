@@ -6,7 +6,6 @@
 #define SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_UPLOADER_H_
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/base/sync_export.h"
 

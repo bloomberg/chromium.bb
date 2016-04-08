@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "sync/protocol/password_specifics.pb.h"
 #include "sync/test/fake_encryptor.h"

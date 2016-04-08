@@ -21,8 +21,8 @@ ChangeRecord::ChangeRecord(const ChangeRecord& other) = default;
 
 ChangeRecord::~ChangeRecord() {}
 
-scoped_ptr<base::DictionaryValue> ChangeRecord::ToValue() const {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+std::unique_ptr<base::DictionaryValue> ChangeRecord::ToValue() const {
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   std::string action_str;
   switch (action) {
     case ACTION_ADD:
@@ -59,7 +59,7 @@ ExtraPasswordChangeRecordData::ExtraPasswordChangeRecordData(
 
 ExtraPasswordChangeRecordData::~ExtraPasswordChangeRecordData() {}
 
-scoped_ptr<base::DictionaryValue> ExtraPasswordChangeRecordData::ToValue()
+std::unique_ptr<base::DictionaryValue> ExtraPasswordChangeRecordData::ToValue()
     const {
   return PasswordSpecificsDataToValue(unencrypted_);
 }

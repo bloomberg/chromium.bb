@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "sync/test/engine/test_id_factory.h"

@@ -5,9 +5,11 @@
 #include "sync/sessions/model_type_registry.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
 #include "base/thread_task_runner_handle.h"
 #include "sync/engine/commit_queue.h"
@@ -139,24 +141,27 @@ void ModelTypeRegistry::SetEnabledDirectoryTypes(
 
 void ModelTypeRegistry::ConnectType(
     ModelType type,
-    scoped_ptr<syncer_v2::ActivationContext> activation_context) {
+    std::unique_ptr<syncer_v2::ActivationContext> activation_context) {
   DVLOG(1) << "Enabling an off-thread sync type: " << ModelTypeToString(type);
 
   // Initialize Worker -> Processor communication channel.
   syncer_v2::ModelTypeProcessor* type_processor =
       activation_context->type_processor.get();
 
-  scoped_ptr<Cryptographer> cryptographer_copy;
+  std::unique_ptr<Cryptographer> cryptographer_copy;
   if (encrypted_types_.Has(type))
     cryptographer_copy.reset(new Cryptographer(*cryptographer_));
 
-  scoped_ptr<syncer_v2::ModelTypeWorker> worker(new syncer_v2::ModelTypeWorker(
-      type, activation_context->data_type_state, std::move(cryptographer_copy),
-      nudge_handler_, std::move(activation_context->type_processor)));
+  std::unique_ptr<syncer_v2::ModelTypeWorker> worker(
+      new syncer_v2::ModelTypeWorker(
+          type, activation_context->data_type_state,
+          std::move(cryptographer_copy), nudge_handler_,
+          std::move(activation_context->type_processor)));
 
   // Initialize Processor -> Worker communication channel.
-  scoped_ptr<syncer_v2::CommitQueue> commit_queue_proxy(new CommitQueueProxy(
-      worker->AsWeakPtr(), scoped_refptr<base::SequencedTaskRunner>(
+  std::unique_ptr<syncer_v2::CommitQueue> commit_queue_proxy(
+      new CommitQueueProxy(worker->AsWeakPtr(),
+                           scoped_refptr<base::SequencedTaskRunner>(
                                base::ThreadTaskRunnerHandle::Get())));
 
   type_processor->ConnectSync(std::move(commit_queue_proxy));
@@ -289,7 +294,7 @@ void ModelTypeRegistry::OnEncryptionStateChanged() {
        it != model_type_workers_.end(); ++it) {
     if (encrypted_types_.Has((*it)->GetModelType())) {
       (*it)->UpdateCryptographer(
-          make_scoped_ptr(new Cryptographer(*cryptographer_)));
+          base::WrapUnique(new Cryptographer(*cryptographer_)));
     }
   }
 }

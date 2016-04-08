@@ -51,16 +51,17 @@ class SYNC_EXPORT AttachmentServiceImpl
   //
   // |max_backoff_delay| the maxmium delay between upload attempts when backed
   // off.
-  AttachmentServiceImpl(scoped_ptr<AttachmentStoreForSync> attachment_store,
-                        scoped_ptr<AttachmentUploader> attachment_uploader,
-                        scoped_ptr<AttachmentDownloader> attachment_downloader,
-                        Delegate* delegate,
-                        const base::TimeDelta& initial_backoff_delay,
-                        const base::TimeDelta& max_backoff_delay);
+  AttachmentServiceImpl(
+      std::unique_ptr<AttachmentStoreForSync> attachment_store,
+      std::unique_ptr<AttachmentUploader> attachment_uploader,
+      std::unique_ptr<AttachmentDownloader> attachment_downloader,
+      Delegate* delegate,
+      const base::TimeDelta& initial_backoff_delay,
+      const base::TimeDelta& max_backoff_delay);
   ~AttachmentServiceImpl() override;
 
   // Create an AttachmentServiceImpl suitable for use in tests.
-  static scoped_ptr<syncer::AttachmentService> CreateForTest();
+  static std::unique_ptr<syncer::AttachmentService> CreateForTest();
 
   // AttachmentService implementation.
   void GetOrDownloadAttachments(const AttachmentIdList& attachment_ids,
@@ -74,15 +75,15 @@ class SYNC_EXPORT AttachmentServiceImpl
   // Use |timer| in the underlying TaskQueue.
   //
   // Used in tests.  See also MockTimer.
-  void SetTimerForTest(scoped_ptr<base::Timer> timer);
+  void SetTimerForTest(std::unique_ptr<base::Timer> timer);
 
  private:
   class GetOrDownloadState;
 
   void ReadDone(const scoped_refptr<GetOrDownloadState>& state,
                 const AttachmentStore::Result& result,
-                scoped_ptr<AttachmentMap> attachments,
-                scoped_ptr<AttachmentIdList> unavailable_attachment_ids);
+                std::unique_ptr<AttachmentMap> attachments,
+                std::unique_ptr<AttachmentIdList> unavailable_attachment_ids);
   void WriteDone(const scoped_refptr<GetOrDownloadState>& state,
                  const Attachment& attachment,
                  const AttachmentStore::Result& result);
@@ -91,25 +92,25 @@ class SYNC_EXPORT AttachmentServiceImpl
   void DownloadDone(const scoped_refptr<GetOrDownloadState>& state,
                     const AttachmentId& attachment_id,
                     const AttachmentDownloader::DownloadResult& result,
-                    scoped_ptr<Attachment> attachment);
+                    std::unique_ptr<Attachment> attachment);
   void BeginUpload(const AttachmentId& attachment_id);
   void ReadDoneNowUpload(
       const AttachmentStore::Result& result,
-      scoped_ptr<AttachmentMap> attachments,
-      scoped_ptr<AttachmentIdList> unavailable_attachment_ids);
+      std::unique_ptr<AttachmentMap> attachments,
+      std::unique_ptr<AttachmentIdList> unavailable_attachment_ids);
 
-  scoped_ptr<AttachmentStoreForSync> attachment_store_;
-
-  // May be null.
-  const scoped_ptr<AttachmentUploader> attachment_uploader_;
+  std::unique_ptr<AttachmentStoreForSync> attachment_store_;
 
   // May be null.
-  const scoped_ptr<AttachmentDownloader> attachment_downloader_;
+  const std::unique_ptr<AttachmentUploader> attachment_uploader_;
+
+  // May be null.
+  const std::unique_ptr<AttachmentDownloader> attachment_downloader_;
 
   // May be null.
   Delegate* delegate_;
 
-  scoped_ptr<TaskQueue<AttachmentId> > upload_task_queue_;
+  std::unique_ptr<TaskQueue<AttachmentId>> upload_task_queue_;
 
   // Must be last data member.
   base::WeakPtrFactory<AttachmentServiceImpl> weak_ptr_factory_;

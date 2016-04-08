@@ -39,7 +39,7 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   ~MockModelTypeProcessor() override;
 
   // Implementation of ModelTypeProcessor.
-  void ConnectSync(scoped_ptr<CommitQueue> commit_queue) override;
+  void ConnectSync(std::unique_ptr<CommitQueue> commit_queue) override;
   void DisconnectSync() override;
   void OnCommitCompleted(const sync_pb::DataTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
@@ -124,7 +124,7 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   // See SetSynchronousExecution() for details.
   bool is_synchronous_;
   std::vector<base::Closure> pending_tasks_;
-  scoped_ptr<CommitQueue> commit_queue_;
+  std::unique_ptr<CommitQueue> commit_queue_;
 
   // A log of messages received by this object.
   std::vector<CommitResponseDataList> received_commit_responses_;

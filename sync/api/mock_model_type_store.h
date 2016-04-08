@@ -24,7 +24,7 @@ namespace syncer_v2 {
 //                 const ModelTypeStore::ReadAllDataCallback& callback) {
 //   // Verify id_list here.
 //   // Prepare fake response.
-//   scoped_ptr<ModelTypeStore::RecordList> record_list(
+//   std::unique_ptr<ModelTypeStore::RecordList> record_list(
 //       new ModelTypeStore::RecordList);
 //   record_list->push_back(ModelTypeStore::Record("id1", "value1"));
 //   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -48,7 +48,7 @@ class MockModelTypeStore : public ModelTypeStore {
       ReadDataSignature;
   typedef base::Callback<void(const ReadMetadataCallback& callback)>
       ReadAllMetadataSignature;
-  typedef base::Callback<void(scoped_ptr<WriteBatch>, CallbackWithResult)>
+  typedef base::Callback<void(std::unique_ptr<WriteBatch>, CallbackWithResult)>
       CommitWriteBatchSignature;
   typedef base::Callback<void(WriteBatch*,
                               const std::string&,
@@ -68,8 +68,8 @@ class MockModelTypeStore : public ModelTypeStore {
   void ReadAllData(const ReadAllDataCallback& callback) override;
   void ReadAllMetadata(const ReadMetadataCallback& callback) override;
 
-  scoped_ptr<WriteBatch> CreateWriteBatch() override;
-  void CommitWriteBatch(scoped_ptr<WriteBatch> write_batch,
+  std::unique_ptr<WriteBatch> CreateWriteBatch() override;
+  void CommitWriteBatch(std::unique_ptr<WriteBatch> write_batch,
                         const CallbackWithResult& callback) override;
 
   void WriteData(WriteBatch* write_batch,

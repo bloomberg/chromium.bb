@@ -24,7 +24,7 @@ void FakeAttachmentDownloader::DownloadAttachment(
   // This is happy fake downloader, it always successfully downloads empty
   // attachment.
   scoped_refptr<base::RefCountedMemory> data(new base::RefCountedBytes());
-  scoped_ptr<Attachment> attachment;
+  std::unique_ptr<Attachment> attachment;
   attachment.reset(
       new Attachment(Attachment::CreateFromParts(attachment_id, data)));
   base::MessageLoop::current()->PostTask(

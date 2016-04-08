@@ -81,8 +81,8 @@ class TestUserShare {
   size_t GetDeleteJournalSize() const;
 
  private:
-  scoped_ptr<TestDirectorySetterUpper> dir_maker_;
-  scoped_ptr<UserShare> user_share_;
+  std::unique_ptr<TestDirectorySetterUpper> dir_maker_;
+  std::unique_ptr<UserShare> user_share_;
 
   DISALLOW_COPY_AND_ASSIGN(TestUserShare);
 };

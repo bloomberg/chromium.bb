@@ -26,7 +26,7 @@ struct SYNC_EXPORT ActivationContext {
 
   // The ModelTypeProcessor for the worker. Note that this is owned because
   // it is generally a proxy object to the real processor.
-  scoped_ptr<ModelTypeProcessor> type_processor;
+  std::unique_ptr<ModelTypeProcessor> type_processor;
 };
 
 }  // namespace syncer_v2

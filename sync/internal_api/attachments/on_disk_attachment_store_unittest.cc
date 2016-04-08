@@ -5,12 +5,14 @@
 #include "sync/internal_api/public/attachments/on_disk_attachment_store.h"
 
 #include <stdint.h>
+
 #include <string>
 #include <utility>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -41,9 +43,9 @@ class OnDiskAttachmentStoreFactory {
   OnDiskAttachmentStoreFactory() {}
   ~OnDiskAttachmentStoreFactory() {}
 
-  scoped_ptr<AttachmentStore> CreateAttachmentStore() {
+  std::unique_ptr<AttachmentStore> CreateAttachmentStore() {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-    scoped_ptr<AttachmentStore> store;
+    std::unique_ptr<AttachmentStore> store;
     AttachmentStore::Result result = AttachmentStore::UNSPECIFIED_ERROR;
     store = AttachmentStore::CreateOnDiskStore(
         temp_dir_.path(), base::ThreadTaskRunnerHandle::Get(),
@@ -68,7 +70,7 @@ class OnDiskAttachmentStoreSpecificTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   base::FilePath db_path_;
   base::MessageLoop message_loop_;
-  scoped_ptr<AttachmentStore> store_;
+  std::unique_ptr<AttachmentStore> store_;
 
   OnDiskAttachmentStoreSpecificTest() {}
 
@@ -87,33 +89,33 @@ class OnDiskAttachmentStoreSpecificTest : public testing::Test {
       AttachmentStore::Result* destination_result,
       AttachmentIdList* destination_failed_attachment_ids,
       const AttachmentStore::Result& source_result,
-      scoped_ptr<AttachmentMap> source_attachments,
-      scoped_ptr<AttachmentIdList> source_failed_attachment_ids) {
+      std::unique_ptr<AttachmentMap> source_attachments,
+      std::unique_ptr<AttachmentIdList> source_failed_attachment_ids) {
     CopyResult(destination_result, source_result);
     *destination_failed_attachment_ids = *source_failed_attachment_ids;
   }
 
   void CopyResultMetadata(
       AttachmentStore::Result* destination_result,
-      scoped_ptr<AttachmentMetadataList>* destination_metadata,
+      std::unique_ptr<AttachmentMetadataList>* destination_metadata,
       const AttachmentStore::Result& source_result,
-      scoped_ptr<AttachmentMetadataList> source_metadata) {
+      std::unique_ptr<AttachmentMetadataList> source_metadata) {
     CopyResult(destination_result, source_result);
     *destination_metadata = std::move(source_metadata);
   }
 
-  scoped_ptr<leveldb::DB> OpenLevelDB() {
+  std::unique_ptr<leveldb::DB> OpenLevelDB() {
     leveldb::DB* db;
     leveldb::Options options;
     options.create_if_missing = true;
     leveldb::Status s =
         leveldb::DB::Open(options, db_path_.AsUTF8Unsafe(), &db);
     EXPECT_TRUE(s.ok());
-    return make_scoped_ptr(db);
+    return base::WrapUnique(db);
   }
 
   void UpdateRecord(const std::string& key, const std::string& content) {
-    scoped_ptr<leveldb::DB> db = OpenLevelDB();
+    std::unique_ptr<leveldb::DB> db = OpenLevelDB();
     leveldb::Status s = db->Put(leveldb::WriteOptions(), key, content);
     EXPECT_TRUE(s.ok());
   }
@@ -130,7 +132,7 @@ class OnDiskAttachmentStoreSpecificTest : public testing::Test {
   }
 
   std::string ReadStoreMetadataRecord() {
-    scoped_ptr<leveldb::DB> db = OpenLevelDB();
+    std::unique_ptr<leveldb::DB> db = OpenLevelDB();
     std::string content;
     leveldb::Status s =
         db->Get(leveldb::ReadOptions(), "database-metadata", &content);
@@ -140,7 +142,7 @@ class OnDiskAttachmentStoreSpecificTest : public testing::Test {
 
   void VerifyAttachmentRecordsPresent(const AttachmentId& attachment_id,
                                       bool expect_records_present) {
-    scoped_ptr<leveldb::DB> db = OpenLevelDB();
+    std::unique_ptr<leveldb::DB> db = OpenLevelDB();
 
     std::string metadata_key =
         OnDiskAttachmentStore::MakeMetadataKeyFromAttachmentId(attachment_id);
@@ -458,7 +460,7 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, ReadMetadataWithUnexpectedRecord) {
 
   // Read all metadata. Should be getting no error and zero entries.
   AttachmentStore::Result metadata_result = AttachmentStore::UNSPECIFIED_ERROR;
-  scoped_ptr<AttachmentMetadataList> metadata_list;
+  std::unique_ptr<AttachmentMetadataList> metadata_list;
   store_->ReadMetadata(
       base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResultMetadata,
                  base::Unretained(this), &metadata_result, &metadata_list));

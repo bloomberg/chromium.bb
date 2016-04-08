@@ -28,9 +28,8 @@ void FakeSyncScheduler::ScheduleLocalRefreshRequest(
 
 void FakeSyncScheduler::ScheduleInvalidationNudge(
     syncer::ModelType type,
-    scoped_ptr<InvalidationInterface> interface,
-    const tracked_objects::Location& nudge_location) {
-}
+    std::unique_ptr<InvalidationInterface> interface,
+    const tracked_objects::Location& nudge_location) {}
 
 void FakeSyncScheduler::ScheduleConfiguration(
      const ConfigurationParams& params) {

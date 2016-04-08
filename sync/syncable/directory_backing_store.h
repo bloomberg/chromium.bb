@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -249,7 +249,7 @@ class SYNC_EXPORT DirectoryBackingStore : public base::NonThreadSafe {
   const std::string dir_name_;
   const int database_page_size_;
 
-  scoped_ptr<sql::Connection> db_;
+  std::unique_ptr<sql::Connection> db_;
   sql::Statement save_meta_statement_;
   sql::Statement save_delete_journal_statement_;
 

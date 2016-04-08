@@ -5,8 +5,9 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_SERVICE_H_
 #define SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_SERVICE_H_
 
+#include <memory>
+
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/base/sync_export.h"
@@ -31,8 +32,8 @@ class SYNC_EXPORT AttachmentService {
     GET_UNSPECIFIED_ERROR,  // An unspecified error occurred.
   };
 
-  typedef base::Callback<
-      void(const GetOrDownloadResult&, scoped_ptr<AttachmentMap> attachments)>
+  typedef base::Callback<void(const GetOrDownloadResult&,
+                              std::unique_ptr<AttachmentMap> attachments)>
       GetOrDownloadCallback;
 
   // An interface that embedder code implements to be notified about different

@@ -5,9 +5,9 @@
 #ifndef SYNC_TEST_FAKE_SERVER_BOOKMARK_ENTITY_BUILDER_H_
 #define SYNC_TEST_FAKE_SERVER_BOOKMARK_ENTITY_BUILDER_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/test/fake_server/fake_server_entity.h"
 #include "url/gurl.h"
@@ -31,11 +31,11 @@ class BookmarkEntityBuilder {
 
   // Builds and returns a FakeServerEntity representing a bookmark. Returns null
   // if the entity could not be built.
-  scoped_ptr<FakeServerEntity> BuildBookmark(const GURL& url);
+  std::unique_ptr<FakeServerEntity> BuildBookmark(const GURL& url);
 
   // Builds and returns a FakeServerEntity representing a bookmark folder.
   // Returns null if the entity could not be built.
-  scoped_ptr<FakeServerEntity> BuildFolder();
+  std::unique_ptr<FakeServerEntity> BuildFolder();
 
  private:
   // Creates an EntitySpecifics and pre-populates its BookmarkSpecifics with
@@ -44,7 +44,7 @@ class BookmarkEntityBuilder {
 
   // Builds the parts of a FakeServerEntity common to both normal bookmarks and
   // folders.
-  scoped_ptr<FakeServerEntity> Build(
+  std::unique_ptr<FakeServerEntity> Build(
       const sync_pb::EntitySpecifics& entity_specifics,
       bool is_folder);
 
