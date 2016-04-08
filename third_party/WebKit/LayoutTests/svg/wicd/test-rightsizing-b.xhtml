@@ -32,10 +32,9 @@
     <script>
     if (window.testRunner)
         testRunner.waitUntilDone();
-    runAfterLayoutAndPaint(function() {
-        if (window.testRunner)
-            testRunner.notifyDone();
-    });
+    onload = function() {
+        runAfterLayoutAndPaint(function() {}, true);
+    };
     </script>
 </body>
 </html>
