@@ -23,6 +23,10 @@ class TestModel : public ui::SimpleMenuModel {
 
   void set_checked_command(int command) { checked_command_ = command; }
 
+  void set_menu_open_callback(const base::Closure& callback) {
+    menu_open_callback_ = callback;
+  }
+
  private:
   class Delegate : public ui::SimpleMenuModel::Delegate {
    public:
@@ -37,6 +41,10 @@ class TestModel : public ui::SimpleMenuModel {
     }
     void ExecuteCommand(int command_id, int event_flags) override {}
 
+    void MenuWillShow(SimpleMenuModel* source) override {
+      model_->menu_open_callback_.Run();
+    }
+
    private:
     TestModel* model_;
 
@@ -46,6 +54,7 @@ class TestModel : public ui::SimpleMenuModel {
  private:
   int checked_command_ = -1;
   Delegate delegate_;
+  base::Closure menu_open_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestModel);
 };
@@ -89,14 +98,13 @@ class MenuRunnerCocoaTest : public ViewsTestBase {
     ViewsTestBase::TearDown();
   }
 
-  // Runs the menu after scheduling |block| on the run loop.
-  MenuRunner::RunResult RunMenu(dispatch_block_t block) {
-    CFRunLoopPerformBlock(CFRunLoopGetCurrent(), kCFRunLoopCommonModes, ^{
-        EXPECT_TRUE(runner_->IsRunning());
-        block();
-    });
-    return runner_->RunMenuAt(parent_, NULL, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
-                              MenuRunner::CONTEXT_MENU);
+  // Runs the menu after registering |callback| as the menu open callback.
+  MenuRunner::RunResult RunMenu(const base::Closure& callback) {
+    menu_->set_menu_open_callback(
+        base::Bind(&MenuRunnerCocoaTest::RunMenuWrapperCallback,
+                   base::Unretained(this), callback));
+    return runner_->RunMenuAt(parent_, nullptr, gfx::Rect(),
+                              MENU_ANCHOR_TOPLEFT, MenuRunner::CONTEXT_MENU);
   }
 
   // Runs then cancels a combobox menu and captures the frame of the anchoring
@@ -107,18 +115,26 @@ class MenuRunnerCocoaTest : public ViewsTestBase {
     // Should be one child (the compositor layer) before showing, and it should
     // go up by one (the anchor view) while the menu is shown.
     EXPECT_EQ(1u, [[parent_->GetNativeView() subviews] count]);
-    CFRunLoopPerformBlock(CFRunLoopGetCurrent(), kCFRunLoopCommonModes, ^{
-      NSArray* subviews = [parent_->GetNativeView() subviews];
-      EXPECT_EQ(2u, [subviews count]);
-      last_anchor_frame_ = [[subviews objectAtIndex:1] frame];
-      runner_->Cancel();
-    });
+
+    menu_->set_menu_open_callback(base::Bind(
+        &MenuRunnerCocoaTest::RunMenuAtCallback, base::Unretained(this)));
+
     MenuRunner::RunResult result = runner_->RunMenuAt(
         parent_, nullptr, anchor, MENU_ANCHOR_TOPLEFT, MenuRunner::COMBOBOX);
 
     // Ensure the anchor view is removed.
     EXPECT_EQ(1u, [[parent_->GetNativeView() subviews] count]);
     return result;
+  }
+
+  void MenuCancelCallback() {
+    runner_->Cancel();
+    EXPECT_FALSE(runner_->IsRunning());
+  }
+
+  void MenuDeleteCallback() {
+    runner_->Release();
+    runner_ = nullptr;
   }
 
  protected:
@@ -128,16 +144,26 @@ class MenuRunnerCocoaTest : public ViewsTestBase {
   NSRect last_anchor_frame_ = NSZeroRect;
 
  private:
+  void RunMenuWrapperCallback(const base::Closure& callback) {
+    EXPECT_TRUE(runner_->IsRunning());
+    callback.Run();
+  }
+
+  void RunMenuAtCallback() {
+    NSArray* subviews = [parent_->GetNativeView() subviews];
+    EXPECT_EQ(2u, [subviews count]);
+    last_anchor_frame_ = [[subviews objectAtIndex:1] frame];
+    runner_->Cancel();
+  }
+
   DISALLOW_COPY_AND_ASSIGN(MenuRunnerCocoaTest);
 };
 
 TEST_F(MenuRunnerCocoaTest, RunMenuAndCancel) {
   base::TimeDelta min_time = ui::EventTimeForNow();
 
-  MenuRunner::RunResult result = RunMenu(^{
-      runner_->Cancel();
-      EXPECT_FALSE(runner_->IsRunning());
-  });
+  MenuRunner::RunResult result = RunMenu(base::Bind(
+      &MenuRunnerCocoaTest::MenuCancelCallback, base::Unretained(this)));
 
   EXPECT_EQ(MenuRunner::NORMAL_EXIT, result);
   EXPECT_FALSE(runner_->IsRunning());
@@ -151,19 +177,15 @@ TEST_F(MenuRunnerCocoaTest, RunMenuAndCancel) {
 }
 
 TEST_F(MenuRunnerCocoaTest, RunMenuAndDelete) {
-  MenuRunner::RunResult result = RunMenu(^{
-      runner_->Release();
-      runner_ = NULL;
-  });
-
+  MenuRunner::RunResult result = RunMenu(base::Bind(
+      &MenuRunnerCocoaTest::MenuDeleteCallback, base::Unretained(this)));
   EXPECT_EQ(MenuRunner::MENU_DELETED, result);
 }
 
 TEST_F(MenuRunnerCocoaTest, RunMenuTwice) {
   for (int i = 0; i < 2; ++i) {
-    MenuRunner::RunResult result = RunMenu(^{
-        runner_->Cancel();
-    });
+    MenuRunner::RunResult result = RunMenu(base::Bind(
+        &MenuRunnerCocoaTest::MenuCancelCallback, base::Unretained(this)));
     EXPECT_EQ(MenuRunner::NORMAL_EXIT, result);
     EXPECT_FALSE(runner_->IsRunning());
   }
