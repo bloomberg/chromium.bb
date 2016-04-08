@@ -37,7 +37,7 @@ public:
     static ImageBitmap* create(HTMLImageElement*, const IntRect&, Document*, const ImageBitmapOptions& = ImageBitmapOptions());
     static ImageBitmap* create(HTMLVideoElement*, const IntRect&, Document*, const ImageBitmapOptions& = ImageBitmapOptions());
     static ImageBitmap* create(HTMLCanvasElement*, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
-    static ImageBitmap* create(ImageData*, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
+    static ImageBitmap* create(ImageData*, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions(), const bool& isImageDataPremultiplied = false);
     static ImageBitmap* create(ImageBitmap*, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
     static ImageBitmap* create(PassRefPtr<StaticBitmapImage>);
     static ImageBitmap* create(PassRefPtr<StaticBitmapImage>, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
@@ -73,7 +73,7 @@ private:
     ImageBitmap(HTMLImageElement*, const IntRect&, Document*, const ImageBitmapOptions&);
     ImageBitmap(HTMLVideoElement*, const IntRect&, Document*, const ImageBitmapOptions&);
     ImageBitmap(HTMLCanvasElement*, const IntRect&, const ImageBitmapOptions&);
-    ImageBitmap(ImageData*, const IntRect&, const ImageBitmapOptions&);
+    ImageBitmap(ImageData*, const IntRect&, const ImageBitmapOptions&, const bool&);
     ImageBitmap(ImageBitmap*, const IntRect&, const ImageBitmapOptions&);
     ImageBitmap(PassRefPtr<StaticBitmapImage>);
     ImageBitmap(PassRefPtr<StaticBitmapImage>, const IntRect&, const ImageBitmapOptions&);

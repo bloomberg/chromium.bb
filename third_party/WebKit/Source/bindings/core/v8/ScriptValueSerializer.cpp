@@ -1012,7 +1012,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeImageBitmap(v8::Lo
         return nullptr;
     if (imageBitmap->isNeutered())
         return handleError(DataCloneError, "An ImageBitmap is neutered and could not be cloned.", next);
-    OwnPtr<uint8_t[]> pixelData = imageBitmap->copyBitmapData();
+    OwnPtr<uint8_t[]> pixelData = imageBitmap->copyBitmapData(PremultiplyAlpha);
     m_writer.writeImageBitmap(imageBitmap->width(), imageBitmap->height(), pixelData.get(), imageBitmap->width() * imageBitmap->height() * 4);
     return nullptr;
 }
@@ -1634,7 +1634,9 @@ bool SerializedScriptValueReader::readImageBitmap(v8::Local<v8::Value>* value)
     ImageData* imageData = doReadImageData();
     if (!imageData)
         return false;
-    RawPtr<ImageBitmap> imageBitmap = ImageBitmap::create(imageData, IntRect(0, 0, imageData->width(), imageData->height()));
+    ImageBitmapOptions options;
+    options.setPremultiplyAlpha("none");
+    RawPtr<ImageBitmap> imageBitmap = ImageBitmap::create(imageData, IntRect(0, 0, imageData->width(), imageData->height()), options, true);
     if (!imageBitmap.get())
         return false;
     *value = toV8(imageBitmap.get(), m_scriptState->context()->Global(), isolate());

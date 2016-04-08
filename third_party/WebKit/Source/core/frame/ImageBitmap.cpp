@@ -226,7 +226,7 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect, con
     m_image->setPremultiplied(premultiplyAlpha);
 }
 
-ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options)
+ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options, const bool& isImageDataPremultiplied)
 {
     bool flipY;
     bool premultiplyAlpha;
@@ -240,7 +240,11 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBi
         int dstHeight = cropRect.height();
         // TODO (xidachen): skia doesn't support SkImage::NewRasterCopy from a kRGBA color type.
         // For now, we swap R and B channel and uses kBGRA color type.
-        SkImageInfo info = SkImageInfo::Make(cropRect.width(), dstHeight, kBGRA_8888_SkColorType, kUnpremul_SkAlphaType);
+        SkImageInfo info;
+        if (!isImageDataPremultiplied)
+            info = SkImageInfo::Make(cropRect.width(), dstHeight, kBGRA_8888_SkColorType, kUnpremul_SkAlphaType);
+        else
+            info = SkImageInfo::Make(cropRect.width(), dstHeight, kBGRA_8888_SkColorType, kPremul_SkAlphaType);
         int srcPixelBytesPerRow = info.bytesPerPixel() * data->size().width();
         int dstPixelBytesPerRow = info.bytesPerPixel() * cropRect.width();
         if (cropRect == IntRect(IntPoint(), data->size())) {
@@ -362,10 +366,10 @@ ImageBitmap* ImageBitmap::create(HTMLCanvasElement* canvas, const IntRect& cropR
     return new ImageBitmap(canvas, normalizedCropRect, options);
 }
 
-ImageBitmap* ImageBitmap::create(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options)
+ImageBitmap* ImageBitmap::create(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options, const bool& isImageDataPremultiplied)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    return new ImageBitmap(data, normalizedCropRect, options);
+    return new ImageBitmap(data, normalizedCropRect, options, isImageDataPremultiplied);
 }
 
 ImageBitmap* ImageBitmap::create(ImageBitmap* bitmap, const IntRect& cropRect, const ImageBitmapOptions& options)
