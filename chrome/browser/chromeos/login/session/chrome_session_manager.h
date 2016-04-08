@@ -18,7 +18,7 @@ namespace chromeos {
 
 class ChromeSessionManager : public session_manager::SessionManager {
  public:
-  static scoped_ptr<session_manager::SessionManager> CreateSessionManager(
+  static std::unique_ptr<session_manager::SessionManager> CreateSessionManager(
       const base::CommandLine& parsed_command_line,
       Profile* profile,
       bool is_running_test);

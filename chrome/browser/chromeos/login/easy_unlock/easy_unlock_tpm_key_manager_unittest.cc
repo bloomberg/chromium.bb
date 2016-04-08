@@ -207,14 +207,14 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
 
     signin_profile_ = profile_manager_.CreateTestingProfile(
         chrome::kInitialProfile,
-        scoped_ptr<syncable_prefs::TestingPrefServiceSyncable>(),
+        std::unique_ptr<syncable_prefs::TestingPrefServiceSyncable>(),
         base::UTF8ToUTF16(chrome::kInitialProfile), 0 /* avatar id */,
         std::string() /* supervized user id */,
         TestingProfile::TestingFactories());
 
     user_profile_ = profile_manager_.CreateTestingProfile(
         test_account_id_.GetUserEmail(),
-        scoped_ptr<syncable_prefs::TestingPrefServiceSyncable>(),
+        std::unique_ptr<syncable_prefs::TestingPrefServiceSyncable>(),
         base::UTF8ToUTF16(test_account_id_.GetUserEmail()), 0 /* avatar id */,
         std::string() /* supervized user id */,
         TestingProfile::TestingFactories());
@@ -339,8 +339,8 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
 
   // The NSS system slot used by EasyUnlockTPMKeyManagers in tests.
-  scoped_ptr<crypto::ScopedTestSystemNSSKeySlot> test_system_slot_;
-  scoped_ptr<crypto::ScopedTestNSSChromeOSUser> test_nss_user_;
+  std::unique_ptr<crypto::ScopedTestSystemNSSKeySlot> test_system_slot_;
+  std::unique_ptr<crypto::ScopedTestNSSChromeOSUser> test_nss_user_;
 
   // Needed to properly set up signin and user profiles for test.
   user_manager::FakeUserManager* user_manager_;

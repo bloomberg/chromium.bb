@@ -116,7 +116,7 @@ class FileManagerPrivateRequestWebStoreAccessTokenFunction
   bool RunAsync() override;
 
  private:
-  scoped_ptr<google_apis::AuthServiceInterface> auth_service_;
+  std::unique_ptr<google_apis::AuthServiceInterface> auth_service_;
 
   void OnAccessTokenFetched(google_apis::DriveApiErrorCode code,
                             const std::string& access_token);

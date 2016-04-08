@@ -195,7 +195,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
 
   ScopedTestingLocalState local_state_;
 
-  scoped_ptr<DeviceSettingsProvider> provider_;
+  std::unique_ptr<DeviceSettingsProvider> provider_;
 
   base::ScopedPathOverride user_data_dir_override_;
 
@@ -394,7 +394,8 @@ TEST_F(DeviceSettingsProviderTest, LegacyDeviceLocalAccounts) {
 
   // On load, the deprecated spec should have been converted to the new format.
   base::ListValue expected_accounts;
-  scoped_ptr<base::DictionaryValue> entry_dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> entry_dict(
+      new base::DictionaryValue());
   entry_dict->SetString(kAccountsPrefDeviceLocalAccountsKeyId,
                         policy::PolicyBuilder::kFakeUsername);
   entry_dict->SetInteger(kAccountsPrefDeviceLocalAccountsKeyType,

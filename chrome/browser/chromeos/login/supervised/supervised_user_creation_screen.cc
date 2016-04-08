@@ -531,7 +531,7 @@ void SupervisedUserCreationScreen::OnCameraPresenceCheckDone(
 void SupervisedUserCreationScreen::OnGetSupervisedUsers(
     const base::DictionaryValue* users) {
   // Copy for passing to WebUI, contains only id, name and avatar URL.
-  scoped_ptr<base::ListValue> ui_users(new base::ListValue());
+  std::unique_ptr<base::ListValue> ui_users(new base::ListValue());
   SupervisedUserManager* supervised_user_manager =
       ChromeUserManager::Get()->GetSupervisedUserManager();
 

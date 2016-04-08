@@ -4,12 +4,14 @@
 
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
@@ -112,7 +114,7 @@ KeyedService* PlatformKeysServiceFactory::BuildServiceInstanceFor(
       policy_connector->IsManaged(), profile->GetPrefs(),
       policy_connector->policy_service(), context, store);
 
-  service->SetSelectDelegate(make_scoped_ptr(new DefaultSelectDelegate()));
+  service->SetSelectDelegate(base::WrapUnique(new DefaultSelectDelegate()));
   return service;
 }
 

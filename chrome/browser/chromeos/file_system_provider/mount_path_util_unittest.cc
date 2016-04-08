@@ -4,10 +4,10 @@
 
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 
+#include <memory>
 #include <string>
 
 #include "base/files/file.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
@@ -78,9 +78,9 @@ class FileSystemProviderMountPathUtilTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;  // Owned by TestingProfileManager.
-  scoped_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
   FakeChromeUserManager* user_manager_;
   Service* file_system_provider_service_;  // Owned by its factory.
 };

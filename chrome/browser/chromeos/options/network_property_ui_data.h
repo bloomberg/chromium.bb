@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_OPTIONS_NETWORK_PROPERTY_UI_DATA_H_
 #define CHROME_BROWSER_CHROMEOS_OPTIONS_NETWORK_PROPERTY_UI_DATA_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/onc/onc_constants.h"
 
 namespace base {
@@ -46,7 +46,7 @@ class NetworkPropertyUIData {
 
  private:
   ::onc::ONCSource onc_source_;
-  scoped_ptr<base::Value> default_value_;
+  std::unique_ptr<base::Value> default_value_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkPropertyUIData);
 };

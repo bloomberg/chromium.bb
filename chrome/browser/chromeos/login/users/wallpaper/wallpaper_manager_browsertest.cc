@@ -157,11 +157,11 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
 
   ash::DesktopBackgroundController* controller_;
   PrefService* local_state_;
-  scoped_ptr<base::CommandLine> wallpaper_manager_command_line_;
+  std::unique_ptr<base::CommandLine> wallpaper_manager_command_line_;
 
   // Directory created by CreateCmdlineWallpapers () to store default
   // wallpaper images.
-  scoped_ptr<base::ScopedTempDir> wallpaper_dir_;
+  std::unique_ptr<base::ScopedTempDir> wallpaper_dir_;
 
   const AccountId test_account_id1_ = AccountId::FromUserEmail(kTestUser1);
   const AccountId test_account_id2_ = AccountId::FromUserEmail(kTestUser2);
@@ -515,7 +515,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
   wallpaper_manager->SetUserWallpaperInfo(test_account_id1_, info, true);
   wallpaper_manager->SetUserWallpaperNow(test_account_id1_);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
-  scoped_ptr<WallpaperManager::TestApi> test_api;
+  std::unique_ptr<WallpaperManager::TestApi> test_api;
   test_api.reset(new WallpaperManager::TestApi(wallpaper_manager));
   // Verify SetUserWallpaperNow updates wallpaper cache.
   gfx::ImageSkia cached_wallpaper;
@@ -543,7 +543,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
   // (simulate DesktopBackgroundController::UpdateDisplay()).
   wallpaper_manager->UpdateWallpaper(true);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
-  scoped_ptr<WallpaperManager::TestApi> test_api;
+  std::unique_ptr<WallpaperManager::TestApi> test_api;
   test_api.reset(new WallpaperManager::TestApi(wallpaper_manager));
   gfx::ImageSkia cached_wallpaper;
   // Previous custom wallpaper should be cached after user login.

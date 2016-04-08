@@ -137,7 +137,7 @@ class CertificateProviderServiceTest : public testing::Test {
         service_(new CertificateProviderService()),
         cert_info1_(CreateCertInfo("client_1.pem")),
         cert_info2_(CreateCertInfo("client_2.pem")) {
-    scoped_ptr<TestDelegate> test_delegate(new TestDelegate);
+    std::unique_ptr<TestDelegate> test_delegate(new TestDelegate);
     test_delegate_ = test_delegate.get();
     service_->SetDelegate(std::move(test_delegate));
 
@@ -210,8 +210,8 @@ class CertificateProviderServiceTest : public testing::Test {
   base::ThreadTaskRunnerHandle task_runner_handle_;
   TestDelegate* test_delegate_ = nullptr;
   net::ClientKeyStore* const client_key_store_;
-  scoped_ptr<CertificateProvider> certificate_provider_;
-  scoped_ptr<CertificateProviderService> service_;
+  std::unique_ptr<CertificateProvider> certificate_provider_;
+  std::unique_ptr<CertificateProviderService> service_;
   const certificate_provider::CertificateInfo cert_info1_;
   const certificate_provider::CertificateInfo cert_info2_;
 

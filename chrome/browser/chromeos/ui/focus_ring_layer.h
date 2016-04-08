@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_UI_FOCUS_RING_LAYER_H_
 #define CHROME_BROWSER_CHROMEOS_UI_FOCUS_RING_LAYER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -62,7 +63,7 @@ class FocusRingLayer : public ui::LayerDelegate {
   aura::Window* root_window_;
 
   // The current layer.
-  scoped_ptr<ui::Layer> layer_;
+  std::unique_ptr<ui::Layer> layer_;
 
   // The bounding rectangle of the focused object, in |root_window_|
   // coordinates.

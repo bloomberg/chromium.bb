@@ -37,8 +37,8 @@ class CertNotAllowedPredicate {
 }  // namespace
 
 ClientCertStoreChromeOS::ClientCertStoreChromeOS(
-    scoped_ptr<CertificateProvider> cert_provider,
-    scoped_ptr<CertFilter> cert_filter,
+    std::unique_ptr<CertificateProvider> cert_provider,
+    std::unique_ptr<CertFilter> cert_filter,
     const PasswordDelegateFactory& password_delegate_factory)
     : cert_provider_(std::move(cert_provider)),
       cert_filter_(std::move(cert_filter)) {}
@@ -75,7 +75,8 @@ void ClientCertStoreChromeOS::GotAdditionalCerts(
     net::CertificateList* selected_certs,
     const base::Closure& callback,
     const net::CertificateList& additional_certs) {
-  scoped_ptr<crypto::CryptoModuleBlockingPasswordDelegate> password_delegate;
+  std::unique_ptr<crypto::CryptoModuleBlockingPasswordDelegate>
+      password_delegate;
   if (!password_delegate_factory_.is_null()) {
     password_delegate.reset(
         password_delegate_factory_.Run(request->host_and_port));
@@ -95,7 +96,8 @@ void ClientCertStoreChromeOS::GotAdditionalCerts(
 }
 
 void ClientCertStoreChromeOS::GetAndFilterCertsOnWorkerThread(
-    scoped_ptr<crypto::CryptoModuleBlockingPasswordDelegate> password_delegate,
+    std::unique_ptr<crypto::CryptoModuleBlockingPasswordDelegate>
+        password_delegate,
     const net::SSLCertRequestInfo* request,
     const net::CertificateList& additional_certs,
     net::CertificateList* selected_certs) {

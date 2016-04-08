@@ -102,7 +102,7 @@ class DeviceLocalAccountPolicyServiceTestBase
   MockDeviceManagementService mock_device_management_service_;
   FakeAffiliatedInvalidationServiceProvider
       affiliated_invalidation_service_provider_;
-  scoped_ptr<DeviceLocalAccountPolicyService> service_;
+  std::unique_ptr<DeviceLocalAccountPolicyService> service_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountPolicyServiceTestBase);
@@ -507,7 +507,7 @@ class DeviceLocalAccountPolicyExtensionCacheTest
   base::FilePath GetCacheDirectoryForAccountID(const std::string& account_id);
 
   base::ScopedTempDir cache_root_dir_;
-  scoped_ptr<base::ScopedPathOverride> cache_root_dir_override_;
+  std::unique_ptr<base::ScopedPathOverride> cache_root_dir_override_;
 
   base::FilePath cache_dir_1_;
   base::FilePath cache_dir_2_;
@@ -785,7 +785,7 @@ class DeviceLocalAccountPolicyProviderTest
   void TearDown() override;
 
   SchemaRegistry schema_registry_;
-  scoped_ptr<DeviceLocalAccountPolicyProvider> provider_;
+  std::unique_ptr<DeviceLocalAccountPolicyProvider> provider_;
   MockConfigurationPolicyObserver provider_observer_;
 
  private:

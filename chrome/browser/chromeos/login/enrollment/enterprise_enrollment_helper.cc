@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper_impl.h"
 
 namespace chromeos {
@@ -22,7 +23,7 @@ void EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
 }
 
 // static
-scoped_ptr<EnterpriseEnrollmentHelper> EnterpriseEnrollmentHelper::Create(
+std::unique_ptr<EnterpriseEnrollmentHelper> EnterpriseEnrollmentHelper::Create(
     EnrollmentStatusConsumer* status_consumer,
     const policy::EnrollmentConfig& enrollment_config,
     const std::string& enrolling_user_domain) {
@@ -34,10 +35,10 @@ scoped_ptr<EnterpriseEnrollmentHelper> EnterpriseEnrollmentHelper::Create(
     create_mock_enrollment_helper_ = nullptr;
     EnterpriseEnrollmentHelper* helper = enrollment_helper_allocator(
         status_consumer, enrollment_config, enrolling_user_domain);
-    return make_scoped_ptr(helper);
+    return base::WrapUnique(helper);
   }
 
-  return make_scoped_ptr(new EnterpriseEnrollmentHelperImpl(
+  return base::WrapUnique(new EnterpriseEnrollmentHelperImpl(
       status_consumer, enrollment_config, enrolling_user_domain));
 }
 

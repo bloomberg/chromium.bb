@@ -125,9 +125,9 @@ void StartupAppLauncher::LoadOAuthFileOnBlockingPool(
   base::FilePath user_data_dir;
   CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
   base::FilePath auth_file = user_data_dir.Append(kOAuthFileName);
-  scoped_ptr<JSONFileValueDeserializer> deserializer(
+  std::unique_ptr<JSONFileValueDeserializer> deserializer(
       new JSONFileValueDeserializer(user_data_dir.Append(kOAuthFileName)));
-  scoped_ptr<base::Value> value =
+  std::unique_ptr<base::Value> value =
       deserializer->Deserialize(&error_code, &error_msg);
   base::DictionaryValue* dict = NULL;
   if (error_code != JSONFileValueDeserializer::JSON_NO_ERROR ||

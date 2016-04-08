@@ -127,7 +127,7 @@ void WebUIScreenLockerTester::SetPassword(const std::string& password) {
 
 std::string WebUIScreenLockerTester::GetPassword() {
   std::string result;
-  scoped_ptr<base::Value> v = content::ExecuteScriptAndGetValue(
+  std::unique_ptr<base::Value> v = content::ExecuteScriptAndGetValue(
       RenderViewHost()->GetMainFrame(),
       "$('pod-row').pods[0].passwordElement.value;");
   CHECK(v->GetAsString(&result));
@@ -142,7 +142,7 @@ void WebUIScreenLockerTester::EnterPassword(const std::string& password) {
   ASSERT_EQ(password, GetPassword());
 
   // Verify that "reauth" warning is hidden.
-  scoped_ptr<base::Value> v = content::ExecuteScriptAndGetValue(
+  std::unique_ptr<base::Value> v = content::ExecuteScriptAndGetValue(
       RenderViewHost()->GetMainFrame(),
       "window.getComputedStyle("
       "    $('pod-row').pods[0].querySelector('.reauth-hint-container'))"

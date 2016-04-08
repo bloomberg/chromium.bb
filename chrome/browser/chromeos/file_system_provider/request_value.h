@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_REQUEST_VALUE_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_REQUEST_VALUE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
 
 namespace chromeos {
@@ -25,35 +25,36 @@ class RequestValue {
 
   virtual ~RequestValue();
 
-  static scoped_ptr<RequestValue> CreateForUnmountSuccess(
-      scoped_ptr<extensions::api::file_system_provider_internal::
-                     UnmountRequestedSuccess::Params> params);
+  static std::unique_ptr<RequestValue> CreateForUnmountSuccess(
+      std::unique_ptr<extensions::api::file_system_provider_internal::
+                          UnmountRequestedSuccess::Params> params);
 
-  static scoped_ptr<RequestValue> CreateForGetMetadataSuccess(
-      scoped_ptr<extensions::api::file_system_provider_internal::
-                     GetMetadataRequestedSuccess::Params> params);
+  static std::unique_ptr<RequestValue> CreateForGetMetadataSuccess(
+      std::unique_ptr<extensions::api::file_system_provider_internal::
+                          GetMetadataRequestedSuccess::Params> params);
 
-  static scoped_ptr<RequestValue> CreateForGetActionsSuccess(
-      scoped_ptr<extensions::api::file_system_provider_internal::
-                     GetActionsRequestedSuccess::Params> params);
+  static std::unique_ptr<RequestValue> CreateForGetActionsSuccess(
+      std::unique_ptr<extensions::api::file_system_provider_internal::
+                          GetActionsRequestedSuccess::Params> params);
 
-  static scoped_ptr<RequestValue> CreateForReadDirectorySuccess(
-      scoped_ptr<extensions::api::file_system_provider_internal::
-                     ReadDirectoryRequestedSuccess::Params> params);
+  static std::unique_ptr<RequestValue> CreateForReadDirectorySuccess(
+      std::unique_ptr<extensions::api::file_system_provider_internal::
+                          ReadDirectoryRequestedSuccess::Params> params);
 
-  static scoped_ptr<RequestValue> CreateForReadFileSuccess(
-      scoped_ptr<extensions::api::file_system_provider_internal::
-                     ReadFileRequestedSuccess::Params> params);
+  static std::unique_ptr<RequestValue> CreateForReadFileSuccess(
+      std::unique_ptr<extensions::api::file_system_provider_internal::
+                          ReadFileRequestedSuccess::Params> params);
 
-  static scoped_ptr<RequestValue> CreateForOperationSuccess(
-      scoped_ptr<extensions::api::file_system_provider_internal::
-                     OperationRequestedSuccess::Params> params);
+  static std::unique_ptr<RequestValue> CreateForOperationSuccess(
+      std::unique_ptr<extensions::api::file_system_provider_internal::
+                          OperationRequestedSuccess::Params> params);
 
-  static scoped_ptr<RequestValue> CreateForOperationError(
-      scoped_ptr<extensions::api::file_system_provider_internal::
-                     OperationRequestedError::Params> params);
+  static std::unique_ptr<RequestValue> CreateForOperationError(
+      std::unique_ptr<extensions::api::file_system_provider_internal::
+                          OperationRequestedError::Params> params);
 
-  static scoped_ptr<RequestValue> CreateForTesting(const std::string& params);
+  static std::unique_ptr<RequestValue> CreateForTesting(
+      const std::string& params);
 
   const extensions::api::file_system_provider_internal::
       UnmountRequestedSuccess::Params*
@@ -100,24 +101,28 @@ class RequestValue {
   const std::string* testing_params() const { return testing_params_.get(); }
 
  private:
-  scoped_ptr<extensions::api::file_system_provider_internal::
-                 UnmountRequestedSuccess::Params> unmount_success_params_;
-  scoped_ptr<extensions::api::file_system_provider_internal::
-                 GetMetadataRequestedSuccess::Params>
+  std::unique_ptr<extensions::api::file_system_provider_internal::
+                      UnmountRequestedSuccess::Params>
+      unmount_success_params_;
+  std::unique_ptr<extensions::api::file_system_provider_internal::
+                      GetMetadataRequestedSuccess::Params>
       get_metadata_success_params_;
-  scoped_ptr<extensions::api::file_system_provider_internal::
-                 GetActionsRequestedSuccess::Params>
+  std::unique_ptr<extensions::api::file_system_provider_internal::
+                      GetActionsRequestedSuccess::Params>
       get_actions_success_params_;
-  scoped_ptr<extensions::api::file_system_provider_internal::
-                 ReadDirectoryRequestedSuccess::Params>
+  std::unique_ptr<extensions::api::file_system_provider_internal::
+                      ReadDirectoryRequestedSuccess::Params>
       read_directory_success_params_;
-  scoped_ptr<extensions::api::file_system_provider_internal::
-                 ReadFileRequestedSuccess::Params> read_file_success_params_;
-  scoped_ptr<extensions::api::file_system_provider_internal::
-                 OperationRequestedSuccess::Params> operation_success_params_;
-  scoped_ptr<extensions::api::file_system_provider_internal::
-                 OperationRequestedError::Params> operation_error_params_;
-  scoped_ptr<std::string> testing_params_;
+  std::unique_ptr<extensions::api::file_system_provider_internal::
+                      ReadFileRequestedSuccess::Params>
+      read_file_success_params_;
+  std::unique_ptr<extensions::api::file_system_provider_internal::
+                      OperationRequestedSuccess::Params>
+      operation_success_params_;
+  std::unique_ptr<extensions::api::file_system_provider_internal::
+                      OperationRequestedError::Params>
+      operation_error_params_;
+  std::unique_ptr<std::string> testing_params_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestValue);
 };

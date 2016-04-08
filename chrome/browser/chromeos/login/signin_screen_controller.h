@@ -69,8 +69,8 @@ class SignInScreenController : public user_manager::RemoveUserDelegate,
   // Reference to the WebUI handling layer for the login screen
   LoginDisplayWebUIHandler* webui_handler_ = nullptr;
 
-  scoped_ptr<GaiaScreen> gaia_screen_;
-  scoped_ptr<UserSelectionScreen> user_selection_screen_;
+  std::unique_ptr<GaiaScreen> gaia_screen_;
+  std::unique_ptr<UserSelectionScreen> user_selection_screen_;
 
   // Used for notifications during the login process.
   content::NotificationRegistrar registrar_;

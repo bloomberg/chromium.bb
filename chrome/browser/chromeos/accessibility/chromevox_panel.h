@@ -52,7 +52,7 @@ class ChromeVoxPanel : public views::WidgetDelegate,
 
  private:
   views::Widget* widget_;
-  scoped_ptr<ChromeVoxPanelWebContentsObserver> web_contents_observer_;
+  std::unique_ptr<ChromeVoxPanelWebContentsObserver> web_contents_observer_;
   views::View* web_view_;
   bool panel_fullscreen_;
 

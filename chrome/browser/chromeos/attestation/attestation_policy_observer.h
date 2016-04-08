@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ATTESTATION_ATTESTATION_POLICY_OBSERVER_H_
 #define CHROME_BROWSER_CHROMEOS_ATTESTATION_ATTESTATION_POLICY_OBSERVER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 
@@ -93,11 +93,11 @@ class AttestationPolicyObserver {
   policy::CloudPolicyClient* policy_client_;
   CryptohomeClient* cryptohome_client_;
   AttestationFlow* attestation_flow_;
-  scoped_ptr<AttestationFlow> default_attestation_flow_;
+  std::unique_ptr<AttestationFlow> default_attestation_flow_;
   int num_retries_;
   int retry_delay_;
 
-  scoped_ptr<CrosSettings::ObserverSubscription> attestation_subscription_;
+  std::unique_ptr<CrosSettings::ObserverSubscription> attestation_subscription_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

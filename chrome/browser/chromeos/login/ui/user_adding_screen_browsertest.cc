@@ -93,7 +93,7 @@ class UserAddingScreenTest : public LoginManagerTest,
  private:
   int user_adding_started_ = 0;
   int user_adding_finished_ = 0;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   bool finished_ = false;  // True if OnUserAddingFinished() has been called
                            // before WaitUntilUserAddingFinishedOrCancelled().
 

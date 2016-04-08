@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "ash/audio/sounds.h"
@@ -22,7 +24,6 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -1048,7 +1049,8 @@ void AccessibilityManager::CheckBrailleState() {
 }
 
 void AccessibilityManager::ReceiveBrailleDisplayState(
-    scoped_ptr<extensions::api::braille_display_private::DisplayState> state) {
+    std::unique_ptr<extensions::api::braille_display_private::DisplayState>
+        state) {
   OnBrailleDisplayStateChanged(*state);
 }
 
@@ -1241,9 +1243,8 @@ void AccessibilityManager::InjectChromeVox(RenderViewHost* render_view_host) {
   LoadChromeVoxExtension(profile_, render_view_host, base::Closure());
 }
 
-scoped_ptr<AccessibilityStatusSubscription>
-    AccessibilityManager::RegisterCallback(
-        const AccessibilityStatusCallback& cb) {
+std::unique_ptr<AccessibilityStatusSubscription>
+AccessibilityManager::RegisterCallback(const AccessibilityStatusCallback& cb) {
   return callback_list_.Add(cb);
 }
 
@@ -1405,8 +1406,8 @@ void AccessibilityManager::PostLoadChromeVox(Profile* profile) {
         extensions::EventRouter::Get(profile);
     CHECK(event_router);
 
-    scoped_ptr<base::ListValue> event_args(new base::ListValue());
-    scoped_ptr<extensions::Event> event(new extensions::Event(
+    std::unique_ptr<base::ListValue> event_args(new base::ListValue());
+    std::unique_ptr<extensions::Event> event(new extensions::Event(
         extensions::events::ACCESSIBILITY_PRIVATE_ON_INTRODUCE_CHROME_VOX,
         extensions::api::accessibility_private::OnIntroduceChromeVox::
             kEventName,

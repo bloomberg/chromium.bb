@@ -340,11 +340,10 @@ IN_PROC_BROWSER_TEST_F(FileBrowserHandlerExtensionTest, SelectionFailed) {
   select_file_function->set_has_callback(true);
   select_file_function->set_user_gesture(true);
 
-  scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
-      utils::RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::DictionaryValue> result(
+      utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
           select_file_function.get(),
-          "[{\"suggestedName\": \"some_file_name.txt\"}]",
-          browser())));
+          "[{\"suggestedName\": \"some_file_name.txt\"}]", browser())));
 
   EXPECT_FALSE(extensions::api_test_utils::GetBoolean(result.get(), "success"));
   base::DictionaryValue* entry_info;
@@ -369,8 +368,8 @@ IN_PROC_BROWSER_TEST_F(FileBrowserHandlerExtensionTest, SuggestedFullPath) {
   select_file_function->set_has_callback(true);
   select_file_function->set_user_gesture(true);
 
-  scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
-      utils::RunFunctionAndReturnSingleResult(
+  std::unique_ptr<base::DictionaryValue> result(
+      utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
           select_file_function.get(),
           "[{\"suggestedName\": \"/path_to_file/some_file_name.txt\"}]",
           browser())));

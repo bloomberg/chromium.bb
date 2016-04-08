@@ -127,7 +127,7 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
   // extensions::WebstoreDataFetcherDelegate overrides:
   void OnWebstoreRequestFailure() override;
   void OnWebstoreResponseParseSuccess(
-      scoped_ptr<base::DictionaryValue> webstore_data) override;
+      std::unique_ptr<base::DictionaryValue> webstore_data) override;
   void OnWebstoreResponseParseFailure(const std::string& error) override;
 
   // Helper function for testing for the existence of |key| in
@@ -153,7 +153,7 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
   gfx::ImageSkia icon_;
   std::string required_platform_version_;
 
-  scoped_ptr<extensions::WebstoreDataFetcher> webstore_fetcher_;
+  std::unique_ptr<extensions::WebstoreDataFetcher> webstore_fetcher_;
   base::FilePath icon_path_;
 
   base::FilePath crx_file_;

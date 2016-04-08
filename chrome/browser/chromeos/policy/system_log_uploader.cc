@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "system_log_uploader.h"
-
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
@@ -22,6 +21,7 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_request_headers.h"
+#include "system_log_uploader.h"
 
 namespace {
 // The maximum number of successive retries.
@@ -41,8 +41,8 @@ const char* const kSystemLogFileNames[] = {
 
 // Reads the system log files as binary files, anonymizes data, stores the files
 // as pairs (file name, data) and returns. Called on blocking thread.
-scoped_ptr<policy::SystemLogUploader::SystemLogs> ReadFiles() {
-  scoped_ptr<policy::SystemLogUploader::SystemLogs> system_logs(
+std::unique_ptr<policy::SystemLogUploader::SystemLogs> ReadFiles() {
+  std::unique_ptr<policy::SystemLogUploader::SystemLogs> system_logs(
       new policy::SystemLogUploader::SystemLogs());
   feedback::AnonymizerTool anonymizer;
   for (auto const file_path : kSystemLogFileNames) {
@@ -70,7 +70,7 @@ class SystemLogDelegate : public policy::SystemLogUploader::Delegate {
   // SystemLogUploader::Delegate:
   void LoadSystemLogs(const LogUploadCallback& upload_callback) override;
 
-  scoped_ptr<policy::UploadJob> CreateUploadJob(
+  std::unique_ptr<policy::UploadJob> CreateUploadJob(
       const GURL& upload_url,
       policy::UploadJob::Delegate* delegate) override;
 
@@ -91,7 +91,7 @@ void SystemLogDelegate::LoadSystemLogs(
                                    upload_callback);
 }
 
-scoped_ptr<policy::UploadJob> SystemLogDelegate::CreateUploadJob(
+std::unique_ptr<policy::UploadJob> SystemLogDelegate::CreateUploadJob(
     const GURL& upload_url,
     policy::UploadJob::Delegate* delegate) {
   chromeos::DeviceOAuth2TokenService* device_oauth2_token_service =
@@ -101,10 +101,11 @@ scoped_ptr<policy::UploadJob> SystemLogDelegate::CreateUploadJob(
       g_browser_process->system_request_context();
   std::string robot_account_id =
       device_oauth2_token_service->GetRobotAccountId();
-  return scoped_ptr<policy::UploadJob>(new policy::UploadJobImpl(
+  return std::unique_ptr<policy::UploadJob>(new policy::UploadJobImpl(
       upload_url, robot_account_id, device_oauth2_token_service,
       system_request_context, delegate,
-      make_scoped_ptr(new policy::UploadJobImpl::RandomMimeBoundaryGenerator)));
+      base::WrapUnique(
+          new policy::UploadJobImpl::RandomMimeBoundaryGenerator)));
 }
 
 // Returns the system log upload frequency.
@@ -155,7 +156,7 @@ const char* const SystemLogUploader::kContentTypePlainText = "text/plain";
 const char* const SystemLogUploader::kNameFieldTemplate = "file%d";
 
 SystemLogUploader::SystemLogUploader(
-    scoped_ptr<Delegate> syslog_delegate,
+    std::unique_ptr<Delegate> syslog_delegate,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : retry_count_(0),
       upload_frequency_(GetUploadFrequency()),
@@ -236,7 +237,8 @@ void SystemLogUploader::RefreshUploadSettings() {
     upload_enabled_ = false;
 }
 
-void SystemLogUploader::UploadSystemLogs(scoped_ptr<SystemLogs> system_logs) {
+void SystemLogUploader::UploadSystemLogs(
+    std::unique_ptr<SystemLogs> system_logs) {
   // Must be called on the main thread.
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!upload_job_);
@@ -249,8 +251,8 @@ void SystemLogUploader::UploadSystemLogs(scoped_ptr<SystemLogs> system_logs) {
   int file_number = 1;
   for (const auto& syslog_entry : *system_logs) {
     std::map<std::string, std::string> header_fields;
-    scoped_ptr<std::string> data =
-        make_scoped_ptr(new std::string(syslog_entry.second));
+    std::unique_ptr<std::string> data =
+        base::WrapUnique(new std::string(syslog_entry.second));
     header_fields.insert(std::make_pair(kFileTypeHeaderName, kFileTypeLogFile));
     header_fields.insert(std::make_pair(net::HttpRequestHeaders::kContentType,
                                         kContentTypePlainText));

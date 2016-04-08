@@ -16,7 +16,7 @@ class DeviceCommandsFactoryChromeOS : public RemoteCommandsFactory {
   ~DeviceCommandsFactoryChromeOS() override;
 
   // RemoteCommandsFactory:
-  scoped_ptr<RemoteCommandJob> BuildJobForType(
+  std::unique_ptr<RemoteCommandJob> BuildJobForType(
       enterprise_management::RemoteCommand_Type type) override;
 
  private:

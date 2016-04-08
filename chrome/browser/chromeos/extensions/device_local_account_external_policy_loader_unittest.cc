@@ -119,7 +119,7 @@ class DeviceLocalAccountExternalPolicyLoaderTest : public testing::Test {
 
   scoped_refptr<DeviceLocalAccountExternalPolicyLoader> loader_;
   MockExternalPolicyProviderVisitor visitor_;
-  scoped_ptr<extensions::ExternalProviderImpl> provider_;
+  std::unique_ptr<extensions::ExternalProviderImpl> provider_;
 
   content::InProcessUtilityThreadHelper in_process_utility_thread_helper_;
 
@@ -175,7 +175,7 @@ void DeviceLocalAccountExternalPolicyLoaderTest::
 }
 
 void DeviceLocalAccountExternalPolicyLoaderTest::SetForceInstallListPolicy() {
-  scoped_ptr<base::ListValue> forcelist(new base::ListValue);
+  std::unique_ptr<base::ListValue> forcelist(new base::ListValue);
   forcelist->AppendString("invalid");
   forcelist->AppendString(base::StringPrintf(
       "%s;%s",

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/extensions/users_private/users_private_delegate.h"
@@ -30,12 +31,12 @@ class TestPrefsUtil : public PrefsUtil {
  public:
   explicit TestPrefsUtil(Profile* profile) : PrefsUtil(profile) {}
 
-  scoped_ptr<api::settings_private::PrefObject> GetPref(
+  std::unique_ptr<api::settings_private::PrefObject> GetPref(
       const std::string& name) override {
     if (name != "cros.accounts.users")
       return PrefsUtil::GetPref(name);
 
-    scoped_ptr<api::settings_private::PrefObject> pref_object(
+    std::unique_ptr<api::settings_private::PrefObject> pref_object(
         new api::settings_private::PrefObject());
     pref_object->key = name;
     pref_object->type = api::settings_private::PrefType::PREF_TYPE_LIST;
@@ -98,7 +99,7 @@ class TestDelegate : public UsersPrivateDelegate {
 
  private:
   Profile* profile_;  // weak
-  scoped_ptr<TestPrefsUtil> prefs_util_;
+  std::unique_ptr<TestPrefsUtil> prefs_util_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
@@ -108,10 +109,10 @@ class UsersPrivateApiTest : public ExtensionApiTest {
   UsersPrivateApiTest() {}
   ~UsersPrivateApiTest() override {}
 
-  static scoped_ptr<KeyedService> GetUsersPrivateDelegate(
+  static std::unique_ptr<KeyedService> GetUsersPrivateDelegate(
       content::BrowserContext* profile) {
     CHECK(s_test_delegate_);
-    return make_scoped_ptr(s_test_delegate_);
+    return base::WrapUnique(s_test_delegate_);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

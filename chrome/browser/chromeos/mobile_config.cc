@@ -178,7 +178,7 @@ void MobileConfig::Carrier::InitFromDictionary(
     for (size_t i = 0; i < deals_list->GetSize(); ++i) {
       const base::DictionaryValue* deal_dict = NULL;
       if (deals_list->GetDictionary(i, &deal_dict)) {
-        scoped_ptr<CarrierDeal> deal(new CarrierDeal(deal_dict));
+        std::unique_ptr<CarrierDeal> deal(new CarrierDeal(deal_dict));
         // Filter out deals by initial_locale right away.
         std::vector<std::string>::const_iterator iter =
             std::find(deal->locales().begin(),
@@ -333,7 +333,7 @@ void MobileConfig::ProcessConfig(const std::string& global_config,
   // Global config is mandatory, local config is optional.
   bool global_initialized = false;
   bool local_initialized = true;
-  scoped_ptr<base::DictionaryValue> global_config_root;
+  std::unique_ptr<base::DictionaryValue> global_config_root;
 
   if (!global_config.empty()) {
     global_initialized = LoadManifestFromString(global_config);

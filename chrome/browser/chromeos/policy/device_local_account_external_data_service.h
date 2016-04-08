@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_LOCAL_ACCOUNT_EXTERNAL_DATA_SERVICE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "components/policy/core/common/cloud/resource_cache.h"
@@ -51,7 +51,7 @@ class DeviceLocalAccountExternalDataService
   DeviceLocalAccountPolicyService* parent_;
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
-  scoped_ptr<ResourceCache> resource_cache_;
+  std::unique_ptr<ResourceCache> resource_cache_;
 
   ExternalDataManagerMap external_data_managers_;
 

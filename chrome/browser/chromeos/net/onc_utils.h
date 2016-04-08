@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_NET_ONC_UTILS_H_
 #define CHROME_BROWSER_CHROMEOS_NET_ONC_UTILS_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/onc/onc_constants.h"
 
 class PrefService;

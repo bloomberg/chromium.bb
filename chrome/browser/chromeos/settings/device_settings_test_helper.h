@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_DEVICE_SETTINGS_TEST_HELPER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -190,9 +190,9 @@ class DeviceSettingsTestBase : public testing::Test {
   // Local DeviceSettingsService instance for tests. Avoid using in combination
   // with the global instance (DeviceSettingsService::Get()).
   DeviceSettingsService device_settings_service_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
 
-  scoped_ptr<DBusThreadManagerSetter> dbus_setter_;
+  std::unique_ptr<DBusThreadManagerSetter> dbus_setter_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceSettingsTestBase);

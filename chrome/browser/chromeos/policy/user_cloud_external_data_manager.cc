@@ -4,8 +4,10 @@
 
 #include "chrome/browser/chromeos/policy/user_cloud_external_data_manager.h"
 
+#include <memory>
+
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_store.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -30,12 +32,12 @@ UserCloudExternalDataManager::UserCloudExternalDataManager(
                                    io_task_runner),
       resource_cache_(new ResourceCache(cache_path, backend_task_runner)) {
   SetPolicyStore(policy_store);
-  SetExternalDataStore(make_scoped_ptr(new CloudExternalDataStore(
+  SetExternalDataStore(base::WrapUnique(new CloudExternalDataStore(
       kCacheKey, backend_task_runner, resource_cache_)));
 }
 
 UserCloudExternalDataManager::~UserCloudExternalDataManager() {
-  SetExternalDataStore(scoped_ptr<CloudExternalDataStore>());
+  SetExternalDataStore(std::unique_ptr<CloudExternalDataStore>());
   backend_task_runner_->DeleteSoon(FROM_HERE, resource_cache_);
 }
 

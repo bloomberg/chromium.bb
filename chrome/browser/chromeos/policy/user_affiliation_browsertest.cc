@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/policy/affiliation_test_helper.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -49,7 +51,7 @@ class UserAffiliationBrowserTest
     chromeos::FakeSessionManagerClient* fake_session_manager_client =
         new chromeos::FakeSessionManagerClient;
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        make_scoped_ptr<chromeos::SessionManagerClient>(
+        base::WrapUnique<chromeos::SessionManagerClient>(
             fake_session_manager_client));
 
     UserPolicyBuilder user_policy;

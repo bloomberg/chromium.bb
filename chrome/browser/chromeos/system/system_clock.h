@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_SYSTEM_CLOCK_H_
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_SYSTEM_CLOCK_H_
 
+#include <memory>
+
 #include "base/callback_list.h"
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromeos/login/login_state.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -73,12 +74,12 @@ class SystemClock : public chromeos::LoginState::Observer,
   base::HourClockType last_focused_pod_hour_clock_type_;
 
   Profile* user_profile_;
-  scoped_ptr<content::NotificationRegistrar> registrar_;
-  scoped_ptr<PrefChangeRegistrar> user_pref_registrar_;
+  std::unique_ptr<content::NotificationRegistrar> registrar_;
+  std::unique_ptr<PrefChangeRegistrar> user_pref_registrar_;
 
   base::ObserverList<SystemClockObserver> observer_list_;
 
-  scoped_ptr<CrosSettingsObserverSubscription> device_settings_observer_;
+  std::unique_ptr<CrosSettingsObserverSubscription> device_settings_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemClock);
 };

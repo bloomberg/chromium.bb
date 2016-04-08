@@ -137,7 +137,7 @@ void SupervisedUserLoginFlow::OnPasswordChangeDataLoaded(
     return;
   }
   base::Base64Decode(base64_signature, &signature);
-  scoped_ptr<base::DictionaryValue> data_copy(password_data->DeepCopy());
+  std::unique_ptr<base::DictionaryValue> data_copy(password_data->DeepCopy());
   cryptohome::KeyDefinition key(password,
                                 kCryptohomeSupervisedUserKeyLabel,
                                 kCryptohomeSupervisedUserKeyPrivileges);
@@ -184,7 +184,7 @@ void SupervisedUserLoginFlow::OnPasswordChangeDataLoaded(
 }
 
 void SupervisedUserLoginFlow::OnNewKeyAdded(
-    scoped_ptr<base::DictionaryValue> password_data) {
+    std::unique_ptr<base::DictionaryValue> password_data) {
   VLOG(1) << "New key added";
   SupervisedUserAuthentication* auth =
       ChromeUserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
@@ -228,7 +228,7 @@ void SupervisedUserLoginFlow::OnAuthenticationFailure(
 }
 
 void SupervisedUserLoginFlow::OnPasswordUpdated(
-    scoped_ptr<base::DictionaryValue> password_data) {
+    std::unique_ptr<base::DictionaryValue> password_data) {
   VLOG(1) << "Updated password for supervised user";
 
   SupervisedUserAuthentication* auth =

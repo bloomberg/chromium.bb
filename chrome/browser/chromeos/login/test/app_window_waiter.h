@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_TEST_APP_WINDOW_WAITER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_TEST_APP_WINDOW_WAITER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 
@@ -47,7 +47,7 @@ class AppWindowWaiter : public extensions::AppWindowRegistry::Observer {
 
   extensions::AppWindowRegistry* const registry_;
   const std::string app_id_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   WaitType wait_type_ = WAIT_FOR_NONE;
   extensions::AppWindow* window_ = nullptr;
 

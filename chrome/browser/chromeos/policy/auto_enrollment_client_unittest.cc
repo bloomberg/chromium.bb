@@ -192,8 +192,8 @@ class AutoEnrollmentClientTest : public testing::Test {
   content::TestBrowserThreadBundle browser_threads_;
   ScopedTestingLocalState scoped_testing_local_state_;
   TestingPrefServiceSimple* local_state_;
-  scoped_ptr<MockDeviceManagementService> service_;
-  scoped_ptr<AutoEnrollmentClient> client_;
+  std::unique_ptr<MockDeviceManagementService> service_;
+  std::unique_ptr<AutoEnrollmentClient> client_;
   em::DeviceManagementRequest last_request_;
   AutoEnrollmentState state_;
 

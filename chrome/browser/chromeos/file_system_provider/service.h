@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_SERVICE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -14,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -88,7 +88,7 @@ class Service : public KeyedService,
       const FileSystemFactoryCallback& factory_callback);
 
   // Sets a custom Registry implementation. Used by unit tests.
-  void SetRegistryForTesting(scoped_ptr<RegistryInterface> registry);
+  void SetRegistryForTesting(std::unique_ptr<RegistryInterface> registry);
 
   // Mounts a file system provided by an extension with the |extension_id|. If
   // |writable| is set to true, then the file system is mounted in a R/W mode.
@@ -209,7 +209,7 @@ class Service : public KeyedService,
   base::ObserverList<Observer> observers_;
   ProvidedFileSystemMap file_system_map_;  // Owns pointers.
   MountPointNameToKeyMap mount_point_name_to_key_map_;
-  scoped_ptr<RegistryInterface> registry_;
+  std::unique_ptr<RegistryInterface> registry_;
   base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<Service> weak_ptr_factory_;

@@ -4,9 +4,10 @@
 
 #include "chrome/browser/chromeos/login/ui/login_feedback.h"
 
+#include <memory>
+
 #include "ash/wm/window_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/test/app_window_waiter.h"
@@ -31,7 +32,7 @@ class LoginFeedbackTest : public LoginManagerTest {
 // Test feedback UI shows up and is active.
 IN_PROC_BROWSER_TEST_F(LoginFeedbackTest, Basic) {
   Profile* const profile = ProfileHelper::GetSigninProfile();
-  scoped_ptr<LoginFeedback> login_feedback(new LoginFeedback(profile));
+  std::unique_ptr<LoginFeedback> login_feedback(new LoginFeedback(profile));
 
   base::RunLoop run_loop;
   login_feedback->Request("Test feedback", run_loop.QuitClosure());

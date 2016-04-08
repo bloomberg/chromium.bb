@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
 #include "components/user_manager/user_manager.h"
@@ -45,7 +46,8 @@ PolicyCertService::PolicyCertService(const std::string& user_id,
       weak_ptr_factory_(this) {
 }
 
-scoped_ptr<PolicyCertVerifier> PolicyCertService::CreatePolicyCertVerifier() {
+std::unique_ptr<PolicyCertVerifier>
+PolicyCertService::CreatePolicyCertVerifier() {
   base::Closure callback = base::Bind(
       &PolicyCertServiceFactory::SetUsedPolicyCertificates, user_id_);
   cert_verifier_ = new PolicyCertVerifier(
@@ -62,7 +64,7 @@ scoped_ptr<PolicyCertVerifier> PolicyCertService::CreatePolicyCertVerifier() {
   net_conf_updater_->GetWebTrustedCertificates(&trust_anchors);
   OnTrustAnchorsChanged(trust_anchors);
 
-  return make_scoped_ptr(cert_verifier_);
+  return base::WrapUnique(cert_verifier_);
 }
 
 void PolicyCertService::OnTrustAnchorsChanged(
@@ -107,11 +109,11 @@ void PolicyCertService::Shutdown() {
 }
 
 // static
-scoped_ptr<PolicyCertService> PolicyCertService::CreateForTesting(
+std::unique_ptr<PolicyCertService> PolicyCertService::CreateForTesting(
     const std::string& user_id,
     PolicyCertVerifier* verifier,
     user_manager::UserManager* user_manager) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new PolicyCertService(user_id, verifier, user_manager));
 }
 

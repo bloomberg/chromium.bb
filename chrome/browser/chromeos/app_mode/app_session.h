@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_APP_MODE_APP_SESSION_H_
 #define CHROME_BROWSER_CHROMEOS_APP_MODE_APP_SESSION_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_session_plugin_handler_delegate.h"
 
 class Profile;
@@ -57,9 +57,9 @@ class AppSession : public KioskSessionPluginHandlerDelegate {
 
   bool is_shutting_down_ = false;
 
-  scoped_ptr<AppWindowHandler> app_window_handler_;
-  scoped_ptr<BrowserWindowHandler> browser_window_handler_;
-  scoped_ptr<KioskSessionPluginHandler> plugin_handler_;
+  std::unique_ptr<AppWindowHandler> app_window_handler_;
+  std::unique_ptr<BrowserWindowHandler> browser_window_handler_;
+  std::unique_ptr<KioskSessionPluginHandler> plugin_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AppSession);
 };

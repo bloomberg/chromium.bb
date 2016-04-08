@@ -214,7 +214,7 @@ void OAuth2LoginManager::OnRefreshTokenResponse(
 }
 
 void OAuth2LoginManager::OnGetUserInfoResponse(
-    scoped_ptr<base::DictionaryValue> user_info) {
+    std::unique_ptr<base::DictionaryValue> user_info) {
   account_info_fetcher_.reset();
 
   std::string gaia_id;

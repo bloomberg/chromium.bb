@@ -79,7 +79,7 @@ class DevicePolicyCrosBrowserTest : public InProcessBrowserTest {
   DevicePolicyCrosTestHelper test_helper_;
 
   // FakeDBusThreadManager uses FakeSessionManagerClient.
-  scoped_ptr<chromeos::DBusThreadManagerSetter> dbus_setter_;
+  std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter_;
   chromeos::FakeSessionManagerClient* fake_session_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DevicePolicyCrosBrowserTest);

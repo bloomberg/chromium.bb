@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_USERS_FAKE_CHROME_USER_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/user_manager_interface.h"
 #include "components/user_manager/fake_user_manager.h"
@@ -100,14 +100,14 @@ class FakeChromeUserManager : public user_manager::FakeUserManager,
   // Lazily creates default user flow.
   UserFlow* GetDefaultUserFlow() const;
 
-  scoped_ptr<FakeSupervisedUserManager> supervised_user_manager_;
+  std::unique_ptr<FakeSupervisedUserManager> supervised_user_manager_;
   AccountId owner_account_id_ = EmptyAccountId();
 
   BootstrapManager* bootstrap_manager_;
   MultiProfileUserController* multi_profile_user_controller_;
 
   // Lazy-initialized default flow.
-  mutable scoped_ptr<UserFlow> default_flow_;
+  mutable std::unique_ptr<UserFlow> default_flow_;
 
   using FlowMap = std::map<AccountId, UserFlow*>;
 

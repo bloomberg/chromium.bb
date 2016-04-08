@@ -7,13 +7,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -213,7 +213,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // login.
   void SetPublicSessionKeyboardLayoutAndLogin(
       const UserContext& user_context,
-      scoped_ptr<base::ListValue> keyboard_layouts);
+      std::unique_ptr<base::ListValue> keyboard_layouts);
 
   // Starts the actual login process for a public session. Invoked when all
   // preconditions have been verified.
@@ -252,7 +252,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
       TokenHandleUtil::TokenHandleStatus token_handle_status);
 
   // Public session auto-login timer.
-  scoped_ptr<base::OneShotTimer> auto_login_timer_;
+  std::unique_ptr<base::OneShotTimer> auto_login_timer_;
 
   // Public session auto-login timeout, in milliseconds.
   int public_session_auto_login_delay_;
@@ -261,7 +261,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   AccountId public_session_auto_login_account_id_ = EmptyAccountId();
 
   // Used to execute login operations.
-  scoped_ptr<LoginPerformer> login_performer_;
+  std::unique_ptr<LoginPerformer> login_performer_;
 
   // Delegate to forward all authentication status events to.
   // Tests can use this to receive authentication status events.
@@ -274,7 +274,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   LoginDisplayHost* host_;
 
   // Login UI implementation instance.
-  scoped_ptr<LoginDisplay> login_display_;
+  std::unique_ptr<LoginDisplay> login_display_;
 
   // Number of login attempts. Used to show help link when > 1 unsuccessful
   // logins for the same user.
@@ -321,25 +321,27 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Timer for the interval to wait for the reboot after TPM error UI was shown.
   base::OneShotTimer reboot_timer_;
 
-  scoped_ptr<login::NetworkStateHelper> network_state_helper_;
+  std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
 
-  scoped_ptr<CrosSettings::ObserverSubscription> show_user_names_subscription_;
-  scoped_ptr<CrosSettings::ObserverSubscription> allow_new_user_subscription_;
-  scoped_ptr<CrosSettings::ObserverSubscription>
+  std::unique_ptr<CrosSettings::ObserverSubscription>
+      show_user_names_subscription_;
+  std::unique_ptr<CrosSettings::ObserverSubscription>
+      allow_new_user_subscription_;
+  std::unique_ptr<CrosSettings::ObserverSubscription>
       allow_supervised_user_subscription_;
-  scoped_ptr<CrosSettings::ObserverSubscription> allow_guest_subscription_;
-  scoped_ptr<CrosSettings::ObserverSubscription> users_subscription_;
-  scoped_ptr<CrosSettings::ObserverSubscription>
+  std::unique_ptr<CrosSettings::ObserverSubscription> allow_guest_subscription_;
+  std::unique_ptr<CrosSettings::ObserverSubscription> users_subscription_;
+  std::unique_ptr<CrosSettings::ObserverSubscription>
       local_account_auto_login_id_subscription_;
-  scoped_ptr<CrosSettings::ObserverSubscription>
+  std::unique_ptr<CrosSettings::ObserverSubscription>
       local_account_auto_login_delay_subscription_;
 
-  scoped_ptr<BootstrapUserContextInitializer>
+  std::unique_ptr<BootstrapUserContextInitializer>
       bootstrap_user_context_initializer_;
 
-  scoped_ptr<OAuth2TokenInitializer> oauth2_token_initializer_;
+  std::unique_ptr<OAuth2TokenInitializer> oauth2_token_initializer_;
 
-  scoped_ptr<TokenHandleUtil> token_handle_util_;
+  std::unique_ptr<TokenHandleUtil> token_handle_util_;
 
   FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, ExistingUserLogin);
 

@@ -7,12 +7,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_MANAGER_FILEAPI_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_FILEAPI_UTIL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "url/gurl.h"
 
@@ -68,8 +68,9 @@ typedef base::Callback<void(const EntryDefinition& entry_definition)>
 
 // The callback used by ConvertFileDefinitionListToEntryDefinitionList. Returns
 // the result of the conversion as a list.
-typedef base::Callback<void(scoped_ptr<
-    EntryDefinitionList> entry_definition_list)> EntryDefinitionListCallback;
+typedef base::Callback<void(
+    std::unique_ptr<EntryDefinitionList> entry_definition_list)>
+    EntryDefinitionListCallback;
 
 // The callback used by
 // ConvertFileSelectedInfoListToFileChooserFileInfoList. Returns the result of

@@ -86,7 +86,7 @@ class WallpaperFetcher : public net::URLFetcherDelegate {
     }
   }
 
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
   FetchCallback callback_;
 };
 
@@ -177,7 +177,7 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
   // We need to generate thumbnail image anyway to make the current third party
   // wallpaper syncable through different devices.
   image.EnsureRepsForSupportedScales();
-  scoped_ptr<gfx::ImageSkia> deep_copy(image.DeepCopy());
+  std::unique_ptr<gfx::ImageSkia> deep_copy(image.DeepCopy());
   // Generates thumbnail before call api function callback. We can then
   // request thumbnail in the javascript callback.
   task_runner->PostTask(
@@ -187,7 +187,8 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
 }
 
 void WallpaperSetWallpaperFunction::GenerateThumbnail(
-    const base::FilePath& thumbnail_path, scoped_ptr<gfx::ImageSkia> image) {
+    const base::FilePath& thumbnail_path,
+    std::unique_ptr<gfx::ImageSkia> image) {
   DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
       sequence_token_));
   if (!base::PathExists(thumbnail_path.DirName()))
@@ -230,13 +231,13 @@ void WallpaperSetWallpaperFunction::ThumbnailGenerated(
     Profile* profile = Profile::FromBrowserContext(browser_context());
     extensions::EventRouter* event_router =
         extensions::EventRouter::Get(profile);
-    scoped_ptr<base::ListValue> event_args(new base::ListValue());
+    std::unique_ptr<base::ListValue> event_args(new base::ListValue());
     event_args->Append(original_result);
     event_args->Append(thumbnail_result);
     event_args->Append(new base::StringValue(
         extensions::api::wallpaper::ToString(params_->details.layout)));
     event_args->Append(new base::StringValue(extension()->name()));
-    scoped_ptr<extensions::Event> event(new extensions::Event(
+    std::unique_ptr<extensions::Event> event(new extensions::Event(
         extensions::events::WALLPAPER_PRIVATE_ON_WALLPAPER_CHANGED_BY_3RD_PARTY,
         extensions::api::wallpaper_private::OnWallpaperChangedBy3rdParty::
             kEventName,

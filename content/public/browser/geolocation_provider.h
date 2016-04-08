@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_GEOLOCATION_PROVIDER_H_
 
 #include "base/callback_list.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
 namespace content {

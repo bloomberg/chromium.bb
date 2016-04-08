@@ -157,9 +157,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   InputMethodManager::Get()->GetActiveIMEState()->ChangeInputMethod(
       kIdentityIMEID, false /* show_message */);
 
-  scoped_ptr<MockIMEInputContextHandler> mock_input_context(
+  std::unique_ptr<MockIMEInputContextHandler> mock_input_context(
       new MockIMEInputContextHandler());
-  scoped_ptr<MockIMECandidateWindowHandler> mock_candidate_window(
+  std::unique_ptr<MockIMECandidateWindowHandler> mock_candidate_window(
       new MockIMECandidateWindowHandler());
 
   ui::IMEBridge::Get()->SetInputContextHandler(mock_input_context.get());
@@ -240,9 +240,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   InputMethodManager::Get()->GetActiveIMEState()->ChangeInputMethod(
       kAPIArgumentIMEID, false /* show_message */);
 
-  scoped_ptr<MockIMEInputContextHandler> mock_input_context(
+  std::unique_ptr<MockIMEInputContextHandler> mock_input_context(
       new MockIMEInputContextHandler());
-  scoped_ptr<MockIMECandidateWindowHandler> mock_candidate_window(
+  std::unique_ptr<MockIMECandidateWindowHandler> mock_candidate_window(
       new MockIMECandidateWindowHandler());
 
   ui::IMEBridge::Get()->SetInputContextHandler(mock_input_context.get());

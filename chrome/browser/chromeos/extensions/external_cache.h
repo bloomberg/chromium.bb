@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_EXTERNAL_CACHE_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_EXTERNAL_CACHE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/extensions/updater/local_extension_cache.h"
@@ -109,7 +109,7 @@ class ExternalCache : public content::NotificationObserver,
 
   // Replace the list of extensions to cache with |prefs| and perform update
   // checks for these.
-  void UpdateExtensionsList(scoped_ptr<base::DictionaryValue> prefs);
+  void UpdateExtensionsList(std::unique_ptr<base::DictionaryValue> prefs);
 
   // If a user of one of the ExternalCache's extensions detects that
   // the extension is damaged then this method can be used to remove it from
@@ -177,14 +177,14 @@ class ExternalCache : public content::NotificationObserver,
   bool flush_on_put_ = false;
 
   // This is the list of extensions currently configured.
-  scoped_ptr<base::DictionaryValue> extensions_;
+  std::unique_ptr<base::DictionaryValue> extensions_;
 
   // This contains extensions that are both currently configured
   // and that have a valid crx in the cache.
-  scoped_ptr<base::DictionaryValue> cached_extensions_;
+  std::unique_ptr<base::DictionaryValue> cached_extensions_;
 
   // Used to download the extensions and to check for updates.
-  scoped_ptr<extensions::ExtensionDownloader> downloader_;
+  std::unique_ptr<extensions::ExtensionDownloader> downloader_;
 
   // Observes failures to install CRX files.
   content::NotificationRegistrar notification_registrar_;

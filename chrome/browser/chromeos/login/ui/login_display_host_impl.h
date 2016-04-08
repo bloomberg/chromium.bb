@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "ash/shell_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
 #include "chrome/browser/chromeos/login/auth/auth_prewarmer.h"
@@ -201,24 +201,24 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   content::NotificationRegistrar registrar_;
 
   // The controller driving the auto-enrollment check.
-  scoped_ptr<AutoEnrollmentController> auto_enrollment_controller_;
+  std::unique_ptr<AutoEnrollmentController> auto_enrollment_controller_;
 
   // Sign in screen controller.
-  scoped_ptr<ExistingUserController> existing_user_controller_;
+  std::unique_ptr<ExistingUserController> existing_user_controller_;
 
   // OOBE and some screens (camera, recovery) controller.
-  scoped_ptr<WizardController> wizard_controller_;
+  std::unique_ptr<WizardController> wizard_controller_;
 
-  scoped_ptr<SignInScreenController> signin_screen_controller_;
+  std::unique_ptr<SignInScreenController> signin_screen_controller_;
 
   // App launch controller.
-  scoped_ptr<AppLaunchController> app_launch_controller_;
+  std::unique_ptr<AppLaunchController> app_launch_controller_;
 
   // Demo app launcher.
-  scoped_ptr<DemoAppLauncher> demo_app_launcher_;
+  std::unique_ptr<DemoAppLauncher> demo_app_launcher_;
 
   // Make sure chrome won't exit while we are at login/oobe screen.
-  scoped_ptr<ScopedKeepAlive> keep_alive_;
+  std::unique_ptr<ScopedKeepAlive> keep_alive_;
 
   // Has ShutdownDisplayHost() already been called?  Used to avoid posting our
   // own deletion to the message loop twice if the user logs out while we're
@@ -278,14 +278,15 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   base::Closure completion_callback_;
 
   // Active instance of authentication prewarmer.
-  scoped_ptr<AuthPrewarmer> auth_prewarmer_;
+  std::unique_ptr<AuthPrewarmer> auth_prewarmer_;
 
   // A focus ring controller to draw focus ring around view for keyboard
   // driven oobe.
-  scoped_ptr<FocusRingController> focus_ring_controller_;
+  std::unique_ptr<FocusRingController> focus_ring_controller_;
 
   // Handles special keys for keyboard driven oobe.
-  scoped_ptr<KeyboardDrivenOobeKeyHandler> keyboard_driven_oobe_key_handler_;
+  std::unique_ptr<KeyboardDrivenOobeKeyHandler>
+      keyboard_driven_oobe_key_handler_;
 
   FinalizeAnimationType finalize_animation_type_;
 
@@ -307,7 +308,8 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // Keeps a copy of the old Drag'n'Drop client, so that it would be disabled
   // during a login session and restored afterwards.
-  scoped_ptr<aura::client::ScopedDragDropDisabler> scoped_drag_drop_disabler_;
+  std::unique_ptr<aura::client::ScopedDragDropDisabler>
+      scoped_drag_drop_disabler_;
 
   base::WeakPtrFactory<LoginDisplayHostImpl> pointer_factory_;
   base::WeakPtrFactory<LoginDisplayHostImpl> animation_weak_ptr_factory_;

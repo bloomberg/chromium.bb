@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_SESSION_MANAGER_OPERATION_H_
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_SESSION_MANAGER_OPERATION_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_validator.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "net/cert/x509_util_nss.h"
@@ -49,11 +50,11 @@ class SessionManagerOperation {
   void RestartLoad(bool key_changed);
 
   // Accessors for recovering the loaded policy data after completion.
-  scoped_ptr<enterprise_management::PolicyData>& policy_data() {
+  std::unique_ptr<enterprise_management::PolicyData>& policy_data() {
     return policy_data_;
   }
-  scoped_ptr<enterprise_management::ChromeDeviceSettingsProto>&
-      device_settings() {
+  std::unique_ptr<enterprise_management::ChromeDeviceSettingsProto>&
+  device_settings() {
     return device_settings_;
   }
 
@@ -113,8 +114,9 @@ class SessionManagerOperation {
   bool force_key_load_;
 
   bool is_loading_;
-  scoped_ptr<enterprise_management::PolicyData> policy_data_;
-  scoped_ptr<enterprise_management::ChromeDeviceSettingsProto> device_settings_;
+  std::unique_ptr<enterprise_management::PolicyData> policy_data_;
+  std::unique_ptr<enterprise_management::ChromeDeviceSettingsProto>
+      device_settings_;
 
   base::WeakPtrFactory<SessionManagerOperation> weak_factory_;
 
@@ -144,7 +146,7 @@ class StoreSettingsOperation : public SessionManagerOperation {
   // Creates a new store operation.
   StoreSettingsOperation(
       const Callback& callback,
-      scoped_ptr<enterprise_management::PolicyFetchResponse> policy);
+      std::unique_ptr<enterprise_management::PolicyFetchResponse> policy);
   ~StoreSettingsOperation() override;
 
  protected:
@@ -155,7 +157,7 @@ class StoreSettingsOperation : public SessionManagerOperation {
   // Handles the result of the store operation and triggers the load.
   void HandleStoreResult(bool success);
 
-  scoped_ptr<enterprise_management::PolicyFetchResponse> policy_;
+  std::unique_ptr<enterprise_management::PolicyFetchResponse> policy_;
 
   base::WeakPtrFactory<StoreSettingsOperation> weak_factory_;
 

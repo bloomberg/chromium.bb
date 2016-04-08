@@ -6,13 +6,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
@@ -222,7 +222,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
   chromeos::MockSessionManagerClient session_manager_client_;
   UserPolicyBuilder policy_;
   MockCloudPolicyStoreObserver observer_;
-  scoped_ptr<UserCloudPolicyStoreChromeOS> store_;
+  std::unique_ptr<UserCloudPolicyStoreChromeOS> store_;
   const AccountId account_id_ =
       AccountId::FromUserEmail(PolicyBuilder::kFakeUsername);
   const cryptohome::Identification cryptohome_id_ =

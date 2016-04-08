@@ -36,11 +36,11 @@ void ExtensionImeMenuEventRouter::ImeMenuActivationChanged(bool activation) {
   if (!router->HasEventListener(OnImeMenuActivationChanged::kEventName))
     return;
 
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->AppendBoolean(activation);
 
   // The router will only send the event to extensions that are listening.
-  scoped_ptr<extensions::Event> event(new extensions::Event(
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::INPUT_METHOD_PRIVATE_ON_IME_MENU_ACTIVATION_CHANGED,
       OnImeMenuActivationChanged::kEventName, std::move(args)));
   event->restrict_to_browser_context = context_;
@@ -53,10 +53,10 @@ void ExtensionImeMenuEventRouter::ImeMenuListChanged() {
   if (!router->HasEventListener(OnImeMenuListChanged::kEventName))
     return;
 
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
 
   // The router will only send the event to extensions that are listening.
-  scoped_ptr<extensions::Event> event(new extensions::Event(
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::INPUT_METHOD_PRIVATE_ON_IME_MENU_LIST_CHANGED,
       OnImeMenuListChanged::kEventName, std::move(args)));
   event->restrict_to_browser_context = context_;
@@ -95,11 +95,11 @@ void ExtensionImeMenuEventRouter::ImeMenuItemsChanged(
     menu_items.push_back(std::move(menu_item));
   }
 
-  scoped_ptr<base::ListValue> args =
+  std::unique_ptr<base::ListValue> args =
       OnImeMenuItemsChanged::Create(engine_id, menu_items);
 
   // The router will only send the event to extensions that are listening.
-  scoped_ptr<extensions::Event> event(new extensions::Event(
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::INPUT_METHOD_PRIVATE_ON_IME_MENU_ITEMS_CHANGED,
       OnImeMenuItemsChanged::kEventName, std::move(args)));
   event->restrict_to_browser_context = context_;

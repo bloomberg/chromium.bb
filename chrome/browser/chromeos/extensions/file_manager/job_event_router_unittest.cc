@@ -46,7 +46,7 @@ class JobEventRouterImpl : public JobEventRouter {
       const std::string& extension_id,
       extensions::events::HistogramValue histogram_value,
       const std::string& event_name,
-      scoped_ptr<base::ListValue> event_args) override {
+      std::unique_ptr<base::ListValue> event_args) override {
     const base::DictionaryValue* event;
     event_args->GetDictionary(0, &event);
     events.push_back(make_linked_ptr(event->DeepCopy()));
@@ -86,7 +86,7 @@ class JobEventRouterTest : public testing::Test {
     return value;
   }
 
-  scoped_ptr<JobEventRouterImpl> job_event_router;
+  std::unique_ptr<JobEventRouterImpl> job_event_router;
 
  private:
   base::MessageLoop message_loop_;

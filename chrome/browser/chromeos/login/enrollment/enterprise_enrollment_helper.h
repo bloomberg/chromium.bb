@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENTERPRISE_ENROLLMENT_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENTERPRISE_ENROLLMENT_HELPER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 
 class GoogleServiceAuthError;
@@ -67,7 +67,7 @@ class EnterpriseEnrollmentHelper {
   };
 
   // Factory method. Caller takes ownership of the returned object.
-  static scoped_ptr<EnterpriseEnrollmentHelper> Create(
+  static std::unique_ptr<EnterpriseEnrollmentHelper> Create(
       EnrollmentStatusConsumer* status_consumer,
       const policy::EnrollmentConfig& enrollment_config,
       const std::string& enrolling_user_domain);

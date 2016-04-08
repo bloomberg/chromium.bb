@@ -176,14 +176,14 @@ class EnableDebuggingTest : public LoginManagerTest {
 
   // LoginManagerTest overrides:
   void SetUpInProcessBrowserTestFixture() override {
-    scoped_ptr<DBusThreadManagerSetter> dbus_setter =
+    std::unique_ptr<DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
     power_manager_client_ = new FakePowerManagerClient;
     dbus_setter->SetPowerManagerClient(
-        scoped_ptr<PowerManagerClient>(power_manager_client_));
+        std::unique_ptr<PowerManagerClient>(power_manager_client_));
     debug_daemon_client_ = new TestDebugDaemonClient;
     dbus_setter->SetDebugDaemonClient(
-        scoped_ptr<DebugDaemonClient>(debug_daemon_client_));
+        std::unique_ptr<DebugDaemonClient>(debug_daemon_client_));
 
     LoginManagerTest::SetUpInProcessBrowserTestFixture();
   }
@@ -354,10 +354,10 @@ class EnableDebuggingNonDevTest : public EnableDebuggingTest {
 
   // LoginManagerTest overrides:
   void SetUpInProcessBrowserTestFixture() override {
-    scoped_ptr<DBusThreadManagerSetter> dbus_setter =
+    std::unique_ptr<DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
     dbus_setter->SetDebugDaemonClient(
-        scoped_ptr<DebugDaemonClient>(new FakeDebugDaemonClient));
+        std::unique_ptr<DebugDaemonClient>(new FakeDebugDaemonClient));
     LoginManagerTest::SetUpInProcessBrowserTestFixture();
   }
 };

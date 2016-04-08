@@ -19,7 +19,7 @@ class DebugInfoCollector {
  public:
   // Callback for ReadDirectory().
   typedef base::Callback<void(FileError error,
-                              scoped_ptr<ResourceEntryVector> entries)>
+                              std::unique_ptr<ResourceEntryVector> entries)>
       ReadDirectoryCallback;
 
   // Callback for IterateFileCache().

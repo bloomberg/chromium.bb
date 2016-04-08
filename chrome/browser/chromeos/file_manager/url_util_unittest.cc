@@ -4,10 +4,11 @@
 
 #include "chrome/browser/chromeos/file_manager/url_util.h"
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "net/base/escape.h"
@@ -22,7 +23,7 @@ std::string PrettyPrintEscapedJson(const std::string& query) {
   const std::string json = net::UnescapeURLComponent(
       query, net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
                  net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
-  scoped_ptr<base::Value> value = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
   std::string pretty_json;
   base::JSONWriter::WriteWithOptions(
       *value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &pretty_json);

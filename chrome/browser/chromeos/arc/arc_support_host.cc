@@ -36,8 +36,8 @@ const char* const ArcSupportHost::kHostOrigin[] = {
     "chrome-extension://cnbgggchhmkkdmeppjobngjoejnihlei/"};
 
 // static
-scoped_ptr<extensions::NativeMessageHost> ArcSupportHost::Create() {
-  return scoped_ptr<NativeMessageHost>(new ArcSupportHost());
+std::unique_ptr<extensions::NativeMessageHost> ArcSupportHost::Create() {
+  return std::unique_ptr<NativeMessageHost>(new ArcSupportHost());
 }
 
 ArcSupportHost::ArcSupportHost() {
@@ -61,7 +61,7 @@ void ArcSupportHost::Start(Client* client) {
 
 void ArcSupportHost::SendLocalization() {
   DCHECK(client_);
-  scoped_ptr<base::DictionaryValue> localized_strings(
+  std::unique_ptr<base::DictionaryValue> localized_strings(
       new base::DictionaryValue());
   base::string16 device_name = ash::GetChromeOSDeviceName();
   localized_strings->SetString(
@@ -127,7 +127,7 @@ void ArcSupportHost::OnOptInUIShowPage(arc::ArcAuthService::UIPage page,
 }
 
 void ArcSupportHost::OnMessage(const std::string& request_string) {
-  scoped_ptr<base::Value> request_value =
+  std::unique_ptr<base::Value> request_value =
       base::JSONReader::Read(request_string);
   base::DictionaryValue* request;
   if (!request_value || !request_value->GetAsDictionary(&request)) {

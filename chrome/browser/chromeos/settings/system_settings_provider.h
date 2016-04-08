@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_SYSTEM_SETTINGS_PROVIDER_H_
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_SYSTEM_SETTINGS_PROVIDER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
@@ -38,7 +38,7 @@ class SystemSettingsProvider : public CrosSettingsProvider,
   // CrosSettingsProvider implementation.
   void DoSet(const std::string& path, const base::Value& in_value) override;
 
-  scoped_ptr<base::StringValue> timezone_value_;
+  std::unique_ptr<base::StringValue> timezone_value_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemSettingsProvider);
 };

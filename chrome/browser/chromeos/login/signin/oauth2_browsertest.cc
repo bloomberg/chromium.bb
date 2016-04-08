@@ -523,13 +523,13 @@ class FakeGoogle {
 
   ~FakeGoogle() {}
 
-  scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
+  std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
     // The scheme and host of the URL is actually not important but required to
     // get a valid GURL in order to parse |request.relative_url|.
     GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
     LOG(WARNING) << "Requesting page " << request.relative_url;
     std::string request_path = request_url.path();
-    scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
+    std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
     if (request_path == kHelloPagePath) {  // Serving "google" page.
       start_event_.Signal();
       content::BrowserThread::PostTask(
@@ -545,7 +545,7 @@ class FakeGoogle {
       http_response->set_content_type("text/html");
       http_response->set_content(kRandomPageContent);
     } else {
-      return scoped_ptr<HttpResponse>();      // Request not understood.
+      return std::unique_ptr<HttpResponse>();  // Request not understood.
     }
 
     return std::move(http_response);
@@ -770,7 +770,7 @@ IN_PROC_BROWSER_TEST_F(MergeSessionTest, XHRThrottle) {
   // to complete.
   extensions::ResultCatcher catcher;
 
-  scoped_ptr<ExtensionTestMessageListener> non_google_xhr_listener(
+  std::unique_ptr<ExtensionTestMessageListener> non_google_xhr_listener(
       new ExtensionTestMessageListener("non-google-xhr-received", false));
 
   // Load extension with a background page. The background page will

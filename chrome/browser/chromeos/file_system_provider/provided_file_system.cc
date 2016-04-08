@@ -9,6 +9,7 @@
 
 #include "base/files/file.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/chromeos/file_system_provider/notification_manager.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/abort.h"
@@ -104,13 +105,14 @@ struct ProvidedFileSystem::AddWatcherInQueueArgs {
 };
 
 struct ProvidedFileSystem::NotifyInQueueArgs {
-  NotifyInQueueArgs(size_t token,
-                    const base::FilePath& entry_path,
-                    bool recursive,
-                    storage::WatcherManager::ChangeType change_type,
-                    scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
-                    const std::string& tag,
-                    const storage::AsyncFileUtil::StatusCallback& callback)
+  NotifyInQueueArgs(
+      size_t token,
+      const base::FilePath& entry_path,
+      bool recursive,
+      storage::WatcherManager::ChangeType change_type,
+      std::unique_ptr<ProvidedFileSystemObserver::Changes> changes,
+      const std::string& tag,
+      const storage::AsyncFileUtil::StatusCallback& callback)
       : token(token),
         entry_path(entry_path),
         recursive(recursive),
@@ -124,7 +126,7 @@ struct ProvidedFileSystem::NotifyInQueueArgs {
   const base::FilePath entry_path;
   const bool recursive;
   const storage::WatcherManager::ChangeType change_type;
-  const scoped_ptr<ProvidedFileSystemObserver::Changes> changes;
+  const std::unique_ptr<ProvidedFileSystemObserver::Changes> changes;
   const std::string tag;
   const storage::AsyncFileUtil::StatusCallback callback;
 
@@ -160,7 +162,7 @@ void ProvidedFileSystem::SetEventRouterForTesting(
 }
 
 void ProvidedFileSystem::SetNotificationManagerForTesting(
-    scoped_ptr<NotificationManagerInterface> notification_manager) {
+    std::unique_ptr<NotificationManagerInterface> notification_manager) {
   notification_manager_ = std::move(notification_manager);
   request_manager_.reset(new RequestManager(
       profile_, file_system_info_.extension_id(), notification_manager_.get()));
@@ -170,7 +172,7 @@ AbortCallback ProvidedFileSystem::RequestUnmount(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
       REQUEST_UNMOUNT,
-      scoped_ptr<RequestManager::HandlerInterface>(
+      std::unique_ptr<RequestManager::HandlerInterface>(
           new operations::Unmount(event_router_, file_system_info_, callback)));
   if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
@@ -187,10 +189,11 @@ AbortCallback ProvidedFileSystem::GetMetadata(
     const GetMetadataCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
       GET_METADATA,
-      scoped_ptr<RequestManager::HandlerInterface>(new operations::GetMetadata(
-          event_router_, file_system_info_, entry_path, fields, callback)));
+      std::unique_ptr<RequestManager::HandlerInterface>(
+          new operations::GetMetadata(event_router_, file_system_info_,
+                                      entry_path, fields, callback)));
   if (!request_id) {
-    callback.Run(make_scoped_ptr<EntryMetadata>(NULL),
+    callback.Run(base::WrapUnique<EntryMetadata>(NULL),
                  base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
   }
@@ -204,8 +207,9 @@ AbortCallback ProvidedFileSystem::GetActions(
     const GetActionsCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
       GET_ACTIONS,
-      scoped_ptr<RequestManager::HandlerInterface>(new operations::GetActions(
-          event_router_, file_system_info_, entry_paths, callback)));
+      std::unique_ptr<RequestManager::HandlerInterface>(
+          new operations::GetActions(event_router_, file_system_info_,
+                                     entry_paths, callback)));
   if (!request_id) {
     callback.Run(Actions(), base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
@@ -221,7 +225,7 @@ AbortCallback ProvidedFileSystem::ExecuteAction(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
       EXECUTE_ACTION,
-      scoped_ptr<RequestManager::HandlerInterface>(
+      std::unique_ptr<RequestManager::HandlerInterface>(
           new operations::ExecuteAction(event_router_, file_system_info_,
                                         entry_paths, action_id, callback)));
   if (!request_id) {
@@ -238,9 +242,9 @@ AbortCallback ProvidedFileSystem::ReadDirectory(
     const storage::AsyncFileUtil::ReadDirectoryCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
       READ_DIRECTORY,
-      scoped_ptr<RequestManager::HandlerInterface>(
-          new operations::ReadDirectory(
-              event_router_, file_system_info_, directory_path, callback)));
+      std::unique_ptr<RequestManager::HandlerInterface>(
+          new operations::ReadDirectory(event_router_, file_system_info_,
+                                        directory_path, callback)));
   if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY,
                  storage::AsyncFileUtil::EntryList(),
@@ -261,15 +265,10 @@ AbortCallback ProvidedFileSystem::ReadFile(
   TRACE_EVENT1(
       "file_system_provider", "ProvidedFileSystem::ReadFile", "length", length);
   const int request_id = request_manager_->CreateRequest(
-      READ_FILE,
-      make_scoped_ptr<RequestManager::HandlerInterface>(
-          new operations::ReadFile(event_router_,
-                                   file_system_info_,
-                                   file_handle,
-                                   buffer,
-                                   offset,
-                                   length,
-                                   callback)));
+      READ_FILE, base::WrapUnique<RequestManager::HandlerInterface>(
+                     new operations::ReadFile(event_router_, file_system_info_,
+                                              file_handle, buffer, offset,
+                                              length, callback)));
   if (!request_id) {
     callback.Run(0 /* chunk_length */,
                  false /* has_more */,
@@ -285,12 +284,12 @@ AbortCallback ProvidedFileSystem::OpenFile(const base::FilePath& file_path,
                                            OpenFileMode mode,
                                            const OpenFileCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
-      OPEN_FILE,
-      scoped_ptr<RequestManager::HandlerInterface>(new operations::OpenFile(
-          event_router_, file_system_info_, file_path, mode,
-          base::Bind(&ProvidedFileSystem::OnOpenFileCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), file_path, mode,
-                     callback))));
+      OPEN_FILE, std::unique_ptr<RequestManager::HandlerInterface>(
+                     new operations::OpenFile(
+                         event_router_, file_system_info_, file_path, mode,
+                         base::Bind(&ProvidedFileSystem::OnOpenFileCompleted,
+                                    weak_ptr_factory_.GetWeakPtr(), file_path,
+                                    mode, callback))));
   if (!request_id) {
     callback.Run(0 /* file_handle */, base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
@@ -304,11 +303,12 @@ AbortCallback ProvidedFileSystem::CloseFile(
     int file_handle,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
-      CLOSE_FILE,
-      scoped_ptr<RequestManager::HandlerInterface>(new operations::CloseFile(
-          event_router_, file_system_info_, file_handle,
-          base::Bind(&ProvidedFileSystem::OnCloseFileCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), file_handle, callback))));
+      CLOSE_FILE, std::unique_ptr<RequestManager::HandlerInterface>(
+                      new operations::CloseFile(
+                          event_router_, file_system_info_, file_handle,
+                          base::Bind(&ProvidedFileSystem::OnCloseFileCompleted,
+                                     weak_ptr_factory_.GetWeakPtr(),
+                                     file_handle, callback))));
   if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
@@ -323,13 +323,10 @@ AbortCallback ProvidedFileSystem::CreateDirectory(
     bool recursive,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
-      CREATE_DIRECTORY,
-      scoped_ptr<RequestManager::HandlerInterface>(
-          new operations::CreateDirectory(event_router_,
-                                          file_system_info_,
-                                          directory_path,
-                                          recursive,
-                                          callback)));
+      CREATE_DIRECTORY, std::unique_ptr<RequestManager::HandlerInterface>(
+                            new operations::CreateDirectory(
+                                event_router_, file_system_info_,
+                                directory_path, recursive, callback)));
   if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
@@ -345,8 +342,9 @@ AbortCallback ProvidedFileSystem::DeleteEntry(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
       DELETE_ENTRY,
-      scoped_ptr<RequestManager::HandlerInterface>(new operations::DeleteEntry(
-          event_router_, file_system_info_, entry_path, recursive, callback)));
+      std::unique_ptr<RequestManager::HandlerInterface>(
+          new operations::DeleteEntry(event_router_, file_system_info_,
+                                      entry_path, recursive, callback)));
   if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
@@ -361,8 +359,9 @@ AbortCallback ProvidedFileSystem::CreateFile(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
       CREATE_FILE,
-      scoped_ptr<RequestManager::HandlerInterface>(new operations::CreateFile(
-          event_router_, file_system_info_, file_path, callback)));
+      std::unique_ptr<RequestManager::HandlerInterface>(
+          new operations::CreateFile(event_router_, file_system_info_,
+                                     file_path, callback)));
   if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
@@ -378,12 +377,9 @@ AbortCallback ProvidedFileSystem::CopyEntry(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
       COPY_ENTRY,
-      scoped_ptr<RequestManager::HandlerInterface>(
-          new operations::CopyEntry(event_router_,
-                                    file_system_info_,
-                                    source_path,
-                                    target_path,
-                                    callback)));
+      std::unique_ptr<RequestManager::HandlerInterface>(
+          new operations::CopyEntry(event_router_, file_system_info_,
+                                    source_path, target_path, callback)));
   if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
@@ -405,14 +401,10 @@ AbortCallback ProvidedFileSystem::WriteFile(
                length);
   const int request_id = request_manager_->CreateRequest(
       WRITE_FILE,
-      make_scoped_ptr<RequestManager::HandlerInterface>(
-          new operations::WriteFile(event_router_,
-                                    file_system_info_,
-                                    file_handle,
-                                    make_scoped_refptr(buffer),
-                                    offset,
-                                    length,
-                                    callback)));
+      base::WrapUnique<RequestManager::HandlerInterface>(
+          new operations::WriteFile(event_router_, file_system_info_,
+                                    file_handle, make_scoped_refptr(buffer),
+                                    offset, length, callback)));
   if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
@@ -428,12 +420,9 @@ AbortCallback ProvidedFileSystem::MoveEntry(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
       MOVE_ENTRY,
-      scoped_ptr<RequestManager::HandlerInterface>(
-          new operations::MoveEntry(event_router_,
-                                    file_system_info_,
-                                    source_path,
-                                    target_path,
-                                    callback)));
+      std::unique_ptr<RequestManager::HandlerInterface>(
+          new operations::MoveEntry(event_router_, file_system_info_,
+                                    source_path, target_path, callback)));
   if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
@@ -448,9 +437,9 @@ AbortCallback ProvidedFileSystem::Truncate(
     int64_t length,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
-      TRUNCATE,
-      scoped_ptr<RequestManager::HandlerInterface>(new operations::Truncate(
-          event_router_, file_system_info_, file_path, length, callback)));
+      TRUNCATE, std::unique_ptr<RequestManager::HandlerInterface>(
+                    new operations::Truncate(event_router_, file_system_info_,
+                                             file_path, length, callback)));
   if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
@@ -520,14 +509,14 @@ void ProvidedFileSystem::Notify(
     const base::FilePath& entry_path,
     bool recursive,
     storage::WatcherManager::ChangeType change_type,
-    scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
+    std::unique_ptr<ProvidedFileSystemObserver::Changes> changes,
     const std::string& tag,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   const size_t token = watcher_queue_.NewToken();
   watcher_queue_.Enqueue(
       token, base::Bind(&ProvidedFileSystem::NotifyInQueue,
                         base::Unretained(this),  // Outlived by the queue.
-                        base::Passed(make_scoped_ptr(new NotifyInQueueArgs(
+                        base::Passed(base::WrapUnique(new NotifyInQueueArgs(
                             token, entry_path, recursive, change_type,
                             std::move(changes), tag, callback)))));
 }
@@ -535,21 +524,21 @@ void ProvidedFileSystem::Notify(
 void ProvidedFileSystem::Configure(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
-      CONFIGURE,
-      scoped_ptr<RequestManager::HandlerInterface>(new operations::Configure(
-          event_router_, file_system_info_, callback)));
+      CONFIGURE, std::unique_ptr<RequestManager::HandlerInterface>(
+                     new operations::Configure(event_router_, file_system_info_,
+                                               callback)));
   if (!request_id)
     callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
 void ProvidedFileSystem::Abort(int operation_request_id) {
   if (!request_manager_->CreateRequest(
-          ABORT,
-          scoped_ptr<RequestManager::HandlerInterface>(new operations::Abort(
-              event_router_, file_system_info_, operation_request_id,
-              base::Bind(&ProvidedFileSystem::OnAbortCompleted,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         operation_request_id))))) {
+          ABORT, std::unique_ptr<RequestManager::HandlerInterface>(
+                     new operations::Abort(
+                         event_router_, file_system_info_, operation_request_id,
+                         base::Bind(&ProvidedFileSystem::OnAbortCompleted,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    operation_request_id))))) {
     // If the aborting event is not handled, then the operation should simply
     // be not aborted. Instead we'll wait until it completes.
     LOG(ERROR) << "Failed to create an abort request.";
@@ -567,7 +556,7 @@ void ProvidedFileSystem::OnAbortCompleted(int operation_request_id,
     return;
   }
   request_manager_->RejectRequest(operation_request_id,
-                                  make_scoped_ptr(new RequestValue()),
+                                  base::WrapUnique(new RequestValue()),
                                   base::File::FILE_ERROR_ABORT);
 }
 
@@ -601,12 +590,13 @@ AbortCallback ProvidedFileSystem::AddWatcherInQueue(
 
   const int request_id = request_manager_->CreateRequest(
       ADD_WATCHER,
-      scoped_ptr<RequestManager::HandlerInterface>(new operations::AddWatcher(
-          event_router_, file_system_info_, args.entry_path, args.recursive,
-          base::Bind(&ProvidedFileSystem::OnAddWatcherInQueueCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), args.token,
-                     args.entry_path, args.recursive, subscriber,
-                     args.callback))));
+      std::unique_ptr<RequestManager::HandlerInterface>(
+          new operations::AddWatcher(
+              event_router_, file_system_info_, args.entry_path, args.recursive,
+              base::Bind(&ProvidedFileSystem::OnAddWatcherInQueueCompleted,
+                         weak_ptr_factory_.GetWeakPtr(), args.token,
+                         args.entry_path, args.recursive, subscriber,
+                         args.callback))));
 
   if (!request_id) {
     OnAddWatcherInQueueCompleted(args.token, args.entry_path, args.recursive,
@@ -645,7 +635,7 @@ AbortCallback ProvidedFileSystem::RemoveWatcherInQueue(
   // Otherwise, emit an event, and remove the watcher.
   request_manager_->CreateRequest(
       REMOVE_WATCHER,
-      scoped_ptr<RequestManager::HandlerInterface>(
+      std::unique_ptr<RequestManager::HandlerInterface>(
           new operations::RemoveWatcher(
               event_router_, file_system_info_, entry_path, recursive,
               base::Bind(&ProvidedFileSystem::OnRemoveWatcherInQueueCompleted,
@@ -656,7 +646,7 @@ AbortCallback ProvidedFileSystem::RemoveWatcherInQueue(
 }
 
 AbortCallback ProvidedFileSystem::NotifyInQueue(
-    scoped_ptr<NotifyInQueueArgs> args) {
+    std::unique_ptr<NotifyInQueueArgs> args) {
   const WatcherKey key(args->entry_path, args->recursive);
   const auto& watcher_it = watchers_.find(key);
   if (watcher_it == watchers_.end()) {
@@ -779,7 +769,7 @@ void ProvidedFileSystem::OnRemoveWatcherInQueueCompleted(
 }
 
 void ProvidedFileSystem::OnNotifyInQueueCompleted(
-    scoped_ptr<NotifyInQueueArgs> args,
+    std::unique_ptr<NotifyInQueueArgs> args,
     base::File::Error result) {
   if (result != base::File::FILE_OK) {
     args->callback.Run(result);

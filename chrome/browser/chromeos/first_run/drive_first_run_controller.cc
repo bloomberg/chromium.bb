@@ -180,7 +180,7 @@ class DriveWebContentsManager : public content::WebContentsObserver,
   Profile* profile_;
   const std::string app_id_;
   const std::string endpoint_url_;
-  scoped_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<content::WebContents> web_contents_;
   content::NotificationRegistrar registrar_;
   bool started_;
   CompletionCallback completion_callback_;
@@ -459,7 +459,7 @@ void DriveFirstRunController::ShowNotification() {
   data.buttons.push_back(message_center::ButtonInfo(
       l10n_util::GetStringUTF16(IDS_DRIVE_OFFLINE_NOTIFICATION_BUTTON)));
   ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
-  scoped_ptr<message_center::Notification> notification(
+  std::unique_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kDriveOfflineNotificationId,
           base::string16(),  // title

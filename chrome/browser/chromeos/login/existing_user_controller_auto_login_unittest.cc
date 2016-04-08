@@ -63,7 +63,7 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
     existing_user_controller_.reset(
         new ExistingUserController(mock_login_display_host_.get()));
 
-    scoped_ptr<base::DictionaryValue> account(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> account(new base::DictionaryValue);
     account->SetStringWithoutPathExpansion(
         kAccountsPrefDeviceLocalAccountsKeyId, auto_login_user_id_);
     account->SetIntegerWithoutPathExpansion(
@@ -140,7 +140,7 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
   // CreateLoginDisplay() on the |mock_login_display_host_| to get it.
   MockLoginDisplay* mock_login_display_;
 
-  scoped_ptr<MockLoginDisplayHost> mock_login_display_host_;
+  std::unique_ptr<MockLoginDisplayHost> mock_login_display_host_;
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   ScopedTestingLocalState local_state_;
@@ -153,7 +153,7 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
 
   // |existing_user_controller_| must be destroyed before
   // |device_settings_test_helper_|.
-  scoped_ptr<ExistingUserController> existing_user_controller_;
+  std::unique_ptr<ExistingUserController> existing_user_controller_;
 };
 
 TEST_F(ExistingUserControllerAutoLoginTest, StartAutoLoginTimer) {

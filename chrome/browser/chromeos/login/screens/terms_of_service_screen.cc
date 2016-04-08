@@ -129,7 +129,8 @@ void TermsOfServiceScreen::OnURLFetchComplete(const net::URLFetcher* source) {
   download_timer_.Stop();
 
   // Destroy the fetcher when this method returns.
-  scoped_ptr<net::URLFetcher> fetcher(std::move(terms_of_service_fetcher_));
+  std::unique_ptr<net::URLFetcher> fetcher(
+      std::move(terms_of_service_fetcher_));
   if (!actor_)
     return;
 

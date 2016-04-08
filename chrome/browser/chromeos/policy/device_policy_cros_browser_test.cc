@@ -87,7 +87,8 @@ DevicePolicyCrosBrowserTest::~DevicePolicyCrosBrowserTest() {
 void DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture() {
   dbus_setter_ = chromeos::DBusThreadManager::GetSetterForTesting();
   dbus_setter_->SetSessionManagerClient(
-      scoped_ptr<chromeos::SessionManagerClient>(fake_session_manager_client_));
+      std::unique_ptr<chromeos::SessionManagerClient>(
+          fake_session_manager_client_));
   InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 }
 

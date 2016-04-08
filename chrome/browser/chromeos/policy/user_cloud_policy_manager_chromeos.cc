@@ -82,8 +82,8 @@ void OnWildcardCheckCompleted(const std::string& username,
 }  // namespace
 
 UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
-    scoped_ptr<CloudPolicyStore> store,
-    scoped_ptr<CloudExternalDataManager> external_data_manager,
+    std::unique_ptr<CloudPolicyStore> store,
+    std::unique_ptr<CloudExternalDataManager> external_data_manager,
     const base::FilePath& component_policy_cache_path,
     bool wait_for_policy_fetch,
     base::TimeDelta initial_policy_fetch_timeout,
@@ -139,7 +139,7 @@ void UserCloudPolicyManagerChromeOS::Connect(
     request_context = new SystemPolicyRequestContext(
         system_request_context, GetUserAgent());
   }
-  scoped_ptr<CloudPolicyClient> cloud_policy_client(new CloudPolicyClient(
+  std::unique_ptr<CloudPolicyClient> cloud_policy_client(new CloudPolicyClient(
       std::string(), std::string(), kPolicyVerificationKeyHash,
       device_management_service, request_context));
   CreateComponentCloudPolicyService(component_policy_cache_path_,

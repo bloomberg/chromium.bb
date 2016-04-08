@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/values.h"
@@ -57,7 +58,7 @@ IN_PROC_BROWSER_TEST_F(UserCloudExternalDataManagerTest, FetchExternalData) {
                                      &external_data));
   ASSERT_FALSE(external_data.empty());
 
-  scoped_ptr<base::DictionaryValue> metadata =
+  std::unique_ptr<base::DictionaryValue> metadata =
       test::ConstructExternalDataReference(url.spec(), external_data);
 #if defined(OS_CHROMEOS)
   UserCloudPolicyManagerChromeOS* policy_manager =
@@ -72,9 +73,8 @@ IN_PROC_BROWSER_TEST_F(UserCloudExternalDataManagerTest, FetchExternalData) {
   // policy. This is only done because there are no policies that reference
   // external data yet. Once the first such policy is added, switch the test to
   // that policy and stop injecting a manually instantiated ExternalDataFetcher.
-  test::SetExternalDataReference(policy_manager->core(),
-                                 key::kHomepageLocation,
-                                 make_scoped_ptr(metadata->DeepCopy()));
+  test::SetExternalDataReference(policy_manager->core(), key::kHomepageLocation,
+                                 base::WrapUnique(metadata->DeepCopy()));
   content::RunAllPendingInMessageLoop();
 
   ProfilePolicyConnector* policy_connector =
@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(UserCloudExternalDataManagerTest, FetchExternalData) {
   ASSERT_TRUE(policy_entry->external_data_fetcher);
 
   base::RunLoop run_loop;
-  scoped_ptr<std::string> fetched_external_data;
+  std::unique_ptr<std::string> fetched_external_data;
   policy_entry->external_data_fetcher->Fetch(base::Bind(
       &test::ExternalDataFetchCallback,
       &fetched_external_data,

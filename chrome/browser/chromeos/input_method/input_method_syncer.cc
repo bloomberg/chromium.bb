@@ -258,7 +258,7 @@ std::string InputMethodSyncer::AddSupportedInputMethodValues(
       pref_name == prefs::kLanguageEnabledExtensionImes) {
     input_method::InputMethodManager* manager =
         input_method::InputMethodManager::Get();
-    scoped_ptr<input_method::InputMethodDescriptors> supported_descriptors;
+    std::unique_ptr<input_method::InputMethodDescriptors> supported_descriptors;
 
     if (pref_name == prefs::kLanguagePreloadEngines) {
       // Set the known input methods.

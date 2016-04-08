@@ -133,7 +133,7 @@ void TokenHandleFetcher::OnNetworkError(int response_code) {
 }
 
 void TokenHandleFetcher::OnGetTokenInfoResponse(
-    scoped_ptr<base::DictionaryValue> token_info) {
+    std::unique_ptr<base::DictionaryValue> token_info) {
   bool success = false;
   if (!token_info->HasKey("error")) {
     std::string handle;

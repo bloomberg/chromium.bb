@@ -36,13 +36,10 @@ class DriveIntegrationServiceTest : public testing::Test {
 };
 
 TEST_F(DriveIntegrationServiceTest, InitializeAndShutdown) {
-  scoped_ptr<DriveIntegrationService> integration_service(
+  std::unique_ptr<DriveIntegrationService> integration_service(
       new DriveIntegrationService(
-          profile_manager_.CreateTestingProfile(kTestProfileName),
-          NULL,
-          new DummyDriveService,
-          std::string(),
-          base::FilePath(),
+          profile_manager_.CreateTestingProfile(kTestProfileName), NULL,
+          new DummyDriveService, std::string(), base::FilePath(),
           new DummyFileSystem));
   integration_service->SetEnabled(true);
   content::RunAllBlockingPoolTasksUntilIdle();

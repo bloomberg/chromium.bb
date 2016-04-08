@@ -9,9 +9,9 @@
 #include "content/public/browser/navigation_handle.h"
 
 // static
-scoped_ptr<content::NavigationThrottle> MergeSessionNavigationThrottle::Create(
-    content::NavigationHandle* handle) {
-  return scoped_ptr<content::NavigationThrottle>(
+std::unique_ptr<content::NavigationThrottle>
+MergeSessionNavigationThrottle::Create(content::NavigationHandle* handle) {
+  return std::unique_ptr<content::NavigationThrottle>(
       new MergeSessionNavigationThrottle(handle));
 }
 

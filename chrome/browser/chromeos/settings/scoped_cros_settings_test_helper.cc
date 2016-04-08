@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
@@ -33,9 +34,9 @@ ScopedCrosSettingsTestHelper::~ScopedCrosSettingsTestHelper() {
   RestoreProvider();
 }
 
-scoped_ptr<FakeOwnerSettingsService>
+std::unique_ptr<FakeOwnerSettingsService>
 ScopedCrosSettingsTestHelper::CreateOwnerSettingsService(Profile* profile) {
-  return make_scoped_ptr(new FakeOwnerSettingsService(
+  return base::WrapUnique(new FakeOwnerSettingsService(
       profile, new ownership::MockOwnerKeyUtil(), &stub_settings_provider_));
 }
 

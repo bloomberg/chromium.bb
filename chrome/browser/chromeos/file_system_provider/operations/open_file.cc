@@ -59,14 +59,14 @@ bool OpenFile::Execute(int request_id) {
 }
 
 void OpenFile::OnSuccess(int request_id,
-                         scoped_ptr<RequestValue> result,
+                         std::unique_ptr<RequestValue> result,
                          bool has_more) {
   // File handle is the same as request id of the OpenFile operation.
   callback_.Run(request_id, base::File::FILE_OK);
 }
 
 void OpenFile::OnError(int /* request_id */,
-                       scoped_ptr<RequestValue> /* result */,
+                       std::unique_ptr<RequestValue> /* result */,
                        base::File::Error error) {
   callback_.Run(0 /* file_handle */, error);
 }

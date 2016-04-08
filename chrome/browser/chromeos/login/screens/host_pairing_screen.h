@@ -86,7 +86,7 @@ class HostPairingScreen
   // Controller performing pairing. Owned by the wizard controller.
   pairing_chromeos::HostPairingController* remora_controller_;
 
-  scoped_ptr<EnterpriseEnrollmentHelper> enrollment_helper_;
+  std::unique_ptr<EnterpriseEnrollmentHelper> enrollment_helper_;
 
   // Current stage of pairing process.
   Stage current_stage_;

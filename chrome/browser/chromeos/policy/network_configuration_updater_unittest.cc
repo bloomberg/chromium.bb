@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -10,7 +12,6 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
@@ -142,7 +143,7 @@ class FakeCertificateImporter : public chromeos::onc::CertificateImporter {
 
  private:
   ::onc::ONCSource expected_onc_source_;
-  scoped_ptr<base::ListValue> expected_onc_certificates_;
+  std::unique_ptr<base::ListValue> expected_onc_certificates_;
   net::CertificateList onc_trusted_certificates_;
   unsigned int call_count_;
 
@@ -215,7 +216,7 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
     providers.push_back(&provider_);
     policy_service_.reset(new PolicyServiceImpl(providers));
 
-    scoped_ptr<base::DictionaryValue> fake_toplevel_onc =
+    std::unique_ptr<base::DictionaryValue> fake_toplevel_onc =
         chromeos::onc::ReadDictionaryFromJson(kFakeONC);
 
     base::ListValue* network_configs = NULL;
@@ -299,15 +300,16 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
   // continues to point to that instance but |certificate_importer_owned_| is
   // released.
   FakeCertificateImporter* certificate_importer_;
-  scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer_owned_;
+  std::unique_ptr<chromeos::onc::CertificateImporter>
+      certificate_importer_owned_;
 
   StrictMock<MockConfigurationPolicyProvider> provider_;
-  scoped_ptr<PolicyServiceImpl> policy_service_;
+  std::unique_ptr<PolicyServiceImpl> policy_service_;
   FakeUser fake_user_;
 
   TestingProfile profile_;
 
-  scoped_ptr<NetworkConfigurationUpdater> network_configuration_updater_;
+  std::unique_ptr<NetworkConfigurationUpdater> network_configuration_updater_;
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
@@ -329,7 +331,7 @@ TEST_F(NetworkConfigurationUpdaterTest, CellularAllowRoaming) {
 }
 
 TEST_F(NetworkConfigurationUpdaterTest, PolicyIsValidatedAndRepaired) {
-  scoped_ptr<base::DictionaryValue> onc_repaired =
+  std::unique_ptr<base::DictionaryValue> onc_repaired =
       chromeos::onc::test_utils::ReadTestDictionary(
           "repaired_toplevel_partially_invalid.onc");
 

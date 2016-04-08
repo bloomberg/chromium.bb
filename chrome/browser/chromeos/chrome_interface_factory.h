@@ -31,7 +31,7 @@ class ChromeInterfaceFactory
       mojo::Connection* connection,
       mojo::InterfaceRequest<keyboard::mojom::Keyboard> request) override;
 
-  scoped_ptr<KeyboardUIService> keyboard_ui_service_;
+  std::unique_ptr<KeyboardUIService> keyboard_ui_service_;
   mojo::BindingSet<keyboard::mojom::Keyboard> keyboard_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeInterfaceFactory);

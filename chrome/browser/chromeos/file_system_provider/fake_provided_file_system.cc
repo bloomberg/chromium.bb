@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 
@@ -30,7 +31,7 @@ const base::FilePath::CharType kFakeFilePath[] =
 FakeEntry::FakeEntry() {
 }
 
-FakeEntry::FakeEntry(scoped_ptr<EntryMetadata> metadata,
+FakeEntry::FakeEntry(std::unique_ptr<EntryMetadata> metadata,
                      const std::string& contents)
     : metadata(std::move(metadata)), contents(contents) {}
 
@@ -61,7 +62,7 @@ void FakeProvidedFileSystem::AddEntry(const base::FilePath& entry_path,
                                       std::string mime_type,
                                       std::string contents) {
   DCHECK(entries_.find(entry_path) == entries_.end());
-  scoped_ptr<EntryMetadata> metadata(new EntryMetadata);
+  std::unique_ptr<EntryMetadata> metadata(new EntryMetadata);
 
   metadata->is_directory.reset(new bool(is_directory));
   metadata->name.reset(new std::string(name));
@@ -94,13 +95,12 @@ AbortCallback FakeProvidedFileSystem::GetMetadata(
   const Entries::const_iterator entry_it = entries_.find(entry_path);
 
   if (entry_it == entries_.end()) {
-    return PostAbortableTask(
-        base::Bind(callback,
-                   base::Passed(make_scoped_ptr<EntryMetadata>(NULL)),
-                   base::File::FILE_ERROR_NOT_FOUND));
+    return PostAbortableTask(base::Bind(
+        callback, base::Passed(base::WrapUnique<EntryMetadata>(NULL)),
+        base::File::FILE_ERROR_NOT_FOUND));
   }
 
-  scoped_ptr<EntryMetadata> metadata(new EntryMetadata);
+  std::unique_ptr<EntryMetadata> metadata(new EntryMetadata);
   if (fields & ProvidedFileSystemInterface::METADATA_FIELD_IS_DIRECTORY) {
     metadata->is_directory.reset(
         new bool(*entry_it->second->metadata->is_directory));
@@ -397,7 +397,7 @@ void FakeProvidedFileSystem::Notify(
     const base::FilePath& entry_path,
     bool recursive,
     storage::WatcherManager::ChangeType change_type,
-    scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
+    std::unique_ptr<ProvidedFileSystemObserver::Changes> changes,
     const std::string& tag,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   NOTREACHED();

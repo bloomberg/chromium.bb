@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_ARC_SETTINGS_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_ARC_SETTINGS_SERVICE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 
@@ -25,7 +26,7 @@ class ArcSettingsService : public ArcService,
   void OnIntentHelperInstanceClosed() override;
 
  private:
-  scoped_ptr<ArcSettingsServiceImpl> impl_;
+  std::unique_ptr<ArcSettingsServiceImpl> impl_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcSettingsService);
 };

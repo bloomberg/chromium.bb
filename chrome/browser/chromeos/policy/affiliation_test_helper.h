@@ -37,7 +37,7 @@ void SetUserKeys(policy::UserPolicyBuilder* user_policy);
 // FakeSessionManagerClient* fake_session_manager_client =
 //   new chromeos::FakeSessionManagerClient;
 // DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-//   scoped_ptr<SessionManagerClient>(fake_session_manager_client));
+//   std::unique_ptr<SessionManagerClient>(fake_session_manager_client));
 //
 // policy::DevicePolicyCrosTestHelper test_helper;
 // std::set<std::string> device_affiliation_ids;
@@ -66,7 +66,7 @@ void SetDeviceAffiliationID(
 // FakeSessionManagerClient* fake_session_manager_client =
 //    new chromeos::FakeSessionManagerClient;
 // DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-//    scoped_ptr<SessionManagerClient>(fake_session_manager_client));
+//    std::unique_ptr<SessionManagerClient>(fake_session_manager_client));
 //
 // policy::UserPolicyBuilder user_policy;
 // std::set<std::string> user_affiliation_ids;

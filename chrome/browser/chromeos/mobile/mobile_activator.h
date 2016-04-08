@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_CHROMEOS_MOBILE_MOBILE_ACTIVATOR_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -173,7 +173,7 @@ class MobileActivator
       const std::string& service_path,
       const base::DictionaryValue& properties);
   void GetPropertiesFailure(const std::string& error_name,
-                            scoped_ptr<base::DictionaryValue> error_data);
+                            std::unique_ptr<base::DictionaryValue> error_data);
   // Handles the signal that the payment portal has finished loading.
   void HandlePortalLoaded(bool success);
   // Handles the signal that the user has finished with the portal.
@@ -233,7 +233,7 @@ class MobileActivator
       const std::string& service_path,
       PlanActivationState new_state,
       const std::string& error_name,
-      scoped_ptr<base::DictionaryValue> error_data);
+      std::unique_ptr<base::DictionaryValue> error_data);
 
   // Request cellular activation for |network|.
   // On success, |success_callback| will be called.

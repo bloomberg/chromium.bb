@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/file_errors.h"
@@ -47,7 +47,7 @@ class ReaderProxy {
                    const net::CompletionCallback& callback) = 0;
 
   // Called when the data from the server is received.
-  virtual void OnGetContent(scoped_ptr<std::string> data) = 0;
+  virtual void OnGetContent(std::unique_ptr<std::string> data) = 0;
 
   // Called when the accessing to the file system is completed.
   virtual void OnCompleted(FileError error) = 0;
@@ -60,7 +60,7 @@ class LocalReaderProxy : public ReaderProxy {
   // This class takes its ownership.
   // |length| is the number of bytes to be read. It must be equal or
   // smaller than the remaining data size in the |file_reader|.
-  LocalReaderProxy(scoped_ptr<util::LocalFileReader> file_reader,
+  LocalReaderProxy(std::unique_ptr<util::LocalFileReader> file_reader,
                    int64_t length);
   ~LocalReaderProxy() override;
 
@@ -68,11 +68,11 @@ class LocalReaderProxy : public ReaderProxy {
   int Read(net::IOBuffer* buffer,
            int buffer_length,
            const net::CompletionCallback& callback) override;
-  void OnGetContent(scoped_ptr<std::string> data) override;
+  void OnGetContent(std::unique_ptr<std::string> data) override;
   void OnCompleted(FileError error) override;
 
  private:
-  scoped_ptr<util::LocalFileReader> file_reader_;
+  std::unique_ptr<util::LocalFileReader> file_reader_;
 
   // Callback for the LocalFileReader::Read.
   void OnReadCompleted(
@@ -106,7 +106,7 @@ class NetworkReaderProxy : public ReaderProxy {
   int Read(net::IOBuffer* buffer,
            int buffer_length,
            const net::CompletionCallback& callback) override;
-  void OnGetContent(scoped_ptr<std::string> data) override;
+  void OnGetContent(std::unique_ptr<std::string> data) override;
   void OnCompleted(FileError error) override;
 
  private:
@@ -160,7 +160,7 @@ class DriveFileStreamReader {
 
   // Callback to return the result of Initialize().
   // |error| is net::Error code.
-  typedef base::Callback<void(int error, scoped_ptr<ResourceEntry> entry)>
+  typedef base::Callback<void(int error, std::unique_ptr<ResourceEntry> entry)>
       InitializeCompletionCallback;
 
   DriveFileStreamReader(const FileSystemGetter& file_system_getter,
@@ -198,19 +198,19 @@ class DriveFileStreamReader {
       const InitializeCompletionCallback& callback,
       FileError error,
       const base::FilePath& local_cache_file_path,
-      scoped_ptr<ResourceEntry> entry);
+      std::unique_ptr<ResourceEntry> entry);
 
   // Part of Initialize. Called when the local file open process is done.
   void InitializeAfterLocalFileOpen(
       int64_t length,
       const InitializeCompletionCallback& callback,
-      scoped_ptr<ResourceEntry> entry,
-      scoped_ptr<util::LocalFileReader> file_reader,
+      std::unique_ptr<ResourceEntry> entry,
+      std::unique_ptr<util::LocalFileReader> file_reader,
       int open_result);
 
   // Called when the data is received from the server.
   void OnGetContent(google_apis::DriveApiErrorCode error_code,
-                    scoped_ptr<std::string> data);
+                    std::unique_ptr<std::string> data);
 
   // Called when GetFileContent is completed.
   void OnGetFileContentCompletion(
@@ -220,7 +220,7 @@ class DriveFileStreamReader {
   const FileSystemGetter file_system_getter_;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   base::Closure cancel_download_closure_;
-  scoped_ptr<internal::ReaderProxy> reader_proxy_;
+  std::unique_ptr<internal::ReaderProxy> reader_proxy_;
 
   base::ThreadChecker thread_checker_;
 

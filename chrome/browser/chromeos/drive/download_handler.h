@@ -124,8 +124,8 @@ class DownloadHandler : public AllDownloadItemNotifier::Observer {
   FileSystemInterface* file_system_;  // Owned by DriveIntegrationService.
 
   // Observe the DownloadManager for new downloads.
-  scoped_ptr<AllDownloadItemNotifier> notifier_;
-  scoped_ptr<AllDownloadItemNotifier> notifier_incognito_;
+  std::unique_ptr<AllDownloadItemNotifier> notifier_;
+  std::unique_ptr<AllDownloadItemNotifier> notifier_incognito_;
 
   // Temporary download location directory.
   base::FilePath drive_tmp_download_path_;

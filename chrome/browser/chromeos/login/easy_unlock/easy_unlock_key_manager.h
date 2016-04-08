@@ -115,8 +115,8 @@ class EasyUnlockKeyManager {
 
   // Stores the current operation in progress. At most one of these variables
   // can be non-null at any time.
-  scoped_ptr<EasyUnlockRefreshKeysOperation> pending_write_operation_;
-  scoped_ptr<EasyUnlockGetKeysOperation> pending_read_operation_;
+  std::unique_ptr<EasyUnlockRefreshKeysOperation> pending_write_operation_;
+  std::unique_ptr<EasyUnlockGetKeysOperation> pending_read_operation_;
 
   base::WeakPtrFactory<EasyUnlockKeyManager> weak_ptr_factory_;
 

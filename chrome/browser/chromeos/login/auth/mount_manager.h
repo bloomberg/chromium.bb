@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_MOUNT_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 class PrefRegistrySimple;
 

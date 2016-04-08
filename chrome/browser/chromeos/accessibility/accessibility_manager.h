@@ -225,7 +225,7 @@ class AccessibilityManager
 
   // Register a callback to be notified when the status of an accessibility
   // option changes.
-  scoped_ptr<AccessibilityStatusSubscription> RegisterCallback(
+  std::unique_ptr<AccessibilityStatusSubscription> RegisterCallback(
       const AccessibilityStatusCallback& cb);
 
   // Notify registered callbacks of a status change in an accessibility setting.
@@ -289,7 +289,8 @@ class AccessibilityManager
 
   void CheckBrailleState();
   void ReceiveBrailleDisplayState(
-      scoped_ptr<extensions::api::braille_display_private::DisplayState> state);
+      std::unique_ptr<extensions::api::braille_display_private::DisplayState>
+          state);
   void UpdateBrailleImeState();
 
   void SetProfile(Profile* profile);
@@ -330,9 +331,9 @@ class AccessibilityManager
   bool chrome_vox_loaded_on_user_screen_;
 
   content::NotificationRegistrar notification_registrar_;
-  scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
-  scoped_ptr<PrefChangeRegistrar> local_state_pref_change_registrar_;
-  scoped_ptr<ash::ScopedSessionStateObserver> session_state_observer_;
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  std::unique_ptr<PrefChangeRegistrar> local_state_pref_change_registrar_;
+  std::unique_ptr<ash::ScopedSessionStateObserver> session_state_observer_;
 
   PrefHandler large_cursor_pref_handler_;
   PrefHandler spoken_feedback_pref_handler_;
@@ -374,7 +375,8 @@ class AccessibilityManager
   bool braille_ime_current_;
 
   ChromeVoxPanel* chromevox_panel_;
-  scoped_ptr<ChromeVoxPanelWidgetObserver> chromevox_panel_widget_observer_;
+  std::unique_ptr<ChromeVoxPanelWidgetObserver>
+      chromevox_panel_widget_observer_;
 
   std::string keyboard_listener_extension_id_;
   bool keyboard_listener_capture_;
@@ -384,7 +386,8 @@ class AccessibilityManager
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  scoped_ptr<AccessibilityHighlightManager> accessibility_highlight_manager_;
+  std::unique_ptr<AccessibilityHighlightManager>
+      accessibility_highlight_manager_;
 
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_;
 

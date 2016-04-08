@@ -195,7 +195,7 @@ bool FileManagerPrivateGetPreferencesFunction::RunSync() {
 
 bool FileManagerPrivateSetPreferencesFunction::RunSync() {
   using extensions::api::file_manager_private::SetPreferences::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   PrefService* const service = GetProfile()->GetPrefs();
@@ -222,7 +222,7 @@ FileManagerPrivateInternalZipSelectionFunction::
 
 bool FileManagerPrivateInternalZipSelectionFunction::RunAsync() {
   using extensions::api::file_manager_private_internal::ZipSelection::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // First param is the parent directory URL.
@@ -283,7 +283,7 @@ void FileManagerPrivateInternalZipSelectionFunction::OnZipDone(bool success) {
 
 bool FileManagerPrivateZoomFunction::RunSync() {
   using extensions::api::file_manager_private::Zoom::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   content::PageZoom zoom_type;
@@ -395,7 +395,7 @@ bool FileManagerPrivateGetProfilesFunction::RunSync() {
 
 bool FileManagerPrivateOpenInspectorFunction::RunSync() {
   using extensions::api::file_manager_private::OpenInspector::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   switch (params->type) {
@@ -438,7 +438,7 @@ FileManagerPrivateInternalGetMimeTypeFunction::
 
 bool FileManagerPrivateInternalGetMimeTypeFunction::RunAsync() {
   using extensions::api::file_manager_private_internal::GetMimeType::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // Convert file url to local path.
@@ -524,7 +524,7 @@ FileManagerPrivateAddProvidedFileSystemFunction::
 ExtensionFunction::ResponseAction
 FileManagerPrivateAddProvidedFileSystemFunction::Run() {
   using extensions::api::file_manager_private::AddProvidedFileSystem::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   using chromeos::file_system_provider::Service;
@@ -545,7 +545,7 @@ FileManagerPrivateConfigureVolumeFunction::
 ExtensionFunction::ResponseAction
 FileManagerPrivateConfigureVolumeFunction::Run() {
   using extensions::api::file_manager_private::ConfigureVolume::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   using file_manager::VolumeManager;
@@ -599,7 +599,7 @@ ExtensionFunction::ResponseAction
 FileManagerPrivateInternalGetCustomActionsFunction::Run() {
   using extensions::api::file_manager_private_internal::GetCustomActions::
       Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const scoped_refptr<storage::FileSystemContext> file_system_context =
@@ -655,7 +655,7 @@ ExtensionFunction::ResponseAction
 FileManagerPrivateInternalExecuteCustomActionFunction::Run() {
   using extensions::api::file_manager_private_internal::ExecuteCustomAction::
       Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const scoped_refptr<storage::FileSystemContext> file_system_context =

@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
+
+#include <memory>
 #include <queue>
 #include <utility>
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_path_override.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
@@ -134,7 +135,7 @@ class OwnerSettingsServiceChromeOSTest : public DeviceSettingsTestBase {
  protected:
   OwnerSettingsServiceChromeOS* service_;
   ScopedTestingLocalState local_state_;
-  scoped_ptr<DeviceSettingsProvider> provider_;
+  std::unique_ptr<DeviceSettingsProvider> provider_;
   base::ScopedPathOverride user_data_dir_override_;
   bool management_settings_set_;
 

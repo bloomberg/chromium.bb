@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LAUNCHER_SEARCH_PROVIDER_ERROR_REPORTER_H_
 #define CHROME_BROWSER_CHROMEOS_LAUNCHER_SEARCH_PROVIDER_ERROR_REPORTER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace content {
 class RenderFrameHost;
@@ -28,7 +28,7 @@ class ErrorReporter {
 
   // Duplicate the instance. Since ErrorReporter is handled as scoped_ptr in the
   // code, we need this to duplicate error reporter to set it to each result.
-  virtual scoped_ptr<ErrorReporter> Duplicate();
+  virtual std::unique_ptr<ErrorReporter> Duplicate();
 
  private:
   // Not owned.

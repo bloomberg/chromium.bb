@@ -4,12 +4,13 @@
 
 #include "chrome/browser/chromeos/net/client_cert_store_chromeos.h"
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
@@ -85,7 +86,7 @@ class ClientCertStoreChromeOSTest : public ::testing::Test {
   }
 
  private:
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 };
 
 // Ensure that cert requests, that are started before the filter is initialized,
@@ -97,7 +98,7 @@ TEST_F(ClientCertStoreChromeOSTest, RequestWaitsForNSSInitAndSucceeds) {
   TestCertFilter* cert_filter =
       new TestCertFilter(false /* init asynchronously */);
   ClientCertStoreChromeOS store(
-      nullptr /* no additional provider */, make_scoped_ptr(cert_filter),
+      nullptr /* no additional provider */, base::WrapUnique(cert_filter),
       ClientCertStoreChromeOS::PasswordDelegateFactory());
 
   scoped_refptr<net::X509Certificate> cert_1(
@@ -134,7 +135,7 @@ TEST_F(ClientCertStoreChromeOSTest, RequestsAfterNSSInitSucceed) {
 
   ClientCertStoreChromeOS store(
       nullptr,  // no additional provider
-      make_scoped_ptr(new TestCertFilter(true /* init synchronously */)),
+      base::WrapUnique(new TestCertFilter(true /* init synchronously */)),
       ClientCertStoreChromeOS::PasswordDelegateFactory());
 
   scoped_refptr<net::X509Certificate> cert_1(
@@ -159,7 +160,7 @@ TEST_F(ClientCertStoreChromeOSTest, Filter) {
   TestCertFilter* cert_filter =
       new TestCertFilter(true /* init synchronously */);
   ClientCertStoreChromeOS store(
-      nullptr /* no additional provider */, make_scoped_ptr(cert_filter),
+      nullptr /* no additional provider */, base::WrapUnique(cert_filter),
       ClientCertStoreChromeOS::PasswordDelegateFactory());
 
   scoped_refptr<net::X509Certificate> cert_1(
@@ -205,7 +206,7 @@ TEST_F(ClientCertStoreChromeOSTest, CertRequestMatching) {
       new TestCertFilter(true /* init synchronously */);
   ClientCertStoreChromeOS store(
       nullptr,  // no additional provider
-      make_scoped_ptr(cert_filter),
+      base::WrapUnique(cert_filter),
       ClientCertStoreChromeOS::PasswordDelegateFactory());
 
   scoped_refptr<net::X509Certificate> cert_1(

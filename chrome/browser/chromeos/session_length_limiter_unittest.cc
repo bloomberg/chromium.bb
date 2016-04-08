@@ -4,9 +4,10 @@
 
 #include "chrome/browser/chromeos/session_length_limiter.h"
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -79,7 +80,7 @@ class SessionLengthLimiterTest : public testing::Test {
 
   MockSessionLengthLimiterDelegate* delegate_;  // Owned by
                                                 // session_length_limiter_.
-  scoped_ptr<SessionLengthLimiter> session_length_limiter_;
+  std::unique_ptr<SessionLengthLimiter> session_length_limiter_;
 };
 
 SessionLengthLimiterTest::SessionLengthLimiterTest()

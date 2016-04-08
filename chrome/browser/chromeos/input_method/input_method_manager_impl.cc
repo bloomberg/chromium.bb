@@ -5,14 +5,15 @@
 #include "chrome/browser/chromeos/input_method/input_method_manager_impl.h"
 
 #include <stdint.h>
+
 #include <algorithm>  // std::find
+#include <memory>
 #include <sstream>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/hash.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_split.h"
@@ -173,9 +174,9 @@ InputMethodManagerImpl::StateImpl::Clone() const {
   return scoped_refptr<InputMethodManager::State>(new_state.get());
 }
 
-scoped_ptr<InputMethodDescriptors>
+std::unique_ptr<InputMethodDescriptors>
 InputMethodManagerImpl::StateImpl::GetActiveInputMethods() const {
-  scoped_ptr<InputMethodDescriptors> result(new InputMethodDescriptors);
+  std::unique_ptr<InputMethodDescriptors> result(new InputMethodDescriptors);
   // Build the active input method descriptors from the active input
   // methods cache |active_input_method_ids|.
   for (size_t i = 0; i < active_input_method_ids.size(); ++i) {
@@ -845,7 +846,7 @@ InputMethodManagerImpl::GetActiveIMEState() {
 }
 
 InputMethodManagerImpl::InputMethodManagerImpl(
-    scoped_ptr<InputMethodDelegate> delegate,
+    std::unique_ptr<InputMethodDelegate> delegate,
     bool enable_extension_loading)
     : delegate_(std::move(delegate)),
       ui_session_(STATE_LOGIN_SCREEN),
@@ -860,7 +861,7 @@ InputMethodManagerImpl::InputMethodManagerImpl(
     keyboard_.reset(new FakeImeKeyboard());
 
   // Initializes the system IME list.
-  scoped_ptr<ComponentExtensionIMEManagerDelegate> comp_delegate(
+  std::unique_ptr<ComponentExtensionIMEManagerDelegate> comp_delegate(
       new ComponentExtensionIMEManagerImpl());
   component_extension_ime_manager_->Initialize(std::move(comp_delegate));
   const InputMethodDescriptors& descriptors =
@@ -943,9 +944,9 @@ void InputMethodManagerImpl::OnUserAddingFinished() {
     SetUISessionState(STATE_BROWSER_SCREEN);
 }
 
-scoped_ptr<InputMethodDescriptors>
+std::unique_ptr<InputMethodDescriptors>
 InputMethodManagerImpl::GetSupportedInputMethods() const {
-  return scoped_ptr<InputMethodDescriptors>(new InputMethodDescriptors);
+  return std::unique_ptr<InputMethodDescriptors>(new InputMethodDescriptors);
 }
 
 const InputMethodDescriptor* InputMethodManagerImpl::LookupInputMethod(
@@ -957,7 +958,7 @@ const InputMethodDescriptor* InputMethodManagerImpl::LookupInputMethod(
 
   // Sanity check
   if (!state->InputMethodIsActivated(input_method_id)) {
-    scoped_ptr<InputMethodDescriptors> input_methods(
+    std::unique_ptr<InputMethodDescriptors> input_methods(
         state->GetActiveInputMethods());
     DCHECK(!input_methods->empty());
     input_method_id_to_switch = input_methods->at(0).id();
@@ -1153,7 +1154,7 @@ void InputMethodManagerImpl::SetImeKeyboardForTesting(ImeKeyboard* keyboard) {
 }
 
 void InputMethodManagerImpl::InitializeComponentExtensionForTesting(
-    scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate) {
+    std::unique_ptr<ComponentExtensionIMEManagerDelegate> delegate) {
   component_extension_ime_manager_->Initialize(std::move(delegate));
   util_.ResetInputMethods(
       component_extension_ime_manager_->GetAllIMEAsInputMethodDescriptor());

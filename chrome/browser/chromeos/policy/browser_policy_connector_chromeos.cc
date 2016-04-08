@@ -135,20 +135,19 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS()
               chromeos::DeviceSettingsService::Get()));
     }
 
-    scoped_ptr<DeviceCloudPolicyStoreChromeOS> device_cloud_policy_store(
+    std::unique_ptr<DeviceCloudPolicyStoreChromeOS> device_cloud_policy_store(
         new DeviceCloudPolicyStoreChromeOS(
-            chromeos::DeviceSettingsService::Get(),
-            install_attributes_.get(),
+            chromeos::DeviceSettingsService::Get(), install_attributes_.get(),
             GetBackgroundTaskRunner()));
     device_cloud_policy_manager_ = new DeviceCloudPolicyManagerChromeOS(
         std::move(device_cloud_policy_store),
         base::ThreadTaskRunnerHandle::Get(), state_keys_broker_.get());
-    AddPolicyProvider(
-        scoped_ptr<ConfigurationPolicyProvider>(device_cloud_policy_manager_));
+    AddPolicyProvider(std::unique_ptr<ConfigurationPolicyProvider>(
+        device_cloud_policy_manager_));
   }
 
   global_user_cloud_policy_provider_ = new ProxyPolicyProvider();
-  AddPolicyProvider(scoped_ptr<ConfigurationPolicyProvider>(
+  AddPolicyProvider(std::unique_ptr<ConfigurationPolicyProvider>(
       global_user_cloud_policy_provider_));
 }
 
@@ -166,7 +165,7 @@ void BrowserPolicyConnectorChromeOS::Init(
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(chromeos::switches::kEnableConsumerManagement)) {
-    scoped_ptr<DeviceManagementService::Configuration> configuration(
+    std::unique_ptr<DeviceManagementService::Configuration> configuration(
         new DeviceManagementServiceConfiguration(
             GetDeviceManagementServerUrlForConsumer()));
     consumer_device_management_service_.reset(
@@ -292,12 +291,12 @@ void BrowserPolicyConnectorChromeOS::SetUserPolicyDelegate(
 }
 
 void BrowserPolicyConnectorChromeOS::SetConsumerManagementServiceForTesting(
-    scoped_ptr<ConsumerManagementService> service) {
+    std::unique_ptr<ConsumerManagementService> service) {
   consumer_management_service_ = std::move(service);
 }
 
 void BrowserPolicyConnectorChromeOS::SetDeviceCloudPolicyInitializerForTesting(
-    scoped_ptr<DeviceCloudPolicyInitializer> initializer) {
+    std::unique_ptr<DeviceCloudPolicyInitializer> initializer) {
   device_cloud_policy_initializer_ = std::move(initializer);
 }
 

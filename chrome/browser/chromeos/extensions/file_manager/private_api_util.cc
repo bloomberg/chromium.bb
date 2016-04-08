@@ -53,7 +53,7 @@ void OnDriveGetFile(const base::FilePath& path,
                     const LocalPathCallback& callback,
                     drive::FileError error,
                     const base::FilePath& local_file_path,
-                    scoped_ptr<drive::ResourceEntry> entry) {
+                    std::unique_ptr<drive::ResourceEntry> entry) {
   if (error != drive::FILE_ERROR_OK)
     DLOG(ERROR) << "Failed to get " << path.value() << " with: " << error;
   callback.Run(local_file_path);
@@ -103,13 +103,15 @@ void GetFileNativeLocalPathForSaving(Profile* profile,
 }
 
 // Forward declarations of helper functions for GetSelectedFileInfo().
-void ContinueGetSelectedFileInfo(Profile* profile,
-                                 scoped_ptr<GetSelectedFileInfoParams> params,
-                                 const base::FilePath& local_file_path);
+void ContinueGetSelectedFileInfo(
+    Profile* profile,
+    std::unique_ptr<GetSelectedFileInfoParams> params,
+    const base::FilePath& local_file_path);
 
 // Part of GetSelectedFileInfo().
-void GetSelectedFileInfoInternal(Profile* profile,
-                                 scoped_ptr<GetSelectedFileInfoParams> params) {
+void GetSelectedFileInfoInternal(
+    Profile* profile,
+    std::unique_ptr<GetSelectedFileInfoParams> params) {
   DCHECK(profile);
 
   for (size_t i = params->selected_files.size();
@@ -152,9 +154,10 @@ void GetSelectedFileInfoInternal(Profile* profile,
 }
 
 // Part of GetSelectedFileInfo().
-void ContinueGetSelectedFileInfo(Profile* profile,
-                                 scoped_ptr<GetSelectedFileInfoParams> params,
-                                 const base::FilePath& local_path) {
+void ContinueGetSelectedFileInfo(
+    Profile* profile,
+    std::unique_ptr<GetSelectedFileInfoParams> params,
+    const base::FilePath& local_path) {
   if (local_path.empty()) {
     params->callback.Run(std::vector<ui::SelectedFileInfo>());
     return;
@@ -330,7 +333,8 @@ void GetSelectedFileInfo(content::RenderFrameHost* render_frame_host,
   DCHECK(render_frame_host);
   DCHECK(profile);
 
-  scoped_ptr<GetSelectedFileInfoParams> params(new GetSelectedFileInfoParams);
+  std::unique_ptr<GetSelectedFileInfoParams> params(
+      new GetSelectedFileInfoParams);
   params->local_path_option = local_path_option;
   params->callback = callback;
 

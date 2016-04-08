@@ -5,12 +5,12 @@
 #include "chrome/browser/chromeos/base/file_flusher.h"
 
 #include <map>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_thread.h"
@@ -61,8 +61,8 @@ class FileFlusherTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  scoped_ptr<FileFlusher> CreateFileFlusher() {
-    scoped_ptr<FileFlusher> flusher(new FileFlusher);
+  std::unique_ptr<FileFlusher> CreateFileFlusher() {
+    std::unique_ptr<FileFlusher> flusher(new FileFlusher);
     flusher->set_on_flush_callback_for_test(
         base::Bind(&FileFlusherTest::OnFlush, base::Unretained(this)));
     return flusher;
@@ -93,7 +93,7 @@ class FileFlusherTest : public testing::Test {
 };
 
 TEST_F(FileFlusherTest, Flush) {
-  scoped_ptr<FileFlusher> flusher(CreateFileFlusher());
+  std::unique_ptr<FileFlusher> flusher(CreateFileFlusher());
   base::RunLoop run_loop;
   flusher->RequestFlush(GetTestFilePath("dir1"), std::vector<base::FilePath>(),
                         base::Closure());
@@ -111,7 +111,7 @@ TEST_F(FileFlusherTest, Flush) {
 }
 
 TEST_F(FileFlusherTest, Exclude) {
-  scoped_ptr<FileFlusher> flusher(CreateFileFlusher());
+  std::unique_ptr<FileFlusher> flusher(CreateFileFlusher());
 
   std::vector<base::FilePath> excludes;
   // Relative exclude
@@ -134,7 +134,7 @@ TEST_F(FileFlusherTest, Exclude) {
 }
 
 TEST_F(FileFlusherTest, DuplicateRequests) {
-  scoped_ptr<FileFlusher> flusher(CreateFileFlusher());
+  std::unique_ptr<FileFlusher> flusher(CreateFileFlusher());
   base::RunLoop run_loop;
   flusher->RequestFlush(GetTestFilePath("dir1"), std::vector<base::FilePath>(),
                         base::Closure());

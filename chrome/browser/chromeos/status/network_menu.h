@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_STATUS_NETWORK_MENU_H_
 #define CHROME_BROWSER_CHROMEOS_STATUS_NETWORK_MENU_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
@@ -93,7 +93,7 @@ class NetworkMenu {
   bool refreshing_menu_;
 
   // The network menu.
-  scoped_ptr<NetworkMenuModel> main_menu_model_;
+  std::unique_ptr<NetworkMenuModel> main_menu_model_;
 
   // Weak pointer factory so we can start connections at a later time
   // without worrying that they will actually try to happen after the lifetime

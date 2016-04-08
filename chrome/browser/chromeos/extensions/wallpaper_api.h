@@ -43,7 +43,7 @@ class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
   // Generates thumbnail of custom wallpaper. A simple STRETCH is used for
   // generating thumbnail.
   void GenerateThumbnail(const base::FilePath& thumbnail_path,
-                         scoped_ptr<gfx::ImageSkia> image);
+                         std::unique_ptr<gfx::ImageSkia> image);
 
   // Thumbnail is ready. Calls api function javascript callback.
   void ThumbnailGenerated(base::RefCountedBytes* original_data,
@@ -52,7 +52,7 @@ class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
   // Called by OnURLFetchComplete().
   void OnWallpaperFetched(bool success, const std::string& response);
 
-  scoped_ptr<extensions::api::wallpaper::SetWallpaper::Params> params_;
+  std::unique_ptr<extensions::api::wallpaper::SetWallpaper::Params> params_;
 
   // Unique file name of the custom wallpaper.
   std::string file_name_;

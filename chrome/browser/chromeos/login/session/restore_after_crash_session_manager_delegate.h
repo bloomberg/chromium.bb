@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SESSION_RESTORE_AFTER_CRASH_SESSION_MANAGER_DELEGATE_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SESSION_RESTORE_AFTER_CRASH_SESSION_MANAGER_DELEGATE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/session_manager/core/session_manager.h"
 
 class Profile;

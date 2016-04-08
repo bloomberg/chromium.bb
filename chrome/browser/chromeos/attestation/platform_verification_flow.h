@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ATTESTATION_PLATFORM_VERIFICATION_FLOW_H_
 #define CHROME_BROWSER_CHROMEOS_ATTESTATION_PLATFORM_VERIFICATION_FLOW_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "url/gurl.h"
@@ -197,7 +197,7 @@ class PlatformVerificationFlow
   // not invoked.
   void OnCertificateReady(const ChallengeContext& context,
                           const AccountId& account_id,
-                          scoped_ptr<base::Timer> timer,
+                          std::unique_ptr<base::Timer> timer,
                           bool operation_success,
                           const std::string& certificate_chain);
 
@@ -236,11 +236,11 @@ class PlatformVerificationFlow
                                 const std::string& certificate_chain);
 
   AttestationFlow* attestation_flow_;
-  scoped_ptr<AttestationFlow> default_attestation_flow_;
+  std::unique_ptr<AttestationFlow> default_attestation_flow_;
   cryptohome::AsyncMethodCaller* async_caller_;
   CryptohomeClient* cryptohome_client_;
   Delegate* delegate_;
-  scoped_ptr<Delegate> default_delegate_;
+  std::unique_ptr<Delegate> default_delegate_;
   base::TimeDelta timeout_delay_;
   std::set<std::string> renewals_in_progress_;
 

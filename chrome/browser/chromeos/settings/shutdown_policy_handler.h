@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_SHUTDOWN_POLICY_HANDLER_H_
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_SHUTDOWN_POLICY_HANDLER_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 
@@ -51,7 +52,8 @@ class ShutdownPolicyHandler {
 
   Delegate* delegate_;
 
-  scoped_ptr<CrosSettings::ObserverSubscription> shutdown_policy_subscription_;
+  std::unique_ptr<CrosSettings::ObserverSubscription>
+      shutdown_policy_subscription_;
 
   base::WeakPtrFactory<ShutdownPolicyHandler> weak_factory_;
 

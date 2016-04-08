@@ -9,11 +9,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "components/drive/file_errors.h"
@@ -58,7 +58,7 @@ class FileManagerPrivateInternalGetEntryPropertiesFunction
   void CompleteGetEntryProperties(
       size_t index,
       const storage::FileSystemURL& url,
-      scoped_ptr<api::file_manager_private::EntryProperties> properties,
+      std::unique_ptr<api::file_manager_private::EntryProperties> properties,
       base::File::Error error);
 
   size_t processed_count_;
@@ -126,16 +126,17 @@ class FileManagerPrivateSearchDriveFunction
 
  private:
   // Callback for Search().
-  void OnSearch(drive::FileError error,
-                const GURL& next_link,
-                scoped_ptr<std::vector<drive::SearchResultInfo> > result_paths);
+  void OnSearch(
+      drive::FileError error,
+      const GURL& next_link,
+      std::unique_ptr<std::vector<drive::SearchResultInfo>> result_paths);
 
   // Called when |result_paths| in OnSearch() are converted to a list of
   // entry definitions.
   void OnEntryDefinitionList(
       const GURL& next_link,
-      scoped_ptr<SearchResultInfoList> search_result_info_list,
-      scoped_ptr<file_manager::util::EntryDefinitionList>
+      std::unique_ptr<SearchResultInfoList> search_result_info_list,
+      std::unique_ptr<file_manager::util::EntryDefinitionList>
           entry_definition_list);
 };
 
@@ -154,14 +155,16 @@ class FileManagerPrivateSearchDriveMetadataFunction
 
  private:
   // Callback for SearchMetadata();
-  void OnSearchMetadata(drive::FileError error,
-                        scoped_ptr<drive::MetadataSearchResultVector> results);
+  void OnSearchMetadata(
+      drive::FileError error,
+      std::unique_ptr<drive::MetadataSearchResultVector> results);
 
   // Called when |results| in OnSearchMetadata() are converted to a list of
   // entry definitions.
   void OnEntryDefinitionList(
-      scoped_ptr<drive::MetadataSearchResultVector> search_result_info_list,
-      scoped_ptr<file_manager::util::EntryDefinitionList>
+      std::unique_ptr<drive::MetadataSearchResultVector>
+          search_result_info_list,
+      std::unique_ptr<file_manager::util::EntryDefinitionList>
           entry_definition_list);
 };
 
@@ -247,7 +250,7 @@ class FileManagerPrivateInternalGetDownloadUrlFunction
   bool RunAsync() override;
 
   void OnGetResourceEntry(drive::FileError error,
-                          scoped_ptr<drive::ResourceEntry> entry);
+                          std::unique_ptr<drive::ResourceEntry> entry);
 
   // Callback with an |access_token|, called by
   // drive::DriveReadonlyTokenFetcher.
@@ -256,7 +259,7 @@ class FileManagerPrivateInternalGetDownloadUrlFunction
 
  private:
   GURL download_url_;
-  scoped_ptr<google_apis::AuthService> auth_service_;
+  std::unique_ptr<google_apis::AuthService> auth_service_;
 };
 
 }  // namespace extensions

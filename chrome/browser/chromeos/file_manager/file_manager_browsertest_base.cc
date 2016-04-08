@@ -376,7 +376,8 @@ class DriveTestVolume : public TestVolume {
 
     // Obtain the parent entry.
     drive::FileError error = drive::FILE_ERROR_OK;
-    scoped_ptr<drive::ResourceEntry> parent_entry(new drive::ResourceEntry);
+    std::unique_ptr<drive::ResourceEntry> parent_entry(
+        new drive::ResourceEntry);
     integration_service_->file_system()->GetResourceEntry(
         drive::util::GetDriveMyDriveRootPath().Append(path).DirName(),
         google_apis::test_util::CreateCopyResultCallback(&error,
@@ -403,7 +404,7 @@ class DriveTestVolume : public TestVolume {
                        const std::string& target_name,
                        const base::Time& modification_time) {
     google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
-    scoped_ptr<google_apis::FileResource> entry;
+    std::unique_ptr<google_apis::FileResource> entry;
     fake_drive_service_->AddNewDirectory(
         parent_id, target_name, drive::AddNewDirectoryOptions(),
         google_apis::test_util::CreateCopyResultCallback(&error, &entry));
@@ -436,7 +437,7 @@ class DriveTestVolume : public TestVolume {
       ASSERT_TRUE(base::ReadFileToString(source_file_path, &content_data));
     }
 
-    scoped_ptr<google_apis::FileResource> entry;
+    std::unique_ptr<google_apis::FileResource> entry;
     fake_drive_service_->AddNewFile(
         mime_type, content_data, parent_id, target_name, shared_with_me,
         google_apis::test_util::CreateCopyResultCallback(&error, &entry));
@@ -576,7 +577,7 @@ void FileManagerBrowserTestBase::RunTestMessageLoop() {
     }
 
     // Parse the message value as JSON.
-    const scoped_ptr<const base::Value> value =
+    const std::unique_ptr<const base::Value> value =
         base::JSONReader::Read(entry.message);
 
     // If the message is not the expected format, just ignore it.

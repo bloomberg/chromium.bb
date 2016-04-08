@@ -91,11 +91,11 @@ class AccessibilityFocusRingController
   base::TimeTicks cursor_change_time_;
   gfx::Point cursor_location_;
   float cursor_opacity_;
-  scoped_ptr<AccessibilityCursorRingLayer> cursor_layer_;
+  std::unique_ptr<AccessibilityCursorRingLayer> cursor_layer_;
   ui::Compositor* cursor_compositor_;
 
   gfx::Point caret_location_;
-  scoped_ptr<AccessibilityCursorRingLayer> caret_layer_;
+  std::unique_ptr<AccessibilityCursorRingLayer> caret_layer_;
 
   friend struct base::DefaultSingletonTraits<AccessibilityFocusRingController>;
 

@@ -48,12 +48,12 @@ bool WriteFile::Execute(int request_id) {
 
   // Set the data directly on base::Value() to avoid an extra string copy.
   DCHECK(buffer_.get());
-  scoped_ptr<base::DictionaryValue> options_as_value = options.ToValue();
+  std::unique_ptr<base::DictionaryValue> options_as_value = options.ToValue();
   options_as_value->Set(
       "data",
       base::BinaryValue::CreateWithCopiedBuffer(buffer_->data(), length_));
 
-  scoped_ptr<base::ListValue> event_args(new base::ListValue);
+  std::unique_ptr<base::ListValue> event_args(new base::ListValue);
   event_args->Append(options_as_value.release());
 
   return SendEvent(
@@ -64,14 +64,14 @@ bool WriteFile::Execute(int request_id) {
 }
 
 void WriteFile::OnSuccess(int /* request_id */,
-                          scoped_ptr<RequestValue> /* result */,
+                          std::unique_ptr<RequestValue> /* result */,
                           bool /* has_more */) {
   TRACE_EVENT0("file_system_provider", "WriteFile::OnSuccess");
   callback_.Run(base::File::FILE_OK);
 }
 
 void WriteFile::OnError(int /* request_id */,
-                        scoped_ptr<RequestValue> /* result */,
+                        std::unique_ptr<RequestValue> /* result */,
                         base::File::Error error) {
   TRACE_EVENT0("file_system_provider", "WriteFile::OnError");
   callback_.Run(error);

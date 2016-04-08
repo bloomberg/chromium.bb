@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_CHROME_LOGIN_PERFORMER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_CHROME_LOGIN_PERFORMER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
@@ -70,7 +70,7 @@ class ChromeLoginPerformer : public LoginPerformer {
       policy::WildcardLoginChecker::Result result);
 
   // Used to verify logins that matched wildcard on the login whitelist.
-  scoped_ptr<policy::WildcardLoginChecker> wildcard_login_checker_;
+  std::unique_ptr<policy::WildcardLoginChecker> wildcard_login_checker_;
   base::WeakPtrFactory<ChromeLoginPerformer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLoginPerformer);

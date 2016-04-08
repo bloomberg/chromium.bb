@@ -174,8 +174,8 @@ class ArcAuthService : public ArcService,
   base::ThreadChecker thread_checker_;
   State state_ = State::STOPPED;
   base::ObserverList<Observer> observer_list_;
-  scoped_ptr<GaiaAuthFetcher> merger_fetcher_;
-  scoped_ptr<UbertokenFetcher> ubertoken_fethcher_;
+  std::unique_ptr<GaiaAuthFetcher> merger_fetcher_;
+  std::unique_ptr<UbertokenFetcher> ubertoken_fethcher_;
   std::string auth_code_;
   GetAuthCodeCallback auth_callback_;
   bool initial_opt_in_ = false;

@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_NET_WAKE_ON_WIFI_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_NET_WAKE_ON_WIFI_MANAGER_H_
 
+#include <memory>
+
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/power/extension_event_observer.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -86,10 +87,11 @@ class WakeOnWifiManager : public content::NotificationObserver,
   bool wifi_properties_received_;
 
   class WakeOnPacketConnectionObserver;
-  base::ScopedPtrHashMap<Profile*, scoped_ptr<WakeOnPacketConnectionObserver>>
+  base::ScopedPtrHashMap<Profile*,
+                         std::unique_ptr<WakeOnPacketConnectionObserver>>
       connection_observers_;
 
-  scoped_ptr<ExtensionEventObserver> extension_event_observer_;
+  std::unique_ptr<ExtensionEventObserver> extension_event_observer_;
 
   content::NotificationRegistrar registrar_;
 

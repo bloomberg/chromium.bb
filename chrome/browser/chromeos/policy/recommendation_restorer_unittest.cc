@@ -4,10 +4,10 @@
 
 #include "chrome/browser/chromeos/policy/recommendation_restorer.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -77,7 +77,7 @@ class RecommendationRestorerTest : public testing::Test {
   base::ThreadTaskRunnerHandle runner_handler_;
 
  private:
-  scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs_owner_;
+  std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs_owner_;
 
   TestingProfileManager profile_manager_;
 

@@ -138,7 +138,7 @@ void NetworkStateHelper::GetConnectedWifiNetwork(std::string* out_onc_spec) {
   if (!network_state)
     return;
 
-  scoped_ptr<base::DictionaryValue> current_onc =
+  std::unique_ptr<base::DictionaryValue> current_onc =
       network_util::TranslateNetworkStateToONC(network_state);
   std::string security;
   current_onc->GetString(
@@ -148,7 +148,8 @@ void NetworkStateHelper::GetConnectedWifiNetwork(std::string* out_onc_spec) {
 
   const std::string hex_ssid = network_state->GetHexSsid();
 
-  scoped_ptr<base::DictionaryValue> copied_onc(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> copied_onc(
+      new base::DictionaryValue());
   copied_onc->Set(onc::toplevel_config::kType,
                   new base::StringValue(onc::network_type::kWiFi));
   copied_onc->Set(onc::network_config::WifiProperty(onc::wifi::kHexSSID),
@@ -163,7 +164,7 @@ void NetworkStateHelper::CreateAndConnectNetworkFromOnc(
     const base::Closure& success_callback,
     const base::Closure& error_callback) const {
   std::string error;
-  scoped_ptr<base::Value> root = base::JSONReader::ReadAndReturnError(
+  std::unique_ptr<base::Value> root = base::JSONReader::ReadAndReturnError(
       onc_spec, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
 
   base::DictionaryValue* toplevel_onc = nullptr;
@@ -213,7 +214,7 @@ void NetworkStateHelper::OnCreateConfiguration(
 void NetworkStateHelper::OnCreateOrConnectNetworkFailed(
     const base::Closure& error_callback,
     const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) const {
+    std::unique_ptr<base::DictionaryValue> error_data) const {
   LOG(ERROR) << "Failed to create or connect to network: " << error_name;
   error_callback.Run();
 }

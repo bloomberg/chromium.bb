@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_NETWORK_CONFIGURATION_UPDATER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_NETWORK_CONFIGURATION_UPDATER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_list.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/network_configuration_updater.h"
 #include "components/onc/onc_constants.h"
@@ -44,7 +44,8 @@ class DeviceNetworkConfigurationUpdater : public NetworkConfigurationUpdater {
   // Creates an updater that applies the ONC device policy from |policy_service|
   // once the policy service is completely initialized and on each policy
   // change. The argument objects must outlive the returned updater.
-  static scoped_ptr<DeviceNetworkConfigurationUpdater> CreateForDevicePolicy(
+  static std::unique_ptr<DeviceNetworkConfigurationUpdater>
+  CreateForDevicePolicy(
       PolicyService* policy_service,
       chromeos::ManagedNetworkConfigurationHandler* network_config_handler,
       chromeos::NetworkDeviceHandler* network_device_handler,
@@ -66,7 +67,7 @@ class DeviceNetworkConfigurationUpdater : public NetworkConfigurationUpdater {
 
   chromeos::NetworkDeviceHandler* network_device_handler_;
   chromeos::CrosSettings* cros_settings_;
-  scoped_ptr<base::CallbackList<void(void)>::Subscription>
+  std::unique_ptr<base::CallbackList<void(void)>::Subscription>
       data_roaming_setting_subscription_;
 
   base::WeakPtrFactory<DeviceNetworkConfigurationUpdater> weak_factory_;

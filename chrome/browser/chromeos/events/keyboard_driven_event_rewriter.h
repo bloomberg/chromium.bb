@@ -19,20 +19,21 @@ class KeyboardDrivenEventRewriter : public ui::EventRewriter {
   ~KeyboardDrivenEventRewriter() override;
 
   // Calls Rewrite for testing.
-  ui::EventRewriteStatus RewriteForTesting(const ui::Event& event,
-                                           scoped_ptr<ui::Event>* new_event);
+  ui::EventRewriteStatus RewriteForTesting(
+      const ui::Event& event,
+      std::unique_ptr<ui::Event>* new_event);
 
   // EventRewriter overrides:
   ui::EventRewriteStatus RewriteEvent(
       const ui::Event& event,
-      scoped_ptr<ui::Event>* new_event) override;
+      std::unique_ptr<ui::Event>* new_event) override;
   ui::EventRewriteStatus NextDispatchEvent(
       const ui::Event& last_event,
-      scoped_ptr<ui::Event>* new_event) override;
+      std::unique_ptr<ui::Event>* new_event) override;
 
  private:
   ui::EventRewriteStatus Rewrite(const ui::Event& event,
-                                 scoped_ptr<ui::Event>* new_event);
+                                 std::unique_ptr<ui::Event>* new_event);
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardDrivenEventRewriter);
 };

@@ -22,18 +22,18 @@
 namespace policy {
 namespace test {
 
-void ExternalDataFetchCallback(scoped_ptr<std::string>* destination,
+void ExternalDataFetchCallback(std::unique_ptr<std::string>* destination,
                                const base::Closure& done_callback,
-                               scoped_ptr<std::string> data) {
+                               std::unique_ptr<std::string> data) {
   *destination = std::move(data);
   done_callback.Run();
 }
 
-scoped_ptr<base::DictionaryValue> ConstructExternalDataReference(
+std::unique_ptr<base::DictionaryValue> ConstructExternalDataReference(
     const std::string& url,
     const std::string& data) {
   const std::string hash = crypto::SHA256HashString(data);
-  scoped_ptr<base::DictionaryValue> metadata(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> metadata(new base::DictionaryValue);
   metadata->SetStringWithoutPathExpansion("url", url);
   metadata->SetStringWithoutPathExpansion("hash", base::HexEncode(hash.c_str(),
                                                                   hash.size()));
@@ -42,7 +42,7 @@ scoped_ptr<base::DictionaryValue> ConstructExternalDataReference(
 
 void SetExternalDataReference(CloudPolicyCore* core,
                               const std::string& policy,
-                              scoped_ptr<base::DictionaryValue> metadata) {
+                              std::unique_ptr<base::DictionaryValue> metadata) {
   CloudPolicyStore* store = core->store();
   ASSERT_TRUE(store);
   PolicyMap policy_map;

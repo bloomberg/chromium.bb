@@ -166,15 +166,17 @@ void ComponentExtensionIMEManagerImpl::Unload(Profile* profile,
   GetComponentLoader(profile)->Remove(extension_id);
 }
 
-scoped_ptr<base::DictionaryValue> ComponentExtensionIMEManagerImpl::GetManifest(
+std::unique_ptr<base::DictionaryValue>
+ComponentExtensionIMEManagerImpl::GetManifest(
     const std::string& manifest_string) {
   std::string error;
   JSONStringValueDeserializer deserializer(manifest_string);
-  scoped_ptr<base::Value> manifest = deserializer.Deserialize(NULL, &error);
+  std::unique_ptr<base::Value> manifest =
+      deserializer.Deserialize(NULL, &error);
   if (!manifest.get())
     LOG(ERROR) << "Failed at getting manifest";
 
-  return scoped_ptr<base::DictionaryValue>(
+  return std::unique_ptr<base::DictionaryValue>(
       static_cast<base::DictionaryValue*>(manifest.release()));
 }
 
@@ -303,7 +305,7 @@ void ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo(
     if (component_ime.manifest.empty())
       continue;
 
-    scoped_ptr<base::DictionaryValue> manifest =
+    std::unique_ptr<base::DictionaryValue> manifest =
         GetManifest(component_ime.manifest);
     if (!manifest.get())
       continue;

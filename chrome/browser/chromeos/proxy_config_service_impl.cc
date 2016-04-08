@@ -38,9 +38,9 @@ bool GetProxyConfig(const PrefService* profile_prefs,
                     const NetworkState& network,
                     net::ProxyConfig* proxy_config,
                     ::onc::ONCSource* onc_source) {
-  scoped_ptr<ProxyConfigDictionary> proxy_dict =
-      proxy_config::GetProxyConfigForNetwork(
-          profile_prefs, local_state_prefs, network, onc_source);
+  std::unique_ptr<ProxyConfigDictionary> proxy_dict =
+      proxy_config::GetProxyConfigForNetwork(profile_prefs, local_state_prefs,
+                                             network, onc_source);
   if (!proxy_dict)
     return false;
   return PrefProxyConfigTrackerImpl::PrefConfigToNetConfig(*proxy_dict,
@@ -240,7 +240,8 @@ void ProxyConfigServiceImpl::DetermineEffectiveConfigFromDefaultNetwork() {
     PrefProxyConfigTrackerImpl::OnProxyConfigChanged(effective_config_state,
                                                      effective_config);
     if (VLOG_IS_ON(1) && !update_pending()) {  // Update was successful.
-      scoped_ptr<base::DictionaryValue> config_dict(effective_config.ToValue());
+      std::unique_ptr<base::DictionaryValue> config_dict(
+          effective_config.ToValue());
       VLOG(1) << this << ": Proxy changed: "
               << ProxyPrefs::ConfigStateToDebugString(active_config_state_)
               << ", " << *config_dict;

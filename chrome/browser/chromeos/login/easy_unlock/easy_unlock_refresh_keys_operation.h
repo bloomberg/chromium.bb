@@ -42,8 +42,8 @@ class EasyUnlockRefreshKeysOperation {
   EasyUnlockDeviceKeyDataList devices_;
   RefreshKeysCallback callback_;
 
-  scoped_ptr<EasyUnlockCreateKeysOperation> create_keys_operation_;
-  scoped_ptr<EasyUnlockRemoveKeysOperation> remove_keys_operation_;
+  std::unique_ptr<EasyUnlockCreateKeysOperation> create_keys_operation_;
+  std::unique_ptr<EasyUnlockRemoveKeysOperation> remove_keys_operation_;
 
   base::WeakPtrFactory<EasyUnlockRefreshKeysOperation> weak_ptr_factory_;
 

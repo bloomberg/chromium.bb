@@ -170,9 +170,9 @@ class BlockingLoginTest
   // Handles an HTTP request sent to the test server. This handler either
   // uses a canned response in |responses_| if the request path matches one
   // of the URLs that we mock, otherwise this handler delegates to |fake_gaia_|.
-  scoped_ptr<net::test_server::HttpResponse> HandleRequest(
+  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
-    scoped_ptr<net::test_server::HttpResponse> response;
+    std::unique_ptr<net::test_server::HttpResponse> response;
 
     GaiaUrls* gaia = GaiaUrls::GetInstance();
     if (request.relative_url == gaia->client_login_to_oauth2_url().path() ||

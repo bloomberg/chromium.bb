@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SIGNIN_OAUTH2_LOGIN_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SIGNIN_OAUTH2_LOGIN_MANAGER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_verifier.h"
@@ -150,7 +150,7 @@ class OAuth2LoginManager : public KeyedService,
   void OnRefreshTokenResponse(const std::string& access_token,
                               int expires_in_seconds) override;
   void OnGetUserInfoResponse(
-      scoped_ptr<base::DictionaryValue> user_info) override;
+      std::unique_ptr<base::DictionaryValue> user_info) override;
   void OnOAuthError() override;
   void OnNetworkError(int response_code) override;
 
@@ -235,9 +235,9 @@ class OAuth2LoginManager : public KeyedService,
   SessionRestoreStrategy restore_strategy_;
   SessionRestoreState state_;
 
-  scoped_ptr<OAuth2TokenFetcher> oauth2_token_fetcher_;
-  scoped_ptr<OAuth2LoginVerifier> login_verifier_;
-  scoped_ptr<gaia::GaiaOAuthClient> account_info_fetcher_;
+  std::unique_ptr<OAuth2TokenFetcher> oauth2_token_fetcher_;
+  std::unique_ptr<OAuth2LoginVerifier> login_verifier_;
+  std::unique_ptr<gaia::GaiaOAuthClient> account_info_fetcher_;
 
   // OAuth2 refresh token.
   std::string refresh_token_;

@@ -6,10 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/files/file.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/file_system_provider/abort_callback.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
@@ -60,11 +61,11 @@ class FileSystemProviderThrottledFileSystemTest : public testing::Test {
         extensions::SOURCE_FILE);
 
     file_system_.reset(new ThrottledFileSystem(
-        make_scoped_ptr(new FakeProvidedFileSystem(file_system_info))));
+        base::WrapUnique(new FakeProvidedFileSystem(file_system_info))));
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<ThrottledFileSystem> file_system_;
+  std::unique_ptr<ThrottledFileSystem> file_system_;
 };
 
 TEST_F(FileSystemProviderThrottledFileSystemTest, OpenFile_LimitedToOneAtOnce) {

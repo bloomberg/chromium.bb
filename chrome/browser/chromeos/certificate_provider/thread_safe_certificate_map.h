@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_CERTIFICATE_PROVIDER_THREAD_SAFE_CERTIFICATE_MAP_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_info.h"
 
@@ -33,7 +33,7 @@ class ThreadSafeCertificateMap {
   };
   using FingerprintToCertAndExtensionMap =
       std::map<net::SHA256HashValue,
-               scoped_ptr<MapValue>,
+               std::unique_ptr<MapValue>,
                net::SHA256HashValueLessThan>;
 
   ThreadSafeCertificateMap();

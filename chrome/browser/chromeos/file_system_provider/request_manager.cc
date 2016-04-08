@@ -44,8 +44,7 @@ RequestManager::~RequestManager() {
   while (it != requests_.end()) {
     const int request_id = it->first;
     ++it;
-    RejectRequest(request_id,
-                  scoped_ptr<RequestValue>(new RequestValue()),
+    RejectRequest(request_id, std::unique_ptr<RequestValue>(new RequestValue()),
                   base::File::FILE_ERROR_ABORT);
   }
 
@@ -54,7 +53,7 @@ RequestManager::~RequestManager() {
 }
 
 int RequestManager::CreateRequest(RequestType type,
-                                  scoped_ptr<HandlerInterface> handler) {
+                                  std::unique_ptr<HandlerInterface> handler) {
   // The request id is unique per request manager, so per service, thereof
   // per profile.
   int request_id = next_id_++;
@@ -92,7 +91,7 @@ int RequestManager::CreateRequest(RequestType type,
 
 base::File::Error RequestManager::FulfillRequest(
     int request_id,
-    scoped_ptr<RequestValue> response,
+    std::unique_ptr<RequestValue> response,
     bool has_more) {
   CHECK(response.get());
   RequestMap::iterator request_it = requests_.find(request_id);
@@ -119,7 +118,7 @@ base::File::Error RequestManager::FulfillRequest(
 
 base::File::Error RequestManager::RejectRequest(
     int request_id,
-    scoped_ptr<RequestValue> response,
+    std::unique_ptr<RequestValue> response,
     base::File::Error error) {
   CHECK(response.get());
   RequestMap::iterator request_it = requests_.find(request_id);
@@ -169,8 +168,7 @@ void RequestManager::OnRequestTimeout(int request_id) {
   FOR_EACH_OBSERVER(Observer, observers_, OnRequestTimeouted(request_id));
 
   if (!notification_manager_) {
-    RejectRequest(request_id,
-                  scoped_ptr<RequestValue>(new RequestValue()),
+    RejectRequest(request_id, std::unique_ptr<RequestValue>(new RequestValue()),
                   base::File::FILE_ERROR_ABORT);
     return;
   }
@@ -197,8 +195,7 @@ void RequestManager::OnUnresponsiveNotificationResult(
     return;
   }
 
-  RejectRequest(request_id,
-                scoped_ptr<RequestValue>(new RequestValue()),
+  RejectRequest(request_id, std::unique_ptr<RequestValue>(new RequestValue()),
                 base::File::FILE_ERROR_ABORT);
 }
 

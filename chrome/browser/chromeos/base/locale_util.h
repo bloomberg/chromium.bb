@@ -7,10 +7,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_BASE_LOCALE_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_BASE_LOCALE_UTIL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 
 class Profile;
 

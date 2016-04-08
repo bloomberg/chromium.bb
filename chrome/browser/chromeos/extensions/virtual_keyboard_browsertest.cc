@@ -96,7 +96,7 @@ content::RenderViewHost* VirtualKeyboardBrowserTest::GetKeyboardRenderViewHost(
     const std::string& id) {
   ShowVirtualKeyboard();
   GURL url = extensions::Extension::GetBaseURLFromExtensionId(id);
-  scoped_ptr<content::RenderWidgetHostIterator> widgets(
+  std::unique_ptr<content::RenderWidgetHostIterator> widgets(
       content::RenderWidgetHost::GetRenderWidgetHosts());
   while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
     content::RenderViewHost* view = content::RenderViewHost::From(widget);

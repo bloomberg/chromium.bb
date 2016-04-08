@@ -33,7 +33,7 @@ const int64_t StatusUploader::kDefaultUploadDelayMs =
 
 StatusUploader::StatusUploader(
     CloudPolicyClient* client,
-    scoped_ptr<DeviceStatusCollector> collector,
+    std::unique_ptr<DeviceStatusCollector> collector,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : client_(client),
       collector_(std::move(collector)),
@@ -120,7 +120,7 @@ void StatusUploader::RefreshUploadFrequency() {
 
 bool StatusUploader::IsSessionDataUploadAllowed() {
   // Check if we're in an auto-launched kiosk session.
-  scoped_ptr<DeviceLocalAccount> account =
+  std::unique_ptr<DeviceLocalAccount> account =
       collector_->GetAutoLaunchedKioskSessionInfo();
   if (!account)
     return false;

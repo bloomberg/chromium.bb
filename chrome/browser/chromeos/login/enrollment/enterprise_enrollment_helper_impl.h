@@ -86,7 +86,7 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper {
   bool auth_data_cleared_;
   std::string oauth_token_;
 
-  scoped_ptr<policy::PolicyOAuth2TokenFetcher> oauth_fetcher_;
+  std::unique_ptr<policy::PolicyOAuth2TokenFetcher> oauth_fetcher_;
 
   base::WeakPtrFactory<EnterpriseEnrollmentHelperImpl> weak_ptr_factory_;
 

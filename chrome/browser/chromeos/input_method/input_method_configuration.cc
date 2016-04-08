@@ -4,9 +4,10 @@
 
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/input_method/accessibility.h"
 #include "chrome/browser/chromeos/input_method/browser_state_monitor.h"
 #include "chrome/browser/chromeos/input_method/input_method_delegate_impl.h"
@@ -36,7 +37,7 @@ class InputMethodConfiguration {
     ui::IMEBridge::Initialize();
 
     InputMethodManagerImpl* impl = new InputMethodManagerImpl(
-        scoped_ptr<InputMethodDelegate>(new InputMethodDelegateImpl),
+        std::unique_ptr<InputMethodDelegate>(new InputMethodDelegateImpl),
         !g_disable_extension_loading);
     InputMethodManager::Initialize(impl);
 
@@ -70,9 +71,9 @@ class InputMethodConfiguration {
   }
 
  private:
-  scoped_ptr<Accessibility> accessibility_;
-  scoped_ptr<BrowserStateMonitor> browser_state_monitor_;
-  scoped_ptr<InputMethodPersistence> input_method_persistence_;
+  std::unique_ptr<Accessibility> accessibility_;
+  std::unique_ptr<BrowserStateMonitor> browser_state_monitor_;
+  std::unique_ptr<InputMethodPersistence> input_method_persistence_;
 };
 
 InputMethodConfiguration* g_input_method_configuration = NULL;

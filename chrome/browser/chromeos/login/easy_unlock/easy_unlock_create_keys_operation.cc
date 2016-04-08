@@ -6,13 +6,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_types.h"
@@ -272,7 +272,7 @@ void EasyUnlockCreateKeysOperation::CreateKeyForDeviceAtIndex(size_t index) {
   crypto::RandBytes(base::WriteInto(&user_key, kUserKeyByteSize + 1),
                     kUserKeyByteSize);
 
-  scoped_ptr<crypto::SymmetricKey> session_key(
+  std::unique_ptr<crypto::SymmetricKey> session_key(
       crypto::SymmetricKey::GenerateRandomKey(crypto::SymmetricKey::AES,
                                               kSessionKeyByteSize * 8));
 
@@ -357,7 +357,7 @@ void EasyUnlockCreateKeysOperation::OnGetSystemSalt(
   // Add cryptohome key.
   const cryptohome::Identification id(user_context_.GetAccountId());
 
-  scoped_ptr<Key> auth_key(new Key(*user_context_.GetKey()));
+  std::unique_ptr<Key> auth_key(new Key(*user_context_.GetKey()));
   if (auth_key->GetKeyType() == Key::KEY_TYPE_PASSWORD_PLAIN)
     auth_key->Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF, system_salt);
 

@@ -324,12 +324,12 @@ BaseScreen* WizardController::GetScreen(const std::string& screen_name) {
 
 BaseScreen* WizardController::CreateScreen(const std::string& screen_name) {
   if (screen_name == kNetworkScreenName) {
-    scoped_ptr<NetworkScreen> screen(
+    std::unique_ptr<NetworkScreen> screen(
         new NetworkScreen(this, this, oobe_ui_->GetNetworkView()));
     screen->Initialize(nullptr /* context */);
     return screen.release();
   } else if (screen_name == kUpdateScreenName) {
-    scoped_ptr<UpdateScreen> screen(new UpdateScreen(
+    std::unique_ptr<UpdateScreen> screen(new UpdateScreen(
         this, oobe_ui_->GetUpdateView(), remora_controller_.get()));
     screen->Initialize(nullptr /* context */);
     return screen.release();
@@ -358,7 +358,7 @@ BaseScreen* WizardController::CreateScreen(const std::string& screen_name) {
     return new SupervisedUserCreationScreen(
         this, oobe_ui_->GetSupervisedUserCreationScreenActor());
   } else if (screen_name == kHIDDetectionScreenName) {
-    scoped_ptr<HIDDetectionScreen> screen(new chromeos::HIDDetectionScreen(
+    std::unique_ptr<HIDDetectionScreen> screen(new chromeos::HIDDetectionScreen(
         this, oobe_ui_->GetHIDDetectionView()));
     screen->Initialize(nullptr /* context */);
     return screen.release();
@@ -1237,7 +1237,7 @@ PrefService* WizardController::GetLocalState() {
 }
 
 void WizardController::OnTimezoneResolved(
-    scoped_ptr<TimeZoneResponseData> timezone,
+    std::unique_ptr<TimeZoneResponseData> timezone,
     bool server_error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(timezone.get());
@@ -1342,7 +1342,8 @@ void WizardController::MaybeStartListeningForSharkConnection() {
 }
 
 void WizardController::OnSharkConnected(
-    scoped_ptr<pairing_chromeos::HostPairingController> remora_controller) {
+    std::unique_ptr<pairing_chromeos::HostPairingController>
+        remora_controller) {
   VLOG(1) << "OnSharkConnected";
   remora_controller_ = std::move(remora_controller);
   base::MessageLoop::current()->DeleteSoon(

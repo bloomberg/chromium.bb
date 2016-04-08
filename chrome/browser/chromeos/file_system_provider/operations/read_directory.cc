@@ -19,7 +19,7 @@ namespace operations {
 namespace {
 
 // Convert |input| into |output|. If parsing fails, then returns false.
-bool ConvertRequestValueToEntryList(scoped_ptr<RequestValue> value,
+bool ConvertRequestValueToEntryList(std::unique_ptr<RequestValue> value,
                                     storage::AsyncFileUtil::EntryList* output) {
   using extensions::api::file_system_provider::EntryMetadata;
   using extensions::api::file_system_provider_internal::
@@ -85,7 +85,7 @@ bool ReadDirectory::Execute(int request_id) {
 }
 
 void ReadDirectory::OnSuccess(int /* request_id */,
-                              scoped_ptr<RequestValue> result,
+                              std::unique_ptr<RequestValue> result,
                               bool has_more) {
   storage::AsyncFileUtil::EntryList entry_list;
   const bool convert_result =
@@ -104,7 +104,7 @@ void ReadDirectory::OnSuccess(int /* request_id */,
 }
 
 void ReadDirectory::OnError(int /* request_id */,
-                            scoped_ptr<RequestValue> /* result */,
+                            std::unique_ptr<RequestValue> /* result */,
                             base::File::Error error) {
   callback_.Run(
       error, storage::AsyncFileUtil::EntryList(), false /* has_more */);

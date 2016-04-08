@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_DEVICE_CHANGE_HANDLER_H_
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_DEVICE_CHANGE_HANDLER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "chrome/browser/chromeos/system/pointer_device_observer.h"
 
 namespace chromeos {
@@ -23,7 +24,7 @@ class DeviceChangeHandler : public PointerDeviceObserver::Observer {
   void TouchpadExists(bool exists) override;
   void MouseExists(bool exists) override;
 
-  scoped_ptr<PointerDeviceObserver> pointer_device_observer_;
+  std::unique_ptr<PointerDeviceObserver> pointer_device_observer_;
 };
 
 }  // namespace system

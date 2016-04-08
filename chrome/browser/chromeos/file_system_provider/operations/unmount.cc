@@ -35,13 +35,13 @@ bool Unmount::Execute(int request_id) {
 }
 
 void Unmount::OnSuccess(int /* request_id */,
-                        scoped_ptr<RequestValue> /* result */,
+                        std::unique_ptr<RequestValue> /* result */,
                         bool /* has_more */) {
   callback_.Run(base::File::FILE_OK);
 }
 
 void Unmount::OnError(int /* request_id */,
-                      scoped_ptr<RequestValue> /* result */,
+                      std::unique_ptr<RequestValue> /* result */,
                       base::File::Error error) {
   callback_.Run(error);
 }

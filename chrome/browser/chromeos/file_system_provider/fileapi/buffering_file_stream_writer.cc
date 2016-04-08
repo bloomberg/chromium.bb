@@ -14,7 +14,7 @@ namespace chromeos {
 namespace file_system_provider {
 
 BufferingFileStreamWriter::BufferingFileStreamWriter(
-    scoped_ptr<storage::FileStreamWriter> file_stream_writer,
+    std::unique_ptr<storage::FileStreamWriter> file_stream_writer,
     int intermediate_buffer_length)
     : file_stream_writer_(std::move(file_stream_writer)),
       intermediate_buffer_length_(intermediate_buffer_length),

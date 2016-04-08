@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell_observer.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "ui/gfx/display.h"
 
@@ -60,7 +60,8 @@ class DisplayRotationDefaultHandler
   std::set<int64_t> rotated_displays_;
   bool rotation_in_progress_ = false;
 
-  scoped_ptr<chromeos::CrosSettings::ObserverSubscription> settings_observer_;
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      settings_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayRotationDefaultHandler);
 };

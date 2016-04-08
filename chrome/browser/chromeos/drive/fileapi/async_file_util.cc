@@ -133,7 +133,7 @@ AsyncFileUtil::~AsyncFileUtil() {
 }
 
 void AsyncFileUtil::CreateOrOpen(
-    scoped_ptr<storage::FileSystemOperationContext> context,
+    std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     int file_flags,
     const CreateOrOpenCallback& callback) {
@@ -158,7 +158,7 @@ void AsyncFileUtil::CreateOrOpen(
 }
 
 void AsyncFileUtil::EnsureFileExists(
-    scoped_ptr<storage::FileSystemOperationContext> context,
+    std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     const EnsureFileExistsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -179,7 +179,7 @@ void AsyncFileUtil::EnsureFileExists(
 }
 
 void AsyncFileUtil::CreateDirectory(
-    scoped_ptr<storage::FileSystemOperationContext> context,
+    std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     bool exclusive,
     bool recursive,
@@ -201,7 +201,7 @@ void AsyncFileUtil::CreateDirectory(
 }
 
 void AsyncFileUtil::GetFileInfo(
-    scoped_ptr<storage::FileSystemOperationContext> context,
+    std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     int /* fields */,
     const GetFileInfoCallback& callback) {
@@ -222,7 +222,7 @@ void AsyncFileUtil::GetFileInfo(
 }
 
 void AsyncFileUtil::ReadDirectory(
-    scoped_ptr<storage::FileSystemOperationContext> context,
+    std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -242,7 +242,7 @@ void AsyncFileUtil::ReadDirectory(
 }
 
 void AsyncFileUtil::Touch(
-    scoped_ptr<storage::FileSystemOperationContext> context,
+    std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
@@ -264,7 +264,7 @@ void AsyncFileUtil::Touch(
 }
 
 void AsyncFileUtil::Truncate(
-    scoped_ptr<storage::FileSystemOperationContext> context,
+    std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     int64_t length,
     const StatusCallback& callback) {
@@ -284,7 +284,7 @@ void AsyncFileUtil::Truncate(
 }
 
 void AsyncFileUtil::CopyFileLocal(
-    scoped_ptr<storage::FileSystemOperationContext> context,
+    std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& src_url,
     const storage::FileSystemURL& dest_url,
     CopyOrMoveOption option,
@@ -317,7 +317,7 @@ void AsyncFileUtil::CopyFileLocal(
 }
 
 void AsyncFileUtil::MoveFileLocal(
-    scoped_ptr<storage::FileSystemOperationContext> context,
+    std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& src_url,
     const storage::FileSystemURL& dest_url,
     CopyOrMoveOption option,
@@ -343,7 +343,7 @@ void AsyncFileUtil::MoveFileLocal(
 }
 
 void AsyncFileUtil::CopyInForeignFile(
-    scoped_ptr<storage::FileSystemOperationContext> context,
+    std::unique_ptr<storage::FileSystemOperationContext> context,
     const base::FilePath& src_file_path,
     const storage::FileSystemURL& dest_url,
     const StatusCallback& callback) {
@@ -364,7 +364,7 @@ void AsyncFileUtil::CopyInForeignFile(
 }
 
 void AsyncFileUtil::DeleteFile(
-    scoped_ptr<storage::FileSystemOperationContext> context,
+    std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -384,7 +384,7 @@ void AsyncFileUtil::DeleteFile(
 }
 
 void AsyncFileUtil::DeleteDirectory(
-    scoped_ptr<storage::FileSystemOperationContext> context,
+    std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -404,7 +404,7 @@ void AsyncFileUtil::DeleteDirectory(
 }
 
 void AsyncFileUtil::DeleteRecursively(
-    scoped_ptr<storage::FileSystemOperationContext> context,
+    std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -424,7 +424,7 @@ void AsyncFileUtil::DeleteRecursively(
 }
 
 void AsyncFileUtil::CreateSnapshotFile(
-    scoped_ptr<storage::FileSystemOperationContext> context,
+    std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     const CreateSnapshotFileCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

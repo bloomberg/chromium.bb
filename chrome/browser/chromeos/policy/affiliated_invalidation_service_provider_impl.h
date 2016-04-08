@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_AFFILIATED_INVALIDATION_SERVICE_PROVIDER_IMPL_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_AFFILIATED_INVALIDATION_SERVICE_PROVIDER_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider.h"
@@ -70,11 +71,12 @@ class AffiliatedInvalidationServiceProviderImpl
   content::NotificationRegistrar registrar_;
 
   // Device-global invalidation service.
-  scoped_ptr<invalidation::TiclInvalidationService>
+  std::unique_ptr<invalidation::TiclInvalidationService>
       device_invalidation_service_;
 
   // State observer for the device-global invalidation service.
-  scoped_ptr<InvalidationServiceObserver> device_invalidation_service_observer_;
+  std::unique_ptr<InvalidationServiceObserver>
+      device_invalidation_service_observer_;
 
   // State observers for logged-in users' invalidation services.
   ScopedVector<InvalidationServiceObserver>

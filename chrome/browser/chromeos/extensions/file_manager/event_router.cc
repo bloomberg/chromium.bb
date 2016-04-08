@@ -5,12 +5,14 @@
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -101,10 +103,10 @@ bool IsRecoveryToolRunning(Profile* profile) {
 void BroadcastEvent(Profile* profile,
                     extensions::events::HistogramValue histogram_value,
                     const std::string& event_name,
-                    scoped_ptr<base::ListValue> event_args) {
-  extensions::EventRouter::Get(profile)
-      ->BroadcastEvent(make_scoped_ptr(new extensions::Event(
-          histogram_value, event_name, std::move(event_args))));
+                    std::unique_ptr<base::ListValue> event_args) {
+  extensions::EventRouter::Get(profile)->BroadcastEvent(
+      base::WrapUnique(new extensions::Event(histogram_value, event_name,
+                                             std::move(event_args))));
 }
 
 // Sends an event named |event_name| with arguments |event_args| to an extension
@@ -114,9 +116,9 @@ void DispatchEventToExtension(
     const std::string& extension_id,
     extensions::events::HistogramValue histogram_value,
     const std::string& event_name,
-    scoped_ptr<base::ListValue> event_args) {
+    std::unique_ptr<base::ListValue> event_args) {
   extensions::EventRouter::Get(profile)->DispatchEventToExtension(
-      extension_id, make_scoped_ptr(new extensions::Event(
+      extension_id, base::WrapUnique(new extensions::Event(
                         histogram_value, event_name, std::move(event_args))));
 }
 
@@ -358,7 +360,7 @@ class JobEventRouterImpl : public JobEventRouter {
       const std::string& extension_id,
       extensions::events::HistogramValue histogram_value,
       const std::string& event_name,
-      scoped_ptr<base::ListValue> event_args) override {
+      std::unique_ptr<base::ListValue> event_args) override {
     ::file_manager::DispatchEventToExtension(profile_, extension_id,
                                              histogram_value, event_name,
                                              std::move(event_args));
@@ -500,7 +502,7 @@ void EventRouter::AddFileWatch(const base::FilePath& local_path,
 
   WatcherMap::iterator iter = file_watchers_.find(watch_path);
   if (iter == file_watchers_.end()) {
-    scoped_ptr<FileWatcher> watcher(new FileWatcher(virtual_path));
+    std::unique_ptr<FileWatcher> watcher(new FileWatcher(virtual_path));
     watcher->AddExtension(extension_id);
 
     if (is_on_drive) {

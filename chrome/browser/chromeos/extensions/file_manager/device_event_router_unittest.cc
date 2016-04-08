@@ -91,7 +91,7 @@ class DeviceEventRouterTest : public testing::Test {
                 false);
   }
 
-  scoped_ptr<DeviceEventRouterImpl> device_event_router;
+  std::unique_ptr<DeviceEventRouterImpl> device_event_router;
 
  private:
   base::MessageLoop message_loop_;
@@ -100,7 +100,7 @@ class DeviceEventRouterTest : public testing::Test {
 TEST_F(DeviceEventRouterTest, AddAndRemoveDevice) {
   const Disk disk1 = CreateTestDisk("/device/test", "/mount/path1");
   const Disk disk1_unmounted = CreateTestDisk("/device/test", "");
-  scoped_ptr<Volume> volume(Volume::CreateForTesting(
+  std::unique_ptr<Volume> volume(Volume::CreateForTesting(
       base::FilePath(FILE_PATH_LITERAL("/device/test")),
       base::FilePath(FILE_PATH_LITERAL("/mount/path1"))));
   device_event_router->OnDeviceAdded("/device/test");

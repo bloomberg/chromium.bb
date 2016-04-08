@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/certificate_provider/certificate_requests.h"
 
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -11,7 +12,6 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 
@@ -50,7 +50,7 @@ int CertificateRequests::AddRequest(
     const std::vector<std::string>& extension_ids,
     const base::Callback<void(const net::CertificateList&)>& callback,
     const base::Callback<void(int)>& timeout_callback) {
-  scoped_ptr<CertificateRequestState> state(new CertificateRequestState);
+  std::unique_ptr<CertificateRequestState> state(new CertificateRequestState);
   state->callback = callback;
   state->pending_extensions.insert(extension_ids.begin(), extension_ids.end());
 

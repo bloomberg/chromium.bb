@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -71,7 +72,7 @@ class FileStreamReader : public storage::FileStreamReader {
   // Called when initialization is completed with either a success or an error.
   void OnInitializeCompleted(const base::Closure& pending_closure,
                              const net::Int64CompletionCallback& error_callback,
-                             scoped_ptr<EntryMetadata> metadata,
+                             std::unique_ptr<EntryMetadata> metadata,
                              base::File::Error result);
 
   // Called when a file system provider returns chunk of read data. Note, that
@@ -87,7 +88,7 @@ class FileStreamReader : public storage::FileStreamReader {
   // or an error.
   void OnGetMetadataForGetLengthReceived(
       const net::Int64CompletionCallback& callback,
-      scoped_ptr<EntryMetadata> metadata,
+      std::unique_ptr<EntryMetadata> metadata,
       base::File::Error result);
 
   // Same as Read(), but called after initializing is completed.

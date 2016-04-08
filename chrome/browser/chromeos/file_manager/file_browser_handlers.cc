@@ -179,19 +179,20 @@ class FileBrowserHandlerExecutor {
 
   // Checks legitimacy of file url and grants file RO access permissions from
   // handler (target) extension and its renderer process.
-  static scoped_ptr<FileDefinitionList> SetupFileAccessPermissions(
+  static std::unique_ptr<FileDefinitionList> SetupFileAccessPermissions(
       scoped_refptr<storage::FileSystemContext> file_system_context_handler,
       const scoped_refptr<const Extension>& handler_extension,
       const std::vector<FileSystemURL>& file_urls);
 
   void ExecuteDoneOnUIThread(bool success);
-  void ExecuteAfterSetupFileAccess(scoped_ptr<FileDefinitionList> file_list);
+  void ExecuteAfterSetupFileAccess(
+      std::unique_ptr<FileDefinitionList> file_list);
   void ExecuteFileActionsOnUIThread(
-      scoped_ptr<FileDefinitionList> file_definition_list,
-      scoped_ptr<EntryDefinitionList> entry_definition_list);
+      std::unique_ptr<FileDefinitionList> file_definition_list,
+      std::unique_ptr<EntryDefinitionList> entry_definition_list);
   void SetupPermissionsAndDispatchEvent(
-      scoped_ptr<FileDefinitionList> file_definition_list,
-      scoped_ptr<EntryDefinitionList> entry_definition_list,
+      std::unique_ptr<FileDefinitionList> file_definition_list,
+      std::unique_ptr<EntryDefinitionList> entry_definition_list,
       int handler_pid_in,
       extensions::ExtensionHost* host);
 
@@ -212,7 +213,7 @@ class FileBrowserHandlerExecutor {
 };
 
 // static
-scoped_ptr<FileDefinitionList>
+std::unique_ptr<FileDefinitionList>
 FileBrowserHandlerExecutor::SetupFileAccessPermissions(
     scoped_refptr<storage::FileSystemContext> file_system_context_handler,
     const scoped_refptr<const Extension>& handler_extension,
@@ -223,7 +224,8 @@ FileBrowserHandlerExecutor::SetupFileAccessPermissions(
   storage::ExternalFileSystemBackend* backend =
       file_system_context_handler->external_backend();
 
-  scoped_ptr<FileDefinitionList> file_definition_list(new FileDefinitionList);
+  std::unique_ptr<FileDefinitionList> file_definition_list(
+      new FileDefinitionList);
   for (size_t i = 0; i < file_urls.size(); ++i) {
     const FileSystemURL& url = file_urls[i];
 
@@ -300,7 +302,7 @@ void FileBrowserHandlerExecutor::Execute(
 }
 
 void FileBrowserHandlerExecutor::ExecuteAfterSetupFileAccess(
-    scoped_ptr<FileDefinitionList> file_definition_list) {
+    std::unique_ptr<FileDefinitionList> file_definition_list) {
   // Outlives the conversion process, since bound to the callback.
   const FileDefinitionList& file_definition_list_ref =
       *file_definition_list.get();
@@ -324,8 +326,8 @@ void FileBrowserHandlerExecutor::ExecuteDoneOnUIThread(bool success) {
 }
 
 void FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread(
-    scoped_ptr<FileDefinitionList> file_definition_list,
-    scoped_ptr<EntryDefinitionList> entry_definition_list) {
+    std::unique_ptr<FileDefinitionList> file_definition_list,
+    std::unique_ptr<EntryDefinitionList> entry_definition_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (file_definition_list->empty() || entry_definition_list->empty()) {
@@ -363,8 +365,8 @@ void FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread(
 }
 
 void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
-    scoped_ptr<FileDefinitionList> file_definition_list,
-    scoped_ptr<EntryDefinitionList> entry_definition_list,
+    std::unique_ptr<FileDefinitionList> file_definition_list,
+    std::unique_ptr<EntryDefinitionList> entry_definition_list,
     int handler_pid_in,
     extensions::ExtensionHost* host) {
   int handler_pid = host ? host->render_process_host()->GetID() :
@@ -384,7 +386,7 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
   SetupHandlerHostFileAccessPermissions(
       file_definition_list.get(), extension_.get(), handler_pid);
 
-  scoped_ptr<base::ListValue> event_args(new base::ListValue());
+  std::unique_ptr<base::ListValue> event_args(new base::ListValue());
   event_args->Append(new base::StringValue(action_id_));
   base::DictionaryValue* details = new base::DictionaryValue();
   event_args->Append(details);
@@ -406,7 +408,7 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
     file_def->SetBoolean("fileIsDirectory", iter->is_directory);
   }
 
-  scoped_ptr<extensions::Event> event(new extensions::Event(
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::FILE_BROWSER_HANDLER_ON_EXECUTE,
       "fileBrowserHandler.onExecute", std::move(event_args)));
   event->restrict_to_browser_context = profile_;

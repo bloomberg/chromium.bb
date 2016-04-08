@@ -36,7 +36,7 @@ bool FileManagerPrivateCancelDialogFunction::RunAsync() {
 
 bool FileManagerPrivateSelectFileFunction::RunAsync() {
   using extensions::api::file_manager_private::SelectFile::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   std::vector<GURL> file_paths;
@@ -77,7 +77,7 @@ void FileManagerPrivateSelectFileFunction::GetSelectedFileInfoResponse(
 
 bool FileManagerPrivateSelectFilesFunction::RunAsync() {
   using extensions::api::file_manager_private::SelectFiles::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   std::vector<GURL> file_urls;

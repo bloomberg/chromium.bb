@@ -23,7 +23,7 @@ void DeviceEventLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  scoped_ptr<SystemLogsResponse> response(new SystemLogsResponse);
+  std::unique_ptr<SystemLogsResponse> response(new SystemLogsResponse);
   const int kMaxDeviceEventsForAboutSystem = 400;
   (*response)[kNetworkEventLogEntry] = device_event_log::GetAsString(
       device_event_log::OLDEST_FIRST, "time,file,level", "network",

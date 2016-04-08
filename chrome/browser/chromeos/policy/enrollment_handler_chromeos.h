@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_ENROLLMENT_HANDLER_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_ENROLLMENT_HANDLER_CHROMEOS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_validator.h"
@@ -66,7 +66,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
       EnterpriseInstallAttributes* install_attributes,
       ServerBackedStateKeysBroker* state_keys_broker,
       chromeos::OwnerSettingsServiceChromeOS* owner_settings_service,
-      scoped_ptr<CloudPolicyClient> client,
+      std::unique_ptr<CloudPolicyClient> client,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const EnrollmentConfig& enrollment_config,
       const std::string& auth_token,
@@ -82,7 +82,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   void StartEnrollment();
 
   // Releases the client.
-  scoped_ptr<CloudPolicyClient> ReleaseClient();
+  std::unique_ptr<CloudPolicyClient> ReleaseClient();
 
   // CloudPolicyClient::Observer:
   void OnPolicyFetched(CloudPolicyClient* client) override;
@@ -161,9 +161,9 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   EnterpriseInstallAttributes* install_attributes_;
   ServerBackedStateKeysBroker* state_keys_broker_;
   chromeos::OwnerSettingsServiceChromeOS* owner_settings_service_;
-  scoped_ptr<CloudPolicyClient> client_;
+  std::unique_ptr<CloudPolicyClient> client_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
-  scoped_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
+  std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
 
   EnrollmentConfig enrollment_config_;
   std::string auth_token_;
@@ -186,7 +186,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   std::string robot_refresh_token_;
 
   // The validated policy response info to be installed in the store.
-  scoped_ptr<enterprise_management::PolicyFetchResponse> policy_;
+  std::unique_ptr<enterprise_management::PolicyFetchResponse> policy_;
   std::string username_;
   std::string device_id_;
   std::string request_token_;

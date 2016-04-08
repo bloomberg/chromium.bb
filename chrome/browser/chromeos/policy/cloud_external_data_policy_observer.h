@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_CLOUD_EXTERNAL_DATA_POLICY_OBSERVER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -51,7 +51,7 @@ class CloudExternalDataPolicyObserver
     // called at all.
     virtual void OnExternalDataFetched(const std::string& policy,
                                        const std::string& user_id,
-                                       scoped_ptr<std::string> data);
+                                       std::unique_ptr<std::string> data);
 
    protected:
     virtual ~Delegate();
@@ -89,7 +89,7 @@ class CloudExternalDataPolicyObserver
                                       const PolicyMap::Entry* entry);
 
   void OnExternalDataFetched(const std::string& user_id,
-                             scoped_ptr<std::string> data);
+                             std::unique_ptr<std::string> data);
 
   // A map from each device-local account user ID to its current policy map
   // entry for |policy_|.
@@ -111,7 +111,7 @@ class CloudExternalDataPolicyObserver
   Delegate* delegate_;
 
   content::NotificationRegistrar notification_registrar_;
-  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       device_local_accounts_subscription_;
 
   // A map from user ID to a base::WeakPtr for each external data fetch

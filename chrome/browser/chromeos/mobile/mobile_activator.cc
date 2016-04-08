@@ -128,7 +128,7 @@ bool CellularConfigDocument::LoadFromFile(const base::FilePath& config_path) {
   if (!base::ReadFileToString(config_path, &config))
     return false;
 
-  scoped_ptr<base::Value> root =
+  std::unique_ptr<base::Value> root =
       base::JSONReader::Read(config, base::JSON_ALLOW_TRAILING_COMMAS);
   DCHECK(root.get() != NULL);
   if (!root.get() || root->GetType() != base::Value::TYPE_DICTIONARY) {
@@ -324,7 +324,7 @@ void MobileActivator::GetPropertiesAndContinueActivation(
 
 void MobileActivator::GetPropertiesFailure(
     const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) {
+    std::unique_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("MobileActivator GetProperties Failed: " + error_name,
                 service_path_);
 }
@@ -928,7 +928,7 @@ void MobileActivator::HandleActivationFailure(
     const std::string& service_path,
     PlanActivationState new_state,
     const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) {
+    std::unique_ptr<base::DictionaryValue> error_data) {
   pending_activation_request_ = false;
   const NetworkState* network = GetNetworkState(service_path);
   if (!network) {

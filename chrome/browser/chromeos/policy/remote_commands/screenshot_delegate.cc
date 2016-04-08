@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/remote_commands/screenshot_delegate.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
@@ -45,7 +46,7 @@ void ScreenshotDelegate::TakeSnapshot(
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-scoped_ptr<UploadJob> ScreenshotDelegate::CreateUploadJob(
+std::unique_ptr<UploadJob> ScreenshotDelegate::CreateUploadJob(
     const GURL& upload_url,
     UploadJob::Delegate* delegate) {
   chromeos::DeviceOAuth2TokenService* device_oauth2_token_service =
@@ -55,10 +56,10 @@ scoped_ptr<UploadJob> ScreenshotDelegate::CreateUploadJob(
       g_browser_process->system_request_context();
   std::string robot_account_id =
       device_oauth2_token_service->GetRobotAccountId();
-  return scoped_ptr<UploadJob>(new UploadJobImpl(
+  return std::unique_ptr<UploadJob>(new UploadJobImpl(
       upload_url, robot_account_id, device_oauth2_token_service,
       system_request_context, delegate,
-      make_scoped_ptr(new UploadJobImpl::RandomMimeBoundaryGenerator)));
+      base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator)));
 }
 
 void ScreenshotDelegate::StoreScreenshot(

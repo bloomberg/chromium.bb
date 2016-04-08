@@ -36,8 +36,8 @@ PowerButtonObserver::PowerButtonObserver() {
   // TODO: Remove after resolving crbug.com/452599.
   VLOG(0) << "Creating PowerButtonObserver " << this;
 
-  ash::Shell::GetInstance()->lock_state_controller()->
-      SetDelegate(scoped_ptr<ash::LockStateControllerDelegate>(
+  ash::Shell::GetInstance()->lock_state_controller()->SetDelegate(
+      std::unique_ptr<ash::LockStateControllerDelegate>(
           new SessionStateControllerDelegateChromeos));
 
   registrar_.Add(

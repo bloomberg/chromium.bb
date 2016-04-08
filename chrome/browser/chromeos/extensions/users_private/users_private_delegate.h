@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_USERS_PRIVATE_USERS_PRIVATE_DELEGATE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 #include "chrome/common/extensions/api/users_private.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -36,7 +36,7 @@ class UsersPrivateDelegate : public KeyedService {
 
  protected:
   Profile* profile_;  // weak; not owned by us
-  scoped_ptr<PrefsUtil> prefs_util_;
+  std::unique_ptr<PrefsUtil> prefs_util_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UsersPrivateDelegate);

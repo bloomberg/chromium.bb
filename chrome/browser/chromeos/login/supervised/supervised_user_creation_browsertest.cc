@@ -68,7 +68,7 @@ class SupervisedUserOwnerCreationTest : public SupervisedUserTestBase {
   }
 
  private:
-  scoped_ptr<StubCrosSettingsProvider> cros_settings_provider_;
+  std::unique_ptr<StubCrosSettingsProvider> cros_settings_provider_;
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserOwnerCreationTest);
 };
 

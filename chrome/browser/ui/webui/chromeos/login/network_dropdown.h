@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_NETWORK_DROPDOWN_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_NETWORK_DROPDOWN_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
@@ -65,7 +67,7 @@ class NetworkDropdown : public NetworkMenu::Delegate,
   void RequestNetworkScan();
 
   // The Network menu.
-  scoped_ptr<NetworkMenuWebUI> network_menu_;
+  std::unique_ptr<NetworkMenuWebUI> network_menu_;
 
   Actor* actor_;
 

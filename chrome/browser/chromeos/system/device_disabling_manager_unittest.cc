@@ -75,7 +75,7 @@ class DeviceDisablingManagerTestBase : public testing::Test,
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
   user_manager::FakeUserManager fake_user_manager_;
-  scoped_ptr<DeviceDisablingManager> device_disabling_manager_;
+  std::unique_ptr<DeviceDisablingManager> device_disabling_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDisablingManagerTestBase);
 };

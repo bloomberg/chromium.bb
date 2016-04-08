@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
@@ -40,7 +41,7 @@ ProvidedFileSystemInterface* CreateProvidedFileSystem(
     const ProvidedFileSystemInfo& file_system_info) {
   DCHECK(profile);
   return new ThrottledFileSystem(
-      make_scoped_ptr(new ProvidedFileSystem(profile, file_system_info)));
+      base::WrapUnique(new ProvidedFileSystem(profile, file_system_info)));
 }
 
 }  // namespace
@@ -105,7 +106,8 @@ void Service::SetFileSystemFactoryForTesting(
   file_system_factory_ = factory_callback;
 }
 
-void Service::SetRegistryForTesting(scoped_ptr<RegistryInterface> registry) {
+void Service::SetRegistryForTesting(
+    std::unique_ptr<RegistryInterface> registry) {
   DCHECK(registry);
   registry_.reset(registry.release());
 }
@@ -282,10 +284,10 @@ bool Service::RequestMount(const std::string& extension_id) {
 
   event_router->DispatchEventToExtension(
       extension_id,
-      make_scoped_ptr(new extensions::Event(
+      base::WrapUnique(new extensions::Event(
           extensions::events::FILE_SYSTEM_PROVIDER_ON_MOUNT_REQUESTED,
           extensions::api::file_system_provider::OnMountRequested::kEventName,
-          scoped_ptr<base::ListValue>(new base::ListValue()))));
+          std::unique_ptr<base::ListValue>(new base::ListValue()))));
 
   return true;
 }
@@ -381,8 +383,8 @@ void Service::OnExtensionUnloaded(
 
 void Service::OnExtensionLoaded(content::BrowserContext* browser_context,
                                 const extensions::Extension* extension) {
-  scoped_ptr<RegistryInterface::RestoredFileSystems> restored_file_systems =
-      registry_->RestoreFileSystems(extension->id());
+  std::unique_ptr<RegistryInterface::RestoredFileSystems>
+      restored_file_systems = registry_->RestoreFileSystems(extension->id());
 
   for (const auto& restored_file_system : *restored_file_systems) {
     const base::File::Error result = MountFileSystemInternal(

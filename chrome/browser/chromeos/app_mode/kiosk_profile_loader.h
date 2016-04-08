@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_PROFILE_LOADER_H_
 #define CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_PROFILE_LOADER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chromeos/login/auth/login_performer.h"
@@ -62,8 +62,8 @@ class KioskProfileLoader : public LoginPerformer::Delegate,
   const AccountId account_id_;
   bool use_guest_mount_;
   Delegate* delegate_;
-  scoped_ptr<CryptohomedChecker> cryptohomed_checker_;
-  scoped_ptr<LoginPerformer> login_performer_;
+  std::unique_ptr<CryptohomedChecker> cryptohomed_checker_;
+  std::unique_ptr<LoginPerformer> login_performer_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskProfileLoader);
 };

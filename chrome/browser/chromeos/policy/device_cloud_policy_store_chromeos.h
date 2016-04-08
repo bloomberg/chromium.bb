@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_CLOUD_POLICY_STORE_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_CLOUD_POLICY_STORE_CHROMEOS_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_validator.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -58,7 +59,7 @@ class DeviceCloudPolicyStoreChromeOS
  private:
   // Create a validator for |policy| with basic device policy configuration and
   // OnPolicyStored() as the completion callback.
-  scoped_ptr<DeviceCloudPolicyValidator> CreateValidator(
+  std::unique_ptr<DeviceCloudPolicyValidator> CreateValidator(
       const enterprise_management::PolicyFetchResponse& policy);
 
   // Called on completion on the policy validation prior to storing policy.

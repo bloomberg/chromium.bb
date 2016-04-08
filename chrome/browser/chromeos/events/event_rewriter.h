@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_CHROMEOS_EVENTS_EVENT_REWRITER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/events/event.h"
 #include "ui/events/event_rewriter.h"
 #include "ui/events/keycodes/dom/dom_key.h"
@@ -72,7 +72,7 @@ class EventRewriter : public ui::EventRewriter {
   // Calls RewriteMouseEvent().
   void RewriteMouseButtonEventForTesting(
       const ui::MouseEvent& event,
-      scoped_ptr<ui::Event>* rewritten_event);
+      std::unique_ptr<ui::Event>* rewritten_event);
 
   const std::map<int, DeviceType>& device_id_to_type_for_testing() const {
     return device_id_to_type_;
@@ -91,16 +91,17 @@ class EventRewriter : public ui::EventRewriter {
   // EventRewriter overrides:
   ui::EventRewriteStatus RewriteEvent(
       const ui::Event& event,
-      scoped_ptr<ui::Event>* rewritten_event) override;
+      std::unique_ptr<ui::Event>* rewritten_event) override;
   ui::EventRewriteStatus NextDispatchEvent(
       const ui::Event& last_event,
-      scoped_ptr<ui::Event>* new_event) override;
+      std::unique_ptr<ui::Event>* new_event) override;
 
   // Generate a new key event from an original key event and the replacement
   // state determined by a key rewriter.
-  static void BuildRewrittenKeyEvent(const ui::KeyEvent& key_event,
-                                     const MutableKeyState& state,
-                                     scoped_ptr<ui::Event>* rewritten_event);
+  static void BuildRewrittenKeyEvent(
+      const ui::KeyEvent& key_event,
+      const MutableKeyState& state,
+      std::unique_ptr<ui::Event>* rewritten_event);
 
  private:
   void DeviceKeyPressedOrReleased(int device_id);
@@ -140,19 +141,19 @@ class EventRewriter : public ui::EventRewriter {
   // Rewrite a particular kind of event.
   ui::EventRewriteStatus RewriteKeyEvent(
       const ui::KeyEvent& key_event,
-      scoped_ptr<ui::Event>* rewritten_event);
+      std::unique_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus RewriteMouseButtonEvent(
       const ui::MouseEvent& mouse_event,
-      scoped_ptr<ui::Event>* rewritten_event);
+      std::unique_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus RewriteMouseWheelEvent(
       const ui::MouseWheelEvent& mouse_event,
-      scoped_ptr<ui::Event>* rewritten_event);
+      std::unique_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus RewriteTouchEvent(
       const ui::TouchEvent& touch_event,
-      scoped_ptr<ui::Event>* rewritten_event);
+      std::unique_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus RewriteScrollEvent(
       const ui::ScrollEvent& scroll_event,
-      scoped_ptr<ui::Event>* rewritten_event);
+      std::unique_ptr<ui::Event>* rewritten_event);
 
   // Rewriter phases. These can inspect the original |event|, but operate using
   // the current |state|, which may have been modified by previous phases.

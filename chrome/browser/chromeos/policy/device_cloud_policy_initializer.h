@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_CLOUD_POLICY_INITIALIZER_H_
 
 #include <bitset>
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -99,11 +99,11 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
                            EnrollmentStatus status);
 
   // Creates a new CloudPolicyClient.
-  scoped_ptr<CloudPolicyClient> CreateClient(
+  std::unique_ptr<CloudPolicyClient> CreateClient(
       DeviceManagementService* device_management_service);
 
   void TryToCreateClient();
-  void StartConnection(scoped_ptr<CloudPolicyClient> client);
+  void StartConnection(std::unique_ptr<CloudPolicyClient> client);
 
   PrefService* local_state_;
   DeviceManagementService* enterprise_service_;
@@ -116,7 +116,7 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   bool is_initialized_;
 
   // Non-NULL if there is an enrollment operation pending.
-  scoped_ptr<EnrollmentHandlerChromeOS> enrollment_handler_;
+  std::unique_ptr<EnrollmentHandlerChromeOS> enrollment_handler_;
 
   ServerBackedStateKeysBroker::Subscription state_keys_update_subscription_;
 

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_DEVICE_SETTINGS_SERVICE_H_
 
 #include <deque>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -134,7 +134,7 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   // Stores a policy blob to session_manager. The result of the operation is
   // reported through |callback|. If successful, the updated device settings are
   // present in policy_data() and device_settings() when the callback runs.
-  void Store(scoped_ptr<enterprise_management::PolicyFetchResponse> policy,
+  void Store(std::unique_ptr<enterprise_management::PolicyFetchResponse> policy,
              const base::Closure& callback);
 
   // Returns the ownership status. May return OWNERSHIP_UNKNOWN if the disk
@@ -214,8 +214,9 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   scoped_refptr<ownership::PublicKey> public_key_;
   base::WeakPtr<ownership::OwnerSettingsService> owner_settings_service_;
 
-  scoped_ptr<enterprise_management::PolicyData> policy_data_;
-  scoped_ptr<enterprise_management::ChromeDeviceSettingsProto> device_settings_;
+  std::unique_ptr<enterprise_management::PolicyData> policy_data_;
+  std::unique_ptr<enterprise_management::ChromeDeviceSettingsProto>
+      device_settings_;
 
   // The queue of pending operations. The first operation on the queue is
   // currently active; it gets removed and destroyed once it completes.

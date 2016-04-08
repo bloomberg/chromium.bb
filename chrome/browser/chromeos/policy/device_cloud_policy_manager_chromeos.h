@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_CLOUD_POLICY_MANAGER_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_CLOUD_POLICY_MANAGER_CHROMEOS_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
@@ -55,7 +55,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // |task_runner| is the runner for policy refresh, heartbeat, and status
   // upload tasks.
   DeviceCloudPolicyManagerChromeOS(
-      scoped_ptr<DeviceCloudPolicyStoreChromeOS> store,
+      std::unique_ptr<DeviceCloudPolicyStoreChromeOS> store,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       ServerBackedStateKeysBroker* state_keys_broker);
   ~DeviceCloudPolicyManagerChromeOS() override;
@@ -95,7 +95,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   std::string GetRobotAccountId();
 
   // Starts the connection via |client_to_connect|.
-  void StartConnection(scoped_ptr<CloudPolicyClient> client_to_connect,
+  void StartConnection(std::unique_ptr<CloudPolicyClient> client_to_connect,
                        EnterpriseInstallAttributes* install_attributes);
 
   // Sends the unregister request. |callback| is invoked with a boolean
@@ -128,19 +128,19 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
 
   // Points to the same object as the base CloudPolicyManager::store(), but with
   // actual device policy specific type.
-  scoped_ptr<DeviceCloudPolicyStoreChromeOS> device_store_;
+  std::unique_ptr<DeviceCloudPolicyStoreChromeOS> device_store_;
   ServerBackedStateKeysBroker* state_keys_broker_;
 
   // Helper object that handles updating the server with our current device
   // state.
-  scoped_ptr<StatusUploader> status_uploader_;
+  std::unique_ptr<StatusUploader> status_uploader_;
 
   // Helper object that handles uploading system logs to the server.
-  scoped_ptr<SystemLogUploader> syslog_uploader_;
+  std::unique_ptr<SystemLogUploader> syslog_uploader_;
 
   // Helper object that handles sending heartbeats over the GCM channel to
   // the server, to monitor connectivity.
-  scoped_ptr<HeartbeatScheduler> heartbeat_scheduler_;
+  std::unique_ptr<HeartbeatScheduler> heartbeat_scheduler_;
 
   // The TaskRunner used to do device status and log uploads.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -150,7 +150,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // PrefService instance to read the policy refresh rate from.
   PrefService* local_state_;
 
-  scoped_ptr<chromeos::attestation::AttestationPolicyObserver>
+  std::unique_ptr<chromeos::attestation::AttestationPolicyObserver>
       attestation_policy_observer_;
 
   base::ObserverList<Observer, true> observers_;

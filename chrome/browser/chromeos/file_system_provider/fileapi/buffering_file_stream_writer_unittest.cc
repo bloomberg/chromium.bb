@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/file_system_provider/fileapi/buffering_file_stream_writer.h"
+
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/file_system_provider/fileapi/buffering_file_stream_writer.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -116,7 +118,7 @@ TEST_F(FileSystemProviderBufferingFileStreamWriterTest, Write) {
   std::vector<std::string> inner_write_log;
   std::vector<int> inner_flush_log;
   BufferingFileStreamWriter writer(
-      make_scoped_ptr(new FakeFileStreamWriter(
+      base::WrapUnique(new FakeFileStreamWriter(
           &inner_write_log, &inner_flush_log, NULL, net::OK)),
       kIntermediateBufferLength);
 
@@ -190,7 +192,7 @@ TEST_F(FileSystemProviderBufferingFileStreamWriterTest, Write_WithError) {
   std::vector<std::string> inner_write_log;
   std::vector<int> inner_flush_log;
   BufferingFileStreamWriter writer(
-      scoped_ptr<storage::FileStreamWriter>(new FakeFileStreamWriter(
+      std::unique_ptr<storage::FileStreamWriter>(new FakeFileStreamWriter(
           &inner_write_log, &inner_flush_log, NULL, net::ERR_FAILED)),
       kIntermediateBufferLength);
 
@@ -240,7 +242,7 @@ TEST_F(FileSystemProviderBufferingFileStreamWriterTest, Write_Directly) {
   std::vector<std::string> inner_write_log;
   std::vector<int> inner_flush_log;
   BufferingFileStreamWriter writer(
-      scoped_ptr<storage::FileStreamWriter>(new FakeFileStreamWriter(
+      std::unique_ptr<storage::FileStreamWriter>(new FakeFileStreamWriter(
           &inner_write_log, &inner_flush_log, NULL, net::OK)),
       kIntermediateBufferLength);
 
@@ -308,7 +310,7 @@ TEST_F(FileSystemProviderBufferingFileStreamWriterTest, Cancel) {
   int inner_cancel_counter = 0;
 
   BufferingFileStreamWriter writer(
-      scoped_ptr<storage::FileStreamWriter>(new FakeFileStreamWriter(
+      std::unique_ptr<storage::FileStreamWriter>(new FakeFileStreamWriter(
           &inner_write_log, &inner_flush_log, &inner_cancel_counter, net::OK)),
       kIntermediateBufferLength);
 
@@ -336,7 +338,7 @@ TEST_F(FileSystemProviderBufferingFileStreamWriterTest, Flush) {
   std::vector<std::string> inner_write_log;
   std::vector<int> inner_flush_log;
   BufferingFileStreamWriter writer(
-      scoped_ptr<storage::FileStreamWriter>(new FakeFileStreamWriter(
+      std::unique_ptr<storage::FileStreamWriter>(new FakeFileStreamWriter(
           &inner_write_log, &inner_flush_log, NULL, net::OK)),
       kIntermediateBufferLength);
 
@@ -373,7 +375,7 @@ TEST_F(FileSystemProviderBufferingFileStreamWriterTest, Flush_AfterWriteError) {
   std::vector<std::string> inner_write_log;
   std::vector<int> inner_flush_log;
   BufferingFileStreamWriter writer(
-      scoped_ptr<storage::FileStreamWriter>(new FakeFileStreamWriter(
+      std::unique_ptr<storage::FileStreamWriter>(new FakeFileStreamWriter(
           &inner_write_log, &inner_flush_log, NULL, net::ERR_FAILED)),
       kIntermediateBufferLength);
 

@@ -4,7 +4,8 @@
 
 #include "chrome/browser/chromeos/file_system_provider/fileapi/backend_delegate.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "chrome/browser/chromeos/file_system_provider/fileapi/buffering_file_stream_reader.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/buffering_file_stream_writer.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/file_stream_reader.h"
@@ -46,7 +47,8 @@ storage::AsyncFileUtil* BackendDelegate::GetAsyncFileUtil(
   return async_file_util_.get();
 }
 
-scoped_ptr<storage::FileStreamReader> BackendDelegate::CreateFileStreamReader(
+std::unique_ptr<storage::FileStreamReader>
+BackendDelegate::CreateFileStreamReader(
     const storage::FileSystemURL& url,
     int64_t offset,
     int64_t max_bytes_to_read,
@@ -55,23 +57,24 @@ scoped_ptr<storage::FileStreamReader> BackendDelegate::CreateFileStreamReader(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(storage::kFileSystemTypeProvided, url.type());
 
-  return scoped_ptr<storage::FileStreamReader>(new BufferingFileStreamReader(
-      scoped_ptr<storage::FileStreamReader>(new FileStreamReader(
-          context, url, offset, expected_modification_time)),
-      kReaderBufferSize,
-      max_bytes_to_read));
+  return std::unique_ptr<storage::FileStreamReader>(
+      new BufferingFileStreamReader(
+          std::unique_ptr<storage::FileStreamReader>(new FileStreamReader(
+              context, url, offset, expected_modification_time)),
+          kReaderBufferSize, max_bytes_to_read));
 }
 
-scoped_ptr<storage::FileStreamWriter> BackendDelegate::CreateFileStreamWriter(
-    const storage::FileSystemURL& url,
-    int64_t offset,
-    storage::FileSystemContext* context) {
+std::unique_ptr<storage::FileStreamWriter>
+BackendDelegate::CreateFileStreamWriter(const storage::FileSystemURL& url,
+                                        int64_t offset,
+                                        storage::FileSystemContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(storage::kFileSystemTypeProvided, url.type());
 
-  return scoped_ptr<storage::FileStreamWriter>(new BufferingFileStreamWriter(
-      scoped_ptr<storage::FileStreamWriter>(new FileStreamWriter(url, offset)),
-      kWriterBufferSize));
+  return std::unique_ptr<storage::FileStreamWriter>(
+      new BufferingFileStreamWriter(std::unique_ptr<storage::FileStreamWriter>(
+                                        new FileStreamWriter(url, offset)),
+                                    kWriterBufferSize));
 }
 
 storage::WatcherManager* BackendDelegate::GetWatcherManager(

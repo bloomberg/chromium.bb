@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_MEDIA_PLAYER_API_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 
@@ -46,7 +46,7 @@ class MediaPlayerAPI : public BrowserContextKeyedAPI {
   static const bool kServiceRedirectedInIncognito = true;
   static const bool kServiceIsNULLWhileTesting = true;
 
-  scoped_ptr<MediaPlayerEventRouter> media_player_event_router_;
+  std::unique_ptr<MediaPlayerEventRouter> media_player_event_router_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPlayerAPI);
 };

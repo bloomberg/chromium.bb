@@ -56,7 +56,7 @@ class PeripheralBatteryObserverTest : public InProcessBrowserTest {
   }
 
  protected:
-  scoped_ptr<PeripheralBatteryObserver> observer_;
+  std::unique_ptr<PeripheralBatteryObserver> observer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PeripheralBatteryObserverTest);

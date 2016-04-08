@@ -4,12 +4,12 @@
 
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
@@ -58,7 +58,7 @@ class DeviceCloudPolicyStoreChromeOSTest
     DeviceSettingsTestBase::SetUp();
 
     dbus_setter_->SetCryptohomeClient(
-        scoped_ptr<chromeos::CryptohomeClient>(fake_cryptohome_client_));
+        std::unique_ptr<chromeos::CryptohomeClient>(fake_cryptohome_client_));
 
     base::RunLoop loop;
     EnterpriseInstallAttributes::LockResult result;
@@ -141,9 +141,9 @@ class DeviceCloudPolicyStoreChromeOSTest
 
   ScopedTestingLocalState local_state_;
   chromeos::FakeCryptohomeClient* fake_cryptohome_client_;
-  scoped_ptr<EnterpriseInstallAttributes> install_attributes_;
+  std::unique_ptr<EnterpriseInstallAttributes> install_attributes_;
 
-  scoped_ptr<DeviceCloudPolicyStoreChromeOS> store_;
+  std::unique_ptr<DeviceCloudPolicyStoreChromeOS> store_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyStoreChromeOSTest);

@@ -68,7 +68,7 @@ base::string16 GetExemplarCity(const icu::TimeZone& zone) {
 
   // Resource keys for timezones use ':' in place of '/'.
   base::ReplaceSubstringsAfterOffset(&zone_id_str, 0, "/", ":");
-  scoped_ptr<UResourceBundle, UResClose> zone_item(
+  std::unique_ptr<UResourceBundle, UResClose> zone_item(
       ures_getByKey(zone_strings, zone_id_str.c_str(), NULL, &status));
   icu::UnicodeString city;
   if (!U_FAILURE(status)) {
@@ -145,10 +145,10 @@ namespace chromeos {
 namespace system {
 
 // Creates a list of pairs of each timezone's ID and name.
-scoped_ptr<base::ListValue> GetTimezoneList() {
+std::unique_ptr<base::ListValue> GetTimezoneList() {
   const std::vector<icu::TimeZone*> &timezones =
       chromeos::system::TimezoneSettings::GetInstance()->GetTimezoneList();
-  scoped_ptr<base::ListValue> timezoneList(new base::ListValue());
+  std::unique_ptr<base::ListValue> timezoneList(new base::ListValue());
   for (std::vector<icu::TimeZone*>::const_iterator iter = timezones.begin();
        iter != timezones.end(); ++iter) {
     const icu::TimeZone* timezone = *iter;

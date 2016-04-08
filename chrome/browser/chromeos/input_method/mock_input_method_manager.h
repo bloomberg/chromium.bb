@@ -40,7 +40,8 @@ class MockInputMethodManager : public InputMethodManager {
         const std::vector<std::string>& initial_layouts) override;
     void EnableLockScreenLayouts() override;
     void GetInputMethodExtensions(InputMethodDescriptors* result) override;
-    scoped_ptr<InputMethodDescriptors> GetActiveInputMethods() const override;
+    std::unique_ptr<InputMethodDescriptors> GetActiveInputMethods()
+        const override;
     const std::vector<std::string>& GetActiveInputMethodIds() const override;
     const InputMethodDescriptor* GetInputMethodFromId(
         const std::string& input_method_id) const override;
@@ -86,7 +87,8 @@ class MockInputMethodManager : public InputMethodManager {
       InputMethodManager::CandidateWindowObserver* observer) override;
   void RemoveImeMenuObserver(
       InputMethodManager::ImeMenuObserver* observer) override;
-  scoped_ptr<InputMethodDescriptors> GetSupportedInputMethods() const override;
+  std::unique_ptr<InputMethodDescriptors> GetSupportedInputMethods()
+      const override;
   void ActivateInputMethodMenuItem(const std::string& key) override;
   bool IsISOLevel5ShiftUsedByCurrentInputMethod() const override;
   bool IsAltGrUsedByCurrentInputMethod() const override;
@@ -108,7 +110,7 @@ class MockInputMethodManager : public InputMethodManager {
   void SetCurrentInputMethodId(const std::string& input_method_id);
 
   void SetComponentExtensionIMEManager(
-      scoped_ptr<ComponentExtensionIMEManager> comp_ime_manager);
+      std::unique_ptr<ComponentExtensionIMEManager> comp_ime_manager);
 
   // Set values that will be provided to the InputMethodUtil.
   void set_application_locale(const std::string& value);
@@ -128,7 +130,7 @@ class MockInputMethodManager : public InputMethodManager {
   InputMethodUtil util_;
   FakeImeKeyboard keyboard_;
   bool mod3_used_;
-  scoped_ptr<ComponentExtensionIMEManager> comp_ime_manager_;
+  std::unique_ptr<ComponentExtensionIMEManager> comp_ime_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MockInputMethodManager);
 };

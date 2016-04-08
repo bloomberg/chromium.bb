@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <vector>
 
 #include "ash/desktop_background/desktop_background_controller.h"
@@ -12,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -229,7 +229,7 @@ void OnNetworkWaitTimedOut(const base::Closure& runner_quit_task) {
 }
 
 // Helper function for LockFileThread.
-void LockAndUnlock(scoped_ptr<base::Lock> lock) {
+void LockAndUnlock(std::unique_ptr<base::Lock> lock) {
   lock->Acquire();
   lock->Release();
 }
@@ -721,7 +721,7 @@ class KioskTest : public OobeBaseTest {
   }
 
   void EnableConsumerKioskMode() {
-    scoped_ptr<bool> locked(new bool(false));
+    std::unique_ptr<bool> locked(new bool(false));
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
     KioskAppManager::Get()->EnableConsumerKioskAutoLaunch(
@@ -799,9 +799,9 @@ class KioskTest : public OobeBaseTest {
   // other conditions are checked and triggered. For example, this can be used
   // to trigger the network screen during app launch without racing with the
   // app launching process itself.
-  scoped_ptr<base::AutoLock> LockFileThread() {
-    scoped_ptr<base::Lock> lock(new base::Lock);
-    scoped_ptr<base::AutoLock> auto_lock(new base::AutoLock(*lock));
+  std::unique_ptr<base::AutoLock> LockFileThread() {
+    std::unique_ptr<base::Lock> lock(new base::Lock);
+    std::unique_ptr<base::AutoLock> auto_lock(new base::AutoLock(*lock));
     content::BrowserThread::PostTask(
         content::BrowserThread::FILE, FROM_HERE,
         base::Bind(&LockAndUnlock, base::Passed(&lock)));
@@ -829,7 +829,7 @@ class KioskTest : public OobeBaseTest {
   }
 
   ScopedCrosSettingsTestHelper settings_helper_;
-  scoped_ptr<FakeOwnerSettingsService> owner_settings_service_;
+  std::unique_ptr<FakeOwnerSettingsService> owner_settings_service_;
 
   const AccountId test_owner_account_id_ =
       AccountId::FromUserEmail(kTestOwnerEmail);
@@ -839,8 +839,8 @@ class KioskTest : public OobeBaseTest {
   std::string test_app_id_;
   std::string test_app_version_;
   std::string test_crx_file_;
-  scoped_ptr<FakeCWS> fake_cws_;
-  scoped_ptr<MockUserManager> mock_user_manager_;
+  std::unique_ptr<FakeCWS> fake_cws_;
+  std::unique_ptr<MockUserManager> mock_user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskTest);
 };
@@ -949,7 +949,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppWithNetworkConfigAccelerator) {
   ScopedCanConfigureNetwork can_configure_network(true, false);
 
   // Block app loading until the network screen is shown.
-  scoped_ptr<base::AutoLock> lock = LockFileThread();
+  std::unique_ptr<base::AutoLock> lock = LockFileThread();
 
   // Start app launch and wait for network connectivity timeout.
   StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());

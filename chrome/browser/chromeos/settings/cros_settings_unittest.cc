@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -51,7 +52,7 @@ class CrosSettingsTest : public testing::Test {
             settings_.PrepareTrustedValues(
                 base::Bind(&CrosSettingsTest::FetchPref,
                            weak_factory_.GetWeakPtr(), pref))) {
-      scoped_ptr<base::Value> expected_value(
+      std::unique_ptr<base::Value> expected_value(
           expected_props_.find(pref)->second);
       const base::Value* pref_value = settings_.GetPref(pref);
       if (expected_value.get()) {

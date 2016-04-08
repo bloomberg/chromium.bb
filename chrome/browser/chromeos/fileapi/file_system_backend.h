@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "storage/browser/fileapi/file_system_backend.h"
 #include "storage/browser/fileapi/task_runner_bound_observer_list.h"
 #include "storage/common/fileapi/file_system_types.h"
@@ -109,13 +109,13 @@ class FileSystemBackend : public storage::ExternalFileSystemBackend {
   bool SupportsStreaming(const storage::FileSystemURL& url) const override;
   bool HasInplaceCopyImplementation(
       storage::FileSystemType type) const override;
-  scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
+  std::unique_ptr<storage::FileStreamReader> CreateFileStreamReader(
       const storage::FileSystemURL& path,
       int64_t offset,
       int64_t max_bytes_to_read,
       const base::Time& expected_modification_time,
       storage::FileSystemContext* context) const override;
-  scoped_ptr<storage::FileStreamWriter> CreateFileStreamWriter(
+  std::unique_ptr<storage::FileStreamWriter> CreateFileStreamWriter(
       const storage::FileSystemURL& url,
       int64_t offset,
       storage::FileSystemContext* context) const override;
@@ -143,17 +143,17 @@ class FileSystemBackend : public storage::ExternalFileSystemBackend {
       const base::FilePath& entry_path) const override;
 
  private:
-  scoped_ptr<FileAccessPermissions> file_access_permissions_;
-  scoped_ptr<storage::AsyncFileUtil> local_file_util_;
+  std::unique_ptr<FileAccessPermissions> file_access_permissions_;
+  std::unique_ptr<storage::AsyncFileUtil> local_file_util_;
 
   // The delegate instance for the drive file system related operations.
-  scoped_ptr<FileSystemBackendDelegate> drive_delegate_;
+  std::unique_ptr<FileSystemBackendDelegate> drive_delegate_;
 
   // The delegate instance for the provided file system related operations.
-  scoped_ptr<FileSystemBackendDelegate> file_system_provider_delegate_;
+  std::unique_ptr<FileSystemBackendDelegate> file_system_provider_delegate_;
 
   // The delegate instance for the MTP file system related operations.
-  scoped_ptr<FileSystemBackendDelegate> mtp_delegate_;
+  std::unique_ptr<FileSystemBackendDelegate> mtp_delegate_;
 
   // Mount points specific to the owning context (i.e. per-profile mount
   // points).

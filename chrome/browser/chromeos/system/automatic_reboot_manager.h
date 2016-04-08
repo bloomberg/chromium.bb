@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_AUTOMATIC_REBOOT_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_AUTOMATIC_REBOOT_MANAGER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -89,7 +90,7 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
     base::TimeTicks update_reboot_needed_time;
   };
 
-  explicit AutomaticRebootManager(scoped_ptr<base::TickClock> clock);
+  explicit AutomaticRebootManager(std::unique_ptr<base::TickClock> clock);
   ~AutomaticRebootManager() override;
 
   AutomaticRebootManagerObserver::Reason reboot_reason() const {
@@ -140,7 +141,7 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
   void Reboot();
 
   // A clock that can be mocked in tests to fast-forward time.
-  scoped_ptr<base::TickClock> clock_;
+  std::unique_ptr<base::TickClock> clock_;
 
   PrefChangeRegistrar local_state_registrar_;
 
@@ -148,7 +149,7 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
 
   // Fires when the user has been idle on the login screen for a set amount of
   // time.
-  scoped_ptr<base::OneShotTimer> login_screen_idle_timer_;
+  std::unique_ptr<base::OneShotTimer> login_screen_idle_timer_;
 
   // The time at which the device was booted, in |clock_| ticks.
   bool have_boot_time_;
@@ -166,8 +167,8 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
   bool reboot_requested_;
 
   // Timers that start and end the grace period.
-  scoped_ptr<base::OneShotTimer> grace_start_timer_;
-  scoped_ptr<base::OneShotTimer> grace_end_timer_;
+  std::unique_ptr<base::OneShotTimer> grace_start_timer_;
+  std::unique_ptr<base::OneShotTimer> grace_end_timer_;
 
   base::ObserverList<AutomaticRebootManagerObserver, true> observers_;
 

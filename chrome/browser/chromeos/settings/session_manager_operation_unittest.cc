@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -13,7 +14,6 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
@@ -96,7 +96,7 @@ class SessionManagerOperationTest : public testing::Test {
   user_manager::FakeUserManager* user_manager_;
   ScopedUserManagerEnabler user_manager_enabler_;
 
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
   OwnerSettingsServiceChromeOS* service_;
 
   bool validated_;

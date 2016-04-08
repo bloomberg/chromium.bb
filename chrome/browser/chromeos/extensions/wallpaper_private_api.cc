@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -20,7 +21,6 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -513,7 +513,7 @@ void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
   std::string file_name = GURL(params->url).ExtractFileName();
   if (SaveData(chrome::DIR_CHROMEOS_WALLPAPERS, file_name, params->wallpaper)) {
     wallpaper_.EnsureRepsForSupportedScales();
-    scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper_.DeepCopy());
+    std::unique_ptr<gfx::ImageSkia> deep_copy(wallpaper_.DeepCopy());
     // ImageSkia is not RefCountedThreadSafe. Use a deep copied ImageSkia if
     // post to another thread.
     BrowserThread::PostTask(
@@ -545,7 +545,7 @@ void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
 }
 
 void WallpaperPrivateSetWallpaperFunction::SetDecodedWallpaper(
-    scoped_ptr<gfx::ImageSkia> image) {
+    std::unique_ptr<gfx::ImageSkia> image) {
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
 
@@ -663,7 +663,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
 
   if (params->generate_thumbnail) {
     image.EnsureRepsForSupportedScales();
-    scoped_ptr<gfx::ImageSkia> deep_copy(image.DeepCopy());
+    std::unique_ptr<gfx::ImageSkia> deep_copy(image.DeepCopy());
     // Generates thumbnail before call api function callback. We can then
     // request thumbnail in the javascript callback.
     task_runner->PostTask(FROM_HERE,
@@ -676,7 +676,8 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
 }
 
 void WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail(
-    const base::FilePath& thumbnail_path, scoped_ptr<gfx::ImageSkia> image) {
+    const base::FilePath& thumbnail_path,
+    std::unique_ptr<gfx::ImageSkia> image) {
   DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
       sequence_token_));
   if (!base::PathExists(thumbnail_path.DirName()))
@@ -709,7 +710,7 @@ WallpaperPrivateSetCustomWallpaperLayoutFunction::
     ~WallpaperPrivateSetCustomWallpaperLayoutFunction() {}
 
 bool WallpaperPrivateSetCustomWallpaperLayoutFunction::RunAsync() {
-  scoped_ptr<set_custom_wallpaper_layout::Params> params(
+  std::unique_ptr<set_custom_wallpaper_layout::Params> params(
       set_custom_wallpaper_layout::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -772,7 +773,7 @@ WallpaperPrivateGetThumbnailFunction::~WallpaperPrivateGetThumbnailFunction() {
 }
 
 bool WallpaperPrivateGetThumbnailFunction::RunAsync() {
-  scoped_ptr<get_thumbnail::Params> params(
+  std::unique_ptr<get_thumbnail::Params> params(
       get_thumbnail::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -858,7 +859,7 @@ WallpaperPrivateSaveThumbnailFunction::
     ~WallpaperPrivateSaveThumbnailFunction() {}
 
 bool WallpaperPrivateSaveThumbnailFunction::RunAsync() {
-  scoped_ptr<save_thumbnail::Params> params(
+  std::unique_ptr<save_thumbnail::Params> params(
       save_thumbnail::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 

@@ -13,7 +13,6 @@
 #include "base/callback_forward.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data_delegate.h"
@@ -263,7 +262,7 @@ class KioskAppManager : public KioskAppDataDelegate,
 
   // Clear cached data and crx of the removed apps.
   void ClearRemovedApps(
-      const std::map<std::string, scoped_ptr<KioskAppData>>& old_apps);
+      const std::map<std::string, std::unique_ptr<KioskAppData>>& old_apps);
 
   // Updates the prefs of |external_cache_| from |apps_|.
   void UpdateExternalCachePrefs();
@@ -308,19 +307,19 @@ class KioskAppManager : public KioskAppDataDelegate,
 
   // True if machine ownership is already established.
   bool ownership_established_;
-  std::vector<scoped_ptr<KioskAppData>> apps_;
+  std::vector<std::unique_ptr<KioskAppData>> apps_;
   std::string auto_launch_app_id_;
   std::string currently_auto_launched_with_zero_delay_app_;
   base::ObserverList<KioskAppManagerObserver, true> observers_;
 
-  scoped_ptr<CrosSettings::ObserverSubscription>
+  std::unique_ptr<CrosSettings::ObserverSubscription>
       local_accounts_subscription_;
-  scoped_ptr<CrosSettings::ObserverSubscription>
+  std::unique_ptr<CrosSettings::ObserverSubscription>
       local_account_auto_login_id_subscription_;
 
-  scoped_ptr<ExternalCache> external_cache_;
+  std::unique_ptr<ExternalCache> external_cache_;
 
-  scoped_ptr<KioskExternalUpdater> usb_stick_updater_;
+  std::unique_ptr<KioskExternalUpdater> usb_stick_updater_;
 
   // The extension external loader for deploying primary app.
   bool external_loader_created_;
@@ -330,7 +329,7 @@ class KioskAppManager : public KioskAppDataDelegate,
   bool secondary_app_external_loader_created_;
   base::WeakPtr<KioskAppExternalLoader> secondary_app_external_loader_;
 
-  scoped_ptr<AppSession> app_session_;
+  std::unique_ptr<AppSession> app_session_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppManager);
 };

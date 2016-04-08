@@ -4,12 +4,12 @@
 
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -167,7 +167,7 @@ void ChromeUserSelectionScreen::SetPublicSessionLocales(
 
   // Construct the list of available locales. This list consists of the
   // recommended locales, followed by all others.
-  scoped_ptr<base::ListValue> available_locales =
+  std::unique_ptr<base::ListValue> available_locales =
       GetUILanguageList(&recommended_locales, std::string());
 
   // Set the initially selected locale to the first recommended locale that is

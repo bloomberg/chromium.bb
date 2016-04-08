@@ -4,14 +4,15 @@
 
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
@@ -94,9 +95,9 @@ std::vector<std::string> DefaultDelegate::CertificateProviderExtensions() {
 
 void DefaultDelegate::BroadcastCertificateRequest(int request_id) {
   const std::string event_name(api_cp::OnCertificatesRequested::kEventName);
-  scoped_ptr<base::ListValue> internal_args(new base::ListValue);
+  std::unique_ptr<base::ListValue> internal_args(new base::ListValue);
   internal_args->AppendInteger(request_id);
-  scoped_ptr<extensions::Event> event(new extensions::Event(
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::CERTIFICATEPROVIDER_ON_CERTIFICATES_REQUESTED,
       event_name, std::move(internal_args)));
   event_router_->BroadcastEvent(std::move(event));
@@ -139,13 +140,13 @@ bool DefaultDelegate::DispatchSignRequestToExtension(
   }
   request.certificate.assign(cert_der.begin(), cert_der.end());
 
-  scoped_ptr<base::ListValue> internal_args(new base::ListValue);
+  std::unique_ptr<base::ListValue> internal_args(new base::ListValue);
   internal_args->AppendInteger(request_id);
   internal_args->Append(request.ToValue());
 
   event_router_->DispatchEventToExtension(
       extension_id,
-      make_scoped_ptr(new extensions::Event(
+      base::WrapUnique(new extensions::Event(
           extensions::events::CERTIFICATEPROVIDER_ON_SIGN_DIGEST_REQUESTED,
           event_name, std::move(internal_args))));
   return true;
@@ -199,7 +200,7 @@ KeyedService* CertificateProviderServiceFactory::BuildServiceInstanceFor(
     return nullptr;
   }
   CertificateProviderService* const service = new CertificateProviderService();
-  service->SetDelegate(make_scoped_ptr(new DefaultDelegate(
+  service->SetDelegate(base::WrapUnique(new DefaultDelegate(
       service,
       extensions::ExtensionRegistryFactory::GetForBrowserContext(context),
       extensions::EventRouterFactory::GetForBrowserContext(context))));

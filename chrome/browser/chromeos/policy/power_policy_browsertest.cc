@@ -185,7 +185,7 @@ void PowerPolicyBrowserTestBase::SetUpInProcessBrowserTestFixture() {
   DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
   power_manager_client_ = new chromeos::FakePowerManagerClient;
   dbus_setter()->SetPowerManagerClient(
-      scoped_ptr<chromeos::PowerManagerClient>(power_manager_client_));
+      std::unique_ptr<chromeos::PowerManagerClient>(power_manager_client_));
 
   // Initialize device policy.
   InstallOwnerKey();

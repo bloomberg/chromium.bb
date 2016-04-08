@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_AUTHENTICATOR_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_AUTHENTICATOR_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -104,7 +104,7 @@ class SupervisedUserAuthenticator
   void OnAuthenticationSuccess(const std::string& mount_hash, bool add_key);
   void OnAuthenticationFailure(AuthState state);
 
-  scoped_ptr<AuthAttempt> current_state_;
+  std::unique_ptr<AuthAttempt> current_state_;
   AuthStatusConsumer* consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserAuthenticator);

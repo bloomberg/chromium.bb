@@ -94,7 +94,7 @@ enum Phase2AuthComboboxIndex {
 
 void ShillError(const std::string& function,
                 const std::string& error_name,
-                scoped_ptr<base::DictionaryValue> error_data) {
+                std::unique_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("Shill Error from WifiConfigView: " + error_name, function);
 }
 

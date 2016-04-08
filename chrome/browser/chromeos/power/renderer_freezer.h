@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_RENDERER_FREEZER_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_RENDERER_FREEZER_H_
 
+#include <memory>
 #include <set>
 
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/kill.h"
 #include "base/time/time.h"
@@ -63,7 +63,7 @@ class CHROMEOS_EXPORT RendererFreezer
     virtual void CheckCanFreezeRenderers(ResultCallback callback) = 0;
   };
 
-  explicit RendererFreezer(scoped_ptr<Delegate> delegate);
+  explicit RendererFreezer(std::unique_ptr<Delegate> delegate);
   ~RendererFreezer() override;
 
   // PowerManagerClient::RenderProcessManagerDelegate implementation.
@@ -95,7 +95,7 @@ class CHROMEOS_EXPORT RendererFreezer
   void OnRenderProcessCreated(content::RenderProcessHost* rph);
 
   // Delegate that takes care of actually freezing and thawing renderers for us.
-  scoped_ptr<Delegate> delegate_;
+  std::unique_ptr<Delegate> delegate_;
 
   // Set that keeps track of the RenderProcessHosts for processes that are
   // hosting GCM extensions.

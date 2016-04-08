@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 
@@ -14,7 +15,6 @@
 #include "base/cancelable_callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -68,7 +68,7 @@ class ExtensionEventObserver : public content::NotificationObserver,
   ExtensionEventObserver();
   ~ExtensionEventObserver() override;
 
-  scoped_ptr<TestApi> CreateTestApi();
+  std::unique_ptr<TestApi> CreateTestApi();
 
   // Called by the WakeOnWifiManager to control whether the
   // ExtensionEventObserver should or should not delay the system suspend.
@@ -116,7 +116,8 @@ class ExtensionEventObserver : public content::NotificationObserver,
 
   struct KeepaliveSources;
   base::ScopedPtrHashMap<const extensions::ExtensionHost*,
-                         scoped_ptr<KeepaliveSources>> keepalive_sources_;
+                         std::unique_ptr<KeepaliveSources>>
+      keepalive_sources_;
 
   std::set<Profile*> active_profiles_;
 

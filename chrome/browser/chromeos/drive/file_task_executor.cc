@@ -67,7 +67,7 @@ FileTaskExecutor::FileTaskExecutor(Profile* profile, const std::string& app_id)
 }
 
 FileTaskExecutor::FileTaskExecutor(
-    scoped_ptr<FileTaskExecutorDelegate> delegate,
+    std::unique_ptr<FileTaskExecutorDelegate> delegate,
     const std::string& app_id)
     : delegate_(std::move(delegate)),
       app_id_(app_id),
@@ -112,8 +112,9 @@ void FileTaskExecutor::Execute(
   }
 }
 
-void FileTaskExecutor::OnFileEntryFetched(FileError error,
-                                          scoped_ptr<ResourceEntry> entry) {
+void FileTaskExecutor::OnFileEntryFetched(
+    FileError error,
+    std::unique_ptr<ResourceEntry> entry) {
   // Here, we are only interested in files.
   if (entry.get() && !entry->has_file_specific_info())
     error = FILE_ERROR_NOT_FOUND;

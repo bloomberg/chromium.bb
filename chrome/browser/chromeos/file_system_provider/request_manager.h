@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_REQUEST_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -67,14 +67,14 @@ class RequestManager {
     // Execute(). It may be called more than once, until |has_more| is set to
     // false.
     virtual void OnSuccess(int request_id,
-                           scoped_ptr<RequestValue> result,
+                           std::unique_ptr<RequestValue> result,
                            bool has_more) = 0;
 
     // Error callback invoked by the providing extension in response to
     // Execute(). It can be called at most once. It can be also called if the
     // request is aborted due to a timeout.
     virtual void OnError(int request_id,
-                         scoped_ptr<RequestValue> result,
+                         std::unique_ptr<RequestValue> result,
                          base::File::Error error) = 0;
   };
 
@@ -116,21 +116,22 @@ class RequestManager {
   // Creates a request and returns its request id (greater than 0). Returns 0 in
   // case of an error (eg. too many requests). The |type| argument indicates
   // what kind of request it is.
-  int CreateRequest(RequestType type, scoped_ptr<HandlerInterface> handler);
+  int CreateRequest(RequestType type,
+                    std::unique_ptr<HandlerInterface> handler);
 
   // Handles successful response for the |request_id|. If |has_more| is false,
   // then the request is disposed, after handling the |response|. On success,
   // returns base::File::FILE_OK. Otherwise returns an error code. |response|
   // must not be NULL.
   base::File::Error FulfillRequest(int request_id,
-                                   scoped_ptr<RequestValue> response,
+                                   std::unique_ptr<RequestValue> response,
                                    bool has_more);
 
   // Handles error response for the |request_id|. If handling the error
   // succeeds, theen returns base::File::FILE_OK. Otherwise returns an error
   // code. Always disposes the request. |response| must not be NULL.
   base::File::Error RejectRequest(int request_id,
-                                  scoped_ptr<RequestValue> response,
+                                  std::unique_ptr<RequestValue> response,
                                   base::File::Error error);
 
   // Sets a custom timeout for tests. The new timeout value will be applied to
@@ -153,7 +154,7 @@ class RequestManager {
     base::OneShotTimer timeout_timer;
 
     // Handler tied to this request.
-    scoped_ptr<HandlerInterface> handler;
+    std::unique_ptr<HandlerInterface> handler;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Request);

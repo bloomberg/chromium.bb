@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_NET_CLIENT_CERT_FILTER_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_NET_CLIENT_CERT_FILTER_CHROMEOS_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/net/client_cert_store_chromeos.h"
 #include "crypto/scoped_nss_types.h"

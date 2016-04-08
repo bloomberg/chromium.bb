@@ -41,7 +41,7 @@ UsersPrivateGetWhitelistedUsersFunction::
 ExtensionFunction::ResponseAction
 UsersPrivateGetWhitelistedUsersFunction::Run() {
   Profile* profile = chrome_details_.GetProfile();
-  scoped_ptr<base::ListValue> user_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> user_list(new base::ListValue);
 
   // Non-owners should not be able to see the list of users.
   if (!chromeos::ProfileHelper::IsOwnerProfile(profile))
@@ -50,13 +50,13 @@ UsersPrivateGetWhitelistedUsersFunction::Run() {
   // Create one list to set. This is needed because user white list update is
   // asynchronous and sequential. Before previous write comes back, cached list
   // is stale and should not be used for appending. See http://crbug.com/127215
-  scoped_ptr<base::ListValue> email_list;
+  std::unique_ptr<base::ListValue> email_list;
 
   UsersPrivateDelegate* delegate =
       UsersPrivateDelegateFactory::GetForBrowserContext(browser_context());
   PrefsUtil* prefs_util = delegate->GetPrefsUtil();
 
-  scoped_ptr<api::settings_private::PrefObject> users_pref_object =
+  std::unique_ptr<api::settings_private::PrefObject> users_pref_object =
       prefs_util->GetPref(chromeos::kAccountsPrefUsers);
   if (users_pref_object->value) {
     const base::ListValue* existing = nullptr;
@@ -117,7 +117,7 @@ UsersPrivateAddWhitelistedUserFunction::
 
 ExtensionFunction::ResponseAction
 UsersPrivateAddWhitelistedUserFunction::Run() {
-  scoped_ptr<api::users_private::AddWhitelistedUser::Params> parameters =
+  std::unique_ptr<api::users_private::AddWhitelistedUser::Params> parameters =
       api::users_private::AddWhitelistedUser::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -156,8 +156,9 @@ UsersPrivateRemoveWhitelistedUserFunction::
 
 ExtensionFunction::ResponseAction
 UsersPrivateRemoveWhitelistedUserFunction::Run() {
-  scoped_ptr<api::users_private::RemoveWhitelistedUser::Params> parameters =
-      api::users_private::RemoveWhitelistedUser::Params::Create(*args_);
+  std::unique_ptr<api::users_private::RemoveWhitelistedUser::Params>
+      parameters =
+          api::users_private::RemoveWhitelistedUser::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
   // Non-owners should not be able to remove users.

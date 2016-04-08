@@ -5,8 +5,10 @@
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_file_system.h"
 
 #include <sys/statvfs.h>
+
 #include <set>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
@@ -284,7 +286,7 @@ FileManagerPrivateGrantAccessFunction::FileManagerPrivateGrantAccessFunction()
 
 ExtensionFunction::ResponseAction FileManagerPrivateGrantAccessFunction::Run() {
   using extensions::api::file_manager_private::GrantAccess::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   scoped_refptr<storage::FileSystemContext> file_system_context =
@@ -414,7 +416,7 @@ void FileManagerPrivateInternalRemoveFileWatchFunction::
 
 bool FileManagerPrivateGetSizeStatsFunction::RunAsync() {
   using extensions::api::file_manager_private::GetSizeStats::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   using file_manager::VolumeManager;
@@ -541,7 +543,7 @@ void FileManagerPrivateGetSizeStatsFunction::OnGetSizeStats(
 bool FileManagerPrivateInternalValidatePathNameLengthFunction::RunAsync() {
   using extensions::api::file_manager_private_internal::ValidatePathNameLength::
       Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   scoped_refptr<storage::FileSystemContext> file_system_context =
@@ -578,7 +580,7 @@ void FileManagerPrivateInternalValidatePathNameLengthFunction::
 
 bool FileManagerPrivateFormatVolumeFunction::RunAsync() {
   using extensions::api::file_manager_private::FormatVolume::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   using file_manager::VolumeManager;
@@ -620,7 +622,7 @@ bool FileManagerPrivateInternalStartCopyFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   using extensions::api::file_manager_private_internal::StartCopy::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   if (params->url.empty() || params->parent_url.empty() ||
@@ -740,7 +742,7 @@ bool FileManagerPrivateCancelCopyFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   using extensions::api::file_manager_private::CancelCopy::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   scoped_refptr<storage::FileSystemContext> file_system_context =
@@ -759,7 +761,7 @@ bool FileManagerPrivateCancelCopyFunction::RunAsync() {
 bool FileManagerPrivateInternalResolveIsolatedEntriesFunction::RunAsync() {
   using extensions::api::file_manager_private_internal::ResolveIsolatedEntries::
       Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   scoped_refptr<storage::FileSystemContext> file_system_context =
@@ -801,8 +803,9 @@ bool FileManagerPrivateInternalResolveIsolatedEntriesFunction::RunAsync() {
 }
 
 void FileManagerPrivateInternalResolveIsolatedEntriesFunction::
-    RunAsyncAfterConvertFileDefinitionListToEntryDefinitionList(scoped_ptr<
-        file_manager::util::EntryDefinitionList> entry_definition_list) {
+    RunAsyncAfterConvertFileDefinitionListToEntryDefinitionList(
+        std::unique_ptr<file_manager::util::EntryDefinitionList>
+            entry_definition_list) {
   using extensions::api::file_manager_private_internal::EntryDescription;
   std::vector<EntryDescription> entries;
 
@@ -834,7 +837,7 @@ FileManagerPrivateInternalComputeChecksumFunction::
 bool FileManagerPrivateInternalComputeChecksumFunction::RunAsync() {
   using extensions::api::file_manager_private_internal::ComputeChecksum::Params;
   using drive::util::FileStreamMd5Digester;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   if (params->url.empty()) {
@@ -853,7 +856,7 @@ bool FileManagerPrivateInternalComputeChecksumFunction::RunAsync() {
     return false;
   }
 
-  scoped_ptr<storage::FileStreamReader> reader =
+  std::unique_ptr<storage::FileStreamReader> reader =
       file_system_context->CreateFileStreamReader(
           file_system_url, 0, storage::kMaximumLength, base::Time());
 
@@ -878,7 +881,7 @@ void FileManagerPrivateInternalComputeChecksumFunction::Respond(
 
 bool FileManagerPrivateSearchFilesByHashesFunction::RunAsync() {
   using api::file_manager_private::SearchFilesByHashes::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // TODO(hirono): Check the volume ID and fail the function for volumes other
@@ -920,10 +923,10 @@ void FileManagerPrivateSearchFilesByHashesFunction::OnSearchByHashes(
     return;
   }
 
-  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   for (const auto& hash : hashes) {
     result->SetWithoutPathExpansion(hash,
-                                    make_scoped_ptr(new base::ListValue()));
+                                    base::WrapUnique(new base::ListValue()));
   }
 
   for (const auto& hashAndPath : search_results) {
@@ -951,7 +954,7 @@ FileManagerPrivateInternalSetEntryTagFunction::
 ExtensionFunction::ResponseAction
 FileManagerPrivateInternalSetEntryTagFunction::Run() {
   using extensions::api::file_manager_private_internal::SetEntryTag::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const base::FilePath local_path = file_manager::util::GetLocalPathFromURL(

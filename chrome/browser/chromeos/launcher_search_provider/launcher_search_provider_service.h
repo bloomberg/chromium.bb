@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LAUNCHER_SEARCH_PROVIDER_LAUNCHER_SEARCH_PROVIDER_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_LAUNCHER_SEARCH_PROVIDER_LAUNCHER_SEARCH_PROVIDER_SERVICE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/launcher_search_provider/error_reporter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/launcher_search_provider.h"
@@ -55,7 +56,7 @@ class Service : public KeyedService,
   // Sets search results of a listener extension.
   void SetSearchResults(
       const extensions::Extension* extension,
-      scoped_ptr<ErrorReporter> error_reporter,
+      std::unique_ptr<ErrorReporter> error_reporter,
       const int query_id,
       const std::vector<
           extensions::api::launcher_search_provider::SearchResult>& results);
@@ -81,7 +82,8 @@ class Service : public KeyedService,
   app_list::LauncherSearchProvider* provider_;
   int query_id_;
   bool is_query_running_;
-  scoped_ptr<std::set<extensions::ExtensionId>> cached_listener_extension_ids_;
+  std::unique_ptr<std::set<extensions::ExtensionId>>
+      cached_listener_extension_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(Service);
 };

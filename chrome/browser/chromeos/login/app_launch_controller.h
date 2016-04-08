@@ -120,10 +120,10 @@ class AppLaunchController
   LoginDisplayHost* host_ = nullptr;
   OobeUI* oobe_ui_ = nullptr;
   AppLaunchSplashScreenActor* app_launch_splash_screen_actor_ = nullptr;
-  scoped_ptr<KioskProfileLoader> kiosk_profile_loader_;
-  scoped_ptr<StartupAppLauncher> startup_app_launcher_;
-  scoped_ptr<AppLaunchSigninScreen> signin_screen_;
-  scoped_ptr<AppWindowWatcher> app_window_watcher_;
+  std::unique_ptr<KioskProfileLoader> kiosk_profile_loader_;
+  std::unique_ptr<StartupAppLauncher> startup_app_launcher_;
+  std::unique_ptr<AppLaunchSigninScreen> signin_screen_;
+  std::unique_ptr<AppWindowWatcher> app_window_watcher_;
 
   content::NotificationRegistrar registrar_;
   bool webui_visible_ = false;

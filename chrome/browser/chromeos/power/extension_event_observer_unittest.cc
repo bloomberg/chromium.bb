@@ -6,10 +6,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -45,7 +46,7 @@ class ExtensionEventObserverTest : public ::testing::Test {
         fake_user_manager_(new FakeChromeUserManager()),
         scoped_user_manager_enabler_(fake_user_manager_) {
     DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        make_scoped_ptr(power_manager_client_));
+        base::WrapUnique(power_manager_client_));
 
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
@@ -128,15 +129,15 @@ class ExtensionEventObserverTest : public ::testing::Test {
   // Owned by DBusThreadManager.
   FakePowerManagerClient* power_manager_client_;
 
-  scoped_ptr<ExtensionEventObserver> extension_event_observer_;
-  scoped_ptr<ExtensionEventObserver::TestApi> test_api_;
+  std::unique_ptr<ExtensionEventObserver> extension_event_observer_;
+  std::unique_ptr<ExtensionEventObserver::TestApi> test_api_;
 
   // Owned by |profile_manager_|.
   TestingProfile* profile_;
-  scoped_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
 
  private:
-  scoped_ptr<aura::TestScreen> test_screen_;
+  std::unique_ptr<aura::TestScreen> test_screen_;
   content::TestBrowserThreadBundle browser_thread_bundle_;
 
   // Needed to ensure we don't end up creating actual RenderViewHosts

@@ -51,7 +51,7 @@ const char kUuencodeCommand[] = "/usr/bin/uuencode";
 const int kMaxDeviceTouchEventLogs = 7;
 
 // Clean up intermediate log files dumped during feedback creation.
-void CleanupEventLog(scoped_ptr<std::vector<base::FilePath>> log_paths) {
+void CleanupEventLog(std::unique_ptr<std::vector<base::FilePath>> log_paths) {
   for (size_t i = 0; i < log_paths->size(); ++i)
     base::DeleteFile((*log_paths)[i], false);
 }
@@ -85,7 +85,7 @@ std::string GetEventLogListOfOnePrefix(
 // Pack the collected event logs in a way that is compatible with the log
 // analysis tools.
 void PackEventLog(system_logs::SystemLogsResponse* response,
-                  scoped_ptr<std::vector<base::FilePath>> log_paths) {
+                  std::unique_ptr<std::vector<base::FilePath>> log_paths) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   // Combine logs with a command line call that tars them up and uuencode the
@@ -134,9 +134,10 @@ void PackEventLog(system_logs::SystemLogsResponse* response,
 // Callback for handing the outcome of GetTouchEventLog().
 //
 // This is the end of the whole touch log collection process.
-void OnEventLogCollected(scoped_ptr<system_logs::SystemLogsResponse> response,
-                         const system_logs::SysLogsSourceCallback& callback,
-                         scoped_ptr<std::vector<base::FilePath>> log_paths) {
+void OnEventLogCollected(
+    std::unique_ptr<system_logs::SystemLogsResponse> response,
+    const system_logs::SysLogsSourceCallback& callback,
+    std::unique_ptr<std::vector<base::FilePath>> log_paths) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // We cannot eliminate these temporaries and inline these closures because the
@@ -154,9 +155,10 @@ void OnEventLogCollected(scoped_ptr<system_logs::SystemLogsResponse> response,
 //
 // Appends the collected log to the SystemLogsResponse map. Also goes on to
 // collect touch event logs.
-void OnStatusLogCollected(scoped_ptr<system_logs::SystemLogsResponse> response,
-                          const system_logs::SysLogsSourceCallback& callback,
-                          scoped_ptr<std::string> log) {
+void OnStatusLogCollected(
+    std::unique_ptr<system_logs::SystemLogsResponse> response,
+    const system_logs::SysLogsSourceCallback& callback,
+    std::unique_ptr<std::string> log) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   (*response)[kDeviceStatusLogDataKey] = *log;
 
@@ -169,7 +171,7 @@ void OnStatusLogCollected(scoped_ptr<system_logs::SystemLogsResponse> response,
 
 // Collect touch HUD debug logs. This needs to be done on the UI thread.
 void CollectTouchHudDebugLog(system_logs::SystemLogsResponse* response) {
-  scoped_ptr<base::DictionaryValue> dictionary =
+  std::unique_ptr<base::DictionaryValue> dictionary =
       ash::TouchHudDebug::GetAllAsDictionary();
   if (!dictionary->empty()) {
     std::string touch_log;
@@ -188,7 +190,7 @@ void TouchLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  scoped_ptr<SystemLogsResponse> response(new SystemLogsResponse);
+  std::unique_ptr<SystemLogsResponse> response(new SystemLogsResponse);
   CollectTouchHudDebugLog(response.get());
 
   // Collect touch device status logs.

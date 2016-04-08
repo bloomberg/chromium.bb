@@ -68,7 +68,7 @@ class ArcSettingsServiceImpl
   // Manages pref observation registration.
   PrefChangeRegistrar registrar_;
 
-  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       reporting_consent_subscription_;
   ArcBridgeService* const arc_bridge_service_;
 

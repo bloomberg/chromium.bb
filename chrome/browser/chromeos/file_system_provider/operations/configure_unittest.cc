@@ -4,12 +4,12 @@
 
 #include "chrome/browser/chromeos/file_system_provider/operations/configure.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/test_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
@@ -100,7 +100,8 @@ TEST_F(FileSystemProviderOperationsConfigureTest, OnSuccess) {
 
   EXPECT_TRUE(configure.Execute(kRequestId));
 
-  configure.OnSuccess(kRequestId, scoped_ptr<RequestValue>(new RequestValue()),
+  configure.OnSuccess(kRequestId,
+                      std::unique_ptr<RequestValue>(new RequestValue()),
                       false /* has_more */);
   ASSERT_EQ(1u, callback_log.size());
   base::File::Error event_result = callback_log[0];
@@ -119,7 +120,8 @@ TEST_F(FileSystemProviderOperationsConfigureTest, OnError) {
 
   EXPECT_TRUE(configure.Execute(kRequestId));
 
-  configure.OnError(kRequestId, scoped_ptr<RequestValue>(new RequestValue()),
+  configure.OnError(kRequestId,
+                    std::unique_ptr<RequestValue>(new RequestValue()),
                     base::File::FILE_ERROR_NOT_FOUND);
   ASSERT_EQ(1u, callback_log.size());
   base::File::Error event_result = callback_log[0];

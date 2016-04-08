@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error_view.h"
@@ -94,7 +95,7 @@ class CaptivePortalWindowTest : public InProcessBrowserTest {
   }
 
  private:
-  scoped_ptr<CaptivePortalWindowProxy> captive_portal_window_proxy_;
+  std::unique_ptr<CaptivePortalWindowProxy> captive_portal_window_proxy_;
   CaptivePortalWindowProxyStubDelegate delegate_;
 
   LoginDisplayHost* host_;

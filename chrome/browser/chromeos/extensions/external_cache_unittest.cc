@@ -140,14 +140,14 @@ class ExternalCacheTest : public testing::Test,
   content::TestBrowserThreadBundle thread_bundle_;
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-  scoped_ptr<net::TestURLFetcherFactory> fetcher_factory_;
+  std::unique_ptr<net::TestURLFetcherFactory> fetcher_factory_;
 
-  scoped_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
+  std::unique_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   base::ScopedTempDir cache_dir_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<base::DictionaryValue> prefs_;
+  std::unique_ptr<base::DictionaryValue> prefs_;
   std::map<std::string, std::string> installed_extensions_;
 
   ScopedTestDeviceSettingsService test_device_settings_service_;
@@ -161,7 +161,7 @@ TEST_F(ExternalCacheTest, Basic) {
   ExternalCache external_cache(cache_dir, request_context_getter(),
       background_task_runner(), this, true, false);
 
-  scoped_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
   base::DictionaryValue* dict = CreateEntryWithUpdateUrl(true);
   prefs->Set(kTestExtensionId1, dict);
   CreateExtensionFile(cache_dir, kTestExtensionId1, "1");
@@ -263,7 +263,7 @@ TEST_F(ExternalCacheTest, Basic) {
       GetExtensionFile(cache_dir, kTestExtensionId2, "2")));
 
   // Shutdown with callback OnExtensionListsUpdated that clears prefs.
-  scoped_ptr<base::DictionaryValue> empty(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> empty(new base::DictionaryValue);
   external_cache.Shutdown(
         base::Bind(&ExternalCacheTest::OnExtensionListsUpdated,
                    base::Unretained(this),
@@ -284,7 +284,7 @@ TEST_F(ExternalCacheTest, PreserveInstalled) {
   ExternalCache external_cache(cache_dir, request_context_getter(),
       background_task_runner(), this, true, false);
 
-  scoped_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
   prefs->Set(kTestExtensionId1, CreateEntryWithUpdateUrl(true));
   prefs->Set(kTestExtensionId2, CreateEntryWithUpdateUrl(true));
 

@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -70,9 +70,9 @@ class FakeDeviceClient : public device::DeviceClient {
   DISALLOW_COPY_AND_ASSIGN(FakeDeviceClient);
 };
 
-scoped_ptr<KeyedService> CreatePrinterDetector(
+std::unique_ptr<KeyedService> CreatePrinterDetector(
     content::BrowserContext* context) {
-  return scoped_ptr<KeyedService>(
+  return std::unique_ptr<KeyedService>(
       new chromeos::PrinterDetector(Profile::FromBrowserContext(context)));
 }
 
@@ -129,8 +129,8 @@ class PrinterDetectorAppSearchEnabledTest : public testing::Test {
 
   // Creates a test extension with the provided permissions.
   scoped_refptr<extensions::Extension> CreateTestExtension(
-      scoped_ptr<base::ListValue> permissions_builder,
-      scoped_ptr<base::DictionaryValue> usb_printers_builder) {
+      std::unique_ptr<base::ListValue> permissions_builder,
+      std::unique_ptr<base::DictionaryValue> usb_printers_builder) {
     return extensions::ExtensionBuilder()
         .SetID("fake_extension_id")
         .SetManifest(
@@ -158,7 +158,7 @@ class PrinterDetectorAppSearchEnabledTest : public testing::Test {
   user_manager::FakeUserManager* user_manager_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   device::MockUsbService usb_service_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
   FakeDeviceClient device_client_;
 
   DISALLOW_COPY_AND_ASSIGN(PrinterDetectorAppSearchEnabledTest);

@@ -74,7 +74,7 @@ void ProfileListChromeOS::RebuildMenu() {
       icon = profiles::GetAvatarIconForMenu(icon, true);
     }
 
-    scoped_ptr<AvatarMenu::Item> item(
+    std::unique_ptr<AvatarMenu::Item> item(
         new AvatarMenu::Item(items_.size(), entry->GetPath(), icon));
     item->name = user->GetDisplayName();
     item->username = entry->GetUserName();

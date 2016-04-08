@@ -14,6 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -173,7 +174,7 @@ class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
 
   const GURL GetServerURL() const { return test_server_.GetURL(kUploadPath); }
 
-  void SetExpectedError(scoped_ptr<UploadJob::ErrorCode> expected_error) {
+  void SetExpectedError(std::unique_ptr<UploadJob::ErrorCode> expected_error) {
     expected_error_ = std::move(expected_error);
   }
 
@@ -191,21 +192,22 @@ class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
   }
 
  protected:
-  scoped_ptr<UploadJob> PrepareUploadJob(scoped_ptr<
-      UploadJobImpl::MimeBoundaryGenerator> mime_boundary_generator) {
-    scoped_ptr<UploadJob> upload_job(
+  std::unique_ptr<UploadJob> PrepareUploadJob(
+      std::unique_ptr<UploadJobImpl::MimeBoundaryGenerator>
+          mime_boundary_generator) {
+    std::unique_ptr<UploadJob> upload_job(
         new UploadJobImpl(GetServerURL(), kRobotAccountId, &oauth2_service_,
                           request_context_getter_.get(), this,
                           std::move(mime_boundary_generator)));
 
     std::map<std::string, std::string> header_entries;
     header_entries.insert(std::make_pair(kCustomField1, "CUSTOM1"));
-    scoped_ptr<std::string> data(new std::string(kTestPayload1));
+    std::unique_ptr<std::string> data(new std::string(kTestPayload1));
     upload_job->AddDataSegment("Name1", "file1.ext", header_entries,
                                std::move(data));
 
     header_entries.insert(std::make_pair(kCustomField2, "CUSTOM2"));
-    scoped_ptr<std::string> data2(new std::string(kTestPayload2));
+    std::unique_ptr<std::string> data2(new std::string(kTestPayload2));
     upload_job->AddDataSegment("Name2", "", header_entries, std::move(data2));
     return upload_job;
   }
@@ -216,7 +218,7 @@ class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   MockOAuth2TokenService oauth2_service_;
 
-  scoped_ptr<UploadJob::ErrorCode> expected_error_;
+  std::unique_ptr<UploadJob::ErrorCode> expected_error_;
 };
 
 class UploadFlowTest : public UploadJobTestBase {
@@ -230,12 +232,12 @@ class UploadFlowTest : public UploadJobTestBase {
         base::Bind(&UploadFlowTest::HandlePostRequest, base::Unretained(this)));
   }
 
-  scoped_ptr<net::test_server::HttpResponse> HandlePostRequest(
+  std::unique_ptr<net::test_server::HttpResponse> HandlePostRequest(
       const net::test_server::HttpRequest& request) {
     EXPECT_TRUE(request.headers.find("Authorization") != request.headers.end());
     const std::string authorization_header =
         request.headers.at("Authorization");
-    scoped_ptr<net::test_server::BasicHttpResponse> response(
+    std::unique_ptr<net::test_server::BasicHttpResponse> response(
         new net::test_server::BasicHttpResponse);
     const size_t pos = authorization_header.find(" ");
     if (pos == std::string::npos) {
@@ -254,8 +256,8 @@ class UploadFlowTest : public UploadJobTestBase {
 TEST_F(UploadFlowTest, SuccessfulUpload) {
   oauth2_service_.SetTokenValid(kTokenValid);
   oauth2_service_.AddTokenToQueue(kTokenValid);
-  scoped_ptr<UploadJob> upload_job = PrepareUploadJob(
-      make_scoped_ptr(new UploadJobImpl::RandomMimeBoundaryGenerator));
+  std::unique_ptr<UploadJob> upload_job = PrepareUploadJob(
+      base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator));
   upload_job->Start();
   run_loop_.Run();
 }
@@ -264,8 +266,8 @@ TEST_F(UploadFlowTest, TokenExpired) {
   oauth2_service_.SetTokenValid(kTokenValid);
   oauth2_service_.AddTokenToQueue(kTokenExpired);
   oauth2_service_.AddTokenToQueue(kTokenValid);
-  scoped_ptr<UploadJob> upload_job = PrepareUploadJob(
-      make_scoped_ptr(new UploadJobImpl::RandomMimeBoundaryGenerator));
+  std::unique_ptr<UploadJob> upload_job = PrepareUploadJob(
+      base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator));
   upload_job->Start();
   run_loop_.Run();
 }
@@ -273,21 +275,21 @@ TEST_F(UploadFlowTest, TokenExpired) {
 TEST_F(UploadFlowTest, TokenInvalid) {
   oauth2_service_.AddTokenToQueue(kTokenInvalid);
   oauth2_service_.AddTokenToQueue(kTokenInvalid);
-  SetExpectedError(scoped_ptr<UploadJob::ErrorCode>(
+  SetExpectedError(std::unique_ptr<UploadJob::ErrorCode>(
       new UploadJob::ErrorCode(UploadJob::AUTHENTICATION_ERROR)));
 
-  scoped_ptr<UploadJob> upload_job = PrepareUploadJob(
-      make_scoped_ptr(new UploadJobImpl::RandomMimeBoundaryGenerator));
+  std::unique_ptr<UploadJob> upload_job = PrepareUploadJob(
+      base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator));
   upload_job->Start();
   run_loop_.Run();
 }
 
 TEST_F(UploadFlowTest, TokenFetchFailure) {
-  SetExpectedError(scoped_ptr<UploadJob::ErrorCode>(
+  SetExpectedError(std::unique_ptr<UploadJob::ErrorCode>(
       new UploadJob::ErrorCode(UploadJob::AUTHENTICATION_ERROR)));
 
-  scoped_ptr<UploadJob> upload_job = PrepareUploadJob(
-      make_scoped_ptr(new UploadJobImpl::RandomMimeBoundaryGenerator));
+  std::unique_ptr<UploadJob> upload_job = PrepareUploadJob(
+      base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator));
   upload_job->Start();
   run_loop_.Run();
 }
@@ -303,9 +305,9 @@ class UploadRequestTest : public UploadJobTestBase {
         &UploadRequestTest::HandlePostRequest, base::Unretained(this)));
   }
 
-  scoped_ptr<net::test_server::HttpResponse> HandlePostRequest(
+  std::unique_ptr<net::test_server::HttpResponse> HandlePostRequest(
       const net::test_server::HttpRequest& request) {
-    scoped_ptr<net::test_server::BasicHttpResponse> response(
+    std::unique_ptr<net::test_server::BasicHttpResponse> response(
         new net::test_server::BasicHttpResponse);
     response->set_code(net::HTTP_OK);
     EXPECT_EQ(expected_content_, request.content);
@@ -323,8 +325,8 @@ class UploadRequestTest : public UploadJobTestBase {
 TEST_F(UploadRequestTest, TestRequestStructure) {
   oauth2_service_.SetTokenValid(kTokenValid);
   oauth2_service_.AddTokenToQueue(kTokenValid);
-  scoped_ptr<UploadJob> upload_job = PrepareUploadJob(
-      make_scoped_ptr(new RepeatingMimeBoundaryGenerator('A')));
+  std::unique_ptr<UploadJob> upload_job = PrepareUploadJob(
+      base::WrapUnique(new RepeatingMimeBoundaryGenerator('A')));
   SetExpectedRequestContent(
       "--AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\n"
       "Content-Disposition: form-data; "

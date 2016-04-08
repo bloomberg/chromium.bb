@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/display/display_preferences.h"
 
 #include <stdint.h>
+
 #include <string>
 #include <utility>
 #include <vector>
@@ -22,6 +23,7 @@
 #include "ash/test/display_manager_test_api.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -115,7 +117,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
     DCHECK(!name.empty());
 
     base::DictionaryValue* pref_data = update.Get();
-    scoped_ptr<base::Value>layout_value(new base::DictionaryValue());
+    std::unique_ptr<base::Value> layout_value(new base::DictionaryValue());
     if (pref_data->HasKey(name)) {
       base::Value* value = nullptr;
       if (pref_data->Get(name, &value) && value != nullptr)
@@ -127,7 +129,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
 
   void StoreDisplayPropertyForList(const display::DisplayIdList& list,
                                    std::string key,
-                                   scoped_ptr<base::Value> value) {
+                                   std::unique_ptr<base::Value> value) {
     std::string name = ash::DisplayIdListToString(list);
 
     DictionaryPrefUpdate update(&local_state_, prefs::kSecondaryDisplays);
@@ -140,7 +142,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
         static_cast<base::DictionaryValue*>(layout_value)
             ->Set(key, std::move(value));
     } else {
-      scoped_ptr<base::DictionaryValue> layout_value(
+      std::unique_ptr<base::DictionaryValue> layout_value(
           new base::DictionaryValue());
       layout_value->SetBoolean(key, value != nullptr);
       pref_data->Set(name, layout_value.release());
@@ -151,7 +153,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
                                        const std::string& key,
                                        bool value) {
     StoreDisplayPropertyForList(
-        list, key, make_scoped_ptr(new base::FundamentalValue(value)));
+        list, key, base::WrapUnique(new base::FundamentalValue(value)));
   }
 
   void StoreDisplayLayoutPrefForList(const display::DisplayIdList& list,
@@ -207,7 +209,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
   MockUserManager* mock_user_manager_;  // Not owned.
   ScopedUserManagerEnabler user_manager_enabler_;
   TestingPrefServiceSimple local_state_;
-  scoped_ptr<DisplayConfigurationObserver> observer_;
+  std::unique_ptr<DisplayConfigurationObserver> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayPreferencesTest);
 };
@@ -287,7 +289,8 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   display::DisplayLayoutBuilder dummy_layout_builder(id1);
   dummy_layout_builder.SetSecondaryPlacement(
       dummy_id, display::DisplayPlacement::LEFT, 20);
-  scoped_ptr<display::DisplayLayout> dummy_layout(dummy_layout_builder.Build());
+  std::unique_ptr<display::DisplayLayout> dummy_layout(
+      dummy_layout_builder.Build());
   display::DisplayIdList list = ash::test::CreateDisplayIdList2(id1, dummy_id);
   StoreDisplayLayoutPrefForTest(list, *dummy_layout);
 
@@ -1022,7 +1025,7 @@ TEST_F(DisplayPreferencesTest, RestoreUnifiedMode) {
   StoreDisplayBoolPropertyForList(list, "default_unified", true);
   StoreDisplayPropertyForList(
       list, "primary-id",
-      make_scoped_ptr(new base::StringValue(base::Int64ToString(id1))));
+      base::WrapUnique(new base::StringValue(base::Int64ToString(id1))));
   LoadDisplayPreferences(false);
 
   // Should not restore to unified unless unified desktop is enabled.

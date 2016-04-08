@@ -104,7 +104,7 @@ void MoveDownloadedFile(const base::FilePath& downloaded_file,
 void ContinueCheckingForFileExistence(
     const content::CheckForFileExistenceCallback& callback,
     FileError error,
-    scoped_ptr<ResourceEntry> entry) {
+    std::unique_ptr<ResourceEntry> entry) {
   callback.Run(error == FILE_ERROR_OK);
 }
 

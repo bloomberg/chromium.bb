@@ -35,7 +35,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenPolicyTest, DisableSupervisedUsers) {
 
   scoped_refptr<content::MessageLoopRunner> runner(
       new content::MessageLoopRunner);
-  scoped_ptr<CrosSettings::ObserverSubscription> subscription(
+  std::unique_ptr<CrosSettings::ObserverSubscription> subscription(
       chromeos::CrosSettings::Get()->AddSettingsObserver(
           chromeos::kAccountsPrefSupervisedUsersEnabled,
           runner->QuitClosure()));

@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_OPERATION_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_OPERATION_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
 #include "extensions/browser/extension_event_histogram_value.h"
@@ -31,7 +31,7 @@ namespace operations {
 // Base class for operation bridges between fileapi and providing extensions.
 class Operation : public RequestManager::HandlerInterface {
  public:
-  typedef base::Callback<bool(scoped_ptr<extensions::Event> event)>
+  typedef base::Callback<bool(std::unique_ptr<extensions::Event> event)>
       DispatchEventImplCallback;
 
   Operation(extensions::EventRouter* event_router,
@@ -41,10 +41,10 @@ class Operation : public RequestManager::HandlerInterface {
   // RequestManager::HandlerInterface overrides.
   bool Execute(int request_id) override = 0;
   void OnSuccess(int request_id,
-                 scoped_ptr<RequestValue> result,
+                 std::unique_ptr<RequestValue> result,
                  bool has_more) override = 0;
   void OnError(int request_id,
-               scoped_ptr<RequestValue> result,
+               std::unique_ptr<RequestValue> result,
                base::File::Error error) override = 0;
 
   // Sets custom dispatchign event implementation for tests.
@@ -57,7 +57,7 @@ class Operation : public RequestManager::HandlerInterface {
   bool SendEvent(int request_id,
                  extensions::events::HistogramValue histogram_value,
                  const std::string& event_name,
-                 scoped_ptr<base::ListValue> event_args);
+                 std::unique_ptr<base::ListValue> event_args);
 
   ProvidedFileSystemInfo file_system_info_;
 

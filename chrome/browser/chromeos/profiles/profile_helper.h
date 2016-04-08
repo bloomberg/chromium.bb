@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PROFILES_PROFILE_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_PROFILES_PROFILE_HELPER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
@@ -215,7 +215,7 @@ class ProfileHelper
   // always be returned by GetUserByProfile().
   static bool always_return_primary_user_for_testing;
 
-  scoped_ptr<FileFlusher> profile_flusher_;
+  std::unique_ptr<FileFlusher> profile_flusher_;
 
   base::WeakPtrFactory<ProfileHelper> weak_factory_;
 

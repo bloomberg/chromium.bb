@@ -54,7 +54,7 @@ class DeviceQuirksPolicyTest : public policy::DevicePolicyCrosBrowserTest {
 
  protected:
   void RefreshPolicyAndWaitDeviceSettingsUpdated() {
-    scoped_ptr<CrosSettings::ObserverSubscription> observer =
+    std::unique_ptr<CrosSettings::ObserverSubscription> observer =
         CrosSettings::Get()->AddSettingsObserver(
             kDeviceQuirksDownloadEnabled,
             base::MessageLoop::current()->QuitWhenIdleClosure());

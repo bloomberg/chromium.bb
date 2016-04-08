@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -15,7 +16,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_actor.h"
 
@@ -80,7 +80,7 @@ class FirstRunController : public FirstRunActor::Delegate,
   FirstRunActor* actor_;
 
   // Helper for manipulating and retreiving information from Shell.
-  scoped_ptr<ash::FirstRunHelper> shell_helper_;
+  std::unique_ptr<ash::FirstRunHelper> shell_helper_;
 
   // List of all tutorial steps.
   Steps steps_;

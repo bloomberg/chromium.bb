@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,7 +15,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -85,37 +86,37 @@ const char kActionLogout[] = "Logout";
 const char kActionShutdown[]  = "Shutdown";
 const char kActionDoNothing[] = "DoNothing";
 
-scoped_ptr<base::Value> GetValue(const base::DictionaryValue* dict,
-                                 const char* key) {
+std::unique_ptr<base::Value> GetValue(const base::DictionaryValue* dict,
+                                      const char* key) {
   const base::Value* value = NULL;
   if (!dict->Get(key, &value))
-    return scoped_ptr<base::Value>();
+    return std::unique_ptr<base::Value>();
   return value->CreateDeepCopy();
 }
 
-scoped_ptr<base::Value> GetAction(const base::DictionaryValue* dict,
-                                  const char* key) {
-  scoped_ptr<base::Value> value = GetValue(dict, key);
+std::unique_ptr<base::Value> GetAction(const base::DictionaryValue* dict,
+                                       const char* key) {
+  std::unique_ptr<base::Value> value = GetValue(dict, key);
   std::string action;
   if (!value || !value->GetAsString(&action))
-    return scoped_ptr<base::Value>();
+    return std::unique_ptr<base::Value>();
   if (action == kActionSuspend) {
-    return scoped_ptr<base::Value>(new base::FundamentalValue(
+    return std::unique_ptr<base::Value>(new base::FundamentalValue(
         chromeos::PowerPolicyController::ACTION_SUSPEND));
   }
   if (action == kActionLogout) {
-    return scoped_ptr<base::Value>(new base::FundamentalValue(
+    return std::unique_ptr<base::Value>(new base::FundamentalValue(
         chromeos::PowerPolicyController::ACTION_STOP_SESSION));
   }
   if (action == kActionShutdown) {
-    return scoped_ptr<base::Value>(new base::FundamentalValue(
+    return std::unique_ptr<base::Value>(new base::FundamentalValue(
         chromeos::PowerPolicyController::ACTION_SHUT_DOWN));
   }
   if (action == kActionDoNothing) {
-    return scoped_ptr<base::Value>(new base::FundamentalValue(
+    return std::unique_ptr<base::Value>(new base::FundamentalValue(
         chromeos::PowerPolicyController::ACTION_DO_NOTHING));
   }
-  return scoped_ptr<base::Value>();
+  return std::unique_ptr<base::Value>();
 }
 
 }  // namespace
@@ -200,7 +201,7 @@ bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
   if (value) {
     std::string onc_blob;
     value->GetAsString(&onc_blob);
-    scoped_ptr<base::DictionaryValue> root_dict =
+    std::unique_ptr<base::DictionaryValue> root_dict =
         chromeos::onc::ReadDictionaryFromJson(onc_blob);
     if (root_dict.get() == NULL) {
       errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_PARSE_FAILED);
@@ -243,7 +244,7 @@ void NetworkConfigurationPolicyHandler::ApplyPolicySettings(
   std::string onc_blob;
   value->GetAsString(&onc_blob);
 
-  scoped_ptr<base::ListValue> network_configs(new base::ListValue);
+  std::unique_ptr<base::ListValue> network_configs(new base::ListValue);
   base::ListValue certificates;
   base::DictionaryValue global_network_config;
   chromeos::onc::ParseAndValidateOncForImport(onc_blob,
@@ -287,7 +288,7 @@ base::Value* NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
   if (!config->GetAsString(&json_string))
     return NULL;
 
-  scoped_ptr<base::DictionaryValue> toplevel_dict =
+  std::unique_ptr<base::DictionaryValue> toplevel_dict =
       chromeos::onc::ReadDictionaryFromJson(json_string);
   if (!toplevel_dict)
     return NULL;
@@ -319,7 +320,7 @@ void PinnedLauncherAppsPolicyHandler::ApplyPolicySettings(
   const base::Value* policy_value = policies.GetValue(policy_name());
   const base::ListValue* policy_list = NULL;
   if (policy_value && policy_value->GetAsList(&policy_list) && policy_list) {
-    scoped_ptr<base::ListValue> pinned_apps_list(new base::ListValue());
+    std::unique_ptr<base::ListValue> pinned_apps_list(new base::ListValue());
     for (base::ListValue::const_iterator entry(policy_list->begin());
          entry != policy_list->end(); ++entry) {
       std::string id;
@@ -405,7 +406,7 @@ PowerManagementIdleSettingsPolicyHandler::
 void PowerManagementIdleSettingsPolicyHandler::ApplyPolicySettings(
     const PolicyMap& policies,
     PrefValueMap* prefs) {
-  scoped_ptr<base::Value> policy_value;
+  std::unique_ptr<base::Value> policy_value;
   if (!CheckAndGetValue(policies, NULL, &policy_value))
     return;
   const base::DictionaryValue* dict = NULL;
@@ -413,7 +414,7 @@ void PowerManagementIdleSettingsPolicyHandler::ApplyPolicySettings(
     NOTREACHED();
     return;
   }
-  scoped_ptr<base::Value> value;
+  std::unique_ptr<base::Value> value;
 
   value = GetValue(dict, kScreenDimDelayAC);
   if (value)
@@ -462,7 +463,7 @@ ScreenLockDelayPolicyHandler::~ScreenLockDelayPolicyHandler() {
 void ScreenLockDelayPolicyHandler::ApplyPolicySettings(
     const PolicyMap& policies,
     PrefValueMap* prefs) {
-  scoped_ptr<base::Value> policy_value;
+  std::unique_ptr<base::Value> policy_value;
   if (!CheckAndGetValue(policies, NULL, &policy_value))
     return;
   const base::DictionaryValue* dict = NULL;
@@ -470,7 +471,7 @@ void ScreenLockDelayPolicyHandler::ApplyPolicySettings(
     NOTREACHED();
     return;
   }
-  scoped_ptr<base::Value> value;
+  std::unique_ptr<base::Value> value;
 
   value = GetValue(dict, kScreenLockDelayAC);
   if (value)

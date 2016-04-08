@@ -20,7 +20,7 @@ class KioskAppExternalLoader
   KioskAppExternalLoader();
 
   // Sets current kiosk app extensions to be loaded.
-  void SetCurrentAppExtensions(scoped_ptr<base::DictionaryValue> prefs);
+  void SetCurrentAppExtensions(std::unique_ptr<base::DictionaryValue> prefs);
 
   // extensions::ExternalLoader overrides:
   void StartLoading() override;

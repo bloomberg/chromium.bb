@@ -112,8 +112,8 @@ class ConsumerManagementServiceTest : public BrowserWithTestWindowTest {
   }
 
   NiceMock<chromeos::MockCryptohomeClient> mock_cryptohome_client_;
-  scoped_ptr<ConsumerManagementService> service_;
-  scoped_ptr<TestingProfileManager> testing_profile_manager_;
+  std::unique_ptr<ConsumerManagementService> service_;
+  std::unique_ptr<TestingProfileManager> testing_profile_manager_;
 
   // Variables for setting the return value or catching the arguments of mock
   // functions.

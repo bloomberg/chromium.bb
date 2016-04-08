@@ -116,8 +116,7 @@ TEST_F(FileManagerFileWatcherTest, WatchLocalFile) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   // See the comment at the end of this function for why scoped_ptr is used.
-  scoped_ptr<FileWatcher> file_watcher(
-      new FileWatcher(kVirtualPath));
+  std::unique_ptr<FileWatcher> file_watcher(new FileWatcher(kVirtualPath));
   file_watcher->AddExtension(kExtensionId);
 
   // Start watching changes in the temporary directory.

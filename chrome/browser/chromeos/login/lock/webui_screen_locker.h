@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "ash/shell_delegate.h"
 #include "ash/wm/lock_state_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_delegate.h"
@@ -153,10 +153,10 @@ class WebUIScreenLocker : public WebUILoginView,
   views::Widget* lock_window_;
 
   // Sign-in Screen controller instance (owns login screens).
-  scoped_ptr<SignInScreenController> signin_screen_controller_;
+  std::unique_ptr<SignInScreenController> signin_screen_controller_;
 
   // Login UI implementation instance.
-  scoped_ptr<WebUILoginDisplay> login_display_;
+  std::unique_ptr<WebUILoginDisplay> login_display_;
 
   // Tracks when the lock window is displayed and ready.
   bool lock_ready_;
@@ -167,7 +167,7 @@ class WebUIScreenLocker : public WebUILoginView,
   // Time when lock was initiated, required for metrics.
   base::TimeTicks lock_time_;
 
-  scoped_ptr<login::NetworkStateHelper> network_state_helper_;
+  std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
 
   // True is subscribed as keyboard controller observer.
   bool is_observing_keyboard_;

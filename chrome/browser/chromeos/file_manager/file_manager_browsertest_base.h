@@ -59,18 +59,18 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
                          const base::DictionaryValue& value,
                          std::string* output);
 
-  scoped_ptr<LocalTestVolume> local_volume_;
+  std::unique_ptr<LocalTestVolume> local_volume_;
   linked_ptr<DriveTestVolume> drive_volume_;
   std::map<Profile*, linked_ptr<DriveTestVolume>> drive_volumes_;
-  scoped_ptr<FakeTestVolume> usb_volume_;
-  scoped_ptr<FakeTestVolume> mtp_volume_;
+  std::unique_ptr<FakeTestVolume> usb_volume_;
+  std::unique_ptr<FakeTestVolume> mtp_volume_;
 
  private:
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile);
   drive::DriveIntegrationServiceFactory::FactoryCallback
       create_drive_integration_service_;
-  scoped_ptr<drive::DriveIntegrationServiceFactory::ScopedFactoryForTest>
+  std::unique_ptr<drive::DriveIntegrationServiceFactory::ScopedFactoryForTest>
       service_factory_for_test_;
 };
 

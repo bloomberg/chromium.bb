@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MODE_INDICATOR_CONTROLLER_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MODE_INDICATOR_CONTROLLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget_observer.h"
@@ -65,7 +66,7 @@ class ModeIndicatorController
 
   // Observer of the widgets created by BubbleDelegateView.  This is used to
   // close the previous widget when a new widget is created.
-  scoped_ptr<ModeIndicatorObserverInterface> mi_observer_;
+  std::unique_ptr<ModeIndicatorObserverInterface> mi_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ModeIndicatorController);
 };

@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
@@ -203,7 +204,7 @@ void ResourceReporter::OnTasksRefreshed(
         auto itr = task_records_.find(id);
         if (itr == task_records_.end()) {
           task_data = new TaskRecord(id);
-          task_records_[id] = make_scoped_ptr(task_data);
+          task_records_[id] = base::WrapUnique(task_data);
         } else {
           task_data = itr->second.get();
         }
@@ -252,11 +253,11 @@ ResourceReporter::ResourceReporter()
 }
 
 // static
-scoped_ptr<rappor::Sample> ResourceReporter::CreateRapporSample(
+std::unique_ptr<rappor::Sample> ResourceReporter::CreateRapporSample(
     rappor::RapporService* rappor_service,
     const ResourceReporter::TaskRecord& task_record) {
-  scoped_ptr<rappor::Sample> sample(rappor_service->CreateSample(
-      rappor::UMA_RAPPOR_TYPE));
+  std::unique_ptr<rappor::Sample> sample(
+      rappor_service->CreateSample(rappor::UMA_RAPPOR_TYPE));
   sample->SetStringField(kRapporTaskStringField,
                          task_record.task_name_for_rappor);
   sample->SetFlagsField(kRapporPriorityFlagsField,
@@ -400,7 +401,7 @@ void ResourceReporter::OnMemoryPressure(
     // metric.
     const TaskRecord* sampled_cpu_task = SampleTaskByCpu();
     if (sampled_cpu_task) {
-      scoped_ptr<rappor::Sample> cpu_sample(
+      std::unique_ptr<rappor::Sample> cpu_sample(
           CreateRapporSample(rappor_service, *sampled_cpu_task));
       cpu_sample->SetFlagsField(kRapporNumCoresRangeFlagsField,
                                 GET_ENUM_VAL(system_cpu_cores_range_),
@@ -416,7 +417,7 @@ void ResourceReporter::OnMemoryPressure(
     // metric.
     const TaskRecord* sampled_memory_task = SampleTaskByMemory();
     if (sampled_memory_task) {
-      scoped_ptr<rappor::Sample> memory_sample(
+      std::unique_ptr<rappor::Sample> memory_sample(
           CreateRapporSample(rappor_service, *sampled_memory_task));
       memory_sample->SetFlagsField(
           kRapporUsageRangeFlagsField,

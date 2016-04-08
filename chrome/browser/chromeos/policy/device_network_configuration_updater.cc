@@ -22,17 +22,16 @@ namespace policy {
 DeviceNetworkConfigurationUpdater::~DeviceNetworkConfigurationUpdater() {}
 
 // static
-scoped_ptr<DeviceNetworkConfigurationUpdater>
+std::unique_ptr<DeviceNetworkConfigurationUpdater>
 DeviceNetworkConfigurationUpdater::CreateForDevicePolicy(
     PolicyService* policy_service,
     chromeos::ManagedNetworkConfigurationHandler* network_config_handler,
     chromeos::NetworkDeviceHandler* network_device_handler,
     chromeos::CrosSettings* cros_settings) {
-  scoped_ptr<DeviceNetworkConfigurationUpdater> updater(
-      new DeviceNetworkConfigurationUpdater(policy_service,
-                                            network_config_handler,
-                                            network_device_handler,
-                                            cros_settings));
+  std::unique_ptr<DeviceNetworkConfigurationUpdater> updater(
+      new DeviceNetworkConfigurationUpdater(
+          policy_service, network_config_handler, network_device_handler,
+          cros_settings));
   updater->Init();
   return updater;
 }

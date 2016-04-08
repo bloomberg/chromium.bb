@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/launcher_search_provider/error_reporter.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/console_message_level.h"
 
@@ -23,8 +24,8 @@ void ErrorReporter::Warn(const std::string& message) {
       content::ConsoleMessageLevel::CONSOLE_MESSAGE_LEVEL_WARNING, message);
 }
 
-scoped_ptr<ErrorReporter> ErrorReporter::Duplicate() {
-  return make_scoped_ptr(new ErrorReporter(host_));
+std::unique_ptr<ErrorReporter> ErrorReporter::Duplicate() {
+  return base::WrapUnique(new ErrorReporter(host_));
 }
 
 }  // namespace launcher_search_provider

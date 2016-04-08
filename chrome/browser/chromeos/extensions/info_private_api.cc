@@ -163,7 +163,7 @@ ChromeosInfoPrivateGetFunction::~ChromeosInfoPrivateGetFunction() {
 bool ChromeosInfoPrivateGetFunction::RunAsync() {
   base::ListValue* list = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetList(0, &list));
-  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   for (size_t i = 0; i < list->GetSize(); ++i) {
     std::string property_name;
     EXTENSION_FUNCTION_VALIDATE(list->GetString(i, &property_name));
@@ -213,7 +213,8 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
     return chromeos::CrosSettings::Get()->GetPref(
             chromeos::kSystemTimezone)->DeepCopy();
   } else if (property_name == kPropertySupportedTimezones) {
-    scoped_ptr<base::ListValue> values = chromeos::system::GetTimezoneList();
+    std::unique_ptr<base::ListValue> values =
+        chromeos::system::GetTimezoneList();
     return values.release();
   } else {
     const char* pref_name =

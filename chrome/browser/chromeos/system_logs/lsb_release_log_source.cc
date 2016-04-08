@@ -4,7 +4,8 @@
 
 #include "chrome/browser/chromeos/system_logs/lsb_release_log_source.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/sys_info.h"
 
 namespace system_logs {
@@ -17,7 +18,7 @@ LsbReleaseLogSource::~LsbReleaseLogSource() {
 
 void LsbReleaseLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(!callback.is_null());
-  scoped_ptr<SystemLogsResponse> response(new SystemLogsResponse);
+  std::unique_ptr<SystemLogsResponse> response(new SystemLogsResponse);
   const base::SysInfo::LsbReleaseMap& lsb_map =
       base::SysInfo::GetLsbReleaseMap();
   for (base::SysInfo::LsbReleaseMap::const_iterator iter = lsb_map.begin();

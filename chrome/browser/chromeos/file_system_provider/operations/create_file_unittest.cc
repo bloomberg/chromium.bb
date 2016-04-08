@@ -4,12 +4,12 @@
 
 #include "chrome/browser/chromeos/file_system_provider/operations/create_file.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/test_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
@@ -126,7 +126,7 @@ TEST_F(FileSystemProviderOperationsCreateFileTest, OnSuccess) {
   EXPECT_TRUE(create_file.Execute(kRequestId));
 
   create_file.OnSuccess(kRequestId,
-                        scoped_ptr<RequestValue>(new RequestValue()),
+                        std::unique_ptr<RequestValue>(new RequestValue()),
                         false /* has_more */);
   ASSERT_EQ(1u, callback_log.size());
   EXPECT_EQ(base::File::FILE_OK, callback_log[0]);
@@ -145,7 +145,7 @@ TEST_F(FileSystemProviderOperationsCreateFileTest, OnError) {
   EXPECT_TRUE(create_file.Execute(kRequestId));
 
   create_file.OnError(kRequestId,
-                      scoped_ptr<RequestValue>(new RequestValue()),
+                      std::unique_ptr<RequestValue>(new RequestValue()),
                       base::File::FILE_ERROR_TOO_MANY_OPENED);
   ASSERT_EQ(1u, callback_log.size());
   EXPECT_EQ(base::File::FILE_ERROR_TOO_MANY_OPENED, callback_log[0]);

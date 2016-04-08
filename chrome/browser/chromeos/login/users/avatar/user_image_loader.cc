@@ -4,13 +4,14 @@
 
 #include "chrome/browser/chromeos/login/users/avatar/user_image_loader.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
@@ -70,7 +71,7 @@ bool CropImage(const SkBitmap& image,
   }
 
   // Encode the cropped image to web-compatible bytes representation
-  scoped_ptr<user_manager::UserImage::Bytes> encoded =
+  std::unique_ptr<user_manager::UserImage::Bytes> encoded =
       user_manager::UserImage::Encode(final_image);
   if (!encoded)
     return false;
@@ -160,7 +161,7 @@ void UserImageRequest::OnImageFinalized(
   gfx::ImageSkia final_image_skia =
       gfx::ImageSkia::CreateFrom1xBitmap(final_image);
   final_image_skia.MakeThreadSafe();
-  scoped_ptr<user_manager::UserImage> user_image(
+  std::unique_ptr<user_manager::UserImage> user_image(
       new user_manager::UserImage(final_image_skia, image_bytes));
   user_image->set_file_path(image_info_.file_path);
   if (image_info_.image_codec == ImageDecoder::ROBUST_JPEG_CODEC ||
@@ -171,7 +172,7 @@ void UserImageRequest::OnImageFinalized(
 }
 
 void UserImageRequest::OnDecodeImageFailed() {
-  image_info_.loaded_cb.Run(make_scoped_ptr(new user_manager::UserImage));
+  image_info_.loaded_cb.Run(base::WrapUnique(new user_manager::UserImage));
   delete this;
 }
 
@@ -185,8 +186,8 @@ void DecodeImage(
   if (!data_is_ready) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(image_info.loaded_cb,
-                   base::Passed(make_scoped_ptr(new user_manager::UserImage))));
+        base::Bind(image_info.loaded_cb, base::Passed(base::WrapUnique(
+                                             new user_manager::UserImage))));
     return;
   }
 
@@ -215,7 +216,7 @@ void StartWithFilePath(
 
 void StartWithData(
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
-    scoped_ptr<std::string> data,
+    std::unique_ptr<std::string> data,
     ImageDecoder::ImageCodec image_codec,
     int pixels_per_side,
     const LoadedCallback& loaded_cb) {

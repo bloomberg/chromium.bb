@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
@@ -94,7 +95,7 @@ class HidDetectionTest : public OobeBaseTest {
   scoped_refptr<
       testing::NiceMock<device::MockBluetoothAdapter> > mock_adapter_;
 
-  scoped_ptr<device::FakeInputServiceLinux> input_service_linux_;
+  std::unique_ptr<device::FakeInputServiceLinux> input_service_linux_;
 
   base::WeakPtrFactory<HidDetectionTest> weak_ptr_factory_;
 

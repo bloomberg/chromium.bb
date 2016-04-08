@@ -315,13 +315,13 @@ EventRewriter::DeviceType EventRewriter::KeyboardDeviceAddedForTesting(
 
 void EventRewriter::RewriteMouseButtonEventForTesting(
     const ui::MouseEvent& event,
-    scoped_ptr<ui::Event>* rewritten_event) {
+    std::unique_ptr<ui::Event>* rewritten_event) {
   RewriteMouseButtonEvent(event, rewritten_event);
 }
 
 ui::EventRewriteStatus EventRewriter::RewriteEvent(
     const ui::Event& event,
-    scoped_ptr<ui::Event>* rewritten_event) {
+    std::unique_ptr<ui::Event>* rewritten_event) {
   if ((event.type() == ui::ET_KEY_PRESSED) ||
       (event.type() == ui::ET_KEY_RELEASED)) {
     return RewriteKeyEvent(static_cast<const ui::KeyEvent&>(event),
@@ -350,7 +350,7 @@ ui::EventRewriteStatus EventRewriter::RewriteEvent(
 
 ui::EventRewriteStatus EventRewriter::NextDispatchEvent(
     const ui::Event& last_event,
-    scoped_ptr<ui::Event>* new_event) {
+    std::unique_ptr<ui::Event>* new_event) {
   if (sticky_keys_controller_) {
     // In the case of sticky keys, we know what the events obtained here are:
     // modifier key releases that match the ones previously discarded. So, we
@@ -366,7 +366,7 @@ ui::EventRewriteStatus EventRewriter::NextDispatchEvent(
 void EventRewriter::BuildRewrittenKeyEvent(
     const ui::KeyEvent& key_event,
     const MutableKeyState& state,
-    scoped_ptr<ui::Event>* rewritten_event) {
+    std::unique_ptr<ui::Event>* rewritten_event) {
   ui::KeyEvent* rewritten_key_event =
       new ui::KeyEvent(key_event.type(), state.key_code, state.code,
                        state.flags, state.key, key_event.time_stamp());
@@ -484,7 +484,7 @@ int EventRewriter::GetRemappedModifierMasks(const PrefService& pref_service,
 
 ui::EventRewriteStatus EventRewriter::RewriteKeyEvent(
     const ui::KeyEvent& key_event,
-    scoped_ptr<ui::Event>* rewritten_event) {
+    std::unique_ptr<ui::Event>* rewritten_event) {
   if (IsExtensionCommandRegistered(key_event.key_code(), key_event.flags()))
     return ui::EVENT_REWRITE_CONTINUE;
   if (key_event.source_device_id() != ui::ED_UNKNOWN_DEVICE)
@@ -560,7 +560,7 @@ ui::EventRewriteStatus EventRewriter::RewriteKeyEvent(
 
 ui::EventRewriteStatus EventRewriter::RewriteMouseButtonEvent(
     const ui::MouseEvent& mouse_event,
-    scoped_ptr<ui::Event>* rewritten_event) {
+    std::unique_ptr<ui::Event>* rewritten_event) {
   int flags = mouse_event.flags();
   RewriteLocatedEvent(mouse_event, &flags);
   ui::EventRewriteStatus status = ui::EVENT_REWRITE_CONTINUE;
@@ -594,7 +594,7 @@ ui::EventRewriteStatus EventRewriter::RewriteMouseButtonEvent(
 
 ui::EventRewriteStatus EventRewriter::RewriteMouseWheelEvent(
     const ui::MouseWheelEvent& wheel_event,
-    scoped_ptr<ui::Event>* rewritten_event) {
+    std::unique_ptr<ui::Event>* rewritten_event) {
   if (!sticky_keys_controller_)
     return ui::EVENT_REWRITE_CONTINUE;
   int flags = wheel_event.flags();
@@ -618,7 +618,7 @@ ui::EventRewriteStatus EventRewriter::RewriteMouseWheelEvent(
 
 ui::EventRewriteStatus EventRewriter::RewriteTouchEvent(
     const ui::TouchEvent& touch_event,
-    scoped_ptr<ui::Event>* rewritten_event) {
+    std::unique_ptr<ui::Event>* rewritten_event) {
   int flags = touch_event.flags();
   RewriteLocatedEvent(touch_event, &flags);
   if (touch_event.flags() == flags)
@@ -634,7 +634,7 @@ ui::EventRewriteStatus EventRewriter::RewriteTouchEvent(
 
 ui::EventRewriteStatus EventRewriter::RewriteScrollEvent(
     const ui::ScrollEvent& scroll_event,
-    scoped_ptr<ui::Event>* rewritten_event) {
+    std::unique_ptr<ui::Event>* rewritten_event) {
   int flags = scroll_event.flags();
   ui::EventRewriteStatus status = ui::EVENT_REWRITE_CONTINUE;
   if (sticky_keys_controller_)

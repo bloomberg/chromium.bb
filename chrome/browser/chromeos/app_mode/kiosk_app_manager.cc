@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/barrier_closure.h"
@@ -12,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/sys_info.h"
@@ -515,7 +517,7 @@ KioskAppManager::CreateSecondaryAppExternalLoader() {
 void KioskAppManager::InstallFromCache(const std::string& id) {
   const base::DictionaryValue* extension = nullptr;
   if (external_cache_->cached_extensions()->GetDictionary(id, &extension)) {
-    scoped_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
     base::DictionaryValue* extension_copy = extension->DeepCopy();
     prefs->Set(id, extension_copy);
     external_loader_->SetCurrentAppExtensions(std::move(prefs));
@@ -527,9 +529,9 @@ void KioskAppManager::InstallFromCache(const std::string& id) {
 
 void KioskAppManager::InstallSecondaryApps(
     const std::vector<std::string>& ids) {
-  scoped_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
   for (const std::string& id : ids) {
-    scoped_ptr<base::DictionaryValue> extension_entry(
+    std::unique_ptr<base::DictionaryValue> extension_entry(
         new base::DictionaryValue);
     extension_entry->SetStringWithoutPathExpansion(
         extensions::ExternalProviderImpl::kExternalUpdateUrl,
@@ -624,7 +626,7 @@ KioskAppData* KioskAppManager::GetAppDataMutable(const std::string& app_id) {
 
 void KioskAppManager::UpdateAppData() {
   // Gets app id to data mapping for existing apps.
-  std::map<std::string, scoped_ptr<KioskAppData>> old_apps;
+  std::map<std::string, std::unique_ptr<KioskAppData>> old_apps;
   for (auto& app : apps_)
     old_apps[app->app_id()] = std::move(app);
   apps_.clear();
@@ -658,7 +660,7 @@ void KioskAppManager::UpdateAppData() {
       std::string version;
       GetCachedCrx(it->kiosk_app_id, &cached_crx, &version);
 
-      apps_.push_back(make_scoped_ptr(
+      apps_.push_back(base::WrapUnique(
           new KioskAppData(this, it->kiosk_app_id, account_id,
                            GURL(it->kiosk_app_update_url), cached_crx)));
       apps_.back()->Load();
@@ -675,7 +677,7 @@ void KioskAppManager::UpdateAppData() {
 }
 
 void KioskAppManager::ClearRemovedApps(
-    const std::map<std::string, scoped_ptr<KioskAppData>>& old_apps) {
+    const std::map<std::string, std::unique_ptr<KioskAppData>>& old_apps) {
   base::Closure cryptohomes_barrier_closure;
 
   const user_manager::User* active_user =
@@ -707,9 +709,9 @@ void KioskAppManager::ClearRemovedApps(
 
 void KioskAppManager::UpdateExternalCachePrefs() {
   // Request external_cache_ to download new apps and update the existing apps.
-  scoped_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
   for (size_t i = 0; i < apps_.size(); ++i) {
-    scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
 
     if (apps_[i]->update_url().is_valid()) {
       entry->SetString(extensions::ExternalProviderImpl::kExternalUpdateUrl,

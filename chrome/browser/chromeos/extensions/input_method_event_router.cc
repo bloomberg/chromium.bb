@@ -42,12 +42,12 @@ void ExtensionInputMethodEventRouter::InputMethodChanged(
   if (!router->HasEventListener(OnChanged::kEventName))
     return;
 
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Append(new base::StringValue(
       manager->GetActiveIMEState()->GetCurrentInputMethod().id()));
 
   // The router will only send the event to extensions that are listening.
-  scoped_ptr<extensions::Event> event(
+  std::unique_ptr<extensions::Event> event(
       new extensions::Event(extensions::events::INPUT_METHOD_PRIVATE_ON_CHANGED,
                             OnChanged::kEventName, std::move(args)));
   event->restrict_to_browser_context = context_;

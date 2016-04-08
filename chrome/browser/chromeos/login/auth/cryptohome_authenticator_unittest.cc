@@ -4,6 +4,8 @@
 
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -12,7 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -168,7 +170,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
 
     fake_cryptohome_client_ = new FakeCryptohomeClient;
     chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        scoped_ptr<CryptohomeClient>(fake_cryptohome_client_));
+        std::unique_ptr<CryptohomeClient>(fake_cryptohome_client_));
 
     SystemSaltGetter::Initialize();
 
@@ -247,8 +249,8 @@ class CryptohomeAuthenticatorTest : public testing::Test {
         .RetiresOnSaturation();
   }
 
-  void ExpectGetKeyDataExCall(scoped_ptr<int64_t> key_type,
-                              scoped_ptr<std::string> salt) {
+  void ExpectGetKeyDataExCall(std::unique_ptr<int64_t> key_type,
+                              std::unique_ptr<std::string> salt) {
     key_definitions_.clear();
     key_definitions_.push_back(cryptohome::KeyDefinition(
         std::string() /* secret */,
@@ -325,7 +327,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
   ScopedTestCrosSettings test_cros_settings_;
 
   TestingProfile profile_;
-  scoped_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
   user_manager::FakeUserManager* user_manager_;
   ScopedUserManagerEnabler user_manager_enabler_;
 
@@ -335,7 +337,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
   MockAuthStatusConsumer consumer_;
 
   scoped_refptr<CryptohomeAuthenticator> auth_;
-  scoped_ptr<TestAttemptState> state_;
+  std::unique_ptr<TestAttemptState> state_;
   FakeCryptohomeClient* fake_cryptohome_client_;
 
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
@@ -570,7 +572,8 @@ TEST_F(CryptohomeAuthenticatorTest, DriveDataResync) {
 
   // Set up mock homedir methods to respond successfully to a cryptohome create
   // attempt.
-  ExpectGetKeyDataExCall(scoped_ptr<int64_t>(), scoped_ptr<std::string>());
+  ExpectGetKeyDataExCall(std::unique_ptr<int64_t>(),
+                         std::unique_ptr<std::string>());
   ExpectMountExCall(true /* expect_create_attempt */);
 
   state_->PresetOnlineLoginStatus(AuthFailure::AuthFailureNone());
@@ -627,7 +630,8 @@ TEST_F(CryptohomeAuthenticatorTest, DriveDataRecover) {
 
   // Set up mock homedir methods to respond successfully to a cryptohome mount
   // attempt.
-  ExpectGetKeyDataExCall(scoped_ptr<int64_t>(), scoped_ptr<std::string>());
+  ExpectGetKeyDataExCall(std::unique_ptr<int64_t>(),
+                         std::unique_ptr<std::string>());
   ExpectMountExCall(false /* expect_create_attempt */);
 
   state_->PresetOnlineLoginStatus(AuthFailure::AuthFailureNone());
@@ -690,7 +694,8 @@ TEST_F(CryptohomeAuthenticatorTest, DriveCreateForNewUser) {
 
   // Set up mock homedir methods to respond successfully to a cryptohome create
   // attempt.
-  ExpectGetKeyDataExCall(scoped_ptr<int64_t>(), scoped_ptr<std::string>());
+  ExpectGetKeyDataExCall(std::unique_ptr<int64_t>(),
+                         std::unique_ptr<std::string>());
   ExpectMountExCall(true /* expect_create_attempt */);
 
   // Set up state as though a cryptohome mount attempt has occurred
@@ -761,8 +766,8 @@ TEST_F(CryptohomeAuthenticatorTest, DriveLoginWithPreHashedPassword) {
   // mount when this pre-hashed key is used.
 
   ExpectGetKeyDataExCall(
-      make_scoped_ptr(new int64_t(Key::KEY_TYPE_SALTED_SHA256)),
-      make_scoped_ptr(new std::string(kSalt)));
+      base::WrapUnique(new int64_t(Key::KEY_TYPE_SALTED_SHA256)),
+      base::WrapUnique(new std::string(kSalt)));
   ExpectMountExCall(false /* expect_create_attempt */);
 
   auth_->AuthenticateToLogin(NULL, user_context_);
@@ -779,8 +784,8 @@ TEST_F(CryptohomeAuthenticatorTest, FailLoginWithMissingSalt) {
   // pre-hashed key was used to create the cryptohome but without the required
   // salt.
   ExpectGetKeyDataExCall(
-      make_scoped_ptr(new int64_t(Key::KEY_TYPE_SALTED_SHA256)),
-      scoped_ptr<std::string>());
+      base::WrapUnique(new int64_t(Key::KEY_TYPE_SALTED_SHA256)),
+      std::unique_ptr<std::string>());
 
   auth_->AuthenticateToLogin(NULL, user_context_);
   base::RunLoop().Run();

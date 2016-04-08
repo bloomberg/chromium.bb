@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_OPTIONS_VPN_CONFIG_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_OPTIONS_VPN_CONFIG_VIEW_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/options/cert_library.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
@@ -82,7 +82,7 @@ class VPNConfigView : public ChildNetworkConfigView,
                           const base::DictionaryValue& dictionary);
   void ParseUIProperties(const NetworkState* vpn);
   void GetPropertiesError(const std::string& error_name,
-                          scoped_ptr<base::DictionaryValue> error_data);
+                          std::unique_ptr<base::DictionaryValue> error_data);
 
   // Fill in |properties| with the properties for the selected client (user)
   // certificate or empty properties if no client cert is required.
@@ -163,16 +163,17 @@ class VPNConfigView : public ChildNetworkConfigView,
   views::Textfield* server_textfield_;
   views::Label* service_text_;
   views::Textfield* service_textfield_;
-  scoped_ptr<internal::ProviderTypeComboboxModel> provider_type_combobox_model_;
+  std::unique_ptr<internal::ProviderTypeComboboxModel>
+      provider_type_combobox_model_;
   views::Combobox* provider_type_combobox_;
   views::Label* provider_type_text_label_;
   views::Label* psk_passphrase_label_;
   PassphraseTextfield* psk_passphrase_textfield_;
   views::Label* user_cert_label_;
-  scoped_ptr<internal::VpnUserCertComboboxModel> user_cert_combobox_model_;
+  std::unique_ptr<internal::VpnUserCertComboboxModel> user_cert_combobox_model_;
   views::Combobox* user_cert_combobox_;
   views::Label* server_ca_cert_label_;
-  scoped_ptr<internal::VpnServerCACertComboboxModel>
+  std::unique_ptr<internal::VpnServerCACertComboboxModel>
       server_ca_cert_combobox_model_;
   views::Combobox* server_ca_cert_combobox_;
   views::Textfield* username_textfield_;

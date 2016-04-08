@@ -132,7 +132,7 @@ class FileStreamWriter::OperationRunner
 
   AbortCallback abort_callback_;
   base::WeakPtr<ProvidedFileSystemInterface> file_system_;
-  scoped_ptr<ScopedFileOpener> file_opener_;
+  std::unique_ptr<ScopedFileOpener> file_opener_;
   int file_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(OperationRunner);

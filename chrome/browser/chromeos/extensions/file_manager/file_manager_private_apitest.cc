@@ -309,8 +309,8 @@ class FileManagerPrivateApiTest : public ExtensionApiTest {
   chromeos::disks::MockDiskMountManager* disk_mount_manager_mock_;
   DiskMountManager::DiskMap volumes_;
   DiskMountManager::MountPointMap mount_points_;
-  scoped_ptr<TestingProfile> testing_profile_;
-  scoped_ptr<file_manager::EventRouter> event_router_;
+  std::unique_ptr<TestingProfile> testing_profile_;
+  std::unique_ptr<file_manager::EventRouter> event_router_;
 };
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Mount) {

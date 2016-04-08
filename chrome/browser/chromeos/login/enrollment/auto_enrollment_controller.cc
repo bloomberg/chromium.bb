@@ -177,7 +177,7 @@ void AutoEnrollmentController::Retry() {
     Start();
 }
 
-scoped_ptr<AutoEnrollmentController::ProgressCallbackList::Subscription>
+std::unique_ptr<AutoEnrollmentController::ProgressCallbackList::Subscription>
 AutoEnrollmentController::RegisterProgressCallback(
     const ProgressCallbackList::CallbackType& callback) {
   return progress_callbacks_.Add(callback);

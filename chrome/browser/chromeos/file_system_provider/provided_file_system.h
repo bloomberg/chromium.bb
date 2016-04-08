@@ -8,11 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/file_system_provider/abort_callback.h"
@@ -91,7 +91,7 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   // so is must be called just after creating ProvideFileSystem instance.
   // Used by unit tests.
   void SetNotificationManagerForTesting(
-      scoped_ptr<NotificationManagerInterface> notification_manager);
+      std::unique_ptr<NotificationManagerInterface> notification_manager);
 
   // ProvidedFileSystemInterface overrides.
   AbortCallback RequestUnmount(
@@ -170,7 +170,7 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   void Notify(const base::FilePath& entry_path,
               bool recursive,
               storage::WatcherManager::ChangeType change_type,
-              scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
+              std::unique_ptr<ProvidedFileSystemObserver::Changes> changes,
               const std::string& tag,
               const storage::AsyncFileUtil::StatusCallback& callback) override;
   void Configure(
@@ -206,7 +206,7 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
       const storage::AsyncFileUtil::StatusCallback& callback);
 
   // Notifies about a notifier even within |watcher_queue_|.
-  AbortCallback NotifyInQueue(scoped_ptr<NotifyInQueueArgs> args);
+  AbortCallback NotifyInQueue(std::unique_ptr<NotifyInQueueArgs> args);
 
   // Called when adding a watcher is completed with either success or en error.
   void OnAddWatcherInQueueCompleted(
@@ -229,7 +229,7 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
 
   // Called when all observers finished handling the change notification. It
   // updates the tag to |tag| for the entry at |entry_path|.
-  void OnNotifyInQueueCompleted(scoped_ptr<NotifyInQueueArgs> args,
+  void OnNotifyInQueueCompleted(std::unique_ptr<NotifyInQueueArgs> args,
                                 const base::File::Error result);
 
   // Called when opening a file is completed with either a success or an error.
@@ -248,8 +248,8 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   Profile* profile_;                       // Not owned.
   extensions::EventRouter* event_router_;  // Not owned. May be NULL.
   ProvidedFileSystemInfo file_system_info_;
-  scoped_ptr<NotificationManagerInterface> notification_manager_;
-  scoped_ptr<RequestManager> request_manager_;
+  std::unique_ptr<NotificationManagerInterface> notification_manager_;
+  std::unique_ptr<RequestManager> request_manager_;
   Watchers watchers_;
   Queue watcher_queue_;
   OpenedFiles opened_files_;

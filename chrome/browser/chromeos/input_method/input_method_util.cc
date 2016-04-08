@@ -9,26 +9,22 @@
 #include <algorithm>
 #include <functional>
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "components/prefs/pref_service.h"
-
 // TODO(nona): move this header from this file.
 #include "chrome/grit/generated_resources.h"
-
+#include "components/prefs/pref_service.h"
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
-
 // For SetHardwareKeyboardLayoutForTesting.
 #include "ui/base/ime/chromeos/fake_input_method_delegate.h"
 #include "ui/base/ime/chromeos/input_method_delegate.h"
-
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {

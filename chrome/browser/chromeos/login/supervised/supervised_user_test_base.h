@@ -36,7 +36,7 @@ class SupervisedUsersSyncTestAdapter {
 
   bool HasChanges() { return !processor_->changes().empty(); }
 
-  scoped_ptr< ::sync_pb::ManagedUserSpecifics> GetFirstChange();
+  std::unique_ptr<::sync_pb::ManagedUserSpecifics> GetFirstChange();
 
   void AddChange(const ::sync_pb::ManagedUserSpecifics& proto, bool update);
 
@@ -51,7 +51,8 @@ class SupervisedUsersSharedSettingsSyncTestAdapter {
 
   bool HasChanges() { return !processor_->changes().empty(); }
 
-  scoped_ptr< ::sync_pb::ManagedUserSharedSettingSpecifics> GetFirstChange();
+  std::unique_ptr<::sync_pb::ManagedUserSharedSettingSpecifics>
+  GetFirstChange();
 
   void AddChange(const ::sync_pb::ManagedUserSharedSettingSpecifics& proto,
                  bool update);
@@ -104,10 +105,11 @@ class SupervisedUserTestBase : public chromeos::LoginManagerTest {
   cryptohome::MockHomedirMethods* mock_homedir_methods_;
   NetworkPortalDetectorTestImpl* network_portal_detector_;
   SupervisedUserRegistrationUtilityStub* registration_utility_stub_;
-  scoped_ptr<ScopedTestingSupervisedUserRegistrationUtility> scoped_utility_;
-  scoped_ptr<SupervisedUsersSharedSettingsSyncTestAdapter>
+  std::unique_ptr<ScopedTestingSupervisedUserRegistrationUtility>
+      scoped_utility_;
+  std::unique_ptr<SupervisedUsersSharedSettingsSyncTestAdapter>
       shared_settings_adapter_;
-  scoped_ptr<SupervisedUsersSyncTestAdapter> supervised_users_adapter_;
+  std::unique_ptr<SupervisedUsersSyncTestAdapter> supervised_users_adapter_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserTestBase);

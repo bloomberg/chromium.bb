@@ -173,7 +173,8 @@ TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
   content::TestBrowserThreadBundle thread_bundle;
 
   // Foo.app can handle "text/plain" and "text/html"
-  scoped_ptr<google_apis::AppResource> foo_app(new google_apis::AppResource);
+  std::unique_ptr<google_apis::AppResource> foo_app(
+      new google_apis::AppResource);
   foo_app->set_product_id("foo_app_id");
   foo_app->set_application_id("foo_app_id");
   foo_app->set_name("Foo");
@@ -184,7 +185,8 @@ TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
   foo_app->set_primary_mimetypes(std::move(foo_mime_types));
 
   // Bar.app can only handle "text/plain".
-  scoped_ptr<google_apis::AppResource> bar_app(new google_apis::AppResource);
+  std::unique_ptr<google_apis::AppResource> bar_app(
+      new google_apis::AppResource);
   bar_app->set_product_id("bar_app_id");
   bar_app->set_application_id("bar_app_id");
   bar_app->set_name("Bar");
@@ -706,7 +708,8 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks) {
 
   // Baz.app can handle "text/plain".
   // This is a Drive app.
-  scoped_ptr<google_apis::AppResource> baz_app(new google_apis::AppResource);
+  std::unique_ptr<google_apis::AppResource> baz_app(
+      new google_apis::AppResource);
   baz_app->set_product_id("baz_app_id");
   baz_app->set_application_id(kBazId);
   baz_app->set_name("Baz");
@@ -754,7 +757,8 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks_GoogleDocument) {
   const char kBarId[] = "odlhccgofgkadkkhcmhgnhgahonahoca";
 
   // Foo.app can handle ".gdoc" files.
-  scoped_ptr<google_apis::AppResource> foo_app(new google_apis::AppResource);
+  std::unique_ptr<google_apis::AppResource> foo_app(
+      new google_apis::AppResource);
   foo_app->set_product_id("foo_app");
   foo_app->set_application_id(kFooId);
   foo_app->set_name("Foo");

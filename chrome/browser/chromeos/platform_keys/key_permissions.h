@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_KEY_PERMISSIONS_H_
 #define CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_KEY_PERMISSIONS_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 class PrefService;
@@ -82,7 +82,7 @@ class KeyPermissions {
     // |extension_id|. Don't use this constructor directly. Call
     // |KeyPermissions::GetPermissionsForExtension| instead.
     PermissionsForExtension(const std::string& extension_id,
-                            scoped_ptr<base::Value> state_store_value,
+                            std::unique_ptr<base::Value> state_store_value,
                             PrefService* profile_prefs,
                             policy::PolicyService* profile_policies,
                             KeyPermissions* key_permissions);
@@ -126,7 +126,7 @@ class KeyPermissions {
 
     // Converts |state_store_entries_| to a base::Value for storing in the state
     // store.
-    scoped_ptr<base::Value> KeyEntriesToState();
+    std::unique_ptr<base::Value> KeyEntriesToState();
 
     // Returns an existing entry for |public_key_spki_der_b64| from
     // |state_store_entries_|. If there is no existing entry, creates, adds and
@@ -161,7 +161,7 @@ class KeyPermissions {
   ~KeyPermissions();
 
   using PermissionsCallback =
-      base::Callback<void(scoped_ptr<PermissionsForExtension>)>;
+      base::Callback<void(std::unique_ptr<PermissionsForExtension>)>;
 
   // Passes an object managing the key permissions of the extension with id
   // |extension_id| to |callback|. This can happen synchronously or
@@ -184,11 +184,11 @@ class KeyPermissions {
   void CreatePermissionObjectAndPassToCallback(
       const std::string& extension_id,
       const PermissionsCallback& callback,
-      scoped_ptr<base::Value> value);
+      std::unique_ptr<base::Value> value);
 
   // Writes |value| to the state store of the extension with id |extension_id|.
   void SetPlatformKeysOfExtension(const std::string& extension_id,
-                                  scoped_ptr<base::Value> value);
+                                  std::unique_ptr<base::Value> value);
 
   const base::DictionaryValue* GetPrefsEntry(
       const std::string& public_key_spki_der_b64) const;

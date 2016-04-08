@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "net/base/network_change_notifier.h"
@@ -195,7 +195,7 @@ class AutoEnrollmentClient
 
   // Used to communicate with the device management service.
   DeviceManagementService* device_management_service_;
-  scoped_ptr<DeviceManagementRequestJob> request_job_;
+  std::unique_ptr<DeviceManagementRequestJob> request_job_;
 
   // PrefService where the protocol's results are cached.
   PrefService* local_state_;

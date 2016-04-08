@@ -5,14 +5,16 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 
 #include <stdint.h>
+
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
@@ -80,7 +82,7 @@ class TestingDeviceCloudPolicyManagerChromeOS
     : public DeviceCloudPolicyManagerChromeOS {
  public:
   TestingDeviceCloudPolicyManagerChromeOS(
-      scoped_ptr<DeviceCloudPolicyStoreChromeOS> store,
+      std::unique_ptr<DeviceCloudPolicyStoreChromeOS> store,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       ServerBackedStateKeysBroker* state_keys_broker)
       : DeviceCloudPolicyManagerChromeOS(std::move(store),
@@ -114,7 +116,7 @@ class DeviceCloudPolicyManagerChromeOSTest
     DeviceSettingsTestBase::SetUp();
 
     dbus_setter_->SetCryptohomeClient(
-        scoped_ptr<chromeos::CryptohomeClient>(fake_cryptohome_client_));
+        std::unique_ptr<chromeos::CryptohomeClient>(fake_cryptohome_client_));
 
     install_attributes_.reset(
         new EnterpriseInstallAttributes(fake_cryptohome_client_));
@@ -122,7 +124,7 @@ class DeviceCloudPolicyManagerChromeOSTest
         &device_settings_service_, install_attributes_.get(),
         base::ThreadTaskRunnerHandle::Get());
     manager_.reset(new TestingDeviceCloudPolicyManagerChromeOS(
-        make_scoped_ptr(store_), base::ThreadTaskRunnerHandle::Get(),
+        base::WrapUnique(store_), base::ThreadTaskRunnerHandle::Get(),
         &state_keys_broker_));
 
     chrome::RegisterLocalState(local_state_.registry());
@@ -211,7 +213,7 @@ class DeviceCloudPolicyManagerChromeOSTest
   MOCK_METHOD0(OnDeviceCloudPolicyManagerConnected, void());
   MOCK_METHOD0(OnDeviceCloudPolicyManagerDisconnected, void());
 
-  scoped_ptr<EnterpriseInstallAttributes> install_attributes_;
+  std::unique_ptr<EnterpriseInstallAttributes> install_attributes_;
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   net::TestURLFetcherFactory url_fetcher_factory_;
@@ -229,8 +231,8 @@ class DeviceCloudPolicyManagerChromeOSTest
 
   DeviceCloudPolicyStoreChromeOS* store_;
   SchemaRegistry schema_registry_;
-  scoped_ptr<TestingDeviceCloudPolicyManagerChromeOS> manager_;
-  scoped_ptr<DeviceCloudPolicyInitializer> initializer_;
+  std::unique_ptr<TestingDeviceCloudPolicyManagerChromeOS> manager_;
+  std::unique_ptr<DeviceCloudPolicyInitializer> initializer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyManagerChromeOSTest);

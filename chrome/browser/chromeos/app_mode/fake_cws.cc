@@ -188,7 +188,8 @@ bool FakeCWS::GetUpdateCheckContent(const std::vector<std::string>& ids,
   return true;
 }
 
-scoped_ptr<HttpResponse> FakeCWS::HandleRequest(const HttpRequest& request) {
+std::unique_ptr<HttpResponse> FakeCWS::HandleRequest(
+    const HttpRequest& request) {
   GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
   std::string request_path = request_url.path();
   if (request_path.find(update_check_end_point_) != std::string::npos &&
@@ -198,7 +199,8 @@ scoped_ptr<HttpResponse> FakeCWS::HandleRequest(const HttpRequest& request) {
       std::string update_check_content;
       if (GetUpdateCheckContent(ids, &update_check_content)) {
         ++update_check_count_;
-        scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
+        std::unique_ptr<BasicHttpResponse> http_response(
+            new BasicHttpResponse());
         http_response->set_code(net::HTTP_OK);
         http_response->set_content_type("text/xml");
         http_response->set_content(update_check_content);
@@ -207,7 +209,7 @@ scoped_ptr<HttpResponse> FakeCWS::HandleRequest(const HttpRequest& request) {
     }
   }
 
-  return scoped_ptr<HttpResponse>();
+  return std::unique_ptr<HttpResponse>();
 }
 
 }  // namespace chromeos

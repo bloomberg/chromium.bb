@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_USERS_AVATAR_USER_IMAGE_MANAGER_IMPL_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -51,7 +51,8 @@ class UserImageManagerImpl
   void UserLoggedIn(bool user_is_new, bool user_is_local) override;
   void UserProfileCreated() override;
   void SaveUserDefaultImageIndex(int default_image_index) override;
-  void SaveUserImage(scoped_ptr<user_manager::UserImage> user_image) override;
+  void SaveUserImage(
+      std::unique_ptr<user_manager::UserImage> user_image) override;
   void SaveUserImageFromFile(const base::FilePath& path) override;
   void SaveUserImageFromProfileImage() override;
   void DeleteUserImage() override;
@@ -63,7 +64,7 @@ class UserImageManagerImpl
   void OnExternalDataSet(const std::string& policy) override;
   void OnExternalDataCleared(const std::string& policy) override;
   void OnExternalDataFetched(const std::string& policy,
-                             scoped_ptr<std::string> data) override;
+                             std::unique_ptr<std::string> data) override;
 
   static void IgnoreProfileDataDownloadDelayForTesting();
 
@@ -173,7 +174,7 @@ class UserImageManagerImpl
 
   // Downloader for the user's profile data. NULL when no download is
   // currently in progress.
-  scoped_ptr<ProfileDownloader> profile_downloader_;
+  std::unique_ptr<ProfileDownloader> profile_downloader_;
 
   // The currently logged-in user's downloaded profile image, if successfully
   // downloaded or initialized from a previously downloaded and saved image.
@@ -201,14 +202,14 @@ class UserImageManagerImpl
   base::RepeatingTimer profile_download_periodic_timer_;
 
   // Sync observer for the currently logged-in user.
-  scoped_ptr<UserImageSyncObserver> user_image_sync_observer_;
+  std::unique_ptr<UserImageSyncObserver> user_image_sync_observer_;
 
   // Background task runner on which Jobs perform file I/O and the image
   // decoders run.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   // The currently running job.
-  scoped_ptr<Job> job_;
+  std::unique_ptr<Job> job_;
 
   bool has_managed_image_;
 

@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_REMOTE_COMMANDS_SCREENSHOT_DELEGATE_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_REMOTE_COMMANDS_SCREENSHOT_DELEGATE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task_runner.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_screenshot_job.h"
@@ -33,8 +34,9 @@ class ScreenshotDelegate : public DeviceCommandScreenshotJob::Delegate {
       gfx::NativeWindow window,
       const gfx::Rect& source_rect,
       const ui::GrabWindowSnapshotAsyncPNGCallback& callback) override;
-  scoped_ptr<UploadJob> CreateUploadJob(const GURL& upload_url,
-                                        UploadJob::Delegate* delegate) override;
+  std::unique_ptr<UploadJob> CreateUploadJob(
+      const GURL& upload_url,
+      UploadJob::Delegate* delegate) override;
 
  private:
   void StoreScreenshot(const ui::GrabWindowSnapshotAsyncPNGCallback& callback,

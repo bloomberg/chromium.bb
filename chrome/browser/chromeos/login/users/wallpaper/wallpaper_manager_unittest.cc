@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
+
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
@@ -15,11 +18,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -89,7 +90,7 @@ TEST_F(WallpaperManagerCacheTest, VerifyWallpaperCache) {
   fake_user_manager()->LoginUser(test_account_id_1);
   fake_user_manager()->LoginUser(test_account_id_2);
 
-  scoped_ptr<WallpaperManager::TestApi> test_api;
+  std::unique_ptr<WallpaperManager::TestApi> test_api;
   test_api.reset(new WallpaperManager::TestApi(WallpaperManager::Get()));
 
   gfx::ImageSkia test_user_1_wallpaper = CreateTestImage(SK_ColorRED);
@@ -132,7 +133,7 @@ TEST_F(WallpaperManagerCacheTest, CacheClearedOnUserRemoval) {
   fake_user_manager()->AddUser(test_account_id_1);
   fake_user_manager()->AddUser(test_account_id_2);
 
-  scoped_ptr<WallpaperManager::TestApi> test_api(
+  std::unique_ptr<WallpaperManager::TestApi> test_api(
       new WallpaperManager::TestApi(WallpaperManager::Get()));
 
   const gfx::ImageSkia test_user_1_wallpaper = CreateTestImage(SK_ColorRED);

@@ -71,9 +71,9 @@ class TouchExplorationTest : public InProcessBrowserTest {
   ui::GestureDetector::Config gesture_detector_config_;
   base::SimpleTestTickClock* simulated_clock_;
   aura::Window* root_window_;
-  scoped_ptr<ui::test::TestEventHandler> event_handler_;
+  std::unique_ptr<ui::test::TestEventHandler> event_handler_;
 
-private:
+ private:
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationTest);
 };
 

@@ -4,11 +4,11 @@
 
 #include "chrome/browser/chromeos/policy/consumer_unenrollment_handler.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
@@ -52,10 +52,9 @@ class ConsumerUnenrollmentHandlerTest
 
 
     // Set up FakeDeviceCloudPolicyManager.
-    scoped_ptr<DeviceCloudPolicyStoreChromeOS> store_(
+    std::unique_ptr<DeviceCloudPolicyStoreChromeOS> store_(
         new DeviceCloudPolicyStoreChromeOS(
-            &device_settings_service_,
-            install_attributes_.get(),
+            &device_settings_service_, install_attributes_.get(),
             base::ThreadTaskRunnerHandle::Get()));
     fake_manager_.reset(new FakeDeviceCloudPolicyManager(
         std::move(store_), base::ThreadTaskRunnerHandle::Get()));
@@ -87,13 +86,14 @@ class ConsumerUnenrollmentHandlerTest
     FlushDeviceSettings();
   }
 
-  scoped_ptr<FakeConsumerManagementService> fake_service_;
-  scoped_ptr<chromeos::FakeCryptohomeClient> fake_cryptohome_client_;
-  scoped_ptr<EnterpriseInstallAttributes> install_attributes_;
-  scoped_ptr<FakeDeviceCloudPolicyManager> fake_manager_;
-  scoped_ptr<chromeos::FakeOwnerSettingsService> fake_owner_settings_service_;
+  std::unique_ptr<FakeConsumerManagementService> fake_service_;
+  std::unique_ptr<chromeos::FakeCryptohomeClient> fake_cryptohome_client_;
+  std::unique_ptr<EnterpriseInstallAttributes> install_attributes_;
+  std::unique_ptr<FakeDeviceCloudPolicyManager> fake_manager_;
+  std::unique_ptr<chromeos::FakeOwnerSettingsService>
+      fake_owner_settings_service_;
 
-  scoped_ptr<ConsumerUnenrollmentHandler> handler_;
+  std::unique_ptr<ConsumerUnenrollmentHandler> handler_;
 };
 
 TEST_F(ConsumerUnenrollmentHandlerTest, UnenrollmentSucceeds) {

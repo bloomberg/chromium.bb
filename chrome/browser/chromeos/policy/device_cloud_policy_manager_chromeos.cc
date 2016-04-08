@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -13,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -107,7 +109,7 @@ bool ForcedReEnrollmentEnabled() {
 }  // namespace
 
 DeviceCloudPolicyManagerChromeOS::DeviceCloudPolicyManagerChromeOS(
-    scoped_ptr<DeviceCloudPolicyStoreChromeOS> store,
+    std::unique_ptr<DeviceCloudPolicyStoreChromeOS> store,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     ServerBackedStateKeysBroker* state_keys_broker)
     : CloudPolicyManager(
@@ -242,7 +244,7 @@ std::string DeviceCloudPolicyManagerChromeOS::GetMachineModel() {
 }
 
 void DeviceCloudPolicyManagerChromeOS::StartConnection(
-    scoped_ptr<CloudPolicyClient> client_to_connect,
+    std::unique_ptr<CloudPolicyClient> client_to_connect,
     EnterpriseInstallAttributes* install_attributes) {
   CHECK(!service());
 
@@ -252,8 +254,8 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
 
   core()->Connect(std::move(client_to_connect));
   core()->StartRefreshScheduler();
-  core()->StartRemoteCommandsService(
-      scoped_ptr<RemoteCommandsFactory>(new DeviceCommandsFactoryChromeOS()));
+  core()->StartRemoteCommandsService(std::unique_ptr<RemoteCommandsFactory>(
+      new DeviceCommandsFactoryChromeOS()));
   core()->TrackRefreshDelayPref(local_state_,
                                 prefs::kDevicePolicyRefreshRate);
   attestation_policy_observer_.reset(
@@ -347,7 +349,7 @@ void DeviceCloudPolicyManagerChromeOS::NotifyDisconnected() {
 void DeviceCloudPolicyManagerChromeOS::CreateStatusUploader() {
   status_uploader_.reset(new StatusUploader(
       client(),
-      make_scoped_ptr(new DeviceStatusCollector(
+      base::WrapUnique(new DeviceStatusCollector(
           local_state_, chromeos::system::StatisticsProvider::GetInstance(),
           DeviceStatusCollector::LocationUpdateRequester(),
           DeviceStatusCollector::VolumeInfoFetcher(),

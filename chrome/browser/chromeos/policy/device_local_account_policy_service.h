@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_LOCAL_ACCOUNT_POLICY_SERVICE_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
@@ -14,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
@@ -61,7 +61,7 @@ class DeviceLocalAccountPolicyBroker
   DeviceLocalAccountPolicyBroker(
       const DeviceLocalAccount& account,
       const base::FilePath& component_policy_cache_path,
-      scoped_ptr<DeviceLocalAccountPolicyStore> store,
+      std::unique_ptr<DeviceLocalAccountPolicyStore> store,
       scoped_refptr<DeviceLocalAccountExternalDataManager>
           external_data_manager,
       const base::Closure& policy_updated_callback,
@@ -126,15 +126,15 @@ class DeviceLocalAccountPolicyBroker
   const std::string user_id_;
   const base::FilePath component_policy_cache_path_;
   SchemaRegistry schema_registry_;
-  const scoped_ptr<DeviceLocalAccountPolicyStore> store_;
+  const std::unique_ptr<DeviceLocalAccountPolicyStore> store_;
   DeviceLocalAccountExtensionTracker extension_tracker_;
   scoped_refptr<DeviceLocalAccountExternalDataManager> external_data_manager_;
   scoped_refptr<chromeos::DeviceLocalAccountExternalPolicyLoader>
       extension_loader_;
   CloudPolicyCore core_;
-  scoped_ptr<ComponentCloudPolicyService> component_policy_service_;
+  std::unique_ptr<ComponentCloudPolicyService> component_policy_service_;
   base::Closure policy_update_callback_;
-  scoped_ptr<AffiliatedCloudPolicyInvalidator> invalidator_;
+  std::unique_ptr<AffiliatedCloudPolicyInvalidator> invalidator_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountPolicyBroker);
 };
@@ -264,11 +264,11 @@ class DeviceLocalAccountPolicyService {
   const scoped_refptr<base::SequencedTaskRunner> store_background_task_runner_;
   const scoped_refptr<base::SequencedTaskRunner> extension_cache_task_runner_;
 
-  scoped_ptr<DeviceLocalAccountExternalDataService> external_data_service_;
+  std::unique_ptr<DeviceLocalAccountExternalDataService> external_data_service_;
 
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 
-  const scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+  const std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       local_accounts_subscription_;
 
   // Path to the directory that contains the cached policy for components

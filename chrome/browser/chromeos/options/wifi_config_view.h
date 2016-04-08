@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_OPTIONS_WIFI_CONFIG_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_OPTIONS_WIFI_CONFIG_VIEW_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/options/cert_library.h"
@@ -183,16 +183,17 @@ class WifiConfigView : public ChildNetworkConfigView,
   NetworkPropertyUIData passphrase_ui_data_;
 
   views::Textfield* ssid_textfield_;
-  scoped_ptr<internal::EAPMethodComboboxModel> eap_method_combobox_model_;
+  std::unique_ptr<internal::EAPMethodComboboxModel> eap_method_combobox_model_;
   views::Combobox* eap_method_combobox_;
   views::Label* phase_2_auth_label_;
-  scoped_ptr<internal::Phase2AuthComboboxModel> phase_2_auth_combobox_model_;
+  std::unique_ptr<internal::Phase2AuthComboboxModel>
+      phase_2_auth_combobox_model_;
   views::Combobox* phase_2_auth_combobox_;
   views::Label* user_cert_label_;
-  scoped_ptr<internal::UserCertComboboxModel> user_cert_combobox_model_;
+  std::unique_ptr<internal::UserCertComboboxModel> user_cert_combobox_model_;
   views::Combobox* user_cert_combobox_;
   views::Label* server_ca_cert_label_;
-  scoped_ptr<internal::ServerCACertComboboxModel>
+  std::unique_ptr<internal::ServerCACertComboboxModel>
       server_ca_cert_combobox_model_;
   views::Combobox* server_ca_cert_combobox_;
   views::Label* subject_match_label_;
@@ -204,7 +205,7 @@ class WifiConfigView : public ChildNetworkConfigView,
   views::Checkbox* save_credentials_checkbox_;
   views::Checkbox* share_network_checkbox_;
   views::Label* shared_network_label_;
-  scoped_ptr<internal::SecurityComboboxModel> security_combobox_model_;
+  std::unique_ptr<internal::SecurityComboboxModel> security_combobox_model_;
   views::Combobox* security_combobox_;
   views::Label* passphrase_label_;
   PassphraseTextfield* passphrase_textfield_;

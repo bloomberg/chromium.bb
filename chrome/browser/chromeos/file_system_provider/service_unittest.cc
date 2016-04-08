@@ -6,13 +6,14 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
@@ -120,9 +121,9 @@ class FakeRegistry : public RegistryInterface {
     }
   }
 
-  scoped_ptr<RestoredFileSystems> RestoreFileSystems(
+  std::unique_ptr<RestoredFileSystems> RestoreFileSystems(
       const std::string& extension_id) override {
-    scoped_ptr<RestoredFileSystems> result(new RestoredFileSystems);
+    std::unique_ptr<RestoredFileSystems> result(new RestoredFileSystems);
 
     if (file_system_info_.get() && watchers_.get()) {
       RestoredFileSystem restored_file_system;
@@ -157,8 +158,8 @@ class FakeRegistry : public RegistryInterface {
   const Watchers* watchers() const { return watchers_.get(); }
 
  private:
-  scoped_ptr<ProvidedFileSystemInfo> file_system_info_;
-  scoped_ptr<Watchers> watchers_;
+  std::unique_ptr<ProvidedFileSystemInfo> file_system_info_;
+  std::unique_ptr<Watchers> watchers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeRegistry);
 };
@@ -206,7 +207,7 @@ class FileSystemProviderServiceTest : public testing::Test {
 
     registry_ = new FakeRegistry;
     // Passes ownership to the service instance.
-    service_->SetRegistryForTesting(make_scoped_ptr(registry_));
+    service_->SetRegistryForTesting(base::WrapUnique(registry_));
 
     fake_watcher_.entry_path = base::FilePath(FILE_PATH_LITERAL("/a/b/c"));
     fake_watcher_.recursive = true;
@@ -214,12 +215,12 @@ class FileSystemProviderServiceTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;
   FakeChromeUserManager* user_manager_;
-  scoped_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
-  scoped_ptr<extensions::ExtensionRegistry> extension_registry_;
-  scoped_ptr<Service> service_;
+  std::unique_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<extensions::ExtensionRegistry> extension_registry_;
+  std::unique_ptr<Service> service_;
   scoped_refptr<extensions::Extension> extension_;
   FakeRegistry* registry_;  // Owned by Service.
   Watcher fake_watcher_;

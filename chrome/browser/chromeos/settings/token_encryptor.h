@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_TOKEN_ENCRYPTOR_H_
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_TOKEN_ENCRYPTOR_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace crypto {
 class SymmetricKey;
@@ -66,7 +66,7 @@ class CryptohomeTokenEncryptor : public TokenEncryptor {
 
   // A key based on the system salt.  Useful for encrypting device-level
   // data for which we have no additional credentials.
-  scoped_ptr<crypto::SymmetricKey> system_salt_key_;
+  std::unique_ptr<crypto::SymmetricKey> system_salt_key_;
 
   DISALLOW_COPY_AND_ASSIGN(CryptohomeTokenEncryptor);
 };

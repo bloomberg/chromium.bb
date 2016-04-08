@@ -4,14 +4,15 @@
 
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/files/file.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -61,8 +62,9 @@ class FakeEventRouter : public extensions::EventRouter {
 
   // Handles an event which would normally be routed to an extension. Instead
   // replies with a hard coded response.
-  void DispatchEventToExtension(const std::string& extension_id,
-                                scoped_ptr<extensions::Event> event) override {
+  void DispatchEventToExtension(
+      const std::string& extension_id,
+      std::unique_ptr<extensions::Event> event) override {
     ASSERT_TRUE(file_system_);
     std::string file_system_id;
     const base::DictionaryValue* dictionary_value = NULL;
@@ -88,7 +90,7 @@ class FakeEventRouter : public extensions::EventRouter {
 
       using extensions::api::file_system_provider_internal::
           OperationRequestedSuccess::Params;
-      scoped_ptr<Params> params(Params::Create(value_as_list));
+      std::unique_ptr<Params> params(Params::Create(value_as_list));
       ASSERT_TRUE(params.get());
       file_system_->GetRequestManager()->FulfillRequest(
           request_id,
@@ -96,7 +98,7 @@ class FakeEventRouter : public extensions::EventRouter {
           false /* has_more */);
     } else {
       file_system_->GetRequestManager()->RejectRequest(
-          request_id, make_scoped_ptr(new RequestValue()), reply_result_);
+          request_id, base::WrapUnique(new RequestValue()), reply_result_);
     }
   }
 
@@ -257,14 +259,14 @@ class FileSystemProviderProvidedFileSystemTest : public testing::Test {
         NULL, kExtensionId);
     provided_file_system_->SetEventRouterForTesting(event_router_.get());
     provided_file_system_->SetNotificationManagerForTesting(
-        make_scoped_ptr(new StubNotificationManager));
+        base::WrapUnique(new StubNotificationManager));
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<FakeEventRouter> event_router_;
-  scoped_ptr<ProvidedFileSystemInfo> file_system_info_;
-  scoped_ptr<ProvidedFileSystem> provided_file_system_;
+  std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<FakeEventRouter> event_router_;
+  std::unique_ptr<ProvidedFileSystemInfo> file_system_info_;
+  std::unique_ptr<ProvidedFileSystem> provided_file_system_;
 };
 
 TEST_F(FileSystemProviderProvidedFileSystemTest, AutoUpdater) {
@@ -421,7 +423,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, AddWatcher_PersistentIllegal) {
                                                    file_system_info);
     simple_provided_file_system.SetEventRouterForTesting(event_router_.get());
     simple_provided_file_system.SetNotificationManagerForTesting(
-        make_scoped_ptr(new StubNotificationManager));
+        base::WrapUnique(new StubNotificationManager));
 
     simple_provided_file_system.AddObserver(&observer);
 
@@ -750,7 +752,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, Notify) {
     Log log;
     provided_file_system_->Notify(
         base::FilePath(kDirectoryPath), false /* recursive */, change_type,
-        make_scoped_ptr(new ProvidedFileSystemObserver::Changes), tag,
+        base::WrapUnique(new ProvidedFileSystemObserver::Changes), tag,
         base::Bind(&LogStatus, base::Unretained(&log)));
     base::RunLoop().RunUntilIdle();
 
@@ -796,7 +798,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, Notify) {
     Log log;
     provided_file_system_->Notify(
         base::FilePath(kDirectoryPath), false /* recursive */, change_type,
-        make_scoped_ptr(new ProvidedFileSystemObserver::Changes), tag,
+        base::WrapUnique(new ProvidedFileSystemObserver::Changes), tag,
         base::Bind(&LogStatus, base::Unretained(&log)));
     base::RunLoop().RunUntilIdle();
 

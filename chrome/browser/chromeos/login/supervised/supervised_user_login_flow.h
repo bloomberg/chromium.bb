@@ -45,9 +45,9 @@ class SupervisedUserLoginFlow
   void ConfigureSync(const std::string& token);
   void OnPasswordChangeDataLoaded(const base::DictionaryValue* password_data);
   void OnPasswordChangeDataLoadFailed();
-  void OnNewKeyAdded(scoped_ptr<base::DictionaryValue> password_data);
+  void OnNewKeyAdded(std::unique_ptr<base::DictionaryValue> password_data);
   void OnOldKeyRemoved();
-  void OnPasswordUpdated(scoped_ptr<base::DictionaryValue> password_data);
+  void OnPasswordUpdated(std::unique_ptr<base::DictionaryValue> password_data);
 
   scoped_refptr<ExtendedAuthenticator> authenticator_;
 

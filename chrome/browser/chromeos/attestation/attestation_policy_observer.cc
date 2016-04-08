@@ -158,7 +158,8 @@ void AttestationPolicyObserver::Start() {
     cryptohome_client_ = DBusThreadManager::Get()->GetCryptohomeClient();
 
   if (!attestation_flow_) {
-    scoped_ptr<ServerProxy> attestation_ca_client(new AttestationCAClient());
+    std::unique_ptr<ServerProxy> attestation_ca_client(
+        new AttestationCAClient());
     default_attestation_flow_.reset(new AttestationFlow(
         cryptohome::AsyncMethodCaller::GetInstance(), cryptohome_client_,
         std::move(attestation_ca_client)));

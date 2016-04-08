@@ -136,7 +136,7 @@ class ResourceReporter : public task_management::TaskManagerObserver {
   ResourceReporter();
 
   // Creates a Rappor sample for the given |task_record|.
-  static scoped_ptr<rappor::Sample> CreateRapporSample(
+  static std::unique_ptr<rappor::Sample> CreateRapporSample(
       rappor::RapporService* rappor_service,
       const TaskRecord& task_record);
 
@@ -160,11 +160,11 @@ class ResourceReporter : public task_management::TaskManagerObserver {
 
   // We'll use this to watch for memory pressure events so that we can trigger
   // Rappor sampling at at the critical memory pressure level.
-  scoped_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   // Contains the collected data about the currently running tasks from the most
   // recent task manager refresh.
-  std::map<task_management::TaskId, scoped_ptr<TaskRecord>> task_records_;
+  std::map<task_management::TaskId, std::unique_ptr<TaskRecord>> task_records_;
 
   // Contains the top |kTopConsumerCount| CPU consumer tasks sorted in a
   // descending order by their CPU usage.

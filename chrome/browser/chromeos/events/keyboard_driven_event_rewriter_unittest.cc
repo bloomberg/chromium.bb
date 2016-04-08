@@ -26,7 +26,7 @@ class KeyboardDrivenEventRewriterTest : public testing::Test {
                                         int ui_flags,
                                         ui::EventType ui_type) {
     ui::KeyEvent keyevent(ui_type, ui_keycode, ui_flags);
-    scoped_ptr<ui::Event> rewritten_event;
+    std::unique_ptr<ui::Event> rewritten_event;
     ui::EventRewriteStatus status =
         rewriter_.RewriteForTesting(keyevent, &rewritten_event);
     return base::StringPrintf(

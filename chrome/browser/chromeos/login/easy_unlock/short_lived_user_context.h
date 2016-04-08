@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_SHORT_LIVED_USER_CONTEXT_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_SHORT_LIVED_USER_CONTEXT_H_
 
+#include <memory>
+
 #include "apps/app_lifetime_monitor.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 namespace base {
@@ -39,7 +40,7 @@ class ShortLivedUserContext : public apps::AppLifetimeMonitor::Observer {
   // apps::AppLifetimeMonitor::Observer:
   void OnAppDeactivated(Profile* profile, const std::string& app_id) override;
 
-  scoped_ptr<UserContext> user_context_;
+  std::unique_ptr<UserContext> user_context_;
 
   apps::AppLifetimeMonitor* app_lifetime_monitor_;
 

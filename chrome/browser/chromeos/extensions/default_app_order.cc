@@ -61,21 +61,22 @@ const char* const kDefaultAppOrder[] = {
 // Reads external ordinal json file and returned the parsed value. Returns NULL
 // if the file does not exist or could not be parsed properly. Caller takes
 // ownership of the returned value.
-scoped_ptr<base::ListValue> ReadExternalOrdinalFile(
+std::unique_ptr<base::ListValue> ReadExternalOrdinalFile(
     const base::FilePath& path) {
   if (!base::PathExists(path))
     return NULL;
 
   JSONFileValueDeserializer deserializer(path);
   std::string error_msg;
-  scoped_ptr<base::Value> value = deserializer.Deserialize(NULL, &error_msg);
+  std::unique_ptr<base::Value> value =
+      deserializer.Deserialize(NULL, &error_msg);
   if (!value) {
     LOG(WARNING) << "Unable to deserialize default app ordinals json data:"
         << error_msg << ", file=" << path.value();
     return NULL;
   }
 
-  scoped_ptr<base::ListValue> ordinal_list_value =
+  std::unique_ptr<base::ListValue> ordinal_list_value =
       base::ListValue::From(std::move(value));
   if (!ordinal_list_value)
     LOG(WARNING) << "Expect a JSON list in file " << path.value();
@@ -154,7 +155,7 @@ void ExternalLoader::Load() {
   base::FilePath ordinals_file;
   CHECK(PathService::Get(chromeos::FILE_DEFAULT_APP_ORDER, &ordinals_file));
 
-  scoped_ptr<base::ListValue> ordinals_value =
+  std::unique_ptr<base::ListValue> ordinals_value =
       ReadExternalOrdinalFile(ordinals_file);
   if (ordinals_value) {
     std::string locale = g_browser_process->GetApplicationLocale();

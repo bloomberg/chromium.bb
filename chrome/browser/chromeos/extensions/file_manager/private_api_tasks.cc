@@ -69,7 +69,7 @@ bool FileManagerPrivateInternalExecuteTaskFunction::RunAsync() {
   using extensions::api::file_manager_private_internal::ExecuteTask::Params;
   using extensions::api::file_manager_private_internal::ExecuteTask::Results::
       Create;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   file_manager::file_tasks::TaskDescriptor task;
@@ -130,7 +130,7 @@ FileManagerPrivateInternalGetFileTasksFunction::
 
 bool FileManagerPrivateInternalGetFileTasksFunction::RunAsync() {
   using extensions::api::file_manager_private_internal::GetFileTasks::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   if (params->urls.empty())
@@ -163,7 +163,7 @@ bool FileManagerPrivateInternalGetFileTasksFunction::RunAsync() {
 }
 
 void FileManagerPrivateInternalGetFileTasksFunction::OnMimeTypesCollected(
-    scoped_ptr<std::vector<std::string>> mime_types) {
+    std::unique_ptr<std::vector<std::string>> mime_types) {
   is_directory_collector_.reset(
       new app_file_handler_util::IsDirectoryCollector(GetProfile()));
   is_directory_collector_->CollectForEntriesPaths(
@@ -174,8 +174,8 @@ void FileManagerPrivateInternalGetFileTasksFunction::OnMimeTypesCollected(
 
 void FileManagerPrivateInternalGetFileTasksFunction::
     OnAreDirectoriesAndMimeTypesCollected(
-        scoped_ptr<std::vector<std::string>> mime_types,
-        scoped_ptr<std::set<base::FilePath>> directory_paths) {
+        std::unique_ptr<std::vector<std::string>> mime_types,
+        std::unique_ptr<std::set<base::FilePath>> directory_paths) {
   std::vector<EntryInfo> entries;
   for (size_t i = 0; i < local_paths_.size(); ++i) {
     entries.push_back(EntryInfo(
@@ -210,7 +210,7 @@ void FileManagerPrivateInternalGetFileTasksFunction::
 
 bool FileManagerPrivateInternalSetDefaultTaskFunction::RunSync() {
   using extensions::api::file_manager_private_internal::SetDefaultTask::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const scoped_refptr<storage::FileSystemContext> file_system_context =

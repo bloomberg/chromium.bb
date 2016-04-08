@@ -5,13 +5,14 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -94,7 +95,7 @@ scoped_refptr<extensions::Extension> MakeKioskApp(
   base::DictionaryValue value;
   value.SetString("name", name);
   value.SetString("version", version);
-  scoped_ptr<base::ListValue> scripts(new base::ListValue);
+  std::unique_ptr<base::ListValue> scripts(new base::ListValue);
   scripts->AppendString("main.js");
   value.Set("app.background.scripts", std::move(scripts));
   value.SetBoolean("kiosk_enabled", true);
@@ -272,8 +273,8 @@ class KioskAppManagerTest : public InProcessBrowserTest {
 
   // Locks device for enterprise.
   policy::EnterpriseInstallAttributes::LockResult LockDeviceForEnterprise() {
-    scoped_ptr<policy::EnterpriseInstallAttributes::LockResult> lock_result(
-        new policy::EnterpriseInstallAttributes::LockResult(
+    std::unique_ptr<policy::EnterpriseInstallAttributes::LockResult>
+        lock_result(new policy::EnterpriseInstallAttributes::LockResult(
             policy::EnterpriseInstallAttributes::LOCK_NOT_READY));
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
@@ -302,7 +303,7 @@ class KioskAppManagerTest : public InProcessBrowserTest {
     base::FilePath icon_path =
         CopyFileToTempDir(data_dir.AppendASCII(icon_file_name));
 
-    scoped_ptr<base::DictionaryValue> apps_dict(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> apps_dict(new base::DictionaryValue);
     apps_dict->SetString(app_id + ".name", app_name);
     apps_dict->SetString(app_id + ".icon", icon_path.MaybeAsASCII());
     apps_dict->SetString(app_id + ".required_platform_version",
@@ -315,7 +316,7 @@ class KioskAppManagerTest : public InProcessBrowserTest {
 
     // Make the app appear in device settings.
     base::ListValue device_local_accounts;
-    scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
     // Fake an account id. Note this needs to match GenerateKioskAppAccountId
     // in kiosk_app_manager.cc to make SetAutoLaunchApp work with the
     // existing app entry created here.
@@ -438,11 +439,11 @@ class KioskAppManagerTest : public InProcessBrowserTest {
 
  protected:
   ScopedCrosSettingsTestHelper settings_helper_;
-  scoped_ptr<FakeOwnerSettingsService> owner_settings_service_;
+  std::unique_ptr<FakeOwnerSettingsService> owner_settings_service_;
 
  private:
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<FakeCWS> fake_cws_;
+  std::unique_ptr<FakeCWS> fake_cws_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppManagerTest);
 };
@@ -766,10 +767,10 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateAndRemoveApp) {
 }
 
 IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, EnableConsumerKiosk) {
-  scoped_ptr<KioskAppManager::ConsumerKioskAutoLaunchStatus> status(
+  std::unique_ptr<KioskAppManager::ConsumerKioskAutoLaunchStatus> status(
       new KioskAppManager::ConsumerKioskAutoLaunchStatus(
           KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_DISABLED));
-  scoped_ptr<bool> locked(new bool(false));
+  std::unique_ptr<bool> locked(new bool(false));
 
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
@@ -807,10 +808,10 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest,
   EXPECT_EQ(LockDeviceForEnterprise(),
             policy::EnterpriseInstallAttributes::LOCK_SUCCESS);
 
-  scoped_ptr<KioskAppManager::ConsumerKioskAutoLaunchStatus> status(
+  std::unique_ptr<KioskAppManager::ConsumerKioskAutoLaunchStatus> status(
       new KioskAppManager::ConsumerKioskAutoLaunchStatus(
           KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_DISABLED));
-  scoped_ptr<bool> locked(new bool(true));
+  std::unique_ptr<bool> locked(new bool(true));
 
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;

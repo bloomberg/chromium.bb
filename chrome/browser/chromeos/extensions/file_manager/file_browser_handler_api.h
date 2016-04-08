@@ -131,7 +131,7 @@ class FileBrowserHandlerInternalSelectFileFunction
 
   // Factory used to create FileSelector to be used for prompting user to select
   // file.
-  scoped_ptr<file_manager::FileSelectorFactory> file_selector_factory_;
+  std::unique_ptr<file_manager::FileSelectorFactory> file_selector_factory_;
   // Whether user gesture check is disabled. This should be true only in tests.
   bool user_gesture_check_enabled_;
 

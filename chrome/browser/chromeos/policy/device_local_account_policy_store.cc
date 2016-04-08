@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -48,8 +49,7 @@ void DeviceLocalAccountPolicyStore::Store(
     const em::PolicyFetchResponse& policy) {
   weak_factory_.InvalidateWeakPtrs();
   CheckKeyAndValidate(
-      true,
-      make_scoped_ptr(new em::PolicyFetchResponse(policy)),
+      true, base::WrapUnique(new em::PolicyFetchResponse(policy)),
       base::Bind(&DeviceLocalAccountPolicyStore::StoreValidatedPolicy,
                  weak_factory_.GetWeakPtr()));
 }
@@ -60,7 +60,8 @@ void DeviceLocalAccountPolicyStore::ValidateLoadedPolicyBlob(
     status_ = CloudPolicyStore::STATUS_LOAD_ERROR;
     NotifyStoreError();
   } else {
-    scoped_ptr<em::PolicyFetchResponse> policy(new em::PolicyFetchResponse());
+    std::unique_ptr<em::PolicyFetchResponse> policy(
+        new em::PolicyFetchResponse());
     if (policy->ParseFromString(policy_blob)) {
       CheckKeyAndValidate(
           false, std::move(policy),
@@ -122,7 +123,7 @@ void DeviceLocalAccountPolicyStore::HandleStoreResult(bool success) {
 
 void DeviceLocalAccountPolicyStore::CheckKeyAndValidate(
     bool valid_timestamp_required,
-    scoped_ptr<em::PolicyFetchResponse> policy,
+    std::unique_ptr<em::PolicyFetchResponse> policy,
     const UserCloudPolicyValidator::CompletionCallback& callback) {
   device_settings_service_->GetOwnershipStatusAsync(
       base::Bind(&DeviceLocalAccountPolicyStore::Validate,
@@ -134,7 +135,7 @@ void DeviceLocalAccountPolicyStore::CheckKeyAndValidate(
 
 void DeviceLocalAccountPolicyStore::Validate(
     bool valid_timestamp_required,
-    scoped_ptr<em::PolicyFetchResponse> policy_response,
+    std::unique_ptr<em::PolicyFetchResponse> policy_response,
     const UserCloudPolicyValidator::CompletionCallback& callback,
     chromeos::DeviceSettingsService::OwnershipStatus ownership_status) {
   DCHECK_NE(chromeos::DeviceSettingsService::OWNERSHIP_UNKNOWN,
@@ -149,7 +150,7 @@ void DeviceLocalAccountPolicyStore::Validate(
     return;
   }
 
-  scoped_ptr<UserCloudPolicyValidator> validator(
+  std::unique_ptr<UserCloudPolicyValidator> validator(
       UserCloudPolicyValidator::Create(std::move(policy_response),
                                        background_task_runner()));
   validator->ValidateUsername(account_id_, false);

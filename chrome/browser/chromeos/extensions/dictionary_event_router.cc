@@ -49,9 +49,9 @@ void ExtensionDictionaryEventRouter::DispatchLoadedEventIfLoaded() {
     return;
   }
 
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   // The router will only send the event to extensions that are listening.
-  scoped_ptr<extensions::Event> event(new extensions::Event(
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::INPUT_METHOD_PRIVATE_ON_DICTIONARY_LOADED,
       OnDictionaryLoaded::kEventName, std::move(args)));
   event->restrict_to_browser_context = context_;
@@ -71,20 +71,20 @@ void ExtensionDictionaryEventRouter::OnCustomDictionaryChanged(
     return;
   }
 
-  scoped_ptr<base::ListValue> added_words(new base::ListValue());
+  std::unique_ptr<base::ListValue> added_words(new base::ListValue());
   for (const std::string& word : dictionary_change.to_add())
     added_words->AppendString(word);
 
-  scoped_ptr<base::ListValue> removed_words(new base::ListValue());
+  std::unique_ptr<base::ListValue> removed_words(new base::ListValue());
   for (const std::string& word : dictionary_change.to_remove())
     removed_words->AppendString(word);
 
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Append(added_words.release());
   args->Append(removed_words.release());
 
   // The router will only send the event to extensions that are listening.
-  scoped_ptr<extensions::Event> event(new extensions::Event(
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::INPUT_METHOD_PRIVATE_ON_DICTIONARY_CHANGED,
       OnDictionaryChanged::kEventName, std::move(args)));
   event->restrict_to_browser_context = context_;

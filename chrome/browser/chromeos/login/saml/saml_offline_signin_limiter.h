@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SAML_SAML_OFFLINE_SIGNIN_LIMITER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SAML_SAML_OFFLINE_SIGNIN_LIMITER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -66,7 +67,7 @@ class SAMLOfflineSigninLimiter : public KeyedService {
 
   PrefChangeRegistrar pref_change_registrar_;
 
-  scoped_ptr<base::OneShotTimer> offline_signin_limit_timer_;
+  std::unique_ptr<base::OneShotTimer> offline_signin_limit_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SAMLOfflineSigninLimiter);
 };

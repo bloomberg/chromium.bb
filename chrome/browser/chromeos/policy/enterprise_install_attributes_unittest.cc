@@ -4,11 +4,12 @@
 
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/policy/proto/install_attributes.pb.h"
@@ -71,7 +72,7 @@ class EnterpriseInstallAttributesTest : public testing::Test {
 
   base::MessageLoopForUI message_loop_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<EnterpriseInstallAttributes> install_attributes_;
+  std::unique_ptr<EnterpriseInstallAttributes> install_attributes_;
 
   EnterpriseInstallAttributes::LockResult LockDeviceAndWaitForResult(
       const std::string& user,

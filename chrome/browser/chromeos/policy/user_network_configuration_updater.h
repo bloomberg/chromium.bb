@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_USER_NETWORK_CONFIGURATION_UPDATER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_USER_NETWORK_CONFIGURATION_UPDATER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/policy/network_configuration_updater.h"
@@ -67,7 +67,7 @@ class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
   // each policy change. Imported certificates, that request it, are only
   // granted Web trust if |allow_trusted_certs_from_policy| is true. A reference
   // to |user| is stored. It must outlive the returned updater.
-  static scoped_ptr<UserNetworkConfigurationUpdater> CreateForUserPolicy(
+  static std::unique_ptr<UserNetworkConfigurationUpdater> CreateForUserPolicy(
       Profile* profile,
       bool allow_trusted_certs_from_policy,
       const user_manager::User& user,
@@ -83,7 +83,7 @@ class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
 
   // Helper method to expose |SetCertificateImporter| for usage in tests.
   void SetCertificateImporterForTest(
-      scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer);
+      std::unique_ptr<chromeos::onc::CertificateImporter> certificate_importer);
 
  private:
   class CrosTrustAnchorProvider;
@@ -119,7 +119,7 @@ class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
   // Sets the certificate importer that should be used to import certificate
   // policies. If there is |pending_certificates_onc_|, it gets imported.
   void SetCertificateImporter(
-      scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer);
+      std::unique_ptr<chromeos::onc::CertificateImporter> certificate_importer);
 
   void NotifyTrustAnchorsChanged();
 
@@ -138,11 +138,11 @@ class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
   // If |ImportCertificates| is called before |SetCertificateImporter|, gets set
   // to a copy of the policy for which the import was requested.
   // The policy will be processed when the certificate importer is set.
-  scoped_ptr<base::ListValue> pending_certificates_onc_;
+  std::unique_ptr<base::ListValue> pending_certificates_onc_;
 
   // Certificate importer to be used for importing policy defined certificates.
   // Set by |SetCertificateImporter|.
-  scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer_;
+  std::unique_ptr<chromeos::onc::CertificateImporter> certificate_importer_;
 
   content::NotificationRegistrar registrar_;
 

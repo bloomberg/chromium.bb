@@ -5,12 +5,13 @@
 #include "chrome/browser/chromeos/printer_detector/printer_detector.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -172,7 +173,7 @@ class SearchPrinterAppNotificationDelegate : public NotificationDelegate {
 
     extensions::EventRouter* event_router =
         extensions::EventRouter::Get(browser_context_);
-    scoped_ptr<extensions::Event> event(new extensions::Event(
+    std::unique_ptr<extensions::Event> event(new extensions::Event(
         extensions::events::WEBSTORE_WIDGET_PRIVATE_ON_SHOW_WIDGET,
         webstore_widget_private_api::OnShowWidget::kEventName,
         webstore_widget_private_api::OnShowWidget::Create(options)));
@@ -202,7 +203,7 @@ void ShowPrinterPluggedNotification(
     NotificationUIManager* notification_ui_manager,
     const scoped_refptr<device::UsbDevice>& device) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  scoped_ptr<Notification> notification;
+  std::unique_ptr<Notification> notification;
 
   const std::string kVendorIdStr = base::IntToString(device->vendor_id());
   const std::string kProductIdStr = base::IntToString(device->product_id());

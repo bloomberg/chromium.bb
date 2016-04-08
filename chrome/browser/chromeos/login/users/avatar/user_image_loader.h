@@ -25,7 +25,7 @@ class UserImage;
 namespace chromeos {
 namespace user_image_loader {
 
-typedef base::Callback<void(scoped_ptr<user_manager::UserImage>)>
+typedef base::Callback<void(std::unique_ptr<user_manager::UserImage>)>
     LoadedCallback;
 
 // Loads an image with |image_codec| in the background and calls |loaded_cb|
@@ -44,7 +44,7 @@ void StartWithFilePath(
     const LoadedCallback& loaded_cb);
 void StartWithData(
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
-    scoped_ptr<std::string> data,
+    std::unique_ptr<std::string> data,
     ImageDecoder::ImageCodec image_codec,
     int pixels_per_side,
     const LoadedCallback& loaded_cb);

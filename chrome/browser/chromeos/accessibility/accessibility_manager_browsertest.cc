@@ -91,7 +91,7 @@ class MockAccessibilityObserver {
   bool observed_enabled_;
   int observed_type_;
 
-  scoped_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
+  std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAccessibilityObserver);
 };
@@ -205,7 +205,7 @@ int GetAutoclickDelayFromPref() {
 
 bool IsBrailleImeActive() {
   InputMethodManager* imm = InputMethodManager::Get();
-  scoped_ptr<InputMethodDescriptors> descriptors =
+  std::unique_ptr<InputMethodDescriptors> descriptors =
       imm->GetActiveIMEState()->GetActiveInputMethods();
   for (InputMethodDescriptors::const_iterator i = descriptors->begin();
        i != descriptors->end();

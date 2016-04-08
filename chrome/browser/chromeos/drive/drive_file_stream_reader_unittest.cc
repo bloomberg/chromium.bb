@@ -63,12 +63,12 @@ class LocalReaderProxyTest : public ::testing::Test {
   base::FilePath file_path_;
   std::string file_content_;
 
-  scoped_ptr<base::Thread> worker_thread_;
+  std::unique_ptr<base::Thread> worker_thread_;
 };
 
 TEST_F(LocalReaderProxyTest, Read) {
   // Open the file first.
-  scoped_ptr<util::LocalFileReader> file_reader(
+  std::unique_ptr<util::LocalFileReader> file_reader(
       new util::LocalFileReader(worker_thread_->task_runner().get()));
   net::TestCompletionCallback callback;
   file_reader->Open(file_path_, 0, callback.callback());
@@ -89,7 +89,7 @@ TEST_F(LocalReaderProxyTest, ReadWithLimit) {
       file_content_.substr(0, file_content_.size() / 2);
 
   // Open the file first.
-  scoped_ptr<util::LocalFileReader> file_reader(
+  std::unique_ptr<util::LocalFileReader> file_reader(
       new util::LocalFileReader(worker_thread_->task_runner().get()));
   net::TestCompletionCallback callback;
   file_reader->Open(file_path_, 0, callback.callback());
@@ -140,7 +140,7 @@ TEST_F(NetworkReaderProxyTest, Read) {
     EXPECT_EQ(net::ERR_IO_PENDING, result);
 
     // And when the data is supplied, the callback will be called.
-    scoped_ptr<std::string> data(new std::string("abcde"));
+    std::unique_ptr<std::string> data(new std::string("abcde"));
     proxy.OnGetContent(std::move(data));
 
     // The returned data should be fit to the buffer size.
@@ -190,7 +190,7 @@ TEST_F(NetworkReaderProxyTest, ReadWithLimit) {
   EXPECT_EQ(net::ERR_IO_PENDING, result);
 
   // And when the data is supplied, the callback will be called.
-  scoped_ptr<std::string> data(new std::string("abcde"));
+  std::unique_ptr<std::string> data(new std::string("abcde"));
   proxy.OnGetContent(std::move(data));
   data.reset(new std::string("fgh"));
   proxy.OnGetContent(std::move(data));
@@ -256,7 +256,7 @@ TEST_F(NetworkReaderProxyTest, ErrorWithPendingData) {
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
 
   // Supply the data before an error.
-  scoped_ptr<std::string> data(new std::string("abcde"));
+  std::unique_ptr<std::string> data(new std::string("abcde"));
   proxy.OnGetContent(std::move(data));
 
   // Emulate that an error is found.
@@ -321,10 +321,10 @@ class DriveFileStreamReaderTest : public ::testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
 
-  scoped_ptr<base::Thread> worker_thread_;
+  std::unique_ptr<base::Thread> worker_thread_;
 
-  scoped_ptr<FakeDriveService> fake_drive_service_;
-  scoped_ptr<test_util::FakeFileSystem> fake_file_system_;
+  std::unique_ptr<FakeDriveService> fake_drive_service_;
+  std::unique_ptr<test_util::FakeFileSystem> fake_file_system_;
 };
 
 TEST_F(DriveFileStreamReaderTest, Read) {
@@ -332,12 +332,12 @@ TEST_F(DriveFileStreamReaderTest, Read) {
       util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
   // Create the reader, and initialize it.
   // In this case, the file is not yet locally cached.
-  scoped_ptr<DriveFileStreamReader> reader(new DriveFileStreamReader(
+  std::unique_ptr<DriveFileStreamReader> reader(new DriveFileStreamReader(
       GetFileSystemGetter(), worker_thread_->task_runner().get()));
   EXPECT_FALSE(reader->IsInitialized());
 
   int error = net::ERR_FAILED;
-  scoped_ptr<ResourceEntry> entry;
+  std::unique_ptr<ResourceEntry> entry;
   {
     base::RunLoop run_loop;
     reader->Initialize(
@@ -400,12 +400,12 @@ TEST_F(DriveFileStreamReaderTest, ReadRange) {
       util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
   // Create the reader, and initialize it.
   // In this case, the file is not yet locally cached.
-  scoped_ptr<DriveFileStreamReader> reader(new DriveFileStreamReader(
+  std::unique_ptr<DriveFileStreamReader> reader(new DriveFileStreamReader(
       GetFileSystemGetter(), worker_thread_->task_runner().get()));
   EXPECT_FALSE(reader->IsInitialized());
 
   int error = net::ERR_FAILED;
-  scoped_ptr<ResourceEntry> entry;
+  std::unique_ptr<ResourceEntry> entry;
   net::HttpByteRange byte_range;
   byte_range.set_first_byte_position(kRangeOffset);
   // Last byte position is inclusive.
@@ -469,12 +469,12 @@ TEST_F(DriveFileStreamReaderTest, OutOfRangeError) {
       util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
   // Create the reader, and initialize it.
   // In this case, the file is not yet locally cached.
-  scoped_ptr<DriveFileStreamReader> reader(new DriveFileStreamReader(
+  std::unique_ptr<DriveFileStreamReader> reader(new DriveFileStreamReader(
       GetFileSystemGetter(), worker_thread_->task_runner().get()));
   EXPECT_FALSE(reader->IsInitialized());
 
   int error = net::ERR_FAILED;
-  scoped_ptr<ResourceEntry> entry;
+  std::unique_ptr<ResourceEntry> entry;
   net::HttpByteRange byte_range;
   byte_range.set_first_byte_position(kRangeOffset);
   // Last byte position is inclusive.
@@ -497,7 +497,7 @@ TEST_F(DriveFileStreamReaderTest, ZeroByteFileRead) {
   // Prepare an empty file
   {
     google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
-    scoped_ptr<google_apis::FileResource> entry;
+    std::unique_ptr<google_apis::FileResource> entry;
     fake_drive_service_->AddNewFile(
         "text/plain",
         "",  // empty
@@ -515,12 +515,12 @@ TEST_F(DriveFileStreamReaderTest, ZeroByteFileRead) {
       util::GetDriveMyDriveRootPath().AppendASCII("EmptyFile.txt");
   // Create the reader, and initialize it.
   // In this case, the file is not yet locally cached.
-  scoped_ptr<DriveFileStreamReader> reader(new DriveFileStreamReader(
+  std::unique_ptr<DriveFileStreamReader> reader(new DriveFileStreamReader(
       GetFileSystemGetter(), worker_thread_->task_runner().get()));
   EXPECT_FALSE(reader->IsInitialized());
 
   int error = net::ERR_FAILED;
-  scoped_ptr<ResourceEntry> entry;
+  std::unique_ptr<ResourceEntry> entry;
   {
     base::RunLoop run_loop;
     reader->Initialize(

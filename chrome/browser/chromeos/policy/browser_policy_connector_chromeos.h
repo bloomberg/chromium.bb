@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_BROWSER_POLICY_CONNECTOR_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_BROWSER_POLICY_CONNECTOR_CHROMEOS_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/users/affiliation.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
@@ -125,11 +125,11 @@ class BrowserPolicyConnectorChromeOS
 
   // Sets the consumer management service for testing.
   void SetConsumerManagementServiceForTesting(
-      scoped_ptr<ConsumerManagementService> service);
+      std::unique_ptr<ConsumerManagementService> service);
 
   // Sets the device cloud policy initializer for testing.
   void SetDeviceCloudPolicyInitializerForTesting(
-      scoped_ptr<DeviceCloudPolicyInitializer> initializer);
+      std::unique_ptr<DeviceCloudPolicyInitializer> initializer);
 
   // Sets the install attributes for testing. Must be called before the browser
   // is created. RemoveInstallAttributesForTesting must be called after the test
@@ -156,19 +156,21 @@ class BrowserPolicyConnectorChromeOS
   void RestartDeviceCloudPolicyInitializer();
 
   // Components of the device cloud policy implementation.
-  scoped_ptr<ServerBackedStateKeysBroker> state_keys_broker_;
-  scoped_ptr<EnterpriseInstallAttributes> install_attributes_;
-  scoped_ptr<AffiliatedInvalidationServiceProvider>
+  std::unique_ptr<ServerBackedStateKeysBroker> state_keys_broker_;
+  std::unique_ptr<EnterpriseInstallAttributes> install_attributes_;
+  std::unique_ptr<AffiliatedInvalidationServiceProvider>
       affiliated_invalidation_service_provider_;
-  scoped_ptr<ConsumerManagementService> consumer_management_service_;
+  std::unique_ptr<ConsumerManagementService> consumer_management_service_;
   DeviceCloudPolicyManagerChromeOS* device_cloud_policy_manager_;
   PrefService* local_state_;
-  scoped_ptr<DeviceManagementService> consumer_device_management_service_;
-  scoped_ptr<DeviceCloudPolicyInitializer> device_cloud_policy_initializer_;
-  scoped_ptr<DeviceLocalAccountPolicyService>
+  std::unique_ptr<DeviceManagementService> consumer_device_management_service_;
+  std::unique_ptr<DeviceCloudPolicyInitializer>
+      device_cloud_policy_initializer_;
+  std::unique_ptr<DeviceLocalAccountPolicyService>
       device_local_account_policy_service_;
-  scoped_ptr<AffiliatedCloudPolicyInvalidator> device_cloud_policy_invalidator_;
-  scoped_ptr<AffiliatedRemoteCommandsInvalidator>
+  std::unique_ptr<AffiliatedCloudPolicyInvalidator>
+      device_cloud_policy_invalidator_;
+  std::unique_ptr<AffiliatedRemoteCommandsInvalidator>
       device_remote_commands_invalidator_;
 
   // This policy provider is used on Chrome OS to feed user policy into the
@@ -179,7 +181,7 @@ class BrowserPolicyConnectorChromeOS
   // pointer to get to the ProxyPolicyProvider at SetUserPolicyDelegate().
   ProxyPolicyProvider* global_user_cloud_policy_provider_;
 
-  scoped_ptr<NetworkConfigurationUpdater> network_configuration_updater_;
+  std::unique_ptr<NetworkConfigurationUpdater> network_configuration_updater_;
 
   base::WeakPtrFactory<BrowserPolicyConnectorChromeOS> weak_ptr_factory_;
 

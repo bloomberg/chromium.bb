@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
 #include "ash/ash_switches.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -112,9 +112,9 @@ class ProfileListChromeOSTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager manager_;
-  scoped_ptr<MockObserver> mock_observer_;
-  scoped_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
-  scoped_ptr<AvatarMenu> avatar_menu_;
+  std::unique_ptr<MockObserver> mock_observer_;
+  std::unique_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<AvatarMenu> avatar_menu_;
   ChromeShellDelegate chrome_shell_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileListChromeOSTest);

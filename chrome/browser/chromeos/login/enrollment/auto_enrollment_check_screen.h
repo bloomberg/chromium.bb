@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_AUTO_ENROLLMENT_CHECK_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_AUTO_ENROLLMENT_CHECK_SCREEN_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen_actor.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
@@ -94,13 +95,13 @@ class AutoEnrollmentCheckScreen
   AutoEnrollmentCheckScreenActor* actor_;
   AutoEnrollmentController* auto_enrollment_controller_;
 
-  scoped_ptr<AutoEnrollmentController::ProgressCallbackList::Subscription>
+  std::unique_ptr<AutoEnrollmentController::ProgressCallbackList::Subscription>
       auto_enrollment_progress_subscription_;
 
   NetworkPortalDetector::CaptivePortalStatus captive_portal_status_;
   policy::AutoEnrollmentState auto_enrollment_state_;
 
-  scoped_ptr<ErrorScreensHistogramHelper> histogram_helper_;
+  std::unique_ptr<ErrorScreensHistogramHelper> histogram_helper_;
 
   ErrorScreen::ConnectRequestCallbackSubscription connect_request_subscription_;
 

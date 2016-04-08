@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -14,7 +16,7 @@
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -71,7 +73,7 @@ const char kKioskAppId[] = "kiosk_app_id";
 const char kExternalMountPoint[] = "/a/b/c";
 const char kPublicAccountId[] = "public_user@localhost";
 
-scoped_ptr<content::Geoposition> mock_position_to_return_next;
+std::unique_ptr<content::Geoposition> mock_position_to_return_next;
 
 void SetMockPositionToReturnNext(const content::Geoposition &position) {
   mock_position_to_return_next.reset(new content::Geoposition(position));
@@ -88,7 +90,7 @@ void MockPositionUpdateRequester(
   // harness, the callback is invoked synchronously upon request, leading to a
   // request-callback loop. The loop is broken by returning the mock position
   // only once.
-  scoped_ptr<content::Geoposition> position(
+  std::unique_ptr<content::Geoposition> position(
       mock_position_to_return_next.release());
   callback.Run(*position);
 }
@@ -134,15 +136,15 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
     baseline_offset_periods_ = 0;
   }
 
-  void set_kiosk_account(scoped_ptr<policy::DeviceLocalAccount> account) {
+  void set_kiosk_account(std::unique_ptr<policy::DeviceLocalAccount> account) {
     kiosk_account_ = std::move(account);
   }
 
-  scoped_ptr<policy::DeviceLocalAccount>
-  GetAutoLaunchedKioskSessionInfo() override {
+  std::unique_ptr<policy::DeviceLocalAccount> GetAutoLaunchedKioskSessionInfo()
+      override {
     if (kiosk_account_)
-      return make_scoped_ptr(new policy::DeviceLocalAccount(*kiosk_account_));
-    return scoped_ptr<policy::DeviceLocalAccount>();
+      return base::WrapUnique(new policy::DeviceLocalAccount(*kiosk_account_));
+    return std::unique_ptr<policy::DeviceLocalAccount>();
   }
 
   std::string GetAppVersion(const std::string& app_id) override {
@@ -177,7 +179,7 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
   // The number of simulated periods since the baseline time.
   int baseline_offset_periods_;
 
-  scoped_ptr<policy::DeviceLocalAccount> kiosk_account_;
+  std::unique_ptr<policy::DeviceLocalAccount> kiosk_account_;
 };
 
 // Return the total number of active milliseconds contained in a device
@@ -261,12 +263,13 @@ class DeviceStatusCollectorTest : public testing::Test {
                                    std::string() /* kiosk_app_update_url */) {
     // Run this test with a well-known timezone so that Time::LocalMidnight()
     // returns the same values on all machines.
-    scoped_ptr<base::Environment> env(base::Environment::Create());
+    std::unique_ptr<base::Environment> env(base::Environment::Create());
     env->SetVar("TZ", "UTC");
 
     // Initialize our mock mounted disk volumes.
-    scoped_ptr<chromeos::disks::MockDiskMountManager> mock_disk_mount_manager =
-        make_scoped_ptr(new chromeos::disks::MockDiskMountManager());
+    std::unique_ptr<chromeos::disks::MockDiskMountManager>
+        mock_disk_mount_manager =
+            base::WrapUnique(new chromeos::disks::MockDiskMountManager());
     AddMountPoint("/mount/volume1");
     AddMountPoint("/mount/volume2");
     EXPECT_CALL(*mock_disk_mount_manager, mount_points())
@@ -409,11 +412,11 @@ class DeviceStatusCollectorTest : public testing::Test {
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
   chromeos::ScopedCrosSettingsTestHelper settings_helper_;
-  scoped_ptr<chromeos::FakeOwnerSettingsService> owner_settings_service_;
+  std::unique_ptr<chromeos::FakeOwnerSettingsService> owner_settings_service_;
   chromeos::MockUserManager* user_manager_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   em::DeviceStatusReportRequest status_;
-  scoped_ptr<TestingDeviceStatusCollector> status_collector_;
+  std::unique_ptr<TestingDeviceStatusCollector> status_collector_;
   const policy::DeviceLocalAccount fake_device_local_account_;
 };
 
@@ -986,7 +989,7 @@ TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfNotKioskMode) {
 TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfSessionReportingDisabled) {
   // Should not report session status if session status reporting is disabled.
   settings_helper_.SetBoolean(chromeos::kReportDeviceSessionStatus, false);
-  status_collector_->set_kiosk_account(make_scoped_ptr(
+  status_collector_->set_kiosk_account(base::WrapUnique(
       new policy::DeviceLocalAccount(fake_device_local_account_)));
   // Set up a device-local account for single-app kiosk mode.
   MockRunningKioskApp(fake_device_local_account_);
@@ -997,7 +1000,7 @@ TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfSessionReportingDisabled) {
 
 TEST_F(DeviceStatusCollectorTest, ReportSessionStatus) {
   settings_helper_.SetBoolean(chromeos::kReportDeviceSessionStatus, true);
-  status_collector_->set_kiosk_account(make_scoped_ptr(
+  status_collector_->set_kiosk_account(base::WrapUnique(
       new policy::DeviceLocalAccount(fake_device_local_account_)));
 
   // Set up a device-local account for single-app kiosk mode.
@@ -1284,7 +1287,7 @@ TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NoNetworkStateIfNotKiosk) {
 
 TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NetworkInterfaces) {
   // Mock that we are in kiosk mode so we report network state.
-  status_collector_->set_kiosk_account(make_scoped_ptr(
+  status_collector_->set_kiosk_account(base::WrapUnique(
       new policy::DeviceLocalAccount(fake_device_local_account_)));
 
   // Interfaces should be reported by default.

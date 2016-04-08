@@ -70,7 +70,7 @@ void ExternalCache::Shutdown(const base::Closure& callback) {
 }
 
 void ExternalCache::UpdateExtensionsList(
-    scoped_ptr<base::DictionaryValue> prefs) {
+    std::unique_ptr<base::DictionaryValue> prefs) {
   extensions_ = std::move(prefs);
 
   if (extensions_->empty()) {

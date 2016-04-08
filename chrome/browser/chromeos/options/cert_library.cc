@@ -234,7 +234,7 @@ void CertLibrary::OnCertificatesLoaded(const net::CertificateList& cert_list,
 
   // Perform locale-sensitive sorting by certificate name.
   UErrorCode error = U_ZERO_ERROR;
-  scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(
+  std::unique_ptr<icu::Collator> collator(icu::Collator::createInstance(
       icu::Locale(g_browser_process->GetApplicationLocale().c_str()), error));
   if (U_FAILURE(error))
     collator.reset();

@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider.h"
 #include "policy/proto/device_management_backend.pb.h"
 
@@ -62,7 +63,7 @@ class AffiliatedCloudPolicyInvalidator
 
   // The current |CloudPolicyInvalidator|. nullptr if no connected invalidation
   // service is available.
-  scoped_ptr<CloudPolicyInvalidator> invalidator_;
+  std::unique_ptr<CloudPolicyInvalidator> invalidator_;
 
   DISALLOW_COPY_AND_ASSIGN(AffiliatedCloudPolicyInvalidator);
 };

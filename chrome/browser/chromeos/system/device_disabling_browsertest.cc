@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
@@ -83,10 +83,9 @@ DeviceDisablingTest::DeviceDisablingTest()
 void DeviceDisablingTest::MarkDisabledAndWaitForPolicyFetch() {
   base::RunLoop run_loop;
   // Set up an |observer| that will wait for the disabled setting to change.
-  scoped_ptr<CrosSettings::ObserverSubscription> observer =
-      CrosSettings::Get()->AddSettingsObserver(
-           kDeviceDisabled,
-           run_loop.QuitClosure());
+  std::unique_ptr<CrosSettings::ObserverSubscription> observer =
+      CrosSettings::Get()->AddSettingsObserver(kDeviceDisabled,
+                                               run_loop.QuitClosure());
   // Prepare a policy fetch response that indicates the device is disabled.
   test_helper_.device_policy()->policy_data().mutable_device_state()->
       set_device_mode(enterprise_management::DeviceState::DEVICE_MODE_DISABLED);
@@ -115,7 +114,7 @@ void DeviceDisablingTest::SetUpInProcessBrowserTestFixture() {
   OobeBaseTest::SetUpInProcessBrowserTestFixture();
 
   DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-      scoped_ptr<SessionManagerClient>(fake_session_manager_client_));
+      std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
 
   test_helper_.InstallOwnerKey();
   test_helper_.MarkAsEnterpriseOwned();

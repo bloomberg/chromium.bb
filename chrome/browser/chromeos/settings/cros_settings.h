@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_CROS_SETTINGS_H_
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_CROS_SETTINGS_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,7 +13,6 @@
 #include "base/callback_list.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
@@ -112,7 +112,7 @@ class CrosSettings : public base::NonThreadSafe {
 
   // Add an observer Callback for changes for the given |path|.
   typedef base::CallbackList<void(void)>::Subscription ObserverSubscription;
-  scoped_ptr<ObserverSubscription> AddSettingsObserver(
+  std::unique_ptr<ObserverSubscription> AddSettingsObserver(
       const std::string& path,
       const base::Closure& callback);
 

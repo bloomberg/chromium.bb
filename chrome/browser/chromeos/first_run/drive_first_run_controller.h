@@ -77,7 +77,7 @@ class DriveFirstRunController {
   void CleanUp();
 
   Profile* profile_;
-  scoped_ptr<DriveWebContentsManager> web_contents_manager_;
+  std::unique_ptr<DriveWebContentsManager> web_contents_manager_;
   base::OneShotTimer web_contents_timer_;
   base::OneShotTimer initial_delay_timer_;
   bool started_;

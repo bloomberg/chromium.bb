@@ -63,15 +63,15 @@ SupervisedUsersSyncTestAdapter::SupervisedUsersSyncTestAdapter(Profile* profile)
   service_ = SupervisedUserSyncServiceFactory::GetForProfile(profile);
   processor_ = new syncer::FakeSyncChangeProcessor();
   service_->MergeDataAndStartSyncing(
-      syncer::SUPERVISED_USERS,
-      syncer::SyncDataList(),
-      scoped_ptr<syncer::SyncChangeProcessor>(processor_),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock));
+      syncer::SUPERVISED_USERS, syncer::SyncDataList(),
+      std::unique_ptr<syncer::SyncChangeProcessor>(processor_),
+      std::unique_ptr<syncer::SyncErrorFactory>(
+          new syncer::SyncErrorFactoryMock));
 }
 
-scoped_ptr< ::sync_pb::ManagedUserSpecifics>
+std::unique_ptr<::sync_pb::ManagedUserSpecifics>
 SupervisedUsersSyncTestAdapter::GetFirstChange() {
-  scoped_ptr< ::sync_pb::ManagedUserSpecifics> result(
+  std::unique_ptr<::sync_pb::ManagedUserSpecifics> result(
       new ::sync_pb::ManagedUserSpecifics);
   CHECK(HasChanges())
       << "GetFirstChange() should only be callled if HasChanges() is true";
@@ -112,15 +112,15 @@ SupervisedUsersSharedSettingsSyncTestAdapter::
       SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(profile);
   processor_ = new syncer::FakeSyncChangeProcessor();
   service_->MergeDataAndStartSyncing(
-      syncer::SUPERVISED_USER_SHARED_SETTINGS,
-      syncer::SyncDataList(),
-      scoped_ptr<syncer::SyncChangeProcessor>(processor_),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock));
+      syncer::SUPERVISED_USER_SHARED_SETTINGS, syncer::SyncDataList(),
+      std::unique_ptr<syncer::SyncChangeProcessor>(processor_),
+      std::unique_ptr<syncer::SyncErrorFactory>(
+          new syncer::SyncErrorFactoryMock));
 }
 
-scoped_ptr< ::sync_pb::ManagedUserSharedSettingSpecifics>
+std::unique_ptr<::sync_pb::ManagedUserSharedSettingSpecifics>
 SupervisedUsersSharedSettingsSyncTestAdapter::GetFirstChange() {
-  scoped_ptr< ::sync_pb::ManagedUserSharedSettingSpecifics> result(
+  std::unique_ptr<::sync_pb::ManagedUserSharedSettingSpecifics> result(
       new ::sync_pb::ManagedUserSharedSettingSpecifics);
   CHECK(HasChanges())
       << "GetFirstChange() should only be callled if HasChanges() is true";

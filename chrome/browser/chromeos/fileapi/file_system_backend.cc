@@ -6,9 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/fileapi/file_access_permissions.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
@@ -280,9 +282,8 @@ storage::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
   if (url.type() == storage::kFileSystemTypeDeviceMediaAsFileStorage) {
     // MTP file operations run on MediaTaskRunner.
     return storage::FileSystemOperation::Create(
-        url,
-        context,
-        make_scoped_ptr(new storage::FileSystemOperationContext(
+        url, context,
+        base::WrapUnique(new storage::FileSystemOperationContext(
             context, MediaFileSystemBackend::MediaTaskRunner().get())));
   }
 
@@ -291,9 +292,8 @@ storage::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
          url.type() == storage::kFileSystemTypeDrive ||
          url.type() == storage::kFileSystemTypeProvided);
   return storage::FileSystemOperation::Create(
-      url,
-      context,
-      make_scoped_ptr(new storage::FileSystemOperationContext(context)));
+      url, context,
+      base::WrapUnique(new storage::FileSystemOperationContext(context)));
 }
 
 bool FileSystemBackend::SupportsStreaming(
@@ -319,7 +319,8 @@ bool FileSystemBackend::HasInplaceCopyImplementation(
   return true;
 }
 
-scoped_ptr<storage::FileStreamReader> FileSystemBackend::CreateFileStreamReader(
+std::unique_ptr<storage::FileStreamReader>
+FileSystemBackend::CreateFileStreamReader(
     const storage::FileSystemURL& url,
     int64_t offset,
     int64_t max_bytes_to_read,
@@ -328,7 +329,7 @@ scoped_ptr<storage::FileStreamReader> FileSystemBackend::CreateFileStreamReader(
   DCHECK(url.is_valid());
 
   if (!IsAccessAllowed(url))
-    return scoped_ptr<storage::FileStreamReader>();
+    return std::unique_ptr<storage::FileStreamReader>();
 
   switch (url.type()) {
     case storage::kFileSystemTypeDrive:
@@ -339,7 +340,7 @@ scoped_ptr<storage::FileStreamReader> FileSystemBackend::CreateFileStreamReader(
           url, offset, max_bytes_to_read, expected_modification_time, context);
     case storage::kFileSystemTypeNativeLocal:
     case storage::kFileSystemTypeRestrictedNativeLocal:
-      return scoped_ptr<storage::FileStreamReader>(
+      return std::unique_ptr<storage::FileStreamReader>(
           storage::FileStreamReader::CreateForFileSystemFile(
               context, url, offset, expected_modification_time));
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:
@@ -348,17 +349,18 @@ scoped_ptr<storage::FileStreamReader> FileSystemBackend::CreateFileStreamReader(
     default:
       NOTREACHED();
   }
-  return scoped_ptr<storage::FileStreamReader>();
+  return std::unique_ptr<storage::FileStreamReader>();
 }
 
-scoped_ptr<storage::FileStreamWriter> FileSystemBackend::CreateFileStreamWriter(
+std::unique_ptr<storage::FileStreamWriter>
+FileSystemBackend::CreateFileStreamWriter(
     const storage::FileSystemURL& url,
     int64_t offset,
     storage::FileSystemContext* context) const {
   DCHECK(url.is_valid());
 
   if (!IsAccessAllowed(url))
-    return scoped_ptr<storage::FileStreamWriter>();
+    return std::unique_ptr<storage::FileStreamWriter>();
 
   switch (url.type()) {
     case storage::kFileSystemTypeDrive:
@@ -367,21 +369,19 @@ scoped_ptr<storage::FileStreamWriter> FileSystemBackend::CreateFileStreamWriter(
       return file_system_provider_delegate_->CreateFileStreamWriter(
           url, offset, context);
     case storage::kFileSystemTypeNativeLocal:
-      return scoped_ptr<storage::FileStreamWriter>(
+      return std::unique_ptr<storage::FileStreamWriter>(
           storage::FileStreamWriter::CreateForLocalFile(
-              context->default_file_task_runner(),
-              url.path(),
-              offset,
+              context->default_file_task_runner(), url.path(), offset,
               storage::FileStreamWriter::OPEN_EXISTING_FILE));
     case storage::kFileSystemTypeRestrictedNativeLocal:
       // Restricted native local file system is read only.
-      return scoped_ptr<storage::FileStreamWriter>();
+      return std::unique_ptr<storage::FileStreamWriter>();
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:
       return mtp_delegate_->CreateFileStreamWriter(url, offset, context);
     default:
       NOTREACHED();
   }
-  return scoped_ptr<storage::FileStreamWriter>();
+  return std::unique_ptr<storage::FileStreamWriter>();
 }
 
 bool FileSystemBackend::GetVirtualPath(const base::FilePath& filesystem_path,

@@ -7,13 +7,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
@@ -69,7 +69,7 @@ class CustomizationDocument {
                                       const std::string& dictionary_name,
                                       const std::string& entry_name) const;
 
-  scoped_ptr<base::DictionaryValue> root_;
+  std::unique_ptr<base::DictionaryValue> root_;
 
   // Value of the "version" attribute that is supported.
   // Otherwise config is not loaded.
@@ -174,7 +174,7 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   bool GetDefaultWallpaperUrl(GURL* out_url) const;
 
   // Returns list of default apps.
-  scoped_ptr<base::DictionaryValue> GetDefaultApps() const;
+  std::unique_ptr<base::DictionaryValue> GetDefaultApps() const;
 
   // Creates an extensions::ExternalLoader that will provide OEM default apps.
   // Cache of OEM default apps stored in profile preferences.
@@ -248,7 +248,7 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   void OnManifestLoaded();
 
   // Returns list of default apps in ExternalProvider format.
-  static scoped_ptr<base::DictionaryValue> GetDefaultAppsInProviderFormat(
+  static std::unique_ptr<base::DictionaryValue> GetDefaultAppsInProviderFormat(
       const base::DictionaryValue& root);
 
   // Update cached manifest for |profile|.
@@ -267,7 +267,7 @@ class ServicesCustomizationDocument : public CustomizationDocument,
 
   // Start download of wallpaper image if needed.
   void StartOEMWallpaperDownload(const GURL& wallpaper_url,
-                                 scoped_ptr<ApplyingTask> applying);
+                                 std::unique_ptr<ApplyingTask> applying);
 
   // Check that current customized wallpaper cache exists. Once wallpaper is
   // downloaded, it's never updated (even if manifest is re-fetched).
@@ -275,17 +275,17 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   void CheckAndApplyWallpaper();
 
   // Intermediate function to pass the result of PathExists to ApplyWallpaper.
-  void OnCheckedWallpaperCacheExists(scoped_ptr<bool> exists,
-                                     scoped_ptr<ApplyingTask> applying);
+  void OnCheckedWallpaperCacheExists(std::unique_ptr<bool> exists,
+                                     std::unique_ptr<ApplyingTask> applying);
 
   // Called after downloaded wallpaper has been checked.
   void ApplyWallpaper(bool default_wallpaper_file_exists,
-                      scoped_ptr<ApplyingTask> applying);
+                      std::unique_ptr<ApplyingTask> applying);
 
   // Set Shell default wallpaper to customized.
   // It's wrapped as a callback and passed as a parameter to
   // CustomizationWallpaperDownloader.
-  void OnOEMWallpaperDownloaded(scoped_ptr<ApplyingTask> applying,
+  void OnOEMWallpaperDownloaded(std::unique_ptr<ApplyingTask> applying,
                                 bool success,
                                 const GURL& wallpaper_url);
 
@@ -299,7 +299,7 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   GURL url_;
 
   // URLFetcher instance.
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   // How many times we already tried to fetch customization manifest file.
   int num_retries_;
@@ -313,7 +313,7 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   // Known external loaders.
   ExternalLoaders external_loaders_;
 
-  scoped_ptr<CustomizationWallpaperDownloader> wallpaper_downloader_;
+  std::unique_ptr<CustomizationWallpaperDownloader> wallpaper_downloader_;
 
   // This is barrier until customization is applied.
   // When number of finished tasks match number of started - customization is

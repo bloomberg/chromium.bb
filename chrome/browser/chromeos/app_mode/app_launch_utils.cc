@@ -55,7 +55,7 @@ class AppLaunchManager : public StartupAppLauncher::Delegate {
   }
   bool IsShowingNetworkConfigScreen() override { return false; }
 
-  scoped_ptr<StartupAppLauncher> startup_app_launcher_;
+  std::unique_ptr<StartupAppLauncher> startup_app_launcher_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLaunchManager);
 };

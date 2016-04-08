@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_CHROMEOS_CERTIFICATE_PROVIDER_CERTIFICATE_REQUESTS_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_info.h"
 #include "net/cert/x509_certificate.h"
 
@@ -56,7 +56,7 @@ class CertificateRequests {
  private:
   struct CertificateRequestState;
 
-  std::map<int, scoped_ptr<CertificateRequestState>> requests_;
+  std::map<int, std::unique_ptr<CertificateRequestState>> requests_;
   int next_free_request_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateRequests);

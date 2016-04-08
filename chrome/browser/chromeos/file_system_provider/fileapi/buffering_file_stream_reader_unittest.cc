@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/file_system_provider/fileapi/buffering_file_stream_reader.h"
+
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/file_system_provider/fileapi/buffering_file_stream_reader.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/io_buffer.h"
@@ -92,10 +93,9 @@ class FileSystemProviderBufferingFileStreamReaderTest : public testing::Test {
 TEST_F(FileSystemProviderBufferingFileStreamReaderTest, Read) {
   std::vector<int> inner_read_log;
   BufferingFileStreamReader reader(
-      scoped_ptr<storage::FileStreamReader>(
+      std::unique_ptr<storage::FileStreamReader>(
           new FakeFileStreamReader(&inner_read_log, net::OK)),
-      kPreloadingBufferLength,
-      kFileSize);
+      kPreloadingBufferLength, kFileSize);
 
   // For the first read, the internal file stream reader is fired, as there is
   // no data in the preloading buffer.
@@ -166,10 +166,9 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest, Read) {
 TEST_F(FileSystemProviderBufferingFileStreamReaderTest, Read_Directly) {
   std::vector<int> inner_read_log;
   BufferingFileStreamReader reader(
-      scoped_ptr<storage::FileStreamReader>(
+      std::unique_ptr<storage::FileStreamReader>(
           new FakeFileStreamReader(&inner_read_log, net::OK)),
-      kPreloadingBufferLength,
-      kFileSize);
+      kPreloadingBufferLength, kFileSize);
 
   // First read couple of bytes, so the internal buffer is filled out.
   {
@@ -227,10 +226,9 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest,
        Read_MoreThanBufferSize) {
   std::vector<int> inner_read_log;
   BufferingFileStreamReader reader(
-      scoped_ptr<storage::FileStreamReader>(
+      std::unique_ptr<storage::FileStreamReader>(
           new FakeFileStreamReader(&inner_read_log, net::OK)),
-      kPreloadingBufferLength,
-      kFileSize);
+      kPreloadingBufferLength, kFileSize);
   // First read couple of bytes, so the internal buffer is filled out.
   {
     scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kChunkSize));
@@ -270,10 +268,9 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest,
   const int total_bytes_to_read = 3;
   ASSERT_LT(total_bytes_to_read, kPreloadingBufferLength);
   BufferingFileStreamReader reader(
-      scoped_ptr<storage::FileStreamReader>(
+      std::unique_ptr<storage::FileStreamReader>(
           new FakeFileStreamReader(&inner_read_log, net::OK)),
-      kPreloadingBufferLength,
-      total_bytes_to_read);
+      kPreloadingBufferLength, total_bytes_to_read);
 
   // For the first read, the internal file stream reader is fired, as there is
   // no data in the preloading buffer.
@@ -298,10 +295,9 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest,
        Read_LessThanBufferSize_WithoutSpecifiedLength) {
   std::vector<int> inner_read_log;
   BufferingFileStreamReader reader(
-      scoped_ptr<storage::FileStreamReader>(
+      std::unique_ptr<storage::FileStreamReader>(
           new FakeFileStreamReader(&inner_read_log, net::OK)),
-      kPreloadingBufferLength,
-      storage::kMaximumLength);
+      kPreloadingBufferLength, storage::kMaximumLength);
 
   // For the first read, the internal file stream reader is fired, as there is
   // no data in the preloading buffer.
@@ -324,10 +320,9 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest,
 TEST_F(FileSystemProviderBufferingFileStreamReaderTest, Read_WithError) {
   std::vector<int> inner_read_log;
   BufferingFileStreamReader reader(
-      scoped_ptr<storage::FileStreamReader>(
+      std::unique_ptr<storage::FileStreamReader>(
           new FakeFileStreamReader(&inner_read_log, net::ERR_ACCESS_DENIED)),
-      kPreloadingBufferLength,
-      kFileSize);
+      kPreloadingBufferLength, kFileSize);
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kChunkSize));
   std::vector<int> read_log;
@@ -343,10 +338,9 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest, Read_WithError) {
 }
 
 TEST_F(FileSystemProviderBufferingFileStreamReaderTest, GetLength) {
-  BufferingFileStreamReader reader(scoped_ptr<storage::FileStreamReader>(
+  BufferingFileStreamReader reader(std::unique_ptr<storage::FileStreamReader>(
                                        new FakeFileStreamReader(NULL, net::OK)),
-                                   kPreloadingBufferLength,
-                                   kFileSize);
+                                   kPreloadingBufferLength, kFileSize);
 
   std::vector<int64_t> get_length_log;
   const int64_t result =

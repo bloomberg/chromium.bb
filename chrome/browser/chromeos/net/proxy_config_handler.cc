@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/net/onc_utils.h"
 #include "chrome/common/pref_names.h"
@@ -39,7 +40,7 @@ void NotifyNetworkStateHandler(const std::string& service_path) {
 
 namespace proxy_config {
 
-scoped_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
+std::unique_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
     const PrefService* profile_prefs,
     const PrefService* local_state_prefs,
     const NetworkState& network,
@@ -55,22 +56,22 @@ scoped_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
     if (!proxy_policy) {
       // This policy doesn't set a proxy for this network. Nonetheless, this
       // disallows changes by the user.
-      return scoped_ptr<ProxyConfigDictionary>();
+      return std::unique_ptr<ProxyConfigDictionary>();
     }
 
-    scoped_ptr<base::DictionaryValue> proxy_dict =
+    std::unique_ptr<base::DictionaryValue> proxy_dict =
         onc::ConvertOncProxySettingsToProxyConfig(*proxy_policy);
-    return make_scoped_ptr(new ProxyConfigDictionary(proxy_dict.get()));
+    return base::WrapUnique(new ProxyConfigDictionary(proxy_dict.get()));
   }
 
   if (network.profile_path().empty())
-    return scoped_ptr<ProxyConfigDictionary>();
+    return std::unique_ptr<ProxyConfigDictionary>();
 
   const NetworkProfile* profile = NetworkHandler::Get()
       ->network_profile_handler()->GetProfileForPath(network.profile_path());
   if (!profile) {
     VLOG(1) << "Unknown profile_path '" << network.profile_path() << "'.";
-    return scoped_ptr<ProxyConfigDictionary>();
+    return std::unique_ptr<ProxyConfigDictionary>();
   }
   if (!profile_prefs && profile->type() == NetworkProfile::TYPE_USER) {
     // This case occurs, for example, if called from the proxy config tracker
@@ -79,7 +80,7 @@ scoped_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
     // settings.
     VLOG(1)
         << "Don't use unshared settings for system context or signin screen.";
-    return scoped_ptr<ProxyConfigDictionary>();
+    return std::unique_ptr<ProxyConfigDictionary>();
   }
 
   // No policy set for this network, read instead the user's (shared or
@@ -88,8 +89,8 @@ scoped_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
   // still rely on Shill storing it.
   const base::DictionaryValue& value = network.proxy_config();
   if (value.empty())
-    return scoped_ptr<ProxyConfigDictionary>();
-  return make_scoped_ptr(new ProxyConfigDictionary(&value));
+    return std::unique_ptr<ProxyConfigDictionary>();
+  return base::WrapUnique(new ProxyConfigDictionary(&value));
 }
 
 void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,

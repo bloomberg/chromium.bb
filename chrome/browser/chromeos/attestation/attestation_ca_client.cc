@@ -48,7 +48,7 @@ void AttestationCAClient::OnURLFetchComplete(const net::URLFetcher* source) {
 
   DataCallback callback = iter->second;
   pending_requests_.erase(iter);
-  scoped_ptr<const net::URLFetcher> scoped_source(source);
+  std::unique_ptr<const net::URLFetcher> scoped_source(source);
 
   if (source->GetStatus().status() != net::URLRequestStatus::SUCCESS) {
     LOG(ERROR) << "Attestation CA request failed, status: "

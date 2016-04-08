@@ -118,7 +118,7 @@ void LoadDisplayLayouts() {
       prefs::kSecondaryDisplays);
   for (base::DictionaryValue::Iterator it(*layouts);
        !it.IsAtEnd(); it.Advance()) {
-    scoped_ptr<display::DisplayLayout> layout(new display::DisplayLayout);
+    std::unique_ptr<display::DisplayLayout> layout(new display::DisplayLayout);
     if (!ash::JsonToDisplayLayout(it.value(), layout.get())) {
       LOG(WARNING) << "Invalid preference value for " << it.key();
       continue;
@@ -219,7 +219,7 @@ void StoreDisplayLayoutPref(const display::DisplayIdList& list,
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate update(local_state, prefs::kSecondaryDisplays);
   base::DictionaryValue* pref_data = update.Get();
-  scoped_ptr<base::Value> layout_value(new base::DictionaryValue());
+  std::unique_ptr<base::Value> layout_value(new base::DictionaryValue());
   if (pref_data->HasKey(name)) {
     base::Value* value = nullptr;
     if (pref_data->Get(name, &value) && value != nullptr)
@@ -255,7 +255,7 @@ void StoreCurrentDisplayProperties() {
     int64_t id = display.id();
     ash::DisplayInfo info = display_manager->GetDisplayInfo(id);
 
-    scoped_ptr<base::DictionaryValue> property_value(
+    std::unique_ptr<base::DictionaryValue> property_value(
         new base::DictionaryValue());
     // Don't save the display preference in unified mode because its
     // size and modes can change depending on the combination of displays.

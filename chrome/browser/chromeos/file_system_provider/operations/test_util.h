@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_TEST_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_TEST_UTIL_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 
 namespace extensions {
@@ -29,7 +29,7 @@ class LoggingDispatchEventImpl {
   virtual ~LoggingDispatchEventImpl();
 
   // Handles sending an event to a providing extension.
-  bool OnDispatchEventImpl(scoped_ptr<extensions::Event> event);
+  bool OnDispatchEventImpl(std::unique_ptr<extensions::Event> event);
 
   // Returns events sent to providing extensions.
   ScopedVector<extensions::Event>& events() { return events_; }

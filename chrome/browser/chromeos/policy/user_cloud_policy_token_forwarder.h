@@ -59,7 +59,7 @@ class UserCloudPolicyTokenForwarder : public KeyedService,
   UserCloudPolicyManagerChromeOS* manager_;
   ProfileOAuth2TokenService* token_service_;
   SigninManagerBase* signin_manager_;
-  scoped_ptr<OAuth2TokenService::Request> request_;
+  std::unique_ptr<OAuth2TokenService::Request> request_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyTokenForwarder);
 };

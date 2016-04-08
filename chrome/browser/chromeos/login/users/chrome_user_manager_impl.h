@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_USERS_CHROME_USER_MANAGER_IMPL_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
@@ -66,7 +66,7 @@ class ChromeUserManagerImpl
   ~ChromeUserManagerImpl() override;
 
   // Creates ChromeUserManagerImpl instance.
-  static scoped_ptr<ChromeUserManager> CreateChromeUserManager();
+  static std::unique_ptr<ChromeUserManager> CreateChromeUserManager();
 
   // Registers user manager preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -129,7 +129,7 @@ class ChromeUserManagerImpl
                              const std::string& user_id) override;
   void OnExternalDataFetched(const std::string& policy,
                              const std::string& user_id,
-                             scoped_ptr<std::string> data) override;
+                             std::unique_ptr<std::string> data) override;
 
   // policy::DeviceLocalAccountPolicyService::Observer implementation.
   void OnPolicyUpdated(const std::string& user_id) override;
@@ -256,32 +256,34 @@ class ChromeUserManagerImpl
   UserImageManagerMap user_image_managers_;
 
   // Supervised user manager.
-  scoped_ptr<SupervisedUserManagerImpl> supervised_user_manager_;
+  std::unique_ptr<SupervisedUserManagerImpl> supervised_user_manager_;
 
   // Session length limiter.
-  scoped_ptr<SessionLengthLimiter> session_length_limiter_;
+  std::unique_ptr<SessionLengthLimiter> session_length_limiter_;
 
   using FlowMap = std::map<AccountId, UserFlow*>;
 
   // Lazy-initialized default flow.
-  mutable scoped_ptr<UserFlow> default_flow_;
+  mutable std::unique_ptr<UserFlow> default_flow_;
 
   // Specific flows by user e-mail. Keys should be canonicalized before
   // access.
   FlowMap specific_flows_;
 
-  scoped_ptr<CrosSettings::ObserverSubscription> local_accounts_subscription_;
+  std::unique_ptr<CrosSettings::ObserverSubscription>
+      local_accounts_subscription_;
 
-  scoped_ptr<MultiProfileUserController> multi_profile_user_controller_;
+  std::unique_ptr<MultiProfileUserController> multi_profile_user_controller_;
 
   // Observer for the policy that can be used to manage user images.
-  scoped_ptr<policy::CloudExternalDataPolicyObserver> avatar_policy_observer_;
+  std::unique_ptr<policy::CloudExternalDataPolicyObserver>
+      avatar_policy_observer_;
 
   // Observer for the policy that can be used to manage wallpapers.
-  scoped_ptr<policy::CloudExternalDataPolicyObserver>
+  std::unique_ptr<policy::CloudExternalDataPolicyObserver>
       wallpaper_policy_observer_;
 
-  scoped_ptr<BootstrapManager> bootstrap_manager_;
+  std::unique_ptr<BootstrapManager> bootstrap_manager_;
 
   base::WeakPtrFactory<ChromeUserManagerImpl> weak_factory_;
 

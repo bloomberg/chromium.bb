@@ -174,11 +174,11 @@ class VolumeManagerTest : public testing::Test {
       return &fake_mtp_storage_info_;
     }
 
-    scoped_ptr<TestingProfile> profile_;
-    scoped_ptr<extensions::ExtensionRegistry> extension_registry_;
-    scoped_ptr<chromeos::file_system_provider::Service>
+    std::unique_ptr<TestingProfile> profile_;
+    std::unique_ptr<extensions::ExtensionRegistry> extension_registry_;
+    std::unique_ptr<chromeos::file_system_provider::Service>
         file_system_provider_service_;
-    scoped_ptr<VolumeManager> volume_manager_;
+    std::unique_ptr<VolumeManager> volume_manager_;
     const MtpStorageInfo fake_mtp_storage_info_;
   };
 
@@ -195,9 +195,9 @@ class VolumeManagerTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<chromeos::FakePowerManagerClient> power_manager_client_;
-  scoped_ptr<FakeDiskMountManager> disk_mount_manager_;
-  scoped_ptr<ProfileEnvironment> main_profile_;
+  std::unique_ptr<chromeos::FakePowerManagerClient> power_manager_client_;
+  std::unique_ptr<FakeDiskMountManager> disk_mount_manager_;
+  std::unique_ptr<ProfileEnvironment> main_profile_;
 };
 
 TEST_F(VolumeManagerTest, OnDriveFileSystemMountAndUnmount) {
@@ -518,11 +518,11 @@ TEST_F(VolumeManagerTest, OnMountEvent_MountingAndUnmounting) {
 }
 
 TEST_F(VolumeManagerTest, OnMountEvent_Remounting) {
-  scoped_ptr<chromeos::disks::DiskMountManager::Disk> disk(
+  std::unique_ptr<chromeos::disks::DiskMountManager::Disk> disk(
       new chromeos::disks::DiskMountManager::Disk(
           "device1", "", "", "", "", "", "", "", "", "", "uuid1", "",
-          chromeos::DEVICE_TYPE_UNKNOWN, 0,
-          false, false, false, false, false, false));
+          chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, false, false, false,
+          false));
   disk_mount_manager_->AddDiskForTest(disk.release());
   disk_mount_manager_->MountPath(
       "device1", "", "", chromeos::MOUNT_TYPE_DEVICE);

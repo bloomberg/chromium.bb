@@ -45,17 +45,17 @@ class ResetTest : public LoginManagerTest {
 
   // LoginManagerTest overrides:
   void SetUpInProcessBrowserTestFixture() override {
-    scoped_ptr<DBusThreadManagerSetter> dbus_setter =
+    std::unique_ptr<DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
     session_manager_client_ = new FakeSessionManagerClient;
     dbus_setter->SetSessionManagerClient(
-        scoped_ptr<SessionManagerClient>(session_manager_client_));
+        std::unique_ptr<SessionManagerClient>(session_manager_client_));
     power_manager_client_ = new FakePowerManagerClient;
     dbus_setter->SetPowerManagerClient(
-        scoped_ptr<PowerManagerClient>(power_manager_client_));
+        std::unique_ptr<PowerManagerClient>(power_manager_client_));
     update_engine_client_ = new FakeUpdateEngineClient;
     dbus_setter->SetUpdateEngineClient(
-        scoped_ptr<UpdateEngineClient>(update_engine_client_));
+        std::unique_ptr<UpdateEngineClient>(update_engine_client_));
 
     LoginManagerTest::SetUpInProcessBrowserTestFixture();
   }

@@ -156,7 +156,8 @@ const base::ListValue* NetworkScreen::GetLanguageList() const {
 }
 
 void NetworkScreen::UpdateLanguageList() {
-  ScheduleResolveLanguageList(scoped_ptr<locale_util::LanguageSwitchResult>());
+  ScheduleResolveLanguageList(
+      std::unique_ptr<locale_util::LanguageSwitchResult>());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -409,22 +410,23 @@ void NetworkScreen::OnLanguageChangedCallback(
     g_browser_process->local_state()->SetString(prefs::kApplicationLocale,
                                                 selected_language_code_);
   }
-  ScheduleResolveLanguageList(scoped_ptr<locale_util::LanguageSwitchResult>(
-      new locale_util::LanguageSwitchResult(result)));
+  ScheduleResolveLanguageList(
+      std::unique_ptr<locale_util::LanguageSwitchResult>(
+          new locale_util::LanguageSwitchResult(result)));
 
   AccessibilityManager::Get()->OnLocaleChanged();
   SetInputMethod(input_method);
 }
 
 void NetworkScreen::ScheduleResolveLanguageList(
-    scoped_ptr<locale_util::LanguageSwitchResult> language_switch_result) {
+    std::unique_ptr<locale_util::LanguageSwitchResult> language_switch_result) {
   UILanguageListResolvedCallback callback = base::Bind(
       &NetworkScreen::OnLanguageListResolved, weak_factory_.GetWeakPtr());
   ResolveUILanguageList(std::move(language_switch_result), callback);
 }
 
 void NetworkScreen::OnLanguageListResolved(
-    scoped_ptr<base::ListValue> new_language_list,
+    std::unique_ptr<base::ListValue> new_language_list,
     const std::string& new_language_list_locale,
     const std::string& new_selected_language) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

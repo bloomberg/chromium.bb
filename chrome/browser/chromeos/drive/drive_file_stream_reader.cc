@@ -96,7 +96,7 @@ int ReadInternal(ScopedVector<std::string>* pending_data,
 }  // namespace
 
 LocalReaderProxy::LocalReaderProxy(
-    scoped_ptr<util::LocalFileReader> file_reader,
+    std::unique_ptr<util::LocalFileReader> file_reader,
     int64_t length)
     : file_reader_(std::move(file_reader)),
       remaining_length_(length),
@@ -126,7 +126,7 @@ int LocalReaderProxy::Read(net::IOBuffer* buffer, int buffer_length,
   return net::ERR_IO_PENDING;
 }
 
-void LocalReaderProxy::OnGetContent(scoped_ptr<std::string> data) {
+void LocalReaderProxy::OnGetContent(std::unique_ptr<std::string> data) {
   // This method should never be called, because no data should be received
   // from the network during the reading of local-cache file.
   NOTREACHED();
@@ -218,7 +218,7 @@ int NetworkReaderProxy::Read(net::IOBuffer* buffer, int buffer_length,
   return result;
 }
 
-void NetworkReaderProxy::OnGetContent(scoped_ptr<std::string> data) {
+void NetworkReaderProxy::OnGetContent(std::unique_ptr<std::string> data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(data && !data->empty());
 
@@ -388,13 +388,13 @@ void DriveFileStreamReader::InitializeAfterGetFileContentInitialized(
     const InitializeCompletionCallback& callback,
     FileError error,
     const base::FilePath& local_cache_file_path,
-    scoped_ptr<ResourceEntry> entry) {
+    std::unique_ptr<ResourceEntry> entry) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // StoreCancelDownloadClosure() should be called before this function.
   DCHECK(!cancel_download_closure_.is_null());
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(FileErrorToNetError(error), scoped_ptr<ResourceEntry>());
+    callback.Run(FileErrorToNetError(error), std::unique_ptr<ResourceEntry>());
     return;
   }
   DCHECK(entry);
@@ -408,8 +408,8 @@ void DriveFileStreamReader::InitializeAfterGetFileContentInitialized(
     // receive unwanted callbacks.
     cancel_download_closure_.Run();
     weak_ptr_factory_.InvalidateWeakPtrs();
-    callback.Run(
-        net::ERR_REQUEST_RANGE_NOT_SATISFIABLE, scoped_ptr<ResourceEntry>());
+    callback.Run(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE,
+                 std::unique_ptr<ResourceEntry>());
     return;
   }
 
@@ -424,7 +424,7 @@ void DriveFileStreamReader::InitializeAfterGetFileContentInitialized(
   }
 
   // Otherwise, open the stream for file.
-  scoped_ptr<util::LocalFileReader> file_reader(
+  std::unique_ptr<util::LocalFileReader> file_reader(
       new util::LocalFileReader(file_task_runner_.get()));
   util::LocalFileReader* file_reader_ptr = file_reader.get();
   file_reader_ptr->Open(
@@ -442,13 +442,13 @@ void DriveFileStreamReader::InitializeAfterGetFileContentInitialized(
 void DriveFileStreamReader::InitializeAfterLocalFileOpen(
     int64_t length,
     const InitializeCompletionCallback& callback,
-    scoped_ptr<ResourceEntry> entry,
-    scoped_ptr<util::LocalFileReader> file_reader,
+    std::unique_ptr<ResourceEntry> entry,
+    std::unique_ptr<util::LocalFileReader> file_reader,
     int open_result) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (open_result != net::OK) {
-    callback.Run(net::ERR_FAILED, scoped_ptr<ResourceEntry>());
+    callback.Run(net::ERR_FAILED, std::unique_ptr<ResourceEntry>());
     return;
   }
 
@@ -459,7 +459,7 @@ void DriveFileStreamReader::InitializeAfterLocalFileOpen(
 
 void DriveFileStreamReader::OnGetContent(
     google_apis::DriveApiErrorCode error_code,
-    scoped_ptr<std::string> data) {
+    std::unique_ptr<std::string> data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(reader_proxy_);
   reader_proxy_->OnGetContent(std::move(data));
@@ -484,7 +484,8 @@ void DriveFileStreamReader::OnGetFileContentCompletion(
     // or may not be called. This is timing issue, and it is difficult to avoid
     // unfortunately.
     if (error != FILE_ERROR_OK) {
-      callback.Run(FileErrorToNetError(error), scoped_ptr<ResourceEntry>());
+      callback.Run(FileErrorToNetError(error),
+                   std::unique_ptr<ResourceEntry>());
     }
   }
 }

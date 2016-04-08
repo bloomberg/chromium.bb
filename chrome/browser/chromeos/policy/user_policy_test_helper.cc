@@ -37,13 +37,14 @@ std::string BuildPolicy(const base::DictionaryValue& mandatory,
                         const base::DictionaryValue& recommended,
                         const std::string& policyType,
                         const std::string& account_id) {
-  scoped_ptr<base::DictionaryValue> policy_type_dict(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> policy_type_dict(
+      new base::DictionaryValue);
   policy_type_dict->SetWithoutPathExpansion("mandatory",
                                             mandatory.CreateDeepCopy());
   policy_type_dict->SetWithoutPathExpansion("recommended",
                                             recommended.CreateDeepCopy());
 
-  scoped_ptr<base::ListValue> managed_users_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> managed_users_list(new base::ListValue);
   managed_users_list->AppendString("*");
 
   base::DictionaryValue root_dict;

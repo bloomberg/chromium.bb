@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -15,7 +16,6 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/file_system_provider/abort_callback.h"
@@ -46,12 +46,12 @@ struct EntryMetadata {
 
   // All of the metadata fields are optional. All strings which are set, are
   // non-empty.
-  scoped_ptr<bool> is_directory;
-  scoped_ptr<std::string> name;
-  scoped_ptr<int64_t> size;
-  scoped_ptr<base::Time> modification_time;
-  scoped_ptr<std::string> mime_type;
-  scoped_ptr<std::string> thumbnail;
+  std::unique_ptr<bool> is_directory;
+  std::unique_ptr<std::string> name;
+  std::unique_ptr<int64_t> size;
+  std::unique_ptr<base::Time> modification_time;
+  std::unique_ptr<std::string> mime_type;
+  std::unique_ptr<std::string> thumbnail;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EntryMetadata);
@@ -109,8 +109,9 @@ class ProvidedFileSystemInterface {
       void(int chunk_length, bool has_more, base::File::Error result)>
       ReadChunkReceivedCallback;
 
-  typedef base::Callback<void(scoped_ptr<EntryMetadata> entry_metadata,
-                              base::File::Error result)> GetMetadataCallback;
+  typedef base::Callback<void(std::unique_ptr<EntryMetadata> entry_metadata,
+                              base::File::Error result)>
+      GetMetadataCallback;
 
   typedef base::Callback<void(const Actions& actions, base::File::Error result)>
       GetActionsCallback;
@@ -250,7 +251,7 @@ class ProvidedFileSystemInterface {
       const base::FilePath& entry_path,
       bool recursive,
       storage::WatcherManager::ChangeType change_type,
-      scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
+      std::unique_ptr<ProvidedFileSystemObserver::Changes> changes,
       const std::string& tag,
       const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 

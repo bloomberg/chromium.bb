@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_EXTERNAL_UPDATER_H_
 #define CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_EXTERNAL_UPDATER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
@@ -142,7 +142,7 @@ class KioskExternalUpdater : public disks::DiskMountManager::Observer,
   // map of app_id: ExternalUpdate
   typedef std::map<std::string, ExternalUpdate> ExternalUpdateMap;
   ExternalUpdateMap external_updates_;
-  scoped_ptr<KioskExternalUpdateNotification> notification_;
+  std::unique_ptr<KioskExternalUpdateNotification> notification_;
 
   base::WeakPtrFactory<KioskExternalUpdater> weak_factory_;
 

@@ -115,13 +115,13 @@ SpokenFeedbackEventRewriter::~SpokenFeedbackEventRewriter() {
 }
 
 void SpokenFeedbackEventRewriter::SetDelegateForTest(
-    scoped_ptr<SpokenFeedbackEventRewriterDelegate> delegate) {
+    std::unique_ptr<SpokenFeedbackEventRewriterDelegate> delegate) {
   delegate_ = std::move(delegate);
 }
 
 ui::EventRewriteStatus SpokenFeedbackEventRewriter::RewriteEvent(
     const ui::Event& event,
-    scoped_ptr<ui::Event>* new_event) {
+    std::unique_ptr<ui::Event>* new_event) {
   if (!delegate_->IsSpokenFeedbackEnabled())
     return ui::EVENT_REWRITE_CONTINUE;
 
@@ -144,6 +144,6 @@ ui::EventRewriteStatus SpokenFeedbackEventRewriter::RewriteEvent(
 
 ui::EventRewriteStatus SpokenFeedbackEventRewriter::NextDispatchEvent(
     const ui::Event& last_event,
-    scoped_ptr<ui::Event>* new_event) {
+    std::unique_ptr<ui::Event>* new_event) {
   return ui::EVENT_REWRITE_CONTINUE;
 }

@@ -211,7 +211,7 @@ class MainMenuModel : public NetworkMenuModel {
   void AddWirelessNetworkMenuItem(const NetworkState* wifi_network, int flag);
   void AddMessageItem(const base::string16& msg);
 
-  scoped_ptr<MoreMenuModel> more_menu_model_;
+  std::unique_ptr<MoreMenuModel> more_menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(MainMenuModel);
 };

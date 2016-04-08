@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
 #include "ash/shell.h"
@@ -14,7 +15,6 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -135,7 +135,7 @@ class ShutdownPolicyBaseTest
 
   content::WebContents* contents_;
   bool result_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 };
 
 class ShutdownPolicyInSessionTest
@@ -175,7 +175,7 @@ class ShutdownPolicyInSessionTest
   }
 
  private:
-  scoped_ptr<ash::DateDefaultView> date_default_view_;
+  std::unique_ptr<ash::DateDefaultView> date_default_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownPolicyInSessionTest);
 };
@@ -208,7 +208,7 @@ class ShutdownPolicyLockerTest : public ShutdownPolicyBaseTest {
   void SetUpInProcessBrowserTestFixture() override {
     fake_session_manager_client_ = new FakeSessionManagerClient;
     DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        scoped_ptr<SessionManagerClient>(fake_session_manager_client_));
+        std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
 
     ShutdownPolicyBaseTest::SetUpInProcessBrowserTestFixture();
     zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
@@ -222,7 +222,7 @@ class ShutdownPolicyLockerTest : public ShutdownPolicyBaseTest {
 
     // Bring up the locker screen.
     ScreenLocker::Show();
-    scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
+    std::unique_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
     tester->EmulateWindowManagerReady();
     content::WindowedNotificationObserver lock_state_observer(
         chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
@@ -244,7 +244,7 @@ class ShutdownPolicyLockerTest : public ShutdownPolicyBaseTest {
   }
 
  private:
-  scoped_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
   FakeSessionManagerClient* fake_session_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownPolicyLockerTest);

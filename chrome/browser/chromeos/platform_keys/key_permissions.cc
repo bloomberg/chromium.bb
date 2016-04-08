@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_map.h"
@@ -88,7 +89,7 @@ struct KeyPermissions::PermissionsForExtension::KeyEntry {
 
 KeyPermissions::PermissionsForExtension::PermissionsForExtension(
     const std::string& extension_id,
-    scoped_ptr<base::Value> state_store_value,
+    std::unique_ptr<base::Value> state_store_value,
     PrefService* profile_prefs,
     policy::PolicyService* profile_policies,
     KeyPermissions* key_permissions)
@@ -169,7 +170,8 @@ void KeyPermissions::PermissionsForExtension::RegisterKeyForCorporateUsage(
 
   DictionaryPrefUpdate update(profile_prefs_, prefs::kPlatformKeys);
 
-  scoped_ptr<base::DictionaryValue> new_pref_entry(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> new_pref_entry(
+      new base::DictionaryValue);
   new_pref_entry->SetStringWithoutPathExpansion(kPrefKeyUsage,
                                                 kPrefKeyUsageCorporate);
 
@@ -274,15 +276,15 @@ void KeyPermissions::PermissionsForExtension::KeyEntriesFromState(
   }
 }
 
-scoped_ptr<base::Value>
+std::unique_ptr<base::Value>
 KeyPermissions::PermissionsForExtension::KeyEntriesToState() {
-  scoped_ptr<base::ListValue> new_state(new base::ListValue);
+  std::unique_ptr<base::ListValue> new_state(new base::ListValue);
   for (const KeyEntry& entry : state_store_entries_) {
     // Drop entries that the extension doesn't have any permissions for anymore.
     if (!entry.sign_once && !entry.sign_unlimited)
       continue;
 
-    scoped_ptr<base::DictionaryValue> new_entry(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> new_entry(new base::DictionaryValue);
     new_entry->SetStringWithoutPathExpansion(kStateStoreSPKI, entry.spki_b64);
     // Omit writing default values, namely |false|.
     if (entry.sign_once) {
@@ -374,14 +376,15 @@ void KeyPermissions::RegisterProfilePrefs(
 void KeyPermissions::CreatePermissionObjectAndPassToCallback(
     const std::string& extension_id,
     const PermissionsCallback& callback,
-    scoped_ptr<base::Value> value) {
-  callback.Run(make_scoped_ptr(
+    std::unique_ptr<base::Value> value) {
+  callback.Run(base::WrapUnique(
       new PermissionsForExtension(extension_id, std::move(value),
                                   profile_prefs_, profile_policies_, this)));
 }
 
-void KeyPermissions::SetPlatformKeysOfExtension(const std::string& extension_id,
-                                                scoped_ptr<base::Value> value) {
+void KeyPermissions::SetPlatformKeysOfExtension(
+    const std::string& extension_id,
+    std::unique_ptr<base::Value> value) {
   extensions_state_store_->SetExtensionValue(
       extension_id, kStateStorePlatformKeys, std::move(value));
 }

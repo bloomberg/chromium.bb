@@ -15,7 +15,7 @@ namespace chromeos {
 namespace file_system_provider {
 
 BufferingFileStreamReader::BufferingFileStreamReader(
-    scoped_ptr<storage::FileStreamReader> file_stream_reader,
+    std::unique_ptr<storage::FileStreamReader> file_stream_reader,
     int preloading_buffer_length,
     int64_t max_bytes_to_read)
     : file_stream_reader_(std::move(file_stream_reader)),

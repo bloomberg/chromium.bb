@@ -7,9 +7,9 @@
 #include <stddef.h>
 
 #include <cctype>
+#include <memory>
 
 #include "ash/first_run/first_run_helper.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_actor.h"
 #include "ui/gfx/geometry/size.h"

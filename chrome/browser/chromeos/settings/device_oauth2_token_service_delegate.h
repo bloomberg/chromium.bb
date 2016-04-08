@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_DEVICE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_DEVICE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -63,7 +63,7 @@ class DeviceOAuth2TokenServiceDelegate
   void OnRefreshTokenResponse(const std::string& access_token,
                               int expires_in_seconds) override;
   void OnGetTokenInfoResponse(
-      scoped_ptr<base::DictionaryValue> token_info) override;
+      std::unique_ptr<base::DictionaryValue> token_info) override;
   void OnOAuthError() override;
   void OnNetworkError(int response_code) override;
 
@@ -145,9 +145,9 @@ class DeviceOAuth2TokenServiceDelegate
   // Cache the decrypted refresh token, so we only decrypt once.
   std::string refresh_token_;
 
-  scoped_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
+  std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
 
-  scoped_ptr<CrosSettings::ObserverSubscription>
+  std::unique_ptr<CrosSettings::ObserverSubscription>
       service_account_identity_subscription_;
 
   base::WeakPtrFactory<DeviceOAuth2TokenServiceDelegate> weak_ptr_factory_;

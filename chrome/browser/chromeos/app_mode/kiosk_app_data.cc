@@ -356,7 +356,7 @@ class KioskAppData::WebstoreDataParser
     // Takes ownership of |parsed_manifest|.
     extensions::Manifest manifest(
         extensions::Manifest::INVALID_LOCATION,
-        scoped_ptr<base::DictionaryValue>(parsed_manifest));
+        std::unique_ptr<base::DictionaryValue>(parsed_manifest));
 
     if (!IsValidKioskAppManifest(manifest)) {
       ReportFailure();
@@ -632,7 +632,7 @@ void KioskAppData::OnWebstoreRequestFailure() {
 }
 
 void KioskAppData::OnWebstoreResponseParseSuccess(
-      scoped_ptr<base::DictionaryValue> webstore_data) {
+    std::unique_ptr<base::DictionaryValue> webstore_data) {
   // Takes ownership of |webstore_data|.
   webstore_fetcher_.reset();
 

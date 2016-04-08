@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -30,8 +32,7 @@ IN_PROC_BROWSER_TEST_F(DeviceCloudPolicyBrowserTest, Initializer) {
 
   // Initializer is deleted when the manager connects.
   connector->GetDeviceCloudPolicyManager()->StartConnection(
-      make_scoped_ptr(mock_client_),
-      connector->GetInstallAttributes());
+      base::WrapUnique(mock_client_), connector->GetInstallAttributes());
   EXPECT_FALSE(connector->GetDeviceCloudPolicyInitializer());
 
   // Initializer is restarted when the manager disconnects.

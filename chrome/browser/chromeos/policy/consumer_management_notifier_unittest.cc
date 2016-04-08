@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chromeos/policy/consumer_management_notifier.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -31,7 +33,7 @@ class ConsumerManagementNotifierTest : public BrowserWithTestWindowTest {
     BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
     connector->SetConsumerManagementServiceForTesting(
-        make_scoped_ptr(fake_service_));
+        base::WrapUnique(fake_service_));
   }
 
   void SetUp() override {
@@ -71,8 +73,8 @@ class ConsumerManagementNotifierTest : public BrowserWithTestWindowTest {
   }
 
   FakeConsumerManagementService* fake_service_;
-  scoped_ptr<TestingProfileManager> testing_profile_manager_;
-  scoped_ptr<ConsumerManagementNotifier> notification_;
+  std::unique_ptr<TestingProfileManager> testing_profile_manager_;
+  std::unique_ptr<ConsumerManagementNotifier> notification_;
 };
 
 TEST_F(ConsumerManagementNotifierTest,

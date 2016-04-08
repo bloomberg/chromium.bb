@@ -102,7 +102,7 @@ InputMethodPrivateSetCurrentInputMethodFunction::Run() {
 #if !defined(OS_CHROMEOS)
   EXTENSION_FUNCTION_VALIDATE(false);
 #else
-  scoped_ptr<SetCurrentInputMethod::Params> params(
+  std::unique_ptr<SetCurrentInputMethod::Params> params(
       SetCurrentInputMethod::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   scoped_refptr<chromeos::input_method::InputMethodManager::State> ime_state =
@@ -132,8 +132,8 @@ InputMethodPrivateGetInputMethodsFunction::Run() {
   chromeos::input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
   scoped_refptr<chromeos::input_method::InputMethodManager::State> ime_state =
       manager->GetActiveIMEState();
-  scoped_ptr<chromeos::input_method::InputMethodDescriptors> input_methods =
-      ime_state->GetActiveInputMethods();
+  std::unique_ptr<chromeos::input_method::InputMethodDescriptors>
+      input_methods = ime_state->GetActiveInputMethods();
   for (size_t i = 0; i < input_methods->size(); ++i) {
     const chromeos::input_method::InputMethodDescriptor& input_method =
         (*input_methods)[i];
@@ -176,7 +176,7 @@ InputMethodPrivateAddWordToDictionaryFunction::Run() {
 #if !defined(OS_CHROMEOS)
   EXTENSION_FUNCTION_VALIDATE(false);
 #else
-  scoped_ptr<AddWordToDictionary::Params> params(
+  std::unique_ptr<AddWordToDictionary::Params> params(
       AddWordToDictionary::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   SpellcheckService* spellcheck = SpellcheckServiceFactory::GetForContext(
@@ -211,7 +211,7 @@ InputMethodPrivateGetEncryptSyncEnabledFunction::Run() {
           Profile::FromBrowserContext(browser_context()));
   if (!profile_sync_service)
     return RespondNow(Error("Sync service is not ready for current profile."));
-  scoped_ptr<base::Value> ret(new base::FundamentalValue(
+  std::unique_ptr<base::Value> ret(new base::FundamentalValue(
       profile_sync_service->IsEncryptEverythingEnabled()));
   return RespondNow(OneArgument(std::move(ret)));
 #endif
@@ -222,7 +222,8 @@ InputMethodPrivateSetXkbLayoutFunction::Run() {
 #if !defined(OS_CHROMEOS)
   EXTENSION_FUNCTION_VALIDATE(false);
 #else
-  scoped_ptr<SetXkbLayout::Params> params(SetXkbLayout::Params::Create(*args_));
+  std::unique_ptr<SetXkbLayout::Params> params(
+      SetXkbLayout::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();

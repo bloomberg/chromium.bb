@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/file_system_provider/operations/get_metadata.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -11,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/test_util.h"
@@ -39,19 +39,19 @@ const char kThumbnail[] = "DaTa:ImAgE/pNg;base64,";
 
 // Returns the request value as |result| in case of successful parse.
 void CreateRequestValueFromJSON(const std::string& json,
-                                scoped_ptr<RequestValue>* result) {
+                                std::unique_ptr<RequestValue>* result) {
   using extensions::api::file_system_provider_internal::
       GetMetadataRequestedSuccess::Params;
 
   int json_error_code;
   std::string json_error_msg;
-  scoped_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
       json, base::JSON_PARSE_RFC, &json_error_code, &json_error_msg);
   ASSERT_TRUE(value.get()) << json_error_msg;
 
   base::ListValue* value_as_list;
   ASSERT_TRUE(value->GetAsList(&value_as_list));
-  scoped_ptr<Params> params(Params::Create(*value_as_list));
+  std::unique_ptr<Params> params(Params::Create(*value_as_list));
   ASSERT_TRUE(params.get());
   *result = RequestValue::CreateForGetMetadataSuccess(std::move(params));
   ASSERT_TRUE(result->get());
@@ -62,7 +62,7 @@ class CallbackLogger {
  public:
   class Event {
    public:
-    Event(scoped_ptr<EntryMetadata> metadata, base::File::Error result)
+    Event(std::unique_ptr<EntryMetadata> metadata, base::File::Error result)
         : metadata_(std::move(metadata)), result_(result) {}
     virtual ~Event() {}
 
@@ -70,7 +70,7 @@ class CallbackLogger {
     base::File::Error result() const { return result_; }
 
    private:
-    scoped_ptr<EntryMetadata> metadata_;
+    std::unique_ptr<EntryMetadata> metadata_;
     base::File::Error result_;
 
     DISALLOW_COPY_AND_ASSIGN(Event);
@@ -79,7 +79,7 @@ class CallbackLogger {
   CallbackLogger() {}
   virtual ~CallbackLogger() {}
 
-  void OnGetMetadata(scoped_ptr<EntryMetadata> metadata,
+  void OnGetMetadata(std::unique_ptr<EntryMetadata> metadata,
                      base::File::Error result) {
     events_.push_back(new Event(std::move(metadata), result));
   }
@@ -311,7 +311,7 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess) {
       "  },\n"
       "  0\n"  // execution_time
       "]\n";
-  scoped_ptr<RequestValue> request_value;
+  std::unique_ptr<RequestValue> request_value;
   ASSERT_NO_FATAL_FAILURE(CreateRequestValueFromJSON(input, &request_value));
 
   const bool has_more = false;
@@ -372,7 +372,7 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess_InvalidMetadata) {
       "  0\n"  // execution_time
       "]\n";
 
-  scoped_ptr<RequestValue> request_value;
+  std::unique_ptr<RequestValue> request_value;
   ASSERT_NO_FATAL_FAILURE(CreateRequestValueFromJSON(input, &request_value));
 
   const bool has_more = false;
@@ -402,7 +402,7 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnError) {
   EXPECT_TRUE(get_metadata.Execute(kRequestId));
 
   get_metadata.OnError(kRequestId,
-                       scoped_ptr<RequestValue>(new RequestValue()),
+                       std::unique_ptr<RequestValue>(new RequestValue()),
                        base::File::FILE_ERROR_TOO_MANY_OPENED);
 
   ASSERT_EQ(1u, callback_logger.events().size());

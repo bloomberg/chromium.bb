@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_REGISTRY_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_REGISTRY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/registry_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/watcher.h"
 
@@ -49,7 +49,7 @@ class Registry : public RegistryInterface {
                           const Watchers& watchers) override;
   void ForgetFileSystem(const std::string& extension_id,
                         const std::string& file_system_id) override;
-  scoped_ptr<RestoredFileSystems> RestoreFileSystems(
+  std::unique_ptr<RestoredFileSystems> RestoreFileSystems(
       const std::string& extension_id) override;
   void UpdateWatcherTag(const ProvidedFileSystemInfo& file_system_info,
                         const Watcher& watcher) override;

@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/login/screens/network_screen.h"
+
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"
-#include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/test/wizard_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -54,7 +56,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
 
     fake_session_manager_client_ = new FakeSessionManagerClient;
     DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        scoped_ptr<SessionManagerClient>(fake_session_manager_client_));
+        std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
   }
 
   void SetUpOnMainThread() override {
@@ -99,7 +101,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
         .WillRepeatedly((Return(false)));
   }
 
-  scoped_ptr<MockBaseScreenDelegate> mock_base_screen_delegate_;
+  std::unique_ptr<MockBaseScreenDelegate> mock_base_screen_delegate_;
   login::MockNetworkStateHelper* mock_network_state_helper_;
   NetworkScreen* network_screen_;
   FakeSessionManagerClient* fake_session_manager_client_;

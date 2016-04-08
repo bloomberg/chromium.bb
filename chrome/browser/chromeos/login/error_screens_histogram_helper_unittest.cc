@@ -21,8 +21,8 @@ class ErrorScreensHistogramHelperTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   base::HistogramTester histograms_;
-  scoped_ptr<ErrorScreensHistogramHelper> helper_;
-  scoped_ptr<ErrorScreensHistogramHelper> second_helper_;
+  std::unique_ptr<ErrorScreensHistogramHelper> helper_;
+  std::unique_ptr<ErrorScreensHistogramHelper> second_helper_;
 };
 
 // No errors when screen was not shown.

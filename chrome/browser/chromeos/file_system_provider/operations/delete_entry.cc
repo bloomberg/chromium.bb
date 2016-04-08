@@ -48,13 +48,13 @@ bool DeleteEntry::Execute(int request_id) {
 }
 
 void DeleteEntry::OnSuccess(int /* request_id */,
-                            scoped_ptr<RequestValue> /* result */,
+                            std::unique_ptr<RequestValue> /* result */,
                             bool has_more) {
   callback_.Run(base::File::FILE_OK);
 }
 
 void DeleteEntry::OnError(int /* request_id */,
-                          scoped_ptr<RequestValue> /* result */,
+                          std::unique_ptr<RequestValue> /* result */,
                           base::File::Error error) {
   callback_.Run(error);
 }

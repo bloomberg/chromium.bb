@@ -25,7 +25,7 @@ namespace policy {
 DeviceLocalAccountPolicyProvider::DeviceLocalAccountPolicyProvider(
     const std::string& user_id,
     DeviceLocalAccountPolicyService* service,
-    scoped_ptr<PolicyMap> chrome_policy_overrides)
+    std::unique_ptr<PolicyMap> chrome_policy_overrides)
     : user_id_(user_id),
       service_(service),
       chrome_policy_overrides_(std::move(chrome_policy_overrides)),
@@ -41,17 +41,17 @@ DeviceLocalAccountPolicyProvider::~DeviceLocalAccountPolicyProvider() {
 }
 
 // static
-scoped_ptr<DeviceLocalAccountPolicyProvider>
+std::unique_ptr<DeviceLocalAccountPolicyProvider>
 DeviceLocalAccountPolicyProvider::Create(
     const std::string& user_id,
     DeviceLocalAccountPolicyService* device_local_account_policy_service) {
   DeviceLocalAccount::Type type;
   if (!device_local_account_policy_service ||
       !IsDeviceLocalAccountUser(user_id, &type)) {
-    return scoped_ptr<DeviceLocalAccountPolicyProvider>();
+    return std::unique_ptr<DeviceLocalAccountPolicyProvider>();
   }
 
-  scoped_ptr<PolicyMap> chrome_policy_overrides;
+  std::unique_ptr<PolicyMap> chrome_policy_overrides;
   if (type == DeviceLocalAccount::TYPE_PUBLIC_SESSION) {
     chrome_policy_overrides.reset(new PolicyMap());
 
@@ -95,7 +95,7 @@ DeviceLocalAccountPolicyProvider::Create(
         NULL);
   }
 
-  scoped_ptr<DeviceLocalAccountPolicyProvider> provider(
+  std::unique_ptr<DeviceLocalAccountPolicyProvider> provider(
       new DeviceLocalAccountPolicyProvider(user_id,
                                            device_local_account_policy_service,
                                            std::move(chrome_policy_overrides)));
@@ -147,7 +147,7 @@ void DeviceLocalAccountPolicyProvider::ReportPolicyRefresh(bool success) {
 
 void DeviceLocalAccountPolicyProvider::UpdateFromBroker() {
   DeviceLocalAccountPolicyBroker* broker = GetBroker();
-  scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
+  std::unique_ptr<PolicyBundle> bundle(new PolicyBundle());
   if (broker) {
     store_initialized_ |= broker->core()->store()->is_initialized();
     if (!waiting_for_policy_refresh_) {

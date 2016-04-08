@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -52,7 +52,7 @@ class JobEventRouter : public drive::JobListObserver {
       const std::string& extension_id,
       extensions::events::HistogramValue histogram_value,
       const std::string& event_name,
-      scoped_ptr<base::ListValue> event_args) = 0;
+      std::unique_ptr<base::ListValue> event_args) = 0;
 
  private:
   // Request sending transfer event with |job_info| and |state|.
@@ -86,7 +86,7 @@ class JobEventRouter : public drive::JobListObserver {
 
   // Job info of pending event. |ScheduleDriveFileTransferEvent| registers
   // timeout callback to dispatch this.
-  scoped_ptr<drive::JobInfo> pending_job_info_;
+  std::unique_ptr<drive::JobInfo> pending_job_info_;
 
   // Transfer state of pending event.
   extensions::api::file_manager_private::TransferState pending_state_;

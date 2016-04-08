@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_CHROMEOS_MOBILE_CONFIG_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
@@ -190,14 +190,14 @@ class MobileConfig : public CustomizationDocument  {
   Carriers carriers_;
 
   // Initial locale specific config if defined.
-  scoped_ptr<LocaleConfig> locale_config_;
+  std::unique_ptr<LocaleConfig> locale_config_;
 
   // Initial locale value.
   std::string initial_locale_;
 
   // Root value of the local config (if it exists).
   // Global config is stored in root_ of the base class.
-  scoped_ptr<base::DictionaryValue> local_config_root_;
+  std::unique_ptr<base::DictionaryValue> local_config_root_;
 
   DISALLOW_COPY_AND_ASSIGN(MobileConfig);
 };

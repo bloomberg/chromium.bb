@@ -51,7 +51,7 @@ class CrashRestoreSimpleTest : public InProcessBrowserTest {
     // Redirect session_manager DBus calls to FakeSessionManagerClient.
     session_manager_client_ = new FakeSessionManagerClient;
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        scoped_ptr<SessionManagerClient>(session_manager_client_));
+        std::unique_ptr<SessionManagerClient>(session_manager_client_));
     session_manager_client_->StartSession(cryptohome_id1_);
   }
 

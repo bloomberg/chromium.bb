@@ -91,7 +91,7 @@ class NetworkStateHelper {
   void OnCreateOrConnectNetworkFailed(
       const base::Closure& error_callback,
       const std::string& error_name,
-      scoped_ptr<base::DictionaryValue> error_data) const;
+      std::unique_ptr<base::DictionaryValue> error_data) const;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateHelper);
 };

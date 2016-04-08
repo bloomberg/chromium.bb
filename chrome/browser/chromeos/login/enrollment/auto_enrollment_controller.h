@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_AUTO_ENROLLMENT_CONTROLLER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_AUTO_ENROLLMENT_CONTROLLER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_list.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
@@ -60,7 +60,7 @@ class AutoEnrollmentController {
   void Retry();
 
   // Registers a callback to invoke on state changes.
-  scoped_ptr<ProgressCallbackList::Subscription> RegisterProgressCallback(
+  std::unique_ptr<ProgressCallbackList::Subscription> RegisterProgressCallback(
       const ProgressCallbackList::CallbackType& callback);
 
   policy::AutoEnrollmentState state() const { return state_; }
@@ -82,7 +82,7 @@ class AutoEnrollmentController {
   policy::AutoEnrollmentState state_;
   ProgressCallbackList progress_callbacks_;
 
-  scoped_ptr<policy::AutoEnrollmentClient> client_;
+  std::unique_ptr<policy::AutoEnrollmentClient> client_;
 
   // This timer acts as a belt-and-suspenders safety for the case where one of
   // the asynchronous steps required to make the auto-enrollment decision

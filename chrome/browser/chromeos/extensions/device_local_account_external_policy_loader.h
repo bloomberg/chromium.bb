@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_DEVICE_LOCAL_ACCOUNT_EXTERNAL_POLICY_LOADER_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_DEVICE_LOCAL_ACCOUNT_EXTERNAL_POLICY_LOADER_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/extensions/external_cache.h"
 #include "chrome/browser/extensions/external_loader.h"
@@ -69,7 +70,7 @@ class DeviceLocalAccountExternalPolicyLoader
 
   policy::CloudPolicyStore* store_;
   const base::FilePath cache_dir_;
-  scoped_ptr<ExternalCache> external_cache_;
+  std::unique_ptr<ExternalCache> external_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountExternalPolicyLoader);
 };

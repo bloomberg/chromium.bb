@@ -74,7 +74,8 @@ class WallpaperPrivateSetWallpaperIfExistsFunction
   void ReadFileAndInitiateStartDecode(const base::FilePath& file_path,
                                       const base::FilePath& fallback_path);
 
-  scoped_ptr<extensions::api::wallpaper_private::SetWallpaperIfExists::Params>
+  std::unique_ptr<
+      extensions::api::wallpaper_private::SetWallpaperIfExists::Params>
       params;
 
   // User id of the active user when this api is been called.
@@ -105,9 +106,10 @@ class WallpaperPrivateSetWallpaperFunction : public WallpaperFunctionBase {
   void SaveToFile();
 
   // Sets wallpaper to the decoded image.
-  void SetDecodedWallpaper(scoped_ptr<gfx::ImageSkia> image);
+  void SetDecodedWallpaper(std::unique_ptr<gfx::ImageSkia> image);
 
-  scoped_ptr<extensions::api::wallpaper_private::SetWallpaper::Params> params;
+  std::unique_ptr<extensions::api::wallpaper_private::SetWallpaper::Params>
+      params;
 
   // The decoded wallpaper. It may accessed from UI thread to set wallpaper or
   // FILE thread to resize and save wallpaper to disk.
@@ -156,12 +158,13 @@ class WallpaperPrivateSetCustomWallpaperFunction
   // Generates thumbnail of custom wallpaper. A simple STRETCH is used for
   // generating thunbail.
   void GenerateThumbnail(const base::FilePath& thumbnail_path,
-                         scoped_ptr<gfx::ImageSkia> image);
+                         std::unique_ptr<gfx::ImageSkia> image);
 
   // Thumbnail is ready. Calls api function javascript callback.
   void ThumbnailGenerated(base::RefCountedBytes* data);
 
-  scoped_ptr<extensions::api::wallpaper_private::SetCustomWallpaper::Params>
+  std::unique_ptr<
+      extensions::api::wallpaper_private::SetCustomWallpaper::Params>
       params;
 
   // User account id of the active user when this api is been called.

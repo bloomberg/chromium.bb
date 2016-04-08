@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/operation.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
@@ -47,10 +48,10 @@ class WriteFile : public Operation {
   // Operation overrides.
   bool Execute(int request_id) override;
   void OnSuccess(int request_id,
-                 scoped_ptr<RequestValue> result,
+                 std::unique_ptr<RequestValue> result,
                  bool has_more) override;
   void OnError(int request_id,
-               scoped_ptr<RequestValue> result,
+               std::unique_ptr<RequestValue> result,
                base::File::Error error) override;
 
  private:

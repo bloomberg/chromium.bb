@@ -38,13 +38,13 @@ KeyboardDrivenEventRewriter::~KeyboardDrivenEventRewriter() {
 
 ui::EventRewriteStatus KeyboardDrivenEventRewriter::RewriteForTesting(
     const ui::Event& event,
-    scoped_ptr<ui::Event>* rewritten_event) {
+    std::unique_ptr<ui::Event>* rewritten_event) {
   return Rewrite(event, rewritten_event);
 }
 
 ui::EventRewriteStatus KeyboardDrivenEventRewriter::RewriteEvent(
     const ui::Event& event,
-    scoped_ptr<ui::Event>* rewritten_event) {
+    std::unique_ptr<ui::Event>* rewritten_event) {
   if (!ShouldStripModifiersForArrowKeysAndEnter())
     return ui::EVENT_REWRITE_CONTINUE;
 
@@ -53,14 +53,14 @@ ui::EventRewriteStatus KeyboardDrivenEventRewriter::RewriteEvent(
 
 ui::EventRewriteStatus KeyboardDrivenEventRewriter::NextDispatchEvent(
     const ui::Event& last_event,
-    scoped_ptr<ui::Event>* new_event) {
+    std::unique_ptr<ui::Event>* new_event) {
   NOTREACHED();
   return ui::EVENT_REWRITE_CONTINUE;
 }
 
 ui::EventRewriteStatus KeyboardDrivenEventRewriter::Rewrite(
     const ui::Event& event,
-    scoped_ptr<ui::Event>* rewritten_event) {
+    std::unique_ptr<ui::Event>* rewritten_event) {
   int flags = event.flags();
   if ((flags & kModifierMask) != kModifierMask)
     return ui::EVENT_REWRITE_CONTINUE;

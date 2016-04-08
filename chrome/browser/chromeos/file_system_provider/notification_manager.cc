@@ -106,7 +106,7 @@ void NotificationManager::OnAppImageUpdated(const std::string& id,
       file_system_info_.mount_path().value(), CreateNotification());
 }
 
-scoped_ptr<message_center::Notification>
+std::unique_ptr<message_center::Notification>
 NotificationManager::CreateNotification() {
   if (!extension_icon_.get())
     icon_loader_->FetchImage(file_system_info_.extension_id());
@@ -122,7 +122,7 @@ NotificationManager::CreateNotification() {
   notifier_id.profile_id =
       multi_user_util::GetAccountIdFromProfile(profile_).GetUserEmail();
 
-  scoped_ptr<message_center::Notification> notification(
+  std::unique_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
           file_system_info_.mount_path().value(),

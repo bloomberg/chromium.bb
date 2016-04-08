@@ -6,11 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
@@ -32,8 +32,9 @@ const char zhuyin_ime_id[] = "zh-hant-t-i0-und";
 
 class TestableInputMethodUtil : public InputMethodUtil {
  public:
-  explicit TestableInputMethodUtil(InputMethodDelegate* delegate,
-                                   scoped_ptr<InputMethodDescriptors> methods)
+  explicit TestableInputMethodUtil(
+      InputMethodDelegate* delegate,
+      std::unique_ptr<InputMethodDescriptors> methods)
       : InputMethodUtil(delegate) {
     ResetInputMethods(*methods);
   }

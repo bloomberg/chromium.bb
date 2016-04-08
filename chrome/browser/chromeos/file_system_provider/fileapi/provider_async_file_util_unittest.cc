@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -13,7 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
@@ -87,7 +88,7 @@ class EventLogger {
   base::File::Error* result() { return result_.get(); }
 
  private:
-  scoped_ptr<base::File::Error> result_;
+  std::unique_ptr<base::File::Error> result_;
   DISALLOW_COPY_AND_ASSIGN(EventLogger);
 };
 
@@ -150,16 +151,17 @@ class FileSystemProviderProviderAsyncFileUtilTest : public testing::Test {
     ASSERT_TRUE(root_url_.is_valid());
   }
 
-  scoped_ptr<storage::FileSystemOperationContext> CreateOperationContext() {
-    return make_scoped_ptr(
+  std::unique_ptr<storage::FileSystemOperationContext>
+  CreateOperationContext() {
+    return base::WrapUnique(
         new storage::FileSystemOperationContext(file_system_context_.get()));
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir data_dir_;
-  scoped_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;  // Owned by TestingProfileManager.
-  scoped_ptr<storage::AsyncFileUtil> async_file_util_;
+  std::unique_ptr<storage::AsyncFileUtil> async_file_util_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   storage::FileSystemURL file_url_;
   storage::FileSystemURL directory_url_;

@@ -48,7 +48,7 @@ void EnsureReadableFilePermissionOnBlockingPool(
 
 bool FileManagerPrivateAddMountFunction::RunAsync() {
   using file_manager_private::AddMount::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
@@ -119,7 +119,7 @@ void FileManagerPrivateAddMountFunction::RunAfterGetDriveFile(
     const base::FilePath& drive_path,
     drive::FileError error,
     const base::FilePath& cache_path,
-    scoped_ptr<drive::ResourceEntry> entry) {
+    std::unique_ptr<drive::ResourceEntry> entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (error != drive::FILE_ERROR_OK) {
@@ -168,7 +168,7 @@ void FileManagerPrivateAddMountFunction::RunAfterMarkCacheFileAsMounted(
 
 bool FileManagerPrivateRemoveMountFunction::RunAsync() {
   using file_manager_private::RemoveMount::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());

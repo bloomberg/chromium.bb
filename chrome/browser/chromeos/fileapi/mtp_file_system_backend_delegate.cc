@@ -29,7 +29,7 @@ storage::AsyncFileUtil* MTPFileSystemBackendDelegate::GetAsyncFileUtil(
   return device_media_async_file_util_.get();
 }
 
-scoped_ptr<storage::FileStreamReader>
+std::unique_ptr<storage::FileStreamReader>
 MTPFileSystemBackendDelegate::CreateFileStreamReader(
     const storage::FileSystemURL& url,
     int64_t offset,
@@ -42,7 +42,7 @@ MTPFileSystemBackendDelegate::CreateFileStreamReader(
       url, offset, expected_modification_time, context);
 }
 
-scoped_ptr<storage::FileStreamWriter>
+std::unique_ptr<storage::FileStreamWriter>
 MTPFileSystemBackendDelegate::CreateFileStreamWriter(
     const storage::FileSystemURL& url,
     int64_t offset,
@@ -50,7 +50,7 @@ MTPFileSystemBackendDelegate::CreateFileStreamWriter(
   DCHECK_EQ(storage::kFileSystemTypeDeviceMediaAsFileStorage, url.type());
 
   // TODO(kinaba): support writing.
-  return scoped_ptr<storage::FileStreamWriter>();
+  return std::unique_ptr<storage::FileStreamWriter>();
 }
 
 storage::WatcherManager* MTPFileSystemBackendDelegate::GetWatcherManager(

@@ -144,7 +144,7 @@ class UserSelectionScreen
   base::OneShotTimer password_clear_timer_;
 
   // Token handler util for checking user OAuth token status.
-  scoped_ptr<TokenHandleUtil> token_handle_util_;
+  std::unique_ptr<TokenHandleUtil> token_handle_util_;
 
   base::WeakPtrFactory<UserSelectionScreen> weak_factory_;
 

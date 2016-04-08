@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/drive_file_stream_reader.h"
@@ -52,10 +53,9 @@ class WebkitFileStreamReaderImpl : public storage::FileStreamReader {
   // Called upon the initialization completion of |stream_reader_|.
   // Processes the result of the initialization with checking last
   // modified time, and calls |callback| with net::Error code as its result.
-  void OnStreamReaderInitialized(
-      const net::CompletionCallback& callback,
-      int error,
-      scoped_ptr<ResourceEntry> entry);
+  void OnStreamReaderInitialized(const net::CompletionCallback& callback,
+                                 int error,
+                                 std::unique_ptr<ResourceEntry> entry);
 
   // Part of Read(). Called after all the initialization process is completed.
   void ReadAfterStreamReaderInitialized(
@@ -70,7 +70,7 @@ class WebkitFileStreamReaderImpl : public storage::FileStreamReader {
       const net::Int64CompletionCallback& callback,
       int initialization_result);
 
-  scoped_ptr<DriveFileStreamReader> stream_reader_;
+  std::unique_ptr<DriveFileStreamReader> stream_reader_;
   const base::FilePath drive_file_path_;
   const int64_t offset_;
   const base::Time expected_modification_time_;

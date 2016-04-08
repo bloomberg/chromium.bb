@@ -7,12 +7,12 @@
 
 #include <cstddef>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"

@@ -107,8 +107,8 @@ class CertVerifyProcChromeOSTest : public testing::Test {
  protected:
   crypto::ScopedTestNSSChromeOSUser user_1_;
   crypto::ScopedTestNSSChromeOSUser user_2_;
-  scoped_ptr<net::NSSCertDatabaseChromeOS> db_1_;
-  scoped_ptr<net::NSSCertDatabaseChromeOS> db_2_;
+  std::unique_ptr<net::NSSCertDatabaseChromeOS> db_1_;
+  std::unique_ptr<net::NSSCertDatabaseChromeOS> db_2_;
   scoped_refptr<net::CertVerifyProc> verify_proc_default_;
   scoped_refptr<net::CertVerifyProc> verify_proc_1_;
   scoped_refptr<net::CertVerifyProc> verify_proc_2_;

@@ -113,7 +113,7 @@ void DeviceOAuth2TokenService::FlushPendingRequests(
   for (std::vector<PendingRequest*>::iterator request(requests.begin());
        request != requests.end();
        ++request) {
-    scoped_ptr<PendingRequest> scoped_request(*request);
+    std::unique_ptr<PendingRequest> scoped_request(*request);
     if (!scoped_request->request)
       continue;
 

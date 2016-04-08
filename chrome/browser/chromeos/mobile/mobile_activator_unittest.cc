@@ -290,7 +290,7 @@ void FakeRequestCellularActivationFailure(
     const NetworkState* network,
     const base::Closure& success_callback,
     const network_handler::ErrorCallback& error_callback) {
-  scoped_ptr<base::DictionaryValue> value;
+  std::unique_ptr<base::DictionaryValue> value;
   error_callback.Run("", std::move(value));
 }
 

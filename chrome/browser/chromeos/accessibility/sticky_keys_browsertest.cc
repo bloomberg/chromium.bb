@@ -59,7 +59,7 @@ class StickyKeysBrowserTest : public InProcessBrowserTest {
   }
 
   content::NotificationRegistrar registrar_;
-  scoped_ptr<ui::test::EventGenerator> event_generator_;
+  std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(StickyKeysBrowserTest);
 };

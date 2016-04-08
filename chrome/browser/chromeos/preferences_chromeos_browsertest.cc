@@ -178,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
 
   // Check that changing prefs of the active user doesn't affect prefs of the
   // inactive user.
-  scoped_ptr<base::DictionaryValue> prefs_backup =
+  std::unique_ptr<base::DictionaryValue> prefs_backup =
       prefs1->GetPreferenceValues();
   SetPrefs(prefs2, false);
   CheckSettingsCorrespondToPrefs(prefs2);

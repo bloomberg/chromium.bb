@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_SIMPLE_WEB_VIEW_DIALOG_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UI_SIMPLE_WEB_VIEW_DIALOG_H_
 
+#include <memory>
 #include <string>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/command_updater_delegate.h"
 #include "chrome/browser/ui/toolbar/chrome_toolbar_model_delegate.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -102,8 +103,8 @@ class SimpleWebViewDialog : public views::ButtonListener,
   void UpdateReload(bool is_loading, bool force);
 
   Profile* profile_;
-  scoped_ptr<ToolbarModel> toolbar_model_;
-  scoped_ptr<CommandUpdater> command_updater_;
+  std::unique_ptr<ToolbarModel> toolbar_model_;
+  std::unique_ptr<CommandUpdater> command_updater_;
 
   // Controls
   views::ImageButton* back_;
@@ -113,9 +114,9 @@ class SimpleWebViewDialog : public views::ButtonListener,
   views::WebView* web_view_;
 
   // Contains |web_view_| while it isn't owned by the view.
-  scoped_ptr<views::WebView> web_view_container_;
+  std::unique_ptr<views::WebView> web_view_container_;
 
-  scoped_ptr<StubBubbleModelDelegate> bubble_model_delegate_;
+  std::unique_ptr<StubBubbleModelDelegate> bubble_model_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleWebViewDialog);
 };

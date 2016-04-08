@@ -57,7 +57,7 @@ void UpdateDict(base::DictionaryValue* dict,
                 const char* pref_path,
                 bool set_or_clear,
                 base::Value* value) {
-  scoped_ptr<base::Value> scoped_value(value);
+  std::unique_ptr<base::Value> scoped_value(value);
   if (set_or_clear)
     dict->Set(pref_path, scoped_value.release());
   else

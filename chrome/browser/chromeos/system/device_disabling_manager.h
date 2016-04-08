@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_DEVICE_DISABLING_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_DEVICE_DISABLING_MANAGER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -121,8 +121,10 @@ class DeviceDisablingManager {
 
   base::ObserverList<Observer> observers_;
 
-  scoped_ptr<CrosSettings::ObserverSubscription> device_disabled_subscription_;
-  scoped_ptr<CrosSettings::ObserverSubscription> disabled_message_subscription_;
+  std::unique_ptr<CrosSettings::ObserverSubscription>
+      device_disabled_subscription_;
+  std::unique_ptr<CrosSettings::ObserverSubscription>
+      disabled_message_subscription_;
 
   // Indicates whether the device was disabled when the cros settings were last
   // read.

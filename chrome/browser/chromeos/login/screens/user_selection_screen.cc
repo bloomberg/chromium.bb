@@ -80,7 +80,7 @@ void AddPublicSessionDetailsToUserDictionaryEntry(
 
   // Construct the list of available locales. This list consists of the
   // recommended locales, followed by all others.
-  scoped_ptr<base::ListValue> available_locales =
+  std::unique_ptr<base::ListValue> available_locales =
       GetUILanguageList(&recommended_locales, std::string());
 
   // Select the the first recommended locale that is actually available or the
@@ -473,7 +473,8 @@ void UserSelectionScreen::ShowUserPodCustomIcon(
     const AccountId& account_id,
     const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions&
         icon_options) {
-  scoped_ptr<base::DictionaryValue> icon = icon_options.ToDictionaryValue();
+  std::unique_ptr<base::DictionaryValue> icon =
+      icon_options.ToDictionaryValue();
   if (!icon || icon->empty())
     return;
   view_->ShowUserPodCustomIcon(account_id, *icon);

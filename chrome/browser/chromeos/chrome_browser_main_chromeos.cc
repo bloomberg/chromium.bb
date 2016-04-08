@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 
 #include <stddef.h>
+
 #include <string>
 #include <utility>
 #include <vector>
@@ -18,6 +19,7 @@
 #include "base/lazy_instance.h"
 #include "base/linux_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -219,13 +221,13 @@ class DBusServices {
 
     ScopedVector<CrosDBusService::ServiceProviderInterface> service_providers;
     service_providers.push_back(ProxyResolutionServiceProvider::Create(
-        make_scoped_ptr(new ChromeProxyResolverDelegate())));
+        base::WrapUnique(new ChromeProxyResolverDelegate())));
     service_providers.push_back(new DisplayPowerServiceProvider(
-        make_scoped_ptr(new ChromeDisplayPowerServiceProviderDelegate)));
+        base::WrapUnique(new ChromeDisplayPowerServiceProviderDelegate)));
     service_providers.push_back(new LivenessServiceProvider);
     service_providers.push_back(new ScreenLockServiceProvider);
     service_providers.push_back(new ConsoleServiceProvider(
-        make_scoped_ptr(new ChromeConsoleServiceProviderDelegate)));
+        base::WrapUnique(new ChromeConsoleServiceProviderDelegate)));
     service_providers.push_back(new KioskInfoService);
     CrosDBusService::Initialize(std::move(service_providers));
 
@@ -288,7 +290,7 @@ class DBusServices {
   }
 
  private:
-  scoped_ptr<NetworkConnectDelegateChromeOS> network_connect_delegate_;
+  std::unique_ptr<NetworkConnectDelegateChromeOS> network_connect_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusServices);
 };
@@ -401,7 +403,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
       new AudioDevicesPrefHandlerImpl(g_browser_process->local_state()));
 
   quirks::QuirksManager::Initialize(
-      scoped_ptr<quirks::QuirksManager::Delegate>(
+      std::unique_ptr<quirks::QuirksManager::Delegate>(
           new quirks::QuirksManagerDelegateImpl()),
       content::BrowserThread::GetBlockingPool(),
       g_browser_process->local_state(),
@@ -559,15 +561,16 @@ class GuestLanguageSetCallbackData {
   }
 
   // Must match SwitchLanguageCallback type.
-  static void Callback(const scoped_ptr<GuestLanguageSetCallbackData>& self,
-                       const locale_util::LanguageSwitchResult& result);
+  static void Callback(
+      const std::unique_ptr<GuestLanguageSetCallbackData>& self,
+      const locale_util::LanguageSwitchResult& result);
 
   Profile* profile;
 };
 
 // static
 void GuestLanguageSetCallbackData::Callback(
-    const scoped_ptr<GuestLanguageSetCallbackData>& self,
+    const std::unique_ptr<GuestLanguageSetCallbackData>& self,
     const locale_util::LanguageSwitchResult& result) {
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
@@ -607,7 +610,7 @@ void GuestLanguageSetCallbackData::Callback(
 }
 
 void SetGuestLocale(Profile* const profile) {
-  scoped_ptr<GuestLanguageSetCallbackData> data(
+  std::unique_ptr<GuestLanguageSetCallbackData> data(
       new GuestLanguageSetCallbackData(profile));
   locale_util::SwitchLanguageCallback callback(base::Bind(
       &GuestLanguageSetCallbackData::Callback, base::Passed(std::move(data))));
@@ -675,7 +678,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   peripheral_battery_observer_.reset(new PeripheralBatteryObserver());
 
   renderer_freezer_.reset(
-      new RendererFreezer(scoped_ptr<RendererFreezer::Delegate>(
+      new RendererFreezer(std::unique_ptr<RendererFreezer::Delegate>(
           new FreezerCgroupProcessManager())));
 
   g_browser_process->platform_part()->InitializeAutomaticRebootManager();
@@ -742,11 +745,11 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
 
     keyboard_event_rewriters_.reset(new EventRewriterController());
     keyboard_event_rewriters_->AddEventRewriter(
-        scoped_ptr<ui::EventRewriter>(new KeyboardDrivenEventRewriter()));
+        std::unique_ptr<ui::EventRewriter>(new KeyboardDrivenEventRewriter()));
     keyboard_event_rewriters_->AddEventRewriter(
-        scoped_ptr<ui::EventRewriter>(new SpokenFeedbackEventRewriter()));
+        std::unique_ptr<ui::EventRewriter>(new SpokenFeedbackEventRewriter()));
     keyboard_event_rewriters_->AddEventRewriter(
-        scoped_ptr<ui::EventRewriter>(new EventRewriter(
+        std::unique_ptr<ui::EventRewriter>(new EventRewriter(
             ash::Shell::GetInstance()->sticky_keys_controller())));
     keyboard_event_rewriters_->Init();
   }

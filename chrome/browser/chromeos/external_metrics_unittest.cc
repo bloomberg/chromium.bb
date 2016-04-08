@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/external_metrics.h"
+
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/test/histogram_tester.h"
-#include "chrome/browser/chromeos/external_metrics.h"
 #include "components/metrics/serialization/metric_sample.h"
 #include "components/metrics/serialization/serialization_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -38,7 +40,7 @@ TEST_F(ExternalMetricsTest, HandleMissingFile) {
 TEST_F(ExternalMetricsTest, CanReceiveHistogram) {
   base::HistogramTester histogram_tester;
 
-  scoped_ptr<metrics::MetricSample> hist =
+  std::unique_ptr<metrics::MetricSample> hist =
       metrics::MetricSample::HistogramSample("foo", 2, 1, 100, 10);
 
   EXPECT_TRUE(metrics::SerializationUtils::WriteMetricToFile(
@@ -53,7 +55,7 @@ TEST_F(ExternalMetricsTest, IncorrectHistogramsAreDiscarded) {
   base::HistogramTester histogram_tester;
 
   // Malformed histogram (min > max).
-  scoped_ptr<metrics::MetricSample> hist =
+  std::unique_ptr<metrics::MetricSample> hist =
       metrics::MetricSample::HistogramSample("bar", 30, 200, 20, 10);
 
   EXPECT_TRUE(metrics::SerializationUtils::WriteMetricToFile(

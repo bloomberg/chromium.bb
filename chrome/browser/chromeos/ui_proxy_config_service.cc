@@ -4,8 +4,9 @@
 
 #include "chrome/browser/chromeos/ui_proxy_config_service.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/net/proxy_config_handler.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
@@ -44,9 +45,9 @@ bool GetProxyConfig(const PrefService* profile_prefs,
                     const NetworkState& network,
                     net::ProxyConfig* proxy_config,
                     onc::ONCSource* onc_source) {
-  scoped_ptr<ProxyConfigDictionary> proxy_dict =
-      proxy_config::GetProxyConfigForNetwork(
-          profile_prefs, local_state_prefs, network, onc_source);
+  std::unique_ptr<ProxyConfigDictionary> proxy_dict =
+      proxy_config::GetProxyConfigForNetwork(profile_prefs, local_state_prefs,
+                                             network, onc_source);
   if (!proxy_dict)
     return false;
   return PrefProxyConfigTrackerImpl::PrefConfigToNetConfig(*proxy_dict,
@@ -120,7 +121,7 @@ void UIProxyConfigService::SetProxyConfig(const UIProxyConfig& config) {
   }
 
   // Store config for this network.
-  scoped_ptr<base::DictionaryValue> proxy_config_value(
+  std::unique_ptr<base::DictionaryValue> proxy_config_value(
       config.ToPrefProxyConfig());
   ProxyConfigDictionary proxy_config_dict(proxy_config_value.get());
 

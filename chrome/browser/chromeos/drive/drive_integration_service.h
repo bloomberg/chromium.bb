@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_INTEGRATION_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_INTEGRATION_SERVICE_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -169,24 +170,25 @@ class DriveIntegrationService : public KeyedService,
   std::string mount_point_name_;
 
   base::FilePath cache_root_directory_;
-  scoped_ptr<EventLogger> logger_;
+  std::unique_ptr<EventLogger> logger_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
-  scoped_ptr<internal::ResourceMetadataStorage,
-             util::DestroyHelper> metadata_storage_;
-  scoped_ptr<internal::FileCache, util::DestroyHelper> cache_;
-  scoped_ptr<DriveServiceInterface> drive_service_;
-  scoped_ptr<JobScheduler> scheduler_;
-  scoped_ptr<DriveAppRegistry> drive_app_registry_;
-  scoped_ptr<internal::ResourceMetadata,
-             util::DestroyHelper> resource_metadata_;
-  scoped_ptr<FileSystemInterface> file_system_;
-  scoped_ptr<DownloadHandler> download_handler_;
-  scoped_ptr<DebugInfoCollector> debug_info_collector_;
+  std::unique_ptr<internal::ResourceMetadataStorage, util::DestroyHelper>
+      metadata_storage_;
+  std::unique_ptr<internal::FileCache, util::DestroyHelper> cache_;
+  std::unique_ptr<DriveServiceInterface> drive_service_;
+  std::unique_ptr<JobScheduler> scheduler_;
+  std::unique_ptr<DriveAppRegistry> drive_app_registry_;
+  std::unique_ptr<internal::ResourceMetadata, util::DestroyHelper>
+      resource_metadata_;
+  std::unique_ptr<FileSystemInterface> file_system_;
+  std::unique_ptr<DownloadHandler> download_handler_;
+  std::unique_ptr<DebugInfoCollector> debug_info_collector_;
 
   base::ObserverList<DriveIntegrationServiceObserver> observers_;
-  scoped_ptr<PreferenceWatcher> preference_watcher_;
-  scoped_ptr<content::NotificationRegistrar> profile_notification_registrar_;
+  std::unique_ptr<PreferenceWatcher> preference_watcher_;
+  std::unique_ptr<content::NotificationRegistrar>
+      profile_notification_registrar_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

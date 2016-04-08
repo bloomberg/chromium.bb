@@ -77,7 +77,8 @@ void ImportNetworksForUser(const user_manager::User* user,
                            std::string* error) {
   error->clear();
 
-  scoped_ptr<base::ListValue> expanded_networks(network_configs.DeepCopy());
+  std::unique_ptr<base::ListValue> expanded_networks(
+      network_configs.DeepCopy());
   ExpandStringPlaceholdersInNetworksForUser(user, expanded_networks.get());
 
   const NetworkProfile* profile =
@@ -98,17 +99,17 @@ void ImportNetworksForUser(const user_manager::User* user,
 
     // Remove irrelevant fields.
     onc::Normalizer normalizer(true /* remove recommended fields */);
-    scoped_ptr<base::DictionaryValue> normalized_network =
+    std::unique_ptr<base::DictionaryValue> normalized_network =
         normalizer.NormalizeObject(&onc::kNetworkConfigurationSignature,
                                    *network);
 
     // TODO(pneubeck): Use ONC and ManagedNetworkConfigurationHandler instead.
     // crbug.com/457936
-    scoped_ptr<base::DictionaryValue> shill_dict =
+    std::unique_ptr<base::DictionaryValue> shill_dict =
         onc::TranslateONCObjectToShill(&onc::kNetworkConfigurationSignature,
                                        *normalized_network);
 
-    scoped_ptr<NetworkUIData> ui_data(
+    std::unique_ptr<NetworkUIData> ui_data(
         NetworkUIData::CreateFromONC(::onc::ONC_SOURCE_USER_IMPORT));
     base::DictionaryValue ui_data_dict;
     ui_data->FillDictionary(&ui_data_dict);

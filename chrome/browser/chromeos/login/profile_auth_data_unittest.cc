@@ -4,13 +4,14 @@
 
 #include "chrome/browser/chromeos/login/profile_auth_data.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -75,14 +76,15 @@ class ProfileAuthDataTest : public testing::Test {
   void VerifyUserChannelID(crypto::ECPrivateKey* expected_key);
 
  protected:
-  scoped_ptr<crypto::ECPrivateKey> channel_id_key1_;
-  scoped_ptr<crypto::ECPrivateKey> channel_id_key2_;
+  std::unique_ptr<crypto::ECPrivateKey> channel_id_key1_;
+  std::unique_ptr<crypto::ECPrivateKey> channel_id_key2_;
 
  private:
-  void PopulateBrowserContext(content::BrowserContext* browser_context,
-                              const std::string& proxy_auth_password,
-                              const std::string& cookie_value,
-                              scoped_ptr<crypto::ECPrivateKey> channel_id_key);
+  void PopulateBrowserContext(
+      content::BrowserContext* browser_context,
+      const std::string& proxy_auth_password,
+      const std::string& cookie_value,
+      std::unique_ptr<crypto::ECPrivateKey> channel_id_key);
 
   net::URLRequestContext* GetRequestContext(
       content::BrowserContext* browser_context);
@@ -103,7 +105,7 @@ class ProfileAuthDataTest : public testing::Test {
   net::CookieList user_cookie_list_;
   net::ChannelIDStore::ChannelIDList user_channel_id_list_;
 
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 };
 
 void ProfileAuthDataTest::SetUp() {
@@ -111,13 +113,13 @@ void ProfileAuthDataTest::SetUp() {
   channel_id_key2_.reset(crypto::ECPrivateKey::Create());
   PopulateBrowserContext(&login_browser_context_, kProxyAuthPassword1,
                          kCookieValue1,
-                         make_scoped_ptr(channel_id_key1_->Copy()));
+                         base::WrapUnique(channel_id_key1_->Copy()));
 }
 
 void ProfileAuthDataTest::PopulateUserBrowserContext() {
   PopulateBrowserContext(&user_browser_context_, kProxyAuthPassword2,
                          kCookieValue2,
-                         make_scoped_ptr(channel_id_key2_->Copy()));
+                         base::WrapUnique(channel_id_key2_->Copy()));
 }
 
 void ProfileAuthDataTest::Transfer(
@@ -201,7 +203,7 @@ void ProfileAuthDataTest::PopulateBrowserContext(
     content::BrowserContext* browser_context,
     const std::string& proxy_auth_password,
     const std::string& cookie_value,
-    scoped_ptr<crypto::ECPrivateKey> channel_id_key) {
+    std::unique_ptr<crypto::ECPrivateKey> channel_id_key) {
   GetProxyAuth(browser_context)->Add(
       GURL(kProxyAuthURL),
       kProxyAuthRealm,
@@ -230,7 +232,7 @@ void ProfileAuthDataTest::PopulateBrowserContext(
       net::CookieStore::SetCookiesCallback());
 
   GetChannelIDs(browser_context)
-      ->SetChannelID(make_scoped_ptr(new net::ChannelIDStore::ChannelID(
+      ->SetChannelID(base::WrapUnique(new net::ChannelIDStore::ChannelID(
           kChannelIDServerIdentifier, base::Time(),
           std::move(channel_id_key))));
 }

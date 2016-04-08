@@ -86,7 +86,8 @@ class DataPromoNotificationTest : public testing::Test {
 
  protected:
   void SetupUser() {
-    scoped_ptr<FakeChromeUserManager> user_manager(new FakeChromeUserManager());
+    std::unique_ptr<FakeChromeUserManager> user_manager(
+        new FakeChromeUserManager());
     const AccountId test_account_id(AccountId::FromUserEmail(kTestUserName));
     user_manager->AddUser(test_account_id);
     user_manager->LoginUser(test_account_id);
@@ -134,10 +135,10 @@ class DataPromoNotificationTest : public testing::Test {
                                      base::FundamentalValue(true));
   }
 
-  scoped_ptr<DataPromoNotification> data_promo_notification_;
-  scoped_ptr<NetworkConnectTestDelegate> network_connect_delegate_;
-  scoped_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
-  scoped_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<DataPromoNotification> data_promo_notification_;
+  std::unique_ptr<NetworkConnectTestDelegate> network_connect_delegate_;
+  std::unique_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
   base::MessageLoop message_loop_;
 
  private:

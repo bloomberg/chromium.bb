@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/app_mode/kiosk_app_update_service.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -16,7 +17,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -151,11 +151,11 @@ class KioskAppUpdateServiceTest
 
  private:
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<base::ScopedPathOverride> uptime_file_override_;
+  std::unique_ptr<base::ScopedPathOverride> uptime_file_override_;
   const extensions::Extension* app_;  // Not owned.
   KioskAppUpdateService* update_service_;  // Not owned.
   system::AutomaticRebootManager* automatic_reboot_manager_;  // Not owned.
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppUpdateServiceTest);
 };

@@ -167,7 +167,7 @@ void BootstrapUserContextInitializer::OnRefreshTokenResponse(
 }
 
 void BootstrapUserContextInitializer::OnGetUserInfoResponse(
-    scoped_ptr<base::DictionaryValue> user_info) {
+    std::unique_ptr<base::DictionaryValue> user_info) {
   std::string email;
   std::string gaia_id;
   if (!user_info->GetString("email", &email) ||

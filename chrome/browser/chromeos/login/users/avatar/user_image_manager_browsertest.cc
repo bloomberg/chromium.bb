@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
+
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -17,7 +20,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -27,7 +29,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_test_util.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -272,9 +273,9 @@ class UserImageManagerTest : public LoginManagerTest,
 
   PrefService* local_state_;
 
-  scoped_ptr<gfx::ImageSkia> decoded_image_;
+  std::unique_ptr<gfx::ImageSkia> decoded_image_;
 
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   const AccountId test_account_id1_ = AccountId::FromUserEmail(kTestUser1);
   const AccountId test_account_id2_ = AccountId::FromUserEmail(kTestUser2);
@@ -381,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImage) {
                       user_manager::User::USER_IMAGE_EXTERNAL,
                       GetUserImagePath(test_account_id1_, "jpg"));
 
-  const scoped_ptr<gfx::ImageSkia> saved_image =
+  const std::unique_ptr<gfx::ImageSkia> saved_image =
       test::ImageLoader(GetUserImagePath(test_account_id1_, "jpg")).Load();
   ASSERT_TRUE(saved_image);
 
@@ -403,7 +404,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromFile) {
 
   const base::FilePath custom_image_path =
       test_data_dir_.Append(test::kUserAvatarImage1RelativePath);
-  const scoped_ptr<gfx::ImageSkia> custom_image =
+  const std::unique_ptr<gfx::ImageSkia> custom_image =
       test::ImageLoader(custom_image_path).Load();
   ASSERT_TRUE(custom_image);
 
@@ -420,7 +421,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromFile) {
                       user_manager::User::USER_IMAGE_EXTERNAL,
                       GetUserImagePath(test_account_id1_, "jpg"));
 
-  const scoped_ptr<gfx::ImageSkia> saved_image =
+  const std::unique_ptr<gfx::ImageSkia> saved_image =
       test::ImageLoader(GetUserImagePath(test_account_id1_, "jpg")).Load();
   ASSERT_TRUE(saved_image);
 
@@ -466,7 +467,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromProfileImage) {
   ExpectUserImageInfo(test_account_id1_, user_manager::User::USER_IMAGE_PROFILE,
                       GetUserImagePath(test_account_id1_, "jpg"));
 
-  const scoped_ptr<gfx::ImageSkia> saved_image =
+  const std::unique_ptr<gfx::ImageSkia> saved_image =
       test::ImageLoader(GetUserImagePath(test_account_id1_, "jpg")).Load();
   ASSERT_TRUE(saved_image);
 
@@ -531,7 +532,7 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
   // UserImageManagerTest overrides:
   void SetUpInProcessBrowserTestFixture() override {
     DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        scoped_ptr<SessionManagerClient>(fake_session_manager_client_));
+        std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
     UserImageManagerTest::SetUpInProcessBrowserTestFixture();
   }
 
@@ -592,7 +593,7 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
   policy::UserPolicyBuilder user_policy_;
   FakeSessionManagerClient* fake_session_manager_client_;
 
-  scoped_ptr<gfx::ImageSkia> policy_image_;
+  std::unique_ptr<gfx::ImageSkia> policy_image_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UserImageManagerPolicyTest);
@@ -636,7 +637,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
                       user_manager::User::USER_IMAGE_EXTERNAL,
                       GetUserImagePath(enterprise_account_id_, "jpg"));
 
-  scoped_ptr<gfx::ImageSkia> saved_image =
+  std::unique_ptr<gfx::ImageSkia> saved_image =
       test::ImageLoader(GetUserImagePath(enterprise_account_id_, "jpg")).Load();
   ASSERT_TRUE(saved_image);
 
@@ -743,7 +744,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PolicyOverridesUser) {
                       user_manager::User::USER_IMAGE_EXTERNAL,
                       GetUserImagePath(enterprise_account_id_, "jpg"));
 
-  scoped_ptr<gfx::ImageSkia> saved_image =
+  std::unique_ptr<gfx::ImageSkia> saved_image =
       test::ImageLoader(GetUserImagePath(enterprise_account_id_, "jpg")).Load();
   ASSERT_TRUE(saved_image);
 
@@ -790,7 +791,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, UserDoesNotOverridePolicy) {
                       user_manager::User::USER_IMAGE_EXTERNAL,
                       GetUserImagePath(enterprise_account_id_, "jpg"));
 
-  scoped_ptr<gfx::ImageSkia> saved_image =
+  std::unique_ptr<gfx::ImageSkia> saved_image =
       test::ImageLoader(GetUserImagePath(enterprise_account_id_, "jpg")).Load();
   ASSERT_TRUE(saved_image);
 

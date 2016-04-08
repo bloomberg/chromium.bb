@@ -4,8 +4,9 @@
 
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 
+#include <memory>
+
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller_delegate.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
@@ -161,7 +162,7 @@ void MultiProfileUserController::StartObserving(Profile* user_profile) {
   if (user_profile->GetProfileUserName().empty())
     return;
 
-  scoped_ptr<PrefChangeRegistrar> registrar(new PrefChangeRegistrar);
+  std::unique_ptr<PrefChangeRegistrar> registrar(new PrefChangeRegistrar);
   registrar->Init(user_profile->GetPrefs());
   registrar->Add(
       prefs::kMultiProfileUserBehavior,

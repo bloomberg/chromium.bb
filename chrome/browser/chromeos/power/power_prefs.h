@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_POWER_PREFS_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_POWER_PREFS_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -58,7 +59,7 @@ class PowerPrefs : public content::NotificationObserver {
   content::NotificationRegistrar notification_registrar_;
 
   Profile* profile_;  // Not owned.
-  scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   // True while the screen is locked (but not while the login screen is shown).
   bool screen_is_locked_;

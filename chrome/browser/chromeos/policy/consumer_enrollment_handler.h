@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_CONSUMER_ENROLLMENT_HANDLER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_CONSUMER_ENROLLMENT_HANDLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -75,7 +75,7 @@ class ConsumerEnrollmentHandler
   DeviceManagementService* device_management_service_;
   std::string gaia_account_id_;
 
-  scoped_ptr<OAuth2TokenService::Request> token_request_;
+  std::unique_ptr<OAuth2TokenService::Request> token_request_;
   base::WeakPtrFactory<ConsumerEnrollmentHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ConsumerEnrollmentHandler);

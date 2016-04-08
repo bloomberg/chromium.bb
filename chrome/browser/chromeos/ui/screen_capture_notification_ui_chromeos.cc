@@ -30,8 +30,8 @@ gfx::NativeViewId ScreenCaptureNotificationUIChromeOS::OnStarted(
 }  // namespace chromeos
 
 // static
-scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
-    const base::string16& text) {
-  return scoped_ptr<ScreenCaptureNotificationUI>(
+std::unique_ptr<ScreenCaptureNotificationUI>
+ScreenCaptureNotificationUI::Create(const base::string16& text) {
+  return std::unique_ptr<ScreenCaptureNotificationUI>(
       new chromeos::ScreenCaptureNotificationUIChromeOS(text));
 }

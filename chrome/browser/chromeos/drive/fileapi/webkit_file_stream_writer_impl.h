@@ -7,11 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/fileapi/file_stream_writer.h"
 
@@ -69,7 +70,7 @@ class WebkitFileStreamWriterImpl : public storage::FileStreamWriter {
   const base::FilePath file_path_;
   const int64_t offset_;
 
-  scoped_ptr<storage::FileStreamWriter> local_file_writer_;
+  std::unique_ptr<storage::FileStreamWriter> local_file_writer_;
   base::Closure close_callback_on_ui_thread_;
   net::CompletionCallback pending_write_callback_;
   net::CompletionCallback pending_cancel_callback_;

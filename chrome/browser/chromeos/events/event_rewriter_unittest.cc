@@ -78,7 +78,7 @@ std::string GetRewrittenEventAsString(chromeos::EventRewriter* rewriter,
                                       ui::DomKey key) {
   const ui::KeyEvent event(ui_type, ui_keycode, code, ui_flags, key,
                            ui::EventTimeForNow());
-  scoped_ptr<ui::Event> new_event;
+  std::unique_ptr<ui::Event> new_event;
   rewriter->RewriteEvent(event, &new_event);
   if (new_event)
     return GetKeyEventAsString(*new_event->AsKeyEvent());
@@ -146,7 +146,7 @@ class EventRewriterTest : public ash::test::AshTestBase {
   const ui::MouseEvent* RewriteMouseButtonEvent(
       chromeos::EventRewriter* rewriter,
       const ui::MouseEvent& event,
-      scoped_ptr<ui::Event>* new_event) {
+      std::unique_ptr<ui::Event>* new_event) {
     rewriter->RewriteMouseButtonEventForTesting(event, new_event);
     return *new_event ? new_event->get()->AsMouseEvent() : &event;
   }
@@ -1822,7 +1822,7 @@ TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
     ui::KeyEvent keyevent(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL,
                           ui::DomCode::CONTROL_LEFT, ui::EF_FINAL,
                           ui::DomKey::CONTROL, ui::EventTimeForNow());
-    scoped_ptr<ui::Event> new_event;
+    std::unique_ptr<ui::Event> new_event;
     // Control should NOT be remapped to Alt if EF_FINAL is set.
     EXPECT_EQ(ui::EVENT_REWRITE_CONTINUE,
               rewriter.RewriteEvent(keyevent, &new_event));
@@ -1837,7 +1837,7 @@ TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
     xevent->xkey.keycode = XKeysymToKeycode(gfx::GetXDisplay(), XK_Control_L);
     xevent->xkey.send_event = True;  // XSendEvent() always does this.
     ui::KeyEvent keyevent(xev);
-    scoped_ptr<ui::Event> new_event;
+    std::unique_ptr<ui::Event> new_event;
     // Control should NOT be remapped to Alt if send_event
     // flag in the event is True.
     EXPECT_EQ(ui::EVENT_REWRITE_CONTINUE,
@@ -1868,7 +1868,7 @@ TEST_F(EventRewriterTest, TestRewriteNonNativeEvent) {
   ui::UpdateX11EventForFlags(&press);
 #endif
 
-  scoped_ptr<ui::Event> new_event;
+  std::unique_ptr<ui::Event> new_event;
   rewriter.RewriteEvent(press, &new_event);
   EXPECT_TRUE(new_event);
   // Control should be remapped to Alt.
@@ -1923,7 +1923,7 @@ class EventRewriterAshTest : public ash::test::AshTestBase {
   ~EventRewriterAshTest() override {}
 
   bool RewriteFunctionKeys(const ui::Event& event,
-                           scoped_ptr<ui::Event>* rewritten_event) {
+                           std::unique_ptr<ui::Event>* rewritten_event) {
     return rewriter_->RewriteEvent(event, rewritten_event);
   }
 
@@ -1976,7 +1976,7 @@ class EventRewriterAshTest : public ash::test::AshTestBase {
   ash::StickyKeysController* sticky_keys_controller_;
 
  private:
-  scoped_ptr<EventRewriter> rewriter_;
+  std::unique_ptr<EventRewriter> rewriter_;
 
   EventBuffer buffer_;
   TestEventSource source_;
@@ -1989,7 +1989,7 @@ class EventRewriterAshTest : public ash::test::AshTestBase {
 };
 
 TEST_F(EventRewriterAshTest, TopRowKeysAreFunctionKeys) {
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(1));
   ash::wm::WindowState* window_state = ash::wm::GetWindowState(window.get());
   window_state->Activate();
   ScopedVector<ui::Event> events;
@@ -2064,7 +2064,7 @@ TEST_F(EventRewriterTest, TestRewrittenModifierClick) {
   // Sanity check.
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, press.type());
   EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON | ui::EF_CONTROL_DOWN, press.flags());
-  scoped_ptr<ui::Event> new_event;
+  std::unique_ptr<ui::Event> new_event;
   const ui::MouseEvent* result =
       RewriteMouseButtonEvent(&rewriter, press, &new_event);
   EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
@@ -2099,7 +2099,7 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     // Sanity check.
     EXPECT_EQ(ui::ET_MOUSE_PRESSED, press.type());
     EXPECT_EQ(kLeftAndAltFlag, press.flags());
-    scoped_ptr<ui::Event> new_event;
+    std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, press, &new_event);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
@@ -2112,7 +2112,7 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
                            ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_release(&release);
     test_release.set_source_device_id(10);
-    scoped_ptr<ui::Event> new_event;
+    std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, release, &new_event);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
@@ -2129,7 +2129,7 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     // Sanity check.
     EXPECT_EQ(ui::ET_MOUSE_PRESSED, press.type());
     EXPECT_EQ(kLeftAndAltFlag, press.flags());
-    scoped_ptr<ui::Event> new_event;
+    std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, press, &new_event);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
@@ -2141,7 +2141,7 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     xev.InitGenericButtonEvent(10, ui::ET_MOUSE_RELEASED, gfx::Point(),
                                kLeftAndAltFlag);
     ui::MouseEvent release(xev);
-    scoped_ptr<ui::Event> new_event;
+    std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, release, &new_event);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
@@ -2157,7 +2157,7 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
                          ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_press(&press);
     test_press.set_source_device_id(10);
-    scoped_ptr<ui::Event> new_event;
+    std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, press, &new_event);
     EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & result->flags());
@@ -2169,7 +2169,7 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
                            ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_release(&release);
     test_release.set_source_device_id(10);
-    scoped_ptr<ui::Event> new_event;
+    std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, release, &new_event);
     EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) & result->flags());
@@ -2182,7 +2182,7 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     xev.InitGenericButtonEvent(10, ui::ET_MOUSE_PRESSED, gfx::Point(),
                                ui::EF_LEFT_MOUSE_BUTTON);
     ui::MouseEvent press(xev);
-    scoped_ptr<ui::Event> new_event;
+    std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, press, &new_event);
     EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & result->flags());
@@ -2193,7 +2193,7 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     xev.InitGenericButtonEvent(10, ui::ET_MOUSE_RELEASED, gfx::Point(),
                                kLeftAndAltFlag);
     ui::MouseEvent release(xev);
-    scoped_ptr<ui::Event> new_event;
+    std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, release, &new_event);
     EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) & result->flags());
@@ -2208,7 +2208,7 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
                          ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_press(&press);
     test_press.set_source_device_id(11);
-    scoped_ptr<ui::Event> new_event;
+    std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, press, &new_event);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
@@ -2221,7 +2221,7 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
                            ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_release(&release);
     test_release.set_source_device_id(10);
-    scoped_ptr<ui::Event> new_event;
+    std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, release, &new_event);
     EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) & result->flags());
@@ -2233,7 +2233,7 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
                            ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_release(&release);
     test_release.set_source_device_id(11);
-    scoped_ptr<ui::Event> new_event;
+    std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, release, &new_event);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
@@ -2247,7 +2247,7 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     xev.InitGenericButtonEvent(11, ui::ET_MOUSE_PRESSED, gfx::Point(),
                                kLeftAndAltFlag);
     ui::MouseEvent press(xev);
-    scoped_ptr<ui::Event> new_event;
+    std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, press, &new_event);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
@@ -2259,7 +2259,7 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     xev.InitGenericButtonEvent(10, ui::ET_MOUSE_RELEASED, gfx::Point(),
                                kLeftAndAltFlag);
     ui::MouseEvent release(xev);
-    scoped_ptr<ui::Event> new_event;
+    std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, release, &new_event);
     EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) & result->flags());
@@ -2270,7 +2270,7 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     xev.InitGenericButtonEvent(11, ui::ET_MOUSE_RELEASED, gfx::Point(),
                                kLeftAndAltFlag);
     ui::MouseEvent release(xev);
-    scoped_ptr<ui::Event> new_event;
+    std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, release, &new_event);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());

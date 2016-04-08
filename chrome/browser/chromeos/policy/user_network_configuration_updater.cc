@@ -27,19 +27,17 @@ namespace policy {
 UserNetworkConfigurationUpdater::~UserNetworkConfigurationUpdater() {}
 
 // static
-scoped_ptr<UserNetworkConfigurationUpdater>
+std::unique_ptr<UserNetworkConfigurationUpdater>
 UserNetworkConfigurationUpdater::CreateForUserPolicy(
     Profile* profile,
     bool allow_trusted_certs_from_policy,
     const user_manager::User& user,
     PolicyService* policy_service,
     chromeos::ManagedNetworkConfigurationHandler* network_config_handler) {
-  scoped_ptr<UserNetworkConfigurationUpdater> updater(
-      new UserNetworkConfigurationUpdater(profile,
-                                          allow_trusted_certs_from_policy,
-                                          user,
-                                          policy_service,
-                                          network_config_handler));
+  std::unique_ptr<UserNetworkConfigurationUpdater> updater(
+      new UserNetworkConfigurationUpdater(
+          profile, allow_trusted_certs_from_policy, user, policy_service,
+          network_config_handler));
   updater->Init();
   return updater;
 }
@@ -78,7 +76,7 @@ UserNetworkConfigurationUpdater::UserNetworkConfigurationUpdater(
 }
 
 void UserNetworkConfigurationUpdater::SetCertificateImporterForTest(
-    scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer) {
+    std::unique_ptr<chromeos::onc::CertificateImporter> certificate_importer) {
   SetCertificateImporter(std::move(certificate_importer));
 }
 
@@ -141,7 +139,7 @@ void UserNetworkConfigurationUpdater::Observe(
 void UserNetworkConfigurationUpdater::CreateAndSetCertificateImporter(
     net::NSSCertDatabase* database) {
   DCHECK(database);
-  SetCertificateImporter(scoped_ptr<chromeos::onc::CertificateImporter>(
+  SetCertificateImporter(std::unique_ptr<chromeos::onc::CertificateImporter>(
       new chromeos::onc::CertificateImporterImpl(
           content::BrowserThread::GetMessageLoopProxyForThread(
               content::BrowserThread::IO),
@@ -149,7 +147,7 @@ void UserNetworkConfigurationUpdater::CreateAndSetCertificateImporter(
 }
 
 void UserNetworkConfigurationUpdater::SetCertificateImporter(
-    scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer) {
+    std::unique_ptr<chromeos::onc::CertificateImporter> certificate_importer) {
   certificate_importer_ = std::move(certificate_importer);
 
   if (pending_certificates_onc_)

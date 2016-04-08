@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_CLOUD_EXTERNAL_DATA_MANAGER_BASE_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_CLOUD_EXTERNAL_DATA_MANAGER_BASE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/policy_details.h"
@@ -41,10 +42,11 @@ class CloudExternalDataManagerBase : public CloudExternalDataManager,
 
   // Allows downloaded external data to be cached in |external_data_store|.
   // Ownership of the store is taken. The store can be destroyed by calling
-  // SetExternalDataStore(scoped_ptr<CloudExternalDataStore>()). Accesses to the
+  // SetExternalDataStore(std::unique_ptr<CloudExternalDataStore>()). Accesses
+  // to the
   // store are made via |backend_task_runner_| only.
   void SetExternalDataStore(
-      scoped_ptr<CloudExternalDataStore> external_data_store);
+      std::unique_ptr<CloudExternalDataStore> external_data_store);
 
   // CloudExternalDataManager:
   void SetPolicyStore(CloudPolicyStore* policy_store) override;
@@ -78,7 +80,7 @@ class CloudExternalDataManagerBase : public CloudExternalDataManager,
   // referenced from background threads. It is instantiated on the thread |this|
   // runs on but after that, must only be accessed and eventually destroyed via
   // the |io_task_runner_|.
-  scoped_ptr<ExternalPolicyDataFetcherBackend>
+  std::unique_ptr<ExternalPolicyDataFetcherBackend>
       external_policy_data_fetcher_backend_;
 
   // The |backend_| handles all data download scheduling, verification, caching
@@ -86,7 +88,7 @@ class CloudExternalDataManagerBase : public CloudExternalDataManager,
   // that, must only be accessed and eventually destroyed via the
   // |backend_task_runner_|.
   class Backend;
-  scoped_ptr<Backend> backend_;
+  std::unique_ptr<Backend> backend_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudExternalDataManagerBase);
 };

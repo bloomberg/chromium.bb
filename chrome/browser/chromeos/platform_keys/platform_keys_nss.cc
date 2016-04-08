@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
-
 #include <cert.h>
 #include <cryptohi.h>
 #include <keyhi.h>
 #include <secder.h>
 #include <stddef.h>
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -19,6 +18,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
 #include "chrome/browser/chromeos/net/client_cert_filter_chromeos.h"
 #include "chrome/browser/chromeos/net/client_cert_store_chromeos.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h"
 #include "chrome/browser/net/nss_context.h"
@@ -227,12 +228,12 @@ class SelectCertificatesState : public NSSOperationState {
 
   void OnError(const tracked_objects::Location& from,
                const std::string& error_message) override {
-    CallBack(from, scoped_ptr<net::CertificateList>() /* no matches */,
+    CallBack(from, std::unique_ptr<net::CertificateList>() /* no matches */,
              error_message);
   }
 
   void CallBack(const tracked_objects::Location& from,
-                scoped_ptr<net::CertificateList> matches,
+                std::unique_ptr<net::CertificateList> matches,
                 const std::string& error_message) {
     origin_task_runner_->PostTask(
         from, base::Bind(callback_, base::Passed(&matches), error_message));
@@ -241,8 +242,8 @@ class SelectCertificatesState : public NSSOperationState {
   const std::string username_hash_;
   const bool use_system_key_slot_;
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
-  scoped_ptr<net::ClientCertStore> cert_store_;
-  scoped_ptr<net::CertificateList> certs_;
+  std::unique_ptr<net::ClientCertStore> cert_store_;
+  std::unique_ptr<net::CertificateList> certs_;
 
  private:
   // Must be called on origin thread, therefore use CallBack().
@@ -257,18 +258,18 @@ class GetCertificatesState : public NSSOperationState {
   void OnError(const tracked_objects::Location& from,
                const std::string& error_message) override {
     CallBack(from,
-             scoped_ptr<net::CertificateList>() /* no certificates */,
+             std::unique_ptr<net::CertificateList>() /* no certificates */,
              error_message);
   }
 
   void CallBack(const tracked_objects::Location& from,
-                scoped_ptr<net::CertificateList> certs,
+                std::unique_ptr<net::CertificateList> certs,
                 const std::string& error_message) {
     origin_task_runner_->PostTask(
         from, base::Bind(callback_, base::Passed(&certs), error_message));
   }
 
-  scoped_ptr<net::CertificateList> certs_;
+  std::unique_ptr<net::CertificateList> certs_;
 
  private:
   // Must be called on origin thread, therefore use CallBack().
@@ -329,12 +330,12 @@ class GetTokensState : public NSSOperationState {
   void OnError(const tracked_objects::Location& from,
                const std::string& error_message) override {
     CallBack(from,
-             scoped_ptr<std::vector<std::string> >() /* no token ids */,
+             std::unique_ptr<std::vector<std::string>>() /* no token ids */,
              error_message);
   }
 
   void CallBack(const tracked_objects::Location& from,
-                scoped_ptr<std::vector<std::string> > token_ids,
+                std::unique_ptr<std::vector<std::string>> token_ids,
                 const std::string& error_message) {
     origin_task_runner_->PostTask(
         from, base::Bind(callback_, base::Passed(&token_ids), error_message));
@@ -401,7 +402,7 @@ GetTokensState::GetTokensState(const GetTokensCallback& callback)
 
 // Does the actual key generation on a worker thread. Used by
 // GenerateRSAKeyWithDB().
-void GenerateRSAKeyOnWorkerThread(scoped_ptr<GenerateRSAKeyState> state) {
+void GenerateRSAKeyOnWorkerThread(std::unique_ptr<GenerateRSAKeyState> state) {
   if (!state->slot_) {
     LOG(ERROR) << "No slot.";
     state->OnError(FROM_HERE, kErrorInternal);
@@ -435,7 +436,7 @@ void GenerateRSAKeyOnWorkerThread(scoped_ptr<GenerateRSAKeyState> state) {
 
 // Continues generating a RSA key with the obtained NSSCertDatabase. Used by
 // GenerateRSAKey().
-void GenerateRSAKeyWithDB(scoped_ptr<GenerateRSAKeyState> state,
+void GenerateRSAKeyWithDB(std::unique_ptr<GenerateRSAKeyState> state,
                           net::NSSCertDatabase* cert_db) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Only the slot and not the NSSCertDatabase is required. Ignore |cert_db|.
@@ -446,7 +447,7 @@ void GenerateRSAKeyWithDB(scoped_ptr<GenerateRSAKeyState> state,
 }
 
 // Does the actual signing on a worker thread. Used by SignRSAWithDB().
-void SignRSAOnWorkerThread(scoped_ptr<SignRSAState> state) {
+void SignRSAOnWorkerThread(std::unique_ptr<SignRSAState> state) {
   const uint8_t* public_key_uint8 =
       reinterpret_cast<const uint8_t*>(state->public_key_.data());
   std::vector<uint8_t> public_key_vector(
@@ -527,7 +528,7 @@ void SignRSAOnWorkerThread(scoped_ptr<SignRSAState> state) {
 }
 
 // Continues signing with the obtained NSSCertDatabase. Used by Sign().
-void SignRSAWithDB(scoped_ptr<SignRSAState> state,
+void SignRSAWithDB(std::unique_ptr<SignRSAState> state,
                    net::NSSCertDatabase* cert_db) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Only the slot and not the NSSCertDatabase is required. Ignore |cert_db|.
@@ -540,7 +541,7 @@ void SignRSAWithDB(scoped_ptr<SignRSAState> state,
 // of net::CertificateList and calls back. Used by
 // SelectCertificatesOnIOThread().
 void DidSelectCertificatesOnIOThread(
-    scoped_ptr<SelectCertificatesState> state) {
+    std::unique_ptr<SelectCertificatesState> state) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state->CallBack(FROM_HERE, std::move(state->certs_),
                   std::string() /* no error */);
@@ -548,12 +549,13 @@ void DidSelectCertificatesOnIOThread(
 
 // Continues selecting certificates on the IO thread. Used by
 // SelectClientCertificates().
-void SelectCertificatesOnIOThread(scoped_ptr<SelectCertificatesState> state) {
+void SelectCertificatesOnIOThread(
+    std::unique_ptr<SelectCertificatesState> state) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state->cert_store_.reset(new ClientCertStoreChromeOS(
       nullptr,  // no additional provider
-      make_scoped_ptr(new ClientCertFilterChromeOS(state->use_system_key_slot_,
-                                                   state->username_hash_)),
+      base::WrapUnique(new ClientCertFilterChromeOS(state->use_system_key_slot_,
+                                                    state->username_hash_)),
       ClientCertStoreChromeOS::PasswordDelegateFactory()));
 
   state->certs_.reset(new net::CertificateList);
@@ -566,8 +568,9 @@ void SelectCertificatesOnIOThread(scoped_ptr<SelectCertificatesState> state) {
 
 // Filters the obtained certificates on a worker thread. Used by
 // DidGetCertificates().
-void FilterCertificatesOnWorkerThread(scoped_ptr<GetCertificatesState> state) {
-  scoped_ptr<net::CertificateList> client_certs(new net::CertificateList);
+void FilterCertificatesOnWorkerThread(
+    std::unique_ptr<GetCertificatesState> state) {
+  std::unique_ptr<net::CertificateList> client_certs(new net::CertificateList);
   for (net::CertificateList::const_iterator it = state->certs_->begin();
        it != state->certs_->end();
        ++it) {
@@ -590,8 +593,8 @@ void FilterCertificatesOnWorkerThread(scoped_ptr<GetCertificatesState> state) {
 
 // Passes the obtained certificates to the worker thread for filtering. Used by
 // GetCertificatesWithDB().
-void DidGetCertificates(scoped_ptr<GetCertificatesState> state,
-                        scoped_ptr<net::CertificateList> all_certs) {
+void DidGetCertificates(std::unique_ptr<GetCertificatesState> state,
+                        std::unique_ptr<net::CertificateList> all_certs) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state->certs_ = std::move(all_certs);
   base::WorkerPool::PostTask(
@@ -602,7 +605,7 @@ void DidGetCertificates(scoped_ptr<GetCertificatesState> state,
 
 // Continues getting certificates with the obtained NSSCertDatabase. Used by
 // GetCertificates().
-void GetCertificatesWithDB(scoped_ptr<GetCertificatesState> state,
+void GetCertificatesWithDB(std::unique_ptr<GetCertificatesState> state,
                            net::NSSCertDatabase* cert_db) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Get the pointer to slot before base::Passed releases |state|.
@@ -613,7 +616,7 @@ void GetCertificatesWithDB(scoped_ptr<GetCertificatesState> state,
 
 // Does the actual certificate importing on the IO thread. Used by
 // ImportCertificate().
-void ImportCertificateWithDB(scoped_ptr<ImportCertificateState> state,
+void ImportCertificateWithDB(std::unique_ptr<ImportCertificateState> state,
                              net::NSSCertDatabase* cert_db) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(pneubeck): Use |state->slot_| to verify that we're really importing to
@@ -651,7 +654,7 @@ void ImportCertificateWithDB(scoped_ptr<ImportCertificateState> state,
 }
 
 // Called on IO thread after the certificate removal is finished.
-void DidRemoveCertificate(scoped_ptr<RemoveCertificateState> state,
+void DidRemoveCertificate(std::unique_ptr<RemoveCertificateState> state,
                           bool certificate_found,
                           bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -670,7 +673,7 @@ void DidRemoveCertificate(scoped_ptr<RemoveCertificateState> state,
 
 // Does the actual certificate removal on the IO thread. Used by
 // RemoveCertificate().
-void RemoveCertificateWithDB(scoped_ptr<RemoveCertificateState> state,
+void RemoveCertificateWithDB(std::unique_ptr<RemoveCertificateState> state,
                              net::NSSCertDatabase* cert_db) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Get the pointer before base::Passed clears |state|.
@@ -683,10 +686,11 @@ void RemoveCertificateWithDB(scoped_ptr<RemoveCertificateState> state,
 }
 
 // Does the actual work to determine which tokens are available.
-void GetTokensWithDB(scoped_ptr<GetTokensState> state,
+void GetTokensWithDB(std::unique_ptr<GetTokensState> state,
                      net::NSSCertDatabase* cert_db) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  scoped_ptr<std::vector<std::string> > token_ids(new std::vector<std::string>);
+  std::unique_ptr<std::vector<std::string>> token_ids(
+      new std::vector<std::string>);
 
   // The user's token is always available.
   token_ids->push_back(kTokenIdUser);
@@ -706,7 +710,7 @@ void GenerateRSAKey(const std::string& token_id,
                     const GenerateKeyCallback& callback,
                     BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_ptr<GenerateRSAKeyState> state(
+  std::unique_ptr<GenerateRSAKeyState> state(
       new GenerateRSAKeyState(modulus_length_bits, callback));
 
   if (modulus_length_bits > kMaxRSAModulusLengthBits) {
@@ -729,7 +733,7 @@ void SignRSAPKCS1Digest(const std::string& token_id,
                         const SignCallback& callback,
                         content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_ptr<SignRSAState> state(
+  std::unique_ptr<SignRSAState> state(
       new SignRSAState(data, public_key, false /* digest before signing */,
                        hash_algorithm, callback));
   // Get the pointer to |state| before base::Passed releases |state|.
@@ -748,7 +752,7 @@ void SignRSAPKCS1Raw(const std::string& token_id,
                      const SignCallback& callback,
                      content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_ptr<SignRSAState> state(new SignRSAState(
+  std::unique_ptr<SignRSAState> state(new SignRSAState(
       data, public_key, true /* sign directly without hashing */,
       HASH_ALGORITHM_NONE, callback));
   // Get the pointer to |state| before base::Passed releases |state|.
@@ -784,7 +788,7 @@ void SelectClientCertificates(
   // device.
   const bool use_system_key_slot = user->IsAffiliated();
 
-  scoped_ptr<SelectCertificatesState> state(new SelectCertificatesState(
+  std::unique_ptr<SelectCertificatesState> state(new SelectCertificatesState(
       user->username_hash(), use_system_key_slot, cert_request_info, callback));
 
   BrowserThread::PostTask(
@@ -839,7 +843,8 @@ void GetCertificates(const std::string& token_id,
                      const GetCertificatesCallback& callback,
                      BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_ptr<GetCertificatesState> state(new GetCertificatesState(callback));
+  std::unique_ptr<GetCertificatesState> state(
+      new GetCertificatesState(callback));
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
   GetCertDatabase(token_id,
@@ -853,7 +858,7 @@ void ImportCertificate(const std::string& token_id,
                        const ImportCertificateCallback& callback,
                        BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_ptr<ImportCertificateState> state(
+  std::unique_ptr<ImportCertificateState> state(
       new ImportCertificateState(certificate, callback));
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
@@ -872,7 +877,7 @@ void RemoveCertificate(const std::string& token_id,
                        const RemoveCertificateCallback& callback,
                        BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_ptr<RemoveCertificateState> state(
+  std::unique_ptr<RemoveCertificateState> state(
       new RemoveCertificateState(certificate, callback));
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
@@ -888,7 +893,7 @@ void RemoveCertificate(const std::string& token_id,
 void GetTokens(const GetTokensCallback& callback,
                content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_ptr<GetTokensState> state(new GetTokensState(callback));
+  std::unique_ptr<GetTokensState> state(new GetTokensState(callback));
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
   GetCertDatabase(std::string() /* don't get any specific slot */,

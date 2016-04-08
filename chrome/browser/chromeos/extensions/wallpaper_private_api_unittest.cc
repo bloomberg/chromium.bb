@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
+
+#include <memory>
+
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_state_delegate.h"
@@ -9,8 +13,6 @@
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
@@ -75,11 +77,11 @@ class TestRestoreFunction
 
 TEST_F(WallpaperPrivateApiUnittest, HideAndRestoreWindows) {
   fake_user_manager()->AddUser(test_account_id1_);
-  scoped_ptr<aura::Window> window4(CreateTestWindowInShellWithId(4));
-  scoped_ptr<aura::Window> window3(CreateTestWindowInShellWithId(3));
-  scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(2));
-  scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
-  scoped_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window4(CreateTestWindowInShellWithId(4));
+  std::unique_ptr<aura::Window> window3(CreateTestWindowInShellWithId(3));
+  std::unique_ptr<aura::Window> window2(CreateTestWindowInShellWithId(2));
+  std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
 
   ash::wm::WindowState* window0_state = ash::wm::GetWindowState(window0.get());
   ash::wm::WindowState* window1_state = ash::wm::GetWindowState(window1.get());
@@ -138,8 +140,8 @@ TEST_F(WallpaperPrivateApiUnittest, HideAndRestoreWindows) {
 // all the unminimized windows.
 TEST_F(WallpaperPrivateApiUnittest, HideAndManualUnminimizeWindows) {
   fake_user_manager()->AddUser(test_account_id1_);
-  scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
-  scoped_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
 
   ash::wm::WindowState* window0_state = ash::wm::GetWindowState(window0.get());
   ash::wm::WindowState* window1_state = ash::wm::GetWindowState(window1.get());
@@ -261,11 +263,11 @@ TEST_F(WallpaperPrivateApiMultiUserUnittest, HideAndRestoreWindowsTwoUsers) {
       test_account_id1_,
       chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED);
 
-  scoped_ptr<aura::Window> window4(CreateTestWindowInShellWithId(4));
-  scoped_ptr<aura::Window> window3(CreateTestWindowInShellWithId(3));
-  scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(2));
-  scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
-  scoped_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window4(CreateTestWindowInShellWithId(4));
+  std::unique_ptr<aura::Window> window3(CreateTestWindowInShellWithId(3));
+  std::unique_ptr<aura::Window> window2(CreateTestWindowInShellWithId(2));
+  std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
 
   ash::wm::WindowState* window0_state = ash::wm::GetWindowState(window0.get());
   ash::wm::WindowState* window1_state = ash::wm::GetWindowState(window1.get());
@@ -362,10 +364,10 @@ TEST_F(WallpaperPrivateApiMultiUserUnittest, HideTeleportedWindow) {
       AccountId::FromUserEmail(kTestAccount1),
       chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_MIXED);
 
-  scoped_ptr<aura::Window> window3(CreateTestWindowInShellWithId(3));
-  scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(2));
-  scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
-  scoped_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window3(CreateTestWindowInShellWithId(3));
+  std::unique_ptr<aura::Window> window2(CreateTestWindowInShellWithId(2));
+  std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
 
   ash::wm::WindowState* window0_state = ash::wm::GetWindowState(window0.get());
   ash::wm::WindowState* window1_state = ash::wm::GetWindowState(window1.get());

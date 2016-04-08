@@ -4,10 +4,11 @@
 
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/common/pref_names.h"
@@ -123,7 +124,7 @@ TEST(ExternalDataPolicyHandlerTest, WrongType) {
 }
 
 TEST(ExternalDataPolicyHandlerTest, MissingURL) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetString("hash", "1234567890123456789012345678901234567890");
   PolicyMap policy_map;
   policy_map.Set(key::kUserAvatarImage,
@@ -139,7 +140,7 @@ TEST(ExternalDataPolicyHandlerTest, MissingURL) {
 }
 
 TEST(ExternalDataPolicyHandlerTest, InvalidURL) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetString("url", "http://");
   dict->SetString("hash", "1234567890123456789012345678901234567890");
   PolicyMap policy_map;
@@ -156,7 +157,7 @@ TEST(ExternalDataPolicyHandlerTest, InvalidURL) {
 }
 
 TEST(ExternalDataPolicyHandlerTest, MissingHash) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetString("url", "http://localhost/");
   PolicyMap policy_map;
   policy_map.Set(key::kUserAvatarImage,
@@ -172,7 +173,7 @@ TEST(ExternalDataPolicyHandlerTest, MissingHash) {
 }
 
 TEST(ExternalDataPolicyHandlerTest, InvalidHash) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetString("url", "http://localhost/");
   dict->SetString("hash", "1234");
   PolicyMap policy_map;
@@ -189,7 +190,7 @@ TEST(ExternalDataPolicyHandlerTest, InvalidHash) {
 }
 
 TEST(ExternalDataPolicyHandlerTest, Valid) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetString("url", "http://localhost/");
   dict->SetString(
       "hash",
@@ -233,7 +234,7 @@ const char kLoginScreenPowerManagementPolicy[] =
 
 TEST(NetworkConfigurationPolicyHandlerTest, Empty) {
   PolicyMap policy_map;
-  scoped_ptr<NetworkConfigurationPolicyHandler> handler(
+  std::unique_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
   EXPECT_TRUE(handler->CheckPolicySettings(policy_map, &errors));
@@ -262,7 +263,7 @@ TEST(NetworkConfigurationPolicyHandlerTest, ValidONC) {
                  POLICY_SOURCE_CLOUD,
                  new base::StringValue(kTestONC),
                  NULL);
-  scoped_ptr<NetworkConfigurationPolicyHandler> handler(
+  std::unique_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
   EXPECT_TRUE(handler->CheckPolicySettings(policy_map, &errors));
@@ -277,7 +278,7 @@ TEST(NetworkConfigurationPolicyHandlerTest, WrongType) {
                  POLICY_SOURCE_CLOUD,
                  new base::FundamentalValue(false),
                  NULL);
-  scoped_ptr<NetworkConfigurationPolicyHandler> handler(
+  std::unique_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
   EXPECT_FALSE(handler->CheckPolicySettings(policy_map, &errors));
@@ -293,7 +294,7 @@ TEST(NetworkConfigurationPolicyHandlerTest, JSONParseError) {
                  POLICY_SOURCE_CLOUD,
                  new base::StringValue(kTestONC),
                  NULL);
-  scoped_ptr<NetworkConfigurationPolicyHandler> handler(
+  std::unique_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
   EXPECT_FALSE(handler->CheckPolicySettings(policy_map, &errors));
@@ -322,7 +323,7 @@ TEST(NetworkConfigurationPolicyHandlerTest, Sanitization) {
                  POLICY_SOURCE_CLOUD,
                  new base::StringValue(kTestONC),
                  NULL);
-  scoped_ptr<NetworkConfigurationPolicyHandler> handler(
+  std::unique_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
   handler->PrepareForDisplaying(&policy_map);

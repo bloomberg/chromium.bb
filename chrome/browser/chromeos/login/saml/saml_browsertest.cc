@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <cstring>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -16,7 +17,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
@@ -153,12 +153,13 @@ class FakeSamlIdp {
   void SetRefreshURL(const GURL& refresh_url);
   void SetCookieValue(const std::string& cookie_value);
 
-  scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request);
+  std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request);
 
  private:
-  scoped_ptr<HttpResponse> BuildHTMLResponse(const std::string& html_template,
-                                             const std::string& relay_state,
-                                             const std::string& next_path);
+  std::unique_ptr<HttpResponse> BuildHTMLResponse(
+      const std::string& html_template,
+      const std::string& relay_state,
+      const std::string& next_path);
 
   base::FilePath html_template_dir_;
 
@@ -210,7 +211,7 @@ void FakeSamlIdp::SetCookieValue(const std::string& cookie_value) {
   cookie_value_ = cookie_value;
 }
 
-scoped_ptr<HttpResponse> FakeSamlIdp::HandleRequest(
+std::unique_ptr<HttpResponse> FakeSamlIdp::HandleRequest(
     const HttpRequest& request) {
   // The scheme and host of the URL is actually not important but required to
   // get a valid GURL in order to parse |request.relative_url|.
@@ -227,7 +228,7 @@ scoped_ptr<HttpResponse> FakeSamlIdp::HandleRequest(
 
   if (request_path != login_auth_path_) {
     // Request not understood.
-    return scoped_ptr<HttpResponse>();
+    return std::unique_ptr<HttpResponse>();
   }
 
   std::string relay_state;
@@ -245,7 +246,7 @@ scoped_ptr<HttpResponse> FakeSamlIdp::HandleRequest(
   redirect_url = net::AppendQueryParameter(
       redirect_url, kRelayState, relay_state);
 
-  scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
+  std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
   http_response->set_code(net::HTTP_TEMPORARY_REDIRECT);
   http_response->AddCustomHeader("Location", redirect_url.spec());
   http_response->AddCustomHeader(
@@ -254,7 +255,7 @@ scoped_ptr<HttpResponse> FakeSamlIdp::HandleRequest(
   return std::move(http_response);
 }
 
-scoped_ptr<HttpResponse> FakeSamlIdp::BuildHTMLResponse(
+std::unique_ptr<HttpResponse> FakeSamlIdp::BuildHTMLResponse(
     const std::string& html_template,
     const std::string& relay_state,
     const std::string& next_path) {
@@ -266,7 +267,7 @@ scoped_ptr<HttpResponse> FakeSamlIdp::BuildHTMLResponse(
   base::ReplaceSubstringsAfterOffset(
       &response_html, 0, "$Refresh", refresh_url_.spec());
 
-  scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
+  std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
   http_response->set_code(net::HTTP_OK);
   http_response->set_content(response_html);
   http_response->set_content_type("text/html");
@@ -336,7 +337,7 @@ class SamlTest : public OobeBaseTest {
 
   void SetUpInProcessBrowserTestFixture() override {
     DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        scoped_ptr<CryptohomeClient>(cryptohome_client_));
+        std::unique_ptr<CryptohomeClient>(cryptohome_client_));
 
     OobeBaseTest::SetUpInProcessBrowserTestFixture();
   }
@@ -753,10 +754,10 @@ class SAMLEnrollmentTest : public SamlTest,
   content::WebContents* GetEnrollmentContents();
 
  private:
-  scoped_ptr<policy::LocalPolicyTestServer> test_server_;
+  std::unique_ptr<policy::LocalPolicyTestServer> test_server_;
   base::ScopedTempDir temp_dir_;
 
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   guest_view::TestGuestViewManagerFactory guest_view_manager_factory_;
 
@@ -957,7 +958,7 @@ SAMLPolicyTest::~SAMLPolicyTest() {
 
 void SAMLPolicyTest::SetUpInProcessBrowserTestFixture() {
   DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-      scoped_ptr<SessionManagerClient>(fake_session_manager_client_));
+      std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
 
   SamlTest::SetUpInProcessBrowserTestFixture();
 
@@ -1023,10 +1024,9 @@ void SAMLPolicyTest::EnableTransferSAMLCookiesPolicy() {
   proto.mutable_saml_settings()->set_transfer_saml_cookies(true);
 
   base::RunLoop run_loop;
-  scoped_ptr<CrosSettings::ObserverSubscription> observer =
-      CrosSettings::Get()->AddSettingsObserver(
-           kAccountsPrefTransferSAMLCookies,
-           run_loop.QuitClosure());
+  std::unique_ptr<CrosSettings::ObserverSubscription> observer =
+      CrosSettings::Get()->AddSettingsObserver(kAccountsPrefTransferSAMLCookies,
+                                               run_loop.QuitClosure());
   device_policy_->SetDefaultSigningKey();
   device_policy_->Build();
   fake_session_manager_client_->set_device_policy(device_policy_->GetBlob());
@@ -1041,7 +1041,7 @@ void SAMLPolicyTest::SetLoginBehaviorPolicyToSAMLInterstitial() {
           em::LoginAuthenticationBehaviorProto_LoginBehavior_SAML_INTERSTITIAL);
 
   base::RunLoop run_loop;
-  scoped_ptr<CrosSettings::ObserverSubscription> observer =
+  std::unique_ptr<CrosSettings::ObserverSubscription> observer =
       CrosSettings::Get()->AddSettingsObserver(kLoginAuthenticationBehavior,
                                                run_loop.QuitClosure());
   device_policy_->SetDefaultSigningKey();

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 
+#include <memory>
 #include <utility>
 
 #undef FocusIn
@@ -13,7 +14,6 @@
 
 #include "ash/shell.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"

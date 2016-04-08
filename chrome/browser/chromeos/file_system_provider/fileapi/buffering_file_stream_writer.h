@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_FILEAPI_BUFFERING_FILE_STREAM_WRITER_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_FILEAPI_BUFFERING_FILE_STREAM_WRITER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/fileapi/file_stream_writer.h"
 
@@ -29,7 +30,7 @@ namespace file_system_provider {
 class BufferingFileStreamWriter : public storage::FileStreamWriter {
  public:
   BufferingFileStreamWriter(
-      scoped_ptr<storage::FileStreamWriter> file_stream_writer,
+      std::unique_ptr<storage::FileStreamWriter> file_stream_writer,
       int intermediate_buffer_length);
 
   ~BufferingFileStreamWriter() override;
@@ -83,7 +84,7 @@ class BufferingFileStreamWriter : public storage::FileStreamWriter {
       const net::CompletionCallback& callback,
       int result);
 
-  scoped_ptr<storage::FileStreamWriter> file_stream_writer_;
+  std::unique_ptr<storage::FileStreamWriter> file_stream_writer_;
   int intermediate_buffer_length_;
   scoped_refptr<net::IOBuffer> intermediate_buffer_;
   int buffered_bytes_;

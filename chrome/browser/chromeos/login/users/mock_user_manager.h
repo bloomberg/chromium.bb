@@ -168,9 +168,9 @@ class MockUserManager : public ChromeUserManager {
   // MockUserManager become invalid.
   void ClearUserList();
 
-  scoped_ptr<UserFlow> user_flow_;
-  scoped_ptr<MockUserImageManager> user_image_manager_;
-  scoped_ptr<FakeSupervisedUserManager> supervised_user_manager_;
+  std::unique_ptr<UserFlow> user_flow_;
+  std::unique_ptr<MockUserImageManager> user_image_manager_;
+  std::unique_ptr<FakeSupervisedUserManager> supervised_user_manager_;
   user_manager::UserList user_list_;
   // TODO (alemate): remove temporary_owner_account_id_ as soon as
   // User::GetAccountId will

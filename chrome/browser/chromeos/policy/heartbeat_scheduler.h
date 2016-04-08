@@ -124,9 +124,9 @@ class HeartbeatScheduler : public gcm::GCMAppHandler,
   base::TimeDelta heartbeat_interval_;
 
   // Observers to changes in the heartbeat settings.
-  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       heartbeat_frequency_observer_;
-  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       heartbeat_enabled_observer_;
 
   // The time the last heartbeat was sent.
@@ -149,7 +149,7 @@ class HeartbeatScheduler : public gcm::GCMAppHandler,
 
   // Helper class to manage registering with the GCM server, including
   // retries, etc.
-  scoped_ptr<HeartbeatRegistrationHelper> registration_helper_;
+  std::unique_ptr<HeartbeatRegistrationHelper> registration_helper_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

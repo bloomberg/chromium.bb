@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_TEST_HTTPS_FORWARDER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_TEST_HTTPS_FORWARDER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -35,7 +35,7 @@ class HTTPSForwarder {
  private:
   std::string ssl_host_;
 
-  scoped_ptr<ForwardingServer> forwarding_server_;
+  std::unique_ptr<ForwardingServer> forwarding_server_;
 
   DISALLOW_COPY_AND_ASSIGN(HTTPSForwarder);
 };

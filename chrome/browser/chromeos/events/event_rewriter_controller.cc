@@ -34,7 +34,7 @@ EventRewriterController::~EventRewriterController() {
 }
 
 void EventRewriterController::AddEventRewriter(
-    scoped_ptr<ui::EventRewriter> rewriter) {
+    std::unique_ptr<ui::EventRewriter> rewriter) {
   DCHECK(!initialized_);
   rewriters_.push_back(rewriter.release());
 }

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_PLATFORM_KEYS_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_PLATFORM_KEYS_SERVICE_H_
 
+#include <memory>
 #include <queue>
 #include <string>
 #include <vector>
@@ -12,7 +13,6 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
@@ -92,7 +92,7 @@ class PlatformKeysService : public KeyedService {
 
   // Sets the delegate which will be used for interactive
   // SelectClientCertificates calls.
-  void SetSelectDelegate(scoped_ptr<SelectDelegate> delegate);
+  void SetSelectDelegate(std::unique_ptr<SelectDelegate> delegate);
 
   // If the generation was successful, |public_key_spki_der| will contain the
   // DER encoding of the SubjectPublicKeyInfo of the generated key and
@@ -158,7 +158,7 @@ class PlatformKeysService : public KeyedService {
   // will be empty. If an error occurred, |matches| will be null and
   // |error_message| contain an error message.
   using SelectCertificatesCallback =
-      base::Callback<void(scoped_ptr<net::CertificateList> matches,
+      base::Callback<void(std::unique_ptr<net::CertificateList> matches,
                           const std::string& error_message)>;
 
   // Returns a list of certificates matching |request|.
@@ -176,7 +176,7 @@ class PlatformKeysService : public KeyedService {
   // not be null.
   void SelectClientCertificates(
       const platform_keys::ClientCertificateRequest& request,
-      scoped_ptr<net::CertificateList> client_certificates,
+      std::unique_ptr<net::CertificateList> client_certificates,
       bool interactive,
       const std::string& extension_id,
       const SelectCertificatesCallback& callback,
@@ -190,7 +190,7 @@ class PlatformKeysService : public KeyedService {
 
   // Starts |task| eventually. To ensure that at most one |Task| is running at a
   // time, it queues |task| for later execution if necessary.
-  void StartOrQueueTask(scoped_ptr<Task> task);
+  void StartOrQueueTask(std::unique_ptr<Task> task);
 
   // Must be called after |task| is done. |task| will be invalid after this
   // call. This must not be called for any but the task that ran last. If any
@@ -218,7 +218,7 @@ class PlatformKeysService : public KeyedService {
 
   content::BrowserContext* browser_context_;
   KeyPermissions key_permissions_;
-  scoped_ptr<SelectDelegate> select_delegate_;
+  std::unique_ptr<SelectDelegate> select_delegate_;
   std::queue<linked_ptr<Task>> tasks_;
   base::WeakPtrFactory<PlatformKeysService> weak_factory_;
 

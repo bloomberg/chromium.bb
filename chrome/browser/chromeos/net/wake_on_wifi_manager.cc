@@ -4,13 +4,14 @@
 
 #include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -333,7 +334,7 @@ void WakeOnWifiManager::OnProfileAdded(Profile* profile) {
   // add will do nothing if |profile| already exists in |connection_observers_|.
   auto result = connection_observers_.add(
       profile,
-      make_scoped_ptr(new WakeOnWifiManager::WakeOnPacketConnectionObserver(
+      base::WrapUnique(new WakeOnWifiManager::WakeOnPacketConnectionObserver(
           profile, wifi_properties_received_)));
 
   if (result.second) {

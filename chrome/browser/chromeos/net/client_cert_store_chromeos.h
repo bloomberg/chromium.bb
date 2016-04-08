@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_NET_CLIENT_CERT_STORE_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_NET_CLIENT_CERT_STORE_CHROMEOS_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/client_cert_store_nss.h"
 
@@ -44,8 +44,8 @@ class ClientCertStoreChromeOS : public net::ClientCertStore {
   // databases that pass the filter |cert_filter| and additionally return
   // certificates provided by |cert_provider|.
   ClientCertStoreChromeOS(
-      scoped_ptr<CertificateProvider> cert_provider,
-      scoped_ptr<CertFilter> cert_filter,
+      std::unique_ptr<CertificateProvider> cert_provider,
+      std::unique_ptr<CertFilter> cert_filter,
       const PasswordDelegateFactory& password_delegate_factory);
   ~ClientCertStoreChromeOS() override;
 
@@ -61,14 +61,14 @@ class ClientCertStoreChromeOS : public net::ClientCertStore {
                           const net::CertificateList& additional_certs);
 
   void GetAndFilterCertsOnWorkerThread(
-      scoped_ptr<crypto::CryptoModuleBlockingPasswordDelegate>
+      std::unique_ptr<crypto::CryptoModuleBlockingPasswordDelegate>
           password_delegate,
       const net::SSLCertRequestInfo* request,
       const net::CertificateList& additional_certs,
       net::CertificateList* selected_certs);
 
-  scoped_ptr<CertificateProvider> cert_provider_;
-  scoped_ptr<CertFilter> cert_filter_;
+  std::unique_ptr<CertificateProvider> cert_provider_;
+  std::unique_ptr<CertFilter> cert_filter_;
 
   // The factory for creating the delegate for requesting a password to a
   // PKCS#11 token. May be null.

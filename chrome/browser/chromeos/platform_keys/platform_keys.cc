@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/worker_pool.h"
 #include "net/base/hash_value.h"
 #include "net/cert/x509_certificate.h"
@@ -58,15 +59,16 @@ ClientCertificateRequest::~ClientCertificateRequest() {
 void IntersectCertificates(
     const net::CertificateList& certs1,
     const net::CertificateList& certs2,
-    const base::Callback<void(scoped_ptr<net::CertificateList>)>& callback) {
-  scoped_ptr<net::CertificateList> intersection(new net::CertificateList);
+    const base::Callback<void(std::unique_ptr<net::CertificateList>)>&
+        callback) {
+  std::unique_ptr<net::CertificateList> intersection(new net::CertificateList);
   net::CertificateList* const intersection_ptr = intersection.get();
   if (!base::WorkerPool::PostTaskAndReply(
           FROM_HERE, base::Bind(&IntersectOnWorkerThread, certs1, certs2,
                                 intersection_ptr),
           base::Bind(callback, base::Passed(&intersection)),
           false /* task_is_slow */)) {
-    callback.Run(make_scoped_ptr(new net::CertificateList));
+    callback.Run(base::WrapUnique(new net::CertificateList));
   }
 }
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
@@ -66,11 +67,11 @@ void StubCrosSettingsProvider::SetDefaults() {
   values_.SetBoolean(kAccountsPrefAllowNewUser, true);
   values_.SetBoolean(kAccountsPrefSupervisedUsersEnabled, true);
   values_.SetBoolean(kAccountsPrefShowUserNamesOnSignIn, true);
-  values_.SetValue(kAccountsPrefUsers, make_scoped_ptr(new base::ListValue));
+  values_.SetValue(kAccountsPrefUsers, base::WrapUnique(new base::ListValue));
   values_.SetBoolean(kAttestationForContentProtectionEnabled, true);
   values_.SetBoolean(kStatsReportingPref, true);
   values_.SetValue(kAccountsPrefDeviceLocalAccounts,
-                   make_scoped_ptr(new base::ListValue));
+                   base::WrapUnique(new base::ListValue));
   // |kDeviceOwner| will be set to the logged-in user by |UserManager|.
 }
 

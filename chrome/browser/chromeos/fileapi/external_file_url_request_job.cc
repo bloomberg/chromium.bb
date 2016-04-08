@@ -49,7 +49,7 @@ class URLHelper {
   // The scoped pointer to control lifetime of the instance itself. The pointer
   // is passed to callback functions and binds the lifetime of the instance to
   // the callback's lifetime.
-  typedef scoped_ptr<URLHelper> Lifetime;
+  typedef std::unique_ptr<URLHelper> Lifetime;
 
   URLHelper(void* profile_id,
             const GURL& url,
@@ -140,7 +140,7 @@ class URLHelper {
   const GURL url_;
   const ExternalFileURLRequestJob::HelperCallback callback_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
-  scoped_ptr<ExternalFileURLRequestJob::IsolatedFileSystemScope>
+  std::unique_ptr<ExternalFileURLRequestJob::IsolatedFileSystemScope>
       isolated_file_system_scope_;
   storage::FileSystemURL file_system_url_;
   std::string mime_type_;
@@ -233,7 +233,7 @@ void ExternalFileURLRequestJob::StartAsync() {
 void ExternalFileURLRequestJob::OnHelperResultObtained(
     net::Error error,
     const scoped_refptr<storage::FileSystemContext>& file_system_context,
-    scoped_ptr<IsolatedFileSystemScope> isolated_file_system_scope,
+    std::unique_ptr<IsolatedFileSystemScope> isolated_file_system_scope,
     const storage::FileSystemURL& file_system_url,
     const std::string& mime_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

@@ -25,7 +25,7 @@ FileStreamMd5Digester::FileStreamMd5Digester()
 FileStreamMd5Digester::~FileStreamMd5Digester() {}
 
 void FileStreamMd5Digester::GetMd5Digest(
-    scoped_ptr<storage::FileStreamReader> stream_reader,
+    std::unique_ptr<storage::FileStreamReader> stream_reader,
     const ResultCallback& callback) {
   reader_ = std::move(stream_reader);
   base::MD5Init(&md5_context_);

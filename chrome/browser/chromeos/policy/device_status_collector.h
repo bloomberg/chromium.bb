@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <deque>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -16,7 +17,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
@@ -108,7 +108,7 @@ class DeviceStatusCollector {
   // kiosk session, if the session was auto-launched with zero delay
   // (this enables functionality such as network reporting).
   // Virtual to allow mocking.
-  virtual scoped_ptr<DeviceLocalAccount> GetAutoLaunchedKioskSessionInfo();
+  virtual std::unique_ptr<DeviceLocalAccount> GetAutoLaunchedKioskSessionInfo();
 
   // How often, in seconds, to poll to see if the user is idle.
   static const unsigned int kIdlePollIntervalSeconds = 30;
@@ -266,7 +266,7 @@ class DeviceStatusCollector {
   // way to mock geolocation exists.
   LocationUpdateRequester location_update_requester_;
 
-  scoped_ptr<content::GeolocationProvider::Subscription>
+  std::unique_ptr<content::GeolocationProvider::Subscription>
       geolocation_subscription_;
 
   // Cached values of the reporting settings from the device policy.
@@ -279,21 +279,21 @@ class DeviceStatusCollector {
   bool report_hardware_status_;
   bool report_session_status_;
 
-  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       version_info_subscription_;
-  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       activity_times_subscription_;
-  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       boot_mode_subscription_;
-  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       location_subscription_;
-  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       network_interfaces_subscription_;
-  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       users_subscription_;
-  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       hardware_status_subscription_;
-  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       session_status_subscription_;
 
   base::WeakPtrFactory<DeviceStatusCollector> weak_factory_;

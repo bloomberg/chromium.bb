@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_REMOTE_COMMANDS_AFFILIATED_REMOTE_COMMANDS_INVALIDATOR_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_REMOTE_COMMANDS_AFFILIATED_REMOTE_COMMANDS_INVALIDATOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider.h"
 
 namespace policy {
@@ -32,7 +33,7 @@ class AffiliatedRemoteCommandsInvalidator
   CloudPolicyCore* const core_;
   AffiliatedInvalidationServiceProvider* const invalidation_service_provider_;
 
-  scoped_ptr<RemoteCommandsInvalidatorImpl> invalidator_;
+  std::unique_ptr<RemoteCommandsInvalidatorImpl> invalidator_;
 
   DISALLOW_COPY_AND_ASSIGN(AffiliatedRemoteCommandsInvalidator);
 };

@@ -5,8 +5,10 @@
 #include "chrome/browser/chromeos/launcher_search_provider/launcher_search_provider_service.h"
 
 #include <stdint.h>
+
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/launcher_search_provider/launcher_search_provider_service_factory.h"
@@ -61,7 +63,7 @@ void Service::OnQueryStarted(app_list::LauncherSearchProvider* provider,
     // javascript side API while we use uint32_t internally to generate it.
     event_router->DispatchEventToExtension(
         extension_id,
-        make_scoped_ptr(new extensions::Event(
+        base::WrapUnique(new extensions::Event(
             extensions::events::LAUNCHER_SEARCH_PROVIDER_ON_QUERY_STARTED,
             api_launcher_search_provider::OnQueryStarted::kEventName,
             api_launcher_search_provider::OnQueryStarted::Create(
@@ -80,7 +82,7 @@ void Service::OnQueryEnded() {
   for (const ExtensionId extension_id : *cached_listener_extension_ids_.get()) {
     event_router->DispatchEventToExtension(
         extension_id,
-        make_scoped_ptr(new extensions::Event(
+        base::WrapUnique(new extensions::Event(
             extensions::events::LAUNCHER_SEARCH_PROVIDER_ON_QUERY_ENDED,
             api_launcher_search_provider::OnQueryEnded::kEventName,
             api_launcher_search_provider::OnQueryEnded::Create(query_id_))));
@@ -98,7 +100,7 @@ void Service::OnOpenResult(const ExtensionId& extension_id,
       extensions::EventRouter::Get(profile_);
   event_router->DispatchEventToExtension(
       extension_id,
-      make_scoped_ptr(new extensions::Event(
+      base::WrapUnique(new extensions::Event(
           extensions::events::LAUNCHER_SEARCH_PROVIDER_ON_OPEN_RESULT,
           api_launcher_search_provider::OnOpenResult::kEventName,
           api_launcher_search_provider::OnOpenResult::Create(item_id))));
@@ -106,7 +108,7 @@ void Service::OnOpenResult(const ExtensionId& extension_id,
 
 void Service::SetSearchResults(
     const extensions::Extension* extension,
-    scoped_ptr<ErrorReporter> error_reporter,
+    std::unique_ptr<ErrorReporter> error_reporter,
     const int query_id,
     const std::vector<extensions::api::launcher_search_provider::SearchResult>&
         results) {

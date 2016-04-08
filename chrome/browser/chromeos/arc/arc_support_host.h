@@ -16,7 +16,7 @@ class ArcSupportHost : public extensions::NativeMessageHost,
   static const char kHostName[];
   static const char* const kHostOrigin[];
 
-  static scoped_ptr<NativeMessageHost> Create();
+  static std::unique_ptr<NativeMessageHost> Create();
 
   ~ArcSupportHost() override;
 

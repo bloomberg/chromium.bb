@@ -17,7 +17,7 @@ namespace chromeos {
 namespace file_system_provider {
 
 ThrottledFileSystem::ThrottledFileSystem(
-    scoped_ptr<ProvidedFileSystemInterface> file_system)
+    std::unique_ptr<ProvidedFileSystemInterface> file_system)
     : file_system_(std::move(file_system)), weak_ptr_factory_(this) {
   const int opened_files_limit =
       file_system_->GetFileSystemInfo().opened_files_limit();
@@ -192,7 +192,7 @@ void ThrottledFileSystem::Notify(
     const base::FilePath& entry_path,
     bool recursive,
     storage::WatcherManager::ChangeType change_type,
-    scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
+    std::unique_ptr<ProvidedFileSystemObserver::Changes> changes,
     const std::string& tag,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   return file_system_->Notify(entry_path, recursive, change_type,

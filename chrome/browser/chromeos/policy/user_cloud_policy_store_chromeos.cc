@@ -68,7 +68,8 @@ class LegacyPolicyCacheLoader : public UserPolicyTokenLoader::Delegate,
   typedef base::Callback<void(const std::string&,
                               const std::string&,
                               CloudPolicyStore::Status,
-                              scoped_ptr<em::PolicyFetchResponse>)> Callback;
+                              std::unique_ptr<em::PolicyFetchResponse>)>
+      Callback;
 
   LegacyPolicyCacheLoader(
       const base::FilePath& token_cache_file,
@@ -101,7 +102,7 @@ class LegacyPolicyCacheLoader : public UserPolicyTokenLoader::Delegate,
 
   std::string dm_token_;
   std::string device_id_;
-  scoped_ptr<em::PolicyFetchResponse> policy_;
+  std::unique_ptr<em::PolicyFetchResponse> policy_;
   CloudPolicyStore::Status status_;
 
   Callback callback_;
@@ -202,7 +203,7 @@ void UserCloudPolicyStoreChromeOS::Store(
     const em::PolicyFetchResponse& policy) {
   // Cancel all pending requests.
   weak_factory_.InvalidateWeakPtrs();
-  scoped_ptr<em::PolicyFetchResponse> response(
+  std::unique_ptr<em::PolicyFetchResponse> response(
       new em::PolicyFetchResponse(policy));
   EnsurePolicyKeyLoaded(
       base::Bind(&UserCloudPolicyStoreChromeOS::ValidatePolicyForStore,
@@ -239,7 +240,8 @@ void UserCloudPolicyStoreChromeOS::LoadImmediately() {
     return;
   }
 
-  scoped_ptr<em::PolicyFetchResponse> policy(new em::PolicyFetchResponse());
+  std::unique_ptr<em::PolicyFetchResponse> policy(
+      new em::PolicyFetchResponse());
   if (!policy->ParseFromString(policy_blob)) {
     status_ = STATUS_PARSE_ERROR;
     NotifyStoreError();
@@ -260,16 +262,16 @@ void UserCloudPolicyStoreChromeOS::LoadImmediately() {
   LoadPolicyKey(policy_key_path_, &policy_key_);
   policy_key_loaded_ = true;
 
-  scoped_ptr<UserCloudPolicyValidator> validator =
+  std::unique_ptr<UserCloudPolicyValidator> validator =
       CreateValidatorForLoad(std::move(policy));
   validator->RunValidation();
   OnRetrievedPolicyValidated(validator.get());
 }
 
 void UserCloudPolicyStoreChromeOS::ValidatePolicyForStore(
-    scoped_ptr<em::PolicyFetchResponse> policy) {
+    std::unique_ptr<em::PolicyFetchResponse> policy) {
   // Create and configure a validator.
-  scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
+  std::unique_ptr<UserCloudPolicyValidator> validator = CreateValidator(
       std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);
   validator->ValidateUsername(account_id_.GetUserEmail(), true);
   if (policy_key_.empty()) {
@@ -351,7 +353,8 @@ void UserCloudPolicyStoreChromeOS::OnPolicyRetrieved(
   // Policy is supplied by session_manager. Disregard legacy data from now on.
   legacy_loader_.reset();
 
-  scoped_ptr<em::PolicyFetchResponse> policy(new em::PolicyFetchResponse());
+  std::unique_ptr<em::PolicyFetchResponse> policy(
+      new em::PolicyFetchResponse());
   if (!policy->ParseFromString(policy_blob)) {
     status_ = STATUS_PARSE_ERROR;
     NotifyStoreError();
@@ -366,9 +369,9 @@ void UserCloudPolicyStoreChromeOS::OnPolicyRetrieved(
 }
 
 void UserCloudPolicyStoreChromeOS::ValidateRetrievedPolicy(
-    scoped_ptr<em::PolicyFetchResponse> policy) {
+    std::unique_ptr<em::PolicyFetchResponse> policy) {
   // Create and configure a validator for the loaded policy.
-  scoped_ptr<UserCloudPolicyValidator> validator =
+  std::unique_ptr<UserCloudPolicyValidator> validator =
       CreateValidatorForLoad(std::move(policy));
   // Start validation. The Validator will delete itself once validation is
   // complete.
@@ -412,12 +415,12 @@ void UserCloudPolicyStoreChromeOS::OnLegacyLoadFinished(
     const std::string& dm_token,
     const std::string& device_id,
     Status status,
-    scoped_ptr<em::PolicyFetchResponse> policy) {
+    std::unique_ptr<em::PolicyFetchResponse> policy) {
   status_ = status;
   if (policy.get()) {
     // Create and configure a validator for the loaded legacy policy. Note that
     // the signature on this policy is not verified.
-    scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
+    std::unique_ptr<UserCloudPolicyValidator> validator = CreateValidator(
         std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);
     validator->ValidateUsername(account_id_.GetUserEmail(), true);
     validator.release()->StartValidation(
@@ -555,10 +558,10 @@ void UserCloudPolicyStoreChromeOS::OnGetSanitizedUsername(
   ReloadPolicyKey(callback);
 }
 
-scoped_ptr<UserCloudPolicyValidator>
+std::unique_ptr<UserCloudPolicyValidator>
 UserCloudPolicyStoreChromeOS::CreateValidatorForLoad(
-    scoped_ptr<em::PolicyFetchResponse> policy) {
-  scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
+    std::unique_ptr<em::PolicyFetchResponse> policy) {
+  std::unique_ptr<UserCloudPolicyValidator> validator = CreateValidator(
       std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_NOT_BEFORE);
   validator->ValidateUsername(account_id_.GetUserEmail(), true);
   const bool allow_rotation = false;

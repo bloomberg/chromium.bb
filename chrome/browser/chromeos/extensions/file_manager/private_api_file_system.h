@@ -260,8 +260,9 @@ class FileManagerPrivateInternalResolveIsolatedEntriesFunction
   bool RunAsync() override;
 
  private:
-  void RunAsyncAfterConvertFileDefinitionListToEntryDefinitionList(scoped_ptr<
-      file_manager::util::EntryDefinitionList> entry_definition_list);
+  void RunAsyncAfterConvertFileDefinitionListToEntryDefinitionList(
+      std::unique_ptr<file_manager::util::EntryDefinitionList>
+          entry_definition_list);
 };
 
 class FileManagerPrivateInternalComputeChecksumFunction
@@ -279,7 +280,7 @@ class FileManagerPrivateInternalComputeChecksumFunction
   bool RunAsync() override;
 
  private:
-  scoped_ptr<drive::util::FileStreamMd5Digester> digester_;
+  std::unique_ptr<drive::util::FileStreamMd5Digester> digester_;
 
   void Respond(const std::string& hash);
 };

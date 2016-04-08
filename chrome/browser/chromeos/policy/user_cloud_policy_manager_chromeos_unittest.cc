@@ -100,7 +100,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
                        BuildFakeProfileOAuth2TokenService));
     profile_ = profile_manager_->CreateTestingProfile(
         chrome::kInitialProfile,
-        scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
+        std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
         base::UTF8ToUTF16(""), 0, std::string(), factories);
     // Usually the signin Profile and the main Profile are separate, but since
     // the signin Profile is an OTR Profile then for this test it suffices to
@@ -170,13 +170,10 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     external_data_manager_->SetPolicyStore(store_);
     EXPECT_CALL(*store_, Load());
     manager_.reset(new UserCloudPolicyManagerChromeOS(
-        scoped_ptr<CloudPolicyStore>(store_),
-        scoped_ptr<CloudExternalDataManager>(external_data_manager_),
-        base::FilePath(),
-        wait_for_fetch,
-        base::TimeDelta::FromSeconds(fetch_timeout),
-        task_runner_,
-        task_runner_,
+        std::unique_ptr<CloudPolicyStore>(store_),
+        std::unique_ptr<CloudExternalDataManager>(external_data_manager_),
+        base::FilePath(), wait_for_fetch,
+        base::TimeDelta::FromSeconds(fetch_timeout), task_runner_, task_runner_,
         task_runner_));
     manager_->Init(&schema_registry_);
     manager_->AddObserver(&observer_);
@@ -336,11 +333,11 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
   MockCloudExternalDataManager* external_data_manager_;  // Not owned.
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   SchemaRegistry schema_registry_;
-  scoped_ptr<UserCloudPolicyManagerChromeOS> manager_;
-  scoped_ptr<UserCloudPolicyTokenForwarder> token_forwarder_;
+  std::unique_ptr<UserCloudPolicyManagerChromeOS> manager_;
+  std::unique_ptr<UserCloudPolicyTokenForwarder> token_forwarder_;
 
   // Required by ProfileHelper to get the signin Profile context.
-  scoped_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;
   TestingProfile* signin_profile_;
 

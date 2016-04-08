@@ -115,8 +115,9 @@ void DeviceSettingsService::Load() {
   EnqueueLoad(false);
 }
 
-void DeviceSettingsService::Store(scoped_ptr<em::PolicyFetchResponse> policy,
-                                  const base::Closure& callback) {
+void DeviceSettingsService::Store(
+    std::unique_ptr<em::PolicyFetchResponse> policy,
+    const base::Closure& callback) {
   Enqueue(linked_ptr<SessionManagerOperation>(new StoreSettingsOperation(
       base::Bind(&DeviceSettingsService::HandleCompletedOperation,
                  weak_factory_.GetWeakPtr(), callback),

@@ -66,7 +66,7 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
     EnterpriseInstallAttributes* install_attributes,
     ServerBackedStateKeysBroker* state_keys_broker,
     chromeos::OwnerSettingsServiceChromeOS* owner_settings_service,
-    scoped_ptr<CloudPolicyClient> client,
+    std::unique_ptr<CloudPolicyClient> client,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     const EnrollmentConfig& enrollment_config,
     const std::string& auth_token,
@@ -116,7 +116,7 @@ void EnrollmentHandlerChromeOS::StartEnrollment() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-scoped_ptr<CloudPolicyClient> EnrollmentHandlerChromeOS::ReleaseClient() {
+std::unique_ptr<CloudPolicyClient> EnrollmentHandlerChromeOS::ReleaseClient() {
   Stop();
   return std::move(client_);
 }
@@ -136,9 +136,9 @@ void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
     return;
   }
 
-  scoped_ptr<DeviceCloudPolicyValidator> validator(
+  std::unique_ptr<DeviceCloudPolicyValidator> validator(
       DeviceCloudPolicyValidator::Create(
-          scoped_ptr<em::PolicyFetchResponse>(
+          std::unique_ptr<em::PolicyFetchResponse>(
               new em::PolicyFetchResponse(*policy)),
           background_task_runner_));
 

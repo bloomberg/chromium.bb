@@ -30,13 +30,13 @@ PolicyCertService* PolicyCertServiceFactory::GetForProfile(Profile* profile) {
 }
 
 // static
-scoped_ptr<PolicyCertVerifier> PolicyCertServiceFactory::CreateForProfile(
+std::unique_ptr<PolicyCertVerifier> PolicyCertServiceFactory::CreateForProfile(
     Profile* profile) {
   DCHECK(!GetInstance()->GetServiceForBrowserContext(profile, false));
   PolicyCertService* service = static_cast<PolicyCertService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
   if (!service)
-    return scoped_ptr<PolicyCertVerifier>();
+    return std::unique_ptr<PolicyCertVerifier>();
   return service->CreatePolicyCertVerifier();
 }
 

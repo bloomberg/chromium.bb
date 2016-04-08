@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_LOCK_SCREEN_LOCKER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_LOCK_SCREEN_LOCKER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/time/time.h"
@@ -149,7 +149,7 @@ class ScreenLocker : public AuthStatusConsumer {
   const user_manager::User* FindUnlockUser(const std::string& user_id);
 
   // ScreenLockerDelegate instance in use.
-  scoped_ptr<ScreenLockerDelegate> delegate_;
+  std::unique_ptr<ScreenLockerDelegate> delegate_;
 
   // Users that can unlock the device.
   user_manager::UserList users_;
@@ -183,10 +183,10 @@ class ScreenLocker : public AuthStatusConsumer {
 
   // Copy of parameters passed to last call of OnLoginSuccess for usage in
   // UnlockOnLoginSuccess().
-  scoped_ptr<AuthenticationParametersCapture> authentication_capture_;
+  std::unique_ptr<AuthenticationParametersCapture> authentication_capture_;
 
   // Provider for button icon set by the screenlockPrivate API.
-  scoped_ptr<ScreenlockIconProvider> screenlock_icon_provider_;
+  std::unique_ptr<ScreenlockIconProvider> screenlock_icon_provider_;
 
   scoped_refptr<input_method::InputMethodManager::State> saved_ime_state_;
 

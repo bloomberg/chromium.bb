@@ -5,14 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PROFILES_PROFILE_LIST_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_PROFILES_PROFILE_LIST_CHROMEOS_H_
 
-#include "chrome/browser/profiles/profile_list.h"
-
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/profiles/profile_list.h"
 
 class ProfileAttributesStorage;
 
@@ -40,7 +39,7 @@ class ProfileListChromeOS : public ProfileList {
   base::FilePath active_profile_path_;
 
   // List of built "menu items."
-  std::vector<scoped_ptr<AvatarMenu::Item>> items_;
+  std::vector<std::unique_ptr<AvatarMenu::Item>> items_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileListChromeOS);
 };

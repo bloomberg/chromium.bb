@@ -205,7 +205,7 @@ struct ShowLoginWizardSwitchLanguageCallbackData {
 };
 
 void OnLanguageSwitchedCallback(
-    scoped_ptr<ShowLoginWizardSwitchLanguageCallbackData> self,
+    std::unique_ptr<ShowLoginWizardSwitchLanguageCallbackData> self,
     const chromeos::locale_util::LanguageSwitchResult& result) {
   if (!result.success)
     LOG(WARNING) << "Locale could not be found for '" << result.requested_locale
@@ -1258,7 +1258,7 @@ void ShowLoginWizard(const std::string& first_screen_name) {
   prefs->SetString(prefs::kApplicationLocale, locale);
   StartupUtils::SetInitialLocale(locale);
 
-  scoped_ptr<ShowLoginWizardSwitchLanguageCallbackData> data(
+  std::unique_ptr<ShowLoginWizardSwitchLanguageCallbackData> data(
       new ShowLoginWizardSwitchLanguageCallbackData(
           first_screen_name, startup_manifest, display_host));
 

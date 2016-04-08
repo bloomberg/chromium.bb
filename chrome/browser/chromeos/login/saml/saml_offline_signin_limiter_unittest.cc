@@ -58,7 +58,7 @@ class SAMLOfflineSigninLimiterTest : public testing::Test {
   MockUserManager* user_manager_;  // Not owned.
   ScopedUserManagerEnabler user_manager_enabler_;
 
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
   base::SimpleTestClock clock_;
 
   SAMLOfflineSigninLimiter* limiter_;  // Owned.

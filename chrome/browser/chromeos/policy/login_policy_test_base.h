@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_LOGIN_POLICY_TEST_BASE_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_LOGIN_POLICY_TEST_BASE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 
 namespace base {
@@ -48,7 +48,7 @@ class LoginPolicyTestBase : public chromeos::OobeBaseTest {
   void SetUpGaiaServerWithAccessTokens();
   void SetMergeSessionParams();
 
-  scoped_ptr<UserPolicyTestHelper> user_policy_helper_;
+  std::unique_ptr<UserPolicyTestHelper> user_policy_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginPolicyTestBase);
 };

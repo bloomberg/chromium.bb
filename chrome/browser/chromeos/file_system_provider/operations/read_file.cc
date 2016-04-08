@@ -21,7 +21,7 @@ namespace {
 
 // Convert |value| into |output|. If parsing fails, then returns a negative
 // value. Otherwise returns number of bytes written to the buffer.
-int CopyRequestValueToBuffer(scoped_ptr<RequestValue> value,
+int CopyRequestValueToBuffer(std::unique_ptr<RequestValue> value,
                              scoped_refptr<net::IOBuffer> buffer,
                              int buffer_offset,
                              int buffer_length) {
@@ -84,7 +84,7 @@ bool ReadFile::Execute(int request_id) {
 }
 
 void ReadFile::OnSuccess(int /* request_id */,
-                         scoped_ptr<RequestValue> result,
+                         std::unique_ptr<RequestValue> result,
                          bool has_more) {
   TRACE_EVENT0("file_system_provider", "ReadFile::OnSuccess");
   const int copy_result = CopyRequestValueToBuffer(std::move(result), buffer_,
@@ -103,7 +103,7 @@ void ReadFile::OnSuccess(int /* request_id */,
 }
 
 void ReadFile::OnError(int /* request_id */,
-                       scoped_ptr<RequestValue> /* result */,
+                       std::unique_ptr<RequestValue> /* result */,
                        base::File::Error error) {
   TRACE_EVENT0("file_system_provider", "ReadFile::OnError");
   callback_.Run(0 /* chunk_length */, false /* has_more */, error);

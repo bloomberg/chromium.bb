@@ -4,9 +4,11 @@
 
 #include "chrome/browser/chromeos/power/extension_event_observer.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -84,9 +86,9 @@ ExtensionEventObserver::~ExtensionEventObserver() {
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
 }
 
-scoped_ptr<ExtensionEventObserver::TestApi>
+std::unique_ptr<ExtensionEventObserver::TestApi>
 ExtensionEventObserver::CreateTestApi() {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new ExtensionEventObserver::TestApi(weak_factory_.GetWeakPtr()));
 }
 
@@ -130,7 +132,7 @@ void ExtensionEventObserver::OnBackgroundHostCreated(
     return;
 
   auto result =
-      keepalive_sources_.add(host, make_scoped_ptr(new KeepaliveSources()));
+      keepalive_sources_.add(host, base::WrapUnique(new KeepaliveSources()));
 
   if (result.second)
     host->AddObserver(this);
@@ -140,7 +142,7 @@ void ExtensionEventObserver::OnExtensionHostDestroyed(
     const extensions::ExtensionHost* host) {
   DCHECK(keepalive_sources_.contains(host));
 
-  scoped_ptr<KeepaliveSources> sources =
+  std::unique_ptr<KeepaliveSources> sources =
       keepalive_sources_.take_and_erase(host);
 
   suspend_keepalive_count_ -= sources->unacked_push_messages.size();

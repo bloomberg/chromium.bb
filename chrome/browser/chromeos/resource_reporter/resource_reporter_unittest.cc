@@ -67,7 +67,7 @@ class DummyTaskManager : public task_management::TestTaskManager {
  public:
   DummyTaskManager() {
     set_timer_for_testing(
-        scoped_ptr<base::Timer>(new base::MockTimer(false, false)));
+        std::unique_ptr<base::Timer>(new base::MockTimer(false, false)));
   }
   ~DummyTaskManager() override {}
 

@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_POLICY_CERT_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_POLICY_CERT_SERVICE_FACTORY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 namespace base {
@@ -39,7 +39,7 @@ class PolicyCertServiceFactory : public BrowserContextKeyedServiceFactory {
   // incognito profile.
   // Note: NetworkConfigurationUpdater is currently only created for the primary
   // user's profile.
-  static scoped_ptr<PolicyCertVerifier> CreateForProfile(Profile* profile);
+  static std::unique_ptr<PolicyCertVerifier> CreateForProfile(Profile* profile);
 
   static PolicyCertServiceFactory* GetInstance();
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/file_system_provider/registry.h"
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/observer.h"
@@ -119,7 +120,7 @@ void Registry::ForgetFileSystem(const std::string& extension_id,
     dict_update->Remove(extension_id, NULL);
 }
 
-scoped_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
+std::unique_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
     const std::string& extension_id) {
   PrefService* const pref_service = profile_->GetPrefs();
   DCHECK(pref_service);
@@ -131,10 +132,10 @@ scoped_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
   const base::DictionaryValue* file_systems_per_extension = NULL;
   if (!file_systems->GetDictionaryWithoutPathExpansion(
           extension_id, &file_systems_per_extension)) {
-    return make_scoped_ptr(new RestoredFileSystems);  // Nothing to restore.
+    return base::WrapUnique(new RestoredFileSystems);  // Nothing to restore.
   }
 
-  scoped_ptr<RestoredFileSystems> restored_file_systems(
+  std::unique_ptr<RestoredFileSystems> restored_file_systems(
       new RestoredFileSystems);
 
   for (base::DictionaryValue::Iterator it(*file_systems_per_extension);

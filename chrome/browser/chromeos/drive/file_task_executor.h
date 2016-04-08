@@ -42,7 +42,7 @@ class FileTaskExecutor {
   FileTaskExecutor(Profile* profile, const std::string& app_id);
 
   // Creates FileTaskExecutor with a specific delegate.
-  FileTaskExecutor(scoped_ptr<FileTaskExecutorDelegate> delegate,
+  FileTaskExecutor(std::unique_ptr<FileTaskExecutorDelegate> delegate,
                    const std::string& app_id);
 
   // Executes file tasks, runs |done| and deletes |this|.
@@ -52,7 +52,8 @@ class FileTaskExecutor {
  private:
   ~FileTaskExecutor();
 
-  void OnFileEntryFetched(FileError error, scoped_ptr<ResourceEntry> entry);
+  void OnFileEntryFetched(FileError error,
+                          std::unique_ptr<ResourceEntry> entry);
   void OnAppAuthorized(const std::string& resource_id,
                        google_apis::DriveApiErrorCode error,
                        const GURL& open_link);
@@ -60,7 +61,7 @@ class FileTaskExecutor {
   // Calls |done_| with |success| status and deletes |this|.
   void Done(bool success);
 
-  scoped_ptr<FileTaskExecutorDelegate> delegate_;
+  std::unique_ptr<FileTaskExecutorDelegate> delegate_;
   std::string app_id_;
   int current_index_;
   file_manager::file_tasks::FileTaskFinishedCallback done_;

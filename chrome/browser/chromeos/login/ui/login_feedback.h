@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_FEEDBACK_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_FEEDBACK_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 class Profile;
@@ -44,7 +44,7 @@ class LoginFeedback {
   std::string description_;
   base::Closure finished_callback_;
 
-  scoped_ptr<FeedbackWindowHandler> feedback_window_handler_;
+  std::unique_ptr<FeedbackWindowHandler> feedback_window_handler_;
 
   base::WeakPtrFactory<LoginFeedback> weak_factory_;
 

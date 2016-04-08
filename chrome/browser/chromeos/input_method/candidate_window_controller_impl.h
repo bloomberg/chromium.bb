@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_CONTROLLER_IMPL_H_
 
-#include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "ui/base/ime/chromeos/ime_candidate_window_handler_interface.h"
 #include "ui/base/ime/infolist_entry.h"
 #include "ui/chromeos/ime/candidate_window_view.h"
@@ -84,7 +84,7 @@ class CandidateWindowControllerImpl
   gfx::Rect composition_head_;
 
   // This is the controller of the IME mode indicator.
-  scoped_ptr<ModeIndicatorController> mode_indicator_controller_;
+  std::unique_ptr<ModeIndicatorController> mode_indicator_controller_;
 
   // The infolist entries and its focused index which currently shown in
   // Infolist window.

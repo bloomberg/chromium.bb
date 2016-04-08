@@ -4,10 +4,12 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
@@ -84,9 +86,9 @@ TEST_F(ExtensionCacheTest, SizePolicy) {
                           now - base::TimeDelta::FromSeconds(3));
 
   ExtensionCacheImpl cache_impl(
-      make_scoped_ptr(new ChromeOSExtensionCacheDelegate(cache_path)));
+      base::WrapUnique(new ChromeOSExtensionCacheDelegate(cache_path)));
 
-  scoped_ptr<base::RunLoop> run_loop(new base::RunLoop);
+  std::unique_ptr<base::RunLoop> run_loop(new base::RunLoop);
   cache_impl.Start(run_loop->QuitClosure());
   run_loop->Run();
 

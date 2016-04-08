@@ -4,13 +4,13 @@
 
 #include "chrome/browser/chromeos/file_system_provider/operations/open_file.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/test_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
@@ -185,7 +185,7 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, OnSuccess) {
   EXPECT_TRUE(open_file.Execute(kRequestId));
 
   open_file.OnSuccess(kRequestId,
-                      scoped_ptr<RequestValue>(new RequestValue()),
+                      std::unique_ptr<RequestValue>(new RequestValue()),
                       false /* has_more */);
   ASSERT_EQ(1u, callback_logger.events().size());
   CallbackLogger::Event* event = callback_logger.events()[0];
@@ -208,7 +208,7 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, OnError) {
   EXPECT_TRUE(open_file.Execute(kRequestId));
 
   open_file.OnError(kRequestId,
-                    scoped_ptr<RequestValue>(new RequestValue()),
+                    std::unique_ptr<RequestValue>(new RequestValue()),
                     base::File::FILE_ERROR_TOO_MANY_OPENED);
   ASSERT_EQ(1u, callback_logger.events().size());
   CallbackLogger::Event* event = callback_logger.events()[0];

@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_SCOPED_CROS_SETTINGS_TEST_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_SCOPED_CROS_SETTINGS_TEST_HELPER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chromeos/settings/cros_settings_provider.h"
 
@@ -42,7 +42,7 @@ class ScopedCrosSettingsTestHelper {
 
   // Method to create an owner settings service that uses
   // |stub_settings_provider_| as settings write path.
-  scoped_ptr<FakeOwnerSettingsService> CreateOwnerSettingsService(
+  std::unique_ptr<FakeOwnerSettingsService> CreateOwnerSettingsService(
       Profile* profile);
 
   // These methods simply call the according |stub_settings_provider_| method.
@@ -68,8 +68,9 @@ class ScopedCrosSettingsTestHelper {
 
  private:
   // Helpers used to mock out cros settings.
-  scoped_ptr<ScopedTestDeviceSettingsService> test_device_settings_service_;
-  scoped_ptr<ScopedTestCrosSettings> test_cros_settings_;
+  std::unique_ptr<ScopedTestDeviceSettingsService>
+      test_device_settings_service_;
+  std::unique_ptr<ScopedTestCrosSettings> test_cros_settings_;
   CrosSettingsProvider* real_settings_provider_ = nullptr;
   StubCrosSettingsProvider stub_settings_provider_;
 

@@ -118,7 +118,7 @@ class Preferences : public syncable_prefs::PrefServiceSyncableObserver,
   syncable_prefs::PrefServiceSyncable* prefs_;
 
   input_method::InputMethodManager* input_method_manager_;
-  scoped_ptr<TracingManager> tracing_manager_;
+  std::unique_ptr<TracingManager> tracing_manager_;
 
   BooleanPrefMember performance_tracing_enabled_;
   BooleanPrefMember tap_to_click_enabled_;
@@ -158,7 +158,7 @@ class Preferences : public syncable_prefs::PrefServiceSyncableObserver,
   // Input Methods state for this user.
   scoped_refptr<input_method::InputMethodManager::State> ime_state_;
 
-  scoped_ptr<input_method::InputMethodSyncer> input_method_syncer_;
+  std::unique_ptr<input_method::InputMethodSyncer> input_method_syncer_;
 
   DISALLOW_COPY_AND_ASSIGN(Preferences);
 };

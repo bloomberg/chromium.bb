@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "extensions/browser/event_router.h"
 
@@ -18,7 +19,7 @@ namespace {
 // tests by Operation::SetDispatchEventImplForTest().
 bool DispatchEventImpl(extensions::EventRouter* event_router,
                        const std::string& extension_id,
-                       scoped_ptr<extensions::Event> event) {
+                       std::unique_ptr<extensions::Event> event) {
   if (!event_router->ExtensionHasEventListener(extension_id, event->event_name))
     return false;
 
@@ -47,8 +48,8 @@ void Operation::SetDispatchEventImplForTesting(
 bool Operation::SendEvent(int request_id,
                           extensions::events::HistogramValue histogram_value,
                           const std::string& event_name,
-                          scoped_ptr<base::ListValue> event_args) {
-  return dispatch_event_impl_.Run(make_scoped_ptr(new extensions::Event(
+                          std::unique_ptr<base::ListValue> event_args) {
+  return dispatch_event_impl_.Run(base::WrapUnique(new extensions::Event(
       histogram_value, event_name, std::move(event_args))));
 }
 

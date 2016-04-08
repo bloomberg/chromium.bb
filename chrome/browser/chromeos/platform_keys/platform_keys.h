@@ -7,13 +7,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/cert/x509_certificate.h"
 
 namespace content {
@@ -102,7 +102,7 @@ void SignRSAPKCS1Raw(const std::string& token_id,
 // contain the list of matching certificates (which may be empty) and
 // |error_message| will be empty. If an error occurred, |matches| will be null
 // and |error_message| contain an error message.
-typedef base::Callback<void(scoped_ptr<net::CertificateList> matches,
+typedef base::Callback<void(std::unique_ptr<net::CertificateList> matches,
                             const std::string& error_message)>
     SelectCertificatesCallback;
 
@@ -127,7 +127,8 @@ std::string GetSubjectPublicKeyInfo(
 void IntersectCertificates(
     const net::CertificateList& certs1,
     const net::CertificateList& certs2,
-    const base::Callback<void(scoped_ptr<net::CertificateList>)>& callback);
+    const base::Callback<void(std::unique_ptr<net::CertificateList>)>&
+        callback);
 
 // Obtains information about the public key in |certificate|.
 // If |certificate| contains an RSA key, sets |key_size_bits| to the modulus
@@ -144,7 +145,7 @@ bool GetPublicKey(const scoped_refptr<net::X509Certificate>& certificate,
 // contain the list of available certificates (maybe empty) and |error_message|
 // will be empty. If an error occurred, |certs| will be empty and
 // |error_message| contain an error message.
-typedef base::Callback<void(scoped_ptr<net::CertificateList> certs,
+typedef base::Callback<void(std::unique_ptr<net::CertificateList> certs,
                             const std::string& error_message)>
     GetCertificatesCallback;
 
@@ -188,7 +189,7 @@ void RemoveCertificate(const std::string& token_id,
 // If the list of available tokens could be successfully retrieved, |token_ids|
 // will contain the token ids. If an error occurs, |token_ids| will be NULL and
 // |error_message| will be set to an error message.
-typedef base::Callback<void(scoped_ptr<std::vector<std::string> > token_ids,
+typedef base::Callback<void(std::unique_ptr<std::vector<std::string>> token_ids,
                             const std::string& error_message)>
     GetTokensCallback;
 

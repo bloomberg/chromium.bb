@@ -150,7 +150,7 @@ AutomaticRebootManager::SystemEventTimes::SystemEventTimes(
 }
 
 AutomaticRebootManager::AutomaticRebootManager(
-    scoped_ptr<base::TickClock> clock)
+    std::unique_ptr<base::TickClock> clock)
     : clock_(std::move(clock)),
       have_boot_time_(false),
       have_update_reboot_needed_time_(false),

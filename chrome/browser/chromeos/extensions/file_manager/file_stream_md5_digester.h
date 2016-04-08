@@ -5,11 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_STREAM_MD5_DIGESTER_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_STREAM_MD5_DIGESTER_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/md5.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/io_buffer.h"
 
 namespace storage {
@@ -33,7 +34,7 @@ class FileStreamMd5Digester {
   // |callback|.  If an error occurs, |callback| is called with an empty string.
   // Only one stream can be processed at a time by each digester.  Do not call
   // GetMd5Digest before the results of a previous call have been returned.
-  void GetMd5Digest(scoped_ptr<storage::FileStreamReader> stream_reader,
+  void GetMd5Digest(std::unique_ptr<storage::FileStreamReader> stream_reader,
                     const ResultCallback& callback);
 
  private:
@@ -43,7 +44,7 @@ class FileStreamMd5Digester {
   void OnChunkRead(const ResultCallback& callback, int bytes_read);
 
   // Maximum chunk size for read operations.
-  scoped_ptr<storage::FileStreamReader> reader_;
+  std::unique_ptr<storage::FileStreamReader> reader_;
   scoped_refptr<net::IOBuffer> buffer_;
   base::MD5Context md5_context_;
 

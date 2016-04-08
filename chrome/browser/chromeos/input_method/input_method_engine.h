@@ -140,7 +140,7 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
   bool SendKeyEvent(ui::KeyEvent* event, const std::string& code) override;
 
   // The current candidate window.
-  scoped_ptr<ui::CandidateWindow> candidate_window_;
+  std::unique_ptr<ui::CandidateWindow> candidate_window_;
 
   // The current candidate window property.
   CandidateWindowProperty candidate_window_property_;

@@ -66,9 +66,9 @@ class PowerPrefsTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager profile_manager_;
   PowerPolicyController* power_policy_controller_;     // Not owned.
-  scoped_ptr<FakePowerManagerClient> fake_power_manager_client_;
+  std::unique_ptr<FakePowerManagerClient> fake_power_manager_client_;
 
-  scoped_ptr<PowerPrefs> power_prefs_;
+  std::unique_ptr<PowerPrefs> power_prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerPrefsTest);
 };
@@ -174,8 +174,8 @@ bool PowerPrefsTest::GetExpectedAllowScreenWakeLocksForProfile(
 
 TEST_F(PowerPrefsTest, LoginScreen) {
   // Set up login profile.
-  scoped_ptr<syncable_prefs::TestingPrefServiceSyncable> login_profile_prefs(
-      new syncable_prefs::TestingPrefServiceSyncable);
+  std::unique_ptr<syncable_prefs::TestingPrefServiceSyncable>
+      login_profile_prefs(new syncable_prefs::TestingPrefServiceSyncable);
   chrome::RegisterLoginProfilePrefs(login_profile_prefs->registry());
   TestingProfile::Builder builder;
   builder.SetPath(

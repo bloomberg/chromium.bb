@@ -18,7 +18,7 @@ LoggingDispatchEventImpl::~LoggingDispatchEventImpl() {
 }
 
 bool LoggingDispatchEventImpl::OnDispatchEventImpl(
-    scoped_ptr<extensions::Event> event) {
+    std::unique_ptr<extensions::Event> event) {
   events_.push_back(event->DeepCopy());
   return dispatch_reply_;
 }

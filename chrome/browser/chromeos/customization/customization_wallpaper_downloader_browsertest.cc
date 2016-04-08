@@ -102,7 +102,7 @@ class TestWallpaperImageURLFetcherCallback {
     std::copy(jpeg_data_raw.begin(), jpeg_data_raw.end(), jpeg_data_.begin());
   }
 
-  scoped_ptr<net::FakeURLFetcher> CreateURLFetcher(
+  std::unique_ptr<net::FakeURLFetcher> CreateURLFetcher(
       const GURL& url,
       net::URLFetcherDelegate* delegate,
       const std::string& response_data,
@@ -134,7 +134,7 @@ class TestWallpaperImageURLFetcherCallback {
       status = net::URLRequestStatus::SUCCESS;
       factory_->SetFakeResponse(url, response_data, response_code, status);
     }
-    scoped_ptr<net::FakeURLFetcher> fetcher(new net::FakeURLFetcher(
+    std::unique_ptr<net::FakeURLFetcher> fetcher(new net::FakeURLFetcher(
         url, delegate, response_data, response_code, status));
     scoped_refptr<net::HttpResponseHeaders> download_headers =
         new net::HttpResponseHeaders(std::string());
@@ -207,12 +207,12 @@ class WallpaperImageFetcherFactory {
     url_callback_->Initialize(fetcher_factory_.get());
   }
 
-  scoped_ptr<TestWallpaperImageURLFetcherCallback> url_callback_;
+  std::unique_ptr<TestWallpaperImageURLFetcherCallback> url_callback_;
 
   // Use a test factory as a fallback so we don't have to deal with other
   // requests.
-  scoped_ptr<net::TestURLFetcherFactory> fallback_fetcher_factory_;
-  scoped_ptr<net::FakeURLFetcherFactory> fetcher_factory_;
+  std::unique_ptr<net::TestURLFetcherFactory> fallback_fetcher_factory_;
+  std::unique_ptr<net::FakeURLFetcherFactory> fetcher_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperImageFetcherFactory);
 };
@@ -249,11 +249,11 @@ class CustomizationWallpaperDownloaderBrowserTest
 
   ash::DesktopBackgroundController* controller_;
   PrefService* local_state_;
-  scoped_ptr<base::CommandLine> wallpaper_manager_command_line_;
+  std::unique_ptr<base::CommandLine> wallpaper_manager_command_line_;
 
   // Directory created by CreateCmdlineWallpapersAndSetFlags() to store default
   // wallpaper images.
-  scoped_ptr<base::ScopedTempDir> cmdline_wallpaper_dir_;
+  std::unique_ptr<base::ScopedTempDir> cmdline_wallpaper_dir_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CustomizationWallpaperDownloaderBrowserTest);

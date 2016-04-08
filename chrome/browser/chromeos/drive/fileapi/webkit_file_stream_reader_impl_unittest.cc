@@ -7,11 +7,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -64,20 +64,22 @@ class WebkitFileStreamReaderImplTest : public ::testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
 
-  scoped_ptr<base::Thread> worker_thread_;
+  std::unique_ptr<base::Thread> worker_thread_;
 
-  scoped_ptr<FakeDriveService> fake_drive_service_;
-  scoped_ptr<test_util::FakeFileSystem> fake_file_system_;
+  std::unique_ptr<FakeDriveService> fake_drive_service_;
+  std::unique_ptr<test_util::FakeFileSystem> fake_file_system_;
 };
 
 TEST_F(WebkitFileStreamReaderImplTest, ReadThenGetLength) {
   const base::FilePath kDriveFile =
       util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
 
-  scoped_ptr<WebkitFileStreamReaderImpl> reader(new WebkitFileStreamReaderImpl(
-      GetFileSystemGetter(), worker_thread_->task_runner().get(), kDriveFile,
-      0,               // offset
-      base::Time()));  // expected modification time
+  std::unique_ptr<WebkitFileStreamReaderImpl> reader(
+      new WebkitFileStreamReaderImpl(
+          GetFileSystemGetter(), worker_thread_->task_runner().get(),
+          kDriveFile,
+          0,               // offset
+          base::Time()));  // expected modification time
 
   std::string content;
   ASSERT_EQ(net::OK, test_util::ReadAllData(reader.get(), &content));
@@ -92,10 +94,12 @@ TEST_F(WebkitFileStreamReaderImplTest, GetLengthThenRead) {
   const base::FilePath kDriveFile =
       util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
 
-  scoped_ptr<WebkitFileStreamReaderImpl> reader(new WebkitFileStreamReaderImpl(
-      GetFileSystemGetter(), worker_thread_->task_runner().get(), kDriveFile,
-      0,               // offset
-      base::Time()));  // expected modification time
+  std::unique_ptr<WebkitFileStreamReaderImpl> reader(
+      new WebkitFileStreamReaderImpl(
+          GetFileSystemGetter(), worker_thread_->task_runner().get(),
+          kDriveFile,
+          0,               // offset
+          base::Time()));  // expected modification time
 
   net::TestInt64CompletionCallback callback;
   int64_t length = reader->GetLength(callback.callback());
@@ -111,10 +115,11 @@ TEST_F(WebkitFileStreamReaderImplTest, ReadWithOffset) {
       util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
   const int kOffset = 5;
 
-  scoped_ptr<WebkitFileStreamReaderImpl> reader(new WebkitFileStreamReaderImpl(
-      GetFileSystemGetter(), worker_thread_->task_runner().get(), kDriveFile,
-      kOffset,
-      base::Time()));  // expected modification time
+  std::unique_ptr<WebkitFileStreamReaderImpl> reader(
+      new WebkitFileStreamReaderImpl(
+          GetFileSystemGetter(), worker_thread_->task_runner().get(),
+          kDriveFile, kOffset,
+          base::Time()));  // expected modification time
 
   std::string content;
   ASSERT_EQ(net::OK, test_util::ReadAllData(reader.get(), &content));
@@ -129,10 +134,12 @@ TEST_F(WebkitFileStreamReaderImplTest, ReadError) {
   const base::FilePath kDriveFile =
       util::GetDriveMyDriveRootPath().AppendASCII("non-existing.txt");
 
-  scoped_ptr<WebkitFileStreamReaderImpl> reader(new WebkitFileStreamReaderImpl(
-      GetFileSystemGetter(), worker_thread_->task_runner().get(), kDriveFile,
-      0,               // offset
-      base::Time()));  // expected modification time
+  std::unique_ptr<WebkitFileStreamReaderImpl> reader(
+      new WebkitFileStreamReaderImpl(
+          GetFileSystemGetter(), worker_thread_->task_runner().get(),
+          kDriveFile,
+          0,               // offset
+          base::Time()));  // expected modification time
 
   const int kBufferSize = 10;
   scoped_refptr<net::IOBuffer> io_buffer(new net::IOBuffer(kBufferSize));
@@ -146,10 +153,12 @@ TEST_F(WebkitFileStreamReaderImplTest, GetLengthError) {
   const base::FilePath kDriveFile =
       util::GetDriveMyDriveRootPath().AppendASCII("non-existing.txt");
 
-  scoped_ptr<WebkitFileStreamReaderImpl> reader(new WebkitFileStreamReaderImpl(
-      GetFileSystemGetter(), worker_thread_->task_runner().get(), kDriveFile,
-      0,               // offset
-      base::Time()));  // expected modification time
+  std::unique_ptr<WebkitFileStreamReaderImpl> reader(
+      new WebkitFileStreamReaderImpl(
+          GetFileSystemGetter(), worker_thread_->task_runner().get(),
+          kDriveFile,
+          0,               // offset
+          base::Time()));  // expected modification time
 
   net::TestInt64CompletionCallback callback;
   int64_t result = reader->GetLength(callback.callback());
@@ -166,7 +175,7 @@ TEST_F(WebkitFileStreamReaderImplTest, LastModification) {
       "2011-12-14T00:40:47.330Z", &expected_modification_time));
 
   FileError error = FILE_ERROR_FAILED;
-  scoped_ptr<ResourceEntry> entry;
+  std::unique_ptr<ResourceEntry> entry;
   fake_file_system_->GetResourceEntry(
       kDriveFile,
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
@@ -175,7 +184,7 @@ TEST_F(WebkitFileStreamReaderImplTest, LastModification) {
   ASSERT_TRUE(entry);
 
   google_apis::DriveApiErrorCode status = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::FileResource> server_entry;
+  std::unique_ptr<google_apis::FileResource> server_entry;
   fake_drive_service_->UpdateResource(
       entry->resource_id(),
       std::string(),  // parent_resource_id
@@ -186,10 +195,12 @@ TEST_F(WebkitFileStreamReaderImplTest, LastModification) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(google_apis::HTTP_SUCCESS, status);
 
-  scoped_ptr<WebkitFileStreamReaderImpl> reader(new WebkitFileStreamReaderImpl(
-      GetFileSystemGetter(), worker_thread_->task_runner().get(), kDriveFile,
-      0,  // offset
-      expected_modification_time));
+  std::unique_ptr<WebkitFileStreamReaderImpl> reader(
+      new WebkitFileStreamReaderImpl(GetFileSystemGetter(),
+                                     worker_thread_->task_runner().get(),
+                                     kDriveFile,
+                                     0,  // offset
+                                     expected_modification_time));
 
   net::TestInt64CompletionCallback callback;
   int64_t result = reader->GetLength(callback.callback());
@@ -205,10 +216,12 @@ TEST_F(WebkitFileStreamReaderImplTest, DISABLED_LastModificationError) {
   const base::FilePath kDriveFile =
       util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
 
-  scoped_ptr<WebkitFileStreamReaderImpl> reader(new WebkitFileStreamReaderImpl(
-      GetFileSystemGetter(), worker_thread_->task_runner().get(), kDriveFile,
-      0,  // offset
-      base::Time::FromInternalValue(1)));
+  std::unique_ptr<WebkitFileStreamReaderImpl> reader(
+      new WebkitFileStreamReaderImpl(GetFileSystemGetter(),
+                                     worker_thread_->task_runner().get(),
+                                     kDriveFile,
+                                     0,  // offset
+                                     base::Time::FromInternalValue(1)));
 
   net::TestInt64CompletionCallback callback;
   int64_t result = reader->GetLength(callback.callback());

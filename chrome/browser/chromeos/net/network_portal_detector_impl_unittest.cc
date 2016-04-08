@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
+
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
-#include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -264,12 +265,11 @@ class NetworkPortalDetectorImplTest
     base::RunLoop().RunUntilIdle();
   }
 
-  scoped_ptr<EnumHistogramChecker> MakeResultHistogramChecker() {
-    return scoped_ptr<EnumHistogramChecker>(
-               new EnumHistogramChecker(
-                   "CaptivePortal.OOBE.DetectionResult",
-                   NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT,
-                   original_samples_.get()));
+  std::unique_ptr<EnumHistogramChecker> MakeResultHistogramChecker() {
+    return std::unique_ptr<EnumHistogramChecker>(new EnumHistogramChecker(
+        "CaptivePortal.OOBE.DetectionResult",
+        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT,
+        original_samples_.get()));
   }
 
  private:
@@ -301,9 +301,9 @@ class NetworkPortalDetectorImplTest
 
   content::TestBrowserThreadBundle thread_bundle_;
   Profile* profile_ = nullptr;
-  scoped_ptr<NetworkPortalDetectorImpl> network_portal_detector_;
-  scoped_ptr<base::HistogramSamples> original_samples_;
-  scoped_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<NetworkPortalDetectorImpl> network_portal_detector_;
+  std::unique_ptr<base::HistogramSamples> original_samples_;
+  std::unique_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
   TestingProfileManager test_profile_manager_;
 };
 

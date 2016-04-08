@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SIGNIN_OAUTH2_TOKEN_INITIALIZER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SIGNIN_OAUTH2_TOKEN_INITIALIZER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_token_fetcher.h"
 #include "chromeos/login/auth/user_context.h"
 
@@ -37,7 +37,7 @@ class OAuth2TokenInitializer final : public OAuth2TokenFetcher::Delegate {
 
   UserContext user_context_;
   FetchOAuth2TokensCallback callback_;
-  scoped_ptr<OAuth2TokenFetcher> oauth2_token_fetcher_;
+  std::unique_ptr<OAuth2TokenFetcher> oauth2_token_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2TokenInitializer);
 };

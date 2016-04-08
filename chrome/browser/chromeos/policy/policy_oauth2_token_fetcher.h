@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_POLICY_OAUTH2_TOKEN_FETCHER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_POLICY_OAUTH2_TOKEN_FETCHER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
@@ -101,8 +101,8 @@ class PolicyOAuth2TokenFetcher
 
   scoped_refptr<net::URLRequestContextGetter> auth_context_getter_;
   scoped_refptr<net::URLRequestContextGetter> system_context_getter_;
-  scoped_ptr<GaiaAuthFetcher> refresh_token_fetcher_;
-  scoped_ptr<OAuth2AccessTokenFetcher> access_token_fetcher_;
+  std::unique_ptr<GaiaAuthFetcher> refresh_token_fetcher_;
+  std::unique_ptr<OAuth2AccessTokenFetcher> access_token_fetcher_;
 
   // OAuth2 refresh token. Could come either from the outside or through
   // refresh token fetching flow within this class.

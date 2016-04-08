@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_SYSTEM_PROVIDER_PROVIDER_FUNCTION_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_SYSTEM_PROVIDER_PROVIDER_FUNCTION_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/file.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 
@@ -60,7 +60,7 @@ class FileSystemProviderInternalFunction : public ChromeSyncExtensionFunction {
   // Rejects the request and sets a response for this API function. Returns true
   // on success, and false on failure.
   bool RejectRequest(
-      scoped_ptr<chromeos::file_system_provider::RequestValue> value,
+      std::unique_ptr<chromeos::file_system_provider::RequestValue> value,
       base::File::Error error);
 
   // Fulfills the request with parsed arguments of this API function
@@ -68,7 +68,7 @@ class FileSystemProviderInternalFunction : public ChromeSyncExtensionFunction {
   // If |has_more| is set to true, then the function will be called again for
   // this request. Returns true on success, and false on failure.
   bool FulfillRequest(
-      scoped_ptr<chromeos::file_system_provider::RequestValue> value,
+      std::unique_ptr<chromeos::file_system_provider::RequestValue> value,
       bool has_more);
 
   // Subclasses implement this for their functionality.

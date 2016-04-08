@@ -93,7 +93,7 @@ int64_t WebkitFileStreamReaderImpl::GetLength(
 void WebkitFileStreamReaderImpl::OnStreamReaderInitialized(
     const net::CompletionCallback& callback,
     int error,
-    scoped_ptr<ResourceEntry> entry) {
+    std::unique_ptr<ResourceEntry> entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(stream_reader_);
   DCHECK(!callback.is_null());

@@ -806,7 +806,7 @@ void VPNConfigView::ParseUIProperties(const NetworkState* vpn) {
 
 void VPNConfigView::GetPropertiesError(
     const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) {
+    std::unique_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("Shill Error from VpnConfigView: " + error_name, "");
 }
 

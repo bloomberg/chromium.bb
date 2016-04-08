@@ -67,7 +67,7 @@ void WaitAsyncWallpaperLoadFinished();
 // Only needs to be called (once) by tests that want to test loading of
 // default wallpapers.
 void CreateCmdlineWallpapers(const base::ScopedTempDir& dir,
-                             scoped_ptr<base::CommandLine>* command_line);
+                             std::unique_ptr<base::CommandLine>* command_line);
 
 }  // namespace wallpaper_manager_test_utils
 }  // namespace chromeos

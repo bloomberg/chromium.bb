@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
@@ -1384,7 +1385,7 @@ void UserSessionManager::InitRlzImpl(Profile* profile, bool disabled) {
   // Negative ping delay means to send ping immediately after a first search is
   // recorded.
   rlz::RLZTracker::SetRlzDelegate(
-      make_scoped_ptr(new ChromeRLZTrackerDelegate));
+      base::WrapUnique(new ChromeRLZTrackerDelegate));
   rlz::RLZTracker::InitRlzDelayed(
       user_manager::UserManager::Get()->IsCurrentUserNew(), ping_delay < 0,
       base::TimeDelta::FromMilliseconds(abs(ping_delay)),

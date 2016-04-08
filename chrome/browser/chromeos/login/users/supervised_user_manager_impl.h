@@ -107,7 +107,7 @@ class SupervisedUserManagerImpl
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;
 
-  scoped_ptr<SupervisedUserAuthentication> authentication_;
+  std::unique_ptr<SupervisedUserAuthentication> authentication_;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserManagerImpl);
 };

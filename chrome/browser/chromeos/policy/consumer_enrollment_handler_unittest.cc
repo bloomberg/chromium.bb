@@ -4,9 +4,10 @@
 
 #include "chrome/browser/chromeos/policy/consumer_enrollment_handler.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -57,9 +58,9 @@ class ConsumerEnrollmentHandlerTest : public testing::Test {
     BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
     connector->SetConsumerManagementServiceForTesting(
-        make_scoped_ptr(fake_service_));
+        base::WrapUnique(fake_service_));
     connector->SetDeviceCloudPolicyInitializerForTesting(
-        make_scoped_ptr(fake_initializer_));
+        base::WrapUnique(fake_initializer_));
 
     // Set up FakeChromeUserManager.
     fake_user_manager_->AddUser(AccountId::FromUserEmail(kTestOwner));
@@ -74,7 +75,7 @@ class ConsumerEnrollmentHandlerTest : public testing::Test {
         std::make_pair(ProfileOAuth2TokenServiceFactory::GetInstance(),
                        BuildAutoIssuingFakeProfileOAuth2TokenService));
     profile_ = testing_profile_manager_->CreateTestingProfile(
-        kTestUser, scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
+        kTestUser, std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
         base::UTF8ToUTF16(kTestUser), 0, std::string(), factories);
 
     // Set up the authenticated user name and ID.
@@ -102,9 +103,9 @@ class ConsumerEnrollmentHandlerTest : public testing::Test {
   FakeDeviceCloudPolicyInitializer* fake_initializer_;
   chromeos::FakeChromeUserManager* fake_user_manager_;
   chromeos::ScopedUserManagerEnabler scoped_user_manager_enabler_;
-  scoped_ptr<TestingProfileManager> testing_profile_manager_;
+  std::unique_ptr<TestingProfileManager> testing_profile_manager_;
   Profile* profile_;
-  scoped_ptr<ConsumerEnrollmentHandler> handler_;
+  std::unique_ptr<ConsumerEnrollmentHandler> handler_;
 };
 
 TEST_F(ConsumerEnrollmentHandlerTest, EnrollsSuccessfully) {

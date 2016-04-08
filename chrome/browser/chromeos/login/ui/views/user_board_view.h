@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_VIEWS_USER_BOARD_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UI_VIEWS_USER_BOARD_VIEW_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "components/proximity_auth/screenlock_bridge.h"
@@ -30,7 +30,7 @@ class UserBoardView {
   virtual void SetPublicSessionDisplayName(const AccountId& account_id,
                                            const std::string& display_name) = 0;
   virtual void SetPublicSessionLocales(const AccountId& account_id,
-                                       scoped_ptr<base::ListValue> locales,
+                                       std::unique_ptr<base::ListValue> locales,
                                        const std::string& default_locale,
                                        bool multiple_recommended_locales) = 0;
   virtual void ShowBannerMessage(const base::string16& message) = 0;

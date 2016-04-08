@@ -49,10 +49,11 @@ extern const base::FilePath::CharType kFakeFilePath[];
 // Represents a file or a directory on a fake file system.
 struct FakeEntry {
   FakeEntry();
-  FakeEntry(scoped_ptr<EntryMetadata> metadata, const std::string& contents);
+  FakeEntry(std::unique_ptr<EntryMetadata> metadata,
+            const std::string& contents);
   ~FakeEntry();
 
-  scoped_ptr<EntryMetadata> metadata;
+  std::unique_ptr<EntryMetadata> metadata;
   std::string contents;
 
  private:
@@ -160,7 +161,7 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
   void Notify(const base::FilePath& entry_path,
               bool recursive,
               storage::WatcherManager::ChangeType change_type,
-              scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
+              std::unique_ptr<ProvidedFileSystemObserver::Changes> changes,
               const std::string& tag,
               const storage::AsyncFileUtil::StatusCallback& callback) override;
   void Configure(

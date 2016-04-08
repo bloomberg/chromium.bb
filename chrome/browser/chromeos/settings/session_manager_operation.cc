@@ -134,7 +134,8 @@ void SessionManagerOperation::RetrieveDeviceSettings() {
 
 void SessionManagerOperation::ValidateDeviceSettings(
     const std::string& policy_blob) {
-  scoped_ptr<em::PolicyFetchResponse> policy(new em::PolicyFetchResponse());
+  std::unique_ptr<em::PolicyFetchResponse> policy(
+      new em::PolicyFetchResponse());
   if (policy_blob.empty()) {
     ReportResult(DeviceSettingsService::STORE_NO_POLICY);
     return;
@@ -219,7 +220,7 @@ void LoadSettingsOperation::Run() {
 
 StoreSettingsOperation::StoreSettingsOperation(
     const Callback& callback,
-    scoped_ptr<em::PolicyFetchResponse> policy)
+    std::unique_ptr<em::PolicyFetchResponse> policy)
     : SessionManagerOperation(callback),
       policy_(std::move(policy)),
       weak_factory_(this) {}

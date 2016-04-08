@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -37,10 +38,9 @@ class StatusUploader : public MediaCaptureDevicesDispatcher::Observer {
   // Constructor. |client| must be registered and must stay
   // valid and registered through the lifetime of this StatusUploader
   // object.
-  StatusUploader(
-      CloudPolicyClient* client,
-      scoped_ptr<DeviceStatusCollector> collector,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
+  StatusUploader(CloudPolicyClient* client,
+                 std::unique_ptr<DeviceStatusCollector> collector,
+                 const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
   ~StatusUploader() override;
 
@@ -79,7 +79,7 @@ class StatusUploader : public MediaCaptureDevicesDispatcher::Observer {
   CloudPolicyClient* client_;
 
   // DeviceStatusCollector that provides status for uploading.
-  scoped_ptr<DeviceStatusCollector> collector_;
+  std::unique_ptr<DeviceStatusCollector> collector_;
 
   // TaskRunner used for scheduling upload tasks.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -88,7 +88,7 @@ class StatusUploader : public MediaCaptureDevicesDispatcher::Observer {
   base::TimeDelta upload_frequency_;
 
   // Observer to changes in the upload frequency.
-  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       upload_frequency_observer_;
 
   // The time the last upload was performed.

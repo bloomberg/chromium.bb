@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -13,7 +14,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/chromeos_paths.h"
@@ -64,7 +64,7 @@ class DefaultAppOrderTest : public testing::Test {
   std::vector<std::string> built_in_default_;
 
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<base::ScopedPathOverride> path_override_;
+  std::unique_ptr<base::ScopedPathOverride> path_override_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultAppOrderTest);
 };
@@ -84,7 +84,7 @@ TEST_F(DefaultAppOrderTest, ExternalOrder) {
       "    \"default\": {\"name\": \"OEM name\"}}}]";
   CreateExternalOrderFile(std::string(kExternalOrder));
 
-  scoped_ptr<default_app_order::ExternalLoader> loader(
+  std::unique_ptr<default_app_order::ExternalLoader> loader(
       new default_app_order::ExternalLoader(false));
 
   std::vector<std::string> apps;
@@ -106,7 +106,7 @@ TEST_F(DefaultAppOrderTest, NoExternalFile) {
   ASSERT_FALSE(base::PathExists(none_existent_file));
   SetExternalFile(none_existent_file);
 
-  scoped_ptr<default_app_order::ExternalLoader> loader(
+  std::unique_ptr<default_app_order::ExternalLoader> loader(
       new default_app_order::ExternalLoader(false));
 
   std::vector<std::string> apps;
@@ -119,7 +119,7 @@ TEST_F(DefaultAppOrderTest, BadExternalFile) {
   const char kExternalOrder[] = "This is not a valid json.";
   CreateExternalOrderFile(std::string(kExternalOrder));
 
-  scoped_ptr<default_app_order::ExternalLoader> loader(
+  std::unique_ptr<default_app_order::ExternalLoader> loader(
       new default_app_order::ExternalLoader(false));
 
   std::vector<std::string> apps;
@@ -133,7 +133,7 @@ TEST_F(DefaultAppOrderTest, ImportDefault) {
       "{ \"import_default_order\": true }, \"app2\"]";
   CreateExternalOrderFile(std::string(kExternalOrder));
 
-  scoped_ptr<default_app_order::ExternalLoader> loader(
+  std::unique_ptr<default_app_order::ExternalLoader> loader(
       new default_app_order::ExternalLoader(false));
 
   std::vector<std::string> apps;

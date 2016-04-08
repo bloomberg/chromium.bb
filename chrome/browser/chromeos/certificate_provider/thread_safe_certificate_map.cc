@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/certificate_provider/thread_safe_certificate_map.h"
 
+#include "base/memory/ptr_util.h"
 #include "net/base/hash_value.h"
 #include "net/cert/x509_certificate.h"
 
@@ -23,7 +24,7 @@ void BuildFingerprintsMap(
           net::X509Certificate::CalculateFingerprint256(
               cert_info.certificate->os_cert_handle());
       fingerprint_to_cert->insert(std::make_pair(
-          fingerprint, make_scoped_ptr(new ThreadSafeCertificateMap::MapValue(
+          fingerprint, base::WrapUnique(new ThreadSafeCertificateMap::MapValue(
                            cert_info, extension_id))));
     }
   }

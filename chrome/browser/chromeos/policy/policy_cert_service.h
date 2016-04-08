@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_POLICY_CERT_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_POLICY_CERT_SERVICE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -45,7 +45,7 @@ class PolicyCertService
 
   // Creates an associated PolicyCertVerifier. The returned object must only be
   // used on the IO thread and must outlive this object.
-  scoped_ptr<PolicyCertVerifier> CreatePolicyCertVerifier();
+  std::unique_ptr<PolicyCertVerifier> CreatePolicyCertVerifier();
 
   // Returns true if the profile that owns this service has used certificates
   // installed via policy to establish a secure connection before. This means
@@ -61,7 +61,7 @@ class PolicyCertService
   // KeyedService:
   void Shutdown() override;
 
-  static scoped_ptr<PolicyCertService> CreateForTesting(
+  static std::unique_ptr<PolicyCertService> CreateForTesting(
       const std::string& user_id,
       PolicyCertVerifier* verifier,
       user_manager::UserManager* user_manager);

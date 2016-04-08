@@ -156,7 +156,7 @@ PlatformVerificationFlow::PlatformVerificationFlow()
       delegate_(NULL),
       timeout_delay_(base::TimeDelta::FromSeconds(kTimeoutInSeconds)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  scoped_ptr<ServerProxy> attestation_ca_client(new AttestationCAClient());
+  std::unique_ptr<ServerProxy> attestation_ca_client(new AttestationCAClient());
   default_attestation_flow_.reset(new AttestationFlow(
       async_caller_, cryptohome_client_, std::move(attestation_ca_client)));
   attestation_flow_ = default_attestation_flow_.get();
@@ -257,8 +257,8 @@ void PlatformVerificationFlow::OnAttestationPrepared(
 void PlatformVerificationFlow::GetCertificate(const ChallengeContext& context,
                                               const AccountId& account_id,
                                               bool force_new_key) {
-  scoped_ptr<base::Timer> timer(new base::Timer(false,    // Don't retain.
-                                                false));  // Don't repeat.
+  std::unique_ptr<base::Timer> timer(new base::Timer(false,    // Don't retain.
+                                                     false));  // Don't repeat.
   base::Closure timeout_callback = base::Bind(
       &PlatformVerificationFlow::OnCertificateTimeout,
       this,
@@ -276,7 +276,7 @@ void PlatformVerificationFlow::GetCertificate(const ChallengeContext& context,
 void PlatformVerificationFlow::OnCertificateReady(
     const ChallengeContext& context,
     const AccountId& account_id,
-    scoped_ptr<base::Timer> timer,
+    std::unique_ptr<base::Timer> timer,
     bool operation_success,
     const std::string& certificate_chain) {
   // Log failure before checking the timer so all failures are logged, even if

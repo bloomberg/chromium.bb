@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_CLOUD_EXTERNAL_DATA_MANAGER_BASE_TEST_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_CLOUD_EXTERNAL_DATA_MANAGER_BASE_TEST_UTIL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class DictionaryValue;
@@ -22,13 +22,13 @@ namespace test {
 
 // Passes |data| to |destination| and invokes |done_callback| to indicate that
 // the |data| has been retrieved.
-void ExternalDataFetchCallback(scoped_ptr<std::string>* destination,
+void ExternalDataFetchCallback(std::unique_ptr<std::string>* destination,
                                const base::Closure& done_callback,
-                               scoped_ptr<std::string> data);
+                               std::unique_ptr<std::string> data);
 
 // Constructs a value that points a policy referencing external data at |url|
 // and sets the expected hash of the external data to that of |data|.
-scoped_ptr<base::DictionaryValue> ConstructExternalDataReference(
+std::unique_ptr<base::DictionaryValue> ConstructExternalDataReference(
     const std::string& url,
     const std::string& data);
 
@@ -39,7 +39,7 @@ scoped_ptr<base::DictionaryValue> ConstructExternalDataReference(
 // removed.
 void SetExternalDataReference(CloudPolicyCore* core,
                               const std::string& policy,
-                              scoped_ptr<base::DictionaryValue> metadata);
+                              std::unique_ptr<base::DictionaryValue> metadata);
 
 }  // namespace test
 }  // namespace policy

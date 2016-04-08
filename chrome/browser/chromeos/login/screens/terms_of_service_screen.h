@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_TERMS_OF_SERVICE_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_TERMS_OF_SERVICE_SCREEN_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen_actor.h"
@@ -56,7 +57,7 @@ class TermsOfServiceScreen : public BaseScreen,
 
   TermsOfServiceScreenActor* actor_;
 
-  scoped_ptr<net::URLFetcher> terms_of_service_fetcher_;
+  std::unique_ptr<net::URLFetcher> terms_of_service_fetcher_;
 
   // Timer that enforces a custom (shorter) timeout on the attempt to download
   // the Terms of Service.

@@ -38,15 +38,15 @@ namespace {
 
 // Decodes a protobuf integer to an IntegerValue. Returns NULL in case the input
 // value is out of bounds.
-scoped_ptr<base::Value> DecodeIntegerValue(google::protobuf::int64 value) {
+std::unique_ptr<base::Value> DecodeIntegerValue(google::protobuf::int64 value) {
   if (value < std::numeric_limits<int>::min() ||
       value > std::numeric_limits<int>::max()) {
     LOG(WARNING) << "Integer value " << value
                  << " out of numeric limits, ignoring.";
-    return scoped_ptr<base::Value>();
+    return std::unique_ptr<base::Value>();
   }
 
-  return scoped_ptr<base::Value>(
+  return std::unique_ptr<base::Value>(
       new base::FundamentalValue(static_cast<int>(value)));
 }
 
@@ -54,16 +54,16 @@ scoped_ptr<base::Value> DecodeIntegerValue(google::protobuf::int64 value) {
 // according to a policy schema. |policy_name| is the name of a policy schema
 // defined in policy_templates.json. Returns NULL in case the input is not a
 // valid JSON string.
-scoped_ptr<base::Value> DecodeJsonStringAndDropUnknownBySchema(
+std::unique_ptr<base::Value> DecodeJsonStringAndDropUnknownBySchema(
     const std::string& json_string,
     const std::string& policy_name) {
   std::string error;
-  scoped_ptr<base::Value> root = base::JSONReader::ReadAndReturnError(
+  std::unique_ptr<base::Value> root = base::JSONReader::ReadAndReturnError(
       json_string, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &error);
 
   if (!root) {
     LOG(WARNING) << "Invalid JSON string: " << error << ", ignoring.";
-    return scoped_ptr<base::Value>();
+    return std::unique_ptr<base::Value>();
   }
 
   const Schema& schema = g_browser_process
@@ -79,7 +79,7 @@ scoped_ptr<base::Value> DecodeJsonStringAndDropUnknownBySchema(
                           &changed)) {
       LOG(WARNING) << "Invalid policy value for " << policy_name << ": "
                    << error << " at " << error_path << ".";
-      return scoped_ptr<base::Value>();
+      return std::unique_ptr<base::Value>();
     }
 
     if (changed) {
@@ -89,7 +89,7 @@ scoped_ptr<base::Value> DecodeJsonStringAndDropUnknownBySchema(
   } else {
     LOG(WARNING) << "Unknown or invalid policy schema for " << policy_name
                  << ".";
-    return scoped_ptr<base::Value>();
+    return std::unique_ptr<base::Value>();
   }
 
   return root;
@@ -198,10 +198,10 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
         policy.device_local_accounts());
     const RepeatedPtrField<em::DeviceLocalAccountInfoProto>& accounts =
         container.account();
-    scoped_ptr<base::ListValue> account_list(new base::ListValue());
+    std::unique_ptr<base::ListValue> account_list(new base::ListValue());
     RepeatedPtrField<em::DeviceLocalAccountInfoProto>::const_iterator entry;
     for (entry = accounts.begin(); entry != accounts.end(); ++entry) {
-      scoped_ptr<base::DictionaryValue> entry_dict(
+      std::unique_ptr<base::DictionaryValue> entry_dict(
           new base::DictionaryValue());
       if (entry->has_type()) {
         if (entry->has_account_id()) {
@@ -708,7 +708,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
 
     if (policy.system_timezone().has_timezone_detection_type()) {
-      scoped_ptr<base::Value> value(DecodeIntegerValue(
+      std::unique_ptr<base::Value> value(DecodeIntegerValue(
           policy.system_timezone().timezone_detection_type()));
       if (value) {
         policies->Set(key::kSystemTimezoneAutomaticDetection,
@@ -814,7 +814,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::LoginScreenPowerManagementProto& container(
         policy.login_screen_power_management());
     if (container.has_login_screen_power_management()) {
-      scoped_ptr<base::Value> decoded_json;
+      std::unique_ptr<base::Value> decoded_json;
       decoded_json = DecodeJsonStringAndDropUnknownBySchema(
           container.login_screen_power_management(),
           key::kDeviceLoginScreenPowerManagement);

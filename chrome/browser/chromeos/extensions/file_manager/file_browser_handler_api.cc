@@ -32,10 +32,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -290,7 +291,8 @@ FileBrowserHandlerInternalSelectFileFunction::
     ~FileBrowserHandlerInternalSelectFileFunction() {}
 
 bool FileBrowserHandlerInternalSelectFileFunction::RunAsync() {
-  scoped_ptr<SelectFile::Params> params(SelectFile::Params::Create(*args_));
+  std::unique_ptr<SelectFile::Params> params(
+      SelectFile::Params::Create(*args_));
 
   base::FilePath suggested_name(params->selection_params.suggested_name);
   std::vector<std::string> allowed_extensions;
@@ -358,7 +360,7 @@ void FileBrowserHandlerInternalSelectFileFunction::RespondEntryDefinition(
 void FileBrowserHandlerInternalSelectFileFunction::Respond(
     const EntryDefinition& entry_definition,
     bool success) {
-  scoped_ptr<SelectFile::Results::Result> result(
+  std::unique_ptr<SelectFile::Results::Result> result(
       new SelectFile::Results::Result());
   result->success = success;
 

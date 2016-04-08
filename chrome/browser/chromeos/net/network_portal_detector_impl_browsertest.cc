@@ -93,7 +93,7 @@ class TestObserver : public MessageCenterObserver {
   }
 
  private:
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };

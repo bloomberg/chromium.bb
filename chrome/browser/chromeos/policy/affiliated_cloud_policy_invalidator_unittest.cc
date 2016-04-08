@@ -84,7 +84,7 @@ TEST(AffiliatedCloudPolicyInvalidatorTest, CreateUseDestroy) {
 
   // Connect |core|. Expect it to send a registration request. Let the
   // registration succeed.
-  scoped_ptr<MockCloudPolicyClient> policy_client_owner(
+  std::unique_ptr<MockCloudPolicyClient> policy_client_owner(
       new MockCloudPolicyClient);
   MockCloudPolicyClient* policy_client = policy_client_owner.get();
   EXPECT_CALL(*policy_client, SetupRegistration("token", "device-id"))

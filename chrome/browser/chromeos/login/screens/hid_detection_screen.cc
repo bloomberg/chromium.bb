@@ -533,7 +533,7 @@ void HIDDetectionScreen::UpdateBTDevices() {
 }
 
 void HIDDetectionScreen::OnStartDiscoverySession(
-    scoped_ptr<device::BluetoothDiscoverySession> discovery_session) {
+    std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
   VLOG(1) << "BT Discovery session started";
   discovery_session_ = std::move(discovery_session);
   UpdateDevices();

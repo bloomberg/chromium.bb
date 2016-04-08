@@ -48,7 +48,7 @@ class TestDelegate : public FileTaskExecutorDelegate {
   bool SetUpTestFiles() {
     {
       google_apis::DriveApiErrorCode result = google_apis::DRIVE_OTHER_ERROR;
-      scoped_ptr<google_apis::FileResource> file;
+      std::unique_ptr<google_apis::FileResource> file;
       fake_drive_service_->AddNewFileWithResourceId(
           "id1",
           "text/plain",
@@ -63,7 +63,7 @@ class TestDelegate : public FileTaskExecutorDelegate {
     }
     {
       google_apis::DriveApiErrorCode result = google_apis::DRIVE_OTHER_ERROR;
-      scoped_ptr<google_apis::FileResource> file;
+      std::unique_ptr<google_apis::FileResource> file;
       fake_drive_service_->AddNewFileWithResourceId(
           "id2",
           "text/plain",
@@ -81,8 +81,8 @@ class TestDelegate : public FileTaskExecutorDelegate {
 
  private:
   std::set<std::string>* const opend_urls_;
-  scoped_ptr<FakeDriveService> fake_drive_service_;
-  scoped_ptr<test_util::FakeFileSystem> fake_file_system_;
+  std::unique_ptr<FakeDriveService> fake_drive_service_;
+  std::unique_ptr<test_util::FakeFileSystem> fake_file_system_;
 };
 
 }  // namespace
@@ -97,7 +97,7 @@ TEST(FileTaskExecutorTest, DriveAppOpenSuccess) {
   ASSERT_TRUE(delegate_ptr->SetUpTestFiles());
   // |executor| deletes itself after Execute() is finished.
   FileTaskExecutor* const executor = new FileTaskExecutor(
-      scoped_ptr<FileTaskExecutorDelegate>(delegate_ptr), "test-app-id");
+      std::unique_ptr<FileTaskExecutorDelegate>(delegate_ptr), "test-app-id");
 
   std::vector<storage::FileSystemURL> urls;
   urls.push_back(storage::FileSystemURL::CreateForTest(
@@ -131,7 +131,7 @@ TEST(FileTaskExecutorTest, DriveAppOpenFailForNonExistingFile) {
   ASSERT_TRUE(delegate_ptr->SetUpTestFiles());
   // |executor| deletes itself after Execute() is finished.
   FileTaskExecutor* const executor = new FileTaskExecutor(
-      scoped_ptr<FileTaskExecutorDelegate>(delegate_ptr), "test-app-id");
+      std::unique_ptr<FileTaskExecutorDelegate>(delegate_ptr), "test-app-id");
 
   std::vector<storage::FileSystemURL> urls;
   urls.push_back(storage::FileSystemURL::CreateForTest(

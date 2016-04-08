@@ -56,7 +56,7 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   bool initialized_;
   base::Time upgrade_detected_time_;
 
-  scoped_ptr<ChannelsRequester> channels_requester_;
+  std::unique_ptr<ChannelsRequester> channels_requester_;
 
   base::WeakPtrFactory<UpgradeDetectorChromeos> weak_factory_;
 

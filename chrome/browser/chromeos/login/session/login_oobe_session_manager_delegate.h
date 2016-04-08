@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SESSION_LOGIN_OOBE_SESSION_MANAGER_DELEGATE_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SESSION_LOGIN_OOBE_SESSION_MANAGER_DELEGATE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/session_manager/core/session_manager.h"
 
 namespace chromeos {

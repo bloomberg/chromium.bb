@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -108,7 +109,7 @@ class CloudExternalDataPolicyObserverTest
                              const std::string& user_id) override;
   void OnExternalDataFetched(const std::string& policy,
                              const std::string& user_id,
-                             scoped_ptr<std::string> data) override;
+                             std::unique_ptr<std::string> data) override;
 
   void CreateObserver();
 
@@ -138,21 +139,21 @@ class CloudExternalDataPolicyObserverTest
   std::string avatar_policy_2_;
 
   chromeos::CrosSettings cros_settings_;
-  scoped_ptr<DeviceLocalAccountPolicyService>
+  std::unique_ptr<DeviceLocalAccountPolicyService>
       device_local_account_policy_service_;
   FakeAffiliatedInvalidationServiceProvider
       affiliated_invalidation_service_provider_;
   net::TestURLFetcherFactory url_fetcher_factory_;
 
-  scoped_ptr<DeviceLocalAccountPolicyProvider>
+  std::unique_ptr<DeviceLocalAccountPolicyProvider>
       device_local_account_policy_provider_;
 
   MockCloudExternalDataManager external_data_manager_;
   MockConfigurationPolicyProvider user_policy_provider_;
 
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
 
-  scoped_ptr<CloudExternalDataPolicyObserver> observer_;
+  std::unique_ptr<CloudExternalDataPolicyObserver> observer_;
 
   std::vector<std::string> set_calls_;
   std::vector<std::string> cleared_calls_;
@@ -237,7 +238,7 @@ void CloudExternalDataPolicyObserverTest::OnExternalDataCleared(
 void CloudExternalDataPolicyObserverTest::OnExternalDataFetched(
     const std::string& policy,
     const std::string& user_id,
-    scoped_ptr<std::string> data) {
+    std::unique_ptr<std::string> data) {
   EXPECT_EQ(key::kUserAvatarImage, policy);
   fetched_calls_.push_back(make_pair(user_id, std::string()));
   fetched_calls_.back().second.swap(*data);
@@ -327,13 +328,13 @@ void CloudExternalDataPolicyObserverTest::LogInAsDeviceLocalAccount(
   device_local_account_policy_provider_.reset(
       new DeviceLocalAccountPolicyProvider(
           account_id.GetUserEmail(), device_local_account_policy_service_.get(),
-          scoped_ptr<PolicyMap>()));
+          std::unique_ptr<PolicyMap>()));
 
   PolicyServiceImpl::Providers providers;
   providers.push_back(device_local_account_policy_provider_.get());
   TestingProfile::Builder builder;
   builder.SetPolicyService(
-      scoped_ptr<PolicyService>(new PolicyServiceImpl(providers)));
+      std::unique_ptr<PolicyService>(new PolicyServiceImpl(providers)));
   builder.SetPath(chromeos::ProfileHelper::Get()->GetProfilePathByUserIdHash(
       chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
           account_id.GetUserEmail())));
@@ -370,7 +371,7 @@ void CloudExternalDataPolicyObserverTest::LogInAsRegularUser() {
   providers.push_back(&user_policy_provider_);
   TestingProfile::Builder builder;
   builder.SetPolicyService(
-      scoped_ptr<PolicyService>(new PolicyServiceImpl(providers)));
+      std::unique_ptr<PolicyService>(new PolicyServiceImpl(providers)));
   builder.SetPath(chromeos::ProfileHelper::Get()->GetProfilePathByUserIdHash(
       chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
           kRegularUserID)));
@@ -792,7 +793,7 @@ TEST_F(CloudExternalDataPolicyObserverTest, RegularUserFetchSuccess) {
   Mock::VerifyAndClear(&external_data_manager_);
   EXPECT_CALL(external_data_manager_, Fetch(key::kUserAvatarImage, _)).Times(0);
 
-  fetch_callback_.Run(make_scoped_ptr(new std::string(avatar_policy_1_data_)));
+  fetch_callback_.Run(base::WrapUnique(new std::string(avatar_policy_1_data_)));
 
   EXPECT_TRUE(set_calls_.empty());
   EXPECT_TRUE(cleared_calls_.empty());
@@ -898,7 +899,7 @@ TEST_F(CloudExternalDataPolicyObserverTest, RegularUserSetUnset) {
   Mock::VerifyAndClear(&external_data_manager_);
   EXPECT_CALL(external_data_manager_, Fetch(key::kUserAvatarImage, _)).Times(0);
 
-  fetch_callback_.Run(make_scoped_ptr(new std::string(avatar_policy_1_data_)));
+  fetch_callback_.Run(base::WrapUnique(new std::string(avatar_policy_1_data_)));
 
   EXPECT_TRUE(set_calls_.empty());
   EXPECT_TRUE(cleared_calls_.empty());
@@ -947,7 +948,7 @@ TEST_F(CloudExternalDataPolicyObserverTest, RegularUserSetSet) {
   Mock::VerifyAndClear(&external_data_manager_);
   EXPECT_CALL(external_data_manager_, Fetch(key::kUserAvatarImage, _)).Times(0);
 
-  fetch_callback_.Run(make_scoped_ptr(new std::string(avatar_policy_2_data_)));
+  fetch_callback_.Run(base::WrapUnique(new std::string(avatar_policy_2_data_)));
 
   EXPECT_TRUE(set_calls_.empty());
   EXPECT_TRUE(cleared_calls_.empty());

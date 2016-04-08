@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_DEMO_MODE_DEMO_APP_LAUNCHER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_DEMO_MODE_DEMO_APP_LAUNCHER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_profile_loader.h"
 
 class AccountId;
@@ -40,7 +40,7 @@ class DemoAppLauncher : public KioskProfileLoader::Delegate {
   void OnProfileLoaded(Profile* profile) override;
   void OnProfileLoadFailed(KioskAppLaunchError::Error error) override;
 
-  scoped_ptr<KioskProfileLoader> kiosk_profile_loader_;
+  std::unique_ptr<KioskProfileLoader> kiosk_profile_loader_;
 
   static base::FilePath* demo_app_path_;
 

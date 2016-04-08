@@ -76,7 +76,7 @@ int PolicyCertVerifier::Verify(
     net::CRLSet* crl_set,
     net::CertVerifyResult* verify_result,
     const net::CompletionCallback& completion_callback,
-    scoped_ptr<Request>* out_req,
+    std::unique_ptr<Request>* out_req,
     const net::BoundNetLog& net_log) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(delegate_);

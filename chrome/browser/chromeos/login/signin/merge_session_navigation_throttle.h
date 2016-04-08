@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SIGNIN_MERGE_SESSION_NAVIGATION_THROTTLE_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SIGNIN_MERGE_SESSION_NAVIGATION_THROTTLE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/navigation_throttle.h"
 
@@ -19,7 +20,7 @@ class NavigationHandle;
 // progress while we are attempting to load a google property.
 class MergeSessionNavigationThrottle : public content::NavigationThrottle {
  public:
-  static scoped_ptr<content::NavigationThrottle> Create(
+  static std::unique_ptr<content::NavigationThrottle> Create(
       content::NavigationHandle* handle);
   ~MergeSessionNavigationThrottle() override;
 

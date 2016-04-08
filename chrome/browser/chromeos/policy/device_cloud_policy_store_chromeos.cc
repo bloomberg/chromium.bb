@@ -53,7 +53,8 @@ void DeviceCloudPolicyStoreChromeOS::Store(
     return;
   }
 
-  scoped_ptr<DeviceCloudPolicyValidator> validator(CreateValidator(policy));
+  std::unique_ptr<DeviceCloudPolicyValidator> validator(
+      CreateValidator(policy));
   validator->ValidateSignature(public_key->as_string(),
                                GetPolicyVerificationKey(),
                                install_attributes_->GetDomain(),
@@ -82,7 +83,8 @@ void DeviceCloudPolicyStoreChromeOS::InstallInitialPolicy(
     return;
   }
 
-  scoped_ptr<DeviceCloudPolicyValidator> validator(CreateValidator(policy));
+  std::unique_ptr<DeviceCloudPolicyValidator> validator(
+      CreateValidator(policy));
   validator->ValidateInitialKey(GetPolicyVerificationKey(),
                                 install_attributes_->GetDomain());
   validator.release()->StartValidation(
@@ -103,12 +105,12 @@ void DeviceCloudPolicyStoreChromeOS::OnDeviceSettingsServiceShutdown() {
   device_settings_service_ = nullptr;
 }
 
-scoped_ptr<DeviceCloudPolicyValidator>
-    DeviceCloudPolicyStoreChromeOS::CreateValidator(
-        const em::PolicyFetchResponse& policy) {
-  scoped_ptr<DeviceCloudPolicyValidator> validator(
+std::unique_ptr<DeviceCloudPolicyValidator>
+DeviceCloudPolicyStoreChromeOS::CreateValidator(
+    const em::PolicyFetchResponse& policy) {
+  std::unique_ptr<DeviceCloudPolicyValidator> validator(
       DeviceCloudPolicyValidator::Create(
-          scoped_ptr<em::PolicyFetchResponse>(
+          std::unique_ptr<em::PolicyFetchResponse>(
               new em::PolicyFetchResponse(policy)),
           background_task_runner_));
   validator->ValidateDomain(install_attributes_->GetDomain());

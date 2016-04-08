@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_LOCAL_ACCOUNT_POLICY_STORE_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_LOCAL_ACCOUNT_POLICY_STORE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
@@ -69,13 +69,13 @@ class DeviceLocalAccountPolicyStore
   // Gets the owner key and triggers policy validation.
   void CheckKeyAndValidate(
       bool valid_timestamp_required,
-      scoped_ptr<enterprise_management::PolicyFetchResponse> policy,
+      std::unique_ptr<enterprise_management::PolicyFetchResponse> policy,
       const UserCloudPolicyValidator::CompletionCallback& callback);
 
   // Triggers policy validation.
   void Validate(
       bool valid_timestamp_required,
-      scoped_ptr<enterprise_management::PolicyFetchResponse> policy,
+      std::unique_ptr<enterprise_management::PolicyFetchResponse> policy,
       const UserCloudPolicyValidator::CompletionCallback& callback,
       chromeos::DeviceSettingsService::OwnershipStatus ownership_status);
 

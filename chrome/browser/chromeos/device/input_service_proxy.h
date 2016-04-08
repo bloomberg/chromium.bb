@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DEVICE_INPUT_SERVICE_PROXY_H_
 #define CHROME_BROWSER_CHROMEOS_DEVICE_INPUT_SERVICE_PROXY_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/task_runner.h"
@@ -59,7 +59,7 @@ class InputServiceProxy {
   void OnDeviceRemoved(const std::string& id);
 
   base::ObserverList<Observer> observers_;
-  scoped_ptr<ServiceObserver> service_observer_;
+  std::unique_ptr<ServiceObserver> service_observer_;
 
   base::ThreadChecker thread_checker_;
 

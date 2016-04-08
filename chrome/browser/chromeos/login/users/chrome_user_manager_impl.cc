@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 
 #include <stddef.h>
+
 #include <cstddef>
 #include <set>
 #include <utility>
@@ -16,6 +17,7 @@
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -142,8 +144,9 @@ void ChromeUserManagerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-scoped_ptr<ChromeUserManager> ChromeUserManagerImpl::CreateChromeUserManager() {
-  return scoped_ptr<ChromeUserManager>(new ChromeUserManagerImpl());
+std::unique_ptr<ChromeUserManager>
+ChromeUserManagerImpl::CreateChromeUserManager() {
+  return std::unique_ptr<ChromeUserManager>(new ChromeUserManagerImpl());
 }
 
 ChromeUserManagerImpl::ChromeUserManagerImpl()
@@ -493,7 +496,7 @@ void ChromeUserManagerImpl::OnExternalDataCleared(const std::string& policy,
 void ChromeUserManagerImpl::OnExternalDataFetched(
     const std::string& policy,
     const std::string& user_id,
-    scoped_ptr<std::string> data) {
+    std::unique_ptr<std::string> data) {
   const AccountId account_id =
       user_manager::known_user::GetAccountId(user_id, std::string());
   if (policy == policy::key::kUserAvatarImage)
@@ -688,7 +691,7 @@ void ChromeUserManagerImpl::GuestUserLoggedIn() {
   // mount point. Legacy (--login-profile) value will be used for now.
   // http://crosbug.com/230859
   active_user_->SetStubImage(
-      make_scoped_ptr(new user_manager::UserImage(
+      base::WrapUnique(new user_manager::UserImage(
           *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
               IDR_PROFILE_PICTURE_LOADING))),
       user_manager::User::USER_IMAGE_INVALID, false);
@@ -797,7 +800,7 @@ void ChromeUserManagerImpl::KioskAppLoggedIn(
 
   active_user_ = user_manager::User::CreateKioskAppUser(kiosk_app_account_id);
   active_user_->SetStubImage(
-      make_scoped_ptr(new user_manager::UserImage(
+      base::WrapUnique(new user_manager::UserImage(
           *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
               IDR_PROFILE_PICTURE_LOADING))),
       user_manager::User::USER_IMAGE_INVALID, false);
@@ -841,7 +844,7 @@ void ChromeUserManagerImpl::DemoAccountLoggedIn() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   active_user_ = user_manager::User::CreateKioskAppUser(login::DemoAccountId());
   active_user_->SetStubImage(
-      make_scoped_ptr(new user_manager::UserImage(
+      base::WrapUnique(new user_manager::UserImage(
           *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
               IDR_PROFILE_PICTURE_LOADING))),
       user_manager::User::USER_IMAGE_INVALID, false);

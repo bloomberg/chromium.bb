@@ -4,10 +4,10 @@
 
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,7 +52,7 @@ class StubCrosSettingsProviderTest : public testing::Test {
     observer_count_[path]++;
   }
 
-  scoped_ptr<StubCrosSettingsProvider> provider_;
+  std::unique_ptr<StubCrosSettingsProvider> provider_;
   std::map<std::string, int> observer_count_;
 };
 

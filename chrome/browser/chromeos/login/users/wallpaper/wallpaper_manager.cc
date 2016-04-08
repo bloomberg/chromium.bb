@@ -377,10 +377,10 @@ void WallpaperManager::InitializeWallpaper() {
   if (ShouldUseCustomizedDefaultWallpaper()) {
     SetDefaultWallpaperPath(GetCustomizedWallpaperDefaultRescaledFileName(
                                 wallpaper::kSmallWallpaperSuffix),
-                            scoped_ptr<gfx::ImageSkia>(),
+                            std::unique_ptr<gfx::ImageSkia>(),
                             GetCustomizedWallpaperDefaultRescaledFileName(
                                 wallpaper::kLargeWallpaperSuffix),
-                            scoped_ptr<gfx::ImageSkia>());
+                            std::unique_ptr<gfx::ImageSkia>());
   }
 
   base::CommandLine* command_line = GetCommandLine();
@@ -475,7 +475,7 @@ void WallpaperManager::RemoveUserWallpaperInfo(const AccountId& account_id) {
 
 void WallpaperManager::OnPolicyFetched(const std::string& policy,
                                        const AccountId& account_id,
-                                       scoped_ptr<std::string> data) {
+                                       std::unique_ptr<std::string> data) {
   if (!data)
     return;
 
@@ -532,7 +532,7 @@ void WallpaperManager::SetCustomWallpaper(
   };
   if (is_persistent) {
     image.EnsureRepsForSupportedScales();
-    scoped_ptr<gfx::ImageSkia> deep_copy(image.DeepCopy());
+    std::unique_ptr<gfx::ImageSkia> deep_copy(image.DeepCopy());
     // Block shutdown on this task. Otherwise, we may lose the custom wallpaper
     // that the user selected.
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner =
@@ -827,7 +827,7 @@ void WallpaperManager::RemovePendingWallpaperFromList(
 
 void WallpaperManager::SetPolicyControlledWallpaper(
     const AccountId& account_id,
-    scoped_ptr<user_manager::UserImage> user_image) {
+    std::unique_ptr<user_manager::UserImage> user_image) {
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(account_id);
   if (!user) {
@@ -947,7 +947,7 @@ void WallpaperManager::OnWallpaperDecoded(
     wallpaper::WallpaperLayout layout,
     bool update_wallpaper,
     MovableOnDestroyCallbackHolder on_finish,
-    scoped_ptr<user_manager::UserImage> user_image) {
+    std::unique_ptr<user_manager::UserImage> user_image) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TRACE_EVENT_ASYNC_END0("ui", "LoadAndDecodeWallpaper", this);
 
@@ -1000,7 +1000,7 @@ void WallpaperManager::StartLoad(const AccountId& account_id,
 void WallpaperManager::SetCustomizedDefaultWallpaperAfterCheck(
     const GURL& wallpaper_url,
     const base::FilePath& downloaded_file,
-    scoped_ptr<CustomizedWallpaperRescaledFiles> rescaled_files) {
+    std::unique_ptr<CustomizedWallpaperRescaledFiles> rescaled_files) {
   PrefService* pref_service = g_browser_process->local_state();
 
   std::string current_url =
@@ -1017,18 +1017,19 @@ void WallpaperManager::SetCustomizedDefaultWallpaperAfterCheck(
                    weak_factory_.GetWeakPtr(), wallpaper_url,
                    base::Passed(std::move(rescaled_files))));
   } else {
-    SetDefaultWallpaperPath(
-        rescaled_files->path_rescaled_small(), scoped_ptr<gfx::ImageSkia>(),
-        rescaled_files->path_rescaled_large(), scoped_ptr<gfx::ImageSkia>());
+    SetDefaultWallpaperPath(rescaled_files->path_rescaled_small(),
+                            std::unique_ptr<gfx::ImageSkia>(),
+                            rescaled_files->path_rescaled_large(),
+                            std::unique_ptr<gfx::ImageSkia>());
   }
 }
 
 void WallpaperManager::OnCustomizedDefaultWallpaperResized(
     const GURL& wallpaper_url,
-    scoped_ptr<CustomizedWallpaperRescaledFiles> rescaled_files,
-    scoped_ptr<bool> success,
-    scoped_ptr<gfx::ImageSkia> small_wallpaper_image,
-    scoped_ptr<gfx::ImageSkia> large_wallpaper_image) {
+    std::unique_ptr<CustomizedWallpaperRescaledFiles> rescaled_files,
+    std::unique_ptr<bool> success,
+    std::unique_ptr<gfx::ImageSkia> small_wallpaper_image,
+    std::unique_ptr<gfx::ImageSkia> large_wallpaper_image) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(rescaled_files);
   DCHECK(success.get());
@@ -1073,9 +1074,9 @@ void WallpaperManager::SetDefaultWallpaperPathsFromCommandLine(
 void WallpaperManager::OnDefaultWallpaperDecoded(
     const base::FilePath& path,
     const wallpaper::WallpaperLayout layout,
-    scoped_ptr<user_manager::UserImage>* result_out,
+    std::unique_ptr<user_manager::UserImage>* result_out,
     MovableOnDestroyCallbackHolder on_finish,
-    scoped_ptr<user_manager::UserImage> user_image) {
+    std::unique_ptr<user_manager::UserImage> user_image) {
   *result_out = std::move(user_image);
   ash::Shell::GetInstance()->desktop_background_controller()->SetWallpaperImage(
       (*result_out)->image(), layout);
@@ -1085,7 +1086,7 @@ void WallpaperManager::StartLoadAndSetDefaultWallpaper(
     const base::FilePath& path,
     const wallpaper::WallpaperLayout layout,
     MovableOnDestroyCallbackHolder on_finish,
-    scoped_ptr<user_manager::UserImage>* result_out) {
+    std::unique_ptr<user_manager::UserImage>* result_out) {
   user_image_loader::StartWithFilePath(
       task_runner_, path, ImageDecoder::ROBUST_JPEG_CODEC,
       0,  // Do not crop.
@@ -1097,9 +1098,9 @@ void WallpaperManager::StartLoadAndSetDefaultWallpaper(
 
 void WallpaperManager::SetDefaultWallpaperPath(
     const base::FilePath& default_small_wallpaper_file,
-    scoped_ptr<gfx::ImageSkia> small_wallpaper_image,
+    std::unique_ptr<gfx::ImageSkia> small_wallpaper_image,
     const base::FilePath& default_large_wallpaper_file,
-    scoped_ptr<gfx::ImageSkia> large_wallpaper_image) {
+    std::unique_ptr<gfx::ImageSkia> large_wallpaper_image) {
   default_small_wallpaper_file_ = default_small_wallpaper_file;
   default_large_wallpaper_file_ = default_large_wallpaper_file;
 

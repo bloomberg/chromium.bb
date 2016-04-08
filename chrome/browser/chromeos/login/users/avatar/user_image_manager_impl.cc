@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -12,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
@@ -148,7 +150,7 @@ int ImageIndexToHistogramIndex(int image_index) {
   }
 }
 
-bool SaveImage(scoped_ptr<user_manager::UserImage::Bytes> image_bytes,
+bool SaveImage(std::unique_ptr<user_manager::UserImage::Bytes> image_bytes,
                const base::FilePath& image_path) {
   if (image_bytes->empty() ||
       base::WriteFile(image_path,
@@ -202,12 +204,12 @@ class UserImageManagerImpl::Job {
   // Saves the |user_image| to disk and sets the user image in local
   // state to that image. Also updates the user with the new image.
   void SetToImage(int image_index,
-                  scoped_ptr<user_manager::UserImage> user_image);
+                  std::unique_ptr<user_manager::UserImage> user_image);
 
   // Decodes the JPEG image |data|, crops and resizes the image, saves
   // it to disk and sets the user image in local state to that image.
   // Also updates the user object with the new image.
-  void SetToImageData(scoped_ptr<std::string> data);
+  void SetToImageData(std::unique_ptr<std::string> data);
 
   // Loads the image at |path|, transcodes it to JPEG format, saves
   // the image to disk and sets the user image in local state to that
@@ -222,20 +224,21 @@ class UserImageManagerImpl::Job {
  private:
   // Called back after an image has been loaded from disk.
   void OnLoadImageDone(bool save,
-                       scoped_ptr<user_manager::UserImage> user_image);
+                       std::unique_ptr<user_manager::UserImage> user_image);
 
   // Updates the user object with |user_image|.
-  void UpdateUser(scoped_ptr<user_manager::UserImage> user_image);
+  void UpdateUser(std::unique_ptr<user_manager::UserImage> user_image);
 
   // Updates the user object with |user_image|, and saves the image
   // bytes. Local state will be updated as needed.
-  void UpdateUserAndSaveImage(scoped_ptr<user_manager::UserImage> user_image);
+  void UpdateUserAndSaveImage(
+      std::unique_ptr<user_manager::UserImage> user_image);
 
   // Saves |image_bytes| to disk in JPEG format if
   // |image_is_safe_format|. Local state will be updated as needed.
   void SaveImageAndUpdateLocalState(
       bool image_is_safe_format,
-      scoped_ptr<user_manager::UserImage::Bytes> image_bytes);
+      std::unique_ptr<user_manager::UserImage::Bytes> image_bytes);
 
   // Called back after the user image has been saved to
   // disk. Updates the user image information in local state. The
@@ -292,8 +295,9 @@ void UserImageManagerImpl::Job::LoadImage(base::FilePath image_path,
   if (image_index_ >= 0 &&
       image_index_ < default_user_image::kDefaultImagesCount) {
     // Load one of the default images. This happens synchronously.
-    scoped_ptr<user_manager::UserImage> user_image(new user_manager::UserImage(
-        default_user_image::GetDefaultImage(image_index_)));
+    std::unique_ptr<user_manager::UserImage> user_image(
+        new user_manager::UserImage(
+            default_user_image::GetDefaultImage(image_index_)));
     UpdateUser(std::move(user_image));
     NotifyJobDone();
   } else if (image_index_ == user_manager::User::USER_IMAGE_EXTERNAL ||
@@ -322,8 +326,9 @@ void UserImageManagerImpl::Job::SetToDefaultImage(int default_image_index) {
   DCHECK_GT(default_user_image::kDefaultImagesCount, default_image_index);
 
   image_index_ = default_image_index;
-  scoped_ptr<user_manager::UserImage> user_image(new user_manager::UserImage(
-      default_user_image::GetDefaultImage(image_index_)));
+  std::unique_ptr<user_manager::UserImage> user_image(
+      new user_manager::UserImage(
+          default_user_image::GetDefaultImage(image_index_)));
 
   UpdateUser(std::move(user_image));
   UpdateLocalState();
@@ -332,7 +337,7 @@ void UserImageManagerImpl::Job::SetToDefaultImage(int default_image_index) {
 
 void UserImageManagerImpl::Job::SetToImage(
     int image_index,
-    scoped_ptr<user_manager::UserImage> user_image) {
+    std::unique_ptr<user_manager::UserImage> user_image) {
   DCHECK(!run_);
   run_ = true;
 
@@ -344,7 +349,8 @@ void UserImageManagerImpl::Job::SetToImage(
   UpdateUserAndSaveImage(std::move(user_image));
 }
 
-void UserImageManagerImpl::Job::SetToImageData(scoped_ptr<std::string> data) {
+void UserImageManagerImpl::Job::SetToImageData(
+    std::unique_ptr<std::string> data) {
   DCHECK(!run_);
   run_ = true;
 
@@ -385,7 +391,7 @@ void UserImageManagerImpl::Job::SetToPath(const base::FilePath& path,
 
 void UserImageManagerImpl::Job::OnLoadImageDone(
     bool save,
-    scoped_ptr<user_manager::UserImage> user_image) {
+    std::unique_ptr<user_manager::UserImage> user_image) {
   if (save) {
     UpdateUserAndSaveImage(std::move(user_image));
   } else {
@@ -395,7 +401,7 @@ void UserImageManagerImpl::Job::OnLoadImageDone(
 }
 
 void UserImageManagerImpl::Job::UpdateUser(
-    scoped_ptr<user_manager::UserImage> user_image) {
+    std::unique_ptr<user_manager::UserImage> user_image) {
   user_manager::User* user = parent_->GetUserAndModify();
   if (!user)
     return;
@@ -404,7 +410,7 @@ void UserImageManagerImpl::Job::UpdateUser(
     user->SetImage(std::move(user_image), image_index_);
   } else {
     user->SetStubImage(
-        make_scoped_ptr(new user_manager::UserImage(
+        base::WrapUnique(new user_manager::UserImage(
             *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                 IDR_PROFILE_PICTURE_LOADING))),
         image_index_, false);
@@ -415,14 +421,14 @@ void UserImageManagerImpl::Job::UpdateUser(
 }
 
 void UserImageManagerImpl::Job::UpdateUserAndSaveImage(
-    scoped_ptr<user_manager::UserImage> user_image) {
+    std::unique_ptr<user_manager::UserImage> user_image) {
   // TODO(crbug.com/593251): Remove the data copy.
   // Copy the image bytes, before the user image is passed to
   // UpdateUser(). This is needed to safely save the data bytes to the disk
   // in the blocking pool. Copying is not desirable but the user image is
   // JPEG data of 512x512 pixels (usually <100KB) hence it's not enormous.
   const bool image_is_safe_format = user_image->is_safe_format();
-  scoped_ptr<user_manager::UserImage::Bytes> copied_bytes;
+  std::unique_ptr<user_manager::UserImage::Bytes> copied_bytes;
   if (image_is_safe_format) {
     copied_bytes.reset(
         new user_manager::UserImage::Bytes(user_image->image_bytes()));
@@ -435,7 +441,7 @@ void UserImageManagerImpl::Job::UpdateUserAndSaveImage(
 
 void UserImageManagerImpl::Job::SaveImageAndUpdateLocalState(
     bool image_is_safe_format,
-    scoped_ptr<user_manager::UserImage::Bytes> image_bytes) {
+    std::unique_ptr<user_manager::UserImage::Bytes> image_bytes) {
   base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   image_path_ = user_data_dir.Append(user_id() + kSafeImagePathExtension);
@@ -476,7 +482,7 @@ void UserImageManagerImpl::Job::UpdateLocalState() {
           AccountId::FromUserEmail(user_id())))
     return;
 
-  scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
   entry->Set(kImagePathNodeName, new base::StringValue(image_path_.value()));
   entry->Set(kImageIndexNodeName, new base::FundamentalValue(image_index_));
   if (!image_url_.is_empty())
@@ -537,7 +543,7 @@ void UserImageManagerImpl::LoadUserImage() {
   image_properties->GetInteger(kImageIndexNodeName, &image_index);
   if (image_index >= 0 &&
       image_index < default_user_image::kDefaultImagesCount) {
-    user->SetImage(make_scoped_ptr(new user_manager::UserImage(
+    user->SetImage(base::WrapUnique(new user_manager::UserImage(
                        default_user_image::GetDefaultImage(image_index))),
                    image_index);
     return;
@@ -556,7 +562,7 @@ void UserImageManagerImpl::LoadUserImage() {
   image_properties->GetString(kImagePathNodeName, &image_path);
 
   user->SetImageURL(image_url);
-  user->SetStubImage(make_scoped_ptr(new user_manager::UserImage(
+  user->SetStubImage(base::WrapUnique(new user_manager::UserImage(
                          *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                              IDR_PROFILE_PICTURE_LOADING))),
                      image_index, true);
@@ -628,7 +634,7 @@ void UserImageManagerImpl::SaveUserDefaultImageIndex(int default_image_index) {
 }
 
 void UserImageManagerImpl::SaveUserImage(
-    scoped_ptr<user_manager::UserImage> user_image) {
+    std::unique_ptr<user_manager::UserImage> user_image) {
   if (IsUserImageManaged())
     return;
   job_.reset(new Job(this));
@@ -651,7 +657,7 @@ void UserImageManagerImpl::SaveUserImageFromProfileImage() {
   job_.reset(new Job(this));
   job_->SetToImage(user_manager::User::USER_IMAGE_PROFILE,
                    downloaded_profile_image_.isNull()
-                       ? make_scoped_ptr(new user_manager::UserImage)
+                       ? base::WrapUnique(new user_manager::UserImage)
                        : user_manager::UserImage::CreateAndEncode(
                              downloaded_profile_image_));
   // If no profile image has been downloaded yet, ensure that a download is
@@ -705,8 +711,9 @@ void UserImageManagerImpl::OnExternalDataCleared(const std::string& policy) {
   TryToCreateImageSyncObserver();
 }
 
-void UserImageManagerImpl::OnExternalDataFetched(const std::string& policy,
-                                                 scoped_ptr<std::string> data) {
+void UserImageManagerImpl::OnExternalDataFetched(
+    const std::string& policy,
+    std::unique_ptr<std::string> data) {
   DCHECK_EQ(policy::key::kUserAvatarImage, policy);
   DCHECK(IsUserImageManaged());
   if (data) {
@@ -743,7 +750,7 @@ bool UserImageManagerImpl::IsPreSignin() const {
 void UserImageManagerImpl::OnProfileDownloadSuccess(
     ProfileDownloader* downloader) {
   // Ensure that the |profile_downloader_| is deleted when this method returns.
-  scoped_ptr<ProfileDownloader> profile_downloader(
+  std::unique_ptr<ProfileDownloader> profile_downloader(
       profile_downloader_.release());
   DCHECK_EQ(downloader, profile_downloader.get());
 

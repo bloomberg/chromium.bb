@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/consumer_management_notifier_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -41,7 +42,7 @@ class ConsumerManagementNotifierFactoryTest : public testing::Test {
     BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
     connector->SetConsumerManagementServiceForTesting(
-        make_scoped_ptr(fake_service_));
+        base::WrapUnique(fake_service_));
 
     // Set up FakeChromeUserManager.
     fake_user_manager_->AddUser(AccountId::FromUserEmail(kTestOwner));
@@ -57,7 +58,7 @@ class ConsumerManagementNotifierFactoryTest : public testing::Test {
   FakeConsumerManagementService* fake_service_;
   chromeos::FakeChromeUserManager* fake_user_manager_;
   chromeos::ScopedUserManagerEnabler scoped_user_manager_enabler_;
-  scoped_ptr<TestingProfileManager> testing_profile_manager_;
+  std::unique_ptr<TestingProfileManager> testing_profile_manager_;
 };
 
 TEST_F(ConsumerManagementNotifierFactoryTest, ServiceIsCreated) {

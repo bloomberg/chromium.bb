@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_CREATION_CONTROLLER_NEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_CREATION_CONTROLLER_NEW_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
@@ -144,7 +144,7 @@ class SupervisedUserCreationControllerNew
     base::DictionaryValue password_data;
 
     Profile* manager_profile;
-    scoped_ptr<SupervisedUserRegistrationUtility> registration_utility;
+    std::unique_ptr<SupervisedUserRegistrationUtility> registration_utility;
   };
 
   // SupervisedUserAuthenticator::StatusConsumer overrides.
@@ -178,7 +178,7 @@ class SupervisedUserCreationControllerNew
   scoped_refptr<ExtendedAuthenticator> authenticator_;
 
   // Creation context. Not null while creating new LMU.
-  scoped_ptr<UserCreationContext> creation_context_;
+  std::unique_ptr<UserCreationContext> creation_context_;
 
   // Timer for showing warning if creation process takes too long.
   base::OneShotTimer timeout_timer_;

@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -16,7 +17,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -91,7 +92,9 @@ class EventLogger {
 
   class SuccessEvent {
    public:
-    SuccessEvent(int request_id, scoped_ptr<RequestValue> result, bool has_more)
+    SuccessEvent(int request_id,
+                 std::unique_ptr<RequestValue> result,
+                 bool has_more)
         : request_id_(request_id),
           result_(std::move(result)),
           has_more_(has_more) {}
@@ -103,14 +106,14 @@ class EventLogger {
 
    private:
     int request_id_;
-    scoped_ptr<RequestValue> result_;
+    std::unique_ptr<RequestValue> result_;
     bool has_more_;
   };
 
   class ErrorEvent {
    public:
     ErrorEvent(int request_id,
-               scoped_ptr<RequestValue> result,
+               std::unique_ptr<RequestValue> result,
                base::File::Error error)
         : request_id_(request_id), result_(std::move(result)), error_(error) {}
     virtual ~ErrorEvent() {}
@@ -121,7 +124,7 @@ class EventLogger {
 
    private:
     int request_id_;
-    scoped_ptr<RequestValue> result_;
+    std::unique_ptr<RequestValue> result_;
     base::File::Error error_;
   };
 
@@ -133,14 +136,14 @@ class EventLogger {
   }
 
   void OnSuccess(int request_id,
-                 scoped_ptr<RequestValue> result,
+                 std::unique_ptr<RequestValue> result,
                  bool has_more) {
     success_events_.push_back(
         new SuccessEvent(request_id, std::move(result), has_more));
   }
 
   void OnError(int request_id,
-               scoped_ptr<RequestValue> result,
+               std::unique_ptr<RequestValue> result,
                base::File::Error error) {
     error_events_.push_back(
         new ErrorEvent(request_id, std::move(result), error));
@@ -182,7 +185,7 @@ class FakeHandler : public RequestManager::HandlerInterface {
 
   // RequestManager::Handler overrides.
   void OnSuccess(int request_id,
-                 scoped_ptr<RequestValue> result,
+                 std::unique_ptr<RequestValue> result,
                  bool has_more) override {
     if (logger_.get())
       logger_->OnSuccess(request_id, std::move(result), has_more);
@@ -190,7 +193,7 @@ class FakeHandler : public RequestManager::HandlerInterface {
 
   // RequestManager::Handler overrides.
   void OnError(int request_id,
-               scoped_ptr<RequestValue> result,
+               std::unique_ptr<RequestValue> result,
                base::File::Error error) override {
     if (logger_.get())
       logger_->OnError(request_id, std::move(result), error);
@@ -324,9 +327,9 @@ class FileSystemProviderRequestManagerTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<FakeNotificationManager> notification_manager_;
-  scoped_ptr<RequestManager> request_manager_;
+  std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<FakeNotificationManager> notification_manager_;
+  std::unique_ptr<RequestManager> request_manager_;
 };
 
 TEST_F(FileSystemProviderRequestManagerTest, CreateFailure) {
@@ -336,7 +339,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateFailure) {
 
   const int request_id = request_manager_->CreateRequest(
       TESTING,
-      make_scoped_ptr<RequestManager::HandlerInterface>(
+      base::WrapUnique<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), false /* execute_reply */)));
 
   EXPECT_EQ(0, request_id);
@@ -362,7 +365,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill) {
 
   const int request_id = request_manager_->CreateRequest(
       TESTING,
-      make_scoped_ptr<RequestManager::HandlerInterface>(
+      base::WrapUnique<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
   EXPECT_EQ(1, request_id);
@@ -381,7 +384,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill) {
   ASSERT_EQ(1u, active_request_ids.size());
   EXPECT_EQ(request_id, active_request_ids[0]);
 
-  scoped_ptr<RequestValue> response(
+  std::unique_ptr<RequestValue> response(
       RequestValue::CreateForTesting("i-like-vanilla"));
   const bool has_more = false;
 
@@ -411,7 +414,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill) {
     EXPECT_EQ(0u, active_request_ids.size());
 
     const base::File::Error retry = request_manager_->FulfillRequest(
-        request_id, scoped_ptr<RequestValue>(new RequestValue), has_more);
+        request_id, std::unique_ptr<RequestValue>(new RequestValue), has_more);
     EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, retry);
     EXPECT_EQ(1u, observer.fulfilled().size());
   }
@@ -419,7 +422,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill) {
   // Rejecting should also fail.
   {
     const base::File::Error retry = request_manager_->RejectRequest(
-        request_id, scoped_ptr<RequestValue>(new RequestValue()),
+        request_id, std::unique_ptr<RequestValue>(new RequestValue()),
         base::File::FILE_ERROR_FAILED);
     EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, retry);
     EXPECT_EQ(0u, observer.rejected().size());
@@ -439,7 +442,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill_WithHasNext) {
 
   const int request_id = request_manager_->CreateRequest(
       TESTING,
-      make_scoped_ptr<RequestManager::HandlerInterface>(
+      base::WrapUnique<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
   EXPECT_EQ(1, request_id);
@@ -456,7 +459,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill_WithHasNext) {
   const bool has_more = true;
 
   const base::File::Error result = request_manager_->FulfillRequest(
-      request_id, scoped_ptr<RequestValue>(new RequestValue), has_more);
+      request_id, std::unique_ptr<RequestValue>(new RequestValue), has_more);
   EXPECT_EQ(base::File::FILE_OK, result);
 
   // Validate if the callback has correct arguments.
@@ -480,7 +483,8 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill_WithHasNext) {
 
     const bool new_has_more = false;
     const base::File::Error retry = request_manager_->FulfillRequest(
-        request_id, scoped_ptr<RequestValue>(new RequestValue), new_has_more);
+        request_id, std::unique_ptr<RequestValue>(new RequestValue),
+        new_has_more);
     EXPECT_EQ(base::File::FILE_OK, retry);
 
     ASSERT_EQ(2u, observer.fulfilled().size());
@@ -497,7 +501,8 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill_WithHasNext) {
 
     const bool new_has_more = false;
     const base::File::Error retry = request_manager_->FulfillRequest(
-        request_id, scoped_ptr<RequestValue>(new RequestValue), new_has_more);
+        request_id, std::unique_ptr<RequestValue>(new RequestValue),
+        new_has_more);
     EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, retry);
     EXPECT_EQ(0u, observer.rejected().size());
   }
@@ -516,7 +521,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndReject) {
 
   const int request_id = request_manager_->CreateRequest(
       TESTING,
-      make_scoped_ptr<RequestManager::HandlerInterface>(
+      base::WrapUnique<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
   EXPECT_EQ(1, request_id);
@@ -532,7 +537,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndReject) {
 
   const base::File::Error error = base::File::FILE_ERROR_NO_MEMORY;
   const base::File::Error result = request_manager_->RejectRequest(
-      request_id, scoped_ptr<RequestValue>(new RequestValue()), error);
+      request_id, std::unique_ptr<RequestValue>(new RequestValue()), error);
   EXPECT_EQ(base::File::FILE_OK, result);
 
   // Validate if the callback has correct arguments.
@@ -550,7 +555,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndReject) {
   {
     const bool has_more = false;
     const base::File::Error retry = request_manager_->FulfillRequest(
-        request_id, scoped_ptr<RequestValue>(new RequestValue), has_more);
+        request_id, std::unique_ptr<RequestValue>(new RequestValue), has_more);
     EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, retry);
     EXPECT_EQ(0u, observer.fulfilled().size());
   }
@@ -558,7 +563,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndReject) {
   // Rejecting should also fail.
   {
     const base::File::Error retry = request_manager_->RejectRequest(
-        request_id, scoped_ptr<RequestValue>(new RequestValue()), error);
+        request_id, std::unique_ptr<RequestValue>(new RequestValue()), error);
     EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, retry);
     EXPECT_EQ(1u, observer.rejected().size());
   }
@@ -578,7 +583,7 @@ TEST_F(FileSystemProviderRequestManagerTest,
 
   const int request_id = request_manager_->CreateRequest(
       TESTING,
-      make_scoped_ptr<RequestManager::HandlerInterface>(
+      base::WrapUnique<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
   EXPECT_EQ(1, request_id);
@@ -595,7 +600,8 @@ TEST_F(FileSystemProviderRequestManagerTest,
   const bool has_more = true;
 
   const base::File::Error result = request_manager_->FulfillRequest(
-      request_id + 1, scoped_ptr<RequestValue>(new RequestValue), has_more);
+      request_id + 1, std::unique_ptr<RequestValue>(new RequestValue),
+      has_more);
   EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, result);
 
   // Callbacks should not be called.
@@ -608,7 +614,7 @@ TEST_F(FileSystemProviderRequestManagerTest,
   // Confirm, that the request hasn't been removed, by fulfilling it correctly.
   {
     const base::File::Error retry = request_manager_->FulfillRequest(
-        request_id, scoped_ptr<RequestValue>(new RequestValue), has_more);
+        request_id, std::unique_ptr<RequestValue>(new RequestValue), has_more);
     EXPECT_EQ(base::File::FILE_OK, retry);
     EXPECT_EQ(1u, observer.fulfilled().size());
   }
@@ -624,7 +630,7 @@ TEST_F(FileSystemProviderRequestManagerTest,
 
   const int request_id = request_manager_->CreateRequest(
       TESTING,
-      make_scoped_ptr<RequestManager::HandlerInterface>(
+      base::WrapUnique<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
   EXPECT_EQ(1, request_id);
@@ -640,7 +646,7 @@ TEST_F(FileSystemProviderRequestManagerTest,
 
   const base::File::Error error = base::File::FILE_ERROR_NO_MEMORY;
   const base::File::Error result = request_manager_->RejectRequest(
-      request_id + 1, scoped_ptr<RequestValue>(new RequestValue()), error);
+      request_id + 1, std::unique_ptr<RequestValue>(new RequestValue()), error);
   EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, result);
 
   // Callbacks should not be called.
@@ -652,7 +658,7 @@ TEST_F(FileSystemProviderRequestManagerTest,
   // Confirm, that the request hasn't been removed, by rejecting it correctly.
   {
     const base::File::Error retry = request_manager_->RejectRequest(
-        request_id, scoped_ptr<RequestValue>(new RequestValue()), error);
+        request_id, std::unique_ptr<RequestValue>(new RequestValue()), error);
     EXPECT_EQ(base::File::FILE_OK, retry);
     EXPECT_EQ(1u, observer.rejected().size());
   }
@@ -665,12 +671,12 @@ TEST_F(FileSystemProviderRequestManagerTest, UniqueIds) {
 
   const int first_request_id = request_manager_->CreateRequest(
       TESTING,
-      make_scoped_ptr<RequestManager::HandlerInterface>(
+      base::WrapUnique<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
   const int second_request_id = request_manager_->CreateRequest(
       TESTING,
-      make_scoped_ptr<RequestManager::HandlerInterface>(
+      base::WrapUnique<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
   EXPECT_EQ(1, first_request_id);
@@ -689,7 +695,7 @@ TEST_F(FileSystemProviderRequestManagerTest, AbortOnDestroy) {
 
     request_id = request_manager.CreateRequest(
         TESTING,
-        make_scoped_ptr<RequestManager::HandlerInterface>(
+        base::WrapUnique<RequestManager::HandlerInterface>(
             new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
     EXPECT_EQ(1, request_id);
@@ -734,7 +740,7 @@ TEST_F(FileSystemProviderRequestManagerTest, AbortOnTimeout) {
   request_manager_->SetTimeoutForTesting(base::TimeDelta::FromSeconds(0));
   const int request_id = request_manager_->CreateRequest(
       TESTING,
-      make_scoped_ptr<RequestManager::HandlerInterface>(
+      base::WrapUnique<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
   EXPECT_EQ(1, request_id);
   EXPECT_EQ(0u, logger.success_events().size());
@@ -779,7 +785,7 @@ TEST_F(FileSystemProviderRequestManagerTest, ContinueOnTimeout) {
   request_manager_->SetTimeoutForTesting(base::TimeDelta::FromSeconds(0));
   const int request_id = request_manager_->CreateRequest(
       TESTING,
-      make_scoped_ptr<RequestManager::HandlerInterface>(
+      base::WrapUnique<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
   EXPECT_EQ(1, request_id);
   EXPECT_EQ(0u, logger.success_events().size());

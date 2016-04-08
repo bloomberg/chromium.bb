@@ -95,7 +95,7 @@ class NetworkPortalNotificationController
   // Creates the default notification informing the user that a captive portal
   // has been detected. On click the captive portal login page is opened in the
   // browser.
-  scoped_ptr<message_center::Notification>
+  std::unique_ptr<message_center::Notification>
   CreateDefaultCaptivePortalNotification(const NetworkState* network);
 
   // Creates an advanced captive portal notification informing the user that a
@@ -103,7 +103,7 @@ class NetworkPortalNotificationController
   // captive portal authentication for that network. Gives the user the choice
   // to either authenticate using that extension or open the captive portal
   // login page in the browser.
-  scoped_ptr<message_center::Notification>
+  std::unique_ptr<message_center::Notification>
   CreateCaptivePortalNotificationForExtension(
       const NetworkState* network,
       extensions::NetworkingConfigService* networking_config_service,
@@ -111,7 +111,7 @@ class NetworkPortalNotificationController
 
   // Constructs a notification to inform the user that a captive portal has been
   // detected.
-  scoped_ptr<message_center::Notification> GetNotification(
+  std::unique_ptr<message_center::Notification> GetNotification(
       const NetworkState* network,
       const NetworkPortalDetector::CaptivePortalState& state);
 

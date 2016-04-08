@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 
 #include <limits>
+#include <memory>
 
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
@@ -13,7 +14,6 @@
 #include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -296,8 +296,8 @@ class MagnificationManagerImpl : public MagnificationManager,
   bool observing_focus_change_in_page_;
 
   content::NotificationRegistrar registrar_;
-  scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
-  scoped_ptr<ash::ScopedSessionStateObserver> session_state_observer_;
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  std::unique_ptr<ash::ScopedSessionStateObserver> session_state_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(MagnificationManagerImpl);
 };

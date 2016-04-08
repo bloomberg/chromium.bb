@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SESSION_USER_SESSION_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SESSION_USER_SESSION_MANAGER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -417,7 +417,7 @@ class UserSessionManager
   StartSessionType start_session_type_;
 
   // Injected user context for stub authenticator.
-  scoped_ptr<UserContext> injected_user_context_;
+  std::unique_ptr<UserContext> injected_user_context_;
 
   // True if the authentication context's cookie jar contains authentication
   // cookies from the authentication extension login flow.
@@ -463,15 +463,15 @@ class UserSessionManager
       ProfileCompare> default_ime_states_;
 
   // Manages Easy unlock cryptohome keys.
-  scoped_ptr<EasyUnlockKeyManager> easy_unlock_key_manager_;
+  std::unique_ptr<EasyUnlockKeyManager> easy_unlock_key_manager_;
   bool running_easy_unlock_key_ops_;
   base::Closure easy_unlock_key_ops_finished_callback_;
 
   // Whether should fetch token handles, tests may override this value.
   bool should_obtain_handles_;
 
-  scoped_ptr<TokenHandleUtil> token_handle_util_;
-  scoped_ptr<TokenHandleFetcher> token_handle_fetcher_;
+  std::unique_ptr<TokenHandleUtil> token_handle_util_;
+  std::unique_ptr<TokenHandleFetcher> token_handle_fetcher_;
 
   // Whether should launch browser, tests may override this value.
   bool should_launch_browser_;

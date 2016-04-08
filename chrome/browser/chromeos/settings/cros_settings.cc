@@ -150,8 +150,8 @@ void CrosSettings::AppendToList(const std::string& path,
                                 const base::Value* value) {
   DCHECK(CalledOnValidThread());
   const base::Value* old_value = GetPref(path);
-  scoped_ptr<base::Value> new_value(
-      old_value ? old_value->DeepCopy() : new base::ListValue());
+  std::unique_ptr<base::Value> new_value(old_value ? old_value->DeepCopy()
+                                                   : new base::ListValue());
   static_cast<base::ListValue*>(new_value.get())->Append(value->DeepCopy());
   Set(path, *new_value);
 }
@@ -160,8 +160,8 @@ void CrosSettings::RemoveFromList(const std::string& path,
                                   const base::Value* value) {
   DCHECK(CalledOnValidThread());
   const base::Value* old_value = GetPref(path);
-  scoped_ptr<base::Value> new_value(
-      old_value ? old_value->DeepCopy() : new base::ListValue());
+  std::unique_ptr<base::Value> new_value(old_value ? old_value->DeepCopy()
+                                                   : new base::ListValue());
   static_cast<base::ListValue*>(new_value.get())->Remove(*value, NULL);
   Set(path, *new_value);
 }
@@ -295,7 +295,7 @@ bool CrosSettings::RemoveSettingsProvider(CrosSettingsProvider* provider) {
   return false;
 }
 
-scoped_ptr<CrosSettings::ObserverSubscription>
+std::unique_ptr<CrosSettings::ObserverSubscription>
 CrosSettings::AddSettingsObserver(const std::string& path,
                                   const base::Closure& callback) {
   DCHECK(!path.empty());
@@ -305,7 +305,7 @@ CrosSettings::AddSettingsObserver(const std::string& path,
   if (!GetProvider(path)) {
     NOTREACHED() << "Trying to add an observer for an unregistered setting: "
                  << path;
-    return scoped_ptr<CrosSettings::ObserverSubscription>();
+    return std::unique_ptr<CrosSettings::ObserverSubscription>();
   }
 
   // Get the callback registry associated with the path.

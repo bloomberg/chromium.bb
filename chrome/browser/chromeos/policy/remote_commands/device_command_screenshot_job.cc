@@ -12,6 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
@@ -72,7 +73,7 @@ class DeviceCommandScreenshotJob::Payload
   ~Payload() override {}
 
   // RemoteCommandJob::ResultPayload:
-  scoped_ptr<std::string> Serialize() override;
+  std::unique_ptr<std::string> Serialize() override;
 
  private:
   std::string payload_;
@@ -87,12 +88,12 @@ DeviceCommandScreenshotJob::Payload::Payload(ResultCode result_code) {
   base::JSONWriter::Write(root_dict, &payload_);
 }
 
-scoped_ptr<std::string> DeviceCommandScreenshotJob::Payload::Serialize() {
-  return make_scoped_ptr(new std::string(payload_));
+std::unique_ptr<std::string> DeviceCommandScreenshotJob::Payload::Serialize() {
+  return base::WrapUnique(new std::string(payload_));
 }
 
 DeviceCommandScreenshotJob::DeviceCommandScreenshotJob(
-    scoped_ptr<Delegate> screenshot_delegate)
+    std::unique_ptr<Delegate> screenshot_delegate)
     : num_pending_screenshots_(0),
       screenshot_delegate_(std::move(screenshot_delegate)),
       weak_ptr_factory_(this) {
@@ -111,7 +112,7 @@ void DeviceCommandScreenshotJob::OnSuccess() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(succeeded_callback_,
-                 base::Passed(make_scoped_ptr(new Payload(SUCCESS)))));
+                 base::Passed(base::WrapUnique(new Payload(SUCCESS)))));
 }
 
 void DeviceCommandScreenshotJob::OnFailure(UploadJob::ErrorCode error_code) {
@@ -128,7 +129,7 @@ void DeviceCommandScreenshotJob::OnFailure(UploadJob::ErrorCode error_code) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(failed_callback_,
-                 base::Passed(make_scoped_ptr(new Payload(result_code)))));
+                 base::Passed(base::WrapUnique(new Payload(result_code)))));
 }
 
 bool DeviceCommandScreenshotJob::IsExpired(base::TimeTicks now) {
@@ -138,7 +139,8 @@ bool DeviceCommandScreenshotJob::IsExpired(base::TimeTicks now) {
 
 bool DeviceCommandScreenshotJob::ParseCommandPayload(
     const std::string& command_payload) {
-  scoped_ptr<base::Value> root(base::JSONReader().ReadToValue(command_payload));
+  std::unique_ptr<base::Value> root(
+      base::JSONReader().ReadToValue(command_payload));
   if (!root.get())
     return false;
   base::DictionaryValue* payload = nullptr;
@@ -171,7 +173,7 @@ void DeviceCommandScreenshotJob::StartScreenshotUpload() {
                                         kContentTypeImagePng));
     header_fields.insert(std::make_pair(kCommandIdHeaderName,
                                         base::Uint64ToString(unique_id())));
-    scoped_ptr<std::string> data = make_scoped_ptr(
+    std::unique_ptr<std::string> data = base::WrapUnique(
         new std::string((const char*)screenshot_entry.second->front(),
                         screenshot_entry.second->size()));
     upload_job_->AddDataSegment(
@@ -192,7 +194,7 @@ void DeviceCommandScreenshotJob::RunImpl(
   if (!screenshot_delegate_->IsScreenshotAllowed()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(failed_callback_, base::Passed(make_scoped_ptr(
+        base::Bind(failed_callback_, base::Passed(base::WrapUnique(
                                          new Payload(FAILURE_USER_INPUT)))));
   }
 
@@ -203,7 +205,7 @@ void DeviceCommandScreenshotJob::RunImpl(
     LOG(ERROR) << upload_url_ << " is not a valid URL.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(failed_callback_, base::Passed(make_scoped_ptr(
+        base::Bind(failed_callback_, base::Passed(base::WrapUnique(
                                          new Payload(FAILURE_INVALID_URL)))));
     return;
   }
@@ -212,7 +214,7 @@ void DeviceCommandScreenshotJob::RunImpl(
   if (root_windows.size() == 0) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(failed_callback_, base::Passed(make_scoped_ptr(new Payload(
+        base::Bind(failed_callback_, base::Passed(base::WrapUnique(new Payload(
                                          FAILURE_SCREENSHOT_ACQUISITION)))));
     return;
   }

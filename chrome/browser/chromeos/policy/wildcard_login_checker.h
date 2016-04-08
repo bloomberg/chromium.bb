@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_WILDCARD_LOGIN_CHECKER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_WILDCARD_LOGIN_CHECKER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/cloud/user_info_fetcher.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -67,8 +68,8 @@ class WildcardLoginChecker : public UserInfoFetcher::Delegate {
 
   StatusCallback callback_;
 
-  scoped_ptr<PolicyOAuth2TokenFetcher> token_fetcher_;
-  scoped_ptr<UserInfoFetcher> user_info_fetcher_;
+  std::unique_ptr<PolicyOAuth2TokenFetcher> token_fetcher_;
+  std::unique_ptr<UserInfoFetcher> user_info_fetcher_;
 
   base::Time start_timestamp_;
   base::Time token_available_timestamp_;

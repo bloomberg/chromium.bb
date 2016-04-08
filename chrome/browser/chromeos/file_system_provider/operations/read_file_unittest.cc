@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/file_system_provider/operations/read_file.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -11,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/test_util.h"
@@ -182,9 +182,9 @@ TEST_F(FileSystemProviderOperationsReadFileTest, OnSuccess) {
   value_as_list.Set(3, new base::FundamentalValue(has_more));
   value_as_list.Set(4, new base::FundamentalValue(execution_time));
 
-  scoped_ptr<Params> params(Params::Create(value_as_list));
+  std::unique_ptr<Params> params(Params::Create(value_as_list));
   ASSERT_TRUE(params.get());
-  scoped_ptr<RequestValue> request_value(
+  std::unique_ptr<RequestValue> request_value(
       RequestValue::CreateForReadFileSuccess(std::move(params)));
   ASSERT_TRUE(request_value.get());
 
@@ -217,7 +217,7 @@ TEST_F(FileSystemProviderOperationsReadFileTest, OnError) {
   EXPECT_TRUE(read_file.Execute(kRequestId));
 
   read_file.OnError(kRequestId,
-                    scoped_ptr<RequestValue>(new RequestValue()),
+                    std::unique_ptr<RequestValue>(new RequestValue()),
                     base::File::FILE_ERROR_TOO_MANY_OPENED);
 
   ASSERT_EQ(1u, callback_logger.events().size());

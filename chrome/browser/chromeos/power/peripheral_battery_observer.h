@@ -94,7 +94,8 @@ class PeripheralBatteryObserver : public PowerManagerClient::Observer,
   // Record the profile used when adding message center notifications.
   Profile* notification_profile_;
 
-  scoped_ptr<base::WeakPtrFactory<PeripheralBatteryObserver> > weakptr_factory_;
+  std::unique_ptr<base::WeakPtrFactory<PeripheralBatteryObserver>>
+      weakptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PeripheralBatteryObserver);
 };

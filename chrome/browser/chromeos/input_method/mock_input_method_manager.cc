@@ -56,17 +56,17 @@ void MockInputMethodManager::RemoveCandidateWindowObserver(
 void MockInputMethodManager::RemoveImeMenuObserver(
     InputMethodManager::ImeMenuObserver* observer) {}
 
-scoped_ptr<InputMethodDescriptors>
+std::unique_ptr<InputMethodDescriptors>
 MockInputMethodManager::GetSupportedInputMethods() const {
-  scoped_ptr<InputMethodDescriptors> result(new InputMethodDescriptors);
+  std::unique_ptr<InputMethodDescriptors> result(new InputMethodDescriptors);
   result->push_back(
       InputMethodUtil::GetFallbackInputMethodDescriptor());
   return result;
 }
 
-scoped_ptr<InputMethodDescriptors>
+std::unique_ptr<InputMethodDescriptors>
 MockInputMethodManager::State::GetActiveInputMethods() const {
-  scoped_ptr<InputMethodDescriptors> result(new InputMethodDescriptors);
+  std::unique_ptr<InputMethodDescriptors> result(new InputMethodDescriptors);
   result->push_back(
       InputMethodUtil::GetFallbackInputMethodDescriptor());
   return result;
@@ -202,7 +202,7 @@ ComponentExtensionIMEManager*
 }
 
 void MockInputMethodManager::SetComponentExtensionIMEManager(
-    scoped_ptr<ComponentExtensionIMEManager> comp_ime_manager) {
+    std::unique_ptr<ComponentExtensionIMEManager> comp_ime_manager) {
   comp_ime_manager_ = std::move(comp_ime_manager);
 }
 

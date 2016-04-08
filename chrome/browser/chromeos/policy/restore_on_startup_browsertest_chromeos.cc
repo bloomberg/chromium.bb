@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/policy/login_policy_test_base.h"
@@ -58,7 +58,7 @@ void RestoreOnStartupTestChromeOS::GetMandatoryPoliciesValue(
     base::DictionaryValue* policy) const {
   policy->SetInteger(key::kRestoreOnStartup,
                      SessionStartupPref::kPrefValueURLs);
-  scoped_ptr<base::ListValue> urls(new base::ListValue);
+  std::unique_ptr<base::ListValue> urls(new base::ListValue);
   urls->AppendString(kStartUpURL1);
   urls->AppendString(kStartUpURL2);
   policy->Set(key::kRestoreOnStartupURLs, std::move(urls));

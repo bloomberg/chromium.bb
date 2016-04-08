@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/quirks/quirks_manager.h"
@@ -20,23 +21,23 @@ const char kFakeIccData[] = {0x00, 0x00, 0x08, 0x90, 0x20, 0x20,
                              0x20, 0x20, 0x02, 0x10, 0x00, 0x00};
 
 // Create FakeURLFetcher which returns fake icc file json.
-scoped_ptr<net::URLFetcher> CreateFakeURLFetcherSuccess(
+std::unique_ptr<net::URLFetcher> CreateFakeURLFetcherSuccess(
     const GURL& url,
     net::URLFetcherDelegate* delegate) {
   net::URLFetcher* fetcher =
       new net::FakeURLFetcher(url, delegate, kFakeIccJson, net::HTTP_OK,
                               net::URLRequestStatus::SUCCESS);
-  return make_scoped_ptr(fetcher);
+  return base::WrapUnique(fetcher);
 }
 
 // Create FakeURLFetcher which replies with HTTP_NOT_FOUND.
-scoped_ptr<net::URLFetcher> CreateFakeURLFetcherFailure(
+std::unique_ptr<net::URLFetcher> CreateFakeURLFetcherFailure(
     const GURL& url,
     net::URLFetcherDelegate* delegate) {
   net::URLFetcher* fetcher = new net::FakeURLFetcher(
       url, delegate, "File not found", net::HTTP_NOT_FOUND,
       net::URLRequestStatus::FAILED);
-  return make_scoped_ptr(fetcher);
+  return base::WrapUnique(fetcher);
 }
 
 // Full path to fake icc file in <tmp test directory>/display_profiles/.

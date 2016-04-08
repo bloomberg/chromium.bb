@@ -119,7 +119,7 @@ class MergeSessionLoadPageTest : public ChromeRenderViewHostTestHarness {
  private:
   ScopedTestDeviceSettingsService test_device_settings_service_;
   ScopedTestCrosSettings test_cros_settings_;
-  scoped_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
+  std::unique_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
 };
 
 TEST_F(MergeSessionLoadPageTest, MergeSessionPageNotShown) {

@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_FREEZER_CGROUP_PROCESS_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_FREEZER_CGROUP_PROCESS_MANAGER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "chrome/browser/chromeos/power/renderer_freezer.h"
 
@@ -38,7 +38,7 @@ class FreezerCgroupProcessManager : public RendererFreezer::Delegate {
   scoped_refptr<base::SequencedTaskRunner> file_thread_;
 
   class FileWorker;
-  scoped_ptr<FileWorker> file_worker_;
+  std::unique_ptr<FileWorker> file_worker_;
 
   DISALLOW_COPY_AND_ASSIGN(FreezerCgroupProcessManager);
 };

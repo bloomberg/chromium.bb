@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_SERVER_BACKED_STATE_KEYS_BROKER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_SERVER_BACKED_STATE_KEYS_BROKER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,7 +13,6 @@
 #include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 namespace base {
@@ -30,7 +30,8 @@ namespace policy {
 // register callbacks to invoke when the state keys change.
 class ServerBackedStateKeysBroker {
  public:
-  typedef scoped_ptr<base::CallbackList<void()>::Subscription> Subscription;
+  typedef std::unique_ptr<base::CallbackList<void()>::Subscription>
+      Subscription;
   typedef base::Callback<void(const std::vector<std::string>&)>
       StateKeysCallback;
 

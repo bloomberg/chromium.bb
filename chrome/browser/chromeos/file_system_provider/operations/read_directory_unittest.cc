@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/file_system_provider/operations/read_directory.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -11,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/get_metadata.h"
@@ -78,19 +78,19 @@ class CallbackLogger {
 
 // Returns the request value as |result| in case of successful parse.
 void CreateRequestValueFromJSON(const std::string& json,
-                                scoped_ptr<RequestValue>* result) {
+                                std::unique_ptr<RequestValue>* result) {
   using extensions::api::file_system_provider_internal::
       ReadDirectoryRequestedSuccess::Params;
 
   int json_error_code;
   std::string json_error_msg;
-  scoped_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
       json, base::JSON_PARSE_RFC, &json_error_code, &json_error_msg);
   ASSERT_TRUE(value.get()) << json_error_msg;
 
   base::ListValue* value_as_list;
   ASSERT_TRUE(value->GetAsList(&value_as_list));
-  scoped_ptr<Params> params(Params::Create(*value_as_list));
+  std::unique_ptr<Params> params(Params::Create(*value_as_list));
   ASSERT_TRUE(params.get());
   *result = RequestValue::CreateForReadDirectorySuccess(std::move(params));
   ASSERT_TRUE(result->get());
@@ -193,7 +193,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnSuccess) {
       "  false,\n"  // has_more
       "  0\n"       // execution_time
       "]\n";
-  scoped_ptr<RequestValue> request_value;
+  std::unique_ptr<RequestValue> request_value;
   ASSERT_NO_FATAL_FAILURE(CreateRequestValueFromJSON(input, &request_value));
 
   const bool has_more = false;
@@ -240,7 +240,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest,
       "  false,\n"  // has_more
       "  0\n"       // execution_time
       "]\n";
-  scoped_ptr<RequestValue> request_value;
+  std::unique_ptr<RequestValue> request_value;
   ASSERT_NO_FATAL_FAILURE(CreateRequestValueFromJSON(input, &request_value));
 
   const bool has_more = false;
@@ -268,7 +268,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnError) {
   EXPECT_TRUE(read_directory.Execute(kRequestId));
 
   read_directory.OnError(kRequestId,
-                         scoped_ptr<RequestValue>(new RequestValue()),
+                         std::unique_ptr<RequestValue>(new RequestValue()),
                          base::File::FILE_ERROR_TOO_MANY_OPENED);
 
   ASSERT_EQ(1u, callback_logger.events().size());

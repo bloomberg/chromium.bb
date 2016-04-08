@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USERS_SCOPED_TEST_USER_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_USERS_SCOPED_TEST_USER_MANAGER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace chromeos {
 
@@ -20,7 +21,7 @@ class ScopedTestUserManager {
   ~ScopedTestUserManager();
 
  private:
-  scoped_ptr<ChromeUserManager> chrome_user_manager_;
+  std::unique_ptr<ChromeUserManager> chrome_user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedTestUserManager);
 };

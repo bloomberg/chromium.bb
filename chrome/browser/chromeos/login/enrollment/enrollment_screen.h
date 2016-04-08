@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENROLLMENT_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENROLLMENT_SCREEN_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
@@ -127,8 +127,8 @@ class EnrollmentScreen
   policy::EnrollmentConfig enrollment_config_;
   bool enrollment_failed_once_;
   std::string enrolling_user_domain_;
-  scoped_ptr<base::ElapsedTimer> elapsed_timer_;
-  scoped_ptr<EnterpriseEnrollmentHelper> enrollment_helper_;
+  std::unique_ptr<base::ElapsedTimer> elapsed_timer_;
+  std::unique_ptr<EnterpriseEnrollmentHelper> enrollment_helper_;
   base::WeakPtrFactory<EnrollmentScreen> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EnrollmentScreen);

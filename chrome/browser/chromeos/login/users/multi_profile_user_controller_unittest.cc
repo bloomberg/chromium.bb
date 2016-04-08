@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -103,7 +104,7 @@ const BehaviorTestCase kBehaviorTestCases[] = {
 // we've ensured the profile has been shut down.
 policy::PolicyCertVerifier* g_policy_cert_verifier_for_factory = NULL;
 
-scoped_ptr<KeyedService> TestPolicyCertServiceFactory(
+std::unique_ptr<KeyedService> TestPolicyCertServiceFactory(
     content::BrowserContext* context) {
   return policy::PolicyCertService::CreateForTesting(
       kUsers[0], g_policy_cert_verifier_for_factory,
@@ -211,12 +212,12 @@ class MultiProfileUserControllerTest
   }
 
   content::TestBrowserThreadBundle threads_;
-  scoped_ptr<policy::PolicyCertVerifier> cert_verifier_;
-  scoped_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<policy::PolicyCertVerifier> cert_verifier_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
   FakeChromeUserManager* fake_user_manager_;  // Not owned
   ScopedUserManagerEnabler user_manager_enabler_;
 
-  scoped_ptr<MultiProfileUserController> controller_;
+  std::unique_ptr<MultiProfileUserController> controller_;
 
   std::vector<TestingProfile*> user_profiles_;
 

@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_CAPTIVE_PORTAL_WINDOW_PROXY_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UI_CAPTIVE_PORTAL_WINDOW_PROXY_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -108,7 +109,7 @@ class CaptivePortalWindowProxy : public views::WidgetObserver {
   Delegate* delegate_;
   // Not owned by this class.
   views::Widget* widget_;
-  scoped_ptr<CaptivePortalView> captive_portal_view_;
+  std::unique_ptr<CaptivePortalView> captive_portal_view_;
 
   // Not owned by this class.
   content::WebContents* web_contents_;

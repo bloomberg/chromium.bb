@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
 
@@ -31,7 +32,7 @@ namespace file_system_provider {
 class BufferingFileStreamReader : public storage::FileStreamReader {
  public:
   BufferingFileStreamReader(
-      scoped_ptr<storage::FileStreamReader> file_stream_reader,
+      std::unique_ptr<storage::FileStreamReader> file_stream_reader,
       int preloading_buffer_length,
       int64_t max_bytes_to_read);
 
@@ -61,7 +62,7 @@ class BufferingFileStreamReader : public storage::FileStreamReader {
                           const net::CompletionCallback& callback,
                           int result);
 
-  scoped_ptr<storage::FileStreamReader> file_stream_reader_;
+  std::unique_ptr<storage::FileStreamReader> file_stream_reader_;
   int preloading_buffer_length_;
   int64_t max_bytes_to_read_;
   int64_t bytes_read_;

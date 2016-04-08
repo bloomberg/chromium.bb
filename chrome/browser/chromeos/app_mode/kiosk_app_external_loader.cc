@@ -18,7 +18,7 @@ KioskAppExternalLoader::~KioskAppExternalLoader() {
 }
 
 void KioskAppExternalLoader::SetCurrentAppExtensions(
-    scoped_ptr<base::DictionaryValue> prefs) {
+    std::unique_ptr<base::DictionaryValue> prefs) {
   prefs_ = std::move(prefs);
   StartLoading();
 }

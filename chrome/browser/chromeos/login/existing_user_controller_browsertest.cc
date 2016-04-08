@@ -209,12 +209,12 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
     return existing_user_controller()->is_login_in_progress_;
   }
 
-  scoped_ptr<ExistingUserController> existing_user_controller_;
+  std::unique_ptr<ExistingUserController> existing_user_controller_;
 
   // |mock_login_display_| is owned by the ExistingUserController, which calls
   // CreateLoginDisplay() on the |mock_login_display_host_| to get it.
   MockLoginDisplay* mock_login_display_ = nullptr;
-  scoped_ptr<MockLoginDisplayHost> mock_login_display_host_;
+  std::unique_ptr<MockLoginDisplayHost> mock_login_display_host_;
 
   // Mock URLFetcher.
   MockURLFetcherFactory<SuccessFetcher> factory_;
@@ -442,7 +442,7 @@ class ExistingUserControllerPublicSessionTest
     // If both settings have changed we need to wait for both to
     // propagate, so check the new values against the old ones.
     scoped_refptr<content::MessageLoopRunner> runner1;
-    scoped_ptr<CrosSettings::ObserverSubscription> subscription1;
+    std::unique_ptr<CrosSettings::ObserverSubscription> subscription1;
     if (!proto.has_device_local_accounts() ||
         !proto.device_local_accounts().has_auto_login_id() ||
         proto.device_local_accounts().auto_login_id() != user_email) {
@@ -452,7 +452,7 @@ class ExistingUserControllerPublicSessionTest
           runner1->QuitClosure());
     }
     scoped_refptr<content::MessageLoopRunner> runner2;
-    scoped_ptr<CrosSettings::ObserverSubscription> subscription2;
+    std::unique_ptr<CrosSettings::ObserverSubscription> subscription2;
     if (!proto.has_device_local_accounts() ||
         !proto.device_local_accounts().has_auto_login_delay() ||
         proto.device_local_accounts().auto_login_delay() != delay) {

@@ -51,7 +51,7 @@ class DataSegment {
  public:
   DataSegment(const std::string& name,
               const std::string& filename,
-              scoped_ptr<std::string> data,
+              std::unique_ptr<std::string> data,
               const std::map<std::string, std::string>& header_entries);
 
   // Returns the header entries for this DataSegment.
@@ -68,7 +68,7 @@ class DataSegment {
   const std::string& GetFilename() const;
 
   // Returns the data contained in this DataSegment. Ownership is passed.
-  scoped_ptr<std::string> GetData();
+  std::unique_ptr<std::string> GetData();
 
   // Returns the size in bytes of the blob in |data_|.
   size_t GetDataSize() const;
@@ -76,7 +76,7 @@ class DataSegment {
  private:
   const std::string name_;
   const std::string filename_;
-  scoped_ptr<std::string> data_;
+  std::unique_ptr<std::string> data_;
   std::map<std::string, std::string> header_entries_;
 
   DISALLOW_COPY_AND_ASSIGN(DataSegment);
@@ -85,7 +85,7 @@ class DataSegment {
 DataSegment::DataSegment(
     const std::string& name,
     const std::string& filename,
-    scoped_ptr<std::string> data,
+    std::unique_ptr<std::string> data,
     const std::map<std::string, std::string>& header_entries)
     : name_(name),
       filename_(filename),
@@ -107,7 +107,7 @@ const std::string& DataSegment::GetFilename() const {
   return filename_;
 }
 
-scoped_ptr<std::string> DataSegment::GetData() {
+std::unique_ptr<std::string> DataSegment::GetData() {
   return std::move(data_);
 }
 
@@ -127,7 +127,7 @@ UploadJobImpl::UploadJobImpl(
     OAuth2TokenService* token_service,
     scoped_refptr<net::URLRequestContextGetter> url_context_getter,
     Delegate* delegate,
-    scoped_ptr<MimeBoundaryGenerator> boundary_generator)
+    std::unique_ptr<MimeBoundaryGenerator> boundary_generator)
     : OAuth2TokenService::Consumer("cros_upload_job"),
       upload_url_(upload_url),
       account_id_(account_id),
@@ -153,13 +153,13 @@ void UploadJobImpl::AddDataSegment(
     const std::string& name,
     const std::string& filename,
     const std::map<std::string, std::string>& header_entries,
-    scoped_ptr<std::string> data) {
+    std::unique_ptr<std::string> data) {
   // Cannot add data to busy or failed instance.
   DCHECK_EQ(IDLE, state_);
   if (state_ != IDLE)
     return;
 
-  scoped_ptr<DataSegment> data_segment(
+  std::unique_ptr<DataSegment> data_segment(
       new DataSegment(name, filename, std::move(data), header_entries));
   data_segments_.push_back(std::move(data_segment));
 }
@@ -229,7 +229,7 @@ bool UploadJobImpl::SetUpMultipart() {
     for (const auto& entry : data_segment->GetHeaderEntries()) {
       post_data_->append(entry.first + ": " + entry.second + "\r\n");
     }
-    scoped_ptr<std::string> data = data_segment->GetData();
+    std::unique_ptr<std::string> data = data_segment->GetData();
     post_data_->append("\r\n" + *data + "\r\n");
   }
   post_data_->append("--" + *mime_boundary_.get() + "--\r\n");

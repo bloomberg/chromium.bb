@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_NET_NETWORK_PORTAL_DETECTOR_IMPL_H_
 #define CHROME_BROWSER_CHROMEOS_NET_NETWORK_PORTAL_DETECTOR_IMPL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/cancelable_callback.h"
@@ -12,7 +13,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
@@ -232,7 +232,8 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
   GURL portal_test_url_;
 
   // Detector for checking default network for a portal state.
-  scoped_ptr<captive_portal::CaptivePortalDetector> captive_portal_detector_;
+  std::unique_ptr<captive_portal::CaptivePortalDetector>
+      captive_portal_detector_;
 
   // True if the NetworkPortalDetector is enabled.
   bool enabled_ = false;
@@ -247,7 +248,7 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
   base::TimeDelta next_attempt_delay_;
 
   // Current detection strategy.
-  scoped_ptr<PortalDetectorStrategy> strategy_;
+  std::unique_ptr<PortalDetectorStrategy> strategy_;
 
   // Last received result from captive portal detector.
   CaptivePortalStatus last_detection_result_ = CAPTIVE_PORTAL_STATUS_UNKNOWN;
@@ -259,7 +260,7 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
   int no_response_result_count_ = 0;
 
   // UI notification controller about captive portal state.
-  scoped_ptr<NetworkPortalNotificationController> notification_controller_;
+  std::unique_ptr<NetworkPortalNotificationController> notification_controller_;
 
   content::NotificationRegistrar registrar_;
 

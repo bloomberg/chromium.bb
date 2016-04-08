@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_FAKE_DEVICE_CLOUD_POLICY_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_FAKE_DEVICE_CLOUD_POLICY_MANAGER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 
 namespace base {
@@ -21,7 +22,7 @@ class DeviceCloudPolicyStoreChromeOS;
 class FakeDeviceCloudPolicyManager : public DeviceCloudPolicyManagerChromeOS {
  public:
   FakeDeviceCloudPolicyManager(
-      scoped_ptr<DeviceCloudPolicyStoreChromeOS> store,
+      std::unique_ptr<DeviceCloudPolicyStoreChromeOS> store,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~FakeDeviceCloudPolicyManager() override;
 

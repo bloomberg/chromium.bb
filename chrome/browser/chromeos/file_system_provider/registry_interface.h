@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_REGISTRY_INTERFACE_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_REGISTRY_INTERFACE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/watcher.h"
 
@@ -50,7 +50,7 @@ class RegistryInterface {
   // Restores from preferences file systems mounted previously by the
   // |extension_id| providing extension. The returned list should be used to
   // remount them.
-  virtual scoped_ptr<RestoredFileSystems> RestoreFileSystems(
+  virtual std::unique_ptr<RestoredFileSystems> RestoreFileSystems(
       const std::string& extension_id) = 0;
 
   // Updates a tag for the specified watcher.

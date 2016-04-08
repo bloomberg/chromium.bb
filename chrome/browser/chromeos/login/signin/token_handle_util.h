@@ -68,7 +68,7 @@ class TokenHandleUtil {
     void OnOAuthError() override;
     void OnNetworkError(int response_code) override;
     void OnGetTokenInfoResponse(
-        scoped_ptr<base::DictionaryValue> token_info) override;
+        std::unique_ptr<base::DictionaryValue> token_info) override;
     void NotifyDone();
 
    private:
@@ -85,15 +85,15 @@ class TokenHandleUtil {
   void OnObtainTokenComplete(const AccountId& account_id);
 
   // Map of pending check operations.
-  base::ScopedPtrHashMap<std::string, scoped_ptr<TokenDelegate>>
+  base::ScopedPtrHashMap<std::string, std::unique_ptr<TokenDelegate>>
       validation_delegates_;
 
   // Map of pending obtain operations.
-  base::ScopedPtrHashMap<AccountId, scoped_ptr<TokenDelegate>>
+  base::ScopedPtrHashMap<AccountId, std::unique_ptr<TokenDelegate>>
       obtain_delegates_;
 
   // Instance of GAIA Client.
-  scoped_ptr<gaia::GaiaOAuthClient> gaia_client_;
+  std::unique_ptr<gaia::GaiaOAuthClient> gaia_client_;
 
   base::WeakPtrFactory<TokenHandleUtil> weak_factory_;
 

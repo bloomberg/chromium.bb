@@ -125,7 +125,7 @@ FileSystemProviderInternalFunction::FileSystemProviderInternalFunction()
 }
 
 bool FileSystemProviderInternalFunction::RejectRequest(
-    scoped_ptr<chromeos::file_system_provider::RequestValue> value,
+    std::unique_ptr<chromeos::file_system_provider::RequestValue> value,
     base::File::Error error) {
   const base::File::Error result =
       request_manager_->RejectRequest(request_id_, std::move(value), error);
@@ -138,7 +138,7 @@ bool FileSystemProviderInternalFunction::RejectRequest(
 }
 
 bool FileSystemProviderInternalFunction::FulfillRequest(
-    scoped_ptr<RequestValue> value,
+    std::unique_ptr<RequestValue> value,
     bool has_more) {
   const base::File::Error result =
       request_manager_->FulfillRequest(request_id_, std::move(value), has_more);

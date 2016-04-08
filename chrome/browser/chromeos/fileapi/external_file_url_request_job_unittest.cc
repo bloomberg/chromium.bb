@@ -6,11 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/chromeos/drive/drive_file_stream_reader.h"
@@ -157,18 +158,18 @@ class ExternalFileURLRequestJobTest : public testing::Test {
 
   bool ReadDriveFileSync(const base::FilePath& file_path,
                          std::string* out_content) {
-    scoped_ptr<base::Thread> worker_thread(
+    std::unique_ptr<base::Thread> worker_thread(
         new base::Thread("ReadDriveFileSync"));
     if (!worker_thread->Start())
       return false;
 
-    scoped_ptr<drive::DriveFileStreamReader> reader(
+    std::unique_ptr<drive::DriveFileStreamReader> reader(
         new drive::DriveFileStreamReader(
             base::Bind(&ExternalFileURLRequestJobTest::GetFileSystem,
                        base::Unretained(this)),
             worker_thread->task_runner().get()));
     int error = net::ERR_FAILED;
-    scoped_ptr<drive::ResourceEntry> entry;
+    std::unique_ptr<drive::ResourceEntry> entry;
     {
       base::RunLoop run_loop;
       reader->Initialize(file_path,
@@ -194,8 +195,8 @@ class ExternalFileURLRequestJobTest : public testing::Test {
     return true;
   }
 
-  scoped_ptr<net::URLRequestContext> url_request_context_;
-  scoped_ptr<TestDelegate> test_delegate_;
+  std::unique_ptr<net::URLRequestContext> url_request_context_;
+  std::unique_ptr<TestDelegate> test_delegate_;
 
  private:
   // Create the drive integration service for the |profile|
@@ -229,21 +230,21 @@ class ExternalFileURLRequestJobTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   drive::DriveIntegrationServiceFactory::FactoryCallback
       integration_service_factory_callback_;
-  scoped_ptr<drive::DriveIntegrationServiceFactory::ScopedFactoryForTest>
+  std::unique_ptr<drive::DriveIntegrationServiceFactory::ScopedFactoryForTest>
       integration_service_factory_scope_;
-  scoped_ptr<drive::DriveIntegrationService> integration_service_;
+  std::unique_ptr<drive::DriveIntegrationService> integration_service_;
   drive::test_util::FakeFileSystem* fake_file_system_;
 
-  scoped_ptr<net::TestNetworkDelegate> test_network_delegate_;
-  scoped_ptr<TestURLRequestJobFactory> test_url_request_job_factory_;
+  std::unique_ptr<net::TestNetworkDelegate> test_network_delegate_;
+  std::unique_ptr<TestURLRequestJobFactory> test_url_request_job_factory_;
 
-  scoped_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
   base::ScopedTempDir drive_cache_dir_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
 };
 
 TEST_F(ExternalFileURLRequestJobTest, NonGetMethod) {
-  scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
+  std::unique_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
       GURL("externalfile:drive-test-user-hash/root/File 1.txt"),
       net::DEFAULT_PRIORITY, test_delegate_.get()));
   request->set_method("POST");  // Set non "GET" method.
@@ -261,8 +262,9 @@ TEST_F(ExternalFileURLRequestJobTest, RegularFile) {
 
   // For the first time, the file should be fetched from the server.
   {
-    scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
-        kTestUrl, net::DEFAULT_PRIORITY, test_delegate_.get()));
+    std::unique_ptr<net::URLRequest> request(
+        url_request_context_->CreateRequest(kTestUrl, net::DEFAULT_PRIORITY,
+                                            test_delegate_.get()));
     request->Start();
 
     base::RunLoop().Run();
@@ -285,9 +287,10 @@ TEST_F(ExternalFileURLRequestJobTest, RegularFile) {
   // The caching emulation is done by FakeFileSystem.
   {
     test_delegate_.reset(new TestDelegate);
-    scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
-        GURL("externalfile:drive-test-user-hash/root/File 1.txt"),
-        net::DEFAULT_PRIORITY, test_delegate_.get()));
+    std::unique_ptr<net::URLRequest> request(
+        url_request_context_->CreateRequest(
+            GURL("externalfile:drive-test-user-hash/root/File 1.txt"),
+            net::DEFAULT_PRIORITY, test_delegate_.get()));
     request->Start();
 
     base::RunLoop().Run();
@@ -306,10 +309,9 @@ TEST_F(ExternalFileURLRequestJobTest, RegularFile) {
 TEST_F(ExternalFileURLRequestJobTest, HostedDocument) {
   // Open a gdoc file.
   test_delegate_->set_quit_on_redirect(true);
-  scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
-      GURL(
-          "externalfile:drive-test-user-hash/root/Document 1 "
-          "excludeDir-test.gdoc"),
+  std::unique_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
+      GURL("externalfile:drive-test-user-hash/root/Document 1 "
+           "excludeDir-test.gdoc"),
       net::DEFAULT_PRIORITY, test_delegate_.get()));
   request->Start();
 
@@ -322,7 +324,7 @@ TEST_F(ExternalFileURLRequestJobTest, HostedDocument) {
 }
 
 TEST_F(ExternalFileURLRequestJobTest, RootDirectory) {
-  scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
+  std::unique_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
       GURL("externalfile:drive-test-user-hash/root"), net::DEFAULT_PRIORITY,
       test_delegate_.get()));
   request->Start();
@@ -334,7 +336,7 @@ TEST_F(ExternalFileURLRequestJobTest, RootDirectory) {
 }
 
 TEST_F(ExternalFileURLRequestJobTest, Directory) {
-  scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
+  std::unique_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
       GURL("externalfile:drive-test-user-hash/root/Directory 1"),
       net::DEFAULT_PRIORITY, test_delegate_.get()));
   request->Start();
@@ -346,7 +348,7 @@ TEST_F(ExternalFileURLRequestJobTest, Directory) {
 }
 
 TEST_F(ExternalFileURLRequestJobTest, NonExistingFile) {
-  scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
+  std::unique_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
       GURL("externalfile:drive-test-user-hash/root/non-existing-file.txt"),
       net::DEFAULT_PRIORITY, test_delegate_.get()));
   request->Start();
@@ -358,7 +360,7 @@ TEST_F(ExternalFileURLRequestJobTest, NonExistingFile) {
 }
 
 TEST_F(ExternalFileURLRequestJobTest, WrongFormat) {
-  scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
+  std::unique_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
       GURL("externalfile:"), net::DEFAULT_PRIORITY, test_delegate_.get()));
   request->Start();
 
@@ -369,7 +371,7 @@ TEST_F(ExternalFileURLRequestJobTest, WrongFormat) {
 }
 
 TEST_F(ExternalFileURLRequestJobTest, Cancel) {
-  scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
+  std::unique_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
       GURL("externalfile:drive-test-user-hash/root/File 1.txt"),
       net::DEFAULT_PRIORITY, test_delegate_.get()));
 
@@ -386,7 +388,7 @@ TEST_F(ExternalFileURLRequestJobTest, RangeHeader) {
   const GURL kTestUrl("externalfile:drive-test-user-hash/root/File 1.txt");
   const base::FilePath kTestFilePath("drive/root/File 1.txt");
 
-  scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
+  std::unique_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
       kTestUrl, net::DEFAULT_PRIORITY, test_delegate_.get()));
 
   // Set range header.
@@ -408,7 +410,7 @@ TEST_F(ExternalFileURLRequestJobTest, RangeHeader) {
 TEST_F(ExternalFileURLRequestJobTest, WrongRangeHeader) {
   const GURL kTestUrl("externalfile:drive-test-user-hash/root/File 1.txt");
 
-  scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
+  std::unique_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
       kTestUrl, net::DEFAULT_PRIORITY, test_delegate_.get()));
 
   // Set range header.

@@ -82,7 +82,7 @@ void EchoPrivateGetRegistrationCodeFunction::GetRegistrationCode(
 }
 
 bool EchoPrivateGetRegistrationCodeFunction::RunSync() {
-  scoped_ptr<echo_api::GetRegistrationCode::Params> params =
+  std::unique_ptr<echo_api::GetRegistrationCode::Params> params =
       echo_api::GetRegistrationCode::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
   GetRegistrationCode(params->type);
@@ -94,12 +94,12 @@ EchoPrivateSetOfferInfoFunction::EchoPrivateSetOfferInfoFunction() {}
 EchoPrivateSetOfferInfoFunction::~EchoPrivateSetOfferInfoFunction() {}
 
 bool EchoPrivateSetOfferInfoFunction::RunSync() {
-  scoped_ptr<echo_api::SetOfferInfo::Params> params =
+  std::unique_ptr<echo_api::SetOfferInfo::Params> params =
       echo_api::SetOfferInfo::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const std::string& service_id = params->id;
-  scoped_ptr<base::DictionaryValue> dict =
+  std::unique_ptr<base::DictionaryValue> dict =
       params->offer_info.additional_properties.DeepCopyWithoutEmptyChildren();
 
   PrefService* local_state = g_browser_process->local_state();
@@ -113,7 +113,7 @@ EchoPrivateGetOfferInfoFunction::EchoPrivateGetOfferInfoFunction() {}
 EchoPrivateGetOfferInfoFunction::~EchoPrivateGetOfferInfoFunction() {}
 
 bool EchoPrivateGetOfferInfoFunction::RunSync() {
-  scoped_ptr<echo_api::GetOfferInfo::Params> params =
+  std::unique_ptr<echo_api::GetOfferInfo::Params> params =
       echo_api::GetOfferInfo::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -231,7 +231,7 @@ void EchoPrivateGetUserConsentFunction::OnRedeemOffersAllowedChecked(
     bool is_allowed) {
   redeem_offers_allowed_ = is_allowed;
 
-  scoped_ptr<echo_api::GetUserConsent::Params> params =
+  std::unique_ptr<echo_api::GetUserConsent::Params> params =
       echo_api::GetUserConsent::Params::Create(*args_);
 
   // Verify that the passed origin URL is valid.

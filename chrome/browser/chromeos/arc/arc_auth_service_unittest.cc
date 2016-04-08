@@ -76,16 +76,16 @@ class ArcAuthServiceTest : public testing::Test {
     PrefServiceSyncableFromProfile(profile_.get())
         ->GetSyncableService(syncer::PREFERENCES)
         ->MergeDataAndStartSyncing(syncer::PREFERENCES, syncer::SyncDataList(),
-                                   scoped_ptr<syncer::SyncChangeProcessor>(
+                                   std::unique_ptr<syncer::SyncChangeProcessor>(
                                        new syncer::FakeSyncChangeProcessor),
-                                   scoped_ptr<syncer::SyncErrorFactory>(
+                                   std::unique_ptr<syncer::SyncErrorFactory>(
                                        new syncer::SyncErrorFactoryMock()));
   }
 
-  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
-  scoped_ptr<arc::FakeArcBridgeService> bridge_service_;
-  scoped_ptr<arc::ArcAuthService> auth_service_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<arc::FakeArcBridgeService> bridge_service_;
+  std::unique_ptr<arc::ArcAuthService> auth_service_;
+  std::unique_ptr<TestingProfile> profile_;
   base::ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAuthServiceTest);

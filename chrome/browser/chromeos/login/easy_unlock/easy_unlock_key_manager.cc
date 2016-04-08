@@ -4,9 +4,11 @@
 
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
@@ -116,7 +118,8 @@ void EasyUnlockKeyManager::DeviceDataToRemoteDeviceDictionary(
   dict->SetString(kKeyBluetoothAddress, data.bluetooth_address);
   dict->SetInteger(kKeyBluetoothType, static_cast<int>(data.bluetooth_type));
   dict->SetString(kKeyPsk, data.psk);
-  scoped_ptr<base::DictionaryValue> permit_record(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> permit_record(
+      new base::DictionaryValue);
   dict->Set(kKeyPermitRecord, permit_record.release());
   dict->SetString(kKeyPermitId, data.public_key);
   dict->SetString(kKeyPermitData, data.public_key);
@@ -166,7 +169,8 @@ void EasyUnlockKeyManager::DeviceDataListToRemoteDeviceList(
     base::ListValue* device_list) {
   device_list->Clear();
   for (size_t i = 0; i < data_list.size(); ++i) {
-    scoped_ptr<base::DictionaryValue> device_dict(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> device_dict(
+        new base::DictionaryValue);
     DeviceDataToRemoteDeviceDictionary(account_id, data_list[i],
                                        device_dict.get());
     device_list->Append(device_dict.release());
@@ -206,11 +210,11 @@ void EasyUnlockKeyManager::RunNextOperation() {
     return;
 
   if (!write_operation_queue_.empty()) {
-    pending_write_operation_ = make_scoped_ptr(write_operation_queue_.front());
+    pending_write_operation_ = base::WrapUnique(write_operation_queue_.front());
     write_operation_queue_.pop_front();
     pending_write_operation_->Start();
   } else if (!read_operation_queue_.empty()) {
-    pending_read_operation_ = make_scoped_ptr(read_operation_queue_.front());
+    pending_read_operation_ = base::WrapUnique(read_operation_queue_.front());
     read_operation_queue_.pop_front();
     pending_read_operation_->Start();
   }

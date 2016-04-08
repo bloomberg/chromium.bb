@@ -4,9 +4,10 @@
 
 #include "chrome/browser/chromeos/login/session/chrome_session_manager.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
@@ -35,7 +36,7 @@ bool ShouldAutoLaunchKioskApp(const base::CommandLine& command_line) {
 }  // namespace
 
 // static
-scoped_ptr<session_manager::SessionManager>
+std::unique_ptr<session_manager::SessionManager>
 ChromeSessionManager::CreateSessionManager(
     const base::CommandLine& parsed_command_line,
     Profile* profile,
@@ -55,17 +56,18 @@ ChromeSessionManager::CreateSessionManager(
 
   if (ShouldAutoLaunchKioskApp(parsed_command_line)) {
     VLOG(1) << "Starting Chrome with KioskAutoLauncherSessionManagerDelegate";
-    return scoped_ptr<session_manager::SessionManager>(new ChromeSessionManager(
-        new KioskAutoLauncherSessionManagerDelegate()));
+    return std::unique_ptr<session_manager::SessionManager>(
+        new ChromeSessionManager(
+            new KioskAutoLauncherSessionManagerDelegate()));
   } else if (parsed_command_line.HasSwitch(switches::kLoginManager) &&
              (!is_running_test || force_login_screen_in_test)) {
     VLOG(1) << "Starting Chrome with LoginOobeSessionManagerDelegate";
-    return scoped_ptr<session_manager::SessionManager>(
+    return std::unique_ptr<session_manager::SessionManager>(
         new ChromeSessionManager(new LoginOobeSessionManagerDelegate()));
   } else if (!base::SysInfo::IsRunningOnChromeOS() &&
              login_account_id == login::StubAccountId()) {
     VLOG(1) << "Starting Chrome with StubLoginSessionManagerDelegate";
-    return scoped_ptr<session_manager::SessionManager>(
+    return std::unique_ptr<session_manager::SessionManager>(
         new ChromeSessionManager(new StubLoginSessionManagerDelegate(
             profile, login_account_id.GetUserEmail())));
   } else {
@@ -77,7 +79,7 @@ ChromeSessionManager::CreateSessionManager(
     // 4. Chrome is started on dev machine i.e. not on Chrome OS device w/o
     //    login flow. In that case --login-user=[chromeos::login::kStubUser] is
     //    added. See PreEarlyInitialization().
-    return scoped_ptr<session_manager::SessionManager>(
+    return std::unique_ptr<session_manager::SessionManager>(
         new ChromeSessionManager(new RestoreAfterCrashSessionManagerDelegate(
             profile, login_account_id.GetUserEmail())));
   }

@@ -53,7 +53,7 @@ ImageLoader::ImageLoader(const base::FilePath& path) : path_(path) {
 ImageLoader::~ImageLoader() {
 }
 
-scoped_ptr<gfx::ImageSkia> ImageLoader::Load() {
+std::unique_ptr<gfx::ImageSkia> ImageLoader::Load() {
   std::string image_data;
   ReadFileToString(path_, &image_data);
   ImageDecoder::StartWithOptions(this, image_data,

@@ -21,7 +21,7 @@ base::FilePathWatcher* CreateAndStartFilePathWatcher(
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!callback.is_null());
 
-  scoped_ptr<base::FilePathWatcher> watcher(new base::FilePathWatcher);
+  std::unique_ptr<base::FilePathWatcher> watcher(new base::FilePathWatcher);
   if (!watcher->Watch(watch_path, false /* recursive */, callback))
     return NULL;
 

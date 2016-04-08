@@ -59,7 +59,7 @@ bool GetFakeCertificateDER(const base::TimeDelta& expiry,
   if (valid_expiry <= valid_start) {
     valid_start = valid_expiry - base::TimeDelta::FromDays(1);
   }
-  scoped_ptr<crypto::RSAPrivateKey> test_key(
+  std::unique_ptr<crypto::RSAPrivateKey> test_key(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(std::vector<uint8_t>(
           &kTestKeyData[0], &kTestKeyData[arraysize(kTestKeyData)])));
   if (!test_key.get()) {

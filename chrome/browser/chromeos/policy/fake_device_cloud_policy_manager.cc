@@ -12,7 +12,7 @@
 namespace policy {
 
 FakeDeviceCloudPolicyManager::FakeDeviceCloudPolicyManager(
-    scoped_ptr<DeviceCloudPolicyStoreChromeOS> store,
+    std::unique_ptr<DeviceCloudPolicyStoreChromeOS> store,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : DeviceCloudPolicyManagerChromeOS(std::move(store), task_runner, NULL),
       unregister_result_(true) {}

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/file_system_provider/operations/write_file.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -11,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/test_util.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
@@ -154,7 +154,7 @@ TEST_F(FileSystemProviderOperationsWriteFileTest, OnSuccess) {
   EXPECT_TRUE(write_file.Execute(kRequestId));
 
   write_file.OnSuccess(kRequestId,
-                       scoped_ptr<RequestValue>(new RequestValue()),
+                       std::unique_ptr<RequestValue>(new RequestValue()),
                        false /* has_more */);
   ASSERT_EQ(1u, callback_log.size());
   EXPECT_EQ(base::File::FILE_OK, callback_log[0]);
@@ -178,7 +178,7 @@ TEST_F(FileSystemProviderOperationsWriteFileTest, OnError) {
   EXPECT_TRUE(write_file.Execute(kRequestId));
 
   write_file.OnError(kRequestId,
-                     scoped_ptr<RequestValue>(new RequestValue()),
+                     std::unique_ptr<RequestValue>(new RequestValue()),
                      base::File::FILE_ERROR_TOO_MANY_OPENED);
 
   ASSERT_EQ(1u, callback_log.size());

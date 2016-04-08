@@ -160,13 +160,13 @@ TEST(StartupCustomizationDocumentTest, BadManifest) {
 
 class TestURLFetcherCallback {
  public:
-  scoped_ptr<net::FakeURLFetcher> CreateURLFetcher(
+  std::unique_ptr<net::FakeURLFetcher> CreateURLFetcher(
       const GURL& url,
       net::URLFetcherDelegate* d,
       const std::string& response_data,
       net::HttpStatusCode response_code,
       net::URLRequestStatus::Status status) {
-    scoped_ptr<net::FakeURLFetcher> fetcher(
+    std::unique_ptr<net::FakeURLFetcher> fetcher(
         new net::FakeURLFetcher(url, d, response_data, response_code, status));
     OnRequestCreate(url, fetcher.get());
     return fetcher;
@@ -278,12 +278,12 @@ class ServicesCustomizationDocumentTest : public testing::Test {
       .WillRepeatedly(Invoke(AddMimeHeader));
   }
 
-  scoped_ptr<TestingProfile> CreateProfile() {
+  std::unique_ptr<TestingProfile> CreateProfile() {
     TestingProfile::Builder profile_builder;
     syncable_prefs::PrefServiceMockFactory factory;
     scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
         new user_prefs::PrefRegistrySyncable);
-    scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs(
+    std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs(
         factory.CreateSyncable(registry.get()));
     chrome::RegisterUserProfilePrefs(registry.get());
     profile_builder.SetPrefService(std::move(prefs));
@@ -315,7 +315,7 @@ TEST_F(ServicesCustomizationDocumentTest, Basic) {
   EXPECT_FALSE(doc->GetDefaultWallpaperUrl(&wallpaper_url));
   EXPECT_EQ("", wallpaper_url.spec());
 
-  scoped_ptr<base::DictionaryValue> default_apps(doc->GetDefaultApps());
+  std::unique_ptr<base::DictionaryValue> default_apps(doc->GetDefaultApps());
   ASSERT_TRUE(default_apps);
   EXPECT_EQ(default_apps->size(), 2u);
 
@@ -344,17 +344,14 @@ TEST_F(ServicesCustomizationDocumentTest, NoCustomizationIdInVpd) {
       ServicesCustomizationDocument::GetInstance();
   EXPECT_FALSE(doc->IsReady());
 
-  scoped_ptr<TestingProfile> profile = CreateProfile();
+  std::unique_ptr<TestingProfile> profile = CreateProfile();
   extensions::ExternalLoader* loader = doc->CreateExternalLoader(profile.get());
   EXPECT_TRUE(loader);
 
   MockExternalProviderVisitor visitor;
-  scoped_ptr<extensions::ExternalProviderImpl> provider(
+  std::unique_ptr<extensions::ExternalProviderImpl> provider(
       new extensions::ExternalProviderImpl(
-          &visitor,
-          loader,
-          profile.get(),
-          extensions::Manifest::EXTERNAL_PREF,
+          &visitor, loader, profile.get(), extensions::Manifest::EXTERNAL_PREF,
           extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
           extensions::Extension::FROM_WEBSTORE |
               extensions::Extension::WAS_INSTALLED_BY_DEFAULT));
@@ -383,7 +380,7 @@ TEST_F(ServicesCustomizationDocumentTest, DefaultApps) {
       ServicesCustomizationDocument::GetInstance();
   EXPECT_FALSE(doc->IsReady());
 
-  scoped_ptr<TestingProfile> profile = CreateProfile();
+  std::unique_ptr<TestingProfile> profile = CreateProfile();
   extensions::ExternalLoader* loader = doc->CreateExternalLoader(profile.get());
   EXPECT_TRUE(loader);
 
@@ -393,12 +390,9 @@ TEST_F(ServicesCustomizationDocumentTest, DefaultApps) {
           &app_list::AppListSyncableServiceFactory::BuildInstanceFor);
 
   MockExternalProviderVisitor visitor;
-  scoped_ptr<extensions::ExternalProviderImpl> provider(
+  std::unique_ptr<extensions::ExternalProviderImpl> provider(
       new extensions::ExternalProviderImpl(
-          &visitor,
-          loader,
-          profile.get(),
-          extensions::Manifest::EXTERNAL_PREF,
+          &visitor, loader, profile.get(), extensions::Manifest::EXTERNAL_PREF,
           extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
           extensions::Extension::FROM_WEBSTORE |
               extensions::Extension::WAS_INSTALLED_BY_DEFAULT));
@@ -436,17 +430,14 @@ TEST_F(ServicesCustomizationDocumentTest, CustomizationManifestNotFound) {
       ServicesCustomizationDocument::GetInstance();
   EXPECT_FALSE(doc->IsReady());
 
-  scoped_ptr<TestingProfile> profile = CreateProfile();
+  std::unique_ptr<TestingProfile> profile = CreateProfile();
   extensions::ExternalLoader* loader = doc->CreateExternalLoader(profile.get());
   EXPECT_TRUE(loader);
 
   MockExternalProviderVisitor visitor;
-  scoped_ptr<extensions::ExternalProviderImpl> provider(
+  std::unique_ptr<extensions::ExternalProviderImpl> provider(
       new extensions::ExternalProviderImpl(
-          &visitor,
-          loader,
-          profile.get(),
-          extensions::Manifest::EXTERNAL_PREF,
+          &visitor, loader, profile.get(), extensions::Manifest::EXTERNAL_PREF,
           extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
           extensions::Extension::FROM_WEBSTORE |
               extensions::Extension::WAS_INSTALLED_BY_DEFAULT));

@@ -114,7 +114,7 @@ void DeviceOAuth2TokenServiceDelegate::OnRefreshTokenResponse(
 }
 
 void DeviceOAuth2TokenServiceDelegate::OnGetTokenInfoResponse(
-    scoped_ptr<base::DictionaryValue> token_info) {
+    std::unique_ptr<base::DictionaryValue> token_info) {
   std::string gaia_robot_id;
   token_info->GetString("email", &gaia_robot_id);
   gaia_oauth_client_.reset();
