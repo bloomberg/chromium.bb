@@ -8,9 +8,9 @@
   <link rel="import" type="css" href="default_browser_page.css">
   <template>
     <style include="settings-shared"></style>
-    <div class="settings-box first">
+    <div class="settings-box first two-line">
       <template is="dom-if" if="[[showButton_]]">
-        <div on-tap="onSetDefaultBrowserTap_">
+        <div class="start" on-tap="onSetDefaultBrowserTap_">
           <div>[[i18n('defaultBrowser')]]</div>
           <div class="secondary">[[i18n('defaultBrowserMakeDefault')]]</div>
         </div>
