@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -32,6 +33,8 @@ const base::FilePath::CharType kFilePath[] =
     FILE_PATH_LITERAL("/offline_pages/example_com.mhtml");
 int64_t kFileSize = 234567;
 
+}  // namespace
+
 class OfflinePageMetadataStoreImplTest : public testing::Test {
  public:
   enum CalledCallback { NONE, LOAD, ADD, REMOVE, DESTROY };
@@ -53,6 +56,11 @@ class OfflinePageMetadataStoreImplTest : public testing::Test {
   void UpdateCallback(CalledCallback called_callback, bool success);
 
   void ClearResults();
+
+  void UpdateStoreEntries(
+      OfflinePageMetadataStoreImpl* store,
+      scoped_ptr<leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector>
+          entries_to_save);
 
  protected:
   CalledCallback last_called_callback_;
@@ -110,6 +118,18 @@ void OfflinePageMetadataStoreImplTest::ClearResults() {
   last_called_callback_ = NONE;
   last_status_ = STATUS_NONE;
   offline_pages_.clear();
+}
+
+void OfflinePageMetadataStoreImplTest::UpdateStoreEntries(
+    OfflinePageMetadataStoreImpl* store,
+    scoped_ptr<leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector>
+        entries_to_save) {
+  scoped_ptr<std::vector<std::string>> keys_to_remove(
+      new std::vector<std::string>());
+  store->UpdateEntries(
+      std::move(entries_to_save), std::move(keys_to_remove),
+      base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
+                 base::Unretained(this), ADD));
 }
 
 // Loads empty store and makes sure that there are no offline pages stored in
@@ -352,8 +372,6 @@ TEST_F(OfflinePageMetadataStoreImplTest, UpdateOfflinePage) {
   EXPECT_EQ(offline_page.client_id, offline_pages_[0].client_id);
 }
 
-}  // namespace
-
 // Test that loading a store with a bad value still loads.
 // Needs to be outside of the anonymous namespace in order for FRIEND_TEST
 // to work.
@@ -375,16 +393,11 @@ TEST_F(OfflinePageMetadataStoreImplTest, LoadCorruptedStore) {
   scoped_ptr<leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector>
       entries_to_save(
           new leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector());
-  scoped_ptr<std::vector<std::string>> keys_to_remove(
-      new std::vector<std::string>());
 
   OfflinePageEntry offline_page_proto;
   entries_to_save->push_back(std::make_pair("0", offline_page_proto));
 
-  store->UpdateEntries(
-      std::move(entries_to_save), std::move(keys_to_remove),
-      base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
-                 base::Unretained(this), ADD));
+  UpdateStoreEntries(store.get(), std::move(entries_to_save));
   PumpLoop();
 
   EXPECT_EQ(ADD, last_called_callback_);
@@ -421,17 +434,12 @@ TEST_F(OfflinePageMetadataStoreImplTest, LoadTotallyCorruptedStore) {
   scoped_ptr<leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector>
       entries_to_save(
           new leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector());
-  scoped_ptr<std::vector<std::string>> keys_to_remove(
-      new std::vector<std::string>());
 
   OfflinePageEntry offline_page_proto;
   entries_to_save->push_back(std::make_pair("0", offline_page_proto));
   entries_to_save->push_back(std::make_pair("1", offline_page_proto));
 
-  store->UpdateEntries(
-      std::move(entries_to_save), std::move(keys_to_remove),
-      base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
-                 base::Unretained(this), ADD));
+  UpdateStoreEntries(store.get(), std::move(entries_to_save));;
   PumpLoop();
 
   EXPECT_EQ(ADD, last_called_callback_);
@@ -447,6 +455,49 @@ TEST_F(OfflinePageMetadataStoreImplTest, LoadTotallyCorruptedStore) {
   // One of the pages was busted, so only expect one page.
   EXPECT_EQ(LOAD, last_called_callback_);
   EXPECT_EQ(STATUS_FALSE, last_status_);
+}
+
+TEST_F(OfflinePageMetadataStoreImplTest, UpgradeStoreFromBookmarkIdToClientId) {
+  scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
+
+  // Manually write a page referring to legacy bookmark id.
+  scoped_ptr<leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector>
+      entries_to_save(
+          new leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector());
+
+  OfflinePageEntry offline_page_proto;
+  offline_page_proto.set_deprecated_bookmark_id(1LL);
+  offline_page_proto.set_version(1);
+  offline_page_proto.set_url(kTestURL);
+  offline_page_proto.set_file_path("/foo/bar");
+  entries_to_save->push_back(std::make_pair("1", offline_page_proto));
+
+  UpdateStoreEntries(store.get(), std::move(entries_to_save));
+  PumpLoop();
+
+  EXPECT_EQ(ADD, last_called_callback_);
+  EXPECT_EQ(STATUS_TRUE, last_status_);
+
+  ClearResults();
+
+  // Close the store first to ensure file lock is removed.
+  store.reset();
+  store = BuildStore();
+  PumpLoop();
+
+  // The page should be upgraded with new Client ID format.
+  EXPECT_EQ(LOAD, last_called_callback_);
+  EXPECT_EQ(STATUS_TRUE, last_status_);
+  EXPECT_EQ(1U, offline_pages_.size());
+  EXPECT_TRUE(offline_pages_[0].offline_id != 0);
+  EXPECT_EQ(offline_pages::BOOKMARK_NAMESPACE,
+            offline_pages_[0].client_id.name_space);
+  EXPECT_EQ(base::Int64ToString(offline_page_proto.deprecated_bookmark_id()),
+            offline_pages_[0].client_id.id);
+  EXPECT_EQ(GURL(kTestURL), offline_pages_[0].url);
+  EXPECT_EQ(offline_page_proto.version(), offline_pages_[0].version);
+  EXPECT_EQ(offline_page_proto.file_path(),
+            offline_pages_[0].file_path.MaybeAsASCII());
 }
 
 }  // namespace offline_pages

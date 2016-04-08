@@ -47,6 +47,8 @@ class OfflinePageMetadataStoreImpl : public OfflinePageMetadataStore {
   void Reset(const ResetCallback& callback) override;
 
  private:
+  friend class OfflinePageMetadataStoreImplTest;
+
   void LoadContinuation(const LoadCallback& callback, bool success);
   void LoadDone(const LoadCallback& callback,
                 bool success,
@@ -80,11 +82,6 @@ class OfflinePageMetadataStoreImpl : public OfflinePageMetadataStore {
   scoped_ptr<leveldb_proto::ProtoDatabase<OfflinePageEntry>> database_;
 
   base::WeakPtrFactory<OfflinePageMetadataStoreImpl> weak_ptr_factory_;
-
-  FRIEND_TEST_ALL_PREFIXES(OfflinePageMetadataStoreImplTest,
-                           LoadCorruptedStore);
-  FRIEND_TEST_ALL_PREFIXES(OfflinePageMetadataStoreImplTest,
-                           LoadTotallyCorruptedStore);
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageMetadataStoreImpl);
 };

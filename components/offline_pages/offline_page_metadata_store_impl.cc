@@ -168,8 +168,7 @@ void OfflinePageMetadataStoreImpl::LoadDone(
       // TODO(bburns): Remove this eventually when we are sure everyone is
       // upgraded.
       if (!entry.has_offline_id()) {
-        entry.set_offline_id(OfflinePageModel::GenerateOfflineId());
-        item.offline_id = entry.offline_id();
+        item.offline_id = OfflinePageModel::GenerateOfflineId();
 
         if (!entry.has_deprecated_bookmark_id()) {
           LOG(ERROR) << "unexpected entry missing bookmark id";
@@ -178,8 +177,12 @@ void OfflinePageMetadataStoreImpl::LoadDone(
         item.client_id.name_space = offline_pages::BOOKMARK_NAMESPACE;
         item.client_id.id = base::Int64ToString(entry.deprecated_bookmark_id());
 
+        OfflinePageEntry upgraded_entry;
+        OfflinePageItemToEntry(item, &upgraded_entry);
         entries_to_update->push_back(
-            std::make_pair(base::Int64ToString(entry.offline_id()), entry));
+            std::make_pair(base::Int64ToString(upgraded_entry.offline_id()),
+                           upgraded_entry));
+        // Remove the old entry that is indexed with deprecated id.
         keys_to_remove->push_back(item.client_id.id);
       }
       result.push_back(item);
