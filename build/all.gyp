@@ -381,7 +381,6 @@
         }],
         ['OS=="win"', {
           'dependencies': [
-            '../chrome/chrome.gyp:crash_service',
             '../chrome/chrome.gyp:installer_util_unittests',
             '../chrome/chrome.gyp:setup_unittests',
             # ../chrome/test/mini_installer requires mini_installer.
@@ -590,13 +589,7 @@
             }],
             ['OS=="win"', {
               'dependencies': [
-                '../chrome/chrome.gyp:crash_service',
                 '../gpu/gpu.gyp:angle_perftests',
-              ],
-            }],
-            ['OS=="win" and target_arch=="ia32"', {
-              'dependencies': [
-                '../chrome/chrome.gyp:crash_service_win64',
               ],
             }],
           ],
@@ -626,16 +619,6 @@
             ['OS=="linux"', {
               'dependencies': [
                 '../chrome/chrome.gyp:linux_symbols'
-              ],
-            }],
-            ['OS=="win"', {
-              'dependencies': [
-                '../chrome/chrome.gyp:crash_service',
-              ],
-            }],
-            ['OS=="win" and target_arch=="ia32"', {
-              'dependencies': [
-                '../chrome/chrome.gyp:crash_service_win64',
               ],
             }],
           ],

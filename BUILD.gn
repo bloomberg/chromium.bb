@@ -873,13 +873,8 @@ group("chromium_builder_perf") {
 
     if (is_win) {
       deps += [
-        "//chrome/tools/crash_service",
         # "//gpu:angle_perftests", TODO(GYP): crbug.com/537008
       ]
-
-      if (target_cpu == "x86") {
-        deps += [ "//chrome/tools/crash_service:crash_service_win64" ]
-      }
     } else {
       deps += [ "//breakpad:minidump_stackwalk($host_toolchain)" ]
     }
