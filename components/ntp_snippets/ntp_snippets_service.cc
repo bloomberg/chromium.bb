@@ -4,6 +4,9 @@
 
 #include "components/ntp_snippets/ntp_snippets_service.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -64,14 +67,15 @@ base::TimeDelta GetFetchingIntervalFallback() {
                              kFetchingIntervalFallbackSeconds);
 }
 
-std::vector<std::string> GetSuggestionsHosts(
+// Extracts the hosts from |suggestions| and returns them in a set.
+std::set<std::string> GetSuggestionsHosts(
     const SuggestionsProfile& suggestions) {
-  std::vector<std::string> hosts;
+  std::set<std::string> hosts;
   for (int i = 0; i < suggestions.suggestions_size(); ++i) {
     const ChromeSuggestion& suggestion = suggestions.suggestions(i);
     GURL url(suggestion.url());
     if (url.is_valid())
-      hosts.push_back(url.host());
+      hosts.insert(url.host());
   }
   return hosts;
 }
@@ -138,6 +142,7 @@ NTPSnippetsService::~NTPSnippetsService() {}
 void NTPSnippetsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kSnippets);
   registry->RegisterListPref(prefs::kDiscardedSnippets);
+  registry->RegisterListPref(prefs::kSnippetHosts);
 }
 
 void NTPSnippetsService::Init(bool enabled) {
@@ -210,18 +215,20 @@ void NTPSnippetsService::RemoveObserver(NTPSnippetsServiceObserver* observer) {
 
 void NTPSnippetsService::OnSuggestionsChanged(
     const SuggestionsProfile& suggestions) {
-  std::vector<std::string> hosts = GetSuggestionsHosts(suggestions);
+  std::set<std::string> hosts = GetSuggestionsHosts(suggestions);
+  if (hosts == GetSnippetHostsFromPrefs())
+    return;
 
   // Remove existing snippets that aren't in the suggestions anymore.
   snippets_.erase(
       std::remove_if(snippets_.begin(), snippets_.end(),
                      [&hosts](const scoped_ptr<NTPSnippet>& snippet) {
-                       return std::find(hosts.begin(), hosts.end(),
-                                        snippet->url().host()) == hosts.end();
+                       return !hosts.count(snippet->url().host());
                      }),
       snippets_.end());
 
   StoreSnippetsToPrefs();
+  StoreSnippetHostsToPrefs(hosts);
 
   FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
                     NTPSnippetsServiceLoaded());
@@ -250,10 +257,10 @@ void NTPSnippetsService::OnJsonError(const std::string& snippets_json,
 }
 
 void NTPSnippetsService::FetchSnippetsImpl(
-    const std::vector<std::string>& hosts) {
+    const std::set<std::string>& hosts) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDontRestrict)) {
-    snippets_fetcher_->FetchSnippets(std::vector<std::string>());
+    snippets_fetcher_->FetchSnippets(std::set<std::string>());
     return;
   }
   if (!hosts.empty())
@@ -330,6 +337,26 @@ void NTPSnippetsService::LoadDiscardedSnippetsFromPrefs() {
 void NTPSnippetsService::StoreDiscardedSnippetsToPrefs() {
   pref_service_->Set(prefs::kDiscardedSnippets,
                      *SnippetsToListValue(discarded_snippets_));
+}
+
+std::set<std::string> NTPSnippetsService::GetSnippetHostsFromPrefs() const {
+  std::set<std::string> hosts;
+  const base::ListValue* list = pref_service_->GetList(prefs::kSnippetHosts);
+  for (const base::Value* value : *list) {
+    std::string str;
+    bool success = value->GetAsString(&str);
+    DCHECK(success) << "Failed to parse snippet host from prefs";
+    hosts.insert(std::move(str));
+  }
+  return hosts;
+}
+
+void NTPSnippetsService::StoreSnippetHostsToPrefs(
+    const std::set<std::string>& hosts) {
+  base::ListValue list;
+  for (const std::string& host : hosts)
+    list.AppendString(host);
+  pref_service_->Set(prefs::kSnippetHosts, list);
 }
 
 bool NTPSnippetsService::HasDiscardedSnippet(const GURL& url) const {

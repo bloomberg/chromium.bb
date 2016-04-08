@@ -11,6 +11,8 @@ namespace prefs {
 extern const char kSnippets[];
 extern const char kDiscardedSnippets[];
 
+extern const char kSnippetHosts[];
+
 }  // namespace prefs
 }  // namespace ntp_snippets
 

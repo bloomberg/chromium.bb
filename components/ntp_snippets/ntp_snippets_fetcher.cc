@@ -78,7 +78,7 @@ NTPSnippetsFetcher::AddCallback(const SnippetsAvailableCallback& callback) {
   return callback_list_.Add(callback);
 }
 
-void NTPSnippetsFetcher::FetchSnippets(const std::vector<std::string>& hosts) {
+void NTPSnippetsFetcher::FetchSnippets(const std::set<std::string>& hosts) {
   // TODO(treib): What to do if there's already a pending request?
   const std::string& key = is_stable_channel_
                                ? google_apis::GetAPIKey()

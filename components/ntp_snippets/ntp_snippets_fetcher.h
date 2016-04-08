@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_FETCHER_H_
 #define COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_FETCHER_H_
 
+#include <set>
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/callback_list.h"
@@ -37,7 +37,7 @@ class NTPSnippetsFetcher : public net::URLFetcherDelegate {
   // Fetches snippets from the server. |hosts| can be used to restrict the
   // results to a set of hosts, e.g. "www.google.com". If it is empty, no
   // restrictions are applied.
-  void FetchSnippets(const std::vector<std::string>& hosts);
+  void FetchSnippets(const std::set<std::string>& hosts);
 
  private:
   // URLFetcherDelegate implementation.

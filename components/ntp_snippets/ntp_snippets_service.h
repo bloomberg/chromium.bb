@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -106,7 +107,7 @@ class NTPSnippetsService : public KeyedService {
                     scoped_ptr<base::Value> parsed);
   void OnJsonError(const std::string& snippets_json, const std::string& error);
 
-  void FetchSnippetsImpl(const std::vector<std::string>& hosts);
+  void FetchSnippetsImpl(const std::set<std::string>& hosts);
 
   // Expects a top-level dictionary containing a "recos" list, which will be
   // passed to LoadFromListValue().
@@ -123,6 +124,9 @@ class NTPSnippetsService : public KeyedService {
 
   void LoadDiscardedSnippetsFromPrefs();
   void StoreDiscardedSnippetsToPrefs();
+
+  std::set<std::string> GetSnippetHostsFromPrefs() const;
+  void StoreSnippetHostsToPrefs(const std::set<std::string>& hosts);
 
   bool HasDiscardedSnippet(const GURL& url) const;
 
