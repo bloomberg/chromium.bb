@@ -88,6 +88,29 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   struct RequestDeviceSession;
   struct PrimaryServicesRequest;
 
+  // Map to keep track of connections. Inserting and removing connections
+  // will update the Web Contents for the frame. Upon destruction
+  // the map will clear Web Contents of Bluetooth connections.
+  struct ConnectedDevicesMap {
+    ConnectedDevicesMap(int render_process_id);
+    ~ConnectedDevicesMap();
+    bool HasActiveConnection(const std::string& device_id);
+    void InsertOrReplace(
+        int frame_routing_id,
+        const std::string& device_id,
+        scoped_ptr<device::BluetoothGattConnection> connection);
+    void Remove(int frame_routing_id, const std::string& device_id);
+    void IncrementBluetoothConnectedDeviceCount(int frame_routing_id);
+    void DecrementBluetoothConnectedDeviceCount(int frame_routing_id);
+
+    int render_process_id_;
+    std::unordered_map<std::string, scoped_ptr<device::BluetoothGattConnection>>
+        device_id_to_connection_map_;
+    // Keeps track of which frame is connected to which device so that
+    // we can clean up the WebContents in our destructor.
+    std::set<std::pair<int, std::string>> frame_ids_device_ids_;
+  };
+
   // Set |adapter_| to a BluetoothAdapter instance and register observers,
   // releasing references to previous |adapter_|.
   void set_adapter(scoped_refptr<device::BluetoothAdapter> adapter);
@@ -318,9 +341,8 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // sessions when other sessions are active.
   base::Timer discovery_session_timer_;
 
-  // Retain BluetoothGattConnection objects to keep connections open.
-  std::map<std::string, scoped_ptr<device::BluetoothGattConnection>>
-      device_id_to_connection_map_;
+  // Retains BluetoothGattConnection objects to keep connections open.
+  scoped_ptr<ConnectedDevicesMap> connected_devices_map_;
 
   // Map of device_address's to primary-services requests that need responses
   // when that device's service discovery completes.

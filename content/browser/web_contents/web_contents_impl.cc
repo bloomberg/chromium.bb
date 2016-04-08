@@ -359,7 +359,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       accessibility_mode_(
           BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode()),
       audio_stream_monitor_(this),
-      bluetooth_device_connected_(false),
+      bluetooth_connected_device_count_(0),
       virtual_keyboard_requested_(false),
       page_scale_factor_is_one_(true),
       text_input_state_(new TextInputState()),
@@ -1124,14 +1124,25 @@ void WebContentsImpl::SetAudioMuted(bool mute) {
   NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
 }
 
-bool WebContentsImpl::IsBluetoothDeviceConnected() const {
-  return bluetooth_device_connected_;
+void WebContentsImpl::IncrementBluetoothConnectedDeviceCount() {
+  // Notify for UI updates if the state changes.
+  bluetooth_connected_device_count_++;
+  if (bluetooth_connected_device_count_ == 1) {
+    NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+  }
 }
 
-void WebContentsImpl::SetBluetoothDeviceConnected(bool connected) {
-  bluetooth_device_connected_ = connected;
-  // Notification for UI updates in response to the connected device.
-  NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+void WebContentsImpl::DecrementBluetoothConnectedDeviceCount() {
+  // Notify for UI updates if the state changes.
+  DCHECK(bluetooth_connected_device_count_ != 0);
+  bluetooth_connected_device_count_--;
+  if (bluetooth_connected_device_count_ == 0) {
+    NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+  }
+}
+
+bool WebContentsImpl::IsConnectedToBluetoothDevice() const {
+  return bluetooth_connected_device_count_ > 0;
 }
 
 bool WebContentsImpl::IsCrashed() const {

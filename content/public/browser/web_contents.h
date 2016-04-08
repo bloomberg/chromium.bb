@@ -357,9 +357,9 @@ class WebContents : public PageNavigator,
   virtual bool IsAudioMuted() const = 0;
   virtual void SetAudioMuted(bool mute) = 0;
 
-  // Indicates/Sets wheter a WebContents is connected to a Bluetooth Device.
-  virtual bool IsBluetoothDeviceConnected() const = 0;
-  virtual void SetBluetoothDeviceConnected(bool connected) = 0;
+  // Indicates whether any frame in the WebContents is connected to a Bluetooth
+  // Device.
+  virtual bool IsConnectedToBluetoothDevice() const = 0;
 
   // Indicates whether this tab should be considered crashed. The setter will
   // also notify the delegate when the flag is changed.

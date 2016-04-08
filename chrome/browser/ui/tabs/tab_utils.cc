@@ -159,7 +159,7 @@ TabAlertState GetTabAlertStateForContents(content::WebContents* contents) {
       return TabAlertState::MEDIA_RECORDING;
   }
 
-  if (contents->IsBluetoothDeviceConnected())
+  if (contents->IsConnectedToBluetoothDevice())
     return TabAlertState::BLUETOOTH_CONNECTED;
 
   if (contents->IsAudioMuted())

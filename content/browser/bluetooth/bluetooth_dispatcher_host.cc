@@ -23,6 +23,7 @@
 #include "content/browser/bluetooth/bluetooth_blacklist.h"
 #include "content/browser/bluetooth/first_device_bluetooth_chooser.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -279,6 +280,8 @@ BluetoothDispatcherHost::BluetoothDispatcherHost(int render_process_id)
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  connected_devices_map_.reset(new ConnectedDevicesMap(render_process_id));
+
   // Bind all future weak pointers to the UI thread.
   weak_ptr_on_ui_thread_ = weak_ptr_factory_.GetWeakPtr();
   weak_ptr_on_ui_thread_.get();  // Associates with UI thread.
@@ -346,7 +349,7 @@ void BluetoothDispatcherHost::SetBluetoothAdapterForTesting(
     characteristic_to_service_.clear();
     characteristic_id_to_notify_session_.clear();
     active_characteristic_threads_.clear();
-    device_id_to_connection_map_.clear();
+    connected_devices_map_.reset(new ConnectedDevicesMap(render_process_id_));
     allowed_devices_map_ = BluetoothAllowedDevicesMap();
   }
 
@@ -450,6 +453,71 @@ struct BluetoothDispatcherHost::PrimaryServicesRequest {
   std::string service_uuid;
   CallingFunction func;
 };
+
+BluetoothDispatcherHost::ConnectedDevicesMap::ConnectedDevicesMap(
+    int render_process_id)
+    : render_process_id_(render_process_id) {}
+
+BluetoothDispatcherHost::ConnectedDevicesMap::~ConnectedDevicesMap() {
+  for (auto frame_id_device_id : frame_ids_device_ids_) {
+    DecrementBluetoothConnectedDeviceCount(frame_id_device_id.first);
+  }
+}
+
+bool BluetoothDispatcherHost::ConnectedDevicesMap::HasActiveConnection(
+    const std::string& device_id) {
+  auto connection_iter = device_id_to_connection_map_.find(device_id);
+  if (connection_iter != device_id_to_connection_map_.end()) {
+    return connection_iter->second->IsConnected();
+  }
+  return false;
+}
+
+void BluetoothDispatcherHost::ConnectedDevicesMap::InsertOrReplace(
+    int frame_routing_id,
+    const std::string& device_id,
+    scoped_ptr<device::BluetoothGattConnection> connection) {
+  auto connection_iter = device_id_to_connection_map_.find(device_id);
+  if (connection_iter == device_id_to_connection_map_.end()) {
+    IncrementBluetoothConnectedDeviceCount(frame_routing_id);
+    frame_ids_device_ids_.insert(std::make_pair(frame_routing_id, device_id));
+  } else {
+    device_id_to_connection_map_.erase(connection_iter);
+  }
+  device_id_to_connection_map_[device_id] = std::move(connection);
+}
+
+void BluetoothDispatcherHost::ConnectedDevicesMap::Remove(
+    int frame_routing_id,
+    const std::string& device_id) {
+  if (device_id_to_connection_map_.erase(device_id)) {
+    VLOG(1) << "Disconnecting device: " << device_id;
+    DecrementBluetoothConnectedDeviceCount(frame_routing_id);
+    frame_ids_device_ids_.erase(std::make_pair(frame_routing_id, device_id));
+  }
+}
+
+void BluetoothDispatcherHost::ConnectedDevicesMap::
+    IncrementBluetoothConnectedDeviceCount(int frame_routing_id) {
+  RenderFrameHostImpl* render_frame_host =
+      RenderFrameHostImpl::FromID(render_process_id_, frame_routing_id);
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderFrameHost(render_frame_host));
+  if (web_contents) {
+    web_contents->IncrementBluetoothConnectedDeviceCount();
+  }
+}
+
+void BluetoothDispatcherHost::ConnectedDevicesMap::
+    DecrementBluetoothConnectedDeviceCount(int frame_routing_id) {
+  RenderFrameHostImpl* render_frame_host =
+      RenderFrameHostImpl::FromID(render_process_id_, frame_routing_id);
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderFrameHost(render_frame_host));
+  if (web_contents) {
+    web_contents->DecrementBluetoothConnectedDeviceCount();
+  }
+}
 
 void BluetoothDispatcherHost::set_adapter(
     scoped_refptr<device::BluetoothAdapter> adapter) {
@@ -675,13 +743,10 @@ void BluetoothDispatcherHost::OnGATTServerConnect(
   }
 
   // If we are already connected no need to connect again.
-  auto connection_iter = device_id_to_connection_map_.find(device_id);
-  if (connection_iter != device_id_to_connection_map_.end()) {
-    if (connection_iter->second->IsConnected()) {
-      VLOG(1) << "Already connected.";
-      Send(new BluetoothMsg_GATTServerConnectSuccess(thread_id, request_id));
-      return;
-    }
+  if (connected_devices_map_->HasActiveConnection(device_id)) {
+    VLOG(1) << "Already connected.";
+    Send(new BluetoothMsg_GATTServerConnectSuccess(thread_id, request_id));
+    return;
   }
 
   query_result.device->CreateGattConnection(
@@ -707,19 +772,16 @@ void BluetoothDispatcherHost::OnGATTServerDisconnect(
   // option to disconnect than closing the tab, we purposefully don't
   // check if the frame has permission to interact with the device.
 
-  RenderFrameHostImpl* render_frame_host =
-      RenderFrameHostImpl::FromID(render_process_id_, frame_routing_id);
-  WebContents* web_contents =
-      WebContents::FromRenderFrameHost(render_frame_host);
-  if (web_contents) {
-    web_contents->SetBluetoothDeviceConnected(false);
-  }
-
   // The last BluetoothGattConnection for a device closes the connection when
   // it's destroyed.
-  if (device_id_to_connection_map_.erase(device_id)) {
-    VLOG(1) << "Disconnecting device: " << device_id;
-  }
+
+  // This only catches disconnections from the renderer. If the device
+  // disconnects by itself, or the renderer frame has been deleted
+  // due to navigation, we will not hide the indicator.
+  // TODO(ortuno): Once we move to Frame and Mojo we will be able
+  // to observe the frame's lifetime and hide the indicator when necessary.
+  // http://crbug.com/508771
+  connected_devices_map_->Remove(frame_routing_id, device_id);
 }
 
 void BluetoothDispatcherHost::OnGetPrimaryService(
@@ -1412,16 +1474,10 @@ void BluetoothDispatcherHost::OnGATTConnectionCreated(
     base::TimeTicks start_time,
     scoped_ptr<device::BluetoothGattConnection> connection) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  device_id_to_connection_map_[device_id] = std::move(connection);
   RecordConnectGATTTimeSuccess(base::TimeTicks::Now() - start_time);
   RecordConnectGATTOutcome(UMAConnectGATTOutcome::SUCCESS);
-  RenderFrameHostImpl* render_frame_host =
-      RenderFrameHostImpl::FromID(render_process_id_, frame_routing_id);
-  WebContents* web_contents =
-      WebContents::FromRenderFrameHost(render_frame_host);
-  if (web_contents) {
-    web_contents->SetBluetoothDeviceConnected(true);
-  }
+  connected_devices_map_->InsertOrReplace(frame_routing_id, device_id,
+                                          std::move(connection));
   Send(new BluetoothMsg_GATTServerConnectSuccess(thread_id, request_id));
 }
 
