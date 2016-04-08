@@ -1889,6 +1889,9 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             return;
         }
 
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M && !"N".equals(Build.VERSION.CODENAME)) {
+            mAwContents.onDrawGLFunctorDetached();
+        }
         mAwContents.onDetachedFromWindow();
     }
 

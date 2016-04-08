@@ -2314,6 +2314,9 @@ public class AwContents implements SmartClipProvider,
         mAwViewMethods.onDetachedFromWindow();
     }
 
+    public void onDrawGLFunctorDetached() {
+    }
+
     /**
      * @see android.view.View#onWindowFocusChanged()
      */
