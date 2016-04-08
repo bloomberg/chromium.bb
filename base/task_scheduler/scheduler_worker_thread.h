@@ -47,10 +47,9 @@ class BASE_EXPORT SchedulerWorkerThread : public PlatformThread::Delegate {
     virtual scoped_refptr<Sequence> GetWork(
         SchedulerWorkerThread* worker_thread) = 0;
 
-    // Called after the SchedulerWorkerThread has tried to run a Task from
-    // |sequence| (a TaskTracker might have prevented the Task from running).
-    // The Task is still in |sequence| when this is called.
-    virtual void RanTaskFromSequence(scoped_refptr<Sequence> sequence) = 0;
+    // Called when |sequence| isn't empty after the SchedulerWorkerThread pops a
+    // Task from it. |sequence| is the last Sequence returned by GetWork().
+    virtual void EnqueueSequence(scoped_refptr<Sequence> sequence) = 0;
   };
 
   // Creates a SchedulerWorkerThread with priority |thread_priority| that runs

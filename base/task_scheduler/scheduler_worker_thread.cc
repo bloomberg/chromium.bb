@@ -74,7 +74,16 @@ void SchedulerWorkerThread::ThreadMain() {
     }
 
     task_tracker_->RunTask(sequence->PeekTask());
-    delegate_->RanTaskFromSequence(std::move(sequence));
+
+    const bool sequence_became_empty = sequence->PopTask();
+
+    // If |sequence| isn't empty immediately after the pop, enqueue it to
+    // maintain the invariant that a non-empty Sequence is always referenced by
+    // either a PriorityQueue or a SchedulerWorkerThread. If it is empty and
+    // there are live references to it, it will be enqueued when a Task is added
+    // to it. Otherwise, it will be destroyed at the end of this scope.
+    if (!sequence_became_empty)
+      delegate_->EnqueueSequence(std::move(sequence));
 
     // Calling WakeUp() guarantees that this SchedulerWorkerThread will run
     // Tasks from Sequences returned by the GetWork() method of |delegate_|

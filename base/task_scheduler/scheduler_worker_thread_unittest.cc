@@ -26,13 +26,13 @@ namespace {
 
 const size_t kNumSequencesPerTest = 150;
 
-class TaskSchedulerWorkerThreadTest : public testing::Test,
+// The test parameter is the number of Tasks per Sequence returned by GetWork().
+class TaskSchedulerWorkerThreadTest : public testing::TestWithParam<size_t>,
                                       public SchedulerWorkerThread::Delegate {
  protected:
   TaskSchedulerWorkerThreadTest()
       : main_entry_called_(true, false),
-        num_get_work_cv_(lock_.CreateConditionVariable()),
-        run_sequences_cv_(lock_.CreateConditionVariable()) {}
+        num_get_work_cv_(lock_.CreateConditionVariable()) {}
 
   void SetUp() override {
     worker_thread_ = SchedulerWorkerThread::CreateSchedulerWorkerThread(
@@ -53,6 +53,8 @@ class TaskSchedulerWorkerThreadTest : public testing::Test,
     EXPECT_TRUE(main_exit_called_);
   }
 
+  size_t TasksPerSequence() const { return GetParam(); }
+
   // Wait until GetWork() has been called |num_get_work| times.
   void WaitForNumGetWork(size_t num_get_work) {
     AutoSchedulerLock auto_lock(lock_);
@@ -60,23 +62,9 @@ class TaskSchedulerWorkerThreadTest : public testing::Test,
       num_get_work_cv_->Wait();
   }
 
-  // Wait until there are no more Sequences to create and RanTaskFromSequence()
-  // has been invoked once for each Sequence returned by GetWork().
-  void WaitForAllSequencesToRun() {
+  void SetMaxGetWork(size_t max_get_work) {
     AutoSchedulerLock auto_lock(lock_);
-
-    while (num_sequences_to_create_ > 0 ||
-           run_sequences_.size() < created_sequences_.size()) {
-      run_sequences_cv_->Wait();
-    }
-
-    // Verify that RanTaskFromSequence() has been invoked with the same
-    // Sequences that were returned by GetWork().
-    EXPECT_EQ(created_sequences_, run_sequences_);
-
-    // Verify that RunTaskCallback() has been invoked once for each Sequence
-    // returned by GetWork().
-    EXPECT_EQ(created_sequences_.size(), num_run_tasks_);
+    max_get_work_ = max_get_work;
   }
 
   void SetNumSequencesToCreate(size_t num_sequences_to_create) {
@@ -85,9 +73,19 @@ class TaskSchedulerWorkerThreadTest : public testing::Test,
     num_sequences_to_create_ = num_sequences_to_create;
   }
 
-  void SetMaxGetWork(size_t max_get_work) {
+  size_t NumRunTasks() {
     AutoSchedulerLock auto_lock(lock_);
-    max_get_work_ = max_get_work;
+    return num_run_tasks_;
+  }
+
+  std::vector<scoped_refptr<Sequence>> CreatedSequences() {
+    AutoSchedulerLock auto_lock(lock_);
+    return created_sequences_;
+  }
+
+  std::vector<scoped_refptr<Sequence>> EnqueuedSequences() {
+    AutoSchedulerLock auto_lock(lock_);
+    return enqueued_sequences_;
   }
 
   std::unique_ptr<SchedulerWorkerThread> worker_thread_;
@@ -128,14 +126,16 @@ class TaskSchedulerWorkerThreadTest : public testing::Test,
       --num_sequences_to_create_;
     }
 
-    // Create a Sequence that contains one Task.
+    // Create a Sequence with TasksPerSequence() Tasks.
     scoped_refptr<Sequence> sequence(new Sequence);
-    std::unique_ptr<Task> task(new Task(
-        FROM_HERE,
-        Bind(&TaskSchedulerWorkerThreadTest::RunTaskCallback, Unretained(this)),
-        TaskTraits()));
-    EXPECT_TRUE(task_tracker_.WillPostTask(task.get()));
-    sequence->PushTask(std::move(task));
+    for (size_t i = 0; i < TasksPerSequence(); ++i) {
+      std::unique_ptr<Task> task(new Task(
+          FROM_HERE, Bind(&TaskSchedulerWorkerThreadTest::RunTaskCallback,
+                          Unretained(this)),
+          TaskTraits()));
+      EXPECT_TRUE(task_tracker_.WillPostTask(task.get()));
+      sequence->PushTask(std::move(task));
+    }
 
     {
       // Add the Sequence to the vector of created Sequences.
@@ -146,11 +146,24 @@ class TaskSchedulerWorkerThreadTest : public testing::Test,
     return sequence;
   }
 
-  void RanTaskFromSequence(scoped_refptr<Sequence> sequence) override {
+  // This override verifies that |sequence| contains the expected number of
+  // Tasks and adds it to |enqueued_sequences_|. Unlike a normal EnqueueSequence
+  // implementation, it doesn't reinsert |sequence| into a queue for further
+  // execution.
+  void EnqueueSequence(scoped_refptr<Sequence> sequence) override {
+    EXPECT_GT(TasksPerSequence(), 1U);
+
+    // Verify that |sequence| contains TasksPerSequence() - 1 Tasks.
+    for (size_t i = 0; i < TasksPerSequence() - 1; ++i) {
+      EXPECT_TRUE(sequence->PeekTask());
+      sequence->PopTask();
+    }
+    EXPECT_FALSE(sequence->PeekTask());
+
+    // Add |sequence| to |enqueued_sequences_|.
     AutoSchedulerLock auto_lock(lock_);
-    run_sequences_.push_back(std::move(sequence));
-    EXPECT_LE(run_sequences_.size(), created_sequences_.size());
-    run_sequences_cv_->Signal();
+    enqueued_sequences_.push_back(std::move(sequence));
+    EXPECT_LE(enqueued_sequences_.size(), created_sequences_.size());
   }
 
   void RunTaskCallback() {
@@ -186,11 +199,8 @@ class TaskSchedulerWorkerThreadTest : public testing::Test,
   // Sequences created by GetWork().
   std::vector<scoped_refptr<Sequence>> created_sequences_;
 
-  // Sequences passed to RanTaskFromSequence().
-  std::vector<scoped_refptr<Sequence>> run_sequences_;
-
-  // Condition variable signaled when a Sequence is added to |run_sequences_|.
-  std::unique_ptr<ConditionVariable> run_sequences_cv_;
+  // Sequences passed to EnqueueSequence().
+  std::vector<scoped_refptr<Sequence>> enqueued_sequences_;
 
   // Number of times that RunTaskCallback() has been called.
   size_t num_run_tasks_ = 0;
@@ -200,7 +210,7 @@ class TaskSchedulerWorkerThreadTest : public testing::Test,
 
 // Verify that when GetWork() continuously returns Sequences, all Tasks in these
 // Sequences run successfully. The test wakes up the SchedulerWorkerThread once.
-TEST_F(TaskSchedulerWorkerThreadTest, ContinuousWork) {
+TEST_P(TaskSchedulerWorkerThreadTest, ContinuousWork) {
   // Set GetWork() to return |kNumSequencesPerTest| Sequences before starting to
   // return nullptr.
   SetNumSequencesToCreate(kNumSequencesPerTest);
@@ -210,17 +220,27 @@ TEST_F(TaskSchedulerWorkerThreadTest, ContinuousWork) {
   const size_t kExpectedNumGetWork = kNumSequencesPerTest + 1;
   SetMaxGetWork(kExpectedNumGetWork);
 
-  // Wake up |worker_thread_| and wait until it has run all the Tasks returned
-  // by GetWork().
+  // Wake up |worker_thread_| and wait until GetWork() has been invoked the
+  // expected amount of times.
   worker_thread_->WakeUp();
-  WaitForAllSequencesToRun();
   WaitForNumGetWork(kExpectedNumGetWork);
+
+  // All tasks should have run.
+  EXPECT_EQ(kNumSequencesPerTest, NumRunTasks());
+
+  // If Sequences returned by GetWork() contain more than one Task, they aren't
+  // empty after the worker thread pops Tasks from them and thus should be
+  // returned to EnqueueSequence().
+  if (TasksPerSequence() > 1)
+    EXPECT_EQ(CreatedSequences(), EnqueuedSequences());
+  else
+    EXPECT_TRUE(EnqueuedSequences().empty());
 }
 
 // Verify that when GetWork() alternates between returning a Sequence and
 // returning nullptr, all Tasks in the returned Sequences run successfully. The
 // test wakes up the SchedulerWorkerThread once for each Sequence.
-TEST_F(TaskSchedulerWorkerThreadTest, IntermittentWork) {
+TEST_P(TaskSchedulerWorkerThreadTest, IntermittentWork) {
   for (size_t i = 0; i < kNumSequencesPerTest; ++i) {
     // Set GetWork() to return 1 Sequence before starting to return
     // nullptr.
@@ -231,13 +251,30 @@ TEST_F(TaskSchedulerWorkerThreadTest, IntermittentWork) {
     const size_t expected_num_get_work = 2 * (i + 1);
     SetMaxGetWork(expected_num_get_work);
 
-    // Wake up |worker_thread_| and wait until it has run the Task returned by
-    // GetWork().
+    // Wake up |worker_thread_| and wait until GetWork() has been invoked
+    // the expected amount of times.
     worker_thread_->WakeUp();
-    WaitForAllSequencesToRun();
     WaitForNumGetWork(expected_num_get_work);
+
+    // The Task should have run
+    EXPECT_EQ(i + 1, NumRunTasks());
+
+    // If Sequences returned by GetWork() contain more than one Task, they
+    // aren't empty after the worker thread pops Tasks from them and thus should
+    // be returned to EnqueueSequence().
+    if (TasksPerSequence() > 1)
+      EXPECT_EQ(CreatedSequences(), EnqueuedSequences());
+    else
+      EXPECT_TRUE(EnqueuedSequences().empty());
   }
 }
+
+INSTANTIATE_TEST_CASE_P(OneTaskPerSequence,
+                        TaskSchedulerWorkerThreadTest,
+                        ::testing::Values(1));
+INSTANTIATE_TEST_CASE_P(TwoTasksPerSequence,
+                        TaskSchedulerWorkerThreadTest,
+                        ::testing::Values(2));
 
 }  // namespace
 }  // namespace internal
