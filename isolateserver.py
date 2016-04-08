@@ -5,7 +5,7 @@
 
 """Archives a set of files or directories to an Isolate Server."""
 
-__version__ = '0.4.6'
+__version__ = '0.4.7'
 
 import base64
 import functools
@@ -107,11 +107,6 @@ _storage_api_cls = None
 
 class Error(Exception):
   """Generic runtime error."""
-  pass
-
-
-class IsolatedErrorNoCommand(isolated_format.IsolatedError):
-  """Signals an early abort due to lack of command specified."""
   pass
 
 
@@ -1814,7 +1809,7 @@ def upload_tree(base_url, infiles, namespace):
     return storage.upload_items(items)
 
 
-def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
+def fetch_isolated(isolated_hash, storage, cache, outdir):
   """Aggressively downloads the .isolated file(s), then download all the files.
 
   Arguments:
@@ -1822,14 +1817,12 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
     storage: Storage class that communicates with isolate storage.
     cache: LocalCache class that knows how to store and map files locally.
     outdir: Output directory to map file tree to.
-    require_command: Ensure *.isolated specifies a command to run.
 
   Returns:
     IsolatedBundle object that holds details about loaded *.isolated file.
   """
   logging.debug(
-      'fetch_isolated(%s, %s, %s, %s, %s)',
-      isolated_hash, storage, cache, outdir, require_command)
+      'fetch_isolated(%s, %s, %s, %s)', isolated_hash, storage, cache, outdir)
   # Hash algorithm to use, defined by namespace |storage| is using.
   algo = storage.hash_algo
   with cache:
@@ -1850,10 +1843,6 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
 
       # Load all *.isolated and start loading rest of the files.
       bundle.fetch(fetch_queue, isolated_hash, algo)
-      if require_command and not bundle.command:
-        # TODO(vadimsh): All fetch operations are already enqueue and there's no
-        # easy way to cancel them.
-        raise IsolatedErrorNoCommand()
 
     with tools.Profiler('GetRest'):
       # Create file system hierarchy.
@@ -2100,8 +2089,7 @@ def CMDdownload(parser, args):
             isolated_hash=options.isolated,
             storage=storage,
             cache=cache,
-            outdir=options.target,
-            require_command=False)
+            outdir=options.target)
       if bundle.command:
         rel = os.path.join(options.target, bundle.relative_cwd)
         print('To run this test please run from the directory %s:' %

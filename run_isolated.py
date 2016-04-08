@@ -305,14 +305,12 @@ def map_and_run(
   tmp_dir = make_temp_dir(prefix + u'tmp', root_dir)
   try:
     start = time.time()
-    try:
-      bundle = isolateserver.fetch_isolated(
-          isolated_hash=isolated_hash,
-          storage=storage,
-          cache=cache,
-          outdir=run_dir,
-          require_command=True)
-    except isolateserver.IsolatedErrorNoCommand:
+    bundle = isolateserver.fetch_isolated(
+        isolated_hash=isolated_hash,
+        storage=storage,
+        cache=cache,
+        outdir=run_dir)
+    if not bundle.command:
       # Handle this as a task failure, not an internal failure.
       sys.stderr.write(
           '<The .isolated doesn\'t declare any command to run!>\n'

@@ -434,8 +434,7 @@ class TaskOutputCollector(object):
             result['outputs_ref']['isolated'],
             storage,
             isolateserver.MemoryCache(file_mode_mask=0700),
-            os.path.join(self.task_output_dir, str(shard_index)),
-            False)
+            os.path.join(self.task_output_dir, str(shard_index)))
 
   def finalize(self):
     """Assembles and returns task summary JSON, shutdowns underlying Storage."""
@@ -1380,8 +1379,7 @@ def CMDreproduce(parser, args):
           properties['inputs_ref']['isolated'],
           storage,
           isolateserver.MemoryCache(file_mode_mask=0700),
-          workdir,
-          False)
+          workdir)
       command = bundle.command
       if bundle.relative_cwd:
         workdir = os.path.join(workdir, bundle.relative_cwd)

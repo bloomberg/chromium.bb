@@ -643,13 +643,13 @@ class TestSwarmingCollection(NetTestCase):
 
   def test_collect_multi(self):
     actual_calls = []
-    def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
+    def fetch_isolated(isolated_hash, storage, cache, outdir):
       self.assertIs(storage.__class__, isolateserver.Storage)
       self.assertIs(cache.__class__, isolateserver.MemoryCache)
       # Ensure storage is pointing to required location.
       self.assertEqual('https://localhost:2', storage.location)
       self.assertEqual('default', storage.namespace)
-      actual_calls.append((isolated_hash, outdir, require_command))
+      actual_calls.append((isolated_hash, outdir))
     self.mock(isolateserver, 'fetch_isolated', fetch_isolated)
 
     collector = swarming.TaskOutputCollector(self.tempdir, 2)
@@ -665,8 +665,8 @@ class TestSwarmingCollection(NetTestCase):
     summary = collector.finalize()
 
     expected_calls = [
-      ('0'*40, os.path.join(self.tempdir, '0'), False),
-      ('1'*40, os.path.join(self.tempdir, '1'), False),
+      ('0'*40, os.path.join(self.tempdir, '0')),
+      ('1'*40, os.path.join(self.tempdir, '1')),
     ]
     self.assertEqual(expected_calls, actual_calls)
 
@@ -727,7 +727,7 @@ class TestSwarmingCollection(NetTestCase):
 
     # Only first fetch is made, second one is ignored.
     self.assertEqual(1, len(actual_calls))
-    isolated_hash, storage, _, outdir, _ = actual_calls[0]
+    isolated_hash, storage, _, outdir = actual_calls[0]
     self.assertEqual(
         ('hash1', os.path.join(self.tempdir, '0')),
         (isolated_hash, outdir))
