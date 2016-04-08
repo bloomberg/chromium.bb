@@ -193,6 +193,7 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
 
     @Override
     public void onDismiss(DialogInterface dialog) {
+        super.onDismiss(dialog);
         if (mListener != null) mListener.onCancel();
     }
 }
