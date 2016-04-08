@@ -3754,6 +3754,7 @@
           'conditions': [
             ['android_java_ui==1', {
               'dependencies': [
+                '../components/components.gyp:browsing_data_ui',
                 '../components/components.gyp:data_usage_android',
                 '../components/components.gyp:offline_pages',
                 '../components/components.gyp:precache_content',

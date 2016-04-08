@@ -26,13 +26,16 @@
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/android/android_about_app_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/locale_settings.h"
+#include "components/browsing_data_ui/history_notice_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -605,6 +608,45 @@ static void ClearBrowsingData(JNIEnv* env,
 static jboolean CanDeleteBrowsingHistory(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj) {
   return GetPrefService()->GetBoolean(prefs::kAllowDeletingBrowserHistory);
+}
+
+static void ShowNoticeAboutOtherFormsOfBrowsingHistory(
+    ScopedJavaGlobalRef<jobject>* listener,
+    bool show) {
+  JNIEnv* env = AttachCurrentThread();
+  if (!show)
+    return;
+  Java_OtherFormsOfBrowsingHistoryListener_showNoticeAboutOtherFormsOfBrowsingHistory(
+      env, listener->obj());
+}
+
+static void EnableDialogAboutOtherFormsOfBrowsingHistory(
+    ScopedJavaGlobalRef<jobject>* listener,
+    bool enabled) {
+  JNIEnv* env = AttachCurrentThread();
+  if (!enabled)
+    return;
+  Java_OtherFormsOfBrowsingHistoryListener_enableDialogAboutOtherFormsOfBrowsingHistory(
+      env, listener->obj());
+}
+
+static void RequestInfoAboutOtherFormsOfBrowsingHistory(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& listener) {
+  // The permanent notice in the footer.
+  browsing_data_ui::ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
+      ProfileSyncServiceFactory::GetForProfile(GetOriginalProfile()),
+      WebHistoryServiceFactory::GetForProfile(GetOriginalProfile()),
+      base::Bind(&ShowNoticeAboutOtherFormsOfBrowsingHistory,
+                 base::Owned(new ScopedJavaGlobalRef<jobject>(env, listener))));
+
+  // The one-time notice in the dialog.
+  browsing_data_ui::ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
+      ProfileSyncServiceFactory::GetForProfile(GetOriginalProfile()),
+      WebHistoryServiceFactory::GetForProfile(GetOriginalProfile()),
+      base::Bind(&EnableDialogAboutOtherFormsOfBrowsingHistory,
+                 base::Owned(new ScopedJavaGlobalRef<jobject>(env, listener))));
 }
 
 static void SetAllowCookiesEnabled(JNIEnv* env,

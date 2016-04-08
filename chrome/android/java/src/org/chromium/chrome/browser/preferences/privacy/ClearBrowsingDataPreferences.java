@@ -37,8 +37,9 @@ import java.util.EnumSet;
  */
 public class ClearBrowsingDataPreferences extends PreferenceFragment
         implements PrefServiceBridge.OnClearBrowsingDataListener,
+                   PrefServiceBridge.OtherFormsOfBrowsingHistoryListener,
                    Preference.OnPreferenceClickListener,
-                   Preference.OnPreferenceChangeListener{
+                   Preference.OnPreferenceChangeListener {
     /**
      * Represents a single item in the dialog.
      */
@@ -339,6 +340,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        PrefServiceBridge.getInstance().requestInfoAboutOtherFormsOfBrowsingHistory(this);
         getActivity().setTitle(R.string.clear_browsing_data_title);
         addPreferencesFromResource(R.xml.clear_browsing_data_preferences);
         DialogOption[] options = getDialogOptions();
@@ -460,12 +462,10 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         return mProgressDialog;
     }
 
-    /**
-     * Shows a notice about other forms of browsing history. To be called by the web history
-     * service when it discovers that they exist.
-     */
-    @VisibleForTesting
+    @Override
     public void showNoticeAboutOtherFormsOfBrowsingHistory() {
+        if (getActivity() == null) return;
+
         TextMessageWithLinkAndIconPreference google_summary =
                 (TextMessageWithLinkAndIconPreference) findPreference(PREF_GOOGLE_SUMMARY);
         if (google_summary == null) return;
@@ -473,13 +473,10 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
                 R.string.clear_browsing_data_footnote_signed_and_other_forms_of_history);
     }
 
-    /**
-     * Enables the dialog about other forms of browsing history that will be shown to the user
-     * after deleting their Chrome history. To be called by the web history service when the
-     * conditions for showing the dialog are met.
-     */
-    @VisibleForTesting
+    @Override
     public void enableDialogAboutOtherFormsOfBrowsingHistory() {
+        if (getActivity() == null) return;
+
         mIsDialogAboutOtherFormsOfBrowsingHistoryEnabled = true;
     }
 
