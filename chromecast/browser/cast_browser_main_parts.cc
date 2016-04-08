@@ -34,6 +34,7 @@
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
 #include "chromecast/browser/pref_service_helper.h"
 #include "chromecast/browser/url_request_context_factory.h"
+#include "chromecast/chromecast_features.h"
 #include "chromecast/common/platform_client_auth.h"
 #include "chromecast/media/audio/cast_audio_manager_factory.h"
 #include "chromecast/media/base/key_systems_common.h"
@@ -200,7 +201,7 @@ DefaultCommandLineSwitch g_default_switches[] = {
 #endif
   // Always enable HTMLMediaElement logs.
   { switches::kBlinkPlatformLogChannels, "Media"},
-#if defined(DISABLE_DISPLAY)
+#if BUILDFLAG(DISABLE_DISPLAY)
   { switches::kDisableGpu, "" },
 #endif
 #if defined(OS_LINUX)
@@ -211,7 +212,7 @@ DefaultCommandLineSwitch g_default_switches[] = {
 #elif defined(ARCH_CPU_ARM_FAMILY)
   // On Linux arm, enable CMA pipeline by default.
   { switches::kEnableCmaMediaPipeline, "" },
-#if !defined(DISABLE_DISPLAY)
+#if !BUILDFLAG(DISABLE_DISPLAY)
   { switches::kEnableHardwareOverlays, "" },
 #endif
 #endif
@@ -408,7 +409,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       new RemoteDebuggingServer(cast_browser_process_->browser_client()
                                     ->EnableRemoteDebuggingImmediately())));
 
-#if defined(USE_AURA) && !defined(DISABLE_DISPLAY)
+#if defined(USE_AURA) && !BUILDFLAG(DISABLE_DISPLAY)
   // TODO(halliwell) move audio builds to use ozone_platform_cast, then can
   // simplify this by removing DISABLE_DISPLAY condition.  Should then also
   // assert(ozone_platform_cast) in BUILD.gn where it depends on //ui/ozone.

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/locales.gni")
 import("//build/config/ui.gni")
@@ -266,6 +267,11 @@ action("chromecast_locales_pak") {
            "-x",
            rebase_path("$root_out_dir/chromecast_locales"),
          ] + locales
+}
+
+buildflag_header("chromecast_features") {
+  header = "chromecast_features.h"
+  flags = [ "DISABLE_DISPLAY=$disable_display" ]
 }
 
 if (is_android) {

@@ -76,6 +76,7 @@ source_set("browser") {
     "//base",
     "//base:i18n",
     "//cc",
+    "//chromecast:chromecast_features",
     "//chromecast/app:cast_crash_client",
     "//chromecast/app:chromecast_settings",
     "//chromecast/app:resources",
@@ -176,6 +177,7 @@ test("cast_shell_browser_test") {
   deps = [
     ":test_support",
     "//base",
+    "//chromecast:chromecast_features",
     "//content/test:browsertest_base",
     "//content/test:test_support",
     "//media/base:test_support",

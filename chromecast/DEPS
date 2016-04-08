@@ -5,6 +5,7 @@ include_rules = [
   # sub-directory within chromecast/.
   "-chromecast",
   "+chromecast/base",
+  "+chromecast/chromecast_features.h",
   "+chromecast/public",
 
   # Other Chromecast-wide dependencies.

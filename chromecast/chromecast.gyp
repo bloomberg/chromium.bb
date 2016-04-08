@@ -22,11 +22,6 @@
     'include_dirs': [
       '..',  # Root of Chromium checkout
     ],
-    'conditions': [
-      ['disable_display==1', {
-        'defines': ['DISABLE_DISPLAY'],
-      }],
-    ],
     'target_conditions': [
       ['_type=="executable"', {
         'ldflags': [
@@ -324,6 +319,7 @@
         'cast_shell_resources',
         'cast_sys_info',
         'cast_version_header',
+        'chromecast_features',
         'chromecast_locales.gyp:chromecast_locales_pak',
         'chromecast_locales.gyp:chromecast_settings',
         'media/media.gyp:media_base',
@@ -548,7 +544,18 @@
         'graphics/graphics_properties_default.cc',
         'graphics/osd_plane_default.cc'
       ],
-    }
+    },
+    {
+      # GN target: //chromecast:chromecast_features
+      'target_name': 'chromecast_features',
+      'includes': [ '../build/buildflag_header.gypi' ],
+      'variables': {
+        'buildflag_header_path': 'chromecast/chromecast_features.h',
+        'buildflag_flags': [
+          'DISABLE_DISPLAY=<(disable_display)',
+        ]
+      }
+    },  # end of target 'chromecast_features'
   ],  # end of targets
 
   # Targets for Android receiver.
