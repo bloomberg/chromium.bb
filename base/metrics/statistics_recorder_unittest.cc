@@ -36,12 +36,14 @@ class StatisticsRecorderTest : public testing::Test {
   }
 
   void InitializeStatisticsRecorder() {
-    statistics_recorder_ = new StatisticsRecorder();
+    DCHECK(!statistics_recorder_);
+    StatisticsRecorder::UninitializeForTesting();
+    statistics_recorder_.reset(new StatisticsRecorder());
   }
 
   void UninitializeStatisticsRecorder() {
-    delete statistics_recorder_;
-    statistics_recorder_ = NULL;
+    statistics_recorder_.reset();
+    StatisticsRecorder::UninitializeForTesting();
   }
 
   Histogram* CreateHistogram(const std::string& name,
@@ -59,7 +61,7 @@ class StatisticsRecorderTest : public testing::Test {
     delete histogram;
   }
 
-  StatisticsRecorder* statistics_recorder_;
+  std::unique_ptr<StatisticsRecorder> statistics_recorder_;
 };
 
 TEST_F(StatisticsRecorderTest, NotInitialized) {

@@ -14,6 +14,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -164,14 +165,14 @@ class BASE_EXPORT StatisticsRecorder {
   // Returns the number of known histograms.
   static size_t GetHistogramCount();
 
-  // Clears all of the known histograms and resets static variables to a
-  // state that allows a new initialization.
-  static void ResetForTesting();
-
   // Removes a histogram from the internal set of known ones. This can be
   // necessary during testing persistent histograms where the underlying
   // memory is being released.
   static void ForgetHistogramForTesting(base::StringPiece name);
+
+  // Reset any global instance of the statistics-recorder that was created
+  // by a call to Initialize().
+  static void UninitializeForTesting();
 
  private:
   // We keep a map of callbacks to histograms, so that as histograms are
@@ -198,6 +199,13 @@ class BASE_EXPORT StatisticsRecorder {
   // use Initialize to do this. But in test code, you can friend this class and
   // call the constructor to get a clean StatisticsRecorder.
   StatisticsRecorder();
+
+  // These are copies of everything that existed when the (test) Statistics-
+  // Recorder was created. The global ones have to be moved aside to create a
+  // clean environment.
+  std::unique_ptr<HistogramMap> existing_histograms_;
+  std::unique_ptr<CallbackMap> existing_callbacks_;
+  std::unique_ptr<RangesMap> existing_ranges_;
 
   static void Reset();
   static void DumpHistogramsToVlog(void* instance);

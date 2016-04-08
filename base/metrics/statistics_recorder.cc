@@ -74,8 +74,12 @@ StatisticsRecorder::~StatisticsRecorder() {
   DCHECK(histograms_);
   DCHECK(ranges_);
 
-  // Global clean up.
+  // Clean out what this object created and then restore what existed before.
   Reset();
+  base::AutoLock auto_lock(*lock_);
+  histograms_ = existing_histograms_.release();
+  callbacks_ = existing_callbacks_.release();
+  ranges_ = existing_ranges_.release();
 }
 
 // static
@@ -397,22 +401,32 @@ size_t StatisticsRecorder::GetHistogramCount() {
 }
 
 // static
-void StatisticsRecorder::ResetForTesting() {
-  // Just call the private version that is used also by the destructor.
-  Reset();
-}
-
-// static
 void StatisticsRecorder::ForgetHistogramForTesting(base::StringPiece name) {
   if (histograms_)
     histograms_->erase(name);
+}
+
+// static
+void StatisticsRecorder::UninitializeForTesting() {
+  // Stop now if it's never been initialized.
+  if (lock_ == NULL || histograms_ == NULL)
+    return;
+
+  // Get the global instance and destruct it. It's held in static memory so
+  // can't "delete" it; call the destructor explicitly.
+  DCHECK(g_statistics_recorder_.private_instance_);
+  g_statistics_recorder_.Get().~StatisticsRecorder();
+
+  // Now the ugly part. There's no official way to release a LazyInstance once
+  // created so it's necessary to clear out an internal variable which
+  // shouldn't be publicly visible but is for initialization reasons.
+  g_statistics_recorder_.private_instance_ = 0;
 }
 
 // This singleton instance should be started during the single threaded portion
 // of main(), and hence it is not thread safe.  It initializes globals to
 // provide support for all future calls.
 StatisticsRecorder::StatisticsRecorder() {
-  DCHECK(!histograms_);
   if (lock_ == NULL) {
     // This will leak on purpose. It's the only way to make sure we won't race
     // against the static uninitialization of the module while one of our
@@ -422,7 +436,13 @@ StatisticsRecorder::StatisticsRecorder() {
     // during static initialization and released only on  process termination.
     lock_ = new base::Lock;
   }
+
   base::AutoLock auto_lock(*lock_);
+
+  existing_histograms_.reset(histograms_);
+  existing_callbacks_.reset(callbacks_);
+  existing_ranges_.reset(ranges_);
+
   histograms_ = new HistogramMap;
   callbacks_ = new CallbackMap;
   ranges_ = new RangesMap;

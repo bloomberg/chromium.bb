@@ -47,13 +47,12 @@ class SparseHistogramTest : public testing::TestWithParam<bool> {
   }
 
   void InitializeStatisticsRecorder() {
-    StatisticsRecorder::ResetForTesting();
-    statistics_recorder_ = new StatisticsRecorder();
+    DCHECK(!statistics_recorder_);
+    statistics_recorder_.reset(new StatisticsRecorder());
   }
 
   void UninitializeStatisticsRecorder() {
-    delete statistics_recorder_;
-    statistics_recorder_ = NULL;
+    statistics_recorder_.reset();
   }
 
   void CreatePersistentMemoryAllocator() {
@@ -78,7 +77,7 @@ class SparseHistogramTest : public testing::TestWithParam<bool> {
 
   const bool use_persistent_histogram_allocator_;
 
-  StatisticsRecorder* statistics_recorder_;
+  std::unique_ptr<StatisticsRecorder> statistics_recorder_;
   PersistentMemoryAllocator* allocator_ = nullptr;
 
  private:

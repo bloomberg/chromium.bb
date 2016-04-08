@@ -55,13 +55,12 @@ class HistogramTest : public testing::TestWithParam<bool> {
   }
 
   void InitializeStatisticsRecorder() {
-    StatisticsRecorder::ResetForTesting();
-    statistics_recorder_ = new StatisticsRecorder();
+    DCHECK(!statistics_recorder_);
+    statistics_recorder_.reset(new StatisticsRecorder());
   }
 
   void UninitializeStatisticsRecorder() {
-    delete statistics_recorder_;
-    statistics_recorder_ = NULL;
+    statistics_recorder_.reset();
   }
 
   void CreatePersistentHistogramAllocator() {
@@ -82,7 +81,7 @@ class HistogramTest : public testing::TestWithParam<bool> {
 
   const bool use_persistent_histogram_allocator_;
 
-  StatisticsRecorder* statistics_recorder_ = nullptr;
+  std::unique_ptr<StatisticsRecorder> statistics_recorder_;
   std::unique_ptr<char[]> allocator_memory_;
   PersistentMemoryAllocator* allocator_ = nullptr;
 
@@ -111,6 +110,14 @@ TEST_P(HistogramTest, BasicTest) {
   HistogramBase* custom_histogram = CustomHistogram::FactoryGet(
       "TestCustomHistogram", custom_ranges, HistogramBase::kNoFlags);
   EXPECT_TRUE(custom_histogram);
+
+  // Macros that create hitograms have an internal static variable which will
+  // continue to point to those from the very first run of this method even
+  // during subsequent runs.
+  static bool already_run = false;
+  if (already_run)
+    return;
+  already_run = true;
 
   // Use standard macros (but with fixed samples)
   LOCAL_HISTOGRAM_TIMES("Test2Histogram", TimeDelta::FromDays(1));
@@ -436,6 +443,13 @@ TEST_P(HistogramTest, BucketPlacementTest) {
 }
 
 TEST_P(HistogramTest, CorruptSampleCounts) {
+  // The internal code creates histograms via macros and thus keeps static
+  // pointers to them. If those pointers are to persistent memory which will
+  // be free'd then any following calls to that code will crash with a
+  // segmentation violation.
+  if (use_persistent_histogram_allocator_)
+    return;
+
   Histogram* histogram = static_cast<Histogram*>(
       Histogram::FactoryGet("Histogram", 1, 64, 8, HistogramBase::kNoFlags));
 
