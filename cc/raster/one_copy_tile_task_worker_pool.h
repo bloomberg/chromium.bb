@@ -7,41 +7,20 @@
 
 #include <stdint.h>
 
-#include <deque>
-#include <set>
-
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/synchronization/lock.h"
-#include "base/time/time.h"
-#include "base/trace_event/memory_dump_provider.h"
-#include "base/values.h"
 #include "cc/output/context_provider.h"
 #include "cc/raster/tile_task_runner.h"
 #include "cc/raster/tile_task_worker_pool.h"
 #include "cc/resources/resource_provider.h"
 
-namespace base {
-namespace trace_event {
-class ConvertableToTraceFormat;
-class TracedValue;
-}
-}
-
-namespace gpu {
-namespace gles2 {
-class GLES2Interface;
-}
-}
-
 namespace cc {
+struct StagingBuffer;
+class StagingBufferPool;
 class ResourcePool;
 
-class CC_EXPORT OneCopyTileTaskWorkerPool
-    : public TileTaskWorkerPool,
-      public TileTaskRunner,
-      public TileTaskClient,
-      public base::trace_event::MemoryDumpProvider {
+class CC_EXPORT OneCopyTileTaskWorkerPool : public TileTaskWorkerPool,
+                                            public TileTaskRunner,
+                                            public TileTaskClient {
  public:
   ~OneCopyTileTaskWorkerPool() override;
 
@@ -72,10 +51,6 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
       uint64_t previous_content_id) override;
   void ReleaseBufferForRaster(scoped_ptr<RasterBuffer> buffer) override;
 
-  // Overridden from base::trace_event::MemoryDumpProvider:
-  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
-                    base::trace_event::ProcessMemoryDump* pmd) override;
-
   // Playback raster source and copy result into |resource|.
   void PlaybackAndCopyOnWorkerThread(
       const Resource* resource,
@@ -85,8 +60,8 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
       const gfx::Rect& raster_dirty_rect,
       float scale,
       const RasterSource::PlaybackSettings& playback_settings,
-      uint64_t resource_content_id,
-      uint64_t previous_content_id);
+      uint64_t previous_content_id,
+      uint64_t new_content_id);
 
  protected:
   OneCopyTileTaskWorkerPool(base::SequencedTaskRunner* task_runner,
@@ -98,67 +73,36 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
                             ResourceFormat preferred_tile_format);
 
  private:
-  struct StagingBuffer {
-    StagingBuffer(const gfx::Size& size, ResourceFormat format);
-    ~StagingBuffer();
+  void PlaybackToStagingBuffer(
+      StagingBuffer* staging_buffer,
+      const Resource* resource,
+      const RasterSource* raster_source,
+      const gfx::Rect& raster_full_rect,
+      const gfx::Rect& raster_dirty_rect,
+      float scale,
+      const RasterSource::PlaybackSettings& playback_settings,
+      uint64_t previous_content_id,
+      uint64_t new_content_id);
+  void CopyOnWorkerThread(StagingBuffer* staging_buffer,
+                          const Resource* resource,
+                          ResourceProvider::ScopedWriteLockGL* resource_lock,
+                          const RasterSource* raster_source,
+                          uint64_t previous_content_id,
+                          uint64_t new_content_id);
 
-    void DestroyGLResources(gpu::gles2::GLES2Interface* gl);
-    void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
-                      ResourceFormat format,
-                      bool is_free) const;
-
-    const gfx::Size size;
-    const ResourceFormat format;
-    scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
-    base::TimeTicks last_usage;
-    unsigned texture_id;
-    unsigned image_id;
-    unsigned query_id;
-    uint64_t content_id;
-  };
-
-  void AddStagingBuffer(const StagingBuffer* staging_buffer,
-                        ResourceFormat format);
-  void RemoveStagingBuffer(const StagingBuffer* staging_buffer);
-  void MarkStagingBufferAsFree(const StagingBuffer* staging_buffer);
-  void MarkStagingBufferAsBusy(const StagingBuffer* staging_buffer);
-  scoped_ptr<StagingBuffer> AcquireStagingBuffer(const Resource* resource,
-                                                 uint64_t previous_content_id);
-  base::TimeTicks GetUsageTimeForLRUBuffer();
-  void ScheduleReduceMemoryUsage();
-  void ReduceMemoryUsage();
-  void ReleaseBuffersNotUsedSince(base::TimeTicks time);
-
-  scoped_ptr<base::trace_event::ConvertableToTraceFormat> StateAsValue() const;
-  void StagingStateAsValueInto(
-      base::trace_event::TracedValue* staging_state) const;
-
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   TaskGraphRunner* task_graph_runner_;
   const NamespaceToken namespace_token_;
   ResourceProvider* const resource_provider_;
   const int max_bytes_per_copy_operation_;
-  const bool use_partial_raster_;
+  bool use_partial_raster_;
+
+  // Context lock must be acquired when accessing this member.
+  int bytes_scheduled_since_last_flush_;
+
+  ResourceFormat preferred_tile_format_;
+  scoped_ptr<StagingBufferPool> staging_pool_;
 
   Task::Vector completed_tasks_;
-
-  mutable base::Lock lock_;
-  // |lock_| must be acquired when accessing the following members.
-  using StagingBufferSet = std::set<const StagingBuffer*>;
-  StagingBufferSet buffers_;
-  using StagingBufferDeque = std::deque<scoped_ptr<StagingBuffer>>;
-  StagingBufferDeque free_buffers_;
-  StagingBufferDeque busy_buffers_;
-  int bytes_scheduled_since_last_flush_;
-  const int max_staging_buffer_usage_in_bytes_;
-  ResourceFormat preferred_tile_format_;
-  int staging_buffer_usage_in_bytes_;
-  int free_staging_buffer_usage_in_bytes_;
-  const base::TimeDelta staging_buffer_expiration_delay_;
-  bool reduce_memory_usage_pending_;
-  base::Closure reduce_memory_usage_callback_;
-
-  base::WeakPtrFactory<OneCopyTileTaskWorkerPool> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OneCopyTileTaskWorkerPool);
 };

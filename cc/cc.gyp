@@ -436,6 +436,8 @@
         'raster/scoped_gpu_raster.h',
         'raster/single_thread_task_graph_runner.cc',
         'raster/single_thread_task_graph_runner.h',
+        'raster/staging_buffer_pool.cc',
+        'raster/staging_buffer_pool.h',
         'raster/synchronous_task_graph_runner.cc',
         'raster/synchronous_task_graph_runner.h',
         'raster/task_category.h',
