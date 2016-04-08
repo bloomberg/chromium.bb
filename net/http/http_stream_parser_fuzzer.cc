@@ -129,7 +129,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   result = parser.ReadResponseHeaders(callback.callback());
   result = callback.GetResult(result);
 
-  if (result != net::OK)
+  if (result < 0)
     return 0;
 
   while (true) {
