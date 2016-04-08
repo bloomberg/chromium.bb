@@ -275,6 +275,7 @@ gbm_bo_import(struct gbm_device *gbm, uint32_t type,
 	bo->strides[0] = fd_data->stride;
 	bo->sizes[0] = fd_data->height * fd_data->stride;
 
+	memset(&prime_handle, 0, sizeof(prime_handle));
 	prime_handle.fd = fd_data->fd;
 
 	ret = drmIoctl(bo->gbm->fd, DRM_IOCTL_PRIME_FD_TO_HANDLE, &prime_handle);
