@@ -3058,6 +3058,7 @@
             '../ash/ash.gyp:ash_with_content',
             '../ash/ash_strings.gyp:ash_strings',
             '../components/components.gyp:user_manager',
+            '../ui/app_list/shower/app_list_shower.gyp:app_list_shower',
           ],
           'conditions': [
             ['chromeos == 0', {

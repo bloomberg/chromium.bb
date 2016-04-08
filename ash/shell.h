@@ -248,12 +248,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Returns app list target visibility.
   bool GetAppListTargetVisibility() const;
 
-  // Returns app list window or NULL if it is not visible.
-  aura::Window* GetAppListWindow();
-
-  // Returns app list view if one exists, or NULL otherwise.
-  app_list::AppListView* GetAppListView();
-
   // Returns true if a system-modal dialog window is currently open.
   bool IsSystemModalWindowOpen() const;
 
@@ -669,8 +663,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<ShelfModel> shelf_model_;
   std::unique_ptr<WindowPositioner> window_positioner_;
 
-  std::unique_ptr<AppListController> app_list_controller_;
-
   std::unique_ptr<DragDropController> drag_drop_controller_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
   std::unique_ptr<::wm::ShadowController> shadow_controller_;
@@ -693,6 +685,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
       partial_magnification_controller_;
   std::unique_ptr<AutoclickController> autoclick_controller_;
   std::unique_ptr<aura::client::FocusClient> focus_client_;
+
   aura::client::ActivationClient* activation_client_;
   std::unique_ptr<PartialScreenshotController> partial_screenshot_controller_;
 

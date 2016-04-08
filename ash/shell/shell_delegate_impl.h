@@ -12,6 +12,11 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 
+namespace app_list {
+class AppListShowerDelegateFactory;
+class AppListShowerImpl;
+}
+
 namespace keyboard {
 class KeyboardUI;
 }
@@ -42,7 +47,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   void RemoveVirtualKeyboardStateObserver(
       VirtualKeyboardStateObserver* observer) override;
   void OpenUrl(const GURL& url) override;
-  app_list::AppListViewDelegate* GetAppListViewDelegate() override;
+  app_list::AppListShower* GetAppListShower() override;
   ShelfDelegate* CreateShelfDelegate(ShelfModel* model) override;
   ash::SystemTrayDelegate* CreateSystemTrayDelegate() override;
   ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() override;
@@ -58,7 +63,9 @@ class ShellDelegateImpl : public ash::ShellDelegate {
 
  private:
   ShelfDelegateImpl* shelf_delegate_;
-  std::unique_ptr<app_list::AppListViewDelegate> app_list_view_delegate_;
+  std::unique_ptr<app_list::AppListShowerDelegateFactory>
+      app_list_shower_delegate_factory_;
+  std::unique_ptr<app_list::AppListShowerImpl> app_list_shower_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateImpl);
 };

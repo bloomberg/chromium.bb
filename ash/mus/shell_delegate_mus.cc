@@ -164,7 +164,7 @@ void ShellDelegateMus::OpenUrl(const GURL& url) {
   NOTIMPLEMENTED();
 }
 
-app_list::AppListViewDelegate* ShellDelegateMus::GetAppListViewDelegate() {
+app_list::AppListShower* ShellDelegateMus::GetAppListShower() {
   NOTIMPLEMENTED();
   return nullptr;
 }

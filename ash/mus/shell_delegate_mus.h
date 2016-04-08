@@ -39,7 +39,7 @@ class ShellDelegateMus : public ash::ShellDelegate {
   void RemoveVirtualKeyboardStateObserver(
       VirtualKeyboardStateObserver* observer) override;
   void OpenUrl(const GURL& url) override;
-  app_list::AppListViewDelegate* GetAppListViewDelegate() override;
+  app_list::AppListShower* GetAppListShower() override;
   ShelfDelegate* CreateShelfDelegate(ShelfModel* model) override;
   ash::SystemTrayDelegate* CreateSystemTrayDelegate() override;
   ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() override;
