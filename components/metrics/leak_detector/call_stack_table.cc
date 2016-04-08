@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "components/metrics/leak_detector/call_stack_manager.h"
-#include "components/metrics/leak_detector/ranked_set.h"
 
 namespace metrics {
 namespace leak_detector {
@@ -43,9 +42,7 @@ CallStackTable::CallStackTable(int call_stack_suspicion_threshold)
 CallStackTable::~CallStackTable() {}
 
 void CallStackTable::Add(const CallStack* call_stack) {
-  Entry* entry = &entry_map_[call_stack];
-
-  ++entry->net_num_allocs;
+  ++entry_map_[call_stack];
   ++num_allocs_;
 }
 
@@ -53,28 +50,27 @@ void CallStackTable::Remove(const CallStack* call_stack) {
   auto iter = entry_map_.find(call_stack);
   if (iter == entry_map_.end())
     return;
-  Entry* entry = &iter->second;
-  --entry->net_num_allocs;
+  uint32_t& count_for_call_stack = iter->second;
+  --count_for_call_stack;
   ++num_frees_;
 
   // Delete zero-alloc entries to free up space.
-  if (entry->net_num_allocs == 0)
+  if (count_for_call_stack == 0)
     entry_map_.erase(iter);
 }
 
 void CallStackTable::TestForLeaks() {
   // Add all entries to the ranked list.
   RankedSet ranked_entries(kMaxCountOfSuspciousStacks);
-
-  for (const auto& entry_pair : entry_map_) {
-    const Entry& entry = entry_pair.second;
-    // Assumes that |entry.net_num_allocs| is always > 0. If that changes
-    // elsewhere in this class, this code should be updated to only pass values
-    // > 0 to |ranked_entries|.
-    LeakDetectorValueType call_stack_value(entry_pair.first);
-    ranked_entries.Add(call_stack_value, entry.net_num_allocs);
-  }
+  GetTopCallStacks(&ranked_entries);
   leak_analyzer_.AddSample(std::move(ranked_entries));
+}
+
+void CallStackTable::GetTopCallStacks(RankedSet* top_entries) const {
+  for (const auto& call_stack_and_count : entry_map_) {
+    top_entries->AddCallStack(call_stack_and_count.first,
+                              call_stack_and_count.second);
+  }
 }
 
 }  // namespace leak_detector

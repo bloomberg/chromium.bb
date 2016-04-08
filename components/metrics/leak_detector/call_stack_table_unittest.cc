@@ -302,5 +302,63 @@ TEST_F(CallStackTableTest, DetectLeak) {
   EXPECT_EQ(stack1_, leaks[1].call_stack());
 }
 
+TEST_F(CallStackTableTest, GetTopCallStacks) {
+  CallStackTable table(kDefaultLeakThreshold);
+
+  // Add a bunch of entries.
+  for (int i = 0; i < 60; ++i)
+    table.Add(stack0_);
+  for (int i = 0; i < 50; ++i)
+    table.Add(stack1_);
+  for (int i = 0; i < 64; ++i)
+    table.Add(stack2_);
+  for (int i = 0; i < 72; ++i)
+    table.Add(stack3_);
+
+  // Get the call sites ordered from least to greatest number of entries.
+  RankedSet top_four(4);
+  table.GetTopCallStacks(&top_four);
+  ASSERT_EQ(4U, top_four.size());
+  auto iter = top_four.begin();
+  EXPECT_EQ(72, iter->count);
+  EXPECT_EQ(stack3_, iter->value.call_stack());
+  ++iter;
+  EXPECT_EQ(64, iter->count);
+  EXPECT_EQ(stack2_, iter->value.call_stack());
+  ++iter;
+  EXPECT_EQ(60, iter->count);
+  EXPECT_EQ(stack0_, iter->value.call_stack());
+  ++iter;
+  EXPECT_EQ(50, iter->count);
+  EXPECT_EQ(stack1_, iter->value.call_stack());
+
+  // Get the top three call sites ordered from least to greatest number of
+  // entries.
+  RankedSet top_three(3);
+  table.GetTopCallStacks(&top_three);
+  ASSERT_EQ(3U, top_three.size());
+  iter = top_three.begin();
+  EXPECT_EQ(72, iter->count);
+  EXPECT_EQ(stack3_, iter->value.call_stack());
+  ++iter;
+  EXPECT_EQ(64, iter->count);
+  EXPECT_EQ(stack2_, iter->value.call_stack());
+  ++iter;
+  EXPECT_EQ(60, iter->count);
+  EXPECT_EQ(stack0_, iter->value.call_stack());
+
+  // Get the top two call sites ordered from least to greatest number of
+  // entries.
+  RankedSet top_two(2);
+  table.GetTopCallStacks(&top_two);
+  ASSERT_EQ(2U, top_two.size());
+  iter = top_two.begin();
+  EXPECT_EQ(72, iter->count);
+  EXPECT_EQ(stack3_, iter->value.call_stack());
+  ++iter;
+  EXPECT_EQ(64, iter->count);
+  EXPECT_EQ(stack2_, iter->value.call_stack());
+}
+
 }  // namespace leak_detector
 }  // namespace metrics

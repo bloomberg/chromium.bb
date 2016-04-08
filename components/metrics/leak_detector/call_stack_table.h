@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "components/metrics/leak_detector/custom_allocator.h"
 #include "components/metrics/leak_detector/leak_analyzer.h"
+#include "components/metrics/leak_detector/ranked_set.h"
 #include "components/metrics/leak_detector/stl_allocator.h"
 
 namespace metrics {
@@ -42,6 +43,11 @@ class CallStackTable {
   // Check for leak patterns in the allocation data.
   void TestForLeaks();
 
+  // Get the top N entries in the CallStackTable, ranked by net number of
+  // allocations. N is given by |top_entries->max_size()|, so |*top_entries|
+  // must already be initialized with that number.
+  void GetTopCallStacks(RankedSet* top_entries) const;
+
   const LeakAnalyzer& leak_analyzer() const { return leak_analyzer_; }
 
   size_t size() const { return entry_map_.size(); }
@@ -51,12 +57,6 @@ class CallStackTable {
   uint32_t num_frees() const { return num_frees_; }
 
  private:
-  // Hash table entry used to track allocation stats for a given call stack.
-  struct Entry {
-    // Net number of allocs (allocs minus frees).
-    uint32_t net_num_allocs;
-  };
-
   // Total number of allocs and frees in this table.
   uint32_t num_allocs_;
   uint32_t num_frees_;
@@ -64,9 +64,13 @@ class CallStackTable {
   // Hash table containing entries. Uses CustomAllocator to avoid recursive
   // malloc hook invocation when analyzing allocs and frees.
   using TableEntryAllocator =
-      STLAllocator<std::pair<const CallStack* const, Entry>, CustomAllocator>;
+      STLAllocator<std::pair<const CallStack* const, uint32_t>,
+                   CustomAllocator>;
+
+  // Stores a mapping of each call stack to the number of recorded allocations
+  // made from that call site.
   base::hash_map<const CallStack*,
-                 Entry,
+                 uint32_t,
                  StoredHash,
                  std::equal_to<const CallStack*>,
                  TableEntryAllocator> entry_map_;

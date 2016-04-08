@@ -66,6 +66,12 @@ class RankedSet {
   // Time complexity is O(log n).
   void Add(const ValueType& value, int count);
 
+  // Helper functions to directly add a size or call stack to the RankedSet.
+  void AddSize(size_t size, int count) { Add(ValueType(size), count); }
+  void AddCallStack(const CallStack* call_stack, int count) {
+    Add(ValueType(call_stack), count);
+  }
+
  private:
   // Max and min counts. Returns 0 if the list is empty.
   int max_count() const {
