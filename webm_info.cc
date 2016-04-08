@@ -325,7 +325,7 @@ bool OutputTracks(const mkvparser::Segment& segment, const Options& options,
   fprintf(o, "\n");
 
   unsigned int i = 0;
-  const unsigned int j = tracks->GetTracksCount();
+  const unsigned long j = tracks->GetTracksCount();
   while (i != j) {
     const mkvparser::Track* const track = tracks->GetTrackByIndex(i++);
     if (track == NULL)
@@ -373,8 +373,8 @@ bool OutputTracks(const mkvparser::Segment& segment, const Options& options,
         const std::string codec_id = track->GetCodecId();
         const std::string v_vp9 = "V_VP9";
         if (codec_id == v_vp9) {
-          const int vp9_profile_level =
-              libwebm::ParseVpxCodecPrivate(private_data, private_size);
+          const int vp9_profile_level = libwebm::ParseVpxCodecPrivate(
+              private_data, static_cast<int32_t>(private_size));
           fprintf(o, "%sVP9 profile level: %d\n", indent->indent_str().c_str(),
                   vp9_profile_level);
         }
@@ -631,7 +631,7 @@ bool OutputCluster(const mkvparser::Cluster& cluster,
   if (clusters_size) {
     // Load the Cluster.
     const mkvparser::BlockEntry* block_entry;
-    int status = cluster.GetFirst(block_entry);
+    long status = cluster.GetFirst(block_entry);
     if (status) {
       fprintf(stderr, "Could not get first Block of Cluster.\n");
       return false;
@@ -670,7 +670,7 @@ bool OutputCluster(const mkvparser::Cluster& cluster,
 
   if (options.output_blocks) {
     const mkvparser::BlockEntry* block_entry;
-    int status = cluster.GetFirst(block_entry);
+    long status = cluster.GetFirst(block_entry);
     if (status) {
       fprintf(stderr, "Could not get first Block of Cluster.\n");
       return false;
@@ -801,9 +801,10 @@ bool OutputCluster(const mkvparser::Cluster& cluster,
 
                 const string codec_id = track->GetCodecId();
                 if (codec_id == "V_VP8") {
-                  PrintVP8Info(data, frame.len, o);
+                  PrintVP8Info(data, static_cast<int>(frame.len), o);
                 } else if (codec_id == "V_VP9") {
-                  PrintVP9Info(data, frame.len, o, time_ns, stats);
+                  PrintVP9Info(data, static_cast<int>(frame.len), o, time_ns,
+                               stats);
                 }
               }
             }
@@ -867,7 +868,7 @@ bool OutputCues(const mkvparser::Segment& segment,
 
   const mkvparser::CuePoint* cue_point = first_cue;
   int cue_point_num = 1;
-  const int num_tracks = tracks.GetTracksCount();
+  const int num_tracks = static_cast<int>(tracks.GetTracksCount());
   indent->Adjust(libwebm::kIncreaseIndent);
 
   do {
