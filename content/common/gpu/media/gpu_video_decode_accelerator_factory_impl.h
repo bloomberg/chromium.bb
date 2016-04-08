@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/threading/thread_checker.h"
+#include "content/common/content_export.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_info.h"
 #include "media/video/video_decode_accelerator.h"
@@ -32,8 +33,8 @@ namespace content {
 // TODO(posciak): this class should be an implementation of
 // content::GpuVideoDecodeAcceleratorFactory, however that can only be achieved
 // once this is moved out of content/common, see crbug.com/597150 and related.
-class GpuVideoDecodeAcceleratorFactoryImpl {
- public:
+class CONTENT_EXPORT GpuVideoDecodeAcceleratorFactoryImpl {
+public:
   ~GpuVideoDecodeAcceleratorFactoryImpl();
 
   // Return current GLContext.

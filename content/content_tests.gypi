@@ -22,7 +22,6 @@
       'browser/geolocation/mock_location_arbitrator.h',
       'browser/geolocation/mock_location_provider.cc',
       'browser/geolocation/mock_location_provider.h',
-      'common/gpu/gpu_memory_buffer_factory_test_template.h',
       'public/test/async_file_test_helper.cc',
       'public/test/async_file_test_helper.h',
       'public/test/background_sync_test_util.cc',
@@ -669,11 +668,6 @@
       'common/discardable_shared_memory_heap_unittest.cc',
       'common/dom_storage/dom_storage_map_unittest.cc',
       'common/fileapi/file_system_util_unittest.cc',
-      'common/gpu/ca_layer_tree_unittest_mac.mm',
-      'common/gpu/gpu_channel_manager_unittest.cc',
-      'common/gpu/gpu_channel_test_common.cc',
-      'common/gpu/gpu_channel_test_common.h',
-      'common/gpu/gpu_channel_unittest.cc',
       'common/host_discardable_shared_memory_manager_unittest.cc',
       'common/host_shared_bitmap_manager_unittest.cc',
       'common/indexed_db/indexed_db_key_unittest.cc',
@@ -823,15 +817,8 @@
       'browser/android/java/jni_helper_unittest.cc',
       'browser/android/url_request_content_job_unittest.cc',
       'common/gpu/client/gpu_memory_buffer_impl_surface_texture_unittest.cc',
-      'common/gpu/gpu_memory_buffer_factory_surface_texture_unittest.cc',
       'renderer/java/gin_java_bridge_value_converter_unittest.cc',
       'renderer/media/android/webmediasession_android_unittest.cc',
-    ],
-    'content_unittests_mac_sources': [
-      'common/gpu/gpu_memory_buffer_factory_io_surface_unittest.cc',
-    ],
-    'content_unittests_ozone_sources': [
-      'common/gpu/gpu_memory_buffer_factory_ozone_native_pixmap_unittest.cc',
     ],
   },
   'targets': [
@@ -847,6 +834,7 @@
         '../components/scheduler/scheduler.gyp:scheduler_test_support',
         '../gpu/blink/gpu_blink.gyp:gpu_blink',
         '../gpu/gpu.gyp:gpu_ipc_common',
+        '../gpu/gpu.gyp:gpu_ipc_service_test_support',
         '../ipc/mojo/ipc_mojo.gyp:*',
         '../media/blink/media_blink.gyp:media_blink',
         '../media/media.gyp:media',
@@ -1219,14 +1207,12 @@
           ],
         }],
         ['use_ozone==1', {
-          'sources': [ '<@(content_unittests_ozone_sources)' ],
           'dependencies': [
             '../ui/ozone/ozone.gyp:ozone',
             '../ui/ozone/ozone.gyp:ozone_base',
           ],
         }],
         ['OS == "mac"', {
-          'sources': [ '<@(content_unittests_mac_sources)' ],
           'dependencies': [
             '../third_party/boringssl/boringssl.gyp:boringssl',
           ],
@@ -1674,12 +1660,13 @@
             'type': '<(gtest_target_type)',
             'dependencies': [
               '../base/base.gyp:base',
+              '../gpu/gpu.gyp:command_buffer_service',
               '../media/media.gyp:media',
               '../testing/gtest.gyp:gtest',
               '../ui/base/ui_base.gyp:ui_base',
               '../ui/gfx/gfx.gyp:gfx',
-              '../ui/gfx/gfx.gyp:gfx_test_support',
               '../ui/gfx/gfx.gyp:gfx_geometry',
+              '../ui/gfx/gfx.gyp:gfx_test_support',
               '../ui/gl/gl.gyp:gl',
               '../ui/gl/gl.gyp:gl_test_support',
               'content.gyp:content',

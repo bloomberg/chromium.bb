@@ -20,8 +20,6 @@
 #include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/gpu/gpu_config.h"
-#include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu_host_messages.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/gpu/gpu_child_thread.h"
@@ -36,6 +34,8 @@
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
+#include "gpu/ipc/service/gpu_config.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -379,9 +379,9 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   logging::SetLogMessageHandler(NULL);
 
-  scoped_ptr<GpuMemoryBufferFactory> gpu_memory_buffer_factory;
+  scoped_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory;
   if (gpu::GetNativeGpuMemoryBufferType() != gfx::EMPTY_BUFFER)
-    gpu_memory_buffer_factory = GpuMemoryBufferFactory::CreateNativeType();
+    gpu_memory_buffer_factory = gpu::GpuMemoryBufferFactory::CreateNativeType();
 
   gpu::SyncPointManager sync_point_manager(false);
 

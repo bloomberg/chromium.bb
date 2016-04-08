@@ -11,8 +11,9 @@
 #include "base/numerics/safe_math.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
-#include "content/common/gpu/gpu_channel.h"
-#include "content/common/gpu/gpu_channel_manager.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl.h"
+#include "gpu/ipc/service/gpu_channel.h"
+#include "gpu/ipc/service/gpu_channel_manager.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
@@ -36,7 +37,7 @@
 namespace content {
 
 static bool MakeDecoderContextCurrent(
-    const base::WeakPtr<GpuCommandBufferStub> stub) {
+    const base::WeakPtr<gpu::GpuCommandBufferStub> stub) {
   if (!stub) {
     DLOG(ERROR) << "Stub is gone; won't MakeCurrent().";
     return false;
@@ -50,8 +51,9 @@ static bool MakeDecoderContextCurrent(
   return true;
 }
 
-GpuVideoEncodeAccelerator::GpuVideoEncodeAccelerator(int32_t host_route_id,
-                                                     GpuCommandBufferStub* stub)
+GpuVideoEncodeAccelerator::GpuVideoEncodeAccelerator(
+    int32_t host_route_id,
+    gpu::GpuCommandBufferStub* stub)
     : host_route_id_(host_route_id),
       stub_(stub),
       input_format_(media::PIXEL_FORMAT_UNKNOWN),

@@ -14,14 +14,16 @@
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/common/gpu/gpu_channel.h"
-#include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator_factory_impl.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
+#include "gpu/ipc/service/gpu_channel.h"
+#include "gpu/ipc/service/gpu_channel_manager.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/message_filter.h"
 #include "media/base/limits.h"
+#include "media/gpu/ipc/common/gpu_video_accelerator_util.h"
 #include "media/gpu/ipc/common/media_messages.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_context.h"
@@ -31,7 +33,7 @@ namespace content {
 
 namespace {
 static gfx::GLContext* GetGLContext(
-    const base::WeakPtr<GpuCommandBufferStub>& stub) {
+    const base::WeakPtr<gpu::GpuCommandBufferStub>& stub) {
   if (!stub) {
     DLOG(ERROR) << "Stub is gone; no GLContext.";
     return nullptr;
@@ -41,7 +43,7 @@ static gfx::GLContext* GetGLContext(
 }
 
 static bool MakeDecoderContextCurrent(
-    const base::WeakPtr<GpuCommandBufferStub>& stub) {
+    const base::WeakPtr<gpu::GpuCommandBufferStub>& stub) {
   if (!stub) {
     DLOG(ERROR) << "Stub is gone; won't MakeCurrent().";
     return false;
@@ -56,7 +58,7 @@ static bool MakeDecoderContextCurrent(
 }
 
 #if (defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)) || defined(OS_MACOSX)
-static bool BindImage(const base::WeakPtr<GpuCommandBufferStub>& stub,
+static bool BindImage(const base::WeakPtr<gpu::GpuCommandBufferStub>& stub,
                       uint32_t client_texture_id,
                       uint32_t texture_target,
                       const scoped_refptr<gl::GLImage>& image,
@@ -82,7 +84,7 @@ static bool BindImage(const base::WeakPtr<GpuCommandBufferStub>& stub,
 #endif
 
 static base::WeakPtr<gpu::gles2::GLES2Decoder> GetGLES2Decoder(
-    const base::WeakPtr<GpuCommandBufferStub>& stub) {
+    const base::WeakPtr<gpu::GpuCommandBufferStub>& stub) {
   if (!stub) {
     DLOG(ERROR) << "Stub is gone; no GLES2Decoder.";
     return base::WeakPtr<gpu::gles2::GLES2Decoder>();
@@ -152,7 +154,7 @@ class GpuVideoDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
 
 GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
     int32_t host_route_id,
-    GpuCommandBufferStub* stub,
+    gpu::GpuCommandBufferStub* stub,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : host_route_id_(host_route_id),
       stub_(stub),

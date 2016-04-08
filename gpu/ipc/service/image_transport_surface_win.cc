@@ -1,0 +1,47 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "gpu/ipc/service/image_transport_surface.h"
+
+#include "gpu/ipc/service/child_window_surface_win.h"
+#include "gpu/ipc/service/pass_through_image_transport_surface.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/vsync_provider_win.h"
+
+namespace gpu {
+
+// static
+scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
+    GpuChannelManager* manager,
+    GpuCommandBufferStub* stub,
+    SurfaceHandle surface_handle,
+    gfx::GLSurface::Format format) {
+  DCHECK_NE(surface_handle, kNullSurfaceHandle);
+
+  scoped_refptr<gfx::GLSurface> surface;
+  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
+      gfx::GLSurfaceEGL::IsDirectCompositionSupported()) {
+    scoped_refptr<ChildWindowSurfaceWin> egl_surface(
+        new ChildWindowSurfaceWin(manager, surface_handle));
+    surface = egl_surface;
+
+    // TODO(jbauman): Get frame statistics from DirectComposition
+    scoped_ptr<gfx::VSyncProvider> vsync_provider(
+        new gfx::VSyncProviderWin(surface_handle));
+    if (!egl_surface->Initialize(std::move(vsync_provider)))
+      return nullptr;
+  } else {
+    surface = gfx::GLSurface::CreateViewGLSurface(surface_handle);
+    if (!surface)
+      return nullptr;
+  }
+
+  return scoped_refptr<gfx::GLSurface>(new PassThroughImageTransportSurface(
+      manager, stub, surface.get()));
+}
+
+}  // namespace gpu

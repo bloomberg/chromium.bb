@@ -301,6 +301,62 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
+      # GN version: //gpu/ipc/service:gpu_ipc_service_unittests
+      'target_name': 'gpu_ipc_service_unittests',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:run_all_unittests',
+        '../base/base.gyp:test_support_base',
+        '../ipc/ipc.gyp:test_support_ipc',
+        '../skia/skia.gyp:skia',
+        '../testing/gtest.gyp:gtest',
+        '../third_party/mesa/mesa.gyp:mesa_headers',
+        '../ui/gfx/gfx.gyp:gfx_test_support',
+        '../url/url.gyp:url_lib',
+        'command_buffer_common',
+        'command_buffer_service',
+        'gpu_config',
+        'gpu_ipc_common',
+        'gpu_ipc_service',
+        'gpu_ipc_service_test_support',
+      ],
+      'sources': [
+        'ipc/service/gpu_channel_manager_unittest.cc',
+        'ipc/service/gpu_channel_test_common.cc',
+        'ipc/service/gpu_channel_test_common.h',
+        'ipc/service/gpu_channel_unittest.cc',
+      ],
+      'include_dirs': [
+        '../third_party/mesa/src/include',
+      ],
+      'conditions': [
+        ['OS == "android"', {
+          'sources': [
+            'ipc/service/gpu_memory_buffer_factory_surface_texture_unittest.cc',
+          ],
+        }],
+        ['OS == "mac"', {
+          'sources': [
+            'ipc/service/ca_layer_tree_unittest_mac.mm',
+            'ipc/service/gpu_memory_buffer_factory_io_surface_unittest.cc',
+          ],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/CoreMedia.framework',
+              '$(SDKROOT)/System/Library/Frameworks/AVFoundation.framework',
+              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
+            ],
+          },
+        }],
+        ['use_ozone == 1', {
+          'sources': [
+            'ipc/service/gpu_memory_buffer_factory_ozone_native_pixmap_unittest.cc',
+          ],
+        }],
+      ],
+    },
+    {
       # GN version: //gpu/gpu_perftests
       'target_name': 'gpu_perftests',
       'type': '<(gtest_target_type)',
@@ -437,6 +493,19 @@
       ],
     },
     {
+      # GN version: //gpu/ipc/service:test_support
+      'target_name': 'gpu_ipc_service_test_support',
+      'type': 'static_library',
+      'dependencies': [
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'gpu/ipc/service/gpu_memory_buffer_factory_test_template.h',
+      ],
+    },
+    {
       # GN version: //gpu:command_buffer_gles2
       'target_name': 'command_buffer_gles2',
       'type': 'shared_library',
@@ -462,17 +531,17 @@
         'gles2_conform_support/egl/test_support.cc',
         'gles2_conform_support/egl/test_support.h',
       ],
-	  'defines': [
+          'defines': [
         'COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY',
         'EGLAPIENTRY=',
-	  ],
+          ],
       'conditions': [
         ['OS=="win"', {
           'defines': [
             'EGLAPI=__declspec(dllexport)',
           ],
         }, { # OS!="win"
-		  'defines': [
+                  'defines': [
             'EGLAPI=__attribute__((visibility(\"default\")))'
           ],
         }],
@@ -495,7 +564,7 @@
         'command_buffer/tests/command_buffer_gles2_tests_main.cc',
         'command_buffer/tests/egl_test.cc',
       ],
-	  'defines': [
+          'defines': [
          'COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY',
          'EGLAPIENTRY=',
       ],
@@ -505,10 +574,10 @@
             'EGLAPI=__declspec(dllimport)',
           ],
         }, { # OS!="win"
-		  'defines': [
+                  'defines': [
             'EGLAPI=',
           ],
-		}],
+        }],
         ['OS == "android"', {
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
@@ -543,6 +612,7 @@
             'gpu_config',
             'gpu_ipc_client',
             'gpu_ipc_common',
+            'gpu_ipc_service',
           ],
           'sources': [
             'gpu_export.h',
@@ -642,6 +712,17 @@
           ],
         },
         {
+          # GN version: //gpu/ipc/service
+          'target_name': 'gpu_ipc_service',
+          'type': 'static_library',
+          'includes': [
+            'gpu_ipc_service.gypi',
+          ],
+          'dependencies': [
+            'command_buffer_traits',
+          ],
+        },
+        {
           'target_name': 'gpu_config',
           'type': 'static_library',
           'includes': [
@@ -676,6 +757,7 @@
             'gpu_config.gypi',
             'gpu_ipc_client.gypi',
             'gpu_ipc_common.gypi',
+            'gpu_ipc_service.gypi',
             '../build/android/increase_size_for_speed.gypi',
           ],
           'defines': [
@@ -746,6 +828,21 @@
         {
           # GN version: //gpu/ipc/common
           'target_name': 'gpu_ipc_common',
+          'type': 'none',
+          'dependencies': [
+            'gpu',
+          ],
+        },
+        {
+          # GN version: //gpu/ipc/service
+          'target_name': 'gpu_ipc_service',
+          'type': 'none',
+          'dependencies': [
+            'gpu',
+          ],
+        },
+        {
+          'target_name': 'gpu_config',
           'type': 'none',
           'dependencies': [
             'gpu',
