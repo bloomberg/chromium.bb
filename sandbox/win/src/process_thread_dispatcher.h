@@ -48,6 +48,7 @@ class ThreadProcessDispatcher : public Dispatcher {
                       base::string16* name,
                       base::string16* cmd_line,
                       base::string16* cur_dir,
+                      base::string16* target_cur_dir,
                       CountedBuffer* info);
 
   // Processes IPC requests coming from calls to CreateThread() in the target.

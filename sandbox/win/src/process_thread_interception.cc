@@ -296,10 +296,10 @@ BOOL WINAPI TargetCreateProcessW(CreateProcessWFunction orig_CreateProcessW,
 
     const wchar_t* cur_dir = NULL;
 
-    wchar_t current_directory[MAX_PATH];
-    DWORD result = ::GetCurrentDirectory(MAX_PATH, current_directory);
+    wchar_t this_current_directory[MAX_PATH];
+    DWORD result = ::GetCurrentDirectory(MAX_PATH, this_current_directory);
     if (0 != result && result < MAX_PATH)
-      cur_dir = current_directory;
+      cur_dir = this_current_directory;
 
     SharedMemIPCClient ipc(memory);
     CrossCallReturn answer = {0};
@@ -308,7 +308,8 @@ BOOL WINAPI TargetCreateProcessW(CreateProcessWFunction orig_CreateProcessW,
                                  sizeof(PROCESS_INFORMATION));
 
     ResultCode code = CrossCall(ipc, IPC_CREATEPROCESSW_TAG, application_name,
-                                command_line, cur_dir, proc_info, &answer);
+                                command_line, cur_dir, current_directory,
+                                proc_info, &answer);
     if (SBOX_ALL_OK != code)
       break;
 
@@ -359,6 +360,7 @@ BOOL WINAPI TargetCreateProcessA(CreateProcessAFunction orig_CreateProcessA,
     // Convert the input params to unicode.
     UNICODE_STRING *cmd_unicode = NULL;
     UNICODE_STRING *app_unicode = NULL;
+    UNICODE_STRING *cwd_unicode = NULL;
     if (command_line) {
       cmd_unicode = AnsiToUnicode(command_line);
       if (!cmd_unicode)
@@ -373,14 +375,24 @@ BOOL WINAPI TargetCreateProcessA(CreateProcessAFunction orig_CreateProcessA,
       }
     }
 
+    if (current_directory) {
+      cwd_unicode = AnsiToUnicode(current_directory);
+      if (!cwd_unicode) {
+        operator delete(cmd_unicode, NT_ALLOC);
+        operator delete(app_unicode, NT_ALLOC);
+        break;
+      }
+    }
+
     const wchar_t* cmd_line = cmd_unicode ? cmd_unicode->Buffer : NULL;
     const wchar_t* app_name = app_unicode ? app_unicode->Buffer : NULL;
+    const wchar_t* cwd = cwd_unicode ? cwd_unicode->Buffer : NULL;
     const wchar_t* cur_dir = NULL;
 
-    wchar_t current_directory[MAX_PATH];
-    DWORD result = ::GetCurrentDirectory(MAX_PATH, current_directory);
+    wchar_t target_current_directory[MAX_PATH];
+    DWORD result = ::GetCurrentDirectory(MAX_PATH, target_current_directory);
     if (0 != result && result < MAX_PATH)
-      cur_dir = current_directory;
+      cur_dir = target_current_directory;
 
     SharedMemIPCClient ipc(memory);
     CrossCallReturn answer = {0};
@@ -389,10 +401,11 @@ BOOL WINAPI TargetCreateProcessA(CreateProcessAFunction orig_CreateProcessA,
                                  sizeof(PROCESS_INFORMATION));
 
     ResultCode code = CrossCall(ipc, IPC_CREATEPROCESSW_TAG, app_name,
-                                cmd_line, cur_dir, proc_info, &answer);
+                                cmd_line, cur_dir, cwd, proc_info, &answer);
 
     operator delete(cmd_unicode, NT_ALLOC);
     operator delete(app_unicode, NT_ALLOC);
+    operator delete(cwd_unicode, NT_ALLOC);
 
     if (SBOX_ALL_OK != code)
       break;

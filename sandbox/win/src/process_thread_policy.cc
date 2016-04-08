@@ -218,6 +218,7 @@ DWORD ProcessPolicy::CreateProcessWAction(EvalResult eval_result,
                                           const ClientInfo& client_info,
                                           const base::string16 &app_name,
                                           const base::string16 &command_line,
+                                          const base::string16 &current_dir,
                                           PROCESS_INFORMATION* process_info) {
   // The only action supported is ASK_BROKER which means create the process.
   if (GIVE_ALLACCESS != eval_result && GIVE_READONLY != eval_result) {
@@ -230,10 +231,15 @@ DWORD ProcessPolicy::CreateProcessWAction(EvalResult eval_result,
       _wcsdup(command_line.c_str()));
 
   BOOL should_give_full_access = (GIVE_ALLACCESS == eval_result);
+
+  const wchar_t* cwd = current_dir.c_str();
+  if (current_dir.empty())
+    cwd = NULL;
+
   if (!CreateProcessExWHelper(client_info.process, should_give_full_access,
                               app_name.c_str(), cmd_line.get(), NULL, NULL,
-                              FALSE, 0, NULL, NULL, &startup_info,
-                              process_info)) {
+                              FALSE, 0, NULL, cwd,
+                              &startup_info, process_info)) {
     return ERROR_ACCESS_DENIED;
   }
   return ERROR_SUCCESS;

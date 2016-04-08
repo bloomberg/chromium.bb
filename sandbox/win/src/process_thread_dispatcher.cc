@@ -120,7 +120,7 @@ ThreadProcessDispatcher::ThreadProcessDispatcher(PolicyBase* policy_base)
 
   static const IPCCall create_params = {
       {IPC_CREATEPROCESSW_TAG,
-       {WCHAR_TYPE, WCHAR_TYPE, WCHAR_TYPE, INOUTPTR_TYPE}},
+       {WCHAR_TYPE, WCHAR_TYPE, WCHAR_TYPE, WCHAR_TYPE, INOUTPTR_TYPE}},
       reinterpret_cast<CallbackGeneric>(
           &ThreadProcessDispatcher::CreateProcessW)};
 
@@ -218,6 +218,7 @@ bool ThreadProcessDispatcher::NtOpenProcessTokenEx(IPCInfo* ipc,
 bool ThreadProcessDispatcher::CreateProcessW(IPCInfo* ipc, base::string16* name,
                                              base::string16* cmd_line,
                                              base::string16* cur_dir,
+                                             base::string16* target_cur_dir,
                                              CountedBuffer* info) {
   if (sizeof(PROCESS_INFORMATION) != info->Size())
     return false;
@@ -250,7 +251,7 @@ bool ThreadProcessDispatcher::CreateProcessW(IPCInfo* ipc, base::string16* name,
   // If our logic was wrong, at least we wont allow create a random process.
   DWORD ret = ProcessPolicy::CreateProcessWAction(eval, *ipc->client_info,
                                                   exe_name, *cmd_line,
-                                                  proc_info);
+                                                  *target_cur_dir, proc_info);
 
   ipc->return_info.win32_result = ret;
   return true;
