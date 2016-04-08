@@ -41,5 +41,9 @@ EOF
       --devtools_port 9222 \
       --url $site \
       --output $outdir/${output_subdir}/${run}
+   if [ $? -ne 0 ]; then
+    echo "Analyze failed. Wait a bit for device to recover."
+    sleep 3
+   fi
  done
 done
