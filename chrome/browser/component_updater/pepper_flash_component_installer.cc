@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
-#include <string.h>
+#include "chrome/browser/component_updater/pepper_flash_component_installer.h"
+
+#include <stddef.h>
+
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/base_paths.h"
@@ -12,6 +16,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
@@ -20,7 +25,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "build/build_config.h"
-#include "chrome/browser/component_updater/flash_component_installer.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -289,6 +293,25 @@ void FinishPepperFlashUpdateRegistration(ComponentUpdateService* cus,
     NOTREACHED() << "Pepper Flash component registration failed.";
 }
 
+bool ValidatePepperFlashManifest(const base::FilePath& path) {
+  base::FilePath manifest_path(path.DirName().AppendASCII("manifest.json"));
+
+  std::string manifest_data;
+  if (!base::ReadFileToString(manifest_path, &manifest_data))
+    return false;
+  std::unique_ptr<base::Value> manifest_value(
+      base::JSONReader::Read(manifest_data, base::JSON_ALLOW_TRAILING_COMMAS));
+  if (!manifest_value.get())
+    return false;
+  base::DictionaryValue* manifest = NULL;
+  if (!manifest_value->GetAsDictionary(&manifest))
+    return false;
+  Version version;
+  if (!chrome::CheckPepperFlashManifest(*manifest, &version))
+    return false;
+  return true;
+}
+
 void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::FilePath path;
@@ -309,10 +332,17 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
   if (GetPepperFlashDirectory(&path, &version, &older_dirs)) {
     path = path.Append(chrome::kPepperFlashPluginFilename);
     if (base::PathExists(path)) {
-      BrowserThread::PostTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&RegisterPepperFlashWithChrome, path, version));
+      // Only register component pepper flash if it validates manifest check.
+      if (ValidatePepperFlashManifest(path)) {
+        BrowserThread::PostTask(
+            BrowserThread::UI,
+            FROM_HERE,
+            base::Bind(&RegisterPepperFlashWithChrome, path, version));
+      } else {
+        // Queue this version to be deleted.
+        older_dirs.push_back(path.DirName());
+        version = Version(kNullVersion);
+      }
     } else {
       version = Version(kNullVersion);
     }

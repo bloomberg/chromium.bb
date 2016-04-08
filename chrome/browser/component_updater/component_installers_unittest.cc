@@ -10,7 +10,7 @@
 #include "base/path_service.h"
 #include "base/version.h"
 #include "build/build_config.h"
-#include "chrome/browser/component_updater/flash_component_installer.h"
+#include "chrome/browser/component_updater/pepper_flash_component_installer.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pepper_flash.h"
 #include "content/public/test/test_browser_thread.h"

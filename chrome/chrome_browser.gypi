@@ -2268,7 +2268,7 @@
     'chrome_browser_plugins_sources': [
       'browser/browsing_data/browsing_data_flash_lso_helper.cc',
       'browser/browsing_data/browsing_data_flash_lso_helper.h',
-      'browser/component_updater/flash_component_installer.h',
+      'browser/component_updater/pepper_flash_component_installer.h',
       'browser/component_updater/pepper_flash_component_installer.cc',
       'browser/metrics/plugin_metrics_provider.cc',
       'browser/metrics/plugin_metrics_provider.h',
