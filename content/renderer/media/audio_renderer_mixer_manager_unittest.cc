@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/media/audio_renderer_mixer_manager.h"
+
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/renderer/media/audio_device_factory.h"
-#include "content/renderer/media/audio_renderer_mixer_manager.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_capturer_source.h"
@@ -108,7 +110,7 @@ class AudioRendererMixerManagerTest : public testing::Test,
     return nullptr;
   }
 
-  scoped_ptr<AudioRendererMixerManager> manager_;
+  std::unique_ptr<AudioRendererMixerManager> manager_;
   scoped_refptr<media::MockAudioRendererSink> mock_sink_;
   scoped_refptr<media::MockAudioRendererSink> mock_sink_no_device_;
 

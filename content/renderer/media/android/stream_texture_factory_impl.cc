@@ -35,7 +35,7 @@ class StreamTextureProxyImpl : public StreamTextureProxy,
  private:
   void BindOnThread(int32_t stream_id);
 
-  const scoped_ptr<StreamTextureHost> host_;
+  const std::unique_ptr<StreamTextureHost> host_;
 
   // Protects access to |client_| and |loop_|.
   base::Lock lock_;

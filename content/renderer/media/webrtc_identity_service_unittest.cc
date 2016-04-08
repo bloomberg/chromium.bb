@@ -69,7 +69,7 @@ class WebRtcIdentityServiceTest : public ::testing::Test {
                    base::Unretained(this)));
   }
 
-  scoped_ptr<WebRtcIdentityServiceForTest> service_;
+  std::unique_ptr<WebRtcIdentityServiceForTest> service_;
   std::string last_certificate_;
   std::string last_private_key_;
   int last_error_;

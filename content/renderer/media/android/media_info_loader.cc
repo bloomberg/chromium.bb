@@ -59,7 +59,7 @@ void MediaInfoLoader::Start(blink::WebFrame* frame) {
   // worse than the previous request+cancel code.  See http://crbug.com/400788
   request.addHTTPHeaderField("Range", "bytes=0-1");
 
-  scoped_ptr<WebURLLoader> loader;
+  std::unique_ptr<WebURLLoader> loader;
   if (test_loader_) {
     loader = std::move(test_loader_);
   } else {

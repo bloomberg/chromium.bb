@@ -65,7 +65,7 @@ void MockMediaStreamRegistry::AddAudioTrack(const std::string& track_id) {
   const scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
       WebRtcLocalAudioTrackAdapter::Create(track_id,
                                            nullptr /* track source */));
-  scoped_ptr<WebRtcLocalAudioTrack> native_track(
+  std::unique_ptr<WebRtcLocalAudioTrack> native_track(
       new WebRtcLocalAudioTrack(adapter.get()));
   blink_track.setExtraData(native_track.release());
   test_stream_.addTrack(blink_track);

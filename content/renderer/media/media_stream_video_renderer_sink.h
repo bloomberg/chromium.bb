@@ -89,7 +89,7 @@ class CONTENT_EXPORT MediaStreamVideoRendererSink
   const blink::WebMediaStreamTrack video_track_;
 
   // Pool of GpuMemoryBuffers and resources used to create hardware frames.
-  scoped_ptr<media::GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
+  std::unique_ptr<media::GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
 
   base::WeakPtrFactory<MediaStreamVideoRendererSink> weak_factory_;

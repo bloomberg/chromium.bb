@@ -46,12 +46,12 @@ struct VpxCodecDeleter {
   }
 };
 
-typedef scoped_ptr<vpx_codec_ctx_t, VpxCodecDeleter> ScopedVpxCodecCtxPtr;
+typedef std::unique_ptr<vpx_codec_ctx_t, VpxCodecDeleter> ScopedVpxCodecCtxPtr;
 
 void OnFrameEncodeCompleted(
     const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_cb,
     const scoped_refptr<VideoFrame>& frame,
-    scoped_ptr<std::string> data,
+    std::unique_ptr<std::string> data,
     base::TimeTicks capture_timestamp,
     bool keyframe) {
   DVLOG(1) << (keyframe ? "" : "non ") << "keyframe "<< data->length() << "B, "
@@ -76,7 +76,7 @@ void OnFrameEncodeCompleted(
 class VideoTrackRecorder::VpxEncoder final
     : public base::RefCountedThreadSafe<VpxEncoder> {
  public:
-  static void ShutdownEncoder(scoped_ptr<base::Thread> encoding_thread,
+  static void ShutdownEncoder(std::unique_ptr<base::Thread> encoding_thread,
                               ScopedVpxCodecCtxPtr encoder);
 
   VpxEncoder(bool use_vp9,
@@ -124,7 +124,7 @@ class VideoTrackRecorder::VpxEncoder final
 
   // Thread for encoding. Active for the lifetime of VpxEncoder. All variables
   // below this are used in this thread.
-  scoped_ptr<base::Thread> encoding_thread_;
+  std::unique_ptr<base::Thread> encoding_thread_;
   // VP8 internal objects: configuration and encoder.
   vpx_codec_enc_cfg_t codec_config_;
   // |encoder_| is a special scoped pointer to guarantee proper destruction.
@@ -140,7 +140,7 @@ class VideoTrackRecorder::VpxEncoder final
 
 // static
 void VideoTrackRecorder::VpxEncoder::ShutdownEncoder(
-    scoped_ptr<base::Thread> encoding_thread,
+    std::unique_ptr<base::Thread> encoding_thread,
     ScopedVpxCodecCtxPtr encoder) {
   DCHECK(encoding_thread->IsRunning());
   encoding_thread->Stop();
@@ -239,7 +239,7 @@ void VideoTrackRecorder::VpxEncoder::EncodeOnEncodingThread(
                                << vpx_codec_error(encoder_.get()) << " -"
                                << vpx_codec_error_detail(encoder_.get());
 
-  scoped_ptr<std::string> data(new std::string);
+  std::unique_ptr<std::string> data(new std::string);
   bool keyframe = false;
   vpx_codec_iter_t iter = NULL;
   const vpx_codec_cx_pkt_t* pkt = NULL;

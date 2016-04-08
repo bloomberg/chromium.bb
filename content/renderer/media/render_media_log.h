@@ -35,11 +35,11 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
   RenderMediaLog();
 
   // MediaLog implementation.
-  void AddEvent(scoped_ptr<media::MediaLogEvent> event) override;
+  void AddEvent(std::unique_ptr<media::MediaLogEvent> event) override;
   std::string GetLastErrorMessage() override;
 
   // Will reset |last_ipc_send_time_| with the value of NowTicks().
-  void SetTickClockForTesting(scoped_ptr<base::TickClock> tick_clock);
+  void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
   void SetTaskRunnerForTesting(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
@@ -57,7 +57,7 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
   // sequence for throttled send on |task_runner_| and coherent retrieval by
   // GetLastErrorMessage().
   mutable base::Lock lock_;
-  scoped_ptr<base::TickClock> tick_clock_;
+  std::unique_ptr<base::TickClock> tick_clock_;
   base::TimeTicks last_ipc_send_time_;
   std::vector<media::MediaLogEvent> queued_media_events_;
 
@@ -65,13 +65,13 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
   bool ipc_send_pending_;
 
   // Limits the number buffered extents changed events we send over IPC to one.
-  scoped_ptr<media::MediaLogEvent> last_buffered_extents_changed_event_;
+  std::unique_ptr<media::MediaLogEvent> last_buffered_extents_changed_event_;
 
   // Holds a copy of the most recent MEDIA_ERROR_LOG_ENTRY, if any.
-  scoped_ptr<media::MediaLogEvent> last_media_error_log_entry_;
+  std::unique_ptr<media::MediaLogEvent> last_media_error_log_entry_;
 
   // Holds a copy of the most recent PIPELINE_ERROR, if any.
-  scoped_ptr<media::MediaLogEvent> last_pipeline_error_;
+  std::unique_ptr<media::MediaLogEvent> last_pipeline_error_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderMediaLog);
 };

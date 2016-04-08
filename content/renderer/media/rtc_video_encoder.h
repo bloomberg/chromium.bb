@@ -8,11 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -65,7 +65,7 @@ class CONTENT_EXPORT RTCVideoEncoder
   friend class RTCVideoEncoder::Impl;
 
   // Return an encoded output buffer to WebRTC.
-  void ReturnEncodedImage(scoped_ptr<webrtc::EncodedImage> image,
+  void ReturnEncodedImage(std::unique_ptr<webrtc::EncodedImage> image,
                           int32_t bitstream_buffer_id,
                           uint16_t picture_id);
 

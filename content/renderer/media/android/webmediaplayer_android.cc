@@ -517,7 +517,7 @@ void WebMediaPlayerAndroid::setSinkId(
     const blink::WebSecurityOrigin& security_origin,
     blink::WebSetSinkIdCallbacks* web_callback) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  scoped_ptr<blink::WebSetSinkIdCallbacks> callback(web_callback);
+  std::unique_ptr<blink::WebSetSinkIdCallbacks> callback(web_callback);
   callback->onError(blink::WebSetSinkIdError::NotSupported);
 }
 
@@ -650,7 +650,7 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
                                   unsigned char alpha,
                                   SkXfermode::Mode mode) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  scoped_ptr<blink::WebGraphicsContext3DProvider> provider(
+  std::unique_ptr<blink::WebGraphicsContext3DProvider> provider(
       blink::Platform::current()
           ->createSharedOffscreenGraphicsContext3DProvider());
   if (!provider)

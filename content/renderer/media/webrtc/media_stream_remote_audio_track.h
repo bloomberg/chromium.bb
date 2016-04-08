@@ -79,7 +79,7 @@ class MediaStreamRemoteAudioSource
 
  private:
   class AudioSink;
-  scoped_ptr<AudioSink> sink_;
+  std::unique_ptr<AudioSink> sink_;
   const scoped_refptr<webrtc::AudioTrackInterface> track_;
   base::ThreadChecker thread_checker_;
 };

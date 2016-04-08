@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -86,9 +86,9 @@ class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
   // Used to DCHECK that some methods are called on the capture audio thread.
   base::ThreadChecker capture_thread_checker_;
 
-  scoped_ptr<media::AudioConverter> audio_converter_;
-  scoped_ptr<media::AudioFifo> fifo_;
-  scoped_ptr<media::AudioBus> output_wrapper_;
+  std::unique_ptr<media::AudioConverter> audio_converter_;
+  std::unique_ptr<media::AudioFifo> fifo_;
+  std::unique_ptr<media::AudioBus> output_wrapper_;
   bool is_enabled_;
   media::AudioParameters source_params_;
   media::AudioParameters sink_params_;

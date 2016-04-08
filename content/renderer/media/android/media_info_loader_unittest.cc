@@ -62,7 +62,7 @@ class MediaInfoLoaderTest : public testing::Test {
 
     // |test_loader_| will be used when Start() is called.
     url_loader_ = new NiceMock<MockWebURLLoader>();
-    loader_->test_loader_ = scoped_ptr<blink::WebURLLoader>(url_loader_);
+    loader_->test_loader_ = std::unique_ptr<blink::WebURLLoader>(url_loader_);
   }
 
   void Start() {
@@ -112,7 +112,7 @@ class MediaInfoLoaderTest : public testing::Test {
  protected:
   GURL gurl_;
 
-  scoped_ptr<MediaInfoLoader> loader_;
+  std::unique_ptr<MediaInfoLoader> loader_;
   NiceMock<MockWebURLLoader>* url_loader_;
 
   MockWebFrameClient client_;

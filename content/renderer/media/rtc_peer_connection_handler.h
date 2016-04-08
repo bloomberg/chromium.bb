@@ -8,12 +8,12 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
@@ -181,10 +181,10 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void OnIceGatheringChange(
       webrtc::PeerConnectionInterface::IceGatheringState new_state);
   void OnRenegotiationNeeded();
-  void OnAddStream(scoped_ptr<RemoteMediaStreamImpl> stream);
+  void OnAddStream(std::unique_ptr<RemoteMediaStreamImpl> stream);
   void OnRemoveStream(
       const scoped_refptr<webrtc::MediaStreamInterface>& stream);
-  void OnDataChannel(scoped_ptr<RtcDataChannelHandler> handler);
+  void OnDataChannel(std::unique_ptr<RtcDataChannelHandler> handler);
   void OnIceCandidate(const std::string& sdp, const std::string& sdp_mid,
       int sdp_mline_index, int component, int address_family);
 
@@ -265,8 +265,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // remote side to record UMA stats once both are set.  We only check
   // for the first offer or answer.  "pranswer"s and "unknown"s (from
   // unit tests) are ignored.
-  scoped_ptr<FirstSessionDescription> first_local_description_;
-  scoped_ptr<FirstSessionDescription> first_remote_description_;
+  std::unique_ptr<FirstSessionDescription> first_local_description_;
+  std::unique_ptr<FirstSessionDescription> first_remote_description_;
 
   typedef std::map<webrtc::MediaStreamInterface*,
       content::RemoteMediaStreamImpl*> RemoteStreamMap;

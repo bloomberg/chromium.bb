@@ -6,13 +6,13 @@
 #define CONTENT_RENDERER_MEDIA_WEBRTC_AUDIO_CAPTURER_H_
 
 #include <list>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -51,7 +51,7 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // created for. |constraints| contains the settings for audio processing.
   // TODO(xians): Implement the interface for the audio source and move the
   // |constraints| to ApplyConstraints(). Called on the main render thread.
-  static scoped_ptr<WebRtcAudioCapturer> CreateCapturer(
+  static std::unique_ptr<WebRtcAudioCapturer> CreateCapturer(
       int render_frame_id,
       const StreamDeviceInfo& device_info,
       const blink::WebMediaConstraints& constraints,

@@ -4,7 +4,8 @@
 
 #include "content/renderer/media/android/webmediasession_android.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/common/media/media_session_messages_android.h"
 #include "content/renderer/media/android/renderer_media_session_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -65,11 +66,11 @@ class TestDeactivateCallback : public blink::WebMediaSessionDeactivateCallback {
 };
 
 TEST_F(WebMediaSessionTest, TestRegistration) {
-  scoped_ptr<RendererMediaSessionManager> session_manager(
+  std::unique_ptr<RendererMediaSessionManager> session_manager(
       new RendererMediaSessionManager(nullptr));
   EXPECT_TRUE(IsSessionManagerEmpty(session_manager.get()));
   {
-    scoped_ptr<WebMediaSessionAndroid> session(
+    std::unique_ptr<WebMediaSessionAndroid> session(
         new WebMediaSessionAndroid(session_manager.get()));
     EXPECT_TRUE(SessionManagerHasSession(session_manager.get(), session.get()));
   }
@@ -77,18 +78,18 @@ TEST_F(WebMediaSessionTest, TestRegistration) {
 }
 
 TEST_F(WebMediaSessionTest, TestMultipleRegistration) {
-  scoped_ptr<RendererMediaSessionManager> session_manager(
+  std::unique_ptr<RendererMediaSessionManager> session_manager(
       new RendererMediaSessionManager(nullptr));
   EXPECT_TRUE(IsSessionManagerEmpty(session_manager.get()));
 
   {
-    scoped_ptr<WebMediaSessionAndroid> session1(
+    std::unique_ptr<WebMediaSessionAndroid> session1(
         new WebMediaSessionAndroid(session_manager.get()));
     EXPECT_TRUE(
         SessionManagerHasSession(session_manager.get(), session1.get()));
 
     {
-      scoped_ptr<WebMediaSessionAndroid> session2(
+      std::unique_ptr<WebMediaSessionAndroid> session2(
           new WebMediaSessionAndroid(session_manager.get()));
       EXPECT_TRUE(
           SessionManagerHasSession(session_manager.get(), session2.get()));
@@ -102,7 +103,7 @@ TEST_F(WebMediaSessionTest, TestMultipleRegistration) {
 }
 
 TEST_F(WebMediaSessionTest, TestMultipleRegistrationOutOfOrder) {
-  scoped_ptr<RendererMediaSessionManager> session_manager(
+  std::unique_ptr<RendererMediaSessionManager> session_manager(
       new RendererMediaSessionManager(nullptr));
   EXPECT_TRUE(IsSessionManagerEmpty(session_manager.get()));
 
@@ -122,10 +123,10 @@ TEST_F(WebMediaSessionTest, TestMultipleRegistrationOutOfOrder) {
 }
 
 TEST_F(WebMediaSessionTest, ActivationOutOfOrder) {
-  scoped_ptr<RendererMediaSessionManager> session_manager(
+  std::unique_ptr<RendererMediaSessionManager> session_manager(
       new RendererMediaSessionManager(nullptr));
 
-  scoped_ptr<WebMediaSessionAndroid> session(
+  std::unique_ptr<WebMediaSessionAndroid> session(
       new WebMediaSessionAndroid(session_manager.get()));
 
   // Request activate three times
@@ -148,10 +149,10 @@ TEST_F(WebMediaSessionTest, ActivationOutOfOrder) {
 }
 
 TEST_F(WebMediaSessionTest, ActivationInOrder) {
-  scoped_ptr<RendererMediaSessionManager> session_manager(
+  std::unique_ptr<RendererMediaSessionManager> session_manager(
       new RendererMediaSessionManager(nullptr));
 
-  scoped_ptr<WebMediaSessionAndroid> session(
+  std::unique_ptr<WebMediaSessionAndroid> session(
       new WebMediaSessionAndroid(session_manager.get()));
 
   // Request activate three times
@@ -172,10 +173,10 @@ TEST_F(WebMediaSessionTest, ActivationInOrder) {
 }
 
 TEST_F(WebMediaSessionTest, ActivationInFlight) {
-  scoped_ptr<RendererMediaSessionManager> session_manager(
+  std::unique_ptr<RendererMediaSessionManager> session_manager(
       new RendererMediaSessionManager(nullptr));
 
-  scoped_ptr<WebMediaSessionAndroid> session(
+  std::unique_ptr<WebMediaSessionAndroid> session(
       new WebMediaSessionAndroid(session_manager.get()));
 
   session->activate(new TestActivateCallback(this));  // request 1
@@ -202,10 +203,10 @@ TEST_F(WebMediaSessionTest, ActivationInFlight) {
 }
 
 TEST_F(WebMediaSessionTest, ActivationFailure) {
-  scoped_ptr<RendererMediaSessionManager> session_manager(
+  std::unique_ptr<RendererMediaSessionManager> session_manager(
       new RendererMediaSessionManager(nullptr));
 
-  scoped_ptr<WebMediaSessionAndroid> session(
+  std::unique_ptr<WebMediaSessionAndroid> session(
       new WebMediaSessionAndroid(session_manager.get()));
 
   session->activate(new TestActivateCallback(this));  // request 1
@@ -227,10 +228,10 @@ TEST_F(WebMediaSessionTest, ActivationFailure) {
 }
 
 TEST_F(WebMediaSessionTest, Deactivation) {
-  scoped_ptr<RendererMediaSessionManager> session_manager(
+  std::unique_ptr<RendererMediaSessionManager> session_manager(
       new RendererMediaSessionManager(nullptr));
 
-  scoped_ptr<WebMediaSessionAndroid> session(
+  std::unique_ptr<WebMediaSessionAndroid> session(
       new WebMediaSessionAndroid(session_manager.get()));
 
   // Request deactivate three times

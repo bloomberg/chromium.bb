@@ -106,7 +106,7 @@ void WebRtcLocalAudioTrackAdapter::AddSink(
   }
 #endif
 
-  scoped_ptr<WebRtcAudioSinkAdapter> adapter(
+  std::unique_ptr<WebRtcAudioSinkAdapter> adapter(
       new WebRtcAudioSinkAdapter(sink));
   owner_->AddSink(adapter.get());
   sink_adapters_.push_back(adapter.release());

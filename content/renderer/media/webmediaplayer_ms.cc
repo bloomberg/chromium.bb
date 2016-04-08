@@ -37,7 +37,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
     blink::WebMediaPlayerClient* client,
     base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
     media::MediaLog* media_log,
-    scoped_ptr<MediaStreamRendererFactory> factory,
+    std::unique_ptr<MediaStreamRendererFactory> factory,
     const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,

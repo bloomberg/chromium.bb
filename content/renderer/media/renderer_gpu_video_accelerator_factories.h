@@ -45,7 +45,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
  public:
   // Takes a ref on |gpu_channel_host| and tests |context| for loss before each
   // use.  Safe to call from any thread.
-  static scoped_ptr<RendererGpuVideoAcceleratorFactories> Create(
+  static std::unique_ptr<RendererGpuVideoAcceleratorFactories> Create(
       gpu::GpuChannelHost* gpu_channel_host,
       const scoped_refptr<base::SingleThreadTaskRunner>&
           main_thread_task_runner,
@@ -57,9 +57,9 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
 
   // media::GpuVideoAcceleratorFactories implementation.
   bool IsGpuVideoAcceleratorEnabled() override;
-  scoped_ptr<media::VideoDecodeAccelerator> CreateVideoDecodeAccelerator()
+  std::unique_ptr<media::VideoDecodeAccelerator> CreateVideoDecodeAccelerator()
       override;
-  scoped_ptr<media::VideoEncodeAccelerator> CreateVideoEncodeAccelerator()
+  std::unique_ptr<media::VideoEncodeAccelerator> CreateVideoEncodeAccelerator()
       override;
   // Creates textures and produces them into mailboxes. Returns true on success
   // or false on failure.
@@ -71,7 +71,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   void DeleteTexture(uint32_t texture_id) override;
   void WaitSyncToken(const gpu::SyncToken& sync_token) override;
 
-  scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
+  std::unique_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override;
@@ -79,10 +79,10 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   bool ShouldUseGpuMemoryBuffersForVideoFrames() const override;
   unsigned ImageTextureTarget(gfx::BufferFormat format) override;
   media::VideoPixelFormat VideoFrameOutputFormat() override;
-  scoped_ptr<media::GpuVideoAcceleratorFactories::ScopedGLContextLock>
+  std::unique_ptr<media::GpuVideoAcceleratorFactories::ScopedGLContextLock>
   GetGLContextLock() override;
   bool CheckContextLost();
-  scoped_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
+  std::unique_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
 
   media::VideoDecodeAccelerator::Capabilities

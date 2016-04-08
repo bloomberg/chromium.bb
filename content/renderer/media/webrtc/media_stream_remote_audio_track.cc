@@ -109,7 +109,8 @@ class MediaStreamRemoteAudioSource::AudioSink
   std::list<SinkInfo> sinks_;
   base::ThreadChecker thread_checker_;
   media::AudioParameters params_;  // Only used on the callback thread.
-  scoped_ptr<media::AudioBus> audio_bus_;  // Only used on the callback thread.
+  std::unique_ptr<media::AudioBus>
+      audio_bus_;  // Only used on the callback thread.
 };
 
 MediaStreamRemoteAudioTrack::MediaStreamRemoteAudioTrack(

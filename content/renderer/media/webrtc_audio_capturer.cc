@@ -91,13 +91,13 @@ class WebRtcAudioCapturer::TrackOwner
 };
 
 // static
-scoped_ptr<WebRtcAudioCapturer> WebRtcAudioCapturer::CreateCapturer(
+std::unique_ptr<WebRtcAudioCapturer> WebRtcAudioCapturer::CreateCapturer(
     int render_frame_id,
     const StreamDeviceInfo& device_info,
     const blink::WebMediaConstraints& constraints,
     WebRtcAudioDeviceImpl* audio_device,
     MediaStreamAudioSource* audio_source) {
-  scoped_ptr<WebRtcAudioCapturer> capturer(new WebRtcAudioCapturer(
+  std::unique_ptr<WebRtcAudioCapturer> capturer(new WebRtcAudioCapturer(
       render_frame_id, device_info, constraints, audio_device, audio_source));
   if (capturer->Initialize())
     return capturer;

@@ -57,7 +57,7 @@ class RendererWebMediaPlayerDelegateTest : public content::RenderViewTest {
  protected:
   IPC::TestSink& test_sink() { return render_thread_->sink(); }
 
-  scoped_ptr<RendererWebMediaPlayerDelegate> delegate_manager_;
+  std::unique_ptr<RendererWebMediaPlayerDelegate> delegate_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RendererWebMediaPlayerDelegateTest);

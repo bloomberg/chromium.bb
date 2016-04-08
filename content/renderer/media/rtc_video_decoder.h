@@ -56,7 +56,7 @@ class CONTENT_EXPORT RTCVideoDecoder
 
   // Creates a RTCVideoDecoder on the message loop of |factories|. Returns NULL
   // if failed. The video decoder will run on the message loop of |factories|.
-  static scoped_ptr<RTCVideoDecoder> Create(
+  static std::unique_ptr<RTCVideoDecoder> Create(
       webrtc::VideoCodecType type,
       media::GpuVideoAcceleratorFactories* factories);
   // Destroys |decoder| on the loop of |factories|
@@ -130,9 +130,10 @@ class CONTENT_EXPORT RTCVideoDecoder
   int GetVDAErrorCounterForTesting() { return vda_error_counter_; }
 
   // Saves a WebRTC buffer in |decode_buffers_| for decode.
-  void SaveToDecodeBuffers_Locked(const webrtc::EncodedImage& input_image,
-                                  scoped_ptr<base::SharedMemory> shm_buffer,
-                                  const BufferData& buffer_data);
+  void SaveToDecodeBuffers_Locked(
+      const webrtc::EncodedImage& input_image,
+      std::unique_ptr<base::SharedMemory> shm_buffer,
+      const BufferData& buffer_data);
 
   // Saves a WebRTC buffer in |pending_buffers_| waiting for SHM available.
   // Returns true on success.
@@ -169,10 +170,10 @@ class CONTENT_EXPORT RTCVideoDecoder
   // Gets a shared-memory segment of at least |min_size| bytes from
   // |available_shm_segments_|. Returns NULL if there is no buffer or the
   // buffer is not big enough.
-  scoped_ptr<base::SharedMemory> GetSHM_Locked(size_t min_size);
+  std::unique_ptr<base::SharedMemory> GetSHM_Locked(size_t min_size);
 
   // Returns a shared-memory segment to the available pool.
-  void PutSHM_Locked(scoped_ptr<base::SharedMemory> shm_buffer);
+  void PutSHM_Locked(std::unique_ptr<base::SharedMemory> shm_buffer);
 
   // Allocates |count| shared memory buffers of |size| bytes.
   void CreateSHM(size_t count, size_t size);
@@ -213,7 +214,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   static const int32_t ID_INVALID;  // indicates Reset or Release never occurred
 
   // The hardware video decoder.
-  scoped_ptr<media::VideoDecodeAccelerator> vda_;
+  std::unique_ptr<media::VideoDecodeAccelerator> vda_;
 
   media::VideoCodecProfile vda_codec_profile_;
 

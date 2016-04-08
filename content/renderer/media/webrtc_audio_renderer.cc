@@ -456,7 +456,7 @@ int WebRtcAudioRenderer::Render(media::AudioBus* audio_bus,
                      base::Unretained(this))));
     }
 
-    scoped_ptr<media::AudioBus> drop_bus =
+    std::unique_ptr<media::AudioBus> drop_bus =
         media::AudioBus::Create(audio_bus->channels(), frames_skipped);
     if (audio_fifo_)
       audio_fifo_->Consume(drop_bus.get(), drop_bus->frames());

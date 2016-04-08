@@ -126,7 +126,7 @@ TEST_F(RenderMediaClientTest, KeySystemNameForUMA) {
 TEST_F(RenderMediaClientTest, IsKeySystemsUpdateNeeded) {
   base::SimpleTestTickClock* tick_clock = new base::SimpleTestTickClock();
   render_media_client_->SetTickClockForTesting(
-      scoped_ptr<base::TickClock>(tick_clock));
+      std::unique_ptr<base::TickClock>(tick_clock));
 
   // IsKeySystemsUpdateNeeded() always returns true after construction.
   EXPECT_TRUE(render_media_client_->IsKeySystemsUpdateNeeded());

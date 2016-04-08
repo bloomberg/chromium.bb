@@ -30,7 +30,7 @@ class MediaStreamRemoteVideoSourceUnderTest
     : public MediaStreamRemoteVideoSource {
  public:
   explicit MediaStreamRemoteVideoSourceUnderTest(
-      scoped_ptr<TrackObserver> observer)
+      std::unique_ptr<TrackObserver> observer)
       : MediaStreamRemoteVideoSource(std::move(observer)) {}
   using MediaStreamRemoteVideoSource::SinkInterfaceForTest;
 };
@@ -44,8 +44,8 @@ class MediaStreamRemoteVideoSourceTest
         webrtc_video_track_(mock_factory_->CreateLocalVideoTrack(
             "test",
             static_cast<cricket::VideoCapturer*>(NULL))),
-        remote_source_(
-            new MediaStreamRemoteVideoSourceUnderTest(scoped_ptr<TrackObserver>(
+        remote_source_(new MediaStreamRemoteVideoSourceUnderTest(
+            std::unique_ptr<TrackObserver>(
                 new TrackObserver(base::ThreadTaskRunnerHandle::Get(),
                                   webrtc_video_track_.get())))),
         number_of_successful_constraints_applied_(0),
@@ -108,8 +108,8 @@ class MediaStreamRemoteVideoSourceTest
   }
 
   base::MessageLoopForUI message_loop_;
-  scoped_ptr<ChildProcess> child_process_;
-  scoped_ptr<MockPeerConnectionDependencyFactory> mock_factory_;
+  std::unique_ptr<ChildProcess> child_process_;
+  std::unique_ptr<MockPeerConnectionDependencyFactory> mock_factory_;
   scoped_refptr<webrtc::VideoTrackInterface> webrtc_video_track_;
   // |remote_source_| is owned by |webkit_source_|.
   MediaStreamRemoteVideoSourceUnderTest* remote_source_;
@@ -119,7 +119,7 @@ class MediaStreamRemoteVideoSourceTest
 };
 
 TEST_F(MediaStreamRemoteVideoSourceTest, StartTrack) {
-  scoped_ptr<MediaStreamVideoTrack> track(CreateTrack());
+  std::unique_ptr<MediaStreamVideoTrack> track(CreateTrack());
   EXPECT_EQ(1, NumberOfSuccessConstraintsCallbacks());
 
   MockMediaStreamVideoSink sink;
@@ -138,7 +138,7 @@ TEST_F(MediaStreamRemoteVideoSourceTest, StartTrack) {
 }
 
 TEST_F(MediaStreamRemoteVideoSourceTest, RemoteTrackStop) {
-  scoped_ptr<MediaStreamVideoTrack> track(CreateTrack());
+  std::unique_ptr<MediaStreamVideoTrack> track(CreateTrack());
 
   MockMediaStreamVideoSink sink;
   track->AddSink(&sink, sink.GetDeliverFrameCB());

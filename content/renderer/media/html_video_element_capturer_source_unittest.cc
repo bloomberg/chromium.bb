@@ -113,8 +113,8 @@ class HTMLVideoElementCapturerSourceTest : public testing::Test {
   // schedule capture events.
   const base::MessageLoopForUI message_loop_;
 
-  scoped_ptr<MockWebMediaPlayer> web_media_player_;
-  scoped_ptr<HtmlVideoElementCapturerSource> html_video_capturer_;
+  std::unique_ptr<MockWebMediaPlayer> web_media_player_;
+  std::unique_ptr<HtmlVideoElementCapturerSource> html_video_capturer_;
 };
 
 // Constructs and destructs all objects, in particular |html_video_capturer_|

@@ -18,7 +18,7 @@ class RenderMediaLogTest : public testing::Test {
       : log_(new RenderMediaLog()),
         tick_clock_(new base::SimpleTestTickClock()),
         task_runner_(new base::TestMockTimeTaskRunner()) {
-    log_->SetTickClockForTesting(scoped_ptr<base::TickClock>(tick_clock_));
+    log_->SetTickClockForTesting(std::unique_ptr<base::TickClock>(tick_clock_));
     log_->SetTaskRunnerForTesting(task_runner_);
   }
 

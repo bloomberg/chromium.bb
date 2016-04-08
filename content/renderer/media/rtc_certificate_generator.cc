@@ -75,8 +75,8 @@ class RTCCertificateIdentityObserver
       GURL first_party_for_cookies) {
     DCHECK(signaling_thread_->BelongsToCurrentThread());
     rtc::scoped_ptr<PeerConnectionIdentityStore> store(
-        new PeerConnectionIdentityStore(
-            main_thread_, signaling_thread_, url, first_party_for_cookies));
+        new PeerConnectionIdentityStore(main_thread_, signaling_thread_, url,
+                                        first_party_for_cookies));
     // Request identity with |this| as the observer. OnSuccess/OnFailure will be
     // called asynchronously.
     store->RequestIdentity(WebRTCKeyParamsToKeyParams(key_params_), this);
@@ -132,7 +132,7 @@ class RTCCertificateIdentityObserver
   // PeerConnectionIdentityStore::RequestIdentity on, as is required.
   const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
   blink::WebRTCKeyParams key_params_;
-  scoped_ptr<blink::WebRTCCertificateCallback> observer_;
+  std::unique_ptr<blink::WebRTCCertificateCallback> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCCertificateIdentityObserver);
 };

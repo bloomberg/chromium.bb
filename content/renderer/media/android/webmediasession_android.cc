@@ -4,8 +4,10 @@
 
 #include "content/renderer/media/android/webmediasession_android.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/common/media_metadata.h"
 #include "content/renderer/media/android/renderer_media_session_manager.h"
 #include "third_party/WebKit/public/platform/modules/mediasession/WebMediaMetadata.h"
@@ -25,12 +27,12 @@ WebMediaSessionAndroid::~WebMediaSessionAndroid() {
 
 void WebMediaSessionAndroid::activate(
     blink::WebMediaSessionActivateCallback* callback) {
-  session_manager_->Activate(media_session_id_, make_scoped_ptr(callback));
+  session_manager_->Activate(media_session_id_, base::WrapUnique(callback));
 }
 
 void WebMediaSessionAndroid::deactivate(
     blink::WebMediaSessionDeactivateCallback* callback) {
-  session_manager_->Deactivate(media_session_id_, make_scoped_ptr(callback));
+  session_manager_->Deactivate(media_session_id_, base::WrapUnique(callback));
 }
 
 void WebMediaSessionAndroid::setMetadata(

@@ -146,7 +146,7 @@ CanvasCaptureHandler::CanvasCaptureHandler(
       size_(size),
       io_task_runner_(io_task_runner),
       weak_ptr_factory_(this) {
-  scoped_ptr<media::VideoCapturerSource> video_source(
+  std::unique_ptr<media::VideoCapturerSource> video_source(
       new VideoCapturerSource(weak_ptr_factory_.GetWeakPtr(), frame_rate));
   AddVideoCapturerSourceToVideoTrack(std::move(video_source), track);
 }
@@ -270,13 +270,13 @@ void CanvasCaptureHandler::CreateNewFrame(const SkImage* image) {
 }
 
 void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
-    scoped_ptr<media::VideoCapturerSource> source,
+    std::unique_ptr<media::VideoCapturerSource> source,
     blink::WebMediaStreamTrack* web_track) {
   std::string str_track_id;
   base::Base64Encode(base::RandBytesAsString(64), &str_track_id);
   const blink::WebString track_id = base::UTF8ToUTF16(str_track_id);
   blink::WebMediaStreamSource webkit_source;
-  scoped_ptr<MediaStreamVideoSource> media_stream_source(
+  std::unique_ptr<MediaStreamVideoSource> media_stream_source(
       new MediaStreamVideoCapturerSource(
           MediaStreamSource::SourceStoppedCallback(), std::move(source)));
   webkit_source.initialize(track_id, blink::WebMediaStreamSource::TypeVideo,

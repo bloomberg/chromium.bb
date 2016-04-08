@@ -53,22 +53,23 @@ class PpapiDecryptor : public media::MediaKeys,
   // media::MediaKeys implementation.
   void SetServerCertificate(
       const std::vector<uint8_t>& certificate,
-      scoped_ptr<media::SimpleCdmPromise> promise) override;
+      std::unique_ptr<media::SimpleCdmPromise> promise) override;
   void CreateSessionAndGenerateRequest(
       SessionType session_type,
       media::EmeInitDataType init_data_type,
       const std::vector<uint8_t>& init_data,
-      scoped_ptr<media::NewSessionCdmPromise> promise) override;
-  void LoadSession(SessionType session_type,
-                   const std::string& session_id,
-                   scoped_ptr<media::NewSessionCdmPromise> promise) override;
+      std::unique_ptr<media::NewSessionCdmPromise> promise) override;
+  void LoadSession(
+      SessionType session_type,
+      const std::string& session_id,
+      std::unique_ptr<media::NewSessionCdmPromise> promise) override;
   void UpdateSession(const std::string& session_id,
                      const std::vector<uint8_t>& response,
-                     scoped_ptr<media::SimpleCdmPromise> promise) override;
+                     std::unique_ptr<media::SimpleCdmPromise> promise) override;
   void CloseSession(const std::string& session_id,
-                    scoped_ptr<media::SimpleCdmPromise> promise) override;
+                    std::unique_ptr<media::SimpleCdmPromise> promise) override;
   void RemoveSession(const std::string& session_id,
-                     scoped_ptr<media::SimpleCdmPromise> promise) override;
+                     std::unique_ptr<media::SimpleCdmPromise> promise) override;
   CdmContext* GetCdmContext() override;
 
   // media::CdmContext implementation.
@@ -97,7 +98,7 @@ class PpapiDecryptor : public media::MediaKeys,
 
  private:
   PpapiDecryptor(
-      scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper,
+      std::unique_ptr<PepperCdmWrapper> pepper_cdm_wrapper,
       const media::SessionMessageCB& session_message_cb,
       const media::SessionClosedCB& session_closed_cb,
       const media::LegacySessionErrorCB& legacy_session_error_cb,
@@ -109,7 +110,7 @@ class PpapiDecryptor : public media::MediaKeys,
   void InitializeCdm(const std::string& key_system,
                      bool allow_distinctive_identifier,
                      bool allow_persistent_state,
-                     scoped_ptr<media::SimpleCdmPromise> promise);
+                     std::unique_ptr<media::SimpleCdmPromise> promise);
 
   void OnDecoderInitialized(StreamType stream_type, bool success);
 
@@ -140,7 +141,7 @@ class PpapiDecryptor : public media::MediaKeys,
 
   // Hold a reference of the Pepper CDM wrapper to make sure the plugin lives
   // as long as needed.
-  scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper_;
+  std::unique_ptr<PepperCdmWrapper> pepper_cdm_wrapper_;
 
   // Callbacks for firing session events.
   media::SessionMessageCB session_message_cb_;

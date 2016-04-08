@@ -8,8 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
@@ -64,7 +65,7 @@ class CONTENT_EXPORT RtcDataChannelHandler
  private:
   void OnStateChange(webrtc::DataChannelInterface::DataState state);
   void OnBufferedAmountDecrease(unsigned previous_amount);
-  void OnMessage(scoped_ptr<webrtc::DataBuffer> buffer);
+  void OnMessage(std::unique_ptr<webrtc::DataBuffer> buffer);
   void RecordMessageSent(size_t num_bytes);
 
   class CONTENT_EXPORT Observer
@@ -95,7 +96,7 @@ class CONTENT_EXPORT RtcDataChannelHandler
 
     void OnStateChangeImpl(webrtc::DataChannelInterface::DataState state);
     void OnBufferedAmountDecreaseImpl(unsigned previous_amount);
-    void OnMessageImpl(scoped_ptr<webrtc::DataBuffer> buffer);
+    void OnMessageImpl(std::unique_ptr<webrtc::DataBuffer> buffer);
 
     RtcDataChannelHandler* handler_;
     const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;

@@ -5,10 +5,10 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBMEDIAPLAYER_MS_H_
 #define CONTENT_RENDERER_MEDIA_WEBMEDIAPLAYER_MS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
@@ -74,7 +74,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
       blink::WebMediaPlayerClient* client,
       base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
       media::MediaLog* media_log,
-      scoped_ptr<MediaStreamRendererFactory> factory,
+      std::unique_ptr<MediaStreamRendererFactory> factory,
       const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
@@ -193,7 +193,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   // Specify content:: to disambiguate from cc::.
   scoped_refptr<content::VideoFrameProvider> video_frame_provider_;  // Weak
 
-  scoped_ptr<cc_blink::WebLayerImpl> video_weblayer_;
+  std::unique_ptr<cc_blink::WebLayerImpl> video_weblayer_;
 
   scoped_refptr<MediaStreamAudioRenderer> audio_renderer_;  // Weak
   media::SkCanvasVideoRenderer video_renderer_;
@@ -204,7 +204,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
 
   scoped_refptr<media::MediaLog> media_log_;
 
-  scoped_ptr<MediaStreamRendererFactory> renderer_factory_;
+  std::unique_ptr<MediaStreamRendererFactory> renderer_factory_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   const scoped_refptr<base::TaskRunner> worker_task_runner_;
@@ -215,7 +215,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
 
   // WebMediaPlayerMS owns |compositor_| and destroys it on
   // |compositor_task_runner_|.
-  scoped_ptr<WebMediaPlayerMSCompositor> compositor_;
+  std::unique_ptr<WebMediaPlayerMSCompositor> compositor_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
 

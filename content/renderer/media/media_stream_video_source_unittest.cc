@@ -230,7 +230,7 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
     }
   }
   const base::MessageLoopForUI message_loop_;
-  const scoped_ptr<ChildProcess> child_process_;
+  const std::unique_ptr<ChildProcess> child_process_;
   blink::WebMediaStreamTrack track_to_release_;
   int number_of_successful_constraints_applied_;
   int number_of_failed_constraints_applied_;

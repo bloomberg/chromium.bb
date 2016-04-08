@@ -5,12 +5,12 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBRTC_STUN_FIELD_TRIAL_H_
 #define CONTENT_RENDERER_MEDIA_WEBRTC_STUN_FIELD_TRIAL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"

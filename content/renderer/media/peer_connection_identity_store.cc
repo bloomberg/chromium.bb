@@ -4,9 +4,10 @@
 
 #include "content/renderer/media/peer_connection_identity_store.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/renderer/media/webrtc_identity_service.h"
 #include "content/renderer/render_thread_impl.h"
@@ -91,7 +92,7 @@ class RequestHandler : public base::RefCountedThreadSafe<RequestHandler> {
 // Used to invoke |observer|->OnSuccess in a PostTask.
 void ObserverOnSuccess(
     const rtc::scoped_refptr<webrtc::DtlsIdentityRequestObserver>& observer,
-    scoped_ptr<rtc::SSLIdentity> identity) {
+    std::unique_ptr<rtc::SSLIdentity> identity) {
   observer->OnSuccess(rtc::scoped_ptr<rtc::SSLIdentity>(identity.release()));
 }
 
@@ -140,8 +141,8 @@ void PeerConnectionIdentityStore::RequestIdentity(
   } else {
     // Fall back on WebRTC identity generation code for everything else, e.g.
     // RSA with any other parameters or ECDSA. These will not be cached.
-    scoped_ptr<rtc::SSLIdentity> identity(rtc::SSLIdentity::Generate(
-        kIdentityName, key_params));
+    std::unique_ptr<rtc::SSLIdentity> identity(
+        rtc::SSLIdentity::Generate(kIdentityName, key_params));
 
     // Invoke |observer| callbacks asynchronously. The callbacks of
     // DtlsIdentityStoreInterface implementations have to be async.

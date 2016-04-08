@@ -31,7 +31,7 @@ namespace content {
 class VideoCaptureImpl::ClientBuffer
     : public base::RefCountedThreadSafe<ClientBuffer> {
  public:
-  ClientBuffer(scoped_ptr<base::SharedMemory> buffer, size_t buffer_size)
+  ClientBuffer(std::unique_ptr<base::SharedMemory> buffer, size_t buffer_size)
       : buffer_(std::move(buffer)), buffer_size_(buffer_size) {}
 
   base::SharedMemory* buffer() const { return buffer_.get(); }
@@ -42,7 +42,7 @@ class VideoCaptureImpl::ClientBuffer
 
   virtual ~ClientBuffer() {}
 
-  const scoped_ptr<base::SharedMemory> buffer_;
+  const std::unique_ptr<base::SharedMemory> buffer_;
   const size_t buffer_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientBuffer);
@@ -252,7 +252,8 @@ void VideoCaptureImpl::OnBufferCreated(base::SharedMemoryHandle handle,
     return;
   }
 
-  scoped_ptr<base::SharedMemory> shm(new base::SharedMemory(handle, false));
+  std::unique_ptr<base::SharedMemory> shm(
+      new base::SharedMemory(handle, false));
   if (!shm->Map(length)) {
     DLOG(ERROR) << "OnBufferCreated: Map failed.";
     return;
@@ -334,7 +335,7 @@ void VideoCaptureImpl::OnBufferReceived(
 
   scoped_refptr<media::VideoFrame> frame;
   BufferFinishedCallback buffer_finished_callback;
-  scoped_ptr<gpu::SyncToken> release_sync_token(new gpu::SyncToken);
+  std::unique_ptr<gpu::SyncToken> release_sync_token(new gpu::SyncToken);
   switch (storage_type) {
     case media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS: {
       const auto& iter = client_buffer2s_.find(buffer_id);
@@ -550,7 +551,7 @@ bool VideoCaptureImpl::RemoveClient(int client_id, ClientInfoMap* clients) {
 // static
 void VideoCaptureImpl::DidFinishConsumingFrame(
     const media::VideoFrameMetadata* metadata,
-    scoped_ptr<gpu::SyncToken> release_sync_token,
+    std::unique_ptr<gpu::SyncToken> release_sync_token,
     const BufferFinishedCallback& callback_to_io_thread) {
   // Note: This function may be called on any thread by the VideoFrame
   // destructor.  |metadata| is still valid for read-access at this point.

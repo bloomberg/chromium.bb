@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/media/webrtc/webrtc_media_stream_adapter.h"
+
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/message_loop/message_loop.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_stream.h"
@@ -14,7 +17,6 @@
 #include "content/renderer/media/mock_media_stream_video_source.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
-#include "content/renderer/media/webrtc/webrtc_media_stream_adapter.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -52,7 +54,7 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
       scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
           WebRtcLocalAudioTrackAdapter::Create(
               audio_track_vector[0].id().utf8(), nullptr));
-      scoped_ptr<WebRtcLocalAudioTrack> native_track(
+      std::unique_ptr<WebRtcLocalAudioTrack> native_track(
           new WebRtcLocalAudioTrack(adapter.get()));
       audio_track_vector[0].setExtraData(native_track.release());
     }
@@ -104,9 +106,9 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
-  scoped_ptr<ChildProcess> child_process_;
-  scoped_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
-  scoped_ptr<WebRtcMediaStreamAdapter> adapter_;
+  std::unique_ptr<ChildProcess> child_process_;
+  std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
+  std::unique_ptr<WebRtcMediaStreamAdapter> adapter_;
 };
 
 TEST_F(WebRtcMediaStreamAdapterTest, CreateWebRtcMediaStream) {

@@ -43,7 +43,7 @@ RenderMediaLog::RenderMediaLog()
       << "RenderMediaLog must be constructed on the render thread";
 }
 
-void RenderMediaLog::AddEvent(scoped_ptr<media::MediaLogEvent> event) {
+void RenderMediaLog::AddEvent(std::unique_ptr<media::MediaLogEvent> event) {
   Log(event.get());
 
   // For enforcing delay until it's been a second since the last ipc message was
@@ -144,7 +144,7 @@ RenderMediaLog::~RenderMediaLog() {
 }
 
 void RenderMediaLog::SetTickClockForTesting(
-    scoped_ptr<base::TickClock> tick_clock) {
+    std::unique_ptr<base::TickClock> tick_clock) {
   base::AutoLock auto_lock(lock_);
   tick_clock_.swap(tick_clock);
   last_ipc_send_time_ = tick_clock_->NowTicks();

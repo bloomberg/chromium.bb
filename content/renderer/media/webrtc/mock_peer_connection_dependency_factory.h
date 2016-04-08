@@ -168,7 +168,7 @@ class MockPeerConnectionDependencyFactory
       int sdp_mline_index,
       const std::string& sdp) override;
 
-  scoped_ptr<WebRtcAudioCapturer> CreateAudioCapturer(
+  std::unique_ptr<WebRtcAudioCapturer> CreateAudioCapturer(
       int render_frame_id,
       const StreamDeviceInfo& device_info,
       const blink::WebMediaConstraints& constraints,

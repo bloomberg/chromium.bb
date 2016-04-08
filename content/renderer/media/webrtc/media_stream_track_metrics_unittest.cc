@@ -143,7 +143,7 @@ class MediaStreamTrackMetricsTest : public testing::Test {
     return new rtc::RefCountedObject<MockVideoTrackInterface>(id);
   }
 
-  scoped_ptr<MockMediaStreamTrackMetrics> metrics_;
+  std::unique_ptr<MockMediaStreamTrackMetrics> metrics_;
   scoped_refptr<MediaStreamInterface> stream_;
 
   base::MessageLoopForUI message_loop_;

@@ -5,10 +5,10 @@
 #ifndef CONTENT_RENDERER_MEDIA_CDM_RENDER_CDM_FACTORY_H_
 #define CONTENT_RENDERER_MEDIA_CDM_RENDER_CDM_FACTORY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media_keys.h"

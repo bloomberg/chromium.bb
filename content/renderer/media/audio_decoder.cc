@@ -65,8 +65,8 @@ bool DecodeAudioFileData(
     audio_data.push_back(destination_bus->channelData(i));
   }
 
-  scoped_ptr<AudioBus> audio_bus = AudioBus::WrapVector(
-      number_of_frames, audio_data);
+  std::unique_ptr<AudioBus> audio_bus =
+      AudioBus::WrapVector(number_of_frames, audio_data);
 
   // Decode the audio file data.
   // TODO(crogers): If our estimate was low, then we still may fail to read

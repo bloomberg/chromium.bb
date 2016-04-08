@@ -33,7 +33,7 @@ void ProxyMediaKeys::Create(
       session_keys_change_cb, session_expiration_update_cb));
 
   // ProxyMediaKeys ownership passed to the promise.
-  scoped_ptr<media::CdmInitializedPromise> promise(
+  std::unique_ptr<media::CdmInitializedPromise> promise(
       new media::CdmInitializedPromise(cdm_created_cb, proxy_media_keys));
 
   proxy_media_keys->InitializeCdm(key_system, security_origin,
@@ -42,7 +42,7 @@ void ProxyMediaKeys::Create(
 
 void ProxyMediaKeys::SetServerCertificate(
     const std::vector<uint8_t>& certificate,
-    scoped_ptr<media::SimpleCdmPromise> promise) {
+    std::unique_ptr<media::SimpleCdmPromise> promise) {
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   manager_->SetServerCertificate(cdm_id_, promise_id, certificate);
 }
@@ -51,7 +51,7 @@ void ProxyMediaKeys::CreateSessionAndGenerateRequest(
     SessionType session_type,
     media::EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
-    scoped_ptr<media::NewSessionCdmPromise> promise) {
+    std::unique_ptr<media::NewSessionCdmPromise> promise) {
   CdmHostMsg_CreateSession_InitDataType create_session_init_data_type =
       INIT_DATA_TYPE_WEBM;
   switch (init_data_type) {
@@ -78,7 +78,7 @@ void ProxyMediaKeys::CreateSessionAndGenerateRequest(
 void ProxyMediaKeys::LoadSession(
     SessionType session_type,
     const std::string& session_id,
-    scoped_ptr<media::NewSessionCdmPromise> promise) {
+    std::unique_ptr<media::NewSessionCdmPromise> promise) {
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   manager_->LoadSession(cdm_id_, promise_id, session_type, session_id);
 }
@@ -86,20 +86,21 @@ void ProxyMediaKeys::LoadSession(
 void ProxyMediaKeys::UpdateSession(
     const std::string& session_id,
     const std::vector<uint8_t>& response,
-    scoped_ptr<media::SimpleCdmPromise> promise) {
+    std::unique_ptr<media::SimpleCdmPromise> promise) {
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   manager_->UpdateSession(cdm_id_, promise_id, session_id, response);
 }
 
-void ProxyMediaKeys::CloseSession(const std::string& session_id,
-                                  scoped_ptr<media::SimpleCdmPromise> promise) {
+void ProxyMediaKeys::CloseSession(
+    const std::string& session_id,
+    std::unique_ptr<media::SimpleCdmPromise> promise) {
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   manager_->CloseSession(cdm_id_, promise_id, session_id);
 }
 
 void ProxyMediaKeys::RemoveSession(
     const std::string& session_id,
-    scoped_ptr<media::SimpleCdmPromise> promise) {
+    std::unique_ptr<media::SimpleCdmPromise> promise) {
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   manager_->RemoveSession(cdm_id_, promise_id, session_id);
 }
@@ -194,7 +195,7 @@ void ProxyMediaKeys::InitializeCdm(
     const std::string& key_system,
     const GURL& security_origin,
     bool use_hw_secure_codecs,
-    scoped_ptr<media::SimpleCdmPromise> promise) {
+    std::unique_ptr<media::SimpleCdmPromise> promise) {
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   manager_->InitializeCdm(cdm_id_, promise_id, this, key_system,
                           security_origin, use_hw_secure_codecs);

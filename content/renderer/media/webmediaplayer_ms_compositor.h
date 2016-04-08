@@ -8,9 +8,9 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
@@ -125,7 +125,7 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
 
   // |rendering_frame_buffer_| stores the incoming frames, and provides a frame
   // selection method which returns the best frame for the render interval.
-  scoped_ptr<media::VideoRendererAlgorithm> rendering_frame_buffer_;
+  std::unique_ptr<media::VideoRendererAlgorithm> rendering_frame_buffer_;
 
   // |current_frame_used_by_compositor_| is updated on compositor thread only.
   // It's used to track whether |current_frame_| was painted for detecting

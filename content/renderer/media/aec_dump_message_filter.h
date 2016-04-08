@@ -5,8 +5,9 @@
 #ifndef CONTENT_RENDERER_MEDIA_AEC_DUMP_MESSAGE_FILTER_H_
 #define CONTENT_RENDERER_MEDIA_AEC_DUMP_MESSAGE_FILTER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_platform_file.h"

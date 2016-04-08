@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/html_video_element_capturer_source.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/renderer/render_thread.h"
@@ -25,7 +26,7 @@ const float kMinFramesPerSecond = 1.0;
 namespace content {
 
 //static
-scoped_ptr<HtmlVideoElementCapturerSource>
+std::unique_ptr<HtmlVideoElementCapturerSource>
 HtmlVideoElementCapturerSource::CreateFromWebMediaPlayerImpl(
     blink::WebMediaPlayer* player,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner) {
@@ -33,7 +34,7 @@ HtmlVideoElementCapturerSource::CreateFromWebMediaPlayerImpl(
   // The histogram counts the number of calls to the JS API.
   UpdateWebRTCMethodCount(WEBKIT_VIDEO_CAPTURE_STREAM);
 
-  return make_scoped_ptr(new HtmlVideoElementCapturerSource(
+  return base::WrapUnique(new HtmlVideoElementCapturerSource(
       static_cast<media::WebMediaPlayerImpl*>(player)->AsWeakPtr(),
       io_task_runner));
 }

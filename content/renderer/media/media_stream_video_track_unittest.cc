@@ -99,7 +99,7 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
 
  private:
   const base::MessageLoopForUI message_loop_;
-  const scoped_ptr<ChildProcess> child_process_;
+  const std::unique_ptr<ChildProcess> child_process_;
   blink::WebMediaStreamSource blink_source_;
   // |mock_source_| is owned by |webkit_source_|.
   MockMediaStreamVideoSource* mock_source_;

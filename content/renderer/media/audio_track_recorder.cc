@@ -106,7 +106,7 @@ class AudioTrackRecorder::AudioEncoder
 
   void OnSetFormat(const media::AudioParameters& params);
 
-  void EncodeAudio(scoped_ptr<media::AudioBus> audio_bus,
+  void EncodeAudio(std::unique_ptr<media::AudioBus> audio_bus,
                    const base::TimeTicks& capture_time);
 
   void set_paused(bool paused) { paused_ = paused; }
@@ -137,11 +137,11 @@ class AudioTrackRecorder::AudioEncoder
   media::AudioParameters output_params_;
 
   // Sampling rate adapter between an OpusEncoder supported and the provided.
-  scoped_ptr<media::AudioConverter> converter_;
-  scoped_ptr<media::AudioFifo> fifo_;
+  std::unique_ptr<media::AudioConverter> converter_;
+  std::unique_ptr<media::AudioFifo> fifo_;
 
   // Buffer for passing AudioBus data to OpusEncoder.
-  scoped_ptr<float[]> buffer_;
+  std::unique_ptr<float[]> buffer_;
 
   // While |paused_|, AudioBuses are not encoded.
   bool paused_;
@@ -238,7 +238,7 @@ void AudioTrackRecorder::AudioEncoder::OnSetFormat(
 }
 
 void AudioTrackRecorder::AudioEncoder::EncodeAudio(
-    scoped_ptr<media::AudioBus> input_bus,
+    std::unique_ptr<media::AudioBus> input_bus,
     const base::TimeTicks& capture_time) {
   DVLOG(3) << __FUNCTION__ << ", #frames " << input_bus->frames();
   DCHECK(encoder_thread_checker_.CalledOnValidThread());
@@ -248,19 +248,20 @@ void AudioTrackRecorder::AudioEncoder::EncodeAudio(
 
   if (!is_initialized() || paused_)
     return;
-  // TODO(mcasas): Consider using a std::deque<scoped_ptr<AudioBus>> instead of
+  // TODO(mcasas): Consider using a std::deque<std::unique_ptr<AudioBus>>
+  // instead of
   // an AudioFifo, to avoid copying data needlessly since we know the sizes of
   // both input and output and they are multiples.
   fifo_->Push(input_bus.get());
 
   // Wait to have enough |input_bus|s to guarantee a satisfactory conversion.
   while (fifo_->frames() >= input_params_.frames_per_buffer()) {
-    scoped_ptr<media::AudioBus> audio_bus = media::AudioBus::Create(
+    std::unique_ptr<media::AudioBus> audio_bus = media::AudioBus::Create(
         output_params_.channels(), kOpusPreferredFramesPerBuffer);
     converter_->Convert(audio_bus.get());
     ToInterleaved(audio_bus.get(), buffer_.get());
 
-    scoped_ptr<std::string> encoded_data(new std::string());
+    std::unique_ptr<std::string> encoded_data(new std::string());
     if (DoEncode(opus_encoder_, buffer_.get(), kOpusPreferredFramesPerBuffer,
                  encoded_data.get())) {
       const base::TimeTicks capture_time_of_first_sample =
@@ -332,7 +333,7 @@ void AudioTrackRecorder::OnData(const media::AudioBus& audio_bus,
   DCHECK(capture_thread_checker_.CalledOnValidThread());
   DCHECK(!capture_time.is_null());
 
-  scoped_ptr<media::AudioBus> audio_data =
+  std::unique_ptr<media::AudioBus> audio_data =
       media::AudioBus::Create(audio_bus.channels(), audio_bus.frames());
   audio_bus.CopyTo(audio_data.get());
 

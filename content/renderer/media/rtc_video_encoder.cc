@@ -200,7 +200,7 @@ class RTCVideoEncoder::Impl
   int32_t* async_retval_;
 
   // The underlying VEA to perform encoding on.
-  scoped_ptr<media::VideoEncodeAccelerator> video_encoder_;
+  std::unique_ptr<media::VideoEncodeAccelerator> video_encoder_;
 
   // Next input frame.  Since there is at most one next frame, a single-element
   // queue is sufficient.
@@ -365,7 +365,7 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
   input_frame_coded_size_ = input_coded_size;
 
   for (unsigned int i = 0; i < input_count + kInputBufferExtraCount; ++i) {
-    scoped_ptr<base::SharedMemory> shm =
+    std::unique_ptr<base::SharedMemory> shm =
         gpu_factories_->CreateSharedMemory(media::VideoFrame::AllocationSize(
             media::PIXEL_FORMAT_I420, input_coded_size));
     if (!shm) {
@@ -378,7 +378,7 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
   }
 
   for (int i = 0; i < kOutputBufferCount; ++i) {
-    scoped_ptr<base::SharedMemory> shm =
+    std::unique_ptr<base::SharedMemory> shm =
         gpu_factories_->CreateSharedMemory(output_buffer_size);
     if (!shm) {
       LogAndNotifyError(FROM_HERE, "failed to create output buffer",
@@ -429,9 +429,8 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32_t bitstream_buffer_id,
   const uint32_t rtp_timestamp =
       static_cast<uint32_t>(capture_time_us * 90 / 1000);
 
-  scoped_ptr<webrtc::EncodedImage> image(new webrtc::EncodedImage(
-      reinterpret_cast<uint8_t*>(output_buffer->memory()),
-      payload_size,
+  std::unique_ptr<webrtc::EncodedImage> image(new webrtc::EncodedImage(
+      reinterpret_cast<uint8_t*>(output_buffer->memory()), payload_size,
       output_buffer->mapped_size()));
   image->_encodedWidth = input_visible_size_.width();
   image->_encodedHeight = input_visible_size_.height();
@@ -732,9 +731,10 @@ int32_t RTCVideoEncoder::SetRates(uint32_t new_bit_rate, uint32_t frame_rate) {
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-void RTCVideoEncoder::ReturnEncodedImage(scoped_ptr<webrtc::EncodedImage> image,
-                                         int32_t bitstream_buffer_id,
-                                         uint16_t picture_id) {
+void RTCVideoEncoder::ReturnEncodedImage(
+    std::unique_ptr<webrtc::EncodedImage> image,
+    int32_t bitstream_buffer_id,
+    uint16_t picture_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(3) << "ReturnEncodedImage(): "
            << "bitstream_buffer_id=" << bitstream_buffer_id

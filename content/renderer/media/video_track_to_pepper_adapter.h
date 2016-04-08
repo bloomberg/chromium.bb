@@ -6,11 +6,11 @@
 #define CONTENT_RENDERER_MEDIA_VIDEO_SOURCE_HANDLER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "media/base/video_frame.h"
@@ -56,7 +56,7 @@ class CONTENT_EXPORT VideoTrackToPepperAdapter {
                FrameReaderInterface* reader);
     ~SourceInfo();
 
-    scoped_ptr<PpFrameReceiver> receiver_;
+    std::unique_ptr<PpFrameReceiver> receiver_;
   };
 
   typedef std::map<FrameReaderInterface*, SourceInfo*> SourceInfoMap;

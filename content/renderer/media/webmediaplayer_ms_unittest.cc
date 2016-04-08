@@ -102,7 +102,7 @@ class ReusableMessageLoopEvent {
   }
 
  private:
-  scoped_ptr<media::WaitableMessageLoopEvent> event_;
+  std::unique_ptr<media::WaitableMessageLoopEvent> event_;
 };
 
 // The class is used mainly to inject VideoFrames into WebMediaPlayerMS.
@@ -343,7 +343,7 @@ class WebMediaPlayerMSTest : public testing::TestWithParam<bool>,
                 this,
                 delegate_.AsWeakPtr(),
                 new media::MediaLog(),
-                scoped_ptr<MediaStreamRendererFactory>(render_factory_),
+                std::unique_ptr<MediaStreamRendererFactory>(render_factory_),
                 message_loop_.task_runner(),
                 message_loop_.task_runner(),
                 message_loop_.task_runner(),

@@ -272,7 +272,7 @@ static base::DictionaryValue* GetDictValueStats(const StatsReport& report) {
 // Builds a DictionaryValue from the StatsReport.
 // The caller takes the ownership of the returned value.
 static base::DictionaryValue* GetDictValue(const StatsReport& report) {
-  scoped_ptr<base::DictionaryValue> stats, result;
+  std::unique_ptr<base::DictionaryValue> stats, result;
 
   stats.reset(GetDictValueStats(report));
   if (!stats)
@@ -295,7 +295,7 @@ class InternalStatsObserver : public webrtc::StatsObserver {
       : lid_(lid), main_thread_(base::ThreadTaskRunnerHandle::Get()) {}
 
   void OnComplete(const StatsReports& reports) override {
-    scoped_ptr<base::ListValue> list(new base::ListValue());
+    std::unique_ptr<base::ListValue> list(new base::ListValue());
 
     for (const auto* r : reports) {
       base::DictionaryValue* report = GetDictValue(*r);
@@ -321,7 +321,7 @@ class InternalStatsObserver : public webrtc::StatsObserver {
  private:
   // Static since |this| will most likely have been deleted by the time we
   // get here.
-  static void OnCompleteImpl(scoped_ptr<base::ListValue> list, int lid) {
+  static void OnCompleteImpl(std::unique_ptr<base::ListValue> list, int lid) {
     DCHECK(!list->empty());
     RenderThreadImpl::current()->Send(
         new PeerConnectionTrackerHost_AddStats(lid, *list.get()));

@@ -5,10 +5,11 @@
 #ifndef CONTENT_RENDERER_MEDIA_REMOTE_MEDIA_STREAM_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_REMOTE_MEDIA_STREAM_IMPL_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
@@ -77,16 +78,16 @@ class CONTENT_EXPORT RemoteMediaStreamImpl {
     void OnChanged() override;
 
     void OnChangedOnMainThread(
-        scoped_ptr<RemoteAudioTrackAdapters> audio_tracks,
-        scoped_ptr<RemoteVideoTrackAdapters> video_tracks);
+        std::unique_ptr<RemoteAudioTrackAdapters> audio_tracks,
+        std::unique_ptr<RemoteVideoTrackAdapters> video_tracks);
 
     base::WeakPtr<RemoteMediaStreamImpl> media_stream_;
     const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
     scoped_refptr<webrtc::MediaStreamInterface> webrtc_stream_;
   };
 
-  void OnChanged(scoped_ptr<RemoteAudioTrackAdapters> audio_tracks,
-                 scoped_ptr<RemoteVideoTrackAdapters> video_tracks);
+  void OnChanged(std::unique_ptr<RemoteAudioTrackAdapters> audio_tracks,
+                 std::unique_ptr<RemoteVideoTrackAdapters> video_tracks);
 
   const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
   scoped_refptr<Observer> observer_;

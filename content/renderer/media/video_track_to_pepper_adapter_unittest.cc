@@ -42,12 +42,12 @@ class VideoTrackToPepperAdapterTest : public ::testing::Test,
   }
 
  protected:
-  scoped_ptr<VideoTrackToPepperAdapter> handler_;
+  std::unique_ptr<VideoTrackToPepperAdapter> handler_;
   // A ChildProcess and a MessageLoop are both needed to fool the Tracks and
   // Sources inside |registry_| into believing they are on the right threads.
   const ChildProcess child_process_;
   const base::MessageLoop message_loop_;
-  scoped_ptr<MockMediaStreamRegistry> registry_;
+  std::unique_ptr<MockMediaStreamRegistry> registry_;
 };
 
 // Open |handler_| and send a VideoFrame to be received at the other side.

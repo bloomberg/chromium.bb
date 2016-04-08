@@ -4,7 +4,8 @@
 
 #include "content/renderer/media/rtc_video_decoder_factory.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/renderer/media/rtc_video_decoder.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 

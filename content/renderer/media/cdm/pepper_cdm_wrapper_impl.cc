@@ -26,7 +26,7 @@ void WebHelperPluginDeleter::operator()(blink::WebHelperPlugin* plugin) const {
   plugin->destroy();
 }
 
-scoped_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
+std::unique_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
     blink::WebLocalFrame* frame,
     const std::string& pluginType,
     const GURL& security_origin) {
@@ -41,13 +41,13 @@ scoped_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
       blink::WebStringToGURL(frame->getSecurityOrigin().toString()));
   if (frame_security_origin != security_origin) {
     LOG(ERROR) << "Frame has a different origin than the EME call.";
-    return scoped_ptr<PepperCdmWrapper>();
+    return std::unique_ptr<PepperCdmWrapper>();
   }
 
   ScopedHelperPlugin helper_plugin(blink::WebHelperPlugin::create(
       blink::WebString::fromUTF8(pluginType), frame));
   if (!helper_plugin)
-    return scoped_ptr<PepperCdmWrapper>();
+    return std::unique_ptr<PepperCdmWrapper>();
 
   blink::WebPlugin* plugin = helper_plugin->getPlugin();
   DCHECK(!plugin->isPlaceholder());  // Prevented by Blink.
@@ -57,7 +57,7 @@ scoped_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
   scoped_refptr<PepperPluginInstanceImpl> plugin_instance =
       ppapi_plugin->instance();
   if (!plugin_instance.get())
-    return scoped_ptr<PepperCdmWrapper>();
+    return std::unique_ptr<PepperCdmWrapper>();
 
   GURL plugin_url(plugin_instance->container()->element().document().url());
   GURL plugin_security_origin = plugin_url.GetOrigin();
@@ -65,9 +65,9 @@ scoped_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
       << "Pepper instance has a different origin than the EME call.";
 
   if (!plugin_instance->GetContentDecryptorDelegate())
-    return scoped_ptr<PepperCdmWrapper>();
+    return std::unique_ptr<PepperCdmWrapper>();
 
-  return scoped_ptr<PepperCdmWrapper>(
+  return std::unique_ptr<PepperCdmWrapper>(
       new PepperCdmWrapperImpl(std::move(helper_plugin), plugin_instance));
 }
 

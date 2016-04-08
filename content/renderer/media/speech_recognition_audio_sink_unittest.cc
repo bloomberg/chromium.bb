@@ -187,15 +187,15 @@ class FakeSpeechRecognizer {
   bool is_responsive_;
 
   // Shared memory for the audio and synchronization.
-  scoped_ptr<base::SharedMemory> shared_memory_;
+  std::unique_ptr<base::SharedMemory> shared_memory_;
 
   // Fake sockets and their shared buffer.
-  scoped_ptr<MockSyncSocket::SharedBuffer> shared_buffer_;
-  scoped_ptr<MockSyncSocket> receiving_socket_;
+  std::unique_ptr<MockSyncSocket::SharedBuffer> shared_buffer_;
+  std::unique_ptr<MockSyncSocket> receiving_socket_;
   MockSyncSocket* sending_socket_;
 
   // Audio bus wrapping the shared memory from the renderer.
-  scoped_ptr<media::AudioBus> audio_track_bus_;
+  std::unique_ptr<media::AudioBus> audio_track_bus_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSpeechRecognizer);
 };
@@ -252,7 +252,8 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
     recognizer_->Initialize(blink_track, sink_params_, &foreign_memory_handle);
 
     // Create the producer.
-    scoped_ptr<base::SyncSocket> sending_socket(recognizer_->sending_socket());
+    std::unique_ptr<base::SyncSocket> sending_socket(
+        recognizer_->sending_socket());
     speech_audio_sink_.reset(new SpeechRecognitionAudioSink(
         blink_track, sink_params_, foreign_memory_handle,
         std::move(sending_socket),
@@ -276,7 +277,7 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
       blink::WebMediaStreamTrack* blink_track) {
     scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
         WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL));
-    scoped_ptr<WebRtcLocalAudioTrack> native_track(
+    std::unique_ptr<WebRtcLocalAudioTrack> native_track(
         new WebRtcLocalAudioTrack(adapter.get()));
     blink::WebMediaStreamSource blink_audio_source;
     blink_audio_source.initialize(base::UTF8ToUTF16("dummy_source_id"),
@@ -356,13 +357,13 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
 
  private:
   // Producer.
-  scoped_ptr<SpeechRecognitionAudioSink> speech_audio_sink_;
+  std::unique_ptr<SpeechRecognitionAudioSink> speech_audio_sink_;
 
   // Consumer.
-  scoped_ptr<FakeSpeechRecognizer> recognizer_;
+  std::unique_ptr<FakeSpeechRecognizer> recognizer_;
 
   // Audio related members.
-  scoped_ptr<media::AudioBus> source_bus_;
+  std::unique_ptr<media::AudioBus> source_bus_;
   media::AudioParameters source_params_;
   media::AudioParameters sink_params_;
   WebRtcLocalAudioTrack* native_track_;

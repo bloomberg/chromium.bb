@@ -5,9 +5,10 @@
 #ifndef CONTENT_RENDERER_MEDIA_MEDIA_RECORDER_HANDLER_H_
 #define CONTENT_RENDERER_MEDIA_MEDIA_RECORDER_HANDLER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
@@ -67,11 +68,11 @@ class CONTENT_EXPORT MediaRecorderHandler final
   friend class MediaRecorderHandlerTest;
 
   void OnEncodedVideo(const scoped_refptr<media::VideoFrame>& video_frame,
-                      scoped_ptr<std::string> encoded_data,
+                      std::unique_ptr<std::string> encoded_data,
                       base::TimeTicks timestamp,
                       bool is_key_frame);
   void OnEncodedAudio(const media::AudioParameters& params,
-                      scoped_ptr<std::string> encoded_data,
+                      std::unique_ptr<std::string> encoded_data,
                       base::TimeTicks timestamp);
   void WriteData(base::StringPiece data);
 
@@ -107,7 +108,7 @@ class CONTENT_EXPORT MediaRecorderHandler final
   ScopedVector<AudioTrackRecorder> audio_recorders_;
 
   // Worker class doing the actual Webm Muxing work.
-  scoped_ptr<media::WebmMuxer> webm_muxer_;
+  std::unique_ptr<media::WebmMuxer> webm_muxer_;
 
   base::WeakPtrFactory<MediaRecorderHandler> weak_factory_;
 

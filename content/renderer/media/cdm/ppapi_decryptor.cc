@@ -41,7 +41,7 @@ void PpapiDecryptor::Create(
   std::string plugin_type = media::GetPepperType(key_system);
   DCHECK(!plugin_type.empty());
 
-  scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper;
+  std::unique_ptr<PepperCdmWrapper> pepper_cdm_wrapper;
   {
     TRACE_EVENT0("media", "PpapiDecryptor::CreatePepperCDM");
     pepper_cdm_wrapper = create_pepper_cdm_cb.Run(plugin_type, security_origin);
@@ -62,7 +62,7 @@ void PpapiDecryptor::Create(
                          session_keys_change_cb, session_expiration_update_cb));
 
   // |ppapi_decryptor| ownership is passed to the promise.
-  scoped_ptr<media::CdmInitializedPromise> promise(
+  std::unique_ptr<media::CdmInitializedPromise> promise(
       new media::CdmInitializedPromise(cdm_created_cb, ppapi_decryptor));
 
   ppapi_decryptor->InitializeCdm(key_system, allow_distinctive_identifier,
@@ -70,7 +70,7 @@ void PpapiDecryptor::Create(
 }
 
 PpapiDecryptor::PpapiDecryptor(
-    scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper,
+    std::unique_ptr<PepperCdmWrapper> pepper_cdm_wrapper,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionClosedCB& session_closed_cb,
     const media::LegacySessionErrorCB& legacy_session_error_cb,
@@ -100,7 +100,7 @@ void PpapiDecryptor::InitializeCdm(
     const std::string& key_system,
     bool allow_distinctive_identifier,
     bool allow_persistent_state,
-    scoped_ptr<media::SimpleCdmPromise> promise) {
+    std::unique_ptr<media::SimpleCdmPromise> promise) {
   base::WeakPtr<PpapiDecryptor> weak_this = weak_ptr_factory_.GetWeakPtr();
   CdmDelegate()->Initialize(
       key_system, allow_distinctive_identifier, allow_persistent_state,
@@ -115,7 +115,7 @@ void PpapiDecryptor::InitializeCdm(
 
 void PpapiDecryptor::SetServerCertificate(
     const std::vector<uint8_t>& certificate,
-    scoped_ptr<media::SimpleCdmPromise> promise) {
+    std::unique_ptr<media::SimpleCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
@@ -131,7 +131,7 @@ void PpapiDecryptor::CreateSessionAndGenerateRequest(
     SessionType session_type,
     media::EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
-    scoped_ptr<media::NewSessionCdmPromise> promise) {
+    std::unique_ptr<media::NewSessionCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
@@ -147,7 +147,7 @@ void PpapiDecryptor::CreateSessionAndGenerateRequest(
 void PpapiDecryptor::LoadSession(
     SessionType session_type,
     const std::string& session_id,
-    scoped_ptr<media::NewSessionCdmPromise> promise) {
+    std::unique_ptr<media::NewSessionCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
@@ -161,7 +161,7 @@ void PpapiDecryptor::LoadSession(
 void PpapiDecryptor::UpdateSession(
     const std::string& session_id,
     const std::vector<uint8_t>& response,
-    scoped_ptr<media::SimpleCdmPromise> promise) {
+    std::unique_ptr<media::SimpleCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
@@ -172,8 +172,9 @@ void PpapiDecryptor::UpdateSession(
   CdmDelegate()->UpdateSession(session_id, response, std::move(promise));
 }
 
-void PpapiDecryptor::CloseSession(const std::string& session_id,
-                                  scoped_ptr<media::SimpleCdmPromise> promise) {
+void PpapiDecryptor::CloseSession(
+    const std::string& session_id,
+    std::unique_ptr<media::SimpleCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
@@ -187,7 +188,7 @@ void PpapiDecryptor::CloseSession(const std::string& session_id,
 
 void PpapiDecryptor::RemoveSession(
     const std::string& session_id,
-    scoped_ptr<media::SimpleCdmPromise> promise) {
+    std::unique_ptr<media::SimpleCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 

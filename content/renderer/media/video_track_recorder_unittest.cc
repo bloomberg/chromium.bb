@@ -2,19 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/media/video_track_recorder.h"
+
 #include <stddef.h>
+
+#include <memory>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
-#include "content/renderer/media/video_track_recorder.h"
 #include "media/base/video_frame.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -82,7 +84,7 @@ class VideoTrackRecorderTest : public TestWithParam<bool> {
                     base::TimeTicks timestamp,
                     bool keyframe));
   void OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
-                      scoped_ptr<std::string> encoded_data,
+                      std::unique_ptr<std::string> encoded_data,
                       base::TimeTicks timestamp,
                       bool is_key_frame) {
     DoOnEncodedVideo(video_frame, *encoded_data, timestamp, is_key_frame);
@@ -106,7 +108,7 @@ class VideoTrackRecorderTest : public TestWithParam<bool> {
   MediaStreamVideoTrack* track_;
   blink::WebMediaStreamTrack blink_track_;
 
-  scoped_ptr<VideoTrackRecorder> video_track_recorder_;
+  std::unique_ptr<VideoTrackRecorder> video_track_recorder_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoTrackRecorderTest);

@@ -8,9 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "media/base/video_capturer_source.h"
@@ -70,7 +71,7 @@ class CONTENT_EXPORT CanvasCaptureHandler final
 
   void CreateNewFrame(const SkImage* image);
   void AddVideoCapturerSourceToVideoTrack(
-      scoped_ptr<media::VideoCapturerSource> source,
+      std::unique_ptr<media::VideoCapturerSource> source,
       blink::WebMediaStreamTrack* web_track);
 
   // Object that does all the work of running |new_frame_callback_|.
@@ -90,7 +91,7 @@ class CONTENT_EXPORT CanvasCaptureHandler final
   scoped_refptr<media::VideoFrame> last_frame_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  scoped_ptr<CanvasCaptureHandlerDelegate> delegate_;
+  std::unique_ptr<CanvasCaptureHandlerDelegate> delegate_;
 
   // Bound to Main Render thread.
   base::ThreadChecker main_render_thread_checker_;

@@ -225,7 +225,7 @@ void MediaRecorderHandler::resume() {
 
 void MediaRecorderHandler::OnEncodedVideo(
     const scoped_refptr<media::VideoFrame>& video_frame,
-    scoped_ptr<std::string> encoded_data,
+    std::unique_ptr<std::string> encoded_data,
     TimeTicks timestamp,
     bool is_key_frame) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
@@ -235,9 +235,10 @@ void MediaRecorderHandler::OnEncodedVideo(
                               is_key_frame);
 }
 
-void MediaRecorderHandler::OnEncodedAudio(const media::AudioParameters& params,
-                                          scoped_ptr<std::string> encoded_data,
-                                          base::TimeTicks timestamp) {
+void MediaRecorderHandler::OnEncodedAudio(
+    const media::AudioParameters& params,
+    std::unique_ptr<std::string> encoded_data,
+    base::TimeTicks timestamp) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   if (webm_muxer_)
     webm_muxer_->OnEncodedAudio(params, std::move(encoded_data), timestamp);

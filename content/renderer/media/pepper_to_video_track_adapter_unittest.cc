@@ -49,7 +49,7 @@ class PepperToVideoTrackAdapterTest : public PpapiUnittest {
   // Sources inside |registry_| into believing they are on the right threads.
   const ChildProcess child_process_;
   const MockRenderThread render_thread_;
-  scoped_ptr<MockMediaStreamRegistry> registry_;
+  std::unique_ptr<MockMediaStreamRegistry> registry_;
 };
 
 TEST_F(PepperToVideoTrackAdapterTest, Open) {

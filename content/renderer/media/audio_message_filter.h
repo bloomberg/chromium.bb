@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/id_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/synchronization/lock.h"
@@ -42,7 +43,8 @@ class CONTENT_EXPORT AudioMessageFilter : public IPC::MessageFilter {
   //
   // The returned object is not thread-safe, and must be used on
   // |io_task_runner|.
-  scoped_ptr<media::AudioOutputIPC> CreateAudioOutputIPC(int render_frame_id);
+  std::unique_ptr<media::AudioOutputIPC> CreateAudioOutputIPC(
+      int render_frame_id);
 
   // IO task runner associated with this message filter.
   base::SingleThreadTaskRunner* io_task_runner() const {

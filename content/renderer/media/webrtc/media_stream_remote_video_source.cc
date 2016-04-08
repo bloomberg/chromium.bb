@@ -140,7 +140,7 @@ RemoteVideoSourceDelegate::DoRenderFrameOnIOThread(
 }
 
 MediaStreamRemoteVideoSource::MediaStreamRemoteVideoSource(
-    scoped_ptr<TrackObserver> observer)
+    std::unique_ptr<TrackObserver> observer)
     : observer_(std::move(observer)) {
   // The callback will be automatically cleared when 'observer_' goes out of
   // scope and no further callbacks will occur.

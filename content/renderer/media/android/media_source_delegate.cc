@@ -347,15 +347,16 @@ void MediaSourceDelegate::OnReadFromDemuxer(media::DemuxerStream::Type type) {
   DCHECK(type == DemuxerStream::AUDIO || type == DemuxerStream::VIDEO);
   // The access unit size should have been initialized properly at this stage.
   DCHECK_GT(access_unit_size_, 0u);
-  scoped_ptr<DemuxerData> data(new DemuxerData());
+  std::unique_ptr<DemuxerData> data(new DemuxerData());
   data->type = type;
   data->access_units.resize(access_unit_size_);
   ReadFromDemuxerStream(type, std::move(data), 0);
 }
 
-void MediaSourceDelegate::ReadFromDemuxerStream(media::DemuxerStream::Type type,
-                                                scoped_ptr<DemuxerData> data,
-                                                size_t index) {
+void MediaSourceDelegate::ReadFromDemuxerStream(
+    media::DemuxerStream::Type type,
+    std::unique_ptr<DemuxerData> data,
+    size_t index) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   // DemuxerStream::Read() always returns the read callback asynchronously.
   DemuxerStream* stream =
@@ -367,7 +368,7 @@ void MediaSourceDelegate::ReadFromDemuxerStream(media::DemuxerStream::Type type,
 
 void MediaSourceDelegate::OnBufferReady(
     media::DemuxerStream::Type type,
-    scoped_ptr<DemuxerData> data,
+    std::unique_ptr<DemuxerData> data,
     size_t index,
     DemuxerStream::Status status,
     const scoped_refptr<media::DecoderBuffer>& buffer) {
@@ -685,7 +686,7 @@ void MediaSourceDelegate::NotifyDemuxerReady(bool is_cdm_attached) {
   if (!pending_cdm_attached_cb_.is_null())
     base::ResetAndReturn(&pending_cdm_attached_cb_).Run(is_cdm_attached);
 
-  scoped_ptr<DemuxerConfigs> configs(new DemuxerConfigs());
+  std::unique_ptr<DemuxerConfigs> configs(new DemuxerConfigs());
   GetDemuxerConfigFromStream(configs.get(), true);
   GetDemuxerConfigFromStream(configs.get(), false);
   configs->duration = GetDuration();

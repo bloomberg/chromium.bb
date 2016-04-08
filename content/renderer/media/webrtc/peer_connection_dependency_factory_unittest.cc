@@ -18,12 +18,12 @@ class PeerConnectionDependencyFactoryTest : public ::testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
-  scoped_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
+  std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
 };
 
 TEST_F(PeerConnectionDependencyFactoryTest, CreateRTCPeerConnectionHandler) {
   MockWebRTCPeerConnectionHandlerClient client_jsep;
-  scoped_ptr<blink::WebRTCPeerConnectionHandler> pc_handler(
+  std::unique_ptr<blink::WebRTCPeerConnectionHandler> pc_handler(
       dependency_factory_->CreateRTCPeerConnectionHandler(&client_jsep));
   EXPECT_TRUE(pc_handler.get() != NULL);
 }

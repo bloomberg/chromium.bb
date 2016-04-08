@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "media/audio/audio_parameters.h"
 
@@ -40,7 +41,7 @@ class WebRtcAudioSinkAdapter : public MediaStreamAudioSink {
   webrtc::AudioTrackSinkInterface* const sink_;
 
   media::AudioParameters params_;
-  scoped_ptr<int16_t[]> interleaved_data_;
+  std::unique_ptr<int16_t[]> interleaved_data_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcAudioSinkAdapter);
 };

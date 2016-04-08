@@ -44,22 +44,23 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
   // MediaKeys implementation.
   void SetServerCertificate(
       const std::vector<uint8_t>& certificate,
-      scoped_ptr<media::SimpleCdmPromise> promise) override;
+      std::unique_ptr<media::SimpleCdmPromise> promise) override;
   void CreateSessionAndGenerateRequest(
       SessionType session_type,
       media::EmeInitDataType init_data_type,
       const std::vector<uint8_t>& init_data,
-      scoped_ptr<media::NewSessionCdmPromise> promise) override;
-  void LoadSession(SessionType session_type,
-                   const std::string& session_id,
-                   scoped_ptr<media::NewSessionCdmPromise> promise) override;
+      std::unique_ptr<media::NewSessionCdmPromise> promise) override;
+  void LoadSession(
+      SessionType session_type,
+      const std::string& session_id,
+      std::unique_ptr<media::NewSessionCdmPromise> promise) override;
   void UpdateSession(const std::string& session_id,
                      const std::vector<uint8_t>& response,
-                     scoped_ptr<media::SimpleCdmPromise> promise) override;
+                     std::unique_ptr<media::SimpleCdmPromise> promise) override;
   void CloseSession(const std::string& session_id,
-                    scoped_ptr<media::SimpleCdmPromise> promise) override;
+                    std::unique_ptr<media::SimpleCdmPromise> promise) override;
   void RemoveSession(const std::string& session_id,
-                     scoped_ptr<media::SimpleCdmPromise> promise) override;
+                     std::unique_ptr<media::SimpleCdmPromise> promise) override;
   media::CdmContext* GetCdmContext() override;
 
   // media::CdmContext implementation.
@@ -104,7 +105,7 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
   void InitializeCdm(const std::string& key_system,
                      const GURL& security_origin,
                      bool use_hw_secure_codecs,
-                     scoped_ptr<media::SimpleCdmPromise> promise);
+                     std::unique_ptr<media::SimpleCdmPromise> promise);
 
   RendererCdmManager* manager_;
   int cdm_id_;

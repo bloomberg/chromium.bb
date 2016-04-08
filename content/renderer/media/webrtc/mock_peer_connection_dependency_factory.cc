@@ -458,7 +458,7 @@ MockPeerConnectionDependencyFactory::CreateIceCandidate(
   return new MockIceCandidate(sdp_mid, sdp_mline_index, sdp);
 }
 
-scoped_ptr<WebRtcAudioCapturer>
+std::unique_ptr<WebRtcAudioCapturer>
 MockPeerConnectionDependencyFactory::CreateAudioCapturer(
     int render_frame_id,
     const StreamDeviceInfo& device_info,

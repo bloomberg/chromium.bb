@@ -78,7 +78,7 @@ void TrackAudioRenderer::OnData(const media::AudioBus& audio_bus,
   if (!audio_shifter_)
     return;
 
-  scoped_ptr<media::AudioBus> audio_data(
+  std::unique_ptr<media::AudioBus> audio_data(
       media::AudioBus::Create(audio_bus.channels(), audio_bus.frames()));
   audio_bus.CopyTo(audio_data.get());
   // Note: For remote audio sources, |reference_time| is the local playout time,

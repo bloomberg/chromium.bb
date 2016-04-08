@@ -141,10 +141,10 @@ class RTCVideoDecoderTest
   }
 
  protected:
-  scoped_ptr<media::MockGpuVideoAcceleratorFactories> mock_gpu_factories_;
+  std::unique_ptr<media::MockGpuVideoAcceleratorFactories> mock_gpu_factories_;
   media::MockVideoDecodeAccelerator* mock_vda_;
   media::MockVideoDecodeAccelerator* mock_vda_after_reset_;
-  scoped_ptr<RTCVideoDecoder> rtc_decoder_;
+  std::unique_ptr<RTCVideoDecoder> rtc_decoder_;
   webrtc::VideoCodec codec_;
   base::Thread vda_thread_;
   media::VideoDecodeAccelerator::Capabilities capabilities_;
@@ -158,7 +158,7 @@ class RTCVideoDecoderTest
 
 TEST_F(RTCVideoDecoderTest, CreateReturnsNullOnUnsupportedCodec) {
   CreateDecoder(webrtc::kVideoCodecVP8);
-  scoped_ptr<RTCVideoDecoder> null_rtc_decoder(RTCVideoDecoder::Create(
+  std::unique_ptr<RTCVideoDecoder> null_rtc_decoder(RTCVideoDecoder::Create(
       webrtc::kVideoCodecI420, mock_gpu_factories_.get()));
   EXPECT_EQ(NULL, null_rtc_decoder.get());
 }

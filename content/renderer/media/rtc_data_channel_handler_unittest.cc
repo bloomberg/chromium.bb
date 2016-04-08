@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/media/rtc_data_channel_handler.h"
+
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/test/test_simple_task_runner.h"
 #include "content/renderer/media/mock_data_channel_impl.h"
-#include "content/renderer/media/rtc_data_channel_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelHandlerClient.h"
 
@@ -49,7 +51,7 @@ class RtcDataChannelHandlerTest : public ::testing::Test {
   webrtc::DataChannelInit config;
   scoped_refptr<base::TestSimpleTaskRunner> signaling_thread_;
   scoped_refptr<MockDataChannel> channel_;
-  scoped_ptr<RtcDataChannelHandler> handler_;
+  std::unique_ptr<RtcDataChannelHandler> handler_;
 };
 
 // Add a client, change to the open state, and verify that the client has

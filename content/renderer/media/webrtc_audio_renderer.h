@@ -225,7 +225,7 @@ class CONTENT_EXPORT WebRtcAudioRenderer
 
   // Used to buffer data between the client and the output device in cases where
   // the client buffer size is not the same as the output device buffer size.
-  scoped_ptr<media::AudioPullFifo> audio_fifo_;
+  std::unique_ptr<media::AudioPullFifo> audio_fifo_;
 
   // Contains the accumulated delay estimate which is provided to the WebRTC
   // AEC.

@@ -91,17 +91,17 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
     const int packet_size =
         params.frames_per_buffer() * 2 * params.channels();
     const size_t length = packet_size * kNumberOfPacketsForTest;
-    scoped_ptr<char[]> capture_data(new char[length]);
+    std::unique_ptr<char[]> capture_data(new char[length]);
     ReadDataFromSpeechFile(capture_data.get(), length);
     const int16_t* data_ptr =
         reinterpret_cast<const int16_t*>(capture_data.get());
-    scoped_ptr<media::AudioBus> data_bus = media::AudioBus::Create(
-        params.channels(), params.frames_per_buffer());
+    std::unique_ptr<media::AudioBus> data_bus =
+        media::AudioBus::Create(params.channels(), params.frames_per_buffer());
 
     // |data_bus_playout| is used if the number of capture channels is larger
     // that max allowed playout channels. |data_bus_playout_to_use| points to
     // the AudioBus to use, either |data_bus| or |data_bus_playout|.
-    scoped_ptr<media::AudioBus> data_bus_playout;
+    std::unique_ptr<media::AudioBus> data_bus_playout;
     media::AudioBus* data_bus_playout_to_use = data_bus.get();
     if (params.channels() > kMaxNumberOfPlayoutDataChannels) {
       data_bus_playout =
@@ -487,12 +487,12 @@ TEST_F(MediaStreamAudioProcessorTest, TestStereoAudio) {
   // Construct left and right channels, and assign different values to the
   // first data of the left channel and right channel.
   const int size = media::AudioBus::CalculateMemorySize(source_params);
-  scoped_ptr<float, base::AlignedFreeDeleter> left_channel(
+  std::unique_ptr<float, base::AlignedFreeDeleter> left_channel(
       static_cast<float*>(base::AlignedAlloc(size, 32)));
-  scoped_ptr<float, base::AlignedFreeDeleter> right_channel(
+  std::unique_ptr<float, base::AlignedFreeDeleter> right_channel(
       static_cast<float*>(base::AlignedAlloc(size, 32)));
-  scoped_ptr<media::AudioBus> wrapper = media::AudioBus::CreateWrapper(
-      source_params.channels());
+  std::unique_ptr<media::AudioBus> wrapper =
+      media::AudioBus::CreateWrapper(source_params.channels());
   wrapper->set_frames(source_params.frames_per_buffer());
   wrapper->SetChannelData(0, left_channel.get());
   wrapper->SetChannelData(1, right_channel.get());

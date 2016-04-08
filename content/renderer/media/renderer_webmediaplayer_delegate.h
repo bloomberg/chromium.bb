@@ -6,10 +6,10 @@
 #define CONTENT_RENDERER_MEDIA_RENDERER_WEBMEDIAPLAYER_DELEGATE_H_
 
 #include <map>
+#include <memory>
 
 #include "base/id_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/default_tick_clock.h"
 #include "base/timer/timer.h"
@@ -97,7 +97,7 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
 
   // Clock used for calculating when delegates have expired. May be overridden
   // for testing.
-  scoped_ptr<base::DefaultTickClock> default_tick_clock_;
+  std::unique_ptr<base::DefaultTickClock> default_tick_clock_;
   base::TickClock* tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebMediaPlayerDelegate);

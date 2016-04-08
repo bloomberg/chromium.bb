@@ -9,10 +9,11 @@
 #error This file should only be included when ENABLE_PEPPER_CDMS is defined
 #endif
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/renderer/media/cdm/pepper_cdm_wrapper.h"
 
 namespace blink {
@@ -41,9 +42,9 @@ struct WebHelperPluginDeleter {
 // blink:: objects.
 class PepperCdmWrapperImpl : public PepperCdmWrapper {
  public:
-  static scoped_ptr<PepperCdmWrapper> Create(blink::WebLocalFrame* frame,
-                                             const std::string& pluginType,
-                                             const GURL& security_origin);
+  static std::unique_ptr<PepperCdmWrapper> Create(blink::WebLocalFrame* frame,
+                                                  const std::string& pluginType,
+                                                  const GURL& security_origin);
 
   ~PepperCdmWrapperImpl() override;
 
@@ -51,7 +52,7 @@ class PepperCdmWrapperImpl : public PepperCdmWrapper {
   ContentDecryptorDelegate* GetCdmDelegate() override;
 
  private:
-  typedef scoped_ptr<blink::WebHelperPlugin, WebHelperPluginDeleter>
+  typedef std::unique_ptr<blink::WebHelperPlugin, WebHelperPluginDeleter>
       ScopedHelperPlugin;
 
   // Takes ownership of |helper_plugin| and |plugin_instance|.

@@ -107,7 +107,7 @@ TEST(AudioMessageFilterTest, Basic) {
       new AudioMessageFilter(message_loop.task_runner()));
 
   MockAudioDelegate delegate;
-  const scoped_ptr<media::AudioOutputIPC> ipc =
+  const std::unique_ptr<media::AudioOutputIPC> ipc =
       filter->CreateAudioOutputIPC(kRenderFrameId);
   static const int kSessionId = 0;
   static const std::string kDeviceId;
@@ -159,9 +159,9 @@ TEST(AudioMessageFilterTest, Delegates) {
 
   MockAudioDelegate delegate1;
   MockAudioDelegate delegate2;
-  const scoped_ptr<media::AudioOutputIPC> ipc1 =
+  const std::unique_ptr<media::AudioOutputIPC> ipc1 =
       filter->CreateAudioOutputIPC(kRenderFrameId);
-  const scoped_ptr<media::AudioOutputIPC> ipc2 =
+  const std::unique_ptr<media::AudioOutputIPC> ipc2 =
       filter->CreateAudioOutputIPC(kRenderFrameId);
   ipc1->CreateStream(&delegate1, media::AudioParameters());
   ipc2->CreateStream(&delegate2, media::AudioParameters());

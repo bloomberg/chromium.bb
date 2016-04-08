@@ -5,9 +5,10 @@
 #include "content/renderer/media/user_media_client_impl.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/child_process.h"
@@ -53,7 +54,7 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
 
   UserMediaClientImplUnderTest(
       PeerConnectionDependencyFactory* dependency_factory,
-      scoped_ptr<MediaStreamDispatcher> media_stream_dispatcher)
+      std::unique_ptr<MediaStreamDispatcher> media_stream_dispatcher)
       : UserMediaClientImpl(NULL,
                             dependency_factory,
                             std::move(media_stream_dispatcher)),
@@ -181,7 +182,7 @@ class UserMediaClientImplTest : public ::testing::Test {
     ms_dispatcher_ = new MockMediaStreamDispatcher();
     used_media_impl_.reset(new UserMediaClientImplUnderTest(
         dependency_factory_.get(),
-        scoped_ptr<MediaStreamDispatcher>(ms_dispatcher_)));
+        std::unique_ptr<MediaStreamDispatcher>(ms_dispatcher_)));
   }
 
   void TearDown() override {
@@ -281,10 +282,10 @@ class UserMediaClientImplTest : public ::testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
-  scoped_ptr<ChildProcess> child_process_;
+  std::unique_ptr<ChildProcess> child_process_;
   MockMediaStreamDispatcher* ms_dispatcher_;  // Owned by |used_media_impl_|.
-  scoped_ptr<UserMediaClientImplUnderTest> used_media_impl_;
-  scoped_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
+  std::unique_ptr<UserMediaClientImplUnderTest> used_media_impl_;
+  std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
 };
 
 TEST_F(UserMediaClientImplTest, GenerateMediaStream) {

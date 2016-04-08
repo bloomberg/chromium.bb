@@ -392,7 +392,7 @@ void LocalVideoCapturerSource::OnDeviceSupportedFormatsEnumerated(
 
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
     const SourceStoppedCallback& stop_callback,
-    scoped_ptr<media::VideoCapturerSource> source)
+    std::unique_ptr<media::VideoCapturerSource> source)
     : source_(std::move(source)) {
   SetStopCallback(stop_callback);
 }

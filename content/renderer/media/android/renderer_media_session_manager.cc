@@ -45,14 +45,14 @@ void RendererMediaSessionManager::UnregisterMediaSession(int session_id) {
 
 void RendererMediaSessionManager::Activate(
     int session_id,
-    scoped_ptr<blink::WebMediaSessionActivateCallback> callback) {
+    std::unique_ptr<blink::WebMediaSessionActivateCallback> callback) {
   int request_id = pending_activation_requests_.Add(callback.release());
   Send(new MediaSessionHostMsg_Activate(routing_id(), session_id, request_id));
 }
 
 void RendererMediaSessionManager::Deactivate(
     int session_id,
-    scoped_ptr<blink::WebMediaSessionDeactivateCallback> callback) {
+    std::unique_ptr<blink::WebMediaSessionDeactivateCallback> callback) {
   int request_id = pending_deactivation_requests_.Add(callback.release());
   Send(
       new MediaSessionHostMsg_Deactivate(routing_id(), session_id, request_id));

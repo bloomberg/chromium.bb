@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/media/media_stream_dispatcher.h"
+
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/public/common/media_stream_request.h"
-#include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "media/audio/audio_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -174,8 +175,8 @@ class MediaStreamDispatcherTest : public ::testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
-  scoped_ptr<MediaStreamDispatcherUnderTest> dispatcher_;
-  scoped_ptr<MockMediaStreamDispatcherEventHandler> handler_;
+  std::unique_ptr<MediaStreamDispatcherUnderTest> dispatcher_;
+  std::unique_ptr<MockMediaStreamDispatcherEventHandler> handler_;
   GURL security_origin_;
   int request_id_;
 };
@@ -215,11 +216,12 @@ TEST_F(MediaStreamDispatcherTest, GenerateStreamAndStopDevices) {
 }
 
 TEST_F(MediaStreamDispatcherTest, BasicVideoDevice) {
-  scoped_ptr<MediaStreamDispatcher> dispatcher(new MediaStreamDispatcher(NULL));
-  scoped_ptr<MockMediaStreamDispatcherEventHandler>
-      handler1(new MockMediaStreamDispatcherEventHandler);
-  scoped_ptr<MockMediaStreamDispatcherEventHandler>
-      handler2(new MockMediaStreamDispatcherEventHandler);
+  std::unique_ptr<MediaStreamDispatcher> dispatcher(
+      new MediaStreamDispatcher(NULL));
+  std::unique_ptr<MockMediaStreamDispatcherEventHandler> handler1(
+      new MockMediaStreamDispatcherEventHandler);
+  std::unique_ptr<MockMediaStreamDispatcherEventHandler> handler2(
+      new MockMediaStreamDispatcherEventHandler);
   GURL security_origin;
 
   int ipc_request_id1 = dispatcher->next_ipc_id_;
@@ -304,9 +306,10 @@ TEST_F(MediaStreamDispatcherTest, BasicVideoDevice) {
 }
 
 TEST_F(MediaStreamDispatcherTest, TestFailure) {
-  scoped_ptr<MediaStreamDispatcher> dispatcher(new MediaStreamDispatcher(NULL));
-  scoped_ptr<MockMediaStreamDispatcherEventHandler>
-      handler(new MockMediaStreamDispatcherEventHandler);
+  std::unique_ptr<MediaStreamDispatcher> dispatcher(
+      new MediaStreamDispatcher(NULL));
+  std::unique_ptr<MockMediaStreamDispatcherEventHandler> handler(
+      new MockMediaStreamDispatcherEventHandler);
   StreamControls components(true, true);
   GURL security_origin;
 
@@ -351,9 +354,10 @@ TEST_F(MediaStreamDispatcherTest, TestFailure) {
 }
 
 TEST_F(MediaStreamDispatcherTest, CancelGenerateStream) {
-  scoped_ptr<MediaStreamDispatcher> dispatcher(new MediaStreamDispatcher(NULL));
-  scoped_ptr<MockMediaStreamDispatcherEventHandler>
-      handler(new MockMediaStreamDispatcherEventHandler);
+  std::unique_ptr<MediaStreamDispatcher> dispatcher(
+      new MediaStreamDispatcher(NULL));
+  std::unique_ptr<MockMediaStreamDispatcherEventHandler> handler(
+      new MockMediaStreamDispatcherEventHandler);
   StreamControls components(true, true);
   int ipc_request_id1 = dispatcher->next_ipc_id_;
 

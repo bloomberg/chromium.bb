@@ -110,8 +110,8 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
       registry_.AddAudioTrack(kTestAudioTrackId);
   }
 
-  scoped_ptr<media::AudioBus> NextAudioBus() {
-    scoped_ptr<media::AudioBus> bus(media::AudioBus::Create(
+  std::unique_ptr<media::AudioBus> NextAudioBus() {
+    std::unique_ptr<media::AudioBus> bus(media::AudioBus::Create(
         kTestAudioChannels,
         kTestAudioSampleRate * kTestAudioBufferDurationMs / 1000));
     audio_source_.OnMoreData(bus.get(), 0, 0);
@@ -125,7 +125,7 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
   MockMediaStreamRegistry registry_;
 
   // The Class under test. Needs to be scoped_ptr to force its destruction.
-  scoped_ptr<MediaRecorderHandler> media_recorder_handler_;
+  std::unique_ptr<MediaRecorderHandler> media_recorder_handler_;
 
   // For generating test AudioBuses
   media::SineWaveAudioSource audio_source_;
@@ -278,8 +278,8 @@ TEST_P(MediaRecorderHandlerTest, EncodeAudioFrames) {
   EXPECT_TRUE(media_recorder_handler_->start());
 
   InSequence s;
-  const scoped_ptr<media::AudioBus> audio_bus1 = NextAudioBus();
-  const scoped_ptr<media::AudioBus> audio_bus2 = NextAudioBus();
+  const std::unique_ptr<media::AudioBus> audio_bus1 = NextAudioBus();
+  const std::unique_ptr<media::AudioBus> audio_bus2 = NextAudioBus();
 
   media::AudioParameters params(
       media::AudioParameters::AUDIO_PCM_LINEAR, media::CHANNEL_LAYOUT_STEREO,

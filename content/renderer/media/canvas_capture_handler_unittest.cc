@@ -118,7 +118,7 @@ class CanvasCaptureHandlerTest : public TestWithParam<bool> {
 
   blink::WebMediaStreamTrack track_;
   // The Class under test. Needs to be scoped_ptr to force its destruction.
-  scoped_ptr<CanvasCaptureHandler> canvas_capture_handler_;
+  std::unique_ptr<CanvasCaptureHandler> canvas_capture_handler_;
 
  protected:
   media::VideoCapturerSource* GetVideoCapturerSource(

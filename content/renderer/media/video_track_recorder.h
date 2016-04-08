@@ -5,9 +5,10 @@
 #ifndef CONTENT_RENDERER_MEDIA_VIDEO_TRACK_RECORDER_H_
 #define CONTENT_RENDERER_MEDIA_VIDEO_TRACK_RECORDER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
@@ -29,7 +30,7 @@ class CONTENT_EXPORT VideoTrackRecorder
  public:
   using OnEncodedVideoCB =
       base::Callback<void(const scoped_refptr<media::VideoFrame>& video_frame,
-                          scoped_ptr<std::string> encoded_data,
+                          std::unique_ptr<std::string> encoded_data,
                           base::TimeTicks capture_timestamp,
                           bool is_key_frame)>;
 

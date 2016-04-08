@@ -8,13 +8,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "media/base/cdm_context.h"
@@ -168,10 +168,10 @@ class MediaSourceDelegate : public media::DemuxerHost {
   // Reads an access unit from the demuxer stream |stream| and stores it in
   // the |index|th access unit in |params|.
   void ReadFromDemuxerStream(media::DemuxerStream::Type type,
-                             scoped_ptr<media::DemuxerData> data,
+                             std::unique_ptr<media::DemuxerData> data,
                              size_t index);
   void OnBufferReady(media::DemuxerStream::Type type,
-                     scoped_ptr<media::DemuxerData> data,
+                     std::unique_ptr<media::DemuxerData> data,
                      size_t index,
                      media::DemuxerStream::Status status,
                      const scoped_refptr<media::DecoderBuffer>& buffer);
@@ -201,15 +201,17 @@ class MediaSourceDelegate : public media::DemuxerHost {
   UpdateNetworkStateCB update_network_state_cb_;
   DurationChangeCB duration_change_cb_;
 
-  scoped_ptr<media::ChunkDemuxer> chunk_demuxer_;
+  std::unique_ptr<media::ChunkDemuxer> chunk_demuxer_;
   bool is_demuxer_ready_;
 
   SetCdmReadyCB set_cdm_ready_cb_;
   media::CdmContext* cdm_context_;
   media::CdmAttachedCB pending_cdm_attached_cb_;
 
-  scoped_ptr<media::DecryptingDemuxerStream> audio_decrypting_demuxer_stream_;
-  scoped_ptr<media::DecryptingDemuxerStream> video_decrypting_demuxer_stream_;
+  std::unique_ptr<media::DecryptingDemuxerStream>
+      audio_decrypting_demuxer_stream_;
+  std::unique_ptr<media::DecryptingDemuxerStream>
+      video_decrypting_demuxer_stream_;
 
   media::DemuxerStream* audio_stream_;
   media::DemuxerStream* video_stream_;

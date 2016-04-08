@@ -8,6 +8,7 @@
 #include <GLES2/gl2ext.h>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "cc/output/context_provider.h"
 #include "content/child/child_gpu_memory_buffer_manager.h"
@@ -43,7 +44,7 @@ void RecordContextProviderPhaseUmaEnum(const ContextProviderPhase phase) {
 }  // namespace
 
 // static
-scoped_ptr<RendererGpuVideoAcceleratorFactories>
+std::unique_ptr<RendererGpuVideoAcceleratorFactories>
 RendererGpuVideoAcceleratorFactories::Create(
     gpu::GpuChannelHost* gpu_channel_host,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
@@ -54,7 +55,7 @@ RendererGpuVideoAcceleratorFactories::Create(
     bool enable_video_accelerator) {
   RecordContextProviderPhaseUmaEnum(
       ContextProviderPhase::CONTEXT_PROVIDER_ACQUIRED);
-  return make_scoped_ptr(new RendererGpuVideoAcceleratorFactories(
+  return base::WrapUnique(new RendererGpuVideoAcceleratorFactories(
       gpu_channel_host, main_thread_task_runner, task_runner, context_provider,
       enable_gpu_memory_buffer_video_frames, image_texture_targets,
       enable_video_accelerator));
@@ -107,7 +108,7 @@ bool RendererGpuVideoAcceleratorFactories::IsGpuVideoAcceleratorEnabled() {
   return video_accelerator_enabled_;
 }
 
-scoped_ptr<media::VideoDecodeAccelerator>
+std::unique_ptr<media::VideoDecodeAccelerator>
 RendererGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator() {
   DCHECK(video_accelerator_enabled_);
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -118,12 +119,12 @@ RendererGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator() {
       context_provider_->GetCommandBufferProxy()->channel();
   DCHECK(channel);
 
-  return scoped_ptr<media::VideoDecodeAccelerator>(
+  return std::unique_ptr<media::VideoDecodeAccelerator>(
       new media::GpuVideoDecodeAcceleratorHost(
           channel, context_provider_->GetCommandBufferProxy()));
 }
 
-scoped_ptr<media::VideoEncodeAccelerator>
+std::unique_ptr<media::VideoEncodeAccelerator>
 RendererGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator() {
   DCHECK(video_accelerator_enabled_);
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -134,7 +135,7 @@ RendererGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator() {
       context_provider_->GetCommandBufferProxy()->channel();
   DCHECK(channel);
 
-  return scoped_ptr<media::VideoEncodeAccelerator>(
+  return std::unique_ptr<media::VideoEncodeAccelerator>(
       new media::GpuVideoEncodeAcceleratorHost(
           channel, context_provider_->GetCommandBufferProxy()));
 }
@@ -214,12 +215,12 @@ void RendererGpuVideoAcceleratorFactories::WaitSyncToken(
   gles2->ShallowFlushCHROMIUM();
 }
 
-scoped_ptr<gfx::GpuMemoryBuffer>
+std::unique_ptr<gfx::GpuMemoryBuffer>
 RendererGpuVideoAcceleratorFactories::AllocateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  scoped_ptr<gfx::GpuMemoryBuffer> buffer =
+  std::unique_ptr<gfx::GpuMemoryBuffer> buffer =
       gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(size, format, usage,
                                                           0 /* surface_id */);
   return buffer;
@@ -263,16 +264,16 @@ class ScopedGLContextLockImpl
 };
 }  // namespace
 
-scoped_ptr<media::GpuVideoAcceleratorFactories::ScopedGLContextLock>
+std::unique_ptr<media::GpuVideoAcceleratorFactories::ScopedGLContextLock>
 RendererGpuVideoAcceleratorFactories::GetGLContextLock() {
   if (CheckContextLost())
     return nullptr;
-  return make_scoped_ptr(new ScopedGLContextLockImpl(context_provider_));
+  return base::WrapUnique(new ScopedGLContextLockImpl(context_provider_));
 }
 
-scoped_ptr<base::SharedMemory>
+std::unique_ptr<base::SharedMemory>
 RendererGpuVideoAcceleratorFactories::CreateSharedMemory(size_t size) {
-  scoped_ptr<base::SharedMemory> mem(
+  std::unique_ptr<base::SharedMemory> mem(
       ChildThreadImpl::AllocateSharedMemory(size, thread_safe_sender_.get()));
   if (mem && !mem->Map(size))
     return nullptr;

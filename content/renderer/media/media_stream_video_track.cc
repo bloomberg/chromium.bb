@@ -15,7 +15,7 @@
 namespace content {
 
 namespace {
-void ResetCallback(scoped_ptr<VideoCaptureDeliverFrameCB> callback) {
+void ResetCallback(std::unique_ptr<VideoCaptureDeliverFrameCB> callback) {
   // |callback| will be deleted when this exits.
 }
 
@@ -129,7 +129,7 @@ void MediaStreamVideoTrack::FrameDeliverer::RemoveCallbackOnIO(
   for (; it != callbacks_.end(); ++it) {
     if (it->first == id) {
       // Callback is copied to heap and then deleted on the target thread.
-      scoped_ptr<VideoCaptureDeliverFrameCB> callback;
+      std::unique_ptr<VideoCaptureDeliverFrameCB> callback;
       callback.reset(new VideoCaptureDeliverFrameCB(it->second));
       callbacks_.erase(it);
       task_runner->PostTask(

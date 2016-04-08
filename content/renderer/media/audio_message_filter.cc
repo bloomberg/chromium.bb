@@ -75,10 +75,10 @@ AudioMessageFilter::AudioOutputIPCImpl::AudioOutputIPCImpl(
 
 AudioMessageFilter::AudioOutputIPCImpl::~AudioOutputIPCImpl() {}
 
-scoped_ptr<media::AudioOutputIPC> AudioMessageFilter::CreateAudioOutputIPC(
+std::unique_ptr<media::AudioOutputIPC> AudioMessageFilter::CreateAudioOutputIPC(
     int render_frame_id) {
   DCHECK_GT(render_frame_id, 0);
-  return scoped_ptr<media::AudioOutputIPC>(
+  return std::unique_ptr<media::AudioOutputIPC>(
       new AudioOutputIPCImpl(this, render_frame_id));
 }
 

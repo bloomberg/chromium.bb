@@ -170,7 +170,7 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   // Returns a new capturer or existing capturer based on the |render_frame_id|
   // and |device_info|; if both are valid, it reuses existing capture if any --
   // otherwise it creates a new capturer.
-  virtual scoped_ptr<WebRtcAudioCapturer> CreateAudioCapturer(
+  virtual std::unique_ptr<WebRtcAudioCapturer> CreateAudioCapturer(
       int render_frame_id,
       const StreamDeviceInfo& device_info,
       const blink::WebMediaConstraints& constraints,
@@ -208,14 +208,14 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   // We own network_manager_, must be deleted on the worker thread.
   // The network manager uses |p2p_socket_dispatcher_|.
   IpcNetworkManager* network_manager_;
-  scoped_ptr<IpcPacketSocketFactory> socket_factory_;
+  std::unique_ptr<IpcPacketSocketFactory> socket_factory_;
 
   scoped_refptr<webrtc::PeerConnectionFactoryInterface> pc_factory_;
 
   scoped_refptr<P2PSocketDispatcher> p2p_socket_dispatcher_;
   scoped_refptr<WebRtcAudioDeviceImpl> audio_device_;
 
-  scoped_ptr<StunProberTrial> stun_trial_;
+  std::unique_ptr<StunProberTrial> stun_trial_;
 
   // PeerConnection threads. signaling_thread_ is created from the
   // "current" chrome thread.

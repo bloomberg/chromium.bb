@@ -74,7 +74,8 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
   }
 
   void InitWithDeviceInfo(const StreamDeviceInfo& device_info) {
-    scoped_ptr<MockVideoCapturerSource> delegate(new MockVideoCapturerSource());
+    std::unique_ptr<MockVideoCapturerSource> delegate(
+        new MockVideoCapturerSource());
     delegate_ = delegate.get();
     source_ = new MediaStreamVideoCapturerSource(
         base::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
@@ -123,7 +124,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
   // A ChildProcess and a MessageLoopForUI are both needed to fool the Tracks
   // and Sources below into believing they are on the right threads.
   base::MessageLoopForUI message_loop_;
-  scoped_ptr<ChildProcess> child_process_;
+  std::unique_ptr<ChildProcess> child_process_;
 
   blink::WebMediaStreamSource webkit_source_;
   MediaStreamVideoCapturerSource* source_;  // owned by |webkit_source_|.
@@ -291,7 +292,8 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
 }
 
 TEST_F(MediaStreamVideoCapturerSourceTest, Ended) {
-  scoped_ptr<MockVideoCapturerSource> delegate(new MockVideoCapturerSource());
+  std::unique_ptr<MockVideoCapturerSource> delegate(
+      new MockVideoCapturerSource());
   delegate_ = delegate.get();
   source_ = new MediaStreamVideoCapturerSource(
       base::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,

@@ -139,7 +139,7 @@ class CONTENT_EXPORT TrackAudioRenderer
   scoped_refptr<media::AudioRendererSink> sink_;
 
   // This does all the synchronization/resampling/smoothing.
-  scoped_ptr<media::AudioShifter> audio_shifter_;
+  std::unique_ptr<media::AudioShifter> audio_shifter_;
 
   // These track the time duration of all the audio rendered so far by this
   // instance.  |prior_elapsed_render_time_| tracks the time duration of all

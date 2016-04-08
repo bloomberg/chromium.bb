@@ -199,10 +199,10 @@ class VideoCaptureImplTest : public ::testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  scoped_ptr<ChildProcess> child_process_;
+  std::unique_ptr<ChildProcess> child_process_;
   scoped_refptr<MockVideoCaptureMessageFilter> message_filter_;
   media::VideoCaptureSessionId session_id_;
-  scoped_ptr<MockVideoCaptureImpl> video_capture_impl_;
+  std::unique_ptr<MockVideoCaptureImpl> video_capture_impl_;
   media::VideoCaptureParams params_small_;
   media::VideoCaptureParams params_large_;
 

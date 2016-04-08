@@ -154,7 +154,7 @@ struct UserMediaClientImpl::MediaDevicesRequestInfo {
 UserMediaClientImpl::UserMediaClientImpl(
     RenderFrame* render_frame,
     PeerConnectionDependencyFactory* dependency_factory,
-    scoped_ptr<MediaStreamDispatcher> media_stream_dispatcher)
+    std::unique_ptr<MediaStreamDispatcher> media_stream_dispatcher)
     : RenderFrameObserver(render_frame),
       dependency_factory_(dependency_factory),
       media_stream_dispatcher_(std::move(media_stream_dispatcher)),

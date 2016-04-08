@@ -5,13 +5,13 @@
 #ifndef CONTENT_RENDERER_MEDIA_USER_MEDIA_CLIENT_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_USER_MEDIA_CLIENT_IMPL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -49,7 +49,7 @@ class CONTENT_EXPORT UserMediaClientImpl
   UserMediaClientImpl(
       RenderFrame* render_frame,
       PeerConnectionDependencyFactory* dependency_factory,
-      scoped_ptr<MediaStreamDispatcher> media_stream_dispatcher);
+      std::unique_ptr<MediaStreamDispatcher> media_stream_dispatcher);
   ~UserMediaClientImpl() override;
 
   MediaStreamDispatcher* media_stream_dispatcher() const {
@@ -246,7 +246,7 @@ class CONTENT_EXPORT UserMediaClientImpl
 
   // UserMediaClientImpl owns MediaStreamDispatcher instead of RenderFrameImpl
   // (or RenderFrameObserver) to ensure tear-down occurs in the right order.
-  const scoped_ptr<MediaStreamDispatcher> media_stream_dispatcher_;
+  const std::unique_ptr<MediaStreamDispatcher> media_stream_dispatcher_;
 
   LocalStreamSources local_sources_;
 

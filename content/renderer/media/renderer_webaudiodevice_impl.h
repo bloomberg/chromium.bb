@@ -81,7 +81,7 @@ class RendererWebAudioDeviceImpl
   // First audio buffer after silence finishes. We store this buffer so that
   // it can be sent to the |output_device_| later after switching from
   // |null_audio_sink_|.
-  scoped_ptr<media::AudioBus> first_buffer_after_silence_;
+  std::unique_ptr<media::AudioBus> first_buffer_after_silence_;
 
   bool is_first_buffer_after_silence_;
 

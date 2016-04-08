@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/media/rtc_peer_connection_handler.h"
+
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -24,7 +26,6 @@
 #include "content/renderer/media/mock_peer_connection_impl.h"
 #include "content/renderer/media/mock_web_rtc_peer_connection_handler_client.h"
 #include "content/renderer/media/peer_connection_tracker.h"
-#include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
@@ -267,7 +268,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     audio_tracks[0].initialize(audio_source.id(), audio_source);
     scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
         WebRtcLocalAudioTrackAdapter::Create(audio_track_label, nullptr));
-    scoped_ptr<WebRtcLocalAudioTrack> native_track(
+    std::unique_ptr<WebRtcLocalAudioTrack> native_track(
         new WebRtcLocalAudioTrack(adapter.get()));
     audio_tracks[0].setExtraData(native_track.release());
     blink::WebVector<blink::WebMediaStreamTrack> video_tracks(
@@ -304,11 +305,11 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  scoped_ptr<ChildProcess> child_process_;
-  scoped_ptr<MockWebRTCPeerConnectionHandlerClient> mock_client_;
-  scoped_ptr<MockPeerConnectionDependencyFactory> mock_dependency_factory_;
-  scoped_ptr<NiceMock<MockPeerConnectionTracker> > mock_tracker_;
-  scoped_ptr<RTCPeerConnectionHandlerUnderTest> pc_handler_;
+  std::unique_ptr<ChildProcess> child_process_;
+  std::unique_ptr<MockWebRTCPeerConnectionHandlerClient> mock_client_;
+  std::unique_ptr<MockPeerConnectionDependencyFactory> mock_dependency_factory_;
+  std::unique_ptr<NiceMock<MockPeerConnectionTracker>> mock_tracker_;
+  std::unique_ptr<RTCPeerConnectionHandlerUnderTest> pc_handler_;
 
   // Weak reference to the mocked native peer connection implementation.
   MockPeerConnectionImpl* mock_peer_connection_;
@@ -327,9 +328,9 @@ TEST_F(RTCPeerConnectionHandlerTest, NoCallbacksToClientAfterStop) {
   pc_handler_->observer()->OnRenegotiationNeeded();
 
   EXPECT_CALL(*mock_client_.get(), didGenerateICECandidate(_)).Times(0);
-    scoped_ptr<webrtc::IceCandidateInterface> native_candidate(
-          mock_dependency_factory_->CreateIceCandidate("sdpMid", 1, kDummySdp));
-    pc_handler_->observer()->OnIceCandidate(native_candidate.get());
+  std::unique_ptr<webrtc::IceCandidateInterface> native_candidate(
+      mock_dependency_factory_->CreateIceCandidate("sdpMid", 1, kDummySdp));
+  pc_handler_->observer()->OnIceCandidate(native_candidate.get());
 
   EXPECT_CALL(*mock_client_.get(), didChangeSignalingState(_)).Times(0);
   pc_handler_->observer()->OnSignalingChange(
@@ -972,7 +973,7 @@ TEST_F(RTCPeerConnectionHandlerTest, OnIceCandidate) {
                                    PeerConnectionTracker::SOURCE_LOCAL, true));
   EXPECT_CALL(*mock_client_.get(), didGenerateICECandidate(_));
 
-  scoped_ptr<webrtc::IceCandidateInterface> native_candidate(
+  std::unique_ptr<webrtc::IceCandidateInterface> native_candidate(
       mock_dependency_factory_->CreateIceCandidate("sdpMid", 1, kDummySdp));
   pc_handler_->observer()->OnIceCandidate(native_candidate.get());
   base::RunLoop().RunUntilIdle();
@@ -995,7 +996,7 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateDataChannel) {
               TrackCreateDataChannel(pc_handler_.get(),
                                      testing::NotNull(),
                                      PeerConnectionTracker::SOURCE_LOCAL));
-  scoped_ptr<blink::WebRTCDataChannelHandler> channel(
+  std::unique_ptr<blink::WebRTCDataChannelHandler> channel(
       pc_handler_->createDataChannel("d1", blink::WebRTCDataChannelInit()));
   EXPECT_TRUE(channel.get() != NULL);
   EXPECT_EQ(label, channel->label());
@@ -1021,7 +1022,7 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateDtmfSender) {
               TrackCreateDTMFSender(pc_handler_.get(),
                                     testing::Ref(tracks[0])));
 
-  scoped_ptr<blink::WebRTCDTMFSenderHandler> sender(
+  std::unique_ptr<blink::WebRTCDTMFSenderHandler> sender(
       pc_handler_->createDTMFSender(tracks[0]));
   EXPECT_TRUE(sender.get());
 }

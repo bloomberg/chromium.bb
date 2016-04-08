@@ -5,12 +5,12 @@
 #ifndef CONTENT_RENDERER_MEDIA_MOCK_PEER_CONNECTION_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_MOCK_PEER_CONNECTION_IMPL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 
@@ -117,9 +117,10 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   std::string stream_label_;
   rtc::scoped_refptr<MockStreamCollection> local_streams_;
   rtc::scoped_refptr<MockStreamCollection> remote_streams_;
-  scoped_ptr<webrtc::SessionDescriptionInterface> local_desc_;
-  scoped_ptr<webrtc::SessionDescriptionInterface> remote_desc_;
-  scoped_ptr<webrtc::SessionDescriptionInterface> created_sessiondescription_;
+  std::unique_ptr<webrtc::SessionDescriptionInterface> local_desc_;
+  std::unique_ptr<webrtc::SessionDescriptionInterface> remote_desc_;
+  std::unique_ptr<webrtc::SessionDescriptionInterface>
+      created_sessiondescription_;
   bool hint_audio_;
   bool hint_video_;
   bool getstats_result_;

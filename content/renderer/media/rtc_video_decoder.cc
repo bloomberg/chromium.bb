@@ -85,10 +85,10 @@ RTCVideoDecoder::~RTCVideoDecoder() {
 }
 
 // static
-scoped_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
+std::unique_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
     webrtc::VideoCodecType type,
     media::GpuVideoAcceleratorFactories* factories) {
-  scoped_ptr<RTCVideoDecoder> decoder;
+  std::unique_ptr<RTCVideoDecoder> decoder;
   // Convert WebRTC codec type to media codec profile.
   media::VideoCodecProfile profile;
   switch (type) {
@@ -229,7 +229,7 @@ int32_t RTCVideoDecoder::Decode(
   // If a shared memory segment is available, there are no pending buffers, and
   // this isn't a mid-stream resolution change, then send the buffer for decode
   // immediately. Otherwise, save the buffer in the queue for later decode.
-  scoped_ptr<base::SharedMemory> shm_buffer;
+  std::unique_ptr<base::SharedMemory> shm_buffer;
   if (!need_to_reset_for_midstream_resize && pending_buffers_.empty())
     shm_buffer = GetSHM_Locked(inputImage._length);
   if (!shm_buffer) {
@@ -454,7 +454,7 @@ void RTCVideoDecoder::NotifyEndOfBitstreamBuffer(int32_t id) {
 
   {
     base::AutoLock auto_lock(lock_);
-    PutSHM_Locked(scoped_ptr<base::SharedMemory>(it->second));
+    PutSHM_Locked(std::unique_ptr<base::SharedMemory>(it->second));
   }
   bitstream_buffers_in_decoder_.erase(it);
 
@@ -506,7 +506,7 @@ void RTCVideoDecoder::RequestBufferDecode() {
 
   while (CanMoreDecodeWorkBeDone()) {
     // Get a buffer and data from the queue.
-    scoped_ptr<base::SharedMemory> shm_buffer;
+    std::unique_ptr<base::SharedMemory> shm_buffer;
     BufferData buffer_data;
     {
       base::AutoLock auto_lock(lock_);
@@ -560,7 +560,7 @@ bool RTCVideoDecoder::IsFirstBufferAfterReset(int32_t id_buffer,
 
 void RTCVideoDecoder::SaveToDecodeBuffers_Locked(
     const webrtc::EncodedImage& input_image,
-    scoped_ptr<base::SharedMemory> shm_buffer,
+    std::unique_ptr<base::SharedMemory> shm_buffer,
     const BufferData& buffer_data) {
   memcpy(shm_buffer->memory(), input_image._buffer, input_image._length);
   std::pair<base::SharedMemory*, BufferData> buffer_pair =
@@ -613,7 +613,7 @@ void RTCVideoDecoder::MovePendingBuffersToDecodeBuffers() {
       continue;
     }
     // Get shared memory and save it to decode buffers.
-    scoped_ptr<base::SharedMemory> shm_buffer =
+    std::unique_ptr<base::SharedMemory> shm_buffer =
         GetSHM_Locked(input_image._length);
     if (!shm_buffer)
       return;
@@ -737,17 +737,18 @@ void RTCVideoDecoder::DestroyVDA() {
 
   // Put the buffers back in case we restart the decoder.
   for (const auto& buffer : bitstream_buffers_in_decoder_)
-    PutSHM_Locked(scoped_ptr<base::SharedMemory>(buffer.second));
+    PutSHM_Locked(std::unique_ptr<base::SharedMemory>(buffer.second));
   bitstream_buffers_in_decoder_.clear();
 
   state_ = UNINITIALIZED;
 }
 
-scoped_ptr<base::SharedMemory> RTCVideoDecoder::GetSHM_Locked(size_t min_size) {
+std::unique_ptr<base::SharedMemory> RTCVideoDecoder::GetSHM_Locked(
+    size_t min_size) {
   // Reuse a SHM if possible.
   if (!available_shm_segments_.empty() &&
       available_shm_segments_.back()->mapped_size() >= min_size) {
-    scoped_ptr<base::SharedMemory> buffer(available_shm_segments_.back());
+    std::unique_ptr<base::SharedMemory> buffer(available_shm_segments_.back());
     available_shm_segments_.pop_back();
     return buffer;
   }
@@ -776,7 +777,8 @@ scoped_ptr<base::SharedMemory> RTCVideoDecoder::GetSHM_Locked(size_t min_size) {
   return NULL;
 }
 
-void RTCVideoDecoder::PutSHM_Locked(scoped_ptr<base::SharedMemory> shm_buffer) {
+void RTCVideoDecoder::PutSHM_Locked(
+    std::unique_ptr<base::SharedMemory> shm_buffer) {
   lock_.AssertAcquired();
   available_shm_segments_.push_back(shm_buffer.release());
 }
@@ -786,7 +788,8 @@ void RTCVideoDecoder::CreateSHM(size_t count, size_t size) {
   DVLOG(2) << "CreateSHM. count=" << count << ", size=" << size;
 
   for (size_t i = 0; i < count; i++) {
-    scoped_ptr<base::SharedMemory> shm = factories_->CreateSharedMemory(size);
+    std::unique_ptr<base::SharedMemory> shm =
+        factories_->CreateSharedMemory(size);
     if (!shm) {
       LOG(ERROR) << "Failed allocating shared memory of size=" << size;
       NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);

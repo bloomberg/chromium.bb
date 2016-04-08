@@ -118,10 +118,10 @@ class VideoCaptureImplManagerTest : public ::testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  scoped_ptr<ChildProcess> child_process_;
+  std::unique_ptr<ChildProcess> child_process_;
   media::VideoCaptureParams params_;
   base::RunLoop cleanup_run_loop_;
-  scoped_ptr<MockVideoCaptureImplManager> manager_;
+  std::unique_ptr<MockVideoCaptureImplManager> manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureImplManagerTest);

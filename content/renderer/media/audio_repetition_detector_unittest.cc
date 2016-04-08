@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/media/audio_repetition_detector.h"
+
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
-#include "content/renderer/media/audio_repetition_detector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -92,7 +93,7 @@ class AudioRepetitionDetectorTest : public ::testing::Test {
     static const size_t kNumChannels = 2;
 
     // Get memory to store interleaved stereo.
-    scoped_ptr<float[]> tester_stereo(
+    std::unique_ptr<float[]> tester_stereo(
         new float[num_frames * kNumChannels]);
 
     for (size_t idx = 0; idx < num_frames; ++idx, ++tester) {
@@ -117,7 +118,7 @@ class AudioRepetitionDetectorTest : public ::testing::Test {
   }
 
  private:
-  scoped_ptr<AudioRepetitionDetectorForTest> detector_;
+  std::unique_ptr<AudioRepetitionDetectorForTest> detector_;
 };
 
 TEST_F(AudioRepetitionDetectorTest, Basic) {

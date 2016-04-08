@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/threading/thread_checker.h"
@@ -42,7 +43,7 @@ class CONTENT_EXPORT SpeechRecognitionAudioSink
   SpeechRecognitionAudioSink(const blink::WebMediaStreamTrack& track,
                              const media::AudioParameters& params,
                              const base::SharedMemoryHandle memory,
-                             scoped_ptr<base::SyncSocket> socket,
+                             std::unique_ptr<base::SyncSocket> socket,
                              const OnStoppedCB& on_stopped_cb);
 
   ~SpeechRecognitionAudioSink() override;
@@ -85,16 +86,16 @@ class CONTENT_EXPORT SpeechRecognitionAudioSink
 
   // Socket for synchronization of audio bus reads/writes.
   // Created on the renderer client and passed here. Accessed on capture thread.
-  scoped_ptr<base::SyncSocket> socket_;
+  std::unique_ptr<base::SyncSocket> socket_;
 
   // Used as a resampler to deliver appropriate format to speech recognition.
-  scoped_ptr<media::AudioConverter> audio_converter_;
+  std::unique_ptr<media::AudioConverter> audio_converter_;
 
   // FIFO is used for queuing audio frames before we resample.
-  scoped_ptr<media::AudioFifo> fifo_;
+  std::unique_ptr<media::AudioFifo> fifo_;
 
   // Audio bus shared with the browser process via |shared_memory_|.
-  scoped_ptr<media::AudioBus> output_bus_;
+  std::unique_ptr<media::AudioBus> output_bus_;
 
   // Params of the source audio. Can change when |OnSetFormat()| occurs.
   media::AudioParameters input_params_;

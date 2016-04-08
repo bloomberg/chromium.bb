@@ -20,7 +20,7 @@ SpeechRecognitionAudioSink::SpeechRecognitionAudioSink(
     const blink::WebMediaStreamTrack& track,
     const media::AudioParameters& params,
     const base::SharedMemoryHandle memory,
-    scoped_ptr<base::SyncSocket> socket,
+    std::unique_ptr<base::SyncSocket> socket,
     const OnStoppedCB& on_stopped_cb)
     : track_(track),
       shared_memory_(memory, false),

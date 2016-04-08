@@ -825,7 +825,7 @@ class RTCPeerConnectionHandler::Observer
 
   void OnAddStream(MediaStreamInterface* stream) override {
     DCHECK(stream);
-    scoped_ptr<RemoteMediaStreamImpl> remote_stream(
+    std::unique_ptr<RemoteMediaStreamImpl> remote_stream(
         new RemoteMediaStreamImpl(main_thread_, stream));
 
     // The webkit object owned by RemoteMediaStreamImpl, will be initialized
@@ -843,7 +843,7 @@ class RTCPeerConnectionHandler::Observer
   }
 
   void OnDataChannel(DataChannelInterface* data_channel) override {
-    scoped_ptr<RtcDataChannelHandler> handler(
+    std::unique_ptr<RtcDataChannelHandler> handler(
         new RtcDataChannelHandler(main_thread_, data_channel));
     main_thread_->PostTask(FROM_HERE,
         base::Bind(&RTCPeerConnectionHandler::Observer::OnDataChannelImpl,
@@ -897,7 +897,7 @@ class RTCPeerConnectionHandler::Observer
             candidate->candidate().address().family()));
   }
 
-  void OnAddStreamImpl(scoped_ptr<RemoteMediaStreamImpl> stream) {
+  void OnAddStreamImpl(std::unique_ptr<RemoteMediaStreamImpl> stream) {
     DCHECK(stream->webkit_stream().getExtraData()) << "Initialization not done";
     if (handler_)
       handler_->OnAddStream(std::move(stream));
@@ -908,7 +908,7 @@ class RTCPeerConnectionHandler::Observer
       handler_->OnRemoveStream(stream);
   }
 
-  void OnDataChannelImpl(scoped_ptr<RtcDataChannelHandler> handler) {
+  void OnDataChannelImpl(std::unique_ptr<RtcDataChannelHandler> handler) {
     if (handler_)
       handler_->OnDataChannel(std::move(handler));
   }
@@ -1316,7 +1316,7 @@ bool RTCPeerConnectionHandler::addICECandidate(
     const blink::WebRTCICECandidate& candidate) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::addICECandidate");
-  scoped_ptr<webrtc::IceCandidateInterface> native_candidate(
+  std::unique_ptr<webrtc::IceCandidateInterface> native_candidate(
       dependency_factory_->CreateIceCandidate(
           base::UTF16ToUTF8(base::StringPiece16(candidate.sdpMid())),
           candidate.sdpMLineIndex(),
@@ -1641,7 +1641,7 @@ void RTCPeerConnectionHandler::OnRenegotiationNeeded() {
 }
 
 void RTCPeerConnectionHandler::OnAddStream(
-    scoped_ptr<RemoteMediaStreamImpl> stream) {
+    std::unique_ptr<RemoteMediaStreamImpl> stream) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(remote_streams_.find(stream->webrtc_stream().get()) ==
          remote_streams_.end());
@@ -1681,7 +1681,7 @@ void RTCPeerConnectionHandler::OnRemoveStream(
                               stream.get());
   PerSessionWebRTCAPIMetrics::GetInstance()->DecrementStreamCounter();
 
-  scoped_ptr<RemoteMediaStreamImpl> remote_stream(it->second);
+  std::unique_ptr<RemoteMediaStreamImpl> remote_stream(it->second);
   const blink::WebMediaStream& webkit_stream = remote_stream->webkit_stream();
   DCHECK(!webkit_stream.isNull());
   remote_streams_.erase(it);
@@ -1696,7 +1696,7 @@ void RTCPeerConnectionHandler::OnRemoveStream(
 }
 
 void RTCPeerConnectionHandler::OnDataChannel(
-    scoped_ptr<RtcDataChannelHandler> handler) {
+    std::unique_ptr<RtcDataChannelHandler> handler) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnDataChannelImpl");
 

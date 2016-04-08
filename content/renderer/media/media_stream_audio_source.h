@@ -5,9 +5,10 @@
 #ifndef CONTENT_RENDERER_MEDIA_MEDIA_STREAM_AUDIO_SOURCE_H_
 #define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_AUDIO_SOURCE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/media_stream_source.h"
@@ -52,7 +53,7 @@ class CONTENT_EXPORT MediaStreamAudioSource
 
   WebRtcAudioCapturer* audio_capturer() const { return audio_capturer_.get(); }
 
-  void SetAudioCapturer(scoped_ptr<WebRtcAudioCapturer> capturer) {
+  void SetAudioCapturer(std::unique_ptr<WebRtcAudioCapturer> capturer) {
     DCHECK(!audio_capturer_.get());
     audio_capturer_ = std::move(capturer);
   }
@@ -69,7 +70,7 @@ class CONTENT_EXPORT MediaStreamAudioSource
     return webaudio_capturer_.get();
   }
 
-  void SetWebAudioCapturer(scoped_ptr<WebAudioCapturerSource> capturer) {
+  void SetWebAudioCapturer(std::unique_ptr<WebAudioCapturerSource> capturer) {
     DCHECK(!webaudio_capturer_.get());
     webaudio_capturer_ = std::move(capturer);
   }
@@ -87,8 +88,8 @@ class CONTENT_EXPORT MediaStreamAudioSource
   // TODO(miu): In a series of soon-upcoming changes, WebRtcAudioCapturer and
   // WebAudioCapturerSource will become subclasses of MediaStreamAudioSource
   // instead.
-  scoped_ptr<WebRtcAudioCapturer> audio_capturer_;
-  scoped_ptr<WebAudioCapturerSource> webaudio_capturer_;
+  std::unique_ptr<WebRtcAudioCapturer> audio_capturer_;
+  std::unique_ptr<WebAudioCapturerSource> webaudio_capturer_;
 
   // This member holds an instance of webrtc::LocalAudioSource. This is used
   // as a container for audio options.

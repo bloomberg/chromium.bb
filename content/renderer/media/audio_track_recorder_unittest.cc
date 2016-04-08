@@ -149,16 +149,16 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
     buffer_.reset(new float[kFramesPerBuffer * params.channels()]);
   }
 
-  scoped_ptr<media::AudioBus> GetFirstSourceAudioBus() {
-    scoped_ptr<media::AudioBus> bus(media::AudioBus::Create(
+  std::unique_ptr<media::AudioBus> GetFirstSourceAudioBus() {
+    std::unique_ptr<media::AudioBus> bus(media::AudioBus::Create(
         first_params_.channels(), first_params_.sample_rate() *
                                       kMediaStreamAudioTrackBufferDurationMs /
                                       base::Time::kMillisecondsPerSecond));
     first_source_.OnMoreData(bus.get(), 0, 0);
     return bus;
   }
-  scoped_ptr<media::AudioBus> GetSecondSourceAudioBus() {
-    scoped_ptr<media::AudioBus> bus(media::AudioBus::Create(
+  std::unique_ptr<media::AudioBus> GetSecondSourceAudioBus() {
+    std::unique_ptr<media::AudioBus> bus(media::AudioBus::Create(
         second_params_.channels(), second_params_.sample_rate() *
                                        kMediaStreamAudioTrackBufferDurationMs /
                                        base::Time::kMillisecondsPerSecond));
@@ -172,7 +172,7 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
                     TimeTicks timestamp));
 
   void OnEncodedAudio(const media::AudioParameters& params,
-                      scoped_ptr<std::string> encoded_data,
+                      std::unique_ptr<std::string> encoded_data,
                       TimeTicks timestamp) {
     EXPECT_TRUE(!encoded_data->empty());
     // Decode |encoded_data| and check we get the expected number of frames
@@ -189,7 +189,7 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
   const base::MessageLoop message_loop_;
 
   // ATR and WebMediaStreamTrack for fooling it.
-  scoped_ptr<AudioTrackRecorder> audio_track_recorder_;
+  std::unique_ptr<AudioTrackRecorder> audio_track_recorder_;
   blink::WebMediaStreamTrack blink_track_;
 
   // Two different sets of AudioParameters for testing re-init of ATR.
@@ -202,7 +202,7 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
 
   // Decoder for verifying data was properly encoded.
   OpusDecoder* opus_decoder_;
-  scoped_ptr<float[]> buffer_;
+  std::unique_ptr<float[]> buffer_;
 
  private:
   // Prepares a blink track of a given MediaStreamType and attaches the native
@@ -211,7 +211,7 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
   void PrepareBlinkTrack() {
     scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
         WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL));
-    scoped_ptr<WebRtcLocalAudioTrack> native_track(
+    std::unique_ptr<WebRtcLocalAudioTrack> native_track(
         new WebRtcLocalAudioTrack(adapter.get()));
     blink::WebMediaStreamSource audio_source;
     audio_source.initialize(base::UTF8ToUTF16("dummy_source_id"),

@@ -29,10 +29,10 @@ namespace content {
 class CONTENT_EXPORT HtmlVideoElementCapturerSource final
     : public media::VideoCapturerSource {
  public:
-  static scoped_ptr<HtmlVideoElementCapturerSource>
-      CreateFromWebMediaPlayerImpl(
-          blink::WebMediaPlayer* player,
-          const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
+  static std::unique_ptr<HtmlVideoElementCapturerSource>
+  CreateFromWebMediaPlayerImpl(
+      blink::WebMediaPlayer* player,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
 
   HtmlVideoElementCapturerSource(
       const base::WeakPtr<blink::WebMediaPlayer>& player,

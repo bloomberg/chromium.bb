@@ -29,7 +29,7 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
     sink_bus_ = media::AudioBus::Create(sink_params_);
     scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
         WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL));
-    scoped_ptr<WebRtcLocalAudioTrack> native_track(
+    std::unique_ptr<WebRtcLocalAudioTrack> native_track(
         new WebRtcLocalAudioTrack(adapter.get()));
     blink::WebMediaStreamSource audio_source;
     audio_source.initialize(blink::WebString::fromUTF8("dummy_source_id"),
@@ -52,9 +52,9 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
 
   media::AudioParameters source_params_;
   media::AudioParameters sink_params_;
-  scoped_ptr<media::AudioBus> sink_bus_;
+  std::unique_ptr<media::AudioBus> sink_bus_;
   blink::WebMediaStreamTrack blink_track_;
-  scoped_ptr<WebRtcLocalAudioSourceProvider> source_provider_;
+  std::unique_ptr<WebRtcLocalAudioSourceProvider> source_provider_;
 };
 
 TEST_F(WebRtcLocalAudioSourceProviderTest, VerifyDataFlow) {
@@ -71,7 +71,7 @@ TEST_F(WebRtcLocalAudioSourceProviderTest, VerifyDataFlow) {
   EXPECT_EQ(0, sink_bus_->channel(0)[0]);
 
   // Create a source AudioBus with channel data filled with non-zero values.
-  const scoped_ptr<media::AudioBus> source_bus =
+  const std::unique_ptr<media::AudioBus> source_bus =
       media::AudioBus::Create(source_params_);
   std::fill(source_bus->channel(0),
             source_bus->channel(0) + source_bus->frames(),

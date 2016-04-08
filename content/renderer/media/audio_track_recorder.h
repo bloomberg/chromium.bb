@@ -5,10 +5,11 @@
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_TRACK_RECORDER_H_
 #define CONTENT_RENDERER_MEDIA_AUDIO_TRACK_RECORDER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -34,7 +35,7 @@ class CONTENT_EXPORT AudioTrackRecorder
  public:
   using OnEncodedAudioCB =
       base::Callback<void(const media::AudioParameters& params,
-                          scoped_ptr<std::string> encoded_data,
+                          std::unique_ptr<std::string> encoded_data,
                           base::TimeTicks capture_time)>;
 
   AudioTrackRecorder(const blink::WebMediaStreamTrack& track,

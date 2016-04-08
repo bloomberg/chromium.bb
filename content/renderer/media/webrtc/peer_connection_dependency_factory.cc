@@ -15,6 +15,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -184,7 +185,7 @@ bool PeerConnectionDependencyFactory::InitializeMediaStreamAudioSource(
     options.echo_cancellation = rtc::Optional<bool>(false);
   }
 
-  scoped_ptr<WebRtcAudioCapturer> capturer = CreateAudioCapturer(
+  std::unique_ptr<WebRtcAudioCapturer> capturer = CreateAudioCapturer(
       render_frame_id, device_info, audio_constraints, source_data);
   if (!capturer.get()) {
     const std::string log_string =
@@ -330,8 +331,8 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
   socket_factory_.reset(
       new IpcPacketSocketFactory(p2p_socket_dispatcher_.get()));
 
-  scoped_ptr<cricket::WebRtcVideoDecoderFactory> decoder_factory;
-  scoped_ptr<cricket::WebRtcVideoEncoderFactory> encoder_factory;
+  std::unique_ptr<cricket::WebRtcVideoDecoderFactory> decoder_factory;
+  std::unique_ptr<cricket::WebRtcVideoEncoderFactory> encoder_factory;
 
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (gpu_factories && gpu_factories->IsGpuVideoAcceleratorEnabled()) {
@@ -385,8 +386,7 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
 
   rtc::scoped_ptr<PeerConnectionIdentityStore> identity_store(
       new PeerConnectionIdentityStore(
-          base::ThreadTaskRunnerHandle::Get(),
-          GetWebRtcSignalingThread(),
+          base::ThreadTaskRunnerHandle::Get(), GetWebRtcSignalingThread(),
           GURL(web_frame->document().url()),
           GURL(web_frame->document().firstPartyForCookies())));
 
@@ -476,7 +476,7 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
   const GURL& requesting_origin =
       GURL(web_frame->document().url()).GetOrigin();
 
-  scoped_ptr<rtc::NetworkManager> network_manager;
+  std::unique_ptr<rtc::NetworkManager> network_manager;
   if (port_config.enable_multiple_routes) {
     FilteringNetworkManager* filtering_network_manager =
         new FilteringNetworkManager(network_manager_, requesting_origin,
@@ -566,7 +566,7 @@ void PeerConnectionDependencyFactory::CreateLocalAudioTrack(
   // TODO(xians): Merge |source| to the capturer(). We can't do this today
   // because only one capturer() is supported while one |source| is created
   // for each audio track.
-  scoped_ptr<WebRtcLocalAudioTrack> audio_track(
+  std::unique_ptr<WebRtcLocalAudioTrack> audio_track(
       new WebRtcLocalAudioTrack(adapter.get()));
 
   // Start the source and connect the audio data flow to the track.
@@ -606,7 +606,7 @@ void PeerConnectionDependencyFactory::CreateWebAudioSource(
 
   MediaStreamAudioSource* source_data = new MediaStreamAudioSource();
   source_data->SetWebAudioCapturer(
-      make_scoped_ptr(new WebAudioCapturerSource(source)));
+      base::WrapUnique(new WebAudioCapturerSource(source)));
 
   // Create a LocalAudioSource object which holds audio options.
   // SetLocalAudioSource() affects core audio parts in third_party/Libjingle.
@@ -753,7 +753,7 @@ void PeerConnectionDependencyFactory::CleanupPeerConnectionFactory() {
   }
 }
 
-scoped_ptr<WebRtcAudioCapturer>
+std::unique_ptr<WebRtcAudioCapturer>
 PeerConnectionDependencyFactory::CreateAudioCapturer(
     int render_frame_id,
     const StreamDeviceInfo& device_info,

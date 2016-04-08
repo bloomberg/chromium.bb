@@ -74,7 +74,7 @@ class WebAudioCapturerSource : public blink::WebAudioDestinationConsumer {
   bool audio_format_changed_;
 
   // A wrapper used for providing audio to |fifo_|.
-  scoped_ptr<media::AudioBus> wrapper_bus_;
+  std::unique_ptr<media::AudioBus> wrapper_bus_;
 
   // Takes in the audio data passed to consumeAudio() and re-buffers it into 10
   // ms chunks for the track.  This ensures each chunk of audio delivered to the

@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/id_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "build/build_config.h"
@@ -40,7 +41,8 @@ class CONTENT_EXPORT AudioInputMessageFilter : public IPC::MessageFilter {
   //
   // The returned object is not thread-safe, and must be used on
   // |io_task_runner|.
-  scoped_ptr<media::AudioInputIPC> CreateAudioInputIPC(int render_frame_id);
+  std::unique_ptr<media::AudioInputIPC> CreateAudioInputIPC(
+      int render_frame_id);
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() const {
     return io_task_runner_;

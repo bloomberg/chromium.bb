@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "media/blink/active_loader.h"
@@ -106,10 +106,10 @@ class CONTENT_EXPORT MediaInfoLoader : private blink::WebURLLoaderClient {
   void DidBecomeReady(Status status);
 
   // Injected WebURLLoader instance for testing purposes.
-  scoped_ptr<blink::WebURLLoader> test_loader_;
+  std::unique_ptr<blink::WebURLLoader> test_loader_;
 
   // Keeps track of an active WebURLLoader and associated state.
-  scoped_ptr<media::ActiveLoader> active_loader_;
+  std::unique_ptr<media::ActiveLoader> active_loader_;
 
   bool loader_failed_;
   GURL url_;

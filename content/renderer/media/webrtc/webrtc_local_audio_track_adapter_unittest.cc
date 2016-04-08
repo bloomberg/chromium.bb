@@ -49,20 +49,20 @@ class WebRtcLocalAudioTrackAdapterTest : public ::testing::Test {
 
   media::AudioParameters params_;
   scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter_;
-  scoped_ptr<WebRtcLocalAudioTrack> track_;
+  std::unique_ptr<WebRtcLocalAudioTrack> track_;
 };
 
 // Adds and Removes a WebRtcAudioSink to a local audio track.
 TEST_F(WebRtcLocalAudioTrackAdapterTest, AddAndRemoveSink) {
   // Add a sink to the webrtc track.
-  scoped_ptr<MockWebRtcAudioSink> sink(new MockWebRtcAudioSink());
+  std::unique_ptr<MockWebRtcAudioSink> sink(new MockWebRtcAudioSink());
   webrtc::AudioTrackInterface* webrtc_track =
       static_cast<webrtc::AudioTrackInterface*>(adapter_.get());
   webrtc_track->AddSink(sink.get());
 
   // Send a packet via |track_| and the data should reach the sink of the
   // |adapter_|.
-  const scoped_ptr<media::AudioBus> audio_bus =
+  const std::unique_ptr<media::AudioBus> audio_bus =
       media::AudioBus::Create(params_);
   // While this test is not checking the signal data being passed around, the
   // implementation in WebRtcLocalAudioTrack reads the data for its signal level

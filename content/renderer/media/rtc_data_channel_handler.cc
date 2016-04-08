@@ -99,7 +99,8 @@ void RtcDataChannelHandler::Observer::OnMessage(
     const webrtc::DataBuffer& buffer) {
   // TODO(tommi): Figure out a way to transfer ownership of the buffer without
   // having to create a copy.  See webrtc bug 3967.
-  scoped_ptr<webrtc::DataBuffer> new_buffer(new webrtc::DataBuffer(buffer));
+  std::unique_ptr<webrtc::DataBuffer> new_buffer(
+      new webrtc::DataBuffer(buffer));
   main_thread_->PostTask(FROM_HERE,
       base::Bind(&RtcDataChannelHandler::Observer::OnMessageImpl, this,
       base::Passed(&new_buffer)));
@@ -120,7 +121,7 @@ void RtcDataChannelHandler::Observer::OnBufferedAmountDecreaseImpl(
 }
 
 void RtcDataChannelHandler::Observer::OnMessageImpl(
-    scoped_ptr<webrtc::DataBuffer> buffer) {
+    std::unique_ptr<webrtc::DataBuffer> buffer) {
   DCHECK(main_thread_->BelongsToCurrentThread());
   if (handler_)
     handler_->OnMessage(std::move(buffer));
@@ -315,7 +316,8 @@ void RtcDataChannelHandler::OnBufferedAmountDecrease(
   webkit_client_->didDecreaseBufferedAmount(previous_amount);
 }
 
-void RtcDataChannelHandler::OnMessage(scoped_ptr<webrtc::DataBuffer> buffer) {
+void RtcDataChannelHandler::OnMessage(
+    std::unique_ptr<webrtc::DataBuffer> buffer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!webkit_client_) {
     // If this happens, the web application will not get notified of changes.
