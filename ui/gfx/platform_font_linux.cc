@@ -196,7 +196,6 @@ int PlatformFontLinux::GetFontSize() const {
 }
 
 const FontRenderParams& PlatformFontLinux::GetFontRenderParams() {
-#if defined(OS_CHROMEOS)
   float current_scale_factor = GetFontRenderParamsDeviceScaleFactor();
   if (current_scale_factor != device_scale_factor_) {
     FontRenderParamsQuery query;
@@ -207,7 +206,6 @@ const FontRenderParams& PlatformFontLinux::GetFontRenderParams() {
     font_render_params_ = gfx::GetFontRenderParams(query, nullptr);
     device_scale_factor_ = current_scale_factor;
   }
-#endif
   return font_render_params_;
 }
 
@@ -237,9 +235,7 @@ void PlatformFontLinux::InitFromDetails(
 
   font_size_pixels_ = font_size_pixels;
   style_ = style;
-#if defined(OS_CHROMEOS)
   device_scale_factor_ = GetFontRenderParamsDeviceScaleFactor();
-#endif
   font_render_params_ = render_params;
 
 }
@@ -249,9 +245,7 @@ void PlatformFontLinux::InitFromPlatformFont(const PlatformFontLinux* other) {
   font_family_ = other->font_family_;
   font_size_pixels_ = other->font_size_pixels_;
   style_ = other->style_;
-#if defined(OS_CHROMEOS)
   device_scale_factor_ = other->device_scale_factor_;
-#endif
   font_render_params_ = other->font_render_params_;
 
   if (!other->metrics_need_computation_) {

@@ -108,9 +108,9 @@ GFX_EXPORT FontRenderParams GetFontRenderParams(
 GFX_EXPORT void ClearFontRenderParamsCacheForTest();
 #endif
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
 // Gets the device scale factor to query the FontRenderParams.
-float GetFontRenderParamsDeviceScaleFactor();
+GFX_EXPORT float GetFontRenderParamsDeviceScaleFactor();
 
 // Sets the device scale factor for FontRenderParams to decide
 // if it should enable subpixel positioning.

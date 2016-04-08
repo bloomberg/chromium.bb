@@ -16,6 +16,7 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/display_observer.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -83,9 +84,10 @@ class DesktopScreenX11Test : public views::ViewsTestBase,
   DesktopScreenX11* screen() { return screen_.get(); }
 
   void NotifyDisplaysChanged(const std::vector<gfx::Display>& displays) {
-    DesktopScreenX11* screen = screen_.get();
-    screen->change_notifier_.NotifyDisplaysChanged(screen->displays_, displays);
-    screen->displays_ = displays;
+    std::vector<gfx::Display> old_displays = screen_->displays_;
+    screen_->SetDisplaysInternal(displays);
+    screen_->change_notifier_.NotifyDisplaysChanged(old_displays,
+                                                    screen_->displays_);
   }
 
   void ResetDisplayChanges() {
@@ -439,6 +441,7 @@ TEST_F(DesktopScreenX11Test, DeviceScaleFactorChange) {
   displays[0].set_device_scale_factor(2.5f);
   NotifyDisplaysChanged(displays);
   EXPECT_EQ(1u, changed_display_.size());
+  EXPECT_EQ(2.5f, gfx::GetFontRenderParamsDeviceScaleFactor());
 
   displays[1].set_device_scale_factor(2.5f);
   NotifyDisplaysChanged(displays);
@@ -456,6 +459,7 @@ TEST_F(DesktopScreenX11Test, DeviceScaleFactorChange) {
   displays[1].set_device_scale_factor(1.f);
   NotifyDisplaysChanged(displays);
   EXPECT_EQ(4u, changed_display_.size());
+  EXPECT_EQ(1.f, gfx::GetFontRenderParamsDeviceScaleFactor());
 }
 
 }  // namespace views

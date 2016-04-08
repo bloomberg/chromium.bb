@@ -279,7 +279,6 @@ TEST_F(FontRenderParamsTest, ForceFullHintingWhenAntialiasingIsDisabled) {
   EXPECT_FALSE(params.subpixel_positioning);
 }
 
-#if defined(OS_CHROMEOS)
 TEST_F(FontRenderParamsTest, ForceSubpixelPositioning) {
   {
     FontRenderParams params =
@@ -299,7 +298,6 @@ TEST_F(FontRenderParamsTest, ForceSubpixelPositioning) {
     SetFontRenderParamsDeviceScaleFactor(1.0f);
   }
 }
-#endif
 
 TEST_F(FontRenderParamsTest, OnlySetConfiguredValues) {
   // Configure the LinuxFontDelegate (which queries GtkSettings on desktop
