@@ -62,6 +62,12 @@ declare_args() {
   # Helper variable for testing builds with disabled libfuzzer.
   # Not for client use.
   disable_libfuzzer = false
+
+  # Value for -fsanitize-coverage flag. Setting this causes
+  # use_sanitizer_coverage to be enabled.
+  # Default value when unset and use_sanitizer_coverage=true:
+  #     edge,indirect-calls,8bit-counters
+  sanitizer_coverage_flags = ""
 }
 
 # Args that are in turn dependent on other args must be in a separate
@@ -74,7 +80,12 @@ declare_args() {
   use_custom_libcxx = (is_asan && is_linux) || is_tsan || is_msan || is_ubsan ||
                       is_ubsan_security || use_libfuzzer
 
-  use_sanitizer_coverage = use_libfuzzer
+  # Enable -fsanitize-coverage.
+  use_sanitizer_coverage = use_libfuzzer || sanitizer_coverage_flags != ""
+}
+
+if (use_sanitizer_coverage && sanitizer_coverage_flags == "") {
+  sanitizer_coverage_flags = "edge,indirect-calls,8bit-counters"
 }
 
 using_sanitizer = is_asan || is_lsan || is_tsan || is_msan || is_ubsan ||
