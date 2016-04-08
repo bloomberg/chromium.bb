@@ -48,8 +48,8 @@ class MEDIA_EXPORT MimeUtil {
     bool has_platform_decoders = false;
 
     bool has_platform_vp8_decoder = false;
+    bool has_platform_vp9_decoder = false;
     bool supports_opus = false;
-    bool supports_vp9 = false;
 
     bool is_unified_media_pipeline_enabled = false;
   };

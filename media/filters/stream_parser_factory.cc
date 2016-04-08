@@ -348,7 +348,7 @@ static bool VerifyCodec(
         return false;
       }
       if (codec_info->tag == CodecInfo::HISTOGRAM_VP9 &&
-          !media::PlatformHasVp9Support() &&
+          !media::MediaCodecUtil::IsVp9DecoderAvailable() &&
           !media::IsUnifiedMediaPipelineEnabled()) {
         return false;
       }

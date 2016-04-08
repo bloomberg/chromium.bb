@@ -209,20 +209,29 @@ class MediaCodecUtil {
                 // We blacklist popular Samsung Galaxy S4 models before Android L.
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
                         && (Build.MODEL.startsWith("GT-I9505")
-                                   || (Build.MODEL.startsWith("GT-I9500")))) {
+                                   || Build.MODEL.startsWith("GT-I9500"))) {
                     return false;
                 }
 
                 // Samsung Galaxy S4 Mini.
                 // Only GT-I9190 was tested with Android 4.4.2
                 // We blacklist it and the popular GT-I9195 for all Android versions.
-                if (Build.MODEL.startsWith("GT-I9190") || (Build.MODEL.startsWith("GT-I9195"))) {
+                if (Build.MODEL.startsWith("GT-I9190") || Build.MODEL.startsWith("GT-I9195")) {
                     return false;
                 }
             }
-        } else if (mime.equals("video/x-vnd.on2.vp9")
-                && Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            return false;
+            // MediaTek decoders do not work properly on vp8. See http://crbug.com/446974 and
+            // http://crbug.com/597836.
+            if (getDefaultCodecName(mime, MEDIA_CODEC_DECODER).startsWith("OMX.MTK.")) return false;
+        } else if (mime.equals("video/x-vnd.on2.vp9")) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return false;
+
+            // MediaTek decoders do not work properly on vp9 before Lollipop. See
+            // http://crbug.com/597836.
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
+                    && getDefaultCodecName(mime, MEDIA_CODEC_DECODER).startsWith("OMX.MTK.")) {
+                return false;
+            }
         } else if (mime.equals("audio/opus")
                 && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             return false;

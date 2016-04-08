@@ -69,6 +69,9 @@ class MEDIA_EXPORT MediaCodecUtil {
   // Indicates if the vp8 decoder or encoder is available on this device.
   static bool IsVp8DecoderAvailable();
   static bool IsVp8EncoderAvailable();
+
+  // Indicates if the vp9 decoder is available on this device.
+  static bool IsVp9DecoderAvailable();
 };
 
 }  // namespace media

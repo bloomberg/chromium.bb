@@ -54,6 +54,13 @@ static std::string GetDefaultCodecName(const std::string& mime_type,
   return ConvertJavaStringToUTF8(env, j_codec_name.obj());
 }
 
+static bool IsDecoderSupportedByDevice(const std::string& mime_type) {
+  DCHECK(MediaCodecUtil::IsMediaCodecAvailable());
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime_type);
+  return Java_MediaCodecUtil_isDecoderSupportedForDevice(env, j_mime.obj());
+}
+
 // static
 bool MediaCodecUtil::IsMediaCodecAvailable() {
   // MediaCodec is only available on JB and greater.
@@ -120,19 +127,27 @@ bool MediaCodecUtil::IsKnownUnaccelerated(const std::string& mime_type,
   if (!codec_name.size())
     return true;
 
+  // MediaTek hardware vp8 is known slower than the software implementation.
+  // MediaTek hardware vp9 is known crashy, see http://crbug.com/446974 and
+  // http://crbug.com/597836.
+  if (base::StartsWith(codec_name, "OMX.MTK.", base::CompareCase::SENSITIVE)) {
+    if (mime_type == "video/x-vnd.on2.vp8")
+      return true;
+
+    if (mime_type == "video/x-vnd.on2.vp9")
+      return base::android::BuildInfo::GetInstance()->sdk_int() < 21;
+
+    return false;
+  }
+
   // It would be nice if MediaCodecInfo externalized some notion of
   // HW-acceleration but it doesn't. Android Media guidance is that the
   // "OMX.google" prefix is always used for SW decoders, so that's what we
   // use. "OMX.SEC.*" codec is Samsung software implementation - report it
-  // as unaccelerated as well. MediaTek hardware vp8 is known slower than
-  // the software implementation. http://crbug.com/446974.
+  // as unaccelerated as well.
   return base::StartsWith(codec_name, "OMX.google.",
                           base::CompareCase::SENSITIVE) ||
-         base::StartsWith(codec_name, "OMX.SEC.",
-                          base::CompareCase::SENSITIVE) ||
-         (base::StartsWith(codec_name, "OMX.MTK.",
-                           base::CompareCase::SENSITIVE) &&
-          mime_type == "video/x-vnd.on2.vp8");
+         base::StartsWith(codec_name, "OMX.SEC.", base::CompareCase::SENSITIVE);
 }
 
 // static
@@ -163,12 +178,7 @@ bool MediaCodecUtil::RegisterMediaCodecUtil(JNIEnv* env) {
 
 // static
 bool MediaCodecUtil::IsVp8DecoderAvailable() {
-  if (!IsMediaCodecAvailable())
-    return false;
-
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, "vp8");
-  return Java_MediaCodecUtil_isDecoderSupportedForDevice(env, j_mime.obj());
+  return IsMediaCodecAvailable() && IsDecoderSupportedByDevice("vp8");
 }
 
 // static
@@ -176,6 +186,11 @@ bool MediaCodecUtil::IsVp8EncoderAvailable() {
   // Currently the vp8 encoder and decoder blacklists cover the same devices,
   // but we have a second method for clarity in future issues.
   return IsVp8DecoderAvailable();
+}
+
+// static
+bool MediaCodecUtil::IsVp9DecoderAvailable() {
+  return IsMediaCodecAvailable() && IsDecoderSupportedByDevice("vp9");
 }
 
 }  // namespace media

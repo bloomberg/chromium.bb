@@ -55,8 +55,8 @@ static void RunCodecSupportTest(const MimeUtil::PlatformInfo& states_to_vary,
   // Stuff states to test into vectors for easy for_each() iteration.
   MAKE_TEST_VECTOR(has_platform_decoders);
   MAKE_TEST_VECTOR(has_platform_vp8_decoder);
+  MAKE_TEST_VECTOR(has_platform_vp9_decoder);
   MAKE_TEST_VECTOR(supports_opus);
-  MAKE_TEST_VECTOR(supports_vp9);
   MAKE_TEST_VECTOR(is_unified_media_pipeline_enabled);
 #undef MAKE_TEST_VECTOR
 
@@ -69,18 +69,19 @@ static void RunCodecSupportTest(const MimeUtil::PlatformInfo& states_to_vary,
 
   RUN_TEST_VECTOR(has_platform_decoders) {
     RUN_TEST_VECTOR(has_platform_vp8_decoder) {
-      RUN_TEST_VECTOR(supports_opus) {
-        RUN_TEST_VECTOR(supports_vp9) {
+      RUN_TEST_VECTOR(has_platform_vp9_decoder) {
+        RUN_TEST_VECTOR(supports_opus) {
           RUN_TEST_VECTOR(is_unified_media_pipeline_enabled) {
             for (int codec = MimeUtil::INVALID_CODEC;
                  codec <= MimeUtil::LAST_CODEC; ++codec) {
               SCOPED_TRACE(base::StringPrintf(
                   "has_platform_decoders=%d, has_platform_vp8_decoder=%d, "
                   "supports_opus=%d, "
-                  "supports_vp9=%d, is_unified_media_pipeline_enabled=%d, "
+                  "has_platform_vp9_decoder=%d, "
+                  "is_unified_media_pipeline_enabled=%d, "
                   "codec=%d",
                   info.has_platform_decoders, info.has_platform_vp8_decoder,
-                  info.supports_opus, info.supports_vp9,
+                  info.supports_opus, info.has_platform_vp9_decoder,
                   info.is_unified_media_pipeline_enabled, codec));
               test_func(info, static_cast<MimeUtil::Codec>(codec));
             }
@@ -97,8 +98,8 @@ static void RunCodecSupportTest(const MimeUtil::PlatformInfo& states_to_vary,
 static MimeUtil::PlatformInfo VaryAllFields() {
   MimeUtil::PlatformInfo states_to_vary;
   states_to_vary.has_platform_vp8_decoder = true;
+  states_to_vary.has_platform_vp9_decoder = true;
   states_to_vary.supports_opus = true;
-  states_to_vary.supports_vp9 = true;
   states_to_vary.is_unified_media_pipeline_enabled = true;
   states_to_vary.has_platform_decoders = true;
   return states_to_vary;
@@ -278,7 +279,7 @@ TEST(IsCodecSupportedOnPlatformTest, EncryptedCodecBehavior) {
             break;
 
           case MimeUtil::VP9:
-            EXPECT_EQ(info.supports_vp9, result);
+            EXPECT_EQ(info.has_platform_vp9_decoder, result);
             break;
 
           case MimeUtil::HEVC_MAIN:
@@ -328,7 +329,7 @@ TEST(IsCodecSupportedOnPlatformTest, ClearCodecBehaviorWithAndroidPipeline) {
             break;
 
           case MimeUtil::VP9:
-            EXPECT_EQ(info.supports_vp9, result);
+            EXPECT_EQ(info.has_platform_vp9_decoder, result);
             break;
 
           case MimeUtil::HEVC_MAIN:

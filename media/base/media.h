@@ -28,10 +28,9 @@ MEDIA_EXPORT void InitializeMediaLibrary();
 MEDIA_EXPORT void EnablePlatformDecoderSupport();
 MEDIA_EXPORT bool HasPlatformDecoderSupport();
 
-// Indicates if the platform supports Opus or VP9. Determined *ONLY* by the
-// platform version, so does not guarantee that either can actually be played.
+// Indicates if the platform supports Opus. Determined *ONLY* by the platform
+// version, so does not guarantee that either can actually be played.
 MEDIA_EXPORT bool PlatformHasOpusSupport();
-MEDIA_EXPORT bool PlatformHasVp9Support();
 
 // Returns true if the unified media pipeline is enabled; the pipeline may still
 // not work for all codecs if HasPlatformDecoderSupport() is false. Please see

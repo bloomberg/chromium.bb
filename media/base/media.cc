@@ -87,10 +87,6 @@ bool PlatformHasOpusSupport() {
   return base::android::BuildInfo::GetInstance()->sdk_int() >= 21;
 }
 
-bool PlatformHasVp9Support() {
-  return base::android::BuildInfo::GetInstance()->sdk_int() >= 19;
-}
-
 bool IsUnifiedMediaPipelineEnabled() {
   // TODO(dalecurtis): This experiment is temporary and should be removed once
   // we have enough data to support the primacy of the unified media pipeline;
