@@ -273,8 +273,8 @@ TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
   upload_done_data.log_path = temp_dir.path().AppendASCII("log");
 
   scoped_ptr<Profile> profile(new TestingProfile());
-  scoped_refptr<WebRtcLoggingHandlerHost> host(
-      new WebRtcLoggingHandlerHost(profile.get(), webrtc_log_uploader.get()));
+  scoped_refptr<WebRtcLoggingHandlerHost> host(new WebRtcLoggingHandlerHost(
+      -1, profile.get(), webrtc_log_uploader.get()));
 
   upload_done_data.incoming_rtp_dump = incoming_dump;
   upload_done_data.outgoing_rtp_dump = outgoing_dump;

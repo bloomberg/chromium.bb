@@ -150,6 +150,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void DisableEventLogRecordings() override;
   void SetWebRtcLogMessageCallback(
       base::Callback<void(const std::string&)> callback) override;
+  void ClearWebRtcLogMessageCallback() override;
   WebRtcStopRtpDumpCallback StartRtpDump(
       bool incoming,
       bool outgoing,

@@ -227,6 +227,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // process associated with this RenderProcessHost.
   virtual void SetWebRtcLogMessageCallback(
       base::Callback<void(const std::string&)> callback) = 0;
+  virtual void ClearWebRtcLogMessageCallback() = 0;
 
   typedef base::Callback<void(scoped_ptr<uint8_t[]> packet_header,
                               size_t header_length,

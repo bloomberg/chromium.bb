@@ -85,6 +85,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void DisableEventLogRecordings() override;
   void SetWebRtcLogMessageCallback(
       base::Callback<void(const std::string&)> callback) override;
+  void ClearWebRtcLogMessageCallback() override;
   WebRtcStopRtpDumpCallback StartRtpDump(
       bool incoming,
       bool outgoing,

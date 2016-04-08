@@ -1889,10 +1889,8 @@ void RenderProcessHostImpl::Cleanup() {
   }
 
 #if defined(ENABLE_WEBRTC)
-  if (is_initialized_) {
-    BrowserMainLoop::GetInstance()->media_stream_manager()->
-        UnregisterNativeLogCallback(GetID());
-  }
+  if (is_initialized_)
+    ClearWebRtcLogMessageCallback();
 #endif
 
   // When there are no other owners of this object, we can delete ourselves.
@@ -2066,6 +2064,14 @@ void RenderProcessHostImpl::SetWebRtcLogMessageCallback(
 #if defined(ENABLE_WEBRTC)
   BrowserMainLoop::GetInstance()->media_stream_manager()->
       RegisterNativeLogCallback(GetID(), callback);
+#endif
+}
+
+void RenderProcessHostImpl::ClearWebRtcLogMessageCallback() {
+#if defined(ENABLE_WEBRTC)
+  BrowserMainLoop::GetInstance()
+      ->media_stream_manager()
+      ->UnregisterNativeLogCallback(GetID());
 #endif
 }
 

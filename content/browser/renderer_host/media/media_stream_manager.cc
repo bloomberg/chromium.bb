@@ -1813,17 +1813,9 @@ void MediaStreamManager::UnregisterNativeLogCallback(int renderer_host_id) {
 }
 
 void MediaStreamManager::AddLogMessageOnIOThread(const std::string& message) {
-  // Get render process ids on the IO thread.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  for (const LabeledDeviceRequest& labeled_request : requests_) {
-    DeviceRequest* const request = labeled_request.second;
-    if (request->request_type == MEDIA_GENERATE_STREAM) {
-      const auto& found = log_callbacks_.find(request->requesting_process_id);
-      if (found != log_callbacks_.end())
-        found->second.Run(message);
-    }
-  }
+  for (const auto& callback : log_callbacks_)
+    callback.second.Run(message);
 }
 
 void MediaStreamManager::HandleAccessRequestResponse(

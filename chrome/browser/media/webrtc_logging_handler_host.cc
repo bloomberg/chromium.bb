@@ -148,6 +148,7 @@ void WebRtcLogBuffer::SetComplete() {
 }
 
 WebRtcLoggingHandlerHost::WebRtcLoggingHandlerHost(
+    int render_process_id,
     Profile* profile,
     WebRtcLogUploader* log_uploader)
     : BrowserMessageFilter(WebRtcLoggingMsgStart),
@@ -156,7 +157,8 @@ WebRtcLoggingHandlerHost::WebRtcLoggingHandlerHost(
       upload_log_on_render_close_(false),
       log_uploader_(log_uploader),
       is_audio_debug_recordings_in_progress_(false),
-      current_audio_debug_recordings_id_(0) {
+      current_audio_debug_recordings_id_(0),
+      render_process_id_(render_process_id) {
   DCHECK(profile_);
   DCHECK(log_uploader_);
 }
@@ -234,7 +236,14 @@ void WebRtcLoggingHandlerHost::StopLogging(
 
   stop_callback_ = callback;
   logging_state_ = STOPPING;
+
   Send(new WebRtcLoggingMsg_StopLogging());
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &WebRtcLoggingHandlerHost::DisableBrowserProcessLoggingOnUIThread,
+          this));
 }
 
 void WebRtcLoggingHandlerHost::UploadLog(const UploadDoneCallback& callback) {
@@ -555,6 +564,16 @@ void WebRtcLoggingHandlerHost::LogInitialInfoOnIOThread(
     return;
   }
 
+  // Tell the renderer and the browser to enable logging. Log messages are
+  // recevied on the IO thread, so the initial info will finish to be written
+  // first.
+  Send(new WebRtcLoggingMsg_StartLogging());
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &WebRtcLoggingHandlerHost::EnableBrowserProcessLoggingOnUIThread,
+          this));
+
   // Log start time (current time). We don't use base/i18n/time_formatting.h
   // here because we don't want the format of the current locale.
   base::Time::Exploded now = {0};
@@ -632,10 +651,27 @@ void WebRtcLoggingHandlerHost::LogInitialInfoOnIOThread(
         net::NetworkChangeNotifier::ConnectionTypeToString(it->type));
   }
 
-  Send(new WebRtcLoggingMsg_StartLogging());
   logging_started_time_ = base::Time::Now();
   logging_state_ = STARTED;
   FireGenericDoneCallback(callback, true, "");
+}
+
+void WebRtcLoggingHandlerHost::EnableBrowserProcessLoggingOnUIThread() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(render_process_id_);
+  if (host) {
+    host->SetWebRtcLogMessageCallback(
+        base::Bind(&WebRtcLoggingHandlerHost::LogMessage, this));
+  }
+}
+
+void WebRtcLoggingHandlerHost::DisableBrowserProcessLoggingOnUIThread() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(render_process_id_);
+  if (host)
+    host->ClearWebRtcLogMessageCallback();
 }
 
 void WebRtcLoggingHandlerHost::LogToCircularBuffer(const std::string& message) {

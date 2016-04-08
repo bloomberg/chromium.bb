@@ -86,7 +86,9 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   typedef base::Callback<void(const std::string&, bool, bool)>
       AudioDebugRecordingsCallback;
 
-  WebRtcLoggingHandlerHost(Profile* profile, WebRtcLogUploader* log_uploader);
+  WebRtcLoggingHandlerHost(int render_process_id,
+                           Profile* profile,
+                           WebRtcLogUploader* log_uploader);
 
   // Sets meta data that will be uploaded along with the log and also written
   // in the beginning of the log. Must be called on the IO thread before calling
@@ -212,6 +214,9 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   void LogInitialInfoOnIOThread(const net::NetworkInterfaceList& network_list,
                                 const GenericDoneCallback& callback);
 
+  void EnableBrowserProcessLoggingOnUIThread();
+  void DisableBrowserProcessLoggingOnUIThread();
+
   // Called after stopping RTP dumps.
   void StoreLogContinue(const std::string& log_id,
       const GenericDoneCallback& callback);
@@ -324,6 +329,9 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
 
   // This counter allows saving each debug recording in separate files.
   uint64_t current_audio_debug_recordings_id_;
+
+  // The render process ID this object belongs to.
+  int render_process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLoggingHandlerHost);
 };
