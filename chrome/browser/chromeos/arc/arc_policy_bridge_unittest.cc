@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/values.h"
@@ -68,22 +69,81 @@ class ArcPolicyBridgeTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ArcPolicyBridgeTest);
 };
 
-TEST_F(ArcPolicyBridgeTest, GetPoliciesTest) {
-  PolicyStringCallback empty_callback("{}");
-  policy_bridge()->GetPolicies(empty_callback);
-  policy_map().Set("HomepageLocation", policy::POLICY_LEVEL_MANDATORY,
-                   policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                   new base::StringValue("http://chromium.org"), nullptr);
-  policy_bridge()->GetPolicies(empty_callback);
+TEST_F(ArcPolicyBridgeTest, EmptyPolicyTest) {
+  // No policy is set, result should be empty.
+  policy_bridge()->GetPolicies(PolicyStringCallback("{}"));
+}
+
+TEST_F(ArcPolicyBridgeTest, ArcApplicationPolicyTest) {
   policy_map().Set(
       "ArcApplicationPolicy", policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      new base::StringValue("{\"application\": \"com.android.chrome\"}"),
+      new base::StringValue(
+          "{\"applications\":"
+              "[{\"packageName\":\"com.google.android.apps.youtube.kids\","
+                "\"installType\":\"REQUIRED\","
+                "\"lockTaskAllowed\":false,"
+                "\"permissionGrants\":[]"
+              "}],"
+          "\"defaultPermissionPolicy\":\"GRANT\""
+          "}"),
       nullptr);
-  PolicyStringCallback chrome_callback(
-      "{\"ArcApplicationPolicy\":"
-      "\"{\\\"application\\\": \\\"com.android.chrome\\\"}\"}");
-  policy_bridge()->GetPolicies(chrome_callback);
+  policy_bridge()->GetPolicies(PolicyStringCallback(
+      "{\"applications\":"
+          "[{\"installType\":\"REQUIRED\","
+            "\"lockTaskAllowed\":false,"
+            "\"packageName\":\"com.google.android.apps.youtube.kids\","
+            "\"permissionGrants\":[]"
+          "}],"
+      "\"defaultPermissionPolicy\":\"GRANT\""
+      "}"));
+}
+
+TEST_F(ArcPolicyBridgeTest, HompageLocationTest) {
+  // This policy will not be passed on, result should be empty.
+  policy_map().Set("HomepageLocation", policy::POLICY_LEVEL_MANDATORY,
+                   policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+                   new base::StringValue("http://chromium.org"), nullptr);
+  policy_bridge()->GetPolicies(PolicyStringCallback("{}"));
+}
+
+TEST_F(ArcPolicyBridgeTest, VideoCaptureAllowedTest) {
+  policy_map().Set("VideoCaptureAllowed", policy::POLICY_LEVEL_MANDATORY,
+                   policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+                   new base::FundamentalValue(false), nullptr);
+  policy_bridge()->GetPolicies(
+      PolicyStringCallback("{\"cameraDisabled\":true}"));
+}
+
+TEST_F(ArcPolicyBridgeTest, AllPoliciesTest) {
+  // Keep them in alphabetical order.
+  policy_map().Set(
+      "ArcApplicationPolicy", policy::POLICY_LEVEL_MANDATORY,
+      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+      new base::StringValue("{\"applications\":"
+              "[{\"packageName\":\"com.google.android.apps.youtube.kids\","
+                "\"installType\":\"REQUIRED\","
+                "\"lockTaskAllowed\":false,"
+                "\"permissionGrants\":[]"
+              "}],"
+          "\"defaultPermissionPolicy\":\"GRANT\"}"),
+      nullptr);
+  policy_map().Set("HomepageLocation", policy::POLICY_LEVEL_MANDATORY,
+                   policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+                   new base::StringValue("http://chromium.org"), nullptr);
+  policy_map().Set("VideoCaptureAllowed", policy::POLICY_LEVEL_MANDATORY,
+                   policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+                   new base::FundamentalValue(false), nullptr);
+  policy_bridge()->GetPolicies(PolicyStringCallback(
+      "{\"applications\":"
+          "[{\"installType\":\"REQUIRED\","
+            "\"lockTaskAllowed\":false,"
+            "\"packageName\":\"com.google.android.apps.youtube.kids\","
+            "\"permissionGrants\":[]"
+          "}],"
+        "\"cameraDisabled\":true,"
+        "\"defaultPermissionPolicy\":\"GRANT\""
+      "}"));
 }
 
 }  // namespace arc

@@ -4,6 +4,10 @@
 
 #include "chrome/browser/chromeos/arc/arc_policy_bridge.h"
 
+#include <memory>
+#include <string>
+
+#include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/values.h"
@@ -17,6 +21,63 @@
 #include "policy/policy_constants.h"
 
 namespace arc {
+
+namespace {
+
+// invert_bool_value: If the Chrome policy and the ARC policy with boolean value
+// have opposite semantics, set this to true so the bool is inverted before
+// being added. Otherwise, set it to false.
+void AddPolicy(const std::string arc_policy_name,
+               const std::string policy_name,
+               const policy::PolicyMap& policy_map,
+               bool invert_bool_value,
+               base::DictionaryValue& filtered_policies) {
+  const base::Value* const policy_value = policy_map.GetValue(policy_name);
+  if (policy_value) {
+    if (invert_bool_value && policy_value->IsType(base::Value::TYPE_BOOLEAN)) {
+      bool bool_value;
+      policy_value->GetAsBoolean(&bool_value);
+      filtered_policies.SetBoolean(arc_policy_name, !bool_value);
+    } else {
+      filtered_policies.Set(arc_policy_name,
+                            policy_value->CreateDeepCopy().release());
+    }
+  }
+}
+
+std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map) {
+  base::DictionaryValue filtered_policies;
+  // Parse ArcApplicationPolicy as JSON string before adding other policies to
+  // the dictionary.
+  const base::Value* const app_policy_value =
+      policy_map.GetValue(policy::key::kArcApplicationPolicy);
+  if (app_policy_value) {
+    std::string app_policy_string;
+    app_policy_value->GetAsString(&app_policy_string);
+    std::unique_ptr<base::DictionaryValue> app_policy_dict =
+        base::DictionaryValue::From(base::JSONReader::Read(app_policy_string));
+    if (app_policy_dict) {
+      // Need a deep copy of all values here instead of doing a swap, because
+      // JSONReader::Read constructs a dictionary whose StringValues are
+      // JSONStringValues which are based on StringPiece instead of string.
+      filtered_policies.MergeDictionary(app_policy_dict.get());
+    } else {
+      LOG(ERROR) << "Value of ArcApplicationPolicy has invalid format: "
+                 << app_policy_string;
+    }
+  }
+
+  // Keep them sorted by the ARC policy names.
+  AddPolicy("cameraDisabled", policy::key::kVideoCaptureAllowed, policy_map,
+            true, filtered_policies);
+
+  std::string policy_json;
+  JSONStringValueSerializer serializer(&policy_json);
+  serializer.Serialize(filtered_policies);
+  return policy_json;
+}
+
+}  // namespace
 
 ArcPolicyBridge::ArcPolicyBridge(ArcBridgeService* bridge_service)
     : ArcService(bridge_service), binding_(this) {
@@ -87,25 +148,6 @@ void ArcPolicyBridge::InitializePolicyService() {
   policy_service_ =
       policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile)
           ->policy_service();
-}
-
-std::string ArcPolicyBridge::GetFilteredJSONPolicies(
-    const policy::PolicyMap& policy_map) {
-  // TODO(phweiss): Implement general filtering mechanism when more policies
-  // need to be passed on.
-  // Create dictionary with the desired policies.
-  base::DictionaryValue filtered_policies;
-  const std::string policy_name = policy::key::kArcApplicationPolicy;
-  const base::Value* const policy_value = policy_map.GetValue(policy_name);
-  if (policy_value) {
-    filtered_policies.Set(policy_name,
-                          policy_value->CreateDeepCopy().release());
-  }
-  // Convert dictionary to JSON.
-  std::string policy_json;
-  JSONStringValueSerializer serializer(&policy_json);
-  serializer.Serialize(filtered_policies);
-  return policy_json;
 }
 
 }  // namespace arc
