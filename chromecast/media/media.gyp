@@ -99,14 +99,6 @@
         'cdm/chromecast_init_data.cc',
         'cdm/chromecast_init_data.h',
       ],
-      'conditions': [
-        ['use_playready==1', {
-          'sources': [
-            'cdm/playready_drm_delegate_android.cc',
-            'cdm/playready_drm_delegate_android.h',
-          ],
-        }],
-      ],
     },
     {
       'target_name': 'cma_base',

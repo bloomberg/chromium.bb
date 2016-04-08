@@ -1901,7 +1901,6 @@
         'use_system_fontconfig%': 1,
       }],
       ['chromecast==1', {
-        'use_playready%': 0,
         'conditions': [
           ['target_arch=="arm"', {
             'arm_arch%': '',
@@ -2934,13 +2933,6 @@
       ['chromecast==1', {
         'defines': [
           'LOG_DISABLED=0',
-        ],
-        'conditions': [
-          ['use_playready==1', {
-            'defines': [
-              'PLAYREADY_CDM_AVAILABLE',
-            ],
-          }],
         ],
       }],
       ['enable_task_manager==1', {
