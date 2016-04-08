@@ -128,6 +128,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_OK" desc="Label for a confirm button. Used in multiple contexts. [CHAR-LIMIT=20]">
         OK
       </message>
+      <message name="IDS_OK_GOT_IT" desc="Label of a button by which the user confirms that they read and understood the information or instructions. Used in multiple contexts. [CHAR-LIMIT=20]">
+        OK, got it
+      </message>
       <message name="IDS_CANCEL" desc="Label for a cancel button. Used in multiple contexts. [CHAR-LIMIT=20]">
         Cancel
       </message>
@@ -426,6 +429,14 @@ For example, some websites may respond to this request by showing you ads that a
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_FOOTNOTE_SIGNED_AND_OTHER_FORMS_OF_HISTORY" desc="A summary string at the bottom of the Clear Browsing Data dialog, informing the user that deleting cookies will not sign them out of their Google account, and also that there are other forms of browsing history present.">
         You won’t be signed out of your Google account. Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK">&lt;link&gt;</ph>history.google.com<ph name="END_LINK">&lt;/link&gt;</ph>.
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_HISTORY_DIALOG_TITLE" desc="Title of a dialog that is shown after the deletion of browsing history finished.">
+        Cleared Chrome data
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_HISTORY_DIALOG_DATA_TEXT" desc="Text of the dialog that is shown after the deletion of browsing history items finished, indicating that the selected data has been removed, but there may be other forms of browsing history still present in user's Google account.">
+        The selected data has been removed from Chrome and your synced devices.
+
+Your Google account may have other forms of browsing history like searches and activity from other Google services at <ph name="BEGIN_LINK">&lt;link&gt;</ph>history.google.com<ph name="END_LINK">&lt;/link&gt;</ph>.
       </message>
       <message name="IDS_CLEAR_CACHE_TITLE" desc="Title for Clear Cache in Clear Browsing Data dialog">
         Cached images and files

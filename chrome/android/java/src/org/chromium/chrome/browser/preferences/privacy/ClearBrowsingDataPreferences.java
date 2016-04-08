@@ -127,9 +127,12 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     /** The tag used for logging. */
     public static final String TAG = "ClearBrowsingDataPreferences";
 
-    /** The my activity URL. */
-    private static final String URL_MY_ACTIVITY =
+    /** The web history URL. */
+    private static final String WEB_HISTORY_URL =
             "https://history.google.com/history/?utm_source=chrome_cbd";
+
+    private OtherFormsOfHistoryDialogFragment mDialogAboutOtherFormsOfBrowsingHistory;
+    private boolean mIsDialogAboutOtherFormsOfBrowsingHistoryEnabled;
 
     /**
      * The various data types that can be cleared via this screen.
@@ -275,14 +278,27 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
             option.getDataType());
     }
 
-    // Called when "clear browsing data" completes.
-    // Implements the ChromePreferences.OnClearBrowsingDataListener interface.
+    /**
+     * Called when clearing browsing data completes.
+     * Implements the ChromePreferences.OnClearBrowsingDataListener interface.
+     */
     @Override
     public void onBrowsingDataCleared() {
         if (getActivity() == null) return;
 
-        dismissProgressDialog();
-        getActivity().finish();
+        // If the user deleted their browsing history, the dialog about other forms of history
+        // is enabled, and it has never been shown before, show it. Otherwise, just close this
+        // preference screen.
+        if (getSelectedOptions().contains(DialogOption.CLEAR_HISTORY)
+                && mIsDialogAboutOtherFormsOfBrowsingHistoryEnabled
+                && !OtherFormsOfHistoryDialogFragment.wasDialogShown(getActivity())) {
+            mDialogAboutOtherFormsOfBrowsingHistory =
+                    OtherFormsOfHistoryDialogFragment.show(getActivity());
+            dismissProgressDialog();
+        } else {
+            dismissProgressDialog();
+            getActivity().finish();
+        }
     }
 
     @Override
@@ -389,7 +405,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
             @Override
             public void run() {
                 new TabDelegate(false /* incognito */).launchUrl(
-                        URL_MY_ACTIVITY, TabLaunchType.FROM_CHROME_UI);
+                        WEB_HISTORY_URL, TabLaunchType.FROM_CHROME_UI);
             }
         });
         general_summary.setLinkClickDelegate(new Runnable() {
@@ -455,5 +471,23 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         if (google_summary == null) return;
         google_summary.setSummary(
                 R.string.clear_browsing_data_footnote_signed_and_other_forms_of_history);
+    }
+
+    /**
+     * Enables the dialog about other forms of browsing history that will be shown to the user
+     * after deleting their Chrome history. To be called by the web history service when the
+     * conditions for showing the dialog are met.
+     */
+    @VisibleForTesting
+    public void enableDialogAboutOtherFormsOfBrowsingHistory() {
+        mIsDialogAboutOtherFormsOfBrowsingHistoryEnabled = true;
+    }
+
+    /**
+     * Used only to access the dialog about other forms of browsing history from tests.
+     */
+    @VisibleForTesting
+    OtherFormsOfHistoryDialogFragment getDialogAboutOtherFormsOfBrowsingHistory() {
+        return mDialogAboutOtherFormsOfBrowsingHistory;
     }
 }

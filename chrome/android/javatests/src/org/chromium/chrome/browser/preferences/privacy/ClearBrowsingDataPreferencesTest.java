@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.preferences.privacy;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceScreen;
+import android.support.v7.app.AlertDialog;
+import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.SpannableString;
@@ -319,6 +321,130 @@ public class ClearBrowsingDataPreferencesTest
                         0, google_summary.getSummary().length(), Object.class).length == 1);
             }
         });
+    }
+
+    /**
+     * A helper Runnable that opens the Preferences activity containing
+     * a ClearBrowsingDataPreferences fragment and clicks the "Clear" button.
+     */
+    static class OpenPreferencesEnableDialogAndClickClearRunnable implements Runnable {
+        final Preferences mPreferences;
+
+        /**
+         * Instantiates this OpenPreferencesEnableDialogAndClickClearRunnable.
+         * @param preferences A Preferences activity containing ClearBrowsingDataPreferences
+         *         fragment.
+         */
+        public OpenPreferencesEnableDialogAndClickClearRunnable(Preferences preferences) {
+            mPreferences = preferences;
+        }
+
+        @Override
+        public void run() {
+            ClearBrowsingDataPreferences fragment =
+                    (ClearBrowsingDataPreferences) mPreferences.getFragmentForTest();
+            PreferenceScreen screen = fragment.getPreferenceScreen();
+
+            // Enable the dialog and click the "Clear" button.
+            fragment.enableDialogAboutOtherFormsOfBrowsingHistory();
+            ButtonPreference clearButton = (ButtonPreference) screen.findPreference(
+                    ClearBrowsingDataPreferences.PREF_CLEAR_BUTTON);
+            assertTrue(clearButton.isEnabled());
+            clearButton.getOnPreferenceClickListener().onPreferenceClick(clearButton);
+        }
+    }
+
+    /**
+     * A criterion that is satisfied when a ClearBrowsingDataPreferences fragment in the given
+     * Preferences activity is closed.
+     */
+    static class PreferenceScreenClosedCriterion extends Criteria {
+        final Preferences mPreferences;
+
+        /**
+         * Instantiates this PreferenceScreenClosedCriterion.
+         * @param preferences A Preferences activity containing ClearBrowsingDataPreferences
+         *         fragment.
+         */
+        public PreferenceScreenClosedCriterion(Preferences preferences) {
+            mPreferences = preferences;
+        }
+
+        @Override
+        public boolean isSatisfied() {
+            ClearBrowsingDataPreferences fragment =
+                    (ClearBrowsingDataPreferences) mPreferences.getFragmentForTest();
+            return fragment == null || !fragment.isVisible();
+        }
+    }
+
+    /**
+     * Tests that if the dialog about other forms of browsing history is enabled, it will be shown
+     * after the deletion completes, if and only if browsing history was checked for deletion
+     * and it has not been shown before.
+     */
+    @LargeTest
+    public void testDialogAboutOtherFormsOfBrowsingHistory() throws Exception {
+        // Sign in.
+        SigninTestUtil.get().addAndSignInTestAccount();
+        OtherFormsOfHistoryDialogFragment.clearShownPreferenceForTesting(getActivity());
+
+        // History is not selected. We still need to select some other datatype, otherwise the
+        // "Clear" button won't be enabled.
+        setDataTypesToClear(Arrays.asList(DialogOption.CLEAR_CACHE));
+        final Preferences preferences1 =
+                startPreferences(ClearBrowsingDataPreferences.class.getName());
+        ThreadUtils.runOnUiThreadBlocking(
+                new OpenPreferencesEnableDialogAndClickClearRunnable(preferences1));
+
+        // The dialog about other forms of history is not shown. The Clear Browsing Data preferences
+        // is closed as usual.
+        CriteriaHelper.pollUiThread(new PreferenceScreenClosedCriterion(preferences1));
+
+        // Reopen Clear Browsing Data preferences, this time with history selected for clearing.
+        setDataTypesToClear(Arrays.asList(DialogOption.CLEAR_HISTORY));
+        final Preferences preferences2 =
+                startPreferences(ClearBrowsingDataPreferences.class.getName());
+        ThreadUtils.runOnUiThreadBlocking(
+                new OpenPreferencesEnableDialogAndClickClearRunnable(preferences2));
+
+        // The dialog about other forms of history should now be shown.
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                ClearBrowsingDataPreferences fragment =
+                        (ClearBrowsingDataPreferences) preferences2.getFragmentForTest();
+                OtherFormsOfHistoryDialogFragment dialog =
+                        fragment.getDialogAboutOtherFormsOfBrowsingHistory();
+                return dialog != null;
+            }
+        });
+
+        // Close that dialog.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ClearBrowsingDataPreferences fragment =
+                        (ClearBrowsingDataPreferences) preferences2.getFragmentForTest();
+                fragment.getDialogAboutOtherFormsOfBrowsingHistory().onClick(
+                        null, AlertDialog.BUTTON_POSITIVE);
+            }
+        });
+
+        // That should close the preference screen as well.
+        CriteriaHelper.pollUiThread(new PreferenceScreenClosedCriterion(preferences2));
+
+        // Reopen Clear Browsing Data preferences and clear history once again.
+        setDataTypesToClear(Arrays.asList(DialogOption.CLEAR_HISTORY));
+        final Preferences preferences3 =
+                startPreferences(ClearBrowsingDataPreferences.class.getName());
+        ThreadUtils.runOnUiThreadBlocking(
+                new OpenPreferencesEnableDialogAndClickClearRunnable(preferences3));
+
+        // The dialog about other forms of browsing history is still enabled, and history has been
+        // selected for deletion. However, the dialog has already been shown before, and therefore
+        // we won't show it again. Expect that the preference screen closes.
+        CriteriaHelper.pollUiThread(new PreferenceScreenClosedCriterion(preferences3));
     }
 
     private void setDataTypesToClear(final List<DialogOption> typesToClear) {

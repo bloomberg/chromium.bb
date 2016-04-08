@@ -650,6 +650,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/privacy/CrashDumpUploadPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/privacy/CrashReportingPermissionManager.java",
   "java/src/org/chromium/chrome/browser/preferences/privacy/DoNotTrackPreference.java",
+  "java/src/org/chromium/chrome/browser/preferences/privacy/OtherFormsOfHistoryDialogFragment.java",
   "java/src/org/chromium/chrome/browser/preferences/privacy/PhysicalWebPreferenceFragment.java",
   "java/src/org/chromium/chrome/browser/preferences/privacy/PrivacyPreferences.java",
   "java/src/org/chromium/chrome/browser/preferences/privacy/PrivacyPreferencesManager.java",
