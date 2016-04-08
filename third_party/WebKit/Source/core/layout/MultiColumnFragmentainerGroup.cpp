@@ -35,7 +35,7 @@ LayoutSize MultiColumnFragmentainerGroup::offsetFromColumnSet() const
 
 LayoutUnit MultiColumnFragmentainerGroup::blockOffsetInEnclosingFragmentationContext() const
 {
-    return logicalTop() + m_columnSet.logicalTop() + m_columnSet.multiColumnFlowThread()->blockOffsetInEnclosingFragmentationContext();
+    return logicalTop() + m_columnSet.logicalTopFromMulticolContentEdge() + m_columnSet.multiColumnFlowThread()->blockOffsetInEnclosingFragmentationContext();
 }
 
 void MultiColumnFragmentainerGroup::resetColumnHeight()

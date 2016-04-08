@@ -386,6 +386,7 @@ void LayoutMultiColumnFlowThread::layoutColumns(SubtreeLayoutScope& layoutScope)
 
     if (FragmentationContext* enclosingFragmentationContext = this->enclosingFragmentationContext()) {
         m_blockOffsetInEnclosingFragmentationContext = multiColumnBlockFlow()->offsetFromLogicalTopOfFirstPage();
+        m_blockOffsetInEnclosingFragmentationContext += multiColumnBlockFlow()->borderAndPaddingBefore();
 
         if (LayoutMultiColumnFlowThread* enclosingFlowThread = enclosingFragmentationContext->associatedFlowThread()) {
             if (LayoutMultiColumnSet* firstSet = firstMultiColumnSet()) {
