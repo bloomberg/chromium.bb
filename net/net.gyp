@@ -706,34 +706,6 @@
       ],
     },
     {
-      'target_name': 'net_docs',
-      'type': 'none',
-      'actions': [
-        {
-          'action_name': 'net_docs',
-          'variables': {
-            'net_docs_input_dir': '.',
-          },
-          'inputs': [
-            '<@(net_docs_sources)',
-          ],
-          'outputs': [
-            '<(net_docs_output_dir)',
-          ],
-          'action': [
-            'python',
-            '<(net_docs_script)',
-            '--input_path',
-            '<(net_docs_input_dir)',
-            '--output_path',
-            '<(net_docs_output_dir)',
-            '<@(net_docs_sources)',
-          ],
-          'message': 'Rendering network stack documentation',
-        }
-      ],
-    },
-    {
       'target_name': 'http_server',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
