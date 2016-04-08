@@ -91,6 +91,7 @@ std::string FileChange::ChangeList::DebugString() const {
 
 FileChange::FileChange() {
 }
+FileChange::FileChange(const FileChange& other) = default;
 FileChange::~FileChange() {}
 
 void FileChange::Update(const base::FilePath file_path,

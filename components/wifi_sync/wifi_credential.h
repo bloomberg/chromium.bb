@@ -33,6 +33,7 @@ class WifiCredential final {  // final because the class is copyable
       WifiCredential,
       bool(*)(const WifiCredential&a, const WifiCredential& b)>;
 
+  WifiCredential(const WifiCredential& other);
   ~WifiCredential();
 
   // Creates a WifiCredential with the given |ssid|, |security_class|,

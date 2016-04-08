@@ -39,6 +39,8 @@ size_t UpdateListIdentifier::hash() const {
 
 V4ProtocolConfig::V4ProtocolConfig() : disable_auto_update(false) {}
 
+V4ProtocolConfig::V4ProtocolConfig(const V4ProtocolConfig& other) = default;
+
 V4ProtocolConfig::~V4ProtocolConfig() {}
 
 // static

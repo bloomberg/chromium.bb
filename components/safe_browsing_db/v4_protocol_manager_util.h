@@ -32,6 +32,7 @@ struct V4ProtocolConfig {
   bool disable_auto_update;
 
   V4ProtocolConfig();
+  V4ProtocolConfig(const V4ProtocolConfig& other);
   ~V4ProtocolConfig();
 };
 

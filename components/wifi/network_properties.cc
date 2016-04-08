@@ -19,6 +19,8 @@ NetworkProperties::NetworkProperties()
       frequency(kFrequencyUnknown) {
 }
 
+NetworkProperties::NetworkProperties(const NetworkProperties& other) = default;
+
 NetworkProperties::~NetworkProperties() {
 }
 

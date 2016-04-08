@@ -60,6 +60,8 @@ size_t IndexToSize(size_t index) {
 
 LeakDetectorImpl::LeakReport::LeakReport() : alloc_size_bytes_(0) {}
 
+LeakDetectorImpl::LeakReport::LeakReport(const LeakReport& other) = default;
+
 LeakDetectorImpl::LeakReport::~LeakReport() {}
 
 bool LeakDetectorImpl::LeakReport::operator<(const LeakReport& other) const {

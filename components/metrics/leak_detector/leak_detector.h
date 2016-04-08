@@ -51,6 +51,7 @@ class LeakDetector {
   // Contains a report of a detected memory leak.
   struct LeakReport {
     LeakReport();
+    LeakReport(const LeakReport& other);
     ~LeakReport();
 
     size_t alloc_size_bytes;

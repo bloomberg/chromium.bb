@@ -32,6 +32,7 @@ typedef std::set<Frequency> FrequencySet;
 // |GetVisibleNetworks|.
 struct WIFI_EXPORT NetworkProperties {
   NetworkProperties();
+  NetworkProperties(const NetworkProperties& other);
   ~NetworkProperties();
 
   std::string connection_state;

@@ -155,6 +155,8 @@ inline void StoreHookDataToTLS(HookData hook_data) {
 
 LeakDetector::LeakReport::LeakReport() {}
 
+LeakDetector::LeakReport::LeakReport(const LeakReport& other) = default;
+
 LeakDetector::LeakReport::~LeakReport() {}
 
 // static

@@ -13,6 +13,8 @@
 
 namespace wifi_sync {
 
+WifiCredential::WifiCredential(const WifiCredential& other) = default;
+
 WifiCredential::~WifiCredential() {
 }
 

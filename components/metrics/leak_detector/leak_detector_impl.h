@@ -39,6 +39,7 @@ class LeakDetectorImpl {
   class LeakReport {
    public:
     LeakReport();
+    LeakReport(const LeakReport& other);
     ~LeakReport();
 
     size_t alloc_size_bytes() const { return alloc_size_bytes_; }
