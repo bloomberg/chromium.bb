@@ -570,8 +570,8 @@ void MultibufferDataSource::UpdateBufferSizes() {
   int64_t back_buffer = clamp(kTargetSecondsBufferedBehind * bytes_per_second,
                               kMinBufferPreload, kMaxBufferPreload);
   int64_t pin_forwards = kMaxBufferSize - back_buffer;
-  DCHECK_LE(preload_ + kPreloadHighExtra, pin_forwards);
-  reader_->SetMaxBuffer(back_buffer, pin_forwards);
+  DCHECK_LE(preload + kPreloadHighExtra, pin_forwards);
+  reader_->SetMaxBuffer(back_buffer, preload + kPreloadHighExtra);
 
   if (preload_ == METADATA) {
     reader_->SetPreload(0, 0);
