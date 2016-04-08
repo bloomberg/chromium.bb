@@ -133,16 +133,12 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState)
     // Don't move a line break just after the caret.  Doing so would create an extra, empty paragraph
     // in the new blockquote.
     if (lineBreakExistsAtVisiblePosition(visiblePos)) {
-        // TODO(yosin) We should use |PositionMoveType::Character| for
-        // |nextPositionOf()| to avoid editing middle of character.
-        pos = nextPositionOf(pos, PositionMoveType::CodePoint);
+        pos = nextPositionOf(pos, PositionMoveType::GraphemeCluster);
     }
 
     // Adjust the position so we don't split at the beginning of a quote.
     while (isFirstVisiblePositionInNode(createVisiblePosition(pos), toHTMLQuoteElement(enclosingNodeOfType(pos, isMailHTMLBlockquoteElement)))) {
-        // TODO(yosin) We should use |PositionMoveType::Character| for
-        // |previousPositionOf()| to avoid editing middle character.
-        pos = previousPositionOf(pos, PositionMoveType::CodePoint);
+        pos = previousPositionOf(pos, PositionMoveType::GraphemeCluster);
     }
 
     // startNode is the first node that we need to move to the new blockquote.

@@ -64,6 +64,19 @@ namespace blink {
 
 using namespace HTMLNames;
 
+namespace {
+std::ostream& operator<<(std::ostream& os, PositionMoveType type)
+{
+    static const char* const texts[] = {
+        "CodeUnit", "BackwardDeletion", "GraphemeCluster"
+    };
+    const auto& it = std::begin(texts) + static_cast<size_t>(type);
+    DCHECK_GE(it, std::begin(texts)) << "Unknown PositionMoveType value";
+    DCHECK_LT(it, std::end(texts)) << "Unknown PositionMoveType value";
+    return os << *it;
+}
+} // namespace
+
 // Atomic means that the node has no children, or has children which are ignored for the
 // purposes of editing.
 bool isAtomicNode(const Node *node)
@@ -634,11 +647,12 @@ PositionTemplate<Strategy> previousPositionOfAlgorithm(const PositionTemplate<St
         switch (moveType) {
         case PositionMoveType::CodeUnit:
             return PositionTemplate<Strategy>(node, offset - 1);
-        case PositionMoveType::CodePoint:
-            // TODO(nona): Move to PositionMoveType::GraphemeBoundary case.
-            return PositionTemplate<Strategy>(node, previousGraphemeBoundaryOf(node, offset));
         case PositionMoveType::BackwardDeletion:
             return PositionTemplate<Strategy>(node, previousBackwardDeletionOffsetOf(node, offset));
+        case PositionMoveType::GraphemeCluster:
+            return PositionTemplate<Strategy>(node, previousGraphemeBoundaryOf(node, offset));
+        default:
+            NOTREACHED() << "Unhandled moveType: " << moveType;
         }
     }
 
@@ -685,9 +699,19 @@ PositionTemplate<Strategy> nextPositionOfAlgorithm(const PositionTemplate<Strate
         //      is correct.
         //   2) The new offset is a bogus offset like (<br>, 1), and there is no
         //      child. Going from 0 to 1 is correct.
-        // TODO(nona): Call nextGraphemeBoundaryOf if
-        //             moveType == PositionMoveType::GraphemeBoundary
-        return PositionTemplate<Strategy>::editingPositionOf(node, (moveType == PositionMoveType::CodePoint) ? nextGraphemeBoundaryOf(node, offset) : offset + 1);
+        switch (moveType) {
+        case PositionMoveType::CodeUnit:
+            return PositionTemplate<Strategy>::editingPositionOf(node, offset + 1);
+        case PositionMoveType::BackwardDeletion:
+            NOTREACHED()
+                << "BackwardDeletion is only available for prevPositionOf "
+                << "functions.";
+            return PositionTemplate<Strategy>::editingPositionOf(node, offset + 1);
+        case PositionMoveType::GraphemeCluster:
+            return PositionTemplate<Strategy>::editingPositionOf(node, nextGraphemeBoundaryOf(node, offset));
+        default:
+            NOTREACHED() << "Unhandled moveType: " << moveType;
+        }
     }
 
     if (ContainerNode* parent = Strategy::parent(*node))

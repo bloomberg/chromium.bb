@@ -1230,13 +1230,9 @@ static RawPtr<Range> findStringBetweenPositions(const String& target, const Ephe
         // next occurrence.
         // TODO(yosin) Handle this case.
         if (forward) {
-            // TODO(yosin) We should use |PositionMoveType::Character|
-            // for |nextPositionOf()|.
-            searchRange = EphemeralRangeTemplate<Strategy>(nextPositionOf(resultRange.startPosition(), PositionMoveType::CodePoint), searchRange.endPosition());
+            searchRange = EphemeralRangeTemplate<Strategy>(nextPositionOf(resultRange.startPosition(), PositionMoveType::GraphemeCluster), searchRange.endPosition());
         } else {
-            // TODO(yosin) We should use |PositionMoveType::Character|
-            // for |previousPositionOf()|.
-            searchRange = EphemeralRangeTemplate<Strategy>(searchRange.startPosition(), previousPositionOf(resultRange.endPosition(), PositionMoveType::CodePoint));
+            searchRange = EphemeralRangeTemplate<Strategy>(searchRange.startPosition(), previousPositionOf(resultRange.endPosition(), PositionMoveType::GraphemeCluster));
         }
     }
 
