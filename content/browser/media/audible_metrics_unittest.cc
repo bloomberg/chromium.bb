@@ -39,7 +39,7 @@ class AudibleMetricsTest : public testing::Test {
     // recognized as initialized.
     clock_->Advance(base::TimeDelta::FromMilliseconds(1));
     audible_metrics_.SetClockForTest(
-        scoped_ptr<base::SimpleTestTickClock>(clock_));
+        std::unique_ptr<base::SimpleTestTickClock>(clock_));
   }
 
   void TearDown() override {
@@ -56,7 +56,7 @@ class AudibleMetricsTest : public testing::Test {
     return user_action_tester_;
   }
 
-  scoped_ptr<base::HistogramSamples> GetHistogramSamplesSinceTestStart(
+  std::unique_ptr<base::HistogramSamples> GetHistogramSamplesSinceTestStart(
       const std::string& name) {
     return histogram_tester_.GetHistogramSamplesSinceCreation(name);
   }
@@ -73,26 +73,24 @@ class AudibleMetricsTest : public testing::Test {
 }  // anonymous namespace
 
 TEST_F(AudibleMetricsTest, CreateAndKillDoesNothing) {
-  {
-    scoped_ptr<AudibleMetrics> audible_metrics(new AudibleMetrics());
-  }
+  { std::unique_ptr<AudibleMetrics> audible_metrics(new AudibleMetrics()); }
 
   {
-    scoped_ptr<base::HistogramSamples> samples(
+    std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(
             CONCURRENT_TAB_WHEN_STARTING_HISTOGRAM));
     EXPECT_EQ(0, samples->TotalCount());
   }
 
   {
-    scoped_ptr<base::HistogramSamples> samples(
+    std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(
             MAX_CONCURRENT_TAB_IN_SESSION_HISTOGRAM));
     EXPECT_EQ(0, samples->TotalCount());
   }
 
   {
-    scoped_ptr<base::HistogramSamples> samples(
+    std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(CONCURRENT_TABS_TIME_HISTOGRAM));
     EXPECT_EQ(0, samples->TotalCount());
   }
@@ -105,7 +103,7 @@ TEST_F(AudibleMetricsTest, AudibleStart) {
   audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
 
   {
-    scoped_ptr<base::HistogramSamples> samples(
+    std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(
             CONCURRENT_TAB_WHEN_STARTING_HISTOGRAM));
     EXPECT_EQ(1, samples->TotalCount());
@@ -113,7 +111,7 @@ TEST_F(AudibleMetricsTest, AudibleStart) {
   }
 
   {
-    scoped_ptr<base::HistogramSamples> samples(
+    std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(
             MAX_CONCURRENT_TAB_IN_SESSION_HISTOGRAM));
     EXPECT_EQ(1, samples->TotalCount());
@@ -121,7 +119,7 @@ TEST_F(AudibleMetricsTest, AudibleStart) {
   }
 
   {
-    scoped_ptr<base::HistogramSamples> samples(
+    std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(CONCURRENT_TABS_TIME_HISTOGRAM));
     EXPECT_EQ(0, samples->TotalCount());
   }
@@ -135,7 +133,7 @@ TEST_F(AudibleMetricsTest, AudibleStartAndStop) {
   audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, false);
 
   {
-    scoped_ptr<base::HistogramSamples> samples(
+    std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(
             CONCURRENT_TAB_WHEN_STARTING_HISTOGRAM));
     EXPECT_EQ(1, samples->TotalCount());
@@ -143,7 +141,7 @@ TEST_F(AudibleMetricsTest, AudibleStartAndStop) {
   }
 
   {
-    scoped_ptr<base::HistogramSamples> samples(
+    std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(
             MAX_CONCURRENT_TAB_IN_SESSION_HISTOGRAM));
     EXPECT_EQ(1, samples->TotalCount());
@@ -151,7 +149,7 @@ TEST_F(AudibleMetricsTest, AudibleStartAndStop) {
   }
 
   {
-    scoped_ptr<base::HistogramSamples> samples(
+    std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(CONCURRENT_TABS_TIME_HISTOGRAM));
     EXPECT_EQ(0, samples->TotalCount());
   }
@@ -168,7 +166,7 @@ TEST_F(AudibleMetricsTest, AddSameTabIsNoOp) {
   audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
 
   {
-    scoped_ptr<base::HistogramSamples> samples(
+    std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(
             CONCURRENT_TAB_WHEN_STARTING_HISTOGRAM));
     EXPECT_EQ(1, samples->TotalCount());
@@ -176,7 +174,7 @@ TEST_F(AudibleMetricsTest, AddSameTabIsNoOp) {
   }
 
   {
-    scoped_ptr<base::HistogramSamples> samples(
+    std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(
             MAX_CONCURRENT_TAB_IN_SESSION_HISTOGRAM));
     EXPECT_EQ(1, samples->TotalCount());
@@ -184,7 +182,7 @@ TEST_F(AudibleMetricsTest, AddSameTabIsNoOp) {
   }
 
   {
-    scoped_ptr<base::HistogramSamples> samples(
+    std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(CONCURRENT_TABS_TIME_HISTOGRAM));
     EXPECT_EQ(0, samples->TotalCount());
   }
@@ -214,8 +212,9 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsInSessionIsIncremental) {
   audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_2, true);
   audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_3, true);
 
-  scoped_ptr<base::HistogramSamples> samples(GetHistogramSamplesSinceTestStart(
-      MAX_CONCURRENT_TAB_IN_SESSION_HISTOGRAM));
+  std::unique_ptr<base::HistogramSamples> samples(
+      GetHistogramSamplesSinceTestStart(
+          MAX_CONCURRENT_TAB_IN_SESSION_HISTOGRAM));
   EXPECT_EQ(4, samples->TotalCount());
   EXPECT_EQ(1, samples->GetCount(1));
   EXPECT_EQ(1, samples->GetCount(2));
@@ -235,8 +234,9 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsInSessionKeepTrackOfRemovedTabs) {
   audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_2, false);
   audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_3, true);
 
-  scoped_ptr<base::HistogramSamples> samples(GetHistogramSamplesSinceTestStart(
-      MAX_CONCURRENT_TAB_IN_SESSION_HISTOGRAM));
+  std::unique_ptr<base::HistogramSamples> samples(
+      GetHistogramSamplesSinceTestStart(
+          MAX_CONCURRENT_TAB_IN_SESSION_HISTOGRAM));
   EXPECT_EQ(2, samples->TotalCount());
   EXPECT_EQ(1, samples->GetCount(1));
   EXPECT_EQ(1, samples->GetCount(2));
@@ -261,8 +261,9 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsInSessionIsNotCountedTwice) {
   audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_2, true);
   audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_3, true);
 
-  scoped_ptr<base::HistogramSamples> samples(GetHistogramSamplesSinceTestStart(
-      MAX_CONCURRENT_TAB_IN_SESSION_HISTOGRAM));
+  std::unique_ptr<base::HistogramSamples> samples(
+      GetHistogramSamplesSinceTestStart(
+          MAX_CONCURRENT_TAB_IN_SESSION_HISTOGRAM));
   EXPECT_EQ(4, samples->TotalCount());
   EXPECT_EQ(1, samples->GetCount(1));
   EXPECT_EQ(1, samples->GetCount(2));
@@ -278,7 +279,7 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsWhenStartingAddedPerTab) {
   audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, true);
 
   {
-    scoped_ptr<base::HistogramSamples> samples(
+    std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(
             CONCURRENT_TAB_WHEN_STARTING_HISTOGRAM));
     EXPECT_EQ(2, samples->TotalCount());
@@ -294,7 +295,7 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsWhenStartingAddedPerTab) {
   audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, true);
 
   {
-    scoped_ptr<base::HistogramSamples> samples(
+    std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(
             CONCURRENT_TAB_WHEN_STARTING_HISTOGRAM));
     EXPECT_EQ(2, samples->TotalCount());
@@ -310,7 +311,7 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsWhenStartingAddedPerTab) {
   audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, false);
 
   {
-    scoped_ptr<base::HistogramSamples> samples(
+    std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(
             CONCURRENT_TAB_WHEN_STARTING_HISTOGRAM));
     EXPECT_EQ(2, samples->TotalCount());
@@ -326,7 +327,7 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsWhenStartingAddedPerTab) {
   audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, true);
 
   {
-    scoped_ptr<base::HistogramSamples> samples(
+    std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(
             CONCURRENT_TAB_WHEN_STARTING_HISTOGRAM));
     EXPECT_EQ(4, samples->TotalCount());
@@ -351,7 +352,7 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsTimeRequiresTwoAudibleTabs) {
   // No longer concurrent.
   audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, false);
   {
-    scoped_ptr<base::HistogramSamples> samples(
+    std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(CONCURRENT_TABS_TIME_HISTOGRAM));
     EXPECT_EQ(1, samples->TotalCount());
     EXPECT_EQ(1, samples->GetCount(1000));
@@ -360,7 +361,7 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsTimeRequiresTwoAudibleTabs) {
   // Stopping the second tab is a no-op.
   audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, false);
   {
-    scoped_ptr<base::HistogramSamples> samples(
+    std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(CONCURRENT_TABS_TIME_HISTOGRAM));
     EXPECT_EQ(1, samples->TotalCount());
     EXPECT_EQ(1, samples->GetCount(1000));
@@ -387,7 +388,7 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsTimeRunsAsLongAsTwoAudibleTabs) {
   // Mutes the first audible tab.
   audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, false);
   {
-    scoped_ptr<base::HistogramSamples> samples(
+    std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(CONCURRENT_TABS_TIME_HISTOGRAM));
     EXPECT_EQ(1, samples->TotalCount());
     EXPECT_EQ(1, samples->GetCount(1500));

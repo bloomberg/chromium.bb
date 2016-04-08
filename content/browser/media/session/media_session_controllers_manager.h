@@ -6,12 +6,12 @@
 #define CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_CONTROLLERS_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "content/public/browser/web_contents_observer.h" // For MediaPlayerId.
+#include "content/public/browser/web_contents_observer.h"  // For MediaPlayerId.
 
 namespace content {
 
@@ -52,7 +52,7 @@ class MediaSessionControllersManager {
   MediaWebContentsObserver* const media_web_contents_observer_;
 
   using ControllersMap =
-      std::map<MediaPlayerId, scoped_ptr<MediaSessionController>>;
+      std::map<MediaPlayerId, std::unique_ptr<MediaSessionController>>;
   ControllersMap controllers_map_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionControllersManager);

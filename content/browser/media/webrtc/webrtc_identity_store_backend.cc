@@ -175,7 +175,7 @@ class WebRTCIdentityStoreBackend::SqlLiteStorage
   // The file path of the DB. Empty if temporary.
   base::FilePath path_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
-  scoped_ptr<sql::Connection> db_;
+  std::unique_ptr<sql::Connection> db_;
   // Batched DB operations pending to commit.
   PendingOperationList pending_operations_;
 
@@ -210,7 +210,7 @@ bool WebRTCIdentityStoreBackend::FindIdentity(
     DCHECK_EQ(state_, NOT_STARTED);
 
     // Kick off loading the DB.
-    scoped_ptr<IdentityMap> out_map(new IdentityMap());
+    std::unique_ptr<IdentityMap> out_map(new IdentityMap());
     base::Closure task(
         base::Bind(&SqlLiteStorage::Load, sql_lite_storage_, out_map.get()));
     // |out_map| will be NULL after this call.
@@ -346,7 +346,8 @@ void WebRTCIdentityStoreBackend::SetValidityPeriodForTesting(
 
 WebRTCIdentityStoreBackend::~WebRTCIdentityStoreBackend() {}
 
-void WebRTCIdentityStoreBackend::OnLoaded(scoped_ptr<IdentityMap> out_map) {
+void WebRTCIdentityStoreBackend::OnLoaded(
+    std::unique_ptr<IdentityMap> out_map) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (state_ != LOADING)
@@ -514,7 +515,7 @@ void WebRTCIdentityStoreBackend::SqlLiteStorage::BatchOperation(
   static const size_t kCommitAfterBatchSize = 512;
 
   // We do a full copy of the cert here, and hopefully just here.
-  scoped_ptr<PendingOperation> operation(
+  std::unique_ptr<PendingOperation> operation(
       new PendingOperation(type, origin, identity_name, identity));
 
   pending_operations_.push_back(operation.release());

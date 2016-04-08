@@ -5,12 +5,12 @@
 #ifndef CONTENT_BROWSER_MEDIA_WEBRTC_WEBRTC_INTERNALS_H_
 #define CONTENT_BROWSER_MEDIA_WEBRTC_WEBRTC_INTERNALS_H_
 
+#include <memory>
 #include <queue>
 
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process.h"
@@ -124,7 +124,8 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   FRIEND_TEST_ALL_PREFIXES(WebRtcInternalsTest,
                            AudioDebugRecordingsFileSelectionCanceled);
 
-  void SendUpdate(const std::string& command, scoped_ptr<base::Value> value);
+  void SendUpdate(const std::string& command,
+                  std::unique_ptr<base::Value> value);
 
   // RenderProcessHostObserver implementation.
   void RenderProcessHostDestroyed(RenderProcessHost* host) override;
@@ -201,7 +202,7 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   // While |peer_connection_data_| is non-empty, hold an instance of
   // PowerSaveBlocker.  This prevents the application from being suspended while
   // remoting.
-  scoped_ptr<PowerSaveBlocker> power_save_blocker_;
+  std::unique_ptr<PowerSaveBlocker> power_save_blocker_;
 
   // Set of render process hosts that |this| is registered as an observer on.
   base::hash_set<int> render_process_id_set_;
@@ -216,7 +217,8 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   // thread.
   class PendingUpdate {
    public:
-    PendingUpdate(const std::string& command, scoped_ptr<base::Value> value);
+    PendingUpdate(const std::string& command,
+                  std::unique_ptr<base::Value> value);
     PendingUpdate(PendingUpdate&& other);
     ~PendingUpdate();
 
@@ -226,7 +228,7 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
    private:
     base::ThreadChecker thread_checker_;
     std::string command_;
-    scoped_ptr<base::Value> value_;
+    std::unique_ptr<base::Value> value_;
     DISALLOW_COPY_AND_ASSIGN(PendingUpdate);
   };
 

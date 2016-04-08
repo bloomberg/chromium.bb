@@ -53,9 +53,9 @@ void MediaSessionDelegateDefault::AbandonAudioFocus() {
 }
 
 // static
-scoped_ptr<MediaSessionDelegate> MediaSessionDelegate::Create(
+std::unique_ptr<MediaSessionDelegate> MediaSessionDelegate::Create(
     MediaSession* media_session) {
-  return scoped_ptr<MediaSessionDelegate>(
+  return std::unique_ptr<MediaSessionDelegate>(
       new MediaSessionDelegateDefault(media_session));
 }
 

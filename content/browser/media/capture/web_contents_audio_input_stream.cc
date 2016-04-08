@@ -4,13 +4,13 @@
 
 #include "content/browser/media/capture/web_contents_audio_input_stream.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/capture/web_contents_tracker.h"
@@ -101,7 +101,7 @@ class WebContentsAudioInputStream::Impl
   const scoped_refptr<WebContentsTracker> tracker_;
   // The AudioInputStream implementation that handles the audio conversion and
   // mixing details.
-  const scoped_ptr<media::VirtualAudioInputStream> mixer_stream_;
+  const std::unique_ptr<media::VirtualAudioInputStream> mixer_stream_;
 
   State state_;
 

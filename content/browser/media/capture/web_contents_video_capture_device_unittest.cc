@@ -6,11 +6,13 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/bind_helpers.h"
 #include "base/debug/debugger.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
@@ -196,7 +198,8 @@ class CaptureTestView : public TestRenderWidgetHostView {
   }
 
   void BeginFrameSubscription(
-      scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) override {
+      std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber)
+      override {
     subscriber_.reset(subscriber.release());
   }
 
@@ -220,7 +223,7 @@ class CaptureTestView : public TestRenderWidgetHostView {
   }
 
  private:
-  scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber_;
+  std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber_;
   CaptureTestSourceController* const controller_;
   gfx::Rect fake_bounds_;
 
@@ -273,7 +276,7 @@ class CaptureTestRenderViewHost : public TestRenderViewHost {
                             bool swapped_out,
                             CaptureTestSourceController* controller)
       : TestRenderViewHost(instance,
-                           make_scoped_ptr(new CaptureTestRenderWidgetHost(
+                           base::WrapUnique(new CaptureTestRenderWidgetHost(
                                widget_delegate,
                                instance->GetProcess(),
                                routing_id,
@@ -355,10 +358,10 @@ class StubClient : public media::VideoCaptureDevice::Client {
 
   MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
 
-  scoped_ptr<media::VideoCaptureDevice::Client::Buffer> ReserveOutputBuffer(
-      const gfx::Size& dimensions,
-      media::VideoPixelFormat format,
-      media::VideoPixelStorage storage) override {
+  std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>
+  ReserveOutputBuffer(const gfx::Size& dimensions,
+                      media::VideoPixelFormat format,
+                      media::VideoPixelStorage storage) override {
     CHECK_EQ(format, media::PIXEL_FORMAT_I420);
     int buffer_id_to_drop = VideoCaptureBufferPool::kInvalidId;  // Ignored.
     const int buffer_id = buffer_pool_->ReserveForProducer(
@@ -366,20 +369,20 @@ class StubClient : public media::VideoCaptureDevice::Client {
     if (buffer_id == VideoCaptureBufferPool::kInvalidId)
       return NULL;
 
-    return scoped_ptr<media::VideoCaptureDevice::Client::Buffer>(
+    return std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>(
         new AutoReleaseBuffer(
             buffer_pool_, buffer_pool_->GetBufferHandle(buffer_id), buffer_id));
   }
 
-  // Trampoline method to workaround GMOCK problems with scoped_ptr<>.
-  void OnIncomingCapturedBuffer(scoped_ptr<Buffer> buffer,
+  // Trampoline method to workaround GMOCK problems with std::unique_ptr<>.
+  void OnIncomingCapturedBuffer(std::unique_ptr<Buffer> buffer,
                                 const media::VideoCaptureFormat& frame_format,
                                 const base::TimeTicks& timestamp) override {
     DoOnIncomingCapturedBuffer();
   }
 
   void OnIncomingCapturedVideoFrame(
-      scoped_ptr<Buffer> buffer,
+      std::unique_ptr<Buffer> buffer,
       const scoped_refptr<media::VideoFrame>& frame,
       const base::TimeTicks& timestamp) override {
     EXPECT_FALSE(frame->visible_rect().IsEmpty());
@@ -407,7 +410,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
         frame->visible_rect().size());
   }
 
-  scoped_ptr<media::VideoCaptureDevice::Client::Buffer>
+  std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>
   ResurrectLastOutputBuffer(const gfx::Size& dimensions,
                             media::VideoPixelFormat format,
                             media::VideoPixelStorage storage) override {
@@ -416,7 +419,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
         buffer_pool_->ResurrectLastForProducer(dimensions, format, storage);
     if (buffer_id == VideoCaptureBufferPool::kInvalidId)
       return nullptr;
-    return scoped_ptr<media::VideoCaptureDevice::Client::Buffer>(
+    return std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>(
         new AutoReleaseBuffer(
             buffer_pool_, buffer_pool_->GetBufferHandle(buffer_id), buffer_id));
   }
@@ -433,7 +436,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
    public:
     AutoReleaseBuffer(
         const scoped_refptr<VideoCaptureBufferPool>& pool,
-        scoped_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle,
+        std::unique_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle,
         int buffer_id)
         : id_(buffer_id),
           pool_(pool),
@@ -460,7 +463,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
 
     const int id_;
     const scoped_refptr<VideoCaptureBufferPool> pool_;
-    const scoped_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle_;
+    const std::unique_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle_;
   };
 
   scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
@@ -483,7 +486,7 @@ class StubClientObserver {
 
   virtual ~StubClientObserver() {}
 
-  scoped_ptr<media::VideoCaptureDevice::Client> PassClient() {
+  std::unique_ptr<media::VideoCaptureDevice::Client> PassClient() {
     return std::move(client_);
   }
 
@@ -571,7 +574,7 @@ class StubClientObserver {
   SkColor wait_color_yuv_;
   SkColor last_frame_color_yuv_;
   gfx::Size last_frame_size_;
-  scoped_ptr<StubClient> client_;
+  std::unique_ptr<StubClient> client_;
 
   DISALLOW_COPY_AND_ASSIGN(StubClientObserver);
 };
@@ -775,21 +778,21 @@ class MAYBE_WebContentsVideoCaptureDeviceTest : public testing::Test {
   CaptureTestSourceController controller_;
 
   // Self-registering RenderProcessHostFactory.
-  scoped_ptr<MockRenderProcessHostFactory> render_process_host_factory_;
+  std::unique_ptr<MockRenderProcessHostFactory> render_process_host_factory_;
 
   // Creates capture-capable RenderViewHosts whose pixel content production is
   // under the control of |controller_|.
-  scoped_ptr<CaptureTestRenderViewHostFactory> render_view_host_factory_;
+  std::unique_ptr<CaptureTestRenderViewHostFactory> render_view_host_factory_;
 
   // Self-registering RenderFrameHostFactory.
-  scoped_ptr<TestRenderFrameHostFactory> render_frame_host_factory_;
+  std::unique_ptr<TestRenderFrameHostFactory> render_frame_host_factory_;
 
   // A mocked-out browser and tab.
-  scoped_ptr<TestBrowserContext> browser_context_;
-  scoped_ptr<WebContents> web_contents_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
+  std::unique_ptr<WebContents> web_contents_;
 
   // Finally, the WebContentsVideoCaptureDevice under test.
-  scoped_ptr<media::VideoCaptureDevice> device_;
+  std::unique_ptr<media::VideoCaptureDevice> device_;
 
   TestBrowserThreadBundle thread_bundle_;
 };

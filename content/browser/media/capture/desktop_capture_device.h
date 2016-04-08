@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_MEDIA_CAPTURE_DESKTOP_CAPTURE_DEVICE_H_
 #define CONTENT_BROWSER_MEDIA_CAPTURE_DESKTOP_CAPTURE_DEVICE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/desktop_media_id.h"
@@ -33,14 +34,14 @@ class CONTENT_EXPORT DesktopCaptureDevice : public media::VideoCaptureDevice {
   // Creates capturer for the specified |source| and then creates
   // DesktopCaptureDevice for it. May return NULL in case of a failure (e.g. if
   // requested window was destroyed).
-  static scoped_ptr<media::VideoCaptureDevice> Create(
+  static std::unique_ptr<media::VideoCaptureDevice> Create(
       const DesktopMediaID& source);
 
   ~DesktopCaptureDevice() override;
 
   // VideoCaptureDevice interface.
   void AllocateAndStart(const media::VideoCaptureParams& params,
-                        scoped_ptr<Client> client) override;
+                        std::unique_ptr<Client> client) override;
   void StopAndDeAllocate() override;
 
   // Set the platform-dependent window id for the notification window.
@@ -50,11 +51,12 @@ class CONTENT_EXPORT DesktopCaptureDevice : public media::VideoCaptureDevice {
   friend class DesktopCaptureDeviceTest;
   class Core;
 
-  DesktopCaptureDevice(scoped_ptr<webrtc::DesktopCapturer> desktop_capturer,
-                       DesktopMediaID::Type type);
+  DesktopCaptureDevice(
+      std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer,
+      DesktopMediaID::Type type);
 
   base::Thread thread_;
-  scoped_ptr<Core> core_;
+  std::unique_ptr<Core> core_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopCaptureDevice);
 };

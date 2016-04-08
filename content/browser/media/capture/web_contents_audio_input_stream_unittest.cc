@@ -361,10 +361,10 @@ class WebContentsAudioInputStreamTest : public testing::Test {
     change_callback_.Run(render_process_id != -1 && render_frame_id != -1);
   }
 
-  scoped_ptr<TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
   base::Thread audio_thread_;
 
-  scoped_ptr<MockAudioMirroringManager> mock_mirroring_manager_;
+  std::unique_ptr<MockAudioMirroringManager> mock_mirroring_manager_;
   scoped_refptr<MockWebContentsTracker> mock_tracker_;
 
   MockVirtualAudioInputStream* mock_vais_;  // Owned by wcais_.

@@ -178,7 +178,7 @@ void MediaInternalsProxy::SendNetEventsOnUIThread() {
 void MediaInternalsProxy::CallJavaScriptFunctionOnUIThread(
     const std::string& function, base::Value* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_ptr<base::Value> args_value(args);
+  std::unique_ptr<base::Value> args_value(args);
   std::vector<const base::Value*> args_vector;
   args_vector.push_back(args_value.get());
   base::string16 update = WebUI::GetJavascriptCall(function, args_vector);

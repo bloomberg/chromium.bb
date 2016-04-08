@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_MEDIA_CAPTURE_WINDOW_ACTIVITY_TRACKER_H_
 #define CONTENT_BROWSER_MEDIA_CAPTURE_WINDOW_ACTIVITY_TRACKER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
@@ -18,7 +19,7 @@ namespace content {
 // whether the user is actively interacting with UI.
 class CONTENT_EXPORT WindowActivityTracker {
  public:
-  static scoped_ptr<WindowActivityTracker> Create(gfx::NativeView view);
+  static std::unique_ptr<WindowActivityTracker> Create(gfx::NativeView view);
 
   WindowActivityTracker();
   virtual ~WindowActivityTracker();

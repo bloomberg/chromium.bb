@@ -55,7 +55,7 @@ class AudioDiscarder : public media::AudioOutputStream {
 
   // Calls FetchAudioData() at regular intervals and discards the data.
   media::FakeAudioWorker worker_;
-  scoped_ptr<media::AudioBus> audio_bus_;
+  std::unique_ptr<media::AudioBus> audio_bus_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDiscarder);
 };

@@ -20,7 +20,7 @@ class MediaSessionDelegateDefaultBrowserTest : public ContentBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(MediaSessionDelegateDefaultBrowserTest,
                        ActiveWebContentsPauseOthers) {
-  scoped_ptr<MockMediaSessionObserver> media_session_observer(
+  std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
   MediaSession* media_session = MediaSession::Get(shell()->web_contents());

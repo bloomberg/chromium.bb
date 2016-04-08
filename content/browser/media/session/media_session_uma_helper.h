@@ -5,7 +5,8 @@
 #ifndef CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_UMA_HELPER_H_
 #define CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_UMA_HELPER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/time/clock.h"
 #include "content/common/content_export.h"
 
@@ -40,12 +41,12 @@ class CONTENT_EXPORT MediaSessionUmaHelper {
   void OnSessionSuspended();
   void OnSessionInactive();
 
-  void SetClockForTest(scoped_ptr<base::Clock> testing_clock);
+  void SetClockForTest(std::unique_ptr<base::Clock> testing_clock);
 
  private:
   base::TimeDelta total_active_time_;
   base::Time current_active_time_;
-  scoped_ptr<base::Clock> clock_;
+  std::unique_ptr<base::Clock> clock_;
 };
 
 }  // namespace content

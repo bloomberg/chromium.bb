@@ -175,8 +175,8 @@ class MediaSessionVisibilityBrowserTest
   // state change after play().
   std::map<MediaSession::State, scoped_refptr<MessageLoopRunner> >
   media_session_state_loop_runners_;
-  scoped_ptr<base::CallbackList<void(MediaSession::State)>::Subscription>
-  media_session_state_callback_subscription_;
+  std::unique_ptr<base::CallbackList<void(MediaSession::State)>::Subscription>
+      media_session_state_callback_subscription_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaSessionVisibilityBrowserTest);

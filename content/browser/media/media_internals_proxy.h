@@ -78,7 +78,7 @@ class MediaInternalsProxy
                                         base::Value* args);
 
   MediaInternalsMessageHandler* handler_;
-  scoped_ptr<base::ListValue> pending_net_updates_;
+  std::unique_ptr<base::ListValue> pending_net_updates_;
   NotificationRegistrar registrar_;
   MediaInternals::UpdateCallback update_callback_;
 

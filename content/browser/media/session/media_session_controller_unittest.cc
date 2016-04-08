@@ -29,8 +29,8 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
   }
 
  protected:
-  scoped_ptr<MediaSessionController> CreateController() {
-    return scoped_ptr<MediaSessionController>(new MediaSessionController(
+  std::unique_ptr<MediaSessionController> CreateController() {
+    return std::unique_ptr<MediaSessionController>(new MediaSessionController(
         id_, contents()->media_web_contents_observer()));
   }
 
@@ -98,7 +98,7 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
   }
 
   WebContentsObserver::MediaPlayerId id_;
-  scoped_ptr<MediaSessionController> controller_;
+  std::unique_ptr<MediaSessionController> controller_;
 };
 
 TEST_F(MediaSessionControllerTest, NoAudioNoSession) {

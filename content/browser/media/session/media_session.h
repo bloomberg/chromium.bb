@@ -130,7 +130,7 @@ class MediaSession : public WebContentsObserver,
   friend class content::MediaSessionStateObserver;
 
   CONTENT_EXPORT void SetDelegateForTests(
-      scoped_ptr<MediaSessionDelegate> delegate);
+      std::unique_ptr<MediaSessionDelegate> delegate);
   CONTENT_EXPORT bool IsActiveForTest() const;
   CONTENT_EXPORT Type audio_focus_type_for_test() const;
   CONTENT_EXPORT void RemoveAllPlayersForTest();
@@ -184,11 +184,11 @@ class MediaSession : public WebContentsObserver,
   void SetAudioFocusState(State audio_focus_state);
 
   // Registers a MediaSession state change callback.
-  CONTENT_EXPORT scoped_ptr<base::CallbackList<void(State)>::Subscription>
+  CONTENT_EXPORT std::unique_ptr<base::CallbackList<void(State)>::Subscription>
   RegisterMediaSessionStateChangedCallbackForTest(
       const StateChangedCallback& cb);
 
-  scoped_ptr<MediaSessionDelegate> delegate_;
+  std::unique_ptr<MediaSessionDelegate> delegate_;
   PlayersMap players_;
 
   State audio_focus_state_;

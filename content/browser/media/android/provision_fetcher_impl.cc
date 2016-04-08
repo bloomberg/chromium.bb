@@ -26,7 +26,7 @@ void ProvisionFetcherImpl::Create(
 }
 
 ProvisionFetcherImpl::ProvisionFetcherImpl(
-    scoped_ptr<media::ProvisionFetcher> provision_fetcher,
+    std::unique_ptr<media::ProvisionFetcher> provision_fetcher,
     mojo::InterfaceRequest<ProvisionFetcher> request)
     : binding_(this, std::move(request)),
       provision_fetcher_(std::move(provision_fetcher)),

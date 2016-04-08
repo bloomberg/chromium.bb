@@ -44,7 +44,7 @@ class MediaInternalsTestBase {
     std::string utf8_update = base::UTF16ToUTF8(update);
     const std::string::size_type first_brace = utf8_update.find('{');
     const std::string::size_type last_brace = utf8_update.rfind('}');
-    scoped_ptr<base::Value> output_value = base::JSONReader::Read(
+    std::unique_ptr<base::Value> output_value = base::JSONReader::Read(
         utf8_update.substr(first_brace, last_brace - first_brace + 1));
     CHECK(output_value);
 
@@ -245,7 +245,7 @@ class MediaInternalsAudioLogTest
   MediaInternals::UpdateCallback update_cb_;
   const media::AudioParameters test_params_;
   const media::AudioLogFactory::AudioComponent test_component_;
-  scoped_ptr<media::AudioLog> audio_log_;
+  std::unique_ptr<media::AudioLog> audio_log_;
 
  private:
   static media::AudioParameters MakeAudioParams() {

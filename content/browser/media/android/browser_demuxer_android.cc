@@ -97,9 +97,9 @@ bool BrowserDemuxerAndroid::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-scoped_ptr<media::DemuxerAndroid> BrowserDemuxerAndroid::CreateDemuxer(
+std::unique_ptr<media::DemuxerAndroid> BrowserDemuxerAndroid::CreateDemuxer(
     int demuxer_client_id) {
-  return scoped_ptr<media::DemuxerAndroid>(
+  return std::unique_ptr<media::DemuxerAndroid>(
       new Internal(this, demuxer_client_id));
 }
 

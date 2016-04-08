@@ -4,6 +4,7 @@
 
 #include "content/browser/media/android/url_provision_fetcher.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/android/provision_fetcher_factory.h"
 #include "media/base/bind_to_current_loop.h"
 #include "net/url_request/url_fetcher.h"
@@ -68,10 +69,10 @@ void URLProvisionFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
 
 // Implementation of content public method CreateProvisionFetcher().
 
-scoped_ptr<media::ProvisionFetcher> CreateProvisionFetcher(
+std::unique_ptr<media::ProvisionFetcher> CreateProvisionFetcher(
     net::URLRequestContextGetter* context_getter) {
   DCHECK(context_getter);
-  return make_scoped_ptr(new URLProvisionFetcher(context_getter));
+  return base::WrapUnique(new URLProvisionFetcher(context_getter));
 }
 
 }  // namespace content

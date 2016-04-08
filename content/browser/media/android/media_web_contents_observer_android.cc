@@ -4,6 +4,7 @@
 
 #include "content/browser/media/android/media_web_contents_observer_android.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/browser/media/android/browser_media_session_manager.h"
 #include "content/browser/media/android/browser_surface_view_manager.h"
@@ -49,7 +50,7 @@ MediaWebContentsObserverAndroid::GetMediaPlayerManager(
 
   BrowserMediaPlayerManager* manager =
       BrowserMediaPlayerManager::Create(render_frame_host);
-  media_player_managers_.set(render_frame_host, make_scoped_ptr(manager));
+  media_player_managers_.set(render_frame_host, base::WrapUnique(manager));
   return manager;
 }
 
@@ -62,7 +63,7 @@ MediaWebContentsObserverAndroid::GetMediaSessionManager(
 
   BrowserMediaSessionManager* manager =
       new BrowserMediaSessionManager(render_frame_host);
-  media_session_managers_.set(render_frame_host, make_scoped_ptr(manager));
+  media_session_managers_.set(render_frame_host, base::WrapUnique(manager));
   return manager;
 }
 
@@ -75,7 +76,7 @@ MediaWebContentsObserverAndroid::GetSurfaceViewManager(
 
   BrowserSurfaceViewManager* manager =
       new BrowserSurfaceViewManager(render_frame_host);
-  surface_view_managers_.set(render_frame_host, make_scoped_ptr(manager));
+  surface_view_managers_.set(render_frame_host, base::WrapUnique(manager));
   return manager;
 }
 

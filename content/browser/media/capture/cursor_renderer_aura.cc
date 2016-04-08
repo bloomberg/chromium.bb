@@ -36,8 +36,9 @@ inline int alpha_blend(int alpha, int src, int dst) {
 }  // namespace
 
 // static
-scoped_ptr<CursorRenderer> CursorRenderer::Create(gfx::NativeWindow window) {
-  return scoped_ptr<CursorRenderer>(
+std::unique_ptr<CursorRenderer> CursorRenderer::Create(
+    gfx::NativeWindow window) {
+  return std::unique_ptr<CursorRenderer>(
       new CursorRendererAura(window, kCursorEnabledOnMouseMovement));
 }
 

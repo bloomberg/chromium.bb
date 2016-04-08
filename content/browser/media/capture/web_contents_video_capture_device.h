@@ -5,10 +5,10 @@
 #ifndef CONTENT_BROWSER_MEDIA_CAPTURE_WEB_CONTENTS_VIDEO_CAPTURE_DEVICE_H_
 #define CONTENT_BROWSER_MEDIA_CAPTURE_WEB_CONTENTS_VIDEO_CAPTURE_DEVICE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "media/capture/content/screen_capture_device_core.h"
 #include "media/capture/video/video_capture_device.h"
@@ -36,7 +36,7 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
 
   // VideoCaptureDevice implementation.
   void AllocateAndStart(const media::VideoCaptureParams& params,
-                        scoped_ptr<Client> client) override;
+                        std::unique_ptr<Client> client) override;
   void RequestRefreshFrame() override;
   void StopAndDeAllocate() override;
 
@@ -46,7 +46,7 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
       int main_render_frame_id,
       bool enable_auto_throttling);
 
-  const scoped_ptr<media::ScreenCaptureDeviceCore> core_;
+  const std::unique_ptr<media::ScreenCaptureDeviceCore> core_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsVideoCaptureDevice);
 };

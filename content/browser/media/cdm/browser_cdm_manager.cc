@@ -5,13 +5,14 @@
 #include "content/browser/media/cdm/browser_cdm_manager.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/task_runner.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
@@ -375,7 +376,7 @@ void BrowserCdmManager::OnInitializeCdm(
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!GetCdm(render_frame_id, cdm_id));
 
-  scoped_ptr<SimplePromise> promise(new SimplePromise(
+  std::unique_ptr<SimplePromise> promise(new SimplePromise(
       weak_ptr_factory_.GetWeakPtr(), render_frame_id, cdm_id, promise_id));
 
   if (params.key_system.size() > media::limits::kMaxKeySystemLength) {
@@ -417,7 +418,7 @@ void BrowserCdmManager::OnSetServerCertificate(
     const std::vector<uint8_t>& certificate) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
-  scoped_ptr<SimplePromise> promise(new SimplePromise(
+  std::unique_ptr<SimplePromise> promise(new SimplePromise(
       weak_ptr_factory_.GetWeakPtr(), render_frame_id, cdm_id, promise_id));
 
   scoped_refptr<MediaKeys> cdm = GetCdm(render_frame_id, cdm_id);
@@ -441,9 +442,9 @@ void BrowserCdmManager::OnCreateSessionAndGenerateRequest(
   int render_frame_id = params.render_frame_id;
   int cdm_id = params.cdm_id;
   const std::vector<uint8_t>& init_data = params.init_data;
-  scoped_ptr<NewSessionPromise> promise(
-      new NewSessionPromise(weak_ptr_factory_.GetWeakPtr(),
-                            render_frame_id, cdm_id, params.promise_id));
+  std::unique_ptr<NewSessionPromise> promise(
+      new NewSessionPromise(weak_ptr_factory_.GetWeakPtr(), render_frame_id,
+                            cdm_id, params.promise_id));
 
   if (init_data.size() > media::limits::kMaxInitDataLength) {
     LOG(WARNING) << "InitData for ID: " << cdm_id
@@ -500,7 +501,7 @@ void BrowserCdmManager::OnLoadSession(
     const std::string& session_id) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
-  scoped_ptr<NewSessionPromise> promise(new NewSessionPromise(
+  std::unique_ptr<NewSessionPromise> promise(new NewSessionPromise(
       weak_ptr_factory_.GetWeakPtr(), render_frame_id, cdm_id, promise_id));
 
   scoped_refptr<MediaKeys> cdm = GetCdm(render_frame_id, cdm_id);
@@ -524,7 +525,7 @@ void BrowserCdmManager::OnUpdateSession(int render_frame_id,
                                         const std::vector<uint8_t>& response) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
-  scoped_ptr<SimplePromise> promise(new SimplePromise(
+  std::unique_ptr<SimplePromise> promise(new SimplePromise(
       weak_ptr_factory_.GetWeakPtr(), render_frame_id, cdm_id, promise_id));
 
   scoped_refptr<MediaKeys> cdm = GetCdm(render_frame_id, cdm_id);
@@ -554,7 +555,7 @@ void BrowserCdmManager::OnCloseSession(int render_frame_id,
                                        const std::string& session_id) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
-  scoped_ptr<SimplePromise> promise(new SimplePromise(
+  std::unique_ptr<SimplePromise> promise(new SimplePromise(
       weak_ptr_factory_.GetWeakPtr(), render_frame_id, cdm_id, promise_id));
 
   scoped_refptr<MediaKeys> cdm = GetCdm(render_frame_id, cdm_id);
@@ -572,7 +573,7 @@ void BrowserCdmManager::OnRemoveSession(int render_frame_id,
                                         const std::string& session_id) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
-  scoped_ptr<SimplePromise> promise(new SimplePromise(
+  std::unique_ptr<SimplePromise> promise(new SimplePromise(
       weak_ptr_factory_.GetWeakPtr(), render_frame_id, cdm_id, promise_id));
 
   scoped_refptr<MediaKeys> cdm = GetCdm(render_frame_id, cdm_id);
@@ -593,7 +594,7 @@ void BrowserCdmManager::OnCdmCreated(
     int render_frame_id,
     int cdm_id,
     const GURL& security_origin,
-    scoped_ptr<media::SimpleCdmPromise> promise,
+    std::unique_ptr<media::SimpleCdmPromise> promise,
     const scoped_refptr<media::MediaKeys>& cdm,
     const std::string& error_message) {
   if (!cdm) {
@@ -691,7 +692,7 @@ void BrowserCdmManager::CreateSessionAndGenerateRequestIfPermitted(
     media::MediaKeys::SessionType session_type,
     media::EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
-    scoped_ptr<media::NewSessionCdmPromise> promise,
+    std::unique_ptr<media::NewSessionCdmPromise> promise,
     bool permission_was_allowed) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
@@ -715,7 +716,7 @@ void BrowserCdmManager::LoadSessionIfPermitted(
     int cdm_id,
     media::MediaKeys::SessionType session_type,
     const std::string& session_id,
-    scoped_ptr<media::NewSessionCdmPromise> promise,
+    std::unique_ptr<media::NewSessionCdmPromise> promise,
     bool permission_was_allowed) {
   DCHECK_NE(media::MediaKeys::SessionType::TEMPORARY_SESSION, session_type);
   DCHECK(task_runner_->RunsTasksOnCurrentThread());

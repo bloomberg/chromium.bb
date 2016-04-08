@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_MEDIA_ANDROID_PROVISION_FETCHER_IMPL_H_
 #define CONTENT_BROWSER_MEDIA_ANDROID_PROVISION_FETCHER_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/android/provision_fetcher_factory.h"
 #include "media/base/android/provision_fetcher.h"
@@ -25,8 +26,9 @@ class ProvisionFetcherImpl : public media::interfaces::ProvisionFetcher {
       RenderFrameHost* render_frame_host,
       mojo::InterfaceRequest<media::interfaces::ProvisionFetcher> request);
 
-  ProvisionFetcherImpl(scoped_ptr<media::ProvisionFetcher> provision_fetcher,
-                       mojo::InterfaceRequest<ProvisionFetcher> request);
+  ProvisionFetcherImpl(
+      std::unique_ptr<media::ProvisionFetcher> provision_fetcher,
+      mojo::InterfaceRequest<ProvisionFetcher> request);
   ~ProvisionFetcherImpl() override;
 
   // media::interfaces::ProvisionFetcher implementation.
@@ -41,7 +43,7 @@ class ProvisionFetcherImpl : public media::interfaces::ProvisionFetcher {
                   const std::string& response);
 
   mojo::StrongBinding<media::interfaces::ProvisionFetcher> binding_;
-  scoped_ptr<media::ProvisionFetcher> provision_fetcher_;
+  std::unique_ptr<media::ProvisionFetcher> provision_fetcher_;
 
   base::WeakPtrFactory<ProvisionFetcherImpl> weak_factory_;
 

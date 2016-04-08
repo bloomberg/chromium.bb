@@ -209,14 +209,14 @@ bool MediaSession::IsControllable() const {
          audio_focus_type_ == Type::Content;
 }
 
-scoped_ptr<base::CallbackList<void(MediaSession::State)>::Subscription>
+std::unique_ptr<base::CallbackList<void(MediaSession::State)>::Subscription>
 MediaSession::RegisterMediaSessionStateChangedCallbackForTest(
     const StateChangedCallback& cb) {
   return media_session_state_listeners_.Add(cb);
 }
 
 void MediaSession::SetDelegateForTests(
-    scoped_ptr<MediaSessionDelegate> delegate) {
+    std::unique_ptr<MediaSessionDelegate> delegate) {
   delegate_ = std::move(delegate);
 }
 

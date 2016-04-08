@@ -5,10 +5,10 @@
 #ifndef CONTENT_BROWSER_MEDIA_CAPTURE_DESKTOP_CAPTURE_DEVICE_AURA_H_
 #define CONTENT_BROWSER_MEDIA_CAPTURE_DESKTOP_CAPTURE_DEVICE_AURA_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "media/capture/content/screen_capture_device_core.h"
@@ -26,21 +26,21 @@ class CONTENT_EXPORT DesktopCaptureDeviceAura
  public:
   // Creates a VideoCaptureDevice for the Aura desktop.  If |source| does not
   // reference a registered aura window, returns nullptr instead.
-  static scoped_ptr<media::VideoCaptureDevice> Create(
+  static std::unique_ptr<media::VideoCaptureDevice> Create(
       const DesktopMediaID& source);
 
   ~DesktopCaptureDeviceAura() override;
 
   // VideoCaptureDevice implementation.
   void AllocateAndStart(const media::VideoCaptureParams& params,
-                        scoped_ptr<Client> client) override;
+                        std::unique_ptr<Client> client) override;
   void RequestRefreshFrame() override;
   void StopAndDeAllocate() override;
 
  private:
   explicit DesktopCaptureDeviceAura(const DesktopMediaID& source);
 
-  scoped_ptr<media::ScreenCaptureDeviceCore> core_;
+  std::unique_ptr<media::ScreenCaptureDeviceCore> core_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopCaptureDeviceAura);
 };

@@ -31,7 +31,8 @@ void AudibleMetrics::UpdateAudibleWebContentsState(
     RemoveAudibleWebContents(web_contents);
 }
 
-void AudibleMetrics::SetClockForTest(scoped_ptr<base::TickClock> test_clock) {
+void AudibleMetrics::SetClockForTest(
+    std::unique_ptr<base::TickClock> test_clock) {
   clock_ = std::move(test_clock);
 }
 

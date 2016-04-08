@@ -43,7 +43,7 @@ static void GenerateIdentityWorker(const std::string& common_name,
   result->error = net::OK;
   int serial_number = base::RandInt(0, std::numeric_limits<int>::max());
 
-  scoped_ptr<crypto::RSAPrivateKey> key;
+  std::unique_ptr<crypto::RSAPrivateKey> key;
   base::Time now = base::Time::Now();
   bool success = net::x509_util::CreateKeyAndSelfSignedCert(
       "CN=" + common_name,

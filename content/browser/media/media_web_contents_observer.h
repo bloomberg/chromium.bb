@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/media/session/media_session_controllers_manager.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -94,8 +94,8 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   // Tracking variables and associated power save blockers for media playback.
   ActiveMediaPlayerMap active_audio_players_;
   ActiveMediaPlayerMap active_video_players_;
-  scoped_ptr<PowerSaveBlocker> audio_power_save_blocker_;
-  scoped_ptr<PowerSaveBlocker> video_power_save_blocker_;
+  std::unique_ptr<PowerSaveBlocker> audio_power_save_blocker_;
+  std::unique_ptr<PowerSaveBlocker> video_power_save_blocker_;
 
   MediaSessionControllersManager session_controllers_manager_;
 

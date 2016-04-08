@@ -76,7 +76,8 @@ class CONTENT_EXPORT MediaInternals
       const media::VideoCaptureDeviceInfos& video_capture_device_infos);
 
   // AudioLogFactory implementation.  Safe to call from any thread.
-  scoped_ptr<media::AudioLog> CreateAudioLog(AudioComponent component) override;
+  std::unique_ptr<media::AudioLog> CreateAudioLog(
+      AudioComponent component) override;
 
   // If possible, i.e. a WebContents exists for the given RenderFrameHostID,
   // tells an existing AudioLogEntry the WebContents title for easier
@@ -137,7 +138,7 @@ class CONTENT_EXPORT MediaInternals
   bool can_update_;
   base::DictionaryValue audio_streams_cached_data_;
   int owner_ids_[AUDIO_COMPONENT_MAX];
-  scoped_ptr<MediaInternalsUMAHandler> uma_handler_;
+  std::unique_ptr<MediaInternalsUMAHandler> uma_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaInternals);
 };

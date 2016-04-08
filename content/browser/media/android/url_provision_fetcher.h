@@ -30,7 +30,7 @@ class URLProvisionFetcher : public media::ProvisionFetcher,
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   net::URLRequestContextGetter* context_getter_;
-  scoped_ptr<net::URLFetcher> request_;
+  std::unique_ptr<net::URLFetcher> request_;
   media::ProvisionFetcher::ResponseCB response_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(URLProvisionFetcher);

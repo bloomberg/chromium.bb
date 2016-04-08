@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/common/content_export.h"
 
@@ -89,18 +90,18 @@ class CONTENT_EXPORT MediaWebContentsObserverAndroid
   // Map from RenderFrameHost* to BrowserMediaPlayerManager.
   using MediaPlayerManagerMap =
       base::ScopedPtrHashMap<RenderFrameHost*,
-                             scoped_ptr<BrowserMediaPlayerManager>>;
+                             std::unique_ptr<BrowserMediaPlayerManager>>;
   MediaPlayerManagerMap media_player_managers_;
 
   // Map from RenderFrameHost* to BrowserMediaSessionManager.
   using MediaSessionManagerMap =
       base::ScopedPtrHashMap<RenderFrameHost*,
-                             scoped_ptr<BrowserMediaSessionManager>>;
+                             std::unique_ptr<BrowserMediaSessionManager>>;
   MediaSessionManagerMap media_session_managers_;
 
   using SurfaceViewManagerMap =
       base::ScopedPtrHashMap<RenderFrameHost*,
-                             scoped_ptr<BrowserSurfaceViewManager>>;
+                             std::unique_ptr<BrowserSurfaceViewManager>>;
   SurfaceViewManagerMap surface_view_managers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaWebContentsObserverAndroid);

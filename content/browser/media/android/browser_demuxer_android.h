@@ -32,7 +32,7 @@ class CONTENT_EXPORT BrowserDemuxerAndroid : public BrowserMessageFilter {
   // Returns an uninitialized demuxer implementation associated with
   // |demuxer_client_id|, which can be used to communicate with the real demuxer
   // in the renderer process.
-  scoped_ptr<media::DemuxerAndroid> CreateDemuxer(int demuxer_client_id);
+  std::unique_ptr<media::DemuxerAndroid> CreateDemuxer(int demuxer_client_id);
 
  protected:
   friend class base::RefCountedThreadSafe<BrowserDemuxerAndroid>;

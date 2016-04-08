@@ -64,7 +64,7 @@ bool MediaSessionControllersManager::RequestPlay(const MediaPlayerId& id,
     return false;
   }
 
-  scoped_ptr<MediaSessionController> controller(
+  std::unique_ptr<MediaSessionController> controller(
       new MediaSessionController(id, media_web_contents_observer_));
 
   if (!controller->Initialize(has_audio, is_remote, duration))

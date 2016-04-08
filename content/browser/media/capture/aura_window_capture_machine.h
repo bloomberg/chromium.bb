@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_MEDIA_CAPTURE_AURA_WINDOW_CAPTURE_MACHINE_H_
 #define CONTENT_BROWSER_MEDIA_CAPTURE_AURA_WINDOW_CAPTURE_MACHINE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/media/capture/cursor_renderer_aura.h"
 #include "media/capture/content/screen_capture_device_core.h"
@@ -79,19 +80,17 @@ class AuraWindowCaptureMachine
       media::ThreadSafeCaptureOracle::CaptureFrameCallback;
 
   // Response callback for cc::Layer::RequestCopyOfOutput().
-  void DidCopyOutput(
-      scoped_refptr<media::VideoFrame> video_frame,
-      base::TimeTicks start_time,
-      const CaptureFrameCallback& capture_frame_cb,
-      scoped_ptr<cc::CopyOutputResult> result);
+  void DidCopyOutput(scoped_refptr<media::VideoFrame> video_frame,
+                     base::TimeTicks start_time,
+                     const CaptureFrameCallback& capture_frame_cb,
+                     std::unique_ptr<cc::CopyOutputResult> result);
 
   // A helper which does the real work for DidCopyOutput. Returns true if
   // succeeded.
-  bool ProcessCopyOutputResponse(
-      scoped_refptr<media::VideoFrame> video_frame,
-      base::TimeTicks start_time,
-      const CaptureFrameCallback& capture_frame_cb,
-      scoped_ptr<cc::CopyOutputResult> result);
+  bool ProcessCopyOutputResponse(scoped_refptr<media::VideoFrame> video_frame,
+                                 base::TimeTicks start_time,
+                                 const CaptureFrameCallback& capture_frame_cb,
+                                 std::unique_ptr<cc::CopyOutputResult> result);
 
   // Renders the cursor if needed and then delivers the captured frame.
   static void CopyOutputFinishedForVideo(
@@ -99,7 +98,7 @@ class AuraWindowCaptureMachine
       base::TimeTicks start_time,
       const CaptureFrameCallback& capture_frame_cb,
       const scoped_refptr<media::VideoFrame>& target,
-      scoped_ptr<cc::SingleReleaseCallback> release_callback,
+      std::unique_ptr<cc::SingleReleaseCallback> release_callback,
       bool result);
 
   // The window associated with the desktop.
@@ -115,14 +114,14 @@ class AuraWindowCaptureMachine
   media::VideoCaptureParams capture_params_;
 
   // YUV readback pipeline.
-  scoped_ptr<content::ReadbackYUVInterface> yuv_readback_pipeline_;
+  std::unique_ptr<content::ReadbackYUVInterface> yuv_readback_pipeline_;
 
   // Renders mouse cursor on frame.
-  scoped_ptr<content::CursorRendererAura> cursor_renderer_;
+  std::unique_ptr<content::CursorRendererAura> cursor_renderer_;
 
   // TODO(jiayl): Remove power_save_blocker_ when there is an API to keep the
   // screen from sleeping for the drive-by web.
-  scoped_ptr<PowerSaveBlocker> power_save_blocker_;
+  std::unique_ptr<PowerSaveBlocker> power_save_blocker_;
 
   // WeakPtrs are used for the asynchronous capture callbacks passed to external
   // modules.  They are only valid on the UI thread and become invalidated

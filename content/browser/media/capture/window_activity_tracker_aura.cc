@@ -12,9 +12,9 @@
 namespace content {
 
 // static
-scoped_ptr<WindowActivityTracker> WindowActivityTracker::Create(
+std::unique_ptr<WindowActivityTracker> WindowActivityTracker::Create(
     gfx::NativeView window) {
-  return scoped_ptr<WindowActivityTracker>(
+  return std::unique_ptr<WindowActivityTracker>(
       new WindowActivityTrackerAura(window));
 }
 

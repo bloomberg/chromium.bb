@@ -123,10 +123,11 @@ class AudioLogImpl : public media::AudioLog {
   void StoreComponentMetadata(int component_id, base::DictionaryValue* dict);
   std::string FormatCacheKey(int component_id);
 
-  static void SendWebContentsTitleHelper(const std::string& cache_key,
-                                         scoped_ptr<base::DictionaryValue> dict,
-                                         int render_process_id,
-                                         int render_frame_id);
+  static void SendWebContentsTitleHelper(
+      const std::string& cache_key,
+      std::unique_ptr<base::DictionaryValue> dict,
+      int render_process_id,
+      int render_frame_id);
 
   const int owner_id_;
   const media::AudioLogFactory::AudioComponent component_;
@@ -208,7 +209,7 @@ void AudioLogImpl::OnSwitchOutputDevice(int component_id,
 void AudioLogImpl::SendWebContentsTitle(int component_id,
                                         int render_process_id,
                                         int render_frame_id) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   StoreComponentMetadata(component_id, dict.get());
   SendWebContentsTitleHelper(FormatCacheKey(component_id), std::move(dict),
                              render_process_id, render_frame_id);
@@ -221,7 +222,7 @@ std::string AudioLogImpl::FormatCacheKey(int component_id) {
 // static
 void AudioLogImpl::SendWebContentsTitleHelper(
     const std::string& cache_key,
-    scoped_ptr<base::DictionaryValue> dict,
+    std::unique_ptr<base::DictionaryValue> dict,
     int render_process_id,
     int render_frame_id) {
   // Page title information can only be retrieved from the UI thread.
@@ -620,11 +621,11 @@ void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
   SendVideoCaptureDeviceCapabilities();
 }
 
-scoped_ptr<media::AudioLog> MediaInternals::CreateAudioLog(
+std::unique_ptr<media::AudioLog> MediaInternals::CreateAudioLog(
     AudioComponent component) {
   base::AutoLock auto_lock(lock_);
-  return scoped_ptr<media::AudioLog>(new AudioLogImpl(
-      owner_ids_[component]++, component, this));
+  return std::unique_ptr<media::AudioLog>(
+      new AudioLogImpl(owner_ids_[component]++, component, this));
 }
 
 void MediaInternals::SetWebContentsTitleForAudioLogEntry(
@@ -683,7 +684,7 @@ void MediaInternals::UpdateAudioLog(AudioLogUpdateType type,
       DCHECK_EQ(type, CREATE);
       audio_streams_cached_data_.Set(cache_key, value->DeepCopy());
     } else if (type == UPDATE_AND_DELETE) {
-      scoped_ptr<base::Value> out_value;
+      std::unique_ptr<base::Value> out_value;
       CHECK(audio_streams_cached_data_.Remove(cache_key, &out_value));
     } else {
       base::DictionaryValue* existing_dict = NULL;

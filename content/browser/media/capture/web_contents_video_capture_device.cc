@@ -51,7 +51,9 @@
 #include "content/browser/media/capture/web_contents_video_capture_device.h"
 
 #include <stdint.h>
+
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -59,7 +61,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
@@ -105,7 +106,7 @@ enum InteractiveModeSettings {
   kMinPeriodNoAnimationMillis = 3000
 };
 
-void DeleteOnWorkerThread(scoped_ptr<base::Thread> render_thread,
+void DeleteOnWorkerThread(std::unique_ptr<base::Thread> render_thread,
                           const base::Closure& callback) {
   render_thread.reset();
 
@@ -220,18 +221,18 @@ class ContentCaptureSubscription {
   const int render_widget_id_;
 
   VideoFrameDeliveryLog delivery_log_;
-  scoped_ptr<FrameSubscriber> refresh_subscriber_;
-  scoped_ptr<FrameSubscriber> mouse_activity_subscriber_;
+  std::unique_ptr<FrameSubscriber> refresh_subscriber_;
+  std::unique_ptr<FrameSubscriber> mouse_activity_subscriber_;
   CaptureCallback capture_callback_;
 
   // Responsible for tracking the cursor state and input events to make
   // decisions and then render the mouse cursor on the video frame after
   // capture is completed.
-  scoped_ptr<content::CursorRenderer> cursor_renderer_;
+  std::unique_ptr<content::CursorRenderer> cursor_renderer_;
 
   // Responsible for tracking the UI events and making a decision on whether
   // user is actively interacting with content.
-  scoped_ptr<content::WindowActivityTracker> window_activity_tracker_;
+  std::unique_ptr<content::WindowActivityTracker> window_activity_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentCaptureSubscription);
 };
@@ -329,7 +330,7 @@ class WebContentsCaptureMachine : public media::VideoCaptureMachine {
 
   // A dedicated worker thread on which SkBitmap->VideoFrame conversion will
   // occur. Only used when this activity cannot be done on the GPU.
-  scoped_ptr<base::Thread> render_thread_;
+  std::unique_ptr<base::Thread> render_thread_;
 
   // Makes all the decisions about which frames to copy, and how.
   scoped_refptr<media::ThreadSafeCaptureOracle> oracle_proxy_;
@@ -342,7 +343,7 @@ class WebContentsCaptureMachine : public media::VideoCaptureMachine {
 
   // Responsible for forwarding events from the active RenderWidgetHost to the
   // oracle, and initiating captures accordingly.
-  scoped_ptr<ContentCaptureSubscription> subscription_;
+  std::unique_ptr<ContentCaptureSubscription> subscription_;
 
   // Weak pointer factory used to invalidate callbacks.
   // NOTE: Weak pointers must be invalidated before all other member variables.
@@ -457,7 +458,7 @@ ContentCaptureSubscription::ContentCaptureSubscription(
   // Subscribe to compositor updates. These will be serviced directly by the
   // oracle.
   if (view) {
-    scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber(
+    std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber(
         new FrameSubscriber(
             media::VideoCaptureOracle::kCompositorUpdate, oracle_proxy,
             &delivery_log_, cursor_renderer_ ? cursor_renderer_->GetWeakPtr()
@@ -939,7 +940,7 @@ WebContentsVideoCaptureDevice::WebContentsVideoCaptureDevice(
     int main_render_frame_id,
     bool enable_auto_throttling)
     : core_(new media::ScreenCaptureDeviceCore(
-          scoped_ptr<media::VideoCaptureMachine>(
+          std::unique_ptr<media::VideoCaptureMachine>(
               new WebContentsCaptureMachine(render_process_id,
                                             main_render_frame_id,
                                             enable_auto_throttling)))) {}
@@ -966,7 +967,7 @@ media::VideoCaptureDevice* WebContentsVideoCaptureDevice::Create(
 
 void WebContentsVideoCaptureDevice::AllocateAndStart(
     const media::VideoCaptureParams& params,
-    scoped_ptr<Client> client) {
+    std::unique_ptr<Client> client) {
   DVLOG(1) << "Allocating " << params.requested_format.frame_size.ToString();
   core_->AllocateAndStart(params, std::move(client));
 }

@@ -5,9 +5,9 @@
 #ifndef CONTENT_BROWSER_MEDIA_AUDIBLE_METRICS_H_
 #define CONTENT_BROWSER_MEDIA_AUDIBLE_METRICS_H_
 
+#include <memory>
 #include <set>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/time/tick_clock.h"
 #include "content/common/content_export.h"
 
@@ -29,7 +29,7 @@ class CONTENT_EXPORT AudibleMetrics {
   void UpdateAudibleWebContentsState(const WebContents* web_contents,
                                      bool audible);
 
-  void SetClockForTest(scoped_ptr<base::TickClock> test_clock);
+  void SetClockForTest(std::unique_ptr<base::TickClock> test_clock);
 
  private:
   void AddAudibleWebContents(const WebContents* web_contents);
@@ -37,7 +37,7 @@ class CONTENT_EXPORT AudibleMetrics {
 
   base::TimeTicks concurrent_web_contents_start_time_;
   size_t max_concurrent_audible_web_contents_in_session_;
-  scoped_ptr<base::TickClock> clock_;
+  std::unique_ptr<base::TickClock> clock_;
 
   std::set<const WebContents*> audible_web_contents_;
 

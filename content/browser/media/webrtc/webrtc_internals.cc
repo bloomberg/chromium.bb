@@ -40,7 +40,8 @@ static base::ListValue* EnsureLogList(base::DictionaryValue* dict) {
 }  // namespace
 
 WebRTCInternals::PendingUpdate::PendingUpdate(
-    const std::string& command, scoped_ptr<base::Value> value)
+    const std::string& command,
+    std::unique_ptr<base::Value> value)
     : command_(command), value_(std::move(value)) {}
 
 WebRTCInternals::PendingUpdate::PendingUpdate(PendingUpdate&& other)
@@ -145,7 +146,7 @@ void WebRTCInternals::OnRemovePeerConnection(ProcessId pid, int lid) {
     CreateOrReleasePowerSaveBlocker();
 
     if (observers_.might_have_observers()) {
-      scoped_ptr<base::DictionaryValue> id(new base::DictionaryValue());
+      std::unique_ptr<base::DictionaryValue> id(new base::DictionaryValue());
       id->SetInteger("pid", static_cast<int>(pid));
       id->SetInteger("lid", lid);
       SendUpdate("removePeerConnection", std::move(id));
@@ -186,7 +187,8 @@ void WebRTCInternals::OnUpdatePeerConnection(
     log->Append(log_entry);
 
     if (observers_.might_have_observers()) {
-      scoped_ptr<base::DictionaryValue> update(new base::DictionaryValue());
+      std::unique_ptr<base::DictionaryValue> update(
+          new base::DictionaryValue());
       update->SetInteger("pid", static_cast<int>(pid));
       update->SetInteger("lid", lid);
       update->MergeDictionary(log_entry);
@@ -202,7 +204,7 @@ void WebRTCInternals::OnAddStats(base::ProcessId pid, int lid,
   if (!observers_.might_have_observers())
     return;
 
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("pid", static_cast<int>(pid));
   dict->SetInteger("lid", lid);
 
@@ -363,7 +365,7 @@ const base::FilePath& WebRTCInternals::GetEventLogRecordingsFilePath() const {
 }
 
 void WebRTCInternals::SendUpdate(const string& command,
-                                 scoped_ptr<base::Value> value) {
+                                 std::unique_ptr<base::Value> value) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(observers_.might_have_observers());
 
@@ -430,7 +432,8 @@ void WebRTCInternals::OnRendererExit(int render_process_id) {
         record->GetInteger("lid", &lid);
         record->GetInteger("pid", &pid);
 
-        scoped_ptr<base::DictionaryValue> update(new base::DictionaryValue());
+        std::unique_ptr<base::DictionaryValue> update(
+            new base::DictionaryValue());
         update->SetInteger("lid", lid);
         update->SetInteger("pid", pid);
         SendUpdate("removePeerConnection", std::move(update));
@@ -457,7 +460,7 @@ void WebRTCInternals::OnRendererExit(int render_process_id) {
   }
 
   if (found_any && observers_.might_have_observers()) {
-    scoped_ptr<base::DictionaryValue> update(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> update(new base::DictionaryValue());
     update->SetInteger("rid", render_process_id);
     SendUpdate("removeGetUserMediaForRenderer", std::move(update));
   }

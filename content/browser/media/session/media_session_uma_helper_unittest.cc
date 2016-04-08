@@ -24,7 +24,7 @@ class MediaSessionUmaHelperTest : public testing::Test {
     clock_ = new base::SimpleTestClock();
     clock_->SetNow(base::Time::Now());
     media_session_uma_helper_.SetClockForTest(
-        scoped_ptr<base::SimpleTestClock>(clock_));
+        std::unique_ptr<base::SimpleTestClock>(clock_));
   }
 
   void TearDown() override {
@@ -37,7 +37,7 @@ class MediaSessionUmaHelperTest : public testing::Test {
     return media_session_uma_helper_;
   };
 
-  scoped_ptr<base::HistogramSamples> GetHistogramSamplesSinceTestStart(
+  std::unique_ptr<base::HistogramSamples> GetHistogramSamplesSinceTestStart(
       const std::string& name) {
     return histogram_tester_.GetHistogramSamplesSinceCreation(name);
   }
@@ -57,13 +57,13 @@ TEST_F(MediaSessionUmaHelperTest, CreateAndKillDoesNothing) {
   }
 
   {
-    scoped_ptr<base::HistogramSamples> samples(
+    std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart("Media.Session.Suspended"));
     EXPECT_EQ(0, samples->TotalCount());
   }
 
   {
-    scoped_ptr<base::HistogramSamples> samples(
+    std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart("Media.Session.ActiveTime"));
     EXPECT_EQ(0, samples->TotalCount());
   }
@@ -73,7 +73,7 @@ TEST_F(MediaSessionUmaHelperTest, SuspendRegisterImmediately) {
   media_session_uma_helper().RecordSessionSuspended(
       MediaSessionSuspendedSource::SystemTransient);
 
-  scoped_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart("Media.Session.Suspended"));
   EXPECT_EQ(1, samples->TotalCount());
   EXPECT_EQ(1, samples->GetCount(0)); // System Transient
@@ -89,7 +89,7 @@ TEST_F(MediaSessionUmaHelperTest, MultipleSuspend) {
   media_session_uma_helper().RecordSessionSuspended(
       MediaSessionSuspendedSource::UI);
 
-  scoped_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart("Media.Session.Suspended"));
   EXPECT_EQ(3, samples->TotalCount());
   EXPECT_EQ(1, samples->GetCount(0)); // System Transient
@@ -111,7 +111,7 @@ TEST_F(MediaSessionUmaHelperTest, MultipleSuspendSame) {
   media_session_uma_helper().RecordSessionSuspended(
       MediaSessionSuspendedSource::UI);
 
-  scoped_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart("Media.Session.Suspended"));
   EXPECT_EQ(6, samples->TotalCount());
   EXPECT_EQ(2, samples->GetCount(0)); // System Transient
@@ -123,7 +123,7 @@ TEST_F(MediaSessionUmaHelperTest, ActivationNotTerminatedDoesNotCommit) {
   media_session_uma_helper().OnSessionActive();
   clock()->Advance(base::TimeDelta::FromMilliseconds(1000));
 
-  scoped_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart("Media.Session.ActiveTime"));
   EXPECT_EQ(0, samples->TotalCount());
 }
@@ -134,7 +134,7 @@ TEST_F(MediaSessionUmaHelperTest, SuspendActivationNotTerminatedDoesNotCommit) {
   clock()->Advance(base::TimeDelta::FromMilliseconds(1000));
   media_session_uma_helper().OnSessionSuspended();
 
-  scoped_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart("Media.Session.ActiveTime"));
   EXPECT_EQ(0, samples->TotalCount());
 }
@@ -145,7 +145,7 @@ TEST_F(MediaSessionUmaHelperTest, FullActivation) {
   clock()->Advance(base::TimeDelta::FromMilliseconds(1000));
   media_session_uma_helper().OnSessionInactive();
 
-  scoped_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart("Media.Session.ActiveTime"));
   EXPECT_EQ(1, samples->TotalCount());
   EXPECT_EQ(1, samples->GetCount(1000));
@@ -163,7 +163,7 @@ TEST_F(MediaSessionUmaHelperTest, ActivationCycleWithSuspend) {
   clock()->Advance(base::TimeDelta::FromMilliseconds(1000));
   media_session_uma_helper().OnSessionInactive();
 
-  scoped_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart("Media.Session.ActiveTime"));
   EXPECT_EQ(1, samples->TotalCount());
   EXPECT_EQ(1, samples->GetCount(2000));
@@ -187,7 +187,7 @@ TEST_F(MediaSessionUmaHelperTest, ActivationCycleWithMultipleSuspend) {
   clock()->Advance(base::TimeDelta::FromMilliseconds(1000));
   media_session_uma_helper().OnSessionInactive();
 
-  scoped_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart("Media.Session.ActiveTime"));
   EXPECT_EQ(1, samples->TotalCount());
   EXPECT_EQ(1, samples->GetCount(3000));
@@ -222,7 +222,7 @@ TEST_F(MediaSessionUmaHelperTest, MultipleActivations) {
   clock()->Advance(base::TimeDelta::FromMilliseconds(1000));
   media_session_uma_helper().OnSessionInactive();
 
-  scoped_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart("Media.Session.ActiveTime"));
   EXPECT_EQ(2, samples->TotalCount());
   EXPECT_EQ(1, samples->GetCount(2000));
@@ -243,7 +243,7 @@ TEST_F(MediaSessionUmaHelperTest, MultipleActivationCalls) {
 
   // Calling OnSessionActive() multiple times reset the start time of the
   // session.
-  scoped_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart("Media.Session.ActiveTime"));
   EXPECT_EQ(1, samples->TotalCount());
   EXPECT_EQ(1, samples->GetCount(500));
@@ -265,7 +265,7 @@ TEST_F(MediaSessionUmaHelperTest, MultipleSuspendCalls_WhileSuspended) {
 
   // If the session is already suspended, OnSessionSuspended() calls are
   // ignored.
-  scoped_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart("Media.Session.ActiveTime"));
   EXPECT_EQ(1, samples->TotalCount());
   EXPECT_EQ(1, samples->GetCount(1000));
@@ -287,7 +287,7 @@ TEST_F(MediaSessionUmaHelperTest, MultipleSuspendCalls_WhileInactive) {
 
   // If the session is already inactive, OnSessionSuspended() calls are
   // ignored.
-  scoped_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart("Media.Session.ActiveTime"));
   EXPECT_EQ(1, samples->TotalCount());
   EXPECT_EQ(1, samples->GetCount(1000));
@@ -306,7 +306,7 @@ TEST_F(MediaSessionUmaHelperTest, MultipleInactiveCalls) {
   media_session_uma_helper().OnSessionInactive();
 
   // If the session is already inactive, OnSessionInactive() calls are ignored.
-  scoped_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart("Media.Session.ActiveTime"));
   EXPECT_EQ(1, samples->TotalCount());
   EXPECT_EQ(1, samples->GetCount(3000));

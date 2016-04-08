@@ -6,10 +6,10 @@
 #define CONTENT_BROWSER_MEDIA_ANDROID_BROWSER_MEDIA_PLAYER_MANAGER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "content/browser/android/content_video_view.h"
@@ -148,7 +148,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // Replaces a player with the specified id with a given MediaPlayerAndroid
   // object. This will also return the original MediaPlayerAndroid object that
   // was replaced.
-  scoped_ptr<media::MediaPlayerAndroid> SwapPlayer(
+  std::unique_ptr<media::MediaPlayerAndroid> SwapPlayer(
       int player_id,
       media::MediaPlayerAndroid* player);
 
@@ -208,10 +208,11 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
   // The fullscreen video view object or NULL if video is not played in
   // fullscreen.
-  scoped_ptr<ContentVideoView> video_view_;
+  std::unique_ptr<ContentVideoView> video_view_;
 
 #if defined(VIDEO_HOLE)
-  scoped_ptr<ExternalVideoSurfaceContainer> external_video_surface_container_;
+  std::unique_ptr<ExternalVideoSurfaceContainer>
+      external_video_surface_container_;
 #endif
 
   // Player ID of the fullscreen media player.
@@ -223,7 +224,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   WebContents* const web_contents_;
 
   // Object for retrieving resources media players.
-  scoped_ptr<media::MediaResourceGetter> media_resource_getter_;
+  std::unique_ptr<media::MediaResourceGetter> media_resource_getter_;
 
   // Map of player IDs to delegate IDs for use with
   // MediaWebContentsObserverAndroid.

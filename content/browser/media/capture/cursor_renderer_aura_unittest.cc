@@ -6,8 +6,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
@@ -126,8 +127,8 @@ class CursorRendererAuraTest : public AuraTestBase {
   }
 
  protected:
-  scoped_ptr<aura::Window> window_;
-  scoped_ptr<CursorRendererAura> cursor_renderer_;
+  std::unique_ptr<aura::Window> window_;
+  std::unique_ptr<CursorRendererAura> cursor_renderer_;
 };
 
 TEST_F(CursorRendererAuraTest, CursorAlwaysDisplayed) {
@@ -193,7 +194,7 @@ TEST_F(CursorRendererAuraTest, CursorOnActiveWindow) {
   EXPECT_TRUE(CursorDisplayed());
 
   // Cursor not be displayed if a second window is activated.
-  scoped_ptr<aura::Window> window2(aura::test::CreateTestWindowWithBounds(
+  std::unique_ptr<aura::Window> window2(aura::test::CreateTestWindowWithBounds(
       gfx::Rect(0, 0, 800, 600), root_window()));
   wm::ActivateWindow(window2.get());
   SnapshotCursorState(gfx::Rect(10, 10, 200, 200));
@@ -237,7 +238,7 @@ TEST_F(CursorRendererAuraTest, CursorRenderedOnRootWindow) {
   EXPECT_TRUE(CursorDisplayed());
 
   // Cursor being displayed even if another window is activated.
-  scoped_ptr<aura::Window> window2(aura::test::CreateTestWindowWithBounds(
+  std::unique_ptr<aura::Window> window2(aura::test::CreateTestWindowWithBounds(
       gfx::Rect(0, 0, 800, 600), root_window()));
   wm::ActivateWindow(window2.get());
   SnapshotCursorState(gfx::Rect(0, 0, 800, 600));

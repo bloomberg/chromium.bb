@@ -53,9 +53,10 @@
 namespace content {
 
 // static
-scoped_ptr<WindowActivityTracker> WindowActivityTracker::Create(
+std::unique_ptr<WindowActivityTracker> WindowActivityTracker::Create(
     gfx::NativeView view) {
-  return scoped_ptr<WindowActivityTracker>(new WindowActivityTrackerMac(view));
+  return std::unique_ptr<WindowActivityTracker>(
+      new WindowActivityTrackerMac(view));
 }
 
 WindowActivityTrackerMac::WindowActivityTrackerMac(NSView* view)

@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/android/content_video_view.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/size.h"
@@ -43,7 +44,7 @@ class CONTENT_EXPORT BrowserSurfaceViewManager
   int surface_id_;
 
   // The fullscreen view that contains a SurfaceView.
-  scoped_ptr<ContentVideoView> content_video_view_;
+  std::unique_ptr<ContentVideoView> content_video_view_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserSurfaceViewManager);
 };

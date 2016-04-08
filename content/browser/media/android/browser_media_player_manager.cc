@@ -638,8 +638,9 @@ void BrowserMediaPlayerManager::ReleaseResources(int player_id) {
     fullscreen_player_is_released_ = true;
 }
 
-scoped_ptr<media::MediaPlayerAndroid> BrowserMediaPlayerManager::SwapPlayer(
-      int player_id, media::MediaPlayerAndroid* player) {
+std::unique_ptr<media::MediaPlayerAndroid>
+BrowserMediaPlayerManager::SwapPlayer(int player_id,
+                                      media::MediaPlayerAndroid* player) {
   media::MediaPlayerAndroid* previous_player = NULL;
   for (ScopedVector<MediaPlayerAndroid>::iterator it = players_.begin();
       it != players_.end(); ++it) {
@@ -656,7 +657,7 @@ scoped_ptr<media::MediaPlayerAndroid> BrowserMediaPlayerManager::SwapPlayer(
       break;
     }
   }
-  return scoped_ptr<media::MediaPlayerAndroid>(previous_player);
+  return std::unique_ptr<media::MediaPlayerAndroid>(previous_player);
 }
 
 bool BrowserMediaPlayerManager::RequestDecoderResources(

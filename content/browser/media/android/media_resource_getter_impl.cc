@@ -54,7 +54,7 @@ static void RequestPlatformPathFromBlobURL(
   ChromeBlobStorageContext* blob_storage_context =
       GetChromeBlobStorageContextForResourceContext(resource_context);
 
-  scoped_ptr<storage::BlobDataHandle> handle =
+  std::unique_ptr<storage::BlobDataHandle> handle =
       blob_storage_context->context()->GetBlobDataFromPublicURL(url);
   if (!handle) {
     // There are plenty of cases where handle can be empty. The most trivial is
@@ -62,7 +62,7 @@ static void RequestPlatformPathFromBlobURL(
     ReturnResultOnUIThread(callback, std::string());
     return;
   }
-  scoped_ptr<storage::BlobDataSnapshot> data = handle->CreateSnapshot();
+  std::unique_ptr<storage::BlobDataSnapshot> data = handle->CreateSnapshot();
   if (!data) {
     ReturnResultOnUIThread(callback, std::string());
     NOTREACHED();

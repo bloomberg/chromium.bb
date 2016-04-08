@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/media/cdm_messages.h"
@@ -151,7 +151,7 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
   void OnCdmCreated(int render_frame_id,
                     int cdm_id,
                     const GURL& security_origin,
-                    scoped_ptr<media::SimpleCdmPromise> promise,
+                    std::unique_ptr<media::SimpleCdmPromise> promise,
                     const scoped_refptr<media::MediaKeys>& cdm,
                     const std::string& error_message);
 
@@ -184,17 +184,18 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
       media::MediaKeys::SessionType session_type,
       media::EmeInitDataType init_data_type,
       const std::vector<uint8_t>& init_data,
-      scoped_ptr<media::NewSessionCdmPromise> promise,
+      std::unique_ptr<media::NewSessionCdmPromise> promise,
       bool permission_was_allowed);
 
   // Calls LoadSession() on the CDM if |permission_was_allowed| is true.
   // Otherwise rejects |promise|.
-  void LoadSessionIfPermitted(int render_frame_id,
-                              int cdm_id,
-                              media::MediaKeys::SessionType session_type,
-                              const std::string& session_id,
-                              scoped_ptr<media::NewSessionCdmPromise> promise,
-                              bool permission_was_allowed);
+  void LoadSessionIfPermitted(
+      int render_frame_id,
+      int cdm_id,
+      media::MediaKeys::SessionType session_type,
+      const std::string& session_id,
+      std::unique_ptr<media::NewSessionCdmPromise> promise,
+      bool permission_was_allowed);
 
   const int render_process_id_;
 
@@ -202,7 +203,7 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
   // dispatched to the browser UI thread.
   scoped_refptr<base::TaskRunner> task_runner_;
 
-  scoped_ptr<media::CdmFactory> cdm_factory_;
+  std::unique_ptr<media::CdmFactory> cdm_factory_;
 
   // The key in the following maps is a combination of |render_frame_id| and
   // |cdm_id|.

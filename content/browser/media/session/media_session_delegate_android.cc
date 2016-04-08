@@ -80,12 +80,12 @@ void MediaSessionDelegateAndroid::RecordSessionDuck(
 }
 
 // static
-scoped_ptr<MediaSessionDelegate> MediaSessionDelegate::Create(
+std::unique_ptr<MediaSessionDelegate> MediaSessionDelegate::Create(
     MediaSession* media_session) {
   MediaSessionDelegateAndroid* delegate =
       new MediaSessionDelegateAndroid(media_session);
   delegate->Initialize();
-  return scoped_ptr<MediaSessionDelegate>(delegate);
+  return std::unique_ptr<MediaSessionDelegate>(delegate);
 }
 
 }  // namespace content

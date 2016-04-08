@@ -120,7 +120,7 @@ class AudioMirroringManagerTest : public testing::Test {
     delete diverter;
   }
 
-  void StartMirroringTo(const scoped_ptr<MockMirroringDestination>& dest,
+  void StartMirroringTo(const std::unique_ptr<MockMirroringDestination>& dest,
                         int expected_inputs_added) {
     EXPECT_CALL(*dest, QueryForMatches(_, _))
         .WillRepeatedly(Invoke(dest.get(),
@@ -136,12 +136,12 @@ class AudioMirroringManagerTest : public testing::Test {
     mirroring_manager_.StartMirroring(dest.get());
   }
 
-  void StopMirroringTo(const scoped_ptr<MockMirroringDestination>& dest) {
+  void StopMirroringTo(const std::unique_ptr<MockMirroringDestination>& dest) {
     mirroring_manager_.StopMirroring(dest.get());
   }
 
   int CountStreamsDivertedTo(
-      const scoped_ptr<MockMirroringDestination>& dest) const {
+      const std::unique_ptr<MockMirroringDestination>& dest) const {
     int count = 0;
     for (StreamRoutes::const_iterator it = mirroring_manager_.routes_.begin();
          it != mirroring_manager_.routes_.end(); ++it) {
@@ -175,7 +175,7 @@ const int kYetAnotherRenderFrameId = 7890;
 }
 
 TEST_F(AudioMirroringManagerTest, MirroringSessionOfNothing) {
-  const scoped_ptr<MockMirroringDestination> destination(
+  const std::unique_ptr<MockMirroringDestination> destination(
       new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
   StartMirroringTo(destination, 0);
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
@@ -187,7 +187,7 @@ TEST_F(AudioMirroringManagerTest, MirroringSessionOfNothing) {
 }
 
 TEST_F(AudioMirroringManagerTest, TwoMirroringSessionsOfNothing) {
-  const scoped_ptr<MockMirroringDestination> destination(
+  const std::unique_ptr<MockMirroringDestination> destination(
       new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
   StartMirroringTo(destination, 0);
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
@@ -195,7 +195,7 @@ TEST_F(AudioMirroringManagerTest, TwoMirroringSessionsOfNothing) {
   StopMirroringTo(destination);
   EXPECT_EQ(0, destination->query_count());
 
-  const scoped_ptr<MockMirroringDestination> another_destination(
+  const std::unique_ptr<MockMirroringDestination> another_destination(
       new MockMirroringDestination(kAnotherRenderProcessId,
                                    kAnotherRenderFrameId));
   StartMirroringTo(another_destination, 0);
@@ -212,7 +212,7 @@ TEST_F(AudioMirroringManagerTest, TwoMirroringSessionsOfNothing) {
 TEST_F(AudioMirroringManagerTest, StreamLifetimeAroundMirroringSession) {
   MockDiverter* const stream =
       CreateStream(kRenderProcessId, kRenderFrameId, 1);
-  const scoped_ptr<MockMirroringDestination> destination(
+  const std::unique_ptr<MockMirroringDestination> destination(
       new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
   StartMirroringTo(destination, 1);
   EXPECT_EQ(1, destination->query_count());
@@ -232,7 +232,7 @@ TEST_F(AudioMirroringManagerTest, StreamLifetimeAroundMirroringSession) {
 // Tests that a mirroring session starts before, and ends after, a stream that
 // will be diverted to it.
 TEST_F(AudioMirroringManagerTest, StreamLifetimeWithinMirroringSession) {
-  const scoped_ptr<MockMirroringDestination> destination(
+  const std::unique_ptr<MockMirroringDestination> destination(
       new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
   StartMirroringTo(destination, 1);
   EXPECT_EQ(0, destination->query_count());
@@ -260,7 +260,7 @@ TEST_F(AudioMirroringManagerTest, StreamLifetimeAcrossTwoMirroringSessions) {
   MockDiverter* const stream =
       CreateStream(kRenderProcessId, kRenderFrameId, 2);
 
-  const scoped_ptr<MockMirroringDestination> destination(
+  const std::unique_ptr<MockMirroringDestination> destination(
       new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
   StartMirroringTo(destination, 1);
   EXPECT_EQ(1, destination->query_count());
@@ -270,7 +270,7 @@ TEST_F(AudioMirroringManagerTest, StreamLifetimeAcrossTwoMirroringSessions) {
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
 
-  const scoped_ptr<MockMirroringDestination> second_destination(
+  const std::unique_ptr<MockMirroringDestination> second_destination(
       new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
   StartMirroringTo(second_destination, 1);
   EXPECT_EQ(1, destination->query_count());
@@ -299,13 +299,13 @@ TEST_F(AudioMirroringManagerTest, StreamDivertingStickyToOneDestination_1) {
   MockDiverter* const stream =
       CreateStream(kRenderProcessId, kRenderFrameId, 2);
 
-  const scoped_ptr<MockMirroringDestination> destination(
+  const std::unique_ptr<MockMirroringDestination> destination(
       new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
   StartMirroringTo(destination, 1);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(destination));
 
-  const scoped_ptr<MockMirroringDestination> replacement_destination(
+  const std::unique_ptr<MockMirroringDestination> replacement_destination(
       new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
   StartMirroringTo(replacement_destination, 1);
   EXPECT_EQ(1, destination->query_count());
@@ -340,13 +340,13 @@ TEST_F(AudioMirroringManagerTest, StreamDivertingStickyToOneDestination_2) {
   MockDiverter* const stream =
       CreateStream(kRenderProcessId, kRenderFrameId, 2);
 
-  const scoped_ptr<MockMirroringDestination> destination(
+  const std::unique_ptr<MockMirroringDestination> destination(
       new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
   StartMirroringTo(destination, 1);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(destination));
 
-  const scoped_ptr<MockMirroringDestination> replacement_destination(
+  const std::unique_ptr<MockMirroringDestination> replacement_destination(
       new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
   StartMirroringTo(replacement_destination, 1);
   EXPECT_EQ(1, destination->query_count());
@@ -382,13 +382,13 @@ TEST_F(AudioMirroringManagerTest, StreamDivertingStickyToOneDestination_3) {
   MockDiverter* const stream =
       CreateStream(kRenderProcessId, kRenderFrameId, 1);
 
-  const scoped_ptr<MockMirroringDestination> destination(
+  const std::unique_ptr<MockMirroringDestination> destination(
       new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
   StartMirroringTo(destination, 1);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(destination));
 
-  const scoped_ptr<MockMirroringDestination> replacement_destination(
+  const std::unique_ptr<MockMirroringDestination> replacement_destination(
       new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
   StartMirroringTo(replacement_destination, 0);
   EXPECT_EQ(1, destination->query_count());
@@ -422,7 +422,7 @@ TEST_F(AudioMirroringManagerTest, MultipleStreamsInOneMirroringSession) {
   MockDiverter* const stream1 =
       CreateStream(kRenderProcessId, kRenderFrameId, 1);
 
-  const scoped_ptr<MockMirroringDestination> destination(
+  const std::unique_ptr<MockMirroringDestination> destination(
       new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
   StartMirroringTo(destination, 3);
   EXPECT_EQ(1, destination->query_count());
@@ -463,13 +463,13 @@ TEST_F(AudioMirroringManagerTest, ThreeSeparateMirroringSessions) {
   MockDiverter* const stream =
       CreateStream(kRenderProcessId, kRenderFrameId, 1);
 
-  const scoped_ptr<MockMirroringDestination> destination(
+  const std::unique_ptr<MockMirroringDestination> destination(
       new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
   StartMirroringTo(destination, 1);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(destination));
 
-  const scoped_ptr<MockMirroringDestination> another_destination(
+  const std::unique_ptr<MockMirroringDestination> another_destination(
       new MockMirroringDestination(kAnotherRenderProcessId,
                                    kAnotherRenderFrameId));
   StartMirroringTo(another_destination, 1);
@@ -498,7 +498,7 @@ TEST_F(AudioMirroringManagerTest, ThreeSeparateMirroringSessions) {
   EXPECT_EQ(2, another_destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(another_destination));
 
-  const scoped_ptr<MockMirroringDestination> yet_another_destination(
+  const std::unique_ptr<MockMirroringDestination> yet_another_destination(
       new MockMirroringDestination(kYetAnotherRenderProcessId,
                                    kYetAnotherRenderFrameId));
   StartMirroringTo(yet_another_destination, 1);

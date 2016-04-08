@@ -126,7 +126,7 @@ class MidiHostTest : public testing::Test {
   }
 
   void OnSendData(uint32_t port) {
-    scoped_ptr<IPC::Message> message(
+    std::unique_ptr<IPC::Message> message(
         new MidiHostMsg_SendData(port, data_, 0.0));
     host_->OnMessageReceived(*message.get());
   }

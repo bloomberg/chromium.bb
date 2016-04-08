@@ -236,7 +236,7 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
         "window.domAutomationController.send("
             "JSON.stringify(userMediaRequests));",
         &json_requests));
-    scoped_ptr<base::Value> value_requests =
+    std::unique_ptr<base::Value> value_requests =
         base::JSONReader::Read(json_requests);
 
     EXPECT_EQ(base::Value::TYPE_LIST, value_requests->GetType());
@@ -786,7 +786,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest, CreatePageDump) {
       "window.domAutomationController.send("
       "JSON.stringify(peerConnectionDataStore));",
       &dump_json));
-  scoped_ptr<base::Value> dump = base::JSONReader::Read(dump_json);
+  std::unique_ptr<base::Value> dump = base::JSONReader::Read(dump_json);
   VerifyPageDumpStructure(dump.get(),
                           2 /*peer_connection_number*/,
                           2 /*update_number*/,

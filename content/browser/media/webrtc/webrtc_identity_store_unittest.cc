@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/media/webrtc/webrtc_identity_store.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/sequenced_worker_pool_owner.h"
-#include "content/browser/media/webrtc/webrtc_identity_store.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
@@ -84,7 +86,7 @@ class WebRtcIdentityStoreTest : public testing::Test {
 
  protected:
   TestBrowserThreadBundle browser_thread_bundle_;
-  scoped_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
+  std::unique_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
   scoped_refptr<WebRTCIdentityStore> webrtc_identity_store_;
 };
 
@@ -384,7 +386,7 @@ TEST_F(WebRtcIdentityStoreTest, HandleDBErrors) {
   RunUntilIdle();
 
   // Verifies the corrupted table was razed.
-  scoped_ptr<sql::Connection> db(new sql::Connection());
+  std::unique_ptr<sql::Connection> db(new sql::Connection());
   EXPECT_TRUE(db->Open(db_path));
   EXPECT_EQ(0U, sql::test::CountSQLTables(db.get()));
 

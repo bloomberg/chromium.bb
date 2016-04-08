@@ -59,7 +59,7 @@ void MediaSessionUmaHelper::OnSessionInactive() {
 }
 
 void MediaSessionUmaHelper::SetClockForTest(
-    scoped_ptr<base::Clock> testing_clock) {
+    std::unique_ptr<base::Clock> testing_clock) {
   clock_ = std::move(testing_clock);
 }
 

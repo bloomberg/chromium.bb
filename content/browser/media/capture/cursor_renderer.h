@@ -21,7 +21,7 @@ namespace content {
 // will listen to mouse events.
 class CONTENT_EXPORT CursorRenderer {
  public:
-  static scoped_ptr<CursorRenderer> Create(gfx::NativeView view);
+  static std::unique_ptr<CursorRenderer> Create(gfx::NativeView view);
 
   virtual ~CursorRenderer() {}
 

@@ -147,7 +147,7 @@ class WebRtcGetUserMediaBrowserTest: public WebRtcContentBrowserTest {
     // would stop both this code and the browser underneath.
     StopTracing();
 
-    scoped_ptr<TraceAnalyzer> analyzer(CreateTraceAnalyzer());
+    std::unique_ptr<TraceAnalyzer> analyzer(CreateTraceAnalyzer());
     analyzer->AssociateBeginEndEvents();
     trace_analyzer::TraceEventVector events;
     DCHECK(measure_filter.size());
@@ -205,7 +205,7 @@ class WebRtcGetUserMediaBrowserTest: public WebRtcContentBrowserTest {
 
     int error_code;
     std::string error_message;
-    scoped_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
+    std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
         devices_as_json, base::JSON_ALLOW_TRAILING_COMMAS, &error_code,
         &error_message);
 

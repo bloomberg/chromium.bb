@@ -6,13 +6,13 @@
 #define CONTENT_BROWSER_MEDIA_WEBRTC_WEBRTC_IDENTITY_STORE_BACKEND_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 
 class GURL;
@@ -102,8 +102,7 @@ class WebRTCIdentityStoreBackend
 
   ~WebRTCIdentityStoreBackend();
 
-  void OnLoaded(scoped_ptr<IdentityMap> out_map);
-
+  void OnLoaded(std::unique_ptr<IdentityMap> out_map);
 
   // Identities expires after |validity_period_|.
   base::TimeDelta validity_period_;
