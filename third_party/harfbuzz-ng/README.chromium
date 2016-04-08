@@ -28,3 +28,5 @@ Local changes:
       "Partially revert 86c68c7a2c97"
       in order to fix mark positioning in
       fast/text/international/arabic-vertical-offset.html
+    * Cherry-pick "Fix FixedVersion::to_int()"
+      https://github.com/behdad/harfbuzz/commit/6dd80fa
