@@ -28,7 +28,6 @@
 
 namespace sandbox {
 
-class AppContainerAttributes;
 class LowLevelPolicy;
 class TargetProcess;
 struct PolicyGlobal;
@@ -53,7 +52,6 @@ class PolicyBase final : public TargetPolicy {
   ResultCode SetIntegrityLevel(IntegrityLevel integrity_level) override;
   IntegrityLevel GetIntegrityLevel() const override;
   ResultCode SetDelayedIntegrityLevel(IntegrityLevel integrity_level) override;
-  ResultCode SetAppContainer(const wchar_t* sid) override;
   ResultCode SetCapability(const wchar_t* sid) override;
   ResultCode SetLowBox(const wchar_t* sid) override;
   ResultCode SetProcessMitigations(MitigationFlags flags) override;
@@ -83,8 +81,6 @@ class PolicyBase final : public TargetPolicy {
   ResultCode MakeTokens(base::win::ScopedHandle* initial,
                         base::win::ScopedHandle* lockdown,
                         base::win::ScopedHandle* lowbox);
-
-  const AppContainerAttributes* GetAppContainer() const;
 
   PSID GetLowBoxSid() const;
 
@@ -155,7 +151,6 @@ class PolicyBase final : public TargetPolicy {
   // given type.
   HandleCloser handle_closer_;
   std::vector<base::string16> capabilities_;
-  std::unique_ptr<AppContainerAttributes> appcontainer_list_;
   PSID lowbox_sid_;
   base::win::ScopedHandle lowbox_directory_;
   std::unique_ptr<Dispatcher> dispatcher_;

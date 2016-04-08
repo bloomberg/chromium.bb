@@ -15,8 +15,6 @@
         'sources': [
             'src/acl.cc',
             'src/acl.h',
-            'src/app_container.cc',
-            'src/app_container.h',
             'src/broker_services.cc',
             'src/broker_services.h',
             'src/crosscall_client.h',
@@ -266,7 +264,6 @@
         '../testing/gtest.gyp:gtest',
       ],
       'sources': [
-        'src/app_container_unittest.cc',
         'src/interception_unittest.cc',
         'src/service_resolver_unittest.cc',
         'src/restricted_token_unittest.cc',

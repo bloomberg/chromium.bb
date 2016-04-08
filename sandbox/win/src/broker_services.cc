@@ -18,7 +18,6 @@
 #include "base/win/scoped_process_information.h"
 #include "base/win/startup_information.h"
 #include "base/win/windows_version.h"
-#include "sandbox/win/src/app_container.h"
 #include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
@@ -328,9 +327,6 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   // This downcast is safe as long as we control CreatePolicy()
   PolicyBase* policy_base = static_cast<PolicyBase*>(policy);
 
-  if (policy_base->GetAppContainer() && policy_base->GetLowBoxSid())
-    return SBOX_ERROR_BAD_PARAMS;
-
   // Construct the tokens and the job object that we are going to associate
   // with the soon to be created target process.
   base::win::ScopedHandle initial_token;
@@ -368,10 +364,6 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   bool inherit_handles = false;
 
   int attribute_count = 0;
-  const AppContainerAttributes* app_container =
-      policy_base->GetAppContainer();
-  if (app_container)
-    ++attribute_count;
 
   size_t mitigations_size;
   ConvertProcessMitigationsToPolicy(policy_base->GetProcessMitigations(),
@@ -407,12 +399,6 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
 
   if (!startup_info.InitializeProcThreadAttributeList(attribute_count))
     return SBOX_ERROR_PROC_THREAD_ATTRIBUTES;
-
-  if (app_container) {
-    result = app_container->ShareForStartup(&startup_info);
-    if (SBOX_ALL_OK != result)
-      return result;
-  }
 
   if (mitigations) {
     if (!startup_info.UpdateProcThreadAttribute(
@@ -553,32 +539,6 @@ ResultCode BrokerServicesBase::AddTargetPeer(HANDLE peer_process) {
   // Release the pointer since it will be cleaned up by the callback.
   ignore_result(peer.release());
   return SBOX_ALL_OK;
-}
-
-ResultCode BrokerServicesBase::InstallAppContainer(const wchar_t* sid,
-                                                   const wchar_t* name) {
-  if (base::win::OSInfo::GetInstance()->version() < base::win::VERSION_WIN8)
-    return SBOX_ERROR_UNSUPPORTED;
-
-  base::string16 old_name = LookupAppContainer(sid);
-  if (old_name.empty())
-    return CreateAppContainer(sid, name);
-
-  if (old_name != name)
-    return SBOX_ERROR_INVALID_APP_CONTAINER;
-
-  return SBOX_ALL_OK;
-}
-
-ResultCode BrokerServicesBase::UninstallAppContainer(const wchar_t* sid) {
-  if (base::win::OSInfo::GetInstance()->version() < base::win::VERSION_WIN8)
-    return SBOX_ERROR_UNSUPPORTED;
-
-  base::string16 name = LookupAppContainer(sid);
-  if (name.empty())
-    return SBOX_ERROR_INVALID_APP_CONTAINER;
-
-  return DeleteAppContainer(sid);
 }
 
 }  // namespace sandbox

@@ -91,15 +91,6 @@ class BrokerServices {
   //   If the return is ERROR_GENERIC, you can call ::GetLastError() to get
   //   more information.
   virtual ResultCode AddTargetPeer(HANDLE peer_process) = 0;
-
-  // Install the AppContainer with the specified sid an name. Returns ALL_OK if
-  // successful or an error code if the AppContainer cannot be installed.
-  virtual ResultCode InstallAppContainer(const wchar_t* sid,
-                                         const wchar_t* name) = 0;
-
-  // Removes from the system the AppContainer with the specified sid.
-  // Returns ALL_OK if successful or an error code otherwise.
-  virtual ResultCode UninstallAppContainer(const wchar_t* sid) = 0;
 };
 
 // TargetServices models the current process from the perspective

@@ -173,17 +173,6 @@ class TargetPolicy {
   // than the current level, the sandbox will fail to start.
   virtual ResultCode SetDelayedIntegrityLevel(IntegrityLevel level) = 0;
 
-  // Sets the AppContainer to be used for the sandboxed process. Any capability
-  // to be enabled for the process should be added before this method is invoked
-  // (by calling SetCapability() as many times as needed).
-  // The desired AppContainer must be already installed on the system, otherwise
-  // launching the sandboxed process will fail. See BrokerServices for details
-  // about installing an AppContainer.
-  // Note that currently Windows restricts the use of impersonation within
-  // AppContainers, so this function is incompatible with the use of an initial
-  // token.
-  virtual ResultCode SetAppContainer(const wchar_t* sid) = 0;
-
   // Sets a capability to be enabled for the sandboxed process' AppContainer.
   virtual ResultCode SetCapability(const wchar_t* sid) = 0;
 

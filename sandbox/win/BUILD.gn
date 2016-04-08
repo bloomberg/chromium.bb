@@ -12,8 +12,6 @@ static_library("sandbox") {
   sources = [
     "src/acl.cc",
     "src/acl.h",
-    "src/app_container.cc",
-    "src/app_container.h",
     "src/broker_services.cc",
     "src/broker_services.h",
     "src/crosscall_client.h",
@@ -245,7 +243,6 @@ test("sbox_validation_tests") {
 
 test("sbox_unittests") {
   sources = [
-    "src/app_container_unittest.cc",
     "src/interception_unittest.cc",
     "src/ipc_unittest.cc",
     "src/job_unittest.cc",

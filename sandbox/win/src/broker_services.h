@@ -53,9 +53,6 @@ class BrokerServicesBase final : public BrokerServices,
                          PROCESS_INFORMATION* target) override;
   ResultCode WaitForAllTargets() override;
   ResultCode AddTargetPeer(HANDLE peer_process) override;
-  ResultCode InstallAppContainer(const wchar_t* sid,
-                                 const wchar_t* name) override;
-  ResultCode UninstallAppContainer(const wchar_t* sid) override;
 
   // Checks if the supplied process ID matches one of the broker's active
   // target processes
