@@ -5,11 +5,12 @@
 #ifndef ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_CONTROLLER_H_
 #define ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_CONTROLLER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell_observer.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/vector3d_f.h"
@@ -112,7 +113,7 @@ class ASH_EXPORT MaximizeModeController :
 
   // Set the TickClock. This is only to be used by tests that need to
   // artificially and deterministically control the current time.
-  void SetTickClockForTest(scoped_ptr<base::TickClock> tick_clock);
+  void SetTickClockForTest(std::unique_ptr<base::TickClock> tick_clock);
 
 #if defined(OS_CHROMEOS)
   // Detect hinge rotation from base and lid accelerometers and automatically
@@ -144,11 +145,11 @@ class ASH_EXPORT MaximizeModeController :
   TouchViewIntervalType CurrentTouchViewIntervalType();
 
   // The maximized window manager (if enabled).
-  scoped_ptr<MaximizeModeWindowManager> maximize_mode_window_manager_;
+  std::unique_ptr<MaximizeModeWindowManager> maximize_mode_window_manager_;
 
   // A helper class which when instantiated will block native events from the
   // internal keyboard and touchpad.
-  scoped_ptr<ScopedDisableInternalMouseAndKeyboard> event_blocker_;
+  std::unique_ptr<ScopedDisableInternalMouseAndKeyboard> event_blocker_;
 
   // Whether we have ever seen accelerometer data.
   bool have_seen_accelerometer_data_;
@@ -167,7 +168,7 @@ class ASH_EXPORT MaximizeModeController :
   base::TimeTicks last_lid_open_time_;
 
   // Source for the current time in base::TimeTicks.
-  scoped_ptr<base::TickClock> tick_clock_;
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   // Tracks when the lid is closed. Used to prevent entering maximize mode.
   bool lid_is_closed_;

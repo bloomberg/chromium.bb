@@ -416,7 +416,7 @@ bool MaximizeModeController::WasLidOpenedRecently() const {
 }
 
 void MaximizeModeController::SetTickClockForTest(
-    scoped_ptr<base::TickClock> tick_clock) {
+    std::unique_ptr<base::TickClock> tick_clock) {
   DCHECK(tick_clock_);
   tick_clock_ = std::move(tick_clock);
 }

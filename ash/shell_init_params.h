@@ -5,6 +5,8 @@
 #ifndef ASH_SHELL_INIT_PARAMS_H_
 #define ASH_SHELL_INIT_PARAMS_H_
 
+#include <memory>
+
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -13,7 +15,6 @@
 
 #include "ash/ash_export.h"
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class SequencedWorkerPool;
@@ -40,7 +41,7 @@ struct ASH_EXPORT ShellInitParams {
   // True if running inside mus.
   bool in_mus = false;
 
-  base::Callback<scoped_ptr<KeyboardUI>()> keyboard_factory;
+  base::Callback<std::unique_ptr<KeyboardUI>()> keyboard_factory;
 
 #if defined(OS_WIN)
   HWND remote_hwnd;

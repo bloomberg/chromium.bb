@@ -118,7 +118,7 @@ class MaximizeModeControllerTest : public test::AshTestBase {
   // Attaches a SimpleTestTickClock to the MaximizeModeController with a non
   // null value initial value.
   void AttachTickClockForTest() {
-    scoped_ptr<base::TickClock> tick_clock(
+    std::unique_ptr<base::TickClock> tick_clock(
         test_tick_clock_ = new base::SimpleTestTickClock());
     test_tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
     maximize_mode_controller()->SetTickClockForTest(std::move(tick_clock));
@@ -432,9 +432,9 @@ TEST_F(MaximizeModeControllerTest, DisplayDisconnectionDuringOverview) {
     return;
 
   UpdateDisplay("800x600,800x600");
-  scoped_ptr<aura::Window> w1(
+  std::unique_ptr<aura::Window> w1(
       CreateTestWindowInShellWithBounds(gfx::Rect(0, 0, 100, 100)));
-  scoped_ptr<aura::Window> w2(
+  std::unique_ptr<aura::Window> w2(
       CreateTestWindowInShellWithBounds(gfx::Rect(800, 0, 100, 100)));
   ASSERT_NE(w1->GetRootWindow(), w2->GetRootWindow());
 

@@ -101,7 +101,7 @@ class WebNotificationTrayTest : public test::AshTestBase {
 
  protected:
   void AddNotification(const std::string& id) {
-    scoped_ptr<message_center::Notification> notification;
+    std::unique_ptr<message_center::Notification> notification;
     notification.reset(new message_center::Notification(
         message_center::NOTIFICATION_TYPE_SIMPLE, id,
         base::ASCIIToUTF16("Test Web Notification"),
@@ -114,7 +114,7 @@ class WebNotificationTrayTest : public test::AshTestBase {
 
   void UpdateNotification(const std::string& old_id,
                           const std::string& new_id) {
-    scoped_ptr<message_center::Notification> notification;
+    std::unique_ptr<message_center::Notification> notification;
     notification.reset(new message_center::Notification(
         message_center::NOTIFICATION_TYPE_SIMPLE, new_id,
         base::ASCIIToUTF16("Updated Web Notification"),
@@ -354,7 +354,7 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndAutoHideShelf) {
   int bottom = GetPopupWorkAreaBottom();
 
   // Shelf's auto-hide state won't be HIDDEN unless window exists.
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
   ShelfLayoutManager* shelf =
       Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
@@ -412,7 +412,7 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndFullscreen) {
   int bottom = GetPopupWorkAreaBottom();
 
   // Checks the work area for normal auto-hidden state.
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
   ShelfLayoutManager* shelf =
       Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();

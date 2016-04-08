@@ -44,20 +44,20 @@ class CleanupWidgetAfterAnimationObserver
     : public ui::ImplicitAnimationObserver {
  public:
   explicit CleanupWidgetAfterAnimationObserver(
-      scoped_ptr<views::Widget> widget);
+      std::unique_ptr<views::Widget> widget);
   ~CleanupWidgetAfterAnimationObserver() override;
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
 
  private:
-  scoped_ptr<views::Widget> widget_;
+  std::unique_ptr<views::Widget> widget_;
 
   DISALLOW_COPY_AND_ASSIGN(CleanupWidgetAfterAnimationObserver);
 };
 
 CleanupWidgetAfterAnimationObserver::CleanupWidgetAfterAnimationObserver(
-    scoped_ptr<views::Widget> widget)
+    std::unique_ptr<views::Widget> widget)
     : widget_(std::move(widget)) {}
 
 CleanupWidgetAfterAnimationObserver::~CleanupWidgetAfterAnimationObserver() {

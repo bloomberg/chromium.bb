@@ -4,6 +4,8 @@
 
 #include "ui/wm/core/accelerator_filter.h"
 
+#include <memory>
+
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_delegate.h"
 #include "ash/shell.h"
@@ -14,7 +16,6 @@
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -47,10 +48,8 @@ TEST_F(AcceleratorFilterTest, TestFilterWithoutFocus) {
 // Tests if AcceleratorFilter works as expected with a focused window.
 TEST_F(AcceleratorFilterTest, TestFilterWithFocus) {
   aura::test::TestWindowDelegate test_delegate;
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
-      &test_delegate,
-      -1,
-      gfx::Rect()));
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithDelegate(&test_delegate, -1, gfx::Rect()));
   wm::ActivateWindow(window.get());
 
   const TestScreenshotDelegate* delegate = GetScreenshotDelegate();
@@ -91,10 +90,10 @@ TEST_F(AcceleratorFilterTest, TestCapsLockMask) {
 // Tests if special hardware keys like brightness and volume are consumed as
 // expected by the shell.
 TEST_F(AcceleratorFilterTest, CanConsumeSystemKeys) {
-  scoped_ptr<ui::AcceleratorHistory>
-    accelerator_history(new ui::AcceleratorHistory());
+  std::unique_ptr<ui::AcceleratorHistory> accelerator_history(
+      new ui::AcceleratorHistory());
   ::wm::AcceleratorFilter filter(
-      scoped_ptr<::wm::AcceleratorDelegate>(new AcceleratorDelegate),
+      std::unique_ptr<::wm::AcceleratorDelegate>(new AcceleratorDelegate),
       accelerator_history.get());
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
 
@@ -118,7 +117,7 @@ TEST_F(AcceleratorFilterTest, CanConsumeSystemKeys) {
   EXPECT_TRUE(press_mute.stopped_propagation());
 
   // Setting a window property on the target allows system keys to pass through.
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(1));
   wm::GetWindowState(window.get())->set_can_consume_system_keys(true);
   ui::KeyEvent press_volume_up(
       ui::ET_KEY_PRESSED, ui::VKEY_VOLUME_UP, ui::EF_NONE);
@@ -129,7 +128,7 @@ TEST_F(AcceleratorFilterTest, CanConsumeSystemKeys) {
 
   // System keys pass through to a child window if the parent (top level)
   // window has the property set.
-  scoped_ptr<aura::Window> child(CreateTestWindowInShellWithId(2));
+  std::unique_ptr<aura::Window> child(CreateTestWindowInShellWithId(2));
   window->AddChild(child.get());
   dispatch_helper.set_target(child.get());
   filter.OnKeyEvent(&press_volume_up);
@@ -161,7 +160,7 @@ TEST_F(AcceleratorFilterTest, SearchKeyShortcutsAreAlwaysHandled) {
 
   // Search+L is also processed when there is a full screen window.
   aura::test::TestWindowDelegate window_delegate;
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
       &window_delegate, 0, gfx::Rect(200, 200)));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   generator.PressKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);

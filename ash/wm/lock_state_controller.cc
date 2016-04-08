@@ -103,7 +103,7 @@ LockStateController::~LockStateController() {
 }
 
 void LockStateController::SetDelegate(
-    scoped_ptr<LockStateControllerDelegate> delegate) {
+    std::unique_ptr<LockStateControllerDelegate> delegate) {
   delegate_ = std::move(delegate);
 }
 

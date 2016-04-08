@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/session/logout_button_tray.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/shelf/shelf_types.h"
@@ -15,7 +16,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/events/event.h"
@@ -73,7 +73,7 @@ LogoutButton::LogoutButton(views::ButtonListener* listener)
   for (size_t state = 0; state < views::Button::STATE_COUNT; ++state)
     SetTextColor(static_cast<views::Button::ButtonState>(state), SK_ColorWHITE);
 
-  scoped_ptr<views::LabelButtonAssetBorder> border(
+  std::unique_ptr<views::LabelButtonAssetBorder> border(
       new views::LabelButtonAssetBorder(views::Button::STYLE_TEXTBUTTON));
   border->SetPainter(false, views::Button::STATE_NORMAL,
       views::Painter::CreateImageGridPainter(kLogoutButtonNormalImages));

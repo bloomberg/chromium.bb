@@ -5,6 +5,8 @@
 #ifndef ASH_WM_PANELS_PANEL_FRAME_VIEW_H_
 #define ASH_WM_PANELS_PANEL_FRAME_VIEW_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/views/window/non_client_view.h"
@@ -68,10 +70,11 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView {
   gfx::Rect client_view_bounds_;
 
   // Helper class for painting the header.
-  scoped_ptr<DefaultHeaderPainter> header_painter_;
+  std::unique_ptr<DefaultHeaderPainter> header_painter_;
 
   // Updates the hittest bounds overrides based on the window state type.
-  scoped_ptr<FrameBorderHitTestController> frame_border_hit_test_controller_;
+  std::unique_ptr<FrameBorderHitTestController>
+      frame_border_hit_test_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelFrameView);
 };

@@ -7,10 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/system/chromeos/power/power_status.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace message_center {
 class MessageCenter;
@@ -31,11 +32,11 @@ class ASH_EXPORT DualRoleNotification {
 
  private:
   // Creates the notification using the updated status.
-  scoped_ptr<message_center::Notification> CreateNotification();
+  std::unique_ptr<message_center::Notification> CreateNotification();
 
   message_center::MessageCenter* message_center_;
-  scoped_ptr<PowerStatus::PowerSource> dual_role_source_;
-  scoped_ptr<PowerStatus::PowerSource> dual_role_sink_;
+  std::unique_ptr<PowerStatus::PowerSource> dual_role_source_;
+  std::unique_ptr<PowerStatus::PowerSource> dual_role_sink_;
   size_t num_dual_role_sinks_;
   bool line_power_connected_;
 

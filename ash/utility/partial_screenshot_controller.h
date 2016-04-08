@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/geometry/point.h"
@@ -75,7 +75,7 @@ class ASH_EXPORT PartialScreenshotController : public ui::EventHandler,
   std::map<aura::Window*, PartialScreenshotLayer*> layers_;
 
   // The object to specify the crosshair cursor.
-  scoped_ptr<ScopedCursorSetter> cursor_setter_;
+  std::unique_ptr<ScopedCursorSetter> cursor_setter_;
 
   // ScreenshotDelegate to take the actual screenshot. No ownership.
   ScreenshotDelegate* screenshot_delegate_;

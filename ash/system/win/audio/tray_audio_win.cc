@@ -4,6 +4,8 @@
 
 #include "ash/system/win/audio/tray_audio_win.h"
 
+#include <memory>
+
 #include "ash/system/win/audio/tray_audio_delegate_win.h"
 
 namespace ash {
@@ -12,9 +14,9 @@ using system::TrayAudioDelegate;
 using system::TrayAudioDelegateWin;
 
 TrayAudioWin::TrayAudioWin(SystemTray* system_tray)
-    : TrayAudio(system_tray,
-                scoped_ptr<TrayAudioDelegate>(new TrayAudioDelegateWin())) {
-}
+    : TrayAudio(
+          system_tray,
+          std::unique_ptr<TrayAudioDelegate>(new TrayAudioDelegateWin())) {}
 
 TrayAudioWin::~TrayAudioWin() {
 }

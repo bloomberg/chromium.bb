@@ -6,6 +6,7 @@
 #define ASH_DISPLAY_DISPLAY_ANIMATOR_CHROMEOS_H_
 
 #include <map>
+#include <memory>
 
 #include "ash/ash_export.h"
 #include "ash/display/display_animator.h"
@@ -55,7 +56,7 @@ class ASH_EXPORT DisplayAnimatorChromeOS
   void ClearHidingLayers();
 
   std::map<aura::Window*, ui::Layer*> hiding_layers_;
-  scoped_ptr<base::OneShotTimer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
   base::WeakPtrFactory<DisplayAnimatorChromeOS> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayAnimatorChromeOS);

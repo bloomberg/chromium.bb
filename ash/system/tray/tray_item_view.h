@@ -5,6 +5,8 @@
 #ifndef ASH_SYSTEM_TRAY_TRAY_ITEM_VIEW_H_
 #define ASH_SYSTEM_TRAY_TRAY_ITEM_VIEW_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -70,7 +72,7 @@ class ASH_EXPORT TrayItemView : public views::View,
   void AnimationCanceled(const gfx::Animation* animation) override;
 
   SystemTrayItem* owner_;
-  scoped_ptr<gfx::SlideAnimation> animation_;
+  std::unique_ptr<gfx::SlideAnimation> animation_;
   views::Label* label_;
   views::ImageView* image_view_;
 

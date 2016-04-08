@@ -5,12 +5,12 @@
 #ifndef ASH_METRICS_TASK_SWITCH_METRIC_RECORDER_H_
 #define ASH_METRICS_TASK_SWITCH_METRIC_RECORDER_H_
 
+#include <memory>
 #include <string>
 
 #include "ash/ash_export.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace aura {
 class Window;
@@ -87,7 +87,8 @@ class ASH_EXPORT TaskSwitchMetricsRecorder {
   // Tracks TaskSwitchSource to TaskSwitchTimeTracker mappings. The
   // |histogram_map_| is populated on demand the first time a
   // TaskSwitchTimeTracker is needed for a given source.
-  base::ScopedPtrHashMap<int, scoped_ptr<TaskSwitchTimeTracker>> histogram_map_;
+  base::ScopedPtrHashMap<int, std::unique_ptr<TaskSwitchTimeTracker>>
+      histogram_map_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskSwitchMetricsRecorder);
 };

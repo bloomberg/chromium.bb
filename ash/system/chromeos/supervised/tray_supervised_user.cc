@@ -96,7 +96,7 @@ void TraySupervisedUser::UpdateAfterLoginStatusChange(
 void TraySupervisedUser::CreateOrUpdateNotification(
     const base::string16& new_message) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  scoped_ptr<Notification> notification(
+  std::unique_ptr<Notification> notification(
       message_center::Notification::CreateSystemNotification(
           kNotificationId, base::string16() /* no title */, new_message,
           bundle.GetImageNamed(GetSupervisedUserIconId()),

@@ -5,6 +5,8 @@
 #ifndef ASH_MUS_KEYBOARD_UI_MUS_H_
 #define ASH_MUS_KEYBOARD_UI_MUS_H_
 
+#include <memory>
+
 #include "ash/keyboard/keyboard_ui.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -22,7 +24,7 @@ class KeyboardUIMus : public KeyboardUI,
   explicit KeyboardUIMus(mojo::Connector* connector);
   ~KeyboardUIMus() override;
 
-  static scoped_ptr<KeyboardUI> Create(mojo::Connector* connector);
+  static std::unique_ptr<KeyboardUI> Create(mojo::Connector* connector);
 
   // KeyboardUI:
   void Hide() override;

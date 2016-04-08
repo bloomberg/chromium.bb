@@ -7,7 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace ash {
 

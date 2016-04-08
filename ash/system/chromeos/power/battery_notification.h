@@ -8,7 +8,6 @@
 #include "ash/ash_export.h"
 #include "ash/system/chromeos/power/tray_power.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace message_center {
 class MessageCenter;

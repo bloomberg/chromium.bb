@@ -5,12 +5,13 @@
 #ifndef ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_TRAY_H_
 #define ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_TRAY_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/user/login_status.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/message_center/message_center_tray.h"
@@ -157,9 +158,9 @@ class ASH_EXPORT WebNotificationTray
   bool IsPopupVisible() const;
   message_center::MessageCenterBubble* GetMessageCenterBubbleForTest();
 
-  scoped_ptr<message_center::MessageCenterTray> message_center_tray_;
-  scoped_ptr<WebNotificationBubbleWrapper> message_center_bubble_;
-  scoped_ptr<message_center::MessagePopupCollection> popup_collection_;
+  std::unique_ptr<message_center::MessageCenterTray> message_center_tray_;
+  std::unique_ptr<WebNotificationBubbleWrapper> message_center_bubble_;
+  std::unique_ptr<message_center::MessagePopupCollection> popup_collection_;
   WebNotificationButton* button_;
 
   bool show_message_center_on_unlock_;
@@ -172,7 +173,7 @@ class ASH_EXPORT WebNotificationTray
   // flickers of the shelf from hidden to shown. See: crbug.com/181213
   bool should_block_shelf_auto_hide_;
 
-  scoped_ptr<AshPopupAlignmentDelegate> popup_alignment_delegate_;
+  std::unique_ptr<AshPopupAlignmentDelegate> popup_alignment_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationTray);
 };

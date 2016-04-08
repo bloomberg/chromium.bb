@@ -4,6 +4,8 @@
 
 #include "ash/display/screen_position_controller.h"
 
+#include <memory>
+
 #include "ash/display/display_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
@@ -43,10 +45,10 @@ namespace test {
 namespace {
 
 void SetSecondaryDisplayLayout(display::DisplayPlacement::Position position) {
-  scoped_ptr<display::DisplayLayout> layout(Shell::GetInstance()
-                                                ->display_manager()
-                                                ->GetCurrentDisplayLayout()
-                                                .Copy());
+  std::unique_ptr<display::DisplayLayout> layout(Shell::GetInstance()
+                                                     ->display_manager()
+                                                     ->GetCurrentDisplayLayout()
+                                                     .Copy());
   layout->placement_list[0].position = position;
   Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
       std::move(layout));
@@ -86,7 +88,7 @@ class ScreenPositionControllerTest : public test::AshTestBase {
   }
 
  protected:
-  scoped_ptr<aura::Window> window_;
+  std::unique_ptr<aura::Window> window_;
   aura::test::TestWindowDelegate window_delegate_;
 
  private:
@@ -341,7 +343,7 @@ TEST_F(ScreenPositionControllerTest,
       Shell::GetInstance()->GetAllRootWindows();
   aura::WindowTracker tracker;
   tracker.Add(root_windows[1]);
-  scoped_ptr<ConvertToScreenEventHandler> event_handler(
+  std::unique_ptr<ConvertToScreenEventHandler> event_handler(
       new ConvertToScreenEventHandler);
 
   // Remove the secondary monitor.

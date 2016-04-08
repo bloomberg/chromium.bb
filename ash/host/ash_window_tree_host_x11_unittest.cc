@@ -93,10 +93,10 @@ class AshWindowTreeHostX11Test : public aura::test::AuraTestBase {
 // delegate will get corresponding ui::TouchEvent if the touch events
 // are targeting this WindowTreeHost.
 TEST_F(AshWindowTreeHostX11Test, MAYBE_DispatchTouchEventToOneRootWindow) {
-  scoped_ptr<aura::WindowTreeHostX11> window_tree_host(
+  std::unique_ptr<aura::WindowTreeHostX11> window_tree_host(
       new AshWindowTreeHostX11(gfx::Rect(0, 0, 2560, 1700)));
   window_tree_host->InitHost();
-  scoped_ptr<RootWindowEventHandler> handler(
+  std::unique_ptr<RootWindowEventHandler> handler(
       new RootWindowEventHandler(window_tree_host.get()));
 
   std::vector<int> devices;
@@ -149,17 +149,17 @@ TEST_F(AshWindowTreeHostX11Test, MAYBE_DispatchTouchEventToOneRootWindow) {
 // the event target of the X touch events should generate the corresponding
 // ui::TouchEvent for its delegate.
 TEST_F(AshWindowTreeHostX11Test, DispatchTouchEventToTwoRootWindow) {
-  scoped_ptr<aura::WindowTreeHostX11> window_tree_host1(
+  std::unique_ptr<aura::WindowTreeHostX11> window_tree_host1(
       new AshWindowTreeHostX11(gfx::Rect(0, 0, 2560, 1700)));
   window_tree_host1->InitHost();
-  scoped_ptr<RootWindowEventHandler> handler1(
+  std::unique_ptr<RootWindowEventHandler> handler1(
       new RootWindowEventHandler(window_tree_host1.get()));
 
   int host2_y_offset = 1700;
-  scoped_ptr<aura::WindowTreeHostX11> window_tree_host2(
+  std::unique_ptr<aura::WindowTreeHostX11> window_tree_host2(
       new AshWindowTreeHostX11(gfx::Rect(0, host2_y_offset, 1920, 1080)));
   window_tree_host2->InitHost();
-  scoped_ptr<RootWindowEventHandler> handler2(
+  std::unique_ptr<RootWindowEventHandler> handler2(
       new RootWindowEventHandler(window_tree_host2.get()));
 
   std::vector<int> devices;

@@ -26,10 +26,10 @@ class TaskSwitchMetricsRecorderTest : public testing::Test {
 
  protected:
   // Used to verify recorded data.
-  scoped_ptr<base::HistogramTester> histogram_tester_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
 
   // The test target.
-  scoped_ptr<TaskSwitchMetricsRecorder> task_switch_metrics_recorder_;
+  std::unique_ptr<TaskSwitchMetricsRecorder> task_switch_metrics_recorder_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TaskSwitchMetricsRecorderTest);

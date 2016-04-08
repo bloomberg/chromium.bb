@@ -8,13 +8,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "ui/aura/window_observer.h"
@@ -182,7 +182,7 @@ class ASH_EXPORT WindowSelector
   // Window text filter widget. As the user writes on it, we filter the items
   // in the overview. It is also responsible for handling overview key events,
   // such as enter key to select.
-  scoped_ptr<views::Widget> text_filter_widget_;
+  std::unique_ptr<views::Widget> text_filter_widget_;
 
   // The current length of the string entered into the text filtering textfield.
   size_t text_filter_string_length_;

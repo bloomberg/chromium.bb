@@ -134,7 +134,7 @@ void WorkspaceController::DoInitialAnimation() {
 }
 
 void WorkspaceController::SetMaximizeBackdropDelegate(
-    scoped_ptr<WorkspaceLayoutManagerDelegate> delegate) {
+    std::unique_ptr<WorkspaceLayoutManagerDelegate> delegate) {
   layout_manager_->SetMaximizeBackdropDelegate(std::move(delegate));
 }
 

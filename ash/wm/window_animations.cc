@@ -105,11 +105,10 @@ void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
   float scale_x = static_cast<float>(target_bounds.width()) / bounds.width();
   float scale_y = static_cast<float>(target_bounds.height()) / bounds.height();
 
-  scoped_ptr<ui::InterpolatedTransform> scale(
-      new ui::InterpolatedScale(gfx::Point3F(1, 1, 1),
-                                gfx::Point3F(scale_x, scale_y, 1)));
+  std::unique_ptr<ui::InterpolatedTransform> scale(new ui::InterpolatedScale(
+      gfx::Point3F(1, 1, 1), gfx::Point3F(scale_x, scale_y, 1)));
 
-  scoped_ptr<ui::InterpolatedTransform> translation(
+  std::unique_ptr<ui::InterpolatedTransform> translation(
       new ui::InterpolatedTranslation(
           gfx::PointF(), gfx::PointF(target_bounds.x() - bounds.x(),
                                      target_bounds.y() - bounds.y())));
@@ -120,7 +119,7 @@ void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
   base::TimeDelta duration = window->layer()->GetAnimator()->
       GetTransitionDuration();
 
-  scoped_ptr<ui::LayerAnimationElement> transition(
+  std::unique_ptr<ui::LayerAnimationElement> transition(
       ui::LayerAnimationElement::CreateInterpolatedTransformElement(
           scale.release(), duration));
 
@@ -269,7 +268,7 @@ class CrossFadeObserver : public ui::CompositorObserver,
   // Observes |window| for destruction, but does not take ownership.
   // Takes ownership of |layer| and its child layers.
   CrossFadeObserver(aura::Window* window,
-                    scoped_ptr<ui::LayerTreeOwner> layer_owner)
+                    std::unique_ptr<ui::LayerTreeOwner> layer_owner)
       : window_(window), layer_owner_(std::move(layer_owner)) {
     window_->AddObserver(this);
     layer_owner_->root()->GetCompositor()->AddObserver(this);
@@ -307,14 +306,14 @@ class CrossFadeObserver : public ui::CompositorObserver,
 
  private:
   aura::Window* window_;  // not owned
-  scoped_ptr<ui::LayerTreeOwner> layer_owner_;
+  std::unique_ptr<ui::LayerTreeOwner> layer_owner_;
 
   DISALLOW_COPY_AND_ASSIGN(CrossFadeObserver);
 };
 
 base::TimeDelta CrossFadeAnimation(
     aura::Window* window,
-    scoped_ptr<ui::LayerTreeOwner> old_layer_owner,
+    std::unique_ptr<ui::LayerTreeOwner> old_layer_owner,
     gfx::Tween::Type tween_type) {
   DCHECK(old_layer_owner->root());
   const gfx::Rect old_bounds(old_layer_owner->root()->bounds());
@@ -413,20 +412,20 @@ std::vector<ui::LayerAnimationSequence*>
 CreateBrightnessGrayscaleAnimationSequence(float target_value,
                                            base::TimeDelta duration) {
   gfx::Tween::Type animation_type = gfx::Tween::EASE_OUT;
-  scoped_ptr<ui::LayerAnimationSequence> brightness_sequence(
+  std::unique_ptr<ui::LayerAnimationSequence> brightness_sequence(
       new ui::LayerAnimationSequence());
-  scoped_ptr<ui::LayerAnimationSequence> grayscale_sequence(
+  std::unique_ptr<ui::LayerAnimationSequence> grayscale_sequence(
       new ui::LayerAnimationSequence());
 
-  scoped_ptr<ui::LayerAnimationElement> brightness_element(
-      ui::LayerAnimationElement::CreateBrightnessElement(
-          target_value, duration));
+  std::unique_ptr<ui::LayerAnimationElement> brightness_element(
+      ui::LayerAnimationElement::CreateBrightnessElement(target_value,
+                                                         duration));
   brightness_element->set_tween_type(animation_type);
   brightness_sequence->AddElement(brightness_element.release());
 
-  scoped_ptr<ui::LayerAnimationElement> grayscale_element(
-      ui::LayerAnimationElement::CreateGrayscaleElement(
-          target_value, duration));
+  std::unique_ptr<ui::LayerAnimationElement> grayscale_element(
+      ui::LayerAnimationElement::CreateGrayscaleElement(target_value,
+                                                        duration));
   grayscale_element->set_tween_type(animation_type);
   grayscale_sequence->AddElement(grayscale_element.release());
 

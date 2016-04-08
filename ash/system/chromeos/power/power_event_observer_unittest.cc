@@ -4,9 +4,10 @@
 
 #include "ash/system/chromeos/power/power_event_observer.h"
 
+#include <memory>
+
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -43,7 +44,7 @@ class PowerEventObserverTest : public test::AshTestBase {
     return result;
   }
 
-  scoped_ptr<PowerEventObserver> observer_;
+  std::unique_ptr<PowerEventObserver> observer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PowerEventObserverTest);

@@ -5,10 +5,10 @@
 #ifndef ASH_WM_BOOT_SPLASH_SCREEN_CHROMEOS_H_
 #define ASH_WM_BOOT_SPLASH_SCREEN_CHROMEOS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 
 namespace aura {
@@ -39,9 +39,9 @@ class BootSplashScreen {
   class CopyHostContentLayerDelegate;
 
   // Copies the host window's content to |layer_|.
-  scoped_ptr<CopyHostContentLayerDelegate> layer_delegate_;
+  std::unique_ptr<CopyHostContentLayerDelegate> layer_delegate_;
 
-  scoped_ptr<ui::Layer> layer_;
+  std::unique_ptr<ui::Layer> layer_;
 
   DISALLOW_COPY_AND_ASSIGN(BootSplashScreen);
 };

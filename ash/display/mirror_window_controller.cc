@@ -138,7 +138,7 @@ DisplayManager::MultiDisplayMode GetCurrentMultiDisplayMode() {
 struct MirrorWindowController::MirroringHostInfo {
   MirroringHostInfo();
   ~MirroringHostInfo();
-  scoped_ptr<AshWindowTreeHost> ash_host;
+  std::unique_ptr<AshWindowTreeHost> ash_host;
   gfx::Size mirror_window_host_size;
   aura::Window* mirror_window = nullptr;
 };
@@ -169,7 +169,7 @@ void MirrorWindowController::UpdateWindow(
   multi_display_mode_ = GetCurrentMultiDisplayMode();
 
   for (const DisplayInfo& display_info : display_info_list) {
-    scoped_ptr<RootWindowTransformer> transformer;
+    std::unique_ptr<RootWindowTransformer> transformer;
     if (display_manager->IsInMirrorMode()) {
       transformer.reset(CreateRootWindowTransformerForMirroredDisplay(
           source_display_info, display_info));

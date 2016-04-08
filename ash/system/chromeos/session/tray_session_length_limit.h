@@ -5,11 +5,12 @@
 #ifndef ASH_SYSTEM_CHROMEOS_SESSION_SESSION_LENGTH_LIMIT_H_
 #define ASH_SYSTEM_CHROMEOS_SESSION_SESSION_LENGTH_LIMIT_H_
 
+#include <memory>
+
 #include "ash/system/chromeos/session/session_length_limit_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -69,7 +70,7 @@ public:
   LimitState last_limit_state_;  // State of last notification update.
 
   LabelTrayView* tray_bubble_view_;
-  scoped_ptr<base::RepeatingTimer> timer_;
+  std::unique_ptr<base::RepeatingTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(TraySessionLengthLimit);
 };

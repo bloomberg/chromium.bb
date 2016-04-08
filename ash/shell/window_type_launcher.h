@@ -5,6 +5,8 @@
 #ifndef ASH_SHELL_WINDOW_TYPE_LAUNCHER_H_
 #define ASH_SHELL_WINDOW_TYPE_LAUNCHER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
@@ -72,7 +74,7 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   views::LabelButton* examples_button_;
   views::LabelButton* show_hide_window_button_;
   views::LabelButton* show_web_notification_;
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTypeLauncher);
 };

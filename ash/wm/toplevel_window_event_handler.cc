@@ -108,7 +108,7 @@ class ToplevelWindowEventHandler::ScopedWindowResizer
 
  private:
   ToplevelWindowEventHandler* handler_;
-  scoped_ptr<WindowResizer> resizer_;
+  std::unique_ptr<WindowResizer> resizer_;
 
   // Whether ScopedWindowResizer grabbed capture.
   bool grabbed_capture_;
@@ -466,7 +466,7 @@ bool ToplevelWindowEventHandler::CompleteDrag(DragCompletionStatus status) {
   if (!window_resizer_)
     return false;
 
-  scoped_ptr<ScopedWindowResizer> resizer(window_resizer_.release());
+  std::unique_ptr<ScopedWindowResizer> resizer(window_resizer_.release());
   switch (status) {
     case DRAG_COMPLETE:
       resizer->resizer()->CompleteDrag();

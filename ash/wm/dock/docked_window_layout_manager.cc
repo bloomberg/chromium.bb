@@ -162,7 +162,8 @@ class DockedBackgroundWidget : public views::Widget,
 
     float target_opacity =
         (background_type == SHELF_BACKGROUND_MAXIMIZED) ? 1.0f : 0.0f;
-    scoped_ptr<ui::ScopedLayerAnimationSettings> opaque_background_animation;
+    std::unique_ptr<ui::ScopedLayerAnimationSettings>
+        opaque_background_animation;
     if (change_type != BACKGROUND_CHANGE_IMMEDIATE) {
       opaque_background_animation.reset(new ui::ScopedLayerAnimationSettings(
           opaque_background_.GetAnimator()));

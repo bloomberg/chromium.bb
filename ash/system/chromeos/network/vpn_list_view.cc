@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/network/vpn_list_view.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -17,7 +18,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chromeos/network/network_connection_handler.h"
@@ -49,8 +49,7 @@ bool IsConnectedOrConnecting(const chromeos::NetworkState* network) {
 }
 
 void IgnoreDisconnectError(const std::string& error_name,
-                           scoped_ptr<base::DictionaryValue> error_data) {
-}
+                           std::unique_ptr<base::DictionaryValue> error_data) {}
 
 // The base class of all list entries, a |HoverHighlightView| with no border.
 class VPNListEntryBase : public HoverHighlightView {
@@ -252,7 +251,7 @@ VPNListView::~VPNListView() {
 void VPNListView::Update() {
   // Before updating the list, determine whether the user was hovering over one
   // of the VPN provider or network entries.
-  scoped_ptr<VPNProvider::Key> hovered_provider_key;
+  std::unique_ptr<VPNProvider::Key> hovered_provider_key;
   std::string hovered_network_service_path;
   for (const std::pair<const views::View* const, VPNProvider::Key>& provider :
        provider_view_key_map_) {

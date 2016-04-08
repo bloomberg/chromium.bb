@@ -5,11 +5,11 @@
 #ifndef ASH_NETWORKING_CONFIG_DELEGATE_H_
 #define ASH_NETWORKING_CONFIG_DELEGATE_H_
 
+#include <memory>
 #include <string>
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace ash {
 
@@ -33,7 +33,7 @@ class NetworkingConfigDelegate {
   // Returns information about the extension registered to control configuration
   // of the network |service_path|. If no extension is registered, the
   // scoped_ptr is empty.
-  virtual scoped_ptr<const ExtensionInfo> LookUpExtensionForNetwork(
+  virtual std::unique_ptr<const ExtensionInfo> LookUpExtensionForNetwork(
       const std::string& service_path) = 0;
 
  private:

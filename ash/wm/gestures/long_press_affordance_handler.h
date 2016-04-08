@@ -5,8 +5,9 @@
 #ifndef ASH_WM_GESTURES_LONG_PRESS_AFFORDANCE_HANDLER_H_
 #define ASH_WM_GESTURES_LONG_PRESS_AFFORDANCE_HANDLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/animation/linear_animation.h"
@@ -60,7 +61,7 @@ class LongPressAffordanceHandler : public gfx::LinearAnimation,
   // Overridden from aura::WindowObserver.
   void OnWindowDestroying(aura::Window* window) override;
 
-  scoped_ptr<LongPressAffordanceView> view_;
+  std::unique_ptr<LongPressAffordanceView> view_;
   gfx::Point tap_down_location_;
   base::OneShotTimer timer_;
   aura::Window* tap_down_target_;

@@ -50,8 +50,8 @@ class ShelfTooltipManagerTest : public AshTestBase {
   }
 
  protected:
-  scoped_ptr<views::Widget> widget_;
-  scoped_ptr<views::View> dummy_anchor_;
+  std::unique_ptr<views::Widget> widget_;
+  std::unique_ptr<views::View> dummy_anchor_;
 
   Shelf* shelf_;
   ShelfTooltipManager* tooltip_manager_;
@@ -89,7 +89,7 @@ TEST_F(ShelfTooltipManagerTest, HideWhenShelfIsHidden) {
   ASSERT_TRUE(TooltipIsVisible());
 
   // Create a full-screen window to hide the shelf.
-  scoped_ptr<views::Widget> widget(new views::Widget);
+  std::unique_ptr<views::Widget> widget(new views::Widget);
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = CurrentContext();

@@ -5,6 +5,8 @@
 #ifndef ASH_SYSTEM_CHROMEOS_POWER_TRAY_POWER_H_
 #define ASH_SYSTEM_CHROMEOS_POWER_TRAY_POWER_H_
 
+#include <memory>
+
 #include "ash/system/chromeos/power/power_status.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/macros.h"
@@ -99,8 +101,8 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
 
   message_center::MessageCenter* message_center_;  // Not owned.
   tray::PowerTrayView* power_tray_;
-  scoped_ptr<BatteryNotification> battery_notification_;
-  scoped_ptr<DualRoleNotification> dual_role_notification_;
+  std::unique_ptr<BatteryNotification> battery_notification_;
+  std::unique_ptr<DualRoleNotification> dual_role_notification_;
   NotificationState notification_state_;
 
   // Was a USB charger connected the last time OnPowerStatusChanged() was

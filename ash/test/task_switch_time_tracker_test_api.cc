@@ -14,7 +14,7 @@ TaskSwitchTimeTrackerTestAPI::TaskSwitchTimeTrackerTestAPI(
     const std::string& histogram_name) {
   tick_clock_ = new base::SimpleTestTickClock();
   time_tracker_.reset(new TaskSwitchTimeTracker(
-      histogram_name, scoped_ptr<base::TickClock>(tick_clock_)));
+      histogram_name, std::unique_ptr<base::TickClock>(tick_clock_)));
 }
 
 TaskSwitchTimeTrackerTestAPI::~TaskSwitchTimeTrackerTestAPI() {

@@ -281,7 +281,7 @@ void WindowSelector::Init(const WindowList& windows) {
         Shell::GetContainer(*iter, kShellWindowId_PanelContainer)
             ->layout_manager())->SetShowCalloutWidgets(false);
 
-    scoped_ptr<WindowGrid> grid(new WindowGrid(*iter, windows, this));
+    std::unique_ptr<WindowGrid> grid(new WindowGrid(*iter, windows, this));
     if (grid->empty())
       continue;
     num_items_ += grid->size();

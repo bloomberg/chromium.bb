@@ -29,7 +29,7 @@ ScreenRotationAnimation::ScreenRotationAnimation(
       tween_type_(tween_type),
       initial_opacity_(initial_opacity),
       target_opacity_(target_opacity) {
-  scoped_ptr<ui::InterpolatedTransform> rotation(
+  std::unique_ptr<ui::InterpolatedTransform> rotation(
       new ui::InterpolatedTransformAboutPivot(
           pivot, new ui::InterpolatedRotation(start_degrees, end_degrees)));
 

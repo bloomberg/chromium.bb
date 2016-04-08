@@ -5,11 +5,7 @@
 #ifndef ASH_DISPLAY_DISPLAY_CONFIGURATION_CONTROLLER_H_
 #define ASH_DISPLAY_DISPLAY_CONFIGURATION_CONTROLLER_H_
 
-// This class controls Display related configuration. Specifically it:
-// * Handles animated transitions where appropriate.
-// * Limits the frequency of certain operations.
-// * Provides a single interface for UI and API classes.
-// * TODO: Forwards display configuration changed events to UI and API classes.
+#include <memory>
 
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -30,6 +26,11 @@ class ShellTestApi;
 class DisplayAnimator;
 class DisplayManager;
 
+// This class controls Display related configuration. Specifically it:
+// * Handles animated transitions where appropriate.
+// * Limits the frequency of certain operations.
+// * Provides a single interface for UI and API classes.
+// * TODO: Forwards display configuration changed events to UI and API classes.
 class ASH_EXPORT DisplayConfigurationController
     : public WindowTreeHostManager::Observer {
  public:
@@ -41,7 +42,7 @@ class ASH_EXPORT DisplayConfigurationController
   // Sets the layout for the current displays with a fade in/out
   // animation. Currently |display_id| is assumed to be the secondary
   // display.  TODO(oshima/stevenjb): Support 3+ displays.
-  void SetDisplayLayout(scoped_ptr<display::DisplayLayout> layout,
+  void SetDisplayLayout(std::unique_ptr<display::DisplayLayout> layout,
                         bool user_action);
 
   // Sets the mirror mode with a fade-in/fade-out animation. Affects all
@@ -73,14 +74,14 @@ class ASH_EXPORT DisplayConfigurationController
   // *before* starting any animations.
   void SetThrottleTimeout(int64_t throttle_ms);
   bool IsLimited();
-  void SetDisplayLayoutImpl(scoped_ptr<display::DisplayLayout> layout);
+  void SetDisplayLayoutImpl(std::unique_ptr<display::DisplayLayout> layout);
   void SetMirrorModeImpl(bool mirror);
   void SetPrimaryDisplayIdImpl(int64_t display_id);
 
   DisplayManager* display_manager_;                  // weak ptr
   WindowTreeHostManager* window_tree_host_manager_;  // weak ptr
-  scoped_ptr<DisplayAnimator> display_animator_;
-  scoped_ptr<DisplayChangeLimiter> limiter_;
+  std::unique_ptr<DisplayAnimator> display_animator_;
+  std::unique_ptr<DisplayChangeLimiter> limiter_;
 
   base::WeakPtrFactory<DisplayConfigurationController> weak_ptr_factory_;
 

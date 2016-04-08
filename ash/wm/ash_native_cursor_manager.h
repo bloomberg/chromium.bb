@@ -5,10 +5,11 @@
 #ifndef ASH_WM_ASH_NATIVE_CURSOR_MANAGER_H_
 #define ASH_WM_ASH_NATIVE_CURSOR_MANAGER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
@@ -62,7 +63,7 @@ class ASH_EXPORT AshNativeCursorManager
 
   bool native_cursor_enabled_;
 
-  scoped_ptr<ui::ImageCursors> image_cursors_;
+  std::unique_ptr<ui::ImageCursors> image_cursors_;
 
   DISALLOW_COPY_AND_ASSIGN(AshNativeCursorManager);
 };

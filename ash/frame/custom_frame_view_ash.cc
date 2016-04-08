@@ -108,7 +108,7 @@ class CustomFrameViewAshWindowStateDelegate
   }
 
   ash::wm::WindowState* window_state_;
-  scoped_ptr<ash::ImmersiveFullscreenController>
+  std::unique_ptr<ash::ImmersiveFullscreenController>
       immersive_fullscreen_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomFrameViewAshWindowStateDelegate);
@@ -182,7 +182,7 @@ class CustomFrameViewAsh::HeaderView
   views::Widget* frame_;
 
   // Helper for painting the header.
-  scoped_ptr<DefaultHeaderPainter> header_painter_;
+  std::unique_ptr<DefaultHeaderPainter> header_painter_;
 
   views::ImageView* avatar_icon_;
 
@@ -387,7 +387,7 @@ CustomFrameViewAsh::OverlayView::OverlayView(HeaderView* header_view)
     : header_view_(header_view) {
   AddChildView(header_view);
   SetEventTargeter(
-      scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
+      std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 }
 
 CustomFrameViewAsh::OverlayView::~OverlayView() {
@@ -442,9 +442,8 @@ CustomFrameViewAsh::CustomFrameViewAsh(views::Widget* frame)
   // be set. This is the case for packaged apps.
   wm::WindowState* window_state = wm::GetWindowState(frame->GetNativeWindow());
   if (!window_state->HasDelegate()) {
-    window_state->SetDelegate(scoped_ptr<wm::WindowStateDelegate>(
-        new CustomFrameViewAshWindowStateDelegate(
-            window_state, this)));
+    window_state->SetDelegate(std::unique_ptr<wm::WindowStateDelegate>(
+        new CustomFrameViewAshWindowStateDelegate(window_state, this)));
   }
 }
 

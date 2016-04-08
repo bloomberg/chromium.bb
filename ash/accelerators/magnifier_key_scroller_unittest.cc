@@ -30,7 +30,7 @@ class KeyEventDelegate : public aura::test::TestWindowDelegate {
   void reset() { key_event.reset(); }
 
  private:
-  scoped_ptr<ui::KeyEvent> key_event;
+  std::unique_ptr<ui::KeyEvent> key_event;
 
   DISALLOW_COPY_AND_ASSIGN(KeyEventDelegate);
 };
@@ -41,10 +41,8 @@ typedef ash::test::AshTestBase MagnifierKeyScrollerTest;
 
 TEST_F(MagnifierKeyScrollerTest, Basic) {
   KeyEventDelegate delegate;
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
-      &delegate,
-      0,
-      gfx::Rect(10, 10, 100, 100)));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+      &delegate, 0, gfx::Rect(10, 10, 100, 100)));
   wm::ActivateWindow(window.get());
 
   MagnifierKeyScroller::ScopedEnablerForTest scoped;

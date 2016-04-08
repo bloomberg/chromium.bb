@@ -18,8 +18,9 @@ using system::TrayAudioDelegate;
 using system::TrayAudioDelegateChromeOs;
 
 TrayAudioChromeOs::TrayAudioChromeOs(SystemTray* system_tray)
-    : TrayAudio(system_tray,
-                scoped_ptr<TrayAudioDelegate>(new TrayAudioDelegateChromeOs())),
+    : TrayAudio(
+          system_tray,
+          std::unique_ptr<TrayAudioDelegate>(new TrayAudioDelegateChromeOs())),
       audio_detail_view_(NULL) {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);

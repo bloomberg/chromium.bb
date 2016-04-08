@@ -7,7 +7,6 @@
 
 #include "ash/wm/overview/overview_animation_type.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 
 namespace aura {

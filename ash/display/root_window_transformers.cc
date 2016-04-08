@@ -13,7 +13,6 @@
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"

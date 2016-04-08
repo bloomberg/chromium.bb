@@ -99,7 +99,7 @@ class ASH_EXPORT ResolutionNotificationController
 
   static void SuppressTimerForTest();
 
-  scoped_ptr<ResolutionChangeInfo> change_info_;
+  std::unique_ptr<ResolutionChangeInfo> change_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ResolutionNotificationController);
 };

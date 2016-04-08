@@ -329,7 +329,7 @@ class DragDropControllerTest : public AshTestBase {
   }
 
  protected:
-  scoped_ptr<TestDragDropController> drag_drop_controller_;
+  std::unique_ptr<TestDragDropController> drag_drop_controller_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DragDropControllerTest);
@@ -342,7 +342,7 @@ class DragDropControllerTest : public AshTestBase {
 #define MAYBE_DragDropInSingleViewTest DragDropInSingleViewTest
 #endif
 TEST_F(DragDropControllerTest, MAYBE_DragDropInSingleViewTest) {
-  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  std::unique_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
   ui::OSExchangeData data;
@@ -388,7 +388,7 @@ TEST_F(DragDropControllerTest, MAYBE_DragDropInSingleViewTest) {
 }
 
 TEST_F(DragDropControllerTest, DragDropWithZeroDragUpdates) {
-  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  std::unique_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
   ui::OSExchangeData data;
@@ -432,7 +432,7 @@ TEST_F(DragDropControllerTest, DragDropWithZeroDragUpdates) {
 #define MAYBE_DragDropInMultipleViewsSingleWidgetTest DragDropInMultipleViewsSingleWidgetTest
 #endif
 TEST_F(DragDropControllerTest, MAYBE_DragDropInMultipleViewsSingleWidgetTest) {
-  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  std::unique_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view1 = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view1);
   DragTestView* drag_view2 = new DragTestView;
@@ -493,10 +493,10 @@ TEST_F(DragDropControllerTest, MAYBE_DragDropInMultipleViewsSingleWidgetTest) {
 #define MAYBE_DragDropInMultipleViewsMultipleWidgetsTest DragDropInMultipleViewsMultipleWidgetsTest
 #endif
 TEST_F(DragDropControllerTest, MAYBE_DragDropInMultipleViewsMultipleWidgetsTest) {
-  scoped_ptr<views::Widget> widget1(CreateNewWidget());
+  std::unique_ptr<views::Widget> widget1(CreateNewWidget());
   DragTestView* drag_view1 = new DragTestView;
   AddViewToWidgetAndResize(widget1.get(), drag_view1);
-  scoped_ptr<views::Widget> widget2(CreateNewWidget());
+  std::unique_ptr<views::Widget> widget2(CreateNewWidget());
   DragTestView* drag_view2 = new DragTestView;
   AddViewToWidgetAndResize(widget2.get(), drag_view2);
   gfx::Rect widget1_bounds = widget1->GetClientAreaBoundsInScreen();
@@ -558,8 +558,8 @@ TEST_F(DragDropControllerTest, MAYBE_DragDropInMultipleViewsMultipleWidgetsTest)
 #define MAYBE_ViewRemovedWhileInDragDropTest ViewRemovedWhileInDragDropTest
 #endif
 TEST_F(DragDropControllerTest, MAYBE_ViewRemovedWhileInDragDropTest) {
-  scoped_ptr<views::Widget> widget(CreateNewWidget());
-  scoped_ptr<DragTestView> drag_view(new DragTestView);
+  std::unique_ptr<views::Widget> widget(CreateNewWidget());
+  std::unique_ptr<DragTestView> drag_view(new DragTestView);
   AddViewToWidgetAndResize(widget.get(), drag_view.get());
   gfx::Point point = gfx::Rect(drag_view->bounds()).CenterPoint();
   ui::OSExchangeData data;
@@ -622,7 +622,7 @@ TEST_F(DragDropControllerTest, DragLeavesClipboardAloneTest) {
   EXPECT_TRUE(cb->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
       ui::CLIPBOARD_TYPE_COPY_PASTE));
 
-  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  std::unique_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
 
@@ -650,7 +650,7 @@ TEST_F(DragDropControllerTest, DragLeavesClipboardAloneTest) {
 }
 
 TEST_F(DragDropControllerTest, WindowDestroyedDuringDragDrop) {
-  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  std::unique_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
   aura::Window* window = widget->GetNativeView();
@@ -696,7 +696,7 @@ TEST_F(DragDropControllerTest, WindowDestroyedDuringDragDrop) {
 }
 
 TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
-  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  std::unique_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
   ui::OSExchangeData data;
@@ -752,7 +752,7 @@ TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
 #define MAYBE_CaptureLostCancelsDragDrop CaptureLostCancelsDragDrop
 #endif
 TEST_F(DragDropControllerTest, MAYBE_PressingEscapeCancelsDragDrop) {
-  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  std::unique_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
   ui::OSExchangeData data;
@@ -794,7 +794,7 @@ TEST_F(DragDropControllerTest, MAYBE_PressingEscapeCancelsDragDrop) {
 }
 
 TEST_F(DragDropControllerTest, MAYBE_CaptureLostCancelsDragDrop) {
-  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  std::unique_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
   ui::OSExchangeData data;
@@ -847,10 +847,10 @@ TEST_F(DragDropControllerTest, MAYBE_CaptureLostCancelsDragDrop) {
 TEST_F(DragDropControllerTest, TouchDragDropInMultipleWindows) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableTouchDragDrop);
-  scoped_ptr<views::Widget> widget1(CreateNewWidget());
+  std::unique_ptr<views::Widget> widget1(CreateNewWidget());
   DragTestView* drag_view1 = new DragTestView;
   AddViewToWidgetAndResize(widget1.get(), drag_view1);
-  scoped_ptr<views::Widget> widget2(CreateNewWidget());
+  std::unique_ptr<views::Widget> widget2(CreateNewWidget());
   DragTestView* drag_view2 = new DragTestView;
   AddViewToWidgetAndResize(widget2.get(), drag_view2);
   gfx::Rect widget1_bounds = widget1->GetClientAreaBoundsInScreen();
@@ -908,7 +908,7 @@ TEST_F(DragDropControllerTest, TouchDragDropInMultipleWindows) {
 TEST_F(DragDropControllerTest, TouchDragDropCancelsOnLongTap) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableTouchDragDrop);
-  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  std::unique_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
@@ -934,7 +934,7 @@ TEST_F(DragDropControllerTest, TouchDragDropCancelsOnLongTap) {
 TEST_F(DragDropControllerTest, TouchDragDropLongTapGestureIsForwarded) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableTouchDragDrop);
-  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  std::unique_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
@@ -989,7 +989,7 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
   ui::OSExchangeData data;
   data.SetString(base::UTF8ToUTF16("I am being dragged"));
   {
-    scoped_ptr<views::Widget> widget(CreateNewWidget());
+    std::unique_ptr<views::Widget> widget(CreateNewWidget());
     aura::Window* window = widget->GetNativeWindow();
     drag_drop_controller_->StartDragAndDrop(
         data,
@@ -1023,7 +1023,7 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
   }
 
   {
-    scoped_ptr<views::Widget> widget(CreateNewWidget());
+    std::unique_ptr<views::Widget> widget(CreateNewWidget());
     aura::Window* window = widget->GetNativeWindow();
     drag_drop_controller_->StartDragAndDrop(
         data,
@@ -1065,7 +1065,7 @@ TEST_F(DragDropControllerTest, TouchDragDropCompletesOnFling) {
       switches::kEnableTouchDragDrop);
   ui::GestureConfiguration::GetInstance()
       ->set_max_touch_move_in_pixels_for_click(1);
-  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  std::unique_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
   ui::OSExchangeData data;

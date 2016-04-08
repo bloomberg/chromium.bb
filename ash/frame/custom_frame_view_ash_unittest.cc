@@ -4,6 +4,8 @@
 
 #include "ash/frame/custom_frame_view_ash.h"
 
+#include <memory>
+
 #include "ash/ash_layout_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
@@ -11,7 +13,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
-#include "base/memory/scoped_ptr.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/rect.h"
@@ -101,8 +102,8 @@ class CustomFrameViewAshTest : public test::AshTestBase {
   ~CustomFrameViewAshTest() override {}
 
  protected:
-  scoped_ptr<views::Widget> CreateWidget(TestWidgetDelegate* delegate) {
-    scoped_ptr<views::Widget> widget(new views::Widget);
+  std::unique_ptr<views::Widget> CreateWidget(TestWidgetDelegate* delegate) {
+    std::unique_ptr<views::Widget> widget(new views::Widget);
     views::Widget::InitParams params;
     params.delegate = delegate;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -126,7 +127,7 @@ class CustomFrameViewAshTest : public test::AshTestBase {
 TEST_F(CustomFrameViewAshTest, HeaderHeight) {
   TestWidgetDelegate* delegate = new TestWidgetDelegate;
 
-  scoped_ptr<views::Widget> widget(CreateWidget(delegate));
+  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
   widget->Show();
 
   // The header should have enough room for the window controls. The
@@ -140,7 +141,7 @@ TEST_F(CustomFrameViewAshTest, HeaderHeight) {
 // sizes when the client view does not specify any size constraints.
 TEST_F(CustomFrameViewAshTest, NoSizeConstraints) {
   TestWidgetConstraintsDelegate* delegate = new TestWidgetConstraintsDelegate;
-  scoped_ptr<views::Widget> widget(CreateWidget(delegate));
+  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
 
   CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
   gfx::Size min_frame_size = custom_frame_view->GetMinimumSize();
@@ -161,7 +162,7 @@ TEST_F(CustomFrameViewAshTest, MinimumAndMaximumSize) {
   TestWidgetConstraintsDelegate* delegate = new TestWidgetConstraintsDelegate;
   delegate->set_minimum_size(min_client_size);
   delegate->set_maximum_size(max_client_size);
-  scoped_ptr<views::Widget> widget(CreateWidget(delegate));
+  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
 
   CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
   gfx::Size min_frame_size = custom_frame_view->GetMinimumSize();
@@ -179,7 +180,7 @@ TEST_F(CustomFrameViewAshTest, MinimumAndMaximumSize) {
 // state of the SessionStateDelegate after visibility change.
 TEST_F(CustomFrameViewAshTest, AvatarIcon) {
   TestWidgetConstraintsDelegate* delegate = new TestWidgetConstraintsDelegate;
-  scoped_ptr<views::Widget> widget(CreateWidget(delegate));
+  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
 
   CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
   EXPECT_FALSE(custom_frame_view->GetAvatarIconViewForTest());
@@ -206,7 +207,7 @@ TEST_F(CustomFrameViewAshTest, AvatarIcon) {
 // new visibility.
 TEST_F(CustomFrameViewAshTest, HeaderViewNotifiedOfChildSizeChange) {
   TestWidgetConstraintsDelegate* delegate = new TestWidgetConstraintsDelegate;
-  scoped_ptr<views::Widget> widget(CreateWidget(delegate));
+  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
 
   const gfx::Rect initial = delegate->
       GetFrameCaptionButtonContainerViewBounds();

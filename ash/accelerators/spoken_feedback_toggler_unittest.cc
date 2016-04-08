@@ -51,7 +51,7 @@ TEST_F(SpokenFeedbackTogglerTest, PassThroughEvents) {
   SpokenFeedbackToggler::ScopedEnablerForTest scoped;
 
   aura::test::EventCountDelegate delegate;
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
       &delegate, 0, gfx::Rect(0, 0, 100, 100)));
   window->Focus();
 

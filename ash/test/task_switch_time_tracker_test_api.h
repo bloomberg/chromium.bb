@@ -5,10 +5,10 @@
 #ifndef ASH_TEST_TASK_SWITCH_TIME_TRACKER_TEST_API_H_
 #define ASH_TEST_TASK_SWITCH_TIME_TRACKER_TEST_API_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -43,7 +43,7 @@ class TaskSwitchTimeTrackerTestAPI {
   base::SimpleTestTickClock* tick_clock_;
 
   // The TaskSwitchTimeTracker to provide internal access to.
-  scoped_ptr<TaskSwitchTimeTracker> time_tracker_;
+  std::unique_ptr<TaskSwitchTimeTracker> time_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskSwitchTimeTrackerTestAPI);
 };

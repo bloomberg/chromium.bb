@@ -27,9 +27,11 @@ void SpokenFeedbackToggler::SetEnabled(bool enabled) {
 }
 
 // static
-scoped_ptr<ui::EventHandler> SpokenFeedbackToggler::CreateHandler() {
-  scoped_ptr<KeyHoldDetector::Delegate> delegate(new SpokenFeedbackToggler());
-  return scoped_ptr<ui::EventHandler>(new KeyHoldDetector(std::move(delegate)));
+std::unique_ptr<ui::EventHandler> SpokenFeedbackToggler::CreateHandler() {
+  std::unique_ptr<KeyHoldDetector::Delegate> delegate(
+      new SpokenFeedbackToggler());
+  return std::unique_ptr<ui::EventHandler>(
+      new KeyHoldDetector(std::move(delegate)));
 }
 
 bool SpokenFeedbackToggler::ShouldProcessEvent(

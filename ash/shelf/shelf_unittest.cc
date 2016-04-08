@@ -84,7 +84,7 @@ class ShelfTest : public ash::test::AshTestBase {
   ShelfView* shelf_view_;
   ShelfModel* shelf_model_;
   ShelfItemDelegateManager* item_delegate_manager_;
-  scoped_ptr<test::ShelfViewTestAPI> test_;
+  std::unique_ptr<test::ShelfViewTestAPI> test_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfTest);
 };
@@ -120,7 +120,7 @@ TEST_F(ShelfTest, checkHoverAfterMenu) {
   item.status = STATUS_RUNNING;
   int index = shelf_model()->Add(item);
 
-  scoped_ptr<ShelfItemDelegate> delegate(
+  std::unique_ptr<ShelfItemDelegate> delegate(
       new test::TestShelfItemDelegate(NULL));
   item_manager()->SetShelfItemDelegate(shelf_model()->items()[index].id,
                                        std::move(delegate));

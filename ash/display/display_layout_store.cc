@@ -49,7 +49,7 @@ void DisplayLayoutStore::SetDefaultDisplayPlacement(
 
 void DisplayLayoutStore::RegisterLayoutForDisplayIdList(
     const display::DisplayIdList& list,
-    scoped_ptr<display::DisplayLayout> layout) {
+    std::unique_ptr<display::DisplayLayout> layout) {
   // m50/51 dev/beta channel may have bad layout data saved in local state.
   // TODO(oshima): Consider removing this after m53.
   if (list.size() == 2 && layout->placement_list.size() > 1)
@@ -103,7 +103,7 @@ void DisplayLayoutStore::UpdateMultiDisplayState(
 
 display::DisplayLayout* DisplayLayoutStore::CreateDefaultDisplayLayout(
     const display::DisplayIdList& list) {
-  scoped_ptr<display::DisplayLayout> layout(new display::DisplayLayout);
+  std::unique_ptr<display::DisplayLayout> layout(new display::DisplayLayout);
   // The first display is the primary by default.
   layout->primary_id = list[0];
   layout->placement_list.clear();

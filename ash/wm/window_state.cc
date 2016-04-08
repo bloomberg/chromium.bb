@@ -95,7 +95,7 @@ bool WindowState::HasDelegate() const {
   return !!delegate_;
 }
 
-void WindowState::SetDelegate(scoped_ptr<WindowStateDelegate> delegate) {
+void WindowState::SetDelegate(std::unique_ptr<WindowStateDelegate> delegate) {
   DCHECK(!delegate_.get());
   delegate_ = std::move(delegate);
 }
@@ -283,10 +283,10 @@ void WindowState::ClearRestoreBounds() {
   window_->ClearProperty(aura::client::kRestoreBoundsKey);
 }
 
-scoped_ptr<WindowState::State> WindowState::SetStateObject(
-    scoped_ptr<WindowState::State> new_state) {
+std::unique_ptr<WindowState::State> WindowState::SetStateObject(
+    std::unique_ptr<WindowState::State> new_state) {
   current_state_->DetachState(this);
-  scoped_ptr<WindowState::State> old_object = std::move(current_state_);
+  std::unique_ptr<WindowState::State> old_object = std::move(current_state_);
   current_state_ = std::move(new_state);
   current_state_->AttachState(this, old_object.get());
   return old_object;
@@ -465,7 +465,7 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds) {
   // cleaned up after the animation completes.
   // Specify |set_bounds| to true here to keep the old bounds in the child
   // windows of |window|.
-  scoped_ptr<ui::LayerTreeOwner> old_layer_owner =
+  std::unique_ptr<ui::LayerTreeOwner> old_layer_owner =
       ::wm::RecreateLayers(window_);
   ui::Layer* old_layer = old_layer_owner->root();
   DCHECK(old_layer);

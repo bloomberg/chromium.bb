@@ -5,12 +5,13 @@
 #ifndef ASH_WM_LOCK_STATE_CONTROLLER_H_
 #define ASH_WM_LOCK_STATE_CONTROLLER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/lock_state_observer.h"
 #include "ash/wm/session_state_animator.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -152,7 +153,7 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   LockStateController();
   ~LockStateController() override;
 
-  void SetDelegate(scoped_ptr<LockStateControllerDelegate> delegate);
+  void SetDelegate(std::unique_ptr<LockStateControllerDelegate> delegate);
 
   void AddObserver(LockStateObserver* observer);
   void RemoveObserver(LockStateObserver* observer);
@@ -286,9 +287,9 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
       ash::SessionStateAnimator::AnimationSpeed speed,
       SessionStateAnimator::AnimationSequence* animation_sequence);
 
-  scoped_ptr<SessionStateAnimator> animator_;
+  std::unique_ptr<SessionStateAnimator> animator_;
 
-  scoped_ptr<LockStateControllerDelegate> delegate_;
+  std::unique_ptr<LockStateControllerDelegate> delegate_;
 
   base::ObserverList<LockStateObserver> observers_;
 
@@ -311,10 +312,10 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   // Indicates that lock animation can be undone.
   bool can_cancel_lock_animation_;
 
-  scoped_ptr<UnlockedStateProperties> unlocked_properties_;
+  std::unique_ptr<UnlockedStateProperties> unlocked_properties_;
 
   // How long has it been since the request to lock the screen?
-  scoped_ptr<base::ElapsedTimer> lock_duration_timer_;
+  std::unique_ptr<base::ElapsedTimer> lock_duration_timer_;
 
   // Started when we request that the screen be locked.  When it fires, we
   // assume that our request got dropped.

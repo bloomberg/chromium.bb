@@ -4,6 +4,8 @@
 
 #include "ash/metrics/user_metrics_recorder.h"
 
+#include <memory>
+
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
@@ -12,7 +14,6 @@
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/test/user_metrics_recorder_test_api.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/histogram_tester.h"
 #include "ui/aura/window.h"
 
@@ -62,7 +63,8 @@ class UserMetricsRecorderTest : public test::AshTestBase {
 
  private:
   // Test API to access private members of the test target.
-  scoped_ptr<test::UserMetricsRecorderTestAPI> user_metrics_recorder_test_api_;
+  std::unique_ptr<test::UserMetricsRecorderTestAPI>
+      user_metrics_recorder_test_api_;
 
   // Histogram value verifier.
   base::HistogramTester histograms_;

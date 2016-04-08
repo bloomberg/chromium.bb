@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -15,7 +16,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/gfx/geometry/size.h"
@@ -98,9 +98,9 @@ class ASH_EXPORT MirrorWindowController : public aura::WindowTreeHostObserver {
 
   DisplayManager::MultiDisplayMode multi_display_mode_;
 
-  scoped_ptr<aura::client::ScreenPositionClient> screen_position_client_;
+  std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
 
-  scoped_ptr<ui::Reflector> reflector_;
+  std::unique_ptr<ui::Reflector> reflector_;
 
   DISALLOW_COPY_AND_ASSIGN(MirrorWindowController);
 };

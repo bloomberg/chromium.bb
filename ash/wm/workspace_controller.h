@@ -5,10 +5,11 @@
 #ifndef ASH_WM_WORKSPACE_CONTROLLER_H_
 #define ASH_WM_WORKSPACE_CONTROLLER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/wm/workspace/workspace_types.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace aura {
 class Window;
@@ -39,7 +40,7 @@ class ASH_EXPORT WorkspaceController {
   // Add a delegate which adds a backdrop behind the top window of the default
   // workspace.
   void SetMaximizeBackdropDelegate(
-      scoped_ptr<WorkspaceLayoutManagerDelegate> delegate);
+      std::unique_ptr<WorkspaceLayoutManagerDelegate> delegate);
 
   WorkspaceLayoutManager* layout_manager() { return layout_manager_; }
 
@@ -49,7 +50,7 @@ class ASH_EXPORT WorkspaceController {
   aura::Window* viewport_;
 
   ShelfLayoutManager* shelf_;
-  scoped_ptr<WorkspaceEventHandler> event_handler_;
+  std::unique_ptr<WorkspaceEventHandler> event_handler_;
   WorkspaceLayoutManager* layout_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceController);

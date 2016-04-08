@@ -9,6 +9,7 @@
 #include "ash/host/root_window_transformer.h"
 #include "ash/ime/input_method_event_handler.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_targeter.h"
@@ -49,7 +50,7 @@ class UnifiedEventTargeter : public aura::WindowTargeter {
 AshWindowTreeHostUnified::AshWindowTreeHostUnified(
     const gfx::Rect& initial_bounds)
     : AshWindowTreeHostPlatform() {
-  scoped_ptr<ui::PlatformWindow> window(new ui::StubWindow(this));
+  std::unique_ptr<ui::PlatformWindow> window(new ui::StubWindow(this));
   window->SetBounds(initial_bounds);
   SetPlatformWindow(std::move(window));
 }
@@ -70,7 +71,7 @@ void AshWindowTreeHostUnified::RegisterMirroringHost(
     AshWindowTreeHost* mirroring_ash_host) {
   aura::Window* src_root = mirroring_ash_host->AsWindowTreeHost()->window();
   src_root->SetEventTargeter(
-      make_scoped_ptr(new UnifiedEventTargeter(src_root, window())));
+      base::WrapUnique(new UnifiedEventTargeter(src_root, window())));
   DCHECK(std::find(mirroring_hosts_.begin(), mirroring_hosts_.end(),
                    mirroring_ash_host) == mirroring_hosts_.end());
   mirroring_hosts_.push_back(mirroring_ash_host);

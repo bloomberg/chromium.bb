@@ -4,6 +4,7 @@
 
 #include "ash/magnifier/magnification_controller.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/accelerators/accelerator_controller.h"
@@ -373,7 +374,7 @@ bool MagnificationControllerImpl::RedrawDIP(const gfx::PointF& position_in_dip,
 
   gfx::Display display =
       gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_window_);
-  scoped_ptr<RootWindowTransformer> transformer(
+  std::unique_ptr<RootWindowTransformer> transformer(
       CreateRootWindowTransformerForDisplay(root_window_, display));
   GetRootWindowController(root_window_)
       ->ash_host()

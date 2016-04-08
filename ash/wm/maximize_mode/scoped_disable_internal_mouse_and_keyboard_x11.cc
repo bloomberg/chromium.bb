@@ -6,13 +6,14 @@
 
 #include <X11/Xlib.h>
 #include <X11/extensions/XInput2.h>
+
+#include <memory>
 #include <set>
 #include <utility>
 
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -108,7 +109,7 @@ ScopedDisableInternalMouseAndKeyboardX11::
   }
   // Allow the accessible keys present on the side of some devices to continue
   // working.
-  scoped_ptr<std::set<ui::KeyboardCode> > excepted_keys(
+  std::unique_ptr<std::set<ui::KeyboardCode>> excepted_keys(
       new std::set<ui::KeyboardCode>);
   excepted_keys->insert(ui::VKEY_VOLUME_DOWN);
   excepted_keys->insert(ui::VKEY_VOLUME_UP);
@@ -131,7 +132,7 @@ ScopedDisableInternalMouseAndKeyboardX11::
   if (core_keyboard_device_id_ != kDeviceIdNone)
     device_data_manager->EnableDevice(core_keyboard_device_id_);
   device_data_manager->SetDisabledKeyboardAllowedKeys(
-      scoped_ptr<std::set<ui::KeyboardCode> >());
+      std::unique_ptr<std::set<ui::KeyboardCode>>());
   ui::PlatformEventSource::GetInstance()->RemovePlatformEventObserver(this);
 }
 

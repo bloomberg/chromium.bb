@@ -5,6 +5,8 @@
 #ifndef ASH_DRAG_DROP_DRAG_DROP_CONTROLLER_H_
 #define ASH_DRAG_DROP_DRAG_DROP_CONTROLLER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -93,7 +95,7 @@ class ASH_EXPORT DragDropController
   // Helper method to reset everything.
   void Cleanup();
 
-  scoped_ptr<DragImageView> drag_image_;
+  std::unique_ptr<DragImageView> drag_image_;
   gfx::Vector2d drag_image_offset_;
   const ui::OSExchangeData* drag_data_;
   int drag_operation_;
@@ -105,7 +107,7 @@ class ASH_EXPORT DragDropController
   gfx::Rect drag_image_initial_bounds_for_cancel_animation_;
   gfx::Rect drag_image_final_bounds_for_cancel_animation_;
 
-  scoped_ptr<gfx::LinearAnimation> cancel_animation_;
+  std::unique_ptr<gfx::LinearAnimation> cancel_animation_;
 
   // Window that started the drag.
   aura::Window* drag_source_window_;
@@ -117,14 +119,14 @@ class ASH_EXPORT DragDropController
   // Closure for quitting nested message loop.
   base::Closure quit_closure_;
 
-  scoped_ptr<ash::DragDropTracker> drag_drop_tracker_;
-  scoped_ptr<DragDropTrackerDelegate> drag_drop_window_delegate_;
+  std::unique_ptr<ash::DragDropTracker> drag_drop_tracker_;
+  std::unique_ptr<DragDropTrackerDelegate> drag_drop_window_delegate_;
 
   ui::DragDropTypes::DragEventSource current_drag_event_source_;
 
   // Holds a synthetic long tap event to be sent to the |drag_source_window_|.
   // See comment in OnGestureEvent() on why we need this.
-  scoped_ptr<ui::GestureEvent> pending_long_tap_;
+  std::unique_ptr<ui::GestureEvent> pending_long_tap_;
 
   base::WeakPtrFactory<DragDropController> weak_factory_;
 

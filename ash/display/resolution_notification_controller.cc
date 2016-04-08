@@ -227,7 +227,7 @@ void ResolutionNotificationController::CreateOrUpdateNotification(
           base::UTF8ToUTF16(change_info_->current_resolution.size.ToString()));
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  scoped_ptr<Notification> notification(new Notification(
+  std::unique_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, message,
       timeout_message, bundle.GetImageNamed(IDR_AURA_NOTIFICATION_DISPLAY),
       base::string16() /* display_source */, GURL(),

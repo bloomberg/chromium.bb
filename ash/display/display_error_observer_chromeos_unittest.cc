@@ -35,7 +35,7 @@ class DisplayErrorObserverTest : public test::AshTestBase {
   }
 
  private:
-  scoped_ptr<DisplayErrorObserver> observer_;
+  std::unique_ptr<DisplayErrorObserver> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayErrorObserverTest);
 };

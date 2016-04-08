@@ -4,6 +4,8 @@
 
 #include "ash/root_window_controller.h"
 
+#include <memory>
+
 #include "ash/display/display_manager.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -17,7 +19,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_tree_client.h"
@@ -951,11 +952,10 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ZOrderTest) {
 
   // Normal window is partially occluded by the virtual keyboard.
   aura::test::TestWindowDelegate delegate;
-  scoped_ptr<aura::Window> normal(CreateTestWindowInShellWithDelegateAndType(
-      &delegate,
-      ui::wm::WINDOW_TYPE_NORMAL,
-      0,
-      gfx::Rect(0, 0, window_width, window_height)));
+  std::unique_ptr<aura::Window> normal(
+      CreateTestWindowInShellWithDelegateAndType(
+          &delegate, ui::wm::WINDOW_TYPE_NORMAL, 0,
+          gfx::Rect(0, 0, window_width, window_height)));
   normal->set_owned_by_parent(false);
   normal->Show();
   TargetHitTestEventHandler normal_handler;
@@ -972,10 +972,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ZOrderTest) {
 
   // Menu overlaps virtual keyboard.
   aura::test::TestWindowDelegate delegate2;
-  scoped_ptr<aura::Window> menu(CreateTestWindowInShellWithDelegateAndType(
-      &delegate2,
-      ui::wm::WINDOW_TYPE_MENU,
-      0,
+  std::unique_ptr<aura::Window> menu(CreateTestWindowInShellWithDelegateAndType(
+      &delegate2, ui::wm::WINDOW_TYPE_MENU, 0,
       gfx::Rect(window_width, 0, window_width, window_height)));
   menu->set_owned_by_parent(false);
   menu->Show();

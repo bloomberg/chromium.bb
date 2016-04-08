@@ -6,13 +6,13 @@
 #define ASH_WM_OVERVIEW_WINDOW_SELECTOR_CONTROLLER_H_
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ui/aura/window_observer.h"
 
@@ -57,7 +57,7 @@ class ASH_EXPORT WindowSelectorController
   // Dispatched when window selection begins.
   void OnSelectionStarted();
 
-  scoped_ptr<WindowSelector> window_selector_;
+  std::unique_ptr<WindowSelector> window_selector_;
   base::Time last_selection_time_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorController);

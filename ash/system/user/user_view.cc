@@ -338,7 +338,7 @@ void UserView::AddLogoutButton(user::LoginStatus login) {
   logout_button_ = logout_button;
   // In public account mode, the logout button border has a custom color.
   if (login == user::LOGGED_IN_PUBLIC) {
-    scoped_ptr<TrayPopupLabelButtonBorder> border(
+    std::unique_ptr<TrayPopupLabelButtonBorder> border(
         new TrayPopupLabelButtonBorder());
     border->SetPainter(false,
                        views::Button::STATE_NORMAL,

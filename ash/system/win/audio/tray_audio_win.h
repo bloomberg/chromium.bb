@@ -8,7 +8,6 @@
 #include "ash/ash_export.h"
 #include "ash/system/audio/tray_audio.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace ash {
 

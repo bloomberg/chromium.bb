@@ -5,6 +5,7 @@
 #ifndef ASH_TEST_TEST_SHELL_DELEGATE_H_
 #define ASH_TEST_TEST_SHELL_DELEGATE_H_
 
+#include <memory>
 #include <string>
 
 #include "ash/media_delegate.h"
@@ -12,7 +13,6 @@
 #include "ash/test/test_session_state_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 
 namespace keyboard {
@@ -74,7 +74,7 @@ class TestShellDelegate : public ShellDelegate {
   bool multi_profiles_enabled_;
   bool force_maximize_on_first_run_;
 
-  scoped_ptr<app_list::AppListViewDelegate> app_list_view_delegate_;
+  std::unique_ptr<app_list::AppListViewDelegate> app_list_view_delegate_;
 
   base::ObserverList<ash::VirtualKeyboardStateObserver>
       keyboard_state_observer_list_;

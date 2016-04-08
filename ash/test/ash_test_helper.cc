@@ -118,8 +118,8 @@ void AshTestHelper::SetUp(bool start_session) {
   init_params.context_factory = context_factory;
   init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
   ash::Shell::CreateInstance(init_params);
-  aura::test::EnvTestHelper(aura::Env::GetInstance()).SetInputStateLookup(
-      scoped_ptr<aura::InputStateLookup>());
+  aura::test::EnvTestHelper(aura::Env::GetInstance())
+      .SetInputStateLookup(std::unique_ptr<aura::InputStateLookup>());
 
   Shell* shell = Shell::GetInstance();
   if (start_session) {
@@ -132,7 +132,7 @@ void AshTestHelper::SetUp(bool start_session) {
 
   test_screenshot_delegate_ = new TestScreenshotDelegate();
   shell->accelerator_controller()->SetScreenshotDelegate(
-      scoped_ptr<ScreenshotDelegate>(test_screenshot_delegate_));
+      std::unique_ptr<ScreenshotDelegate>(test_screenshot_delegate_));
 }
 
 void AshTestHelper::TearDown() {

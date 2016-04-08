@@ -4,6 +4,8 @@
 
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
 
+#include <memory>
+
 #include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
@@ -17,7 +19,6 @@
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -65,9 +66,9 @@ class TrayRotationLockTest : public test::AshTestBase {
   void TearDown() override;
 
  private:
-  scoped_ptr<TrayRotationLock> tray_;
-  scoped_ptr<views::View> tray_view_;
-  scoped_ptr<views::View> default_view_;
+  std::unique_ptr<TrayRotationLock> tray_;
+  std::unique_ptr<views::View> tray_view_;
+  std::unique_ptr<views::View> default_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayRotationLockTest);
 };
@@ -247,12 +248,12 @@ TEST_F(TrayRotationLockTest, InternalDisplayNotAvailableAtCreation) {
   TearDownViews();
   gfx::Display::SetInternalDisplayId(gfx::Display::kInvalidDisplayID);
 
-  scoped_ptr<TrayRotationLock> tray(new TrayRotationLock(
+  std::unique_ptr<TrayRotationLock> tray(new TrayRotationLock(
       StatusAreaWidgetTestHelper::GetStatusAreaWidget()->system_tray()));
 
   gfx::Display::SetInternalDisplayId(internal_display_id);
-  scoped_ptr<views::View> tray_view(CreateTrayView(tray.get()));
-  scoped_ptr<views::View> default_view(tray->CreateDefaultView(
+  std::unique_ptr<views::View> tray_view(CreateTrayView(tray.get()));
+  std::unique_ptr<views::View> default_view(tray->CreateDefaultView(
       StatusAreaWidgetTestHelper::GetUserLoginStatus()));
   EXPECT_TRUE(default_view);
   Shell::GetInstance()

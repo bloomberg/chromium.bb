@@ -5,6 +5,7 @@
 #include "ash/metrics/task_switch_metrics_recorder.h"
 
 #include "ash/metrics/task_switch_time_tracker.h"
+#include "base/memory/ptr_util.h"
 
 namespace ash {
 
@@ -96,7 +97,7 @@ void TaskSwitchMetricsRecorder::AddTaskSwitchTimeTracker(
 
   histogram_map_.add(
       task_switch_source,
-      make_scoped_ptr(new TaskSwitchTimeTracker(histogram_name)));
+      base::WrapUnique(new TaskSwitchTimeTracker(histogram_name)));
 }
 
 }  // namespace ash

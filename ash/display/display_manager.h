@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -16,7 +17,6 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/gfx/display.h"
@@ -138,7 +138,8 @@ class ASH_EXPORT DisplayManager
 
   // Sets the layout for the current display pair. The |layout| specifies
   // the locaion of the displays relative to their parents.
-  void SetLayoutForCurrentDisplays(scoped_ptr<display::DisplayLayout> layout);
+  void SetLayoutForCurrentDisplays(
+      std::unique_ptr<display::DisplayLayout> layout);
 
   // Returns display for given |id|;
   const gfx::Display& GetDisplayForId(int64_t id) const;
@@ -317,7 +318,7 @@ class ASH_EXPORT DisplayManager
   // Creates a MouseWarpController for the current display
   // configuration. |drag_source| is the window where dragging
   // started, or nullptr otherwise.
-  scoped_ptr<MouseWarpController> CreateMouseWarpController(
+  std::unique_ptr<MouseWarpController> CreateMouseWarpController(
       aura::Window* drag_source) const;
 
   // Create a screen instance to be used during shutdown.
@@ -409,9 +410,9 @@ private:
 
   Delegate* delegate_;  // not owned.
 
-  scoped_ptr<ScreenAsh> screen_;
+  std::unique_ptr<ScreenAsh> screen_;
 
-  scoped_ptr<DisplayLayoutStore> layout_store_;
+  std::unique_ptr<DisplayLayoutStore> layout_store_;
 
   int64_t first_display_id_;
 

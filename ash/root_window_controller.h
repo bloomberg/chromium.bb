@@ -6,13 +6,13 @@
 #define ASH_ROOT_WINDOW_CONTROLLER_H_
 
 #include <map>
+#include <memory>
 
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell_observer.h"
 #include "ash/system/user/login_status.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_types.h"
@@ -257,20 +257,20 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   void OnLoginStateChanged(user::LoginStatus status) override;
   void OnTouchHudProjectionToggled(bool enabled) override;
 
-  scoped_ptr<AshWindowTreeHost> ash_host_;
+  std::unique_ptr<AshWindowTreeHost> ash_host_;
   RootWindowLayoutManager* root_window_layout_;
 
-  scoped_ptr<StackingController> stacking_controller_;
+  std::unique_ptr<StackingController> stacking_controller_;
 
   // The shelf for managing the shelf and the status widget.
-  scoped_ptr<ShelfWidget> shelf_;
+  std::unique_ptr<ShelfWidget> shelf_;
 
   // An invisible/empty window used as a event target for
   // |MouseCursorEventFilter| before a user logs in.
   // (crbug.com/266987)
   // Its container is |LockScreenBackgroundContainer| and
   // this must be deleted before the container is deleted.
-  scoped_ptr<aura::Window> mouse_event_target_;
+  std::unique_ptr<aura::Window> mouse_event_target_;
 
   // Manages layout of docked windows. Owned by DockedContainer.
   DockedWindowLayoutManager* docked_layout_manager_;
@@ -278,17 +278,17 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Manages layout of panels. Owned by PanelContainer.
   PanelLayoutManager* panel_layout_manager_;
 
-  scoped_ptr<SystemBackgroundController> system_background_;
+  std::unique_ptr<SystemBackgroundController> system_background_;
 
 #if defined(OS_CHROMEOS)
-  scoped_ptr<BootSplashScreen> boot_splash_screen_;
+  std::unique_ptr<BootSplashScreen> boot_splash_screen_;
   // Responsible for initializing TouchExplorationController when spoken
   // feedback is on.
-  scoped_ptr<AshTouchExplorationManager> touch_exploration_manager_;
+  std::unique_ptr<AshTouchExplorationManager> touch_exploration_manager_;
 #endif
 
-  scoped_ptr<WorkspaceController> workspace_controller_;
-  scoped_ptr<AlwaysOnTopController> always_on_top_controller_;
+  std::unique_ptr<WorkspaceController> workspace_controller_;
+  std::unique_ptr<AlwaysOnTopController> always_on_top_controller_;
 
   // Heads-up displays for touch events. These HUDs are not owned by the root
   // window controller and manage their own lifetimes.
@@ -296,11 +296,11 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   TouchHudProjection* touch_hud_projection_;
 
   // Handles double clicks on the panel window header.
-  scoped_ptr<ui::EventHandler> panel_container_handler_;
+  std::unique_ptr<ui::EventHandler> panel_container_handler_;
 
-  scoped_ptr<DesktopBackgroundWidgetController> wallpaper_controller_;
-  scoped_ptr<AnimatingDesktopController> animating_wallpaper_controller_;
-  scoped_ptr< ::wm::ScopedCaptureClient> capture_client_;
+  std::unique_ptr<DesktopBackgroundWidgetController> wallpaper_controller_;
+  std::unique_ptr<AnimatingDesktopController> animating_wallpaper_controller_;
+  std::unique_ptr<::wm::ScopedCaptureClient> capture_client_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowController);
 };

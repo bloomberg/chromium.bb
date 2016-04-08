@@ -2114,7 +2114,7 @@ TEST_F(ShelfLayoutManagerTest, WorkAreaChangeWorkspace) {
 // shelf is not autohidden.
 TEST_F(ShelfLayoutManagerTest, Dimming) {
   GetShelfLayoutManager()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
-  scoped_ptr<aura::Window> w1(CreateTestWindow());
+  std::unique_ptr<aura::Window> w1(CreateTestWindow());
   w1->Show();
   wm::ActivateWindow(w1.get());
 
@@ -2195,14 +2195,14 @@ TEST_F(ShelfLayoutManagerTest, BubbleEnlargesShelfMouseHitArea) {
 TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColor) {
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
 
-  scoped_ptr<aura::Window> w1(CreateTestWindow());
+  std::unique_ptr<aura::Window> w1(CreateTestWindow());
   w1->Show();
   wm::ActivateWindow(w1.get());
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, GetShelfWidget()->GetBackgroundType());
 
-  scoped_ptr<aura::Window> w2(CreateTestWindow());
+  std::unique_ptr<aura::Window> w2(CreateTestWindow());
   w2->Show();
   wm::ActivateWindow(w2.get());
   // Overlaps with shelf.
@@ -2228,7 +2228,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColorAutoHide) {
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget ()->GetBackgroundType());
 
   GetShelfLayoutManager()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  scoped_ptr<aura::Window> w1(CreateTestWindow());
+  std::unique_ptr<aura::Window> w1(CreateTestWindow());
   w1->Show();
   wm::ActivateWindow(w1.get());
   EXPECT_EQ(SHELF_BACKGROUND_OVERLAP, GetShelfWidget()->GetBackgroundType());
@@ -2307,7 +2307,7 @@ TEST_F(ShelfLayoutManagerTest, ShutdownHandlesWindowActivation) {
   window1->SetBounds(gfx::Rect(0, 0, 100, 100));
   window1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   window1->Show();
-  scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window2(CreateTestWindowInShellWithId(0));
   window2->SetBounds(gfx::Rect(0, 0, 100, 100));
   window2->Show();
   wm::ActivateWindow(window1);

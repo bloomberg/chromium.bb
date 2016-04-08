@@ -46,7 +46,7 @@ class VirtualKeyboardControllerTest : public AshTestBase {
 
   // Sets the event blocker on the maximized window controller.
   void SetEventBlocker(
-      scoped_ptr<ScopedDisableInternalMouseAndKeyboard> blocker) {
+      std::unique_ptr<ScopedDisableInternalMouseAndKeyboard> blocker) {
     Shell::GetInstance()->maximize_mode_controller()->event_blocker_ =
         std::move(blocker);
   }
@@ -102,7 +102,7 @@ TEST_F(VirtualKeyboardControllerTest, RestoreKeyboardDevices) {
   Shell::GetInstance()
       ->maximize_mode_controller()
       ->EnableMaximizeModeWindowManager(true);
-  scoped_ptr<ScopedDisableInternalMouseAndKeyboard> blocker(
+  std::unique_ptr<ScopedDisableInternalMouseAndKeyboard> blocker(
       new MockEventBlocker);
   SetEventBlocker(std::move(blocker));
 }

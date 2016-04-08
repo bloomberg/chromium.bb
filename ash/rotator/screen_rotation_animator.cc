@@ -62,7 +62,7 @@ bool Is180DegreeFlip(gfx::Display::Rotation initial_rotation,
 class LayerCleanupObserver : public ui::LayerAnimationObserver {
  public:
   explicit LayerCleanupObserver(
-      scoped_ptr<ui::LayerTreeOwner> layer_tree_owner);
+      std::unique_ptr<ui::LayerTreeOwner> layer_tree_owner);
   ~LayerCleanupObserver() override;
 
   // Get the root layer of the owned layer tree.
@@ -88,7 +88,7 @@ class LayerCleanupObserver : public ui::LayerAnimationObserver {
   void AbortAnimations(ui::Layer* layer);
 
   // The owned layer tree.
-  scoped_ptr<ui::LayerTreeOwner> layer_tree_owner_;
+  std::unique_ptr<ui::LayerTreeOwner> layer_tree_owner_;
 
   // The LayerAnimationSequence that |this| has been attached to. Defaults to
   // nullptr.
@@ -98,7 +98,7 @@ class LayerCleanupObserver : public ui::LayerAnimationObserver {
 };
 
 LayerCleanupObserver::LayerCleanupObserver(
-    scoped_ptr<ui::LayerTreeOwner> layer_tree_owner)
+    std::unique_ptr<ui::LayerTreeOwner> layer_tree_owner)
     : layer_tree_owner_(std::move(layer_tree_owner)), sequence_(nullptr) {}
 
 LayerCleanupObserver::~LayerCleanupObserver() {
@@ -168,14 +168,14 @@ void RotateScreen(int64_t display_id,
 
   const gfx::Tween::Type tween_type = gfx::Tween::FAST_OUT_LINEAR_IN;
 
-  scoped_ptr<ui::LayerTreeOwner> old_layer_tree =
+  std::unique_ptr<ui::LayerTreeOwner> old_layer_tree =
       wm::RecreateLayers(root_window);
 
   // Add the cloned layer tree in to the root, so it will be rendered.
   root_window->layer()->Add(old_layer_tree->root());
   root_window->layer()->StackAtTop(old_layer_tree->root());
 
-  scoped_ptr<LayerCleanupObserver> layer_cleanup_observer(
+  std::unique_ptr<LayerCleanupObserver> layer_cleanup_observer(
       new LayerCleanupObserver(std::move(old_layer_tree)));
 
   Shell::GetInstance()->display_manager()->SetDisplayRotation(
@@ -196,7 +196,7 @@ void RotateScreen(int64_t display_id,
     if (child_layer == layer_cleanup_observer->GetRootLayer())
       continue;
 
-    scoped_ptr<ScreenRotationAnimation> screen_rotation(
+    std::unique_ptr<ScreenRotationAnimation> screen_rotation(
         new ScreenRotationAnimation(
             child_layer, kRotationDegrees * rotation_factor,
             0 /* end_degrees */, child_layer->opacity(),
@@ -205,7 +205,7 @@ void RotateScreen(int64_t display_id,
     ui::LayerAnimator* animator = child_layer->GetAnimator();
     animator->set_preemption_strategy(
         ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-    scoped_ptr<ui::LayerAnimationSequence> animation_sequence(
+    std::unique_ptr<ui::LayerAnimationSequence> animation_sequence(
         new ui::LayerAnimationSequence(screen_rotation.release()));
     animator->StartAnimation(animation_sequence.release());
   }
@@ -220,7 +220,7 @@ void RotateScreen(int64_t display_id,
       (rotated_screen_bounds.height() - original_screen_bounds.height()) / 2);
   layer_cleanup_observer->GetRootLayer()->SetTransform(translate_transform);
 
-  scoped_ptr<ScreenRotationAnimation> screen_rotation(
+  std::unique_ptr<ScreenRotationAnimation> screen_rotation(
       new ScreenRotationAnimation(
           layer_cleanup_observer->GetRootLayer(),
           old_layer_initial_rotation_degrees * rotation_factor,
@@ -233,7 +233,7 @@ void RotateScreen(int64_t display_id,
       layer_cleanup_observer->GetRootLayer()->GetAnimator();
   animator->set_preemption_strategy(
       ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-  scoped_ptr<ui::LayerAnimationSequence> animation_sequence(
+  std::unique_ptr<ui::LayerAnimationSequence> animation_sequence(
       new ui::LayerAnimationSequence(screen_rotation.release()));
   // Add an observer so that the cloned layers can be cleaned up with the
   // animation completes/aborts.

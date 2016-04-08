@@ -5,6 +5,7 @@
 #include "ash/shelf/shelf_view.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -32,7 +33,6 @@
 #include "ash/test/test_shelf_item_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/user_action_tester.h"
@@ -113,8 +113,8 @@ class ShelfViewIconObserverTest : public AshTestBase {
   }
 
  private:
-  scoped_ptr<TestShelfIconObserver> observer_;
-  scoped_ptr<ShelfViewTestAPI> shelf_view_test_;
+  std::unique_ptr<TestShelfIconObserver> observer_;
+  std::unique_ptr<ShelfViewTestAPI> shelf_view_test_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfViewIconObserverTest);
 };
@@ -167,7 +167,7 @@ TEST_F(ShelfViewIconObserverTest, AddRemove) {
   params.bounds = gfx::Rect(0, 0, 200, 200);
   params.context = CurrentContext();
 
-  scoped_ptr<views::Widget> widget(new views::Widget());
+  std::unique_ptr<views::Widget> widget(new views::Widget());
   widget->Init(params);
   shelf_delegate->AddShelfItem(widget->GetNativeWindow());
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
@@ -203,7 +203,7 @@ TEST_F(ShelfViewIconObserverTest, MAYBE_AddRemoveWithMultipleDisplays) {
   params.bounds = gfx::Rect(0, 0, 200, 200);
   params.context = CurrentContext();
 
-  scoped_ptr<views::Widget> widget(new views::Widget());
+  std::unique_ptr<views::Widget> widget(new views::Widget());
   widget->Init(params);
   shelf_delegate->AddShelfItem(widget->GetNativeWindow());
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
@@ -330,7 +330,8 @@ class ShelfViewTest : public AshTestBase {
 
  protected:
   void CreateAndSetShelfItemDelegateForID(ShelfID id) {
-    scoped_ptr<ShelfItemDelegate> delegate(new TestShelfItemDelegate(NULL));
+    std::unique_ptr<ShelfItemDelegate> delegate(
+        new TestShelfItemDelegate(NULL));
     item_manager_->SetShelfItemDelegate(id, std::move(delegate));
   }
 
@@ -680,7 +681,7 @@ class ShelfViewTest : public AshTestBase {
   // Owned by ash::Shell.
   TestShelfDelegateForShelfView* shelf_delegate_;
 
-  scoped_ptr<ShelfViewTestAPI> test_api_;
+  std::unique_ptr<ShelfViewTestAPI> test_api_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfViewTest);
@@ -1232,7 +1233,7 @@ TEST_F(ShelfViewTest, ClickingTwiceActivatesOnce) {
   ShelfID browser_shelf_id = model_->items()[browser_index_].id;
   ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
   item_manager_->SetShelfItemDelegate(
-      browser_shelf_id, scoped_ptr<ShelfItemDelegate>(selection_tracker));
+      browser_shelf_id, std::unique_ptr<ShelfItemDelegate>(selection_tracker));
 
   // A single click selects the item.
   SimulateClick(browser_index_);
@@ -1257,7 +1258,7 @@ TEST_F(ShelfViewTest, ClickAndMoveSlightly) {
   // the shelf item gets selected.
   ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
   item_manager_->SetShelfItemDelegate(
-      shelf_id, scoped_ptr<ShelfItemDelegate>(selection_tracker));
+      shelf_id, std::unique_ptr<ShelfItemDelegate>(selection_tracker));
 
   gfx::Vector2d press_offset(5, 30);
   gfx::Point press_location = gfx::Point() + press_offset;
@@ -1859,7 +1860,7 @@ TEST_F(ShelfViewTest,
   ShelfID browser_shelf_id = model_->items()[browser_index_].id;
   ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
   item_manager_->SetShelfItemDelegate(
-      browser_shelf_id, scoped_ptr<ShelfItemDelegate>(selection_tracker));
+      browser_shelf_id, std::unique_ptr<ShelfItemDelegate>(selection_tracker));
 
   SimulateClick(browser_index_);
   EXPECT_EQ(1,
@@ -1876,7 +1877,7 @@ TEST_F(ShelfViewTest, Launcher_TaskUserActionsRecordedWhenItemSelected) {
   selection_tracker->set_item_selected_action(
       ShelfItemDelegate::kNewWindowCreated);
   item_manager_->SetShelfItemDelegate(
-      browser_shelf_id, scoped_ptr<ShelfItemDelegate>(selection_tracker));
+      browser_shelf_id, std::unique_ptr<ShelfItemDelegate>(selection_tracker));
 
   SimulateClick(browser_index_);
   EXPECT_EQ(1, user_action_tester.GetActionCount("Launcher_LaunchTask"));
@@ -1891,7 +1892,7 @@ TEST_F(ShelfViewTest,
   ShelfID browser_shelf_id = model_->items()[browser_index_].id;
   ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
   item_manager_->SetShelfItemDelegate(
-      browser_shelf_id, scoped_ptr<ShelfItemDelegate>(selection_tracker));
+      browser_shelf_id, std::unique_ptr<ShelfItemDelegate>(selection_tracker));
 
   selection_tracker->set_item_selected_action(
       ShelfItemDelegate::kExistingWindowMinimized);

@@ -5,9 +5,10 @@
 #ifndef ASH_DRAG_DROP_DRAG_DROP_TRACKER_H_
 #define ASH_DRAG_DROP_DRAG_DROP_TRACKER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/events/event.h"
 
 namespace aura {
@@ -47,7 +48,7 @@ class ASH_EXPORT DragDropTracker {
 
  private:
   // A window for capturing drag events while dragging.
-  scoped_ptr<aura::Window> capture_window_;
+  std::unique_ptr<aura::Window> capture_window_;
 
   DISALLOW_COPY_AND_ASSIGN(DragDropTracker);
 };

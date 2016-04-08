@@ -6,7 +6,6 @@
 #define ASH_SYSTEM_TRAY_TRAY_BUBBLE_WRAPPER_H_
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace views {

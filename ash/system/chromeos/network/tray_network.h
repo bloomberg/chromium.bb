@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_NETWORK_H
 #define ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_NETWORK_H
 
+#include <memory>
 #include <set>
 
 #include "ash/system/chromeos/network/network_observer.h"
@@ -12,7 +13,6 @@
 #include "ash/system/chromeos/network/tray_network_state_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 
 namespace chromeos {
@@ -60,7 +60,7 @@ class TrayNetwork : public SystemTrayItem,
   tray::NetworkDefaultView* default_;
   tray::NetworkDetailedView* detailed_;
   bool request_wifi_view_;
-  scoped_ptr<TrayNetworkStateObserver> network_state_observer_;
+  std::unique_ptr<TrayNetworkStateObserver> network_state_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayNetwork);
 };

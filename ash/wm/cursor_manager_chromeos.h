@@ -5,10 +5,11 @@
 #ifndef ASH_WM_CURSOR_MANAGER_CHROMEOS_H_
 #define ASH_WM_CURSOR_MANAGER_CHROMEOS_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/native_cursor_manager_delegate.h"
 
@@ -27,8 +28,7 @@ namespace ash {
 // enabled.
 class ASH_EXPORT CursorManager : public ::wm::CursorManager {
  public:
-  explicit CursorManager(
-      scoped_ptr< ::wm::NativeCursorManager> delegate);
+  explicit CursorManager(std::unique_ptr<::wm::NativeCursorManager> delegate);
   ~CursorManager() override;
 
   // aura::client::CursorClient:

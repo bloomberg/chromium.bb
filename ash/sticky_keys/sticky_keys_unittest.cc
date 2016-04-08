@@ -192,7 +192,7 @@ class StickyKeysTest : public test::AshTestBase {
 
   // Creates a synthesized MouseWHeel event.
   ui::MouseWheelEvent* GenerateSynthesizedMouseWheelEvent(int wheel_delta) {
-    scoped_ptr<ui::MouseEvent> mev(
+    std::unique_ptr<ui::MouseEvent> mev(
         GenerateSynthesizedMouseEventAt(ui::ET_MOUSEWHEEL, gfx::Point(0, 0)));
     ui::MouseWheelEvent* event = new ui::MouseWheelEvent(*mev, 0, wheel_delta);
     ui::Event::DispatcherApi dispatcher(event);
@@ -204,7 +204,7 @@ class StickyKeysTest : public test::AshTestBase {
                                     ui::KeyboardCode key_code) {
     bool released = false;
     int down_flags = 0;
-    scoped_ptr<ui::KeyEvent> ev;
+    std::unique_ptr<ui::KeyEvent> ev;
     ev.reset(GenerateKey(ui::ET_KEY_PRESSED, key_code));
     handler->HandleKeyEvent(*ev.get(), key_code, &down_flags, &released);
     ev.reset(GenerateKey(ui::ET_KEY_RELEASED, key_code));
@@ -243,7 +243,7 @@ class StickyKeysTest : public test::AshTestBase {
 };
 
 TEST_F(StickyKeysTest, BasicOneshotScenarioTest) {
-  scoped_ptr<ui::KeyEvent> ev;
+  std::unique_ptr<ui::KeyEvent> ev;
   StickyKeysHandler sticky_key(ui::EF_SHIFT_DOWN);
 
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
@@ -268,7 +268,7 @@ TEST_F(StickyKeysTest, BasicOneshotScenarioTest) {
 
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
   // Making sure Shift up keyboard event is available.
-  scoped_ptr<ui::Event> up_event;
+  std::unique_ptr<ui::Event> up_event;
   ASSERT_EQ(0, sticky_key.GetModifierUpEvent(&up_event));
   EXPECT_TRUE(up_event.get());
   EXPECT_EQ(ui::ET_KEY_RELEASED, up_event->type());
@@ -286,7 +286,7 @@ TEST_F(StickyKeysTest, BasicOneshotScenarioTest) {
 }
 
 TEST_F(StickyKeysTest, BasicLockedScenarioTest) {
-  scoped_ptr<ui::KeyEvent> ev;
+  std::unique_ptr<ui::KeyEvent> ev;
   StickyKeysHandler sticky_key(ui::EF_SHIFT_DOWN);
 
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
@@ -327,7 +327,7 @@ TEST_F(StickyKeysTest, BasicLockedScenarioTest) {
 }
 
 TEST_F(StickyKeysTest, NonTargetModifierTest) {
-  scoped_ptr<ui::KeyEvent> ev;
+  std::unique_ptr<ui::KeyEvent> ev;
   StickyKeysHandler sticky_key(ui::EF_SHIFT_DOWN);
 
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
@@ -374,7 +374,7 @@ TEST_F(StickyKeysTest, NonTargetModifierTest) {
 
 TEST_F(StickyKeysTest, NormalShortcutTest) {
   // Sticky keys should not be enabled if we perform a normal shortcut.
-  scoped_ptr<ui::KeyEvent> ev;
+  std::unique_ptr<ui::KeyEvent> ev;
   StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN);
 
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
@@ -411,8 +411,8 @@ TEST_F(StickyKeysTest, NormalShortcutTest) {
 }
 
 TEST_F(StickyKeysTest, NormalModifiedClickTest) {
-  scoped_ptr<ui::KeyEvent> kev;
-  scoped_ptr<ui::MouseEvent> mev;
+  std::unique_ptr<ui::KeyEvent> kev;
+  std::unique_ptr<ui::MouseEvent> mev;
   StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN);
 
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
@@ -434,8 +434,8 @@ TEST_F(StickyKeysTest, NormalModifiedClickTest) {
 }
 
 TEST_F(StickyKeysTest, MouseMovedModifierTest) {
-  scoped_ptr<ui::KeyEvent> kev;
-  scoped_ptr<ui::MouseEvent> mev;
+  std::unique_ptr<ui::KeyEvent> kev;
+  std::unique_ptr<ui::MouseEvent> mev;
   StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN);
 
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
@@ -457,8 +457,8 @@ TEST_F(StickyKeysTest, MouseMovedModifierTest) {
 }
 
 TEST_F(StickyKeysTest, NormalModifiedScrollTest) {
-  scoped_ptr<ui::KeyEvent> kev;
-  scoped_ptr<ui::ScrollEvent> sev;
+  std::unique_ptr<ui::KeyEvent> kev;
+  std::unique_ptr<ui::ScrollEvent> sev;
   StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN);
 
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
@@ -482,8 +482,8 @@ TEST_F(StickyKeysTest, NormalModifiedScrollTest) {
 }
 
 TEST_F(StickyKeysTest, MouseEventOneshot) {
-  scoped_ptr<ui::MouseEvent> ev;
-  scoped_ptr<ui::KeyEvent> kev;
+  std::unique_ptr<ui::MouseEvent> ev;
+  std::unique_ptr<ui::KeyEvent> kev;
   StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN);
 
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
@@ -508,7 +508,7 @@ TEST_F(StickyKeysTest, MouseEventOneshot) {
 
   // Making sure modifier key release event is dispatched in the right order.
   EXPECT_TRUE(released);
-  scoped_ptr<ui::Event> up_event;
+  std::unique_ptr<ui::Event> up_event;
   ASSERT_EQ(0, sticky_key.GetModifierUpEvent(&up_event));
   EXPECT_TRUE(up_event.get());
   EXPECT_EQ(ui::ET_KEY_RELEASED, up_event->type());
@@ -530,8 +530,8 @@ TEST_F(StickyKeysTest, MouseEventOneshot) {
 }
 
 TEST_F(StickyKeysTest, MouseEventLocked) {
-  scoped_ptr<ui::MouseEvent> ev;
-  scoped_ptr<ui::KeyEvent> kev;
+  std::unique_ptr<ui::MouseEvent> ev;
+  std::unique_ptr<ui::KeyEvent> kev;
   StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN);
 
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
@@ -587,8 +587,8 @@ TEST_F(StickyKeysTest, MouseEventLocked) {
 }
 
 TEST_F(StickyKeysTest, ScrollEventOneshot) {
-  scoped_ptr<ui::ScrollEvent> ev;
-  scoped_ptr<ui::KeyEvent> kev;
+  std::unique_ptr<ui::ScrollEvent> ev;
+  std::unique_ptr<ui::KeyEvent> kev;
   StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN);
 
   int scroll_deltas[] = {-10, 10};
@@ -625,7 +625,7 @@ TEST_F(StickyKeysTest, ScrollEventOneshot) {
     EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
     EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
 
-    scoped_ptr<ui::Event> up_event;
+    std::unique_ptr<ui::Event> up_event;
     EXPECT_TRUE(released);
     ASSERT_EQ(0, sticky_key.GetModifierUpEvent(&up_event));
     EXPECT_TRUE(up_event.get());
@@ -636,8 +636,8 @@ TEST_F(StickyKeysTest, ScrollEventOneshot) {
 }
 
 TEST_F(StickyKeysTest, ScrollDirectionChanged) {
-  scoped_ptr<ui::ScrollEvent> ev;
-  scoped_ptr<ui::KeyEvent> kev;
+  std::unique_ptr<ui::ScrollEvent> ev;
+  std::unique_ptr<ui::KeyEvent> kev;
   StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN);
 
   // Test direction change with both boundary value and negative value.
@@ -673,8 +673,8 @@ TEST_F(StickyKeysTest, ScrollDirectionChanged) {
 }
 
 TEST_F(StickyKeysTest, ScrollEventLocked) {
-  scoped_ptr<ui::ScrollEvent> ev;
-  scoped_ptr<ui::KeyEvent> kev;
+  std::unique_ptr<ui::ScrollEvent> ev;
+  std::unique_ptr<ui::KeyEvent> kev;
   StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN);
 
   // Lock sticky keys.
@@ -713,7 +713,7 @@ TEST_F(StickyKeysTest, SynthesizedEvents) {
   StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN);
 
   // Test non-native key events.
-  scoped_ptr<ui::KeyEvent> kev;
+  std::unique_ptr<ui::KeyEvent> kev;
   SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_CONTROL);
   EXPECT_EQ(STICKY_KEY_STATE_ENABLED, sticky_key.current_state());
 
@@ -731,7 +731,7 @@ TEST_F(StickyKeysTest, SynthesizedEvents) {
   SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_CONTROL);
   EXPECT_EQ(STICKY_KEY_STATE_ENABLED, sticky_key.current_state());
 
-  scoped_ptr<ui::MouseEvent> mev;
+  std::unique_ptr<ui::MouseEvent> mev;
   mev.reset(GenerateSynthesizedMouseClickEvent(ui::ET_MOUSE_PRESSED,
                                                gfx::Point(0, 0)));
   bool released = false;

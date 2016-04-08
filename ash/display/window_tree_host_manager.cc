@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "ash/ash_switches.h"
@@ -133,7 +134,7 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
       host->GetAcceleratedWidget(), info.GetActiveRotation(), scale);
 #endif
 #endif
-  scoped_ptr<RootWindowTransformer> transformer(
+  std::unique_ptr<RootWindowTransformer> transformer(
       CreateRootWindowTransformerForDisplay(host->window(), display));
   ash_host->SetRootWindowTransformer(std::move(transformer));
 
@@ -446,7 +447,7 @@ void WindowTreeHostManager::SetPrimaryDisplayId(int64_t id) {
   // when the primary id is set after new displays are connected.
   // Only update the layout if it is requested to swap primary display.
   if (layout.primary_id != new_primary_display.id()) {
-    scoped_ptr<display::DisplayLayout> swapped_layout(layout.Copy());
+    std::unique_ptr<display::DisplayLayout> swapped_layout(layout.Copy());
     swapped_layout->placement_list[0].Swap();
     swapped_layout->primary_id = new_primary_display.id();
     display::DisplayIdList list = display_manager->GetCurrentDisplayIdList();

@@ -64,7 +64,7 @@ TEST_F(WindowAnimationsTest, HideShowBrightnessGrayscaleAnimation) {
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   window->Show();
   EXPECT_TRUE(window->layer()->visible());
 
@@ -95,7 +95,7 @@ TEST_F(WindowAnimationsTest, HideShowBrightnessGrayscaleAnimation) {
 }
 
 TEST_F(WindowAnimationsTest, LayerTargetVisibility) {
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
 
   // Layer target visibility changes according to Show/Hide.
   window->Show();
@@ -112,7 +112,7 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
-  scoped_ptr<Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<Window> window(CreateTestWindowInShellWithId(0));
   window->SetBounds(gfx::Rect(5, 10, 320, 240));
   window->Show();
 
@@ -171,7 +171,7 @@ TEST_F(WindowAnimationsTest, CrossFadeToBoundsFromTransform) {
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
-  scoped_ptr<Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<Window> window(CreateTestWindowInShellWithId(0));
   window->SetBounds(gfx::Rect(10, 10, 320, 240));
   gfx::Transform half_size;
   half_size.Translate(10, 10);
@@ -210,7 +210,7 @@ TEST_F(WindowAnimationsTest, LockAnimationDuration) {
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
-  scoped_ptr<Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<Window> window(CreateTestWindowInShellWithId(0));
   Layer* layer = window->layer();
   window->SetBounds(gfx::Rect(5, 10, 320, 240));
   window->Show();

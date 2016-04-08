@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_util.h"
+#include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
@@ -162,7 +163,7 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
   aura::Window* drag_window_ = nullptr;  // Owned by the container.
 
   // The copy of window_->layer() and its descendants.
-  scoped_ptr<ui::LayerTreeOwner> layer_owner_;
+  std::unique_ptr<ui::LayerTreeOwner> layer_owner_;
 
   DISALLOW_COPY_AND_ASSIGN(DragWindowDetails);
 };
@@ -188,7 +189,7 @@ DragWindowController::DragWindowController(aura::Window* window)
     if (current.id() == display.id())
       continue;
     drag_windows_.push_back(
-        make_scoped_ptr(new DragWindowDetails(display, window_)));
+        base::WrapUnique(new DragWindowDetails(display, window_)));
   }
 }
 
@@ -196,13 +197,13 @@ DragWindowController::~DragWindowController() {}
 
 void DragWindowController::Update(const gfx::Rect& bounds_in_screen,
                                   const gfx::Point& drag_location_in_screen) {
-  for (scoped_ptr<DragWindowDetails>& details : drag_windows_)
+  for (std::unique_ptr<DragWindowDetails>& details : drag_windows_)
     details->Update(window_, bounds_in_screen, drag_location_in_screen);
 }
 
 int DragWindowController::GetDragWindowsCountForTest() const {
   int count = 0;
-  for (const scoped_ptr<DragWindowDetails>& details : drag_windows_) {
+  for (const std::unique_ptr<DragWindowDetails>& details : drag_windows_) {
     if (details->drag_window_)
       count++;
   }
@@ -211,7 +212,7 @@ int DragWindowController::GetDragWindowsCountForTest() const {
 
 const aura::Window* DragWindowController::GetDragWindowForTest(
     size_t index) const {
-  for (const scoped_ptr<DragWindowDetails>& details : drag_windows_) {
+  for (const std::unique_ptr<DragWindowDetails>& details : drag_windows_) {
     if (details->drag_window_) {
       if (index == 0)
         return details->drag_window_;
@@ -223,7 +224,7 @@ const aura::Window* DragWindowController::GetDragWindowForTest(
 
 const ui::LayerTreeOwner* DragWindowController::GetDragLayerOwnerForTest(
     size_t index) const {
-  for (const scoped_ptr<DragWindowDetails>& details : drag_windows_) {
+  for (const std::unique_ptr<DragWindowDetails>& details : drag_windows_) {
     if (details->layer_owner_) {
       if (index == 0)
         return details->layer_owner_.get();

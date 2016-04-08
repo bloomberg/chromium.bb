@@ -103,10 +103,10 @@ void PhantomWindowController::Show(const gfx::Rect& bounds_in_screen) {
   AnimateToBounds(phantom_widget_.get(), target_bounds_in_screen_);
 }
 
-scoped_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
+std::unique_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
     aura::Window* root_window,
     const gfx::Rect& bounds_in_screen) {
-  scoped_ptr<views::Widget> phantom_widget(new views::Widget);
+  std::unique_ptr<views::Widget> phantom_widget(new views::Widget);
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   // PhantomWindowController is used by FrameMaximizeButton to highlight the

@@ -10,7 +10,6 @@
 #include "ash/shelf/scoped_observer_with_duplicated_sources.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/display_observer.h"

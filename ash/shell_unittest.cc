@@ -351,12 +351,12 @@ TEST_F(ShellTest, IsScreenLocked) {
 
 TEST_F(ShellTest, LockScreenClosesActiveMenu) {
   SimpleMenuDelegate menu_delegate;
-  scoped_ptr<ui::SimpleMenuModel> menu_model(
+  std::unique_ptr<ui::SimpleMenuModel> menu_model(
       new ui::SimpleMenuModel(&menu_delegate));
   menu_model->AddItem(0, base::ASCIIToUTF16("Menu item"));
   views::Widget* widget = ash::Shell::GetPrimaryRootWindowController()->
       wallpaper_controller()->widget();
-  scoped_ptr<views::MenuRunner> menu_runner(
+  std::unique_ptr<views::MenuRunner> menu_runner(
       new views::MenuRunner(menu_model.get(), views::MenuRunner::CONTEXT_MENU));
 
   // When MenuRunner runs a nested loop the LockScreenAndVerifyMenuClosed
@@ -446,7 +446,7 @@ TEST_F(ShellTest, FullscreenWindowHidesShelf) {
 // Various assertions around SetShelfAutoHideBehavior() and
 // GetShelfAutoHideBehavior().
 TEST_F(ShellTest, ToggleAutoHide) {
-  scoped_ptr<aura::Window> window(new aura::Window(NULL));
+  std::unique_ptr<aura::Window> window(new aura::Window(NULL));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
@@ -518,7 +518,7 @@ class ShellTest2 : public test::AshTestBase {
   ~ShellTest2() override {}
 
  protected:
-  scoped_ptr<aura::Window> window_;
+  std::unique_ptr<aura::Window> window_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellTest2);

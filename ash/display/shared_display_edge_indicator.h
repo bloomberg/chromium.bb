@@ -5,9 +5,10 @@
 #ifndef ASH_DISPLAY_SHARED_DISPLAY_EDGE_INDICATOR_H_
 #define ASH_DISPLAY_SHARED_DISPLAY_EDGE_INDICATOR_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/display.h"
 
@@ -47,7 +48,7 @@ class ASH_EXPORT SharedDisplayEdgeIndicator : public gfx::AnimationDelegate {
   views::View* dst_indicator_;
 
   // Used to transition the opacity.
-  scoped_ptr<gfx::ThrobAnimation> animation_;
+  std::unique_ptr<gfx::ThrobAnimation> animation_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedDisplayEdgeIndicator);
 };

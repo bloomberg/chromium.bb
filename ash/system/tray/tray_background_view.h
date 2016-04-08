@@ -5,6 +5,8 @@
 #ifndef ASH_SYSTEM_TRAY_TRAY_BACKGROUND_VIEW_H_
 #define ASH_SYSTEM_TRAY_TRAY_BACKGROUND_VIEW_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/shelf/background_animator.h"
 #include "ash/shelf/shelf_types.h"
@@ -188,8 +190,8 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // differently if set to true.
   bool draw_background_as_active_;
 
-  scoped_ptr<TrayWidgetObserver> widget_observer_;
-  scoped_ptr<TrayEventFilter> tray_event_filter_;
+  std::unique_ptr<TrayWidgetObserver> widget_observer_;
+  std::unique_ptr<TrayEventFilter> tray_event_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBackgroundView);
 };

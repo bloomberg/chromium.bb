@@ -86,7 +86,7 @@ class ToplevelWindowEventHandlerTest : public AshTestBase {
     generator.PressMoveAndReleaseTouchBy(dx, dy);
   }
 
-  scoped_ptr<ToplevelWindowEventHandler> handler_;
+  std::unique_ptr<ToplevelWindowEventHandler> handler_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventHandlerTest);
@@ -95,7 +95,7 @@ class ToplevelWindowEventHandlerTest : public AshTestBase {
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, Caption) {
-  scoped_ptr<aura::Window> w1(CreateWindow(HTCAPTION));
+  std::unique_ptr<aura::Window> w1(CreateWindow(HTCAPTION));
   gfx::Size size = w1->bounds().size();
   DragFromCenterBy(w1.get(), 100, 100);
   // Position should have been offset by 100,100.
@@ -131,7 +131,7 @@ class CancelDragObserver : public aura::WindowObserver {
 
 // Cancelling drag while starting window drag should not crash.
 TEST_F(ToplevelWindowEventHandlerTest, CancelWhileDragStart) {
-  scoped_ptr<aura::Window> w1(CreateWindow(HTCAPTION));
+  std::unique_ptr<aura::Window> w1(CreateWindow(HTCAPTION));
   CancelDragObserver observer;
   w1->AddObserver(&observer);
   gfx::Point origin = w1->bounds().origin();
@@ -141,7 +141,7 @@ TEST_F(ToplevelWindowEventHandlerTest, CancelWhileDragStart) {
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, BottomRight) {
-  scoped_ptr<aura::Window> w1(CreateWindow(HTBOTTOMRIGHT));
+  std::unique_ptr<aura::Window> w1(CreateWindow(HTBOTTOMRIGHT));
   gfx::Point position = w1->bounds().origin();
   DragFromCenterBy(w1.get(), 100, 100);
   // Position should not have changed.
@@ -151,7 +151,7 @@ TEST_F(ToplevelWindowEventHandlerTest, BottomRight) {
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, GrowBox) {
-  scoped_ptr<aura::Window> w1(CreateWindow(HTGROWBOX));
+  std::unique_ptr<aura::Window> w1(CreateWindow(HTGROWBOX));
   TestWindowDelegate* window_delegate =
       static_cast<TestWindowDelegate*>(w1->delegate());
   window_delegate->set_minimum_size(gfx::Size(40, 40));
@@ -179,7 +179,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GrowBox) {
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, Right) {
-  scoped_ptr<aura::Window> w1(CreateWindow(HTRIGHT));
+  std::unique_ptr<aura::Window> w1(CreateWindow(HTRIGHT));
   gfx::Point position = w1->bounds().origin();
   DragFromCenterBy(w1.get(), 100, 100);
   // Position should not have changed.
@@ -189,7 +189,7 @@ TEST_F(ToplevelWindowEventHandlerTest, Right) {
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, Bottom) {
-  scoped_ptr<aura::Window> w1(CreateWindow(HTBOTTOM));
+  std::unique_ptr<aura::Window> w1(CreateWindow(HTBOTTOM));
   gfx::Point position = w1->bounds().origin();
   DragFromCenterBy(w1.get(), 100, 100);
   // Position should not have changed.
@@ -199,7 +199,7 @@ TEST_F(ToplevelWindowEventHandlerTest, Bottom) {
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, TopRight) {
-  scoped_ptr<aura::Window> w1(CreateWindow(HTTOPRIGHT));
+  std::unique_ptr<aura::Window> w1(CreateWindow(HTTOPRIGHT));
   DragFromCenterBy(w1.get(), -50, 50);
   // Position should have been offset by 0,50.
   EXPECT_EQ(gfx::Point(0, 50).ToString(), w1->bounds().origin().ToString());
@@ -208,7 +208,7 @@ TEST_F(ToplevelWindowEventHandlerTest, TopRight) {
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, Top) {
-  scoped_ptr<aura::Window> w1(CreateWindow(HTTOP));
+  std::unique_ptr<aura::Window> w1(CreateWindow(HTTOP));
   DragFromCenterBy(w1.get(), 50, 50);
   // Position should have been offset by 0,50.
   EXPECT_EQ(gfx::Point(0, 50).ToString(), w1->bounds().origin().ToString());
@@ -217,7 +217,7 @@ TEST_F(ToplevelWindowEventHandlerTest, Top) {
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, Left) {
-  scoped_ptr<aura::Window> w1(CreateWindow(HTLEFT));
+  std::unique_ptr<aura::Window> w1(CreateWindow(HTLEFT));
   DragFromCenterBy(w1.get(), 50, 50);
   // Position should have been offset by 50,0.
   EXPECT_EQ(gfx::Point(50, 0).ToString(), w1->bounds().origin().ToString());
@@ -226,7 +226,7 @@ TEST_F(ToplevelWindowEventHandlerTest, Left) {
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, BottomLeft) {
-  scoped_ptr<aura::Window> w1(CreateWindow(HTBOTTOMLEFT));
+  std::unique_ptr<aura::Window> w1(CreateWindow(HTBOTTOMLEFT));
   DragFromCenterBy(w1.get(), 50, -50);
   // Position should have been offset by 50,0.
   EXPECT_EQ(gfx::Point(50, 0).ToString(), w1->bounds().origin().ToString());
@@ -235,7 +235,7 @@ TEST_F(ToplevelWindowEventHandlerTest, BottomLeft) {
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, TopLeft) {
-  scoped_ptr<aura::Window> w1(CreateWindow(HTTOPLEFT));
+  std::unique_ptr<aura::Window> w1(CreateWindow(HTTOPLEFT));
   DragFromCenterBy(w1.get(), 50, 50);
   // Position should have been offset by 50,50.
   EXPECT_EQ(gfx::Point(50, 50).ToString(), w1->bounds().origin().ToString());
@@ -244,7 +244,7 @@ TEST_F(ToplevelWindowEventHandlerTest, TopLeft) {
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, Client) {
-  scoped_ptr<aura::Window> w1(CreateWindow(HTCLIENT));
+  std::unique_ptr<aura::Window> w1(CreateWindow(HTCLIENT));
   gfx::Rect bounds = w1->bounds();
   DragFromCenterBy(w1.get(), 100, 100);
   // Neither position nor size should have changed.
@@ -252,7 +252,7 @@ TEST_F(ToplevelWindowEventHandlerTest, Client) {
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, LeftPastMinimum) {
-  scoped_ptr<aura::Window> w1(CreateWindow(HTLEFT));
+  std::unique_ptr<aura::Window> w1(CreateWindow(HTLEFT));
   TestWindowDelegate* window_delegate =
       static_cast<TestWindowDelegate*>(w1->delegate());
   window_delegate->set_minimum_size(gfx::Size(40, 40));
@@ -265,7 +265,7 @@ TEST_F(ToplevelWindowEventHandlerTest, LeftPastMinimum) {
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, RightPastMinimum) {
-  scoped_ptr<aura::Window> w1(CreateWindow(HTRIGHT));
+  std::unique_ptr<aura::Window> w1(CreateWindow(HTRIGHT));
   TestWindowDelegate* window_delegate =
       static_cast<TestWindowDelegate*>(w1->delegate());
   window_delegate->set_minimum_size(gfx::Size(40, 40));
@@ -279,7 +279,7 @@ TEST_F(ToplevelWindowEventHandlerTest, RightPastMinimum) {
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, TopLeftPastMinimum) {
-  scoped_ptr<aura::Window> w1(CreateWindow(HTTOPLEFT));
+  std::unique_ptr<aura::Window> w1(CreateWindow(HTTOPLEFT));
   TestWindowDelegate* window_delegate =
       static_cast<TestWindowDelegate*>(w1->delegate());
   window_delegate->set_minimum_size(gfx::Size(40, 40));
@@ -292,7 +292,7 @@ TEST_F(ToplevelWindowEventHandlerTest, TopLeftPastMinimum) {
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, TopRightPastMinimum) {
-  scoped_ptr<aura::Window> w1(CreateWindow(HTTOPRIGHT));
+  std::unique_ptr<aura::Window> w1(CreateWindow(HTTOPRIGHT));
   TestWindowDelegate* window_delegate =
       static_cast<TestWindowDelegate*>(w1->delegate());
   window_delegate->set_minimum_size(gfx::Size(40, 40));
@@ -306,7 +306,7 @@ TEST_F(ToplevelWindowEventHandlerTest, TopRightPastMinimum) {
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, BottomLeftPastMinimum) {
-  scoped_ptr<aura::Window> w1(CreateWindow(HTBOTTOMLEFT));
+  std::unique_ptr<aura::Window> w1(CreateWindow(HTBOTTOMLEFT));
   TestWindowDelegate* window_delegate =
       static_cast<TestWindowDelegate*>(w1->delegate());
   window_delegate->set_minimum_size(gfx::Size(40, 40));
@@ -320,7 +320,7 @@ TEST_F(ToplevelWindowEventHandlerTest, BottomLeftPastMinimum) {
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, BottomRightPastMinimum) {
-  scoped_ptr<aura::Window> w1(CreateWindow(HTBOTTOMRIGHT));
+  std::unique_ptr<aura::Window> w1(CreateWindow(HTBOTTOMRIGHT));
   TestWindowDelegate* window_delegate =
       static_cast<TestWindowDelegate*>(w1->delegate());
   window_delegate->set_minimum_size(gfx::Size(40, 40));
@@ -334,7 +334,7 @@ TEST_F(ToplevelWindowEventHandlerTest, BottomRightPastMinimum) {
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, BottomRightWorkArea) {
-  scoped_ptr<aura::Window> target(CreateWindow(HTBOTTOMRIGHT));
+  std::unique_ptr<aura::Window> target(CreateWindow(HTBOTTOMRIGHT));
   gfx::Rect work_area = gfx::Screen::GetScreen()
                             ->GetDisplayNearestWindow(target.get())
                             .work_area();
@@ -350,7 +350,7 @@ TEST_F(ToplevelWindowEventHandlerTest, BottomRightWorkArea) {
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, BottomLeftWorkArea) {
-  scoped_ptr<aura::Window> target(CreateWindow(HTBOTTOMLEFT));
+  std::unique_ptr<aura::Window> target(CreateWindow(HTBOTTOMLEFT));
   gfx::Rect work_area = gfx::Screen::GetScreen()
                             ->GetDisplayNearestWindow(target.get())
                             .work_area();
@@ -367,7 +367,7 @@ TEST_F(ToplevelWindowEventHandlerTest, BottomLeftWorkArea) {
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, BottomWorkArea) {
-  scoped_ptr<aura::Window> target(CreateWindow(HTBOTTOM));
+  std::unique_ptr<aura::Window> target(CreateWindow(HTBOTTOM));
   gfx::Rect work_area = gfx::Screen::GetScreen()
                             ->GetDisplayNearestWindow(target.get())
                             .work_area();
@@ -383,8 +383,8 @@ TEST_F(ToplevelWindowEventHandlerTest, BottomWorkArea) {
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, DontDragIfModalChild) {
-  scoped_ptr<aura::Window> w1(CreateWindow(HTCAPTION));
-  scoped_ptr<aura::Window> w2(CreateWindow(HTCAPTION));
+  std::unique_ptr<aura::Window> w1(CreateWindow(HTCAPTION));
+  std::unique_ptr<aura::Window> w2(CreateWindow(HTCAPTION));
   w2->SetBounds(gfx::Rect(100, 0, 100, 100));
   w2->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
   ::wm::AddTransientChild(w1.get(), w2.get());
@@ -403,7 +403,7 @@ TEST_F(ToplevelWindowEventHandlerTest, DontDragIfModalChild) {
 
 // Verifies we don't let windows drag to a -y location.
 TEST_F(ToplevelWindowEventHandlerTest, DontDragToNegativeY) {
-  scoped_ptr<aura::Window> target(CreateWindow(HTTOP));
+  std::unique_ptr<aura::Window> target(CreateWindow(HTTOP));
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      target.get());
   generator.MoveMouseTo(0, 5);
@@ -415,7 +415,7 @@ TEST_F(ToplevelWindowEventHandlerTest, DontDragToNegativeY) {
 
 // Verifies we don't let windows go bigger than the display width.
 TEST_F(ToplevelWindowEventHandlerTest, DontGotWiderThanScreen) {
-  scoped_ptr<aura::Window> target(CreateWindow(HTRIGHT));
+  std::unique_ptr<aura::Window> target(CreateWindow(HTRIGHT));
   gfx::Rect work_area =
       gfx::Screen::GetScreen()->GetDisplayNearestWindow(target.get()).bounds();
   DragFromCenterBy(target.get(), work_area.width() * 2, 0);
@@ -425,11 +425,8 @@ TEST_F(ToplevelWindowEventHandlerTest, DontGotWiderThanScreen) {
 
 // Verifies that touch-gestures drag the window correctly.
 TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
-  scoped_ptr<aura::Window> target(
-      CreateTestWindowInShellWithDelegate(
-          new TestWindowDelegate(HTCAPTION),
-          0,
-          gfx::Rect(0, 0, 100, 100)));
+  std::unique_ptr<aura::Window> target(CreateTestWindowInShellWithDelegate(
+      new TestWindowDelegate(HTCAPTION), 0, gfx::Rect(0, 0, 100, 100)));
   wm::WindowState* window_state = wm::GetWindowState(target.get());
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      target.get());
@@ -501,7 +498,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
 // Tests that a gesture cannot minimize an unminimizeable window.
 TEST_F(ToplevelWindowEventHandlerTest,
        GestureAttemptMinimizeUnminimizeableWindow) {
-  scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
+  std::unique_ptr<aura::Window> target(CreateWindow(HTCAPTION));
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      target.get());
   gfx::Rect old_bounds = target->bounds();
@@ -519,11 +516,8 @@ TEST_F(ToplevelWindowEventHandlerTest,
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, GestureDragToRestore) {
-  scoped_ptr<aura::Window> window(
-      CreateTestWindowInShellWithDelegate(
-          new TestWindowDelegate(HTCAPTION),
-          0,
-          gfx::Rect(10, 20, 30, 40)));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+      new TestWindowDelegate(HTCAPTION), 0, gfx::Rect(10, 20, 30, 40)));
   window->Show();
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   window_state->Activate();
@@ -547,7 +541,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragToRestore) {
 
 // Tests that an unresizable window cannot be dragged or snapped using gestures.
 TEST_F(ToplevelWindowEventHandlerTest, GestureDragForUnresizableWindow) {
-  scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
+  std::unique_ptr<aura::Window> target(CreateWindow(HTCAPTION));
   wm::WindowState* window_state = wm::GetWindowState(target.get());
 
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
@@ -595,15 +589,10 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragForUnresizableWindow) {
 
 // Tests that dragging multiple windows at the same time is not allowed.
 TEST_F(ToplevelWindowEventHandlerTest, GestureDragMultipleWindows) {
-  scoped_ptr<aura::Window> target(
-      CreateTestWindowInShellWithDelegate(
-          new TestWindowDelegate(HTCAPTION),
-          0,
-          gfx::Rect(0, 0, 100, 100)));
-  scoped_ptr<aura::Window> notmoved(
-      CreateTestWindowInShellWithDelegate(
-          new TestWindowDelegate(HTCAPTION),
-          1, gfx::Rect(100, 0, 100, 100)));
+  std::unique_ptr<aura::Window> target(CreateTestWindowInShellWithDelegate(
+      new TestWindowDelegate(HTCAPTION), 0, gfx::Rect(0, 0, 100, 100)));
+  std::unique_ptr<aura::Window> notmoved(CreateTestWindowInShellWithDelegate(
+      new TestWindowDelegate(HTCAPTION), 1, gfx::Rect(100, 0, 100, 100)));
 
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      target.get());
@@ -638,7 +627,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragMultipleWindows) {
 #define MAYBE_EscapeReverts EscapeReverts
 #endif
 TEST_F(ToplevelWindowEventHandlerTest, MAYBE_EscapeReverts) {
-  scoped_ptr<aura::Window> target(CreateWindow(HTBOTTOMRIGHT));
+  std::unique_ptr<aura::Window> target(CreateWindow(HTBOTTOMRIGHT));
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      target.get());
   generator.PressLeftButton();
@@ -663,7 +652,7 @@ TEST_F(ToplevelWindowEventHandlerTest, MAYBE_EscapeReverts) {
 TEST_F(ToplevelWindowEventHandlerTest, MAYBE_MinimizeMaximizeCompletes) {
   // Once window is minimized, window dragging completes.
   {
-    scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
+    std::unique_ptr<aura::Window> target(CreateWindow(HTCAPTION));
     target->Focus();
     ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                        target.get());
@@ -683,7 +672,7 @@ TEST_F(ToplevelWindowEventHandlerTest, MAYBE_MinimizeMaximizeCompletes) {
 
   // Once window is maximized, window dragging completes.
   {
-    scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
+    std::unique_ptr<aura::Window> target(CreateWindow(HTCAPTION));
     target->Focus();
     ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                        target.get());
@@ -706,9 +695,9 @@ TEST_F(ToplevelWindowEventHandlerTest, MAYBE_MinimizeMaximizeCompletes) {
 // aura::client::WindowMoveClient::RunMoveLoop() while another drag is already
 // in progress.
 TEST_F(ToplevelWindowEventHandlerTest, RunMoveLoopFailsDuringInProgressDrag) {
-  scoped_ptr<aura::Window> window1(CreateWindow(HTCAPTION));
+  std::unique_ptr<aura::Window> window1(CreateWindow(HTCAPTION));
   EXPECT_EQ("0,0 100x100", window1->bounds().ToString());
-  scoped_ptr<aura::Window> window2(CreateWindow(HTCAPTION));
+  std::unique_ptr<aura::Window> window2(CreateWindow(HTCAPTION));
 
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      window1.get());
@@ -740,7 +729,7 @@ void SendMouseReleaseAndReleaseCapture(ui::test::EventGenerator* generator,
 // Test that a drag is successful even if ET_MOUSE_CAPTURE_CHANGED is sent
 // immediately after the mouse release. views::Widget has this behavior.
 TEST_F(ToplevelWindowEventHandlerTest, CaptureLossAfterMouseRelease) {
-  scoped_ptr<aura::Window> window(CreateWindow(HTNOWHERE));
+  std::unique_ptr<aura::Window> window(CreateWindow(HTNOWHERE));
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      window.get());
   generator.PressLeftButton();
@@ -769,7 +758,7 @@ void CheckHasCaptureAndReleaseCapture(aura::Window* window) {
 
 // Test that releasing capture completes an in-progress gesture drag.
 TEST_F(ToplevelWindowEventHandlerTest, GestureDragCaptureLoss) {
-  scoped_ptr<aura::Window> window(CreateWindow(HTNOWHERE));
+  std::unique_ptr<aura::Window> window(CreateWindow(HTNOWHERE));
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      window.get());
 

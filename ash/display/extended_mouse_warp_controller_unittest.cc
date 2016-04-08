@@ -62,7 +62,7 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnRight) {
       gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]).id();
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  scoped_ptr<display::DisplayLayout> layout(
+  std::unique_ptr<display::DisplayLayout> layout(
       test::CreateDisplayLayout(display::DisplayPlacement::RIGHT, 0));
 
   display_manager->SetLayoutForCurrentDisplays(layout->Copy());
@@ -134,7 +134,7 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnLeft) {
       gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]).id();
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  scoped_ptr<display::DisplayLayout> layout(
+  std::unique_ptr<display::DisplayLayout> layout(
       test::CreateDisplayLayout(display::DisplayPlacement::LEFT, 0));
   display_manager->SetLayoutForCurrentDisplays(layout->Copy());
 
@@ -175,7 +175,7 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnTopBottom) {
       gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]).id();
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  scoped_ptr<display::DisplayLayout> layout(
+  std::unique_ptr<display::DisplayLayout> layout(
       test::CreateDisplayLayout(display::DisplayPlacement::TOP, 0));
   display_manager->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);

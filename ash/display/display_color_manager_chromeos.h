@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -61,9 +62,10 @@ class ASH_EXPORT DisplayColorManager
                                                ui::DisplayConnectionType type,
                                                const base::FilePath& path,
                                                bool file_downloaded);
-  virtual void UpdateCalibrationData(int64_t display_id,
-                                     int64_t product_id,
-                                     scoped_ptr<ColorCalibrationData> data);
+  virtual void UpdateCalibrationData(
+      int64_t display_id,
+      int64_t product_id,
+      std::unique_ptr<ColorCalibrationData> data);
 
  private:
   void ApplyDisplayColorCalibration(int64_t display_id, int64_t product_id);

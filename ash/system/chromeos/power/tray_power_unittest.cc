@@ -5,11 +5,11 @@
 #include "ash/system/chromeos/power/tray_power.h"
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "ash/ash_switches.h"
 #include "ash/test/ash_test_base.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "ui/message_center/fake_message_center.h"
 
@@ -28,7 +28,7 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
   int update_count() const { return update_count_; }
 
   // message_center::FakeMessageCenter overrides:
-  void AddNotification(scoped_ptr<Notification> notification) override {
+  void AddNotification(std::unique_ptr<Notification> notification) override {
     add_count_++;
     notifications_.insert(
         std::make_pair(notification->id(), std::move(notification)));
@@ -40,8 +40,9 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
     remove_count_++;
     notifications_.erase(id);
   }
-  void UpdateNotification(const std::string& id,
-                          scoped_ptr<Notification> new_notification) override {
+  void UpdateNotification(
+      const std::string& id,
+      std::unique_ptr<Notification> new_notification) override {
     update_count_++;
     Notification* notification = FindVisibleNotificationById(id);
     if (notification)
@@ -59,7 +60,7 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
   int add_count_;
   int remove_count_;
   int update_count_;
-  std::map<std::string, scoped_ptr<Notification>> notifications_;
+  std::map<std::string, std::unique_ptr<Notification>> notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMessageCenter);
 };
@@ -136,8 +137,8 @@ class TrayPowerTest : public test::AshTestBase {
   }
 
  private:
-  scoped_ptr<MockMessageCenter> message_center_;
-  scoped_ptr<TrayPower> tray_power_;
+  std::unique_ptr<MockMessageCenter> message_center_;
+  std::unique_ptr<TrayPower> tray_power_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayPowerTest);
 };

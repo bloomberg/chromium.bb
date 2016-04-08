@@ -258,20 +258,18 @@ void StartGrayscaleBrightnessAnimationForWindow(
     ui::LayerAnimationObserver* observer) {
   ui::LayerAnimator* animator = window->layer()->GetAnimator();
 
-  scoped_ptr<ui::LayerAnimationSequence> brightness_sequence(
+  std::unique_ptr<ui::LayerAnimationSequence> brightness_sequence(
       new ui::LayerAnimationSequence());
-  scoped_ptr<ui::LayerAnimationSequence> grayscale_sequence(
+  std::unique_ptr<ui::LayerAnimationSequence> grayscale_sequence(
       new ui::LayerAnimationSequence());
 
-  scoped_ptr<ui::LayerAnimationElement> brightness_element(
-      ui::LayerAnimationElement::CreateBrightnessElement(
-          target, duration));
+  std::unique_ptr<ui::LayerAnimationElement> brightness_element(
+      ui::LayerAnimationElement::CreateBrightnessElement(target, duration));
   brightness_element->set_tween_type(tween_type);
   brightness_sequence->AddElement(brightness_element.release());
 
-  scoped_ptr<ui::LayerAnimationElement> grayscale_element(
-      ui::LayerAnimationElement::CreateGrayscaleElement(
-          target, duration));
+  std::unique_ptr<ui::LayerAnimationElement> grayscale_element(
+      ui::LayerAnimationElement::CreateGrayscaleElement(target, duration));
   grayscale_element->set_tween_type(tween_type);
   grayscale_sequence->AddElement(grayscale_element.release());
 

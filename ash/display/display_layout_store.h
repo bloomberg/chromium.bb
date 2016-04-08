@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/display/manager/display_layout.h"
 
 namespace ash {
@@ -26,7 +26,7 @@ class ASH_EXPORT DisplayLayoutStore {
   // Registeres the display layout info for the specified display(s).
   void RegisterLayoutForDisplayIdList(
       const display::DisplayIdList& list,
-      scoped_ptr<display::DisplayLayout> layout);
+      std::unique_ptr<display::DisplayLayout> layout);
 
   // If no layout is registered, it creatas new layout using
   // |default_display_layout_|.
@@ -49,7 +49,8 @@ class ASH_EXPORT DisplayLayoutStore {
   display::DisplayPlacement default_display_placement_;
 
   // Display layout per list of devices.
-  std::map<display::DisplayIdList, scoped_ptr<display::DisplayLayout>> layouts_;
+  std::map<display::DisplayIdList, std::unique_ptr<display::DisplayLayout>>
+      layouts_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayLayoutStore);
 };

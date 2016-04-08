@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -15,7 +16,6 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -202,13 +202,13 @@ class ASH_EXPORT WindowTreeHostManager
   // display.
   AshWindowTreeHost* primary_tree_host_for_replace_;
 
-  scoped_ptr<FocusActivationStore> focus_activation_store_;
+  std::unique_ptr<FocusActivationStore> focus_activation_store_;
 
-  scoped_ptr<CursorWindowController> cursor_window_controller_;
-  scoped_ptr<MirrorWindowController> mirror_window_controller_;
+  std::unique_ptr<CursorWindowController> cursor_window_controller_;
+  std::unique_ptr<MirrorWindowController> mirror_window_controller_;
 
-  scoped_ptr<ui::InputMethod> input_method_;
-  scoped_ptr<InputMethodEventHandler> input_method_event_handler_;
+  std::unique_ptr<ui::InputMethod> input_method_;
+  std::unique_ptr<InputMethodEventHandler> input_method_event_handler_;
 
   // Stores the current cursor location (in native coordinates and screen
   // coordinates respectively). The locations are used to restore the cursor

@@ -5,6 +5,7 @@
 #include "ash/display/display_error_observer_chromeos.h"
 
 #include <cinttypes>
+#include <memory>
 #include <utility>
 
 #include "ash/new_window_delegate.h"
@@ -77,7 +78,7 @@ void DisplayErrorObserver::OnDisplayModeChangeFailed(
       IDS_ASH_DISPLAY_FAILURE_ON_NON_MIRRORING;
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  scoped_ptr<Notification> notification(new Notification(
+  std::unique_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kDisplayErrorNotificationId,
       base::string16(),  // title
       l10n_util::GetStringUTF16(message_id),

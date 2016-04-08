@@ -5,8 +5,9 @@
 #ifndef ASH_WM_WINDOW_ANIMATIONS_H_
 #define ASH_WM_WINDOW_ANIMATIONS_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/transform.h"
 #include "ui/wm/core/window_animations.h"
@@ -51,7 +52,7 @@ extern const int kCrossFadeDurationMS;
 // animation.
 ASH_EXPORT base::TimeDelta CrossFadeAnimation(
     aura::Window* window,
-    scoped_ptr<ui::LayerTreeOwner> old_layer_owner,
+    std::unique_ptr<ui::LayerTreeOwner> old_layer_owner,
     gfx::Tween::Type tween_type);
 
 ASH_EXPORT bool AnimateOnChildWindowVisibilityChanged(aura::Window* window,

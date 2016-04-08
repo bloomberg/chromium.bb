@@ -5,9 +5,10 @@
 #ifndef ASH_WM_WINDOW_CYCLE_CONTROLLER_H_
 #define ASH_WM_WINDOW_CYCLE_CONTROLLER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 
 namespace ui {
@@ -65,14 +66,14 @@ class ASH_EXPORT WindowCycleController {
   // Cycles to the next or previous window based on |direction|.
   void Step(Direction direction);
 
-  scoped_ptr<WindowCycleList> window_cycle_list_;
+  std::unique_ptr<WindowCycleList> window_cycle_list_;
 
   // Tracks what Window was active when starting to cycle and used to determine
   // if the active Window changed in when ending cycling.
   aura::Window* active_window_before_window_cycle_ = nullptr;
 
   // Event handler to watch for release of alt key.
-  scoped_ptr<ui::EventHandler> event_handler_;
+  std::unique_ptr<ui::EventHandler> event_handler_;
 
   base::Time cycle_start_time_;
 

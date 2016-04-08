@@ -171,7 +171,7 @@ void SwapPrimaryDisplay() {
       ScreenUtil::GetSecondaryDisplay().id());
 }
 
-scoped_ptr<display::DisplayLayout> CreateDisplayLayout(
+std::unique_ptr<display::DisplayLayout> CreateDisplayLayout(
     display::DisplayPlacement::Position position,
     int offset) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();

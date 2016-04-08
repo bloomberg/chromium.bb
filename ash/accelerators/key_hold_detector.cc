@@ -17,7 +17,7 @@ namespace ash {
 namespace {
 
 void DispatchPressedEvent(const ui::KeyEvent& key_event,
-                          scoped_ptr<aura::WindowTracker> tracker) {
+                          std::unique_ptr<aura::WindowTracker> tracker) {
   // The target window may be gone.
   if (tracker->windows().empty())
     return;
@@ -34,7 +34,7 @@ void PostPressedEvent(ui::KeyEvent* event) {
       event->key_code(),
       event->code(),
       event->flags() | ui::EF_SHIFT_DOWN | ui::EF_IS_SYNTHESIZED);
-  scoped_ptr<aura::WindowTracker> tracker(new aura::WindowTracker);
+  std::unique_ptr<aura::WindowTracker> tracker(new aura::WindowTracker);
   tracker->Add(static_cast<aura::Window*>(event->target()));
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -44,7 +44,7 @@ void PostPressedEvent(ui::KeyEvent* event) {
 
 }  // namespace
 
-KeyHoldDetector::KeyHoldDetector(scoped_ptr<Delegate> delegate)
+KeyHoldDetector::KeyHoldDetector(std::unique_ptr<Delegate> delegate)
     : state_(INITIAL), delegate_(std::move(delegate)) {}
 
 KeyHoldDetector::~KeyHoldDetector() {}

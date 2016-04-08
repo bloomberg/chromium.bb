@@ -5,9 +5,10 @@
 #ifndef ASH_ACCELERATOR_KEY_HOLD_DETECTOR_H_
 #define ASH_ACCELERATOR_KEY_HOLD_DETECTOR_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/events/event_handler.h"
 
 namespace ui {
@@ -42,7 +43,7 @@ class ASH_EXPORT KeyHoldDetector : public ui::EventHandler {
     virtual void OnKeyUnhold(const ui::KeyEvent* event) = 0;
   };
 
-  explicit KeyHoldDetector(scoped_ptr<Delegate> delegate);
+  explicit KeyHoldDetector(std::unique_ptr<Delegate> delegate);
   ~KeyHoldDetector() override;
 
   // ui::EventHandler overrides:
@@ -65,7 +66,7 @@ class ASH_EXPORT KeyHoldDetector : public ui::EventHandler {
   };
 
   State state_;
-  scoped_ptr<Delegate> delegate_;
+  std::unique_ptr<Delegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyHoldDetector);
 };

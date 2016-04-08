@@ -6,13 +6,13 @@
 #define ASH_SHELF_SHELF_ITEM_DELEGATE_MANAGER_H_
 
 #include <map>
+#include <memory>
 
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_item_types.h"
 #include "ash/shelf/shelf_model_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 
 namespace ash {
@@ -51,7 +51,7 @@ class ASH_EXPORT ShelfItemDelegateManager : public ShelfModelObserver {
 
   // Set |item_delegate| for |id| and take an ownership.
   void SetShelfItemDelegate(ShelfID id,
-                            scoped_ptr<ShelfItemDelegate> item_delegate);
+                            std::unique_ptr<ShelfItemDelegate> item_delegate);
 
   // Returns ShelfItemDelegate for |item_type|. Always returns non-NULL.
   ShelfItemDelegate* GetShelfItemDelegate(ShelfID id);

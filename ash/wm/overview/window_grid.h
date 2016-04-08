@@ -7,12 +7,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "ash/wm/overview/window_selector.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_observer.h"
 
 namespace aura {
@@ -133,7 +133,7 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver {
   std::set<aura::Window*> observed_windows_;
 
   // Widget that indicates to the user which is the selected window.
-  scoped_ptr<views::Widget> selection_widget_;
+  std::unique_ptr<views::Widget> selection_widget_;
 
   // Current selected window position.
   size_t selected_index_;

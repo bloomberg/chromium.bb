@@ -5,10 +5,11 @@
 #ifndef ASH_SHELF_SHELF_BUTTON_PRESSED_METRIC_TRACKER_H_
 #define ASH_SHELF_SHELF_BUTTON_PRESSED_METRIC_TRACKER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_item_delegate.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "ui/events/event.h"
@@ -74,7 +75,7 @@ class ASH_EXPORT ShelfButtonPressedMetricTracker {
   void ResetMinimizedData();
 
   // Time source for performed action times.
-  scoped_ptr<base::TickClock> tick_clock_;
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   // Stores the time of the last window minimize action.
   base::TimeTicks time_of_last_minimize_;

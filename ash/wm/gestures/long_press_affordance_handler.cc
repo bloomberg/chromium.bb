@@ -4,6 +4,8 @@
 
 #include "ash/wm/gestures/long_press_affordance_handler.h"
 
+#include <memory>
+
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -213,7 +215,7 @@ class LongPressAffordanceHandler::LongPressAffordanceView
     canvas->Restore();
   }
 
-  scoped_ptr<views::Widget> widget_;
+  std::unique_ptr<views::Widget> widget_;
   int current_angle_;
   double current_scale_;
 

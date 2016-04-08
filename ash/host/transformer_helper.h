@@ -5,8 +5,9 @@
 #ifndef ASH_HOST_TRANSFORMER_HELPER_H_
 #define ASH_HOST_TRANSFORMER_HELPER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace gfx {
 class Insets;
@@ -36,7 +37,8 @@ class TransformerHelper {
   void SetTransform(const gfx::Transform& transform);
 
   // Sets a RootWindowTransformer which takes the insets into account.
-  void SetRootWindowTransformer(scoped_ptr<RootWindowTransformer> transformer);
+  void SetRootWindowTransformer(
+      std::unique_ptr<RootWindowTransformer> transformer);
 
   // Returns the transforms applied to the root window.
   gfx::Transform GetTransform() const;
@@ -48,7 +50,7 @@ class TransformerHelper {
 
  private:
   AshWindowTreeHost* ash_host_;
-  scoped_ptr<RootWindowTransformer> transformer_;
+  std::unique_ptr<RootWindowTransformer> transformer_;
 
   DISALLOW_COPY_AND_ASSIGN(TransformerHelper);
 };

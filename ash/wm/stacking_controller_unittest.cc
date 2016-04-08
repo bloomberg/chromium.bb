@@ -37,7 +37,7 @@ class StackingControllerTest : public test::AshTestBase {
 // transient parent.
 TEST_F(StackingControllerTest, TransientParent) {
   // Normal window .
-  scoped_ptr<Window> w2(CreateTestWindow());
+  std::unique_ptr<Window> w2(CreateTestWindow());
   w2->SetBounds(gfx::Rect(10, 11, 250, 251));
   aura::Window* launcher = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
       kShellWindowId_ShelfContainer);
@@ -47,7 +47,7 @@ TEST_F(StackingControllerTest, TransientParent) {
   wm::ActivateWindow(w2.get());
 
   // Window with a transient parent.
-  scoped_ptr<Window> w1(CreateTestWindow());
+  std::unique_ptr<Window> w1(CreateTestWindow());
   ::wm::AddTransientChild(w2.get(), w1.get());
   w1->SetBounds(gfx::Rect(10, 11, 250, 251));
   ParentWindowInPrimaryRootWindow(w1.get());

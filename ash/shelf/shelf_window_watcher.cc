@@ -4,6 +4,7 @@
 
 #include "ash/shelf/shelf_window_watcher.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/display/window_tree_host_manager.h"
@@ -16,7 +17,6 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
@@ -135,7 +135,7 @@ void ShelfWindowWatcher::AddShelfItem(aura::Window* window) {
   item.status = wm::IsActiveWindow(window) ? STATUS_ACTIVE: STATUS_RUNNING;
   SetShelfItemDetailsForShelfItem(&item, *item_details);
   SetShelfIDForWindow(id, window);
-  scoped_ptr<ShelfItemDelegate> item_delegate(
+  std::unique_ptr<ShelfItemDelegate> item_delegate(
       new ShelfWindowWatcherItemDelegate(window));
   // |item_delegate| is owned by |item_delegate_manager_|.
   item_delegate_manager_->SetShelfItemDelegate(id, std::move(item_delegate));

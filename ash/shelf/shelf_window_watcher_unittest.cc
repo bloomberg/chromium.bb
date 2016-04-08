@@ -56,8 +56,8 @@ TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItem) {
   // ShelfModel only has an APP_LIST item.
   EXPECT_EQ(1, model_->item_count());
 
-  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithId(0));
-  scoped_ptr<aura::Window> w2(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> w2(CreateTestWindowInShellWithId(0));
 
   // Create a ShelfItem for w1.
   ShelfID id_w1 = CreateShelfItem(w1.get());
@@ -87,8 +87,8 @@ TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItem) {
 TEST_F(ShelfWindowWatcherTest, ActivateWindow) {
   // ShelfModel only have APP_LIST item.
   EXPECT_EQ(1, model_->item_count());
-  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithId(0));
-  scoped_ptr<aura::Window> w2(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> w2(CreateTestWindowInShellWithId(0));
 
   // Create a ShelfItem for w1.
   ShelfID id_w1 = CreateShelfItem(w1.get());
@@ -117,7 +117,7 @@ TEST_F(ShelfWindowWatcherTest, UpdateWindowProperty) {
   // ShelfModel only has an APP_LIST item.
   EXPECT_EQ(1, model_->item_count());
 
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
 
   // Create a ShelfItem for |window|.
   ShelfID id = CreateShelfItem(window.get());
@@ -142,7 +142,7 @@ TEST_F(ShelfWindowWatcherTest, MaximizeAndRestoreWindow) {
   // ShelfModel only has an APP_LIST item.
   EXPECT_EQ(1, model_->item_count());
 
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
 
   // Create a ShelfItem for |window|.
@@ -177,7 +177,7 @@ TEST_F(ShelfWindowWatcherTest, ReparentWindow) {
   // ShelfModel only has an APP_LIST item.
   EXPECT_EQ(1, model_->item_count());
 
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   window->set_owned_by_parent(false);
 
   // Create a ShelfItem for |window|.
@@ -214,7 +214,7 @@ TEST_F(ShelfWindowWatcherTest, DragWindow) {
   // ShelfModel only has an APP_LIST item.
   EXPECT_EQ(1, model_->item_count());
 
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
 
   // Create a ShelfItem for |window|.
   ShelfID id = CreateShelfItem(window.get());
@@ -224,10 +224,8 @@ TEST_F(ShelfWindowWatcherTest, DragWindow) {
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index].status);
 
   // Simulate dragging of |window| and check its item is not changed.
-  scoped_ptr<WindowResizer> resizer(
-      CreateWindowResizer(window.get(),
-                          gfx::Point(),
-                          HTCAPTION,
+  std::unique_ptr<WindowResizer> resizer(
+      CreateWindowResizer(window.get(), gfx::Point(), HTCAPTION,
                           aura::client::WINDOW_MOVE_SOURCE_MOUSE));
   ASSERT_TRUE(resizer.get());
   resizer->Drag(gfx::Point(50, 50), 0);
@@ -244,7 +242,7 @@ TEST_F(ShelfWindowWatcherTest, ReparentWindowDuringTheDragging) {
   // ShelfModel only has an APP_LIST item.
   EXPECT_EQ(1, model_->item_count());
 
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   window->set_owned_by_parent(false);
 
   // Create a ShelfItem for |window|.
@@ -265,10 +263,8 @@ TEST_F(ShelfWindowWatcherTest, ReparentWindowDuringTheDragging) {
 
   // Simulate re-parenting to |new_parent| during the dragging.
   {
-    scoped_ptr<WindowResizer> resizer(
-        CreateWindowResizer(window.get(),
-                            gfx::Point(),
-                            HTCAPTION,
+    std::unique_ptr<WindowResizer> resizer(
+        CreateWindowResizer(window.get(), gfx::Point(), HTCAPTION,
                             aura::client::WINDOW_MOVE_SOURCE_MOUSE));
     ASSERT_TRUE(resizer.get());
     resizer->Drag(gfx::Point(50, 50), 0);

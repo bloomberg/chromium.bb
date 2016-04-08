@@ -5,6 +5,8 @@
 #ifndef ASH_SYSTEM_USER_USER_VIEW_H_
 #define ASH_SYSTEM_USER_USER_VIEW_H_
 
+#include <memory>
+
 #include "ash/session/session_state_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/user/login_status.h"
@@ -86,14 +88,14 @@ class UserView : public views::View,
   bool is_user_card_button_;
 
   views::View* logout_button_;
-  scoped_ptr<PopupMessage> popup_message_;
-  scoped_ptr<views::Widget> add_menu_option_;
+  std::unique_ptr<PopupMessage> popup_message_;
+  std::unique_ptr<views::Widget> add_menu_option_;
 
   // False when the add user panel is visible but not activatable.
   bool add_user_enabled_;
 
   // The mouse watcher which takes care of out of window hover events.
-  scoped_ptr<views::MouseWatcher> mouse_watcher_;
+  std::unique_ptr<views::MouseWatcher> mouse_watcher_;
 
   // The focus manager which we use to detect focus changes.
   views::FocusManager* focus_manager_;

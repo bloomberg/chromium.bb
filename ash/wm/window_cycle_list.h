@@ -5,13 +5,13 @@
 #ifndef ASH_WM_WINDOW_CYCLE_LIST_H_
 #define ASH_WM_WINDOW_CYCLE_LIST_H_
 
+#include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_observer.h"
 
 namespace ash {
@@ -52,7 +52,7 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver {
   int current_index_;
 
   // Wrapper for the window brought to the front.
-  scoped_ptr<ScopedShowWindow> showing_window_;
+  std::unique_ptr<ScopedShowWindow> showing_window_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowCycleList);
 };

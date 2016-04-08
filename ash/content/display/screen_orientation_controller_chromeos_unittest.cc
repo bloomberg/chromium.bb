@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/display/screen_orientation_controller_chromeos.h"
+
+#include <memory>
 #include <vector>
 
 #include "ash/ash_switches.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
-#include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
@@ -18,7 +20,6 @@
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/accelerometer/accelerometer_types.h"
 #include "content/public/browser/browser_context.h"
@@ -124,11 +125,11 @@ class ScreenOrientationControllerTest : public test::AshTestBase {
 
  private:
   // Optional content::BrowserContext used for two window tests.
-  scoped_ptr<content::BrowserContext> secondary_browser_context_;
+  std::unique_ptr<content::BrowserContext> secondary_browser_context_;
 
   // Setups underlying content layer so that content::WebContents can be
   // generated.
-  scoped_ptr<views::WebViewTestHelper> webview_test_helper_;
+  std::unique_ptr<views::WebViewTestHelper> webview_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationControllerTest);
 };
@@ -162,8 +163,8 @@ void ScreenOrientationControllerTest::SetUp() {
 
 // Tests that a content::WebContents can lock rotation.
 TEST_F(ScreenOrientationControllerTest, LockOrientation) {
-  scoped_ptr<content::WebContents> content(CreateWebContents());
-  scoped_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<content::WebContents> content(CreateWebContents());
+  std::unique_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
   ASSERT_NE(nullptr, content->GetNativeView());
   ASSERT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   ASSERT_FALSE(RotationLocked());
@@ -176,8 +177,8 @@ TEST_F(ScreenOrientationControllerTest, LockOrientation) {
 
 // Tests that a content::WebContents can unlock rotation.
 TEST_F(ScreenOrientationControllerTest, Unlock) {
-  scoped_ptr<content::WebContents> content(CreateWebContents());
-  scoped_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<content::WebContents> content(CreateWebContents());
+  std::unique_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
   ASSERT_NE(nullptr, content->GetNativeView());
   ASSERT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   ASSERT_FALSE(RotationLocked());
@@ -194,8 +195,8 @@ TEST_F(ScreenOrientationControllerTest, Unlock) {
 // Tests that a content::WebContents is able to change the orientation of the
 // display after having locked rotation.
 TEST_F(ScreenOrientationControllerTest, OrientationChanges) {
-  scoped_ptr<content::WebContents> content(CreateWebContents());
-  scoped_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<content::WebContents> content(CreateWebContents());
+  std::unique_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
   ASSERT_NE(nullptr, content->GetNativeView());
   ASSERT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   ASSERT_FALSE(RotationLocked());
@@ -212,10 +213,10 @@ TEST_F(ScreenOrientationControllerTest, OrientationChanges) {
 // Tests that orientation can only be set by the first content::WebContents that
 // has set a rotation lock.
 TEST_F(ScreenOrientationControllerTest, SecondContentCannotChangeOrientation) {
-  scoped_ptr<content::WebContents> content1(CreateWebContents());
-  scoped_ptr<content::WebContents> content2(CreateSecondaryWebContents());
-  scoped_ptr<aura::Window> focus_window1(CreateTestWindowInShellWithId(0));
-  scoped_ptr<aura::Window> focus_window2(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<content::WebContents> content1(CreateWebContents());
+  std::unique_ptr<content::WebContents> content2(CreateSecondaryWebContents());
+  std::unique_ptr<aura::Window> focus_window1(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> focus_window2(CreateTestWindowInShellWithId(1));
   ASSERT_NE(content1->GetNativeView(), content2->GetNativeView());
 
   AttachAndActivateWebContents(content1.get(), focus_window1.get());
@@ -228,10 +229,10 @@ TEST_F(ScreenOrientationControllerTest, SecondContentCannotChangeOrientation) {
 // Tests that only the content::WebContents that set a rotation lock can perform
 // an unlock.
 TEST_F(ScreenOrientationControllerTest, SecondContentCannotUnlock) {
-  scoped_ptr<content::WebContents> content1(CreateWebContents());
-  scoped_ptr<content::WebContents> content2(CreateSecondaryWebContents());
-  scoped_ptr<aura::Window> focus_window1(CreateTestWindowInShellWithId(0));
-  scoped_ptr<aura::Window> focus_window2(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<content::WebContents> content1(CreateWebContents());
+  std::unique_ptr<content::WebContents> content2(CreateSecondaryWebContents());
+  std::unique_ptr<aura::Window> focus_window1(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> focus_window2(CreateTestWindowInShellWithId(1));
   ASSERT_NE(content1->GetNativeView(), content2->GetNativeView());
 
   AttachAndActivateWebContents(content1.get(), focus_window1.get());
@@ -244,9 +245,9 @@ TEST_F(ScreenOrientationControllerTest, SecondContentCannotUnlock) {
 // Tests that a rotation lock is applied only while the content::WebContents are
 // a part of the active window.
 TEST_F(ScreenOrientationControllerTest, ActiveWindowChangesUpdateLock) {
-  scoped_ptr<content::WebContents> content(CreateWebContents());
-  scoped_ptr<aura::Window> focus_window1(CreateTestWindowInShellWithId(0));
-  scoped_ptr<aura::Window> focus_window2(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<content::WebContents> content(CreateWebContents());
+  std::unique_ptr<aura::Window> focus_window1(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> focus_window2(CreateTestWindowInShellWithId(1));
 
   AttachAndActivateWebContents(content.get(), focus_window1.get());
   delegate()->Lock(content.get(), blink::WebScreenOrientationLockLandscape);
@@ -264,10 +265,10 @@ TEST_F(ScreenOrientationControllerTest, ActiveWindowChangesUpdateLock) {
 // Tests that switching between windows with different orientation locks change
 // the orientation.
 TEST_F(ScreenOrientationControllerTest, ActiveWindowChangesUpdateOrientation) {
-  scoped_ptr<content::WebContents> content1(CreateWebContents());
-  scoped_ptr<content::WebContents> content2(CreateSecondaryWebContents());
-  scoped_ptr<aura::Window> focus_window1(CreateTestWindowInShellWithId(0));
-  scoped_ptr<aura::Window> focus_window2(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<content::WebContents> content1(CreateWebContents());
+  std::unique_ptr<content::WebContents> content2(CreateSecondaryWebContents());
+  std::unique_ptr<aura::Window> focus_window1(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> focus_window2(CreateTestWindowInShellWithId(1));
   AttachAndActivateWebContents(content1.get(), focus_window1.get());
   AttachWebContents(content2.get(), focus_window2.get());
 
@@ -289,8 +290,8 @@ TEST_F(ScreenOrientationControllerTest, ActiveWindowChangesUpdateOrientation) {
 // Tests that a rotation lock is removed when the setting window is hidden, and
 // that it is reapplied when the window becomes visible.
 TEST_F(ScreenOrientationControllerTest, VisibilityChangesLock) {
-  scoped_ptr<content::WebContents> content(CreateWebContents());
-  scoped_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<content::WebContents> content(CreateWebContents());
+  std::unique_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
   AttachAndActivateWebContents(content.get(), focus_window.get());
   delegate()->Lock(content.get(), blink::WebScreenOrientationLockLandscape);
   EXPECT_TRUE(RotationLocked());
@@ -306,9 +307,9 @@ TEST_F(ScreenOrientationControllerTest, VisibilityChangesLock) {
 // Tests that when a window is destroyed that its rotation lock is removed, and
 // window activations no longer change the lock
 TEST_F(ScreenOrientationControllerTest, WindowDestructionRemovesLock) {
-  scoped_ptr<content::WebContents> content(CreateWebContents());
-  scoped_ptr<aura::Window> focus_window1(CreateTestWindowInShellWithId(0));
-  scoped_ptr<aura::Window> focus_window2(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<content::WebContents> content(CreateWebContents());
+  std::unique_ptr<aura::Window> focus_window1(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> focus_window2(CreateTestWindowInShellWithId(1));
 
   AttachAndActivateWebContents(content.get(), focus_window1.get());
   delegate()->Lock(content.get(), blink::WebScreenOrientationLockLandscape);
@@ -509,8 +510,8 @@ TEST_F(ScreenOrientationControllerTest, UpdateUserRotationWhileRotationLocked) {
 // Tests that when the orientation lock is set to Landscape, that rotation can
 // be done between the two angles of the orientation.
 TEST_F(ScreenOrientationControllerTest, LandscapeOrientationAllowsRotation) {
-  scoped_ptr<content::WebContents> content(CreateWebContents());
-  scoped_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<content::WebContents> content(CreateWebContents());
+  std::unique_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
   EnableMaximizeMode(true);
 
   AttachAndActivateWebContents(content.get(), focus_window.get());
@@ -532,8 +533,8 @@ TEST_F(ScreenOrientationControllerTest, LandscapeOrientationAllowsRotation) {
 // Tests that when the orientation lock is set to Portrait, that rotaiton can be
 // done between the two angles of the orientation.
 TEST_F(ScreenOrientationControllerTest, PortraitOrientationAllowsRotation) {
-  scoped_ptr<content::WebContents> content(CreateWebContents());
-  scoped_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<content::WebContents> content(CreateWebContents());
+  std::unique_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
   EnableMaximizeMode(true);
 
   AttachAndActivateWebContents(content.get(), focus_window.get());
@@ -555,8 +556,8 @@ TEST_F(ScreenOrientationControllerTest, PortraitOrientationAllowsRotation) {
 // Tests that for an orientation lock which does not allow rotation, that the
 // display rotation remains constant.
 TEST_F(ScreenOrientationControllerTest, OrientationLockDisallowsRotation) {
-  scoped_ptr<content::WebContents> content(CreateWebContents());
-  scoped_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<content::WebContents> content(CreateWebContents());
+  std::unique_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
   EnableMaximizeMode(true);
 
   AttachAndActivateWebContents(content.get(), focus_window.get());
@@ -577,8 +578,8 @@ TEST_F(ScreenOrientationControllerTest, OrientationLockDisallowsRotation) {
 // Tests that after a content::WebContents has applied an orientation lock which
 // supports rotation, that a user rotation lock does not allow rotation.
 TEST_F(ScreenOrientationControllerTest, UserRotationLockDisallowsRotation) {
-  scoped_ptr<content::WebContents> content(CreateWebContents());
-  scoped_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<content::WebContents> content(CreateWebContents());
+  std::unique_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
   EnableMaximizeMode(true);
 
   AttachAndActivateWebContents(content.get(), focus_window.get());

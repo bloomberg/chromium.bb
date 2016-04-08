@@ -5,6 +5,8 @@
 #ifndef ASH_DISPLAY_CURSOR_WINDOW_CONTROLLER_H_
 #define ASH_DISPLAY_CURSOR_WINDOW_CONTROLLER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/aura/window.h"
@@ -87,8 +89,8 @@ class ASH_EXPORT CursorWindowController {
   // For mirroring mode, the display is always the primary display.
   gfx::Display display_;
 
-  scoped_ptr<aura::Window> cursor_window_;
-  scoped_ptr<CursorWindowDelegate> delegate_;
+  std::unique_ptr<aura::Window> cursor_window_;
+  std::unique_ptr<CursorWindowDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CursorWindowController);
 };

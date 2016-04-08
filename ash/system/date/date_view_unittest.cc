@@ -34,7 +34,7 @@ class TimeViewTest : public ash::test::AshTestBase {
   }
 
  private:
-  scoped_ptr<TimeView> time_view_;
+  std::unique_ptr<TimeView> time_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TimeViewTest);
 };

@@ -5,6 +5,7 @@
 #include "ash/shelf/shelf_view.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
@@ -28,7 +29,6 @@
 #include "ash/shell_delegate.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "base/auto_reset.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "grit/ash_strings.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -330,7 +330,7 @@ class ShelfView::FadeOutAnimationDelegate : public gfx::AnimationDelegate {
 
  private:
   ShelfView* shelf_view_;
-  scoped_ptr<views::View> view_;
+  std::unique_ptr<views::View> view_;
 
   DISALLOW_COPY_AND_ASSIGN(FadeOutAnimationDelegate);
 };
@@ -1008,8 +1008,8 @@ void ShelfView::FadeIn(views::View* view) {
   view->layer()->SetOpacity(0);
   AnimateToIdealBounds();
   bounds_animator_->SetAnimationDelegate(
-      view,
-      scoped_ptr<gfx::AnimationDelegate>(new FadeInAnimationDelegate(view)));
+      view, std::unique_ptr<gfx::AnimationDelegate>(
+                new FadeInAnimationDelegate(view)));
 }
 
 void ShelfView::PrepareForDrag(Pointer pointer, const ui::LocatedEvent& event) {
@@ -1370,7 +1370,7 @@ void ShelfView::StartFadeInLastVisibleItem() {
     last_visible_view->layer()->SetOpacity(0);
     bounds_animator_->SetAnimationDelegate(
         last_visible_view,
-        scoped_ptr<gfx::AnimationDelegate>(
+        std::unique_ptr<gfx::AnimationDelegate>(
             new StartFadeAnimationDelegate(this, last_visible_view)));
   }
 }
@@ -1550,9 +1550,8 @@ void ShelfView::ShelfItemAdded(int model_index) {
   if (model_index <= last_visible_index_ ||
       model_index >= model_->FirstPanelIndex()) {
     bounds_animator_->SetAnimationDelegate(
-        view,
-        scoped_ptr<gfx::AnimationDelegate>(
-            new StartFadeAnimationDelegate(this, view)));
+        view, std::unique_ptr<gfx::AnimationDelegate>(
+                  new StartFadeAnimationDelegate(this, view)));
   } else {
     // Undo the hiding if animation does not run.
     view->layer()->SetOpacity(1.0f);
@@ -1586,9 +1585,8 @@ void ShelfView::ShelfItemRemoved(int model_index, ShelfID id) {
     // of the views to their target location.
     bounds_animator_->AnimateViewTo(view, view->bounds());
     bounds_animator_->SetAnimationDelegate(
-        view,
-        scoped_ptr<gfx::AnimationDelegate>(
-            new FadeOutAnimationDelegate(this, view)));
+        view, std::unique_ptr<gfx::AnimationDelegate>(
+                  new FadeOutAnimationDelegate(this, view)));
   } else {
     // We don't need to show a fade out animation for invisible |view|. When an
     // item is ripped out from the shelf, its |view| is already invisible.
@@ -1604,7 +1602,7 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
   if (old_item.type != item.type) {
     // Type changed, swap the views.
     model_index = CancelDrag(model_index);
-    scoped_ptr<views::View> old_view(view_model_->view_at(model_index));
+    std::unique_ptr<views::View> old_view(view_model_->view_at(model_index));
     bounds_animator_->StopAnimatingView(old_view.get());
     // Removing and re-inserting a view in our view model will strip the ideal
     // bounds from the item. To avoid recalculation of everything the bounds
@@ -1692,7 +1690,7 @@ void ShelfView::ButtonPressed(views::Button* sender, const ui::Event& event) {
     ScopedTargetRootWindow scoped_target(
         sender->GetWidget()->GetNativeView()->GetRootWindow());
     // Slow down activation animations if shift key is pressed.
-    scoped_ptr<ui::ScopedAnimationDurationScaleMode> slowing_animations;
+    std::unique_ptr<ui::ScopedAnimationDurationScaleMode> slowing_animations;
     if (event.IsShiftDown()) {
       slowing_animations.reset(new ui::ScopedAnimationDurationScaleMode(
             ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
@@ -1739,7 +1737,7 @@ void ShelfView::ShowListMenuForView(const ShelfItem& item,
                                     const ui::Event& event) {
   ShelfItemDelegate* item_delegate =
       item_manager_->GetShelfItemDelegate(item.id);
-  scoped_ptr<ui::MenuModel> list_menu_model(
+  std::unique_ptr<ui::MenuModel> list_menu_model(
       item_delegate->CreateApplicationMenu(event.flags()));
 
   // Make sure we have a menu and it has at least two items in addition to the
@@ -1761,7 +1759,7 @@ void ShelfView::ShowContextMenuForView(views::View* source,
     return;
   }
 
-  scoped_ptr<ui::MenuModel> context_menu_model(
+  std::unique_ptr<ui::MenuModel> context_menu_model(
       Shell::GetInstance()->delegate()->CreateContextMenu(shelf_, item));
   if (!context_menu_model)
     return;

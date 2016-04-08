@@ -56,9 +56,10 @@ class DisplayColorManagerForTest : public DisplayColorManager {
     }
   }
 
-  void UpdateCalibrationData(int64_t display_id,
-                             int64_t product_id,
-                             scoped_ptr<ColorCalibrationData> data) override {
+  void UpdateCalibrationData(
+      int64_t display_id,
+      int64_t product_id,
+      std::unique_ptr<ColorCalibrationData> data) override {
     DisplayColorManager::UpdateCalibrationData(display_id, product_id,
                                                std::move(data));
     if (!on_finished_for_test_.is_null()) {
@@ -117,7 +118,7 @@ class DisplayColorManagerTest : public testing::Test {
     native_display_delegate_ =
         new ui::test::TestNativeDisplayDelegate(log_.get());
     configurator_.SetDelegateForTesting(
-        scoped_ptr<ui::NativeDisplayDelegate>(native_display_delegate_));
+        std::unique_ptr<ui::NativeDisplayDelegate>(native_display_delegate_));
 
     color_manager_.reset(new DisplayColorManagerForTest(
         &configurator_, pool_owner_->pool().get()));
@@ -131,7 +132,7 @@ class DisplayColorManagerTest : public testing::Test {
         chromeos::DIR_DEVICE_COLOR_CALIBRATION_PROFILES, color_path_));
 
     quirks::QuirksManager::Initialize(
-        scoped_ptr<quirks::QuirksManager::Delegate>(
+        std::unique_ptr<quirks::QuirksManager::Delegate>(
             new QuirksManagerDelegateTestImpl(color_path_)),
         pool_owner_->pool().get(), nullptr, nullptr);
   }
@@ -151,16 +152,16 @@ class DisplayColorManagerTest : public testing::Test {
   ~DisplayColorManagerTest() override {}
 
  protected:
-  scoped_ptr<base::ScopedPathOverride> path_override_;
+  std::unique_ptr<base::ScopedPathOverride> path_override_;
   base::FilePath color_path_;
-  scoped_ptr<ui::test::ActionLogger> log_;
+  std::unique_ptr<ui::test::ActionLogger> log_;
   ui::DisplayConfigurator configurator_;
   ui::DisplayConfigurator::TestApi test_api_;
   ui::test::TestNativeDisplayDelegate* native_display_delegate_;  // not owned
-  scoped_ptr<DisplayColorManagerForTest> color_manager_;
+  std::unique_ptr<DisplayColorManagerForTest> color_manager_;
 
   base::MessageLoopForUI ui_message_loop_;
-  scoped_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
+  std::unique_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DisplayColorManagerTest);

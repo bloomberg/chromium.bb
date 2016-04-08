@@ -5,6 +5,7 @@
 #include "ash/wm/window_cycle_controller.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf.h"
@@ -19,7 +20,6 @@
 #include "ash/wm/window_cycle_list.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
@@ -64,7 +64,7 @@ class WindowCycleControllerTest : public test::AshTestBase {
   }
 
  private:
-  scoped_ptr<test::ShelfViewTestAPI> shelf_view_test_;
+  std::unique_ptr<test::ShelfViewTestAPI> shelf_view_test_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowCycleControllerTest);
 };
@@ -77,7 +77,7 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindowBaseCases) {
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
 
   // Create a single test window.
-  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<Window> window0(CreateTestWindowInShellWithId(0));
   wm::ActivateWindow(window0.get());
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 
@@ -93,7 +93,7 @@ TEST_F(WindowCycleControllerTest, SingleWindowNotActive) {
       Shell::GetInstance()->window_cycle_controller();
 
   // Create a single test window.
-  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<Window> window0(CreateTestWindowInShellWithId(0));
   wm::ActivateWindow(window0.get());
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 
@@ -113,9 +113,9 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
 
   // Set up several windows to use to test cycling.  Create them in reverse
   // order so they are stacked 0 over 1 over 2.
-  scoped_ptr<Window> window2(CreateTestWindowInShellWithId(2));
-  scoped_ptr<Window> window1(CreateTestWindowInShellWithId(1));
-  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<Window> window2(CreateTestWindowInShellWithId(2));
+  std::unique_ptr<Window> window1(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<Window> window0(CreateTestWindowInShellWithId(0));
   wm::ActivateWindow(window0.get());
 
   // Simulate pressing and releasing Alt-tab.
@@ -191,7 +191,7 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
       ash::Shell::GetContainer(
           Shell::GetPrimaryRootWindow(),
           kShellWindowId_SystemModalContainer);
-  scoped_ptr<Window> modal_window(
+  std::unique_ptr<Window> modal_window(
       CreateTestWindowWithId(-2, modal_container));
   modal_window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
   wm::ActivateWindow(modal_window.get());
@@ -211,8 +211,8 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
 // Cycles between a maximized and normal window.
 TEST_F(WindowCycleControllerTest, MaximizedWindow) {
   // Create a couple of test windows.
-  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
-  scoped_ptr<Window> window1(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<Window> window0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<Window> window1(CreateTestWindowInShellWithId(1));
   wm::WindowState* window1_state = wm::GetWindowState(window1.get());
   window1_state->Maximize();
   window1_state->Activate();
@@ -232,8 +232,8 @@ TEST_F(WindowCycleControllerTest, MaximizedWindow) {
 // Cycles to a minimized window.
 TEST_F(WindowCycleControllerTest, Minimized) {
   // Create a couple of test windows.
-  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
-  scoped_ptr<Window> window1(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<Window> window0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<Window> window1(CreateTestWindowInShellWithId(1));
   wm::WindowState* window0_state = wm::GetWindowState(window0.get());
   wm::WindowState* window1_state = wm::GetWindowState(window1.get());
 
@@ -258,14 +258,14 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopWindow) {
       Shell::GetInstance()->window_cycle_controller();
 
   // Set up several windows to use to test cycling.
-  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
-  scoped_ptr<Window> window1(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<Window> window0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<Window> window1(CreateTestWindowInShellWithId(1));
 
   Window* top_container =
       Shell::GetContainer(
           Shell::GetPrimaryRootWindow(),
           kShellWindowId_AlwaysOnTopContainer);
-  scoped_ptr<Window> window2(CreateTestWindowWithId(2, top_container));
+  std::unique_ptr<Window> window2(CreateTestWindowWithId(2, top_container));
   wm::ActivateWindow(window0.get());
 
   // Simulate pressing and releasing Alt-tab.
@@ -302,15 +302,15 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultiWindow) {
       Shell::GetInstance()->window_cycle_controller();
 
   // Set up several windows to use to test cycling.
-  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
-  scoped_ptr<Window> window1(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<Window> window0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<Window> window1(CreateTestWindowInShellWithId(1));
 
   Window* top_container =
       Shell::GetContainer(
           Shell::GetPrimaryRootWindow(),
           kShellWindowId_AlwaysOnTopContainer);
-  scoped_ptr<Window> window2(CreateTestWindowWithId(2, top_container));
-  scoped_ptr<Window> window3(CreateTestWindowWithId(3, top_container));
+  std::unique_ptr<Window> window2(CreateTestWindowWithId(2, top_container));
+  std::unique_ptr<Window> window3(CreateTestWindowWithId(3, top_container));
   wm::ActivateWindow(window0.get());
 
   // Simulate pressing and releasing Alt-tab.
@@ -361,25 +361,25 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
   Shell::GetInstance()->set_target_root_window(root_windows[0]);
 
   // Create two windows in the primary root.
-  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<Window> window0(CreateTestWindowInShellWithId(0));
   EXPECT_EQ(root_windows[0], window0->GetRootWindow());
   Window* top_container0 =
       Shell::GetContainer(
           root_windows[0],
           kShellWindowId_AlwaysOnTopContainer);
-  scoped_ptr<Window> window1(CreateTestWindowWithId(1, top_container0));
+  std::unique_ptr<Window> window1(CreateTestWindowWithId(1, top_container0));
   EXPECT_EQ(root_windows[0], window1->GetRootWindow());
 
   // And two on the secondary root.
   Shell::GetInstance()->set_target_root_window(root_windows[1]);
-  scoped_ptr<Window> window2(CreateTestWindowInShellWithId(2));
+  std::unique_ptr<Window> window2(CreateTestWindowInShellWithId(2));
   EXPECT_EQ(root_windows[1], window2->GetRootWindow());
 
   Window* top_container1 =
       Shell::GetContainer(
           root_windows[1],
           kShellWindowId_AlwaysOnTopContainer);
-  scoped_ptr<Window> window3(CreateTestWindowWithId(3, top_container1));
+  std::unique_ptr<Window> window3(CreateTestWindowWithId(3, top_container1));
   EXPECT_EQ(root_windows[1], window3->GetRootWindow());
 
   // Move the active root window to the secondary.
@@ -430,9 +430,9 @@ TEST_F(WindowCycleControllerTest, MostRecentlyUsed) {
       Shell::GetInstance()->window_cycle_controller();
 
   // Set up several windows to use to test cycling.
-  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
-  scoped_ptr<Window> window1(CreateTestWindowInShellWithId(1));
-  scoped_ptr<Window> window2(CreateTestWindowInShellWithId(2));
+  std::unique_ptr<Window> window0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<Window> window1(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<Window> window2(CreateTestWindowInShellWithId(2));
 
   wm::ActivateWindow(window0.get());
 
@@ -472,8 +472,8 @@ TEST_F(WindowCycleControllerTest, SelectingHidesAppList) {
   WindowCycleController* controller =
       Shell::GetInstance()->window_cycle_controller();
 
-  scoped_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
-  scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
   Shell::GetInstance()->ShowAppList(NULL);
   EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
@@ -486,8 +486,8 @@ TEST_F(WindowCycleControllerTest, CyclePreservesMinimization) {
   WindowCycleController* controller =
       Shell::GetInstance()->window_cycle_controller();
 
-  scoped_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
-  scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
   wm::ActivateWindow(window1.get());
   wm::GetWindowState(window1.get())->Minimize();
   wm::ActivateWindow(window0.get());
@@ -511,9 +511,9 @@ TEST_F(WindowCycleControllerTest, CyclePanels) {
   WindowCycleController* controller =
       Shell::GetInstance()->window_cycle_controller();
 
-  scoped_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
-  scoped_ptr<aura::Window> panel0(CreatePanelWindow());
-  scoped_ptr<aura::Window> panel1(CreatePanelWindow());
+  std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> panel0(CreatePanelWindow());
+  std::unique_ptr<aura::Window> panel1(CreatePanelWindow());
   wm::ActivateWindow(window0.get());
   wm::ActivateWindow(panel1.get());
   wm::ActivateWindow(panel0.get());
@@ -540,11 +540,11 @@ TEST_F(WindowCycleControllerTest, CyclePanelsDestroyed) {
   WindowCycleController* controller =
       Shell::GetInstance()->window_cycle_controller();
 
-  scoped_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
-  scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
-  scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(2));
-  scoped_ptr<aura::Window> panel0(CreatePanelWindow());
-  scoped_ptr<aura::Window> panel1(CreatePanelWindow());
+  std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<aura::Window> window2(CreateTestWindowInShellWithId(2));
+  std::unique_ptr<aura::Window> panel0(CreatePanelWindow());
+  std::unique_ptr<aura::Window> panel1(CreatePanelWindow());
   wm::ActivateWindow(window2.get());
   wm::ActivateWindow(panel1.get());
   wm::ActivateWindow(panel0.get());
@@ -568,10 +568,10 @@ TEST_F(WindowCycleControllerTest, CycleMruPanelDestroyed) {
   WindowCycleController* controller =
       Shell::GetInstance()->window_cycle_controller();
 
-  scoped_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
-  scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
-  scoped_ptr<aura::Window> panel0(CreatePanelWindow());
-  scoped_ptr<aura::Window> panel1(CreatePanelWindow());
+  std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<aura::Window> panel0(CreatePanelWindow());
+  std::unique_ptr<aura::Window> panel1(CreatePanelWindow());
   wm::ActivateWindow(panel1.get());
   wm::ActivateWindow(panel0.get());
   wm::ActivateWindow(window1.get());

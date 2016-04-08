@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "ash/shelf/shelf_item_types.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/display_observer.h"
 
@@ -54,7 +54,7 @@ class WindowWatcher : public aura::WindowObserver,
   // Maps from window to the id we gave it.
   IDToWindow id_to_window_;
 
-  scoped_ptr<WorkspaceWindowWatcher> workspace_window_watcher_;
+  std::unique_ptr<WorkspaceWindowWatcher> workspace_window_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowWatcher);
 };

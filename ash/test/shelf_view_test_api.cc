@@ -87,7 +87,8 @@ void ShelfViewTestAPI::RunMessageLoopUntilAnimationsDone() {
   if (!shelf_view_->bounds_animator_->IsAnimating())
     return;
 
-  scoped_ptr<TestAPIAnimationObserver> observer(new TestAPIAnimationObserver());
+  std::unique_ptr<TestAPIAnimationObserver> observer(
+      new TestAPIAnimationObserver());
   shelf_view_->bounds_animator_->AddObserver(observer.get());
 
   // This nested loop will quit when TestAPIAnimationObserver's

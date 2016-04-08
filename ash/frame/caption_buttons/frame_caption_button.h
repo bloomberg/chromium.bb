@@ -5,10 +5,11 @@
 #ifndef ASH_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_H_
 #define ASH_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/frame/caption_buttons/caption_button_types.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/custom_button.h"
 
@@ -102,7 +103,7 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
 
   // Crossfade animation started when the button's images are changed by
   // SetImage().
-  scoped_ptr<gfx::SlideAnimation> swap_images_animation_;
+  std::unique_ptr<gfx::SlideAnimation> swap_images_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameCaptionButton);
 };

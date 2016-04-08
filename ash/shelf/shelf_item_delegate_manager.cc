@@ -36,7 +36,7 @@ void ShelfItemDelegateManager::RemoveObserver(
 
 void ShelfItemDelegateManager::SetShelfItemDelegate(
     ShelfID id,
-    scoped_ptr<ShelfItemDelegate> item_delegate) {
+    std::unique_ptr<ShelfItemDelegate> item_delegate) {
   // If another ShelfItemDelegate is already registered for |id|, we assume
   // that this request is replacing ShelfItemDelegate for |id| with
   // |item_delegate|.

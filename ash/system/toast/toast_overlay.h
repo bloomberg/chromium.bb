@@ -5,8 +5,9 @@
 #ifndef ASH_SYSTEM_TOAST_TOAST_OVERLAY_H_
 #define ASH_SYSTEM_TOAST_TOAST_OVERLAY_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -58,8 +59,8 @@ class ASH_EXPORT ToastOverlay : public ui::LayerAnimationObserver {
   bool is_visible_ = false;
   Delegate* const delegate_;
   const std::string text_;
-  scoped_ptr<views::Widget> overlay_widget_;
-  scoped_ptr<ToastOverlayView> overlay_view_;
+  std::unique_ptr<views::Widget> overlay_widget_;
+  std::unique_ptr<ToastOverlayView> overlay_view_;
   gfx::Size widget_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ToastOverlay);

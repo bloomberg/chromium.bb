@@ -5,6 +5,8 @@
 #ifndef ASH_SHELF_SHELF_WIDGET_H_
 #define ASH_SHELF_SHELF_WIDGET_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/shelf/background_animator.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
@@ -100,7 +102,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   class DelegateView;
 
   ShelfLayoutManager* shelf_layout_manager_;
-  scoped_ptr<Shelf> shelf_;
+  std::unique_ptr<Shelf> shelf_;
   StatusAreaWidget* status_area_widget_;
 
   // delegate_view_ is attached to window_container_ and is cleaned up

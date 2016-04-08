@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -125,7 +126,7 @@ class WindowTypeShelfItem : public app_list::AppListItem {
       case EXAMPLES_WINDOW: {
         views::examples::ShowExamplesWindow(
             views::examples::QUIT_ON_CLOSE, NULL,
-            scoped_ptr<ScopedVector<views::examples::ExampleBase>>());
+            std::unique_ptr<ScopedVector<views::examples::ExampleBase>>());
         break;
       }
       default:
@@ -193,8 +194,8 @@ class ExampleSearchResult : public app_list::SearchResult {
   WindowTypeShelfItem::Type type() const { return type_; }
 
   // app_list::SearchResult:
-  scoped_ptr<SearchResult> Duplicate() const override {
-    return scoped_ptr<SearchResult>();
+  std::unique_ptr<SearchResult> Duplicate() const override {
+    return std::unique_ptr<SearchResult>();
   }
 
  private:
@@ -217,7 +218,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
       WindowTypeShelfItem::Type type =
           static_cast<WindowTypeShelfItem::Type>(i);
       std::string id = base::IntToString(i);
-      scoped_ptr<WindowTypeShelfItem> shelf_item(
+      std::unique_ptr<WindowTypeShelfItem> shelf_item(
           new WindowTypeShelfItem(id, type));
       model_->AddItem(std::move(shelf_item));
     }
@@ -357,7 +358,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
 
   bool IsSpeechRecognitionEnabled() override { return false; }
 
-  scoped_ptr<app_list::AppListModel> model_;
+  std::unique_ptr<app_list::AppListModel> model_;
   app_list::SpeechUIModel speech_ui_;
   Users users_;
 

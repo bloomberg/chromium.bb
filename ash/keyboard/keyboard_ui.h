@@ -5,9 +5,10 @@
 #ifndef ASH_KEYBOARD_KEYBOARD_UI_H_
 #define ASH_KEYBOARD_KEYBOARD_UI_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 
 namespace ash {
@@ -20,7 +21,7 @@ class ASH_EXPORT KeyboardUI {
  public:
   virtual ~KeyboardUI();
 
-  static scoped_ptr<KeyboardUI> Create();
+  static std::unique_ptr<KeyboardUI> Create();
 
   virtual void Show() = 0;
   virtual void Hide() = 0;

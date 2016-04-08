@@ -1999,7 +1999,7 @@ TEST_F(DisplayManagerTest, UnifiedWithDockWindows) {
 
   UpdateDisplay("400x500,300x200");
 
-  scoped_ptr<aura::Window> docked(
+  std::unique_ptr<aura::Window> docked(
       CreateTestWindowInShellWithBounds(gfx::Rect(10, 10, 50, 50)));
   docked->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_DOCKED);
   ASSERT_TRUE(wm::GetWindowState(docked.get())->IsDocked());
@@ -2246,7 +2246,7 @@ TEST_F(DisplayManagerTest, RejectInvalidLayoutData) {
   ASSERT_TRUE(CompareDisplayIds(id1, id2));
   display::DisplayLayoutBuilder good_builder(id1);
   good_builder.SetSecondaryPlacement(id2, display::DisplayPlacement::LEFT, 0);
-  scoped_ptr<display::DisplayLayout> good(good_builder.Build());
+  std::unique_ptr<display::DisplayLayout> good(good_builder.Build());
 
   display::DisplayIdList good_list = test::CreateDisplayIdList2(id1, id2);
   layout_store->RegisterLayoutForDisplayIdList(good_list, good->Copy());
@@ -2267,7 +2267,8 @@ TEST_F(DisplayManagerTest, GuessDisplayIdFieldsInDisplayLayout) {
   int64_t id1 = 10001;
   int64_t id2 = 10002;
 
-  scoped_ptr<display::DisplayLayout> old_layout(new display::DisplayLayout);
+  std::unique_ptr<display::DisplayLayout> old_layout(
+      new display::DisplayLayout);
   old_layout->placement_list.emplace_back(display::DisplayPlacement::BOTTOM, 0);
   old_layout->primary_id = id1;
 

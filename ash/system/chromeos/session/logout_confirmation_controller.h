@@ -5,11 +5,12 @@
 #ifndef ASH_SYSTEM_CHROMEOS_SESSION_LOGOUT_CONFIRMATION_CONTROLLER_H_
 #define ASH_SYSTEM_CHROMEOS_SESSION_LOGOUT_CONFIRMATION_CONTROLLER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 
@@ -40,7 +41,7 @@ class ASH_EXPORT LogoutConfirmationController : public ShellObserver {
   // the current dialog's |logout_time_|.
   void ConfirmLogout(base::TimeTicks logout_time);
 
-  void SetClockForTesting(scoped_ptr<base::TickClock> clock);
+  void SetClockForTesting(std::unique_ptr<base::TickClock> clock);
 
   // ShellObserver:
   void OnLockStateChanged(bool locked) override;
@@ -54,7 +55,7 @@ class ASH_EXPORT LogoutConfirmationController : public ShellObserver {
   LogoutConfirmationDialog* dialog_for_testing() const { return dialog_; }
 
  private:
-  scoped_ptr<base::TickClock> clock_;
+  std::unique_ptr<base::TickClock> clock_;
   base::Closure logout_closure_;
 
   base::TimeTicks logout_time_;

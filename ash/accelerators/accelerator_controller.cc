@@ -161,7 +161,7 @@ void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
                                            int new_shortcut_id) {
   const base::string16 message =
       GetNotificationText(message_id, old_shortcut_id, new_shortcut_id);
-  scoped_ptr<message_center::Notification> notification(
+  std::unique_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
           base::string16(), message,
@@ -819,17 +819,17 @@ AcceleratorController::GetCurrentAcceleratorRestriction() {
 }
 
 void AcceleratorController::SetBrightnessControlDelegate(
-    scoped_ptr<BrightnessControlDelegate> brightness_control_delegate) {
+    std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate) {
   brightness_control_delegate_ = std::move(brightness_control_delegate);
 }
 
 void AcceleratorController::SetImeControlDelegate(
-    scoped_ptr<ImeControlDelegate> ime_control_delegate) {
+    std::unique_ptr<ImeControlDelegate> ime_control_delegate) {
   ime_control_delegate_ = std::move(ime_control_delegate);
 }
 
 void AcceleratorController::SetScreenshotDelegate(
-    scoped_ptr<ScreenshotDelegate> screenshot_delegate) {
+    std::unique_ptr<ScreenshotDelegate> screenshot_delegate) {
   screenshot_delegate_ = std::move(screenshot_delegate);
 }
 
@@ -1430,8 +1430,8 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
 }
 
 void AcceleratorController::SetKeyboardBrightnessControlDelegate(
-    scoped_ptr<KeyboardBrightnessControlDelegate>
-    keyboard_brightness_control_delegate) {
+    std::unique_ptr<KeyboardBrightnessControlDelegate>
+        keyboard_brightness_control_delegate) {
   keyboard_brightness_control_delegate_ =
       std::move(keyboard_brightness_control_delegate);
 }

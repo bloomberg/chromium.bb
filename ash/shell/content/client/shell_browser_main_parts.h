@@ -5,8 +5,9 @@
 #ifndef ASH_SHELL_CONTENT_CLIENT_EXAMPLES_BROWSER_MAIN_PARTS_H_
 #define ASH_SHELL_CONTENT_CLIENT_EXAMPLES_BROWSER_MAIN_PARTS_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_main_parts.h"
 
 namespace base {
@@ -54,12 +55,12 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   }
 
  private:
-  scoped_ptr<net::NetLog> net_log_;
-  scoped_ptr<content::ShellBrowserContext> browser_context_;
-  scoped_ptr<views::ViewsDelegate> views_delegate_;
-  scoped_ptr<ash::shell::WindowWatcher> window_watcher_;
+  std::unique_ptr<net::NetLog> net_log_;
+  std::unique_ptr<content::ShellBrowserContext> browser_context_;
+  std::unique_ptr<views::ViewsDelegate> views_delegate_;
+  std::unique_ptr<ash::shell::WindowWatcher> window_watcher_;
   ShellDelegateImpl* delegate_;  // owned by Shell
-  scoped_ptr<wm::WMState> wm_state_;
+  std::unique_ptr<wm::WMState> wm_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
 };

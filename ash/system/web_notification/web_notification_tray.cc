@@ -103,8 +103,8 @@ class WebNotificationBubbleWrapper {
   views::TrayBubbleView* bubble_view() const { return bubble_->bubble_view(); }
 
  private:
-  scoped_ptr<message_center::MessageBubbleBase> bubble_;
-  scoped_ptr<TrayBubbleWrapper> bubble_wrapper_;
+  std::unique_ptr<message_center::MessageBubbleBase> bubble_;
+  std::unique_ptr<TrayBubbleWrapper> bubble_wrapper_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationBubbleWrapper);
 };

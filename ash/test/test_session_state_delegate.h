@@ -5,12 +5,12 @@
 #ifndef ASH_TEST_TEST_SESSION_STATE_DELEGATE_H_
 #define ASH_TEST_TEST_SESSION_STATE_DELEGATE_H_
 
+#include <memory>
 #include <vector>
 
 #include "ash/session/session_state_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/image/image_skia.h"
 
 class AccountId;
@@ -107,7 +107,7 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   std::vector<MockUserInfo*> user_list_;
 
   // The user manager to be used instead of the system instance.
-  scoped_ptr<TestUserManager> user_manager_;
+  std::unique_ptr<TestUserManager> user_manager_;
 
   // The current state of the login screen. |session_state_| becomes active
   // before the profile and browser UI are available.

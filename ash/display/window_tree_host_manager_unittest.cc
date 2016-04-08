@@ -4,6 +4,8 @@
 
 #include "ash/display/window_tree_host_manager.h"
 
+#include <memory>
+
 #include "ash/ash_switches.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_layout_store.h"
@@ -187,7 +189,7 @@ gfx::Display GetSecondaryDisplay() {
 void SetSecondaryDisplayLayoutAndOffset(
     display::DisplayPlacement::Position position,
     int offset) {
-  scoped_ptr<display::DisplayLayout> layout(
+  std::unique_ptr<display::DisplayLayout> layout(
       test::CreateDisplayLayout(position, offset));
   ASSERT_GT(gfx::Screen::GetScreen()->GetNumDisplays(), 1);
   Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
@@ -396,7 +398,7 @@ TEST_F(WindowTreeHostManagerTest, SecondaryDisplayLayout) {
     return;
 
   // Creates windows to catch activation change event.
-  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithId(1));
   w1->Focus();
 
   TestObserver observer;
@@ -558,7 +560,7 @@ TEST_F(WindowTreeHostManagerTest, MirrorToDockedWithFullscreen) {
     return;
 
   // Creates windows to catch activation change event.
-  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithId(1));
   w1->Focus();
 
   // Docked mode.
@@ -608,7 +610,7 @@ TEST_F(WindowTreeHostManagerTest, BoundsUpdated) {
     return;
 
   // Creates windows to catch activation change event.
-  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithId(1));
   w1->Focus();
 
   TestObserver observer;

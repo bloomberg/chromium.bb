@@ -7,11 +7,11 @@
 
 #include "ash/display/mouse_warp_controller.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace aura {
@@ -84,16 +84,16 @@ class ASH_EXPORT ExtendedMouseWarpController : public MouseWarpController {
 
     // Shows the area where a window can be dragged in to/out from another
     // display.
-    scoped_ptr<SharedDisplayEdgeIndicator> shared_display_edge_indicator_;
+    std::unique_ptr<SharedDisplayEdgeIndicator> shared_display_edge_indicator_;
 
     DISALLOW_COPY_AND_ASSIGN(WarpRegion);
   };
 
-  std::vector<scoped_ptr<WarpRegion>> warp_regions_;
+  std::vector<std::unique_ptr<WarpRegion>> warp_regions_;
 
   // Registers the WarpRegion; also displays a drag indicator on the screen if
   // |has_drag_source| is true.
-  void AddWarpRegion(scoped_ptr<WarpRegion> region, bool has_drag_source);
+  void AddWarpRegion(std::unique_ptr<WarpRegion> region, bool has_drag_source);
 
   // Warps the mouse cursor to an alternate root window when the
   // mouse location in |event|, hits the edge of the event target's root and
@@ -109,9 +109,9 @@ class ASH_EXPORT ExtendedMouseWarpController : public MouseWarpController {
   // drag is started, or invalid id passed if this is not for
   // dragging. Returns null scoped_ptr if two displays do not share
   // the edge.
-  scoped_ptr<WarpRegion> CreateWarpRegion(const gfx::Display& a,
-                                          const gfx::Display& b,
-                                          int64_t drag_source_dispay_id);
+  std::unique_ptr<WarpRegion> CreateWarpRegion(const gfx::Display& a,
+                                               const gfx::Display& b,
+                                               int64_t drag_source_dispay_id);
 
   void allow_non_native_event_for_test() { allow_non_native_event_ = true; }
 

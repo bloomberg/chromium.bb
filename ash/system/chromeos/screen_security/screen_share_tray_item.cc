@@ -67,7 +67,7 @@ void ScreenShareTrayItem::CreateOrUpdateNotification() {
   data.buttons.push_back(message_center::ButtonInfo(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SCREEN_SHARE_STOP)));
   ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
-  scoped_ptr<Notification> notification(new Notification(
+  std::unique_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kScreenShareNotificationId,
       help_label_text, base::string16() /* body is blank */,
       resource_bundle.GetImageNamed(IDR_AURA_UBER_TRAY_SCREENSHARE_DARK),

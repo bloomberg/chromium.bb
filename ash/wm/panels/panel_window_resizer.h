@@ -5,6 +5,8 @@
 #ifndef ASH_WM_PANELS_PANEL_WINDOW_RESIZER_H_
 #define ASH_WM_PANELS_PANEL_WINDOW_RESIZER_H_
 
+#include <memory>
+
 #include "ash/wm/window_resizer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -63,7 +65,7 @@ class ASH_EXPORT PanelWindowResizer : public WindowResizer {
 
   // Wraps a window resizer and adds panel detaching / reattaching and snapping
   // to launcher behavior during drags.
-  scoped_ptr<WindowResizer> next_window_resizer_;
+  std::unique_ptr<WindowResizer> next_window_resizer_;
 
   // Panel container window.
   aura::Window* panel_container_;

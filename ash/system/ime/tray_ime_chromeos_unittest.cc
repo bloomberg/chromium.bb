@@ -51,9 +51,9 @@ class TrayIMETest : public test::AshTestBase {
   void TearDown() override;
 
  private:
-  scoped_ptr<TrayIME> tray_;
-  scoped_ptr<views::View> default_view_;
-  scoped_ptr<views::View> detailed_view_;
+  std::unique_ptr<TrayIME> tray_;
+  std::unique_ptr<views::View> default_view_;
+  std::unique_ptr<views::View> detailed_view_;
 };
 
 void TrayIMETest::SetUpForStatusAreaWidget(

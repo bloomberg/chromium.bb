@@ -7,8 +7,9 @@
 
 #include "ash/shelf/shelf_button_pressed_metric_tracker.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/events/event.h"
 
 namespace base {
@@ -25,7 +26,7 @@ class ShelfButtonPressedMetricTrackerTestAPI {
   ~ShelfButtonPressedMetricTrackerTestAPI();
 
   // Set's the |tick_clock_| on the internal ShelfButtonPressedMetricTracker.
-  void SetTickClock(scoped_ptr<base::TickClock> tick_clock);
+  void SetTickClock(std::unique_ptr<base::TickClock> tick_clock);
 
  private:
   ShelfButtonPressedMetricTracker* shelf_button_pressed_metric_tracker_;

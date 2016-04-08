@@ -177,7 +177,7 @@ class ImmersiveFullscreenController::BubbleObserver
 
   // Lock which keeps the top-of-window views revealed based on whether any of
   // |bubbles_| is visible.
-  scoped_ptr<ImmersiveRevealedLock> revealed_lock_;
+  std::unique_ptr<ImmersiveRevealedLock> revealed_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleObserver);
 };
@@ -289,7 +289,7 @@ void ImmersiveFullscreenController::Init(Delegate* delegate,
   top_container_ = top_container;
   widget_ = widget;
   native_window_ = widget_->GetNativeWindow();
-  native_window_->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
+  native_window_->SetEventTargeter(std::unique_ptr<ui::EventTargeter>(
       new ResizeHandleWindowTargeter(native_window_, this)));
 }
 

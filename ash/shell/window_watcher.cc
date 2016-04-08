@@ -118,7 +118,7 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
 
   ShelfItemDelegateManager* manager =
       Shell::GetInstance()->shelf_item_delegate_manager();
-  scoped_ptr<ShelfItemDelegate> delegate(
+  std::unique_ptr<ShelfItemDelegate> delegate(
       new WindowWatcherShelfItemDelegate(id, this));
   manager->SetShelfItemDelegate(id, std::move(delegate));
   SetShelfIDForWindow(id, new_window);

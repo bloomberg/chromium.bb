@@ -17,6 +17,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/keyboard/keyboard_switches.h"
@@ -34,7 +35,7 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
     test::AshTestBase::SetUp();
-    SetAlignmentDelegate(make_scoped_ptr(new AshPopupAlignmentDelegate(
+    SetAlignmentDelegate(base::WrapUnique(new AshPopupAlignmentDelegate(
         Shelf::ForPrimaryDisplay()->shelf_layout_manager())));
   }
 
@@ -69,7 +70,8 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
     alignment_delegate->OnDisplayWorkAreaInsetsChanged();
   }
 
-  void SetAlignmentDelegate(scoped_ptr<AshPopupAlignmentDelegate> delegate) {
+  void SetAlignmentDelegate(
+      std::unique_ptr<AshPopupAlignmentDelegate> delegate) {
     if (!delegate.get()) {
       alignment_delegate_.reset();
       return;
@@ -99,7 +101,7 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
   }
 
  private:
-  scoped_ptr<AshPopupAlignmentDelegate> alignment_delegate_;
+  std::unique_ptr<AshPopupAlignmentDelegate> alignment_delegate_;
 };
 
 #if defined(OS_WIN) && !defined(USE_ASH)
@@ -168,7 +170,7 @@ TEST_F(AshPopupAlignmentDelegateTest, AutoHide) {
   int baseline = alignment_delegate()->GetBaseLine();
 
   // Create a window, otherwise autohide doesn't work.
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   Shell::GetInstance()->SetShelfAutoHideBehavior(
       SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
       Shell::GetPrimaryRootWindow());
@@ -184,7 +186,7 @@ TEST_F(AshPopupAlignmentDelegateTest, DockedWindow) {
   int origin_x = alignment_delegate()->GetToastOriginX(toast_size);
   int baseline = alignment_delegate()->GetBaseLine();
 
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(0, 0, 50, 50)));
   aura::Window* docked_container = Shell::GetContainer(
       Shell::GetPrimaryRootWindow(),
@@ -272,7 +274,7 @@ TEST_F(AshPopupAlignmentDelegateTest, Extended) {
   if (!SupportsMultipleDisplays())
     return;
   UpdateDisplay("600x600,800x800");
-  SetAlignmentDelegate(make_scoped_ptr(new AshPopupAlignmentDelegate(
+  SetAlignmentDelegate(base::WrapUnique(new AshPopupAlignmentDelegate(
       Shelf::ForPrimaryDisplay()->shelf_layout_manager())));
 
   gfx::Display second_display = ScreenUtil::GetSecondaryDisplay();
@@ -300,7 +302,7 @@ TEST_F(AshPopupAlignmentDelegateTest, Unified) {
   SetAlignmentDelegate(nullptr);
 
   UpdateDisplay("600x600,800x800");
-  SetAlignmentDelegate(make_scoped_ptr(new AshPopupAlignmentDelegate(
+  SetAlignmentDelegate(base::WrapUnique(new AshPopupAlignmentDelegate(
       Shelf::ForPrimaryDisplay()->shelf_layout_manager())));
 
   EXPECT_GT(600,

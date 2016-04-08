@@ -796,7 +796,7 @@ views::View* NetworkStateListDetailedView::CreateControlledByExtensionView(
           ->GetNetworkingConfigDelegate();
   if (!networking_config_delegate)
     return nullptr;
-  scoped_ptr<const ash::NetworkingConfigDelegate::ExtensionInfo>
+  std::unique_ptr<const ash::NetworkingConfigDelegate::ExtensionInfo>
       extension_info = networking_config_delegate->LookUpExtensionForNetwork(
           info.service_path);
   if (!extension_info)

@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "ash/rotator/screen_rotation_animation.h"
+
+#include <memory>
+
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
@@ -28,7 +30,7 @@ class ScreenRotationAnimationTest : public AshTestBase {
   void SetUp() override;
 
  private:
-  scoped_ptr<ui::ScopedAnimationDurationScaleMode> non_zero_duration_mode_;
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> non_zero_duration_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenRotationAnimationTest);
 };
@@ -40,10 +42,10 @@ void ScreenRotationAnimationTest::SetUp() {
 }
 
 TEST_F(ScreenRotationAnimationTest, LayerTransformGetsSetToTargetWhenAborted) {
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(9));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(9));
   ui::Layer* layer = window->layer();
 
-  scoped_ptr<ScreenRotationAnimation> screen_rotation(
+  std::unique_ptr<ScreenRotationAnimation> screen_rotation(
       new ScreenRotationAnimation(
           layer, 45 /* start_degrees */, 0 /* end_degrees */,
           0.5f /* initial_opacity */, 1.0f /* target_opacity */,
@@ -53,7 +55,7 @@ TEST_F(ScreenRotationAnimationTest, LayerTransformGetsSetToTargetWhenAborted) {
   ui::LayerAnimator* animator = layer->GetAnimator();
   animator->set_preemption_strategy(
       ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-  scoped_ptr<ui::LayerAnimationSequence> animation_sequence(
+  std::unique_ptr<ui::LayerAnimationSequence> animation_sequence(
       new ui::LayerAnimationSequence(screen_rotation.release()));
   animator->StartAnimation(animation_sequence.release());
 

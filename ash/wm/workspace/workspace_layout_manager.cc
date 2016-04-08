@@ -65,7 +65,7 @@ void WorkspaceLayoutManager::SetShelf(ShelfLayoutManager* shelf) {
 }
 
 void WorkspaceLayoutManager::SetMaximizeBackdropDelegate(
-    scoped_ptr<WorkspaceLayoutManagerDelegate> delegate) {
+    std::unique_ptr<WorkspaceLayoutManagerDelegate> delegate) {
   backdrop_delegate_.reset(delegate.release());
 }
 

@@ -40,8 +40,8 @@ class OverviewGestureHandlerTest : public test::AshTestBase {
 TEST_F(OverviewGestureHandlerTest, VerticalSwipes) {
   gfx::Rect bounds(0, 0, 400, 400);
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
-  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
   ui::test::EventGenerator generator(root_window, root_window);
   generator.ScrollSequence(gfx::Point(), base::TimeDelta::FromMilliseconds(5),
       0, -500, 100, 3);
@@ -67,8 +67,8 @@ TEST_F(OverviewGestureHandlerTest, VerticalSwipes) {
 TEST_F(OverviewGestureHandlerTest, HorizontalSwipes) {
   gfx::Rect bounds(0, 0, 400, 400);
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
-  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
   ui::test::EventGenerator generator(root_window, root_window);
   generator.ScrollSequence(gfx::Point(), base::TimeDelta::FromMilliseconds(5),
       600, -500, 100, 3);
@@ -84,8 +84,8 @@ TEST_F(OverviewGestureHandlerTest, HorizontalSwipes) {
 TEST_F(OverviewGestureHandlerTest, SwipeUpDownWithoutReleasing) {
   gfx::Rect bounds(0, 0, 400, 400);
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
-  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
   ui::test::EventGenerator generator(root_window, root_window);
   base::TimeDelta timestamp = base::TimeDelta::FromInternalValue(
       base::TimeTicks::Now().ToInternalValue());

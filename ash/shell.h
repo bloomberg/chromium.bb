@@ -5,6 +5,7 @@
 #ifndef ASH_SHELL_H_
 #define ASH_SHELL_H_
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -17,7 +18,6 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "ui/aura/window.h"
@@ -625,7 +625,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Overridden from ui::EventTarget:
   bool CanAcceptEvent(const ui::Event& event) override;
   EventTarget* GetParentTarget() override;
-  scoped_ptr<ui::EventTargetIterator> GetChildIterator() const override;
+  std::unique_ptr<ui::EventTargetIterator> GetChildIterator() const override;
   ui::EventTargeter* GetEventTargeter() override;
 
   // Overridden from aura::client::ActivationChangeObserver:
@@ -648,113 +648,115 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   aura::Window* scoped_target_root_window_;
 
   // The CompoundEventFilter owned by aura::Env object.
-  scoped_ptr< ::wm::CompoundEventFilter> env_filter_;
+  std::unique_ptr<::wm::CompoundEventFilter> env_filter_;
 
   std::vector<WindowAndBoundsPair> to_restore_;
 
-  scoped_ptr<UserMetricsRecorder> user_metrics_recorder_;
-  scoped_ptr<AcceleratorController> accelerator_controller_;
-  scoped_ptr<ShellDelegate> delegate_;
-  scoped_ptr<SystemTrayDelegate> system_tray_delegate_;
-  scoped_ptr<SystemTrayNotifier> system_tray_notifier_;
-  scoped_ptr<UserWallpaperDelegate> user_wallpaper_delegate_;
-  scoped_ptr<SessionStateDelegate> session_state_delegate_;
-  scoped_ptr<AccessibilityDelegate> accessibility_delegate_;
-  scoped_ptr<NewWindowDelegate> new_window_delegate_;
-  scoped_ptr<MediaDelegate> media_delegate_;
-  scoped_ptr<ShelfDelegate> shelf_delegate_;
-  scoped_ptr<ShelfItemDelegateManager> shelf_item_delegate_manager_;
-  scoped_ptr<ShelfWindowWatcher> shelf_window_watcher_;
+  std::unique_ptr<UserMetricsRecorder> user_metrics_recorder_;
+  std::unique_ptr<AcceleratorController> accelerator_controller_;
+  std::unique_ptr<ShellDelegate> delegate_;
+  std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
+  std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
+  std::unique_ptr<UserWallpaperDelegate> user_wallpaper_delegate_;
+  std::unique_ptr<SessionStateDelegate> session_state_delegate_;
+  std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
+  std::unique_ptr<NewWindowDelegate> new_window_delegate_;
+  std::unique_ptr<MediaDelegate> media_delegate_;
+  std::unique_ptr<ShelfDelegate> shelf_delegate_;
+  std::unique_ptr<ShelfItemDelegateManager> shelf_item_delegate_manager_;
+  std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
 
-  scoped_ptr<ShelfModel> shelf_model_;
-  scoped_ptr<WindowPositioner> window_positioner_;
+  std::unique_ptr<ShelfModel> shelf_model_;
+  std::unique_ptr<WindowPositioner> window_positioner_;
 
-  scoped_ptr<AppListController> app_list_controller_;
+  std::unique_ptr<AppListController> app_list_controller_;
 
-  scoped_ptr<DragDropController> drag_drop_controller_;
-  scoped_ptr<ResizeShadowController> resize_shadow_controller_;
-  scoped_ptr< ::wm::ShadowController> shadow_controller_;
-  scoped_ptr< ::wm::VisibilityController> visibility_controller_;
-  scoped_ptr< ::wm::WindowModalityController> window_modality_controller_;
-  scoped_ptr<views::corewm::TooltipController> tooltip_controller_;
-  scoped_ptr<DesktopBackgroundController> desktop_background_controller_;
-  scoped_ptr<PowerButtonController> power_button_controller_;
-  scoped_ptr<LockStateController> lock_state_controller_;
-  scoped_ptr<MruWindowTracker> mru_window_tracker_;
-  scoped_ptr<ui::UserActivityDetector> user_activity_detector_;
-  scoped_ptr<VideoDetector> video_detector_;
-  scoped_ptr<WindowCycleController> window_cycle_controller_;
-  scoped_ptr<WindowSelectorController> window_selector_controller_;
-  scoped_ptr<FocusCycler> focus_cycler_;
-  scoped_ptr<WindowTreeHostManager> window_tree_host_manager_;
-  scoped_ptr<HighContrastController> high_contrast_controller_;
-  scoped_ptr<MagnificationController> magnification_controller_;
-  scoped_ptr<PartialMagnificationController> partial_magnification_controller_;
-  scoped_ptr<AutoclickController> autoclick_controller_;
-  scoped_ptr<aura::client::FocusClient> focus_client_;
+  std::unique_ptr<DragDropController> drag_drop_controller_;
+  std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
+  std::unique_ptr<::wm::ShadowController> shadow_controller_;
+  std::unique_ptr<::wm::VisibilityController> visibility_controller_;
+  std::unique_ptr<::wm::WindowModalityController> window_modality_controller_;
+  std::unique_ptr<views::corewm::TooltipController> tooltip_controller_;
+  std::unique_ptr<DesktopBackgroundController> desktop_background_controller_;
+  std::unique_ptr<PowerButtonController> power_button_controller_;
+  std::unique_ptr<LockStateController> lock_state_controller_;
+  std::unique_ptr<MruWindowTracker> mru_window_tracker_;
+  std::unique_ptr<ui::UserActivityDetector> user_activity_detector_;
+  std::unique_ptr<VideoDetector> video_detector_;
+  std::unique_ptr<WindowCycleController> window_cycle_controller_;
+  std::unique_ptr<WindowSelectorController> window_selector_controller_;
+  std::unique_ptr<FocusCycler> focus_cycler_;
+  std::unique_ptr<WindowTreeHostManager> window_tree_host_manager_;
+  std::unique_ptr<HighContrastController> high_contrast_controller_;
+  std::unique_ptr<MagnificationController> magnification_controller_;
+  std::unique_ptr<PartialMagnificationController>
+      partial_magnification_controller_;
+  std::unique_ptr<AutoclickController> autoclick_controller_;
+  std::unique_ptr<aura::client::FocusClient> focus_client_;
   aura::client::ActivationClient* activation_client_;
-  scoped_ptr<PartialScreenshotController> partial_screenshot_controller_;
+  std::unique_ptr<PartialScreenshotController> partial_screenshot_controller_;
 
-  scoped_ptr<MouseCursorEventFilter> mouse_cursor_filter_;
-  scoped_ptr<ScreenPositionController> screen_position_controller_;
-  scoped_ptr<SystemModalContainerEventFilter> modality_filter_;
-  scoped_ptr<EventClientImpl> event_client_;
-  scoped_ptr<EventTransformationHandler> event_transformation_handler_;
+  std::unique_ptr<MouseCursorEventFilter> mouse_cursor_filter_;
+  std::unique_ptr<ScreenPositionController> screen_position_controller_;
+  std::unique_ptr<SystemModalContainerEventFilter> modality_filter_;
+  std::unique_ptr<EventClientImpl> event_client_;
+  std::unique_ptr<EventTransformationHandler> event_transformation_handler_;
 
   // An event filter that pre-handles key events while the partial
   // screenshot UI or the keyboard overlay is active.
-  scoped_ptr<OverlayEventFilter> overlay_filter_;
+  std::unique_ptr<OverlayEventFilter> overlay_filter_;
 
   // An event filter for logging keyboard-related metrics.
-  scoped_ptr<KeyboardUMAEventFilter> keyboard_metrics_filter_;
+  std::unique_ptr<KeyboardUMAEventFilter> keyboard_metrics_filter_;
 
   // An event filter which handles moving and resizing windows.
-  scoped_ptr<ToplevelWindowEventHandler> toplevel_window_event_handler_;
+  std::unique_ptr<ToplevelWindowEventHandler> toplevel_window_event_handler_;
 
   // An event filter which handles system level gestures
-  scoped_ptr<SystemGestureEventFilter> system_gesture_filter_;
+  std::unique_ptr<SystemGestureEventFilter> system_gesture_filter_;
 
   // An event filter that pre-handles global accelerators.
-  scoped_ptr< ::wm::AcceleratorFilter> accelerator_filter_;
+  std::unique_ptr<::wm::AcceleratorFilter> accelerator_filter_;
 
-  scoped_ptr<DisplayManager> display_manager_;
-  scoped_ptr<DisplayConfigurationController> display_configuration_controller_;
+  std::unique_ptr<DisplayManager> display_manager_;
+  std::unique_ptr<DisplayConfigurationController>
+      display_configuration_controller_;
 
-  scoped_ptr<LocaleNotificationController> locale_notification_controller_;
+  std::unique_ptr<LocaleNotificationController> locale_notification_controller_;
 
 #if defined(OS_CHROMEOS)
-  scoped_ptr<PowerEventObserver> power_event_observer_;
-  scoped_ptr<ui::UserActivityPowerManagerNotifier> user_activity_notifier_;
-  scoped_ptr<VideoActivityNotifier> video_activity_notifier_;
-  scoped_ptr<StickyKeysController> sticky_keys_controller_;
-  scoped_ptr<ResolutionNotificationController>
+  std::unique_ptr<PowerEventObserver> power_event_observer_;
+  std::unique_ptr<ui::UserActivityPowerManagerNotifier> user_activity_notifier_;
+  std::unique_ptr<VideoActivityNotifier> video_activity_notifier_;
+  std::unique_ptr<StickyKeysController> sticky_keys_controller_;
+  std::unique_ptr<ResolutionNotificationController>
       resolution_notification_controller_;
-  scoped_ptr<BluetoothNotificationController>
+  std::unique_ptr<BluetoothNotificationController>
       bluetooth_notification_controller_;
-  scoped_ptr<LogoutConfirmationController> logout_confirmation_controller_;
-  scoped_ptr<LastWindowClosedLogoutReminder>
+  std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;
+  std::unique_ptr<LastWindowClosedLogoutReminder>
       last_window_closed_logout_reminder_;
-  scoped_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
+  std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
   // Controls video output device state.
-  scoped_ptr<ui::DisplayConfigurator> display_configurator_;
-  scoped_ptr<DisplayColorManager> display_color_manager_;
-  scoped_ptr<DisplayErrorObserver> display_error_observer_;
-  scoped_ptr<ProjectingObserver> projecting_observer_;
+  std::unique_ptr<ui::DisplayConfigurator> display_configurator_;
+  std::unique_ptr<DisplayColorManager> display_color_manager_;
+  std::unique_ptr<DisplayErrorObserver> display_error_observer_;
+  std::unique_ptr<ProjectingObserver> projecting_observer_;
 
   // Listens for output changes and updates the display manager.
-  scoped_ptr<DisplayChangeObserver> display_change_observer_;
+  std::unique_ptr<DisplayChangeObserver> display_change_observer_;
 
   // Implements content::ScreenOrientationController for ChromeOS
-  scoped_ptr<ScreenOrientationController> screen_orientation_controller_;
+  std::unique_ptr<ScreenOrientationController> screen_orientation_controller_;
 
-  scoped_ptr<TouchTransformerController> touch_transformer_controller_;
+  std::unique_ptr<TouchTransformerController> touch_transformer_controller_;
 
-  scoped_ptr<ui::EventHandler> magnifier_key_scroll_handler_;
-  scoped_ptr<ui::EventHandler> speech_feedback_handler_;
+  std::unique_ptr<ui::EventHandler> magnifier_key_scroll_handler_;
+  std::unique_ptr<ui::EventHandler> speech_feedback_handler_;
 #endif  // defined(OS_CHROMEOS)
 
-  scoped_ptr<ToastManager> toast_manager_;
-  scoped_ptr<MaximizeModeController> maximize_mode_controller_;
+  std::unique_ptr<ToastManager> toast_manager_;
+  std::unique_ptr<MaximizeModeController> maximize_mode_controller_;
 
   // |native_cursor_manager_| is owned by |cursor_manager_|, but we keep a
   // pointer to vend to test code.
@@ -762,7 +764,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   // Cursor may be hidden on certain key events in ChromeOS, whereas we never
   // hide the cursor on Windows.
-  scoped_ptr<::wm::CursorManager> cursor_manager_;
+  std::unique_ptr<::wm::CursorManager> cursor_manager_;
 
   base::ObserverList<ShellObserver> observers_;
 
@@ -772,13 +774,13 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   bool is_touch_hud_projection_enabled_;
 
   // Injected content::GPUDataManager support.
-  scoped_ptr<GPUSupport> gpu_support_;
+  std::unique_ptr<GPUSupport> gpu_support_;
 
   base::SequencedWorkerPool* blocking_pool_;
 
   bool in_mus_ = false;
 
-  scoped_ptr<KeyboardUI> keyboard_ui_;
+  std::unique_ptr<KeyboardUI> keyboard_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

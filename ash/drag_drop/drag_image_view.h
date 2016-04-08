@@ -5,6 +5,8 @@
 #ifndef ASH_DRAG_DROP_DRAG_IMAGE_VIEW_H_
 #define ASH_DRAG_DROP_DRAG_IMAGE_VIEW_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/views/controls/image_view.h"
@@ -71,7 +73,7 @@ class DragImageView : public views::ImageView {
   // Overridden from views::view
   void Layout() override;
 
-  scoped_ptr<views::Widget> widget_;
+  std::unique_ptr<views::Widget> widget_;
   gfx::Size widget_size_;
 
   ui::DragDropTypes::DragEventSource drag_event_source_;

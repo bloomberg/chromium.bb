@@ -36,9 +36,11 @@ void MagnifierKeyScroller::SetEnabled(bool enabled) {
 }
 
 // static
-scoped_ptr<ui::EventHandler> MagnifierKeyScroller::CreateHandler() {
-  scoped_ptr<KeyHoldDetector::Delegate> delegate(new MagnifierKeyScroller());
-  return scoped_ptr<ui::EventHandler>(new KeyHoldDetector(std::move(delegate)));
+std::unique_ptr<ui::EventHandler> MagnifierKeyScroller::CreateHandler() {
+  std::unique_ptr<KeyHoldDetector::Delegate> delegate(
+      new MagnifierKeyScroller());
+  return std::unique_ptr<ui::EventHandler>(
+      new KeyHoldDetector(std::move(delegate)));
 }
 
 bool MagnifierKeyScroller::ShouldProcessEvent(const ui::KeyEvent* event) const {

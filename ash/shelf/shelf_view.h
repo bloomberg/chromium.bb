@@ -5,6 +5,7 @@
 #ifndef ASH_SHELF_SHELF_VIEW_H_
 #define ASH_SHELF_SHELF_VIEW_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -325,7 +326,7 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Used to manage the set of active launcher buttons. There is a view per
   // item in |model_|.
-  scoped_ptr<views::ViewModel> view_model_;
+  std::unique_ptr<views::ViewModel> view_model_;
 
   // Index of first visible launcher item.
   int first_visible_index_;
@@ -334,11 +335,11 @@ class ASH_EXPORT ShelfView : public views::View,
   // (does not go into overflow).
   mutable int last_visible_index_;
 
-  scoped_ptr<views::BoundsAnimator> bounds_animator_;
+  std::unique_ptr<views::BoundsAnimator> bounds_animator_;
 
   OverflowButton* overflow_button_;
 
-  scoped_ptr<OverflowBubble> overflow_bubble_;
+  std::unique_ptr<OverflowBubble> overflow_bubble_;
 
   OverflowBubble* owner_overflow_bubble_;
 
@@ -361,9 +362,9 @@ class ASH_EXPORT ShelfView : public views::View,
   // Used for the context menu of a particular item.
   ShelfID context_menu_id_;
 
-  scoped_ptr<views::FocusSearch> focus_search_;
+  std::unique_ptr<views::FocusSearch> focus_search_;
 
-  scoped_ptr<views::MenuRunner> launcher_menu_runner_;
+  std::unique_ptr<views::MenuRunner> launcher_menu_runner_;
 
   base::ObserverList<ShelfIconObserver> observers_;
 
@@ -403,7 +404,7 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // The image proxy for drag operations when a drag and drop host exists and
   // the item can be dragged outside the app grid.
-  scoped_ptr<ash::DragImageView> drag_image_;
+  std::unique_ptr<ash::DragImageView> drag_image_;
 
   // The cursor offset to the middle of the dragged item.
   gfx::Vector2d drag_image_offset_;

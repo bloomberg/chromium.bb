@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "ash/system/audio/audio_observer.h"
 #include "ash/system/tray/tray_image_item.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/display_observer.h"
 
 namespace ash {
@@ -28,7 +29,7 @@ class TrayAudio : public TrayImageItem,
                   public gfx::DisplayObserver {
  public:
   TrayAudio(SystemTray* system_tray,
-            scoped_ptr<system::TrayAudioDelegate> audio_delegate);
+            std::unique_ptr<system::TrayAudioDelegate> audio_delegate);
   ~TrayAudio() override;
 
   static bool ShowAudioDeviceMenu();
@@ -42,7 +43,7 @@ class TrayAudio : public TrayImageItem,
 
   virtual void Update();
 
-  scoped_ptr<system::TrayAudioDelegate> audio_delegate_;
+  std::unique_ptr<system::TrayAudioDelegate> audio_delegate_;
   tray::VolumeView* volume_view_;
 
   // True if VolumeView should be created for accelerator pop up;

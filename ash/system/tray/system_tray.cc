@@ -117,8 +117,8 @@ class SystemBubbleWrapper {
   bool is_persistent() const { return is_persistent_; }
 
  private:
-  scoped_ptr<SystemTrayBubble> bubble_;
-  scoped_ptr<TrayBubbleWrapper> bubble_wrapper_;
+  std::unique_ptr<SystemTrayBubble> bubble_;
+  std::unique_ptr<TrayBubbleWrapper> bubble_wrapper_;
   bool is_persistent_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemBubbleWrapper);

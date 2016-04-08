@@ -5,6 +5,10 @@
 #ifndef ASH_SYSTEM_TRAY_SYSTEM_TRAY_H_
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_H_
 
+#include <map>
+#include <memory>
+#include <vector>
+
 #include "ash/ash_export.h"
 #include "ash/system/cast/tray_cast.h"
 #include "ash/system/tray/system_tray_bubble.h"
@@ -12,13 +16,9 @@
 #include "ash/system/user/login_status.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/view.h"
-
-#include <map>
-#include <vector>
 
 namespace ash {
 class ScreenTrayItem;
@@ -217,10 +217,10 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   std::map<SystemTrayItem*, views::View*> tray_item_map_;
 
   // Bubble for default and detailed views.
-  scoped_ptr<SystemBubbleWrapper> system_bubble_;
+  std::unique_ptr<SystemBubbleWrapper> system_bubble_;
 
   // Bubble for notifications.
-  scoped_ptr<SystemBubbleWrapper> notification_bubble_;
+  std::unique_ptr<SystemBubbleWrapper> notification_bubble_;
 
   // Keep track of the default view height so that when we create detailed
   // views directly (e.g. from a notification) we know what height to use.

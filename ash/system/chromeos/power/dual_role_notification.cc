@@ -64,8 +64,8 @@ void DualRoleNotification::Update() {
 
   std::string current_power_source_id = status.GetCurrentPowerSourceID();
 
-  scoped_ptr<PowerStatus::PowerSource> new_source;
-  scoped_ptr<PowerStatus::PowerSource> new_sink;
+  std::unique_ptr<PowerStatus::PowerSource> new_source;
+  std::unique_ptr<PowerStatus::PowerSource> new_sink;
   size_t num_sinks_found = 0;
   for (const auto& source : status.GetPowerSources()) {
     // The power source can't be changed if there's a dedicated charger.
@@ -125,7 +125,7 @@ void DualRoleNotification::Update() {
   }
 }
 
-scoped_ptr<Notification> DualRoleNotification::CreateNotification() {
+std::unique_ptr<Notification> DualRoleNotification::CreateNotification() {
   base::string16 title;
   if (dual_role_source_) {
     title = l10n_util::GetStringFUTF16(
@@ -140,7 +140,7 @@ scoped_ptr<Notification> DualRoleNotification::CreateNotification() {
         IDS_ASH_STATUS_TRAY_CHARGING_DUAL_ROLE_DEVICES_TITLE);
   }
 
-  scoped_ptr<Notification> notification(new Notification(
+  std::unique_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kDualRoleNotificationId, title,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DUAL_ROLE_MESSAGE),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(

@@ -221,7 +221,7 @@ bool TrayPower::MaybeShowUsbChargerNotification() {
   // Check for a USB charger being connected.
   if (usb_charger_is_connected && !usb_charger_was_connected_ &&
       !usb_notification_dismissed_) {
-    scoped_ptr<Notification> notification(new Notification(
+    std::unique_ptr<Notification> notification(new Notification(
         message_center::NOTIFICATION_TYPE_SIMPLE, kUsbNotificationId,
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE),
         ash::SubstituteChromeOSDeviceType(

@@ -5,12 +5,13 @@
 #ifndef ASH_FRAME_DEFAULT_HEADER_PAINTER_H_
 #define ASH_FRAME_DEFAULT_HEADER_PAINTER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/frame/header_painter.h"
 #include "base/compiler_specific.h"  // override
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_delegate.h"
 
@@ -109,7 +110,7 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
   // Whether the header is painted for the first time.
   bool initial_paint_;
 
-  scoped_ptr<gfx::SlideAnimation> activation_animation_;
+  std::unique_ptr<gfx::SlideAnimation> activation_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultHeaderPainter);
 };

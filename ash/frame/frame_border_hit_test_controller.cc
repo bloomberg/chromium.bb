@@ -4,6 +4,8 @@
 
 #include "ash/frame/frame_border_hit_test_controller.h"
 
+#include <memory>
+
 #include "ash/ash_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/wm/resize_handle_window_targeter.h"
@@ -21,7 +23,7 @@ namespace ash {
 
 FrameBorderHitTestController::FrameBorderHitTestController(views::Widget* frame)
     : frame_window_(frame->GetNativeWindow()) {
-  frame_window_->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
+  frame_window_->SetEventTargeter(std::unique_ptr<ui::EventTargeter>(
       new ResizeHandleWindowTargeter(frame_window_, NULL)));
 }
 

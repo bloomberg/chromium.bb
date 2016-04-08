@@ -5,13 +5,14 @@
 #ifndef ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_CONTROLLER_H_
 #define ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_CONTROLLER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell_observer.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
@@ -156,7 +157,7 @@ class ASH_EXPORT DesktopBackgroundController
   base::ObserverList<DesktopBackgroundControllerObserver> observers_;
 
   // The current wallpaper.
-  scoped_ptr<wallpaper::WallpaperResizer> current_wallpaper_;
+  std::unique_ptr<wallpaper::WallpaperResizer> current_wallpaper_;
 
   gfx::Size current_max_display_size_;
 

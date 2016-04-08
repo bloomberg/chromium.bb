@@ -101,7 +101,7 @@ void LocaleNotificationController::OnLocaleChanged(
   optional.never_timeout = true;
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  scoped_ptr<Notification> notification(new Notification(
+  std::unique_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kLocaleChangeNotificationId,
       base::string16() /* title */,
       l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_LOCALE_CHANGE_MESSAGE,

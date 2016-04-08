@@ -4,13 +4,13 @@
 
 #include "ash/system/chromeos/bluetooth/bluetooth_notification_controller.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/system/system_notifier.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -274,7 +274,7 @@ void BluetoothNotificationController::NotifyAdapterDiscoverable() {
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
 
-  scoped_ptr<Notification> notification(new Notification(
+  std::unique_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       kBluetoothDeviceDiscoverableNotificationId, base::string16() /* title */,
       l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERABLE,
@@ -305,7 +305,7 @@ void BluetoothNotificationController::NotifyPairing(
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
 
-  scoped_ptr<Notification> notification(new Notification(
+  std::unique_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       kBluetoothDevicePairingNotificationId, base::string16() /* title */,
       message, bundle.GetImageNamed(IDR_AURA_NOTIFICATION_BLUETOOTH),
@@ -330,7 +330,7 @@ void BluetoothNotificationController::NotifyPairedDevice(
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
 
-  scoped_ptr<Notification> notification(new Notification(
+  std::unique_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       kBluetoothDevicePairedNotificationId, base::string16() /* title */,
       l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIRED,

@@ -312,7 +312,7 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
   } else if (sender == show_hide_window_button_) {
     NonModalTransient::ToggleNonModalTransient(GetWidget()->GetNativeView());
   } else if (sender == show_web_notification_) {
-    scoped_ptr<message_center::Notification> notification;
+    std::unique_ptr<message_center::Notification> notification;
     notification.reset(new message_center::Notification(
         message_center::NOTIFICATION_TYPE_SIMPLE, "id0",
         base::ASCIIToUTF16("Test Shell Web Notification"),

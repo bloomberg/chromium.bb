@@ -46,7 +46,7 @@ const int kVerticalClockMinutesTopOffset = -4;
 
 base::string16 FormatDate(const base::Time& time) {
   icu::UnicodeString date_string;
-  scoped_ptr<icu::DateFormat> formatter(
+  std::unique_ptr<icu::DateFormat> formatter(
       icu::DateFormat::createDateInstance(icu::DateFormat::kMedium));
   formatter->format(static_cast<UDate>(time.ToDoubleT() * 1000), date_string);
   return base::string16(date_string.getBuffer(),
@@ -55,7 +55,7 @@ base::string16 FormatDate(const base::Time& time) {
 
 base::string16 FormatDayOfWeek(const base::Time& time) {
   UErrorCode status = U_ZERO_ERROR;
-  scoped_ptr<icu::DateTimePatternGenerator> generator(
+  std::unique_ptr<icu::DateTimePatternGenerator> generator(
       icu::DateTimePatternGenerator::createInstance(status));
   DCHECK(U_SUCCESS(status));
   const char kBasePattern[] = "EEE";

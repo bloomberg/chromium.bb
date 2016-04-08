@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/test/test_windows.h"
@@ -61,7 +62,7 @@ TEST_P(AppListControllerTest, HideOnFocusOut) {
   Shell::GetInstance()->ShowAppList(NULL);
   EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
 
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   wm::ActivateWindow(window.get());
 
   EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
@@ -75,7 +76,7 @@ TEST_P(AppListControllerTest, RemainVisibleWhenFocusingToApplistContainer) {
 
   aura::Window* applist_container = Shell::GetContainer(
       Shell::GetPrimaryRootWindow(), kShellWindowId_AppListContainer);
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       aura::test::CreateTestWindowWithId(0, applist_container));
   wm::ActivateWindow(window.get());
 

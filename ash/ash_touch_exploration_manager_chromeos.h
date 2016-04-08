@@ -5,6 +5,8 @@
 #ifndef ASH_TOUCH_EXPLORATION_MANAGER_CHROMEOS_H_
 #define ASH_TOUCH_EXPLORATION_MANAGER_CHROMEOS_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/system/tray_accessibility.h"
 #include "base/macros.h"
@@ -45,7 +47,7 @@ class ASH_EXPORT AshTouchExplorationManager
   void UpdateTouchExplorationState();
   bool VolumeAdjustSoundEnabled();
 
-  scoped_ptr<ui::TouchExplorationController> touch_exploration_controller_;
+  std::unique_ptr<ui::TouchExplorationController> touch_exploration_controller_;
   RootWindowController* root_window_controller_;
   chromeos::CrasAudioHandler* audio_handler_;
 

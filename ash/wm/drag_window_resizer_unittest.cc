@@ -136,12 +136,12 @@ class DragWindowResizerTest : public test::AshTestBase {
   aura::test::TestWindowDelegate delegate5_;
   aura::test::TestWindowDelegate delegate6_;
 
-  scoped_ptr<aura::Window> window_;
-  scoped_ptr<aura::Window> always_on_top_window_;
-  scoped_ptr<aura::Window> system_modal_window_;
-  scoped_ptr<aura::Window> panel_window_;
+  std::unique_ptr<aura::Window> window_;
+  std::unique_ptr<aura::Window> always_on_top_window_;
+  std::unique_ptr<aura::Window> system_modal_window_;
+  std::unique_ptr<aura::Window> panel_window_;
   aura::Window* transient_child_;
-  scoped_ptr<aura::Window> transient_parent_;
+  std::unique_ptr<aura::Window> transient_parent_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DragWindowResizerTest);
@@ -163,8 +163,8 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   {
     // Grab (0, 0) of the window.
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window_.get(), gfx::Point(), HTCAPTION));
+    std::unique_ptr<WindowResizer> resizer(
+        CreateDragWindowResizer(window_.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     // Drag the pointer to the right. Once it reaches the right edge of the
     // primary display, it warps to the secondary.
@@ -181,8 +181,8 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   {
     // Grab (0, 0) of the window and move the pointer to (775, 10).
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window_.get(), gfx::Point(), HTCAPTION));
+    std::unique_ptr<WindowResizer> resizer(
+        CreateDragWindowResizer(window_.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 795, 10), 0);
     // Window should be adjusted for minimum visibility (25px) during the drag.
@@ -201,8 +201,8 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
   {
     // Grab the top-right edge of the window and move the pointer to (0, 10)
     // in the secondary root window's coordinates.
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window_.get(), gfx::Point(49, 0), HTCAPTION));
+    std::unique_ptr<WindowResizer> resizer(
+        CreateDragWindowResizer(window_.get(), gfx::Point(49, 0), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 751, 10), ui::EF_CONTROL_DOWN);
     resizer->CompleteDrag();
@@ -224,8 +224,8 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
   {
     // Grab the top-right edge of the window and move the pointer to (0, 10)
     // in the secondary root window's coordinates.
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window_.get(), gfx::Point(699, 0), HTCAPTION));
+    std::unique_ptr<WindowResizer> resizer(
+        CreateDragWindowResizer(window_.get(), gfx::Point(699, 0), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 101, 10), ui::EF_CONTROL_DOWN);
     resizer->CompleteDrag();
@@ -250,8 +250,8 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
     // Grab the top-left edge of the window and move the pointer to (150, 10)
     // in the secondary root window's coordinates. Make sure the window is
     // shrink in such a way that it keeps the cursor within.
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window_.get(), gfx::Point(0, 0), HTCAPTION));
+    std::unique_ptr<WindowResizer> resizer(
+        CreateDragWindowResizer(window_.get(), gfx::Point(0, 0), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 799, 10), ui::EF_CONTROL_DOWN);
     resizer->Drag(CalculateDragPoint(*resizer, 850, 10), ui::EF_CONTROL_DOWN);
@@ -281,7 +281,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplaysActiveRoot) {
   ASSERT_EQ(2U, root_windows.size());
 
   aura::test::TestWindowDelegate delegate;
-  scoped_ptr<aura::Window> window(new aura::Window(&delegate));
+  std::unique_ptr<aura::Window> window(new aura::Window(&delegate));
   window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
   ParentWindowInPrimaryRootWindow(window.get());
@@ -294,8 +294,8 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplaysActiveRoot) {
   EXPECT_EQ(root_windows[0], ash::Shell::GetTargetRootWindow());
   {
     // Grab (0, 0) of the window.
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window.get(), gfx::Point(), HTCAPTION));
+    std::unique_ptr<WindowResizer> resizer(
+        CreateDragWindowResizer(window.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     // Drag the pointer to the right. Once it reaches the right edge of the
     // primary display, it warps to the secondary.
@@ -323,8 +323,8 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplaysRightToLeft) {
   EXPECT_EQ(root_windows[1], window_->GetRootWindow());
   {
     // Grab (0, 0) of the window.
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window_.get(), gfx::Point(), HTCAPTION));
+    std::unique_ptr<WindowResizer> resizer(
+        CreateDragWindowResizer(window_.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     // Move the mouse near the right edge, (798, 0), of the primary display.
     resizer->Drag(CalculateDragPoint(*resizer, -2, 0), ui::EF_CONTROL_DOWN);
@@ -351,7 +351,7 @@ TEST_F(DragWindowResizerTest, DragWindowController) {
   {
     // Hold the center of the window so that the window doesn't stick to the
     // edge when dragging around the edge of the display.
-    scoped_ptr<WindowResizer> resizer(
+    std::unique_ptr<WindowResizer> resizer(
         CreateDragWindowResizer(window_.get(), gfx::Point(25, 30), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     DragWindowResizer* drag_resizer = DragWindowResizer::instance_;
@@ -401,8 +401,8 @@ TEST_F(DragWindowResizerTest, DragWindowController) {
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
   {
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window_.get(), gfx::Point(), HTCAPTION));
+    std::unique_ptr<WindowResizer> resizer(
+        CreateDragWindowResizer(window_.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     DragWindowResizer* drag_resizer = DragWindowResizer::instance_;
     DragWindowController* controller =
@@ -450,7 +450,7 @@ TEST_F(DragWindowResizerTest, DragWindowControllerAcrossThreeDisplays) {
 
   // Hold the center of the window so that the window doesn't stick to the edge
   // when dragging around the edge of the display.
-  scoped_ptr<WindowResizer> resizer(
+  std::unique_ptr<WindowResizer> resizer(
       CreateDragWindowResizer(window_.get(), gfx::Point(50, 50), HTCAPTION));
   ASSERT_TRUE(resizer.get());
   DragWindowResizer* drag_resizer = DragWindowResizer::instance_;
@@ -529,8 +529,8 @@ TEST_F(DragWindowResizerTest, WarpMousePointer) {
 
   EXPECT_TRUE(event_filter->mouse_warp_enabled_);
   {
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window_.get(), gfx::Point(), HTCAPTION));
+    std::unique_ptr<WindowResizer> resizer(
+        CreateDragWindowResizer(window_.get(), gfx::Point(), HTCAPTION));
     // While dragging a window, warp should be allowed.
     EXPECT_TRUE(event_filter->mouse_warp_enabled_);
     resizer->CompleteDrag();
@@ -538,16 +538,16 @@ TEST_F(DragWindowResizerTest, WarpMousePointer) {
   EXPECT_TRUE(event_filter->mouse_warp_enabled_);
 
   {
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window_.get(), gfx::Point(), HTCAPTION));
+    std::unique_ptr<WindowResizer> resizer(
+        CreateDragWindowResizer(window_.get(), gfx::Point(), HTCAPTION));
     EXPECT_TRUE(event_filter->mouse_warp_enabled_);
     resizer->RevertDrag();
   }
   EXPECT_TRUE(event_filter->mouse_warp_enabled_);
 
   {
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window_.get(), gfx::Point(), HTRIGHT));
+    std::unique_ptr<WindowResizer> resizer(
+        CreateDragWindowResizer(window_.get(), gfx::Point(), HTRIGHT));
     // While resizing a window, warp should NOT be allowed.
     EXPECT_FALSE(event_filter->mouse_warp_enabled_);
     resizer->CompleteDrag();
@@ -555,8 +555,8 @@ TEST_F(DragWindowResizerTest, WarpMousePointer) {
   EXPECT_TRUE(event_filter->mouse_warp_enabled_);
 
   {
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window_.get(), gfx::Point(), HTRIGHT));
+    std::unique_ptr<WindowResizer> resizer(
+        CreateDragWindowResizer(window_.get(), gfx::Point(), HTRIGHT));
     EXPECT_FALSE(event_filter->mouse_warp_enabled_);
     resizer->RevertDrag();
   }
@@ -584,8 +584,8 @@ TEST_F(DragWindowResizerTest, CursorDeviceScaleFactor) {
                                gfx::Screen::GetScreen()->GetPrimaryDisplay());
     EXPECT_EQ(root_windows[0], window_->GetRootWindow());
     // Grab (0, 0) of the window.
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window_.get(), gfx::Point(), HTCAPTION));
+    std::unique_ptr<WindowResizer> resizer(
+        CreateDragWindowResizer(window_.get(), gfx::Point(), HTCAPTION));
     EXPECT_EQ(1.0f, cursor_test_api.GetCurrentCursor().device_scale_factor());
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
@@ -608,8 +608,8 @@ TEST_F(DragWindowResizerTest, CursorDeviceScaleFactor) {
         gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
     EXPECT_EQ(root_windows[1], window_->GetRootWindow());
     // Grab (0, 0) of the window.
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window_.get(), gfx::Point(), HTCAPTION));
+    std::unique_ptr<WindowResizer> resizer(
+        CreateDragWindowResizer(window_.get(), gfx::Point(), HTCAPTION));
     EXPECT_EQ(2.0f, cursor_test_api.GetCurrentCursor().device_scale_factor());
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, -200, 200), 0);
@@ -638,8 +638,8 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
                               gfx::Screen::GetScreen()->GetPrimaryDisplay());
     // Grab (0, 0) of the window.
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window, gfx::Point(), HTCAPTION));
+    std::unique_ptr<WindowResizer> resizer(
+        CreateDragWindowResizer(window, gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(399, 200)));
@@ -654,8 +654,8 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
                               gfx::Screen::GetScreen()->GetPrimaryDisplay());
     // Grab (0, 0) of the window.
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window, gfx::Point(), HTCAPTION));
+    std::unique_ptr<WindowResizer> resizer(
+        CreateDragWindowResizer(window, gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(399, 200)));
@@ -671,8 +671,8 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
                               gfx::Screen::GetScreen()->GetPrimaryDisplay());
     aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(0, 0));
     // Grab (0, 0) of the window.
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window, gfx::Point(), HTCAPTION));
+    std::unique_ptr<WindowResizer> resizer(
+        CreateDragWindowResizer(window, gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(399, 200)));
@@ -687,8 +687,8 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
                               gfx::Screen::GetScreen()->GetPrimaryDisplay());
     // Grab (0, 0) of the window.
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window, gfx::Point(), HTCAPTION));
+    std::unique_ptr<WindowResizer> resizer(
+        CreateDragWindowResizer(window, gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(399, 200)));
@@ -703,8 +703,8 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
                               gfx::Screen::GetScreen()->GetPrimaryDisplay());
     // Grab (0, 0) of the window.
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window, gfx::Point(), HTCAPTION));
+    std::unique_ptr<WindowResizer> resizer(
+        CreateDragWindowResizer(window, gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(399, 200)));
@@ -719,8 +719,8 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
                               gfx::Screen::GetScreen()->GetPrimaryDisplay());
     // Grab (0, 0) of the window.
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window, gfx::Point(), HTCAPTION));
+    std::unique_ptr<WindowResizer> resizer(
+        CreateDragWindowResizer(window, gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(399, 200)));

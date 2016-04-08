@@ -112,8 +112,9 @@ void LockWindowState::DetachState(wm::WindowState* window_state) {
 
 // static
 wm::WindowState* LockWindowState::SetLockWindowState(aura::Window* window) {
-  scoped_ptr<wm::WindowState::State> lock_state(new LockWindowState(window));
-  scoped_ptr<wm::WindowState::State> old_state(
+  std::unique_ptr<wm::WindowState::State> lock_state(
+      new LockWindowState(window));
+  std::unique_ptr<wm::WindowState::State> old_state(
       wm::GetWindowState(window)->SetStateObject(std::move(lock_state)));
   return wm::GetWindowState(window);
 }

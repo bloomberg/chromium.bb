@@ -101,8 +101,8 @@ struct TouchPointLog {
 
   // Populates a dictionary value with all the information about the touch
   // point.
-  scoped_ptr<base::DictionaryValue> GetAsDictionary() const {
-    scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> GetAsDictionary() const {
+    std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
 
     value->SetInteger("id", id);
     value->SetString("type", std::string(GetTouchEventLabel(type)));
@@ -153,8 +153,8 @@ class TouchTrace {
   }
 
   // Returns a list containing data from all events for the touch point.
-  scoped_ptr<base::ListValue> GetAsList() const {
-    scoped_ptr<base::ListValue> list(new base::ListValue());
+  std::unique_ptr<base::ListValue> GetAsList() const {
+    std::unique_ptr<base::ListValue> list(new base::ListValue());
     for (const_iterator i = log_.begin(); i != log_.end(); ++i)
       list->Append((*i).GetAsDictionary().release());
     return list;
@@ -188,8 +188,8 @@ class TouchLog {
       traces_[i].Reset();
   }
 
-  scoped_ptr<base::ListValue> GetAsList() const {
-    scoped_ptr<base::ListValue> list(new base::ListValue());
+  std::unique_ptr<base::ListValue> GetAsList() const {
+    std::unique_ptr<base::ListValue> list(new base::ListValue());
     for (int i = 0; i < kMaxPaths; ++i) {
       if (!traces_[i].log().empty())
         list->Append(traces_[i].GetAsList().release());
@@ -357,15 +357,15 @@ TouchHudDebug::~TouchHudDebug() {
 }
 
 // static
-scoped_ptr<base::DictionaryValue> TouchHudDebug::GetAllAsDictionary() {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+std::unique_ptr<base::DictionaryValue> TouchHudDebug::GetAllAsDictionary() {
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   aura::Window::Windows roots = Shell::GetInstance()->GetAllRootWindows();
   for (aura::Window::Windows::iterator iter = roots.begin();
       iter != roots.end(); ++iter) {
     RootWindowController* controller = GetRootWindowController(*iter);
     TouchHudDebug* hud = controller->touch_hud_debug();
     if (hud) {
-      scoped_ptr<base::ListValue> list = hud->GetLogAsList();
+      std::unique_ptr<base::ListValue> list = hud->GetLogAsList();
       if (!list->empty())
         value->Set(base::Int64ToString(hud->display_id()), list.release());
     }
@@ -387,7 +387,7 @@ void TouchHudDebug::ChangeToNextMode() {
   }
 }
 
-scoped_ptr<base::ListValue> TouchHudDebug::GetLogAsList() const {
+std::unique_ptr<base::ListValue> TouchHudDebug::GetLogAsList() const {
   return touch_log_->GetAsList();
 }
 

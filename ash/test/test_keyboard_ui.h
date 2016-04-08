@@ -5,8 +5,9 @@
 #ifndef ASH_TEST_TEST_KEYBOARD_UI_H_
 #define ASH_TEST_TEST_KEYBOARD_UI_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/keyboard/keyboard_ui.h"
 
@@ -35,7 +36,7 @@ class TestKeyboardUI : public keyboard::KeyboardUI {
   void ResetInsets() override;
 
   aura::test::TestWindowDelegate delegate_;
-  scoped_ptr<aura::Window> keyboard_;
+  std::unique_ptr<aura::Window> keyboard_;
   DISALLOW_COPY_AND_ASSIGN(TestKeyboardUI);
 };
 

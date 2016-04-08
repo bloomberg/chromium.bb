@@ -534,7 +534,7 @@ void PanelLayoutManager::WillChangeVisibilityState(
   bool shelf_hidden = new_state == ash::SHELF_HIDDEN;
   if (!shelf_hidden) {
     if (restore_windows_on_shelf_visible_) {
-      scoped_ptr<aura::WindowTracker> restore_windows(
+      std::unique_ptr<aura::WindowTracker> restore_windows(
           std::move(restore_windows_on_shelf_visible_));
       for (aura::Window::Windows::const_iterator iter =
                restore_windows->windows().begin();
@@ -547,7 +547,8 @@ void PanelLayoutManager::WillChangeVisibilityState(
 
   if (restore_windows_on_shelf_visible_)
     return;
-  scoped_ptr<aura::WindowTracker> minimized_windows(new aura::WindowTracker);
+  std::unique_ptr<aura::WindowTracker> minimized_windows(
+      new aura::WindowTracker);
   for (PanelList::iterator iter = panel_windows_.begin();
        iter != panel_windows_.end();) {
     aura::Window* window = iter->window;

@@ -55,7 +55,8 @@ void TestShelfDelegate::AddShelfItem(aura::Window* window,
   ShelfItemDelegateManager* manager =
       Shell::GetInstance()->shelf_item_delegate_manager();
   // |manager| owns TestShelfItemDelegate.
-  scoped_ptr<ShelfItemDelegate> delegate(new TestShelfItemDelegate(window));
+  std::unique_ptr<ShelfItemDelegate> delegate(
+      new TestShelfItemDelegate(window));
   manager->SetShelfItemDelegate(id, std::move(delegate));
   SetShelfIDForWindow(id, window);
 }

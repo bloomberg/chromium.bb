@@ -4,8 +4,9 @@
 
 #include "ash/system/tray/tray_bar_button_with_title.h"
 
+#include <memory>
+
 #include "ash/system/tray/tray_constants.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -54,7 +55,7 @@ class TrayBarButtonWithTitle::TrayBarButton : public views::View {
  private:
   const int* bar_active_images_;
   const int* bar_disabled_images_;
-  scoped_ptr<views::HorizontalPainter> painter_;
+  std::unique_ptr<views::HorizontalPainter> painter_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBarButton);
 };

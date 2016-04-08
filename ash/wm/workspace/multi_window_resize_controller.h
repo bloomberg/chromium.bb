@@ -5,11 +5,11 @@
 #ifndef ASH_WM_WORKSPACE_MULTI_WINDOW_RESIZE_CONTROLLER_H_
 #define ASH_WM_WORKSPACE_MULTI_WINDOW_RESIZE_CONTROLLER_H_
 
+#include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
@@ -159,10 +159,10 @@ class ASH_EXPORT MultiWindowResizeController :
   // Timer used before showing.
   base::OneShotTimer show_timer_;
 
-  scoped_ptr<views::Widget> resize_widget_;
+  std::unique_ptr<views::Widget> resize_widget_;
 
   // If non-null we're in a resize loop.
-  scoped_ptr<WorkspaceWindowResizer> window_resizer_;
+  std::unique_ptr<WorkspaceWindowResizer> window_resizer_;
 
   // Mouse coordinate passed to Show() in container's coodinates.
   gfx::Point show_location_in_parent_;
@@ -173,7 +173,7 @@ class ASH_EXPORT MultiWindowResizeController :
   // Used to detect whether the mouse is over the windows. While
   // |resize_widget_| is non-NULL (ie the widget is showing) we ignore calls
   // to Show().
-  scoped_ptr<views::MouseWatcher> mouse_watcher_;
+  std::unique_ptr<views::MouseWatcher> mouse_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiWindowResizeController);
 };

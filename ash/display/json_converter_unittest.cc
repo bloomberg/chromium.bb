@@ -4,6 +4,8 @@
 
 #include "ash/display/json_converter.h"
 
+#include <memory>
+
 #include "base/json/json_reader.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,7 +51,7 @@ TEST(JsonConverterTest, JsonFromToDisplayLayout) {
       "}";
   int error_code = 0, error_line, error_column;
   std::string error_msg;
-  scoped_ptr<base::Value> read_value(base::JSONReader::ReadAndReturnError(
+  std::unique_ptr<base::Value> read_value(base::JSONReader::ReadAndReturnError(
       data, 0, &error_code, &error_msg, &error_line, &error_column));
   ASSERT_EQ(0, error_code) << error_msg << " at " << error_line << ":"
                            << error_column;
@@ -74,7 +76,7 @@ TEST(JsonConverterTest, OldJsonToDisplayLayout) {
       "}";
   int error_code = 0, error_line, error_column;
   std::string error_msg;
-  scoped_ptr<base::Value> read_value(base::JSONReader::ReadAndReturnError(
+  std::unique_ptr<base::Value> read_value(base::JSONReader::ReadAndReturnError(
       data, 0, &error_code, &error_msg, &error_line, &error_column));
   ASSERT_EQ(0, error_code) << error_msg << " at " << error_line << ":"
                            << error_column;

@@ -62,7 +62,7 @@ TEST_F(WindowStateTest, SnapWindowBasic) {
   const gfx::Rect kSecondaryDisplayWorkAreaBounds =
       ScreenUtil::GetSecondaryDisplay().work_area();
 
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
   WindowState* window_state = GetWindowState(window.get());
   const WMEvent snap_left(WM_EVENT_SNAP_LEFT);
@@ -108,7 +108,7 @@ TEST_F(WindowStateTest, SnapWindowMinimumSize) {
       gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area();
 
   aura::test::TestWindowDelegate delegate;
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
       &delegate, -1, gfx::Rect(0, 100, kWorkAreaBounds.width() - 1, 100)));
 
   // It should be possible to snap a window with a minimum size.
@@ -145,7 +145,7 @@ TEST_F(WindowStateTest, TestRespectMinimumSize) {
   const gfx::Size minimum_size(gfx::Size(500, 300));
   delegate.set_minimum_size(minimum_size);
 
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
       &delegate, -1, gfx::Rect(0, 100, 100, 100)));
 
   // Check that the window has the correct minimum size.
@@ -180,8 +180,8 @@ TEST_F(WindowStateTest, TestIgnoreTooBigMinimumSize) {
   delegate.set_minimum_size(minimum_size);
 
   // The creation should force the window to respect the screen size.
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
-      &delegate, -1, illegal_bounds));
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithDelegate(&delegate, -1, illegal_bounds));
   EXPECT_EQ(work_area_size.ToString(), window->bounds().size().ToString());
 
   // Trying to set the size to something bigger then the screen size should be
@@ -204,7 +204,7 @@ TEST_F(WindowStateTest, SnapWindowSetBounds) {
   const gfx::Rect kWorkAreaBounds =
       gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area();
 
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
   WindowState* window_state = GetWindowState(window.get());
   const WMEvent snap_left(WM_EVENT_SNAP_LEFT);
@@ -225,7 +225,7 @@ TEST_F(WindowStateTest, SnapWindowSetBounds) {
 
 // Test that snapping left/right preserves the restore bounds.
 TEST_F(WindowStateTest, RestoreBounds) {
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
   WindowState* window_state = GetWindowState(window.get());
 
@@ -266,7 +266,7 @@ TEST_F(WindowStateTest, RestoreBounds) {
 // Test that maximizing an auto managed window, then snapping it puts the window
 // at the snapped bounds and not at the auto-managed (centered) bounds.
 TEST_F(WindowStateTest, AutoManaged) {
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   WindowState* window_state = GetWindowState(window.get());
   window_state->set_window_position_managed(true);
   window->Hide();
@@ -293,23 +293,22 @@ TEST_F(WindowStateTest, AutoManaged) {
 
 // Test that the replacement of a State object works as expected.
 TEST_F(WindowStateTest, SimpleStateSwap) {
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   WindowState* window_state = GetWindowState(window.get());
   EXPECT_FALSE(window_state->IsMaximized());
-  window_state->SetStateObject(
-      scoped_ptr<WindowState::State> (new AlwaysMaximizeTestState(
-          window_state->GetStateType())));
+  window_state->SetStateObject(std::unique_ptr<WindowState::State>(
+      new AlwaysMaximizeTestState(window_state->GetStateType())));
   EXPECT_TRUE(window_state->IsMaximized());
 }
 
 // Test that the replacement of a state object, following a restore with the
 // original one restores the window to its original state.
 TEST_F(WindowStateTest, StateSwapRestore) {
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   WindowState* window_state = GetWindowState(window.get());
   EXPECT_FALSE(window_state->IsMaximized());
-  scoped_ptr<WindowState::State> old(
-      window_state->SetStateObject(scoped_ptr<WindowState::State>(
+  std::unique_ptr<WindowState::State> old(
+      window_state->SetStateObject(std::unique_ptr<WindowState::State>(
           new AlwaysMaximizeTestState(window_state->GetStateType()))));
   EXPECT_TRUE(window_state->IsMaximized());
   window_state->SetStateObject(std::move(old));
@@ -319,7 +318,7 @@ TEST_F(WindowStateTest, StateSwapRestore) {
 // Tests that a window that had same bounds as the work area shrinks after the
 // window is maximized and then restored.
 TEST_F(WindowStateTest, RestoredWindowBoundsShrink) {
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   WindowState* window_state = GetWindowState(window.get());
   EXPECT_FALSE(window_state->IsMaximized());
   gfx::Rect work_area =
@@ -340,8 +339,8 @@ TEST_F(WindowStateTest, DoNotResizeMaximizedWindowInFullscreen) {
   if (!SupportsHostWindowResize())
     return;
 
-  scoped_ptr<aura::Window> maximized(CreateTestWindowInShellWithId(0));
-  scoped_ptr<aura::Window> fullscreen(CreateTestWindowInShellWithId(1));
+  std::unique_ptr<aura::Window> maximized(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> fullscreen(CreateTestWindowInShellWithId(1));
   WindowState* maximized_state = GetWindowState(maximized.get());
   maximized_state->Maximize();
   ASSERT_TRUE(maximized_state->IsMaximized());

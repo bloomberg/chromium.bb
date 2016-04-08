@@ -22,7 +22,7 @@ namespace ash {
 
 namespace {
 
-scoped_ptr<DisplayColorManager::ColorCalibrationData> ParseDisplayProfile(
+std::unique_ptr<DisplayColorManager::ColorCalibrationData> ParseDisplayProfile(
     const base::FilePath& path,
     bool has_color_correction_matrix) {
   VLOG(1) << "Trying ICC file " << path.value()
@@ -44,7 +44,7 @@ scoped_ptr<DisplayColorManager::ColorCalibrationData> ParseDisplayProfile(
     return nullptr;
   }
 
-  scoped_ptr<DisplayColorManager::ColorCalibrationData> data(
+  std::unique_ptr<DisplayColorManager::ColorCalibrationData> data(
       new DisplayColorManager::ColorCalibrationData());
   if (vcgt_channel_length) {
     VLOG_IF(1, has_color_correction_matrix)
@@ -236,7 +236,7 @@ void DisplayColorManager::FinishLoadCalibrationForDisplay(
 void DisplayColorManager::UpdateCalibrationData(
     int64_t display_id,
     int64_t product_id,
-    scoped_ptr<ColorCalibrationData> data) {
+    std::unique_ptr<ColorCalibrationData> data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (data) {
     // The map takes over ownership of the underlying memory.

@@ -4,7 +4,8 @@
 
 #include "ash/system/chromeos/power/power_status.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/message_loop/message_loop.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,7 +55,7 @@ class PowerStatusTest : public testing::Test {
  protected:
   base::MessageLoopForUI message_loop_;
   PowerStatus* power_status_;  // Not owned.
-  scoped_ptr<TestObserver> test_observer_;
+  std::unique_ptr<TestObserver> test_observer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PowerStatusTest);

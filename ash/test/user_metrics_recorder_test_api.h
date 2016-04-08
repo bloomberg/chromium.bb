@@ -7,7 +7,6 @@
 
 #include "ash/metrics/user_metrics_recorder.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace ash {
 namespace test {

@@ -42,7 +42,7 @@
 namespace ash {
 
 TrayAudio::TrayAudio(SystemTray* system_tray,
-                     scoped_ptr<system::TrayAudioDelegate> audio_delegate)
+                     std::unique_ptr<system::TrayAudioDelegate> audio_delegate)
     : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_VOLUME_MUTE),
       audio_delegate_(std::move(audio_delegate)),
       volume_view_(NULL),

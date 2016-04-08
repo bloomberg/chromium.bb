@@ -126,7 +126,7 @@ class TouchPointView : public views::View,
   SkColor gradient_colors_[2];
   SkScalar gradient_pos_[2];
 
-  scoped_ptr<gfx::Animation> fadeout_;
+  std::unique_ptr<gfx::Animation> fadeout_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchPointView);
 };

@@ -5,6 +5,7 @@
 #ifndef ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_H_
 #define ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_H_
 
+#include <memory>
 #include <set>
 
 #include "ash/ash_export.h"
@@ -13,7 +14,6 @@
 #include "ash/wm/wm_types.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
@@ -56,7 +56,7 @@ class ASH_EXPORT WorkspaceLayoutManager
   // window. With the call the ownership of the delegate will be transferred to
   // the WorkspaceLayoutManager.
   void SetMaximizeBackdropDelegate(
-      scoped_ptr<WorkspaceLayoutManagerDelegate> delegate);
+      std::unique_ptr<WorkspaceLayoutManagerDelegate> delegate);
 
   // Overridden from aura::LayoutManager:
   void OnWindowResized() override {}
@@ -144,7 +144,7 @@ class ASH_EXPORT WorkspaceLayoutManager
 
   // A window which covers the full container and which gets inserted behind the
   // topmost visible window.
-  scoped_ptr<WorkspaceLayoutManagerDelegate> backdrop_delegate_;
+  std::unique_ptr<WorkspaceLayoutManagerDelegate> backdrop_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManager);
 };

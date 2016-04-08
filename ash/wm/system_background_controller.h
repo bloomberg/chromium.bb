@@ -5,11 +5,11 @@
 #ifndef ASH_WM_SYSTEM_BACKGROUND_CONTROLLER_H_
 #define ASH_WM_SYSTEM_BACKGROUND_CONTROLLER_H_
 
+#include <memory>
 #include <string>
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window_observer.h"
 
@@ -42,7 +42,7 @@ class SystemBackgroundController : public aura::WindowObserver {
 
   aura::Window* root_window_;  // not owned
 
-  scoped_ptr<ui::Layer> layer_;
+  std::unique_ptr<ui::Layer> layer_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemBackgroundController);
 };

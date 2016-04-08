@@ -91,8 +91,8 @@ class ShelfModelTest : public testing::Test {
     model_.reset();
   }
 
-  scoped_ptr<ShelfModel> model_;
-  scoped_ptr<TestShelfModelObserver> observer_;
+  std::unique_ptr<ShelfModel> model_;
+  std::unique_ptr<TestShelfModelObserver> observer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfModelTest);

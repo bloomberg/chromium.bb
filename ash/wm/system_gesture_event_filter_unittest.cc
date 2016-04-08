@@ -171,13 +171,13 @@ TEST_F(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
 
   aura::test::TestWindowDelegate delegate;
-  scoped_ptr<aura::Window> window0(
+  std::unique_ptr<aura::Window> window0(
       aura::test::CreateTestWindowWithDelegate(
           &delegate, 9, gfx::Rect(0, 0, 100, 100), root_window));
-  scoped_ptr<aura::Window> window1(
+  std::unique_ptr<aura::Window> window1(
       aura::test::CreateTestWindowWithDelegate(
           &delegate, 10, gfx::Rect(0, 0, 100, 50), window0.get()));
-  scoped_ptr<aura::Window> window2(
+  std::unique_ptr<aura::Window> window2(
       aura::test::CreateTestWindowWithDelegate(
           &delegate, 11, gfx::Rect(0, 50, 100, 50), window0.get()));
 
@@ -522,12 +522,12 @@ TEST_F(SystemGestureEventFilterTest, DragRightNearEdgeSnaps) {
 // contents are often (but not always) of type WINDOW_TYPE_CONTROL.
 TEST_F(SystemGestureEventFilterTest,
        ControlWindowGetsMultiFingerGestureEvents) {
-  scoped_ptr<aura::Window> parent(
+  std::unique_ptr<aura::Window> parent(
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100)));
 
   aura::test::EventCountDelegate delegate;
   delegate.set_window_component(HTCLIENT);
-  scoped_ptr<aura::Window> child(new aura::Window(&delegate));
+  std::unique_ptr<aura::Window> child(new aura::Window(&delegate));
   child->SetType(ui::wm::WINDOW_TYPE_CONTROL);
   child->Init(ui::LAYER_TEXTURED);
   parent->AddChild(child.get());

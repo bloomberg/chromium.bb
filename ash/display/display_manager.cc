@@ -23,6 +23,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -242,7 +243,7 @@ display::DisplayIdList DisplayManager::GetCurrentDisplayIdList() const {
 }
 
 void DisplayManager::SetLayoutForCurrentDisplays(
-    scoped_ptr<display::DisplayLayout> layout) {
+    std::unique_ptr<display::DisplayLayout> layout) {
   if (GetNumDisplays() == 1)
     return;
   const display::DisplayIdList list = GetCurrentDisplayIdList();
@@ -1048,15 +1049,15 @@ void DisplayManager::CreateMirrorWindowAsyncIfAny() {
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-scoped_ptr<MouseWarpController> DisplayManager::CreateMouseWarpController(
+std::unique_ptr<MouseWarpController> DisplayManager::CreateMouseWarpController(
     aura::Window* drag_source) const {
   if (IsInUnifiedMode() && num_connected_displays() >= 2)
-    return make_scoped_ptr(new UnifiedMouseWarpController());
+    return base::WrapUnique(new UnifiedMouseWarpController());
   // Extra check for |num_connected_displays()| is for SystemDisplayApiTest
   // that injects MockScreen.
   if (GetNumDisplays() < 2 || num_connected_displays() < 2)
-    return make_scoped_ptr(new NullMouseWarpController());
-  return make_scoped_ptr(new ExtendedMouseWarpController(drag_source));
+    return base::WrapUnique(new NullMouseWarpController());
+  return base::WrapUnique(new ExtendedMouseWarpController(drag_source));
 }
 
 void DisplayManager::CreateScreenForShutdown() const {

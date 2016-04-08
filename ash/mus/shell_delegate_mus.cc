@@ -70,7 +70,7 @@ class SessionStateDelegateStub : public SessionStateDelegate {
   bool screen_locked_;
 
   // A pseudo user info.
-  scoped_ptr<user_manager::UserInfo> user_info_;
+  std::unique_ptr<user_manager::UserInfo> user_info_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStateDelegateStub);
 };

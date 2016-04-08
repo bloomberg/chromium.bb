@@ -5,6 +5,7 @@
 #include "ash/system/chromeos/session/tray_session_length_limit.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "ash/shell.h"
@@ -148,7 +149,7 @@ void TraySessionLengthLimit::UpdateNotification() {
   message_center::RichNotificationData data;
   data.should_make_spoken_feedback_for_popup_updates =
       (limit_state_ != last_limit_state_);
-  scoped_ptr<message_center::Notification> notification(
+  std::unique_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
           base::string16() /* title */,

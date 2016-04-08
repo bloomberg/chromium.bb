@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_TRAY_SYSTEM_TRAY_DELEGATE_H_
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_DELEGATE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,7 +15,6 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/i18n/time_formatting.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -295,7 +295,7 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Sets the VolumeControlDelegate.
   virtual void SetVolumeControlDelegate(
-      scoped_ptr<VolumeControlDelegate> delegate);
+      std::unique_ptr<VolumeControlDelegate> delegate);
 
   // Retrieves the session start time. Returns |false| if the time is not set.
   virtual bool GetSessionStartTime(base::TimeTicks* session_start_time);

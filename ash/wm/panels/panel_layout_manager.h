@@ -6,6 +6,7 @@
 #define ASH_WM_PANELS_PANEL_LAYOUT_MANAGER_H_
 
 #include <list>
+#include <memory>
 
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -15,7 +16,6 @@
 #include "ash/wm/window_state_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_observer.h"
@@ -187,7 +187,7 @@ class ASH_EXPORT PanelLayoutManager
   // When not NULL, the shelf is hidden (i.e. full screen) and this tracks the
   // set of panel windows which have been temporarily hidden and need to be
   // restored when the shelf becomes visible again.
-  scoped_ptr<aura::WindowTracker> restore_windows_on_shelf_visible_;
+  std::unique_ptr<aura::WindowTracker> restore_windows_on_shelf_visible_;
 
   // The last active panel. Used to maintain stacking order even if no panels
   // are currently focused.

@@ -36,9 +36,9 @@ class MruWindowTrackerTest : public test::AshTestBase {
 
 // Basic test that the activation order is tracked.
 TEST_F(MruWindowTrackerTest, Basic) {
-  scoped_ptr<aura::Window> w1(CreateWindow());
-  scoped_ptr<aura::Window> w2(CreateWindow());
-  scoped_ptr<aura::Window> w3(CreateWindow());
+  std::unique_ptr<aura::Window> w1(CreateWindow());
+  std::unique_ptr<aura::Window> w2(CreateWindow());
+  std::unique_ptr<aura::Window> w3(CreateWindow());
   wm::ActivateWindow(w3.get());
   wm::ActivateWindow(w2.get());
   wm::ActivateWindow(w1.get());
@@ -53,12 +53,12 @@ TEST_F(MruWindowTrackerTest, Basic) {
 // Test that minimized windows are considered least recently used (but kept in
 // correct relative order).
 TEST_F(MruWindowTrackerTest, MinimizedWindowsAreLru) {
-  scoped_ptr<aura::Window> w1(CreateWindow());
-  scoped_ptr<aura::Window> w2(CreateWindow());
-  scoped_ptr<aura::Window> w3(CreateWindow());
-  scoped_ptr<aura::Window> w4(CreateWindow());
-  scoped_ptr<aura::Window> w5(CreateWindow());
-  scoped_ptr<aura::Window> w6(CreateWindow());
+  std::unique_ptr<aura::Window> w1(CreateWindow());
+  std::unique_ptr<aura::Window> w2(CreateWindow());
+  std::unique_ptr<aura::Window> w3(CreateWindow());
+  std::unique_ptr<aura::Window> w4(CreateWindow());
+  std::unique_ptr<aura::Window> w5(CreateWindow());
+  std::unique_ptr<aura::Window> w6(CreateWindow());
   wm::ActivateWindow(w6.get());
   wm::ActivateWindow(w5.get());
   wm::ActivateWindow(w4.get());
@@ -84,7 +84,7 @@ TEST_F(MruWindowTrackerTest, MinimizedWindowsAreLru) {
 
 // Tests that windows being dragged are only in the WindowList once.
 TEST_F(MruWindowTrackerTest, DraggedWindowsInListOnlyOnce) {
-  scoped_ptr<aura::Window> w1(CreateWindow());
+  std::unique_ptr<aura::Window> w1(CreateWindow());
   wm::ActivateWindow(w1.get());
 
   // Start dragging the window.

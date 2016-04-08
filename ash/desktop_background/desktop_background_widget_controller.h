@@ -5,9 +5,10 @@
 #ifndef ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_WIDGET_CONTROLLER_H_
 #define ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_WIDGET_CONTROLLER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/widget/widget.h"
@@ -84,7 +85,7 @@ class ASH_EXPORT AnimatingDesktopController {
   DesktopBackgroundWidgetController* GetController(bool pass_ownership);
 
  private:
-  scoped_ptr<DesktopBackgroundWidgetController> controller_;
+  std::unique_ptr<DesktopBackgroundWidgetController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AnimatingDesktopController);
 };

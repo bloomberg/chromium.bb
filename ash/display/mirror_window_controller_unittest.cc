@@ -80,11 +80,8 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorBasic) {
   display_manager->SetMultiDisplayMode(DisplayManager::MIRRORING);
   UpdateDisplay("400x400,400x400");
   aura::Window* root = Shell::GetInstance()->GetPrimaryRootWindow();
-  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
-      &test_window_delegate,
-      0,
-      gfx::Rect(50, 50, 100, 100),
-      root));
+  std::unique_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
+      &test_window_delegate, 0, gfx::Rect(50, 50, 100, 100), root));
   window->Show();
   window->SetName("foo");
 
@@ -130,11 +127,8 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorRotate) {
   display_manager->SetMultiDisplayMode(DisplayManager::MIRRORING);
   UpdateDisplay("400x400,400x400");
   aura::Window* root = Shell::GetInstance()->GetPrimaryRootWindow();
-  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
-      &test_window_delegate,
-      0,
-      gfx::Rect(50, 50, 100, 100),
-      root));
+  std::unique_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
+      &test_window_delegate, 0, gfx::Rect(50, 50, 100, 100), root));
   window->Show();
   window->SetName("foo");
 

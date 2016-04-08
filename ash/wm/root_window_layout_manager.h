@@ -8,7 +8,6 @@
 #include "ash/shell_window_ids.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/layout_manager.h"
 
 namespace aura {

@@ -5,8 +5,9 @@
 #ifndef ASH_MUS_STUB_CONTEXT_FACTORY_H_
 #define ASH_MUS_STUB_CONTEXT_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/compositor/compositor.h"
 
 namespace cc {
@@ -24,7 +25,7 @@ class StubContextFactory : public ui::ContextFactory {
  private:
   // ui::ContextFactory implementation.
   void CreateOutputSurface(base::WeakPtr<ui::Compositor> compositor) override;
-  scoped_ptr<ui::Reflector> CreateReflector(
+  std::unique_ptr<ui::Reflector> CreateReflector(
       ui::Compositor* mirrored_compositor,
       ui::Layer* mirroring_layer) override;
   void RemoveReflector(ui::Reflector* reflector) override;
@@ -36,12 +37,12 @@ class StubContextFactory : public ui::ContextFactory {
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
-  scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() override;
+  std::unique_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() override;
   void ResizeDisplay(ui::Compositor* compositor,
                      const gfx::Size& size) override;
 
   uint32_t next_surface_id_namespace_;
-  scoped_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;
+  std::unique_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(StubContextFactory);
 };

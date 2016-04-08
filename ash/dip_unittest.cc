@@ -14,7 +14,6 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"

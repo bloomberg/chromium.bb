@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -148,9 +149,9 @@ class AshTestBase : public testing::Test {
   bool teardown_called_;
   // |SetUp()| doesn't activate session if this is set to false.
   bool start_session_;
-  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
-  scoped_ptr<AshTestHelper> ash_test_helper_;
-  scoped_ptr<ui::test::EventGenerator> event_generator_;
+  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<AshTestHelper> ash_test_helper_;
+  std::unique_ptr<ui::test::EventGenerator> event_generator_;
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;
 #endif

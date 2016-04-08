@@ -10,7 +10,6 @@
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget_observer.h"
 

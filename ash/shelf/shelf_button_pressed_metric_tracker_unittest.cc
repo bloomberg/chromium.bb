@@ -118,7 +118,8 @@ void ShelfButtonPressedMetricTrackerTest::SetUp() {
 
   ShelfButtonPressedMetricTrackerTestAPI test_api(metric_tracker_);
 
-  scoped_ptr<base::TickClock> test_tick_clock(new base::SimpleTestTickClock());
+  std::unique_ptr<base::TickClock> test_tick_clock(
+      new base::SimpleTestTickClock());
   tick_clock_ = static_cast<base::SimpleTestTickClock*>(test_tick_clock.get());
   test_api.SetTickClock(std::move(test_tick_clock));
 

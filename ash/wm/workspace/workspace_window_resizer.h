@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/workspace/magnetism_matcher.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/window_tracker.h"
 
@@ -186,11 +186,11 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   // Gives a previews of where the the window will end up. Only used if there
   // is a grid and the caption is being dragged.
-  scoped_ptr<PhantomWindowController> snap_phantom_window_controller_;
+  std::unique_ptr<PhantomWindowController> snap_phantom_window_controller_;
 
   // Used to determine whether the window should be snapped or docked when
   // the user drags a window to the edge of the screen.
-  scoped_ptr<TwoStepEdgeCycler> edge_cycler_;
+  std::unique_ptr<TwoStepEdgeCycler> edge_cycler_;
 
   // The edge to which the window should be snapped to at the end of the drag.
   SnapType snap_type_;

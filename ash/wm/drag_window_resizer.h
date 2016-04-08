@@ -5,11 +5,12 @@
 #ifndef ASH_WM_DRAG_WINDOW_RESIZER_H_
 #define ASH_WM_DRAG_WINDOW_RESIZER_H_
 
+#include <memory>
+
 #include "ash/wm/window_resizer.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -51,10 +52,10 @@ class ASH_EXPORT DragWindowResizer : public WindowResizer {
   // Returns true if we should allow the mouse pointer to warp.
   bool ShouldAllowMouseWarp();
 
-  scoped_ptr<WindowResizer> next_window_resizer_;
+  std::unique_ptr<WindowResizer> next_window_resizer_;
 
   // Shows a semi-transparent image of the window being dragged.
-  scoped_ptr<DragWindowController> drag_window_controller_;
+  std::unique_ptr<DragWindowController> drag_window_controller_;
 
   gfx::Point last_mouse_location_;
 

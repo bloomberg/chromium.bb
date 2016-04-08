@@ -4,6 +4,8 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 
+#include <memory>
+
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/window.h"
@@ -20,9 +22,9 @@ namespace accelerators {
 typedef test::AshTestBase AcceleratorCommandsTest;
 
 TEST_F(AcceleratorCommandsTest, ToggleMinimized) {
-  scoped_ptr<aura::Window> window1(
+  std::unique_ptr<aura::Window> window1(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  scoped_ptr<aura::Window> window2(
+  std::unique_ptr<aura::Window> window2(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   wm::WindowState* window_state1 = wm::GetWindowState(window1.get());
   wm::WindowState* window_state2 = wm::GetWindowState(window2.get());

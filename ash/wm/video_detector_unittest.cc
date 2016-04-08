@@ -4,12 +4,13 @@
 
 #include "ash/wm/video_detector.h"
 
+#include <memory>
+
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/aura_constants.h"
@@ -90,7 +91,7 @@ class VideoDetectorTest : public AshTestBase {
 
   VideoDetector* detector_;  // not owned
 
-  scoped_ptr<TestVideoDetectorObserver> observer_;
+  std::unique_ptr<TestVideoDetectorObserver> observer_;
 
   base::TimeTicks now_;
 
@@ -100,7 +101,7 @@ class VideoDetectorTest : public AshTestBase {
 
 TEST_F(VideoDetectorTest, Basic) {
   gfx::Rect window_bounds(gfx::Point(), gfx::Size(1024, 768));
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateTestWindowInShell(SK_ColorRED, 12345, window_bounds));
 
   // Send enough updates, but make them be too small to trigger detection.
@@ -169,7 +170,7 @@ TEST_F(VideoDetectorTest, Basic) {
 
 TEST_F(VideoDetectorTest, Shutdown) {
   gfx::Rect window_bounds(gfx::Point(), gfx::Size(1024, 768));
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateTestWindowInShell(SK_ColorRED, 12345, window_bounds));
   gfx::Rect update_region(
       gfx::Point(),
@@ -185,7 +186,7 @@ TEST_F(VideoDetectorTest, Shutdown) {
 
 TEST_F(VideoDetectorTest, WindowNotVisible) {
   gfx::Rect window_bounds(gfx::Point(), gfx::Size(1024, 768));
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateTestWindowInShell(SK_ColorRED, 12345, window_bounds));
 
   // Reparent the window to the root to make sure that visibility changes aren't
@@ -228,9 +229,9 @@ TEST_F(VideoDetectorTest, WindowNotVisible) {
 TEST_F(VideoDetectorTest, MultipleWindows) {
   // Create two windows.
   gfx::Rect window_bounds(gfx::Point(), gfx::Size(1024, 768));
-  scoped_ptr<aura::Window> window1(
+  std::unique_ptr<aura::Window> window1(
       CreateTestWindowInShell(SK_ColorRED, 12345, window_bounds));
-  scoped_ptr<aura::Window> window2(
+  std::unique_ptr<aura::Window> window2(
       CreateTestWindowInShell(SK_ColorBLUE, 23456, window_bounds));
 
   // Even if there's video playing in both, the observer should only receive a
@@ -251,7 +252,7 @@ TEST_F(VideoDetectorTest, MultipleWindows) {
 // Test that the observer receives repeated notifications.
 TEST_F(VideoDetectorTest, RepeatedNotifications) {
   gfx::Rect window_bounds(gfx::Point(), gfx::Size(1024, 768));
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateTestWindowInShell(SK_ColorRED, 12345, window_bounds));
 
   gfx::Rect update_region(
@@ -282,7 +283,7 @@ TEST_F(VideoDetectorTest, FullscreenWindow) {
   UpdateDisplay("1024x768,1024x768");
 
   const gfx::Rect kLeftBounds(gfx::Point(), gfx::Size(1024, 768));
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateTestWindowInShell(SK_ColorRED, 12345, kLeftBounds));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   const wm::WMEvent toggle_fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
@@ -304,7 +305,7 @@ TEST_F(VideoDetectorTest, FullscreenWindow) {
   window_state->OnWMEvent(&toggle_fullscreen_event);
   ASSERT_FALSE(window_state->IsFullscreen());
   const gfx::Rect kRightBounds(gfx::Point(1024, 0), gfx::Size(1024, 768));
-  scoped_ptr<aura::Window> other_window(
+  std::unique_ptr<aura::Window> other_window(
       CreateTestWindowInShell(SK_ColorBLUE, 6789, kRightBounds));
   wm::WindowState* other_window_state = wm::GetWindowState(other_window.get());
   other_window_state->OnWMEvent(&toggle_fullscreen_event);

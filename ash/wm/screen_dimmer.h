@@ -9,7 +9,6 @@
 #include "ash/shell_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_observer.h"
 
 namespace ui {

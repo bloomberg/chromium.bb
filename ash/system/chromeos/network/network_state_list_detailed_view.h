@@ -5,13 +5,13 @@
 #ifndef ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_LIST_DETAILED_VIEW_H_
 #define ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_LIST_DETAILED_VIEW_H_
 
+#include <memory>
 #include <string>
 
 #include "ash/system/chromeos/network/network_detailed_view.h"
 #include "ash/system/tray/view_click_listener.h"
 #include "ash/system/user/login_status.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/chromeos/network/network_list_delegate.h"
 #include "ui/gfx/image/image.h"
@@ -140,7 +140,7 @@ class NetworkStateListDetailedView
 
   gfx::Image controlled_by_extension_icon_;
 
-  scoped_ptr<ui::NetworkListViewBase> network_list_view_;
+  std::unique_ptr<ui::NetworkListViewBase> network_list_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateListDetailedView);
 };

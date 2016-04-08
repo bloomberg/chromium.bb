@@ -57,7 +57,7 @@ void LogoutConfirmationController::ConfirmLogout(
 }
 
 void LogoutConfirmationController::SetClockForTesting(
-    scoped_ptr<base::TickClock> clock) {
+    std::unique_ptr<base::TickClock> clock) {
   clock_ = std::move(clock);
 }
 

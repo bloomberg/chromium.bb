@@ -53,7 +53,7 @@ class AnimationObserverDeleteLayer : public ui::ImplicitAnimationObserver {
   }
 
  private:
-  scoped_ptr<ui::Layer> layer_;
+  std::unique_ptr<ui::Layer> layer_;
 
   DISALLOW_COPY_AND_ASSIGN(AnimationObserverDeleteLayer);
 };
@@ -85,7 +85,7 @@ void SystemTrayBubble::UpdateView(
     BubbleType bubble_type) {
   DCHECK(bubble_type != BUBBLE_TYPE_NOTIFICATION);
 
-  scoped_ptr<ui::Layer> scoped_layer;
+  std::unique_ptr<ui::Layer> scoped_layer;
   if (bubble_type != bubble_type_) {
     base::TimeDelta swipe_duration =
         base::TimeDelta::FromMilliseconds(kSwipeDelayMS);

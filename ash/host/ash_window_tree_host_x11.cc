@@ -111,7 +111,7 @@ void AshWindowTreeHostX11::UnConfineCursor() {
 }
 
 void AshWindowTreeHostX11::SetRootWindowTransformer(
-    scoped_ptr<RootWindowTransformer> transformer) {
+    std::unique_ptr<RootWindowTransformer> transformer) {
   transformer_helper_.SetRootWindowTransformer(std::move(transformer));
   if (pointer_barriers_) {
     UnConfineCursor();
@@ -131,7 +131,7 @@ void AshWindowTreeHostX11::PrepareForShutdown() {
   // ui::EventHandlers to be unable to convert the event's location to screen
   // coordinates.
   window()->SetEventTargeter(
-      scoped_ptr<ui::EventTargeter>(new ui::NullEventTargeter));
+      std::unique_ptr<ui::EventTargeter>(new ui::NullEventTargeter));
 
   if (ui::PlatformEventSource::GetInstance()) {
     // Block X events which are not turned into ui::Events from getting

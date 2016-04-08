@@ -5,6 +5,8 @@
 #ifndef ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_WINDOW_STATE_H_
 #define ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_WINDOW_STATE_H_
 
+#include <memory>
+
 #include "ash/wm/window_state.h"
 #include "base/macros.h"
 
@@ -63,7 +65,7 @@ class MaximizeModeWindowState : public wm::WindowState::State {
   void UpdateBounds(wm::WindowState* window_state, bool animated);
 
   // The original state object of the window.
-  scoped_ptr<wm::WindowState::State> old_state_;
+  std::unique_ptr<wm::WindowState::State> old_state_;
 
   // The state object for this object which owns this instance.
   aura::Window* window_;

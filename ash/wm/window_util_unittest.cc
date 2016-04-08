@@ -28,7 +28,7 @@ TEST_F(WindowUtilTest, CenterWindow) {
     return;
 
   UpdateDisplay("500x400, 600x400");
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(12, 20, 100, 100)));
 
   wm::WindowState* window_state = wm::GetWindowState(window.get());

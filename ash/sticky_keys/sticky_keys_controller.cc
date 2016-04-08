@@ -172,7 +172,7 @@ ui::EventRewriteStatus StickyKeysController::RewriteScrollEvent(
 }
 
 ui::EventRewriteStatus StickyKeysController::NextDispatchEvent(
-    scoped_ptr<ui::Event>* new_event) {
+    std::unique_ptr<ui::Event>* new_event) {
   DCHECK(new_event);
   new_event->reset();
   int remaining = shift_sticky_key_->GetModifierUpEvent(new_event) +
@@ -309,7 +309,8 @@ bool StickyKeysHandler::HandleScrollEvent(
   return false;
 }
 
-int StickyKeysHandler::GetModifierUpEvent(scoped_ptr<ui::Event>* new_event) {
+int StickyKeysHandler::GetModifierUpEvent(
+    std::unique_ptr<ui::Event>* new_event) {
   if (current_state_ != STICKY_KEY_STATE_DISABLED || !modifier_up_event_)
     return 0;
   DCHECK(new_event);

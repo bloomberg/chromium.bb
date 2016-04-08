@@ -4,6 +4,7 @@
 
 #include "ash/wm/lock_state_controller.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/session/session_state_delegate.h"
@@ -16,7 +17,6 @@
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/session_state_animator.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "ui/events/test/event_generator.h"
@@ -55,7 +55,7 @@ class LockStateControllerTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    scoped_ptr<LockStateControllerDelegate> lock_state_controller_delegate(
+    std::unique_ptr<LockStateControllerDelegate> lock_state_controller_delegate(
         lock_state_controller_delegate_ = new TestLockStateControllerDelegate);
     test_animator_ = new TestSessionStateAnimator;
 
@@ -347,7 +347,7 @@ class LockStateControllerTest : public AshTestBase {
       lock_state_controller_delegate_;  // not owned
   TestSessionStateAnimator* test_animator_;  // not owned
   SessionStateDelegate* session_state_delegate_;  // not owned
-  scoped_ptr<LockStateController::TestApi> test_api_;
+  std::unique_ptr<LockStateController::TestApi> test_api_;
   TestShellDelegate* shell_delegate_;  // not owned
 
  private:

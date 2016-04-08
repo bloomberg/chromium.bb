@@ -54,7 +54,7 @@ void AshWindowTreeHostPlatform::UnConfineCursor() {
 }
 
 void AshWindowTreeHostPlatform::SetRootWindowTransformer(
-    scoped_ptr<RootWindowTransformer> transformer) {
+    std::unique_ptr<RootWindowTransformer> transformer) {
   transformer_helper_.SetRootWindowTransformer(std::move(transformer));
   ConfineCursorToRootWindow();
 }
@@ -73,7 +73,7 @@ void AshWindowTreeHostPlatform::PrepareForShutdown() {
   // ui::EventHandlers to be unable to convert the event's location to screen
   // coordinates.
   window()->SetEventTargeter(
-      scoped_ptr<ui::EventTargeter>(new ui::NullEventTargeter));
+      std::unique_ptr<ui::EventTargeter>(new ui::NullEventTargeter));
 }
 
 void AshWindowTreeHostPlatform::SetRootTransform(

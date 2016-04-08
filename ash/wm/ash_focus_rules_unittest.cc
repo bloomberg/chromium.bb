@@ -68,7 +68,7 @@ class LockScreenSessionStateDelegate : public TestSessionStateDelegate {
     lock_screen_widget_->GetNativeView()->Focus();
   }
 
-  scoped_ptr<views::Widget> lock_screen_widget_;
+  std::unique_ptr<views::Widget> lock_screen_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenSessionStateDelegate);
 };
@@ -145,8 +145,8 @@ class LockScreenAshFocusRulesTest : public AshTestBase {
 // Verifies focus is returned (after unlocking the screen) to the most recent
 // window that had it before locking the screen.
 TEST_F(LockScreenAshFocusRulesTest, RegainFocusAfterUnlock) {
-  scoped_ptr<aura::Window> normal_window(CreateWindowInDefaultContainer());
-  scoped_ptr<aura::Window> always_on_top_window(
+  std::unique_ptr<aura::Window> normal_window(CreateWindowInDefaultContainer());
+  std::unique_ptr<aura::Window> always_on_top_window(
       CreateWindowInAlwaysOnTopContainer());
 
   wm::ActivateWindow(always_on_top_window.get());

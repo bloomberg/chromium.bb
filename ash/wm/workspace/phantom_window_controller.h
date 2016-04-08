@@ -5,9 +5,10 @@
 #ifndef ASH_WM_WORKSPACE_PHANTOM_WINDOW_CONTROLLER_H_
 #define ASH_WM_WORKSPACE_PHANTOM_WINDOW_CONTROLLER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace aura {
@@ -38,7 +39,7 @@ class ASH_EXPORT PhantomWindowController {
 
   // Creates, shows and returns a phantom widget at |bounds|
   // with kShellWindowId_ShelfContainer in |root_window| as a parent.
-  scoped_ptr<views::Widget> CreatePhantomWidget(
+  std::unique_ptr<views::Widget> CreatePhantomWidget(
       aura::Window* root_window,
       const gfx::Rect& bounds_in_screen);
 
@@ -50,7 +51,7 @@ class ASH_EXPORT PhantomWindowController {
   gfx::Rect target_bounds_in_screen_;
 
   // Phantom representation of the window.
-  scoped_ptr<views::Widget> phantom_widget_;
+  std::unique_ptr<views::Widget> phantom_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(PhantomWindowController);
 };

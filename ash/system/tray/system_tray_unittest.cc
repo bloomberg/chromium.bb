@@ -391,7 +391,7 @@ TEST_F(SystemTrayTest, PersistentBubble) {
   TestItem* test_item = new TestItem;
   tray->AddTrayItem(test_item);
 
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
 
   // Tests for usual default view.
   // Activating window.
@@ -477,7 +477,7 @@ TEST_F(SystemTrayTest, SetVisibleDuringHideAnimation) {
   SystemTray* tray = GetSystemTray();
   ASSERT_TRUE(tray->visible());
 
-  scoped_ptr<ui::ScopedAnimationDurationScaleMode> animation_duration;
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> animation_duration;
   animation_duration.reset(
       new ui::ScopedAnimationDurationScaleMode(
           ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));

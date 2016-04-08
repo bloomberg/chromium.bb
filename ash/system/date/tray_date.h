@@ -5,11 +5,12 @@
 #ifndef ASH_SYSTEM_DATE_TRAY_DATE_H_
 #define ASH_SYSTEM_DATE_TRAY_DATE_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace views {
 class Label;
@@ -72,7 +73,7 @@ class ASH_EXPORT TrayDate : public SystemTrayItem, public ClockObserver {
   user::LoginStatus login_status_;
 
 #if defined(OS_CHROMEOS)
-  scoped_ptr<SystemClockObserver> system_clock_observer_;
+  std::unique_ptr<SystemClockObserver> system_clock_observer_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(TrayDate);

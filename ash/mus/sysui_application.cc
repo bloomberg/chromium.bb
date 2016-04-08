@@ -88,7 +88,7 @@ class AshWindowTreeHostMus : public AshWindowTreeHostPlatform {
  public:
   explicit AshWindowTreeHostMus(const gfx::Rect& initial_bounds)
       : AshWindowTreeHostPlatform() {
-    scoped_ptr<ui::PlatformWindow> window(new ui::StubWindow(this));
+    std::unique_ptr<ui::PlatformWindow> window(new ui::StubWindow(this));
     window->SetBounds(initial_bounds);
     SetPlatformWindow(std::move(window));
   }
@@ -275,9 +275,9 @@ class AshInit {
 
  private:
   scoped_refptr<base::SequencedWorkerPool> worker_pool_;
-  scoped_ptr<views::AuraInit> aura_init_;
+  std::unique_ptr<views::AuraInit> aura_init_;
   ShellDelegateMus* ash_delegate_ = nullptr;
-  scoped_ptr<NativeWidgetFactory> native_widget_factory_;
+  std::unique_ptr<NativeWidgetFactory> native_widget_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AshInit);
 };

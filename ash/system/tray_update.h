@@ -5,11 +5,12 @@
 #ifndef ASH_SYSTEM_TRAY_UPDATE_H_
 #define ASH_SYSTEM_TRAY_UPDATE_H_
 
+#include <memory>
+
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_image_item.h"
 #include "ash/system/user/update_observer.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace views {
 class View;
@@ -39,7 +40,7 @@ class TrayUpdate : public TrayImageItem,
 
   // Used to nag the user in case the tray has been hidden too long with an
   // unseen update notification.
-  scoped_ptr<tray::UpdateNagger> nagger_;
+  std::unique_ptr<tray::UpdateNagger> nagger_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayUpdate);
 };

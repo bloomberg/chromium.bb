@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -98,7 +99,7 @@ void SwapPrimaryDisplay();
 // independent of current displays, use DisplayLayoutBuilder or simply
 // create a new DisplayLayout and set display id fields (primary, ids
 // in placement) manually.
-scoped_ptr<display::DisplayLayout> CreateDisplayLayout(
+std::unique_ptr<display::DisplayLayout> CreateDisplayLayout(
     display::DisplayPlacement::Position position,
     int offset);
 

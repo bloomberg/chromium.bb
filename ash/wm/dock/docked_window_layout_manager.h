@@ -5,6 +5,8 @@
 #ifndef ASH_WM_DOCK_DOCKED_WINDOW_LAYOUT_MANAGER_H_
 #define ASH_WM_DOCK_DOCKED_WINDOW_LAYOUT_MANAGER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shell_observer.h"
@@ -14,7 +16,6 @@
 #include "ash/wm/window_state_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
@@ -319,10 +320,10 @@ class ASH_EXPORT DockedWindowLayoutManager
   base::Time last_action_time_;
 
   // Observes shelf for bounds changes.
-  scoped_ptr<ShelfWindowObserver> shelf_observer_;
+  std::unique_ptr<ShelfWindowObserver> shelf_observer_;
 
   // Widget used to paint a background for the docked area.
-  scoped_ptr<DockedBackgroundWidget> background_widget_;
+  std::unique_ptr<DockedBackgroundWidget> background_widget_;
 
   // Observers of dock bounds changes.
   base::ObserverList<DockedWindowLayoutManagerObserver> observer_list_;

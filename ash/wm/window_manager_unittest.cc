@@ -142,29 +142,29 @@ TEST_F(WindowManagerTest, Focus) {
   // Supplied ids are negative so as not to collide with shell ids.
   // TODO(beng): maybe introduce a MAKE_SHELL_ID() macro that generates a safe
   //             id beyond shell id max?
-  scoped_ptr<aura::Window> w1(CreateTestWindowInShell(
-      SK_ColorWHITE, -1, gfx::Rect(10, 10, 500, 500)));
-  scoped_ptr<aura::Window> w11(aura::test::CreateTestWindow(
+  std::unique_ptr<aura::Window> w1(
+      CreateTestWindowInShell(SK_ColorWHITE, -1, gfx::Rect(10, 10, 500, 500)));
+  std::unique_ptr<aura::Window> w11(aura::test::CreateTestWindow(
       SK_ColorGREEN, -11, gfx::Rect(5, 5, 100, 100), w1.get()));
-  scoped_ptr<aura::Window> w111(aura::test::CreateTestWindow(
+  std::unique_ptr<aura::Window> w111(aura::test::CreateTestWindow(
       SK_ColorCYAN, -111, gfx::Rect(5, 5, 75, 75), w11.get()));
-  scoped_ptr<aura::Window> w1111(aura::test::CreateTestWindow(
+  std::unique_ptr<aura::Window> w1111(aura::test::CreateTestWindow(
       SK_ColorRED, -1111, gfx::Rect(5, 5, 50, 50), w111.get()));
-  scoped_ptr<aura::Window> w12(aura::test::CreateTestWindow(
+  std::unique_ptr<aura::Window> w12(aura::test::CreateTestWindow(
       SK_ColorMAGENTA, -12, gfx::Rect(10, 420, 25, 25), w1.get()));
   aura::test::ColorTestWindowDelegate* w121delegate =
       new aura::test::ColorTestWindowDelegate(SK_ColorYELLOW);
-  scoped_ptr<aura::Window> w121(aura::test::CreateTestWindowWithDelegate(
+  std::unique_ptr<aura::Window> w121(aura::test::CreateTestWindowWithDelegate(
       w121delegate, -121, gfx::Rect(5, 5, 5, 5), w12.get()));
   aura::test::ColorTestWindowDelegate* w122delegate =
       new aura::test::ColorTestWindowDelegate(SK_ColorRED);
-  scoped_ptr<aura::Window> w122(aura::test::CreateTestWindowWithDelegate(
+  std::unique_ptr<aura::Window> w122(aura::test::CreateTestWindowWithDelegate(
       w122delegate, -122, gfx::Rect(10, 5, 5, 5), w12.get()));
   aura::test::ColorTestWindowDelegate* w123delegate =
       new aura::test::ColorTestWindowDelegate(SK_ColorRED);
-  scoped_ptr<aura::Window> w123(aura::test::CreateTestWindowWithDelegate(
+  std::unique_ptr<aura::Window> w123(aura::test::CreateTestWindowWithDelegate(
       w123delegate, -123, gfx::Rect(15, 5, 5, 5), w12.get()));
-  scoped_ptr<aura::Window> w13(aura::test::CreateTestWindow(
+  std::unique_ptr<aura::Window> w13(aura::test::CreateTestWindow(
       SK_ColorGRAY, -13, gfx::Rect(5, 470, 50, 50), w1.get()));
 
   // Click on a sub-window (w121) to focus it.
@@ -263,12 +263,12 @@ TEST_F(WindowManagerTest, ActivateOnMouse) {
 
   test::TestActivationDelegate d1;
   aura::test::TestWindowDelegate wd;
-  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
-      &wd, -1, gfx::Rect(10, 10, 50, 50)));
+  std::unique_ptr<aura::Window> w1(
+      CreateTestWindowInShellWithDelegate(&wd, -1, gfx::Rect(10, 10, 50, 50)));
   d1.SetWindow(w1.get());
   test::TestActivationDelegate d2;
-  scoped_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
-      &wd, -2, gfx::Rect(70, 70, 50, 50)));
+  std::unique_ptr<aura::Window> w2(
+      CreateTestWindowInShellWithDelegate(&wd, -2, gfx::Rect(70, 70, 50, 50)));
   d2.SetWindow(w2.get());
 
   aura::client::FocusClient* focus_client =
@@ -331,8 +331,8 @@ TEST_F(WindowManagerTest, ActivateOnMouse) {
   // Clicking an active window with a child shouldn't steal the
   // focus from the child.
   {
-    scoped_ptr<aura::Window> w11(CreateTestWindowWithDelegate(
-          &wd, -11, gfx::Rect(10, 10, 10, 10), w1.get()));
+    std::unique_ptr<aura::Window> w11(CreateTestWindowWithDelegate(
+        &wd, -11, gfx::Rect(10, 10, 10, 10), w1.get()));
     ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                        w11.get());
     // First set the focus to the child |w11|.
@@ -354,11 +354,11 @@ TEST_F(WindowManagerTest, ActivateOnMouse) {
   // give focus to the background window.
   {
     NonFocusableDelegate nfd;
-    scoped_ptr<aura::Window> w11(CreateTestWindowWithDelegate(
-          &nfd, -1, gfx::Rect(10, 10, 10, 10), w1.get()));
+    std::unique_ptr<aura::Window> w11(CreateTestWindowWithDelegate(
+        &nfd, -1, gfx::Rect(10, 10, 10, 10), w1.get()));
     // Move focus to |w2| first.
-    scoped_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
-          &wd, -1, gfx::Rect(70, 70, 50, 50)));
+    std::unique_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
+        &wd, -1, gfx::Rect(70, 70, 50, 50)));
     ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), w2.get());
     generator.ClickLeftButton();
     EXPECT_EQ(w2.get(), focus_client->GetFocusedWindow());
@@ -373,10 +373,10 @@ TEST_F(WindowManagerTest, ActivateOnMouse) {
 
 TEST_F(WindowManagerTest, PanelActivation) {
   aura::test::TestWindowDelegate wd;
-  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
-      &wd, -1, gfx::Rect(10, 10, 50, 50)));
+  std::unique_ptr<aura::Window> w1(
+      CreateTestWindowInShellWithDelegate(&wd, -1, gfx::Rect(10, 10, 50, 50)));
   aura::test::TestWindowDelegate pd;
-  scoped_ptr<aura::Window> p1(CreateTestWindowInShellWithDelegateAndType(
+  std::unique_ptr<aura::Window> p1(CreateTestWindowInShellWithDelegateAndType(
       &pd, ui::wm::WINDOW_TYPE_PANEL, -1, gfx::Rect(10, 10, 50, 50)));
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(w1.get());
@@ -398,8 +398,8 @@ TEST_F(WindowManagerTest, PanelActivation) {
   // Clicking on a non-activatable window should not change the active window.
   {
     NonFocusableDelegate nfd;
-    scoped_ptr<aura::Window> w3(CreateTestWindowInShellWithDelegate(
-          &nfd, -1, gfx::Rect(70, 70, 50, 50)));
+    std::unique_ptr<aura::Window> w3(CreateTestWindowInShellWithDelegate(
+        &nfd, -1, gfx::Rect(70, 70, 50, 50)));
     ui::test::EventGenerator generator3(Shell::GetPrimaryRootWindow(),
                                         w3.get());
     wm::ActivateWindow(p1.get());
@@ -415,12 +415,12 @@ TEST_F(WindowManagerTest, ActivateOnTouch) {
 
   test::TestActivationDelegate d1;
   aura::test::TestWindowDelegate wd;
-  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
-      &wd, -1, gfx::Rect(10, 10, 50, 50)));
+  std::unique_ptr<aura::Window> w1(
+      CreateTestWindowInShellWithDelegate(&wd, -1, gfx::Rect(10, 10, 50, 50)));
   d1.SetWindow(w1.get());
   test::TestActivationDelegate d2;
-  scoped_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
-      &wd, -2, gfx::Rect(70, 70, 50, 50)));
+  std::unique_ptr<aura::Window> w2(
+      CreateTestWindowInShellWithDelegate(&wd, -2, gfx::Rect(70, 70, 50, 50)));
   d2.SetWindow(w2.get());
 
   aura::client::FocusClient* focus_client =
@@ -492,10 +492,8 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
   const int kWindowLeft = 123;
   const int kWindowTop = 45;
   HitTestWindowDelegate window_delegate;
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
-    &window_delegate,
-    -1,
-    gfx::Rect(kWindowLeft, kWindowTop, 640, 480)));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+      &window_delegate, -1, gfx::Rect(kWindowLeft, kWindowTop, 640, 480)));
 
   // Create two mouse movement events we can switch between.
   gfx::Point point1(kWindowLeft, kWindowTop);
@@ -616,7 +614,7 @@ TEST_F(WindowManagerTest, MAYBE_TransformActivate) {
 
   test::TestActivationDelegate d1;
   aura::test::TestWindowDelegate wd;
-  scoped_ptr<aura::Window> w1(
+  std::unique_ptr<aura::Window> w1(
       CreateTestWindowInShellWithDelegate(&wd, 1, gfx::Rect(0, 15, 50, 50)));
   d1.SetWindow(w1.get());
   w1->Show();
@@ -655,13 +653,13 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
 
   // Creates a window and make it active
-  scoped_ptr<aura::Window> w1(CreateTestWindowInShell(
-      SK_ColorWHITE, -1, gfx::Rect(0, 0, 100, 100)));
+  std::unique_ptr<aura::Window> w1(
+      CreateTestWindowInShell(SK_ColorWHITE, -1, gfx::Rect(0, 0, 100, 100)));
   wm::ActivateWindow(w1.get());
 
   // Creates two addition filters
-  scoped_ptr<CustomEventHandler> f1(new CustomEventHandler);
-  scoped_ptr<CustomEventHandler> f2(new CustomEventHandler);
+  std::unique_ptr<CustomEventHandler> f1(new CustomEventHandler);
+  std::unique_ptr<CustomEventHandler> f2(new CustomEventHandler);
 
   // Adds them to root window event filter.
   ::wm::CompoundEventFilter* env_filter =
@@ -799,8 +797,8 @@ TEST_F(WindowManagerTest, TestCursorClientObserver) {
   ::wm::CursorManager* cursor_manager =
       ash::Shell::GetInstance()->cursor_manager();
 
-  scoped_ptr<aura::Window> w1(CreateTestWindowInShell(
-      SK_ColorWHITE, -1, gfx::Rect(0, 0, 100, 100)));
+  std::unique_ptr<aura::Window> w1(
+      CreateTestWindowInShell(SK_ColorWHITE, -1, gfx::Rect(0, 0, 100, 100)));
   wm::ActivateWindow(w1.get());
 
   // Add two observers. Both should have OnCursorVisibilityChanged()

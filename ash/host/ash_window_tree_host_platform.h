@@ -5,6 +5,8 @@
 #ifndef ASH_HOST_ASH_WINDOW_TREE_HOST_PLATFORM_H_
 #define ASH_HOST_ASH_WINDOW_TREE_HOST_PLATFORM_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/transformer_helper.h"
@@ -27,7 +29,7 @@ class ASH_EXPORT AshWindowTreeHostPlatform
   bool ConfineCursorToRootWindow() override;
   void UnConfineCursor() override;
   void SetRootWindowTransformer(
-      scoped_ptr<RootWindowTransformer> transformer) override;
+      std::unique_ptr<RootWindowTransformer> transformer) override;
   gfx::Insets GetHostInsets() const override;
   aura::WindowTreeHost* AsWindowTreeHost() override;
   void PrepareForShutdown() override;

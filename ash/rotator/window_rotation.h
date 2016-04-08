@@ -5,9 +5,10 @@
 #ifndef ASH_WINDOW_ROTATION_H_
 #define ASH_WINDOW_ROTATION_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -44,7 +45,7 @@ class ASH_EXPORT WindowRotation : public ui::LayerAnimationElement {
   void OnGetTarget(TargetValue* target) const override;
   void OnAbort(ui::LayerAnimationDelegate* delegate) override;
 
-  scoped_ptr<ui::InterpolatedTransform> interpolated_transform_;
+  std::unique_ptr<ui::InterpolatedTransform> interpolated_transform_;
 
   // The number of degrees to rotate.
   int degrees_;

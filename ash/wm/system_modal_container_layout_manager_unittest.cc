@@ -195,7 +195,7 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
 };
 
 TEST_F(SystemModalContainerLayoutManagerTest, NonModalTransient) {
-  scoped_ptr<aura::Window> parent(OpenToplevelTestWindow(false));
+  std::unique_ptr<aura::Window> parent(OpenToplevelTestWindow(false));
   aura::Window* transient = OpenTestWindowWithParent(parent.get(), false);
   TransientWindowObserver destruction_observer;
   transient->AddObserver(&destruction_observer);
@@ -209,7 +209,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, NonModalTransient) {
 }
 
 TEST_F(SystemModalContainerLayoutManagerTest, ModalTransient) {
-  scoped_ptr<aura::Window> parent(OpenToplevelTestWindow(false));
+  std::unique_ptr<aura::Window> parent(OpenToplevelTestWindow(false));
   // parent should be active.
   EXPECT_TRUE(wm::IsActiveWindow(parent.get()));
   aura::Window* t1 = OpenTestWindowWithParent(parent.get(), true);
@@ -250,7 +250,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ModalTransient) {
 }
 
 TEST_F(SystemModalContainerLayoutManagerTest, ModalNonTransient) {
-  scoped_ptr<aura::Window> t1(OpenToplevelTestWindow(true));
+  std::unique_ptr<aura::Window> t1(OpenToplevelTestWindow(true));
   // parent should be active.
   EXPECT_TRUE(wm::IsActiveWindow(t1.get()));
   TransientWindowObserver do1;
@@ -292,13 +292,13 @@ TEST_F(SystemModalContainerLayoutManagerTest, ModalNonTransient) {
 // Tests that we can activate an unrelated window after a modal window is closed
 // for a window.
 TEST_F(SystemModalContainerLayoutManagerTest, CanActivateAfterEndModalSession) {
-  scoped_ptr<aura::Window> unrelated(OpenToplevelTestWindow(false));
+  std::unique_ptr<aura::Window> unrelated(OpenToplevelTestWindow(false));
   unrelated->SetBounds(gfx::Rect(100, 100, 50, 50));
-  scoped_ptr<aura::Window> parent(OpenToplevelTestWindow(false));
+  std::unique_ptr<aura::Window> parent(OpenToplevelTestWindow(false));
   // parent should be active.
   EXPECT_TRUE(wm::IsActiveWindow(parent.get()));
 
-  scoped_ptr<aura::Window> transient(
+  std::unique_ptr<aura::Window> transient(
       OpenTestWindowWithParent(parent.get(), true));
   // t1 should now be active.
   EXPECT_TRUE(wm::IsActiveWindow(transient.get()));
@@ -326,7 +326,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, CanActivateAfterEndModalSession) {
 TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
   // Create a normal window and attempt to receive a click event.
   EventTestWindow* main_delegate = new EventTestWindow(false);
-  scoped_ptr<aura::Window> main(
+  std::unique_ptr<aura::Window> main(
       main_delegate->OpenTestWindowWithContext(CurrentContext()));
   EXPECT_TRUE(wm::IsActiveWindow(main.get()));
   ui::test::EventGenerator e1(Shell::GetPrimaryRootWindow(), main.get());
@@ -349,7 +349,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
     // the mouse event instead of the modal window (crbug.com/110920).
     BlockUserSession(static_cast<UserSessionBlockReason>(block_reason));
     EventTestWindow* lock_delegate = new EventTestWindow(false);
-    scoped_ptr<aura::Window> lock(lock_delegate->OpenTestWindowWithParent(
+    std::unique_ptr<aura::Window> lock(lock_delegate->OpenTestWindowWithParent(
         Shell::GetPrimaryRootWindowController()->GetContainer(
             ash::kShellWindowId_LockScreenContainer)));
     EXPECT_TRUE(wm::IsActiveWindow(lock.get()));
@@ -382,8 +382,8 @@ TEST_F(SystemModalContainerLayoutManagerTest, ShowModalWhileHidden) {
       ->SetOpacity(0);
 
   // Create a modal window.
-  scoped_ptr<aura::Window> parent(OpenToplevelTestWindow(false));
-  scoped_ptr<aura::Window> modal_window(
+  std::unique_ptr<aura::Window> parent(OpenToplevelTestWindow(false));
+  std::unique_ptr<aura::Window> modal_window(
       OpenTestWindowWithParent(parent.get(), true));
   parent->Show();
   modal_window->Show();
@@ -393,7 +393,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ShowModalWhileHidden) {
 TEST_F(SystemModalContainerLayoutManagerTest, ChangeCapture) {
   views::Widget* widget = views::Widget::CreateWindowWithContext(
       new TestWindow(false), CurrentContext());
-  scoped_ptr<aura::Window> widget_window(widget->GetNativeView());
+  std::unique_ptr<aura::Window> widget_window(widget->GetNativeView());
   views::test::CaptureTrackingView* view = new views::test::CaptureTrackingView;
   widget->GetContentsView()->AddChildView(view);
   view->SetBoundsRect(widget->GetContentsView()->bounds());
@@ -404,7 +404,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ChangeCapture) {
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), center);
   generator.PressLeftButton();
   EXPECT_TRUE(view->got_press());
-  scoped_ptr<aura::Window> modal_window(
+  std::unique_ptr<aura::Window> modal_window(
       OpenTestWindowWithParent(widget->GetNativeView(), true));
   modal_window->Show();
   EXPECT_TRUE(view->got_capture_lost());
@@ -414,8 +414,8 @@ TEST_F(SystemModalContainerLayoutManagerTest, ChangeCapture) {
 // resize.
 TEST_F(SystemModalContainerLayoutManagerTest, KeepVisible) {
   GetModalContainer()->SetBounds(gfx::Rect(0, 0, 1024, 768));
-  scoped_ptr<aura::Window> main(OpenTestWindowWithParent(GetModalContainer(),
-                                                         true));
+  std::unique_ptr<aura::Window> main(
+      OpenTestWindowWithParent(GetModalContainer(), true));
   main->SetBounds(gfx::Rect(924, 668, 100, 100));
   // We set now the bounds of the root window to something new which will
   // Then trigger the repos operation.
@@ -429,8 +429,8 @@ TEST_F(SystemModalContainerLayoutManagerTest, KeepVisible) {
 // area changed.
 TEST_F(SystemModalContainerLayoutManagerTest, KeepCentered) {
   GetModalContainer()->SetBounds(gfx::Rect(0, 0, 800, 600));
-  scoped_ptr<aura::Window> main(OpenTestWindowWithParent(GetModalContainer(),
-                                                         true));
+  std::unique_ptr<aura::Window> main(
+      OpenTestWindowWithParent(GetModalContainer(), true));
   // Center the window.
   main->SetBounds(gfx::Rect((800 - 512) / 2, (600 - 256) / 2, 512, 256));
 
@@ -444,8 +444,8 @@ TEST_F(SystemModalContainerLayoutManagerTest, KeepCentered) {
 }
 
 TEST_F(SystemModalContainerLayoutManagerTest, ShowNormalBackgroundOrLocked) {
-  scoped_ptr<aura::Window> parent(OpenToplevelTestWindow(false));
-  scoped_ptr<aura::Window> modal_window(
+  std::unique_ptr<aura::Window> parent(OpenToplevelTestWindow(false));
+  std::unique_ptr<aura::Window> modal_window(
       OpenTestWindowWithParent(parent.get(), true));
   parent->Show();
   modal_window->Show();
@@ -465,12 +465,12 @@ TEST_F(SystemModalContainerLayoutManagerTest, ShowNormalBackgroundOrLocked) {
     // Normal system modal window while blocked.  Shows blocked system modal
     // background.
     BlockUserSession(static_cast<UserSessionBlockReason>(block_reason));
-    scoped_ptr<aura::Window> lock_parent(OpenTestWindowWithParent(
+    std::unique_ptr<aura::Window> lock_parent(OpenTestWindowWithParent(
         Shell::GetPrimaryRootWindowController()->GetContainer(
             ash::kShellWindowId_LockScreenContainer),
         false));
-    scoped_ptr<aura::Window> lock_modal_window(OpenTestWindowWithParent(
-        lock_parent.get(), true));
+    std::unique_ptr<aura::Window> lock_modal_window(
+        OpenTestWindowWithParent(lock_parent.get(), true));
     lock_parent->Show();
     lock_modal_window->Show();
     EXPECT_FALSE(AllRootWindowsHaveModalBackgrounds());
@@ -479,7 +479,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ShowNormalBackgroundOrLocked) {
 
     // Normal system modal window while blocked, but it belongs to the normal
     // window.  Shouldn't show blocked system modal background, but normal.
-    scoped_ptr<aura::Window> modal_window(
+    std::unique_ptr<aura::Window> modal_window(
         OpenTestWindowWithParent(parent.get(), true));
     modal_window->Show();
     EXPECT_TRUE(AllRootWindowsHaveModalBackgrounds());
@@ -499,7 +499,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, MultiDisplays) {
 
   UpdateDisplay("500x500,500x500");
 
-  scoped_ptr<aura::Window> normal(OpenToplevelTestWindow(false));
+  std::unique_ptr<aura::Window> normal(OpenToplevelTestWindow(false));
   normal->SetBounds(gfx::Rect(100, 100, 50, 50));
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
@@ -509,16 +509,16 @@ TEST_F(SystemModalContainerLayoutManagerTest, MultiDisplays) {
   aura::Window* container2 = Shell::GetContainer(
       root_windows[1], ash::kShellWindowId_SystemModalContainer);
 
-  scoped_ptr<aura::Window> modal1(
+  std::unique_ptr<aura::Window> modal1(
       OpenTestWindowWithParent(container1, true));
   EXPECT_TRUE(AllRootWindowsHaveModalBackgrounds());
   EXPECT_TRUE(wm::IsActiveWindow(modal1.get()));
 
-  scoped_ptr<aura::Window> modal11(
+  std::unique_ptr<aura::Window> modal11(
       OpenTestWindowWithParent(container1, true));
   EXPECT_TRUE(wm::IsActiveWindow(modal11.get()));
 
-  scoped_ptr<aura::Window> modal2(
+  std::unique_ptr<aura::Window> modal2(
       OpenTestWindowWithParent(container2, true));
   EXPECT_TRUE(wm::IsActiveWindow(modal2.get()));
 
@@ -563,8 +563,8 @@ TEST_F(SystemModalContainerLayoutManagerTest,
   gfx::Rect modal_bounds = gfx::Rect(modal_origin, modal_size);
 
   // Create a modal window.
-  scoped_ptr<aura::Window> parent(OpenToplevelTestWindow(false));
-  scoped_ptr<aura::Window> modal_window(
+  std::unique_ptr<aura::Window> parent(OpenToplevelTestWindow(false));
+  std::unique_ptr<aura::Window> modal_window(
       OpenTestWindowWithParent(parent.get(), true));
   modal_window->SetBounds(modal_bounds);
   parent->Show();
@@ -600,8 +600,8 @@ TEST_F(SystemModalContainerLayoutManagerTest,
   gfx::Rect modal_bounds = gfx::Rect(modal_origin, modal_size);
 
   // Create a modal window.
-  scoped_ptr<aura::Window> parent(OpenToplevelTestWindow(false));
-  scoped_ptr<aura::Window> modal_window(
+  std::unique_ptr<aura::Window> parent(OpenToplevelTestWindow(false));
+  std::unique_ptr<aura::Window> modal_window(
       OpenTestWindowWithParent(parent.get(), true));
   modal_window->SetBounds(modal_bounds);
   parent->Show();
@@ -630,8 +630,8 @@ TEST_F(SystemModalContainerLayoutManagerTest,
   gfx::Rect modal_bounds = gfx::Rect(modal_origin, modal_size);
 
   // Create a modal window.
-  scoped_ptr<aura::Window> parent(OpenToplevelTestWindow(false));
-  scoped_ptr<aura::Window> modal_window(
+  std::unique_ptr<aura::Window> parent(OpenToplevelTestWindow(false));
+  std::unique_ptr<aura::Window> modal_window(
       OpenTestWindowWithParent(parent.get(), true));
   modal_window->SetBounds(modal_bounds);
   parent->Show();

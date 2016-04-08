@@ -43,7 +43,7 @@ gfx::Image& GetBatteryImage(TrayPower::NotificationState notification_state) {
   return ui::ResourceBundle::GetSharedInstance().GetImageNamed(resource_id);
 }
 
-scoped_ptr<Notification> CreateNotification(
+std::unique_ptr<Notification> CreateNotification(
     TrayPower::NotificationState notification_state) {
   const PowerStatus& status = *PowerStatus::Get();
 
@@ -77,7 +77,7 @@ scoped_ptr<Notification> CreateNotification(
   if (!time_message.empty())
     message = message + base::ASCIIToUTF16("\n") + time_message;
 
-  scoped_ptr<Notification> notification(new Notification(
+  std::unique_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kBatteryNotificationId,
       base::string16(), message, GetBatteryImage(notification_state),
       base::string16(), GURL(),

@@ -238,8 +238,7 @@ VolumeControlDelegate* SystemTrayDelegate::GetVolumeControlDelegate() const {
 }
 
 void SystemTrayDelegate::SetVolumeControlDelegate(
-    scoped_ptr<VolumeControlDelegate> delegate) {
-}
+    std::unique_ptr<VolumeControlDelegate> delegate) {}
 
 bool SystemTrayDelegate::GetSessionStartTime(
     base::TimeTicks* session_start_time) {

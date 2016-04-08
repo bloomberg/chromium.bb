@@ -4,6 +4,8 @@
 
 #include "ash/mus/shelf_delegate_mus.h"
 
+#include <memory>
+
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
@@ -186,7 +188,7 @@ void ShelfDelegateMus::OnUserWindowAdded(
 
   ShelfItemDelegateManager* manager =
       Shell::GetInstance()->shelf_item_delegate_manager();
-  scoped_ptr<ShelfItemDelegate> delegate(new ShelfItemDelegateMus(
+  std::unique_ptr<ShelfItemDelegate> delegate(new ShelfItemDelegateMus(
       user_window->window_id, user_window->window_title.To<base::string16>(),
       user_window_controller_.get()));
   manager->SetShelfItemDelegate(shelf_id, std::move(delegate));

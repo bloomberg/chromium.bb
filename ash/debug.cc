@@ -15,7 +15,7 @@ namespace debug {
 void ToggleShowDebugBorders() {
   aura::Window::Windows root_windows =
       Shell::GetInstance()->GetAllRootWindows();
-  scoped_ptr<bool> value;
+  std::unique_ptr<bool> value;
   for (aura::Window::Windows::iterator it = root_windows.begin();
        it != root_windows.end(); ++it) {
     ui::Compositor* compositor = (*it)->GetHost()->compositor();
@@ -30,7 +30,7 @@ void ToggleShowDebugBorders() {
 void ToggleShowFpsCounter() {
   aura::Window::Windows root_windows =
       Shell::GetInstance()->GetAllRootWindows();
-  scoped_ptr<bool> value;
+  std::unique_ptr<bool> value;
   for (aura::Window::Windows::iterator it = root_windows.begin();
        it != root_windows.end(); ++it) {
     ui::Compositor* compositor = (*it)->GetHost()->compositor();
@@ -45,7 +45,7 @@ void ToggleShowFpsCounter() {
 void ToggleShowPaintRects() {
   aura::Window::Windows root_windows =
       Shell::GetInstance()->GetAllRootWindows();
-  scoped_ptr<bool> value;
+  std::unique_ptr<bool> value;
   for (aura::Window::Windows::iterator it = root_windows.begin();
        it != root_windows.end(); ++it) {
     ui::Compositor* compositor = (*it)->GetHost()->compositor();

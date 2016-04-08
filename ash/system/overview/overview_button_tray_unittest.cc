@@ -102,7 +102,7 @@ TEST_F(OverviewButtonTrayTest, PerformAction) {
       IsSelecting());
 
   // Overview Mode only works when there is a window
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   ui::GestureEvent tap(
       0, 0, 0, base::TimeDelta(), ui::GestureEventDetails(ui::ET_GESTURE_TAP));
@@ -128,7 +128,7 @@ TEST_F(OverviewButtonTrayTest, TrayOverviewUserAction) {
 
   // With one window present, tapping on the control to enter overview mode
   // should record the user action.
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   GetTray()->PerformAction(tap);
   ASSERT_TRUE(
@@ -205,7 +205,7 @@ TEST_F(OverviewButtonTrayTest, ActiveStateOnlyDuringOverviewMode) {
   ASSERT_FALSE(GetTray()->draw_background_as_active());
 
   // Overview Mode only works when there is a window
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   ui::GestureEvent tap(
       0, 0, 0, base::TimeDelta(), ui::GestureEventDetails(ui::ET_GESTURE_TAP));
@@ -234,14 +234,14 @@ TEST_F(OverviewButtonTrayTest, MAYBE_HideAnimationAlwaysCompletes) {
       ->EnableMaximizeModeWindowManager(true);
 
   // Long duration for hide animation, to allow it to be interrupted.
-  scoped_ptr<ui::ScopedAnimationDurationScaleMode> hide_duration(
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> hide_duration(
       new ui::ScopedAnimationDurationScaleMode(
           ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
   GetTray()->SetVisible(false);
 
   // ScreenRotationAnimator copies the current layers, and deletes them upon
   // completion. Allow its animation to complete first.
-  scoped_ptr<ui::ScopedAnimationDurationScaleMode> rotate_duration(
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> rotate_duration(
       new ui::ScopedAnimationDurationScaleMode(
           ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
   ash::ScreenRotationAnimator(gfx::Display::InternalDisplayId())
@@ -257,7 +257,7 @@ TEST_F(OverviewButtonTrayTest, MAYBE_HideAnimationAlwaysCompletes) {
 TEST_F(OverviewButtonTrayTest, VisibilityChangesForSystemModalWindow) {
   // TODO(jonross): When CreateTestWindow*() have been unified, use the
   // appropriate method to replace this setup. (crbug.com/483503)
-  scoped_ptr<aura::Window> window(new aura::Window(nullptr));
+  std::unique_ptr<aura::Window> window(new aura::Window(nullptr));
   window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
   window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);

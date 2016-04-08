@@ -32,9 +32,8 @@ TaskSwitchTimeTracker::TaskSwitchTimeTracker(const std::string& histogram_name)
 
 TaskSwitchTimeTracker::TaskSwitchTimeTracker(
     const std::string& histogram_name,
-    scoped_ptr<base::TickClock> tick_clock)
-    : histogram_name_(histogram_name), tick_clock_(tick_clock.release()) {
-}
+    std::unique_ptr<base::TickClock> tick_clock)
+    : histogram_name_(histogram_name), tick_clock_(tick_clock.release()) {}
 
 TaskSwitchTimeTracker::~TaskSwitchTimeTracker() {
 }

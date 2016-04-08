@@ -5,6 +5,7 @@
 #ifndef ASH_SHELL_SHELL_DELEGATE_IMPL_H_
 #define ASH_SHELL_SHELL_DELEGATE_IMPL_H_
 
+#include <memory>
 #include <string>
 
 #include "ash/shell_delegate.h"
@@ -57,7 +58,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
 
  private:
   ShelfDelegateImpl* shelf_delegate_;
-  scoped_ptr<app_list::AppListViewDelegate> app_list_view_delegate_;
+  std::unique_ptr<app_list::AppListViewDelegate> app_list_view_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateImpl);
 };

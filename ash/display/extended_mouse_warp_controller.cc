@@ -13,6 +13,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/events/event_utils.h"
@@ -113,7 +114,7 @@ ExtendedMouseWarpController::ExtendedMouseWarpController(
     gfx::Display display = display_list.back();
     display_list.pop_back();
     for (const gfx::Display& peer : display_list) {
-      scoped_ptr<WarpRegion> region =
+      std::unique_ptr<WarpRegion> region =
           CreateWarpRegion(display, peer, drag_source_id);
       if (region)
         AddWarpRegion(std::move(region), drag_source != nullptr);
@@ -165,7 +166,7 @@ void ExtendedMouseWarpController::SetEnabled(bool enabled) {
 }
 
 void ExtendedMouseWarpController::AddWarpRegion(
-    scoped_ptr<WarpRegion> warp_region,
+    std::unique_ptr<WarpRegion> warp_region,
     bool has_drag_source) {
   if (has_drag_source) {
     warp_region->shared_display_edge_indicator_.reset(
@@ -181,7 +182,7 @@ bool ExtendedMouseWarpController::WarpMouseCursorInNativeCoords(
     const gfx::Point& point_in_native,
     const gfx::Point& point_in_screen,
     bool update_mouse_location_now) {
-  for (const scoped_ptr<WarpRegion>& warp : warp_regions_) {
+  for (const std::unique_ptr<WarpRegion>& warp : warp_regions_) {
     bool in_a_edge = warp->a_edge_bounds_in_native_.Contains(point_in_native);
     bool in_b_edge = warp->b_edge_bounds_in_native_.Contains(point_in_native);
     if (!in_a_edge && !in_b_edge)
@@ -200,7 +201,7 @@ bool ExtendedMouseWarpController::WarpMouseCursorInNativeCoords(
   return false;
 }
 
-scoped_ptr<ExtendedMouseWarpController::WarpRegion>
+std::unique_ptr<ExtendedMouseWarpController::WarpRegion>
 ExtendedMouseWarpController::CreateWarpRegion(const gfx::Display& a,
                                               const gfx::Display& b,
                                               int64_t drag_source_id) {
@@ -221,7 +222,7 @@ ExtendedMouseWarpController::CreateWarpRegion(const gfx::Display& a,
       AdjustSourceEdgeBounds(b.bounds(), snap_barrier, &b_edge);
   }
 
-  return make_scoped_ptr(new WarpRegion(a.id(), b.id(), a_edge, b_edge));
+  return base::WrapUnique(new WarpRegion(a.id(), b.id(), a_edge, b_edge));
 }
 
 }  // namespace ash

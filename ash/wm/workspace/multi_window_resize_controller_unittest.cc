@@ -122,11 +122,11 @@ class MultiWindowResizeControllerTest : public test::AshTestBase {
 // Assertions around moving mouse over 2 windows.
 TEST_F(MultiWindowResizeControllerTest, BasicTests) {
   aura::test::TestWindowDelegate delegate1;
-  scoped_ptr<aura::Window> w1(
+  std::unique_ptr<aura::Window> w1(
       CreateTestWindow(&delegate1, gfx::Rect(0, 0, 100, 100)));
   delegate1.set_window_component(HTRIGHT);
   aura::test::TestWindowDelegate delegate2;
-  scoped_ptr<aura::Window> w2(
+  std::unique_ptr<aura::Window> w2(
       CreateTestWindow(&delegate2, gfx::Rect(100, 0, 100, 100)));
   delegate2.set_window_component(HTRIGHT);
   ui::test::EventGenerator generator(w1->GetRootWindow());
@@ -155,7 +155,7 @@ TEST_F(MultiWindowResizeControllerTest, IsOverWindows) {
   //  |        |________|
   //  |        | w3     |
   //  |________|________|
-  scoped_ptr<views::Widget> w1(new views::Widget);
+  std::unique_ptr<views::Widget> w1(new views::Widget);
   views::Widget::InitParams params1;
   params1.delegate = new TestWidgetDelegate;
   params1.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -164,7 +164,7 @@ TEST_F(MultiWindowResizeControllerTest, IsOverWindows) {
   w1->Init(params1);
   w1->Show();
 
-  scoped_ptr<views::Widget> w2(new views::Widget);
+  std::unique_ptr<views::Widget> w2(new views::Widget);
   views::Widget::InitParams params2;
   params2.delegate = new TestWidgetDelegate;
   params2.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -173,7 +173,7 @@ TEST_F(MultiWindowResizeControllerTest, IsOverWindows) {
   w2->Init(params2);
   w2->Show();
 
-  scoped_ptr<views::Widget> w3(new views::Widget);
+  std::unique_ptr<views::Widget> w3(new views::Widget);
   views::Widget::InitParams params3;
   params3.delegate = new TestWidgetDelegate;
   params3.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -223,11 +223,11 @@ TEST_F(MultiWindowResizeControllerTest, IsOverWindows) {
 // Makes sure deleting a window hides.
 TEST_F(MultiWindowResizeControllerTest, DeleteWindow) {
   aura::test::TestWindowDelegate delegate1;
-  scoped_ptr<aura::Window> w1(
+  std::unique_ptr<aura::Window> w1(
       CreateTestWindow(&delegate1, gfx::Rect(0, 0, 100, 100)));
   delegate1.set_window_component(HTRIGHT);
   aura::test::TestWindowDelegate delegate2;
-  scoped_ptr<aura::Window> w2(
+  std::unique_ptr<aura::Window> w2(
       CreateTestWindow(&delegate2, gfx::Rect(100, 0, 100, 100)));
   delegate2.set_window_component(HTRIGHT);
   ui::test::EventGenerator generator(w1->GetRootWindow());
@@ -262,11 +262,11 @@ TEST_F(MultiWindowResizeControllerTest, DeleteWindow) {
 // Tests resizing.
 TEST_F(MultiWindowResizeControllerTest, Drag) {
   aura::test::TestWindowDelegate delegate1;
-  scoped_ptr<aura::Window> w1(
+  std::unique_ptr<aura::Window> w1(
       CreateTestWindow(&delegate1, gfx::Rect(0, 0, 100, 100)));
   delegate1.set_window_component(HTRIGHT);
   aura::test::TestWindowDelegate delegate2;
-  scoped_ptr<aura::Window> w2(
+  std::unique_ptr<aura::Window> w2(
       CreateTestWindow(&delegate2, gfx::Rect(100, 0, 100, 100)));
   delegate2.set_window_component(HTRIGHT);
   ui::test::EventGenerator generator(w1->GetRootWindow());
@@ -301,15 +301,15 @@ TEST_F(MultiWindowResizeControllerTest, Drag) {
 // Makes sure three windows are picked up.
 TEST_F(MultiWindowResizeControllerTest, Three) {
   aura::test::TestWindowDelegate delegate1;
-  scoped_ptr<aura::Window> w1(
+  std::unique_ptr<aura::Window> w1(
       CreateTestWindow(&delegate1, gfx::Rect(0, 0, 100, 100)));
   delegate1.set_window_component(HTRIGHT);
   aura::test::TestWindowDelegate delegate2;
-  scoped_ptr<aura::Window> w2(
+  std::unique_ptr<aura::Window> w2(
       CreateTestWindow(&delegate2, gfx::Rect(100, 0, 100, 100)));
   delegate2.set_window_component(HTRIGHT);
   aura::test::TestWindowDelegate delegate3;
-  scoped_ptr<aura::Window> w3(
+  std::unique_ptr<aura::Window> w3(
       CreateTestWindow(&delegate3, gfx::Rect(200, 0, 100, 100)));
   delegate3.set_window_component(HTRIGHT);
 
@@ -341,11 +341,11 @@ TEST_F(MultiWindowResizeControllerTest, Three) {
 // Tests that clicking outside of the resize handle dismisses it.
 TEST_F(MultiWindowResizeControllerTest, ClickOutside) {
   aura::test::TestWindowDelegate delegate1;
-  scoped_ptr<aura::Window> w1(
+  std::unique_ptr<aura::Window> w1(
       CreateTestWindow(&delegate1, gfx::Rect(0, 0, 100, 100)));
   delegate1.set_window_component(HTRIGHT);
   aura::test::TestWindowDelegate delegate2;
-  scoped_ptr<aura::Window> w2(
+  std::unique_ptr<aura::Window> w2(
       CreateTestWindow(&delegate2, gfx::Rect(100, 0, 100, 100)));
   delegate2.set_window_component(HTLEFT);
 

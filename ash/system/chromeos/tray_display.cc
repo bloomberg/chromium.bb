@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/tray_display.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -397,7 +398,7 @@ void TrayDisplay::CreateOrUpdateNotification(
   }
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  scoped_ptr<Notification> notification(new Notification(
+  std::unique_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, message,
       additional_message, bundle.GetImageNamed(IDR_AURA_NOTIFICATION_DISPLAY),
       base::string16(),  // display_source

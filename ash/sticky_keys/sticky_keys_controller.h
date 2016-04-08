@@ -5,10 +5,11 @@
 #ifndef ASH_STICKY_KEYS_STICKY_KEYS_CONTROLLER_H_
 #define ASH_STICKY_KEYS_STICKY_KEYS_CONTROLLER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/sticky_keys/sticky_keys_state.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_rewriter.h"
@@ -108,7 +109,8 @@ class ASH_EXPORT StickyKeysController {
   // - ui::EVENT_REWRITE_REWRITE if this is the last or only modifier-up event;
   // Otherwise, there is no pending modifier-up event, and this function
   // returns ui::EVENT_REWRITE_CONTINUE and sets |new_event| to NULL.
-  ui::EventRewriteStatus NextDispatchEvent(scoped_ptr<ui::Event>* new_event);
+  ui::EventRewriteStatus NextDispatchEvent(
+      std::unique_ptr<ui::Event>* new_event);
 
  private:
   // Handles keyboard event. Returns true if Sticky key consumes keyboard event.
@@ -144,14 +146,14 @@ class ASH_EXPORT StickyKeysController {
   bool altgr_enabled_;
 
   // Sticky key handlers.
-  scoped_ptr<StickyKeysHandler> shift_sticky_key_;
-  scoped_ptr<StickyKeysHandler> alt_sticky_key_;
-  scoped_ptr<StickyKeysHandler> altgr_sticky_key_;
-  scoped_ptr<StickyKeysHandler> ctrl_sticky_key_;
-  scoped_ptr<StickyKeysHandler> mod3_sticky_key_;
-  scoped_ptr<StickyKeysHandler> search_sticky_key_;
+  std::unique_ptr<StickyKeysHandler> shift_sticky_key_;
+  std::unique_ptr<StickyKeysHandler> alt_sticky_key_;
+  std::unique_ptr<StickyKeysHandler> altgr_sticky_key_;
+  std::unique_ptr<StickyKeysHandler> ctrl_sticky_key_;
+  std::unique_ptr<StickyKeysHandler> mod3_sticky_key_;
+  std::unique_ptr<StickyKeysHandler> search_sticky_key_;
 
-  scoped_ptr<StickyKeysOverlay> overlay_;
+  std::unique_ptr<StickyKeysOverlay> overlay_;
 
   DISALLOW_COPY_AND_ASSIGN(StickyKeysController);
 };
@@ -215,7 +217,7 @@ class ASH_EXPORT StickyKeysHandler {
   // Fetches a pending modifier-up event if one exists and the return
   // parameter |new_event| is available (i.e. not set). Returns the number
   // of pending events still remaining to be returned.
-  int GetModifierUpEvent(scoped_ptr<ui::Event>* new_event);
+  int GetModifierUpEvent(std::unique_ptr<ui::Event>* new_event);
 
   // Returns current internal state.
   StickyKeyState current_state() const { return current_state_; }
@@ -271,7 +273,7 @@ class ASH_EXPORT StickyKeysHandler {
   int scroll_delta_;
 
   // The modifier up key event to be sent on non modifier key on ENABLED state.
-  scoped_ptr<ui::KeyEvent> modifier_up_event_;
+  std::unique_ptr<ui::KeyEvent> modifier_up_event_;
 
   DISALLOW_COPY_AND_ASSIGN(StickyKeysHandler);
 };

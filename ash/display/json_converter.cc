@@ -4,6 +4,7 @@
 
 #include "ash/display/json_converter.h"
 
+#include <memory>
 #include <string>
 
 #include "ash/display/display_pref_util.h"
@@ -178,9 +179,9 @@ bool DisplayLayoutToJson(const display::DisplayLayout& layout,
   dict_value->SetBoolean(kDefaultUnifiedKey, layout.default_unified);
   dict_value->SetString(kPrimaryIdKey, base::Int64ToString(layout.primary_id));
 
-  scoped_ptr<base::ListValue> placement_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> placement_list(new base::ListValue);
   for (const auto& placement : layout.placement_list) {
-    scoped_ptr<base::DictionaryValue> placement_value(
+    std::unique_ptr<base::DictionaryValue> placement_value(
         new base::DictionaryValue);
     placement_value->SetString(
         kPositionKey,

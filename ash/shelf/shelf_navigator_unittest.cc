@@ -64,7 +64,7 @@ class ShelfNavigatorTest : public testing::Test {
   const ShelfModel& model() { return *model_.get(); }
 
  private:
-  scoped_ptr<ShelfModel> model_;
+  std::unique_ptr<ShelfModel> model_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfNavigatorTest);
 };

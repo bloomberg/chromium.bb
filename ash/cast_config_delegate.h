@@ -5,12 +5,12 @@
 #ifndef ASH_CAST_CONFIG_DELEGATE_H_
 #define ASH_CAST_CONFIG_DELEGATE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "url/gurl.h"
 

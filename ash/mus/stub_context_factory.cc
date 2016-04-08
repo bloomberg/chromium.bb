@@ -4,6 +4,7 @@
 
 #include "ash/mus/stub_context_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "cc/output/context_provider.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/surfaces/surface_id_allocator.h"
@@ -34,7 +35,7 @@ StubContextFactory::~StubContextFactory() {}
 void StubContextFactory::CreateOutputSurface(
     base::WeakPtr<ui::Compositor> compositor) {}
 
-scoped_ptr<ui::Reflector> StubContextFactory::CreateReflector(
+std::unique_ptr<ui::Reflector> StubContextFactory::CreateReflector(
     ui::Compositor* mirrored_compositor,
     ui::Layer* mirroring_layer) {
   return nullptr;
@@ -70,9 +71,9 @@ cc::TaskGraphRunner* StubContextFactory::GetTaskGraphRunner() {
   return task_graph_runner_.get();
 }
 
-scoped_ptr<cc::SurfaceIdAllocator>
+std::unique_ptr<cc::SurfaceIdAllocator>
 StubContextFactory::CreateSurfaceIdAllocator() {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new cc::SurfaceIdAllocator(next_surface_id_namespace_++));
 }
 

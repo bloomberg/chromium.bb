@@ -106,7 +106,7 @@ class FirstRunHelperTest : public AshTestBase,
   // FirstRunHelper::Observer overrides.
   void OnCancelled() override { ++cancelled_times_; }
 
-  scoped_ptr<FirstRunHelper> helper_;
+  std::unique_ptr<FirstRunHelper> helper_;
   int cancelled_times_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunHelperTest);

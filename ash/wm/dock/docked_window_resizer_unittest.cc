@@ -246,7 +246,7 @@ class DockedWindowResizerTest
   }
 
  private:
-  scoped_ptr<WindowResizer> resizer_;
+  std::unique_ptr<WindowResizer> resizer_;
   ShelfModel* model_;
   ui::wm::WindowType window_type_;
   aura::test::TestWindowDelegate delegate_;
@@ -262,7 +262,8 @@ TEST_P(DockedWindowResizerTest, AttachRightPrecise) {
   if (!SupportsHostWindowResize())
     return;
 
-  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
 
   // The window should be docked at the right edge.
@@ -277,7 +278,8 @@ TEST_P(DockedWindowResizerTest, AttachRightOvershoot) {
   if (!SupportsHostWindowResize())
     return;
 
-  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), +4);
 
   // The window should be docked at the right edge.
@@ -292,7 +294,8 @@ TEST_P(DockedWindowResizerTest, AttachRightUndershoot) {
   if (!SupportsHostWindowResize())
     return;
 
-  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   // Grabbing at 70px ensures that at least 30% of the window is in screen,
   // otherwise the window would be adjusted in
   // WorkspaceLayoutManager::AdjustWindowBoundsWhenAdded.
@@ -317,7 +320,8 @@ TEST_P(DockedWindowResizerTest, AttachLeftPrecise) {
   if (!SupportsHostWindowResize())
     return;
 
-  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_LEFT, window.get(), 0);
 
   // The window should be docked at the left edge.
@@ -332,7 +336,8 @@ TEST_P(DockedWindowResizerTest, AttachLeftOvershoot) {
   if (!SupportsHostWindowResize())
     return;
 
-  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_LEFT, window.get(), -4);
 
   // The window should be docked at the left edge.
@@ -347,7 +352,8 @@ TEST_P(DockedWindowResizerTest, AttachLeftUndershoot) {
   if (!SupportsHostWindowResize())
     return;
 
-  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   gfx::Rect initial_bounds(window->bounds());
   DragRelativeToEdge(DOCKED_EDGE_LEFT, window.get(), 1);
 
@@ -363,7 +369,8 @@ TEST_P(DockedWindowResizerTest, AttachRightChangeShelf) {
   if (!SupportsHostWindowResize())
     return;
 
-  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
 
   // The window should be docked at the right edge.
@@ -402,8 +409,8 @@ TEST_P(DockedWindowResizerTest, AttachTryDetach) {
   if (!SupportsHostWindowResize())
     return;
 
-  scoped_ptr<aura::Window> window(CreateTestWindow(
-      gfx::Rect(0, 0, ideal_width() + 10, 201)));
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(0, 0, ideal_width() + 10, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
 
   // The window should be docked at the right edge.
@@ -448,8 +455,8 @@ TEST_P(DockedWindowResizerTest, AttachTryDetachDragRightEdgeOfHeader) {
   if (!SupportsHostWindowResize())
     return;
 
-  scoped_ptr<aura::Window> window(CreateTestWindow(
-      gfx::Rect(0, 0, ideal_width() + 10, 201)));
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(0, 0, ideal_width() + 10, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
 
   // The window should be docked at the right edge.
@@ -491,7 +498,8 @@ TEST_P(DockedWindowResizerTest, AttachMinimizeRestore) {
   if (!SupportsHostWindowResize())
     return;
 
-  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
 
   // The window should be docked at the right edge.
@@ -517,7 +525,8 @@ TEST_P(DockedWindowResizerTest, AttachMaximize) {
   if (!SupportsHostWindowResize())
     return;
 
-  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
 
   // The window should be docked at the right edge.
@@ -540,8 +549,8 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindows) {
     return;
   UpdateDisplay("600x600");
 
-  scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
-  scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w2.get(), 50);
 
@@ -582,7 +591,7 @@ TEST_P(DockedWindowResizerTest, AttachOneAutoHideShelf) {
   if (!SupportsHostWindowResize())
     return;
 
-  scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
 
   // w1 should be docked at the right edge.
@@ -590,7 +599,7 @@ TEST_P(DockedWindowResizerTest, AttachOneAutoHideShelf) {
             w1->GetBoundsInScreen().right());
   EXPECT_EQ(kShellWindowId_DockedContainer, w1->parent()->id());
 
-  scoped_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegateAndType(
+  std::unique_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegateAndType(
       NULL, ui::wm::WINDOW_TYPE_NORMAL, 0, gfx::Rect(20, 20, 150, 20)));
   wm::GetWindowState(w2.get())->Maximize();
   EXPECT_EQ(kShellWindowId_DefaultContainer, w2->parent()->id());
@@ -624,8 +633,8 @@ TEST_P(DockedWindowResizerTest, AttachOnTwoSides) {
   if (!SupportsHostWindowResize())
     return;
 
-  scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
-  scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
   gfx::Rect initial_bounds(w2->bounds());
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_LEFT, w2.get(), 50);
@@ -648,7 +657,8 @@ TEST_P(DockedWindowResizerTest, RevertDragRestoresAttachment) {
   if (!SupportsHostWindowResize())
     return;
 
-  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
 
   // The window should be docked at the right edge.
@@ -673,7 +683,8 @@ TEST_P(DockedWindowResizerTest, RevertDragRestoresAttachment) {
 TEST_P(DockedWindowResizerTest, RevertDockedDragRevertsAttachment) {
   if (!SupportsHostWindowResize())
     return;
-  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   aura::Window* dock_container = Shell::GetContainer(
       window->GetRootWindow(),
       kShellWindowId_DockedContainer);
@@ -722,7 +733,8 @@ TEST_P(DockedWindowResizerTest, DragAcrossDisplays) {
   UpdateDisplay("800x800,800x800");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(2, static_cast<int>(root_windows.size()));
-  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   gfx::Rect initial_bounds = window->GetBoundsInScreen();
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
 
@@ -783,8 +795,8 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindowsDetachOne) {
     return;
   UpdateDisplay("600x600");
 
-  scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
-  scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 201)));
+  std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 201)));
   // Work area should cover the whole screen.
   EXPECT_EQ(ScreenUtil::GetDisplayBoundsInParent(w2.get()).width(),
             ScreenUtil::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
@@ -855,8 +867,8 @@ TEST_P(DockedWindowResizerTest, AttachWindowMaximizeOther) {
   if (!SupportsHostWindowResize())
     return;
 
-  scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
-  scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 201)));
+  std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 201)));
   // Work area should cover the whole screen.
   EXPECT_EQ(ScreenUtil::GetDisplayBoundsInParent(w2.get()).width(),
             ScreenUtil::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
@@ -954,8 +966,8 @@ TEST_P(DockedWindowResizerTest, AttachOneTestSticky) {
   if (!SupportsHostWindowResize())
     return;
 
-  scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
-  scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 201)));
+  std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 201)));
   // Work area should cover the whole screen.
   EXPECT_EQ(ScreenUtil::GetDisplayBoundsInParent(w2.get()).width(),
             ScreenUtil::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
@@ -1054,8 +1066,8 @@ TEST_P(DockedWindowResizerTest, ResizeOneOfTwoWindows) {
 
   // Wider display to start since panels are limited to half the display width.
   UpdateDisplay("1000x600");
-  scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
-  scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 201)));
+  std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 201)));
   // Work area should cover the whole screen.
   EXPECT_EQ(ScreenUtil::GetDisplayBoundsInParent(w2.get()).width(),
             ScreenUtil::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
@@ -1201,7 +1213,7 @@ TEST_P(DockedWindowResizerTest, ResizingKeepsSize) {
   // Wider display to start since panels are limited to half the display width.
   UpdateDisplay("1000x600");
   const gfx::Size original_size(201, 201);
-  scoped_ptr<aura::Window> w1(
+  std::unique_ptr<aura::Window> w1(
       CreateTestWindow(gfx::Rect(gfx::Point(), original_size)));
 
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
@@ -1256,7 +1268,7 @@ TEST_P(DockedWindowResizerTest, ResizingKeepsDockedState) {
 
   // Wider display to start since panels are limited to half the display width.
   UpdateDisplay("1000x600");
-  scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
 
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
   // Window should be docked at the right edge.
@@ -1314,8 +1326,8 @@ TEST_P(DockedWindowResizerTest, ResizeTwoWindows) {
 
   // Wider display to start since panels are limited to half the display width.
   UpdateDisplay("1000x600");
-  scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
-  scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 201)));
+  std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 201)));
 
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w2.get(), 100);
@@ -1382,7 +1394,7 @@ TEST_P(DockedWindowResizerTest, DragToShelf) {
   if (!SupportsHostWindowResize())
     return;
 
-  scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   // Work area should cover the whole screen.
   EXPECT_EQ(ScreenUtil::GetDisplayBoundsInParent(w1.get()).width(),
             ScreenUtil::GetDisplayWorkAreaBoundsInParent(w1.get()).width());
@@ -1430,9 +1442,11 @@ TEST_P(DockedWindowResizerTest, DragWindowWithTransientChild) {
     return;
 
   // Create a window with a transient child.
-  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
-  scoped_ptr<aura::Window> child(CreateTestWindowInShellWithDelegateAndType(
-      NULL, ui::wm::WINDOW_TYPE_NORMAL, 0, gfx::Rect(20, 20, 150, 20)));
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> child(
+      CreateTestWindowInShellWithDelegateAndType(
+          NULL, ui::wm::WINDOW_TYPE_NORMAL, 0, gfx::Rect(20, 20, 150, 20)));
   ::wm::AddTransientChild(window.get(), child.get());
   if (window->parent() != child->parent())
     window->parent()->AddChild(child.get());
@@ -1471,7 +1485,8 @@ TEST_P(DockedWindowResizerTest, DragWindowWithModalTransientChild) {
     return;
 
   // Create a window.
-  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   gfx::Rect bounds(window->bounds());
 
   // Start dragging the window.
@@ -1482,7 +1497,8 @@ TEST_P(DockedWindowResizerTest, DragWindowWithModalTransientChild) {
 
   // While still dragging create a modal window and make it a transient child of
   // the |window|.
-  scoped_ptr<aura::Window> child(CreateModalWindow(gfx::Rect(20, 20, 150, 20)));
+  std::unique_ptr<aura::Window> child(
+      CreateModalWindow(gfx::Rect(20, 20, 150, 20)));
   ::wm::AddTransientChild(window.get(), child.get());
   EXPECT_EQ(window.get(), ::wm::GetTransientParent(child.get()));
   EXPECT_EQ(kShellWindowId_SystemModalContainer, child->parent()->id());
@@ -1510,7 +1526,7 @@ TEST_P(DockedWindowResizerTest, SideSnapDocked) {
   if (!SupportsHostWindowResize() || test_panels())
     return;
 
-  scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   wm::WindowState* window_state = wm::GetWindowState(w1.get());
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
   // A window should be docked at the right edge.
@@ -1567,8 +1583,8 @@ TEST_P(DockedWindowResizerTest, MaximizedDuringDrag) {
   if (!SupportsHostWindowResize() || test_panels())
     return;
 
-  scoped_ptr<aura::Window> window(CreateTestWindow(
-      gfx::Rect(0, 0, ideal_width(), 201)));
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(0, 0, ideal_width(), 201)));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
 
   // Dock the window to the right edge.

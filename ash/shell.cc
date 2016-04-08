@@ -83,6 +83,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -593,7 +594,7 @@ ShelfDelegate* Shell::GetShelfDelegate() {
         new ShelfItemDelegateManager(shelf_model_.get()));
 
     shelf_delegate_.reset(delegate_->CreateShelfDelegate(shelf_model_.get()));
-    scoped_ptr<ShelfItemDelegate> controller(new AppListShelfItemDelegate);
+    std::unique_ptr<ShelfItemDelegate> controller(new AppListShelfItemDelegate);
 
     // Finding the shelf model's location of the app list and setting its
     // ShelfItemDelegate.
@@ -859,10 +860,10 @@ void Shell::Init(const ShellInitParams& init_params) {
     native_cursor_manager_ = new AshNativeCursorManager;
 #if defined(OS_CHROMEOS)
     cursor_manager_.reset(
-        new CursorManager(make_scoped_ptr(native_cursor_manager_)));
+        new CursorManager(base::WrapUnique(native_cursor_manager_)));
 #else
     cursor_manager_.reset(
-        new ::wm::CursorManager(make_scoped_ptr(native_cursor_manager_)));
+        new ::wm::CursorManager(base::WrapUnique(native_cursor_manager_)));
 #endif
   }
 
@@ -974,7 +975,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   AddShellObserver(overlay_filter_.get());
 
   accelerator_filter_.reset(new ::wm::AcceleratorFilter(
-      scoped_ptr<::wm::AcceleratorDelegate>(new AcceleratorDelegate),
+      std::unique_ptr<::wm::AcceleratorDelegate>(new AcceleratorDelegate),
       accelerator_controller_->accelerator_history()));
   AddPreTargetHandler(accelerator_filter_.get());
 
@@ -1033,7 +1034,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   window_cycle_controller_.reset(new WindowCycleController());
 
   tooltip_controller_.reset(new views::corewm::TooltipController(
-      scoped_ptr<views::corewm::Tooltip>(new views::corewm::TooltipAura)));
+      std::unique_ptr<views::corewm::Tooltip>(new views::corewm::TooltipAura)));
   AddPreTargetHandler(tooltip_controller_.get());
 
   event_client_.reset(new EventClientImpl);
@@ -1108,7 +1109,7 @@ void Shell::Init(const ShellInitParams& init_params) {
 #if defined(OS_CHROMEOS)
   // Set accelerator controller delegates.
   accelerator_controller_->SetBrightnessControlDelegate(
-      scoped_ptr<BrightnessControlDelegate>(
+      std::unique_ptr<BrightnessControlDelegate>(
           new system::BrightnessControllerChromeos));
 
   power_event_observer_.reset(new PowerEventObserver());
@@ -1200,8 +1201,8 @@ ui::EventTarget* Shell::GetParentTarget() {
   return aura::Env::GetInstance();
 }
 
-scoped_ptr<ui::EventTargetIterator> Shell::GetChildIterator() const {
-  return scoped_ptr<ui::EventTargetIterator>();
+std::unique_ptr<ui::EventTargetIterator> Shell::GetChildIterator() const {
+  return std::unique_ptr<ui::EventTargetIterator>();
 }
 
 ui::EventTargeter* Shell::GetEventTargeter() {

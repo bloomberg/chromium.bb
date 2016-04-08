@@ -98,7 +98,7 @@ MaximizeModeWindowState::MaximizeModeWindowState(
       current_state_type_(wm::GetWindowState(window)->GetStateType()),
       defer_bounds_updates_(false) {
   old_state_.reset(wm::GetWindowState(window)
-                       ->SetStateObject(scoped_ptr<State>(this))
+                       ->SetStateObject(std::unique_ptr<State>(this))
                        .release());
 }
 
@@ -108,7 +108,7 @@ MaximizeModeWindowState::~MaximizeModeWindowState() {
 
 void MaximizeModeWindowState::LeaveMaximizeMode(wm::WindowState* window_state) {
   // Note: When we return we will destroy ourselves with the |our_reference|.
-  scoped_ptr<wm::WindowState::State> our_reference =
+  std::unique_ptr<wm::WindowState::State> our_reference =
       window_state->SetStateObject(std::move(old_state_));
 }
 

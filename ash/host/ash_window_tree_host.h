@@ -5,9 +5,10 @@
 #ifndef ASH_HOST_ASH_WINDOW_TREE_HOST_H_
 #define ASH_HOST_ASH_WINDOW_TREE_HOST_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace aura {
 class Window;
@@ -62,7 +63,7 @@ class ASH_EXPORT AshWindowTreeHost {
   virtual void UnConfineCursor() = 0;
 
   virtual void SetRootWindowTransformer(
-      scoped_ptr<RootWindowTransformer> transformer) = 0;
+      std::unique_ptr<RootWindowTransformer> transformer) = 0;
 
   virtual gfx::Insets GetHostInsets() const = 0;
 

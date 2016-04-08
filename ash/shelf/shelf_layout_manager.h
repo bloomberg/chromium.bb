@@ -5,6 +5,7 @@
 #ifndef ASH_SHELF_SHELF_LAYOUT_MANAGER_H_
 #define ASH_SHELF_SHELF_LAYOUT_MANAGER_H_
 
+#include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -354,10 +355,10 @@ class ASH_EXPORT ShelfLayoutManager
 
   // EventFilter used to detect when user moves the mouse over the shelf to
   // trigger showing the shelf.
-  scoped_ptr<AutoHideEventFilter> auto_hide_event_filter_;
+  std::unique_ptr<AutoHideEventFilter> auto_hide_event_filter_;
 
   // EventFilter used to detect when user issues a gesture on a bezel sensor.
-  scoped_ptr<ShelfBezelEventFilter> bezel_event_filter_;
+  std::unique_ptr<ShelfBezelEventFilter> bezel_event_filter_;
 
   base::ObserverList<ShelfLayoutManagerObserver> observers_;
 

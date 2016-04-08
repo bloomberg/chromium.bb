@@ -5,13 +5,13 @@
 #ifndef ASH_SYSTEM_TRAY_SYSTEM_TRAY_BUBBLE_H_
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_BUBBLE_H_
 
+#include <memory>
+#include <vector>
+
 #include "ash/system/user/login_status.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/views/bubble/tray_bubble_view.h"
-
-#include <vector>
 
 namespace ash {
 class SystemTray;

@@ -82,7 +82,7 @@ VolumeControlDelegate* DefaultSystemTrayDelegate::GetVolumeControlDelegate()
 }
 
 void DefaultSystemTrayDelegate::SetVolumeControlDelegate(
-    scoped_ptr<VolumeControlDelegate> delegate) {
+    std::unique_ptr<VolumeControlDelegate> delegate) {
   volume_control_delegate_ = std::move(delegate);
 }
 

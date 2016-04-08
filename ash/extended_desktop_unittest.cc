@@ -35,7 +35,7 @@ namespace ash {
 namespace {
 
 void SetSecondaryDisplayLayout(display::DisplayPlacement::Position position) {
-  scoped_ptr<display::DisplayLayout> layout =
+  std::unique_ptr<display::DisplayLayout> layout =
       Shell::GetInstance()->display_manager()->GetCurrentDisplayLayout().Copy();
   layout->placement_list[0].position = position;
   Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
@@ -378,11 +378,11 @@ TEST_F(ExtendedDesktopTest, Capture) {
   aura::test::EventCountDelegate r1_d2;
   aura::test::EventCountDelegate r2_d1;
 
-  scoped_ptr<aura::Window> r1_w1(aura::test::CreateTestWindowWithDelegate(
+  std::unique_ptr<aura::Window> r1_w1(aura::test::CreateTestWindowWithDelegate(
       &r1_d1, 0, gfx::Rect(10, 10, 100, 100), root_windows[0]));
-  scoped_ptr<aura::Window> r1_w2(aura::test::CreateTestWindowWithDelegate(
+  std::unique_ptr<aura::Window> r1_w2(aura::test::CreateTestWindowWithDelegate(
       &r1_d2, 0, gfx::Rect(10, 100, 100, 100), root_windows[0]));
-  scoped_ptr<aura::Window> r2_w1(aura::test::CreateTestWindowWithDelegate(
+  std::unique_ptr<aura::Window> r2_w1(aura::test::CreateTestWindowWithDelegate(
       &r2_d1, 0, gfx::Rect(10, 10, 100, 100), root_windows[1]));
 
   r1_w1->SetCapture();
@@ -448,11 +448,11 @@ TEST_F(ExtendedDesktopTest, CaptureEventLocation) {
   aura::test::EventCountDelegate r1_d2;
   aura::test::EventCountDelegate r2_d1;
 
-  scoped_ptr<aura::Window> r1_w1(aura::test::CreateTestWindowWithDelegate(
+  std::unique_ptr<aura::Window> r1_w1(aura::test::CreateTestWindowWithDelegate(
       &r1_d1, 0, gfx::Rect(10, 10, 100, 100), root_windows[0]));
-  scoped_ptr<aura::Window> r1_w2(aura::test::CreateTestWindowWithDelegate(
+  std::unique_ptr<aura::Window> r1_w2(aura::test::CreateTestWindowWithDelegate(
       &r1_d2, 0, gfx::Rect(10, 100, 100, 100), root_windows[0]));
-  scoped_ptr<aura::Window> r2_w1(aura::test::CreateTestWindowWithDelegate(
+  std::unique_ptr<aura::Window> r2_w1(aura::test::CreateTestWindowWithDelegate(
       &r2_d1, 0, gfx::Rect(10, 10, 100, 100), root_windows[1]));
 
   r1_w1->SetCapture();
@@ -483,11 +483,11 @@ TEST_F(ExtendedDesktopTest, CaptureEventLocationHighDPI) {
   aura::test::EventCountDelegate r1_d2;
   aura::test::EventCountDelegate r2_d1;
 
-  scoped_ptr<aura::Window> r1_w1(aura::test::CreateTestWindowWithDelegate(
+  std::unique_ptr<aura::Window> r1_w1(aura::test::CreateTestWindowWithDelegate(
       &r1_d1, 0, gfx::Rect(10, 10, 100, 100), root_windows[0]));
-  scoped_ptr<aura::Window> r1_w2(aura::test::CreateTestWindowWithDelegate(
+  std::unique_ptr<aura::Window> r1_w2(aura::test::CreateTestWindowWithDelegate(
       &r1_d2, 0, gfx::Rect(10, 100, 100, 100), root_windows[0]));
-  scoped_ptr<aura::Window> r2_w1(aura::test::CreateTestWindowWithDelegate(
+  std::unique_ptr<aura::Window> r2_w1(aura::test::CreateTestWindowWithDelegate(
       &r2_d1, 0, gfx::Rect(10, 10, 100, 100), root_windows[1]));
 
   r1_w1->SetCapture();
@@ -518,11 +518,11 @@ TEST_F(ExtendedDesktopTest, CaptureEventLocationHighDPI_2) {
   aura::test::EventCountDelegate r1_d2;
   aura::test::EventCountDelegate r2_d1;
 
-  scoped_ptr<aura::Window> r1_w1(aura::test::CreateTestWindowWithDelegate(
+  std::unique_ptr<aura::Window> r1_w1(aura::test::CreateTestWindowWithDelegate(
       &r1_d1, 0, gfx::Rect(10, 10, 100, 100), root_windows[0]));
-  scoped_ptr<aura::Window> r1_w2(aura::test::CreateTestWindowWithDelegate(
+  std::unique_ptr<aura::Window> r1_w2(aura::test::CreateTestWindowWithDelegate(
       &r1_d2, 0, gfx::Rect(10, 100, 100, 100), root_windows[0]));
-  scoped_ptr<aura::Window> r2_w1(aura::test::CreateTestWindowWithDelegate(
+  std::unique_ptr<aura::Window> r2_w1(aura::test::CreateTestWindowWithDelegate(
       &r2_d1, 0, gfx::Rect(10, 10, 100, 100), root_windows[1]));
 
   r1_w1->SetCapture();
@@ -591,7 +591,7 @@ TEST_F(ExtendedDesktopTest, MoveWindowByMouseClick) {
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   aura::test::EventCountDelegate delegate;
-  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
+  std::unique_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
       &delegate, 0, gfx::Rect(10, 10, 100, 100), root_windows[0]));
   MoveWindowByClickEventHandler event_handler(window.get());
   window->AddPreTargetHandler(&event_handler);

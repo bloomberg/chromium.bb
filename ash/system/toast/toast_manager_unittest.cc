@@ -153,7 +153,7 @@ TEST_F(ToastManagerTest, PositionWithVisibleBottomShelf) {
 }
 
 TEST_F(ToastManagerTest, PositionWithAutoHiddenBottomShelf) {
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
 
   ShelfLayoutManager* shelf =

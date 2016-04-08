@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_TOAST_TOAST_MANAGER_H_
 #define ASH_SYSTEM_TOAST_TOAST_MANAGER_H_
 
+#include <memory>
 #include <queue>
 #include <string>
 
@@ -41,7 +42,7 @@ class ASH_EXPORT ToastManager : public ToastOverlay::Delegate {
 
   int toast_id_ = 0;
   std::queue<std::pair<std::string, uint64_t>> queue_;
-  scoped_ptr<ToastOverlay> overlay_;
+  std::unique_ptr<ToastOverlay> overlay_;
 
   base::WeakPtrFactory<ToastManager> weak_ptr_factory_;
 

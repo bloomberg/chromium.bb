@@ -5,12 +5,13 @@
 #ifndef ASH_WM_WINDOW_STATE_H_
 #define ASH_WM_WINDOW_STATE_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/wm/drag_details.h"
 #include "ash/wm/wm_types.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
@@ -85,7 +86,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   const aura::Window* window() const { return window_; }
 
   bool HasDelegate() const;
-  void SetDelegate(scoped_ptr<WindowStateDelegate> delegate);
+  void SetDelegate(std::unique_ptr<WindowStateDelegate> delegate);
 
   // Returns the window's current ash state type.
   // Refer to WindowStateType definition in wm_types.h as for why Ash
@@ -176,7 +177,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // Replace the State object of a window with a state handler which can
   // implement a new window manager type. The passed object will be owned
   // by this object and the returned object will be owned by the caller.
-  scoped_ptr<State> SetStateObject(scoped_ptr<State> new_state);
+  std::unique_ptr<State> SetStateObject(std::unique_ptr<State> new_state);
 
   // True if the window should be unminimized to the restore bounds, as
   // opposed to the window's current bounds. |unminimized_to_restore_bounds_| is
@@ -360,7 +361,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   // The owner of this window settings.
   aura::Window* window_;
-  scoped_ptr<WindowStateDelegate> delegate_;
+  std::unique_ptr<WindowStateDelegate> delegate_;
 
   bool window_position_managed_;
   bool bounds_changed_by_user_;
@@ -368,7 +369,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool ignored_by_shelf_;
   bool can_consume_system_keys_;
   bool top_row_keys_are_function_keys_;
-  scoped_ptr<DragDetails> drag_details_;
+  std::unique_ptr<DragDetails> drag_details_;
 
   bool unminimize_to_restore_bounds_;
   bool in_immersive_fullscreen_;
@@ -380,7 +381,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // A property to remember the window position which was set before the
   // auto window position manager changed the window bounds, so that it can get
   // restored when only this one window gets shown.
-  scoped_ptr<gfx::Rect> pre_auto_manage_window_bounds_;
+  std::unique_ptr<gfx::Rect> pre_auto_manage_window_bounds_;
 
   base::ObserverList<WindowStateObserver> observer_list_;
 
@@ -388,7 +389,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // UpdateWindowStateType()
   bool ignore_property_change_;
 
-  scoped_ptr<State> current_state_;
+  std::unique_ptr<State> current_state_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowState);
 };

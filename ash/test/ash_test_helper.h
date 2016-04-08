@@ -5,9 +5,10 @@
 #ifndef ASH_TEST_ASH_TEST_HELPER_H_
 #define ASH_TEST_ASH_TEST_HELPER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace aura {
 class Window;
@@ -84,12 +85,12 @@ class AshTestHelper {
  private:
   base::MessageLoopForUI* message_loop_;  // Not owned.
   TestShellDelegate* test_shell_delegate_;  // Owned by ash::Shell.
-  scoped_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
   // Owned by ash::AcceleratorController
   TestScreenshotDelegate* test_screenshot_delegate_;
 
-  scoped_ptr<views::ViewsDelegate> views_delegate_;
+  std::unique_ptr<views::ViewsDelegate> views_delegate_;
 
   // An implementation of ShellContentState supplied by the user prior to
   // SetUp().

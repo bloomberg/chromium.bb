@@ -51,7 +51,7 @@ class PowerStatusViewTest : public test::AshTestBase {
   }
 
  private:
-  scoped_ptr<PowerStatusView> view_;
+  std::unique_ptr<PowerStatusView> view_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerStatusViewTest);
 };

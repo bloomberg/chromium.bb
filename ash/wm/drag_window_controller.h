@@ -5,12 +5,12 @@
 #ifndef ASH_WM_DRAG_WINDOW_CONTROLLER_H_
 #define ASH_WM_DRAG_WINDOW_CONTROLLER_H_
 
+#include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -56,7 +56,7 @@ class ASH_EXPORT DragWindowController {
   // Window the drag window is placed beneath.
   aura::Window* window_;
 
-  std::vector<scoped_ptr<DragWindowDetails>> drag_windows_;
+  std::vector<std::unique_ptr<DragWindowDetails>> drag_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(DragWindowController);
 };

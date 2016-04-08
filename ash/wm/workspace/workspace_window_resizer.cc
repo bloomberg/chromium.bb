@@ -26,6 +26,7 @@
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/two_step_edge_cycler.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -42,7 +43,7 @@
 
 namespace ash {
 
-scoped_ptr<WindowResizer> CreateWindowResizer(
+std::unique_ptr<WindowResizer> CreateWindowResizer(
     aura::Window* window,
     const gfx::Point& point_in_parent,
     int window_component,
@@ -53,11 +54,11 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
   // resizer already exists for this window.
   if ((!window_state->CanResize() && window_component != HTCAPTION) ||
       window_state->drag_details()) {
-    return scoped_ptr<WindowResizer>();
+    return std::unique_ptr<WindowResizer>();
   }
 
   if (window_component == HTCAPTION && !window_state->can_be_dragged())
-    return scoped_ptr<WindowResizer>();
+    return std::unique_ptr<WindowResizer>();
 
   // TODO(varkha): The chaining of window resizers causes some of the logic
   // to be repeated and the logic flow difficult to control. With some windows
@@ -73,12 +74,12 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
   WindowResizer* window_resizer = NULL;
 
   if (!window_state->IsNormalOrSnapped() && !window_state->IsDocked())
-    return scoped_ptr<WindowResizer>();
+    return std::unique_ptr<WindowResizer>();
 
   int bounds_change = WindowResizer::GetBoundsChangeForWindowComponent(
       window_component);
   if (bounds_change == WindowResizer::kBoundsChangeDirection_None)
-    return scoped_ptr<WindowResizer>();
+    return std::unique_ptr<WindowResizer>();
 
   window_state->CreateDragDetails(window, point_in_parent, window_component,
       source);
@@ -101,7 +102,7 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
        window->parent()->id() == kShellWindowId_PanelContainer)) {
     window_resizer = DockedWindowResizer::Create(window_resizer, window_state);
   }
-  return make_scoped_ptr<WindowResizer>(window_resizer);
+  return base::WrapUnique<WindowResizer>(window_resizer);
 }
 
 namespace {

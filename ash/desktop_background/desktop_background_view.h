@@ -5,6 +5,8 @@
 #ifndef ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_VIEW_H_
 #define ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_VIEW_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/events/event.h"
 #include "ui/gfx/image/image_skia.h"
@@ -32,7 +34,7 @@ class DesktopBackgroundView : public views::View,
   void ShowContextMenuForView(views::View* source,
                               const gfx::Point& point,
                               ui::MenuSourceType source_type) override;
-  scoped_ptr<PreEventDispatchHandler> pre_dispatch_handler_;
+  std::unique_ptr<PreEventDispatchHandler> pre_dispatch_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopBackgroundView);
 };

@@ -127,7 +127,7 @@ class DimmerView : public views::View,
   ash::BackgroundAnimator background_animator_;
 
   // Notification of entering / exiting of the shelf area by mouse.
-  scoped_ptr<DimmerEventFilter> event_filter_;
+  std::unique_ptr<DimmerEventFilter> event_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(DimmerView);
 };
@@ -379,7 +379,7 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
 
  private:
   ShelfWidget* shelf_;
-  scoped_ptr<views::Widget> dimmer_;
+  std::unique_ptr<views::Widget> dimmer_;
   FocusCycler* focus_cycler_;
   int alpha_;
   // A black background layer which is shown when a maximized window is visible.
@@ -631,10 +631,10 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container,
   status_container->SetLayoutManager(
       new StatusAreaLayoutManager(status_container, this));
 
-  shelf_container->SetEventTargeter(scoped_ptr<ui::EventTargeter>(new
-      ShelfWindowTargeter(shelf_container, shelf_layout_manager_)));
-  status_container->SetEventTargeter(scoped_ptr<ui::EventTargeter>(new
-      ShelfWindowTargeter(status_container, shelf_layout_manager_)));
+  shelf_container->SetEventTargeter(std::unique_ptr<ui::EventTargeter>(
+      new ShelfWindowTargeter(shelf_container, shelf_layout_manager_)));
+  status_container->SetEventTargeter(std::unique_ptr<ui::EventTargeter>(
+      new ShelfWindowTargeter(status_container, shelf_layout_manager_)));
 
   views::Widget::AddObserver(this);
 }
@@ -651,7 +651,7 @@ void ShelfWidget::SetPaintsBackground(
   ui::Layer* opaque_background = delegate_view_->opaque_background();
   float target_opacity =
       (background_type == SHELF_BACKGROUND_MAXIMIZED) ? 1.0f : 0.0f;
-  scoped_ptr<ui::ScopedLayerAnimationSettings> opaque_background_animation;
+  std::unique_ptr<ui::ScopedLayerAnimationSettings> opaque_background_animation;
   if (change_type != BACKGROUND_CHANGE_IMMEDIATE) {
     opaque_background_animation.reset(new ui::ScopedLayerAnimationSettings(
         opaque_background->GetAnimator()));
@@ -684,7 +684,7 @@ void ShelfWidget::HideShelfBehindBlackBar(bool hide, int animation_time_ms) {
 
   ui::Layer* opaque_foreground = delegate_view_->opaque_foreground();
   float target_opacity = hide ? 1.0f : 0.0f;
-  scoped_ptr<ui::ScopedLayerAnimationSettings> opaque_foreground_animation;
+  std::unique_ptr<ui::ScopedLayerAnimationSettings> opaque_foreground_animation;
   opaque_foreground_animation.reset(new ui::ScopedLayerAnimationSettings(
       opaque_foreground->GetAnimator()));
   opaque_foreground_animation->SetTransitionDuration(

@@ -69,7 +69,7 @@ class AutoclickControllerImpl : public AutoclickController,
   bool enabled_;
   int delay_ms_;
   int mouse_event_flags_;
-  scoped_ptr<base::Timer> autoclick_timer_;
+  std::unique_ptr<base::Timer> autoclick_timer_;
   // The position in screen coordinates used to determine
   // the distance the mouse has moved.
   gfx::Point anchor_location_;

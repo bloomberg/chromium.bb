@@ -5,10 +5,11 @@
 #ifndef ASH_ACCELERATORS_SPOKEN_FEEDBACK_TOGGLER_H_
 #define ASH_ACCELERATORS_SPOKEN_FEEDBACK_TOGGLER_H_
 
+#include <memory>
+
 #include "ash/accelerators/key_hold_detector.h"
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/events/event_handler.h"
 
 namespace ui {
@@ -22,7 +23,7 @@ class ASH_EXPORT SpokenFeedbackToggler : public KeyHoldDetector::Delegate {
  public:
   static bool IsEnabled();
   static void SetEnabled(bool enabled);
-  static scoped_ptr<ui::EventHandler> CreateHandler();
+  static std::unique_ptr<ui::EventHandler> CreateHandler();
 
   // A scoped object to enable and disable the magnifier accelerator for test.
   class ScopedEnablerForTest {

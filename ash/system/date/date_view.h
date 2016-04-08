@@ -5,12 +5,13 @@
 #ifndef ASH_SYSTEM_DATE_DATE_VIEW_H_
 #define ASH_SYSTEM_DATE_DATE_VIEW_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/system/date/tray_date.h"
 #include "ash/system/tray/actionable_view.h"
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/views/view.h"
 
@@ -123,11 +124,11 @@ class ASH_EXPORT TimeView : public BaseDateTimeView {
   void SetupLabel(views::Label* label);
 
   // Label text used for the normal horizontal shelf.
-  scoped_ptr<views::Label> horizontal_label_;
+  std::unique_ptr<views::Label> horizontal_label_;
 
   // The time label is split into two lines for the vertical shelf.
-  scoped_ptr<views::Label> vertical_label_hours_;
-  scoped_ptr<views::Label> vertical_label_minutes_;
+  std::unique_ptr<views::Label> vertical_label_hours_;
+  std::unique_ptr<views::Label> vertical_label_minutes_;
 
   base::HourClockType hour_type_;
 

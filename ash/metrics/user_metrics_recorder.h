@@ -5,10 +5,11 @@
 #ifndef ASH_METRICS_USER_METRICS_RECORDER_H_
 #define ASH_METRICS_USER_METRICS_RECORDER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/metrics/task_switch_metrics_recorder.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 
 namespace ash {
@@ -193,7 +194,7 @@ class ASH_EXPORT UserMetricsRecorder {
 
   // Metric recorder to track how often task windows are activated by mouse
   // clicks or touchscreen taps.
-  scoped_ptr<DesktopTaskSwitchMetricRecorder>
+  std::unique_ptr<DesktopTaskSwitchMetricRecorder>
       desktop_task_switch_metric_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(UserMetricsRecorder);

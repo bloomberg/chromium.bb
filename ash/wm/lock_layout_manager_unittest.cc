@@ -112,7 +112,7 @@ TEST_F(LockLayoutManagerTest, NorwmalWindowBoundsArePreserved) {
       views::Widget::InitParams::TYPE_WINDOW);
   const gfx::Rect bounds = gfx::Rect(10, 10, 300, 300);
   widget_params.bounds = bounds;
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateTestLoginWindow(widget_params, false /* use_delegate */));
   EXPECT_EQ(bounds.ToString(), window->GetBoundsInScreen().ToString());
 
@@ -142,13 +142,13 @@ TEST_F(LockLayoutManagerTest, MaximizedFullscreenWindowBoundsAreEqualToScreen) {
   widget_params.bounds = bounds;
   // Maximized TYPE_WINDOW_FRAMELESS windows needs a delegate defined otherwise
   // it won't get initial SetBounds event.
-  scoped_ptr<aura::Window> maximized_window(
+  std::unique_ptr<aura::Window> maximized_window(
       CreateTestLoginWindow(widget_params, true /* use_delegate */));
 
   widget_params.show_state = ui::SHOW_STATE_FULLSCREEN;
   widget_params.delegate = NULL;
-  scoped_ptr<aura::Window> fullscreen_window(
-      CreateTestLoginWindow(widget_params, false  /* use_delegate */));
+  std::unique_ptr<aura::Window> fullscreen_window(
+      CreateTestLoginWindow(widget_params, false /* use_delegate */));
 
   EXPECT_EQ(screen_bounds.ToString(),
             maximized_window->GetBoundsInScreen().ToString());
@@ -191,7 +191,7 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   widget_params.show_state = ui::SHOW_STATE_FULLSCREEN;
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateTestLoginWindow(widget_params, false /* use_delegate */));
 
   EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
@@ -260,7 +260,7 @@ TEST_F(LockLayoutManagerTest, MultipleMonitors) {
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   widget_params.show_state = ui::SHOW_STATE_FULLSCREEN;
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateTestLoginWindow(widget_params, false /* use_delegate */));
   window->SetProperty(aura::client::kCanMaximizeKey, true);
 

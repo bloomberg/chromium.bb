@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray_accessibility.h"
+#include "base/memory/ptr_util.h"
 #include "ui/keyboard/keyboard_controller.h"
 
 namespace ash {
@@ -51,8 +52,8 @@ class KeyboardUIImpl : public KeyboardUI, public AccessibilityObserver {
 KeyboardUI::~KeyboardUI() {}
 
 // static
-scoped_ptr<KeyboardUI> KeyboardUI::Create() {
-  return make_scoped_ptr(new KeyboardUIImpl);
+std::unique_ptr<KeyboardUI> KeyboardUI::Create() {
+  return base::WrapUnique(new KeyboardUIImpl);
 }
 
 void KeyboardUI::AddObserver(KeyboardUIObserver* observer) {

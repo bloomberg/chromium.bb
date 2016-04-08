@@ -68,7 +68,7 @@ DisplayConfigurationController::~DisplayConfigurationController() {
 }
 
 void DisplayConfigurationController::SetDisplayLayout(
-    scoped_ptr<display::DisplayLayout> layout,
+    std::unique_ptr<display::DisplayLayout> layout,
     bool user_action) {
   if (user_action && display_animator_) {
     display_animator_->StartFadeOutAnimation(
@@ -147,7 +147,7 @@ bool DisplayConfigurationController::IsLimited() {
 }
 
 void DisplayConfigurationController::SetDisplayLayoutImpl(
-    scoped_ptr<display::DisplayLayout> layout) {
+    std::unique_ptr<display::DisplayLayout> layout) {
   // TODO(oshima/stevenjb): Add support for 3+ displays.
   display_manager_->SetLayoutForCurrentDisplays(std::move(layout));
   if (display_animator_)

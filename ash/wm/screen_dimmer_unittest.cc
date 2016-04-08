@@ -4,11 +4,12 @@
 
 #include "ash/wm/screen_dimmer.h"
 
+#include <memory>
+
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/dim_window.h"
-#include "base/memory/scoped_ptr.h"
 //#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/compositor/layer.h"
@@ -95,7 +96,7 @@ TEST_F(ScreenDimmerTest, RootDimmer) {
 TEST_F(ScreenDimmerTest, DimAtBottom) {
   ScreenDimmer* root_dimmer = ScreenDimmer::GetForRoot();
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       aura::test::CreateTestWindowWithId(1, root_window));
   root_dimmer->SetDimming(true);
   std::vector<aura::Window*>::const_iterator dim_iter =

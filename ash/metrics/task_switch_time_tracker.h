@@ -5,11 +5,11 @@
 #ifndef ASH_METRICS_TASK_SWITCH_TIME_TRACKER_H_
 #define ASH_METRICS_TASK_SWITCH_TIME_TRACKER_H_
 
+#include <memory>
 #include <string>
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -42,7 +42,7 @@ class ASH_EXPORT TaskSwitchTimeTracker {
   // Private constructor that the test::TaskSwitchTimeTrackerTestAPI can use to
   // inject a custom |tick_clock|.
   TaskSwitchTimeTracker(const std::string& histogram_name,
-                        scoped_ptr<base::TickClock> tick_clock);
+                        std::unique_ptr<base::TickClock> tick_clock);
 
   // Returns true if |last_action_time_| has a valid value.
   bool HasLastActionTime() const;
@@ -68,7 +68,7 @@ class ASH_EXPORT TaskSwitchTimeTracker {
   base::TimeTicks last_action_time_ = base::TimeTicks();
 
   // The clock used to determine the |last_action_time_|.
-  scoped_ptr<base::TickClock> tick_clock_;
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskSwitchTimeTracker);
 };
