@@ -5,7 +5,8 @@
 #ifndef UI_APP_LIST_SHOWER_APP_LIST_SHOWER_DELEGATE_FACTORY_H_
 #define UI_APP_LIST_SHOWER_APP_LIST_SHOWER_DELEGATE_FACTORY_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/app_list/shower/app_list_shower_export.h"
 
 namespace app_list {
@@ -17,7 +18,7 @@ class APP_LIST_SHOWER_EXPORT AppListShowerDelegateFactory {
  public:
   virtual ~AppListShowerDelegateFactory() {}
 
-  virtual scoped_ptr<AppListShowerDelegate> GetDelegate(
+  virtual std::unique_ptr<AppListShowerDelegate> GetDelegate(
       AppListShower* shower) = 0;
 };
 

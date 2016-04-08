@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "ui/app_list/shower/app_list_shower_delegate_factory.h"
 #include "ui/app_list/shower/app_list_shower_impl.h"
 #include "ui/app_list/shower/test/app_list_shower_impl_test_api.h"
@@ -72,11 +74,11 @@ class AppListShowerDelegateFactoryTest : public AppListShowerDelegateFactory {
   AppListShowerDelegateTest* current_delegate() { return current_delegate_; }
 
   // AppListShowerDelegateFactory:
-  scoped_ptr<AppListShowerDelegate> GetDelegate(
+  std::unique_ptr<AppListShowerDelegate> GetDelegate(
       AppListShower* shower) override {
     current_delegate_ =
         new AppListShowerDelegateTest(container_, &app_list_view_delegate_);
-    return make_scoped_ptr(current_delegate_);
+    return base::WrapUnique(current_delegate_);
   }
 
  private:
@@ -106,9 +108,9 @@ class AppListShowerImplTest : public aura::test::AuraTestBase {
   void TearDown() override;
 
  private:
-  scoped_ptr<AppListShowerDelegateFactoryTest> factory_;
-  scoped_ptr<AppListShowerImpl> shower_;
-  scoped_ptr<aura::Window> container_;
+  std::unique_ptr<AppListShowerDelegateFactoryTest> factory_;
+  std::unique_ptr<AppListShowerImpl> shower_;
+  std::unique_ptr<aura::Window> container_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListShowerImplTest);
 };
@@ -145,7 +147,7 @@ TEST_F(AppListShowerImplTest, HideOnFocusOut) {
   focus_client->FocusWindow(shower()->GetWindow());
   EXPECT_TRUE(shower()->GetTargetVisibility());
 
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateNormalWindow(1, root_window(), nullptr));
   focus_client->FocusWindow(window.get());
 
@@ -169,7 +171,8 @@ TEST_F(AppListShowerImplTest, RemainVisibleWhenFocusingToSibling) {
   EXPECT_FALSE(delegate()->update_bounds_called());
 
   // Create a sibling window.
-  scoped_ptr<aura::Window> window(CreateNormalWindow(1, container(), nullptr));
+  std::unique_ptr<aura::Window> window(
+      CreateNormalWindow(1, container(), nullptr));
   focus_client->FocusWindow(window.get());
 
   EXPECT_TRUE(shower()->GetTargetVisibility());

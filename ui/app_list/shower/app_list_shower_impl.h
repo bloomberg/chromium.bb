@@ -5,6 +5,8 @@
 #ifndef UI_APP_LIST_SHOWER_APP_LIST_SHOWER_IMPL_H_
 #define UI_APP_LIST_SHOWER_APP_LIST_SHOWER_IMPL_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/app_list/pagination_model_observer.h"
@@ -92,7 +94,7 @@ class APP_LIST_SHOWER_EXPORT AppListShowerImpl
   AppListShowerDelegateFactory* const factory_;
 
   // Responsible for laying out the app list UI.
-  scoped_ptr<AppListShowerDelegate> shower_delegate_;
+  std::unique_ptr<AppListShowerDelegate> shower_delegate_;
 
   // Whether we should show or hide app list widget.
   bool is_visible_ = false;
