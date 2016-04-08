@@ -6,12 +6,12 @@
 #define CHROMECAST_BROWSER_MEDIA_MEDIA_PIPELINE_HOST_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chromecast/browser/media/media_pipeline_backend_factory.h"
@@ -49,7 +49,7 @@ class MediaPipelineHost {
                   const CreateMediaPipelineBackendCB& create_backend_cb);
 
   void SetAvPipe(TrackId track_id,
-                 scoped_ptr<base::SharedMemory> shared_mem,
+                 std::unique_ptr<base::SharedMemory> shared_mem,
                  const base::Closure& pipe_read_activity_cb,
                  const base::Closure& av_pipe_set_cb);
   void AudioInitialize(TrackId track_id,
@@ -73,11 +73,11 @@ class MediaPipelineHost {
  private:
   base::ThreadChecker thread_checker_;
 
-  scoped_ptr<TaskRunnerImpl> task_runner_;
-  scoped_ptr<MediaPipelineImpl> media_pipeline_;
+  std::unique_ptr<TaskRunnerImpl> task_runner_;
+  std::unique_ptr<MediaPipelineImpl> media_pipeline_;
 
-  scoped_ptr<CodedFrameProvider> audio_frame_provider_;
-  scoped_ptr<CodedFrameProvider> video_frame_provider_;
+  std::unique_ptr<CodedFrameProvider> audio_frame_provider_;
+  std::unique_ptr<CodedFrameProvider> video_frame_provider_;
 
   // The shared memory for a track id must be valid until Stop is invoked on
   // that track id.

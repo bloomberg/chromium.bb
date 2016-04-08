@@ -5,12 +5,12 @@
 #ifndef CHROMECAST_MEDIA_CMA_PIPELINE_MEDIA_PIPELINE_IMPL_H_
 #define CHROMECAST_MEDIA_CMA_PIPELINE_MEDIA_PIPELINE_IMPL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -42,7 +42,7 @@ class MediaPipelineImpl {
   // Initialize the media pipeline: the pipeline is configured based on
   // |load_type|.
   void Initialize(LoadType load_type,
-                  scoped_ptr<MediaPipelineBackend> media_pipeline_backend);
+                  std::unique_ptr<MediaPipelineBackend> media_pipeline_backend);
 
   void SetClient(const MediaPipelineClient& client);
   void SetCdm(int cdm_id);
@@ -50,11 +50,11 @@ class MediaPipelineImpl {
   ::media::PipelineStatus InitializeAudio(
       const ::media::AudioDecoderConfig& config,
       const AvPipelineClient& client,
-      scoped_ptr<CodedFrameProvider> frame_provider);
+      std::unique_ptr<CodedFrameProvider> frame_provider);
   ::media::PipelineStatus InitializeVideo(
       const std::vector<::media::VideoDecoderConfig>& configs,
       const VideoPipelineClient& client,
-      scoped_ptr<CodedFrameProvider> frame_provider);
+      std::unique_ptr<CodedFrameProvider> frame_provider);
   void StartPlayingFrom(base::TimeDelta time);
   void Flush(const base::Closure& flush_cb);
   void Stop();
@@ -87,7 +87,7 @@ class MediaPipelineImpl {
 
   base::ThreadChecker thread_checker_;
   MediaPipelineClient client_;
-  scoped_ptr<BufferingController> buffering_controller_;
+  std::unique_ptr<BufferingController> buffering_controller_;
   BrowserCdmCast* cdm_;
 
   // Interface with the underlying hardware media pipeline.
@@ -96,13 +96,13 @@ class MediaPipelineImpl {
   // Cached here because CMA pipeline backend does not support rate == 0,
   // which is emulated by pausing the backend.
   float playback_rate_;
-  scoped_ptr<MediaPipelineBackend> media_pipeline_backend_;
-  scoped_ptr<AudioDecoderSoftwareWrapper> audio_decoder_;
+  std::unique_ptr<MediaPipelineBackend> media_pipeline_backend_;
+  std::unique_ptr<AudioDecoderSoftwareWrapper> audio_decoder_;
   MediaPipelineBackend::VideoDecoder* video_decoder_;
 
-  scoped_ptr<AudioPipelineImpl> audio_pipeline_;
-  scoped_ptr<VideoPipelineImpl> video_pipeline_;
-  scoped_ptr<FlushTask> pending_flush_task_;
+  std::unique_ptr<AudioPipelineImpl> audio_pipeline_;
+  std::unique_ptr<VideoPipelineImpl> video_pipeline_;
+  std::unique_ptr<FlushTask> pending_flush_task_;
 
   // The media time is retrieved at regular intervals.
   bool pending_time_update_task_;

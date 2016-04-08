@@ -18,8 +18,8 @@ HoleFrameFactory::HoleFrameFactory(
     ::media::GpuVideoAcceleratorFactories* gpu_factories)
     : gpu_factories_(gpu_factories), texture_(0), image_id_(0) {
   if (gpu_factories_) {
-    scoped_ptr<::media::GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
-        gpu_factories_->GetGLContextLock());
+    std::unique_ptr<::media::GpuVideoAcceleratorFactories::ScopedGLContextLock>
+        lock(gpu_factories_->GetGLContextLock());
     CHECK(lock);
     gpu::gles2::GLES2Interface* gl = lock->ContextGL();
 
@@ -41,8 +41,8 @@ HoleFrameFactory::HoleFrameFactory(
 
 HoleFrameFactory::~HoleFrameFactory() {
   if (texture_) {
-    scoped_ptr<::media::GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
-        gpu_factories_->GetGLContextLock());
+    std::unique_ptr<::media::GpuVideoAcceleratorFactories::ScopedGLContextLock>
+        lock(gpu_factories_->GetGLContextLock());
     CHECK(lock);
     gpu::gles2::GLES2Interface* gl = lock->ContextGL();
     gl->BindTexture(GL_TEXTURE_2D, texture_);

@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 
@@ -48,8 +49,8 @@ class MediaPipelineBackendDefault : public MediaPipelineBackend {
   bool running_;
   float rate_;
 
-  scoped_ptr<AudioDecoderDefault> audio_decoder_;
-  scoped_ptr<VideoDecoderDefault> video_decoder_;
+  std::unique_ptr<AudioDecoderDefault> audio_decoder_;
+  std::unique_ptr<VideoDecoderDefault> video_decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendDefault);
 };

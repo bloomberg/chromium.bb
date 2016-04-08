@@ -146,7 +146,7 @@ void CastContentRendererClient::AddKeySystems(
 }
 
 #if !defined(OS_ANDROID)
-scoped_ptr<::media::RendererFactory>
+std::unique_ptr<::media::RendererFactory>
 CastContentRendererClient::CreateMediaRendererFactory(
     ::content::RenderFrame* render_frame,
     ::media::GpuVideoAcceleratorFactories* gpu_factories,
@@ -155,7 +155,7 @@ CastContentRendererClient::CreateMediaRendererFactory(
   if (!cmd_line->HasSwitch(switches::kEnableCmaMediaPipeline))
     return nullptr;
 
-  return scoped_ptr<::media::RendererFactory>(
+  return std::unique_ptr<::media::RendererFactory>(
       new chromecast::media::ChromecastMediaRendererFactory(
           gpu_factories, render_frame->GetRoutingID()));
 }

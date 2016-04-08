@@ -6,11 +6,12 @@
 #define CHROMECAST_APP_ANDROID_CRASH_HANDLER_H_
 
 #include <jni.h>
+
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace chromecast {
 class CastCrashReporterClientAndroid;
@@ -47,7 +48,7 @@ class CrashHandler {
 
   std::string process_type_;
 
-  scoped_ptr<CastCrashReporterClientAndroid> crash_reporter_client_;
+  std::unique_ptr<CastCrashReporterClientAndroid> crash_reporter_client_;
 
   DISALLOW_COPY_AND_ASSIGN(CrashHandler);
 };

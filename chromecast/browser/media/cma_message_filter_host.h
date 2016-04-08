@@ -74,7 +74,7 @@ class CmaMessageFilterHost
   void OnAvPipeSet(int media_id,
                    TrackId track_id,
                    base::SharedMemoryHandle foreign_memory_handle,
-                   scoped_ptr<base::CancelableSyncSocket> foreign_socket);
+                   std::unique_ptr<base::CancelableSyncSocket> foreign_socket);
   void AudioInitialize(int media_id,
                        TrackId track_id,
                        const ::media::AudioDecoderConfig& config);

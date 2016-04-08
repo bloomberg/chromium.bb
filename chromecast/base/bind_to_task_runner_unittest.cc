@@ -17,17 +17,17 @@ void BoundBoolSet(bool* var, bool val) {
   *var = val;
 }
 
-void BoundBoolSetFromScopedPtr(bool* var, scoped_ptr<bool> val) {
+void BoundBoolSetFromScopedPtr(bool* var, std::unique_ptr<bool> val) {
   *var = *val;
 }
 
 void BoundBoolSetFromScopedPtrFreeDeleter(
     bool* var,
-    scoped_ptr<bool, base::FreeDeleter> val) {
+    std::unique_ptr<bool, base::FreeDeleter> val) {
   *var = *val;
 }
 
-void BoundBoolSetFromScopedArray(bool* var, scoped_ptr<bool[]> val) {
+void BoundBoolSetFromScopedArray(bool* var, std::unique_ptr<bool[]> val) {
   *var = val[0];
 }
 
@@ -70,7 +70,7 @@ TEST_F(BindToTaskRunnerTest, Bool) {
 
 TEST_F(BindToTaskRunnerTest, BoundScopedPtrBool) {
   bool bool_val = false;
-  scoped_ptr<bool> scoped_ptr_bool(new bool(true));
+  std::unique_ptr<bool> scoped_ptr_bool(new bool(true));
   base::Closure cb = BindToCurrentThread(base::Bind(
       &BoundBoolSetFromScopedPtr, &bool_val, base::Passed(&scoped_ptr_bool)));
   cb.Run();
@@ -81,8 +81,8 @@ TEST_F(BindToTaskRunnerTest, BoundScopedPtrBool) {
 
 TEST_F(BindToTaskRunnerTest, PassedScopedPtrBool) {
   bool bool_val = false;
-  scoped_ptr<bool> scoped_ptr_bool(new bool(true));
-  base::Callback<void(scoped_ptr<bool>)> cb =
+  std::unique_ptr<bool> scoped_ptr_bool(new bool(true));
+  base::Callback<void(std::unique_ptr<bool>)> cb =
       BindToCurrentThread(base::Bind(&BoundBoolSetFromScopedPtr, &bool_val));
   cb.Run(std::move(scoped_ptr_bool));
   EXPECT_FALSE(bool_val);
@@ -92,7 +92,7 @@ TEST_F(BindToTaskRunnerTest, PassedScopedPtrBool) {
 
 TEST_F(BindToTaskRunnerTest, BoundScopedArrayBool) {
   bool bool_val = false;
-  scoped_ptr<bool[]> scoped_array_bool(new bool[1]);
+  std::unique_ptr<bool[]> scoped_array_bool(new bool[1]);
   scoped_array_bool[0] = true;
   base::Closure cb =
       BindToCurrentThread(base::Bind(&BoundBoolSetFromScopedArray, &bool_val,
@@ -105,9 +105,9 @@ TEST_F(BindToTaskRunnerTest, BoundScopedArrayBool) {
 
 TEST_F(BindToTaskRunnerTest, PassedScopedArrayBool) {
   bool bool_val = false;
-  scoped_ptr<bool[]> scoped_array_bool(new bool[1]);
+  std::unique_ptr<bool[]> scoped_array_bool(new bool[1]);
   scoped_array_bool[0] = true;
-  base::Callback<void(scoped_ptr<bool[]>)> cb =
+  base::Callback<void(std::unique_ptr<bool[]>)> cb =
       BindToCurrentThread(base::Bind(&BoundBoolSetFromScopedArray, &bool_val));
   cb.Run(std::move(scoped_array_bool));
   EXPECT_FALSE(bool_val);
@@ -117,7 +117,7 @@ TEST_F(BindToTaskRunnerTest, PassedScopedArrayBool) {
 
 TEST_F(BindToTaskRunnerTest, BoundScopedPtrFreeDeleterBool) {
   bool bool_val = false;
-  scoped_ptr<bool, base::FreeDeleter> scoped_ptr_free_deleter_bool(
+  std::unique_ptr<bool, base::FreeDeleter> scoped_ptr_free_deleter_bool(
       static_cast<bool*>(malloc(sizeof(bool))));
   *scoped_ptr_free_deleter_bool = true;
   base::Closure cb = BindToCurrentThread(
@@ -131,10 +131,10 @@ TEST_F(BindToTaskRunnerTest, BoundScopedPtrFreeDeleterBool) {
 
 TEST_F(BindToTaskRunnerTest, PassedScopedPtrFreeDeleterBool) {
   bool bool_val = false;
-  scoped_ptr<bool, base::FreeDeleter> scoped_ptr_free_deleter_bool(
+  std::unique_ptr<bool, base::FreeDeleter> scoped_ptr_free_deleter_bool(
       static_cast<bool*>(malloc(sizeof(bool))));
   *scoped_ptr_free_deleter_bool = true;
-  base::Callback<void(scoped_ptr<bool, base::FreeDeleter>)> cb =
+  base::Callback<void(std::unique_ptr<bool, base::FreeDeleter>)> cb =
       BindToCurrentThread(
           base::Bind(&BoundBoolSetFromScopedPtrFreeDeleter, &bool_val));
   cb.Run(std::move(scoped_ptr_free_deleter_bool));

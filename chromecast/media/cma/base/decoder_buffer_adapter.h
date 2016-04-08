@@ -8,9 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 
 namespace media {
@@ -48,7 +49,7 @@ class DecoderBufferAdapter : public DecoderBufferBase {
 
   StreamId stream_id_;
   scoped_refptr<::media::DecoderBuffer> const buffer_;
-  mutable scoped_ptr<CastDecryptConfig> decrypt_config_;
+  mutable std::unique_ptr<CastDecryptConfig> decrypt_config_;
 
   DISALLOW_COPY_AND_ASSIGN(DecoderBufferAdapter);
 };

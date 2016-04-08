@@ -27,7 +27,7 @@ const size_t kMaxFrameSize = 4 * 1024 * 1024;
 
 class DecoderBufferFromMsg : public DecoderBufferBase {
  public:
-  explicit DecoderBufferFromMsg(scoped_ptr<MediaMessage> msg);
+  explicit DecoderBufferFromMsg(std::unique_ptr<MediaMessage> msg);
 
   void Initialize();
 
@@ -55,19 +55,19 @@ class DecoderBufferFromMsg : public DecoderBufferBase {
   base::TimeDelta pts_;
 
   // CENC parameters.
-  scoped_ptr<CastDecryptConfig> decrypt_config_;
+  std::unique_ptr<CastDecryptConfig> decrypt_config_;
 
   // Size of the frame.
   size_t data_size_;
 
   // Keeps the message since frame data is not copied.
-  scoped_ptr<MediaMessage> msg_;
+  std::unique_ptr<MediaMessage> msg_;
   uint8_t* data_;
 
   DISALLOW_COPY_AND_ASSIGN(DecoderBufferFromMsg);
 };
 
-DecoderBufferFromMsg::DecoderBufferFromMsg(scoped_ptr<MediaMessage> msg)
+DecoderBufferFromMsg::DecoderBufferFromMsg(std::unique_ptr<MediaMessage> msg)
     : is_eos_(true), stream_id_(kPrimary), msg_(std::move(msg)), data_(NULL) {
   CHECK(msg_);
 }
@@ -198,7 +198,7 @@ void DecoderBufferBaseMarshaller::Write(
 
 // static
 scoped_refptr<DecoderBufferBase> DecoderBufferBaseMarshaller::Read(
-    scoped_ptr<MediaMessage> msg) {
+    std::unique_ptr<MediaMessage> msg) {
   scoped_refptr<DecoderBufferFromMsg> buffer(
       new DecoderBufferFromMsg(std::move(msg)));
   buffer->Initialize();

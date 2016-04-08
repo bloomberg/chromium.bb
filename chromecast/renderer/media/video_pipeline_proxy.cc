@@ -41,9 +41,9 @@ void IgnoreResult() {
 // as the media channel proxy.
 class VideoPipelineProxyInternal {
  public:
-  typedef base::Callback<void(scoped_ptr<base::SharedMemory>)> SharedMemCB;
+  typedef base::Callback<void(std::unique_ptr<base::SharedMemory>)> SharedMemCB;
 
-  static void Release(scoped_ptr<VideoPipelineProxyInternal> proxy);
+  static void Release(std::unique_ptr<VideoPipelineProxyInternal> proxy);
 
   explicit VideoPipelineProxyInternal(
       scoped_refptr<MediaChannelProxy> media_channel_proxy);
@@ -86,7 +86,7 @@ class VideoPipelineProxyInternal {
 
 // static
 void VideoPipelineProxyInternal::Release(
-    scoped_ptr<VideoPipelineProxyInternal> proxy) {
+    std::unique_ptr<VideoPipelineProxyInternal> proxy) {
   proxy->Shutdown();
 }
 
@@ -115,9 +115,9 @@ void VideoPipelineProxyInternal::NotifyPipeWrite() {
 
   // TODO(damienv): An alternative way would be to use a dedicated socket for
   // this event.
-  bool success = media_channel_proxy_->Send(scoped_ptr<IPC::Message>(
-      new CmaHostMsg_NotifyPipeWrite(media_channel_proxy_->GetId(),
-                                     kVideoTrackId)));
+  bool success = media_channel_proxy_->Send(
+      std::unique_ptr<IPC::Message>(new CmaHostMsg_NotifyPipeWrite(
+          media_channel_proxy_->GetId(), kVideoTrackId)));
   VLOG_IF(4, !success) << "Sending msg failed";
 }
 
@@ -143,11 +143,11 @@ void VideoPipelineProxyInternal::CreateAvPipe(
     const SharedMemCB& shared_mem_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(shared_mem_cb_.is_null());
-  bool success = media_channel_proxy_->Send(scoped_ptr<IPC::Message>(
-      new CmaHostMsg_CreateAvPipe(
+  bool success = media_channel_proxy_->Send(
+      std::unique_ptr<IPC::Message>(new CmaHostMsg_CreateAvPipe(
           media_channel_proxy_->GetId(), kVideoTrackId, kAppVideoBufferSize)));
   if (!success) {
-    shared_mem_cb.Run(scoped_ptr<base::SharedMemory>());
+    shared_mem_cb.Run(std::unique_ptr<base::SharedMemory>());
     return;
   }
   shared_mem_cb_ = shared_mem_cb;
@@ -160,12 +160,12 @@ void VideoPipelineProxyInternal::OnAvPipeCreated(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!shared_mem_cb_.is_null());
   if (!success) {
-    shared_mem_cb_.Run(scoped_ptr<base::SharedMemory>());
+    shared_mem_cb_.Run(std::unique_ptr<base::SharedMemory>());
     return;
   }
 
   CHECK(base::SharedMemory::IsHandleValid(shared_mem_handle));
-  shared_mem_cb_.Run(scoped_ptr<base::SharedMemory>(
+  shared_mem_cb_.Run(std::unique_ptr<base::SharedMemory>(
       new base::SharedMemory(shared_mem_handle, false)));
 }
 
@@ -173,9 +173,9 @@ void VideoPipelineProxyInternal::Initialize(
     const std::vector<::media::VideoDecoderConfig>& configs,
     const ::media::PipelineStatusCB& status_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  bool success = media_channel_proxy_->Send(scoped_ptr<IPC::Message>(
-      new CmaHostMsg_VideoInitialize(media_channel_proxy_->GetId(),
-                                     kVideoTrackId, configs)));
+  bool success = media_channel_proxy_->Send(
+      std::unique_ptr<IPC::Message>(new CmaHostMsg_VideoInitialize(
+          media_channel_proxy_->GetId(), kVideoTrackId, configs)));
   if (!success) {
     status_cb.Run( ::media::PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
@@ -227,7 +227,7 @@ void VideoPipelineProxy::SetClient(const VideoPipelineClient& video_client) {
 
 void VideoPipelineProxy::Initialize(
     const std::vector<::media::VideoDecoderConfig>& configs,
-    scoped_ptr<CodedFrameProvider> frame_provider,
+    std::unique_ptr<CodedFrameProvider> frame_provider,
     const ::media::PipelineStatusCB& status_cb) {
   CMALOG(kLogControl) << "VideoPipelineProxy::Initialize";
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -243,7 +243,7 @@ void VideoPipelineProxy::Initialize(
 void VideoPipelineProxy::OnAvPipeCreated(
     const std::vector<::media::VideoDecoderConfig>& configs,
     const ::media::PipelineStatusCB& status_cb,
-    scoped_ptr<base::SharedMemory> shared_memory) {
+    std::unique_ptr<base::SharedMemory> shared_memory) {
   CMALOG(kLogControl) << "VideoPipelineProxy::OnAvPipeCreated";
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!shared_memory ||
@@ -253,9 +253,9 @@ void VideoPipelineProxy::OnAvPipeCreated(
   }
   CHECK(shared_memory->memory());
 
-  scoped_ptr<MediaMemoryChunk> shared_memory_chunk(
+  std::unique_ptr<MediaMemoryChunk> shared_memory_chunk(
       new SharedMemoryChunk(std::move(shared_memory), kAppVideoBufferSize));
-  scoped_ptr<MediaMessageFifo> video_pipe(
+  std::unique_ptr<MediaMessageFifo> video_pipe(
       new MediaMessageFifo(std::move(shared_memory_chunk), false));
   video_pipe->ObserveWriteActivity(
       base::Bind(&VideoPipelineProxy::OnPipeWrite, weak_this_));

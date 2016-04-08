@@ -83,7 +83,7 @@ DefaultVideoPlane* g_video_plane = nullptr;
 
 base::AtExitManager g_at_exit_manager;
 
-scoped_ptr<base::ThreadTaskRunnerHandle> g_thread_task_runner_handle;
+std::unique_ptr<base::ThreadTaskRunnerHandle> g_thread_task_runner_handle;
 
 }  // namespace
 

@@ -546,7 +546,7 @@ void StreamMixerAlsa::SignalError() {
 }
 
 void StreamMixerAlsa::SetAlsaWrapperForTest(
-    scoped_ptr<AlsaWrapper> alsa_wrapper) {
+    std::unique_ptr<AlsaWrapper> alsa_wrapper) {
   if (alsa_) {
     Stop();
     ClosePcm();
@@ -564,7 +564,7 @@ void StreamMixerAlsa::ClearInputsForTest() {
   inputs_.clear();
 }
 
-void StreamMixerAlsa::AddInput(scoped_ptr<InputQueue> input) {
+void StreamMixerAlsa::AddInput(std::unique_ptr<InputQueue> input) {
   RUN_ON_MIXER_THREAD(&StreamMixerAlsa::AddInput,
                       base::Passed(std::move(input)));
   if (!alsa_)

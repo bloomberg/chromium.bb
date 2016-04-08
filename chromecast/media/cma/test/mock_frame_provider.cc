@@ -30,7 +30,7 @@ MockFrameProvider::~MockFrameProvider() {
 
 void MockFrameProvider::Configure(
     const std::vector<bool>& delayed_task_pattern,
-    scoped_ptr<FrameGeneratorForTest> frame_generator) {
+    std::unique_ptr<FrameGeneratorForTest> frame_generator) {
   delayed_task_pattern_ = delayed_task_pattern;
   pattern_idx_ = 0;
 

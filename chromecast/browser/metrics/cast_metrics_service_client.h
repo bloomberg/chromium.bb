@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "components/metrics/metrics_service_client.h"
 
@@ -45,7 +45,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
  public:
   ~CastMetricsServiceClient() override;
 
-  static scoped_ptr<CastMetricsServiceClient> Create(
+  static std::unique_ptr<CastMetricsServiceClient> Create(
       base::TaskRunner* io_task_runner,
       PrefService* pref_service,
       net::URLRequestContextGetter* request_context);
@@ -78,7 +78,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
   void InitializeSystemProfileMetrics(
       const base::Closure& done_callback) override;
   void CollectFinalMetricsForLog(const base::Closure& done_callback) override;
-  scoped_ptr< ::metrics::MetricsLogUploader> CreateUploader(
+  std::unique_ptr<::metrics::MetricsLogUploader> CreateUploader(
       const base::Callback<void(int)>& on_upload_complete) override;
   base::TimeDelta GetStandardUploadInterval() override;
 
@@ -95,7 +95,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
   // Returns whether or not metrics reporting is enabled.
   bool IsReportingEnabled();
 
-  scoped_ptr< ::metrics::ClientInfo> LoadClientInfo();
+  std::unique_ptr<::metrics::ClientInfo> LoadClientInfo();
   void StoreClientInfo(const ::metrics::ClientInfo& client_info);
 
   base::TaskRunner* const io_task_runner_;
@@ -110,8 +110,8 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
   ExternalMetrics* platform_metrics_;
 #endif  // defined(OS_LINUX)
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_ptr< ::metrics::MetricsStateManager> metrics_state_manager_;
-  scoped_ptr< ::metrics::MetricsService> metrics_service_;
+  std::unique_ptr<::metrics::MetricsStateManager> metrics_state_manager_;
+  std::unique_ptr<::metrics::MetricsService> metrics_service_;
   net::URLRequestContextGetter* const request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMetricsServiceClient);

@@ -8,9 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace chromecast {
 namespace media {
@@ -28,34 +29,34 @@ class MediaMessage {
   // Memory allocator: given a number of bytes to allocate,
   // return the pointer to the allocated block if successful
   // or NULL if allocation failed.
-  typedef base::Callback<scoped_ptr<MediaMemoryChunk>(size_t)>
+  typedef base::Callback<std::unique_ptr<MediaMemoryChunk>(size_t)>
       MemoryAllocatorCB;
 
   // Creates a message with no associated memory for its content, i.e.
   // each write on this message is a dummy operation.
   // This type of message can be useful to calculate first the size of the
   // message, before allocating the real message.
-  static scoped_ptr<MediaMessage> CreateDummyMessage(uint32_t type);
+  static std::unique_ptr<MediaMessage> CreateDummyMessage(uint32_t type);
 
   // Creates a message with a capacity of at least |msg_content_capacity|
   // bytes. The actual content size can be smaller than its capacity.
   // The message can be populated with some Write functions.
-  static scoped_ptr<MediaMessage> CreateMessage(
+  static std::unique_ptr<MediaMessage> CreateMessage(
       uint32_t type,
       const MemoryAllocatorCB& memory_allocator,
       size_t msg_content_capacity);
 
   // Creates a message of type |type| whose serialized structure is stored
   // in |mem|.
-  static scoped_ptr<MediaMessage> CreateMessage(
+  static std::unique_ptr<MediaMessage> CreateMessage(
       uint32_t type,
-      scoped_ptr<MediaMemoryChunk> mem);
+      std::unique_ptr<MediaMemoryChunk> mem);
 
   // Creates a message from a memory area which already contains
   // the serialized structure of the message.
   // Only Read functions can be invoked on this type of message.
-  static scoped_ptr<MediaMessage> MapMessage(
-      scoped_ptr<MediaMemoryChunk> mem);
+  static std::unique_ptr<MediaMessage> MapMessage(
+      std::unique_ptr<MediaMemoryChunk> mem);
 
   // Return the minimum size of a message.
   static size_t minimum_msg_size() {
@@ -112,8 +113,8 @@ class MediaMessage {
 
  private:
   MediaMessage(uint32_t type, size_t msg_size);
-  MediaMessage(uint32_t type, scoped_ptr<MediaMemoryChunk> memory);
-  MediaMessage(scoped_ptr<MediaMemoryChunk> memory);
+  MediaMessage(uint32_t type, std::unique_ptr<MediaMemoryChunk> memory);
+  MediaMessage(std::unique_ptr<MediaMemoryChunk> memory);
 
   struct Header {
     // Total size of the message (including both header & content).
@@ -151,7 +152,7 @@ class MediaMessage {
   // Memory allocated to store the underlying serialized structure into memory.
   // Note: a dummy message has no underlying serialized structure:
   // |mem_| is a null pointer in that case.
-  scoped_ptr<MediaMemoryChunk> mem_;
+  std::unique_ptr<MediaMemoryChunk> mem_;
 
   // Read iterator into the message.
   size_t rd_offset_;

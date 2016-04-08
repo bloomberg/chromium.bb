@@ -98,7 +98,7 @@ bool CmaMessageFilterProxy::SetVideoDelegate(
   return true;
 }
 
-bool CmaMessageFilterProxy::Send(scoped_ptr<IPC::Message> message) {
+bool CmaMessageFilterProxy::Send(std::unique_ptr<IPC::Message> message) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!sender_)
     return false;

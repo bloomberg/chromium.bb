@@ -5,8 +5,9 @@
 #ifndef CHROMECAST_UTILITY_CAST_CONTENT_UTILITY_CLIENT_H_
 #define CHROMECAST_UTILITY_CAST_CONTENT_UTILITY_CLIENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/utility/content_utility_client.h"
 
 namespace chromecast {
@@ -14,7 +15,7 @@ namespace shell {
 
 class CastContentUtilityClient : public content::ContentUtilityClient {
  public:
-  static scoped_ptr<CastContentUtilityClient> Create();
+  static std::unique_ptr<CastContentUtilityClient> Create();
 
   CastContentUtilityClient() {}
 

@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/prefs/pref_member.h"
 
 namespace devtools_http_handler {
@@ -29,7 +30,8 @@ class RemoteDebuggingServer {
   // Called when pref_enabled_ is changed.
   void OnEnabledChanged();
 
-  scoped_ptr<devtools_http_handler::DevToolsHttpHandler> devtools_http_handler_;
+  std::unique_ptr<devtools_http_handler::DevToolsHttpHandler>
+      devtools_http_handler_;
 
   BooleanPrefMember pref_enabled_;
   uint16_t port_;

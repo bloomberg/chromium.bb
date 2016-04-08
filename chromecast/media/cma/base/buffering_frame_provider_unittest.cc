@@ -5,14 +5,15 @@
 #include "chromecast/media/cma/base/buffering_frame_provider.h"
 
 #include <stddef.h>
+
 #include <list>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chromecast/media/cma/test/frame_generator_for_test.h"
@@ -42,8 +43,8 @@ class BufferingFrameProviderTest : public testing::Test {
   void Start();
 
  protected:
-  scoped_ptr<BufferingFrameProvider> buffering_frame_provider_;
-  scoped_ptr<MockFrameConsumer> frame_consumer_;
+  std::unique_ptr<BufferingFrameProvider> buffering_frame_provider_;
+  std::unique_ptr<MockFrameConsumer> frame_consumer_;
 
  private:
   void OnTestTimeout();
@@ -74,23 +75,20 @@ void BufferingFrameProviderTest::Configure(
   }
   frame_specs[frame_specs.size() - 1].is_eos = true;
 
-  scoped_ptr<FrameGeneratorForTest> frame_generator_provider(
+  std::unique_ptr<FrameGeneratorForTest> frame_generator_provider(
       new FrameGeneratorForTest(frame_specs));
-  scoped_ptr<FrameGeneratorForTest> frame_generator_consumer(
+  std::unique_ptr<FrameGeneratorForTest> frame_generator_consumer(
       new FrameGeneratorForTest(frame_specs));
 
-  scoped_ptr<MockFrameProvider> frame_provider(new MockFrameProvider());
+  std::unique_ptr<MockFrameProvider> frame_provider(new MockFrameProvider());
   frame_provider->Configure(provider_delayed_pattern,
                             std::move(frame_generator_provider));
 
   size_t max_frame_size = 10 * 1024;
   size_t buffer_size = 10 * max_frame_size;
-  buffering_frame_provider_.reset(
-      new BufferingFrameProvider(
-          scoped_ptr<CodedFrameProvider>(frame_provider.release()),
-          buffer_size,
-          max_frame_size,
-          BufferingFrameProvider::FrameBufferedCB()));
+  buffering_frame_provider_.reset(new BufferingFrameProvider(
+      std::unique_ptr<CodedFrameProvider>(frame_provider.release()),
+      buffer_size, max_frame_size, BufferingFrameProvider::FrameBufferedCB()));
 
   frame_consumer_.reset(
       new MockFrameConsumer(buffering_frame_provider_.get()));
@@ -128,7 +126,7 @@ TEST_F(BufferingFrameProviderTest, FastProviderSlowConsumer) {
           consumer_delayed_pattern,
           consumer_delayed_pattern + arraysize(consumer_delayed_pattern)));
 
-  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   message_loop->PostTask(
       FROM_HERE,
       base::Bind(&BufferingFrameProviderTest::Start, base::Unretained(this)));
@@ -149,7 +147,7 @@ TEST_F(BufferingFrameProviderTest, SlowProviderFastConsumer) {
           consumer_delayed_pattern,
           consumer_delayed_pattern + arraysize(consumer_delayed_pattern)));
 
-  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   message_loop->PostTask(
       FROM_HERE,
       base::Bind(&BufferingFrameProviderTest::Start, base::Unretained(this)));
@@ -177,7 +175,7 @@ TEST_F(BufferingFrameProviderTest, SlowFastProducerConsumer) {
           consumer_delayed_pattern,
           consumer_delayed_pattern + arraysize(consumer_delayed_pattern)));
 
-  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   message_loop->PostTask(
       FROM_HERE,
       base::Bind(&BufferingFrameProviderTest::Start, base::Unretained(this)));

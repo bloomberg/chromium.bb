@@ -4,6 +4,7 @@
 
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -11,7 +12,6 @@
 #include "base/bind_helpers.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
 #include "base/single_thread_task_runner.h"
@@ -40,8 +40,8 @@ CastMetricsHelper* g_instance = NULL;
 
 const char kMetricsNameAppInfoDelimiter = '#';
 
-scoped_ptr<std::string> SerializeToJson(const base::Value& value) {
-  scoped_ptr<std::string> json_str(new std::string());
+std::unique_ptr<std::string> SerializeToJson(const base::Value& value) {
+  std::unique_ptr<std::string> json_str(new std::string());
   JSONStringValueSerializer serializer(json_str.get());
   if (!serializer.Serialize(value))
     json_str.reset(nullptr);
@@ -292,7 +292,8 @@ void CastMetricsHelper::LogMediumTimeHistogramEvent(
 }
 
 void CastMetricsHelper::RecordApplicationEvent(const std::string& event) {
-  scoped_ptr<base::DictionaryValue> cast_event(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> cast_event(
+      new base::DictionaryValue());
   cast_event->SetString("name", event);
   base::TimeTicks now = base::TimeTicks::Now();
   cast_event->SetDouble("time", now.ToInternalValue());
@@ -306,7 +307,8 @@ void CastMetricsHelper::RecordApplicationEvent(const std::string& event) {
 void CastMetricsHelper::RecordApplicationEventWithValue(
     const std::string& event,
     int value) {
-  scoped_ptr<base::DictionaryValue> cast_event(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> cast_event(
+      new base::DictionaryValue());
   cast_event->SetString("name", event);
   base::TimeTicks now = base::TimeTicks::Now();
   cast_event->SetDouble("time", now.ToInternalValue());

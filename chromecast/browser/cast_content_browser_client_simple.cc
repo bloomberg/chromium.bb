@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "chromecast/browser/cast_content_browser_client.h"
 
-#include "base/memory/scoped_ptr.h"
 
 namespace chromecast {
 namespace shell {
 
 // static
-scoped_ptr<CastContentBrowserClient> CastContentBrowserClient::Create() {
-  return make_scoped_ptr(new CastContentBrowserClient());
+std::unique_ptr<CastContentBrowserClient> CastContentBrowserClient::Create() {
+  return base::WrapUnique(new CastContentBrowserClient());
 }
 
 }  // namespace shell

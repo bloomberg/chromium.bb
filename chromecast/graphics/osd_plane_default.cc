@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromecast/public/graphics_types.h"
 #include "chromecast/public/osd_plane.h"
 #include "chromecast/public/osd_plane_shlib.h"
@@ -59,7 +60,7 @@ class OsdPlaneDefault : public OsdPlane {
   void Flip() override {}
 
  private:
-  scoped_ptr<OsdSurface> back_buffer_;
+  std::unique_ptr<OsdSurface> back_buffer_;
   Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(OsdPlaneDefault);

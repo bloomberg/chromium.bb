@@ -6,11 +6,11 @@
 #define CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
@@ -28,11 +28,11 @@ class MediaPipelineBackendManager {
   ~MediaPipelineBackendManager();
 
   // Create media pipeline backend.
-  scoped_ptr<MediaPipelineBackend> CreateMediaPipelineBackend(
+  std::unique_ptr<MediaPipelineBackend> CreateMediaPipelineBackend(
       const MediaPipelineDeviceParams& params);
 
   // Create media pipeline backend with a specific stream_type.
-  scoped_ptr<MediaPipelineBackend> CreateMediaPipelineBackend(
+  std::unique_ptr<MediaPipelineBackend> CreateMediaPipelineBackend(
       const MediaPipelineDeviceParams& params,
       int stream_type);
 

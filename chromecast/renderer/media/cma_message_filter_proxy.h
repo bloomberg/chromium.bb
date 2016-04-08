@@ -5,9 +5,10 @@
 #ifndef CHROMECAST_RENDERER_MEDIA_CMA_MESSAGE_FILTER_PROXY_H_
 #define CHROMECAST_RENDERER_MEDIA_CMA_MESSAGE_FILTER_PROXY_H_
 
+#include <memory>
+
 #include "base/id_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "chromecast/common/media/cma_ipc_common.h"
@@ -73,7 +74,7 @@ class CmaMessageFilterProxy : public IPC::MessageFilter {
   bool SetVideoDelegate(int id, const VideoDelegate& video_delegate);
 
   // Sends an IPC message using |channel_|.
-  bool Send(scoped_ptr<IPC::Message> message);
+  bool Send(std::unique_ptr<IPC::Message> message);
 
   // IPC::ChannelProxy::MessageFilter implementation. Called on IO thread.
   bool OnMessageReceived(const IPC::Message& message) override;

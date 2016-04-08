@@ -11,8 +11,9 @@
 namespace chromecast {
 namespace media {
 
-SharedMemoryChunk::SharedMemoryChunk(scoped_ptr<base::SharedMemory> shared_mem,
-                                     size_t size)
+SharedMemoryChunk::SharedMemoryChunk(
+    std::unique_ptr<base::SharedMemory> shared_mem,
+    size_t size)
     : shared_mem_(std::move(shared_mem)), size_(size) {}
 
 SharedMemoryChunk::~SharedMemoryChunk() {

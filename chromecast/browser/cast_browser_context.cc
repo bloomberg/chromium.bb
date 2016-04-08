@@ -80,7 +80,7 @@ void CastBrowserContext::InitWhileIOAllowed() {
   BrowserContext::Initialize(this, path_);
 }
 
-scoped_ptr<content::ZoomLevelDelegate>
+std::unique_ptr<content::ZoomLevelDelegate>
 CastBrowserContext::CreateZoomLevelDelegate(
     const base::FilePath& partition_path) {
   return nullptr;

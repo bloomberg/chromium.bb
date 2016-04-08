@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromecast/media/cma/base/buffering_controller.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "chromecast/media/cma/base/buffering_controller.h"
 #include "chromecast/media/cma/base/buffering_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,7 +45,7 @@ class BufferingControllerTest : public testing::Test {
   ~BufferingControllerTest() override;
 
  protected:
-  scoped_ptr<BufferingController> buffering_controller_;
+  std::unique_ptr<BufferingController> buffering_controller_;
 
   MockBufferingControllerClient client_;
 

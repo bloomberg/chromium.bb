@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -300,7 +301,7 @@ void CastBrowserMainParts::PreMainMessageLoopStart() {
 }
 
 void CastBrowserMainParts::PostMainMessageLoopStart() {
-  cast_browser_process_->SetMetricsHelper(make_scoped_ptr(
+  cast_browser_process_->SetMetricsHelper(base::WrapUnique(
       new metrics::CastMetricsHelper(base::ThreadTaskRunnerHandle::Get())));
 
 #if defined(OS_ANDROID)
@@ -334,7 +335,7 @@ int CastBrowserMainParts::PreCreateThreads() {
     LOG(ERROR) << "Could not find crash dump location.";
   }
   cast_browser_process_->SetCrashDumpManager(
-      make_scoped_ptr(new breakpad::CrashDumpManager(crash_dumps_dir)));
+      base::WrapUnique(new breakpad::CrashDumpManager(crash_dumps_dir)));
 #else
   base::FilePath home_dir;
   CHECK(PathService::Get(DIR_CAST_HOME, &home_dir));
@@ -352,7 +353,7 @@ int CastBrowserMainParts::PreCreateThreads() {
   // Set GL strings so GPU config code can make correct feature blacklisting/
   // whitelisting decisions.
   // Note: SetGLStrings can be called before GpuDataManager::Initialize.
-  scoped_ptr<CastSysInfo> sys_info = CreateSysInfo();
+  std::unique_ptr<CastSysInfo> sys_info = CreateSysInfo();
   content::GpuDataManager::GetInstance()->SetGLStrings(
       sys_info->GetGlVendor(), sys_info->GetGlRenderer(),
       sys_info->GetGlVersion());
@@ -363,7 +364,7 @@ int CastBrowserMainParts::PreCreateThreads() {
   // is assumed as an interface to access display information, e.g. from metrics
   // code.  See CastContentWindow::CreateWindowTree for update when resolution
   // is available.
-  cast_browser_process_->SetCastScreen(make_scoped_ptr(new CastScreen));
+  cast_browser_process_->SetCastScreen(base::WrapUnique(new CastScreen));
   DCHECK(!gfx::Screen::GetScreen());
   gfx::Screen::SetScreenInstance(cast_browser_process_->cast_screen());
 #endif
@@ -393,7 +394,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   url_request_context_factory_->InitializeOnUIThread(net_log_.get());
 
   cast_browser_process_->SetBrowserContext(
-      make_scoped_ptr(new CastBrowserContext(url_request_context_factory_)));
+      base::WrapUnique(new CastBrowserContext(url_request_context_factory_)));
   cast_browser_process_->SetMetricsServiceClient(
       metrics::CastMetricsServiceClient::Create(
           content::BrowserThread::GetBlockingPool(),
@@ -403,9 +404,9 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   if (!PlatformClientAuth::Initialize())
     LOG(ERROR) << "PlatformClientAuth::Initialize failed.";
 
-  cast_browser_process_->SetRemoteDebuggingServer(make_scoped_ptr(
-      new RemoteDebuggingServer(cast_browser_process_->browser_client()->
-          EnableRemoteDebuggingImmediately())));
+  cast_browser_process_->SetRemoteDebuggingServer(base::WrapUnique(
+      new RemoteDebuggingServer(cast_browser_process_->browser_client()
+                                    ->EnableRemoteDebuggingImmediately())));
 
 #if defined(USE_AURA) && !defined(DISABLE_DISPLAY)
   // TODO(halliwell) move audio builds to use ozone_platform_cast, then can

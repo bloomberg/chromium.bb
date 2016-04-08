@@ -5,9 +5,10 @@
 #ifndef CHROMECAST_MEDIA_CMA_IPC_STREAMER_CODED_FRAME_PROVIDER_HOST_H_
 #define CHROMECAST_MEDIA_CMA_IPC_STREAMER_CODED_FRAME_PROVIDER_HOST_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chromecast/media/cma/base/coded_frame_provider.h"
@@ -26,7 +27,7 @@ class CodedFrameProviderHost : public CodedFrameProvider {
   // the caller must make sure the shared memory segment is valid
   // during the whole lifetime of this object.
   explicit CodedFrameProviderHost(
-      scoped_ptr<MediaMessageFifo> media_message_fifo);
+      std::unique_ptr<MediaMessageFifo> media_message_fifo);
   ~CodedFrameProviderHost() override;
 
   // CodedFrameProvider implementation.
@@ -43,7 +44,7 @@ class CodedFrameProviderHost : public CodedFrameProvider {
   base::ThreadChecker thread_checker_;
 
   // Fifo holding the frames.
-  scoped_ptr<MediaMessageFifo> fifo_;
+  std::unique_ptr<MediaMessageFifo> fifo_;
 
   ReadCB read_cb_;
 

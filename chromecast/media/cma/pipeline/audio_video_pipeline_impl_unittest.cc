@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "chromecast/media/cma/backend/audio_decoder_default.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_default.h"
@@ -57,8 +58,8 @@ class AudioVideoPipelineImplTest
 
  protected:
   void SetUp() override {
-    scoped_ptr<MediaPipelineBackendDefault> backend =
-        make_scoped_ptr(new MediaPipelineBackendDefault());
+    std::unique_ptr<MediaPipelineBackendDefault> backend =
+        base::WrapUnique(new MediaPipelineBackendDefault());
     pipeline_backend_ = backend.get();
     media_pipeline_.Initialize(kLoadTypeURL, std::move(backend));
 
@@ -97,7 +98,7 @@ class AudioVideoPipelineImplTest
   enum Stream { STREAM_AUDIO, STREAM_VIDEO };
   DISALLOW_COPY_AND_ASSIGN(AudioVideoPipelineImplTest);
 
-  scoped_ptr<CodedFrameProvider> CreateFrameProvider() {
+  std::unique_ptr<CodedFrameProvider> CreateFrameProvider() {
     std::vector<FrameGeneratorForTest::FrameSpec> frame_specs;
     frame_specs.resize(kNumFrames);
     for (size_t k = 0; k < frame_specs.size() - 1; k++) {
@@ -109,10 +110,10 @@ class AudioVideoPipelineImplTest
     }
     frame_specs[frame_specs.size() - 1].is_eos = true;
 
-    scoped_ptr<FrameGeneratorForTest> frame_generator(
+    std::unique_ptr<FrameGeneratorForTest> frame_generator(
         new FrameGeneratorForTest(frame_specs));
     bool provider_delayed_pattern[] = {false, true};
-    scoped_ptr<MockFrameProvider> frame_provider(new MockFrameProvider());
+    std::unique_ptr<MockFrameProvider> frame_provider(new MockFrameProvider());
     frame_provider->Configure(
         std::vector<bool>(
             provider_delayed_pattern,

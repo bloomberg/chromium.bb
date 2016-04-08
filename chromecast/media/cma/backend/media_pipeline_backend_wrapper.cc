@@ -11,7 +11,7 @@ namespace chromecast {
 namespace media {
 
 MediaPipelineBackendWrapper::MediaPipelineBackendWrapper(
-    scoped_ptr<MediaPipelineBackend> backend,
+    std::unique_ptr<MediaPipelineBackend> backend,
     int stream_type,
     float stream_type_volume,
     MediaPipelineBackendManager* backend_manager)

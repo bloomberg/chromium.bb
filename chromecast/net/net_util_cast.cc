@@ -14,7 +14,7 @@ namespace chromecast {
 
 base::hash_set<std::string> GetIgnoredInterfaces() {
   base::hash_set<std::string> ignored_interfaces;
-  scoped_ptr<CastSysInfo> sys_info = CreateSysInfo();
+  std::unique_ptr<CastSysInfo> sys_info = CreateSysInfo();
   if (!sys_info->GetApInterface().empty())
     ignored_interfaces.insert(sys_info->GetApInterface());
 

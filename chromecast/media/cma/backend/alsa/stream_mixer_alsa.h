@@ -8,12 +8,12 @@
 #include <alsa/asoundlib.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread.h"
 #include "base/timer/timer.h"
@@ -128,7 +128,7 @@ class StreamMixerAlsa {
 
   // Adds an input to the mixer. The input will live at least until
   // RemoveInput(input) is called. Can be called on any thread.
-  void AddInput(scoped_ptr<InputQueue> input);
+  void AddInput(std::unique_ptr<InputQueue> input);
   // Instructs the mixer to remove an input. The input should not be referenced
   // after this is called. Can be called on any thread.
   void RemoveInput(InputQueue* input);
@@ -137,7 +137,7 @@ class StreamMixerAlsa {
   // mixer thread.
   void OnFramesQueued();
 
-  void SetAlsaWrapperForTest(scoped_ptr<AlsaWrapper> alsa_wrapper);
+  void SetAlsaWrapperForTest(std::unique_ptr<AlsaWrapper> alsa_wrapper);
   void WriteFramesForTest();  // Can be called on any thread.
   void ClearInputsForTest();  // Removes all inputs.
 
@@ -191,8 +191,8 @@ class StreamMixerAlsa {
 
   static bool single_threaded_for_test_;
 
-  scoped_ptr<AlsaWrapper> alsa_;
-  scoped_ptr<base::Thread> mixer_thread_;
+  std::unique_ptr<AlsaWrapper> alsa_;
+  std::unique_ptr<base::Thread> mixer_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> mixer_task_runner_;
 
   unsigned int fixed_output_samples_per_second_;
@@ -224,13 +224,13 @@ class StreamMixerAlsa {
   // Buffers that hold audio data while it is mixed, before it is passed to the
   // ALSA layer. These are kept as members of this class to minimize copies and
   // allocations.
-  scoped_ptr<::media::AudioBus> temp_;
-  scoped_ptr<::media::AudioBus> mixed_;
+  std::unique_ptr<::media::AudioBus> temp_;
+  std::unique_ptr<::media::AudioBus> mixed_;
 
-  scoped_ptr<base::Timer> retry_write_frames_timer_;
+  std::unique_ptr<base::Timer> retry_write_frames_timer_;
 
   int check_close_timeout_;
-  scoped_ptr<base::Timer> check_close_timer_;
+  std::unique_ptr<base::Timer> check_close_timer_;
 
   std::vector<CastMediaShlib::LoopbackAudioObserver*> loopback_observers_;
 

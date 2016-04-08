@@ -116,7 +116,7 @@ MediaPipelineImpl::~MediaPipelineImpl() {
 
 void MediaPipelineImpl::Initialize(
     LoadType load_type,
-    scoped_ptr<MediaPipelineBackend> media_pipeline_backend) {
+    std::unique_ptr<MediaPipelineBackend> media_pipeline_backend) {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
   audio_decoder_.reset();
@@ -167,7 +167,7 @@ void MediaPipelineImpl::SetCdm(BrowserCdmCast* cdm) {
 ::media::PipelineStatus MediaPipelineImpl::InitializeAudio(
     const ::media::AudioDecoderConfig& config,
     const AvPipelineClient& client,
-    scoped_ptr<CodedFrameProvider> frame_provider) {
+    std::unique_ptr<CodedFrameProvider> frame_provider) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!audio_decoder_);
 
@@ -186,7 +186,7 @@ void MediaPipelineImpl::SetCdm(BrowserCdmCast* cdm) {
 ::media::PipelineStatus MediaPipelineImpl::InitializeVideo(
     const std::vector<::media::VideoDecoderConfig>& configs,
     const VideoPipelineClient& client,
-    scoped_ptr<CodedFrameProvider> frame_provider) {
+    std::unique_ptr<CodedFrameProvider> frame_provider) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!video_decoder_);
 

@@ -5,7 +5,7 @@
 #ifndef CHROMECAST_MEDIA_CMA_IPC_STREAMER_DECRYPT_CONFIG_MARSHALLER_H_
 #define CHROMECAST_MEDIA_CMA_IPC_STREAMER_DECRYPT_CONFIG_MARSHALLER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace media {
 class DecryptConfig;
@@ -22,7 +22,7 @@ class DecryptConfigMarshaller {
   static void Write(const CastDecryptConfig& config, MediaMessage* msg);
 
   // Returns a DecryptConfig from its serialized structure.
-  static scoped_ptr<CastDecryptConfig> Read(MediaMessage* msg);
+  static std::unique_ptr<CastDecryptConfig> Read(MediaMessage* msg);
 };
 
 }  // namespace media

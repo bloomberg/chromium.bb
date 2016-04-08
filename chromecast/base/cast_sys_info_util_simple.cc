@@ -4,13 +4,14 @@
 
 #include "chromecast/base/cast_sys_info_util.h"
 
+#include "base/memory/ptr_util.h"
 #include "chromecast/base/cast_sys_info_dummy.h"
 
 namespace chromecast {
 
 // static
-scoped_ptr<CastSysInfo> CreateSysInfo() {
-  return make_scoped_ptr(new CastSysInfoDummy());
+std::unique_ptr<CastSysInfo> CreateSysInfo() {
+  return base::WrapUnique(new CastSysInfoDummy());
 }
 
 }  // namespace chromecast

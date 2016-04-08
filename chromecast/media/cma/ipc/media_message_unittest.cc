@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromecast/media/cma/ipc/media_message.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromecast/media/cma/ipc/media_memory_chunk.h"
-#include "chromecast/media/cma/ipc/media_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromecast {
@@ -33,10 +35,11 @@ class ExternalMemoryBlock
   const size_t size_;
 };
 
-scoped_ptr<MediaMemoryChunk> DummyAllocator(
-    void* data, size_t size, size_t alloc_size) {
+std::unique_ptr<MediaMemoryChunk> DummyAllocator(void* data,
+                                                 size_t size,
+                                                 size_t alloc_size) {
   CHECK_LE(alloc_size, size);
-  return scoped_ptr<MediaMemoryChunk>(
+  return std::unique_ptr<MediaMemoryChunk>(
       new ExternalMemoryBlock(data, alloc_size));
 }
 
@@ -44,7 +47,7 @@ scoped_ptr<MediaMemoryChunk> DummyAllocator(
 
 TEST(MediaMessageTest, WriteRead) {
   int buffer_size = 1024;
-  scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
+  std::unique_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
   MediaMessage::MemoryAllocatorCB mem_alloc_cb(
       base::Bind(&DummyAllocator, buffer.get(), buffer_size));
   uint32_t type = 0x1;
@@ -52,7 +55,7 @@ TEST(MediaMessageTest, WriteRead) {
 
   // Write a message.
   int count = 64;
-  scoped_ptr<MediaMessage> msg1(
+  std::unique_ptr<MediaMessage> msg1(
       MediaMessage::CreateMessage(type, mem_alloc_cb, msg_content_capacity));
   for (int k = 0; k < count; k++) {
     int v1 = 2 * k + 1;
@@ -63,8 +66,8 @@ TEST(MediaMessageTest, WriteRead) {
   EXPECT_EQ(msg1->content_size(), count * (sizeof(int) + sizeof(uint8_t)));
 
   // Verify the integrity of the message.
-  scoped_ptr<MediaMessage> msg2(
-      MediaMessage::MapMessage(scoped_ptr<MediaMemoryChunk>(
+  std::unique_ptr<MediaMessage> msg2(
+      MediaMessage::MapMessage(std::unique_ptr<MediaMemoryChunk>(
           new ExternalMemoryBlock(&buffer[0], buffer_size))));
   for (int k = 0; k < count; k++) {
     int v1;
@@ -80,13 +83,13 @@ TEST(MediaMessageTest, WriteRead) {
 
 TEST(MediaMessageTest, WriteOverflow) {
   int buffer_size = 1024;
-  scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
+  std::unique_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
   MediaMessage::MemoryAllocatorCB mem_alloc_cb(
       base::Bind(&DummyAllocator, buffer.get(), buffer_size));
   uint32_t type = 0x1;
   int msg_content_capacity = 8;
 
-  scoped_ptr<MediaMessage> msg1(
+  std::unique_ptr<MediaMessage> msg1(
       MediaMessage::CreateMessage(type, mem_alloc_cb, msg_content_capacity));
   uint32_t v1 = 0;
   uint8_t v2 = 0;
@@ -99,20 +102,20 @@ TEST(MediaMessageTest, WriteOverflow) {
 
 TEST(MediaMessageTest, ReadOverflow) {
   int buffer_size = 1024;
-  scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
+  std::unique_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
   MediaMessage::MemoryAllocatorCB mem_alloc_cb(
       base::Bind(&DummyAllocator, buffer.get(), buffer_size));
   uint32_t type = 0x1;
   int msg_content_capacity = 8;
 
-  scoped_ptr<MediaMessage> msg1(
+  std::unique_ptr<MediaMessage> msg1(
       MediaMessage::CreateMessage(type, mem_alloc_cb, msg_content_capacity));
   uint32_t v1 = 0xcd;
   EXPECT_TRUE(msg1->WritePod(v1));
   EXPECT_TRUE(msg1->WritePod(v1));
 
-  scoped_ptr<MediaMessage> msg2(
-      MediaMessage::MapMessage(scoped_ptr<MediaMemoryChunk>(
+  std::unique_ptr<MediaMessage> msg2(
+      MediaMessage::MapMessage(std::unique_ptr<MediaMemoryChunk>(
           new ExternalMemoryBlock(&buffer[0], buffer_size))));
   uint32_t v2;
   EXPECT_TRUE(msg2->ReadPod(&v2));
@@ -124,20 +127,19 @@ TEST(MediaMessageTest, ReadOverflow) {
 
 TEST(MediaMessageTest, DummyMessage) {
   int buffer_size = 1024;
-  scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
+  std::unique_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
   MediaMessage::MemoryAllocatorCB mem_alloc_cb(
       base::Bind(&DummyAllocator, buffer.get(), buffer_size));
   uint32_t type = 0x1;
 
   // Create first a dummy message to estimate the content size.
-  scoped_ptr<MediaMessage> msg1(
-      MediaMessage::CreateDummyMessage(type));
+  std::unique_ptr<MediaMessage> msg1(MediaMessage::CreateDummyMessage(type));
   uint32_t v1 = 0xcd;
   EXPECT_TRUE(msg1->WritePod(v1));
   EXPECT_TRUE(msg1->WritePod(v1));
 
   // Create the real message and write the actual content.
-  scoped_ptr<MediaMessage> msg2(
+  std::unique_ptr<MediaMessage> msg2(
       MediaMessage::CreateMessage(type, mem_alloc_cb, msg1->content_size()));
   EXPECT_TRUE(msg2->WritePod(v1));
   EXPECT_TRUE(msg2->WritePod(v1));

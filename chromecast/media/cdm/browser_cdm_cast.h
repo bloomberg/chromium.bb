@@ -61,7 +61,7 @@ class BrowserCdmCast : public ::media::MediaKeys,
   // Returns the decryption context needed to decrypt frames encrypted with
   // |key_id|.
   // Returns null if |key_id| is not available.
-  virtual scoped_ptr<DecryptContextImpl> GetDecryptContext(
+  virtual std::unique_ptr<DecryptContextImpl> GetDecryptContext(
       const std::string& key_id) const = 0;
 
   // Notifies that key status has changed (e.g. if expiry is detected by
@@ -99,7 +99,7 @@ class BrowserCdmCast : public ::media::MediaKeys,
   ::media::SessionExpirationUpdateCB session_expiration_update_cb_;
 
   MediaResourceTracker* media_resource_tracker_;
-  scoped_ptr<::media::PlayerTrackerImpl> player_tracker_impl_;
+  std::unique_ptr<::media::PlayerTrackerImpl> player_tracker_impl_;
 
   base::ThreadChecker thread_checker_;
 
@@ -123,22 +123,26 @@ class BrowserCdmCastUi : public ::media::MediaKeys {
   // ::media::MediaKeys implementation:
   void SetServerCertificate(
       const std::vector<uint8_t>& certificate,
-      scoped_ptr<::media::SimpleCdmPromise> promise) override;
+      std::unique_ptr<::media::SimpleCdmPromise> promise) override;
   void CreateSessionAndGenerateRequest(
       ::media::MediaKeys::SessionType session_type,
       ::media::EmeInitDataType init_data_type,
       const std::vector<uint8_t>& init_data,
-      scoped_ptr<::media::NewSessionCdmPromise> promise) override;
-  void LoadSession(::media::MediaKeys::SessionType session_type,
-                   const std::string& session_id,
-                   scoped_ptr<::media::NewSessionCdmPromise> promise) override;
-  void UpdateSession(const std::string& session_id,
-                     const std::vector<uint8_t>& response,
-                     scoped_ptr<::media::SimpleCdmPromise> promise) override;
-  void CloseSession(const std::string& session_id,
-                    scoped_ptr<::media::SimpleCdmPromise> promise) override;
-  void RemoveSession(const std::string& session_id,
-                     scoped_ptr<::media::SimpleCdmPromise> promise) override;
+      std::unique_ptr<::media::NewSessionCdmPromise> promise) override;
+  void LoadSession(
+      ::media::MediaKeys::SessionType session_type,
+      const std::string& session_id,
+      std::unique_ptr<::media::NewSessionCdmPromise> promise) override;
+  void UpdateSession(
+      const std::string& session_id,
+      const std::vector<uint8_t>& response,
+      std::unique_ptr<::media::SimpleCdmPromise> promise) override;
+  void CloseSession(
+      const std::string& session_id,
+      std::unique_ptr<::media::SimpleCdmPromise> promise) override;
+  void RemoveSession(
+      const std::string& session_id,
+      std::unique_ptr<::media::SimpleCdmPromise> promise) override;
 
   scoped_refptr<BrowserCdmCast> browser_cdm_cast_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

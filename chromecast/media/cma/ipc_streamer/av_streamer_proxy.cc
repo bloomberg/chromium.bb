@@ -35,14 +35,14 @@ AvStreamerProxy::~AvStreamerProxy() {
 }
 
 void AvStreamerProxy::SetCodedFrameProvider(
-    scoped_ptr<CodedFrameProvider> frame_provider) {
+    std::unique_ptr<CodedFrameProvider> frame_provider) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!frame_provider_);
   frame_provider_.reset(frame_provider.release());
 }
 
 void AvStreamerProxy::SetMediaMessageFifo(
-    scoped_ptr<MediaMessageFifo> fifo) {
+    std::unique_ptr<MediaMessageFifo> fifo) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!fifo_);
   fifo_.reset(fifo.release());
@@ -158,17 +158,15 @@ void AvStreamerProxy::ProcessPendingData() {
 bool AvStreamerProxy::SendAudioDecoderConfig(
     const ::media::AudioDecoderConfig& config) {
   // Create a dummy message to calculate first the message size.
-  scoped_ptr<MediaMessage> dummy_msg(
+  std::unique_ptr<MediaMessage> dummy_msg(
       MediaMessage::CreateDummyMessage(AudioConfigMediaMsg));
   AudioDecoderConfigMarshaller::Write(config, dummy_msg.get());
 
   // Create the real message and write the actual content.
-  scoped_ptr<MediaMessage> msg(
-      MediaMessage::CreateMessage(
-          AudioConfigMediaMsg,
-          base::Bind(&MediaMessageFifo::ReserveMemory,
-                     base::Unretained(fifo_.get())),
-          dummy_msg->content_size()));
+  std::unique_ptr<MediaMessage> msg(MediaMessage::CreateMessage(
+      AudioConfigMediaMsg, base::Bind(&MediaMessageFifo::ReserveMemory,
+                                      base::Unretained(fifo_.get())),
+      dummy_msg->content_size()));
   if (!msg)
     return false;
 
@@ -179,17 +177,15 @@ bool AvStreamerProxy::SendAudioDecoderConfig(
 bool AvStreamerProxy::SendVideoDecoderConfig(
     const ::media::VideoDecoderConfig& config) {
   // Create a dummy message to calculate first the message size.
-  scoped_ptr<MediaMessage> dummy_msg(
+  std::unique_ptr<MediaMessage> dummy_msg(
       MediaMessage::CreateDummyMessage(VideoConfigMediaMsg));
   VideoDecoderConfigMarshaller::Write(config, dummy_msg.get());
 
   // Create the real message and write the actual content.
-  scoped_ptr<MediaMessage> msg(
-      MediaMessage::CreateMessage(
-          VideoConfigMediaMsg,
-          base::Bind(&MediaMessageFifo::ReserveMemory,
-                     base::Unretained(fifo_.get())),
-          dummy_msg->content_size()));
+  std::unique_ptr<MediaMessage> msg(MediaMessage::CreateMessage(
+      VideoConfigMediaMsg, base::Bind(&MediaMessageFifo::ReserveMemory,
+                                      base::Unretained(fifo_.get())),
+      dummy_msg->content_size()));
   if (!msg)
     return false;
 
@@ -200,17 +196,15 @@ bool AvStreamerProxy::SendVideoDecoderConfig(
 bool AvStreamerProxy::SendBuffer(
     const scoped_refptr<DecoderBufferBase>& buffer) {
   // Create a dummy message to calculate first the message size.
-  scoped_ptr<MediaMessage> dummy_msg(
+  std::unique_ptr<MediaMessage> dummy_msg(
       MediaMessage::CreateDummyMessage(FrameMediaMsg));
   DecoderBufferBaseMarshaller::Write(buffer, dummy_msg.get());
 
   // Create the real message and write the actual content.
-  scoped_ptr<MediaMessage> msg(
-      MediaMessage::CreateMessage(
-          FrameMediaMsg,
-          base::Bind(&MediaMessageFifo::ReserveMemory,
-                     base::Unretained(fifo_.get())),
-          dummy_msg->content_size()));
+  std::unique_ptr<MediaMessage> msg(MediaMessage::CreateMessage(
+      FrameMediaMsg, base::Bind(&MediaMessageFifo::ReserveMemory,
+                                base::Unretained(fifo_.get())),
+      dummy_msg->content_size()));
   if (!msg)
     return false;
 

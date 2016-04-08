@@ -39,19 +39,20 @@ void DecryptConfigMarshaller::Write(const CastDecryptConfig& config,
 }
 
 // static
-scoped_ptr<CastDecryptConfig> DecryptConfigMarshaller::Read(MediaMessage* msg) {
+std::unique_ptr<CastDecryptConfig> DecryptConfigMarshaller::Read(
+    MediaMessage* msg) {
   size_t key_id_size = 0;
   CHECK(msg->ReadPod(&key_id_size));
   CHECK_GT(key_id_size, 0u);
   CHECK_LT(key_id_size, kMaxKeyIdSize);
-  scoped_ptr<char[]> key_id(new char[key_id_size]);
+  std::unique_ptr<char[]> key_id(new char[key_id_size]);
   CHECK(msg->ReadBuffer(key_id.get(), key_id_size));
 
   size_t iv_size = 0;
   CHECK(msg->ReadPod(&iv_size));
   CHECK_GT(iv_size, 0u);
   CHECK_LT(iv_size, kMaxIvSize);
-  scoped_ptr<char[]> iv(new char[iv_size]);
+  std::unique_ptr<char[]> iv(new char[iv_size]);
   CHECK(msg->ReadBuffer(iv.get(), iv_size));
 
   size_t subsample_count = 0;
@@ -66,7 +67,7 @@ scoped_ptr<CastDecryptConfig> DecryptConfigMarshaller::Read(MediaMessage* msg) {
     CHECK(msg->ReadPod(&subsamples[k].cypher_bytes));
   }
 
-  return scoped_ptr<CastDecryptConfig>(
+  return std::unique_ptr<CastDecryptConfig>(
       new CastDecryptConfigImpl(std::string(key_id.get(), key_id_size),
                                 std::string(iv.get(), iv_size), subsamples));
 }

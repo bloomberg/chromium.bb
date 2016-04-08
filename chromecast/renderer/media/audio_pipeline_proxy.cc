@@ -40,9 +40,9 @@ void IgnoreResult() {
 // as the media channel proxy.
 class AudioPipelineProxyInternal {
  public:
-  typedef base::Callback<void(scoped_ptr<base::SharedMemory>)> SharedMemCB;
+  typedef base::Callback<void(std::unique_ptr<base::SharedMemory>)> SharedMemCB;
 
-  static void Release(scoped_ptr<AudioPipelineProxyInternal> proxy);
+  static void Release(std::unique_ptr<AudioPipelineProxyInternal> proxy);
 
   explicit AudioPipelineProxyInternal(
       scoped_refptr<MediaChannelProxy> media_channel_proxy);
@@ -86,7 +86,7 @@ class AudioPipelineProxyInternal {
 
 // static
 void AudioPipelineProxyInternal::Release(
-    scoped_ptr<AudioPipelineProxyInternal> proxy) {
+    std::unique_ptr<AudioPipelineProxyInternal> proxy) {
   proxy->Shutdown();
 }
 
@@ -115,8 +115,8 @@ void AudioPipelineProxyInternal::NotifyPipeWrite() {
 
   // TODO(erickung): An alternative way would be to use a dedicated socket for
   // this event.
-  bool success = media_channel_proxy_->Send(scoped_ptr<IPC::Message>(
-      new CmaHostMsg_NotifyPipeWrite(
+  bool success = media_channel_proxy_->Send(
+      std::unique_ptr<IPC::Message>(new CmaHostMsg_NotifyPipeWrite(
           media_channel_proxy_->GetId(), kAudioTrackId)));
   VLOG_IF(4, !success) << "Sending msg failed";
 }
@@ -142,11 +142,11 @@ void AudioPipelineProxyInternal::CreateAvPipe(
     const SharedMemCB& shared_mem_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(shared_mem_cb_.is_null());
-  bool success = media_channel_proxy_->Send(scoped_ptr<IPC::Message>(
-      new CmaHostMsg_CreateAvPipe(
+  bool success = media_channel_proxy_->Send(
+      std::unique_ptr<IPC::Message>(new CmaHostMsg_CreateAvPipe(
           media_channel_proxy_->GetId(), kAudioTrackId, kAppAudioBufferSize)));
   if (!success) {
-    shared_mem_cb.Run(scoped_ptr<base::SharedMemory>());
+    shared_mem_cb.Run(std::unique_ptr<base::SharedMemory>());
     return;
   }
   shared_mem_cb_ = shared_mem_cb;
@@ -159,12 +159,12 @@ void AudioPipelineProxyInternal::OnAvPipeCreated(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!shared_mem_cb_.is_null());
   if (!success) {
-    shared_mem_cb_.Run(scoped_ptr<base::SharedMemory>());
+    shared_mem_cb_.Run(std::unique_ptr<base::SharedMemory>());
     return;
   }
 
   CHECK(base::SharedMemory::IsHandleValid(shared_mem_handle));
-  shared_mem_cb_.Run(scoped_ptr<base::SharedMemory>(
+  shared_mem_cb_.Run(std::unique_ptr<base::SharedMemory>(
       new base::SharedMemory(shared_mem_handle, false)));
 }
 
@@ -172,8 +172,8 @@ void AudioPipelineProxyInternal::Initialize(
     const ::media::AudioDecoderConfig& config,
     const ::media::PipelineStatusCB& status_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  bool success = media_channel_proxy_->Send(scoped_ptr<IPC::Message>(
-      new CmaHostMsg_AudioInitialize(
+  bool success = media_channel_proxy_->Send(
+      std::unique_ptr<IPC::Message>(new CmaHostMsg_AudioInitialize(
           media_channel_proxy_->GetId(), kAudioTrackId, config)));
   if (!success) {
     status_cb.Run( ::media::PIPELINE_ERROR_INITIALIZATION_FAILED);
@@ -185,9 +185,9 @@ void AudioPipelineProxyInternal::Initialize(
 
 void AudioPipelineProxyInternal::SetVolume(float volume) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  media_channel_proxy_->Send(scoped_ptr<IPC::Message>(
-      new CmaHostMsg_SetVolume(media_channel_proxy_->GetId(),
-                               kAudioTrackId, volume)));
+  media_channel_proxy_->Send(
+      std::unique_ptr<IPC::Message>(new CmaHostMsg_SetVolume(
+          media_channel_proxy_->GetId(), kAudioTrackId, volume)));
 }
 
 void AudioPipelineProxyInternal::OnStateChanged(
@@ -232,7 +232,7 @@ void AudioPipelineProxy::SetClient(const AvPipelineClient& client) {
 
 void AudioPipelineProxy::Initialize(
     const ::media::AudioDecoderConfig& config,
-    scoped_ptr<CodedFrameProvider> frame_provider,
+    std::unique_ptr<CodedFrameProvider> frame_provider,
     const ::media::PipelineStatusCB& status_cb) {
   CMALOG(kLogControl) << "AudioPipelineProxy::Initialize";
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -248,7 +248,7 @@ void AudioPipelineProxy::Initialize(
 void AudioPipelineProxy::OnAvPipeCreated(
     const ::media::AudioDecoderConfig& config,
     const ::media::PipelineStatusCB& status_cb,
-    scoped_ptr<base::SharedMemory> shared_memory) {
+    std::unique_ptr<base::SharedMemory> shared_memory) {
   CMALOG(kLogControl) << "AudioPipelineProxy::OnAvPipeCreated";
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!shared_memory ||
@@ -258,9 +258,9 @@ void AudioPipelineProxy::OnAvPipeCreated(
   }
   CHECK(shared_memory->memory());
 
-  scoped_ptr<MediaMemoryChunk> shared_memory_chunk(
+  std::unique_ptr<MediaMemoryChunk> shared_memory_chunk(
       new SharedMemoryChunk(std::move(shared_memory), kAppAudioBufferSize));
-  scoped_ptr<MediaMessageFifo> audio_pipe(
+  std::unique_ptr<MediaMessageFifo> audio_pipe(
       new MediaMessageFifo(std::move(shared_memory_chunk), false));
   audio_pipe->ObserveWriteActivity(
       base::Bind(&AudioPipelineProxy::OnPipeWrite, weak_this_));

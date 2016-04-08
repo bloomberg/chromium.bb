@@ -62,7 +62,8 @@ void CastRenderer::Initialize(
           ? MediaPipelineDeviceParams::kModeIgnorePts
           : MediaPipelineDeviceParams::kModeSyncPts;
   MediaPipelineDeviceParams params(sync_type, backend_task_runner_.get());
-  scoped_ptr<MediaPipelineBackend> backend = create_backend_cb_.Run(params);
+  std::unique_ptr<MediaPipelineBackend> backend =
+      create_backend_cb_.Run(params);
 
   // Create pipeline.
   MediaPipelineClient pipeline_client;
@@ -82,7 +83,7 @@ void CastRenderer::Initialize(
         base::Bind(&CastRenderer::OnEos, base::Unretained(this), STREAM_AUDIO);
     audio_client.playback_error_cb = error_cb;
     audio_client.statistics_cb = statistics_cb;
-    scoped_ptr<CodedFrameProvider> frame_provider(new DemuxerStreamAdapter(
+    std::unique_ptr<CodedFrameProvider> frame_provider(new DemuxerStreamAdapter(
         task_runner_, media_task_runner_factory_, audio_stream));
     ::media::PipelineStatus status =
         pipeline_->InitializeAudio(audio_stream->audio_decoder_config(),
@@ -110,7 +111,7 @@ void CastRenderer::Initialize(
     // after CmaRenderer is deprecated.
     std::vector<::media::VideoDecoderConfig> video_configs;
     video_configs.push_back(video_stream->video_decoder_config());
-    scoped_ptr<CodedFrameProvider> frame_provider(new DemuxerStreamAdapter(
+    std::unique_ptr<CodedFrameProvider> frame_provider(new DemuxerStreamAdapter(
         task_runner_, media_task_runner_factory_, video_stream));
     ::media::PipelineStatus status = pipeline_->InitializeVideo(
         video_configs, video_client, std::move(frame_provider));

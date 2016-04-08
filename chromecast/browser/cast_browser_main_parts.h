@@ -5,9 +5,10 @@
 #ifndef CHROMECAST_BROWSER_CAST_BROWSER_MAIN_PARTS_H_
 #define CHROMECAST_BROWSER_CAST_BROWSER_MAIN_PARTS_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
 
@@ -56,18 +57,18 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   void PostDestroyThreads() override;
 
  private:
-  scoped_ptr<CastBrowserProcess> cast_browser_process_;
+  std::unique_ptr<CastBrowserProcess> cast_browser_process_;
   const content::MainFunctionParams parameters_;  // For running browser tests.
   URLRequestContextFactory* const url_request_context_factory_;
-  scoped_ptr<net::NetLog> net_log_;
-  scoped_ptr<media::VideoPlaneController> video_plane_controller_;
+  std::unique_ptr<net::NetLog> net_log_;
+  std::unique_ptr<media::VideoPlaneController> video_plane_controller_;
 
 #if !defined(OS_ANDROID)
   // Tracks usage of media resource by e.g. CMA pipeline, CDM.
   media::MediaResourceTracker* media_resource_tracker_;
 
   // Tracks all media pipeline backends.
-  scoped_ptr<media::MediaPipelineBackendManager>
+  std::unique_ptr<media::MediaPipelineBackendManager>
       media_pipeline_backend_manager_;
 #endif
 

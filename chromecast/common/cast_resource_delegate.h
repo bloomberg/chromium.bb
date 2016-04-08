@@ -5,11 +5,11 @@
 #ifndef CHROMECAST_COMMON_CAST_RESOURCE_DELEGATE_H_
 #define CHROMECAST_COMMON_CAST_RESOURCE_DELEGATE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace base {

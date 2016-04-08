@@ -29,8 +29,8 @@ void MediaChannelProxy::Open(LoadType load_type) {
   is_open_ = true;
 
   // Browser side.
-  bool success = Send(
-      scoped_ptr<IPC::Message>(new CmaHostMsg_CreateMedia(id_, load_type)));
+  bool success = Send(std::unique_ptr<IPC::Message>(
+      new CmaHostMsg_CreateMedia(id_, load_type)));
   if (!success) {
     is_open_ = false;
     id_ = 0;
@@ -42,7 +42,7 @@ void MediaChannelProxy::Close() {
     return;
 
   // Browser side.
-  Send(scoped_ptr<IPC::Message>(new CmaHostMsg_DestroyMedia(id_)));
+  Send(std::unique_ptr<IPC::Message>(new CmaHostMsg_DestroyMedia(id_)));
 
   // Renderer side.
   is_open_ = false;
@@ -71,7 +71,7 @@ bool MediaChannelProxy::SetVideoDelegate(
   return filter_->SetVideoDelegate(id_, video_delegate);
 }
 
-bool MediaChannelProxy::Send(scoped_ptr<IPC::Message> message) {
+bool MediaChannelProxy::Send(std::unique_ptr<IPC::Message> message) {
   if (!is_open_)
     return false;
   return filter_->Send(std::move(message));

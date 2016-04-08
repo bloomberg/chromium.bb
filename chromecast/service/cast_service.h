@@ -5,9 +5,10 @@
 #ifndef CHROMECAST_SERVICE_CAST_SERVICE_H_
 #define CHROMECAST_SERVICE_CAST_SERVICE_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 class PrefService;
 
@@ -67,7 +68,7 @@ class CastService {
   content::BrowserContext* const browser_context_;
   PrefService* const pref_service_;
   bool stopped_;
-  const scoped_ptr<base::ThreadChecker> thread_checker_;
+  const std::unique_ptr<base::ThreadChecker> thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(CastService);
 };

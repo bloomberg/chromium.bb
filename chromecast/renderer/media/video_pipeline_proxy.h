@@ -5,11 +5,11 @@
 #ifndef CHROMECAST_RENDERER_MEDIA_VIDEO_PIPELINE_PROXY_H_
 #define CHROMECAST_RENDERER_MEDIA_VIDEO_PIPELINE_PROXY_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/pipeline_status.h"
@@ -38,7 +38,7 @@ class VideoPipelineProxy {
   ~VideoPipelineProxy();
 
   void Initialize(const std::vector<::media::VideoDecoderConfig>& configs,
-                  scoped_ptr<CodedFrameProvider> frame_provider,
+                  std::unique_ptr<CodedFrameProvider> frame_provider,
                   const ::media::PipelineStatusCB& status_cb);
   void StartFeeding();
   void Flush(const base::Closure& done_cb);
@@ -49,19 +49,18 @@ class VideoPipelineProxy {
  private:
   base::ThreadChecker thread_checker_;
 
-  void OnAvPipeCreated(
-      const std::vector<::media::VideoDecoderConfig>& configs,
-      const ::media::PipelineStatusCB& status_cb,
-      scoped_ptr<base::SharedMemory> shared_memory);
+  void OnAvPipeCreated(const std::vector<::media::VideoDecoderConfig>& configs,
+                       const ::media::PipelineStatusCB& status_cb,
+                       std::unique_ptr<base::SharedMemory> shared_memory);
   void OnPipeWrite();
   void OnPipeRead();
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // |proxy_| main goal is to convert function calls to IPC messages.
-  scoped_ptr<VideoPipelineProxyInternal> proxy_;
+  std::unique_ptr<VideoPipelineProxyInternal> proxy_;
 
-  scoped_ptr<AvStreamerProxy> video_streamer_;
+  std::unique_ptr<AvStreamerProxy> video_streamer_;
 
   base::WeakPtr<VideoPipelineProxy> weak_this_;
   base::WeakPtrFactory<VideoPipelineProxy> weak_factory_;

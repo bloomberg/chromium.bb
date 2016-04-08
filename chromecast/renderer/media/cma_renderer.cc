@@ -45,7 +45,7 @@ void MediaPipelineClientDummyCallback() {
 
 }  // namespace
 
-CmaRenderer::CmaRenderer(scoped_ptr<MediaPipelineProxy> media_pipeline,
+CmaRenderer::CmaRenderer(std::unique_ptr<MediaPipelineProxy> media_pipeline,
                          ::media::VideoRendererSink* video_renderer_sink,
                          ::media::GpuVideoAcceleratorFactories* gpu_factories)
     : media_task_runner_factory_(
@@ -270,7 +270,7 @@ void CmaRenderer::InitializeAudioPipeline() {
       base::Bind(&CmaRenderer::OnStatisticsUpdated, weak_this_));
   audio_pipeline_->SetClient(av_pipeline_client);
 
-  scoped_ptr<CodedFrameProvider> frame_provider(new DemuxerStreamAdapter(
+  std::unique_ptr<CodedFrameProvider> frame_provider(new DemuxerStreamAdapter(
       base::ThreadTaskRunnerHandle::Get(), media_task_runner_factory_, stream));
 
   const ::media::AudioDecoderConfig& config = stream->audio_decoder_config();
@@ -334,7 +334,7 @@ void CmaRenderer::InitializeVideoPipeline() {
       base::Bind(&CmaRenderer::OnNaturalSizeChanged, weak_this_));
   video_pipeline_->SetClient(client);
 
-  scoped_ptr<CodedFrameProvider> frame_provider(new DemuxerStreamAdapter(
+  std::unique_ptr<CodedFrameProvider> frame_provider(new DemuxerStreamAdapter(
       base::ThreadTaskRunnerHandle::Get(), media_task_runner_factory_, stream));
 
   const ::media::VideoDecoderConfig& config = stream->video_decoder_config();

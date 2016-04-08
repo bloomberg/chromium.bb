@@ -5,10 +5,11 @@
 #ifndef CHROMECAST_MEDIA_CMA_DECODER_CAST_AUDIO_DECODER_H_
 #define CHROMECAST_MEDIA_CMA_DECODER_CAST_AUDIO_DECODER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -43,7 +44,7 @@ class CastAudioDecoder {
   // Creates a CastAudioDecoder instance for the given |config|. Decoding must
   // occur on the same thread as |task_runner|. Returns an empty scoped_ptr if
   // the decoder could not be created.
-  static scoped_ptr<CastAudioDecoder> Create(
+  static std::unique_ptr<CastAudioDecoder> Create(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const media::AudioConfig& config,
       OutputFormat output_format,

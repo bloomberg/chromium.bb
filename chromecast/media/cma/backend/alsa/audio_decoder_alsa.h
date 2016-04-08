@@ -74,12 +74,12 @@ class AudioDecoderAlsa : public MediaPipelineBackend::AudioDecoder,
   bool error_;
 
   AudioConfig config_;
-  scoped_ptr<CastAudioDecoder> decoder_;
+  std::unique_ptr<CastAudioDecoder> decoder_;
 
   int64_t current_pts_;
   int64_t last_buffer_pts_;
 
-  scoped_ptr<StreamMixerAlsaInput> mixer_input_;
+  std::unique_ptr<StreamMixerAlsaInput> mixer_input_;
   RenderingDelay last_known_delay_;
   float volume_multiplier_;
 

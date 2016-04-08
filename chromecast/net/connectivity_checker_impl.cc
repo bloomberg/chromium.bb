@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "chromecast/net/net_switches.h"
 #include "net/base/request_priority.h"
@@ -64,7 +65,7 @@ void ConnectivityCheckerImpl::Initialize() {
       check_url_str.empty() ? kDefaultConnectivityCheckUrl : check_url_str));
 
   net::URLRequestContextBuilder builder;
-  builder.set_proxy_config_service(make_scoped_ptr(
+  builder.set_proxy_config_service(base::WrapUnique(
       new net::ProxyConfigServiceFixed(net::ProxyConfig::CreateDirect())));
   builder.DisableHttpCache();
   url_request_context_ = builder.Build();

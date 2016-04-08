@@ -5,6 +5,7 @@
 #include "chromecast/browser/cast_content_browser_client.h"
 
 #include <stddef.h>
+
 #include <string>
 #include <utility>
 
@@ -13,6 +14,7 @@
 #include "base/files/scoped_file.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -66,13 +68,13 @@ namespace shell {
 
 namespace {
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-static scoped_ptr<mojo::ShellClient> CreateCastMojoMediaApplication(
+static std::unique_ptr<mojo::ShellClient> CreateCastMojoMediaApplication(
     CastContentBrowserClient* browser_client) {
-  scoped_ptr<media::CastMojoMediaClient> mojo_media_client(
+  std::unique_ptr<media::CastMojoMediaClient> mojo_media_client(
       new media::CastMojoMediaClient(
           base::Bind(&CastContentBrowserClient::CreateMediaPipelineBackend,
                      base::Unretained(browser_client))));
-  return scoped_ptr<mojo::ShellClient>(new media::CastMojoMediaApplication(
+  return std::unique_ptr<mojo::ShellClient>(new media::CastMojoMediaApplication(
       std::move(mojo_media_client), browser_client->GetMediaTaskRunner()));
 }
 #endif  // ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS
@@ -96,12 +98,12 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
 void CastContentBrowserClient::PreCreateThreads() {
 }
 
-scoped_ptr<CastService> CastContentBrowserClient::CreateCastService(
+std::unique_ptr<CastService> CastContentBrowserClient::CreateCastService(
     content::BrowserContext* browser_context,
     PrefService* pref_service,
     net::URLRequestContextGetter* request_context_getter,
     media::VideoPlaneController* video_plane_controller) {
-  return make_scoped_ptr(new CastServiceSimple(browser_context, pref_service));
+  return base::WrapUnique(new CastServiceSimple(browser_context, pref_service));
 }
 
 #if !defined(OS_ANDROID)
@@ -111,7 +113,7 @@ CastContentBrowserClient::GetMediaTaskRunner() {
   return cast_browser_main_parts_->GetMediaTaskRunner();
 }
 
-scoped_ptr<media::MediaPipelineBackend>
+std::unique_ptr<media::MediaPipelineBackend>
 CastContentBrowserClient::CreateMediaPipelineBackend(
     const media::MediaPipelineDeviceParams& params) {
   return media_pipeline_backend_manager()->CreateMediaPipelineBackend(params);
@@ -274,7 +276,7 @@ void CastContentBrowserClient::OverrideWebkitPrefs(
 
 void CastContentBrowserClient::ResourceDispatcherHostCreated() {
   CastBrowserProcess::GetInstance()->SetResourceDispatcherHostDelegate(
-      make_scoped_ptr(new CastResourceDispatcherHostDelegate));
+      base::WrapUnique(new CastResourceDispatcherHostDelegate));
   content::ResourceDispatcherHost::Get()->SetDelegate(
       CastBrowserProcess::GetInstance()->resource_dispatcher_host_delegate());
 }
@@ -309,7 +311,7 @@ void CastContentBrowserClient::AllowCertificateError(
 void CastContentBrowserClient::SelectClientCertificate(
     content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
-    scoped_ptr<content::ClientCertificateDelegate> delegate) {
+    std::unique_ptr<content::ClientCertificateDelegate> delegate) {
   GURL requesting_url("https://" + cert_request_info->host_and_port.ToString());
 
   if (!requesting_url.is_valid()) {
@@ -416,10 +418,11 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 
 #else
 
-scoped_ptr<::media::CdmFactory> CastContentBrowserClient::CreateCdmFactory() {
+std::unique_ptr<::media::CdmFactory>
+CastContentBrowserClient::CreateCdmFactory() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCmaMediaPipeline)) {
-    return make_scoped_ptr(new media::CastBrowserCdmFactory(
+    return base::WrapUnique(new media::CastBrowserCdmFactory(
         GetMediaTaskRunner(), media_resource_tracker()));
   }
 

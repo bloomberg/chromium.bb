@@ -9,6 +9,7 @@
 #include <limits>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -114,7 +115,7 @@ const int32_t kTestData[NUM_DATA_SETS][NUM_SAMPLES] = {
 };
 
 // Return a scoped pointer filled with the data laid out at |index| above.
-scoped_ptr<::media::AudioBus> GetTestData(size_t index) {
+std::unique_ptr<::media::AudioBus> GetTestData(size_t index) {
   CHECK_LT(index, NUM_DATA_SETS);
   int frames = NUM_SAMPLES / kNumChannels;
   auto data = ::media::AudioBus::Create(kNumChannels, frames);
@@ -159,7 +160,7 @@ class MockInputQueue : public StreamMixerAlsa::InputQueue {
   // Setters and getters for test control.
   void SetPaused(bool paused) { paused_ = paused; }
   void SetMaxReadSize(int max_read_size) { max_read_size_ = max_read_size; }
-  void SetData(scoped_ptr<::media::AudioBus> data) {
+  void SetData(std::unique_ptr<::media::AudioBus> data) {
     CHECK(!data_);
     data_ = std::move(data);
     max_read_size_ = data_->frames();
@@ -197,14 +198,14 @@ class MockInputQueue : public StreamMixerAlsa::InputQueue {
   float multiplier_;
   bool primary_;
   bool deleting_;
-  scoped_ptr<::media::AudioBus> data_;
+  std::unique_ptr<::media::AudioBus> data_;
 
   DISALLOW_COPY_AND_ASSIGN(MockInputQueue);
 };
 
 // Given |inputs|, returns mixed audio data according to the mixing method used
 // by the mixer.
-scoped_ptr<::media::AudioBus> GetMixedAudioData(
+std::unique_ptr<::media::AudioBus> GetMixedAudioData(
     const std::vector<testing::StrictMock<MockInputQueue>*>& inputs) {
   int read_size = std::numeric_limits<int>::max();
   for (const auto input : inputs) {
@@ -239,7 +240,7 @@ scoped_ptr<::media::AudioBus> GetMixedAudioData(
 
 // Like the method above, but accepts a single input. This returns an AudioBus
 // with this input after it is scaled and clipped.
-scoped_ptr<::media::AudioBus> GetMixedAudioData(
+std::unique_ptr<::media::AudioBus> GetMixedAudioData(
     testing::StrictMock<MockInputQueue>* input) {
   return GetMixedAudioData(
       std::vector<testing::StrictMock<MockInputQueue>*>(1, input));
@@ -266,7 +267,7 @@ class StreamMixerAlsaTest : public testing::Test {
       : message_loop_(new base::MessageLoop()),
         mock_alsa_(new testing::NiceMock<MockAlsaWrapper>()) {
     StreamMixerAlsa::MakeSingleThreadedForTest();
-    StreamMixerAlsa::Get()->SetAlsaWrapperForTest(make_scoped_ptr(mock_alsa_));
+    StreamMixerAlsa::Get()->SetAlsaWrapperForTest(base::WrapUnique(mock_alsa_));
   }
 
   ~StreamMixerAlsaTest() override {
@@ -276,7 +277,7 @@ class StreamMixerAlsaTest : public testing::Test {
   MockAlsaWrapper* mock_alsa() { return mock_alsa_; }
 
  private:
-  const scoped_ptr<base::MessageLoop> message_loop_;
+  const std::unique_ptr<base::MessageLoop> message_loop_;
   testing::NiceMock<MockAlsaWrapper>* mock_alsa_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamMixerAlsaTest);
@@ -287,7 +288,7 @@ TEST_F(StreamMixerAlsaTest, AddSingleInput) {
   StreamMixerAlsa* mixer = StreamMixerAlsa::Get();
 
   EXPECT_CALL(*input, Initialize(_)).Times(1);
-  mixer->AddInput(make_scoped_ptr(input));
+  mixer->AddInput(base::WrapUnique(input));
   EXPECT_EQ(StreamMixerAlsa::kStateNormalPlayback, mixer->state());
 }
 
@@ -299,8 +300,8 @@ TEST_F(StreamMixerAlsaTest, AddMultipleInputs) {
 
   EXPECT_CALL(*input1, Initialize(_)).Times(1);
   EXPECT_CALL(*input2, Initialize(_)).Times(1);
-  mixer->AddInput(make_scoped_ptr(input1));
-  mixer->AddInput(make_scoped_ptr(input2));
+  mixer->AddInput(base::WrapUnique(input1));
+  mixer->AddInput(base::WrapUnique(input2));
 
   // The mixer should be ready to play, and should sample to the initial
   // sample rate.
@@ -319,7 +320,7 @@ TEST_F(StreamMixerAlsaTest, RemoveInput) {
   StreamMixerAlsa* mixer = StreamMixerAlsa::Get();
   for (size_t i = 0; i < inputs.size(); ++i) {
     EXPECT_CALL(*inputs[i], Initialize(_)).Times(1);
-    mixer->AddInput(make_scoped_ptr(inputs[i]));
+    mixer->AddInput(base::WrapUnique(inputs[i]));
   }
 
   EXPECT_EQ(StreamMixerAlsa::kStateNormalPlayback, mixer->state());
@@ -348,7 +349,7 @@ TEST_F(StreamMixerAlsaTest, WriteFrames) {
   StreamMixerAlsa* mixer = StreamMixerAlsa::Get();
   for (size_t i = 0; i < inputs.size(); ++i) {
     EXPECT_CALL(*inputs[i], Initialize(_)).Times(1);
-    mixer->AddInput(make_scoped_ptr(inputs[i]));
+    mixer->AddInput(base::WrapUnique(inputs[i]));
   }
 
   ASSERT_EQ(StreamMixerAlsa::kStateNormalPlayback, mixer->state());
@@ -397,7 +398,7 @@ TEST_F(StreamMixerAlsaTest, OneStreamMixesProperly) {
 
   StreamMixerAlsa* mixer = StreamMixerAlsa::Get();
   EXPECT_CALL(*input, Initialize(_)).Times(1);
-  mixer->AddInput(make_scoped_ptr(input));
+  mixer->AddInput(base::WrapUnique(input));
   EXPECT_EQ(StreamMixerAlsa::kStateNormalPlayback, mixer->state());
 
   // Populate the stream with data.
@@ -426,7 +427,7 @@ TEST_F(StreamMixerAlsaTest, OneStreamIsScaledDownProperly) {
 
   StreamMixerAlsa* mixer = StreamMixerAlsa::Get();
   EXPECT_CALL(*input, Initialize(_)).Times(1);
-  mixer->AddInput(make_scoped_ptr(input));
+  mixer->AddInput(base::WrapUnique(input));
   EXPECT_EQ(StreamMixerAlsa::kStateNormalPlayback, mixer->state());
 
   // Populate the stream with data.
@@ -464,7 +465,7 @@ TEST_F(StreamMixerAlsaTest, TwoUnscaledStreamsMixProperly) {
   StreamMixerAlsa* mixer = StreamMixerAlsa::Get();
   for (size_t i = 0; i < inputs.size(); ++i) {
     EXPECT_CALL(*inputs[i], Initialize(_)).Times(1);
-    mixer->AddInput(make_scoped_ptr(inputs[i]));
+    mixer->AddInput(base::WrapUnique(inputs[i]));
   }
 
   // Poll the inputs for data.
@@ -502,7 +503,7 @@ TEST_F(StreamMixerAlsaTest, TwoUnscaledStreamsMixProperlyWithEdgeCases) {
   StreamMixerAlsa* mixer = StreamMixerAlsa::Get();
   for (size_t i = 0; i < inputs.size(); ++i) {
     EXPECT_CALL(*inputs[i], Initialize(_)).Times(1);
-    mixer->AddInput(make_scoped_ptr(inputs[i]));
+    mixer->AddInput(base::WrapUnique(inputs[i]));
   }
 
   // Create edge case data for the inputs. By mixing these two short streams,
@@ -568,7 +569,7 @@ TEST_F(StreamMixerAlsaTest, WriteBuffersOfVaryingLength) {
 
   StreamMixerAlsa* mixer = StreamMixerAlsa::Get();
   EXPECT_CALL(*input, Initialize(_)).Times(1);
-  mixer->AddInput(make_scoped_ptr(input));
+  mixer->AddInput(base::WrapUnique(input));
   EXPECT_EQ(StreamMixerAlsa::kStateNormalPlayback, mixer->state());
 
   // The input stream will provide buffers of several different lengths.

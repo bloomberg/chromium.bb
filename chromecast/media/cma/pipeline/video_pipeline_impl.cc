@@ -39,7 +39,7 @@ VideoPipelineImpl::~VideoPipelineImpl() {
 
 ::media::PipelineStatus VideoPipelineImpl::Initialize(
     const std::vector<::media::VideoDecoderConfig>& configs,
-    scoped_ptr<CodedFrameProvider> frame_provider) {
+    std::unique_ptr<CodedFrameProvider> frame_provider) {
   DCHECK_GT(configs.size(), 0u);
   for (const auto& config : configs) {
     CMALOG(kLogControl) << __FUNCTION__ << " "

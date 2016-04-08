@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromecast/media/cma/base/demuxer_stream_adapter.h"
+
 #include <list>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chromecast/media/cma/base/balanced_media_task_runner_factory.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
-#include "chromecast/media/cma/base/demuxer_stream_adapter.h"
 #include "chromecast/media/cma/base/demuxer_stream_for_test.h"
 #include "chromecast/public/media/cast_decoder_buffer.h"
 #include "media/base/audio_decoder_config.h"
@@ -56,9 +57,9 @@ class DemuxerStreamAdapterTest : public testing::Test {
   // List of expected frame indices with decoder config changes.
   std::list<int> config_idx_;
 
-  scoped_ptr<DemuxerStreamForTest> demuxer_stream_;
+  std::unique_ptr<DemuxerStreamForTest> demuxer_stream_;
 
-  scoped_ptr<CodedFrameProvider> coded_frame_provider_;
+  std::unique_ptr<CodedFrameProvider> coded_frame_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DemuxerStreamAdapterTest);
 };
@@ -159,7 +160,7 @@ TEST_F(DemuxerStreamAdapterTest, NoDelay) {
   demuxer_stream_.reset(new DemuxerStreamForTest(
       -1, cycle_count, delayed_frame_count, config_idx_));
 
-  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   Initialize(demuxer_stream_.get());
   message_loop->PostTask(
       FROM_HERE,
@@ -179,7 +180,7 @@ TEST_F(DemuxerStreamAdapterTest, AllDelayed) {
   demuxer_stream_.reset(new DemuxerStreamForTest(
       -1, cycle_count, delayed_frame_count, config_idx_));
 
-  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   Initialize(demuxer_stream_.get());
   message_loop->PostTask(
       FROM_HERE,
@@ -200,7 +201,7 @@ TEST_F(DemuxerStreamAdapterTest, AllDelayedEarlyFlush) {
   demuxer_stream_.reset(new DemuxerStreamForTest(
       -1, cycle_count, delayed_frame_count, config_idx_));
 
-  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   Initialize(demuxer_stream_.get());
   message_loop->PostTask(
       FROM_HERE,

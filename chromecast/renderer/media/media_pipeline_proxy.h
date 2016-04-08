@@ -5,9 +5,10 @@
 #ifndef CHROMECAST_RENDERER_MEDIA_MEDIA_PIPELINE_PROXY_H_
 #define CHROMECAST_RENDERER_MEDIA_MEDIA_PIPELINE_PROXY_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chromecast/media/cma/pipeline/load_type.h"
@@ -40,10 +41,10 @@ class MediaPipelineProxy {
   AudioPipelineProxy* GetAudioPipeline() const;
   VideoPipelineProxy* GetVideoPipeline() const;
   void InitializeAudio(const ::media::AudioDecoderConfig& config,
-                       scoped_ptr<CodedFrameProvider> frame_provider,
+                       std::unique_ptr<CodedFrameProvider> frame_provider,
                        const ::media::PipelineStatusCB& status_cb);
   void InitializeVideo(const std::vector<::media::VideoDecoderConfig>& configs,
-                       scoped_ptr<CodedFrameProvider> frame_provider,
+                       std::unique_ptr<CodedFrameProvider> frame_provider,
                        const ::media::PipelineStatusCB& status_cb);
   void StartPlayingFrom(base::TimeDelta time);
   void Flush(const base::Closure& flush_cb);
@@ -63,13 +64,13 @@ class MediaPipelineProxy {
   // CMA channel to convey IPC messages.
   scoped_refptr<MediaChannelProxy> const media_channel_proxy_;
 
-  scoped_ptr<MediaPipelineProxyInternal> proxy_;
+  std::unique_ptr<MediaPipelineProxyInternal> proxy_;
 
   bool has_audio_;
   bool has_video_;
-  scoped_ptr<AudioPipelineProxy> audio_pipeline_;
-  scoped_ptr<VideoPipelineProxy> video_pipeline_;
-  scoped_ptr< ::media::SerialRunner> pending_flush_callbacks_;
+  std::unique_ptr<AudioPipelineProxy> audio_pipeline_;
+  std::unique_ptr<VideoPipelineProxy> video_pipeline_;
+  std::unique_ptr<::media::SerialRunner> pending_flush_callbacks_;
 
   base::WeakPtr<MediaPipelineProxy> weak_this_;
   base::WeakPtrFactory<MediaPipelineProxy> weak_factory_;

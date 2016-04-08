@@ -5,8 +5,9 @@
 #ifndef CHROMECAST_MEDIA_CMA_IPC_STREAMER_DECODER_BUFFER_BASE_MARSHALLER_H_
 #define CHROMECAST_MEDIA_CMA_IPC_STREAMER_DECODER_BUFFER_BASE_MARSHALLER_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace chromecast {
 namespace media {
@@ -20,7 +21,8 @@ class DecoderBufferBaseMarshaller {
       const scoped_refptr<DecoderBufferBase>& buffer, MediaMessage* msg);
 
   // Returns a decoder buffer from its serialized structure.
-  static scoped_refptr<DecoderBufferBase> Read(scoped_ptr<MediaMessage> msg);
+  static scoped_refptr<DecoderBufferBase> Read(
+      std::unique_ptr<MediaMessage> msg);
 };
 
 }  // namespace media

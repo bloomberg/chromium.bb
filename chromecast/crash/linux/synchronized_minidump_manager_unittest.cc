@@ -12,7 +12,9 @@
 #include <sys/stat.h>  // mkdir
 #include <sys/types.h>
 #include <time.h>
+
 #include <fstream>
+#include <memory>
 #include <utility>
 
 #include "base/base_paths.h"
@@ -20,7 +22,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/process/launch.h"
 #include "base/test/scoped_path_override.h"
@@ -50,7 +52,7 @@ class SynchronizedMinidumpManagerSimple : public SynchronizedMinidumpManager {
         lockfile_path_(dump_path_.Append(kLockfileName).value()) {}
   ~SynchronizedMinidumpManagerSimple() override {}
 
-  void SetDumpInfoToWrite(scoped_ptr<DumpInfo> dump_info) {
+  void SetDumpInfoToWrite(std::unique_ptr<DumpInfo> dump_info) {
     dump_info_ = std::move(dump_info);
   }
 
@@ -75,7 +77,7 @@ class SynchronizedMinidumpManagerSimple : public SynchronizedMinidumpManager {
   bool work_done_;
   int add_entry_return_code_;
   std::string lockfile_path_;
-  scoped_ptr<DumpInfo> dump_info_;
+  std::unique_ptr<DumpInfo> dump_info_;
 };
 
 void DoWorkLockedTask(SynchronizedMinidumpManagerSimple* manager) {
@@ -166,7 +168,7 @@ class SynchronizedMinidumpManagerTest : public testing::Test {
 
  private:
   base::ScopedTempDir fake_home_dir_;
-  scoped_ptr<base::ScopedPathOverride> path_override_;
+  std::unique_ptr<base::ScopedPathOverride> path_override_;
 };
 
 // Have |producer| generate |num_dumps| while checking there are no errors.
@@ -242,7 +244,7 @@ TEST_F(SynchronizedMinidumpManagerTest,
 
   // Test that the manager tried to log the entry and failed.
   SynchronizedMinidumpManagerSimple manager;
-  manager.SetDumpInfoToWrite(make_scoped_ptr(new DumpInfo(&val)));
+  manager.SetDumpInfoToWrite(base::WrapUnique(new DumpInfo(&val)));
   ASSERT_EQ(0, manager.DoWorkLocked());
   ASSERT_EQ(-1, manager.add_entry_return_code());
 
@@ -262,7 +264,7 @@ TEST_F(SynchronizedMinidumpManagerTest,
   // Write the first entry.
   SynchronizedMinidumpManagerSimple manager;
   manager.SetDumpInfoToWrite(
-      make_scoped_ptr(new DumpInfo("dump1", "log1", now, params)));
+      base::WrapUnique(new DumpInfo("dump1", "log1", now, params)));
   ASSERT_EQ(0, manager.DoWorkLocked());
   ASSERT_EQ(0, manager.add_entry_return_code());
 
@@ -273,7 +275,7 @@ TEST_F(SynchronizedMinidumpManagerTest,
 
   // Write the second entry.
   manager.SetDumpInfoToWrite(
-      make_scoped_ptr(new DumpInfo("dump2", "log2", now, params)));
+      base::WrapUnique(new DumpInfo("dump2", "log2", now, params)));
   ASSERT_EQ(0, manager.DoWorkLocked());
   ASSERT_EQ(0, manager.add_entry_return_code());
 
@@ -316,7 +318,7 @@ TEST_F(SynchronizedMinidumpManagerTest,
   const int sleep_time_ms = 100;
   SleepySynchronizedMinidumpManagerSimple sleepy_manager(sleep_time_ms);
   sleepy_manager.SetDumpInfoToWrite(
-      make_scoped_ptr(new DumpInfo("dump", "log", now, params)));
+      base::WrapUnique(new DumpInfo("dump", "log", now, params)));
   base::Thread sleepy_thread("sleepy");
   sleepy_thread.Start();
   sleepy_thread.task_runner()->PostTask(
@@ -334,7 +336,7 @@ TEST_F(SynchronizedMinidumpManagerTest,
   // the dump.
   SynchronizedMinidumpManagerSimple manager;
   manager.SetDumpInfoToWrite(
-      make_scoped_ptr(new DumpInfo("dump", "log", now, params)));
+      base::WrapUnique(new DumpInfo("dump", "log", now, params)));
   manager.set_non_blocking(false);
 
   EXPECT_EQ(0, manager.DoWorkLocked());
@@ -401,7 +403,7 @@ TEST_F(SynchronizedMinidumpManagerTest,
     // and finally releases the lock.
     SleepySynchronizedMinidumpManagerSimple sleepy_manager(100);
     sleepy_manager.SetDumpInfoToWrite(
-        make_scoped_ptr(new DumpInfo("dump", "log", now, params)));
+        base::WrapUnique(new DumpInfo("dump", "log", now, params)));
     ASSERT_EQ(0, sleepy_manager.DoWorkLocked());
     ASSERT_TRUE(sleepy_manager.work_done());
     return;
@@ -418,7 +420,7 @@ TEST_F(SynchronizedMinidumpManagerTest,
   // the dump.
   SynchronizedMinidumpManagerSimple manager;
   manager.SetDumpInfoToWrite(
-      make_scoped_ptr(new DumpInfo("dump", "log", now, params)));
+      base::WrapUnique(new DumpInfo("dump", "log", now, params)));
   manager.set_non_blocking(false);
 
   EXPECT_EQ(0, manager.DoWorkLocked());
@@ -441,7 +443,7 @@ TEST_F(SynchronizedMinidumpManagerTest,
   FakeSynchronizedMinidumpUploader uploader;
   SynchronizedMinidumpManagerSimple producer;
   producer.SetDumpInfoToWrite(
-      make_scoped_ptr(new DumpInfo("dump1", "log1", now, params)));
+      base::WrapUnique(new DumpInfo("dump1", "log1", now, params)));
 
   const int max_dumps = SynchronizedMinidumpManager::kRatelimitPeriodMaxDumps;
   produce_dumps(producer, max_dumps);
@@ -457,7 +459,7 @@ TEST_F(SynchronizedMinidumpManagerTest, Upload_FailsWhenTooManyRecentDumps) {
   FakeSynchronizedMinidumpUploader uploader;
   SynchronizedMinidumpManagerSimple producer;
   producer.SetDumpInfoToWrite(
-      make_scoped_ptr(new DumpInfo("dump1", "log1", now, params)));
+      base::WrapUnique(new DumpInfo("dump1", "log1", now, params)));
 
   const int max_dumps = SynchronizedMinidumpManager::kRatelimitPeriodMaxDumps;
   produce_dumps(producer, max_dumps + 1);
@@ -477,7 +479,7 @@ TEST_F(SynchronizedMinidumpManagerTest, UploadSucceedsAfterRateLimitPeriodEnd) {
   FakeSynchronizedMinidumpUploader uploader;
   SynchronizedMinidumpManagerSimple producer;
   producer.SetDumpInfoToWrite(
-      make_scoped_ptr(new DumpInfo("dump1", "log1", now, params)));
+      base::WrapUnique(new DumpInfo("dump1", "log1", now, params)));
 
   const int iters = 3;
   const int max_dumps = SynchronizedMinidumpManager::kRatelimitPeriodMaxDumps;
@@ -521,7 +523,7 @@ TEST_F(SynchronizedMinidumpManagerTest, HasDumpsWithDumps) {
   FakeSynchronizedMinidumpUploader uploader;
 
   producer.SetDumpInfoToWrite(
-      make_scoped_ptr(new DumpInfo("dump1", "log1", now, params)));
+      base::WrapUnique(new DumpInfo("dump1", "log1", now, params)));
 
   const int kNumDumps = 3;
   for (int i = 0; i < kNumDumps; ++i) {

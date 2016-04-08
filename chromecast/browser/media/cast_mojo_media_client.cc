@@ -4,6 +4,7 @@
 
 #include "chromecast/browser/media/cast_mojo_media_client.h"
 
+#include "base/memory/ptr_util.h"
 #include "chromecast/browser/media/cast_renderer.h"
 
 namespace {
@@ -15,14 +16,14 @@ class CastRendererFactory : public media::RendererFactory {
       : create_backend_cb_(create_backend_cb), media_log_(media_log) {}
   ~CastRendererFactory() final {}
 
-  scoped_ptr<media::Renderer> CreateRenderer(
+  std::unique_ptr<media::Renderer> CreateRenderer(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       media::AudioRendererSink* audio_renderer_sink,
       media::VideoRendererSink* video_renderer_sink,
       const media::RequestSurfaceCB& request_surface_cb) final {
     DCHECK(!audio_renderer_sink && !video_renderer_sink);
-    return make_scoped_ptr(new chromecast::media::CastRenderer(
+    return base::WrapUnique(new chromecast::media::CastRenderer(
         create_backend_cb_, media_task_runner));
   }
 
@@ -42,9 +43,10 @@ CastMojoMediaClient::CastMojoMediaClient(
 
 CastMojoMediaClient::~CastMojoMediaClient() {}
 
-scoped_ptr<::media::RendererFactory> CastMojoMediaClient::CreateRendererFactory(
+std::unique_ptr<::media::RendererFactory>
+CastMojoMediaClient::CreateRendererFactory(
     const scoped_refptr<::media::MediaLog>& media_log) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new CastRendererFactory(create_backend_cb_, media_log));
 }
 

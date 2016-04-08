@@ -185,8 +185,8 @@ class CastAudioOutputStream::Backend
 
  private:
   const ::media::AudioParameters audio_params_;
-  scoped_ptr<MediaPipelineBackend> backend_;
-  scoped_ptr<TaskRunnerImpl> backend_task_runner_;
+  std::unique_ptr<MediaPipelineBackend> backend_;
+  std::unique_ptr<TaskRunnerImpl> backend_task_runner_;
   MediaPipelineBackend::AudioDecoder* decoder_;
   PushBufferCompletionCallback completion_cb_;
   bool first_start_;

@@ -6,11 +6,11 @@
 #define CHROMECAST_BROWSER_CAST_CONTENT_BROWSER_CLIENT_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 
@@ -48,7 +48,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
  public:
   // Creates an implementation of CastContentBrowserClient. Platform should
   // link in an implementation as needed.
-  static scoped_ptr<CastContentBrowserClient> Create();
+  static std::unique_ptr<CastContentBrowserClient> Create();
 
   ~CastContentBrowserClient() override;
 
@@ -61,7 +61,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   // Creates and returns the CastService instance for the current process.
   // Note: |request_context_getter| might be different than the main request
   // getter accessible via CastBrowserProcess.
-  virtual scoped_ptr<CastService> CreateCastService(
+  virtual std::unique_ptr<CastService> CreateCastService(
       content::BrowserContext* browser_context,
       PrefService* pref_service,
       net::URLRequestContextGetter* request_context_getter,
@@ -73,8 +73,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
 
   // Creates a MediaPipelineDevice (CMA backend) for media playback, called
   // once per media player instance.
-  virtual scoped_ptr<media::MediaPipelineBackend> CreateMediaPipelineBackend(
-      const media::MediaPipelineDeviceParams& params);
+  virtual std::unique_ptr<media::MediaPipelineBackend>
+  CreateMediaPipelineBackend(const media::MediaPipelineDeviceParams& params);
 
   media::MediaResourceTracker* media_resource_tracker();
 
@@ -119,7 +119,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   void SelectClientCertificate(
       content::WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
-      scoped_ptr<content::ClientCertificateDelegate> delegate) override;
+      std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
   bool CanCreateWindow(
       const GURL& opener_url,
       const GURL& opener_top_level_frame_url,
@@ -145,7 +145,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       content::FileDescriptorInfo* mappings,
       std::map<int, base::MemoryMappedFile::Region>* regions) override;
 #else
-  scoped_ptr<::media::CdmFactory> CreateCdmFactory() override;
+  std::unique_ptr<::media::CdmFactory> CreateCdmFactory() override;
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
@@ -188,7 +188,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
 
   // Created by CastContentBrowserClient but owned by BrowserMainLoop.
   CastBrowserMainParts* cast_browser_main_parts_;
-  scoped_ptr<URLRequestContextFactory> url_request_context_factory_;
+  std::unique_ptr<URLRequestContextFactory> url_request_context_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentBrowserClient);
 };

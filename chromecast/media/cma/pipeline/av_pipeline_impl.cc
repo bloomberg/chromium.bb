@@ -64,7 +64,7 @@ AvPipelineImpl::~AvPipelineImpl() {
 }
 
 void AvPipelineImpl::SetCodedFrameProvider(
-    scoped_ptr<CodedFrameProvider> frame_provider,
+    std::unique_ptr<CodedFrameProvider> frame_provider,
     size_t max_buffer_size,
     size_t max_frame_size) {
   DCHECK_EQ(state_, kUninitialized);
@@ -206,7 +206,7 @@ void AvPipelineImpl::ProcessPendingBuffer() {
     enable_feeding_ = false;
   }
 
-  scoped_ptr<DecryptContextImpl> decrypt_context;
+  std::unique_ptr<DecryptContextImpl> decrypt_context;
   if (!pending_buffer_->end_of_stream() &&
       pending_buffer_->decrypt_config()) {
     // Verify that CDM has the key ID.

@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromecast/media/cma/ipc/media_message_fifo.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "chromecast/media/cma/ipc/media_memory_chunk.h"
 #include "chromecast/media/cma/ipc/media_message.h"
-#include "chromecast/media/cma/ipc/media_message_fifo.h"
 #include "chromecast/media/cma/ipc/media_message_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,20 +40,17 @@ class FifoMemoryChunk : public MediaMemoryChunk {
   DISALLOW_COPY_AND_ASSIGN(FifoMemoryChunk);
 };
 
-void MsgProducer(scoped_ptr<MediaMessageFifo> fifo,
+void MsgProducer(std::unique_ptr<MediaMessageFifo> fifo,
                  int msg_count,
                  base::WaitableEvent* event) {
-
   for (int k = 0; k < msg_count; k++) {
     uint32_t msg_type = 0x2 + (k % 5);
     uint32_t max_msg_content_size = k % 64;
     do {
-      scoped_ptr<MediaMessage> msg1(
-          MediaMessage::CreateMessage(
-              msg_type,
-              base::Bind(&MediaMessageFifo::ReserveMemory,
-                         base::Unretained(fifo.get())),
-              max_msg_content_size));
+      std::unique_ptr<MediaMessage> msg1(MediaMessage::CreateMessage(
+          msg_type, base::Bind(&MediaMessageFifo::ReserveMemory,
+                               base::Unretained(fifo.get())),
+          max_msg_content_size));
       if (msg1)
         break;
       base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
@@ -63,15 +62,14 @@ void MsgProducer(scoped_ptr<MediaMessageFifo> fifo,
   event->Signal();
 }
 
-void MsgConsumer(scoped_ptr<MediaMessageFifo> fifo,
+void MsgConsumer(std::unique_ptr<MediaMessageFifo> fifo,
                  int msg_count,
                  base::WaitableEvent* event) {
-
   int k = 0;
   while (k < msg_count) {
     uint32_t msg_type = 0x2 + (k % 5);
     do {
-      scoped_ptr<MediaMessage> msg2(fifo->Pop());
+      std::unique_ptr<MediaMessage> msg2(fifo->Pop());
       if (msg2) {
         if (msg2->type() != PaddingMediaMsg) {
           EXPECT_EQ(msg2->type(), msg_type);
@@ -88,27 +86,24 @@ void MsgConsumer(scoped_ptr<MediaMessageFifo> fifo,
   event->Signal();
 }
 
-void MsgProducerConsumer(
-    scoped_ptr<MediaMessageFifo> producer_fifo,
-    scoped_ptr<MediaMessageFifo> consumer_fifo,
-    base::WaitableEvent* event) {
+void MsgProducerConsumer(std::unique_ptr<MediaMessageFifo> producer_fifo,
+                         std::unique_ptr<MediaMessageFifo> consumer_fifo,
+                         base::WaitableEvent* event) {
   for (int k = 0; k < 2048; k++) {
     // Should have enough space to create a message.
     uint32_t msg_type = 0x2 + (k % 5);
     uint32_t max_msg_content_size = k % 64;
-    scoped_ptr<MediaMessage> msg1(
-        MediaMessage::CreateMessage(
-            msg_type,
-            base::Bind(&MediaMessageFifo::ReserveMemory,
-                       base::Unretained(producer_fifo.get())),
-            max_msg_content_size));
+    std::unique_ptr<MediaMessage> msg1(MediaMessage::CreateMessage(
+        msg_type, base::Bind(&MediaMessageFifo::ReserveMemory,
+                             base::Unretained(producer_fifo.get())),
+        max_msg_content_size));
     EXPECT_TRUE(msg1);
 
     // Make sure the message is commited.
     msg1.reset();
 
     // At this point, we should have a message to read.
-    scoped_ptr<MediaMessage> msg2(consumer_fifo->Pop());
+    std::unique_ptr<MediaMessage> msg2(consumer_fifo->Pop());
     EXPECT_TRUE(msg2);
   }
 
@@ -122,20 +117,21 @@ void MsgProducerConsumer(
 
 TEST(MediaMessageFifoTest, AlternateWriteRead) {
   size_t buffer_size = 64 * 1024;
-  scoped_ptr<uint64_t[]> buffer(new uint64_t[buffer_size / sizeof(uint64_t)]);
+  std::unique_ptr<uint64_t[]> buffer(
+      new uint64_t[buffer_size / sizeof(uint64_t)]);
 
-  scoped_ptr<base::Thread> thread(
+  std::unique_ptr<base::Thread> thread(
       new base::Thread("FeederConsumerThread"));
   thread->Start();
 
-  scoped_ptr<MediaMessageFifo> producer_fifo(new MediaMessageFifo(
-      scoped_ptr<MediaMemoryChunk>(
-          new FifoMemoryChunk(&buffer[0], buffer_size)),
-      true));
-  scoped_ptr<MediaMessageFifo> consumer_fifo(new MediaMessageFifo(
-      scoped_ptr<MediaMemoryChunk>(
-          new FifoMemoryChunk(&buffer[0], buffer_size)),
-      false));
+  std::unique_ptr<MediaMessageFifo> producer_fifo(
+      new MediaMessageFifo(std::unique_ptr<MediaMemoryChunk>(
+                               new FifoMemoryChunk(&buffer[0], buffer_size)),
+                           true));
+  std::unique_ptr<MediaMessageFifo> consumer_fifo(
+      new MediaMessageFifo(std::unique_ptr<MediaMemoryChunk>(
+                               new FifoMemoryChunk(&buffer[0], buffer_size)),
+                           false));
 
   base::WaitableEvent event(false, false);
   thread->task_runner()->PostTask(
@@ -148,23 +144,24 @@ TEST(MediaMessageFifoTest, AlternateWriteRead) {
 
 TEST(MediaMessageFifoTest, MultiThreaded) {
   size_t buffer_size = 64 * 1024;
-  scoped_ptr<uint64_t[]> buffer(new uint64_t[buffer_size / sizeof(uint64_t)]);
+  std::unique_ptr<uint64_t[]> buffer(
+      new uint64_t[buffer_size / sizeof(uint64_t)]);
 
-  scoped_ptr<base::Thread> producer_thread(
+  std::unique_ptr<base::Thread> producer_thread(
       new base::Thread("FeederThread"));
-  scoped_ptr<base::Thread> consumer_thread(
+  std::unique_ptr<base::Thread> consumer_thread(
       new base::Thread("ConsumerThread"));
   producer_thread->Start();
   consumer_thread->Start();
 
-  scoped_ptr<MediaMessageFifo> producer_fifo(new MediaMessageFifo(
-      scoped_ptr<MediaMemoryChunk>(
-          new FifoMemoryChunk(&buffer[0], buffer_size)),
-      true));
-  scoped_ptr<MediaMessageFifo> consumer_fifo(new MediaMessageFifo(
-      scoped_ptr<MediaMemoryChunk>(
-          new FifoMemoryChunk(&buffer[0], buffer_size)),
-      false));
+  std::unique_ptr<MediaMessageFifo> producer_fifo(
+      new MediaMessageFifo(std::unique_ptr<MediaMemoryChunk>(
+                               new FifoMemoryChunk(&buffer[0], buffer_size)),
+                           true));
+  std::unique_ptr<MediaMessageFifo> consumer_fifo(
+      new MediaMessageFifo(std::unique_ptr<MediaMemoryChunk>(
+                               new FifoMemoryChunk(&buffer[0], buffer_size)),
+                           false));
 
   base::WaitableEvent producer_event_done(false, false);
   base::WaitableEvent consumer_event_done(false, false);

@@ -5,9 +5,10 @@
 #ifndef CHROMECAST_MEDIA_CMA_BACKEND_ALSA_STREAM_MIXER_ALSA_INPUT_H_
 #define CHROMECAST_MEDIA_CMA_BACKEND_ALSA_STREAM_MIXER_ALSA_INPUT_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chromecast/media/cma/backend/alsa/media_pipeline_backend_alsa.h"
 

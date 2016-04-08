@@ -5,9 +5,10 @@
 #ifndef CHROMECAST_MEDIA_CMA_BACKEND_ALSA_MEDIA_PIPELINE_BACKEND_ALSA_H_
 #define CHROMECAST_MEDIA_CMA_BACKEND_ALSA_MEDIA_PIPELINE_BACKEND_ALSA_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
@@ -53,8 +54,8 @@ class MediaPipelineBackendAlsa : public MediaPipelineBackend {
   State state_;
 
   const MediaPipelineDeviceParams params_;
-  scoped_ptr<VideoDecoderDefault> video_decoder_;
-  scoped_ptr<AudioDecoderAlsa> audio_decoder_;
+  std::unique_ptr<VideoDecoderDefault> video_decoder_;
+  std::unique_ptr<AudioDecoderAlsa> audio_decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendAlsa);
 };

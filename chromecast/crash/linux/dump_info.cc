@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 namespace chromecast {
@@ -62,8 +63,9 @@ DumpInfo::DumpInfo(const std::string& crashed_process_dump,
 DumpInfo::~DumpInfo() {
 }
 
-scoped_ptr<base::Value> DumpInfo::GetAsValue() const {
-  scoped_ptr<base::Value> result = make_scoped_ptr(new base::DictionaryValue());
+std::unique_ptr<base::Value> DumpInfo::GetAsValue() const {
+  std::unique_ptr<base::Value> result =
+      base::WrapUnique(new base::DictionaryValue());
   base::DictionaryValue* entry;
   result->GetAsDictionary(&entry);
   entry->SetString(kNameKey, params_.process_name);

@@ -5,12 +5,13 @@
 #ifndef CHROMECAST_BASE_BIND_TO_TASK_RUNNER_H_
 #define CHROMECAST_BASE_BIND_TO_TASK_RUNNER_H_
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -42,8 +43,8 @@ T& TrampolineForward(T& t) {
 }
 
 template <typename T, typename R>
-base::internal::PassedWrapper<scoped_ptr<T, R>> TrampolineForward(
-    scoped_ptr<T, R>& p) {
+base::internal::PassedWrapper<std::unique_ptr<T, R>> TrampolineForward(
+    std::unique_ptr<T, R>& p) {
   return base::Passed(&p);
 }
 

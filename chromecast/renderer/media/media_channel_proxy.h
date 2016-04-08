@@ -5,9 +5,10 @@
 #ifndef CHROMECAST_RENDERER_MEDIA_MEDIA_CHANNEL_PROXY_H_
 #define CHROMECAST_RENDERER_MEDIA_MEDIA_CHANNEL_PROXY_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromecast/media/cma/pipeline/load_type.h"
 #include "chromecast/renderer/media/cma_message_filter_proxy.h"
 
@@ -44,7 +45,7 @@ class MediaChannelProxy
       const CmaMessageFilterProxy::VideoDelegate& video_delegate);
 
   // Sends an IPC message over this CMA ipc channel.
-  bool Send(scoped_ptr<IPC::Message> message);
+  bool Send(std::unique_ptr<IPC::Message> message);
 
  private:
   friend class base::RefCountedThreadSafe<MediaChannelProxy>;

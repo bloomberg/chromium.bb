@@ -4,8 +4,9 @@
 
 #include "chromecast/base/component/component.h"
 
+#include <memory>
+
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -17,7 +18,7 @@ class ComponentTest : public ::testing::Test {
  protected:
   ComponentTest() : message_loop_(new base::MessageLoop()) {}
 
-  const scoped_ptr<base::MessageLoop> message_loop_;
+  const std::unique_ptr<base::MessageLoop> message_loop_;
 };
 
 using ComponentDeathTest = ComponentTest;
@@ -70,9 +71,9 @@ class ComponentA : public Component<ComponentA> {
   bool enabled_ = false;
   bool fail_enable_ = false;
 
-  scoped_ptr<Component<ComponentA>::Dependency> a_;
-  scoped_ptr<Component<ComponentB>::Dependency> b_;
-  scoped_ptr<Component<ComponentC>::Dependency> c_;
+  std::unique_ptr<Component<ComponentA>::Dependency> a_;
+  std::unique_ptr<Component<ComponentB>::Dependency> b_;
+  std::unique_ptr<Component<ComponentC>::Dependency> c_;
 };
 
 class ComponentB : public Component<ComponentB> {
@@ -179,7 +180,7 @@ TEST_F(ComponentDeathTest, TransitiveCircularDependency) {
         //     GTEST_HAS_DEATH_TEST
 
 TEST_F(ComponentTest, SimpleEnable) {
-  scoped_ptr<ComponentA> a(new ComponentA());
+  std::unique_ptr<ComponentA> a(new ComponentA());
   a->Enable();
   message_loop_->RunUntilIdle();
   EXPECT_TRUE(a->enabled());
@@ -187,9 +188,9 @@ TEST_F(ComponentTest, SimpleEnable) {
 }
 
 TEST_F(ComponentTest, TransitiveEnable) {
-  scoped_ptr<ComponentA> a(new ComponentA());
-  scoped_ptr<ComponentB> b(new ComponentB(a->GetRef()));
-  scoped_ptr<ComponentC> c(new ComponentC(b->GetRef()));
+  std::unique_ptr<ComponentA> a(new ComponentA());
+  std::unique_ptr<ComponentB> b(new ComponentB(a->GetRef()));
+  std::unique_ptr<ComponentC> c(new ComponentC(b->GetRef()));
   c->Enable();
   message_loop_->RunUntilIdle();
   EXPECT_TRUE(a->enabled());
@@ -201,7 +202,7 @@ TEST_F(ComponentTest, TransitiveEnable) {
 }
 
 TEST_F(ComponentTest, FailEnable) {
-  scoped_ptr<ComponentA> a(new ComponentA());
+  std::unique_ptr<ComponentA> a(new ComponentA());
   a->FailEnable();
   a->Enable();
   message_loop_->RunUntilIdle();
@@ -210,9 +211,9 @@ TEST_F(ComponentTest, FailEnable) {
 }
 
 TEST_F(ComponentTest, TransitiveFailEnable) {
-  scoped_ptr<ComponentA> a(new ComponentA());
-  scoped_ptr<ComponentB> b(new ComponentB(a->GetRef()));
-  scoped_ptr<ComponentC> c(new ComponentC(b->GetRef()));
+  std::unique_ptr<ComponentA> a(new ComponentA());
+  std::unique_ptr<ComponentB> b(new ComponentB(a->GetRef()));
+  std::unique_ptr<ComponentC> c(new ComponentC(b->GetRef()));
   a->FailEnable();
   c->Enable();
   message_loop_->RunUntilIdle();
@@ -225,7 +226,7 @@ TEST_F(ComponentTest, TransitiveFailEnable) {
 }
 
 TEST_F(ComponentTest, DisableWhileEnabling) {
-  scoped_ptr<ComponentA> a(new ComponentA());
+  std::unique_ptr<ComponentA> a(new ComponentA());
   a->Enable();
   a->Disable();
   message_loop_->RunUntilIdle();
@@ -234,7 +235,7 @@ TEST_F(ComponentTest, DisableWhileEnabling) {
 }
 
 TEST_F(ComponentTest, EnableTwice) {
-  scoped_ptr<ComponentA> a(new ComponentA());
+  std::unique_ptr<ComponentA> a(new ComponentA());
   a->Enable();
   a->Enable();
   message_loop_->RunUntilIdle();
@@ -243,7 +244,7 @@ TEST_F(ComponentTest, EnableTwice) {
 }
 
 TEST_F(ComponentTest, DisableTwice) {
-  scoped_ptr<ComponentA> a(new ComponentA());
+  std::unique_ptr<ComponentA> a(new ComponentA());
   a->Enable();
   message_loop_->RunUntilIdle();
   EXPECT_TRUE(a->enabled());
@@ -257,7 +258,7 @@ TEST_F(ComponentTest, DisableTwice) {
 }
 
 TEST_F(ComponentTest, DisableAfterFailedEnable) {
-  scoped_ptr<ComponentA> a(new ComponentA());
+  std::unique_ptr<ComponentA> a(new ComponentA());
   a->FailEnable();
   a->Enable();
   message_loop_->RunUntilIdle();
@@ -269,7 +270,7 @@ TEST_F(ComponentTest, DisableAfterFailedEnable) {
 }
 
 TEST_F(ComponentTest, DisableAfterNeverEnabled) {
-  scoped_ptr<ComponentA> a(new ComponentA());
+  std::unique_ptr<ComponentA> a(new ComponentA());
   a->Disable();
   message_loop_->RunUntilIdle();
   EXPECT_FALSE(a->enabled());
@@ -277,9 +278,9 @@ TEST_F(ComponentTest, DisableAfterNeverEnabled) {
 }
 
 TEST_F(ComponentTest, DisableDependencyWhileEnabling) {
-  scoped_ptr<ComponentA> a(new ComponentA());
-  scoped_ptr<ComponentB> b(new ComponentB(a->GetRef()));
-  scoped_ptr<ComponentC> c(new ComponentC(b->GetRef()));
+  std::unique_ptr<ComponentA> a(new ComponentA());
+  std::unique_ptr<ComponentB> b(new ComponentB(a->GetRef()));
+  std::unique_ptr<ComponentC> c(new ComponentC(b->GetRef()));
   b->Enable();
   message_loop_->RunUntilIdle();
   c->Enable();
@@ -294,7 +295,7 @@ TEST_F(ComponentTest, DisableDependencyWhileEnabling) {
 }
 
 TEST_F(ComponentTest, EnableDisableEnable) {
-  scoped_ptr<ComponentA> a(new ComponentA());
+  std::unique_ptr<ComponentA> a(new ComponentA());
   a->Enable();
   a->Disable();
   a->Enable();
@@ -304,7 +305,7 @@ TEST_F(ComponentTest, EnableDisableEnable) {
 }
 
 TEST_F(ComponentTest, DisableEnableDisable) {
-  scoped_ptr<ComponentA> a(new ComponentA());
+  std::unique_ptr<ComponentA> a(new ComponentA());
   a->Enable();
   message_loop_->RunUntilIdle();
   EXPECT_TRUE(a->enabled());
@@ -317,9 +318,9 @@ TEST_F(ComponentTest, DisableEnableDisable) {
 }
 
 TEST_F(ComponentTest, TransitiveEnableDisableEnable) {
-  scoped_ptr<ComponentA> a(new ComponentA());
-  scoped_ptr<ComponentB> b(new ComponentB(a->GetRef()));
-  scoped_ptr<ComponentC> c(new ComponentC(b->GetRef()));
+  std::unique_ptr<ComponentA> a(new ComponentA());
+  std::unique_ptr<ComponentB> b(new ComponentB(a->GetRef()));
+  std::unique_ptr<ComponentC> c(new ComponentC(b->GetRef()));
   a->Enable();
   message_loop_->RunUntilIdle();
   c->Enable();
@@ -339,7 +340,7 @@ TEST_F(ComponentTest, TransitiveEnableDisableEnable) {
 }
 
 TEST_F(ComponentTest, WeakRefs) {
-  scoped_ptr<ComponentA> a(new ComponentA());
+  std::unique_ptr<ComponentA> a(new ComponentA());
   ComponentA::WeakRef weak = a->GetRef();
   EXPECT_FALSE(weak.Try());
   a->Enable();
@@ -354,7 +355,7 @@ TEST_F(ComponentTest, WeakRefs) {
 }
 
 TEST_F(ComponentTest, WeakRefsKeepEnabled) {
-  scoped_ptr<ComponentA> a(new ComponentA());
+  std::unique_ptr<ComponentA> a(new ComponentA());
   ComponentA::WeakRef weak = a->GetRef();
   EXPECT_FALSE(weak.Try());
   a->Enable();

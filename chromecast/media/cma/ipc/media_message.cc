@@ -14,13 +14,13 @@ namespace chromecast {
 namespace media {
 
 // static
-scoped_ptr<MediaMessage> MediaMessage::CreateDummyMessage(uint32_t type) {
-  return scoped_ptr<MediaMessage>(
+std::unique_ptr<MediaMessage> MediaMessage::CreateDummyMessage(uint32_t type) {
+  return std::unique_ptr<MediaMessage>(
       new MediaMessage(type, std::numeric_limits<size_t>::max()));
 }
 
 // static
-scoped_ptr<MediaMessage> MediaMessage::CreateMessage(
+std::unique_ptr<MediaMessage> MediaMessage::CreateMessage(
     uint32_t type,
     const MemoryAllocatorCB& memory_allocator,
     size_t msg_content_capacity) {
@@ -32,24 +32,26 @@ scoped_ptr<MediaMessage> MediaMessage::CreateMessage(
   if (end_alignment != 0)
     msg_size += ALIGNOF(SerializedMsg) - end_alignment;
 
-  scoped_ptr<MediaMemoryChunk> memory(memory_allocator.Run(msg_size));
+  std::unique_ptr<MediaMemoryChunk> memory(memory_allocator.Run(msg_size));
   if (!memory)
-    return scoped_ptr<MediaMessage>();
+    return std::unique_ptr<MediaMessage>();
 
-  return scoped_ptr<MediaMessage>(new MediaMessage(type, std::move(memory)));
+  return std::unique_ptr<MediaMessage>(
+      new MediaMessage(type, std::move(memory)));
 }
 
 // static
-scoped_ptr<MediaMessage> MediaMessage::CreateMessage(
+std::unique_ptr<MediaMessage> MediaMessage::CreateMessage(
     uint32_t type,
-    scoped_ptr<MediaMemoryChunk> memory) {
-  return scoped_ptr<MediaMessage>(new MediaMessage(type, std::move(memory)));
+    std::unique_ptr<MediaMemoryChunk> memory) {
+  return std::unique_ptr<MediaMessage>(
+      new MediaMessage(type, std::move(memory)));
 }
 
 // static
-scoped_ptr<MediaMessage> MediaMessage::MapMessage(
-    scoped_ptr<MediaMemoryChunk> memory) {
-  return scoped_ptr<MediaMessage>(new MediaMessage(std::move(memory)));
+std::unique_ptr<MediaMessage> MediaMessage::MapMessage(
+    std::unique_ptr<MediaMemoryChunk> memory) {
+  return std::unique_ptr<MediaMessage>(new MediaMessage(std::move(memory)));
 }
 
 MediaMessage::MediaMessage(uint32_t type, size_t msg_size)
@@ -63,7 +65,8 @@ MediaMessage::MediaMessage(uint32_t type, size_t msg_size)
   cached_header_->content_size = 0;
 }
 
-MediaMessage::MediaMessage(uint32_t type, scoped_ptr<MediaMemoryChunk> memory)
+MediaMessage::MediaMessage(uint32_t type,
+                           std::unique_ptr<MediaMemoryChunk> memory)
     : is_dummy_msg_(false),
       cached_header_(&cached_msg_.header),
       msg_(static_cast<SerializedMsg*>(memory->data())),
@@ -90,7 +93,7 @@ MediaMessage::MediaMessage(uint32_t type, scoped_ptr<MediaMemoryChunk> memory)
   msg_->header = *cached_header_;
 }
 
-MediaMessage::MediaMessage(scoped_ptr<MediaMemoryChunk> memory)
+MediaMessage::MediaMessage(std::unique_ptr<MediaMemoryChunk> memory)
     : is_dummy_msg_(false),
       cached_header_(&cached_msg_.header),
       msg_(NULL),

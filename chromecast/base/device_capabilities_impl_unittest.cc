@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
@@ -26,7 +27,7 @@ const char kSampleDictionaryCapability[] =
     "}";
 
 void GetSampleDefaultCapability(std::string* key,
-                                scoped_ptr<base::Value>* init_value);
+                                std::unique_ptr<base::Value>* init_value);
 void TestBasicOperations(DeviceCapabilities* capabilities);
 
 // Simple capability manager that implements the Validator interface. Either
@@ -39,7 +40,7 @@ class FakeCapabilityManagerSimple : public DeviceCapabilities::Validator {
   // untouched.
   FakeCapabilityManagerSimple(DeviceCapabilities* capabilities,
                               const std::string& key,
-                              scoped_ptr<base::Value> init_value,
+                              std::unique_ptr<base::Value> init_value,
                               bool accept_changes)
       : DeviceCapabilities::Validator(capabilities),
         key_(key),
@@ -55,7 +56,7 @@ class FakeCapabilityManagerSimple : public DeviceCapabilities::Validator {
   }
 
   void Validate(const std::string& path,
-                scoped_ptr<base::Value> proposed_value) override {
+                std::unique_ptr<base::Value> proposed_value) override {
     ASSERT_EQ(path.find(key_), 0ul);
     if (accept_changes_)
       SetValidatedValue(path, std::move(proposed_value));
@@ -83,7 +84,7 @@ class FakeCapabilityManagerComplex : public DeviceCapabilities::Validator {
 
   // Runs TestBasicOperations().
   void Validate(const std::string& path,
-                scoped_ptr<base::Value> proposed_value) override {
+                std::unique_ptr<base::Value> proposed_value) override {
     TestBasicOperations(capabilities());
   }
 
@@ -135,35 +136,35 @@ class MockCapabilitiesObserver : public DeviceCapabilities::Observer {
 // Test fixtures needs an example default capability to test DeviceCapabilities
 // methods. Gets a sample key and initial value.
 void GetSampleDefaultCapability(std::string* key,
-                                scoped_ptr<base::Value>* init_value) {
+                                std::unique_ptr<base::Value>* init_value) {
   DCHECK(key);
   DCHECK(init_value);
   *key = DeviceCapabilities::kKeyBluetoothSupported;
-  *init_value = make_scoped_ptr(new base::FundamentalValue(true));
+  *init_value = base::WrapUnique(new base::FundamentalValue(true));
 }
 
 // For test fixtures that test dynamic capabilities, gets a sample key
 // and initial value.
 void GetSampleDynamicCapability(std::string* key,
-                                scoped_ptr<base::Value>* init_value) {
+                                std::unique_ptr<base::Value>* init_value) {
   DCHECK(key);
   DCHECK(init_value);
   *key = "dummy_dynamic_key";
-  *init_value = make_scoped_ptr(new base::FundamentalValue(99));
+  *init_value = base::WrapUnique(new base::FundamentalValue(99));
 }
 
 // Gets a value for sample default capability different from |init_value|
 // returned in GetSampleDefaultCapability(). Must be of same type as
 // |init_value| of course.
-scoped_ptr<base::Value> GetSampleDefaultCapabilityNewValue() {
-  return make_scoped_ptr(new base::FundamentalValue(false));
+std::unique_ptr<base::Value> GetSampleDefaultCapabilityNewValue() {
+  return base::WrapUnique(new base::FundamentalValue(false));
 }
 
 // Gets a value for sample dynamic capability different from |init_value|
 // returned in GetSampleDynamicCapability(). Must be of same type as
 // |init_value| of course.
-scoped_ptr<base::Value> GetSampleDynamicCapabilityNewValue() {
-  return make_scoped_ptr(new base::FundamentalValue(100));
+std::unique_ptr<base::Value> GetSampleDynamicCapabilityNewValue() {
+  return base::WrapUnique(new base::FundamentalValue(100));
 }
 
 // Tests that |json| string matches contents of a DictionaryValue with one entry
@@ -173,7 +174,7 @@ bool JsonStringEquals(const std::string& json,
                       const base::Value& value) {
   base::DictionaryValue dict_value;
   dict_value.Set(key, value.CreateDeepCopy());
-  scoped_ptr<const std::string> dict_json(SerializeToJson(dict_value));
+  std::unique_ptr<const std::string> dict_json(SerializeToJson(dict_value));
   return dict_json.get() && *dict_json == json;
 }
 
@@ -185,7 +186,7 @@ bool JsonStringEquals(const std::string& json,
 // class before this function is called.
 void TestBasicOperations(DeviceCapabilities* capabilities) {
   std::string key;
-  scoped_ptr<base::Value> init_value;
+  std::unique_ptr<base::Value> init_value;
   GetSampleDefaultCapability(&key, &init_value);
 
   ASSERT_FALSE(capabilities->GetCapability(key));
@@ -204,7 +205,7 @@ void TestBasicOperations(DeviceCapabilities* capabilities) {
 
   // Write capability again. Provides way of checking that this function
   // ran and was successful.
-  scoped_ptr<base::Value> new_value = GetSampleDefaultCapabilityNewValue();
+  std::unique_ptr<base::Value> new_value = GetSampleDefaultCapabilityNewValue();
   capabilities->SetCapability(key, std::move(new_value));
 }
 
@@ -212,11 +213,11 @@ void TestBasicOperations(DeviceCapabilities* capabilities) {
 void AssertBasicOperationsSuccessful(const DeviceCapabilities* capabilities) {
   base::RunLoop().RunUntilIdle();
   std::string key;
-  scoped_ptr<base::Value> init_value;
+  std::unique_ptr<base::Value> init_value;
   GetSampleDefaultCapability(&key, &init_value);
-  scoped_ptr<base::Value> value = capabilities->GetCapability(key);
+  std::unique_ptr<base::Value> value = capabilities->GetCapability(key);
   ASSERT_TRUE(value);
-  scoped_ptr<base::Value> new_value = GetSampleDefaultCapabilityNewValue();
+  std::unique_ptr<base::Value> new_value = GetSampleDefaultCapabilityNewValue();
   EXPECT_TRUE(base::Value::Equals(value.get(), new_value.get()));
 }
 
@@ -253,14 +254,14 @@ class DeviceCapabilitiesImplTest : public ::testing::Test {
   }
 
  private:
-  scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<DeviceCapabilities> capabilities_;
-  scoped_ptr<MockCapabilitiesObserver> mock_capabilities_observer_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<DeviceCapabilities> capabilities_;
+  std::unique_ptr<MockCapabilitiesObserver> mock_capabilities_observer_;
 };
 
 // Tests that class is in correct state after Create().
 TEST_F(DeviceCapabilitiesImplTest, Create) {
-  scoped_ptr<const std::string> empty_dict_string(
+  std::unique_ptr<const std::string> empty_dict_string(
       SerializeToJson(base::DictionaryValue()));
   EXPECT_EQ(capabilities()->GetData()->json_string(), *empty_dict_string);
   EXPECT_TRUE(capabilities()->GetData()->dictionary().empty());
@@ -269,14 +270,14 @@ TEST_F(DeviceCapabilitiesImplTest, Create) {
 // Tests Register() of a default capability.
 TEST_F(DeviceCapabilitiesImplTest, Register) {
   std::string key;
-  scoped_ptr<base::Value> init_value;
+  std::unique_ptr<base::Value> init_value;
   GetSampleDefaultCapability(&key, &init_value);
 
   EXPECT_CALL(*capabilities_observer(), OnCapabilitiesChanged(key)).Times(0);
   FakeCapabilityManagerSimple manager(capabilities(), key, nullptr, true);
 
   EXPECT_EQ(capabilities()->GetValidator(key), &manager);
-  scoped_ptr<const std::string> empty_dict_string(
+  std::unique_ptr<const std::string> empty_dict_string(
       SerializeToJson(base::DictionaryValue()));
   EXPECT_EQ(capabilities()->GetData()->json_string(), *empty_dict_string);
   EXPECT_FALSE(capabilities()->GetCapability(key));
@@ -285,7 +286,7 @@ TEST_F(DeviceCapabilitiesImplTest, Register) {
 // Tests Unregister() of a default capability.
 TEST_F(DeviceCapabilitiesImplTest, Unregister) {
   std::string key;
-  scoped_ptr<base::Value> init_value;
+  std::unique_ptr<base::Value> init_value;
   GetSampleDefaultCapability(&key, &init_value);
 
   EXPECT_CALL(*capabilities_observer(), OnCapabilitiesChanged(key)).Times(0);
@@ -295,7 +296,7 @@ TEST_F(DeviceCapabilitiesImplTest, Unregister) {
   delete manager;
 
   EXPECT_FALSE(capabilities()->GetValidator(key));
-  scoped_ptr<const std::string> empty_dict_string(
+  std::unique_ptr<const std::string> empty_dict_string(
       SerializeToJson(base::DictionaryValue()));
   EXPECT_EQ(capabilities()->GetData()->json_string(), *empty_dict_string);
   EXPECT_FALSE(capabilities()->GetCapability(key));
@@ -304,7 +305,7 @@ TEST_F(DeviceCapabilitiesImplTest, Unregister) {
 // Tests GetCapability() and updating the value through SetCapability().
 TEST_F(DeviceCapabilitiesImplTest, GetCapabilityAndSetCapability) {
   std::string key;
-  scoped_ptr<base::Value> init_value;
+  std::unique_ptr<base::Value> init_value;
   GetSampleDefaultCapability(&key, &init_value);
   FakeCapabilityManagerSimple manager(capabilities(), key,
                                       init_value->CreateDeepCopy(), true);
@@ -312,7 +313,7 @@ TEST_F(DeviceCapabilitiesImplTest, GetCapabilityAndSetCapability) {
   EXPECT_TRUE(base::Value::Equals(capabilities()->GetCapability(key).get(),
                                   init_value.get()));
 
-  scoped_ptr<base::Value> new_value = GetSampleDefaultCapabilityNewValue();
+  std::unique_ptr<base::Value> new_value = GetSampleDefaultCapabilityNewValue();
   capabilities()->SetCapability(key, new_value->CreateDeepCopy());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(base::Value::Equals(capabilities()->GetCapability(key).get(),
@@ -323,12 +324,12 @@ TEST_F(DeviceCapabilitiesImplTest, GetCapabilityAndSetCapability) {
 TEST_F(DeviceCapabilitiesImplTest, BluetoothSupportedAndSetCapability) {
   FakeCapabilityManagerSimple manager(
       capabilities(), DeviceCapabilities::kKeyBluetoothSupported,
-      make_scoped_ptr(new base::FundamentalValue(true)), true);
+      base::WrapUnique(new base::FundamentalValue(true)), true);
 
   EXPECT_TRUE(capabilities()->BluetoothSupported());
   capabilities()->SetCapability(
       DeviceCapabilities::kKeyBluetoothSupported,
-      make_scoped_ptr(new base::FundamentalValue(false)));
+      base::WrapUnique(new base::FundamentalValue(false)));
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(capabilities()->BluetoothSupported());
 }
@@ -337,12 +338,12 @@ TEST_F(DeviceCapabilitiesImplTest, BluetoothSupportedAndSetCapability) {
 TEST_F(DeviceCapabilitiesImplTest, DisplaySupportedAndSetCapability) {
   FakeCapabilityManagerSimple manager(
       capabilities(), DeviceCapabilities::kKeyDisplaySupported,
-      make_scoped_ptr(new base::FundamentalValue(true)), true);
+      base::WrapUnique(new base::FundamentalValue(true)), true);
 
   EXPECT_TRUE(capabilities()->DisplaySupported());
   capabilities()->SetCapability(
       DeviceCapabilities::kKeyDisplaySupported,
-      make_scoped_ptr(new base::FundamentalValue(false)));
+      base::WrapUnique(new base::FundamentalValue(false)));
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(capabilities()->DisplaySupported());
 }
@@ -351,12 +352,12 @@ TEST_F(DeviceCapabilitiesImplTest, DisplaySupportedAndSetCapability) {
 TEST_F(DeviceCapabilitiesImplTest, HiResAudioSupportedAndSetCapability) {
   FakeCapabilityManagerSimple manager(
       capabilities(), DeviceCapabilities::kKeyHiResAudioSupported,
-      make_scoped_ptr(new base::FundamentalValue(true)), true);
+      base::WrapUnique(new base::FundamentalValue(true)), true);
 
   EXPECT_TRUE(capabilities()->HiResAudioSupported());
   capabilities()->SetCapability(
       DeviceCapabilities::kKeyHiResAudioSupported,
-      make_scoped_ptr(new base::FundamentalValue(false)));
+      base::WrapUnique(new base::FundamentalValue(false)));
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(capabilities()->HiResAudioSupported());
 }
@@ -365,7 +366,7 @@ TEST_F(DeviceCapabilitiesImplTest, HiResAudioSupportedAndSetCapability) {
 // rejects the proposed change.
 TEST_F(DeviceCapabilitiesImplTest, SetCapabilityInvalid) {
   std::string key;
-  scoped_ptr<base::Value> init_value;
+  std::unique_ptr<base::Value> init_value;
   GetSampleDefaultCapability(&key, &init_value);
   FakeCapabilityManagerSimple manager(capabilities(), key,
                                       init_value->CreateDeepCopy(), false);
@@ -380,7 +381,7 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityInvalid) {
 // Test that SetCapability() updates the capabilities string correctly
 TEST_F(DeviceCapabilitiesImplTest, SetCapabilityUpdatesString) {
   std::string key;
-  scoped_ptr<base::Value> init_value;
+  std::unique_ptr<base::Value> init_value;
   GetSampleDefaultCapability(&key, &init_value);
   FakeCapabilityManagerSimple manager(capabilities(), key,
                                       init_value->CreateDeepCopy(), true);
@@ -388,7 +389,7 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityUpdatesString) {
   EXPECT_TRUE(JsonStringEquals(capabilities()->GetData()->json_string(), key,
                                *init_value));
 
-  scoped_ptr<base::Value> new_value = GetSampleDefaultCapabilityNewValue();
+  std::unique_ptr<base::Value> new_value = GetSampleDefaultCapabilityNewValue();
   capabilities()->SetCapability(key, new_value->CreateDeepCopy());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(JsonStringEquals(capabilities()->GetData()->json_string(), key,
@@ -399,7 +400,7 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityUpdatesString) {
 // changes
 TEST_F(DeviceCapabilitiesImplTest, SetCapabilityNotifiesObservers) {
   std::string key;
-  scoped_ptr<base::Value> init_value;
+  std::unique_ptr<base::Value> init_value;
   GetSampleDefaultCapability(&key, &init_value);
 
   EXPECT_CALL(*capabilities_observer(), OnCapabilitiesChanged(key)).Times(3);
@@ -422,7 +423,7 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityNotifiesObservers) {
 // Test adding dynamic capabilities
 TEST_F(DeviceCapabilitiesImplTest, SetCapabilityDynamic) {
   std::string key;
-  scoped_ptr<base::Value> init_value;
+  std::unique_ptr<base::Value> init_value;
   GetSampleDynamicCapability(&key, &init_value);
 
   ASSERT_FALSE(capabilities()->GetCapability(key));
@@ -434,7 +435,7 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityDynamic) {
   EXPECT_TRUE(JsonStringEquals(capabilities()->GetData()->json_string(), key,
                                *init_value));
 
-  scoped_ptr<base::Value> new_value = GetSampleDynamicCapabilityNewValue();
+  std::unique_ptr<base::Value> new_value = GetSampleDynamicCapabilityNewValue();
   capabilities()->SetCapability(key, new_value->CreateDeepCopy());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(base::Value::Equals(capabilities()->GetCapability(key).get(),
@@ -447,7 +448,7 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityDynamic) {
 // capability of type DictionaryValue.
 TEST_F(DeviceCapabilitiesImplTest, SetCapabilityDictionary) {
   std::string key("dummy_dictionary_key");
-  scoped_ptr<base::Value> init_value =
+  std::unique_ptr<base::Value> init_value =
       DeserializeFromJson(kSampleDictionaryCapability);
   ASSERT_TRUE(init_value);
   FakeCapabilityManagerSimple manager(capabilities(), key,
@@ -455,10 +456,10 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityDictionary) {
 
   capabilities()->SetCapability(
       "dummy_dictionary_key.dummy_field_bool",
-      make_scoped_ptr(new base::FundamentalValue(false)));
+      base::WrapUnique(new base::FundamentalValue(false)));
   base::RunLoop().RunUntilIdle();
   bool value_bool = true;
-  scoped_ptr<base::Value> value =
+  std::unique_ptr<base::Value> value =
       capabilities()->GetCapability("dummy_dictionary_key.dummy_field_bool");
   ASSERT_TRUE(value);
   EXPECT_TRUE(value->GetAsBoolean(&value_bool));
@@ -466,7 +467,7 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityDictionary) {
 
   capabilities()->SetCapability(
       "dummy_dictionary_key.dummy_field_int",
-      make_scoped_ptr(new base::FundamentalValue(100)));
+      base::WrapUnique(new base::FundamentalValue(100)));
   base::RunLoop().RunUntilIdle();
   int value_int = 0;
   value = capabilities()->GetCapability("dummy_dictionary_key.dummy_field_int");
@@ -479,7 +480,7 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityDictionary) {
 // capability of type DictionaryValue and invalid changes are proposed.
 TEST_F(DeviceCapabilitiesImplTest, SetCapabilityDictionaryInvalid) {
   std::string key("dummy_dictionary_key");
-  scoped_ptr<base::Value> init_value =
+  std::unique_ptr<base::Value> init_value =
       DeserializeFromJson(kSampleDictionaryCapability);
   ASSERT_TRUE(init_value);
   FakeCapabilityManagerSimple manager(capabilities(), key,
@@ -487,10 +488,10 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityDictionaryInvalid) {
 
   capabilities()->SetCapability(
       "dummy_dictionary_key.dummy_field_bool",
-      make_scoped_ptr(new base::FundamentalValue(false)));
+      base::WrapUnique(new base::FundamentalValue(false)));
   base::RunLoop().RunUntilIdle();
   bool value_bool = false;
-  scoped_ptr<base::Value> value =
+  std::unique_ptr<base::Value> value =
       capabilities()->GetCapability("dummy_dictionary_key.dummy_field_bool");
   ASSERT_TRUE(value);
   EXPECT_TRUE(value->GetAsBoolean(&value_bool));
@@ -498,7 +499,7 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityDictionaryInvalid) {
 
   capabilities()->SetCapability(
       "dummy_dictionary_key.dummy_field_int",
-      make_scoped_ptr(new base::FundamentalValue(100)));
+      base::WrapUnique(new base::FundamentalValue(100)));
   base::RunLoop().RunUntilIdle();
   int value_int = 0;
   value = capabilities()->GetCapability("dummy_dictionary_key.dummy_field_int");
@@ -509,7 +510,7 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityDictionaryInvalid) {
 
 // Test  MergeDictionary.
 TEST_F(DeviceCapabilitiesImplTest, MergeDictionary) {
-  scoped_ptr<base::Value> deserialized_value =
+  std::unique_ptr<base::Value> deserialized_value =
       DeserializeFromJson(kSampleDictionaryCapability);
   ASSERT_TRUE(deserialized_value);
   base::DictionaryValue* dict_value = nullptr;
@@ -521,7 +522,7 @@ TEST_F(DeviceCapabilitiesImplTest, MergeDictionary) {
 
   // First make sure that capabilities get created if they do not exist
   bool value_bool = false;
-  scoped_ptr<base::Value> value =
+  std::unique_ptr<base::Value> value =
       capabilities()->GetCapability("dummy_field_bool");
   ASSERT_TRUE(value);
   EXPECT_TRUE(value->GetAsBoolean(&value_bool));
@@ -561,7 +562,7 @@ TEST_F(DeviceCapabilitiesImplTest, OnCapabilitiesChangedSafe) {
 
   // Trigger FakeCapabilitiesObserver::OnCapabilitiesChanged()
   capabilities()->SetCapability(
-      "dummy_trigger_key", make_scoped_ptr(new base::FundamentalValue(true)));
+      "dummy_trigger_key", base::WrapUnique(new base::FundamentalValue(true)));
   base::RunLoop().RunUntilIdle();
 
   // Check that FakeCapabilitiesObserver::OnCapabilitiesChanged() ran and that
@@ -577,7 +578,7 @@ TEST_F(DeviceCapabilitiesImplTest, ValidateSafe) {
 
   // Trigger FakeCapabilityManagerComplex::Validate()
   capabilities()->SetCapability(
-      "dummy_validate_key", make_scoped_ptr(new base::FundamentalValue(true)));
+      "dummy_validate_key", base::WrapUnique(new base::FundamentalValue(true)));
   base::RunLoop().RunUntilIdle();
 
   // Check that FakeCapabilityManagerComplex::Validate() ran and that behavior

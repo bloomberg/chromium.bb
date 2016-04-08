@@ -53,7 +53,7 @@ CastBrowserProcess::~CastBrowserProcess() {
 }
 
 void CastBrowserProcess::SetBrowserContext(
-    scoped_ptr<CastBrowserContext> browser_context) {
+    std::unique_ptr<CastBrowserContext> browser_context) {
   DCHECK(!browser_context_);
   browser_context_.swap(browser_context);
 }
@@ -64,50 +64,53 @@ void CastBrowserProcess::SetCastContentBrowserClient(
   cast_content_browser_client_ = cast_content_browser_client;
 }
 
-void CastBrowserProcess::SetCastService(scoped_ptr<CastService> cast_service) {
+void CastBrowserProcess::SetCastService(
+    std::unique_ptr<CastService> cast_service) {
   DCHECK(!cast_service_);
   cast_service_.swap(cast_service);
 }
 
 #if defined(USE_AURA)
-void CastBrowserProcess::SetCastScreen(scoped_ptr<CastScreen> cast_screen) {
+void CastBrowserProcess::SetCastScreen(
+    std::unique_ptr<CastScreen> cast_screen) {
   DCHECK(!cast_screen_);
   cast_screen_ = std::move(cast_screen);
 }
 #endif  // defined(USE_AURA)
 
 void CastBrowserProcess::SetMetricsHelper(
-    scoped_ptr<metrics::CastMetricsHelper> metrics_helper) {
+    std::unique_ptr<metrics::CastMetricsHelper> metrics_helper) {
   DCHECK(!metrics_helper_);
   metrics_helper_.swap(metrics_helper);
 }
 
 void CastBrowserProcess::SetMetricsServiceClient(
-    scoped_ptr<metrics::CastMetricsServiceClient> metrics_service_client) {
+    std::unique_ptr<metrics::CastMetricsServiceClient> metrics_service_client) {
   DCHECK(!metrics_service_client_);
   metrics_service_client_.swap(metrics_service_client);
 }
 
-void CastBrowserProcess::SetPrefService(scoped_ptr<PrefService> pref_service) {
+void CastBrowserProcess::SetPrefService(
+    std::unique_ptr<PrefService> pref_service) {
   DCHECK(!pref_service_);
   pref_service_.swap(pref_service);
 }
 
 void CastBrowserProcess::SetRemoteDebuggingServer(
-    scoped_ptr<RemoteDebuggingServer> remote_debugging_server) {
+    std::unique_ptr<RemoteDebuggingServer> remote_debugging_server) {
   DCHECK(!remote_debugging_server_);
   remote_debugging_server_.swap(remote_debugging_server);
 }
 
 void CastBrowserProcess::SetResourceDispatcherHostDelegate(
-    scoped_ptr<CastResourceDispatcherHostDelegate> delegate) {
+    std::unique_ptr<CastResourceDispatcherHostDelegate> delegate) {
   DCHECK(!resource_dispatcher_host_delegate_);
   resource_dispatcher_host_delegate_.swap(delegate);
 }
 
 #if defined(OS_ANDROID)
 void CastBrowserProcess::SetCrashDumpManager(
-    scoped_ptr<breakpad::CrashDumpManager> crash_dump_manager) {
+    std::unique_ptr<breakpad::CrashDumpManager> crash_dump_manager) {
   DCHECK(!crash_dump_manager_);
   crash_dump_manager_.swap(crash_dump_manager);
 }

@@ -17,7 +17,7 @@ class CastMojoMediaClient : public ::media::MojoMediaClient {
   ~CastMojoMediaClient() override;
 
   // MojoMediaClient overrides.
-  scoped_ptr<::media::RendererFactory> CreateRendererFactory(
+  std::unique_ptr<::media::RendererFactory> CreateRendererFactory(
       const scoped_refptr<::media::MediaLog>& media_log) override;
 
  private:

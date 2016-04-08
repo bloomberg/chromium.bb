@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/memory/ptr_util.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_wrapper.h"
 #include "chromecast/public/cast_media_shlib.h"
 
@@ -20,22 +21,23 @@ MediaPipelineBackendManager::MediaPipelineBackendManager(
 MediaPipelineBackendManager::~MediaPipelineBackendManager() {
 }
 
-scoped_ptr<MediaPipelineBackend>
+std::unique_ptr<MediaPipelineBackend>
 MediaPipelineBackendManager::CreateMediaPipelineBackend(
     const media::MediaPipelineDeviceParams& params) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   return CreateMediaPipelineBackend(params, 0);
 }
 
-scoped_ptr<MediaPipelineBackend>
+std::unique_ptr<MediaPipelineBackend>
 MediaPipelineBackendManager::CreateMediaPipelineBackend(
     const media::MediaPipelineDeviceParams& params,
     int stream_type) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  scoped_ptr<MediaPipelineBackend> backend_ptr(new MediaPipelineBackendWrapper(
-      make_scoped_ptr(
-          media::CastMediaShlib::CreateMediaPipelineBackend(params)),
-      stream_type, GetVolumeMultiplier(stream_type), this));
+  std::unique_ptr<MediaPipelineBackend> backend_ptr(
+      new MediaPipelineBackendWrapper(
+          base::WrapUnique(
+              media::CastMediaShlib::CreateMediaPipelineBackend(params)),
+          stream_type, GetVolumeMultiplier(stream_type), this));
   media_pipeline_backends_.push_back(backend_ptr.get());
   return backend_ptr;
 }

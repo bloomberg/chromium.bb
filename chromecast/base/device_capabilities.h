@@ -5,11 +5,11 @@
 #ifndef CHROMECAST_BASE_DEVICE_CAPABILITIES_H_
 #define CHROMECAST_BASE_DEVICE_CAPABILITIES_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class DictionaryValue;
@@ -75,7 +75,7 @@ class DeviceCapabilities {
     // to it must be handled serially. Returns response through
     // SetValidatedValue().
     virtual void Validate(const std::string& path,
-                          scoped_ptr<base::Value> proposed_value) = 0;
+                          std::unique_ptr<base::Value> proposed_value) = 0;
 
    protected:
     explicit Validator(DeviceCapabilities* capabilities);
@@ -88,7 +88,7 @@ class DeviceCapabilities {
     // DeviceCapabilities. This method passes these parameters to
     // DeviceCapabilities, where |path| is updated internally to |new_value|.
     void SetValidatedValue(const std::string& path,
-                           scoped_ptr<base::Value> new_value) const;
+                           std::unique_ptr<base::Value> new_value) const;
 
    private:
     DeviceCapabilities* const capabilities_;
@@ -118,11 +118,11 @@ class DeviceCapabilities {
     // Constructs empty dictionary with no capabilities.
     Data();
     // Uses |dictionary| as capabilities dictionary.
-    explicit Data(scoped_ptr<const base::DictionaryValue> dictionary);
+    explicit Data(std::unique_ptr<const base::DictionaryValue> dictionary);
     ~Data();
 
-    const scoped_ptr<const base::DictionaryValue> dictionary_;
-    const scoped_ptr<const std::string> json_string_;
+    const std::unique_ptr<const base::DictionaryValue> dictionary_;
+    const std::unique_ptr<const std::string> json_string_;
 
     DISALLOW_COPY_AND_ASSIGN(Data);
   };
@@ -141,11 +141,11 @@ class DeviceCapabilities {
   // singleton, there is meant to be a single instance owned by another module.
   // The instance should be created early enough for all managers to register
   // themselves, and then live long enough for all managers to unregister.
-  static scoped_ptr<DeviceCapabilities> Create();
+  static std::unique_ptr<DeviceCapabilities> Create();
   // Creates an instance where all the default capabilities are initialized
   // to a predefined default value, and no Validators are registered. For use
   // only in unit tests.
-  static scoped_ptr<DeviceCapabilities> CreateForTesting();
+  static std::unique_ptr<DeviceCapabilities> CreateForTesting();
 
   // Registers a Validator for a capability. A given key must only be
   // registered once, and must be unregistered before calling Register() again.
@@ -180,7 +180,7 @@ class DeviceCapabilities {
 
   // Returns a deep copy of the value at |path|. If the capability at |path|
   // does not exist, a null scoped_ptr is returned.
-  virtual scoped_ptr<base::Value> GetCapability(
+  virtual std::unique_ptr<base::Value> GetCapability(
       const std::string& path) const = 0;
 
   // Use this method to access dictionary and JSON string. No deep copying is
@@ -199,7 +199,7 @@ class DeviceCapabilities {
   // method. Client code may use the Observer interface to determine the
   // ultimate value used. This method is asynchronous.
   virtual void SetCapability(const std::string& path,
-                             scoped_ptr<base::Value> proposed_value) = 0;
+                             std::unique_ptr<base::Value> proposed_value) = 0;
   // Iterates through entries in |dict_value| and calls SetCapability() for
   // each one. This method is asynchronous.
   virtual void MergeDictionary(const base::DictionaryValue& dict_value) = 0;
@@ -217,12 +217,12 @@ class DeviceCapabilities {
   static scoped_refptr<Data> CreateData();
   // Uses |dictionary| as capabilities dictionary.
   static scoped_refptr<Data> CreateData(
-      scoped_ptr<const base::DictionaryValue> dictionary);
+      std::unique_ptr<const base::DictionaryValue> dictionary);
 
  private:
   // Does actual internal update of |path| to |new_value|.
   virtual void SetValidatedValue(const std::string& path,
-                                 scoped_ptr<base::Value> new_value) = 0;
+                                 std::unique_ptr<base::Value> new_value) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceCapabilities);
 };

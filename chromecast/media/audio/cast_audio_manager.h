@@ -35,7 +35,7 @@ class CastAudioManager : public ::media::AudioManagerBase {
 
   // This must be called on cast media thread.
   // See chromecast::media::MediaMessageLoop.
-  virtual scoped_ptr<MediaPipelineBackend> CreateMediaPipelineBackend(
+  virtual std::unique_ptr<MediaPipelineBackend> CreateMediaPipelineBackend(
       const MediaPipelineDeviceParams& params);
 
  private:

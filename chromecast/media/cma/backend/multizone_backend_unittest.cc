@@ -6,13 +6,13 @@
 #include <stdlib.h>
 
 #include <limits>
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
@@ -85,8 +85,8 @@ class BufferFeeder : public MediaPipelineBackend::Decoder::Delegate {
   const bool effects_only_;
   const base::Closure eos_cb_;
   bool feeding_completed_;
-  scoped_ptr<TaskRunnerImpl> task_runner_;
-  scoped_ptr<MediaPipelineBackend> backend_;
+  std::unique_ptr<TaskRunnerImpl> task_runner_;
+  std::unique_ptr<MediaPipelineBackend> backend_;
   MediaPipelineBackend::AudioDecoder* decoder_;
   int64_t push_limit_us_;
   int64_t last_push_length_us_;
@@ -124,8 +124,8 @@ class MultizoneBackendTest : public testing::TestWithParam<int> {
   void OnEndOfStream();
 
  private:
-  std::vector<scoped_ptr<BufferFeeder>> effects_feeders_;
-  scoped_ptr<BufferFeeder> audio_feeder_;
+  std::vector<std::unique_ptr<BufferFeeder>> effects_feeders_;
+  std::unique_ptr<BufferFeeder> audio_feeder_;
 
   DISALLOW_COPY_AND_ASSIGN(MultizoneBackendTest);
 };
@@ -271,7 +271,7 @@ void MultizoneBackendTest::AddEffectsStreams() {
   effects_config.samples_per_second = 48000;
 
   for (int i = 0; i < kNumEffectsStreams; ++i) {
-    scoped_ptr<BufferFeeder> feeder(new BufferFeeder(
+    std::unique_ptr<BufferFeeder> feeder(new BufferFeeder(
         effects_config, true /* effects_only */, base::Bind(&IgnoreEos)));
     feeder->Initialize();
     effects_feeders_.push_back(std::move(feeder));
@@ -294,7 +294,7 @@ void MultizoneBackendTest::OnEndOfStream() {
 }
 
 TEST_P(MultizoneBackendTest, RenderingDelay) {
-  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
 
   Initialize(GetParam());
   AddEffectsStreams();

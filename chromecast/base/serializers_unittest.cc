@@ -30,37 +30,37 @@ const char kTestValue[] = "test_value";
 
 TEST(DeserializeFromJson, EmptyString) {
   std::string str;
-  scoped_ptr<base::Value> value = DeserializeFromJson(str);
+  std::unique_ptr<base::Value> value = DeserializeFromJson(str);
   EXPECT_EQ(nullptr, value.get());
 }
 
 TEST(DeserializeFromJson, EmptyJsonObject) {
   std::string str = kEmptyJsonString;
-  scoped_ptr<base::Value> value = DeserializeFromJson(str);
+  std::unique_ptr<base::Value> value = DeserializeFromJson(str);
   EXPECT_NE(nullptr, value.get());
 }
 
 TEST(DeserializeFromJson, ProperJsonObject) {
   std::string str = kProperJsonString;
-  scoped_ptr<base::Value> value = DeserializeFromJson(str);
+  std::unique_ptr<base::Value> value = DeserializeFromJson(str);
   EXPECT_NE(nullptr, value.get());
 }
 
 TEST(DeserializeFromJson, PoorlyFormedJsonObject) {
   std::string str = kPoorlyFormedJsonString;
-  scoped_ptr<base::Value> value = DeserializeFromJson(str);
+  std::unique_ptr<base::Value> value = DeserializeFromJson(str);
   EXPECT_EQ(nullptr, value.get());
 }
 
 TEST(SerializeToJson, BadValue) {
-  base::BinaryValue value(scoped_ptr<char[]>(new char[12]), 12);
-  scoped_ptr<std::string> str = SerializeToJson(value);
+  base::BinaryValue value(std::unique_ptr<char[]>(new char[12]), 12);
+  std::unique_ptr<std::string> str = SerializeToJson(value);
   EXPECT_EQ(nullptr, str.get());
 }
 
 TEST(SerializeToJson, EmptyValue) {
   base::DictionaryValue value;
-  scoped_ptr<std::string> str = SerializeToJson(value);
+  std::unique_ptr<std::string> str = SerializeToJson(value);
   ASSERT_NE(nullptr, str.get());
   EXPECT_EQ(kEmptyJsonString, *str);
 }
@@ -68,16 +68,16 @@ TEST(SerializeToJson, EmptyValue) {
 TEST(SerializeToJson, PopulatedValue) {
   base::DictionaryValue orig_value;
   orig_value.SetString(kTestKey, kTestValue);
-  scoped_ptr<std::string> str = SerializeToJson(orig_value);
+  std::unique_ptr<std::string> str = SerializeToJson(orig_value);
   ASSERT_NE(nullptr, str.get());
 
-  scoped_ptr<base::Value> new_value = DeserializeFromJson(*str);
+  std::unique_ptr<base::Value> new_value = DeserializeFromJson(*str);
   ASSERT_NE(nullptr, new_value.get());
   EXPECT_TRUE(new_value->Equals(&orig_value));
 }
 
 TEST(DeserializeJsonFromFile, NoFile) {
-  scoped_ptr<base::Value> value =
+  std::unique_ptr<base::Value> value =
       DeserializeJsonFromFile(base::FilePath("/file/does/not/exist.json"));
   EXPECT_EQ(nullptr, value.get());
 }
@@ -85,7 +85,7 @@ TEST(DeserializeJsonFromFile, NoFile) {
 TEST(DeserializeJsonFromFile, EmptyString) {
   ScopedTempFile temp;
   EXPECT_EQ(static_cast<int>(strlen("")), temp.Write(""));
-  scoped_ptr<base::Value> value = DeserializeJsonFromFile(temp.path());
+  std::unique_ptr<base::Value> value = DeserializeJsonFromFile(temp.path());
   EXPECT_EQ(nullptr, value.get());
 }
 
@@ -93,7 +93,7 @@ TEST(DeserializeJsonFromFile, EmptyJsonObject) {
   ScopedTempFile temp;
   EXPECT_EQ(static_cast<int>(strlen(kEmptyJsonString)),
             temp.Write(kEmptyJsonString));
-  scoped_ptr<base::Value> value = DeserializeJsonFromFile(temp.path());
+  std::unique_ptr<base::Value> value = DeserializeJsonFromFile(temp.path());
   EXPECT_NE(nullptr, value.get());
 }
 
@@ -101,7 +101,7 @@ TEST(DeserializeJsonFromFile, ProperJsonObject) {
   ScopedTempFile temp;
   EXPECT_EQ(static_cast<int>(strlen(kProperJsonString)),
             temp.Write(kProperJsonString));
-  scoped_ptr<base::Value> value = DeserializeJsonFromFile(temp.path());
+  std::unique_ptr<base::Value> value = DeserializeJsonFromFile(temp.path());
   EXPECT_NE(nullptr, value.get());
 }
 
@@ -109,14 +109,14 @@ TEST(DeserializeJsonFromFile, PoorlyFormedJsonObject) {
   ScopedTempFile temp;
   EXPECT_EQ(static_cast<int>(strlen(kPoorlyFormedJsonString)),
             temp.Write(kPoorlyFormedJsonString));
-  scoped_ptr<base::Value> value = DeserializeJsonFromFile(temp.path());
+  std::unique_ptr<base::Value> value = DeserializeJsonFromFile(temp.path());
   EXPECT_EQ(nullptr, value.get());
 }
 
 TEST(SerializeJsonToFile, BadValue) {
   ScopedTempFile temp;
 
-  base::BinaryValue value(scoped_ptr<char[]>(new char[12]), 12);
+  base::BinaryValue value(std::unique_ptr<char[]>(new char[12]), 12);
   ASSERT_FALSE(SerializeJsonToFile(temp.path(), value));
   std::string str(temp.Read());
   EXPECT_TRUE(str.empty());
@@ -141,7 +141,7 @@ TEST(SerializeJsonToFile, PopulatedValue) {
   std::string str(temp.Read());
   ASSERT_FALSE(str.empty());
 
-  scoped_ptr<base::Value> new_value = DeserializeJsonFromFile(temp.path());
+  std::unique_ptr<base::Value> new_value = DeserializeJsonFromFile(temp.path());
   ASSERT_NE(nullptr, new_value.get());
   EXPECT_TRUE(new_value->Equals(&orig_value));
 }

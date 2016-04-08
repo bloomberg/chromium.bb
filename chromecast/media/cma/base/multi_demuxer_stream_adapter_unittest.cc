@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
@@ -88,10 +90,9 @@ void MultiDemuxerStreamAdaptersTest::Start() {
   frame_received_count_ = 0;
 
   for (auto& stream : demuxer_streams_) {
-    coded_frame_providers_.push_back(make_scoped_ptr(
+    coded_frame_providers_.push_back(base::WrapUnique(
         new DemuxerStreamAdapter(base::ThreadTaskRunnerHandle::Get(),
-                                 media_task_runner_factory_,
-                                 stream)));
+                                 media_task_runner_factory_, stream)));
   }
   running_stream_count_ = coded_frame_providers_.size();
 
@@ -150,14 +151,14 @@ TEST_F(MultiDemuxerStreamAdaptersTest, EarlyEos) {
       frame_count_short +
       kMaxPtsDiffMs / DemuxerStreamForTest::kDemuxerStreamForTestFrameDuration +
       100;
-  demuxer_streams_.push_back(scoped_ptr<DemuxerStreamForTest>(
+  demuxer_streams_.push_back(std::unique_ptr<DemuxerStreamForTest>(
       new DemuxerStreamForTest(frame_count_short, 2, 0, config_idx_)));
-  demuxer_streams_.push_back(scoped_ptr<DemuxerStreamForTest>(
+  demuxer_streams_.push_back(std::unique_ptr<DemuxerStreamForTest>(
       new DemuxerStreamForTest(frame_count_long, 10, 0, config_idx_)));
 
   total_expected_frames_ = frame_count_short + frame_count_long;
 
-  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   message_loop->PostTask(FROM_HERE,
                          base::Bind(&MultiDemuxerStreamAdaptersTest::Start,
                                     base::Unretained(this)));

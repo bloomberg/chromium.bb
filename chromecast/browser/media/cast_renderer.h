@@ -51,8 +51,8 @@ class CastRenderer : public ::media::Renderer {
   const CreateMediaPipelineBackendCB create_backend_cb_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<BalancedMediaTaskRunnerFactory> media_task_runner_factory_;
-  scoped_ptr<TaskRunnerImpl> backend_task_runner_;
-  scoped_ptr<MediaPipelineImpl> pipeline_;
+  std::unique_ptr<TaskRunnerImpl> backend_task_runner_;
+  std::unique_ptr<MediaPipelineImpl> pipeline_;
   bool eos_[2];
   base::Closure ended_cb_;
   DISALLOW_COPY_AND_ASSIGN(CastRenderer);

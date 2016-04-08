@@ -105,7 +105,8 @@ FifoOwnedMemory::~FifoOwnedMemory() {
   }
 }
 
-MediaMessageFifo::MediaMessageFifo(scoped_ptr<MediaMemoryChunk> mem, bool init)
+MediaMessageFifo::MediaMessageFifo(std::unique_ptr<MediaMemoryChunk> mem,
+                                   bool init)
     : mem_(std::move(mem)), weak_factory_(this) {
   CHECK_EQ(reinterpret_cast<uintptr_t>(mem_->data()) % ALIGNOF(Descriptor),
            0u);
@@ -155,7 +156,7 @@ void MediaMessageFifo::ObserveWriteActivity(
   write_event_cb_ = write_event_cb;
 }
 
-scoped_ptr<MediaMemoryChunk> MediaMessageFifo::ReserveMemory(
+std::unique_ptr<MediaMemoryChunk> MediaMessageFifo::ReserveMemory(
     size_t size_to_reserve) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -166,7 +167,7 @@ scoped_ptr<MediaMemoryChunk> MediaMessageFifo::ReserveMemory(
   size_t allocated_size = (size_ + wr_offset - rd_offset) % size_;
   size_t free_size = size_ - 1 - allocated_size;
   if (free_size < size_to_reserve)
-    return scoped_ptr<MediaMemoryChunk>();
+    return std::unique_ptr<MediaMemoryChunk>();
   CHECK_LE(MediaMessage::minimum_msg_size(), size_to_reserve);
 
   // Note: in the next 2 conditions, we have:
@@ -180,16 +181,16 @@ scoped_ptr<MediaMemoryChunk> MediaMessageFifo::ReserveMemory(
     // skip the trailing bytes and come back to the beginning of the fifo.
     // (no way to insert a padding message).
     if (free_size < trailing_byte_count)
-      return scoped_ptr<MediaMemoryChunk>();
+      return std::unique_ptr<MediaMemoryChunk>();
     wr_offset = 0;
     CommitInternalWrite(wr_offset);
 
   } else if (trailing_byte_count < size_to_reserve) {
     // At this point, we know we have at least the space to write a message.
     // However, to avoid splitting a message, a padding message is needed.
-    scoped_ptr<MediaMemoryChunk> mem(
+    std::unique_ptr<MediaMemoryChunk> mem(
         ReserveMemoryNoCheck(trailing_byte_count));
-    scoped_ptr<MediaMessage> padding_message(
+    std::unique_ptr<MediaMessage> padding_message(
         MediaMessage::CreateMessage(PaddingMediaMsg, std::move(mem)));
   }
 
@@ -198,12 +199,12 @@ scoped_ptr<MediaMemoryChunk> MediaMessageFifo::ReserveMemory(
   allocated_size = (size_ + wr_offset - rd_offset) % size_;
   free_size = size_ - 1 - allocated_size;
   if (free_size < size_to_reserve)
-    return scoped_ptr<MediaMemoryChunk>();
+    return std::unique_ptr<MediaMemoryChunk>();
 
   return ReserveMemoryNoCheck(size_to_reserve);
 }
 
-scoped_ptr<MediaMessage> MediaMessageFifo::Pop() {
+std::unique_ptr<MediaMessage> MediaMessageFifo::Pop() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Capture the read and write offsets.
@@ -212,7 +213,7 @@ scoped_ptr<MediaMessage> MediaMessageFifo::Pop() {
   size_t allocated_size = (size_ + wr_offset - rd_offset) % size_;
 
   if (allocated_size < MediaMessage::minimum_msg_size())
-    return scoped_ptr<MediaMessage>();
+    return std::unique_ptr<MediaMessage>();
 
   size_t trailing_byte_count = size_ - rd_offset;
   if (trailing_byte_count < MediaMessage::minimum_msg_size()) {
@@ -231,7 +232,7 @@ scoped_ptr<MediaMessage> MediaMessageFifo::Pop() {
   // smaller than |trailing_byte_count|.
   size_t max_msg_size = std::min(allocated_size, trailing_byte_count);
   if (max_msg_size < MediaMessage::minimum_msg_size())
-    return scoped_ptr<MediaMessage>();
+    return std::unique_ptr<MediaMessage>();
   void* msg_src = static_cast<uint8_t*>(base_) + rd_offset;
 
   // Create a flag to protect the serialized structure of the message
@@ -239,13 +240,13 @@ scoped_ptr<MediaMessage> MediaMessageFifo::Pop() {
   // The serialized structure starts at offset |rd_offset|.
   scoped_refptr<MediaMessageFlag> rd_flag(new MediaMessageFlag(rd_offset));
   rd_flags_.push_back(rd_flag);
-  scoped_ptr<MediaMemoryChunk> mem(
-      new FifoOwnedMemory(
-          msg_src, max_msg_size, rd_flag,
-          base::Bind(&MediaMessageFifo::OnRdMemoryReleased, weak_this_)));
+  std::unique_ptr<MediaMemoryChunk> mem(new FifoOwnedMemory(
+      msg_src, max_msg_size, rd_flag,
+      base::Bind(&MediaMessageFifo::OnRdMemoryReleased, weak_this_)));
 
   // Create the message which wraps its the serialized structure.
-  scoped_ptr<MediaMessage> message(MediaMessage::MapMessage(std::move(mem)));
+  std::unique_ptr<MediaMessage> message(
+      MediaMessage::MapMessage(std::move(mem)));
   CHECK(message);
 
   // Update the internal read pointer.
@@ -273,7 +274,7 @@ void MediaMessageFifo::Flush() {
   CommitRead(wr_offset);
 }
 
-scoped_ptr<MediaMemoryChunk> MediaMessageFifo::ReserveMemoryNoCheck(
+std::unique_ptr<MediaMemoryChunk> MediaMessageFifo::ReserveMemoryNoCheck(
     size_t size_to_reserve) {
   size_t wr_offset = internal_wr_offset();
 
@@ -281,10 +282,9 @@ scoped_ptr<MediaMemoryChunk> MediaMessageFifo::ReserveMemoryNoCheck(
   void* msg_start = static_cast<uint8_t*>(base_) + wr_offset;
   scoped_refptr<MediaMessageFlag> wr_flag(new MediaMessageFlag(wr_offset));
   wr_flags_.push_back(wr_flag);
-  scoped_ptr<MediaMemoryChunk> mem(
-      new FifoOwnedMemory(
-          msg_start, size_to_reserve, wr_flag,
-          base::Bind(&MediaMessageFifo::OnWrMemoryReleased, weak_this_)));
+  std::unique_ptr<MediaMemoryChunk> mem(new FifoOwnedMemory(
+      msg_start, size_to_reserve, wr_flag,
+      base::Bind(&MediaMessageFifo::OnWrMemoryReleased, weak_this_)));
 
   // Update the internal write pointer.
   wr_offset = (wr_offset + size_to_reserve) % size_;

@@ -28,7 +28,7 @@ BufferingFrameProvider::BufferWithConfig::~BufferWithConfig() {
 }
 
 BufferingFrameProvider::BufferingFrameProvider(
-    scoped_ptr<CodedFrameProvider> coded_frame_provider,
+    std::unique_ptr<CodedFrameProvider> coded_frame_provider,
     size_t max_buffer_size,
     size_t max_frame_size,
     const FrameBufferedCB& frame_buffered_cb)

@@ -6,10 +6,10 @@
 #define CHROMECAST_MEDIA_CMA_IPC_STREAMER_AV_STREAMER_PROXY_H_
 
 #include <list>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/audio_decoder_config.h"
@@ -30,8 +30,9 @@ class AvStreamerProxy {
 
   // AvStreamerProxy gets frames and audio/video config
   // from the |frame_provider| and feed them into the |fifo|.
-  void SetCodedFrameProvider(scoped_ptr<CodedFrameProvider> frame_provider);
-  void SetMediaMessageFifo(scoped_ptr<MediaMessageFifo> fifo);
+  void SetCodedFrameProvider(
+      std::unique_ptr<CodedFrameProvider> frame_provider);
+  void SetMediaMessageFifo(std::unique_ptr<MediaMessageFifo> fifo);
 
   // Starts fetching A/V buffers.
   void Start();
@@ -61,10 +62,10 @@ class AvStreamerProxy {
 
   base::ThreadChecker thread_checker_;
 
-  scoped_ptr<CodedFrameProvider> frame_provider_;
+  std::unique_ptr<CodedFrameProvider> frame_provider_;
 
   // Fifo used to convey A/V configs and buffers.
-  scoped_ptr<MediaMessageFifo> fifo_;
+  std::unique_ptr<MediaMessageFifo> fifo_;
 
   // State.
   bool is_running_;

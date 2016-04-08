@@ -71,9 +71,9 @@ class ConnectivityCheckerImpl
   // Called when URL request timed out.
   void OnUrlRequestTimeout();
 
-  scoped_ptr<GURL> connectivity_check_url_;
-  scoped_ptr<net::URLRequestContext> url_request_context_;
-  scoped_ptr<net::URLRequest> url_request_;
+  std::unique_ptr<GURL> connectivity_check_url_;
+  std::unique_ptr<net::URLRequestContext> url_request_context_;
+  std::unique_ptr<net::URLRequest> url_request_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   bool connected_;
   net::NetworkChangeNotifier::ConnectionType connection_type_;

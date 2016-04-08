@@ -61,7 +61,8 @@ void CastAudioManager::GetAudioInputDeviceNames(
       ::media::CHANNEL_LAYOUT_STEREO, 48000, 16, 1024);
 }
 
-scoped_ptr<MediaPipelineBackend> CastAudioManager::CreateMediaPipelineBackend(
+std::unique_ptr<MediaPipelineBackend>
+CastAudioManager::CreateMediaPipelineBackend(
     const MediaPipelineDeviceParams& params) {
   return backend_manager_->CreateMediaPipelineBackend(params);
 }

@@ -38,7 +38,7 @@ base::FilePath GetConfigPath() {
 }  // namespace
 
 // static
-scoped_ptr<PrefService> PrefServiceHelper::CreatePrefService(
+std::unique_ptr<PrefService> PrefServiceHelper::CreatePrefService(
     PrefRegistrySimple* registry) {
   const base::FilePath config_path(GetConfigPath());
   VLOG(1) << "Loading config from " << config_path.value();
@@ -69,7 +69,8 @@ scoped_ptr<PrefService> PrefServiceHelper::CreatePrefService(
   prefServiceFactory.set_read_error_callback(
       base::Bind(&UserPrefsLoadError, &prefs_read_error));
 
-  scoped_ptr<PrefService> pref_service(prefServiceFactory.Create(registry));
+  std::unique_ptr<PrefService> pref_service(
+      prefServiceFactory.Create(registry));
   if (prefs_read_error != PersistentPrefStore::PREF_READ_ERROR_NONE) {
     LOG(ERROR) << "Cannot initialize chromecast config: "
                << config_path.value()

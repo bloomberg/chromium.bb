@@ -6,11 +6,12 @@
 #define CHROMECAST_MEDIA_CMA_BASE_DECODER_BUFFER_BASE_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chromecast/public/media/cast_decoder_buffer.h"
 #include "chromecast/public/media/decrypt_context.h"
@@ -31,7 +32,7 @@ class DecoderBufferBase : public CastDecoderBuffer,
   // Partial CastDecoderBuffer implementation:
   DecryptContext* decrypt_context() const override;
 
-  void set_decrypt_context(scoped_ptr<DecryptContext> context) {
+  void set_decrypt_context(std::unique_ptr<DecryptContext> context) {
     decrypt_context_ = std::move(context);
   }
 
@@ -50,7 +51,7 @@ class DecoderBufferBase : public CastDecoderBuffer,
   ~DecoderBufferBase() override;
 
  private:
-  scoped_ptr<DecryptContext> decrypt_context_;
+  std::unique_ptr<DecryptContext> decrypt_context_;
 
   DISALLOW_COPY_AND_ASSIGN(DecoderBufferBase);
 };

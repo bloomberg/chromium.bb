@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chromecast/media/cma/backend/audio_decoder_wrapper.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
@@ -22,7 +23,7 @@ class MediaPipelineBackendManager;
 
 class MediaPipelineBackendWrapper : public MediaPipelineBackend {
  public:
-  MediaPipelineBackendWrapper(scoped_ptr<MediaPipelineBackend> backend,
+  MediaPipelineBackendWrapper(std::unique_ptr<MediaPipelineBackend> backend,
                               int stream_type,
                               float stream_type_volume,
                               MediaPipelineBackendManager* backend_manager);
@@ -43,9 +44,9 @@ class MediaPipelineBackendWrapper : public MediaPipelineBackend {
   void SetStreamTypeVolume(float stream_type_volume);
 
  private:
-  scoped_ptr<MediaPipelineBackend> backend_;
+  std::unique_ptr<MediaPipelineBackend> backend_;
   const int stream_type_;
-  scoped_ptr<AudioDecoderWrapper> audio_decoder_wrapper_;
+  std::unique_ptr<AudioDecoderWrapper> audio_decoder_wrapper_;
   float stream_type_volume_;
   bool is_initialized_;
   MediaPipelineBackendManager* const backend_manager_;

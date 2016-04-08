@@ -31,10 +31,11 @@ class DeviceCapabilitiesImpl : public DeviceCapabilities {
   bool BluetoothSupported() const override;
   bool DisplaySupported() const override;
   bool HiResAudioSupported() const override;
-  scoped_ptr<base::Value> GetCapability(const std::string& path) const override;
+  std::unique_ptr<base::Value> GetCapability(
+      const std::string& path) const override;
   scoped_refptr<Data> GetData() const override;
   void SetCapability(const std::string& path,
-                     scoped_ptr<base::Value> proposed_value) override;
+                     std::unique_ptr<base::Value> proposed_value) override;
   void MergeDictionary(const base::DictionaryValue& dict_value) override;
   void AddCapabilitiesObserver(Observer* observer) override;
   void RemoveCapabilitiesObserver(Observer* observer) override;
@@ -52,7 +53,7 @@ class DeviceCapabilitiesImpl : public DeviceCapabilities {
     }
 
     void Validate(const std::string& path,
-                  scoped_ptr<base::Value> proposed_value) const;
+                  std::unique_ptr<base::Value> proposed_value) const;
 
    private:
     Validator* const validator_;
@@ -69,14 +70,14 @@ class DeviceCapabilitiesImpl : public DeviceCapabilities {
 
   // Map from capability key to corresponding ValidatorInfo. Gets updated
   // in Register()/Unregister().
-  typedef base::ScopedPtrHashMap<std::string, scoped_ptr<ValidatorInfo>>
+  typedef base::ScopedPtrHashMap<std::string, std::unique_ptr<ValidatorInfo>>
       ValidatorMap;
 
   // Internal constructor used by static DeviceCapabilities::Create*() methods.
   DeviceCapabilitiesImpl();
 
   void SetValidatedValue(const std::string& path,
-                         scoped_ptr<base::Value> new_value) override;
+                         std::unique_ptr<base::Value> new_value) override;
 
   // Lock for reading/writing data_ pointer
   mutable base::Lock data_lock_;

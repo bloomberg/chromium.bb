@@ -7,11 +7,11 @@
 #ifndef CHROMECAST_BROWSER_PREF_SERVICE_HELPER_H_
 #define CHROMECAST_BROWSER_PREF_SERVICE_HELPER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_checker.h"
 #include "components/prefs/pref_service.h"
@@ -26,7 +26,7 @@ namespace shell {
 class PrefServiceHelper {
  public:
   // Loads configs from config file. Returns true if successful.
-  static scoped_ptr<PrefService> CreatePrefService(
+  static std::unique_ptr<PrefService> CreatePrefService(
       PrefRegistrySimple* registry);
 
  private:

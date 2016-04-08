@@ -139,7 +139,7 @@ BufferList H264SegmenterForTest(const uint8_t* data, size_t data_size) {
   int prev_pic_order_cnt_lsb = 0;
   int pic_order_cnt_msb = 0;
 
-  scoped_ptr< ::media::H264Parser> h264_parser(new ::media::H264Parser());
+  std::unique_ptr<::media::H264Parser> h264_parser(new ::media::H264Parser());
   h264_parser->SetStream(data, data_size);
 
   while (true) {
@@ -270,8 +270,7 @@ void OnEncryptedMediaInitData(::media::EmeInitDataType init_data_type,
   LOG(FATAL) << "Unexpected test failure: file is encrypted.";
 }
 
-void OnMediaTracksUpdated(scoped_ptr<::media::MediaTracks> tracks) {
-}
+void OnMediaTracksUpdated(std::unique_ptr<::media::MediaTracks> tracks) {}
 
 void OnNewBuffer(BufferList* buffer_list,
                  const base::Closure& finished_cb,

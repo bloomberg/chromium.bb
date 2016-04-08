@@ -5,8 +5,9 @@
 #ifndef CHROMECAST_RENDERER_MEDIA_CMA_RENDERER_H_
 #define CHROMECAST_RENDERER_MEDIA_CMA_RENDERER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
@@ -37,7 +38,7 @@ class VideoPipelineProxy;
 
 class CmaRenderer : public ::media::Renderer {
  public:
-  CmaRenderer(scoped_ptr<MediaPipelineProxy> media_pipeline,
+  CmaRenderer(std::unique_ptr<MediaPipelineProxy> media_pipeline,
               ::media::VideoRendererSink* video_renderer_sink,
               ::media::GpuVideoAcceleratorFactories* gpu_factories);
   ~CmaRenderer() override;
@@ -101,7 +102,7 @@ class CmaRenderer : public ::media::Renderer {
   base::ThreadChecker thread_checker_;
 
   scoped_refptr<BalancedMediaTaskRunnerFactory> media_task_runner_factory_;
-  scoped_ptr<MediaPipelineProxy> media_pipeline_;
+  std::unique_ptr<MediaPipelineProxy> media_pipeline_;
   AudioPipelineProxy* audio_pipeline_;
   VideoPipelineProxy* video_pipeline_;
   ::media::VideoRendererSink* video_renderer_sink_;
@@ -132,7 +133,7 @@ class CmaRenderer : public ::media::Renderer {
   gfx::Size initial_natural_size_;
   bool initial_video_hole_created_;
   ::media::GpuVideoAcceleratorFactories* gpu_factories_;
-  scoped_ptr<HoleFrameFactory> hole_frame_factory_;
+  std::unique_ptr<HoleFrameFactory> hole_frame_factory_;
 
   // Lock protecting access to |time_interpolator_|.
   base::Lock time_interpolator_lock_;
@@ -142,7 +143,7 @@ class CmaRenderer : public ::media::Renderer {
 
   // Tracks the most recent media time update and provides interpolated values
   // as playback progresses.
-  scoped_ptr<::media::TimeDeltaInterpolator> time_interpolator_;
+  std::unique_ptr<::media::TimeDeltaInterpolator> time_interpolator_;
 
   double playback_rate_;
 

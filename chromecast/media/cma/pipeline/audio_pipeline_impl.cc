@@ -33,7 +33,7 @@ AudioPipelineImpl::~AudioPipelineImpl() {}
 
 ::media::PipelineStatus AudioPipelineImpl::Initialize(
     const ::media::AudioDecoderConfig& audio_config,
-    scoped_ptr<CodedFrameProvider> frame_provider) {
+    std::unique_ptr<CodedFrameProvider> frame_provider) {
   CMALOG(kLogControl) << __FUNCTION__ << " "
                       << audio_config.AsHumanReadableString();
   if (frame_provider) {

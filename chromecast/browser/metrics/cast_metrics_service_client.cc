@@ -8,6 +8,7 @@
 #include "base/guid.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -87,11 +88,11 @@ GetReleaseChannelFromUpdateChannelName(const std::string& channel_name) {
 }  // namespace
 
 // static
-scoped_ptr<CastMetricsServiceClient> CastMetricsServiceClient::Create(
+std::unique_ptr<CastMetricsServiceClient> CastMetricsServiceClient::Create(
     base::TaskRunner* io_task_runner,
     PrefService* pref_service,
     net::URLRequestContextGetter* request_context) {
-  return make_scoped_ptr(new CastMetricsServiceClient(
+  return base::WrapUnique(new CastMetricsServiceClient(
       io_task_runner, pref_service, request_context));
 }
 
@@ -125,8 +126,9 @@ void CastMetricsServiceClient::StoreClientInfo(
   SetMetricsClientId(client_id);
 }
 
-scoped_ptr< ::metrics::ClientInfo> CastMetricsServiceClient::LoadClientInfo() {
-  scoped_ptr< ::metrics::ClientInfo> client_info(new ::metrics::ClientInfo);
+std::unique_ptr<::metrics::ClientInfo>
+CastMetricsServiceClient::LoadClientInfo() {
+  std::unique_ptr<::metrics::ClientInfo> client_info(new ::metrics::ClientInfo);
   client_info_loaded_ = true;
 
   // kMetricsIsNewClientID would be missing if either the device was just
@@ -156,7 +158,7 @@ scoped_ptr< ::metrics::ClientInfo> CastMetricsServiceClient::LoadClientInfo() {
     LOG(ERROR) << "Invalid client id from platform: " << force_client_id_
                << " from platform.";
   }
-  return scoped_ptr< ::metrics::ClientInfo>();
+  return std::unique_ptr<::metrics::ClientInfo>();
 }
 
 bool CastMetricsServiceClient::IsOffTheRecordSessionActive() {
@@ -179,7 +181,7 @@ bool CastMetricsServiceClient::GetBrand(std::string* brand_code) {
 }
 
 ::metrics::SystemProfileProto::Channel CastMetricsServiceClient::GetChannel() {
-  scoped_ptr<CastSysInfo> sys_info = CreateSysInfo();
+  std::unique_ptr<CastSysInfo> sys_info = CreateSysInfo();
 
 #if defined(OS_ANDROID)
   switch (sys_info->GetBuildType()) {
@@ -238,7 +240,7 @@ void CastMetricsServiceClient::CollectFinalMetricsForLog(
   done_callback.Run();
 }
 
-scoped_ptr< ::metrics::MetricsLogUploader>
+std::unique_ptr<::metrics::MetricsLogUploader>
 CastMetricsServiceClient::CreateUploader(
     const base::Callback<void(int)>& on_upload_complete) {
   std::string uma_server_url(::metrics::kDefaultMetricsServerUrl);
@@ -248,9 +250,8 @@ CastMetricsServiceClient::CreateUploader(
         command_line->GetSwitchValueASCII(switches::kOverrideMetricsUploadUrl));
   }
   DCHECK(!uma_server_url.empty());
-  return scoped_ptr< ::metrics::MetricsLogUploader>(
-      new ::metrics::NetMetricsLogUploader(request_context_,
-                                           uma_server_url,
+  return std::unique_ptr<::metrics::MetricsLogUploader>(
+      new ::metrics::NetMetricsLogUploader(request_context_, uma_server_url,
                                            ::metrics::kDefaultMetricsMimeType,
                                            on_upload_complete));
 }
@@ -347,25 +348,25 @@ void CastMetricsServiceClient::Initialize(CastService* cast_service) {
   CastStabilityMetricsProvider* stability_provider =
       new CastStabilityMetricsProvider(metrics_service_.get());
   metrics_service_->RegisterMetricsProvider(
-      scoped_ptr< ::metrics::MetricsProvider>(stability_provider));
+      std::unique_ptr<::metrics::MetricsProvider>(stability_provider));
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kDisableGpu)) {
     metrics_service_->RegisterMetricsProvider(
-        scoped_ptr< ::metrics::MetricsProvider>(
+        std::unique_ptr<::metrics::MetricsProvider>(
             new ::metrics::GPUMetricsProvider));
 
     // TODO(gfhuang): Does ChromeCast actually need metrics about screen info?
     // crbug.com/541577
     metrics_service_->RegisterMetricsProvider(
-        scoped_ptr< ::metrics::MetricsProvider>(
+        std::unique_ptr<::metrics::MetricsProvider>(
             new ::metrics::ScreenInfoMetricsProvider));
   }
   metrics_service_->RegisterMetricsProvider(
-      scoped_ptr< ::metrics::MetricsProvider>(
+      std::unique_ptr<::metrics::MetricsProvider>(
           new ::metrics::NetworkMetricsProvider(io_task_runner_)));
   metrics_service_->RegisterMetricsProvider(
-      scoped_ptr< ::metrics::MetricsProvider>(
+      std::unique_ptr<::metrics::MetricsProvider>(
           new ::metrics::ProfilerMetricsProvider));
   shell::CastBrowserProcess::GetInstance()->browser_client()->
       RegisterMetricsProviders(metrics_service_.get());

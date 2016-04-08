@@ -141,8 +141,8 @@ class SynchronizedMinidumpManager {
   const std::string lockfile_path_;
   const std::string metadata_path_;
   int lockfile_fd_;
-  scoped_ptr<base::Value> metadata_;
-  scoped_ptr<base::ListValue> dumps_;
+  std::unique_ptr<base::Value> metadata_;
+  std::unique_ptr<base::ListValue> dumps_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronizedMinidumpManager);
 };

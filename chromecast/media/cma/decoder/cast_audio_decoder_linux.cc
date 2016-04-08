@@ -228,7 +228,7 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
       num_frames += chunk->frame_count();
 
     // Copy decoded data into an AudioBus for conversion.
-    scoped_ptr<::media::AudioBus> decoded =
+    std::unique_ptr<::media::AudioBus> decoded =
         ::media::AudioBus::Create(config_.channel_number, num_frames);
     int bus_frame_offset = 0;
     for (auto& chunk : decoded_chunks_) {
@@ -239,7 +239,7 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
 
     if (mixer_) {
       // Convert to stereo if necessary.
-      scoped_ptr<::media::AudioBus> converted_to_stereo =
+      std::unique_ptr<::media::AudioBus> converted_to_stereo =
           ::media::AudioBus::Create(kStereoOutputChannelCount, num_frames);
       mixer_->Transform(decoded.get(), converted_to_stereo.get());
       decoded.swap(converted_to_stereo);
@@ -248,7 +248,7 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
     // TODO(tianyuwang): Remove this hack for 7_1 USB test speaker.
     if (mixer_7_1_) {
       // Convert to layout 7_1 if necessary.
-      scoped_ptr<::media::AudioBus> converted_to_7_1 =
+      std::unique_ptr<::media::AudioBus> converted_to_7_1 =
           ::media::AudioBus::Create(num_output_channels_, num_frames);
       mixer_7_1_->Transform(decoded.get(), converted_to_7_1.get());
       decoded.swap(converted_to_7_1);
@@ -292,12 +292,12 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
   InitializedCallback initialized_callback_;
   OutputFormat output_format_;
   media::AudioConfig config_;
-  scoped_ptr<::media::AudioDecoder> decoder_;
+  std::unique_ptr<::media::AudioDecoder> decoder_;
   std::queue<DecodeBufferCallbackPair> decode_queue_;
   bool initialized_;
   int num_output_channels_;
-  scoped_ptr<::media::ChannelMixer> mixer_;
-  scoped_ptr<::media::ChannelMixer> mixer_7_1_;
+  std::unique_ptr<::media::ChannelMixer> mixer_;
+  std::unique_ptr<::media::ChannelMixer> mixer_7_1_;
   bool decode_pending_;
   std::vector<scoped_refptr<::media::AudioBuffer>> decoded_chunks_;
   base::WeakPtrFactory<CastAudioDecoderImpl> weak_factory_;
@@ -308,12 +308,12 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
 }  // namespace
 
 // static
-scoped_ptr<CastAudioDecoder> CastAudioDecoder::Create(
+std::unique_ptr<CastAudioDecoder> CastAudioDecoder::Create(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const media::AudioConfig& config,
     OutputFormat output_format,
     const InitializedCallback& initialized_callback) {
-  scoped_ptr<CastAudioDecoderImpl> decoder(new CastAudioDecoderImpl(
+  std::unique_ptr<CastAudioDecoderImpl> decoder(new CastAudioDecoderImpl(
       task_runner, initialized_callback, output_format));
   decoder->Initialize(config);
   return std::move(decoder);

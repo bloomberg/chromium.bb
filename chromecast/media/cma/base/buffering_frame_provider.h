@@ -8,10 +8,10 @@
 #include <stddef.h>
 
 #include <list>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chromecast/media/cma/base/coded_frame_provider.h"
@@ -39,7 +39,7 @@ class BufferingFrameProvider : public CodedFrameProvider {
   // might be greater than |max_buffer_size|.
   // Note: takes ownership of |coded_frame_provider|.
   BufferingFrameProvider(
-      scoped_ptr<CodedFrameProvider> coded_frame_provider,
+      std::unique_ptr<CodedFrameProvider> coded_frame_provider,
       size_t max_buffer_size,
       size_t max_frame_size,
       const FrameBufferedCB& frame_buffered_cb);
@@ -81,7 +81,7 @@ class BufferingFrameProvider : public CodedFrameProvider {
   base::ThreadChecker thread_checker_;
 
   // Frame provider the buffering frame provider fetches data from.
-  scoped_ptr<CodedFrameProvider> coded_frame_provider_;
+  std::unique_ptr<CodedFrameProvider> coded_frame_provider_;
 
   // Indicates whether there is a pending read request on
   // |coded_frame_provider_|.

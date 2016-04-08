@@ -7,6 +7,8 @@
 
 #include <jni.h>
 #include <stdint.h>
+
+#include <memory>
 #include <vector>
 
 #include "base/android/jni_string.h"
@@ -14,7 +16,6 @@
 #include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/public/browser/web_contents.h"
@@ -81,8 +82,8 @@ class CastWindowAndroid : public content::WebContentsDelegate,
 
   content::BrowserContext* browser_context_;
   base::android::ScopedJavaGlobalRef<jobject> window_java_;
-  scoped_ptr<content::WebContents> web_contents_;
-  scoped_ptr<CastContentWindow> content_window_;
+  std::unique_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<CastContentWindow> content_window_;
 
   base::WeakPtrFactory<CastWindowAndroid> weak_factory_;
 

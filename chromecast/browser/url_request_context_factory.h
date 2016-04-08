@@ -88,8 +88,8 @@ class URLRequestContextFactory {
   scoped_refptr<net::URLRequestContextGetter> system_getter_;
   scoped_refptr<net::URLRequestContextGetter> media_getter_;
   scoped_refptr<net::URLRequestContextGetter> main_getter_;
-  scoped_ptr<CastNetworkDelegate> app_network_delegate_;
-  scoped_ptr<CastNetworkDelegate> system_network_delegate_;
+  std::unique_ptr<CastNetworkDelegate> app_network_delegate_;
+  std::unique_ptr<CastNetworkDelegate> system_network_delegate_;
 
   // Shared objects for all contexts.
   // The URLRequestContextStorage class is not used as owner to these objects
@@ -97,27 +97,27 @@ class URLRequestContextFactory {
   // The URLRequestContextStorage class manages dependent resources for a single
   // instance of URLRequestContext only.
   bool system_dependencies_initialized_;
-  scoped_ptr<net::HostResolver> host_resolver_;
-  scoped_ptr<net::ChannelIDService> channel_id_service_;
-  scoped_ptr<net::CertVerifier> cert_verifier_;
+  std::unique_ptr<net::HostResolver> host_resolver_;
+  std::unique_ptr<net::ChannelIDService> channel_id_service_;
+  std::unique_ptr<net::CertVerifier> cert_verifier_;
   scoped_refptr<net::SSLConfigService> ssl_config_service_;
-  scoped_ptr<net::TransportSecurityState> transport_security_state_;
-  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
-  scoped_ptr<net::ProxyService> proxy_service_;
-  scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory_;
-  scoped_ptr<net::HttpServerProperties> http_server_properties_;
-  scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings_;
-  scoped_ptr<net::HttpTransactionFactory> system_transaction_factory_;
-  scoped_ptr<net::CookieStore> system_cookie_store_;
-  scoped_ptr<net::URLRequestJobFactory> system_job_factory_;
+  std::unique_ptr<net::TransportSecurityState> transport_security_state_;
+  std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
+  std::unique_ptr<net::ProxyService> proxy_service_;
+  std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory_;
+  std::unique_ptr<net::HttpServerProperties> http_server_properties_;
+  std::unique_ptr<net::HttpUserAgentSettings> http_user_agent_settings_;
+  std::unique_ptr<net::HttpTransactionFactory> system_transaction_factory_;
+  std::unique_ptr<net::CookieStore> system_cookie_store_;
+  std::unique_ptr<net::URLRequestJobFactory> system_job_factory_;
 
   bool main_dependencies_initialized_;
-  scoped_ptr<net::HttpTransactionFactory> main_transaction_factory_;
-  scoped_ptr<net::CookieStore> main_cookie_store_;
-  scoped_ptr<net::URLRequestJobFactory> main_job_factory_;
+  std::unique_ptr<net::HttpTransactionFactory> main_transaction_factory_;
+  std::unique_ptr<net::CookieStore> main_cookie_store_;
+  std::unique_ptr<net::URLRequestJobFactory> main_job_factory_;
 
   bool media_dependencies_initialized_;
-  scoped_ptr<net::HttpTransactionFactory> media_transaction_factory_;
+  std::unique_ptr<net::HttpTransactionFactory> media_transaction_factory_;
 
   net::NetLog* net_log_;
 };

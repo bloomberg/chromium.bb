@@ -6,10 +6,10 @@
 #define CHROMECAST_MEDIA_CMA_BACKEND_ALSA_STREAM_MIXER_ALSA_INPUT_IMPL_H_
 
 #include <deque>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chromecast/media/cma/backend/alsa/media_pipeline_backend_alsa.h"
@@ -164,7 +164,7 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
 
   OnReadyToDeleteCb delete_cb_;
 
-  scoped_ptr<::media::MultiChannelResampler> resampler_;
+  std::unique_ptr<::media::MultiChannelResampler> resampler_;
 
   base::WeakPtr<StreamMixerAlsaInputImpl> weak_this_;
   base::WeakPtrFactory<StreamMixerAlsaInputImpl> weak_factory_;

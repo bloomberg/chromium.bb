@@ -5,16 +5,16 @@
 #ifndef CHROMECAST_BASE_CAST_SYS_INFO_UTIL_H_
 #define CHROMECAST_BASE_CAST_SYS_INFO_UTIL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 
 namespace chromecast {
 
 class CastSysInfo;
 
-scoped_ptr<CastSysInfo> CreateSysInfo();
+std::unique_ptr<CastSysInfo> CreateSysInfo();
 
 }  // namespace chromecast
 

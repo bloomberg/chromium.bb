@@ -5,10 +5,10 @@
 #ifndef CHROMECAST_MEDIA_CMA_BASE_VIDEO_PIPELINE_IMPL_H_
 #define CHROMECAST_MEDIA_CMA_BASE_VIDEO_PIPELINE_IMPL_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_impl.h"
 #include "chromecast/media/cma/pipeline/video_pipeline_client.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
@@ -33,7 +33,7 @@ class VideoPipelineImpl : public AvPipelineImpl {
 
   ::media::PipelineStatus Initialize(
       const std::vector<::media::VideoDecoderConfig>& configs,
-      scoped_ptr<CodedFrameProvider> frame_provider);
+      std::unique_ptr<CodedFrameProvider> frame_provider);
 
   // AvPipelineImpl implementation:
   void UpdateStatistics() override;

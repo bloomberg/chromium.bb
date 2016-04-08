@@ -15,11 +15,13 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
+
 #include <utility>
 
 #include "base/files/dir_reader_posix.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "chromecast/base/path_utils.h"
@@ -262,19 +264,20 @@ int SynchronizedMinidumpManager::ParseFiles() {
   std::vector<std::string> lines = base::SplitString(
       lockfile, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
-  scoped_ptr<base::ListValue> dumps = make_scoped_ptr(new base::ListValue());
+  std::unique_ptr<base::ListValue> dumps =
+      base::WrapUnique(new base::ListValue());
 
   // Validate dumps
   for (const std::string& line : lines) {
     if (line.size() == 0)
       continue;
-    scoped_ptr<base::Value> dump_info = DeserializeFromJson(line);
+    std::unique_ptr<base::Value> dump_info = DeserializeFromJson(line);
     DumpInfo info(dump_info.get());
     RCHECK(info.valid(), -1);
     dumps->Append(std::move(dump_info));
   }
 
-  scoped_ptr<base::Value> metadata =
+  std::unique_ptr<base::Value> metadata =
       DeserializeJsonFromFile(base::FilePath(metadata_path_));
   RCHECK(ValidateMetadata(metadata.get()), -1);
 
@@ -290,7 +293,7 @@ int SynchronizedMinidumpManager::WriteFiles(const base::ListValue* dumps,
   std::string lockfile;
 
   for (const base::Value* elem : *dumps) {
-    scoped_ptr<std::string> dump_info = SerializeToJson(*elem);
+    std::unique_ptr<std::string> dump_info = SerializeToJson(*elem);
     RCHECK(dump_info, -1);
     lockfile += *dump_info;
     lockfile += "\n";  // Add line seperatators
@@ -307,15 +310,16 @@ int SynchronizedMinidumpManager::WriteFiles(const base::ListValue* dumps,
 }
 
 int SynchronizedMinidumpManager::InitializeFiles() {
-  scoped_ptr<base::DictionaryValue> metadata =
-      make_scoped_ptr(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> metadata =
+      base::WrapUnique(new base::DictionaryValue());
 
   base::DictionaryValue* ratelimit_fields = new base::DictionaryValue();
-  metadata->Set(kLockfileRatelimitKey, make_scoped_ptr(ratelimit_fields));
+  metadata->Set(kLockfileRatelimitKey, base::WrapUnique(ratelimit_fields));
   ratelimit_fields->SetString(kLockfileRatelimitPeriodStartKey, "0");
   ratelimit_fields->SetInteger(kLockfileRatelimitPeriodDumpsKey, 0);
 
-  scoped_ptr<base::ListValue> dumps = make_scoped_ptr(new base::ListValue());
+  std::unique_ptr<base::ListValue> dumps =
+      base::WrapUnique(new base::ListValue());
 
   return WriteFiles(dumps.get(), metadata.get());
 }

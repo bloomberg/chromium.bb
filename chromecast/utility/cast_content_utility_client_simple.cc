@@ -8,8 +8,8 @@ namespace chromecast {
 namespace shell {
 
 // static
-scoped_ptr<CastContentUtilityClient> CastContentUtilityClient::Create() {
-  return scoped_ptr<CastContentUtilityClient>();
+std::unique_ptr<CastContentUtilityClient> CastContentUtilityClient::Create() {
+  return std::unique_ptr<CastContentUtilityClient>();
 }
 
 }  // namespace shell

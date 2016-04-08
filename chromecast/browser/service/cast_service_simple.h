@@ -5,8 +5,9 @@
 #ifndef CHROMECAST_BROWSER_SERVICE_CAST_SERVICE_SIMPLE_H_
 #define CHROMECAST_BROWSER_SERVICE_CAST_SERVICE_SIMPLE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromecast/service/cast_service.h"
 #include "url/gurl.h"
 
@@ -32,8 +33,8 @@ class CastServiceSimple : public CastService {
   void StopInternal() override;
 
  private:
-  scoped_ptr<CastContentWindow> window_;
-  scoped_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<CastContentWindow> window_;
+  std::unique_ptr<content::WebContents> web_contents_;
   GURL startup_url_;
 
   DISALLOW_COPY_AND_ASSIGN(CastServiceSimple);

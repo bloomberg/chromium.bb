@@ -47,9 +47,9 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
 
   double volume_;
   AudioSourceCallback* source_callback_;
-  scoped_ptr<::media::AudioBus> audio_bus_;
+  std::unique_ptr<::media::AudioBus> audio_bus_;
   scoped_refptr<media::DecoderBufferBase> decoder_buffer_;
-  scoped_ptr<Backend> backend_;
+  std::unique_ptr<Backend> backend_;
   const base::TimeDelta buffer_duration_;
   bool push_in_progress_;
   base::TimeTicks next_push_time_;

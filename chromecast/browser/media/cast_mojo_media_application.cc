@@ -16,7 +16,7 @@ void CreateServiceFactory(
     mojo::InterfaceRequest<media::interfaces::ServiceFactory> request,
     mojo::shell::mojom::InterfaceProvider* interfaces,
     scoped_refptr<media::MediaLog> media_log,
-    scoped_ptr<mojo::MessageLoopRef> app_refcount,
+    std::unique_ptr<mojo::MessageLoopRef> app_refcount,
     media::MojoMediaClient* mojo_media_client) {
   new ::media::ServiceFactoryImpl(std::move(request), interfaces,
                                   std::move(media_log), std::move(app_refcount),
@@ -28,7 +28,7 @@ namespace chromecast {
 namespace media {
 
 CastMojoMediaApplication::CastMojoMediaApplication(
-    scoped_ptr<CastMojoMediaClient> mojo_media_client,
+    std::unique_ptr<CastMojoMediaClient> mojo_media_client,
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner)
     : mojo_media_client_(std::move(mojo_media_client)),
       media_task_runner_(media_task_runner),
@@ -56,7 +56,7 @@ void CastMojoMediaApplication::Create(
   //    stop the app message loop when destroyed on the app task runner.
   // 2. It will prevent CastMojoMediaApplication from getting destroyed until
   //    the task posted to the media thread is run.
-  scoped_ptr<mojo::MessageLoopRef> app_refcount = ref_factory_.CreateRef();
+  std::unique_ptr<mojo::MessageLoopRef> app_refcount = ref_factory_.CreateRef();
   media_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&CreateServiceFactory, base::Passed(&request),

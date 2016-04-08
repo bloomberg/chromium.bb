@@ -5,9 +5,10 @@
 #ifndef CHROMECAST_RENDERER_MEDIA_AUDIO_PIPELINE_PROXY_H_
 #define CHROMECAST_RENDERER_MEDIA_AUDIO_PIPELINE_PROXY_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chromecast/common/media/cma_ipc_common.h"
@@ -36,10 +37,9 @@ class AudioPipelineProxy {
                      scoped_refptr<MediaChannelProxy> media_channel_proxy);
   ~AudioPipelineProxy();
 
-  void Initialize(
-      const ::media::AudioDecoderConfig& config,
-      scoped_ptr<CodedFrameProvider> frame_provider,
-      const ::media::PipelineStatusCB& status_cb);
+  void Initialize(const ::media::AudioDecoderConfig& config,
+                  std::unique_ptr<CodedFrameProvider> frame_provider,
+                  const ::media::PipelineStatusCB& status_cb);
   void StartFeeding();
   void Flush(const base::Closure& done_cb);
   void Stop();
@@ -50,19 +50,18 @@ class AudioPipelineProxy {
  private:
   base::ThreadChecker thread_checker_;
 
-  void OnAvPipeCreated(
-      const ::media::AudioDecoderConfig& config,
-      const ::media::PipelineStatusCB& status_cb,
-      scoped_ptr<base::SharedMemory> shared_memory);
+  void OnAvPipeCreated(const ::media::AudioDecoderConfig& config,
+                       const ::media::PipelineStatusCB& status_cb,
+                       std::unique_ptr<base::SharedMemory> shared_memory);
   void OnPipeWrite();
   void OnPipeRead();
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // |proxy_| main goal is to convert function calls to IPC messages.
-  scoped_ptr<AudioPipelineProxyInternal> proxy_;
+  std::unique_ptr<AudioPipelineProxyInternal> proxy_;
 
-  scoped_ptr<AvStreamerProxy> audio_streamer_;
+  std::unique_ptr<AvStreamerProxy> audio_streamer_;
 
   base::WeakPtr<AudioPipelineProxy> weak_this_;
   base::WeakPtrFactory<AudioPipelineProxy> weak_factory_;

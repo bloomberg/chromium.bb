@@ -4,9 +4,10 @@
 
 #include "chromecast/media/base/media_resource_tracker.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
@@ -99,9 +100,9 @@ class MediaResourceTrackerTest : public ::testing::Test {
   }
 
   MediaResourceTracker* resource_tracker_;
-  scoped_ptr<MediaResourceTrackerTestMocks> test_mocks_;
-  scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<base::Thread> media_thread_;
+  std::unique_ptr<MediaResourceTrackerTestMocks> test_mocks_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::Thread> media_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaResourceTrackerTest);

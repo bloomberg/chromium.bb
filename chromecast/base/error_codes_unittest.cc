@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromecast/base/error_codes.h"
+
+#include <memory>
+
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/scoped_path_override.h"
-#include "chromecast/base/error_codes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromecast {
@@ -29,7 +31,7 @@ class ErrorCodesTest : public testing::Test {
 
  private:
   base::ScopedTempDir fake_home_dir_;
-  scoped_ptr<base::ScopedPathOverride> path_override_;
+  std::unique_ptr<base::ScopedPathOverride> path_override_;
 };
 
 TEST_F(ErrorCodesTest, GetInitialErrorCodeReturnsNoErrorIfMissingFile) {

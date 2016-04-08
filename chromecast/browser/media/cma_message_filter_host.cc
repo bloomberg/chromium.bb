@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/threading/thread_checker.h"
@@ -62,7 +62,7 @@ class MediaPipelineCmaMap {
 
   void DestroyMediaPipeline(int process_id,
                             int media_id,
-                            scoped_ptr<MediaPipelineHost> media_pipeline) {
+                            std::unique_ptr<MediaPipelineHost> media_pipeline) {
     DCHECK(thread_checker_.CalledOnValidThread());
     uint64_t pipeline_id = GetPipelineId(process_id, media_id);
     auto it = id_pipeline_map_.find(pipeline_id);
@@ -183,7 +183,7 @@ void CmaMessageFilterHost::DeleteEntries() {
   for (MediaPipelineMap::iterator it = media_pipelines_.begin();
        it != media_pipelines_.end(); ) {
     int media_id = it->first;
-    scoped_ptr<MediaPipelineHost> media_pipeline(it->second);
+    std::unique_ptr<MediaPipelineHost> media_pipeline(it->second);
     media_pipelines_.erase(it++);
     task_runner_->PostTask(
         FROM_HERE,
@@ -206,7 +206,8 @@ MediaPipelineHost* CmaMessageFilterHost::LookupById(int media_id) {
 void CmaMessageFilterHost::CreateMedia(int media_id, LoadType load_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  scoped_ptr<MediaPipelineHost> media_pipeline_host(new MediaPipelineHost());
+  std::unique_ptr<MediaPipelineHost> media_pipeline_host(
+      new MediaPipelineHost());
   MediaPipelineClient client;
   client.time_update_cb = ::media::BindToCurrentLoop(base::Bind(
       &CmaMessageFilterHost::OnTimeUpdate, weak_this_, media_id));
@@ -245,7 +246,7 @@ void CmaMessageFilterHost::DestroyMedia(int media_id) {
   if (it == media_pipelines_.end())
     return;
 
-  scoped_ptr<MediaPipelineHost> media_pipeline(it->second);
+  std::unique_ptr<MediaPipelineHost> media_pipeline(it->second);
   media_pipelines_.erase(it);
   task_runner_->PostTask(
       FROM_HERE,
@@ -287,9 +288,9 @@ void CmaMessageFilterHost::CreateAvPipe(
   // Create the local/foreign sockets to signal media message
   // consune/feed events.
   // Use CancelableSyncSocket so that write is always non-blocking.
-  scoped_ptr<base::CancelableSyncSocket> local_socket(
+  std::unique_ptr<base::CancelableSyncSocket> local_socket(
       new base::CancelableSyncSocket());
-  scoped_ptr<base::CancelableSyncSocket> foreign_socket(
+  std::unique_ptr<base::CancelableSyncSocket> foreign_socket(
       new base::CancelableSyncSocket());
   if (!base::CancelableSyncSocket::CreatePair(local_socket.get(),
                                               foreign_socket.get()) ||
@@ -301,7 +302,7 @@ void CmaMessageFilterHost::CreateAvPipe(
   }
 
   // Shared memory used to convey media messages.
-  scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
+  std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
   if (!shared_memory->CreateAndMapAnonymous(shared_mem_size) ||
       !shared_memory->ShareToProcess(PeerHandle(), &foreign_memory_handle)) {
     Send(new CmaMsg_AvPipeCreated(
@@ -337,7 +338,7 @@ void CmaMessageFilterHost::OnAvPipeSet(
     int media_id,
     TrackId track_id,
     base::SharedMemoryHandle foreign_memory_handle,
-    scoped_ptr<base::CancelableSyncSocket> foreign_socket) {
+    std::unique_ptr<base::CancelableSyncSocket> foreign_socket) {
   base::FileDescriptor foreign_socket_handle;
   foreign_socket_handle.fd = foreign_socket->handle();
   foreign_socket_handle.auto_close = false;

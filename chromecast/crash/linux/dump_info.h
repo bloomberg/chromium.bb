@@ -6,10 +6,10 @@
 #define CHROMECAST_CRASH_LINUX_DUMP_INFO_H_
 
 #include <ctime>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromecast/crash/linux/minidump_params.h"
 
 namespace base {
@@ -61,7 +61,7 @@ class DumpInfo {
   //   "build_number": <build_number>
   //   "reason": <reason>
   // }
-  scoped_ptr<base::Value> GetAsValue() const;
+  std::unique_ptr<base::Value> GetAsValue() const;
   const MinidumpParams& params() const { return params_; }
   bool valid() const { return valid_; }
 

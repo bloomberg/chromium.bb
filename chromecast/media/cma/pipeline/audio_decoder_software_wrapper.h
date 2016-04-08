@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chromecast/media/cma/decoder/cast_audio_decoder.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
@@ -55,7 +56,7 @@ class AudioDecoderSoftwareWrapper
 
   MediaPipelineBackend::AudioDecoder* const backend_decoder_;
   DecoderDelegate* delegate_;
-  scoped_ptr<CastAudioDecoder> software_decoder_;
+  std::unique_ptr<CastAudioDecoder> software_decoder_;
   AudioConfig output_config_;
   scoped_refptr<DecoderBufferBase> pending_pushed_buffer_;
 

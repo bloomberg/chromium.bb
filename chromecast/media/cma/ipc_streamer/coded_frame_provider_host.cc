@@ -21,7 +21,7 @@ namespace chromecast {
 namespace media {
 
 CodedFrameProviderHost::CodedFrameProviderHost(
-    scoped_ptr<MediaMessageFifo> media_message_fifo)
+    std::unique_ptr<MediaMessageFifo> media_message_fifo)
     : fifo_(std::move(media_message_fifo)), weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();
   thread_checker_.DetachFromThread();
@@ -63,7 +63,7 @@ void CodedFrameProviderHost::ReadMessages() {
   // Read messages until a frame is provided (i.e. not just the audio/video
   // configurations).
   while (!read_cb_.is_null()) {
-    scoped_ptr<MediaMessage> msg(fifo_->Pop());
+    std::unique_ptr<MediaMessage> msg(fifo_->Pop());
     if (!msg)
       break;
 

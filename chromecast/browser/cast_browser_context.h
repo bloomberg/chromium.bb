@@ -26,7 +26,7 @@ class CastBrowserContext : public content::BrowserContext {
   ~CastBrowserContext() override;
 
   // BrowserContext implementation:
-  scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
+  std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
   base::FilePath GetPath() const override;
   bool IsOffTheRecord() const override;
@@ -65,9 +65,9 @@ class CastBrowserContext : public content::BrowserContext {
 
   URLRequestContextFactory* const url_request_context_factory_;
   base::FilePath path_;
-  scoped_ptr<CastResourceContext> resource_context_;
-  scoped_ptr<CastDownloadManagerDelegate> download_manager_delegate_;
-  scoped_ptr<content::PermissionManager> permission_manager_;
+  std::unique_ptr<CastResourceContext> resource_context_;
+  std::unique_ptr<CastDownloadManagerDelegate> download_manager_delegate_;
+  std::unique_ptr<content::PermissionManager> permission_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CastBrowserContext);
 };

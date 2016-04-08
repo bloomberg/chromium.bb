@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromecast/crash/linux/minidump_writer.h"
+
 #include <fstream>
+#include <memory>
 
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/scoped_path_override.h"
 #include "chromecast/base/scoped_temp_file.h"
 #include "chromecast/crash/linux/crash_testing_utils.h"
 #include "chromecast/crash/linux/dump_info.h"
 #include "chromecast/crash/linux/minidump_generator.h"
-#include "chromecast/crash/linux/minidump_writer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromecast {
@@ -76,7 +77,7 @@ class MinidumpWriterTest : public testing::Test {
 
  private:
   base::ScopedTempDir fake_home_dir_;
-  scoped_ptr<base::ScopedPathOverride> home_;
+  std::unique_ptr<base::ScopedPathOverride> home_;
 
   DISALLOW_COPY_AND_ASSIGN(MinidumpWriterTest);
 };

@@ -4,14 +4,15 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <list>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -73,11 +74,11 @@ class AvStreamerTest : public testing::Test {
   void OnTestTimeout();
 
  protected:
-  scoped_ptr<uint64_t[]> fifo_mem_;
+  std::unique_ptr<uint64_t[]> fifo_mem_;
 
-  scoped_ptr<AvStreamerProxy> av_buffer_proxy_;
-  scoped_ptr<CodedFrameProviderHost> coded_frame_provider_host_;
-  scoped_ptr<MockFrameConsumer> frame_consumer_;
+  std::unique_ptr<AvStreamerProxy> av_buffer_proxy_;
+  std::unique_ptr<CodedFrameProviderHost> coded_frame_provider_host_;
+  std::unique_ptr<MockFrameConsumer> frame_consumer_;
 
   // number of pending cb in StopAndFlush
   int stop_and_flush_cb_count_;
@@ -115,28 +116,26 @@ void AvStreamerTest::Configure(
   }
   frame_specs[frame_specs.size() - 1].is_eos = true;
 
-  scoped_ptr<FrameGeneratorForTest> frame_generator_provider(
+  std::unique_ptr<FrameGeneratorForTest> frame_generator_provider(
       new FrameGeneratorForTest(frame_specs));
-  scoped_ptr<FrameGeneratorForTest> frame_generator_consumer(
+  std::unique_ptr<FrameGeneratorForTest> frame_generator_consumer(
       new FrameGeneratorForTest(frame_specs));
 
-  scoped_ptr<MockFrameProvider> frame_provider(new MockFrameProvider());
+  std::unique_ptr<MockFrameProvider> frame_provider(new MockFrameProvider());
   frame_provider->Configure(provider_delayed_pattern,
                             std::move(frame_generator_provider));
   frame_provider->SetDelayFlush(delay_flush);
 
   size_t fifo_size_div_8 = 512;
   fifo_mem_.reset(new uint64_t[fifo_size_div_8]);
-  scoped_ptr<MediaMessageFifo> producer_fifo(
-      new MediaMessageFifo(
-          scoped_ptr<MediaMemoryChunk>(
-              new FifoMemoryChunk(&fifo_mem_[0], fifo_size_div_8 * 8)),
-          true));
-  scoped_ptr<MediaMessageFifo> consumer_fifo(
-      new MediaMessageFifo(
-          scoped_ptr<MediaMemoryChunk>(
-              new FifoMemoryChunk(&fifo_mem_[0], fifo_size_div_8 * 8)),
-          false));
+  std::unique_ptr<MediaMessageFifo> producer_fifo(new MediaMessageFifo(
+      std::unique_ptr<MediaMemoryChunk>(
+          new FifoMemoryChunk(&fifo_mem_[0], fifo_size_div_8 * 8)),
+      true));
+  std::unique_ptr<MediaMessageFifo> consumer_fifo(new MediaMessageFifo(
+      std::unique_ptr<MediaMemoryChunk>(
+          new FifoMemoryChunk(&fifo_mem_[0], fifo_size_div_8 * 8)),
+      false));
   producer_fifo->ObserveWriteActivity(
       base::Bind(&AvStreamerTest::OnFifoWrite, base::Unretained(this)));
   consumer_fifo->ObserveReadActivity(
@@ -145,7 +144,7 @@ void AvStreamerTest::Configure(
   av_buffer_proxy_.reset(
       new AvStreamerProxy());
   av_buffer_proxy_->SetCodedFrameProvider(
-      scoped_ptr<CodedFrameProvider>(frame_provider.release()));
+      std::unique_ptr<CodedFrameProvider>(frame_provider.release()));
   av_buffer_proxy_->SetMediaMessageFifo(std::move(producer_fifo));
 
   coded_frame_provider_host_.reset(
@@ -226,7 +225,7 @@ TEST_F(AvStreamerTest, FastProviderSlowConsumer) {
                 consumer_delayed_pattern + arraysize(consumer_delayed_pattern)),
             false);
 
-  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   message_loop->PostTask(
       FROM_HERE,
       base::Bind(&AvStreamerTest::Start, base::Unretained(this)));
@@ -247,7 +246,7 @@ TEST_F(AvStreamerTest, SlowProviderFastConsumer) {
                 consumer_delayed_pattern + arraysize(consumer_delayed_pattern)),
             false);
 
-  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   message_loop->PostTask(
       FROM_HERE,
       base::Bind(&AvStreamerTest::Start, base::Unretained(this)));
@@ -276,7 +275,7 @@ TEST_F(AvStreamerTest, SlowFastProducerConsumer) {
                 consumer_delayed_pattern + arraysize(consumer_delayed_pattern)),
             false);
 
-  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   message_loop->PostTask(
       FROM_HERE,
       base::Bind(&AvStreamerTest::Start, base::Unretained(this)));
@@ -299,7 +298,7 @@ TEST_F(AvStreamerTest, StopInFlush) {
   Configure(frame_count, dummy_delayed_pattern_vector,
             dummy_delayed_pattern_vector, true);
 
-  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
 
   // Flush takes 10ms to finish. 1s timeout is enough for this test.
   message_loop->PostDelayedTask(

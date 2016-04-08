@@ -7,8 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromecast/media/cma/ipc/media_memory_chunk.h"
 
 namespace base {
@@ -20,7 +21,7 @@ namespace media {
 
 class SharedMemoryChunk : public MediaMemoryChunk {
  public:
-  SharedMemoryChunk(scoped_ptr<base::SharedMemory> shared_mem,
+  SharedMemoryChunk(std::unique_ptr<base::SharedMemory> shared_mem,
                     size_t size);
   ~SharedMemoryChunk() override;
 
@@ -30,7 +31,7 @@ class SharedMemoryChunk : public MediaMemoryChunk {
   bool valid() const override;
 
  private:
-  scoped_ptr<base::SharedMemory> shared_mem_;
+  std::unique_ptr<base::SharedMemory> shared_mem_;
   size_t size_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedMemoryChunk);

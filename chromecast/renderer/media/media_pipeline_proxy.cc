@@ -26,7 +26,7 @@ namespace media {
 // as the media channel proxy.
 class MediaPipelineProxyInternal {
  public:
-  static void Release(scoped_ptr<MediaPipelineProxyInternal> proxy);
+  static void Release(std::unique_ptr<MediaPipelineProxyInternal> proxy);
 
   explicit MediaPipelineProxyInternal(
       scoped_refptr<MediaChannelProxy> media_channel_proxy);
@@ -59,7 +59,7 @@ class MediaPipelineProxyInternal {
 
 // static
 void MediaPipelineProxyInternal::Release(
-    scoped_ptr<MediaPipelineProxyInternal> proxy) {
+    std::unique_ptr<MediaPipelineProxyInternal> proxy) {
   proxy->Shutdown();
 }
 
@@ -99,16 +99,15 @@ void MediaPipelineProxyInternal::SetClient(const MediaPipelineClient& client) {
 
 void MediaPipelineProxyInternal::SetCdm(int render_frame_id, int cdm_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  bool success = media_channel_proxy_->Send(scoped_ptr<IPC::Message>(
-      new CmaHostMsg_SetCdm(media_channel_proxy_->GetId(),
-                            render_frame_id,
-                            cdm_id)));
+  bool success = media_channel_proxy_->Send(
+      std::unique_ptr<IPC::Message>(new CmaHostMsg_SetCdm(
+          media_channel_proxy_->GetId(), render_frame_id, cdm_id)));
   LOG_IF(ERROR, !success) << "Failed to send SetCdm=" << cdm_id;
 }
 
 void MediaPipelineProxyInternal::Flush(const base::Closure& flush_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  bool success = media_channel_proxy_->Send(scoped_ptr<IPC::Message>(
+  bool success = media_channel_proxy_->Send(std::unique_ptr<IPC::Message>(
       new CmaHostMsg_Flush(media_channel_proxy_->GetId())));
   if (!success) {
     LOG(ERROR) << "Failed to send Flush";
@@ -120,7 +119,7 @@ void MediaPipelineProxyInternal::Flush(const base::Closure& flush_cb) {
 
 void MediaPipelineProxyInternal::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  bool success = media_channel_proxy_->Send(scoped_ptr<IPC::Message>(
+  bool success = media_channel_proxy_->Send(std::unique_ptr<IPC::Message>(
       new CmaHostMsg_Stop(media_channel_proxy_->GetId())));
   if (!success)
     client_.error_cb.Run(::media::PIPELINE_ERROR_ABORT);
@@ -128,17 +127,16 @@ void MediaPipelineProxyInternal::Stop() {
 
 void MediaPipelineProxyInternal::StartPlayingFrom(const base::TimeDelta& time) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  bool success = media_channel_proxy_->Send(scoped_ptr<IPC::Message>(
-      new CmaHostMsg_StartPlayingFrom(
-          media_channel_proxy_->GetId(), time)));
+  bool success = media_channel_proxy_->Send(std::unique_ptr<IPC::Message>(
+      new CmaHostMsg_StartPlayingFrom(media_channel_proxy_->GetId(), time)));
   if (!success)
     client_.error_cb.Run(::media::PIPELINE_ERROR_ABORT);
 }
 
 void MediaPipelineProxyInternal::SetPlaybackRate(double playback_rate) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  media_channel_proxy_->Send(scoped_ptr<IPC::Message>(
-      new CmaHostMsg_SetPlaybackRate(
+  media_channel_proxy_->Send(
+      std::unique_ptr<IPC::Message>(new CmaHostMsg_SetPlaybackRate(
           media_channel_proxy_->GetId(), playback_rate)));
 }
 
@@ -204,7 +202,7 @@ VideoPipelineProxy* MediaPipelineProxy::GetVideoPipeline() const {
 
 void MediaPipelineProxy::InitializeAudio(
     const ::media::AudioDecoderConfig& config,
-    scoped_ptr<CodedFrameProvider> frame_provider,
+    std::unique_ptr<CodedFrameProvider> frame_provider,
     const ::media::PipelineStatusCB& status_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   has_audio_ = true;
@@ -213,7 +211,7 @@ void MediaPipelineProxy::InitializeAudio(
 
 void MediaPipelineProxy::InitializeVideo(
     const std::vector<::media::VideoDecoderConfig>& configs,
-    scoped_ptr<CodedFrameProvider> frame_provider,
+    std::unique_ptr<CodedFrameProvider> frame_provider,
     const ::media::PipelineStatusCB& status_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   has_video_ = true;

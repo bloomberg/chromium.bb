@@ -5,9 +5,11 @@
 #include "chromecast/base/device_capabilities_impl.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -51,22 +53,22 @@ const char DeviceCapabilities::kKeyHiResAudioSupported[] =
     "hi_res_audio_supported";
 
 // static
-scoped_ptr<DeviceCapabilities> DeviceCapabilities::Create() {
-  return make_scoped_ptr(new DeviceCapabilitiesImpl);
+std::unique_ptr<DeviceCapabilities> DeviceCapabilities::Create() {
+  return base::WrapUnique(new DeviceCapabilitiesImpl);
 }
 
 // static
-scoped_ptr<DeviceCapabilities> DeviceCapabilities::CreateForTesting() {
+std::unique_ptr<DeviceCapabilities> DeviceCapabilities::CreateForTesting() {
   DeviceCapabilities* capabilities = new DeviceCapabilitiesImpl;
   capabilities->SetCapability(
       kKeyBluetoothSupported,
-      make_scoped_ptr(new base::FundamentalValue(false)));
+      base::WrapUnique(new base::FundamentalValue(false)));
   capabilities->SetCapability(
-      kKeyDisplaySupported, make_scoped_ptr(new base::FundamentalValue(true)));
+      kKeyDisplaySupported, base::WrapUnique(new base::FundamentalValue(true)));
   capabilities->SetCapability(
       kKeyHiResAudioSupported,
-      make_scoped_ptr(new base::FundamentalValue(false)));
-  return make_scoped_ptr(capabilities);
+      base::WrapUnique(new base::FundamentalValue(false)));
+  return base::WrapUnique(capabilities);
 }
 
 scoped_refptr<DeviceCapabilities::Data> DeviceCapabilities::CreateData() {
@@ -74,7 +76,7 @@ scoped_refptr<DeviceCapabilities::Data> DeviceCapabilities::CreateData() {
 }
 
 scoped_refptr<DeviceCapabilities::Data> DeviceCapabilities::CreateData(
-    scoped_ptr<const base::DictionaryValue> dictionary) {
+    std::unique_ptr<const base::DictionaryValue> dictionary) {
   DCHECK(dictionary.get());
   return make_scoped_refptr(new Data(std::move(dictionary)));
 }
@@ -86,7 +88,7 @@ DeviceCapabilities::Validator::Validator(DeviceCapabilities* capabilities)
 
 void DeviceCapabilities::Validator::SetValidatedValue(
     const std::string& path,
-    scoped_ptr<base::Value> new_value) const {
+    std::unique_ptr<base::Value> new_value) const {
   capabilities_->SetValidatedValue(path, std::move(new_value));
 }
 
@@ -97,7 +99,7 @@ DeviceCapabilities::Data::Data()
 }
 
 DeviceCapabilities::Data::Data(
-    scoped_ptr<const base::DictionaryValue> dictionary)
+    std::unique_ptr<const base::DictionaryValue> dictionary)
     : dictionary_(std::move(dictionary)),
       json_string_(SerializeToJson(*dictionary_)) {
   DCHECK(dictionary_.get());
@@ -120,7 +122,7 @@ DeviceCapabilitiesImpl::ValidatorInfo::~ValidatorInfo() {
 
 void DeviceCapabilitiesImpl::ValidatorInfo::Validate(
     const std::string& path,
-    scoped_ptr<base::Value> proposed_value) const {
+    std::unique_ptr<base::Value> proposed_value) const {
   // Check that we are running Validate on the same thread that ValidatorInfo
   // was constructed on.
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -148,7 +150,7 @@ void DeviceCapabilitiesImpl::Register(const std::string& key,
 
   base::AutoLock auto_lock(validation_lock_);
   bool added =
-      validator_map_.add(key, make_scoped_ptr(new ValidatorInfo(validator)))
+      validator_map_.add(key, base::WrapUnique(new ValidatorInfo(validator)))
           .second;
   // Check that a validator has not already been registered for this key
   DCHECK(added);
@@ -205,12 +207,12 @@ bool DeviceCapabilitiesImpl::HiResAudioSupported() const {
   return hi_res_audio_supported;
 }
 
-scoped_ptr<base::Value> DeviceCapabilitiesImpl::GetCapability(
+std::unique_ptr<base::Value> DeviceCapabilitiesImpl::GetCapability(
     const std::string& path) const {
   scoped_refptr<Data> data_ref = GetData();
   const base::Value* value = nullptr;
   bool found_path = data_ref->dictionary().Get(path, &value);
-  return found_path ? value->CreateDeepCopy() : scoped_ptr<base::Value>();
+  return found_path ? value->CreateDeepCopy() : std::unique_ptr<base::Value>();
 }
 
 scoped_refptr<DeviceCapabilities::Data>
@@ -224,7 +226,7 @@ DeviceCapabilitiesImpl::GetData() const {
 
 void DeviceCapabilitiesImpl::SetCapability(
     const std::string& path,
-    scoped_ptr<base::Value> proposed_value) {
+    std::unique_ptr<base::Value> proposed_value) {
   DCHECK(proposed_value.get());
   if (!IsValidPath(path)) {
     LOG(DFATAL) << "Invalid capability path encountered for SetCapability()";
@@ -276,7 +278,7 @@ void DeviceCapabilitiesImpl::RemoveCapabilitiesObserver(Observer* observer) {
 
 void DeviceCapabilitiesImpl::SetValidatedValue(
     const std::string& path,
-    scoped_ptr<base::Value> new_value) {
+    std::unique_ptr<base::Value> new_value) {
   // All internal writes/modifications of capabilities must occur on same
   // thread to avoid race conditions.
   if (!task_runner_for_writes_->BelongsToCurrentThread()) {
@@ -305,7 +307,7 @@ void DeviceCapabilitiesImpl::SetValidatedValue(
   // data_lock_. If we were to lock and modify the capabilities
   // dictionary directly, there may be expensive writes that block other
   // threads.
-  scoped_ptr<base::DictionaryValue> dictionary_deep_copy(
+  std::unique_ptr<base::DictionaryValue> dictionary_deep_copy(
       data_->dictionary().CreateDeepCopy());
   dictionary_deep_copy->Set(path, std::move(new_value));
   scoped_refptr<Data> new_data(CreateData(std::move(dictionary_deep_copy)));

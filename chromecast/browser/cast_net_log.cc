@@ -20,7 +20,8 @@ namespace chromecast {
 namespace {
 
 base::DictionaryValue* GetShellConstants() {
-  scoped_ptr<base::DictionaryValue> constants_dict = net::GetNetConstants();
+  std::unique_ptr<base::DictionaryValue> constants_dict =
+      net::GetNetConstants();
 
   // Add a dictionary with client information
   base::DictionaryValue* dict = new base::DictionaryValue();
@@ -59,7 +60,7 @@ CastNetLog::CastNetLog() {
       LOG(ERROR) << "Could not open file " << log_path.value()
                  << " for net logging";
     } else {
-      scoped_ptr<base::Value> constants(GetShellConstants());
+      std::unique_ptr<base::Value> constants(GetShellConstants());
       write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
       write_to_file_observer_->StartObserving(this, std::move(file),
                                               constants.get(), nullptr);

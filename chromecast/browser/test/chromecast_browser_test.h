@@ -5,8 +5,9 @@
 #ifndef CHROMECAST_BROWSER_TEST_CHROMECAST_BROWSER_TEST_H_
 #define CHROMECAST_BROWSER_TEST_CHROMECAST_BROWSER_TEST_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
 
@@ -44,8 +45,8 @@ class ChromecastBrowserTest : public content::BrowserTestBase {
   content::WebContents* web_contents() const { return web_contents_.get(); }
 
  private:
-  scoped_ptr<content::WebContents> web_contents_;
-  scoped_ptr<CastContentWindow> window_;
+  std::unique_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<CastContentWindow> window_;
 
   bool setup_called_;
 

@@ -9,13 +9,13 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 
 #include "base/atomicops.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 
@@ -38,7 +38,7 @@ class MediaMessageFlag;
 // feeder (using MediaMessageFifo instance fifo_feeder) will push messages
 // in the following way:
 //   // Create a dummy message to calculate the size of the serialized message.
-//   scoped_ptr<MediaMessage> dummy_msg(
+//   std::unique_ptr<MediaMessage> dummy_msg(
 //     MediaMessage::CreateDummyMessage(msg_type));
 //   // ...
 //   // Write all the fields to the dummy message.
@@ -46,7 +46,7 @@ class MediaMessageFlag;
 //
 //   // Create the real message, once the size of the serialized message
 //   // is known.
-//   scoped_ptr<MediaMessage> msg(
+//   std::unique_ptr<MediaMessage> msg(
 //     MediaMessage::CreateMessage(
 //       msg_type,
 //       base::Bind(&MediaMessageFifo::ReserveMemory,
@@ -70,7 +70,7 @@ class MediaMessageFlag;
 //
 // A typical consumer (using MediaMessageFifo instance fifo_consumer)
 // will retrive messages in the following way:
-//   scoped_ptr<MediaMessage> msg(fifo_consumer->Pop());
+//   std::unique_ptr<MediaMessage> msg(fifo_consumer->Pop());
 //   if (!msg) {
 //     // The fifo is empty, i.e. no message left.
 //     // Try reading again later (e.g. after receiving a write activity event.
@@ -100,7 +100,7 @@ class MediaMessageFifo {
   // Creates a media message fifo using |mem| as the underlying serialized
   // structure.
   // If |init| is true, the underlying fifo structure is initialized.
-  MediaMessageFifo(scoped_ptr<MediaMemoryChunk> mem, bool init);
+  MediaMessageFifo(std::unique_ptr<MediaMemoryChunk> mem, bool init);
   ~MediaMessageFifo();
 
   // When the consumer and the feeder are living in two different processes,
@@ -112,11 +112,11 @@ class MediaMessageFifo {
   // Reserves a writeable block of memory at the back of the fifo,
   // corresponding to the serialized structure of the message.
   // Returns NULL if the required size cannot be allocated.
-  scoped_ptr<MediaMemoryChunk> ReserveMemory(size_t size);
+  std::unique_ptr<MediaMemoryChunk> ReserveMemory(size_t size);
 
   // Pop a message from the queue.
   // Returns a null pointer if there is no message left.
-  scoped_ptr<MediaMessage> Pop();
+  std::unique_ptr<MediaMessage> Pop();
 
   // Flush the fifo.
   void Flush();
@@ -136,7 +136,7 @@ class MediaMessageFifo {
 
   // Reserve a block of free memory without doing any check on the available
   // space. Invoke this function only when all the checks have been done.
-  scoped_ptr<MediaMemoryChunk> ReserveMemoryNoCheck(size_t size);
+  std::unique_ptr<MediaMemoryChunk> ReserveMemoryNoCheck(size_t size);
 
   // Invoked each time there is a memory region in the free space of the fifo
   // that has possibly been written.
@@ -166,7 +166,7 @@ class MediaMessageFifo {
   base::Closure write_event_cb_;
 
   // The serialized structure of the fifo.
-  scoped_ptr<MediaMemoryChunk> mem_;
+  std::unique_ptr<MediaMemoryChunk> mem_;
 
   // The size in bytes of the fifo is cached locally for security purpose.
   // (the renderer process cannot modify the size and make the browser process

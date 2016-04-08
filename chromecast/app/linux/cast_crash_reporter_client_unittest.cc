@@ -118,7 +118,7 @@ class CastCrashReporterClientTest : public testing::Test {
  private:
   base::ScopedTempDir fake_home_dir_;
   ScopedTempFile minidump_;
-  scoped_ptr<base::ScopedPathOverride> home_override_;
+  std::unique_ptr<base::ScopedPathOverride> home_override_;
 
   DISALLOW_COPY_AND_ASSIGN(CastCrashReporterClientTest);
 };

@@ -5,6 +5,7 @@
 #include "chromecast/browser/cast_content_window.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_process.h"
@@ -104,7 +105,7 @@ void CastContentWindow::CreateWindowTree(
 #endif
 }
 
-scoped_ptr<content::WebContents> CastContentWindow::CreateWebContents(
+std::unique_ptr<content::WebContents> CastContentWindow::CreateWebContents(
     const gfx::Size& initial_size,
     content::BrowserContext* browser_context) {
   content::WebContents::CreateParams create_params(browser_context, NULL);
@@ -113,7 +114,7 @@ scoped_ptr<content::WebContents> CastContentWindow::CreateWebContents(
   content::WebContents* web_contents = content::WebContents::Create(
       create_params);
   content::WebContentsObserver::Observe(web_contents);
-  return make_scoped_ptr(web_contents);
+  return base::WrapUnique(web_contents);
 }
 
 void CastContentWindow::DidFirstVisuallyNonEmptyPaint() {

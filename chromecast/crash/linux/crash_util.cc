@@ -58,7 +58,7 @@ bool CrashUtil::RequestUploadCrashDump(
 
   base::FilePath filename = base::FilePath(existing_minidump_path).BaseName();
 
-  scoped_ptr<MinidumpWriter> writer;
+  std::unique_ptr<MinidumpWriter> writer;
   if (g_dumpstate_cb) {
     writer.reset(new MinidumpWriter(
         &minidump_generator, filename.value(), params, *g_dumpstate_cb));

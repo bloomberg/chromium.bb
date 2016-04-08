@@ -10,12 +10,12 @@ namespace chromecast {
 namespace media {
 
 // static
-scoped_ptr<CastAudioDecoder> CastAudioDecoder::Create(
+std::unique_ptr<CastAudioDecoder> CastAudioDecoder::Create(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const media::AudioConfig& config,
     OutputFormat output_format,
     const InitializedCallback& initialized_callback) {
-  return scoped_ptr<CastAudioDecoder>();
+  return std::unique_ptr<CastAudioDecoder>();
 }
 
 // static
