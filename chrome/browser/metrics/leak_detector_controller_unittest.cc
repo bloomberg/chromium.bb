@@ -48,12 +48,21 @@ TEST(LeakDetectorControllerTest, SingleReport) {
   controller->GetLeakReports(&stored_reports);
   ASSERT_EQ(1U, stored_reports.size());
 
-  EXPECT_EQ(8U, stored_reports[0].size_bytes());
-  ASSERT_EQ(4, stored_reports[0].call_stack().size());
-  EXPECT_EQ(1U, stored_reports[0].call_stack().Get(0));
-  EXPECT_EQ(2U, stored_reports[0].call_stack().Get(1));
-  EXPECT_EQ(3U, stored_reports[0].call_stack().Get(2));
-  EXPECT_EQ(4U, stored_reports[0].call_stack().Get(3));
+  const MemoryLeakReportProto& proto = stored_reports[0];
+  EXPECT_EQ(8U, proto.size_bytes());
+  ASSERT_EQ(4, proto.call_stack().size());
+  EXPECT_EQ(1U, proto.call_stack().Get(0));
+  EXPECT_EQ(2U, proto.call_stack().Get(1));
+  EXPECT_EQ(3U, proto.call_stack().Get(2));
+  EXPECT_EQ(4U, proto.call_stack().Get(3));
+
+  // Check that default leak detector parameters are stored in the leak report.
+  // Default values are listed in leak_detector_controller.cc.
+  EXPECT_DOUBLE_EQ(1.0f / 256, proto.sampling_rate());
+  EXPECT_EQ(4U, proto.max_stack_depth());
+  EXPECT_EQ(32U * 1024 * 1024, proto.analysis_interval_bytes());
+  EXPECT_EQ(4U, proto.size_suspicion_threshold());
+  EXPECT_EQ(4U, proto.call_stack_suspicion_threshold());
 
   // No more reports.
   controller->GetLeakReports(&stored_reports);

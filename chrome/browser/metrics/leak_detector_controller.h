@@ -34,6 +34,13 @@ class LeakDetectorController : public LeakDetector::Observer {
   // format.
   std::vector<MemoryLeakReportProto> stored_reports_;
 
+  // All incoming leak reports should be converted to a MemoryLeakReportProto
+  // starting with this template, which has some fields already filled in, e.g.
+  // leak detection parameters. Storing the LeakDetector parameters in the
+  // protobuf template avoids having to store these params as individual member
+  // variables.
+  const MemoryLeakReportProto leak_report_proto_template_;
+
   // For thread safety.
   base::ThreadChecker thread_checker_;
 
