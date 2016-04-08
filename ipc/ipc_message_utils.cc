@@ -96,8 +96,15 @@ void GetValueSize(base::PickleSizer* sizer,
     case base::Value::TYPE_STRING: {
       const base::StringValue* result;
       value->GetAsString(&result);
-      DCHECK(result);
-      GetParamSize(sizer, result->GetString());
+      if (value->GetAsString(&result)) {
+        DCHECK(result);
+        GetParamSize(sizer, result->GetString());
+      } else {
+        std::string str;
+        bool as_string_result = value->GetAsString(&str);
+        DCHECK(as_string_result);
+        GetParamSize(sizer, str);
+      }
       break;
     }
     case base::Value::TYPE_BINARY: {

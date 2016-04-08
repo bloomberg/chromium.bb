@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/files/file_path.h"
+#include "base/json/json_reader.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -112,6 +113,22 @@ TEST(IPCMessageUtilsTest, ValueSize) {
 
   base::PickleSizer sizer;
   IPC::GetParamSize(&sizer, *value);
+
+  EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
+}
+
+TEST(IPCMessageUtilsTest, JsonValueSize) {
+  const char kJson[] = "[ { \"foo\": \"bar\", \"baz\": 1234.0 } ]";
+  std::unique_ptr<base::Value> json_value = base::JSONReader::Read(kJson);
+  EXPECT_NE(nullptr, json_value);
+  base::ListValue value;
+  value.Append(std::move(json_value));
+
+  base::Pickle pickle;
+  IPC::WriteParam(&pickle, value);
+
+  base::PickleSizer sizer;
+  IPC::GetParamSize(&sizer, value);
 
   EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
 }
