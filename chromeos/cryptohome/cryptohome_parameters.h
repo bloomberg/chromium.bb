@@ -87,6 +87,7 @@ struct CHROMEOS_EXPORT KeyDefinition {
     AuthorizationData(bool encrypt,
                       bool sign,
                       const std::string& symmetric_key);
+    AuthorizationData(const AuthorizationData& other);
     ~AuthorizationData();
 
     bool operator==(const AuthorizationData& other) const;
@@ -121,6 +122,7 @@ struct CHROMEOS_EXPORT KeyDefinition {
   KeyDefinition(const std::string& secret,
                 const std::string& label,
                 int privileges);
+  KeyDefinition(const KeyDefinition& other);
   ~KeyDefinition();
 
   bool operator==(const KeyDefinition& other) const;
@@ -151,6 +153,7 @@ struct CHROMEOS_EXPORT Authorization {
 class CHROMEOS_EXPORT MountParameters {
  public:
   explicit MountParameters(bool ephemeral);
+  MountParameters(const MountParameters& other);
   ~MountParameters();
 
   bool operator==(const MountParameters& other) const;

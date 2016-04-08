@@ -26,6 +26,7 @@ class CHROMEOS_EXPORT IssuerSubjectPattern {
                        const std::string& locality,
                        const std::string& organization,
                        const std::string& organizational_unit);
+  IssuerSubjectPattern(const IssuerSubjectPattern& other);
   ~IssuerSubjectPattern();
 
   // Returns true if all fields in the pattern are empty.
@@ -63,6 +64,7 @@ class CHROMEOS_EXPORT IssuerSubjectPattern {
 class CHROMEOS_EXPORT CertificatePattern {
  public:
   CertificatePattern();
+  CertificatePattern(const CertificatePattern& other);
   ~CertificatePattern();
 
   // Returns true if this pattern has nothing set (and so would match

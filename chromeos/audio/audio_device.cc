@@ -132,6 +132,8 @@ AudioDevice::AudioDevice(const AudioNode& node) {
   plugged_time = node.plugged_time;
 }
 
+AudioDevice::AudioDevice(const AudioDevice& other) = default;
+
 std::string AudioDevice::ToString() const {
   std::string result;
   base::StringAppendF(&result,

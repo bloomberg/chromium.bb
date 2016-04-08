@@ -36,6 +36,7 @@ struct CHROMEOS_EXPORT AudioNode {
             std::string name,
             bool active,
             uint64_t plugged_time);
+  AudioNode(const AudioNode& other);
   ~AudioNode();
   std::string ToString() const;
 };

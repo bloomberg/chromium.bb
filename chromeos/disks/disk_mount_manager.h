@@ -73,6 +73,7 @@ class CHROMEOS_EXPORT DiskMountManager {
          bool on_boot_device,
          bool on_removable_device,
          bool is_hidden);
+    Disk(const Disk& other);
     ~Disk();
 
     // The path of the device, used by devicekit-disks.

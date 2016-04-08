@@ -264,6 +264,8 @@ ClientCertConfig::ClientCertConfig()
       client_cert_type(onc::client_cert::kClientCertTypeNone) {
 }
 
+ClientCertConfig::ClientCertConfig(const ClientCertConfig& other) = default;
+
 void OncToClientCertConfig(const base::DictionaryValue& network_config,
                            ClientCertConfig* cert_config) {
   using namespace ::onc;

@@ -33,6 +33,7 @@ class NetworkTypePattern;
 // Struct for passing wifi access point data.
 struct CHROMEOS_EXPORT WifiAccessPoint {
   WifiAccessPoint();
+  WifiAccessPoint(const WifiAccessPoint& other);
   ~WifiAccessPoint();
   std::string ssid;  // The ssid of the WiFi node if available.
   std::string mac_address;  // The mac address of the WiFi node.
@@ -45,6 +46,7 @@ struct CHROMEOS_EXPORT WifiAccessPoint {
 // Struct for passing network scan result data.
 struct CHROMEOS_EXPORT CellularScanResult {
   CellularScanResult();
+  CellularScanResult(const CellularScanResult& other);
   ~CellularScanResult();
   std::string status;  // The network's availability status. (One of "unknown",
                        // "available", "current", or "forbidden")

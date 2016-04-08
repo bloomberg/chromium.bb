@@ -36,6 +36,8 @@ AudioNode::AudioNode(bool is_input,
       active(active),
       plugged_time(plugged_time) {}
 
+AudioNode::AudioNode(const AudioNode& other) = default;
+
 AudioNode::~AudioNode() {}
 
 std::string AudioNode::ToString() const {

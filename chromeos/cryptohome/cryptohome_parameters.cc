@@ -112,6 +112,8 @@ KeyDefinition::AuthorizationData::AuthorizationData(
                              false /* wrapped */));
 }
 
+KeyDefinition::AuthorizationData::AuthorizationData(
+    const AuthorizationData& other) = default;
 
 KeyDefinition::AuthorizationData::~AuthorizationData() {
 }
@@ -188,6 +190,8 @@ KeyDefinition::KeyDefinition(const std::string& secret,
       secret(secret) {
 }
 
+KeyDefinition::KeyDefinition(const KeyDefinition& other) = default;
+
 KeyDefinition::~KeyDefinition() {
 }
 
@@ -228,6 +232,8 @@ bool Authorization::operator==(const Authorization& other) const {
 
 MountParameters::MountParameters(bool ephemeral) : ephemeral(ephemeral) {
 }
+
+MountParameters::MountParameters(const MountParameters& other) = default;
 
 bool MountParameters::operator==(const MountParameters& other) const {
   return ephemeral == other.ephemeral && create_keys == other.create_keys;

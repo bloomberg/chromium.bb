@@ -35,6 +35,7 @@ enum AudioDeviceType {
 struct CHROMEOS_EXPORT AudioDevice {
   AudioDevice();
   explicit AudioDevice(const AudioNode& node);
+  AudioDevice(const AudioDevice& other);
   std::string ToString() const;
 
   // Converts between the string type sent via D-Bus and AudioDeviceType.

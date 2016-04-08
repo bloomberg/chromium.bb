@@ -683,6 +683,8 @@ DiskMountManager::Disk::Disk(const std::string& device_path,
       on_removable_device_(on_removable_device),
       is_hidden_(is_hidden) {}
 
+DiskMountManager::Disk::Disk(const Disk& other) = default;
+
 DiskMountManager::Disk::~Disk() {}
 
 bool DiskMountManager::AddDiskForTest(Disk* disk) {

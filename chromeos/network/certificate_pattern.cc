@@ -48,6 +48,9 @@ IssuerSubjectPattern::IssuerSubjectPattern(
 IssuerSubjectPattern::IssuerSubjectPattern() {
 }
 
+IssuerSubjectPattern::IssuerSubjectPattern(const IssuerSubjectPattern& other) =
+    default;
+
 IssuerSubjectPattern::~IssuerSubjectPattern() {
 }
 
@@ -81,6 +84,9 @@ void IssuerSubjectPattern::ReadFromONCDictionary(
 
 CertificatePattern::CertificatePattern() {
 }
+
+CertificatePattern::CertificatePattern(const CertificatePattern& other) =
+    default;
 
 CertificatePattern::~CertificatePattern() {
 }

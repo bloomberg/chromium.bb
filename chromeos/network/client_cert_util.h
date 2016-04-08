@@ -35,6 +35,7 @@ enum ConfigType {
 
 struct CHROMEOS_EXPORT ClientCertConfig {
   ClientCertConfig();
+  ClientCertConfig(const ClientCertConfig& other);
 
   // Independent of whether the client cert (pattern or reference) is
   // configured, the location determines whether this network configuration

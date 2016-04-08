@@ -29,11 +29,16 @@ WifiAccessPoint::WifiAccessPoint()
       channel(0) {
 }
 
+WifiAccessPoint::WifiAccessPoint(const WifiAccessPoint& other) = default;
+
 WifiAccessPoint::~WifiAccessPoint() {
 }
 
 CellularScanResult::CellularScanResult() {
 }
+
+CellularScanResult::CellularScanResult(const CellularScanResult& other) =
+    default;
 
 CellularScanResult::~CellularScanResult() {
 }
