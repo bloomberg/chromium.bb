@@ -4,12 +4,20 @@
 
 #include "components/arc/crash_collector/arc_crash_collector_bridge.h"
 
+#include <sysexits.h>
+#include <unistd.h>
+
 #include <utility>
 
-#include "base/files/file.h"
 #include "base/logging.h"
-#include "base/strings/string_util.h"
+#include "base/process/launch.h"
 #include "mojo/edk/embedder/embedder.h"
+
+namespace {
+
+const char kCrashReporterPath[] = "/sbin/crash_reporter";
+
+}
 
 namespace arc {
 
@@ -33,19 +41,22 @@ void ArcCrashCollectorBridge::DumpCrash(const mojo::String& type,
   mojo::edk::ScopedPlatformHandle handle;
   mojo::edk::PassWrappedPlatformHandle(pipe.get().value(), &handle);
 
-  // TODO(domlaskowski): Spawn crash_reporter with --arc flag.
-  base::File file(handle.release().handle);
+  base::FileHandleMappingVector fd_map = {
+    std::make_pair(handle.get().handle, STDIN_FILENO)
+  };
 
-  static const int kSize = 1 << 10;
-  char buffer[kSize];
-  int total = 0;
-  int count;
+  base::LaunchOptions options;
+  options.fds_to_remap = &fd_map;
 
-  while ((count = file.ReadAtCurrentPosNoBestEffort(buffer, kSize)) > 0)
-    total += count;
+  const auto flag = "--arc_java_crash=" + type.get();
+  auto process = base::LaunchProcess({ kCrashReporterPath, flag }, options);
 
-  LOG(WARNING) << "Ignoring " << type << " dump ("
-               << base::FormatBytesUnlocalized(total) << ").";
+  int exit_code;
+  if (!process.WaitForExit(&exit_code)) {
+    LOG(ERROR) << "Failed to wait for " << kCrashReporterPath;
+  } else if (exit_code != EX_OK) {
+    LOG(ERROR) << kCrashReporterPath << " failed with exit code " << exit_code;
+  }
 }
 
 }  // namespace arc
