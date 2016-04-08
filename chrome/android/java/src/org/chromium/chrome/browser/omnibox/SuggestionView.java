@@ -807,7 +807,7 @@ class SuggestionView extends ViewGroup {
 
         private int getUrlBarLeftOffset() {
             if (DeviceFormFactor.isTablet(getContext())) {
-                mUrlBar.getLocationOnScreen(mViewPositionHolder);
+                mUrlBar.getLocationInWindow(mViewPositionHolder);
                 return mViewPositionHolder[0];
             } else {
                 return ApiCompatibilityUtils.isLayoutRtl(this) ? mPhoneUrlBarLeftOffsetRtlPx
@@ -822,7 +822,7 @@ class SuggestionView extends ViewGroup {
             if (mLocationBar == null) return 0;
 
             int leftOffset = getUrlBarLeftOffset();
-            getLocationOnScreen(mViewPositionHolder);
+            getLocationInWindow(mViewPositionHolder);
             return leftOffset + mUrlBar.getPaddingLeft() - mViewPositionHolder[0];
         }
 
@@ -833,7 +833,7 @@ class SuggestionView extends ViewGroup {
             if (mLocationBar == null) return 0;
 
             int leftOffset = getUrlBarLeftOffset();
-            getLocationOnScreen(mViewPositionHolder);
+            getLocationInWindow(mViewPositionHolder);
             return leftOffset + mUrlBar.getWidth() - mUrlBar.getPaddingRight()
                     - mViewPositionHolder[0];
         }
