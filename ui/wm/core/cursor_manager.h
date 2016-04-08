@@ -82,6 +82,12 @@ class WM_EXPORT CursorManager : public aura::client::CursorClient,
 
   base::ObserverList<aura::client::CursorClientObserver> observers_;
 
+  // This flag holds the cursor visibility state for the duration of the
+  // process. Defaults to true. This flag helps ensure that when a
+  // CursorManager instance is created it gets populated with the correct
+  // cursor visibility state.
+  static bool last_cursor_visibility_state_;
+
   DISALLOW_COPY_AND_ASSIGN(CursorManager);
 };
 

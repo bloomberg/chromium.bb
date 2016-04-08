@@ -73,11 +73,16 @@ class CursorState {
 
 }  // namespace internal
 
+bool CursorManager::last_cursor_visibility_state_ = true;
+
 CursorManager::CursorManager(scoped_ptr<NativeCursorManager> delegate)
     : delegate_(std::move(delegate)),
       cursor_lock_count_(0),
       current_state_(new internal::CursorState),
-      state_on_unlock_(new internal::CursorState) {}
+      state_on_unlock_(new internal::CursorState) {
+  // Restore the last cursor visibility state.
+  current_state_->SetVisible(last_cursor_visibility_state_);
+}
 
 CursorManager::~CursorManager() {
 }
@@ -95,6 +100,7 @@ gfx::NativeCursor CursorManager::GetCursor() const {
 }
 
 void CursorManager::ShowCursor() {
+  last_cursor_visibility_state_ = true;
   state_on_unlock_->SetVisible(true);
   if (cursor_lock_count_ == 0 &&
       IsCursorVisible() != state_on_unlock_->visible()) {
@@ -105,6 +111,7 @@ void CursorManager::ShowCursor() {
 }
 
 void CursorManager::HideCursor() {
+  last_cursor_visibility_state_ = false;
   state_on_unlock_->SetVisible(false);
   if (cursor_lock_count_ == 0 &&
       IsCursorVisible() != state_on_unlock_->visible()) {
