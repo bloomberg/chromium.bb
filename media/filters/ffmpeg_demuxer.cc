@@ -1136,8 +1136,11 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
                                   HashCodecName(GetCodecName(codec_context)));
       detected_audio_track_count++;
 
-      if (audio_stream)
+      if (audio_stream) {
+        MEDIA_LOG(INFO, media_log_) << GetDisplayName()
+                                    << ": skipping extra audio track";
         continue;
+      }
     } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
       // Log the codec detected, whether it is supported or not, and whether or
       // not we have already detected a supported codec in another stream.
@@ -1145,8 +1148,11 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
                                   HashCodecName(GetCodecName(codec_context)));
       detected_video_track_count++;
 
-      if (video_stream)
+      if (video_stream) {
+        MEDIA_LOG(INFO, media_log_) << GetDisplayName()
+                                    << ": skipping extra video track";
         continue;
+      }
 
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
       if (stream->codec->codec_id == AV_CODEC_ID_HEVC) {
@@ -1186,6 +1192,16 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     if (demuxer_stream.get()) {
       streams_[i] = demuxer_stream.release();
     } else {
+      if (codec_type == AVMEDIA_TYPE_AUDIO) {
+        MEDIA_LOG(INFO, media_log_)
+            << GetDisplayName()
+            << ": skipping invalid or unsupported audio track";
+      } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
+        MEDIA_LOG(INFO, media_log_)
+            << GetDisplayName()
+            << ": skipping invalid or unsupported video track";
+      }
+
       // This AVStream does not successfully convert.
       continue;
     }
