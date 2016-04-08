@@ -40,17 +40,17 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_RENDERER_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_RENDERER_HOST_H_
 
+#include <stddef.h>
+
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
-
-#include <stddef.h>
 
 #include "base/atomic_ref_count.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/browser/renderer_host/media/audio_output_device_enumerator.h"
@@ -203,7 +203,7 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
 
   // Delete an audio entry, notifying observers first.  This is called by
   // AudioOutputController after it has closed.
-  void DeleteEntry(scoped_ptr<AudioEntry> entry);
+  void DeleteEntry(std::unique_ptr<AudioEntry> entry);
 
   // Send an error message to the renderer, then close the stream.
   void ReportErrorAndClose(int stream_id);
@@ -223,7 +223,7 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
                                const OutputDeviceAccessCB& callback);
 
   // Invoke |callback| after permission to use a device has been checked.
-  void AccessChecked(scoped_ptr<MediaStreamUIProxy> ui_proxy,
+  void AccessChecked(std::unique_ptr<MediaStreamUIProxy> ui_proxy,
                      const OutputDeviceAccessCB& callback,
                      bool have_access);
 
@@ -242,7 +242,7 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
 
   media::AudioManager* const audio_manager_;
   AudioMirroringManager* const mirroring_manager_;
-  scoped_ptr<media::AudioLog> audio_log_;
+  std::unique_ptr<media::AudioLog> audio_log_;
 
   // Used to access to AudioInputDeviceManager.
   MediaStreamManager* media_stream_manager_;

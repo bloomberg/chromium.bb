@@ -28,12 +28,12 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/system_monitor/system_monitor.h"
@@ -72,7 +72,7 @@ class CONTENT_EXPORT MediaStreamManager
  public:
   // Callback to deliver the result of a media request.
   typedef base::Callback<void(const MediaStreamDevices& devices,
-                              scoped_ptr<MediaStreamUIProxy> ui)>
+                              std::unique_ptr<MediaStreamUIProxy> ui)>
       MediaRequestResponseCallback;
 
   // Adds |message| to native logs for outstanding device requests, for use by
@@ -212,7 +212,7 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Called by the tests to specify a fake UI that should be used for next
   // generated stream (or when using --use-fake-ui-for-media-stream).
-  void UseFakeUIForTests(scoped_ptr<FakeMediaStreamUIProxy> fake_ui);
+  void UseFakeUIForTests(std::unique_ptr<FakeMediaStreamUIProxy> fake_ui);
 
   // Register and unregister a new callback for receiving native log entries.
   // The registered callback will be invoked on the IO thread.
@@ -410,7 +410,7 @@ class CONTENT_EXPORT MediaStreamManager
   media::AudioManager* const audio_manager_;  // not owned
   scoped_refptr<AudioInputDeviceManager> audio_input_device_manager_;
   scoped_refptr<VideoCaptureManager> video_capture_manager_;
-  scoped_ptr<AudioOutputDeviceEnumerator> audio_output_device_enumerator_;
+  std::unique_ptr<AudioOutputDeviceEnumerator> audio_output_device_enumerator_;
 #if defined(OS_WIN)
   base::Thread video_capture_thread_;
 #endif
@@ -431,7 +431,7 @@ class CONTENT_EXPORT MediaStreamManager
   DeviceRequests requests_;
 
   bool use_fake_ui_;
-  scoped_ptr<FakeMediaStreamUIProxy> fake_ui_;
+  std::unique_ptr<FakeMediaStreamUIProxy> fake_ui_;
 
   // Maps render process hosts to log callbacks. Used on the IO thread.
   std::map<int, base::Callback<void(const std::string&)>> log_callbacks_;

@@ -133,7 +133,8 @@ class AudioInputDebugWriterTest
     VerifyHeader(wav_header, params_, writes_, file.GetLength());
 
     if (source_samples_ > 0) {
-      scoped_ptr<int16_t[]> result_interleaved(new int16_t[source_samples_]);
+      std::unique_ptr<int16_t[]> result_interleaved(
+          new int16_t[source_samples_]);
       memset(result_interleaved.get(), 0, source_samples_ * kBytesPerSample);
 
       // Recording is read from file as a byte sequence, so it stored as
@@ -164,7 +165,7 @@ class AudioInputDebugWriterTest
         new AudioInputDebugWriter(std::move(file), params_));
     // Write tasks are posted to BrowserThread::FILE.
     for (int i = 0; i < writes_; ++i) {
-      scoped_ptr<media::AudioBus> bus = media::AudioBus::Create(
+      std::unique_ptr<media::AudioBus> bus = media::AudioBus::Create(
           params_.channels(), params_.frames_per_buffer());
 
       bus->FromInterleaved(
@@ -192,7 +193,7 @@ class AudioInputDebugWriterTest
   TestBrowserThreadBundle thread_bundle_;
 
   // Writer under test.
-  scoped_ptr<AudioInputDebugWriter> input_debug_writer_;
+  std::unique_ptr<AudioInputDebugWriter> input_debug_writer_;
 
   // AudioBus parameters.
   media::AudioParameters params_;
@@ -204,7 +205,7 @@ class AudioInputDebugWriterTest
   int source_samples_;
 
   // Source data.
-  scoped_ptr<int16_t[]> source_interleaved_;
+  std::unique_ptr<int16_t[]> source_interleaved_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioInputDebugWriterTest);

@@ -70,10 +70,10 @@ class MediaStreamDeviceUIControllerTest
                                   std::string());
   }
 
-  scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<BrowserThreadImpl> ui_thread_;
-  scoped_ptr<BrowserThreadImpl> io_thread_;
-  scoped_ptr<MediaStreamUIController> ui_controller_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<BrowserThreadImpl> ui_thread_;
+  std::unique_ptr<BrowserThreadImpl> io_thread_;
+  std::unique_ptr<MediaStreamUIController> ui_controller_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDeviceUIControllerTest);
@@ -97,7 +97,7 @@ TEST_F(MediaStreamDeviceUIControllerTest, GenerateAndRemoveRequest) {
 }
 
 TEST_F(MediaStreamDeviceUIControllerTest, HandleRequestUsingFakeUI) {
-  ui_controller_->UseFakeUI(scoped_ptr<MediaStreamUI>());
+  ui_controller_->UseFakeUI(std::unique_ptr<MediaStreamUI>());
 
   const std::string label = "label";
   CreateDummyRequest(label, true, true);
@@ -111,7 +111,7 @@ TEST_F(MediaStreamDeviceUIControllerTest, HandleRequestUsingFakeUI) {
 }
 
 TEST_F(MediaStreamDeviceUIControllerTest, CreateRequestsAndCancelTheFirst) {
-  ui_controller_->UseFakeUI(scoped_ptr<MediaStreamUI>());
+  ui_controller_->UseFakeUI(std::unique_ptr<MediaStreamUI>());
 
   // Create the first audio request.
   const std::string label_1 = "label_1";
@@ -139,7 +139,7 @@ TEST_F(MediaStreamDeviceUIControllerTest, CreateRequestsAndCancelTheFirst) {
 }
 
 TEST_F(MediaStreamDeviceUIControllerTest, CreateRequestsAndCancelTheLast) {
-  ui_controller_->UseFakeUI(scoped_ptr<MediaStreamUI>());
+  ui_controller_->UseFakeUI(std::unique_ptr<MediaStreamUI>());
 
   // Create the first audio request.
   const std::string label_1 = "label_1";

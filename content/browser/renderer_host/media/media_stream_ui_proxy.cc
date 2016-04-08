@@ -45,7 +45,7 @@ class MediaStreamUIProxy::Core {
                 RenderFrameHostDelegate* test_render_delegate);
   ~Core();
 
-  void RequestAccess(scoped_ptr<MediaStreamRequest> request);
+  void RequestAccess(std::unique_ptr<MediaStreamRequest> request);
   bool CheckAccess(const GURL& security_origin,
                    MediaStreamType type,
                    int process_id,
@@ -55,13 +55,13 @@ class MediaStreamUIProxy::Core {
  private:
   void ProcessAccessRequestResponse(const MediaStreamDevices& devices,
                                     content::MediaStreamRequestResult result,
-                                    scoped_ptr<MediaStreamUI> stream_ui);
+                                    std::unique_ptr<MediaStreamUI> stream_ui);
   void ProcessStopRequestFromUI();
   RenderFrameHostDelegate* GetRenderFrameHostDelegate(int render_process_id,
                                                       int render_frame_id);
 
   base::WeakPtr<MediaStreamUIProxy> proxy_;
-  scoped_ptr<MediaStreamUI> ui_;
+  std::unique_ptr<MediaStreamUI> ui_;
 
   RenderFrameHostDelegate* const test_render_delegate_;
 
@@ -84,7 +84,7 @@ MediaStreamUIProxy::Core::~Core() {
 }
 
 void MediaStreamUIProxy::Core::RequestAccess(
-    scoped_ptr<MediaStreamRequest> request) {
+    std::unique_ptr<MediaStreamRequest> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderFrameHostDelegate* render_delegate = GetRenderFrameHostDelegate(
@@ -94,7 +94,7 @@ void MediaStreamUIProxy::Core::RequestAccess(
   if (!render_delegate) {
     ProcessAccessRequestResponse(MediaStreamDevices(),
                                  MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
-                                 scoped_ptr<MediaStreamUI>());
+                                 std::unique_ptr<MediaStreamUI>());
     return;
   }
   SetAndCheckAncestorFlag(request.get());
@@ -129,7 +129,7 @@ void MediaStreamUIProxy::Core::OnStarted(gfx::NativeViewId* window_id) {
 void MediaStreamUIProxy::Core::ProcessAccessRequestResponse(
     const MediaStreamDevices& devices,
     content::MediaStreamRequestResult result,
-    scoped_ptr<MediaStreamUI> stream_ui) {
+    std::unique_ptr<MediaStreamUI> stream_ui) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ui_ = std::move(stream_ui);
@@ -158,14 +158,14 @@ RenderFrameHostDelegate* MediaStreamUIProxy::Core::GetRenderFrameHostDelegate(
 }
 
 // static
-scoped_ptr<MediaStreamUIProxy> MediaStreamUIProxy::Create() {
-  return scoped_ptr<MediaStreamUIProxy>(new MediaStreamUIProxy(NULL));
+std::unique_ptr<MediaStreamUIProxy> MediaStreamUIProxy::Create() {
+  return std::unique_ptr<MediaStreamUIProxy>(new MediaStreamUIProxy(NULL));
 }
 
 // static
-scoped_ptr<MediaStreamUIProxy> MediaStreamUIProxy::CreateForTests(
+std::unique_ptr<MediaStreamUIProxy> MediaStreamUIProxy::CreateForTests(
     RenderFrameHostDelegate* render_delegate) {
-  return scoped_ptr<MediaStreamUIProxy>(
+  return std::unique_ptr<MediaStreamUIProxy>(
       new MediaStreamUIProxy(render_delegate));
 }
 
@@ -181,7 +181,7 @@ MediaStreamUIProxy::~MediaStreamUIProxy() {
 }
 
 void MediaStreamUIProxy::RequestAccess(
-    scoped_ptr<MediaStreamRequest> request,
+    std::unique_ptr<MediaStreamRequest> request,
     const ResponseCallback& response_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -290,7 +290,7 @@ void FakeMediaStreamUIProxy::SetCameraAccess(bool access) {
 }
 
 void FakeMediaStreamUIProxy::RequestAccess(
-    scoped_ptr<MediaStreamRequest> request,
+    std::unique_ptr<MediaStreamRequest> request,
     const ResponseCallback& response_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

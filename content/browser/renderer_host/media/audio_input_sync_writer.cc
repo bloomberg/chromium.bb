@@ -61,7 +61,7 @@ AudioInputSyncWriter::AudioInputSyncWriter(void* shared_memory,
     CHECK_EQ(0U, reinterpret_cast<uintptr_t>(ptr) &
         (AudioBus::kChannelAlignment - 1));
     AudioInputBuffer* buffer = reinterpret_cast<AudioInputBuffer*>(ptr);
-    scoped_ptr<AudioBus> audio_bus =
+    std::unique_ptr<AudioBus> audio_bus =
         AudioBus::WrapMemory(params, buffer->audio);
     audio_buses_.push_back(std::move(audio_bus));
     ptr += shared_memory_segment_size_;
@@ -132,7 +132,8 @@ void AudioInputSyncWriter::Write(const AudioBus* data,
   // writing. We verify that each buffer index is in sequence.
   size_t number_of_indices_available = socket_->Peek() / sizeof(uint32_t);
   if (number_of_indices_available > 0) {
-    scoped_ptr<uint32_t[]> indices(new uint32_t[number_of_indices_available]);
+    std::unique_ptr<uint32_t[]> indices(
+        new uint32_t[number_of_indices_available]);
     size_t bytes_received = socket_->Receive(
         &indices[0],
         number_of_indices_available * sizeof(indices[0]));
@@ -249,7 +250,7 @@ bool AudioInputSyncWriter::PushDataToFifo(const AudioBus* data,
   overflow_params_.push_back(params);
 
   // Push audio data to fifo.
-  scoped_ptr<AudioBus> audio_bus =
+  std::unique_ptr<AudioBus> audio_bus =
       AudioBus::Create(data->channels(), data->frames());
   data->CopyTo(audio_bus.get());
   overflow_buses_.push_back(std::move(audio_bus));

@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/renderer_host/media/audio_output_device_enumerator.h"
+
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
-#include "content/browser/renderer_host/media/audio_output_device_enumerator.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/fake_audio_log_factory.h"
@@ -118,7 +119,7 @@ class AudioOutputDeviceEnumeratorTest : public ::testing::Test {
   }
 
  protected:
-  scoped_ptr<MockAudioManager> audio_manager_;
+  std::unique_ptr<MockAudioManager> audio_manager_;
   TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::RunLoop run_loop_;

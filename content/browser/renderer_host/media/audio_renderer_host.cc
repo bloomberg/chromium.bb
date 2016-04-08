@@ -130,8 +130,8 @@ class AudioRendererHost::AudioEntry
              int render_frame_id,
              const media::AudioParameters& params,
              const std::string& output_device_id,
-             scoped_ptr<base::SharedMemory> shared_memory,
-             scoped_ptr<media::AudioOutputController::SyncReader> reader);
+             std::unique_ptr<base::SharedMemory> shared_memory,
+             std::unique_ptr<media::AudioOutputController::SyncReader> reader);
   ~AudioEntry() override;
 
   int stream_id() const {
@@ -167,10 +167,10 @@ class AudioRendererHost::AudioEntry
   const int render_frame_id_;
 
   // Shared memory for transmission of the audio data.  Used by |reader_|.
-  const scoped_ptr<base::SharedMemory> shared_memory_;
+  const std::unique_ptr<base::SharedMemory> shared_memory_;
 
   // The synchronous reader to be used by |controller_|.
-  const scoped_ptr<media::AudioOutputController::SyncReader> reader_;
+  const std::unique_ptr<media::AudioOutputController::SyncReader> reader_;
 
   // The AudioOutputController that manages the audio stream.
   const scoped_refptr<media::AudioOutputController> controller_;
@@ -184,8 +184,8 @@ AudioRendererHost::AudioEntry::AudioEntry(
     int render_frame_id,
     const media::AudioParameters& params,
     const std::string& output_device_id,
-    scoped_ptr<base::SharedMemory> shared_memory,
-    scoped_ptr<media::AudioOutputController::SyncReader> reader)
+    std::unique_ptr<base::SharedMemory> shared_memory,
+    std::unique_ptr<media::AudioOutputController::SyncReader> reader)
     : host_(host),
       stream_id_(stream_id),
       render_frame_id_(render_frame_id),
@@ -564,13 +564,13 @@ void AudioRendererHost::DoCreateStream(int stream_id,
   // Create the shared memory and share with the renderer process.
   uint32_t shared_memory_size = sizeof(media::AudioOutputBufferParameters) +
                                 AudioBus::CalculateMemorySize(params);
-  scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
+  std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
   if (!shared_memory->CreateAndMapAnonymous(shared_memory_size)) {
     SendErrorMessage(stream_id);
     return;
   }
 
-  scoped_ptr<AudioSyncReader> reader(
+  std::unique_ptr<AudioSyncReader> reader(
       new AudioSyncReader(shared_memory.get(), params));
   if (!reader->Init()) {
     SendErrorMessage(stream_id);
@@ -582,7 +582,7 @@ void AudioRendererHost::DoCreateStream(int stream_id,
   if (media_observer)
     media_observer->OnCreatingAudioStream(render_process_id_, render_frame_id);
 
-  scoped_ptr<AudioEntry> entry(
+  std::unique_ptr<AudioEntry> entry(
       new AudioEntry(this, stream_id, render_frame_id, params, device_unique_id,
                      std::move(shared_memory), std::move(reader)));
   if (mirroring_manager_) {
@@ -656,7 +656,7 @@ void AudioRendererHost::OnCloseStream(int stream_id) {
   AudioEntryMap::iterator i = audio_entries_.find(stream_id);
   if (i == audio_entries_.end())
     return;
-  scoped_ptr<AudioEntry> entry(i->second);
+  std::unique_ptr<AudioEntry> entry(i->second);
   audio_entries_.erase(i);
   g_audio_streams_tracker.Get().DecreaseStreamCount();
 
@@ -666,7 +666,7 @@ void AudioRendererHost::OnCloseStream(int stream_id) {
   audio_log_->OnClosed(stream_id);
 }
 
-void AudioRendererHost::DeleteEntry(scoped_ptr<AudioEntry> entry) {
+void AudioRendererHost::DeleteEntry(std::unique_ptr<AudioEntry> entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // De-register the controller from the AudioMirroringManager now that the
@@ -771,7 +771,7 @@ void AudioRendererHost::CheckOutputDeviceAccess(
   } else {
     // Check that MediaStream device permissions have been granted,
     // hence the use of a MediaStreamUIProxy.
-    scoped_ptr<MediaStreamUIProxy> ui_proxy = MediaStreamUIProxy::Create();
+    std::unique_ptr<MediaStreamUIProxy> ui_proxy = MediaStreamUIProxy::Create();
 
     // Use MEDIA_DEVICE_AUDIO_CAPTURE instead of MEDIA_DEVICE_AUDIO_OUTPUT
     // because MediaStreamUIProxy::CheckAccess does not currently support
@@ -785,9 +785,10 @@ void AudioRendererHost::CheckOutputDeviceAccess(
   }
 }
 
-void AudioRendererHost::AccessChecked(scoped_ptr<MediaStreamUIProxy> ui_proxy,
-                                      const OutputDeviceAccessCB& callback,
-                                      bool have_access) {
+void AudioRendererHost::AccessChecked(
+    std::unique_ptr<MediaStreamUIProxy> ui_proxy,
+    const OutputDeviceAccessCB& callback,
+    bool have_access) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   callback.Run(have_access);
 }

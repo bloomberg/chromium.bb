@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
@@ -141,10 +142,10 @@ VideoCaptureController::GetWeakPtrForIOThread() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-scoped_ptr<media::VideoCaptureDevice::Client>
+std::unique_ptr<media::VideoCaptureDevice::Client>
 VideoCaptureController::NewDeviceClient() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return make_scoped_ptr(new VideoCaptureDeviceClient(
+  return base::WrapUnique(new VideoCaptureDeviceClient(
       this->GetWeakPtrForIOThread(), buffer_pool_));
 }
 
@@ -352,7 +353,7 @@ VideoCaptureController::~VideoCaptureController() {
 }
 
 void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
-    scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
+    std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
     const scoped_refptr<VideoFrame>& frame,
     const base::TimeTicks& timestamp) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -365,7 +366,8 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
       frame->metadata()->SetDouble(VideoFrameMetadata::FRAME_RATE,
                                    video_capture_format_.frame_rate);
     }
-    scoped_ptr<base::DictionaryValue> metadata(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> metadata(
+        new base::DictionaryValue());
     frame->metadata()->MergeInternalValuesInto(metadata.get());
 
     // Only I420 pixel format is currently supported.

@@ -146,7 +146,7 @@ AudioInputDebugWriter::~AudioInputDebugWriter() {
   WriteHeader();
 }
 
-void AudioInputDebugWriter::Write(scoped_ptr<media::AudioBus> data) {
+void AudioInputDebugWriter::Write(std::unique_ptr<media::AudioBus> data) {
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
@@ -155,7 +155,7 @@ void AudioInputDebugWriter::Write(scoped_ptr<media::AudioBus> data) {
                  base::Passed(&data)));
 }
 
-void AudioInputDebugWriter::DoWrite(scoped_ptr<media::AudioBus> data) {
+void AudioInputDebugWriter::DoWrite(std::unique_ptr<media::AudioBus> data) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   // Convert to 16 bit audio and write to file.
   int data_size = data->frames() * data->channels();

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -58,7 +59,7 @@ class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
 
   const int id_;
   const scoped_refptr<VideoCaptureBufferPool> pool_;
-  const scoped_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle_;
+  const std::unique_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle_;
 };
 
 VideoCaptureDeviceClient::VideoCaptureDeviceClient(
@@ -133,7 +134,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       use_gpu_memory_buffers_ ? media::PIXEL_STORAGE_GPUMEMORYBUFFER
                               : media::PIXEL_STORAGE_CPU;
   uint8_t *y_plane_data, *u_plane_data, *v_plane_data;
-  scoped_ptr<Buffer> buffer(
+  std::unique_ptr<Buffer> buffer(
       ReserveI420OutputBuffer(dimensions, output_pixel_storage, &y_plane_data,
                               &u_plane_data, &v_plane_data));
   if (!buffer.get()) {
@@ -256,7 +257,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
   OnIncomingCapturedBuffer(std::move(buffer), output_format, timestamp);
 }
 
-scoped_ptr<media::VideoCaptureDevice::Client::Buffer>
+std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>
 VideoCaptureDeviceClient::ReserveOutputBuffer(
     const gfx::Size& frame_size,
     media::VideoPixelFormat pixel_format,
@@ -279,12 +280,12 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(
   }
   if (buffer_id == VideoCaptureBufferPool::kInvalidId)
     return nullptr;
-  return make_scoped_ptr<Buffer>(
+  return base::WrapUnique<Buffer>(
       new AutoReleaseBuffer(buffer_pool_, buffer_id));
 }
 
 void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
-    scoped_ptr<Buffer> buffer,
+    std::unique_ptr<Buffer> buffer,
     const VideoCaptureFormat& frame_format,
     const base::TimeTicks& timestamp) {
   // Currently, only I420 pixel format is supported.
@@ -322,7 +323,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
 }
 
 void VideoCaptureDeviceClient::OnIncomingCapturedVideoFrame(
-    scoped_ptr<Buffer> buffer,
+    std::unique_ptr<Buffer> buffer,
     const scoped_refptr<VideoFrame>& frame,
     const base::TimeTicks& timestamp) {
   BrowserThread::PostTask(
@@ -336,7 +337,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedVideoFrame(
           timestamp));
 }
 
-scoped_ptr<media::VideoCaptureDevice::Client::Buffer>
+std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>
 VideoCaptureDeviceClient::ResurrectLastOutputBuffer(
     const gfx::Size& dimensions,
     media::VideoPixelFormat format,
@@ -345,7 +346,7 @@ VideoCaptureDeviceClient::ResurrectLastOutputBuffer(
       buffer_pool_->ResurrectLastForProducer(dimensions, format, storage);
   if (buffer_id == VideoCaptureBufferPool::kInvalidId)
     return nullptr;
-  return make_scoped_ptr<Buffer>(
+  return base::WrapUnique<Buffer>(
       new AutoReleaseBuffer(buffer_pool_, buffer_id));
 }
 
@@ -376,7 +377,7 @@ double VideoCaptureDeviceClient::GetBufferPoolUtilization() const {
   return buffer_pool_->GetBufferPoolUtilization();
 }
 
-scoped_ptr<media::VideoCaptureDevice::Client::Buffer>
+std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>
 VideoCaptureDeviceClient::ReserveI420OutputBuffer(
     const gfx::Size& dimensions,
     media::VideoPixelStorage storage,
@@ -389,10 +390,10 @@ VideoCaptureDeviceClient::ReserveI420OutputBuffer(
   DCHECK(dimensions.width());
 
   const media::VideoPixelFormat format = media::PIXEL_FORMAT_I420;
-  scoped_ptr<Buffer> buffer(ReserveOutputBuffer(
-      dimensions, media::PIXEL_FORMAT_I420, storage));
+  std::unique_ptr<Buffer> buffer(
+      ReserveOutputBuffer(dimensions, media::PIXEL_FORMAT_I420, storage));
   if (!buffer)
-    return scoped_ptr<Buffer>();
+    return std::unique_ptr<Buffer>();
 
   switch (storage) {
     case media::PIXEL_STORAGE_CPU:
@@ -418,7 +419,7 @@ VideoCaptureDeviceClient::ReserveI420OutputBuffer(
       return buffer;
   }
   NOTREACHED();
-  return scoped_ptr<Buffer>();
+  return std::unique_ptr<Buffer>();
 }
 
 }  // namespace content

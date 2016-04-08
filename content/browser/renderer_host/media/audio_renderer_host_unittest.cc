@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/renderer_host/media/audio_renderer_host.h"
+
 #include <stdint.h>
+
+#include <memory>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/sync_socket.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
-#include "content/browser/renderer_host/media/audio_renderer_host.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/common/media/audio_messages.h"
 #include "content/public/common/content_switches.h"
@@ -157,8 +159,8 @@ class MockAudioRendererHost : public AudioRendererHost {
     }
   }
 
-  scoped_ptr<base::SharedMemory> shared_memory_;
-  scoped_ptr<base::SyncSocket> sync_socket_;
+  std::unique_ptr<base::SharedMemory> shared_memory_;
+  std::unique_ptr<base::SyncSocket> sync_socket_;
   uint32_t shared_memory_length_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAudioRendererHost);
@@ -321,9 +323,9 @@ class AudioRendererHostTest : public testing::Test {
  private:
   // MediaStreamManager uses a DestructionObserver, so it must outlive the
   // TestBrowserThreadBundle.
-  scoped_ptr<MediaStreamManager> media_stream_manager_;
+  std::unique_ptr<MediaStreamManager> media_stream_manager_;
   TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<media::AudioManager> audio_manager_;
+  std::unique_ptr<media::AudioManager> audio_manager_;
   MockAudioMirroringManager mirroring_manager_;
   scoped_refptr<MockAudioRendererHost> host_;
 

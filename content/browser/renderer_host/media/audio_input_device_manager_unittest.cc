@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/renderer_host/media/audio_input_device_manager.h"
+
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/audio/audio_manager_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -94,11 +95,11 @@ class MAYBE_AudioInputDeviceManagerTest : public testing::Test {
     io_thread_.reset();
   }
 
-  scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<BrowserThreadImpl> io_thread_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<BrowserThreadImpl> io_thread_;
   scoped_refptr<AudioInputDeviceManager> manager_;
-  scoped_ptr<MockAudioInputDeviceManagerListener> audio_input_listener_;
-  scoped_ptr<media::AudioManager> audio_manager_;
+  std::unique_ptr<MockAudioInputDeviceManagerListener> audio_input_listener_;
+  std::unique_ptr<media::AudioManager> audio_manager_;
   StreamDeviceInfoArray devices_;
 
  private:
@@ -141,7 +142,7 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenMultipleDevices) {
   InSequence s;
 
   int index = 0;
-  scoped_ptr<int[]> session_id(new int[devices_.size()]);
+  std::unique_ptr<int[]> session_id(new int[devices_.size()]);
 
   // Opens the devices in a loop.
   for (StreamDeviceInfoArray::const_iterator iter = devices_.begin();
@@ -238,7 +239,7 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, AccessAndCloseSession) {
   InSequence s;
 
   int index = 0;
-  scoped_ptr<int[]> session_id(new int[devices_.size()]);
+  std::unique_ptr<int[]> session_id(new int[devices_.size()]);
 
   // Loops through the devices and calls Open()/Close()/GetOpenedDeviceInfoById
   // for each device.

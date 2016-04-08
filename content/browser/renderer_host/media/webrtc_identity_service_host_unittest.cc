@@ -178,7 +178,7 @@ class WebRTCIdentityServiceHostTest : public ::testing::Test {
 
  protected:
   TestBrowserThreadBundle browser_thread_bundle_;
-  scoped_ptr<MockResourceContext> mock_resource_context_;
+  std::unique_ptr<MockResourceContext> mock_resource_context_;
   scoped_refptr<MockWebRTCIdentityStore> store_;
   scoped_refptr<WebRTCIdentityServiceHostForTest> host_;
 };

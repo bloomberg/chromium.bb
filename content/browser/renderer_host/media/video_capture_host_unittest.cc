@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/renderer_host/media/video_capture_host.h"
+
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -13,7 +16,6 @@
 #include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -24,7 +26,6 @@
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
-#include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/video_capture_messages.h"
 #include "content/public/common/content_switches.h"
@@ -280,7 +281,7 @@ class VideoCaptureHostTest : public testing::Test {
 #endif
     media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
     media_stream_manager_->UseFakeUIForTests(
-        scoped_ptr<FakeMediaStreamUIProxy>());
+        std::unique_ptr<FakeMediaStreamUIProxy>());
 
     // Create a Host and connect it to a simulated IPC channel.
     host_ = new MockVideoCaptureHost(media_stream_manager_.get());
@@ -483,8 +484,8 @@ class VideoCaptureHostTest : public testing::Test {
 
  private:
   StrictMock<MockMediaStreamRequester> stream_requester_;
-  scoped_ptr<media::AudioManager> audio_manager_;
-  scoped_ptr<MediaStreamManager> media_stream_manager_;
+  std::unique_ptr<media::AudioManager> audio_manager_;
+  std::unique_ptr<MediaStreamManager> media_stream_manager_;
   content::TestBrowserThreadBundle thread_bundle_;
   content::TestBrowserContext browser_context_;
   content::TestContentBrowserClient browser_client_;

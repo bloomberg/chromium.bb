@@ -12,13 +12,14 @@
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_OUTPUT_DEVICE_ENUMERATOR_H_
 
 #include <stdint.h>
+
 #include <list>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"

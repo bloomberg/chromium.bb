@@ -5,6 +5,8 @@
 #ifndef MEDIA_AUDIO_AUDIO_INPUT_WRITER_H_
 #define MEDIA_AUDIO_AUDIO_INPUT_WRITER_H_
 
+#include "base/memory/scoped_ptr.h"
+
 namespace media {
 
 class AudioBus;

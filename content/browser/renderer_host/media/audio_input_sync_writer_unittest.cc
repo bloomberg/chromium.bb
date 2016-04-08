@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/renderer_host/media/audio_input_sync_writer.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sync_socket.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/browser/renderer_host/media/audio_input_sync_writer.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
@@ -181,9 +183,9 @@ class AudioInputSyncWriterTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<AudioInputSyncWriterUnderTest> writer_;
+  std::unique_ptr<AudioInputSyncWriterUnderTest> writer_;
   MockCancelableSyncSocket* socket_;
-  scoped_ptr<AudioBus> audio_bus_;
+  std::unique_ptr<AudioBus> audio_bus_;
 
  private:
   TestBrowserThreadBundle thread_bundle_;

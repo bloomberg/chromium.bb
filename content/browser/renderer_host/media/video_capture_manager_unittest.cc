@@ -4,19 +4,20 @@
 
 // Unit test for VideoCaptureManager.
 
+#include "content/browser/renderer_host/media/video_capture_manager.h"
+
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
-#include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/media_stream_options.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -81,8 +82,9 @@ class VideoCaptureManagerTest : public testing::Test {
                                            message_loop_.get()));
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
                                            message_loop_.get()));
-    vcm_ = new VideoCaptureManager(scoped_ptr<media::VideoCaptureDeviceFactory>(
-        new media::FakeVideoCaptureDeviceFactory()));
+    vcm_ = new VideoCaptureManager(
+        std::unique_ptr<media::VideoCaptureDeviceFactory>(
+            new media::FakeVideoCaptureDeviceFactory()));
     video_capture_device_factory_ =
         static_cast<media::FakeVideoCaptureDeviceFactory*>(
             vcm_->video_capture_device_factory());
@@ -161,11 +163,11 @@ class VideoCaptureManagerTest : public testing::Test {
   int next_client_id_;
   std::map<VideoCaptureControllerID, VideoCaptureController*> controllers_;
   scoped_refptr<VideoCaptureManager> vcm_;
-  scoped_ptr<MockMediaStreamProviderListener> listener_;
-  scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<BrowserThreadImpl> ui_thread_;
-  scoped_ptr<BrowserThreadImpl> io_thread_;
-  scoped_ptr<MockFrameObserver> frame_observer_;
+  std::unique_ptr<MockMediaStreamProviderListener> listener_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<BrowserThreadImpl> ui_thread_;
+  std::unique_ptr<BrowserThreadImpl> io_thread_;
+  std::unique_ptr<MockFrameObserver> frame_observer_;
   media::FakeVideoCaptureDeviceFactory* video_capture_device_factory_;
 
  private:

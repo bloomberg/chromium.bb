@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/move.h"
 #include "content/common/content_export.h"
@@ -38,11 +39,11 @@ class CONTENT_EXPORT AudioInputDebugWriter
   ~AudioInputDebugWriter() override;
 
   // Write data from |data| to file.
-  void Write(scoped_ptr<media::AudioBus> data) override;
+  void Write(std::unique_ptr<media::AudioBus> data) override;
 
  private:
   // Write data from |data| to file. Called on the FILE thread.
-  void DoWrite(scoped_ptr<media::AudioBus> data);
+  void DoWrite(std::unique_ptr<media::AudioBus> data);
 
   // Write wave header to file. Called on the FILE thread twice: on construction
   // of AudioInputDebugWriter size of the wave data is unknown, so the header is
@@ -60,7 +61,7 @@ class CONTENT_EXPORT AudioInputDebugWriter
   media::AudioParameters params_;
 
   // Intermediate buffer to be written to file. Interleaved 16 bit audio data.
-  scoped_ptr<int16_t[]> interleaved_data_;
+  std::unique_ptr<int16_t[]> interleaved_data_;
   int interleaved_data_size_;
 
   base::WeakPtrFactory<AudioInputDebugWriter> weak_factory_;

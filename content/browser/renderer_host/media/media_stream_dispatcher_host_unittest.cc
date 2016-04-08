@@ -288,7 +288,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
       EXPECT_CALL(*stream_ui_, OnStarted(_, _));
     }
     media_stream_manager_->UseFakeUIForTests(
-      scoped_ptr<FakeMediaStreamUIProxy>(stream_ui_));
+        std::unique_ptr<FakeMediaStreamUIProxy>(stream_ui_));
   }
 
   void GenerateStreamAndWaitForResult(int render_frame_id,
@@ -422,11 +422,11 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   }
 
   scoped_refptr<MockMediaStreamDispatcherHost> host_;
-  scoped_ptr<media::AudioManager> audio_manager_;
-  scoped_ptr<MediaStreamManager> media_stream_manager_;
+  std::unique_ptr<media::AudioManager> audio_manager_;
+  std::unique_ptr<MediaStreamManager> media_stream_manager_;
   MockMediaStreamUIProxy* stream_ui_;
   ContentBrowserClient* old_browser_client_;
-  scoped_ptr<ContentClient> content_client_;
+  std::unique_ptr<ContentClient> content_client_;
   content::TestBrowserThreadBundle thread_bundle_;
   content::TestBrowserContext browser_context_;
   media::AudioDeviceNames physical_audio_devices_;
@@ -846,7 +846,8 @@ TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
   StreamControls controls(false, true);
 
   base::Closure close_callback;
-  scoped_ptr<MockMediaStreamUIProxy> stream_ui(new MockMediaStreamUIProxy());
+  std::unique_ptr<MockMediaStreamUIProxy> stream_ui(
+      new MockMediaStreamUIProxy());
   EXPECT_CALL(*stream_ui, OnStarted(_, _))
       .WillOnce(SaveArg<0>(&close_callback));
   media_stream_manager_->UseFakeUIForTests(std::move(stream_ui));

@@ -8,12 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
@@ -53,9 +53,10 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
   };
 
   typedef base::Callback<void(
-      scoped_ptr<media::VideoCaptureDevice::Client::Buffer>,
+      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>,
       const scoped_refptr<media::VideoFrame>&,
-      const base::TimeTicks&)> DecodeDoneCB;
+      const base::TimeTicks&)>
+      DecodeDoneCB;
 
   // |decode_done_cb| is called on the IO thread when decode succeed. This can
   // be on any thread. |decode_done_cb| is never called after
@@ -75,7 +76,7 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
       size_t in_buffer_size,
       const media::VideoCaptureFormat& frame_format,
       const base::TimeTicks& timestamp,
-      scoped_ptr<media::VideoCaptureDevice::Client::Buffer> out_buffer);
+      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> out_buffer);
 
   // JpegDecodeAccelerator::Client implementation.
   // These will be called on IO thread.
@@ -105,7 +106,7 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host_;
 
   // The underlying JPEG decode accelerator.
-  scoped_ptr<media::JpegDecodeAccelerator> decoder_;
+  std::unique_ptr<media::JpegDecodeAccelerator> decoder_;
 
   // The callback to run when decode succeeds.
   const DecodeDoneCB decode_done_cb_;
@@ -124,7 +125,7 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
 
   // Shared memory to store JPEG stream buffer. The input BitstreamBuffer is
   // backed by this.
-  scoped_ptr<base::SharedMemory> in_shared_memory_;
+  std::unique_ptr<base::SharedMemory> in_shared_memory_;
 
   STATUS decoder_status_;
 

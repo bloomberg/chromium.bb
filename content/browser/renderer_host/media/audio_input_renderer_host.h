@@ -24,15 +24,15 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_RENDERER_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_RENDERER_HOST_H_
 
-#include <map>
-#include <string>
-
 #include <stdint.h>
+
+#include <map>
+#include <memory>
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/sequenced_task_runner_helpers.h"
@@ -259,7 +259,7 @@ class CONTENT_EXPORT AudioInputRendererHost
   // Raw pointer of the UserInputMonitor.
   media::UserInputMonitor* user_input_monitor_;
 
-  scoped_ptr<media::AudioLog> audio_log_;
+  std::unique_ptr<media::AudioLog> audio_log_;
 
   base::WeakPtrFactory<AudioInputRendererHost> weak_factory_;
 

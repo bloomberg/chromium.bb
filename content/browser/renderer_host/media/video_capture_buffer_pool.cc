@@ -4,8 +4,10 @@
 
 #include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
@@ -39,8 +41,8 @@ class VideoCaptureBufferPool::SharedMemTracker final : public Tracker {
     return shared_memory_.CreateAndMapAnonymous(mapped_size_);
   }
 
-  scoped_ptr<BufferHandle> GetBufferHandle() override {
-    return make_scoped_ptr(new SharedMemBufferHandle(this));
+  std::unique_ptr<BufferHandle> GetBufferHandle() override {
+    return base::WrapUnique(new SharedMemBufferHandle(this));
   }
   bool ShareToProcess(base::ProcessHandle process_handle,
                       base::SharedMemoryHandle* new_handle) override {
@@ -138,10 +140,10 @@ class VideoCaptureBufferPool::GpuMemoryBufferTracker final : public Tracker {
     return true;
   }
 
-  scoped_ptr<BufferHandle> GetBufferHandle() override {
+  std::unique_ptr<BufferHandle> GetBufferHandle() override {
     DCHECK_EQ(gpu_memory_buffers_.size(),
               media::VideoFrame::NumPlanes(pixel_format()));
-    return make_scoped_ptr(new GpuMemoryBufferBufferHandle(this));
+    return base::WrapUnique(new GpuMemoryBufferBufferHandle(this));
   }
 
   bool ShareToProcess(base::ProcessHandle process_handle,
@@ -220,21 +222,21 @@ class VideoCaptureBufferPool::GpuMemoryBufferTracker final : public Tracker {
   };
 
   // Owned references to GpuMemoryBuffers.
-  std::vector<scoped_ptr<gfx::GpuMemoryBuffer>> gpu_memory_buffers_;
+  std::vector<std::unique_ptr<gfx::GpuMemoryBuffer>> gpu_memory_buffers_;
 };
 
 // static
-scoped_ptr<VideoCaptureBufferPool::Tracker>
+std::unique_ptr<VideoCaptureBufferPool::Tracker>
 VideoCaptureBufferPool::Tracker::CreateTracker(
     media::VideoPixelStorage storage) {
   switch (storage) {
     case media::PIXEL_STORAGE_GPUMEMORYBUFFER:
-      return make_scoped_ptr(new GpuMemoryBufferTracker());
+      return base::WrapUnique(new GpuMemoryBufferTracker());
     case media::PIXEL_STORAGE_CPU:
-      return make_scoped_ptr(new SharedMemTracker());
+      return base::WrapUnique(new SharedMemTracker());
   }
   NOTREACHED();
-  return scoped_ptr<VideoCaptureBufferPool::Tracker>();
+  return std::unique_ptr<VideoCaptureBufferPool::Tracker>();
 }
 
 VideoCaptureBufferPool::Tracker::~Tracker() {}
@@ -285,14 +287,14 @@ bool VideoCaptureBufferPool::ShareToProcess2(
   return false;
 }
 
-scoped_ptr<VideoCaptureBufferPool::BufferHandle>
+std::unique_ptr<VideoCaptureBufferPool::BufferHandle>
 VideoCaptureBufferPool::GetBufferHandle(int buffer_id) {
   base::AutoLock lock(lock_);
 
   Tracker* tracker = GetTracker(buffer_id);
   if (!tracker) {
     NOTREACHED() << "Invalid buffer_id.";
-    return scoped_ptr<BufferHandle>();
+    return std::unique_ptr<BufferHandle>();
   }
 
   DCHECK(tracker->held_by_producer());
@@ -457,7 +459,7 @@ int VideoCaptureBufferPool::ReserveForProducerInternal(
   // Create the new tracker.
   const int buffer_id = next_buffer_id_++;
 
-  scoped_ptr<Tracker> tracker = Tracker::CreateTracker(storage_type);
+  std::unique_ptr<Tracker> tracker = Tracker::CreateTracker(storage_type);
   // TODO(emircan): We pass the lock here to solve GMB allocation issue, see
   // crbug.com/545238.
   if (!tracker->Init(dimensions, pixel_format, storage_type, &lock_)) {

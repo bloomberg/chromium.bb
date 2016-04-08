@@ -190,7 +190,7 @@ class MediaStreamManagerTest : public ::testing::Test {
   MOCK_METHOD1(Response, void(int index));
   void ResponseCallback(int index,
                         const MediaStreamDevices& devices,
-                        scoped_ptr<MediaStreamUIProxy> ui_proxy) {
+                        std::unique_ptr<MediaStreamUIProxy> ui_proxy) {
     Response(index);
     task_runner_->PostTask(FROM_HERE, run_loop_.QuitClosure());
   }
@@ -210,8 +210,8 @@ class MediaStreamManagerTest : public ::testing::Test {
         security_origin, callback);
   }
 
-  scoped_ptr<MockAudioManager> audio_manager_;
-  scoped_ptr<MediaStreamManager> media_stream_manager_;
+  std::unique_ptr<MockAudioManager> audio_manager_;
+  std::unique_ptr<MediaStreamManager> media_stream_manager_;
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::RunLoop run_loop_;

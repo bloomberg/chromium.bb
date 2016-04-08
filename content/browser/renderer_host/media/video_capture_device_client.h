@@ -8,9 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "media/capture/video/video_capture_device.h"
@@ -49,18 +50,18 @@ class CONTENT_EXPORT VideoCaptureDeviceClient
                               const media::VideoCaptureFormat& frame_format,
                               int rotation,
                               const base::TimeTicks& timestamp) override;
-  scoped_ptr<Buffer> ReserveOutputBuffer(
+  std::unique_ptr<Buffer> ReserveOutputBuffer(
       const gfx::Size& dimensions,
       media::VideoPixelFormat format,
       media::VideoPixelStorage storage) override;
-  void OnIncomingCapturedBuffer(scoped_ptr<Buffer> buffer,
+  void OnIncomingCapturedBuffer(std::unique_ptr<Buffer> buffer,
                                 const media::VideoCaptureFormat& frame_format,
                                 const base::TimeTicks& timestamp) override;
   void OnIncomingCapturedVideoFrame(
-      scoped_ptr<Buffer> buffer,
+      std::unique_ptr<Buffer> buffer,
       const scoped_refptr<media::VideoFrame>& frame,
       const base::TimeTicks& timestamp) override;
-  scoped_ptr<Buffer> ResurrectLastOutputBuffer(
+  std::unique_ptr<Buffer> ResurrectLastOutputBuffer(
       const gfx::Size& dimensions,
       media::VideoPixelFormat format,
       media::VideoPixelStorage storage) override;
@@ -82,17 +83,18 @@ class CONTENT_EXPORT VideoCaptureDeviceClient
   // GpuMemoryBuffers in R_8 format representing I420 planes are reserved. The
   // output buffers stay reserved and mapped for use until the Buffer objects
   // are destroyed or returned.
-  scoped_ptr<Buffer> ReserveI420OutputBuffer(const gfx::Size& dimensions,
-                                             media::VideoPixelStorage storage,
-                                             uint8_t** y_plane_data,
-                                             uint8_t** u_plane_data,
-                                             uint8_t** v_plane_data);
+  std::unique_ptr<Buffer> ReserveI420OutputBuffer(
+      const gfx::Size& dimensions,
+      media::VideoPixelStorage storage,
+      uint8_t** y_plane_data,
+      uint8_t** u_plane_data,
+      uint8_t** v_plane_data);
 
   // The controller to which we post events.
   const base::WeakPtr<VideoCaptureController> controller_;
 
   // Hardware JPEG decoder.
-  scoped_ptr<VideoCaptureGpuJpegDecoder> external_jpeg_decoder_;
+  std::unique_ptr<VideoCaptureGpuJpegDecoder> external_jpeg_decoder_;
 
   // Whether |external_jpeg_decoder_| has been initialized.
   bool external_jpeg_decoder_initialized_;

@@ -76,7 +76,7 @@ class CONTENT_EXPORT VideoCaptureBufferPool
                        gfx::GpuMemoryBufferHandle* new_handle);
 
   // Try and obtain a BufferHandle for |buffer_id|.
-  scoped_ptr<BufferHandle> GetBufferHandle(int buffer_id);
+  std::unique_ptr<BufferHandle> GetBufferHandle(int buffer_id);
 
   // Reserve or allocate a buffer to support a packed frame of |dimensions| of
   // pixel |format| and return its id. This will fail (returning kInvalidId) if
@@ -134,7 +134,8 @@ class CONTENT_EXPORT VideoCaptureBufferPool
   // Tracker carries indication of pixel format and storage type.
   class Tracker {
    public:
-    static scoped_ptr<Tracker> CreateTracker(media::VideoPixelStorage storage);
+    static std::unique_ptr<Tracker> CreateTracker(
+        media::VideoPixelStorage storage);
 
     Tracker()
         : max_pixel_count_(0),
@@ -167,7 +168,7 @@ class CONTENT_EXPORT VideoCaptureBufferPool
 
     // Returns a handle to the underlying storage, be that a block of Shared
     // Memory, or a GpuMemoryBuffer.
-    virtual scoped_ptr<BufferHandle> GetBufferHandle() = 0;
+    virtual std::unique_ptr<BufferHandle> GetBufferHandle() = 0;
 
     virtual bool ShareToProcess(base::ProcessHandle process_handle,
                                 base::SharedMemoryHandle* new_handle) = 0;

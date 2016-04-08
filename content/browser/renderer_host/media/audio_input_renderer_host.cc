@@ -66,7 +66,7 @@ void CloseFile(base::File file) {
 }
 
 void DeleteInputDebugWriterOnFileThread(
-    scoped_ptr<AudioInputDebugWriter> writer) {
+    std::unique_ptr<AudioInputDebugWriter> writer) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   // |writer| must be closed and destroyed on FILE thread.
 }
@@ -91,11 +91,11 @@ struct AudioInputRendererHost::AudioEntry {
 
   // The synchronous writer to be used by the controller. We have the
   // ownership of the writer.
-  scoped_ptr<AudioInputSyncWriter> writer;
+  std::unique_ptr<AudioInputSyncWriter> writer;
 
   // Must be deleted on the file thread. Must be posted for deletion and nulled
   // before the AudioEntry is deleted.
-  scoped_ptr<AudioInputDebugWriter> input_debug_writer;
+  std::unique_ptr<AudioInputDebugWriter> input_debug_writer;
 
   // Set to true after we called Close() for the controller.
   bool pending_close;
@@ -403,7 +403,7 @@ void AudioInputRendererHost::DoCreateStream(
   }
 
   // Create a new AudioEntry structure.
-  scoped_ptr<AudioEntry> entry(new AudioEntry());
+  std::unique_ptr<AudioEntry> entry(new AudioEntry());
 
   const uint32_t segment_size =
       (sizeof(media::AudioInputBufferParameters) +
@@ -422,7 +422,7 @@ void AudioInputRendererHost::DoCreateStream(
     return;
   }
 
-  scoped_ptr<AudioInputSyncWriter> writer(new AudioInputSyncWriter(
+  std::unique_ptr<AudioInputSyncWriter> writer(new AudioInputSyncWriter(
       entry->shared_memory.memory(), entry->shared_memory.requested_size(),
       entry->shared_memory_segment_count, audio_params));
 
@@ -601,7 +601,7 @@ void AudioInputRendererHost::DeleteEntry(AudioEntry* entry) {
 #endif
 
   // Delete the entry when this method goes out of scope.
-  scoped_ptr<AudioEntry> entry_deleter(entry);
+  std::unique_ptr<AudioEntry> entry_deleter(entry);
 
   // Erase the entry from the map.
   audio_entries_.erase(entry->stream_id);

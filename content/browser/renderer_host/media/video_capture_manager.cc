@@ -128,7 +128,7 @@ namespace content {
 VideoCaptureManager::DeviceEntry::DeviceEntry(
     MediaStreamType stream_type,
     const std::string& id,
-    scoped_ptr<VideoCaptureController> controller,
+    std::unique_ptr<VideoCaptureController> controller,
     const media::VideoCaptureParams& params)
     : serial_id(g_device_start_id++),
       stream_type(stream_type),
@@ -145,12 +145,12 @@ VideoCaptureManager::DeviceEntry::~DeviceEntry() {
 }
 
 void VideoCaptureManager::DeviceEntry::SetVideoCaptureDevice(
-    scoped_ptr<media::VideoCaptureDevice> device) {
+    std::unique_ptr<media::VideoCaptureDevice> device) {
   DCHECK(thread_checker_.CalledOnValidThread());
   video_capture_device_.swap(device);
 }
 
-scoped_ptr<media::VideoCaptureDevice>
+std::unique_ptr<media::VideoCaptureDevice>
 VideoCaptureManager::DeviceEntry::ReleaseVideoCaptureDevice() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return std::move(video_capture_device_);
@@ -179,7 +179,7 @@ VideoCaptureManager::CaptureDeviceStartRequest::CaptureDeviceStartRequest(
 }
 
 VideoCaptureManager::VideoCaptureManager(
-    scoped_ptr<media::VideoCaptureDeviceFactory> factory)
+    std::unique_ptr<media::VideoCaptureDeviceFactory> factory)
     : listener_(NULL),
       new_capture_session_id_(1),
       video_capture_device_factory_(std::move(factory)) {}
@@ -226,17 +226,13 @@ void VideoCaptureManager::EnumerateDevices(MediaStreamType stream_type) {
   // Bind a callback to ConsolidateDevicesInfoOnDeviceThread() with an argument
   // for another callback to OnDevicesInfoEnumerated() to be run in the current
   // loop, i.e. IO loop. Pass a timer for UMA histogram collection.
-  base::Callback<void(scoped_ptr<media::VideoCaptureDevice::Names>)>
-      devices_enumerated_callback =
-          base::Bind(&VideoCaptureManager::ConsolidateDevicesInfoOnDeviceThread,
-                     this,
-                     media::BindToCurrentLoop(base::Bind(
-                         &VideoCaptureManager::OnDevicesInfoEnumerated,
-                         this,
-                         stream_type,
-                         base::Owned(new base::ElapsedTimer()))),
-                     stream_type,
-                     devices_info_cache_);
+  base::Callback<void(std::unique_ptr<media::VideoCaptureDevice::Names>)>
+      devices_enumerated_callback = base::Bind(
+          &VideoCaptureManager::ConsolidateDevicesInfoOnDeviceThread, this,
+          media::BindToCurrentLoop(
+              base::Bind(&VideoCaptureManager::OnDevicesInfoEnumerated, this,
+                         stream_type, base::Owned(new base::ElapsedTimer()))),
+          stream_type, devices_info_cache_);
   // OK to use base::Unretained() since we own the VCDFactory and |this| is
   // bound in |devices_enumerated_callback|.
   device_task_runner_->PostTask(FROM_HERE,
@@ -371,7 +367,7 @@ void VideoCaptureManager::HandleQueuedStartRequest() {
   DVLOG(3) << "HandleQueuedStartRequest, Post start to device thread, device = "
            << entry->id << " start id = " << entry->serial_id;
 
-  base::Callback<scoped_ptr<media::VideoCaptureDevice>(void)>
+  base::Callback<std::unique_ptr<media::VideoCaptureDevice>(void)>
       start_capture_function;
 
   switch (entry->stream_type) {
@@ -437,7 +433,7 @@ void VideoCaptureManager::HandleQueuedStartRequest() {
 
 void VideoCaptureManager::OnDeviceStarted(
     int serial_id,
-    scoped_ptr<media::VideoCaptureDevice> device) {
+    std::unique_ptr<media::VideoCaptureDevice> device) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(serial_id == device_start_queue_.begin()->serial_id());
   DVLOG(3) << "OnDeviceStarted";
@@ -477,15 +473,15 @@ void VideoCaptureManager::OnDeviceStarted(
   HandleQueuedStartRequest();
 }
 
-scoped_ptr<media::VideoCaptureDevice>
+std::unique_ptr<media::VideoCaptureDevice>
 VideoCaptureManager::DoStartDeviceCaptureOnDeviceThread(
     const media::VideoCaptureDevice::Name& name,
     const media::VideoCaptureParams& params,
-    scoped_ptr<media::VideoCaptureDevice::Client> device_client) {
+    std::unique_ptr<media::VideoCaptureDevice::Client> device_client) {
   SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.StartDeviceTime");
   DCHECK(IsOnDeviceThread());
 
-  scoped_ptr<media::VideoCaptureDevice> video_capture_device;
+  std::unique_ptr<media::VideoCaptureDevice> video_capture_device;
   video_capture_device = video_capture_device_factory_->Create(name);
 
   if (!video_capture_device) {
@@ -497,15 +493,15 @@ VideoCaptureManager::DoStartDeviceCaptureOnDeviceThread(
   return video_capture_device;
 }
 
-scoped_ptr<media::VideoCaptureDevice>
+std::unique_ptr<media::VideoCaptureDevice>
 VideoCaptureManager::DoStartTabCaptureOnDeviceThread(
     const std::string& id,
     const media::VideoCaptureParams& params,
-    scoped_ptr<media::VideoCaptureDevice::Client> device_client) {
+    std::unique_ptr<media::VideoCaptureDevice::Client> device_client) {
   SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.StartDeviceTime");
   DCHECK(IsOnDeviceThread());
 
-  scoped_ptr<media::VideoCaptureDevice> video_capture_device;
+  std::unique_ptr<media::VideoCaptureDevice> video_capture_device;
   video_capture_device.reset(WebContentsVideoCaptureDevice::Create(id));
 
   if (!video_capture_device) {
@@ -517,15 +513,15 @@ VideoCaptureManager::DoStartTabCaptureOnDeviceThread(
   return video_capture_device;
 }
 
-scoped_ptr<media::VideoCaptureDevice>
+std::unique_ptr<media::VideoCaptureDevice>
 VideoCaptureManager::DoStartDesktopCaptureOnDeviceThread(
     const std::string& id,
     const media::VideoCaptureParams& params,
-    scoped_ptr<media::VideoCaptureDevice::Client> device_client) {
+    std::unique_ptr<media::VideoCaptureDevice::Client> device_client) {
   SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.StartDeviceTime");
   DCHECK(IsOnDeviceThread());
 
-  scoped_ptr<media::VideoCaptureDevice> video_capture_device;
+  std::unique_ptr<media::VideoCaptureDevice> video_capture_device;
 #if defined(ENABLE_SCREEN_CAPTURE)
   DesktopMediaID desktop_id = DesktopMediaID::Parse(id);
   if (desktop_id.is_null()) {
@@ -791,7 +787,7 @@ void VideoCaptureManager::MaybePostDesktopCaptureWindowId(
 }
 
 void VideoCaptureManager::DoStopDeviceOnDeviceThread(
-    scoped_ptr<media::VideoCaptureDevice> device) {
+    std::unique_ptr<media::VideoCaptureDevice> device) {
   SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.StopDeviceTime");
   DCHECK(IsOnDeviceThread());
   device->StopAndDeAllocate();
@@ -856,7 +852,7 @@ void VideoCaptureManager::ConsolidateDevicesInfoOnDeviceThread(
         on_devices_enumerated_callback,
     MediaStreamType stream_type,
     const media::VideoCaptureDeviceInfos& old_device_info_cache,
-    scoped_ptr<media::VideoCaptureDevice::Names> names_snapshot) {
+    std::unique_ptr<media::VideoCaptureDevice::Names> names_snapshot) {
   DCHECK(IsOnDeviceThread());
   // Construct |new_devices_info_cache| with the cached devices that are still
   // present in the system, and remove their names from |names_snapshot|, so we
@@ -956,7 +952,7 @@ VideoCaptureManager::DeviceEntry* VideoCaptureManager::GetOrCreateDeviceEntry(
 
   const int max_buffers = device_info.type == MEDIA_TAB_VIDEO_CAPTURE ?
       kMaxNumberOfBuffersForTabCapture : kMaxNumberOfBuffers;
-  scoped_ptr<VideoCaptureController> video_capture_controller(
+  std::unique_ptr<VideoCaptureController> video_capture_controller(
       new VideoCaptureController(max_buffers));
   DeviceEntry* new_device =
       new DeviceEntry(device_info.type, device_info.id,

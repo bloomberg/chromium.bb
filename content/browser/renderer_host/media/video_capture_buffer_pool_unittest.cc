@@ -10,13 +10,14 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "cc/test/test_context_provider.h"
@@ -104,12 +105,12 @@ class VideoCaptureBufferPoolTest
    public:
     StubBrowserGpuMemoryBufferManager() : BrowserGpuMemoryBufferManager(1, 1) {}
 
-    scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
+    std::unique_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
         const gfx::Size& size,
         gfx::BufferFormat format,
         gfx::BufferUsage usage,
         int32_t surface_id) override {
-      return make_scoped_ptr(new MockGpuMemoryBuffer(size));
+      return base::WrapUnique(new MockGpuMemoryBuffer(size));
     }
   };
   class MockBufferQueue : public BufferQueue {
@@ -133,7 +134,7 @@ class VideoCaptureBufferPoolTest
   class Buffer {
    public:
     Buffer(const scoped_refptr<VideoCaptureBufferPool> pool,
-           scoped_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle,
+           std::unique_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle,
            int id)
         : id_(id), pool_(pool), buffer_handle_(std::move(buffer_handle)) {}
     ~Buffer() { pool_->RelinquishProducerReservation(id()); }
@@ -144,7 +145,7 @@ class VideoCaptureBufferPoolTest
    private:
     const int id_;
     const scoped_refptr<VideoCaptureBufferPool> pool_;
-    const scoped_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle_;
+    const std::unique_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle_;
   };
 
   VideoCaptureBufferPoolTest()
@@ -168,8 +169,9 @@ class VideoCaptureBufferPoolTest
     expected_dropped_id_ = expected_dropped_id;
   }
 
-  scoped_ptr<Buffer> ReserveBuffer(const gfx::Size& dimensions,
-                                   PixelFormatAndStorage format_and_storage) {
+  std::unique_ptr<Buffer> ReserveBuffer(
+      const gfx::Size& dimensions,
+      PixelFormatAndStorage format_and_storage) {
     // To verify that ReserveBuffer always sets |buffer_id_to_drop|,
     // initialize it to something different than the expected value.
     int buffer_id_to_drop = ~expected_dropped_id_;
@@ -181,24 +183,24 @@ class VideoCaptureBufferPoolTest
         dimensions, format_and_storage.pixel_format,
         format_and_storage.pixel_storage, &buffer_id_to_drop);
     if (buffer_id == VideoCaptureBufferPool::kInvalidId)
-      return scoped_ptr<Buffer>();
+      return std::unique_ptr<Buffer>();
     EXPECT_EQ(expected_dropped_id_, buffer_id_to_drop);
 
-    scoped_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle =
+    std::unique_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle =
         pool_->GetBufferHandle(buffer_id);
-    return scoped_ptr<Buffer>(
+    return std::unique_ptr<Buffer>(
         new Buffer(pool_, std::move(buffer_handle), buffer_id));
   }
 
-  scoped_ptr<Buffer> ResurrectLastBuffer(
+  std::unique_ptr<Buffer> ResurrectLastBuffer(
       const gfx::Size& dimensions,
       PixelFormatAndStorage format_and_storage) {
     const int buffer_id = pool_->ResurrectLastForProducer(
         dimensions, format_and_storage.pixel_format,
         format_and_storage.pixel_storage);
     if (buffer_id == VideoCaptureBufferPool::kInvalidId)
-      return scoped_ptr<Buffer>();
-    return scoped_ptr<Buffer>(
+      return std::unique_ptr<Buffer>();
+    return std::unique_ptr<Buffer>(
         new Buffer(pool_, pool_->GetBufferHandle(buffer_id), buffer_id));
   }
 
@@ -208,8 +210,8 @@ class VideoCaptureBufferPoolTest
 
  private:
 #if !defined(OS_ANDROID)
-  scoped_ptr<StubBrowserGpuMemoryBufferManager> gpu_memory_buffer_manager_;
-  scoped_ptr<MockBufferQueue> output_surface_;
+  std::unique_ptr<StubBrowserGpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  std::unique_ptr<MockBufferQueue> output_surface_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureBufferPoolTest);
@@ -230,13 +232,13 @@ TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
   // reserved.
   ASSERT_EQ(0.0, pool_->GetBufferPoolUtilization());
 
-  scoped_ptr<Buffer> buffer1 = ReserveBuffer(size_lo, GetParam());
+  std::unique_ptr<Buffer> buffer1 = ReserveBuffer(size_lo, GetParam());
   ASSERT_NE(nullptr, buffer1.get());
   ASSERT_EQ(1.0 / kTestBufferPoolSize, pool_->GetBufferPoolUtilization());
-  scoped_ptr<Buffer> buffer2 = ReserveBuffer(size_lo, GetParam());
+  std::unique_ptr<Buffer> buffer2 = ReserveBuffer(size_lo, GetParam());
   ASSERT_NE(nullptr, buffer2.get());
   ASSERT_EQ(2.0 / kTestBufferPoolSize, pool_->GetBufferPoolUtilization());
-  scoped_ptr<Buffer> buffer3 = ReserveBuffer(size_lo, GetParam());
+  std::unique_ptr<Buffer> buffer3 = ReserveBuffer(size_lo, GetParam());
   ASSERT_NE(nullptr, buffer3.get());
   ASSERT_EQ(3.0 / kTestBufferPoolSize, pool_->GetBufferPoolUtilization());
 
@@ -266,7 +268,7 @@ TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
   // Release 1st buffer and retry; this should succeed.
   buffer1.reset();
   ASSERT_EQ(2.0 / kTestBufferPoolSize, pool_->GetBufferPoolUtilization());
-  scoped_ptr<Buffer> buffer4 = ReserveBuffer(size_lo, GetParam());
+  std::unique_ptr<Buffer> buffer4 = ReserveBuffer(size_lo, GetParam());
   ASSERT_NE(nullptr, buffer4.get());
   ASSERT_EQ(3.0 / kTestBufferPoolSize, pool_->GetBufferPoolUtilization());
 
@@ -392,12 +394,13 @@ TEST_P(VideoCaptureBufferPoolTest, ResurrectsLastBuffer) {
   ExpectDroppedId(VideoCaptureBufferPool::kInvalidId);
 
   // At the start, there should be nothing to resurrect.
-  scoped_ptr<Buffer> resurrected =
+  std::unique_ptr<Buffer> resurrected =
       ResurrectLastBuffer(gfx::Size(10, 10), GetParam());
   ASSERT_EQ(nullptr, resurrected.get());
 
   // Reserve a 10x10 buffer and fill it with 0xab values.
-  scoped_ptr<Buffer> original = ReserveBuffer(gfx::Size(10, 10), GetParam());
+  std::unique_ptr<Buffer> original =
+      ReserveBuffer(gfx::Size(10, 10), GetParam());
   ASSERT_NE(nullptr, original.get());
   const size_t original_mapped_size = original->mapped_size();
   memset(original->data(), 0xab, original_mapped_size);
@@ -435,7 +438,8 @@ TEST_P(VideoCaptureBufferPoolTest, DoesNotResurrectIfPropertiesNotMatched) {
   ExpectDroppedId(VideoCaptureBufferPool::kInvalidId);
 
   // Reserve a 10x10 buffer, fill it with 0xcd values, and release it.
-  scoped_ptr<Buffer> original = ReserveBuffer(gfx::Size(10, 10), GetParam());
+  std::unique_ptr<Buffer> original =
+      ReserveBuffer(gfx::Size(10, 10), GetParam());
   ASSERT_NE(nullptr, original.get());
   const size_t original_mapped_size = original->mapped_size();
   memset(original->data(), 0xcd, original_mapped_size);
@@ -443,7 +447,7 @@ TEST_P(VideoCaptureBufferPoolTest, DoesNotResurrectIfPropertiesNotMatched) {
 
   // Expect that the buffer cannot be resurrected if the dimensions do not
   // match.
-  scoped_ptr<Buffer> resurrected =
+  std::unique_ptr<Buffer> resurrected =
       ResurrectLastBuffer(gfx::Size(8, 8), GetParam());
   ASSERT_EQ(nullptr, resurrected.get());
 
@@ -484,21 +488,22 @@ TEST_P(VideoCaptureBufferPoolTest, AvoidsClobberingForResurrectingLastBuffer) {
   ExpectDroppedId(VideoCaptureBufferPool::kInvalidId);
 
   // Reserve a 10x10 buffer, fill it with 0xde values, and release it.
-  scoped_ptr<Buffer> original = ReserveBuffer(gfx::Size(10, 10), GetParam());
+  std::unique_ptr<Buffer> original =
+      ReserveBuffer(gfx::Size(10, 10), GetParam());
   ASSERT_NE(nullptr, original.get());
   const size_t original_mapped_size = original->mapped_size();
   memset(original->data(), 0xde, original_mapped_size);
   original.reset();
 
   // Reserve all but one of the pool's buffers.
-  std::vector<scoped_ptr<Buffer>> held_buffers;
+  std::vector<std::unique_ptr<Buffer>> held_buffers;
   for (int i = 0; i < kTestBufferPoolSize - 1; ++i) {
     held_buffers.push_back(ReserveBuffer(gfx::Size(10, 10), GetParam()));
     ASSERT_NE(nullptr, held_buffers.back().get());
   }
 
   // Now, attempt to resurrect the original buffer.  This should succeed.
-  scoped_ptr<Buffer> resurrected =
+  std::unique_ptr<Buffer> resurrected =
       ResurrectLastBuffer(gfx::Size(10, 10), GetParam());
   ASSERT_NE(nullptr, resurrected.get());
   ASSERT_EQ(original_mapped_size, resurrected->mapped_size());

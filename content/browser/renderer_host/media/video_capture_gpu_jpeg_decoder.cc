@@ -80,7 +80,7 @@ void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
     size_t in_buffer_size,
     const media::VideoCaptureFormat& frame_format,
     const base::TimeTicks& timestamp,
-    scoped_ptr<media::VideoCaptureDevice::Client::Buffer> out_buffer) {
+    std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> out_buffer) {
   DCHECK(CalledOnValidThread());
   DCHECK(decoder_);
 
@@ -229,7 +229,7 @@ void VideoCaptureGpuJpegDecoder::FinishInitialization(
         BrowserGpuChannelHostFactory::instance()->GetIOThreadTaskRunner();
 
     int32_t route_id = gpu_channel_host_->GenerateRouteID();
-    scoped_ptr<media::GpuJpegDecodeAcceleratorHost> decoder(
+    std::unique_ptr<media::GpuJpegDecodeAcceleratorHost> decoder(
         new media::GpuJpegDecodeAcceleratorHost(gpu_channel_host_.get(),
                                                 route_id, io_task_runner));
     if (decoder->Initialize(this)) {

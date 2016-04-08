@@ -41,11 +41,11 @@
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_CONTROLLER_H_
 
 #include <list>
+#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
@@ -71,7 +71,7 @@ class CONTENT_EXPORT VideoCaptureController {
 
   // Return a new VideoCaptureDeviceClient to forward capture events to this
   // instance.
-  scoped_ptr<media::VideoCaptureDevice::Client> NewDeviceClient();
+  std::unique_ptr<media::VideoCaptureDevice::Client> NewDeviceClient();
 
   // Start video capturing and try to use the resolution specified in |params|.
   // Buffers will be shared to the client as necessary. The client will continue
@@ -127,7 +127,7 @@ class CONTENT_EXPORT VideoCaptureController {
 
   // Worker functions on IO thread. Called by the VideoCaptureDeviceClient.
   virtual void DoIncomingCapturedVideoFrameOnIOThread(
-      scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
+      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
       const scoped_refptr<media::VideoFrame>& frame,
       const base::TimeTicks& timestamp);
   virtual void DoErrorOnIOThread();

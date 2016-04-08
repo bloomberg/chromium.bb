@@ -283,7 +283,7 @@ class MediaStreamManager::DeviceRequest {
   }
 
   bool HasUIRequest() const { return ui_request_.get() != nullptr; }
-  scoped_ptr<MediaStreamRequest> DetachUIRequest() {
+  std::unique_ptr<MediaStreamRequest> DetachUIRequest() {
     return std::move(ui_request_);
   }
 
@@ -347,13 +347,13 @@ class MediaStreamManager::DeviceRequest {
   // Currently it is only used by |DEVICE_ACCESS| type.
   MediaStreamManager::MediaRequestResponseCallback callback;
 
-  scoped_ptr<MediaStreamUIProxy> ui_proxy;
+  std::unique_ptr<MediaStreamUIProxy> ui_proxy;
 
   std::string tab_capture_device_id;
 
  private:
   std::vector<MediaRequestState> state_;
-  scoped_ptr<MediaStreamRequest> ui_request_;
+  std::unique_ptr<MediaStreamRequest> ui_request_;
   MediaStreamType audio_type_;
   MediaStreamType video_type_;
   int target_process_id_;
@@ -1106,7 +1106,7 @@ void MediaStreamManager::DeleteRequest(const std::string& label) {
   for (DeviceRequests::iterator request_it = requests_.begin();
        request_it != requests_.end(); ++request_it) {
     if (request_it->first == label) {
-      scoped_ptr<DeviceRequest> request(request_it->second);
+      std::unique_ptr<DeviceRequest> request(request_it->second);
       requests_.erase(request_it);
       return;
     }
@@ -1792,7 +1792,7 @@ void MediaStreamManager::OnResume() {
 }
 
 void MediaStreamManager::UseFakeUIForTests(
-    scoped_ptr<FakeMediaStreamUIProxy> fake_ui) {
+    std::unique_ptr<FakeMediaStreamUIProxy> fake_ui) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   use_fake_ui_ = true;
   fake_ui_ = std::move(fake_ui);
