@@ -10801,15 +10801,18 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_SYNC_CONFIRMATION_CHROME_SYNC_BODY" desc="Body of the chrome sync section of the sync confirmation dialog in the tab modal signin flow">
         Your bookmarks, history, passwords and other settings will be synced to your Google Account so you can use them on all your devices. Control what to sync in <ph name="BEGIN_LINK">&lt;a id="settingsLink" href="#"&gt;Settings&lt;/a&gt;.</ph>
+       </message>
+      <message name="IDS_SYNC_CONFIRMATION_CHROME_SYNC_MESSAGE" desc="Body of the chrome sync section of the sync confirmation dialog in the tab modal signin flow">
+        Your bookmarks, history, passwords, and other settings will be synced to your Google Account so you can use them on all your devices
       </message>
-      <message name="IDS_SYNC_CONFIRMATION_ACTIVITY_CONTROLS_TITLE" desc="Title of the activity controls section of the sync confirmation dialog in the tab modal signin flow">
+      <message name="IDS_SYNC_CONFIRMATION_PERSONALIZE_SERVICES_TITLE" desc="Title of the personalize services section of the sync confirmation dialog in the tab modal signin flow">
         Personalize Google services
       </message>
-      <message name="IDS_SYNC_CONFIRMATION_ACTIVITY_CONTROLS_BODY" desc="Body of the activity controls section of the sync confirmation dialog in the tab modal signin flow">
-        Google may use your browsing history to personalize Search and other Google services. You can control this at myaccount.google.com.
+      <message name="IDS_SYNC_CONFIRMATION_PERSONALIZE_SERVICES_BODY" desc="Body of the personalize services section of the sync confirmation dialog in the tab modal signin flow">
+        Google may use your browsing history to personalize Search and other Google services
       </message>
-      <message name="IDS_SYNC_CONFIRMATION_ACTIVITY_CONTROLS_CHECKBOX_LABEL" desc="Label of the checkbox for managing user's privacy settings.">
-        Open myaccount.google.com after signing in
+      <message name="IDS_SYNC_CONFIRMATION_SYNC_SETTINGS_LINK_BODY" desc="Label of the section containing the link to go to the sync setting page.">
+        Control how this works in <ph name="BEGIN_LINK">&lt;a id="settingsLink" href="#"&gt;Settings&lt;/a&gt;.</ph>
       </message>
       <message name="IDS_SYNC_CONFIRMATION_CONFIRM_BUTTON_LABEL" desc="Label of the confirmation button in the sync confirmation dialog of the tab modal signin flow">
         Ok, got it
@@ -11439,6 +11442,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_SYNC_FULL_ENCRYPTION_BODY_GOOGLE_WITH_DATE" desc="Text of the radio that when selected enables full encryption.">
           All data was encrypted with your Google password as of
           <ph name="TIME">$1<ex>Sept 1, 2012</ex></ph>
+        </message>
+
+        <!-- Personalize Google Services section of the configure sync dialog -->
+        <message name="IDS_SYNC_PERSONALIZE_GOOGLE_SERVICES_MESSAGE" desc="Text of the section containing a link to the Google Activity Controls.">
+          Control how Google uses your browsing history to personalize Search and other Google services from <ph name="BEGIN_LINK">&lt;a href="$1" target=&quot;_blank&quot;&gt;</ph>Google Activity Controls<ph name="END_LINK">&lt;/a&gt;</ph>.
         </message>
 
         <!-- Passphrase dialog strings -->
