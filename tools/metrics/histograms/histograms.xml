@@ -70387,6 +70387,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1284" label="TouchDragUserGestureUsed"/>
   <int value="1285" label="TouchDragUserGestureUsedCrossOrigin"/>
   <int value="1286" label="DocumentCreateEventForeignFetchEvent"/>
+  <int value="1287" label="SVGCalcModeDiscrete"/>
+  <int value="1288" label="SVGCalcModeLinear"/>
+  <int value="1289" label="SVGCalcModePaced"/>
+  <int value="1290" label="SVGCalcModeSpline"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

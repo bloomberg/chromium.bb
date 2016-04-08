@@ -305,15 +305,23 @@ void SVGAnimationElement::setCalcMode(const AtomicString& calcMode)
     DEFINE_STATIC_LOCAL(const AtomicString, linear, ("linear"));
     DEFINE_STATIC_LOCAL(const AtomicString, paced, ("paced"));
     DEFINE_STATIC_LOCAL(const AtomicString, spline, ("spline"));
-    if (calcMode == discrete)
+    if (calcMode == discrete) {
+        UseCounter::count(document(), UseCounter::SVGCalcModeDiscrete);
         setCalcMode(CalcModeDiscrete);
-    else if (calcMode == linear)
+    } else if (calcMode == linear) {
+        if (isSVGAnimateMotionElement(*this))
+            UseCounter::count(document(), UseCounter::SVGCalcModeLinear);
+        // else linear is the default.
         setCalcMode(CalcModeLinear);
-    else if (calcMode == paced)
+    } else if (calcMode == paced) {
+        if (!isSVGAnimateMotionElement(*this))
+            UseCounter::count(document(), UseCounter::SVGCalcModePaced);
+        // else paced is the default.
         setCalcMode(CalcModePaced);
-    else if (calcMode == spline)
+    } else if (calcMode == spline) {
+        UseCounter::count(document(), UseCounter::SVGCalcModeSpline);
         setCalcMode(CalcModeSpline);
-    else
+    } else
         setCalcMode(isSVGAnimateMotionElement(*this) ? CalcModePaced : CalcModeLinear);
 }
 

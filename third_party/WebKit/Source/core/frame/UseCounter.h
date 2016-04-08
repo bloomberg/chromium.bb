@@ -1102,6 +1102,10 @@ public:
         TouchDragUserGestureUsed = 1284,
         TouchDragUserGestureUsedCrossOrigin = 1285,
         DocumentCreateEventForeignFetchEvent = 1286,
+        SVGCalcModeDiscrete = 1287,
+        SVGCalcModeLinear = 1288,
+        SVGCalcModePaced = 1289,
+        SVGCalcModeSpline = 1290,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
