@@ -30,6 +30,7 @@
 
 #include "web/AssociatedURLLoader.h"
 
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchUtils.h"
 #include "core/loader/DocumentThreadableLoader.h"
@@ -247,6 +248,8 @@ void AssociatedURLLoader::ClientAdapter::didFinishLoading(unsigned long identifi
     if (!m_client)
         return;
 
+    m_loader->disposeObserver();
+
     m_client->didFinishLoading(m_loader, finishTime, WebURLLoaderClient::kUnknownEncodedDataLength);
 }
 
@@ -254,6 +257,8 @@ void AssociatedURLLoader::ClientAdapter::didFail(const ResourceError& error)
 {
     if (!m_client)
         return;
+
+    m_loader->disposeObserver();
 
     m_didFail = true;
     m_error = WebURLError(error);
@@ -264,11 +269,6 @@ void AssociatedURLLoader::ClientAdapter::didFail(const ResourceError& error)
 void AssociatedURLLoader::ClientAdapter::didFailRedirectCheck()
 {
     didFail(ResourceError());
-}
-
-void AssociatedURLLoader::ClientAdapter::setDelayedError(const ResourceError& error)
-{
-    didFail(error);
 }
 
 void AssociatedURLLoader::ClientAdapter::enableErrorNotifications()
@@ -284,15 +284,45 @@ void AssociatedURLLoader::ClientAdapter::notifyError(Timer<ClientAdapter>* timer
 {
     ASSERT_UNUSED(timer, timer == &m_errorTimer);
 
+    if (!m_client)
+        return;
+
     m_client->didFail(m_loader, m_error);
 }
 
+class AssociatedURLLoader::Observer final : public GarbageCollectedFinalized<Observer>, public ContextLifecycleObserver {
+    USING_GARBAGE_COLLECTED_MIXIN(Observer);
+public:
+    Observer(AssociatedURLLoader* parent, Document* document)
+        : ContextLifecycleObserver(document)
+        , m_parent(parent)
+    {
+    }
+
+    void dispose()
+    {
+        m_parent = nullptr;
+        clearContext();
+    }
+
+    void contextDestroyed() override
+    {
+        if (m_parent)
+            m_parent->documentDestroyed();
+    }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        ContextLifecycleObserver::trace(visitor);
+    }
+
+    AssociatedURLLoader* m_parent;
+};
+
 AssociatedURLLoader::AssociatedURLLoader(RawPtr<WebLocalFrameImpl> frameImpl, const WebURLLoaderOptions& options)
-    : m_frameImpl(frameImpl)
-    , m_options(options)
-    , m_client(0)
+    : m_options(options)
+    , m_observer(new Observer(this, frameImpl->frame()->document()))
 {
-    DCHECK(m_frameImpl);
 }
 
 AssociatedURLLoader::~AssociatedURLLoader()
@@ -320,16 +350,15 @@ void AssociatedURLLoader::loadSynchronously(const WebURLRequest& request, WebURL
 void AssociatedURLLoader::loadAsynchronously(const WebURLRequest& request, WebURLLoaderClient* client)
 {
     DCHECK(!m_loader);
-    DCHECK(!m_client);
+    DCHECK(!m_clientAdapter);
 
-    m_client = client;
-    DCHECK(m_client);
+    DCHECK(client);
 
     bool allowLoad = true;
     WebURLRequest newRequest(request);
     if (m_options.untrustedHTTP) {
         WebString method = newRequest.httpMethod();
-        allowLoad = isValidHTTPToken(method) && FetchUtils::isUsefulMethod(method);
+        allowLoad = m_observer && isValidHTTPToken(method) && FetchUtils::isUsefulMethod(method);
         if (allowLoad) {
             newRequest.setHTTPMethod(FetchUtils::normalizeMethod(method));
             HTTPRequestHeaderValidator validator;
@@ -338,7 +367,7 @@ void AssociatedURLLoader::loadAsynchronously(const WebURLRequest& request, WebUR
         }
     }
 
-    m_clientAdapter = ClientAdapter::create(this, m_client, m_options);
+    m_clientAdapter = ClientAdapter::create(this, client, m_options);
 
     if (allowLoad) {
         ThreadableLoaderOptions options;
@@ -357,25 +386,34 @@ void AssociatedURLLoader::loadAsynchronously(const WebURLRequest& request, WebUR
             newRequest.setRequestContext(WebURLRequest::RequestContextInternal);
         }
 
-        Document* webcoreDocument = m_frameImpl->frame()->document();
-        DCHECK(webcoreDocument);
-        m_loader = DocumentThreadableLoader::create(*webcoreDocument, m_clientAdapter.get(), options, resourceLoaderOptions);
+        Document* document = toDocument(m_observer->lifecycleContext());
+        DCHECK(document);
+        m_loader = DocumentThreadableLoader::create(*document, m_clientAdapter.get(), options, resourceLoaderOptions);
         m_loader->start(webcoreRequest);
     }
 
     if (!m_loader) {
         // FIXME: return meaningful error codes.
-        m_clientAdapter->setDelayedError(ResourceError());
+        m_clientAdapter->didFail(ResourceError());
     }
     m_clientAdapter->enableErrorNotifications();
 }
 
 void AssociatedURLLoader::cancel()
 {
-    if (m_clientAdapter)
-        m_clientAdapter->clearClient();
-    if (m_loader)
+    disposeObserver();
+
+    if (!m_clientAdapter)
+        return;
+
+    // Prevent invocation of the WebURLLoaderClient methods.
+    m_clientAdapter->clearClient();
+
+    if (m_loader) {
         m_loader->cancel();
+        m_loader.clear();
+    }
+    m_clientAdapter.clear();
 }
 
 void AssociatedURLLoader::setDefersLoading(bool defersLoading)
@@ -387,6 +425,40 @@ void AssociatedURLLoader::setDefersLoading(bool defersLoading)
 void AssociatedURLLoader::setLoadingTaskRunner(blink::WebTaskRunner*)
 {
     // TODO(alexclarke): Maybe support this one day if it proves worthwhile.
+}
+
+void AssociatedURLLoader::documentDestroyed()
+{
+    cancel();
+
+    m_client->didFail(this, ResourceError());
+    // |this| may be dead here.
+}
+
+void AssociatedURLLoader::disposeObserver()
+{
+    if (!m_observer)
+        return;
+
+    // TODO(tyoshino): Remove this assert once Document is fixed so that
+    // contextDestroyed() is invoked for all kinds of Documents.
+    //
+    // Currently, the method of detecting Document destruction implemented here
+    // doesn't work for all kinds of Documents. In case we reached here after
+    // the Oilpan is destroyed, we just crash the renderer process to prevent
+    // UaF.
+    //
+    // We could consider just skipping the rest of code in case
+    // ThreadState::current() is null. However, the fact we reached here
+    // without cancelling the loader means that it's possible there're some
+    // non-Blink non-on-heap objects still facing on-heap Blink objects. E.g.
+    // there could be a WebURLLoader instance behind the
+    // DocumentThreadableLoader instance. So, for safety, we chose to just
+    // crash here.
+    RELEASE_ASSERT(ThreadState::current());
+
+    m_observer->dispose();
+    m_observer = nullptr;
 }
 
 } // namespace blink
