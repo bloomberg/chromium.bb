@@ -96,6 +96,7 @@ test("webkit_unit_tests") {
     "//base/test:test_support",
     "//content/test:test_support",
     "//gpu:test_support",
+    "//mojo/edk/system:system",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/Source/core",

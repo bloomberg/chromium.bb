@@ -7,4 +7,5 @@ include_rules = [
     "+base/test/launcher/unit_test_launcher.h",
     "+base/test/test_suite.h",
     "+content/test/blink_test_environment.h",
+    "+mojo/edk/embedder/embedder.h",
 ]
