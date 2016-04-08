@@ -64,7 +64,7 @@ enum ReasonForCallingCanExecuteScripts {
     NotAboutToExecuteScript
 };
 
-class CORE_EXPORT ScriptController final : public GarbageCollectedFinalized<ScriptController> {
+class CORE_EXPORT ScriptController final : public GarbageCollected<ScriptController> {
     WTF_MAKE_NONCOPYABLE(ScriptController);
 public:
     enum ExecuteScriptPolicy {
@@ -77,7 +77,6 @@ public:
         return new ScriptController(frame);
     }
 
-    ~ScriptController();
     DECLARE_TRACE();
 
     bool initializeMainWorld();
@@ -154,7 +153,6 @@ private:
     v8::Local<v8::Value> evaluateScriptInMainWorld(const ScriptSourceCode&, AccessControlStatus, ExecuteScriptPolicy, double* compilationFinishTime = 0);
 
     Member<WindowProxyManager> m_windowProxyManager;
-    const String* m_sourceURL;
 };
 
 } // namespace blink

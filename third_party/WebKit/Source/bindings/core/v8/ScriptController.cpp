@@ -88,11 +88,6 @@ bool ScriptController::canAccessFromCurrentOrigin(v8::Isolate* isolate, Frame* f
 
 ScriptController::ScriptController(LocalFrame* frame)
     : m_windowProxyManager(WindowProxyManager::create(*frame))
-    , m_sourceURL(0)
-{
-}
-
-ScriptController::~ScriptController()
 {
 }
 
@@ -409,10 +404,6 @@ v8::Local<v8::Value> ScriptController::evaluateScriptInMainWorld(const ScriptSou
     if (policy == DoNotExecuteScriptWhenScriptsDisabled && !canExecuteScripts(AboutToExecuteScript))
         return v8::Local<v8::Value>();
 
-    String sourceURL = sourceCode.url();
-    const String* savedSourceURL = m_sourceURL;
-    m_sourceURL = &sourceURL;
-
     ScriptState* scriptState = ScriptState::forMainWorld(frame());
     if (!scriptState)
         return v8::Local<v8::Value>();
@@ -424,7 +415,6 @@ v8::Local<v8::Value> ScriptController::evaluateScriptInMainWorld(const ScriptSou
         frame()->loader().didAccessInitialDocument();
 
     v8::Local<v8::Value> object = executeScriptAndReturnValue(scriptState->context(), sourceCode, accessControlStatus, compilationFinishTime);
-    m_sourceURL = savedSourceURL;
 
     if (object.IsEmpty())
         return v8::Local<v8::Value>();
