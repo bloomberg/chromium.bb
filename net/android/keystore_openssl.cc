@@ -17,6 +17,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "crypto/openssl_util.h"
 #include "net/android/keystore.h"
 #include "net/android/legacy_openssl.h"

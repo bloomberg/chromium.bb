@@ -9,6 +9,7 @@
 #include <nss.h>
 
 #include "base/base64url.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"

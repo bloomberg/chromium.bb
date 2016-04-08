@@ -6,7 +6,8 @@
 
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -71,9 +72,9 @@ const uint8_t kTestPrivateKeyInfo[] = {
 // Generate random private keys with two different sizes. Reimport, then
 // export them again. We should get back the same exact bytes.
 TEST(RSAPrivateKeyUnitTest, InitRandomTest) {
-  scoped_ptr<crypto::RSAPrivateKey> keypair1(
+  std::unique_ptr<crypto::RSAPrivateKey> keypair1(
       crypto::RSAPrivateKey::Create(1024));
-  scoped_ptr<crypto::RSAPrivateKey> keypair2(
+  std::unique_ptr<crypto::RSAPrivateKey> keypair2(
       crypto::RSAPrivateKey::Create(2048));
   ASSERT_TRUE(keypair1.get());
   ASSERT_TRUE(keypair2.get());
@@ -88,9 +89,9 @@ TEST(RSAPrivateKeyUnitTest, InitRandomTest) {
   ASSERT_TRUE(keypair1->ExportPublicKey(&pubkey1));
   ASSERT_TRUE(keypair2->ExportPublicKey(&pubkey2));
 
-  scoped_ptr<crypto::RSAPrivateKey> keypair3(
+  std::unique_ptr<crypto::RSAPrivateKey> keypair3(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(privkey1));
-  scoped_ptr<crypto::RSAPrivateKey> keypair4(
+  std::unique_ptr<crypto::RSAPrivateKey> keypair4(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(privkey2));
   ASSERT_TRUE(keypair3.get());
   ASSERT_TRUE(keypair4.get());
@@ -113,10 +114,10 @@ TEST(RSAPrivateKeyUnitTest, CopyTest) {
   std::vector<uint8_t> input(kTestPrivateKeyInfo,
                              kTestPrivateKeyInfo + sizeof(kTestPrivateKeyInfo));
 
-  scoped_ptr<crypto::RSAPrivateKey> key(
+  std::unique_ptr<crypto::RSAPrivateKey> key(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(input));
 
-  scoped_ptr<crypto::RSAPrivateKey> key_copy(key->Copy());
+  std::unique_ptr<crypto::RSAPrivateKey> key_copy(key->Copy());
   ASSERT_TRUE(key_copy.get());
 
   std::vector<uint8_t> privkey_copy;
@@ -131,7 +132,7 @@ TEST(RSAPrivateKeyUnitTest, ExtraData) {
                              kTestPrivateKeyInfo + sizeof(kTestPrivateKeyInfo));
   input.push_back(0);
 
-  scoped_ptr<crypto::RSAPrivateKey> key(
+  std::unique_ptr<crypto::RSAPrivateKey> key(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(input));
 
   // Import should fail.
@@ -158,7 +159,7 @@ TEST(RSAPrivateKeyUnitTest, NotRsaKey) {
       kTestEcPrivateKeyInfo,
       kTestEcPrivateKeyInfo + sizeof(kTestEcPrivateKeyInfo));
 
-  scoped_ptr<crypto::RSAPrivateKey> key(
+  std::unique_ptr<crypto::RSAPrivateKey> key(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(input));
 
   // Import should fail as the given PKCS8 bytes were for an EC key not RSA key.
@@ -187,7 +188,7 @@ TEST(RSAPrivateKeyUnitTest, PublicKeyTest) {
   std::vector<uint8_t> input(kTestPrivateKeyInfo,
                              kTestPrivateKeyInfo + sizeof(kTestPrivateKeyInfo));
 
-  scoped_ptr<crypto::RSAPrivateKey> key(
+  std::unique_ptr<crypto::RSAPrivateKey> key(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(input));
   ASSERT_TRUE(key.get());
 
@@ -334,9 +335,9 @@ TEST(RSAPrivateKeyUnitTest, ShortIntegers) {
   memcpy(&input2.front(), short_integer_without_high_bit,
          sizeof(short_integer_without_high_bit));
 
-  scoped_ptr<crypto::RSAPrivateKey> keypair1(
+  std::unique_ptr<crypto::RSAPrivateKey> keypair1(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(input1));
-  scoped_ptr<crypto::RSAPrivateKey> keypair2(
+  std::unique_ptr<crypto::RSAPrivateKey> keypair2(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(input2));
   ASSERT_TRUE(keypair1.get());
   ASSERT_TRUE(keypair2.get());
@@ -355,11 +356,11 @@ TEST(RSAPrivateKeyUnitTest, ShortIntegers) {
 }
 
 TEST(RSAPrivateKeyUnitTest, CreateFromKeyTest) {
-  scoped_ptr<crypto::RSAPrivateKey> key_pair(
+  std::unique_ptr<crypto::RSAPrivateKey> key_pair(
       crypto::RSAPrivateKey::Create(512));
   ASSERT_TRUE(key_pair.get());
 
-  scoped_ptr<crypto::RSAPrivateKey> key_copy(
+  std::unique_ptr<crypto::RSAPrivateKey> key_copy(
       crypto::RSAPrivateKey::CreateFromKey(key_pair->key()));
   ASSERT_TRUE(key_copy.get());
 

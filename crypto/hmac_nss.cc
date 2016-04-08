@@ -8,8 +8,9 @@
 #include <pk11pub.h>
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
 

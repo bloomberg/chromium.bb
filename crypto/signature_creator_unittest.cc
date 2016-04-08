@@ -2,31 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "crypto/signature_creator.h"
+
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/sha1.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/sha2.h"
-#include "crypto/signature_creator.h"
 #include "crypto/signature_verifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(SignatureCreatorTest, BasicTest) {
   // Do a verify round trip.
-  scoped_ptr<crypto::RSAPrivateKey> key_original(
+  std::unique_ptr<crypto::RSAPrivateKey> key_original(
       crypto::RSAPrivateKey::Create(1024));
   ASSERT_TRUE(key_original.get());
 
   std::vector<uint8_t> key_info;
   key_original->ExportPrivateKey(&key_info);
-  scoped_ptr<crypto::RSAPrivateKey> key(
+  std::unique_ptr<crypto::RSAPrivateKey> key(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_info));
   ASSERT_TRUE(key.get());
 
-  scoped_ptr<crypto::SignatureCreator> signer(
+  std::unique_ptr<crypto::SignatureCreator> signer(
       crypto::SignatureCreator::Create(key.get(),
                                        crypto::SignatureCreator::SHA1));
   ASSERT_TRUE(signer.get());
@@ -53,13 +54,13 @@ TEST(SignatureCreatorTest, BasicTest) {
 
 TEST(SignatureCreatorTest, SignDigestTest) {
   // Do a verify round trip.
-  scoped_ptr<crypto::RSAPrivateKey> key_original(
+  std::unique_ptr<crypto::RSAPrivateKey> key_original(
       crypto::RSAPrivateKey::Create(1024));
   ASSERT_TRUE(key_original.get());
 
   std::vector<uint8_t> key_info;
   key_original->ExportPrivateKey(&key_info);
-  scoped_ptr<crypto::RSAPrivateKey> key(
+  std::unique_ptr<crypto::RSAPrivateKey> key(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_info));
   ASSERT_TRUE(key.get());
 
@@ -87,13 +88,13 @@ TEST(SignatureCreatorTest, SignDigestTest) {
 
 TEST(SignatureCreatorTest, SignSHA256DigestTest) {
   // Do a verify round trip.
-  scoped_ptr<crypto::RSAPrivateKey> key_original(
+  std::unique_ptr<crypto::RSAPrivateKey> key_original(
       crypto::RSAPrivateKey::Create(1024));
   ASSERT_TRUE(key_original.get());
 
   std::vector<uint8_t> key_info;
   key_original->ExportPrivateKey(&key_info);
-  scoped_ptr<crypto::RSAPrivateKey> key(
+  std::unique_ptr<crypto::RSAPrivateKey> key(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_info));
   ASSERT_TRUE(key.get());
 

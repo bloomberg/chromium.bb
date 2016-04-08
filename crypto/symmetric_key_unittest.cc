@@ -4,15 +4,15 @@
 
 #include "crypto/symmetric_key.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(SymmetricKeyTest, GenerateRandomKey) {
-  scoped_ptr<crypto::SymmetricKey> key(
+  std::unique_ptr<crypto::SymmetricKey> key(
       crypto::SymmetricKey::GenerateRandomKey(crypto::SymmetricKey::AES, 256));
   ASSERT_TRUE(NULL != key.get());
   std::string raw_key;
@@ -21,7 +21,7 @@ TEST(SymmetricKeyTest, GenerateRandomKey) {
 
   // Do it again and check that the keys are different.
   // (Note: this has a one-in-10^77 chance of failure!)
-  scoped_ptr<crypto::SymmetricKey> key2(
+  std::unique_ptr<crypto::SymmetricKey> key2(
       crypto::SymmetricKey::GenerateRandomKey(crypto::SymmetricKey::AES, 256));
   ASSERT_TRUE(NULL != key2.get());
   std::string raw_key2;
@@ -31,13 +31,13 @@ TEST(SymmetricKeyTest, GenerateRandomKey) {
 }
 
 TEST(SymmetricKeyTest, ImportGeneratedKey) {
-  scoped_ptr<crypto::SymmetricKey> key1(
+  std::unique_ptr<crypto::SymmetricKey> key1(
       crypto::SymmetricKey::GenerateRandomKey(crypto::SymmetricKey::AES, 256));
   ASSERT_TRUE(NULL != key1.get());
   std::string raw_key1;
   EXPECT_TRUE(key1->GetRawKey(&raw_key1));
 
-  scoped_ptr<crypto::SymmetricKey> key2(
+  std::unique_ptr<crypto::SymmetricKey> key2(
       crypto::SymmetricKey::Import(crypto::SymmetricKey::AES, raw_key1));
   ASSERT_TRUE(NULL != key2.get());
 
@@ -48,14 +48,14 @@ TEST(SymmetricKeyTest, ImportGeneratedKey) {
 }
 
 TEST(SymmetricKeyTest, ImportDerivedKey) {
-  scoped_ptr<crypto::SymmetricKey> key1(
+  std::unique_ptr<crypto::SymmetricKey> key1(
       crypto::SymmetricKey::DeriveKeyFromPassword(
           crypto::SymmetricKey::HMAC_SHA1, "password", "somesalt", 1024, 160));
   ASSERT_TRUE(NULL != key1.get());
   std::string raw_key1;
   EXPECT_TRUE(key1->GetRawKey(&raw_key1));
 
-  scoped_ptr<crypto::SymmetricKey> key2(
+  std::unique_ptr<crypto::SymmetricKey> key2(
       crypto::SymmetricKey::Import(crypto::SymmetricKey::HMAC_SHA1, raw_key1));
   ASSERT_TRUE(NULL != key2.get());
 
@@ -89,10 +89,9 @@ TEST_P(SymmetricKeyDeriveKeyFromPasswordTest, DeriveKeyFromPassword) {
   }
 #endif  // OS_MACOSX
 
-  scoped_ptr<crypto::SymmetricKey> key(
+  std::unique_ptr<crypto::SymmetricKey> key(
       crypto::SymmetricKey::DeriveKeyFromPassword(
-          test_data.algorithm,
-          test_data.password, test_data.salt,
+          test_data.algorithm, test_data.password, test_data.salt,
           test_data.rounds, test_data.key_size_in_bits));
   ASSERT_TRUE(NULL != key.get());
 

@@ -17,8 +17,9 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
@@ -61,7 +62,7 @@ ECPrivateKey* ECPrivateKey::Create() {
   if (!slot)
     return nullptr;
 
-  scoped_ptr<ECPrivateKey> result(new ECPrivateKey);
+  std::unique_ptr<ECPrivateKey> result(new ECPrivateKey);
 
   SECOidData* oid_data = SECOID_FindOIDByTag(SEC_OID_SECG_EC_SECP256R1);
   if (!oid_data) {
@@ -111,7 +112,7 @@ ECPrivateKey* ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
   if (!slot)
     return nullptr;
 
-  scoped_ptr<ECPrivateKey> result(new ECPrivateKey);
+  std::unique_ptr<ECPrivateKey> result(new ECPrivateKey);
 
   SECItem encoded_spki = {
     siBuffer,
@@ -224,7 +225,7 @@ bool ECPrivateKey::ImportFromEncryptedPrivateKeyInfo(
 }
 
 ECPrivateKey* ECPrivateKey::Copy() const {
-  scoped_ptr<ECPrivateKey> copy(new ECPrivateKey);
+  std::unique_ptr<ECPrivateKey> copy(new ECPrivateKey);
   if (key_) {
     copy->key_ = SECKEY_CopyPrivateKey(key_);
     if (!copy->key_)

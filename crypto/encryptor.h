@@ -8,9 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "crypto/crypto_export.h"
@@ -113,7 +113,7 @@ class CRYPTO_EXPORT Encryptor {
 
   SymmetricKey* key_;
   Mode mode_;
-  scoped_ptr<Counter> counter_;
+  std::unique_ptr<Counter> counter_;
 
 #if defined(USE_OPENSSL)
   bool Crypt(bool do_encrypt,  // Pass true to encrypt, false to decrypt.

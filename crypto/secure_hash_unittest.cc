@@ -7,9 +7,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "crypto/sha2.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,8 +23,8 @@ TEST(SecureHashTest, TestUpdate) {
 
   uint8_t output3[crypto::kSHA256Length];
 
-  scoped_ptr<crypto::SecureHash> ctx(crypto::SecureHash::Create(
-      crypto::SecureHash::SHA256));
+  std::unique_ptr<crypto::SecureHash> ctx(
+      crypto::SecureHash::Create(crypto::SecureHash::SHA256));
   ctx->Update(input3.data(), input3.size());
   ctx->Update(input3.data(), input3.size());
 
@@ -50,12 +50,12 @@ TEST(SecureHashTest, TestClone) {
   uint8_t output2[crypto::kSHA256Length];
   uint8_t output3[crypto::kSHA256Length];
 
-  scoped_ptr<crypto::SecureHash> ctx1(crypto::SecureHash::Create(
-      crypto::SecureHash::SHA256));
+  std::unique_ptr<crypto::SecureHash> ctx1(
+      crypto::SecureHash::Create(crypto::SecureHash::SHA256));
   ctx1->Update(input1.data(), input1.size());
 
-  scoped_ptr<crypto::SecureHash> ctx2(ctx1->Clone());
-  scoped_ptr<crypto::SecureHash> ctx3(ctx2->Clone());
+  std::unique_ptr<crypto::SecureHash> ctx2(ctx1->Clone());
+  std::unique_ptr<crypto::SecureHash> ctx3(ctx2->Clone());
   // At this point, ctx1, ctx2, and ctx3 are all equivalent and represent the
   // state after hashing input1.
 
@@ -76,7 +76,7 @@ TEST(SecureHashTest, TestClone) {
 }
 
 TEST(SecureHashTest, TestLength) {
-  scoped_ptr<crypto::SecureHash> ctx(
+  std::unique_ptr<crypto::SecureHash> ctx(
       crypto::SecureHash::Create(crypto::SecureHash::SHA256));
   EXPECT_EQ(crypto::kSHA256Length, ctx->GetHashLength());
 }

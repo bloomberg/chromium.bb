@@ -6,16 +6,16 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "crypto/symmetric_key.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(EncryptorTest, EncryptDecrypt) {
-  scoped_ptr<crypto::SymmetricKey> key(
+  std::unique_ptr<crypto::SymmetricKey> key(
       crypto::SymmetricKey::DeriveKeyFromPassword(
           crypto::SymmetricKey::AES, "password", "saltiest", 1000, 256));
   EXPECT_TRUE(key.get());
@@ -39,29 +39,29 @@ TEST(EncryptorTest, EncryptDecrypt) {
 }
 
 TEST(EncryptorTest, DecryptWrongKey) {
-  scoped_ptr<crypto::SymmetricKey> key(
+  std::unique_ptr<crypto::SymmetricKey> key(
       crypto::SymmetricKey::DeriveKeyFromPassword(
           crypto::SymmetricKey::AES, "password", "saltiest", 1000, 256));
   EXPECT_TRUE(key.get());
 
   // A wrong key that can be detected by implementations that validate every
   // byte in the padding.
-  scoped_ptr<crypto::SymmetricKey> wrong_key(
-        crypto::SymmetricKey::DeriveKeyFromPassword(
-            crypto::SymmetricKey::AES, "wrongword", "sweetest", 1000, 256));
+  std::unique_ptr<crypto::SymmetricKey> wrong_key(
+      crypto::SymmetricKey::DeriveKeyFromPassword(
+          crypto::SymmetricKey::AES, "wrongword", "sweetest", 1000, 256));
   EXPECT_TRUE(wrong_key.get());
 
   // A wrong key that can't be detected by any implementation.  The password
   // "wrongword;" would also work.
-  scoped_ptr<crypto::SymmetricKey> wrong_key2(
-        crypto::SymmetricKey::DeriveKeyFromPassword(
-            crypto::SymmetricKey::AES, "wrongword+", "sweetest", 1000, 256));
+  std::unique_ptr<crypto::SymmetricKey> wrong_key2(
+      crypto::SymmetricKey::DeriveKeyFromPassword(
+          crypto::SymmetricKey::AES, "wrongword+", "sweetest", 1000, 256));
   EXPECT_TRUE(wrong_key2.get());
 
   // A wrong key that can be detected by all implementations.
-  scoped_ptr<crypto::SymmetricKey> wrong_key3(
-        crypto::SymmetricKey::DeriveKeyFromPassword(
-            crypto::SymmetricKey::AES, "wrongwordx", "sweetest", 1000, 256));
+  std::unique_ptr<crypto::SymmetricKey> wrong_key3(
+      crypto::SymmetricKey::DeriveKeyFromPassword(
+          crypto::SymmetricKey::AES, "wrongwordx", "sweetest", 1000, 256));
   EXPECT_TRUE(wrong_key3.get());
 
   crypto::Encryptor encryptor;
@@ -189,8 +189,8 @@ void TestAESCTREncrypt(
     const unsigned char* plaintext, size_t plaintext_size,
     const unsigned char* ciphertext, size_t ciphertext_size) {
   std::string key_str(reinterpret_cast<const char*>(key), key_size);
-  scoped_ptr<crypto::SymmetricKey> sym_key(crypto::SymmetricKey::Import(
-      crypto::SymmetricKey::AES, key_str));
+  std::unique_ptr<crypto::SymmetricKey> sym_key(
+      crypto::SymmetricKey::Import(crypto::SymmetricKey::AES, key_str));
   ASSERT_TRUE(sym_key.get());
 
   crypto::Encryptor encryptor;
@@ -221,8 +221,8 @@ void TestAESCTRMultipleDecrypt(
     const unsigned char* plaintext, size_t plaintext_size,
     const unsigned char* ciphertext, size_t ciphertext_size) {
   std::string key_str(reinterpret_cast<const char*>(key), key_size);
-  scoped_ptr<crypto::SymmetricKey> sym_key(crypto::SymmetricKey::Import(
-      crypto::SymmetricKey::AES, key_str));
+  std::unique_ptr<crypto::SymmetricKey> sym_key(
+      crypto::SymmetricKey::Import(crypto::SymmetricKey::AES, key_str));
   ASSERT_TRUE(sym_key.get());
 
   crypto::Encryptor encryptor;
@@ -284,7 +284,7 @@ TEST(EncryptorTest, EncryptAES256CTR_MultipleDecrypt) {
 }
 
 TEST(EncryptorTest, EncryptDecryptCTR) {
-  scoped_ptr<crypto::SymmetricKey> key(
+  std::unique_ptr<crypto::SymmetricKey> key(
       crypto::SymmetricKey::GenerateRandomKey(crypto::SymmetricKey::AES, 128));
 
   EXPECT_TRUE(key.get());
@@ -407,8 +407,8 @@ TEST(EncryptorTest, EncryptAES256CBC) {
   };
 
   std::string key(reinterpret_cast<const char*>(kRawKey), sizeof(kRawKey));
-  scoped_ptr<crypto::SymmetricKey> sym_key(crypto::SymmetricKey::Import(
-      crypto::SymmetricKey::AES, key));
+  std::unique_ptr<crypto::SymmetricKey> sym_key(
+      crypto::SymmetricKey::Import(crypto::SymmetricKey::AES, key));
   ASSERT_TRUE(sym_key.get());
 
   crypto::Encryptor encryptor;
@@ -440,8 +440,8 @@ TEST(EncryptorTest, EncryptAES128CBCRegression) {
       "D4A67A0BA33C30F207344D81D1E944BBE65587C3D7D9939A"
       "C070C62B9C15A3EA312EA4AD1BC7929F4D3C16B03AD5ADA8";
 
-  scoped_ptr<crypto::SymmetricKey> sym_key(crypto::SymmetricKey::Import(
-      crypto::SymmetricKey::AES, key));
+  std::unique_ptr<crypto::SymmetricKey> sym_key(
+      crypto::SymmetricKey::Import(crypto::SymmetricKey::AES, key));
   ASSERT_TRUE(sym_key.get());
 
   crypto::Encryptor encryptor;
@@ -464,8 +464,8 @@ TEST(EncryptorTest, EncryptAES128CBCRegression) {
 TEST(EncryptorTest, UnsupportedKeySize) {
   std::string key = "7 = bad";
   std::string iv = "Sweet Sixteen IV";
-  scoped_ptr<crypto::SymmetricKey> sym_key(crypto::SymmetricKey::Import(
-      crypto::SymmetricKey::AES, key));
+  std::unique_ptr<crypto::SymmetricKey> sym_key(
+      crypto::SymmetricKey::Import(crypto::SymmetricKey::AES, key));
   if (!sym_key.get())
     return;
 
@@ -478,8 +478,8 @@ TEST(EncryptorTest, UnsupportedKeySize) {
 TEST(EncryptorTest, UnsupportedIV) {
   std::string key = "128=SixteenBytes";
   std::string iv = "OnlyForteen :(";
-  scoped_ptr<crypto::SymmetricKey> sym_key(crypto::SymmetricKey::Import(
-      crypto::SymmetricKey::AES, key));
+  std::unique_ptr<crypto::SymmetricKey> sym_key(
+      crypto::SymmetricKey::Import(crypto::SymmetricKey::AES, key));
   ASSERT_TRUE(sym_key.get());
 
   crypto::Encryptor encryptor;
@@ -492,8 +492,8 @@ TEST(EncryptorTest, EmptyEncrypt) {
   std::string plaintext;
   std::string expected_ciphertext_hex = "8518B8878D34E7185E300D0FCC426396";
 
-  scoped_ptr<crypto::SymmetricKey> sym_key(crypto::SymmetricKey::Import(
-      crypto::SymmetricKey::AES, key));
+  std::unique_ptr<crypto::SymmetricKey> sym_key(
+      crypto::SymmetricKey::Import(crypto::SymmetricKey::AES, key));
   ASSERT_TRUE(sym_key.get());
 
   crypto::Encryptor encryptor;
@@ -511,8 +511,8 @@ TEST(EncryptorTest, CipherTextNotMultipleOfBlockSize) {
   std::string key = "128=SixteenBytes";
   std::string iv = "Sweet Sixteen IV";
 
-  scoped_ptr<crypto::SymmetricKey> sym_key(crypto::SymmetricKey::Import(
-      crypto::SymmetricKey::AES, key));
+  std::unique_ptr<crypto::SymmetricKey> sym_key(
+      crypto::SymmetricKey::Import(crypto::SymmetricKey::AES, key));
   ASSERT_TRUE(sym_key.get());
 
   crypto::Encryptor encryptor;
@@ -526,7 +526,7 @@ TEST(EncryptorTest, CipherTextNotMultipleOfBlockSize) {
   // Otherwise when using std::string as the other tests do, accesses several
   // bytes off the end of the buffer may fall inside the reservation of
   // the string and not be detected.
-  scoped_ptr<char[]> ciphertext(new char[1]);
+  std::unique_ptr<char[]> ciphertext(new char[1]);
 
   std::string plaintext;
   EXPECT_FALSE(

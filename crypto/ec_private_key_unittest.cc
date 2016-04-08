@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Generate random private keys. Export, then re-import. We should get
@@ -19,8 +19,10 @@ TEST(ECPrivateKeyUnitTest, InitRandomTest) {
   const std::string password1;
   const std::string password2 = "test";
 
-  scoped_ptr<crypto::ECPrivateKey> keypair1(crypto::ECPrivateKey::Create());
-  scoped_ptr<crypto::ECPrivateKey> keypair2(crypto::ECPrivateKey::Create());
+  std::unique_ptr<crypto::ECPrivateKey> keypair1(
+      crypto::ECPrivateKey::Create());
+  std::unique_ptr<crypto::ECPrivateKey> keypair2(
+      crypto::ECPrivateKey::Create());
   ASSERT_TRUE(keypair1.get());
   ASSERT_TRUE(keypair2.get());
 
@@ -42,10 +44,10 @@ TEST(ECPrivateKeyUnitTest, InitRandomTest) {
   EXPECT_TRUE(keypair1->ExportRawPublicKey(&raw_pubkey1));
   EXPECT_TRUE(keypair2->ExportRawPublicKey(&raw_pubkey2));
 
-  scoped_ptr<crypto::ECPrivateKey> keypair3(
+  std::unique_ptr<crypto::ECPrivateKey> keypair3(
       crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
           password1, privkey1, pubkey1));
-  scoped_ptr<crypto::ECPrivateKey> keypair4(
+  std::unique_ptr<crypto::ECPrivateKey> keypair4(
       crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
           password2, privkey2, pubkey2));
   ASSERT_TRUE(keypair3.get());
@@ -75,8 +77,9 @@ TEST(ECPrivateKeyUnitTest, InitRandomTest) {
 }
 
 TEST(ECPrivateKeyUnitTest, Copy) {
-  scoped_ptr<crypto::ECPrivateKey> keypair1(crypto::ECPrivateKey::Create());
-  scoped_ptr<crypto::ECPrivateKey> keypair2(keypair1->Copy());
+  std::unique_ptr<crypto::ECPrivateKey> keypair1(
+      crypto::ECPrivateKey::Create());
+  std::unique_ptr<crypto::ECPrivateKey> keypair2(keypair1->Copy());
   ASSERT_TRUE(keypair1.get());
   ASSERT_TRUE(keypair2.get());
 
@@ -103,7 +106,7 @@ TEST(ECPrivateKeyUnitTest, BadPasswordTest) {
   const std::string password1;
   const std::string password2 = "test";
 
-  scoped_ptr<crypto::ECPrivateKey> keypair1(
+  std::unique_ptr<crypto::ECPrivateKey> keypair1(
       crypto::ECPrivateKey::Create());
   ASSERT_TRUE(keypair1.get());
 
@@ -113,7 +116,7 @@ TEST(ECPrivateKeyUnitTest, BadPasswordTest) {
       password1, 1, &privkey1));
   ASSERT_TRUE(keypair1->ExportPublicKey(&pubkey1));
 
-  scoped_ptr<crypto::ECPrivateKey> keypair2(
+  std::unique_ptr<crypto::ECPrivateKey> keypair2(
       crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
           password2, privkey1, pubkey1));
   ASSERT_FALSE(keypair2.get());
@@ -149,7 +152,7 @@ TEST(ECPrivateKeyUnitTest, LoadNSSKeyTest) {
       0x2c, 0x3b, 0xe8, 0xdb, 0x19, 0xfc, 0x5e,
   };
 
-  scoped_ptr<crypto::ECPrivateKey> keypair_nss(
+  std::unique_ptr<crypto::ECPrivateKey> keypair_nss(
       crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
           "", std::vector<uint8_t>(std::begin(kNSSKey), std::end(kNSSKey)),
           std::vector<uint8_t>(std::begin(kNSSPublicKey),
@@ -195,7 +198,7 @@ TEST(ECPrivateKeyUnitTest, LoadOpenSSLKeyTest) {
       0xaa, 0x44, 0xff, 0xab, 0x4d, 0xb5, 0x7e, 0x25, 0x3d,
   };
 
-  scoped_ptr<crypto::ECPrivateKey> keypair_openssl(
+  std::unique_ptr<crypto::ECPrivateKey> keypair_openssl(
       crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
           "",
           std::vector<uint8_t>(std::begin(kOpenSSLKey), std::end(kOpenSSLKey)),
@@ -291,7 +294,7 @@ TEST(ECPrivateKeyUnitTest, LoadOldOpenSSLKeyTest) {
       0x41, 0x3b, 0x0d, 0x10, 0xa7, 0x4a, 0x93, 0xdb, 0x5a, 0xe7, 0xec,
   };
 
-  scoped_ptr<crypto::ECPrivateKey> keypair_openssl(
+  std::unique_ptr<crypto::ECPrivateKey> keypair_openssl(
       crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
           "",
           std::vector<uint8_t>(std::begin(kOpenSSLKey), std::end(kOpenSSLKey)),

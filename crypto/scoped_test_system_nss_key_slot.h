@@ -5,8 +5,9 @@
 #ifndef CRYPTO_SCOPED_TEST_SYSTEM_NSS_KEY_SLOT_H_
 #define CRYPTO_SCOPED_TEST_SYSTEM_NSS_KEY_SLOT_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "crypto/crypto_export.h"
 
 // Forward declaration, from <pk11pub.h>
@@ -33,7 +34,7 @@ class CRYPTO_EXPORT ScopedTestSystemNSSKeySlot {
   PK11SlotInfo* slot() const;
 
  private:
-  scoped_ptr<ScopedTestNSSDB> test_db_;
+  std::unique_ptr<ScopedTestNSSDB> test_db_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedTestSystemNSSKeySlot);
 };
