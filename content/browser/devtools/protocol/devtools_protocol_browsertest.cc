@@ -488,4 +488,30 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, ReloadBlankPage) {
   // Should not crash at this point.
 }
 
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, EvaluateInBlankPage) {
+  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
+  Attach();
+  scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+  params->SetString("expression", "window");
+  SendCommand("Runtime.evaluate", std::move(params), true);
+  bool wasThrown = true;
+  EXPECT_TRUE(result_->GetBoolean("wasThrown", &wasThrown));
+  EXPECT_FALSE(wasThrown);
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
+    EvaluateInBlankPageAfterNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_url = embedded_test_server()->GetURL("/devtools/navigation.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
+  Attach();
+  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
+  scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+  params->SetString("expression", "window");
+  SendCommand("Runtime.evaluate", std::move(params), true);
+  bool wasThrown = true;
+  EXPECT_TRUE(result_->GetBoolean("wasThrown", &wasThrown));
+  EXPECT_FALSE(wasThrown);
+}
+
 }  // namespace content

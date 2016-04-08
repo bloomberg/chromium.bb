@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
@@ -15,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "cc/trees/layer_tree_host.h"
@@ -377,11 +379,15 @@ class RenderViewImplTest : public RenderViewTest {
 class DevToolsAgentTest : public RenderViewImplTest {
  public:
   void Attach() {
+    notifications_ = std::vector<std::string>();
     std::string host_id = "host_id";
     agent()->OnAttach(host_id, 17);
+    agent()->send_protocol_message_callback_for_test_ = base::Bind(
+       &DevToolsAgentTest::OnDevToolsMessage, base::Unretained(this));
   }
 
   void Detach() {
+    agent()->send_protocol_message_callback_for_test_.Reset();
     agent()->OnDetach();
   }
 
@@ -398,10 +404,32 @@ class DevToolsAgentTest : public RenderViewImplTest {
     view()->NotifyOnClose();
   }
 
+  void OnDevToolsMessage(
+      int, int, const std::string& message, const std::string&) {
+    scoped_ptr<base::DictionaryValue> root(static_cast<base::DictionaryValue*>(
+        base::JSONReader::Read(message).release()));
+    int id;
+    if (!root->GetInteger("id", &id)) {
+      std::string notification;
+      EXPECT_TRUE(root->GetString("method", &notification));
+      notifications_.push_back(notification);
+    }
+  }
+
+  bool HasNotifications(const std::string& notification, int count) {
+    for (const std::string& s : notifications_) {
+      if (s == notification)
+        --count;
+    }
+    return count <= 0;
+  }
+
  private:
   DevToolsAgent* agent() {
     return frame()->devtools_agent();
   }
+
+  std::vector<std::string> notifications_;
 };
 
 class RenderViewImplBlinkSettingsTest : public RenderViewImplTest {
@@ -2353,6 +2381,21 @@ TEST_F(DevToolsAgentTest, DevToolsResumeOnClose) {
   // CloseWhilePaused should resume execution and continue here.
   EXPECT_FALSE(IsPaused());
   Detach();
+}
+
+TEST_F(DevToolsAgentTest, RuntimeEnableForcesMainContext) {
+  LoadHTML("");
+  Attach();
+  DispatchDevToolsMessage("{\"id\":1,\"method\":\"Runtime.enable\"}");
+  EXPECT_TRUE(HasNotifications("Runtime.executionContextCreated", 1));
+}
+
+TEST_F(DevToolsAgentTest, RuntimeEnableForcesContextsAfterNavigation) {
+  Attach();
+  DispatchDevToolsMessage("{\"id\":1,\"method\":\"Runtime.enable\"}");
+  EXPECT_FALSE(HasNotifications("Runtime.executionContextCreated", 1));
+  LoadHTML("<body>page<iframe></iframe></body>");
+  EXPECT_TRUE(HasNotifications("Runtime.executionContextCreated", 2));
 }
 
 }  // namespace content

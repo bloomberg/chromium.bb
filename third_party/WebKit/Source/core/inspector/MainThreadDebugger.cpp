@@ -101,10 +101,9 @@ void MainThreadDebugger::contextCreated(ScriptState* scriptState, LocalFrame* fr
     ASSERT(isMainThread());
     v8::HandleScope handles(scriptState->isolate());
     DOMWrapperWorld& world = scriptState->world();
-    bool isMainContext = frame->localFrameRoot() == frame && world.isMainWorld();
-    if (isMainContext)
+    if (frame->localFrameRoot() == frame && world.isMainWorld())
         debugger()->resetContextGroup(contextGroupId(frame));
-    debugger()->contextCreated(V8ContextInfo(scriptState->context(), contextGroupId(frame), isMainContext, world.isMainWorld(), origin ? origin->toRawString() : "", world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "", IdentifiersFactory::frameId(frame)));
+    debugger()->contextCreated(V8ContextInfo(scriptState->context(), contextGroupId(frame), world.isMainWorld(), origin ? origin->toRawString() : "", world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "", IdentifiersFactory::frameId(frame)));
 }
 
 void MainThreadDebugger::contextWillBeDestroyed(ScriptState* scriptState)
@@ -191,6 +190,18 @@ bool MainThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context> c
 
     DOMWindow* window = toDOMWindow(target);
     return window && BindingSecurity::shouldAllowAccessTo(m_isolate, toLocalDOMWindow(toDOMWindow(calling)), window, DoNotReportSecurityError);
+}
+
+int MainThreadDebugger::ensureDefaultContextInGroup(int contextGroupId)
+{
+    LocalFrame* frame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
+    if (!frame)
+        return 0;
+    ScriptState* scriptState = ScriptState::forMainWorld(frame);
+    if (!scriptState)
+        return 0;
+    v8::HandleScope scopes(scriptState->isolate());
+    return V8Debugger::contextId(scriptState->context());
 }
 
 } // namespace blink

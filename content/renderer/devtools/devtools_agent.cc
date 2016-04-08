@@ -107,6 +107,11 @@ void DevToolsAgent::sendProtocolMessage(int session_id,
                                         int call_id,
                                         const blink::WebString& message,
                                         const blink::WebString& state_cookie) {
+  if (!send_protocol_message_callback_for_test_.is_null()) {
+    send_protocol_message_callback_for_test_.Run(
+        session_id, call_id, message.utf8(), state_cookie.utf8());
+    return;
+  }
   SendChunkedProtocolMessage(this, routing_id(), session_id, call_id,
                              message.utf8(), state_cookie.utf8());
 }

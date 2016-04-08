@@ -28,6 +28,7 @@ public:
     virtual bool formatAccessorsAsProperties(v8::Local<v8::Value>) = 0;
     virtual bool isExecutionAllowed() = 0;
     virtual double currentTimeMS() = 0;
+    virtual int ensureDefaultContextInGroup(int contextGroupId) = 0;
 };
 
 } // namespace blink

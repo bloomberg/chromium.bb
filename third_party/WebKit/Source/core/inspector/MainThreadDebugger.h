@@ -77,6 +77,7 @@ private:
     void muteConsole() override;
     void unmuteConsole() override;
     bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) override;
+    int ensureDefaultContextInGroup(int contextGroupId) override;
 
     OwnPtr<ClientMessageLoop> m_clientMessageLoop;
     OwnPtr<InspectorTaskRunner> m_taskRunner;

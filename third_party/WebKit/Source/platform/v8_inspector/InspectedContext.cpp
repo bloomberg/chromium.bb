@@ -21,7 +21,6 @@ InspectedContext::InspectedContext(V8DebuggerImpl* debugger, const V8ContextInfo
     , m_context(info.context->GetIsolate(), info.context)
     , m_contextId(contextId)
     , m_contextGroupId(info.contextGroupId)
-    , m_isMainInGroup(info.isMainInGroup)
     , m_isDefault(info.isDefault)
     , m_origin(info.origin)
     , m_humanReadableName(info.humanReadableName)

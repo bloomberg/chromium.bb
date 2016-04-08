@@ -30,6 +30,7 @@
 
 #include "core/inspector/WorkerThreadDebugger.h"
 
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/inspector/WorkerDebuggerAgent.h"
 #include "core/workers/WorkerThread.h"
@@ -60,7 +61,7 @@ WorkerThreadDebugger::~WorkerThreadDebugger()
 
 void WorkerThreadDebugger::contextCreated(v8::Local<v8::Context> context)
 {
-    debugger()->contextCreated(V8ContextInfo(context, workerContextGroupId, true, true, m_workerThread->workerGlobalScope()->url().getString(), "", ""));
+    debugger()->contextCreated(V8ContextInfo(context, workerContextGroupId, true, m_workerThread->workerGlobalScope()->url().getString(), "", ""));
 }
 
 void WorkerThreadDebugger::contextWillBeDestroyed(v8::Local<v8::Context> context)
@@ -87,6 +88,16 @@ void WorkerThreadDebugger::quitMessageLoopOnPause()
 bool WorkerThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target)
 {
     return true;
+}
+
+int WorkerThreadDebugger::ensureDefaultContextInGroup(int contextGroupId)
+{
+    ASSERT(contextGroupId == workerContextGroupId);
+    ScriptState* scriptState = m_workerThread->workerGlobalScope()->scriptController()->getScriptState();
+    if (!scriptState)
+        return 0;
+    v8::HandleScope scopes(scriptState->isolate());
+    return V8Debugger::contextId(scriptState->context());
 }
 
 } // namespace blink

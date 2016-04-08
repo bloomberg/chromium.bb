@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
@@ -90,6 +91,8 @@ class CONTENT_EXPORT DevToolsAgent
   bool paused_in_mouse_move_;
   bool paused_;
   RenderFrameImpl* frame_;
+  base::Callback<void(int, int, const std::string&, const std::string&)>
+      send_protocol_message_callback_for_test_;
   scoped_ptr<DevToolsCPUThrottler> cpu_throttler_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgent);

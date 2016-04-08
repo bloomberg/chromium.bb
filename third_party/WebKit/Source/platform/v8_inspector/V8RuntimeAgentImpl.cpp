@@ -88,20 +88,11 @@ void V8RuntimeAgentImpl::evaluate(
     if (executionContextId.isJust()) {
         contextId = executionContextId.fromJust();
     } else {
-        InspectedContext* mainInGroup = nullptr;
-        if (const V8DebuggerImpl::ContextByIdMap* contexts = m_debugger->contextGroup(m_session->contextGroupId())) {
-            for (auto& idContext : *contexts) {
-                if (idContext.second->isMainInGroup()) {
-                    mainInGroup = idContext.second;
-                    break;
-                }
-            }
-        }
-        if (!mainInGroup) {
+        contextId = m_debugger->client()->ensureDefaultContextInGroup(m_session->contextGroupId());
+        if (!contextId) {
             *errorString = "Cannot find default execution context";
             return;
         }
-        contextId = mainInGroup->contextId();
     }
 
     InjectedScript* injectedScript = m_session->findInjectedScript(errorString, contextId);
