@@ -1,8 +1,5 @@
+ortuno@chromium.org
 scheib@chromium.org
-
-# No longer fulltime chromium developers:
-keybuk@chromium.org
-armansito@chromium.org
 
 per-file *.gyp*=*
 per-file BUILD.gn=*
