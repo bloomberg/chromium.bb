@@ -22,6 +22,8 @@ AAC::AAC()
       extension_frequency_(0), channel_layout_(CHANNEL_LAYOUT_UNSUPPORTED) {
 }
 
+AAC::AAC(const AAC& other) = default;
+
 AAC::~AAC() {
 }
 

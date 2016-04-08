@@ -31,6 +31,7 @@ class MEDIA_EXPORT PictureBuffer {
                 gfx::Size size,
                 const TextureIds& texture_ids,
                 const std::vector<gpu::Mailbox>& texture_mailboxes);
+  PictureBuffer(const PictureBuffer& other);
   ~PictureBuffer();
 
   // Returns the client-specified id of the buffer.

@@ -34,6 +34,8 @@ PictureBuffer::PictureBuffer(int32_t id,
   DCHECK_EQ(texture_ids.size(), texture_mailboxes.size());
 }
 
+PictureBuffer::PictureBuffer(const PictureBuffer& other) = default;
+
 PictureBuffer::~PictureBuffer() {}
 
 Picture::Picture(int32_t picture_buffer_id,

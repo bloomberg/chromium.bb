@@ -90,6 +90,7 @@ class MEDIA_EXPORT BufferReader {
 
 class MEDIA_EXPORT BoxReader : public BufferReader {
  public:
+  BoxReader(const BoxReader& other);
   ~BoxReader();
 
   // Create a BoxReader from a buffer. Note that this function may return NULL

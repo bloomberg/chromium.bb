@@ -151,6 +151,9 @@ Mp2tStreamParser::BufferQueueWithConfig::BufferQueueWithConfig(
     video_config(video_cfg) {
 }
 
+Mp2tStreamParser::BufferQueueWithConfig::BufferQueueWithConfig(
+    const BufferQueueWithConfig& other) = default;
+
 Mp2tStreamParser::BufferQueueWithConfig::~BufferQueueWithConfig() {
 }
 

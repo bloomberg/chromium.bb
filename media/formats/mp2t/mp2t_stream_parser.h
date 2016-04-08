@@ -52,6 +52,7 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
     BufferQueueWithConfig(bool is_cfg_sent,
                           const AudioDecoderConfig& audio_cfg,
                           const VideoDecoderConfig& video_cfg);
+    BufferQueueWithConfig(const BufferQueueWithConfig& other);
     ~BufferQueueWithConfig();
 
     bool is_config_sent;

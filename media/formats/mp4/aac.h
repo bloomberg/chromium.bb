@@ -27,6 +27,7 @@ namespace mp4 {
 class MEDIA_EXPORT AAC {
  public:
   AAC();
+  AAC(const AAC& other);
   ~AAC();
 
   // Parse the AAC config from the raw binary data embedded in esds box.

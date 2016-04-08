@@ -30,9 +30,10 @@ enum SampleFlags {
   kSampleIsNonSyncSample = 0x10000
 };
 
-#define DECLARE_BOX_METHODS(T) \
-  T(); \
-  ~T() override; \
+#define DECLARE_BOX_METHODS(T)            \
+  T();                                    \
+  T(const T& other);                      \
+  ~T() override;                          \
   bool Parse(BoxReader* reader) override; \
   FourCC BoxType() const override;
 
@@ -77,6 +78,7 @@ struct MEDIA_EXPORT SampleAuxiliaryInformationSize : Box {
 // Represent an entry in SampleEncryption box or CENC auxiliary info.
 struct MEDIA_EXPORT SampleEncryptionEntry {
   SampleEncryptionEntry();
+  SampleEncryptionEntry(const SampleEncryptionEntry& other);
   ~SampleEncryptionEntry();
 
   // Parse SampleEncryptionEntry from |reader|.
@@ -278,6 +280,7 @@ struct MEDIA_EXPORT SampleDescription : Box {
 
 struct MEDIA_EXPORT CencSampleEncryptionInfoEntry {
   CencSampleEncryptionInfoEntry();
+  CencSampleEncryptionInfoEntry(const CencSampleEncryptionInfoEntry& other);
   ~CencSampleEncryptionInfoEntry();
 
   bool is_encrypted;

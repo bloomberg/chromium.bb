@@ -17,13 +17,19 @@ DemuxerConfigs::DemuxerConfigs()
       video_codec(kUnknownVideoCodec),
       is_video_encrypted(false) {}
 
+DemuxerConfigs::DemuxerConfigs(const DemuxerConfigs& other) = default;
+
 DemuxerConfigs::~DemuxerConfigs() {}
 
 AccessUnit::AccessUnit() : is_end_of_stream(false), is_key_frame(false) {}
 
+AccessUnit::AccessUnit(const AccessUnit& other) = default;
+
 AccessUnit::~AccessUnit() {}
 
 DemuxerData::DemuxerData() : type(DemuxerStream::UNKNOWN) {}
+
+DemuxerData::DemuxerData(const DemuxerData& other) = default;
 
 DemuxerData::~DemuxerData() {}
 

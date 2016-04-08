@@ -53,6 +53,7 @@ struct MEDIA_EXPORT HEVCDecoderConfigurationRecord : Box {
   typedef std::vector<uint8_t> HVCCNALUnit;
   struct HVCCNALArray {
     HVCCNALArray();
+    HVCCNALArray(const HVCCNALArray& other);
     ~HVCCNALArray();
     uint8_t first_byte;
     std::vector<HVCCNALUnit> units;

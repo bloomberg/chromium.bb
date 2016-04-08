@@ -20,6 +20,7 @@ namespace media {
 
 struct MEDIA_EXPORT DemuxerConfigs {
   DemuxerConfigs();
+  DemuxerConfigs(const DemuxerConfigs& other);
   ~DemuxerConfigs();
 
   AudioCodec audio_codec;
@@ -40,6 +41,7 @@ struct MEDIA_EXPORT DemuxerConfigs {
 
 struct MEDIA_EXPORT AccessUnit {
   AccessUnit();
+  AccessUnit(const AccessUnit& other);
   ~AccessUnit();
 
   DemuxerStream::Status status;
@@ -55,6 +57,7 @@ struct MEDIA_EXPORT AccessUnit {
 
 struct MEDIA_EXPORT DemuxerData {
   DemuxerData();
+  DemuxerData(const DemuxerData& other);
   ~DemuxerData();
 
   DemuxerStream::Type type;

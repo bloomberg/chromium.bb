@@ -53,6 +53,9 @@ bool HEVCDecoderConfigurationRecord::Parse(const uint8_t* data, int data_size) {
 HEVCDecoderConfigurationRecord::HVCCNALArray::HVCCNALArray()
     : first_byte(0) {}
 
+HEVCDecoderConfigurationRecord::HVCCNALArray::HVCCNALArray(
+    const HVCCNALArray& other) = default;
+
 HEVCDecoderConfigurationRecord::HVCCNALArray::~HVCCNALArray() {}
 
 bool HEVCDecoderConfigurationRecord::ParseInternal(

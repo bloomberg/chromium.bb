@@ -100,6 +100,8 @@ BoxReader::BoxReader(const uint8_t* buf,
       scanned_(false),
       is_EOS_(is_EOS) {}
 
+BoxReader::BoxReader(const BoxReader& other) = default;
+
 BoxReader::~BoxReader() {
   if (scanned_ && !children_.empty()) {
     for (ChildMap::iterator itr = children_.begin();
