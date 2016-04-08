@@ -41,6 +41,39 @@
 #include "ui/events/keycodes/platform_key_map_win.h"
 #endif
 
+// Support a collection of histograms, perhaps one for each entry in an
+// enumeration. This macro manages a block of pointers, adding to a specific
+// one by its index.
+//
+// A typical instantiation looks something like this:
+//  STATIC_HISTOGRAM_POINTER_GROUP(
+//      GetHistogramNameForIndex(histogram_index),
+//      histogram_index, MAXIMUM_HISTOGRAM_INDEX, Add(some_delta),
+//      base::Histogram::FactoryGet(
+//          GetHistogramNameForType(histogram_index),
+//          MINIMUM_SAMPLE, MAXIMUM_SAMPLE, BUCKET_COUNT,
+//          base::HistogramBase::kUmaTargetedHistogramFlag));
+//
+// Though it seems inefficient to generate the name twice, the first
+// instance will be used only for DCHECK builds and the second will
+// execute only during the first access to the given index, after which
+// the pointer is cached and the name never needed again.
+//
+// This is defined in this way so that it can be moved unchanged into
+// base/metrics/histogram_macros.h if it is useful in other files.
+#define STATIC_HISTOGRAM_POINTER_GROUP(constant_histogram_name, index,        \
+                                       constant_maximum,                      \
+                                       histogram_add_method_invocation,       \
+                                       histogram_factory_get_invocation)      \
+  do {                                                                        \
+    static base::subtle::AtomicWord atomic_histograms[constant_maximum];      \
+    DCHECK_LE(0, index);                                                      \
+    DCHECK_LT(index, constant_maximum);                                       \
+    HISTOGRAM_POINTER_USE(&atomic_histograms[index], constant_histogram_name, \
+                          histogram_add_method_invocation,                    \
+                          histogram_factory_get_invocation);                  \
+  } while (0)
+
 namespace {
 
 std::string EventTypeName(ui::EventType type) {
@@ -312,16 +345,17 @@ Event::Event(const base::NativeEvent& native_event,
       static_cast<base::HistogramBase::Sample>(delta.InMicroseconds());
   UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Browser", delta_sample, 1, 1000000,
                               100);
-  std::string name_for_event =
-      base::StringPrintf("Event.Latency.Browser.%s", name_.c_str());
-  base::HistogramBase* counter_for_type =
+
+  // Though it seems inefficient to generate the string twice, the first
+  // instance will be used only for DCHECK builds and the second won't be
+  // executed at all if the histogram was previously accessed here.
+  STATIC_HISTOGRAM_POINTER_GROUP(
+      base::StringPrintf("Event.Latency.Browser.%s", name_.c_str()),
+      type_, ET_LAST, Add(delta_sample),
       base::Histogram::FactoryGet(
-          name_for_event,
-          1,
-          1000000,
-          100,
-          base::HistogramBase::kUmaTargetedHistogramFlag);
-  counter_for_type->Add(delta_sample);
+          base::StringPrintf("Event.Latency.Browser.%s", name_.c_str()),
+          1, 1000000, 100,
+          base::HistogramBase::kUmaTargetedHistogramFlag));
 
 #if defined(USE_X11)
   if (native_event->type == GenericEvent) {
