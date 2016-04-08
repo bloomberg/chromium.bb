@@ -11,13 +11,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
   def SetExpectations(self):
     # All platforms.
-    self.Skip('deqp/data/gles3/shaders/functions.html', bug=483282)
-    self.Skip('deqp/data/gles3/shaders/linkage.html', bug=483282)
-    self.Skip('deqp/data/gles3/shaders/preprocessor.html', bug=483282)
-
-    self.Skip('deqp/framework/opengl/simplereference/referencecontext.html',
-        bug=483282)
-
     self.Skip('deqp/functional/gles3/attriblocation.html', bug=483282)
     self.Skip('deqp/functional/gles3/builtinprecision*.html', bug=483282)
     self.Skip('deqp/functional/gles3/draw.html', bug=483282)
@@ -59,6 +52,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/uniformapi.html', bug=483282)
     self.Skip('deqp/functional/gles3/uniformbuffers.html', bug=483282)
     self.Skip('deqp/functional/gles3/vertexarrays.html', bug=483282)
+
+    self.Fail('deqp/data/gles3/shaders/linkage.html', bug=483282)
+    self.Fail('deqp/data/gles3/shaders/preprocessor.html', bug=483282)
 
     self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
 
@@ -377,6 +373,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'intel'], bug=483282)
 
     # Linux only.
+    self.Fail('deqp/data/gles3/shaders/functions.html',
+        ['linux'], bug=483282)
     self.Skip('deqp/functional/gles3/shaderswitch.html',
         ['linux'], bug=483282)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
