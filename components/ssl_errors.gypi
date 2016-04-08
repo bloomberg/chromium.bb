@@ -13,7 +13,8 @@
         '../net/net.gyp:net',
         '../ui/base/ui_base.gyp:ui_base',
         'components_strings.gyp:components_strings',
-        'url_formatter/url_formatter.gyp:url_formatter'
+        'network_time',
+        'url_formatter/url_formatter.gyp:url_formatter',
       ],
       'include_dirs': [
         '..',
