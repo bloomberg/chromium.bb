@@ -9310,7 +9310,6 @@
     },
     "internal-toolchain-minor": {
         "active_waterfall": "chromeos",
-        "archive_build_debug": true,
         "boards": [
             "x86-alex",
             "stumpy",
@@ -9319,30 +9318,21 @@
         ],
         "build_timeout": 28200,
         "build_type": "toolchain",
-        "builder_class_name": "sdk_builders.ChrootSdkBuilder",
-        "chrome_sdk": true,
         "chromeos_official": true,
         "description": "Test next minor toolchain revision (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
         "gcc_githash": "svn-mirror/google/gcc-4_9",
-        "git_sync": true,
-        "hw_tests_override": [],
-        "image_test": true,
-        "images": [
-            "base",
-            "recovery",
-            "test",
-            "factory_install"
+        "hw_tests_override": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
         ],
         "internal": true,
         "latest_toolchain": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
-        "use_sdk": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "usepkg_build_packages": false
+        ]
     },
     "ivybridge-full-group": {
         "_template": "full",
@@ -21069,7 +21059,6 @@
         ]
     },
     "toolchain-minor": {
-        "archive_build_debug": true,
         "boards": [
             "x86-generic",
             "arm-generic",
@@ -21077,23 +21066,14 @@
         ],
         "build_timeout": 28200,
         "build_type": "toolchain",
-        "builder_class_name": "sdk_builders.ChrootSdkBuilder",
-        "chrome_sdk": true,
         "description": "Test next minor toolchain revision",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
         "gcc_githash": "svn-mirror/google/gcc-4_9",
-        "git_sync": true,
-        "hw_tests_override": [],
-        "image_test": true,
-        "images": [
-            "base",
-            "recovery",
-            "test",
-            "factory_install"
+        "hw_tests_override": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
         ],
-        "latest_toolchain": true,
-        "use_sdk": false,
-        "usepkg_build_packages": false
+        "latest_toolchain": true
     },
     "tricky-chrome-pfq": {
         "_template": "chrome-pfq",

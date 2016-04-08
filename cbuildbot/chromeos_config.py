@@ -1308,7 +1308,9 @@ def GetConfig():
 
   _toolchain_minor = site_config.AddWithoutTemplate(
       'toolchain-minor',
-      _cros_sdk,
+      boards=[
+          'x86-generic', 'arm-generic', 'amd64-generic'
+      ],
       build_type=constants.TOOLCHAIN_TYPE,
       build_timeout=12 * 60 * 60 if IS_RELEASE_BRANCH else (7 * 60 + 50) * 60,
       latest_toolchain=True,
