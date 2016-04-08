@@ -85,6 +85,10 @@ class ArcBridgeService : public ArcBridgeHost {
     virtual void OnAuthInstanceReady() {}
     virtual void OnAuthInstanceClosed() {}
 
+    // Called whenever ARC Bluetooth instance is ready.
+    virtual void OnBluetoothInstanceReady() {}
+    virtual void OnBluetoothInstanceClosed() {}
+
     // Called whenever the ARC clipboard interface state changes.
     virtual void OnClipboardInstanceReady() {}
     virtual void OnClipboardInstanceClosed() {}
@@ -169,6 +173,7 @@ class ArcBridgeService : public ArcBridgeHost {
   AppInstance* app_instance() { return app_ptr_.get(); }
   AudioInstance* audio_instance() { return audio_ptr_.get(); }
   AuthInstance* auth_instance() { return auth_ptr_.get(); }
+  BluetoothInstance* bluetooth_instance() { return bluetooth_ptr_.get(); }
   ClipboardInstance* clipboard_instance() { return clipboard_ptr_.get(); }
   CrashCollectorInstance* crash_collector_instance() {
     return crash_collector_ptr_.get();
@@ -189,6 +194,7 @@ class ArcBridgeService : public ArcBridgeHost {
 
   int32_t app_version() const { return app_ptr_.version(); }
   int32_t audio_version() const { return audio_ptr_.version(); }
+  int32_t bluetooth_version() const { return bluetooth_ptr_.version(); }
   int32_t auth_version() const { return auth_ptr_.version(); }
   int32_t clipboard_version() const { return clipboard_ptr_.version(); }
   int32_t crash_collector_version() const {
@@ -208,6 +214,7 @@ class ArcBridgeService : public ArcBridgeHost {
   void OnAppInstanceReady(AppInstancePtr app_ptr) override;
   void OnAudioInstanceReady(AudioInstancePtr audio_ptr) override;
   void OnAuthInstanceReady(AuthInstancePtr auth_ptr) override;
+  void OnBluetoothInstanceReady(BluetoothInstancePtr bluetooth_ptr) override;
   void OnClipboardInstanceReady(ClipboardInstancePtr clipboard_ptr) override;
   void OnCrashCollectorInstanceReady(
       CrashCollectorInstancePtr crash_collector_ptr) override;
@@ -256,6 +263,7 @@ class ArcBridgeService : public ArcBridgeHost {
   void CloseAppChannel();
   void CloseAudioChannel();
   void CloseAuthChannel();
+  void CloseBluetoothChannel();
   void CloseClipboardChannel();
   void CloseCrashCollectorChannel();
   void CloseImeChannel();
@@ -272,6 +280,7 @@ class ArcBridgeService : public ArcBridgeHost {
   void OnAppVersionReady(int32_t version);
   void OnAudioVersionReady(int32_t version);
   void OnAuthVersionReady(int32_t version);
+  void OnBluetoothVersionReady(int32_t version);
   void OnClipboardVersionReady(int32_t version);
   void OnCrashCollectorVersionReady(int32_t version);
   void OnImeVersionReady(int32_t version);
@@ -288,6 +297,7 @@ class ArcBridgeService : public ArcBridgeHost {
   AppInstancePtr app_ptr_;
   AudioInstancePtr audio_ptr_;
   AuthInstancePtr auth_ptr_;
+  BluetoothInstancePtr bluetooth_ptr_;
   ClipboardInstancePtr clipboard_ptr_;
   CrashCollectorInstancePtr crash_collector_ptr_;
   ImeInstancePtr ime_ptr_;
@@ -309,6 +319,7 @@ class ArcBridgeService : public ArcBridgeHost {
   AppInstancePtr temporary_app_ptr_;
   AudioInstancePtr temporary_audio_ptr_;
   AuthInstancePtr temporary_auth_ptr_;
+  BluetoothInstancePtr temporary_bluetooth_ptr_;
   ClipboardInstancePtr temporary_clipboard_ptr_;
   CrashCollectorInstancePtr temporary_crash_collector_ptr_;
   ImeInstancePtr temporary_ime_ptr_;

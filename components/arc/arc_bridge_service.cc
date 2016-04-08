@@ -64,6 +64,8 @@ void ArcBridgeService::AddObserver(Observer* observer) {
     observer->OnAudioInstanceReady();
   if (auth_instance())
     observer->OnAuthInstanceReady();
+  if (bluetooth_instance())
+    observer->OnBluetoothInstanceReady();
   if (clipboard_instance())
     observer->OnClipboardInstanceReady();
   if (crash_collector_instance())
@@ -160,6 +162,31 @@ void ArcBridgeService::CloseAuthChannel() {
 
   auth_ptr_.reset();
   FOR_EACH_OBSERVER(Observer, observer_list(), OnAuthInstanceClosed());
+}
+
+void ArcBridgeService::OnBluetoothInstanceReady(
+    BluetoothInstancePtr bluetooth_ptr) {
+  DCHECK(CalledOnValidThread());
+  temporary_bluetooth_ptr_ = std::move(bluetooth_ptr);
+  temporary_bluetooth_ptr_.QueryVersion(base::Bind(
+      &ArcBridgeService::OnBluetoothVersionReady, weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeService::OnBluetoothVersionReady(int32_t version) {
+  DCHECK(CalledOnValidThread());
+  bluetooth_ptr_ = std::move(temporary_bluetooth_ptr_);
+  bluetooth_ptr_.set_connection_error_handler(base::Bind(
+      &ArcBridgeService::CloseBluetoothChannel, weak_factory_.GetWeakPtr()));
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnBluetoothInstanceReady());
+}
+
+void ArcBridgeService::CloseBluetoothChannel() {
+  DCHECK(CalledOnValidThread());
+  if (!bluetooth_ptr_)
+    return;
+
+  bluetooth_ptr_.reset();
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnBluetoothInstanceClosed());
 }
 
 void ArcBridgeService::OnClipboardInstanceReady(
@@ -461,6 +488,7 @@ void ArcBridgeService::CloseAllChannels() {
   CloseAppChannel();
   CloseAudioChannel();
   CloseAuthChannel();
+  CloseBluetoothChannel();
   CloseClipboardChannel();
   CloseCrashCollectorChannel();
   CloseImeChannel();

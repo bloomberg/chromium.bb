@@ -10,6 +10,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_bridge_service_impl.h"
 #include "components/arc/audio/arc_audio_bridge.h"
+#include "components/arc/bluetooth/arc_bluetooth_bridge.h"
 #include "components/arc/clipboard/arc_clipboard_bridge.h"
 #include "components/arc/crash_collector/arc_crash_collector_bridge.h"
 #include "components/arc/ime/arc_ime_service.h"
@@ -45,6 +46,7 @@ ArcServiceManager::ArcServiceManager() {
   }
 
   AddService(make_scoped_ptr(new ArcAudioBridge(arc_bridge_service())));
+  AddService(make_scoped_ptr(new ArcBluetoothBridge(arc_bridge_service())));
   AddService(make_scoped_ptr(new ArcClipboardBridge(arc_bridge_service())));
   AddService(
       make_scoped_ptr(new ArcCrashCollectorBridge(arc_bridge_service())));

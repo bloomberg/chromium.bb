@@ -1,0 +1,168 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module arc;
+
+[Extensible]
+enum BluetoothAdapterState {
+  OFF = 0,
+  ON
+};
+
+[Extensible]
+enum BluetoothDiscoveryState {
+  STOPPED,
+  STARTED
+};
+
+[Extensible]
+enum BluetoothAclState {
+  CONNECTED,
+  DISCONNECTED
+};
+
+[Extensible]
+enum BluetoothStatus {
+  SUCCESS = 0,
+  FAIL,
+  NOT_READY,
+  NOMEM,
+  BUSY,
+  DONE,
+  UNSUPPORTED,
+  PARM_INVALID,
+  UNHANDLED,
+  AUTH_FAILURE,
+  RMT_DEV_DOWN,
+  AUTH_REJECTED
+};
+
+struct BluetoothAddress {
+  array<uint8, 6> address;
+};
+
+struct BluetoothUUID {
+  array<uint8, 16> uuid;
+};
+
+struct BluetoothServiceRecord {
+  BluetoothUUID uuid;
+  uint16 channel;
+  string name;
+};
+
+struct BluetoothLocalLEFeatures {
+  uint16 version_supported;
+  uint8 local_privacy_enabled;
+  uint8 max_adv_instance;
+  uint8 rpa_offload_supported;
+  uint8 max_irk_list_size;
+  uint8 max_adv_filter_supported;
+  uint8 activity_energy_info_supported;
+  uint16 scan_result_storage_size;
+  uint16 total_trackable_advertisers;
+  bool extended_scan_support;
+  bool debug_logging_supported;
+};
+
+[Extensible]
+enum BluetoothPropertyType {
+  ALL = 0,
+  BDNAME = 1,
+  BDADDR,
+  UUIDS,
+  CLASS_OF_DEVICE,
+  TYPE_OF_DEVICE,
+  SERVICE_RECORD,
+  ADAPTER_SCAN_MODE,
+  ADAPTER_BONDED_DEVICES,
+  ADAPTER_DISCOVERY_TIMEOUT,
+  REMOTE_FRIENDLY_NAME,
+  REMOTE_RSSI,
+  REMOTE_VERSION_INFO,
+  LOCAL_LE_FEATURES,
+  REMOTE_DEVICE_TIMESTAMP = 0xFF,
+};
+
+[Extensible]
+enum BluetoothScanMode {
+  NONE = 0x0,
+  CONNECTABLE,
+  CONNECTABLE_DISCOVERABLE
+};
+
+[Extensible]
+enum BluetoothDeviceType {
+  BREDR = 0x1,
+  BLE,
+  DUAL
+};
+
+[Extensible]
+enum BluetoothBondState {
+  NONE = 0,
+  BONDING,
+  BONDED
+};
+
+struct BluetoothRemoteVersion {
+  int32 version;
+  int32 sub_ver;
+  int32 manufacturer;
+};
+
+union BluetoothProperty {
+  string bdname;
+  BluetoothAddress bdaddr;
+  array<BluetoothUUID> uuids;
+  uint32 device_class;
+  BluetoothDeviceType device_type;
+  BluetoothServiceRecord service_record;
+  BluetoothScanMode adapter_scan_mode;
+  array<BluetoothAddress> bonded_devices;
+  uint32 discovery_timeout;
+  string remote_friendly_name;
+  int32 remote_rssi;
+  BluetoothRemoteVersion remote_version;
+  BluetoothLocalLEFeatures local_le_features;
+};
+
+interface BluetoothHost {
+  EnableAdapter() => (BluetoothAdapterState state);
+  DisableAdapter() => (BluetoothAdapterState state);
+  GetAdapterProperty(BluetoothPropertyType type);
+  SetAdapterProperty(BluetoothProperty property);
+  GetRemoteDeviceProperty(BluetoothAddress remote_addr,
+                          BluetoothPropertyType type);
+  SetRemoteDeviceProperty(BluetoothAddress remote_addr,
+                          BluetoothProperty property);
+  GetRemoteServiceRecord(BluetoothAddress remote_addr,
+                         BluetoothUUID uuid);
+  GetRemoteServices(BluetoothAddress remote_addr);
+  StartDiscovery();
+  CancelDiscovery();
+  CreateBond(BluetoothAddress addr, int32 transport);
+  RemoveBond(BluetoothAddress addr);
+  CancelBond(BluetoothAddress addr);
+
+  GetConnectionState(BluetoothAddress addr) => (bool connected);
+};
+
+interface BluetoothInstance {
+  Init(BluetoothHost host_ptr);
+
+  OnAdapterProperties(BluetoothStatus status,
+                      array<BluetoothProperty> properties);
+  OnRemoteDeviceProperties(BluetoothStatus status,
+                           BluetoothAddress address,
+                           array<BluetoothProperty> properties);
+  OnDeviceFound(array<BluetoothProperty> properties);
+  OnDiscoveryStateChanged(BluetoothDiscoveryState state);
+  OnBondStateChanged(BluetoothStatus status,
+                     BluetoothAddress remote_addr,
+                     BluetoothBondState state);
+  OnAclStateChanged(BluetoothStatus status,
+                    BluetoothAddress remote_addr,
+                    BluetoothAclState state);
+};

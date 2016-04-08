@@ -7,6 +7,7 @@ module arc;
 import "app.mojom";
 import "audio.mojom";
 import "auth.mojom";
+import "bluetooth.mojom";
 import "clipboard.mojom";
 import "crash_collector.mojom";
 import "ime.mojom";
@@ -32,6 +33,9 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the AuthInstance interface is ready.
   [MinVersion=1] OnAuthInstanceReady@106(AuthInstance instance_ptr);
+
+  // Notifies Chrome that the BluetoothInstance interface is ready.
+  [MinVersion=9] OnBluetoothInstanceReady@113(BluetoothInstance instance_ptr);
 
   // Notifies Chrome that the ClipboardInstance interface is ready.
   [MinVersion=2] OnClipboardInstanceReady@109(ClipboardInstance instance_ptr);
