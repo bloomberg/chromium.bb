@@ -130,6 +130,11 @@ void RootWindowController::OnEmbed(mus::Window* root) {
   layout_manager_[window].reset(new WindowLayout(window));
   window_manager_client()->AddActivationParent(window);
 
+  // Bubble windows must be allowed to activate because some of them rely on
+  // deactivation to close.
+  mus::Window* bubbles = GetWindowForContainer(mojom::Container::BUBBLES);
+  window_manager_client()->AddActivationParent(bubbles);
+
   AddAccelerators();
 
   window_manager_->Initialize(this, app_->session());
@@ -193,6 +198,7 @@ void RootWindowController::CreateContainers() {
   CreateContainer(mojom::Container::LOGIN_APP, mojom::Container::LOGIN_WINDOWS);
   CreateContainer(mojom::Container::LOGIN_SHELF,
                   mojom::Container::LOGIN_WINDOWS);
+  CreateContainer(mojom::Container::BUBBLES, mojom::Container::ROOT);
   CreateContainer(mojom::Container::SYSTEM_MODAL_WINDOWS,
                   mojom::Container::ROOT);
   CreateContainer(mojom::Container::KEYBOARD, mojom::Container::ROOT);

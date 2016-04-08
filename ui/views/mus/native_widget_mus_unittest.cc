@@ -16,9 +16,11 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace views {
 namespace {
@@ -30,6 +32,32 @@ SkBitmap MakeBitmap(SkColor color) {
   bitmap.eraseColor(color);
   return bitmap;
 }
+
+// An observer that tracks widget activation changes.
+class WidgetActivationObserver : public WidgetObserver {
+ public:
+  explicit WidgetActivationObserver(Widget* widget) : widget_(widget) {
+    widget_->AddObserver(this);
+  }
+
+  ~WidgetActivationObserver() override {
+    widget_->RemoveObserver(this);
+  }
+
+  const std::vector<bool>& changes() const { return changes_; }
+
+  // WidgetObserver:
+  void OnWidgetActivationChanged(Widget* widget, bool active) override {
+    ASSERT_EQ(widget_, widget);
+    changes_.push_back(active);
+  }
+
+ private:
+  Widget* widget_;
+  std::vector<bool> changes_;
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetActivationObserver);
+};
 
 // A WidgetDelegate that supplies an app icon.
 class TestWidgetDelegate : public WidgetDelegateView {
@@ -58,8 +86,8 @@ class NativeWidgetMusTest : public ViewsTestBase {
   ~NativeWidgetMusTest() override {}
 
   // Creates a test widget. Takes ownership of |delegate|.
-  Widget* CreateWidget(TestWidgetDelegate* delegate) {
-    Widget* widget = new Widget();
+  scoped_ptr<Widget> CreateWidget(TestWidgetDelegate* delegate) {
+    scoped_ptr<Widget> widget(new Widget());
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
     params.delegate = delegate;
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -71,6 +99,38 @@ class NativeWidgetMusTest : public ViewsTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetMusTest);
 };
+
+// Tests communication of activation and focus between Widget and
+// NativeWidgetMus.
+TEST_F(NativeWidgetMusTest, OnActivationChanged) {
+  scoped_ptr<Widget> widget(CreateWidget(nullptr));
+  widget->Show();
+
+  // Track activation, focus and blur events.
+  WidgetActivationObserver activation_observer(widget.get());
+  TestWidgetFocusChangeListener focus_listener;
+  WidgetFocusManager::GetInstance()->AddFocusChangeListener(&focus_listener);
+
+  // Deactivate the Widget, which deactivates the NativeWidgetMus.
+  widget->Deactivate();
+
+  // The widget is blurred and deactivated.
+  ASSERT_EQ(1u, focus_listener.focus_changes().size());
+  EXPECT_EQ(nullptr, focus_listener.focus_changes()[0]);
+  ASSERT_EQ(1u, activation_observer.changes().size());
+  EXPECT_EQ(false, activation_observer.changes()[0]);
+
+  // Re-activate the Widget, which actives the NativeWidgetMus.
+  widget->Activate();
+
+  // The widget is focused and activated.
+  ASSERT_EQ(2u, focus_listener.focus_changes().size());
+  EXPECT_EQ(widget->GetNativeView(), focus_listener.focus_changes()[1]);
+  ASSERT_EQ(2u, activation_observer.changes().size());
+  EXPECT_TRUE(activation_observer.changes()[1]);
+
+  WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(&focus_listener);
+}
 
 // Tests that a window with an icon sets the mus::Window icon property.
 TEST_F(NativeWidgetMusTest, AppIcon) {

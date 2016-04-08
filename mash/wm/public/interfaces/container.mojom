@@ -4,6 +4,10 @@
 
 module mash.wm.mojom;
 
+// Containers for windows. This list is in the z-order of the windows, however
+// they are actually built in a hierarchy (e.g. USER_WORKSPACE and LOGIN_WINDOWS
+// are siblings). See RootWindowController::CreateContainers() for the full
+// hierarchy. 
 enum Container {
   ROOT = 0,
   ALL_USER_BACKGROUND,
@@ -17,6 +21,9 @@ enum Container {
   LOGIN_WINDOWS,
   LOGIN_APP,    // TODO(beng): what about dialog boxes login opens?
   LOGIN_SHELF,
+  // Bubble windows, for example the sysui system tray bubble and the screen
+  // brightness bubble.
+  BUBBLES,
   SYSTEM_MODAL_WINDOWS,
   KEYBOARD,
   MENUS,

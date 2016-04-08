@@ -11,11 +11,6 @@
 #include "ui/views/mouse_watcher.h"
 #include "ui/views/views_export.h"
 
-// Specialized bubble view for bubbles associated with a tray icon (e.g. the
-// Ash status area). Mostly this handles custom anchor location and arrow and
-// border rendering. This also has its own delegate for handling mouse events
-// and other implementation specific details.
-
 namespace ui {
 class LocatedEvent;
 }
@@ -32,6 +27,10 @@ class TrayBubbleBorder;
 class TrayBubbleContentMask;
 }
 
+// Specialized bubble view for bubbles associated with a tray icon (e.g. the
+// Ash status area). Mostly this handles custom anchor location and arrow and
+// border rendering. This also has its own delegate for handling mouse events
+// and other implementation specific details.
 class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView,
                                     public views::MouseWatcherListener {
  public:

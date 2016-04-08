@@ -325,6 +325,7 @@ void NativeWidgetMus::OnActivationChanged(bool active) {
     native_widget_delegate_->OnNativeBlur();
     GetWidget()->GetFocusManager()->StoreFocusedView(true);
   }
+  native_widget_delegate_->OnNativeWidgetActivationChanged(active);
 }
 
 void NativeWidgetMus::UpdateClientArea() {

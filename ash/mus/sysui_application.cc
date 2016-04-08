@@ -48,7 +48,6 @@ namespace {
 // Tries to determine the corresponding mash container from widget init params.
 mash::wm::mojom::Container GetContainerId(
     const views::Widget::InitParams& params) {
-  DCHECK(params.parent);
   const int id = params.parent->id();
   if (id == kShellWindowId_DesktopBackgroundContainer)
     return mash::wm::mojom::Container::USER_BACKGROUND;
@@ -58,16 +57,17 @@ mash::wm::mojom::Container GetContainerId(
     return mash::wm::mojom::Container::USER_SHELF;
   }
 
-  // Show mash shelf tooltips and settings bubbles in the menu container.
-  if (params.type == views::Widget::InitParams::Type::TYPE_MENU ||
-      params.type == views::Widget::InitParams::Type::TYPE_BUBBLE) {
-    return mash::wm::mojom::Container::MENUS;
+  // Determine the container based on Widget type.
+  switch (params.type) {
+    case views::Widget::InitParams::Type::TYPE_BUBBLE:
+      return mash::wm::mojom::Container::BUBBLES;
+    case views::Widget::InitParams::Type::TYPE_MENU:
+      return mash::wm::mojom::Container::MENUS;
+    case views::Widget::InitParams::Type::TYPE_TOOLTIP:
+      return mash::wm::mojom::Container::TOOLTIPS;
+    default:
+      return mash::wm::mojom::Container::COUNT;
   }
-
-  if (params.type == views::Widget::InitParams::Type::TYPE_TOOLTIP)
-    return mash::wm::mojom::Container::TOOLTIPS;
-
-  return mash::wm::mojom::Container::COUNT;
 }
 
 // Tries to determine the corresponding ash window type from the ash container
