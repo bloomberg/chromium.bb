@@ -19,7 +19,10 @@ group("blimp") {
   ]
 
   if (is_android) {
-    deps += [ "//blimp/client:blimp_apk" ]
+    deps += [
+      "//blimp/client:blimp_apk",
+      "//blimp/client:blimp_apk_incremental",
+    ]
   }
 
   if (is_linux) {

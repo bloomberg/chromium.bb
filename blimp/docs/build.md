@@ -24,14 +24,22 @@ To build:
 ninja -C out-android/Debug blimp
 ```
 
-You can also build and install incremental APK like this:
+This will also generate an incremental APK, which you can install with this
+command:
 
 ```bash
-ninja -C out-android/Debug blimp blimp_apk_incremental &&
+out-android/Debug/bin/install_blimp_apk_incremental
+```
+
+During development, it might be beneficial to put these two commands together
+like this:
+
+```bash
+ninja -C out-android/Debug blimp && \
     out-android/Debug/bin/install_blimp_apk_incremental
 ```
 
-To add your own build preferences
+To add your own build preferences:
 
 ```bash
 gn args out-android/Debug
