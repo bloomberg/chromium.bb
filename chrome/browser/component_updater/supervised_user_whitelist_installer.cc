@@ -258,6 +258,7 @@ class SupervisedUserWhitelistComponentInstallerTraits
   base::FilePath GetBaseDirectory() const override;
   void GetHash(std::vector<uint8_t>* hash) const override;
   std::string GetName() const override;
+  std::string GetAp() const override;
 
   std::string crx_id_;
   std::string name_;
@@ -316,6 +317,10 @@ void SupervisedUserWhitelistComponentInstallerTraits::GetHash(
 
 std::string SupervisedUserWhitelistComponentInstallerTraits::GetName() const {
   return name_;
+}
+
+std::string SupervisedUserWhitelistComponentInstallerTraits::GetAp() const {
+  return std::string();
 }
 
 class SupervisedUserWhitelistInstallerImpl

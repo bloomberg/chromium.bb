@@ -33,6 +33,11 @@ std::string SanitizeBrand(const std::string& brand) {
   return IsValidBrand(brand) ? brand : std::string("");
 }
 
+// Returns a sanitized version of the |ap| or an empty string otherwise.
+std::string SanitizeAp(const std::string& ap) {
+  return IsValidAp(ap) ? ap : std::string();
+}
+
 // Returns true if at least one item requires network encryption.
 bool IsEncryptionRequired(const std::vector<CrxUpdateItem*>& items) {
   for (const auto& item : items) {
@@ -63,6 +68,7 @@ std::string BuildUpdateCheckRequest(const Configurator& config,
   std::string app_elements;
   for (size_t i = 0; i != items.size(); ++i) {
     const CrxUpdateItem* item = items[i];
+    const std::string ap(SanitizeAp(item->component.ap));
     std::string app("<app ");
     base::StringAppendF(&app, "appid=\"%s\" version=\"%s\"", item->id.c_str(),
                         item->component.version.GetString().c_str());
@@ -70,6 +76,8 @@ std::string BuildUpdateCheckRequest(const Configurator& config,
       base::StringAppendF(&app, " brand=\"%s\"", brand.c_str());
     if (item->on_demand)
       base::StringAppendF(&app, " installsource=\"ondemand\"");
+    if (!ap.empty())
+      base::StringAppendF(&app, " ap=\"%s\"", ap.c_str());
     base::StringAppendF(&app, ">");
     base::StringAppendF(&app, "<updatecheck />");
     if (!item->component.fingerprint.empty()) {

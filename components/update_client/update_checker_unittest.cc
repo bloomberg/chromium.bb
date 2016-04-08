@@ -161,6 +161,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
   update_checker_ = UpdateChecker::Create(config_);
 
   CrxUpdateItem item(BuildCrxUpdateItem());
+  item.component.ap = "some_ap";
   std::vector<CrxUpdateItem*> items_to_check;
   items_to_check.push_back(&item);
 
@@ -185,8 +186,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
   EXPECT_NE(
       string::npos,
       post_interceptor_->GetRequests()[0].find(
-          "app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\" "
-          "brand=\"TEST\"><updatecheck />"
+          "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\" "
+          "brand=\"TEST\" ap=\"some_ap\"><updatecheck />"
           "<packages><package fp=\"fp1\"/></packages></app>"));
 
   EXPECT_NE(string::npos,
@@ -198,6 +199,32 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
   EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf",
                results_.list[0].extension_id.c_str());
   EXPECT_STREQ("1.0", results_.list[0].manifest.version.c_str());
+}
+
+// Tests that an invalid "ap" is not serialized.
+TEST_F(UpdateCheckerTest, UpdateCheckInvalidAp) {
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+
+  update_checker_ = UpdateChecker::Create(config_);
+
+  CrxUpdateItem item(BuildCrxUpdateItem());
+  item.component.ap = std::string(257, 'a');  // Too long.
+  std::vector<CrxUpdateItem*> items_to_check;
+  items_to_check.push_back(&item);
+
+  update_checker_->CheckForUpdates(
+      items_to_check, "", base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                                     base::Unretained(this)));
+
+  RunThreads();
+
+  EXPECT_NE(
+      string::npos,
+      post_interceptor_->GetRequests()[0].find(
+          "app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\" "
+          "brand=\"TEST\"><updatecheck />"
+          "<packages><package fp=\"fp1\"/></packages></app>"));
 }
 
 TEST_F(UpdateCheckerTest, UpdateCheckSuccessNoBrand) {
@@ -220,7 +247,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccessNoBrand) {
   EXPECT_NE(
       string::npos,
       post_interceptor_->GetRequests()[0].find(
-          "app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
+          "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
           "<updatecheck /><packages><package fp=\"fp1\"/></packages></app>"));
 }
 
@@ -302,7 +329,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckCupError) {
   EXPECT_NE(
       string::npos,
       post_interceptor_->GetRequests()[0].find(
-          "app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\" "
+          "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\" "
           "brand=\"TEST\"><updatecheck />"
           "<packages><package fp=\"fp1\"/></packages></app>"));
 

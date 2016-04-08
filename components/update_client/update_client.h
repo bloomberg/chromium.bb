@@ -196,6 +196,7 @@ struct CrxComponent {
 
   std::string fingerprint;  // Optional.
   std::string name;         // Optional.
+  std::string ap;           // Optional. Must match ^[-+_=a-zA-Z0-9]{0,256}$
 
   // Specifies that the CRX can be background-downloaded in some cases.
   // The default for this value is |true|.

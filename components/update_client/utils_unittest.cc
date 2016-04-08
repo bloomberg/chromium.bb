@@ -81,6 +81,30 @@ TEST(UpdateClientUtils, IsValidBrand) {
   EXPECT_FALSE(IsValidBrand(std::string("\xaa")));   // Has non-ASCII char.
 }
 
+// Tests that the ap matches ^([-+_=a-zA-Z0-9]{0,256})$
+TEST(UpdateClientUtils, IsValidAp) {
+  EXPECT_TRUE(IsValidAp(std::string("a=1")));
+  EXPECT_TRUE(IsValidAp(std::string("")));
+  EXPECT_TRUE(IsValidAp(std::string("A")));
+  EXPECT_TRUE(IsValidAp(std::string("Z")));
+  EXPECT_TRUE(IsValidAp(std::string("a")));
+  EXPECT_TRUE(IsValidAp(std::string("z")));
+  EXPECT_TRUE(IsValidAp(std::string("0")));
+  EXPECT_TRUE(IsValidAp(std::string("9")));
+  EXPECT_TRUE(IsValidAp(std::string(256, 'a')));
+  EXPECT_TRUE(IsValidAp(std::string("-+_=")));
+
+  EXPECT_FALSE(IsValidAp(std::string(257, 'a')));  // Too long.
+  EXPECT_FALSE(IsValidAp(std::string(" ap")));     // Begins with white space.
+  EXPECT_FALSE(IsValidAp(std::string("ap ")));     // Ends with white space.
+  EXPECT_FALSE(IsValidAp(std::string("a p")));     // Contains white space.
+  EXPECT_FALSE(IsValidAp(std::string("<ap")));     // Has <.
+  EXPECT_FALSE(IsValidAp(std::string("ap>")));     // Has >.
+  EXPECT_FALSE(IsValidAp(std::string("\"")));      // Has "
+  EXPECT_FALSE(IsValidAp(std::string("\\")));      // Has backspace.
+  EXPECT_FALSE(IsValidAp(std::string("\xaa")));    // Has non-ASCII char.
+}
+
 TEST(UpdateClientUtils, RemoveUnsecureUrls) {
   const GURL test1[] = {GURL("http://foo"), GURL("https://foo")};
   std::vector<GURL> urls(std::begin(test1), std::end(test1));

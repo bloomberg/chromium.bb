@@ -83,6 +83,12 @@ class ComponentInstallerTraits {
 
   // Returns the human-readable name of the component.
   virtual std::string GetName() const = 0;
+
+  // Returns the additional parameters to be used in the update checks for
+  // this component. A compatible server may use this attribute to negotiate
+  // special update rules when issuing an update response.
+  // The current implementation restricts ap to ^([-+_=a-zA-Z0-9]{0,256})$
+  virtual std::string GetAp() const = 0;
 };
 
 // A DefaultComponentInstaller is intended to be final, and not derived from.

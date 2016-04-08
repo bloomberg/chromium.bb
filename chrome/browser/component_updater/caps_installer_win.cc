@@ -110,6 +110,8 @@ class CAPSInstallerTraits : public ComponentInstallerTraits {
 
   // This string is shown in chrome://components.
   std::string GetName() const override { return "Chrome Crash Service"; }
+
+  std::string GetAp() const override { return std::string(); }
 };
 
 }  // namespace

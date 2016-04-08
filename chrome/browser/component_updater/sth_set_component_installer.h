@@ -60,6 +60,7 @@ class STHSetComponentInstallerTraits : public ComponentInstallerTraits {
   base::FilePath GetBaseDirectory() const override;
   void GetHash(std::vector<uint8_t>* hash) const override;
   std::string GetName() const override;
+  std::string GetAp() const override;
 
   // Reads and parses the on-disk json.
   void LoadSTHsFromDisk(const base::FilePath& sths_file_path,

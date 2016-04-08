@@ -104,6 +104,10 @@ std::string STHSetComponentInstallerTraits::GetName() const {
   return kSTHSetFetcherManifestName;
 }
 
+std::string STHSetComponentInstallerTraits::GetAp() const {
+  return std::string();
+}
+
 void STHSetComponentInstallerTraits::LoadSTHsFromDisk(
     const base::FilePath& sths_path,
     const base::Version& version) {

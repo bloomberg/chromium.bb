@@ -137,6 +137,8 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
 
   std::string GetName() const override { return "Software Reporter Tool"; }
 
+  std::string GetAp() const override { return std::string(); }
+
   static base::FilePath install_dir() {
     // The base directory on windows looks like:
     // <profile>\AppData\Local\Google\Chrome\User Data\SwReporter\.

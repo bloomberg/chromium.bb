@@ -249,6 +249,7 @@ class WidevineCdmComponentInstallerTraits : public ComponentInstallerTraits {
   base::FilePath GetBaseDirectory() const override;
   void GetHash(std::vector<uint8_t>* hash) const override;
   std::string GetName() const override;
+  std::string GetAp() const override;
 
   // Checks and updates CDM adapter if necessary to make sure the latest CDM
   // adapter is always used.
@@ -321,6 +322,10 @@ void WidevineCdmComponentInstallerTraits::GetHash(
 
 std::string WidevineCdmComponentInstallerTraits::GetName() const {
   return kWidevineCdmDisplayName;
+}
+
+std::string WidevineCdmComponentInstallerTraits::GetAp() const {
+  return std::string();
 }
 
 void WidevineCdmComponentInstallerTraits::UpdateCdmAdapter(

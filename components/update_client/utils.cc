@@ -239,6 +239,25 @@ bool IsValidBrand(const std::string& brand) {
          }) == brand.end();
 }
 
+bool IsValidAp(const std::string& ap) {
+  const size_t kMaxApSize = 256;
+  if (ap.size() > kMaxApSize)
+    return false;
+
+  return std::find_if_not(ap.begin(), ap.end(), [](char ch) {
+           if (base::IsAsciiAlpha(ch) || base::IsAsciiDigit(ch))
+             return true;
+
+           const char kSpecialChars[] = "+-_=";
+           for (auto c : kSpecialChars) {
+             if (c == ch)
+               return true;
+           }
+
+           return false;
+         }) == ap.end();
+}
+
 void RemoveUnsecureUrls(std::vector<GURL>* urls) {
   DCHECK(urls);
   urls->erase(std::remove_if(

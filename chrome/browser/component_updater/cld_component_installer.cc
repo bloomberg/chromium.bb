@@ -113,6 +113,10 @@ std::string CldComponentInstallerTraits::GetName() const {
   return kCldManifestName;
 }
 
+std::string CldComponentInstallerTraits::GetAp() const {
+  return std::string();
+}
+
 // static
 void RegisterCldComponent(ComponentUpdateService* cus) {
   if (!translate::CldDataSource::IsUsingComponentDataSource()) {
