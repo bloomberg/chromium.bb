@@ -26,6 +26,8 @@ class PermissionProvider {
   virtual bool HasFunctionPermission(uint8_t requested_function,
                                      uint8_t configuration_value,
                                      const DeviceInfo& device_info) const = 0;
+  virtual void IncrementConnectionCount() = 0;
+  virtual void DecrementConnectionCount() = 0;
 };
 
 }  // namespace usb

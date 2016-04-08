@@ -42,6 +42,10 @@ class UsbTabHelper : public content::WebContentsObserver,
       content::RenderFrameHost* render_frame_host,
       mojo::InterfaceRequest<device::usb::ChooserService> request);
 
+  void IncrementConnectionCount();
+  void DecrementConnectionCount();
+  bool IsDeviceConnected() const;
+
  private:
   explicit UsbTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<UsbTabHelper>;
@@ -59,7 +63,10 @@ class UsbTabHelper : public content::WebContentsObserver,
       content::RenderFrameHost* render_frame_host,
       mojo::InterfaceRequest<device::usb::ChooserService> request);
 
+  void NotifyTabStateChanged() const;
+
   FrameUsbServicesMap frame_usb_services_;
+  int device_connection_count_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbTabHelper);
 };

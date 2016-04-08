@@ -13,6 +13,7 @@
 #include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/usb/usb_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
@@ -162,6 +163,10 @@ TabAlertState GetTabAlertStateForContents(content::WebContents* contents) {
   if (contents->IsConnectedToBluetoothDevice())
     return TabAlertState::BLUETOOTH_CONNECTED;
 
+  UsbTabHelper* usb_tab_helper = UsbTabHelper::FromWebContents(contents);
+  if (usb_tab_helper && usb_tab_helper->IsDeviceConnected())
+    return TabAlertState::USB_CONNECTED;
+
   if (contents->IsAudioMuted())
     return TabAlertState::AUDIO_MUTING;
   if (contents->WasRecentlyAudible())
@@ -185,6 +190,8 @@ gfx::Image GetTabAlertIndicatorImage(TabAlertState alert_state,
       return rb->GetNativeImageNamed(IDR_TAB_CAPTURE_INDICATOR);
     case TabAlertState::BLUETOOTH_CONNECTED:
       return rb->GetNativeImageNamed(IDR_TAB_BLUETOOTH_INDICATOR);
+    case TabAlertState::USB_CONNECTED:
+      return rb->GetNativeImageNamed(IDR_TAB_USB_INDICATOR);
     case TabAlertState::NONE:
       break;
   }
@@ -205,6 +212,9 @@ gfx::Image GetTabAlertIndicatorImage(TabAlertState alert_state,
       break;
     case TabAlertState::BLUETOOTH_CONNECTED:
       icon_id = gfx::VectorIconId::TAB_BLUETOOTH_CONNECTED;
+      break;
+    case TabAlertState::USB_CONNECTED:
+      icon_id = gfx::VectorIconId::TAB_USB_CONNECTED;
       break;
     case TabAlertState::NONE:
       break;
@@ -227,6 +237,7 @@ gfx::Image GetTabAlertIndicatorAffordanceImage(TabAlertState alert_state,
     case TabAlertState::MEDIA_RECORDING:
     case TabAlertState::TAB_CAPTURING:
     case TabAlertState::BLUETOOTH_CONNECTED:
+    case TabAlertState::USB_CONNECTED:
       return GetTabAlertIndicatorImage(alert_state, button_color);
   }
   NOTREACHED();
@@ -284,6 +295,10 @@ base::string16 AssembleTabTooltipText(const base::string16& title,
       result.append(l10n_util::GetStringUTF16(
           IDS_TOOLTIP_TAB_ALERT_STATE_BLUETOOTH_CONNECTED));
       break;
+    case TabAlertState::USB_CONNECTED:
+      result.append(
+          l10n_util::GetStringUTF16(IDS_TOOLTIP_TAB_ALERT_STATE_USB_CONNECTED));
+      break;
     case TabAlertState::NONE:
       NOTREACHED();
       break;
@@ -305,6 +320,7 @@ bool CanToggleAudioMute(content::WebContents* contents) {
     case TabAlertState::MEDIA_RECORDING:
     case TabAlertState::TAB_CAPTURING:
     case TabAlertState::BLUETOOTH_CONNECTED:
+    case TabAlertState::USB_CONNECTED:
       return false;
   }
   NOTREACHED();

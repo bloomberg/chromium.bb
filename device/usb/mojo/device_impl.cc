@@ -146,8 +146,11 @@ DeviceImpl::~DeviceImpl() {
 }
 
 void DeviceImpl::CloseHandle() {
-  if (device_handle_)
+  if (device_handle_) {
     device_handle_->Close();
+    if (permission_provider_)
+      permission_provider_->DecrementConnectionCount();
+  }
   device_handle_ = nullptr;
 }
 
@@ -194,6 +197,8 @@ bool DeviceImpl::HasControlTransferPermission(
 void DeviceImpl::OnOpen(const OpenCallback& callback,
                         scoped_refptr<UsbDeviceHandle> handle) {
   device_handle_ = handle;
+  if (device_handle_ && permission_provider_)
+    permission_provider_->IncrementConnectionCount();
   callback.Run(handle ? OpenDeviceError::OK : OpenDeviceError::ACCESS_DENIED);
 }
 

@@ -29,6 +29,9 @@ class MockPermissionProvider : public PermissionProvider {
                           uint8_t configuration_value,
                           const DeviceInfo& device_info));
 
+  MOCK_METHOD0(IncrementConnectionCount, void());
+  MOCK_METHOD0(DecrementConnectionCount, void());
+
  private:
   base::WeakPtrFactory<PermissionProvider> weak_factory_;
 };

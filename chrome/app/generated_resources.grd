@@ -13697,6 +13697,9 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_BLUETOOTH_CONNECTED" desc="Extra tool tip text, when tab is connected to a Bluetooth device.">
         This tab is connected to a Bluetooth Device.
       </message>
+      <message name="IDS_TOOLTIP_TAB_ALERT_STATE_USB_CONNECTED" desc="Extra tool tip text, when tab is connected to a USB device.">
+        This tab is connected to a USB device.
+      </message>
 
       <!-- ProcessSingleton -->
       <message name="IDS_PROFILE_IN_USE_LINUX_QUIT" desc="Text of button in profile in use dialog to quit without doing anything.">

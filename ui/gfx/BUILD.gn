@@ -539,6 +539,7 @@ action("aggregate_vector_icons") {
     "vector_icons/tab_close_normal.icon",
     "vector_icons/tab_media_capturing.icon",
     "vector_icons/tab_media_recording.icon",
+    "vector_icons/tab_usb_connected.icon",
     "vector_icons/tablet.icon",
     "vector_icons/translate.icon",
     "vector_icons/upgrade_menu_item.icon",

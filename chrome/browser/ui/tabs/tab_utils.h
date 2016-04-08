@@ -33,6 +33,7 @@ enum class TabAlertState {
   AUDIO_PLAYING,        // Audible audio is playing from the tab.
   AUDIO_MUTING,         // Tab audio is being muted.
   BLUETOOTH_CONNECTED,  // Tab is connected to a BT Device.
+  USB_CONNECTED,        // Tab is connected to a USB device.
 };
 
 enum class TabMutedReason {

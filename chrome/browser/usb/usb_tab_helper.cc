@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/usb/web_usb_permission_provider.h"
 #include "device/usb/mojo/device_manager_impl.h"
 
@@ -57,8 +59,23 @@ void UsbTabHelper::CreateChooserService(
   GetChooserService(render_frame_host, std::move(request));
 }
 
+void UsbTabHelper::IncrementConnectionCount() {
+  device_connection_count_++;
+  NotifyTabStateChanged();
+}
+
+void UsbTabHelper::DecrementConnectionCount() {
+  DCHECK_GT(device_connection_count_, 0);
+  device_connection_count_--;
+  NotifyTabStateChanged();
+}
+
+bool UsbTabHelper::IsDeviceConnected() const {
+  return device_connection_count_ > 0;
+}
+
 UsbTabHelper::UsbTabHelper(WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {}
+    : content::WebContentsObserver(web_contents), device_connection_count_(0) {}
 
 void UsbTabHelper::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
   frame_usb_services_.erase(render_frame_host);
@@ -100,4 +117,17 @@ void UsbTabHelper::GetChooserService(
 #endif  // defined(OS_ANDROID)
   }
   frame_usb_services->chooser_service->Bind(std::move(request));
+}
+
+void UsbTabHelper::NotifyTabStateChanged() const {
+  // TODO(https://crbug.com/601627): Implement tab indicator for Android.
+#if !defined(OS_ANDROID)
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  if (browser) {
+    TabStripModel* tab_strip_model = browser->tab_strip_model();
+    tab_strip_model->UpdateWebContentsStateAt(
+        tab_strip_model->GetIndexOfWebContents(web_contents()),
+        TabStripModelObserver::ALL);
+  }
+#endif
 }

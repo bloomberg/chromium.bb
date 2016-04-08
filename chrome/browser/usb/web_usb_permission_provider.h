@@ -36,6 +36,8 @@ class WebUSBPermissionProvider : public device::usb::PermissionProvider {
       uint8_t requested_function,
       uint8_t configuration_value,
       const device::usb::DeviceInfo& device_info) const override;
+  void IncrementConnectionCount() override;
+  void DecrementConnectionCount() override;
 
  private:
   content::RenderFrameHost* const render_frame_host_;
