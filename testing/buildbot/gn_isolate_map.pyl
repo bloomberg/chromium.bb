@@ -337,13 +337,6 @@
     #"label": "//third_party/libphonenumber:libphonenumber_unittests",
     #"type": "console_test_launcher",
   #},
-  "mash_browser_tests": {
-    "label": "//chrome/test:mash_browser_tests",
-    "label_type": "group",
-    "type": "windowed_test_launcher",
-    "executable": "browser_tests",
-    "args": ["--override-use-gl-with-osmesa-for-tests", "--run-in-mash", "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.browser_tests.filter"],
-  },
   "media_unittests": {
     "label": "//media:media_unittests",
     "type": "windowed_test_launcher",
