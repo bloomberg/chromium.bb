@@ -14,7 +14,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsController;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsLauncher;
 import org.chromium.chrome.browser.precache.PrecacheController;
 
@@ -25,17 +24,22 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
     private Context mContext;
     private BackgroundSyncLauncher mSyncLauncher;
     private SnippetsLauncher mSnippetsLauncher;
-    private MockSnippetsController mSnippetsController;
     private MockTaskService mTaskService;
 
     static class MockTaskService extends ChromeBackgroundService {
         private boolean mDidLaunchBrowser = false;
+        private boolean mDidFetchSnippets = false;
         private boolean mHasPrecacheInstance = true;
         private boolean mPrecachingStarted = false;
 
         @Override
         protected void launchBrowser(Context context) {
             mDidLaunchBrowser = true;
+        }
+
+        @Override
+        protected void fetchSnippets() {
+            mDidFetchSnippets = true;
         }
 
         @Override
@@ -53,37 +57,20 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
         // Posts an assertion task to the UI thread. Since this is only called after the call
         // to onRunTask, it will be enqueued after any possible call to launchBrowser, and we
         // can reliably check whether launchBrowser was called.
-        protected void checkExpectations(
-                final boolean expectedLaunchBrowser, final boolean expectedPrecacheStarted) {
+        protected void checkExpectations(final boolean expectedLaunchBrowser,
+                final boolean expectedPrecacheStarted, final boolean expectedFetchSnippets) {
             ThreadUtils.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     assertEquals("StartedService", expectedLaunchBrowser, mDidLaunchBrowser);
                     assertEquals("StartedPrecache", expectedPrecacheStarted, mPrecachingStarted);
+                    assertEquals("FetchedSnippets", expectedFetchSnippets, mDidFetchSnippets);
                 }
             });
         }
 
         protected void deletePrecacheInstance() {
             mHasPrecacheInstance = false;
-        }
-    }
-
-    static class MockSnippetsController extends SnippetsController {
-        private boolean mDidFetchSnippets = false;
-
-        @Override
-        public void fetchSnippets() {
-            mDidFetchSnippets = true;
-        }
-
-        protected void checkExpectations(final boolean expectedFetchSnippets) {
-            ThreadUtils.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    assertEquals("FetchedSnippets", expectedFetchSnippets, mDidFetchSnippets);
-                }
-            });
         }
     }
 
@@ -94,8 +81,6 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
         RecordHistogram.disableForTests();
         mSyncLauncher = BackgroundSyncLauncher.create(mContext);
         mSnippetsLauncher = SnippetsLauncher.create(mContext);
-        mSnippetsController = new MockSnippetsController();
-        SnippetsController.setInstanceForTesting(mSnippetsController);
         mTaskService = new MockTaskService();
     }
 
@@ -112,8 +97,7 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
     private void startOnRunTaskAndVerify(String taskTag, boolean shouldStart,
             boolean shouldPrecache, boolean shouldFetchSnippets) {
         mTaskService.onRunTask(new TaskParams(taskTag));
-        mTaskService.checkExpectations(shouldStart, shouldPrecache);
-        mSnippetsController.checkExpectations(shouldFetchSnippets);
+        mTaskService.checkExpectations(shouldStart, shouldPrecache, shouldFetchSnippets);
     }
 
     @SmallTest

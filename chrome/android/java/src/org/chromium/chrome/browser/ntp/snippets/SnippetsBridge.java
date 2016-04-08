@@ -47,6 +47,13 @@ public class SnippetsBridge {
     }
 
     /**
+     * Fetches new snippets.
+     */
+    public static void fetchSnippets() {
+        nativeFetchSnippets();
+    }
+
+    /**
      * Tells the native service to discard a snippet. It will be removed from the native side
      * storage and will also be discarded from subsequent fetch results.
      *
@@ -90,6 +97,7 @@ public class SnippetsBridge {
 
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeNTPSnippetsBridge);
+    private static native void nativeFetchSnippets();
     private native void nativeDiscardSnippet(long nativeNTPSnippetsBridge, String snippetUrl);
     private native void nativeSetObserver(long nativeNTPSnippetsBridge, SnippetsBridge bridge);
 }

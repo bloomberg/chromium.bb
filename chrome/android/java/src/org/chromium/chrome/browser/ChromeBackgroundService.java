@@ -16,7 +16,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsController;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsLauncher;
 import org.chromium.chrome.browser.precache.PrecacheController;
 
@@ -77,7 +77,12 @@ public class ChromeBackgroundService extends GcmTaskService {
         if (!SnippetsLauncher.hasInstance()) {
             launchBrowser(context);
         }
-        SnippetsController.get().fetchSnippets();
+        fetchSnippets();
+    }
+
+    @VisibleForTesting
+    protected void fetchSnippets() {
+        SnippetsBridge.fetchSnippets();
     }
 
     private void handlePrecache(Context context, String tag) {

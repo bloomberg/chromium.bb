@@ -13,6 +13,7 @@
 #include "chrome/browser/ntp_snippets/ntp_snippets_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
 #include "jni/SnippetsBridge_jni.h"
@@ -27,6 +28,12 @@ static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& j_profile) {
   NTPSnippetsBridge* snippets_bridge = new NTPSnippetsBridge(env, j_profile);
   return reinterpret_cast<intptr_t>(snippets_bridge);
+}
+
+static void FetchSnippets(JNIEnv* env,
+                          const JavaParamRef<jclass>& caller) {
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  NTPSnippetsServiceFactory::GetForProfile(profile)->FetchSnippets();
 }
 
 NTPSnippetsBridge::NTPSnippetsBridge(JNIEnv* env,
