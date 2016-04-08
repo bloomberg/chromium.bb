@@ -72,6 +72,7 @@ using IMEPropertyInfoList = std::vector<IMEPropertyInfo>;
 
 struct ASH_EXPORT IMEInfo {
   IMEInfo();
+  IMEInfo(const IMEInfo& other);
   ~IMEInfo();
 
   bool selected;

@@ -26,6 +26,8 @@ BluetoothDeviceInfo::~BluetoothDeviceInfo() {
 IMEInfo::IMEInfo() : selected(false), third_party(false) {
 }
 
+IMEInfo::IMEInfo(const IMEInfo& other) = default;
+
 IMEInfo::~IMEInfo() {
 }
 
