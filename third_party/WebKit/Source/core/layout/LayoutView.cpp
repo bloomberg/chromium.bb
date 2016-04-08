@@ -489,11 +489,8 @@ bool LayoutView::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ance
     if (document().printing())
         return true;
 
-    if (style()->isFlippedBlocksWritingMode()) {
-        // We have to flip by hand since the view's logical width has not been determined.  We
-        // can use the viewport width.
-        rect.setX(viewWidth() - rect.maxX());
-    }
+    // Convert the rect into the physical coordinates space of this LayoutView.
+    flipForWritingMode(rect);
 
     if (mode & IsFixed)
         adjustOffsetForFixedPosition(rect);

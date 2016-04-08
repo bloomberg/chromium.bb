@@ -1974,26 +1974,14 @@ LayoutRect LayoutBox::localOverflowRectForPaintInvalidation() const
 
 bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisualRectFlags visualRectFlags) const
 {
-    // The rect we compute at each step is shifted by our x/y offset in the parent container's coordinate space.
-    // Only when we cross a writing mode boundary will we have to possibly flipForWritingMode (to convert into a more appropriate
-    // offset corner for the enclosing container). This allows for a fully RL or BT document to issue paint invalidations
-    // properly even during layout, since the rect remains flipped all the way until the end.
-    //
-    // LayoutView::computeRectForPaintInvalidation then converts the rect to physical coordinates. We also convert to
-    // physical when we hit the ancestor. Therefore the final rect returned is always in the
-    // physical coordinate space of the ancestor.
-    const ComputedStyle& styleToUse = styleRef();
-
-    EPosition position = styleToUse.position();
-
     // We need to inflate the paint invalidation rect before we use paintInvalidationState,
     // else we would forget to inflate it for the current layoutObject. FIXME: If these were
     // included into the visual overflow for paint invalidation, we wouldn't have this issue.
     inflatePaintInvalidationRectForReflectionAndFilter(rect);
 
     if (ancestor == this) {
-        if (ancestor->style()->isFlippedBlocksWritingMode())
-            flipForWritingMode(rect);
+        // The final rect returned is always in the physical coordinate space of the ancestor.
+        flipForWritingMode(rect);
         return true;
     }
 
@@ -2002,8 +1990,15 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ances
     if (!container)
         return true;
 
-    if (isWritingModeRoot())
+    // The rect we compute at each step is shifted by our x/y offset in the parent container's coordinate space.
+    // Only when we cross a writing mode boundary will we have to possibly flipForWritingMode (to convert into a more
+    // appropriate offset corner for the enclosing container).
+    if (isWritingModeRoot()) {
         flipForWritingMode(rect);
+        // Then flip rect currently in physical direction to container's block direction.
+        if (container->styleRef().isFlippedBlocksWritingMode())
+            rect.setX(m_frameRect.width() - rect.maxX());
+    }
 
     LayoutPoint topLeft = rect.location();
     topLeft.move(locationOffset());
@@ -2016,6 +2011,8 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ances
         topLeft.move(locationOffset());
     }
 
+    const ComputedStyle& styleToUse = styleRef();
+    EPosition position = styleToUse.position();
     if (position == AbsolutePosition && container->isInFlowPositioned() && container->isLayoutInline()) {
         topLeft += toLayoutInline(container)->offsetForInFlowPositionedInline(*this);
     } else if (styleToUse.hasInFlowPosition() && layer()) {

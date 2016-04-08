@@ -409,6 +409,44 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowHidden)
     EXPECT_EQ(LayoutRect(58, 10, 32, 80), rect);
 }
 
+TEST_F(VisualRectMappingTest, ContainerAndTargetDifferentFlippedWritingMode)
+{
+    setBodyInnerHTML(
+        "<div id='container' style='writing-mode: vertical-rl; position: absolute; top: 111px; left: 222px;"
+        "    border: solid red; border-width: 10px 20px 30px 40px;"
+        "    overflow: scroll; width: 50px; height: 80px'>"
+        "    <div id='target' style='writing-mode: vertical-lr; box-shadow: 40px 20px black; width: 100px; height: 90px'></div>"
+        "    <div style='width: 100px; height: 100px'></div>"
+        "</div>");
+
+    LayoutBlock* container = toLayoutBlock(getLayoutObjectByElementId("container"));
+    EXPECT_EQ(LayoutUnit(0), container->scrollTop());
+    // The initial scroll offset is to the left-most because of flipped blocks writing mode.
+    // 150 = total_layout_overflow(100 + 100) - width(50)
+    EXPECT_EQ(LayoutUnit(150), container->scrollLeft());
+    container->setScrollTop(LayoutUnit(7));
+    container->setScrollLeft(LayoutUnit(142)); // Scroll to the right by 8 pixels.
+    document().view()->updateAllLifecyclePhases();
+
+    LayoutBlock* target = toLayoutBlock(getLayoutObjectByElementId("target"));
+    LayoutRect targetOverflowRect = target->localOverflowRectForPaintInvalidation();
+    // 140 = width(100) + box_shadow_offset_x(40)
+    // 110 = height(90) + box_shadow_offset_y(20)
+    EXPECT_EQ(LayoutRect(0, 0, 140, 110), targetOverflowRect);
+
+    LayoutRect rect = targetOverflowRect;
+    EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(target, rect));
+    // This rect is in physical coordinates of target.
+    EXPECT_EQ(LayoutRect(0, 0, 140, 110), rect);
+
+    rect = targetOverflowRect;
+    EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(container, rect));
+    // -2 = target_physical_x(100) + container_border_left(40) - scroll_left(142)
+    // 3 = target_y(0) + container_border_top(10) - scroll_top(7)
+    // Rect is not clipped by container's overflow clip.
+    EXPECT_EQ(LayoutRect(-2, 3, 140, 110), rect);
+}
+
 TEST_F(VisualRectMappingTest, DifferentPaintInvalidaitionContainerForAbsolutePosition)
 {
     enableCompositing();
