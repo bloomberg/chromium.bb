@@ -63,13 +63,10 @@
 ../../third_party/catapult/devil/devil/utils/timeout_retry.py
 ../../third_party/catapult/devil/devil/utils/watchdog_timer.py
 ../../third_party/catapult/devil/devil/utils/zip_utils.py
-../util/lib/common/perf_result_data_type.py
-../util/lib/common/perf_tests_results_helper.py
 ../util/lib/common/unittest_util.py
 devil_chromium.py
 pylib/__init__.py
 pylib/base/__init__.py
-pylib/base/base_setup.py
 pylib/base/base_test_result.py
 pylib/base/base_test_runner.py
 pylib/base/environment.py
@@ -89,13 +86,7 @@ pylib/gtest/gtest_test_instance.py
 pylib/instrumentation/__init__.py
 pylib/instrumentation/instrumentation_parser.py
 pylib/instrumentation/instrumentation_test_instance.py
-pylib/instrumentation/json_perf_parser.py
-pylib/instrumentation/setup.py
-pylib/instrumentation/test_jar.py
-pylib/instrumentation/test_options.py
-pylib/instrumentation/test_package.py
 pylib/instrumentation/test_result.py
-pylib/instrumentation/test_runner.py
 pylib/junit/__init__.py
 pylib/junit/setup.py
 pylib/junit/test_dispatcher.py
