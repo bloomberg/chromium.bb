@@ -26,7 +26,8 @@ struct ShortcutInfo {
     SOURCE_APP_BANNER = 2,
     SOURCE_BOOKMARK_NAVIGATOR_WIDGET = 3,
     SOURCE_BOOKMARK_SHORTCUT_WIDGET = 4,
-    SOURCE_COUNT = 5
+    SOURCE_NOTIFICATION = 5,
+    SOURCE_COUNT = 6
   };
 
   explicit ShortcutInfo(const GURL& shortcut_url);

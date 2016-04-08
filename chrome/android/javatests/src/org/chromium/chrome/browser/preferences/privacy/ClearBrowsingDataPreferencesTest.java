@@ -186,7 +186,7 @@ public class ClearBrowsingDataPreferencesTest
         );
         CriteriaHelper.pollUiThread(new CallbackCriteria());
 
-        WebappDataStorage.getURL(getActivity(), "first",
+        WebappDataStorage.getUrl(getActivity(), "first",
                 new WebappDataStorage.FetchCallback<String>() {
                     @Override
                     public void onDataRetrieved(String readObject) {

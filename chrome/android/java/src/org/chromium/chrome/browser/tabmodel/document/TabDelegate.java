@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.TabState;
@@ -188,5 +189,17 @@ public class TabDelegate extends TabCreator {
 
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         return intent;
+    }
+
+    /**
+     * Passes the supplied web app launch intent to the IntentHandler.
+     * @param intent Web app launch intent.
+     */
+    public void createNewStandaloneFrame(Intent intent) {
+        assert intent != null;
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                | ApiCompatibilityUtils.getActivityNewDocumentFlag());
+        IntentHandler.startActivityForTrustedIntent(intent,
+                ApplicationStatus.getApplicationContext());
     }
 }

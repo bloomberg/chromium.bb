@@ -104,13 +104,46 @@ public class WebappRegistry {
                 SharedPreferences preferences = openSharedPreferences(context);
                 if (getRegisteredWebappIds(preferences).contains(webappId)) {
                     WebappDataStorage storage = WebappDataStorage.open(context, webappId);
-                    storage.updateLastUsedTime();
                     return storage;
                 }
                 return null;
             }
 
             @Override
+            protected final void onPostExecute(WebappDataStorage storage) {
+                assert callback != null;
+                callback.onWebappDataStorageRetrieved(storage);
+            }
+        }.execute();
+    }
+
+    /**
+     * Runs the callback, supplying the WebappDataStorage object whose scope most closely matches
+     * the provided URL, or null if a matching web app cannot be found. The most closely matching
+     * scope is the longest scope which has the same prefix as the URL to open.
+     * @param context  Context to open the registry with.
+     * @param url      The URL to search for.
+     * @return The storage object for the web app, or null if webappId is not registered.
+     */
+    public static void getWebappDataStorageForUrl(final Context context, final String url,
+            final FetchWebappDataStorageCallback callback) {
+        new AsyncTask<Void, Void, WebappDataStorage>() {
+            @Override
+            protected final WebappDataStorage doInBackground(Void... nothing) {
+                SharedPreferences preferences = openSharedPreferences(context);
+                WebappDataStorage bestMatch = null;
+                int largestOverlap = 0;
+                for (String id : getRegisteredWebappIds(preferences)) {
+                    WebappDataStorage storage = WebappDataStorage.open(context, id);
+                    String scope = storage.getScope();
+                    if (url.startsWith(scope) && scope.length() > largestOverlap) {
+                        bestMatch = storage;
+                        largestOverlap = scope.length();
+                    }
+                }
+                return bestMatch;
+            }
+
             protected final void onPostExecute(WebappDataStorage storage) {
                 assert callback != null;
                 callback.onWebappDataStorageRetrieved(storage);

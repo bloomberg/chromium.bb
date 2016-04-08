@@ -22,6 +22,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Tests the WebappDataStorage class by ensuring that it persists data to
  * SharedPreferences as expected.
@@ -44,6 +46,23 @@ public class WebappDataStorageTest {
         public void onDataRetrieved(T readObject) {
             mCallbackCalled = true;
             assertEquals(mExpected, readObject);
+        }
+    }
+
+    private static class TestClock extends WebappDataStorage.Clock {
+        private long mCurrentTime;
+
+        public TestClock(long currentTime) {
+            updateTime(currentTime);
+        }
+
+        public void updateTime(long currentTime) {
+            mCurrentTime = currentTime;
+        }
+
+        @Override
+        public long currentTimeMillis() {
+            return mCurrentTime;
         }
     }
 
@@ -149,18 +168,83 @@ public class WebappDataStorageTest {
 
     @Test
     @Feature({"Webapp"})
-    public void testURLRetrieval() throws Exception {
+    public void testUrlRetrieval() throws Exception {
         final String url = "https://www.google.com";
         mSharedPreferences.edit()
                 .putString(WebappDataStorage.KEY_URL, url)
                 .commit();
 
-        WebappDataStorage.getURL(Robolectric.application, "test",
+        WebappDataStorage.getUrl(Robolectric.application, "test",
                 new FetchCallback<String>(url));
         BackgroundShadowAsyncTask.runBackgroundTasks();
         Robolectric.runUiThreadTasks();
 
         assertTrue(mCallbackCalled);
+    }
+
+    @Test
+    @Feature({"Webapp"})
+    public void testWasLaunchedRecently() throws Exception {
+        final TestClock clock = new TestClock(System.currentTimeMillis());
+        WebappDataStorage.setClockForTests(clock);
+
+        WebappDataStorage storage = WebappDataStorage.open(Robolectric.application, "test");
+        storage.updateLastUsedTime();
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+        assertTrue(!storage.wasLaunchedRecently());
+
+        long lastUsedTime = mSharedPreferences.getLong(WebappDataStorage.KEY_LAST_USED,
+                WebappDataStorage.LAST_USED_INVALID);
+
+        assertTrue(lastUsedTime != WebappDataStorage.LAST_USED_UNSET);
+        assertTrue(lastUsedTime != WebappDataStorage.LAST_USED_INVALID);
+
+        // Mark as launched, check launched recently.
+        mSharedPreferences.edit()
+                .putBoolean(WebappDataStorage.KEY_LAUNCHED, true)
+                .commit();
+        assertTrue(storage.wasLaunchedRecently());
+
+        // Move the last used time one day in the past.
+        mSharedPreferences.edit()
+                .putLong(WebappDataStorage.KEY_LAST_USED, lastUsedTime - TimeUnit.DAYS.toMillis(1L))
+                .commit();
+        assertTrue(storage.wasLaunchedRecently());
+
+        // Move the last used time three days in the past.
+        mSharedPreferences.edit()
+                .putLong(WebappDataStorage.KEY_LAST_USED, lastUsedTime - TimeUnit.DAYS.toMillis(3L))
+                .commit();
+        assertTrue(storage.wasLaunchedRecently());
+
+        // Move the last used time one week in the past.
+        mSharedPreferences.edit()
+                .putLong(WebappDataStorage.KEY_LAST_USED, lastUsedTime - TimeUnit.DAYS.toMillis(7L))
+                .commit();
+        assertTrue(storage.wasLaunchedRecently());
+
+        // Move the last used time just under ten days in the past.
+        mSharedPreferences.edit().putLong(WebappDataStorage.KEY_LAST_USED,
+                lastUsedTime - TimeUnit.DAYS.toMillis(10L) + 1).commit();
+        assertTrue(storage.wasLaunchedRecently());
+
+        // Mark as not launched.
+        mSharedPreferences.edit()
+                .putBoolean(WebappDataStorage.KEY_LAUNCHED, false)
+                .commit();
+        assertTrue(!storage.wasLaunchedRecently());
+
+        // Mark as launched.
+        mSharedPreferences.edit()
+                .putBoolean(WebappDataStorage.KEY_LAUNCHED, true)
+                .commit();
+        assertTrue(storage.wasLaunchedRecently());
+
+        // Move the last used time to exactly ten days in the past.
+        mSharedPreferences.edit().putLong(WebappDataStorage.KEY_LAST_USED,
+                lastUsedTime - TimeUnit.DAYS.toMillis(10L)).commit();
+        assertTrue(!storage.wasLaunchedRecently());
     }
 
     @Test

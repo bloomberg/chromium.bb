@@ -18601,7 +18601,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Launch.HomeScreenSource" enum="LaunchFromHomeScreenSource">
   <owner>dominickn@chromium.org</owner>
   <summary>
-    Records the source of an Android Home screen shortcut used to launch Chrome.
+    Records the source of an Android homescreen launch intent used to launch
+    Chrome.
   </summary>
 </histogram>
 
@@ -74065,6 +74066,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="App banner"/>
   <int value="3" label="Bookmark navigator widget"/>
   <int value="4" label="Bookmark shortcut widget"/>
+  <int value="5" label="Notification"/>
 </enum>
 
 <enum name="LaunchIntentFlags" type="int">

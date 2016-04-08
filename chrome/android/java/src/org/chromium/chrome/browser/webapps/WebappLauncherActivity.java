@@ -14,6 +14,7 @@ import android.util.Base64;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
@@ -58,7 +59,15 @@ public class WebappLauncherActivity extends Activity {
                     webappMacString == null ? null : Base64.decode(webappMacString, Base64.DEFAULT);
 
             Intent launchIntent = null;
-            if (webappMac != null && WebappAuthenticator.isUrlValid(this, webappUrl, webappMac)) {
+
+            // Permit the launch to a standalone web app frame if the intent was sent by Chrome, or
+            // if the MAC is present and valid for the URL to be opened.
+            boolean isTrusted = IntentHandler.wasIntentSenderChrome(intent,
+                    ApplicationStatus.getApplicationContext());
+            boolean isUrlValid = (webappMac != null
+                    && WebappAuthenticator.isUrlValid(this, webappUrl, webappMac));
+
+            if (isTrusted || isUrlValid) {
                 LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(webappUrl, webappSource);
 
                 String activityName = WebappActivity.class.getName();

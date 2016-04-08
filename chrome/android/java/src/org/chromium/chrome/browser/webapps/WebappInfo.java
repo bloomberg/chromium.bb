@@ -255,4 +255,12 @@ public class WebappInfo {
         intent.putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, backgroundColor());
         intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_GENERATED, isIconGenerated());
     }
+
+    /**
+     * Returns true if the WebappInfo was created for an Intent fired from a launcher shortcut (as
+     * opposed to an intent from a push notification or other internal source).
+     */
+    public boolean isLaunchedFromHomescreen() {
+        return source() != ShortcutSource.NOTIFICATION;
+    }
 }

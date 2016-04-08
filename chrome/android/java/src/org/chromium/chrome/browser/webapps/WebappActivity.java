@@ -264,6 +264,16 @@ public class WebappActivity extends FullScreenActivity {
                         // Restore the data if necessary from the intent.
                         storage.updateFromShortcutIntent(intent);
 
+                        // A recent last used time is the indicator that the web app is still
+                        // present on the home screen, and enables sources such as notifications to
+                        // launch web apps. Thus, we do not update the last used time when the web
+                        // app is not directly launched from the home screen, as this interferes
+                        // with the heuristic.
+                        if (mWebappInfo.isLaunchedFromHomescreen()) {
+                            storage.updateLastUsedTime();
+                            storage.setLaunched();
+                        }
+
                         // Retrieve the splash image if it exists.
                         storage.getSplashScreenImage(new WebappDataStorage.FetchCallback<Bitmap>() {
                             @Override

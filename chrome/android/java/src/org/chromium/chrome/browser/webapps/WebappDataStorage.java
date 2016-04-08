@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Stores data about an installed web app. Uses SharedPreferences to persist the data to disk.
@@ -41,6 +42,7 @@ public class WebappDataStorage {
     static final String KEY_ACTION = "action";
     static final String KEY_IS_ICON_GENERATED = "is_icon_generated";
     static final String KEY_VERSION = "version";
+    static final String KEY_LAUNCHED = "launched";
 
     // Unset/invalid constants for last used times and URLs. 0 is used as the null last
     // used time as WebappRegistry assumes that this is always a valid timestamp.
@@ -49,6 +51,12 @@ public class WebappDataStorage {
     static final String URL_INVALID = "";
     static final int VERSION_INVALID = 0;
 
+    // We use a heuristic to determine whether a web app is still installed on the home screen, as
+    // there is no way to do so directly. Any web app which has been opened in the last ten days
+    // is considered to be still on the home screen.
+    static final long WEBAPP_LAST_OPEN_MAX_TIME = TimeUnit.DAYS.toMillis(10L);
+
+    private static Clock sClock = new Clock();
     private static Factory sFactory = new Factory();
 
     private final String mId;
@@ -128,12 +136,12 @@ public class WebappDataStorage {
      * @param callback Called when the URL has been retrieved.
      */
     @VisibleForTesting
-    public static void getURL(final Context context, final String webappId,
+    public static void getUrl(final Context context, final String webappId,
             final FetchCallback<String> callback) {
         new AsyncTask<Void, Void, String>() {
             @Override
             protected final String doInBackground(Void... nothing) {
-                return new WebappDataStorage(context.getApplicationContext(), webappId).getURL();
+                return new WebappDataStorage(context.getApplicationContext(), webappId).getUrl();
             }
 
             @Override
@@ -156,18 +164,31 @@ public class WebappDataStorage {
     }
 
     /**
-     * Deletes the URL and scope, and sets last used time to 0 in SharedPreferences.
+     * Deletes the launched flag, URL and scope, and sets last used time to 0 in SharedPreferences.
      * This does not remove the stored splash screen image (if any) for the app.
      * @param context  The context to read the SharedPreferences file.
      * @param webappId The ID of the web app for which history is being cleared.
      */
     static void clearHistory(final Context context, final String webappId) {
+        assert !ThreadUtils.runningOnUiThread();
+        SharedPreferences.Editor editor = openSharedPreferences(context, webappId).edit();
+
         // The last used time is set to 0 to ensure that a valid value is always present.
         // If the web app is not launched prior to the next cleanup, then its remaining data will be
-        // removed. Otherwise, the next launch will update the last used time.
-        assert !ThreadUtils.runningOnUiThread();
-        openSharedPreferences(context, webappId).edit()
-                .putLong(KEY_LAST_USED, LAST_USED_UNSET).remove(KEY_URL).remove(KEY_SCOPE).apply();
+        // removed. Otherwise, the next launch from home screen will update the last used time.
+        editor.putLong(KEY_LAST_USED, LAST_USED_UNSET);
+        editor.remove(KEY_LAUNCHED);
+        editor.remove(KEY_URL);
+        editor.remove(KEY_SCOPE);
+        editor.apply();
+    }
+
+    /**
+     * Sets the clock used to get the current time.
+     */
+    @VisibleForTesting
+    public static void setClockForTests(Clock clock) {
+        sClock = clock;
     }
 
     /**
@@ -326,16 +347,15 @@ public class WebappDataStorage {
     /**
      * Returns the URL stored in this object, or URL_INVALID if it is not stored.
      */
-    String getURL() {
+    String getUrl() {
         return mPreferences.getString(KEY_URL, URL_INVALID);
     }
 
     /**
      * Updates the last used time of this object.
-     * @param lastUsedTime the new last used time.
      */
     void updateLastUsedTime() {
-        mPreferences.edit().putLong(KEY_LAST_USED, System.currentTimeMillis()).apply();
+        mPreferences.edit().putLong(KEY_LAST_USED, sClock.currentTimeMillis()).apply();
     }
 
     /**
@@ -343,6 +363,32 @@ public class WebappDataStorage {
      */
     long getLastUsedTime() {
         return mPreferences.getLong(KEY_LAST_USED, LAST_USED_INVALID);
+    }
+
+    /**
+     * Returns true if this web app has been launched from home screen recently (within
+     * WEBAPP_LAST_OPEN_MAX_TIME milliseconds).
+     */
+    public boolean wasLaunchedRecently() {
+        // Registering the web app sets the last used time, so we must also ensure that the web app
+        // has actually been launched. Otherwise, launches from home screen are the only occasion
+        // when last used time is updated.
+        return getLaunched()
+                && (sClock.currentTimeMillis() - getLastUsedTime() < WEBAPP_LAST_OPEN_MAX_TIME);
+    }
+
+    /**
+     * Returns true if this web app has been launched from home screen.
+     */
+    boolean getLaunched() {
+        return mPreferences.getBoolean(KEY_LAUNCHED, false);
+    }
+
+    /**
+     * Marks this web app as having been launched from home screen.
+     */
+    void setLaunched() {
+        mPreferences.edit().putBoolean(KEY_LAUNCHED, true).apply();
     }
 
     private Map<String, ?> getAllData() {
@@ -368,6 +414,19 @@ public class WebappDataStorage {
          */
         public WebappDataStorage create(final Context context, final String webappId) {
             return new WebappDataStorage(context, webappId);
+        }
+    }
+
+    /**
+     * Clock used to generate the current time in millseconds for updating and setting last used
+     * time.
+     */
+    public static class Clock {
+        /**
+         * Returns the current time in milliseconds.
+         */
+        public long currentTimeMillis() {
+            return System.currentTimeMillis();
         }
     }
 }
