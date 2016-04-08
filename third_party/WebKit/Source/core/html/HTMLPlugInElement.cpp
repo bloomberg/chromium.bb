@@ -86,16 +86,14 @@ void HTMLPlugInElement::setPersistedPluginWidget(Widget* widget)
 {
     if (m_persistedPluginWidget == widget)
         return;
-#if ENABLE(OILPAN)
     if (m_persistedPluginWidget) {
         if (m_persistedPluginWidget->isPluginView()) {
             m_persistedPluginWidget->hide();
             m_persistedPluginWidget->dispose();
         } else {
-            ASSERT(m_persistedPluginWidget->isFrameView());
+            ASSERT(m_persistedPluginWidget->isFrameView() || m_persistedPluginWidget->isRemoteFrameView());
         }
     }
-#endif
     m_persistedPluginWidget = widget;
 }
 
