@@ -118,6 +118,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const base::Closure& callback);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(PushMessagingServiceTest, NormalizeSenderInfo);
   FRIEND_TEST_ALL_PREFIXES(PushMessagingServiceTest, PayloadEncryptionTest);
 
   // A subscription is pending until it has succeeded or failed.
@@ -195,6 +196,11 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       bool not_found);
 
   // Helper methods ------------------------------------------------------------
+
+  // Normalizes the |sender_info|. In most cases the |sender_info| will be
+  // passed through to the GCM Driver as-is, but NIST P-256 application server
+  // keys have to be encoded using the URL-safe variant of the base64 encoding.
+  std::string NormalizeSenderInfo(const std::string& sender_info) const;
 
   // Checks if a given origin is allowed to use Push.
   bool IsPermissionSet(const GURL& origin);

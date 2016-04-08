@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
+#include "base/base64url.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
@@ -412,7 +413,9 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
   }
 
   IncreasePushSubscriptionCount(1, true /* is_pending */);
-  std::vector<std::string> sender_ids(1, options.sender_info);
+  std::vector<std::string> sender_ids(1,
+                                      NormalizeSenderInfo(options.sender_info));
+
   GetGCMDriver()->Register(app_identifier.app_id(), sender_ids,
                            base::Bind(&PushMessagingServiceImpl::DidSubscribe,
                                       weak_factory_.GetWeakPtr(),
@@ -525,7 +528,9 @@ void PushMessagingServiceImpl::DidRequestPermission(
   }
 
   IncreasePushSubscriptionCount(1, true /* is_pending */);
-  std::vector<std::string> sender_ids(1, options.sender_info);
+  std::vector<std::string> sender_ids(1,
+                                      NormalizeSenderInfo(options.sender_info));
+
   GetGCMDriver()->Register(app_identifier.app_id(), sender_ids,
                            base::Bind(&PushMessagingServiceImpl::DidSubscribe,
                                       weak_factory_.GetWeakPtr(),
@@ -602,11 +607,12 @@ void PushMessagingServiceImpl::Unsubscribe(
 #if defined(OS_ANDROID)
   // On Android the backend is different, and requires the original sender_id.
   // UnsubscribeBecausePermissionRevoked sometimes calls us with an empty one.
-  if (sender_id.empty())
+  if (sender_id.empty()) {
     unregister_callback.Run(gcm::GCMClient::INVALID_PARAMETER);
-  else
-    GetGCMDriver()->UnregisterWithSenderId(app_id, sender_id,
-                                           unregister_callback);
+  } else {
+    GetGCMDriver()->UnregisterWithSenderId(
+        app_id, NormalizeSenderInfo(sender_id), unregister_callback);
+  }
 #else
   GetGCMDriver()->Unregister(app_id, unregister_callback);
 #endif
@@ -746,6 +752,20 @@ void PushMessagingServiceImpl::OnMenuClick() {
 }
 
 // Helper methods --------------------------------------------------------------
+
+std::string PushMessagingServiceImpl::NormalizeSenderInfo(
+    const std::string& sender_info) const {
+  // Only encode the |sender_info| when it is a NIST P-256 public key in
+  // uncompressed format, verified through its length and the 0x04 prefix byte.
+  if (sender_info.size() != 65 || sender_info[0] != 0x04)
+    return sender_info;
+
+  std::string encoded_sender_info;
+  base::Base64UrlEncode(sender_info, base::Base64UrlEncodePolicy::OMIT_PADDING,
+                        &encoded_sender_info);
+
+  return encoded_sender_info;
+}
 
 // Assumes user_visible always since this is just meant to check
 // if the permission was previously granted and not revoked.

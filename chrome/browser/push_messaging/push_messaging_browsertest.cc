@@ -58,18 +58,22 @@ namespace {
 
 // NIST P-256 public key made available to tests. Must be an uncompressed
 // point in accordance with SEC1 2.3.3.
-// Note: Although the key itself is only 65 bytes, we pad it with a 0x00 to
-// make dcheck happy when it compares input and output as strings.
-const uint8_t kApplicationServerKey[66] = {
+const uint8_t kApplicationServerKey[65] = {
     0x04, 0x55, 0x52, 0x6A, 0xA5, 0x6E, 0x8E, 0xAA, 0x47, 0x97, 0x36,
     0x10, 0xC1, 0x66, 0x3C, 0x1E, 0x65, 0xBF, 0xA1, 0x7B, 0xEE, 0x48,
     0xC9, 0xC6, 0xBB, 0xBF, 0x02, 0x18, 0x53, 0x72, 0x1D, 0x0C, 0x7B,
     0xA9, 0xE3, 0x11, 0xB7, 0x03, 0x52, 0x21, 0xD3, 0x71, 0x90, 0x13,
     0xA8, 0xC1, 0xCF, 0xED, 0x20, 0xF7, 0x1F, 0xD1, 0x7F, 0xF2, 0x76,
-    0xB6, 0x01, 0x20, 0xD8, 0x35, 0xA5, 0xD9, 0x3C, 0x43, 0xFD, 0x00};
+    0xB6, 0x01, 0x20, 0xD8, 0x35, 0xA5, 0xD9, 0x3C, 0x43, 0xFD};
 
-const char* getTestApplicationServerKey() {
-  return reinterpret_cast<const char*>(kApplicationServerKey);
+// URL-safe base64 encoded version of the |kApplicationServerKey|.
+const char kEncodedApplicationServerKey[] =
+    "BFVSaqVujqpHlzYQwWY8HmW_oXvuSMnGu78CGFNyHQx7qeMRtwNSIdNxkBOowc_tIPcf0X_ydr"
+    "YBINg1pdk8Q_0";
+
+std::string GetTestApplicationServerKey() {
+  return std::string(kApplicationServerKey,
+                     kApplicationServerKey + arraysize(kApplicationServerKey));
 }
 
 // Class to instantiate on the stack that is meant to be used with
@@ -332,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   PushMessagingAppIdentifier app_identifier =
       GetAppIdentifierForServiceWorkerRegistration(0LL);
   EXPECT_EQ(app_identifier.app_id(), gcm_service()->last_registered_app_id());
-  EXPECT_EQ(getTestApplicationServerKey(),
+  EXPECT_EQ(kEncodedApplicationServerKey,
             gcm_service()->last_registered_sender_ids()[0]);
 }
 
@@ -351,7 +355,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   PushMessagingAppIdentifier app_identifier =
       GetAppIdentifierForServiceWorkerRegistration(0LL);
   EXPECT_EQ(app_identifier.app_id(), gcm_service()->last_registered_app_id());
-  EXPECT_EQ(getTestApplicationServerKey(),
+  EXPECT_EQ(kEncodedApplicationServerKey,
             gcm_service()->last_registered_sender_ids()[0]);
 }
 
@@ -603,7 +607,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
   PushMessagingAppIdentifier app_identifier =
       GetAppIdentifierForServiceWorkerRegistration(0LL);
   EXPECT_EQ(app_identifier.app_id(), gcm_service()->last_registered_app_id());
-  EXPECT_EQ(getTestApplicationServerKey(),
+  EXPECT_EQ(kEncodedApplicationServerKey,
             gcm_service()->last_registered_sender_ids()[0]);
 
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
@@ -615,7 +619,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
   ASSERT_EQ("true - is controlled", script_result);
 
   gcm::IncomingMessage message;
-  message.sender_id = std::string(getTestApplicationServerKey());
+  message.sender_id = GetTestApplicationServerKey();
   message.raw_data = "testdata";
   message.decrypted = true;
   push_service()->OnMessage(app_identifier.app_id(), message);
@@ -631,7 +635,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventWithoutPayload) {
   PushMessagingAppIdentifier app_identifier =
       GetAppIdentifierForServiceWorkerRegistration(0LL);
   EXPECT_EQ(app_identifier.app_id(), gcm_service()->last_registered_app_id());
-  EXPECT_EQ(getTestApplicationServerKey(),
+  EXPECT_EQ(kEncodedApplicationServerKey,
             gcm_service()->last_registered_sender_ids()[0]);
 
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
@@ -643,7 +647,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventWithoutPayload) {
   ASSERT_EQ("true - is controlled", script_result);
 
   gcm::IncomingMessage message;
-  message.sender_id = std::string(getTestApplicationServerKey());
+  message.sender_id = GetTestApplicationServerKey();
   message.decrypted = false;
 
   push_service()->OnMessage(app_identifier.app_id(), message);
@@ -659,7 +663,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
   PushMessagingAppIdentifier app_identifier =
       GetAppIdentifierForServiceWorkerRegistration(0LL);
   EXPECT_EQ(app_identifier.app_id(), gcm_service()->last_registered_app_id());
-  EXPECT_EQ(getTestApplicationServerKey(),
+  EXPECT_EQ(kEncodedApplicationServerKey,
             gcm_service()->last_registered_sender_ids()[0]);
 
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
@@ -681,7 +685,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
       base::Bind(&UnregistrationCallback::Run, base::Unretained(&callback)));
 
   gcm::IncomingMessage message;
-  message.sender_id = std::string(getTestApplicationServerKey());
+  message.sender_id = GetTestApplicationServerKey();
   message.raw_data = "testdata";
   message.decrypted = true;
   push_service()->OnMessage(app_identifier.app_id(), message);
@@ -704,7 +708,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   PushMessagingAppIdentifier app_identifier =
       GetAppIdentifierForServiceWorkerRegistration(0LL);
   EXPECT_EQ(app_identifier.app_id(), gcm_service()->last_registered_app_id());
-  EXPECT_EQ(getTestApplicationServerKey(),
+  EXPECT_EQ(kEncodedApplicationServerKey,
             gcm_service()->last_registered_sender_ids()[0]);
 
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
@@ -726,7 +730,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   // If the site is visible in an active tab, we should not force a notification
   // to be shown. Try it twice, since we allow one mistake per 10 push events.
   gcm::IncomingMessage message;
-  message.sender_id = std::string(getTestApplicationServerKey());
+  message.sender_id = GetTestApplicationServerKey();
   message.decrypted = true;
   for (int n = 0; n < 2; n++) {
     message.raw_data = "testdata";
@@ -812,7 +816,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   PushMessagingAppIdentifier app_identifier =
       GetAppIdentifierForServiceWorkerRegistration(0LL);
   EXPECT_EQ(app_identifier.app_id(), gcm_service()->last_registered_app_id());
-  EXPECT_EQ(getTestApplicationServerKey(),
+  EXPECT_EQ(kEncodedApplicationServerKey,
             gcm_service()->last_registered_sender_ids()[0]);
 
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
@@ -831,7 +835,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   std::vector<size_t> number_of_notifications_shown;
 
   gcm::IncomingMessage message;
-  message.sender_id = std::string(getTestApplicationServerKey());
+  message.sender_id = GetTestApplicationServerKey();
   message.decrypted = true;
 
   {
@@ -866,7 +870,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   PushMessagingAppIdentifier app_identifier =
       GetAppIdentifierForServiceWorkerRegistration(0LL);
   EXPECT_EQ(app_identifier.app_id(), gcm_service()->last_registered_app_id());
-  EXPECT_EQ(getTestApplicationServerKey(),
+  EXPECT_EQ(kEncodedApplicationServerKey,
             gcm_service()->last_registered_sender_ids()[0]);
 
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
@@ -883,7 +887,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       message_loop_runner->QuitClosure());
 
   gcm::IncomingMessage message;
-  message.sender_id = std::string(getTestApplicationServerKey());
+  message.sender_id = GetTestApplicationServerKey();
   message.raw_data = "shownotification-without-waituntil";
   message.decrypted = true;
   push_service()->OnMessage(app_identifier.app_id(), message);

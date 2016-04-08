@@ -38,6 +38,23 @@ const char kTestSenderId[] = "1234567890";
 const int64_t kTestServiceWorkerId = 42;
 const char kTestPayload[] = "Hello, world!";
 
+// NIST P-256 public key in uncompressed format per SEC1 2.3.3.
+const uint8_t kTestP256Key[] = {
+    0x04, 0x55, 0x52, 0x6A, 0xA5, 0x6E, 0x8E, 0xAA, 0x47, 0x97, 0x36,
+    0x10, 0xC1, 0x66, 0x3C, 0x1E, 0x65, 0xBF, 0xA1, 0x7B, 0xEE, 0x48,
+    0xC9, 0xC6, 0xBB, 0xBF, 0x02, 0x18, 0x53, 0x72, 0x1D, 0x0C, 0x7B,
+    0xA9, 0xE3, 0x11, 0xB7, 0x03, 0x52, 0x21, 0xD3, 0x71, 0x90, 0x13,
+    0xA8, 0xC1, 0xCF, 0xED, 0x20, 0xF7, 0x1F, 0xD1, 0x7F, 0xF2, 0x76,
+    0xB6, 0x01, 0x20, 0xD8, 0x35, 0xA5, 0xD9, 0x3C, 0x43, 0xFD};
+
+static_assert(sizeof(kTestP256Key) == 65,
+              "The fake public key must be a valid P-256 uncompressed point.");
+
+// URL-safe base64 encoded version of the |kTestP256Key|.
+const char kTestEncodedP256Key[] =
+    "BFVSaqVujqpHlzYQwWY8HmW_oXvuSMnGu78CGFNyHQx7qeMRtwNSIdNxkBOowc_tIPcf0X_ydr"
+    "YBINg1pdk8Q_0";
+
 // Implementation of the TestingProfile that provides the Push Messaging Service
 // and the Permission Manager, both of which are required for the tests.
 class PushMessagingTestingProfile : public TestingProfile {
@@ -222,4 +239,24 @@ TEST_F(PushMessagingServiceTest, PayloadEncryptionTest) {
 
   EXPECT_FALSE(payload.is_null);
   EXPECT_EQ(kTestPayload, payload.data);
+}
+
+TEST_F(PushMessagingServiceTest, NormalizeSenderInfo) {
+  PushMessagingServiceImpl* push_service = profile()->GetPushMessagingService();
+  ASSERT_TRUE(push_service);
+
+  std::string p256dh(kTestP256Key, kTestP256Key + arraysize(kTestP256Key));
+  ASSERT_EQ(65u, p256dh.size());
+
+  // NIST P-256 public keys in uncompressed format will be encoded using the
+  // URL-safe base64 encoding by the normalization function.
+  EXPECT_EQ(kTestEncodedP256Key, push_service->NormalizeSenderInfo(p256dh));
+
+  // Any other value, binary or not, will be passed through as-is.
+  EXPECT_EQ("1234567890", push_service->NormalizeSenderInfo("1234567890"));
+  EXPECT_EQ("foo@bar.com", push_service->NormalizeSenderInfo("foo@bar.com"));
+
+  p256dh[0] = 0x05;  // invalidate |p256dh| as a public key.
+
+  EXPECT_EQ(p256dh, push_service->NormalizeSenderInfo(p256dh));
 }
