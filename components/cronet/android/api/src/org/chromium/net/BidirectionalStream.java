@@ -113,13 +113,12 @@ public abstract class BidirectionalStream {
             return this;
         }
 
-        /** @deprecated not really deprecated but hidden. */
+        /** @hide */
         @IntDef({
                 STREAM_PRIORITY_IDLE, STREAM_PRIORITY_LOWEST, STREAM_PRIORITY_LOW,
                 STREAM_PRIORITY_MEDIUM, STREAM_PRIORITY_HIGHEST,
         })
         @Retention(RetentionPolicy.SOURCE)
-        @SuppressWarnings("DepAnn")
         public @interface StreamPriority {}
 
         /**

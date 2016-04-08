@@ -140,13 +140,12 @@ public interface UrlRequest {
             return this;
         }
 
-        /** @deprecated not really deprecated but hidden. */
+        /** @hide */
         @IntDef({
                 REQUEST_PRIORITY_IDLE, REQUEST_PRIORITY_LOWEST, REQUEST_PRIORITY_LOW,
                 REQUEST_PRIORITY_MEDIUM, REQUEST_PRIORITY_HIGHEST,
         })
         @Retention(RetentionPolicy.SOURCE)
-        @SuppressWarnings("DepAnn")
         public @interface RequestPriority {}
 
         /**
@@ -222,9 +221,8 @@ public interface UrlRequest {
          * {@link CronetEngine.RequestFinishedListener} with a {@link CronetEngine.UrlRequestInfo}.
          * @return the builder to facilitate chaining.
          *
-         * @deprecated not really deprecated but hidden for now as it's a prototype.
+         * @hide as it's a prototype.
          */
-        @Deprecated
         public Builder addRequestAnnotation(Object annotation) {
             if (annotation == null) {
                 throw new NullPointerException("Invalid metrics annotation.");
@@ -377,7 +375,7 @@ public interface UrlRequest {
      * Request status values returned by {@link #getStatus}.
      */
     public static class Status {
-        /** @deprecated not really deprecated but hidden. */
+        /** @hide */
         @IntDef({
                 INVALID, IDLE, WAITING_FOR_STALLED_SOCKET_POOL, WAITING_FOR_AVAILABLE_SOCKET,
                 WAITING_FOR_DELEGATE, WAITING_FOR_CACHE, DOWNLOADING_PROXY_SCRIPT,
@@ -386,7 +384,6 @@ public interface UrlRequest {
                 READING_RESPONSE,
         })
         @Retention(RetentionPolicy.SOURCE)
-        @SuppressWarnings("DepAnn")
         public @interface StatusValues {}
 
         /**
@@ -579,6 +576,7 @@ public interface UrlRequest {
      *
      * @param method "GET", "HEAD", "DELETE", "POST" or "PUT".
      * @deprecated Use {@link Builder#setHttpMethod}.
+     * @hide
      */
     @Deprecated public void setHttpMethod(String method);
 
@@ -588,6 +586,7 @@ public interface UrlRequest {
      * @param header header name.
      * @param value header value.
      * @deprecated Use {@link Builder#setPriority}.
+     * @hide
      */
     @Deprecated public void addHeader(String header, String value);
 
@@ -602,6 +601,7 @@ public interface UrlRequest {
      *     using this {@code Executor}. May optionally be the same
      *     {@code Executor} the request itself is using.
      * @deprecated Use {@link Builder#setUploadDataProvider}.
+     * @hide
      */
     @Deprecated
     public void setUploadDataProvider(UploadDataProvider uploadDataProvider, Executor executor);
@@ -665,6 +665,7 @@ public interface UrlRequest {
      * Disables cache for the request. If context is not set up to use cache,
      * this call has no effect.
      * @deprecated Use {@link Builder#disableCache}.
+     * @hide
      */
     // TODO(pauljensen): When all callers shifted to Builder.disableCache(),
     // remove this method and instead add constructor argument and make
