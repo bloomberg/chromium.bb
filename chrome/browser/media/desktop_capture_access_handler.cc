@@ -88,6 +88,77 @@ base::string16 GetApplicationTitle(content::WebContents* web_contents,
   return base::UTF8ToUTF16(title);
 }
 
+base::string16 GetStopSharingUIString(
+    const base::string16& application_title,
+    const base::string16& registered_extension_name,
+    bool capture_audio,
+    content::DesktopMediaID::Type capture_type) {
+  if (!capture_audio) {
+    if (application_title == registered_extension_name) {
+      switch (capture_type) {
+        case content::DesktopMediaID::TYPE_SCREEN:
+          return l10n_util::GetStringFUTF16(
+              IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TEXT, application_title);
+        case content::DesktopMediaID::TYPE_WINDOW:
+          return l10n_util::GetStringFUTF16(
+              IDS_MEDIA_WINDOW_CAPTURE_NOTIFICATION_TEXT, application_title);
+        case content::DesktopMediaID::TYPE_WEB_CONTENTS:
+          return l10n_util::GetStringFUTF16(
+              IDS_MEDIA_TAB_CAPTURE_NOTIFICATION_TEXT, application_title);
+        case content::DesktopMediaID::TYPE_NONE:
+          NOTREACHED();
+      }
+    } else {
+      switch (capture_type) {
+        case content::DesktopMediaID::TYPE_SCREEN:
+          return l10n_util::GetStringFUTF16(
+              IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TEXT_DELEGATED,
+              registered_extension_name, application_title);
+        case content::DesktopMediaID::TYPE_WINDOW:
+          return l10n_util::GetStringFUTF16(
+              IDS_MEDIA_WINDOW_CAPTURE_NOTIFICATION_TEXT_DELEGATED,
+              registered_extension_name, application_title);
+        case content::DesktopMediaID::TYPE_WEB_CONTENTS:
+          return l10n_util::GetStringFUTF16(
+              IDS_MEDIA_TAB_CAPTURE_NOTIFICATION_TEXT_DELEGATED,
+              registered_extension_name, application_title);
+        case content::DesktopMediaID::TYPE_NONE:
+          NOTREACHED();
+      }
+    }
+  } else {  // The case with audio
+    if (application_title == registered_extension_name) {
+      switch (capture_type) {
+        case content::DesktopMediaID::TYPE_SCREEN:
+          return l10n_util::GetStringFUTF16(
+              IDS_MEDIA_SCREEN_CAPTURE_WITH_AUDIO_NOTIFICATION_TEXT,
+              application_title);
+        case content::DesktopMediaID::TYPE_WEB_CONTENTS:
+          return l10n_util::GetStringFUTF16(
+              IDS_MEDIA_TAB_CAPTURE_WITH_AUDIO_NOTIFICATION_TEXT,
+              application_title);
+        case content::DesktopMediaID::TYPE_NONE:
+        case content::DesktopMediaID::TYPE_WINDOW:
+          NOTREACHED();
+      }
+    } else {
+      switch (capture_type) {
+        case content::DesktopMediaID::TYPE_SCREEN:
+          return l10n_util::GetStringFUTF16(
+              IDS_MEDIA_SCREEN_CAPTURE_WITH_AUDIO_NOTIFICATION_TEXT_DELEGATED,
+              registered_extension_name, application_title);
+        case content::DesktopMediaID::TYPE_WEB_CONTENTS:
+          return l10n_util::GetStringFUTF16(
+              IDS_MEDIA_TAB_CAPTURE_WITH_AUDIO_NOTIFICATION_TEXT_DELEGATED,
+              registered_extension_name, application_title);
+        case content::DesktopMediaID::TYPE_NONE:
+        case content::DesktopMediaID::TYPE_WINDOW:
+          NOTREACHED();
+      }
+    }
+  }
+  return base::string16();
+}
 // Helper to get list of media stream devices for desktop capture in |devices|.
 // Registers to display notification if |display_notification| is true.
 // Returns an instance of MediaStreamUI to be passed to content layer.
@@ -118,16 +189,13 @@ scoped_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
   }
 
   // If required, register to display the notification for stream capture.
-  if (display_notification) {
-    if (application_title == registered_extension_name) {
-      ui = ScreenCaptureNotificationUI::Create(l10n_util::GetStringFUTF16(
-          IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TEXT, application_title));
-    } else {
-      ui = ScreenCaptureNotificationUI::Create(l10n_util::GetStringFUTF16(
-          IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TEXT_DELEGATED,
-          registered_extension_name, application_title));
-    }
+  if (!display_notification) {
+    return ui;
   }
+
+  ui = ScreenCaptureNotificationUI::Create(GetStopSharingUIString(
+      application_title, registered_extension_name, capture_audio,
+      media_id.type));
 
   return ui;
 }
