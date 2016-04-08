@@ -170,6 +170,14 @@ public class AwContents implements SmartClipProvider,
      */
     public interface NativeGLDelegate {
         /**
+         * Set the callback for when the getAwDrawGLFunction objects is safe to be deleted
+         * for this view. The callback forms a lifecycle between requestDrawGL (with canvas).
+         *
+         * @return false if not supported and this is a no-op; true otherwise.
+         */
+        boolean setDrawGLFunctionDetachedCallback(View view, Runnable callback);
+
+        /**
          * Requests a callback on the native DrawGL method (see getAwDrawGLFunction)
          * if called from within onDraw, |canvas| will be non-null and hardware accelerated.
          * Otherwise, |canvas| will be null, and the container view itself will be hardware
@@ -2323,9 +2331,6 @@ public class AwContents implements SmartClipProvider,
     @SuppressLint("MissingSuperCall")
     public void onDetachedFromWindow() {
         mAwViewMethods.onDetachedFromWindow();
-    }
-
-    public void onDrawGLFunctorDetached() {
     }
 
     /**

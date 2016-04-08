@@ -1889,9 +1889,6 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             return;
         }
 
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M && !"N".equals(Build.VERSION.CODENAME)) {
-            mAwContents.onDrawGLFunctorDetached();
-        }
         mAwContents.onDetachedFromWindow();
     }
 
@@ -2247,6 +2244,11 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
 
     // AwContents.NativeGLDelegate implementation --------------------------------------
     private class WebViewNativeGLDelegate implements AwContents.NativeGLDelegate {
+        @Override
+        public boolean setDrawGLFunctionDetachedCallback(View view, Runnable callback) {
+            return false; // Not supported yet.
+        }
+
         @Override
         public boolean requestDrawGL(Canvas canvas, boolean waitForCompletion, View containerView) {
             if (mGLfunctor == null) {

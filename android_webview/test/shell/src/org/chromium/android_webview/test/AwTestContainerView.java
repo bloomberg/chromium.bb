@@ -417,6 +417,11 @@ public class AwTestContainerView extends FrameLayout {
 
     private class NativeGLDelegate implements AwContents.NativeGLDelegate {
         @Override
+        public boolean setDrawGLFunctionDetachedCallback(View view, Runnable callback) {
+            return false;
+        }
+
+        @Override
         public boolean requestDrawGL(Canvas canvas, boolean waitForCompletion,
                 View containerview) {
             if (!isBackedByHardwareView()) return false;
