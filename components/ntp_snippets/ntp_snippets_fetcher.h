@@ -58,8 +58,6 @@ class NTPSnippetsFetcher : public net::URLFetcherDelegate {
   // Flag for picking the right (stable/non-stable) API key for Chrome Reader
   bool is_stable_channel_;
 
-  base::WeakPtrFactory<NTPSnippetsFetcher> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsFetcher);
 };
 }  // namespace ntp_snippets

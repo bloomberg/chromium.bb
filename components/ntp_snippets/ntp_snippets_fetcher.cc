@@ -67,8 +67,7 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
     bool is_stable_channel)
     : file_task_runner_(file_task_runner),
       url_request_context_getter_(url_request_context_getter),
-      is_stable_channel_(is_stable_channel),
-      weak_ptr_factory_(this) {}
+      is_stable_channel_(is_stable_channel) {}
 
 NTPSnippetsFetcher::~NTPSnippetsFetcher() {
 }
