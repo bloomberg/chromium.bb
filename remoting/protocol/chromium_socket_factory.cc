@@ -201,7 +201,7 @@ int UdpPacketSocket::SendTo(const void* data, size_t data_size,
   cricket::ApplyPacketOptions(
       reinterpret_cast<uint8_t*>(packet.data->data()), data_size,
       options.packet_time_params,
-      (base::TimeTicks::Now() - base::TimeTicks()).InMilliseconds());
+      (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds());
   send_queue_.push_back(packet);
   send_queue_size_ += data_size;
 
