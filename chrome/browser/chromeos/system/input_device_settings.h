@@ -78,6 +78,7 @@ const int kMaxPointerSensitivity = 5;
 class TouchpadSettings {
  public:
   TouchpadSettings();
+  TouchpadSettings(const TouchpadSettings& other);
   TouchpadSettings& operator=(const TouchpadSettings& other);
 
   void SetSensitivity(int value);
@@ -125,6 +126,7 @@ class TouchpadSettings {
 class MouseSettings {
  public:
   MouseSettings();
+  MouseSettings(const MouseSettings& other);
   MouseSettings& operator=(const MouseSettings& other);
 
   void SetSensitivity(int value);

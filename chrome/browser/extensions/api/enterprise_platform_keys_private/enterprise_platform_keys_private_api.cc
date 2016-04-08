@@ -74,6 +74,9 @@ EPKPChallengeKeyBase::PrepareKeyContext::PrepareKeyContext(
       require_user_consent(require_user_consent),
       callback(callback) {}
 
+EPKPChallengeKeyBase::PrepareKeyContext::PrepareKeyContext(
+    const PrepareKeyContext& other) = default;
+
 EPKPChallengeKeyBase::PrepareKeyContext::~PrepareKeyContext() {
 }
 

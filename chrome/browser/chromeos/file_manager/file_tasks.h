@@ -171,6 +171,7 @@ class FullTaskDescriptor {
                      const GURL& icon_url,
                      bool is_default,
                      bool is_generic_file_handler);
+  FullTaskDescriptor(const FullTaskDescriptor& other);
   const TaskDescriptor& task_descriptor() const { return task_descriptor_; }
 
   // The title of the task.

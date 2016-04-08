@@ -66,6 +66,8 @@ bool IntelUarchTableCmp(const IntelUarchTableEntry& a,
 
 CPUIdentity::CPUIdentity() : family(0), model(0) {}
 
+CPUIdentity::CPUIdentity(const CPUIdentity& other) = default;
+
 CPUIdentity::~CPUIdentity() {}
 
 std::string GetIntelUarch(const CPUIdentity& cpuid) {

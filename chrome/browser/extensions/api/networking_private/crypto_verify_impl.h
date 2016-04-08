@@ -26,6 +26,7 @@ class CryptoVerifyImpl : public NetworkingPrivateDelegate::VerifyDelegate {
     // VerificationProperties are not copyable so define a struct that can be
     // passed to tasks on the worker thread.
     explicit Credentials(const VerificationProperties& properties);
+    Credentials(const Credentials& other);
     ~Credentials();
 
     std::string certificate;

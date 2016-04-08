@@ -42,6 +42,9 @@ InstallLimiter::DeferredInstall::DeferredInstall(
       path(path) {
 }
 
+InstallLimiter::DeferredInstall::DeferredInstall(const DeferredInstall& other) =
+    default;
+
 InstallLimiter::DeferredInstall::~DeferredInstall() {
 }
 

@@ -29,6 +29,7 @@ class MachOImageReader {
   // Represents a Mach-O load command, including all of its data.
   struct LoadCommand {
     LoadCommand();
+    LoadCommand(const LoadCommand& other);
     ~LoadCommand();
 
     uint32_t cmd() const {

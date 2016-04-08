@@ -46,6 +46,7 @@ class KioskExternalUpdater : public disks::DiskMountManager::Observer,
   };
   struct ExternalUpdate {
     ExternalUpdate();
+    ExternalUpdate(const ExternalUpdate& other);
     ~ExternalUpdate();
 
     std::string app_name;

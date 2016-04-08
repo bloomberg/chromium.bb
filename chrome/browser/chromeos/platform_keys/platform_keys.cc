@@ -53,6 +53,9 @@ const char kTokenIdSystem[] = "system";
 ClientCertificateRequest::ClientCertificateRequest() {
 }
 
+ClientCertificateRequest::ClientCertificateRequest(
+    const ClientCertificateRequest& other) = default;
+
 ClientCertificateRequest::~ClientCertificateRequest() {
 }
 

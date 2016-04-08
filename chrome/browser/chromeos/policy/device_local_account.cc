@@ -42,6 +42,9 @@ DeviceLocalAccount::DeviceLocalAccount(Type type,
       kiosk_app_update_url(kiosk_app_update_url) {
 }
 
+DeviceLocalAccount::DeviceLocalAccount(const DeviceLocalAccount& other) =
+    default;
+
 DeviceLocalAccount::~DeviceLocalAccount() {
 }
 

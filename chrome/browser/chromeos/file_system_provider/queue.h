@@ -68,6 +68,7 @@ class Queue {
   struct Task {
     Task();
     Task(size_t token, const AbortableCallback& callback);
+    Task(const Task& other);
     ~Task();
 
     size_t token;

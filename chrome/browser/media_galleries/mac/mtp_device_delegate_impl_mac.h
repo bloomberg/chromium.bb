@@ -171,6 +171,7 @@ class MTPDeviceDelegateImplMac : public MTPDeviceAsyncDelegate {
                     const base::FilePath& snapshot_filename,
                     CreateSnapshotFileSuccessCallback success_cb,
                     ErrorCallback error_cb);
+    ReadFileRequest(const ReadFileRequest& other);
     ~ReadFileRequest();
 
     std::string request_file;
@@ -185,6 +186,7 @@ class MTPDeviceDelegateImplMac : public MTPDeviceAsyncDelegate {
     ReadDirectoryRequest(const base::FilePath& dir,
                          ReadDirectorySuccessCallback success_cb,
                          ErrorCallback error_cb);
+    ReadDirectoryRequest(const ReadDirectoryRequest& other);
     ~ReadDirectoryRequest();
 
     base::FilePath directory;

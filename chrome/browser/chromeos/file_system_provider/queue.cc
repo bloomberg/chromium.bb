@@ -19,6 +19,8 @@ Queue::Task::Task(size_t token, const AbortableCallback& callback)
     : token(token), callback(callback) {
 }
 
+Queue::Task::Task(const Task& other) = default;
+
 Queue::Task::~Task() {
 }
 

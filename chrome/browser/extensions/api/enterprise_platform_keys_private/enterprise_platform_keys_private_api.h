@@ -132,6 +132,7 @@ class EPKPChallengeKeyBase {
                           certificate_profile,
                       bool require_user_consent,
                       const base::Callback<void(PrepareKeyResult)>& callback);
+    PrepareKeyContext(const PrepareKeyContext& other);
     ~PrepareKeyContext();
 
     chromeos::attestation::AttestationKeyType key_type;

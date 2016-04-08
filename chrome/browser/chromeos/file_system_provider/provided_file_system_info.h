@@ -40,6 +40,8 @@ class ProvidedFileSystemInfo {
                          bool watchable,
                          extensions::FileSystemProviderSource source);
 
+  ProvidedFileSystemInfo(const ProvidedFileSystemInfo& other);
+
   ~ProvidedFileSystemInfo();
 
   const std::string& extension_id() const { return extension_id_; }

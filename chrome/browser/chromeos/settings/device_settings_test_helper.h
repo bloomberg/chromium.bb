@@ -132,6 +132,7 @@ class DeviceSettingsTestHelper : public SessionManagerClient {
     std::vector<RetrievePolicyCallback> retrieve_callbacks_;
 
     PolicyState();
+    PolicyState(const PolicyState& other);
     ~PolicyState();
 
     bool HasPendingOperations() const {

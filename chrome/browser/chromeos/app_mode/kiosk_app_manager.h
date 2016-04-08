@@ -67,6 +67,7 @@ class KioskAppManager : public KioskAppDataDelegate,
         bool is_extension_pending,
         bool was_auto_launched_with_zero_delay);
     App();
+    App(const App& other);
     ~App();
 
     std::string app_id;

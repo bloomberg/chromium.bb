@@ -23,6 +23,7 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
                  const std::string& source_format,
                  const std::string& mount_label,
                  chromeos::MountType type);
+    MountRequest(const MountRequest& other);
 
     std::string source_path;
     std::string source_format;

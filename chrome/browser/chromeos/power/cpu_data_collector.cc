@@ -442,6 +442,9 @@ CpuDataCollector::StateOccupancySample::StateOccupancySample()
     : cpu_online(false) {
 }
 
+CpuDataCollector::StateOccupancySample::StateOccupancySample(
+    const StateOccupancySample& other) = default;
+
 CpuDataCollector::StateOccupancySample::~StateOccupancySample() {
 }
 

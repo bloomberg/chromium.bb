@@ -178,6 +178,8 @@ CryptoVerifyImpl::Credentials::Credentials(
   public_key = properties.public_key;
 }
 
+CryptoVerifyImpl::Credentials::Credentials(const Credentials& other) = default;
+
 CryptoVerifyImpl::Credentials::~Credentials() {
 }
 

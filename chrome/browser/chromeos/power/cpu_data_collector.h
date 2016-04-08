@@ -29,6 +29,7 @@ class CpuDataCollector {
  public:
   struct StateOccupancySample {
     StateOccupancySample();
+    StateOccupancySample(const StateOccupancySample& other);
     ~StateOccupancySample();
 
     // The time when the data was sampled.

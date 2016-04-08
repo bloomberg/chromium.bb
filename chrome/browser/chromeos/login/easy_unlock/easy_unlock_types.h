@@ -23,6 +23,7 @@ struct EasyUnlockDeviceKeyData {
   enum BluetoothType { BLUETOOTH_CLASSIC, BLUETOOTH_LE, NUM_BLUETOOTH_TYPES };
 
   EasyUnlockDeviceKeyData();
+  EasyUnlockDeviceKeyData(const EasyUnlockDeviceKeyData& other);
   ~EasyUnlockDeviceKeyData();
 
   // Bluetooth address of the remote device.

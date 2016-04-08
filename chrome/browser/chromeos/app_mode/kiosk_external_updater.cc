@@ -95,6 +95,9 @@ bool ShouldUpdateForHigherVersion(const std::string& version_1,
 KioskExternalUpdater::ExternalUpdate::ExternalUpdate() {
 }
 
+KioskExternalUpdater::ExternalUpdate::ExternalUpdate(
+    const ExternalUpdate& other) = default;
+
 KioskExternalUpdater::ExternalUpdate::~ExternalUpdate() {
 }
 

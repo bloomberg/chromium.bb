@@ -20,6 +20,9 @@ FakeDiskMountManager::MountRequest::MountRequest(
       type(type) {
 }
 
+FakeDiskMountManager::MountRequest::MountRequest(const MountRequest& other) =
+    default;
+
 FakeDiskMountManager::UnmountRequest::UnmountRequest(
     const std::string& mount_path,
     chromeos::UnmountOptions options)

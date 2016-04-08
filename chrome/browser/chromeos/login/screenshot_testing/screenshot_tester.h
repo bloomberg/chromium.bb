@@ -29,6 +29,7 @@ class ScreenshotTester {
   // Contains the results of comparison
   struct Result {
     Result();
+    Result(const Result& other);
     ~Result();
 
     // Is true if screenshots are considered to be equal, false otherwise.

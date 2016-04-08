@@ -52,6 +52,9 @@ ProvidedFileSystemInfo::ProvidedFileSystemInfo(
   DCHECK_LE(0, mount_options.opened_files_limit);
 }
 
+ProvidedFileSystemInfo::ProvidedFileSystemInfo(
+    const ProvidedFileSystemInfo& other) = default;
+
 ProvidedFileSystemInfo::~ProvidedFileSystemInfo() {}
 
 }  // namespace file_system_provider

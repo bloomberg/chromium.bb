@@ -616,6 +616,9 @@ LocalExtensionCache::CacheItemInfo::CacheItemInfo(
       size(size),
       file_path(file_path) {}
 
+LocalExtensionCache::CacheItemInfo::CacheItemInfo(const CacheItemInfo& other) =
+    default;
+
 LocalExtensionCache::CacheItemInfo::~CacheItemInfo() {
 }
 

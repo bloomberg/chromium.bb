@@ -13,6 +13,9 @@ RegistryInterface::~RegistryInterface() {
 RegistryInterface::RestoredFileSystem::RestoredFileSystem() {
 }
 
+RegistryInterface::RestoredFileSystem::RestoredFileSystem(
+    const RestoredFileSystem& other) = default;
+
 RegistryInterface::RestoredFileSystem::~RestoredFileSystem() {
 }
 

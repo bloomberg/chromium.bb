@@ -351,6 +351,9 @@ ProcessInfoSnapshot::ProcInfoEntry::ProcInfoEntry()
       vsize(0) {
 }
 
+ProcessInfoSnapshot::ProcInfoEntry::ProcInfoEntry(const ProcInfoEntry& other) =
+    default;
+
 bool ProcessInfoSnapshot::GetProcInfo(int pid,
                                       ProcInfoEntry* proc_info) const {
   std::map<int,ProcInfoEntry>::const_iterator it = proc_info_entries_.find(pid);

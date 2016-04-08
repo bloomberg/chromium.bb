@@ -47,6 +47,8 @@ ScreenshotTester::~ScreenshotTester() {
 ScreenshotTester::Result::Result() {
 }
 
+ScreenshotTester::Result::Result(const Result& other) = default;
+
 ScreenshotTester::Result::~Result() {
 }
 

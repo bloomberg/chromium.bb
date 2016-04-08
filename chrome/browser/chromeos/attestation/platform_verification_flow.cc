@@ -147,6 +147,9 @@ PlatformVerificationFlow::ChallengeContext::ChallengeContext(
       challenge(challenge),
       callback(callback) {}
 
+PlatformVerificationFlow::ChallengeContext::ChallengeContext(
+    const ChallengeContext& other) = default;
+
 PlatformVerificationFlow::ChallengeContext::~ChallengeContext() {}
 
 PlatformVerificationFlow::PlatformVerificationFlow()

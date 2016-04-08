@@ -161,6 +161,7 @@ class PlatformVerificationFlow
                      const std::string& service_id,
                      const std::string& challenge,
                      const ChallengeCallback& callback);
+    ChallengeContext(const ChallengeContext& other);
     ~ChallengeContext();
 
     content::WebContents* web_contents;

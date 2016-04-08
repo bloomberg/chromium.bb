@@ -27,6 +27,7 @@ class RegistryInterface {
   // Information about a file system to be restored.
   struct RestoredFileSystem {
     RestoredFileSystem();
+    RestoredFileSystem(const RestoredFileSystem& other);
     ~RestoredFileSystem();
 
     std::string extension_id;

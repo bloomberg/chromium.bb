@@ -61,6 +61,7 @@ class ProcessInfoSnapshot {
     std::string command;
 
     ProcInfoEntry();
+    ProcInfoEntry(const ProcInfoEntry& other);
   };
 
   // Get process information for a given PID.

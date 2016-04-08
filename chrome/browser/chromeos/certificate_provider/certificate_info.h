@@ -19,6 +19,7 @@ namespace certificate_provider {
 // to implement net::SSLPrivateKey.
 struct CertificateInfo {
   CertificateInfo();
+  CertificateInfo(const CertificateInfo& other);
   ~CertificateInfo();
 
   net::SSLPrivateKey::Type type = net::SSLPrivateKey::Type::RSA;

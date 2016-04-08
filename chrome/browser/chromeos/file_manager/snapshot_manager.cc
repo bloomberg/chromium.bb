@@ -105,6 +105,9 @@ SnapshotManager::FileReferenceWithSizeInfo::FileReferenceWithSizeInfo(
     int64_t size)
     : file_ref(ref), file_size(size) {}
 
+SnapshotManager::FileReferenceWithSizeInfo::FileReferenceWithSizeInfo(
+    const FileReferenceWithSizeInfo& other) = default;
+
 SnapshotManager::FileReferenceWithSizeInfo::~FileReferenceWithSizeInfo() {
 }
 

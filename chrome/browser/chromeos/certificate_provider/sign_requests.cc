@@ -11,6 +11,9 @@ namespace certificate_provider {
 
 SignRequests::RequestsState::RequestsState() {}
 
+SignRequests::RequestsState::RequestsState(const RequestsState& other) =
+    default;
+
 SignRequests::RequestsState::~RequestsState() {}
 
 SignRequests::SignRequests() {}

@@ -49,6 +49,8 @@ AlbumInfo::AlbumInfo(const std::string& name, const base::Time& timestamp,
       path(path) {
 }
 
+AlbumInfo::AlbumInfo(const AlbumInfo& other) = default;
+
 AlbumInfo::~AlbumInfo() {
 }
 

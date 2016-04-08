@@ -31,6 +31,7 @@ struct DeviceLocalAccount {
                      const std::string& account_id,
                      const std::string& kiosk_app_id,
                      const std::string& kiosk_app_update_url);
+  DeviceLocalAccount(const DeviceLocalAccount& other);
   ~DeviceLocalAccount();
 
   Type type;

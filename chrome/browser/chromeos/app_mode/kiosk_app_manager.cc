@@ -188,6 +188,8 @@ KioskAppManager::App::App()
       is_loading(false),
       was_auto_launched_with_zero_delay(false) {}
 
+KioskAppManager::App::App(const App& other) = default;
+
 KioskAppManager::App::~App() {}
 
 std::string KioskAppManager::GetAutoLaunchApp() const {

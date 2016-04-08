@@ -56,6 +56,8 @@ const int kDefaultPageSize = 9;
 
 InputMethodEngine::Candidate::Candidate() {}
 
+InputMethodEngine::Candidate::Candidate(const Candidate& other) = default;
+
 InputMethodEngine::Candidate::~Candidate() {}
 
 // When the default values are changed, please modify

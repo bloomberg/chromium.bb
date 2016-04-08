@@ -191,6 +191,9 @@ void DeviceSettingsTestHelper::StopArcInstance(const ArcCallback& callback) {}
 DeviceSettingsTestHelper::PolicyState::PolicyState()
     : store_result_(true) {}
 
+DeviceSettingsTestHelper::PolicyState::PolicyState(const PolicyState& other) =
+    default;
+
 DeviceSettingsTestHelper::PolicyState::~PolicyState() {}
 
 ScopedDeviceSettingsTestHelper::ScopedDeviceSettingsTestHelper() {

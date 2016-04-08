@@ -18,6 +18,8 @@ namespace system {
 TouchpadSettings::TouchpadSettings() {
 }
 
+TouchpadSettings::TouchpadSettings(const TouchpadSettings& other) = default;
+
 TouchpadSettings& TouchpadSettings::operator=(const TouchpadSettings& other) {
   if (&other != this) {
     sensitivity_ = other.sensitivity_;
@@ -136,6 +138,8 @@ void TouchpadSettings::Apply(const TouchpadSettings& touchpad_settings,
 
 MouseSettings::MouseSettings() {
 }
+
+MouseSettings::MouseSettings(const MouseSettings& other) = default;
 
 MouseSettings& MouseSettings::operator=(const MouseSettings& other) {
   if (&other != this) {

@@ -414,6 +414,8 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
 EntryDefinition::EntryDefinition() {
 }
 
+EntryDefinition::EntryDefinition(const EntryDefinition& other) = default;
+
 EntryDefinition::~EntryDefinition() {
 }
 

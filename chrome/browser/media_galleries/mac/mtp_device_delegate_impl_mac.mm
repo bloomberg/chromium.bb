@@ -541,6 +541,9 @@ MTPDeviceDelegateImplMac::ReadFileRequest::ReadFileRequest(
 
 MTPDeviceDelegateImplMac::ReadFileRequest::ReadFileRequest() {}
 
+MTPDeviceDelegateImplMac::ReadFileRequest::ReadFileRequest(
+    const ReadFileRequest& other) = default;
+
 MTPDeviceDelegateImplMac::ReadFileRequest::~ReadFileRequest() {}
 
 MTPDeviceDelegateImplMac::ReadDirectoryRequest::ReadDirectoryRequest(
@@ -550,6 +553,9 @@ MTPDeviceDelegateImplMac::ReadDirectoryRequest::ReadDirectoryRequest(
     : directory(dir),
       success_callback(success_cb),
       error_callback(error_cb) {}
+
+MTPDeviceDelegateImplMac::ReadDirectoryRequest::ReadDirectoryRequest(
+    const ReadDirectoryRequest& other) = default;
 
 MTPDeviceDelegateImplMac::ReadDirectoryRequest::~ReadDirectoryRequest() {}
 

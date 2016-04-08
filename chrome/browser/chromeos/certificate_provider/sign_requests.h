@@ -41,6 +41,7 @@ class SignRequests {
   // Holds state of all sign requests to a single extension.
   struct RequestsState {
     RequestsState();
+    RequestsState(const RequestsState& other);
     ~RequestsState();
 
     // Maps from request id to the SignCallback that must be called with the

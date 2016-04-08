@@ -60,6 +60,7 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
 
   struct Candidate {
     Candidate();
+    Candidate(const Candidate& other);
     virtual ~Candidate();
 
     std::string value;

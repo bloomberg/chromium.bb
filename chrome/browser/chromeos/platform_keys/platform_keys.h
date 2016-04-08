@@ -44,6 +44,7 @@ enum HashAlgorithm {
 
 struct ClientCertificateRequest {
   ClientCertificateRequest();
+  ClientCertificateRequest(const ClientCertificateRequest& other);
   ~ClientCertificateRequest();
 
   // The list of the types of certificates requested, sorted in order of the

@@ -24,11 +24,15 @@ bool WatcherKey::Comparator::operator()(const WatcherKey& a,
 Subscriber::Subscriber() : persistent(false) {
 }
 
+Subscriber::Subscriber(const Subscriber& other) = default;
+
 Subscriber::~Subscriber() {
 }
 
 Watcher::Watcher() : recursive(false) {
 }
+
+Watcher::Watcher(const Watcher& other) = default;
 
 Watcher::~Watcher() {
 }

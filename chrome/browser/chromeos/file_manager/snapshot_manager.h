@@ -54,6 +54,7 @@ class SnapshotManager {
     FileReferenceWithSizeInfo(
         scoped_refptr<storage::ShareableFileReference> ref,
         int64_t size);
+    FileReferenceWithSizeInfo(const FileReferenceWithSizeInfo& other);
     ~FileReferenceWithSizeInfo();
     scoped_refptr<storage::ShareableFileReference> file_ref;
     int64_t file_size;

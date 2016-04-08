@@ -45,6 +45,7 @@ class InstallLimiter : public KeyedService,
   struct DeferredInstall {
     DeferredInstall(const scoped_refptr<CrxInstaller>& installer,
                    const base::FilePath& path);
+    DeferredInstall(const DeferredInstall& other);
     ~DeferredInstall();
 
     const scoped_refptr<CrxInstaller> installer;

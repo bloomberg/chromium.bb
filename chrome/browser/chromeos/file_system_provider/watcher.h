@@ -44,6 +44,7 @@ typedef std::map<GURL, Subscriber> Subscribers;
 // one subscriber per origin for the same watcher.
 struct Subscriber {
   Subscriber();
+  Subscriber(const Subscriber& other);
   ~Subscriber();
 
   // Origin of the subscriber.
@@ -62,6 +63,7 @@ struct Subscriber {
 // Represents a watcher on a file system.
 struct Watcher {
   Watcher();
+  Watcher(const Watcher& other);
   ~Watcher();
 
   // Map of subscribers for notifications of the watcher.

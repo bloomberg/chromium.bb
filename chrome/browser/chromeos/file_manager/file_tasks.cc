@@ -150,6 +150,9 @@ FullTaskDescriptor::FullTaskDescriptor(
       is_generic_file_handler_(is_generic_file_handler) {
 }
 
+FullTaskDescriptor::FullTaskDescriptor(const FullTaskDescriptor& other) =
+    default;
+
 void UpdateDefaultTask(PrefService* pref_service,
                        const std::string& task_id,
                        const std::set<std::string>& suffixes,

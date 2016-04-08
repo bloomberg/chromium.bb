@@ -16,6 +16,9 @@ const char kEasyUnlockKeyMetaNameWrappedSecret[] = "eu.WUK";
 EasyUnlockDeviceKeyData::EasyUnlockDeviceKeyData()
     : bluetooth_type(BLUETOOTH_CLASSIC) {}
 
+EasyUnlockDeviceKeyData::EasyUnlockDeviceKeyData(
+    const EasyUnlockDeviceKeyData& other) = default;
+
 EasyUnlockDeviceKeyData::~EasyUnlockDeviceKeyData() {
 }
 

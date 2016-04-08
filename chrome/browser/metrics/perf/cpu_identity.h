@@ -12,6 +12,7 @@
 // makes things testable.
 struct CPUIdentity {
   CPUIdentity();
+  CPUIdentity(const CPUIdentity& other);
   ~CPUIdentity();
 
   // The system architecture based on uname().

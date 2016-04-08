@@ -118,6 +118,7 @@ class LocalExtensionCache {
                   const base::Time& last_used,
                   uint64_t size,
                   const base::FilePath& file_path);
+    CacheItemInfo(const CacheItemInfo& other);
     ~CacheItemInfo();
   };
   typedef std::multimap<std::string, CacheItemInfo> CacheMap;

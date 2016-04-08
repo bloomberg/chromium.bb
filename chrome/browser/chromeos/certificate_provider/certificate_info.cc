@@ -9,6 +9,8 @@ namespace certificate_provider {
 
 CertificateInfo::CertificateInfo() {}
 
+CertificateInfo::CertificateInfo(const CertificateInfo& other) = default;
+
 CertificateInfo::~CertificateInfo() {}
 
 }  // namespace certificate_provider

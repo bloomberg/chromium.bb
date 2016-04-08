@@ -73,6 +73,8 @@ class ByteSlice {
 
 MachOImageReader::LoadCommand::LoadCommand() {}
 
+MachOImageReader::LoadCommand::LoadCommand(const LoadCommand& other) = default;
+
 MachOImageReader::LoadCommand::~LoadCommand() {}
 
 // static

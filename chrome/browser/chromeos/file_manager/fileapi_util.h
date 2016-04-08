@@ -45,6 +45,7 @@ struct FileDefinition {
 // Contains all information needed to create an Entry object in custom bindings.
 struct EntryDefinition {
   EntryDefinition();
+  EntryDefinition(const EntryDefinition& other);
   ~EntryDefinition();
 
   std::string file_system_root_url;  // Used to create DOMFileSystem.
