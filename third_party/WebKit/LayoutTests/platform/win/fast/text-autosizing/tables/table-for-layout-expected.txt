@@ -4,9 +4,9 @@ layer at (0,0) size 800x400
   LayoutBlockFlow {HTML} at (0,0) size 800x400
     LayoutBlockFlow {BODY} at (0,0) size 800x399
       LayoutBlockFlow {DIV} at (0,0) size 600x36
-        LayoutText {#text} at (0,0) size 208x14
-          text run at (0,0) width 208: "Table autosizing tests - table-for-layout.html"
-        LayoutBR {BR} at (208,0) size 0x14
+        LayoutText {#text} at (0,0) size 207x14
+          text run at (0,0) width 207: "Table autosizing tests - table-for-layout.html"
+        LayoutBR {BR} at (206,0) size 1x14
         LayoutText {#text} at (0,15) size 247x14
           text run at (0,15) width 247: "This test passes if the main content area is autosized."
       LayoutTable {TABLE} at (1,37) size 798x362 [border: none]

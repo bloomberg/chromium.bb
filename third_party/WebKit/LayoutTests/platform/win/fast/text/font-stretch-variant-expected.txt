@@ -5,8 +5,8 @@ layer at (0,0) size 785x620 backgroundClip at (0,0) size 785x600 clip at (0,0) s
     LayoutBlockFlow {BODY} at (8,19.91) size 769x592.53
       LayoutBlockFlow {SECTION} at (0,0) size 769x134.91
         LayoutBlockFlow {H2} at (0,0) size 769x27
-          LayoutText {#text} at (0,0) size 414x26
-            text run at (0,0) width 414: "font-stretch: condensed vs Arial Narrow"
+          LayoutText {#text} at (0,0) size 413x26
+            text run at (0,0) width 413: "font-stretch: condensed vs Arial Narrow"
         LayoutBlockFlow {DIV} at (0,46.91) size 769x18
           LayoutText {#text} at (0,0) size 447x17
             text run at (0,0) width 447: "Back in June we delivered oxygen equipment of the same size."

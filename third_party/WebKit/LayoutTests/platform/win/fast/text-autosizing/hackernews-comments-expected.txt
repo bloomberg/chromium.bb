@@ -60,12 +60,12 @@ layer at (0,0) size 785x965 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                             text run at (1,1) width 69: "999 points"
                         LayoutText {#text} at (70,1) size 26x16
                           text run at (70,1) width 26: " by "
-                        LayoutInline {A} at (0,0) size 22x16 [color=#0000EE]
-                          LayoutText {#text} at (96,1) size 22x16
-                            text run at (96,1) width 22: "pdr"
-                        LayoutText {#text} at (118,1) size 190x16
-                          text run at (118,1) width 89: " 4 hours ago "
-                          text run at (207,1) width 101: "| 74 comments"
+                        LayoutInline {A} at (0,0) size 23x16 [color=#0000EE]
+                          LayoutText {#text} at (95,1) size 23x16
+                            text run at (95,1) width 23: "pdr"
+                        LayoutText {#text} at (117,1) size 191x16
+                          text run at (117,1) width 90: " 4 hours ago "
+                          text run at (206,1) width 102: "| 74 comments"
                     LayoutTableRow {TR} at (0,42) size 416x10
                     LayoutTableRow {TR} at (0,54) size 416x2
                       LayoutTableCell {TD} at (2,54) size 55x2 [r=3 c=0 rs=1 cs=1]

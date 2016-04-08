@@ -37,34 +37,34 @@ layer at (0,0) size 800x268
           text run at (0,18) width 348: "should be inherited. This was discovered in Safari 1.0."
       LayoutBlockFlow {DIV} at (0,110.44) size 784x120
         LayoutBlockFlow {P} at (0,0) size 784x18
-          LayoutText {#text} at (0,0) size 134x17
-            text run at (0,0) width 134: "Text inside "
+          LayoutText {#text} at (0,0) size 133x17
+            text run at (0,0) width 133: "Text inside "
           LayoutInline {B} at (0,0) size 50x17
-            LayoutText {#text} at (133,0) size 50x17
-              text run at (133,0) width 50: "bold"
-          LayoutText {#text} at (182,0) size 103x17
-            text run at (182,0) width 103: " element."
+            LayoutText {#text} at (132,0) size 50x17
+              text run at (132,0) width 50: "bold"
+          LayoutText {#text} at (181,0) size 103x17
+            text run at (181,0) width 103: " element."
         LayoutBlockFlow {P} at (0,34) size 784x18
-          LayoutText {#text} at (0,0) size 134x17
-            text run at (0,0) width 134: "Text inside "
+          LayoutText {#text} at (0,0) size 133x17
+            text run at (0,0) width 133: "Text inside "
           LayoutInline {STRONG} at (0,0) size 73x17
-            LayoutText {#text} at (133,0) size 73x17
-              text run at (133,0) width 73: "strong"
-          LayoutText {#text} at (205,0) size 103x17
-            text run at (205,0) width 103: " element."
+            LayoutText {#text} at (132,0) size 73x17
+              text run at (132,0) width 73: "strong"
+          LayoutText {#text} at (204,0) size 102x17
+            text run at (204,0) width 102: " element."
         LayoutBlockFlow {P} at (0,68) size 784x18
-          LayoutText {#text} at (0,0) size 134x17
-            text run at (0,0) width 134: "Text inside "
+          LayoutText {#text} at (0,0) size 133x17
+            text run at (0,0) width 133: "Text inside "
           LayoutInline {I} at (0,0) size 62x17
-            LayoutText {#text} at (133,0) size 62x17
-              text run at (133,0) width 62: "italic"
-          LayoutText {#text} at (194,0) size 103x17
-            text run at (194,0) width 103: " element."
+            LayoutText {#text} at (132,0) size 62x17
+              text run at (132,0) width 62: "italic"
+          LayoutText {#text} at (193,0) size 103x17
+            text run at (193,0) width 103: " element."
         LayoutBlockFlow {P} at (0,102) size 784x18
-          LayoutText {#text} at (0,0) size 134x17
-            text run at (0,0) width 134: "Text inside "
-          LayoutInline {EM} at (0,0) size 99x17
-            LayoutText {#text} at (133,0) size 99x17
-              text run at (133,0) width 99: "emphasis"
-          LayoutText {#text} at (231,0) size 102x17
-            text run at (231,0) width 102: " element."
+          LayoutText {#text} at (0,0) size 133x17
+            text run at (0,0) width 133: "Text inside "
+          LayoutInline {EM} at (0,0) size 98x17
+            LayoutText {#text} at (132,0) size 98x17
+              text run at (132,0) width 98: "emphasis"
+          LayoutText {#text} at (229,0) size 103x17
+            text run at (229,0) width 103: " element."

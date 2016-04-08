@@ -6,7 +6,7 @@ layer at (0,0) size 800x1794 backgroundClip at (0,0) size 800x600 clip at (0,0) 
       LayoutBlockFlow {DIV} at (0,0) size 600x36
         LayoutText {#text} at (0,0) size 308x14
           text run at (0,0) width 308: "Table autosizing tests - single-percent-width-cell-lots-of-text.html"
-        LayoutBR {BR} at (308,0) size 0x14
+        LayoutBR {BR} at (307,0) size 1x14
         LayoutText {#text} at (0,15) size 492x14
           text run at (0,15) width 492: "This test passes if there is a one cell with lots of text that's autosized, and five cells that are not autosized."
       LayoutTable {TABLE} at (1,37) size 798x1756 [border: none]

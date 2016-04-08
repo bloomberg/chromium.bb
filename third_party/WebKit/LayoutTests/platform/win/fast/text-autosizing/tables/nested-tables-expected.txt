@@ -6,7 +6,7 @@ layer at (0,0) size 800x315
       LayoutBlockFlow {DIV} at (0,0) size 600x36
         LayoutText {#text} at (0,0) size 196x14
           text run at (0,0) width 196: "Table autosizing tests - nested-tables.html"
-        LayoutBR {BR} at (196,0) size 0x14
+        LayoutBR {BR} at (195,0) size 1x14
         LayoutText {#text} at (0,15) size 358x14
           text run at (0,15) width 358: "This test passes if \"This text should not overlap itself\" doesn't overlap itself."
       LayoutTable {TABLE} at (1,37) size 798x277 [border: none]

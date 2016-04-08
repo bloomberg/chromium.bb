@@ -4,11 +4,11 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 55x17
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 762x35
-          LayoutText {#text} at (54,0) size 762x35
-            text run at (54,0) width 708: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6137 Disable kerning and some ligatures in the ATSUI code"
+        LayoutText {#text} at (0,0) size 54x17
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 759x35
+          LayoutText {#text} at (53,0) size 759x35
+            text run at (53,0) width 706: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6137 Disable kerning and some ligatures in the ATSUI code"
             text run at (0,18) width 29: "path"
         LayoutText {#text} at (28,18) size 5x17
           text run at (28,18) width 5: "."

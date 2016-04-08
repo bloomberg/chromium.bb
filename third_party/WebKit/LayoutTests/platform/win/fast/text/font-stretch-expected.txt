@@ -4,8 +4,8 @@ layer at (0,0) size 800x431
   LayoutBlockFlow {HTML} at (0,0) size 800x431
     LayoutBlockFlow {BODY} at (8,8) size 784x415
       LayoutBlockFlow {H1} at (0,0) size 784x23
-        LayoutText {#text} at (0,0) size 252x22
-          text run at (0,0) width 252: "Tests support for font-stretch"
+        LayoutText {#text} at (0,0) size 250x22
+          text run at (0,0) width 250: "Tests support for font-stretch"
       LayoutBlockFlow {P} at (0,25) size 784x16
         LayoutText {#text} at (0,0) size 228x15
           text run at (0,0) width 228: "Tests that CSS font-stretch is supported."
