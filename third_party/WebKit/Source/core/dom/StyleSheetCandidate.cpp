@@ -61,7 +61,7 @@ bool StyleSheetCandidate::isCSSStyle() const
 
 Document* StyleSheetCandidate::importedDocument() const
 {
-    ASSERT(isImport());
+    DCHECK(isImport());
     return toHTMLLinkElement(node()).import();
 }
 
@@ -88,7 +88,7 @@ bool StyleSheetCandidate::isEnabledAndLoading() const
 
 bool StyleSheetCandidate::hasPreferrableName() const
 {
-    ASSERT(isEnabledAndLoading() || sheet());
+    DCHECK(isEnabledAndLoading() || sheet());
     return !isEnabledViaScript() && !title().isEmpty() && !isAlternate();
 }
 

@@ -44,7 +44,7 @@ inline bool hasSameAttributes(const Vector<Attribute>& attributes, ShareableElem
 
 RawPtr<ShareableElementData> ElementDataCache::cachedShareableElementDataWithAttributes(const Vector<Attribute>& attributes)
 {
-    ASSERT(!attributes.isEmpty());
+    DCHECK(!attributes.isEmpty());
 
     ShareableElementDataCache::ValueType* it = m_shareableElementDataCache.add(attributeHash(attributes), nullptr).storedValue;
 

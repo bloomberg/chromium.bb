@@ -184,7 +184,7 @@ String Text::wholeText() const
             continue;
         result.append(toText(n)->data());
     }
-    ASSERT(result.length() == resultLength);
+    DCHECK_EQ(result.length(), resultLength);
 
     return result.toString();
 }
@@ -326,7 +326,7 @@ bool Text::textLayoutObjectIsNeeded(const ComputedStyle& style, const LayoutObje
 static bool isSVGText(Text* text)
 {
     Node* parentOrShadowHostNode = text->parentOrShadowHostNode();
-    ASSERT(parentOrShadowHostNode);
+    DCHECK(parentOrShadowHostNode);
     return parentOrShadowHostNode->isSVGElement() && !isSVGForeignObjectElement(*parentOrShadowHostNode);
 }
 
@@ -397,7 +397,7 @@ void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling)
 // need to create one if the parent style now has white-space: pre.
 bool Text::needsWhitespaceLayoutObject()
 {
-    ASSERT(!layoutObject());
+    DCHECK(!layoutObject());
     if (const ComputedStyle* style = parentComputedStyle())
         return style->preserveNewline();
     return false;
@@ -407,7 +407,7 @@ bool Text::needsWhitespaceLayoutObject()
 // |Node::layoutObject()| are discouraged.
 static bool shouldUpdateLayoutByReattaching(const Text& textNode, LayoutText* textLayoutObject)
 {
-    ASSERT(textNode.layoutObject() == textLayoutObject);
+    DCHECK_EQ(textNode.layoutObject(), textLayoutObject);
     if (!textLayoutObject)
         return true;
     if (!textNode.textLayoutObjectIsNeeded(*textLayoutObject->style(), *textLayoutObject->parent()))

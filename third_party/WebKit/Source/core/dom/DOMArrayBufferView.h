@@ -33,7 +33,7 @@ public:
 
     PassRefPtr<DOMArrayBuffer> buffer() const
     {
-        ASSERT(!isShared());
+        DCHECK(!isShared());
         if (!m_domArrayBuffer) {
             m_domArrayBuffer = DOMArrayBuffer::create(view()->buffer());
         }
@@ -42,7 +42,7 @@ public:
 
     PassRefPtr<DOMSharedArrayBuffer> bufferShared() const
     {
-        ASSERT(isShared());
+        DCHECK(isShared());
         if (!m_domArrayBuffer) {
             m_domArrayBuffer = DOMSharedArrayBuffer::create(view()->buffer());
         }
@@ -78,14 +78,14 @@ protected:
     explicit DOMArrayBufferView(PassRefPtr<WTF::ArrayBufferView> bufferView)
         : m_bufferView(bufferView)
     {
-        ASSERT(m_bufferView);
+        DCHECK(m_bufferView);
     }
     DOMArrayBufferView(PassRefPtr<WTF::ArrayBufferView> bufferView, PassRefPtr<DOMArrayBufferBase> domArrayBuffer)
         : m_bufferView(bufferView), m_domArrayBuffer(domArrayBuffer)
     {
-        ASSERT(m_bufferView);
-        ASSERT(m_domArrayBuffer);
-        ASSERT(m_domArrayBuffer->buffer() == m_bufferView->buffer());
+        DCHECK(m_bufferView);
+        DCHECK(m_domArrayBuffer);
+        DCHECK_EQ(m_domArrayBuffer->buffer(), m_bufferView->buffer());
     }
 
 private:

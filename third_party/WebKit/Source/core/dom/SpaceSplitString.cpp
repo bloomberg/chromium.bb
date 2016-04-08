@@ -104,14 +104,14 @@ bool SpaceSplitString::Data::containsAll(Data& other)
 
 void SpaceSplitString::Data::add(const AtomicString& string)
 {
-    ASSERT(hasOneRef());
-    ASSERT(!contains(string));
+    DCHECK(hasOneRef());
+    DCHECK(!contains(string));
     m_vector.append(string);
 }
 
 void SpaceSplitString::Data::remove(unsigned index)
 {
-    ASSERT(hasOneRef());
+    DCHECK(hasOneRef());
     m_vector.remove(index);
 }
 
@@ -190,7 +190,7 @@ PassRefPtr<SpaceSplitString::Data> SpaceSplitString::Data::createUnique(const Da
 SpaceSplitString::Data::Data(const AtomicString& string)
     : m_keyString(string)
 {
-    ASSERT(!string.isNull());
+    DCHECK(!string.isNull());
     createVector(string);
 }
 

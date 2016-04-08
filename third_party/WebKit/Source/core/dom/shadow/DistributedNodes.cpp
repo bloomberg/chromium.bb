@@ -38,8 +38,8 @@ void DistributedNodes::swap(DistributedNodes& other)
 
 void DistributedNodes::append(RawPtr<Node> node)
 {
-    ASSERT(node);
-    ASSERT(!node->isSlotOrActiveInsertionPoint());
+    DCHECK(node);
+    DCHECK(!node->isSlotOrActiveInsertionPoint());
     size_t size = m_nodes.size();
     m_indices.set(node.get(), size);
     m_nodes.append(node);

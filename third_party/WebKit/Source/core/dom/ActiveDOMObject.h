@@ -40,7 +40,7 @@ public:
     // suspendIfNeeded() should be called exactly once after object construction to synchronize
     // the suspend state with that in ExecutionContext.
     void suspendIfNeeded();
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     bool suspendIfNeededCalled() const { return m_suspendIfNeededCalled; }
 #endif
 
@@ -56,7 +56,7 @@ protected:
     virtual ~ActiveDOMObject();
 
 private:
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     bool m_suspendIfNeededCalled;
 #endif
 };

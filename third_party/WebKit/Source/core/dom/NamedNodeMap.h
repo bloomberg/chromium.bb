@@ -71,7 +71,7 @@ private:
         : m_element(element)
     {
         // Only supports NamedNodeMaps with Element associated.
-        ASSERT(m_element);
+        DCHECK(m_element);
     }
 
     Member<Element> m_element;

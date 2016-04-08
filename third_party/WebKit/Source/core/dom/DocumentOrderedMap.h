@@ -62,7 +62,7 @@ public:
 
     DECLARE_TRACE();
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     // While removing a ContainerNode, ID lookups won't be precise should the tree
     // have elements with duplicate IDs contained in the element being removed.
     // Rare trees, but ID lookups may legitimately fail across such removals;

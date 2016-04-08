@@ -157,7 +157,7 @@ public:
     void incrementDetachCount() { m_detachCount++; }
     void decrementDetachCount()
     {
-        ASSERT(m_detachCount > 0);
+        DCHECK_GT(m_detachCount, 0);
         m_detachCount--;
     }
 

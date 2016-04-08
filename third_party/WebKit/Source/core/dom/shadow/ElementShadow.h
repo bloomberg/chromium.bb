@@ -46,7 +46,7 @@ public:
     ~ElementShadow();
 
     Element* host() const;
-    ShadowRoot& youngestShadowRoot() const { ASSERT(m_shadowRoots.head()); return *m_shadowRoots.head(); }
+    ShadowRoot& youngestShadowRoot() const { DCHECK(m_shadowRoots.head()); return *m_shadowRoots.head(); }
     ShadowRoot* oldestShadowRoot() const { return m_shadowRoots.tail(); }
     ElementShadow* containingShadow() const;
 
@@ -59,7 +59,7 @@ public:
 
     HTMLSlotElement* assignedSlotFor(const Node& node) const
     {
-        ASSERT(m_slotAssignment);
+        DCHECK(m_slotAssignment);
         return m_slotAssignment->assignedSlotFor(node);
     }
 
@@ -127,7 +127,7 @@ private:
 
 inline Element* ElementShadow::host() const
 {
-    ASSERT(!m_shadowRoots.isEmpty());
+    DCHECK(!m_shadowRoots.isEmpty());
     return youngestShadowRoot().host();
 }
 

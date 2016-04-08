@@ -16,7 +16,7 @@ class CORE_EXPORT DOMSharedArrayBuffer final : public DOMArrayBufferBase {
 public:
     static PassRefPtr<DOMSharedArrayBuffer> create(PassRefPtr<WTF::ArrayBuffer> buffer)
     {
-        ASSERT(buffer->isShared());
+        DCHECK(buffer->isShared());
         return adoptRef(new DOMSharedArrayBuffer(buffer));
     }
     static PassRefPtr<DOMSharedArrayBuffer> create(unsigned numElements, unsigned elementByteSize)
@@ -29,7 +29,7 @@ public:
     }
     static PassRefPtr<DOMSharedArrayBuffer> create(WTF::ArrayBufferContents& contents)
     {
-        ASSERT(contents.isShared());
+        DCHECK(contents.isShared());
         return create(WTF::ArrayBuffer::create(contents));
     }
 

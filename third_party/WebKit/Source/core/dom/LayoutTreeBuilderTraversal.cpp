@@ -54,7 +54,7 @@ void ParentDetails::didTraverseInsertionPoint(const InsertionPoint* insertionPoi
 ContainerNode* parent(const Node& node, ParentDetails* details)
 {
     // TODO(hayato): Uncomment this once we can be sure LayoutTreeBuilderTraversal::parent() is used only for a node in a document.
-    // ASSERT(node.inShadowIncludingDocument());
+    // DCHECK(node.inShadowIncludingDocument());
     return FlatTreeTraversal::parent(node, details);
 }
 
@@ -186,8 +186,8 @@ static Node* pseudoAwareFirstChild(const Node& node)
 
 static Node* nextAncestorSibling(const Node& node, const Node* stayWithin)
 {
-    ASSERT(!pseudoAwareNextSibling(node));
-    ASSERT(node != stayWithin);
+    DCHECK(!pseudoAwareNextSibling(node));
+    DCHECK_NE(node, stayWithin);
     for (Node* parentNode = parent(node); parentNode; parentNode = parent(*parentNode)) {
         if (parentNode == stayWithin)
             return 0;
@@ -239,7 +239,7 @@ LayoutObject* nextInTopLayer(const Element& element)
         return 0;
     const HeapVector<Member<Element>>& topLayerElements = element.document().topLayerElements();
     size_t position = topLayerElements.find(&element);
-    ASSERT(position != kNotFound);
+    DCHECK_NE(position, kNotFound);
     for (size_t i = position + 1; i < topLayerElements.size(); ++i) {
         if (LayoutObject* layoutObject = topLayerElements[i]->layoutObject())
             return layoutObject;

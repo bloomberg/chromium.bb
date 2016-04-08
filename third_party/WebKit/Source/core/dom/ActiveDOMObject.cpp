@@ -33,11 +33,11 @@ namespace blink {
 
 ActiveDOMObject::ActiveDOMObject(ExecutionContext* executionContext)
     : ContextLifecycleObserver(executionContext, ActiveDOMObjectType)
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     , m_suspendIfNeededCalled(false)
 #endif
 {
-    ASSERT(!executionContext || executionContext->isContextThread());
+    DCHECK(!executionContext || executionContext->isContextThread());
     // TODO(hajimehoshi): Now the leak detector can't treat vaious threads other
     // than the main thread and worker threads. After fixing the leak detector,
     // let's count objects on other threads as many as possible.
@@ -50,18 +50,20 @@ ActiveDOMObject::~ActiveDOMObject()
     if (isMainThread())
         InstanceCounters::decrementCounter(InstanceCounters::ActiveDOMObjectCounter);
 
-    ASSERT(m_suspendIfNeededCalled);
+#if DCHECK_IS_ON()
+    DCHECK(m_suspendIfNeededCalled);
+#endif
 
     // Oilpan: not valid to access getExecutionContext() in the destructor.
 #if !ENABLE(OILPAN)
-    ASSERT(!getExecutionContext() || getExecutionContext()->isContextThread());
+    DCHECK(!getExecutionContext() || getExecutionContext()->isContextThread());
 #endif
 }
 
 void ActiveDOMObject::suspendIfNeeded()
 {
-#if ENABLE(ASSERT)
-    ASSERT(!m_suspendIfNeededCalled);
+#if DCHECK_IS_ON()
+    DCHECK(!m_suspendIfNeededCalled);
     m_suspendIfNeededCalled = true;
 #endif
     if (ExecutionContext* context = getExecutionContext())

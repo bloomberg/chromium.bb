@@ -36,7 +36,7 @@ namespace blink {
 
 RawPtr<MutationObserverInterestGroup> MutationObserverInterestGroup::createIfNeeded(Node& target, MutationObserver::MutationType type, MutationRecordDeliveryOptions oldValueFlag, const QualifiedName* attributeName)
 {
-    ASSERT((type == MutationObserver::Attributes && attributeName) || !attributeName);
+    DCHECK((type == MutationObserver::Attributes && attributeName) || !attributeName);
     HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions> observers;
     target.getRegisteredMutationObserversOfType(observers, type, attributeName);
     if (observers.isEmpty())
@@ -48,7 +48,7 @@ RawPtr<MutationObserverInterestGroup> MutationObserverInterestGroup::createIfNee
 MutationObserverInterestGroup::MutationObserverInterestGroup(HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions>& observers, MutationRecordDeliveryOptions oldValueFlag)
     : m_oldValueFlag(oldValueFlag)
 {
-    ASSERT(!observers.isEmpty());
+    DCHECK(!observers.isEmpty());
     m_observers.swap(observers);
 }
 

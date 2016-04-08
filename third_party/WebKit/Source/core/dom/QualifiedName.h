@@ -91,7 +91,7 @@ public:
             , m_namespace(namespaceURI)
 
         {
-            ASSERT(!namespaceURI.isEmpty() || namespaceURI.isNull());
+            DCHECK(!namespaceURI.isEmpty() || namespaceURI.isNull());
         }
     };
 

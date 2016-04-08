@@ -162,13 +162,13 @@ void StyleEngine::addPendingSheet()
 // This method is called whenever a top-level stylesheet has finished loading.
 void StyleEngine::removePendingSheet(Node* styleSheetCandidateNode)
 {
-    ASSERT(styleSheetCandidateNode);
+    DCHECK(styleSheetCandidateNode);
     TreeScope* treeScope = isStyleElement(*styleSheetCandidateNode) ? &styleSheetCandidateNode->treeScope() : m_document.get();
     if (styleSheetCandidateNode->inShadowIncludingDocument())
         markTreeScopeDirty(*treeScope);
 
     // Make sure we knew this sheet was pending, and that our count isn't out of sync.
-    ASSERT(m_pendingStylesheets > 0);
+    DCHECK_GT(m_pendingStylesheets, 0);
 
     m_pendingStylesheets--;
     if (m_pendingStylesheets)
@@ -190,7 +190,7 @@ void StyleEngine::setNeedsActiveStyleUpdate(StyleSheet* sheet, StyleResolverUpda
         Node* node = sheet->ownerNode();
         if (node && node->inShadowIncludingDocument()) {
             TreeScope& treeScope = isStyleElement(*node) ? node->treeScope() : *m_document;
-            ASSERT(isStyleElement(*node) || node->treeScope() == m_document);
+            DCHECK(isStyleElement(*node) || node->treeScope() == m_document);
             markTreeScopeDirty(treeScope);
         }
     }
@@ -204,10 +204,10 @@ void StyleEngine::addStyleSheetCandidateNode(Node* node)
         return;
 
     TreeScope& treeScope = isStyleElement(*node) ? node->treeScope() : *m_document;
-    ASSERT(isStyleElement(*node) || treeScope == m_document);
-    ASSERT(!isXSLStyleSheet(*node));
+    DCHECK(isStyleElement(*node) || treeScope == m_document);
+    DCHECK(!isXSLStyleSheet(*node));
     TreeScopeStyleSheetCollection* collection = ensureStyleSheetCollectionFor(treeScope);
-    ASSERT(collection);
+    DCHECK(collection);
     collection->addStyleSheetCandidateNode(node);
 
     markTreeScopeDirty(treeScope);
@@ -222,8 +222,8 @@ void StyleEngine::removeStyleSheetCandidateNode(Node* node)
 
 void StyleEngine::removeStyleSheetCandidateNode(Node* node, TreeScope& treeScope)
 {
-    ASSERT(isStyleElement(*node) || treeScope == m_document);
-    ASSERT(!isXSLStyleSheet(*node));
+    DCHECK(isStyleElement(*node) || treeScope == m_document);
+    DCHECK(!isXSLStyleSheet(*node));
 
     TreeScopeStyleSheetCollection* collection = styleSheetCollectionFor(treeScope);
     // After detaching document, collection could be null. In the case,
@@ -241,7 +241,7 @@ void StyleEngine::modifiedStyleSheetCandidateNode(Node* node)
         return;
 
     TreeScope& treeScope = isStyleElement(*node) ? node->treeScope() : *m_document;
-    ASSERT(isStyleElement(*node) || treeScope == m_document);
+    DCHECK(isStyleElement(*node) || treeScope == m_document);
     markTreeScopeDirty(treeScope);
     resolverChanged(FullStyleUpdate);
 }
@@ -268,9 +268,9 @@ bool StyleEngine::shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdate
 void StyleEngine::clearMediaQueryRuleSetOnTreeScopeStyleSheets(UnorderedTreeScopeSet& treeScopes)
 {
     for (TreeScope* treeScope : treeScopes) {
-        ASSERT(treeScope != m_document);
+        DCHECK(treeScope != m_document);
         ShadowTreeStyleSheetCollection* collection = static_cast<ShadowTreeStyleSheetCollection*>(styleSheetCollectionFor(*treeScope));
-        ASSERT(collection);
+        DCHECK(collection);
         collection->clearMediaQueryRuleSetStyleSheets();
     }
 }
@@ -284,7 +284,7 @@ void StyleEngine::clearMediaQueryRuleSetStyleSheets()
 
 void StyleEngine::updateStyleSheetsInImport(DocumentStyleSheetCollector& parentCollector)
 {
-    ASSERT(!isMaster());
+    DCHECK(!isMaster());
     HeapVector<Member<StyleSheet>> sheetsForList;
     ImportedDocumentStyleSheetCollector subcollector(parentCollector, sheetsForList);
     documentStyleSheetCollection()->collectStyleSheets(*this, subcollector);
@@ -293,22 +293,22 @@ void StyleEngine::updateStyleSheetsInImport(DocumentStyleSheetCollector& parentC
 
 void StyleEngine::updateActiveStyleSheetsInShadow(StyleResolverUpdateMode updateMode, TreeScope* treeScope, UnorderedTreeScopeSet& treeScopesRemoved)
 {
-    ASSERT(treeScope != m_document);
+    DCHECK_NE(treeScope, m_document);
     ShadowTreeStyleSheetCollection* collection = static_cast<ShadowTreeStyleSheetCollection*>(styleSheetCollectionFor(*treeScope));
-    ASSERT(collection);
+    DCHECK(collection);
     collection->updateActiveStyleSheets(*this, updateMode);
     if (!collection->hasStyleSheetCandidateNodes()) {
         treeScopesRemoved.add(treeScope);
         // When removing TreeScope from ActiveTreeScopes,
         // its resolver should be destroyed by invoking resetAuthorStyle.
-        ASSERT(!treeScope->scopedStyleResolver());
+        DCHECK(!treeScope->scopedStyleResolver());
     }
 }
 
 void StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
 {
-    ASSERT(isMaster());
-    ASSERT(!document().inStyleRecalc());
+    DCHECK(isMaster());
+    DCHECK(!document().inStyleRecalc());
 
     if (!document().isActive())
         return;
@@ -379,7 +379,7 @@ void StyleEngine::shadowRootRemovedFromDocument(ShadowRoot* shadowRoot)
 
 void StyleEngine::appendActiveAuthorStyleSheets()
 {
-    ASSERT(isMaster());
+    DCHECK(isMaster());
 
     m_resolver->appendAuthorStyleSheets(documentStyleSheetCollection()->activeAuthorStyleSheets());
     for (TreeScope* treeScope : m_activeTreeScopes) {
@@ -396,7 +396,7 @@ void StyleEngine::createResolver()
     // which is not in a frame. Code which hits this should have checked
     // Document::isActive() before calling into code which could get here.
 
-    ASSERT(document().frame());
+    DCHECK(document().frame());
 
     m_resolver = StyleResolver::create(*m_document);
 
@@ -407,8 +407,8 @@ void StyleEngine::createResolver()
 
 void StyleEngine::clearResolver()
 {
-    ASSERT(!document().inStyleRecalc());
-    ASSERT(isMaster() || !m_resolver);
+    DCHECK(!document().inStyleRecalc());
+    DCHECK(isMaster() || !m_resolver);
 
     document().clearScopedStyleResolver();
     // StyleEngine::shadowRootRemovedFromDocument removes not-in-document
@@ -475,7 +475,7 @@ void StyleEngine::updateGenericFontFamilySettings()
 {
     // FIXME: we should not update generic font family settings when
     // document is inactive.
-    ASSERT(document().isActive());
+    DCHECK(document().isActive());
 
     if (!m_fontSelector)
         return;
@@ -505,7 +505,7 @@ void StyleEngine::markTreeScopeDirty(TreeScope& scope)
         return;
     }
 
-    ASSERT(m_styleSheetCollectionMap.contains(&scope));
+    DCHECK(m_styleSheetCollectionMap.contains(&scope));
     m_dirtyTreeScopes.add(&scope);
 }
 
@@ -522,7 +522,7 @@ static bool isCacheableForStyleElement(const StyleSheetContents& contents)
     if (!contents.importRules().isEmpty())
         return false;
     // Until import rules are supported in cached sheets it's not possible for loading to fail.
-    ASSERT(!contents.didLoadErrorOccur());
+    DCHECK(!contents.didLoadErrorOccur());
     // It is not the original sheet anymore.
     if (contents.isMutable())
         return false;
@@ -548,13 +548,13 @@ RawPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const String& text, T
         }
     } else {
         StyleSheetContents* contents = result.storedValue->value;
-        ASSERT(contents);
-        ASSERT(isCacheableForStyleElement(*contents));
-        ASSERT(contents->singleOwnerDocument() == e->document());
+        DCHECK(contents);
+        DCHECK(isCacheableForStyleElement(*contents));
+        DCHECK_EQ(contents->singleOwnerDocument(), e->document());
         styleSheet = CSSStyleSheet::createInline(contents, e, startPosition);
     }
 
-    ASSERT(styleSheet);
+    DCHECK(styleSheet);
     styleSheet->setTitle(e->title());
     return styleSheet;
 }
@@ -735,7 +735,7 @@ void StyleEngine::setStatsEnabled(bool enabled)
 
 void StyleEngine::setShadowCascadeOrder(ShadowCascadeOrder order)
 {
-    ASSERT(order != ShadowCascadeOrder::ShadowCascadeNone);
+    DCHECK_NE(order, ShadowCascadeOrder::ShadowCascadeNone);
 
     if (order == m_shadowCascadeOrder)
         return;

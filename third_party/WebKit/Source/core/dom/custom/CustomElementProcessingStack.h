@@ -79,7 +79,7 @@ private:
         CustomElementCallbackQueue* sentinel = 0;
         for (size_t i = 0; i < kNumSentinels; i++)
             m_flattenedProcessingStack.append(sentinel);
-        ASSERT(s_elementQueueEnd == m_flattenedProcessingStack.size());
+        DCHECK_EQ(s_elementQueueEnd, m_flattenedProcessingStack.size());
     }
 
     // The start of the element queue on the top of the processing

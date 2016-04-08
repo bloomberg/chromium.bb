@@ -50,7 +50,7 @@ AttachedDetachedInvocation::AttachedDetachedInvocation(RawPtr<CustomElementLifec
     : CustomElementCallbackInvocation(callbacks)
     , m_which(which)
 {
-    ASSERT(m_which == CustomElementLifecycleCallbacks::AttachedCallback || m_which == CustomElementLifecycleCallbacks::DetachedCallback);
+    DCHECK(m_which == CustomElementLifecycleCallbacks::AttachedCallback || m_which == CustomElementLifecycleCallbacks::DetachedCallback);
 }
 
 void AttachedDetachedInvocation::dispatch(Element* element)

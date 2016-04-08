@@ -60,7 +60,7 @@ ChildListMutationAccumulator::ChildListMutationAccumulator(RawPtr<Node> target, 
 
 void ChildListMutationAccumulator::leaveMutationScope()
 {
-    ASSERT(m_mutationScopes > 0);
+    DCHECK_GT(m_mutationScopes, 0u);
     if (!--m_mutationScopes) {
         if (!isEmpty())
             enqueueMutationRecord();
@@ -88,7 +88,7 @@ inline bool ChildListMutationAccumulator::isAddedNodeInOrder(Node* child)
 
 void ChildListMutationAccumulator::childAdded(RawPtr<Node> prpChild)
 {
-    ASSERT(hasObservers());
+    DCHECK(hasObservers());
 
     RawPtr<Node> child = prpChild;
 
@@ -111,7 +111,7 @@ inline bool ChildListMutationAccumulator::isRemovedNodeInOrder(Node* child)
 
 void ChildListMutationAccumulator::willRemoveChild(RawPtr<Node> prpChild)
 {
-    ASSERT(hasObservers());
+    DCHECK(hasObservers());
 
     RawPtr<Node> child = prpChild;
 
@@ -131,25 +131,25 @@ void ChildListMutationAccumulator::willRemoveChild(RawPtr<Node> prpChild)
 
 void ChildListMutationAccumulator::enqueueMutationRecord()
 {
-    ASSERT(hasObservers());
-    ASSERT(!isEmpty());
+    DCHECK(hasObservers());
+    DCHECK(!isEmpty());
 
     RawPtr<StaticNodeList> addedNodes = StaticNodeList::adopt(m_addedNodes);
     RawPtr<StaticNodeList> removedNodes = StaticNodeList::adopt(m_removedNodes);
     RawPtr<MutationRecord> record = MutationRecord::createChildList(m_target, addedNodes.release(), removedNodes.release(), m_previousSibling.release(), m_nextSibling.release());
     m_observers->enqueueMutationRecord(record.release());
     m_lastAdded = nullptr;
-    ASSERT(isEmpty());
+    DCHECK(isEmpty());
 }
 
 bool ChildListMutationAccumulator::isEmpty()
 {
     bool result = m_removedNodes.isEmpty() && m_addedNodes.isEmpty();
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     if (result) {
-        ASSERT(!m_previousSibling);
-        ASSERT(!m_nextSibling);
-        ASSERT(!m_lastAdded);
+        DCHECK(!m_previousSibling);
+        DCHECK(!m_nextSibling);
+        DCHECK(!m_lastAdded);
     }
 #endif
     return result;

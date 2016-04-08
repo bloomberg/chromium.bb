@@ -52,7 +52,7 @@ void NodeIntersectionObserverData::dispose()
     copyToVector(m_intersectionObservers, observersToDisconnect);
     for (auto& observer : observersToDisconnect)
         observer->disconnect();
-    ASSERT(m_intersectionObservers.isEmpty());
+    DCHECK(m_intersectionObservers.isEmpty());
 }
 #endif
 
@@ -64,7 +64,7 @@ RawPtr<Node> NodeIntersectionObserverData::createWeakPtr(Node* node)
     if (!m_weakPointerFactory)
         m_weakPointerFactory = new WeakPtrFactory<Node>(node);
     WeakPtr<Node> result = m_weakPointerFactory->createWeakPtr();
-    ASSERT(result.get() == node);
+    DCHECK_EQ(result.get(), node);
     return result;
 #endif
 }

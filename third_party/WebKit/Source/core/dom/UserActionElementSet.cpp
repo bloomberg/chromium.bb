@@ -41,7 +41,7 @@ UserActionElementSet::~UserActionElementSet()
 
 void UserActionElementSet::didDetach(Element& element)
 {
-    ASSERT(element.isUserActionElement());
+    DCHECK(element.isUserActionElement());
     clearFlags(&element, IsActiveFlag | InActiveChainFlag | IsHoveredFlag);
 }
 
@@ -54,7 +54,7 @@ void UserActionElementSet::documentDidRemoveLastRef()
 
 bool UserActionElementSet::hasFlags(const Node* node, unsigned flags) const
 {
-    ASSERT(node->isUserActionElement() && node->isElementNode());
+    DCHECK(node->isUserActionElement() && node->isElementNode());
     return hasFlags(toElement(node), flags);
 }
 
@@ -74,7 +74,7 @@ void UserActionElementSet::clearFlags(Node* node, unsigned flags)
 
 inline bool UserActionElementSet::hasFlags(const Element* element, unsigned flags) const
 {
-    ASSERT(element->isUserActionElement());
+    DCHECK(element->isUserActionElement());
     ElementFlagMap::const_iterator found = m_elements.find(const_cast<Element*>(element));
     if (found == m_elements.end())
         return false;
@@ -84,7 +84,7 @@ inline bool UserActionElementSet::hasFlags(const Element* element, unsigned flag
 inline void UserActionElementSet::clearFlags(Element* element, unsigned flags)
 {
     if (!element->isUserActionElement()) {
-        ASSERT(m_elements.end() == m_elements.find(element));
+        DCHECK(m_elements.end() == m_elements.find(element));
         return;
     }
 
@@ -108,7 +108,7 @@ inline void UserActionElementSet::setFlags(Element* element, unsigned flags)
 {
     ElementFlagMap::iterator result = m_elements.find(element);
     if (result != m_elements.end()) {
-        ASSERT(element->isUserActionElement());
+        DCHECK(element->isUserActionElement());
         result->value |= flags;
         return;
     }

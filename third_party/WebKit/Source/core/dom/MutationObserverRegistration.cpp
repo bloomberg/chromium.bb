@@ -81,8 +81,8 @@ void MutationObserverRegistration::observedSubtreeNodeWillDetach(Node& node)
     if (!m_transientRegistrationNodes) {
         m_transientRegistrationNodes = new NodeHashSet;
 
-        ASSERT(m_registrationNode);
-        ASSERT(!m_registrationNodeKeepAlive);
+        DCHECK(m_registrationNode);
+        DCHECK(!m_registrationNodeKeepAlive);
         m_registrationNodeKeepAlive = RawPtr<Node>(m_registrationNode.get()); // Balanced in clearTransientRegistrations.
     }
     m_transientRegistrationNodes->add(&node);
@@ -91,7 +91,7 @@ void MutationObserverRegistration::observedSubtreeNodeWillDetach(Node& node)
 void MutationObserverRegistration::clearTransientRegistrations()
 {
     if (!m_transientRegistrationNodes) {
-        ASSERT(!m_registrationNodeKeepAlive);
+        DCHECK(!m_registrationNodeKeepAlive);
         return;
     }
 
@@ -100,20 +100,20 @@ void MutationObserverRegistration::clearTransientRegistrations()
 
     m_transientRegistrationNodes.clear();
 
-    ASSERT(m_registrationNodeKeepAlive);
+    DCHECK(m_registrationNodeKeepAlive);
     m_registrationNodeKeepAlive = nullptr; // Balanced in observeSubtreeNodeWillDetach.
 }
 
 void MutationObserverRegistration::unregister()
 {
-    ASSERT(m_registrationNode);
+    DCHECK(m_registrationNode);
     m_registrationNode->unregisterMutationObserver(this);
     // The above line will cause this object to be deleted, so don't do any more in this function.
 }
 
 bool MutationObserverRegistration::shouldReceiveMutationFrom(Node& node, MutationObserver::MutationType type, const QualifiedName* attributeName) const
 {
-    ASSERT((type == MutationObserver::Attributes && attributeName) || !attributeName);
+    DCHECK((type == MutationObserver::Attributes && attributeName) || !attributeName);
     if (!(m_options & type))
         return false;
 
@@ -131,7 +131,7 @@ bool MutationObserverRegistration::shouldReceiveMutationFrom(Node& node, Mutatio
 
 void MutationObserverRegistration::addRegistrationNodesToSet(HeapHashSet<Member<Node>>& nodes) const
 {
-    ASSERT(m_registrationNode);
+    DCHECK(m_registrationNode);
     nodes.add(m_registrationNode.get());
     if (!m_transientRegistrationNodes)
         return;

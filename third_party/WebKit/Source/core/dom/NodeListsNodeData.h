@@ -63,7 +63,7 @@ public:
 #if !ENABLE(OILPAN)
     void removeChildNodeList(ChildNodeList* list)
     {
-        ASSERT(m_childNodeList == list);
+        DCHECK_EQ(m_childNodeList, list);
         if (deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(list->ownerNode()))
             return;
         m_childNodeList = nullptr;
@@ -71,7 +71,7 @@ public:
 
     void removeEmptyChildNodeList(EmptyNodeList* list)
     {
-        ASSERT(m_childNodeList == list);
+        DCHECK_EQ(m_childNodeList, list);
         if (deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(list->ownerNode()))
             return;
         m_childNodeList = nullptr;
@@ -150,7 +150,7 @@ public:
 #if !ENABLE(OILPAN)
     void removeCache(LiveNodeListBase* list, CollectionType collectionType, const AtomicString& name = starAtom)
     {
-        ASSERT(list == m_atomicNameCaches.get(namedNodeListKey(collectionType, name)));
+        DCHECK_EQ(list, m_atomicNameCaches.get(namedNodeListKey(collectionType, name)));
         if (deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(list->ownerNode()))
             return;
         m_atomicNameCaches.remove(namedNodeListKey(collectionType, name));
@@ -159,7 +159,7 @@ public:
     void removeCache(LiveNodeListBase* list, const AtomicString& namespaceURI, const AtomicString& localName)
     {
         QualifiedName name(nullAtom, localName, namespaceURI);
-        ASSERT(list == m_tagCollectionCacheNS.get(name));
+        DCHECK_EQ(list, m_tagCollectionCacheNS.get(name));
         if (deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(list->ownerNode()))
             return;
         m_tagCollectionCacheNS.remove(name);
@@ -185,7 +185,7 @@ public:
 
     void adoptDocument(Document& oldDocument, Document& newDocument)
     {
-        ASSERT(oldDocument != newDocument);
+        DCHECK_NE(oldDocument, newDocument);
 
         NodeListAtomicNameCacheMap::const_iterator atomicNameCacheEnd = m_atomicNameCaches.end();
         for (NodeListAtomicNameCacheMap::const_iterator it = m_atomicNameCaches.begin(); it != atomicNameCacheEnd; ++it) {
@@ -196,7 +196,7 @@ public:
         TagCollectionCacheNS::const_iterator tagEnd = m_tagCollectionCacheNS.end();
         for (TagCollectionCacheNS::const_iterator it = m_tagCollectionCacheNS.begin(); it != tagEnd; ++it) {
             LiveNodeListBase* list = it->value;
-            ASSERT(!list->isRootedAtTreeScope());
+            DCHECK(!list->isRootedAtTreeScope());
             list->didMoveToDocument(oldDocument, newDocument);
         }
     }
@@ -228,7 +228,7 @@ private:
 #if !ENABLE(OILPAN)
 inline bool NodeListsNodeData::deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(Node& ownerNode)
 {
-    ASSERT(ownerNode.nodeLists() == this);
+    DCHECK_EQ(ownerNode.nodeLists(), this);
     if ((m_childNodeList ? 1 : 0) + m_atomicNameCaches.size() + m_tagCollectionCacheNS.size() != 1)
         return false;
     ownerNode.clearNodeLists();

@@ -60,7 +60,7 @@ public:
     unsigned descendantShadowElementCount() const { return m_descendantShadowElementCount; }
 
     void didAddChildShadowRoot() { ++m_childShadowRootCount; }
-    void didRemoveChildShadowRoot() { ASSERT(m_childShadowRootCount > 0); --m_childShadowRootCount; }
+    void didRemoveChildShadowRoot() { DCHECK_GT(m_childShadowRootCount, 0u); --m_childShadowRootCount; }
 
     unsigned childShadowRootCount() const { return m_childShadowRootCount; }
 
@@ -72,7 +72,7 @@ public:
     void setStyleSheets(RawPtr<StyleSheetList> styleSheetList) { m_styleSheetList = styleSheetList; }
 
     void didAddSlot() { ++m_descendantSlotCount; }
-    void didRemoveSlot() { ASSERT(m_descendantSlotCount >= 1); --m_descendantSlotCount; }
+    void didRemoveSlot() { DCHECK_GT(m_descendantSlotCount, 0u); --m_descendantSlotCount; }
 
     unsigned descendantSlotCount() const { return m_descendantSlotCount; }
 
@@ -102,7 +102,7 @@ private:
 
 inline void ShadowRootRareData::didAddInsertionPoint(InsertionPoint* point)
 {
-    ASSERT(point);
+    DCHECK(point);
     if (isHTMLShadowElement(*point))
         ++m_descendantShadowElementCount;
     else if (isHTMLContentElement(*point))
@@ -113,12 +113,12 @@ inline void ShadowRootRareData::didAddInsertionPoint(InsertionPoint* point)
 
 inline void ShadowRootRareData::didRemoveInsertionPoint(InsertionPoint* point)
 {
-    ASSERT(point);
+    DCHECK(point);
     if (isHTMLShadowElement(*point)) {
-        ASSERT(m_descendantShadowElementCount > 0);
+        DCHECK_GT(m_descendantShadowElementCount, 0u);
         --m_descendantShadowElementCount;
     } else if (isHTMLContentElement(*point)) {
-        ASSERT(m_descendantContentElementCount > 0);
+        DCHECK_GT(m_descendantContentElementCount, 0u);
         --m_descendantContentElementCount;
     } else {
         ASSERT_NOT_REACHED();

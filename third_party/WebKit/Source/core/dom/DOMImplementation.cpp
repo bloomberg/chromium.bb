@@ -205,7 +205,7 @@ RawPtr<HTMLDocument> DOMImplementation::createHTMLDocument(const String& title)
     d->write("<!doctype html><html><head></head><body></body></html>");
     if (!title.isNull()) {
         HTMLHeadElement* headElement = d->head();
-        ASSERT(headElement);
+        DCHECK(headElement);
         RawPtr<HTMLTitleElement> titleElement = HTMLTitleElement::create(*d);
         headElement->appendChild(titleElement);
         titleElement->appendChild(d->createTextNode(title), ASSERT_NO_EXCEPTION);

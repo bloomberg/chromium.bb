@@ -265,7 +265,7 @@ private:
     Member<Node> m_lastChild;
 };
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 bool childAttachedAllowedWhenAttachingChildren(ContainerNode*);
 #endif
 
@@ -337,7 +337,7 @@ inline bool Node::isTreeScope() const
 
 inline void getChildNodes(ContainerNode& node, NodeVector& nodes)
 {
-    ASSERT(!nodes.size());
+    DCHECK(!nodes.size());
     for (Node* child = node.firstChild(); child; child = child->nextSibling())
         nodes.append(child);
 }

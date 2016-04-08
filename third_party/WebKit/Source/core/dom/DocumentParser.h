@@ -62,7 +62,7 @@ public:
     virtual void finish() = 0;
 
     // document() will return 0 after detach() is called.
-    Document* document() const { ASSERT(m_document); return m_document; }
+    Document* document() const { DCHECK(m_document); return m_document; }
 
     bool isParsing() const { return m_state == ParsingState; }
     bool isStopping() const { return m_state == StoppingState; }

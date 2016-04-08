@@ -80,7 +80,7 @@ PendingScript& PendingScript::operator=(const PendingScript& other)
 
 void PendingScript::watchForLoad(ScriptResourceClient* client)
 {
-    ASSERT(!m_watchingForLoad);
+    DCHECK(!m_watchingForLoad);
     // addClient() will call streamingFinished() if the load is complete. Callers
     // who do not expect to be re-entered from this call should not call
     // watchForLoad for a PendingScript which isReady. We also need to set
@@ -96,7 +96,7 @@ void PendingScript::stopWatchingForLoad()
 {
     if (!m_watchingForLoad)
         return;
-    ASSERT(resource());
+    DCHECK(resource());
     if (!m_streamer)
         resource()->removeClient(m_client);
     m_client = nullptr;
@@ -105,7 +105,7 @@ void PendingScript::stopWatchingForLoad()
 
 void PendingScript::streamingFinished()
 {
-    ASSERT(resource());
+    DCHECK(resource());
     if (m_client)
         m_client->notifyFinished(resource());
 }
@@ -135,7 +135,7 @@ void PendingScript::setScriptResource(ScriptResource* resource)
 
 void PendingScript::markParserBlockingLoadStartTime()
 {
-    ASSERT(m_parserBlockingLoadStartTime == 0.0);
+    DCHECK_EQ(m_parserBlockingLoadStartTime, 0.0);
     m_parserBlockingLoadStartTime = monotonicallyIncreasingTime();
 }
 
@@ -164,7 +164,7 @@ void PendingScript::notifyFinished(Resource* resource)
     //
     // See https://crbug.com/500701 for more information.
     if (m_element) {
-        ASSERT(resource->getType() == Resource::Script);
+        DCHECK_EQ(resource->getType(), Resource::Script);
         ScriptResource* scriptResource = toScriptResource(resource);
         String integrityAttr = m_element->fastGetAttribute(HTMLNames::integrityAttr);
 
@@ -208,7 +208,7 @@ ScriptSourceCode PendingScript::getSource(const KURL& documentURL, bool& errorOc
 {
     if (resource()) {
         errorOccurred = resource()->errorOccurred() || m_integrityFailure;
-        ASSERT(resource()->isLoaded());
+        DCHECK(resource()->isLoaded());
         if (m_streamer && !m_streamer->streamingSuppressed())
             return ScriptSourceCode(m_streamer, resource());
         return ScriptSourceCode(resource());
@@ -219,8 +219,8 @@ ScriptSourceCode PendingScript::getSource(const KURL& documentURL, bool& errorOc
 
 void PendingScript::setStreamer(RawPtr<ScriptStreamer> streamer)
 {
-    ASSERT(!m_streamer);
-    ASSERT(!m_watchingForLoad);
+    DCHECK(!m_streamer);
+    DCHECK(!m_watchingForLoad);
     m_streamer = streamer;
 }
 

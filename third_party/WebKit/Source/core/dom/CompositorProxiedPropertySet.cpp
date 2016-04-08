@@ -37,7 +37,7 @@ void CompositorProxiedPropertySet::decrement(uint32_t mutableProperties)
 {
     for (int i = 0; i < CompositorMutableProperty::kNumProperties; ++i) {
         if (mutableProperties & (1 << i)) {
-            ASSERT(m_counts[i]);
+            DCHECK(m_counts[i]);
             --m_counts[i];
         }
     }

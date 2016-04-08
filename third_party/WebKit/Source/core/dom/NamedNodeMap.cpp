@@ -77,13 +77,13 @@ RawPtr<Attr> NamedNodeMap::removeNamedItemNS(const AtomicString& namespaceURI, c
 
 RawPtr<Attr> NamedNodeMap::setNamedItem(Attr* attr, ExceptionState& exceptionState)
 {
-    ASSERT(attr);
+    DCHECK(attr);
     return m_element->setAttributeNode(attr, exceptionState);
 }
 
 RawPtr<Attr> NamedNodeMap::setNamedItemNS(Attr* attr, ExceptionState& exceptionState)
 {
-    ASSERT(attr);
+    DCHECK(attr);
     return m_element->setAttributeNodeNS(attr, exceptionState);
 }
 

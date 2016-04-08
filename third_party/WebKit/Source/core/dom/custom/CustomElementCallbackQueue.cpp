@@ -49,7 +49,7 @@ CustomElementCallbackQueue::CustomElementCallbackQueue(RawPtr<Element> element)
 
 bool CustomElementCallbackQueue::processInElementQueue(ElementQueueId caller)
 {
-    ASSERT(!m_inCreatedCallback);
+    DCHECK(!m_inCreatedCallback);
     bool didWork = false;
 
     // Never run custom element callbacks in UA shadow roots since that would

@@ -60,13 +60,13 @@ v8::Local<v8::Object> DOMDataView::wrap(v8::Isolate* isolate, v8::Local<v8::Obje
     // object gets associated with the wrapper.
     RefPtr<DOMDataView> protect(this);
 
-    ASSERT(!DOMDataStore::containsWrapper(this, isolate));
+    DCHECK(!DOMDataStore::containsWrapper(this, isolate));
 
     const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();
     v8::Local<v8::Value> v8Buffer = toV8(buffer(), creationContext, isolate);
     if (v8Buffer.IsEmpty())
         return v8::Local<v8::Object>();
-    ASSERT(v8Buffer->IsArrayBuffer());
+    DCHECK(v8Buffer->IsArrayBuffer());
 
     v8::Local<v8::Object> wrapper = v8::DataView::New(v8Buffer.As<v8::ArrayBuffer>(), byteOffset(), byteLength());
 

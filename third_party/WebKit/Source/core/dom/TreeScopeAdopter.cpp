@@ -34,7 +34,7 @@ namespace blink {
 
 void TreeScopeAdopter::moveTreeToNewScope(Node& root) const
 {
-    ASSERT(needsScopeChange());
+    DCHECK(needsScopeChange());
 
 #if !ENABLE(OILPAN)
     oldScope().guardRef();
@@ -84,7 +84,7 @@ void TreeScopeAdopter::moveTreeToNewScope(Node& root) const
 
 void TreeScopeAdopter::moveTreeToNewDocument(Node& root, Document& oldDocument, Document& newDocument) const
 {
-    ASSERT(oldDocument != newDocument);
+    DCHECK_NE(oldDocument, newDocument);
     for (Node& node : NodeTraversal::inclusiveDescendantsOf(root)) {
         moveNodeToNewDocument(node, oldDocument, newDocument);
 
@@ -102,13 +102,13 @@ void TreeScopeAdopter::moveTreeToNewDocument(Node& root, Document& oldDocument, 
     }
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 static bool didMoveToNewDocumentWasCalled = false;
 static Document* oldDocumentDidMoveToNewDocumentWasCalledWith = 0;
 
 void TreeScopeAdopter::ensureDidMoveToNewDocumentWasCalled(Document& oldDocument)
 {
-    ASSERT(!didMoveToNewDocumentWasCalled);
+    DCHECK(!didMoveToNewDocumentWasCalled);
     ASSERT_UNUSED(oldDocument, oldDocument == oldDocumentDidMoveToNewDocumentWasCalledWith);
     didMoveToNewDocumentWasCalled = true;
 }
@@ -116,8 +116,8 @@ void TreeScopeAdopter::ensureDidMoveToNewDocumentWasCalled(Document& oldDocument
 
 inline void TreeScopeAdopter::updateTreeScope(Node& node) const
 {
-    ASSERT(!node.isTreeScope());
-    ASSERT(node.treeScope() == oldScope());
+    DCHECK(!node.isTreeScope());
+    DCHECK(node.treeScope() == oldScope());
 #if !ENABLE(OILPAN)
     newScope().guardRef();
     oldScope().guardDeref();
@@ -127,7 +127,7 @@ inline void TreeScopeAdopter::updateTreeScope(Node& node) const
 
 inline void TreeScopeAdopter::moveNodeToNewDocument(Node& node, Document& oldDocument, Document& newDocument) const
 {
-    ASSERT(oldDocument != newDocument);
+    DCHECK_NE(oldDocument, newDocument);
 
     if (node.hasRareData()) {
         NodeRareData* rareData = node.rareData();
@@ -140,13 +140,15 @@ inline void TreeScopeAdopter::moveNodeToNewDocument(Node& node, Document& oldDoc
     if (node.isShadowRoot())
         toShadowRoot(node).setDocument(newDocument);
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     didMoveToNewDocumentWasCalled = false;
     oldDocumentDidMoveToNewDocumentWasCalledWith = &oldDocument;
 #endif
 
     node.didMoveToNewDocument(oldDocument);
-    ASSERT(didMoveToNewDocumentWasCalled);
+#if DCHECK_IS_ON()
+    DCHECK(didMoveToNewDocumentWasCalled);
+#endif
 }
 
 } // namespace blink

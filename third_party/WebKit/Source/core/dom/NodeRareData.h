@@ -81,7 +81,7 @@ public:
     void incrementConnectedSubframeCount();
     void decrementConnectedSubframeCount()
     {
-        ASSERT(m_connectedFrameCount);
+        DCHECK(m_connectedFrameCount);
         --m_connectedFrameCount;
     }
 

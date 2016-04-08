@@ -109,7 +109,7 @@ static int getErrorCode(const String& name)
 
 DOMException::DOMException(unsigned short code, const String& name, const String& sanitizedMessage, const String& unsanitizedMessage)
 {
-    ASSERT(name);
+    DCHECK(name);
     m_code = code;
     m_name = name;
     m_sanitizedMessage = sanitizedMessage;
@@ -119,7 +119,7 @@ DOMException::DOMException(unsigned short code, const String& name, const String
 DOMException* DOMException::create(ExceptionCode ec, const String& sanitizedMessage, const String& unsanitizedMessage)
 {
     const CoreException* entry = getErrorEntry(ec);
-    ASSERT(entry);
+    DCHECK(entry);
     return new DOMException(entry->code,
         entry->name ? entry->name : "Error",
         sanitizedMessage.isNull() ? String(entry->message) : sanitizedMessage,
@@ -144,7 +144,7 @@ String DOMException::toStringForConsole() const
 String DOMException::getErrorName(ExceptionCode ec)
 {
     const CoreException* entry = getErrorEntry(ec);
-    ASSERT(entry);
+    DCHECK(entry);
     if (!entry)
         return "UnknownError";
 
@@ -154,7 +154,7 @@ String DOMException::getErrorName(ExceptionCode ec)
 String DOMException::getErrorMessage(ExceptionCode ec)
 {
     const CoreException* entry = getErrorEntry(ec);
-    ASSERT(entry);
+    DCHECK(entry);
     if (!entry)
         return "Unknown error.";
 

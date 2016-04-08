@@ -379,7 +379,7 @@ public:
     // This is a DOM function.
     StyleSheetList* styleSheets();
 
-    StyleEngine& styleEngine() { ASSERT(m_styleEngine.get()); return *m_styleEngine.get(); }
+    StyleEngine& styleEngine() { DCHECK(m_styleEngine.get()); return *m_styleEngine.get(); }
 
     bool gotoAnchorNeededAfterStylesheetsLoad() { return m_gotoAnchorNeededAfterStylesheetsLoad; }
     void setGotoAnchorNeededAfterStylesheetsLoad(bool b) { m_gotoAnchorNeededAfterStylesheetsLoad = b; }
@@ -798,7 +798,7 @@ public:
     void setTransformSource(PassOwnPtr<TransformSource>);
     TransformSource* transformSource() const { return m_transformSource.get(); }
 
-    void incDOMTreeVersion() { ASSERT(m_lifecycle.stateAllowsTreeMutations()); m_domTreeVersion = ++s_globalTreeVersion; }
+    void incDOMTreeVersion() { DCHECK(m_lifecycle.stateAllowsTreeMutations()); m_domTreeVersion = ++s_globalTreeVersion; }
     uint64_t domTreeVersion() const { return m_domTreeVersion; }
 
     uint64_t styleVersion() const { return m_styleVersion; }
@@ -1048,7 +1048,7 @@ public:
     void incrementNodeCount() { m_nodeCount++; }
     void decrementNodeCount()
     {
-        ASSERT(m_nodeCount > 0);
+        DCHECK_GT(m_nodeCount, 0);
         m_nodeCount--;
     }
     int nodeCount() const { return m_nodeCount; }
@@ -1157,7 +1157,7 @@ private:
     using EventFactorySet = HashSet<OwnPtr<EventFactoryBase>>;
     static EventFactorySet& eventFactories();
 
-    void setNthIndexCache(NthIndexCache* nthIndexCache) { ASSERT(!m_nthIndexCache || !nthIndexCache); m_nthIndexCache = nthIndexCache; }
+    void setNthIndexCache(NthIndexCache* nthIndexCache) { DCHECK(!m_nthIndexCache || !nthIndexCache); m_nthIndexCache = nthIndexCache; }
 
     const OriginAccessEntry& accessEntryFromURL();
 

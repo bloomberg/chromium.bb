@@ -1380,6 +1380,8 @@ crbug.com/587737 [ Mac10.11 Retina ] virtual/gpu-rasterization/fast/images/color
 
 crbug.com/599975 [ Android ] media/video-autoplay.html [ Timeout ]
 
+crbug.com/601669 [ Win ] svg/as-image/svg-nested.html [ Crash ]
+
 crbug.com/601166 [ Mac10.9 ]  fast/text-autosizing/tables/css-table-lots-of-text-many-cells.html [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  fast/text-autosizing/tables/css-table-single-cell-lots-of-text.html [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  fast/text-autosizing/tables/fixed-table-lots-of-text-many-cells.html [ Failure ]
@@ -1577,4 +1579,3 @@ crbug.com/601166 [ Mac10.9 ]  fast/text/word-space.html [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  fast/text/zero-font-size.html [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  ietestcenter/css3/text/textshadow-003.htm [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  ietestcenter/css3/text/textshadow-004.htm [ Failure ]
-

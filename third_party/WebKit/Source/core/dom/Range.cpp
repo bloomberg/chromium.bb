@@ -96,15 +96,15 @@ RawPtr<Range> Range::createAdjustedToTreeScope(const TreeScope& treeScope, const
 
     // Make sure the range is in this scope.
     Node* firstNode = range->firstNode();
-    ASSERT(firstNode);
+    DCHECK(firstNode);
     Node* shadowHostInThisScopeOrFirstNode = treeScope.ancestorInThisScope(firstNode);
-    ASSERT(shadowHostInThisScopeOrFirstNode);
+    DCHECK(shadowHostInThisScopeOrFirstNode);
     if (shadowHostInThisScopeOrFirstNode == firstNode)
         return range.release();
 
     // If not, create a range for the shadow host in this scope.
     ContainerNode* container = shadowHostInThisScopeOrFirstNode->parentNode();
-    ASSERT(container);
+    DCHECK(container);
     unsigned offset = shadowHostInThisScopeOrFirstNode->nodeIndex();
     return Range::create(treeScope.document(), container, offset, container, offset);
 }
@@ -119,14 +119,14 @@ void Range::dispose()
 
 bool Range::inShadowIncludingDocument() const
 {
-    ASSERT(m_start.inShadowIncludingDocument() == m_end.inShadowIncludingDocument());
+    DCHECK_EQ(m_start.inShadowIncludingDocument(), m_end.inShadowIncludingDocument());
     return m_start.inShadowIncludingDocument();
 }
 
 void Range::setDocument(Document& document)
 {
-    ASSERT(m_ownerDocument != document);
-    ASSERT(m_ownerDocument);
+    DCHECK_NE(m_ownerDocument, document);
+    DCHECK(m_ownerDocument);
     m_ownerDocument->detachRange(this);
     m_ownerDocument = &document;
     m_start.setToStartOfNode(document);
@@ -353,7 +353,7 @@ bool Range::boundaryPointsValid() const
 
 void Range::deleteContents(ExceptionState& exceptionState)
 {
-    ASSERT(boundaryPointsValid());
+    DCHECK(boundaryPointsValid());
 
     {
         EventQueueScope eventQueueScope;
@@ -421,7 +421,7 @@ bool Range::intersectsNode(Node* refNode, const Position& start, const Position&
 
     if (compareBoundaryPoints(parentNode, nodeIndex, startContainerNode, startOffset, exceptionState) < 0 // starts before start
         && compareBoundaryPoints(parentNode, nodeIndex + 1, startContainerNode, startOffset, exceptionState) < 0) { // ends before start
-        ASSERT(!exceptionState.hadException());
+        DCHECK(!exceptionState.hadException());
         return false;
     }
 
@@ -430,7 +430,7 @@ bool Range::intersectsNode(Node* refNode, const Position& start, const Position&
 
     if (compareBoundaryPoints(parentNode, nodeIndex, endContainerNode, endOffset, exceptionState) > 0 // starts after end
         && compareBoundaryPoints(parentNode, nodeIndex + 1, endContainerNode, endOffset, exceptionState) > 0) { // ends after end
-        ASSERT(!exceptionState.hadException());
+        DCHECK(!exceptionState.hadException());
         return false;
     }
 
@@ -442,7 +442,7 @@ static inline Node* highestAncestorUnderCommonRoot(Node* node, Node* commonRoot)
     if (node == commonRoot)
         return 0;
 
-    ASSERT(commonRoot->contains(node));
+    DCHECK(commonRoot->contains(node));
 
     while (node->parentNode() != commonRoot)
         node = node->parentNode();
@@ -452,8 +452,8 @@ static inline Node* highestAncestorUnderCommonRoot(Node* node, Node* commonRoot)
 
 static inline Node* childOfCommonRootBeforeOffset(Node* container, unsigned offset, Node* commonRoot)
 {
-    ASSERT(container);
-    ASSERT(commonRoot);
+    DCHECK(container);
+    DCHECK(commonRoot);
 
     if (!commonRoot->contains(container))
         return 0;
@@ -482,7 +482,7 @@ RawPtr<DocumentFragment> Range::processContents(ActionType action, ExceptionStat
         return fragment.release();
 
     RawPtr<Node> commonRoot = commonAncestorContainer();
-    ASSERT(commonRoot);
+    DCHECK(commonRoot);
 
     if (m_start.container() == m_end.container()) {
         processContentsBetweenOffsets(action, fragment, m_start.container(), m_start.offset(), m_end.offset(), exceptionState);
@@ -584,8 +584,8 @@ static inline void deleteCharacterData(RawPtr<CharacterData> data, unsigned star
 RawPtr<Node> Range::processContentsBetweenOffsets(ActionType action, RawPtr<DocumentFragment> fragment,
     Node* container, unsigned startOffset, unsigned endOffset, ExceptionState& exceptionState)
 {
-    ASSERT(container);
-    ASSERT(startOffset <= endOffset);
+    DCHECK(container);
+    DCHECK_LE(startOffset, endOffset);
 
     // This switch statement must be consistent with that of Node::lengthOfContents.
     RawPtr<Node> result = nullptr;
@@ -673,7 +673,7 @@ RawPtr<Node> Range::processAncestorsAndTheirSiblings(ActionType action, Node* co
         // Copy siblings of an ancestor of start/end containers
         // FIXME: This assertion may fail if DOM is modified during mutation event
         // FIXME: Share code with Range::processNodes
-        ASSERT(!firstChildInAncestorToProcess || firstChildInAncestorToProcess->parentNode() == ancestor);
+        DCHECK(!firstChildInAncestorToProcess || firstChildInAncestorToProcess->parentNode() == ancestor);
 
         NodeVector nodes;
         for (Node* child = firstChildInAncestorToProcess.get(); child;
@@ -822,7 +822,7 @@ void Range::insertNode(RawPtr<Node> prpNewNode, ExceptionState& exceptionState)
             // The insertion will do nothing, but we need to extend the range to include
             // the inserted nodes.
             Node* firstChild = (newNodeType == Node::DOCUMENT_FRAGMENT_NODE) ? toDocumentFragment(newNode)->firstChild() : newNode.get();
-            ASSERT(firstChild);
+            DCHECK(firstChild);
             m_start.setToBeforeChild(*firstChild);
             return;
         }
@@ -1222,7 +1222,7 @@ void Range::setStartBefore(Node* refNode, ExceptionState& exceptionState)
 
 void Range::checkExtractPrecondition(ExceptionState& exceptionState)
 {
-    ASSERT(boundaryPointsValid());
+    DCHECK(boundaryPointsValid());
 
     if (!commonAncestorContainer())
         return;
@@ -1274,9 +1274,9 @@ IntRect Range::boundingBox() const
 void Range::textRects(Vector<IntRect>& rects, bool useSelectionHeight) const
 {
     Node* startContainer = m_start.container();
-    ASSERT(startContainer);
+    DCHECK(startContainer);
     Node* endContainer = m_end.container();
-    ASSERT(endContainer);
+    DCHECK(endContainer);
 
     Node* stopNode = pastLastNode();
     for (Node* node = firstNode(); node != stopNode; node = NodeTraversal::next(*node)) {
@@ -1293,9 +1293,9 @@ void Range::textRects(Vector<IntRect>& rects, bool useSelectionHeight) const
 void Range::textQuads(Vector<FloatQuad>& quads, bool useSelectionHeight) const
 {
     Node* startContainer = m_start.container();
-    ASSERT(startContainer);
+    DCHECK(startContainer);
     Node* endContainer = m_end.container();
-    ASSERT(endContainer);
+    DCHECK(endContainer);
 
     Node* stopNode = pastLastNode();
     for (Node* node = firstNode(); node != stopNode; node = NodeTraversal::next(*node)) {
@@ -1351,8 +1351,8 @@ static inline void boundaryNodeChildrenChanged(RangeBoundaryPoint& boundary, Con
 
 void Range::nodeChildrenChanged(ContainerNode* container)
 {
-    ASSERT(container);
-    ASSERT(container->document() == m_ownerDocument);
+    DCHECK(container);
+    DCHECK_EQ(container->document(), m_ownerDocument);
     boundaryNodeChildrenChanged(m_start, container);
     boundaryNodeChildrenChanged(m_end, container);
 }
@@ -1376,7 +1376,7 @@ static inline void boundaryNodeChildrenWillBeRemoved(RangeBoundaryPoint& boundar
 
 void Range::nodeChildrenWillBeRemoved(ContainerNode& container)
 {
-    ASSERT(container.document() == m_ownerDocument);
+    DCHECK_EQ(container.document(), m_ownerDocument);
     boundaryNodeChildrenWillBeRemoved(m_start, container);
     boundaryNodeChildrenWillBeRemoved(m_end, container);
 }
@@ -1398,11 +1398,11 @@ static inline void boundaryNodeWillBeRemoved(RangeBoundaryPoint& boundary, Node&
 
 void Range::nodeWillBeRemoved(Node& node)
 {
-    ASSERT(node.document() == m_ownerDocument);
-    ASSERT(node != m_ownerDocument.get());
+    DCHECK_EQ(node.document(), m_ownerDocument);
+    DCHECK_NE(node, m_ownerDocument.get());
 
     // FIXME: Once DOMNodeRemovedFromDocument mutation event removed, we
-    // should change following if-statement to ASSERT(!node->parentNode).
+    // should change following if-statement to DCHECK(!node->parentNode).
     if (!node.parentNode())
         return;
     boundaryNodeWillBeRemoved(m_start, node);
@@ -1421,8 +1421,8 @@ static inline void boundaryTextInserted(RangeBoundaryPoint& boundary, Node* text
 
 void Range::didInsertText(Node* text, unsigned offset, unsigned length)
 {
-    ASSERT(text);
-    ASSERT(text->document() == m_ownerDocument);
+    DCHECK(text);
+    DCHECK_EQ(text->document(), m_ownerDocument);
     boundaryTextInserted(m_start, text, offset, length);
     boundaryTextInserted(m_end, text, offset, length);
 }
@@ -1442,8 +1442,8 @@ static inline void boundaryTextRemoved(RangeBoundaryPoint& boundary, Node* text,
 
 void Range::didRemoveText(Node* text, unsigned offset, unsigned length)
 {
-    ASSERT(text);
-    ASSERT(text->document() == m_ownerDocument);
+    DCHECK(text);
+    DCHECK_EQ(text->document(), m_ownerDocument);
     boundaryTextRemoved(m_start, text, offset, length);
     boundaryTextRemoved(m_end, text, offset, length);
 }
@@ -1458,21 +1458,21 @@ static inline void boundaryTextNodesMerged(RangeBoundaryPoint& boundary, const N
 
 void Range::didMergeTextNodes(const NodeWithIndex& oldNode, unsigned offset)
 {
-    ASSERT(oldNode.node().document() == m_ownerDocument);
-    ASSERT(oldNode.node().parentNode());
-    ASSERT(oldNode.node().isTextNode());
-    ASSERT(oldNode.node().previousSibling());
-    ASSERT(oldNode.node().previousSibling()->isTextNode());
+    DCHECK_EQ(oldNode.node().document(), m_ownerDocument);
+    DCHECK(oldNode.node().parentNode());
+    DCHECK(oldNode.node().isTextNode());
+    DCHECK(oldNode.node().previousSibling());
+    DCHECK(oldNode.node().previousSibling()->isTextNode());
     boundaryTextNodesMerged(m_start, oldNode, offset);
     boundaryTextNodesMerged(m_end, oldNode, offset);
 }
 
 void Range::updateOwnerDocumentIfNeeded()
 {
-    ASSERT(m_start.container());
-    ASSERT(m_end.container());
+    DCHECK(m_start.container());
+    DCHECK(m_end.container());
     Document& newDocument = m_start.container()->document();
-    ASSERT(newDocument == m_end.container()->document());
+    DCHECK_EQ(newDocument, m_end.container()->document());
     if (newDocument == m_ownerDocument)
         return;
     m_ownerDocument->detachRange(this);
@@ -1492,13 +1492,13 @@ static inline void boundaryTextNodeSplit(RangeBoundaryPoint& boundary, Text& old
 
 void Range::didSplitTextNode(Text& oldNode)
 {
-    ASSERT(oldNode.document() == m_ownerDocument);
-    ASSERT(oldNode.parentNode());
-    ASSERT(oldNode.nextSibling());
-    ASSERT(oldNode.nextSibling()->isTextNode());
+    DCHECK_EQ(oldNode.document(), m_ownerDocument);
+    DCHECK(oldNode.parentNode());
+    DCHECK(oldNode.nextSibling());
+    DCHECK(oldNode.nextSibling()->isTextNode());
     boundaryTextNodeSplit(m_start, oldNode);
     boundaryTextNodeSplit(m_end, oldNode);
-    ASSERT(boundaryPointsValid());
+    DCHECK(boundaryPointsValid());
 }
 
 void Range::expand(const String& unit, ExceptionState& exceptionState)

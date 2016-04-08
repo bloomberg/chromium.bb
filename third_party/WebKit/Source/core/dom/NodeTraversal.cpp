@@ -75,7 +75,7 @@ Node* NodeTraversal::nextIncludingPseudoSkippingChildren(const Node& current, co
 
 Node* NodeTraversal::nextAncestorSibling(const Node& current)
 {
-    ASSERT(!current.nextSibling());
+    DCHECK(!current.nextSibling());
     for (Node* parent = current.parentNode(); parent; parent = parent->parentNode()) {
         if (parent->nextSibling())
             return parent->nextSibling();
@@ -85,8 +85,8 @@ Node* NodeTraversal::nextAncestorSibling(const Node& current)
 
 Node* NodeTraversal::nextAncestorSibling(const Node& current, const Node* stayWithin)
 {
-    ASSERT(!current.nextSibling());
-    ASSERT(current != stayWithin);
+    DCHECK(!current.nextSibling());
+    DCHECK_NE(current, stayWithin);
     for (Node* parent = current.parentNode(); parent; parent = parent->parentNode()) {
         if (parent == stayWithin)
             return 0;
@@ -152,7 +152,7 @@ Node* NodeTraversal::nextPostOrder(const Node& current, const Node* stayWithin)
 
 static Node* previousAncestorSiblingPostOrder(const Node& current, const Node* stayWithin)
 {
-    ASSERT(!current.previousSibling());
+    DCHECK(!current.previousSibling());
     for (Node* parent = current.parentNode(); parent; parent = parent->parentNode()) {
         if (parent == stayWithin)
             return 0;

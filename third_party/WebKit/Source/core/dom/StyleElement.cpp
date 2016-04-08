@@ -64,8 +64,8 @@ StyleElement::~StyleElement()
 StyleElement::ProcessingResult StyleElement::processStyleSheet(Document& document, Element* element)
 {
     TRACE_EVENT0("blink", "StyleElement::processStyleSheet");
-    ASSERT(element);
-    ASSERT(element->inShadowIncludingDocument());
+    DCHECK(element);
+    DCHECK(element->inShadowIncludingDocument());
 
     m_registeredAsCandidate = true;
     document.styleEngine().addStyleSheetCandidateNode(element);
@@ -115,7 +115,7 @@ void StyleElement::clearDocumentData(Document& document, Element* element)
         m_sheet->clearOwnerNode();
 
     if (m_registeredAsCandidate) {
-        ASSERT(element->inShadowIncludingDocument());
+        DCHECK(element->inShadowIncludingDocument());
         document.styleEngine().removeStyleSheetCandidateNode(element, element->treeScope());
         m_registeredAsCandidate = false;
     }
@@ -123,7 +123,7 @@ void StyleElement::clearDocumentData(Document& document, Element* element)
 
 StyleElement::ProcessingResult StyleElement::childrenChanged(Element* element)
 {
-    ASSERT(element);
+    DCHECK(element);
     if (m_createdByParser)
         return ProcessingSuccessful;
 
@@ -132,7 +132,7 @@ StyleElement::ProcessingResult StyleElement::childrenChanged(Element* element)
 
 StyleElement::ProcessingResult StyleElement::finishParsingChildren(Element* element)
 {
-    ASSERT(element);
+    DCHECK(element);
     ProcessingResult result = process(element);
     m_createdByParser = false;
     return result;
@@ -147,7 +147,7 @@ StyleElement::ProcessingResult StyleElement::process(Element* element)
 
 void StyleElement::clearSheet(Element* ownerElement)
 {
-    ASSERT(m_sheet);
+    DCHECK(m_sheet);
 
     if (ownerElement && m_sheet->isLoading())
         ownerElement->document().styleEngine().removePendingSheet(ownerElement);
@@ -172,8 +172,8 @@ static bool shouldBypassMainWorldCSP(Element* element)
 
 StyleElement::ProcessingResult StyleElement::createSheet(Element* e, const String& text)
 {
-    ASSERT(e);
-    ASSERT(e->inShadowIncludingDocument());
+    DCHECK(e);
+    DCHECK(e->inShadowIncludingDocument());
     Document& document = e->document();
 
     const ContentSecurityPolicy* csp = document.contentSecurityPolicy();

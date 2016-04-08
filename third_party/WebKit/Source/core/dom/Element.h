@@ -148,7 +148,7 @@ public:
     // attribute or one of the SVG animatable attributes.
     bool fastHasAttribute(const QualifiedName&) const;
     const AtomicString& fastGetAttribute(const QualifiedName&) const;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     bool fastAttributeLookupAllowed(const QualifiedName&) const;
 #endif
 
@@ -757,13 +757,17 @@ inline Element* Node::parentElement() const
 
 inline bool Element::fastHasAttribute(const QualifiedName& name) const
 {
-    ASSERT(fastAttributeLookupAllowed(name));
+#if DCHECK_IS_ON()
+    DCHECK(fastAttributeLookupAllowed(name));
+#endif
     return elementData() && elementData()->attributes().findIndex(name) != kNotFound;
 }
 
 inline const AtomicString& Element::fastGetAttribute(const QualifiedName& name) const
 {
-    ASSERT(fastAttributeLookupAllowed(name));
+#if DCHECK_IS_ON()
+    DCHECK(fastAttributeLookupAllowed(name));
+#endif
     if (elementData()) {
         if (const Attribute* attribute = elementData()->attributes().find(name))
             return attribute->value();
@@ -793,7 +797,7 @@ inline bool Element::hasAttributes() const
 
 inline const AtomicString& Element::idForStyleResolution() const
 {
-    ASSERT(hasID());
+    DCHECK(hasID());
     return elementData()->idForStyleResolution();
 }
 
@@ -823,8 +827,8 @@ inline void Element::setIdAttribute(const AtomicString& value)
 
 inline const SpaceSplitString& Element::classNames() const
 {
-    ASSERT(hasClass());
-    ASSERT(elementData());
+    DCHECK(hasClass());
+    DCHECK(elementData());
     return elementData()->classNames();
 }
 
@@ -847,9 +851,9 @@ inline UniqueElementData& Element::ensureUniqueElementData()
 
 inline Node::InsertionNotificationRequest Node::insertedInto(ContainerNode* insertionPoint)
 {
-    ASSERT(!childNeedsStyleInvalidation());
-    ASSERT(!needsStyleInvalidation());
-    ASSERT(insertionPoint->inShadowIncludingDocument() || insertionPoint->isInShadowTree() || isContainerNode());
+    DCHECK(!childNeedsStyleInvalidation());
+    DCHECK(!needsStyleInvalidation());
+    DCHECK(insertionPoint->inShadowIncludingDocument() || insertionPoint->isInShadowTree() || isContainerNode());
     if (insertionPoint->inShadowIncludingDocument()) {
         setFlag(InDocumentFlag);
         insertionPoint->document().incrementNodeCount();
@@ -863,7 +867,7 @@ inline Node::InsertionNotificationRequest Node::insertedInto(ContainerNode* inse
 
 inline void Node::removedFrom(ContainerNode* insertionPoint)
 {
-    ASSERT(insertionPoint->inShadowIncludingDocument() || isContainerNode() || isInShadowTree());
+    DCHECK(insertionPoint->inShadowIncludingDocument() || isContainerNode() || isInShadowTree());
     if (insertionPoint->inShadowIncludingDocument()) {
         clearFlag(InDocumentFlag);
         insertionPoint->document().decrementNodeCount();
@@ -876,7 +880,7 @@ inline void Node::removedFrom(ContainerNode* insertionPoint)
 
 inline void Element::invalidateStyleAttribute()
 {
-    ASSERT(elementData());
+    DCHECK(elementData());
     elementData()->m_styleAttributeIsDirty = true;
 }
 
@@ -894,8 +898,8 @@ inline const StylePropertySet* Element::presentationAttributeStyle()
 inline void Element::setTagNameForCreateElementNS(const QualifiedName& tagName)
 {
     // We expect this method to be called only to reset the prefix.
-    ASSERT(tagName.localName() == m_tagName.localName());
-    ASSERT(tagName.namespaceURI() == m_tagName.namespaceURI());
+    DCHECK_EQ(tagName.localName(), m_tagName.localName());
+    DCHECK_EQ(tagName.namespaceURI(), m_tagName.namespaceURI());
     m_tagName = tagName;
 }
 

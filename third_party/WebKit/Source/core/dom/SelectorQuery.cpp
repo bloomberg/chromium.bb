@@ -44,7 +44,7 @@ struct SingleElementSelectorQueryTrait {
     static const bool shouldOnlyMatchFirstElement = true;
     ALWAYS_INLINE static void appendElement(OutputType& output, Element& element)
     {
-        ASSERT(!output);
+        DCHECK(!output);
         output = &element;
     }
 };
@@ -74,7 +74,7 @@ public:
     Element* next()
     {
         Element* current = m_currentElement;
-        ASSERT(current);
+        DCHECK(current);
         if (onlyRoots)
             m_currentElement = nextInternal(ElementTraversal::nextSkippingChildren(*m_currentElement, m_rootNode));
         else
@@ -99,7 +99,7 @@ private:
 
 void SelectorDataList::initialize(const CSSSelectorList& selectorList)
 {
-    ASSERT(m_selectors.isEmpty());
+    DCHECK(m_selectors.isEmpty());
 
     unsigned selectorCount = 0;
     for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(*selector))
@@ -208,7 +208,7 @@ void SelectorDataList::collectElementsByTagName(ContainerNode& rootNode, const Q
     for (Element& element : ElementTraversal::descendantsOf(rootNode)) {
         // querySelector*() doesn't allow namespaces and throws before it gets
         // here so we can ignore them.
-        ASSERT(tagName.namespaceURI() == starAtom);
+        DCHECK_EQ(tagName.namespaceURI(), starAtom);
         if (matchesTagName(tagName, element)) {
             SelectorQueryTrait::appendElement(output, element);
             if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
@@ -255,7 +255,7 @@ void SelectorDataList::findTraverseRootsAndExecute(ContainerNode& rootNode, type
 {
     // We need to return the matches in document order. To use id lookup while there is possiblity of multiple matches
     // we would need to sort the results. For now, just traverse the document in that case.
-    ASSERT(m_selectors.size() == 1);
+    DCHECK_EQ(m_selectors.size(), 1u);
 
     bool isRightmostSelector = true;
     bool startFromParent = false;
@@ -390,7 +390,7 @@ static ShadowRoot* authorShadowRootOf(const ContainerNode& node)
         return nullptr;
 
     ElementShadow* shadow = toElement(node).shadow();
-    ASSERT(shadow);
+    DCHECK(shadow);
     for (ShadowRoot* shadowRoot = shadow->oldestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->youngerShadowRoot()) {
         if (shadowRoot->type() == ShadowRootType::V0 || shadowRoot->type() == ShadowRootType::Open)
             return shadowRoot;
@@ -423,7 +423,7 @@ static ContainerNode* nextTraversingShadowTree(const ContainerNode& node, const 
             return nullptr;
         if (ShadowRoot* youngerShadowRoot = shadowRoot->youngerShadowRoot()) {
             // Should not obtain any elements in closed or user-agent shadow root.
-            ASSERT(youngerShadowRoot->type() == ShadowRootType::V0 || youngerShadowRoot->type() == ShadowRootType::Open);
+            DCHECK(youngerShadowRoot->type() == ShadowRootType::V0 || youngerShadowRoot->type() == ShadowRootType::Open);
             return youngerShadowRoot;
         }
 
@@ -472,7 +472,7 @@ void SelectorDataList::execute(ContainerNode& rootNode, typename SelectorQueryTr
         return;
     }
 
-    ASSERT(m_selectors.size() == 1);
+    DCHECK_EQ(m_selectors.size(), 1u);
 
     const CSSSelector& selector = *m_selectors[0];
     const CSSSelector& firstSelector = selector;

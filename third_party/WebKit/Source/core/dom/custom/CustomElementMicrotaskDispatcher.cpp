@@ -35,7 +35,7 @@ void CustomElementMicrotaskDispatcher::enqueue(CustomElementCallbackQueue* queue
 
 void CustomElementMicrotaskDispatcher::ensureMicrotaskScheduledForElementQueue()
 {
-    ASSERT(m_phase == Quiescent || m_phase == Resolving);
+    DCHECK(m_phase == Quiescent || m_phase == Resolving);
     ensureMicrotaskScheduled();
 }
 
@@ -54,9 +54,10 @@ void CustomElementMicrotaskDispatcher::dispatch()
 
 void CustomElementMicrotaskDispatcher::doDispatch()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
-    ASSERT(m_phase == Quiescent && m_hasScheduledMicrotask);
+    DCHECK(m_phase == Quiescent);
+    DCHECK(m_hasScheduledMicrotask);
     m_hasScheduledMicrotask = false;
 
     // Finishing microtask work deletes all

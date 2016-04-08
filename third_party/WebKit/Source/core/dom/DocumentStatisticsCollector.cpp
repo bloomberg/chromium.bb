@@ -222,7 +222,7 @@ WebDistillabilityFeatures DocumentStatisticsCollector::collectStatistics(Documen
     if (!document.frame() || !document.frame()->isMainFrame())
         return features;
 
-    ASSERT(document.hasFinishedParsing());
+    DCHECK(document.hasFinishedParsing());
 
     HTMLElement* body = document.body();
     HTMLElement* head = document.head();

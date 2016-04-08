@@ -58,7 +58,7 @@ bool ContextFeatures::pagePopupEnabled(Document* document)
 
 bool ContextFeatures::mutationEventsEnabled(Document* document)
 {
-    ASSERT(document);
+    DCHECK(document);
     if (!document)
         return true;
     return document->contextFeatures().isEnabled(document, MutationEvents, true);

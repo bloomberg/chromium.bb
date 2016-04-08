@@ -34,7 +34,7 @@ namespace blink {
 
 IconURL IconURL::defaultFavicon(const KURL& documentURL)
 {
-    ASSERT(documentURL.protocolIsInHTTPFamily());
+    DCHECK(documentURL.protocolIsInHTTPFamily());
     KURL url;
     bool couldSetProtocol = url.setProtocol(documentURL.protocol());
     ASSERT_UNUSED(couldSetProtocol, couldSetProtocol);

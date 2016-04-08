@@ -66,7 +66,7 @@ void ScriptedAnimationController::suspend()
 
 void ScriptedAnimationController::resume()
 {
-    // It would be nice to put an ASSERT(m_suspendCount > 0) here, but in WK1 resume() can be called
+    // It would be nice to put an DCHECK(m_suspendCount > 0) here, but in WK1 resume() can be called
     // even when suspend hasn't (if a tab was created in the background).
     if (m_suspendCount > 0)
         --m_suspendCount;

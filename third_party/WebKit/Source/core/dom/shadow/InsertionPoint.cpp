@@ -145,7 +145,7 @@ bool InsertionPoint::isActive() const
     if (!canBeActive())
         return false;
     ShadowRoot* shadowRoot = containingShadowRoot();
-    ASSERT(shadowRoot);
+    DCHECK(shadowRoot);
     if (!isHTMLShadowElement(*this) || shadowRoot->descendantShadowElementCount() <= 1)
         return true;
 
@@ -235,7 +235,7 @@ void InsertionPoint::removedFrom(ContainerNode* insertionPoint)
     clearDistribution();
 
     if (m_registeredWithShadowRoot && insertionPoint->treeScope().rootNode() == root) {
-        ASSERT(root);
+        DCHECK(root);
         m_registeredWithShadowRoot = false;
         root->didRemoveInsertionPoint(this);
         if (rootOwner) {
@@ -255,7 +255,7 @@ DEFINE_TRACE(InsertionPoint)
 
 const InsertionPoint* resolveReprojection(const Node* projectedNode)
 {
-    ASSERT(projectedNode);
+    DCHECK(projectedNode);
     const InsertionPoint* insertionPoint = 0;
     const Node* current = projectedNode;
     ElementShadow* lastElementShadow = 0;
@@ -267,7 +267,7 @@ const InsertionPoint* resolveReprojection(const Node* projectedNode)
         const InsertionPoint* insertedTo = shadow->finalDestinationInsertionPointFor(projectedNode);
         if (!insertedTo)
             break;
-        ASSERT(current != insertedTo);
+        DCHECK_NE(current, insertedTo);
         current = insertedTo;
         insertionPoint = insertedTo;
     }
@@ -288,7 +288,7 @@ void collectDestinationInsertionPoints(const Node& node, HeapVector<Member<Inser
             return;
         for (size_t i = 0; i < insertionPoints->size(); ++i)
             results.append(insertionPoints->at(i).get());
-        ASSERT(current != insertionPoints->last().get());
+        DCHECK_NE(current, insertionPoints->last().get());
         current = insertionPoints->last().get();
     }
 }

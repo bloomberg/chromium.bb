@@ -38,16 +38,16 @@ namespace blink {
 
 static inline const AtomicString& linkAttribute(const Element& element)
 {
-    ASSERT(element.isLink());
+    DCHECK(element.isLink());
     if (element.isHTMLElement())
         return element.fastGetAttribute(HTMLNames::hrefAttr);
-    ASSERT(element.isSVGElement());
+    DCHECK(element.isSVGElement());
     return SVGURIReference::legacyHrefString(toSVGElement(element));
 }
 
 static inline LinkHash linkHashForElement(const Element& element, const AtomicString& attribute = AtomicString())
 {
-    ASSERT(attribute.isNull() || linkAttribute(element) == attribute);
+    DCHECK(attribute.isNull() || linkAttribute(element) == attribute);
     if (isHTMLAnchorElement(element))
         return toHTMLAnchorElement(element).visitedLinkHash();
     return visitedLinkHash(element.document().baseURL(), attribute.isNull() ? linkAttribute(element) : attribute);
@@ -88,9 +88,9 @@ void VisitedLinkState::invalidateStyleForLink(LinkHash linkHash)
 
 EInsideLink VisitedLinkState::determineLinkStateSlowCase(const Element& element)
 {
-    ASSERT(element.isLink());
-    ASSERT(document().isActive());
-    ASSERT(document() == element.document());
+    DCHECK(element.isLink());
+    DCHECK(document().isActive());
+    DCHECK(document() == element.document());
 
     const AtomicString& attribute = linkAttribute(element);
 

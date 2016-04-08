@@ -26,14 +26,14 @@ v8::Local<v8::Object> DOMTypedArray<WTFTypedArray, V8TypedArray>::wrap(v8::Isola
     // object gets associated with the wrapper.
     RefPtr<ThisType> protect(this);
 
-    ASSERT(!DOMDataStore::containsWrapper(this, isolate));
+    DCHECK(!DOMDataStore::containsWrapper(this, isolate));
 
     const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();
     RefPtr<DOMArrayBufferBase> buffer = this->bufferBase();
     v8::Local<v8::Value> v8Buffer = toV8(buffer.get(), creationContext, isolate);
     if (v8Buffer.IsEmpty())
         return v8::Local<v8::Object>();
-    ASSERT(isShared() == v8Buffer->IsSharedArrayBuffer());
+    DCHECK_EQ(isShared(), v8Buffer->IsSharedArrayBuffer());
 
     v8::Local<v8::Object> wrapper;
     if (isShared()) {

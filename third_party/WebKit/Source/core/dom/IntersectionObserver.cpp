@@ -86,7 +86,7 @@ IntersectionObserver* IntersectionObserver::create(const IntersectionObserverIni
     if (!root) {
         // TODO(szager): Use Document instead of document element for implicit root. (crbug.com/570538)
         ExecutionContext* context = callback.getExecutionContext();
-        ASSERT(context->isDocument());
+        DCHECK(context->isDocument());
         Frame* mainFrame = toDocument(context)->frame()->tree().top();
         if (mainFrame && mainFrame->isLocalFrame())
             root = toLocalFrame(mainFrame)->document();
@@ -268,7 +268,7 @@ static LayoutUnit computeMargin(const Length& length, LayoutUnit referenceLength
 {
     if (length.type() == Percent)
         return LayoutUnit(static_cast<int>(referenceLength.toFloat() * length.percent() / 100.0));
-    ASSERT(length.type() == Fixed);
+    DCHECK_EQ(length.type(), Fixed);
     return LayoutUnit(length.intValue());
 }
 

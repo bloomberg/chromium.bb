@@ -48,7 +48,7 @@ void FlatTreeTraversalTest::SetUp()
 {
     m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
     m_document = toHTMLDocument(&m_dummyPageHolder->document());
-    ASSERT(m_document);
+    DCHECK(m_document);
 }
 
 HTMLDocument& FlatTreeTraversalTest::document() const

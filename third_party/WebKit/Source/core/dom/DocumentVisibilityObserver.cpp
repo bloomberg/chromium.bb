@@ -36,7 +36,7 @@ void DocumentVisibilityObserver::unregisterObserver()
 
 void DocumentVisibilityObserver::registerObserver(Document& document)
 {
-    ASSERT(!m_document);
+    DCHECK(!m_document);
     m_document = &document;
     if (m_document)
         m_document->registerVisibilityObserver(this);

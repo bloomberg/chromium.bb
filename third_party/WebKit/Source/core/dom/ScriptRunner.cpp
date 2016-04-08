@@ -46,7 +46,7 @@ ScriptRunner::ScriptRunner(Document* document)
     , m_weakPointerFactoryForTasks(this)
 #endif
 {
-    ASSERT(document);
+    DCHECK(document);
 #ifndef NDEBUG
     m_hasEverBeenSuspended = false;
 #endif
@@ -83,7 +83,7 @@ void ScriptRunner::dispose()
 
 void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, ExecutionType executionType)
 {
-    ASSERT(scriptLoader);
+    DCHECK(scriptLoader);
     m_document->incrementLoadEventDelayCount();
     switch (executionType) {
     case ASYNC_EXECUTION:
@@ -117,7 +117,7 @@ void ScriptRunner::suspend()
 
 void ScriptRunner::resume()
 {
-    ASSERT(m_isSuspended);
+    DCHECK(m_isSuspended);
 
     m_isSuspended = false;
 
@@ -225,12 +225,12 @@ void ScriptRunner::movePendingScript(Document& oldDocument, Document& newDocumen
         // The script element's loader is in that case moved to document() and
         // its script runner, which is the non-null Document that contextDocument()
         // would return if not detached.
-        ASSERT(!newDocument.frame());
+        DCHECK(!newDocument.frame());
         newContextDocument = &newDocument;
     }
     RawPtr<Document> oldContextDocument = oldDocument.contextDocument().get();
     if (!oldContextDocument) {
-        ASSERT(!oldDocument.frame());
+        DCHECK(!oldDocument.frame());
         oldContextDocument = &oldDocument;
     }
     if (oldContextDocument != newContextDocument)
@@ -275,7 +275,7 @@ void ScriptRunner::executeTask()
 
 #ifndef NDEBUG
     // Extra tasks should be posted only when we resume after suspending.
-    ASSERT(m_hasEverBeenSuspended);
+    DCHECK(m_hasEverBeenSuspended);
 #endif
 }
 

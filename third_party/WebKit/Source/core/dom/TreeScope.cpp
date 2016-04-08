@@ -65,7 +65,7 @@ TreeScope::TreeScope(ContainerNode& rootNode, Document& document)
 #endif
     , m_idTargetObserverRegistry(IdTargetObserverRegistry::create())
 {
-    ASSERT(rootNode != document);
+    DCHECK_NE(rootNode, document);
 #if !ENABLE(OILPAN)
     m_parentTreeScope->guardRef();
 #endif
@@ -87,7 +87,7 @@ TreeScope::TreeScope(Document& document)
 TreeScope::~TreeScope()
 {
 #if !ENABLE(OILPAN)
-    ASSERT(!m_guardRefCount);
+    DCHECK(!m_guardRefCount);
     m_rootNode->setTreeScope(nullptr);
 
     if (m_selection) {
@@ -135,7 +135,7 @@ void TreeScope::destroyTreeScopeData()
 void TreeScope::setParentTreeScope(TreeScope& newParentScope)
 {
     // A document node cannot be re-parented.
-    ASSERT(!rootNode().isDocumentNode());
+    DCHECK(!rootNode().isDocumentNode());
 
 #if !ENABLE(OILPAN)
     newParentScope.guardRef();
@@ -287,7 +287,7 @@ Element* TreeScope::hitTestPoint(int x, int y, const HitTestRequest& request) co
         return nullptr;
     if (node->isPseudoElement() || node->isTextNode())
         node = node->parentOrShadowHostNode();
-    ASSERT(!node || node->isElementNode() || node->isShadowRoot());
+    DCHECK(!node || node->isElementNode() || node->isShadowRoot());
     node = ancestorInThisScope(node);
     if (!node || !node->isElementNode())
         return nullptr;
@@ -345,13 +345,13 @@ HeapVector<Member<Element>> TreeScope::elementsFromPoint(int x, int y) const
 
 void TreeScope::addLabel(const AtomicString& forAttributeValue, HTMLLabelElement* element)
 {
-    ASSERT(m_labelsByForAttribute);
+    DCHECK(m_labelsByForAttribute);
     m_labelsByForAttribute->add(forAttributeValue, element);
 }
 
 void TreeScope::removeLabel(const AtomicString& forAttributeValue, HTMLLabelElement* element)
 {
-    ASSERT(m_labelsByForAttribute);
+    DCHECK(m_labelsByForAttribute);
     m_labelsByForAttribute->remove(forAttributeValue, element);
 }
 
@@ -410,8 +410,8 @@ Element* TreeScope::findAnchor(const String& name)
 
 void TreeScope::adoptIfNeeded(Node& node)
 {
-    ASSERT(this);
-    ASSERT(!node.isDocumentNode());
+    DCHECK(this);
+    DCHECK(!node.isDocumentNode());
 #if !ENABLE(OILPAN)
     ASSERT_WITH_SECURITY_IMPLICATION(!node.m_deletionHasBegun);
 #endif

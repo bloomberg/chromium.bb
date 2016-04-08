@@ -149,7 +149,7 @@ void NodeIterator::nodeWillBeRemoved(Node& removedNode)
 
 void NodeIterator::updateForNodeRemoval(Node& removedNode, NodePointer& referenceNode) const
 {
-    ASSERT(root()->document() == removedNode.document());
+    DCHECK_EQ(root()->document(), removedNode.document());
 
     // Iterator is not affected if the removed node is the reference node and is the root.
     // or if removed node is not the reference node, or the ancestor of the reference node.

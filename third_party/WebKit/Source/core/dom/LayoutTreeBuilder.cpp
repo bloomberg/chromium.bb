@@ -47,7 +47,7 @@ LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(Element& element, Compu
     : LayoutTreeBuilder(element, nullptr)
     , m_style(style)
 {
-    ASSERT(!element.isSlotOrActiveInsertionPoint());
+    DCHECK(!element.isSlotOrActiveInsertionPoint());
     if (element.isFirstLetterPseudoElement()) {
         if (LayoutObject* nextLayoutObject = FirstLetterPseudoElement::firstLetterTextLayoutObject(element))
             m_layoutObjectParent = nextLayoutObject->parent();
@@ -58,7 +58,7 @@ LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(Element& element, Compu
 
 LayoutObject* LayoutTreeBuilderForElement::nextLayoutObject() const
 {
-    ASSERT(m_layoutObjectParent);
+    DCHECK(m_layoutObjectParent);
 
     if (m_node->isInTopLayer())
         return LayoutTreeBuilderTraversal::nextInTopLayer(*m_node);
@@ -149,7 +149,7 @@ void LayoutTreeBuilderForText::createLayoutObject()
 {
     ComputedStyle& style = m_layoutObjectParent->mutableStyleRef();
 
-    ASSERT(m_node->textLayoutObjectIsNeeded(style, *m_layoutObjectParent));
+    DCHECK(m_node->textLayoutObjectIsNeeded(style, *m_layoutObjectParent));
 
     LayoutText* newLayoutObject = m_node->createTextLayoutObject(style);
     if (!m_layoutObjectParent->isChildAllowed(newLayoutObject, style)) {

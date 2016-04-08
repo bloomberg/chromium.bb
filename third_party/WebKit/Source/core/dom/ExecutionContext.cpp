@@ -78,14 +78,14 @@ ExecutionContext::~ExecutionContext()
 
 void ExecutionContext::suspendActiveDOMObjects()
 {
-    ASSERT(!m_activeDOMObjectsAreSuspended);
+    DCHECK(!m_activeDOMObjectsAreSuspended);
     notifySuspendingActiveDOMObjects();
     m_activeDOMObjectsAreSuspended = true;
 }
 
 void ExecutionContext::resumeActiveDOMObjects()
 {
-    ASSERT(m_activeDOMObjectsAreSuspended);
+    DCHECK(m_activeDOMObjectsAreSuspended);
     m_activeDOMObjectsAreSuspended = false;
     notifyResumingActiveDOMObjects();
 }
@@ -131,7 +131,9 @@ void ExecutionContext::resumeScheduledTasks()
 
 void ExecutionContext::suspendActiveDOMObjectIfNeeded(ActiveDOMObject* object)
 {
-    ASSERT(contains(object));
+#if DCHECK_IS_ON()
+    DCHECK(contains(object));
+#endif
     // Ensure all ActiveDOMObjects are suspended also newly created ones.
     if (m_activeDOMObjectsAreSuspended)
         object->suspend();
@@ -178,7 +180,7 @@ bool ExecutionContext::dispatchErrorEvent(RawPtr<ErrorEvent> event, AccessContro
     if (shouldSanitizeScriptError(errorEvent->filename(), corsStatus))
         errorEvent = ErrorEvent::createSanitizedError(errorEvent->world());
 
-    ASSERT(!m_inDispatchErrorEvent);
+    DCHECK(!m_inDispatchErrorEvent);
     m_inDispatchErrorEvent = true;
     target->dispatchEvent(errorEvent);
     m_inDispatchErrorEvent = false;

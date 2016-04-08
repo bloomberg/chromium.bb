@@ -171,13 +171,13 @@ FirstLetterPseudoElement::FirstLetterPseudoElement(Element* parent)
 
 FirstLetterPseudoElement::~FirstLetterPseudoElement()
 {
-    ASSERT(!m_remainingTextLayoutObject);
+    DCHECK(!m_remainingTextLayoutObject);
 }
 
 void FirstLetterPseudoElement::updateTextFragments()
 {
     String oldText =  m_remainingTextLayoutObject->completeText();
-    ASSERT(oldText.impl());
+    DCHECK(oldText.impl());
 
     unsigned length = FirstLetterPseudoElement::firstLetterLength(oldText);
     m_remainingTextLayoutObject->setTextFragment(oldText.impl()->substring(length, oldText.length()), length, oldText.length() - length);
@@ -235,10 +235,10 @@ void FirstLetterPseudoElement::detach(const AttachContext& context)
 
 ComputedStyle* FirstLetterPseudoElement::styleForFirstLetter(LayoutObject* layoutObjectContainer)
 {
-    ASSERT(layoutObjectContainer);
+    DCHECK(layoutObjectContainer);
 
     LayoutObject* styleContainer = parentOrShadowHostElement()->layoutObject();
-    ASSERT(styleContainer);
+    DCHECK(styleContainer);
 
     // We always force the pseudo style to recompute as the first-letter style
     // computed by the style container may not have taken the layoutObjects styles
@@ -246,7 +246,7 @@ ComputedStyle* FirstLetterPseudoElement::styleForFirstLetter(LayoutObject* layou
     styleContainer->mutableStyle()->removeCachedPseudoStyle(PseudoIdFirstLetter);
 
     ComputedStyle* pseudoStyle = styleContainer->getCachedPseudoStyle(PseudoIdFirstLetter, layoutObjectContainer->firstLineStyle());
-    ASSERT(pseudoStyle);
+    DCHECK(pseudoStyle);
 
     return pseudoStyle;
 }
@@ -254,14 +254,14 @@ ComputedStyle* FirstLetterPseudoElement::styleForFirstLetter(LayoutObject* layou
 void FirstLetterPseudoElement::attachFirstLetterTextLayoutObjects()
 {
     LayoutObject* nextLayoutObject = FirstLetterPseudoElement::firstLetterTextLayoutObject(*this);
-    ASSERT(nextLayoutObject);
-    ASSERT(nextLayoutObject->isText());
+    DCHECK(nextLayoutObject);
+    DCHECK(nextLayoutObject->isText());
 
     // The original string is going to be either a generated content string or a DOM node's
     // string. We want the original string before it got transformed in case first-letter has
     // no text-transform or a different text-transform applied to it.
     String oldText = toLayoutText(nextLayoutObject)->isTextFragment() ? toLayoutTextFragment(nextLayoutObject)->completeText() : toLayoutText(nextLayoutObject)->originalText();
-    ASSERT(oldText.impl());
+    DCHECK(oldText.impl());
 
     ComputedStyle* pseudoStyle = styleForFirstLetter(nextLayoutObject->parent());
     layoutObject()->setStyle(pseudoStyle);

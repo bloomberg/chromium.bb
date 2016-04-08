@@ -54,7 +54,7 @@ void CustomElementProcessingStack::processElementQueueAndPop()
 
 void CustomElementProcessingStack::processElementQueueAndPop(size_t start, size_t end)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     CustomElementCallbackQueue::ElementQueueId thisQueue = currentElementQueue();
 
     for (size_t i = start; i < end; ++i) {
@@ -65,8 +65,8 @@ void CustomElementProcessingStack::processElementQueueAndPop(size_t start, size_
             m_flattenedProcessingStack[i]->processInElementQueue(thisQueue);
         }
 
-        ASSERT(start == s_elementQueueStart);
-        ASSERT(end == s_elementQueueEnd);
+        DCHECK_EQ(start, s_elementQueueStart);
+        DCHECK_EQ(end, s_elementQueueEnd);
     }
 
     // Pop the element queue from the processing stack
@@ -79,7 +79,7 @@ void CustomElementProcessingStack::processElementQueueAndPop(size_t start, size_
 
 void CustomElementProcessingStack::enqueue(CustomElementCallbackQueue* callbackQueue)
 {
-    ASSERT(inCallbackDeliveryScope());
+    DCHECK(inCallbackDeliveryScope());
 
     if (callbackQueue->owner() == currentElementQueue())
         return;

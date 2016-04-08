@@ -58,7 +58,7 @@ public:
 
     void dispose();
 
-    Document& ownerDocument() const { ASSERT(m_ownerDocument); return *m_ownerDocument.get(); }
+    Document& ownerDocument() const { DCHECK(m_ownerDocument); return *m_ownerDocument.get(); }
     Node* startContainer() const { return m_start.container(); }
     int startOffset() const { return m_start.offset(); }
     Node* endContainer() const { return m_end.container(); }

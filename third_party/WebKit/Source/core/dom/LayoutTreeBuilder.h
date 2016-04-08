@@ -45,15 +45,15 @@ protected:
         : m_node(node)
         , m_layoutObjectParent(layoutObjectParent)
     {
-        ASSERT(!node.layoutObject());
-        ASSERT(node.needsAttach());
-        ASSERT(node.document().inStyleRecalc());
-        ASSERT(node.inActiveDocument());
+        DCHECK(!node.layoutObject());
+        DCHECK(node.needsAttach());
+        DCHECK(node.document().inStyleRecalc());
+        DCHECK(node.inActiveDocument());
     }
 
     LayoutObject* nextLayoutObject() const
     {
-        ASSERT(m_layoutObjectParent);
+        DCHECK(m_layoutObjectParent);
 
         // Avoid an O(N^2) walk over the children when reattaching all children of a node.
         if (m_layoutObjectParent->node() && m_layoutObjectParent->node()->needsAttach())

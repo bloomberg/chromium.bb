@@ -40,7 +40,7 @@ namespace blink {
 DocumentStyleSheetCollection::DocumentStyleSheetCollection(TreeScope& treeScope)
     : TreeScopeStyleSheetCollection(treeScope)
 {
-    ASSERT(treeScope.rootNode() == treeScope.rootNode().document());
+    DCHECK_EQ(treeScope.rootNode(), treeScope.rootNode().document());
 }
 
 void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine& engine, DocumentStyleSheetCollector& collector)
@@ -48,7 +48,7 @@ void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine&
     for (Node* n : m_styleSheetCandidateNodes) {
         StyleSheetCandidate candidate(*n);
 
-        ASSERT(!candidate.isXSL());
+        DCHECK(!candidate.isXSL());
         if (candidate.isImport()) {
             Document* document = candidate.importedDocument();
             if (!document)
@@ -81,7 +81,7 @@ void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine&
 
 void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine& engine, DocumentStyleSheetCollector& collector)
 {
-    ASSERT(&document().styleEngine() == &engine);
+    DCHECK_EQ(&document().styleEngine(), &engine);
     collector.appendActiveStyleSheets(engine.injectedAuthorStyleSheets());
     collectStyleSheetsFromCandidates(engine, collector);
 }
@@ -105,7 +105,7 @@ void DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine& engine, 
             engine.clearFontCache();
     } else if (StyleResolver* styleResolver = engine.resolver()) {
         if (change.styleResolverUpdateType != Additive) {
-            ASSERT(change.styleResolverUpdateType == Reset);
+            DCHECK_EQ(change.styleResolverUpdateType, Reset);
             styleResolver->resetAuthorStyle(treeScope());
             engine.removeFontFaceRules(change.fontFaceRulesToRemove);
             styleResolver->removePendingAuthorStyleSheets(m_activeAuthorStyleSheets);

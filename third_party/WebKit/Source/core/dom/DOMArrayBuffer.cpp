@@ -15,7 +15,7 @@ v8::Local<v8::Object> DOMArrayBuffer::wrap(v8::Isolate* isolate, v8::Local<v8::O
     // object gets associated with the wrapper.
     RefPtr<DOMArrayBuffer> protect(this);
 
-    ASSERT(!DOMDataStore::containsWrapper(this, isolate));
+    DCHECK(!DOMDataStore::containsWrapper(this, isolate));
 
     const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();
     v8::Local<v8::Object> wrapper = v8::ArrayBuffer::New(isolate, data(), byteLength());

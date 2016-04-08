@@ -123,14 +123,14 @@ RawPtr<Node> Attr::cloneNode(bool /*deep*/)
 
 void Attr::detachFromElementWithValue(const AtomicString& value)
 {
-    ASSERT(m_element);
+    DCHECK(m_element);
     m_standaloneValueOrAttachedLocalName = value;
     m_element = nullptr;
 }
 
 void Attr::attachToElement(Element* element, const AtomicString& attachedLocalName)
 {
-    ASSERT(!m_element);
+    DCHECK(!m_element);
     m_element = element;
     m_standaloneValueOrAttachedLocalName = attachedLocalName;
 }

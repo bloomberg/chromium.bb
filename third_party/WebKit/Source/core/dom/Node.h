@@ -348,7 +348,7 @@ public:
     virtual void notifyLoadedSheetAndAllCriticalSubresources(LoadedSheetErrorStatus) { }
     virtual void startLoadingDynamicSheet() { ASSERT_NOT_REACHED(); }
 
-    bool hasName() const { ASSERT(!isTextNode()); return getFlag(HasNameOrIsEditingTextFlag); }
+    bool hasName() const { DCHECK(!isTextNode()); return getFlag(HasNameOrIsEditingTextFlag); }
 
     bool isUserActionElement() const { return getFlag(IsUserActionElementFlag); }
     void setUserActionElement(bool flag) { setFlag(flag, IsUserActionElementFlag); }
@@ -367,16 +367,16 @@ public:
     StyleChangeType getStyleChangeType() const { return static_cast<StyleChangeType>(m_nodeFlags & StyleChangeMask); }
     bool childNeedsStyleRecalc() const { return getFlag(ChildNeedsStyleRecalcFlag); }
     bool isLink() const { return getFlag(IsLinkFlag); }
-    bool isEditingText() const { ASSERT(isTextNode()); return getFlag(HasNameOrIsEditingTextFlag); }
+    bool isEditingText() const { DCHECK(isTextNode()); return getFlag(HasNameOrIsEditingTextFlag); }
 
-    void setHasName(bool f) { ASSERT(!isTextNode()); setFlag(f, HasNameOrIsEditingTextFlag); }
+    void setHasName(bool f) { DCHECK(!isTextNode()); setFlag(f, HasNameOrIsEditingTextFlag); }
     void setChildNeedsStyleRecalc() { setFlag(ChildNeedsStyleRecalcFlag); }
     void clearChildNeedsStyleRecalc() { clearFlag(ChildNeedsStyleRecalcFlag); }
 
     void setNeedsStyleRecalc(StyleChangeType, const StyleChangeReasonForTracing&);
     void clearNeedsStyleRecalc();
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     bool needsDistributionRecalc() const;
 #endif
 
@@ -470,7 +470,7 @@ public:
 
     TreeScope& treeScope() const
     {
-        ASSERT(m_treeScope);
+        DCHECK(m_treeScope);
         return *m_treeScope;
     }
 
@@ -847,13 +847,13 @@ private:
 
 inline void Node::setParentOrShadowHostNode(ContainerNode* parent)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     m_parentOrShadowHostNode = parent;
 }
 
 inline ContainerNode* Node::parentOrShadowHostNode() const
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     return m_parentOrShadowHostNode;
 }
 

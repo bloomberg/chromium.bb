@@ -60,7 +60,7 @@ ProcessingInstruction::~ProcessingInstruction()
         clearSheet();
 
     // FIXME: ProcessingInstruction should not be in document here.
-    // However, if we add ASSERT(!inShadowIncludingDocument()), fast/xsl/xslt-entity.xml
+    // However, if we add DCHECK(!inShadowIncludingDocument()), fast/xsl/xslt-entity.xml
     // crashes. We need to investigate ProcessingInstruction lifetime.
     if (inShadowIncludingDocument() && m_isCSS)
         document().styleEngine().removeStyleSheetCandidateNode(this);
@@ -204,11 +204,11 @@ bool ProcessingInstruction::sheetLoaded()
 void ProcessingInstruction::setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource* sheet)
 {
     if (!inShadowIncludingDocument()) {
-        ASSERT(!m_sheet);
+        DCHECK(!m_sheet);
         return;
     }
 
-    ASSERT(m_isCSS);
+    DCHECK(m_isCSS);
     CSSParserContext parserContext(document(), 0, baseURL, charset);
 
     RawPtr<StyleSheetContents> newSheet = StyleSheetContents::create(href, parserContext);
@@ -229,11 +229,11 @@ void ProcessingInstruction::setCSSStyleSheet(const String& href, const KURL& bas
 void ProcessingInstruction::setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet)
 {
     if (!inShadowIncludingDocument()) {
-        ASSERT(!m_sheet);
+        DCHECK(!m_sheet);
         return;
     }
 
-    ASSERT(m_isXSL);
+    DCHECK(m_isXSL);
     m_sheet = XSLStyleSheet::create(this, href, baseURL);
     RawPtr<Document> protect(&document());
     OwnPtr<IncrementLoadEventDelayCount> delay = IncrementLoadEventDelayCount::create(document());
@@ -284,7 +284,7 @@ void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint)
 
     RawPtr<StyleSheet> removedSheet = m_sheet;
     if (m_sheet) {
-        ASSERT(m_sheet->ownerNode() == this);
+        DCHECK_EQ(m_sheet->ownerNode(), this);
         clearSheet();
     }
 
@@ -298,7 +298,7 @@ void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint)
 
 void ProcessingInstruction::clearSheet()
 {
-    ASSERT(m_sheet);
+    DCHECK(m_sheet);
     if (m_sheet->isLoading())
         document().styleEngine().removePendingSheet(this);
     m_sheet.release()->clearOwnerNode();

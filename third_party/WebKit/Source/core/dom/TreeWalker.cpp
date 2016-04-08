@@ -40,7 +40,7 @@ TreeWalker::TreeWalker(RawPtr<Node> rootNode, unsigned whatToShow, RawPtr<NodeFi
 
 void TreeWalker::setCurrentNode(RawPtr<Node> node)
 {
-    ASSERT(node);
+    DCHECK(node);
     m_current = node;
 }
 

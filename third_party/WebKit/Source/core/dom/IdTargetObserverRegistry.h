@@ -59,7 +59,7 @@ private:
 
 inline void IdTargetObserverRegistry::notifyObservers(const AtomicString& id)
 {
-    ASSERT(!m_notifyingObserversInSet);
+    DCHECK(!m_notifyingObserversInSet);
     if (id.isEmpty() || m_registry.isEmpty())
         return;
     IdTargetObserverRegistry::notifyObserversInternal(id);

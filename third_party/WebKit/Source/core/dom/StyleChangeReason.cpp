@@ -57,7 +57,7 @@ DEFINE_GLOBAL(AtomicString, Unresolved)
 
 void init()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     new (NotNull, (void*)&Active) AtomicString(":active");
     new (NotNull, (void*)&Disabled) AtomicString(":disabled");

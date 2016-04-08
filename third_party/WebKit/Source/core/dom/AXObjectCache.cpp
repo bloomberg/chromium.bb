@@ -34,13 +34,13 @@ AXObjectCache::AXObjectCacheCreateFunction AXObjectCache::m_createFunction = nul
 
 void AXObjectCache::init(AXObjectCacheCreateFunction function)
 {
-    ASSERT(!m_createFunction);
+    DCHECK(!m_createFunction);
     m_createFunction = function;
 }
 
 AXObjectCache* AXObjectCache::create(Document& document)
 {
-    ASSERT(m_createFunction);
+    DCHECK(m_createFunction);
     return m_createFunction(document);
 }
 
@@ -75,7 +75,7 @@ AXObjectCache* ScopedAXObjectCache::get()
     if (m_cache)
         return m_cache.get();
     AXObjectCache* cache = m_document->axObjectCache();
-    ASSERT(cache);
+    DCHECK(cache);
     return cache;
 }
 

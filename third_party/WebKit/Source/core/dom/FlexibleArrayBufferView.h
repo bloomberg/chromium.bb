@@ -41,7 +41,7 @@ public:
 
     DOMArrayBufferView* full() const
     {
-        ASSERT(isFull());
+        DCHECK(isFull());
         return m_full.get();
     }
 
@@ -50,19 +50,19 @@ public:
     // FlexibleArrayBufferView object.
     void* baseAddressMaybeOnStack() const
     {
-        ASSERT(!isEmpty());
+        DCHECK(!isEmpty());
         return isFull() ? m_full->baseAddress() : m_smallData;
     }
 
     unsigned byteOffset() const
     {
-        ASSERT(!isEmpty());
+        DCHECK(!isEmpty());
         return isFull() ? m_full->byteOffset() : 0;
     }
 
     unsigned byteLength() const
     {
-        ASSERT(!isEmpty());
+        DCHECK(!isEmpty());
         return isFull() ? m_full->byteLength() : m_smallLength;
     }
 

@@ -55,7 +55,7 @@ void FrameRequestCallbackCollection::executeCallbacks(double highResNowMs, doubl
 {
     // First, generate a list of callbacks to consider.  Callbacks registered from this point
     // on are considered only for the "next" frame, not this one.
-    ASSERT(m_callbacksToInvoke.isEmpty());
+    DCHECK(m_callbacksToInvoke.isEmpty());
     m_callbacksToInvoke.swap(m_callbacks);
 
     for (size_t i = 0; i < m_callbacksToInvoke.size(); ++i) {

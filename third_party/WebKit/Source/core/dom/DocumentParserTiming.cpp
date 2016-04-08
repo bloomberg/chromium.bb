@@ -27,7 +27,7 @@ void DocumentParserTiming::markParserStart()
 {
     if (m_parserDetached || m_parserStart > 0.0)
         return;
-    ASSERT(m_parserStop == 0.0);
+    DCHECK_EQ(m_parserStop, 0.0);
     m_parserStart = monotonicallyIncreasingTime();
     notifyDocumentParserTimingChanged();
 }
@@ -42,7 +42,7 @@ void DocumentParserTiming::markParserStop()
 
 void DocumentParserTiming::markParserDetached()
 {
-    ASSERT(m_parserStart > 0.0);
+    DCHECK_GT(m_parserStart, 0.0);
     m_parserDetached = true;
 }
 

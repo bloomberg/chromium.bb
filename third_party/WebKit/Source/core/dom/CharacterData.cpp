@@ -164,7 +164,7 @@ void CharacterData::setDataAndUpdate(const String& newData, unsigned offsetOfRep
     String oldData = m_data;
     m_data = newData;
 
-    ASSERT(!layoutObject() || isTextNode());
+    DCHECK(!layoutObject() || isTextNode());
     if (isTextNode())
         toText(this)->updateTextLayoutObject(offsetOfReplacedData, oldLength, recalcStyleBehavior);
 

@@ -33,7 +33,7 @@ TagCollection::TagCollection(ContainerNode& rootNode, CollectionType type, const
     , m_namespaceURI(namespaceURI)
     , m_localName(localName)
 {
-    ASSERT(m_namespaceURI.isNull() || !m_namespaceURI.isEmpty());
+    DCHECK(m_namespaceURI.isNull() || !m_namespaceURI.isEmpty());
 }
 
 TagCollection::~TagCollection()

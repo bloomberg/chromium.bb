@@ -62,7 +62,7 @@ inline const ComputedStyle* Node::parentComputedStyle() const
 inline const ComputedStyle& Node::computedStyleRef() const
 {
     const ComputedStyle* style = computedStyle();
-    ASSERT(style);
+    DCHECK(style);
     return *style;
 }
 

@@ -52,7 +52,7 @@ public:
     {
         // ElementCallbackQueues only migrate towards the top of the
         // processing stack.
-        ASSERT(newOwner >= m_owner);
+        DCHECK_GE(newOwner, m_owner);
         m_owner = newOwner;
     }
 

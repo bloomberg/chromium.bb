@@ -50,7 +50,7 @@ DocumentOrderedMap::DocumentOrderedMap()
 {
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 static int s_removeScopeLevel = 0;
 
 DocumentOrderedMap::RemoveScope::RemoveScope()
@@ -60,7 +60,7 @@ DocumentOrderedMap::RemoveScope::RemoveScope()
 
 DocumentOrderedMap::RemoveScope::~RemoveScope()
 {
-    ASSERT(s_removeScopeLevel);
+    DCHECK(s_removeScopeLevel);
     s_removeScopeLevel--;
 }
 #endif
@@ -87,15 +87,15 @@ inline bool keyMatchesLabelForAttribute(const AtomicString& key, const Element& 
 
 void DocumentOrderedMap::add(const AtomicString& key, Element* element)
 {
-    ASSERT(key);
-    ASSERT(element);
+    DCHECK(key);
+    DCHECK(element);
 
     Map::AddResult addResult = m_map.add(key, new MapEntry(element));
     if (addResult.isNewEntry)
         return;
 
     Member<MapEntry>& entry = addResult.storedValue->value;
-    ASSERT(entry->count);
+    DCHECK(entry->count);
     entry->element = nullptr;
     entry->count++;
     entry->orderedList.clear();
@@ -103,21 +103,21 @@ void DocumentOrderedMap::add(const AtomicString& key, Element* element)
 
 void DocumentOrderedMap::remove(const AtomicString& key, Element* element)
 {
-    ASSERT(key);
-    ASSERT(element);
+    DCHECK(key);
+    DCHECK(element);
 
     Map::iterator it = m_map.find(key);
     if (it == m_map.end())
         return;
 
     Member<MapEntry>& entry = it->value;
-    ASSERT(entry->count);
+    DCHECK(entry->count);
     if (entry->count == 1) {
-        ASSERT(!entry->element || entry->element == element);
+        DCHECK(!entry->element || entry->element == element);
         m_map.remove(it);
     } else {
         if (entry->element == element) {
-            ASSERT(entry->orderedList.isEmpty() || entry->orderedList.first() == element);
+            DCHECK(entry->orderedList.isEmpty() || entry->orderedList.first() == element);
             entry->element = entry->orderedList.size() > 1 ? entry->orderedList[1] : nullptr;
         }
         entry->count--;
@@ -128,14 +128,14 @@ void DocumentOrderedMap::remove(const AtomicString& key, Element* element)
 template<bool keyMatches(const AtomicString&, const Element&)>
 inline Element* DocumentOrderedMap::get(const AtomicString& key, const TreeScope* scope) const
 {
-    ASSERT(key);
-    ASSERT(scope);
+    DCHECK(key);
+    DCHECK(scope);
 
     MapEntry* entry = m_map.get(key);
     if (!entry)
         return 0;
 
-    ASSERT(entry->count);
+    DCHECK(entry->count);
     if (entry->element)
         return entry->element;
 
@@ -151,7 +151,9 @@ inline Element* DocumentOrderedMap::get(const AtomicString& key, const TreeScope
     }
     // As get()/getElementById() can legitimately be called while handling element
     // removals, allow failure iff we're in the scope of node removals.
-    ASSERT(s_removeScopeLevel);
+#if DCHECK_IS_ON()
+    DCHECK(s_removeScopeLevel);
+#endif
     return 0;
 }
 
@@ -162,8 +164,8 @@ Element* DocumentOrderedMap::getElementById(const AtomicString& key, const TreeS
 
 const HeapVector<Member<Element>>& DocumentOrderedMap::getAllElementsById(const AtomicString& key, const TreeScope* scope) const
 {
-    ASSERT(key);
-    ASSERT(scope);
+    DCHECK(key);
+    DCHECK(scope);
     DEFINE_STATIC_LOCAL(HeapVector<Member<Element>>, emptyVector, (new HeapVector<Member<Element>>));
 
     Map::iterator it = m_map.find(key);
@@ -171,12 +173,12 @@ const HeapVector<Member<Element>>& DocumentOrderedMap::getAllElementsById(const 
         return emptyVector;
 
     Member<MapEntry>& entry = it->value;
-    ASSERT(entry->count);
+    DCHECK(entry->count);
 
     if (entry->orderedList.isEmpty()) {
         entry->orderedList.reserveCapacity(entry->count);
         for (Element* element = entry->element ? entry->element.get() : ElementTraversal::firstWithin(scope->rootNode()); entry->orderedList.size() < entry->count; element = ElementTraversal::next(*element)) {
-            ASSERT(element);
+            DCHECK(element);
             if (!keyMatchesId(key, *element))
                 continue;
             entry->orderedList.uncheckedAppend(element);

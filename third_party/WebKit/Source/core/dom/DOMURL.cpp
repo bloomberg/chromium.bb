@@ -62,7 +62,7 @@ void DOMURL::setInput(const String& value)
 
 String DOMURL::createObjectURL(ExecutionContext* executionContext, Blob* blob, ExceptionState& exceptionState)
 {
-    ASSERT(blob);
+    DCHECK(blob);
     if (!executionContext)
         return String();
     if (blob->hasBeenClosed()) {

@@ -57,12 +57,12 @@ protected:
         : Node(&treeScope, type)
         , m_data(!text.isNull() ? text : emptyString())
     {
-        ASSERT(type == CreateOther || type == CreateText || type == CreateEditingText);
+        DCHECK(type == CreateOther || type == CreateText || type == CreateEditingText);
     }
 
     void setDataWithoutUpdate(const String& data)
     {
-        ASSERT(!data.isNull());
+        DCHECK(!data.isNull());
         m_data = data;
     }
     enum UpdateSource {

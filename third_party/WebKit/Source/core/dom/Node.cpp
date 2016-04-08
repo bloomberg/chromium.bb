@@ -113,13 +113,13 @@ static_assert(sizeof(Node) <= sizeof(SameSizeAsNode), "Node should stay small");
 #if !ENABLE(OILPAN)
 void* Node::operator new(size_t size)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     return partitionAlloc(WTF::Partitions::nodePartition(), size, "blink::Node");
 }
 
 void Node::operator delete(void* ptr)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     partitionFree(ptr);
 }
 #endif
@@ -264,7 +264,7 @@ Node::Node(TreeScope* treeScope, ConstructionType type)
     , m_previous(nullptr)
     , m_next(nullptr)
 {
-    ASSERT(m_treeScope || type == CreateDocument || type == CreateShadowRoot);
+    DCHECK(m_treeScope || type == CreateDocument || type == CreateShadowRoot);
 #if !ENABLE(OILPAN)
     if (m_treeScope)
         m_treeScope->guardRef();
@@ -304,7 +304,7 @@ Node::~Node()
 
     // clearEventTargetData() must be always done,
     // or eventTargetDataMap() may keep a raw pointer to a deleted object.
-    ASSERT(!hasEventTargetData());
+    DCHECK(!hasEventTargetData());
 #else
     // With Oilpan, the rare data finalizer also asserts for
     // this condition (we cannot directly access it here.)
@@ -349,7 +349,7 @@ NodeRareData& Node::ensureRareData()
     else
         m_data.m_rareData = NodeRareData::create(m_data.m_layoutObject);
 
-    ASSERT(m_data.m_rareData);
+    DCHECK(m_data.m_rareData);
 
     setFlag(HasRareDataFlag);
     return *rareData();
@@ -358,8 +358,8 @@ NodeRareData& Node::ensureRareData()
 #if !ENABLE(OILPAN)
 void Node::clearRareData()
 {
-    ASSERT(hasRareData());
-    ASSERT(!transientMutationObserverRegistry() || transientMutationObserverRegistry()->isEmpty());
+    DCHECK(hasRareData());
+    DCHECK(!transientMutationObserverRegistry() || transientMutationObserverRegistry()->isEmpty());
 
     LayoutObject* layoutObject = m_data.m_rareData->layoutObject();
     if (isElementNode())
@@ -544,7 +544,7 @@ bool Node::hasEditableStyle(EditableLevel editableLevel, UserSelectAllTreatment 
     if (isPseudoElement())
         return false;
 
-    // Ideally we'd call ASSERT(!needsStyleRecalc()) here, but
+    // Ideally we'd call DCHECK(!needsStyleRecalc()) here, but
     // ContainerNode::setFocus() calls setNeedsStyleRecalc(), so the assertion
     // would fire in the middle of Document::setFocusedNode().
 
@@ -625,11 +625,11 @@ Node& Node::shadowIncludingRoot() const
         root = host;
     while (Node* ancestor = root->parentNode())
         root = ancestor;
-    ASSERT(!root->shadowHost());
+    DCHECK(!root->shadowHost());
     return *root;
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 bool Node::needsDistributionRecalc() const
 {
     return shadowIncludingRoot().childNeedsDistributionRecalc();
@@ -650,14 +650,14 @@ void Node::updateDistribution()
 
 void Node::recalcDistribution()
 {
-    ASSERT(childNeedsDistributionRecalc());
+    DCHECK(childNeedsDistributionRecalc());
 
     if (isElementNode()) {
         if (ElementShadow* shadow = toElement(this)->shadow())
             shadow->distributeIfNeeded();
     }
 
-    ASSERT(ScriptForbiddenScope::isScriptForbidden());
+    DCHECK(ScriptForbiddenScope::isScriptForbidden());
     for (Node* child = firstChild(); child; child = child->nextSibling()) {
         if (child->childNeedsDistributionRecalc())
             child->recalcDistribution();
@@ -678,7 +678,7 @@ void Node::setIsLink(bool isLink)
 
 void Node::setNeedsStyleInvalidation()
 {
-    ASSERT(isElementNode());
+    DCHECK(isElementNode());
     setFlag(NeedsStyleInvalidationFlag);
     markAncestorsWithChildNeedsStyleInvalidation();
 }
@@ -718,7 +718,7 @@ void Node::markAncestorsWithChildNeedsStyleRecalc()
 
 void Node::setNeedsStyleRecalc(StyleChangeType changeType, const StyleChangeReasonForTracing& reason)
 {
-    ASSERT(changeType != NoStyleChange);
+    DCHECK(changeType != NoStyleChange);
     if (!inActiveDocument())
         return;
 
@@ -762,7 +762,7 @@ Node* Node::focusDelegate()
 
 bool Node::shouldHaveFocusAppearance() const
 {
-    ASSERT(focused());
+    DCHECK(focused());
     return true;
 }
 
@@ -890,7 +890,7 @@ Node* Node::commonAncestor(const Node& other, ContainerNode* (*parent)(const Nod
         thisIterator = parent(*thisIterator);
         otherIterator = parent(*otherIterator);
     }
-    ASSERT(!otherIterator);
+    DCHECK(!otherIterator);
     return nullptr;
 }
 
@@ -907,10 +907,10 @@ void Node::reattach(const AttachContext& context)
 
 void Node::attach(const AttachContext&)
 {
-    ASSERT(document().inStyleRecalc() || isDocumentNode());
-    ASSERT(!document().lifecycle().inDetach());
-    ASSERT(needsAttach());
-    ASSERT(!layoutObject() || (layoutObject()->style() && (layoutObject()->parent() || layoutObject()->isLayoutView())));
+    DCHECK(document().inStyleRecalc() || isDocumentNode());
+    DCHECK(!document().lifecycle().inDetach());
+    DCHECK(needsAttach());
+    DCHECK(!layoutObject() || (layoutObject()->style() && (layoutObject()->parent() || layoutObject()->isLayoutView())));
 
     clearNeedsStyleRecalc();
 
@@ -920,7 +920,7 @@ void Node::attach(const AttachContext&)
 
 void Node::detach(const AttachContext& context)
 {
-    ASSERT(document().lifecycle().stateAllowsDetach());
+    DCHECK(document().lifecycle().stateAllowsDetach());
     DocumentLifecycle::DetachScope willDetach(document().lifecycle());
 
     if (layoutObject())
@@ -1031,7 +1031,7 @@ ShadowRoot* Node::containingShadowRoot() const
 
 Node* Node::nonBoundaryShadowTreeRootNode()
 {
-    ASSERT(!isShadowRoot());
+    DCHECK(!isShadowRoot());
     Node* root = this;
     while (root) {
         if (root->isShadowRoot())
@@ -1899,7 +1899,7 @@ EventTargetData& Node::ensureEventTargetData()
 {
     if (hasEventTargetData())
         return *eventTargetDataMap().get(this);
-    ASSERT(!eventTargetDataMap().contains(this));
+    DCHECK(!eventTargetDataMap().contains(this));
     setHasEventTargetData(true);
     RawPtr<EventTargetData> data = new EventTargetData;
     EventTargetData* dataPtr = data.get();
@@ -1911,7 +1911,7 @@ EventTargetData& Node::ensureEventTargetData()
 void Node::clearEventTargetData()
 {
     eventTargetDataMap().remove(this);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     setHasEventTargetData(false);
 #endif
 }
@@ -1955,7 +1955,7 @@ static inline void collectMatchingObserversForMutation(HeapHashMap<Member<Mutati
 
 void Node::getRegisteredMutationObserversOfType(HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions>& observers, MutationObserver::MutationType type, const QualifiedName* attributeName)
 {
-    ASSERT((type == MutationObserver::Attributes && attributeName) || !attributeName);
+    DCHECK((type == MutationObserver::Attributes && attributeName) || !attributeName);
     collectMatchingObserversForMutation(observers, mutationObserverRegistry(), *this, type, attributeName);
     collectMatchingObserversForMutation(observers, transientMutationObserverRegistry(), *this, type, attributeName);
     ScriptForbiddenScope forbidScriptDuringRawIteration;
@@ -1987,12 +1987,12 @@ void Node::registerMutationObserver(MutationObserver& observer, MutationObserver
 void Node::unregisterMutationObserver(MutationObserverRegistration* registration)
 {
     HeapVector<Member<MutationObserverRegistration>>* registry = mutationObserverRegistry();
-    ASSERT(registry);
+    DCHECK(registry);
     if (!registry)
         return;
 
     size_t index = registry->find(registration);
-    ASSERT(index != kNotFound);
+    DCHECK_NE(index, kNotFound);
     if (index == kNotFound)
         return;
 
@@ -2016,11 +2016,11 @@ void Node::registerTransientMutationObserver(MutationObserverRegistration* regis
 void Node::unregisterTransientMutationObserver(MutationObserverRegistration* registration)
 {
     HeapHashSet<Member<MutationObserverRegistration>>* transientRegistry = transientMutationObserverRegistry();
-    ASSERT(transientRegistry);
+    DCHECK(transientRegistry);
     if (!transientRegistry)
         return;
 
-    ASSERT(transientRegistry->contains(registration));
+    DCHECK(transientRegistry->contains(registration));
     transientRegistry->remove(registration);
 }
 
@@ -2071,7 +2071,9 @@ void Node::dispatchSubtreeModifiedEvent()
     if (isInShadowTree())
         return;
 
-    ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
+#if DCHECK_IS_ON()
+    DCHECK(!EventDispatchForbiddenScope::isEventDispatchForbidden());
+#endif
 
     if (!document().hasListenerType(Document::DOMSUBTREEMODIFIED_LISTENER))
         return;
@@ -2081,7 +2083,9 @@ void Node::dispatchSubtreeModifiedEvent()
 
 DispatchEventResult Node::dispatchDOMActivateEvent(int detail, RawPtr<Event> underlyingEvent)
 {
-    ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
+#if DCHECK_IS_ON()
+    DCHECK(!EventDispatchForbiddenScope::isEventDispatchForbidden());
+#endif
     RawPtr<UIEvent> event = UIEvent::create(EventTypeNames::DOMActivate, true, true, document().domWindow(), detail);
     event->setUnderlyingEvent(underlyingEvent);
     dispatchScopedEvent(event);
@@ -2214,13 +2218,13 @@ inline void TreeScope::removedLastRefToScope()
         // extra self-only ref.
         guardRef();
         dispose();
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
         // We need to do this right now since guardDeref() can delete this.
         rootNode().m_inRemovedLastRefFunction = false;
 #endif
         guardDeref();
     } else {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
         rootNode().m_inRemovedLastRefFunction = false;
 #endif
 #if ENABLE(SECURITY_ASSERT)
@@ -2256,7 +2260,7 @@ unsigned Node::connectedSubframeCount() const
 
 void Node::incrementConnectedSubframeCount()
 {
-    ASSERT(isContainerNode());
+    DCHECK(isContainerNode());
     ensureRareData().incrementConnectedSubframeCount();
 }
 
@@ -2273,7 +2277,7 @@ RawPtr<StaticNodeList> Node::getDestinationInsertionPoints()
     HeapVector<Member<Node>> filteredInsertionPoints;
     for (size_t i = 0; i < insertionPoints.size(); ++i) {
         InsertionPoint* insertionPoint = insertionPoints[i];
-        ASSERT(insertionPoint->containingShadowRoot());
+        DCHECK(insertionPoint->containingShadowRoot());
         if (!insertionPoint->containingShadowRoot()->isOpenOrV0())
             break;
         filteredInsertionPoints.append(insertionPoint);
@@ -2283,7 +2287,9 @@ RawPtr<StaticNodeList> Node::getDestinationInsertionPoints()
 
 HTMLSlotElement* Node::assignedSlot() const
 {
-    ASSERT(!needsDistributionRecalc());
+#if DCHECK_IS_ON()
+    DCHECK(!needsDistributionRecalc());
+#endif
     if (ElementShadow* shadow = parentElementShadow()) {
         if (shadow->isV1())
             return shadow->assignedSlotFor(*this);
@@ -2318,25 +2324,25 @@ void Node::setHovered(bool flag)
 
 bool Node::isUserActionElementActive() const
 {
-    ASSERT(isUserActionElement());
+    DCHECK(isUserActionElement());
     return document().userActionElements().isActive(this);
 }
 
 bool Node::isUserActionElementInActiveChain() const
 {
-    ASSERT(isUserActionElement());
+    DCHECK(isUserActionElement());
     return document().userActionElements().isInActiveChain(this);
 }
 
 bool Node::isUserActionElementHovered() const
 {
-    ASSERT(isUserActionElement());
+    DCHECK(isUserActionElement());
     return document().userActionElements().isHovered(this);
 }
 
 bool Node::isUserActionElementFocused() const
 {
-    ASSERT(isUserActionElement());
+    DCHECK(isUserActionElement());
     return document().userActionElements().isFocused(this);
 }
 
@@ -2350,15 +2356,15 @@ void Node::setCustomElementState(CustomElementState newState)
         return;
 
     case WaitingForUpgrade:
-        ASSERT(NotCustomElement == oldState);
+        DCHECK_EQ(NotCustomElement, oldState);
         break;
 
     case Upgraded:
-        ASSERT(WaitingForUpgrade == oldState);
+        DCHECK_EQ(WaitingForUpgrade, oldState);
         break;
     }
 
-    ASSERT(isHTMLElement() || isSVGElement());
+    DCHECK(isHTMLElement() || isSVGElement());
     setFlag(CustomElementFlag);
     setFlag(newState == Upgraded, CustomElementUpgradedFlag);
 
@@ -2408,7 +2414,7 @@ v8::Local<v8::Object> Node::wrap(v8::Isolate* isolate, v8::Local<v8::Object> cre
     // object gets associated with the wrapper.
     RawPtr<Node> protect(this);
 
-    ASSERT(!DOMDataStore::containsWrapper(this, isolate));
+    DCHECK(!DOMDataStore::containsWrapper(this, isolate));
 
     const WrapperTypeInfo* wrapperType = wrapperTypeInfo();
 

@@ -125,7 +125,7 @@ void ScriptedIdleTaskController::callbackFired(CallbackId id, double deadlineSec
 
 void ScriptedIdleTaskController::runCallback(CallbackId id, double deadlineSeconds, IdleDeadline::CallbackType callbackType)
 {
-    ASSERT(!m_suspended);
+    DCHECK(!m_suspended);
     auto callback = m_callbacks.take(id);
     if (!callback)
         return;
@@ -157,7 +157,7 @@ void ScriptedIdleTaskController::suspend()
 
 void ScriptedIdleTaskController::resume()
 {
-    ASSERT(m_suspended);
+    DCHECK(m_suspended);
     m_suspended = false;
 
     // Run any pending timeouts.

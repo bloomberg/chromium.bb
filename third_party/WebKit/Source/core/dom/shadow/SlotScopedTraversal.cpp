@@ -39,15 +39,15 @@ Element* SlotScopedTraversal::next(const Element& current)
             return next;
     } else {
         // If current is in assigned scope, find an assigned ancestor.
-        ASSERT(nearestAncestorAssignedToSlot);
+        DCHECK(nearestAncestorAssignedToSlot);
         if (Element* next = ElementTraversal::next(current, nearestAncestorAssignedToSlot))
             return next;
         slot = nearestAncestorAssignedToSlot->assignedSlot();
-        ASSERT(slot);
+        DCHECK(slot);
     }
     HeapVector<Member<Node>> assignedNodes = slot->getAssignedNodes();
     size_t currentIndex = assignedNodes.find(*nearestAncestorAssignedToSlot);
-    ASSERT(currentIndex != kNotFound);
+    DCHECK_NE(currentIndex, kNotFound);
     for (++currentIndex; currentIndex < assignedNodes.size(); ++currentIndex) {
         if (assignedNodes[currentIndex]->isElementNode())
             return toElement(assignedNodes[currentIndex]);
@@ -58,14 +58,14 @@ Element* SlotScopedTraversal::next(const Element& current)
 Element* SlotScopedTraversal::previous(const Element& current)
 {
     Element* nearestAncestorAssignedToSlot = SlotScopedTraversal::nearestAncestorAssignedToSlot(current);
-    ASSERT(nearestAncestorAssignedToSlot);
+    DCHECK(nearestAncestorAssignedToSlot);
     // NodeTraversal within nearestAncestorAssignedToSlot
     if (Element* previous = ElementTraversal::previous(current, nearestAncestorAssignedToSlot))
         return previous;
     // If null, jump to previous assigned node's descendant
     const HeapVector<Member<Node>> assignedNodes = nearestAncestorAssignedToSlot->assignedSlot()->getAssignedNodes();
     size_t currentIndex = assignedNodes.reverseFind(*nearestAncestorAssignedToSlot);
-    ASSERT(currentIndex != kNotFound);
+    DCHECK_NE(currentIndex, kNotFound);
     for (; currentIndex > 0; --currentIndex) {
         const Member<Node> assignedPrevious = assignedNodes[currentIndex - 1];
         if (assignedPrevious->isElementNode()) {

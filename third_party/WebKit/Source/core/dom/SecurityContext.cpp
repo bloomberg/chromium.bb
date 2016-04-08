@@ -99,10 +99,10 @@ void SecurityContext::enforceSuborigin(const Suborigin& suborigin)
     if (!RuntimeEnabledFeatures::suboriginsEnabled())
         return;
 
-    ASSERT(!suborigin.name().isEmpty());
-    ASSERT(RuntimeEnabledFeatures::suboriginsEnabled());
-    ASSERT(m_securityOrigin.get());
-    ASSERT(!m_securityOrigin->hasSuborigin() || m_securityOrigin->suborigin()->name() == suborigin.name());
+    DCHECK(!suborigin.name().isEmpty());
+    DCHECK(RuntimeEnabledFeatures::suboriginsEnabled());
+    DCHECK(m_securityOrigin.get());
+    DCHECK(!m_securityOrigin->hasSuborigin() || m_securityOrigin->suborigin()->name() == suborigin.name());
     m_securityOrigin->addSuborigin(suborigin);
     didUpdateSecurityOrigin();
 }

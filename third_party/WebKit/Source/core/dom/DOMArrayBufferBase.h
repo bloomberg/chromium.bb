@@ -37,7 +37,7 @@ protected:
     explicit DOMArrayBufferBase(PassRefPtr<WTF::ArrayBuffer> buffer)
         : m_buffer(buffer)
     {
-        ASSERT(m_buffer);
+        DCHECK(m_buffer);
     }
 
     RefPtr<WTF::ArrayBuffer> m_buffer;

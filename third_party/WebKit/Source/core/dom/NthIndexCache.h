@@ -58,7 +58,7 @@ private:
     Member<ParentMap> m_parentMap;
     Member<ParentMapForType> m_parentMapForType;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     uint64_t m_domTreeVersion;
 #endif
 };

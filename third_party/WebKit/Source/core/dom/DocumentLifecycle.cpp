@@ -72,7 +72,7 @@ DocumentLifecycle::AllowThrottlingScope::AllowThrottlingScope(DocumentLifecycle&
 
 DocumentLifecycle::AllowThrottlingScope::~AllowThrottlingScope()
 {
-    ASSERT(s_allowThrottlingCount > 0);
+    DCHECK_GT(s_allowThrottlingCount, 0u);
     s_allowThrottlingCount--;
 }
 
@@ -276,7 +276,7 @@ void DocumentLifecycle::advanceTo(LifecycleState nextState)
 
 void DocumentLifecycle::ensureStateAtMost(LifecycleState state)
 {
-    ASSERT(state == VisualUpdatePending || state == StyleClean || state == LayoutClean);
+    DCHECK(state == VisualUpdatePending || state == StyleClean || state == LayoutClean);
     if (m_state <= state)
         return;
 #if DCHECK_IS_ON()

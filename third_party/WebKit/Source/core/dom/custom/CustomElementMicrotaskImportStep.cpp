@@ -71,7 +71,7 @@ bool CustomElementMicrotaskImportStep::shouldWaitForImport() const
 
 void CustomElementMicrotaskImportStep::didUpgradeAllCustomElements()
 {
-    ASSERT(m_queue);
+    DCHECK(m_queue);
     if (m_import)
         m_import->didFinishUpgradingCustomElements();
 }

@@ -24,7 +24,7 @@ public:
 
     unsigned length() const
     {
-        ASSERT(byteLength() % sizeof(ValueType) == 0);
+        DCHECK_EQ(byteLength() % sizeof(ValueType), 0u);
         return byteLength() / sizeof(ValueType);
     }
 };

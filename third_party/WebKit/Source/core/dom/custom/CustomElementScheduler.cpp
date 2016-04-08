@@ -89,7 +89,7 @@ static CustomElementCallbackQueue& scheduleCallbackQueue(RawPtr<Element> passEle
 
 void CustomElementScheduler::scheduleCallback(RawPtr<CustomElementLifecycleCallbacks> callbacks, RawPtr<Element> element, CustomElementLifecycleCallbacks::CallbackType type)
 {
-    ASSERT(type != CustomElementLifecycleCallbacks::AttributeChangedCallback);
+    DCHECK(type != CustomElementLifecycleCallbacks::AttributeChangedCallback);
 
     if (!callbacks->hasCallback(type))
         return;
@@ -121,8 +121,8 @@ void CustomElementScheduler::resolveOrScheduleResolution(RawPtr<CustomElementReg
 
 CustomElementMicrotaskImportStep* CustomElementScheduler::scheduleImport(HTMLImportChild* import)
 {
-    ASSERT(!import->hasFinishedLoading());
-    ASSERT(import->parent());
+    DCHECK(!import->hasFinishedLoading());
+    DCHECK(import->parent());
 
     // Ownership of the new step is transferred to the parent
     // processing step, or the base queue.
@@ -147,7 +147,7 @@ void CustomElementScheduler::callbackDispatcherDidFinish()
 
 void CustomElementScheduler::microtaskDispatcherDidFinish()
 {
-    ASSERT(!CustomElementProcessingStack::inCallbackDeliveryScope());
+    DCHECK(!CustomElementProcessingStack::inCallbackDeliveryScope());
     callbackQueues().clear();
 }
 

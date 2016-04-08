@@ -48,8 +48,10 @@ void ContextLifecycleNotifier::notifyResumingActiveDOMObjects()
             if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
                 continue;
             ActiveDOMObject* activeDOMObject = static_cast<ActiveDOMObject*>(observer);
-            ASSERT(activeDOMObject->getExecutionContext() == context());
-            ASSERT(activeDOMObject->suspendIfNeededCalled());
+#if DCHECK_IS_ON()
+            DCHECK_EQ(activeDOMObject->getExecutionContext(), context());
+            DCHECK(activeDOMObject->suspendIfNeededCalled());
+#endif
             activeDOMObject->resume();
         }
     }
@@ -67,8 +69,10 @@ void ContextLifecycleNotifier::notifySuspendingActiveDOMObjects()
             if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
                 continue;
             ActiveDOMObject* activeDOMObject = static_cast<ActiveDOMObject*>(observer);
-            ASSERT(activeDOMObject->getExecutionContext() == context());
-            ASSERT(activeDOMObject->suspendIfNeededCalled());
+#if DCHECK_IS_ON()
+            DCHECK_EQ(activeDOMObject->getExecutionContext(), context());
+            DCHECK(activeDOMObject->suspendIfNeededCalled());
+#endif
             activeDOMObject->suspend();
         }
     }
@@ -86,8 +90,10 @@ void ContextLifecycleNotifier::notifyStoppingActiveDOMObjects()
             if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
                 continue;
             ActiveDOMObject* activeDOMObject = static_cast<ActiveDOMObject*>(observer);
-            ASSERT(activeDOMObject->getExecutionContext() == context());
-            ASSERT(activeDOMObject->suspendIfNeededCalled());
+#if DCHECK_IS_ON()
+            DCHECK_EQ(activeDOMObject->getExecutionContext(), context());
+            DCHECK(activeDOMObject->suspendIfNeededCalled());
+#endif
             activeDOMObject->stop();
         }
     }
@@ -104,7 +110,7 @@ unsigned ContextLifecycleNotifier::activeDOMObjectCount() const
     return activeDOMObjects;
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 bool ContextLifecycleNotifier::contains(ActiveDOMObject* object) const
 {
     for (ContextLifecycleObserver* observer : m_observers) {

@@ -49,7 +49,7 @@ void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine& engine, Sty
 {
     for (Node* n : m_styleSheetCandidateNodes) {
         StyleSheetCandidate candidate(*n);
-        ASSERT(!candidate.isXSL());
+        DCHECK(!candidate.isXSL());
 
         if (!candidate.isCSSStyle())
             continue;

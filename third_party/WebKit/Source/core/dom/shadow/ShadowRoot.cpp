@@ -69,8 +69,8 @@ ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
 ShadowRoot::~ShadowRoot()
 {
 #if !ENABLE(OILPAN)
-    ASSERT(!m_prev);
-    ASSERT(!m_next);
+    DCHECK(!m_prev);
+    DCHECK(!m_next);
 
     if (m_shadowRootRareData && m_shadowRootRareData->styleSheets())
         m_shadowRootRareData->styleSheets()->detachFromDocument();
@@ -107,7 +107,7 @@ ShadowRoot* ShadowRoot::olderShadowRootForBindings() const
     ShadowRoot* older = olderShadowRoot();
     while (older && !older->isOpenOrV0())
         older = older->olderShadowRoot();
-    ASSERT(!older || older->isOpenOrV0());
+    DCHECK(!older || older->isOpenOrV0());
     return older;
 }
 
@@ -136,7 +136,7 @@ void ShadowRoot::setInnerHTML(const String& markup, ExceptionState& exceptionSta
 void ShadowRoot::recalcStyle(StyleRecalcChange change)
 {
     // ShadowRoot doesn't support custom callbacks.
-    ASSERT(!hasCustomStyleCallbacks());
+    DCHECK(!hasCustomStyleCallbacks());
 
     StyleSharingDepthScope sharingScope(*this);
 
@@ -164,7 +164,7 @@ Node::InsertionNotificationRequest ShadowRoot::insertedInto(ContainerNode* inser
         return InsertionDone;
 
     // FIXME: When parsing <video controls>, insertedInto() is called many times without invoking removedFrom.
-    // For now, we check m_registeredWithParentShadowroot. We would like to ASSERT(!m_registeredShadowRoot) here.
+    // For now, we check m_registeredWithParentShadowroot. We would like to DCHECK(!m_registeredShadowRoot) here.
     // https://bugs.webkit.org/show_bug.cig?id=101316
     if (m_registeredWithParentShadowRoot)
         return InsertionDone;
@@ -214,7 +214,7 @@ void ShadowRoot::registerScopedHTMLStyleChild()
 
 void ShadowRoot::unregisterScopedHTMLStyleChild()
 {
-    ASSERT(m_numberOfStyles > 0);
+    DCHECK_GT(m_numberOfStyles, 0u);
     --m_numberOfStyles;
 }
 
@@ -331,7 +331,7 @@ void ShadowRoot::didAddSlot()
 
 void ShadowRoot::didRemoveSlot()
 {
-    ASSERT(m_shadowRootRareData);
+    DCHECK(m_shadowRootRareData);
     m_shadowRootRareData->didRemoveSlot();
     invalidateDescendantSlots();
 }
@@ -351,13 +351,13 @@ const HeapVector<Member<HTMLSlotElement>>& ShadowRoot::descendantSlots()
 {
     DEFINE_STATIC_LOCAL(HeapVector<Member<HTMLSlotElement>>, emptyList, (new HeapVector<Member<HTMLSlotElement>>));
     if (m_descendantSlotsIsValid) {
-        ASSERT(m_shadowRootRareData);
+        DCHECK(m_shadowRootRareData);
         return m_shadowRootRareData->descendantSlots();
     }
     if (descendantSlotCount() == 0)
         return emptyList;
 
-    ASSERT(m_shadowRootRareData);
+    DCHECK(m_shadowRootRareData);
     HeapVector<Member<HTMLSlotElement>> slots;
     slots.reserveCapacity(descendantSlotCount());
     for (HTMLSlotElement& slot : Traversal<HTMLSlotElement>::descendantsOf(rootNode()))

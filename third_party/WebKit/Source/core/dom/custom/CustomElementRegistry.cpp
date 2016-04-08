@@ -62,9 +62,9 @@ CustomElementDefinition* CustomElementRegistry::registerElement(Document* docume
     if (!constructorBuilder->validateOptions(type, tagName, exceptionState))
         return 0;
 
-    ASSERT(tagName.namespaceURI() == HTMLNames::xhtmlNamespaceURI || tagName.namespaceURI() == SVGNames::svgNamespaceURI);
+    DCHECK(tagName.namespaceURI() == HTMLNames::xhtmlNamespaceURI || tagName.namespaceURI() == SVGNames::svgNamespaceURI);
 
-    ASSERT(!m_documentWasDetached);
+    DCHECK(!m_documentWasDetached);
 
     RawPtr<CustomElementLifecycleCallbacks> lifecycleCallbacks = constructorBuilder->createCallbacks();
 

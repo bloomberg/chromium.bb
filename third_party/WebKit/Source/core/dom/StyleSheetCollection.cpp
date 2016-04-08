@@ -43,7 +43,7 @@ void StyleSheetCollection::swap(StyleSheetCollection& other)
 void StyleSheetCollection::swapSheetsForSheetList(HeapVector<Member<StyleSheet>>& sheets)
 {
     // Only called for collection of HTML Imports that never has active sheets.
-    ASSERT(m_activeAuthorStyleSheets.isEmpty());
+    DCHECK(m_activeAuthorStyleSheets.isEmpty());
     m_styleSheetsForStyleSheetList.swap(sheets);
 }
 

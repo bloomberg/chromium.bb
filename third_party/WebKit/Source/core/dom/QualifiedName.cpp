@@ -43,7 +43,7 @@ using QualifiedNameCache = HashSet<QualifiedName::QualifiedNameImpl*, QualifiedN
 static QualifiedNameCache& qualifiedNameCache()
 {
     // This code is lockless and thus assumes it all runs on one thread!
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     static QualifiedNameCache* gNameCache = new QualifiedNameCache;
     return *gNameCache;
 }
@@ -103,7 +103,7 @@ DEFINE_GLOBAL(QualifiedName, nullName, nullAtom, nullAtom, nullAtom)
 
 void QualifiedName::initAndReserveCapacityForSize(unsigned size)
 {
-    ASSERT(starAtom.impl());
+    DCHECK(starAtom.impl());
     qualifiedNameCache().reserveCapacityForSize(size + 2 /*starAtom and nullAtom */);
     new ((void*)&anyName) QualifiedName(nullAtom, starAtom, starAtom, true );
     new ((void*)&nullName) QualifiedName(nullAtom, nullAtom, nullAtom, true );

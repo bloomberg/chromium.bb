@@ -54,7 +54,7 @@ struct MutationObserver::ObserverLessThan {
 
 RawPtr<MutationObserver> MutationObserver::create(RawPtr<MutationCallback> callback)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     return new MutationObserver(callback);
 }
 
@@ -67,14 +67,14 @@ MutationObserver::MutationObserver(RawPtr<MutationCallback> callback)
 MutationObserver::~MutationObserver()
 {
 #if !ENABLE(OILPAN)
-    ASSERT(m_registrations.isEmpty());
+    DCHECK(m_registrations.isEmpty());
 #endif
     cancelInspectorAsyncTasks();
 }
 
 void MutationObserver::observe(Node* node, const MutationObserverInit& observerInit, ExceptionState& exceptionState)
 {
-    ASSERT(node);
+    DCHECK(node);
 
     MutationObserverOptions options = 0;
 
@@ -148,18 +148,18 @@ void MutationObserver::disconnect()
         if (m_registrations.contains(registration))
             registration->unregister();
     }
-    ASSERT(m_registrations.isEmpty());
+    DCHECK(m_registrations.isEmpty());
 }
 
 void MutationObserver::observationStarted(MutationObserverRegistration* registration)
 {
-    ASSERT(!m_registrations.contains(registration));
+    DCHECK(!m_registrations.contains(registration));
     m_registrations.add(registration);
 }
 
 void MutationObserver::observationEnded(MutationObserverRegistration* registration)
 {
-    ASSERT(m_registrations.contains(registration));
+    DCHECK(m_registrations.contains(registration));
     m_registrations.remove(registration);
 }
 
@@ -185,7 +185,7 @@ static void activateObserver(RawPtr<MutationObserver> observer)
 
 void MutationObserver::enqueueMutationRecord(RawPtr<MutationRecord> mutation)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     m_records.append(mutation);
     activateObserver(this);
     InspectorInstrumentation::asyncTaskScheduled(m_callback->getExecutionContext(), mutation->type(), mutation);
@@ -193,7 +193,7 @@ void MutationObserver::enqueueMutationRecord(RawPtr<MutationRecord> mutation)
 
 void MutationObserver::setHasTransientRegistration()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     activateObserver(this);
 }
 
@@ -218,7 +218,7 @@ void MutationObserver::cancelInspectorAsyncTasks()
 
 void MutationObserver::deliver()
 {
-    ASSERT(!shouldBeSuspended());
+    DCHECK(!shouldBeSuspended());
 
     // Calling clearTransientRegistrations() can modify m_registrations, so it's necessary
     // to make a copy of the transient registrations before operating on them.
@@ -243,7 +243,7 @@ void MutationObserver::deliver()
 
 void MutationObserver::resumeSuspendedObservers()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     if (suspendedMutationObservers().isEmpty())
         return;
 
@@ -259,7 +259,7 @@ void MutationObserver::resumeSuspendedObservers()
 
 void MutationObserver::deliverMutations()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     MutationObserverVector observers;
     copyToVector(activeMutationObservers(), observers);
     activeMutationObservers().clear();

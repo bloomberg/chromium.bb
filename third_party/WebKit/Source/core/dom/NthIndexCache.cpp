@@ -11,7 +11,7 @@ namespace blink {
 
 NthIndexCache::NthIndexCache(Document& document)
     : m_document(&document)
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     , m_domTreeVersion(document.domTreeVersion())
 #endif
 {
@@ -20,7 +20,9 @@ NthIndexCache::NthIndexCache(Document& document)
 
 NthIndexCache::~NthIndexCache()
 {
-    ASSERT(m_domTreeVersion == m_document->domTreeVersion());
+#if DCHECK_IS_ON()
+    DCHECK_EQ(m_domTreeVersion, m_document->domTreeVersion());
+#endif
     m_document->setNthIndexCache(nullptr);
 }
 
@@ -80,7 +82,7 @@ unsigned NthIndexCache::nthChildIndex(Element& element)
 {
     if (element.isPseudoElement())
         return 1;
-    ASSERT(element.parentNode());
+    DCHECK(element.parentNode());
     NthIndexCache* nthIndexCache = element.document().nthIndexCache();
     NthIndexData* nthIndexData = nullptr;
     if (nthIndexCache && nthIndexCache->m_parentMap)
@@ -97,7 +99,7 @@ unsigned NthIndexCache::nthLastChildIndex(Element& element)
 {
     if (element.isPseudoElement())
         return 1;
-    ASSERT(element.parentNode());
+    DCHECK(element.parentNode());
     NthIndexCache* nthIndexCache = element.document().nthIndexCache();
     NthIndexData* nthIndexData = nullptr;
     if (nthIndexCache && nthIndexCache->m_parentMap)
@@ -112,7 +114,7 @@ unsigned NthIndexCache::nthLastChildIndex(Element& element)
 
 NthIndexData* NthIndexCache::nthTypeIndexDataForParent(Element& element) const
 {
-    ASSERT(element.parentNode());
+    DCHECK(element.parentNode());
     if (!m_parentMapForType)
         return nullptr;
     if (const IndexByType* map = m_parentMapForType->get(element.parentNode()))
@@ -154,12 +156,12 @@ unsigned NthIndexCache::nthLastOfTypeIndex(Element& element)
 
 void NthIndexCache::cacheNthIndexDataForParent(Element& element)
 {
-    ASSERT(element.parentNode());
+    DCHECK(element.parentNode());
     if (!m_parentMap)
         m_parentMap = new ParentMap();
 
     ParentMap::AddResult addResult = m_parentMap->add(element.parentNode(), nullptr);
-    ASSERT(addResult.isNewEntry);
+    DCHECK(addResult.isNewEntry);
     addResult.storedValue->value = new NthIndexData(*element.parentNode());
 }
 
@@ -172,21 +174,21 @@ NthIndexCache::IndexByType& NthIndexCache::ensureTypeIndexMap(ContainerNode& par
     if (addResult.isNewEntry)
         addResult.storedValue->value = new IndexByType();
 
-    ASSERT(addResult.storedValue->value);
+    DCHECK(addResult.storedValue->value);
     return *addResult.storedValue->value;
 }
 
 void NthIndexCache::cacheNthOfTypeIndexDataForParent(Element& element)
 {
-    ASSERT(element.parentNode());
+    DCHECK(element.parentNode());
     IndexByType::AddResult addResult = ensureTypeIndexMap(*element.parentNode()).add(element.tagName(), nullptr);
-    ASSERT(addResult.isNewEntry);
+    DCHECK(addResult.isNewEntry);
     addResult.storedValue->value = new NthIndexData(*element.parentNode(), element.tagQName());
 }
 
 unsigned NthIndexData::nthIndex(Element& element) const
 {
-    ASSERT(!element.isPseudoElement());
+    DCHECK(!element.isPseudoElement());
 
     unsigned index = 0;
     for (Element* sibling = &element; sibling; sibling = ElementTraversal::previousSibling(*sibling), index++) {
@@ -199,7 +201,7 @@ unsigned NthIndexData::nthIndex(Element& element) const
 
 unsigned NthIndexData::nthOfTypeIndex(Element& element) const
 {
-    ASSERT(!element.isPseudoElement());
+    DCHECK(!element.isPseudoElement());
 
     unsigned index = 0;
     for (Element* sibling = &element; sibling; sibling = ElementTraversal::previousSibling(*sibling, HasTagName(element.tagQName())), index++) {
@@ -233,7 +235,7 @@ NthIndexData::NthIndexData(ContainerNode& parent)
         if (!(++count % spread))
             m_elementIndexMap.add(sibling, count);
     }
-    ASSERT(count);
+    DCHECK(count);
     m_count = count;
 }
 
@@ -250,7 +252,7 @@ NthIndexData::NthIndexData(ContainerNode& parent, const QualifiedName& type)
         if (!(++count % spread))
             m_elementIndexMap.add(sibling, count);
     }
-    ASSERT(count);
+    DCHECK(count);
     m_count = count;
 }
 

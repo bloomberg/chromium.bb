@@ -69,7 +69,7 @@ CSSSelectorWatch* CSSSelectorWatch::fromIfExists(Document& document)
 void CSSSelectorWatch::callbackSelectorChangeTimerFired(Timer<CSSSelectorWatch>*)
 {
     // Should be ensured by updateSelectorMatches():
-    ASSERT(!m_addedSelectors.isEmpty() || !m_removedSelectors.isEmpty());
+    DCHECK(!m_addedSelectors.isEmpty() || !m_removedSelectors.isEmpty());
 
     if (m_timerExpirations < 1) {
         m_timerExpirations++;

@@ -148,7 +148,7 @@ static unsigned computePresentationAttributeCacheHash(const PresentationAttribut
 {
     if (!key.tagName)
         return 0;
-    ASSERT(key.attributesAndValues.size());
+    DCHECK(key.attributesAndValues.size());
     unsigned attributeHash = StringHasher::hashMemory(key.attributesAndValues.data(), key.attributesAndValues.size() * sizeof(key.attributesAndValues[0]));
     return WTF::hashInts(key.tagName->existingHash(), attributeHash);
 }
@@ -157,7 +157,7 @@ RawPtr<StylePropertySet> computePresentationAttributeStyle(Element& element)
 {
     DEFINE_STATIC_LOCAL(PresentationAttributeCacheCleaner, cacheCleaner, ());
 
-    ASSERT(element.isStyledElement());
+    DCHECK(element.isStyledElement());
 
     PresentationAttributeCacheKey cacheKey;
     makePresentationAttributeCacheKey(element, cacheKey);

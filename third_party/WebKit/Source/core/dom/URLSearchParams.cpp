@@ -42,7 +42,7 @@ URLSearchParams* URLSearchParams::create(const URLSearchParamsInit& init)
     if (init.isURLSearchParams())
         return new URLSearchParams(init.getAsURLSearchParams());
 
-    ASSERT(init.isNull());
+    DCHECK(init.isNull());
     return new URLSearchParams(String());
 }
 
@@ -54,7 +54,7 @@ URLSearchParams::URLSearchParams(const String& queryString)
 
 URLSearchParams::URLSearchParams(URLSearchParams* searchParams)
 {
-    ASSERT(searchParams);
+    DCHECK(searchParams);
     m_params = searchParams->m_params;
 }
 
@@ -69,7 +69,7 @@ static String decodeString(String input)
 
 void URLSearchParams::setInput(const String& queryString)
 {
-    ASSERT(m_params.isEmpty());
+    DCHECK(m_params.isEmpty());
     size_t start = 0;
     size_t queryStringLength = queryString.length();
     while (start < queryStringLength) {

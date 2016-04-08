@@ -67,7 +67,7 @@ public:
 
     Document& document() const
     {
-        ASSERT(m_document);
+        DCHECK(m_document);
         return *m_document;
     }
 
@@ -114,14 +114,14 @@ public:
     // pointer without introducing reference cycles.
     void guardRef()
     {
-        ASSERT(!deletionHasBegun());
+        DCHECK(!deletionHasBegun());
         ++m_guardRefCount;
     }
 
     void guardDeref()
     {
-        ASSERT(m_guardRefCount > 0);
-        ASSERT(!deletionHasBegun());
+        DCHECK_GT(m_guardRefCount, 0);
+        DCHECK(!deletionHasBegun());
         --m_guardRefCount;
         if (!m_guardRefCount && !refCount() && !rootNodeHasTreeSharedParent()) {
             beginDeletion();
@@ -204,7 +204,7 @@ private:
 
 inline bool TreeScope::hasElementWithId(const AtomicString& id) const
 {
-    ASSERT(!id.isNull());
+    DCHECK(!id.isNull());
     return m_elementsById && m_elementsById->contains(id);
 }
 

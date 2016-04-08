@@ -151,7 +151,7 @@ ShareableElementData::~ShareableElementData()
 ShareableElementData::ShareableElementData(const UniqueElementData& other)
     : ElementData(other, false)
 {
-    ASSERT(!other.m_presentationAttributeStyle);
+    DCHECK(!other.m_presentationAttributeStyle);
 
     if (other.m_inlineStyle) {
         m_inlineStyle = other.m_inlineStyle->immutableCopyIfNeeded();
@@ -183,7 +183,7 @@ UniqueElementData::UniqueElementData(const ShareableElementData& other)
     : ElementData(other, true)
 {
     // An ShareableElementData should never have a mutable inline StylePropertySet attached.
-    ASSERT(!other.m_inlineStyle || !other.m_inlineStyle->isMutable());
+    DCHECK(!other.m_inlineStyle || !other.m_inlineStyle->isMutable());
     m_inlineStyle = other.m_inlineStyle;
 
     unsigned length = other.attributes().size();

@@ -188,7 +188,7 @@ void ElementShadow::removeDetachedShadowRoots()
 {
     // Dont protect this ref count.
     Element* shadowHost = host();
-    ASSERT(shadowHost);
+    DCHECK(shadowHost);
 
     while (RawPtr<ShadowRoot> oldRoot = m_shadowRoots.head()) {
         InspectorInstrumentation::willPopShadowRoot(shadowHost, oldRoot.get());
@@ -258,7 +258,10 @@ bool ElementShadow::hasSameStyles(const ElementShadow* other) const
 
 const InsertionPoint* ElementShadow::finalDestinationInsertionPointFor(const Node* key) const
 {
-    ASSERT(key && !key->needsDistributionRecalc());
+    DCHECK(key);
+#if DCHECK_IS_ON()
+    DCHECK(!key->needsDistributionRecalc());
+#endif
     NodeToDestinationInsertionPoints::const_iterator it = m_nodeToInsertionPoints.find(key);
 #if ENABLE(OILPAN)
     return it == m_nodeToInsertionPoints.end() ? nullptr : it->value->last().get();
@@ -269,7 +272,10 @@ const InsertionPoint* ElementShadow::finalDestinationInsertionPointFor(const Nod
 
 const DestinationInsertionPoints* ElementShadow::destinationInsertionPointsFor(const Node* key) const
 {
-    ASSERT(key && !key->needsDistributionRecalc());
+    DCHECK(key);
+#if DCHECK_IS_ON()
+    DCHECK(!key->needsDistributionRecalc());
+#endif
     NodeToDestinationInsertionPoints::const_iterator it = m_nodeToInsertionPoints.find(key);
 #if ENABLE(OILPAN)
     return it == m_nodeToInsertionPoints.end() ? nullptr : it->value.get();
@@ -299,7 +305,7 @@ void ElementShadow::distributeV0()
             if (!point->isActive())
                 continue;
             if (isHTMLShadowElement(*point)) {
-                ASSERT(!shadowInsertionPoint);
+                DCHECK(!shadowInsertionPoint);
                 shadowInsertionPoint = toHTMLShadowElement(point);
                 shadowInsertionPoints.append(shadowInsertionPoint);
             } else {
@@ -313,7 +319,7 @@ void ElementShadow::distributeV0()
     for (size_t i = shadowInsertionPoints.size(); i > 0; --i) {
         HTMLShadowElement* shadowInsertionPoint = shadowInsertionPoints[i - 1];
         ShadowRoot* root = shadowInsertionPoint->containingShadowRoot();
-        ASSERT(root);
+        DCHECK(root);
         if (root->isOldest()) {
             pool.distributeTo(shadowInsertionPoint, this);
         } else if (root->olderShadowRoot()->type() == root->type()) {

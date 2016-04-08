@@ -187,12 +187,12 @@ inline ElementRareData::~ElementRareData()
         m_elementAnimations->dispose();
     if (m_intersectionObserverData)
         m_intersectionObserverData->dispose();
-    ASSERT(!m_shadow);
+    DCHECK(!m_shadow);
 #endif
-    ASSERT(!m_generatedBefore);
-    ASSERT(!m_generatedAfter);
-    ASSERT(!m_generatedFirstLetter);
-    ASSERT(!m_backdrop);
+    DCHECK(!m_generatedBefore);
+    DCHECK(!m_generatedAfter);
+    DCHECK(!m_generatedFirstLetter);
+    DCHECK(!m_backdrop);
 }
 
 inline bool ElementRareData::hasPseudoElements() const

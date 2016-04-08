@@ -55,7 +55,7 @@ Node::InsertionNotificationRequest DocumentType::insertedInto(ContainerNode* ins
     Node::insertedInto(insertionPoint);
 
     // DocumentType can only be inserted into a Document.
-    ASSERT(parentNode()->isDocumentNode());
+    DCHECK(parentNode()->isDocumentNode());
 
     document().setDoctype(this);
 

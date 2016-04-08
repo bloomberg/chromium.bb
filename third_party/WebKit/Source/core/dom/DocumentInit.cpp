@@ -94,7 +94,7 @@ LocalFrame* DocumentInit::frameForSecurityContext() const
 
 SandboxFlags DocumentInit::getSandboxFlags() const
 {
-    ASSERT(frameForSecurityContext());
+    DCHECK(frameForSecurityContext());
     FrameLoader* loader = &frameForSecurityContext()->loader();
     SandboxFlags flags = loader->effectiveSandboxFlags();
 
@@ -110,19 +110,19 @@ SandboxFlags DocumentInit::getSandboxFlags() const
 
 bool DocumentInit::shouldEnforceStrictMixedContentChecking() const
 {
-    ASSERT(frameForSecurityContext());
+    DCHECK(frameForSecurityContext());
     return frameForSecurityContext()->loader().shouldEnforceStrictMixedContentChecking();
 }
 
 SecurityContext::InsecureRequestsPolicy DocumentInit::getInsecureRequestsPolicy() const
 {
-    ASSERT(frameForSecurityContext());
+    DCHECK(frameForSecurityContext());
     return frameForSecurityContext()->loader().getInsecureRequestsPolicy();
 }
 
 SecurityContext::InsecureNavigationsSet* DocumentInit::insecureNavigationsToUpgrade() const
 {
-    ASSERT(frameForSecurityContext());
+    DCHECK(frameForSecurityContext());
     return frameForSecurityContext()->loader().insecureNavigationsToUpgrade();
 }
 
@@ -139,7 +139,7 @@ bool DocumentInit::isHostedInReservedIPRange() const
 
 Settings* DocumentInit::settings() const
 {
-    ASSERT(frameForSecurityContext());
+    DCHECK(frameForSecurityContext());
     return frameForSecurityContext()->settings();
 }
 
@@ -150,14 +150,16 @@ KURL DocumentInit::parentBaseURL() const
 
 DocumentInit& DocumentInit::withRegistrationContext(CustomElementRegistrationContext* registrationContext)
 {
-    ASSERT(!m_createNewRegistrationContext && !m_registrationContext);
+    DCHECK(!m_createNewRegistrationContext);
+    DCHECK(!m_registrationContext);
     m_registrationContext = registrationContext;
     return *this;
 }
 
 DocumentInit& DocumentInit::withNewRegistrationContext()
 {
-    ASSERT(!m_createNewRegistrationContext && !m_registrationContext);
+    DCHECK(!m_createNewRegistrationContext);
+    DCHECK(!m_registrationContext);
     m_createNewRegistrationContext = true;
     return *this;
 }
@@ -184,4 +186,3 @@ DocumentInit DocumentInit::fromContext(RawPtr<Document> contextDocument, const K
 }
 
 } // namespace blink
-

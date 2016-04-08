@@ -16,7 +16,7 @@ TEST(ElementTest, SupportsFocus)
 {
     OwnPtr<DummyPageHolder> pageHolder = DummyPageHolder::create();
     Document& document = pageHolder->document();
-    ASSERT(isHTMLHtmlElement(document.documentElement()));
+    DCHECK(isHTMLHtmlElement(document.documentElement()));
     document.setDesignMode("on");
     document.view()->updateAllLifecyclePhases();
     EXPECT_TRUE(document.documentElement()->supportsFocus())

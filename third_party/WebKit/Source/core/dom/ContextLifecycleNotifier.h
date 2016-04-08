@@ -55,7 +55,7 @@ protected:
     // constructor ExecutionContext::ExecutionContext()".
     ContextLifecycleNotifier() { }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     bool contains(ActiveDOMObject*) const;
 #endif
 };

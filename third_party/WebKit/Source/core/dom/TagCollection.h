@@ -34,7 +34,7 @@ class TagCollection : public HTMLCollection {
 public:
     static RawPtr<TagCollection> create(ContainerNode& rootNode, const AtomicString& namespaceURI, const AtomicString& localName)
     {
-        ASSERT(namespaceURI != starAtom);
+        DCHECK(namespaceURI != starAtom);
         return new TagCollection(rootNode, TagCollectionType, namespaceURI, localName);
     }
 

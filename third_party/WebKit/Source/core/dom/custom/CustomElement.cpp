@@ -121,13 +121,13 @@ void CustomElement::define(Element* element, RawPtr<CustomElementDefinition> pas
 
 void CustomElement::attributeDidChange(Element* element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
-    ASSERT(element->getCustomElementState() == Element::Upgraded);
+    DCHECK_EQ(element->getCustomElementState(), Element::Upgraded);
     CustomElementScheduler::scheduleAttributeChangedCallback(element->customElementDefinition()->callbacks(), element, name, oldValue, newValue);
 }
 
 void CustomElement::didAttach(Element* element, const Document& document)
 {
-    ASSERT(element->getCustomElementState() == Element::Upgraded);
+    DCHECK_EQ(element->getCustomElementState(), Element::Upgraded);
     if (!document.domWindow())
         return;
     CustomElementScheduler::scheduleCallback(element->customElementDefinition()->callbacks(), element, CustomElementLifecycleCallbacks::AttachedCallback);
@@ -135,7 +135,7 @@ void CustomElement::didAttach(Element* element, const Document& document)
 
 void CustomElement::didDetach(Element* element, const Document& document)
 {
-    ASSERT(element->getCustomElementState() == Element::Upgraded);
+    DCHECK_EQ(element->getCustomElementState(), Element::Upgraded);
     if (!document.domWindow())
         return;
     CustomElementScheduler::scheduleCallback(element->customElementDefinition()->callbacks(), element, CustomElementLifecycleCallbacks::DetachedCallback);

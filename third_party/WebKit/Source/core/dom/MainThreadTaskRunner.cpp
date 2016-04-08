@@ -92,14 +92,14 @@ void MainThreadTaskRunner::perform(PassOwnPtr<ExecutionContextTask> task, bool i
 
 void MainThreadTaskRunner::suspend()
 {
-    ASSERT(!m_suspended);
+    DCHECK(!m_suspended);
     m_pendingTasksTimer.stop();
     m_suspended = true;
 }
 
 void MainThreadTaskRunner::resume()
 {
-    ASSERT(m_suspended);
+    DCHECK(m_suspended);
     if (!m_pendingTasks.isEmpty())
         m_pendingTasksTimer.startOneShot(0, BLINK_FROM_HERE);
 

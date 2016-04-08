@@ -44,9 +44,9 @@ void IntersectionObservation::initializeGeometry(IntersectionGeometry& geometry)
 
 void IntersectionObservation::initializeTargetRect(LayoutRect& rect) const
 {
-    ASSERT(m_target);
+    DCHECK(m_target);
     LayoutObject* targetLayoutObject = target()->layoutObject();
-    ASSERT(targetLayoutObject && targetLayoutObject->isBoxModelObject());
+    DCHECK(targetLayoutObject && targetLayoutObject->isBoxModelObject());
     rect = toLayoutBoxModelObject(targetLayoutObject)->visualOverflowRect();
 }
 
@@ -66,7 +66,7 @@ void IntersectionObservation::clipToRoot(IntersectionGeometry& geometry) const
 {
     // Map and clip rect into root element coordinates.
     // TODO(szager): the writing mode flipping needs a test.
-    ASSERT(m_target);
+    DCHECK(m_target);
     LayoutObject* rootLayoutObject = m_observer->rootLayoutObject();
     LayoutObject* targetLayoutObject = target()->layoutObject();
 
@@ -154,7 +154,7 @@ bool IntersectionObservation::computeGeometry(IntersectionGeometry& geometry) co
     if (!targetElement || !targetElement->inShadowIncludingDocument())
         return false;
     LayoutObject* targetLayoutObject = targetElement->layoutObject();
-    ASSERT(m_observer);
+    DCHECK(m_observer);
     LayoutObject* rootLayoutObject = m_observer->rootLayoutObject();
     // TODO(szager): Support SVG
     if (!targetLayoutObject)

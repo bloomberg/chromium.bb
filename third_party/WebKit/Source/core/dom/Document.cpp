@@ -342,7 +342,7 @@ static Widget* widgetForElement(const Element& focusedElement)
 
 static bool acceptsEditingFocus(const Element& element)
 {
-    ASSERT(element.hasEditableStyle());
+    DCHECK(element.hasEditableStyle());
 
     return element.document().frame() && element.rootEditableElement();
 }
@@ -463,7 +463,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_nodeCount(0)
 {
     if (m_frame) {
-        ASSERT(m_frame->page());
+        DCHECK(m_frame->page());
         provideContextFeaturesToDocumentFrom(*this, *m_frame->page());
 
         m_fetcher = m_frame->loader().documentLoader()->fetcher();
@@ -503,27 +503,27 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     // else this new Document would have a new ExecutionContext which suspended state
     // would not match the one from the parent, and could start loading resources
     // ignoring the defersLoading flag.
-    ASSERT(!parentDocument() || !parentDocument()->activeDOMObjectsAreSuspended());
+    DCHECK(!parentDocument() || !parentDocument()->activeDOMObjectsAreSuspended());
 
     liveDocumentSet().add(this);
 }
 
 Document::~Document()
 {
-    ASSERT(!layoutView());
-    ASSERT(!parentTreeScope());
+    DCHECK(!layoutView());
+    DCHECK(!parentTreeScope());
     // If a top document with a cache, verify that it was comprehensively
     // cleared during detach.
-    ASSERT(!m_axObjectCache);
+    DCHECK(!m_axObjectCache);
 #if !ENABLE(OILPAN)
-    ASSERT(m_ranges.isEmpty());
-    ASSERT(!hasGuardRefCount());
-    ASSERT(!m_importsController);
+    DCHECK(m_ranges.isEmpty());
+    DCHECK(!hasGuardRefCount());
+    DCHECK(!m_importsController);
     // With Oilpan, either the document outlives the visibility observers
     // or the visibility observers and the document die in the same GC round.
     // When they die in the same GC round, the list of visibility observers
     // will not be empty on Document destruction.
-    ASSERT(m_visibilityObservers.isEmpty());
+    DCHECK(m_visibilityObservers.isEmpty());
 
     if (m_templateDocument)
         m_templateDocument->m_templateDocumentHost = nullptr; // balanced in ensureTemplateDocument().
@@ -542,7 +542,7 @@ Document::~Document()
     // has a reference to the Document.  If you hit this ASSERT, then that
     // assumption is wrong.  DocumentParser::detach() should ensure that even
     // if the DocumentParser outlives the Document it won't cause badness.
-    ASSERT(!m_parser || m_parser->refCount() == 1);
+    DCHECK(!m_parser || m_parser->refCount() == 1);
     detachParser();
 
     if (m_styleSheetList)
@@ -561,10 +561,10 @@ Document::~Document()
     if (hasRareData())
         clearRareData();
 
-    ASSERT(m_listsInvalidatedAtDocument.isEmpty());
+    DCHECK(m_listsInvalidatedAtDocument.isEmpty());
 
     for (unsigned i = 0; i < WTF_ARRAY_LENGTH(m_nodeListCounts); ++i)
-        ASSERT(!m_nodeListCounts[i]);
+        DCHECK(!m_nodeListCounts[i]);
 
     liveDocumentSet().remove(this);
 #endif
@@ -663,7 +663,7 @@ String Document::compatMode() const
 void Document::setDoctype(RawPtr<DocumentType> docType)
 {
     // This should never be called more than once.
-    ASSERT(!m_docType || !docType);
+    DCHECK(!m_docType || !docType);
     m_docType = docType;
     if (m_docType) {
         this->adoptIfNeeded(*m_docType);
@@ -806,7 +806,7 @@ CustomElementMicrotaskRunQueue* Document::customElementMicrotaskRunQueue()
 
 void Document::setImportsController(HTMLImportsController* controller)
 {
-    ASSERT(!m_importsController || !controller);
+    DCHECK(!m_importsController || !controller);
     m_importsController = controller;
     if (!m_importsController && !loader())
         m_fetcher->clearContext();
@@ -1049,7 +1049,7 @@ RawPtr<Element> Document::createElement(const QualifiedName& qName, bool created
     if (e->prefix() != qName.prefix())
         e->setTagNameForCreateElementNS(qName);
 
-    ASSERT(qName == e->tagQName());
+    DCHECK(qName == e->tagQName());
 
     return e.release();
 }
@@ -1427,13 +1427,13 @@ void Document::didChangeVisibilityState()
 
 void Document::registerVisibilityObserver(DocumentVisibilityObserver* observer)
 {
-    ASSERT(!m_visibilityObservers.contains(observer));
+    DCHECK(!m_visibilityObservers.contains(observer));
     m_visibilityObservers.add(observer);
 }
 
 void Document::unregisterVisibilityObserver(DocumentVisibilityObserver* observer)
 {
-    ASSERT(m_visibilityObservers.contains(observer));
+    DCHECK(m_visibilityObservers.contains(observer));
     m_visibilityObservers.remove(observer);
 }
 
@@ -1498,13 +1498,13 @@ RawPtr<Range> Document::createRange()
 
 RawPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, RawPtr<NodeFilter> filter)
 {
-    ASSERT(root);
+    DCHECK(root);
     return NodeIterator::create(root, whatToShow, filter);
 }
 
 RawPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, RawPtr<NodeFilter> filter)
 {
-    ASSERT(root);
+    DCHECK(root);
     return TreeWalker::create(root, whatToShow, filter);
 }
 
@@ -1559,9 +1559,9 @@ bool Document::shouldScheduleLayoutTreeUpdate() const
 
 void Document::scheduleLayoutTreeUpdate()
 {
-    ASSERT(!hasPendingVisualUpdate());
-    ASSERT(shouldScheduleLayoutTreeUpdate());
-    ASSERT(needsLayoutTreeUpdate());
+    DCHECK(!hasPendingVisualUpdate());
+    DCHECK(shouldScheduleLayoutTreeUpdate());
+    DCHECK(needsLayoutTreeUpdate());
 
     if (!view()->canThrottleRendering())
         page()->animator().scheduleVisualUpdate(frame());
@@ -1599,8 +1599,8 @@ void Document::setupFontBuilder(ComputedStyle& documentStyle)
 
 void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
 {
-    ASSERT(inStyleRecalc());
-    ASSERT(documentElement());
+    DCHECK(inStyleRecalc());
+    DCHECK(documentElement());
 
     bool didRecalcDocumentElement = false;
     RefPtr<ComputedStyle> documentElementStyle = documentElement()->mutableComputedStyle();
@@ -1653,7 +1653,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
         if (element == body) {
             overflowStyle = bodyStyle.get();
         } else {
-            ASSERT(element == documentElement());
+            DCHECK_EQ(element, documentElement());
             overflowStyle = documentElementStyle.get();
 
             // The body element has its own scrolling box, independent from the viewport.
@@ -1727,7 +1727,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     }
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 static void assertLayoutTreeUpdated(Node& root)
 {
     for (Node& node : NodeTraversal::inclusiveDescendantsOf(root)) {
@@ -1740,11 +1740,11 @@ static void assertLayoutTreeUpdated(Node& root)
             && !node.isShadowRoot()
             && !node.isDocumentNode())
             continue;
-        ASSERT(!node.needsStyleRecalc());
-        ASSERT(!node.childNeedsStyleRecalc());
-        ASSERT(!node.childNeedsDistributionRecalc());
-        ASSERT(!node.needsStyleInvalidation());
-        ASSERT(!node.childNeedsStyleInvalidation());
+        DCHECK(!node.needsStyleRecalc());
+        DCHECK(!node.childNeedsStyleRecalc());
+        DCHECK(!node.childNeedsDistributionRecalc());
+        DCHECK(!node.needsStyleInvalidation());
+        DCHECK(!node.childNeedsStyleInvalidation());
         for (ShadowRoot* shadowRoot = node.youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
             assertLayoutTreeUpdated(*shadowRoot);
     }
@@ -1753,7 +1753,7 @@ static void assertLayoutTreeUpdated(Node& root)
 
 void Document::updateLayoutTree()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     ScriptForbiddenScope forbidScript;
     // We should forbid script execution for plugins here because update while layout is changing,
@@ -1828,21 +1828,21 @@ void Document::updateLayoutTree()
         clearFocusedElementSoon();
     layoutView()->clearHitTestCache();
 
-    ASSERT(!DocumentAnimations::needsAnimationTimingUpdate(*this));
+    DCHECK(!DocumentAnimations::needsAnimationTimingUpdate(*this));
 
     unsigned elementCount = styleEngine().styleForElementCount() - startElementCount;
 
     TRACE_EVENT_END1("blink,devtools.timeline", "UpdateLayoutTree", "elementCount", elementCount);
     InspectorInstrumentation::didRecalculateStyle(cookie, elementCount);
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     assertLayoutTreeUpdated(*this);
 #endif
 }
 
 void Document::updateStyle()
 {
-    ASSERT(!view()->shouldThrottleRendering());
+    DCHECK(!view()->shouldThrottleRendering());
     TRACE_EVENT_BEGIN0("blink,blink_style", "Document::updateStyle");
     unsigned initialElementCount = styleEngine().styleForElementCount();
 
@@ -1894,10 +1894,10 @@ void Document::updateStyle()
 
     m_wasPrinting = m_printing;
 
-    ASSERT(!needsStyleRecalc());
-    ASSERT(!childNeedsStyleRecalc());
-    ASSERT(inStyleRecalc());
-    ASSERT(styleResolver() == &resolver);
+    DCHECK(!needsStyleRecalc());
+    DCHECK(!childNeedsStyleRecalc());
+    DCHECK(inStyleRecalc());
+    DCHECK_EQ(styleResolver(), &resolver);
     m_lifecycle.advanceTo(DocumentLifecycle::StyleClean);
     if (shouldRecordStats) {
         TRACE_EVENT_END2("blink,blink_style", "Document::updateStyle",
@@ -1917,7 +1917,7 @@ void Document::notifyLayoutTreeOfSubtreeChanges()
     m_lifecycle.advanceTo(DocumentLifecycle::InLayoutSubtreeChange);
 
     layoutView()->handleSubtreeModifications();
-    ASSERT(!layoutView()->wasNotifiedOfSubtreeChange());
+    DCHECK(!layoutView()->wasNotifiedOfSubtreeChange());
 
     m_lifecycle.advanceTo(DocumentLifecycle::LayoutSubtreeChangeClean);
 }
@@ -1942,7 +1942,7 @@ bool Document::needsLayoutTreeUpdateForNode(const Node& node) const
 
 void Document::updateLayoutTreeForNode(Node* node)
 {
-    ASSERT(node);
+    DCHECK(node);
     if (!needsLayoutTreeUpdateForNode(*node))
         return;
     updateLayoutTree();
@@ -1950,7 +1950,7 @@ void Document::updateLayoutTreeForNode(Node* node)
 
 void Document::updateLayoutIgnorePendingStylesheetsForNode(Node* node)
 {
-    ASSERT(node);
+    DCHECK(node);
     if (!node->inActiveDocument())
         return;
     updateLayoutIgnorePendingStylesheets();
@@ -1958,7 +1958,7 @@ void Document::updateLayoutIgnorePendingStylesheetsForNode(Node* node)
 
 void Document::updateLayout()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     ScriptForbiddenScope forbidScript;
 
@@ -2197,8 +2197,8 @@ StyleResolver& Document::ensureStyleResolver() const
 
 void Document::attach(const AttachContext& context)
 {
-    ASSERT(m_lifecycle.state() == DocumentLifecycle::Inactive);
-    ASSERT(!m_axObjectCache || this != &axObjectCacheOwner());
+    DCHECK_EQ(m_lifecycle.state(), DocumentLifecycle::Inactive);
+    DCHECK(!m_axObjectCache || this != &axObjectCacheOwner());
 
     m_layoutView = new LayoutView(this);
     setLayoutObject(m_layoutView);
@@ -2362,7 +2362,7 @@ Document& Document::axObjectCacheOwner() const
     // except for page popups, which share the axObjectCache of their owner.
     Document* doc = const_cast<Document*>(this);
     if (doc->frame() && doc->frame()->pagePopupOwner()) {
-        ASSERT(!doc->m_axObjectCache);
+        DCHECK(!doc->m_axObjectCache);
         return doc->frame()->pagePopupOwner()->document().axObjectCacheOwner();
     }
     return *doc;
@@ -2370,7 +2370,7 @@ Document& Document::axObjectCacheOwner() const
 
 void Document::clearAXObjectCache()
 {
-    ASSERT(&axObjectCacheOwner() == this);
+    DCHECK_EQ(&axObjectCacheOwner(), this);
     // Clear the cache member variable before calling delete because attempts
     // are made to access it during destruction.
     if (m_axObjectCache)
@@ -2404,7 +2404,7 @@ AXObjectCache* Document::axObjectCache() const
     if (!cacheOwner.layoutView())
         return 0;
 
-    ASSERT(&cacheOwner == this || !m_axObjectCache);
+    DCHECK(&cacheOwner == this || !m_axObjectCache);
     if (!cacheOwner.m_axObjectCache)
         cacheOwner.m_axObjectCache = AXObjectCache::create(cacheOwner);
     return cacheOwner.m_axObjectCache.get();
@@ -2467,7 +2467,7 @@ void Document::open(Document* enteredDocument, ExceptionState& exceptionState)
 
 void Document::open()
 {
-    ASSERT(!importLoader());
+    DCHECK(!importLoader());
 
     if (m_frame) {
         if (ScriptableDocumentParser* parser = scriptableDocumentParser()) {
@@ -2517,7 +2517,7 @@ RawPtr<DocumentParser> Document::implicitOpen(ParserSynchronizationPolicy parser
     detachParser();
 
     removeChildren();
-    ASSERT(!m_focusedElement);
+    DCHECK(!m_focusedElement);
 
     setCompatibilityMode(NoQuirksMode);
 
@@ -2657,7 +2657,7 @@ void Document::close()
 
 void Document::implicitClose()
 {
-    ASSERT(!inStyleRecalc());
+    DCHECK(!inStyleRecalc());
     if (processingLoadEvent() || !m_parser)
         return;
     if (frame() && frame()->navigationScheduler().locationChangePending()) {
@@ -2820,7 +2820,7 @@ void Document::dispatchUnloadEvents()
             RawPtr<Event> unloadEvent(Event::create(EventTypeNames::unload));
             if (documentLoader && !documentLoader->timing().unloadEventStart() && !documentLoader->timing().unloadEventEnd()) {
                 DocumentLoadTiming& timing = documentLoader->timing();
-                ASSERT(timing.navigationStart());
+                DCHECK(timing.navigationStart());
                 timing.markUnloadEventStart();
                 m_frame->localDOMWindow()->dispatchEvent(unloadEvent, this);
                 timing.markUnloadEventEnd();
@@ -2931,7 +2931,7 @@ void Document::write(const SegmentedString& text, Document* enteredDocument, Exc
     if (!hasInsertionPoint)
         open(enteredDocument, ASSERT_NO_EXCEPTION);
 
-    ASSERT(m_parser);
+    DCHECK(m_parser);
     m_parser->insert(text);
 }
 
@@ -2950,7 +2950,7 @@ void Document::writeln(const String& text, Document* enteredDocument, ExceptionS
 
 void Document::write(LocalDOMWindow* callingWindow, const Vector<String>& text, ExceptionState& exceptionState)
 {
-    ASSERT(callingWindow);
+    DCHECK(callingWindow);
     StringBuilder builder;
     for (const String& string : text)
         builder.append(string);
@@ -2959,7 +2959,7 @@ void Document::write(LocalDOMWindow* callingWindow, const Vector<String>& text, 
 
 void Document::writeln(LocalDOMWindow* callingWindow, const Vector<String>& text, ExceptionState& exceptionState)
 {
-    ASSERT(callingWindow);
+    DCHECK(callingWindow);
     StringBuilder builder;
     for (const String& string : text)
         builder.append(string);
@@ -3026,7 +3026,7 @@ void Document::updateBaseURL()
 
     if (m_elemSheet) {
         // Element sheet is silly. It never contains anything.
-        ASSERT(!m_elemSheet->contents()->ruleCount());
+        DCHECK(!m_elemSheet->contents()->ruleCount());
         m_elemSheet = CSSStyleSheet::createInline(this, m_baseURL);
     }
 
@@ -3236,7 +3236,7 @@ String Document::outgoingReferrer() const
             frame = toLocalFrame(frame->tree().parent());
             // Srcdoc documents cannot be top-level documents, by definition,
             // because they need to be contained in iframes with the srcdoc.
-            ASSERT(frame);
+            DCHECK(frame);
         }
         referrerDocument = frame->document();
     }
@@ -3245,7 +3245,7 @@ String Document::outgoingReferrer() const
 
 MouseEventWithHitTestResults Document::prepareMouseEvent(const HitTestRequest& request, const LayoutPoint& documentPoint, const PlatformMouseEvent& event)
 {
-    ASSERT(!layoutView() || layoutView()->isLayoutView());
+    DCHECK(!layoutView() || layoutView()->isLayoutView());
 
     // LayoutView::hitTest causes a layout, and we don't want to hit that until the first
     // layout because until then, there is nothing shown on the screen - the user can't
@@ -3514,7 +3514,7 @@ void Document::styleResolverMayHaveChanged()
         // recalc while sheets are still loading to avoid FOUC.
         m_pendingSheetLayout = IgnoreLayoutWithPendingSheets;
 
-        ASSERT(layoutView() || importsController());
+        DCHECK(layoutView() || importsController());
         if (layoutView())
             layoutView()->invalidatePaintForViewAndCompositedLayers();
     }
@@ -3599,7 +3599,7 @@ void Document::setAnnotatedRegions(const Vector<AnnotatedRegionValue>& regions)
 
 bool Document::setFocusedElement(RawPtr<Element> prpNewFocusedElement, const FocusParams& params)
 {
-    ASSERT(!m_lifecycle.inDetach());
+    DCHECK(!m_lifecycle.inDetach());
 
     m_clearFocusedElementTimer.stop();
 
@@ -3757,7 +3757,7 @@ void Document::setSequentialFocusNavigationStartingPoint(Node* node)
         m_sequentialFocusNavigationStartingPoint = nullptr;
         return;
     }
-    ASSERT(node->document() == this);
+    DCHECK_EQ(node->document(), this);
     if (!m_sequentialFocusNavigationStartingPoint)
         m_sequentialFocusNavigationStartingPoint = Range::create(*this);
     m_sequentialFocusNavigationStartingPoint->selectNodeContents(node, ASSERT_NO_EXCEPTION);
@@ -3771,7 +3771,7 @@ Element* Document::sequentialFocusNavigationStartingPoint(WebFocusType type) con
         return nullptr;
     if (!m_sequentialFocusNavigationStartingPoint->collapsed()) {
         Node* node = m_sequentialFocusNavigationStartingPoint->startContainer();
-        ASSERT(node == m_sequentialFocusNavigationStartingPoint->endContainer());
+        DCHECK_EQ(node, m_sequentialFocusNavigationStartingPoint->endContainer());
         if (node->isElementNode())
             return toElement(node);
         if (Element* neighborElement = type == WebFocusTypeForward ? ElementTraversal::previous(*node) : ElementTraversal::next(*node))
@@ -3810,7 +3810,7 @@ void Document::setCSSTarget(Element* newTarget)
 void Document::registerNodeList(const LiveNodeListBase* list)
 {
 #if ENABLE(OILPAN)
-    ASSERT(!m_nodeLists[list->invalidationType()].contains(list));
+    DCHECK(!m_nodeLists[list->invalidationType()].contains(list));
     m_nodeLists[list->invalidationType()].add(list);
 #else
     m_nodeListCounts[list->invalidationType()]++;
@@ -3822,13 +3822,13 @@ void Document::registerNodeList(const LiveNodeListBase* list)
 void Document::unregisterNodeList(const LiveNodeListBase* list)
 {
 #if ENABLE(OILPAN)
-    ASSERT(m_nodeLists[list->invalidationType()].contains(list));
+    DCHECK(m_nodeLists[list->invalidationType()].contains(list));
     m_nodeLists[list->invalidationType()].remove(list);
 #else
     m_nodeListCounts[list->invalidationType()]--;
 #endif
     if (list->isRootedAtTreeScope()) {
-        ASSERT(m_listsInvalidatedAtDocument.contains(list));
+        DCHECK(m_listsInvalidatedAtDocument.contains(list));
         m_listsInvalidatedAtDocument.remove(list);
     }
 }
@@ -3836,7 +3836,7 @@ void Document::unregisterNodeList(const LiveNodeListBase* list)
 void Document::registerNodeListWithIdNameCache(const LiveNodeListBase* list)
 {
 #if ENABLE(OILPAN)
-    ASSERT(!m_nodeLists[InvalidateOnIdNameAttrChange].contains(list));
+    DCHECK(!m_nodeLists[InvalidateOnIdNameAttrChange].contains(list));
     m_nodeLists[InvalidateOnIdNameAttrChange].add(list);
 #else
     m_nodeListCounts[InvalidateOnIdNameAttrChange]++;
@@ -3846,10 +3846,10 @@ void Document::registerNodeListWithIdNameCache(const LiveNodeListBase* list)
 void Document::unregisterNodeListWithIdNameCache(const LiveNodeListBase* list)
 {
 #if ENABLE(OILPAN)
-    ASSERT(m_nodeLists[InvalidateOnIdNameAttrChange].contains(list));
+    DCHECK(m_nodeLists[InvalidateOnIdNameAttrChange].contains(list));
     m_nodeLists[InvalidateOnIdNameAttrChange].remove(list);
 #else
-    ASSERT(m_nodeListCounts[InvalidateOnIdNameAttrChange] > 0);
+    DCHECK_GT(m_nodeListCounts[InvalidateOnIdNameAttrChange], 0);
     m_nodeListCounts[InvalidateOnIdNameAttrChange]--;
 #endif
 }
@@ -3885,7 +3885,7 @@ void Document::updateRangesAfterChildrenChanged(ContainerNode* container)
 
 void Document::updateRangesAfterNodeMovedToAnotherDocument(const Node& node)
 {
-    ASSERT(node.document() != this);
+    DCHECK_NE(node.document(), this);
     if (m_ranges.isEmpty())
         return;
 
@@ -4054,7 +4054,7 @@ const OriginAccessEntry& Document::accessEntryFromURL()
 
 void Document::registerEventFactory(PassOwnPtr<EventFactoryBase> eventFactory)
 {
-    ASSERT(!eventFactories().contains(eventFactory.get()));
+    DCHECK(!eventFactories().contains(eventFactory.get()));
     eventFactories().add(eventFactory);
 }
 
@@ -4126,7 +4126,7 @@ bool Document::isInInvisibleSubframe() const
     if (!ownerElement())
         return false; // this is the root element
 
-    ASSERT(frame());
+    DCHECK(frame());
     return !frame()->ownerLayoutObject();
 }
 
@@ -4273,7 +4273,7 @@ const KURL Document::firstPartyForCookies() const
         // Skip over srcdoc documents, as they are always same-origin with their closest non-srcdoc parent.
         while (currentFrame->isLocalFrame() && toLocalFrame(currentFrame)->document()->isSrcdocDocument())
             currentFrame = currentFrame->tree().parent();
-        ASSERT(currentFrame);
+        DCHECK(currentFrame);
 
         // We use 'matchesDomain' here, as it turns out that some folks embed HTTPS login forms
         // into HTTP pages; we should allow this kind of upgrade.
@@ -4446,7 +4446,7 @@ bool Document::parseQualifiedName(const AtomicString& qualifiedName, AtomicStrin
     } else if (returnValue.status == QNEmptyPrefix) {
         message.appendLiteral("has an empty namespace prefix.");
     } else {
-        ASSERT(returnValue.status == QNEmptyLocalName);
+        DCHECK_EQ(returnValue.status, QNEmptyLocalName);
         message.appendLiteral("has an empty local name.");
     }
 
@@ -4477,7 +4477,7 @@ void Document::setEncodingData(const DocumentEncodingData& newData)
         m_titleElement->setTextContent(correctlyDecodedTitle);
     }
 
-    ASSERT(newData.encoding().isValid());
+    DCHECK(newData.encoding().isValid());
     m_encodingData = newData;
 
     // FIXME: Should be removed as part of https://code.google.com/p/chromium/issues/detail?id=319643
@@ -4498,7 +4498,7 @@ KURL Document::completeURL(const String& url) const
 
 KURL Document::completeURLWithOverride(const String& url, const KURL& baseURLOverride) const
 {
-    ASSERT(baseURLOverride.isEmpty() || baseURLOverride.isValid());
+    DCHECK(baseURLOverride.isEmpty() || baseURLOverride.isValid());
 
     // Always return a null URL when passed a null string.
     // FIXME: Should we change the KURL constructor to have this behavior?
@@ -4658,13 +4658,13 @@ HTMLScriptElement* Document::currentScriptForBinding() const
 
 void Document::pushCurrentScript(RawPtr<HTMLScriptElement> newCurrentScript)
 {
-    ASSERT(newCurrentScript);
+    DCHECK(newCurrentScript);
     m_currentScriptStack.append(newCurrentScript);
 }
 
 void Document::popCurrentScript()
 {
-    ASSERT(!m_currentScriptStack.isEmpty());
+    DCHECK(!m_currentScriptStack.isEmpty());
     m_currentScriptStack.removeLast();
 }
 
@@ -4711,7 +4711,7 @@ Document& Document::topDocument() const
     for (HTMLFrameOwnerElement* element = doc->ownerElement(); element; element = doc->ownerElement())
         doc = &element->document();
 
-    ASSERT(doc);
+    DCHECK(doc);
     return *doc;
 }
 
@@ -4823,8 +4823,8 @@ RawPtr<DocumentNameCollection> Document::documentNamedItems(const AtomicString& 
 
 void Document::finishedParsing()
 {
-    ASSERT(!scriptableDocumentParser() || !m_parser->isParsing());
-    ASSERT(!scriptableDocumentParser() || m_readyState != Loading);
+    DCHECK(!scriptableDocumentParser() || !m_parser->isParsing());
+    DCHECK(!scriptableDocumentParser() || m_readyState != Loading);
     setParsingState(InDOMContentLoaded);
     DocumentParserTiming::from(*this).markParserStop();
 
@@ -4973,7 +4973,7 @@ bool Document::useSecureKeyboardEntryWhenActive() const
 
 void Document::initSecurityContext(const DocumentInit& initializer)
 {
-    ASSERT(!getSecurityOrigin());
+    DCHECK(!getSecurityOrigin());
 
     if (!initializer.hasSecurityContext()) {
         // No source for a security context.
@@ -5181,7 +5181,7 @@ void Document::updateFocusAppearanceTimerFired(Timer<Document>*)
 
 void Document::attachRange(Range* range)
 {
-    ASSERT(!m_ranges.contains(range));
+    DCHECK(!m_ranges.contains(range));
     m_ranges.add(range);
 }
 
@@ -5331,8 +5331,8 @@ void Document::addToTopLayer(Element* element, const Element* before)
     if (element->isInTopLayer())
         return;
 
-    ASSERT(!m_topLayerElements.contains(element));
-    ASSERT(!before || m_topLayerElements.contains(before));
+    DCHECK(!m_topLayerElements.contains(element));
+    DCHECK(!before || m_topLayerElements.contains(before));
     if (before) {
         size_t beforePosition = m_topLayerElements.find(before);
         m_topLayerElements.insert(beforePosition, element);
@@ -5347,7 +5347,7 @@ void Document::removeFromTopLayer(Element* element)
     if (!element->isInTopLayer())
         return;
     size_t position = m_topLayerElements.find(element);
-    ASSERT(position != kNotFound);
+    DCHECK_NE(position, kNotFound);
     m_topLayerElements.remove(position);
     element->setIsInTopLayer(false);
 }
@@ -5389,7 +5389,7 @@ void Document::suppressLoadEvent()
 
 void Document::decrementLoadEventDelayCount()
 {
-    ASSERT(m_loadEventDelayCount);
+    DCHECK(m_loadEventDelayCount);
     --m_loadEventDelayCount;
 
     if (!m_loadEventDelayCount)
@@ -5605,7 +5605,7 @@ static LayoutObject* nearestCommonHoverAncestor(LayoutObject* obj1, LayoutObject
 
 void Document::updateHoverActiveState(const HitTestRequest& request, Element* innerElement)
 {
-    ASSERT(!request.readOnly());
+    DCHECK(!request.readOnly());
 
     if (request.active() && m_frame)
         m_frame->eventHandler().notifyElementActivated();
@@ -5622,7 +5622,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
         // The oldActiveElement layoutObject is null, dropped on :active by setting display: none,
         // for instance. We still need to clear the ActiveChain as the mouse is released.
         for (RawPtr<Node> node = oldActiveElement; node; node = FlatTreeTraversal::parent(*node)) {
-            ASSERT(!node->isTextNode());
+            DCHECK(!node->isTextNode());
             node->setActive(false);
             m_userActionElements.setInActiveChain(node.get(), false);
         }
@@ -5633,7 +5633,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
             // We are setting the :active chain and freezing it. If future moves happen, they
             // will need to reference this chain.
             for (Node* node = newActiveElement; node; node = FlatTreeTraversal::parent(*node)) {
-                ASSERT(!node->isTextNode());
+                DCHECK(!node->isTextNode());
                 m_userActionElements.setInActiveChain(node, true);
             }
             setActiveHoverElement(newActiveElement);
@@ -5734,7 +5734,7 @@ Locale& Document::getCachedLocale(const AtomicString& locale)
 
 AnimationClock& Document::animationClock()
 {
-    ASSERT(page());
+    DCHECK(page());
     return page()->animator().clock();
 }
 
@@ -5811,7 +5811,7 @@ void Document::setAutofocusElement(Element* element)
     if (m_hasAutofocused)
         return;
     m_hasAutofocused = true;
-    ASSERT(!m_autofocusElement);
+    DCHECK(!m_autofocusElement);
     m_autofocusElement = element;
     m_taskRunner->postTask(BLINK_FROM_HERE, AutofocusTask::create());
 }
@@ -5901,7 +5901,7 @@ v8::Local<v8::Object> Document::wrap(v8::Isolate* isolate, v8::Local<v8::Object>
     // object gets associated with the wrapper.
     RawPtr<Document> protect(this);
 
-    ASSERT(!DOMDataStore::containsWrapper(this, isolate));
+    DCHECK(!DOMDataStore::containsWrapper(this, isolate));
 
     const WrapperTypeInfo* wrapperType = wrapperTypeInfo();
 

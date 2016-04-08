@@ -87,7 +87,7 @@ void SlotAssignment::resolveAssignment(ShadowRoot& shadowRoot)
 
 void SlotAssignment::assign(Node& hostChild, HTMLSlotElement& slot)
 {
-    ASSERT(hostChild.isSlotAssignable());
+    DCHECK(hostChild.isSlotAssignable());
     m_assignment.add(&hostChild, &slot);
     slot.appendAssignedNode(hostChild);
     if (isHTMLSlotElement(hostChild))

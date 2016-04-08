@@ -85,7 +85,7 @@ PseudoElement::PseudoElement(Element* parent, PseudoId pseudoId)
     : Element(pseudoElementTagName(pseudoId), &parent->document(), CreateElement)
     , m_pseudoId(pseudoId)
 {
-    ASSERT(pseudoId != PseudoIdNone);
+    DCHECK_NE(pseudoId, PseudoIdNone);
     parent->treeScope().adoptIfNeeded(*this);
     setParentOrShadowHostNode(parent);
     setHasCustomStyleCallbacks();
@@ -100,12 +100,12 @@ PassRefPtr<ComputedStyle> PseudoElement::customStyleForLayoutObject()
 
 void PseudoElement::dispose()
 {
-    ASSERT(parentOrShadowHostElement());
+    DCHECK(parentOrShadowHostElement());
 
     InspectorInstrumentation::pseudoElementDestroyed(this);
 
-    ASSERT(!nextSibling());
-    ASSERT(!previousSibling());
+    DCHECK(!nextSibling());
+    DCHECK(!previousSibling());
 
     detach();
     RawPtr<Element> parent = parentOrShadowHostElement();
@@ -116,7 +116,7 @@ void PseudoElement::dispose()
 
 void PseudoElement::attach(const AttachContext& context)
 {
-    ASSERT(!layoutObject());
+    DCHECK(!layoutObject());
 
     Element::attach(context);
 
@@ -127,7 +127,7 @@ void PseudoElement::attach(const AttachContext& context)
     ComputedStyle& style = layoutObject->mutableStyleRef();
     if (style.styleType() != PseudoIdBefore && style.styleType() != PseudoIdAfter)
         return;
-    ASSERT(style.contentData());
+    DCHECK(style.contentData());
 
     for (const ContentData* content = style.contentData(); content; content = content->next()) {
         LayoutObject* child = content->createLayoutObject(document(), style);
@@ -180,14 +180,14 @@ Node* PseudoElement::findAssociatedNode() const
     if (getPseudoId() == PseudoIdBackdrop)
         return parentOrShadowHostNode();
 
-    ASSERT(layoutObject());
-    ASSERT(layoutObject()->parent());
+    DCHECK(layoutObject());
+    DCHECK(layoutObject()->parent());
 
     // We can have any number of anonymous layout objects inserted between
     // us and our parent so make sure we skip over them.
     LayoutObject* ancestor = layoutObject()->parent();
     while (ancestor->isAnonymous() || (ancestor->node() && ancestor->node()->isPseudoElement())) {
-        ASSERT(ancestor->parent());
+        DCHECK(ancestor->parent());
         ancestor = ancestor->parent();
     }
     return ancestor->node();

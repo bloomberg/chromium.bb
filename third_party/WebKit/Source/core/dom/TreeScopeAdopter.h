@@ -39,7 +39,7 @@ public:
     void execute() const { moveTreeToNewScope(*m_toAdopt); }
     bool needsScopeChange() const { return m_oldScope != m_newScope; }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     static void ensureDidMoveToNewDocumentWasCalled(Document&);
 #else
     static void ensureDidMoveToNewDocumentWasCalled(Document&) { }

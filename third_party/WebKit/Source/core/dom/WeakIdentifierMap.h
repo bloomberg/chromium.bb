@@ -68,7 +68,7 @@ private:
 
     void put(T* object, IdentifierType identifier)
     {
-        ASSERT(object && !m_objectToIdentifier.contains(object));
+        DCHECK(object && !m_objectToIdentifier.contains(object));
         m_objectToIdentifier.set(object, identifier);
         m_identifierToObject.set(identifier, object);
         Traits::addedToIdentifierMap(object);
@@ -128,7 +128,7 @@ private:
 
     void put(T* object, IdentifierType identifier)
     {
-        ASSERT(object && !m_objectToIdentifier->contains(object));
+        DCHECK(object && !m_objectToIdentifier->contains(object));
         m_objectToIdentifier->set(object, identifier);
         m_identifierToObject->set(identifier, object);
     }

@@ -49,7 +49,7 @@ static bool isCallingCompositorFrameCallback()
 
 static void decrementCompositorProxiedPropertiesForElement(uint64_t elementId, uint32_t compositorMutableProperties)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     Node* node = DOMNodeIds::nodeForId(elementId);
     if (!node)
         return;
@@ -59,7 +59,7 @@ static void decrementCompositorProxiedPropertiesForElement(uint64_t elementId, u
 
 static void incrementCompositorProxiedPropertiesForElement(uint64_t elementId, uint32_t compositorMutableProperties)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     Node* node = DOMNodeIds::nodeForId(elementId);
     if (!node)
         return;
@@ -89,7 +89,7 @@ static uint32_t compositorMutablePropertiesFromNames(const Vector<String>& attri
     return properties;
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 static bool sanityCheckMutableProperties(uint32_t properties)
 {
     // Ensures that we only have bits set for valid mutable properties.
@@ -121,9 +121,11 @@ CompositorProxy::CompositorProxy(Element& element, const Vector<String>& attribu
     : m_elementId(DOMNodeIds::idForNode(&element))
     , m_compositorMutableProperties(compositorMutablePropertiesFromNames(attributeArray))
 {
-    ASSERT(isMainThread());
-    ASSERT(m_compositorMutableProperties);
-    ASSERT(sanityCheckMutableProperties(m_compositorMutableProperties));
+    DCHECK(isMainThread());
+    DCHECK(m_compositorMutableProperties);
+#if DCHECK_IS_ON()
+    DCHECK(sanityCheckMutableProperties(m_compositorMutableProperties));
+#endif
 
     incrementCompositorProxiedPropertiesForElement(m_elementId, m_compositorMutableProperties);
 }
@@ -132,8 +134,10 @@ CompositorProxy::CompositorProxy(uint64_t elementId, uint32_t compositorMutableP
     : m_elementId(elementId)
     , m_compositorMutableProperties(compositorMutableProperties)
 {
-    ASSERT(isControlThread());
-    ASSERT(sanityCheckMutableProperties(m_compositorMutableProperties));
+    DCHECK(isControlThread());
+#if DCHECK_IS_ON()
+    DCHECK(sanityCheckMutableProperties(m_compositorMutableProperties));
+#endif
     Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&incrementCompositorProxiedPropertiesForElement, m_elementId, m_compositorMutableProperties));
 }
 

@@ -73,14 +73,14 @@ Node* FlatTreeTraversal::resolveDistributionStartingAt(const Node* node, Travers
 
 Node* FlatTreeTraversal::v0ResolveDistributionStartingAt(const Node& node, TraversalDirection direction)
 {
-    ASSERT(!isHTMLSlotElement(node));
+    DCHECK(!isHTMLSlotElement(node));
     for (const Node* sibling = &node; sibling; sibling = (direction == TraversalDirectionForward ? sibling->nextSibling() : sibling->previousSibling())) {
         if (!isActiveInsertionPoint(*sibling))
             return const_cast<Node*>(sibling);
         const InsertionPoint& insertionPoint = toInsertionPoint(*sibling);
         if (Node* found = (direction == TraversalDirectionForward ? insertionPoint.firstDistributedNode() : insertionPoint.lastDistributedNode()))
             return found;
-        ASSERT(isHTMLShadowElement(insertionPoint) || (isHTMLContentElement(insertionPoint) && !insertionPoint.hasChildren()));
+        DCHECK(isHTMLShadowElement(insertionPoint) || (isHTMLContentElement(insertionPoint) && !insertionPoint.hasChildren()));
     }
     return nullptr;
 }
@@ -117,7 +117,7 @@ Node* FlatTreeTraversal::traverseSiblings(const Node& node, TraversalDirection d
         ShadowRoot* parentShadowRoot = toShadowRoot(node.parentNode());
         if (!parentShadowRoot->isYoungest()) {
             HTMLShadowElement* assignedInsertionPoint = parentShadowRoot->shadowInsertionPointOfYoungerShadowRoot();
-            ASSERT(assignedInsertionPoint);
+            DCHECK(assignedInsertionPoint);
             return traverseSiblings(*assignedInsertionPoint, direction);
         }
     }
@@ -169,7 +169,7 @@ ContainerNode* FlatTreeTraversal::traverseParent(const Node& node, ParentTravers
     if (canBeDistributedToInsertionPoint(node))
         return traverseParentForV0(node, details);
 
-    ASSERT(!shadowWhereNodeCanBeDistributed(node));
+    DCHECK(!shadowWhereNodeCanBeDistributed(node));
     return traverseParentOrHost(node);
 }
 
@@ -200,7 +200,7 @@ ContainerNode* FlatTreeTraversal::traverseParentOrHost(const Node& node)
     if (!parent->isShadowRoot())
         return parent;
     ShadowRoot* shadowRoot = toShadowRoot(parent);
-    ASSERT(!shadowRoot->shadowInsertionPointOfYoungerShadowRoot());
+    DCHECK(!shadowRoot->shadowInsertionPointOfYoungerShadowRoot());
     if (!shadowRoot->isYoungest())
         return nullptr;
     return shadowRoot->host();
@@ -245,7 +245,7 @@ Node* FlatTreeTraversal::previousSkippingChildren(const Node& node)
 
 static Node* previousAncestorSiblingPostOrder(const Node& current, const Node* stayWithin)
 {
-    ASSERT(!FlatTreeTraversal::previousSibling(current));
+    DCHECK(!FlatTreeTraversal::previousSibling(current));
     for (Node* parent = FlatTreeTraversal::parent(current); parent; parent = FlatTreeTraversal::parent(*parent)) {
         if (parent == stayWithin)
             return nullptr;
@@ -303,7 +303,7 @@ Node* FlatTreeTraversal::commonAncestor(const Node& nodeA, const Node& nodeB)
 
 Node* FlatTreeTraversal::traverseNextAncestorSibling(const Node& node)
 {
-    ASSERT(!traverseNextSibling(node));
+    DCHECK(!traverseNextSibling(node));
     for (Node* parent = traverseParent(node); parent; parent = traverseParent(*parent)) {
         if (Node* nextSibling = traverseNextSibling(*parent))
             return nextSibling;
@@ -313,7 +313,7 @@ Node* FlatTreeTraversal::traverseNextAncestorSibling(const Node& node)
 
 Node* FlatTreeTraversal::traversePreviousAncestorSibling(const Node& node)
 {
-    ASSERT(!traversePreviousSibling(node));
+    DCHECK(!traversePreviousSibling(node));
     for (Node* parent = traverseParent(node); parent; parent = traverseParent(*parent)) {
         if (Node* previousSibling = traversePreviousSibling(*parent))
             return previousSibling;

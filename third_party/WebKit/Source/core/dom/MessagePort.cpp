@@ -70,8 +70,8 @@ void MessagePort::postMessage(ExecutionContext* context, PassRefPtr<SerializedSc
 {
     if (!isEntangled())
         return;
-    ASSERT(getExecutionContext());
-    ASSERT(m_entangledChannel);
+    DCHECK(getExecutionContext());
+    DCHECK(m_entangledChannel);
 
     OwnPtr<MessagePortChannelArray> channels;
     // Make sure we aren't connected to any of the passed-in ports.
@@ -119,7 +119,7 @@ MessagePortArray* MessagePort::toMessagePortArray(ExecutionContext* context, con
 
 PassOwnPtr<WebMessagePortChannel> MessagePort::disentangle()
 {
-    ASSERT(m_entangledChannel);
+    DCHECK(m_entangledChannel);
     m_entangledChannel->setClient(0);
     return m_entangledChannel.release();
 }
@@ -128,7 +128,7 @@ PassOwnPtr<WebMessagePortChannel> MessagePort::disentangle()
 // This code may be called from another thread, and so should not call any non-threadsafe APIs (i.e. should not call into the entangled channel or access mutable variables).
 void MessagePort::messageAvailable()
 {
-    ASSERT(getExecutionContext());
+    DCHECK(getExecutionContext());
     getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&MessagePort::dispatchMessages, m_weakFactory.createWeakPtr()));
 }
 
@@ -138,7 +138,7 @@ void MessagePort::start()
     if (!isEntangled())
         return;
 
-    ASSERT(getExecutionContext());
+    DCHECK(getExecutionContext());
     if (m_started)
         return;
 
@@ -156,8 +156,8 @@ void MessagePort::close()
 void MessagePort::entangle(PassOwnPtr<WebMessagePortChannel> remote)
 {
     // Only invoked to set our initial entanglement.
-    ASSERT(!m_entangledChannel);
-    ASSERT(getExecutionContext());
+    DCHECK(!m_entangledChannel);
+    DCHECK(getExecutionContext());
 
     m_entangledChannel = remote;
     m_entangledChannel->setClient(this);
@@ -281,13 +281,13 @@ DEFINE_TRACE(MessagePort)
 
 v8::Isolate* MessagePort::scriptIsolate()
 {
-    ASSERT(getExecutionContext());
+    DCHECK(getExecutionContext());
     return toIsolate(getExecutionContext());
 }
 
 v8::Local<v8::Context> MessagePort::scriptContextForMessageConversion()
 {
-    ASSERT(getExecutionContext());
+    DCHECK(getExecutionContext());
     if (!m_scriptStateForConversion) {
         v8::Isolate* isolate = scriptIsolate();
         m_scriptStateForConversion = ScriptState::create(v8::Context::New(isolate), DOMWrapperWorld::create(isolate));

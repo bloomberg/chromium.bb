@@ -56,7 +56,7 @@ TreeScopeStyleSheetCollection::StyleResolverUpdateType TreeScopeStyleSheetCollec
 {
     unsigned newStyleSheetCount = newStylesheets.size();
     unsigned oldStyleSheetCount = oldStyleSheets.size();
-    ASSERT(newStyleSheetCount >= oldStyleSheetCount);
+    DCHECK_GE(newStyleSheetCount, oldStyleSheetCount);
 
     if (!newStyleSheetCount)
         return Reconstruct;
@@ -103,7 +103,7 @@ static bool findFontFaceRulesFromStyleSheetContents(const HeapVector<Member<Styl
     bool hasFontFaceRule = false;
 
     for (unsigned i = 0; i < sheets.size(); ++i) {
-        ASSERT(sheets[i]);
+        DCHECK(sheets[i]);
         if (sheets[i]->hasFontFaceRule()) {
             // FIXME: We don't need this for styles in shadow tree.
             sheets[i]->findFontFaceRules(fontFaceRules);

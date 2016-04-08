@@ -68,7 +68,7 @@ void CustomElementRegistrationContext::registerElement(Document* document, Custo
 
 RawPtr<Element> CustomElementRegistrationContext::createCustomTagElement(Document& document, const QualifiedName& tagName)
 {
-    ASSERT(CustomElement::isValidName(tagName.localName()));
+    DCHECK(CustomElement::isValidName(tagName.localName()));
 
     RawPtr<Element> element;
 
@@ -98,10 +98,10 @@ void CustomElementRegistrationContext::resolveOrScheduleResolution(Element* elem
     const AtomicString& type = CustomElement::isValidName(element->localName())
         ? element->localName()
         : typeExtension;
-    ASSERT(!type.isNull());
+    DCHECK(!type.isNull());
 
     CustomElementDescriptor descriptor(type, element->namespaceURI(), element->localName());
-    ASSERT(element->getCustomElementState() == Element::WaitingForUpgrade);
+    DCHECK_EQ(element->getCustomElementState(), Element::WaitingForUpgrade);
 
     CustomElementScheduler::resolveOrScheduleResolution(this, element, descriptor);
 }
@@ -112,15 +112,15 @@ void CustomElementRegistrationContext::resolve(Element* element, const CustomEle
     if (definition) {
         CustomElement::define(element, definition);
     } else {
-        ASSERT(element->getCustomElementState() == Element::WaitingForUpgrade);
+        DCHECK_EQ(element->getCustomElementState(), Element::WaitingForUpgrade);
         m_candidates->add(descriptor, element);
     }
 }
 
 void CustomElementRegistrationContext::setIsAttributeAndTypeExtension(Element* element, const AtomicString& type)
 {
-    ASSERT(element);
-    ASSERT(!type.isEmpty());
+    DCHECK(element);
+    DCHECK(!type.isEmpty());
     element->setAttribute(HTMLNames::isAttr, type);
     setTypeExtension(element, type);
 }
@@ -144,7 +144,7 @@ void CustomElementRegistrationContext::setTypeExtension(Element* element, const 
     }
 
     // Custom tags take precedence over type extensions
-    ASSERT(!CustomElement::isValidName(element->localName()));
+    DCHECK(!CustomElement::isValidName(element->localName()));
 
     if (!CustomElement::isValidName(type))
         return;

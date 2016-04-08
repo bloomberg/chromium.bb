@@ -311,7 +311,7 @@ void Fullscreen::fullyExitFullscreen(Document& document)
     // 3. Remove elements from |doc|'s fullscreen element stack until only the top element is left.
     size_t stackSize = from(doc).m_fullScreenElementStack.size();
     from(doc).m_fullScreenElementStack.remove(0, stackSize - 1);
-    ASSERT(from(doc).m_fullScreenElementStack.size() == 1);
+    DCHECK_EQ(from(doc).m_fullScreenElementStack.size(), 1u);
 
     // 4. Act as if the exitFullscreen() method was invoked on |doc|.
     from(doc).exitFullscreen();
@@ -337,7 +337,7 @@ void Fullscreen::exitFullscreen()
     for (Frame* descendant = document()->frame() ? document()->frame()->tree().traverseNext() : 0; descendant; descendant = descendant->tree().traverseNext()) {
         if (!descendant->isLocalFrame())
             continue;
-        ASSERT(toLocalFrame(descendant)->document());
+        DCHECK(toLocalFrame(descendant)->document());
         if (fullscreenElementFrom(*toLocalFrame(descendant)->document()))
             descendants.prepend(toLocalFrame(descendant)->document());
     }
@@ -345,7 +345,7 @@ void Fullscreen::exitFullscreen()
     // 4. For each descendant in descendants, empty descendant's fullscreen element stack, and queue a
     // task to fire an event named fullscreenchange with its bubbles attribute set to true on descendant.
     for (auto& descendant : descendants) {
-        ASSERT(descendant);
+        DCHECK(descendant);
         RequestType requestType = from(*descendant).m_fullScreenElementStack.last().second;
         from(*descendant).clearFullscreenElementStack();
         enqueueChangeEvent(*descendant, requestType);
@@ -386,7 +386,7 @@ void Fullscreen::exitFullscreen()
     FrameHost* host = document()->frameHost();
 
     // Speculative fix for engaget.com/videos per crbug.com/336239.
-    // FIXME: This check is wrong. We ASSERT(document->isActive()) above
+    // FIXME: This check is wrong. We DCHECK(document->isActive()) above
     // so this should be redundant and should be removed!
     if (!host)
         return;
@@ -420,7 +420,7 @@ bool Fullscreen::fullscreenEnabled(Document& document)
 
 void Fullscreen::didEnterFullScreenForElement(Element* element)
 {
-    ASSERT(element);
+    DCHECK(element);
     if (!document()->isActive())
         return;
 
@@ -486,7 +486,7 @@ void Fullscreen::didExitFullScreenForElement(Element*)
     Document* exitingDocument = document();
     if (m_eventQueue.isEmpty())
         exitingDocument = &document()->topDocument();
-    ASSERT(exitingDocument);
+    DCHECK(exitingDocument);
     from(*exitingDocument).m_eventQueueTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
@@ -504,7 +504,7 @@ void Fullscreen::setFullScreenLayoutObject(LayoutFullScreen* layoutObject)
 
     if (m_fullScreenLayoutObject)
         m_fullScreenLayoutObject->unwrapLayoutObject();
-    ASSERT(!m_fullScreenLayoutObject);
+    DCHECK(!m_fullScreenLayoutObject);
 
     m_fullScreenLayoutObject = layoutObject;
 }
@@ -520,7 +520,7 @@ void Fullscreen::enqueueChangeEvent(Document& document, RequestType requestType)
     if (requestType == UnprefixedRequest) {
         event = createEvent(EventTypeNames::fullscreenchange, document);
     } else {
-        ASSERT(document.hasFullscreenSupplement());
+        DCHECK(document.hasFullscreenSupplement());
         Fullscreen& fullscreen = from(document);
         EventTarget* target = fullscreen.fullscreenElement();
         if (!target)
@@ -559,7 +559,7 @@ void Fullscreen::eventQueueTimerFired(Timer<Fullscreen>*)
 
         // If the element was removed from our tree, also message the documentElement.
         if (!target->inShadowIncludingDocument() && document()->documentElement()) {
-            ASSERT(isPrefixed(event->type()));
+            DCHECK(isPrefixed(event->type()));
             eventQueue.append(createEvent(event->type(), *document()->documentElement()));
         }
 

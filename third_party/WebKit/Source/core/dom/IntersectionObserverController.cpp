@@ -53,7 +53,7 @@ void IntersectionObserverController::resume()
 
 void IntersectionObserverController::handleEvent(IdleDeadline*)
 {
-    ASSERT(m_callbackID);
+    DCHECK(m_callbackID);
     m_callbackID = 0;
     deliverIntersectionObservations();
 }
