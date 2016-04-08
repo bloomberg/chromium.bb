@@ -156,7 +156,7 @@ class ProfileStatisticsAggregatorState {
   std::set<std::string> stats_categories_;
   size_t num_of_stats_categories_;
   size_t required_stat_count_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   profiles::ProfileCategoryStats stats_;
   int num_of_fails_ = 0;

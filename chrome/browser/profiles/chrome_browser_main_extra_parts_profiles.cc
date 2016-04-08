@@ -254,13 +254,13 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
 #if defined(ENABLE_EXTENSIONS)
 #if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX)
-  scoped_ptr<extensions::NetworkingPrivateVerifyDelegateFactoryImpl>
+  std::unique_ptr<extensions::NetworkingPrivateVerifyDelegateFactoryImpl>
       networking_private_verify_delegate_factory(
           new extensions::NetworkingPrivateVerifyDelegateFactoryImpl);
   extensions::NetworkingPrivateDelegateFactory::GetInstance()
       ->SetVerifyDelegateFactory(
           std::move(networking_private_verify_delegate_factory));
-  scoped_ptr<extensions::NetworkingPrivateUIDelegateFactoryImpl>
+  std::unique_ptr<extensions::NetworkingPrivateUIDelegateFactoryImpl>
       networking_private_ui_delegate_factory(
           new extensions::NetworkingPrivateUIDelegateFactoryImpl);
   extensions::NetworkingPrivateDelegateFactory::GetInstance()

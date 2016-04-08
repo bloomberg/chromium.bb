@@ -4,13 +4,14 @@
 
 #include "chrome/browser/profiles/off_the_record_profile_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -244,10 +245,10 @@ base::FilePath OffTheRecordProfileImpl::GetPath() const {
   return profile_->GetPath();
 }
 
-scoped_ptr<content::ZoomLevelDelegate>
+std::unique_ptr<content::ZoomLevelDelegate>
 OffTheRecordProfileImpl::CreateZoomLevelDelegate(
     const base::FilePath& partition_path) {
-  return make_scoped_ptr(new ChromeZoomLevelOTRDelegate(
+  return base::WrapUnique(new ChromeZoomLevelOTRDelegate(
       ui_zoom::ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr()));
 }
 
@@ -511,7 +512,7 @@ class GuestSessionProfile : public OffTheRecordProfileImpl {
 
  private:
   // The guest user should be able to customize Chrome OS preferences.
-  scoped_ptr<chromeos::Preferences> chromeos_preferences_;
+  std::unique_ptr<chromeos::Preferences> chromeos_preferences_;
 };
 #endif
 

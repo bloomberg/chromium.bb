@@ -172,10 +172,10 @@ class AvatarMenu :
   void Update();
 
   // The model that provides the list of menu items.
-  scoped_ptr<ProfileList> profile_list_;
+  std::unique_ptr<ProfileList> profile_list_;
 
   // The controller for avatar menu actions.
-  scoped_ptr<AvatarMenuActions> menu_actions_;
+  std::unique_ptr<AvatarMenuActions> menu_actions_;
 
 #if defined(ENABLE_SUPERVISED_USERS)
   // Observes changes to a supervised user's custodian info.

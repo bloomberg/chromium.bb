@@ -178,7 +178,7 @@ base::FilePath CreateOrUpdateShortcutIconForProfile(
     return base::FilePath();
   }
 
-  scoped_ptr<gfx::ImageFamily> family = GetAppIconImageFamily();
+  std::unique_ptr<gfx::ImageFamily> family = GetAppIconImageFamily();
   if (!family)
     return base::FilePath();
 

@@ -37,12 +37,14 @@ class ProfileListDesktopBrowserTest : public InProcessBrowserTest {
  public:
   ProfileListDesktopBrowserTest() {}
 
-  scoped_ptr<AvatarMenu> CreateAvatarMenu(ProfileAttributesStorage* storage) {
-    return scoped_ptr<AvatarMenu>(new AvatarMenu(storage, NULL, browser()));
+  std::unique_ptr<AvatarMenu> CreateAvatarMenu(
+      ProfileAttributesStorage* storage) {
+    return std::unique_ptr<AvatarMenu>(
+        new AvatarMenu(storage, NULL, browser()));
   }
 
  private:
-  scoped_ptr<AvatarMenu> avatar_menu_;
+  std::unique_ptr<AvatarMenu> avatar_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileListDesktopBrowserTest);
 };
@@ -69,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, MAYBE_SignOut) {
   ASSERT_TRUE(storage.GetProfileAttributesWithPath(current_profile->GetPath(),
                                                    &entry));
 
-  scoped_ptr<AvatarMenu> menu = CreateAvatarMenu(&storage);
+  std::unique_ptr<AvatarMenu> menu = CreateAvatarMenu(&storage);
   menu->RebuildMenu();
 
   BrowserList* browser_list = BrowserList::GetInstance();
@@ -126,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, MAYBE_SwitchToProfile) {
   content::RunMessageLoop();
   ASSERT_EQ(2u, storage.GetNumberOfProfiles());
 
-  scoped_ptr<AvatarMenu> menu = CreateAvatarMenu(&storage);
+  std::unique_ptr<AvatarMenu> menu = CreateAvatarMenu(&storage);
   menu->RebuildMenu();
   BrowserList* browser_list = BrowserList::GetInstance();
   EXPECT_EQ(1u, browser_list->size());

@@ -4,12 +4,12 @@
 
 #include "chrome/browser/profiles/profile_list_desktop.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -89,8 +89,8 @@ class ProfileListDesktopTest : public testing::Test {
 
  private:
   TestingProfileManager manager_;
-  scoped_ptr<MockObserver> mock_observer_;
-  scoped_ptr<AvatarMenu> avatar_menu_;
+  std::unique_ptr<MockObserver> mock_observer_;
+  std::unique_ptr<AvatarMenu> avatar_menu_;
   content::TestBrowserThreadBundle thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileListDesktopTest);

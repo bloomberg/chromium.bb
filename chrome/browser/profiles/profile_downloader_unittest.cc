@@ -89,8 +89,8 @@ class ProfileDownloaderTest : public testing::Test,
   FakeAccountFetcherService* account_fetcher_service_;
   content::TestBrowserThreadBundle thread_bundle_;
   TestSigninClient* signin_client_;
-  scoped_ptr<Profile> profile_;
-  scoped_ptr<ProfileDownloader> profile_downloader_;
+  std::unique_ptr<Profile> profile_;
+  std::unique_ptr<ProfileDownloader> profile_downloader_;
 };
 
 TEST_F(ProfileDownloaderTest, AccountInfoReady) {

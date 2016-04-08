@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_PROFILES_OFF_THE_RECORD_PROFILE_IO_DATA_H_
 #define CHROME_BROWSER_PROFILES_OFF_THE_RECORD_PROFILE_IO_DATA_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
@@ -87,7 +88,7 @@ class OffTheRecordProfileIOData : public ProfileIOData {
     // Collect references to context getters in reverse order, i.e. last item
     // will be main request getter. This list is passed to |io_data_|
     // for invalidation on IO thread.
-    scoped_ptr<ChromeURLRequestContextGetterVector> GetAllContextGetters();
+    std::unique_ptr<ChromeURLRequestContextGetterVector> GetAllContextGetters();
 
     // The getters will be invalidated on the IO thread before
     // ProfileIOData instance is deleted.
@@ -113,17 +114,17 @@ class OffTheRecordProfileIOData : public ProfileIOData {
   ~OffTheRecordProfileIOData() override;
 
   void InitializeInternal(
-      scoped_ptr<ChromeNetworkDelegate> chrome_network_delegate,
+      std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate,
       ProfileParams* profile_params,
       content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector
-          request_interceptors) const override;
+      content::URLRequestInterceptorScopedVector request_interceptors)
+      const override;
   void InitializeExtensionsRequestContext(
       ProfileParams* profile_params) const override;
   net::URLRequestContext* InitializeAppRequestContext(
       net::URLRequestContext* main_context,
       const StoragePartitionDescriptor& partition_descriptor,
-      scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
+      std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)
@@ -135,7 +136,7 @@ class OffTheRecordProfileIOData : public ProfileIOData {
   net::URLRequestContext* AcquireIsolatedAppRequestContext(
       net::URLRequestContext* main_context,
       const StoragePartitionDescriptor& partition_descriptor,
-      scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
+      std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)
@@ -144,20 +145,20 @@ class OffTheRecordProfileIOData : public ProfileIOData {
       net::URLRequestContext* app_context,
       const StoragePartitionDescriptor& partition_descriptor) const override;
 
-  mutable scoped_ptr<ChromeNetworkDelegate> network_delegate_;
+  mutable std::unique_ptr<ChromeNetworkDelegate> network_delegate_;
 
-  mutable scoped_ptr<net::HttpNetworkSession> http_network_session_;
-  mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
-  mutable scoped_ptr<net::FtpTransactionFactory> ftp_factory_;
+  mutable std::unique_ptr<net::HttpNetworkSession> http_network_session_;
+  mutable std::unique_ptr<net::HttpTransactionFactory> main_http_factory_;
+  mutable std::unique_ptr<net::FtpTransactionFactory> ftp_factory_;
 
-  mutable scoped_ptr<net::CookieStore> main_cookie_store_;
-  mutable scoped_ptr<net::CookieStore> extensions_cookie_store_;
+  mutable std::unique_ptr<net::CookieStore> main_cookie_store_;
+  mutable std::unique_ptr<net::CookieStore> extensions_cookie_store_;
 
-  mutable scoped_ptr<net::URLRequestJobFactory> main_job_factory_;
-  mutable scoped_ptr<net::URLRequestJobFactory> extensions_job_factory_;
+  mutable std::unique_ptr<net::URLRequestJobFactory> main_job_factory_;
+  mutable std::unique_ptr<net::URLRequestJobFactory> extensions_job_factory_;
 
-  mutable scoped_ptr<net::SdchManager> sdch_manager_;
-  mutable scoped_ptr<net::SdchOwner> sdch_policy_;
+  mutable std::unique_ptr<net::SdchManager> sdch_manager_;
+  mutable std::unique_ptr<net::SdchOwner> sdch_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileIOData);
 };

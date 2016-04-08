@@ -7,13 +7,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/task_runner.h"
 #include "chrome/browser/profiles/profile_statistics_common.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
@@ -153,7 +153,7 @@ class ProfileStatisticsAggregator
   base::CancelableTaskTracker tracker_;
 
   // Bookmark counting
-  scoped_ptr<BookmarkModelHelper> bookmark_model_helper_;
+  std::unique_ptr<BookmarkModelHelper> bookmark_model_helper_;
 
   // Password counting.
   PasswordStoreConsumerHelper password_store_consumer_helper_;

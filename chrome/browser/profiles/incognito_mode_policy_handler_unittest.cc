@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/incognito_mode_policy_handler.h"
+
+#include "base/memory/ptr_util.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/browser/configuration_policy_pref_store_test.h"
@@ -17,8 +19,8 @@ class IncognitoModePolicyHandlerTest
     : public ConfigurationPolicyPrefStoreTest {
  public:
   void SetUp() override {
-    handler_list_.AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
-          new IncognitoModePolicyHandler));
+    handler_list_.AddHandler(base::WrapUnique<ConfigurationPolicyHandler>(
+        new IncognitoModePolicyHandler));
   }
  protected:
   static const int kIncognitoModeAvailabilityNotSet = -1;

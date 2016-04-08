@@ -216,7 +216,7 @@ ProfileStatisticsAggregator::ProfileStatValue
 
   ProfileStatValue result;
   if (pref_service) {
-    scoped_ptr<base::DictionaryValue> prefs =
+    std::unique_ptr<base::DictionaryValue> prefs =
         pref_service->GetPreferenceValuesWithoutPathExpansion();
 
     int count = 0;

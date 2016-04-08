@@ -609,7 +609,7 @@ std::vector<Profile*> ProfileManager::GetLastOpenedProfiles(
   if (local_state->HasPrefPath(prefs::kProfilesLastActive) &&
       local_state->GetList(prefs::kProfilesLastActive)) {
     // Make a copy because the list might change in the calls to GetProfile.
-    scoped_ptr<base::ListValue> profile_list(
+    std::unique_ptr<base::ListValue> profile_list(
         local_state->GetList(prefs::kProfilesLastActive)->DeepCopy());
     base::ListValue::const_iterator it;
     std::string profile;

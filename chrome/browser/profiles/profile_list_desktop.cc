@@ -46,7 +46,7 @@ void ProfileListDesktop::RebuildMenu() {
       continue;
 
     gfx::Image icon = entry->GetAvatarIcon();
-    scoped_ptr<AvatarMenu::Item> item(
+    std::unique_ptr<AvatarMenu::Item> item(
         new AvatarMenu::Item(items_.size(), entry->GetPath(), icon));
     item->name = entry->GetName();
     item->username = entry->GetUserName();

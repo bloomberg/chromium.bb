@@ -4,10 +4,11 @@
 
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -231,13 +232,9 @@ gfx::Image GetSizedAvatarIcon(const gfx::Image& image,
   gfx::Size size(width, height);
 
   // Source for a centered, sized icon. GAIA images get a border.
-  scoped_ptr<gfx::ImageSkiaSource> source(
-      new AvatarImageSource(
-          *image.ToImageSkia(),
-          size,
-          std::min(width, height),
-          AvatarImageSource::POSITION_CENTER,
-          AvatarImageSource::BORDER_NONE));
+  std::unique_ptr<gfx::ImageSkiaSource> source(new AvatarImageSource(
+      *image.ToImageSkia(), size, std::min(width, height),
+      AvatarImageSource::POSITION_CENTER, AvatarImageSource::BORDER_NONE));
 
   return gfx::Image(gfx::ImageSkia(source.release(), size));
 }
@@ -268,14 +265,11 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
 
   // Source for a sized icon drawn at the bottom center of the canvas,
   // with an etched border (for GAIA images).
-  scoped_ptr<gfx::ImageSkiaSource> source(
-      new AvatarImageSource(
-          *image.ToImageSkia(),
-          dst_size,
-          size,
-          AvatarImageSource::POSITION_BOTTOM_CENTER,
-          is_gaia_image ? AvatarImageSource::BORDER_ETCHED :
-              AvatarImageSource::BORDER_NONE));
+  std::unique_ptr<gfx::ImageSkiaSource> source(
+      new AvatarImageSource(*image.ToImageSkia(), dst_size, size,
+                            AvatarImageSource::POSITION_BOTTOM_CENTER,
+                            is_gaia_image ? AvatarImageSource::BORDER_ETCHED
+                                          : AvatarImageSource::BORDER_NONE));
 
   return gfx::Image(gfx::ImageSkia(source.release(), dst_size));
 }

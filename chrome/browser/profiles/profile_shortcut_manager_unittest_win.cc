@@ -279,8 +279,8 @@ class ProfileShortcutManagerTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
-  scoped_ptr<TestingProfileManager> profile_manager_;
-  scoped_ptr<ProfileShortcutManager> profile_shortcut_manager_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<ProfileShortcutManager> profile_shortcut_manager_;
   ProfileInfoCache* profile_info_cache_;
   base::ScopedPathOverride fake_user_desktop_;
   base::ScopedPathOverride fake_system_desktop_;

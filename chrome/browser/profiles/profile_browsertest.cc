@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -13,7 +15,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
@@ -91,7 +92,7 @@ class TestURLFetcherDelegate : public net::URLFetcherDelegate {
   base::RunLoop run_loop_;
 
   bool is_complete_;
-  scoped_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLFetcherDelegate);
 };
@@ -167,12 +168,11 @@ class ProfileBrowserTest : public InProcessBrowserTest {
         base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, false));
   }
 
-  scoped_ptr<Profile> CreateProfile(
-      const base::FilePath& path,
-      Profile::Delegate* delegate,
-      Profile::CreateMode create_mode) {
-    scoped_ptr<Profile> profile(Profile::CreateProfile(
-        path, delegate, create_mode));
+  std::unique_ptr<Profile> CreateProfile(const base::FilePath& path,
+                                         Profile::Delegate* delegate,
+                                         Profile::CreateMode create_mode) {
+    std::unique_ptr<Profile> profile(
+        Profile::CreateProfile(path, delegate, create_mode));
     EXPECT_TRUE(profile.get());
 
     // Store the Profile's IO task runner so we can wind it down.
@@ -262,7 +262,7 @@ class ProfileBrowserTest : public InProcessBrowserTest {
   scoped_refptr<base::SequencedTaskRunner> profile_io_task_runner_;
 
   // URLFetcherDelegate that outlives the Profile, to test shutdown.
-  scoped_ptr<TestURLFetcherDelegate> url_fetcher_delegate_;
+  std::unique_ptr<TestURLFetcherDelegate> url_fetcher_delegate_;
 };
 
 // Test OnProfileCreate is called with is_new_profile set to true when
@@ -275,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNewProfileSynchronous) {
   EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, true));
 
   {
-    scoped_ptr<Profile> profile(CreateProfile(
+    std::unique_ptr<Profile> profile(CreateProfile(
         temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
     CheckChromeVersion(profile.get(), true);
   }
@@ -294,7 +294,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateOldProfileSynchronous) {
   EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, false));
 
   {
-    scoped_ptr<Profile> profile(CreateProfile(
+    std::unique_ptr<Profile> profile(CreateProfile(
         temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
     CheckChromeVersion(profile.get(), false);
   }
@@ -318,7 +318,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
         chrome::NOTIFICATION_PROFILE_CREATED,
         content::NotificationService::AllSources());
 
-    scoped_ptr<Profile> profile(CreateProfile(
+    std::unique_ptr<Profile> profile(CreateProfile(
         temp_dir.path(), &delegate, Profile::CREATE_MODE_ASYNCHRONOUS));
 
     // Wait for the profile to be created.
@@ -347,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
         chrome::NOTIFICATION_PROFILE_CREATED,
         content::NotificationService::AllSources());
 
-    scoped_ptr<Profile> profile(CreateProfile(
+    std::unique_ptr<Profile> profile(CreateProfile(
         temp_dir.path(), &delegate, Profile::CREATE_MODE_ASYNCHRONOUS));
 
     // Wait for the profile to be created.
@@ -372,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DISABLED_ProfileReadmeCreated) {
         chrome::NOTIFICATION_PROFILE_CREATED,
         content::NotificationService::AllSources());
 
-    scoped_ptr<Profile> profile(CreateProfile(
+    std::unique_ptr<Profile> profile(CreateProfile(
         temp_dir.path(), &delegate, Profile::CREATE_MODE_ASYNCHRONOUS));
 
     // Wait for the profile to be created.
@@ -394,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ExitType) {
   MockProfileDelegate delegate;
   EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, true));
   {
-    scoped_ptr<Profile> profile(CreateProfile(
+    std::unique_ptr<Profile> profile(CreateProfile(
         temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
 
     PrefService* prefs = profile->GetPrefs();
@@ -433,7 +433,7 @@ std::string GetExitTypePreferenceFromDisk(Profile* profile) {
   if (!base::ReadFileToString(prefs_path, &prefs))
     return std::string();
 
-  scoped_ptr<base::Value> value = base::JSONReader::Read(prefs);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(prefs);
   if (!value)
     return std::string();
 

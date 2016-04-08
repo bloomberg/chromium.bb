@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_DOWNLOADER_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_DOWNLOADER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/image_decoder.h"
 #include "components/signin/core/browser/account_info.h"
@@ -126,8 +126,8 @@ class ProfileDownloader : public net::URLFetcherDelegate,
   ProfileDownloaderDelegate* delegate_;
   std::string account_id_;
   std::string auth_token_;
-  scoped_ptr<net::URLFetcher> profile_image_fetcher_;
-  scoped_ptr<OAuth2TokenService::Request> oauth2_access_token_request_;
+  std::unique_ptr<net::URLFetcher> profile_image_fetcher_;
+  std::unique_ptr<OAuth2TokenService::Request> oauth2_access_token_request_;
   AccountInfo account_info_;
   SkBitmap profile_picture_;
   PictureStatus picture_status_;

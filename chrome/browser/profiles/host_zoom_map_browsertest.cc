@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/host_zoom_map.h"
-
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -16,7 +15,6 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -38,6 +36,7 @@
 #include "components/signin/core/common/signin_switches.h"
 #include "components/ui/zoom/page_zoom.h"
 #include "components/ui/zoom/zoom_event_manager.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -75,7 +74,7 @@ class ZoomLevelChangeObserver {
 
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   std::vector<std::string> changed_hosts_;
-  scoped_ptr<content::HostZoomMap::Subscription> subscription_;
+  std::unique_ptr<content::HostZoomMap::Subscription> subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomLevelChangeObserver);
 };
@@ -143,9 +142,9 @@ class HostZoomMapBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  scoped_ptr<net::test_server::HttpResponse> HandleRequest(
+  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
-    return scoped_ptr<net::test_server::HttpResponse>(
+    return std::unique_ptr<net::test_server::HttpResponse>(
         new net::test_server::BasicHttpResponse);
   }
 

@@ -31,7 +31,7 @@ class ProfileAvatarDownloader : public chrome::BitmapFetcherDelegate {
 
  private:
   // Downloads the avatar image from a url.
-  scoped_ptr<chrome::BitmapFetcher> fetcher_;
+  std::unique_ptr<chrome::BitmapFetcher> fetcher_;
 
   // Index of the avatar being downloaded.
   size_t icon_index_;

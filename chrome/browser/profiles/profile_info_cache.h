@@ -266,7 +266,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
   PrefService* prefs_;
   std::vector<std::string> sorted_keys_;
-  base::ScopedPtrHashMap<base::FilePath, scoped_ptr<ProfileAttributesEntry> >
+  base::ScopedPtrHashMap<base::FilePath,
+                         std::unique_ptr<ProfileAttributesEntry>>
       profile_attributes_entries_;
   base::FilePath user_data_dir_;
 

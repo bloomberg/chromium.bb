@@ -104,7 +104,7 @@ bool GAIAInfoUpdateService::IsPreSignin() const {
 void GAIAInfoUpdateService::OnProfileDownloadSuccess(
     ProfileDownloader* downloader) {
   // Make sure that |ProfileDownloader| gets deleted after return.
-  scoped_ptr<ProfileDownloader> profile_image_downloader(
+  std::unique_ptr<ProfileDownloader> profile_image_downloader(
       profile_image_downloader_.release());
 
   // Save the last updated time.

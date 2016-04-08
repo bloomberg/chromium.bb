@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_PROFILES_GAIA_INFO_UPDATE_SERVICE_H_
 #define CHROME_BROWSER_PROFILES_GAIA_INFO_UPDATE_SERVICE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
@@ -61,7 +62,7 @@ class GAIAInfoUpdateService : public KeyedService,
                        const std::string& username) override;
 
   Profile* profile_;
-  scoped_ptr<ProfileDownloader> profile_image_downloader_;
+  std::unique_ptr<ProfileDownloader> profile_image_downloader_;
   base::Time last_updated_;
   base::OneShotTimer timer_;
 

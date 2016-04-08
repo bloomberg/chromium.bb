@@ -55,20 +55,19 @@ class ProfileImplIOData : public ProfileIOData {
 
     // Init() must be called before ~Handle(). It records most of the
     // parameters needed to construct a ChromeURLRequestContextGetter.
-    void Init(
-        const base::FilePath& cookie_path,
-        const base::FilePath& channel_id_path,
-        const base::FilePath& cache_path,
-        int cache_max_size,
-        const base::FilePath& media_cache_path,
-        int media_cache_max_size,
-        const base::FilePath& extensions_cookie_path,
-        const base::FilePath& profile_path,
-        chrome_browser_net::Predictor* predictor,
-        content::CookieStoreConfig::SessionCookieMode session_cookie_mode,
-        storage::SpecialStoragePolicy* special_storage_policy,
-        scoped_ptr<domain_reliability::DomainReliabilityMonitor>
-            domain_reliability_monitor);
+    void Init(const base::FilePath& cookie_path,
+              const base::FilePath& channel_id_path,
+              const base::FilePath& cache_path,
+              int cache_max_size,
+              const base::FilePath& media_cache_path,
+              int media_cache_max_size,
+              const base::FilePath& extensions_cookie_path,
+              const base::FilePath& profile_path,
+              chrome_browser_net::Predictor* predictor,
+              content::CookieStoreConfig::SessionCookieMode session_cookie_mode,
+              storage::SpecialStoragePolicy* special_storage_policy,
+              std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
+                  domain_reliability_monitor);
 
     // These Create*ContextGetter() functions are only exposed because the
     // circular relationship between Profile, ProfileIOData::Handle, and the
@@ -125,7 +124,7 @@ class ProfileImplIOData : public ProfileIOData {
     // Collect references to context getters in reverse order, i.e. last item
     // will be main request getter. This list is passed to |io_data_|
     // for invalidation on IO thread.
-    scoped_ptr<ChromeURLRequestContextGetterVector> GetAllContextGetters();
+    std::unique_ptr<ChromeURLRequestContextGetterVector> GetAllContextGetters();
 
     // The getters will be invalidated on the IO thread before
     // ProfileIOData instance is deleted.
@@ -170,17 +169,17 @@ class ProfileImplIOData : public ProfileIOData {
   ~ProfileImplIOData() override;
 
   void InitializeInternal(
-      scoped_ptr<ChromeNetworkDelegate> chrome_network_delegate,
+      std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate,
       ProfileParams* profile_params,
       content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector
-          request_interceptors) const override;
+      content::URLRequestInterceptorScopedVector request_interceptors)
+      const override;
   void InitializeExtensionsRequestContext(
       ProfileParams* profile_params) const override;
   net::URLRequestContext* InitializeAppRequestContext(
       net::URLRequestContext* main_context,
       const StoragePartitionDescriptor& partition_descriptor,
-      scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
+      std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)
@@ -192,7 +191,7 @@ class ProfileImplIOData : public ProfileIOData {
   net::URLRequestContext* AcquireIsolatedAppRequestContext(
       net::URLRequestContext* main_context,
       const StoragePartitionDescriptor& partition_descriptor,
-      scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
+      std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)
@@ -208,37 +207,38 @@ class ProfileImplIOData : public ProfileIOData {
   void ClearNetworkingHistorySinceOnIOThread(base::Time time,
                                              const base::Closure& completion);
 
-  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyNetworkDelegate>
-       network_delegate_;
+  mutable std::unique_ptr<
+      data_reduction_proxy::DataReductionProxyNetworkDelegate>
+      network_delegate_;
 
   // Lazy initialization params.
-  mutable scoped_ptr<LazyParams> lazy_params_;
+  mutable std::unique_ptr<LazyParams> lazy_params_;
 
   mutable scoped_refptr<JsonPrefStore> network_json_store_;
 
-  mutable scoped_ptr<net::HttpNetworkSession> http_network_session_;
-  mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
-  mutable scoped_ptr<net::FtpTransactionFactory> ftp_factory_;
+  mutable std::unique_ptr<net::HttpNetworkSession> http_network_session_;
+  mutable std::unique_ptr<net::HttpTransactionFactory> main_http_factory_;
+  mutable std::unique_ptr<net::FtpTransactionFactory> ftp_factory_;
 
   // Same as |ProfileIOData::http_server_properties_|, owned there to maintain
   // destruction ordering.
   mutable net::HttpServerPropertiesManager* http_server_properties_manager_;
 
-  mutable scoped_ptr<net::CookieStore> main_cookie_store_;
-  mutable scoped_ptr<net::CookieStore> extensions_cookie_store_;
+  mutable std::unique_ptr<net::CookieStore> main_cookie_store_;
+  mutable std::unique_ptr<net::CookieStore> extensions_cookie_store_;
 
-  mutable scoped_ptr<chrome_browser_net::Predictor> predictor_;
+  mutable std::unique_ptr<chrome_browser_net::Predictor> predictor_;
 
-  mutable scoped_ptr<net::URLRequestContext> media_request_context_;
+  mutable std::unique_ptr<net::URLRequestContext> media_request_context_;
 
-  mutable scoped_ptr<net::URLRequestJobFactory> main_job_factory_;
-  mutable scoped_ptr<net::URLRequestJobFactory> extensions_job_factory_;
+  mutable std::unique_ptr<net::URLRequestJobFactory> main_job_factory_;
+  mutable std::unique_ptr<net::URLRequestJobFactory> extensions_job_factory_;
 
-  mutable scoped_ptr<domain_reliability::DomainReliabilityMonitor>
+  mutable std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
       domain_reliability_monitor_;
 
-  mutable scoped_ptr<net::SdchManager> sdch_manager_;
-  mutable scoped_ptr<net::SdchOwner> sdch_policy_;
+  mutable std::unique_ptr<net::SdchManager> sdch_manager_;
+  mutable std::unique_ptr<net::SdchOwner> sdch_policy_;
 
   // Parameters needed for isolated apps.
   base::FilePath profile_path_;

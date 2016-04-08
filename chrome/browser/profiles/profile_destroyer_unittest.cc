@@ -13,12 +13,13 @@
 class TestingOffTheRecordDestructionProfile : public TestingProfile {
  public:
   TestingOffTheRecordDestructionProfile()
-      : TestingProfile(base::FilePath(),
-                       NULL,
-                       scoped_refptr<ExtensionSpecialStoragePolicy>()
-                       scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
-                       true,
-                       TestingFactories()),
+      : TestingProfile(
+            base::FilePath(),
+            NULL,
+            scoped_refptr<ExtensionSpecialStoragePolicy>()
+                std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
+            true,
+            TestingFactories()),
         destroyed_otr_profile_(false) {
     set_incognito(true);
   }
@@ -76,13 +77,13 @@ class ProfileDestroyerTest : public BrowserWithTestWindowTest {
 TEST_F(ProfileDestroyerTest, DelayProfileDestruction) {
   scoped_refptr<content::SiteInstance> instance1(
       content::SiteInstance::Create(off_the_record_profile_));
-  scoped_ptr<content::RenderProcessHost> render_process_host1;
+  std::unique_ptr<content::RenderProcessHost> render_process_host1;
   render_process_host1.reset(instance1->GetProcess());
   ASSERT_TRUE(render_process_host1.get() != NULL);
 
   scoped_refptr<content::SiteInstance> instance2(
       content::SiteInstance::Create(off_the_record_profile_));
-  scoped_ptr<content::RenderProcessHost> render_process_host2;
+  std::unique_ptr<content::RenderProcessHost> render_process_host2;
   render_process_host2.reset(instance2->GetProcess());
   ASSERT_TRUE(render_process_host2.get() != NULL);
 
@@ -114,7 +115,7 @@ TEST_F(ProfileDestroyerTest, DelayOriginalProfileDestruction) {
 
   scoped_refptr<content::SiteInstance> instance1(
       content::SiteInstance::Create(off_the_record_profile));
-  scoped_ptr<content::RenderProcessHost> render_process_host1;
+  std::unique_ptr<content::RenderProcessHost> render_process_host1;
   render_process_host1.reset(instance1->GetProcess());
   ASSERT_TRUE(render_process_host1.get() != NULL);
 
@@ -134,7 +135,7 @@ TEST_F(ProfileDestroyerTest, DelayOriginalProfileDestruction) {
       new TestingOriginalDestructionProfile;
   scoped_refptr<content::SiteInstance> instance2(
       content::SiteInstance::Create(main_profile));
-  scoped_ptr<content::RenderProcessHost> render_process_host2;
+  std::unique_ptr<content::RenderProcessHost> render_process_host2;
   render_process_host2.reset(instance2->GetProcess());
   ASSERT_TRUE(render_process_host2.get() != NULL);
 

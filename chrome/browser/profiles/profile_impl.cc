@@ -5,6 +5,8 @@
 #include "chrome/browser/profiles/profile_impl.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -15,7 +17,7 @@
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
@@ -709,9 +711,9 @@ Profile::ProfileType ProfileImpl::GetProfileType() const {
   return REGULAR_PROFILE;
 }
 
-scoped_ptr<content::ZoomLevelDelegate> ProfileImpl::CreateZoomLevelDelegate(
-    const base::FilePath& partition_path) {
-  return make_scoped_ptr(new ChromeZoomLevelPrefs(
+std::unique_ptr<content::ZoomLevelDelegate>
+ProfileImpl::CreateZoomLevelDelegate(const base::FilePath& partition_path) {
+  return base::WrapUnique(new ChromeZoomLevelPrefs(
       GetPrefs(), GetPath(), partition_path,
       ui_zoom::ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr()));
 }
@@ -731,7 +733,7 @@ bool ProfileImpl::IsOffTheRecord() const {
 
 Profile* ProfileImpl::GetOffTheRecordProfile() {
   if (!off_the_record_profile_) {
-    scoped_ptr<Profile> p(CreateOffTheRecordProfile());
+    std::unique_ptr<Profile> p(CreateOffTheRecordProfile());
     off_the_record_profile_.swap(p);
 
     content::NotificationService::current()->Notify(
@@ -1265,13 +1267,13 @@ PrefProxyConfigTracker* ProfileImpl::CreateProxyConfigTracker() {
       GetPrefs(), g_browser_process->local_state());
 }
 
-scoped_ptr<domain_reliability::DomainReliabilityMonitor>
+std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
 ProfileImpl::CreateDomainReliabilityMonitor(PrefService* local_state) {
   domain_reliability::DomainReliabilityService* service =
       domain_reliability::DomainReliabilityServiceFactory::GetInstance()->
           GetForBrowserContext(this);
   if (!service)
-    return scoped_ptr<domain_reliability::DomainReliabilityMonitor>();
+    return std::unique_ptr<domain_reliability::DomainReliabilityMonitor>();
 
   return service->CreateMonitor(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
