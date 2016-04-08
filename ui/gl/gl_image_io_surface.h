@@ -5,6 +5,7 @@
 #ifndef UI_GL_GL_IMAGE_IO_SURFACE_H_
 #define UI_GL_GL_IMAGE_IO_SURFACE_H_
 
+#include <CoreVideo/CVPixelBuffer.h>
 #include <IOSurface/IOSurface.h>
 #include <stdint.h>
 
@@ -31,6 +32,14 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
                   gfx::GenericSharedMemoryId io_surface_id,
                   gfx::BufferFormat format);
 
+  // IOSurfaces coming from video decode are wrapped in a CVPixelBuffer
+  // and may be discarded if the owning CVPixelBuffer is destroyed. This
+  // initialization will ensure that the CVPixelBuffer be retained for the
+  // lifetime of the GLImage.
+  bool InitializeWithCVPixelBuffer(CVPixelBufferRef cv_pixel_buffer,
+                                   gfx::GenericSharedMemoryId io_surface_id,
+                                   gfx::BufferFormat format);
+
   // Overridden from GLImage:
   void Destroy(bool have_context) override;
   gfx::Size GetSize() override;
@@ -52,6 +61,7 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
 
   gfx::GenericSharedMemoryId io_surface_id() const { return io_surface_id_; }
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface();
+  base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer();
 
   static unsigned GetInternalFormatForTesting(gfx::BufferFormat format);
 
@@ -63,6 +73,7 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   const unsigned internalformat_;
   gfx::BufferFormat format_;
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
+  base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer_;
   gfx::GenericSharedMemoryId io_surface_id_;
   base::ThreadChecker thread_checker_;
 

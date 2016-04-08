@@ -864,7 +864,7 @@ void VTVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_id) {
   DCHECK(gpu_thread_checker_.CalledOnValidThread());
   DCHECK(picture_info_map_.count(picture_id));
   PictureInfo* picture_info = picture_info_map_.find(picture_id)->second.get();
-  DCHECK_EQ(CFGetRetainCount(picture_info->cv_image), 1);
+  DCHECK_EQ(CFGetRetainCount(picture_info->cv_image), 2);
   picture_info->cv_image.reset();
   picture_info->gl_image->Destroy(false);
   picture_info->gl_image = nullptr;
@@ -1037,12 +1037,11 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
     return false;
   }
 
-  IOSurfaceRef io_surface = CVPixelBufferGetIOSurface(frame.image.get());
-
   scoped_refptr<gl::GLImageIOSurface> gl_image(
       new gl::GLImageIOSurface(frame.coded_size, GL_BGRA_EXT));
-  if (!gl_image->Initialize(io_surface, gfx::GenericSharedMemoryId(),
-        gfx::BufferFormat::YUV_420_BIPLANAR)) {
+  if (!gl_image->InitializeWithCVPixelBuffer(
+          frame.image.get(), gfx::GenericSharedMemoryId(),
+          gfx::BufferFormat::YUV_420_BIPLANAR)) {
     NOTIFY_STATUS("Failed to initialize GLImageIOSurface", PLATFORM_FAILURE,
         SFT_PLATFORM_ERROR);
   }

@@ -221,6 +221,23 @@ bool GLImageIOSurface::Initialize(IOSurfaceRef io_surface,
   return true;
 }
 
+bool GLImageIOSurface::InitializeWithCVPixelBuffer(
+    CVPixelBufferRef cv_pixel_buffer,
+    gfx::GenericSharedMemoryId io_surface_id,
+    BufferFormat format) {
+  IOSurfaceRef io_surface = CVPixelBufferGetIOSurface(cv_pixel_buffer);
+  if (!io_surface) {
+    LOG(ERROR) << "Can't init GLImage from CVPixelBuffer with no IOSurface";
+    return false;
+  }
+
+  if (!Initialize(io_surface, io_surface_id, format))
+    return false;
+
+  cv_pixel_buffer_.reset(cv_pixel_buffer, base::scoped_policy::RETAIN);
+  return true;
+}
+
 void GLImageIOSurface::Destroy(bool have_context) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (have_context && framebuffer_) {
@@ -231,6 +248,7 @@ void GLImageIOSurface::Destroy(bool have_context) {
     glDeleteFramebuffersEXT(1, &framebuffer_);
   }
   io_surface_.reset();
+  cv_pixel_buffer_.reset();
 }
 
 gfx::Size GLImageIOSurface::GetSize() {
@@ -414,6 +432,10 @@ void GLImageIOSurface::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
 
 base::ScopedCFTypeRef<IOSurfaceRef> GLImageIOSurface::io_surface() {
   return io_surface_;
+}
+
+base::ScopedCFTypeRef<CVPixelBufferRef> GLImageIOSurface::cv_pixel_buffer() {
+  return cv_pixel_buffer_;
 }
 
 // static
