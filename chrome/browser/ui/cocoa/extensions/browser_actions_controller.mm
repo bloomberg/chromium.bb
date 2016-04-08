@@ -679,9 +679,10 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
   // Cocoa goes a little crazy if we try and change animations while adjusting
   // child frames (i.e., the buttons). If the toolbar is already animating,
   // just jump to the new frame. (This typically only happens if someone is
-  // "spamming" a button to add/remove an action.)
+  // "spamming" a button to add/remove an action.) If the window isn't visible
+  // (for example it's in the process of being created), don't bother animating.
   BOOL animate = !toolbarActionsBar_->suppress_animation() &&
-      ![containerView_ isAnimating];
+      ![containerView_ isAnimating] && [[containerView_ window] isVisible];
   [self updateContainerVisibility];
   [containerView_ resizeToWidth:width
                         animate:animate];
