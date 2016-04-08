@@ -10,7 +10,7 @@
 
 // A protocol implemented by a provider of labels and actions for a context
 // menu.
-@protocol CRWContextMenuProvider
+@protocol CRWContextMenuProvider<NSObject>
 
 // Returns a CRUContextMenuHolder with the titles and actions associated with
 // each menu item. The "Cancel" item is automatically added when constructing
