@@ -722,7 +722,13 @@ public:
 
     // Checks that the given audio sink exists and is authorized. The result is provided via the callbacks.
     // This method takes ownership of the callbacks pointer.
-    virtual void checkIfAudioSinkExistsAndIsAuthorized(const WebString& sinkId, const WebSecurityOrigin&, WebSetSinkIdCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void checkIfAudioSinkExistsAndIsAuthorized(const WebString& sinkId, const WebSecurityOrigin&, WebSetSinkIdCallbacks* callbacks)
+    {
+        if (callbacks) {
+            callbacks->onError(WebSetSinkIdError::NotSupported);
+            delete callbacks;
+        }
+    }
 
     // Mojo ----------------------------------------------------------------
     virtual ServiceRegistry* serviceRegistry() { return nullptr; }

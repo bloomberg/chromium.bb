@@ -35,11 +35,7 @@ public:
     // cross process sharing. See crbug.com/492102 for design docs.
     // Subsequent MemoryAllocatorDump(s) with the same |absolute_name| are
     // expected to have the same guid.
-    virtual WebMemoryAllocatorDumpGuid guid() const
-    {
-        BLINK_ASSERT_NOT_REACHED();
-        return 0;
-    }
+    virtual WebMemoryAllocatorDumpGuid guid() const = 0;
 };
 
 } // namespace blink

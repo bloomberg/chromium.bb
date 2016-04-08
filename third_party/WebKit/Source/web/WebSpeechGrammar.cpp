@@ -48,13 +48,13 @@ WebSpeechGrammar& WebSpeechGrammar::operator=(SpeechGrammar* value)
 
 WebURL WebSpeechGrammar::src() const
 {
-    BLINK_ASSERT(m_private.get());
+    DCHECK(m_private.get());
     return m_private->src();
 }
 
 float WebSpeechGrammar::weight() const
 {
-    BLINK_ASSERT(m_private.get());
+    DCHECK(m_private.get());
     return m_private->weight();
 }
 

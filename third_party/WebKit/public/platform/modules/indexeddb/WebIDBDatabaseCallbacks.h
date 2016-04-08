@@ -36,11 +36,11 @@ class WebIDBDatabaseCallbacks {
 public:
     virtual ~WebIDBDatabaseCallbacks() { }
 
-    virtual void onForcedClose() { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void onVersionChange(long long oldVersion, long long newVersion) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onForcedClose() = 0;
+    virtual void onVersionChange(long long oldVersion, long long newVersion) = 0;
 
-    virtual void onAbort(long long transactionId, const WebIDBDatabaseError&) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void onComplete(long long transactionId) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onAbort(long long transactionId, const WebIDBDatabaseError&) = 0;
+    virtual void onComplete(long long transactionId) = 0;
 };
 
 } // namespace blink

@@ -66,7 +66,6 @@
       'exported/FilePathConversion.cpp',
       'exported/URLConversion.cpp',
       'exported/WebCString.cpp',
-      'exported/WebCommon.cpp',
       'exported/WebString.cpp',
     ],
   },

@@ -126,7 +126,7 @@ void MediaKeyStatusMap::addEntry(WebData keyId, const String& status)
 
 const MediaKeyStatusMap::MapEntry& MediaKeyStatusMap::at(size_t index) const
 {
-    BLINK_ASSERT(index < m_entries.size());
+    DCHECK_LT(index, m_entries.size());
     return *m_entries.at(index);
 }
 

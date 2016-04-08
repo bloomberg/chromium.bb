@@ -111,13 +111,9 @@ TEST(LinkHighlightImplTest, verifyWebViewImplIntegration)
 
 namespace {
 
-class FakeWebFrameClient : public WebFrameClient {
-    // To make the destructor public.
-};
-
 class FakeCompositingWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
-    FakeWebFrameClient m_fakeWebFrameClient;
+    FrameTestHelpers::TestWebFrameClient m_fakeWebFrameClient;
 };
 
 FakeCompositingWebViewClient* compositingWebViewClient()

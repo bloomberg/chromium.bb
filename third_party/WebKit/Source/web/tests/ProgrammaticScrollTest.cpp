@@ -20,9 +20,6 @@
 
 namespace blink {
 
-class MockWebFrameClient : public WebFrameClient {
-};
-
 class ProgrammaticScrollTest : public testing::Test {
 public:
     ProgrammaticScrollTest()
@@ -44,7 +41,7 @@ protected:
     }
 
     std::string m_baseURL;
-    MockWebFrameClient m_mockWebFrameClient;
+    FrameTestHelpers::TestWebFrameClient m_mockWebFrameClient;
 };
 
 TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale)

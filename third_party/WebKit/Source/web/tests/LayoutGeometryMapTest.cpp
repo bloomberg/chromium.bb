@@ -44,9 +44,6 @@
 
 namespace blink {
 
-class MockWebFrameClient : public WebFrameClient {
-};
-
 class LayoutGeometryMapTest : public testing::Test {
 public:
     LayoutGeometryMapTest()
@@ -126,7 +123,7 @@ protected:
     }
 
     const std::string m_baseURL;
-    MockWebFrameClient m_mockWebViewClient;
+    FrameTestHelpers::TestWebFrameClient m_mockWebViewClient;
 };
 
 TEST_F(LayoutGeometryMapTest, SimpleGeometryMapTest)

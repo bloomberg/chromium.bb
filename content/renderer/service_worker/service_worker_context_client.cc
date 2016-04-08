@@ -613,6 +613,13 @@ void ServiceWorkerContextClient::postMessageToClient(
                             base::Passed(&channel_array)));
 }
 
+void ServiceWorkerContextClient::postMessageToCrossOriginClient(
+    const blink::WebCrossOriginServiceWorkerClient&,
+    const blink::WebString&,
+    blink::WebMessagePortChannelArray*) {
+  NOTREACHED();
+}
+
 void ServiceWorkerContextClient::focus(
     const blink::WebString& uuid,
     blink::WebServiceWorkerClientCallbacks* callback) {

@@ -42,9 +42,9 @@ class WebIDBFactory {
 public:
     virtual ~WebIDBFactory() { }
 
-    virtual void getDatabaseNames(WebIDBCallbacks* callbacks, const WebSecurityOrigin&) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void open(const WebString& name, long long version, long long transactionId, WebIDBCallbacks* callbacks, WebIDBDatabaseCallbacks* databaseCallbacks, const WebSecurityOrigin&) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void deleteDatabase(const WebString& name, WebIDBCallbacks* callbacks, const WebSecurityOrigin&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void getDatabaseNames(WebIDBCallbacks*, const WebSecurityOrigin&) = 0;
+    virtual void open(const WebString& name, long long version, long long transactionId, WebIDBCallbacks*, WebIDBDatabaseCallbacks*, const WebSecurityOrigin&) = 0;
+    virtual void deleteDatabase(const WebString& name, WebIDBCallbacks*, const WebSecurityOrigin&) = 0;
 };
 
 } // namespace blink

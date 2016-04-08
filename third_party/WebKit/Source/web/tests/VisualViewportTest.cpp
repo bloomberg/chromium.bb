@@ -1012,7 +1012,7 @@ TEST_P(ParameterizedVisualViewportTest, TestWebViewResizeCausesViewportConstrain
     EXPECT_TRUE(navbar->needsLayout());
 }
 
-class MockWebFrameClient : public WebFrameClient {
+class MockWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     MOCK_METHOD1(showContextMenu, void(const WebContextMenuData&));
     MOCK_METHOD1(didChangeScrollOffset, void(WebLocalFrame*));

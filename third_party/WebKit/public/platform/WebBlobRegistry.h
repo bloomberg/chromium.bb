@@ -77,7 +77,7 @@ public:
 
     // Caller takes ownership of the Builder. The blob is finalized (and sent to
     // the browser) on calling build() on the Builder object.
-    virtual Builder* createBuilder(const WebString& uuid, const WebString& contentType) { BLINK_ASSERT_NOT_REACHED(); return nullptr; }
+    virtual Builder* createBuilder(const WebString& uuid, const WebString& contentType) = 0;
 
     virtual void addBlobDataRef(const WebString& uuid) { }
     virtual void removeBlobDataRef(const WebString& uuid) { }
@@ -86,28 +86,28 @@ public:
 
     // Registers a stream URL referring to a stream with the specified media
     // type.
-    virtual void registerStreamURL(const WebURL&, const WebString&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void registerStreamURL(const WebURL&, const WebString&) = 0;
 
     // Registers a stream URL referring to the stream identified by the
     // specified srcURL.
-    virtual void registerStreamURL(const WebURL&, const WebURL& srcURL) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void registerStreamURL(const WebURL&, const WebURL& srcURL) = 0;
 
     // Add data to the stream referred by the URL.
-    virtual void addDataToStream(const WebURL&, const char* data, size_t length) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void addDataToStream(const WebURL&, const char* data, size_t length) = 0;
 
     // Flush contents buffered in the stream to the corresponding reader.
-    virtual void flushStream(const WebURL&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void flushStream(const WebURL&) = 0;
 
     // Tell the registry that construction of this stream has completed
     // successfully and so it won't receive any more data.
-    virtual void finalizeStream(const WebURL&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void finalizeStream(const WebURL&) = 0;
 
     // Tell the registry that construction of this stream has been aborted and
     // so it won't receive any more data.
-    virtual void abortStream(const WebURL&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void abortStream(const WebURL&) = 0;
 
     // Unregisters a stream referred by the URL.
-    virtual void unregisterStreamURL(const WebURL&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void unregisterStreamURL(const WebURL&) = 0;
 };
 
 } // namespace blink

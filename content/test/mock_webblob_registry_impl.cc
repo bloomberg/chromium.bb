@@ -24,6 +24,13 @@ void MockWebBlobRegistryImpl::registerBlobData(const WebString& uuid,
                                                const WebBlobData& data) {
 }
 
+MockWebBlobRegistryImpl::Builder* MockWebBlobRegistryImpl::createBuilder(
+    const blink::WebString& uuid,
+    const blink::WebString& contentType) {
+  NOTREACHED();
+  return nullptr;
+}
+
 void MockWebBlobRegistryImpl::addBlobDataRef(const WebString& uuid) {
 }
 

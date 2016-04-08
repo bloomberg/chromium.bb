@@ -93,23 +93,6 @@ typedef unsigned short WebUChar;
 // Latin-1 character type
 typedef unsigned char WebLChar;
 
-// -----------------------------------------------------------------------------
-// Assertions
-
-BLINK_COMMON_EXPORT void failedAssertion(const char* file, int line, const char* function, const char* assertion);
-
 } // namespace blink
-
-// Ideally, only use inside the public directory but outside of INSIDE_BLINK blocks.  (Otherwise use WTF's ASSERT.)
-#if defined(NDEBUG)
-#define BLINK_ASSERT(assertion) ((void)0)
-#else
-#define BLINK_ASSERT(assertion) do { \
-    if (!(assertion)) \
-        failedAssertion(__FILE__, __LINE__, __FUNCTION__, #assertion); \
-} while (0)
-#endif
-
-#define BLINK_ASSERT_NOT_REACHED() BLINK_ASSERT(0)
 
 #endif

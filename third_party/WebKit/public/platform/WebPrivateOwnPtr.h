@@ -29,6 +29,7 @@
 
 #include "WebCommon.h"
 #include "WebNonCopyable.h"
+#include "base/logging.h"
 #include <cstddef>
 
 #if INSIDE_BLINK
@@ -48,7 +49,7 @@ class WebPrivateOwnPtr : public WebNonCopyable {
 public:
     WebPrivateOwnPtr() : m_ptr(nullptr) {}
     WebPrivateOwnPtr(std::nullptr_t) : m_ptr(nullptr) {}
-    ~WebPrivateOwnPtr() { BLINK_ASSERT(!m_ptr); }
+    ~WebPrivateOwnPtr() { DCHECK(!m_ptr); }
 
     explicit WebPrivateOwnPtr(T* ptr)
         : m_ptr(ptr)
@@ -80,13 +81,13 @@ public:
 
     T& operator*() const
     {
-        BLINK_ASSERT(m_ptr);
+        DCHECK(m_ptr);
         return *m_ptr;
     }
 
     T* operator->() const
     {
-        BLINK_ASSERT(m_ptr);
+        DCHECK(m_ptr);
         return m_ptr;
     }
 #endif // INSIDE_BLINK

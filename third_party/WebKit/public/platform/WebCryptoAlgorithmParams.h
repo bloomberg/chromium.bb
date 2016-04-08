@@ -35,6 +35,7 @@
 #include "WebCryptoAlgorithm.h"
 #include "WebCryptoKey.h"
 #include "WebVector.h"
+#include "base/logging.h"
 
 namespace blink {
 
@@ -77,7 +78,7 @@ public:
     explicit WebCryptoAlgorithmParamsWithHash(const WebCryptoAlgorithm& hash)
         : m_hash(hash)
     {
-        BLINK_ASSERT(!hash.isNull());
+        DCHECK(!hash.isNull());
     }
 
     const WebCryptoAlgorithm& hash() const { return m_hash; }
@@ -135,7 +136,7 @@ public:
         , m_hasLengthBits(hasLengthBits)
         , m_optionalLengthBits(lengthBits)
     {
-        BLINK_ASSERT(hasLengthBits || !lengthBits);
+        DCHECK(hasLengthBits || !lengthBits);
     }
 
     virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeHmacImportParams; }
@@ -156,7 +157,7 @@ public:
         , m_hasLengthBits(hasLengthBits)
         , m_optionalLengthBits(lengthBits)
     {
-        BLINK_ASSERT(hasLengthBits || !lengthBits);
+        DCHECK(hasLengthBits || !lengthBits);
     }
 
     virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeHmacKeyGenParams; }
@@ -179,8 +180,8 @@ public:
         , m_hasTagLengthBits(hasTagLengthBits)
         , m_optionalTagLengthBits(tagLengthBits)
     {
-        BLINK_ASSERT(hasAdditionalData || !additionalDataSize);
-        BLINK_ASSERT(hasTagLengthBits || !tagLengthBits);
+        DCHECK(hasAdditionalData || !additionalDataSize);
+        DCHECK(hasTagLengthBits || !tagLengthBits);
     }
 
     virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeAesGcmParams; }
@@ -218,7 +219,7 @@ public:
         , m_publicExponent(publicExponent, publicExponentSize)
         , m_hash(hash)
     {
-        BLINK_ASSERT(!hash.isNull());
+        DCHECK(!hash.isNull());
     }
 
     virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams; }
@@ -255,7 +256,7 @@ public:
         : m_hasLabel(hasLabel)
         , m_optionalLabel(label, labelSize)
     {
-        BLINK_ASSERT(hasLabel || !labelSize);
+        DCHECK(hasLabel || !labelSize);
     }
 
     virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeRsaOaepParams; }

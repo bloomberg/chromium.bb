@@ -15,6 +15,7 @@
 #include "media/base/audio_hardware_config.h"
 #include "media/base/media_log.h"
 #include "media/base/test_helpers.h"
+#include "media/blink/mock_webframeclient.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/blink/webmediaplayer_params.h"
@@ -33,10 +34,6 @@ namespace media {
 int64_t OnAdjustAllocatedMemory(int64_t delta) {
   return 0;
 }
-
-// Dummy superclass necessary since blink::WebFrameClient() has a protected
-// destructor.
-class DummyWebFrameClient : public blink::WebFrameClient {};
 
 class DummyWebMediaPlayerClient : public blink::WebMediaPlayerClient {
  public:
@@ -172,7 +169,7 @@ class WebMediaPlayerImplTest : public testing::Test {
   base::Thread media_thread_;
 
   // Blink state.
-  DummyWebFrameClient web_frame_client_;
+  MockWebFrameClient web_frame_client_;
   blink::WebView* web_view_;
   blink::WebLocalFrame* web_local_frame_;
 

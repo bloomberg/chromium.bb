@@ -30,6 +30,16 @@ public:
     MOCK_METHOD0(workerScriptLoaded, void());
     MOCK_METHOD1(createServiceWorkerNetworkProvider, WebServiceWorkerNetworkProvider*(WebDataSource*));
     MOCK_METHOD0(createServiceWorkerProvider, WebServiceWorkerProvider*());
+    void getClient(const WebString&, WebServiceWorkerClientCallbacks*) override { NOTREACHED(); }
+    void getClients(const WebServiceWorkerClientQueryOptions&, WebServiceWorkerClientsCallbacks*) override { NOTREACHED(); }
+    void openWindow(const WebURL&, WebServiceWorkerClientCallbacks*) override { NOTREACHED(); }
+    void postMessageToClient(const WebString& uuid, const WebString&, WebMessagePortChannelArray*) override { NOTREACHED(); }
+    void postMessageToCrossOriginClient(const WebCrossOriginServiceWorkerClient&, const WebString&, WebMessagePortChannelArray*) override { NOTREACHED(); }
+    void skipWaiting(WebServiceWorkerSkipWaitingCallbacks*) override { NOTREACHED(); }
+    void claim(WebServiceWorkerClientsClaimCallbacks*) override { NOTREACHED(); }
+    void focus(const WebString& uuid, WebServiceWorkerClientCallbacks*) override { NOTREACHED(); }
+    void navigate(const WebString& uuid, const WebURL&, WebServiceWorkerClientCallbacks*) override { NOTREACHED(); }
+    void registerForeignFetchScopes(const WebVector<WebURL>& subScopes, const WebVector<WebSecurityOrigin>& origins) override { NOTREACHED(); }
 };
 
 class WebEmbeddedWorkerImplTest : public ::testing::Test {

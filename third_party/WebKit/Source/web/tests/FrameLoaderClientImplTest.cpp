@@ -49,7 +49,7 @@ using testing::Return;
 namespace blink {
 namespace {
 
-class MockWebFrameClient : public WebFrameClient {
+class MockWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     ~MockWebFrameClient() override { }
 

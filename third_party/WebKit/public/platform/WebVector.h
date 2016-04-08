@@ -32,6 +32,7 @@
 #define WebVector_h
 
 #include "WebCommon.h"
+#include "base/logging.h"
 
 #include <algorithm>
 #include <vector>
@@ -124,13 +125,13 @@ public:
 
     T& operator[](size_t i)
     {
-        BLINK_ASSERT(i < m_data.size());
+        DCHECK_LT(i, m_data.size());
         return m_data[i];
     }
 
     const T& operator[](size_t i) const
     {
-        BLINK_ASSERT(i < m_data.size());
+        DCHECK_LT(i, m_data.size());
         return m_data[i];
     }
 

@@ -61,11 +61,6 @@ private:
     WebNavigationPolicy* m_target;
 };
 
-class TestWebFrameClient : public WebFrameClient {
-public:
-    ~TestWebFrameClient() override { }
-};
-
 } // anonymous namespace
 
 class GetNavigationPolicyTest : public testing::Test {
@@ -116,7 +111,7 @@ protected:
     TestWebViewClient m_webViewClient;
     WebViewImpl* m_webView;
     WebFrame* m_mainFrame;
-    TestWebFrameClient m_webFrameClient;
+    FrameTestHelpers::TestWebFrameClient m_webFrameClient;
     Persistent<ChromeClientImpl> m_chromeClientImpl;
 };
 

@@ -38,13 +38,13 @@ class WebSpeechRecognizerClient;
 class WebSpeechRecognizer {
 public:
     // Start speech recognition for the specified handle using the specified parameters. Notifications on progress, results, and errors will be sent via the client.
-    virtual void start(const WebSpeechRecognitionHandle&, const WebSpeechRecognitionParams&, WebSpeechRecognizerClient*) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void start(const WebSpeechRecognitionHandle&, const WebSpeechRecognitionParams&, WebSpeechRecognizerClient*) = 0;
 
     // Stop speech recognition for the specified handle, returning any results for the audio recorded so far. Notifications and errors are sent via the client.
-    virtual void stop(const WebSpeechRecognitionHandle&, WebSpeechRecognizerClient*) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void stop(const WebSpeechRecognitionHandle&, WebSpeechRecognizerClient*) = 0;
 
     // Abort speech recognition for the specified handle, discarding any recorded audio. Notifications and errors are sent via the client.
-    virtual void abort(const WebSpeechRecognitionHandle&, WebSpeechRecognizerClient*) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void abort(const WebSpeechRecognitionHandle&, WebSpeechRecognizerClient*) = 0;
 
 protected:
     virtual ~WebSpeechRecognizer() { }

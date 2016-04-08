@@ -32,6 +32,7 @@
 #define WebPrivatePtr_h
 
 #include "WebCommon.h"
+#include "base/logging.h"
 
 #if INSIDE_BLINK
 #include "platform/heap/Handle.h"
@@ -248,7 +249,7 @@ public:
         // want to expose destructors of core classes to embedders. We should
         // call reset() manually in destructors of classes with WebPrivatePtr
         // members.
-        BLINK_ASSERT(!m_storage);
+        DCHECK(!m_storage);
     }
 
     bool isNull() const { return !m_storage; }

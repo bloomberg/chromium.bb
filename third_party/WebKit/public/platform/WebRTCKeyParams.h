@@ -32,6 +32,7 @@
 #define WebRTCKeyParams_h
 
 #include "WebCommon.h"
+#include "base/logging.h"
 
 namespace blink {
 
@@ -69,12 +70,12 @@ public:
     WebRTCKeyType keyType() const { return m_keyType; }
     WebRTCRSAParams rsaParams() const
     {
-        BLINK_ASSERT(m_keyType == WebRTCKeyTypeRSA);
+        DCHECK_EQ(m_keyType, WebRTCKeyTypeRSA);
         return m_params.rsa;
     }
     WebRTCECCurve ecCurve() const
     {
-        BLINK_ASSERT(m_keyType == WebRTCKeyTypeECDSA);
+        DCHECK_EQ(m_keyType, WebRTCKeyTypeECDSA);
         return m_params.ecCurve;
     }
 
