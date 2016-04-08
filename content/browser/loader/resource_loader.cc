@@ -132,8 +132,8 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
 
 }  // namespace
 
-ResourceLoader::ResourceLoader(scoped_ptr<net::URLRequest> request,
-                               scoped_ptr<ResourceHandler> handler,
+ResourceLoader::ResourceLoader(std::unique_ptr<net::URLRequest> request,
+                               std::unique_ptr<ResourceHandler> handler,
                                CertStore* cert_store,
                                ResourceLoaderDelegate* delegate)
     : deferred_stage_(DEFERRED_NONE),

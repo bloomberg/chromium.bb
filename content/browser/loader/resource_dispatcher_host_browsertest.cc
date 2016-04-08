@@ -280,14 +280,14 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 namespace {
 
 // Handles |request| by serving a redirect response.
-scoped_ptr<net::test_server::HttpResponse> NoContentResponseHandler(
+std::unique_ptr<net::test_server::HttpResponse> NoContentResponseHandler(
     const std::string& path,
     const net::test_server::HttpRequest& request) {
   if (!base::StartsWith(path, request.relative_url,
                         base::CompareCase::SENSITIVE))
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return std::unique_ptr<net::test_server::HttpResponse>();
 
-  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_NO_CONTENT);
   return std::move(http_response);
@@ -465,14 +465,14 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 
 namespace {
 
-scoped_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
+std::unique_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
     const std::string& request_path,
     const net::test_server::HttpRequest& request) {
   if (!base::StartsWith(request.relative_url, request_path,
                         base::CompareCase::SENSITIVE))
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return std::unique_ptr<net::test_server::HttpResponse>();
 
-  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_FOUND);
   http_response->AddCustomHeader(
@@ -678,7 +678,7 @@ class LoFiResourceDispatcherHostBrowserTest : public ContentBrowserTest {
   }
 
  private:
-  scoped_ptr<LoFiModeResourceDispatcherHostDelegate> delegate_;
+  std::unique_ptr<LoFiModeResourceDispatcherHostDelegate> delegate_;
 };
 
 // Test that navigating with ShouldEnableLoFiMode returning true fetches the

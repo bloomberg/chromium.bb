@@ -14,7 +14,7 @@
 namespace content {
 
 ThrottlingResourceHandler::ThrottlingResourceHandler(
-    scoped_ptr<ResourceHandler> next_handler,
+    std::unique_ptr<ResourceHandler> next_handler,
     net::URLRequest* request,
     ScopedVector<ResourceThrottle> throttles)
     : LayeredResourceHandler(request, std::move(next_handler)),

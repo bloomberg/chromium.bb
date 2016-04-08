@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 #include "net/base/priority_queue.h"
@@ -61,10 +61,11 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
   // Requests that this ResourceScheduler schedule, and eventually loads, the
   // specified |url_request|. Caller should delete the returned ResourceThrottle
   // when the load completes or is canceled, before |url_request| is deleted.
-  scoped_ptr<ResourceThrottle> ScheduleRequest(int child_id,
-                                               int route_id,
-                                               bool is_async,
-                                               net::URLRequest* url_request);
+  std::unique_ptr<ResourceThrottle> ScheduleRequest(
+      int child_id,
+      int route_id,
+      bool is_async,
+      net::URLRequest* url_request);
 
   // Signals from the UI thread, posted as tasks on the IO thread:
 

@@ -61,7 +61,7 @@ static const int kMaxReadBufSize = 524288;
 class RedirectToFileResourceHandler::Writer {
  public:
   Writer(RedirectToFileResourceHandler* handler,
-         scoped_ptr<net::FileStream> file_stream,
+         std::unique_ptr<net::FileStream> file_stream,
          ShareableFileReference* deletable_file)
       : handler_(handler),
         file_stream_(std::move(file_stream)),
@@ -119,7 +119,7 @@ class RedirectToFileResourceHandler::Writer {
 
   RedirectToFileResourceHandler* handler_;
 
-  scoped_ptr<net::FileStream> file_stream_;
+  std::unique_ptr<net::FileStream> file_stream_;
   bool is_writing_;
 
   // We create a ShareableFileReference that's deletable for the temp file
@@ -130,7 +130,7 @@ class RedirectToFileResourceHandler::Writer {
 };
 
 RedirectToFileResourceHandler::RedirectToFileResourceHandler(
-    scoped_ptr<ResourceHandler> next_handler,
+    std::unique_ptr<ResourceHandler> next_handler,
     net::URLRequest* request)
     : LayeredResourceHandler(request, std::move(next_handler)),
       buf_(new net::GrowableIOBuffer()),
@@ -243,7 +243,7 @@ void RedirectToFileResourceHandler::OnResponseCompleted(
 
 void RedirectToFileResourceHandler::DidCreateTemporaryFile(
     base::File::Error error_code,
-    scoped_ptr<net::FileStream> file_stream,
+    std::unique_ptr<net::FileStream> file_stream,
     ShareableFileReference* deletable_file) {
   DCHECK(!writer_);
   if (error_code != base::File::FILE_OK) {

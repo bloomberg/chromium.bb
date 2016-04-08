@@ -5,7 +5,8 @@
 #ifndef CONTENT_BROWSER_LOADER_LAYERED_RESOURCE_HANDLER_H_
 #define CONTENT_BROWSER_LOADER_LAYERED_RESOURCE_HANDLER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/browser/loader/resource_handler.h"
 #include "content/common/content_export.h"
 
@@ -20,7 +21,7 @@ namespace content {
 class CONTENT_EXPORT LayeredResourceHandler : public ResourceHandler {
  public:
   LayeredResourceHandler(net::URLRequest* request,
-                         scoped_ptr<ResourceHandler> next_handler);
+                         std::unique_ptr<ResourceHandler> next_handler);
   ~LayeredResourceHandler() override;
 
   // ResourceHandler implementation:
@@ -40,7 +41,7 @@ class CONTENT_EXPORT LayeredResourceHandler : public ResourceHandler {
                            bool* defer) override;
   void OnDataDownloaded(int bytes_downloaded) override;
 
-  scoped_ptr<ResourceHandler> next_handler_;
+  std::unique_ptr<ResourceHandler> next_handler_;
 };
 
 }  // namespace content

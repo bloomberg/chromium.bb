@@ -12,7 +12,7 @@ namespace content {
 
 LayeredResourceHandler::LayeredResourceHandler(
     net::URLRequest* request,
-    scoped_ptr<ResourceHandler> next_handler)
+    std::unique_ptr<ResourceHandler> next_handler)
     : ResourceHandler(request), next_handler_(std::move(next_handler)) {}
 
 LayeredResourceHandler::~LayeredResourceHandler() {

@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_LOADER_RESOURCE_LOADER_H_
 #define CONTENT_BROWSER_LOADER_RESOURCE_LOADER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "content/browser/loader/resource_handler.h"
@@ -35,8 +36,8 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
                                       public SSLClientAuthHandler::Delegate,
                                       public ResourceController {
  public:
-  ResourceLoader(scoped_ptr<net::URLRequest> request,
-                 scoped_ptr<ResourceHandler> handler,
+  ResourceLoader(std::unique_ptr<net::URLRequest> request,
+                 std::unique_ptr<ResourceHandler> handler,
                  CertStore* cert_store,
                  ResourceLoaderDelegate* delegate);
   ~ResourceLoader() override;
@@ -136,12 +137,12 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   };
   DeferredStage deferred_stage_;
 
-  scoped_ptr<net::URLRequest> request_;
-  scoped_ptr<ResourceHandler> handler_;
+  std::unique_ptr<net::URLRequest> request_;
+  std::unique_ptr<ResourceHandler> handler_;
   ResourceLoaderDelegate* delegate_;
 
   scoped_refptr<ResourceDispatcherHostLoginDelegate> login_delegate_;
-  scoped_ptr<SSLClientAuthHandler> ssl_client_auth_handler_;
+  std::unique_ptr<SSLClientAuthHandler> ssl_client_auth_handler_;
 
   base::TimeTicks read_deferral_start_time_;
 

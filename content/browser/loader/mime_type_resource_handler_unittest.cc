@@ -6,10 +6,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
@@ -87,14 +88,14 @@ class TestResourceDispatcherHost : public ResourceDispatcherHostImpl {
 
   bool intercepted_as_stream() const { return intercepted_as_stream_; }
 
-  scoped_ptr<ResourceHandler> CreateResourceHandlerForDownload(
+  std::unique_ptr<ResourceHandler> CreateResourceHandlerForDownload(
       net::URLRequest* request,
       bool is_content_initiated,
       bool must_download) override {
-    return scoped_ptr<ResourceHandler>(new TestResourceHandler);
+    return std::unique_ptr<ResourceHandler>(new TestResourceHandler);
   }
 
-  scoped_ptr<ResourceHandler> MaybeInterceptAsStream(
+  std::unique_ptr<ResourceHandler> MaybeInterceptAsStream(
       const base::FilePath& plugin_path,
       net::URLRequest* request,
       ResourceResponse* response,
@@ -102,9 +103,9 @@ class TestResourceDispatcherHost : public ResourceDispatcherHostImpl {
     intercepted_as_stream_count_++;
     if (stream_has_handler_) {
       intercepted_as_stream_ = true;
-      return scoped_ptr<ResourceHandler>(new TestResourceHandler);
+      return std::unique_ptr<ResourceHandler>(new TestResourceHandler);
     } else {
-      return scoped_ptr<ResourceHandler>();
+      return std::unique_ptr<ResourceHandler>();
     }
   }
 
@@ -238,7 +239,7 @@ bool MimeTypeResourceHandlerTest::TestStreamIsIntercepted(
     bool must_download,
     ResourceType request_resource_type) {
   net::URLRequestContext context;
-  scoped_ptr<net::URLRequest> request(context.CreateRequest(
+  std::unique_ptr<net::URLRequest> request(context.CreateRequest(
       GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr));
   bool is_main_frame = request_resource_type == RESOURCE_TYPE_MAIN_FRAME;
   ResourceRequestInfo::AllocateForTesting(
@@ -259,9 +260,10 @@ bool MimeTypeResourceHandlerTest::TestStreamIsIntercepted(
   host.SetDelegate(&host_delegate);
 
   TestFakePluginService plugin_service(plugin_available_, plugin_stale_);
-  scoped_ptr<ResourceHandler> mime_sniffing_handler(new MimeTypeResourceHandler(
-      scoped_ptr<ResourceHandler>(new TestResourceHandler()), &host,
-      &plugin_service, request.get()));
+  std::unique_ptr<ResourceHandler> mime_sniffing_handler(
+      new MimeTypeResourceHandler(
+          std::unique_ptr<ResourceHandler>(new TestResourceHandler()), &host,
+          &plugin_service, request.get()));
   TestResourceController resource_controller;
   mime_sniffing_handler->SetController(&resource_controller);
 
@@ -280,7 +282,7 @@ bool MimeTypeResourceHandlerTest::TestStreamIsIntercepted(
 std::string MimeTypeResourceHandlerTest::TestAcceptHeaderSetting(
     ResourceType request_resource_type) {
   net::URLRequestContext context;
-  scoped_ptr<net::URLRequest> request(context.CreateRequest(
+  std::unique_ptr<net::URLRequest> request(context.CreateRequest(
       GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr));
   return TestAcceptHeaderSettingWithURLRequest(
       request_resource_type, request.get());
@@ -307,9 +309,10 @@ std::string MimeTypeResourceHandlerTest::TestAcceptHeaderSettingWithURLRequest(
   TestResourceDispatcherHostDelegate host_delegate(false);
   host.SetDelegate(&host_delegate);
 
-  scoped_ptr<ResourceHandler> mime_sniffing_handler(new MimeTypeResourceHandler(
-      scoped_ptr<ResourceHandler>(new TestResourceHandler()), &host,
-      nullptr, request));
+  std::unique_ptr<ResourceHandler> mime_sniffing_handler(
+      new MimeTypeResourceHandler(
+          std::unique_ptr<ResourceHandler>(new TestResourceHandler()), &host,
+          nullptr, request));
 
   bool defer = false;
   mime_sniffing_handler->OnWillStart(request->url(), &defer);
@@ -352,7 +355,7 @@ TEST_F(MimeTypeResourceHandlerTest, AcceptHeaders) {
 
   // Ensure that if an Accept header is already set, it is not overwritten.
   net::URLRequestContext context;
-  scoped_ptr<net::URLRequest> request(context.CreateRequest(
+  std::unique_ptr<net::URLRequest> request(context.CreateRequest(
       GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr));
   request->SetExtraRequestHeaderByName("Accept", "*", true);
   EXPECT_EQ("*",

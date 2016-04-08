@@ -96,7 +96,7 @@ void AsyncRevalidationManager::BeginAsyncRevalidation(
       for_request.url());
   std::pair<AsyncRevalidationMap::iterator, bool> insert_result =
       in_progress_.insert(AsyncRevalidationMap::value_type(
-          async_revalidation_key, scoped_ptr<AsyncRevalidationDriver>()));
+          async_revalidation_key, std::unique_ptr<AsyncRevalidationDriver>()));
   if (!insert_result.second) {
     // A matching async revalidation is already in progress for this cache; we
     // don't need another one.
@@ -107,7 +107,7 @@ void AsyncRevalidationManager::BeginAsyncRevalidation(
   headers.AddHeadersFromString(info->original_headers());
 
   // Construct the request.
-  scoped_ptr<net::URLRequest> new_request = request_context->CreateRequest(
+  std::unique_ptr<net::URLRequest> new_request = request_context->CreateRequest(
       for_request.url(), net::MINIMUM_PRIORITY, nullptr);
 
   new_request->set_method(for_request.method());
@@ -139,7 +139,7 @@ void AsyncRevalidationManager::BeginAsyncRevalidation(
   int child_id = info->GetChildID();
   int route_id = info->GetRouteID();
 
-  scoped_ptr<ResourceThrottle> throttle =
+  std::unique_ptr<ResourceThrottle> throttle =
       scheduler->ScheduleRequest(child_id, route_id, false, new_request.get());
 
   // AsyncRevalidationDriver does not outlive its entry in |in_progress_|,

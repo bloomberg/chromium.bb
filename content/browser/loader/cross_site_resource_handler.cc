@@ -63,7 +63,7 @@ struct CrossSiteResponseParams {
 };
 
 void OnCrossSiteResponseHelper(const CrossSiteResponseParams& params) {
-  scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request(
+  std::unique_ptr<CrossSiteTransferringRequest> cross_site_transferring_request(
       new CrossSiteTransferringRequest(params.global_request_id));
 
   RenderFrameHostImpl* rfh =
@@ -110,7 +110,7 @@ CheckNavigationPolicyOnUI(GURL real_url, int process_id, int render_frame_id) {
 }  // namespace
 
 CrossSiteResourceHandler::CrossSiteResourceHandler(
-    scoped_ptr<ResourceHandler> next_handler,
+    std::unique_ptr<ResourceHandler> next_handler,
     net::URLRequest* request)
     : LayeredResourceHandler(request, std::move(next_handler)),
       has_started_response_(false),

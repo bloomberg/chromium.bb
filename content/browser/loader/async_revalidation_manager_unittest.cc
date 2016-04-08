@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
@@ -216,7 +217,7 @@ class BlackholeFilter : public ResourceMessageFilter {
   }
 
   bool Send(IPC::Message* msg) override {
-    scoped_ptr<IPC::Message> take_ownership(msg);
+    std::unique_ptr<IPC::Message> take_ownership(msg);
     ReleaseHandlesInMessage(*msg);
     return true;
   }
@@ -265,7 +266,7 @@ ResourceHostMsg_Request CreateResourceRequest(const char* method,
 class AsyncRevalidationManagerTest : public ::testing::Test {
  protected:
   AsyncRevalidationManagerTest(
-      scoped_ptr<net::TestNetworkDelegate> network_delegate)
+      std::unique_ptr<net::TestNetworkDelegate> network_delegate)
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         network_delegate_(std::move(network_delegate)) {
     browser_context_.reset(new TestBrowserContext());
@@ -283,7 +284,7 @@ class AsyncRevalidationManagerTest : public ::testing::Test {
 
   AsyncRevalidationManagerTest()
       : AsyncRevalidationManagerTest(
-            make_scoped_ptr(new net::TestNetworkDelegate)) {}
+            base::WrapUnique(new net::TestNetworkDelegate)) {}
 
   void TearDown() override {
     host_.CancelRequestsForProcess(filter_->child_id());
@@ -315,10 +316,10 @@ class AsyncRevalidationManagerTest : public ::testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestBrowserContext> browser_context_;
-  scoped_ptr<TestURLRequestJobFactory> job_factory_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
+  std::unique_ptr<TestURLRequestJobFactory> job_factory_;
   scoped_refptr<BlackholeFilter> filter_;
-  scoped_ptr<net::TestNetworkDelegate> network_delegate_;
+  std::unique_ptr<net::TestNetworkDelegate> network_delegate_;
   ResourceDispatcherHostImpl host_;
 };
 
@@ -417,7 +418,7 @@ class AsyncRevalidationManagerRecordingTest
  public:
   AsyncRevalidationManagerRecordingTest()
       : AsyncRevalidationManagerTest(
-            make_scoped_ptr(new URLRequestRecordingNetworkDelegate)) {}
+            base::WrapUnique(new URLRequestRecordingNetworkDelegate)) {}
 
   void TearDown() override {
     EXPECT_TRUE(IsEmpty());

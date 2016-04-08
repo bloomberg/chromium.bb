@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_LOADER_STREAM_RESOURCE_HANDLER_H_
 #define CONTENT_BROWSER_LOADER_STREAM_RESOURCE_HANDLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/loader/resource_handler.h"
 #include "content/browser/loader/stream_writer.h"
 

@@ -33,7 +33,7 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
     CANCEL_REQUEST
   };
 
-  CrossSiteResourceHandler(scoped_ptr<ResourceHandler> next_handler,
+  CrossSiteResourceHandler(std::unique_ptr<ResourceHandler> next_handler,
                            net::URLRequest* request);
   ~CrossSiteResourceHandler() override;
 

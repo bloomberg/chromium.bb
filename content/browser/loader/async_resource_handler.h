@@ -87,7 +87,7 @@ class AsyncResourceHandler : public ResourceHandler,
   bool sent_received_response_msg_;
   bool sent_data_buffer_msg_;
 
-  scoped_ptr<InliningHelper> inlining_helper_;
+  std::unique_ptr<InliningHelper> inlining_helper_;
   base::TimeTicks response_started_ticks_;
 
   uint64_t last_upload_position_;

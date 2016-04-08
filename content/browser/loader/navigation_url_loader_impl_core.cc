@@ -39,7 +39,7 @@ NavigationURLLoaderImplCore::~NavigationURLLoaderImplCore() {
 void NavigationURLLoaderImplCore::Start(
     ResourceContext* resource_context,
     ServiceWorkerNavigationHandleCore* service_worker_handle_core,
-    scoped_ptr<NavigationRequestInfo> request_info) {
+    std::unique_ptr<NavigationRequestInfo> request_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BrowserThread::PostTask(
@@ -94,7 +94,7 @@ void NavigationURLLoaderImplCore::NotifyRequestRedirected(
 
 void NavigationURLLoaderImplCore::NotifyResponseStarted(
     ResourceResponse* response,
-    scoped_ptr<StreamHandle> body) {
+    std::unique_ptr<StreamHandle> body) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT_ASYNC_END0("navigation", "Navigation redirectDelay", this);
   TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted", this,

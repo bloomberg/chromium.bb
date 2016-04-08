@@ -5,7 +5,8 @@
 #ifndef CONTENT_BROWSER_LOADER_UPLOAD_DATA_STREAM_BUILDER_H_
 #define CONTENT_BROWSER_LOADER_UPLOAD_DATA_STREAM_BUILDER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/common/content_export.h"
 
 namespace base {
@@ -40,7 +41,7 @@ class CONTENT_EXPORT UploadDataStreamBuilder {
   // |file_system_context| is used to create a FileStreamReader for files with
   // filesystem URLs.  |file_task_runner| is used to perform file operations
   // when the data gets uploaded.
-  static scoped_ptr<net::UploadDataStream> Build(
+  static std::unique_ptr<net::UploadDataStream> Build(
       ResourceRequestBody* body,
       storage::BlobStorageContext* blob_context,
       storage::FileSystemContext* file_system_context,

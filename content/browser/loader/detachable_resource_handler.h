@@ -5,10 +5,11 @@
 #ifndef CONTENT_BROWSER_LOADER_DETACHABLE_RESOURCE_HANDLER_H_
 #define CONTENT_BROWSER_LOADER_DETACHABLE_RESOURCE_HANDLER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/browser/loader/resource_handler.h"
@@ -36,7 +37,7 @@ class DetachableResourceHandler : public ResourceHandler,
  public:
   DetachableResourceHandler(net::URLRequest* request,
                             base::TimeDelta cancel_delay,
-                            scoped_ptr<ResourceHandler> next_handler);
+                            std::unique_ptr<ResourceHandler> next_handler);
   ~DetachableResourceHandler() override;
 
   bool is_detached() const { return next_handler_ == NULL; }
@@ -70,10 +71,10 @@ class DetachableResourceHandler : public ResourceHandler,
   void CancelWithError(int error_code) override;
 
  private:
-  scoped_ptr<ResourceHandler> next_handler_;
+  std::unique_ptr<ResourceHandler> next_handler_;
   scoped_refptr<net::IOBuffer> read_buffer_;
 
-  scoped_ptr<base::OneShotTimer> detached_timer_;
+  std::unique_ptr<base::OneShotTimer> detached_timer_;
   base::TimeDelta cancel_delay_;
 
   bool is_deferred_;

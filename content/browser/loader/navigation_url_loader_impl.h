@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_LOADER_NAVIGATION_URL_LOADER_IMPL_H_
 #define CONTENT_BROWSER_LOADER_NAVIGATION_URL_LOADER_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/loader/navigation_url_loader.h"
@@ -27,7 +28,7 @@ class NavigationURLLoaderImpl : public NavigationURLLoader {
  public:
   // The caller is responsible for ensuring that |delegate| outlives the loader.
   NavigationURLLoaderImpl(BrowserContext* browser_context,
-                          scoped_ptr<NavigationRequestInfo> request_info,
+                          std::unique_ptr<NavigationRequestInfo> request_info,
                           ServiceWorkerNavigationHandle* service_worker_handle,
                           NavigationURLLoaderDelegate* delegate);
   ~NavigationURLLoaderImpl() override;
@@ -45,7 +46,7 @@ class NavigationURLLoaderImpl : public NavigationURLLoader {
 
   // Notifies the delegate that the response has started.
   void NotifyResponseStarted(const scoped_refptr<ResourceResponse>& response,
-                             scoped_ptr<StreamHandle> body);
+                             std::unique_ptr<StreamHandle> body);
 
   // Notifies the delegate the request failed to return a response.
   void NotifyRequestFailed(bool in_cache, int net_error);

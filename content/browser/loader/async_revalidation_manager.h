@@ -6,10 +6,10 @@
 #define CONTENT_BROWSER_LOADER_ASYNC_REVALIDATION_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 class GURL;
 struct ResourceHostMsg_Request;
@@ -89,9 +89,10 @@ class AsyncRevalidationManager {
     };
   };
 
-  using AsyncRevalidationMap = std::map<AsyncRevalidationKey,
-                                        scoped_ptr<AsyncRevalidationDriver>,
-                                        AsyncRevalidationKey::LessThan>;
+  using AsyncRevalidationMap =
+      std::map<AsyncRevalidationKey,
+               std::unique_ptr<AsyncRevalidationDriver>,
+               AsyncRevalidationKey::LessThan>;
 
   void OnAsyncRevalidationComplete(AsyncRevalidationMap::iterator it);
 

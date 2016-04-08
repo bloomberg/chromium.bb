@@ -92,9 +92,8 @@ void GetResponseHead(const std::vector<IPC::Message>& messages,
   ASSERT_TRUE(IPC::ReadParam(&messages[0], &iter, response_head));
 }
 
-void GenerateIPCMessage(
-    scoped_refptr<ResourceMessageFilter> filter,
-    scoped_ptr<IPC::Message> message) {
+void GenerateIPCMessage(scoped_refptr<ResourceMessageFilter> filter,
+                        std::unique_ptr<IPC::Message> message) {
   ResourceDispatcherHostImpl::Get()->OnMessageReceived(
       *message, filter.get());
 }
@@ -767,7 +766,7 @@ class TestResourceDispatcherHostDelegate
   bool create_two_throttles_;
   int flags_;
   int error_code_for_cancellation_;
-  scoped_ptr<base::SupportsUserData::Data> user_data_;
+  std::unique_ptr<base::SupportsUserData::Data> user_data_;
 };
 
 // Waits for a ShareableFileReference to be released.
@@ -909,8 +908,9 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
     return true;
   }
 
-  scoped_ptr<LoadInfoMap> RunLoadInfoTest(LoadInfoTestRequestInfo* request_info,
-                                          size_t num_requests) {
+  std::unique_ptr<LoadInfoMap> RunLoadInfoTest(
+      LoadInfoTestRequestInfo* request_info,
+      size_t num_requests) {
     for (size_t i = 0; i < num_requests; ++i) {
       loader_test_request_info_.reset(
           new LoadInfoTestRequestInfo(request_info[i]));
@@ -946,7 +946,7 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
         base::FeatureList::InitializeInstance(std::string(), std::string());
         break;
       case TestConfig::kOptimizeIPCForSmallResourceEnabled: {
-        scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+        std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
         feature_list->InitializeFromCommandLine(
             features::kOptimizeIPCForSmallResource.name, std::string());
         base::FeatureList::SetInstance(std::move(feature_list));
@@ -1079,7 +1079,7 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
     int request_id = -1;
     bool result = base::PickleIterator(msg).ReadInt(&request_id);
     DCHECK(result);
-    scoped_ptr<IPC::Message> ack(
+    std::unique_ptr<IPC::Message> ack(
         new ResourceHostMsg_DataReceived_ACK(request_id));
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1106,14 +1106,14 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
     host_.OnRenderFrameDeleted(global_routing_id);
   }
 
-  scoped_ptr<LoadInfoTestRequestInfo> loader_test_request_info_;
-  scoped_ptr<base::RunLoop> wait_for_request_create_loop_;
+  std::unique_ptr<LoadInfoTestRequestInfo> loader_test_request_info_;
+  std::unique_ptr<base::RunLoop> wait_for_request_create_loop_;
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestBrowserContext> browser_context_;
-  scoped_ptr<TestURLRequestJobFactory> job_factory_;
-  scoped_ptr<WebContents> web_contents_;
-  scoped_ptr<TestWebContentsObserver> web_contents_observer_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
+  std::unique_ptr<TestURLRequestJobFactory> job_factory_;
+  std::unique_ptr<WebContents> web_contents_;
+  std::unique_ptr<TestWebContentsObserver> web_contents_observer_;
   scoped_refptr<ForwardingFilter> filter_;
   scoped_refptr<TestFilterSpecifyingChild> web_contents_filter_;
   net::TestNetworkDelegate network_delegate_;
@@ -1126,7 +1126,7 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
   net::URLRequest::ProtocolFactory* old_factory_;
   bool send_data_received_acks_;
   std::set<int> child_ids_;
-  scoped_ptr<base::RunLoop> wait_for_request_complete_loop_;
+  std::unique_ptr<base::RunLoop> wait_for_request_complete_loop_;
   RenderViewHostTestEnabler render_view_host_test_enabler_;
   MockCertStore mock_cert_store_;
 };
@@ -1210,7 +1210,7 @@ void ResourceDispatcherHostTest::MakeWebContentsAssociatedDownloadRequest(
     const GURL& url) {
   net::URLRequestContext* request_context =
       browser_context_->GetResourceContext()->GetRequestContext();
-  scoped_ptr<net::URLRequest> request(
+  std::unique_ptr<net::URLRequest> request(
       request_context->CreateRequest(url, net::DEFAULT_PRIORITY, NULL));
   host_.BeginDownload(std::move(request), Referrer(),
                       false,  // is_content_initiated
@@ -2186,7 +2186,7 @@ TEST_P(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
 // Test the private helper method "CalculateApproximateMemoryCost()".
 TEST_P(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
   net::URLRequestContext context;
-  scoped_ptr<net::URLRequest> req(context.CreateRequest(
+  std::unique_ptr<net::URLRequest> req(context.CreateRequest(
       GURL("http://www.google.com"), net::DEFAULT_PRIORITY, NULL));
   EXPECT_EQ(
       4427,
@@ -2202,8 +2202,9 @@ TEST_P(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
   std::string upload_content;
   upload_content.resize(33);
   std::fill(upload_content.begin(), upload_content.end(), 'x');
-  scoped_ptr<net::UploadElementReader> reader(new net::UploadBytesElementReader(
-      upload_content.data(), upload_content.size()));
+  std::unique_ptr<net::UploadElementReader> reader(
+      new net::UploadBytesElementReader(upload_content.data(),
+                                        upload_content.size()));
   req->set_upload(
       net::ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));
 
@@ -3518,7 +3519,7 @@ TEST_P(ResourceDispatcherHostTest, DownloadToFile) {
 
 // Tests GetLoadInfoForAllRoutes when there are no pending requests.
 TEST_P(ResourceDispatcherHostTest, LoadInfoNoRequests) {
-  scoped_ptr<LoadInfoMap> load_info_map = RunLoadInfoTest(nullptr, 0);
+  std::unique_ptr<LoadInfoMap> load_info_map = RunLoadInfoTest(nullptr, 0);
   EXPECT_EQ(0u, load_info_map->size());
 }
 
@@ -3540,7 +3541,7 @@ TEST_P(ResourceDispatcherHostTest, LoadInfo) {
        net::LOAD_STATE_SENDING_REQUEST,
        net::UploadProgress(0, 0)},
   };
-  scoped_ptr<LoadInfoMap> load_info_map =
+  std::unique_ptr<LoadInfoMap> load_info_map =
       RunLoadInfoTest(request_info, arraysize(request_info));
   ASSERT_EQ(1u, load_info_map->size());
   ASSERT_TRUE(load_info_map->find(kId) != load_info_map->end());
@@ -3565,7 +3566,7 @@ TEST_P(ResourceDispatcherHostTest, LoadInfoSamePriority) {
        net::LOAD_STATE_IDLE,
        net::UploadProgress(0, 0)},
   };
-  scoped_ptr<LoadInfoMap> load_info_map =
+  std::unique_ptr<LoadInfoMap> load_info_map =
       RunLoadInfoTest(request_info, arraysize(request_info));
   ASSERT_EQ(1u, load_info_map->size());
   ASSERT_TRUE(load_info_map->find(kId) != load_info_map->end());
@@ -3600,7 +3601,7 @@ TEST_P(ResourceDispatcherHostTest, LoadInfoUploadProgress) {
        net::LOAD_STATE_READING_RESPONSE,
        net::UploadProgress(0, 0)},
   };
-  scoped_ptr<LoadInfoMap> load_info_map =
+  std::unique_ptr<LoadInfoMap> load_info_map =
       RunLoadInfoTest(request_info, arraysize(request_info));
   ASSERT_EQ(1u, load_info_map->size());
   ASSERT_TRUE(load_info_map->find(kId) != load_info_map->end());
@@ -3635,7 +3636,7 @@ TEST_P(ResourceDispatcherHostTest, LoadInfoTwoRenderViews) {
        net::LOAD_STATE_CONNECTING,
        net::UploadProgress(0, 0)},
   };
-  scoped_ptr<LoadInfoMap> load_info_map =
+  std::unique_ptr<LoadInfoMap> load_info_map =
       RunLoadInfoTest(request_info, arraysize(request_info));
   ASSERT_EQ(2u, load_info_map->size());
 
@@ -3770,7 +3771,7 @@ net::URLRequestJob* TestURLRequestJobFactory::MaybeCreateJobWithProtocolHandler(
     test_fixture_->wait_for_request_create_loop_->Quit();
   if (test_fixture_->loader_test_request_info_) {
     DCHECK_EQ(test_fixture_->loader_test_request_info_->url, request->url());
-    scoped_ptr<LoadInfoTestRequestInfo> info =
+    std::unique_ptr<LoadInfoTestRequestInfo> info =
         std::move(test_fixture_->loader_test_request_info_);
     return new URLRequestLoadInfoJob(request, network_delegate,
                                      info->load_state, info->upload_progress);

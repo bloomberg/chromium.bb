@@ -49,8 +49,8 @@ const int kBackgroundRouteId = 43;
 
 class TestRequest : public ResourceController {
  public:
-  TestRequest(scoped_ptr<net::URLRequest> url_request,
-              scoped_ptr<ResourceThrottle> throttle,
+  TestRequest(std::unique_ptr<net::URLRequest> url_request,
+              std::unique_ptr<ResourceThrottle> throttle,
               ResourceScheduler* scheduler)
       : started_(false),
         url_request_(std::move(url_request)),
@@ -92,19 +92,19 @@ class TestRequest : public ResourceController {
 
  private:
   bool started_;
-  scoped_ptr<net::URLRequest> url_request_;
-  scoped_ptr<ResourceThrottle> throttle_;
+  std::unique_ptr<net::URLRequest> url_request_;
+  std::unique_ptr<ResourceThrottle> throttle_;
   ResourceScheduler* scheduler_;
 };
 
 class CancelingTestRequest : public TestRequest {
  public:
-  CancelingTestRequest(scoped_ptr<net::URLRequest> url_request,
-                       scoped_ptr<ResourceThrottle> throttle,
+  CancelingTestRequest(std::unique_ptr<net::URLRequest> url_request,
+                       std::unique_ptr<ResourceThrottle> throttle,
                        ResourceScheduler* scheduler)
       : TestRequest(std::move(url_request), std::move(throttle), scheduler) {}
 
-  void set_request_to_cancel(scoped_ptr<TestRequest> request_to_cancel) {
+  void set_request_to_cancel(std::unique_ptr<TestRequest> request_to_cancel) {
     request_to_cancel_ = std::move(request_to_cancel);
   }
 
@@ -114,7 +114,7 @@ class CancelingTestRequest : public TestRequest {
     request_to_cancel_.reset();
   }
 
-  scoped_ptr<TestRequest> request_to_cancel_;
+  std::unique_ptr<TestRequest> request_to_cancel_;
 };
 
 class FakeResourceContext : public ResourceContext {
@@ -165,18 +165,19 @@ class ResourceSchedulerTest : public testing::Test {
         force_field_trial_argument, std::set<std::string>());
   }
 
-  scoped_ptr<net::URLRequest> NewURLRequestWithChildAndRoute(
+  std::unique_ptr<net::URLRequest> NewURLRequestWithChildAndRoute(
       const char* url,
       net::RequestPriority priority,
       int child_id,
       int route_id) {
-    scoped_ptr<net::URLRequest> url_request(
+    std::unique_ptr<net::URLRequest> url_request(
         context_.CreateRequest(GURL(url), priority, NULL));
     return url_request;
   }
 
-  scoped_ptr<net::URLRequest> NewURLRequest(const char* url,
-                                            net::RequestPriority priority) {
+  std::unique_ptr<net::URLRequest> NewURLRequest(
+      const char* url,
+      net::RequestPriority priority) {
     return NewURLRequestWithChildAndRoute(url, priority, kChildId, kRouteId);
   }
 
@@ -225,9 +226,9 @@ class ResourceSchedulerTest : public testing::Test {
                                  int child_id,
                                  int route_id,
                                  bool is_async) {
-    scoped_ptr<net::URLRequest> url_request(
+    std::unique_ptr<net::URLRequest> url_request(
         NewURLRequestWithChildAndRoute(url, priority, child_id, route_id));
-    scoped_ptr<ResourceThrottle> throttle(scheduler_->ScheduleRequest(
+    std::unique_ptr<ResourceThrottle> throttle(scheduler_->ScheduleRequest(
         child_id, route_id, is_async, url_request.get()));
     TestRequest* request = new TestRequest(std::move(url_request),
                                            std::move(throttle), scheduler());
@@ -254,7 +255,7 @@ class ResourceSchedulerTest : public testing::Test {
   BrowserThreadImpl ui_thread_;
   BrowserThreadImpl io_thread_;
   ResourceDispatcherHostImpl rdh_;
-  scoped_ptr<ResourceScheduler> scheduler_;
+  std::unique_ptr<ResourceScheduler> scheduler_;
   base::FieldTrialList field_trial_list_;
   base::MockTimer* mock_timer_;
   net::HttpServerPropertiesImpl http_server_properties_;
@@ -262,14 +263,16 @@ class ResourceSchedulerTest : public testing::Test {
 };
 
 TEST_F(ResourceSchedulerTest, OneIsolatedLowRequest) {
-  scoped_ptr<TestRequest> request(NewRequest("http://host/1", net::LOWEST));
+  std::unique_ptr<TestRequest> request(
+      NewRequest("http://host/1", net::LOWEST));
   EXPECT_TRUE(request->started());
 }
 
 TEST_F(ResourceSchedulerTest, OneLowLoadsUntilIdle) {
-  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  scoped_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high->started());
   EXPECT_TRUE(low->started());
   EXPECT_FALSE(low2->started());
@@ -280,9 +283,10 @@ TEST_F(ResourceSchedulerTest, OneLowLoadsUntilIdle) {
 }
 
 TEST_F(ResourceSchedulerTest, OneLowLoadsUntilBodyInserted) {
-  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  scoped_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high->started());
   EXPECT_TRUE(low->started());
   EXPECT_FALSE(low2->started());
@@ -299,9 +303,10 @@ TEST_F(ResourceSchedulerTest, OneLowLoadsUntilBodyInserted) {
 }
 
 TEST_F(ResourceSchedulerTest, OneLowLoadsUntilCriticalComplete) {
-  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  scoped_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high->started());
   EXPECT_TRUE(low->started());
   EXPECT_FALSE(low2->started());
@@ -316,9 +321,10 @@ TEST_F(ResourceSchedulerTest, OneLowLoadsUntilCriticalComplete) {
 }
 
 TEST_F(ResourceSchedulerTest, LowDoesNotBlockCriticalComplete) {
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOW));
-  scoped_ptr<TestRequest> lowest(NewRequest("http://host/lowest", net::LOWEST));
-  scoped_ptr<TestRequest> lowest2(
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOW));
+  std::unique_ptr<TestRequest> lowest(
+      NewRequest("http://host/lowest", net::LOWEST));
+  std::unique_ptr<TestRequest> lowest2(
       NewRequest("http://host/lowest", net::LOWEST));
   EXPECT_TRUE(low->started());
   EXPECT_TRUE(lowest->started());
@@ -332,11 +338,12 @@ TEST_F(ResourceSchedulerTest, LowDoesNotBlockCriticalComplete) {
 TEST_F(ResourceSchedulerTest, OneLowLoadsUntilBodyInsertedExceptSpdy) {
   http_server_properties_.SetSupportsSpdy(
       net::HostPortPair("spdyhost", 443), true);
-  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low_spdy(
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low_spdy(
       NewRequest("https://spdyhost/low", net::LOWEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  scoped_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high->started());
   EXPECT_TRUE(low_spdy->started());
   EXPECT_TRUE(low->started());
@@ -351,9 +358,10 @@ TEST_F(ResourceSchedulerTest, OneLowLoadsUntilBodyInsertedExceptSpdy) {
 TEST_F(ResourceSchedulerTest, NavigationResetsState) {
   scheduler()->OnWillInsertBody(kChildId, kRouteId);
   scheduler()->OnNavigate(kChildId, kRouteId);
-  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  scoped_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high->started());
   EXPECT_TRUE(low->started());
   EXPECT_FALSE(low2->started());
@@ -361,16 +369,18 @@ TEST_F(ResourceSchedulerTest, NavigationResetsState) {
 
 TEST_F(ResourceSchedulerTest, BackgroundRequestStartsImmediately) {
   const int route_id = 0;  // Indicates a background request.
-  scoped_ptr<TestRequest> request(NewRequestWithRoute("http://host/1",
-                                                      net::LOWEST, route_id));
+  std::unique_ptr<TestRequest> request(
+      NewRequestWithRoute("http://host/1", net::LOWEST, route_id));
   EXPECT_TRUE(request->started());
 }
 
 TEST_F(ResourceSchedulerTest, StartMultipleLowRequestsWhenIdle) {
-  scoped_ptr<TestRequest> high1(NewRequest("http://host/high1", net::HIGHEST));
-  scoped_ptr<TestRequest> high2(NewRequest("http://host/high2", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  scoped_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> high1(
+      NewRequest("http://host/high1", net::HIGHEST));
+  std::unique_ptr<TestRequest> high2(
+      NewRequest("http://host/high2", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high1->started());
   EXPECT_TRUE(high2->started());
   EXPECT_TRUE(low->started());
@@ -386,20 +396,24 @@ TEST_F(ResourceSchedulerTest, StartMultipleLowRequestsWhenIdle) {
 }
 
 TEST_F(ResourceSchedulerTest, CancelOtherRequestsWhileResuming) {
-  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low1(NewRequest("http://host/low1", net::LOWEST));
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low1(
+      NewRequest("http://host/low1", net::LOWEST));
 
-  scoped_ptr<net::URLRequest> url_request(
+  std::unique_ptr<net::URLRequest> url_request(
       NewURLRequest("http://host/low2", net::LOWEST));
-  scoped_ptr<ResourceThrottle> throttle(scheduler()->ScheduleRequest(
+  std::unique_ptr<ResourceThrottle> throttle(scheduler()->ScheduleRequest(
       kChildId, kRouteId, true, url_request.get()));
-  scoped_ptr<CancelingTestRequest> low2(new CancelingTestRequest(
+  std::unique_ptr<CancelingTestRequest> low2(new CancelingTestRequest(
       std::move(url_request), std::move(throttle), scheduler()));
   low2->Start();
 
-  scoped_ptr<TestRequest> low3(NewRequest("http://host/low3", net::LOWEST));
+  std::unique_ptr<TestRequest> low3(
+      NewRequest("http://host/low3", net::LOWEST));
   low2->set_request_to_cancel(std::move(low3));
-  scoped_ptr<TestRequest> low4(NewRequest("http://host/low4", net::LOWEST));
+  std::unique_ptr<TestRequest> low4(
+      NewRequest("http://host/low4", net::LOWEST));
 
   EXPECT_TRUE(high->started());
   EXPECT_FALSE(low2->started());
@@ -416,7 +430,8 @@ TEST_F(ResourceSchedulerTest, LimitedNumberOfDelayableRequestsInFlight) {
   scheduler()->OnWillInsertBody(kChildId, kRouteId);
 
   // Throw in one high priority request to make sure that's not a factor.
-  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
   EXPECT_TRUE(high->started());
 
   const int kMaxNumDelayableRequestsPerClient = 10;  // Should match the .cc.
@@ -429,10 +444,10 @@ TEST_F(ResourceSchedulerTest, LimitedNumberOfDelayableRequestsInFlight) {
     EXPECT_TRUE(lows_singlehost[i]->started());
   }
 
-  scoped_ptr<TestRequest> second_last_singlehost(NewRequest("http://host/last",
-                                                            net::LOWEST));
-  scoped_ptr<TestRequest> last_singlehost(NewRequest("http://host/s_last",
-                                                     net::LOWEST));
+  std::unique_ptr<TestRequest> second_last_singlehost(
+      NewRequest("http://host/last", net::LOWEST));
+  std::unique_ptr<TestRequest> last_singlehost(
+      NewRequest("http://host/s_last", net::LOWEST));
 
   EXPECT_FALSE(second_last_singlehost->started());
 
@@ -457,17 +472,19 @@ TEST_F(ResourceSchedulerTest, LimitedNumberOfDelayableRequestsInFlight) {
     EXPECT_TRUE(lows_different_host[i]->started());
   }
 
-  scoped_ptr<TestRequest> last_different_host(NewRequest("http://host_new/last",
-                                                         net::LOWEST));
+  std::unique_ptr<TestRequest> last_different_host(
+      NewRequest("http://host_new/last", net::LOWEST));
   EXPECT_FALSE(last_different_host->started());
 }
 
 TEST_F(ResourceSchedulerTest, RaisePriorityAndStart) {
   // Dummies to enforce scheduling.
-  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/req", net::LOWEST));
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/req", net::LOWEST));
 
-  scoped_ptr<TestRequest> request(NewRequest("http://host/req", net::LOWEST));
+  std::unique_ptr<TestRequest> request(
+      NewRequest("http://host/req", net::LOWEST));
   EXPECT_FALSE(request->started());
 
   ChangeRequestPriority(request.get(), net::HIGHEST);
@@ -477,11 +494,13 @@ TEST_F(ResourceSchedulerTest, RaisePriorityAndStart) {
 
 TEST_F(ResourceSchedulerTest, RaisePriorityInQueue) {
   // Dummies to enforce scheduling.
-  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
 
-  scoped_ptr<TestRequest> request(NewRequest("http://host/req", net::IDLE));
-  scoped_ptr<TestRequest> idle(NewRequest("http://host/idle", net::IDLE));
+  std::unique_ptr<TestRequest> request(
+      NewRequest("http://host/req", net::IDLE));
+  std::unique_ptr<TestRequest> idle(NewRequest("http://host/idle", net::IDLE));
   EXPECT_FALSE(request->started());
   EXPECT_FALSE(idle->started());
 
@@ -507,11 +526,13 @@ TEST_F(ResourceSchedulerTest, RaisePriorityInQueue) {
 
 TEST_F(ResourceSchedulerTest, LowerPriority) {
   // Dummies to enforce scheduling.
-  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
 
-  scoped_ptr<TestRequest> request(NewRequest("http://host/req", net::LOWEST));
-  scoped_ptr<TestRequest> idle(NewRequest("http://host/idle", net::IDLE));
+  std::unique_ptr<TestRequest> request(
+      NewRequest("http://host/req", net::LOWEST));
+  std::unique_ptr<TestRequest> idle(NewRequest("http://host/idle", net::IDLE));
   EXPECT_FALSE(request->started());
   EXPECT_FALSE(idle->started());
 
@@ -540,11 +561,13 @@ TEST_F(ResourceSchedulerTest, LowerPriority) {
 
 TEST_F(ResourceSchedulerTest, ReprioritizedRequestGoesToBackOfQueue) {
   // Dummies to enforce scheduling.
-  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
 
-  scoped_ptr<TestRequest> request(NewRequest("http://host/req", net::LOWEST));
-  scoped_ptr<TestRequest> idle(NewRequest("http://host/idle", net::IDLE));
+  std::unique_ptr<TestRequest> request(
+      NewRequest("http://host/req", net::LOWEST));
+  std::unique_ptr<TestRequest> idle(NewRequest("http://host/idle", net::IDLE));
   EXPECT_FALSE(request->started());
   EXPECT_FALSE(idle->started());
 
@@ -573,8 +596,9 @@ TEST_F(ResourceSchedulerTest, ReprioritizedRequestGoesToBackOfQueue) {
 
 TEST_F(ResourceSchedulerTest, HigherIntraPriorityGoesToFrontOfQueue) {
   // Dummies to enforce scheduling.
-  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
 
   const int kMaxNumDelayableRequestsPerClient = 10;  // Should match the .cc.
   ScopedVector<TestRequest> lows;
@@ -583,7 +607,8 @@ TEST_F(ResourceSchedulerTest, HigherIntraPriorityGoesToFrontOfQueue) {
     lows.push_back(NewRequest(url.c_str(), net::IDLE));
   }
 
-  scoped_ptr<TestRequest> request(NewRequest("http://host/req", net::IDLE));
+  std::unique_ptr<TestRequest> request(
+      NewRequest("http://host/req", net::IDLE));
   EXPECT_FALSE(request->started());
 
   ChangeRequestPriority(request.get(), net::IDLE, 1);
@@ -598,26 +623,30 @@ TEST_F(ResourceSchedulerTest, HigherIntraPriorityGoesToFrontOfQueue) {
 
 TEST_F(ResourceSchedulerTest, NonHTTPSchedulesImmediately) {
   // Dummies to enforce scheduling.
-  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
 
-  scoped_ptr<TestRequest> request(
+  std::unique_ptr<TestRequest> request(
       NewRequest("chrome-extension://req", net::LOWEST));
   EXPECT_TRUE(request->started());
 }
 
 TEST_F(ResourceSchedulerTest, SpdyProxySchedulesImmediately) {
-  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
 
-  scoped_ptr<TestRequest> request(NewRequest("http://host/req", net::IDLE));
+  std::unique_ptr<TestRequest> request(
+      NewRequest("http://host/req", net::IDLE));
   EXPECT_FALSE(request->started());
 
   scheduler()->OnReceivedSpdyProxiedHttpResponse(kChildId, kRouteId);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(request->started());
 
-  scoped_ptr<TestRequest> after(NewRequest("http://host/after", net::IDLE));
+  std::unique_ptr<TestRequest> after(
+      NewRequest("http://host/after", net::IDLE));
   EXPECT_TRUE(after->started());
 }
 
@@ -625,7 +654,7 @@ TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
   scheduler()->OnWillInsertBody(kChildId, kRouteId);
   const int kMaxNumDelayableRequestsPerClient = 10;  // Should match the .cc.
 
-  scoped_ptr<TestRequest> low1_spdy(
+  std::unique_ptr<TestRequest> low1_spdy(
       NewRequest("http://spdyhost1:8080/low", net::LOWEST));
   // Cancel a request after we learn the server supports SPDY.
   ScopedVector<TestRequest> lows;
@@ -633,7 +662,7 @@ TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
     string url = "http://host" + base::IntToString(i) + "/low";
     lows.push_back(NewRequest(url.c_str(), net::LOWEST));
   }
-  scoped_ptr<TestRequest> low1(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> low1(NewRequest("http://host/low", net::LOWEST));
   EXPECT_FALSE(low1->started());
   http_server_properties_.SetSupportsSpdy(
       net::HostPortPair("spdyhost1", 8080), true);
@@ -643,7 +672,7 @@ TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
 
   low1.reset();
   base::RunLoop().RunUntilIdle();
-  scoped_ptr<TestRequest> low2_spdy(
+  std::unique_ptr<TestRequest> low2_spdy(
       NewRequest("http://spdyhost2:8080/low", net::IDLE));
   // Reprioritize a request after we learn the server supports SPDY.
   EXPECT_TRUE(low2_spdy->started());
@@ -651,7 +680,7 @@ TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
       net::HostPortPair("spdyhost2", 8080), true);
   ChangeRequestPriority(low2_spdy.get(), net::LOWEST);
   base::RunLoop().RunUntilIdle();
-  scoped_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(low2->started());
 }
 
@@ -710,9 +739,10 @@ TEST_F(ResourceSchedulerTest, OutstandingRequestLimitDelays) {
                          kRequestLimit)));
 
   InitializeScheduler();
-  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  scoped_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high->started());
   EXPECT_FALSE(low->started());
   EXPECT_FALSE(low2->started());
@@ -728,11 +758,11 @@ TEST_F(ResourceSchedulerTest, OutstandingRequestLimitDelays) {
 // async revalidations to the same URL from being issued.
 TEST_F(ResourceSchedulerTest, RequestStartedAfterClientDeleted) {
   scheduler_->OnClientCreated(kChildId2, kRouteId2);
-  scoped_ptr<TestRequest> high(NewRequestWithChildAndRoute(
+  std::unique_ptr<TestRequest> high(NewRequestWithChildAndRoute(
       "http://host/high", net::HIGHEST, kChildId2, kRouteId2));
-  scoped_ptr<TestRequest> lowest1(NewRequestWithChildAndRoute(
+  std::unique_ptr<TestRequest> lowest1(NewRequestWithChildAndRoute(
       "http://host/lowest", net::LOWEST, kChildId2, kRouteId2));
-  scoped_ptr<TestRequest> lowest2(NewRequestWithChildAndRoute(
+  std::unique_ptr<TestRequest> lowest2(NewRequestWithChildAndRoute(
       "http://host/lowest", net::LOWEST, kChildId2, kRouteId2));
   EXPECT_FALSE(lowest2->started());
 
@@ -749,7 +779,7 @@ TEST_F(ResourceSchedulerTest, RequestStartedAfterClientDeleted) {
 // even if they were not started by the destructor.
 TEST_F(ResourceSchedulerTest, RequestStartedAfterClientDeletedManyDelayable) {
   scheduler_->OnClientCreated(kChildId2, kRouteId2);
-  scoped_ptr<TestRequest> high(NewRequestWithChildAndRoute(
+  std::unique_ptr<TestRequest> high(NewRequestWithChildAndRoute(
       "http://host/high", net::HIGHEST, kChildId2, kRouteId2));
   const int kMaxNumDelayableRequestsPerClient = 10;
   ScopedVector<TestRequest> delayable_requests;
@@ -757,7 +787,7 @@ TEST_F(ResourceSchedulerTest, RequestStartedAfterClientDeletedManyDelayable) {
     delayable_requests.push_back(NewRequestWithChildAndRoute(
         "http://host/lowest", net::LOWEST, kChildId2, kRouteId2));
   }
-  scoped_ptr<TestRequest> lowest(NewRequestWithChildAndRoute(
+  std::unique_ptr<TestRequest> lowest(NewRequestWithChildAndRoute(
       "http://host/lowest", net::LOWEST, kChildId2, kRouteId2));
   EXPECT_FALSE(lowest->started());
 
@@ -788,18 +818,19 @@ TEST_F(ResourceSchedulerTest, DefaultLayoutBlockingPriority) {
       kMaxNumDelayableWhileLayoutBlocking,
       kMaxNumDelayableRequestsPerClient)));
   InitializeScheduler();
-  scoped_ptr<TestRequest> high(
+  std::unique_ptr<TestRequest> high(
       NewRequest("http://hosthigh/high", net::HIGHEST));
-  scoped_ptr<TestRequest> high2(
+  std::unique_ptr<TestRequest> high2(
       NewRequest("http://hosthigh/high", net::HIGHEST));
-  scoped_ptr<TestRequest> medium(
+  std::unique_ptr<TestRequest> medium(
       NewRequest("http://hostmedium/medium", net::MEDIUM));
-  scoped_ptr<TestRequest> medium2(
+  std::unique_ptr<TestRequest> medium2(
       NewRequest("http://hostmedium/medium", net::MEDIUM));
-  scoped_ptr<TestRequest> low(NewRequest("http://hostlow/low", net::LOW));
-  scoped_ptr<TestRequest> low2(NewRequest("http://hostlow/low", net::LOW));
-  scoped_ptr<TestRequest> lowest(NewRequest("http://hostlowest/lowest", net::LOWEST));
-  scoped_ptr<TestRequest> lowest2(
+  std::unique_ptr<TestRequest> low(NewRequest("http://hostlow/low", net::LOW));
+  std::unique_ptr<TestRequest> low2(NewRequest("http://hostlow/low", net::LOW));
+  std::unique_ptr<TestRequest> lowest(
+      NewRequest("http://hostlowest/lowest", net::LOWEST));
+  std::unique_ptr<TestRequest> lowest2(
       NewRequest("http://hostlowest/lowest", net::LOWEST));
   EXPECT_TRUE(high->started());
   EXPECT_TRUE(high2->started());
@@ -837,18 +868,19 @@ TEST_F(ResourceSchedulerTest, IncreaseLayoutBlockingPriority) {
       kMaxNumDelayableWhileLayoutBlocking,
       kMaxNumDelayableRequestsPerClient)));
   InitializeScheduler();
-  scoped_ptr<TestRequest> high(
+  std::unique_ptr<TestRequest> high(
       NewRequest("http://hosthigh/high", net::HIGHEST));
-  scoped_ptr<TestRequest> high2(
+  std::unique_ptr<TestRequest> high2(
       NewRequest("http://hosthigh/high", net::HIGHEST));
-  scoped_ptr<TestRequest> medium(
+  std::unique_ptr<TestRequest> medium(
       NewRequest("http://hostmedium/medium", net::MEDIUM));
-  scoped_ptr<TestRequest> medium2(
+  std::unique_ptr<TestRequest> medium2(
       NewRequest("http://hostmedium/medium", net::MEDIUM));
-  scoped_ptr<TestRequest> low(NewRequest("http://hostlow/low", net::LOW));
-  scoped_ptr<TestRequest> low2(NewRequest("http://hostlow/low", net::LOW));
-  scoped_ptr<TestRequest> lowest(NewRequest("http://hostlowest/lowest", net::LOWEST));
-  scoped_ptr<TestRequest> lowest2(
+  std::unique_ptr<TestRequest> low(NewRequest("http://hostlow/low", net::LOW));
+  std::unique_ptr<TestRequest> low2(NewRequest("http://hostlow/low", net::LOW));
+  std::unique_ptr<TestRequest> lowest(
+      NewRequest("http://hostlowest/lowest", net::LOWEST));
+  std::unique_ptr<TestRequest> lowest2(
       NewRequest("http://hostlowest/lowest", net::LOWEST));
   EXPECT_TRUE(high->started());
   EXPECT_TRUE(high2->started());
@@ -897,10 +929,12 @@ TEST_F(ResourceSchedulerTest, UseLayoutBlockingThresholdOne) {
       kMaxNumDelayableWhileLayoutBlocking,
       kMaxNumDelayableRequestsPerClient)));
   InitializeScheduler();
-  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> high2(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  scoped_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> high2(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high->started());
   EXPECT_TRUE(high2->started());
   EXPECT_FALSE(low->started());
@@ -942,11 +976,14 @@ TEST_F(ResourceSchedulerTest, UseLayoutBlockingThresholdTwo) {
       kMaxNumDelayableWhileLayoutBlocking,
       kMaxNumDelayableRequestsPerClient)));
   InitializeScheduler();
-  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> high2(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> high3(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  scoped_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> high2(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> high3(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high->started());
   EXPECT_TRUE(high2->started());
   EXPECT_TRUE(high3->started());
@@ -990,10 +1027,11 @@ TEST_F(ResourceSchedulerTest, TwoDelayableLoadsUntilBodyInserted) {
       kMaxNumDelayableWhileLayoutBlocking,
       kMaxNumDelayableRequestsPerClient)));
   InitializeScheduler();
-  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  scoped_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
-  scoped_ptr<TestRequest> low3(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> low3(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high->started());
   EXPECT_TRUE(low->started());
   EXPECT_TRUE(low2->started());
@@ -1029,11 +1067,13 @@ TEST_F(ResourceSchedulerTest,
       kMaxNumDelayableWhileLayoutBlocking,
       kMaxNumDelayableRequestsPerClient)));
   InitializeScheduler();
-  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> high2(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  scoped_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
-  scoped_ptr<TestRequest> low3(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> high2(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> low3(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high->started());
   EXPECT_TRUE(high2->started());
   EXPECT_FALSE(low->started());
@@ -1086,8 +1126,8 @@ TEST_F(ResourceSchedulerTest, TwentyMaxNumDelayableRequestsPerClient) {
     EXPECT_TRUE(lows_different_host[i]->started());
   }
 
-  scoped_ptr<TestRequest> last_different_host(NewRequest("http://host_new/last",
-                                                        net::LOWEST));
+  std::unique_ptr<TestRequest> last_different_host(
+      NewRequest("http://host_new/last", net::LOWEST));
   EXPECT_FALSE(last_different_host->started());
 }
 
@@ -1127,8 +1167,8 @@ TEST_F(ResourceSchedulerTest,
     EXPECT_TRUE(lows_different_host[i]->started());
   }
 
-  scoped_ptr<TestRequest> last_different_host(NewRequest("http://host_new/last",
-                                                         net::LOWEST));
+  std::unique_ptr<TestRequest> last_different_host(
+      NewRequest("http://host_new/last", net::LOWEST));
   EXPECT_FALSE(last_different_host->started());
 }
 

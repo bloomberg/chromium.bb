@@ -5,12 +5,12 @@
 #ifndef CONTENT_BROWSER_LOADER_RESOURCE_REQUEST_INFO_IMPL_H_
 #define CONTENT_BROWSER_LOADER_RESOURCE_REQUEST_INFO_IMPL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/resource_request_info.h"

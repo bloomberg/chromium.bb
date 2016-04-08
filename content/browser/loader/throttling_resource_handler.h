@@ -28,7 +28,7 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
                                   public ResourceController {
  public:
   // Takes ownership of the ResourceThrottle instances.
-  ThrottlingResourceHandler(scoped_ptr<ResourceHandler> next_handler,
+  ThrottlingResourceHandler(std::unique_ptr<ResourceHandler> next_handler,
                             net::URLRequest* request,
                             ScopedVector<ResourceThrottle> throttles);
   ~ThrottlingResourceHandler() override;

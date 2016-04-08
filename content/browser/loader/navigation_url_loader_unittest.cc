@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
@@ -110,7 +111,7 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
   }
 
   void OnResponseStarted(const scoped_refptr<ResourceResponse>& response,
-                         scoped_ptr<StreamHandle> body) override {
+                         std::unique_ptr<StreamHandle> body) override {
     response_ = response;
     body_ = std::move(body);
     ASSERT_TRUE(response_started_);
@@ -132,13 +133,13 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
   net::RedirectInfo redirect_info_;
   scoped_refptr<ResourceResponse> redirect_response_;
   scoped_refptr<ResourceResponse> response_;
-  scoped_ptr<StreamHandle> body_;
+  std::unique_ptr<StreamHandle> body_;
   int net_error_;
   int on_request_handled_counter_;
 
-  scoped_ptr<base::RunLoop> request_redirected_;
-  scoped_ptr<base::RunLoop> response_started_;
-  scoped_ptr<base::RunLoop> request_failed_;
+  std::unique_ptr<base::RunLoop> request_redirected_;
+  std::unique_ptr<base::RunLoop> response_started_;
+  std::unique_ptr<base::RunLoop> request_failed_;
 };
 
 class RequestBlockingResourceDispatcherHostDelegate
@@ -169,7 +170,7 @@ class NavigationURLLoaderTest : public testing::Test {
         "test", net::URLRequestTestJob::CreateProtocolHandler());
     job_factory_.SetProtocolHandler(
         "blob",
-        make_scoped_ptr(new StreamProtocolHandler(
+        base::WrapUnique(new StreamProtocolHandler(
             StreamContext::GetFor(browser_context_.get())->registry())));
     request_context->set_job_factory(&job_factory_);
 
@@ -178,16 +179,17 @@ class NavigationURLLoaderTest : public testing::Test {
         switches::kEnableBrowserSideNavigation);
   }
 
-  scoped_ptr<NavigationURLLoader> MakeTestLoader(
+  std::unique_ptr<NavigationURLLoader> MakeTestLoader(
       const GURL& url,
       NavigationURLLoaderDelegate* delegate) {
     BeginNavigationParams begin_params(std::string(), net::LOAD_NORMAL, false,
                                        false, REQUEST_CONTEXT_TYPE_LOCATION);
     CommonNavigationParams common_params;
     common_params.url = url;
-    scoped_ptr<NavigationRequestInfo> request_info(new NavigationRequestInfo(
-        common_params, begin_params, url, url::Origin(url), true, false, -1,
-        scoped_refptr<ResourceRequestBody>()));
+    std::unique_ptr<NavigationRequestInfo> request_info(
+        new NavigationRequestInfo(common_params, begin_params, url,
+                                  url::Origin(url), true, false, -1,
+                                  scoped_refptr<ResourceRequestBody>()));
 
     return NavigationURLLoader::Create(
         browser_context_.get(), std::move(request_info), nullptr, delegate);
@@ -198,8 +200,8 @@ class NavigationURLLoaderTest : public testing::Test {
     net::TestDelegate delegate;
     net::URLRequestContext* request_context =
         browser_context_->GetResourceContext()->GetRequestContext();
-    scoped_ptr<net::URLRequest> request(request_context->CreateRequest(
-        url, net::DEFAULT_PRIORITY, &delegate));
+    std::unique_ptr<net::URLRequest> request(
+        request_context->CreateRequest(url, net::DEFAULT_PRIORITY, &delegate));
     request->Start();
     base::RunLoop().Run();
 
@@ -211,14 +213,14 @@ class NavigationURLLoaderTest : public testing::Test {
  protected:
   TestBrowserThreadBundle thread_bundle_;
   net::URLRequestJobFactoryImpl job_factory_;
-  scoped_ptr<TestBrowserContext> browser_context_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
   ResourceDispatcherHostImpl host_;
 };
 
 // Tests that a basic request works.
 TEST_F(NavigationURLLoaderTest, Basic) {
   TestNavigationURLLoaderDelegate delegate;
-  scoped_ptr<NavigationURLLoader> loader =
+  std::unique_ptr<NavigationURLLoader> loader =
       MakeTestLoader(net::URLRequestTestJob::test_url_1(), &delegate);
 
   // Wait for the response to come back.
@@ -241,7 +243,7 @@ TEST_F(NavigationURLLoaderTest, Basic) {
 // Tests that request failures are propagated correctly.
 TEST_F(NavigationURLLoaderTest, RequestFailed) {
   TestNavigationURLLoaderDelegate delegate;
-  scoped_ptr<NavigationURLLoader> loader =
+  std::unique_ptr<NavigationURLLoader> loader =
       MakeTestLoader(GURL("bogus:bogus"), &delegate);
 
   // Wait for the request to fail as expected.
@@ -255,9 +257,8 @@ TEST_F(NavigationURLLoaderTest, RequestRedirected) {
   // Fake a top-level request. Choose a URL which redirects so the request can
   // be paused before the response comes in.
   TestNavigationURLLoaderDelegate delegate;
-  scoped_ptr<NavigationURLLoader> loader =
-      MakeTestLoader(net::URLRequestTestJob::test_url_redirect_to_url_2(),
-                     &delegate);
+  std::unique_ptr<NavigationURLLoader> loader = MakeTestLoader(
+      net::URLRequestTestJob::test_url_redirect_to_url_2(), &delegate);
 
   // Wait for the request to redirect.
   delegate.WaitForRequestRedirected();
@@ -293,9 +294,8 @@ TEST_F(NavigationURLLoaderTest, CancelOnDestruct) {
   // Fake a top-level request. Choose a URL which redirects so the request can
   // be paused before the response comes in.
   TestNavigationURLLoaderDelegate delegate;
-  scoped_ptr<NavigationURLLoader> loader =
-      MakeTestLoader(net::URLRequestTestJob::test_url_redirect_to_url_2(),
-                     &delegate);
+  std::unique_ptr<NavigationURLLoader> loader = MakeTestLoader(
+      net::URLRequestTestJob::test_url_redirect_to_url_2(), &delegate);
 
   // Wait for the request to redirect.
   delegate.WaitForRequestRedirected();
@@ -311,9 +311,8 @@ TEST_F(NavigationURLLoaderTest, CancelOnDestruct) {
 // loader race.
 TEST_F(NavigationURLLoaderTest, CancelResponseRace) {
   TestNavigationURLLoaderDelegate delegate;
-  scoped_ptr<NavigationURLLoader> loader =
-      MakeTestLoader(net::URLRequestTestJob::test_url_redirect_to_url_2(),
-                     &delegate);
+  std::unique_ptr<NavigationURLLoader> loader = MakeTestLoader(
+      net::URLRequestTestJob::test_url_redirect_to_url_2(), &delegate);
 
   // Wait for the request to redirect.
   delegate.WaitForRequestRedirected();
@@ -333,9 +332,8 @@ TEST_F(NavigationURLLoaderTest, CancelResponseRace) {
 // Tests that the loader may be canceled by context.
 TEST_F(NavigationURLLoaderTest, CancelByContext) {
   TestNavigationURLLoaderDelegate delegate;
-  scoped_ptr<NavigationURLLoader> loader =
-      MakeTestLoader(net::URLRequestTestJob::test_url_redirect_to_url_2(),
-                     &delegate);
+  std::unique_ptr<NavigationURLLoader> loader = MakeTestLoader(
+      net::URLRequestTestJob::test_url_redirect_to_url_2(), &delegate);
 
   // Wait for the request to redirect.
   delegate.WaitForRequestRedirected();
@@ -356,7 +354,7 @@ TEST_F(NavigationURLLoaderTest, RequestBlocked) {
   host_.SetDelegate(&rdh_delegate);
 
   TestNavigationURLLoaderDelegate delegate;
-  scoped_ptr<NavigationURLLoader> loader =
+  std::unique_ptr<NavigationURLLoader> loader =
       MakeTestLoader(net::URLRequestTestJob::test_url_1(), &delegate);
 
   // Wait for the request to fail as expected.
@@ -371,7 +369,7 @@ TEST_F(NavigationURLLoaderTest, RequestBlocked) {
 TEST_F(NavigationURLLoaderTest, LoaderDetached) {
   // Fake a top-level request to a URL whose body does not load immediately.
   TestNavigationURLLoaderDelegate delegate;
-  scoped_ptr<NavigationURLLoader> loader =
+  std::unique_ptr<NavigationURLLoader> loader =
       MakeTestLoader(net::URLRequestTestJob::test_url_2(), &delegate);
 
   // Wait for the response to come back.
@@ -398,7 +396,7 @@ TEST_F(NavigationURLLoaderTest, LoaderDetached) {
 TEST_F(NavigationURLLoaderTest, OwnedByHandle) {
   // Fake a top-level request to a URL whose body does not load immediately.
   TestNavigationURLLoaderDelegate delegate;
-  scoped_ptr<NavigationURLLoader> loader =
+  std::unique_ptr<NavigationURLLoader> loader =
       MakeTestLoader(net::URLRequestTestJob::test_url_2(), &delegate);
 
   // Wait for the response to come back.

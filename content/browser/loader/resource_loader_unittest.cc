@@ -6,13 +6,15 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -111,11 +113,10 @@ class LoaderDestroyingCertStore : public net::ClientCertStore {
   // Creates a client certificate store which, when looked up, posts a task to
   // reset |loader| and then call the callback. The caller is responsible for
   // ensuring the pointers remain valid until the process is complete.
-  LoaderDestroyingCertStore(scoped_ptr<ResourceLoader>* loader,
+  LoaderDestroyingCertStore(std::unique_ptr<ResourceLoader>* loader,
                             const base::Closure& on_loader_deleted_callback)
       : loader_(loader),
-        on_loader_deleted_callback_(on_loader_deleted_callback) {
-  }
+        on_loader_deleted_callback_(on_loader_deleted_callback) {}
 
   // net::ClientCertStore:
   void GetClientCerts(const net::SSLCertRequestInfo& cert_request_info,
@@ -133,7 +134,7 @@ class LoaderDestroyingCertStore : public net::ClientCertStore {
   // This needs to be static because |loader| owns the
   // LoaderDestroyingCertStore (ClientCertStores are actually handles, and not
   // global cert stores).
-  static void DoCallback(scoped_ptr<ResourceLoader>* loader,
+  static void DoCallback(std::unique_ptr<ResourceLoader>* loader,
                          const base::Closure& cert_selected_callback,
                          const base::Closure& on_loader_deleted_callback) {
     loader->reset();
@@ -141,7 +142,7 @@ class LoaderDestroyingCertStore : public net::ClientCertStore {
     on_loader_deleted_callback.Run();
   }
 
-  scoped_ptr<ResourceLoader>* loader_;
+  std::unique_ptr<ResourceLoader>* loader_;
   base::Closure on_loader_deleted_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(LoaderDestroyingCertStore);
@@ -427,7 +428,7 @@ class ResourceHandlerStub : public ResourceHandler {
   int total_bytes_downloaded_;
   base::RunLoop deferred_run_loop_;
   base::RunLoop response_completed_run_loop_;
-  scoped_ptr<base::RunLoop> wait_for_progress_run_loop_;
+  std::unique_ptr<base::RunLoop> wait_for_progress_run_loop_;
 };
 
 // Test browser client that captures calls to SelectClientCertificates and
@@ -447,7 +448,7 @@ class SelectCertificateBrowserClient : public TestContentBrowserClient {
   void SelectClientCertificate(
       WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
-      scoped_ptr<ClientCertificateDelegate> delegate) override {
+      std::unique_ptr<ClientCertificateDelegate> delegate) override {
     EXPECT_FALSE(delegate_.get());
 
     ++call_count_;
@@ -469,7 +470,7 @@ class SelectCertificateBrowserClient : public TestContentBrowserClient {
  private:
   net::CertificateList passed_certs_;
   int call_count_;
-  scoped_ptr<ClientCertificateDelegate> delegate_;
+  std::unique_ptr<ClientCertificateDelegate> delegate_;
 
   base::RunLoop select_certificate_run_loop_;
 
@@ -481,16 +482,16 @@ class ResourceContextStub : public MockResourceContext {
   explicit ResourceContextStub(net::URLRequestContext* test_request_context)
       : MockResourceContext(test_request_context) {}
 
-  scoped_ptr<net::ClientCertStore> CreateClientCertStore() override {
+  std::unique_ptr<net::ClientCertStore> CreateClientCertStore() override {
     return std::move(dummy_cert_store_);
   }
 
-  void SetClientCertStore(scoped_ptr<net::ClientCertStore> store) {
+  void SetClientCertStore(std::unique_ptr<net::ClientCertStore> store) {
     dummy_cert_store_ = std::move(store);
   }
 
  private:
-  scoped_ptr<net::ClientCertStore> dummy_cert_store_;
+  std::unique_ptr<net::ClientCertStore> dummy_cert_store_;
 };
 
 // Wraps a ChunkedUploadDataStream to behave as non-chunked to enable upload
@@ -532,8 +533,8 @@ void CreateTemporaryError(
     const CreateTemporaryFileStreamCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(callback, error, base::Passed(scoped_ptr<net::FileStream>()),
-                 nullptr));
+      base::Bind(callback, error,
+                 base::Passed(std::unique_ptr<net::FileStream>()), nullptr));
 }
 
 }  // namespace
@@ -555,19 +556,19 @@ class ResourceLoaderTest : public testing::Test,
     return net::URLRequestTestJob::test_data_1();
   }
 
-  virtual scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+  virtual std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>
   CreateProtocolHandler() {
     return net::URLRequestTestJob::CreateProtocolHandler();
   }
 
-  virtual scoped_ptr<ResourceHandler> WrapResourceHandler(
-      scoped_ptr<ResourceHandlerStub> leaf_handler,
+  virtual std::unique_ptr<ResourceHandler> WrapResourceHandler(
+      std::unique_ptr<ResourceHandlerStub> leaf_handler,
       net::URLRequest* request) {
     return std::move(leaf_handler);
   }
 
   // Replaces loader_ with a new one for |request|.
-  void SetUpResourceLoader(scoped_ptr<net::URLRequest> request) {
+  void SetUpResourceLoader(std::unique_ptr<net::URLRequest> request) {
     raw_ptr_to_request_ = request.get();
 
     RenderFrameHost* rfh = web_contents_->GetMainFrame();
@@ -577,7 +578,7 @@ class ResourceLoaderTest : public testing::Test,
         rfh->GetRoutingID(), true /* is_main_frame */,
         false /* parent_is_main_frame */, true /* allow_download */,
         false /* is_async */, false /* is_using_lofi_ */);
-    scoped_ptr<ResourceHandlerStub> resource_handler(
+    std::unique_ptr<ResourceHandlerStub> resource_handler(
         new ResourceHandlerStub(request.get()));
     raw_ptr_resource_handler_ = resource_handler.get();
     loader_.reset(new ResourceLoader(
@@ -595,11 +596,9 @@ class ResourceLoaderTest : public testing::Test,
     web_contents_.reset(
         TestWebContents::Create(browser_context_.get(), site_instance.get()));
 
-    scoped_ptr<net::URLRequest> request(
+    std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
-            test_url(),
-            net::DEFAULT_PRIORITY,
-            nullptr /* delegate */));
+            test_url(), net::DEFAULT_PRIORITY, nullptr /* delegate */));
     SetUpResourceLoader(std::move(request));
   }
 
@@ -633,20 +632,20 @@ class ResourceLoaderTest : public testing::Test,
   net::URLRequestJobFactoryImpl job_factory_;
   net::TestURLRequestContext test_url_request_context_;
   ResourceContextStub resource_context_;
-  scoped_ptr<TestBrowserContext> browser_context_;
-  scoped_ptr<TestWebContents> web_contents_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
+  std::unique_ptr<TestWebContents> web_contents_;
 
   // The ResourceLoader owns the URLRequest and the ResourceHandler.
   ResourceHandlerStub* raw_ptr_resource_handler_;
   net::URLRequest* raw_ptr_to_request_;
-  scoped_ptr<ResourceLoader> loader_;
+  std::unique_ptr<ResourceLoader> loader_;
 };
 
 class ClientCertResourceLoaderTest : public ResourceLoaderTest {
  protected:
-  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler> CreateProtocolHandler()
-      override {
-    return make_scoped_ptr(new MockClientCertJobProtocolHandler);
+  std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>
+  CreateProtocolHandler() override {
+    return base::WrapUnique(new MockClientCertJobProtocolHandler);
   }
 };
 
@@ -673,11 +672,11 @@ class HTTPSSecurityInfoResourceLoaderTest : public ResourceLoaderTest {
     net::URLRequestFilter::GetInstance()->ClearHandlers();
     net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
         "https", "example.test",
-        scoped_ptr<net::URLRequestInterceptor>(
+        std::unique_ptr<net::URLRequestInterceptor>(
             new MockHTTPSJobURLRequestInterceptor(false /* redirect */)));
     net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
         "https", "example-redirect.test",
-        scoped_ptr<net::URLRequestInterceptor>(
+        std::unique_ptr<net::URLRequestInterceptor>(
             new MockHTTPSJobURLRequestInterceptor(true /* redirect */)));
   }
 
@@ -693,7 +692,7 @@ TEST_F(ClientCertResourceLoaderTest, WithStoreLookup) {
   std::vector<std::string> store_requested_authorities;
   net::CertificateList dummy_certs(1, scoped_refptr<net::X509Certificate>(
       new net::X509Certificate("test", "test", base::Time(), base::Time())));
-  scoped_ptr<ClientCertStoreStub> test_store(new ClientCertStoreStub(
+  std::unique_ptr<ClientCertStoreStub> test_store(new ClientCertStoreStub(
       dummy_certs, &store_request_count, &store_requested_authorities));
   resource_context_.SetClientCertStore(std::move(test_store));
 
@@ -805,8 +804,7 @@ TEST_F(ClientCertResourceLoaderTest, StoreAsyncCancel) {
   LoaderDestroyingCertStore* test_store =
       new LoaderDestroyingCertStore(&loader_,
                                     loader_destroyed_run_loop.QuitClosure());
-  resource_context_.SetClientCertStore(
-      make_scoped_ptr(test_store));
+  resource_context_.SetClientCertStore(base::WrapUnique(test_store));
 
   loader_->StartRequest();
   loader_destroyed_run_loop.Run();
@@ -881,8 +879,8 @@ class ResourceLoaderRedirectToFileTest : public ResourceLoaderTest {
     return redirect_to_file_resource_handler_;
   }
 
-  scoped_ptr<ResourceHandler> WrapResourceHandler(
-      scoped_ptr<ResourceHandlerStub> leaf_handler,
+  std::unique_ptr<ResourceHandler> WrapResourceHandler(
+      std::unique_ptr<ResourceHandlerStub> leaf_handler,
       net::URLRequest* request) override {
     leaf_handler->set_expect_reads(false);
 
@@ -894,7 +892,7 @@ class ResourceLoaderRedirectToFileTest : public ResourceLoaderTest {
     CHECK(file.IsValid());
 
     // Create mock file streams and a ShareableFileReference.
-    scoped_ptr<net::testing::MockFileStream> file_stream(
+    std::unique_ptr<net::testing::MockFileStream> file_stream(
         new net::testing::MockFileStream(std::move(file),
                                          base::ThreadTaskRunnerHandle::Get()));
     file_stream_ = file_stream.get();
@@ -905,7 +903,7 @@ class ResourceLoaderRedirectToFileTest : public ResourceLoaderTest {
             BrowserThread::FILE).get());
 
     // Inject them into the handler.
-    scoped_ptr<RedirectToFileResourceHandler> handler(
+    std::unique_ptr<RedirectToFileResourceHandler> handler(
         new RedirectToFileResourceHandler(std::move(leaf_handler), request));
     redirect_to_file_resource_handler_ = handler.get();
     handler->SetCreateTemporaryFileStreamFunctionForTesting(
@@ -916,9 +914,8 @@ class ResourceLoaderRedirectToFileTest : public ResourceLoaderTest {
   }
 
  private:
-  void PostCallback(
-      scoped_ptr<net::FileStream> file_stream,
-      const CreateTemporaryFileStreamCallback& callback) {
+  void PostCallback(std::unique_ptr<net::FileStream> file_stream,
+                    const CreateTemporaryFileStreamCallback& callback) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(callback, base::File::FILE_OK, base::Passed(&file_stream),
@@ -1081,7 +1078,7 @@ TEST_F(ResourceLoaderRedirectToFileTest, DownstreamDeferStart) {
 // to it.
 TEST_F(HTTPSSecurityInfoResourceLoaderTest, SecurityInfoOnHTTPSResource) {
   // Start the request and wait for it to finish.
-  scoped_ptr<net::URLRequest> request(
+  std::unique_ptr<net::URLRequest> request(
       resource_context_.GetRequestContext()->CreateRequest(
           test_https_url(), net::DEFAULT_PRIORITY, nullptr /* delegate */));
   SetUpResourceLoader(std::move(request));
@@ -1119,7 +1116,7 @@ TEST_F(HTTPSSecurityInfoResourceLoaderTest, SecurityInfoOnHTTPSResource) {
 TEST_F(HTTPSSecurityInfoResourceLoaderTest,
        SecurityInfoOnHTTPSRedirectResource) {
   // Start the request and wait for it to finish.
-  scoped_ptr<net::URLRequest> request(
+  std::unique_ptr<net::URLRequest> request(
       resource_context_.GetRequestContext()->CreateRequest(
           test_https_redirect_url(), net::DEFAULT_PRIORITY,
           nullptr /* delegate */));

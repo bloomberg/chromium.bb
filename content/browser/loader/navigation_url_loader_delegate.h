@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_LOADER_NAVIGATION_URL_LOADER_DELEGATE_H_
 #define CONTENT_BROWSER_LOADER_NAVIGATION_URL_LOADER_DELEGATE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
 namespace net {
@@ -33,7 +34,7 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
   // |body_stream|.
   virtual void OnResponseStarted(
       const scoped_refptr<ResourceResponse>& response,
-      scoped_ptr<StreamHandle> body_stream) = 0;
+      std::unique_ptr<StreamHandle> body_stream) = 0;
 
   // Called if the request fails before receving a response. |net_error| is a
   // network error code for the failure. |has_stale_copy_in_cache| is true if

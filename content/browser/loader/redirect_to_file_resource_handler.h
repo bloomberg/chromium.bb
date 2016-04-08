@@ -5,13 +5,14 @@
 #ifndef CONTENT_BROWSER_LOADER_REDIRECT_TO_FILE_RESOURCE_HANDLER_H_
 #define CONTENT_BROWSER_LOADER_REDIRECT_TO_FILE_RESOURCE_HANDLER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/layered_resource_handler.h"
 #include "content/browser/loader/temporary_file_stream.h"
@@ -44,7 +45,7 @@ class CONTENT_EXPORT RedirectToFileResourceHandler
 
   // Create a RedirectToFileResourceHandler for |request| which wraps
   // |next_handler|.
-  RedirectToFileResourceHandler(scoped_ptr<ResourceHandler> next_handler,
+  RedirectToFileResourceHandler(std::unique_ptr<ResourceHandler> next_handler,
                                 net::URLRequest* request);
   ~RedirectToFileResourceHandler() override;
 
@@ -68,7 +69,7 @@ class CONTENT_EXPORT RedirectToFileResourceHandler
 
  private:
   void DidCreateTemporaryFile(base::File::Error error_code,
-                              scoped_ptr<net::FileStream> file_stream,
+                              std::unique_ptr<net::FileStream> file_stream,
                               storage::ShareableFileReference* deletable_file);
 
   // Called by RedirectToFileResourceHandler::Writer.

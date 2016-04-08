@@ -12,6 +12,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/fileapi/upload_file_system_file_element_reader.h"
 #include "content/common/resource_request_body.h"
@@ -75,20 +76,20 @@ class FileElementReader : public net::UploadFileElementReader {
 
 }  // namespace
 
-scoped_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
+std::unique_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
     ResourceRequestBody* body,
     storage::BlobStorageContext* blob_context,
     storage::FileSystemContext* file_system_context,
     base::SingleThreadTaskRunner* file_task_runner) {
-  std::vector<scoped_ptr<net::UploadElementReader>> element_readers;
+  std::vector<std::unique_ptr<net::UploadElementReader>> element_readers;
   for (const auto& element : *body->elements()) {
     switch (element.type()) {
       case ResourceRequestBody::Element::TYPE_BYTES:
         element_readers.push_back(
-            make_scoped_ptr(new BytesElementReader(body, element)));
+            base::WrapUnique(new BytesElementReader(body, element)));
         break;
       case ResourceRequestBody::Element::TYPE_FILE:
-        element_readers.push_back(make_scoped_ptr(
+        element_readers.push_back(base::WrapUnique(
             new FileElementReader(body, file_task_runner, element)));
         break;
       case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
@@ -96,17 +97,17 @@ scoped_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
         // supplied a FileSystemContext.
         DCHECK(file_system_context);
         element_readers.push_back(
-            make_scoped_ptr(new content::UploadFileSystemFileElementReader(
+            base::WrapUnique(new content::UploadFileSystemFileElementReader(
                 file_system_context, element.filesystem_url(), element.offset(),
                 element.length(), element.expected_modification_time())));
         break;
       case ResourceRequestBody::Element::TYPE_BLOB: {
         DCHECK_EQ(std::numeric_limits<uint64_t>::max(), element.length());
         DCHECK_EQ(0ul, element.offset());
-        scoped_ptr<storage::BlobDataHandle> handle =
+        std::unique_ptr<storage::BlobDataHandle> handle =
             blob_context->GetBlobDataFromUUID(element.blob_uuid());
         element_readers.push_back(
-            make_scoped_ptr(new storage::UploadBlobElementReader(
+            base::WrapUnique(new storage::UploadBlobElementReader(
                 std::move(handle), file_system_context, file_task_runner)));
         break;
       }
@@ -118,7 +119,7 @@ scoped_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
     }
   }
 
-  return make_scoped_ptr(new net::ElementsUploadDataStream(
+  return base::WrapUnique(new net::ElementsUploadDataStream(
       std::move(element_readers), body->identifier()));
 }
 

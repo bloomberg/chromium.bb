@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_LOADER_NAVIGATION_URL_LOADER_IMPL_CORE_H_
 #define CONTENT_BROWSER_LOADER_NAVIGATION_URL_LOADER_IMPL_CORE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 
@@ -41,7 +42,7 @@ class NavigationURLLoaderImplCore {
   // Starts the request.
   void Start(ResourceContext* resource_context,
              ServiceWorkerNavigationHandleCore* service_worker_handle_core,
-             scoped_ptr<NavigationRequestInfo> request_info);
+             std::unique_ptr<NavigationRequestInfo> request_info);
 
   // Follows the current pending redirect.
   void FollowRedirect();
@@ -59,7 +60,7 @@ class NavigationURLLoaderImplCore {
 
   // Notifies |loader_| on the UI thread that the response started.
   void NotifyResponseStarted(ResourceResponse* response,
-                             scoped_ptr<StreamHandle> body);
+                             std::unique_ptr<StreamHandle> body);
 
   // Notifies |loader_| on the UI thread that the request failed.
   void NotifyRequestFailed(bool in_cache, int net_error);

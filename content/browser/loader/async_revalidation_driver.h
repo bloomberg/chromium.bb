@@ -5,12 +5,12 @@
 #ifndef CONTENT_BROWSER_LOADER_ASYNC_REVALIDATION_DRIVER_H_
 #define CONTENT_BROWSER_LOADER_ASYNC_REVALIDATION_DRIVER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
@@ -33,8 +33,8 @@ class CONTENT_EXPORT AsyncRevalidationDriver : public net::URLRequest::Delegate,
  public:
   // |completion_callback| is guaranteed to be called on completion,
   // regardless of success or failure.
-  AsyncRevalidationDriver(scoped_ptr<net::URLRequest> request,
-                          scoped_ptr<ResourceThrottle> throttle,
+  AsyncRevalidationDriver(std::unique_ptr<net::URLRequest> request,
+                          std::unique_ptr<ResourceThrottle> throttle,
                           const base::Closure& completion_callback);
   ~AsyncRevalidationDriver() override;
 
@@ -89,8 +89,8 @@ class CONTENT_EXPORT AsyncRevalidationDriver : public net::URLRequest::Delegate,
   scoped_refptr<net::IOBuffer> read_buffer_;
   base::OneShotTimer timer_;
 
-  scoped_ptr<net::URLRequest> request_;
-  scoped_ptr<ResourceThrottle> throttle_;
+  std::unique_ptr<net::URLRequest> request_;
+  std::unique_ptr<ResourceThrottle> throttle_;
 
   base::Closure completion_callback_;
 

@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_LOADER_TEMPORARY_FILE_STREAM_H_
 #define CONTENT_BROWSER_LOADER_TEMPORARY_FILE_STREAM_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/files/file.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
 namespace net {
@@ -21,7 +22,7 @@ class ShareableFileReference;
 namespace content {
 
 typedef base::Callback<void(base::File::Error,
-                            scoped_ptr<net::FileStream>,
+                            std::unique_ptr<net::FileStream>,
                             storage::ShareableFileReference*)>
     CreateTemporaryFileStreamCallback;
 

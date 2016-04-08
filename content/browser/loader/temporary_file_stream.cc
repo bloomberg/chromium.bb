@@ -20,15 +20,14 @@ namespace content {
 
 namespace {
 
-void DidCreateTemporaryFile(
-    const CreateTemporaryFileStreamCallback& callback,
-    scoped_ptr<base::FileProxy> file_proxy,
-    base::File::Error error_code,
-    const base::FilePath& file_path) {
+void DidCreateTemporaryFile(const CreateTemporaryFileStreamCallback& callback,
+                            std::unique_ptr<base::FileProxy> file_proxy,
+                            base::File::Error error_code,
+                            const base::FilePath& file_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!file_proxy->IsValid()) {
-    callback.Run(error_code, scoped_ptr<net::FileStream>(), NULL);
+    callback.Run(error_code, std::unique_ptr<net::FileStream>(), NULL);
     return;
   }
 
@@ -42,7 +41,7 @@ void DidCreateTemporaryFile(
           ShareableFileReference::DELETE_ON_FINAL_RELEASE,
           task_runner.get());
 
-  scoped_ptr<net::FileStream> file_stream(
+  std::unique_ptr<net::FileStream> file_stream(
       new net::FileStream(file_proxy->TakeFile(), task_runner));
 
   callback.Run(error_code, std::move(file_stream), deletable_file.get());
@@ -54,7 +53,7 @@ void CreateTemporaryFileStream(
     const CreateTemporaryFileStreamCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  scoped_ptr<base::FileProxy> file_proxy(new base::FileProxy(
+  std::unique_ptr<base::FileProxy> file_proxy(new base::FileProxy(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get()));
   base::FileProxy* proxy = file_proxy.get();
   proxy->CreateTemporary(

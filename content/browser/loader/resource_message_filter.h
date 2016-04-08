@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_LOADER_RESOURCE_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_LOADER_RESOURCE_MESSAGE_FILTER_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"

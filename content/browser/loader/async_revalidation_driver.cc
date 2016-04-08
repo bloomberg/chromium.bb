@@ -37,8 +37,8 @@ const int kReadTimeoutInSeconds = 30;
 }  // namespace
 
 AsyncRevalidationDriver::AsyncRevalidationDriver(
-    scoped_ptr<net::URLRequest> request,
-    scoped_ptr<ResourceThrottle> throttle,
+    std::unique_ptr<net::URLRequest> request,
+    std::unique_ptr<ResourceThrottle> throttle,
     const base::Closure& completion_callback)
     : request_(std::move(request)),
       throttle_(std::move(throttle)),

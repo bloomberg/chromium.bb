@@ -776,16 +776,17 @@ ResourceScheduler::~ResourceScheduler() {
   DCHECK(client_map_.empty());
 }
 
-scoped_ptr<ResourceThrottle> ResourceScheduler::ScheduleRequest(
+std::unique_ptr<ResourceThrottle> ResourceScheduler::ScheduleRequest(
     int child_id,
     int route_id,
     bool is_async,
     net::URLRequest* url_request) {
   DCHECK(CalledOnValidThread());
   ClientId client_id = MakeClientId(child_id, route_id);
-  scoped_ptr<ScheduledResourceRequest> request(new ScheduledResourceRequest(
-      client_id, url_request, this,
-      RequestPriorityParams(url_request->priority(), 0), is_async));
+  std::unique_ptr<ScheduledResourceRequest> request(
+      new ScheduledResourceRequest(
+          client_id, url_request, this,
+          RequestPriorityParams(url_request->priority(), 0), is_async));
 
   ClientMap::iterator it = client_map_.find(client_id);
   if (it == client_map_.end()) {

@@ -21,7 +21,7 @@ namespace content {
 
 NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     BrowserContext* browser_context,
-    scoped_ptr<NavigationRequestInfo> request_info,
+    std::unique_ptr<NavigationRequestInfo> request_info,
     ServiceWorkerNavigationHandle* service_worker_handle,
     NavigationURLLoaderDelegate* delegate)
     : delegate_(delegate), weak_factory_(this) {
@@ -81,7 +81,7 @@ void NavigationURLLoaderImpl::NotifyRequestRedirected(
 
 void NavigationURLLoaderImpl::NotifyResponseStarted(
     const scoped_refptr<ResourceResponse>& response,
-    scoped_ptr<StreamHandle> body) {
+    std::unique_ptr<StreamHandle> body) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   delegate_->OnResponseStarted(response, std::move(body));

@@ -66,7 +66,7 @@ class DependentIOBuffer : public net::WrappedIOBuffer {
 }  // namespace
 
 MimeTypeResourceHandler::MimeTypeResourceHandler(
-    scoped_ptr<ResourceHandler> next_handler,
+    std::unique_ptr<ResourceHandler> next_handler,
     ResourceDispatcherHostImpl* host,
     PluginService* plugin_service,
     net::URLRequest* request)
@@ -346,7 +346,7 @@ bool MimeTypeResourceHandler::SelectPluginHandler(bool* defer,
   if (has_plugin)
     plugin_path = plugin.path;
   std::string payload;
-  scoped_ptr<ResourceHandler> handler(host_->MaybeInterceptAsStream(
+  std::unique_ptr<ResourceHandler> handler(host_->MaybeInterceptAsStream(
       plugin_path, request(), response_.get(), &payload));
   if (handler) {
     *handled_by_plugin = true;
@@ -406,7 +406,7 @@ bool MimeTypeResourceHandler::SelectNextHandler(bool* defer) {
 
   // Install download handler
   info->set_is_download(true);
-  scoped_ptr<ResourceHandler> handler(
+  std::unique_ptr<ResourceHandler> handler(
       host_->CreateResourceHandlerForDownload(request(),
                                               true,  // is_content_initiated
                                               must_download));
@@ -414,7 +414,7 @@ bool MimeTypeResourceHandler::SelectNextHandler(bool* defer) {
 }
 
 bool MimeTypeResourceHandler::UseAlternateNextHandler(
-    scoped_ptr<ResourceHandler> new_handler,
+    std::unique_ptr<ResourceHandler> new_handler,
     const std::string& payload_for_old_handler) {
   if (response_->head.headers.get() &&  // Can be NULL if FTP.
       response_->head.headers->response_code() / 100 != 2) {

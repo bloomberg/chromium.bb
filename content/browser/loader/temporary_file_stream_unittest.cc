@@ -39,7 +39,7 @@ class WaitForFileStream {
   }
 
   void OnFileStreamCreated(base::File::Error error,
-                           scoped_ptr<net::FileStream> file_stream,
+                           std::unique_ptr<net::FileStream> file_stream,
                            ShareableFileReference* deletable_file) {
     error_ = error;
     file_stream_ = std::move(file_stream);
@@ -58,7 +58,7 @@ class WaitForFileStream {
  private:
   base::RunLoop loop_;
   base::File::Error error_;
-  scoped_ptr<net::FileStream> file_stream_;
+  std::unique_ptr<net::FileStream> file_stream_;
   scoped_refptr<ShareableFileReference> deletable_file_;
 };
 

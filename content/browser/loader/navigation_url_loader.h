@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_LOADER_NAVIGATION_URL_LOADER_H_
 #define CONTENT_BROWSER_LOADER_NAVIGATION_URL_LOADER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -32,9 +33,9 @@ class CONTENT_EXPORT NavigationURLLoader {
   // request parameters should not come in as a navigation-specific
   // structure. Information like has_user_gesture and
   // should_replace_current_entry shouldn't be needed at this layer.
-  static scoped_ptr<NavigationURLLoader> Create(
+  static std::unique_ptr<NavigationURLLoader> Create(
       BrowserContext* browser_context,
-      scoped_ptr<NavigationRequestInfo> request_info,
+      std::unique_ptr<NavigationRequestInfo> request_info,
       ServiceWorkerNavigationHandle* service_worker_handle,
       NavigationURLLoaderDelegate* delegate);
 
