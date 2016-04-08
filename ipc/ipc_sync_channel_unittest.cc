@@ -39,16 +39,18 @@ namespace {
 class Worker : public Listener, public Sender {
  public:
   // Will create a channel without a name.
-  Worker(Channel::Mode mode, const std::string& thread_name)
+  Worker(Channel::Mode mode,
+         const std::string& thread_name,
+         const std::string& channel_name)
       : done_(new WaitableEvent(false, false)),
         channel_created_(new WaitableEvent(false, false)),
+        channel_name_(channel_name),
         mode_(mode),
         ipc_thread_((thread_name + "_ipc").c_str()),
         listener_thread_((thread_name + "_listener").c_str()),
         overrided_thread_(NULL),
         shutdown_event_(true, false),
-        is_shutdown_(false) {
-  }
+        is_shutdown_(false) {}
 
   // Will create a named channel and use this name for the threads' name.
   Worker(const std::string& channel_name, Channel::Mode mode)
@@ -276,9 +278,9 @@ class IPCSyncChannelTest : public testing::Test {
 
 class SimpleServer : public Worker {
  public:
-  explicit SimpleServer(bool pump_during_send)
-      : Worker(Channel::MODE_SERVER, "simpler_server"),
-        pump_during_send_(pump_during_send) { }
+  SimpleServer(bool pump_during_send, const std::string& channel_name)
+      : Worker(Channel::MODE_SERVER, "simpler_server", channel_name),
+        pump_during_send_(pump_during_send) {}
   void Run() override {
     SendAnswerToLife(pump_during_send_, true);
     Done();
@@ -289,7 +291,8 @@ class SimpleServer : public Worker {
 
 class SimpleClient : public Worker {
  public:
-  SimpleClient() : Worker(Channel::MODE_CLIENT, "simple_client") { }
+  explicit SimpleClient(const std::string& channel_name)
+      : Worker(Channel::MODE_CLIENT, "simple_client", channel_name) {}
 
   void OnAnswer(int* answer) override {
     *answer = 42;
@@ -299,8 +302,8 @@ class SimpleClient : public Worker {
 
 void Simple(bool pump_during_send) {
   std::vector<Worker*> workers;
-  workers.push_back(new SimpleServer(pump_during_send));
-  workers.push_back(new SimpleClient());
+  workers.push_back(new SimpleServer(pump_during_send, "Simple"));
+  workers.push_back(new SimpleClient("Simple"));
   RunTest(workers);
 }
 
@@ -322,9 +325,9 @@ TEST_F(IPCSyncChannelTest, MAYBE_Simple) {
 // ChannelProxy::Init separately) process.
 class TwoStepServer : public Worker {
  public:
-  explicit TwoStepServer(bool create_pipe_now)
-      : Worker(Channel::MODE_SERVER, "simpler_server"),
-        create_pipe_now_(create_pipe_now) { }
+  TwoStepServer(bool create_pipe_now, const std::string& channel_name)
+      : Worker(Channel::MODE_SERVER, "simpler_server", channel_name),
+        create_pipe_now_(create_pipe_now) {}
 
   void Run() override {
     SendAnswerToLife(false, true);
@@ -345,9 +348,9 @@ class TwoStepServer : public Worker {
 
 class TwoStepClient : public Worker {
  public:
-  TwoStepClient(bool create_pipe_now)
-      : Worker(Channel::MODE_CLIENT, "simple_client"),
-        create_pipe_now_(create_pipe_now) { }
+  TwoStepClient(bool create_pipe_now, const std::string& channel_name)
+      : Worker(Channel::MODE_CLIENT, "simple_client", channel_name),
+        create_pipe_now_(create_pipe_now) {}
 
   void OnAnswer(int* answer) override {
     *answer = 42;
@@ -368,8 +371,8 @@ class TwoStepClient : public Worker {
 
 void TwoStep(bool create_server_pipe_now, bool create_client_pipe_now) {
   std::vector<Worker*> workers;
-  workers.push_back(new TwoStepServer(create_server_pipe_now));
-  workers.push_back(new TwoStepClient(create_client_pipe_now));
+  workers.push_back(new TwoStepServer(create_server_pipe_now, "TwoStep"));
+  workers.push_back(new TwoStepClient(create_client_pipe_now, "TwoStep"));
   RunTest(workers);
 }
 
@@ -386,7 +389,8 @@ TEST_F(IPCSyncChannelTest, TwoStepInitialization) {
 
 class DelayClient : public Worker {
  public:
-  DelayClient() : Worker(Channel::MODE_CLIENT, "delay_client") { }
+  explicit DelayClient(const std::string& channel_name)
+      : Worker(Channel::MODE_CLIENT, "delay_client", channel_name) {}
 
   void OnAnswerDelay(Message* reply_msg) override {
     SyncChannelTestMsg_AnswerToLife::WriteReplyParams(reply_msg, 42);
@@ -397,8 +401,8 @@ class DelayClient : public Worker {
 
 void DelayReply(bool pump_during_send) {
   std::vector<Worker*> workers;
-  workers.push_back(new SimpleServer(pump_during_send));
-  workers.push_back(new DelayClient());
+  workers.push_back(new SimpleServer(pump_during_send, "DelayReply"));
+  workers.push_back(new DelayClient("DelayReply"));
   RunTest(workers);
 }
 
@@ -412,10 +416,12 @@ TEST_F(IPCSyncChannelTest, DelayReply) {
 
 class NoHangServer : public Worker {
  public:
-  NoHangServer(WaitableEvent* got_first_reply, bool pump_during_send)
-      : Worker(Channel::MODE_SERVER, "no_hang_server"),
+  NoHangServer(WaitableEvent* got_first_reply,
+               bool pump_during_send,
+               const std::string& channel_name)
+      : Worker(Channel::MODE_SERVER, "no_hang_server", channel_name),
         got_first_reply_(got_first_reply),
-        pump_during_send_(pump_during_send) { }
+        pump_during_send_(pump_during_send) {}
   void Run() override {
     SendAnswerToLife(pump_during_send_, true);
     got_first_reply_->Signal();
@@ -430,9 +436,9 @@ class NoHangServer : public Worker {
 
 class NoHangClient : public Worker {
  public:
-  explicit NoHangClient(WaitableEvent* got_first_reply)
-    : Worker(Channel::MODE_CLIENT, "no_hang_client"),
-      got_first_reply_(got_first_reply) { }
+  NoHangClient(WaitableEvent* got_first_reply, const std::string& channel_name)
+      : Worker(Channel::MODE_CLIENT, "no_hang_client", channel_name),
+        got_first_reply_(got_first_reply) {}
 
   void OnAnswerDelay(Message* reply_msg) override {
     // Use the DELAY_REPLY macro so that we can force the reply to be sent
@@ -450,8 +456,9 @@ class NoHangClient : public Worker {
 void NoHang(bool pump_during_send) {
   WaitableEvent got_first_reply(false, false);
   std::vector<Worker*> workers;
-  workers.push_back(new NoHangServer(&got_first_reply, pump_during_send));
-  workers.push_back(new NoHangClient(&got_first_reply));
+  workers.push_back(
+      new NoHangServer(&got_first_reply, pump_during_send, "NoHang"));
+  workers.push_back(new NoHangClient(&got_first_reply, "NoHang"));
   RunTest(workers);
 }
 
@@ -465,10 +472,12 @@ TEST_F(IPCSyncChannelTest, NoHang) {
 
 class UnblockServer : public Worker {
  public:
-  UnblockServer(bool pump_during_send, bool delete_during_send)
-    : Worker(Channel::MODE_SERVER, "unblock_server"),
-      pump_during_send_(pump_during_send),
-      delete_during_send_(delete_during_send) { }
+  UnblockServer(bool pump_during_send,
+                bool delete_during_send,
+                const std::string& channel_name)
+      : Worker(Channel::MODE_SERVER, "unblock_server", channel_name),
+        pump_during_send_(pump_during_send),
+        delete_during_send_(delete_during_send) {}
   void Run() override {
     if (delete_during_send_) {
       // Use custom code since race conditions mean the answer may or may not be
@@ -497,9 +506,9 @@ class UnblockServer : public Worker {
 
 class UnblockClient : public Worker {
  public:
-  explicit UnblockClient(bool pump_during_send)
-    : Worker(Channel::MODE_CLIENT, "unblock_client"),
-      pump_during_send_(pump_during_send) { }
+  UnblockClient(bool pump_during_send, const std::string& channel_name)
+      : Worker(Channel::MODE_CLIENT, "unblock_client", channel_name),
+        pump_during_send_(pump_during_send) {}
 
   void OnAnswer(int* answer) override {
     SendDouble(pump_during_send_, true);
@@ -512,8 +521,9 @@ class UnblockClient : public Worker {
 
 void Unblock(bool server_pump, bool client_pump, bool delete_during_send) {
   std::vector<Worker*> workers;
-  workers.push_back(new UnblockServer(server_pump, delete_during_send));
-  workers.push_back(new UnblockClient(client_pump));
+  workers.push_back(
+      new UnblockServer(server_pump, delete_during_send, "Unblock"));
+  workers.push_back(new UnblockClient(client_pump, "Unblock"));
   RunTest(workers);
 }
 
@@ -544,10 +554,14 @@ TEST_F(IPCSyncChannelTest, MAYBE_ChannelDeleteDuringSend) {
 
 class RecursiveServer : public Worker {
  public:
-  RecursiveServer(bool expected_send_result, bool pump_first, bool pump_second)
-      : Worker(Channel::MODE_SERVER, "recursive_server"),
+  RecursiveServer(bool expected_send_result,
+                  bool pump_first,
+                  bool pump_second,
+                  const std::string& channel_name)
+      : Worker(Channel::MODE_SERVER, "recursive_server", channel_name),
         expected_send_result_(expected_send_result),
-        pump_first_(pump_first), pump_second_(pump_second) {}
+        pump_first_(pump_first),
+        pump_second_(pump_second) {}
   void Run() override {
     SendDouble(pump_first_, expected_send_result_);
     Done();
@@ -563,9 +577,12 @@ class RecursiveServer : public Worker {
 
 class RecursiveClient : public Worker {
  public:
-  RecursiveClient(bool pump_during_send, bool close_channel)
-      : Worker(Channel::MODE_CLIENT, "recursive_client"),
-        pump_during_send_(pump_during_send), close_channel_(close_channel) {}
+  RecursiveClient(bool pump_during_send,
+                  bool close_channel,
+                  const std::string& channel_name)
+      : Worker(Channel::MODE_CLIENT, "recursive_client", channel_name),
+        pump_during_send_(pump_during_send),
+        close_channel_(close_channel) {}
 
   void OnDoubleDelay(int in, Message* reply_msg) override {
     SendDouble(pump_during_send_, !close_channel_);
@@ -594,9 +611,9 @@ class RecursiveClient : public Worker {
 void Recursive(
     bool server_pump_first, bool server_pump_second, bool client_pump) {
   std::vector<Worker*> workers;
-  workers.push_back(
-      new RecursiveServer(true, server_pump_first, server_pump_second));
-  workers.push_back(new RecursiveClient(client_pump, false));
+  workers.push_back(new RecursiveServer(true, server_pump_first,
+                                        server_pump_second, "Recursive"));
+  workers.push_back(new RecursiveClient(client_pump, false, "Recursive"));
   RunTest(workers);
 }
 
@@ -617,9 +634,9 @@ TEST_F(IPCSyncChannelTest, Recursive) {
 void RecursiveNoHang(
     bool server_pump_first, bool server_pump_second, bool client_pump) {
   std::vector<Worker*> workers;
-  workers.push_back(
-      new RecursiveServer(false, server_pump_first, server_pump_second));
-  workers.push_back(new RecursiveClient(client_pump, true));
+  workers.push_back(new RecursiveServer(false, server_pump_first,
+                                        server_pump_second, "RecursiveNoHang"));
+  workers.push_back(new RecursiveClient(client_pump, true, "RecursiveNoHang"));
   RunTest(workers);
 }
 
@@ -860,8 +877,8 @@ TEST_F(IPCSyncChannelTest, QueuedReply) {
 
 class ChattyClient : public Worker {
  public:
-  ChattyClient() :
-      Worker(Channel::MODE_CLIENT, "chatty_client") { }
+  explicit ChattyClient(const std::string& channel_name)
+      : Worker(Channel::MODE_CLIENT, "chatty_client", channel_name) {}
 
   void OnAnswer(int* answer) override {
     // The PostMessage limit is 10k.  Send 20% more than that.
@@ -878,8 +895,8 @@ class ChattyClient : public Worker {
 
 void ChattyServer(bool pump_during_send) {
   std::vector<Worker*> workers;
-  workers.push_back(new UnblockServer(pump_during_send, false));
-  workers.push_back(new ChattyClient());
+  workers.push_back(new UnblockServer(pump_during_send, false, "ChattyServer"));
+  workers.push_back(new ChattyClient("ChattyServer"));
   RunTest(workers);
 }
 
@@ -913,8 +930,8 @@ void TimeoutCallback() {
 
 class DoneEventRaceServer : public Worker {
  public:
-  DoneEventRaceServer()
-      : Worker(Channel::MODE_SERVER, "done_event_race_server") { }
+  explicit DoneEventRaceServer(const std::string& channel_name)
+      : Worker(Channel::MODE_SERVER, "done_event_race_server", channel_name) {}
 
   void Run() override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -942,8 +959,8 @@ class DoneEventRaceServer : public Worker {
 // reply comes back OnObjectSignaled will be called for the first message.
 TEST_F(IPCSyncChannelTest, MAYBE_DoneEventRace) {
   std::vector<Worker*> workers;
-  workers.push_back(new DoneEventRaceServer());
-  workers.push_back(new SimpleClient());
+  workers.push_back(new DoneEventRaceServer("DoneEventRace"));
+  workers.push_back(new SimpleClient("DoneEventRace"));
   RunTest(workers);
 }
 
@@ -984,8 +1001,10 @@ class TestSyncMessageFilter : public SyncMessageFilter {
 
 class SyncMessageFilterServer : public Worker {
  public:
-  SyncMessageFilterServer()
-      : Worker(Channel::MODE_SERVER, "sync_message_filter_server"),
+  explicit SyncMessageFilterServer(const std::string& channel_name)
+      : Worker(Channel::MODE_SERVER,
+               "sync_message_filter_server",
+               channel_name),
         thread_("helper_thread") {
     base::Thread::Options options;
     options.message_loop_type = base::MessageLoop::TYPE_DEFAULT;
@@ -1006,10 +1025,9 @@ class SyncMessageFilterServer : public Worker {
 // channel does not crash after the channel has been closed.
 class ServerSendAfterClose : public Worker {
  public:
-  ServerSendAfterClose()
-     : Worker(Channel::MODE_SERVER, "simpler_server"),
-       send_result_(true) {
-  }
+  explicit ServerSendAfterClose(const std::string& channel_name)
+      : Worker(Channel::MODE_SERVER, "simpler_server", channel_name),
+        send_result_(true) {}
 
   bool SendDummy() {
     ListenerThread()->task_runner()->PostTask(
@@ -1040,14 +1058,14 @@ class ServerSendAfterClose : public Worker {
 // Tests basic synchronous call
 TEST_F(IPCSyncChannelTest, SyncMessageFilter) {
   std::vector<Worker*> workers;
-  workers.push_back(new SyncMessageFilterServer());
-  workers.push_back(new SimpleClient());
+  workers.push_back(new SyncMessageFilterServer("SyncMessageFilter"));
+  workers.push_back(new SimpleClient("SyncMessageFilter"));
   RunTest(workers);
 }
 
 // Test the case when the channel is closed and a Send is attempted after that.
 TEST_F(IPCSyncChannelTest, SendAfterClose) {
-  ServerSendAfterClose server;
+  ServerSendAfterClose server("SendAfterClose");
   server.Start();
 
   server.done_event()->Wait();
