@@ -1,27 +1,16 @@
 <!DOCTYPE html>
-<script>
-if (window.testRunner)
-    testRunner.setAllowDisplayOfInsecureContent(true);
-
-function done()
-{
-    if (window.testRunner)
-        testRunner.notifyDone();
-}
-</script>
-<style>
-test {
-    content: url("http://127.0.0.1:8080/security/resources/green-if-no-referrer.php");
-}
-</style>
+<head>
+<script src="http://127.0.0.1:8000/security/resources/echo-referrer-js.php?before"></script>
 <meta name="referrer" content="origin" />
-<body onload="done();">
+<script src="http://127.0.0.1:8000/security/resources/echo-referrer-js.php?after"></script>
+</head>
+<body>
 <p>
-Checks that an CSS image that was created before a referrer policy was set is
+Checks that a script that was loaded before a referrer policy was set is
 loaded with the correct referrer, in this case, without a referrer.
 </p>
-<p>
-The test passes, if a green rectangle is displayed below.
-</p>
-<test/>
+<script>
+if (window.testRunner)
+    testRunner.notifyDone();
+</script>
 </body>

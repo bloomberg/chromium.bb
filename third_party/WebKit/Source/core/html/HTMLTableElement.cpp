@@ -42,7 +42,6 @@
 #include "core/html/HTMLTableSectionElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutTable.h"
-#include "platform/weborigin/Referrer.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
@@ -299,7 +298,6 @@ void HTMLTableElement::collectStyleForPresentationAttribute(const QualifiedName&
         String url = stripLeadingAndTrailingHTMLSpaces(value);
         if (!url.isEmpty()) {
             RawPtr<CSSImageValue> imageValue = CSSImageValue::create(url, document().completeURL(url));
-            imageValue->setReferrer(Referrer(document().outgoingReferrer(), document().getReferrerPolicy()));
             style->setProperty(CSSProperty(CSSPropertyBackgroundImage, imageValue.release()));
         }
     } else if (name == valignAttr) {
