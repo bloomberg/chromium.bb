@@ -149,21 +149,9 @@ const char kOmniboxGeolocationLastAuthorizationAlertVersion[] =
 const char kRateThisAppDialogLastShownTime[] =
     "ios.ratethisapp.dialog_last_shown_time";
 
-// Boolean that is true when SafeBrowsing is enabled.
-const char kSafeBrowsingEnabled[] = "safebrowsing.enabled";
-
-// Boolean that tell us whether Safe Browsing extended reporting is enabled.
-const char kSafeBrowsingExtendedReportingEnabled[] =
-    "safebrowsing.extended_reporting_enabled";
-
-// Boolean that tells us whether users are given the option to opt in to Safe
-// Browsing extended reporting.
-const char kSafeBrowsingExtendedReportingOptInAllowed[] =
-    "safebrowsing.extended_reporting_opt_in_allowed";
-
-// Boolean that is true when the SafeBrowsing interstitial should not allow
-// users to proceed anyway.
-const char kSafeBrowsingProceedAnywayDisabled[] =
-    "safebrowsing.proceed_anyway_disabled";
+// TODO(vasilii): drop the pref in M54.
+// True if the safe browsing cookie store was deleted on the disk.
+extern const char kDroppedSafeBrowsingCookies[] =
+    "safebrowsing.cookie_store_deleted";
 
 }  // namespace prefs

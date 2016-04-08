@@ -51,13 +51,7 @@ extern const char kOmniboxGeolocationLastAuthorizationAlertVersion[];
 
 extern const char kRateThisAppDialogLastShownTime[];
 
-// TODO(crbug.com/567136): those preferences are duplicated between desktop
-// and iOS. Once the corresponding code has been componentized or is no longer
-// used by iOS, remove the duplicate registration/definition.
-extern const char kSafeBrowsingEnabled[];
-extern const char kSafeBrowsingExtendedReportingEnabled[];
-extern const char kSafeBrowsingExtendedReportingOptInAllowed[];
-extern const char kSafeBrowsingProceedAnywayDisabled[];
+extern const char kDroppedSafeBrowsingCookies[];
 
 }  // namespace prefs
 
