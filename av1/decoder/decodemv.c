@@ -117,7 +117,29 @@ static void read_drl_idx(const AV1_COMMON *cm,
   uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
   mbmi->ref_mv_idx = 0;
 
-  if (xd->ref_mv_count[ref_frame_type] > 2) {
+  if (xd->ref_mv_count[ref_frame_type] > 1 && mbmi->mode == NEWMV) {
+    uint8_t drl_ctx = av1_drl_ctx(xd->ref_mv_stack[ref_frame_type], 0);
+    aom_prob drl_prob = cm->fc->drl_prob0[drl_ctx];
+
+    if (!aom_read(r, drl_prob)) {
+      mbmi->ref_mv_idx = 0;
+      return;
+    }
+    mbmi->ref_mv_idx = 1;
+
+    if (xd->ref_mv_count[ref_frame_type] > 2) {
+      drl_ctx = av1_drl_ctx(xd->ref_mv_stack[ref_frame_type], 1);
+      drl_prob = cm->fc->drl_prob0[drl_ctx];
+      if (!aom_read(r, drl_prob)) {
+        mbmi->ref_mv_idx = 1;
+        return;
+      }
+      mbmi->ref_mv_idx = 2;
+    }
+    return;
+  }
+
+  if (xd->ref_mv_count[ref_frame_type] > 2 && mbmi->mode == NEARMV) {
     uint8_t drl0_ctx = av1_drl_ctx(xd->ref_mv_stack[ref_frame_type], 1);
     aom_prob drl0_prob = cm->fc->drl_prob0[drl0_ctx];
     if (aom_read(r, drl0_prob)) {
@@ -710,7 +732,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     if (bsize >= BLOCK_8X8) {
       mbmi->mode = read_inter_mode(cm, xd, r, mode_ctx);
 #if CONFIG_REF_MV
-      if (mbmi->mode == NEARMV)
+      if (mbmi->mode == NEARMV || mbmi->mode == NEWMV)
         read_drl_idx(cm, xd, mbmi, r);
 #endif
     }
@@ -810,6 +832,21 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     mbmi->mv[0].as_int = mi->bmi[3].as_mv[0].as_int;
     mbmi->mv[1].as_int = mi->bmi[3].as_mv[1].as_int;
   } else {
+#if CONFIG_REF_MV
+    int ref;
+    for (ref = 0; ref < 1 + is_compound && mbmi->mode == NEWMV; ++ref) {
+      int_mv ref_mv = nearestmv[ref];
+      uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+      if (xd->ref_mv_count[ref_frame_type] > 1) {
+        ref_mv = (ref == 0) ?
+            xd->ref_mv_stack[ref_frame_type][mbmi->ref_mv_idx].this_mv :
+            xd->ref_mv_stack[ref_frame_type][mbmi->ref_mv_idx].comp_mv;
+        clamp_mv_ref(&ref_mv.as_mv, xd->n8_w << 3, xd->n8_h << 3, xd);
+        lower_mv_precision(&ref_mv.as_mv, allow_hp);
+      }
+      nearestmv[ref] = ref_mv;
+    }
+#endif
     xd->corrupted |= !assign_mv(cm, xd, mbmi->mode, 0, mbmi->mv, nearestmv,
                                 nearestmv, nearmv, is_compound, allow_hp, r);
   }

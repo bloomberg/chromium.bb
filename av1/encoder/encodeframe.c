@@ -916,11 +916,31 @@ static void update_state(AV1_COMP *cpi, ThreadData *td, PICK_MODE_CONTEXT *ctx,
   const int mi_width = num_8x8_blocks_wide_lookup[bsize];
   const int mi_height = num_8x8_blocks_high_lookup[bsize];
   int max_plane;
+#if CONFIG_REF_MV
+  int8_t rf_type;
+#endif
 
   assert(mi->mbmi.sb_type == bsize);
 
   *mi_addr = *mi;
   *x->mbmi_ext = ctx->mbmi_ext;
+
+#if CONFIG_REF_MV
+  rf_type = av1_ref_frame_type(mbmi->ref_frame);
+  if (x->mbmi_ext->ref_mv_count[rf_type] > 1 &&
+      mbmi->sb_type >= BLOCK_8X8 &&
+      mbmi->mode == NEWMV) {
+    for (i = 0; i < 1 + has_second_ref(mbmi); ++i) {
+      int_mv this_mv = (i == 0) ?
+          x->mbmi_ext->ref_mv_stack[rf_type][mbmi->ref_mv_idx].this_mv :
+          x->mbmi_ext->ref_mv_stack[rf_type][mbmi->ref_mv_idx].comp_mv;
+      clamp_mv_ref(&this_mv.as_mv, xd->n8_w << 3, xd->n8_h << 3, xd);
+      lower_mv_precision(&this_mv.as_mv, cm->allow_high_precision_mv);
+      x->mbmi_ext->ref_mvs[mbmi->ref_frame[i]][0] = this_mv;
+      mbmi->pred_mv[i] = this_mv;
+    }
+  }
+#endif
 
   // If segmentation in use
   if (seg->enabled) {

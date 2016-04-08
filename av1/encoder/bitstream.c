@@ -115,7 +115,31 @@ static void write_drl_idx(const AV1_COMMON *cm,
                           const MB_MODE_INFO_EXT *mbmi_ext,
                           aom_writer *w) {
   uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
-  if (mbmi_ext->ref_mv_count[ref_frame_type] > 2) {
+
+  assert(mbmi->ref_mv_idx < 3);
+
+  if (mbmi_ext->ref_mv_count[ref_frame_type] > 1 && mbmi->mode == NEWMV) {
+    uint8_t drl_ctx =
+        av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], 0);
+    aom_prob drl_prob = cm->fc->drl_prob0[drl_ctx];
+
+    aom_write(w, mbmi->ref_mv_idx != 0, drl_prob);
+    if (mbmi->ref_mv_idx == 0)
+      return;
+
+    if (mbmi_ext->ref_mv_count[ref_frame_type] > 2) {
+      drl_ctx = av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], 1);
+      drl_prob = cm->fc->drl_prob0[drl_ctx];
+      aom_write(w, mbmi->ref_mv_idx != 1, drl_prob);
+    }
+    if (mbmi->ref_mv_idx == 1)
+      return;
+
+    assert(mbmi->ref_mv_idx == 2);
+    return;
+  }
+
+  if (mbmi_ext->ref_mv_count[ref_frame_type] > 2 && mbmi->mode == NEARMV) {
     uint8_t drl0_ctx =
         av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], 1);
     aom_prob drl0_prob = cm->fc->drl_prob0[drl0_ctx];
@@ -474,7 +498,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
       if (bsize >= BLOCK_8X8) {
         write_inter_mode(cm, w, mode, mode_ctx);
 #if CONFIG_REF_MV
-        if (mode == NEARMV)
+        if (mode == NEARMV || mode == NEWMV)
           write_drl_idx(cm, mbmi, mbmi_ext, w);
 #endif
       }
@@ -520,20 +544,22 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
       }
     } else {
       if (mode == NEWMV) {
+        int_mv ref_mv;
         for (ref = 0; ref < 1 + is_compound; ++ref) {
 #if CONFIG_REF_MV
-              int nmv_ctx =
-                  av1_nmv_ctx(mbmi_ext->ref_mv_count[mbmi->ref_frame[ref]],
-                              mbmi_ext->ref_mv_stack[mbmi->ref_frame[ref]]);
-              const nmv_context *nmvc = &cm->fc->nmvc[nmv_ctx];
+          int nmv_ctx =
+              av1_nmv_ctx(mbmi_ext->ref_mv_count[mbmi->ref_frame[ref]],
+                          mbmi_ext->ref_mv_stack[mbmi->ref_frame[ref]]);
+          const nmv_context *nmvc = &cm->fc->nmvc[nmv_ctx];
 #endif
-              av1_encode_mv(cpi, w, &mbmi->mv[ref].as_mv,
-                         &mbmi_ext->ref_mvs[mbmi->ref_frame[ref]][0].as_mv,
-                         nmvc, allow_hp);
+          ref_mv = mbmi_ext->ref_mvs[mbmi->ref_frame[ref]][0];
+          av1_encode_mv(cpi, w, &mbmi->mv[ref].as_mv,
+                        &ref_mv.as_mv, nmvc, allow_hp);
         }
       }
     }
   }
+
   if (mbmi->tx_size < TX_32X32 && cm->base_qindex > 0 && !mbmi->skip &&
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
     if (is_inter) {

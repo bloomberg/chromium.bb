@@ -2957,7 +2957,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   int64_t best_filter_diff[SWITCHABLE_FILTER_CONTEXTS];
   MB_MODE_INFO best_mbmode;
 #if CONFIG_REF_MV
-  uint8_t best_ref_mv_idx[MODE_CTX_REF_FRAMES] = { 0 };
   int rate_skip0 = av1_cost_bit(av1_get_skip_prob(cm, xd), 0);
   int rate_skip1 = av1_cost_bit(av1_get_skip_prob(cm, xd), 1);
 #endif
@@ -3284,8 +3283,26 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       distortion2 = distortion_y + distortion_uv;
     } else {
 #if CONFIG_REF_MV
+      int_mv backup_ref_mv[2];
+      backup_ref_mv[0] = mbmi_ext->ref_mvs[ref_frame][0];
+      if (comp_pred)
+        backup_ref_mv[1] = mbmi_ext->ref_mvs[second_ref_frame][0];
+
       mbmi->ref_mv_idx = 0;
       ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+
+      if (this_mode == NEWMV &&
+          mbmi_ext->ref_mv_count[ref_frame_type] > 1) {
+        int ref;
+        for (ref = 0; ref < 1 + comp_pred; ++ref) {
+          int_mv this_mv = (ref == 0) ?
+              mbmi_ext->ref_mv_stack[ref_frame_type][0].this_mv :
+              mbmi_ext->ref_mv_stack[ref_frame_type][0].comp_mv;
+          clamp_mv_ref(&this_mv.as_mv, xd->n8_w << 3, xd->n8_h << 3, xd);
+          lower_mv_precision(&this_mv.as_mv, cm->allow_high_precision_mv);
+          mbmi_ext->ref_mvs[mbmi->ref_frame[ref]][0] = this_mv;
+        }
+      }
 #endif
       this_rd = handle_inter_mode(
           cpi, x, bsize, &rate2, &distortion2, &skippable, &rate_y, &rate_uv,
@@ -3294,20 +3311,42 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
           &mask_filter, filter_cache);
 
 #if CONFIG_REF_MV
-
-      if (!comp_pred && mbmi->mode == NEARMV &&
-          mbmi_ext->ref_mv_count[ref_frame_type] > 2) {
+      if ((mbmi->mode == NEARMV &&
+           mbmi_ext->ref_mv_count[ref_frame_type] > 2) ||
+          (mbmi->mode == NEWMV &&
+           mbmi_ext->ref_mv_count[ref_frame_type] > 1)) {
         int_mv backup_mv = frame_mv[NEARMV][ref_frame];
-        int_mv cur_mv = mbmi_ext->ref_mv_stack[ref_frame][2].this_mv;
         MB_MODE_INFO backup_mbmi = *mbmi;
-
+        int backup_skip = x->skip;
+        uint8_t backup_zcoeff_blk[256];
         int64_t tmp_ref_rd = this_rd;
         int ref_idx;
-        int ref_set = AOMMIN(2, mbmi_ext->ref_mv_count[ref_frame_type] - 2);
-        uint8_t drl0_ctx =
-            av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], 1);
 
-        rate2 += cpi->drl_mode_cost0[drl0_ctx][0];
+        // TODO(jingning): This should be deprecated shortly.
+        int idx_offset = (mbmi->mode == NEARMV) ? 1 : 0;
+
+        int ref_set =
+            AOMMIN(2, mbmi_ext->ref_mv_count[ref_frame_type] - 1 - idx_offset);
+
+        uint8_t drl0_ctx = 0;
+        uint8_t drl_ctx = 0;
+
+        // Dummy
+        int_mv backup_fmv[2];
+        backup_fmv[0] = frame_mv[NEWMV][ref_frame];
+        if (comp_pred)
+          backup_fmv[1] = frame_mv[NEWMV][second_ref_frame];
+
+        memcpy(backup_zcoeff_blk, x->zcoeff_blk[mbmi->tx_size],
+               sizeof(backup_zcoeff_blk[0]) * ctx->num_4x4_blk);
+
+        if (mbmi->mode == NEARMV) {
+          drl0_ctx = av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], 1);
+          rate2 += cpi->drl_mode_cost0[drl0_ctx][0];
+        } else {
+          drl_ctx = av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], 0);
+          rate2 += cpi->drl_mode_cost0[drl_ctx][0];
+        }
 
         if (this_rd < INT64_MAX) {
           if (RDCOST(x->rdmult, x->rddiv,
@@ -3325,8 +3364,25 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
           int tmp_rate = 0, tmp_rate_y = 0, tmp_rate_uv = 0;
           int tmp_skip = 1;
           int64_t tmp_dist = 0, tmp_sse = 0;
+          int dummy_disable_skip = 0;
+          int ref;
+          int_mv cur_mv;
 
-          cur_mv = mbmi_ext->ref_mv_stack[ref_frame][2 + ref_idx].this_mv;
+          mbmi->ref_mv_idx = 1 + ref_idx;
+
+          for (ref = 0; ref < 1 + comp_pred; ++ref) {
+            int_mv this_mv = (ref == 0) ?
+                mbmi_ext->ref_mv_stack[ref_frame_type]
+                                      [mbmi->ref_mv_idx].this_mv :
+                mbmi_ext->ref_mv_stack[ref_frame_type]
+                                      [mbmi->ref_mv_idx].comp_mv;
+            clamp_mv_ref(&this_mv.as_mv, xd->n8_w << 3, xd->n8_h << 3, xd);
+            lower_mv_precision(&this_mv.as_mv, cm->allow_high_precision_mv);
+            mbmi_ext->ref_mvs[mbmi->ref_frame[ref]][0] = this_mv;
+          }
+
+          cur_mv = mbmi_ext->ref_mv_stack[ref_frame]
+                                 [mbmi->ref_mv_idx + idx_offset].this_mv;
           lower_mv_precision(&cur_mv.as_mv, cm->allow_high_precision_mv);
           clamp_mv2(&cur_mv.as_mv, xd);
 
@@ -3335,11 +3391,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
             INTERP_FILTER dummy_single_inter_filter[MB_MODE_COUNT]
                                                    [MAX_REF_FRAMES];
             int dummy_single_skippable[MB_MODE_COUNT][MAX_REF_FRAMES];
-            int dummy_disable_skip = 0;
             int64_t dummy_mask_filter = 0;
             int_mv dummy_single_newmv[MAX_REF_FRAMES] = { { 0 } };
-
-            mbmi->ref_mv_idx = 1 + ref_idx;
 
             frame_mv[NEARMV][ref_frame] = cur_mv;
             tmp_alt_rd = handle_inter_mode(cpi, x, bsize,
@@ -3355,12 +3408,23 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                            dummy_filter_cache);
           }
 
-          tmp_rate += cpi->drl_mode_cost0[drl0_ctx][1];
+          if (this_mode == NEARMV) {
+            tmp_rate += cpi->drl_mode_cost0[drl0_ctx][1];
+            if (mbmi_ext->ref_mv_count[ref_frame_type] > 3) {
+              uint8_t drl1_ctx =
+                  av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], 2);
+              tmp_rate += cpi->drl_mode_cost1[drl1_ctx][ref_idx];
+            }
+          }
 
-          if (mbmi_ext->ref_mv_count[ref_frame_type] > 3) {
-            uint8_t drl1_ctx =
-                av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], 2);
-            tmp_rate += cpi->drl_mode_cost1[drl1_ctx][ref_idx];
+          if (this_mode == NEWMV) {
+            tmp_rate += cpi->drl_mode_cost0[drl_ctx][1];
+
+            if (mbmi_ext->ref_mv_count[ref_frame_type] > 2) {
+              uint8_t this_drl_ctx =
+                  av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], 1);
+              tmp_rate += cpi->drl_mode_cost0[this_drl_ctx][ref_idx];
+            }
           }
 
           if (tmp_alt_rd < INT64_MAX) {
@@ -3378,21 +3442,33 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
             rate2 = tmp_rate;
             distortion2 = tmp_dist;
             skippable = tmp_skip;
+            disable_skip = dummy_disable_skip;
             rate_y = tmp_rate_y;
             rate_uv = tmp_rate_uv;
             total_sse = tmp_sse;
             this_rd = tmp_alt_rd;
             mbmi->ref_mv_idx = 1 + ref_idx;
-            // Indicator of the effective nearmv reference motion vector.
-            best_ref_mv_idx[ref_frame_type] = 1 + ref_idx;
             tmp_ref_rd = tmp_alt_rd;
             backup_mbmi = *mbmi;
+            backup_skip = x->skip;
+            memcpy(backup_zcoeff_blk, x->zcoeff_blk[mbmi->tx_size],
+                   sizeof(backup_zcoeff_blk[0]) * ctx->num_4x4_blk);
           } else {
             *mbmi = backup_mbmi;
+            x->skip = backup_skip;
+            memcpy(x->zcoeff_blk[mbmi->tx_size], backup_zcoeff_blk,
+                   sizeof(backup_zcoeff_blk[0]) * ctx->num_4x4_blk);
           }
         }
         frame_mv[NEARMV][ref_frame] = backup_mv;
+        frame_mv[NEWMV][ref_frame] = backup_fmv[0];
+        if (comp_pred)
+          frame_mv[NEWMV][second_ref_frame] = backup_fmv[1];
       }
+
+      mbmi_ext->ref_mvs[ref_frame][0] = backup_ref_mv[0];
+      if (comp_pred)
+        mbmi_ext->ref_mvs[second_ref_frame][0] = backup_ref_mv[1];
 #endif
 
       if (this_rd == INT64_MAX)
@@ -3580,23 +3656,26 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                          best_mbmode.ref_frame[1] };
     int comp_pred_mode = refs[1] > INTRA_FRAME;
 #if CONFIG_REF_MV
+    const uint8_t rf_type = av1_ref_frame_type(best_mbmode.ref_frame);
     if (!comp_pred_mode) {
-      if (best_ref_mv_idx[refs[0]] > 0) {
-        int idx = best_ref_mv_idx[best_mbmode.ref_frame[0]] + 1;
-        int_mv cur_mv =
-            mbmi_ext->ref_mv_stack[best_mbmode.ref_frame[0]][idx].this_mv;
+      int i;
+      int ref_set = (mbmi_ext->ref_mv_count[rf_type] >= 2) ?
+          AOMMIN(2, mbmi_ext->ref_mv_count[rf_type] - 2) : INT_MAX;
+
+      for (i = 0; i <= ref_set && ref_set != INT_MAX; ++i) {
+        int_mv cur_mv = mbmi_ext->ref_mv_stack[rf_type][i + 1].this_mv;
         lower_mv_precision(&cur_mv.as_mv, cm->allow_high_precision_mv);
-        frame_mv[NEARMV][refs[0]] = cur_mv;
+        if (cur_mv.as_int == best_mbmode.mv[0].as_int) {
+          best_mbmode.mode = NEARMV;
+          best_mbmode.ref_mv_idx = i;
+        }
       }
 
       if (frame_mv[NEARESTMV][refs[0]].as_int == best_mbmode.mv[0].as_int)
         best_mbmode.mode = NEARESTMV;
-      else if (frame_mv[NEARMV][refs[0]].as_int == best_mbmode.mv[0].as_int)
-        best_mbmode.mode = NEARMV;
       else if (best_mbmode.mv[0].as_int == 0)
         best_mbmode.mode = ZEROMV;
     } else {
-      uint8_t rf_type = av1_ref_frame_type(best_mbmode.ref_frame);
       int i;
       const int allow_hp = cm->allow_high_precision_mv;
       int_mv nearestmv[2] = { frame_mv[NEARESTMV][refs[0]],
@@ -3605,15 +3684,25 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       int_mv nearmv[2] = { frame_mv[NEARMV][refs[0]],
                            frame_mv[NEARMV][refs[1]] };
 
+      int ref_set = (mbmi_ext->ref_mv_count[rf_type] >= 2) ?
+          AOMMIN(2, mbmi_ext->ref_mv_count[rf_type] - 2) : INT_MAX;
+
+      for (i = 0; i <= ref_set && ref_set != INT_MAX; ++i) {
+        nearmv[0] = mbmi_ext->ref_mv_stack[rf_type][i + 1].this_mv;
+        nearmv[1] = mbmi_ext->ref_mv_stack[rf_type][i + 1].comp_mv;
+        lower_mv_precision(&nearmv[0].as_mv, allow_hp);
+        lower_mv_precision(&nearmv[1].as_mv, allow_hp);
+
+        if (nearmv[0].as_int == best_mbmode.mv[0].as_int &&
+            nearmv[1].as_int == best_mbmode.mv[1].as_int) {
+          best_mbmode.mode = NEARMV;
+          best_mbmode.ref_mv_idx = i;
+        }
+      }
+
       if (mbmi_ext->ref_mv_count[rf_type] >= 1) {
         nearestmv[0] = mbmi_ext->ref_mv_stack[rf_type][0].this_mv;
         nearestmv[1] = mbmi_ext->ref_mv_stack[rf_type][0].comp_mv;
-      }
-
-      if (mbmi_ext->ref_mv_count[rf_type] > 1) {
-        const int ref_mv_idx = best_ref_mv_idx[rf_type] + 1;
-        nearmv[0] = mbmi_ext->ref_mv_stack[rf_type][ref_mv_idx].this_mv;
-        nearmv[1] = mbmi_ext->ref_mv_stack[rf_type][ref_mv_idx].comp_mv;
       }
 
       for (i = 0; i < MAX_MV_REF_CANDIDATES; ++i) {
@@ -3624,9 +3713,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       if (nearestmv[0].as_int == best_mbmode.mv[0].as_int &&
           nearestmv[1].as_int == best_mbmode.mv[1].as_int)
         best_mbmode.mode = NEARESTMV;
-      else if (nearmv[0].as_int == best_mbmode.mv[0].as_int &&
-          nearmv[1].as_int == best_mbmode.mv[1].as_int)
-        best_mbmode.mode = NEARMV;
       else if (best_mbmode.mv[0].as_int == 0 && best_mbmode.mv[1].as_int == 0)
         best_mbmode.mode = ZEROMV;
     }
@@ -3656,11 +3742,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     int16_t mode_ctx = mbmi_ext->mode_context[ref_frame_type];
     if (mode_ctx & (1 << ALL_ZERO_FLAG_OFFSET))
       best_mbmode.mode = ZEROMV;
-  }
-
-  if (best_mbmode.mode == NEARMV) {
-    uint8_t ref_frame_type = av1_ref_frame_type(best_mbmode.ref_frame);
-    best_mbmode.ref_mv_idx = best_ref_mv_idx[ref_frame_type];
   }
 #endif
 

@@ -357,6 +357,8 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
           if (prev_frame_mvs->ref_frame[ref] == ref_frame) {
             int_mv this_refmv = prev_frame_mvs->mv[ref];
             lower_mv_precision(&this_refmv.as_mv, cm->allow_high_precision_mv);
+            clamp_mv_ref(&this_refmv.as_mv,
+                         xd->n8_w << 3, xd->n8_h << 3, xd);
 
             if (abs(this_refmv.as_mv.row) >= 16 ||
                 abs(this_refmv.as_mv.col) >= 16)
