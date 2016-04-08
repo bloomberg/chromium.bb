@@ -307,6 +307,7 @@ void AddStringsForCloudImport(base::DictionaryValue* dict) {
 void AddStringsForCrUiMenuItemShortcuts(base::DictionaryValue* dict) {
   // Shortcut key names: used from cr.ui.MenuItem.updateShortcut_.
   SET_STRING("SHORTCUT_ALT", IDS_FILE_BROWSER_SHORTCUT_ALT);
+  SET_STRING("SHORTCUT_BACKSPACE", IDS_FILE_BROWSER_SHORTCUT_BACKSPACE);
   SET_STRING("SHORTCUT_CTRL", IDS_FILE_BROWSER_SHORTCUT_CTRL);
   SET_STRING("SHORTCUT_ENTER", IDS_FILE_BROWSER_SHORTCUT_ENTER);
   SET_STRING("SHORTCUT_META", IDS_FILE_BROWSER_SHORTCUT_META);

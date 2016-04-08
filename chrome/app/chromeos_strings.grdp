@@ -162,6 +162,9 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_SHORTCUT_ENTER" desc="[Enter] key name to use in shortcuts descriptions. Shouldn't be translated in many languages actually.">
     Enter
   </message>
+  <message name="IDS_FILE_BROWSER_SHORTCUT_BACKSPACE" desc="[Backspace] key name to use in shortcuts descriptions. Shouldn't be translated in many languages actually.">
+    Backspace
+  </message>
 
   <message name="IDS_FILE_BROWSER_STATUS_COLUMN_LABEL" desc="Status column label.  This column reflects the cloud import status of files.  The status is an icon depicting whether a file has been imported, and if so, where to - for example, a Drive icon if a file has been imported to Google Drive.  For unimported files, this column is blank. ">
     Status
