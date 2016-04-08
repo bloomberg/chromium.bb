@@ -6,12 +6,12 @@
 #define GOOGLE_APIS_GAIA_FAKE_GAIA_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -106,7 +106,7 @@ class FakeGaia {
   // Handles a request and returns a response if the request was recognized as a
   // GAIA request. Note that this respects the switches::kGaiaUrl and friends so
   // that this can used with EmbeddedTestServer::RegisterRequestHandler().
-  scoped_ptr<net::test_server::HttpResponse> HandleRequest(
+  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request);
 
   // Configures an OAuth2 token that'll be returned when a client requests an

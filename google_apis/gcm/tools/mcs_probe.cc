@@ -6,8 +6,10 @@
 // own.
 
 #include <stdint.h>
+
 #include <cstddef>
 #include <cstdio>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -17,8 +19,8 @@
 #include "base/compiler_specific.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -142,7 +144,7 @@ class MyTestURLRequestContext : public net::TestURLRequestContext {
     context_storage_.set_host_resolver(
         net::HostResolver::CreateDefaultResolver(NULL));
     context_storage_.set_transport_security_state(
-        make_scoped_ptr(new net::TransportSecurityState()));
+        base::WrapUnique(new net::TransportSecurityState()));
     Init();
   }
 
@@ -166,7 +168,7 @@ class MyTestURLRequestContextGetter : public net::TestURLRequestContextGetter {
  private:
   ~MyTestURLRequestContextGetter() override {}
 
-  scoped_ptr<MyTestURLRequestContext> context_;
+  std::unique_ptr<MyTestURLRequestContext> context_;
 };
 
 // A cert verifier that access all certificates.
@@ -182,7 +184,7 @@ class MyTestCertVerifier : public net::CertVerifier {
              net::CRLSet* crl_set,
              net::CertVerifyResult* verify_result,
              const net::CompletionCallback& callback,
-             scoped_ptr<Request>* out_req,
+             std::unique_ptr<Request>* out_req,
              const net::BoundNetLog& net_log) override {
     return net::OK;
   }
@@ -226,7 +228,7 @@ class MCSProbe {
   void InitializeNetworkState();
   void BuildNetworkSession();
 
-  void LoadCallback(scoped_ptr<GCMStore::LoadResult> load_result);
+  void LoadCallback(std::unique_ptr<GCMStore::LoadResult> load_result);
   void UpdateCallback(bool success);
   void ErrorCallback();
   void OnCheckInCompleted(
@@ -246,28 +248,28 @@ class MCSProbe {
   // Network state.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   net::NetLog net_log_;
-  scoped_ptr<net::WriteToFileNetLogObserver> logger_;
-  scoped_ptr<net::HostResolver> host_resolver_;
-  scoped_ptr<net::CertVerifier> cert_verifier_;
-  scoped_ptr<net::ChannelIDService> system_channel_id_service_;
-  scoped_ptr<net::TransportSecurityState> transport_security_state_;
+  std::unique_ptr<net::WriteToFileNetLogObserver> logger_;
+  std::unique_ptr<net::HostResolver> host_resolver_;
+  std::unique_ptr<net::CertVerifier> cert_verifier_;
+  std::unique_ptr<net::ChannelIDService> system_channel_id_service_;
+  std::unique_ptr<net::TransportSecurityState> transport_security_state_;
   MCSProbeAuthPreferences http_auth_preferences_;
-  scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory_;
-  scoped_ptr<net::HttpServerPropertiesImpl> http_server_properties_;
-  scoped_ptr<net::HostMappingRules> host_mapping_rules_;
-  scoped_ptr<net::HttpNetworkSession> network_session_;
-  scoped_ptr<net::ProxyService> proxy_service_;
+  std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory_;
+  std::unique_ptr<net::HttpServerPropertiesImpl> http_server_properties_;
+  std::unique_ptr<net::HostMappingRules> host_mapping_rules_;
+  std::unique_ptr<net::HttpNetworkSession> network_session_;
+  std::unique_ptr<net::ProxyService> proxy_service_;
 
   FakeGCMStatsRecorder recorder_;
-  scoped_ptr<GCMStore> gcm_store_;
-  scoped_ptr<MCSClient> mcs_client_;
-  scoped_ptr<CheckinRequest> checkin_request_;
+  std::unique_ptr<GCMStore> gcm_store_;
+  std::unique_ptr<MCSClient> mcs_client_;
+  std::unique_ptr<CheckinRequest> checkin_request_;
 
-  scoped_ptr<ConnectionFactoryImpl> connection_factory_;
+  std::unique_ptr<ConnectionFactoryImpl> connection_factory_;
 
   base::Thread file_thread_;
 
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 };
 
 MCSProbe::MCSProbe(
@@ -324,9 +326,8 @@ void MCSProbe::Start() {
                                 &net_log_,
                                 &recorder_));
   gcm_store_.reset(
-      new GCMStoreImpl(gcm_store_path_,
-                       file_thread_.task_runner(),
-                       make_scoped_ptr<Encryptor>(new FakeEncryptor)));
+      new GCMStoreImpl(gcm_store_path_, file_thread_.task_runner(),
+                       base::WrapUnique<Encryptor>(new FakeEncryptor)));
   mcs_client_.reset(new MCSClient("probe",
                                   &clock_,
                                   connection_factory_.get(),
@@ -339,7 +340,7 @@ void MCSProbe::Start() {
   run_loop_->Run();
 }
 
-void MCSProbe::LoadCallback(scoped_ptr<GCMStore::LoadResult> load_result) {
+void MCSProbe::LoadCallback(std::unique_ptr<GCMStore::LoadResult> load_result) {
   DCHECK(load_result->success);
   if (android_id_ != 0 && secret_ != 0) {
     DVLOG(1) << "Presetting MCS id " << android_id_;

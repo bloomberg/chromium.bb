@@ -53,7 +53,7 @@ class AuthRequest : public OAuth2TokenService::Consumer {
                          const GoogleServiceAuthError& error) override;
 
   AuthStatusCallback callback_;
-  scoped_ptr<OAuth2TokenService::Request> request_;
+  std::unique_ptr<OAuth2TokenService::Request> request_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthRequest);

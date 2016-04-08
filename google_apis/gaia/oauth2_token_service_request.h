@@ -5,12 +5,12 @@
 #ifndef GOOGLE_APIS_GAIA_OAUTH2_TOKEN_SERVICE_REQUEST_H_
 #define GOOGLE_APIS_GAIA_OAUTH2_TOKEN_SERVICE_REQUEST_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -69,7 +69,7 @@ class OAuth2TokenServiceRequest : public OAuth2TokenService::Request,
   // object ensure that |consumer| will not be called.  However, the actual
   // network activities may not be canceled and the cache in OAuth2TokenService
   // may be populated with the fetched results.
-  static scoped_ptr<OAuth2TokenServiceRequest> CreateAndStart(
+  static std::unique_ptr<OAuth2TokenServiceRequest> CreateAndStart(
       const scoped_refptr<TokenServiceProvider>& provider,
       const std::string& account_id,
       const OAuth2TokenService::ScopeSet& scopes,

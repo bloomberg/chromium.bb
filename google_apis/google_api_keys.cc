@@ -9,11 +9,12 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringize_macros.h"
 #include "google_apis/gaia/gaia_switches.h"
 
@@ -93,7 +94,7 @@ const char kAPIKeysDevelopersHowToURL[] =
 class APIKeyCache {
  public:
   APIKeyCache() {
-    scoped_ptr<base::Environment> environment(base::Environment::Create());
+    std::unique_ptr<base::Environment> environment(base::Environment::Create());
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
     api_key_ = CalculateKeyValue(

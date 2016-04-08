@@ -15,12 +15,12 @@ namespace google_apis {
 // Test about resource parsing.
 TEST(DriveAPIParserTest, AboutResourceParser) {
   std::string error;
-  scoped_ptr<base::Value> document = test_util::LoadJSONFile(
-      "drive/about.json");
+  std::unique_ptr<base::Value> document =
+      test_util::LoadJSONFile("drive/about.json");
   ASSERT_TRUE(document.get());
 
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, document->GetType());
-  scoped_ptr<AboutResource> resource(new AboutResource());
+  std::unique_ptr<AboutResource> resource(new AboutResource());
   EXPECT_TRUE(resource->Parse(*document));
 
   EXPECT_EQ("0AIv7G8yEYAWHUk9123", resource->root_folder_id());
@@ -32,12 +32,12 @@ TEST(DriveAPIParserTest, AboutResourceParser) {
 // Test app list parsing.
 TEST(DriveAPIParserTest, AppListParser) {
   std::string error;
-  scoped_ptr<base::Value> document = test_util::LoadJSONFile(
-      "drive/applist.json");
+  std::unique_ptr<base::Value> document =
+      test_util::LoadJSONFile("drive/applist.json");
   ASSERT_TRUE(document.get());
 
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, document->GetType());
-  scoped_ptr<AppList> applist(new AppList);
+  std::unique_ptr<AppList> applist(new AppList);
   EXPECT_TRUE(applist->Parse(*document));
 
   EXPECT_EQ("\"Jm4BaSnCWNND-noZsHINRqj4ABC/tuqRBw0lvjUdPtc_2msA1tN4XYZ\"",
@@ -110,12 +110,12 @@ TEST(DriveAPIParserTest, AppListParser) {
 // Test file list parsing.
 TEST(DriveAPIParserTest, FileListParser) {
   std::string error;
-  scoped_ptr<base::Value> document = test_util::LoadJSONFile(
-      "drive/filelist.json");
+  std::unique_ptr<base::Value> document =
+      test_util::LoadJSONFile("drive/filelist.json");
   ASSERT_TRUE(document.get());
 
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, document->GetType());
-  scoped_ptr<FileList> filelist(new FileList);
+  std::unique_ptr<FileList> filelist(new FileList);
   EXPECT_TRUE(filelist->Parse(*document));
 
   EXPECT_EQ(GURL("https://www.googleapis.com/drive/v2/files?pageToken=EAIaggEL"
@@ -213,12 +213,12 @@ TEST(DriveAPIParserTest, FileListParser) {
 // Test change list parsing.
 TEST(DriveAPIParserTest, ChangeListParser) {
   std::string error;
-  scoped_ptr<base::Value> document =
+  std::unique_ptr<base::Value> document =
       test_util::LoadJSONFile("drive/changelist.json");
   ASSERT_TRUE(document.get());
 
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, document->GetType());
-  scoped_ptr<ChangeList> changelist(new ChangeList);
+  std::unique_ptr<ChangeList> changelist(new ChangeList);
   EXPECT_TRUE(changelist->Parse(*document));
 
   EXPECT_EQ("https://www.googleapis.com/drive/v2/changes?pageToken=8929",
@@ -263,9 +263,9 @@ TEST(DriveAPIParserTest, ChangeListParser) {
 }
 
 TEST(DriveAPIParserTest, HasKind) {
-  scoped_ptr<base::Value> change_list_json(
+  std::unique_ptr<base::Value> change_list_json(
       test_util::LoadJSONFile("drive/changelist.json"));
-  scoped_ptr<base::Value> file_list_json(
+  std::unique_ptr<base::Value> file_list_json(
       test_util::LoadJSONFile("drive/filelist.json"));
 
   EXPECT_TRUE(ChangeList::HasChangeListKind(*change_list_json));

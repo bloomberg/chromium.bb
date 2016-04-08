@@ -90,12 +90,12 @@ class GCM_EXPORT ConnectionFactoryImpl :
 
   // Helper method for creating a backoff entry.
   // Virtual for testing.
-  virtual scoped_ptr<net::BackoffEntry> CreateBackoffEntry(
+  virtual std::unique_ptr<net::BackoffEntry> CreateBackoffEntry(
       const net::BackoffEntry::Policy* const policy);
 
   // Helper method for creating the connection handler.
   // Virtual for testing.
-  virtual scoped_ptr<ConnectionHandler> CreateConnectionHandler(
+  virtual std::unique_ptr<ConnectionHandler> CreateConnectionHandler(
       base::TimeDelta read_timeout,
       const ConnectionHandler::ProtoReceivedCallback& read_callback,
       const ConnectionHandler::ProtoSentCallback& write_callback,
@@ -154,10 +154,10 @@ class GCM_EXPORT ConnectionFactoryImpl :
   // The handle to the socket for the current connection, if one exists.
   net::ClientSocketHandle socket_handle_;
   // Current backoff entry.
-  scoped_ptr<net::BackoffEntry> backoff_entry_;
+  std::unique_ptr<net::BackoffEntry> backoff_entry_;
   // Backoff entry from previous connection attempt. Updated on each login
   // completion.
-  scoped_ptr<net::BackoffEntry> previous_backoff_;
+  std::unique_ptr<net::BackoffEntry> previous_backoff_;
 
   // Whether a connection attempt is currently actively in progress.
   bool connecting_;
@@ -187,7 +187,7 @@ class GCM_EXPORT ConnectionFactoryImpl :
   ConnectionHandler::ProtoSentCallback write_callback_;
 
   // The current connection handler, if one exists.
-  scoped_ptr<ConnectionHandler> connection_handler_;
+  std::unique_ptr<ConnectionHandler> connection_handler_;
 
   // Builder for generating new login requests.
   BuildLoginRequestCallback request_builder_;

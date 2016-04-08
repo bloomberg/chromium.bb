@@ -346,10 +346,10 @@ class IdentityAccountTrackerTest : public testing::Test {
 
   base::MessageLoopForIO message_loop_;  // net:: stuff needs IO message loop.
   net::TestURLFetcherFactory test_fetcher_factory_;
-  scoped_ptr<FakeOAuth2TokenService> fake_oauth2_token_service_;
-  scoped_ptr<FakeIdentityProvider> fake_identity_provider_;
+  std::unique_ptr<FakeOAuth2TokenService> fake_oauth2_token_service_;
+  std::unique_ptr<FakeIdentityProvider> fake_identity_provider_;
 
-  scoped_ptr<AccountTracker> account_tracker_;
+  std::unique_ptr<AccountTracker> account_tracker_;
   AccountTrackerObserver observer_;
 };
 

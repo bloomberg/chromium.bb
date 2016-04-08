@@ -6,10 +6,10 @@
 #define GOOGLE_APIS_GAIA_ACCOUNT_TRACKER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/identity_provider.h"
@@ -149,8 +149,8 @@ class AccountIdFetcher : public OAuth2TokenService::Consumer,
   AccountTracker* tracker_;
   const std::string account_key_;
 
-  scoped_ptr<OAuth2TokenService::Request> login_token_request_;
-  scoped_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
+  std::unique_ptr<OAuth2TokenService::Request> login_token_request_;
+  std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
 };
 
 }  // namespace extensions

@@ -5,8 +5,9 @@
 #ifndef GOOGLE_APIS_GAIA_UBERTOKEN_FETCHER_H_
 #define GOOGLE_APIS_GAIA_UBERTOKEN_FETCHER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -87,8 +88,8 @@ class UbertokenFetcher : public GaiaAuthConsumer,
   std::string source_;
   net::URLRequestContextGetter* request_context_;
   GaiaAuthFetcherFactory gaia_auth_fetcher_factory_;
-  scoped_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
-  scoped_ptr<OAuth2TokenService::Request> access_token_request_;
+  std::unique_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
+  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
   std::string account_id_;
   std::string access_token_;
   int retry_number_;

@@ -16,8 +16,9 @@ namespace gcm {
 namespace {
 
 // Build a basic login response.
-scoped_ptr<google::protobuf::MessageLite> BuildLoginResponse(bool fail_login) {
-  scoped_ptr<mcs_proto::LoginResponse> login_response(
+std::unique_ptr<google::protobuf::MessageLite> BuildLoginResponse(
+    bool fail_login) {
+  std::unique_ptr<mcs_proto::LoginResponse> login_response(
       new mcs_proto::LoginResponse());
   login_response->set_id("id");
   if (fail_login)

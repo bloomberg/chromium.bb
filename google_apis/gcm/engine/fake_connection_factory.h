@@ -5,8 +5,9 @@
 #ifndef GOOGLE_APIS_GCM_ENGINE_FAKE_CONNECTION_FACTORY_H_
 #define GOOGLE_APIS_GCM_ENGINE_FAKE_CONNECTION_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "google_apis/gcm/engine/connection_factory.h"
 
 namespace gcm {
@@ -43,7 +44,7 @@ class FakeConnectionFactory : public ConnectionFactory {
   }
 
  private:
-  scoped_ptr<FakeConnectionHandler> connection_handler_;
+  std::unique_ptr<FakeConnectionHandler> connection_handler_;
 
   BuildLoginRequestCallback request_builder_;
 

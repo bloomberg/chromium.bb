@@ -25,9 +25,9 @@ std::string GenerateIfMatchHeader(const std::string& etag) {
   return etag.empty() ? kIfMatchAllHeader : (kIfMatchHeaderPrefix + etag);
 }
 
-scoped_ptr<base::DictionaryValue> CreateParentValue(
+std::unique_ptr<base::DictionaryValue> CreateParentValue(
     const std::string& file_id) {
-  scoped_ptr<base::DictionaryValue> parent(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> parent(new base::DictionaryValue);
   parent->SetString("kind", kParentLinkKind);
   parent->SetString("id", file_id);
   return parent;

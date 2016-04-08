@@ -5,10 +5,11 @@
 #ifndef GOOGLE_APIS_GCM_ENGINE_HEARTBEAT_MANAGER_H_
 #define GOOGLE_APIS_GCM_ENGINE_HEARTBEAT_MANAGER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/power_monitor/power_observer.h"
 #include "google_apis/gcm/base/gcm_export.h"
@@ -59,7 +60,7 @@ class GCM_EXPORT HeartbeatManager : public base::PowerObserver {
   base::TimeTicks GetNextHeartbeatTime() const;
 
   // Updates the timer used for scheduling heartbeats.
-  void UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer);
+  void UpdateHeartbeatTimer(std::unique_ptr<base::Timer> timer);
 
   // base::PowerObserver override.
   void OnSuspend() override;
@@ -117,7 +118,7 @@ class GCM_EXPORT HeartbeatManager : public base::PowerObserver {
   int client_interval_ms_;
 
   // Timer for triggering heartbeats.
-  scoped_ptr<base::Timer> heartbeat_timer_;
+  std::unique_ptr<base::Timer> heartbeat_timer_;
 
   // Time at which the machine was last suspended.
   base::Time suspend_time_;

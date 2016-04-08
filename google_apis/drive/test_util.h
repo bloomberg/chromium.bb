@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -15,7 +16,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "google_apis/drive/base_requests.h"
 #include "google_apis/drive/drive_api_error_codes.h"
@@ -81,17 +81,17 @@ bool CreateFileOfSpecifiedSize(const base::FilePath& temp_dir,
 
 // Loads a test JSON file as a base::Value, from a test file stored under
 // chrome/test/data.
-scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path);
+std::unique_ptr<base::Value> LoadJSONFile(const std::string& relative_path);
 
 // Returns a HttpResponse created from the given file path.
-scoped_ptr<net::test_server::BasicHttpResponse> CreateHttpResponseFromFile(
+std::unique_ptr<net::test_server::BasicHttpResponse> CreateHttpResponseFromFile(
     const base::FilePath& file_path);
 
 // Handles a request for downloading a file. Reads a file from the test
 // directory and returns the content. Also, copies the |request| to the memory
 // pointed by |out_request|.
 // |base_url| must be set to the server's base url.
-scoped_ptr<net::test_server::HttpResponse> HandleDownloadFileRequest(
+std::unique_ptr<net::test_server::HttpResponse> HandleDownloadFileRequest(
     const GURL& base_url,
     net::test_server::HttpRequest* out_request,
     const net::test_server::HttpRequest& request);
@@ -137,8 +137,8 @@ namespace internal {
 // Declare if the type is movable or not. Currently limited to scoped_ptr only.
 // We can add more types upon the usage.
 template<typename T> struct IsMovable : std::false_type {};
-template<typename T, typename D>
-struct IsMovable<scoped_ptr<T, D> > : std::true_type {};
+template <typename T, typename D>
+struct IsMovable<std::unique_ptr<T, D>> : std::true_type {};
 
 // InType is const T& if |UseConstRef| is true, otherwise |T|.
 template<bool UseConstRef, typename T> struct InTypeHelper {
@@ -288,7 +288,7 @@ class TestGetContentCallback {
 
  private:
   void OnGetContent(google_apis::DriveApiErrorCode error,
-                    scoped_ptr<std::string> data);
+                    std::unique_ptr<std::string> data);
 
   const GetContentCallback callback_;
   ScopedVector<std::string> data_;

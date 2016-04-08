@@ -6,13 +6,15 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -167,15 +169,15 @@ class MCSClientTest : public testing::Test {
 
   base::ScopedTempDir temp_directory_;
   base::MessageLoop message_loop_;
-  scoped_ptr<base::RunLoop> run_loop_;
-  scoped_ptr<GCMStore> gcm_store_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<GCMStore> gcm_store_;
 
   FakeConnectionFactory connection_factory_;
-  scoped_ptr<TestMCSClient> mcs_client_;
+  std::unique_ptr<TestMCSClient> mcs_client_;
   bool init_success_;
   uint64_t restored_android_id_;
   uint64_t restored_security_token_;
-  scoped_ptr<MCSMessage> received_message_;
+  std::unique_ptr<MCSMessage> received_message_;
   std::string sent_message_id_;
   MCSClient::MessageSendStatus message_send_status_;
 
@@ -202,10 +204,9 @@ void MCSClientTest::SetUp() {
 }
 
 void MCSClientTest::BuildMCSClient() {
-  gcm_store_.reset(new GCMStoreImpl(
-      temp_directory_.path(),
-      message_loop_.task_runner(),
-      make_scoped_ptr<Encryptor>(new FakeEncryptor)));
+  gcm_store_.reset(
+      new GCMStoreImpl(temp_directory_.path(), message_loop_.task_runner(),
+                       base::WrapUnique<Encryptor>(new FakeEncryptor)));
   mcs_client_.reset(new TestMCSClient(&clock_,
                                       &connection_factory_,
                                       gcm_store_.get(),
@@ -242,7 +243,7 @@ void MCSClientTest::LoginClientWithHeartbeat(
 void MCSClientTest::AddExpectedLoginRequest(
     const std::vector<std::string>& acknowledged_ids,
     int heartbeat_interval_ms) {
-  scoped_ptr<mcs_proto::LoginRequest> login_request =
+  std::unique_ptr<mcs_proto::LoginRequest> login_request =
       BuildLoginRequest(kAndroidId, kSecurityToken, "");
   for (size_t i = 0; i < acknowledged_ids.size(); ++i)
     login_request->add_received_persistent_id(acknowledged_ids[i]);
@@ -428,7 +429,7 @@ TEST_F(MCSClientTest, SendMessageRMQWhileDisconnected) {
   PumpLoop();         // Wait for the send to happen.
 
   // Receive the ack.
-  scoped_ptr<mcs_proto::IqStanza> ack = BuildStreamAck();
+  std::unique_ptr<mcs_proto::IqStanza> ack = BuildStreamAck();
   ack->set_last_stream_id_received(2);
   GetFakeHandler()->ReceiveMessage(MCSMessage(kIqStanzaTag, std::move(ack)));
   WaitForMCSEvent();
@@ -490,7 +491,7 @@ TEST_F(MCSClientTest, SendMessageRMQWithStreamAck) {
   EXPECT_TRUE(GetFakeHandler()->AllOutgoingMessagesReceived());
 
   // Receive the ack.
-  scoped_ptr<mcs_proto::IqStanza> ack = BuildStreamAck();
+  std::unique_ptr<mcs_proto::IqStanza> ack = BuildStreamAck();
   ack->set_last_stream_id_received(kMessageBatchSize + 1);
   GetFakeHandler()->ReceiveMessage(MCSMessage(kIqStanzaTag, std::move(ack)));
   WaitForMCSEvent();
@@ -529,7 +530,7 @@ TEST_F(MCSClientTest, SendMessageRMQAckOnReconnect) {
   BuildMCSClient();
   InitializeClient();
   LoginClient(std::vector<std::string>());
-  scoped_ptr<mcs_proto::IqStanza> ack(BuildSelectiveAck(id_list));
+  std::unique_ptr<mcs_proto::IqStanza> ack(BuildSelectiveAck(id_list));
   GetFakeHandler()->ReceiveMessage(MCSMessage(kIqStanzaTag, std::move(ack)));
   EXPECT_TRUE(GetFakeHandler()->AllOutgoingMessagesReceived());
 }
@@ -575,7 +576,7 @@ TEST_F(MCSClientTest, SendMessageRMQPartialAckOnReconnect) {
         kTTLValue, 1, 0, "", 0, IMMEDIATE_ACK_NO));
     GetFakeHandler()->ExpectOutgoingMessage(message);
   }
-  scoped_ptr<mcs_proto::IqStanza> ack(BuildSelectiveAck(acked_ids));
+  std::unique_ptr<mcs_proto::IqStanza> ack(BuildSelectiveAck(acked_ids));
   GetFakeHandler()->ReceiveMessage(MCSMessage(kIqStanzaTag, std::move(ack)));
   WaitForMCSEvent();
   PumpLoop();
@@ -638,7 +639,7 @@ TEST_F(MCSClientTest, SelectiveAckMidStream) {
                                         IMMEDIATE_ACK_NO));
   GetFakeHandler()->ExpectOutgoingMessage(cMessage3);
   std::vector<std::string> acked_ids(1, "1");
-  scoped_ptr<mcs_proto::IqStanza> ack(BuildSelectiveAck(acked_ids));
+  std::unique_ptr<mcs_proto::IqStanza> ack(BuildSelectiveAck(acked_ids));
   GetFakeHandler()->ReceiveMessage(MCSMessage(kIqStanzaTag, std::move(ack)));
   WaitForMCSEvent();
   PumpLoop();
@@ -724,7 +725,7 @@ TEST_F(MCSClientTest, AckWhenLimitReachedWithHeartbeat) {
   LoginClient(std::vector<std::string>());
 
   // The stream ack.
-  scoped_ptr<mcs_proto::IqStanza> ack = BuildStreamAck();
+  std::unique_ptr<mcs_proto::IqStanza> ack = BuildStreamAck();
   ack->set_last_stream_id_received(kAckLimitSize + 1);
   GetFakeHandler()->ExpectOutgoingMessage(
       MCSMessage(kIqStanzaTag, std::move(ack)));
@@ -743,11 +744,11 @@ TEST_F(MCSClientTest, AckWhenLimitReachedWithHeartbeat) {
   EXPECT_TRUE(GetFakeHandler()->AllOutgoingMessagesReceived());
 
   // Receive a heartbeat confirming the ack (and receive the heartbeat ack).
-  scoped_ptr<mcs_proto::HeartbeatPing> heartbeat(
+  std::unique_ptr<mcs_proto::HeartbeatPing> heartbeat(
       new mcs_proto::HeartbeatPing());
   heartbeat->set_last_stream_id_received(2);
 
-  scoped_ptr<mcs_proto::HeartbeatAck> heartbeat_ack(
+  std::unique_ptr<mcs_proto::HeartbeatAck> heartbeat_ack(
       new mcs_proto::HeartbeatAck());
   heartbeat_ack->set_last_stream_id_received(kAckLimitSize + 2);
   GetFakeHandler()->ExpectOutgoingMessage(
@@ -1154,7 +1155,7 @@ TEST_F(MCSClientTest, AckWhenImmediateAckRequested) {
   LoginClient(std::vector<std::string>());
 
   // The stream ack.
-  scoped_ptr<mcs_proto::IqStanza> ack = BuildStreamAck();
+  std::unique_ptr<mcs_proto::IqStanza> ack = BuildStreamAck();
   ack->set_last_stream_id_received(kAckLimitSize - 1);
   GetFakeHandler()->ExpectOutgoingMessage(
       MCSMessage(kIqStanzaTag, std::move(ack)));

@@ -5,10 +5,11 @@
 #include "google_apis/drive/base_requests.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
@@ -123,9 +124,9 @@ class BaseRequestsTest : public testing::Test {
         base::Bind(&BaseRequestsTest::HandleRequest, base::Unretained(this)));
   }
 
-  scoped_ptr<net::test_server::HttpResponse> HandleRequest(
+  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
-    scoped_ptr<net::test_server::BasicHttpResponse> response(
+    std::unique_ptr<net::test_server::BasicHttpResponse> response(
         new net::test_server::BasicHttpResponse);
     response->set_code(response_code_);
     response->set_content(response_body_);
@@ -135,7 +136,7 @@ class BaseRequestsTest : public testing::Test {
 
   base::MessageLoopForIO message_loop_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
-  scoped_ptr<RequestSender> sender_;
+  std::unique_ptr<RequestSender> sender_;
   net::EmbeddedTestServer test_server_;
 
   net::HttpStatusCode response_code_;
@@ -145,7 +146,7 @@ class BaseRequestsTest : public testing::Test {
 typedef BaseRequestsTest MultipartUploadRequestBaseTest;
 
 TEST_F(BaseRequestsTest, ParseValidJson) {
-  scoped_ptr<base::Value> json(ParseJson(kValidJsonString));
+  std::unique_ptr<base::Value> json(ParseJson(kValidJsonString));
 
   base::DictionaryValue* root_dict = NULL;
   ASSERT_TRUE(json);
@@ -192,7 +193,7 @@ TEST_F(BaseRequestsTest, UrlFetchRequestBaseResponseCodeOverride) {
 TEST_F(MultipartUploadRequestBaseTest, Basic) {
   response_code_ = net::HTTP_OK;
   response_body_ = "{\"kind\": \"drive#file\", \"id\": \"file_id\"}";
-  scoped_ptr<google_apis::FileResource> file;
+  std::unique_ptr<google_apis::FileResource> file;
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   base::RunLoop run_loop;
   const base::FilePath source_path =
@@ -208,9 +209,9 @@ TEST_F(MultipartUploadRequestBaseTest, Basic) {
           ProgressCallback(), test_server_.base_url(), &upload_content_type,
           &upload_content_data);
   multipart_request->SetBoundaryForTesting("TESTBOUNDARY");
-  scoped_ptr<drive::SingleBatchableDelegateRequest> request(
-      new drive::SingleBatchableDelegateRequest(
-          sender_.get(), multipart_request));
+  std::unique_ptr<drive::SingleBatchableDelegateRequest> request(
+      new drive::SingleBatchableDelegateRequest(sender_.get(),
+                                                multipart_request));
   sender_->StartRequestWithAuthRetry(request.release());
   run_loop.Run();
   EXPECT_EQ("multipart/related; boundary=TESTBOUNDARY", upload_content_type);

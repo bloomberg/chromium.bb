@@ -179,7 +179,7 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
 
   int retry_number_;
   base::OneShotTimer retry_timer_;
-  scoped_ptr<OAuth2AccessTokenFetcher> fetcher_;
+  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher_;
 
   // Variables that store fetch results.
   // Initialized to be GoogleServiceAuthError::SERVICE_UNAVAILABLE to handle
@@ -421,7 +421,7 @@ void OAuth2TokenService::RemoveDiagnosticsObserver(
   diagnostics_observer_list_.RemoveObserver(observer);
 }
 
-scoped_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
+std::unique_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
     const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes,
     OAuth2TokenService::Consumer* consumer) {
@@ -434,7 +434,7 @@ scoped_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
       consumer);
 }
 
-scoped_ptr<OAuth2TokenService::Request>
+std::unique_ptr<OAuth2TokenService::Request>
 OAuth2TokenService::StartRequestForClient(
     const std::string& account_id,
     const std::string& client_id,
@@ -454,7 +454,7 @@ net::URLRequestContextGetter* OAuth2TokenService::GetRequestContext() const {
   return delegate_->GetRequestContext();
 }
 
-scoped_ptr<OAuth2TokenService::Request>
+std::unique_ptr<OAuth2TokenService::Request>
 OAuth2TokenService::StartRequestWithContext(
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
@@ -469,7 +469,7 @@ OAuth2TokenService::StartRequestWithContext(
       consumer);
 }
 
-scoped_ptr<OAuth2TokenService::Request>
+std::unique_ptr<OAuth2TokenService::Request>
 OAuth2TokenService::StartRequestForClientWithContext(
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
@@ -484,7 +484,7 @@ OAuth2TokenService::StartRequestForClientWithContext(
   tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422460 OAuth2TokenService::StartRequestForClientWithContext 1"));
-  scoped_ptr<RequestImpl> request(new RequestImpl(account_id, consumer));
+  std::unique_ptr<RequestImpl> request(new RequestImpl(account_id, consumer));
   FOR_EACH_OBSERVER(DiagnosticsObserver, diagnostics_observer_list_,
                     OnAccessTokenRequested(account_id,
                                            consumer->id(),

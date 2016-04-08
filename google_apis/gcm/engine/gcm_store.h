@@ -5,19 +5,19 @@
 #ifndef GOOGLE_APIS_GCM_ENGINE_GCM_STORE_H_
 #define GOOGLE_APIS_GCM_ENGINE_GCM_STORE_H_
 
+#include <google/protobuf/message_lite.h>
+#include <stdint.h>
+
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
-
-#include <google/protobuf/message_lite.h>
-#include <stdint.h>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "google_apis/gcm/base/gcm_export.h"
 #include "google_apis/gcm/engine/account_mapping.h"
@@ -67,7 +67,7 @@ class GCM_EXPORT GCMStore {
   };
 
   typedef std::vector<std::string> PersistentIdList;
-  typedef base::Callback<void(scoped_ptr<LoadResult> result)> LoadCallback;
+  typedef base::Callback<void(std::unique_ptr<LoadResult> result)> LoadCallback;
   typedef base::Callback<void(bool success)> UpdateCallback;
 
   GCMStore();

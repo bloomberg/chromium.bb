@@ -49,12 +49,12 @@ class MockURLFetcherFactory : public net::URLFetcherFactory,
         success_(true) {
   }
   ~MockURLFetcherFactory() {}
-  scoped_ptr<net::URLFetcher> CreateURLFetcher(
+  std::unique_ptr<net::URLFetcher> CreateURLFetcher(
       int id,
       const GURL& url,
       net::URLFetcher::RequestType request_type,
       net::URLFetcherDelegate* d) override {
-    return scoped_ptr<net::URLFetcher>(
+    return std::unique_ptr<net::URLFetcher>(
         new T(success_, url, results_, request_type, d));
   }
   void set_success(bool success) {

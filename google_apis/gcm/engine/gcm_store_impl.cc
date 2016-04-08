@@ -185,7 +185,7 @@ class GCMStoreImpl::Backend
  public:
   Backend(const base::FilePath& path,
           scoped_refptr<base::SequencedTaskRunner> foreground_runner,
-          scoped_ptr<Encryptor> encryptor);
+          std::unique_ptr<Encryptor> encryptor);
 
   // Blocking implementations of GCMStoreImpl methods.
   void Load(StoreOpenMode open_mode, const LoadCallback& callback);
@@ -262,15 +262,15 @@ class GCMStoreImpl::Backend
 
   const base::FilePath path_;
   scoped_refptr<base::SequencedTaskRunner> foreground_task_runner_;
-  scoped_ptr<Encryptor> encryptor_;
+  std::unique_ptr<Encryptor> encryptor_;
 
-  scoped_ptr<leveldb::DB> db_;
+  std::unique_ptr<leveldb::DB> db_;
 };
 
 GCMStoreImpl::Backend::Backend(
     const base::FilePath& path,
     scoped_refptr<base::SequencedTaskRunner> foreground_task_runner,
-    scoped_ptr<Encryptor> encryptor)
+    std::unique_ptr<Encryptor> encryptor)
     : path_(path),
       foreground_task_runner_(foreground_task_runner),
       encryptor_(std::move(encryptor)) {}
@@ -341,7 +341,7 @@ LoadStatus GCMStoreImpl::Backend::OpenStoreAndLoadData(StoreOpenMode open_mode,
 
 void GCMStoreImpl::Backend::Load(StoreOpenMode open_mode,
                                  const LoadCallback& callback) {
-  scoped_ptr<LoadResult> result(new LoadResult());
+  std::unique_ptr<LoadResult> result(new LoadResult());
   LoadStatus load_status = OpenStoreAndLoadData(open_mode, result.get());
   UMA_HISTOGRAM_ENUMERATION("GCM.LoadStatus", load_status, LOAD_STATUS_COUNT);
   if (load_status != LOADING_SUCCEEDED) {
@@ -694,7 +694,7 @@ void GCMStoreImpl::Backend::SetGServicesSettings(
   // Remove all existing settings.
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
-  scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
+  std::unique_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
   for (iter->Seek(MakeSlice(kGServiceSettingKeyStart));
        iter->Valid() && iter->key().ToString() < kGServiceSettingKeyEnd;
        iter->Next()) {
@@ -939,7 +939,7 @@ bool GCMStoreImpl::Backend::LoadRegistrations(
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
 
-  scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
+  std::unique_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
   for (iter->Seek(MakeSlice(kRegistrationKeyStart));
        iter->Valid() && iter->key().ToString() < kRegistrationKeyEnd;
        iter->Next()) {
@@ -961,7 +961,7 @@ bool GCMStoreImpl::Backend::LoadIncomingMessages(
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
 
-  scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
+  std::unique_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
   for (iter->Seek(MakeSlice(kIncomingMsgKeyStart));
        iter->Valid() && iter->key().ToString() < kIncomingMsgKeyEnd;
        iter->Next()) {
@@ -983,7 +983,7 @@ bool GCMStoreImpl::Backend::LoadOutgoingMessages(
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
 
-  scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
+  std::unique_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
   for (iter->Seek(MakeSlice(kOutgoingMsgKeyStart));
        iter->Valid() && iter->key().ToString() < kOutgoingMsgKeyEnd;
        iter->Next()) {
@@ -994,7 +994,7 @@ bool GCMStoreImpl::Backend::LoadOutgoingMessages(
     }
     uint8_t tag = iter->value().data()[0];
     std::string id = ParseOutgoingKey(iter->key().ToString());
-    scoped_ptr<google::protobuf::MessageLite> message(
+    std::unique_ptr<google::protobuf::MessageLite> message(
         BuildProtobufFromTag(tag));
     if (!message.get() ||
         !message->ParseFromString(iter->value().ToString().substr(1))) {
@@ -1049,7 +1049,7 @@ bool GCMStoreImpl::Backend::LoadGServicesSettings(
   read_options.verify_checksums = true;
 
   // Load all of the GServices settings.
-  scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
+  std::unique_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
   for (iter->Seek(MakeSlice(kGServiceSettingKeyStart));
        iter->Valid() && iter->key().ToString() < kGServiceSettingKeyEnd;
        iter->Next()) {
@@ -1075,7 +1075,7 @@ bool GCMStoreImpl::Backend::LoadAccountMappingInfo(
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
 
-  scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
+  std::unique_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
   for (iter->Seek(MakeSlice(kAccountKeyStart));
        iter->Valid() && iter->key().ToString() < kAccountKeyEnd;
        iter->Next()) {
@@ -1119,7 +1119,7 @@ bool GCMStoreImpl::Backend::LoadHeartbeatIntervals(
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
 
-  scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
+  std::unique_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
   for (iter->Seek(MakeSlice(kHeartbeatKeyStart));
        iter->Valid() && iter->key().ToString() < kHeartbeatKeyEnd;
        iter->Next()) {
@@ -1143,7 +1143,7 @@ bool GCMStoreImpl::Backend::LoadInstanceIDData(
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
 
-  scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
+  std::unique_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
   for (iter->Seek(MakeSlice(kInstanceIDKeyStart));
        iter->Valid() && iter->key().ToString() < kInstanceIDKeyEnd;
        iter->Next()) {
@@ -1163,7 +1163,7 @@ bool GCMStoreImpl::Backend::LoadInstanceIDData(
 GCMStoreImpl::GCMStoreImpl(
     const base::FilePath& path,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
-    scoped_ptr<Encryptor> encryptor)
+    std::unique_ptr<Encryptor> encryptor)
     : backend_(new Backend(path,
                            base::ThreadTaskRunnerHandle::Get(),
                            std::move(encryptor))),
@@ -1424,7 +1424,7 @@ void GCMStoreImpl::SetValueForTesting(const std::string& key,
 }
 
 void GCMStoreImpl::LoadContinuation(const LoadCallback& callback,
-                                    scoped_ptr<LoadResult> result) {
+                                    std::unique_ptr<LoadResult> result) {
   // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(

@@ -6,9 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/json/json_value_converter.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -22,7 +23,7 @@ namespace {
 const int64_t kUnsetFileSize = -1;
 
 bool CreateFileResourceFromValue(const base::Value* value,
-                                 scoped_ptr<FileResource>* file) {
+                                 std::unique_ptr<FileResource>* file) {
   *file = FileResource::CreateFrom(*value);
   return !!*file;
 }
@@ -216,11 +217,12 @@ AboutResource::AboutResource()
 AboutResource::~AboutResource() {}
 
 // static
-scoped_ptr<AboutResource> AboutResource::CreateFrom(const base::Value& value) {
-  scoped_ptr<AboutResource> resource(new AboutResource());
+std::unique_ptr<AboutResource> AboutResource::CreateFrom(
+    const base::Value& value) {
+  std::unique_ptr<AboutResource> resource(new AboutResource());
   if (!IsResourceKindExpected(value, kAboutKind) || !resource->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid About resource JSON!";
-    return scoped_ptr<AboutResource>();
+    return std::unique_ptr<AboutResource>();
   }
   return resource;
 }
@@ -271,11 +273,12 @@ void DriveAppIcon::RegisterJSONConverter(
 }
 
 // static
-scoped_ptr<DriveAppIcon> DriveAppIcon::CreateFrom(const base::Value& value) {
-  scoped_ptr<DriveAppIcon> resource(new DriveAppIcon());
+std::unique_ptr<DriveAppIcon> DriveAppIcon::CreateFrom(
+    const base::Value& value) {
+  std::unique_ptr<DriveAppIcon> resource(new DriveAppIcon());
   if (!resource->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid DriveAppIcon JSON!";
-    return scoped_ptr<DriveAppIcon>();
+    return std::unique_ptr<DriveAppIcon>();
   }
   return resource;
 }
@@ -336,11 +339,11 @@ void AppResource::RegisterJSONConverter(
 }
 
 // static
-scoped_ptr<AppResource> AppResource::CreateFrom(const base::Value& value) {
-  scoped_ptr<AppResource> resource(new AppResource());
+std::unique_ptr<AppResource> AppResource::CreateFrom(const base::Value& value) {
+  std::unique_ptr<AppResource> resource(new AppResource());
   if (!IsResourceKindExpected(value, kAppKind) || !resource->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid AppResource JSON!";
-    return scoped_ptr<AppResource>();
+    return std::unique_ptr<AppResource>();
   }
   return resource;
 }
@@ -370,11 +373,11 @@ void AppList::RegisterJSONConverter(
 }
 
 // static
-scoped_ptr<AppList> AppList::CreateFrom(const base::Value& value) {
-  scoped_ptr<AppList> resource(new AppList());
+std::unique_ptr<AppList> AppList::CreateFrom(const base::Value& value) {
+  std::unique_ptr<AppList> resource(new AppList());
   if (!IsResourceKindExpected(value, kAppListKind) || !resource->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid AppList JSON!";
-    return scoped_ptr<AppList>();
+    return std::unique_ptr<AppList>();
   }
   return resource;
 }
@@ -405,13 +408,13 @@ void ParentReference::RegisterJSONConverter(
 }
 
 // static
-scoped_ptr<ParentReference>
-ParentReference::CreateFrom(const base::Value& value) {
-  scoped_ptr<ParentReference> reference(new ParentReference());
+std::unique_ptr<ParentReference> ParentReference::CreateFrom(
+    const base::Value& value) {
+  std::unique_ptr<ParentReference> reference(new ParentReference());
   if (!IsResourceKindExpected(value, kParentReferenceKind) ||
       !reference->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid ParentRefernce JSON!";
-    return scoped_ptr<ParentReference>();
+    return std::unique_ptr<ParentReference>();
   }
   return reference;
 }
@@ -481,11 +484,12 @@ void FileResource::RegisterJSONConverter(
 }
 
 // static
-scoped_ptr<FileResource> FileResource::CreateFrom(const base::Value& value) {
-  scoped_ptr<FileResource> resource(new FileResource());
+std::unique_ptr<FileResource> FileResource::CreateFrom(
+    const base::Value& value) {
+  std::unique_ptr<FileResource> resource(new FileResource());
   if (!IsResourceKindExpected(value, kFileKind) || !resource->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid FileResource JSON!";
-    return scoped_ptr<FileResource>();
+    return std::unique_ptr<FileResource>();
   }
   return resource;
 }
@@ -532,11 +536,11 @@ bool FileList::HasFileListKind(const base::Value& value) {
 }
 
 // static
-scoped_ptr<FileList> FileList::CreateFrom(const base::Value& value) {
-  scoped_ptr<FileList> resource(new FileList());
+std::unique_ptr<FileList> FileList::CreateFrom(const base::Value& value) {
+  std::unique_ptr<FileList> resource(new FileList());
   if (!HasFileListKind(value) || !resource->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid FileList JSON!";
-    return scoped_ptr<FileList>();
+    return std::unique_ptr<FileList>();
   }
   return resource;
 }
@@ -572,12 +576,12 @@ void ChangeResource::RegisterJSONConverter(
 }
 
 // static
-scoped_ptr<ChangeResource>
-ChangeResource::CreateFrom(const base::Value& value) {
-  scoped_ptr<ChangeResource> resource(new ChangeResource());
+std::unique_ptr<ChangeResource> ChangeResource::CreateFrom(
+    const base::Value& value) {
+  std::unique_ptr<ChangeResource> resource(new ChangeResource());
   if (!IsResourceKindExpected(value, kChangeKind) || !resource->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid ChangeResource JSON!";
-    return scoped_ptr<ChangeResource>();
+    return std::unique_ptr<ChangeResource>();
   }
   return resource;
 }
@@ -616,11 +620,11 @@ bool ChangeList::HasChangeListKind(const base::Value& value) {
 }
 
 // static
-scoped_ptr<ChangeList> ChangeList::CreateFrom(const base::Value& value) {
-  scoped_ptr<ChangeList> resource(new ChangeList());
+std::unique_ptr<ChangeList> ChangeList::CreateFrom(const base::Value& value) {
+  std::unique_ptr<ChangeList> resource(new ChangeList());
   if (!HasChangeListKind(value) || !resource->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid ChangeList JSON!";
-    return scoped_ptr<ChangeList>();
+    return std::unique_ptr<ChangeList>();
   }
   return resource;
 }
@@ -649,11 +653,11 @@ void FileLabels::RegisterJSONConverter(
 }
 
 // static
-scoped_ptr<FileLabels> FileLabels::CreateFrom(const base::Value& value) {
-  scoped_ptr<FileLabels> resource(new FileLabels());
+std::unique_ptr<FileLabels> FileLabels::CreateFrom(const base::Value& value) {
+  std::unique_ptr<FileLabels> resource(new FileLabels());
   if (!resource->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid FileLabels JSON!";
-    return scoped_ptr<FileLabels>();
+    return std::unique_ptr<FileLabels>();
   }
   return resource;
 }
@@ -689,12 +693,12 @@ void ImageMediaMetadata::RegisterJSONConverter(
 }
 
 // static
-scoped_ptr<ImageMediaMetadata> ImageMediaMetadata::CreateFrom(
+std::unique_ptr<ImageMediaMetadata> ImageMediaMetadata::CreateFrom(
     const base::Value& value) {
-  scoped_ptr<ImageMediaMetadata> resource(new ImageMediaMetadata());
+  std::unique_ptr<ImageMediaMetadata> resource(new ImageMediaMetadata());
   if (!resource->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid ImageMediaMetadata JSON!";
-    return scoped_ptr<ImageMediaMetadata>();
+    return std::unique_ptr<ImageMediaMetadata>();
   }
   return resource;
 }

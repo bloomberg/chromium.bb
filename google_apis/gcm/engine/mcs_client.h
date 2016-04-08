@@ -9,13 +9,13 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "google_apis/gcm/base/gcm_export.h"
 #include "google_apis/gcm/base/mcs_message.h"
@@ -118,7 +118,7 @@ class GCM_EXPORT MCSClient {
   void Initialize(const ErrorCallback& initialization_callback,
                   const OnMessageReceivedCallback& message_received_callback,
                   const OnMessageSentCallback& message_sent_callback,
-                  scoped_ptr<GCMStore::LoadResult> load_result);
+                  std::unique_ptr<GCMStore::LoadResult> load_result);
 
   // Logs the client into the server. Client must be initialized.
   // |android_id| and |security_token| are optional if this is not a new
@@ -151,7 +151,7 @@ class GCM_EXPORT MCSClient {
   std::string GetStateString() const;
 
   // Updates the timer used by |heartbeat_manager_| for sending heartbeats.
-  void UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer);
+  void UpdateHeartbeatTimer(std::unique_ptr<base::Timer> timer);
 
   // Allows a caller to set a heartbeat interval (in milliseconds) with which
   // the MCS connection will be monitored on both ends, to detect device
@@ -195,10 +195,11 @@ class GCM_EXPORT MCSClient {
 
   // Handle a data message sent to the MCS client system from the MCS server.
   void HandleMCSDataMesssage(
-      scoped_ptr<google::protobuf::MessageLite> protobuf);
+      std::unique_ptr<google::protobuf::MessageLite> protobuf);
 
   // Handle a packet received over the wire.
-  void HandlePacketFromWire(scoped_ptr<google::protobuf::MessageLite> protobuf);
+  void HandlePacketFromWire(
+      std::unique_ptr<google::protobuf::MessageLite> protobuf);
 
   // ReliableMessageQueue acknowledgment helpers.
   // Handle a StreamAck sent by the server confirming receipt of all

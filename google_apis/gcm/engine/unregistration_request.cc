@@ -54,7 +54,7 @@ UnregistrationRequest::CustomRequestHandler::~CustomRequestHandler() {}
 UnregistrationRequest::UnregistrationRequest(
     const GURL& registration_url,
     const RequestInfo& request_info,
-    scoped_ptr<CustomRequestHandler> custom_request_handler,
+    std::unique_ptr<CustomRequestHandler> custom_request_handler,
     const net::BackoffEntry::Policy& backoff_policy,
     const UnregistrationCallback& callback,
     int max_retry_count,

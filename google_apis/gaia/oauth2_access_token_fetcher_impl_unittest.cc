@@ -4,16 +4,17 @@
 //
 // A complete set of unit tests for OAuth2AccessTokenFetcherImpl.
 
+#include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
+
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
-#include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -70,11 +71,12 @@ class MockUrlFetcherFactory : public ScopedURLFetcherFactory,
                            URLFetcher::RequestType request_type,
                            URLFetcherDelegate* d));
 
-  scoped_ptr<URLFetcher> CreateURLFetcher(int id,
-                                          const GURL& url,
-                                          URLFetcher::RequestType request_type,
-                                          URLFetcherDelegate* d) override {
-    return scoped_ptr<URLFetcher>(
+  std::unique_ptr<URLFetcher> CreateURLFetcher(
+      int id,
+      const GURL& url,
+      URLFetcher::RequestType request_type,
+      URLFetcherDelegate* d) override {
+    return std::unique_ptr<URLFetcher>(
         CreateURLFetcherMock(id, url, request_type, d));
   }
 };

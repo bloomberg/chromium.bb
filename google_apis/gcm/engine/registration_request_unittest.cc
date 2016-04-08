@@ -54,7 +54,7 @@ class RegistrationRequestTest : public GCMRequestTestBase {
   std::string registration_id_;
   bool callback_called_;
   std::map<std::string, std::string> extras_;
-  scoped_ptr<RegistrationRequest> request_;
+  std::unique_ptr<RegistrationRequest> request_;
   FakeGCMStatsRecorder recorder_;
 };
 
@@ -98,7 +98,7 @@ GCMRegistrationRequestTest::~GCMRegistrationRequestTest() {
 void GCMRegistrationRequestTest::CreateRequest(const std::string& sender_ids) {
   RegistrationRequest::RequestInfo request_info(
       kAndroidId, kSecurityToken, kAppId);
-  scoped_ptr<GCMRegistrationRequestHandler> request_handler(
+  std::unique_ptr<GCMRegistrationRequestHandler> request_handler(
       new GCMRegistrationRequestHandler(sender_ids));
   request_.reset(new RegistrationRequest(
       GURL(kRegistrationURL), request_info, std::move(request_handler),
@@ -417,9 +417,9 @@ void InstanceIDGetTokenRequestTest::CreateRequest(
     const std::map<std::string, std::string>& options) {
   RegistrationRequest::RequestInfo request_info(
       kAndroidId, kSecurityToken, kAppId);
-  scoped_ptr<InstanceIDGetTokenRequestHandler> request_handler(
-      new InstanceIDGetTokenRequestHandler(
-          instance_id, authorized_entity, scope, kGCMVersion, options));
+  std::unique_ptr<InstanceIDGetTokenRequestHandler> request_handler(
+      new InstanceIDGetTokenRequestHandler(instance_id, authorized_entity,
+                                           scope, kGCMVersion, options));
   request_.reset(new RegistrationRequest(
       GURL(kRegistrationURL), request_info, std::move(request_handler),
       GetBackoffPolicy(),

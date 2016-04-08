@@ -5,13 +5,13 @@
 #ifndef GOOGLE_APIS_DRIVE_REQUEST_SENDER_H_
 #define GOOGLE_APIS_DRIVE_REQUEST_SENDER_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "google_apis/drive/drive_api_error_codes.h"
@@ -92,7 +92,7 @@ class RequestSender {
   void CancelRequest(
       const base::WeakPtr<AuthenticatedRequestInterface>& request);
 
-  scoped_ptr<AuthServiceInterface> auth_service_;
+  std::unique_ptr<AuthServiceInterface> auth_service_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 

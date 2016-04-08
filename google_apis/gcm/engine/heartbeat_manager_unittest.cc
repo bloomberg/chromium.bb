@@ -4,9 +4,11 @@
 
 #include "google_apis/gcm/engine/heartbeat_manager.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -61,7 +63,7 @@ class HeartbeatManagerTest : public testing::Test {
   void SendHeartbeatClosure();
   void TriggerReconnectClosure(ConnectionFactory::ConnectionResetReason reason);
 
-  scoped_ptr<TestHeartbeatManager> manager_;
+  std::unique_ptr<TestHeartbeatManager> manager_;
 
   int heartbeats_sent_;
   int reconnects_triggered_;
@@ -182,7 +184,7 @@ TEST_F(HeartbeatManagerTest, StartThenUpdateInterval) {
 // timer.
 TEST_F(HeartbeatManagerTest, UpdateTimerBeforeStart) {
   manager()->UpdateHeartbeatTimer(
-      make_scoped_ptr(new base::Timer(true, false)));
+      base::WrapUnique(new base::Timer(true, false)));
   EXPECT_TRUE(manager()->GetNextHeartbeatTime().is_null());
 }
 
@@ -193,7 +195,7 @@ TEST_F(HeartbeatManagerTest, UpdateTimerAfterStart) {
   base::TimeTicks heartbeat = manager()->GetNextHeartbeatTime();
 
   manager()->UpdateHeartbeatTimer(
-      make_scoped_ptr(new base::Timer(true, false)));
+      base::WrapUnique(new base::Timer(true, false)));
   EXPECT_LT(manager()->GetNextHeartbeatTime() - heartbeat,
             base::TimeDelta::FromMilliseconds(5));
 }

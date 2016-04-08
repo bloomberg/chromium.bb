@@ -4,9 +4,9 @@
 
 #include "google_apis/drive/files_list_request_runner.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -93,7 +93,7 @@ class FilesListRequestRunnerTest : public testing::Test {
 
   // Called when the request is completed and no more backoff retries will
   // happen.
-  void OnCompleted(DriveApiErrorCode error, scoped_ptr<FileList> entry) {
+  void OnCompleted(DriveApiErrorCode error, std::unique_ptr<FileList> entry) {
     response_error_.reset(new DriveApiErrorCode(error));
     response_entry_ = std::move(entry);
     on_completed_callback_.Run();
@@ -111,7 +111,7 @@ class FilesListRequestRunnerTest : public testing::Test {
   }
 
   // Handles a HTTP request to the Drive API server and returns a fake response.
-  scoped_ptr<net::test_server::HttpResponse> OnFilesListRequest(
+  std::unique_ptr<net::test_server::HttpResponse> OnFilesListRequest(
       const GURL& base_url,
       const net::test_server::HttpRequest& request) {
     http_request_.reset(new net::test_server::HttpRequest(request));
@@ -119,19 +119,19 @@ class FilesListRequestRunnerTest : public testing::Test {
   }
 
   base::MessageLoopForIO message_loop_;  // Test server needs IO thread.
-  scoped_ptr<RequestSender> request_sender_;
+  std::unique_ptr<RequestSender> request_sender_;
   net::EmbeddedTestServer test_server_;
-  scoped_ptr<FilesListRequestRunner> runner_;
+  std::unique_ptr<FilesListRequestRunner> runner_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   base::Closure on_completed_callback_;
 
   // Response set by test cases to be returned from the HTTP server.
-  scoped_ptr<net::test_server::BasicHttpResponse> fake_server_response_;
+  std::unique_ptr<net::test_server::BasicHttpResponse> fake_server_response_;
 
   // A requests and a response stored for verification in test cases.
-  scoped_ptr<net::test_server::HttpRequest> http_request_;
-  scoped_ptr<DriveApiErrorCode> response_error_;
-  scoped_ptr<FileList> response_entry_;
+  std::unique_ptr<net::test_server::HttpRequest> http_request_;
+  std::unique_ptr<DriveApiErrorCode> response_error_;
+  std::unique_ptr<FileList> response_entry_;
 };
 
 TEST_F(FilesListRequestRunnerTest, Success_NoBackoff) {

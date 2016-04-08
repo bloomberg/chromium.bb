@@ -5,12 +5,12 @@
 #ifndef GOOGLE_APIS_GAIA_GAIA_AUTH_FETCHER_H_
 #define GOOGLE_APIS_GAIA_GAIA_AUTH_FETCHER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -446,7 +446,7 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   const GURL oauth2_iframe_url_;
 
   // While a fetch is going on:
-  scoped_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
   GURL client_login_to_oauth2_gurl_;
   std::string request_body_;
   std::string requested_service_;

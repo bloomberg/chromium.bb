@@ -77,30 +77,30 @@ bool CreateFileOfSpecifiedSize(const base::FilePath& temp_dir,
   return WriteStringToFile(*path, *data);
 }
 
-scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path) {
+std::unique_ptr<base::Value> LoadJSONFile(const std::string& relative_path) {
   base::FilePath path = GetTestFilePath(relative_path);
 
   std::string error;
   JSONFileValueDeserializer deserializer(path);
-  scoped_ptr<base::Value> value = deserializer.Deserialize(NULL, &error);
+  std::unique_ptr<base::Value> value = deserializer.Deserialize(NULL, &error);
   LOG_IF(WARNING, !value.get()) << "Failed to parse " << path.value()
                                 << ": " << error;
   return value;
 }
 
 // Returns a HttpResponse created from the given file path.
-scoped_ptr<net::test_server::BasicHttpResponse> CreateHttpResponseFromFile(
+std::unique_ptr<net::test_server::BasicHttpResponse> CreateHttpResponseFromFile(
     const base::FilePath& file_path) {
   std::string content;
   if (!base::ReadFileToString(file_path, &content))
-    return scoped_ptr<net::test_server::BasicHttpResponse>();
+    return std::unique_ptr<net::test_server::BasicHttpResponse>();
 
   std::string content_type = "text/plain";
   if (base::EndsWith(file_path.AsUTF8Unsafe(), ".json",
                      base::CompareCase::SENSITIVE))
     content_type = "application/json";
 
-  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_OK);
   http_response->set_content(content);
@@ -108,7 +108,7 @@ scoped_ptr<net::test_server::BasicHttpResponse> CreateHttpResponseFromFile(
   return http_response;
 }
 
-scoped_ptr<net::test_server::HttpResponse> HandleDownloadFileRequest(
+std::unique_ptr<net::test_server::HttpResponse> HandleDownloadFileRequest(
     const GURL& base_url,
     net::test_server::HttpRequest* out_request,
     const net::test_server::HttpRequest& request) {
@@ -117,7 +117,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleDownloadFileRequest(
   GURL absolute_url = base_url.Resolve(request.relative_url);
   std::string remaining_path;
   if (!RemovePrefix(absolute_url.path(), "/files/", &remaining_path))
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return std::unique_ptr<net::test_server::HttpResponse>();
   return CreateHttpResponseFromFile(GetTestFilePath(remaining_path));
 }
 
@@ -173,7 +173,7 @@ std::string TestGetContentCallback::GetConcatenatedData() const {
 }
 
 void TestGetContentCallback::OnGetContent(google_apis::DriveApiErrorCode error,
-                                          scoped_ptr<std::string> data) {
+                                          std::unique_ptr<std::string> data) {
   data_.push_back(data.release());
 }
 

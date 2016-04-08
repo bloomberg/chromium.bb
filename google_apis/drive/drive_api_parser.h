@@ -6,13 +6,14 @@
 #define GOOGLE_APIS_DRIVE_DRIVE_API_PARSER_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
@@ -44,7 +45,7 @@ class AboutResource {
       base::JSONValueConverter<AboutResource>* converter);
 
   // Creates about resource from parsed JSON.
-  static scoped_ptr<AboutResource> CreateFrom(const base::Value& value);
+  static std::unique_ptr<AboutResource> CreateFrom(const base::Value& value);
 
   // Returns the largest change ID number.
   int64_t largest_change_id() const { return largest_change_id_; }
@@ -106,7 +107,7 @@ class DriveAppIcon {
       base::JSONValueConverter<DriveAppIcon>* converter);
 
   // Creates drive app icon instance from parsed JSON.
-  static scoped_ptr<DriveAppIcon> CreateFrom(const base::Value& value);
+  static std::unique_ptr<DriveAppIcon> CreateFrom(const base::Value& value);
 
   // Category of the icon.
   IconCategory category() const { return category_; }
@@ -160,7 +161,7 @@ class AppResource {
       base::JSONValueConverter<AppResource>* converter);
 
   // Creates app resource from parsed JSON.
-  static scoped_ptr<AppResource> CreateFrom(const base::Value& value);
+  static std::unique_ptr<AppResource> CreateFrom(const base::Value& value);
 
   // Returns application ID, which is 12-digit decimals (e.g. "123456780123").
   const std::string& application_id() const { return application_id_; }
@@ -292,7 +293,7 @@ class AppList {
       base::JSONValueConverter<AppList>* converter);
 
   // Creates app list from parsed JSON.
-  static scoped_ptr<AppList> CreateFrom(const base::Value& value);
+  static std::unique_ptr<AppList> CreateFrom(const base::Value& value);
 
   // ETag for this resource.
   const std::string& etag() const { return etag_; }
@@ -332,7 +333,7 @@ class ParentReference {
       base::JSONValueConverter<ParentReference>* converter);
 
   // Creates parent reference from parsed JSON.
-  static scoped_ptr<ParentReference> CreateFrom(const base::Value& value);
+  static std::unique_ptr<ParentReference> CreateFrom(const base::Value& value);
 
   // Returns the file id of the reference.
   const std::string& file_id() const { return file_id_; }
@@ -367,7 +368,7 @@ class FileLabels {
       base::JSONValueConverter<FileLabels>* converter);
 
   // Creates about resource from parsed JSON.
-  static scoped_ptr<FileLabels> CreateFrom(const base::Value& value);
+  static std::unique_ptr<FileLabels> CreateFrom(const base::Value& value);
 
   // Whether this file has been trashed.
   bool is_trashed() const { return trashed_; }
@@ -397,7 +398,8 @@ class ImageMediaMetadata {
       base::JSONValueConverter<ImageMediaMetadata>* converter);
 
   // Creates about resource from parsed JSON.
-  static scoped_ptr<ImageMediaMetadata> CreateFrom(const base::Value& value);
+  static std::unique_ptr<ImageMediaMetadata> CreateFrom(
+      const base::Value& value);
 
   // Width of the image in pixels.
   int width() const { return width_; }
@@ -442,7 +444,7 @@ class FileResource {
       base::JSONValueConverter<FileResource>* converter);
 
   // Creates file resource from parsed JSON.
-  static scoped_ptr<FileResource> CreateFrom(const base::Value& value);
+  static std::unique_ptr<FileResource> CreateFrom(const base::Value& value);
 
   // Returns true if this is a directory.
   // Note: "folder" is used elsewhere in this file to match Drive API reference,
@@ -607,7 +609,7 @@ class FileList {
   static bool HasFileListKind(const base::Value& value);
 
   // Creates file list from parsed JSON.
-  static scoped_ptr<FileList> CreateFrom(const base::Value& value);
+  static std::unique_ptr<FileList> CreateFrom(const base::Value& value);
 
   // Returns a link to the next page of files.  The URL includes the next page
   // token.
@@ -648,7 +650,7 @@ class ChangeResource {
       base::JSONValueConverter<ChangeResource>* converter);
 
   // Creates change resource from parsed JSON.
-  static scoped_ptr<ChangeResource> CreateFrom(const base::Value& value);
+  static std::unique_ptr<ChangeResource> CreateFrom(const base::Value& value);
 
   // Returns change ID for this change.  This is a monotonically increasing
   // number.
@@ -674,7 +676,7 @@ class ChangeResource {
   void set_deleted(bool deleted) {
     deleted_ = deleted;
   }
-  void set_file(scoped_ptr<FileResource> file) { file_ = std::move(file); }
+  void set_file(std::unique_ptr<FileResource> file) { file_ = std::move(file); }
   void set_modification_date(const base::Time& modification_date) {
     modification_date_ = modification_date;
   }
@@ -690,7 +692,7 @@ class ChangeResource {
   int64_t change_id_;
   std::string file_id_;
   bool deleted_;
-  scoped_ptr<FileResource> file_;
+  std::unique_ptr<FileResource> file_;
   base::Time modification_date_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeResource);
@@ -712,7 +714,7 @@ class ChangeList {
   static bool HasChangeListKind(const base::Value& value);
 
   // Creates change list from parsed JSON.
-  static scoped_ptr<ChangeList> CreateFrom(const base::Value& value);
+  static std::unique_ptr<ChangeList> CreateFrom(const base::Value& value);
 
   // Returns a link to the next page of files.  The URL includes the next page
   // token.

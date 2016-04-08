@@ -122,7 +122,8 @@ base::TimeTicks HeartbeatManager::GetNextHeartbeatTime() const {
     return base::TimeTicks();
 }
 
-void HeartbeatManager::UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) {
+void HeartbeatManager::UpdateHeartbeatTimer(
+    std::unique_ptr<base::Timer> timer) {
   bool was_running = heartbeat_timer_->IsRunning();
   base::TimeDelta remaining_delay =
       heartbeat_timer_->desired_run_time() - base::TimeTicks::Now();

@@ -12,6 +12,8 @@
 
 #include "google_apis/google_api_keys.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "google_apis/gaia/gaia_switches.h"
@@ -39,7 +41,6 @@
 #include "base/environment.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringize_macros.h"
 
 // This is the default baked-in value for OAuth IDs and secrets.
@@ -95,7 +96,7 @@ class GoogleAPIKeysTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<base::Environment> env_;
+  std::unique_ptr<base::Environment> env_;
 
   // Why 3?  It is for GOOGLE_API_KEY, GOOGLE_DEFAULT_CLIENT_ID and
   // GOOGLE_DEFAULT_CLIENT_SECRET.
@@ -451,7 +452,7 @@ namespace override_all_keys_env {
 TEST_F(GoogleAPIKeysTest, OverrideAllKeysUsingEnvironment) {
   namespace testcase = override_all_keys_env::google_apis;
 
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   env->SetVar("GOOGLE_API_KEY", "env-API_KEY");
   env->SetVar("GOOGLE_CLIENT_ID_MAIN", "env-ID_MAIN");
   env->SetVar("GOOGLE_CLIENT_ID_CLOUD_PRINT", "env-ID_CLOUD_PRINT");

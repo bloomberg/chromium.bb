@@ -83,7 +83,7 @@ class GCM_EXPORT CheckinRequest : public net::URLFetcherDelegate {
 
   net::BackoffEntry backoff_entry_;
   GURL checkin_url_;
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
   const RequestInfo request_info_;
   base::TimeTicks request_start_time_;
 

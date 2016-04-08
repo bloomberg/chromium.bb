@@ -4,8 +4,9 @@
 
 #include "google_apis/gaia/ubertoken_fetcher.h"
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
@@ -64,7 +65,7 @@ class UbertokenFetcherTest : public testing::Test {
   FakeOAuth2TokenService token_service_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   MockUbertokenConsumer consumer_;
-  scoped_ptr<UbertokenFetcher> fetcher_;
+  std::unique_ptr<UbertokenFetcher> fetcher_;
 };
 
 TEST_F(UbertokenFetcherTest, Basic) {

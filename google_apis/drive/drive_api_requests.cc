@@ -60,20 +60,20 @@ const char kUMADriveTotalFileSizeInBatchUpload[] =
 // UI thread once parsing is done.
 // This is customized version of ParseJsonAndRun defined above to adapt the
 // remaining response type.
-void ParseFileResourceWithUploadRangeAndRun(const UploadRangeCallback& callback,
-                                            const UploadRangeResponse& response,
-                                            scoped_ptr<base::Value> value) {
+void ParseFileResourceWithUploadRangeAndRun(
+    const UploadRangeCallback& callback,
+    const UploadRangeResponse& response,
+    std::unique_ptr<base::Value> value) {
   DCHECK(!callback.is_null());
 
-  scoped_ptr<FileResource> file_resource;
+  std::unique_ptr<FileResource> file_resource;
   if (value) {
     file_resource = FileResource::CreateFrom(*value);
     if (!file_resource) {
-      callback.Run(
-          UploadRangeResponse(DRIVE_PARSE_ERROR,
-                              response.start_position_received,
-                              response.end_position_received),
-          scoped_ptr<FileResource>());
+      callback.Run(UploadRangeResponse(DRIVE_PARSE_ERROR,
+                                       response.start_position_received,
+                                       response.end_position_received),
+                   std::unique_ptr<FileResource>());
       return;
     }
   }
@@ -124,7 +124,7 @@ std::string CreateMultipartUploadMetadataJson(
 
   // Fill parent link.
   if (!parent_resource_id.empty()) {
-    scoped_ptr<base::ListValue> parents(new base::ListValue);
+    std::unique_ptr<base::ListValue> parents(new base::ListValue);
     parents->Append(
         google_apis::util::CreateParentValue(parent_resource_id).release());
     root.Set("parents", parents.release());
@@ -175,8 +175,7 @@ base::StringPiece TrimTransportPadding(const base::StringPiece& piece) {
   return piece.substr(0, piece.size() - trim_size);
 }
 
-void EmptyClosure(scoped_ptr<BatchableDelegate>) {
-}
+void EmptyClosure(std::unique_ptr<BatchableDelegate>) {}
 
 }  // namespace
 
@@ -833,7 +832,7 @@ bool InitiateUploadNewFileRequest::GetContentData(
   root.SetString("title", title_);
 
   // Fill parent link.
-  scoped_ptr<base::ListValue> parents(new base::ListValue);
+  std::unique_ptr<base::ListValue> parents(new base::ListValue);
   parents->Append(util::CreateParentValue(parent_resource_id_).release());
   root.Set("parents", parents.release());
 
@@ -893,7 +892,7 @@ bool InitiateUploadExistingFileRequest::GetContentData(
     std::string* upload_content) {
   base::DictionaryValue root;
   if (!parent_resource_id_.empty()) {
-    scoped_ptr<base::ListValue> parents(new base::ListValue);
+    std::unique_ptr<base::ListValue> parents(new base::ListValue);
     parents->Append(util::CreateParentValue(parent_resource_id_).release());
     root.Set("parents", parents.release());
   }
@@ -948,7 +947,7 @@ ResumeUploadRequest::~ResumeUploadRequest() {}
 
 void ResumeUploadRequest::OnRangeRequestComplete(
     const UploadRangeResponse& response,
-    scoped_ptr<base::Value> value) {
+    std::unique_ptr<base::Value> value) {
   DCHECK(CalledOnValidThread());
   ParseFileResourceWithUploadRangeAndRun(callback_, response, std::move(value));
 }
@@ -977,7 +976,7 @@ GetUploadStatusRequest::~GetUploadStatusRequest() {}
 
 void GetUploadStatusRequest::OnRangeRequestComplete(
     const UploadRangeResponse& response,
-    scoped_ptr<base::Value> value) {
+    std::unique_ptr<base::Value> value) {
   DCHECK(CalledOnValidThread());
   ParseFileResourceWithUploadRangeAndRun(callback_, response, std::move(value));
 }

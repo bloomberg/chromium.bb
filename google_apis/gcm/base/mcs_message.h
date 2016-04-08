@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "google_apis/gcm/base/gcm_export.h"
 
 namespace google {
@@ -37,7 +37,7 @@ class GCM_EXPORT MCSMessage {
   MCSMessage(uint8_t tag, const google::protobuf::MessageLite& protobuf);
   // |tag| must match |protobuf|'s message type. Takes ownership of |protobuf|.
   MCSMessage(uint8_t tag,
-             scoped_ptr<const google::protobuf::MessageLite> protobuf);
+             std::unique_ptr<const google::protobuf::MessageLite> protobuf);
   MCSMessage(const MCSMessage& other);
   ~MCSMessage();
 
@@ -54,14 +54,15 @@ class GCM_EXPORT MCSMessage {
   const google::protobuf::MessageLite& GetProtobuf() const;
 
   // Getter for creating a mutated version of the protobuf.
-  scoped_ptr<google::protobuf::MessageLite> CloneProtobuf() const;
+  std::unique_ptr<google::protobuf::MessageLite> CloneProtobuf() const;
 
  private:
   class Core : public base::RefCountedThreadSafe<MCSMessage::Core> {
    public:
     Core();
     Core(uint8_t tag, const google::protobuf::MessageLite& protobuf);
-    Core(uint8_t tag, scoped_ptr<const google::protobuf::MessageLite> protobuf);
+    Core(uint8_t tag,
+         std::unique_ptr<const google::protobuf::MessageLite> protobuf);
 
     const google::protobuf::MessageLite& Get() const;
 
@@ -70,7 +71,7 @@ class GCM_EXPORT MCSMessage {
     ~Core();
 
     // The immutable protobuf.
-    scoped_ptr<const google::protobuf::MessageLite> protobuf_;
+    std::unique_ptr<const google::protobuf::MessageLite> protobuf_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };

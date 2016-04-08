@@ -4,10 +4,11 @@
 
 #include "google_apis/drive/base_requests.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "google_apis/drive/dummy_auth_service.h"
@@ -59,7 +60,7 @@ class BaseRequestsServerTest : public testing::Test {
 
   base::MessageLoopForIO message_loop_;  // Test server needs IO thread.
   net::EmbeddedTestServer test_server_;
-  scoped_ptr<RequestSender> request_sender_;
+  std::unique_ptr<RequestSender> request_sender_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   base::ScopedTempDir temp_dir_;
 

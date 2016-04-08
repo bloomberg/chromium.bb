@@ -300,19 +300,20 @@ void FakeGaia::Initialize() {
       gaia_urls->oauth_user_info_url(), HandleOAuthUserInfo);
 }
 
-scoped_ptr<HttpResponse> FakeGaia::HandleRequest(const HttpRequest& request) {
+std::unique_ptr<HttpResponse> FakeGaia::HandleRequest(
+    const HttpRequest& request) {
   // The scheme and host of the URL is actually not important but required to
   // get a valid GURL in order to parse |request.relative_url|.
   GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
   std::string request_path = request_url.path();
-  scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
+  std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
   RequestHandlerMap::iterator iter = request_handlers_.find(request_path);
   if (iter != request_handlers_.end()) {
     LOG(WARNING) << "Serving request " << request_path;
     iter->second.Run(request, http_response.get());
   } else {
     LOG(ERROR) << "Unhandled request " << request_path;
-    return scoped_ptr<HttpResponse>();      // Request not understood.
+    return std::unique_ptr<HttpResponse>();  // Request not understood.
   }
 
   return std::move(http_response);

@@ -63,7 +63,7 @@ void FilesListRequestRunner::OnCompleted(int max_results,
                                          const FileListCallback& callback,
                                          CancelCallback* cancel_callback,
                                          DriveApiErrorCode error,
-                                         scoped_ptr<FileList> entry) {
+                                         std::unique_ptr<FileList> entry) {
   if (!request_completed_callback_for_testing_.is_null())
     request_completed_callback_for_testing_.Run();
 

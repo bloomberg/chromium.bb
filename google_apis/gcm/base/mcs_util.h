@@ -9,11 +9,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "google_apis/gcm/base/gcm_export.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 
@@ -56,18 +56,18 @@ enum MCSIqStanzaExtension {
 };
 
 // Builds a LoginRequest with the hardcoded local data.
-GCM_EXPORT scoped_ptr<mcs_proto::LoginRequest> BuildLoginRequest(
+GCM_EXPORT std::unique_ptr<mcs_proto::LoginRequest> BuildLoginRequest(
     uint64_t auth_id,
     uint64_t auth_token,
     const std::string& version_string);
 
 // Builds a StreamAck IqStanza message.
-GCM_EXPORT scoped_ptr<mcs_proto::IqStanza> BuildStreamAck();
-GCM_EXPORT scoped_ptr<mcs_proto::IqStanza> BuildSelectiveAck(
+GCM_EXPORT std::unique_ptr<mcs_proto::IqStanza> BuildStreamAck();
+GCM_EXPORT std::unique_ptr<mcs_proto::IqStanza> BuildSelectiveAck(
     const std::vector<std::string>& acked_ids);
 
 // Utility methods for building and identifying MCS protobufs.
-GCM_EXPORT scoped_ptr<google::protobuf::MessageLite> BuildProtobufFromTag(
+GCM_EXPORT std::unique_ptr<google::protobuf::MessageLite> BuildProtobufFromTag(
     uint8_t tag);
 GCM_EXPORT int GetMCSProtoTag(const google::protobuf::MessageLite& message);
 

@@ -52,7 +52,7 @@ class UnregistrationRequestTest : public GCMRequestTestBase {
   int max_retry_count_;
   bool callback_called_;
   UnregistrationRequest::Status status_;
-  scoped_ptr<UnregistrationRequest> request_;
+  std::unique_ptr<UnregistrationRequest> request_;
   FakeGCMStatsRecorder recorder_;
 };
 
@@ -93,7 +93,7 @@ GCMUnregistrationRequestTest::~GCMUnregistrationRequestTest() {
 void GCMUnregistrationRequestTest::CreateRequest() {
   UnregistrationRequest::RequestInfo request_info(
       kAndroidId, kSecurityToken, kAppId);
-  scoped_ptr<GCMUnregistrationRequestHandler> request_handler(
+  std::unique_ptr<GCMUnregistrationRequestHandler> request_handler(
       new GCMUnregistrationRequestHandler(kAppId));
   request_.reset(new UnregistrationRequest(
       GURL(kRegistrationURL), request_info, std::move(request_handler),
@@ -341,9 +341,9 @@ void InstaceIDDeleteTokenRequestTest::CreateRequest(
     const std::string& scope) {
   UnregistrationRequest::RequestInfo request_info(
       kAndroidId, kSecurityToken, kAppId);
-  scoped_ptr<InstanceIDDeleteTokenRequestHandler> request_handler(
-      new InstanceIDDeleteTokenRequestHandler(
-          instance_id, authorized_entity, scope, kGCMVersion));
+  std::unique_ptr<InstanceIDDeleteTokenRequestHandler> request_handler(
+      new InstanceIDDeleteTokenRequestHandler(instance_id, authorized_entity,
+                                              scope, kGCMVersion));
   request_.reset(new UnregistrationRequest(
       GURL(kRegistrationURL), request_info, std::move(request_handler),
       GetBackoffPolicy(),

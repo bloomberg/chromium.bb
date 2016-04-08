@@ -49,7 +49,7 @@ class CheckinRequestTest : public GCMRequestTestBase {
   uint64_t security_token_;
   int checkin_device_type_;
   checkin_proto::ChromeBuildProto chrome_build_proto_;
-  scoped_ptr<CheckinRequest> request_;
+  std::unique_ptr<CheckinRequest> request_;
   FakeGCMStatsRecorder recorder_;
 };
 

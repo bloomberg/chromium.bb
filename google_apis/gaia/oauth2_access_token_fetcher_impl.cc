@@ -90,12 +90,13 @@ static GoogleServiceAuthError CreateAuthError(URLRequestStatus status) {
   }
 }
 
-static scoped_ptr<URLFetcher> CreateFetcher(URLRequestContextGetter* getter,
-                                            const GURL& url,
-                                            const std::string& body,
-                                            URLFetcherDelegate* delegate) {
+static std::unique_ptr<URLFetcher> CreateFetcher(
+    URLRequestContextGetter* getter,
+    const GURL& url,
+    const std::string& body,
+    URLFetcherDelegate* delegate) {
   bool empty_body = body.empty();
-  scoped_ptr<URLFetcher> result = net::URLFetcher::Create(
+  std::unique_ptr<URLFetcher> result = net::URLFetcher::Create(
       0, url, empty_body ? URLFetcher::GET : URLFetcher::POST, delegate);
 
   result->SetRequestContext(getter);
@@ -113,17 +114,17 @@ static scoped_ptr<URLFetcher> CreateFetcher(URLRequestContextGetter* getter,
   return result;
 }
 
-scoped_ptr<base::DictionaryValue> ParseGetAccessTokenResponse(
+std::unique_ptr<base::DictionaryValue> ParseGetAccessTokenResponse(
     const net::URLFetcher* source) {
   CHECK(source);
 
   std::string data;
   source->GetResponseAsString(&data);
-  scoped_ptr<base::Value> value = base::JSONReader::Read(data);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(data);
   if (!value.get() || value->GetType() != base::Value::TYPE_DICTIONARY)
     value.reset();
 
-  return scoped_ptr<base::DictionaryValue>(
+  return std::unique_ptr<base::DictionaryValue>(
       static_cast<base::DictionaryValue*>(value.release()));
 }
 
@@ -299,7 +300,8 @@ bool OAuth2AccessTokenFetcherImpl::ParseGetAccessTokenSuccessResponse(
     std::string* access_token,
     int* expires_in) {
   CHECK(access_token);
-  scoped_ptr<base::DictionaryValue> value = ParseGetAccessTokenResponse(source);
+  std::unique_ptr<base::DictionaryValue> value =
+      ParseGetAccessTokenResponse(source);
   if (value.get() == NULL)
     return false;
 
@@ -312,7 +314,8 @@ bool OAuth2AccessTokenFetcherImpl::ParseGetAccessTokenFailureResponse(
     const net::URLFetcher* source,
     std::string* error) {
   CHECK(error);
-  scoped_ptr<base::DictionaryValue> value = ParseGetAccessTokenResponse(source);
+  std::unique_ptr<base::DictionaryValue> value =
+      ParseGetAccessTokenResponse(source);
   if (value.get() == NULL)
     return false;
   return value->GetString(kErrorKey, error);

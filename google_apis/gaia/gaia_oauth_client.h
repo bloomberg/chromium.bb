@@ -5,12 +5,12 @@
 #ifndef GOOGLE_APIS_GAIA_GAIA_OAUTH_CLIENT_H_
 #define GOOGLE_APIS_GAIA_GAIA_OAUTH_CLIENT_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
 namespace net {
@@ -49,10 +49,10 @@ class GaiaOAuthClient {
     virtual void OnGetUserIdResponse(const std::string& user_id) {}
     // Invoked on a successful response to the GetUserInfo request.
     virtual void OnGetUserInfoResponse(
-        scoped_ptr<base::DictionaryValue> user_info) {}
+        std::unique_ptr<base::DictionaryValue> user_info) {}
     // Invoked on a successful response to the GetTokenInfo request.
     virtual void OnGetTokenInfoResponse(
-        scoped_ptr<base::DictionaryValue> token_info) {}
+        std::unique_ptr<base::DictionaryValue> token_info) {}
     // Invoked when there is an OAuth error with one of the requests.
     virtual void OnOAuthError() = 0;
     // Invoked when there is a network error or upon receiving an invalid

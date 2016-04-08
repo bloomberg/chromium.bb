@@ -17,7 +17,7 @@ class AppList;
 
 // Callback used for getting AboutResource.
 typedef base::Callback<void(DriveApiErrorCode error,
-                            scoped_ptr<AboutResource> about_resource)>
+                            std::unique_ptr<AboutResource> about_resource)>
     AboutResourceCallback;
 
 // Callback used for getting ShareUrl.
@@ -26,7 +26,8 @@ typedef base::Callback<void(DriveApiErrorCode error,
 
 // Callback used for getting AppList.
 typedef base::Callback<void(DriveApiErrorCode error,
-                            scoped_ptr<AppList> app_list)> AppListCallback;
+                            std::unique_ptr<AppList> app_list)>
+    AppListCallback;
 
 // Callback used for authorizing an app. |open_url| is used to open the target
 // file with the authorized app.

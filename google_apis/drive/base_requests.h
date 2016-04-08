@@ -50,19 +50,19 @@ typedef base::Callback<void(DriveApiErrorCode)> PrepareCallback;
 // Callback used for requests that the server returns FileResource data
 // formatted into JSON value.
 typedef base::Callback<void(DriveApiErrorCode error,
-                            scoped_ptr<FileResource> entry)>
+                            std::unique_ptr<FileResource> entry)>
     FileResourceCallback;
 
 // Callback used for DownloadFileRequest and ResumeUploadRequestBase.
 typedef base::Callback<void(int64_t progress, int64_t total)> ProgressCallback;
 
 // Callback used to get the content from DownloadFileRequest.
-typedef base::Callback<void(
-    DriveApiErrorCode error,
-    scoped_ptr<std::string> content)> GetContentCallback;
+typedef base::Callback<void(DriveApiErrorCode error,
+                            std::unique_ptr<std::string> content)>
+    GetContentCallback;
 
 // Parses JSON passed in |json|. Returns NULL on failure.
-scoped_ptr<base::Value> ParseJson(const std::string& json);
+std::unique_ptr<base::Value> ParseJson(const std::string& json);
 
 // Generate multipart body. If |predetermined_boundary| is not empty, it uses
 // the string as boundary. Otherwise it generates random boundary that does not
@@ -144,7 +144,7 @@ class ResponseWriter : public net::URLFetcherResponseWriter {
 
   const GetContentCallback get_content_callback_;
   std::string data_;
-  scoped_ptr<net::URLFetcherFileWriter> file_writer_;
+  std::unique_ptr<net::URLFetcherFileWriter> file_writer_;
   base::WeakPtrFactory<ResponseWriter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResponseWriter);
@@ -249,7 +249,7 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
 
   ReAuthenticateCallback re_authenticate_callback_;
   int re_authenticate_count_;
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
   ResponseWriter* response_writer_;  // Owned by |url_fetcher_|.
   RequestSender* sender_;
   DriveApiErrorCode error_code_;
@@ -419,12 +419,12 @@ class UploadRangeRequestBase : public UrlFetchRequestBase {
   // Note: Subclasses should have responsibility to run some callback
   // in this method to notify the finish status to its clients (or ignore it
   // under its responsibility).
-  virtual void OnRangeRequestComplete(
-      const UploadRangeResponse& response, scoped_ptr<base::Value> value) = 0;
+  virtual void OnRangeRequestComplete(const UploadRangeResponse& response,
+                                      std::unique_ptr<base::Value> value) = 0;
 
  private:
   // Called when ParseJson() is completed.
-  void OnDataParsed(DriveApiErrorCode code, scoped_ptr<base::Value> value);
+  void OnDataParsed(DriveApiErrorCode code, std::unique_ptr<base::Value> value);
 
   const GURL upload_url_;
 
@@ -550,7 +550,7 @@ class MultipartUploadRequestBase : public BatchableDelegate {
   // Parses the response value and invokes |callback_| with |FileResource|.
   void OnDataParsed(DriveApiErrorCode code,
                     const base::Closure& callback,
-                    scoped_ptr<base::Value> value);
+                    std::unique_ptr<base::Value> value);
 
  private:
   // Continues to rest part of |Start| method after determining boundary string

@@ -5,12 +5,12 @@
 #ifndef GOOGLE_APIS_GAIA_OAUTH2_ACCESS_TOKEN_FETCHER_IMPL_H_
 #define GOOGLE_APIS_GAIA_OAUTH2_ACCESS_TOKEN_FETCHER_IMPL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -102,7 +102,7 @@ class OAuth2AccessTokenFetcherImpl : public OAuth2AccessTokenFetcher,
   State state_;
 
   // While a fetch is in progress.
-  scoped_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
   std::string client_id_;
   std::string client_secret_;
   std::vector<std::string> scopes_;

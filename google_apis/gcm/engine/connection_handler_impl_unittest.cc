@@ -5,11 +5,12 @@
 #include "google_apis/gcm/engine/connection_handler_impl.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_timeouts.h"
@@ -27,7 +28,7 @@
 namespace gcm {
 namespace {
 
-typedef scoped_ptr<google::protobuf::MessageLite> ScopedMessage;
+typedef std::unique_ptr<google::protobuf::MessageLite> ScopedMessage;
 typedef std::vector<net::MockRead> ReadList;
 typedef std::vector<net::MockWrite> WriteList;
 
@@ -171,21 +172,21 @@ class GCMConnectionHandlerImplTest : public testing::Test {
   // SocketStreams and their data provider.
   ReadList mock_reads_;
   WriteList mock_writes_;
-  scoped_ptr<net::StaticSocketDataProvider> data_provider_;
+  std::unique_ptr<net::StaticSocketDataProvider> data_provider_;
 
   // The connection handler being tested.
-  scoped_ptr<ConnectionHandlerImpl> connection_handler_;
+  std::unique_ptr<ConnectionHandlerImpl> connection_handler_;
 
   // The last connection error received.
   int last_error_;
 
   // net:: components.
-  scoped_ptr<net::StreamSocket> socket_;
+  std::unique_ptr<net::StreamSocket> socket_;
   net::MockClientSocketFactory socket_factory_;
   net::AddressList address_list_;
 
   base::MessageLoopForIO message_loop_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 };
 
 GCMConnectionHandlerImplTest::GCMConnectionHandlerImplTest()

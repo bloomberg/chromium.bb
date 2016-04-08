@@ -7,6 +7,7 @@
 #include <cmath>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -74,9 +75,7 @@ double CalculateBackoff(int num_attempts) {
   return delay;
 }
 
-void ReadContinuation(
-    scoped_ptr<google::protobuf::MessageLite> message) {
-}
+void ReadContinuation(std::unique_ptr<google::protobuf::MessageLite> message) {}
 
 void WriteContinuation() {
 }
@@ -93,9 +92,9 @@ class TestConnectionFactoryImpl : public ConnectionFactoryImpl {
   // Overridden stubs.
   void ConnectImpl() override;
   void InitHandler() override;
-  scoped_ptr<net::BackoffEntry> CreateBackoffEntry(
+  std::unique_ptr<net::BackoffEntry> CreateBackoffEntry(
       const net::BackoffEntry::Policy* const policy) override;
-  scoped_ptr<ConnectionHandler> CreateConnectionHandler(
+  std::unique_ptr<ConnectionHandler> CreateConnectionHandler(
       base::TimeDelta read_timeout,
       const ConnectionHandler::ProtoReceivedCallback& read_callback,
       const ConnectionHandler::ProtoSentCallback& write_callback,
@@ -132,7 +131,7 @@ class TestConnectionFactoryImpl : public ConnectionFactoryImpl {
   base::Closure finished_callback_;
   // A temporary scoped pointer to make sure we don't leak the handler in the
   // cases it's never consumed by the ConnectionFactory.
-  scoped_ptr<FakeConnectionHandler> scoped_handler_;
+  std::unique_ptr<FakeConnectionHandler> scoped_handler_;
   // The current fake connection handler..
   FakeConnectionHandler* fake_handler_;
   // Dummy GCM Stats recorder.
@@ -167,7 +166,7 @@ TestConnectionFactoryImpl::~TestConnectionFactoryImpl() {
 void TestConnectionFactoryImpl::ConnectImpl() {
   ASSERT_GT(num_expected_attempts_, 0);
   ASSERT_FALSE(GetConnectionHandler()->CanSendMessage());
-  scoped_ptr<mcs_proto::LoginRequest> request(BuildLoginRequest(0, 0, ""));
+  std::unique_ptr<mcs_proto::LoginRequest> request(BuildLoginRequest(0, 0, ""));
   GetConnectionHandler()->Init(*request, NULL);
   OnConnectDone(connect_result_);
   if (!NextRetryAttempt().is_null()) {
@@ -190,13 +189,14 @@ void TestConnectionFactoryImpl::InitHandler() {
     ConnectionHandlerCallback(net::OK);
 }
 
-scoped_ptr<net::BackoffEntry> TestConnectionFactoryImpl::CreateBackoffEntry(
+std::unique_ptr<net::BackoffEntry>
+TestConnectionFactoryImpl::CreateBackoffEntry(
     const net::BackoffEntry::Policy* const policy) {
-  return make_scoped_ptr(new net::BackoffEntry(&kTestBackoffPolicy,
-                                               &tick_clock_));
+  return base::WrapUnique(
+      new net::BackoffEntry(&kTestBackoffPolicy, &tick_clock_));
 }
 
-scoped_ptr<ConnectionHandler>
+std::unique_ptr<ConnectionHandler>
 TestConnectionFactoryImpl::CreateConnectionHandler(
     base::TimeDelta read_timeout,
     const ConnectionHandler::ProtoReceivedCallback& read_callback,
@@ -267,7 +267,7 @@ class ConnectionFactoryImplTest
 
   TestConnectionFactoryImpl factory_;
   base::MessageLoop message_loop_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   GURL connected_server_;
 };

@@ -6,9 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "net/base/ip_address.h"
@@ -65,12 +66,12 @@ class GCMSocketStreamTest : public testing::Test {
   // SocketStreams and their data providers.
   ReadList mock_reads_;
   WriteList mock_writes_;
-  scoped_ptr<net::StaticSocketDataProvider> data_provider_;
-  scoped_ptr<SocketInputStream> socket_input_stream_;
-  scoped_ptr<SocketOutputStream> socket_output_stream_;
+  std::unique_ptr<net::StaticSocketDataProvider> data_provider_;
+  std::unique_ptr<SocketInputStream> socket_input_stream_;
+  std::unique_ptr<SocketOutputStream> socket_output_stream_;
 
   // net:: components.
-  scoped_ptr<net::StreamSocket> socket_;
+  std::unique_ptr<net::StreamSocket> socket_;
   net::MockClientSocketFactory socket_factory_;
   net::AddressList address_list_;
 

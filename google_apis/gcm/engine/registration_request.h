@@ -8,13 +8,13 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "google_apis/gcm/base/gcm_export.h"
@@ -99,7 +99,7 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
   RegistrationRequest(
       const GURL& registration_url,
       const RequestInfo& request_info,
-      scoped_ptr<CustomRequestHandler> custom_request_handler,
+      std::unique_ptr<CustomRequestHandler> custom_request_handler,
       const net::BackoffEntry::Policy& backoff_policy,
       const RegistrationCallback& callback,
       int max_retry_count,
@@ -126,12 +126,12 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
 
   RegistrationCallback callback_;
   RequestInfo request_info_;
-  scoped_ptr<CustomRequestHandler> custom_request_handler_;
+  std::unique_ptr<CustomRequestHandler> custom_request_handler_;
   GURL registration_url_;
 
   net::BackoffEntry backoff_entry_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
   int retries_left_;
   base::TimeTicks request_start_time_;
 

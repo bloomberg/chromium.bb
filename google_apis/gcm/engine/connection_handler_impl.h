@@ -100,8 +100,8 @@ class GCM_EXPORT ConnectionHandlerImpl : public ConnectionHandler {
 
   // This connection's socket and the input/output streams attached to it.
   net::StreamSocket* socket_;
-  scoped_ptr<SocketInputStream> input_stream_;
-  scoped_ptr<SocketOutputStream> output_stream_;
+  std::unique_ptr<SocketInputStream> input_stream_;
+  std::unique_ptr<SocketOutputStream> output_stream_;
 
   // Whether the MCS login handshake has successfully completed. See Init(..)
   // description for more info on what the handshake involves.

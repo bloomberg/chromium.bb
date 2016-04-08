@@ -53,7 +53,7 @@ const int kMaxTTLSeconds = 24 * 60 * 60;  // 1 day.
 
 }  // namespace
 
-scoped_ptr<mcs_proto::LoginRequest> BuildLoginRequest(
+std::unique_ptr<mcs_proto::LoginRequest> BuildLoginRequest(
     uint64_t auth_id,
     uint64_t auth_token,
     const std::string& version_string) {
@@ -64,7 +64,7 @@ scoped_ptr<mcs_proto::LoginRequest> BuildLoginRequest(
   std::string auth_id_str = base::Uint64ToString(auth_id);
   std::string auth_token_str = base::Uint64ToString(auth_token);
 
-  scoped_ptr<mcs_proto::LoginRequest> login_request(
+  std::unique_ptr<mcs_proto::LoginRequest> login_request(
       new mcs_proto::LoginRequest());
 
   login_request->set_adaptive_heartbeat(false);
@@ -84,8 +84,8 @@ scoped_ptr<mcs_proto::LoginRequest> BuildLoginRequest(
   return login_request;
 }
 
-scoped_ptr<mcs_proto::IqStanza> BuildStreamAck() {
-  scoped_ptr<mcs_proto::IqStanza> stream_ack_iq(new mcs_proto::IqStanza());
+std::unique_ptr<mcs_proto::IqStanza> BuildStreamAck() {
+  std::unique_ptr<mcs_proto::IqStanza> stream_ack_iq(new mcs_proto::IqStanza());
   stream_ack_iq->set_type(mcs_proto::IqStanza::SET);
   stream_ack_iq->set_id("");
   stream_ack_iq->mutable_extension()->set_id(kStreamAck);
@@ -93,9 +93,10 @@ scoped_ptr<mcs_proto::IqStanza> BuildStreamAck() {
   return stream_ack_iq;
 }
 
-scoped_ptr<mcs_proto::IqStanza> BuildSelectiveAck(
+std::unique_ptr<mcs_proto::IqStanza> BuildSelectiveAck(
     const std::vector<std::string>& acked_ids) {
-  scoped_ptr<mcs_proto::IqStanza> selective_ack_iq(new mcs_proto::IqStanza());
+  std::unique_ptr<mcs_proto::IqStanza> selective_ack_iq(
+      new mcs_proto::IqStanza());
   selective_ack_iq->set_type(mcs_proto::IqStanza::SET);
   selective_ack_iq->set_id("");
   selective_ack_iq->mutable_extension()->set_id(kSelectiveAck);
@@ -109,34 +110,35 @@ scoped_ptr<mcs_proto::IqStanza> BuildSelectiveAck(
 
 // Utility method to build a google::protobuf::MessageLite object from a MCS
 // tag.
-scoped_ptr<google::protobuf::MessageLite> BuildProtobufFromTag(uint8_t tag) {
+std::unique_ptr<google::protobuf::MessageLite> BuildProtobufFromTag(
+    uint8_t tag) {
   switch(tag) {
     case kHeartbeatPingTag:
-      return scoped_ptr<google::protobuf::MessageLite>(
+      return std::unique_ptr<google::protobuf::MessageLite>(
           new mcs_proto::HeartbeatPing());
     case kHeartbeatAckTag:
-      return scoped_ptr<google::protobuf::MessageLite>(
+      return std::unique_ptr<google::protobuf::MessageLite>(
           new mcs_proto::HeartbeatAck());
     case kLoginRequestTag:
-      return scoped_ptr<google::protobuf::MessageLite>(
+      return std::unique_ptr<google::protobuf::MessageLite>(
           new mcs_proto::LoginRequest());
     case kLoginResponseTag:
-      return scoped_ptr<google::protobuf::MessageLite>(
+      return std::unique_ptr<google::protobuf::MessageLite>(
           new mcs_proto::LoginResponse());
     case kCloseTag:
-      return scoped_ptr<google::protobuf::MessageLite>(
+      return std::unique_ptr<google::protobuf::MessageLite>(
           new mcs_proto::Close());
     case kIqStanzaTag:
-      return scoped_ptr<google::protobuf::MessageLite>(
+      return std::unique_ptr<google::protobuf::MessageLite>(
           new mcs_proto::IqStanza());
     case kDataMessageStanzaTag:
-      return scoped_ptr<google::protobuf::MessageLite>(
+      return std::unique_ptr<google::protobuf::MessageLite>(
           new mcs_proto::DataMessageStanza());
     case kStreamErrorStanzaTag:
-      return scoped_ptr<google::protobuf::MessageLite>(
+      return std::unique_ptr<google::protobuf::MessageLite>(
           new mcs_proto::StreamErrorStanza());
     default:
-      return scoped_ptr<google::protobuf::MessageLite>();
+      return std::unique_ptr<google::protobuf::MessageLite>();
   }
 }
 

@@ -5,11 +5,11 @@
 #ifndef GOOGLE_APIS_DRIVE_FILES_LIST_REQUEST_RUNNER_H_
 #define GOOGLE_APIS_DRIVE_FILES_LIST_REQUEST_RUNNER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "google_apis/drive/drive_api_requests.h"
 #include "google_apis/drive/drive_api_url_generator.h"
@@ -54,7 +54,7 @@ class FilesListRequestRunner {
                    const FileListCallback& callback,
                    CancelCallback* cancel_callback,
                    DriveApiErrorCode error,
-                   scoped_ptr<FileList> entry);
+                   std::unique_ptr<FileList> entry);
 
   RequestSender* request_sender_;                          // Not owned.
   const google_apis::DriveApiUrlGenerator url_generator_;  // Not owned.

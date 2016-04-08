@@ -312,7 +312,7 @@ void ConnectionHandlerImpl::OnGotVersion() {
 void ConnectionHandlerImpl::OnGotMessageTag() {
   if (input_stream_->GetState() != SocketInputStream::READY) {
     LOG(ERROR) << "Failed to receive protobuf tag.";
-    read_callback_.Run(scoped_ptr<google::protobuf::MessageLite>());
+    read_callback_.Run(std::unique_ptr<google::protobuf::MessageLite>());
     return;
   }
 
@@ -336,7 +336,7 @@ void ConnectionHandlerImpl::OnGotMessageTag() {
 void ConnectionHandlerImpl::OnGotMessageSize() {
   if (input_stream_->GetState() != SocketInputStream::READY) {
     LOG(ERROR) << "Failed to receive message size.";
-    read_callback_.Run(scoped_ptr<google::protobuf::MessageLite>());
+    read_callback_.Run(std::unique_ptr<google::protobuf::MessageLite>());
     return;
   }
 
@@ -381,7 +381,7 @@ void ConnectionHandlerImpl::OnGotMessageSize() {
 
 void ConnectionHandlerImpl::OnGotMessageBytes() {
   read_timeout_timer_.Stop();
-  scoped_ptr<google::protobuf::MessageLite> protobuf(
+  std::unique_ptr<google::protobuf::MessageLite> protobuf(
       BuildProtobufFromTag(message_tag_));
   // Messages with no content are valid; just use the default protobuf for
   // that tag.
