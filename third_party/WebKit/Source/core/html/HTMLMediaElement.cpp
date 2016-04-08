@@ -2333,9 +2333,9 @@ AudioTrackList& HTMLMediaElement::audioTracks()
     return *m_audioTracks;
 }
 
-void HTMLMediaElement::audioTrackChanged()
+void HTMLMediaElement::audioTrackChanged(WebMediaPlayer::TrackId trackId, bool enabled)
 {
-    WTF_LOG(Media, "HTMLMediaElement::audioTrackChanged(%p)", this);
+    WTF_LOG(Media, "HTMLMediaElement::audioTrackChanged(%p) trackId=%u enabled=%d", this, trackId, enabled);
     ASSERT(RuntimeEnabledFeatures::audioVideoTracksEnabled());
 
     audioTracks().scheduleChangeEvent();
@@ -2391,7 +2391,7 @@ VideoTrackList& HTMLMediaElement::videoTracks()
 
 void HTMLMediaElement::selectedVideoTrackChanged(WebMediaPlayer::TrackId* selectedTrackId)
 {
-    WTF_LOG(Media, "HTMLMediaElement::selectedVideoTrackChanged(%p)", this);
+    WTF_LOG(Media, "HTMLMediaElement::selectedVideoTrackChanged(%p) selectedTrackId=%s", this, selectedTrackId ? String::format("%u", *selectedTrackId).ascii().data() : "none");
     ASSERT(RuntimeEnabledFeatures::audioVideoTracksEnabled());
 
     if (selectedTrackId)

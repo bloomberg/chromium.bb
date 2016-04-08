@@ -32,7 +32,7 @@ void AudioTrack::setEnabled(bool enabled)
     m_enabled = enabled;
 
     if (mediaElement())
-        mediaElement()->audioTrackChanged();
+        mediaElement()->audioTrackChanged(trackId(), enabled);
 }
 
 const AtomicString& AudioTrack::alternativeKeyword()

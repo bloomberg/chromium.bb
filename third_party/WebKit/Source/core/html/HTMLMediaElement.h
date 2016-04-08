@@ -174,7 +174,7 @@ public:
     void togglePlayState();
 
     AudioTrackList& audioTracks();
-    void audioTrackChanged();
+    void audioTrackChanged(WebMediaPlayer::TrackId, bool enabled);
 
     VideoTrackList& videoTracks();
     void selectedVideoTrackChanged(WebMediaPlayer::TrackId*);
