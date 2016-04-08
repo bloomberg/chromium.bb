@@ -6,9 +6,6 @@
 
 #include <limits>
 
-#include "ash/app_list/app_list_shower_delegate.h"
-#include "ash/app_list/app_list_shower_delegate_factory.h"
-#include "ash/app_list/app_list_view_delegate_factory.h"
 #include "ash/default_accessibility_delegate.h"
 #include "ash/gpu_support_stub.h"
 #include "ash/media_delegate.h"
@@ -24,8 +21,8 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
-#include "ui/app_list/shower/app_list_shower_impl.h"
+#include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/image/image.h"
@@ -79,34 +76,12 @@ class MediaDelegateImpl : public MediaDelegate {
   DISALLOW_COPY_AND_ASSIGN(MediaDelegateImpl);
 };
 
-class AppListViewDelegateFactoryImpl : public ash::AppListViewDelegateFactory {
- public:
-  AppListViewDelegateFactoryImpl() {}
-  ~AppListViewDelegateFactoryImpl() override {}
-
-  // app_list::AppListViewDelegateFactory:
-  app_list::AppListViewDelegate* GetDelegate() override {
-    if (!app_list_view_delegate_.get()) {
-      app_list_view_delegate_.reset(
-          new app_list::test::AppListTestViewDelegate);
-    }
-    return app_list_view_delegate_.get();
-  }
-
- private:
-  std::unique_ptr<app_list::AppListViewDelegate> app_list_view_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListViewDelegateFactoryImpl);
-};
-
 }  // namespace
 
 TestShellDelegate::TestShellDelegate()
     : num_exit_requests_(0),
       multi_profiles_enabled_(false),
-      force_maximize_on_first_run_(false),
-      app_list_shower_delegate_factory_(new AppListShowerDelegateFactory(
-          base::WrapUnique(new AppListViewDelegateFactoryImpl))) {}
+      force_maximize_on_first_run_(false) {}
 
 TestShellDelegate::~TestShellDelegate() {
 }
@@ -167,12 +142,10 @@ void TestShellDelegate::RemoveVirtualKeyboardStateObserver(
 
 void TestShellDelegate::OpenUrl(const GURL& url) {}
 
-app_list::AppListShower* TestShellDelegate::GetAppListShower() {
-  if (!app_list_shower_) {
-    app_list_shower_.reset(new app_list::AppListShowerImpl(
-        app_list_shower_delegate_factory_.get()));
-  }
-  return app_list_shower_.get();
+app_list::AppListViewDelegate* TestShellDelegate::GetAppListViewDelegate() {
+  if (!app_list_view_delegate_)
+    app_list_view_delegate_.reset(new app_list::test::AppListTestViewDelegate);
+  return app_list_view_delegate_.get();
 }
 
 ShelfDelegate* TestShellDelegate::CreateShelfDelegate(ShelfModel* model) {

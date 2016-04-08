@@ -587,23 +587,6 @@ if (!is_android) {
     }
   }
 
-  if (enable_app_list && use_ash) {
-    source_set("test_support_applist_ash") {
-      defines = []
-      testonly = true
-
-      sources = rebase_path(
-              chrome_tests_gypi_values.chrome_browser_app_list_ash_test_support_sources,
-              ".",
-              "//chrome")
-
-      deps = [
-        "//chrome/browser/ui",
-        "//ui/app_list/shower:test_support",
-      ]
-    }
-  }
-
   source_set("sync_integration_test_support") {
     testonly = true
     sources = rebase_path(
@@ -1035,10 +1018,6 @@ if (!is_android) {
                       ".",
                       "//chrome")
       deps += [ "//ash:test_support" ]
-
-      if (enable_app_list) {
-        deps += [ ":test_support_applist_ash" ]
-      }
     }
     if (use_aura || toolkit_views) {
       deps += [ "//ui/events:test_support" ]

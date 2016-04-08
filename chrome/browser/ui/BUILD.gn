@@ -260,7 +260,6 @@ source_set("ui") {
       "//ash:ash_with_content",
       "//ash/strings",
       "//components/user_manager",
-      "//ui/app_list/shower",
       "//ui/keyboard:mojom",
     ]
     if (!is_chromeos) {

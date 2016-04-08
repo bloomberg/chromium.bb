@@ -10,13 +10,9 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 
-namespace app_list {
-class AppListShowerImpl;
-}
-
 class AppListControllerDelegateAsh : public AppListControllerDelegate {
  public:
-  explicit AppListControllerDelegateAsh(app_list::AppListShowerImpl*);
+  AppListControllerDelegateAsh();
   ~AppListControllerDelegateAsh() override;
 
  private:
@@ -51,9 +47,6 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
   bool ShouldShowUserIcon() override;
 
   ash::LaunchSource AppListSourceToLaunchSource(AppListSource source);
-
-  // Not owned.
-  app_list::AppListShowerImpl* app_list_shower_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateAsh);
 };

@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -23,16 +24,10 @@
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/custom_launcher_page_view.h"
 #include "ui/app_list/views/search_box_view.h"
-#include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/focus_manager.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/ash/app_list/test/app_list_service_ash_test_api.h"
-#include "ui/app_list/shower/app_list_shower_impl.h"
-#endif
 
 namespace {
 
@@ -79,9 +74,9 @@ class CustomLauncherPageBrowserTest
   app_list::AppListView* GetAppListView() {
     app_list::AppListView* app_list_view = nullptr;
 #if defined(OS_CHROMEOS)
-    AppListServiceAshTestApi service_test;
-    app_list_view = service_test.GetAppListView();
-    EXPECT_TRUE(service_test.GetAppListShower()->GetTargetVisibility());
+    ash::Shell* shell = ash::Shell::GetInstance();
+    app_list_view = shell->GetAppListView();
+    EXPECT_TRUE(shell->GetAppListTargetVisibility());
 #else
     AppListServiceViews* service =
         static_cast<AppListServiceViews*>(AppListService::Get());

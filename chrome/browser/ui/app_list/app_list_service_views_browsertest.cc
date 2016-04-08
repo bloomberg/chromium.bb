@@ -27,14 +27,14 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"
-#include "chrome/browser/ui/ash/app_list/test/app_list_service_ash_test_api.h"
+#include "ash/test/app_list_controller_test_api.h"
 #endif
 
 namespace {
 
 app_list::AppListView* GetAppListView(AppListService* service) {
 #if defined(OS_CHROMEOS)
-  return AppListServiceAshTestApi().GetAppListView();
+  return ash::test::AppListControllerTestApi(ash::Shell::GetInstance()).view();
 #else
   return static_cast<AppListServiceViews*>(service)->shower().app_list();
 #endif
