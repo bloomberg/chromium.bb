@@ -21,11 +21,7 @@ namespace content {
 namespace {
 
 bool IsUseZoomForDSFEnabledByDefault() {
-#if defined(OS_CHROMEOS)
-  return true;
-#else
   return false;
-#endif
 }
 
 }  // namespace
