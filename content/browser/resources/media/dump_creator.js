@@ -47,7 +47,7 @@ var DumpCreator = (function() {
         '<p><div>&lt;base filename&gt;.&lt;render process ID&gt;' +
         '.aec_dump.&lt;recording ID&gt;</div>' +
         '<div>&lt;base filename&gt;.&lt;render process ID&gt;' +
-        '.source_input.&lt;stream ID&gt;.pcm</div></p>' +
+        '.source_input.&lt;stream ID&gt;.wav</div></p>' +
         '<p class=audio-recordings-info>If recordings are disabled and then' +
         ' enabled using the same base filename, the microphone recording file' +
         ' will be overwritten, and the AEC dump file will be appended to and' +
