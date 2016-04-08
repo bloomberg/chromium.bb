@@ -27,6 +27,9 @@ public class ReaderModeTabInfo {
     // be distilled. This flag is used to detect if the callback is set for this tab.
     private boolean mIsCallbackSet;
 
+    // Used to flag the the panel was shown and recorded by UMA.
+    private boolean mShowPanelRecorded;
+
     /**
      * @param observer The WebContentsObserver for the tab this object represents.
      */
@@ -96,5 +99,20 @@ public class ReaderModeTabInfo {
     public void setIsCallbackSet(boolean isSet) {
         mIsCallbackSet = isSet;
     }
+
+    /**
+     * @return If the call to show the panel was recorded.
+     */
+    public boolean isPanelShowRecorded() {
+        return mShowPanelRecorded;
+    }
+
+    /**
+     * @param isRecorded True if the action has been recorded.
+     */
+    public void setIsPanelShowRecorded(boolean isRecorded) {
+        mShowPanelRecorded = isRecorded;
+    }
+
 }
 

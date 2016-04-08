@@ -68,7 +68,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
     private boolean mIsUmaRecorded;
 
     // The per-tab state of distillation.
-    private Map<Integer, ReaderModeTabInfo> mTabStatusMap;
+    protected Map<Integer, ReaderModeTabInfo> mTabStatusMap;
 
     // The current tab ID. This will change as the user switches between tabs.
     private int mTabId;
@@ -143,7 +143,6 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
     @Override
     public void onShown(Tab shownTab) {
         int shownTabId = shownTab.getId();
-
         Tab previousTab = mTabModelSelector.getTabById(mTabId);
         mTabId = shownTabId;
 
@@ -192,8 +191,14 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
 
     @Override
     public void onDestroyed(Tab tab) {
+        if (tab == null) return;
         if (tab.getInfoBarContainer() != null) {
             tab.getInfoBarContainer().removeObserver(this);
+        }
+        // If the panel was not shown for the previous navigation, record it now.
+        ReaderModeTabInfo info = mTabStatusMap.get(tab.getId());
+        if (info != null && !info.isPanelShowRecorded()) {
+            recordPanelVisibilityForNavigation(false);
         }
         removeTabState(tab.getId());
     }
@@ -299,6 +304,26 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
     @Override
     public ChromeActivity getChromeActivity() {
         return mChromeActivity;
+    }
+
+    @Override
+    public void onPanelShown() {
+        if (mTabModelSelector == null) return;
+        int tabId = mTabModelSelector.getCurrentTabId();
+
+        ReaderModeTabInfo info = mTabStatusMap.get(tabId);
+        if (info != null && !info.isPanelShowRecorded()) {
+            info.setIsPanelShowRecorded(true);
+            recordPanelVisibilityForNavigation(true);
+        }
+    }
+
+    /**
+     * Record if the panel became visible on the current page. This can be overridden for testing.
+     * @param visible If the panel was visible at any time.
+     */
+    protected void recordPanelVisibilityForNavigation(boolean visible) {
+        RecordHistogram.recordBooleanHistogram("DomDistiller.ReaderShownForPageLoad", visible);
     }
 
     @Override
@@ -435,6 +460,13 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                 // Reset closed state of reader mode in this tab once we know a navigation is
                 // happening.
                 tabInfo.setIsDismissed(false);
+
+                // If the panel was not shown for the previous navigation, record it now.
+                Tab curTab = mTabModelSelector.getTabById(readerTabId);
+                if (curTab != null && !curTab.isNativePage() && !curTab.isBeingRestored()) {
+                    recordPanelVisibilityForNavigation(false);
+                }
+                tabInfo.setIsPanelShowRecorded(false);
             }
         };
     }
@@ -460,6 +492,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                 || DeviceClassManager.isAccessibilityModeEnabled(mChromeActivity)) {
             return;
         }
+
         mReaderModePanel.requestPanelShow(reason);
     }
 

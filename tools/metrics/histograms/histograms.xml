@@ -9379,6 +9379,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Records whether a page has distilled data.</summary>
 </histogram>
 
+<histogram name="DomDistiller.ReaderShownForPageLoad" enum="Boolean">
+  <owner>mdjones@chromium.org</owner>
+  <summary>
+    Records if the panel became visible at any point after a page was navigated.
+  </summary>
+</histogram>
+
+<histogram name="DomDistiller.Statistics.FirstPageWordCount" units="words">
+  <owner>mdjones@chromium.org</owner>
+  <summary>
+    Records the number of words in a distilled page. This only records the first
+    page of a multi-page article.
+  </summary>
+</histogram>
+
 <histogram name="DomDistiller.Statistics.WordCount" units="words">
   <owner>nyquist@chromium.org</owner>
   <summary>

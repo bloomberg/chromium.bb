@@ -252,6 +252,13 @@ public class ReaderModePanel extends OverlayPanel {
     }
 
     @Override
+    public void peekPanel(StateChangeReason reason) {
+        super.peekPanel(reason);
+        if (mManagerDelegate == null) return;
+        mManagerDelegate.onPanelShown();
+    }
+
+    @Override
     public void closePanel(StateChangeReason reason, boolean animate) {
         super.closePanel(reason, animate);
         if (mTimerRunning) {

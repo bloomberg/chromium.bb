@@ -25,6 +25,11 @@ public interface ReaderModeManagerDelegate {
     void createNewTab(String url);
 
     /**
+     * Notify the manager that the panel was actually shown.
+     */
+    void onPanelShown();
+
+    /**
      * Notify the manager that the panel has completely closed.
      */
     void onClosed(StateChangeReason reason);

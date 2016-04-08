@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -141,6 +142,16 @@ void DistillerImpl::OnPageDistillationFinished(
     bool distillation_successful) {
   DCHECK(started_pages_index_.find(page_num) != started_pages_index_.end());
   if (distillation_successful) {
+
+    if (distiller_result->has_statistics_info() && page_num == 0) {
+      if (distiller_result->statistics_info().has_word_count()) {
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "DomDistiller.Statistics.FirstPageWordCount",
+            distiller_result->statistics_info().word_count(),
+            1, 4000, 50);
+      }
+    }
+
     DCHECK(distiller_result.get());
     DistilledPageData* page_data =
         GetPageAtIndex(started_pages_index_[page_num]);
