@@ -28,7 +28,7 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add(ContentSwitches.DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK)
 public class PauseOnHeadsetUnplugTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String TEST_PATH =
-            "/content/test/data/android/media/media-session.html";
+            "/content/test/data/media/session/media-session.html";
     private static final String VIDEO_ID = "long-video";
 
     private EmbeddedTestServer mTestServer;

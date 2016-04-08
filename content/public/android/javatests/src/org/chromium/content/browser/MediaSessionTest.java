@@ -26,7 +26,7 @@ import java.util.concurrent.Callable;
 @CommandLineFlags.Add(ContentSwitches.DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK)
 public class MediaSessionTest extends ContentShellTestBase {
     private static final String MEDIA_SESSION_TEST_URL =
-            "content/test/data/android/media/media-session.html";
+            "content/test/data/media/session/media-session.html";
     private static final String VERY_SHORT_AUDIO = "very-short-audio";
     private static final String SHORT_AUDIO = "short-audio";
     private static final String LONG_AUDIO = "long-audio";

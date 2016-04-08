@@ -7,6 +7,7 @@
       'variables': {
         'files': [
           '<(DEPTH)/content/test/data/android/',
+          '<(DEPTH)/content/test/data/media/session/',
           '<(DEPTH)/net/data/ssl/certificates/crit-codeSigning-chain.pem',
           '<(DEPTH)/net/data/ssl/certificates/eku-test-root.pem',
           '<(DEPTH)/net/data/ssl/certificates/invalid_key_usage_cert.der',

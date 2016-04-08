@@ -70,7 +70,7 @@ class MediaSessionVisibilityBrowserTest
 
   void LoadTestPage() {
     TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
-    shell()->LoadURL(GetTestUrl("android/media", "media-session.html"));
+    shell()->LoadURL(GetTestUrl("media/session", "media-session.html"));
     navigation_observer.Wait();
   }
 
