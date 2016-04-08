@@ -143,6 +143,7 @@
       'dependencies': [
         '../remoting/proto/chromotocol.gyp:chromotocol_proto_lib',
         '../testing/gtest.gyp:gtest',
+        '../third_party/webrtc/modules/modules.gyp:desktop_capture',
         'remoting_test_support',
       ],
       'sources': [
