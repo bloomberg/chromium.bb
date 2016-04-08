@@ -178,7 +178,7 @@ URLRequestContextBuilder::HttpNetworkSessionParams::HttpNetworkSessionParams()
       host_mapping_rules(NULL),
       testing_fixed_http_port(0),
       testing_fixed_https_port(0),
-      enable_spdy31(true),
+      enable_spdy31(false),
       enable_http2(true),
       parse_alternative_services(false),
       enable_alternative_service_with_different_host(false),

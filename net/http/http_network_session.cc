@@ -90,7 +90,7 @@ HttpNetworkSession::Params::Params()
       enable_tcp_fast_open_for_ssl(false),
       enable_spdy_ping_based_connection_checking(true),
       spdy_default_protocol(kProtoUnknown),
-      enable_spdy31(true),
+      enable_spdy31(false),
       enable_http2(true),
       spdy_session_max_recv_window_size(kSpdySessionMaxRecvWindowSize),
       spdy_stream_max_recv_window_size(kSpdyStreamMaxRecvWindowSize),

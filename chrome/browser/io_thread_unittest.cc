@@ -88,7 +88,7 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
   EXPECT_FALSE(params_.ignore_certificate_errors);
   EXPECT_EQ(0u, params_.testing_fixed_http_port);
   EXPECT_EQ(0u, params_.testing_fixed_https_port);
-  EXPECT_TRUE(params_.enable_spdy31);
+  EXPECT_FALSE(params_.enable_spdy31);
   EXPECT_TRUE(params_.enable_http2);
   EXPECT_FALSE(params_.enable_tcp_fast_open_for_ssl);
   EXPECT_FALSE(params_.parse_alternative_services);
