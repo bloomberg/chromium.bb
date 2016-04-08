@@ -6,13 +6,14 @@
 #include <cert.h>
 #include <pk11pub.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/simple_test_clock.h"
@@ -203,8 +204,9 @@ class ClientCertResolverTest : public testing::Test,
         "} ]";
 
     std::string error;
-    scoped_ptr<base::Value> policy_value = base::JSONReader::ReadAndReturnError(
-        kTestPolicy, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
+    std::unique_ptr<base::Value> policy_value =
+        base::JSONReader::ReadAndReturnError(
+            kTestPolicy, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
     ASSERT_TRUE(policy_value) << error;
 
     base::ListValue* policy = nullptr;
@@ -240,8 +242,9 @@ class ClientCertResolverTest : public testing::Test,
         kTestPolicyTemplate, identity.c_str(), test_ca_cert_pem_.c_str());
 
     std::string error;
-    scoped_ptr<base::Value> policy_value = base::JSONReader::ReadAndReturnError(
-        policy_json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
+    std::unique_ptr<base::Value> policy_value =
+        base::JSONReader::ReadAndReturnError(
+            policy_json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
     ASSERT_TRUE(policy_value) << error;
 
     base::ListValue* policy = nullptr;
@@ -271,8 +274,8 @@ class ClientCertResolverTest : public testing::Test,
 
   int network_properties_changed_count_;
   std::string test_cert_id_;
-  scoped_ptr<base::SimpleTestClock> test_clock_;
-  scoped_ptr<ClientCertResolver> client_cert_resolver_;
+  std::unique_ptr<base::SimpleTestClock> test_clock_;
+  std::unique_ptr<ClientCertResolver> client_cert_resolver_;
 
  private:
   // ClientCertResolver::Observer:
@@ -284,15 +287,16 @@ class ClientCertResolverTest : public testing::Test,
   ShillServiceClient::TestInterface* service_test_;
   ShillProfileClient::TestInterface* profile_test_;
   CertLoader* cert_loader_;
-  scoped_ptr<NetworkStateHandler> network_state_handler_;
-  scoped_ptr<NetworkProfileHandler> network_profile_handler_;
-  scoped_ptr<NetworkConfigurationHandler> network_config_handler_;
-  scoped_ptr<ManagedNetworkConfigurationHandlerImpl> managed_config_handler_;
+  std::unique_ptr<NetworkStateHandler> network_state_handler_;
+  std::unique_ptr<NetworkProfileHandler> network_profile_handler_;
+  std::unique_ptr<NetworkConfigurationHandler> network_config_handler_;
+  std::unique_ptr<ManagedNetworkConfigurationHandlerImpl>
+      managed_config_handler_;
   base::MessageLoop message_loop_;
   scoped_refptr<net::X509Certificate> test_client_cert_;
   std::string test_ca_cert_pem_;
   crypto::ScopedTestNSSDB test_nssdb_;
-  scoped_ptr<net::NSSCertDatabaseChromeOS> test_nsscertdb_;
+  std::unique_ptr<net::NSSCertDatabaseChromeOS> test_nsscertdb_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientCertResolverTest);
 };

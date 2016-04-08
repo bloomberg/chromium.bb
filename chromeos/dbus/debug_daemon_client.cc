@@ -559,7 +559,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   // Creates dbus::FileDescriptor from base::File.
-  static scoped_ptr<dbus::FileDescriptor>
+  static std::unique_ptr<dbus::FileDescriptor>
   CreateFileDescriptorToStopSystemTracing(base::File pipe_write_end) {
     if (!pipe_write_end.IsValid()) {
       LOG(ERROR) << "Cannot create pipe reader";
@@ -568,7 +568,8 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                                 base::File::FLAG_OPEN | base::File::FLAG_WRITE);
       // TODO(sleffler) if this fails AppendFileDescriptor will abort
     }
-    scoped_ptr<dbus::FileDescriptor> file_descriptor(new dbus::FileDescriptor);
+    std::unique_ptr<dbus::FileDescriptor> file_descriptor(
+        new dbus::FileDescriptor);
     file_descriptor->PutValue(pipe_write_end.TakePlatformFile());
     file_descriptor->CheckValidity();
     return file_descriptor;
@@ -577,7 +578,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   // Called when a CheckValidity response is received.
   void OnCreateFileDescriptorRequestStopSystem(
       const StopAgentTracingCallback& callback,
-      scoped_ptr<dbus::FileDescriptor> file_descriptor) {
+      std::unique_ptr<dbus::FileDescriptor> file_descriptor) {
     DCHECK(file_descriptor);
 
     // Issue the dbus request to stop system tracing
@@ -626,7 +627,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   dbus::ObjectProxy* debugdaemon_proxy_;
-  scoped_ptr<PipeReaderForString> pipe_reader_;
+  std::unique_ptr<PipeReaderForString> pipe_reader_;
   StopAgentTracingCallback callback_;
   scoped_refptr<base::TaskRunner> stop_agent_tracing_task_runner_;
   base::WeakPtrFactory<DebugDaemonClientImpl> weak_ptr_factory_;

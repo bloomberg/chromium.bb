@@ -31,7 +31,7 @@ class CHROMEOS_EXPORT RemoteObject : public Object {
   Type GetType() const override;
   bool Transact(CommandBroker* command_broker,
                 const TransactionData& data,
-                scoped_ptr<TransactionData>* reply) override;
+                std::unique_ptr<TransactionData>* reply) override;
 
  protected:
   ~RemoteObject() override;

@@ -5,9 +5,10 @@
 #ifndef CHROMEOS_NETWORK_NETWORK_HANDLER_H_
 #define CHROMEOS_NETWORK_NETWORK_HANDLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "chromeos/chromeos_export.h"
 
@@ -72,20 +73,21 @@ class CHROMEOS_EXPORT NetworkHandler {
 
   // The order of these determines the (inverse) destruction order.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_ptr<NetworkStateHandler> network_state_handler_;
-  scoped_ptr<NetworkDeviceHandlerImpl> network_device_handler_;
-  scoped_ptr<NetworkProfileHandler> network_profile_handler_;
-  scoped_ptr<NetworkConfigurationHandler> network_configuration_handler_;
-  scoped_ptr<ManagedNetworkConfigurationHandlerImpl>
+  std::unique_ptr<NetworkStateHandler> network_state_handler_;
+  std::unique_ptr<NetworkDeviceHandlerImpl> network_device_handler_;
+  std::unique_ptr<NetworkProfileHandler> network_profile_handler_;
+  std::unique_ptr<NetworkConfigurationHandler> network_configuration_handler_;
+  std::unique_ptr<ManagedNetworkConfigurationHandlerImpl>
       managed_network_configuration_handler_;
-  scoped_ptr<NetworkCertMigrator> network_cert_migrator_;
-  scoped_ptr<ClientCertResolver> client_cert_resolver_;
-  scoped_ptr<NetworkActivationHandler> network_activation_handler_;
-  scoped_ptr<NetworkConnectionHandler> network_connection_handler_;
-  scoped_ptr<AutoConnectHandler> auto_connect_handler_;
-  scoped_ptr<NetworkSmsHandler> network_sms_handler_;
-  scoped_ptr<GeolocationHandler> geolocation_handler_;
-  scoped_ptr<ProhibitedTechnologiesHandler> prohibited_technologies_handler_;
+  std::unique_ptr<NetworkCertMigrator> network_cert_migrator_;
+  std::unique_ptr<ClientCertResolver> client_cert_resolver_;
+  std::unique_ptr<NetworkActivationHandler> network_activation_handler_;
+  std::unique_ptr<NetworkConnectionHandler> network_connection_handler_;
+  std::unique_ptr<AutoConnectHandler> auto_connect_handler_;
+  std::unique_ptr<NetworkSmsHandler> network_sms_handler_;
+  std::unique_ptr<GeolocationHandler> geolocation_handler_;
+  std::unique_ptr<ProhibitedTechnologiesHandler>
+      prohibited_technologies_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHandler);
 };

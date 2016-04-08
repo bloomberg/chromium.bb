@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "chromeos/audio/audio_device.h"
 #include "chromeos/audio/audio_devices_pref_handler.h"
 #include "chromeos/audio/cras_audio_handler.h"

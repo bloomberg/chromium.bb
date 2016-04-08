@@ -5,10 +5,10 @@
 #ifndef CHROMEOS_NETWORK_ONC_ONC_MAPPER_H_
 #define CHROMEOS_NETWORK_ONC_ONC_MAPPER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 
 namespace base {
@@ -44,15 +44,16 @@ class CHROMEOS_EXPORT Mapper {
   // Calls |MapObject|, |MapArray| and |MapPrimitive| according to |onc_value|'s
   // type, which always return an object of the according type. Result of the
   // mapping is returned. Only on error sets |error| to true.
-  virtual scoped_ptr<base::Value> MapValue(const OncValueSignature& signature,
-                                           const base::Value& onc_value,
-                                           bool* error);
+  virtual std::unique_ptr<base::Value> MapValue(
+      const OncValueSignature& signature,
+      const base::Value& onc_value,
+      bool* error);
 
   // Maps objects/dictionaries. By default calls |MapFields|, which recurses
   // into each field of |onc_object|, and drops unknown fields. Result of the
   // mapping is returned. Only on error sets |error| to true. In this
   // implementation only unknown fields are errors.
-  virtual scoped_ptr<base::DictionaryValue> MapObject(
+  virtual std::unique_ptr<base::DictionaryValue> MapObject(
       const OncValueSignature& signature,
       const base::DictionaryValue& onc_object,
       bool* error);
@@ -60,7 +61,7 @@ class CHROMEOS_EXPORT Mapper {
   // Maps primitive values like BinaryValue, StringValue, IntegerValue... (all
   // but dictionaries and lists). By default copies |onc_primitive|. Result of
   // the mapping is returned. Only on error sets |error| to true.
-  virtual scoped_ptr<base::Value> MapPrimitive(
+  virtual std::unique_ptr<base::Value> MapPrimitive(
       const OncValueSignature& signature,
       const base::Value& onc_primitive,
       bool* error);
@@ -80,7 +81,7 @@ class CHROMEOS_EXPORT Mapper {
   // signature in |object_signature| using |MapValue|. Sets
   // |found_unknown_field| to true and returns NULL if |field_name| cannot be
   // found in |object_signature|. Otherwise returns the mapping of |onc_value|.
-  virtual scoped_ptr<base::Value> MapField(
+  virtual std::unique_ptr<base::Value> MapField(
       const std::string& field_name,
       const OncValueSignature& object_signature,
       const base::Value& onc_value,
@@ -92,17 +93,18 @@ class CHROMEOS_EXPORT Mapper {
   // the nested mappings failed, the flag |nested_error| is set to true and the
   // entry is dropped from the result. Otherwise |nested_error| isn't
   // modified. The resulting array is returned.
-  virtual scoped_ptr<base::ListValue> MapArray(
+  virtual std::unique_ptr<base::ListValue> MapArray(
       const OncValueSignature& array_signature,
       const base::ListValue& onc_array,
       bool* nested_error);
 
   // Calls |MapValue| and returns its result. Called by |MapArray| for each
   // entry and its index in the enclosing array.
-  virtual scoped_ptr<base::Value> MapEntry(int index,
-                                           const OncValueSignature& signature,
-                                           const base::Value& onc_value,
-                                           bool* error);
+  virtual std::unique_ptr<base::Value> MapEntry(
+      int index,
+      const OncValueSignature& signature,
+      const base::Value& onc_value,
+      bool* error);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Mapper);

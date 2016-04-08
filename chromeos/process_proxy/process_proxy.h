@@ -9,11 +9,11 @@
 #include <signal.h>
 
 #include <cstdio>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromeos/process_proxy/process_output_watcher.h"
 
 namespace base {
@@ -106,9 +106,9 @@ class ProcessProxy : public base::RefCountedThreadSafe<ProcessProxy> {
   scoped_refptr<base::TaskRunner> callback_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> watcher_runner_;
 
-  scoped_ptr<ProcessOutputWatcher> output_watcher_;
+  std::unique_ptr<ProcessOutputWatcher> output_watcher_;
 
-  scoped_ptr<base::Process> process_;
+  std::unique_ptr<base::Process> process_;
 
   int pt_pair_[2];
 

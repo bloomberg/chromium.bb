@@ -5,11 +5,11 @@
 #include "chromeos/dbus/nfc_adapter_client.h"
 
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/dbus/nfc_manager_client.h"
@@ -196,7 +196,7 @@ class NfcAdapterClientImpl
 
   // Mapping from object paths to object proxies and properties structures that
   // were already created by us.
-  scoped_ptr<nfc_client_helpers::DBusObjectMap> object_map_;
+  std::unique_ptr<nfc_client_helpers::DBusObjectMap> object_map_;
 
   // The manager client that we listen to events notifications from.
   NfcManagerClient* manager_client_;

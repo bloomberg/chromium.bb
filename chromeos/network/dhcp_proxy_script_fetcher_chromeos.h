@@ -5,9 +5,10 @@
 #ifndef CHROMEOS_NETWORK_DHCP_PROXY_SCRIPT_FETCHER_CHROMEOS_H_
 #define CHROMEOS_NETWORK_DHCP_PROXY_SCRIPT_FETCHER_CHROMEOS_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "net/proxy/dhcp_proxy_script_fetcher.h"
@@ -47,7 +48,7 @@ class CHROMEOS_EXPORT DhcpProxyScriptFetcherChromeos
                      std::string pac_url);
 
   net::URLRequestContext* url_request_context_;  // Weak ptr
-  scoped_ptr<net::ProxyScriptFetcher> proxy_script_fetcher_;
+  std::unique_ptr<net::ProxyScriptFetcher> proxy_script_fetcher_;
   scoped_refptr<base::SingleThreadTaskRunner> network_handler_task_runner_;
 
   GURL pac_url_;

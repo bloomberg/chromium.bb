@@ -65,7 +65,8 @@ void FakeShillProfileClient::GetProperties(
   if (!profile)
     return;
 
-  scoped_ptr<base::DictionaryValue> properties(profile->properties.DeepCopy());
+  std::unique_ptr<base::DictionaryValue> properties(
+      profile->properties.DeepCopy());
   base::ListValue* entry_paths = new base::ListValue;
   properties->SetWithoutPathExpansion(shill::kEntriesProperty, entry_paths);
   for (base::DictionaryValue::Iterator it(profile->entries); !it.IsAtEnd();

@@ -135,7 +135,7 @@ class TimeZoneResolver::TimeZoneResolverImpl : public base::PowerObserver {
   int requests_count_;
 
   // This is not NULL when update is in progress.
-  scoped_ptr<TZRequest> request_;
+  std::unique_ptr<TZRequest> request_;
 
   base::WeakPtrFactory<TimeZoneResolver::TimeZoneResolverImpl>
       weak_ptr_factory_;
@@ -162,7 +162,7 @@ class TZRequest {
                           const base::TimeDelta elapsed);
 
   // TimeZoneRequest::TimeZoneResponseCallback implementation.
-  void OnTimezoneResolved(scoped_ptr<TimeZoneResponseData> timezone,
+  void OnTimezoneResolved(std::unique_ptr<TimeZoneResponseData> timezone,
                           bool server_error);
 
   base::WeakPtr<TZRequest> AsWeakPtr();
@@ -224,8 +224,9 @@ void TZRequest::OnLocationResolved(const Geoposition& position,
   base::Closure unused = on_request_finished.Release();
 }
 
-void TZRequest::OnTimezoneResolved(scoped_ptr<TimeZoneResponseData> timezone,
-                                   bool server_error) {
+void TZRequest::OnTimezoneResolved(
+    std::unique_ptr<TimeZoneResponseData> timezone,
+    bool server_error) {
   base::ScopedClosureRunner on_request_finished(
       base::Bind(&TimeZoneResolver::TimeZoneResolverImpl::RequestIsFinished,
                  base::Unretained(resolver_)));

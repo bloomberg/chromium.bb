@@ -100,7 +100,7 @@ class CHROMEOS_EXPORT FakeNfcTagClient : public NfcTagClient {
   base::ObserverList<Observer> observers_;
 
   // Fake properties that are returned for the emulated tag.
-  scoped_ptr<Properties> properties_;
+  std::unique_ptr<Properties> properties_;
 
   // If true, a pairing simulation was begun using BeginPairing() and no call
   // to EndPairing() has been made.

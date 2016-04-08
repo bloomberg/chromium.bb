@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -14,7 +15,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
@@ -295,7 +295,7 @@ class TimezoneSettingsBaseImpl : public chromeos::system::TimezoneSettings {
 
   base::ObserverList<Observer> observers_;
   std::vector<icu::TimeZone*> timezones_;
-  scoped_ptr<icu::TimeZone> timezone_;
+  std::unique_ptr<icu::TimeZone> timezone_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TimezoneSettingsBaseImpl);
@@ -347,7 +347,7 @@ base::string16 TimezoneSettingsBaseImpl::GetCurrentTimezoneID() {
 
 void TimezoneSettingsBaseImpl::SetTimezoneFromID(
     const base::string16& timezone_id) {
-  scoped_ptr<icu::TimeZone> timezone(icu::TimeZone::createTimeZone(
+  std::unique_ptr<icu::TimeZone> timezone(icu::TimeZone::createTimeZone(
       icu::UnicodeString(timezone_id.c_str(), timezone_id.size())));
   SetTimezone(*timezone);
 }

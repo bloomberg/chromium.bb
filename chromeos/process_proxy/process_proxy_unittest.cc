@@ -5,11 +5,11 @@
 #include <gtest/gtest.h>
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
@@ -217,7 +217,7 @@ class ProcessProxyTest : public testing::Test {
     base::MessageLoop::current()->Run();
   }
 
-  scoped_ptr<TestRunner> test_runner_;
+  std::unique_ptr<TestRunner> test_runner_;
 
  private:
   ProcessProxyRegistry* registry_;

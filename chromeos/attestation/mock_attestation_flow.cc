@@ -4,7 +4,8 @@
 
 #include "chromeos/attestation/mock_attestation_flow.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/signin/core/account_id/account_id.h"
 
 using testing::_;
@@ -47,7 +48,7 @@ MockObserver::MockObserver() {}
 MockObserver::~MockObserver() {}
 
 MockAttestationFlow::MockAttestationFlow()
-    : AttestationFlow(NULL, NULL, scoped_ptr<ServerProxy>()) {}
+    : AttestationFlow(NULL, NULL, std::unique_ptr<ServerProxy>()) {}
 
 MockAttestationFlow::~MockAttestationFlow() {}
 

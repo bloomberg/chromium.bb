@@ -4,11 +4,11 @@
 
 #include "chromeos/network/network_sms_handler.h"
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -88,8 +88,8 @@ class NetworkSmsHandlerTest : public testing::Test {
 
  protected:
   base::MessageLoopForUI message_loop_;
-  scoped_ptr<NetworkSmsHandler> network_sms_handler_;
-  scoped_ptr<TestObserver> test_observer_;
+  std::unique_ptr<NetworkSmsHandler> network_sms_handler_;
+  std::unique_ptr<TestObserver> test_observer_;
 };
 
 TEST_F(NetworkSmsHandlerTest, SmsHandlerDbusStub) {

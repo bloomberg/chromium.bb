@@ -221,7 +221,7 @@ void NetworkConfigurationHandler::SetShillProperties(
   }
   NET_LOG(USER) << "SetShillProperties: " << service_path;
 
-  scoped_ptr<base::DictionaryValue> properties_to_set(
+  std::unique_ptr<base::DictionaryValue> properties_to_set(
       shill_properties.DeepCopy());
 
   // Make sure that the GUID is saved to Shill when setting properties.
@@ -237,7 +237,7 @@ void NetworkConfigurationHandler::SetShillProperties(
 
   LogConfigProperties("SetProperty", service_path, *properties_to_set);
 
-  scoped_ptr<base::DictionaryValue> properties_copy(
+  std::unique_ptr<base::DictionaryValue> properties_copy(
       properties_to_set->DeepCopy());
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperties(
       dbus::ObjectPath(service_path), *properties_to_set,
@@ -296,7 +296,7 @@ void NetworkConfigurationHandler::CreateShillConfiguration(
     return;
   }
 
-  scoped_ptr<base::DictionaryValue> properties_to_set(
+  std::unique_ptr<base::DictionaryValue> properties_to_set(
       shill_properties.DeepCopy());
 
   NET_LOG(USER) << "CreateShillConfiguration: " << type << ": " << network_id;
@@ -317,7 +317,7 @@ void NetworkConfigurationHandler::CreateShillConfiguration(
 
   LogConfigProperties("Configure", type, *properties_to_set);
 
-  scoped_ptr<base::DictionaryValue> properties_copy(
+  std::unique_ptr<base::DictionaryValue> properties_copy(
       properties_to_set->DeepCopy());
   manager->ConfigureServiceForProfile(
       dbus::ObjectPath(profile_path), *properties_to_set,
@@ -392,7 +392,7 @@ void NetworkConfigurationHandler::Init(
 void NetworkConfigurationHandler::RunCreateNetworkCallback(
     const std::string& profile_path,
     NetworkConfigurationObserver::Source source,
-    scoped_ptr<base::DictionaryValue> configure_properties,
+    std::unique_ptr<base::DictionaryValue> configure_properties,
     const network_handler::ServiceResultCallback& callback,
     const dbus::ObjectPath& service_path) {
   if (!callback.is_null()) {
@@ -458,7 +458,7 @@ void NetworkConfigurationHandler::GetPropertiesCallback(
     return;
 
   // Get the correct name from WifiHex if necessary.
-  scoped_ptr<base::DictionaryValue> properties_copy(properties.DeepCopy());
+  std::unique_ptr<base::DictionaryValue> properties_copy(properties.DeepCopy());
   std::string name =
       shill_property_util::GetNameFromProperties(service_path, properties);
   if (!name.empty())
@@ -481,7 +481,7 @@ void NetworkConfigurationHandler::GetPropertiesCallback(
 
 void NetworkConfigurationHandler::SetPropertiesSuccessCallback(
     const std::string& service_path,
-    scoped_ptr<base::DictionaryValue> set_properties,
+    std::unique_ptr<base::DictionaryValue> set_properties,
     NetworkConfigurationObserver::Source source,
     const base::Closure& callback) {
   if (!callback.is_null())

@@ -5,8 +5,9 @@
 #ifndef CHROMEOS_BINDER_LOCAL_OBJECT_H_
 #define CHROMEOS_BINDER_LOCAL_OBJECT_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromeos/binder/object.h"
 #include "chromeos/chromeos_export.h"
 
@@ -21,24 +22,24 @@ class CHROMEOS_EXPORT LocalObject : public Object {
     virtual ~TransactionHandler() {}
 
     // Called when LocalObject::Transact() is called.
-    virtual scoped_ptr<TransactionData> OnTransact(
+    virtual std::unique_ptr<TransactionData> OnTransact(
         CommandBroker* command_broker,
         const TransactionData& data) = 0;
   };
 
-  explicit LocalObject(scoped_ptr<TransactionHandler> handler);
+  explicit LocalObject(std::unique_ptr<TransactionHandler> handler);
 
   // Object override:
   Type GetType() const override;
   bool Transact(CommandBroker* command_broker,
                 const TransactionData& data,
-                scoped_ptr<TransactionData>* reply) override;
+                std::unique_ptr<TransactionData>* reply) override;
 
  protected:
   ~LocalObject() override;
 
  private:
-  scoped_ptr<TransactionHandler> handler_;
+  std::unique_ptr<TransactionHandler> handler_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalObject);
 };

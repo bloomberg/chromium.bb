@@ -5,9 +5,9 @@
 #ifndef CHROMEOS_NETWORK_SHILL_PROPERTY_UTIL_H_
 #define CHROMEOS_NETWORK_SHILL_PROPERTY_UTIL_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 
 namespace base {
@@ -47,12 +47,12 @@ CHROMEOS_EXPORT std::string GetNameFromProperties(
 
 // Returns the UIData specified by |value|. Returns NULL if the value cannot be
 // parsed.
-scoped_ptr<NetworkUIData> GetUIDataFromValue(const base::Value& value);
+std::unique_ptr<NetworkUIData> GetUIDataFromValue(const base::Value& value);
 
 // Returns the NetworkUIData parsed from the UIData property of
 // |shill_dictionary|. If parsing fails or the field doesn't exist, returns
 // NULL.
-scoped_ptr<NetworkUIData> GetUIDataFromProperties(
+std::unique_ptr<NetworkUIData> GetUIDataFromProperties(
     const base::DictionaryValue& shill_dictionary);
 
 // Sets the UIData property in |shill_dictionary| to the serialization of

@@ -5,11 +5,11 @@
 #ifndef CHROMEOS_ATTESTATION_ATTESTATION_FLOW_H_
 #define CHROMEOS_ATTESTATION_ATTESTATION_FLOW_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/attestation/attestation_constants.h"
 #include "chromeos/chromeos_export.h"
@@ -59,7 +59,7 @@ class CHROMEOS_EXPORT AttestationFlow {
 
   AttestationFlow(cryptohome::AsyncMethodCaller* async_caller,
                   CryptohomeClient* cryptohome_client,
-                  scoped_ptr<ServerProxy> server_proxy);
+                  std::unique_ptr<ServerProxy> server_proxy);
   virtual ~AttestationFlow();
 
   // Gets an attestation certificate for a hardware-protected key.  If a key for
@@ -205,7 +205,7 @@ class CHROMEOS_EXPORT AttestationFlow {
 
   cryptohome::AsyncMethodCaller* async_caller_;
   CryptohomeClient* cryptohome_client_;
-  scoped_ptr<ServerProxy> server_proxy_;
+  std::unique_ptr<ServerProxy> server_proxy_;
 
   base::WeakPtrFactory<AttestationFlow> weak_factory_;
 

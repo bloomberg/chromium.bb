@@ -25,7 +25,7 @@ class BinderCommandStreamTest : public ::testing::Test,
   // CommandStream::IncomingCommandHandler override:
   bool OnTransaction(const TransactionData& data) override { return false; }
 
-  void OnReply(scoped_ptr<TransactionData> data) override {
+  void OnReply(std::unique_ptr<TransactionData> data) override {
     received_response_ = RESPONSE_REPLY;
     ASSERT_TRUE(data);
     EXPECT_FALSE(data->HasStatus());  // No error.

@@ -5,12 +5,12 @@
 #ifndef CHROMEOS_DBUS_SERVICES_DISPLAY_POWER_SERVICE_PROVIDER_H_
 #define CHROMEOS_DBUS_SERVICES_DISPLAY_POWER_SERVICE_PROVIDER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
@@ -44,7 +44,7 @@ class CHROMEOS_EXPORT DisplayPowerServiceProvider
     virtual void SetDimming(bool dimmed) = 0;
   };
 
-  explicit DisplayPowerServiceProvider(scoped_ptr<Delegate> delegate);
+  explicit DisplayPowerServiceProvider(std::unique_ptr<Delegate> delegate);
   ~DisplayPowerServiceProvider() override;
 
   // CrosDBusService::ServiceProviderInterface overrides:
@@ -64,7 +64,7 @@ class CHROMEOS_EXPORT DisplayPowerServiceProvider
       dbus::MethodCall* method_call,
       dbus::ExportedObject::ResponseSender response_sender);
 
-  scoped_ptr<Delegate> delegate_;
+  std::unique_ptr<Delegate> delegate_;
 
   // Keep this last so that all weak pointers will be invalidated at the
   // beginning of destruction.

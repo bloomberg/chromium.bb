@@ -442,7 +442,7 @@ void ClientCertResolver::PolicyAppliedToNetwork(
 
 void ClientCertResolver::ResolveNetworks(
     const NetworkStateHandler::NetworkStateList& networks) {
-  scoped_ptr<std::vector<NetworkAndCertPattern>> networks_to_resolve(
+  std::unique_ptr<std::vector<NetworkAndCertPattern>> networks_to_resolve(
       new std::vector<NetworkAndCertPattern>);
 
   // Filter networks with ClientCertPattern. As ClientCertPatterns can only be

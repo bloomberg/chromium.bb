@@ -44,7 +44,7 @@ class ShillIPConfigClientTest : public ShillClientUnittestBase {
   void TearDown() override { ShillClientUnittestBase::TearDown(); }
 
  protected:
-  scoped_ptr<ShillIPConfigClient> client_;
+  std::unique_ptr<ShillIPConfigClient> client_;
 };
 
 TEST_F(ShillIPConfigClientTest, PropertyChanged) {
@@ -85,7 +85,7 @@ TEST_F(ShillIPConfigClientTest, GetProperties) {
   const int32_t kMtu = 68;
 
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
   dbus::MessageWriter array_writer(NULL);
   writer.OpenArray("{sv}", &array_writer);
@@ -124,7 +124,7 @@ TEST_F(ShillIPConfigClientTest, SetProperty) {
   const char kAddress[] = "address";
 
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
   base::StringValue value(kAddress);
@@ -144,7 +144,7 @@ TEST_F(ShillIPConfigClientTest, SetProperty) {
 
 TEST_F(ShillIPConfigClientTest, ClearProperty) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
   PrepareForMethodCall(shill::kClearPropertyFunction,
@@ -161,7 +161,7 @@ TEST_F(ShillIPConfigClientTest, ClearProperty) {
 
 TEST_F(ShillIPConfigClientTest, Remove) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
   PrepareForMethodCall(shill::kRemoveConfigFunction,

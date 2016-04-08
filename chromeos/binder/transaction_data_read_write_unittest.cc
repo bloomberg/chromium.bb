@@ -232,7 +232,7 @@ TEST(BinderTransactionDataReadWriteTest, Object) {
   CommandBroker command_broker(&driver);
 
   scoped_refptr<LocalObject> local(
-      new LocalObject(scoped_ptr<LocalObject::TransactionHandler>()));
+      new LocalObject(std::unique_ptr<LocalObject::TransactionHandler>()));
 
   const int32_t kDummyHandle = 42;
   scoped_refptr<RemoteObject> remote(

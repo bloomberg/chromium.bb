@@ -192,7 +192,7 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   void HandleConfigurationFailure(
       const std::string& service_path,
       const std::string& error_name,
-      scoped_ptr<base::DictionaryValue> error_data);
+      std::unique_ptr<base::DictionaryValue> error_data);
 
   // Handles success or failure from Shill.Service.Connect.
   void HandleShillConnectSuccess(const std::string& service_path);
@@ -244,7 +244,7 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   // Map of pending connect requests, used to prevent repeated attempts while
   // waiting for Shill and to trigger callbacks on eventual success or failure.
   std::map<std::string, ConnectRequest> pending_requests_;
-  scoped_ptr<ConnectRequest> queued_connect_;
+  std::unique_ptr<ConnectRequest> queued_connect_;
 
   // Track certificate loading state.
   bool logged_in_;

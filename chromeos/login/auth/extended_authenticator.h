@@ -5,13 +5,13 @@
 #ifndef CHROMEOS_LOGIN_AUTH_EXTENDED_AUTHENTICATOR_H_
 #define CHROMEOS_LOGIN_AUTH_EXTENDED_AUTHENTICATOR_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 

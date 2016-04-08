@@ -88,7 +88,7 @@ std::string GetKeyNameForProfile(AttestationCertificateProfile profile,
 
 AttestationFlow::AttestationFlow(cryptohome::AsyncMethodCaller* async_caller,
                                  CryptohomeClient* cryptohome_client,
-                                 scoped_ptr<ServerProxy> server_proxy)
+                                 std::unique_ptr<ServerProxy> server_proxy)
     : async_caller_(async_caller),
       cryptohome_client_(cryptohome_client),
       server_proxy_(std::move(server_proxy)),

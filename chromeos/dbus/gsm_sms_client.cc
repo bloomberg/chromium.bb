@@ -6,12 +6,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
@@ -128,7 +128,7 @@ class SMSProxy {
     if (!response)
       return;
     dbus::MessageReader reader(response);
-    scoped_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
+    std::unique_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
     base::DictionaryValue* dictionary_value = NULL;
     if (!value.get() || !value->GetAsDictionary(&dictionary_value)) {
       LOG(WARNING) << "Invalid response: " << response->ToString();
@@ -142,7 +142,7 @@ class SMSProxy {
     if (!response)
       return;
     dbus::MessageReader reader(response);
-    scoped_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
+    std::unique_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
     base::ListValue* list_value = NULL;
     if (!value.get() || !value->GetAsList(&list_value)) {
       LOG(WARNING) << "Invalid response: " << response->ToString();
@@ -211,7 +211,7 @@ class GsmSMSClientImpl : public GsmSMSClient {
 
  private:
   using ProxyMap =
-      std::map<std::pair<std::string, std::string>, scoped_ptr<SMSProxy>>;
+      std::map<std::pair<std::string, std::string>, std::unique_ptr<SMSProxy>>;
 
   // Returns a SMSProxy for the given service name and object path.
   SMSProxy* GetProxy(const std::string& service_name,
@@ -222,7 +222,8 @@ class GsmSMSClientImpl : public GsmSMSClient {
       return it->second.get();
 
     // There is no proxy for the service_name and object_path, create it.
-    scoped_ptr<SMSProxy> proxy(new SMSProxy(bus_, service_name, object_path));
+    std::unique_ptr<SMSProxy> proxy(
+        new SMSProxy(bus_, service_name, object_path));
     SMSProxy* proxy_ptr = proxy.get();
     proxies_[key] = std::move(proxy);
     return proxy_ptr;

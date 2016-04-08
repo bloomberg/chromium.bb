@@ -4,8 +4,9 @@
 
 #include "chromeos/dbus/nfc_manager_client.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "dbus/bus.h"
@@ -142,7 +143,7 @@ class NfcManagerClientImpl : public NfcManagerClient {
   dbus::ObjectProxy* object_proxy_;
 
   // Properties for neard Manager interface.
-  scoped_ptr<Properties> properties_;
+  std::unique_ptr<Properties> properties_;
 
   // List of observers interested in event notifications.
   base::ObserverList<NfcManagerClient::Observer> observers_;

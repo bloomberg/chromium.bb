@@ -19,11 +19,12 @@ namespace {
 const char kDefaultGeolocationProviderUrl[] =
     "https://www.googleapis.com/geolocation/v1/geolocate?";
 
-scoped_ptr<WifiAccessPointVector> GetAccessPointData() {
+std::unique_ptr<WifiAccessPointVector> GetAccessPointData() {
   if (!chromeos::NetworkHandler::Get()->geolocation_handler()->wifi_enabled())
     return nullptr;
 
-  scoped_ptr<WifiAccessPointVector> result(new chromeos::WifiAccessPointVector);
+  std::unique_ptr<WifiAccessPointVector> result(
+      new chromeos::WifiAccessPointVector);
   int64_t age_ms = 0;
   if (!NetworkHandler::Get()->geolocation_handler()->GetWifiAccessPoints(
           result.get(), &age_ms)) {

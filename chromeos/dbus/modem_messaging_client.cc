@@ -4,11 +4,11 @@
 #include "chromeos/dbus/modem_messaging_client.h"
 
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
@@ -165,7 +165,7 @@ class CHROMEOS_EXPORT ModemMessagingClientImpl : public ModemMessagingClient {
 
  private:
   using ProxyMap = std::map<std::pair<std::string, std::string>,
-                            scoped_ptr<ModemMessagingProxy>>;
+                            std::unique_ptr<ModemMessagingProxy>>;
 
   // Returns a SMSProxy for the given service name and object path.
   ModemMessagingProxy* GetProxy(const std::string& service_name,
@@ -176,7 +176,7 @@ class CHROMEOS_EXPORT ModemMessagingClientImpl : public ModemMessagingClient {
       return it->second.get();
 
     // There is no proxy for the service_name and object_path, create it.
-    scoped_ptr<ModemMessagingProxy> proxy(
+    std::unique_ptr<ModemMessagingProxy> proxy(
         new ModemMessagingProxy(bus_, service_name, object_path));
     ModemMessagingProxy* proxy_ptr = proxy.get();
     proxies_[key] = std::move(proxy);

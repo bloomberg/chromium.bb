@@ -637,7 +637,7 @@ void NetworkConnectionHandler::CallShillConnect(
 void NetworkConnectionHandler::HandleConfigurationFailure(
     const std::string& service_path,
     const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) {
+    std::unique_ptr<base::DictionaryValue> error_data) {
   ConnectRequest* request = GetPendingRequest(service_path);
   if (!request) {
     NET_LOG_ERROR("HandleConfigurationFailure called with no pending request.",

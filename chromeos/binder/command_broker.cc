@@ -85,7 +85,7 @@ bool CommandBroker::PollCommands() {
 
 bool CommandBroker::Transact(int32_t handle,
                              const TransactionData& request,
-                             scoped_ptr<TransactionData>* reply) {
+                             std::unique_ptr<TransactionData>* reply) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Send transaction.
   binder_transaction_data tr = ConvertTransactionDataToStruct(request);
@@ -96,7 +96,7 @@ bool CommandBroker::Transact(int32_t handle,
     return false;
   }
   // Wait for response.
-  scoped_ptr<TransactionData> response_data;
+  std::unique_ptr<TransactionData> response_data;
   ResponseType response_type = WaitForResponse(&response_data);
   if (response_type != RESPONSE_TYPE_TRANSACTION_COMPLETE) {
     LOG(ERROR) << "Failed to wait for response: response_type = "
@@ -105,7 +105,7 @@ bool CommandBroker::Transact(int32_t handle,
   }
   if (!request.IsOneWay()) {
     // Wait for reply.
-    scoped_ptr<TransactionData> response_data;
+    std::unique_ptr<TransactionData> response_data;
     ResponseType response_type = WaitForResponse(&response_data);
     if (response_type != RESPONSE_TYPE_TRANSACTION_REPLY) {
       LOG(ERROR) << "Failed to wait for response: response_type = "
@@ -138,7 +138,7 @@ base::Closure CommandBroker::GetReleaseReferenceClosure(int32_t handle) {
 
 bool CommandBroker::OnTransaction(const TransactionData& data) {
   LocalObject* object = reinterpret_cast<LocalObject*>(data.GetCookie());
-  scoped_ptr<TransactionData> reply;
+  std::unique_ptr<TransactionData> reply;
   if (!object->Transact(this, data, &reply)) {
     LOG(ERROR) << "Failed to transact.";
     return false;
@@ -155,7 +155,7 @@ bool CommandBroker::OnTransaction(const TransactionData& data) {
       LOG(ERROR) << "Failed to write";
       return false;
     }
-    scoped_ptr<TransactionData> response_data;
+    std::unique_ptr<TransactionData> response_data;
     ResponseType response_type = WaitForResponse(&response_data);
     // Not returning false for errors here, as doing it can result in letting
     // another process abort the loop in PollCommands() (e.g. any process can
@@ -167,7 +167,7 @@ bool CommandBroker::OnTransaction(const TransactionData& data) {
   return true;
 }
 
-void CommandBroker::OnReply(scoped_ptr<TransactionData> data) {
+void CommandBroker::OnReply(std::unique_ptr<TransactionData> data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(response_type_, RESPONSE_TYPE_NONE);
   DCHECK(!response_data_);
@@ -210,7 +210,7 @@ void CommandBroker::OnFailedReply() {
 }
 
 CommandBroker::ResponseType CommandBroker::WaitForResponse(
-    scoped_ptr<TransactionData>* data) {
+    std::unique_ptr<TransactionData>* data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(response_type_, RESPONSE_TYPE_NONE);
   DCHECK(!response_data_);

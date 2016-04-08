@@ -42,7 +42,7 @@ class ShillServiceClientTest : public ShillClientUnittestBase {
   void TearDown() override { ShillClientUnittestBase::TearDown(); }
 
  protected:
-  scoped_ptr<ShillServiceClient> client_;
+  std::unique_ptr<ShillServiceClient> client_;
 };
 
 TEST_F(ShillServiceClientTest, PropertyChanged) {
@@ -84,7 +84,7 @@ TEST_F(ShillServiceClientTest, PropertyChanged) {
 TEST_F(ShillServiceClientTest, GetProperties) {
   const int kValue = 42;
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
   dbus::MessageWriter array_writer(NULL);
   writer.OpenArray("{sv}", &array_writer);
@@ -112,7 +112,7 @@ TEST_F(ShillServiceClientTest, GetProperties) {
 TEST_F(ShillServiceClientTest, SetProperty) {
   const char kValue[] = "passphrase";
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
   const base::StringValue value(kValue);
@@ -138,10 +138,10 @@ TEST_F(ShillServiceClientTest, SetProperty) {
 
 TEST_F(ShillServiceClientTest, SetProperties) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
-  scoped_ptr<base::DictionaryValue> arg(CreateExampleServiceProperties());
+  std::unique_ptr<base::DictionaryValue> arg(CreateExampleServiceProperties());
   // Use a variant valued dictionary rather than a string valued one.
   const bool string_valued = false;
   PrepareForMethodCall(
@@ -165,7 +165,7 @@ TEST_F(ShillServiceClientTest, SetProperties) {
 
 TEST_F(ShillServiceClientTest, ClearProperty) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
   PrepareForMethodCall(shill::kClearPropertyFunction,
@@ -188,7 +188,7 @@ TEST_F(ShillServiceClientTest, ClearProperty) {
 
 TEST_F(ShillServiceClientTest, ClearProperties) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
   dbus::MessageWriter array_writer(NULL);
   writer.OpenArray("b", &array_writer);
@@ -219,7 +219,7 @@ TEST_F(ShillServiceClientTest, ClearProperties) {
 
 TEST_F(ShillServiceClientTest, Connect) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
   MockClosure mock_closure;
@@ -239,7 +239,7 @@ TEST_F(ShillServiceClientTest, Connect) {
 
 TEST_F(ShillServiceClientTest, Disconnect) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
   PrepareForMethodCall(shill::kDisconnectFunction,
@@ -260,7 +260,7 @@ TEST_F(ShillServiceClientTest, Disconnect) {
 
 TEST_F(ShillServiceClientTest, Remove) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
   PrepareForMethodCall(shill::kRemoveServiceFunction,
@@ -282,7 +282,7 @@ TEST_F(ShillServiceClientTest, Remove) {
 TEST_F(ShillServiceClientTest, ActivateCellularModem) {
   const char kCarrier[] = "carrier";
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
   PrepareForMethodCall(shill::kActivateCellularModemFunction,

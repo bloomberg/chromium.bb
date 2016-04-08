@@ -4,11 +4,12 @@
 
 #include "chromeos/network/onc/onc_validator.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_test_utils.h"
@@ -27,11 +28,11 @@ class ONCValidatorTest : public ::testing::Test {
   // validation is stored, so that expectations can be checked afterwards using
   // one of the Expect* functions below.
   void Validate(bool strict,
-                scoped_ptr<base::DictionaryValue> onc_object,
+                std::unique_ptr<base::DictionaryValue> onc_object,
                 const OncValueSignature* signature,
                 bool managed_onc,
                 ::onc::ONCSource onc_source) {
-    scoped_ptr<Validator> validator;
+    std::unique_ptr<Validator> validator;
     if (strict) {
       // Create a strict validator that complains about every error.
       validator.reset(new Validator(true, true, true, managed_onc));
@@ -65,8 +66,8 @@ class ONCValidatorTest : public ::testing::Test {
 
  private:
   Validator::Result validation_result_;
-  scoped_ptr<const base::DictionaryValue> original_object_;
-  scoped_ptr<const base::DictionaryValue> repaired_object_;
+  std::unique_ptr<const base::DictionaryValue> original_object_;
+  std::unique_ptr<const base::DictionaryValue> repaired_object_;
 };
 
 namespace {
@@ -278,13 +279,13 @@ class ONCValidatorTestRepairable
  public:
   // Load the common test data and return the dictionary at the field with
   // name |name|.
-  scoped_ptr<base::DictionaryValue> GetDictionaryFromTestFile(
-      const std::string &name) {
-    scoped_ptr<const base::DictionaryValue> dict(
+  std::unique_ptr<base::DictionaryValue> GetDictionaryFromTestFile(
+      const std::string& name) {
+    std::unique_ptr<const base::DictionaryValue> dict(
         test_utils::ReadTestDictionary("invalid_settings_with_repairs.json"));
     const base::DictionaryValue* onc_object = NULL;
     CHECK(dict->GetDictionary(name, &onc_object));
-    return make_scoped_ptr(onc_object->DeepCopy());
+    return base::WrapUnique(onc_object->DeepCopy());
   }
 };
 

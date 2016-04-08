@@ -5,7 +5,8 @@
 #ifndef CHROMEOS_NETWORK_ONC_ONC_TRANSLATOR_H_
 #define CHROMEOS_NETWORK_ONC_ONC_TRANSLATOR_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "chromeos/chromeos_export.h"
 #include "components/onc/onc_constants.h"
 
@@ -29,7 +30,7 @@ struct OncValueSignature;
 // This function is used to translate network settings from ONC to Shill's
 // format before sending them to Shill.
 CHROMEOS_EXPORT
-scoped_ptr<base::DictionaryValue> TranslateONCObjectToShill(
+std::unique_ptr<base::DictionaryValue> TranslateONCObjectToShill(
     const OncValueSignature* signature,
     const base::DictionaryValue& onc_object);
 
@@ -46,7 +47,7 @@ scoped_ptr<base::DictionaryValue> TranslateONCObjectToShill(
 // will be used to set the ErrorState property. Otherwise ErrorState will not
 // be set.
 CHROMEOS_EXPORT
-scoped_ptr<base::DictionaryValue> TranslateShillServiceToONCPart(
+std::unique_ptr<base::DictionaryValue> TranslateShillServiceToONCPart(
     const base::DictionaryValue& shill_dictionary,
     ::onc::ONCSource onc_source,
     const OncValueSignature* onc_signature,

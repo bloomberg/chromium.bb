@@ -33,7 +33,7 @@ base::DictionaryValue* PopStringToStringDictionary(
   dbus::MessageReader array_reader(NULL);
   if (!reader->PopArray(&array_reader))
     return NULL;
-  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   while (array_reader.HasMoreData()) {
     dbus::MessageReader entry_reader(NULL);
     std::string key;
@@ -272,7 +272,7 @@ void ShillClientUnittestBase::ExpectArrayOfStringsArgument(
 void ShillClientUnittestBase::ExpectValueArgument(
     const base::Value* expected_value,
     dbus::MessageReader* reader) {
-  scoped_ptr<base::Value> value(dbus::PopDataAsValue(reader));
+  std::unique_ptr<base::Value> value(dbus::PopDataAsValue(reader));
   ASSERT_TRUE(value.get());
   EXPECT_TRUE(value->Equals(expected_value));
   EXPECT_FALSE(reader->HasMoreData());
@@ -286,7 +286,7 @@ void ShillClientUnittestBase::ExpectStringAndValueArguments(
   std::string str;
   ASSERT_TRUE(reader->PopString(&str));
   EXPECT_EQ(expected_string, str);
-  scoped_ptr<base::Value> value(dbus::PopDataAsValue(reader));
+  std::unique_ptr<base::Value> value(dbus::PopDataAsValue(reader));
   ASSERT_TRUE(value.get());
   EXPECT_TRUE(value->Equals(expected_value));
   EXPECT_FALSE(reader->HasMoreData());
@@ -315,7 +315,7 @@ void ShillClientUnittestBase::ExpectDictionaryValueArgument(
     }
     dbus::MessageReader variant_reader(NULL);
     ASSERT_TRUE(entry_reader.PopVariant(&variant_reader));
-    scoped_ptr<base::Value> value;
+    std::unique_ptr<base::Value> value;
     // Variants in the dictionary can be basic types or string-to-string
     // dictinoary.
     switch (variant_reader.GetDataType()) {

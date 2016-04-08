@@ -164,7 +164,7 @@ class GsmSMSClientTest : public testing::Test {
 
  protected:
   // The client to be tested.
-  scoped_ptr<GsmSMSClient> client_;
+  std::unique_ptr<GsmSMSClient> client_;
   // A message loop to emulate asynchronous behavior.
   base::MessageLoop message_loop_;
   // The mock bus.
@@ -232,7 +232,7 @@ TEST_F(GsmSMSClientTest, Delete) {
   MockDeleteCallback callback;
   EXPECT_CALL(callback, Run()).Times(1);
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   response_ = response.get();
   // Call Delete.
   client_->Delete(kServiceName, dbus::ObjectPath(kObjectPath), kIndex,
@@ -253,7 +253,7 @@ TEST_F(GsmSMSClientTest, Get) {
   EXPECT_CALL(callback, Run(_))
       .WillOnce(Invoke(this, &GsmSMSClientTest::CheckResult));
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
   dbus::MessageWriter array_writer(NULL);
   writer.OpenArray("{sv}", &array_writer);
@@ -291,7 +291,7 @@ TEST_F(GsmSMSClientTest, List) {
   EXPECT_CALL(callback, Run(_))
       .WillOnce(Invoke(this, &GsmSMSClientTest::CheckResult));
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
   dbus::MessageWriter array_writer(NULL);
   writer.OpenArray("a{sv}", &array_writer);

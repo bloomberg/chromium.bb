@@ -46,7 +46,7 @@ void TimeZoneProvider::RequestTimezone(
 void TimeZoneProvider::OnTimezoneResponse(
     TimeZoneRequest* request,
     TimeZoneRequest::TimeZoneResponseCallback callback,
-    scoped_ptr<TimeZoneResponseData> timezone,
+    std::unique_ptr<TimeZoneResponseData> timezone,
     bool server_error) {
   ScopedVector<TimeZoneRequest>::iterator position =
       std::find(requests_.begin(), requests_.end(), request);

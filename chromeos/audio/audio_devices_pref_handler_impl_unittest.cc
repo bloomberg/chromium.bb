@@ -85,7 +85,7 @@ class AudioDevicesPrefHandlerTest : public testing::Test {
 
  protected:
   scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler_;
-  scoped_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioDevicesPrefHandlerTest);

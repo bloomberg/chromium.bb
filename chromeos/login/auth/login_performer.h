@@ -5,11 +5,11 @@
 #ifndef CHROMEOS_LOGIN_AUTH_LOGIN_PERFORMER_H_
 #define CHROMEOS_LOGIN_AUTH_LOGIN_PERFORMER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/auth_status_consumer.h"

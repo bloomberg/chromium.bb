@@ -6,10 +6,11 @@
 #define CHROMEOS_NETWORK_FIREWALL_HOLE_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "dbus/file_descriptor.h"
 
@@ -24,7 +25,7 @@ class CHROMEOS_EXPORT FirewallHole {
     TCP,
   };
 
-  typedef base::Callback<void(scoped_ptr<FirewallHole>)> OpenCallback;
+  typedef base::Callback<void(std::unique_ptr<FirewallHole>)> OpenCallback;
 
   // Opens a port on the system firewall for the given network interface (or all
   // interfaces if |interface| is ""). The hole will be closed when the object

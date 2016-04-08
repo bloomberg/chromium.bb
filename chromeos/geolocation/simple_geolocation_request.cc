@@ -182,8 +182,9 @@ bool ParseServerResponse(const GURL& server_url,
 
   // Parse the response, ignoring comments.
   std::string error_msg;
-  scoped_ptr<base::Value> response_value = base::JSONReader::ReadAndReturnError(
-      response_body, base::JSON_PARSE_RFC, NULL, &error_msg);
+  std::unique_ptr<base::Value> response_value =
+      base::JSONReader::ReadAndReturnError(response_body, base::JSON_PARSE_RFC,
+                                           NULL, &error_msg);
   if (response_value == NULL) {
     PrintGeolocationError(
         server_url, "JSONReader failed: " + error_msg, position);
@@ -294,7 +295,7 @@ SimpleGeolocationRequest::SimpleGeolocationRequest(
     net::URLRequestContextGetter* url_context_getter,
     const GURL& service_url,
     base::TimeDelta timeout,
-    scoped_ptr<WifiAccessPointVector> wifi_data)
+    std::unique_ptr<WifiAccessPointVector> wifi_data)
     : url_context_getter_(url_context_getter),
       service_url_(service_url),
       retry_sleep_on_server_error_(base::TimeDelta::FromSeconds(
@@ -324,7 +325,7 @@ std::string SimpleGeolocationRequest::FormatRequestBody() const {
     return std::string(kSimpleGeolocationRequestBody);
   }
 
-  scoped_ptr<base::DictionaryValue> request(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> request(new base::DictionaryValue);
   request->SetBooleanWithoutPathExpansion(kConsiderIp, true);
 
   base::ListValue* wifi_access_points(new base::ListValue);

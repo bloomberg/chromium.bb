@@ -60,7 +60,7 @@ class CHROMEOS_EXPORT FakeNfcManagerClient : public NfcManagerClient {
 
   // Fake properties object. This gets updated whenever AddAdapter or
   // RemoveAdapter gets called.
-  scoped_ptr<Properties> properties_;
+  std::unique_ptr<Properties> properties_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeNfcManagerClient);
 };

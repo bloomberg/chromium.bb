@@ -6,12 +6,12 @@
 #define CHROMEOS_NETWORK_MANAGED_NETWORK_CONFIGURATION_HANDLER_IMPL_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
@@ -115,11 +115,12 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
   friend class ProhibitedTechnologiesHandlerTest;
 
   struct Policies;
-  typedef base::Callback<void(const std::string& service_path,
-                              scoped_ptr<base::DictionaryValue> properties)>
+  typedef base::Callback<void(
+      const std::string& service_path,
+      std::unique_ptr<base::DictionaryValue> properties)>
       GetDevicePropertiesCallback;
-  typedef std::map<std::string, scoped_ptr<Policies>> UserToPoliciesMap;
-  typedef std::map<std::string, scoped_ptr<PolicyApplicator>>
+  typedef std::map<std::string, std::unique_ptr<Policies>> UserToPoliciesMap;
+  typedef std::map<std::string, std::unique_ptr<PolicyApplicator>>
       UserToPolicyApplicatorMap;
   typedef std::map<std::string, std::set<std::string>>
       UserToModifiedPoliciesMap;
@@ -140,14 +141,14 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
       const network_handler::DictionaryResultCallback& callback,
       const network_handler::ErrorCallback& error_callback,
       const std::string& service_path,
-      scoped_ptr<base::DictionaryValue> shill_properties);
+      std::unique_ptr<base::DictionaryValue> shill_properties);
 
   // Sends the response to the caller of GetProperties.
   void SendProperties(const std::string& userhash,
                       const network_handler::DictionaryResultCallback& callback,
                       const network_handler::ErrorCallback& error_callback,
                       const std::string& service_path,
-                      scoped_ptr<base::DictionaryValue> shill_properties);
+                      std::unique_ptr<base::DictionaryValue> shill_properties);
 
   const Policies* GetPoliciesForUser(const std::string& userhash) const;
   const Policies* GetPoliciesForProfile(const NetworkProfile& profile) const;
@@ -172,22 +173,23 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
 
   void GetDevicePropertiesSuccess(
       const std::string& service_path,
-      scoped_ptr<base::DictionaryValue> network_properties,
+      std::unique_ptr<base::DictionaryValue> network_properties,
       GetDevicePropertiesCallback send_callback,
       const std::string& device_path,
       const base::DictionaryValue& device_properties);
   void GetDevicePropertiesFailure(
       const std::string& service_path,
-      scoped_ptr<base::DictionaryValue> network_properties,
+      std::unique_ptr<base::DictionaryValue> network_properties,
       GetDevicePropertiesCallback send_callback,
       const std::string& error_name,
-      scoped_ptr<base::DictionaryValue> error_data);
+      std::unique_ptr<base::DictionaryValue> error_data);
 
   // Called from SetProperties, calls NCH::SetShillProperties.
-  void SetShillProperties(const std::string& service_path,
-                          scoped_ptr<base::DictionaryValue> shill_dictionary,
-                          const base::Closure& callback,
-                          const network_handler::ErrorCallback& error_callback);
+  void SetShillProperties(
+      const std::string& service_path,
+      std::unique_ptr<base::DictionaryValue> shill_dictionary,
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback);
 
   // Applies policies for |userhash|. |modified_policies| must be not null and
   // contain the GUIDs of the network configurations that changed since the last

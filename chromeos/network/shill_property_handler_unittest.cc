@@ -7,12 +7,12 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -285,8 +285,8 @@ class ShillPropertyHandlerTest : public testing::Test {
   }
 
   base::MessageLoopForUI message_loop_;
-  scoped_ptr<TestListener> listener_;
-  scoped_ptr<internal::ShillPropertyHandler> shill_property_handler_;
+  std::unique_ptr<TestListener> listener_;
+  std::unique_ptr<internal::ShillPropertyHandler> shill_property_handler_;
   ShillManagerClient::TestInterface* manager_test_;
   ShillDeviceClient::TestInterface* device_test_;
   ShillServiceClient::TestInterface* service_test_;

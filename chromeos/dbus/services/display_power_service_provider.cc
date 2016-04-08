@@ -23,7 +23,7 @@ void RunConfigurationCallback(
 }  // namespace
 
 DisplayPowerServiceProvider::DisplayPowerServiceProvider(
-    scoped_ptr<Delegate> delegate)
+    std::unique_ptr<Delegate> delegate)
     : delegate_(std::move(delegate)), weak_ptr_factory_(this) {}
 
 DisplayPowerServiceProvider::~DisplayPowerServiceProvider() {}

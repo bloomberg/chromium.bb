@@ -292,7 +292,7 @@ void FakeShillManagerClient::ConfigureService(
     existing_properties = service_client->GetServiceProperties(service_path);
   }
 
-  scoped_ptr<base::DictionaryValue> merged_properties(
+  std::unique_ptr<base::DictionaryValue> merged_properties(
       existing_properties->DeepCopy());
   merged_properties->MergeDictionary(&properties);
 
@@ -526,7 +526,8 @@ void FakeShillManagerClient::SortManagerServices(bool notify) {
       GetListProperty(shill::kServiceCompleteListProperty);
   if (complete_list->empty())
     return;
-  scoped_ptr<base::ListValue> prev_complete_list(complete_list->DeepCopy());
+  std::unique_ptr<base::ListValue> prev_complete_list(
+      complete_list->DeepCopy());
 
   std::vector<std::string> active_services;
   std::vector<std::string> inactive_services;
@@ -928,7 +929,7 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
 
 void FakeShillManagerClient::PassStubProperties(
     const DictionaryValueCallback& callback) const {
-  scoped_ptr<base::DictionaryValue> stub_properties(
+  std::unique_ptr<base::DictionaryValue> stub_properties(
       stub_properties_.DeepCopy());
   stub_properties->SetWithoutPathExpansion(
       shill::kServiceCompleteListProperty,
@@ -962,7 +963,7 @@ void FakeShillManagerClient::NotifyObserversPropertyChanged(
     return;
   }
   if (property == shill::kServiceCompleteListProperty) {
-    scoped_ptr<base::ListValue> services(GetEnabledServiceList(property));
+    std::unique_ptr<base::ListValue> services(GetEnabledServiceList(property));
     FOR_EACH_OBSERVER(ShillPropertyChangedObserver,
                       observer_list_,
                       OnPropertyChanged(property, *(services.get())));

@@ -4,13 +4,13 @@
 
 #include "chromeos/dbus/lorgnette_manager_client.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
 #include "chromeos/dbus/pipe_reader.h"
@@ -129,7 +129,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
       scanned_image_data_string_.clear();
     }
 
-    scoped_ptr<chromeos::PipeReaderForString> pipe_reader_;
+    std::unique_ptr<chromeos::PipeReaderForString> pipe_reader_;
     std::string scanned_image_data_string_;
 
     DISALLOW_COPY_AND_ASSIGN(ScanToStringCompletion);

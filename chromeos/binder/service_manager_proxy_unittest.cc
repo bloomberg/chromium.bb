@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromeos/binder/service_manager_proxy.h"
+
 #include "base/guid.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/binder/command_broker.h"
 #include "chromeos/binder/driver.h"
 #include "chromeos/binder/local_object.h"
-#include "chromeos/binder/service_manager_proxy.h"
 #include "chromeos/binder/transaction_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,9 +25,10 @@ class DummyTransactionHandler : public LocalObject::TransactionHandler {
   DummyTransactionHandler() {}
   ~DummyTransactionHandler() override {}
 
-  scoped_ptr<TransactionData> OnTransact(CommandBroker* command_broker,
-                                         const TransactionData& data) override {
-    return scoped_ptr<TransactionData>();
+  std::unique_ptr<TransactionData> OnTransact(
+      CommandBroker* command_broker,
+      const TransactionData& data) override {
+    return std::unique_ptr<TransactionData>();
   }
 
  private:
@@ -57,7 +60,7 @@ TEST_F(BinderServiceManagerProxyTest, AddAndCheck) {
 
   // Add service.
   scoped_refptr<Object> object(
-      new LocalObject(make_scoped_ptr(new DummyTransactionHandler())));
+      new LocalObject(base::WrapUnique(new DummyTransactionHandler())));
   EXPECT_TRUE(ServiceManagerProxy::AddService(&command_broker_, kServiceName,
                                               object, 0));
 

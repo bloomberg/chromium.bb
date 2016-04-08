@@ -633,7 +633,7 @@ class DiskMountManagerImpl : public DiskMountManager {
   bool already_refreshed_;
   std::vector<EnsureMountInfoRefreshedCallback> refresh_callbacks_;
 
-  scoped_ptr<SuspendUnmountManager> suspend_unmount_manager_;
+  std::unique_ptr<SuspendUnmountManager> suspend_unmount_manager_;
 
   base::WeakPtrFactory<DiskMountManagerImpl> weak_ptr_factory_;
 

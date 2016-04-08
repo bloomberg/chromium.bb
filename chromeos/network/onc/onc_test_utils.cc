@@ -38,9 +38,9 @@ std::string ReadTestData(const std::string& filename) {
   return result;
 }
 
-scoped_ptr<base::DictionaryValue> ReadTestDictionary(
+std::unique_ptr<base::DictionaryValue> ReadTestDictionary(
     const std::string& filename) {
-  scoped_ptr<base::DictionaryValue> dict;
+  std::unique_ptr<base::DictionaryValue> dict;
   base::FilePath path;
   if (!chromeos::test_utils::GetTestDataPath(kNetworkComponentDirectory,
                                              filename,
@@ -54,7 +54,7 @@ scoped_ptr<base::DictionaryValue> ReadTestDictionary(
   deserializer.set_allow_trailing_comma(true);
 
   std::string error_message;
-  scoped_ptr<base::Value> content =
+  std::unique_ptr<base::Value> content =
       deserializer.Deserialize(NULL, &error_message);
   CHECK(content != NULL) << "Couldn't json-deserialize file '"
                          << filename << "': " << error_message;

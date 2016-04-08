@@ -4,6 +4,8 @@
 
 #include "chromeos/system/statistics_provider.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -12,7 +14,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -233,7 +234,7 @@ class StatisticsProviderImpl : public StatisticsProvider {
   base::WaitableEvent on_statistics_loaded_;
   bool oem_manifest_loaded_;
   std::string region_;
-  scoped_ptr<base::Value> regional_data_;
+  std::unique_ptr<base::Value> regional_data_;
   base::hash_map<std::string, RegionDataExtractor> regional_data_extractors_;
 
  private:

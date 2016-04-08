@@ -5,13 +5,14 @@
 #include "chromeos/cryptohome/homedir_methods.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -93,7 +94,7 @@ HomedirMethodsTest::~HomedirMethodsTest() {
 }
 
 void HomedirMethodsTest::SetUp() {
-  scoped_ptr<chromeos::MockCryptohomeClient> cryptohome_client(
+  std::unique_ptr<chromeos::MockCryptohomeClient> cryptohome_client(
       new chromeos::MockCryptohomeClient);
   cryptohome_client_ = cryptohome_client.get();
   chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(

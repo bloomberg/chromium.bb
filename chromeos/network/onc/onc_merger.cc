@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "components/onc/onc_constants.h"
@@ -19,7 +20,7 @@ namespace chromeos {
 namespace onc {
 namespace {
 
-typedef scoped_ptr<base::DictionaryValue> DictionaryPtr;
+typedef std::unique_ptr<base::DictionaryValue> DictionaryPtr;
 
 // Returns true if the field is the identifier of a configuration, i.e. the GUID
 // of a network or a certificate.
@@ -112,7 +113,7 @@ class MergeListOfDictionaries {
         if (key == ::onc::kRecommended || !visited.insert(key).second)
           continue;
 
-        scoped_ptr<base::Value> merged_value;
+        std::unique_ptr<base::Value> merged_value;
         if (field.value().IsType(base::Value::TYPE_DICTIONARY)) {
           DictPtrs nested_dicts;
           for (DictPtrs::const_iterator it_inner = dicts.begin();
@@ -149,7 +150,7 @@ class MergeListOfDictionaries {
   // are located at the same path in each of the dictionaries. The order of the
   // values is the same as of the given dictionaries |dicts|. If a dictionary
   // doesn't contain a path then it's value is NULL.
-  virtual scoped_ptr<base::Value> MergeListOfValues(
+  virtual std::unique_ptr<base::Value> MergeListOfValues(
       const std::string& key,
       const std::vector<const base::Value*>& values) = 0;
 
@@ -213,8 +214,9 @@ class MergeSettingsAndPolicies : public MergeListOfDictionaries {
   // This function is called by MergeDictionaries for each list of values that
   // are located at the same path in each of the dictionaries. Implementations
   // can use the Has*Policy functions.
-  virtual scoped_ptr<base::Value> MergeValues(const std::string& key,
-                                              const ValueParams& values) = 0;
+  virtual std::unique_ptr<base::Value> MergeValues(
+      const std::string& key,
+      const ValueParams& values) = 0;
 
   // Whether a user policy was provided.
   bool HasUserPolicy() {
@@ -227,7 +229,7 @@ class MergeSettingsAndPolicies : public MergeListOfDictionaries {
   }
 
   // MergeListOfDictionaries override.
-  scoped_ptr<base::Value> MergeListOfValues(
+  std::unique_ptr<base::Value> MergeListOfValues(
       const std::string& key,
       const std::vector<const base::Value*>& values) override {
     bool user_editable = !HasUserPolicy();
@@ -282,9 +284,9 @@ class MergeToEffective : public MergeSettingsAndPolicies {
   // the
   // user policy didn't set a value but also didn't recommend it, thus enforcing
   // the empty value.
-  scoped_ptr<base::Value> MergeValues(const std::string& key,
-                                      const ValueParams& values,
-                                      std::string* which) {
+  std::unique_ptr<base::Value> MergeValues(const std::string& key,
+                                           const ValueParams& values,
+                                           std::string* which) {
     const base::Value* result = NULL;
     which->clear();
     if (!values.user_editable) {
@@ -310,13 +312,13 @@ class MergeToEffective : public MergeSettingsAndPolicies {
       // dictionaries contained a value for it.
     }
     if (result)
-      return make_scoped_ptr(result->DeepCopy());
-    return scoped_ptr<base::Value>();
+      return base::WrapUnique(result->DeepCopy());
+    return std::unique_ptr<base::Value>();
   }
 
   // MergeSettingsAndPolicies override.
-  scoped_ptr<base::Value> MergeValues(const std::string& key,
-                                      const ValueParams& values) override {
+  std::unique_ptr<base::Value> MergeValues(const std::string& key,
+                                           const ValueParams& values) override {
     std::string which;
     return MergeValues(key, values, &which);
   }
@@ -369,8 +371,8 @@ class MergeToAugmented : public MergeToEffective {
 
  protected:
   // MergeSettingsAndPolicies override.
-  scoped_ptr<base::Value> MergeValues(const std::string& key,
-                                      const ValueParams& values) override {
+  std::unique_ptr<base::Value> MergeValues(const std::string& key,
+                                           const ValueParams& values) override {
     const OncFieldSignature* field = NULL;
     if (signature_)
       field = GetFieldSignature(*signature_, key);
@@ -380,14 +382,14 @@ class MergeToAugmented : public MergeToEffective {
       // controlled by policy. Return the plain active value instead of an
       // augmented dictionary.
       if (values.active_setting)
-        return make_scoped_ptr(values.active_setting->DeepCopy());
+        return base::WrapUnique(values.active_setting->DeepCopy());
       return nullptr;
     }
 
     // This field is part of the provided ONCSignature, thus it can be
     // controlled by policy.
     std::string which_effective;
-    scoped_ptr<base::Value> effective_value =
+    std::unique_ptr<base::Value> effective_value =
         MergeToEffective::MergeValues(key, values, &which_effective);
 
     if (IsReadOnlyField(*signature_, key)) {
@@ -402,13 +404,13 @@ class MergeToAugmented : public MergeToEffective {
       }
       if (values.active_setting) {
         // Unmanaged networks have assigned (active) values.
-        return make_scoped_ptr(values.active_setting->DeepCopy());
+        return base::WrapUnique(values.active_setting->DeepCopy());
       }
       LOG(ERROR) << "Field has no effective value: " << key;
       return nullptr;
     }
 
-    scoped_ptr<base::DictionaryValue> augmented_value(
+    std::unique_ptr<base::DictionaryValue> augmented_value(
         new base::DictionaryValue);
 
     if (values.active_setting) {

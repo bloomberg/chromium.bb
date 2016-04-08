@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/json/json_string_value_serializer.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/strings/stringprintf.h"
 #include "chromeos/dbus/fake_easy_unlock_client.h"
+
+#include <memory>
+
+#include "base/json/json_string_value_serializer.h"
+#include "base/strings/stringprintf.h"
 
 namespace {
 
@@ -22,7 +24,8 @@ const char kEc256PublicKeyKey[] = "ec_p256_public_key";
 int ExtractKeyPairIndexFromKey(const std::string& key,
                                const std::string& key_type) {
   JSONStringValueDeserializer deserializer(key);
-  scoped_ptr<base::Value> json_value = deserializer.Deserialize(NULL, NULL);
+  std::unique_ptr<base::Value> json_value =
+      deserializer.Deserialize(NULL, NULL);
   if (!json_value)
     return -1;
 

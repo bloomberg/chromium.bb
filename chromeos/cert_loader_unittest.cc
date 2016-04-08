@@ -5,11 +5,12 @@
 #include "chromeos/cert_loader.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "crypto/scoped_nss_types.h"
@@ -96,7 +97,7 @@ class CertLoaderTest : public testing::Test,
   }
 
   void CreateCertDatabase(crypto::ScopedTestNSSDB* db,
-                          scoped_ptr<TestNSSCertDatabase>* certdb) {
+                          std::unique_ptr<TestNSSCertDatabase>* certdb) {
     ASSERT_TRUE(db->is_open());
 
     certdb->reset(new TestNSSCertDatabase(
@@ -141,7 +142,7 @@ class CertLoaderTest : public testing::Test,
   // has nothing to do with crypto::InitializeNSSForChromeOSUser is_primary_user
   // parameter (which is irrelevant for these tests).
   crypto::ScopedTestNSSDB primary_db_;
-  scoped_ptr<TestNSSCertDatabase> primary_certdb_;
+  std::unique_ptr<TestNSSCertDatabase> primary_certdb_;
 
   base::MessageLoop message_loop_;
 
@@ -197,7 +198,7 @@ TEST_F(CertLoaderTest, CertLoaderUpdatesCertListOnNewCert) {
 
 TEST_F(CertLoaderTest, CertLoaderNoUpdateOnSecondaryDbChanges) {
   crypto::ScopedTestNSSDB secondary_db;
-  scoped_ptr<TestNSSCertDatabase> secondary_certdb;
+  std::unique_ptr<TestNSSCertDatabase> secondary_certdb;
 
   StartCertLoaderWithPrimaryDB();
   CreateCertDatabase(&secondary_db, &secondary_certdb);
@@ -226,7 +227,7 @@ TEST_F(CertLoaderTest, ClientLoaderUpdateOnNewClientCert) {
 
 TEST_F(CertLoaderTest, CertLoaderNoUpdateOnNewClientCertInSecondaryDb) {
   crypto::ScopedTestNSSDB secondary_db;
-  scoped_ptr<TestNSSCertDatabase> secondary_certdb;
+  std::unique_ptr<TestNSSCertDatabase> secondary_certdb;
 
   StartCertLoaderWithPrimaryDB();
   CreateCertDatabase(&secondary_db, &secondary_certdb);

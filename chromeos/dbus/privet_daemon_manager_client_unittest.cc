@@ -7,7 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string_number_conversions.h"
 #include "dbus/message.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,7 +16,7 @@
 namespace chromeos {
 
 TEST(PrivetDaemonManagerClientTest, ReadPairingInfo) {
-  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(message.get());
   dbus::MessageWriter variant_writer(nullptr);
   dbus::MessageWriter variant_array_writer(nullptr);

@@ -5,8 +5,9 @@
 #ifndef CHROMEOS_BINDER_IPC_THREAD_H_
 #define CHROMEOS_BINDER_IPC_THREAD_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "chromeos/binder/command_broker.h"
@@ -68,8 +69,8 @@ class CHROMEOS_EXPORT MainIpcThread : public base::Thread {
   void CleanUp() override;
 
  private:
-  scoped_ptr<Driver> driver_;
-  scoped_ptr<IpcThreadPoller> poller_;
+  std::unique_ptr<Driver> driver_;
+  std::unique_ptr<IpcThreadPoller> poller_;
   bool initialized_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MainIpcThread);
@@ -99,7 +100,7 @@ class CHROMEOS_EXPORT SubIpcThread : public base::Thread {
 
  private:
   MainIpcThread* main_thread_;
-  scoped_ptr<IpcThreadPoller> poller_;
+  std::unique_ptr<IpcThreadPoller> poller_;
   bool initialized_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SubIpcThread);

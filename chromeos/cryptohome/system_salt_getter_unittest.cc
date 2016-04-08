@@ -27,7 +27,7 @@ class SystemSaltGetterTest : public testing::Test {
   void SetUp() override {
     fake_cryptohome_client_ = new FakeCryptohomeClient;
     DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        scoped_ptr<CryptohomeClient>(fake_cryptohome_client_));
+        std::unique_ptr<CryptohomeClient>(fake_cryptohome_client_));
 
     EXPECT_FALSE(SystemSaltGetter::IsInitialized());
     SystemSaltGetter::Initialize();

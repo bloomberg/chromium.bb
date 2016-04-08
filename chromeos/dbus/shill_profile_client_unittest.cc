@@ -50,7 +50,7 @@ class ShillProfileClientTest : public ShillClientUnittestBase {
   void TearDown() override { ShillClientUnittestBase::TearDown(); }
 
  protected:
-  scoped_ptr<ShillProfileClient> client_;
+  std::unique_ptr<ShillProfileClient> client_;
 };
 
 TEST_F(ShillProfileClientTest, PropertyChanged) {
@@ -92,7 +92,7 @@ TEST_F(ShillProfileClientTest, PropertyChanged) {
 
 TEST_F(ShillProfileClientTest, GetProperties) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
   dbus::MessageWriter array_writer(NULL);
   writer.OpenArray("{sv}", &array_writer);
@@ -127,7 +127,7 @@ TEST_F(ShillProfileClientTest, GetProperties) {
 
 TEST_F(ShillProfileClientTest, GetEntry) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
   dbus::MessageWriter array_writer(NULL);
   writer.OpenArray("{sv}", &array_writer);
@@ -160,7 +160,7 @@ TEST_F(ShillProfileClientTest, GetEntry) {
 
 TEST_F(ShillProfileClientTest, DeleteEntry) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Create the expected value.
   base::DictionaryValue value;

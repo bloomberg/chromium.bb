@@ -68,7 +68,7 @@ class ShillDeviceClientTest : public ShillClientUnittestBase {
   void TearDown() override { ShillClientUnittestBase::TearDown(); }
 
  protected:
-  scoped_ptr<ShillDeviceClient> client_;
+  std::unique_ptr<ShillDeviceClient> client_;
 };
 
 TEST_F(ShillDeviceClientTest, PropertyChanged) {
@@ -111,7 +111,7 @@ TEST_F(ShillDeviceClientTest, PropertyChanged) {
 TEST_F(ShillDeviceClientTest, GetProperties) {
   const bool kValue = true;
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
   dbus::MessageWriter array_writer(NULL);
   writer.OpenArray("{sv}", &array_writer);
@@ -138,7 +138,7 @@ TEST_F(ShillDeviceClientTest, GetProperties) {
 
 TEST_F(ShillDeviceClientTest, ProposeScan) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
   PrepareForMethodCall(shill::kProposeScanFunction,
@@ -154,7 +154,7 @@ TEST_F(ShillDeviceClientTest, ProposeScan) {
 TEST_F(ShillDeviceClientTest, SetProperty) {
   const bool kValue = true;
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
   const base::FundamentalValue value(kValue);
@@ -180,7 +180,7 @@ TEST_F(ShillDeviceClientTest, SetProperty) {
 
 TEST_F(ShillDeviceClientTest, ClearProperty) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
   PrepareForMethodCall(shill::kClearPropertyFunction,
@@ -198,7 +198,7 @@ TEST_F(ShillDeviceClientTest, ClearProperty) {
 TEST_F(ShillDeviceClientTest, AddIPConfig) {
   const dbus::ObjectPath expected_result("/result/path");
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
   writer.AppendObjectPath(expected_result);
 
@@ -218,7 +218,7 @@ TEST_F(ShillDeviceClientTest, RequirePin) {
   const char kPin[] = "123456";
   const bool kRequired = true;
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
   MockClosure mock_closure;
@@ -243,7 +243,7 @@ TEST_F(ShillDeviceClientTest, RequirePin) {
 TEST_F(ShillDeviceClientTest, EnterPin) {
   const char kPin[] = "123456";
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
   MockClosure mock_closure;
@@ -268,7 +268,7 @@ TEST_F(ShillDeviceClientTest, UnblockPin) {
   const char kPuk[] = "987654";
   const char kPin[] = "123456";
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
   MockClosure mock_closure;
@@ -293,7 +293,7 @@ TEST_F(ShillDeviceClientTest, ChangePin) {
   const char kOldPin[] = "123456";
   const char kNewPin[] = "234567";
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
   MockClosure mock_closure;
@@ -319,7 +319,7 @@ TEST_F(ShillDeviceClientTest, ChangePin) {
 TEST_F(ShillDeviceClientTest, Register) {
   const char kNetworkId[] = "networkid";
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
   MockClosure mock_closure;
@@ -342,7 +342,7 @@ TEST_F(ShillDeviceClientTest, Register) {
 TEST_F(ShillDeviceClientTest, SetCarrier) {
   const char kCarrier[] = "carrier";
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
   MockClosure mock_closure;
@@ -362,7 +362,7 @@ TEST_F(ShillDeviceClientTest, SetCarrier) {
 
 TEST_F(ShillDeviceClientTest, Reset) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
   MockClosure mock_closure;

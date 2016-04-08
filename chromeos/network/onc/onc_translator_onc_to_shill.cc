@@ -15,6 +15,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_signature.h"
@@ -30,11 +31,12 @@ namespace onc {
 
 namespace {
 
-scoped_ptr<base::StringValue> ConvertValueToString(const base::Value& value) {
+std::unique_ptr<base::StringValue> ConvertValueToString(
+    const base::Value& value) {
   std::string str;
   if (!value.GetAsString(&str))
     base::JSONWriter::Write(value, &str);
-  return make_scoped_ptr(new base::StringValue(str));
+  return base::WrapUnique(new base::StringValue(str));
 }
 
 // This class is responsible to translate the local fields of the given
@@ -78,7 +80,7 @@ class LocalTranslator {
   // by the associated signature. Takes ownership of |value|. Does nothing if
   // |value| is NULL or the property name cannot be read from the signature.
   void AddValueAccordingToSignature(const std::string& onc_field_name,
-                                    scoped_ptr<base::Value> value);
+                                    std::unique_ptr<base::Value> value);
 
   // Translates the value |onc_value| using |table|. It is an error if no
   // matching table entry is found. Writes the result as entry at
@@ -167,7 +169,7 @@ void LocalTranslator::TranslateOpenVPN() {
 
   for (base::DictionaryValue::Iterator it(*onc_object_); !it.IsAtEnd();
        it.Advance()) {
-    scoped_ptr<base::Value> translated;
+    std::unique_ptr<base::Value> translated;
     if (it.key() == ::onc::openvpn::kRemoteCertKU ||
         it.key() == ::onc::openvpn::kServerCAPEMs) {
       translated.reset(it.value().DeepCopy());
@@ -294,7 +296,7 @@ void LocalTranslator::TranslateNetworkConfiguration() {
   const base::DictionaryValue* proxy_settings = nullptr;
   if (onc_object_->GetDictionaryWithoutPathExpansion(
           ::onc::network_config::kProxySettings, &proxy_settings)) {
-    scoped_ptr<base::DictionaryValue> proxy_config =
+    std::unique_ptr<base::DictionaryValue> proxy_config =
         ConvertOncProxySettingsToProxyConfig(*proxy_settings);
     std::string proxy_config_str;
     base::JSONWriter::Write(*proxy_config.get(), &proxy_config_str);
@@ -309,7 +311,7 @@ void LocalTranslator::CopyFieldsAccordingToSignature() {
   for (base::DictionaryValue::Iterator it(*onc_object_); !it.IsAtEnd();
        it.Advance()) {
     AddValueAccordingToSignature(it.key(),
-                                 make_scoped_ptr(it.value().DeepCopy()));
+                                 base::WrapUnique(it.value().DeepCopy()));
   }
 }
 
@@ -341,7 +343,7 @@ void LocalTranslator::CopyFieldFromONCToShill(
 
 void LocalTranslator::AddValueAccordingToSignature(
     const std::string& onc_name,
-    scoped_ptr<base::Value> value) {
+    std::unique_ptr<base::Value> value) {
   if (!value || !field_translation_table_)
     return;
   std::string shill_property_name;
@@ -415,11 +417,12 @@ void TranslateONCHierarchy(const OncValueSignature& signature,
 
 }  // namespace
 
-scoped_ptr<base::DictionaryValue> TranslateONCObjectToShill(
+std::unique_ptr<base::DictionaryValue> TranslateONCObjectToShill(
     const OncValueSignature* onc_signature,
     const base::DictionaryValue& onc_object) {
   CHECK(onc_signature != NULL);
-  scoped_ptr<base::DictionaryValue> shill_dictionary(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> shill_dictionary(
+      new base::DictionaryValue);
   TranslateONCHierarchy(*onc_signature, onc_object, shill_dictionary.get());
   return shill_dictionary;
 }

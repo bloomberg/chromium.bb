@@ -5,10 +5,10 @@
 #ifndef CHROMEOS_DBUS_SERVICES_CONSOLE_SERVICE_PROVIDER_H_
 #define CHROMEOS_DBUS_SERVICES_CONSOLE_SERVICE_PROVIDER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
@@ -37,7 +37,7 @@ class CHROMEOS_EXPORT ConsoleServiceProvider
         const UpdateOwnershipCallback& callback) = 0;
   };
 
-  explicit ConsoleServiceProvider(scoped_ptr<Delegate> delegate);
+  explicit ConsoleServiceProvider(std::unique_ptr<Delegate> delegate);
   ~ConsoleServiceProvider() override;
 
   // CrosDBusService::ServiceProviderInterface overrides:
@@ -63,7 +63,7 @@ class CHROMEOS_EXPORT ConsoleServiceProvider
                   const std::string& method_name,
                   bool success);
 
-  scoped_ptr<Delegate> delegate_;
+  std::unique_ptr<Delegate> delegate_;
   base::WeakPtrFactory<ConsoleServiceProvider> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ConsoleServiceProvider);

@@ -5,11 +5,11 @@
 #ifndef CHROMEOS_DBUS_SERVICES_PROXY_RESOLUTION_SERVICE_PROVIDER_H_
 #define CHROMEOS_DBUS_SERVICES_PROXY_RESOLUTION_SERVICE_PROVIDER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
@@ -91,7 +91,7 @@ class CHROMEOS_EXPORT ProxyResolutionServiceProvider
 
   // Creates the instance.
   static ProxyResolutionServiceProvider* Create(
-      scoped_ptr<ProxyResolverDelegate> delgate);
+      std::unique_ptr<ProxyResolverDelegate> delgate);
 
  private:
   explicit ProxyResolutionServiceProvider(ProxyResolverInterface *resovler);
@@ -119,7 +119,7 @@ class CHROMEOS_EXPORT ProxyResolutionServiceProvider
   bool OnOriginThread();
 
   scoped_refptr<dbus::ExportedObject> exported_object_;
-  scoped_ptr<ProxyResolverInterface> resolver_;
+  std::unique_ptr<ProxyResolverInterface> resolver_;
   scoped_refptr<base::SingleThreadTaskRunner> origin_thread_;
   base::WeakPtrFactory<ProxyResolutionServiceProvider> weak_ptr_factory_;
 

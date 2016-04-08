@@ -101,7 +101,7 @@ void ServiceProviderTestHelper::SetUpReturnSignal(
                                       signal_callback, on_connected_callback);
 }
 
-scoped_ptr<dbus::Response> ServiceProviderTestHelper::CallMethod(
+std::unique_ptr<dbus::Response> ServiceProviderTestHelper::CallMethod(
     dbus::MethodCall* method_call) {
   return mock_object_proxy_->CallMethodAndBlock(
       method_call,
@@ -156,7 +156,7 @@ void ServiceProviderTestHelper::MockSendSignal(dbus::Signal* signal) {
 }
 
 void ServiceProviderTestHelper::OnResponse(
-    scoped_ptr<dbus::Response> response) {
+    std::unique_ptr<dbus::Response> response) {
   response_ = std::move(response);
   response_received_ = true;
   if (base::MessageLoop::current()->is_running())

@@ -11,6 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -49,10 +50,10 @@ const char kEmptyUnencryptedConfiguration[] =
     "{\"Type\":\"UnencryptedConfiguration\",\"NetworkConfigurations\":[],"
     "\"Certificates\":[]}";
 
-scoped_ptr<base::DictionaryValue> ReadDictionaryFromJson(
+std::unique_ptr<base::DictionaryValue> ReadDictionaryFromJson(
     const std::string& json) {
   std::string error;
-  scoped_ptr<base::Value> root = base::JSONReader::ReadAndReturnError(
+  std::unique_ptr<base::Value> root = base::JSONReader::ReadAndReturnError(
       json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
 
   base::DictionaryValue* dict_ptr = nullptr;
@@ -61,11 +62,12 @@ scoped_ptr<base::DictionaryValue> ReadDictionaryFromJson(
     return nullptr;
   }
   ignore_result(root.release());
-  return make_scoped_ptr(dict_ptr);
+  return base::WrapUnique(dict_ptr);
 }
 
-scoped_ptr<base::DictionaryValue> Decrypt(const std::string& passphrase,
-                                          const base::DictionaryValue& root) {
+std::unique_ptr<base::DictionaryValue> Decrypt(
+    const std::string& passphrase,
+    const base::DictionaryValue& root) {
   const int kKeySizeInBits = 256;
   const int kMaxIterationCount = 500000;
   std::string onc_type;
@@ -117,11 +119,9 @@ scoped_ptr<base::DictionaryValue> Decrypt(const std::string& passphrase,
     return nullptr;
   }
 
-  scoped_ptr<crypto::SymmetricKey> key(
+  std::unique_ptr<crypto::SymmetricKey> key(
       crypto::SymmetricKey::DeriveKeyFromPassword(crypto::SymmetricKey::AES,
-                                                  passphrase,
-                                                  salt,
-                                                  iterations,
+                                                  passphrase, salt, iterations,
                                                   kKeySizeInBits));
 
   if (!base::Base64Decode(initial_vector, &initial_vector)) {
@@ -156,7 +156,7 @@ scoped_ptr<base::DictionaryValue> Decrypt(const std::string& passphrase,
     return nullptr;
   }
 
-  scoped_ptr<base::DictionaryValue> new_root =
+  std::unique_ptr<base::DictionaryValue> new_root =
       ReadDictionaryFromJson(plaintext);
   if (!new_root) {
     NET_LOG(ERROR) << "Property dictionary malformed.";
@@ -289,7 +289,7 @@ namespace {
 
 class OncMaskValues : public Mapper {
  public:
-  static scoped_ptr<base::DictionaryValue> Mask(
+  static std::unique_ptr<base::DictionaryValue> Mask(
       const OncValueSignature& signature,
       const base::DictionaryValue& onc_object,
       const std::string& mask) {
@@ -303,13 +303,14 @@ class OncMaskValues : public Mapper {
       : mask_(mask) {
   }
 
-  scoped_ptr<base::Value> MapField(const std::string& field_name,
-                                   const OncValueSignature& object_signature,
-                                   const base::Value& onc_value,
-                                   bool* found_unknown_field,
-                                   bool* error) override {
+  std::unique_ptr<base::Value> MapField(
+      const std::string& field_name,
+      const OncValueSignature& object_signature,
+      const base::Value& onc_value,
+      bool* found_unknown_field,
+      bool* error) override {
     if (FieldIsCredential(object_signature, field_name)) {
-      return scoped_ptr<base::Value>(new base::StringValue(mask_));
+      return std::unique_ptr<base::Value>(new base::StringValue(mask_));
     } else {
       return Mapper::MapField(field_name, object_signature, onc_value,
                               found_unknown_field, error);
@@ -322,7 +323,7 @@ class OncMaskValues : public Mapper {
 
 }  // namespace
 
-scoped_ptr<base::DictionaryValue> MaskCredentialsInOncObject(
+std::unique_ptr<base::DictionaryValue> MaskCredentialsInOncObject(
     const OncValueSignature& signature,
     const base::DictionaryValue& onc_object,
     const std::string& mask) {
@@ -412,7 +413,7 @@ bool ParseAndValidateOncForImport(const std::string& onc_blob,
   if (onc_blob.empty())
     return true;
 
-  scoped_ptr<base::DictionaryValue> toplevel_onc =
+  std::unique_ptr<base::DictionaryValue> toplevel_onc =
       ReadDictionaryFromJson(onc_blob);
   if (!toplevel_onc) {
     LOG(ERROR) << "ONC loaded from " << GetSourceAsString(onc_source)
@@ -555,7 +556,7 @@ bool ResolveCertRefList(const CertPEMsByGUIDMap& certs_by_guid,
     return true;
   }
 
-  scoped_ptr<base::ListValue> pem_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> pem_list(new base::ListValue);
   for (const base::Value* entry : *guid_ref_list) {
     std::string guid_ref;
     entry->GetAsString(&guid_ref);
@@ -584,7 +585,7 @@ bool ResolveSingleCertRefToList(const CertPEMsByGUIDMap& certs_by_guid,
   if (!GUIDRefToPEMEncoding(certs_by_guid, guid_ref, &pem_encoded))
     return false;
 
-  scoped_ptr<base::ListValue> pem_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> pem_list(new base::ListValue);
   pem_list->AppendString(pem_encoded);
   onc_object->RemoveWithoutPathExpansion(key_guid_ref, nullptr);
   onc_object->SetWithoutPathExpansion(key_pem_list, pem_list.release());
@@ -852,7 +853,7 @@ void SetProxyForScheme(const net::ProxyConfig::ProxyRules& proxy_rules,
   if (!proxy_list || proxy_list->IsEmpty())
     return;
   const net::ProxyServer& server = proxy_list->Get();
-  scoped_ptr<base::DictionaryValue> url_dict(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> url_dict(new base::DictionaryValue);
   std::string host = server.host_port_pair().host();
 
   // For all proxy types except SOCKS, the default scheme of the proxy host is
@@ -871,11 +872,11 @@ void SetProxyForScheme(const net::ProxyConfig::ProxyRules& proxy_rules,
 
 }  // namespace
 
-scoped_ptr<base::DictionaryValue> ConvertOncProxySettingsToProxyConfig(
+std::unique_ptr<base::DictionaryValue> ConvertOncProxySettingsToProxyConfig(
     const base::DictionaryValue& onc_proxy_settings) {
   std::string type;
   onc_proxy_settings.GetStringWithoutPathExpansion(::onc::proxy::kType, &type);
-  scoped_ptr<base::DictionaryValue> proxy_dict;
+  std::unique_ptr<base::DictionaryValue> proxy_dict;
 
   if (type == ::onc::proxy::kDirect) {
     proxy_dict.reset(ProxyConfigDictionary::CreateDirect());
@@ -915,14 +916,15 @@ scoped_ptr<base::DictionaryValue> ConvertOncProxySettingsToProxyConfig(
   return proxy_dict;
 }
 
-scoped_ptr<base::DictionaryValue> ConvertProxyConfigToOncProxySettings(
+std::unique_ptr<base::DictionaryValue> ConvertProxyConfigToOncProxySettings(
     const base::DictionaryValue& proxy_config_value) {
   // Create a ProxyConfigDictionary from the DictionaryValue.
-  scoped_ptr<ProxyConfigDictionary> proxy_config(
+  std::unique_ptr<ProxyConfigDictionary> proxy_config(
       new ProxyConfigDictionary(&proxy_config_value));
 
   // Create the result DictionaryValue and populate it.
-  scoped_ptr<base::DictionaryValue> proxy_settings(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> proxy_settings(
+      new base::DictionaryValue);
   ProxyPrefs::ProxyMode mode;
   if (!proxy_config->GetMode(&mode))
     return nullptr;
@@ -948,7 +950,7 @@ scoped_ptr<base::DictionaryValue> ConvertProxyConfigToOncProxySettings(
     }
     case ProxyPrefs::MODE_FIXED_SERVERS: {
       proxy_settings->SetString(::onc::proxy::kType, ::onc::proxy::kManual);
-      scoped_ptr<base::DictionaryValue> manual(new base::DictionaryValue);
+      std::unique_ptr<base::DictionaryValue> manual(new base::DictionaryValue);
       std::string proxy_rules_string;
       if (proxy_config->GetProxyServer(&proxy_rules_string)) {
         net::ProxyConfig::ProxyRules proxy_rules;
@@ -970,7 +972,7 @@ scoped_ptr<base::DictionaryValue> ConvertProxyConfigToOncProxySettings(
       if (proxy_config->GetBypassList(&bypass_rules_string)) {
         net::ProxyBypassRules bypass_rules;
         bypass_rules.ParseFromString(bypass_rules_string);
-        scoped_ptr<base::ListValue> exclude_domains(new base::ListValue);
+        std::unique_ptr<base::ListValue> exclude_domains(new base::ListValue);
         for (const net::ProxyBypassRules::Rule* rule : bypass_rules.rules())
           exclude_domains->AppendString(rule->ToString());
         if (!exclude_domains->empty()) {

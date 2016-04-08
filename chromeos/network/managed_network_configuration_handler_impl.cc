@@ -4,6 +4,7 @@
 
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -11,7 +12,7 @@
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
@@ -72,7 +73,7 @@ void InvokeErrorCallback(const std::string& service_path,
 
 void LogErrorWithDict(const tracked_objects::Location& from_where,
                       const std::string& error_name,
-                      scoped_ptr<base::DictionaryValue> error_data) {
+                      std::unique_ptr<base::DictionaryValue> error_data) {
   device_event_log::AddEntry(from_where.file_name(), from_where.line_number(),
                              device_event_log::LOG_TYPE_NETWORK,
                              device_event_log::LOG_LEVEL_ERROR, error_name);
@@ -138,7 +139,7 @@ void ManagedNetworkConfigurationHandlerImpl::SendManagedProperties(
     const network_handler::DictionaryResultCallback& callback,
     const network_handler::ErrorCallback& error_callback,
     const std::string& service_path,
-    scoped_ptr<base::DictionaryValue> shill_properties) {
+    std::unique_ptr<base::DictionaryValue> shill_properties) {
   std::string profile_path;
   shill_properties->GetStringWithoutPathExpansion(shill::kProfileProperty,
                                                   &profile_path);
@@ -147,7 +148,7 @@ void ManagedNetworkConfigurationHandlerImpl::SendManagedProperties(
   if (!profile)
     NET_LOG_ERROR("No profile for service: " + profile_path, service_path);
 
-  scoped_ptr<NetworkUIData> ui_data =
+  std::unique_ptr<NetworkUIData> ui_data =
       shill_property_util::GetUIDataFromProperties(*shill_properties);
 
   const base::DictionaryValue* user_settings = NULL;
@@ -168,7 +169,7 @@ void ManagedNetworkConfigurationHandlerImpl::SendManagedProperties(
   FindPolicyByGUID(userhash, guid, &onc_source);
   const NetworkState* network_state =
       network_state_handler_->GetNetworkState(service_path);
-  scoped_ptr<base::DictionaryValue> active_settings(
+  std::unique_ptr<base::DictionaryValue> active_settings(
       onc::TranslateShillServiceToONCPart(*shill_properties, onc_source,
                                           &onc::kNetworkWithStateSignature,
                                           network_state));
@@ -187,11 +188,9 @@ void ManagedNetworkConfigurationHandlerImpl::SendManagedProperties(
     global_policy = &policies->global_network_config;
   }
 
-  scoped_ptr<base::DictionaryValue> augmented_properties(
-      policy_util::CreateManagedONC(global_policy,
-                                    network_policy,
-                                    user_settings,
-                                    active_settings.get(),
+  std::unique_ptr<base::DictionaryValue> augmented_properties(
+      policy_util::CreateManagedONC(global_policy, network_policy,
+                                    user_settings, active_settings.get(),
                                     profile));
   callback.Run(service_path, *augmented_properties);
 }
@@ -220,7 +219,7 @@ void ManagedNetworkConfigurationHandlerImpl::SendProperties(
     const network_handler::DictionaryResultCallback& callback,
     const network_handler::ErrorCallback& error_callback,
     const std::string& service_path,
-    scoped_ptr<base::DictionaryValue> shill_properties) {
+    std::unique_ptr<base::DictionaryValue> shill_properties) {
   const NetworkState* network_state =
       network_state_handler_->GetNetworkState(service_path);
 
@@ -230,7 +229,7 @@ void ManagedNetworkConfigurationHandlerImpl::SendProperties(
   ::onc::ONCSource onc_source;
   FindPolicyByGUID(userhash, guid, &onc_source);
 
-  scoped_ptr<base::DictionaryValue> onc_network(
+  std::unique_ptr<base::DictionaryValue> onc_network(
       onc::TranslateShillServiceToONCPart(*shill_properties, onc_source,
                                           &onc::kNetworkWithStateSignature,
                                           network_state));
@@ -277,7 +276,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
 
   // We need to ensure that required configuration properties (e.g. Type) are
   // included for ONC validation and translation to Shill properties.
-  scoped_ptr<base::DictionaryValue> user_settings_copy(
+  std::unique_ptr<base::DictionaryValue> user_settings_copy(
       user_settings.DeepCopy());
   user_settings_copy->SetStringWithoutPathExpansion(
       ::onc::network_config::kType,
@@ -292,11 +291,10 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
                            false);  // This ONC does not come from policy.
 
   onc::Validator::Result validation_result;
-  scoped_ptr<base::DictionaryValue> validated_user_settings =
-      validator.ValidateAndRepairObject(
-          &onc::kNetworkConfigurationSignature,
-          *user_settings_copy,
-          &validation_result);
+  std::unique_ptr<base::DictionaryValue> validated_user_settings =
+      validator.ValidateAndRepairObject(&onc::kNetworkConfigurationSignature,
+                                        *user_settings_copy,
+                                        &validation_result);
   if (validation_result == onc::Validator::INVALID) {
     InvokeErrorCallback(service_path, error_callback, kInvalidUserSettings);
     return;
@@ -315,12 +313,10 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
   VLOG(2) << "This configuration is " << (network_policy ? "" : "not ")
           << "managed.";
 
-  scoped_ptr<base::DictionaryValue> shill_dictionary(
-      policy_util::CreateShillConfiguration(*profile,
-                                            guid,
-                                            &policies->global_network_config,
-                                            network_policy,
-                                            validated_user_settings.get()));
+  std::unique_ptr<base::DictionaryValue> shill_dictionary(
+      policy_util::CreateShillConfiguration(
+          *profile, guid, &policies->global_network_config, network_policy,
+          validated_user_settings.get()));
 
   // 'Carrier' needs to be handled specially if set.
   base::DictionaryValue* cellular = nullptr;
@@ -346,7 +342,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
 
 void ManagedNetworkConfigurationHandlerImpl::SetShillProperties(
     const std::string& service_path,
-    scoped_ptr<base::DictionaryValue> shill_dictionary,
+    std::unique_ptr<base::DictionaryValue> shill_dictionary,
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) {
   network_configuration_handler_->SetShillProperties(
@@ -386,9 +382,8 @@ void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
   // Generate a new GUID for this configuration. Ignore the maybe provided GUID
   // in |properties| as it is not our own and from an untrusted source.
   std::string guid = base::GenerateGUID();
-  scoped_ptr<base::DictionaryValue> shill_dictionary(
-      policy_util::CreateShillConfiguration(*profile,
-                                            guid,
+  std::unique_ptr<base::DictionaryValue> shill_dictionary(
+      policy_util::CreateShillConfiguration(*profile, guid,
                                             NULL,  // no global policy
                                             NULL,  // no network policy
                                             &properties));
@@ -423,7 +418,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
     policies = policies_by_user_[userhash].get();
   } else {
     policies = new Policies;
-    policies_by_user_[userhash] = make_scoped_ptr(policies);
+    policies_by_user_[userhash] = base::WrapUnique(policies);
   }
 
   policies->global_network_config.MergeDictionary(&global_network_config);
@@ -516,7 +511,7 @@ bool ManagedNetworkConfigurationHandlerImpl::ApplyOrQueuePolicies(
                            policies->global_network_config,
                            this,
                            modified_policies);
-  policy_applicators_[userhash] = make_scoped_ptr(applicator);
+  policy_applicators_[userhash] = base::WrapUnique(applicator);
   applicator->Run();
   return true;
 }
@@ -786,7 +781,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback(
     GetDevicePropertiesCallback send_callback,
     const std::string& service_path,
     const base::DictionaryValue& shill_properties) {
-  scoped_ptr<base::DictionaryValue> shill_properties_copy(
+  std::unique_ptr<base::DictionaryValue> shill_properties_copy(
       shill_properties.DeepCopy());
 
   std::string guid;
@@ -826,7 +821,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback(
 
   // Request the device properties. On success or failure pass (a possibly
   // modified) |shill_properties| to |send_callback|.
-  scoped_ptr<base::DictionaryValue> shill_properties_copy_error_copy(
+  std::unique_ptr<base::DictionaryValue> shill_properties_copy_error_copy(
       shill_properties_copy->DeepCopy());
   network_device_handler_->GetDeviceProperties(
       device_path,
@@ -846,7 +841,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback(
 
 void ManagedNetworkConfigurationHandlerImpl::GetDevicePropertiesSuccess(
     const std::string& service_path,
-    scoped_ptr<base::DictionaryValue> network_properties,
+    std::unique_ptr<base::DictionaryValue> network_properties,
     GetDevicePropertiesCallback send_callback,
     const std::string& device_path,
     const base::DictionaryValue& device_properties) {
@@ -858,10 +853,10 @@ void ManagedNetworkConfigurationHandlerImpl::GetDevicePropertiesSuccess(
 
 void ManagedNetworkConfigurationHandlerImpl::GetDevicePropertiesFailure(
     const std::string& service_path,
-    scoped_ptr<base::DictionaryValue> network_properties,
+    std::unique_ptr<base::DictionaryValue> network_properties,
     GetDevicePropertiesCallback send_callback,
     const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) {
+    std::unique_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("Error getting device properties", service_path);
   send_callback.Run(service_path, std::move(network_properties));
 }

@@ -127,7 +127,7 @@ class DiskMountManagerTest : public testing::Test {
   void SetUp() override {
     fake_cros_disks_client_ = new FakeCrosDisksClient;
     DBusThreadManager::GetSetterForTesting()->SetCrosDisksClient(
-        scoped_ptr<CrosDisksClient>(fake_cros_disks_client_));
+        std::unique_ptr<CrosDisksClient>(fake_cros_disks_client_));
 
     DiskMountManager::Initialize();
 

@@ -5,8 +5,9 @@
 #ifndef CHROMEOS_DBUS_FAKE_NFC_RECORD_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_NFC_RECORD_CLIENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "chromeos/chromeos_export.h"
@@ -79,10 +80,10 @@ class CHROMEOS_EXPORT FakeNfcRecordClient : public NfcRecordClient {
   base::ObserverList<Observer> observers_;
 
   // Fake properties that are returned for the fake records.
-  scoped_ptr<Properties> device_smart_poster_record_properties_;
-  scoped_ptr<Properties> device_text_record_properties_;
-  scoped_ptr<Properties> device_uri_record_properties_;
-  scoped_ptr<Properties> tag_record_properties_;
+  std::unique_ptr<Properties> device_smart_poster_record_properties_;
+  std::unique_ptr<Properties> device_text_record_properties_;
+  std::unique_ptr<Properties> device_uri_record_properties_;
+  std::unique_ptr<Properties> tag_record_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeNfcRecordClient);
 };

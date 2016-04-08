@@ -53,7 +53,7 @@ class ProxyResolverImpl : public ProxyResolverInterface {
     DISALLOW_COPY_AND_ASSIGN(Request);
   };
 
-  explicit ProxyResolverImpl(scoped_ptr<ProxyResolverDelegate> delegate)
+  explicit ProxyResolverImpl(std::unique_ptr<ProxyResolverDelegate> delegate)
       : delegate_(std::move(delegate)),
         origin_thread_(base::ThreadTaskRunnerHandle::Get()),
         weak_ptr_factory_(this) {}
@@ -176,7 +176,7 @@ class ProxyResolverImpl : public ProxyResolverInterface {
     return origin_thread_->BelongsToCurrentThread();
   }
 
-  scoped_ptr<ProxyResolverDelegate> delegate_;
+  std::unique_ptr<ProxyResolverDelegate> delegate_;
   scoped_refptr<base::SingleThreadTaskRunner> origin_thread_;
   std::set<Request*> all_requests_;
   base::WeakPtrFactory<ProxyResolverImpl> weak_ptr_factory_;
@@ -240,7 +240,7 @@ void ProxyResolutionServiceProvider::ResolveProxyHandler(
       !reader.PopString(&signal_interface) ||
       !reader.PopString(&signal_name)) {
     LOG(ERROR) << "Unexpected method call: " << method_call->ToString();
-    response_sender.Run(scoped_ptr<dbus::Response>());
+    response_sender.Run(std::unique_ptr<dbus::Response>());
     return;
   }
 
@@ -261,14 +261,14 @@ void ProxyResolutionServiceProvider::CallResolveProxyHandler(
     dbus::ExportedObject::ResponseSender response_sender) {
   if (!provider_weak_ptr) {
     LOG(WARNING) << "Called after the object is deleted";
-    response_sender.Run(scoped_ptr<dbus::Response>());
+    response_sender.Run(std::unique_ptr<dbus::Response>());
     return;
   }
   provider_weak_ptr->ResolveProxyHandler(method_call, response_sender);
 }
 
 ProxyResolutionServiceProvider* ProxyResolutionServiceProvider::Create(
-    scoped_ptr<ProxyResolverDelegate> delegate) {
+    std::unique_ptr<ProxyResolverDelegate> delegate) {
   return new ProxyResolutionServiceProvider(
       new ProxyResolverImpl(std::move(delegate)));
 }

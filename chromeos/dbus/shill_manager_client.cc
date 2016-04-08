@@ -218,7 +218,7 @@ class ShillManagerClientImpl : public ShillManagerClient {
 
  private:
   dbus::ObjectProxy* proxy_;
-  scoped_ptr<ShillClientHelper> helper_;
+  std::unique_ptr<ShillClientHelper> helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ShillManagerClientImpl);
 };

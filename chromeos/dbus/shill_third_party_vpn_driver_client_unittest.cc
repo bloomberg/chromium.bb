@@ -57,7 +57,7 @@ class ShillThirdPartyVpnDriverClientTest : public ShillClientUnittestBase {
   }
 
  protected:
-  scoped_ptr<ShillThirdPartyVpnDriverClient> client_;
+  std::unique_ptr<ShillThirdPartyVpnDriverClient> client_;
 };
 
 TEST_F(ShillThirdPartyVpnDriverClientTest, PlatformSignal) {
@@ -93,7 +93,7 @@ TEST_F(ShillThirdPartyVpnDriverClientTest, PlatformSignal) {
 
   testing::Mock::VerifyAndClearExpectations(&observer);
 
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   uint32_t connection_state = 2;
 
   PrepareForMethodCall(shill::kUpdateConnectionStateFunction,
@@ -126,7 +126,7 @@ TEST_F(ShillThirdPartyVpnDriverClientTest, PlatformSignal) {
 }
 
 TEST_F(ShillThirdPartyVpnDriverClientTest, SetParameters) {
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
   writer.AppendString(std::string("deadbeef"));
 
@@ -152,7 +152,7 @@ TEST_F(ShillThirdPartyVpnDriverClientTest, SetParameters) {
 }
 
 TEST_F(ShillThirdPartyVpnDriverClientTest, UpdateConnectionState) {
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   uint32_t connection_state = 2;
 
   EXPECT_CALL(*this, MockSuccess()).Times(1);
@@ -171,7 +171,7 @@ TEST_F(ShillThirdPartyVpnDriverClientTest, UpdateConnectionState) {
 }
 
 TEST_F(ShillThirdPartyVpnDriverClientTest, SendPacket) {
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   const size_t kPacketSize = 5;
   const std::vector<char> data(kPacketSize, 0);

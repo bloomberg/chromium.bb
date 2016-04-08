@@ -10,7 +10,7 @@
 
 namespace binder {
 
-LocalObject::LocalObject(scoped_ptr<TransactionHandler> handler)
+LocalObject::LocalObject(std::unique_ptr<TransactionHandler> handler)
     : handler_(std::move(handler)) {}
 
 LocalObject::~LocalObject() {}
@@ -21,7 +21,7 @@ Object::Type LocalObject::GetType() const {
 
 bool LocalObject::Transact(CommandBroker* command_broker,
                            const TransactionData& data,
-                           scoped_ptr<TransactionData>* reply) {
+                           std::unique_ptr<TransactionData>* reply) {
   *reply = handler_->OnTransact(command_broker, data);
   return true;
 }

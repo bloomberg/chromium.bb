@@ -32,12 +32,12 @@ class CHROMEOS_EXPORT HostResolverImplChromeOS : public net::HostResolverImpl {
   // This is expected to be constructed on the same thread that Resolve() is
   // called from, i.e. the IO thread, which is presumed to differ from the
   // thread that NetworkStateHandler is called on, i.e. the UI thread.
-  static scoped_ptr<net::HostResolver> CreateSystemResolver(
+  static std::unique_ptr<net::HostResolver> CreateSystemResolver(
       const Options& options,
       net::NetLog* net_log);
 
   // Creates a host resolver instance for testing.
-  static scoped_ptr<net::HostResolver> CreateHostResolverForTest(
+  static std::unique_ptr<net::HostResolver> CreateHostResolverForTest(
       scoped_refptr<base::SingleThreadTaskRunner> network_handler_task_runner,
       NetworkStateHandler* network_state_handler);
 

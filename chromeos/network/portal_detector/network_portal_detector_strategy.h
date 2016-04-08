@@ -5,9 +5,10 @@
 #ifndef CHROMEOS_NETWORK_PORTAL_DETECTOR_NETWORK_PORTAL_DETECTOR_STRATEGY_H_
 #define CHROMEOS_NETWORK_PORTAL_DETECTOR_NETWORK_PORTAL_DETECTOR_STRATEGY_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
@@ -38,8 +39,8 @@ class CHROMEOS_EXPORT PortalDetectorStrategy {
   virtual ~PortalDetectorStrategy();
 
   // Lifetime of delegate must enclose lifetime of PortalDetectorStrategy.
-  static scoped_ptr<PortalDetectorStrategy> CreateById(StrategyId id,
-                                                       Delegate* delegate);
+  static std::unique_ptr<PortalDetectorStrategy> CreateById(StrategyId id,
+                                                            Delegate* delegate);
 
   // Returns delay before next detection attempt. This delay is needed
   // to separate detection attempts in time.
@@ -71,7 +72,7 @@ class CHROMEOS_EXPORT PortalDetectorStrategy {
 
   Delegate* delegate_;
   net::BackoffEntry::Policy policy_;
-  scoped_ptr<net::BackoffEntry> backoff_entry_;
+  std::unique_ptr<net::BackoffEntry> backoff_entry_;
 
  private:
   friend class NetworkPortalDetectorImplTest;

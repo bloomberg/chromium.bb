@@ -52,7 +52,7 @@ class ServiceProviderTestHelper {
       dbus::ObjectProxy::OnConnectedCallback on_connected_callback);
 
   // Calls tested dbus method.
-  scoped_ptr<dbus::Response> CallMethod(dbus::MethodCall* method_call);
+  std::unique_ptr<dbus::Response> CallMethod(dbus::MethodCall* method_call);
 
   // Cleanups helper. Should be called after |CallMethod()|.
   void TearDown();
@@ -81,16 +81,16 @@ class ServiceProviderTestHelper {
   void MockSendSignal(dbus::Signal* signal);
 
   // Receives a response and makes it available to MockCallMethodAndBlock().
-  void OnResponse(scoped_ptr<dbus::Response> response);
+  void OnResponse(std::unique_ptr<dbus::Response> response);
 
   scoped_refptr<dbus::MockBus> mock_bus_;
   scoped_refptr<dbus::MockExportedObject> mock_exported_object_;
   scoped_refptr<dbus::MockObjectProxy> mock_object_proxy_;
   dbus::ExportedObject::MethodCallCallback method_callback_;
   dbus::ObjectProxy::SignalCallback on_signal_callback_;
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
   bool response_received_;
-  scoped_ptr<dbus::Response> response_;
+  std::unique_ptr<dbus::Response> response_;
 };
 
 }  // namespace chromeos

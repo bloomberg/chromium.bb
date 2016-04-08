@@ -88,7 +88,7 @@ void AudioDevicesPrefHandlerImpl::SetMuteValue(const AudioDevice& device,
 void AudioDevicesPrefHandlerImpl::SetDeviceActive(const AudioDevice& device,
                                                   bool active,
                                                   bool activate_by_user) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetBoolean("active", active);
   if (active)
     dict->SetBoolean("activate_by_user", activate_by_user);

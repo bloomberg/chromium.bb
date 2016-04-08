@@ -68,7 +68,7 @@ class ShillManagerClientTest : public ShillClientUnittestBase {
   void TearDown() override { ShillClientUnittestBase::TearDown(); }
 
  protected:
-  scoped_ptr<ShillManagerClient> client_;
+  std::unique_ptr<ShillManagerClient> client_;
 };
 
 TEST_F(ShillManagerClientTest, PropertyChanged) {
@@ -104,7 +104,7 @@ TEST_F(ShillManagerClientTest, PropertyChanged) {
 
 TEST_F(ShillManagerClientTest, GetProperties) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
   dbus::MessageWriter array_writer(NULL);
   writer.OpenArray("{sv}", &array_writer);
@@ -131,7 +131,7 @@ TEST_F(ShillManagerClientTest, GetProperties) {
 
 TEST_F(ShillManagerClientTest, GetNetworksForGeolocation) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   dbus::MessageWriter writer(response.get());
   dbus::MessageWriter type_dict_writer(NULL);
@@ -181,7 +181,7 @@ TEST_F(ShillManagerClientTest, GetNetworksForGeolocation) {
 
 TEST_F(ShillManagerClientTest, SetProperty) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   // Set expectations.
   base::StringValue value("portal list");
   PrepareForMethodCall(shill::kSetPropertyFunction,
@@ -205,7 +205,7 @@ TEST_F(ShillManagerClientTest, SetProperty) {
 
 TEST_F(ShillManagerClientTest, RequestScan) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   // Set expectations.
   PrepareForMethodCall(shill::kRequestScanFunction,
                        base::Bind(&ExpectStringArgument, shill::kTypeWifi),
@@ -225,7 +225,7 @@ TEST_F(ShillManagerClientTest, RequestScan) {
 
 TEST_F(ShillManagerClientTest, EnableTechnology) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   // Set expectations.
   PrepareForMethodCall(shill::kEnableTechnologyFunction,
                        base::Bind(&ExpectStringArgument, shill::kTypeWifi),
@@ -245,7 +245,7 @@ TEST_F(ShillManagerClientTest, EnableTechnology) {
 
 TEST_F(ShillManagerClientTest, DisableTechnology) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   // Set expectations.
   PrepareForMethodCall(shill::kDisableTechnologyFunction,
                        base::Bind(&ExpectStringArgument, shill::kTypeWifi),
@@ -266,11 +266,11 @@ TEST_F(ShillManagerClientTest, DisableTechnology) {
 TEST_F(ShillManagerClientTest, ConfigureService) {
   // Create response.
   const dbus::ObjectPath object_path("/");
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
   writer.AppendObjectPath(object_path);
   // Create the argument dictionary.
-  scoped_ptr<base::DictionaryValue> arg(CreateExampleServiceProperties());
+  std::unique_ptr<base::DictionaryValue> arg(CreateExampleServiceProperties());
   // Use a variant valued dictionary rather than a string valued one.
   const bool string_valued = false;
   // Set expectations.
@@ -293,11 +293,11 @@ TEST_F(ShillManagerClientTest, ConfigureService) {
 TEST_F(ShillManagerClientTest, GetService) {
   // Create response.
   const dbus::ObjectPath object_path("/");
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
   writer.AppendObjectPath(object_path);
   // Create the argument dictionary.
-  scoped_ptr<base::DictionaryValue> arg(CreateExampleServiceProperties());
+  std::unique_ptr<base::DictionaryValue> arg(CreateExampleServiceProperties());
   // Use a variant valued dictionary rather than a string valued one.
   const bool string_valued = false;
   // Set expectations.
@@ -319,7 +319,7 @@ TEST_F(ShillManagerClientTest, GetService) {
 
 TEST_F(ShillManagerClientTest, VerifyDestination) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
   bool expected = true;
   writer.AppendBool(expected);
@@ -358,7 +358,7 @@ TEST_F(ShillManagerClientTest, VerifyDestination) {
 
 TEST_F(ShillManagerClientTest, VerifyAndEncryptCredentials) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
   std::string expected = "encrypted_credentials";
   writer.AppendString(expected);
@@ -402,7 +402,7 @@ TEST_F(ShillManagerClientTest, VerifyAndEncryptCredentials) {
 
 TEST_F(ShillManagerClientTest, VerifyAndEncryptData) {
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
   std::string expected = "encrypted_data";
   writer.AppendString(expected);

@@ -4,7 +4,8 @@
 
 #include "chromeos/dbus/power_policy_controller.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/message_loop/message_loop.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,7 +31,7 @@ class PowerPolicyControllerTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<FakePowerManagerClient> fake_power_client_;
+  std::unique_ptr<FakePowerManagerClient> fake_power_client_;
   PowerPolicyController* policy_controller_;
   base::MessageLoop message_loop_;
 };

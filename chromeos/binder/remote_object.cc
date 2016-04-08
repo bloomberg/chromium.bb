@@ -31,7 +31,7 @@ Object::Type RemoteObject::GetType() const {
 
 bool RemoteObject::Transact(CommandBroker* command_broker,
                             const TransactionData& data,
-                            scoped_ptr<TransactionData>* reply) {
+                            std::unique_ptr<TransactionData>* reply) {
   return command_broker->Transact(handle_, data, reply);
 }
 

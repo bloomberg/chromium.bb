@@ -5,12 +5,12 @@
 #ifndef CHROMEOS_LOGIN_AUTH_EXTENDED_AUTHENTICATOR_IMPL_H_
 #define CHROMEOS_LOGIN_AUTH_EXTENDED_AUTHENTICATOR_IMPL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"

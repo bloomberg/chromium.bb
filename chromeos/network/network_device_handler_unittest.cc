@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -35,7 +36,7 @@ class NetworkDeviceHandlerTest : public testing::Test {
   void SetUp() override {
     fake_device_client_ = new FakeShillDeviceClient;
     DBusThreadManager::GetSetterForTesting()->SetShillDeviceClient(
-        scoped_ptr<ShillDeviceClient>(fake_device_client_));
+        std::unique_ptr<ShillDeviceClient>(fake_device_client_));
 
     success_callback_ = base::Bind(&NetworkDeviceHandlerTest::SuccessCallback,
                                    base::Unretained(this));
@@ -75,7 +76,7 @@ class NetworkDeviceHandlerTest : public testing::Test {
   }
 
   void ErrorCallback(const std::string& error_name,
-                     scoped_ptr<base::DictionaryValue> error_data) {
+                     std::unique_ptr<base::DictionaryValue> error_data) {
     VLOG(1) << "ErrorCallback: " << error_name;
     result_ = error_name;
   }
@@ -99,14 +100,14 @@ class NetworkDeviceHandlerTest : public testing::Test {
   std::string result_;
 
   FakeShillDeviceClient* fake_device_client_;
-  scoped_ptr<NetworkDeviceHandler> network_device_handler_;
-  scoped_ptr<NetworkStateHandler> network_state_handler_;
+  std::unique_ptr<NetworkDeviceHandler> network_device_handler_;
+  std::unique_ptr<NetworkStateHandler> network_state_handler_;
   base::MessageLoopForUI message_loop_;
   base::Closure success_callback_;
   network_handler::DictionaryResultCallback properties_success_callback_;
   network_handler::StringResultCallback string_success_callback_;
   network_handler::ErrorCallback error_callback_;
-  scoped_ptr<base::DictionaryValue> properties_;
+  std::unique_ptr<base::DictionaryValue> properties_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkDeviceHandlerTest);

@@ -5,12 +5,12 @@
 #ifndef CHROMEOS_TPM_TPM_TOKEN_INFO_GETTER_H_
 #define CHROMEOS_TPM_TPM_TOKEN_INFO_GETTER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
@@ -48,13 +48,13 @@ class CHROMEOS_EXPORT TPMTokenInfoGetter {
   using TPMTokenInfoCallback = base::Callback<void(const TPMTokenInfo& info)>;
 
   // Factory method for TPMTokenInfoGetter for a user token.
-  static scoped_ptr<TPMTokenInfoGetter> CreateForUserToken(
+  static std::unique_ptr<TPMTokenInfoGetter> CreateForUserToken(
       const AccountId& account_id,
       CryptohomeClient* cryptohome_client,
       const scoped_refptr<base::TaskRunner>& delayed_task_runner);
 
   // Factory method for TPMTokenGetter for the system token.
-  static scoped_ptr<TPMTokenInfoGetter> CreateForSystemToken(
+  static std::unique_ptr<TPMTokenInfoGetter> CreateForSystemToken(
       CryptohomeClient* cryptohome_client,
       const scoped_refptr<base::TaskRunner>& delayed_task_runner);
 

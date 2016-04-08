@@ -177,8 +177,9 @@ bool ParseServerResponse(const GURL& server_url,
 
   // Parse the response, ignoring comments.
   std::string error_msg;
-  scoped_ptr<base::Value> response_value = base::JSONReader::ReadAndReturnError(
-      response_body, base::JSON_PARSE_RFC, NULL, &error_msg);
+  std::unique_ptr<base::Value> response_value =
+      base::JSONReader::ReadAndReturnError(response_body, base::JSON_PARSE_RFC,
+                                           NULL, &error_msg);
   if (response_value == NULL) {
     PrintTimeZoneError(server_url, "JSONReader failed: " + error_msg, timezone);
     RecordUmaEvent(TIMEZONE_REQUEST_EVENT_RESPONSE_MALFORMED);
@@ -263,12 +264,12 @@ bool ParseServerResponse(const GURL& server_url,
 
 // Attempts to extract a position from the response. Detects and indicates
 // various failure cases.
-scoped_ptr<TimeZoneResponseData> GetTimeZoneFromResponse(
+std::unique_ptr<TimeZoneResponseData> GetTimeZoneFromResponse(
     bool http_success,
     int status_code,
     const std::string& response_body,
     const GURL& server_url) {
-  scoped_ptr<TimeZoneResponseData> timezone(new TimeZoneResponseData);
+  std::unique_ptr<TimeZoneResponseData> timezone(new TimeZoneResponseData);
 
   // HttpPost can fail for a number of reasons. Most likely this is because
   // we're offline, or there was no response.
@@ -368,7 +369,7 @@ void TimeZoneRequest::OnURLFetchComplete(const net::URLFetcher* source) {
 
   std::string data;
   source->GetResponseAsString(&data);
-  scoped_ptr<TimeZoneResponseData> timezone = GetTimeZoneFromResponse(
+  std::unique_ptr<TimeZoneResponseData> timezone = GetTimeZoneFromResponse(
       status.is_success(), response_code, data, source->GetURL());
   const bool server_error =
       !status.is_success() || (response_code >= 500 && response_code < 600);

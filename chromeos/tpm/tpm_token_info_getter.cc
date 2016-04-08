@@ -43,20 +43,20 @@ TPMTokenInfo::TPMTokenInfo()
 TPMTokenInfo::~TPMTokenInfo() {}
 
 // static
-scoped_ptr<TPMTokenInfoGetter> TPMTokenInfoGetter::CreateForUserToken(
+std::unique_ptr<TPMTokenInfoGetter> TPMTokenInfoGetter::CreateForUserToken(
     const AccountId& account_id,
     CryptohomeClient* cryptohome_client,
     const scoped_refptr<base::TaskRunner>& delayed_task_runner) {
   CHECK(account_id.is_valid());
-  return scoped_ptr<TPMTokenInfoGetter>(new TPMTokenInfoGetter(
+  return std::unique_ptr<TPMTokenInfoGetter>(new TPMTokenInfoGetter(
       TYPE_USER, account_id, cryptohome_client, delayed_task_runner));
 }
 
 // static
-scoped_ptr<TPMTokenInfoGetter> TPMTokenInfoGetter::CreateForSystemToken(
+std::unique_ptr<TPMTokenInfoGetter> TPMTokenInfoGetter::CreateForSystemToken(
     CryptohomeClient* cryptohome_client,
     const scoped_refptr<base::TaskRunner>& delayed_task_runner) {
-  return scoped_ptr<TPMTokenInfoGetter>(new TPMTokenInfoGetter(
+  return std::unique_ptr<TPMTokenInfoGetter>(new TPMTokenInfoGetter(
       TYPE_SYSTEM, EmptyAccountId(), cryptohome_client, delayed_task_runner));
 }
 

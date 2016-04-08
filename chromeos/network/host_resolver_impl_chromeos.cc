@@ -189,21 +189,21 @@ bool HostResolverImplChromeOS::ResolveLocalIPAddress(
 }
 
 // static
-scoped_ptr<net::HostResolver> HostResolverImplChromeOS::CreateSystemResolver(
-    const Options& options,
-    net::NetLog* net_log) {
-  return scoped_ptr<net::HostResolver>(new HostResolverImplChromeOS(
+std::unique_ptr<net::HostResolver>
+HostResolverImplChromeOS::CreateSystemResolver(const Options& options,
+                                               net::NetLog* net_log) {
+  return std::unique_ptr<net::HostResolver>(new HostResolverImplChromeOS(
       NetworkHandler::Get()->task_runner(),
       NetworkHandler::Get()->network_state_handler(), options, net_log));
 }
 
 // static
-scoped_ptr<net::HostResolver>
+std::unique_ptr<net::HostResolver>
 HostResolverImplChromeOS::CreateHostResolverForTest(
     scoped_refptr<base::SingleThreadTaskRunner> network_handler_task_runner,
     NetworkStateHandler* network_state_handler) {
   Options options;
-  return scoped_ptr<net::HostResolver>(new HostResolverImplChromeOS(
+  return std::unique_ptr<net::HostResolver>(new HostResolverImplChromeOS(
       network_handler_task_runner, network_state_handler, options, NULL));
 }
 

@@ -5,9 +5,10 @@
 #ifndef CHROMEOS_TIMEZONE_TIMEZONE_PROVIDER_H_
 #define CHROMEOS_TIMEZONE_TIMEZONE_PROVIDER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -44,7 +45,7 @@ class CHROMEOS_EXPORT TimeZoneProvider {
   // Deletes request from requests_.
   void OnTimezoneResponse(TimeZoneRequest* request,
                           TimeZoneRequest::TimeZoneResponseCallback callback,
-                          scoped_ptr<TimeZoneResponseData> timezone,
+                          std::unique_ptr<TimeZoneResponseData> timezone,
                           bool server_error);
 
   scoped_refptr<net::URLRequestContextGetter> url_context_getter_;

@@ -4,9 +4,10 @@
 
 #include "chromeos/dbus/blocking_method_caller.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/task_runner.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
@@ -95,7 +96,8 @@ class BlockingMethodCallerTest : public testing::Test {
       dbus::MessageReader reader(method_call);
       std::string text_message;
       if (reader.PopString(&text_message)) {
-        scoped_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
+        std::unique_ptr<dbus::Response> response =
+            dbus::Response::CreateEmpty();
         dbus::MessageWriter writer(response.get());
         writer.AppendString(text_message);
         return response.release();
@@ -121,7 +123,7 @@ TEST_F(BlockingMethodCallerTest, Echo) {
 
   // Call the method.
   BlockingMethodCaller blocking_method_caller(mock_bus_.get(), proxy);
-  scoped_ptr<dbus::Response> response(
+  std::unique_ptr<dbus::Response> response(
       blocking_method_caller.CallMethodAndBlock(&method_call));
 
   // Check the response.

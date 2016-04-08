@@ -4,10 +4,10 @@
 
 #include "chromeos/network/onc/onc_translator.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_test_utils.h"
@@ -26,14 +26,14 @@ class ONCTranslatorOncToShillTest
 // Test the translation from ONC to Shill json.
 TEST_P(ONCTranslatorOncToShillTest, Translate) {
   std::string source_onc_filename = GetParam().first;
-  scoped_ptr<const base::DictionaryValue> onc_network(
+  std::unique_ptr<const base::DictionaryValue> onc_network(
       test_utils::ReadTestDictionary(source_onc_filename));
   std::string result_shill_filename = GetParam().second;
-  scoped_ptr<const base::DictionaryValue> expected_shill_network(
+  std::unique_ptr<const base::DictionaryValue> expected_shill_network(
       test_utils::ReadTestDictionary(result_shill_filename));
 
-  scoped_ptr<base::DictionaryValue> translation(TranslateONCObjectToShill(
-      &kNetworkConfigurationSignature, *onc_network));
+  std::unique_ptr<base::DictionaryValue> translation(
+      TranslateONCObjectToShill(&kNetworkConfigurationSignature, *onc_network));
 
   EXPECT_TRUE(test_utils::Equals(expected_shill_network.get(),
                                  translation.get()));
@@ -79,16 +79,17 @@ class ONCTranslatorShillToOncTest
 
 TEST_P(ONCTranslatorShillToOncTest, Translate) {
   std::string source_shill_filename = GetParam().first;
-  scoped_ptr<const base::DictionaryValue> shill_network(
+  std::unique_ptr<const base::DictionaryValue> shill_network(
       test_utils::ReadTestDictionary(source_shill_filename));
 
   std::string result_onc_filename = GetParam().second;
-  scoped_ptr<base::DictionaryValue> expected_onc_network(
+  std::unique_ptr<base::DictionaryValue> expected_onc_network(
       test_utils::ReadTestDictionary(result_onc_filename));
 
-  scoped_ptr<base::DictionaryValue> translation(TranslateShillServiceToONCPart(
-      *shill_network, ::onc::ONC_SOURCE_NONE, &kNetworkWithStateSignature,
-      nullptr /* network_state */));
+  std::unique_ptr<base::DictionaryValue> translation(
+      TranslateShillServiceToONCPart(*shill_network, ::onc::ONC_SOURCE_NONE,
+                                     &kNetworkWithStateSignature,
+                                     nullptr /* network_state */));
 
   EXPECT_TRUE(test_utils::Equals(expected_onc_network.get(),
                                  translation.get()));

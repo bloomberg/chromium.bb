@@ -5,9 +5,10 @@
 #ifndef CHROMEOS_TIMEZONE_TIMEZONE_RESOLVER_H_
 #define CHROMEOS_TIMEZONE_TIMEZONE_RESOLVER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chromeos/chromeos_export.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -96,7 +97,7 @@ class CHROMEOS_EXPORT TimeZoneResolver {
   const DelayNetworkCallClosure delay_network_call_;
   PrefService* local_state_;
 
-  scoped_ptr<TimeZoneResolverImpl> implementation_;
+  std::unique_ptr<TimeZoneResolverImpl> implementation_;
 
   bool send_wifi_data_to_geolocation_api_;
 

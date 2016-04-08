@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/device_event_log/device_event_log.h"
 
@@ -46,9 +47,8 @@ void RunErrorCallback(const ErrorCallback& error_callback,
                       const std::string& error_detail) {
   if (error_callback.is_null())
     return;
-  error_callback.Run(
-      error_name,
-      make_scoped_ptr(CreateErrorData(path, error_name, error_detail)));
+  error_callback.Run(error_name, base::WrapUnique(CreateErrorData(
+                                     path, error_name, error_detail)));
 }
 
 base::DictionaryValue* CreateDBusErrorData(
@@ -85,7 +85,7 @@ void ShillErrorCallbackFunction(const std::string& error_name,
 
   if (error_callback.is_null())
     return;
-  scoped_ptr<base::DictionaryValue> error_data(CreateDBusErrorData(
+  std::unique_ptr<base::DictionaryValue> error_data(CreateDBusErrorData(
       path, error_name, detail, dbus_error_name, dbus_error_message));
   error_callback.Run(error_name, std::move(error_data));
 }

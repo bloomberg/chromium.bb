@@ -89,7 +89,8 @@ NetworkUIData::NetworkUIData(const base::DictionaryValue& dict) {
 NetworkUIData::~NetworkUIData() {
 }
 
-void NetworkUIData::set_user_settings(scoped_ptr<base::DictionaryValue> dict) {
+void NetworkUIData::set_user_settings(
+    std::unique_ptr<base::DictionaryValue> dict) {
   user_settings_ = std::move(dict);
 }
 
@@ -110,9 +111,9 @@ void NetworkUIData::FillDictionary(base::DictionaryValue* dict) const {
 }
 
 // static
-scoped_ptr<NetworkUIData> NetworkUIData::CreateFromONC(
+std::unique_ptr<NetworkUIData> NetworkUIData::CreateFromONC(
     ::onc::ONCSource onc_source) {
-  scoped_ptr<NetworkUIData> ui_data(new NetworkUIData());
+  std::unique_ptr<NetworkUIData> ui_data(new NetworkUIData());
 
   ui_data->onc_source_ = onc_source;
 

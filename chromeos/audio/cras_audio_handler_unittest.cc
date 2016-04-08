@@ -7,10 +7,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -422,7 +423,7 @@ class CrasAudioHandlerTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
   CrasAudioHandler* cras_audio_handler_;  // Not owned.
   FakeCrasAudioClient* fake_cras_audio_client_;  // Not owned.
-  scoped_ptr<TestObserver> test_observer_;
+  std::unique_ptr<TestObserver> test_observer_;
   scoped_refptr<AudioDevicesPrefHandlerStub> audio_pref_handler_;
 
  private:

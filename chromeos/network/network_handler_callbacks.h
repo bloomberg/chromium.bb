@@ -5,10 +5,10 @@
 #ifndef CHROMEOS_NETWORK_NETWORK_HANDLER_CALLBACKS_H_
 #define CHROMEOS_NETWORK_NETWORK_HANDLER_CALLBACKS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 
@@ -28,9 +28,9 @@ CHROMEOS_EXPORT extern const char kDbusErrorMessage[];
 
 // An error callback used by both the configuration handler and the state
 // handler to receive error results from the API.
-typedef base::Callback<
-  void(const std::string& error_name,
-       scoped_ptr<base::DictionaryValue> error_data)> ErrorCallback;
+typedef base::Callback<void(const std::string& error_name,
+                            std::unique_ptr<base::DictionaryValue> error_data)>
+    ErrorCallback;
 
 typedef base::Callback<
   void(const std::string& service_path,

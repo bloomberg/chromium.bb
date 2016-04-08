@@ -4,12 +4,12 @@
 
 #include "chromeos/network/policy_applicator.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_profile_client.h"
@@ -130,7 +130,7 @@ void PolicyApplicator::GetEntryCallback(
   VLOG(2) << "Received properties for entry " << entry << " of profile "
           << profile_.ToDebugString();
 
-  scoped_ptr<base::DictionaryValue> onc_part(
+  std::unique_ptr<base::DictionaryValue> onc_part(
       onc::TranslateShillServiceToONCPart(
           entry_properties, ::onc::ONC_SOURCE_UNKNOWN,
           &onc::kNetworkWithStateSignature, nullptr /* network_state */));
@@ -144,7 +144,7 @@ void PolicyApplicator::GetEntryCallback(
     // unmanaged.
   }
 
-  scoped_ptr<NetworkUIData> ui_data =
+  std::unique_ptr<NetworkUIData> ui_data =
       shill_property_util::GetUIDataFromProperties(entry_properties);
   if (!ui_data) {
     VLOG(1) << "Entry " << entry << " of profile " << profile_.ToDebugString()
@@ -192,12 +192,10 @@ void PolicyApplicator::GetEntryCallback(
     } else {
       const base::DictionaryValue* user_settings =
           ui_data ? ui_data->user_settings() : NULL;
-      scoped_ptr<base::DictionaryValue> new_shill_properties =
-          policy_util::CreateShillConfiguration(profile_,
-                                                new_guid,
+      std::unique_ptr<base::DictionaryValue> new_shill_properties =
+          policy_util::CreateShillConfiguration(profile_, new_guid,
                                                 &global_network_config_,
-                                                new_policy,
-                                                user_settings);
+                                                new_policy, user_settings);
       // A new policy has to be applied to this profile entry. In order to keep
       // implicit state of Shill like "connected successfully before", keep the
       // entry if a policy is reapplied (e.g. after reboot) or is updated.
@@ -328,12 +326,10 @@ void PolicyApplicator::ApplyRemainingPolicies() {
     VLOG(1) << "Creating new configuration managed by policy " << *it
             << " in profile " << profile_.ToDebugString() << ".";
 
-    scoped_ptr<base::DictionaryValue> shill_dictionary =
-        policy_util::CreateShillConfiguration(profile_,
-                                              *it,
-                                              &global_network_config_,
-                                              network_policy,
-                                              NULL /* no user settings */);
+    std::unique_ptr<base::DictionaryValue> shill_dictionary =
+        policy_util::CreateShillConfiguration(
+            profile_, *it, &global_network_config_, network_policy,
+            NULL /* no user settings */);
     WriteNewShillConfiguration(
         *shill_dictionary, *network_policy, false /* write now */);
   }

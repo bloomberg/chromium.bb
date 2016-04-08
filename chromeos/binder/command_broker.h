@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chromeos/binder/command_stream.h"
@@ -57,7 +57,7 @@ class CHROMEOS_EXPORT CommandBroker
   // until the target object sends a reply.
   bool Transact(int32_t handle,
                 const TransactionData& request,
-                scoped_ptr<TransactionData>* reply);
+                std::unique_ptr<TransactionData>* reply);
 
   // Increments the ref-count of a remote object specified by |handle|.
   void AddReference(int32_t handle);
@@ -72,7 +72,7 @@ class CHROMEOS_EXPORT CommandBroker
 
   // CommandStream::IncomingCommandHandler override:
   bool OnTransaction(const TransactionData& data) override;
-  void OnReply(scoped_ptr<TransactionData> data) override;
+  void OnReply(std::unique_ptr<TransactionData> data) override;
   void OnDeadReply() override;
   void OnTransactionComplete() override;
   void OnIncrementWeakReference(void* ptr, void* cookie) override;
@@ -91,13 +91,13 @@ class CHROMEOS_EXPORT CommandBroker
   };
 
   // Waits for a response to the previous transaction.
-  ResponseType WaitForResponse(scoped_ptr<TransactionData>* data);
+  ResponseType WaitForResponse(std::unique_ptr<TransactionData>* data);
 
   base::ThreadChecker thread_checker_;
   CommandStream command_stream_;
 
   ResponseType response_type_ = RESPONSE_TYPE_NONE;
-  scoped_ptr<TransactionData> response_data_;
+  std::unique_ptr<TransactionData> response_data_;
 
   base::WeakPtrFactory<CommandBroker> weak_ptr_factory_;
 

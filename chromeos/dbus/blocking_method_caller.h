@@ -29,7 +29,8 @@ class CHROMEOS_EXPORT BlockingMethodCaller {
   virtual ~BlockingMethodCaller();
 
   // Calls the method and blocks until it returns.
-  scoped_ptr<dbus::Response> CallMethodAndBlock(dbus::MethodCall* method_call);
+  std::unique_ptr<dbus::Response> CallMethodAndBlock(
+      dbus::MethodCall* method_call);
 
  private:
   dbus::Bus* bus_;

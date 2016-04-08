@@ -49,11 +49,11 @@ namespace merger {
 
 class ONCMergerTest : public testing::Test {
  public:
-  scoped_ptr<const base::DictionaryValue> user_;
-  scoped_ptr<const base::DictionaryValue> policy_;
-  scoped_ptr<const base::DictionaryValue> policy_without_recommended_;
-  scoped_ptr<const base::DictionaryValue> device_policy_;
-  scoped_ptr<const base::DictionaryValue> active_;
+  std::unique_ptr<const base::DictionaryValue> user_;
+  std::unique_ptr<const base::DictionaryValue> policy_;
+  std::unique_ptr<const base::DictionaryValue> policy_without_recommended_;
+  std::unique_ptr<const base::DictionaryValue> device_policy_;
+  std::unique_ptr<const base::DictionaryValue> active_;
 
   void SetUp() override {
     policy_ = test_utils::ReadTestDictionary("managed_vpn.onc");
@@ -66,61 +66,67 @@ class ONCMergerTest : public testing::Test {
 };
 
 TEST_F(ONCMergerTest, MandatoryValueOverwritesUserValue) {
-  scoped_ptr<base::DictionaryValue> merged(MergeSettingsAndPoliciesToEffective(
-      policy_.get(), NULL, user_.get(), NULL));
+  std::unique_ptr<base::DictionaryValue> merged(
+      MergeSettingsAndPoliciesToEffective(policy_.get(), NULL, user_.get(),
+                                          NULL));
   EXPECT_TRUE(HaveSameValueAt(*merged, *policy_, "Type"));
   EXPECT_TRUE(HaveSameValueAt(*merged, *policy_, "StaticIPConfig"));
 }
 
 TEST_F(ONCMergerTest, MandatoryValueAndNoUserValue) {
-  scoped_ptr<base::DictionaryValue> merged(MergeSettingsAndPoliciesToEffective(
-      policy_.get(), NULL, user_.get(), NULL));
+  std::unique_ptr<base::DictionaryValue> merged(
+      MergeSettingsAndPoliciesToEffective(policy_.get(), NULL, user_.get(),
+                                          NULL));
   EXPECT_TRUE(HaveSameValueAt(*merged, *policy_, "GUID"));
   EXPECT_TRUE(HaveSameValueAt(*merged, *policy_, "VPN.OpenVPN.Username"));
 }
 
 TEST_F(ONCMergerTest, MandatoryDictionaryAndNoUserValue) {
-  scoped_ptr<base::DictionaryValue> merged(MergeSettingsAndPoliciesToEffective(
-          policy_.get(), NULL, user_.get(), NULL));
+  std::unique_ptr<base::DictionaryValue> merged(
+      MergeSettingsAndPoliciesToEffective(policy_.get(), NULL, user_.get(),
+                                          NULL));
   EXPECT_TRUE(HaveSameValueAt(*merged, *policy_without_recommended_,
                               "VPN.OpenVPN.ClientCertPattern"));
 }
 
 TEST_F(ONCMergerTest, UserValueOverwritesRecommendedValue) {
-  scoped_ptr<base::DictionaryValue> merged(MergeSettingsAndPoliciesToEffective(
-      policy_.get(), NULL, user_.get(), NULL));
+  std::unique_ptr<base::DictionaryValue> merged(
+      MergeSettingsAndPoliciesToEffective(policy_.get(), NULL, user_.get(),
+                                          NULL));
   EXPECT_TRUE(HaveSameValueAt(*merged, *user_, "VPN.Host"));
 }
 
 TEST_F(ONCMergerTest, UserValueAndRecommendedUnset) {
-  scoped_ptr<base::DictionaryValue> merged(MergeSettingsAndPoliciesToEffective(
-      policy_.get(), NULL, user_.get(), NULL));
+  std::unique_ptr<base::DictionaryValue> merged(
+      MergeSettingsAndPoliciesToEffective(policy_.get(), NULL, user_.get(),
+                                          NULL));
   EXPECT_TRUE(HaveSameValueAt(*merged, *user_, "VPN.OpenVPN.Password"));
 }
 
 TEST_F(ONCMergerTest, UserDictionaryAndNoPolicyValue) {
-  scoped_ptr<base::DictionaryValue> merged(MergeSettingsAndPoliciesToEffective(
-      policy_.get(), NULL, user_.get(), NULL));
+  std::unique_ptr<base::DictionaryValue> merged(
+      MergeSettingsAndPoliciesToEffective(policy_.get(), NULL, user_.get(),
+                                          NULL));
   const base::Value* value = NULL;
   EXPECT_FALSE(merged->Get("ProxySettings", &value));
 }
 
 TEST_F(ONCMergerTest, MergeWithEmptyPolicyProhibitsEverything) {
   base::DictionaryValue emptyDict;
-  scoped_ptr<base::DictionaryValue> merged(
+  std::unique_ptr<base::DictionaryValue> merged(
       MergeSettingsAndPoliciesToEffective(&emptyDict, NULL, user_.get(), NULL));
   EXPECT_TRUE(merged->empty());
 }
 
 TEST_F(ONCMergerTest, MergeWithoutPolicyAllowsAnything) {
-  scoped_ptr<base::DictionaryValue> merged(
+  std::unique_ptr<base::DictionaryValue> merged(
       MergeSettingsAndPoliciesToEffective(NULL, NULL, user_.get(), NULL));
   EXPECT_TRUE(test_utils::Equals(user_.get(), merged.get()));
 }
 
 TEST_F(ONCMergerTest, MergeWithoutUserSettings) {
   base::DictionaryValue emptyDict;
-  scoped_ptr<base::DictionaryValue> merged;
+  std::unique_ptr<base::DictionaryValue> merged;
 
   merged = MergeSettingsAndPoliciesToEffective(
       policy_.get(), NULL, &emptyDict, NULL);
@@ -133,24 +139,27 @@ TEST_F(ONCMergerTest, MergeWithoutUserSettings) {
 }
 
 TEST_F(ONCMergerTest, MandatoryUserPolicyOverwritesDevicePolicy) {
-  scoped_ptr<base::DictionaryValue> merged(MergeSettingsAndPoliciesToEffective(
-      policy_.get(), device_policy_.get(), user_.get(), NULL));
+  std::unique_ptr<base::DictionaryValue> merged(
+      MergeSettingsAndPoliciesToEffective(policy_.get(), device_policy_.get(),
+                                          user_.get(), NULL));
   EXPECT_TRUE(HaveSameValueAt(*merged, *policy_, "VPN.OpenVPN.Port"));
 }
 
 TEST_F(ONCMergerTest, MandatoryDevicePolicyOverwritesRecommendedUserPolicy) {
-  scoped_ptr<base::DictionaryValue> merged(MergeSettingsAndPoliciesToEffective(
-      policy_.get(), device_policy_.get(), user_.get(), NULL));
+  std::unique_ptr<base::DictionaryValue> merged(
+      MergeSettingsAndPoliciesToEffective(policy_.get(), device_policy_.get(),
+                                          user_.get(), NULL));
   EXPECT_TRUE(HaveSameValueAt(*merged, *device_policy_,
                               "VPN.OpenVPN.Username"));
 }
 
 TEST_F(ONCMergerTest, MergeToAugmented) {
-  scoped_ptr<base::DictionaryValue> expected_augmented =
+  std::unique_ptr<base::DictionaryValue> expected_augmented =
       test_utils::ReadTestDictionary("augmented_merge.json");
-  scoped_ptr<base::DictionaryValue> merged(MergeSettingsAndPoliciesToAugmented(
-      kNetworkConfigurationSignature, policy_.get(), device_policy_.get(),
-      user_.get(), NULL, active_.get()));
+  std::unique_ptr<base::DictionaryValue> merged(
+      MergeSettingsAndPoliciesToAugmented(kNetworkConfigurationSignature,
+                                          policy_.get(), device_policy_.get(),
+                                          user_.get(), NULL, active_.get()));
   EXPECT_TRUE(test_utils::Equals(expected_augmented.get(), merged.get()));
 }
 

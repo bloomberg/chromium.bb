@@ -5,12 +5,12 @@
 #ifndef CHROMEOS_NETWORK_NETWORK_CHANGE_NOTIFIER_CHROMEOS_H_
 #define CHROMEOS_NETWORK_NETWORK_CHANGE_NOTIFIER_CHROMEOS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "chromeos/chromeos_export.h"
@@ -101,7 +101,7 @@ class CHROMEOS_EXPORT NetworkChangeNotifierChromeos
   // default network.
   double max_bandwidth_mbps_;
 
-  scoped_ptr<DnsConfigService> dns_config_service_;
+  std::unique_ptr<DnsConfigService> dns_config_service_;
 
   // Callback for refreshing network state.
   base::Closure poll_callback_;

@@ -29,7 +29,8 @@ enum PseudoTerminalFd {
 
 const int kInvalidFd = -1;
 
-void StopOutputWatcher(scoped_ptr<chromeos::ProcessOutputWatcher> watcher) {
+void StopOutputWatcher(
+    std::unique_ptr<chromeos::ProcessOutputWatcher> watcher) {
   // Just deleting |watcher| if sufficient to stop it.
 }
 

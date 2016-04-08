@@ -4,12 +4,12 @@
 #include "chromeos/dbus/sms_client.h"
 
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
@@ -63,7 +63,7 @@ class SMSClientImpl : public SMSClient {
       return;
     }
     dbus::MessageReader reader(response);
-    scoped_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
+    std::unique_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
     base::DictionaryValue* dictionary_value = NULL;
     if (!value.get() || !value->GetAsDictionary(&dictionary_value)) {
       LOG(WARNING) << "Invalid response: " << response->ToString();

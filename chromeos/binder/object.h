@@ -5,8 +5,9 @@
 #ifndef CHROMEOS_BINDER_OBJECT_H_
 #define CHROMEOS_BINDER_OBJECT_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace binder {
 
@@ -28,7 +29,7 @@ class Object : public base::RefCountedThreadSafe<Object> {
   // Performs a transaction.
   virtual bool Transact(CommandBroker* command_broker,
                         const TransactionData& data,
-                        scoped_ptr<TransactionData>* reply) = 0;
+                        std::unique_ptr<TransactionData>* reply) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<Object>;

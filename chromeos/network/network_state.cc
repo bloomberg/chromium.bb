@@ -6,7 +6,8 @@
 
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/network/network_profile_handler.h"
@@ -161,7 +162,7 @@ bool NetworkState::PropertyChanged(const std::string& key,
     if (proxy_config_str.empty())
       return true;
 
-    scoped_ptr<base::DictionaryValue> proxy_config_dict(
+    std::unique_ptr<base::DictionaryValue> proxy_config_dict(
         onc::ReadDictionaryFromJson(proxy_config_str));
     if (proxy_config_dict) {
       // Warning: The DictionaryValue returned from
@@ -248,7 +249,7 @@ void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {
   if (NetworkTypePattern::VPN().MatchesType(type())) {
     // Shill sends VPN provider properties in a nested dictionary. |dictionary|
     // must replicate that nested structure.
-    scoped_ptr<base::DictionaryValue> provider_property(
+    std::unique_ptr<base::DictionaryValue> provider_property(
         new base::DictionaryValue);
     provider_property->SetStringWithoutPathExpansion(shill::kTypeProperty,
                                                      vpn_provider_type_);

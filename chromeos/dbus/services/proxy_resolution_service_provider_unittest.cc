@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -52,7 +53,7 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
     // Create the proxy resolution service with the mock bus and the mock
     // resolver injected.
     service_provider_.reset(ProxyResolutionServiceProvider::Create(
-        make_scoped_ptr(new TestProxyResolverDelegate(
+        base::WrapUnique(new TestProxyResolverDelegate(
             base::ThreadTaskRunnerHandle::Get()))));
 
     test_helper_.SetUp(kResolveNetworkProxy, service_provider_.get());
@@ -101,7 +102,7 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
   std::string proxy_info_;
   std::string error_message_;
   ServiceProviderTestHelper test_helper_;
-  scoped_ptr<CrosDBusService::ServiceProviderInterface> service_provider_;
+  std::unique_ptr<CrosDBusService::ServiceProviderInterface> service_provider_;
 };
 
 TEST_F(ProxyResolutionServiceProviderTest, ResolveProxy) {
@@ -115,7 +116,8 @@ TEST_F(ProxyResolutionServiceProviderTest, ResolveProxy) {
   writer.AppendString(kReturnSignalName);
 
   // Call the ResolveNetworkProxy method.
-  scoped_ptr<dbus::Response> response(test_helper_.CallMethod(&method_call));
+  std::unique_ptr<dbus::Response> response(
+      test_helper_.CallMethod(&method_call));
   base::RunLoop().RunUntilIdle();
 
   // An empty response should be returned.

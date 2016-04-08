@@ -64,7 +64,7 @@ void FakeNfcAdapterClient::Properties::Set(
 
   // Obtain the cached "set value" and send a property changed signal only if
   // its value is different from the current value of the property.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
   property->AppendSetValueToWriter(&writer);
   dbus::MessageReader reader(response.get());

@@ -5,11 +5,12 @@
 #ifndef CHROMEOS_TIMEZONE_TIMEZONE_REQUEST_H_
 #define CHROMEOS_TIMEZONE_TIMEZONE_REQUEST_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "chromeos/chromeos_export.h"
@@ -63,8 +64,9 @@ class CHROMEOS_EXPORT TimeZoneRequest : private net::URLFetcherDelegate {
   // The second argument indicates whether there was a server error or not.
   // It is true when there was a server or network error - either no response
   // or a 500 error code.
-  typedef base::Callback<void(scoped_ptr<TimeZoneResponseData> /* timezone */,
-                              bool /* server_error */)>
+  typedef base::Callback<void(
+      std::unique_ptr<TimeZoneResponseData> /* timezone */,
+      bool /* server_error */)>
       TimeZoneResponseCallback;
 
   // |url| is the server address to which the request wil be sent.
@@ -109,7 +111,7 @@ class CHROMEOS_EXPORT TimeZoneRequest : private net::URLFetcherDelegate {
   TimeZoneResponseCallback callback_;
 
   GURL request_url_;
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   // When request was actually started.
   base::Time request_started_at_;

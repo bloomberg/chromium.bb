@@ -4,8 +4,9 @@
 
 #include "chromeos/app_mode/kiosk_oem_manifest_parser.h"
 
+#include <memory>
+
 #include "base/json/json_file_value_serializer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 
@@ -31,9 +32,9 @@ bool KioskOemManifestParser::Load(
     KioskOemManifestParser::Manifest* manifest) {
   int error_code = JSONFileValueDeserializer::JSON_NO_ERROR;
   std::string error_msg;
-  scoped_ptr<JSONFileValueDeserializer> deserializer(
-     new JSONFileValueDeserializer(kiosk_oem_file));
-  scoped_ptr<base::Value> value =
+  std::unique_ptr<JSONFileValueDeserializer> deserializer(
+      new JSONFileValueDeserializer(kiosk_oem_file));
+  std::unique_ptr<base::Value> value =
       deserializer->Deserialize(&error_code, &error_msg);
   base::DictionaryValue* dict = NULL;
   if (error_code != JSONFileValueDeserializer::JSON_NO_ERROR ||

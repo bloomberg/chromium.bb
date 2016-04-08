@@ -74,9 +74,9 @@ void UMACryptohomeMigrationToGaiaId(const CryptohomeMigrationToGaiaId status) {
 
 // Hashes |key| with |system_salt| if it its type is KEY_TYPE_PASSWORD_PLAIN.
 // Returns the keys unmodified otherwise.
-scoped_ptr<Key> TransformKeyIfNeeded(const Key& key,
-                                     const std::string& system_salt) {
-  scoped_ptr<Key> result(new Key(key));
+std::unique_ptr<Key> TransformKeyIfNeeded(const Key& key,
+                                          const std::string& system_salt) {
+  std::unique_ptr<Key> result(new Key(key));
   if (result->GetKeyType() == Key::KEY_TYPE_PASSWORD_PLAIN)
     result->Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF, system_salt);
 
@@ -302,8 +302,8 @@ void OnGetKeyDataEx(
       DCHECK_EQ(kCryptohomeGAIAKeyLabel, key_definition.label);
 
       // Extract the key type and salt from |key_definition|, if present.
-      scoped_ptr<int64_t> type;
-      scoped_ptr<std::string> salt;
+      std::unique_ptr<int64_t> type;
+      std::unique_ptr<std::string> salt;
       for (std::vector<cryptohome::KeyDefinition::ProviderData>::
                const_iterator it = key_definition.provider_data.begin();
            it != key_definition.provider_data.end(); ++it) {
@@ -422,9 +422,9 @@ void Migrate(const base::WeakPtr<AuthAttemptState>& attempt,
 
   // TODO(bartfab): Retrieve the hashing algorithm and salt to use for |old_key|
   // from cryptohomed.
-  scoped_ptr<Key> old_key =
+  std::unique_ptr<Key> old_key =
       TransformKeyIfNeeded(Key(old_password), system_salt);
-  scoped_ptr<Key> new_key =
+  std::unique_ptr<Key> new_key =
       TransformKeyIfNeeded(*attempt->user_context.GetKey(), system_salt);
   if (passing_old_hash) {
     caller->AsyncMigrateKey(
@@ -456,7 +456,7 @@ void Remove(const base::WeakPtr<AuthAttemptState>& attempt,
 void CheckKey(const base::WeakPtr<AuthAttemptState>& attempt,
               scoped_refptr<CryptohomeAuthenticator> resolver,
               const std::string& system_salt) {
-  scoped_ptr<Key> key =
+  std::unique_ptr<Key> key =
       TransformKeyIfNeeded(*attempt->user_context.GetKey(), system_salt);
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncCheckKey(
       cryptohome::Identification(attempt->user_context.GetAccountId()),

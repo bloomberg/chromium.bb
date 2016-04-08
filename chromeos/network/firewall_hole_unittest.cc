@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromeos/network/firewall_hole.h"
+
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/mock_permission_broker_client.h"
-#include "chromeos/network/firewall_hole.h"
 #include "dbus/file_descriptor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,17 +36,17 @@ class FirewallHoleTest : public testing::Test {
   void SetUp() override {
     mock_permission_broker_client_ = new MockPermissionBrokerClient();
     DBusThreadManager::GetSetterForTesting()->SetPermissionBrokerClient(
-        make_scoped_ptr(mock_permission_broker_client_));
+        base::WrapUnique(mock_permission_broker_client_));
   }
 
   void TearDown() override { DBusThreadManager::Shutdown(); }
 
-  void AssertOpenSuccess(scoped_ptr<FirewallHole> hole) {
+  void AssertOpenSuccess(std::unique_ptr<FirewallHole> hole) {
     EXPECT_TRUE(hole.get() != nullptr);
     run_loop_.Quit();
   }
 
-  void AssertOpenFailure(scoped_ptr<FirewallHole> hole) {
+  void AssertOpenFailure(std::unique_ptr<FirewallHole> hole) {
     EXPECT_TRUE(hole.get() == nullptr);
     run_loop_.Quit();
   }

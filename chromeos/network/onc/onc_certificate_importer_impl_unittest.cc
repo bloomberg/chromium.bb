@@ -99,9 +99,9 @@ class ONCCertificateImporterImplTest : public testing::Test {
 
   void AddCertificatesFromFile(const std::string& filename,
                                bool expected_success) {
-    scoped_ptr<base::DictionaryValue> onc =
+    std::unique_ptr<base::DictionaryValue> onc =
         test_utils::ReadTestDictionary(filename);
-    scoped_ptr<base::Value> certificates_value;
+    std::unique_ptr<base::Value> certificates_value;
     base::ListValue* certificates = NULL;
     onc->RemoveWithoutPathExpansion(::onc::toplevel_config::kCertificates,
                                     &certificates_value);
@@ -153,9 +153,9 @@ class ONCCertificateImporterImplTest : public testing::Test {
   crypto::ScopedTestNSSDB private_nssdb_;
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  scoped_ptr<base::ThreadTaskRunnerHandle> thread_task_runner_handle_;
-  scoped_ptr<net::NSSCertDatabaseChromeOS> test_nssdb_;
-  scoped_ptr<base::ListValue> onc_certificates_;
+  std::unique_ptr<base::ThreadTaskRunnerHandle> thread_task_runner_handle_;
+  std::unique_ptr<net::NSSCertDatabaseChromeOS> test_nssdb_;
+  std::unique_ptr<base::ListValue> onc_certificates_;
   // List of certs in the nssdb's public slot.
   net::CertificateList public_list_;
   // List of certs in the nssdb's "private" slot.

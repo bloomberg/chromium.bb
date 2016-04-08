@@ -5,6 +5,7 @@
 #include "chromeos/network/onc/onc_mapper.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_signature.h"
 
@@ -17,10 +18,11 @@ Mapper::Mapper() {
 Mapper::~Mapper() {
 }
 
-scoped_ptr<base::Value> Mapper::MapValue(const OncValueSignature& signature,
-                                         const base::Value& onc_value,
-                                         bool* error) {
-  scoped_ptr<base::Value> result_value;
+std::unique_ptr<base::Value> Mapper::MapValue(
+    const OncValueSignature& signature,
+    const base::Value& onc_value,
+    bool* error) {
+  std::unique_ptr<base::Value> result_value;
   switch (onc_value.GetType()) {
     case base::Value::TYPE_DICTIONARY: {
       const base::DictionaryValue* dict = NULL;
@@ -43,11 +45,11 @@ scoped_ptr<base::Value> Mapper::MapValue(const OncValueSignature& signature,
   return result_value;
 }
 
-scoped_ptr<base::DictionaryValue> Mapper::MapObject(
+std::unique_ptr<base::DictionaryValue> Mapper::MapObject(
     const OncValueSignature& signature,
     const base::DictionaryValue& onc_object,
     bool* error) {
-  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
 
   bool found_unknown_field = false;
   MapFields(signature, onc_object, &found_unknown_field, error, result.get());
@@ -56,10 +58,11 @@ scoped_ptr<base::DictionaryValue> Mapper::MapObject(
   return result;
 }
 
-scoped_ptr<base::Value> Mapper::MapPrimitive(const OncValueSignature& signature,
-                                             const base::Value& onc_primitive,
-                                             bool* error) {
-  return make_scoped_ptr(onc_primitive.DeepCopy());
+std::unique_ptr<base::Value> Mapper::MapPrimitive(
+    const OncValueSignature& signature,
+    const base::Value& onc_primitive,
+    bool* error) {
+  return base::WrapUnique(onc_primitive.DeepCopy());
 }
 
 void Mapper::MapFields(const OncValueSignature& object_signature,
@@ -70,11 +73,9 @@ void Mapper::MapFields(const OncValueSignature& object_signature,
   for (base::DictionaryValue::Iterator it(onc_object); !it.IsAtEnd();
        it.Advance()) {
     bool current_field_unknown = false;
-    scoped_ptr<base::Value> result_value = MapField(it.key(),
-                                                    object_signature,
-                                                    it.value(),
-                                                    &current_field_unknown,
-                                                    nested_error);
+    std::unique_ptr<base::Value> result_value =
+        MapField(it.key(), object_signature, it.value(), &current_field_unknown,
+                 nested_error);
 
     if (current_field_unknown)
       *found_unknown_field = true;
@@ -85,7 +86,7 @@ void Mapper::MapFields(const OncValueSignature& object_signature,
   }
 }
 
-scoped_ptr<base::Value> Mapper::MapField(
+std::unique_ptr<base::Value> Mapper::MapField(
     const std::string& field_name,
     const OncValueSignature& object_signature,
     const base::Value& onc_value,
@@ -102,24 +103,24 @@ scoped_ptr<base::Value> Mapper::MapField(
   } else {
     DVLOG(1) << "Found unknown field name: '" << field_name << "'";
     *found_unknown_field = true;
-    return scoped_ptr<base::Value>();
+    return std::unique_ptr<base::Value>();
   }
 }
 
-scoped_ptr<base::ListValue> Mapper::MapArray(
+std::unique_ptr<base::ListValue> Mapper::MapArray(
     const OncValueSignature& array_signature,
     const base::ListValue& onc_array,
     bool* nested_error) {
   DCHECK(array_signature.onc_array_entry_signature != NULL)
       << "Found missing onc_array_entry_signature.";
 
-  scoped_ptr<base::ListValue> result_array(new base::ListValue);
+  std::unique_ptr<base::ListValue> result_array(new base::ListValue);
   int original_index = 0;
   for (base::ListValue::const_iterator it = onc_array.begin();
        it != onc_array.end(); ++it, ++original_index) {
     const base::Value* entry = *it;
 
-    scoped_ptr<base::Value> result_entry;
+    std::unique_ptr<base::Value> result_entry;
     result_entry = MapEntry(original_index,
                             *array_signature.onc_array_entry_signature,
                             *entry,
@@ -132,10 +133,11 @@ scoped_ptr<base::ListValue> Mapper::MapArray(
   return result_array;
 }
 
-scoped_ptr<base::Value> Mapper::MapEntry(int index,
-                                         const OncValueSignature& signature,
-                                         const base::Value& onc_value,
-                                         bool* error) {
+std::unique_ptr<base::Value> Mapper::MapEntry(
+    int index,
+    const OncValueSignature& signature,
+    const base::Value& onc_value,
+    bool* error) {
   return MapValue(signature, onc_value, error);
 }
 

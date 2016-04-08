@@ -6,13 +6,13 @@
 #define CHROMEOS_PROCESS_PROXY_PROCESS_PROXY_REGISTRY_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "chromeos/chromeos_export.h"
@@ -71,7 +71,7 @@ class CHROMEOS_EXPORT ProcessProxyRegistry : public base::NonThreadSafe {
   // Map of all existing ProcessProxies.
   std::map<int, ProcessProxyInfo> proxy_map_;
 
-  scoped_ptr<base::Thread> watcher_thread_;
+  std::unique_ptr<base::Thread> watcher_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessProxyRegistry);
 };

@@ -4,6 +4,7 @@
 
 #include "chromeos/network/auto_connect_handler.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -11,7 +12,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -153,7 +153,7 @@ class AutoConnectHandlerTest : public testing::Test {
 
  protected:
   bool Configure(const std::string& json_string) {
-    scoped_ptr<base::DictionaryValue> json_dict =
+    std::unique_ptr<base::DictionaryValue> json_dict =
         onc::ReadDictionaryFromJson(json_string);
     if (!json_dict) {
       LOG(ERROR) << "Error parsing json: " << json_string;
@@ -213,10 +213,10 @@ class AutoConnectHandlerTest : public testing::Test {
   void SetupPolicy(const std::string& network_configs_json,
                    const base::DictionaryValue& global_config,
                    bool user_policy) {
-    scoped_ptr<base::ListValue> network_configs(new base::ListValue);
+    std::unique_ptr<base::ListValue> network_configs(new base::ListValue);
     if (!network_configs_json.empty()) {
       std::string error;
-      scoped_ptr<base::Value> network_configs_value =
+      std::unique_ptr<base::Value> network_configs_value =
           base::JSONReader::ReadAndReturnError(network_configs_json,
                                                base::JSON_ALLOW_TRAILING_COMMAS,
                                                nullptr, &error);
@@ -239,16 +239,17 @@ class AutoConnectHandlerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  scoped_ptr<AutoConnectHandler> auto_connect_handler_;
-  scoped_ptr<ClientCertResolver> client_cert_resolver_;
-  scoped_ptr<NetworkStateHandler> network_state_handler_;
-  scoped_ptr<NetworkConfigurationHandler> network_config_handler_;
-  scoped_ptr<ManagedNetworkConfigurationHandlerImpl> managed_config_handler_;
-  scoped_ptr<NetworkProfileHandler> network_profile_handler_;
+  std::unique_ptr<AutoConnectHandler> auto_connect_handler_;
+  std::unique_ptr<ClientCertResolver> client_cert_resolver_;
+  std::unique_ptr<NetworkStateHandler> network_state_handler_;
+  std::unique_ptr<NetworkConfigurationHandler> network_config_handler_;
+  std::unique_ptr<ManagedNetworkConfigurationHandlerImpl>
+      managed_config_handler_;
+  std::unique_ptr<NetworkProfileHandler> network_profile_handler_;
   ShillManagerClient::TestInterface* test_manager_client_;
   ShillServiceClient::TestInterface* test_service_client_;
   crypto::ScopedTestNSSDB test_nssdb_;
-  scoped_ptr<net::NSSCertDatabaseChromeOS> test_nsscertdb_;
+  std::unique_ptr<net::NSSCertDatabaseChromeOS> test_nsscertdb_;
   base::MessageLoopForUI message_loop_;
 
  private:

@@ -39,7 +39,7 @@ class BinderEndToEndTest : public ::testing::Test {
     CommandBroker command_broker(&driver_);
     WritableTransactionData data;
     data.SetCode(TestService::SIGNAL_TRANSACTION);
-    scoped_ptr<TransactionData> reply;
+    std::unique_ptr<TransactionData> reply;
     ASSERT_TRUE(remote_object_->Transact(&command_broker, data, &reply));
     ASSERT_TRUE(reply);
 
@@ -62,7 +62,7 @@ TEST_F(BinderEndToEndTest, IncrementInt) {
   WritableTransactionData data;
   data.SetCode(TestService::INCREMENT_INT_TRANSACTION);
   data.WriteInt32(kInput);
-  scoped_ptr<TransactionData> reply;
+  std::unique_ptr<TransactionData> reply;
   ASSERT_TRUE(remote_object_->Transact(&command_broker_, data, &reply));
   ASSERT_TRUE(reply);
 
@@ -75,7 +75,7 @@ TEST_F(BinderEndToEndTest, IncrementInt) {
 TEST_F(BinderEndToEndTest, GetFD) {
   WritableTransactionData data;
   data.SetCode(TestService::GET_FD_TRANSACTION);
-  scoped_ptr<TransactionData> reply;
+  std::unique_ptr<TransactionData> reply;
   ASSERT_TRUE(remote_object_->Transact(&command_broker_, data, &reply));
   ASSERT_TRUE(reply);
 
@@ -108,7 +108,7 @@ TEST_F(BinderEndToEndTest, MultiThread) {
   // Wait for the signal.
   WritableTransactionData data;
   data.SetCode(TestService::WAIT_TRANSACTION);
-  scoped_ptr<TransactionData> reply;
+  std::unique_ptr<TransactionData> reply;
   ASSERT_TRUE(remote_object_->Transact(&command_broker_, data, &reply));
   ASSERT_TRUE(reply);
 

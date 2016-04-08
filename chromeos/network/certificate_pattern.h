@@ -5,10 +5,10 @@
 #ifndef CHROMEOS_NETWORK_CERTIFICATE_PATTERN_H_
 #define CHROMEOS_NETWORK_CERTIFICATE_PATTERN_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 
 namespace base {

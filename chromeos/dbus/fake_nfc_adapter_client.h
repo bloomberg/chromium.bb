@@ -5,10 +5,10 @@
 #ifndef CHROMEOS_DBUS_FAKE_NFC_ADAPTER_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_NFC_ADAPTER_CLIENT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/nfc_adapter_client.h"
@@ -94,8 +94,8 @@ class CHROMEOS_EXPORT FakeNfcAdapterClient : public NfcAdapterClient {
   base::ObserverList<Observer> observers_;
 
   // Fake properties that are returned for the emulated adapters.
-  scoped_ptr<Properties> properties_;
-  scoped_ptr<Properties> second_properties_;
+  std::unique_ptr<Properties> properties_;
+  std::unique_ptr<Properties> second_properties_;
 
   // Whether the adapter and second adapter are present or not.
   bool present_;

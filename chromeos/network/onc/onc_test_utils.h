@@ -5,9 +5,9 @@
 #ifndef CHROMEOS_NETWORK_ONC_ONC_TEST_UTILS_H_
 #define CHROMEOS_NETWORK_ONC_ONC_TEST_UTILS_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -24,7 +24,7 @@ std::string ReadTestData(const std::string& filename);
 
 // Read a JSON dictionary from |filename| and return it as a
 // DictionaryValue. CHECKs if any error occurs.
-scoped_ptr<base::DictionaryValue> ReadTestDictionary(
+std::unique_ptr<base::DictionaryValue> ReadTestDictionary(
     const std::string& filename);
 
 // Checks that the pointer |actual| is not NULL but points to a value that

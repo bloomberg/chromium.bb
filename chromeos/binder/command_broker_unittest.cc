@@ -28,7 +28,7 @@ class BinderCommandBrokerTest : public ::testing::Test {
 TEST_F(BinderCommandBrokerTest, Transact) {
   WritableTransactionData data;
   data.SetCode(kPingTransactionCode);
-  scoped_ptr<TransactionData> reply;
+  std::unique_ptr<TransactionData> reply;
   EXPECT_TRUE(command_broker_.Transact(kContextManagerHandle, data, &reply));
   ASSERT_TRUE(reply);
   EXPECT_FALSE(reply->HasStatus());  // No error.

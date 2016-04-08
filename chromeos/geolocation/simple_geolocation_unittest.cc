@@ -76,7 +76,7 @@ class TestGeolocationAPIURLFetcherCallback {
         attempts_(0),
         provider_(provider) {}
 
-  scoped_ptr<net::FakeURLFetcher> CreateURLFetcher(
+  std::unique_ptr<net::FakeURLFetcher> CreateURLFetcher(
       const GURL& url,
       net::URLFetcherDelegate* delegate,
       const std::string& response_data,
@@ -99,7 +99,7 @@ class TestGeolocationAPIURLFetcherCallback {
       status = net::URLRequestStatus::SUCCESS;
       factory_->SetFakeResponse(url, response_, response_code, status);
     }
-    scoped_ptr<net::FakeURLFetcher> fetcher(new net::FakeURLFetcher(
+    std::unique_ptr<net::FakeURLFetcher> fetcher(new net::FakeURLFetcher(
         url, delegate, response_, response_code, status));
     scoped_refptr<net::HttpResponseHeaders> download_headers =
         new net::HttpResponseHeaders(std::string());
@@ -152,8 +152,8 @@ class GeolocationAPIFetcherFactory {
   size_t attempts() const { return url_callback_->attempts(); }
 
  private:
-  scoped_ptr<TestGeolocationAPIURLFetcherCallback> url_callback_;
-  scoped_ptr<net::FakeURLFetcherFactory> fetcher_factory_;
+  std::unique_ptr<TestGeolocationAPIURLFetcherCallback> url_callback_;
+  std::unique_ptr<net::FakeURLFetcherFactory> fetcher_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationAPIFetcherFactory);
 };
@@ -185,7 +185,7 @@ class GeolocationReceiver {
   Geoposition position_;
   bool server_error_;
   base::TimeDelta elapsed_;
-  scoped_ptr<base::RunLoop> message_loop_runner_;
+  std::unique_ptr<base::RunLoop> message_loop_runner_;
 };
 
 class WiFiTestMonitor : public SimpleGeolocationRequestTestMonitor {
@@ -371,7 +371,7 @@ class SimpleGeolocationWiFiTest : public ::testing::TestWithParam<bool> {
 
  protected:
   base::MessageLoopForUI message_loop_;
-  scoped_ptr<GeolocationHandler> geolocation_handler_;
+  std::unique_ptr<GeolocationHandler> geolocation_handler_;
   ShillManagerClient::TestInterface* manager_test_;
   WifiAccessPointVector wifi_access_points_;
 

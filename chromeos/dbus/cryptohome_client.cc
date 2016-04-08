@@ -178,7 +178,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(cryptohome_id.id());
 
-    scoped_ptr<dbus::Response> response =
+    std::unique_ptr<dbus::Response> response =
         blocking_method_caller_->CallMethodAndBlock(&method_call);
 
     std::string sanitized_username;
@@ -335,7 +335,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   bool CallTpmClearStoredPasswordAndBlock() override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeTpmClearStoredPassword);
-    scoped_ptr<dbus::Response> response(
+    std::unique_ptr<dbus::Response> response(
         blocking_method_caller_->CallMethodAndBlock(&method_call));
     return response.get() != NULL;
   }
@@ -385,7 +385,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
                                  cryptohome::kCryptohomeInstallAttributesGet);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(name);
-    scoped_ptr<dbus::Response> response(
+    std::unique_ptr<dbus::Response> response(
         blocking_method_caller_->CallMethodAndBlock(&method_call));
     if (!response.get())
       return false;
@@ -986,7 +986,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // Calls a method with a bool value reult and block.
   bool CallBoolMethodAndBlock(dbus::MethodCall* method_call,
                               bool* result) {
-    scoped_ptr<dbus::Response> response(
+    std::unique_ptr<dbus::Response> response(
         blocking_method_caller_->CallMethodAndBlock(method_call));
     if (!response.get())
       return false;
@@ -1158,7 +1158,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   dbus::ObjectProxy* proxy_;
-  scoped_ptr<BlockingMethodCaller> blocking_method_caller_;
+  std::unique_ptr<BlockingMethodCaller> blocking_method_caller_;
   AsyncCallStatusHandler async_call_status_handler_;
   AsyncCallStatusWithDataHandler async_call_status_data_handler_;
 

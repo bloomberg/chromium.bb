@@ -90,7 +90,7 @@ class TestTimeZoneAPIURLFetcherCallback {
         attempts_(0),
         provider_(provider) {}
 
-  scoped_ptr<net::FakeURLFetcher> CreateURLFetcher(
+  std::unique_ptr<net::FakeURLFetcher> CreateURLFetcher(
       const GURL& url,
       net::URLFetcherDelegate* delegate,
       const std::string& response_data,
@@ -113,7 +113,7 @@ class TestTimeZoneAPIURLFetcherCallback {
       status = net::URLRequestStatus::SUCCESS;
       factory_->SetFakeResponse(url, response_, response_code, status);
     }
-    scoped_ptr<net::FakeURLFetcher> fetcher(new net::FakeURLFetcher(
+    std::unique_ptr<net::FakeURLFetcher> fetcher(new net::FakeURLFetcher(
         url, delegate, response_, response_code, status));
     scoped_refptr<net::HttpResponseHeaders> download_headers =
         new net::HttpResponseHeaders(std::string());
@@ -166,8 +166,8 @@ class TimeZoneAPIFetcherFactory {
   size_t attempts() const { return url_callback_->attempts(); }
 
  private:
-  scoped_ptr<TestTimeZoneAPIURLFetcherCallback> url_callback_;
-  scoped_ptr<net::FakeURLFetcherFactory> fetcher_factory_;
+  std::unique_ptr<TestTimeZoneAPIURLFetcherCallback> url_callback_;
+  std::unique_ptr<net::FakeURLFetcherFactory> fetcher_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TimeZoneAPIFetcherFactory);
 };
@@ -176,7 +176,7 @@ class TimeZoneReceiver {
  public:
   TimeZoneReceiver() : server_error_(false) {}
 
-  void OnRequestDone(scoped_ptr<TimeZoneResponseData> timezone,
+  void OnRequestDone(std::unique_ptr<TimeZoneResponseData> timezone,
                      bool server_error) {
     timezone_ = std::move(timezone);
     server_error_ = server_error;
@@ -193,9 +193,9 @@ class TimeZoneReceiver {
   bool server_error() const { return server_error_; }
 
  private:
-  scoped_ptr<TimeZoneResponseData> timezone_;
+  std::unique_ptr<TimeZoneResponseData> timezone_;
   bool server_error_;
-  scoped_ptr<base::RunLoop> message_loop_runner_;
+  std::unique_ptr<base::RunLoop> message_loop_runner_;
 };
 
 class TimeZoneTest : public testing::Test {

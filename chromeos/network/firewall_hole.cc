@@ -7,10 +7,12 @@
 #include <fcntl.h>
 #include <stdint.h>
 #include <unistd.h>
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/worker_pool.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/permission_broker_client.h"
@@ -139,7 +141,7 @@ void FirewallHole::PortAccessGranted(PortType type,
                                      const FirewallHole::OpenCallback& callback,
                                      bool success) {
   if (success) {
-    callback.Run(make_scoped_ptr(
+    callback.Run(base::WrapUnique(
         new FirewallHole(type, port, interface, std::move(lifeline_fd))));
   } else {
     callback.Run(nullptr);

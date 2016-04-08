@@ -152,7 +152,7 @@ void CertLoader::LoadCertificates() {
 }
 
 void CertLoader::UpdateCertificates(
-    scoped_ptr<net::CertificateList> cert_list) {
+    std::unique_ptr<net::CertificateList> cert_list) {
   CHECK(thread_checker_.CalledOnValidThread());
   DCHECK(certificates_update_running_);
   VLOG(1) << "UpdateCertificates: " << cert_list->size();

@@ -5,12 +5,12 @@
 #ifndef CHROMEOS_DBUS_DBUS_THREAD_MANAGER_H_
 #define CHROMEOS_DBUS_DBUS_THREAD_MANAGER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client_bundle.h"
 
@@ -90,7 +90,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // Returns a DBusThreadManagerSetter instance that allows tests to
   // replace individual D-Bus clients with their own implementations.
   // Also initializes the main DBusThreadManager for testing if necessary.
-  static scoped_ptr<DBusThreadManagerSetter> GetSetterForTesting();
+  static std::unique_ptr<DBusThreadManagerSetter> GetSetterForTesting();
 
   // Returns true if DBusThreadManager has been initialized. Call this to
   // avoid initializing + shutting down DBusThreadManager more than once.
@@ -148,7 +148,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
 
   // Creates a new DBusThreadManager using the DBusClients set in
   // |client_bundle|.
-  explicit DBusThreadManager(scoped_ptr<DBusClientBundle> client_bundle);
+  explicit DBusThreadManager(std::unique_ptr<DBusClientBundle> client_bundle);
   ~DBusThreadManager();
 
   // Creates a global instance of DBusThreadManager with the real
@@ -174,9 +174,9 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // performs additional setup.
   void InitializeClients();
 
-  scoped_ptr<base::Thread> dbus_thread_;
+  std::unique_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> system_bus_;
-  scoped_ptr<DBusClientBundle> client_bundle_;
+  std::unique_ptr<DBusClientBundle> client_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusThreadManager);
 };
@@ -185,39 +185,42 @@ class CHROMEOS_EXPORT DBusThreadManagerSetter {
  public:
   ~DBusThreadManagerSetter();
 
-  void SetAmplifierClient(scoped_ptr<AmplifierClient> client);
-  void SetAudioDspClient(scoped_ptr<AudioDspClient> client);
-  void SetCrasAudioClient(scoped_ptr<CrasAudioClient> client);
-  void SetCrosDisksClient(scoped_ptr<CrosDisksClient> client);
-  void SetCryptohomeClient(scoped_ptr<CryptohomeClient> client);
-  void SetDebugDaemonClient(scoped_ptr<DebugDaemonClient> client);
-  void SetEasyUnlockClient(scoped_ptr<EasyUnlockClient> client);
-  void SetLorgnetteManagerClient(scoped_ptr<LorgnetteManagerClient> client);
-  void SetShillDeviceClient(scoped_ptr<ShillDeviceClient> client);
-  void SetShillIPConfigClient(scoped_ptr<ShillIPConfigClient> client);
-  void SetShillManagerClient(scoped_ptr<ShillManagerClient> client);
-  void SetShillServiceClient(scoped_ptr<ShillServiceClient> client);
-  void SetShillProfileClient(scoped_ptr<ShillProfileClient> client);
+  void SetAmplifierClient(std::unique_ptr<AmplifierClient> client);
+  void SetAudioDspClient(std::unique_ptr<AudioDspClient> client);
+  void SetCrasAudioClient(std::unique_ptr<CrasAudioClient> client);
+  void SetCrosDisksClient(std::unique_ptr<CrosDisksClient> client);
+  void SetCryptohomeClient(std::unique_ptr<CryptohomeClient> client);
+  void SetDebugDaemonClient(std::unique_ptr<DebugDaemonClient> client);
+  void SetEasyUnlockClient(std::unique_ptr<EasyUnlockClient> client);
+  void SetLorgnetteManagerClient(
+      std::unique_ptr<LorgnetteManagerClient> client);
+  void SetShillDeviceClient(std::unique_ptr<ShillDeviceClient> client);
+  void SetShillIPConfigClient(std::unique_ptr<ShillIPConfigClient> client);
+  void SetShillManagerClient(std::unique_ptr<ShillManagerClient> client);
+  void SetShillServiceClient(std::unique_ptr<ShillServiceClient> client);
+  void SetShillProfileClient(std::unique_ptr<ShillProfileClient> client);
   void SetShillThirdPartyVpnDriverClient(
-      scoped_ptr<ShillThirdPartyVpnDriverClient> client);
-  void SetGsmSMSClient(scoped_ptr<GsmSMSClient> client);
-  void SetImageBurnerClient(scoped_ptr<ImageBurnerClient> client);
-  void SetIntrospectableClient(scoped_ptr<IntrospectableClient> client);
-  void SetModemMessagingClient(scoped_ptr<ModemMessagingClient> client);
-  void SetNfcAdapterClient(scoped_ptr<NfcAdapterClient> client);
-  void SetNfcDeviceClient(scoped_ptr<NfcDeviceClient> client);
-  void SetNfcManagerClient(scoped_ptr<NfcManagerClient> client);
-  void SetNfcRecordClient(scoped_ptr<NfcRecordClient> client);
-  void SetNfcTagClient(scoped_ptr<NfcTagClient> client);
-  void SetPeerDaemonManagerClient(scoped_ptr<PeerDaemonManagerClient> client);
-  void SetPermissionBrokerClient(scoped_ptr<PermissionBrokerClient> client);
+      std::unique_ptr<ShillThirdPartyVpnDriverClient> client);
+  void SetGsmSMSClient(std::unique_ptr<GsmSMSClient> client);
+  void SetImageBurnerClient(std::unique_ptr<ImageBurnerClient> client);
+  void SetIntrospectableClient(std::unique_ptr<IntrospectableClient> client);
+  void SetModemMessagingClient(std::unique_ptr<ModemMessagingClient> client);
+  void SetNfcAdapterClient(std::unique_ptr<NfcAdapterClient> client);
+  void SetNfcDeviceClient(std::unique_ptr<NfcDeviceClient> client);
+  void SetNfcManagerClient(std::unique_ptr<NfcManagerClient> client);
+  void SetNfcRecordClient(std::unique_ptr<NfcRecordClient> client);
+  void SetNfcTagClient(std::unique_ptr<NfcTagClient> client);
+  void SetPeerDaemonManagerClient(
+      std::unique_ptr<PeerDaemonManagerClient> client);
+  void SetPermissionBrokerClient(
+      std::unique_ptr<PermissionBrokerClient> client);
   void SetPrivetDaemonManagerClient(
-      scoped_ptr<PrivetDaemonManagerClient> client);
-  void SetPowerManagerClient(scoped_ptr<PowerManagerClient> client);
-  void SetSessionManagerClient(scoped_ptr<SessionManagerClient> client);
-  void SetSMSClient(scoped_ptr<SMSClient> client);
-  void SetSystemClockClient(scoped_ptr<SystemClockClient> client);
-  void SetUpdateEngineClient(scoped_ptr<UpdateEngineClient> client);
+      std::unique_ptr<PrivetDaemonManagerClient> client);
+  void SetPowerManagerClient(std::unique_ptr<PowerManagerClient> client);
+  void SetSessionManagerClient(std::unique_ptr<SessionManagerClient> client);
+  void SetSMSClient(std::unique_ptr<SMSClient> client);
+  void SetSystemClockClient(std::unique_ptr<SystemClockClient> client);
+  void SetUpdateEngineClient(std::unique_ptr<UpdateEngineClient> client);
 
  private:
   friend class DBusThreadManager;

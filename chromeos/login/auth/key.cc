@@ -4,9 +4,10 @@
 
 #include "chromeos/login/auth/key.h"
 
+#include <memory>
+
 #include "base/base64.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "crypto/sha2.h"
@@ -89,12 +90,10 @@ void Key::Transform(KeyType target_key_type, const std::string& salt) {
       break;
     }
     case KEY_TYPE_SALTED_PBKDF2_AES256_1234: {
-      scoped_ptr<crypto::SymmetricKey> key(
-          crypto::SymmetricKey::DeriveKeyFromPassword(crypto::SymmetricKey::AES,
-                                                      secret_,
-                                                      salt,
-                                                      kNumIterations,
-                                                      kKeySizeInBits));
+      std::unique_ptr<crypto::SymmetricKey> key(
+          crypto::SymmetricKey::DeriveKeyFromPassword(
+              crypto::SymmetricKey::AES, secret_, salt, kNumIterations,
+              kKeySizeInBits));
       std::string raw_secret;
       key->GetRawKey(&raw_secret);
       base::Base64Encode(raw_secret, &secret_);

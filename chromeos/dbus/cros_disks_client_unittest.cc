@@ -6,7 +6,8 @@
 
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "dbus/message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -61,7 +62,7 @@ TEST(CrosDisksClientTest, DiskInfo) {
   const std::string kVendorName = "Vendor Name";
 
   // Construct a fake response of GetDeviceProperties().
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   {
     dbus::MessageWriter writer(response.get());
     dbus::MessageWriter array_writer(NULL);

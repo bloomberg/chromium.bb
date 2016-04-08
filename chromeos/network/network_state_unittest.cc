@@ -5,11 +5,13 @@
 #include "chromeos/network/network_state.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/i18n/streaming_utf8_validator.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,14 +59,14 @@ class NetworkStateTest : public testing::Test {
   }
 
  protected:
-  bool SetProperty(const std::string& key, scoped_ptr<base::Value> value) {
+  bool SetProperty(const std::string& key, std::unique_ptr<base::Value> value) {
     const bool result = network_state_.PropertyChanged(key, *value);
     properties_.SetWithoutPathExpansion(key, value.release());
     return result;
   }
 
   bool SetStringProperty(const std::string& key, const std::string& value) {
-    return SetProperty(key, make_scoped_ptr(new TestStringValue(value)));
+    return SetProperty(key, base::WrapUnique(new TestStringValue(value)));
   }
 
   bool SignalInitialPropertiesReceived() {
@@ -224,7 +226,7 @@ TEST_F(NetworkStateTest, VPNThirdPartyProvider) {
   EXPECT_TRUE(SetStringProperty(shill::kTypeProperty, shill::kTypeVPN));
   EXPECT_TRUE(SetStringProperty(shill::kNameProperty, "VPN"));
 
-  scoped_ptr<base::DictionaryValue> provider(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> provider(new base::DictionaryValue);
   provider->SetStringWithoutPathExpansion(shill::kTypeProperty,
                                           shill::kProviderThirdPartyVpn);
   provider->SetStringWithoutPathExpansion(

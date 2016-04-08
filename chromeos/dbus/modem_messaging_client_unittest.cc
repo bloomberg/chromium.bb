@@ -131,7 +131,7 @@ class ModemMessagingClientTest : public testing::Test {
 
  protected:
   // The client to be tested.
-  scoped_ptr<ModemMessagingClient> client_;
+  std::unique_ptr<ModemMessagingClient> client_;
   // A message loop to emulate asynchronous behavior.
   base::MessageLoop message_loop_;
   // The mock bus.
@@ -199,7 +199,7 @@ TEST_F(ModemMessagingClientTest, Delete) {
   MockDeleteCallback callback;
   EXPECT_CALL(callback, Run()).Times(1);
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   response_ = response.get();
   // Call Delete.
   client_->Delete(kServiceName, dbus::ObjectPath(kObjectPath), kSmsPath,
@@ -218,7 +218,7 @@ TEST_F(ModemMessagingClientTest, List) {
   EXPECT_CALL(callback, Run(_))
       .WillOnce(Invoke(this, &ModemMessagingClientTest::CheckResult));
   // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::ObjectPath path1("/SMS/1");
   dbus::ObjectPath path2("/SMS/2");
   std::vector<dbus::ObjectPath> expected_result;

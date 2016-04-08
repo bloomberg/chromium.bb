@@ -15,7 +15,7 @@ namespace {
 
 void OnDisplayOwnershipChanged(
     const dbus::ExportedObject::ResponseSender& response_sender,
-    scoped_ptr<dbus::Response> response,
+    std::unique_ptr<dbus::Response> response,
     bool status) {
   dbus::MessageWriter writer(response.get());
   writer.AppendBool(status);
@@ -24,7 +24,8 @@ void OnDisplayOwnershipChanged(
 
 }  // namespace
 
-ConsoleServiceProvider::ConsoleServiceProvider(scoped_ptr<Delegate> delegate)
+ConsoleServiceProvider::ConsoleServiceProvider(
+    std::unique_ptr<Delegate> delegate)
     : delegate_(std::move(delegate)), weak_ptr_factory_(this) {}
 
 ConsoleServiceProvider::~ConsoleServiceProvider() {

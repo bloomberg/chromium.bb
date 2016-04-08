@@ -254,7 +254,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
         login_manager::kSessionManagerRetrievePolicyForUser);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(cryptohome_id.id());
-    scoped_ptr<dbus::Response> response =
+    std::unique_ptr<dbus::Response> response =
         blocking_method_caller_->CallMethodAndBlock(&method_call);
     std::string policy;
     ExtractString(login_manager::kSessionManagerRetrievePolicyForUser,
@@ -703,7 +703,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   dbus::ObjectProxy* session_manager_proxy_;
-  scoped_ptr<BlockingMethodCaller> blocking_method_caller_;
+  std::unique_ptr<BlockingMethodCaller> blocking_method_caller_;
   base::ObserverList<Observer> observers_;
 
   // Most recent screen-lock state received from session_manager.

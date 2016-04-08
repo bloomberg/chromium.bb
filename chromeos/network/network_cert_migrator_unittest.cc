@@ -191,10 +191,10 @@ class NetworkCertMigratorTest : public testing::Test {
   base::MessageLoop message_loop_;
 
  private:
-  scoped_ptr<NetworkStateHandler> network_state_handler_;
-  scoped_ptr<NetworkCertMigrator> network_cert_migrator_;
+  std::unique_ptr<NetworkStateHandler> network_state_handler_;
+  std::unique_ptr<NetworkCertMigrator> network_cert_migrator_;
   crypto::ScopedTestNSSDB test_nssdb_;
-  scoped_ptr<net::NSSCertDatabaseChromeOS> test_nsscertdb_;
+  std::unique_ptr<net::NSSCertDatabaseChromeOS> test_nsscertdb_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkCertMigratorTest);
 };

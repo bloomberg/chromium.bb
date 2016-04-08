@@ -354,11 +354,11 @@ class NfcClientTest : public testing::Test {
   // Response returned by mock methods.
   dbus::Response* response_;
   // The D-Bus client objects under test.
-  scoped_ptr<NfcManagerClient> manager_client_;
-  scoped_ptr<NfcAdapterClient> adapter_client_;
-  scoped_ptr<NfcDeviceClient> device_client_;
-  scoped_ptr<NfcTagClient> tag_client_;
-  scoped_ptr<NfcRecordClient> record_client_;
+  std::unique_ptr<NfcManagerClient> manager_client_;
+  std::unique_ptr<NfcAdapterClient> adapter_client_;
+  std::unique_ptr<NfcDeviceClient> device_client_;
+  std::unique_ptr<NfcTagClient> tag_client_;
+  std::unique_ptr<NfcRecordClient> record_client_;
   // Mock observers.
   MockNfcManagerObserver mock_manager_observer_;
   MockNfcAdapterObserver mock_adapter_observer_;

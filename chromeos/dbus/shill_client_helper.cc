@@ -148,7 +148,7 @@ void OnDictionaryValueMethod(
     return;
   }
   dbus::MessageReader reader(response);
-  scoped_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
+  std::unique_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
   base::DictionaryValue* result = NULL;
   if (!value.get() || !value->GetAsDictionary(&result)) {
     base::DictionaryValue result;
@@ -174,7 +174,7 @@ void OnDictionaryValueMethodWithErrorCallback(
     const ShillClientHelper::ErrorCallback& error_callback,
     dbus::Response* response) {
   dbus::MessageReader reader(response);
-  scoped_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
+  std::unique_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
   base::DictionaryValue* result = NULL;
   if (!value.get() || !value->GetAsDictionary(&result)) {
     error_callback.Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
@@ -190,7 +190,7 @@ void OnListValueMethodWithErrorCallback(
     const ShillClientHelper::ErrorCallback& error_callback,
     dbus::Response* response) {
   dbus::MessageReader reader(response);
-  scoped_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
+  std::unique_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
   base::ListValue* result = NULL;
   if (!value.get() || !value->GetAsList(&result)) {
     error_callback.Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
@@ -543,7 +543,7 @@ void ShillClientHelper::OnPropertyChanged(dbus::Signal* signal) {
   std::string name;
   if (!reader.PopString(&name))
     return;
-  scoped_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
+  std::unique_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
   if (!value.get())
     return;
 

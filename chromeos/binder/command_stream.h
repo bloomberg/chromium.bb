@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chromeos/chromeos_export.h"
@@ -38,7 +38,7 @@ class CHROMEOS_EXPORT CommandStream {
 
     // Called to handle BR_REPLY.
     // |data| is the reply for the previous transaction.
-    virtual void OnReply(scoped_ptr<TransactionData> data) = 0;
+    virtual void OnReply(std::unique_ptr<TransactionData> data) = 0;
 
     // Called to handle BR_DEAD_REPLY.
     virtual void OnDeadReply() = 0;
@@ -101,7 +101,7 @@ class CHROMEOS_EXPORT CommandStream {
 
   std::vector<char> outgoing_data_;  // Buffer for outgoing commands.
   std::vector<char> incoming_data_;  // Buffer for incoming commands.
-  scoped_ptr<BufferReader> incoming_data_reader_;
+  std::unique_ptr<BufferReader> incoming_data_reader_;
 
   base::WeakPtrFactory<CommandStream> weak_ptr_factory_;
 

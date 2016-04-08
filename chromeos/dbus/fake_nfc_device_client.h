@@ -5,8 +5,9 @@
 #ifndef CHROMEOS_DBUS_FAKE_NFC_DEVICE_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_NFC_DEVICE_CLIENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/nfc_client_helpers.h"
@@ -110,7 +111,7 @@ class CHROMEOS_EXPORT FakeNfcDeviceClient : public NfcDeviceClient {
   base::ObserverList<Observer> observers_;
 
   // Fake properties that are returned for the emulated device.
-  scoped_ptr<Properties> properties_;
+  std::unique_ptr<Properties> properties_;
 
   // If true, a pairing simulation was started using BeginPairing() and no call
   // to EndPairing() has been made.

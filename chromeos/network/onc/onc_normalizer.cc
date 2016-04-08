@@ -22,26 +22,26 @@ Normalizer::Normalizer(bool remove_recommended_fields)
 Normalizer::~Normalizer() {
 }
 
-scoped_ptr<base::DictionaryValue> Normalizer::NormalizeObject(
+std::unique_ptr<base::DictionaryValue> Normalizer::NormalizeObject(
     const OncValueSignature* object_signature,
     const base::DictionaryValue& onc_object) {
   CHECK(object_signature != NULL);
   bool error = false;
-  scoped_ptr<base::DictionaryValue> result =
+  std::unique_ptr<base::DictionaryValue> result =
       MapObject(*object_signature, onc_object, &error);
   DCHECK(!error);
   return result;
 }
 
-scoped_ptr<base::DictionaryValue> Normalizer::MapObject(
+std::unique_ptr<base::DictionaryValue> Normalizer::MapObject(
     const OncValueSignature& signature,
     const base::DictionaryValue& onc_object,
     bool* error) {
-  scoped_ptr<base::DictionaryValue> normalized =
+  std::unique_ptr<base::DictionaryValue> normalized =
       Mapper::MapObject(signature, onc_object, error);
 
   if (normalized.get() == NULL)
-    return scoped_ptr<base::DictionaryValue>();
+    return std::unique_ptr<base::DictionaryValue>();
 
   if (remove_recommended_fields_)
     normalized->RemoveWithoutPathExpansion(::onc::kRecommended, NULL);

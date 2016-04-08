@@ -81,7 +81,7 @@ void FakeShillServiceClient::GetProperties(
     const dbus::ObjectPath& service_path,
     const DictionaryValueCallback& callback) {
   base::DictionaryValue* nested_dict = NULL;
-  scoped_ptr<base::DictionaryValue> result_properties;
+  std::unique_ptr<base::DictionaryValue> result_properties;
   DBusMethodCallStatus call_status;
   stub_services_.GetDictionaryWithoutPathExpansion(service_path.value(),
                                                    &nested_dict);
@@ -159,7 +159,7 @@ void FakeShillServiceClient::ClearProperties(
     error_callback.Run("Error.InvalidService", "Invalid Service");
     return;
   }
-  scoped_ptr<base::ListValue> results(new base::ListValue);
+  std::unique_ptr<base::ListValue> results(new base::ListValue);
   for (std::vector<std::string>::const_iterator iter = names.begin();
       iter != names.end(); ++iter) {
     dict->RemoveWithoutPathExpansion(*iter, NULL);
@@ -267,7 +267,7 @@ void FakeShillServiceClient::GetLoadableProfileEntries(
     const DictionaryValueCallback& callback) {
   // Provide a dictionary with a single { profile_path, service_path } entry
   // if the Profile property is set, or an empty dictionary.
-  scoped_ptr<base::DictionaryValue> result_properties(
+  std::unique_ptr<base::DictionaryValue> result_properties(
       new base::DictionaryValue);
   base::DictionaryValue* service_properties =
       GetModifiableServiceProperties(service_path.value(), false);
@@ -426,7 +426,7 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
     const base::DictionaryValue* new_dict = NULL;
     value.GetAsDictionary(&new_dict);
     CHECK(new_dict);
-    scoped_ptr<base::Value> cur_value;
+    std::unique_ptr<base::Value> cur_value;
     base::DictionaryValue* cur_dict;
     if (dict->RemoveWithoutPathExpansion(property, &cur_value) &&
         cur_value->GetAsDictionary(&cur_dict)) {

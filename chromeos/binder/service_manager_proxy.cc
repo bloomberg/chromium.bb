@@ -29,7 +29,7 @@ scoped_refptr<Object> ServiceManagerProxy::CheckService(
   data.WriteInterfaceToken(base::ASCIIToUTF16(kInterfaceName),
                            kStrictModePolicy);
   data.WriteString16(service_name);
-  scoped_ptr<TransactionData> reply;
+  std::unique_ptr<TransactionData> reply;
   if (!command_broker->Transact(kContextManagerHandle, data, &reply) ||
       !reply || reply->HasStatus()) {
     LOG(ERROR) << "Failed to get the service.";
@@ -54,7 +54,7 @@ bool ServiceManagerProxy::AddService(CommandBroker* command_broker,
   data.WriteString16(service_name);
   data.WriteObject(object);
   data.WriteInt32((options & ALLOW_ISOLATED) ? 1 : 0);
-  scoped_ptr<TransactionData> reply;
+  std::unique_ptr<TransactionData> reply;
   if (!command_broker->Transact(kContextManagerHandle, data, &reply) ||
       !reply || reply->HasStatus()) {
     LOG(ERROR) << "Failed to add the service.";

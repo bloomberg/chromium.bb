@@ -12,11 +12,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chromeos/chromeos_export.h"
@@ -95,15 +95,15 @@ CHROMEOS_EXPORT bool ParseCellularScanResults(
 // Retrieves the ONC state dictionary for |network| using GetStateProperties.
 // This includes properties from the corresponding NetworkState if it exists.
 // Assumed to be called from the primary user profile.
-CHROMEOS_EXPORT scoped_ptr<base::DictionaryValue> TranslateNetworkStateToONC(
-    const NetworkState* network);
+CHROMEOS_EXPORT std::unique_ptr<base::DictionaryValue>
+TranslateNetworkStateToONC(const NetworkState* network);
 
 // Retrieves the list of network services by passing |pattern|,
 // |configured_only|, and |visible_only| to NetworkStateHandler::
 // GetNetworkListByType(). Translates the result into a list of ONC
 // dictionaries using TranslateShillServiceToONCPart. |limit| is used to limit
 // the number of results.
-CHROMEOS_EXPORT scoped_ptr<base::ListValue> TranslateNetworkListToONC(
+CHROMEOS_EXPORT std::unique_ptr<base::ListValue> TranslateNetworkListToONC(
     NetworkTypePattern pattern,
     bool configured_only,
     bool visible_only,

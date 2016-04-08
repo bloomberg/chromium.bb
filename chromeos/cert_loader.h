@@ -99,7 +99,7 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
   void LoadCertificates();
 
   // Called if a certificate load task is finished.
-  void UpdateCertificates(scoped_ptr<net::CertificateList> cert_list);
+  void UpdateCertificates(std::unique_ptr<net::CertificateList> cert_list);
 
   void NotifyCertificatesLoaded(bool initial_load);
 
@@ -120,7 +120,7 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
   net::NSSCertDatabase* database_;
 
   // Cached Certificates loaded from the database.
-  scoped_ptr<net::CertificateList> cert_list_;
+  std::unique_ptr<net::CertificateList> cert_list_;
 
   base::ThreadChecker thread_checker_;
 

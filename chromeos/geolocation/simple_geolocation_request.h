@@ -5,11 +5,12 @@
 #ifndef CHROMEOS_GEOLOCATION_SIMPLE_GEOLOCATION_REQUEST_H_
 #define CHROMEOS_GEOLOCATION_SIMPLE_GEOLOCATION_REQUEST_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "chromeos/chromeos_export.h"
@@ -55,7 +56,7 @@ class CHROMEOS_EXPORT SimpleGeolocationRequest
   SimpleGeolocationRequest(net::URLRequestContextGetter* url_context_getter,
                            const GURL& service_url,
                            base::TimeDelta timeout,
-                           scoped_ptr<WifiAccessPointVector> wifi_data);
+                           std::unique_ptr<WifiAccessPointVector> wifi_data);
 
   ~SimpleGeolocationRequest() override;
 
@@ -108,7 +109,7 @@ class CHROMEOS_EXPORT SimpleGeolocationRequest
   // Actual URL with parameters.
   GURL request_url_;
 
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   // When request was actually started.
   base::Time request_started_at_;
@@ -131,7 +132,7 @@ class CHROMEOS_EXPORT SimpleGeolocationRequest
   // This is updated on each retry.
   Geoposition position_;
 
-  scoped_ptr<WifiAccessPointVector> wifi_data_;
+  std::unique_ptr<WifiAccessPointVector> wifi_data_;
 
   // Creation and destruction should happen on the same thread.
   base::ThreadChecker thread_checker_;

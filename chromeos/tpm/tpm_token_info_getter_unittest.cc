@@ -245,8 +245,8 @@ class SystemTPMTokenInfoGetterTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<TestCryptohomeClient> cryptohome_client_;
-  scoped_ptr<chromeos::TPMTokenInfoGetter> tpm_token_info_getter_;
+  std::unique_ptr<TestCryptohomeClient> cryptohome_client_;
+  std::unique_ptr<chromeos::TPMTokenInfoGetter> tpm_token_info_getter_;
 
   std::vector<int64_t> delays_;
 
@@ -270,8 +270,8 @@ class UserTPMTokenInfoGetterTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<TestCryptohomeClient> cryptohome_client_;
-  scoped_ptr<chromeos::TPMTokenInfoGetter> tpm_token_info_getter_;
+  std::unique_ptr<TestCryptohomeClient> cryptohome_client_;
+  std::unique_ptr<chromeos::TPMTokenInfoGetter> tpm_token_info_getter_;
 
   const AccountId account_id_;
   std::vector<int64_t> delays_;

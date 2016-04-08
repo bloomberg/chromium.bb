@@ -254,10 +254,10 @@ void TDLSErrorCallback(
       dbus_error_name == shill::kErrorResultInProgress ?
       NetworkDeviceHandler::kErrorTimeout : NetworkDeviceHandler::kErrorUnknown;
   const std::string& error_detail = params.ip_or_mac_address;
-  scoped_ptr<base::DictionaryValue> error_data(
-      network_handler::CreateDBusErrorData(
-          device_path, error_name, error_detail,
-          dbus_error_name, dbus_error_message));
+  std::unique_ptr<base::DictionaryValue> error_data(
+      network_handler::CreateDBusErrorData(device_path, error_name,
+                                           error_detail, dbus_error_name,
+                                           dbus_error_message));
   error_callback.Run(error_name, std::move(error_data));
 }
 
@@ -571,7 +571,8 @@ const DeviceState* NetworkDeviceHandlerImpl::GetWifiDeviceState(
   if (!device_state) {
     if (error_callback.is_null())
       return NULL;
-    scoped_ptr<base::DictionaryValue> error_data(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> error_data(
+        new base::DictionaryValue);
     error_data->SetString(network_handler::kErrorName, kErrorDeviceMissing);
     error_callback.Run(kErrorDeviceMissing, std::move(error_data));
     return NULL;

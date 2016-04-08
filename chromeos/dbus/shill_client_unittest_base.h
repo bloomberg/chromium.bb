@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/shill_client_helper.h"
@@ -53,7 +53,7 @@ class ValueMatcher : public MatcherInterface<const base::Value&> {
   void DescribeNegationTo(::std::ostream* os) const override;
 
  private:
-  scoped_ptr<base::Value> expected_value_;
+  std::unique_ptr<base::Value> expected_value_;
 };
 
 inline Matcher<const base::Value&> ValueEq(const base::Value& expected_value) {

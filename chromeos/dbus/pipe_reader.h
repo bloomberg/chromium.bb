@@ -5,13 +5,13 @@
 #ifndef CHROMEOS_DBUS_PIPE_READER_H_
 #define CHROMEOS_DBUS_PIPE_READER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 namespace base {
@@ -57,7 +57,7 @@ class PipeReader {
   virtual void AcceptData(const char *data, int length) = 0;
 
  private:
-  scoped_ptr<net::FileStream> data_stream_;
+  std::unique_ptr<net::FileStream> data_stream_;
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
   scoped_refptr<base::TaskRunner> task_runner_;
   IOCompleteCallback callback_;

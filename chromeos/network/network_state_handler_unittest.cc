@@ -7,12 +7,12 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -267,8 +267,8 @@ class NetworkStateHandlerTest : public testing::Test {
   }
 
   base::MessageLoopForUI message_loop_;
-  scoped_ptr<NetworkStateHandler> network_state_handler_;
-  scoped_ptr<TestObserver> test_observer_;
+  std::unique_ptr<NetworkStateHandler> network_state_handler_;
+  std::unique_ptr<TestObserver> test_observer_;
   ShillDeviceClient::TestInterface* device_test_;
   ShillManagerClient::TestInterface* manager_test_;
   ShillProfileClient::TestInterface* profile_test_;

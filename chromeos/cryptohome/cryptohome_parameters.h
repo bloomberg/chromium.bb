@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 
 class AccountId;
@@ -113,8 +113,8 @@ struct CHROMEOS_EXPORT KeyDefinition {
     bool operator==(const ProviderData& other) const;
 
     std::string name;
-    scoped_ptr<int64_t> number;
-    scoped_ptr<std::string> bytes;
+    std::unique_ptr<int64_t> number;
+    std::unique_ptr<std::string> bytes;
   };
 
   KeyDefinition();

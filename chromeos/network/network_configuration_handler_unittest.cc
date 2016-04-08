@@ -67,7 +67,7 @@ void DictionaryValueCallback(const std::string& expected_id,
 void ErrorCallback(bool error_expected,
                    const std::string& expected_id,
                    const std::string& error_name,
-                   scoped_ptr<base::DictionaryValue> error_data) {
+                   std::unique_ptr<base::DictionaryValue> error_data) {
   EXPECT_TRUE(error_expected) << "Unexpected error: " << error_name
                               << " with associated data: \n"
                               << PrettyJson(*error_data);
@@ -183,17 +183,17 @@ class NetworkConfigurationHandlerTest : public testing::Test {
   ~NetworkConfigurationHandlerTest() override {}
 
   void SetUp() override {
-    scoped_ptr<DBusThreadManagerSetter> dbus_setter =
+    std::unique_ptr<DBusThreadManagerSetter> dbus_setter =
         DBusThreadManager::GetSetterForTesting();
     mock_manager_client_ = new MockShillManagerClient();
     mock_profile_client_ = new MockShillProfileClient();
     mock_service_client_ = new MockShillServiceClient();
     dbus_setter->SetShillManagerClient(
-        scoped_ptr<ShillManagerClient>(mock_manager_client_));
+        std::unique_ptr<ShillManagerClient>(mock_manager_client_));
     dbus_setter->SetShillProfileClient(
-        scoped_ptr<ShillProfileClient>(mock_profile_client_));
+        std::unique_ptr<ShillProfileClient>(mock_profile_client_));
     dbus_setter->SetShillServiceClient(
-        scoped_ptr<ShillServiceClient>(mock_service_client_));
+        std::unique_ptr<ShillServiceClient>(mock_service_client_));
 
     EXPECT_CALL(*mock_service_client_, GetProperties(_, _)).Times(AnyNumber());
     EXPECT_CALL(*mock_manager_client_, GetProperties(_)).Times(AnyNumber());
@@ -295,8 +295,8 @@ class NetworkConfigurationHandlerTest : public testing::Test {
   MockShillManagerClient* mock_manager_client_;
   MockShillProfileClient* mock_profile_client_;
   MockShillServiceClient* mock_service_client_;
-  scoped_ptr<NetworkStateHandler> network_state_handler_;
-  scoped_ptr<NetworkConfigurationHandler> network_configuration_handler_;
+  std::unique_ptr<NetworkStateHandler> network_state_handler_;
+  std::unique_ptr<NetworkConfigurationHandler> network_configuration_handler_;
   base::MessageLoopForUI message_loop_;
   base::DictionaryValue* dictionary_value_result_;
 };
@@ -306,7 +306,7 @@ TEST_F(NetworkConfigurationHandlerTest, GetProperties) {
   std::string expected_json = "{\n   \"SSID\": \"MyNetwork\"\n}\n";
   std::string networkName = "MyNetwork";
   std::string key = "SSID";
-  scoped_ptr<base::StringValue> networkNameValue(
+  std::unique_ptr<base::StringValue> networkNameValue(
       new base::StringValue(networkName));
 
   base::DictionaryValue value;
@@ -335,7 +335,7 @@ TEST_F(NetworkConfigurationHandlerTest, SetProperties) {
   std::string service_path = "/service/1";
   std::string networkName = "MyNetwork";
   std::string key = "SSID";
-  scoped_ptr<base::StringValue> networkNameValue(
+  std::unique_ptr<base::StringValue> networkNameValue(
       new base::StringValue(networkName));
 
   base::DictionaryValue value;
@@ -355,7 +355,7 @@ TEST_F(NetworkConfigurationHandlerTest, ClearProperties) {
   std::string service_path = "/service/1";
   std::string networkName = "MyNetwork";
   std::string key = "SSID";
-  scoped_ptr<base::StringValue> networkNameValue(
+  std::unique_ptr<base::StringValue> networkNameValue(
       new base::StringValue(networkName));
 
   // First set up a value to clear.
@@ -387,7 +387,7 @@ TEST_F(NetworkConfigurationHandlerTest, ClearPropertiesError) {
   std::string service_path = "/service/1";
   std::string networkName = "MyNetwork";
   std::string key = "SSID";
-  scoped_ptr<base::StringValue> networkNameValue(
+  std::unique_ptr<base::StringValue> networkNameValue(
       new base::StringValue(networkName));
 
   // First set up a value to clear.
@@ -578,13 +578,13 @@ class NetworkConfigurationHandlerStubTest : public testing::Test {
     return false;
   }
 
-  scoped_ptr<NetworkStateHandler> network_state_handler_;
-  scoped_ptr<NetworkConfigurationHandler> network_configuration_handler_;
-  scoped_ptr<TestObserver> test_observer_;
+  std::unique_ptr<NetworkStateHandler> network_state_handler_;
+  std::unique_ptr<NetworkConfigurationHandler> network_configuration_handler_;
+  std::unique_ptr<TestObserver> test_observer_;
   base::MessageLoopForUI message_loop_;
   std::string success_callback_name_;
   std::string get_properties_path_;
-  scoped_ptr<base::DictionaryValue> get_properties_;
+  std::unique_ptr<base::DictionaryValue> get_properties_;
   std::string create_service_path_;
 };
 
@@ -694,7 +694,7 @@ TEST_F(NetworkConfigurationHandlerStubTest, NetworkConfigurationObserver) {
   const std::string service_path("/service/test_wifi");
   const std::string test_passphrase("test_passphrase");
 
-  scoped_ptr<TestNetworkConfigurationObserver> test_observer(
+  std::unique_ptr<TestNetworkConfigurationObserver> test_observer(
       new TestNetworkConfigurationObserver);
   network_configuration_handler_->AddObserver(test_observer.get());
   CreateTestConfiguration(service_path, shill::kTypeWifi);

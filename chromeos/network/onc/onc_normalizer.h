@@ -5,8 +5,9 @@
 #ifndef CHROMEOS_NETWORK_ONC_ONC_NORMALIZER_H_
 #define CHROMEOS_NETWORK_ONC_ONC_NORMALIZER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/onc/onc_mapper.h"
 
@@ -29,13 +30,13 @@ class CHROMEOS_EXPORT Normalizer : public Mapper {
   // is set, but the field "HexSSID" is not, the contents of the "SSID" field is
   // converted to UTF-8 encoding, a hex representation of the byte sequence is
   // created and stored in the field "HexSSID".
-  scoped_ptr<base::DictionaryValue> NormalizeObject(
+  std::unique_ptr<base::DictionaryValue> NormalizeObject(
       const OncValueSignature* object_signature,
       const base::DictionaryValue& onc_object);
 
  private:
   // Dispatch to the right normalization function according to |signature|.
-  scoped_ptr<base::DictionaryValue> MapObject(
+  std::unique_ptr<base::DictionaryValue> MapObject(
       const OncValueSignature& signature,
       const base::DictionaryValue& onc_object,
       bool* error) override;

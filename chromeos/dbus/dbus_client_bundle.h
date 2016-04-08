@@ -5,10 +5,10 @@
 #ifndef CHROMEOS_DBUS_DBUS_CLIENT_BUNDLE_H_
 #define CHROMEOS_DBUS_DBUS_CLIENT_BUNDLE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 
 namespace chromeos {
@@ -228,41 +228,41 @@ class CHROMEOS_EXPORT DBusClientBundle {
   // are defined within DBusClientType enum.
   DBusClientTypeMask unstub_client_mask_;
 
-  scoped_ptr<AmplifierClient> amplifier_client_;
-  scoped_ptr<ApManagerClient> ap_manager_client_;
-  scoped_ptr<AudioDspClient> audio_dsp_client_;
-  scoped_ptr<CrasAudioClient> cras_audio_client_;
-  scoped_ptr<CrosDisksClient> cros_disks_client_;
-  scoped_ptr<CryptohomeClient> cryptohome_client_;
-  scoped_ptr<DebugDaemonClient> debug_daemon_client_;
-  scoped_ptr<EasyUnlockClient> easy_unlock_client_;
-  scoped_ptr<LorgnetteManagerClient> lorgnette_manager_client_;
-  scoped_ptr<PeerDaemonManagerClient> peer_daemon_manager_client_;
-  scoped_ptr<PrivetDaemonManagerClient> privet_daemon_manager_client_;
-  scoped_ptr<ShillDeviceClient> shill_device_client_;
-  scoped_ptr<ShillIPConfigClient> shill_ipconfig_client_;
-  scoped_ptr<ShillManagerClient> shill_manager_client_;
-  scoped_ptr<ShillServiceClient> shill_service_client_;
-  scoped_ptr<ShillProfileClient> shill_profile_client_;
-  scoped_ptr<ShillThirdPartyVpnDriverClient>
+  std::unique_ptr<AmplifierClient> amplifier_client_;
+  std::unique_ptr<ApManagerClient> ap_manager_client_;
+  std::unique_ptr<AudioDspClient> audio_dsp_client_;
+  std::unique_ptr<CrasAudioClient> cras_audio_client_;
+  std::unique_ptr<CrosDisksClient> cros_disks_client_;
+  std::unique_ptr<CryptohomeClient> cryptohome_client_;
+  std::unique_ptr<DebugDaemonClient> debug_daemon_client_;
+  std::unique_ptr<EasyUnlockClient> easy_unlock_client_;
+  std::unique_ptr<LorgnetteManagerClient> lorgnette_manager_client_;
+  std::unique_ptr<PeerDaemonManagerClient> peer_daemon_manager_client_;
+  std::unique_ptr<PrivetDaemonManagerClient> privet_daemon_manager_client_;
+  std::unique_ptr<ShillDeviceClient> shill_device_client_;
+  std::unique_ptr<ShillIPConfigClient> shill_ipconfig_client_;
+  std::unique_ptr<ShillManagerClient> shill_manager_client_;
+  std::unique_ptr<ShillServiceClient> shill_service_client_;
+  std::unique_ptr<ShillProfileClient> shill_profile_client_;
+  std::unique_ptr<ShillThirdPartyVpnDriverClient>
       shill_third_party_vpn_driver_client_;
-  scoped_ptr<GsmSMSClient> gsm_sms_client_;
-  scoped_ptr<ImageBurnerClient> image_burner_client_;
-  scoped_ptr<IntrospectableClient> introspectable_client_;
-  scoped_ptr<ModemMessagingClient> modem_messaging_client_;
+  std::unique_ptr<GsmSMSClient> gsm_sms_client_;
+  std::unique_ptr<ImageBurnerClient> image_burner_client_;
+  std::unique_ptr<IntrospectableClient> introspectable_client_;
+  std::unique_ptr<ModemMessagingClient> modem_messaging_client_;
   // The declaration order for NFC client objects is important. See
   // DBusThreadManager::InitializeClients for the dependencies.
-  scoped_ptr<NfcManagerClient> nfc_manager_client_;
-  scoped_ptr<NfcAdapterClient> nfc_adapter_client_;
-  scoped_ptr<NfcDeviceClient> nfc_device_client_;
-  scoped_ptr<NfcTagClient> nfc_tag_client_;
-  scoped_ptr<NfcRecordClient> nfc_record_client_;
-  scoped_ptr<PermissionBrokerClient> permission_broker_client_;
-  scoped_ptr<SystemClockClient> system_clock_client_;
-  scoped_ptr<PowerManagerClient> power_manager_client_;
-  scoped_ptr<SessionManagerClient> session_manager_client_;
-  scoped_ptr<SMSClient> sms_client_;
-  scoped_ptr<UpdateEngineClient> update_engine_client_;
+  std::unique_ptr<NfcManagerClient> nfc_manager_client_;
+  std::unique_ptr<NfcAdapterClient> nfc_adapter_client_;
+  std::unique_ptr<NfcDeviceClient> nfc_device_client_;
+  std::unique_ptr<NfcTagClient> nfc_tag_client_;
+  std::unique_ptr<NfcRecordClient> nfc_record_client_;
+  std::unique_ptr<PermissionBrokerClient> permission_broker_client_;
+  std::unique_ptr<SystemClockClient> system_clock_client_;
+  std::unique_ptr<PowerManagerClient> power_manager_client_;
+  std::unique_ptr<SessionManagerClient> session_manager_client_;
+  std::unique_ptr<SMSClient> sms_client_;
+  std::unique_ptr<UpdateEngineClient> update_engine_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusClientBundle);
 };

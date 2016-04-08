@@ -131,9 +131,10 @@ bool CommandStream::OnIncomingCommand(uint32_t command, BufferReader* reader) {
       break;
     }
     case BR_REPLY: {
-      scoped_ptr<TransactionDataFromDriver> data(new TransactionDataFromDriver(
-          base::Bind(&CommandStream::FreeTransactionBuffer,
-                     weak_ptr_factory_.GetWeakPtr())));
+      std::unique_ptr<TransactionDataFromDriver> data(
+          new TransactionDataFromDriver(
+              base::Bind(&CommandStream::FreeTransactionBuffer,
+                         weak_ptr_factory_.GetWeakPtr())));
       binder_transaction_data* data_struct = data->mutable_data();
       if (!reader->Read(data_struct, sizeof(*data_struct))) {
         LOG(ERROR) << "Failed to read transaction data.";

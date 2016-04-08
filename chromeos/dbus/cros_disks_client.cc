@@ -577,7 +577,7 @@ DiskInfo::~DiskInfo() {
 // ]
 void DiskInfo::InitializeFromResponse(dbus::Response* response) {
   dbus::MessageReader reader(response);
-  scoped_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
+  std::unique_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
   base::DictionaryValue* properties = NULL;
   if (!value || !value->GetAsDictionary(&properties))
     return;

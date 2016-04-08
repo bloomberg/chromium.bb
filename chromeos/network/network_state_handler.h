@@ -6,6 +6,7 @@
 #define CHROMEOS_NETWORK_NETWORK_STATE_HANDLER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -13,7 +14,6 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
@@ -375,7 +375,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
       const NetworkTypePattern& type) const;
 
   // Shill property handler instance, owned by this class.
-  scoped_ptr<internal::ShillPropertyHandler> shill_property_handler_;
+  std::unique_ptr<internal::ShillPropertyHandler> shill_property_handler_;
 
   // Observer list
   base::ObserverList<NetworkStateHandlerObserver, true> observers_;
