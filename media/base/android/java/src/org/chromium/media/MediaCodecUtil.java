@@ -243,6 +243,29 @@ class MediaCodecUtil {
     }
 
     /**
+     * Returns true if and only enabling adaptive playback is unsafe.  On some
+     * device / os combinations, enabling it causes decoded frames to be
+     * unusable.  For example, the S3 on 4.4.2 returns black and white, tiled
+     * frames when this is enabled.
+     */
+    private static boolean isAdaptivePlaybackBlacklisted(String mime) {
+        if (!mime.equals("video/avc") && !mime.equals("video/avc1")) {
+            return false;
+        }
+
+        if (!Build.VERSION.RELEASE.equals("4.4.2")) {
+            return false;
+        }
+
+        if (!Build.MANUFACTURER.toLowerCase(Locale.getDefault()).equals("samsung")) {
+            return false;
+        }
+
+        return Build.MODEL.startsWith("GT-I9300") || // S3 (I9300 / I9300I)
+                Build.MODEL.startsWith("SCH-I535"); // S3
+    }
+
+    /**
      * Returns true if the given codec supports adaptive playback (dynamic resolution change).
      * @param mediaCodec the codec.
      * @param mime MIME type that corresponds to the codec creation.
@@ -258,6 +281,11 @@ class MediaCodecUtil {
             if (info.isEncoder()) {
                 return false;
             }
+
+            if (isAdaptivePlaybackBlacklisted(mime)) {
+                return false;
+            }
+
             MediaCodecInfo.CodecCapabilities capabilities = info.getCapabilitiesForType(mime);
             return (capabilities != null)
                     && capabilities.isFeatureSupported(

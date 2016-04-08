@@ -122,6 +122,9 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     // an output SurfaceView on Android. It's only valid when not equal to
     // |kNoSurfaceID|.
     int surface_id = kNoSurfaceID;
+
+    // Coded size of the video frame hint, subject to change.
+    gfx::Size initial_expected_coded_size;
   };
 
   // Interface for collaborating with picture interface to provide memory for

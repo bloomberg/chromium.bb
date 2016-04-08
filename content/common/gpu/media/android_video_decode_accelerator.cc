@@ -331,6 +331,8 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   client_ = client;
   codec_config_ = new CodecConfig();
   codec_config_->codec_ = VideoCodecProfileToVideoCodec(config.profile);
+  codec_config_->initial_expected_coded_size_ =
+      config.initial_expected_coded_size;
   is_encrypted_ = config.is_encrypted;
 
   bool profile_supported = codec_config_->codec_ == media::kCodecVP8 ||
@@ -955,13 +957,11 @@ AndroidVideoDecodeAccelerator::ConfigureMediaCodecOnAnyThread(
   // |needs_protected_surface_| implies encrypted stream.
   DCHECK(!codec_config->needs_protected_surface_ || media_crypto);
 
-  // Pass a dummy 320x240 canvas size and let the codec signal the real size
-  // when it's known from the bitstream.
   return scoped_ptr<media::VideoCodecBridge>(
       media::VideoCodecBridge::CreateDecoder(
           codec_config->codec_, codec_config->needs_protected_surface_,
-          gfx::Size(320, 240), codec_config->surface_.j_surface().obj(),
-          media_crypto, false));
+          codec_config->initial_expected_coded_size_,
+          codec_config->surface_.j_surface().obj(), media_crypto, true));
 }
 
 void AndroidVideoDecodeAccelerator::OnCodecConfigured(

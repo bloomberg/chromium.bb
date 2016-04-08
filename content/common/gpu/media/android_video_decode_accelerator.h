@@ -184,6 +184,10 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
     // an encrypted stream.
     media::MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto_;
 
+    // Initial coded size.  The actual size might change at any time, so this
+    // is only a hint.
+    gfx::Size initial_expected_coded_size_;
+
    protected:
     friend class base::RefCountedThreadSafe<CodecConfig>;
     virtual ~CodecConfig();

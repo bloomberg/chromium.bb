@@ -43,10 +43,6 @@ class MediaCodecBridge {
     private static final int MEDIA_CODEC_ABORT = 8;
     private static final int MEDIA_CODEC_ERROR = 9;
 
-    // Max adaptive playback size to be supplied to the decoder.
-    private static final int MAX_ADAPTIVE_PLAYBACK_WIDTH = 1920;
-    private static final int MAX_ADAPTIVE_PLAYBACK_HEIGHT = 1080;
-
     // After a flush(), dequeueOutputBuffer() can often produce empty presentation timestamps
     // for several frames. As a result, the player may find that the time does not increase
     // after decoding a frame. To detect this, we check whether the presentation timestamp from
@@ -455,9 +451,21 @@ class MediaCodecBridge {
     private boolean configureVideo(MediaFormat format, Surface surface, MediaCrypto crypto,
             int flags, boolean allowAdaptivePlayback) {
         try {
-            if (mAdaptivePlaybackSupported && allowAdaptivePlayback) {
-                format.setInteger(MediaFormat.KEY_MAX_WIDTH, MAX_ADAPTIVE_PLAYBACK_WIDTH);
-                format.setInteger(MediaFormat.KEY_MAX_HEIGHT, MAX_ADAPTIVE_PLAYBACK_HEIGHT);
+            // If adaptive playback is turned off by request, then treat it as
+            // not supported.  Note that configureVideo is only called once
+            // during creation, else this would prevent re-enabling adaptive
+            // playback later.
+            if (!allowAdaptivePlayback) mAdaptivePlaybackSupported = false;
+
+            if (mAdaptivePlaybackSupported) {
+                // The max size is a hint to the codec, and causes it to
+                // allocate more memory up front.  It still supports higher
+                // resolutions if they arrive.  So, we try to ask only for
+                // the initial size.
+                format.setInteger(
+                        MediaFormat.KEY_MAX_WIDTH, format.getInteger(MediaFormat.KEY_WIDTH));
+                format.setInteger(
+                        MediaFormat.KEY_MAX_HEIGHT, format.getInteger(MediaFormat.KEY_HEIGHT));
             }
             mMediaCodec.configure(format, surface, crypto, flags);
             return true;
@@ -496,8 +504,9 @@ class MediaCodecBridge {
 
     @CalledByNative
     private boolean isAdaptivePlaybackSupported(int width, int height) {
-        if (!mAdaptivePlaybackSupported) return false;
-        return width <= MAX_ADAPTIVE_PLAYBACK_WIDTH && height <= MAX_ADAPTIVE_PLAYBACK_HEIGHT;
+        // If media codec has adaptive playback supported, then the max sizes
+        // used during creation are only hints.
+        return mAdaptivePlaybackSupported;
     }
 
     @CalledByNative

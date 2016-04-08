@@ -251,6 +251,7 @@ void GpuVideoDecoder::CompleteInitialization(int cdm_id, int surface_id) {
   VideoDecodeAccelerator::Config vda_config(config_);
   vda_config.surface_id = surface_id;
   vda_config.is_deferred_initialization_allowed = true;
+  vda_config.initial_expected_coded_size = config_.coded_size();
   if (!vda_->Initialize(vda_config, this)) {
     DVLOG(1) << "VDA::Initialize failed.";
     base::ResetAndReturn(&init_cb_).Run(false);
