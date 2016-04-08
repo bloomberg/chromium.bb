@@ -15,7 +15,6 @@
  *   policy: boolean,
  *   readonly: boolean,
  *   untrusted: boolean,
- *   urlLocked: boolean
  * }}
  * @see chrome/browser/ui/webui/settings/certificates_handler.cc
  */

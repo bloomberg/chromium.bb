@@ -530,12 +530,20 @@ cr.define('certificate_manager_page', function() {
       // once tapped the correct event is fired.
       test('MenuOptions_Edit', function() {
         var editButton = subentry.shadowRoot.querySelector('#edit');
+        assertTrue(!!editButton);
         // Should be disabled for any certificate type other than
         // CertificateType.CA
         assertTrue(editButton.hidden);
         subentry.certificateType = settings.CertificateType.CA;
         assertFalse(editButton.hidden);
 
+        // Should be disabled if |policy| is true.
+        var model = createSampleCertificateSubnode();
+        model.policy = true;
+        subentry.model = model;
+        assertTrue(editButton.hidden);
+
+        subentry.model = createSampleCertificateSubnode();
         var waitForActionEvent = actionEventToPromise();
         MockInteractions.tap(editButton);
         return waitForActionEvent.then(function(event) {
@@ -550,14 +558,22 @@ cr.define('certificate_manager_page', function() {
       // Test that the 'Delete' option is only shown when appropriate and that
       // once tapped the correct event is fired.
       test('MenuOptions_Delete', function() {
-        subentry.set('model.readonly', true);
-
         var deleteButton = subentry.shadowRoot.querySelector('#delete');
-        // Should be disabled when 'model.readonly' is true.
-        assertTrue(deleteButton.hidden);
-        subentry.set('model.readonly', false);
-        assertFalse(deleteButton.hidden);
+        assertTrue(!!deleteButton);
 
+        // Should be disabled when 'model.readonly' is true.
+        var model = createSampleCertificateSubnode();
+        model.readonly = true;
+        subentry.model = model;
+        assertTrue(deleteButton.hidden);
+
+        // Should be disabled when 'model.policy' is true.
+        var model = createSampleCertificateSubnode();
+        model.policy = true;
+        subentry.model = model;
+        assertTrue(deleteButton.hidden);
+
+        subentry.model = createSampleCertificateSubnode();
         var waitForActionEvent = actionEventToPromise();
         MockInteractions.tap(deleteButton);
         return waitForActionEvent.then(function(event) {
@@ -568,10 +584,13 @@ cr.define('certificate_manager_page', function() {
         });
       });
 
-      // Test case of exporting a certificate that is not PERSONAL.
+      // Test that the 'Export' option is always shown when the certificate type
+      // is not PERSONAL and that once tapped the correct event is fired.
       test('MenuOptions_Export', function() {
         subentry.certificateType = settings.CertificateType.SERVER;
         var exportButton = subentry.shadowRoot.querySelector('#export');
+        assertTrue(!!exportButton);
+        assertFalse(exportButton.hidden);
         MockInteractions.tap(exportButton);
         return browserProxy.whenCalled('exportCertificate').then(function(id) {
           assertEquals(subentry.model.id, id);
@@ -580,9 +599,18 @@ cr.define('certificate_manager_page', function() {
 
       // Test case of exporting a PERSONAL certificate.
       test('MenuOptions_ExportPersonal', function() {
-        var waitForActionEvent = actionEventToPromise();
-
         var exportButton = subentry.shadowRoot.querySelector('#export');
+        assertTrue(!!exportButton);
+
+        // Should be disabled when 'model.extractable' is false.
+        assertTrue(exportButton.hidden);
+
+        var model = createSampleCertificateSubnode();
+        model.extractable = true;
+        subentry.model = model;
+        assertFalse(exportButton.hidden);
+
+        var waitForActionEvent = actionEventToPromise();
         MockInteractions.tap(exportButton);
         return browserProxy.whenCalled('exportPersonalCertificate').then(
             function(id) {

@@ -141,12 +141,35 @@ Polymer({
   },
 
   /**
-   * @param {string} certificateType The type of this certificate.
+   * @param {!settings.CertificateType} certificateType
+   * @param {!CertificateSubnode} model
    * @return {boolean} Whether the certificate can be edited.
    * @private
    */
-  canEdit_: function(certificateType) {
-    return this.certificateType == settings.CertificateType.CA;
+  canEdit_: function(certificateType, model) {
+    return certificateType == settings.CertificateType.CA && !model.policy;
+  },
+
+  /**
+   * @param {!settings.CertificateType} certificateType
+   * @param {!CertificateSubnode} model
+   * @return {boolean} Whether the certificate can be exported.
+   * @private
+   */
+  canExport_: function(certificateType, model) {
+    if (certificateType == settings.CertificateType.PERSONAL) {
+      return model.extractable;
+    }
+    return true;
+  },
+
+  /**
+   * @param {!CertificateSubnode} model
+   * @return {boolean} Whether the certificate can be deleted.
+   * @private
+   */
+  canDelete_: function(model) {
+    return !model.readonly && !model.policy;
   },
 
   /** @private */
