@@ -35,6 +35,10 @@
 #include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_surface.h"
 
+#if defined(USE_OZONE)
+#include "ui/gl/gl_image_ozone_native_pixmap.h"
+#endif
+
 namespace mus {
 
 namespace {
@@ -84,10 +88,19 @@ bool CommandBufferDriver::Initialize(
   const bool offscreen = widget_ == gfx::kNullAcceleratedWidget;
   static scoped_refptr<gfx::GLSurface> underlying_surface;
   if (offscreen) {
-    surface_ = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1));
+    surface_ = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(0, 0));
   } else {
+#if defined(USE_OZONE)
+    scoped_refptr<gfx::GLSurface> underlying_surface =
+        gfx::GLSurface::CreateSurfacelessViewGLSurface(widget_);
+    if (!underlying_surface)
+      underlying_surface = gfx::GLSurface::CreateViewGLSurface(widget_);
+#else
+    scoped_refptr<gfx::GLSurface> underlying_surface =
+        gfx::GLSurface::CreateViewGLSurface(widget_);
+#endif
     scoped_refptr<GLSurfaceAdapterMus> surface_adapter =
-        new GLSurfaceAdapterMus(gfx::GLSurface::CreateViewGLSurface(widget_));
+        new GLSurfaceAdapterMus(underlying_surface);
     surface_adapter->SetGpuCompletedSwapBuffersCallback(
         base::Bind(&CommandBufferDriver::OnGpuCompletedSwapBuffers,
                    weak_factory_.GetWeakPtr()));
@@ -272,6 +285,32 @@ void CommandBufferDriver::CreateImage(int32_t id,
   image_manager->AddImage(image.get(), id);
 }
 
+// TODO(rjkroege): It is conceivable that this code belongs in
+// ozone_gpu_memory_buffer.cc
+void CommandBufferDriver::CreateImageNativeOzone(int32_t id,
+                                                 int32_t type,
+                                                 gfx::Size size,
+                                                 gfx::BufferFormat format,
+                                                 uint32_t internal_format,
+                                                 ui::NativePixmap* pixmap) {
+#if defined(USE_OZONE)
+  gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
+  if (image_manager->LookupImage(id)) {
+    LOG(ERROR) << "Image already exists with same ID.";
+    return;
+  }
+
+  scoped_refptr<gfx::GLImageOzoneNativePixmap> image =
+      new gfx::GLImageOzoneNativePixmap(size, internal_format);
+  if (!image->Initialize(pixmap, format)) {
+    NOTREACHED();
+    return;
+  }
+
+  image_manager->AddImage(image.get(), id);
+#endif
+}
+
 void CommandBufferDriver::DestroyImage(int32_t id) {
   DCHECK(CalledOnValidThread());
   gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
@@ -286,6 +325,7 @@ void CommandBufferDriver::DestroyImage(int32_t id) {
 
 bool CommandBufferDriver::IsScheduled() const {
   DCHECK(CalledOnValidThread());
+  DCHECK(executor_);
   return executor_->scheduled();
 }
 

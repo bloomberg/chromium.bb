@@ -63,6 +63,10 @@ source_set("gles2") {
 
   if (use_ozone) {
     deps += [ "//ui/ozone:ozone" ]
+    sources += [
+      "ozone_gpu_memory_buffer.cc",
+      "ozone_gpu_memory_buffer.h",
+    ]
   }
 
   include_dirs = [ "../.." ]
@@ -72,6 +76,8 @@ source_set("lib") {
   sources = [
     "command_buffer_type_conversions.cc",
     "command_buffer_type_conversions.h",
+    "gpu_memory_buffer_impl.cc",
+    "gpu_memory_buffer_impl.h",
     "mojo_buffer_backing.cc",
     "mojo_buffer_backing.h",
     "mojo_gpu_memory_buffer.cc",

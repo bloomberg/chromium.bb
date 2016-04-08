@@ -20,23 +20,31 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/system/buffer.h"
+#include "ui/gfx/buffer_types.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/mojo/geometry/geometry.mojom.h"
+
+namespace gfx {
+class GLContext;
+class GLSurface;
+}
 
 namespace gpu {
 class CommandBufferService;
 class CommandExecutor;
 class SyncPointClient;
 class SyncPointOrderData;
+
 namespace gles2 {
 class GLES2Decoder;
-}
-}
+}  // namespace gles2
 
-namespace gfx {
-class GLContext;
-class GLSurface;
+}  // namespace gpu
+
+namespace ui {
+class NativePixmap;
 }
 
 namespace mus {
@@ -79,6 +87,12 @@ class CommandBufferDriver : base::NonThreadSafe {
                    mojo::SizePtr size,
                    int32_t format,
                    int32_t internal_format);
+  void CreateImageNativeOzone(int32_t id,
+                              int32_t type,
+                              gfx::Size size,
+                              gfx::BufferFormat format,
+                              uint32_t internal_format,
+                              ui::NativePixmap* pixmap);
   void DestroyImage(int32_t id);
   bool IsScheduled() const;
   bool HasUnprocessedCommands() const;

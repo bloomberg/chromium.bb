@@ -126,6 +126,12 @@ class CommandBufferLocal : public gpu::CommandBuffer,
                               mojo::SizePtr size,
                               int32_t format,
                               int32_t internal_format);
+  bool CreateImageNativeOzoneOnGpuThread(int32_t id,
+                                         int32_t type,
+                                         gfx::Size size,
+                                         gfx::BufferFormat format,
+                                         uint32_t internal_format,
+                                         ui::NativePixmap* pixmap);
   bool DestroyImageOnGpuThread(int32_t id);
   bool MakeProgressOnGpuThread(base::WaitableEvent* event,
                                gpu::CommandBuffer::State* state);

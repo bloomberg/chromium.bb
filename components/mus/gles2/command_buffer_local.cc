@@ -233,44 +233,56 @@ int32_t CommandBufferLocal::CreateImage(ClientBuffer buffer,
 
   mus::MojoGpuMemoryBufferImpl* gpu_memory_buffer =
       mus::MojoGpuMemoryBufferImpl::FromClientBuffer(buffer);
-  gfx::GpuMemoryBufferHandle handle = gpu_memory_buffer->GetHandle();
 
   bool requires_sync_point = false;
-  if (handle.type != gfx::SHARED_MEMORY_BUFFER) {
-    requires_sync_point = true;
-    NOTIMPLEMENTED();
-    return -1;
-  }
 
-  base::SharedMemoryHandle dupd_handle =
-      base::SharedMemory::DuplicateHandle(handle.handle);
+  if (gpu_memory_buffer->GetBufferType() == gfx::SHARED_MEMORY_BUFFER) {
+    gfx::GpuMemoryBufferHandle handle = gpu_memory_buffer->GetHandle();
+    // TODO(rjkroege): Verify that this is required and update appropriately.
+    base::SharedMemoryHandle dupd_handle =
+        base::SharedMemory::DuplicateHandle(handle.handle);
 #if defined(OS_WIN)
-  HANDLE platform_handle = dupd_handle.GetHandle();
+    HANDLE platform_handle = dupd_handle.GetHandle();
 #else
-  int platform_handle = dupd_handle.fd;
+    int platform_handle = dupd_handle.fd;
 #endif
 
-  MojoHandle mojo_handle = MOJO_HANDLE_INVALID;
-  MojoResult create_result =
-      MojoCreatePlatformHandleWrapper(platform_handle, &mojo_handle);
-  // |MojoCreatePlatformHandleWrapper()| always takes the ownership of the
-  // |platform_handle|, so we don't need close |platform_handle|.
-  if (create_result != MOJO_RESULT_OK) {
+    MojoHandle mojo_handle = MOJO_HANDLE_INVALID;
+    MojoResult create_result =
+        MojoCreatePlatformHandleWrapper(platform_handle, &mojo_handle);
+    // |MojoCreatePlatformHandleWrapper()| always takes the ownership of the
+    // |platform_handle|, so we don't need to close |platform_handle|.
+    if (create_result != MOJO_RESULT_OK) {
+      NOTIMPLEMENTED();
+      return -1;
+    }
+    mojo::ScopedHandle scoped_handle;
+    scoped_handle.reset(mojo::Handle(mojo_handle));
+
+    const int32_t format = static_cast<int32_t>(gpu_memory_buffer->GetFormat());
+    gpu_state_->command_buffer_task_runner()->PostTask(
+        driver_.get(),
+        base::Bind(&CommandBufferLocal::CreateImageOnGpuThread,
+                   base::Unretained(this), new_id, base::Passed(&scoped_handle),
+                   handle.type, base::Passed(&size), format, internal_format));
+#if defined(USE_OZONE)
+  } else if (gpu_memory_buffer->GetBufferType() == gfx::OZONE_NATIVE_PIXMAP) {
+    gpu_state_->command_buffer_task_runner()->PostTask(
+        driver_.get(),
+        base::Bind(&CommandBufferLocal::CreateImageNativeOzoneOnGpuThread,
+                   base::Unretained(this), new_id,
+                   gpu_memory_buffer->GetBufferType(),
+                   gpu_memory_buffer->GetSize(), gpu_memory_buffer->GetFormat(),
+                   internal_format,
+                   base::RetainedRef(gpu_memory_buffer->GetNativePixmap())));
+#endif
+  } else {
     NOTIMPLEMENTED();
     return -1;
   }
-  mojo::ScopedHandle scoped_handle;
-  scoped_handle.reset(mojo::Handle(mojo_handle));
-
-  const int32_t format = static_cast<int32_t>(gpu_memory_buffer->GetFormat());
-  gpu_state_->command_buffer_task_runner()->PostTask(
-      driver_.get(),
-      base::Bind(&CommandBufferLocal::CreateImageOnGpuThread,
-                 base::Unretained(this), new_id, base::Passed(&scoped_handle),
-                 handle.type, base::Passed(&size), format, internal_format));
 
   if (requires_sync_point) {
-    NOTIMPLEMENTED();
+    NOTIMPLEMENTED() << "Require sync points";
     // TODO(jam): need to support this if we support types other than
     // SHARED_MEMORY_BUFFER.
     // gpu_memory_buffer_manager->SetDestructionSyncPoint(gpu_memory_buffer,
@@ -508,6 +520,19 @@ bool CommandBufferLocal::CreateImageOnGpuThread(
   DCHECK(driver_->IsScheduled());
   driver_->CreateImage(id, std::move(memory_handle), type, std::move(size),
                        format, internal_format);
+  return true;
+}
+
+bool CommandBufferLocal::CreateImageNativeOzoneOnGpuThread(
+    int32_t id,
+    int32_t type,
+    gfx::Size size,
+    gfx::BufferFormat format,
+    uint32_t internal_format,
+    ui::NativePixmap* pixmap) {
+  DCHECK(driver_->IsScheduled());
+  driver_->CreateImageNativeOzone(id, type, size, format, internal_format,
+                                  pixmap);
   return true;
 }
 
