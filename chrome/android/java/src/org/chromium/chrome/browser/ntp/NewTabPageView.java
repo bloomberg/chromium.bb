@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObse
 import org.chromium.chrome.browser.profiles.MostVisitedSites.ThumbnailCallback;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
+import org.chromium.ui.base.DeviceFormFactor;
 
 import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 
@@ -257,11 +258,10 @@ public class NewTabPageView extends FrameLayout
      *
      * @param manager NewTabPageManager used to perform various actions when the user interacts
      *                with the page.
-     * @param isSingleUrlBarMode Whether the NTP is in single URL bar mode.
      * @param searchProviderHasLogo Whether the search provider has a logo.
      * @param useCardsUi Whether to use the new cards based UI or the old one.
      */
-    public void initialize(NewTabPageManager manager, boolean isSingleUrlBarMode,
+    public void initialize(NewTabPageManager manager,
             boolean searchProviderHasLogo, boolean useCardsUi) {
         mManager = manager;
         ViewStub stub = (ViewStub) findViewById(R.id.new_tab_page_layout_stub);
@@ -297,7 +297,8 @@ public class NewTabPageView extends FrameLayout
 
         mSearchBoxTextView = (TextView) mSearchBoxView.findViewById(R.id.search_box_text);
         String hintText = getResources().getString(R.string.search_or_type_url);
-        if (isSingleUrlBarMode) {
+
+        if (!DeviceFormFactor.isTablet(getContext()) || manager.isFakeOmniboxTextEnabledTablet()) {
             mSearchBoxTextView.setHint(hintText);
         } else {
             mSearchBoxTextView.setContentDescription(hintText);

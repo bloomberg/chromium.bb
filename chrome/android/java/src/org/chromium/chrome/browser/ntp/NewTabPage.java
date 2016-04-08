@@ -591,8 +591,8 @@ public class NewTabPage
 
         LayoutInflater inflater = LayoutInflater.from(activity);
         mNewTabPageView = (NewTabPageView) inflater.inflate(R.layout.new_tab_page, null);
-        mNewTabPageView.initialize(mNewTabPageManager, isInSingleUrlBarMode(activity),
-                mSearchProviderHasLogo, mSnippetsBridge != null);
+        mNewTabPageView.initialize(mNewTabPageManager, mSearchProviderHasLogo,
+                mSnippetsBridge != null);
 
         RecordHistogram.recordBooleanHistogram(
                 "NewTabPage.MobileIsUserOnline", NetworkChangeNotifier.isOnline());
@@ -643,8 +643,7 @@ public class NewTabPage
     }
 
     private boolean isInSingleUrlBarMode(Context context) {
-        if (DeviceFormFactor.isTablet(context)
-                && !mNewTabPageManager.isFakeOmniboxTextEnabledTablet()) return false;
+        if (DeviceFormFactor.isTablet(context)) return false;
 
         return mSearchProviderHasLogo;
     }
