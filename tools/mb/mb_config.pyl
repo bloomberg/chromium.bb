@@ -728,7 +728,6 @@
         'swarming_chromeos_gyp_release_trybot',
       'linux_chromium_chromeos_rel_ng': 'swarming_chromeos_gyp_release_trybot',
       'linux_chromium_chromeos_variable_chrome': 'findit',
-      'linux_chromium_clang_upload': 'gn_release_bot',
       'linux_chromium_clobber_rel_ng': 'gn_release_trybot',
       'linux_chromium_compile_dbg_32_ng': 'swarming_gyp_debug_trybot_x86',
       'linux_chromium_compile_dbg_ng': 'swarming_gn_debug_trybot',
@@ -759,6 +758,7 @@
       'linux_optional_gpu_tests_rel':
         'swarming_gpu_fyi_tests_gn_release_trybot',
       'linux_site_isolation': 'gn_release_trybot',
+      'linux_upload_clang': 'gn_release_bot',
       'linux_valgrind': 'gyp_valgrind_release_bot',
     },
 
@@ -779,7 +779,6 @@
       'ios_rel_device': 'ios_gyp',
       'ios_rel_device_gn': 'ios_gn',
       'ios_rel_device_ninja': 'ios_gyp',
-      'mac_chromium_clang_upload': 'gn_release_bot',
       'mac_chromium_gn_dbg': 'gn_debug_static_bot',
       'mac_chromium_gn_rel': 'gn_release_trybot',
       'mac_chromium_gn_upload': 'gn_release_bot',
@@ -792,6 +791,7 @@
       'mac_chromium_variable_layout': 'findit',
       'mac_nacl_sdk': 'nacl_annotator',
       'mac_nacl_sdk_build': 'nacl_annotator',
+      'mac_upload_clang': 'gn_release_bot',
     },
 
     'tryserver.chromium.perf': {
@@ -844,7 +844,6 @@
       'win8_chromium_gn_upload': 'gn_release_bot_minimal_symbols_x86',
       'win8_chromium_ng': 'gn_release_trybot_x86',
       'win_archive': 'noswarming_gyp_release_trybot_minimal_symbols_x86',
-      'win_chromium_clang_upload': 'gn_release_bot',
       'win_chromium_compile_dbg_ng':
         'swarming_gyp_debug_bot_minimal_symbols_x86',
       'win_chromium_compile_rel_ng':
@@ -878,6 +877,7 @@
       'win_optional_gpu_tests_rel':
         'swarming_gpu_tests_deqp_gles_gyp_release_trybot_minimal_symbols_x86',
       'win_pgo': 'gyp_official_winpgo',
+      'win_upload_clang': 'gn_release_bot',
     },
 
     'tryserver.v8': {
