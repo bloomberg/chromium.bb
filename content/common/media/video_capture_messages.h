@@ -110,7 +110,7 @@ IPC_MESSAGE_CONTROL3(VideoCaptureHostMsg_Resume,
 // Requests that the video capturer send a frame "soon" (e.g., to resolve
 // picture loss or quality issues).
 IPC_MESSAGE_CONTROL1(VideoCaptureHostMsg_RequestRefreshFrame,
-                     int /* device_id */);
+                     int /* device_id */)
 
 // Close the video capture specified by |device_id|.
 IPC_MESSAGE_CONTROL1(VideoCaptureHostMsg_Stop,
