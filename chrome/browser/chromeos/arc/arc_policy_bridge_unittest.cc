@@ -41,7 +41,7 @@ class ArcPolicyBridgeTest : public testing::Test {
    public:
     explicit PolicyStringRunnable(mojo::String expected)
         : expected_(expected) {}
-    void Run(const mojo::String& policies) const override {
+    void Run(const mojo::String& policies) override {
       EXPECT_EQ(expected_, policies);
     }
 

@@ -33,8 +33,7 @@ class Callback<void(Args...)> {
         // because it is a virtual interface. So we have to take the arguments
         // all by value (except String which we take as a const reference due to
         // ForwardType).
-        typename internal::Callback_ParamTraits<Args>::ForwardType...)
-        const = 0;
+        typename internal::Callback_ParamTraits<Args>::ForwardType...) = 0;
   };
 
   // Constructs a "null" callback that does nothing.
@@ -98,7 +97,7 @@ class Callback<void(Args...)> {
     explicit RunnableAdapter(const Sink& sink) : sink(sink) {}
     virtual void Run(
         typename internal::Callback_ParamTraits<Args>::ForwardType... args)
-        const override {
+        override {
       sink.Run(std::forward<
                typename internal::Callback_ParamTraits<Args>::ForwardType>(
           args)...);
@@ -112,7 +111,7 @@ class Callback<void(Args...)> {
     explicit FunctorAdapter(const Sink& sink) : sink(sink) {}
     virtual void Run(
         typename internal::Callback_ParamTraits<Args>::ForwardType... args)
-        const override {
+        override {
       sink.operator()(
           std::forward<
               typename internal::Callback_ParamTraits<Args>::ForwardType>(
@@ -132,7 +131,7 @@ class Callback<void(Args...)> {
         : function_ptr(function_ptr) {}
     virtual void Run(
         typename internal::Callback_ParamTraits<Args>::ForwardType... args)
-        const override {
+        override {
       (*function_ptr)(
           std::forward<
               typename internal::Callback_ParamTraits<Args>::ForwardType>(

@@ -225,18 +225,18 @@ class {{class_name}}_{{method.name}}_ProxyToResponder
         serialization_context_(std::move(router)) {
   }
 
-  void Run({{interface_macros.declare_params("in_", method.response_parameters)}}) const override;
+  void Run({{interface_macros.declare_params("in_", method.response_parameters)}}) override;
 
  private:
   uint64_t request_id_;
   bool is_sync_;
-  mutable mojo::MessageReceiverWithStatus* responder_;
+  mojo::MessageReceiverWithStatus* responder_;
   // TODO(yzshen): maybe I should use a ref to the original one?
-  mutable mojo::internal::SerializationContext serialization_context_;
+  mojo::internal::SerializationContext serialization_context_;
   DISALLOW_COPY_AND_ASSIGN({{class_name}}_{{method.name}}_ProxyToResponder);
 };
 void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
-    {{interface_macros.declare_params("in_", method.response_parameters)}}) const {
+    {{interface_macros.declare_params("in_", method.response_parameters)}}) {
   {{struct_macros.get_serialized_size(response_params_struct, "in_%s",
                                       "&serialization_context_")}}
   mojo::internal::ResponseMessageBuilder builder(
