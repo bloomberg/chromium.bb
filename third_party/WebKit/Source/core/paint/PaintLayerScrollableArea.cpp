@@ -621,16 +621,18 @@ bool PaintLayerScrollableArea::updateAfterLayout(SubtreeLayoutScope* delayedLayo
 
     m_scrollbarManager.setCanDetachScrollbars(true);
 
-    DoubleSize originalScrollOffset = adjustedScrollOffset();
+    IntPoint originalOrigin = scrollOrigin();
     computeScrollDimensions();
 
     // Layout may cause us to be at an invalid scroll position. In this case we need
     // to pull our scroll offsets back to the max (or push them up to the min).
     DoublePoint clampedScrollPosition = clampScrollPosition(scrollPositionDouble());
-    if (clampedScrollPosition != scrollPositionDouble())
+    if (clampedScrollPosition != scrollPositionDouble()) {
         scrollToPosition(clampedScrollPosition);
-
-    if (originalScrollOffset != adjustedScrollOffset()) {
+    } else if (originalOrigin != scrollOrigin()) {
+        // TODO: We should be able to use scrollOriginChanged() here, but we can't because
+        // PaintLayerScrollableArea does not maintain that flag: it gets set, but it never
+        // gets unset.  We should unset the flag after layout.
         scrollPositionChanged(scrollPositionDouble(), ProgrammaticScroll);
     }
 
