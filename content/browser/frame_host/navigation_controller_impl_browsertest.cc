@@ -635,7 +635,7 @@ class LoadCommittedCapturer : public WebContentsObserver {
     // Don't pay attention to swapped out RenderFrameHosts in the main frame.
     // TODO(nasko): Remove once swappedout:// is gone.
     // See https://crbug.com/357747.
-    if (!RenderFrameHostImpl::IsRFHStateActive(rfh->rfh_state())) {
+    if (!rfh->is_active()) {
       DLOG(INFO) << "Skipping swapped out RFH: "
                  << rfh->GetSiteInstance()->GetSiteURL();
       return;

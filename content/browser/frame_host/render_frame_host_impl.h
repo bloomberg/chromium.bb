@@ -103,21 +103,6 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
       base::Callback<void(
           const ui::AXTreeUpdate&)>;
 
-  // Keeps track of the state of the RenderFrameHostImpl, particularly with
-  // respect to swap out.
-  enum RenderFrameHostImplState {
-    // The standard state for a RFH handling the communication with an active
-    // RenderFrame.
-    STATE_DEFAULT = 0,
-    // The RFH has not received the SwapOutACK yet, but the new page has
-    // committed in a different RFH.  Upon reception of the SwapOutACK, the RFH
-    // will be deleted.
-    STATE_PENDING_SWAP_OUT,
-  };
-  // Helper function to determine whether the RFH state should contribute to the
-  // number of active frames of a SiteInstance or not.
-  static bool IsRFHStateActive(RenderFrameHostImplState rfh_state);
-
   // An accessibility reset is only allowed to prevent very rare corner cases
   // or race conditions where the browser and renderer get out of sync. If
   // this happens more than this many times, kill the renderer.
@@ -359,8 +344,9 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // out.
   void OnSwappedOut();
 
-  // The current state of this RFH.
-  RenderFrameHostImplState rfh_state() const { return rfh_state_; }
+  // This method returns true from the time this RenderFrameHost is created
+  // until SwapOut is called, at which point it is pending deletion.
+  bool is_active() { return !is_waiting_for_swapout_ack_; }
 
   // Sends the given navigation message. Use this rather than sending it
   // yourself since this does the internal bookkeeping described below. This
@@ -690,9 +676,9 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // Registers Mojo services that this frame host makes available.
   void RegisterMojoServices();
 
-  // Updates the state of this RenderFrameHost and clears any waiting state
-  // that is no longer relevant.
-  void SetState(RenderFrameHostImplState rfh_state);
+  // Resets any waiting state of this RenderFrameHost that is no longer
+  // relevant.
+  void ResetWaitingState();
 
   // Returns whether the given URL is allowed to commit in the current process.
   // This is a more conservative check than RenderProcessHost::FilterURL, since
@@ -836,8 +822,9 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
 
   int routing_id_;
 
-  // The current state of this RenderFrameHost.
-  RenderFrameHostImplState rfh_state_;
+  // Boolean indicating whether this RenderFrameHost is being actively used or
+  // is waiting for FrameHostMsg_SwapOut_ACK and thus pending deletion.
+  bool is_waiting_for_swapout_ack_;
 
   // Tracks whether the RenderFrame for this RenderFrameHost has been created in
   // the renderer process.  Currently only used for subframes.

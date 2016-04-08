@@ -151,7 +151,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
 
   // Commit the navigation.
   main_test_rfh()->SendNavigate(0, entry_id, true, kUrl);
-  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, main_test_rfh()->rfh_state());
+  EXPECT_TRUE(main_test_rfh()->is_active());
   EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(browser_context(), kUrl),
             main_test_rfh()->GetSiteInstance()->GetSiteURL());
   EXPECT_EQ(kUrl, contents()->GetLastCommittedURL());
@@ -204,7 +204,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
 
   // Commit the navigation.
   main_test_rfh()->SendNavigate(1, 0, true, kUrl2);
-  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, main_test_rfh()->rfh_state());
+  EXPECT_TRUE(main_test_rfh()->is_active());
   EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(browser_context(), kUrl2),
             main_test_rfh()->GetSiteInstance()->GetSiteURL());
   EXPECT_EQ(kUrl2, contents()->GetLastCommittedURL());
@@ -258,7 +258,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
 
   // Commit the navigation.
   main_test_rfh()->SendNavigate(1, 0, true, kUrl2);
-  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, main_test_rfh()->rfh_state());
+  EXPECT_TRUE(main_test_rfh()->is_active());
   EXPECT_EQ(kUrl2, contents()->GetLastCommittedURL());
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
   EXPECT_FALSE(node->render_manager()->pending_frame_host());

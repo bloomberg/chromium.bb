@@ -136,11 +136,6 @@ base::i18n::TextDirection WebTextDirectionToChromeTextDirection(
 }  // namespace
 
 // static
-bool RenderFrameHostImpl::IsRFHStateActive(RenderFrameHostImplState rfh_state) {
-  return rfh_state == STATE_DEFAULT;
-}
-
-// static
 RenderFrameHost* RenderFrameHost::FromID(int render_process_id,
                                          int render_frame_id) {
   return RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
@@ -197,7 +192,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       frame_tree_node_(frame_tree_node),
       render_widget_host_(nullptr),
       routing_id_(routing_id),
-      rfh_state_(STATE_DEFAULT),
+      is_waiting_for_swapout_ack_(false),
       render_frame_created_(false),
       navigations_suspended_(false),
       is_waiting_for_beforeunload_ack_(false),
@@ -267,18 +262,16 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   if (delegate_ && render_frame_created_)
     delegate_->RenderFrameDeleted(this);
 
-  bool is_active = IsRFHStateActive(rfh_state_);
-
   // If this RenderFrameHost is swapped out, it already decremented the active
   // frame count of the SiteInstance it belongs to.
-  if (is_active)
+  if (is_active())
     GetSiteInstance()->DecrementActiveFrameCount();
 
   // If this RenderFrameHost is swapping with a RenderFrameProxyHost, the
   // RenderFrame will already be deleted in the renderer process. Main frame
   // RenderFrames will be cleaned up as part of deleting its RenderView. In all
   // other cases, the RenderFrame should be cleaned up (if it exists).
-  if (is_active && !frame_tree_node_->IsMainFrame() && render_frame_created_)
+  if (is_active() && !frame_tree_node_->IsMainFrame() && render_frame_created_)
     Send(new FrameMsg_Delete(routing_id_));
 
   // NULL out the swapout timer; in crash dumps this member will be null only if
@@ -844,8 +837,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(
   // RenderFrame corresponding to this host sent an IPC message to create a
   // frame and it is delivered after this host is swapped out.
   // Ignore such messages, as we know this RenderFrameHost is going away.
-  if (rfh_state_ != RenderFrameHostImpl::STATE_DEFAULT ||
-      frame_tree_node_->current_frame_host() != this)
+  if (!is_active() || frame_tree_node_->current_frame_host() != this)
     return;
 
   frame_tree_->AddFrame(frame_tree_node_, GetProcess()->GetID(), new_routing_id,
@@ -1180,9 +1172,9 @@ void RenderFrameHostImpl::SwapOut(
   // to be fixed when RenderViewHostImpl::OnSwapOut moves to RenderFrameHost.
   TRACE_EVENT_ASYNC_BEGIN0("navigation", "RenderFrameHostImpl::SwapOut", this);
 
-  // If this RenderFrameHost is not in the default state, it must have already
+  // If this RenderFrameHost is already pending deletion, it must have already
   // gone through this, therefore just return.
-  if (rfh_state_ != RenderFrameHostImpl::STATE_DEFAULT) {
+  if (!is_active()) {
     NOTREACHED() << "RFH should be in default state when calling SwapOut.";
     return;
   }
@@ -1204,9 +1196,16 @@ void RenderFrameHostImpl::SwapOut(
                               replication_state));
   }
 
-  // If this is the last active frame in the SiteInstance, the SetState call
-  // below will trigger the deletion of the SiteInstance's proxies.
-  SetState(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT);
+  // TODO(nasko): If the frame is not live, the RFH should just be deleted by
+  // simulating the receipt of swap out ack.
+  is_waiting_for_swapout_ack_ = true;
+  if (frame_tree_node_->IsMainFrame())
+    render_view_host_->set_is_active(false);
+
+  // If this is the last active frame in the SiteInstance, the
+  // DecrementActiveFrameCount call will trigger the deletion of the
+  // SiteInstance's proxies.
+  GetSiteInstance()->DecrementActiveFrameCount();
 
   if (!GetParent())
     delegate_->SwappedOut(this);
@@ -1306,7 +1305,7 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
 
 bool RenderFrameHostImpl::IsWaitingForUnloadACK() const {
   return render_view_host_->is_waiting_for_close_ack_ ||
-      rfh_state_ == STATE_PENDING_SWAP_OUT;
+         is_waiting_for_swapout_ack_;
 }
 
 void RenderFrameHostImpl::OnSwapOutACK() {
@@ -1340,7 +1339,7 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
   // If the process has died, we don't need to wait for the swap out ack from
   // this RenderFrame if it is pending deletion.  Complete the swap out to
   // destroy it.
-  if (!IsRFHStateActive(rfh_state()))
+  if (!is_active())
     OnSwappedOut();
 
   // Note: don't add any more code at this point in the function because
@@ -1350,7 +1349,7 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
 
 void RenderFrameHostImpl::OnSwappedOut() {
   // Ignore spurious swap out ack.
-  if (rfh_state_ != STATE_PENDING_SWAP_OUT)
+  if (!is_waiting_for_swapout_ack_)
     return;
 
   TRACE_EVENT_ASYNC_END0("navigation", "RenderFrameHostImpl::SwapOut", this);
@@ -1359,8 +1358,7 @@ void RenderFrameHostImpl::OnSwappedOut() {
   ClearAllWebUI();
 
   // If this is a main frame RFH that's about to be deleted, update its RVH's
-  // swapped-out state here, since SetState won't be called once this RFH is
-  // deleted below. https://crbug.com/505887
+  // swapped-out state here. https://crbug.com/505887
   if (frame_tree_node_->IsMainFrame()) {
     render_view_host_->set_is_active(false);
     render_view_host_->set_is_swapped_out(true);
@@ -1637,8 +1635,7 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
   RenderWidgetHostViewBase* view = GetViewForAccessibility();
 
   AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if ((accessibility_mode != AccessibilityModeOff) && view &&
-      RenderFrameHostImpl::IsRFHStateActive(rfh_state())) {
+  if ((accessibility_mode != AccessibilityModeOff) && view && is_active()) {
     if (accessibility_mode & AccessibilityModeFlagPlatform)
       GetOrCreateBrowserAccessibilityManager();
 
@@ -1708,7 +1705,7 @@ void RenderFrameHostImpl::OnAccessibilityLocationChanges(
 
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
       render_view_host_->GetWidget()->GetView());
-  if (view && RenderFrameHostImpl::IsRFHStateActive(rfh_state())) {
+  if (view && is_active()) {
     AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
     if (accessibility_mode & AccessibilityModeFlagPlatform) {
       BrowserAccessibilityManager* manager =
@@ -1788,7 +1785,7 @@ void RenderFrameHostImpl::OnDidStartLoading(bool to_different_document) {
 
   // Only inform the FrameTreeNode of a change in load state if the load state
   // of this RenderFrameHost is being tracked.
-  if (rfh_state_ == STATE_DEFAULT) {
+  if (is_active()) {
     frame_tree_node_->DidStartLoading(to_different_document,
                                       was_previously_loading);
   }
@@ -1810,7 +1807,7 @@ void RenderFrameHostImpl::OnDidStopLoading() {
 
   // Only inform the FrameTreeNode of a change in load state if the load state
   // of this RenderFrameHost is being tracked.
-  if (rfh_state_ == STATE_DEFAULT)
+  if (is_active())
     frame_tree_node_->DidStopLoading();
 }
 
@@ -1926,34 +1923,26 @@ void RenderFrameHostImpl::RegisterMojoServices() {
       GetServiceRegistry(), this);
 }
 
-void RenderFrameHostImpl::SetState(RenderFrameHostImplState rfh_state) {
-  // We decrement the number of RenderFrameHosts in a SiteInstance when the
-  // status of a RenderFrameHost gets flipped from active.
-  if (IsRFHStateActive(rfh_state_) && !IsRFHStateActive(rfh_state))
-    GetSiteInstance()->DecrementActiveFrameCount();
+void RenderFrameHostImpl::ResetWaitingState() {
+  DCHECK(is_active());
 
   // The active state of the RVH is determined by its main frame, since
   // subframes should have their own widgets.
   if (frame_tree_node_->IsMainFrame()) {
-    render_view_host_->set_is_active(IsRFHStateActive(rfh_state));
+    render_view_host_->set_is_active(true);
     render_view_host_->set_is_swapped_out(false);
   }
 
-  // Whenever we change the RFH state to and from active state, we should not be
-  // waiting for beforeunload or close acks.  We clear them here to be safe,
-  // since they can cause navigations to be ignored in
-  // OnDidCommitProvisionalLoad.
-  // TODO(creis): Move is_waiting_for_beforeunload_ack_ into the state machine.
-  if (rfh_state == STATE_DEFAULT || rfh_state_ == STATE_DEFAULT) {
-    if (is_waiting_for_beforeunload_ack_) {
-      is_waiting_for_beforeunload_ack_ = false;
-      render_view_host_->GetWidget()->decrement_in_flight_event_count();
-      render_view_host_->GetWidget()->StopHangMonitorTimeout();
-    }
-    send_before_unload_start_time_ = base::TimeTicks();
-    render_view_host_->is_waiting_for_close_ack_ = false;
+  // Whenever we reset the RFH state, we should not be waiting for beforeunload
+  // or close acks.  We clear them here to be safe, since they can cause
+  // navigations to be ignored in OnDidCommitProvisionalLoad.
+  if (is_waiting_for_beforeunload_ack_) {
+    is_waiting_for_beforeunload_ack_ = false;
+    render_view_host_->GetWidget()->decrement_in_flight_event_count();
+    render_view_host_->GetWidget()->StopHangMonitorTimeout();
   }
-  rfh_state_ = rfh_state;
+  send_before_unload_start_time_ = base::TimeTicks();
+  render_view_host_->is_waiting_for_close_ack_ = false;
 }
 
 bool RenderFrameHostImpl::CanCommitURL(const GURL& url) {
@@ -2019,8 +2008,8 @@ void RenderFrameHostImpl::Navigate(
         new NavigationParams(common_params, start_params, request_params));
   } else {
     // Get back to a clean state, in case we start a new navigation without
-    // completing a RFH swap or unload handler.
-    SetState(RenderFrameHostImpl::STATE_DEFAULT);
+    // completing an unload handler.
+    ResetWaitingState();
     SendNavigateMessage(common_params, start_params, request_params);
   }
 
@@ -2185,8 +2174,8 @@ void RenderFrameHostImpl::CommitNavigation(
   UpdatePermissionsForNavigation(common_params, request_params);
 
   // Get back to a clean state, in case we start a new navigation without
-  // completing a RFH swap or unload handler.
-  SetState(RenderFrameHostImpl::STATE_DEFAULT);
+  // completing an unload handler.
+  ResetWaitingState();
 
   // The renderer can exit view source mode when any error or cancellation
   // happen. When reusing the same renderer, overwrite to recover the mode.
@@ -2226,8 +2215,8 @@ void RenderFrameHostImpl::FailedNavigation(
     bool has_stale_copy_in_cache,
     int error_code) {
   // Get back to a clean state, in case a new navigation started without
-  // completing a RFH swap or unload handler.
-  SetState(RenderFrameHostImpl::STATE_DEFAULT);
+  // completing an unload handler.
+  ResetWaitingState();
 
   Send(new FrameMsg_FailedNavigation(routing_id_, common_params, request_params,
                                      has_stale_copy_in_cache, error_code));
@@ -2394,7 +2383,7 @@ void RenderFrameHostImpl::ResetLoadingState() {
     // When pending deletion, just set the loading state to not loading.
     // Otherwise, OnDidStopLoading will take care of that, as well as sending
     // notification to the FrameTreeNode about the change in loading state.
-    if (rfh_state_ != STATE_DEFAULT)
+    if (!is_active())
       is_loading_ = false;
     else
       OnDidStopLoading();
@@ -2433,8 +2422,7 @@ void RenderFrameHostImpl::SetAccessibilityCallbackForTesting(
 
 void RenderFrameHostImpl::UpdateAXTreeData() {
   AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode == AccessibilityModeOff ||
-      !RenderFrameHostImpl::IsRFHStateActive(rfh_state())) {
+  if (accessibility_mode == AccessibilityModeOff || !is_active()) {
     return;
   }
 
@@ -2565,9 +2553,8 @@ void RenderFrameHostImpl::SetNavigationsSuspended(
 
   if (!suspend && suspended_nav_params_) {
     // There's navigation message params waiting to be sent. Now that we're not
-    // suspended anymore, resume navigation by sending them. If we were swapped
-    // out, we should also stop filtering out the IPC messages now.
-    SetState(RenderFrameHostImpl::STATE_DEFAULT);
+    // suspended anymore, resume navigation by sending them.
+    ResetWaitingState();
 
     DCHECK(!proceed_time.is_null());
     // TODO(csharrison): Make sure that PlzNavigate and the current architecture

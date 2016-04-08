@@ -347,7 +347,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     TestRenderFrameHost* active_rfh = contents()->GetPendingMainFrame()
                                           ? contents()->GetPendingMainFrame()
                                           : old_rfh;
-    EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, old_rfh->rfh_state());
+    EXPECT_TRUE(old_rfh->is_active());
 
     // Commit the navigation with a new page ID.
     int32_t max_page_id =
@@ -361,8 +361,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
 
     // Make sure that we start to run the unload handler at the time of commit.
     if (old_rfh != active_rfh && !rfh_observer.deleted()) {
-      EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT,
-                old_rfh->rfh_state());
+      EXPECT_FALSE(old_rfh->is_active());
     }
 
     // Simulate the swap out ACK coming from the pending renderer.  This should
@@ -659,8 +658,8 @@ TEST_F(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingSwapOut) {
   TestRenderFrameHost* rfh2 = contents()->GetPendingMainFrame();
   contents()->TestDidNavigate(rfh2, 1, entry_id, true, kDestUrl,
                               ui::PAGE_TRANSITION_TYPED);
-  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh2->rfh_state());
-  EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT, rfh1->rfh_state());
+  EXPECT_FALSE(rfh1->is_active());
+  EXPECT_TRUE(rfh2->is_active());
 
   // The new RVH should be able to update its favicons.
   {
@@ -1282,7 +1281,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
   contents()->GetPendingMainFrame()->SendNavigate(
       entry1->GetPageID(), entry1->GetUniqueID(), false, entry1->GetURL());
   EXPECT_TRUE(rfh2->IsWaitingForUnloadACK());
-  EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT, rfh2->rfh_state());
+  EXPECT_FALSE(rfh2->is_active());
 
   // We should be able to navigate forward.
   contents()->GetController().GoForward();
@@ -1290,7 +1289,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
   const NavigationEntry* entry2 = contents()->GetController().GetPendingEntry();
   contents()->GetPendingMainFrame()->SendNavigate(
       entry2->GetPageID(), entry2->GetUniqueID(), false, entry2->GetURL());
-  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, main_test_rfh()->rfh_state());
+  EXPECT_TRUE(main_test_rfh()->is_active());
 }
 
 // Test that we create swapped out RFHs for the opener chain when navigating an
@@ -1763,7 +1762,7 @@ TEST_F(RenderFrameHostManagerTest, DeleteFrameAfterSwapOutACK) {
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = contents()->GetMainFrame();
   RenderFrameDeletedObserver rfh_deleted_observer(rfh1);
-  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh1->rfh_state());
+  EXPECT_TRUE(rfh1->is_active());
 
   // Navigate to new site, simulating onbeforeunload approval.
   controller().LoadURL(
@@ -1771,14 +1770,14 @@ TEST_F(RenderFrameHostManagerTest, DeleteFrameAfterSwapOutACK) {
   int entry_id = controller().GetPendingEntry()->GetUniqueID();
   contents()->GetMainFrame()->PrepareForCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
-  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh1->rfh_state());
+  EXPECT_TRUE(rfh1->is_active());
   TestRenderFrameHost* rfh2 = contents()->GetPendingMainFrame();
 
   // Simulate the swap out ack, unexpectedly early (before commit).  It should
   // have no effect.
   rfh1->OnSwappedOut();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
-  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh1->rfh_state());
+  EXPECT_TRUE(rfh1->is_active());
 
   // The new page commits.
   contents()->TestDidNavigate(rfh2, 1, entry_id, true, kUrl2,
@@ -1786,8 +1785,8 @@ TEST_F(RenderFrameHostManagerTest, DeleteFrameAfterSwapOutACK) {
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(rfh2, contents()->GetMainFrame());
   EXPECT_TRUE(contents()->GetPendingMainFrame() == NULL);
-  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh2->rfh_state());
-  EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT, rfh1->rfh_state());
+  EXPECT_TRUE(rfh2->is_active());
+  EXPECT_FALSE(rfh1->is_active());
 
   // Simulate the swap out ack.
   rfh1->OnSwappedOut();
@@ -1807,7 +1806,7 @@ TEST_F(RenderFrameHostManagerTest, SwapOutFrameAfterSwapOutACK) {
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = contents()->GetMainFrame();
   RenderFrameDeletedObserver rfh_deleted_observer(rfh1);
-  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh1->rfh_state());
+  EXPECT_TRUE(rfh1->is_active());
 
   // Increment the number of active frames in SiteInstanceImpl so that rfh1 is
   // not deleted on swap out.
@@ -1819,7 +1818,7 @@ TEST_F(RenderFrameHostManagerTest, SwapOutFrameAfterSwapOutACK) {
   int entry_id = controller().GetPendingEntry()->GetUniqueID();
   contents()->GetMainFrame()->PrepareForCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
-  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh1->rfh_state());
+  EXPECT_TRUE(rfh1->is_active());
   TestRenderFrameHost* rfh2 = contents()->GetPendingMainFrame();
 
   // The new page commits.
@@ -1828,8 +1827,8 @@ TEST_F(RenderFrameHostManagerTest, SwapOutFrameAfterSwapOutACK) {
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(rfh2, contents()->GetMainFrame());
   EXPECT_TRUE(contents()->GetPendingMainFrame() == NULL);
-  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh2->rfh_state());
-  EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT, rfh1->rfh_state());
+  EXPECT_FALSE(rfh1->is_active());
+  EXPECT_TRUE(rfh2->is_active());
 
   // Simulate the swap out ack.
   rfh1->OnSwappedOut();
@@ -1851,7 +1850,7 @@ TEST_F(RenderFrameHostManagerTest,
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = contents()->GetMainFrame();
   RenderFrameDeletedObserver rfh_deleted_observer(rfh1);
-  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh1->rfh_state());
+  EXPECT_TRUE(rfh1->is_active());
 
   // Increment the number of active frames in SiteInstanceImpl so that rfh1 is
   // not deleted on swap out.
@@ -1872,8 +1871,8 @@ TEST_F(RenderFrameHostManagerTest,
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(rfh2, contents()->GetMainFrame());
   EXPECT_TRUE(contents()->GetPendingMainFrame() == NULL);
-  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh2->rfh_state());
-  EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT, rfh1->rfh_state());
+  EXPECT_FALSE(rfh1->is_active());
+  EXPECT_TRUE(rfh2->is_active());
 
   // Simulate the swap out ack.
   rfh1->OnSwappedOut();
@@ -1896,7 +1895,7 @@ TEST_F(RenderFrameHostManagerTest,
   // Navigate to the first page.
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = main_test_rfh();
-  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh1->rfh_state());
+  EXPECT_TRUE(rfh1->is_active());
 
   // Navigate to a new site, starting a cross-site navigation.
   controller().LoadURL(
@@ -2003,10 +2002,8 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
   EXPECT_TRUE(GetPendingFrameHost(iframe2));
   EXPECT_EQ(host1, GetPendingFrameHost(iframe1));
   EXPECT_EQ(host2, GetPendingFrameHost(iframe2));
-  EXPECT_TRUE(RenderFrameHostImpl::IsRFHStateActive(
-      GetPendingFrameHost(iframe1)->rfh_state()));
-  EXPECT_TRUE(RenderFrameHostImpl::IsRFHStateActive(
-      GetPendingFrameHost(iframe2)->rfh_state()));
+  EXPECT_TRUE(GetPendingFrameHost(iframe1)->is_active());
+  EXPECT_TRUE(GetPendingFrameHost(iframe2)->is_active());
   EXPECT_NE(GetPendingFrameHost(iframe1), GetPendingFrameHost(iframe2));
   EXPECT_EQ(GetPendingFrameHost(iframe1)->GetSiteInstance(),
             GetPendingFrameHost(iframe2)->GetSiteInstance());
