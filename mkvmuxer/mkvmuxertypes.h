@@ -9,6 +9,15 @@
 #ifndef MKVMUXER_MKVMUXERTYPES_H_
 #define MKVMUXER_MKVMUXERTYPES_H_
 
+namespace mkvmuxer {
+typedef unsigned char uint8;
+typedef short int16;
+typedef int int32;
+typedef unsigned int uint32;
+typedef long long int64;
+typedef unsigned long long uint64;
+}  // namespace mkvmuxer
+
 // Copied from Chromium basictypes.h
 // A macro to disallow the copy constructor and operator= functions
 // This should be used in the private: declarations for a class

@@ -24,11 +24,11 @@ class MkvWriter : public IMkvWriter {
   virtual ~MkvWriter();
 
   // IMkvWriter interface
-  virtual int64_t Position() const;
-  virtual int32_t Position(int64_t position);
+  virtual int64 Position() const;
+  virtual int32 Position(int64 position);
   virtual bool Seekable() const;
-  virtual int32_t Write(const void* buffer, uint32_t length);
-  virtual void ElementStartNotify(uint64_t element_id, int64_t position);
+  virtual int32 Write(const void* buffer, uint32 length);
+  virtual void ElementStartNotify(uint64 element_id, int64 position);
 
   // Creates and opens a file for writing. |filename| is the name of the file
   // to open. This function will overwrite the contents of |filename|. Returns

@@ -37,14 +37,14 @@ const uint64_t kMaxTrackNumber = 126;
 class IMkvWriter {
  public:
   // Writes out |len| bytes of |buf|. Returns 0 on success.
-  virtual int32_t Write(const void* buf, uint32_t len) = 0;
+  virtual int32 Write(const void* buf, uint32 len) = 0;
 
   // Returns the offset of the output position from the beginning of the
   // output.
-  virtual int64_t Position() const = 0;
+  virtual int64 Position() const = 0;
 
   // Set the current File position. Returns 0 on success.
-  virtual int32_t Position(int64_t position) = 0;
+  virtual int32 Position(int64 position) = 0;
 
   // Returns true if the writer is seekable.
   virtual bool Seekable() const = 0;
@@ -54,7 +54,7 @@ class IMkvWriter {
   // |position| is the location in the WebM stream where the first octet of the
   // element identifier will be written.
   // Note: the |MkvId| enumeration in webmids.hpp defines element values.
-  virtual void ElementStartNotify(uint64_t element_id, int64_t position) = 0;
+  virtual void ElementStartNotify(uint64 element_id, int64 position) = 0;
 
  protected:
   IMkvWriter();
