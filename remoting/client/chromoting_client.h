@@ -17,6 +17,7 @@
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/input_stub.h"
+#include "remoting/protocol/mouse_input_filter.h"
 #include "remoting/protocol/performance_tracker.h"
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/video_stub.h"
@@ -78,7 +79,7 @@ class ChromotingClient : public SignalStrategy::Listener,
     return connection_->clipboard_forwarder();
   }
   protocol::HostStub* host_stub() { return connection_->host_stub(); }
-  protocol::InputStub* input_stub() { return connection_->input_stub(); }
+  protocol::InputStub* input_stub() { return &mouse_input_scaler_; }
 
   // ClientStub implementation.
   void SetCapabilities(const protocol::Capabilities& capabilities) override;
@@ -129,6 +130,8 @@ class ChromotingClient : public SignalStrategy::Listener,
 
   std::unique_ptr<protocol::SessionManager> session_manager_;
   std::unique_ptr<protocol::ConnectionToHost> connection_;
+
+  protocol::MouseInputFilter mouse_input_scaler_;
 
   std::unique_ptr<AudioDecodeScheduler> audio_decode_scheduler_;
 
