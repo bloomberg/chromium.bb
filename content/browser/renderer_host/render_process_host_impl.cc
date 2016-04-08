@@ -24,12 +24,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
-#include "base/memory/shared_memory_handle.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "base/metrics/persistent_histogram_allocator.h"
-#include "base/metrics/persistent_memory_allocator.h"
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
@@ -1121,11 +1117,6 @@ void RenderProcessHostImpl::NotifyTimezoneChange(const std::string& zone_id) {
 ServiceRegistry* RenderProcessHostImpl::GetServiceRegistry() {
   DCHECK(mojo_application_host_);
   return mojo_application_host_->service_registry();
-}
-
-scoped_ptr<base::SharedPersistentMemoryAllocator>
-RenderProcessHostImpl::TakeMetricsAllocator() {
-  return std::move(metrics_allocator_);
 }
 
 const base::TimeTicks& RenderProcessHostImpl::GetInitTimeForNavigationMetrics()
@@ -2367,31 +2358,6 @@ void RenderProcessHostImpl::RegisterProcessHostForSite(
     map->RegisterProcess(site, process);
 }
 
-void RenderProcessHostImpl::CreateSharedRendererHistogramAllocator() {
-  DCHECK(!metrics_allocator_);
-
-  // Create a persistent memory segment for renderer histograms only if
-  // they're active in the browser.
-  if (!base::GlobalHistogramAllocator::Get())
-    return;
-
-  // Get handle to the renderer process. Stop if there is none.
-  base::ProcessHandle destination = GetHandle();
-  if (destination == base::kNullProcessHandle)
-    return;
-
-  // TODO(bcwhite): Update this with the correct memory size.
-  scoped_ptr<base::SharedMemory> shm(new base::SharedMemory());
-  shm->CreateAndMapAnonymous(2 << 20);  // 2 MiB
-  metrics_allocator_.reset(new base::SharedPersistentMemoryAllocator(
-      std::move(shm), GetID(), "RendererMetrics", /*readonly=*/false));
-
-  base::SharedMemoryHandle shm_handle;
-  metrics_allocator_->shared_memory()->ShareToProcess(destination, &shm_handle);
-  Send(new ChildProcessMsg_SetHistogramMemory(
-      shm_handle, metrics_allocator_->shared_memory()->mapped_size()));
-}
-
 void RenderProcessHostImpl::ProcessDied(bool already_dead,
                                         RendererClosedDetails* known_details) {
   // Our child process has died.  If we didn't expect it, it's a crash.
@@ -2594,9 +2560,6 @@ void RenderProcessHostImpl::OnProcessLaunched() {
 #if defined(OS_ANDROID)
     UpdateProcessPriority();
 #endif
-
-    // Share histograms between the renderer and this process.
-    CreateSharedRendererHistogramAllocator();
   }
 
   // NOTE: This needs to be before sending queued messages because

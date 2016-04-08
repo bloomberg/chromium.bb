@@ -102,16 +102,8 @@ IPC_MESSAGE_CONTROL2(ChildProcessMsg_GetChildProfilerData,
 IPC_MESSAGE_CONTROL1(ChildProcessMsg_ProfilingPhaseCompleted,
                      int /* profiling_phase */)
 
-// Sent to set the shared memory buffer to be used for storing histograms that
-// are to be reported by the browser process to UMA. The following message
-// (GetChildNonPersistentHistogramData) will return any histograms created
-// before this message is received but not any histograms created afterward.
-IPC_MESSAGE_CONTROL2(ChildProcessMsg_SetHistogramMemory,
-                     base::SharedMemoryHandle /* shm_handle */,
-                     int /* shm_size */)
-
 // Send to all the child processes to send back histogram data.
-IPC_MESSAGE_CONTROL1(ChildProcessMsg_GetChildNonPersistentHistogramData,
+IPC_MESSAGE_CONTROL1(ChildProcessMsg_GetChildHistogramData,
                      int /* sequence_number */)
 
 // Sent to child processes to tell them to enter or leave background mode.

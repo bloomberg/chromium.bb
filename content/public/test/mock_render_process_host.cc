@@ -263,11 +263,6 @@ ServiceRegistry* MockRenderProcessHost::GetServiceRegistry() {
   return service_registry_.get();
 }
 
-scoped_ptr<base::SharedPersistentMemoryAllocator>
-MockRenderProcessHost::TakeMetricsAllocator() {
-  return nullptr;
-}
-
 const base::TimeTicks& MockRenderProcessHost::GetInitTimeForNavigationMetrics()
     const {
   static base::TimeTicks dummy_time = base::TimeTicks::Now();

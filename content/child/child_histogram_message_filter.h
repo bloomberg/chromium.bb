@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/shared_memory.h"
 #include "ipc/message_filter.h"
 
 namespace base {
@@ -37,11 +36,9 @@ class ChildHistogramMessageFilter : public IPC::MessageFilter {
   ~ChildHistogramMessageFilter() override;
 
   // Message handlers.
-  void OnSetHistogramMemory(const base::SharedMemoryHandle& memory_handle,
-                            int memory_size);
-  void OnGetChildHistogramData(int sequence_number);
+  virtual void OnGetChildHistogramData(int sequence_number);
 
-  // Extract snapshot data and then send it off to the Browser process.
+  // Extract snapshot data and then send it off the the Browser process.
   // Send only a delta to what we have already sent.
   void UploadAllHistograms(int sequence_number);
 

@@ -116,6 +116,13 @@ class BASE_EXPORT PersistentHistogramAllocator {
   // Histogram containing creation results. Visible for testing.
   static HistogramBase* GetCreateHistogramResultHistogram();
 
+  // This access to the persistent allocator is only for testing; it extracts
+  // the current allocator completely. This allows easy creation of histograms
+  // within persistent memory segments which can then be extracted and used
+  // in other ways.
+  static std::unique_ptr<PersistentHistogramAllocator>
+  ReleaseGlobalAllocatorForTesting();
+
  protected:
   // The structure used to hold histogram data in persistent memory. It is
   // defined and used entirely within the .cc file.

@@ -54884,24 +54884,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="UMA.PersistentAllocator.RendererMetrics.Allocs" units="bytes">
-  <owner>bcwhite@chromium.org</owner>
-  <owner>asvitkine@chromium.org</owner>
-  <summary>
-    Size, before padding, of objects allocated from persistent memory. This is
-    updated with every allocation.
-  </summary>
-</histogram>
-
-<histogram name="UMA.PersistentAllocator.RendererMetrics.UsedPct" units="%">
-  <owner>bcwhite@chromium.org</owner>
-  <owner>asvitkine@chromium.org</owner>
-  <summary>
-    Percentage of persistent memory segment that has been allocated. This is
-    updated only once per reporting cycle.
-  </summary>
-</histogram>
-
 <histogram name="UMA.PersistentAllocator.SetupMetrics.Allocs" units="bytes">
   <owner>bcwhite@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
@@ -54973,16 +54955,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The time spent to store unsent logs to local state, which is done
     periodically and also during start up if there was an initial stability log.
-  </summary>
-</histogram>
-
-<histogram name="UMA.SubprocessMetricsProvider.SubprocessCount"
-    units="subprocesses">
-  <owner>asvitkine@chromium.org</owner>
-  <owner>bcwhite@chromium.org</owner>
-  <summary>
-    The number of subprocesses from which persistent metrics were collected,
-    logged once with every reporting cycle.
   </summary>
 </histogram>
 

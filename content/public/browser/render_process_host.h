@@ -22,7 +22,6 @@
 class GURL;
 
 namespace base {
-class SharedPersistentMemoryAllocator;
 class TimeDelta;
 }
 
@@ -254,14 +253,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Returns the ServiceRegistry for this process.
   virtual ServiceRegistry* GetServiceRegistry() = 0;
-
-  // Extracts any persistent-memory-allocator used for renderer metrics.
-  // Ownership is passed to the caller. To support sharing of histogram data
-  // between the Renderer and the Browser, the allocator is created when the
-  // process is created and later retrieved by the SubprocessMetricsProvider
-  // for management.
-  virtual scoped_ptr<base::SharedPersistentMemoryAllocator>
-  TakeMetricsAllocator() = 0;
 
   // PlzNavigate
   // Returns the time the first call to Init completed successfully (after a new
