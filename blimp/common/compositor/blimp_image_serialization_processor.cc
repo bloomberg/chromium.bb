@@ -50,9 +50,8 @@ class WebPImageEncoder : public SkPixelSerializer {
     picture.height = pixmap.height();
 
     // Import picture from raw pixels.
-    DCHECK(pixmap.alphaType() == kPremul_SkAlphaType);
     auto pixel_chars = static_cast<const unsigned char*>(pixmap.addr());
-    if (!PlatformPictureImport(pixel_chars, &picture))
+    if (!PlatformPictureImport(pixel_chars, &picture, pixmap.alphaType()))
       return nullptr;
 
     // Create a buffer for where to store the output data.
@@ -65,6 +64,7 @@ class WebPImageEncoder : public SkPixelSerializer {
     // Setup the configuration for the output WebP picture. This is currently
     // the same as the default configuration for WebP, but since any change in
     // the WebP defaults would invalidate all caches they are hard coded.
+    config.lossless = 0;
     config.quality = 75.0;  // between 0 (smallest file) and 100 (biggest).
     config.method = 4;  // quality/speed trade-off (0=fast, 6=slower-better).
 
@@ -121,18 +121,24 @@ class WebPImageEncoder : public SkPixelSerializer {
   }
 
   bool PlatformPictureImport(const unsigned char* pixels,
-                             WebPPicture* picture) {
-    // Need to unpremultiply each pixel, each pixel using 4 bytes (RGBA).
-    size_t pixel_count = picture->height * picture->width;
-    std::vector<unsigned char> unpremul_pixels(pixel_count * 4);
-    UnPremultiply(pixels, unpremul_pixels.data(), pixel_count);
-
+                             WebPPicture* picture,
+                             SkAlphaType alphaType) {
     // Each pixel uses 4 bytes (RGBA) which affects the stride per row.
     int row_stride = picture->width * 4;
+    if (alphaType == kPremul_SkAlphaType) {
+      // Need to unpremultiply each pixel, each pixel using 4 bytes (RGBA).
+      size_t pixel_count = picture->height * picture->width;
+      std::vector<unsigned char> unpremul_pixels(pixel_count * 4);
+      UnPremultiply(pixels, unpremul_pixels.data(), pixel_count);
+      if (SK_B32_SHIFT)  // Android
+        return WebPPictureImportRGBA(picture, unpremul_pixels.data(),
+                                     row_stride);
+      return WebPPictureImportBGRA(picture, unpremul_pixels.data(), row_stride);
+    }
 
     if (SK_B32_SHIFT)  // Android
-      return WebPPictureImportRGBA(picture, unpremul_pixels.data(), row_stride);
-    return WebPPictureImportBGRA(picture, unpremul_pixels.data(), row_stride);
+      return WebPPictureImportRGBA(picture, pixels, row_stride);
+    return WebPPictureImportBGRA(picture, pixels, row_stride);
   }
 };
 
