@@ -3886,6 +3886,7 @@ interface Node : EventTarget
     getter baseURI
     getter childNodes
     getter firstChild
+    getter isConnected
     getter lastChild
     getter nextSibling
     getter nodeName
