@@ -76,7 +76,7 @@ bool CSPSource::pathMatches(const KURL& url) const
     String path = decodeURLEscapeSequences(url.path());
 
     if (m_path.endsWith("/"))
-        return path.startsWith(m_path, TextCaseInsensitive);
+        return path.startsWith(m_path);
 
     return path == m_path;
 }

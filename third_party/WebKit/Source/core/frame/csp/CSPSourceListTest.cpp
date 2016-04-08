@@ -139,6 +139,7 @@ TEST_F(CSPSourceListTest, BasicMatching)
     EXPECT_FALSE(sourceList.matches(KURL(base, "http://example1.com/")));
     EXPECT_FALSE(sourceList.matches(KURL(base, "https://example1.com/foo")));
     EXPECT_FALSE(sourceList.matches(KURL(base, "http://example1.com:9000/foo/")));
+    EXPECT_FALSE(sourceList.matches(KURL(base, "http://example1.com:8000/FOO/")));
 }
 
 TEST_F(CSPSourceListTest, WildcardMatching)

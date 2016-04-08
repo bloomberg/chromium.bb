@@ -35,6 +35,8 @@ TEST_F(CSPSourceTest, BasicMatching)
     EXPECT_FALSE(source.matches(KURL(base, "http://example.com:8000/bar/")));
     EXPECT_FALSE(source.matches(KURL(base, "https://example.com:8000/bar/")));
     EXPECT_FALSE(source.matches(KURL(base, "http://example.com:9000/bar/")));
+    EXPECT_FALSE(source.matches(KURL(base, "HTTP://example.com:8000/FOO/bar")));
+    EXPECT_FALSE(source.matches(KURL(base, "HTTP://example.com:8000/FOO/BAR")));
 }
 
 TEST_F(CSPSourceTest, WildcardMatching)
