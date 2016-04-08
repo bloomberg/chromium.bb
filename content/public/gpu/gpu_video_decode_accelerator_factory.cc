@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/media/gpu_video_decode_accelerator_factory_impl.h"
 #include "content/public/gpu/gpu_video_decode_accelerator_factory.h"
+
+#include "content/common/gpu/media/gpu_video_decode_accelerator_factory_impl.h"
+#include "content/gpu/gpu_child_thread.h"
 
 namespace content {
 
@@ -44,8 +46,9 @@ GpuVideoDecodeAcceleratorFactory::CreateWithGLES2Decoder(
 
 // static
 gpu::VideoDecodeAcceleratorCapabilities
-GpuVideoDecodeAcceleratorFactory::GetDecoderCapabilities(
-    const gpu::GpuPreferences& gpu_preferences) {
+GpuVideoDecodeAcceleratorFactory::GetDecoderCapabilities() {
+  const gpu::GpuPreferences gpu_preferences =
+      GpuChildThread::current()->gpu_preferences();
   return GpuVideoDecodeAcceleratorFactoryImpl::GetDecoderCapabilities(
       gpu_preferences);
 }
@@ -53,11 +56,12 @@ GpuVideoDecodeAcceleratorFactory::GetDecoderCapabilities(
 scoped_ptr<media::VideoDecodeAccelerator>
 GpuVideoDecodeAcceleratorFactory::CreateVDA(
     media::VideoDecodeAccelerator::Client* client,
-    const media::VideoDecodeAccelerator::Config& config,
-    const gpu::GpuPreferences& gpu_preferences) {
+    const media::VideoDecodeAccelerator::Config& config) {
   if (!gvdafactory_impl_)
     return nullptr;
 
+  const gpu::GpuPreferences gpu_preferences =
+      GpuChildThread::current()->gpu_preferences();
   return gvdafactory_impl_->CreateVDA(client, config, gpu_preferences);
 }
 

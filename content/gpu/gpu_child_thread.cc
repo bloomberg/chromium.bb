@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_local.h"
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
@@ -49,6 +50,9 @@
 
 namespace content {
 namespace {
+
+base::LazyInstance<base::ThreadLocalPointer<GpuChildThread>> g_lazy_tls =
+    LAZY_INSTANCE_INITIALIZER;
 
 static base::LazyInstance<scoped_refptr<ThreadSafeSender> >
     g_thread_safe_sender = LAZY_INSTANCE_INITIALIZER;
@@ -148,6 +152,11 @@ ChildThreadImpl::Options GetOptions(
 
 }  // namespace
 
+// static
+GpuChildThread* GpuChildThread::current() {
+  return g_lazy_tls.Pointer()->Get();
+}
+
 GpuChildThread::GpuChildThread(
     GpuWatchdogThread* watchdog_thread,
     bool dead_on_arrival,
@@ -167,6 +176,7 @@ GpuChildThread::GpuChildThread(
   target_services_ = NULL;
 #endif
   g_thread_safe_sender.Get() = thread_safe_sender();
+  g_lazy_tls.Pointer()->Set(this);
 }
 
 GpuChildThread::GpuChildThread(
@@ -201,6 +211,7 @@ GpuChildThread::GpuChildThread(
     VLOG(1) << "gfx::GLSurface::InitializeOneOff failed";
 
   g_thread_safe_sender.Get() = thread_safe_sender();
+  g_lazy_tls.Pointer()->Set(this);
 }
 
 GpuChildThread::~GpuChildThread() {
@@ -208,6 +219,7 @@ GpuChildThread::~GpuChildThread() {
     delete deferred_messages_.front();
     deferred_messages_.pop();
   }
+  g_lazy_tls.Pointer()->Set(nullptr);
 }
 
 void GpuChildThread::Shutdown() {

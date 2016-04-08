@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_info.h"
 #include "media/video/video_decode_accelerator.h"
 
@@ -71,15 +70,13 @@ class CONTENT_EXPORT GpuVideoDecodeAcceleratorFactory {
       const GetGLES2DecoderCallback& get_gles2_decoder_cb);
 
   // Return decoder capabilities supported on the current platform.
-  static gpu::VideoDecodeAcceleratorCapabilities GetDecoderCapabilities(
-      const gpu::GpuPreferences& gpu_preferences);
+  static gpu::VideoDecodeAcceleratorCapabilities GetDecoderCapabilities();
 
   // Create a VDA for the current platform for |client| with the given |config|
   // and for given |gpu_preferences|. Return nullptr on failure.
   virtual scoped_ptr<media::VideoDecodeAccelerator> CreateVDA(
       media::VideoDecodeAccelerator::Client* client,
-      const media::VideoDecodeAccelerator::Config& config,
-      const gpu::GpuPreferences& gpu_preferences);
+      const media::VideoDecodeAccelerator::Config& config);
 
  private:
   // TODO(posciak): This is temporary and will not be needed once
