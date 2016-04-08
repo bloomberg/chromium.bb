@@ -348,7 +348,7 @@ class LocalFileSyncContextTest : public testing::Test {
   }
 
   base::ScopedTempDir dir_;
-  scoped_ptr<leveldb::Env> in_memory_env_;
+  std::unique_ptr<leveldb::Env> in_memory_env_;
 
   // These need to remain until the very end.
   content::TestBrowserThreadBundle thread_bundle_;

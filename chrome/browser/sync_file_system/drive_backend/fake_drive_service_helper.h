@@ -68,7 +68,7 @@ class FakeDriveServiceHelper {
 
   google_apis::DriveApiErrorCode GetFileResource(
       const std::string& file_id,
-      scoped_ptr<google_apis::FileResource>* entry);
+      std::unique_ptr<google_apis::FileResource>* entry);
   google_apis::DriveApiErrorCode GetFileVisibility(
       const std::string& file_id,
       google_apis::drive::FileVisibility* visiblity);
@@ -76,13 +76,13 @@ class FakeDriveServiceHelper {
       const std::string& file_id,
       std::string* file_content);
   google_apis::DriveApiErrorCode GetAboutResource(
-      scoped_ptr<google_apis::AboutResource>* about_resource);
+      std::unique_ptr<google_apis::AboutResource>* about_resource);
 
   base::FilePath base_dir_path() { return base_dir_.path(); }
 
  private:
   google_apis::DriveApiErrorCode CompleteListing(
-      scoped_ptr<google_apis::FileList> list,
+      std::unique_ptr<google_apis::FileList> list,
       ScopedVector<google_apis::FileResource>* entries);
 
   void Initialize();

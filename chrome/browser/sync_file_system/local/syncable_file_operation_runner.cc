@@ -68,7 +68,8 @@ void SyncableFileOperationRunner::OnWriteEnabled(const FileSystemURL& url) {
   RunNextRunnableTask();
 }
 
-void SyncableFileOperationRunner::PostOperationTask(scoped_ptr<Task> task) {
+void SyncableFileOperationRunner::PostOperationTask(
+    std::unique_ptr<Task> task) {
   DCHECK(CalledOnValidThread());
   pending_tasks_.push_back(task.release());
   RunNextRunnableTask();
@@ -81,7 +82,7 @@ void SyncableFileOperationRunner::RunNextRunnableTask() {
     if ((*iter)->IsRunnable(sync_status())) {
       ++num_inflight_tasks_;
       DCHECK_GE(num_inflight_tasks_, 1);
-      scoped_ptr<Task> task(*iter);
+      std::unique_ptr<Task> task(*iter);
       pending_tasks_.erase(iter++);
       task->Start(sync_status());
       continue;

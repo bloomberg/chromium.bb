@@ -109,15 +109,16 @@ class SyncWorkerTest : public testing::Test,
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
     extension_service_.reset(new MockExtensionService);
-    scoped_ptr<drive::DriveServiceInterface>
-        fake_drive_service(new drive::FakeDriveService);
+    std::unique_ptr<drive::DriveServiceInterface> fake_drive_service(
+        new drive::FakeDriveService);
 
-    scoped_ptr<SyncEngineContext> sync_engine_context(new SyncEngineContext(
-        std::move(fake_drive_service), nullptr /* drive_uploader */,
-        nullptr /* task_logger */,
-        base::ThreadTaskRunnerHandle::Get() /* ui_task_runner */,
-        base::ThreadTaskRunnerHandle::Get() /* worker_task_runner */,
-        nullptr /* worker_pool */));
+    std::unique_ptr<SyncEngineContext> sync_engine_context(
+        new SyncEngineContext(
+            std::move(fake_drive_service), nullptr /* drive_uploader */,
+            nullptr /* task_logger */,
+            base::ThreadTaskRunnerHandle::Get() /* ui_task_runner */,
+            base::ThreadTaskRunnerHandle::Get() /* worker_task_runner */,
+            nullptr /* worker_pool */));
 
     sync_worker_.reset(new SyncWorker(
         profile_dir_.path(),
@@ -160,10 +161,10 @@ class SyncWorkerTest : public testing::Test,
  private:
   content::TestBrowserThreadBundle browser_threads_;
   base::ScopedTempDir profile_dir_;
-  scoped_ptr<leveldb::Env> in_memory_env_;
+  std::unique_ptr<leveldb::Env> in_memory_env_;
 
-  scoped_ptr<MockExtensionService> extension_service_;
-  scoped_ptr<SyncWorker> sync_worker_;
+  std::unique_ptr<MockExtensionService> extension_service_;
+  std::unique_ptr<SyncWorker> sync_worker_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncWorkerTest);
 };
@@ -262,7 +263,7 @@ TEST_F(SyncWorkerTest, GetOriginStatusMap) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SYNC_STATUS_OK, sync_status);
 
-  scoped_ptr<RemoteFileSyncService::OriginStatusMap> status_map;
+  std::unique_ptr<RemoteFileSyncService::OriginStatusMap> status_map;
   sync_worker()->GetOriginStatusMap(CreateResultReceiver(&status_map));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(2u, status_map->size());
@@ -366,22 +367,16 @@ TEST_F(SyncWorkerTest, UpdateServiceState) {
                  REMOTE_SERVICE_DISABLED));
 
   GetSyncTaskManager()->ScheduleSyncTask(
-      FROM_HERE,
-      scoped_ptr<SyncTask>(new MockSyncTask(false)),
+      FROM_HERE, std::unique_ptr<SyncTask>(new MockSyncTask(false)),
       SyncTaskManager::PRIORITY_MED,
-      base::Bind(&SyncWorkerTest::CheckServiceState,
-                 AsWeakPtr(),
-                 SYNC_STATUS_OK,
-                 REMOTE_SERVICE_DISABLED));
+      base::Bind(&SyncWorkerTest::CheckServiceState, AsWeakPtr(),
+                 SYNC_STATUS_OK, REMOTE_SERVICE_DISABLED));
 
   GetSyncTaskManager()->ScheduleSyncTask(
-      FROM_HERE,
-      scoped_ptr<SyncTask>(new MockSyncTask(true)),
+      FROM_HERE, std::unique_ptr<SyncTask>(new MockSyncTask(true)),
       SyncTaskManager::PRIORITY_MED,
-      base::Bind(&SyncWorkerTest::CheckServiceState,
-                 AsWeakPtr(),
-                 SYNC_STATUS_OK,
-                 REMOTE_SERVICE_OK));
+      base::Bind(&SyncWorkerTest::CheckServiceState, AsWeakPtr(),
+                 SYNC_STATUS_OK, REMOTE_SERVICE_OK));
 
   base::RunLoop().RunUntilIdle();
 }

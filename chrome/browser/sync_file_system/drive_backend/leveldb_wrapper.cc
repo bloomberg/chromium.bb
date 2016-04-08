@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
@@ -144,7 +145,7 @@ void LevelDBWrapper::Iterator::AdvanceIterators() {
 // ---------------------------------------------------------------------------
 // LevelDBWrapper class
 // ---------------------------------------------------------------------------
-LevelDBWrapper::LevelDBWrapper(scoped_ptr<leveldb::DB> db)
+LevelDBWrapper::LevelDBWrapper(std::unique_ptr<leveldb::DB> db)
     : db_(std::move(db)), num_puts_(0), num_deletes_(0) {
   DCHECK(db_);
 }
@@ -179,8 +180,8 @@ leveldb::Status LevelDBWrapper::Get(const std::string& key,
   return leveldb::Status::NotSupported("Not supported operation.");
 }
 
-scoped_ptr<LevelDBWrapper::Iterator> LevelDBWrapper::NewIterator() {
-  return make_scoped_ptr(new Iterator(this));
+std::unique_ptr<LevelDBWrapper::Iterator> LevelDBWrapper::NewIterator() {
+  return base::WrapUnique(new Iterator(this));
 }
 
 leveldb::Status LevelDBWrapper::Commit() {

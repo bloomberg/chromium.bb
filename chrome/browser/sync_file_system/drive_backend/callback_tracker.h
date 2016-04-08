@@ -59,7 +59,7 @@ class CallbackTracker {
  private:
   friend class internal::AbortHelper;
 
-  scoped_ptr<internal::AbortHelper> PassAbortHelper(
+  std::unique_ptr<internal::AbortHelper> PassAbortHelper(
       internal::AbortHelper* helper);
 
   AbortClosureByHelper helpers_;  // Owns AbortHelpers.

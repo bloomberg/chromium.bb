@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <string>
 #include <utility>
 
@@ -13,6 +14,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
@@ -448,8 +450,8 @@ SyncFileSystemService::SyncFileSystemService(Profile* profile)
 }
 
 void SyncFileSystemService::Initialize(
-    scoped_ptr<LocalFileSyncService> local_service,
-    scoped_ptr<RemoteFileSyncService> remote_service) {
+    std::unique_ptr<LocalFileSyncService> local_service,
+    std::unique_ptr<RemoteFileSyncService> remote_service) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(local_service);
   DCHECK(remote_service);
@@ -458,9 +460,9 @@ void SyncFileSystemService::Initialize(
   local_service_ = std::move(local_service);
   remote_service_ = std::move(remote_service);
 
-  scoped_ptr<LocalSyncRunner> local_syncer(
+  std::unique_ptr<LocalSyncRunner> local_syncer(
       new LocalSyncRunner(kLocalSyncName, this));
-  scoped_ptr<RemoteSyncRunner> remote_syncer(
+  std::unique_ptr<RemoteSyncRunner> remote_syncer(
       new RemoteSyncRunner(kRemoteSyncName, this, remote_service_.get()));
 
   local_service_->AddChangeObserver(local_syncer.get());
@@ -572,7 +574,7 @@ void SyncFileSystemService::DidInitializeFileSystemForDump(
 void SyncFileSystemService::DidDumpFiles(
     const GURL& origin,
     const DumpFilesCallback& callback,
-    scoped_ptr<base::ListValue> dump_files) {
+    std::unique_ptr<base::ListValue> dump_files) {
   if (!dump_files || !dump_files->GetSize() ||
       !local_service_ || !remote_service_) {
     callback.Run(base::ListValue());
@@ -606,18 +608,19 @@ void SyncFileSystemService::DidDumpFiles(
   }
 }
 
-void SyncFileSystemService::DidDumpDatabase(const DumpFilesCallback& callback,
-                                            scoped_ptr<base::ListValue> list) {
+void SyncFileSystemService::DidDumpDatabase(
+    const DumpFilesCallback& callback,
+    std::unique_ptr<base::ListValue> list) {
   if (!list)
-    list = make_scoped_ptr(new base::ListValue);
+    list = base::WrapUnique(new base::ListValue);
   callback.Run(*list);
 }
 
 void SyncFileSystemService::DidGetExtensionStatusMap(
     const ExtensionStatusMapCallback& callback,
-    scoped_ptr<RemoteFileSyncService::OriginStatusMap> status_map) {
+    std::unique_ptr<RemoteFileSyncService::OriginStatusMap> status_map) {
   if (!status_map)
-    status_map = make_scoped_ptr(new RemoteFileSyncService::OriginStatusMap);
+    status_map = base::WrapUnique(new RemoteFileSyncService::OriginStatusMap);
   callback.Run(*status_map);
 }
 

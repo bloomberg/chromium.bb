@@ -9,13 +9,13 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/sync_file_system/file_change.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
@@ -179,7 +179,7 @@ class LocalFileChangeTracker : public storage::FileUpdateObserver,
   FileChangeMap mirror_changes_;  // For mirrors.
   FileChangeMap demoted_changes_;  // For demoted changes.
 
-  scoped_ptr<TrackerDB> tracker_db_;
+  std::unique_ptr<TrackerDB> tracker_db_;
 
   // Change sequence number. Briefly gives a hint about the order of changes,
   // but they are updated when a new change comes on the same file (as

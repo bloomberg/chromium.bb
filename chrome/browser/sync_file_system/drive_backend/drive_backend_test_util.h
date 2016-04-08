@@ -7,7 +7,8 @@
 
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 
@@ -32,15 +33,15 @@ void ExpectEquivalentMetadata(const FileMetadata& left,
 void ExpectEquivalentTrackers(const FileTracker& left,
                               const FileTracker& right);
 
-scoped_ptr<FileMetadata> CreateFolderMetadata(const std::string& file_id,
-                                              const std::string& title);
-scoped_ptr<FileMetadata> CreateFileMetadata(const std::string& file_id,
-                                            const std::string& title,
-                                            const std::string& md5);
-scoped_ptr<FileTracker> CreateTracker(const FileMetadata& metadata,
-                                      int64_t tracker_id,
-                                      const FileTracker* parent_tracker);
-scoped_ptr<FileTracker> CreatePlaceholderTracker(
+std::unique_ptr<FileMetadata> CreateFolderMetadata(const std::string& file_id,
+                                                   const std::string& title);
+std::unique_ptr<FileMetadata> CreateFileMetadata(const std::string& file_id,
+                                                 const std::string& title,
+                                                 const std::string& md5);
+std::unique_ptr<FileTracker> CreateTracker(const FileMetadata& metadata,
+                                           int64_t tracker_id,
+                                           const FileTracker* parent_tracker);
+std::unique_ptr<FileTracker> CreatePlaceholderTracker(
     const std::string& file_id,
     int64_t tracker_id,
     const FileTracker* parent_tracker);

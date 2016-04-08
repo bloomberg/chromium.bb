@@ -25,16 +25,16 @@ namespace drive_backend {
 
 namespace {
 
-void DidAddFileOrDirectoryForMakingConflict(DriveApiErrorCode error,
-                                            scoped_ptr<FileResource> entry) {
+void DidAddFileOrDirectoryForMakingConflict(
+    DriveApiErrorCode error,
+    std::unique_ptr<FileResource> entry) {
   ASSERT_EQ(google_apis::HTTP_CREATED, error);
   ASSERT_TRUE(entry);
 }
 
-void DidAddFileForUploadNew(
-    const UploadCompletionCallback& callback,
-    DriveApiErrorCode error,
-    scoped_ptr<FileResource> entry) {
+void DidAddFileForUploadNew(const UploadCompletionCallback& callback,
+                            DriveApiErrorCode error,
+                            std::unique_ptr<FileResource> entry) {
   ASSERT_EQ(google_apis::HTTP_CREATED, error);
   ASSERT_TRUE(entry);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -48,7 +48,7 @@ void DidAddFileForUploadNew(
 void DidGetFileResourceForUploadExisting(
     const UploadCompletionCallback& callback,
     DriveApiErrorCode error,
-    scoped_ptr<FileResource> entry) {
+    std::unique_ptr<FileResource> entry) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback,

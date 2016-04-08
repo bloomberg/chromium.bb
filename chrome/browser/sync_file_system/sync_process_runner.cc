@@ -60,7 +60,7 @@ bool WasSuccessfulSync(SyncStatusCode status) {
 
 SyncProcessRunner::SyncProcessRunner(const std::string& name,
                                      Client* client,
-                                     scoped_ptr<TimerHelper> timer_helper,
+                                     std::unique_ptr<TimerHelper> timer_helper,
                                      size_t max_parallel_task)
     : name_(name),
       client_(client),

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,7 +15,6 @@
 #include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_status.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
@@ -145,7 +145,7 @@ class CannedSyncableFileSystem
   // Returns the # of bytes written (>=0) or an error code (<0).
   int64_t Write(net::URLRequestContext* url_request_context,
                 const storage::FileSystemURL& url,
-                scoped_ptr<storage::BlobDataHandle> blob_data_handle);
+                std::unique_ptr<storage::BlobDataHandle> blob_data_handle);
   int64_t WriteString(const storage::FileSystemURL& url,
                       const std::string& data);
 
@@ -207,7 +207,7 @@ class CannedSyncableFileSystem
                        const StatusCallback& callback);
   void DoWrite(net::URLRequestContext* url_request_context,
                const storage::FileSystemURL& url,
-               scoped_ptr<storage::BlobDataHandle> blob_data_handle,
+               std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
                const WriteCallback& callback);
   void DoWriteString(const storage::FileSystemURL& url,
                      const std::string& data,

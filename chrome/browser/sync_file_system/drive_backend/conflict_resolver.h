@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_CONFLICT_RESOLVER_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_CONFLICT_RESOLVER_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
@@ -43,28 +43,28 @@ class ConflictResolver : public SyncTask {
 
   explicit ConflictResolver(SyncEngineContext* sync_context);
   ~ConflictResolver() override;
-  void RunPreflight(scoped_ptr<SyncTaskToken> token) override;
-  void RunExclusive(scoped_ptr<SyncTaskToken> token);
+  void RunPreflight(std::unique_ptr<SyncTaskToken> token) override;
+  void RunExclusive(std::unique_ptr<SyncTaskToken> token);
 
  private:
   typedef std::pair<std::string, std::string> FileIDAndETag;
 
-  void DetachFromNonPrimaryParents(scoped_ptr<SyncTaskToken> token);
-  void DidDetachFromParent(scoped_ptr<SyncTaskToken> token,
+  void DetachFromNonPrimaryParents(std::unique_ptr<SyncTaskToken> token);
+  void DidDetachFromParent(std::unique_ptr<SyncTaskToken> token,
                            google_apis::DriveApiErrorCode error);
 
   std::string PickPrimaryFile(const TrackerIDSet& trackers);
-  void RemoveNonPrimaryFiles(scoped_ptr<SyncTaskToken> token);
-  void DidRemoveFile(scoped_ptr<SyncTaskToken> token,
+  void RemoveNonPrimaryFiles(std::unique_ptr<SyncTaskToken> token);
+  void DidRemoveFile(std::unique_ptr<SyncTaskToken> token,
                      const std::string& file_id,
                      google_apis::DriveApiErrorCode error);
 
   void UpdateFileMetadata(const std::string& file_id,
-                          scoped_ptr<SyncTaskToken> token);
+                          std::unique_ptr<SyncTaskToken> token);
   void DidGetRemoteMetadata(const std::string& file_id,
-                            scoped_ptr<SyncTaskToken> token,
+                            std::unique_ptr<SyncTaskToken> token,
                             google_apis::DriveApiErrorCode error,
-                            scoped_ptr<google_apis::FileResource> entry);
+                            std::unique_ptr<google_apis::FileResource> entry);
 
   std::string target_file_id_;
   std::vector<std::string> parents_to_remove_;

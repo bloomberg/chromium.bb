@@ -200,11 +200,11 @@ class LocalFileSyncServiceTest
   content::TestBrowserThreadBundle thread_bundle_;
 
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<leveldb::Env> in_memory_env_;
+  std::unique_ptr<leveldb::Env> in_memory_env_;
   TestingProfile profile_;
 
-  scoped_ptr<CannedSyncableFileSystem> file_system_;
-  scoped_ptr<LocalFileSyncService> local_service_;
+  std::unique_ptr<CannedSyncableFileSystem> file_system_;
+  std::unique_ptr<LocalFileSyncService> local_service_;
 
   int64_t num_changes_;
 };

@@ -34,7 +34,7 @@ ListChangesTask::ListChangesTask(SyncEngineContext* sync_context)
 ListChangesTask::~ListChangesTask() {
 }
 
-void ListChangesTask::RunPreflight(scoped_ptr<SyncTaskToken> token) {
+void ListChangesTask::RunPreflight(std::unique_ptr<SyncTaskToken> token) {
   token->InitializeTaskLog("List Changes");
 
   if (!IsContextReady()) {
@@ -44,12 +44,12 @@ void ListChangesTask::RunPreflight(scoped_ptr<SyncTaskToken> token) {
   }
 
   SyncTaskManager::UpdateTaskBlocker(
-      std::move(token), scoped_ptr<TaskBlocker>(new TaskBlocker),
+      std::move(token), std::unique_ptr<TaskBlocker>(new TaskBlocker),
       base::Bind(&ListChangesTask::StartListing,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ListChangesTask::StartListing(scoped_ptr<SyncTaskToken> token) {
+void ListChangesTask::StartListing(std::unique_ptr<SyncTaskToken> token) {
   drive_service()->GetChangeList(
       metadata_database()->GetLargestFetchedChangeID() + 1,
       base::Bind(&ListChangesTask::DidListChanges,
@@ -57,9 +57,9 @@ void ListChangesTask::StartListing(scoped_ptr<SyncTaskToken> token) {
 }
 
 void ListChangesTask::DidListChanges(
-    scoped_ptr<SyncTaskToken> token,
+    std::unique_ptr<SyncTaskToken> token,
     google_apis::DriveApiErrorCode error,
-    scoped_ptr<google_apis::ChangeList> change_list) {
+    std::unique_ptr<google_apis::ChangeList> change_list) {
   SyncStatusCode status = DriveApiErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
     token->RecordLog("Failed to fetch change list.");
@@ -99,7 +99,7 @@ void ListChangesTask::DidListChanges(
     return;
   }
 
-  scoped_ptr<TaskBlocker> task_blocker(new TaskBlocker);
+  std::unique_ptr<TaskBlocker> task_blocker(new TaskBlocker);
   task_blocker->exclusive = true;
   SyncTaskManager::UpdateTaskBlocker(
       std::move(token), std::move(task_blocker),
@@ -109,7 +109,7 @@ void ListChangesTask::DidListChanges(
 }
 
 void ListChangesTask::CheckInChangeList(int64_t largest_change_id,
-                                        scoped_ptr<SyncTaskToken> token) {
+                                        std::unique_ptr<SyncTaskToken> token) {
   token->RecordLog(base::StringPrintf(
       "Got %" PRIuS " changes, updating MetadataDatabase.",
       change_list_.size()));

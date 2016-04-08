@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_FOLDER_CREATOR_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_FOLDER_CREATOR_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
@@ -45,11 +45,11 @@ class FolderCreator {
  private:
   void DidCreateFolder(const FileIDCallback& callback,
                        google_apis::DriveApiErrorCode error,
-                       scoped_ptr<google_apis::FileResource> entry);
+                       std::unique_ptr<google_apis::FileResource> entry);
   void DidListFolders(const FileIDCallback& callback,
                       ScopedVector<google_apis::FileResource> candidates,
                       google_apis::DriveApiErrorCode error,
-                      scoped_ptr<google_apis::FileList> file_list);
+                      std::unique_ptr<google_apis::FileList> file_list);
 
   drive::DriveServiceInterface* drive_service_;
   MetadataDatabase* metadata_database_;

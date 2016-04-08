@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
@@ -641,8 +642,8 @@ void LocalFileSyncContext::InitializeFileSystemContextOnIOThread(
     // Create and initialize LocalFileChangeTracker and call back this method
     // later again.
     std::set<GURL>* origins_with_changes = new std::set<GURL>;
-    scoped_ptr<LocalFileChangeTracker>* tracker_ptr(
-        new scoped_ptr<LocalFileChangeTracker>);
+    std::unique_ptr<LocalFileChangeTracker>* tracker_ptr(
+        new std::unique_ptr<LocalFileChangeTracker>);
     base::PostTaskAndReplyWithResult(
         file_system_context->default_file_task_runner(), FROM_HERE,
         base::Bind(&LocalFileSyncContext::InitializeChangeTrackerOnFileThread,
@@ -670,7 +671,7 @@ void LocalFileSyncContext::InitializeFileSystemContextOnIOThread(
 }
 
 SyncStatusCode LocalFileSyncContext::InitializeChangeTrackerOnFileThread(
-    scoped_ptr<LocalFileChangeTracker>* tracker_ptr,
+    std::unique_ptr<LocalFileChangeTracker>* tracker_ptr,
     FileSystemContext* file_system_context,
     std::set<GURL>* origins_with_changes) {
   DCHECK(file_system_context);
@@ -699,7 +700,7 @@ SyncStatusCode LocalFileSyncContext::InitializeChangeTrackerOnFileThread(
 }
 
 void LocalFileSyncContext::DidInitializeChangeTrackerOnIOThread(
-    scoped_ptr<LocalFileChangeTracker>* tracker_ptr,
+    std::unique_ptr<LocalFileChangeTracker>* tracker_ptr,
     const GURL& source_url,
     FileSystemContext* file_system_context,
     std::set<GURL>* origins_with_changes,
@@ -759,7 +760,7 @@ void LocalFileSyncContext::DidInitialize(
   pending_initialize_callbacks_.erase(file_system_context);
 }
 
-scoped_ptr<LocalFileSyncContext::FileSystemURLQueue>
+std::unique_ptr<LocalFileSyncContext::FileSystemURLQueue>
 LocalFileSyncContext::GetNextURLsForSyncOnFileThread(
     FileSystemContext* file_system_context) {
   DCHECK(file_system_context);
@@ -769,7 +770,7 @@ LocalFileSyncContext::GetNextURLsForSyncOnFileThread(
       SyncFileSystemBackend::GetBackend(file_system_context);
   DCHECK(backend);
   DCHECK(backend->change_tracker());
-  scoped_ptr<FileSystemURLQueue> urls(new FileSystemURLQueue);
+  std::unique_ptr<FileSystemURLQueue> urls(new FileSystemURLQueue);
   backend->change_tracker()->GetNextChangedURLs(
       urls.get(), kMaxURLsToFetchForLocalSync);
   for (FileSystemURLQueue::iterator iter = urls->begin();
@@ -782,7 +783,7 @@ LocalFileSyncContext::GetNextURLsForSyncOnFileThread(
 void LocalFileSyncContext::TryPrepareForLocalSync(
     FileSystemContext* file_system_context,
     const LocalFileSyncInfoCallback& callback,
-    scoped_ptr<FileSystemURLQueue> urls) {
+    std::unique_ptr<FileSystemURLQueue> urls) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(urls);
 
@@ -809,7 +810,7 @@ void LocalFileSyncContext::TryPrepareForLocalSync(
 
 void LocalFileSyncContext::DidTryPrepareForLocalSync(
     FileSystemContext* file_system_context,
-    scoped_ptr<FileSystemURLQueue> remaining_urls,
+    std::unique_ptr<FileSystemURLQueue> remaining_urls,
     const LocalFileSyncInfoCallback& callback,
     SyncStatusCode status,
     const LocalFileSyncInfo& sync_file_info,
@@ -854,7 +855,7 @@ void LocalFileSyncContext::PromoteDemotedChangesForURL(
 
 void LocalFileSyncContext::PromoteDemotedChangesForURLs(
     FileSystemContext* file_system_context,
-    scoped_ptr<FileSystemURLQueue> urls) {
+    std::unique_ptr<FileSystemURLQueue> urls) {
   DCHECK(file_system_context);
   if (!file_system_context->default_file_task_runner()->
           RunsTasksOnCurrentThread()) {
@@ -911,11 +912,9 @@ void LocalFileSyncContext::DidGetWritingStatusForSync(
   DCHECK(file_util);
 
   base::File::Error file_error = file_util->GetFileInfo(
-      make_scoped_ptr(
-          new FileSystemOperationContext(file_system_context)).get(),
-      url,
-      &file_info,
-      &platform_path);
+      base::WrapUnique(new FileSystemOperationContext(file_system_context))
+          .get(),
+      url, &file_info, &platform_path);
 
   storage::ScopedFile snapshot;
   if (file_error == base::File::FILE_OK && sync_mode == SYNC_SNAPSHOT) {

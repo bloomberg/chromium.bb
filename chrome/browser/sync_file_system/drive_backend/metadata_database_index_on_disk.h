@@ -32,7 +32,8 @@ struct ParentIDAndTitle;
 // Maintains indexes of MetadataDatabase on disk.
 class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
  public:
-  static scoped_ptr<MetadataDatabaseIndexOnDisk>  Create(LevelDBWrapper* db);
+  static std::unique_ptr<MetadataDatabaseIndexOnDisk> Create(
+      LevelDBWrapper* db);
 
   ~MetadataDatabaseIndexOnDisk() override;
 
@@ -41,8 +42,8 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
   bool GetFileMetadata(const std::string& file_id,
                        FileMetadata* metadata) const override;
   bool GetFileTracker(int64_t tracker_id, FileTracker* tracker) const override;
-  void StoreFileMetadata(scoped_ptr<FileMetadata> metadata) override;
-  void StoreFileTracker(scoped_ptr<FileTracker> tracker) override;
+  void StoreFileMetadata(std::unique_ptr<FileMetadata> metadata) override;
+  void StoreFileTracker(std::unique_ptr<FileTracker> tracker) override;
   void RemoveFileMetadata(const std::string& file_id) override;
   void RemoveFileTracker(int64_t tracker_id) override;
   TrackerIDSet GetFileTrackerIDsByFileID(
@@ -167,7 +168,7 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
   void DeleteKeyStartsWith(const std::string& prefix);
 
   LevelDBWrapper* db_;  // Not owned.
-  scoped_ptr<ServiceMetadata> service_metadata_;
+  std::unique_ptr<ServiceMetadata> service_metadata_;
 
   size_t num_dirty_trackers_;
 

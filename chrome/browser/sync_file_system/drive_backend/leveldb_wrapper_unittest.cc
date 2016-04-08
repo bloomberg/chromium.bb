@@ -11,6 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
@@ -60,7 +61,7 @@ class LevelDBWrapperTest : public testing::Test {
   void CheckDBContents(const TestData expects[], size_t size) {
     DCHECK(db_);
 
-    scoped_ptr<LevelDBWrapper::Iterator> itr = db_->NewIterator();
+    std::unique_ptr<LevelDBWrapper::Iterator> itr = db_->NewIterator();
     itr->SeekToFirst();
     for (size_t i = 0; i < size; ++i) {
       ASSERT_TRUE(itr->Valid());
@@ -82,17 +83,17 @@ class LevelDBWrapperTest : public testing::Test {
         leveldb::DB::Open(options, database_dir_.path().AsUTF8Unsafe(), &db);
     ASSERT_TRUE(status.ok());
 
-    db_.reset(new LevelDBWrapper(make_scoped_ptr(db)));
+    db_.reset(new LevelDBWrapper(base::WrapUnique(db)));
   }
 
   base::ScopedTempDir database_dir_;
-  scoped_ptr<leveldb::Env> in_memory_env_;
-  scoped_ptr<LevelDBWrapper> db_;
+  std::unique_ptr<leveldb::Env> in_memory_env_;
+  std::unique_ptr<LevelDBWrapper> db_;
 };
 
 TEST_F(LevelDBWrapperTest, IteratorTest) {
   CreateDefaultDatabase();
-  scoped_ptr<LevelDBWrapper::Iterator> itr = GetDB()->NewIterator();
+  std::unique_ptr<LevelDBWrapper::Iterator> itr = GetDB()->NewIterator();
 
   itr->Seek("a");
   EXPECT_TRUE(itr->Valid());
@@ -142,7 +143,7 @@ TEST_F(LevelDBWrapperTest, Iterator2Test) {
   GetDB()->Put("c", "3");
   // Keep pending transanctions on memory.
 
-  scoped_ptr<LevelDBWrapper::Iterator> itr = GetDB()->NewIterator();
+  std::unique_ptr<LevelDBWrapper::Iterator> itr = GetDB()->NewIterator();
 
   std::string prev_key;
   std::string prev_value;

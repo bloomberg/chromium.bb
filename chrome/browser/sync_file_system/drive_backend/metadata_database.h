@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -17,7 +18,6 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -124,23 +124,24 @@ class MetadataDatabase {
   // If |env_override| is non-NULL, internal LevelDB uses |env_override| instead
   // of leveldb::Env::Default().  Use leveldb::MemEnv in test code for faster
   // testing.
-  static scoped_ptr<MetadataDatabase> Create(
+  static std::unique_ptr<MetadataDatabase> Create(
       const base::FilePath& database_path,
       leveldb::Env* env_override,
       SyncStatusCode* status);
-  static scoped_ptr<MetadataDatabase> CreateInternal(
+  static std::unique_ptr<MetadataDatabase> CreateInternal(
       const base::FilePath& database_path,
       leveldb::Env* env_override,
       bool enable_on_disk_index,
       SyncStatusCode* status);
   static SyncStatusCode CreateForTesting(
-      scoped_ptr<LevelDBWrapper> db,
+      std::unique_ptr<LevelDBWrapper> db,
       bool enable_on_disk_index,
-      scoped_ptr<MetadataDatabase>* metadata_database_out);
+      std::unique_ptr<MetadataDatabase>* metadata_database_out);
 
   ~MetadataDatabase();
 
-  static void ClearDatabase(scoped_ptr<MetadataDatabase> metadata_database);
+  static void ClearDatabase(
+      std::unique_ptr<MetadataDatabase> metadata_database);
 
   int64_t GetLargestFetchedChangeID() const;
   int64_t GetSyncRootTrackerID() const;
@@ -151,10 +152,10 @@ class MetadataDatabase {
   bool HasSyncRoot() const;
 
   // Returns all file metadata for the given |app_id|.
-  scoped_ptr<base::ListValue> DumpFiles(const std::string& app_id);
+  std::unique_ptr<base::ListValue> DumpFiles(const std::string& app_id);
 
   // Returns all database data.
-  scoped_ptr<base::ListValue> DumpDatabase();
+  std::unique_ptr<base::ListValue> DumpDatabase();
 
   // TODO(tzik): Move GetLargestKnownChangeID() to private section, and hide its
   // handling in the class, instead of letting user do.
@@ -374,15 +375,15 @@ class MetadataDatabase {
 
   void RemoveUnneededTrackersForMissingFile(const std::string& file_id);
   void UpdateByFileMetadata(const tracked_objects::Location& from_where,
-                            scoped_ptr<FileMetadata> file,
+                            std::unique_ptr<FileMetadata> file,
                             UpdateOption option);
 
   SyncStatusCode WriteToDatabase();
 
   bool HasNewerFileMetadata(const std::string& file_id, int64_t change_id);
 
-  scoped_ptr<base::ListValue> DumpTrackers();
-  scoped_ptr<base::ListValue> DumpMetadata();
+  std::unique_ptr<base::ListValue> DumpTrackers();
+  std::unique_ptr<base::ListValue> DumpMetadata();
 
   void AttachSyncRoot(const google_apis::FileResource& sync_root_folder);
   void AttachInitialAppRoot(const google_apis::FileResource& app_root_folder);
@@ -395,13 +396,13 @@ class MetadataDatabase {
 
   base::FilePath database_path_;
   leveldb::Env* env_override_;
-  scoped_ptr<LevelDBWrapper> db_;
+  std::unique_ptr<LevelDBWrapper> db_;
 
   bool enable_on_disk_index_;
 
   int64_t largest_known_change_id_;
 
-  scoped_ptr<MetadataDatabaseIndexInterface> index_;
+  std::unique_ptr<MetadataDatabaseIndexInterface> index_;
 
   base::WeakPtrFactory<MetadataDatabase> weak_ptr_factory_;
 

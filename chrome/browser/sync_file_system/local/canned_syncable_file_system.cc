@@ -187,8 +187,8 @@ class WriteHelper {
 
  private:
   int64_t bytes_written_;
-  scoped_ptr<MockBlobURLRequestContext> request_context_;
-  scoped_ptr<ScopedTextBlob> blob_data_;
+  std::unique_ptr<MockBlobURLRequestContext> request_context_;
+  std::unique_ptr<ScopedTextBlob> blob_data_;
 
   DISALLOW_COPY_AND_ASSIGN(WriteHelper);
 };
@@ -474,7 +474,7 @@ File::Error CannedSyncableFileSystem::ReadDirectory(
 int64_t CannedSyncableFileSystem::Write(
     net::URLRequestContext* url_request_context,
     const FileSystemURL& url,
-    scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
+    std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {
   return RunOnThread<int64_t>(
       io_task_runner_.get(), FROM_HERE,
       base::Bind(&CannedSyncableFileSystem::DoWrite, base::Unretained(this),
@@ -685,7 +685,7 @@ void CannedSyncableFileSystem::DoReadDirectory(
 void CannedSyncableFileSystem::DoWrite(
     net::URLRequestContext* url_request_context,
     const FileSystemURL& url,
-    scoped_ptr<storage::BlobDataHandle> blob_data_handle,
+    std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
     const WriteCallback& callback) {
   EXPECT_TRUE(io_task_runner_->RunsTasksOnCurrentThread());
   EXPECT_TRUE(is_filesystem_opened_);

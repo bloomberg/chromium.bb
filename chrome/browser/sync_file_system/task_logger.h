@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_TASK_LOGGER_H_
 
 #include <deque>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -48,7 +48,7 @@ class TaskLogger : public base::SupportsWeakPtr<TaskLogger> {
   TaskLogger();
   ~TaskLogger();
 
-  void RecordLog(scoped_ptr<TaskLog> log);
+  void RecordLog(std::unique_ptr<TaskLog> log);
   void ClearLog();
 
   void AddObserver(Observer* observer);

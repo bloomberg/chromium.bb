@@ -8,10 +8,9 @@
 
 namespace sync_file_system {
 
-scoped_ptr<RemoteFileSyncService>
-RemoteFileSyncService::CreateForBrowserContext(
-    content::BrowserContext* context,
-    TaskLogger* task_logger) {
+std::unique_ptr<RemoteFileSyncService>
+RemoteFileSyncService::CreateForBrowserContext(content::BrowserContext* context,
+                                               TaskLogger* task_logger) {
   return drive_backend::SyncEngine::CreateForBrowserContext(context,
                                                             task_logger);
 }

@@ -5,8 +5,10 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index.h"
 
 #include <stdint.h>
+
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_test_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/leveldb_wrapper.h"
@@ -27,34 +29,30 @@ const int64_t kAppRootTrackerID = 2;
 const int64_t kFileTrackerID = 3;
 const int64_t kPlaceholderTrackerID = 4;
 
-scoped_ptr<DatabaseContents> CreateTestDatabaseContents() {
-  scoped_ptr<DatabaseContents> contents(new DatabaseContents);
+std::unique_ptr<DatabaseContents> CreateTestDatabaseContents() {
+  std::unique_ptr<DatabaseContents> contents(new DatabaseContents);
 
-  scoped_ptr<FileMetadata> sync_root_metadata =
+  std::unique_ptr<FileMetadata> sync_root_metadata =
       test_util::CreateFolderMetadata("sync_root_folder_id",
                                       "Chrome Syncable FileSystem");
-  scoped_ptr<FileTracker> sync_root_tracker =
-      test_util::CreateTracker(*sync_root_metadata, kSyncRootTrackerID,
-                               nullptr);
+  std::unique_ptr<FileTracker> sync_root_tracker = test_util::CreateTracker(
+      *sync_root_metadata, kSyncRootTrackerID, nullptr);
 
-  scoped_ptr<FileMetadata> app_root_metadata =
+  std::unique_ptr<FileMetadata> app_root_metadata =
       test_util::CreateFolderMetadata("app_root_folder_id", "app_id");
-  scoped_ptr<FileTracker> app_root_tracker =
-      test_util::CreateTracker(*app_root_metadata, kAppRootTrackerID,
-                               sync_root_tracker.get());
+  std::unique_ptr<FileTracker> app_root_tracker = test_util::CreateTracker(
+      *app_root_metadata, kAppRootTrackerID, sync_root_tracker.get());
   app_root_tracker->set_app_id("app_id");
   app_root_tracker->set_tracker_kind(TRACKER_KIND_APP_ROOT);
 
-  scoped_ptr<FileMetadata> file_metadata =
+  std::unique_ptr<FileMetadata> file_metadata =
       test_util::CreateFileMetadata("file_id", "file", "file_md5");
-  scoped_ptr<FileTracker> file_tracker =
-      test_util::CreateTracker(*file_metadata, kFileTrackerID,
-                               app_root_tracker.get());
+  std::unique_ptr<FileTracker> file_tracker = test_util::CreateTracker(
+      *file_metadata, kFileTrackerID, app_root_tracker.get());
 
-  scoped_ptr<FileTracker> placeholder_tracker =
-      test_util::CreatePlaceholderTracker("unsynced_file_id",
-                                          kPlaceholderTrackerID,
-                                          app_root_tracker.get());
+  std::unique_ptr<FileTracker> placeholder_tracker =
+      test_util::CreatePlaceholderTracker(
+          "unsynced_file_id", kPlaceholderTrackerID, app_root_tracker.get());
 
   contents->file_metadata.push_back(sync_root_metadata.release());
   contents->file_trackers.push_back(sync_root_tracker.release());
@@ -91,14 +89,14 @@ class MetadataDatabaseIndexTest : public testing::Test {
     leveldb::Status status = leveldb::DB::Open(options, "", &db);
     ASSERT_TRUE(status.ok());
 
-    db_.reset(new LevelDBWrapper(make_scoped_ptr(db)));
+    db_.reset(new LevelDBWrapper(base::WrapUnique(db)));
   }
 
-  scoped_ptr<DatabaseContents> contents_;
-  scoped_ptr<MetadataDatabaseIndex> index_;
+  std::unique_ptr<DatabaseContents> contents_;
+  std::unique_ptr<MetadataDatabaseIndex> index_;
 
-  scoped_ptr<leveldb::Env> in_memory_env_;
-  scoped_ptr<LevelDBWrapper> db_;
+  std::unique_ptr<leveldb::Env> in_memory_env_;
+  std::unique_ptr<LevelDBWrapper> db_;
 };
 
 TEST_F(MetadataDatabaseIndexTest, GetEntryTest) {
@@ -149,7 +147,7 @@ TEST_F(MetadataDatabaseIndexTest, UpdateTest) {
   ASSERT_TRUE(index()->GetFileTracker(kAppRootTrackerID, &app_root_tracker));
 
   int64_t new_tracker_id = 100;
-  scoped_ptr<FileTracker> new_tracker =
+  std::unique_ptr<FileTracker> new_tracker =
       test_util::CreateTracker(metadata, new_tracker_id, &app_root_tracker);
   new_tracker->set_active(false);
   index()->StoreFileTracker(std::move(new_tracker));

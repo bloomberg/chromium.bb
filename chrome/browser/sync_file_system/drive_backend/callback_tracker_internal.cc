@@ -21,11 +21,11 @@ base::WeakPtr<AbortHelper> AbortHelper::AsWeakPtr() {
 }
 
 // static
-scoped_ptr<AbortHelper> AbortHelper::TakeOwnership(
+std::unique_ptr<AbortHelper> AbortHelper::TakeOwnership(
     const base::WeakPtr<AbortHelper>& abort_helper) {
   if (!abort_helper)
     return nullptr;
-  scoped_ptr<AbortHelper> result =
+  std::unique_ptr<AbortHelper> result =
       abort_helper->tracker_->PassAbortHelper(abort_helper.get());
   abort_helper->weak_ptr_factory_.InvalidateWeakPtrs();
   return result;

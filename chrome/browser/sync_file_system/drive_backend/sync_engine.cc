@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -64,22 +65,18 @@ class RemoteChangeProcessor;
 
 namespace drive_backend {
 
-scoped_ptr<drive::DriveServiceInterface>
+std::unique_ptr<drive::DriveServiceInterface>
 SyncEngine::DriveServiceFactory::CreateDriveService(
     OAuth2TokenService* oauth2_token_service,
     net::URLRequestContextGetter* url_request_context_getter,
     base::SequencedTaskRunner* blocking_task_runner) {
-  return scoped_ptr<drive::DriveServiceInterface>(
-      new drive::DriveAPIService(
-          oauth2_token_service,
-          url_request_context_getter,
-          blocking_task_runner,
-          GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
-          GURL(google_apis::DriveApiUrlGenerator::
-               kBaseDownloadUrlForProduction),
-          GURL(google_apis::DriveApiUrlGenerator::
-               kBaseThumbnailUrlForProduction),
-          std::string() /* custom_user_agent */));
+  return std::unique_ptr<
+      drive::DriveServiceInterface>(new drive::DriveAPIService(
+      oauth2_token_service, url_request_context_getter, blocking_task_runner,
+      GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
+      GURL(google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction),
+      GURL(google_apis::DriveApiUrlGenerator::kBaseThumbnailUrlForProduction),
+      std::string() /* custom_user_agent */));
 }
 
 class SyncEngine::WorkerObserver : public SyncWorkerInterface::Observer {
@@ -170,7 +167,7 @@ void DidRegisterOrigin(const base::TimeTicks& start_time,
 
 }  // namespace
 
-scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
+std::unique_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
     content::BrowserContext* context,
     TaskLogger* task_logger) {
   scoped_refptr<base::SequencedWorkerPool> worker_pool =
@@ -199,20 +196,12 @@ scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
   scoped_refptr<net::URLRequestContextGetter> request_context =
       context->GetRequestContext();
 
-  scoped_ptr<drive_backend::SyncEngine> sync_engine(
-      new SyncEngine(ui_task_runner.get(),
-                     worker_task_runner.get(),
-                     drive_task_runner.get(),
-                     worker_pool.get(),
-                     GetSyncFileSystemDir(context->GetPath()),
-                     task_logger,
-                     notification_manager,
-                     extension_service,
-                     signin_manager,
-                     token_service,
-                     request_context.get(),
-                     make_scoped_ptr(new DriveServiceFactory()),
-                     nullptr /* env_override */));
+  std::unique_ptr<drive_backend::SyncEngine> sync_engine(new SyncEngine(
+      ui_task_runner.get(), worker_task_runner.get(), drive_task_runner.get(),
+      worker_pool.get(), GetSyncFileSystemDir(context->GetPath()), task_logger,
+      notification_manager, extension_service, signin_manager, token_service,
+      request_context.get(), base::WrapUnique(new DriveServiceFactory()),
+      nullptr /* env_override */));
 
   sync_engine->Initialize();
   return sync_engine;
@@ -262,10 +251,10 @@ void SyncEngine::Initialize() {
     return;
 
   DCHECK(drive_service_factory_);
-  scoped_ptr<drive::DriveServiceInterface> drive_service =
+  std::unique_ptr<drive::DriveServiceInterface> drive_service =
       drive_service_factory_->CreateDriveService(
           token_service_, request_context_.get(), drive_task_runner_.get());
-  scoped_ptr<drive::DriveUploaderInterface> drive_uploader(
+  std::unique_ptr<drive::DriveUploaderInterface> drive_uploader(
       new drive::DriveUploader(drive_service.get(), drive_task_runner_.get()));
 
   InitializeInternal(std::move(drive_service), std::move(drive_uploader),
@@ -273,18 +262,18 @@ void SyncEngine::Initialize() {
 }
 
 void SyncEngine::InitializeForTesting(
-    scoped_ptr<drive::DriveServiceInterface> drive_service,
-    scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
-    scoped_ptr<SyncWorkerInterface> sync_worker) {
+    std::unique_ptr<drive::DriveServiceInterface> drive_service,
+    std::unique_ptr<drive::DriveUploaderInterface> drive_uploader,
+    std::unique_ptr<SyncWorkerInterface> sync_worker) {
   Reset();
   InitializeInternal(std::move(drive_service), std::move(drive_uploader),
                      std::move(sync_worker));
 }
 
 void SyncEngine::InitializeInternal(
-    scoped_ptr<drive::DriveServiceInterface> drive_service,
-    scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
-    scoped_ptr<SyncWorkerInterface> sync_worker) {
+    std::unique_ptr<drive::DriveServiceInterface> drive_service,
+    std::unique_ptr<drive::DriveUploaderInterface> drive_uploader,
+    std::unique_ptr<SyncWorkerInterface> sync_worker) {
   drive_service_ = std::move(drive_service);
   drive_service_wrapper_.reset(new DriveServiceWrapper(drive_service_.get()));
 
@@ -299,15 +288,15 @@ void SyncEngine::InitializeInternal(
 
   // DriveServiceWrapper and DriveServiceOnWorker relay communications
   // between DriveService and syncers in SyncWorker.
-  scoped_ptr<drive::DriveServiceInterface> drive_service_on_worker(
+  std::unique_ptr<drive::DriveServiceInterface> drive_service_on_worker(
       new DriveServiceOnWorker(drive_service_wrapper_->AsWeakPtr(),
                                ui_task_runner_.get(),
                                worker_task_runner_.get()));
-  scoped_ptr<drive::DriveUploaderInterface> drive_uploader_on_worker(
+  std::unique_ptr<drive::DriveUploaderInterface> drive_uploader_on_worker(
       new DriveUploaderOnWorker(drive_uploader_wrapper_->AsWeakPtr(),
                                 ui_task_runner_.get(),
                                 worker_task_runner_.get()));
-  scoped_ptr<SyncEngineContext> sync_engine_context(new SyncEngineContext(
+  std::unique_ptr<SyncEngineContext> sync_engine_context(new SyncEngineContext(
       std::move(drive_service_on_worker), std::move(drive_uploader_on_worker),
       task_logger_, ui_task_runner_.get(), worker_task_runner_.get(),
       worker_pool_.get()));
@@ -497,7 +486,7 @@ RemoteServiceState SyncEngine::GetCurrentState() const {
 
 void SyncEngine::GetOriginStatusMap(const StatusMapCallback& callback) {
   base::Closure abort_closure =
-      base::Bind(callback, base::Passed(scoped_ptr<OriginStatusMap>()));
+      base::Bind(callback, base::Passed(std::unique_ptr<OriginStatusMap>()));
 
   if (!sync_worker_) {
     abort_closure.Run();
@@ -519,7 +508,7 @@ void SyncEngine::GetOriginStatusMap(const StatusMapCallback& callback) {
 void SyncEngine::DumpFiles(const GURL& origin,
                            const ListCallback& callback) {
   base::Closure abort_closure =
-      base::Bind(callback, base::Passed(scoped_ptr<base::ListValue>()));
+      base::Bind(callback, base::Passed(std::unique_ptr<base::ListValue>()));
 
   if (!sync_worker_) {
     abort_closure.Run();
@@ -539,7 +528,7 @@ void SyncEngine::DumpFiles(const GURL& origin,
 
 void SyncEngine::DumpDatabase(const ListCallback& callback) {
   base::Closure abort_closure =
-      base::Bind(callback, base::Passed(scoped_ptr<base::ListValue>()));
+      base::Bind(callback, base::Passed(std::unique_ptr<base::ListValue>()));
 
   if (!sync_worker_) {
     abort_closure.Run();
@@ -728,7 +717,7 @@ SyncEngine::SyncEngine(
     SigninManagerBase* signin_manager,
     OAuth2TokenService* token_service,
     net::URLRequestContextGetter* request_context,
-    scoped_ptr<DriveServiceFactory> drive_service_factory,
+    std::unique_ptr<DriveServiceFactory> drive_service_factory,
     leveldb::Env* env_override)
     : ui_task_runner_(ui_task_runner),
       worker_task_runner_(worker_task_runner),

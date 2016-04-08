@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_CALLBACK_HELPER_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_CALLBACK_HELPER_H_
 
+#include <memory>
 #include <type_traits>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 
@@ -23,7 +23,8 @@ namespace drive_backend {
 namespace internal {
 
 template <typename T>
-base::internal::PassedWrapper<scoped_ptr<T>> RebindForward(scoped_ptr<T>& t) {
+base::internal::PassedWrapper<std::unique_ptr<T>> RebindForward(
+    std::unique_ptr<T>& t) {
   return base::Passed(&t);
 }
 
@@ -57,7 +58,7 @@ class CallbackHolder {
  private:
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   const tracked_objects::Location from_here_;
-  scoped_ptr<base::Callback<T> > callback_;
+  std::unique_ptr<base::Callback<T>> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CallbackHolder);
 };

@@ -66,7 +66,7 @@ SyncWorker::~SyncWorker() {
   observers_.Clear();
 }
 
-void SyncWorker::Initialize(scoped_ptr<SyncEngineContext> context) {
+void SyncWorker::Initialize(std::unique_ptr<SyncEngineContext> context) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(!task_manager_);
 
@@ -89,7 +89,7 @@ void SyncWorker::RegisterOrigin(
   if (!GetMetadataDatabase())
     PostInitializeTask();
 
-  scoped_ptr<RegisterAppTask> task(
+  std::unique_ptr<RegisterAppTask> task(
       new RegisterAppTask(context_.get(), origin.host()));
   if (task->CanFinishImmediately()) {
     callback.Run(SYNC_STATUS_OK);
@@ -135,11 +135,9 @@ void SyncWorker::UninstallOrigin(
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   task_manager_->ScheduleSyncTask(
-      FROM_HERE,
-      scoped_ptr<SyncTask>(
-          new UninstallAppTask(context_.get(), origin.host(), flag)),
-      SyncTaskManager::PRIORITY_HIGH,
-      callback);
+      FROM_HERE, std::unique_ptr<SyncTask>(
+                     new UninstallAppTask(context_.get(), origin.host(), flag)),
+      SyncTaskManager::PRIORITY_HIGH, callback);
 }
 
 void SyncWorker::ProcessRemoteChange(const SyncFileCallback& callback) {
@@ -147,13 +145,10 @@ void SyncWorker::ProcessRemoteChange(const SyncFileCallback& callback) {
 
   RemoteToLocalSyncer* syncer = new RemoteToLocalSyncer(context_.get());
   task_manager_->ScheduleSyncTask(
-      FROM_HERE,
-      scoped_ptr<SyncTask>(syncer),
+      FROM_HERE, std::unique_ptr<SyncTask>(syncer),
       SyncTaskManager::PRIORITY_MED,
       base::Bind(&SyncWorker::DidProcessRemoteChange,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 syncer,
-                 callback));
+                 weak_ptr_factory_.GetWeakPtr(), syncer, callback));
 }
 
 void SyncWorker::SetRemoteChangeProcessor(
@@ -181,8 +176,8 @@ void SyncWorker::GetOriginStatusMap(
   std::vector<std::string> app_ids;
   GetMetadataDatabase()->GetRegisteredAppIDs(&app_ids);
 
-  scoped_ptr<RemoteFileSyncService::OriginStatusMap>
-      status_map(new RemoteFileSyncService::OriginStatusMap);
+  std::unique_ptr<RemoteFileSyncService::OriginStatusMap> status_map(
+      new RemoteFileSyncService::OriginStatusMap);
   for (std::vector<std::string>::const_iterator itr = app_ids.begin();
        itr != app_ids.end(); ++itr) {
     const std::string& app_id = *itr;
@@ -194,19 +189,19 @@ void SyncWorker::GetOriginStatusMap(
   callback.Run(std::move(status_map));
 }
 
-scoped_ptr<base::ListValue> SyncWorker::DumpFiles(const GURL& origin) {
+std::unique_ptr<base::ListValue> SyncWorker::DumpFiles(const GURL& origin) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   if (!GetMetadataDatabase())
-    return scoped_ptr<base::ListValue>();
+    return std::unique_ptr<base::ListValue>();
   return GetMetadataDatabase()->DumpFiles(origin.host());
 }
 
-scoped_ptr<base::ListValue> SyncWorker::DumpDatabase() {
+std::unique_ptr<base::ListValue> SyncWorker::DumpDatabase() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   if (!GetMetadataDatabase())
-    return scoped_ptr<base::ListValue>();
+    return std::unique_ptr<base::ListValue>();
   return GetMetadataDatabase()->DumpDatabase();
 }
 
@@ -253,13 +248,10 @@ void SyncWorker::ApplyLocalChange(const FileChange& local_change,
   LocalToRemoteSyncer* syncer = new LocalToRemoteSyncer(
       context_.get(), local_metadata, local_change, local_path, url);
   task_manager_->ScheduleSyncTask(
-      FROM_HERE,
-      scoped_ptr<SyncTask>(syncer),
+      FROM_HERE, std::unique_ptr<SyncTask>(syncer),
       SyncTaskManager::PRIORITY_MED,
       base::Bind(&SyncWorker::DidApplyLocalChange,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 syncer,
-                 callback));
+                 weak_ptr_factory_.GetWeakPtr(), syncer, callback));
 }
 
 void SyncWorker::MaybeScheduleNextTask() {
@@ -296,7 +288,7 @@ void SyncWorker::NotifyLastOperationStatus(
   }
 }
 
-void SyncWorker::RecordTaskLog(scoped_ptr<TaskLogger::TaskLog> task_log) {
+void SyncWorker::RecordTaskLog(std::unique_ptr<TaskLogger::TaskLog> task_log) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   context_->GetUITaskRunner()->PostTask(
@@ -371,11 +363,9 @@ void SyncWorker::PostInitializeTask() {
                                 base_dir_.Append(kDatabaseName),
                                 env_override_);
   task_manager_->ScheduleSyncTask(
-      FROM_HERE,
-      scoped_ptr<SyncTask>(initializer),
+      FROM_HERE, std::unique_ptr<SyncTask>(initializer),
       SyncTaskManager::PRIORITY_HIGH,
-      base::Bind(&SyncWorker::DidInitialize,
-                 weak_ptr_factory_.GetWeakPtr(),
+      base::Bind(&SyncWorker::DidInitialize, weak_ptr_factory_.GetWeakPtr(),
                  initializer));
 }
 
@@ -393,7 +383,7 @@ void SyncWorker::DidInitialize(SyncEngineInitializer* initializer,
     return;
   }
 
-  scoped_ptr<MetadataDatabase> metadata_database =
+  std::unique_ptr<MetadataDatabase> metadata_database =
       initializer->PassMetadataDatabase();
   if (metadata_database) {
     context_->SetMetadataDatabase(std::move(metadata_database));
@@ -409,7 +399,8 @@ void SyncWorker::UpdateRegisteredApps() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(metadata_db);
 
-  scoped_ptr<std::vector<std::string> > app_ids(new std::vector<std::string>);
+  std::unique_ptr<std::vector<std::string>> app_ids(
+      new std::vector<std::string>);
   metadata_db->GetRegisteredAppIDs(app_ids.get());
 
   AppStatusMap* app_status = new AppStatusMap;
@@ -559,7 +550,7 @@ void SyncWorker::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
       !listing_remote_changes_) {
     task_manager_->ScheduleSyncTask(
         FROM_HERE,
-        scoped_ptr<SyncTask>(new ListChangesTask(context_.get())),
+        std::unique_ptr<SyncTask>(new ListChangesTask(context_.get())),
         SyncTaskManager::PRIORITY_HIGH,
         base::Bind(&SyncWorker::DidFetchChanges,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -595,7 +586,7 @@ bool SyncWorker::MaybeStartFetchChanges() {
       should_check_conflict_ = false;
       return task_manager_->ScheduleSyncTaskIfIdle(
           FROM_HERE,
-          scoped_ptr<SyncTask>(new ConflictResolver(context_.get())),
+          std::unique_ptr<SyncTask>(new ConflictResolver(context_.get())),
           base::Bind(&SyncWorker::DidResolveConflict,
                      weak_ptr_factory_.GetWeakPtr()));
     }
@@ -604,7 +595,7 @@ bool SyncWorker::MaybeStartFetchChanges() {
 
   if (task_manager_->ScheduleSyncTaskIfIdle(
           FROM_HERE,
-          scoped_ptr<SyncTask>(new ListChangesTask(context_.get())),
+          std::unique_ptr<SyncTask>(new ListChangesTask(context_.get())),
           base::Bind(&SyncWorker::DidFetchChanges,
                      weak_ptr_factory_.GetWeakPtr()))) {
     should_check_remote_change_ = false;

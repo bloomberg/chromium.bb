@@ -4,8 +4,9 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/metadata_db_migration_util.h"
 
+#include <memory>
+
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "storage/common/fileapi/file_system_types.h"
@@ -41,7 +42,8 @@ SyncStatusCode MigrateDatabaseFromV4ToV3(leveldb::DB* db) {
   leveldb::WriteBatch write_batch;
   write_batch.Put(kDatabaseVersionKey, "3");
 
-  scoped_ptr<leveldb::Iterator> itr(db->NewIterator(leveldb::ReadOptions()));
+  std::unique_ptr<leveldb::Iterator> itr(
+      db->NewIterator(leveldb::ReadOptions()));
   for (itr->SeekToFirst(); itr->Valid(); itr->Next()) {
     std::string key = itr->key().ToString();
 

@@ -154,11 +154,11 @@ bool RemovePrefix(const std::string& str, const std::string& prefix,
   return true;
 }
 
-scoped_ptr<ServiceMetadata> InitializeServiceMetadata(LevelDBWrapper* db) {
+std::unique_ptr<ServiceMetadata> InitializeServiceMetadata(LevelDBWrapper* db) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(db);
 
-  scoped_ptr<ServiceMetadata> service_metadata;
+  std::unique_ptr<ServiceMetadata> service_metadata;
 
   std::string value;
   leveldb::Status status = db->Get(kServiceMetadataKey, &value);

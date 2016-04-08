@@ -38,8 +38,8 @@ class SyncEngineTest : public testing::Test,
   void SetUp() override {
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
 
-    scoped_ptr<drive::DriveServiceInterface>
-        fake_drive_service(new drive::FakeDriveService);
+    std::unique_ptr<drive::DriveServiceInterface> fake_drive_service(
+        new drive::FakeDriveService);
 
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
         base::ThreadTaskRunnerHandle::Get();
@@ -64,7 +64,7 @@ class SyncEngineTest : public testing::Test,
     sync_engine_->InitializeForTesting(
         std::move(fake_drive_service),
         nullptr,  // drive_uploader
-        scoped_ptr<SyncWorkerInterface>(new FakeSyncWorker));
+        std::unique_ptr<SyncWorkerInterface>(new FakeSyncWorker));
     sync_engine_->SetSyncEnabled(true);
     sync_engine_->OnReadyToSendRequests();
 
@@ -79,7 +79,7 @@ class SyncEngineTest : public testing::Test,
   }
 
   bool FindOriginStatus(const GURL& origin, std::string* status) {
-    scoped_ptr<RemoteOriginStatusMap> status_map;
+    std::unique_ptr<RemoteOriginStatusMap> status_map;
     sync_engine()->GetOriginStatusMap(CreateResultReceiver(&status_map));
     WaitForWorkerTaskRunner();
 
@@ -126,7 +126,7 @@ class SyncEngineTest : public testing::Test,
  private:
   content::TestBrowserThreadBundle browser_threads_;
   base::ScopedTempDir profile_dir_;
-  scoped_ptr<drive_backend::SyncEngine> sync_engine_;
+  std::unique_ptr<drive_backend::SyncEngine> sync_engine_;
 
   base::SequencedWorkerPoolOwner worker_pool_owner_;
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
@@ -187,7 +187,7 @@ TEST_F(SyncEngineTest, GetOriginStatusMap) {
   WaitForWorkerTaskRunner();
   EXPECT_EQ(SYNC_STATUS_OK, sync_status);
 
-  scoped_ptr<RemoteOriginStatusMap> status_map;
+  std::unique_ptr<RemoteOriginStatusMap> status_map;
   sync_engine()->GetOriginStatusMap(CreateResultReceiver(&status_map));
   WaitForWorkerTaskRunner();
   ASSERT_EQ(2u, status_map->size());

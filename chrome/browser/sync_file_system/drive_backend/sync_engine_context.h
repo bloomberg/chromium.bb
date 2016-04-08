@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_ENGINE_CONTEXT_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_ENGINE_CONTEXT_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 
@@ -33,15 +34,15 @@ class MetadataDatabase;
 class SyncEngineContext {
  public:
   SyncEngineContext(
-      scoped_ptr<drive::DriveServiceInterface> drive_service,
-      scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
+      std::unique_ptr<drive::DriveServiceInterface> drive_service,
+      std::unique_ptr<drive::DriveUploaderInterface> drive_uploader,
       TaskLogger* task_logger,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
       const scoped_refptr<base::SequencedWorkerPool>& worker_pool);
   ~SyncEngineContext();
 
-  void SetMetadataDatabase(scoped_ptr<MetadataDatabase> metadata_database);
+  void SetMetadataDatabase(std::unique_ptr<MetadataDatabase> metadata_database);
   void SetRemoteChangeProcessor(
       RemoteChangeProcessor* remote_change_processor);
 
@@ -54,19 +55,19 @@ class SyncEngineContext {
   base::SequencedTaskRunner* GetWorkerTaskRunner();
   base::SequencedWorkerPool* GetWorkerPool();
 
-  scoped_ptr<MetadataDatabase> PassMetadataDatabase();
+  std::unique_ptr<MetadataDatabase> PassMetadataDatabase();
 
   void DetachFromSequence();
 
  private:
   friend class DriveBackendSyncTest;
 
-  scoped_ptr<drive::DriveServiceInterface> drive_service_;
-  scoped_ptr<drive::DriveUploaderInterface> drive_uploader_;
+  std::unique_ptr<drive::DriveServiceInterface> drive_service_;
+  std::unique_ptr<drive::DriveUploaderInterface> drive_uploader_;
   base::WeakPtr<TaskLogger> task_logger_;
   RemoteChangeProcessor* remote_change_processor_;  // Not owned.
 
-  scoped_ptr<MetadataDatabase> metadata_database_;
+  std::unique_ptr<MetadataDatabase> metadata_database_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
   scoped_refptr<base::SequencedWorkerPool> worker_pool_;

@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_REGISTER_APP_TASK_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_REGISTER_APP_TASK_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
@@ -53,7 +53,7 @@ class RegisterAppTask : public ExclusiveTask {
   int create_folder_retry_count_;
   std::string app_id_;
 
-  scoped_ptr<FolderCreator> folder_creator_;
+  std::unique_ptr<FolderCreator> folder_creator_;
 
   base::WeakPtrFactory<RegisterAppTask> weak_ptr_factory_;
 

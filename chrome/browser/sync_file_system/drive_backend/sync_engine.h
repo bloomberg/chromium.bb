@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_ENGINE_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_ENGINE_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/sync_file_system/drive_backend/callback_tracker.h"
@@ -71,7 +71,7 @@ class SyncEngine : public RemoteFileSyncService,
    public:
     DriveServiceFactory() {}
     virtual ~DriveServiceFactory() {}
-    virtual scoped_ptr<drive::DriveServiceInterface> CreateDriveService(
+    virtual std::unique_ptr<drive::DriveServiceInterface> CreateDriveService(
         OAuth2TokenService* oauth2_token_service,
         net::URLRequestContextGetter* url_request_context_getter,
         base::SequencedTaskRunner* blocking_task_runner);
@@ -80,7 +80,7 @@ class SyncEngine : public RemoteFileSyncService,
     DISALLOW_COPY_AND_ASSIGN(DriveServiceFactory);
   };
 
-  static scoped_ptr<SyncEngine> CreateForBrowserContext(
+  static std::unique_ptr<SyncEngine> CreateForBrowserContext(
       content::BrowserContext* context,
       TaskLogger* task_logger);
   static void AppendDependsOnFactories(
@@ -93,13 +93,13 @@ class SyncEngine : public RemoteFileSyncService,
   void Initialize();
 
   void InitializeForTesting(
-      scoped_ptr<drive::DriveServiceInterface> drive_service,
-      scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
-      scoped_ptr<SyncWorkerInterface> sync_worker);
+      std::unique_ptr<drive::DriveServiceInterface> drive_service,
+      std::unique_ptr<drive::DriveUploaderInterface> drive_uploader,
+      std::unique_ptr<SyncWorkerInterface> sync_worker);
   void InitializeInternal(
-      scoped_ptr<drive::DriveServiceInterface> drive_service,
-      scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
-      scoped_ptr<SyncWorkerInterface> sync_worker);
+      std::unique_ptr<drive::DriveServiceInterface> drive_service,
+      std::unique_ptr<drive::DriveUploaderInterface> drive_uploader,
+      std::unique_ptr<SyncWorkerInterface> sync_worker);
 
   // RemoteFileSyncService overrides.
   void AddServiceObserver(SyncServiceObserver* observer) override;
@@ -168,7 +168,7 @@ class SyncEngine : public RemoteFileSyncService,
              SigninManagerBase* signin_manager,
              OAuth2TokenService* token_service,
              net::URLRequestContextGetter* request_context,
-             scoped_ptr<DriveServiceFactory> drive_service_factory,
+             std::unique_ptr<DriveServiceFactory> drive_service_factory,
              leveldb::Env* env_override);
 
   // Called by WorkerObserver.
@@ -202,17 +202,19 @@ class SyncEngine : public RemoteFileSyncService,
 
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 
-  scoped_ptr<DriveServiceFactory> drive_service_factory_;
+  std::unique_ptr<DriveServiceFactory> drive_service_factory_;
 
-  scoped_ptr<drive::DriveServiceInterface> drive_service_;
-  scoped_ptr<DriveServiceWrapper> drive_service_wrapper_;
-  scoped_ptr<drive::DriveUploaderInterface> drive_uploader_;
-  scoped_ptr<DriveUploaderWrapper> drive_uploader_wrapper_;
+  std::unique_ptr<drive::DriveServiceInterface> drive_service_;
+  std::unique_ptr<DriveServiceWrapper> drive_service_wrapper_;
+  std::unique_ptr<drive::DriveUploaderInterface> drive_uploader_;
+  std::unique_ptr<DriveUploaderWrapper> drive_uploader_wrapper_;
 
   RemoteChangeProcessor* remote_change_processor_;  // Not owned.
-  scoped_ptr<RemoteChangeProcessorWrapper> remote_change_processor_wrapper_;
+  std::unique_ptr<RemoteChangeProcessorWrapper>
+      remote_change_processor_wrapper_;
   // Delete this on worker.
-  scoped_ptr<RemoteChangeProcessorOnWorker> remote_change_processor_on_worker_;
+  std::unique_ptr<RemoteChangeProcessorOnWorker>
+      remote_change_processor_on_worker_;
 
   RemoteServiceState service_state_;
   bool has_refresh_token_;
@@ -220,8 +222,8 @@ class SyncEngine : public RemoteFileSyncService,
   bool sync_enabled_;
 
   // Delete them on worker.
-  scoped_ptr<WorkerObserver> worker_observer_;
-  scoped_ptr<SyncWorkerInterface> sync_worker_;
+  std::unique_ptr<WorkerObserver> worker_observer_;
+  std::unique_ptr<SyncWorkerInterface> sync_worker_;
 
   base::ObserverList<SyncServiceObserver> service_observers_;
   base::ObserverList<FileStatusObserver> file_status_observers_;

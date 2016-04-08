@@ -33,10 +33,10 @@ ConflictResolver::ConflictResolver(SyncEngineContext* sync_context)
 
 ConflictResolver::~ConflictResolver() {}
 
-void ConflictResolver::RunPreflight(scoped_ptr<SyncTaskToken> token) {
+void ConflictResolver::RunPreflight(std::unique_ptr<SyncTaskToken> token) {
   token->InitializeTaskLog("Conflict Resolution");
 
-  scoped_ptr<TaskBlocker> task_blocker(new TaskBlocker);
+  std::unique_ptr<TaskBlocker> task_blocker(new TaskBlocker);
   task_blocker->exclusive = true;
   SyncTaskManager::UpdateTaskBlocker(
       std::move(token), std::move(task_blocker),
@@ -44,7 +44,7 @@ void ConflictResolver::RunPreflight(scoped_ptr<SyncTaskToken> token) {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ConflictResolver::RunExclusive(scoped_ptr<SyncTaskToken> token) {
+void ConflictResolver::RunExclusive(std::unique_ptr<SyncTaskToken> token) {
   if (!IsContextReady()) {
     SyncTaskManager::NotifyTaskDone(std::move(token), SYNC_STATUS_FAILED);
     return;
@@ -128,7 +128,7 @@ void ConflictResolver::RunExclusive(scoped_ptr<SyncTaskToken> token) {
 }
 
 void ConflictResolver::DetachFromNonPrimaryParents(
-    scoped_ptr<SyncTaskToken> token) {
+    std::unique_ptr<SyncTaskToken> token) {
   DCHECK(!parents_to_remove_.empty());
 
   // TODO(tzik): Check if ETag match is available for
@@ -148,7 +148,7 @@ void ConflictResolver::DetachFromNonPrimaryParents(
 }
 
 void ConflictResolver::DidDetachFromParent(
-    scoped_ptr<SyncTaskToken> token,
+    std::unique_ptr<SyncTaskToken> token,
     google_apis::DriveApiErrorCode error) {
   SyncStatusCode status = DriveApiErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
@@ -165,7 +165,7 @@ void ConflictResolver::DidDetachFromParent(
 }
 
 std::string ConflictResolver::PickPrimaryFile(const TrackerIDSet& trackers) {
-  scoped_ptr<FileMetadata> primary;
+  std::unique_ptr<FileMetadata> primary;
   for (TrackerIDSet::const_iterator itr = trackers.begin();
        itr != trackers.end(); ++itr) {
     FileTracker tracker;
@@ -174,7 +174,7 @@ std::string ConflictResolver::PickPrimaryFile(const TrackerIDSet& trackers) {
       continue;
     }
 
-    scoped_ptr<FileMetadata> file_metadata(new FileMetadata);
+    std::unique_ptr<FileMetadata> file_metadata(new FileMetadata);
     if (!metadata_database()->FindFileByFileID(
             tracker.file_id(), file_metadata.get())) {
       NOTREACHED();
@@ -229,7 +229,8 @@ std::string ConflictResolver::PickPrimaryFile(const TrackerIDSet& trackers) {
   return std::string();
 }
 
-void ConflictResolver::RemoveNonPrimaryFiles(scoped_ptr<SyncTaskToken> token) {
+void ConflictResolver::RemoveNonPrimaryFiles(
+    std::unique_ptr<SyncTaskToken> token) {
   DCHECK(!non_primary_file_ids_.empty());
 
   std::string file_id = non_primary_file_ids_.back().first;
@@ -250,7 +251,7 @@ void ConflictResolver::RemoveNonPrimaryFiles(scoped_ptr<SyncTaskToken> token) {
                  base::Passed(&token), file_id));
 }
 
-void ConflictResolver::DidRemoveFile(scoped_ptr<SyncTaskToken> token,
+void ConflictResolver::DidRemoveFile(std::unique_ptr<SyncTaskToken> token,
                                      const std::string& file_id,
                                      google_apis::DriveApiErrorCode error) {
   if (error == google_apis::HTTP_PRECONDITION ||
@@ -283,7 +284,7 @@ bool ConflictResolver::IsContextReady() {
 
 void ConflictResolver::UpdateFileMetadata(
     const std::string& file_id,
-    scoped_ptr<SyncTaskToken> token) {
+    std::unique_ptr<SyncTaskToken> token) {
   drive_service()->GetFileResource(
       file_id,
       base::Bind(&ConflictResolver::DidGetRemoteMetadata,
@@ -293,9 +294,9 @@ void ConflictResolver::UpdateFileMetadata(
 
 void ConflictResolver::DidGetRemoteMetadata(
     const std::string& file_id,
-    scoped_ptr<SyncTaskToken> token,
+    std::unique_ptr<SyncTaskToken> token,
     google_apis::DriveApiErrorCode error,
-    scoped_ptr<google_apis::FileResource> entry) {
+    std::unique_ptr<google_apis::FileResource> entry) {
   SyncStatusCode status = DriveApiErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK && error != google_apis::HTTP_NOT_FOUND) {
     SyncTaskManager::NotifyTaskDone(std::move(token), status);

@@ -30,12 +30,12 @@ SyncFileSystemServiceFactory* SyncFileSystemServiceFactory::GetInstance() {
 }
 
 void SyncFileSystemServiceFactory::set_mock_local_file_service(
-    scoped_ptr<LocalFileSyncService> mock_local_service) {
+    std::unique_ptr<LocalFileSyncService> mock_local_service) {
   mock_local_file_service_ = std::move(mock_local_service);
 }
 
 void SyncFileSystemServiceFactory::set_mock_remote_file_service(
-    scoped_ptr<RemoteFileSyncService> mock_remote_service) {
+    std::unique_ptr<RemoteFileSyncService> mock_remote_service) {
   mock_remote_file_service_ = std::move(mock_remote_service);
 }
 
@@ -62,13 +62,13 @@ KeyedService* SyncFileSystemServiceFactory::BuildServiceInstanceFor(
 
   SyncFileSystemService* service = new SyncFileSystemService(profile);
 
-  scoped_ptr<LocalFileSyncService> local_file_service;
+  std::unique_ptr<LocalFileSyncService> local_file_service;
   if (mock_local_file_service_)
     local_file_service = std::move(mock_local_file_service_);
   else
     local_file_service = LocalFileSyncService::Create(profile);
 
-  scoped_ptr<RemoteFileSyncService> remote_file_service;
+  std::unique_ptr<RemoteFileSyncService> remote_file_service;
   if (mock_remote_file_service_) {
     remote_file_service = std::move(mock_remote_file_service_);
   } else {

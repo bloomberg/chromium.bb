@@ -6,11 +6,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <queue>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sync_file_system {
@@ -82,7 +83,7 @@ class FakeTimerHelper : public SyncProcessRunner::TimerHelper {
 class FakeSyncProcessRunner : public SyncProcessRunner {
  public:
   FakeSyncProcessRunner(SyncProcessRunner::Client* client,
-                        scoped_ptr<TimerHelper> timer_helper,
+                        std::unique_ptr<TimerHelper> timer_helper,
                         size_t max_parallel_task)
       : SyncProcessRunner("FakeSyncProcess",
                           client,
@@ -125,8 +126,7 @@ TEST(SyncProcessRunnerTest, SingleTaskBasicTest) {
   FakeClient fake_client;
   FakeTimerHelper* fake_timer = new FakeTimerHelper();
   FakeSyncProcessRunner fake_runner(
-      &fake_client,
-      scoped_ptr<SyncProcessRunner::TimerHelper>(fake_timer),
+      &fake_client, std::unique_ptr<SyncProcessRunner::TimerHelper>(fake_timer),
       1 /* max_parallel_task */);
 
   base::TimeTicks base_time = base::TimeTicks::Now();
@@ -196,8 +196,7 @@ TEST(SyncProcessRunnerTest, MultiTaskBasicTest) {
   FakeClient fake_client;
   FakeTimerHelper* fake_timer = new FakeTimerHelper();
   FakeSyncProcessRunner fake_runner(
-      &fake_client,
-      scoped_ptr<SyncProcessRunner::TimerHelper>(fake_timer),
+      &fake_client, std::unique_ptr<SyncProcessRunner::TimerHelper>(fake_timer),
       2 /* max_parallel_task */);
 
   base::TimeTicks base_time = base::TimeTicks::Now();

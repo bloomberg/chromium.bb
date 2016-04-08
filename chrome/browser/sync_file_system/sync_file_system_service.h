@@ -11,7 +11,6 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -99,8 +98,8 @@ class SyncFileSystemService
   explicit SyncFileSystemService(Profile* profile);
   ~SyncFileSystemService() override;
 
-  void Initialize(scoped_ptr<LocalFileSyncService> local_file_service,
-                  scoped_ptr<RemoteFileSyncService> remote_file_service);
+  void Initialize(std::unique_ptr<LocalFileSyncService> local_file_service,
+                  std::unique_ptr<RemoteFileSyncService> remote_file_service);
 
   // Callbacks for InitializeForApp.
   void DidInitializeFileSystem(const GURL& app_origin,
@@ -115,14 +114,14 @@ class SyncFileSystemService
                                       SyncStatusCode status);
   void DidDumpFiles(const GURL& app_origin,
                     const DumpFilesCallback& callback,
-                    scoped_ptr<base::ListValue> files);
+                    std::unique_ptr<base::ListValue> files);
 
   void DidDumpDatabase(const DumpFilesCallback& callback,
-                       scoped_ptr<base::ListValue> list);
+                       std::unique_ptr<base::ListValue> list);
 
   void DidGetExtensionStatusMap(
       const ExtensionStatusMapCallback& callback,
-      scoped_ptr<RemoteFileSyncService::OriginStatusMap> status_map);
+      std::unique_ptr<RemoteFileSyncService::OriginStatusMap> status_map);
 
   // Overrides sync_enabled_ setting. This should be called only by tests.
   void SetSyncEnabledForTesting(bool enabled);
@@ -169,8 +168,8 @@ class SyncFileSystemService
 
   Profile* profile_;
 
-  scoped_ptr<LocalFileSyncService> local_service_;
-  scoped_ptr<RemoteFileSyncService> remote_service_;
+  std::unique_ptr<LocalFileSyncService> local_service_;
+  std::unique_ptr<RemoteFileSyncService> remote_service_;
 
   // Holds all SyncProcessRunners.
   ScopedVector<SyncProcessRunner> local_sync_runners_;

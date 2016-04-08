@@ -69,7 +69,7 @@ SyncEngineInitializer::~SyncEngineInitializer() {
     cancel_callback_.Run();
 }
 
-void SyncEngineInitializer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
+void SyncEngineInitializer::RunPreflight(std::unique_ptr<SyncTaskToken> token) {
   util::Log(logging::LOG_VERBOSE, FROM_HERE, "[Initialize] Start.");
   DCHECK(sync_context_);
   DCHECK(sync_context_->GetDriveService());
@@ -83,7 +83,7 @@ void SyncEngineInitializer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
   }
 
   SyncStatusCode status = SYNC_STATUS_FAILED;
-  scoped_ptr<MetadataDatabase> metadata_database =
+  std::unique_ptr<MetadataDatabase> metadata_database =
       MetadataDatabase::Create(database_path_, env_override_, &status);
 
   if (status != SYNC_STATUS_OK) {
@@ -106,12 +106,13 @@ void SyncEngineInitializer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
   GetAboutResource(std::move(token));
 }
 
-scoped_ptr<MetadataDatabase> SyncEngineInitializer::PassMetadataDatabase() {
+std::unique_ptr<MetadataDatabase>
+SyncEngineInitializer::PassMetadataDatabase() {
   return std::move(metadata_database_);
 }
 
 void SyncEngineInitializer::GetAboutResource(
-    scoped_ptr<SyncTaskToken> token) {
+    std::unique_ptr<SyncTaskToken> token) {
   set_used_network(true);
   sync_context_->GetDriveService()->GetAboutResource(
       base::Bind(&SyncEngineInitializer::DidGetAboutResource,
@@ -119,9 +120,9 @@ void SyncEngineInitializer::GetAboutResource(
 }
 
 void SyncEngineInitializer::DidGetAboutResource(
-    scoped_ptr<SyncTaskToken> token,
+    std::unique_ptr<SyncTaskToken> token,
     google_apis::DriveApiErrorCode error,
-    scoped_ptr<google_apis::AboutResource> about_resource) {
+    std::unique_ptr<google_apis::AboutResource> about_resource) {
   cancel_callback_.Reset();
 
   SyncStatusCode status = DriveApiErrorCodeToSyncStatusCode(error);
@@ -140,7 +141,7 @@ void SyncEngineInitializer::DidGetAboutResource(
   FindSyncRoot(std::move(token));
 }
 
-void SyncEngineInitializer::FindSyncRoot(scoped_ptr<SyncTaskToken> token) {
+void SyncEngineInitializer::FindSyncRoot(std::unique_ptr<SyncTaskToken> token) {
   if (find_sync_root_retry_count_++ >= kMaxRetry) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Initialize] Reached max retry count.");
@@ -158,9 +159,9 @@ void SyncEngineInitializer::FindSyncRoot(scoped_ptr<SyncTaskToken> token) {
 }
 
 void SyncEngineInitializer::DidFindSyncRoot(
-    scoped_ptr<SyncTaskToken> token,
+    std::unique_ptr<SyncTaskToken> token,
     google_apis::DriveApiErrorCode error,
-    scoped_ptr<google_apis::FileList> file_list) {
+    std::unique_ptr<google_apis::FileList> file_list) {
   cancel_callback_.Reset();
 
   SyncStatusCode status = DriveApiErrorCodeToSyncStatusCode(error);
@@ -227,7 +228,8 @@ void SyncEngineInitializer::DidFindSyncRoot(
   ListAppRootFolders(std::move(token));
 }
 
-void SyncEngineInitializer::CreateSyncRoot(scoped_ptr<SyncTaskToken> token) {
+void SyncEngineInitializer::CreateSyncRoot(
+    std::unique_ptr<SyncTaskToken> token) {
   DCHECK(!sync_root_folder_);
   set_used_network(true);
   drive::AddNewDirectoryOptions options;
@@ -239,9 +241,9 @@ void SyncEngineInitializer::CreateSyncRoot(scoped_ptr<SyncTaskToken> token) {
 }
 
 void SyncEngineInitializer::DidCreateSyncRoot(
-    scoped_ptr<SyncTaskToken> token,
+    std::unique_ptr<SyncTaskToken> token,
     google_apis::DriveApiErrorCode error,
-    scoped_ptr<google_apis::FileResource> entry) {
+    std::unique_ptr<google_apis::FileResource> entry) {
   DCHECK(!sync_root_folder_);
   cancel_callback_.Reset();
 
@@ -256,7 +258,8 @@ void SyncEngineInitializer::DidCreateSyncRoot(
   FindSyncRoot(std::move(token));
 }
 
-void SyncEngineInitializer::DetachSyncRoot(scoped_ptr<SyncTaskToken> token) {
+void SyncEngineInitializer::DetachSyncRoot(
+    std::unique_ptr<SyncTaskToken> token) {
   DCHECK(sync_root_folder_);
   set_used_network(true);
   cancel_callback_ =
@@ -269,7 +272,7 @@ void SyncEngineInitializer::DetachSyncRoot(scoped_ptr<SyncTaskToken> token) {
 }
 
 void SyncEngineInitializer::DidDetachSyncRoot(
-    scoped_ptr<SyncTaskToken> token,
+    std::unique_ptr<SyncTaskToken> token,
     google_apis::DriveApiErrorCode error) {
   cancel_callback_.Reset();
 
@@ -285,7 +288,7 @@ void SyncEngineInitializer::DidDetachSyncRoot(
 }
 
 void SyncEngineInitializer::ListAppRootFolders(
-    scoped_ptr<SyncTaskToken> token) {
+    std::unique_ptr<SyncTaskToken> token) {
   DCHECK(sync_root_folder_);
   set_used_network(true);
   cancel_callback_ =
@@ -297,9 +300,9 @@ void SyncEngineInitializer::ListAppRootFolders(
 }
 
 void SyncEngineInitializer::DidListAppRootFolders(
-    scoped_ptr<SyncTaskToken> token,
+    std::unique_ptr<SyncTaskToken> token,
     google_apis::DriveApiErrorCode error,
-    scoped_ptr<google_apis::FileList> file_list) {
+    std::unique_ptr<google_apis::FileList> file_list) {
   cancel_callback_.Reset();
 
   SyncStatusCode status = DriveApiErrorCodeToSyncStatusCode(error);
@@ -338,7 +341,7 @@ void SyncEngineInitializer::DidListAppRootFolders(
 }
 
 void SyncEngineInitializer::PopulateDatabase(
-    scoped_ptr<SyncTaskToken> token) {
+    std::unique_ptr<SyncTaskToken> token) {
   DCHECK(sync_root_folder_);
   SyncStatusCode status = metadata_database_->PopulateInitialData(
       largest_change_id_, *sync_root_folder_, app_root_folders_);

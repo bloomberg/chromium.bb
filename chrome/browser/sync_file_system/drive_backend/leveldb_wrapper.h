@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
 
 namespace leveldb {
@@ -67,13 +67,13 @@ class LevelDBWrapper {
     void AdvanceIterators();
 
     LevelDBWrapper* db_;  // do not own
-    scoped_ptr<leveldb::Iterator> db_iterator_;
+    std::unique_ptr<leveldb::Iterator> db_iterator_;
     PendingOperationMap::iterator map_iterator_;
 
     DISALLOW_COPY_AND_ASSIGN(Iterator);
   };
 
-  explicit LevelDBWrapper(scoped_ptr<leveldb::DB> db);
+  explicit LevelDBWrapper(std::unique_ptr<leveldb::DB> db);
   ~LevelDBWrapper();
 
   // Wrapping methods of leveldb::WriteBatch
@@ -82,7 +82,7 @@ class LevelDBWrapper {
 
   // Wrapping methods of leveldb::DB
   leveldb::Status Get(const std::string& key, std::string* value);
-  scoped_ptr<Iterator> NewIterator();
+  std::unique_ptr<Iterator> NewIterator();
 
   // Commits pending transactions to |db_| and clears cached transactions.
   // Returns true if the commitment succeeds.
@@ -103,7 +103,7 @@ class LevelDBWrapper {
   leveldb::DB* GetLevelDB();
 
  private:
-  scoped_ptr<leveldb::DB> db_;
+  std::unique_ptr<leveldb::DB> db_;
 
   PendingOperationMap pending_;
   int64_t num_puts_;

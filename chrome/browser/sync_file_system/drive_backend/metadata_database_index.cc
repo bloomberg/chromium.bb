@@ -7,6 +7,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -82,14 +83,14 @@ void ReadDatabaseContents(LevelDBWrapper* db, DatabaseContents* contents) {
   DCHECK(db);
   DCHECK(contents);
 
-  scoped_ptr<LevelDBWrapper::Iterator> itr(db->NewIterator());
+  std::unique_ptr<LevelDBWrapper::Iterator> itr(db->NewIterator());
   for (itr->SeekToFirst(); itr->Valid(); itr->Next()) {
     std::string key = itr->key().ToString();
     std::string value = itr->value().ToString();
 
     std::string file_id;
     if (RemovePrefix(key, kFileMetadataKeyPrefix, &file_id)) {
-      scoped_ptr<FileMetadata> metadata(new FileMetadata);
+      std::unique_ptr<FileMetadata> metadata(new FileMetadata);
       if (!metadata->ParseFromString(itr->value().ToString())) {
         util::Log(logging::LOG_WARNING, FROM_HERE,
                   "Failed to parse a FileMetadata");
@@ -109,7 +110,7 @@ void ReadDatabaseContents(LevelDBWrapper* db, DatabaseContents* contents) {
         continue;
       }
 
-      scoped_ptr<FileTracker> tracker(new FileTracker);
+      std::unique_ptr<FileTracker> tracker(new FileTracker);
       if (!tracker->ParseFromString(itr->value().ToString())) {
         util::Log(logging::LOG_WARNING, FROM_HERE,
                   "Failed to parse a Tracker");
@@ -200,13 +201,14 @@ void RemoveUnreachableItemsFromDB(DatabaseContents* contents,
 }  // namespace
 
 // static
-scoped_ptr<MetadataDatabaseIndex>
-MetadataDatabaseIndex::Create(LevelDBWrapper* db) {
+std::unique_ptr<MetadataDatabaseIndex> MetadataDatabaseIndex::Create(
+    LevelDBWrapper* db) {
   DCHECK(db);
 
-  scoped_ptr<ServiceMetadata> service_metadata = InitializeServiceMetadata(db);
+  std::unique_ptr<ServiceMetadata> service_metadata =
+      InitializeServiceMetadata(db);
   if (!service_metadata)
-    return scoped_ptr<MetadataDatabaseIndex>();
+    return std::unique_ptr<MetadataDatabaseIndex>();
 
   DatabaseContents contents;
   PutVersionToDB(kCurrentDatabaseVersion, db);
@@ -215,31 +217,31 @@ MetadataDatabaseIndex::Create(LevelDBWrapper* db) {
                                service_metadata->sync_root_tracker_id(),
                                db);
 
-  scoped_ptr<MetadataDatabaseIndex> index(new MetadataDatabaseIndex(db));
+  std::unique_ptr<MetadataDatabaseIndex> index(new MetadataDatabaseIndex(db));
   index->Initialize(std::move(service_metadata), &contents);
   return index;
 }
 
 // static
-scoped_ptr<MetadataDatabaseIndex>
-MetadataDatabaseIndex::CreateForTesting(DatabaseContents* contents,
-                                        LevelDBWrapper* db) {
-  scoped_ptr<MetadataDatabaseIndex> index(new MetadataDatabaseIndex(db));
-  index->Initialize(make_scoped_ptr(new ServiceMetadata), contents);
+std::unique_ptr<MetadataDatabaseIndex> MetadataDatabaseIndex::CreateForTesting(
+    DatabaseContents* contents,
+    LevelDBWrapper* db) {
+  std::unique_ptr<MetadataDatabaseIndex> index(new MetadataDatabaseIndex(db));
+  index->Initialize(base::WrapUnique(new ServiceMetadata), contents);
   return index;
 }
 
 void MetadataDatabaseIndex::Initialize(
-    scoped_ptr<ServiceMetadata> service_metadata,
+    std::unique_ptr<ServiceMetadata> service_metadata,
     DatabaseContents* contents) {
   service_metadata_ = std::move(service_metadata);
 
   for (size_t i = 0; i < contents->file_metadata.size(); ++i)
-    StoreFileMetadata(make_scoped_ptr(contents->file_metadata[i]));
+    StoreFileMetadata(base::WrapUnique(contents->file_metadata[i]));
   contents->file_metadata.weak_clear();
 
   for (size_t i = 0; i < contents->file_trackers.size(); ++i)
-    StoreFileTracker(make_scoped_ptr(contents->file_trackers[i]));
+    StoreFileTracker(base::WrapUnique(contents->file_trackers[i]));
   contents->file_trackers.weak_clear();
 
   UMA_HISTOGRAM_COUNTS("SyncFileSystem.MetadataNumber", metadata_by_id_.size());
@@ -278,7 +280,7 @@ bool MetadataDatabaseIndex::GetFileTracker(int64_t tracker_id,
 }
 
 void MetadataDatabaseIndex::StoreFileMetadata(
-    scoped_ptr<FileMetadata> metadata) {
+    std::unique_ptr<FileMetadata> metadata) {
   PutFileMetadataToDB(*metadata.get(), db_);
   if (!metadata) {
     NOTREACHED();
@@ -290,7 +292,7 @@ void MetadataDatabaseIndex::StoreFileMetadata(
 }
 
 void MetadataDatabaseIndex::StoreFileTracker(
-    scoped_ptr<FileTracker> tracker) {
+    std::unique_ptr<FileTracker> tracker) {
   PutFileTrackerToDB(*tracker.get(), db_);
   if (!tracker) {
     NOTREACHED();

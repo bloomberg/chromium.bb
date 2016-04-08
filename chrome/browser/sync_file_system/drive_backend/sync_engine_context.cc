@@ -4,10 +4,10 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
@@ -20,8 +20,8 @@ namespace sync_file_system {
 namespace drive_backend {
 
 SyncEngineContext::SyncEngineContext(
-    scoped_ptr<drive::DriveServiceInterface> drive_service,
-    scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
+    std::unique_ptr<drive::DriveServiceInterface> drive_service,
+    std::unique_ptr<drive::DriveUploaderInterface> drive_uploader,
     TaskLogger* task_logger,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
@@ -61,7 +61,7 @@ MetadataDatabase* SyncEngineContext::GetMetadataDatabase() {
   return metadata_database_.get();
 }
 
-scoped_ptr<MetadataDatabase> SyncEngineContext::PassMetadataDatabase() {
+std::unique_ptr<MetadataDatabase> SyncEngineContext::PassMetadataDatabase() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   return std::move(metadata_database_);
 }
@@ -87,7 +87,7 @@ base::SequencedWorkerPool* SyncEngineContext::GetWorkerPool() {
 }
 
 void SyncEngineContext::SetMetadataDatabase(
-    scoped_ptr<MetadataDatabase> metadata_database) {
+    std::unique_ptr<MetadataDatabase> metadata_database) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   if (metadata_database)
     metadata_database_ = std::move(metadata_database);

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync_file_system/local/local_file_sync_service.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -106,15 +107,15 @@ void LocalFileSyncService::OriginChangeMap::SetOriginEnabled(
 
 // LocalFileSyncService -------------------------------------------------------
 
-scoped_ptr<LocalFileSyncService> LocalFileSyncService::Create(
+std::unique_ptr<LocalFileSyncService> LocalFileSyncService::Create(
     Profile* profile) {
-  return make_scoped_ptr(new LocalFileSyncService(profile, nullptr));
+  return base::WrapUnique(new LocalFileSyncService(profile, nullptr));
 }
 
-scoped_ptr<LocalFileSyncService> LocalFileSyncService::CreateForTesting(
+std::unique_ptr<LocalFileSyncService> LocalFileSyncService::CreateForTesting(
     Profile* profile,
     leveldb::Env* env) {
-  scoped_ptr<LocalFileSyncService> sync_service(
+  std::unique_ptr<LocalFileSyncService> sync_service(
       new LocalFileSyncService(profile, env));
   sync_service->sync_context_->set_mock_notify_changes_duration_in_sec(0);
   return sync_service;

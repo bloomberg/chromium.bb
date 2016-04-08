@@ -17,7 +17,7 @@ namespace drive_backend {
 namespace {
 
 void CallRunExclusive(const base::WeakPtr<ExclusiveTask>& task,
-                      scoped_ptr<SyncTaskToken> token) {
+                      std::unique_ptr<SyncTaskToken> token) {
   if (task)
     task->RunExclusive(SyncTaskToken::WrapToCallback(std::move(token)));
 }
@@ -27,8 +27,8 @@ void CallRunExclusive(const base::WeakPtr<ExclusiveTask>& task,
 ExclusiveTask::ExclusiveTask() : weak_ptr_factory_(this) {}
 ExclusiveTask::~ExclusiveTask() {}
 
-void ExclusiveTask::RunPreflight(scoped_ptr<SyncTaskToken> token) {
-  scoped_ptr<TaskBlocker> task_blocker(new TaskBlocker);
+void ExclusiveTask::RunPreflight(std::unique_ptr<SyncTaskToken> token) {
+  std::unique_ptr<TaskBlocker> task_blocker(new TaskBlocker);
   task_blocker->exclusive = true;
 
   SyncTaskManager::UpdateTaskBlocker(

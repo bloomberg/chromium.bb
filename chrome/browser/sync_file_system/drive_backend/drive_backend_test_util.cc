@@ -57,40 +57,40 @@ void ExpectEquivalentTrackers(const FileTracker& left,
   EXPECT_EQ(left.needs_folder_listing(), right.needs_folder_listing());
 }
 
-scoped_ptr<FileMetadata> CreateFolderMetadata(const std::string& file_id,
-                                              const std::string& title) {
+std::unique_ptr<FileMetadata> CreateFolderMetadata(const std::string& file_id,
+                                                   const std::string& title) {
   FileDetails details;
   details.set_title(title);
   details.set_file_kind(FILE_KIND_FOLDER);
   details.set_missing(false);
 
-  scoped_ptr<FileMetadata> metadata(new FileMetadata);
+  std::unique_ptr<FileMetadata> metadata(new FileMetadata);
   metadata->set_file_id(file_id);
   *metadata->mutable_details() = details;
 
   return metadata;
 }
 
-scoped_ptr<FileMetadata> CreateFileMetadata(const std::string& file_id,
-                                            const std::string& title,
-                                            const std::string& md5) {
+std::unique_ptr<FileMetadata> CreateFileMetadata(const std::string& file_id,
+                                                 const std::string& title,
+                                                 const std::string& md5) {
   FileDetails details;
   details.set_title(title);
   details.set_file_kind(FILE_KIND_FILE);
   details.set_missing(false);
   details.set_md5(md5);
 
-  scoped_ptr<FileMetadata> metadata(new FileMetadata);
+  std::unique_ptr<FileMetadata> metadata(new FileMetadata);
   metadata->set_file_id(file_id);
   *metadata->mutable_details() = details;
 
   return metadata;
 }
 
-scoped_ptr<FileTracker> CreateTracker(const FileMetadata& metadata,
-                                      int64_t tracker_id,
-                                      const FileTracker* parent_tracker) {
-  scoped_ptr<FileTracker> tracker(new FileTracker);
+std::unique_ptr<FileTracker> CreateTracker(const FileMetadata& metadata,
+                                           int64_t tracker_id,
+                                           const FileTracker* parent_tracker) {
+  std::unique_ptr<FileTracker> tracker(new FileTracker);
   tracker->set_tracker_id(tracker_id);
   int64_t parent_id =
       parent_tracker ? parent_tracker->tracker_id() : kInvalidTrackerID;
@@ -106,11 +106,11 @@ scoped_ptr<FileTracker> CreateTracker(const FileMetadata& metadata,
   return tracker;
 }
 
-scoped_ptr<FileTracker> CreatePlaceholderTracker(
+std::unique_ptr<FileTracker> CreatePlaceholderTracker(
     const std::string& file_id,
     int64_t tracker_id,
     const FileTracker* parent_tracker) {
-  scoped_ptr<FileTracker> tracker(new FileTracker);
+  std::unique_ptr<FileTracker> tracker(new FileTracker);
   tracker->set_tracker_id(tracker_id);
   if (parent_tracker)
     tracker->set_parent_tracker_id(parent_tracker->tracker_id());

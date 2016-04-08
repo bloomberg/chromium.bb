@@ -47,13 +47,12 @@ class ListChangesTaskTest : public testing::Test {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
-    scoped_ptr<drive::FakeDriveService>
-        fake_drive_service(new drive::FakeDriveService);
+    std::unique_ptr<drive::FakeDriveService> fake_drive_service(
+        new drive::FakeDriveService);
 
-    scoped_ptr<drive::DriveUploaderInterface>
-        drive_uploader(new drive::DriveUploader(
-            fake_drive_service.get(),
-            base::ThreadTaskRunnerHandle::Get()));
+    std::unique_ptr<drive::DriveUploaderInterface> drive_uploader(
+        new drive::DriveUploader(fake_drive_service.get(),
+                                 base::ThreadTaskRunnerHandle::Get()));
 
     fake_drive_service_helper_.reset(
         new FakeDriveServiceHelper(fake_drive_service.get(),
@@ -85,7 +84,7 @@ class ListChangesTaskTest : public testing::Test {
   }
 
  protected:
-  SyncStatusCode RunTask(scoped_ptr<SyncTask> sync_task) {
+  SyncStatusCode RunTask(std::unique_ptr<SyncTask> sync_task) {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     sync_task_manager_->ScheduleSyncTask(FROM_HERE, std::move(sync_task),
                                          SyncTaskManager::PRIORITY_MED,
@@ -175,7 +174,7 @@ class ListChangesTaskTest : public testing::Test {
                                   in_memory_env_.get());
 
     sync_task_manager_->ScheduleSyncTask(
-        FROM_HERE, scoped_ptr<SyncTask>(initializer),
+        FROM_HERE, std::unique_ptr<SyncTask>(initializer),
         SyncTaskManager::PRIORITY_MED,
         base::Bind(&ListChangesTaskTest::DidInitializeMetadataDatabase,
                    base::Unretained(this), initializer, &status));
@@ -193,11 +192,12 @@ class ListChangesTaskTest : public testing::Test {
   }
 
   void RegisterApp(const std::string& app_id) {
-    EXPECT_EQ(SYNC_STATUS_OK, RunTask(scoped_ptr<SyncTask>(
-        new RegisterAppTask(context_.get(), app_id))));
+    EXPECT_EQ(SYNC_STATUS_OK,
+              RunTask(std::unique_ptr<SyncTask>(
+                  new RegisterAppTask(context_.get(), app_id))));
   }
 
-  scoped_ptr<leveldb::Env> in_memory_env_;
+  std::unique_ptr<leveldb::Env> in_memory_env_;
 
   std::string sync_root_folder_id_;
   std::string app_root_folder_id_;
@@ -206,10 +206,10 @@ class ListChangesTaskTest : public testing::Test {
   content::TestBrowserThreadBundle browser_threads_;
   base::ScopedTempDir database_dir_;
 
-  scoped_ptr<SyncEngineContext> context_;
-  scoped_ptr<FakeDriveServiceHelper> fake_drive_service_helper_;
+  std::unique_ptr<SyncEngineContext> context_;
+  std::unique_ptr<FakeDriveServiceHelper> fake_drive_service_helper_;
 
-  scoped_ptr<SyncTaskManager> sync_task_manager_;
+  std::unique_ptr<SyncTaskManager> sync_task_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ListChangesTaskTest);
 };
@@ -217,8 +217,9 @@ class ListChangesTaskTest : public testing::Test {
 TEST_F(ListChangesTaskTest, NoChange) {
   size_t num_dirty_trackers = CountDirtyTracker();
 
-  EXPECT_EQ(SYNC_STATUS_NO_CHANGE_TO_SYNC, RunTask(
-      scoped_ptr<SyncTask>(new ListChangesTask(GetSyncEngineContext()))));
+  EXPECT_EQ(SYNC_STATUS_NO_CHANGE_TO_SYNC,
+            RunTask(std::unique_ptr<SyncTask>(
+                new ListChangesTask(GetSyncEngineContext()))));
 
   EXPECT_EQ(num_dirty_trackers, CountDirtyTracker());
 }
@@ -229,8 +230,8 @@ TEST_F(ListChangesTaskTest, UnrelatedChange) {
   SetUpChangesInFolder(root_resource_id());
   SetUpChangesInFolder(unregistered_app_root_folder_id());
 
-  EXPECT_EQ(SYNC_STATUS_OK, RunTask(
-      scoped_ptr<SyncTask>(new ListChangesTask(GetSyncEngineContext()))));
+  EXPECT_EQ(SYNC_STATUS_OK, RunTask(std::unique_ptr<SyncTask>(
+                                new ListChangesTask(GetSyncEngineContext()))));
 
   EXPECT_EQ(num_dirty_trackers, CountDirtyTracker());
 }
@@ -240,8 +241,8 @@ TEST_F(ListChangesTaskTest, UnderTrackedFolder) {
 
   SetUpChangesInFolder(app_root_folder_id());
 
-  EXPECT_EQ(SYNC_STATUS_OK, RunTask(
-      scoped_ptr<SyncTask>(new ListChangesTask(GetSyncEngineContext()))));
+  EXPECT_EQ(SYNC_STATUS_OK, RunTask(std::unique_ptr<SyncTask>(
+                                new ListChangesTask(GetSyncEngineContext()))));
 
   EXPECT_EQ(num_dirty_trackers + 4, CountDirtyTracker());
 }

@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
@@ -70,7 +70,7 @@ class SyncProcessRunner {
 
   SyncProcessRunner(const std::string& name,
                     Client* client,
-                    scoped_ptr<TimerHelper> timer_helper,
+                    std::unique_ptr<TimerHelper> timer_helper,
                     size_t max_parallel_task);
   virtual ~SyncProcessRunner();
 
@@ -109,7 +109,7 @@ class SyncProcessRunner {
   Client* client_;
   size_t max_parallel_task_;
   size_t running_tasks_;
-  scoped_ptr<TimerHelper> timer_helper_;
+  std::unique_ptr<TimerHelper> timer_helper_;
   base::TimeTicks last_run_;
   base::TimeTicks last_scheduled_;
   SyncServiceState service_state_;

@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "google_apis/drive/drive_api_error_codes.h"
@@ -52,7 +52,7 @@ SyncStatusCode DriveApiErrorCodeToSyncStatusCode(
 bool RemovePrefix(const std::string& str, const std::string& prefix,
                   std::string* out);
 
-scoped_ptr<ServiceMetadata> InitializeServiceMetadata(LevelDBWrapper* db);
+std::unique_ptr<ServiceMetadata> InitializeServiceMetadata(LevelDBWrapper* db);
 
 template <typename Src, typename Dest>
 void AppendContents(const Src& src, Dest* dest) {

@@ -105,7 +105,7 @@ void RegisterAppTask::DidCreateAppRootFolder(
     const SyncStatusCallback& callback,
     const std::string& folder_id,
     SyncStatusCode status) {
-  scoped_ptr<FolderCreator> deleter = std::move(folder_creator_);
+  std::unique_ptr<FolderCreator> deleter = std::move(folder_creator_);
   if (status != SYNC_STATUS_OK) {
     callback.Run(status);
     return;
@@ -125,10 +125,10 @@ bool RegisterAppTask::FilterCandidates(const TrackerIDSet& trackers,
     NOTREACHED();
   }
 
-  scoped_ptr<FileTracker> oldest_tracker;
+  std::unique_ptr<FileTracker> oldest_tracker;
   for (TrackerIDSet::const_iterator itr = trackers.begin();
        itr != trackers.end(); ++itr) {
-    scoped_ptr<FileTracker> tracker(new FileTracker);
+    std::unique_ptr<FileTracker> tracker(new FileTracker);
     if (!metadata_database()->FindTrackerByTrackerID(
             *itr, tracker.get())) {
       NOTREACHED();

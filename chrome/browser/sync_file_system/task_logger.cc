@@ -37,7 +37,7 @@ TaskLogger::~TaskLogger() {
   ClearLog();
 }
 
-void TaskLogger::RecordLog(scoped_ptr<TaskLog> log) {
+void TaskLogger::RecordLog(std::unique_ptr<TaskLog> log) {
   if (!log)
     return;
 

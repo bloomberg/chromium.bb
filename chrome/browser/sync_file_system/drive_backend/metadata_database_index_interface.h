@@ -8,11 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -53,11 +53,11 @@ class MetadataDatabaseIndexInterface {
 
   // Stores |metadata| and updates indexes.
   // This overwrites existing FileMetadata for the same |file_id|.
-  virtual void StoreFileMetadata(scoped_ptr<FileMetadata> metadata) = 0;
+  virtual void StoreFileMetadata(std::unique_ptr<FileMetadata> metadata) = 0;
 
   // Stores |tracker| and updates indexes.
   // This overwrites existing FileTracker for the same |tracker_id|.
-  virtual void StoreFileTracker(scoped_ptr<FileTracker> tracker) = 0;
+  virtual void StoreFileTracker(std::unique_ptr<FileTracker> tracker) = 0;
 
   // Removes FileMetadata identified by |file_id| from indexes.
   virtual void RemoveFileMetadata(const std::string& file_id) = 0;

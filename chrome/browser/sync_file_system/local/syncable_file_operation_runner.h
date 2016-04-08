@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_status.h"
@@ -68,7 +68,7 @@ class SyncableFileOperationRunner
   // If there're ongoing sync tasks on the target_paths this method
   // just queues up the |task|.
   // Pending tasks are cancelled when this class is destructed.
-  void PostOperationTask(scoped_ptr<Task> task);
+  void PostOperationTask(std::unique_ptr<Task> task);
 
   // Runs a next runnable task (if there's any).
   void RunNextRunnableTask();

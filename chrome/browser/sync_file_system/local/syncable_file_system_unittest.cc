@@ -103,7 +103,7 @@ class SyncableFileSystemTest : public testing::Test {
 
   base::ScopedTempDir data_dir_;
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<leveldb::Env> in_memory_env_;
+  std::unique_ptr<leveldb::Env> in_memory_env_;
   CannedSyncableFileSystem file_system_;
 
  private:

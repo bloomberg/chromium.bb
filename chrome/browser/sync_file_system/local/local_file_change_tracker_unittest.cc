@@ -7,11 +7,11 @@
 #include <stdint.h>
 
 #include <deque>
+#include <memory>
 #include <set>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -114,7 +114,7 @@ class LocalFileChangeTrackerTest : public testing::Test {
 
   base::MessageLoopForIO message_loop_;
   base::ScopedTempDir base_dir_;
-  scoped_ptr<leveldb::Env> in_memory_env_;
+  std::unique_ptr<leveldb::Env> in_memory_env_;
   CannedSyncableFileSystem file_system_;
 
  private:

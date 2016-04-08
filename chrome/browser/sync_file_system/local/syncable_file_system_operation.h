@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "storage/browser/fileapi/file_system_operation.h"
@@ -65,8 +65,8 @@ class SyncableFileSystemOperation
               bool recursive,
               const StatusCallback& callback) override;
   void Write(const storage::FileSystemURL& url,
-             scoped_ptr<storage::FileWriterDelegate> writer_delegate,
-             scoped_ptr<net::URLRequest> blob_request,
+             std::unique_ptr<storage::FileWriterDelegate> writer_delegate,
+             std::unique_ptr<net::URLRequest> blob_request,
              const WriteCallback& callback) override;
   void Truncate(const storage::FileSystemURL& url,
                 int64_t length,
@@ -110,7 +110,7 @@ class SyncableFileSystemOperation
   SyncableFileSystemOperation(
       const storage::FileSystemURL& url,
       storage::FileSystemContext* file_system_context,
-      scoped_ptr<storage::FileSystemOperationContext> operation_context);
+      std::unique_ptr<storage::FileSystemOperationContext> operation_context);
 
   void DidFinish(base::File::Error status);
   void DidWrite(const WriteCallback& callback,
@@ -122,7 +122,7 @@ class SyncableFileSystemOperation
 
   const storage::FileSystemURL url_;
 
-  scoped_ptr<storage::FileSystemOperation> impl_;
+  std::unique_ptr<storage::FileSystemOperation> impl_;
   base::WeakPtr<SyncableFileOperationRunner> operation_runner_;
   std::vector<storage::FileSystemURL> target_paths_;
 

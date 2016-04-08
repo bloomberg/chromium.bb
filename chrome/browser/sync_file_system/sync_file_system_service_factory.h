@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_SERVICE_FACTORY_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
@@ -26,12 +27,12 @@ class SyncFileSystemServiceFactory : public BrowserContextKeyedServiceFactory {
   // This overrides the local/remote service for testing.
   // For testing this must be called before GetForProfile is called.
   // Otherwise a new DriveFileSyncService is created for the new service.
-  // Since we use scoped_ptr it's one-off and the instance is passed
+  // Since we use std::unique_ptr it's one-off and the instance is passed
   // to the newly created SyncFileSystemService.
   void set_mock_local_file_service(
-      scoped_ptr<LocalFileSyncService> mock_local_service);
+      std::unique_ptr<LocalFileSyncService> mock_local_service);
   void set_mock_remote_file_service(
-      scoped_ptr<RemoteFileSyncService> mock_remote_service);
+      std::unique_ptr<RemoteFileSyncService> mock_remote_service);
 
  private:
   friend struct base::DefaultSingletonTraits<SyncFileSystemServiceFactory>;
@@ -42,8 +43,8 @@ class SyncFileSystemServiceFactory : public BrowserContextKeyedServiceFactory {
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
-  mutable scoped_ptr<LocalFileSyncService> mock_local_file_service_;
-  mutable scoped_ptr<RemoteFileSyncService> mock_remote_file_service_;
+  mutable std::unique_ptr<LocalFileSyncService> mock_local_file_service_;
+  mutable std::unique_ptr<RemoteFileSyncService> mock_remote_file_service_;
 };
 
 }  // namespace sync_file_system

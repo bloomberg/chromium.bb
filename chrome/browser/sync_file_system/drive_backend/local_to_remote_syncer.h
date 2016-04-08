@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
 #include "chrome/browser/sync_file_system/file_change.h"
@@ -41,7 +41,7 @@ class SyncEngineContext;
 
 class LocalToRemoteSyncer : public SyncTask {
  public:
-  typedef base::Callback<void(scoped_ptr<SyncTaskToken>)> Continuation;
+  typedef base::Callback<void(std::unique_ptr<SyncTaskToken>)> Continuation;
 
   LocalToRemoteSyncer(SyncEngineContext* sync_context,
                       const SyncFileMetadata& local_metadata,
@@ -49,7 +49,7 @@ class LocalToRemoteSyncer : public SyncTask {
                       const base::FilePath& local_path,
                       const storage::FileSystemURL& url);
   ~LocalToRemoteSyncer() override;
-  void RunPreflight(scoped_ptr<SyncTaskToken> token) override;
+  void RunPreflight(std::unique_ptr<SyncTaskToken> token) override;
 
   const storage::FileSystemURL& url() const { return url_; }
   const base::FilePath& target_path() const { return target_path_; }
@@ -61,46 +61,46 @@ class LocalToRemoteSyncer : public SyncTask {
 
  private:
   void MoveToBackground(const Continuation& continuation,
-                        scoped_ptr<SyncTaskToken> token);
+                        std::unique_ptr<SyncTaskToken> token);
   void ContinueAsBackgroundTask(const Continuation& continuation,
-                                scoped_ptr<SyncTaskToken> token);
-  void SyncCompleted(scoped_ptr<SyncTaskToken> token,
+                                std::unique_ptr<SyncTaskToken> token);
+  void SyncCompleted(std::unique_ptr<SyncTaskToken> token,
                      SyncStatusCode status);
 
-  void HandleConflict(scoped_ptr<SyncTaskToken> token);
-  void HandleExistingRemoteFile(scoped_ptr<SyncTaskToken> token);
+  void HandleConflict(std::unique_ptr<SyncTaskToken> token);
+  void HandleExistingRemoteFile(std::unique_ptr<SyncTaskToken> token);
 
   void UpdateTrackerForReusedFolder(const FileDetails& details,
-                                    scoped_ptr<SyncTaskToken> token);
+                                    std::unique_ptr<SyncTaskToken> token);
 
-  void DeleteRemoteFile(scoped_ptr<SyncTaskToken> token);
-  void DidDeleteRemoteFile(scoped_ptr<SyncTaskToken> token,
+  void DeleteRemoteFile(std::unique_ptr<SyncTaskToken> token);
+  void DidDeleteRemoteFile(std::unique_ptr<SyncTaskToken> token,
                            google_apis::DriveApiErrorCode error);
 
-  void UploadExistingFile(scoped_ptr<SyncTaskToken> token);
-  void DidUploadExistingFile(scoped_ptr<SyncTaskToken> token,
+  void UploadExistingFile(std::unique_ptr<SyncTaskToken> token);
+  void DidUploadExistingFile(std::unique_ptr<SyncTaskToken> token,
                              google_apis::DriveApiErrorCode error,
                              const GURL&,
-                             scoped_ptr<google_apis::FileResource>);
+                             std::unique_ptr<google_apis::FileResource>);
   void UpdateRemoteMetadata(const std::string& file_id,
-                            scoped_ptr<SyncTaskToken> token);
+                            std::unique_ptr<SyncTaskToken> token);
   void DidGetRemoteMetadata(const std::string& file_id,
-                            scoped_ptr<SyncTaskToken> token,
+                            std::unique_ptr<SyncTaskToken> token,
                             google_apis::DriveApiErrorCode error,
-                            scoped_ptr<google_apis::FileResource> entry);
+                            std::unique_ptr<google_apis::FileResource> entry);
 
-  void UploadNewFile(scoped_ptr<SyncTaskToken> token);
-  void DidUploadNewFile(scoped_ptr<SyncTaskToken> token,
+  void UploadNewFile(std::unique_ptr<SyncTaskToken> token);
+  void DidUploadNewFile(std::unique_ptr<SyncTaskToken> token,
                         google_apis::DriveApiErrorCode error,
                         const GURL& upload_location,
-                        scoped_ptr<google_apis::FileResource> entry);
+                        std::unique_ptr<google_apis::FileResource> entry);
 
-  void CreateRemoteFolder(scoped_ptr<SyncTaskToken> token);
-  void DidCreateRemoteFolder(scoped_ptr<SyncTaskToken> token,
+  void CreateRemoteFolder(std::unique_ptr<SyncTaskToken> token);
+  void DidCreateRemoteFolder(std::unique_ptr<SyncTaskToken> token,
                              const std::string& file_id,
                              SyncStatusCode status);
   void DidDetachResourceForCreationConflict(
-      scoped_ptr<SyncTaskToken> token,
+      std::unique_ptr<SyncTaskToken> token,
       google_apis::DriveApiErrorCode error);
 
   bool IsContextReady();
@@ -117,15 +117,15 @@ class LocalToRemoteSyncer : public SyncTask {
   SyncFileType file_type_;
   SyncAction sync_action_;
 
-  scoped_ptr<FileTracker> remote_file_tracker_;
-  scoped_ptr<FileTracker> remote_parent_folder_tracker_;
+  std::unique_ptr<FileTracker> remote_file_tracker_;
+  std::unique_ptr<FileTracker> remote_parent_folder_tracker_;
   base::FilePath target_path_;
   int64_t remote_file_change_id_;
 
   bool retry_on_success_;
   bool needs_remote_change_listing_;
 
-  scoped_ptr<FolderCreator> folder_creator_;
+  std::unique_ptr<FolderCreator> folder_creator_;
 
   base::WeakPtrFactory<LocalToRemoteSyncer> weak_ptr_factory_;
 

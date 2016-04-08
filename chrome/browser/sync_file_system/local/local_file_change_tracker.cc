@@ -50,7 +50,7 @@ class LocalFileChangeTracker::TrackerDB {
   SyncStatusCode ClearDirty(const std::string& url);
   SyncStatusCode GetDirtyEntries(
       std::queue<FileSystemURL>* dirty_files);
-  SyncStatusCode WriteBatch(scoped_ptr<leveldb::WriteBatch> batch);
+  SyncStatusCode WriteBatch(std::unique_ptr<leveldb::WriteBatch> batch);
 
  private:
   enum RecoveryOption {
@@ -65,7 +65,7 @@ class LocalFileChangeTracker::TrackerDB {
 
   const base::FilePath base_path_;
   leveldb::Env* env_override_;
-  scoped_ptr<leveldb::DB> db_;
+  std::unique_ptr<leveldb::DB> db_;
   SyncStatusCode db_status_;
 
   DISALLOW_COPY_AND_ASSIGN(TrackerDB);
@@ -277,7 +277,7 @@ SyncStatusCode LocalFileChangeTracker::Initialize(
 void LocalFileChangeTracker::ResetForFileSystem(const GURL& origin,
                                                 storage::FileSystemType type) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
-  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  std::unique_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
   for (FileChangeMap::iterator iter = changes_.begin();
        iter != changes_.end();) {
     storage::FileSystemURL url = iter->first;
@@ -358,7 +358,7 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
   FileSystemFileUtil* file_util =
       file_system_context->sandbox_delegate()->sync_file_util();
   DCHECK(file_util);
-  scoped_ptr<FileSystemOperationContext> context(
+  std::unique_ptr<FileSystemOperationContext> context(
       new FileSystemOperationContext(file_system_context));
 
   base::File::Info file_info;
@@ -383,7 +383,7 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
             SYNC_FILE_TYPE_DIRECTORY));
 
         // Push files and directories in this directory into |dirty_files|.
-        scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
+        std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
             file_util->CreateFileEnumerator(context.get(), url));
         base::FilePath path_each;
         while (!(path_each = enumerator->Next()).empty()) {
@@ -591,7 +591,8 @@ SyncStatusCode LocalFileChangeTracker::TrackerDB::GetDirtyEntries(
     return db_status_;
   }
 
-  scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(leveldb::ReadOptions()));
+  std::unique_ptr<leveldb::Iterator> iter(
+      db_->NewIterator(leveldb::ReadOptions()));
   iter->SeekToFirst();
   FileSystemURL url;
   while (iter->Valid()) {
@@ -610,7 +611,7 @@ SyncStatusCode LocalFileChangeTracker::TrackerDB::GetDirtyEntries(
 }
 
 SyncStatusCode LocalFileChangeTracker::TrackerDB::WriteBatch(
-    scoped_ptr<leveldb::WriteBatch> batch) {
+    std::unique_ptr<leveldb::WriteBatch> batch) {
   if (db_status_ != SYNC_STATUS_OK)
     return db_status_;
 

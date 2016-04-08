@@ -8,13 +8,13 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/sync_file_system/local/local_origin_change_observer.h"
@@ -73,8 +73,8 @@ class LocalFileSyncService
                               bool has_pending_changes)>
       HasPendingLocalChangeCallback;
 
-  static scoped_ptr<LocalFileSyncService> Create(Profile* profile);
-  static scoped_ptr<LocalFileSyncService> CreateForTesting(
+  static std::unique_ptr<LocalFileSyncService> Create(Profile* profile);
+  static std::unique_ptr<LocalFileSyncService> CreateForTesting(
       Profile* profile,
       leveldb::Env* env_override);
   ~LocalFileSyncService() override;

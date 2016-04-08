@@ -7,6 +7,7 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -17,7 +18,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
@@ -240,11 +240,11 @@ class LocalFileSyncContext
       const std::string& /* name */,
       base::File::Error error);
   SyncStatusCode InitializeChangeTrackerOnFileThread(
-      scoped_ptr<LocalFileChangeTracker>* tracker_ptr,
+      std::unique_ptr<LocalFileChangeTracker>* tracker_ptr,
       storage::FileSystemContext* file_system_context,
       std::set<GURL>* origins_with_changes);
   void DidInitializeChangeTrackerOnIOThread(
-      scoped_ptr<LocalFileChangeTracker>* tracker_ptr,
+      std::unique_ptr<LocalFileChangeTracker>* tracker_ptr,
       const GURL& source_url,
       storage::FileSystemContext* file_system_context,
       std::set<GURL>* origins_with_changes,
@@ -254,14 +254,14 @@ class LocalFileSyncContext
                      SyncStatusCode status);
 
   // Helper routines for GetFileForLocalSync.
-  scoped_ptr<FileSystemURLQueue> GetNextURLsForSyncOnFileThread(
+  std::unique_ptr<FileSystemURLQueue> GetNextURLsForSyncOnFileThread(
       storage::FileSystemContext* file_system_context);
   void TryPrepareForLocalSync(storage::FileSystemContext* file_system_context,
                               const LocalFileSyncInfoCallback& callback,
-                              scoped_ptr<FileSystemURLQueue> urls);
+                              std::unique_ptr<FileSystemURLQueue> urls);
   void DidTryPrepareForLocalSync(
       storage::FileSystemContext* file_system_context,
-      scoped_ptr<FileSystemURLQueue> remaining_urls,
+      std::unique_ptr<FileSystemURLQueue> remaining_urls,
       const LocalFileSyncInfoCallback& callback,
       SyncStatusCode status,
       const LocalFileSyncInfo& sync_file_info,
@@ -271,7 +271,7 @@ class LocalFileSyncContext
       const storage::FileSystemURL& url);
   void PromoteDemotedChangesForURLs(
       storage::FileSystemContext* file_system_context,
-      scoped_ptr<FileSystemURLQueue> url);
+      std::unique_ptr<FileSystemURLQueue> url);
 
   // Callback routine for PrepareForSync and GetFileForLocalSync.
   void DidGetWritingStatusForSync(
@@ -338,11 +338,11 @@ class LocalFileSyncContext
   bool shutdown_on_io_;  // Updated and referred only on IO thread.
 
   // OperationRunner. This must be accessed only on IO thread.
-  scoped_ptr<SyncableFileOperationRunner> operation_runner_;
+  std::unique_ptr<SyncableFileOperationRunner> operation_runner_;
 
   // Keeps track of writing/syncing status.
   // This must be accessed only on IO thread.
-  scoped_ptr<LocalFileSyncStatus> sync_status_;
+  std::unique_ptr<LocalFileSyncStatus> sync_status_;
 
   // Pointers to file system contexts that have been initialized for
   // synchronization (i.e. that own this instance).
@@ -360,13 +360,13 @@ class LocalFileSyncContext
 
   // Used only on IO thread for available changes notifications.
   base::Time last_notified_changes_;
-  scoped_ptr<base::OneShotTimer> timer_on_io_;
+  std::unique_ptr<base::OneShotTimer> timer_on_io_;
   std::vector<base::Closure> pending_completion_callbacks_;
   std::set<GURL> origins_with_pending_changes_;
 
   // Populated while root directory deletion is being handled for
   // ApplyRemoteChange(). Modified only on IO thread.
-  scoped_ptr<RootDeleteHelper> root_delete_helper_;
+  std::unique_ptr<RootDeleteHelper> root_delete_helper_;
 
   base::ObserverList<LocalOriginChangeObserver> origin_change_observers_;
 

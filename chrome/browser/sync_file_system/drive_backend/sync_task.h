@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_TASK_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_TASK_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 
@@ -19,7 +20,7 @@ class SyncTask {
  public:
   SyncTask() : used_network_(false) {}
   virtual ~SyncTask() {}
-  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) = 0;
+  virtual void RunPreflight(std::unique_ptr<SyncTaskToken> token) = 0;
 
   bool used_network() { return used_network_; }
 
@@ -39,7 +40,7 @@ class ExclusiveTask : public SyncTask {
   ExclusiveTask();
   ~ExclusiveTask() override;
 
-  void RunPreflight(scoped_ptr<SyncTaskToken> token) final;
+  void RunPreflight(std::unique_ptr<SyncTaskToken> token) final;
   virtual void RunExclusive(const SyncStatusCallback& callback) = 0;
 
  private:

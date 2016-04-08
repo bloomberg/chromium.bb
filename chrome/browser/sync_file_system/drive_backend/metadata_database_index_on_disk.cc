@@ -158,12 +158,12 @@ void RemoveUnreachableItemsFromDB(LevelDBWrapper* db,
   {
     // Set up links from parent tracker to child trackers.
     std::set<int64_t> inactive_trackers;
-    scoped_ptr<LevelDBWrapper::Iterator> itr = db->NewIterator();
+    std::unique_ptr<LevelDBWrapper::Iterator> itr = db->NewIterator();
     for (itr->Seek(kFileTrackerKeyPrefix); itr->Valid(); itr->Next()) {
       if (!RemovePrefix(itr->key().ToString(), kFileTrackerKeyPrefix, nullptr))
         break;
 
-      scoped_ptr<FileTracker> tracker(new FileTracker);
+      std::unique_ptr<FileTracker> tracker(new FileTracker);
       if (!tracker->ParseFromString(itr->value().ToString())) {
         util::Log(logging::LOG_WARNING, FROM_HERE,
                   "Failed to parse a Tracker");
@@ -211,12 +211,12 @@ void RemoveUnreachableItemsFromDB(LevelDBWrapper* db,
   // remained trackers.
   base::hash_set<std::string> referred_file_ids;
   {
-    scoped_ptr<LevelDBWrapper::Iterator> itr = db->NewIterator();
+    std::unique_ptr<LevelDBWrapper::Iterator> itr = db->NewIterator();
     for (itr->Seek(kFileTrackerKeyPrefix); itr->Valid(); itr->Next()) {
       if (!RemovePrefix(itr->key().ToString(), kFileTrackerKeyPrefix, nullptr))
         break;
 
-      scoped_ptr<FileTracker> tracker(new FileTracker);
+      std::unique_ptr<FileTracker> tracker(new FileTracker);
       if (!tracker->ParseFromString(itr->value().ToString())) {
         util::Log(logging::LOG_WARNING, FROM_HERE,
                   "Failed to parse a Tracker");
@@ -233,12 +233,12 @@ void RemoveUnreachableItemsFromDB(LevelDBWrapper* db,
 
   // Delete all unreferred metadata.
   {
-    scoped_ptr<LevelDBWrapper::Iterator> itr = db->NewIterator();
+    std::unique_ptr<LevelDBWrapper::Iterator> itr = db->NewIterator();
     for (itr->Seek(kFileMetadataKeyPrefix); itr->Valid(); itr->Next()) {
       if (!RemovePrefix(itr->key().ToString(), kFileMetadataKeyPrefix, nullptr))
         break;
 
-      scoped_ptr<FileMetadata> metadata(new FileMetadata);
+      std::unique_ptr<FileMetadata> metadata(new FileMetadata);
       if (!metadata->ParseFromString(itr->value().ToString())) {
         util::Log(logging::LOG_WARNING, FROM_HERE,
                   "Failed to parse a Tracker");
@@ -254,18 +254,19 @@ void RemoveUnreachableItemsFromDB(LevelDBWrapper* db,
 }  // namespace
 
 // static
-scoped_ptr<MetadataDatabaseIndexOnDisk>
+std::unique_ptr<MetadataDatabaseIndexOnDisk>
 MetadataDatabaseIndexOnDisk::Create(LevelDBWrapper* db) {
   DCHECK(db);
 
-  scoped_ptr<ServiceMetadata> service_metadata = InitializeServiceMetadata(db);
+  std::unique_ptr<ServiceMetadata> service_metadata =
+      InitializeServiceMetadata(db);
   if (!service_metadata)
     return nullptr;
 
   PutVersionToDB(kDatabaseOnDiskVersion, db);
   RemoveUnreachableItemsFromDB(db, service_metadata->sync_root_tracker_id());
-  scoped_ptr<MetadataDatabaseIndexOnDisk>
-      index(new MetadataDatabaseIndexOnDisk(db));
+  std::unique_ptr<MetadataDatabaseIndexOnDisk> index(
+      new MetadataDatabaseIndexOnDisk(db));
 
   return index;
 }
@@ -341,13 +342,13 @@ bool MetadataDatabaseIndexOnDisk::GetFileTracker(int64_t tracker_id,
 }
 
 void MetadataDatabaseIndexOnDisk::StoreFileMetadata(
-    scoped_ptr<FileMetadata> metadata) {
+    std::unique_ptr<FileMetadata> metadata) {
   DCHECK(metadata);
   PutFileMetadataToDB(*metadata, db_);
 }
 
 void MetadataDatabaseIndexOnDisk::StoreFileTracker(
-    scoped_ptr<FileTracker> tracker) {
+    std::unique_ptr<FileTracker> tracker) {
   DCHECK(tracker);
 
   int64_t tracker_id = tracker->tracker_id();
@@ -442,7 +443,7 @@ std::vector<int64_t> MetadataDatabaseIndexOnDisk::GetFileTrackerIDsByParent(
   std::vector<int64_t> result;
 
   const std::string prefix = GenerateTrackerIDsByParentIDKeyPrefix(parent_id);
-  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
+  std::unique_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
     const std::string& key(itr->key().ToString());
     std::string title_and_id;
@@ -461,7 +462,7 @@ std::vector<int64_t> MetadataDatabaseIndexOnDisk::GetFileTrackerIDsByParent(
 }
 
 std::string MetadataDatabaseIndexOnDisk::PickMultiTrackerFileID() const {
-  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
+  std::unique_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   itr->Seek(kMultiTrackerByFileIDKeyPrefix);
   if (!itr->Valid())
     return std::string();
@@ -475,7 +476,7 @@ std::string MetadataDatabaseIndexOnDisk::PickMultiTrackerFileID() const {
 }
 
 ParentIDAndTitle MetadataDatabaseIndexOnDisk::PickMultiBackingFilePath() const {
-  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
+  std::unique_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   itr->Seek(kMultiBackingParentAndTitleKeyPrefix);
   if (!itr->Valid())
     return ParentIDAndTitle();
@@ -495,7 +496,7 @@ ParentIDAndTitle MetadataDatabaseIndexOnDisk::PickMultiBackingFilePath() const {
 }
 
 int64_t MetadataDatabaseIndexOnDisk::PickDirtyTracker() const {
-  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
+  std::unique_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   itr->Seek(kDirtyIDKeyPrefix);
   if (!itr->Valid())
     return kInvalidTrackerID;
@@ -532,7 +533,7 @@ void MetadataDatabaseIndexOnDisk::DemoteDirtyTracker(int64_t tracker_id) {
 }
 
 bool MetadataDatabaseIndexOnDisk::HasDemotedDirtyTracker() const {
-  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
+  std::unique_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   itr->Seek(kDemotedDirtyIDKeyPrefix);
   if (!itr->Valid())
     return false;
@@ -559,7 +560,7 @@ void MetadataDatabaseIndexOnDisk::PromoteDemotedDirtyTracker(
 
 bool MetadataDatabaseIndexOnDisk::PromoteDemotedDirtyTrackers() {
   bool promoted = false;
-  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
+  std::unique_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(kDemotedDirtyIDKeyPrefix); itr->Valid(); itr->Next()) {
     std::string id_str;
     if (!RemovePrefix(itr->key().ToString(), kDemotedDirtyIDKeyPrefix, &id_str))
@@ -584,7 +585,7 @@ size_t MetadataDatabaseIndexOnDisk::CountDirtyTracker() const {
 size_t MetadataDatabaseIndexOnDisk::CountFileMetadata() const {
   // TODO(peria): Cache the number of FileMetadata in the DB.
   size_t count = 0;
-  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
+  std::unique_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(kFileMetadataKeyPrefix); itr->Valid(); itr->Next()) {
     if (!base::StartsWith(itr->key().ToString(), kFileMetadataKeyPrefix,
                           base::CompareCase::SENSITIVE))
@@ -597,7 +598,7 @@ size_t MetadataDatabaseIndexOnDisk::CountFileMetadata() const {
 size_t MetadataDatabaseIndexOnDisk::CountFileTracker() const {
   // TODO(peria): Cache the number of FileTracker in the DB.
   size_t count = 0;
-  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
+  std::unique_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(kFileTrackerKeyPrefix); itr->Valid(); itr->Next()) {
     if (!base::StartsWith(itr->key().ToString(), kFileTrackerKeyPrefix,
                           base::CompareCase::SENSITIVE))
@@ -656,7 +657,7 @@ int64_t MetadataDatabaseIndexOnDisk::GetNextTrackerID() const {
 std::vector<std::string>
 MetadataDatabaseIndexOnDisk::GetRegisteredAppIDs() const {
   std::vector<std::string> result;
-  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
+  std::unique_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(kAppRootIDByAppIDKeyPrefix); itr->Valid(); itr->Next()) {
     std::string id;
     if (!RemovePrefix(itr->key().ToString(), kAppRootIDByAppIDKeyPrefix, &id))
@@ -668,7 +669,7 @@ MetadataDatabaseIndexOnDisk::GetRegisteredAppIDs() const {
 
 std::vector<int64_t> MetadataDatabaseIndexOnDisk::GetAllTrackerIDs() const {
   std::vector<int64_t> tracker_ids;
-  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
+  std::unique_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(kFileTrackerKeyPrefix); itr->Valid(); itr->Next()) {
     std::string id_str;
     if (!RemovePrefix(itr->key().ToString(), kFileTrackerKeyPrefix, &id_str))
@@ -685,7 +686,7 @@ std::vector<int64_t> MetadataDatabaseIndexOnDisk::GetAllTrackerIDs() const {
 std::vector<std::string>
 MetadataDatabaseIndexOnDisk::GetAllMetadataIDs() const {
   std::vector<std::string> file_ids;
-  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
+  std::unique_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(kFileMetadataKeyPrefix); itr->Valid(); itr->Next()) {
     std::string file_id;
     if (!RemovePrefix(itr->key().ToString(), kFileMetadataKeyPrefix, &file_id))
@@ -698,7 +699,7 @@ MetadataDatabaseIndexOnDisk::GetAllMetadataIDs() const {
 int64_t MetadataDatabaseIndexOnDisk::BuildTrackerIndexes() {
   int64_t num_puts_before = db_->num_puts();
 
-  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
+  std::unique_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(kFileTrackerKeyPrefix); itr->Valid(); itr->Next()) {
     if (!RemovePrefix(itr->key().ToString(), kFileTrackerKeyPrefix, nullptr))
       break;
@@ -892,7 +893,7 @@ void MetadataDatabaseIndexOnDisk::AddToPathIndexes(
   const std::string prefix =
       GenerateTrackerIDByParentAndTitleKeyPrefix(parent_id, title);
   if (!title.empty()) {
-    scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
+    std::unique_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
     for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
       std::string id_str;
       if (!RemovePrefix(itr->key().ToString(), prefix, &id_str))
@@ -1074,7 +1075,7 @@ TrackerIDSet MetadataDatabaseIndexOnDisk::GetTrackerIDSetByPrefix(
   TrackerIDSet trackers;
 
   // Seek IDs.
-  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
+  std::unique_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(ids_prefix); itr->Valid(); itr->Next()) {
     const std::string& key(itr->key().ToString());
     std::string id_str;
@@ -1164,7 +1165,7 @@ void MetadataDatabaseIndexOnDisk::DeactivateInTrackerIDSetWithPrefix(
 }
 
 bool MetadataDatabaseIndexOnDisk::DBHasKey(const std::string& key) const {
-  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
+  std::unique_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   itr->Seek(key);
   return itr->Valid() && (itr->key() == key);
 }
@@ -1172,7 +1173,7 @@ bool MetadataDatabaseIndexOnDisk::DBHasKey(const std::string& key) const {
 size_t MetadataDatabaseIndexOnDisk::CountDirtyTrackerInternal() const {
   size_t num_dirty_trackers = 0;
 
-  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
+  std::unique_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(kDirtyIDKeyPrefix); itr->Valid(); itr->Next()) {
     if (!base::StartsWith(itr->key().ToString(), kDirtyIDKeyPrefix,
                           base::CompareCase::SENSITIVE))
@@ -1189,7 +1190,7 @@ MetadataDatabaseIndexOnDisk::CountWithPrefix(const std::string& prefix,
   const std::string ignored = base::Int64ToString(ignored_id);
 
   size_t count = 0;
-  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
+  std::unique_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(prefix); itr->Valid() && count <= 1; itr->Next()) {
     std::string value;
     if (!RemovePrefix(itr->key().ToString(), prefix, &value))
@@ -1207,7 +1208,7 @@ MetadataDatabaseIndexOnDisk::CountWithPrefix(const std::string& prefix,
 
 void MetadataDatabaseIndexOnDisk::DeleteKeyStartsWith(
     const std::string& prefix) {
-  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
+  std::unique_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(prefix); itr->Valid();) {
     const std::string key = itr->key().ToString();
     if (!base::StartsWith(key, prefix, base::CompareCase::SENSITIVE))

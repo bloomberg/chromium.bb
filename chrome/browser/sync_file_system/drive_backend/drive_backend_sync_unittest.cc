@@ -105,14 +105,13 @@ class DriveBackendSyncTest : public testing::Test,
         &profile_, in_memory_env_.get());
     local_sync_service_->AddChangeObserver(this);
 
-    scoped_ptr<drive::FakeDriveService>
-        drive_service(new drive::FakeDriveService);
+    std::unique_ptr<drive::FakeDriveService> drive_service(
+        new drive::FakeDriveService);
     drive_service->Initialize("test@example.com");
     ASSERT_TRUE(drive::test_util::SetUpTestEntries(drive_service.get()));
 
-    scoped_ptr<drive::DriveUploaderInterface> uploader(
-        new drive::DriveUploader(drive_service.get(),
-                                 file_task_runner_.get()));
+    std::unique_ptr<drive::DriveUploaderInterface> uploader(
+        new drive::DriveUploader(drive_service.get(), file_task_runner_.get()));
 
     fake_drive_service_helper_.reset(new FakeDriveServiceHelper(
         drive_service.get(), uploader.get(),
@@ -325,7 +324,7 @@ class DriveBackendSyncTest : public testing::Test,
   }
 
   int64_t GetLargestChangeID() {
-    scoped_ptr<google_apis::AboutResource> about_resource;
+    std::unique_ptr<google_apis::AboutResource> about_resource;
     EXPECT_EQ(google_apis::HTTP_SUCCESS,
               fake_drive_service_helper()->GetAboutResource(&about_resource));
     if (!about_resource)
@@ -624,16 +623,16 @@ class DriveBackendSyncTest : public testing::Test,
   content::TestBrowserThreadBundle thread_bundle_;
 
   base::ScopedTempDir base_dir_;
-  scoped_ptr<leveldb::Env> in_memory_env_;
+  std::unique_ptr<leveldb::Env> in_memory_env_;
   TestingProfile profile_;
 
-  scoped_ptr<SyncEngine> remote_sync_service_;
-  scoped_ptr<LocalFileSyncService> local_sync_service_;
+  std::unique_ptr<SyncEngine> remote_sync_service_;
+  std::unique_ptr<LocalFileSyncService> local_sync_service_;
 
   int64_t pending_remote_changes_;
   int64_t pending_local_changes_;
 
-  scoped_ptr<FakeDriveServiceHelper> fake_drive_service_helper_;
+  std::unique_ptr<FakeDriveServiceHelper> fake_drive_service_helper_;
   std::map<std::string, CannedSyncableFileSystem*> file_systems_;
 
 

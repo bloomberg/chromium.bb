@@ -58,13 +58,12 @@ class RemoteToLocalSyncerTest : public testing::Test {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
-    scoped_ptr<drive::FakeDriveService>
-        fake_drive_service(new drive::FakeDriveService);
+    std::unique_ptr<drive::FakeDriveService> fake_drive_service(
+        new drive::FakeDriveService);
 
-    scoped_ptr<drive::DriveUploaderInterface>
-        drive_uploader(new drive::DriveUploader(
-            fake_drive_service.get(),
-            base::ThreadTaskRunnerHandle::Get().get()));
+    std::unique_ptr<drive::DriveUploaderInterface> drive_uploader(
+        new drive::DriveUploader(fake_drive_service.get(),
+                                 base::ThreadTaskRunnerHandle::Get().get()));
     fake_drive_helper_.reset(
         new FakeDriveServiceHelper(fake_drive_service.get(),
                                    drive_uploader.get(),
@@ -102,12 +101,10 @@ class RemoteToLocalSyncerTest : public testing::Test {
                                   in_memory_env_.get());
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     sync_task_manager_->ScheduleSyncTask(
-        FROM_HERE,
-        scoped_ptr<SyncTask>(initializer),
+        FROM_HERE, std::unique_ptr<SyncTask>(initializer),
         SyncTaskManager::PRIORITY_MED,
         base::Bind(&RemoteToLocalSyncerTest::DidInitializeMetadataDatabase,
-                   base::Unretained(this),
-                   initializer, &status));
+                   base::Unretained(this), initializer, &status));
 
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(SYNC_STATUS_OK, status);
@@ -179,8 +176,8 @@ class RemoteToLocalSyncerTest : public testing::Test {
 
   SyncStatusCode RunSyncer() {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    scoped_ptr<RemoteToLocalSyncer>
-        syncer(new RemoteToLocalSyncer(context_.get()));
+    std::unique_ptr<RemoteToLocalSyncer> syncer(
+        new RemoteToLocalSyncer(context_.get()));
     syncer->RunPreflight(SyncTaskToken::CreateForTesting(
         CreateResultReceiver(&status)));
     base::RunLoop().RunUntilIdle();
@@ -219,9 +216,8 @@ class RemoteToLocalSyncerTest : public testing::Test {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     sync_task_manager_->ScheduleSyncTask(
         FROM_HERE,
-        scoped_ptr<SyncTask>(new ListChangesTask(context_.get())),
-        SyncTaskManager::PRIORITY_MED,
-        CreateResultReceiver(&status));
+        std::unique_ptr<SyncTask>(new ListChangesTask(context_.get())),
+        SyncTaskManager::PRIORITY_MED, CreateResultReceiver(&status));
     base::RunLoop().RunUntilIdle();
     return status;
   }
@@ -239,13 +235,13 @@ class RemoteToLocalSyncerTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir database_dir_;
-  scoped_ptr<leveldb::Env> in_memory_env_;
+  std::unique_ptr<leveldb::Env> in_memory_env_;
 
-  scoped_ptr<SyncEngineContext> context_;
-  scoped_ptr<FakeDriveServiceHelper> fake_drive_helper_;
-  scoped_ptr<FakeRemoteChangeProcessor> remote_change_processor_;
+  std::unique_ptr<SyncEngineContext> context_;
+  std::unique_ptr<FakeDriveServiceHelper> fake_drive_helper_;
+  std::unique_ptr<FakeRemoteChangeProcessor> remote_change_processor_;
 
-  scoped_ptr<SyncTaskManager> sync_task_manager_;
+  std::unique_ptr<SyncTaskManager> sync_task_manager_;
 
   URLToFileChangesMap expected_changes_;
 

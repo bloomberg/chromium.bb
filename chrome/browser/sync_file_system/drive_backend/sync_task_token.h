@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/task_logger.h"
@@ -29,16 +30,16 @@ class SyncTaskToken {
   static const int64_t kForegroundTaskTokenID;
   static const int64_t kMinimumBackgroundTaskTokenID;
 
-  static scoped_ptr<SyncTaskToken> CreateForTesting(
+  static std::unique_ptr<SyncTaskToken> CreateForTesting(
       const SyncStatusCallback& callback);
-  static scoped_ptr<SyncTaskToken> CreateForForegroundTask(
+  static std::unique_ptr<SyncTaskToken> CreateForForegroundTask(
       const base::WeakPtr<SyncTaskManager>& manager,
       base::SequencedTaskRunner* task_runner);
-  static scoped_ptr<SyncTaskToken> CreateForBackgroundTask(
+  static std::unique_ptr<SyncTaskToken> CreateForBackgroundTask(
       const base::WeakPtr<SyncTaskManager>& manager,
       base::SequencedTaskRunner* task_runner,
       int64_t token_id,
-      scoped_ptr<TaskBlocker> task_blocker);
+      std::unique_ptr<TaskBlocker> task_blocker);
 
   void UpdateTask(const tracked_objects::Location& location,
                   const SyncStatusCallback& callback);
@@ -46,14 +47,15 @@ class SyncTaskToken {
   const tracked_objects::Location& location() const { return location_; }
   virtual ~SyncTaskToken();
 
-  static SyncStatusCallback WrapToCallback(scoped_ptr<SyncTaskToken> token);
+  static SyncStatusCallback WrapToCallback(
+      std::unique_ptr<SyncTaskToken> token);
 
   SyncTaskManager* manager() { return manager_.get(); }
 
   const SyncStatusCallback& callback() const { return callback_; }
   void clear_callback() { callback_.Reset(); }
 
-  void set_task_blocker(scoped_ptr<TaskBlocker> task_blocker);
+  void set_task_blocker(std::unique_ptr<TaskBlocker> task_blocker);
   const TaskBlocker* task_blocker() const;
   void clear_task_blocker();
 
@@ -64,14 +66,14 @@ class SyncTaskToken {
   void RecordLog(const std::string& message);
 
   bool has_task_log() const { return !!task_log_; }
-  void SetTaskLog(scoped_ptr<TaskLogger::TaskLog> task_log);
-  scoped_ptr<TaskLogger::TaskLog> PassTaskLog();
+  void SetTaskLog(std::unique_ptr<TaskLogger::TaskLog> task_log);
+  std::unique_ptr<TaskLogger::TaskLog> PassTaskLog();
 
  private:
   SyncTaskToken(const base::WeakPtr<SyncTaskManager>& manager,
                 const scoped_refptr<base::SequencedTaskRunner>& task_runner,
                 int64_t token_id,
-                scoped_ptr<TaskBlocker> task_blocker,
+                std::unique_ptr<TaskBlocker> task_blocker,
                 const SyncStatusCallback& callback);
 
   base::WeakPtr<SyncTaskManager> manager_;
@@ -80,8 +82,8 @@ class SyncTaskToken {
   int64_t token_id_;
   SyncStatusCallback callback_;
 
-  scoped_ptr<TaskLogger::TaskLog> task_log_;
-  scoped_ptr<TaskBlocker> task_blocker_;
+  std::unique_ptr<TaskLogger::TaskLog> task_log_;
+  std::unique_ptr<TaskBlocker> task_blocker_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncTaskToken);
 };

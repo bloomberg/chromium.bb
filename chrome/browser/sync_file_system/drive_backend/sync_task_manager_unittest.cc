@@ -82,7 +82,7 @@ class TaskManagerClient
     last_operation_status_ = last_operation_status;
   }
 
-  void RecordTaskLog(scoped_ptr<TaskLogger::TaskLog>) override {}
+  void RecordTaskLog(std::unique_ptr<TaskLogger::TaskLog>) override {}
 
   void ScheduleTask(SyncStatusCode status_to_return,
                     const SyncStatusCallback& callback) {
@@ -122,7 +122,7 @@ class TaskManagerClient
         FROM_HERE, base::Bind(callback, status_to_return));
   }
 
-  scoped_ptr<SyncTaskManager> task_manager_;
+  std::unique_ptr<SyncTaskManager> task_manager_;
 
   int maybe_schedule_next_task_count_;
   int task_scheduled_count_;
@@ -193,8 +193,8 @@ class BackgroundTask : public SyncTask {
 
   ~BackgroundTask() override {}
 
-  void RunPreflight(scoped_ptr<SyncTaskToken> token) override {
-    scoped_ptr<TaskBlocker> task_blocker(new TaskBlocker);
+  void RunPreflight(std::unique_ptr<SyncTaskToken> token) override {
+    std::unique_ptr<TaskBlocker> task_blocker(new TaskBlocker);
     task_blocker->app_id = app_id_;
     task_blocker->paths.push_back(path_);
 
@@ -205,7 +205,7 @@ class BackgroundTask : public SyncTask {
   }
 
  private:
-  void RunAsBackgroundTask(scoped_ptr<SyncTaskToken> token) {
+  void RunAsBackgroundTask(std::unique_ptr<SyncTaskToken> token) {
     ++(stats_->running_background_task);
     if (stats_->max_parallel_task < stats_->running_background_task)
       stats_->max_parallel_task = stats_->running_background_task;
@@ -216,7 +216,7 @@ class BackgroundTask : public SyncTask {
                    weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
   }
 
-  void CompleteTask(scoped_ptr<SyncTaskToken> token) {
+  void CompleteTask(std::unique_ptr<SyncTaskToken> token) {
     ++(stats_->finished_task);
     --(stats_->running_background_task);
     SyncTaskManager::NotifyTaskDone(std::move(token), SYNC_STATUS_OK);
@@ -248,12 +248,12 @@ class BlockerUpdateTestHelper : public SyncTask {
 
   ~BlockerUpdateTestHelper() override {}
 
-  void RunPreflight(scoped_ptr<SyncTaskToken> token) override {
+  void RunPreflight(std::unique_ptr<SyncTaskToken> token) override {
     UpdateBlocker(std::move(token));
   }
 
  private:
-  void UpdateBlocker(scoped_ptr<SyncTaskToken> token) {
+  void UpdateBlocker(std::unique_ptr<SyncTaskToken> token) {
     if (paths_.empty()) {
       log_->push_back(name_ + ": finished");
       SyncTaskManager::NotifyTaskDone(std::move(token), SYNC_STATUS_OK);
@@ -265,7 +265,7 @@ class BlockerUpdateTestHelper : public SyncTask {
 
     log_->push_back(name_ + ": updating to " + updating_to);
 
-    scoped_ptr<TaskBlocker> task_blocker(new TaskBlocker);
+    std::unique_ptr<TaskBlocker> task_blocker(new TaskBlocker);
     task_blocker->app_id = app_id_;
     task_blocker->paths.push_back(
         base::FilePath(storage::VirtualPath::GetNormalizedFilePath(
@@ -278,7 +278,7 @@ class BlockerUpdateTestHelper : public SyncTask {
   }
 
   void UpdateBlockerSoon(const std::string& updated_to,
-                         scoped_ptr<SyncTaskToken> token) {
+                         std::unique_ptr<SyncTaskToken> token) {
     log_->push_back(name_ + ": updated to " + updated_to);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -401,9 +401,8 @@ TEST(SyncTaskManagerTest, ScheduleAndCancelSyncTask) {
     task_manager.Initialize(SYNC_STATUS_OK);
     message_loop.RunUntilIdle();
     task_manager.ScheduleSyncTask(
-        FROM_HERE,
-        scoped_ptr<SyncTask>(new MultihopSyncTask(
-            &task_started, &task_completed)),
+        FROM_HERE, std::unique_ptr<SyncTask>(
+                       new MultihopSyncTask(&task_started, &task_completed)),
         SyncTaskManager::PRIORITY_MED,
         base::Bind(&IncrementAndAssign, 0, &callback_count, &status));
   }
@@ -488,28 +487,19 @@ TEST(SyncTaskManagerTest, BackgroundTask_Sequential) {
   SyncStatusCode status = SYNC_STATUS_FAILED;
   BackgroundTask::Stats stats;
   task_manager.ScheduleSyncTask(
-      FROM_HERE,
-      scoped_ptr<SyncTask>(new BackgroundTask(
-          "app_id", MAKE_PATH("/hoge/fuga"),
-          &stats)),
-      SyncTaskManager::PRIORITY_MED,
-      CreateResultReceiver(&status));
+      FROM_HERE, std::unique_ptr<SyncTask>(new BackgroundTask(
+                     "app_id", MAKE_PATH("/hoge/fuga"), &stats)),
+      SyncTaskManager::PRIORITY_MED, CreateResultReceiver(&status));
 
   task_manager.ScheduleSyncTask(
-      FROM_HERE,
-      scoped_ptr<SyncTask>(new BackgroundTask(
-          "app_id", MAKE_PATH("/hoge"),
-          &stats)),
-      SyncTaskManager::PRIORITY_MED,
-      CreateResultReceiver(&status));
+      FROM_HERE, std::unique_ptr<SyncTask>(
+                     new BackgroundTask("app_id", MAKE_PATH("/hoge"), &stats)),
+      SyncTaskManager::PRIORITY_MED, CreateResultReceiver(&status));
 
   task_manager.ScheduleSyncTask(
-      FROM_HERE,
-      scoped_ptr<SyncTask>(new BackgroundTask(
-          "app_id", MAKE_PATH("/hoge/fuga/piyo"),
-          &stats)),
-      SyncTaskManager::PRIORITY_MED,
-      CreateResultReceiver(&status));
+      FROM_HERE, std::unique_ptr<SyncTask>(new BackgroundTask(
+                     "app_id", MAKE_PATH("/hoge/fuga/piyo"), &stats)),
+      SyncTaskManager::PRIORITY_MED, CreateResultReceiver(&status));
 
   message_loop.RunUntilIdle();
 
@@ -530,28 +520,19 @@ TEST(SyncTaskManagerTest, BackgroundTask_Parallel) {
   SyncStatusCode status = SYNC_STATUS_FAILED;
   BackgroundTask::Stats stats;
   task_manager.ScheduleSyncTask(
-      FROM_HERE,
-      scoped_ptr<SyncTask>(new BackgroundTask(
-          "app_id", MAKE_PATH("/hoge"),
-          &stats)),
-      SyncTaskManager::PRIORITY_MED,
-      CreateResultReceiver(&status));
+      FROM_HERE, std::unique_ptr<SyncTask>(
+                     new BackgroundTask("app_id", MAKE_PATH("/hoge"), &stats)),
+      SyncTaskManager::PRIORITY_MED, CreateResultReceiver(&status));
 
   task_manager.ScheduleSyncTask(
-      FROM_HERE,
-      scoped_ptr<SyncTask>(new BackgroundTask(
-          "app_id", MAKE_PATH("/fuga"),
-          &stats)),
-      SyncTaskManager::PRIORITY_MED,
-      CreateResultReceiver(&status));
+      FROM_HERE, std::unique_ptr<SyncTask>(
+                     new BackgroundTask("app_id", MAKE_PATH("/fuga"), &stats)),
+      SyncTaskManager::PRIORITY_MED, CreateResultReceiver(&status));
 
   task_manager.ScheduleSyncTask(
-      FROM_HERE,
-      scoped_ptr<SyncTask>(new BackgroundTask(
-          "app_id", MAKE_PATH("/piyo"),
-          &stats)),
-      SyncTaskManager::PRIORITY_MED,
-      CreateResultReceiver(&status));
+      FROM_HERE, std::unique_ptr<SyncTask>(
+                     new BackgroundTask("app_id", MAKE_PATH("/piyo"), &stats)),
+      SyncTaskManager::PRIORITY_MED, CreateResultReceiver(&status));
 
   message_loop.RunUntilIdle();
 
@@ -572,28 +553,19 @@ TEST(SyncTaskManagerTest, BackgroundTask_Throttled) {
   SyncStatusCode status = SYNC_STATUS_FAILED;
   BackgroundTask::Stats stats;
   task_manager.ScheduleSyncTask(
-      FROM_HERE,
-      scoped_ptr<SyncTask>(new BackgroundTask(
-          "app_id", MAKE_PATH("/hoge"),
-          &stats)),
-      SyncTaskManager::PRIORITY_MED,
-      CreateResultReceiver(&status));
+      FROM_HERE, std::unique_ptr<SyncTask>(
+                     new BackgroundTask("app_id", MAKE_PATH("/hoge"), &stats)),
+      SyncTaskManager::PRIORITY_MED, CreateResultReceiver(&status));
 
   task_manager.ScheduleSyncTask(
-      FROM_HERE,
-      scoped_ptr<SyncTask>(new BackgroundTask(
-          "app_id", MAKE_PATH("/fuga"),
-          &stats)),
-      SyncTaskManager::PRIORITY_MED,
-      CreateResultReceiver(&status));
+      FROM_HERE, std::unique_ptr<SyncTask>(
+                     new BackgroundTask("app_id", MAKE_PATH("/fuga"), &stats)),
+      SyncTaskManager::PRIORITY_MED, CreateResultReceiver(&status));
 
   task_manager.ScheduleSyncTask(
-      FROM_HERE,
-      scoped_ptr<SyncTask>(new BackgroundTask(
-          "app_id", MAKE_PATH("/piyo"),
-          &stats)),
-      SyncTaskManager::PRIORITY_MED,
-      CreateResultReceiver(&status));
+      FROM_HERE, std::unique_ptr<SyncTask>(
+                     new BackgroundTask("app_id", MAKE_PATH("/piyo"), &stats)),
+      SyncTaskManager::PRIORITY_MED, CreateResultReceiver(&status));
 
   message_loop.RunUntilIdle();
 
@@ -621,11 +593,9 @@ TEST(SyncTaskManagerTest, UpdateTaskBlocker) {
     paths.push_back("/foo");
     paths.push_back("/hoge/fuga/piyo");
     task_manager.ScheduleSyncTask(
-        FROM_HERE,
-        scoped_ptr<SyncTask>(new BlockerUpdateTestHelper(
-            "task1", "app_id", paths, &log)),
-        SyncTaskManager::PRIORITY_MED,
-        CreateResultReceiver(&status1));
+        FROM_HERE, std::unique_ptr<SyncTask>(new BlockerUpdateTestHelper(
+                       "task1", "app_id", paths, &log)),
+        SyncTaskManager::PRIORITY_MED, CreateResultReceiver(&status1));
   }
 
   {
@@ -634,11 +604,9 @@ TEST(SyncTaskManagerTest, UpdateTaskBlocker) {
     paths.push_back("/foo/bar");
     paths.push_back("/hoge/fuga/piyo");
     task_manager.ScheduleSyncTask(
-        FROM_HERE,
-        scoped_ptr<SyncTask>(new BlockerUpdateTestHelper(
-            "task2", "app_id", paths, &log)),
-        SyncTaskManager::PRIORITY_MED,
-        CreateResultReceiver(&status2));
+        FROM_HERE, std::unique_ptr<SyncTask>(new BlockerUpdateTestHelper(
+                       "task2", "app_id", paths, &log)),
+        SyncTaskManager::PRIORITY_MED, CreateResultReceiver(&status2));
   }
 
   message_loop.RunUntilIdle();

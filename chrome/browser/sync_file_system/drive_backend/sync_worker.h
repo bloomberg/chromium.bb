@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_WORKER_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_WORKER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
@@ -61,13 +61,13 @@ class SyncWorker : public SyncWorkerInterface,
 
   ~SyncWorker() override;
 
-  void Initialize(scoped_ptr<SyncEngineContext> context) override;
+  void Initialize(std::unique_ptr<SyncEngineContext> context) override;
 
   // SyncTaskManager::Client overrides
   void MaybeScheduleNextTask() override;
   void NotifyLastOperationStatus(SyncStatusCode sync_status,
                                  bool used_network) override;
-  void RecordTaskLog(scoped_ptr<TaskLogger::TaskLog> task_log) override;
+  void RecordTaskLog(std::unique_ptr<TaskLogger::TaskLog> task_log) override;
 
   // SyncWorkerInterface overrides
   void RegisterOrigin(const GURL& origin,
@@ -85,8 +85,8 @@ class SyncWorker : public SyncWorkerInterface,
   RemoteServiceState GetCurrentState() const override;
   void GetOriginStatusMap(
       const RemoteFileSyncService::StatusMapCallback& callback) override;
-  scoped_ptr<base::ListValue> DumpFiles(const GURL& origin) override;
-  scoped_ptr<base::ListValue> DumpDatabase() override;
+  std::unique_ptr<base::ListValue> DumpFiles(const GURL& origin) override;
+  std::unique_ptr<base::ListValue> DumpDatabase() override;
   void SetSyncEnabled(bool enabled) override;
   void PromoteDemotedChanges(const base::Closure& callback) override;
   void ApplyLocalChange(const FileChange& local_change,
@@ -165,11 +165,11 @@ class SyncWorker : public SyncWorkerInterface,
   bool sync_enabled_;
   base::Closure call_on_idle_callback_;
 
-  scoped_ptr<SyncTaskManager> task_manager_;
+  std::unique_ptr<SyncTaskManager> task_manager_;
 
   base::WeakPtr<ExtensionServiceInterface> extension_service_;
 
-  scoped_ptr<SyncEngineContext> context_;
+  std::unique_ptr<SyncEngineContext> context_;
   base::ObserverList<Observer> observers_;
 
   base::SequenceChecker sequence_checker_;

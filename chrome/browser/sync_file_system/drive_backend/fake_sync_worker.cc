@@ -24,7 +24,7 @@ FakeSyncWorker::~FakeSyncWorker() {
 }
 
 void FakeSyncWorker::Initialize(
-    scoped_ptr<SyncEngineContext> sync_engine_context) {
+    std::unique_ptr<SyncEngineContext> sync_engine_context) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   sync_engine_context_ = std::move(sync_engine_context);
@@ -85,8 +85,8 @@ void FakeSyncWorker::GetOriginStatusMap(
     const RemoteFileSyncService::StatusMapCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
-  scoped_ptr<RemoteFileSyncService::OriginStatusMap>
-      status_map(new RemoteFileSyncService::OriginStatusMap);
+  std::unique_ptr<RemoteFileSyncService::OriginStatusMap> status_map(
+      new RemoteFileSyncService::OriginStatusMap);
   for (StatusMap::const_iterator itr = status_map_.begin();
        itr != status_map_.end(); ++itr) {
     switch (itr->second) {
@@ -110,12 +110,12 @@ void FakeSyncWorker::GetOriginStatusMap(
   callback.Run(std::move(status_map));
 }
 
-scoped_ptr<base::ListValue> FakeSyncWorker::DumpFiles(const GURL& origin) {
+std::unique_ptr<base::ListValue> FakeSyncWorker::DumpFiles(const GURL& origin) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   return nullptr;
 }
 
-scoped_ptr<base::ListValue> FakeSyncWorker::DumpDatabase() {
+std::unique_ptr<base::ListValue> FakeSyncWorker::DumpDatabase() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   return nullptr;
 }
