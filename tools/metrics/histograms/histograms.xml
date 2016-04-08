@@ -24529,6 +24529,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.CertificateTransparency.PilotSTHAge" units="ms">
+  <owner>eranm@chromium.org</owner>
+  <summary>
+    Age of Pilot's Signed Tree Head, as observed by the client, in minutes.
+    Measuring the age of a particular log's Signed Tree Head will allow more
+    informed update frequency of the Component Updater component that provides
+    them. Emitted once for every STH update received by the component updater.
+  </summary>
+</histogram>
+
 <histogram name="Net.CertificateTransparency.SCTOrigin" enum="SCTOrigin">
   <owner>eranm@chromium.org</owner>
   <summary>
