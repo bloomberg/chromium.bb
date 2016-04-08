@@ -38,7 +38,7 @@ bool TracingApp::AcceptConnection(mojo::Connection* connection) {
         new TraceRecorderImpl(GetProxy(&recorder_ptr), sink_.get()));
     provider_ptr->StartTracing(tracing_categories_, std::move(recorder_ptr));
   }
-  provider_ptrs_.AddInterfacePtr(std::move(provider_ptr));
+  provider_ptrs_.AddPtr(std::move(provider_ptr));
   return true;
 }
 

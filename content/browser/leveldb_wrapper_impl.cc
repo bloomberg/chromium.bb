@@ -28,7 +28,7 @@ void LevelDBWrapperImpl::Bind(mojom::LevelDBWrapperRequest request) {
 }
 
 void LevelDBWrapperImpl::AddObserver(mojom::LevelDBObserverPtr observer) {
-  observers_.AddInterfacePtr(std::move(observer));
+  observers_.AddPtr(std::move(observer));
 }
 
 LevelDBWrapperImpl::~LevelDBWrapperImpl() {}

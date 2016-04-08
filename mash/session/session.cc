@@ -61,7 +61,7 @@ void Session::SwitchUser() {
 void Session::AddScreenlockStateListener(
     mojom::ScreenlockStateListenerPtr listener) {
   listener->ScreenlockStateChanged(screen_locked_);
-  screenlock_listeners_.AddInterfacePtr(std::move(listener));
+  screenlock_listeners_.AddPtr(std::move(listener));
 }
 
 void Session::LockScreen() {

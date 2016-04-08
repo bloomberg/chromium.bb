@@ -116,7 +116,7 @@ void UserDisplayManager::CallOnDisplayChanged(
 void UserDisplayManager::AddObserver(
     mojom::DisplayManagerObserverPtr observer) {
   mojom::DisplayManagerObserver* observer_impl = observer.get();
-  display_manager_observers_.AddInterfacePtr(std::move(observer));
+  display_manager_observers_.AddPtr(std::move(observer));
   OnObserverAdded(observer_impl);
 }
 

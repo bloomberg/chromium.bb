@@ -10,20 +10,22 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 
 namespace mojo {
+namespace internal {
 
-template <typename Interface>
-class InterfacePtrSet {
+template <typename Interface, template <typename> class Ptr>
+class PtrSet {
  public:
-  InterfacePtrSet() {}
-  ~InterfacePtrSet() { CloseAll(); }
+  PtrSet() {}
+  ~PtrSet() { CloseAll(); }
 
-  void AddInterfacePtr(InterfacePtr<Interface> ptr) {
+  void AddPtr(Ptr<Interface> ptr) {
     auto weak_interface_ptr = new Element(std::move(ptr));
     ptrs_.push_back(weak_interface_ptr->GetWeakPtr());
-    ClearNullInterfacePtrs();
+    ClearNullPtrs();
   }
 
   template <typename FunctionType>
@@ -32,7 +34,7 @@ class InterfacePtrSet {
       if (it)
         function(it->get());
     }
-    ClearNullInterfacePtrs();
+    ClearNullPtrs();
   }
 
   void CloseAll() {
@@ -46,7 +48,7 @@ class InterfacePtrSet {
  private:
   class Element {
    public:
-    explicit Element(InterfacePtr<Interface> ptr)
+    explicit Element(Ptr<Interface> ptr)
         : ptr_(std::move(ptr)), weak_ptr_factory_(this) {
       ptr_.set_connection_error_handler([this]() { delete this; });
     }
@@ -61,13 +63,13 @@ class InterfacePtrSet {
     }
 
    private:
-    InterfacePtr<Interface> ptr_;
+    Ptr<Interface> ptr_;
     base::WeakPtrFactory<Element> weak_ptr_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(Element);
   };
 
-  void ClearNullInterfacePtrs() {
+  void ClearNullPtrs() {
     ptrs_.erase(std::remove_if(ptrs_.begin(), ptrs_.end(),
                                [](const base::WeakPtr<Element>& p) {
                                  return p.get() == nullptr;
@@ -77,6 +79,15 @@ class InterfacePtrSet {
 
   std::vector<base::WeakPtr<Element>> ptrs_;
 };
+
+}  // namespace internal
+
+template <typename Interface>
+using InterfacePtrSet = internal::PtrSet<Interface, InterfacePtr>;
+
+template <typename Interface>
+using AssociatedInterfacePtrSet =
+    internal::PtrSet<Interface, AssociatedInterfacePtr>;
 
 }  // namespace mojo
 

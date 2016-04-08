@@ -639,7 +639,7 @@ void Shell::AddInstanceListener(mojom::InstanceListenerPtr listener) {
     instances.push_back(instance.second->CreateInstanceInfo());
   listener->SetExistingInstances(std::move(instances));
 
-  instance_listeners_.AddInterfacePtr(std::move(listener));
+  instance_listeners_.AddPtr(std::move(listener));
 }
 
 void Shell::CreateShellClientWithFactory(const Identity& source,
