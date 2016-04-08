@@ -294,10 +294,6 @@ void TestPlugin::updateGeometry(
   layer_->SetNeedsDisplay();
 }
 
-bool TestPlugin::acceptsInputEvents() {
-  return true;
-}
-
 bool TestPlugin::isPlaceholder() {
   return false;
 }

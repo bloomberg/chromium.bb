@@ -54,7 +54,6 @@ class PepperWebPluginImpl : public blink::WebPlugin {
                       bool is_visible) override;
   void updateFocus(bool focused, blink::WebFocusType focus_type) override;
   void updateVisibility(bool visible) override;
-  bool acceptsInputEvents() override;
   blink::WebInputEventResult handleInputEvent(
       const blink::WebInputEvent& event,
       blink::WebCursorInfo& cursor_info) override;

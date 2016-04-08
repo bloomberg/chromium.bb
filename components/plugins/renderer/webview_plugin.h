@@ -103,7 +103,6 @@ class WebViewPlugin : public blink::WebPlugin,
   void updateFocus(bool foucsed, blink::WebFocusType focus_type) override;
   void updateVisibility(bool) override {}
 
-  bool acceptsInputEvents() override;
   blink::WebInputEventResult handleInputEvent(
       const blink::WebInputEvent& event,
       blink::WebCursorInfo& cursor_info) override;

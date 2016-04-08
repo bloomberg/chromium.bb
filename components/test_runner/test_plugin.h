@@ -82,7 +82,6 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
                       bool is_visible) override;
   void updateFocus(bool focus, blink::WebFocusType focus_type) override {}
   void updateVisibility(bool visibility) override {}
-  bool acceptsInputEvents() override;
   blink::WebInputEventResult handleInputEvent(
       const blink::WebInputEvent& event,
       blink::WebCursorInfo& info) override;

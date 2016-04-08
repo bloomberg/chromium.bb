@@ -412,10 +412,6 @@ void BrowserPlugin::updateVisibility(bool visible) {
       visible));
 }
 
-bool BrowserPlugin::acceptsInputEvents() {
-  return true;
-}
-
 blink::WebInputEventResult BrowserPlugin::handleInputEvent(
     const blink::WebInputEvent& event,
     blink::WebCursorInfo& cursor_info) {

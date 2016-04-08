@@ -222,8 +222,6 @@ void WebViewPlugin::updateFocus(bool focused, blink::WebFocusType focus_type) {
   focused_ = focused;
 }
 
-bool WebViewPlugin::acceptsInputEvents() { return true; }
-
 blink::WebInputEventResult WebViewPlugin::handleInputEvent(
     const WebInputEvent& event,
     WebCursorInfo& cursor) {

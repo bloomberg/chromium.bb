@@ -214,8 +214,6 @@ void PepperWebPluginImpl::updateFocus(bool focused,
 
 void PepperWebPluginImpl::updateVisibility(bool visible) {}
 
-bool PepperWebPluginImpl::acceptsInputEvents() { return true; }
-
 blink::WebInputEventResult PepperWebPluginImpl::handleInputEvent(
     const blink::WebInputEvent& event,
     blink::WebCursorInfo& cursor_info) {
