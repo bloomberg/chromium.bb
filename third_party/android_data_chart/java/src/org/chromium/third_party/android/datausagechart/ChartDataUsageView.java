@@ -23,7 +23,6 @@ import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
 import android.view.View;
 
 import org.chromium.third_party.android.R;
@@ -87,7 +86,6 @@ public class ChartDataUsageView extends ChartView {
         // tell everyone about our axis
         mOriginalSeries.init(mHoriz, mVert);
         mCompressedSeries.init(mHoriz, mVert);
-        setActivated(false);
     }
 
     public void bindOriginalNetworkStats(NetworkStatsHistory stats) {
@@ -145,23 +143,6 @@ public class ChartDataUsageView extends ChartView {
         mOriginalSeries.setEstimateVisible(false);
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        if (isActivated()) return false;
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN: {
-                return true;
-            }
-            case MotionEvent.ACTION_UP: {
-                setActivated(true);
-                return true;
-            }
-            default: {
-                return false;
-            }
-        }
-    }
-
     public long getInspectStart() {
         return mLeft;
     }
@@ -192,7 +173,6 @@ public class ChartDataUsageView extends ChartView {
                 || visibleEnd != end + timeZoneOffset) {
             min = start;
             max = end;
-            setActivated(true);
         }
 
         mLeft = min;
