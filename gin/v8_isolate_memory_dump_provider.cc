@@ -117,6 +117,20 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
                             heap_statistics.total_physical_size());
   }
 
+  // Dump statistics about malloced memory.
+  std::string malloc_name = dump_base_name + "/malloc";
+  auto malloc_dump = process_memory_dump->CreateAllocatorDump(malloc_name);
+  malloc_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                         base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                         heap_statistics.malloced_memory());
+  const char* system_allocator_name =
+      base::trace_event::MemoryDumpManager::GetInstance()
+          ->system_allocator_pool_name();
+  if (system_allocator_name) {
+    process_memory_dump->AddSuballocation(malloc_dump->guid(),
+                                          system_allocator_name);
+  }
+
   // If light dump is requested, then object statistics are not dumped
   if (args.level_of_detail == base::trace_event::MemoryDumpLevelOfDetail::LIGHT)
     return;
