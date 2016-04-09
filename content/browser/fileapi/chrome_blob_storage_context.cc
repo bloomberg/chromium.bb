@@ -26,7 +26,7 @@ const char kBlobStorageContextKeyName[] = "content_blob_storage_context";
 
 class BlobHandleImpl : public BlobHandle {
  public:
-  explicit BlobHandleImpl(scoped_ptr<storage::BlobDataHandle> handle)
+  explicit BlobHandleImpl(std::unique_ptr<storage::BlobDataHandle> handle)
       : handle_(std::move(handle)) {}
 
   ~BlobHandleImpl() override {}
@@ -34,7 +34,7 @@ class BlobHandleImpl : public BlobHandle {
   std::string GetUUID() override { return handle_->uuid(); }
 
  private:
-  scoped_ptr<storage::BlobDataHandle> handle_;
+  std::unique_ptr<storage::BlobDataHandle> handle_;
 };
 
 }  // namespace
@@ -66,25 +66,26 @@ void ChromeBlobStorageContext::InitializeOnIOThread() {
   context_.reset(new BlobStorageContext());
 }
 
-scoped_ptr<BlobHandle> ChromeBlobStorageContext::CreateMemoryBackedBlob(
-    const char* data, size_t length) {
+std::unique_ptr<BlobHandle> ChromeBlobStorageContext::CreateMemoryBackedBlob(
+    const char* data,
+    size_t length) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::string uuid(base::GenerateGUID());
   storage::BlobDataBuilder blob_data_builder(uuid);
   blob_data_builder.AppendData(data, length);
 
-  scoped_ptr<storage::BlobDataHandle> blob_data_handle =
+  std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
       context_->AddFinishedBlob(&blob_data_builder);
   if (!blob_data_handle)
-    return scoped_ptr<BlobHandle>();
+    return std::unique_ptr<BlobHandle>();
 
-  scoped_ptr<BlobHandle> blob_handle(
+  std::unique_ptr<BlobHandle> blob_handle(
       new BlobHandleImpl(std::move(blob_data_handle)));
   return blob_handle;
 }
 
-scoped_ptr<BlobHandle> ChromeBlobStorageContext::CreateFileBackedBlob(
+std::unique_ptr<BlobHandle> ChromeBlobStorageContext::CreateFileBackedBlob(
     const base::FilePath& path,
     int64_t offset,
     int64_t size,
@@ -95,12 +96,12 @@ scoped_ptr<BlobHandle> ChromeBlobStorageContext::CreateFileBackedBlob(
   storage::BlobDataBuilder blob_data_builder(uuid);
   blob_data_builder.AppendFile(path, offset, size, expected_modification_time);
 
-  scoped_ptr<storage::BlobDataHandle> blob_data_handle =
+  std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
       context_->AddFinishedBlob(&blob_data_builder);
   if (!blob_data_handle)
-    return scoped_ptr<BlobHandle>();
+    return std::unique_ptr<BlobHandle>();
 
-  scoped_ptr<BlobHandle> blob_handle(
+  std::unique_ptr<BlobHandle> blob_handle(
       new BlobHandleImpl(std::move(blob_data_handle)));
   return blob_handle;
 }

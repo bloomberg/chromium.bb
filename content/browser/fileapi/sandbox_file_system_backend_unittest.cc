@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/public/test/test_file_system_options.h"
@@ -130,14 +130,14 @@ class SandboxFileSystemBackendTest : public testing::Test {
 
   base::ScopedTempDir data_dir_;
   base::MessageLoop message_loop_;
-  scoped_ptr<storage::SandboxFileSystemBackendDelegate> delegate_;
-  scoped_ptr<storage::SandboxFileSystemBackend> backend_;
+  std::unique_ptr<storage::SandboxFileSystemBackendDelegate> delegate_;
+  std::unique_ptr<storage::SandboxFileSystemBackend> backend_;
 };
 
 TEST_F(SandboxFileSystemBackendTest, Empty) {
   SetUpNewBackend(CreateAllowFileAccessOptions());
-  scoped_ptr<SandboxFileSystemBackendDelegate::OriginEnumerator> enumerator(
-      CreateOriginEnumerator());
+  std::unique_ptr<SandboxFileSystemBackendDelegate::OriginEnumerator>
+      enumerator(CreateOriginEnumerator());
   ASSERT_TRUE(enumerator->Next().is_empty());
 }
 
@@ -169,8 +169,8 @@ TEST_F(SandboxFileSystemBackendTest, EnumerateOrigins) {
     persistent_set.insert(GURL(persistent_origins[i]));
   }
 
-  scoped_ptr<SandboxFileSystemBackendDelegate::OriginEnumerator> enumerator(
-      CreateOriginEnumerator());
+  std::unique_ptr<SandboxFileSystemBackendDelegate::OriginEnumerator>
+      enumerator(CreateOriginEnumerator());
   size_t temporary_actual_size = 0;
   size_t persistent_actual_size = 0;
   GURL current;

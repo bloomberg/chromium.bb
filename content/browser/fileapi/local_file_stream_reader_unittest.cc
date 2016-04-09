@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/files/file.h"
@@ -15,7 +16,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
@@ -131,7 +131,7 @@ class LocalFileStreamReaderTest : public testing::Test {
 
 TEST_F(LocalFileStreamReaderTest, NonExistent) {
   base::FilePath nonexistent_path = test_dir().AppendASCII("nonexistent");
-  scoped_ptr<LocalFileStreamReader> reader(
+  std::unique_ptr<LocalFileStreamReader> reader(
       CreateFileReader(nonexistent_path, 0, base::Time()));
   int result = 0;
   std::string data;
@@ -146,7 +146,7 @@ TEST_F(LocalFileStreamReaderTest, Empty) {
   ASSERT_TRUE(file.IsValid());
   file.Close();
 
-  scoped_ptr<LocalFileStreamReader> reader(
+  std::unique_ptr<LocalFileStreamReader> reader(
       CreateFileReader(empty_path, 0, base::Time()));
   int result = 0;
   std::string data;
@@ -162,7 +162,7 @@ TEST_F(LocalFileStreamReaderTest, Empty) {
 }
 
 TEST_F(LocalFileStreamReaderTest, GetLengthNormal) {
-  scoped_ptr<LocalFileStreamReader> reader(
+  std::unique_ptr<LocalFileStreamReader> reader(
       CreateFileReader(test_path(), 0, test_file_modification_time()));
   net::TestInt64CompletionCallback callback;
   int64_t result = reader->GetLength(callback.callback());
@@ -176,7 +176,7 @@ TEST_F(LocalFileStreamReaderTest, GetLengthAfterModified) {
   // from what we expect.
   TouchTestFile(base::TimeDelta::FromSeconds(-1));
 
-  scoped_ptr<LocalFileStreamReader> reader(
+  std::unique_ptr<LocalFileStreamReader> reader(
       CreateFileReader(test_path(), 0, test_file_modification_time()));
   net::TestInt64CompletionCallback callback;
   int64_t result = reader->GetLength(callback.callback());
@@ -193,7 +193,7 @@ TEST_F(LocalFileStreamReaderTest, GetLengthAfterModified) {
 }
 
 TEST_F(LocalFileStreamReaderTest, GetLengthWithOffset) {
-  scoped_ptr<LocalFileStreamReader> reader(
+  std::unique_ptr<LocalFileStreamReader> reader(
       CreateFileReader(test_path(), 3, base::Time()));
   net::TestInt64CompletionCallback callback;
   int64_t result = reader->GetLength(callback.callback());
@@ -204,7 +204,7 @@ TEST_F(LocalFileStreamReaderTest, GetLengthWithOffset) {
 }
 
 TEST_F(LocalFileStreamReaderTest, ReadNormal) {
-  scoped_ptr<LocalFileStreamReader> reader(
+  std::unique_ptr<LocalFileStreamReader> reader(
       CreateFileReader(test_path(), 0, test_file_modification_time()));
   int result = 0;
   std::string data;
@@ -218,7 +218,7 @@ TEST_F(LocalFileStreamReaderTest, ReadAfterModified) {
   // from what we expect. Note that the resolution on some filesystems
   // is 1s so we can't test with deltas less than that.
   TouchTestFile(base::TimeDelta::FromSeconds(-1));
-  scoped_ptr<LocalFileStreamReader> reader(
+  std::unique_ptr<LocalFileStreamReader> reader(
       CreateFileReader(test_path(), 0, test_file_modification_time()));
   int result = 0;
   std::string data;
@@ -253,7 +253,7 @@ TEST_F(LocalFileStreamReaderTest, ReadAfterModified) {
 }
 
 TEST_F(LocalFileStreamReaderTest, ReadWithOffset) {
-  scoped_ptr<LocalFileStreamReader> reader(
+  std::unique_ptr<LocalFileStreamReader> reader(
       CreateFileReader(test_path(), 3, base::Time()));
   int result = 0;
   std::string data;
@@ -263,7 +263,7 @@ TEST_F(LocalFileStreamReaderTest, ReadWithOffset) {
 }
 
 TEST_F(LocalFileStreamReaderTest, DeleteWithUnfinishedRead) {
-  scoped_ptr<LocalFileStreamReader> reader(
+  std::unique_ptr<LocalFileStreamReader> reader(
       CreateFileReader(test_path(), 0, base::Time()));
 
   net::TestCompletionCallback callback;

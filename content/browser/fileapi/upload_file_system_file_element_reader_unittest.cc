@@ -123,7 +123,7 @@ class UploadFileSystemFileElementReaderTest : public testing::Test {
   std::vector<char> file_data_;
   GURL file_url_;
   base::Time file_modification_time_;
-  scoped_ptr<UploadFileSystemFileElementReader> reader_;
+  std::unique_ptr<UploadFileSystemFileElementReader> reader_;
 };
 
 TEST_F(UploadFileSystemFileElementReaderTest, ReadAll) {

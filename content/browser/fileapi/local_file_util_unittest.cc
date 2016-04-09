@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/files/file.h"
@@ -11,7 +12,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -80,7 +80,7 @@ class LocalFileUtilTest : public testing::Test {
 
   base::FilePath LocalPath(const char *file_name) {
     base::FilePath path;
-    scoped_ptr<FileSystemOperationContext> context(NewContext());
+    std::unique_ptr<FileSystemOperationContext> context(NewContext());
     file_util()->GetLocalFilePath(context.get(), CreateURL(file_name), &path);
     return path;
   }
@@ -104,14 +104,14 @@ class LocalFileUtilTest : public testing::Test {
     int file_flags = base::File::FLAG_CREATE |
                      base::File::FLAG_WRITE | base::File::FLAG_ASYNC;
 
-    scoped_ptr<FileSystemOperationContext> context(NewContext());
+    std::unique_ptr<FileSystemOperationContext> context(NewContext());
     return file_util()->CreateOrOpen(context.get(), CreateURL(file_name),
                                      file_flags);
   }
 
   base::File::Error EnsureFileExists(const char* file_name,
                                      bool* created) {
-    scoped_ptr<FileSystemOperationContext> context(NewContext());
+    std::unique_ptr<FileSystemOperationContext> context(NewContext());
     return file_util()->EnsureFileExists(context.get(),
                                          CreateURL(file_name), created);
   }
@@ -137,7 +137,7 @@ TEST_F(LocalFileUtilTest, CreateAndClose) {
   EXPECT_TRUE(FileExists(file_name));
   EXPECT_EQ(0, GetSize(file_name));
 
-  scoped_ptr<FileSystemOperationContext> context(NewContext());
+  std::unique_ptr<FileSystemOperationContext> context(NewContext());
 }
 
 // base::CreateSymbolicLink is only supported on POSIX.
@@ -157,7 +157,7 @@ TEST_F(LocalFileUtilTest, CreateFailForSymlink) {
   ASSERT_TRUE(FileExists(symlink_name));
 
   // Try to open the symlink file which should fail.
-  scoped_ptr<FileSystemOperationContext> context(NewContext());
+  std::unique_ptr<FileSystemOperationContext> context(NewContext());
   FileSystemURL url = CreateURL(symlink_name);
   int file_flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
   base::File file = file_util()->CreateOrOpen(context.get(), url, file_flags);
@@ -185,7 +185,7 @@ TEST_F(LocalFileUtilTest, TouchFile) {
   ASSERT_TRUE(file.IsValid());
   ASSERT_TRUE(file.created());
 
-  scoped_ptr<FileSystemOperationContext> context(NewContext());
+  std::unique_ptr<FileSystemOperationContext> context(NewContext());
 
   base::File::Info info;
   ASSERT_TRUE(base::GetFileInfo(LocalPath(file_name), &info));
@@ -205,7 +205,7 @@ TEST_F(LocalFileUtilTest, TouchFile) {
 
 TEST_F(LocalFileUtilTest, TouchDirectory) {
   const char *dir_name = "test_dir";
-  scoped_ptr<FileSystemOperationContext> context(NewContext());
+  std::unique_ptr<FileSystemOperationContext> context(NewContext());
   ASSERT_EQ(base::File::FILE_OK,
             file_util()->CreateDirectory(context.get(),
                                         CreateURL(dir_name),
@@ -234,7 +234,7 @@ TEST_F(LocalFileUtilTest, Truncate) {
   ASSERT_EQ(base::File::FILE_OK, EnsureFileExists(file_name, &created));
   ASSERT_TRUE(created);
 
-  scoped_ptr<FileSystemOperationContext> context;
+  std::unique_ptr<FileSystemOperationContext> context;
 
   context.reset(NewContext());
   ASSERT_EQ(base::File::FILE_OK,
@@ -252,7 +252,7 @@ TEST_F(LocalFileUtilTest, CopyFile) {
   ASSERT_EQ(base::File::FILE_OK, EnsureFileExists(from_file, &created));
   ASSERT_TRUE(created);
 
-  scoped_ptr<FileSystemOperationContext> context;
+  std::unique_ptr<FileSystemOperationContext> context;
   context.reset(NewContext());
   ASSERT_EQ(base::File::FILE_OK,
             file_util()->Truncate(context.get(), CreateURL(from_file), 1020));
@@ -285,7 +285,7 @@ TEST_F(LocalFileUtilTest, CopyDirectory) {
   const char *to_dir = "todir";
   const char *to_file = "todir/fromfile";
   bool created;
-  scoped_ptr<FileSystemOperationContext> context;
+  std::unique_ptr<FileSystemOperationContext> context;
 
   context.reset(NewContext());
   ASSERT_EQ(base::File::FILE_OK,
@@ -322,7 +322,7 @@ TEST_F(LocalFileUtilTest, MoveFile) {
   bool created;
   ASSERT_EQ(base::File::FILE_OK, EnsureFileExists(from_file, &created));
   ASSERT_TRUE(created);
-  scoped_ptr<FileSystemOperationContext> context;
+  std::unique_ptr<FileSystemOperationContext> context;
 
   context.reset(NewContext());
   ASSERT_EQ(base::File::FILE_OK,
@@ -348,7 +348,7 @@ TEST_F(LocalFileUtilTest, MoveDirectory) {
   const char *to_dir = "todir";
   const char *to_file = "todir/fromfile";
   bool created;
-  scoped_ptr<FileSystemOperationContext> context;
+  std::unique_ptr<FileSystemOperationContext> context;
 
   context.reset(NewContext());
   ASSERT_EQ(base::File::FILE_OK,

@@ -5,14 +5,15 @@
 #include <stdint.h>
 
 #include <limits>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -73,8 +74,8 @@ class EmptyDataHandle : public storage::BlobDataBuilder::DataHandle {
   ~EmptyDataHandle() override {}
 };
 
-scoped_ptr<disk_cache::Backend> CreateInMemoryDiskCache() {
-  scoped_ptr<disk_cache::Backend> cache;
+std::unique_ptr<disk_cache::Backend> CreateInMemoryDiskCache() {
+  std::unique_ptr<disk_cache::Backend> cache;
   net::TestCompletionCallback callback;
   int rv = disk_cache::CreateCacheBackend(net::MEMORY_CACHE,
                                           net::CACHE_BACKEND_DEFAULT,
@@ -154,7 +155,7 @@ class BlobURLRequestJobTest : public testing::Test {
         disk_cache_backend_.get(), kTestDiskCacheKey, kTestDiskCacheData);
 
     url_request_job_factory_.SetProtocolHandler(
-        "blob", make_scoped_ptr(new MockProtocolHandler(this)));
+        "blob", base::WrapUnique(new MockProtocolHandler(this)));
     url_request_context_.set_job_factory(&url_request_job_factory_);
   }
 
@@ -297,7 +298,7 @@ class BlobURLRequestJobTest : public testing::Test {
   // Otherwise, this will fail a CHECK.
   int64_t GetTotalBlobLength() {
     int64_t total = 0;
-    scoped_ptr<BlobDataSnapshot> data =
+    std::unique_ptr<BlobDataSnapshot> data =
         GetHandleFromBuilder()->CreateSnapshot();
     const auto& items = data->items();
     for (const auto& item : items) {
@@ -320,20 +321,20 @@ class BlobURLRequestJobTest : public testing::Test {
   base::Time temp_file_system_file_modification_time1_;
   base::Time temp_file_system_file_modification_time2_;
 
-  scoped_ptr<disk_cache::Backend> disk_cache_backend_;
+  std::unique_ptr<disk_cache::Backend> disk_cache_backend_;
   disk_cache::ScopedEntryPtr disk_cache_entry_;
 
   base::MessageLoopForIO message_loop_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
 
   storage::BlobStorageContext blob_context_;
-  scoped_ptr<storage::BlobDataHandle> blob_handle_;
-  scoped_ptr<BlobDataBuilder> blob_data_;
-  scoped_ptr<BlobDataSnapshot> blob_data_snapshot_;
+  std::unique_ptr<storage::BlobDataHandle> blob_handle_;
+  std::unique_ptr<BlobDataBuilder> blob_data_;
+  std::unique_ptr<BlobDataSnapshot> blob_data_snapshot_;
   net::URLRequestJobFactoryImpl url_request_job_factory_;
   net::URLRequestContext url_request_context_;
   MockURLRequestDelegate url_request_delegate_;
-  scoped_ptr<net::URLRequest> request_;
+  std::unique_ptr<net::URLRequest> request_;
 
   int expected_status_code_;
   std::string expected_response_;

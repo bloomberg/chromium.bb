@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 
 #include "base/files/file.h"
@@ -11,7 +12,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "storage/browser/fileapi/native_file_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -169,7 +169,7 @@ TEST_F(NativeFileUtilTest, CreateFileEnumerator) {
             NativeFileUtil::EnsureFileExists(path_121, &created));
 
   {
-    scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator =
+    std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator =
         NativeFileUtil::CreateFileEnumerator(Path(), false);
     std::set<base::FilePath> set;
     set.insert(path_1);
@@ -181,9 +181,9 @@ TEST_F(NativeFileUtilTest, CreateFileEnumerator) {
   }
 
   {
-    scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator =
+    std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator =
         NativeFileUtil::CreateFileEnumerator(Path(), true);
-        std::set<base::FilePath> set;
+    std::set<base::FilePath> set;
     set.insert(path_1);
     set.insert(path_2);
     set.insert(path_11);

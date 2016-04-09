@@ -4,9 +4,10 @@
 
 #include "storage/browser/fileapi/sandbox_file_system_backend_delegate.h"
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/public/test/test_file_system_options.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -45,7 +46,7 @@ class SandboxFileSystemBackendDelegateTest : public testing::Test {
 
   base::ScopedTempDir data_dir_;
   base::MessageLoop message_loop_;
-  scoped_ptr<storage::SandboxFileSystemBackendDelegate> delegate_;
+  std::unique_ptr<storage::SandboxFileSystemBackendDelegate> delegate_;
 };
 
 TEST_F(SandboxFileSystemBackendDelegateTest, IsAccessValid) {

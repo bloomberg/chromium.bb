@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -55,7 +56,7 @@ class CONTENT_EXPORT UploadFileSystemFileElementReader :
   const uint64_t range_length_;
   const base::Time expected_modification_time_;
 
-  scoped_ptr<storage::FileStreamReader> stream_reader_;
+  std::unique_ptr<storage::FileStreamReader> stream_reader_;
 
   uint64_t stream_length_;
   uint64_t position_;

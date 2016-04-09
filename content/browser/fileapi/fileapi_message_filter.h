@@ -208,7 +208,7 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   scoped_refptr<StreamContext> stream_context_;
 
-  scoped_ptr<storage::FileSystemOperationRunner> operation_runner_;
+  std::unique_ptr<storage::FileSystemOperationRunner> operation_runner_;
 
   // Keep track of stream URLs registered in this process. Need to unregister
   // all of them when the renderer process dies.

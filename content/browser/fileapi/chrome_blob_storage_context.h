@@ -8,8 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/content_export.h"
 
@@ -48,11 +49,11 @@ class CONTENT_EXPORT ChromeBlobStorageContext
   storage::BlobStorageContext* context() const { return context_.get(); }
 
   // Returns a NULL scoped_ptr on failure.
-  scoped_ptr<BlobHandle> CreateMemoryBackedBlob(const char* data,
-                                                size_t length);
+  std::unique_ptr<BlobHandle> CreateMemoryBackedBlob(const char* data,
+                                                     size_t length);
 
   // Returns a NULL scoped_ptr on failure.
-  scoped_ptr<BlobHandle> CreateFileBackedBlob(
+  std::unique_ptr<BlobHandle> CreateFileBackedBlob(
       const base::FilePath& path,
       int64_t offset,
       int64_t size,
@@ -69,7 +70,7 @@ class CONTENT_EXPORT ChromeBlobStorageContext
 
   void DeleteOnCorrectThread() const;
 
-  scoped_ptr<storage::BlobStorageContext> context_;
+  std::unique_ptr<storage::BlobStorageContext> context_;
 };
 
 struct ChromeBlobStorageContextDeleter {

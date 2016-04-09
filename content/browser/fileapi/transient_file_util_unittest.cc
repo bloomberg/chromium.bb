@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "content/public/test/test_file_system_context.h"
 #include "storage/browser/blob/scoped_file.h"
@@ -57,8 +59,8 @@ class TransientFileUtilTest : public testing::Test {
         GURL("http://foo"), storage::kFileSystemTypeIsolated, virtual_path);
   }
 
-  scoped_ptr<storage::FileSystemOperationContext> NewOperationContext() {
-    return make_scoped_ptr(
+  std::unique_ptr<storage::FileSystemOperationContext> NewOperationContext() {
+    return base::WrapUnique(
         new storage::FileSystemOperationContext(file_system_context_.get()));
   }
 
@@ -70,7 +72,7 @@ class TransientFileUtilTest : public testing::Test {
   base::MessageLoop message_loop_;
   base::ScopedTempDir data_dir_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
-  scoped_ptr<storage::TransientFileUtil> transient_file_util_;
+  std::unique_ptr<storage::TransientFileUtil> transient_file_util_;
 
   DISALLOW_COPY_AND_ASSIGN(TransientFileUtilTest);
 };

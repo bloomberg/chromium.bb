@@ -245,7 +245,7 @@ TEST_F(FileAPIMessageFilterTest, BuildStreamWithSharedMemory) {
 
   const std::string kFakeData = "foobarbaz";
 
-  scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
+  std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
   ASSERT_TRUE(shared_memory->CreateAndMapAnonymous(kFakeData.size()));
   memcpy(shared_memory->memory(), kFakeData.data(), kFakeData.size());
   StreamHostMsg_SyncAppendSharedMemory append_message(

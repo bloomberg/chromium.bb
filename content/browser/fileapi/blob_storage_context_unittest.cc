@@ -7,12 +7,12 @@
 #include <stdint.h>
 
 #include <limits>
+#include <memory>
 #include <string>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
@@ -49,8 +49,8 @@ class EmptyDataHandle : public storage::BlobDataBuilder::DataHandle {
   ~EmptyDataHandle() override {}
 };
 
-scoped_ptr<disk_cache::Backend> CreateInMemoryDiskCache() {
-  scoped_ptr<disk_cache::Backend> cache;
+std::unique_ptr<disk_cache::Backend> CreateInMemoryDiskCache() {
+  std::unique_ptr<disk_cache::Backend> cache;
   net::TestCompletionCallback callback;
   int rv = disk_cache::CreateCacheBackend(net::MEMORY_CACHE,
                                           net::CACHE_BACKEND_DEFAULT,
@@ -87,7 +87,7 @@ class BlobStorageContextTest : public testing::Test {
   BlobStorageContextTest() {}
   ~BlobStorageContextTest() override {}
 
-  scoped_ptr<BlobDataHandle> SetupBasicBlob(const std::string& id) {
+  std::unique_ptr<BlobDataHandle> SetupBasicBlob(const std::string& id) {
     BlobDataBuilder builder(id);
     builder.AppendData("1", 1);
     builder.set_content_type("text/plain");
@@ -102,7 +102,7 @@ TEST_F(BlobStorageContextTest, IncrementDecrementRef) {
 
   // Build up a basic blob.
   const std::string kId("id");
-  scoped_ptr<BlobDataHandle> blob_data_handle = SetupBasicBlob(kId);
+  std::unique_ptr<BlobDataHandle> blob_data_handle = SetupBasicBlob(kId);
 
   // Do an extra increment to keep it around after we kill the handle.
   context_.IncrementBlobRefCount(kId);
@@ -141,11 +141,12 @@ TEST_F(BlobStorageContextTest, BlobDataHandle) {
 
   // Build up a basic blob.
   const std::string kId("id");
-  scoped_ptr<BlobDataHandle> blob_data_handle = SetupBasicBlob(kId);
+  std::unique_ptr<BlobDataHandle> blob_data_handle = SetupBasicBlob(kId);
   EXPECT_TRUE(blob_data_handle);
 
   // Get another handle
-  scoped_ptr<BlobDataHandle> another_handle = context_.GetBlobDataFromUUID(kId);
+  std::unique_ptr<BlobDataHandle> another_handle =
+      context_.GetBlobDataFromUUID(kId);
   EXPECT_TRUE(another_handle);
 
   // Should disappear after dropping both handles.
@@ -180,10 +181,10 @@ TEST_F(BlobStorageContextTest, MemoryUsage) {
 
   EXPECT_EQ(0lu, context_.memory_usage());
 
-  scoped_ptr<BlobDataHandle> blob_data_handle =
+  std::unique_ptr<BlobDataHandle> blob_data_handle =
       context_.AddFinishedBlob(&builder1);
   EXPECT_EQ(10lu, context_.memory_usage());
-  scoped_ptr<BlobDataHandle> blob_data_handle2 =
+  std::unique_ptr<BlobDataHandle> blob_data_handle2 =
       context_.AddFinishedBlob(&builder2);
   EXPECT_EQ(10lu, context_.memory_usage());
 
@@ -221,15 +222,15 @@ TEST_F(BlobStorageContextTest, AddFinishedBlob) {
 
   BlobStorageContext context;
 
-  scoped_ptr<BlobDataHandle> blob_data_handle =
+  std::unique_ptr<BlobDataHandle> blob_data_handle =
       context_.AddFinishedBlob(&builder1);
-  scoped_ptr<BlobDataHandle> blob_data_handle2 =
+  std::unique_ptr<BlobDataHandle> blob_data_handle2 =
       context_.AddFinishedBlob(&builder2);
 
   ASSERT_TRUE(blob_data_handle);
   ASSERT_TRUE(blob_data_handle2);
-  scoped_ptr<BlobDataSnapshot> data1 = blob_data_handle->CreateSnapshot();
-  scoped_ptr<BlobDataSnapshot> data2 = blob_data_handle2->CreateSnapshot();
+  std::unique_ptr<BlobDataSnapshot> data1 = blob_data_handle->CreateSnapshot();
+  std::unique_ptr<BlobDataSnapshot> data2 = blob_data_handle2->CreateSnapshot();
   EXPECT_EQ(*data1, builder1);
   EXPECT_EQ(*data2, canonicalized_blob_data2);
   blob_data_handle.reset();
@@ -247,7 +248,7 @@ TEST_F(BlobStorageContextTest, AddFinishedBlob) {
   BlobDataBuilder builder3(kId3);
   builder3.AppendBlob(kId2);
   builder3.AppendBlob(kId2);
-  scoped_ptr<BlobDataHandle> blob_data_handle3 =
+  std::unique_ptr<BlobDataHandle> blob_data_handle3 =
       context_.AddFinishedBlob(&builder3);
   blob_data_handle2.reset();
   base::RunLoop().RunUntilIdle();
@@ -255,7 +256,7 @@ TEST_F(BlobStorageContextTest, AddFinishedBlob) {
   blob_data_handle2 = context_.GetBlobDataFromUUID(kId2);
   EXPECT_FALSE(blob_data_handle2);
   EXPECT_TRUE(blob_data_handle3);
-  scoped_ptr<BlobDataSnapshot> data3 = blob_data_handle3->CreateSnapshot();
+  std::unique_ptr<BlobDataSnapshot> data3 = blob_data_handle3->CreateSnapshot();
 
   BlobDataBuilder canonicalized_blob_data3(kId3Prime);
   canonicalized_blob_data3.AppendData("Data2");
@@ -287,14 +288,14 @@ TEST_F(BlobStorageContextTest, AddFinishedBlob_LargeOffset) {
   BlobDataBuilder builder2(kId2);
   builder2.AppendBlob(kId1, kLargeSize - kBlobLength, kBlobLength);
 
-  scoped_ptr<BlobDataHandle> blob_data_handle1 =
+  std::unique_ptr<BlobDataHandle> blob_data_handle1 =
       context_.AddFinishedBlob(&builder1);
-  scoped_ptr<BlobDataHandle> blob_data_handle2 =
+  std::unique_ptr<BlobDataHandle> blob_data_handle2 =
       context_.AddFinishedBlob(&builder2);
 
   ASSERT_TRUE(blob_data_handle1);
   ASSERT_TRUE(blob_data_handle2);
-  scoped_ptr<BlobDataSnapshot> data = blob_data_handle2->CreateSnapshot();
+  std::unique_ptr<BlobDataSnapshot> data = blob_data_handle2->CreateSnapshot();
   ASSERT_EQ(1u, data->items().size());
   const scoped_refptr<BlobDataItem> item = data->items()[0];
   EXPECT_EQ(kLargeSize - kBlobLength, item->offset());
@@ -313,7 +314,7 @@ TEST_F(BlobStorageContextTest, BuildDiskCacheBlob) {
   {
     BlobStorageContext context;
 
-    scoped_ptr<disk_cache::Backend> cache = CreateInMemoryDiskCache();
+    std::unique_ptr<disk_cache::Backend> cache = CreateInMemoryDiskCache();
     ASSERT_TRUE(cache);
 
     const std::string kTestBlobData = "Test Blob Data";
@@ -330,9 +331,9 @@ TEST_F(BlobStorageContextTest, BuildDiskCacheBlob) {
     builder.AppendDiskCacheEntry(
         data_handle, entry.get(), kTestDiskCacheStreamIndex);
 
-    scoped_ptr<BlobDataHandle> blob_data_handle =
+    std::unique_ptr<BlobDataHandle> blob_data_handle =
         context.AddFinishedBlob(&builder);
-    scoped_ptr<BlobDataSnapshot> data = blob_data_handle->CreateSnapshot();
+    std::unique_ptr<BlobDataSnapshot> data = blob_data_handle->CreateSnapshot();
     EXPECT_EQ(*data, builder);
     EXPECT_FALSE(data_handle->HasOneRef())
         << "Data handle was destructed while context and builder still exist.";
@@ -369,7 +370,7 @@ TEST_F(BlobStorageContextTest, CompoundBlobs) {
 
   BlobDataBuilder blob_data3(kId3);
   blob_data3.AppendData("Data4");
-  scoped_ptr<disk_cache::Backend> cache = CreateInMemoryDiskCache();
+  std::unique_ptr<disk_cache::Backend> cache = CreateInMemoryDiskCache();
   ASSERT_TRUE(cache);
   disk_cache::ScopedEntryPtr disk_cache_entry =
       CreateDiskCacheEntry(cache.get(), "another key", "Data5");
@@ -385,13 +386,13 @@ TEST_F(BlobStorageContextTest, CompoundBlobs) {
       base::FilePath(FILE_PATH_LITERAL("File2.txt")), 0, 20, time2);
 
   BlobStorageContext context;
-  scoped_ptr<BlobDataHandle> blob_data_handle;
+  std::unique_ptr<BlobDataHandle> blob_data_handle;
 
   // Test a blob referring to only data and a file.
   blob_data_handle = context_.AddFinishedBlob(&blob_data1);
 
   ASSERT_TRUE(blob_data_handle);
-  scoped_ptr<BlobDataSnapshot> data = blob_data_handle->CreateSnapshot();
+  std::unique_ptr<BlobDataSnapshot> data = blob_data_handle->CreateSnapshot();
   ASSERT_TRUE(blob_data_handle);
   EXPECT_EQ(*data, blob_data1);
 
@@ -417,16 +418,16 @@ TEST_F(BlobStorageContextTest, PublicBlobUrls) {
 
   // Build up a basic blob.
   const std::string kId("id");
-  scoped_ptr<BlobDataHandle> first_handle = SetupBasicBlob(kId);
+  std::unique_ptr<BlobDataHandle> first_handle = SetupBasicBlob(kId);
 
   // Now register a url for that blob.
   GURL kUrl("blob:id");
   context_.RegisterPublicBlobURL(kUrl, kId);
-  scoped_ptr<BlobDataHandle> blob_data_handle =
+  std::unique_ptr<BlobDataHandle> blob_data_handle =
       context_.GetBlobDataFromPublicURL(kUrl);
   ASSERT_TRUE(blob_data_handle.get());
   EXPECT_EQ(kId, blob_data_handle->uuid());
-  scoped_ptr<BlobDataSnapshot> data = blob_data_handle->CreateSnapshot();
+  std::unique_ptr<BlobDataSnapshot> data = blob_data_handle->CreateSnapshot();
   blob_data_handle.reset();
   first_handle.reset();
   base::RunLoop().RunUntilIdle();
@@ -463,7 +464,7 @@ TEST_F(BlobStorageContextTest, TestUnknownBrokenAndBuildingBlobReference) {
   BlobDataBuilder builder(kReferencingId);
   builder.AppendData("data");
   builder.AppendBlob(kUnknownId);
-  scoped_ptr<BlobDataHandle> handle = context_.AddFinishedBlob(builder);
+  std::unique_ptr<BlobDataHandle> handle = context_.AddFinishedBlob(builder);
   EXPECT_TRUE(handle->IsBroken());
   EXPECT_TRUE(context_.registry().HasEntry(kReferencingId));
   handle.reset();

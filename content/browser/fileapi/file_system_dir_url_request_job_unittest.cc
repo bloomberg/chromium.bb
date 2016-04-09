@@ -214,7 +214,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
 
   void CreateDirectory(const base::StringPiece& dir_name) {
     base::FilePath path = base::FilePath().AppendASCII(dir_name);
-    scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
+    std::unique_ptr<FileSystemOperationContext> context(NewOperationContext());
     ASSERT_EQ(base::File::FILE_OK, file_util()->CreateDirectory(
         context.get(),
         CreateURL(path),
@@ -224,14 +224,14 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
 
   void EnsureFileExists(const base::StringPiece file_name) {
     base::FilePath path = base::FilePath().AppendASCII(file_name);
-    scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
+    std::unique_ptr<FileSystemOperationContext> context(NewOperationContext());
     ASSERT_EQ(base::File::FILE_OK, file_util()->EnsureFileExists(
         context.get(), CreateURL(path), NULL));
   }
 
   void TruncateFile(const base::StringPiece file_name, int64_t length) {
     base::FilePath path = base::FilePath().AppendASCII(file_name);
-    scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
+    std::unique_ptr<FileSystemOperationContext> context(NewOperationContext());
     ASSERT_EQ(base::File::FILE_OK, file_util()->Truncate(
         context.get(), CreateURL(path), length));
   }
@@ -239,7 +239,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   base::File::Error GetFileInfo(const base::FilePath& path,
                                 base::File::Info* file_info,
                                 base::FilePath* platform_file_path) {
-    scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
+    std::unique_ptr<FileSystemOperationContext> context(NewOperationContext());
     return file_util()->GetFileInfo(context.get(),
                                     CreateURL(path),
                                     file_info, platform_file_path);
@@ -275,7 +275,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     }
 
     icu::UnicodeString date_ustr(match.group(7, status));
-    scoped_ptr<icu::DateFormat> formatter(
+    std::unique_ptr<icu::DateFormat> formatter(
         icu::DateFormat::createDateTimeInstance(icu::DateFormat::kShort));
     UErrorCode parse_status = U_ZERO_ERROR;
     UDate udate = formatter->parse(date_ustr, parse_status);
@@ -299,9 +299,9 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
   net::URLRequestContext empty_context_;
-  scoped_ptr<net::TestDelegate> delegate_;
-  scoped_ptr<net::URLRequest> request_;
-  scoped_ptr<FileSystemDirURLRequestJobFactory> job_factory_;
+  std::unique_ptr<net::TestDelegate> delegate_;
+  std::unique_ptr<net::URLRequest> request_;
+  std::unique_ptr<FileSystemDirURLRequestJobFactory> job_factory_;
   scoped_refptr<MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<FileSystemContext> file_system_context_;
   base::WeakPtrFactory<FileSystemDirURLRequestJobTest> weak_factory_;

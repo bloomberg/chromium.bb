@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <queue>
 #include <set>
 #include <string>
@@ -15,7 +16,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -251,8 +252,8 @@ class DraggedFileUtilTest : public testing::Test {
     }
   }
 
-  scoped_ptr<storage::FileSystemOperationContext> GetOperationContext() {
-    return make_scoped_ptr(
+  std::unique_ptr<storage::FileSystemOperationContext> GetOperationContext() {
+    return base::WrapUnique(
         new storage::FileSystemOperationContext(file_system_context()));
   }
 
@@ -290,7 +291,7 @@ class DraggedFileUtilTest : public testing::Test {
   std::string filesystem_id_;
   scoped_refptr<FileSystemContext> file_system_context_;
   std::map<base::FilePath, base::FilePath> toplevel_root_map_;
-  scoped_ptr<storage::DraggedFileUtil> file_util_;
+  std::unique_ptr<storage::DraggedFileUtil> file_util_;
   DISALLOW_COPY_AND_ASSIGN(DraggedFileUtilTest);
 };
 

@@ -7,13 +7,14 @@
 #include <math.h>
 #include <stddef.h>
 #include <stdint.h>
+
 #include <limits>
+#include <memory>
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "content/browser/fileapi/sandbox_database_test_helper.h"
@@ -140,7 +141,7 @@ class SandboxDirectoryDatabaseTest : public testing::Test {
  protected:
   // Common temp base for nondestructive uses.
   base::ScopedTempDir base_;
-  scoped_ptr<SandboxDirectoryDatabase> db_;
+  std::unique_ptr<SandboxDirectoryDatabase> db_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SandboxDirectoryDatabaseTest);

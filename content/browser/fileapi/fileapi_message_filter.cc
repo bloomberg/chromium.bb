@@ -4,6 +4,7 @@
 
 #include "content/browser/fileapi/fileapi_message_filter.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -12,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
@@ -387,7 +387,7 @@ void FileAPIMessageFilter::OnWrite(int request_id,
     return;
   }
 
-  scoped_ptr<storage::BlobDataHandle> blob =
+  std::unique_ptr<storage::BlobDataHandle> blob =
       blob_storage_context_->context()->GetBlobDataFromUUID(blob_uuid);
 
   operations_[request_id] = operation_runner()->Write(
