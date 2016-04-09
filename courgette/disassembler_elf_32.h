@@ -101,7 +101,7 @@ class DisassemblerElf32 : public Disassembler {
 
   const Elf32_Shdr* SectionHeader(Elf32_Half id) const {
     assert(id >= 0 && id < SectionHeaderCount());
-    return section_header_table_ + id;
+    return &section_header_table_[id];
   }
 
   const uint8_t* SectionBody(Elf32_Half id) const {
@@ -162,7 +162,7 @@ class DisassemblerElf32 : public Disassembler {
   CheckBool ParseRel32RelocsFromSections() WARN_UNUSED_RESULT;
 
   const Elf32_Ehdr* header_;
-  const Elf32_Shdr* section_header_table_;
+  std::vector<Elf32_Shdr> section_header_table_;
   Elf32_Half section_header_table_size_;
 
   const Elf32_Phdr* program_header_table_;

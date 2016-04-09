@@ -12,10 +12,27 @@
 
 namespace courgette {
 
+namespace {
+
+// Initializes |section_header_table| by copying |section_header_table_size|
+// entries from |section_header_table_raw|, and sorting by |sh_offset|.
+void SortSectionHeader(const Elf32_Shdr* section_header_table_raw,
+                       Elf32_Half section_header_table_size,
+                       std::vector<Elf32_Shdr>* section_header_table) {
+  section_header_table->assign(section_header_table_raw,
+      section_header_table_raw + section_header_table_size);
+  auto comp = [](const Elf32_Shdr& header1, const Elf32_Shdr& header2) {
+    return header1.sh_offset < header2.sh_offset;
+  };
+  std::stable_sort(
+      section_header_table->begin(), section_header_table->end(), comp);
+}
+
+}  // namespace
+
 DisassemblerElf32::DisassemblerElf32(const void* start, size_t length)
     : Disassembler(start, length),
       header_(nullptr),
-      section_header_table_(nullptr),
       section_header_table_size_(0),
       program_header_table_(nullptr),
       program_header_table_size_(0),
@@ -95,9 +112,12 @@ bool DisassemblerElf32::ParseHeader() {
   if (!IsArrayInBounds(header_->e_shoff, header_->e_shnum, sizeof(Elf32_Shdr)))
     return Bad("Out of bounds section header table");
 
-  section_header_table_ = reinterpret_cast<const Elf32_Shdr*>(
-      FileOffsetToPointer(header_->e_shoff));
+  const Elf32_Shdr* section_header_table_raw =
+      reinterpret_cast<const Elf32_Shdr*>(
+          FileOffsetToPointer(header_->e_shoff));
   section_header_table_size_ = header_->e_shnum;
+  SortSectionHeader(section_header_table_raw, section_header_table_size_,
+                    &section_header_table_);
 
   if (!IsArrayInBounds(header_->e_phoff, header_->e_phnum, sizeof(Elf32_Phdr)))
     return Bad("Out of bounds program header table");
