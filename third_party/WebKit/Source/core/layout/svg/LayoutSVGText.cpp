@@ -145,6 +145,7 @@ void LayoutSVGText::subtreeChildWillBeRemoved()
     // The positioning elements cache depends on the size of each text layoutObject in the
     // subtree. If this changes, clear the cache. It will be rebuilt on the next layout.
     invalidatePositioningValues(LayoutInvalidationReason::ChildChanged);
+    setNeedsTextMetricsUpdate();
 }
 
 void LayoutSVGText::subtreeTextDidChange()
@@ -163,15 +164,15 @@ void LayoutSVGText::subtreeTextDidChange()
     setNeedsTextMetricsUpdate();
 }
 
-static inline void updateFontInAllDescendants(LayoutSVGText& textRoot, SVGTextLayoutAttributesBuilder* builder = nullptr)
+static inline void updateFontAndMetrics(LayoutSVGText& textRoot)
 {
-    for (LayoutObject* descendant = &textRoot; descendant; descendant = descendant->nextInPreOrder(&textRoot)) {
+    bool lastCharacterWasWhiteSpace = true;
+    for (LayoutObject* descendant = textRoot.firstChild(); descendant; descendant = descendant->nextInPreOrder(&textRoot)) {
         if (!descendant->isSVGInlineText())
             continue;
-        LayoutSVGInlineText* text = toLayoutSVGInlineText(descendant);
-        text->updateScaledFont();
-        if (builder)
-            builder->rebuildMetricsForTextLayoutObject(textRoot, *text);
+        LayoutSVGInlineText& text = toLayoutSVGInlineText(*descendant);
+        text.updateScaledFont();
+        text.updateMetricsList(lastCharacterWasWhiteSpace);
     }
 }
 
@@ -201,8 +202,8 @@ void LayoutSVGText::layout()
         // and propogate resulting SVGLayoutAttributes to all LayoutSVGInlineText children in the subtree.
         ASSERT(m_layoutAttributes.isEmpty());
         collectLayoutAttributes(this, m_layoutAttributes);
-        updateFontInAllDescendants(*this);
-        m_layoutAttributesBuilder.buildLayoutAttributesForForSubtree(*this);
+        updateFontAndMetrics(*this);
+        m_layoutAttributesBuilder.buildLayoutAttributesForTextRoot(*this);
 
         m_needsReordering = true;
         m_needsTextMetricsUpdate = false;
@@ -212,20 +213,20 @@ void LayoutSVGText::layout()
         // When the x/y/dx/dy/rotate lists change, recompute the layout attributes, and eventually
         // update the on-screen font objects as well in all descendants.
         if (m_needsTextMetricsUpdate) {
-            updateFontInAllDescendants(*this);
+            updateFontAndMetrics(*this);
             m_needsTextMetricsUpdate = false;
         }
 
         m_layoutAttributes.clear();
         collectLayoutAttributes(this, m_layoutAttributes);
-        m_layoutAttributesBuilder.buildLayoutAttributesForForSubtree(*this);
+        m_layoutAttributesBuilder.buildLayoutAttributesForTextRoot(*this);
         m_needsReordering = true;
         m_needsPositioningValuesUpdate = false;
         updateCachedBoundariesInParents = true;
     } else if (m_needsTextMetricsUpdate || SVGLayoutSupport::findTreeRootObject(this)->isLayoutSizeChanged()) {
         // If the root layout size changed (eg. window size changes) or the transform to the root
         // context has changed then recompute the on-screen font size.
-        updateFontInAllDescendants(*this, &m_layoutAttributesBuilder);
+        updateFontAndMetrics(*this);
 
         ASSERT(!m_needsReordering);
         ASSERT(!m_needsPositioningValuesUpdate);

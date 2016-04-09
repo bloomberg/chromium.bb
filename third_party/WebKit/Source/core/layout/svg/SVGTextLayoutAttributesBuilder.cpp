@@ -22,17 +22,68 @@
 #include "core/layout/svg/LayoutSVGInline.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGText.h"
-#include "core/layout/svg/SVGTextMetricsBuilder.h"
 #include "core/svg/SVGTextPositioningElement.h"
 
 namespace blink {
+
+namespace {
+
+void updateLayoutAttributes(LayoutSVGInlineText& text, unsigned& valueListPosition, const SVGCharacterDataMap& allCharactersMap)
+{
+    SVGTextLayoutAttributes& attributes = *text.layoutAttributes();
+    attributes.clear();
+
+    const Vector<SVGTextMetrics>& metricsList = text.metricsList();
+    auto metricsEnd = metricsList.end();
+    unsigned surrogatePairCharacters = 0;
+    unsigned skippedWhitespace = 0;
+    unsigned currentPosition = 0;
+    for (auto metrics = metricsList.begin(); metrics != metricsEnd; currentPosition += metrics->length(), ++metrics) {
+        if (metrics->isEmpty()) {
+            skippedWhitespace++;
+            continue;
+        }
+
+        unsigned currentValueListPosition = valueListPosition - skippedWhitespace - surrogatePairCharacters + currentPosition + 1;
+        auto it = allCharactersMap.find(currentValueListPosition);
+        if (it != allCharactersMap.end())
+            attributes.characterDataMap().set(currentPosition + 1, it->value);
+
+        // At the moment, only surrogates will be length == 2 (or even > 1).
+        if (metrics->length() == 2)
+            surrogatePairCharacters++;
+    }
+
+    // TODO(fs): currentPosition ought to always equal text.textLength() here.
+    valueListPosition += currentPosition - skippedWhitespace;
+}
+
+} // namespace
 
 SVGTextLayoutAttributesBuilder::SVGTextLayoutAttributesBuilder()
     : m_textLength(0)
 {
 }
 
-bool SVGTextLayoutAttributesBuilder::buildLayoutAttributesForForSubtree(LayoutSVGText& textRoot)
+void SVGTextLayoutAttributesBuilder::buildLayoutAttributes(LayoutSVGText& textRoot) const
+{
+    unsigned valueListPosition = 0;
+    LayoutObject* child = textRoot.firstChild();
+    while (child) {
+        if (child->isSVGInlineText()) {
+            updateLayoutAttributes(toLayoutSVGInlineText(*child), valueListPosition, m_characterDataMap);
+        } else if (child->isSVGInline()) {
+            // Visit children of text content elements.
+            if (LayoutObject* inlineChild = toLayoutSVGInline(child)->firstChild()) {
+                child = inlineChild;
+                continue;
+            }
+        }
+        child = child->nextInPreOrderAfterChildren(&textRoot);
+    }
+}
+
+void SVGTextLayoutAttributesBuilder::buildLayoutAttributesForTextRoot(LayoutSVGText& textRoot)
 {
     m_characterDataMap.clear();
 
@@ -43,16 +94,10 @@ bool SVGTextLayoutAttributesBuilder::buildLayoutAttributesForForSubtree(LayoutSV
     }
 
     if (!m_textLength)
-        return false;
+        return;
 
     buildCharacterDataMap(textRoot);
-    SVGTextMetricsBuilder::buildMetricsAndLayoutAttributes(textRoot, m_characterDataMap);
-    return true;
-}
-
-void SVGTextLayoutAttributesBuilder::rebuildMetricsForTextLayoutObject(LayoutSVGText& textRoot, LayoutSVGInlineText& text)
-{
-    SVGTextMetricsBuilder::measureTextLayoutObject(textRoot, text);
+    buildLayoutAttributes(textRoot);
 }
 
 static inline void processLayoutSVGInlineText(LayoutSVGInlineText* text, unsigned& atCharacter, UChar& lastCharacter)

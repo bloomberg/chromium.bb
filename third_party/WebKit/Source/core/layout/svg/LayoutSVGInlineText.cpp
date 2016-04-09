@@ -30,6 +30,7 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/layout/svg/SVGTextMetricsBuilder.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 
 namespace blink {
@@ -202,6 +203,11 @@ PositionWithAffinity LayoutSVGInlineText::positionForPoint(const LayoutPoint& po
 void LayoutSVGInlineText::updateScaledFont()
 {
     computeNewScaledFontForStyle(this, m_scalingFactor, m_scaledFont);
+}
+
+void LayoutSVGInlineText::updateMetricsList(bool& lastCharacterWasWhiteSpace)
+{
+    SVGTextMetricsBuilder::updateTextMetrics(*this, lastCharacterWasWhiteSpace);
 }
 
 void LayoutSVGInlineText::computeNewScaledFontForStyle(LayoutObject* layoutObject, float& scalingFactor, Font& scaledFont)

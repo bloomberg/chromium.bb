@@ -20,9 +20,7 @@
 #include "core/layout/svg/SVGTextMetricsBuilder.h"
 
 #include "core/layout/api/LineLayoutSVGInlineText.h"
-#include "core/layout/svg/LayoutSVGInline.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
-#include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGTextMetrics.h"
 #include "platform/fonts/CharacterRange.h"
 #include "platform/text/BidiCharacterRun.h"
@@ -47,7 +45,7 @@ inline bool characterStartsSurrogatePair(const TextRun& run, unsigned index)
 
 class SVGTextMetricsCalculator {
 public:
-    SVGTextMetricsCalculator(LineLayoutSVGInlineText);
+    SVGTextMetricsCalculator(LayoutSVGInlineText&);
     ~SVGTextMetricsCalculator();
 
     bool advancePosition();
@@ -73,7 +71,7 @@ public:
 private:
     void setupBidiRuns();
 
-    static TextRun constructTextRun(LineLayoutSVGInlineText, unsigned position, unsigned length, TextDirection);
+    static TextRun constructTextRun(LayoutSVGInlineText&, unsigned position, unsigned length, TextDirection);
 
     // Ensure |m_subrunRanges| is updated for the current bidi run, or the
     // complete m_run if no bidi runs are present. Returns the current position
@@ -83,7 +81,7 @@ private:
     // Current character position in m_text.
     unsigned m_currentPosition;
 
-    LineLayoutSVGInlineText m_text;
+    LayoutSVGInlineText& m_text;
     float m_fontScalingFactor;
     float m_cachedFontHeight;
     TextRun m_run;
@@ -95,9 +93,9 @@ private:
     Vector<CharacterRange> m_subrunRanges;
 };
 
-TextRun SVGTextMetricsCalculator::constructTextRun(LineLayoutSVGInlineText textLayoutItem, unsigned position, unsigned length, TextDirection textDirection)
+TextRun SVGTextMetricsCalculator::constructTextRun(LayoutSVGInlineText& text, unsigned position, unsigned length, TextDirection textDirection)
 {
-    const ComputedStyle& style = textLayoutItem.styleRef();
+    const ComputedStyle& style = text.styleRef();
 
     TextRun run(static_cast<const LChar*>(nullptr) // characters, will be set below if non-zero.
         , 0 // length, will be set below if non-zero.
@@ -108,22 +106,22 @@ TextRun SVGTextMetricsCalculator::constructTextRun(LineLayoutSVGInlineText textL
         , isOverride(style.unicodeBidi()) /* directionalOverride */);
 
     if (length) {
-        if (textLayoutItem.is8Bit())
-            run.setText(textLayoutItem.characters8() + position, length);
+        if (text.is8Bit())
+            run.setText(text.characters8() + position, length);
         else
-            run.setText(textLayoutItem.characters16() + position, length);
+            run.setText(text.characters16() + position, length);
     }
 
     // We handle letter & word spacing ourselves.
     run.disableSpacing();
 
     // Propagate the maximum length of the characters buffer to the TextRun, even when we're only processing a substring.
-    run.setCharactersLength(textLayoutItem.textLength() - position);
+    run.setCharactersLength(text.textLength() - position);
     ASSERT(run.charactersLength() >= run.length());
     return run;
 }
 
-SVGTextMetricsCalculator::SVGTextMetricsCalculator(LineLayoutSVGInlineText text)
+SVGTextMetricsCalculator::SVGTextMetricsCalculator(LayoutSVGInlineText& text)
     : m_currentPosition(0)
     , m_text(text)
     , m_fontScalingFactor(m_text.scalingFactor())
@@ -233,128 +231,33 @@ SVGTextMetrics SVGTextMetricsCalculator::currentCharacterMetrics()
     return SVGTextMetrics(length, width / m_fontScalingFactor, m_cachedFontHeight);
 }
 
-struct TreeWalkTextState {
-    TreeWalkTextState()
-        : lastCharacterWasWhiteSpace(true)
-        , valueListPosition(0) { }
+} // namespace
 
-    bool lastCharacterWasWhiteSpace;
-    unsigned valueListPosition;
-};
-
-// Struct for updating SVGTextLayoutAttributes. If an SVGCharacterDataMap is
-// available, the attribute's character data map will also be updated.
-// TreeWalkTextState should be used to maintain the value list position which
-// indexes into the SVGCharacterDataMap of all characters.
-struct UpdateAttributes {
-    UpdateAttributes(
-        SVGTextLayoutAttributes& textAttributes,
-        Vector<SVGTextMetrics>& metricsList,
-        const SVGCharacterDataMap* allCharacters)
-        : metricsList(metricsList)
-        , attributes(textAttributes)
-        , allCharactersMap(allCharacters) { }
-
-    void clearExistingAttributes()
-    {
-        metricsList.clear();
-
-        if (allCharactersMap)
-            attributes.clear();
-    }
-
-    void addMetrics(SVGTextMetrics metrics)
-    {
-        metricsList.append(metrics);
-    }
-
-    void updateCharacterDataMap(unsigned valueListPosition, unsigned currentTextPosition)
-    {
-        if (!allCharactersMap)
-            return;
-        const SVGCharacterDataMap::const_iterator it = allCharactersMap->find(valueListPosition);
-        if (it != allCharactersMap->end())
-            attributes.characterDataMap().set(currentTextPosition, it->value);
-    }
-
-    Vector<SVGTextMetrics>& metricsList;
-    SVGTextLayoutAttributes& attributes;
-    const SVGCharacterDataMap* allCharactersMap;
-};
-
-void walkInlineText(LayoutSVGInlineText* text, TreeWalkTextState& textState, UpdateAttributes* attributesToUpdate = nullptr)
+void SVGTextMetricsBuilder::updateTextMetrics(LayoutSVGInlineText& text, bool& lastCharacterWasWhiteSpace)
 {
-    LineLayoutSVGInlineText textLayoutItem(text);
-    if (attributesToUpdate)
-        attributesToUpdate->clearExistingAttributes();
+    Vector<SVGTextMetrics>& metricsList = text.metricsList();
+    metricsList.clear();
 
-    if (!textLayoutItem.textLength())
+    if (!text.textLength())
         return;
 
     // TODO(pdr): This loop is too tightly coupled to SVGTextMetricsCalculator.
     // We should refactor SVGTextMetricsCalculator to be a simple bidi run
     // iterator and move all subrun logic to a single function.
-    SVGTextMetricsCalculator calculator(textLayoutItem);
-    bool preserveWhiteSpace = textLayoutItem.styleRef().whiteSpace() == PRE;
-    unsigned surrogatePairCharacters = 0;
-    unsigned skippedWhitespace = 0;
+    SVGTextMetricsCalculator calculator(text);
+    bool preserveWhiteSpace = text.styleRef().whiteSpace() == PRE;
     do {
         bool currentCharacterIsWhiteSpace = calculator.currentCharacterIsWhiteSpace();
-        if (currentCharacterIsWhiteSpace && !preserveWhiteSpace && textState.lastCharacterWasWhiteSpace) {
-            if (attributesToUpdate)
-                attributesToUpdate->addMetrics(SVGTextMetrics(SVGTextMetrics::SkippedSpaceMetrics));
+        if (!preserveWhiteSpace && lastCharacterWasWhiteSpace && currentCharacterIsWhiteSpace) {
+            metricsList.append(SVGTextMetrics(SVGTextMetrics::SkippedSpaceMetrics));
             ASSERT(calculator.currentCharacterMetrics().length() == 1);
-            skippedWhitespace++;
             continue;
         }
 
-        if (attributesToUpdate) {
-            attributesToUpdate->updateCharacterDataMap(textState.valueListPosition - skippedWhitespace - surrogatePairCharacters + calculator.currentPosition() + 1, calculator.currentPosition() + 1);
-            attributesToUpdate->addMetrics(calculator.currentCharacterMetrics());
-        }
+        metricsList.append(calculator.currentCharacterMetrics());
 
-        if (calculator.currentCharacterStartsSurrogatePair())
-            surrogatePairCharacters++;
-        textState.lastCharacterWasWhiteSpace = currentCharacterIsWhiteSpace;
+        lastCharacterWasWhiteSpace = currentCharacterIsWhiteSpace;
     } while (calculator.advancePosition());
-
-    textState.valueListPosition += calculator.currentPosition() - skippedWhitespace;
-}
-
-void walkTree(LayoutSVGText& start, LayoutSVGInlineText* stopAtText, SVGCharacterDataMap* allCharactersMap = nullptr)
-{
-    TreeWalkTextState textState;
-    LayoutObject* child = start.firstChild();
-    while (child) {
-        if (child->isSVGInlineText()) {
-            LayoutSVGInlineText* text = toLayoutSVGInlineText(child);
-            OwnPtr<UpdateAttributes> attributesToUpdate = nullptr;
-            if (!stopAtText || stopAtText == text)
-                attributesToUpdate = adoptPtr(new UpdateAttributes(*text->layoutAttributes(), text->metricsList(), allCharactersMap));
-            walkInlineText(text, textState, attributesToUpdate.get());
-            if (stopAtText == text)
-                return;
-        } else if (child->isSVGInline()) {
-            // Visit children of text content elements.
-            if (LayoutObject* inlineChild = toLayoutSVGInline(child)->firstChild()) {
-                child = inlineChild;
-                continue;
-            }
-        }
-        child = child->nextInPreOrderAfterChildren(&start);
-    }
-}
-
-} // namespace
-
-void SVGTextMetricsBuilder::measureTextLayoutObject(LayoutSVGText& textRoot, LayoutSVGInlineText& text)
-{
-    walkTree(textRoot, &text);
-}
-
-void SVGTextMetricsBuilder::buildMetricsAndLayoutAttributes(LayoutSVGText& textRoot, SVGCharacterDataMap& allCharactersMap)
-{
-    walkTree(textRoot, nullptr, &allCharactersMap);
 }
 
 } // namespace blink

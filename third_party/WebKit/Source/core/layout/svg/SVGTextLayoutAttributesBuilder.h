@@ -46,9 +46,8 @@ class SVGTextLayoutAttributesBuilder {
     WTF_MAKE_NONCOPYABLE(SVGTextLayoutAttributesBuilder);
 public:
     SVGTextLayoutAttributesBuilder();
-    bool buildLayoutAttributesForForSubtree(LayoutSVGText&);
 
-    void rebuildMetricsForTextLayoutObject(LayoutSVGText&, LayoutSVGInlineText&);
+    void buildLayoutAttributesForTextRoot(LayoutSVGText&);
 
     // Invoked whenever the underlying DOM tree changes, so that m_textPositions is rebuild.
     void clearTextPositioningElements() { m_textPositions.clear(); }
@@ -73,6 +72,7 @@ public:
 
 private:
     void buildCharacterDataMap(LayoutSVGText&);
+    void buildLayoutAttributes(LayoutSVGText&) const;
     void collectTextPositioningElements(LayoutBoxModelObject&, UChar& lastCharacter);
     void fillCharacterDataMap(const TextPosition&);
 

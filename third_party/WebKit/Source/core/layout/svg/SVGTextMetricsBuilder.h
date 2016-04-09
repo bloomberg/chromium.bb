@@ -20,17 +20,13 @@
 #ifndef SVGTextMetricsBuilder_h
 #define SVGTextMetricsBuilder_h
 
-#include "core/layout/svg/SVGTextLayoutAttributes.h"
-
 namespace blink {
 
 class LayoutSVGInlineText;
-class LayoutSVGText;
 
 namespace SVGTextMetricsBuilder {
 
-void measureTextLayoutObject(LayoutSVGText&, LayoutSVGInlineText&);
-void buildMetricsAndLayoutAttributes(LayoutSVGText&, SVGCharacterDataMap& allCharactersMap);
+void updateTextMetrics(LayoutSVGInlineText&, bool& lastCharacterWasWhiteSpace);
 
 } // namespace SVGTextMetricsBuilder
 
