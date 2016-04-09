@@ -470,8 +470,11 @@ void AXTable::columnHeaders(AXObjectVector& headers)
 
     updateChildrenIfNecessary();
     unsigned columnCount = m_columns.size();
-    for (unsigned c = 0; c < columnCount; c++)
-        toAXTableColumn(m_columns[c].get())->headerObjectsForColumn(headers);
+    for (unsigned c = 0; c < columnCount; c++) {
+        AXObject* column = m_columns[c].get();
+        if (column->isTableCol())
+            toAXTableColumn(column)->headerObjectsForColumn(headers);
+    }
 }
 
 void AXTable::rowHeaders(AXObjectVector& headers)
@@ -481,8 +484,11 @@ void AXTable::rowHeaders(AXObjectVector& headers)
 
     updateChildrenIfNecessary();
     unsigned rowCount = m_rows.size();
-    for (unsigned r = 0; r < rowCount; r++)
-        toAXTableRow(m_rows[r].get())->headerObjectsForRow(headers);
+    for (unsigned r = 0; r < rowCount; r++) {
+        AXObject* row = m_rows[r].get();
+        if (row->isTableRow())
+            toAXTableRow(m_rows[r].get())->headerObjectsForRow(headers);
+    }
 }
 
 unsigned AXTable::columnCount()
