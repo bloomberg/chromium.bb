@@ -760,11 +760,11 @@ NSString* const kVersionKey = @"KSVersion";
   NSMutableDictionary* dictionary =
       [NSMutableDictionary dictionaryWithObject:statusNumber
                                          forKey:kAutoupdateStatusStatus];
-  if (version) {
+  if ([version length]) {
     [dictionary setObject:version forKey:kAutoupdateStatusVersion];
   }
-  if (error) {
-    [dictionary setObject:version forKey:kAutoupdateStatusErrorMessages];
+  if ([error length]) {
+    [dictionary setObject:error forKey:kAutoupdateStatusErrorMessages];
   }
 
   NSNotification* notification =
