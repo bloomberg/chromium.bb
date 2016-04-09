@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 #include <deque>
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/surfaces/surface_factory_client.h"
@@ -69,7 +69,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // pointer is released.
   // TODO(wjmaclean): We should consider making this available in other view
   // types, such as RenderWidgetHostViewAura.
-  void RegisterFrameSwappedCallback(scoped_ptr<base::Closure> callback);
+  void RegisterFrameSwappedCallback(std::unique_ptr<base::Closure> callback);
 
   // RenderWidgetHostView implementation.
   void InitAsChild(gfx::NativeView parent_view) override;
@@ -121,8 +121,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
       const base::Callback<void(const gfx::Rect&, bool)>& callback) override;
   bool CanCopyToVideoFrame() const override;
   bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
-  void OnSwapCompositorFrame(uint32_t output_surface_id,
-                             scoped_ptr<cc::CompositorFrame> frame) override;
+  void OnSwapCompositorFrame(
+      uint32_t output_surface_id,
+      std::unique_ptr<cc::CompositorFrame> frame) override;
   // Since the URL of content rendered by this class is not displayed in
   // the URL bar, this method does not need an implementation.
   void ClearCompositorFrame() override {}
@@ -196,8 +197,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   RenderWidgetHostImpl* host_;
 
   // Surface-related state.
-  scoped_ptr<cc::SurfaceIdAllocator> id_allocator_;
-  scoped_ptr<cc::SurfaceFactory> surface_factory_;
+  std::unique_ptr<cc::SurfaceIdAllocator> id_allocator_;
+  std::unique_ptr<cc::SurfaceFactory> surface_factory_;
   cc::SurfaceId surface_id_;
   uint32_t next_surface_sequence_;
   uint32_t last_output_surface_id_;
@@ -221,7 +222,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
                                 const ReadbackRequestCallback& callback,
                                 const SkColorType preferred_color_type);
 
-  using FrameSwappedCallbackList = std::deque<scoped_ptr<base::Closure>>;
+  using FrameSwappedCallbackList = std::deque<std::unique_ptr<base::Closure>>;
   // Since frame-drawn callbacks are "fire once", we use std::deque to make
   // it convenient to swap() when processing the list.
   FrameSwappedCallbackList frame_swapped_callbacks_;

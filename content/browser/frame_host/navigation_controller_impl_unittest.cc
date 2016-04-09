@@ -6,12 +6,14 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1082,7 +1084,8 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
   RegisterForAllNavNotifications(&notifications, &controller);
 
   // Set a WebContentsDelegate to listen for state changes.
-  scoped_ptr<TestWebContentsDelegate> delegate(new TestWebContentsDelegate());
+  std::unique_ptr<TestWebContentsDelegate> delegate(
+      new TestWebContentsDelegate());
   EXPECT_FALSE(contents()->GetDelegate());
   contents()->SetDelegate(delegate.get());
 
@@ -1124,7 +1127,8 @@ TEST_F(NavigationControllerTest, LoadURL_AbortDoesntCancelPending) {
   RegisterForAllNavNotifications(&notifications, &controller);
 
   // Set a WebContentsDelegate to listen for state changes.
-  scoped_ptr<TestWebContentsDelegate> delegate(new TestWebContentsDelegate());
+  std::unique_ptr<TestWebContentsDelegate> delegate(
+      new TestWebContentsDelegate());
   EXPECT_FALSE(contents()->GetDelegate());
   contents()->SetDelegate(delegate.get());
 
@@ -1186,7 +1190,8 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   navigation_entry_committed_counter_ = 0;
 
   // Set a WebContentsDelegate to listen for state changes.
-  scoped_ptr<TestWebContentsDelegate> delegate(new TestWebContentsDelegate());
+  std::unique_ptr<TestWebContentsDelegate> delegate(
+      new TestWebContentsDelegate());
   EXPECT_FALSE(contents()->GetDelegate());
   contents()->SetDelegate(delegate.get());
 
@@ -2868,8 +2873,8 @@ TEST_F(NavigationControllerTest, EnforceMaxNavigationCount) {
 TEST_F(NavigationControllerTest, RestoreNavigate) {
   // Create a NavigationController with a restored set of tabs.
   GURL url("http://foo");
-  std::vector<scoped_ptr<NavigationEntry>> entries;
-  scoped_ptr<NavigationEntry> entry =
+  std::vector<std::unique_ptr<NavigationEntry>> entries;
+  std::unique_ptr<NavigationEntry> entry =
       NavigationControllerImpl::CreateNavigationEntry(
           url, Referrer(), ui::PAGE_TRANSITION_RELOAD, false, std::string(),
           browser_context());
@@ -2879,7 +2884,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   const base::Time timestamp = base::Time::Now();
   entry->SetTimestamp(timestamp);
   entries.push_back(std::move(entry));
-  scoped_ptr<WebContentsImpl> our_contents(static_cast<WebContentsImpl*>(
+  std::unique_ptr<WebContentsImpl> our_contents(static_cast<WebContentsImpl*>(
       WebContents::Create(WebContents::CreateParams(browser_context()))));
   NavigationControllerImpl& our_controller = our_contents->GetController();
   our_controller.Restore(
@@ -2942,8 +2947,8 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
 TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   // Create a NavigationController with a restored set of tabs.
   GURL url("http://foo");
-  std::vector<scoped_ptr<NavigationEntry>> entries;
-  scoped_ptr<NavigationEntry> new_entry =
+  std::vector<std::unique_ptr<NavigationEntry>> entries;
+  std::unique_ptr<NavigationEntry> new_entry =
       NavigationControllerImpl::CreateNavigationEntry(
           url, Referrer(), ui::PAGE_TRANSITION_RELOAD, false, std::string(),
           browser_context());
@@ -2951,7 +2956,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   new_entry->SetTitle(base::ASCIIToUTF16("Title"));
   new_entry->SetPageState(PageState::CreateFromEncodedData("state"));
   entries.push_back(std::move(new_entry));
-  scoped_ptr<WebContentsImpl> our_contents(static_cast<WebContentsImpl*>(
+  std::unique_ptr<WebContentsImpl> our_contents(static_cast<WebContentsImpl*>(
       WebContents::Create(WebContents::CreateParams(browser_context()))));
   NavigationControllerImpl& our_controller = our_contents->GetController();
   our_controller.Restore(
@@ -3190,7 +3195,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   notifications.Reset();
 
   // Adding a transient with no pending entry.
-  scoped_ptr<NavigationEntry> transient_entry(new NavigationEntryImpl);
+  std::unique_ptr<NavigationEntry> transient_entry(new NavigationEntryImpl);
   transient_entry->SetURL(transient_url);
   controller.SetTransientEntry(std::move(transient_entry));
 
@@ -3349,7 +3354,7 @@ TEST_F(NavigationControllerTest, ReloadTransient) {
       url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
 
   // A transient entry is added, interrupting the navigation.
-  scoped_ptr<NavigationEntry> transient_entry(new NavigationEntryImpl);
+  std::unique_ptr<NavigationEntry> transient_entry(new NavigationEntryImpl);
   transient_entry->SetURL(transient_url);
   controller.SetTransientEntry(std::move(transient_entry));
   EXPECT_TRUE(controller.GetTransientEntry());
@@ -3841,7 +3846,7 @@ TEST_F(NavigationControllerTest, CloneAndGoBack) {
   controller.GetVisibleEntry()->SetTitle(title);
   NavigateAndCommit(url2);
 
-  scoped_ptr<WebContents> clone(controller.GetWebContents()->Clone());
+  std::unique_ptr<WebContents> clone(controller.GetWebContents()->Clone());
 
   ASSERT_EQ(2, clone->GetController().GetEntryCount());
   EXPECT_TRUE(clone->GetController().NeedsReload());
@@ -3866,7 +3871,7 @@ TEST_F(NavigationControllerTest, CloneAndReload) {
   controller.GetVisibleEntry()->SetTitle(title);
   NavigateAndCommit(url2);
 
-  scoped_ptr<WebContents> clone(controller.GetWebContents()->Clone());
+  std::unique_ptr<WebContents> clone(controller.GetWebContents()->Clone());
   clone->GetController().LoadIfNecessary();
 
   ASSERT_EQ(2, clone->GetController().GetEntryCount());
@@ -3888,9 +3893,9 @@ TEST_F(NavigationControllerTest, CloneOmitsInterstitials) {
   // Add an interstitial entry.  Should be deleted with controller.
   NavigationEntryImpl* interstitial_entry = new NavigationEntryImpl();
   interstitial_entry->set_page_type(PAGE_TYPE_INTERSTITIAL);
-  controller.SetTransientEntry(make_scoped_ptr(interstitial_entry));
+  controller.SetTransientEntry(base::WrapUnique(interstitial_entry));
 
-  scoped_ptr<WebContents> clone(controller.GetWebContents()->Clone());
+  std::unique_ptr<WebContents> clone(controller.GetWebContents()->Clone());
 
   ASSERT_EQ(2, clone->GetController().GetEntryCount());
 }
@@ -4013,7 +4018,7 @@ TEST_F(NavigationControllerTest, CopyStateFrom) {
   controller.GoBack();
   contents()->CommitPendingNavigation();
 
-  scoped_ptr<TestWebContents> other_contents(
+  std::unique_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_controller.CopyStateFrom(controller);
@@ -4074,7 +4079,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
   EXPECT_EQ(1, controller.GetEntryAtIndex(1)->GetPageID());
   EXPECT_EQ(1, contents()->GetMaxPageIDForSiteInstance(instance1));
 
-  scoped_ptr<TestWebContents> other_contents(
+  std::unique_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
@@ -4120,7 +4125,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
   controller.GoBack();
   contents()->CommitPendingNavigation();
 
-  scoped_ptr<TestWebContents> other_contents(
+  std::unique_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
@@ -4155,7 +4160,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
   NavigateAndCommit(url1);
   NavigateAndCommit(url2);
 
-  scoped_ptr<TestWebContents> other_contents(
+  std::unique_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
@@ -4191,7 +4196,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneNotLast) {
   NavigateAndCommit(url1);
   NavigateAndCommit(url2);
 
-  scoped_ptr<TestWebContents> other_contents(
+  std::unique_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
@@ -4231,7 +4236,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneTargetPending) {
   controller.GoBack();
   contents()->CommitPendingNavigation();
 
-  scoped_ptr<TestWebContents> other_contents(
+  std::unique_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
@@ -4272,7 +4277,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneTargetPending2) {
 
   NavigateAndCommit(url1);
 
-  scoped_ptr<TestWebContents> other_contents(
+  std::unique_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url2a);
@@ -4322,7 +4327,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneSourcePending) {
   NavigateAndCommit(url2);
   controller.GoBack();
 
-  scoped_ptr<TestWebContents> other_contents(
+  std::unique_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
@@ -4367,7 +4372,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneMaxEntries) {
   NavigateAndCommit(url2);
   NavigateAndCommit(url3);
 
-  scoped_ptr<TestWebContents> other_contents(
+  std::unique_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url4);
@@ -4414,7 +4419,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneReplaceEntry) {
   EXPECT_EQ(1, controller.GetEntryAtIndex(1)->GetPageID());
   EXPECT_EQ(1, contents()->GetMaxPageIDForSiteInstance(instance1));
 
-  scoped_ptr<TestWebContents> other_contents(
+  std::unique_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
@@ -4466,7 +4471,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneMaxEntriesReplaceEntry) {
   NavigateAndCommit(url2);
   NavigateAndCommit(url3);
 
-  scoped_ptr<TestWebContents> other_contents(
+  std::unique_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url4);
@@ -4501,9 +4506,9 @@ TEST_F(NavigationControllerTest, CopyRestoredStateAndNavigate) {
   };
   const GURL kInitialUrl("http://site3.com");
 
-  std::vector<scoped_ptr<NavigationEntry>> entries;
+  std::vector<std::unique_ptr<NavigationEntry>> entries;
   for (size_t i = 0; i < arraysize(kRestoredUrls); ++i) {
-    scoped_ptr<NavigationEntry> entry =
+    std::unique_ptr<NavigationEntry> entry =
         NavigationControllerImpl::CreateNavigationEntry(
             kRestoredUrls[i], Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
             std::string(), browser_context());
@@ -4512,7 +4517,7 @@ TEST_F(NavigationControllerTest, CopyRestoredStateAndNavigate) {
   }
 
   // Create a WebContents with restored entries.
-  scoped_ptr<TestWebContents> source_contents(
+  std::unique_ptr<TestWebContents> source_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& source_controller =
       source_contents->GetController();
@@ -4738,7 +4743,7 @@ TEST_F(NavigationControllerTest, IsInitialNavigation) {
 
   // For cloned tabs, IsInitialNavigationShould be true but
   // IsInitialBlankNavigation should be false.
-  scoped_ptr<WebContents> clone(controller.GetWebContents()->Clone());
+  std::unique_ptr<WebContents> clone(controller.GetWebContents()->Clone());
   EXPECT_TRUE(clone->GetController().IsInitialNavigation());
   EXPECT_FALSE(clone->GetController().IsInitialBlankNavigation());
 }
@@ -4853,7 +4858,7 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
 
   MockScreenshotManager* screenshot_manager =
       new MockScreenshotManager(&controller);
-  controller.SetScreenshotManager(make_scoped_ptr(screenshot_manager));
+  controller.SetScreenshotManager(base::WrapUnique(screenshot_manager));
   for (int i = 0; i < controller.GetEntryCount(); ++i) {
     entry = controller.GetEntryAtIndex(i);
     screenshot_manager->TakeScreenshotFor(entry);
@@ -5006,7 +5011,8 @@ TEST_F(NavigationControllerTest, ClearHistoryList) {
 }
 
 TEST_F(NavigationControllerTest, PostThenReplaceStateThenReload) {
-  scoped_ptr<TestWebContentsDelegate> delegate(new TestWebContentsDelegate());
+  std::unique_ptr<TestWebContentsDelegate> delegate(
+      new TestWebContentsDelegate());
   EXPECT_FALSE(contents()->GetDelegate());
   contents()->SetDelegate(delegate.get());
 

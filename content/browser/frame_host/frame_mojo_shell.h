@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_FRAME_MOJO_SHELL_H_
 #define CONTENT_BROWSER_FRAME_HOST_FRAME_MOJO_SHELL_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/shell/public/interfaces/connector.mojom.h"
@@ -42,7 +43,7 @@ class FrameMojoShell : public mojo::shell::mojom::Connector {
   mojo::BindingSet<mojo::shell::mojom::Connector> connectors_;
 
   // ServiceRegistry providing browser services to connected applications.
-  scoped_ptr<ServiceRegistryImpl> service_registry_;
+  std::unique_ptr<ServiceRegistryImpl> service_registry_;
   mojo::BindingSet<mojo::shell::mojom::InterfaceProvider>
       service_provider_bindings_;
 

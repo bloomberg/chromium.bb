@@ -300,25 +300,26 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // |navigation_handle| is transferred.
   // PlzNavigate: called when a navigation is ready to commit in this
   // RenderFrameHost.
-  void SetNavigationHandle(scoped_ptr<NavigationHandleImpl> navigation_handle);
+  void SetNavigationHandle(
+      std::unique_ptr<NavigationHandleImpl> navigation_handle);
 
   // Gives the ownership of |navigation_handle_| to the caller.
   // This happens during transfer navigations, where it should be transferred
   // from the RenderFrameHost that issued the initial request to the new
   // RenderFrameHost that will issue the transferring request.
-  scoped_ptr<NavigationHandleImpl> PassNavigationHandleOwnership();
+  std::unique_ptr<NavigationHandleImpl> PassNavigationHandleOwnership();
 
   // Called on the pending RenderFrameHost when the network response is ready to
   // commit.  We should ensure that the old RenderFrameHost runs its unload
   // handler and determine whether a transfer to a different RenderFrameHost is
   // needed.
-  void OnCrossSiteResponse(
-      const GlobalRequestID& global_request_id,
-      scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
-      const std::vector<GURL>& transfer_url_chain,
-      const Referrer& referrer,
-      ui::PageTransition page_transition,
-      bool should_replace_current_entry);
+  void OnCrossSiteResponse(const GlobalRequestID& global_request_id,
+                           std::unique_ptr<CrossSiteTransferringRequest>
+                               cross_site_transferring_request,
+                           const std::vector<GURL>& transfer_url_chain,
+                           const Referrer& referrer,
+                           ui::PageTransition page_transition,
+                           bool should_replace_current_entry);
 
   // Tells the renderer that this RenderFrame is being swapped out for one in a
   // different renderer process.  It should run its unload handler and move to
@@ -492,7 +493,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // PlzNavigate: Indicates that a navigation is ready to commit and can be
   // handled by this RenderFrame.
   void CommitNavigation(ResourceResponse* response,
-                        scoped_ptr<StreamHandle> body,
+                        std::unique_ptr<StreamHandle> body,
                         const CommonNavigationParams& common_params,
                         const RequestNavigationParams& request_params,
                         bool is_view_source);
@@ -843,7 +844,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // will destroy the pending RenderFrameHost and create a new one if a second
   // navigation occurs.
   // PlzNavigate: unused as navigations are never suspended.
-  scoped_ptr<NavigationParams> suspended_nav_params_;
+  std::unique_ptr<NavigationParams> suspended_nav_params_;
 
   // When the last BeforeUnload message was sent.
   base::TimeTicks send_before_unload_start_time_;
@@ -884,18 +885,18 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // Used to swap out or shut down this RFH when the unload event is taking too
   // long to execute, depending on the number of active frames in the
   // SiteInstance.
-  scoped_ptr<TimeoutMonitor> swapout_event_monitor_timeout_;
+  std::unique_ptr<TimeoutMonitor> swapout_event_monitor_timeout_;
 
-  scoped_ptr<ServiceRegistryImpl> service_registry_;
+  std::unique_ptr<ServiceRegistryImpl> service_registry_;
 
 #if defined(OS_ANDROID)
-  scoped_ptr<ServiceRegistryAndroid> service_registry_android_;
+  std::unique_ptr<ServiceRegistryAndroid> service_registry_android_;
 #endif
 
-  scoped_ptr<WebBluetoothServiceImpl> web_bluetooth_service_;
+  std::unique_ptr<WebBluetoothServiceImpl> web_bluetooth_service_;
 
   // The object managing the accessibility tree for this frame.
-  scoped_ptr<BrowserAccessibilityManager> browser_accessibility_manager_;
+  std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager_;
 
   // This is nonzero if we sent an accessibility reset to the renderer and
   // we're waiting for an IPC containing this reset token (sequentially
@@ -920,21 +921,21 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   base::Callback<void(RenderFrameHostImpl*, ui::AXEvent, int)>
       accessibility_testing_callback_;
   // The most recently received accessibility tree - for testing only.
-  scoped_ptr<ui::AXTree> ax_tree_for_testing_;
+  std::unique_ptr<ui::AXTree> ax_tree_for_testing_;
   // Flag to not create a BrowserAccessibilityManager, for testing. If one
   // already exists it will still be used.
   bool no_create_browser_accessibility_manager_for_testing_;
 
   // PlzNavigate: Owns the stream used in navigations to store the body of the
   // response once it has started.
-  scoped_ptr<StreamHandle> stream_handle_;
+  std::unique_ptr<StreamHandle> stream_handle_;
 
   // Context shared for each mojom::PermissionService instance created for this
   // RFH.
-  scoped_ptr<PermissionServiceContext> permission_service_context_;
+  std::unique_ptr<PermissionServiceContext> permission_service_context_;
 
   // The frame's Mojo Shell service.
-  scoped_ptr<FrameMojoShell> frame_mojo_shell_;
+  std::unique_ptr<FrameMojoShell> frame_mojo_shell_;
 
   // Holder of Mojo connection with ImageDownloader service in RenderFrame.
   content::mojom::ImageDownloaderPtr mojo_image_downloader_;
@@ -944,18 +945,18 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // navigation per RenderFrameHost.
   // PlzNavigate: before the navigation is ready to be committed, the
   // NavigationHandle for it is owned by the NavigationRequest.
-  scoped_ptr<NavigationHandleImpl> navigation_handle_;
+  std::unique_ptr<NavigationHandleImpl> navigation_handle_;
 
   // The associated WebUIImpl and its type. They will be set if the current
   // document is from WebUI source. Otherwise they will be null and
   // WebUI::kNoWebUI, respectively.
-  scoped_ptr<WebUIImpl> web_ui_;
+  std::unique_ptr<WebUIImpl> web_ui_;
   WebUI::TypeID web_ui_type_;
 
   // The pending WebUIImpl and its type. These values will be used exclusively
   // for same-site navigations to keep a transition of a WebUI in a pending
   // state until the navigation commits.
-  scoped_ptr<WebUIImpl> pending_web_ui_;
+  std::unique_ptr<WebUIImpl> pending_web_ui_;
   WebUI::TypeID pending_web_ui_type_;
 
   // If true the associated WebUI should be reused when CommitPendingWebUI is

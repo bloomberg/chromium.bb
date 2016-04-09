@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/render_frame_host_factory.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 
@@ -14,7 +15,7 @@ namespace content {
 RenderFrameHostFactory* RenderFrameHostFactory::factory_ = NULL;
 
 // static
-scoped_ptr<RenderFrameHostImpl> RenderFrameHostFactory::Create(
+std::unique_ptr<RenderFrameHostImpl> RenderFrameHostFactory::Create(
     SiteInstance* site_instance,
     RenderViewHostImpl* render_view_host,
     RenderFrameHostDelegate* delegate,
@@ -29,7 +30,7 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostFactory::Create(
         site_instance, render_view_host, delegate, rwh_delegate, frame_tree,
         frame_tree_node, routing_id, widget_routing_id, hidden);
   }
-  return make_scoped_ptr(new RenderFrameHostImpl(
+  return base::WrapUnique(new RenderFrameHostImpl(
       site_instance, render_view_host, delegate, rwh_delegate, frame_tree,
       frame_tree_node, routing_id, widget_routing_id, hidden));
 }

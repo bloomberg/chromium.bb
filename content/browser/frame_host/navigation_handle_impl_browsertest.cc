@@ -214,7 +214,7 @@ class TestNavigationThrottleInstaller : public WebContentsObserver {
 
  private:
   void DidStartNavigation(NavigationHandle* handle) override {
-    scoped_ptr<NavigationThrottle> throttle(new TestNavigationThrottle(
+    std::unique_ptr<NavigationThrottle> throttle(new TestNavigationThrottle(
         handle, will_start_result_, will_redirect_result_, will_process_result_,
         base::Bind(&TestNavigationThrottleInstaller::DidCallWillStartRequest,
                    base::Unretained(this)),

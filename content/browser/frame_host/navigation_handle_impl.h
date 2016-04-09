@@ -66,7 +66,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // both renderer-initiated and browser-initiated navigation start.
   // PlzNavigate: This value always comes from the CommonNavigationParams
   // associated with this navigation.
-  static scoped_ptr<NavigationHandleImpl> Create(
+  static std::unique_ptr<NavigationHandleImpl> Create(
       const GURL& url,
       FrameTreeNode* frame_tree_node,
       bool is_synchronous,
@@ -99,7 +99,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   void CancelDeferredNavigation(
       NavigationThrottle::ThrottleCheckResult result) override;
   void RegisterThrottleForTesting(
-      scoped_ptr<NavigationThrottle> navigation_throttle) override;
+      std::unique_ptr<NavigationThrottle> navigation_throttle) override;
   NavigationThrottle::ThrottleCheckResult CallWillStartRequestForTesting(
       bool is_post,
       const Referrer& sanitized_referrer,
@@ -290,7 +290,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // PlzNavigate
   // Manages the lifetime of a pre-created ServiceWorkerProviderHost until a
   // corresponding ServiceWorkerNetworkProvider is created in the renderer.
-  scoped_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
+  std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationHandleImpl);
 };

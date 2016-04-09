@@ -171,7 +171,8 @@ void NavigatorImpl::DidStartProvisionalLoad(
     // This ensures that notifications about the end of the previous
     // navigation are sent before notifications about the start of the
     // new navigation.
-    render_frame_host->SetNavigationHandle(scoped_ptr<NavigationHandleImpl>());
+    render_frame_host->SetNavigationHandle(
+        std::unique_ptr<NavigationHandleImpl>());
   }
 
   NavigationEntry* pending_entry = controller_->GetPendingEntry();
@@ -928,7 +929,7 @@ void NavigatorImpl::RequestNavigation(
       frame_tree_node->current_frame_host()->ShouldDispatchBeforeUnload();
   FrameMsg_Navigate_Type::Value navigation_type =
       GetNavigationType(controller_->GetBrowserContext(), entry, reload_type);
-  scoped_ptr<NavigationRequest> scoped_request =
+  std::unique_ptr<NavigationRequest> scoped_request =
       NavigationRequest::CreateBrowserInitiated(
           frame_tree_node, dest_url, dest_referrer, frame_entry, entry,
           navigation_type, lofi_state, is_same_document_history_load,
@@ -1025,7 +1026,7 @@ void NavigatorImpl::DidStartMainFrameNavigation(
   bool has_browser_initiated_pending_entry =
       pending_entry && !pending_entry->is_renderer_initiated();
   if (!has_browser_initiated_pending_entry) {
-    scoped_ptr<NavigationEntryImpl> entry =
+    std::unique_ptr<NavigationEntryImpl> entry =
         NavigationEntryImpl::FromNavigationEntry(
             controller_->CreateNavigationEntry(
                 url, content::Referrer(), ui::PAGE_TRANSITION_LINK,

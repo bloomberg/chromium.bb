@@ -13,6 +13,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -81,7 +82,7 @@ RenderFrameHostManager::~RenderFrameHostManager() {
   ResetProxyHosts();
 
   // We should always have a current RenderFrameHost except in some tests.
-  SetRenderFrameHost(scoped_ptr<RenderFrameHostImpl>());
+  SetRenderFrameHost(std::unique_ptr<RenderFrameHostImpl>());
 }
 
 void RenderFrameHostManager::Init(SiteInstance* site_instance,
@@ -427,7 +428,8 @@ void RenderFrameHostManager::OnBeforeUnloadACK(
 void RenderFrameHostManager::OnCrossSiteResponse(
     RenderFrameHostImpl* transferring_render_frame_host,
     const GlobalRequestID& global_request_id,
-    scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
+    std::unique_ptr<CrossSiteTransferringRequest>
+        cross_site_transferring_request,
     const std::vector<GURL>& transfer_url_chain,
     const Referrer& referrer,
     ui::PageTransition page_transition,
@@ -626,7 +628,7 @@ void RenderFrameHostManager::CommitPendingSandboxFlags() {
 }
 
 void RenderFrameHostManager::SwapOutOldFrame(
-    scoped_ptr<RenderFrameHostImpl> old_render_frame_host) {
+    std::unique_ptr<RenderFrameHostImpl> old_render_frame_host) {
   TRACE_EVENT1("navigation", "RenderFrameHostManager::SwapOutOldFrame",
                "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
 
@@ -671,7 +673,7 @@ void RenderFrameHostManager::SwapOutOldFrame(
 }
 
 void RenderFrameHostManager::DiscardUnusedFrame(
-    scoped_ptr<RenderFrameHostImpl> render_frame_host) {
+    std::unique_ptr<RenderFrameHostImpl> render_frame_host) {
   // TODO(carlosk): this code is very similar to what can be found in
   // SwapOutOldFrame and we should see that these are unified at some point.
 
@@ -700,7 +702,7 @@ void RenderFrameHostManager::DiscardUnusedFrame(
 }
 
 void RenderFrameHostManager::MoveToPendingDeleteHosts(
-    scoped_ptr<RenderFrameHostImpl> render_frame_host) {
+    std::unique_ptr<RenderFrameHostImpl> render_frame_host) {
   // |render_frame_host| will be deleted when its SwapOut ACK is received, or
   // when the timer times out, or when the RFHM itself is deleted (whichever
   // comes first).
@@ -933,7 +935,7 @@ void RenderFrameHostManager::CleanUpNavigation() {
 }
 
 // PlzNavigate
-scoped_ptr<RenderFrameHostImpl>
+std::unique_ptr<RenderFrameHostImpl>
 RenderFrameHostManager::UnsetSpeculativeRenderFrameHost() {
   CHECK(IsBrowserSideNavigationEnabled());
   speculative_render_frame_host_->GetProcess()->RemovePendingView();
@@ -1018,7 +1020,7 @@ RenderFrameProxyHost* RenderFrameHostManager::CreateRenderFrameProxyHost(
       << "A proxy already existed for this SiteInstance.";
   RenderFrameProxyHost* proxy_host =
       new RenderFrameProxyHost(site_instance, rvh, frame_tree_node_);
-  proxy_hosts_[site_instance_id] = make_scoped_ptr(proxy_host);
+  proxy_hosts_[site_instance_id] = base::WrapUnique(proxy_host);
   static_cast<SiteInstanceImpl*>(site_instance)->AddObserver(this);
   return proxy_host;
 }
@@ -1579,12 +1581,12 @@ void RenderFrameHostManager::CreateProxiesForNewNamedFrame() {
   }
 }
 
-scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrameHost(
-    SiteInstance* site_instance,
-    int32_t view_routing_id,
-    int32_t frame_routing_id,
-    int32_t widget_routing_id,
-    bool hidden) {
+std::unique_ptr<RenderFrameHostImpl>
+RenderFrameHostManager::CreateRenderFrameHost(SiteInstance* site_instance,
+                                              int32_t view_routing_id,
+                                              int32_t frame_routing_id,
+                                              int32_t widget_routing_id,
+                                              bool hidden) {
   if (frame_routing_id == MSG_ROUTING_NONE)
     frame_routing_id = site_instance->GetProcess()->GetNextRoutingID();
 
@@ -1641,7 +1643,7 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
   return !!speculative_render_frame_host_;
 }
 
-scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
+std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
     SiteInstance* instance,
     bool hidden,
     int* view_routing_id_ptr) {
@@ -1652,7 +1654,7 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
   CHECK(SiteIsolationPolicy::AreCrossProcessFramesPossible() ||
         frame_tree_node_->IsMainFrame());
 
-  scoped_ptr<RenderFrameHostImpl> new_render_frame_host;
+  std::unique_ptr<RenderFrameHostImpl> new_render_frame_host;
   bool success = true;
   if (view_routing_id_ptr)
     *view_routing_id_ptr = MSG_ROUTING_NONE;
@@ -2032,7 +2034,7 @@ void RenderFrameHostManager::CommitPending() {
 
   // Swap in the pending or speculative frame and make it active. Also ensure
   // the FrameTree stays in sync.
-  scoped_ptr<RenderFrameHostImpl> old_render_frame_host;
+  std::unique_ptr<RenderFrameHostImpl> old_render_frame_host;
   if (!IsBrowserSideNavigationEnabled()) {
     DCHECK(!speculative_render_frame_host_);
     old_render_frame_host =
@@ -2313,9 +2315,9 @@ void RenderFrameHostManager::CancelPending() {
     frame_tree_node_->DidStopLoading();
 }
 
-scoped_ptr<RenderFrameHostImpl>
+std::unique_ptr<RenderFrameHostImpl>
 RenderFrameHostManager::UnsetPendingRenderFrameHost() {
-  scoped_ptr<RenderFrameHostImpl> pending_render_frame_host =
+  std::unique_ptr<RenderFrameHostImpl> pending_render_frame_host =
       std::move(pending_render_frame_host_);
 
   RenderFrameDevToolsAgentHost::OnCancelPendingNavigation(
@@ -2328,10 +2330,10 @@ RenderFrameHostManager::UnsetPendingRenderFrameHost() {
   return pending_render_frame_host;
 }
 
-scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
-    scoped_ptr<RenderFrameHostImpl> render_frame_host) {
+std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
+    std::unique_ptr<RenderFrameHostImpl> render_frame_host) {
   // Swap the two.
-  scoped_ptr<RenderFrameHostImpl> old_render_frame_host =
+  std::unique_ptr<RenderFrameHostImpl> old_render_frame_host =
       std::move(render_frame_host_);
   render_frame_host_ = std::move(render_frame_host);
 

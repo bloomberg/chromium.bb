@@ -30,14 +30,14 @@ void UpdateThrottleCheckResult(
 }  // namespace
 
 // static
-scoped_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
+std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     const GURL& url,
     FrameTreeNode* frame_tree_node,
     bool is_synchronous,
     bool is_srcdoc,
     const base::TimeTicks& navigation_start,
     int pending_nav_entry_id) {
-  return scoped_ptr<NavigationHandleImpl>(
+  return std::unique_ptr<NavigationHandleImpl>(
       new NavigationHandleImpl(url, frame_tree_node, is_synchronous, is_srcdoc,
                                navigation_start, pending_nav_entry_id));
 }
@@ -219,7 +219,7 @@ void NavigationHandleImpl::CancelDeferredNavigation(
 }
 
 void NavigationHandleImpl::RegisterThrottleForTesting(
-    scoped_ptr<NavigationThrottle> navigation_throttle) {
+    std::unique_ptr<NavigationThrottle> navigation_throttle) {
   throttles_.push_back(std::move(navigation_throttle));
 }
 

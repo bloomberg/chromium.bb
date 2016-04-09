@@ -9,6 +9,7 @@
 #include <queue>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -109,19 +110,19 @@ bool NavigationEntryImpl::TreeNode::MatchesFrame(
          frame_entry->frame_tree_node_id() == -1;
 }
 
-scoped_ptr<NavigationEntryImpl::TreeNode>
+std::unique_ptr<NavigationEntryImpl::TreeNode>
 NavigationEntryImpl::TreeNode::CloneAndReplace(
     FrameTreeNode* frame_tree_node,
     FrameNavigationEntry* frame_navigation_entry) const {
   if (frame_tree_node && MatchesFrame(frame_tree_node)) {
     // Replace this node in the cloned tree and prune its children.
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new NavigationEntryImpl::TreeNode(frame_navigation_entry));
   }
 
   // Clone the tree using a copy of the FrameNavigationEntry, without sharing.
   // TODO(creis): Share FNEs unless it's for another tab.
-  scoped_ptr<NavigationEntryImpl::TreeNode> copy(
+  std::unique_ptr<NavigationEntryImpl::TreeNode> copy(
       new NavigationEntryImpl::TreeNode(frame_entry->Clone()));
 
   // Recursively clone the children.
@@ -133,8 +134,8 @@ NavigationEntryImpl::TreeNode::CloneAndReplace(
   return copy;
 }
 
-scoped_ptr<NavigationEntry> NavigationEntry::Create() {
-  return make_scoped_ptr(new NavigationEntryImpl());
+std::unique_ptr<NavigationEntry> NavigationEntry::Create() {
+  return base::WrapUnique(new NavigationEntryImpl());
 }
 
 NavigationEntryImpl* NavigationEntryImpl::FromNavigationEntry(
@@ -147,9 +148,9 @@ const NavigationEntryImpl* NavigationEntryImpl::FromNavigationEntry(
   return static_cast<const NavigationEntryImpl*>(entry);
 }
 
-scoped_ptr<NavigationEntryImpl> NavigationEntryImpl::FromNavigationEntry(
-    scoped_ptr<NavigationEntry> entry) {
-  return make_scoped_ptr(FromNavigationEntry(entry.release()));
+std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::FromNavigationEntry(
+    std::unique_ptr<NavigationEntry> entry) {
+  return base::WrapUnique(FromNavigationEntry(entry.release()));
 }
 
 NavigationEntryImpl::NavigationEntryImpl()
@@ -517,15 +518,15 @@ void NavigationEntryImpl::ClearExtraData(const std::string& key) {
   extra_data_.erase(key);
 }
 
-scoped_ptr<NavigationEntryImpl> NavigationEntryImpl::Clone() const {
+std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::Clone() const {
   return NavigationEntryImpl::CloneAndReplace(nullptr, nullptr);
 }
 
-scoped_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
+std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
     FrameTreeNode* frame_tree_node,
     FrameNavigationEntry* frame_navigation_entry) const {
-  scoped_ptr<NavigationEntryImpl> copy =
-      make_scoped_ptr(new NavigationEntryImpl());
+  std::unique_ptr<NavigationEntryImpl> copy =
+      base::WrapUnique(new NavigationEntryImpl());
 
   // TODO(creis): Only share the same FrameNavigationEntries if cloning within
   // the same tab.

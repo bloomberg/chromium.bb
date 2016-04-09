@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_NAVIGATION_REQUEST_H_
 #define CONTENT_BROWSER_FRAME_HOST_NAVIGATION_REQUEST_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/common/content_export.h"
@@ -68,7 +69,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   };
 
   // Creates a request for a browser-intiated navigation.
-  static scoped_ptr<NavigationRequest> CreateBrowserInitiated(
+  static std::unique_ptr<NavigationRequest> CreateBrowserInitiated(
       FrameTreeNode* frame_tree_node,
       const GURL& dest_url,
       const Referrer& dest_referrer,
@@ -85,7 +86,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // should no longer be manipulated afterwards on the UI thread.
   // TODO(clamy): see if ResourceRequestBody could be un-refcounted to avoid
   // threading subtleties.
-  static scoped_ptr<NavigationRequest> CreateRendererInitiated(
+  static std::unique_ptr<NavigationRequest> CreateRendererInitiated(
       FrameTreeNode* frame_tree_node,
       const CommonNavigationParams& common_params,
       const BeginNavigationParams& begin_params,
@@ -173,7 +174,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       const net::RedirectInfo& redirect_info,
       const scoped_refptr<ResourceResponse>& response) override;
   void OnResponseStarted(const scoped_refptr<ResourceResponse>& response,
-                         scoped_ptr<StreamHandle> body) override;
+                         std::unique_ptr<StreamHandle> body) override;
   void OnRequestFailed(bool has_stale_copy_in_cache, int net_error) override;
   void OnRequestStarted(base::TimeTicks timestamp) override;
 
@@ -212,9 +213,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   // The parameters to send to the IO thread. |loader_| takes ownership of
   // |info_| after calling BeginNavigation.
-  scoped_ptr<NavigationRequestInfo> info_;
+  std::unique_ptr<NavigationRequestInfo> info_;
 
-  scoped_ptr<NavigationURLLoader> loader_;
+  std::unique_ptr<NavigationURLLoader> loader_;
 
   // These next items are used in browser-initiated navigations to store
   // information from the NavigationEntryImpl that is required after request
@@ -228,12 +229,12 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // The type of SiteInstance associated with this navigation.
   AssociatedSiteInstanceType associated_site_instance_type_;
 
-  scoped_ptr<NavigationHandleImpl> navigation_handle_;
+  std::unique_ptr<NavigationHandleImpl> navigation_handle_;
 
   // Holds the ResourceResponse and the StreamHandle for the navigation while
   // the WillProcessResponse checks are performed by the NavigationHandle.
   scoped_refptr<ResourceResponse> response_;
-  scoped_ptr<StreamHandle> body_;
+  std::unique_ptr<StreamHandle> body_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationRequest);
 };

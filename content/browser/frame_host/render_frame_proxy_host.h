@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "ipc/ipc_listener.h"
@@ -154,11 +155,11 @@ class RenderFrameProxyHost
   // frame tree, this class connects its associated RenderWidgetHostView
   // to this RenderFrameProxyHost, which corresponds to the same frame in the
   // parent's renderer process.
-  scoped_ptr<CrossProcessFrameConnector> cross_process_frame_connector_;
+  std::unique_ptr<CrossProcessFrameConnector> cross_process_frame_connector_;
 
   // TODO(nasko): This can be removed once we don't have a swapped out state on
   // RenderFrameHosts. See https://crbug.com/357747.
-  scoped_ptr<RenderFrameHostImpl> render_frame_host_;
+  std::unique_ptr<RenderFrameHostImpl> render_frame_host_;
 
   // The RenderViewHost that this RenderFrameProxyHost is associated with. It is
   // kept alive as long as any RenderFrameHosts or RenderFrameProxyHosts

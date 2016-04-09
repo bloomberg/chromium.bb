@@ -49,7 +49,7 @@ class NavigatorTestWithBrowserSideNavigation
   void SetUp() override {
 #if !defined(OS_ANDROID)
     ImageTransportFactory::InitializeForUnitTests(
-        scoped_ptr<ImageTransportFactory>(
+        std::unique_ptr<ImageTransportFactory>(
             new NoTransportImageTransportFactory));
 #endif
     EnableBrowserSideNavigation();

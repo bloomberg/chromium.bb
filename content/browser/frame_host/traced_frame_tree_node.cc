@@ -41,17 +41,17 @@ TracedFrameTreeNode::~TracedFrameTreeNode() {
 }
 
 void TracedFrameTreeNode::AppendAsTraceFormat(std::string* out) const {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
 
   if (parent_node_id_ >= 0) {
-    scoped_ptr<base::DictionaryValue> ref(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> ref(new base::DictionaryValue());
     ref->SetString("id_ref", base::StringPrintf("0x%x", parent_node_id_));
     ref->SetString("scope", "FrameTreeNode");
     value->Set("parent", std::move(ref));
   }
 
   if (process_id_ >= 0) {
-    scoped_ptr<base::DictionaryValue> ref(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> ref(new base::DictionaryValue());
     ref->SetInteger("pid_ref", process_id_);
     ref->SetString("id_ref", base::StringPrintf("0x%x", routing_id_));
     ref->SetString("scope", "RenderFrame");

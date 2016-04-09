@@ -9,12 +9,12 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <unordered_map>
 
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -299,14 +299,14 @@ class CONTENT_EXPORT RenderFrameHostManager
   // determine whether a RenderFrameHost transfer is needed.
   // |cross_site_transferring_request| is NULL if a request is not being
   // transferred between renderers.
-  void OnCrossSiteResponse(
-      RenderFrameHostImpl* pending_render_frame_host,
-      const GlobalRequestID& global_request_id,
-      scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
-      const std::vector<GURL>& transfer_url_chain,
-      const Referrer& referrer,
-      ui::PageTransition page_transition,
-      bool should_replace_current_entry);
+  void OnCrossSiteResponse(RenderFrameHostImpl* pending_render_frame_host,
+                           const GlobalRequestID& global_request_id,
+                           std::unique_ptr<CrossSiteTransferringRequest>
+                               cross_site_transferring_request,
+                           const std::vector<GURL>& transfer_url_chain,
+                           const Referrer& referrer,
+                           ui::PageTransition page_transition,
+                           bool should_replace_current_entry);
 
   // Determines whether a navigation to |dest_url| may be completed using an
   // existing RenderFrameHost, or whether transferring to a new RenderFrameHost
@@ -338,9 +338,10 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Creates and initializes a RenderFrameHost. If |view_routing_id_ptr|
   // is not nullptr it will be set to the routing id of the view associated with
   // the frame.
-  scoped_ptr<RenderFrameHostImpl> CreateRenderFrame(SiteInstance* instance,
-                                                    bool hidden,
-                                                    int* view_routing_id_ptr);
+  std::unique_ptr<RenderFrameHostImpl> CreateRenderFrame(
+      SiteInstance* instance,
+      bool hidden,
+      int* view_routing_id_ptr);
 
   // Helper method to create and initialize a RenderFrameProxyHost and return
   // its routing id.
@@ -425,7 +426,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // PlzNavigate
   // Clears the speculative members, returning the RenderFrameHost to the caller
   // for disposal.
-  scoped_ptr<RenderFrameHostImpl> UnsetSpeculativeRenderFrameHost();
+  std::unique_ptr<RenderFrameHostImpl> UnsetSpeculativeRenderFrameHost();
 
   // Notification methods to tell this RenderFrameHostManager that the frame it
   // is responsible for has started or stopped loading a document.
@@ -493,7 +494,7 @@ class CONTENT_EXPORT RenderFrameHostManager
 
   // Returns a const reference to the map of proxy hosts. The keys are
   // SiteInstance IDs, the values are RenderFrameProxyHosts.
-  const std::unordered_map<int32_t, scoped_ptr<RenderFrameProxyHost>>&
+  const std::unordered_map<int32_t, std::unique_ptr<RenderFrameProxyHost>>&
   GetAllProxyHostsForTesting() const {
     return proxy_hosts_;
   }
@@ -657,7 +658,7 @@ class CONTENT_EXPORT RenderFrameHostManager
                                        FrameTreeNode* skip_this_node);
 
   // Creates a RenderFrameHost and corresponding RenderViewHost if necessary.
-  scoped_ptr<RenderFrameHostImpl> CreateRenderFrameHost(
+  std::unique_ptr<RenderFrameHostImpl> CreateRenderFrameHost(
       SiteInstance* instance,
       int32_t view_routing_id,
       int32_t frame_routing_id,
@@ -696,28 +697,30 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Runs the unload handler in the old RenderFrameHost, after the new
   // RenderFrameHost has committed.  |old_render_frame_host| will either be
   // deleted or put on the pending delete list during this call.
-  void SwapOutOldFrame(scoped_ptr<RenderFrameHostImpl> old_render_frame_host);
+  void SwapOutOldFrame(
+      std::unique_ptr<RenderFrameHostImpl> old_render_frame_host);
 
   // Discards a RenderFrameHost that was never made active (for active ones
   // SwapOutOldFrame is used instead).
-  void DiscardUnusedFrame(scoped_ptr<RenderFrameHostImpl> render_frame_host);
+  void DiscardUnusedFrame(
+      std::unique_ptr<RenderFrameHostImpl> render_frame_host);
 
   // Holds |render_frame_host| until it can be deleted when its swap out ACK
   // arrives.
   void MoveToPendingDeleteHosts(
-      scoped_ptr<RenderFrameHostImpl> render_frame_host);
+      std::unique_ptr<RenderFrameHostImpl> render_frame_host);
 
   // Helper method to terminate the pending RenderFrameHost. The frame may be
   // deleted immediately, or it may be kept around in hopes of later reuse.
   void CancelPending();
 
   // Clears pending_render_frame_host_, returning it to the caller for disposal.
-  scoped_ptr<RenderFrameHostImpl> UnsetPendingRenderFrameHost();
+  std::unique_ptr<RenderFrameHostImpl> UnsetPendingRenderFrameHost();
 
   // Helper method to set the active RenderFrameHost. Returns the old
   // RenderFrameHost and updates counts.
-  scoped_ptr<RenderFrameHostImpl> SetRenderFrameHost(
-      scoped_ptr<RenderFrameHostImpl> render_frame_host);
+  std::unique_ptr<RenderFrameHostImpl> SetRenderFrameHost(
+      std::unique_ptr<RenderFrameHostImpl> render_frame_host);
 
   RenderFrameHostImpl* UpdateStateForNavigate(
       const GURL& dest_url,
@@ -750,17 +753,18 @@ class CONTENT_EXPORT RenderFrameHostManager
   // RenderFrame instance.
   // For now, RenderFrameHost keeps a RenderViewHost in its SiteInstance alive.
   // Eventually, RenderViewHost will be replaced with a page context.
-  scoped_ptr<RenderFrameHostImpl> render_frame_host_;
+  std::unique_ptr<RenderFrameHostImpl> render_frame_host_;
 
   // A RenderFrameHost used to load a cross-site page. This remains hidden
   // while a cross-site request is pending until it calls DidNavigate.
   // Note: This member is not used in PlzNavigate.
-  scoped_ptr<RenderFrameHostImpl> pending_render_frame_host_;
+  std::unique_ptr<RenderFrameHostImpl> pending_render_frame_host_;
 
   // If a pending request needs to be transferred to another process, this
   // owns the request until it's transferred to the new process, so it will be
   // cleaned up if the navigation is cancelled.  Otherwise, this is NULL.
-  scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request_;
+  std::unique_ptr<CrossSiteTransferringRequest>
+      cross_site_transferring_request_;
 
   // This is used to temporarily store the NavigationHandle during
   // transferring navigations. The handle needs to be stored because the old
@@ -768,13 +772,14 @@ class CONTENT_EXPORT RenderFrameHostManager
   // for the navigation.
   // PlzNavigate: this will never be set since there are no transferring
   // navigations in PlzNavigate.
-  scoped_ptr<NavigationHandleImpl> transfer_navigation_handle_;
+  std::unique_ptr<NavigationHandleImpl> transfer_navigation_handle_;
 
   // Proxy hosts, indexed by site instance ID.
-  std::unordered_map<int32_t, scoped_ptr<RenderFrameProxyHost>> proxy_hosts_;
+  std::unordered_map<int32_t, std::unique_ptr<RenderFrameProxyHost>>
+      proxy_hosts_;
 
   // A list of RenderFrameHosts waiting to shut down after swapping out.
-  using RFHPendingDeleteList = std::list<scoped_ptr<RenderFrameHostImpl>>;
+  using RFHPendingDeleteList = std::list<std::unique_ptr<RenderFrameHostImpl>>;
   RFHPendingDeleteList pending_delete_hosts_;
 
   // The intersitial page currently shown if any, not own by this class
@@ -790,7 +795,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // it.
   // Note: PlzNavigate only uses the speculative RenderFrameHost, not the
   // pending one.
-  scoped_ptr<RenderFrameHostImpl> speculative_render_frame_host_;
+  std::unique_ptr<RenderFrameHostImpl> speculative_render_frame_host_;
 
   base::WeakPtrFactory<RenderFrameHostManager> weak_factory_;
 

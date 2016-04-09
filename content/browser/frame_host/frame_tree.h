@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include <iterator>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/common/content_export.h"
 

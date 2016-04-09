@@ -5,10 +5,11 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_NAVIGATOR_IMPL_H_
 #define CONTENT_BROWSER_FRAME_HOST_NAVIGATOR_IMPL_H_
 
+#include <memory>
+
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigator.h"
@@ -149,7 +150,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   // events. Can be NULL in tests.
   NavigatorDelegate* delegate_;
 
-  scoped_ptr<NavigatorImpl::NavigationMetricsData> navigation_data_;
+  std::unique_ptr<NavigatorImpl::NavigationMetricsData> navigation_data_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
 };

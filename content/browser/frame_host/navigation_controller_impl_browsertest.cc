@@ -2549,7 +2549,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   // 4. Create a NavigationEntry with the same PageState as |entry2| and verify
   // it has the same FrameNavigationEntry structure.
-  scoped_ptr<NavigationEntryImpl> restored_entry =
+  std::unique_ptr<NavigationEntryImpl> restored_entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationControllerImpl::CreateNavigationEntry(
               main_url_a, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
@@ -2571,7 +2571,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 
   // 5. Restore the new entry in a new tab and verify the correct URLs load.
-  std::vector<scoped_ptr<NavigationEntry>> entries;
+  std::vector<std::unique_ptr<NavigationEntry>> entries;
   entries.push_back(std::move(restored_entry));
   Shell* new_shell = Shell::CreateNewWindow(
       controller.GetBrowserContext(), GURL::EmptyGURL(), nullptr, gfx::Size());
@@ -2835,7 +2835,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerOopifBrowserTest,
   NavigationEntryImpl* entry2 = controller.GetLastCommittedEntry();
 
   // 3. Create a NavigationEntry with the same PageState as |entry2|.
-  scoped_ptr<NavigationEntryImpl> restored_entry =
+  std::unique_ptr<NavigationEntryImpl> restored_entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationControllerImpl::CreateNavigationEntry(
               main_url_a, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
@@ -2850,7 +2850,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerOopifBrowserTest,
       restored_entry->root_node()->children[0]->frame_entry->site_instance());
 
   // 4. Restore the new entry in a new tab and verify the correct URLs load.
-  std::vector<scoped_ptr<NavigationEntry>> entries;
+  std::vector<std::unique_ptr<NavigationEntry>> entries;
   entries.push_back(std::move(restored_entry));
   Shell* new_shell = Shell::CreateNewWindow(
       controller.GetBrowserContext(), GURL::EmptyGURL(), nullptr, gfx::Size());

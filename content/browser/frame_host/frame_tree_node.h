@@ -7,12 +7,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/common/content_export.h"
@@ -71,7 +71,7 @@ class CONTENT_EXPORT FrameTreeNode {
 
   bool IsMainFrame() const;
 
-  FrameTreeNode* AddChild(scoped_ptr<FrameTreeNode> child,
+  FrameTreeNode* AddChild(std::unique_ptr<FrameTreeNode> child,
                           int process_id,
                           int frame_routing_id);
   void RemoveChild(FrameTreeNode* child);
@@ -217,7 +217,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // navigation. If there was an ongoing navigation request before calling this
   // function, it is canceled. |navigation_request| should not be null.
   void CreatedNavigationRequest(
-      scoped_ptr<NavigationRequest> navigation_request);
+      std::unique_ptr<NavigationRequest> navigation_request);
 
   // PlzNavigate
   // Resets the current navigation request. If |keep_state| is true, any state
@@ -307,10 +307,10 @@ class CONTENT_EXPORT FrameTreeNode {
   // is set to a non-null node, and it is removed from that list when |opener_|
   // changes or when this node is destroyed.  It is also cleared if |opener_|
   // is disowned.
-  scoped_ptr<OpenerDestroyedObserver> opener_observer_;
+  std::unique_ptr<OpenerDestroyedObserver> opener_observer_;
 
   // The immediate children of this specific frame.
-  std::vector<scoped_ptr<FrameTreeNode>> children_;
+  std::vector<std::unique_ptr<FrameTreeNode>> children_;
 
   // Whether this frame has committed any real load, replacing its initial
   // about:blank page.
@@ -341,7 +341,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // PlzNavigate
   // Owns an ongoing NavigationRequest until it is ready to commit. It will then
   // be reset and a RenderFrameHost will be responsible for the navigation.
-  scoped_ptr<NavigationRequest> navigation_request_;
+  std::unique_ptr<NavigationRequest> navigation_request_;
 
   // List of objects observing this FrameTreeNode.
   base::ObserverList<Observer> observers_;

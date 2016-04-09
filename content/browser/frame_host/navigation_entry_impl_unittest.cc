@@ -37,8 +37,8 @@ class NavigationEntryTest : public testing::Test {
   void TearDown() override {}
 
  protected:
-  scoped_ptr<NavigationEntryImpl> entry1_;
-  scoped_ptr<NavigationEntryImpl> entry2_;
+  std::unique_ptr<NavigationEntryImpl> entry1_;
+  std::unique_ptr<NavigationEntryImpl> entry2_;
   // SiteInstances are deleted when their NavigationEntries are gone.
   scoped_refptr<SiteInstanceImpl> instance_;
 };
@@ -233,7 +233,7 @@ TEST_F(NavigationEntryTest, NavigationEntryClone) {
   entry2_->SetTransitionType(ui::PAGE_TRANSITION_RELOAD);
   entry2_->set_should_replace_entry(true);
 
-  scoped_ptr<NavigationEntryImpl> clone(entry2_->Clone());
+  std::unique_ptr<NavigationEntryImpl> clone(entry2_->Clone());
 
   // Value from FrameNavigationEntry.
   EXPECT_EQ(entry2_->site_instance(), clone->site_instance());

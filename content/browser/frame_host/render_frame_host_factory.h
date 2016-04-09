@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -28,7 +29,7 @@ class CONTENT_EXPORT RenderFrameHostFactory {
  public:
   // Creates a new RenderFrameHostImpl using the currently registered factory,
   // or a regular RenderFrameHostImpl if no factory is registered.
-  static scoped_ptr<RenderFrameHostImpl> Create(
+  static std::unique_ptr<RenderFrameHostImpl> Create(
       SiteInstance* site_instance,
       RenderViewHostImpl* render_view_host,
       RenderFrameHostDelegate* delegate,
@@ -48,7 +49,7 @@ class CONTENT_EXPORT RenderFrameHostFactory {
 
   // You can derive from this class and specify an implementation for this
   // function to create an alternate kind of RenderFrameHostImpl for testing.
-  virtual scoped_ptr<RenderFrameHostImpl> CreateRenderFrameHost(
+  virtual std::unique_ptr<RenderFrameHostImpl> CreateRenderFrameHost(
       SiteInstance* site_instance,
       RenderViewHostImpl* render_view_host,
       RenderFrameHostDelegate* delegate,

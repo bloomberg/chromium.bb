@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/process/kill.h"
 #include "base/time/time.h"
@@ -451,7 +452,7 @@ blink::WebPageVisibilityState RenderFrameHostImpl::GetVisibilityState() {
 bool RenderFrameHostImpl::Send(IPC::Message* message) {
   if (IPC_MESSAGE_ID_CLASS(message->type()) == InputMsgStart) {
     return render_view_host_->GetWidget()->input_router()->SendInput(
-        make_scoped_ptr(message));
+        base::WrapUnique(message));
   }
 
   return GetProcess()->Send(message);
@@ -1137,13 +1138,13 @@ int RenderFrameHostImpl::GetEnabledBindings() {
 }
 
 void RenderFrameHostImpl::SetNavigationHandle(
-    scoped_ptr<NavigationHandleImpl> navigation_handle) {
+    std::unique_ptr<NavigationHandleImpl> navigation_handle) {
   navigation_handle_ = std::move(navigation_handle);
   if (navigation_handle_)
     navigation_handle_->set_render_frame_host(this);
 }
 
-scoped_ptr<NavigationHandleImpl>
+std::unique_ptr<NavigationHandleImpl>
 RenderFrameHostImpl::PassNavigationHandleOwnership() {
   DCHECK(!IsBrowserSideNavigationEnabled());
   navigation_handle_->set_is_transferring(true);
@@ -1152,7 +1153,8 @@ RenderFrameHostImpl::PassNavigationHandleOwnership() {
 
 void RenderFrameHostImpl::OnCrossSiteResponse(
     const GlobalRequestID& global_request_id,
-    scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
+    std::unique_ptr<CrossSiteTransferringRequest>
+        cross_site_transferring_request,
     const std::vector<GURL>& transfer_url_chain,
     const Referrer& referrer,
     ui::PageTransition page_transition,
@@ -2165,7 +2167,7 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
 // PlzNavigate
 void RenderFrameHostImpl::CommitNavigation(
     ResourceResponse* response,
-    scoped_ptr<StreamHandle> body,
+    std::unique_ptr<StreamHandle> body,
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     bool is_view_source) {

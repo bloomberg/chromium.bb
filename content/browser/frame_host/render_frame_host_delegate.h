@@ -184,7 +184,8 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // Creates a WebUI object for a frame navigating to |url|. If no WebUI
   // applies, returns null.
-  virtual scoped_ptr<WebUIImpl> CreateWebUIForRenderFrameHost(const GURL& url);
+  virtual std::unique_ptr<WebUIImpl> CreateWebUIForRenderFrameHost(
+      const GURL& url);
 
  protected:
   virtual ~RenderFrameHostDelegate() {}

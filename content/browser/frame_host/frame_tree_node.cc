@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -142,7 +143,7 @@ bool FrameTreeNode::IsMainFrame() const {
   return frame_tree_->root() == this;
 }
 
-FrameTreeNode* FrameTreeNode::AddChild(scoped_ptr<FrameTreeNode> child,
+FrameTreeNode* FrameTreeNode::AddChild(std::unique_ptr<FrameTreeNode> child,
                                        int process_id,
                                        int frame_routing_id) {
   // Child frame must always be created in the same process as the parent.
@@ -174,7 +175,7 @@ void FrameTreeNode::RemoveChild(FrameTreeNode* child) {
     if (iter->get() == child) {
       // Subtle: we need to make sure the node is gone from the tree before
       // observers are notified of its deletion.
-      scoped_ptr<FrameTreeNode> node_to_delete(std::move(*iter));
+      std::unique_ptr<FrameTreeNode> node_to_delete(std::move(*iter));
       children_.erase(iter);
       node_to_delete.reset();
       return;
@@ -188,7 +189,7 @@ void FrameTreeNode::ResetForNewProcess() {
 
   // Remove child nodes from the tree, then delete them. This destruction
   // operation will notify observers.
-  std::vector<scoped_ptr<FrameTreeNode>>().swap(children_);
+  std::vector<std::unique_ptr<FrameTreeNode>>().swap(children_);
 }
 
 void FrameTreeNode::SetOpener(FrameTreeNode* opener) {
@@ -201,7 +202,7 @@ void FrameTreeNode::SetOpener(FrameTreeNode* opener) {
 
   if (opener_) {
     if (!opener_observer_)
-      opener_observer_ = make_scoped_ptr(new OpenerDestroyedObserver(this));
+      opener_observer_ = base::WrapUnique(new OpenerDestroyedObserver(this));
     opener_->AddObserver(opener_observer_.get());
   }
 }
@@ -314,7 +315,7 @@ bool FrameTreeNode::CommitPendingSandboxFlags() {
 }
 
 void FrameTreeNode::CreatedNavigationRequest(
-    scoped_ptr<NavigationRequest> navigation_request) {
+    std::unique_ptr<NavigationRequest> navigation_request) {
   CHECK(IsBrowserSideNavigationEnabled());
 
   bool was_previously_loading = frame_tree()->IsLoading();
@@ -484,7 +485,7 @@ void FrameTreeNode::TraceSnapshot() const {
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
       "navigation", "FrameTreeNode",
       TRACE_ID_WITH_SCOPE("FrameTreeNode", frame_tree_node_id_),
-      scoped_ptr<base::trace_event::ConvertableToTraceFormat>(
+      std::unique_ptr<base::trace_event::ConvertableToTraceFormat>(
           new TracedFrameTreeNode(*this)));
 }
 

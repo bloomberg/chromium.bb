@@ -108,7 +108,7 @@ class InterstitialTitleUpdateWatcher : public BrowserMessageFilter {
   }
 
   base::string16 expected_title_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(InterstitialTitleUpdateWatcher);
 };
@@ -169,7 +169,7 @@ class ClipboardMessageWatcher : public IPC::MessageFilter {
     return false;
   }
 
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   std::string last_text_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardMessageWatcher);
@@ -327,7 +327,7 @@ class InterstitialPageImplTest : public ContentBrowserTest {
     completion->Signal();
   }
 
-  scoped_ptr<InterstitialPageImpl> interstitial_;
+  std::unique_ptr<InterstitialPageImpl> interstitial_;
   scoped_refptr<ClipboardMessageWatcher> clipboard_message_watcher_;
   scoped_refptr<InterstitialTitleUpdateWatcher> title_update_watcher_;
 

@@ -160,7 +160,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     TestNavigationThrottle* test_throttle =
         new TestNavigationThrottle(test_handle(), result);
     test_handle()->RegisterThrottleForTesting(
-        scoped_ptr<TestNavigationThrottle>(test_throttle));
+        std::unique_ptr<TestNavigationThrottle>(test_throttle));
     return test_throttle;
   }
 
@@ -173,7 +173,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     was_callback_called_ = true;
   }
 
-  scoped_ptr<NavigationHandleImpl> test_handle_;
+  std::unique_ptr<NavigationHandleImpl> test_handle_;
   bool was_callback_called_;
   NavigationThrottle::ThrottleCheckResult callback_result_;
 };

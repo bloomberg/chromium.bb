@@ -45,9 +45,8 @@ void RenderFrameHostDelegate::RequestMediaAccessPermission(
     const MediaResponseCallback& callback) {
   LOG(ERROR) << "RenderFrameHostDelegate::RequestMediaAccessPermission: "
              << "Not supported.";
-  callback.Run(MediaStreamDevices(),
-               MEDIA_DEVICE_NOT_SUPPORTED,
-               scoped_ptr<MediaStreamUI>());
+  callback.Run(MediaStreamDevices(), MEDIA_DEVICE_NOT_SUPPORTED,
+               std::unique_ptr<MediaStreamUI>());
 }
 
 bool RenderFrameHostDelegate::CheckMediaAccessPermission(
@@ -83,8 +82,8 @@ bool RenderFrameHostDelegate::ShouldRouteMessageEvent(
   return false;
 }
 
-scoped_ptr<WebUIImpl> RenderFrameHostDelegate::CreateWebUIForRenderFrameHost(
-    const GURL& url) {
+std::unique_ptr<WebUIImpl>
+RenderFrameHostDelegate::CreateWebUIForRenderFrameHost(const GURL& url) {
   return nullptr;
 }
 

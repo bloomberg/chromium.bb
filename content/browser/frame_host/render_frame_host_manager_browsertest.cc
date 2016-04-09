@@ -1862,7 +1862,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   GURL url1(embedded_test_server()->GetURL("/file_input.html"));
   NavigateToURL(shell(), url1);
   int process_id = shell()->web_contents()->GetRenderProcessHost()->GetID();
-  scoped_ptr<FileChooserDelegate> delegate(new FileChooserDelegate(file));
+  std::unique_ptr<FileChooserDelegate> delegate(new FileChooserDelegate(file));
   shell()->web_contents()->SetDelegate(delegate.get());
   EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
                             "document.getElementById('fileinput').click();"));
@@ -1920,7 +1920,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
   FrameTreeNode* root = wc->GetFrameTree()->root();
   int process_id = shell()->web_contents()->GetRenderProcessHost()->GetID();
-  scoped_ptr<FileChooserDelegate> delegate(new FileChooserDelegate(file));
+  std::unique_ptr<FileChooserDelegate> delegate(new FileChooserDelegate(file));
   shell()->web_contents()->SetDelegate(delegate.get());
   EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(),
                             "document.getElementById('fileinput').click();"));
