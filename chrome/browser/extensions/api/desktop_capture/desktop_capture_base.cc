@@ -143,7 +143,7 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
             (show_windows ? DesktopMediaListAsh::WINDOWS : 0))));
       }
 #endif
-      if (!media_list) {
+      if (media_lists.empty()) {
         webrtc::DesktopCaptureOptions options =
             webrtc::DesktopCaptureOptions::CreateDefault();
         options.set_disable_effects(false);
