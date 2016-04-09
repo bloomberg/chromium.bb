@@ -248,8 +248,10 @@ bool UtilityProcessHostImpl::StartProcess() {
     return true;
 
   bool mojo_result = mojo_application_host_->Init();
-  if (!mojo_result)
+  if (!mojo_result) {
+    NotifyAndDelete();
     return false;
+  }
 
   // Name must be set or metrics_service will crash in any test which
   // launches a UtilityProcessHost.
@@ -257,8 +259,10 @@ bool UtilityProcessHostImpl::StartProcess() {
   process_->SetName(name_);
 
   std::string channel_id = process_->GetHost()->CreateChannel();
-  if (channel_id.empty())
+  if (channel_id.empty()) {
+    NotifyAndDelete();
     return false;
+  }
 
   if (RenderProcessHost::run_renderer_in_process()) {
     DCHECK(g_utility_main_thread_factory);
@@ -401,6 +405,23 @@ void UtilityProcessHostImpl::OnProcessLaunched() {
     handle = process_->GetData().handle;
 
   mojo_application_host_->Activate(this, handle);
+}
+
+void UtilityProcessHostImpl::NotifyAndDelete() {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&UtilityProcessHostImpl::NotifyLaunchFailedAndDelete,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+// static
+void UtilityProcessHostImpl::NotifyLaunchFailedAndDelete(
+    base::WeakPtr<UtilityProcessHostImpl> host) {
+  if (!host)
+    return;
+
+  host->OnProcessLaunchFailed();
+  delete host.get();
 }
 
 }  // namespace content
