@@ -7,7 +7,8 @@
 
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/common/content_export.h"
 #include "content/common/input/did_overscroll_params.h"
 #include "content/common/input/input_event_ack_state.h"
@@ -21,7 +22,7 @@ struct CONTENT_EXPORT InputEventAck {
   InputEventAck(blink::WebInputEvent::Type type,
                 InputEventAckState state,
                 const ui::LatencyInfo& latency,
-                scoped_ptr<content::DidOverscrollParams> overscroll,
+                std::unique_ptr<content::DidOverscrollParams> overscroll,
                 uint32_t unique_touch_event_id);
   InputEventAck(blink::WebInputEvent::Type type,
                 InputEventAckState state,
@@ -37,7 +38,7 @@ struct CONTENT_EXPORT InputEventAck {
   blink::WebInputEvent::Type type;
   InputEventAckState state;
   ui::LatencyInfo latency;
-  scoped_ptr<content::DidOverscrollParams> overscroll;
+  std::unique_ptr<content::DidOverscrollParams> overscroll;
   uint32_t unique_touch_event_id;
 };
 

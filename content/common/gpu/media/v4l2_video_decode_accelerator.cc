@@ -66,12 +66,12 @@ struct V4L2VideoDecodeAccelerator::BitstreamBufferRef {
   BitstreamBufferRef(
       base::WeakPtr<Client>& client,
       scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner,
-      scoped_ptr<SharedMemoryRegion> shm,
+      std::unique_ptr<SharedMemoryRegion> shm,
       int32_t input_id);
   ~BitstreamBufferRef();
   const base::WeakPtr<Client> client;
   const scoped_refptr<base::SingleThreadTaskRunner> client_task_runner;
-  const scoped_ptr<SharedMemoryRegion> shm;
+  const std::unique_ptr<SharedMemoryRegion> shm;
   size_t bytes_used;
   const int32_t input_id;
 };
@@ -93,7 +93,7 @@ struct V4L2VideoDecodeAccelerator::PictureRecord {
 V4L2VideoDecodeAccelerator::BitstreamBufferRef::BitstreamBufferRef(
     base::WeakPtr<Client>& client,
     scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner,
-    scoped_ptr<SharedMemoryRegion> shm,
+    std::unique_ptr<SharedMemoryRegion> shm,
     int32_t input_id)
     : client(client),
       client_task_runner(client_task_runner),
@@ -419,8 +419,8 @@ void V4L2VideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
   }
 #endif
 
-  scoped_ptr<EGLSyncKHRRef> egl_sync_ref(new EGLSyncKHRRef(
-      egl_display_, egl_sync));
+  std::unique_ptr<EGLSyncKHRRef> egl_sync_ref(
+      new EGLSyncKHRRef(egl_display_, egl_sync));
   decoder_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
       &V4L2VideoDecodeAccelerator::ReusePictureBufferTask,
       base::Unretained(this), picture_buffer_id, base::Passed(&egl_sync_ref)));
@@ -490,9 +490,9 @@ void V4L2VideoDecodeAccelerator::DecodeTask(
   TRACE_EVENT1("Video Decoder", "V4L2VDA::DecodeTask", "input_id",
                bitstream_buffer.id());
 
-  scoped_ptr<BitstreamBufferRef> bitstream_record(new BitstreamBufferRef(
+  std::unique_ptr<BitstreamBufferRef> bitstream_record(new BitstreamBufferRef(
       decode_client_, decode_task_runner_,
-      scoped_ptr<SharedMemoryRegion>(
+      std::unique_ptr<SharedMemoryRegion>(
           new SharedMemoryRegion(bitstream_buffer, true)),
       bitstream_buffer.id()));
   if (!bitstream_record->shm->Map()) {
@@ -1086,7 +1086,7 @@ void V4L2VideoDecodeAccelerator::Dequeue() {
   while (output_buffer_queued_count_ > 0) {
     DCHECK(output_streamon_);
     struct v4l2_buffer dqbuf;
-    scoped_ptr<struct v4l2_plane[]> planes(
+    std::unique_ptr<struct v4l2_plane[]> planes(
         new v4l2_plane[output_planes_count_]);
     memset(&dqbuf, 0, sizeof(dqbuf));
     memset(planes.get(), 0, sizeof(struct v4l2_plane) * output_planes_count_);
@@ -1190,7 +1190,7 @@ bool V4L2VideoDecodeAccelerator::EnqueueOutputRecord() {
     output_record.egl_sync = EGL_NO_SYNC_KHR;
   }
   struct v4l2_buffer qbuf;
-  scoped_ptr<struct v4l2_plane[]> qbuf_planes(
+  std::unique_ptr<struct v4l2_plane[]> qbuf_planes(
       new v4l2_plane[output_planes_count_]);
   memset(&qbuf, 0, sizeof(qbuf));
   memset(
@@ -1209,7 +1209,7 @@ bool V4L2VideoDecodeAccelerator::EnqueueOutputRecord() {
 
 void V4L2VideoDecodeAccelerator::ReusePictureBufferTask(
     int32_t picture_buffer_id,
-    scoped_ptr<EGLSyncKHRRef> egl_sync_ref) {
+    std::unique_ptr<EGLSyncKHRRef> egl_sync_ref) {
   DVLOG(3) << "ReusePictureBufferTask(): picture_buffer_id="
            << picture_buffer_id;
   DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());

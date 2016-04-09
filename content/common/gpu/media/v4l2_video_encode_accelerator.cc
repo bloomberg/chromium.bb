@@ -51,10 +51,10 @@
 namespace content {
 
 struct V4L2VideoEncodeAccelerator::BitstreamBufferRef {
-  BitstreamBufferRef(int32_t id, scoped_ptr<SharedMemoryRegion> shm)
+  BitstreamBufferRef(int32_t id, std::unique_ptr<SharedMemoryRegion> shm)
       : id(id), shm(std::move(shm)) {}
   const int32_t id;
-  const scoped_ptr<SharedMemoryRegion> shm;
+  const std::unique_ptr<SharedMemoryRegion> shm;
 };
 
 V4L2VideoEncodeAccelerator::InputRecord::InputRecord() : at_device(false) {
@@ -221,13 +221,14 @@ void V4L2VideoEncodeAccelerator::UseOutputBitstreamBuffer(
     return;
   }
 
-  scoped_ptr<SharedMemoryRegion> shm(new SharedMemoryRegion(buffer, false));
+  std::unique_ptr<SharedMemoryRegion> shm(
+      new SharedMemoryRegion(buffer, false));
   if (!shm->Map()) {
     NOTIFY_ERROR(kPlatformFailureError);
     return;
   }
 
-  scoped_ptr<BitstreamBufferRef> buffer_ref(
+  std::unique_ptr<BitstreamBufferRef> buffer_ref(
       new BitstreamBufferRef(buffer.id(), std::move(shm)));
   encoder_thread_.message_loop()->PostTask(
       FROM_HERE,
@@ -380,7 +381,7 @@ void V4L2VideoEncodeAccelerator::EncodeTask(
 }
 
 void V4L2VideoEncodeAccelerator::UseOutputBitstreamBufferTask(
-    scoped_ptr<BitstreamBufferRef> buffer_ref) {
+    std::unique_ptr<BitstreamBufferRef> buffer_ref) {
   DVLOG(3) << "UseOutputBitstreamBufferTask(): id=" << buffer_ref->id;
   DCHECK_EQ(encoder_thread_.message_loop(), base::MessageLoop::current());
 

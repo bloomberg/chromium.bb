@@ -50,17 +50,17 @@ class GpuJpegDecodeAccelerator
   static bool IsSupported();
 
  private:
-  using CreateJDAFp = scoped_ptr<media::JpegDecodeAccelerator> (*)(
-          const scoped_refptr<base::SingleThreadTaskRunner>&);
+  using CreateJDAFp = std::unique_ptr<media::JpegDecodeAccelerator> (*)(
+      const scoped_refptr<base::SingleThreadTaskRunner>&);
 
   class Client;
   class MessageFilter;
 
   void ClientRemoved();
 
-  static scoped_ptr<media::JpegDecodeAccelerator> CreateV4L2JDA(
+  static std::unique_ptr<media::JpegDecodeAccelerator> CreateV4L2JDA(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
-  static scoped_ptr<media::JpegDecodeAccelerator> CreateVaapiJDA(
+  static std::unique_ptr<media::JpegDecodeAccelerator> CreateVaapiJDA(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
 
   // The lifetime of objects of this class is managed by a gpu::GpuChannel. The

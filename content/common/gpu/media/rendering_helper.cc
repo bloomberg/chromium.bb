@@ -148,7 +148,7 @@ class RenderingHelper::StubOzoneDelegate : public ui::PlatformWindowDelegate {
   ui::PlatformWindow* platform_window() const { return platform_window_.get(); }
 
  private:
-  scoped_ptr<ui::PlatformWindow> platform_window_;
+  std::unique_ptr<ui::PlatformWindow> platform_window_;
   gfx::AcceleratedWidget accelerated_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(StubOzoneDelegate);
@@ -517,7 +517,8 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
 // several frames here to warm up the rendering.
 void RenderingHelper::WarmUpRendering(int warm_up_iterations) {
   unsigned int texture_id;
-  scoped_ptr<GLubyte[]> emptyData(new GLubyte[screen_size_.GetArea() * 2]());
+  std::unique_ptr<GLubyte[]> emptyData(
+      new GLubyte[screen_size_.GetArea() * 2]());
   glGenTextures(1, &texture_id);
   glBindTexture(GL_TEXTURE_2D, texture_id);
   glTexImage2D(GL_TEXTURE_2D,

@@ -5,11 +5,12 @@
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "content/common/mac/font_descriptor.h"
 #include "content/common/mac/font_loader.h"
@@ -25,7 +26,7 @@ class FontLoadingTestCase : public MacSandboxTestCase {
   bool SandboxedTest() override;
 
  private:
-  scoped_ptr<base::SharedMemory> font_shmem_;
+  std::unique_ptr<base::SharedMemory> font_shmem_;
   size_t font_data_length_;
 };
 REGISTER_SANDBOX_TEST_CASE(FontLoadingTestCase);

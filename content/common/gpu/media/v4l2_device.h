@@ -49,7 +49,8 @@ class CONTENT_EXPORT V4L2Device
   };
 
   // Creates and initializes an appropriate V4L2Device of |type| for the
-  // current platform and returns a scoped_ptr<V4L2Device> on success, or NULL.
+  // current platform and returns a std::unique_ptr<V4L2Device> on success, or
+  // NULL.
   static scoped_refptr<V4L2Device> Create(Type type);
 
   // Parameters and return value are the same as for the standard ioctl() system

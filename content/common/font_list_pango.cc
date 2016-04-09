@@ -14,8 +14,8 @@
 
 namespace content {
 
-scoped_ptr<base::ListValue> GetFontList_SlowBlocking() {
-  scoped_ptr<base::ListValue> font_list(new base::ListValue);
+std::unique_ptr<base::ListValue> GetFontList_SlowBlocking() {
+  std::unique_ptr<base::ListValue> font_list(new base::ListValue);
 
   PangoFontMap* font_map = ::pango_cairo_font_map_get_default();
   PangoFontFamily** families = NULL;

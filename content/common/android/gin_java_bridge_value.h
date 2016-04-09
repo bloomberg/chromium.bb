@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
@@ -33,18 +34,19 @@ class GinJavaBridgeValue {
   };
 
   // Serialization
-  CONTENT_EXPORT static scoped_ptr<base::BinaryValue> CreateUndefinedValue();
-  CONTENT_EXPORT static scoped_ptr<base::BinaryValue> CreateNonFiniteValue(
+  CONTENT_EXPORT static std::unique_ptr<base::BinaryValue>
+  CreateUndefinedValue();
+  CONTENT_EXPORT static std::unique_ptr<base::BinaryValue> CreateNonFiniteValue(
       float in_value);
-  CONTENT_EXPORT static scoped_ptr<base::BinaryValue> CreateNonFiniteValue(
+  CONTENT_EXPORT static std::unique_ptr<base::BinaryValue> CreateNonFiniteValue(
       double in_value);
-  CONTENT_EXPORT static scoped_ptr<base::BinaryValue> CreateObjectIDValue(
+  CONTENT_EXPORT static std::unique_ptr<base::BinaryValue> CreateObjectIDValue(
       int32_t in_value);
 
   // De-serialization
   CONTENT_EXPORT static bool ContainsGinJavaBridgeValue(
       const base::Value* value);
-  CONTENT_EXPORT static scoped_ptr<const GinJavaBridgeValue> FromValue(
+  CONTENT_EXPORT static std::unique_ptr<const GinJavaBridgeValue> FromValue(
       const base::Value* value);
 
   CONTENT_EXPORT Type GetType() const;

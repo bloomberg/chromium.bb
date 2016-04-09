@@ -247,7 +247,7 @@ void V4L2JpegDecodeAccelerator::Decode(
     return;
   }
 
-  scoped_ptr<JobRecord> job_record(
+  std::unique_ptr<JobRecord> job_record(
       new JobRecord(bitstream_buffer, video_frame));
 
   decoder_task_runner_->PostTask(
@@ -267,7 +267,8 @@ bool V4L2JpegDecodeAccelerator::IsSupported() {
   return false;
 }
 
-void V4L2JpegDecodeAccelerator::DecodeTask(scoped_ptr<JobRecord> job_record) {
+void V4L2JpegDecodeAccelerator::DecodeTask(
+    std::unique_ptr<JobRecord> job_record) {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   if (!job_record->shm.Map()) {
     PLOG(ERROR) << __func__ << ": could not map bitstream_buffer";

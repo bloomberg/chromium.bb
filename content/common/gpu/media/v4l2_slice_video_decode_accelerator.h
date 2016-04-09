@@ -8,13 +8,14 @@
 #include <linux/videodev2.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <queue>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -259,7 +260,7 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
   // Auto-destruction reference for EGLSync (for message-passing).
   struct EGLSyncKHRRef;
   void ReusePictureBufferTask(int32_t picture_buffer_id,
-                              scoped_ptr<EGLSyncKHRRef> egl_sync_ref);
+                              std::unique_ptr<EGLSyncKHRRef> egl_sync_ref);
 
   // Called to actually send |dec_surface| to the client, after it is decoded
   // preserving the order in which it was scheduled via SurfaceReady().
@@ -294,7 +295,7 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
   // To expose client callbacks from VideoDecodeAccelerator.
   // NOTE: all calls to these objects *MUST* be executed on
   // child_task_runner_.
-  scoped_ptr<base::WeakPtrFactory<VideoDecodeAccelerator::Client>>
+  std::unique_ptr<base::WeakPtrFactory<VideoDecodeAccelerator::Client>>
       client_ptr_factory_;
   base::WeakPtr<VideoDecodeAccelerator::Client> client_;
   // Callbacks to |decode_client_| must be executed on |decode_task_runner_|.
@@ -337,7 +338,7 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
   // Input queue of stream buffers coming from the client.
   std::queue<linked_ptr<BitstreamBufferRef>> decoder_input_queue_;
   // BitstreamBuffer currently being processed.
-  scoped_ptr<BitstreamBufferRef> decoder_current_bitstream_buffer_;
+  std::unique_ptr<BitstreamBufferRef> decoder_current_bitstream_buffer_;
 
   // Queue storing decode surfaces ready to be output as soon as they are
   // decoded. The surfaces must be output in order they are queued.
@@ -355,11 +356,11 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
 
   // Hardware accelerators.
   // TODO(posciak): Try to have a superclass here if possible.
-  scoped_ptr<V4L2H264Accelerator> h264_accelerator_;
-  scoped_ptr<V4L2VP8Accelerator> vp8_accelerator_;
+  std::unique_ptr<V4L2H264Accelerator> h264_accelerator_;
+  std::unique_ptr<V4L2VP8Accelerator> vp8_accelerator_;
 
   // Codec-specific software decoder in use.
-  scoped_ptr<AcceleratedVideoDecoder> decoder_;
+  std::unique_ptr<AcceleratedVideoDecoder> decoder_;
 
   // Surfaces queued to device to keep references to them while decoded.
   using V4L2DecodeSurfaceByOutputId =

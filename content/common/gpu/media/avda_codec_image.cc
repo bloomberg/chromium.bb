@@ -137,7 +137,8 @@ void AVDACodecImage::UpdateSurfaceTexture(RestoreBindingsMode mode) {
   codec_buffer_index_ = kInvalidCodecBufferIndex;
 
   // Swap the rendered image to the front.
-  scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current = MakeCurrentIfNeeded();
+  std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current =
+      MakeCurrentIfNeeded();
 
   // If we changed contexts, then we always want to restore it, since the caller
   // doesn't know that we're switching contexts.
@@ -196,9 +197,9 @@ void AVDACodecImage::AttachSurfaceTextureToContext() {
   shared_state_->DidAttachSurfaceTexture();
 }
 
-scoped_ptr<ui::ScopedMakeCurrent> AVDACodecImage::MakeCurrentIfNeeded() {
+std::unique_ptr<ui::ScopedMakeCurrent> AVDACodecImage::MakeCurrentIfNeeded() {
   DCHECK(shared_state_->context());
-  scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;
+  std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current;
   if (!shared_state_->context()->IsCurrent(NULL)) {
     scoped_make_current.reset(new ui::ScopedMakeCurrent(
         shared_state_->context(), shared_state_->surface()));

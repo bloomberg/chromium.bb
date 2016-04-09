@@ -5,7 +5,8 @@
 #ifndef CONTENT_COMMON_INPUT_SYNTHETIC_GESTURE_PARAMS_H_
 #define CONTENT_COMMON_INPUT_SYNTHETIC_GESTURE_PARAMS_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/common/content_export.h"
 
 namespace content {

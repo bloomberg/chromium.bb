@@ -110,7 +110,7 @@ class CONTENT_EXPORT V4L2ImageProcessor {
   void NotifyError();
   void DestroyTask();
 
-  void ProcessTask(scoped_ptr<JobRecord> job_record);
+  void ProcessTask(std::unique_ptr<JobRecord> job_record);
   void ServiceDeviceTask();
 
   // Attempt to start/stop device_poll_thread_.

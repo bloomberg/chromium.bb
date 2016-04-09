@@ -344,7 +344,7 @@ bool GpuVideoDecodeAccelerator::Initialize(
     return false;
 #endif
 
-  scoped_ptr<GpuVideoDecodeAcceleratorFactoryImpl> vda_factory =
+  std::unique_ptr<GpuVideoDecodeAcceleratorFactoryImpl> vda_factory =
       GpuVideoDecodeAcceleratorFactoryImpl::CreateWithGLES2Decoder(
           get_gl_context_cb_, make_context_current_cb_, bind_image_cb_,
           get_gles2_decoder_cb_);

@@ -291,15 +291,15 @@ TEST_F(CCMessagesTest, AllQuads) {
   arbitrary_filters2.Append(FilterOperation::CreateBrightnessFilter(
       arbitrary_float2));
 
-  scoped_ptr<RenderPass> child_pass_in = RenderPass::Create();
+  std::unique_ptr<RenderPass> child_pass_in = RenderPass::Create();
   child_pass_in->SetAll(child_id, arbitrary_rect2, arbitrary_rect3,
                         arbitrary_matrix2, arbitrary_bool2);
 
-  scoped_ptr<RenderPass> child_pass_cmp = RenderPass::Create();
+  std::unique_ptr<RenderPass> child_pass_cmp = RenderPass::Create();
   child_pass_cmp->SetAll(child_id, arbitrary_rect2, arbitrary_rect3,
                          arbitrary_matrix2, arbitrary_bool2);
 
-  scoped_ptr<RenderPass> pass_in = RenderPass::Create();
+  std::unique_ptr<RenderPass> pass_in = RenderPass::Create();
   pass_in->SetAll(root_id, arbitrary_rect1, arbitrary_rect2, arbitrary_matrix1,
                   arbitrary_bool1);
 
@@ -308,7 +308,7 @@ TEST_F(CCMessagesTest, AllQuads) {
                            arbitrary_rect2, arbitrary_bool1, arbitrary_float1,
                            arbitrary_blend_mode1, arbitrary_context_id1);
 
-  scoped_ptr<RenderPass> pass_cmp = RenderPass::Create();
+  std::unique_ptr<RenderPass> pass_cmp = RenderPass::Create();
   pass_cmp->SetAll(root_id, arbitrary_rect1, arbitrary_rect2, arbitrary_matrix1,
                    arbitrary_bool1);
 
@@ -479,12 +479,13 @@ TEST_F(CCMessagesTest, AllQuads) {
       &iter, &frame_out));
 
   // Make sure the out and cmp RenderPasses match.
-  scoped_ptr<RenderPass> child_pass_out =
+  std::unique_ptr<RenderPass> child_pass_out =
       std::move(frame_out.render_pass_list[0]);
   Compare(child_pass_cmp.get(), child_pass_out.get());
   ASSERT_EQ(0u, child_pass_out->shared_quad_state_list.size());
   ASSERT_EQ(0u, child_pass_out->quad_list.size());
-  scoped_ptr<RenderPass> pass_out = std::move(frame_out.render_pass_list[1]);
+  std::unique_ptr<RenderPass> pass_out =
+      std::move(frame_out.render_pass_list[1]);
   Compare(pass_cmp.get(), pass_out.get());
   ASSERT_EQ(3u, pass_out->shared_quad_state_list.size());
   ASSERT_EQ(9u, pass_out->quad_list.size());
@@ -513,7 +514,7 @@ TEST_F(CCMessagesTest, AllQuads) {
 }
 
 TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
-  scoped_ptr<RenderPass> pass_in = RenderPass::Create();
+  std::unique_ptr<RenderPass> pass_in = RenderPass::Create();
   pass_in->SetAll(RenderPassId(1, 1),
                   gfx::Rect(100, 100),
                   gfx::Rect(),
@@ -599,7 +600,8 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
   EXPECT_TRUE(
       IPC::ParamTraits<DelegatedFrameData>::Read(&msg, &iter, &frame_out));
 
-  scoped_ptr<RenderPass> pass_out = std::move(frame_out.render_pass_list[0]);
+  std::unique_ptr<RenderPass> pass_out =
+      std::move(frame_out.render_pass_list[0]);
 
   // 2 SharedQuadStates come out. The first and fourth SharedQuadStates were
   // used by quads, and so serialized. Others were not.
@@ -656,7 +658,7 @@ TEST_F(CCMessagesTest, Resources) {
   arbitrary_resource2.mailbox_holder.sync_token = arbitrary_token2;
   arbitrary_resource2.is_overlay_candidate = false;
 
-  scoped_ptr<RenderPass> renderpass_in = RenderPass::Create();
+  std::unique_ptr<RenderPass> renderpass_in = RenderPass::Create();
   renderpass_in->SetNew(
       RenderPassId(1, 1), gfx::Rect(), gfx::Rect(), gfx::Transform());
 

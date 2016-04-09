@@ -54,7 +54,8 @@ class CONTENT_EXPORT VTVideoEncodeAccelerator
   // Encoding tasks to be run on |encoder_thread_|.
   void EncodeTask(const scoped_refptr<media::VideoFrame>& frame,
                   bool force_keyframe);
-  void UseOutputBitstreamBufferTask(scoped_ptr<BitstreamBufferRef> buffer_ref);
+  void UseOutputBitstreamBufferTask(
+      std::unique_ptr<BitstreamBufferRef> buffer_ref);
   void RequestEncodingParametersChangeTask(uint32_t bitrate,
                                            uint32_t framerate);
   void DestroyTask();
@@ -69,12 +70,12 @@ class CONTENT_EXPORT VTVideoEncodeAccelerator
                                   VTEncodeInfoFlags info,
                                   CMSampleBufferRef sbuf);
   void CompressionCallbackTask(OSStatus status,
-                               scoped_ptr<EncodeOutput> encode_output);
+                               std::unique_ptr<EncodeOutput> encode_output);
 
   // Copy CMSampleBuffer into a BitstreamBuffer and return it to the |client_|.
   void ReturnBitstreamBuffer(
-      scoped_ptr<EncodeOutput> encode_output,
-      scoped_ptr<VTVideoEncodeAccelerator::BitstreamBufferRef> buffer_ref);
+      std::unique_ptr<EncodeOutput> encode_output,
+      std::unique_ptr<VTVideoEncodeAccelerator::BitstreamBufferRef> buffer_ref);
 
   // Reset the encoder's compression session by destroying the existing one
   // using DestroyCompressionSession() and creating a new one. The new session
@@ -106,10 +107,10 @@ class CONTENT_EXPORT VTVideoEncodeAccelerator
   int32_t target_bitrate_;
 
   // Bitstream buffers ready to be used to return encoded output as a FIFO.
-  std::deque<scoped_ptr<BitstreamBufferRef>> bitstream_buffer_queue_;
+  std::deque<std::unique_ptr<BitstreamBufferRef>> bitstream_buffer_queue_;
 
   // EncodeOutput needs to be copied into a BitstreamBufferRef as a FIFO.
-  std::deque<scoped_ptr<EncodeOutput>> encoder_output_queue_;
+  std::deque<std::unique_ptr<EncodeOutput>> encoder_output_queue_;
 
   // Our original calling task runner for the child thread.
   const scoped_refptr<base::SingleThreadTaskRunner> client_task_runner_;
@@ -118,7 +119,7 @@ class CONTENT_EXPORT VTVideoEncodeAccelerator
   // NOTE: all calls to this object *MUST* be executed on
   // |client_task_runner_|.
   base::WeakPtr<Client> client_;
-  scoped_ptr<base::WeakPtrFactory<Client> > client_ptr_factory_;
+  std::unique_ptr<base::WeakPtrFactory<Client>> client_ptr_factory_;
 
   // Thread checker to enforce that this object is used on a specific thread.
   // It is pinned on |client_task_runner_| thread.

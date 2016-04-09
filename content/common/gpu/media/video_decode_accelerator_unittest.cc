@@ -263,7 +263,7 @@ class VideoDecodeAcceleratorTestEnvironment : public ::testing::Environment {
  private:
   base::Thread rendering_thread_;
 #if defined(USE_OZONE)
-  scoped_ptr<ui::OzoneGpuTestHelper> gpu_helper_;
+  std::unique_ptr<ui::OzoneGpuTestHelper> gpu_helper_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecodeAcceleratorTestEnvironment);
@@ -392,11 +392,11 @@ class GLRenderingVDAClient
   size_t encoded_data_next_pos_to_decode_;
   int next_bitstream_buffer_id_;
   ClientStateNotification<ClientState>* note_;
-  scoped_ptr<VideoDecodeAccelerator> decoder_;
+  std::unique_ptr<VideoDecodeAccelerator> decoder_;
   base::WeakPtr<VideoDecodeAccelerator> weak_vda_;
-  scoped_ptr<base::WeakPtrFactory<VideoDecodeAccelerator>>
+  std::unique_ptr<base::WeakPtrFactory<VideoDecodeAccelerator>>
       weak_vda_ptr_factory_;
-  scoped_ptr<GpuVideoDecodeAcceleratorFactoryImpl> vda_factory_;
+  std::unique_ptr<GpuVideoDecodeAcceleratorFactoryImpl> vda_factory_;
   int remaining_play_throughs_;
   int reset_after_frame_num_;
   int delete_decoder_state_;

@@ -14,14 +14,14 @@ namespace {
 class HostSharedBitmapManagerTest : public testing::Test {
  protected:
   void SetUp() override { manager_.reset(new HostSharedBitmapManager()); }
-  scoped_ptr<HostSharedBitmapManager> manager_;
+  std::unique_ptr<HostSharedBitmapManager> manager_;
 };
 
 TEST_F(HostSharedBitmapManagerTest, TestCreate) {
   gfx::Size bitmap_size(1, 1);
   size_t size_in_bytes;
   EXPECT_TRUE(cc::SharedBitmap::SizeInBytes(bitmap_size, &size_in_bytes));
-  scoped_ptr<base::SharedMemory> bitmap(new base::SharedMemory());
+  std::unique_ptr<base::SharedMemory> bitmap(new base::SharedMemory());
   bitmap->CreateAndMapAnonymous(size_in_bytes);
   memset(bitmap->memory(), 0xff, size_in_bytes);
   cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
@@ -32,35 +32,35 @@ TEST_F(HostSharedBitmapManagerTest, TestCreate) {
   client.ChildAllocatedSharedBitmap(size_in_bytes, handle,
                                     base::GetCurrentProcessHandle(), id);
 
-  scoped_ptr<cc::SharedBitmap> large_bitmap;
+  std::unique_ptr<cc::SharedBitmap> large_bitmap;
   large_bitmap = manager_->GetSharedBitmapFromId(gfx::Size(1024, 1024), id);
   EXPECT_TRUE(large_bitmap.get() == NULL);
 
-  scoped_ptr<cc::SharedBitmap> very_large_bitmap;
+  std::unique_ptr<cc::SharedBitmap> very_large_bitmap;
   very_large_bitmap =
       manager_->GetSharedBitmapFromId(gfx::Size(1, (1 << 30) | 1), id);
   EXPECT_TRUE(very_large_bitmap.get() == NULL);
 
-  scoped_ptr<cc::SharedBitmap> negative_size_bitmap;
+  std::unique_ptr<cc::SharedBitmap> negative_size_bitmap;
   negative_size_bitmap =
       manager_->GetSharedBitmapFromId(gfx::Size(-1, 1024), id);
   EXPECT_TRUE(negative_size_bitmap.get() == NULL);
 
   cc::SharedBitmapId id2 = cc::SharedBitmap::GenerateId();
-  scoped_ptr<cc::SharedBitmap> invalid_bitmap;
+  std::unique_ptr<cc::SharedBitmap> invalid_bitmap;
   invalid_bitmap = manager_->GetSharedBitmapFromId(bitmap_size, id2);
   EXPECT_TRUE(invalid_bitmap.get() == NULL);
 
-  scoped_ptr<cc::SharedBitmap> shared_bitmap;
+  std::unique_ptr<cc::SharedBitmap> shared_bitmap;
   shared_bitmap = manager_->GetSharedBitmapFromId(bitmap_size, id);
   ASSERT_TRUE(shared_bitmap.get() != NULL);
   EXPECT_EQ(memcmp(shared_bitmap->pixels(), bitmap->memory(), 4), 0);
 
-  scoped_ptr<cc::SharedBitmap> large_bitmap2;
+  std::unique_ptr<cc::SharedBitmap> large_bitmap2;
   large_bitmap2 = manager_->GetSharedBitmapFromId(gfx::Size(1024, 1024), id);
   EXPECT_TRUE(large_bitmap2.get() == NULL);
 
-  scoped_ptr<cc::SharedBitmap> shared_bitmap2;
+  std::unique_ptr<cc::SharedBitmap> shared_bitmap2;
   shared_bitmap2 = manager_->GetSharedBitmapFromId(bitmap_size, id);
   EXPECT_TRUE(shared_bitmap2->pixels() == shared_bitmap->pixels());
   shared_bitmap2.reset();
@@ -88,11 +88,12 @@ TEST_F(HostSharedBitmapManagerTest, TestCreateForChild) {
                                       size_in_bytes, id, &handle);
 
   EXPECT_TRUE(base::SharedMemory::IsHandleValid(handle));
-  scoped_ptr<base::SharedMemory> bitmap(new base::SharedMemory(handle, false));
+  std::unique_ptr<base::SharedMemory> bitmap(
+      new base::SharedMemory(handle, false));
   EXPECT_TRUE(bitmap->Map(size_in_bytes));
   memset(bitmap->memory(), 0xff, size_in_bytes);
 
-  scoped_ptr<cc::SharedBitmap> shared_bitmap;
+  std::unique_ptr<cc::SharedBitmap> shared_bitmap;
   shared_bitmap = manager_->GetSharedBitmapFromId(bitmap_size, id);
   EXPECT_TRUE(shared_bitmap);
   EXPECT_TRUE(
@@ -105,19 +106,19 @@ TEST_F(HostSharedBitmapManagerTest, RemoveProcess) {
   gfx::Size bitmap_size(1, 1);
   size_t size_in_bytes;
   EXPECT_TRUE(cc::SharedBitmap::SizeInBytes(bitmap_size, &size_in_bytes));
-  scoped_ptr<base::SharedMemory> bitmap(new base::SharedMemory());
+  std::unique_ptr<base::SharedMemory> bitmap(new base::SharedMemory());
   bitmap->CreateAndMapAnonymous(size_in_bytes);
   memset(bitmap->memory(), 0xff, size_in_bytes);
   cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
 
   base::SharedMemoryHandle handle;
-  scoped_ptr<HostSharedBitmapManagerClient> client(
+  std::unique_ptr<HostSharedBitmapManagerClient> client(
       new HostSharedBitmapManagerClient(manager_.get()));
   bitmap->ShareToProcess(base::GetCurrentProcessHandle(), &handle);
   client->ChildAllocatedSharedBitmap(size_in_bytes, handle,
                                      base::GetCurrentProcessHandle(), id);
 
-  scoped_ptr<cc::SharedBitmap> shared_bitmap;
+  std::unique_ptr<cc::SharedBitmap> shared_bitmap;
   shared_bitmap = manager_->GetSharedBitmapFromId(bitmap_size, id);
   ASSERT_TRUE(shared_bitmap.get() != NULL);
 
@@ -125,7 +126,7 @@ TEST_F(HostSharedBitmapManagerTest, RemoveProcess) {
   client.reset();
   EXPECT_EQ(0u, manager_->AllocatedBitmapCount());
 
-  scoped_ptr<cc::SharedBitmap> shared_bitmap2;
+  std::unique_ptr<cc::SharedBitmap> shared_bitmap2;
   shared_bitmap2 = manager_->GetSharedBitmapFromId(bitmap_size, id);
   EXPECT_TRUE(shared_bitmap2.get() == NULL);
   EXPECT_EQ(memcmp(shared_bitmap->pixels(), bitmap->memory(), size_in_bytes),
@@ -138,7 +139,7 @@ TEST_F(HostSharedBitmapManagerTest, AddDuplicate) {
   gfx::Size bitmap_size(1, 1);
   size_t size_in_bytes;
   EXPECT_TRUE(cc::SharedBitmap::SizeInBytes(bitmap_size, &size_in_bytes));
-  scoped_ptr<base::SharedMemory> bitmap(new base::SharedMemory());
+  std::unique_ptr<base::SharedMemory> bitmap(new base::SharedMemory());
   bitmap->CreateAndMapAnonymous(size_in_bytes);
   memset(bitmap->memory(), 0xff, size_in_bytes);
   cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
@@ -149,14 +150,14 @@ TEST_F(HostSharedBitmapManagerTest, AddDuplicate) {
   client.ChildAllocatedSharedBitmap(size_in_bytes, handle,
                                     base::GetCurrentProcessHandle(), id);
 
-  scoped_ptr<base::SharedMemory> bitmap2(new base::SharedMemory());
+  std::unique_ptr<base::SharedMemory> bitmap2(new base::SharedMemory());
   bitmap2->CreateAndMapAnonymous(size_in_bytes);
   memset(bitmap2->memory(), 0x00, size_in_bytes);
 
   client.ChildAllocatedSharedBitmap(size_in_bytes, bitmap2->handle(),
                                     base::GetCurrentProcessHandle(), id);
 
-  scoped_ptr<cc::SharedBitmap> shared_bitmap;
+  std::unique_ptr<cc::SharedBitmap> shared_bitmap;
   shared_bitmap = manager_->GetSharedBitmapFromId(bitmap_size, id);
   ASSERT_TRUE(shared_bitmap.get() != NULL);
   EXPECT_EQ(memcmp(shared_bitmap->pixels(), bitmap->memory(), size_in_bytes),

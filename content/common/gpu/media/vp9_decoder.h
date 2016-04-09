@@ -8,11 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/gpu/media/accelerated_video_decoder.h"
 #include "content/common/gpu/media/vp9_picture.h"
 #include "media/filters/vp9_parser.h"
@@ -113,7 +113,7 @@ class CONTENT_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
   State state_;
 
   // Current frame header to be used in decoding the next picture.
-  scoped_ptr<media::Vp9FrameHeader> curr_frame_hdr_;
+  std::unique_ptr<media::Vp9FrameHeader> curr_frame_hdr_;
 
   // Reference frames currently in use.
   std::vector<scoped_refptr<VP9Picture>> ref_frames_;

@@ -5,9 +5,9 @@
 #ifndef CONTENT_COMMON_ORIGIN_TRIALS_TRIAL_TOKEN_H_
 #define CONTENT_COMMON_ORIGIN_TRIALS_TRIAL_TOKEN_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -35,7 +35,7 @@ class CONTENT_EXPORT TrialToken {
   // Returns a token object if the string represents a well-formed token, or
   // nullptr otherwise. (This does not mean that the token is valid, just that
   // it can be parsed.)
-  static scoped_ptr<TrialToken> Parse(const std::string& token_text);
+  static std::unique_ptr<TrialToken> Parse(const std::string& token_text);
 
   // Returns true if this feature is appropriate for use by the given origin,
   // for the given feature name. This does not check whether the signature is

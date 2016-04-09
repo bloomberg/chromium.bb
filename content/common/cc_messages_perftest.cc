@@ -65,9 +65,9 @@ class CCMessagesPerfTest : public testing::Test {
 };
 
 TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_1_4000) {
-  scoped_ptr<CompositorFrame> frame(new CompositorFrame);
+  std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
 
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   render_pass->CreateAndAppendSharedQuadState();
   for (int i = 0; i < 4000; ++i) {
     PictureDrawQuad* quad =
@@ -83,9 +83,9 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_1_4000) {
 }
 
 TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_1_100000) {
-  scoped_ptr<CompositorFrame> frame(new CompositorFrame);
+  std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
 
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   render_pass->CreateAndAppendSharedQuadState();
   for (int i = 0; i < 100000; ++i) {
     PictureDrawQuad* quad =
@@ -101,9 +101,9 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_1_100000) {
 }
 
 TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_4000_4000) {
-  scoped_ptr<CompositorFrame> frame(new CompositorFrame);
+  std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
 
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   for (int i = 0; i < 4000; ++i) {
     render_pass->CreateAndAppendSharedQuadState();
     PictureDrawQuad* quad =
@@ -119,9 +119,9 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_4000_4000) {
 }
 
 TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_100000_100000) {
-  scoped_ptr<CompositorFrame> frame(new CompositorFrame);
+  std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
 
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   for (int i = 0; i < 100000; ++i) {
     render_pass->CreateAndAppendSharedQuadState();
     PictureDrawQuad* quad =
@@ -138,11 +138,11 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_100000_100000) {
 
 TEST_F(CCMessagesPerfTest,
        DelegatedFrame_ManyRenderPasses_10000_100) {
-  scoped_ptr<CompositorFrame> frame(new CompositorFrame);
+  std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
   frame->delegated_frame_data.reset(new DelegatedFrameData);
 
   for (int i = 0; i < 1000; ++i) {
-    scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+    std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
     for (int j = 0; j < 100; ++j) {
       render_pass->CreateAndAppendSharedQuadState();
       PictureDrawQuad* quad =

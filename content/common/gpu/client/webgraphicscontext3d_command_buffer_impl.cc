@@ -206,7 +206,7 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext() {
   TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::CreateContext");
   scoped_refptr<gpu::gles2::ShareGroup> gles2_share_group;
 
-  scoped_ptr<base::AutoLock> share_group_lock;
+  std::unique_ptr<base::AutoLock> share_group_lock;
   bool add_to_share_group = false;
   if (!command_buffer_) {
     WebGraphicsContext3DCommandBufferImpl* share_context = NULL;

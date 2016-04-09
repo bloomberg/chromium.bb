@@ -2,23 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
+#include "content/common/gpu/media/vt_video_decode_accelerator_mac.h"
 
 #include <CoreVideo/CoreVideo.h>
 #include <OpenGL/CGLIOSurface.h>
 #include <OpenGL/gl.h>
 #include <stddef.h>
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sys_byteorder.h"
 #include "base/sys_info.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/version.h"
-#include "content/common/gpu/media/vt_video_decode_accelerator_mac.h"
 #include "media/base/limits.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_io_surface.h"
@@ -851,8 +853,8 @@ void VTVideoDecodeAccelerator::AssignPictureBuffers(
     DCHECK_LE(1u, picture.texture_ids().size());
     picture_info_map_.insert(std::make_pair(
         picture.id(),
-        make_scoped_ptr(new PictureInfo(picture.internal_texture_ids()[0],
-                                        picture.texture_ids()[0]))));
+        base::WrapUnique(new PictureInfo(picture.internal_texture_ids()[0],
+                                         picture.texture_ids()[0]))));
   }
 
   // Pictures are not marked as uncleared until after this method returns, and

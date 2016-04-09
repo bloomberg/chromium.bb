@@ -28,7 +28,8 @@ namespace content {
 // a time. Any Load requests received while the app is running will be dropped.
 class StaticLoader : public mojo::shell::Loader {
  public:
-  using ApplicationFactory = base::Callback<scoped_ptr<mojo::ShellClient>()>;
+  using ApplicationFactory =
+      base::Callback<std::unique_ptr<mojo::ShellClient>()>;
 
   // Constructs a static loader for |factory|.
   explicit StaticLoader(const ApplicationFactory& factory);
@@ -54,7 +55,7 @@ class StaticLoader : public mojo::shell::Loader {
   base::Closure quit_callback_;
 
   // Thread for the application if currently running.
-  scoped_ptr<base::SimpleThread> thread_;
+  std::unique_ptr<base::SimpleThread> thread_;
 
   base::WeakPtrFactory<StaticLoader> weak_factory_;
 

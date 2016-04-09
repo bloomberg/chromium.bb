@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/service/gpu_command_buffer_stub.h"
@@ -73,23 +73,23 @@ class GpuVideoEncodeAccelerator
       const gpu::GpuPreferences& gpu_preferences);
 
  private:
-  typedef scoped_ptr<media::VideoEncodeAccelerator>(*CreateVEAFp)();
+  typedef std::unique_ptr<media::VideoEncodeAccelerator> (*CreateVEAFp)();
 
   // Return a set of VEA Create function pointers applicable to the current
   // platform.
   static std::vector<CreateVEAFp> CreateVEAFps(
       const gpu::GpuPreferences& gpu_preferences);
 #if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
-  static scoped_ptr<media::VideoEncodeAccelerator> CreateV4L2VEA();
+  static std::unique_ptr<media::VideoEncodeAccelerator> CreateV4L2VEA();
 #endif
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  static scoped_ptr<media::VideoEncodeAccelerator> CreateVaapiVEA();
+  static std::unique_ptr<media::VideoEncodeAccelerator> CreateVaapiVEA();
 #endif
 #if defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
-  static scoped_ptr<media::VideoEncodeAccelerator> CreateAndroidVEA();
+  static std::unique_ptr<media::VideoEncodeAccelerator> CreateAndroidVEA();
 #endif
 #if defined(OS_MACOSX)
-  static scoped_ptr<media::VideoEncodeAccelerator> CreateVTVEA();
+  static std::unique_ptr<media::VideoEncodeAccelerator> CreateVTVEA();
 #endif
 
   // IPC handlers, proxying media::VideoEncodeAccelerator for the renderer
@@ -104,7 +104,7 @@ class GpuVideoEncodeAccelerator
   void OnDestroy();
 
   void EncodeFrameFinished(int32_t frame_id,
-                           scoped_ptr<base::SharedMemory> shm);
+                           std::unique_ptr<base::SharedMemory> shm);
   void Send(IPC::Message* message);
 
   // Route ID to communicate with the host.
@@ -116,7 +116,7 @@ class GpuVideoEncodeAccelerator
   gpu::GpuCommandBufferStub* const stub_;
 
   // Owned pointer to the underlying VideoEncodeAccelerator.
-  scoped_ptr<media::VideoEncodeAccelerator> encoder_;
+  std::unique_ptr<media::VideoEncodeAccelerator> encoder_;
   base::Callback<bool(void)> make_context_current_;
 
   // Video encoding parameters.

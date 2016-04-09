@@ -117,7 +117,8 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
 
   // Add a BitstreamBuffer to the queue of buffers ready to be used for encoder
   // output.
-  void UseOutputBitstreamBufferTask(scoped_ptr<BitstreamBufferRef> buffer_ref);
+  void UseOutputBitstreamBufferTask(
+      std::unique_ptr<BitstreamBufferRef> buffer_ref);
 
   // Device destruction task.
   void DestroyTask();
@@ -215,7 +216,7 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
 
   // We need to provide the stream header with every keyframe, to allow
   // midstream decoding restarts.  Store it here.
-  scoped_ptr<uint8_t[]> stream_header_;
+  std::unique_ptr<uint8_t[]> stream_header_;
   size_t stream_header_size_;
 
   // Video frames ready to be encoded.
@@ -248,7 +249,7 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   std::vector<linked_ptr<BitstreamBufferRef> > encoder_output_queue_;
 
   // Image processor, if one is in use.
-  scoped_ptr<V4L2ImageProcessor> image_processor_;
+  std::unique_ptr<V4L2ImageProcessor> image_processor_;
 
   // This thread services tasks posted from the VEA API entry points by the
   // child thread and device service callbacks posted from the device thread.
@@ -262,7 +263,7 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   // NOTE: all calls to these objects *MUST* be executed on
   // child_task_runner_.
   base::WeakPtr<Client> client_;
-  scoped_ptr<base::WeakPtrFactory<Client> > client_ptr_factory_;
+  std::unique_ptr<base::WeakPtrFactory<Client>> client_ptr_factory_;
 
   // WeakPtr<> pointing to |this| for use in posting tasks from the
   // image_processor_ back to the child thread.

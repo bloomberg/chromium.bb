@@ -212,12 +212,12 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   // Instantiate a media codec using |codec_config|.
   // This may be called on any thread.
-  static scoped_ptr<media::VideoCodecBridge> ConfigureMediaCodecOnAnyThread(
-      scoped_refptr<CodecConfig> codec_config);
+  static std::unique_ptr<media::VideoCodecBridge>
+  ConfigureMediaCodecOnAnyThread(scoped_refptr<CodecConfig> codec_config);
 
   // Called on the main thread to update |media_codec_| and complete codec
   // configuration.  |media_codec| will be null if configuration failed.
-  void OnCodecConfigured(scoped_ptr<media::VideoCodecBridge> media_codec);
+  void OnCodecConfigured(std::unique_ptr<media::VideoCodecBridge> media_codec);
 
   // Sends the decoded frame specified by |codec_buffer_index| to the client.
   void SendDecodedFrameToClient(int32_t codec_buffer_index,
@@ -320,7 +320,7 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   std::queue<int32_t> free_picture_ids_;
 
   // The low-level decoder which Android SDK provides.
-  scoped_ptr<media::VideoCodecBridge> media_codec_;
+  std::unique_ptr<media::VideoCodecBridge> media_codec_;
 
   // Set to true after requesting picture buffers to the client.
   bool picturebuffers_requested_;
@@ -343,7 +343,7 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   std::list<int32_t> bitstreams_notified_in_advance_;
 
   // Backing strategy that we'll use to connect PictureBuffers to frames.
-  scoped_ptr<BackingStrategy> strategy_;
+  std::unique_ptr<BackingStrategy> strategy_;
 
   // Helper class that manages asynchronous OnFrameAvailable callbacks.
   class OnFrameAvailableHandler;

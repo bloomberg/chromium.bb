@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/public/common/common_param_traits.h"
+
 #include <stddef.h>
 #include <string.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "content/public/common/common_param_traits.h"
 #include "content/public/common/content_constants.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
@@ -69,7 +71,7 @@ TEST(IPCMessageTest, Bitmap) {
   bad_msg.WriteData(fixed_data, fixed_data_size);
   // Add some bogus pixel data.
   const size_t bogus_pixels_size = bitmap.getSize() * 2;
-  scoped_ptr<char[]> bogus_pixels(new char[bogus_pixels_size]);
+  std::unique_ptr<char[]> bogus_pixels(new char[bogus_pixels_size]);
   memset(bogus_pixels.get(), 'B', bogus_pixels_size);
   bad_msg.WriteData(bogus_pixels.get(), bogus_pixels_size);
   // Make sure we don't read out the bitmap!
@@ -106,11 +108,11 @@ TEST(IPCMessageTest, DictionaryValue) {
   input.Set("bool", new base::FundamentalValue(true));
   input.Set("int", new base::FundamentalValue(42));
 
-  scoped_ptr<base::DictionaryValue> subdict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> subdict(new base::DictionaryValue());
   subdict->Set("str", new base::StringValue("forty two"));
   subdict->Set("bool", new base::FundamentalValue(false));
 
-  scoped_ptr<base::ListValue> sublist(new base::ListValue());
+  std::unique_ptr<base::ListValue> sublist(new base::ListValue());
   sublist->Set(0, new base::FundamentalValue(42.42));
   sublist->Set(1, new base::StringValue("forty"));
   sublist->Set(2, new base::StringValue("two"));

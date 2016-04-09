@@ -38,7 +38,7 @@ class ContextProviderCommandBuffer::LostContextCallbackProxy
 
 scoped_refptr<ContextProviderCommandBuffer>
 ContextProviderCommandBuffer::Create(
-    scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
+    std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
     CommandBufferContextType type) {
   if (!context3d)
     return NULL;
@@ -47,7 +47,7 @@ ContextProviderCommandBuffer::Create(
 }
 
 ContextProviderCommandBuffer::ContextProviderCommandBuffer(
-    scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
+    std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
     CommandBufferContextType type)
     : context3d_(std::move(context3d)),
       context_type_(type),

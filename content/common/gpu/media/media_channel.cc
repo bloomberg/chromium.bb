@@ -14,7 +14,7 @@ namespace content {
 namespace {
 
 void SendCreateJpegDecoderResult(
-    scoped_ptr<IPC::Message> reply_message,
+    std::unique_ptr<IPC::Message> reply_message,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     base::WeakPtr<gpu::GpuChannel> channel,
     scoped_refptr<gpu::GpuChannelMessageFilter> filter,
@@ -82,7 +82,7 @@ bool MediaChannel::OnMessageReceived(const IPC::Message& message) {
 
 void MediaChannel::OnCreateJpegDecoder(int32_t route_id,
                                        IPC::Message* reply_msg) {
-  scoped_ptr<IPC::Message> msg(reply_msg);
+  std::unique_ptr<IPC::Message> msg(reply_msg);
   if (!jpeg_decoder_) {
     jpeg_decoder_.reset(
         new GpuJpegDecodeAccelerator(channel_, channel_->io_task_runner()));

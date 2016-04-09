@@ -6,8 +6,7 @@
 #define CONTENT_COMMON_INPUT_WEB_INPUT_EVENT_QUEUE_H_
 
 #include <deque>
-
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace content {
 
@@ -40,17 +39,17 @@ class WebInputEventQueue {
   // queued events.
   void Queue(const T& event) {
     if (!queue_.empty()) {
-      scoped_ptr<T>& last_event = queue_.back();
+      std::unique_ptr<T>& last_event = queue_.back();
       if (last_event->CanCoalesceWith(event)) {
         last_event->CoalesceWith(event);
         return;
       }
     }
-    queue_.emplace_back(scoped_ptr<T>(new T(event)));
+    queue_.emplace_back(std::unique_ptr<T>(new T(event)));
   }
 
-  scoped_ptr<T> Pop() {
-    scoped_ptr<T> result;
+  std::unique_ptr<T> Pop() {
+    std::unique_ptr<T> result;
     if (!queue_.empty()) {
       result.reset(queue_.front().release());
       queue_.pop_front();
@@ -67,7 +66,7 @@ class WebInputEventQueue {
   WebInputEventQueueState state() const WARN_UNUSED_RESULT { return state_; }
 
  private:
-  typedef std::deque<scoped_ptr<T>> EventQueue;
+  typedef std::deque<std::unique_ptr<T>> EventQueue;
   EventQueue queue_;
   WebInputEventQueueState state_;
 

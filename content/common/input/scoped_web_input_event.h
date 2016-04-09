@@ -5,7 +5,8 @@
 #ifndef CONTENT_COMMON_INPUT_SCOPED_WEB_INPUT_EVENT_H_
 #define CONTENT_COMMON_INPUT_SCOPED_WEB_INPUT_EVENT_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/common/content_export.h"
 
 namespace blink {
@@ -19,8 +20,8 @@ struct CONTENT_EXPORT WebInputEventDeleter {
   WebInputEventDeleter();
   void operator()(blink::WebInputEvent* web_event) const;
 };
-typedef scoped_ptr<blink::WebInputEvent,
-                   WebInputEventDeleter> ScopedWebInputEvent;
+typedef std::unique_ptr<blink::WebInputEvent, WebInputEventDeleter>
+    ScopedWebInputEvent;
 
 }  // namespace content
 

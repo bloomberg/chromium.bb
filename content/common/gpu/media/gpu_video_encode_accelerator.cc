@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/numerics/safe_math.h"
 #include "base/sys_info.h"
@@ -177,8 +178,8 @@ GpuVideoEncodeAccelerator::GetSupportedProfiles(
       CreateVEAFps(gpu_preferences);
 
   for (size_t i = 0; i < create_vea_fps.size(); ++i) {
-    scoped_ptr<media::VideoEncodeAccelerator>
-        encoder = (*create_vea_fps[i])();
+    std::unique_ptr<media::VideoEncodeAccelerator> encoder =
+        (*create_vea_fps[i])();
     if (!encoder)
       continue;
     media::VideoEncodeAccelerator::SupportedProfiles vea_profiles =
@@ -214,9 +215,9 @@ GpuVideoEncodeAccelerator::CreateVEAFps(
 
 #if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
 // static
-scoped_ptr<media::VideoEncodeAccelerator>
+std::unique_ptr<media::VideoEncodeAccelerator>
 GpuVideoEncodeAccelerator::CreateV4L2VEA() {
-  scoped_ptr<media::VideoEncodeAccelerator> encoder;
+  std::unique_ptr<media::VideoEncodeAccelerator> encoder;
   scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kEncoder);
   if (device)
     encoder.reset(new V4L2VideoEncodeAccelerator(device));
@@ -226,27 +227,27 @@ GpuVideoEncodeAccelerator::CreateV4L2VEA() {
 
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
 // static
-scoped_ptr<media::VideoEncodeAccelerator>
+std::unique_ptr<media::VideoEncodeAccelerator>
 GpuVideoEncodeAccelerator::CreateVaapiVEA() {
-  return make_scoped_ptr<media::VideoEncodeAccelerator>(
+  return base::WrapUnique<media::VideoEncodeAccelerator>(
       new VaapiVideoEncodeAccelerator());
 }
 #endif
 
 #if defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
 // static
-scoped_ptr<media::VideoEncodeAccelerator>
+std::unique_ptr<media::VideoEncodeAccelerator>
 GpuVideoEncodeAccelerator::CreateAndroidVEA() {
-  return make_scoped_ptr<media::VideoEncodeAccelerator>(
+  return base::WrapUnique<media::VideoEncodeAccelerator>(
       new AndroidVideoEncodeAccelerator());
 }
 #endif
 
 #if defined(OS_MACOSX)
 // static
-scoped_ptr<media::VideoEncodeAccelerator>
+std::unique_ptr<media::VideoEncodeAccelerator>
 GpuVideoEncodeAccelerator::CreateVTVEA() {
-  return make_scoped_ptr<media::VideoEncodeAccelerator>(
+  return base::WrapUnique<media::VideoEncodeAccelerator>(
       new VTVideoEncodeAccelerator());
 }
 #endif
@@ -260,7 +261,7 @@ void GpuVideoEncodeAccelerator::OnEncode(
 
   // Wrap into a SharedMemory in the beginning, so that |params.buffer_handle|
   // is cleaned properly in case of an early return.
-  scoped_ptr<base::SharedMemory> shm(
+  std::unique_ptr<base::SharedMemory> shm(
       new base::SharedMemory(params.buffer_handle, true));
 
   if (!encoder_)
@@ -375,7 +376,7 @@ void GpuVideoEncodeAccelerator::OnRequestEncodingParametersChange(
 
 void GpuVideoEncodeAccelerator::EncodeFrameFinished(
     int32_t frame_id,
-    scoped_ptr<base::SharedMemory> shm) {
+    std::unique_ptr<base::SharedMemory> shm) {
   Send(new AcceleratedVideoEncoderHostMsg_NotifyInputDone(host_route_id_,
                                                           frame_id));
   // Just let |shm| fall out of scope.

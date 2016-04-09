@@ -8,11 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/accelerated_video_decoder.h"
 #include "content/common/gpu/media/h264_dpb.h"
@@ -261,8 +261,8 @@ class CONTENT_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   int curr_pps_id_;
 
   // Current NALU and slice header being processed.
-  scoped_ptr<media::H264NALU> curr_nalu_;
-  scoped_ptr<media::H264SliceHeader> curr_slice_hdr_;
+  std::unique_ptr<media::H264NALU> curr_nalu_;
+  std::unique_ptr<media::H264SliceHeader> curr_slice_hdr_;
 
   // Output picture size.
   gfx::Size pic_size_;

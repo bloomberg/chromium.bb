@@ -8,11 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/linked_list.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "content/common/content_export.h"
@@ -58,26 +59,27 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
   // |shared_memory| must be aligned to the block size and |size| must be a
   // multiple of the block size. |deleted_callback| is called when
   // |shared_memory| has been deleted.
-  scoped_ptr<Span> Grow(scoped_ptr<base::DiscardableSharedMemory> shared_memory,
-                        size_t size,
-                        int32_t id,
-                        const base::Closure& deleted_callback);
+  std::unique_ptr<Span> Grow(
+      std::unique_ptr<base::DiscardableSharedMemory> shared_memory,
+      size_t size,
+      int32_t id,
+      const base::Closure& deleted_callback);
 
   // Merge |span| into the free lists. This will coalesce |span| with
   // neighboring free spans when possible.
-  void MergeIntoFreeLists(scoped_ptr<Span> span);
+  void MergeIntoFreeLists(std::unique_ptr<Span> span);
 
   // Split an allocated span into two spans, one of length |blocks| followed
   // by another span of length "span->length - blocks" blocks. Modifies |span|
   // to point to the first span of length |blocks|. Return second span.
-  scoped_ptr<Span> Split(Span* span, size_t blocks);
+  std::unique_ptr<Span> Split(Span* span, size_t blocks);
 
   // Search free lists for span that satisfies the request for |blocks| of
   // memory. If found, the span is removed from the free list and returned.
   // |slack| determines the fitness requirement. Only spans that are less
   // or equal to |blocks| + |slack| are considered, worse fitting spans are
   // ignored.
-  scoped_ptr<Span> SearchFreeLists(size_t blocks, size_t slack);
+  std::unique_ptr<Span> SearchFreeLists(size_t blocks, size_t slack);
 
   // Release free shared memory segments.
   void ReleaseFreeMemory();
@@ -110,11 +112,12 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
  private:
   class ScopedMemorySegment {
    public:
-    ScopedMemorySegment(DiscardableSharedMemoryHeap* heap,
-                        scoped_ptr<base::DiscardableSharedMemory> shared_memory,
-                        size_t size,
-                        int32_t id,
-                        const base::Closure& deleted_callback);
+    ScopedMemorySegment(
+        DiscardableSharedMemoryHeap* heap,
+        std::unique_ptr<base::DiscardableSharedMemory> shared_memory,
+        size_t size,
+        int32_t id,
+        const base::Closure& deleted_callback);
     ~ScopedMemorySegment();
 
     bool IsUsed() const;
@@ -133,7 +136,7 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
 
    private:
     DiscardableSharedMemoryHeap* const heap_;
-    scoped_ptr<base::DiscardableSharedMemory> shared_memory_;
+    std::unique_ptr<base::DiscardableSharedMemory> shared_memory_;
     const size_t size_;
     const int32_t id_;
     const base::Closure deleted_callback_;
@@ -141,9 +144,9 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
     DISALLOW_COPY_AND_ASSIGN(ScopedMemorySegment);
   };
 
-  void InsertIntoFreeList(scoped_ptr<Span> span);
-  scoped_ptr<Span> RemoveFromFreeList(Span* span);
-  scoped_ptr<Span> Carve(Span* span, size_t blocks);
+  void InsertIntoFreeList(std::unique_ptr<Span> span);
+  std::unique_ptr<Span> RemoveFromFreeList(Span* span);
+  std::unique_ptr<Span> Carve(Span* span, size_t blocks);
   void RegisterSpan(Span* span);
   void UnregisterSpan(Span* span);
   bool IsMemoryUsed(const base::DiscardableSharedMemory* shared_memory,

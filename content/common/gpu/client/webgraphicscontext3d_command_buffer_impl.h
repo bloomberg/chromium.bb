@@ -8,12 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
@@ -204,11 +204,11 @@ class WebGraphicsContext3DCommandBufferImpl
 
   gfx::GpuPreference gpu_preference_;
 
-  scoped_ptr<gpu::CommandBufferProxyImpl> command_buffer_;
-  scoped_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
-  scoped_ptr<gpu::TransferBuffer> transfer_buffer_;
-  scoped_ptr<gpu::gles2::GLES2Implementation> real_gl_;
-  scoped_ptr<gpu::gles2::GLES2Interface> trace_gl_;
+  std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_;
+  std::unique_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
+  std::unique_ptr<gpu::TransferBuffer> transfer_buffer_;
+  std::unique_ptr<gpu::gles2::GLES2Implementation> real_gl_;
+  std::unique_ptr<gpu::gles2::GLES2Interface> trace_gl_;
   SharedMemoryLimits mem_limits_;
   scoped_refptr<ShareGroup> share_group_;
 

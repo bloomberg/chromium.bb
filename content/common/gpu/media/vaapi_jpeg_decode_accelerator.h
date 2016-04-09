@@ -49,12 +49,12 @@ class CONTENT_EXPORT VaapiJpegDecodeAccelerator
   // consumption, provided by the client.
   struct DecodeRequest {
     DecodeRequest(int32_t bitstream_buffer_id,
-                  scoped_ptr<SharedMemoryRegion> shm,
+                  std::unique_ptr<SharedMemoryRegion> shm,
                   const scoped_refptr<media::VideoFrame>& video_frame);
     ~DecodeRequest();
 
     int32_t bitstream_buffer_id;
-    scoped_ptr<SharedMemoryRegion> shm;
+    std::unique_ptr<SharedMemoryRegion> shm;
     scoped_refptr<media::VideoFrame> video_frame;
   };
 
@@ -65,7 +65,7 @@ class CONTENT_EXPORT VaapiJpegDecodeAccelerator
   void VideoFrameReady(int32_t bitstream_buffer_id);
 
   // Processes one decode |request|.
-  void DecodeTask(const scoped_ptr<DecodeRequest>& request);
+  void DecodeTask(const std::unique_ptr<DecodeRequest>& request);
 
   // Puts contents of |va_surface| into given |video_frame|, releases the
   // surface and passes the |input_buffer_id| of the resulting picture to
@@ -95,7 +95,7 @@ class CONTENT_EXPORT VaapiJpegDecodeAccelerator
 
   // Comes after vaapi_wrapper_ to ensure its destructor is executed before
   // |vaapi_wrapper_| is destroyed.
-  scoped_ptr<VaapiJpegDecoder> decoder_;
+  std::unique_ptr<VaapiJpegDecoder> decoder_;
   base::Thread decoder_thread_;
   // Use this to post tasks to |decoder_thread_| instead of
   // |decoder_thread_.task_runner()| because the latter will be NULL once

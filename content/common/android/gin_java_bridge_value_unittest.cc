@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/common/android/gin_java_bridge_value.h"
+
 #include <stdint.h>
 
 #include <cmath>
+#include <memory>
 
-#include "base/memory/scoped_ptr.h"
-#include "content/common/android/gin_java_bridge_value.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -19,11 +20,11 @@ TEST_F(GinJavaBridgeValueTest, BasicValues) {
   float native_float;
   int32_t native_object_id;
 
-  scoped_ptr<base::BinaryValue> undefined(
+  std::unique_ptr<base::BinaryValue> undefined(
       GinJavaBridgeValue::CreateUndefinedValue());
   ASSERT_TRUE(undefined.get());
   EXPECT_TRUE(GinJavaBridgeValue::ContainsGinJavaBridgeValue(undefined.get()));
-  scoped_ptr<const GinJavaBridgeValue> undefined_value(
+  std::unique_ptr<const GinJavaBridgeValue> undefined_value(
       GinJavaBridgeValue::FromValue(undefined.get()));
   ASSERT_TRUE(undefined_value.get());
   EXPECT_TRUE(undefined_value->IsType(GinJavaBridgeValue::TYPE_UNDEFINED));
@@ -31,13 +32,13 @@ TEST_F(GinJavaBridgeValueTest, BasicValues) {
   EXPECT_FALSE(undefined_value->GetAsNonFinite(&native_float));
   EXPECT_FALSE(undefined_value->GetAsObjectID(&native_object_id));
 
-  scoped_ptr<base::BinaryValue> float_infinity(
+  std::unique_ptr<base::BinaryValue> float_infinity(
       GinJavaBridgeValue::CreateNonFiniteValue(
           std::numeric_limits<float>::infinity()));
   ASSERT_TRUE(float_infinity.get());
   EXPECT_TRUE(
       GinJavaBridgeValue::ContainsGinJavaBridgeValue(float_infinity.get()));
-  scoped_ptr<const GinJavaBridgeValue> float_infinity_value(
+  std::unique_ptr<const GinJavaBridgeValue> float_infinity_value(
       GinJavaBridgeValue::FromValue(float_infinity.get()));
   ASSERT_TRUE(float_infinity_value.get());
   EXPECT_TRUE(float_infinity_value->IsType(GinJavaBridgeValue::TYPE_NONFINITE));
@@ -46,13 +47,13 @@ TEST_F(GinJavaBridgeValueTest, BasicValues) {
 
   EXPECT_FALSE(undefined_value->GetAsObjectID(&native_object_id));
 
-  scoped_ptr<base::BinaryValue> double_infinity(
+  std::unique_ptr<base::BinaryValue> double_infinity(
       GinJavaBridgeValue::CreateNonFiniteValue(
           std::numeric_limits<double>::infinity()));
   ASSERT_TRUE(double_infinity.get());
   EXPECT_TRUE(
       GinJavaBridgeValue::ContainsGinJavaBridgeValue(double_infinity.get()));
-  scoped_ptr<const GinJavaBridgeValue> double_infinity_value(
+  std::unique_ptr<const GinJavaBridgeValue> double_infinity_value(
       GinJavaBridgeValue::FromValue(double_infinity.get()));
   ASSERT_TRUE(double_infinity_value.get());
   EXPECT_TRUE(
@@ -62,11 +63,11 @@ TEST_F(GinJavaBridgeValueTest, BasicValues) {
 
   EXPECT_FALSE(undefined_value->GetAsObjectID(&native_object_id));
 
-  scoped_ptr<base::BinaryValue> object_id(
+  std::unique_ptr<base::BinaryValue> object_id(
       GinJavaBridgeValue::CreateObjectIDValue(42));
   ASSERT_TRUE(object_id.get());
   EXPECT_TRUE(GinJavaBridgeValue::ContainsGinJavaBridgeValue(object_id.get()));
-  scoped_ptr<const GinJavaBridgeValue> object_id_value(
+  std::unique_ptr<const GinJavaBridgeValue> object_id_value(
       GinJavaBridgeValue::FromValue(object_id.get()));
   ASSERT_TRUE(object_id_value.get());
   EXPECT_TRUE(object_id_value->IsType(GinJavaBridgeValue::TYPE_OBJECT_ID));
@@ -77,12 +78,12 @@ TEST_F(GinJavaBridgeValueTest, BasicValues) {
 }
 
 TEST_F(GinJavaBridgeValueTest, BrokenValues) {
-  scoped_ptr<base::Value> non_binary(new base::FundamentalValue(42));
+  std::unique_ptr<base::Value> non_binary(new base::FundamentalValue(42));
   EXPECT_FALSE(
       GinJavaBridgeValue::ContainsGinJavaBridgeValue(non_binary.get()));
 
   const char dummy_data[] = "\000\001\002\003\004\005\006\007\010\011\012\013";
-  scoped_ptr<base::BinaryValue> broken_binary(
+  std::unique_ptr<base::BinaryValue> broken_binary(
       base::BinaryValue::CreateWithCopiedBuffer(dummy_data,
                                                 sizeof(dummy_data)));
   EXPECT_FALSE(

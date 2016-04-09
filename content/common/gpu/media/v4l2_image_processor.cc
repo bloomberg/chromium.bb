@@ -174,7 +174,7 @@ void V4L2ImageProcessor::Process(const scoped_refptr<media::VideoFrame>& frame,
                                  const FrameReadyCB& cb) {
   DVLOG(3) << __func__ << ": ts=" << frame->timestamp().InMilliseconds();
 
-  scoped_ptr<JobRecord> job_record(new JobRecord());
+  std::unique_ptr<JobRecord> job_record(new JobRecord());
   job_record->frame = frame;
   job_record->ready_cb = cb;
 
@@ -185,7 +185,7 @@ void V4L2ImageProcessor::Process(const scoped_refptr<media::VideoFrame>& frame,
                  base::Passed(&job_record)));
 }
 
-void V4L2ImageProcessor::ProcessTask(scoped_ptr<JobRecord> job_record) {
+void V4L2ImageProcessor::ProcessTask(std::unique_ptr<JobRecord> job_record) {
   DCHECK_EQ(device_thread_.message_loop(), base::MessageLoop::current());
 
   input_queue_.push(make_linked_ptr(job_record.release()));

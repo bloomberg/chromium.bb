@@ -35,7 +35,7 @@
 
 namespace {
 
-void DecodeFinished(scoped_ptr<base::SharedMemory> shm) {
+void DecodeFinished(std::unique_ptr<base::SharedMemory> shm) {
   // Do nothing. Because VideoFrame is backed by |shm|, the purpose of this
   // function is to just keep reference of |shm| to make sure it lives util
   // decode finishes.
@@ -101,7 +101,8 @@ class GpuJpegDecodeAccelerator::Client
     accelerator_->Decode(bitstream_buffer, video_frame);
   }
 
-  void set_accelerator(scoped_ptr<media::JpegDecodeAccelerator> accelerator) {
+  void set_accelerator(
+      std::unique_ptr<media::JpegDecodeAccelerator> accelerator) {
     DCHECK(CalledOnValidThread());
     accelerator_ = std::move(accelerator);
   }
@@ -109,7 +110,7 @@ class GpuJpegDecodeAccelerator::Client
  private:
   base::WeakPtr<content::GpuJpegDecodeAccelerator> owner_;
   int32_t route_id_;
-  scoped_ptr<media::JpegDecodeAccelerator> accelerator_;
+  std::unique_ptr<media::JpegDecodeAccelerator> accelerator_;
 };
 
 // Create, destroy, and RemoveClient run on child thread. All other methods run
@@ -207,7 +208,7 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
     // For handles in |params|, from now on, |params.output_video_frame_handle|
     // is taken cared by scoper. |params.input_buffer.handle()| need to be
     // closed manually for early exits.
-    scoped_ptr<base::SharedMemory> output_shm(
+    std::unique_ptr<base::SharedMemory> output_shm(
         new base::SharedMemory(params.output_video_frame_handle, false));
     if (!output_shm->Map(params.output_buffer_size)) {
       LOG(ERROR) << "Could not map output shared memory for input buffer id "
@@ -257,7 +258,7 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
       STLDeleteValues(&client_map_);
     } else {
       // Make sure |Client| are deleted on child thread.
-      scoped_ptr<ClientMap> client_map(new ClientMap);
+      std::unique_ptr<ClientMap> client_map(new ClientMap);
       client_map->swap(client_map_);
 
       child_task_runner_->PostTask(
@@ -270,7 +271,8 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
   using ClientMap = base::hash_map<int32_t, Client*>;
 
   // Must be static because this method runs after destructor.
-  static void DeleteClientMapOnChildThread(scoped_ptr<ClientMap> client_map) {
+  static void DeleteClientMapOnChildThread(
+      std::unique_ptr<ClientMap> client_map) {
     STLDeleteValues(client_map.get());
   }
 
@@ -320,10 +322,10 @@ void GpuJpegDecodeAccelerator::AddClient(int32_t route_id,
       &GpuJpegDecodeAccelerator::CreateVaapiJDA,
   };
 
-  scoped_ptr<Client> client(new Client(this, route_id));
-  scoped_ptr<media::JpegDecodeAccelerator> accelerator;
+  std::unique_ptr<Client> client(new Client(this, route_id));
+  std::unique_ptr<media::JpegDecodeAccelerator> accelerator;
   for (const auto& create_jda_function : create_jda_fps) {
-    scoped_ptr<media::JpegDecodeAccelerator> tmp_accelerator =
+    std::unique_ptr<media::JpegDecodeAccelerator> tmp_accelerator =
         (*create_jda_function)(io_task_runner_);
     if (tmp_accelerator && tmp_accelerator->Initialize(client.get())) {
       accelerator = std::move(tmp_accelerator);
@@ -381,10 +383,10 @@ bool GpuJpegDecodeAccelerator::Send(IPC::Message* message) {
 }
 
 // static
-scoped_ptr<media::JpegDecodeAccelerator>
+std::unique_ptr<media::JpegDecodeAccelerator>
 GpuJpegDecodeAccelerator::CreateV4L2JDA(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner) {
-  scoped_ptr<media::JpegDecodeAccelerator> decoder;
+  std::unique_ptr<media::JpegDecodeAccelerator> decoder;
 #if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
   scoped_refptr<V4L2Device> device = V4L2Device::Create(
       V4L2Device::kJpegDecoder);
@@ -395,10 +397,10 @@ GpuJpegDecodeAccelerator::CreateV4L2JDA(
 }
 
 // static
-scoped_ptr<media::JpegDecodeAccelerator>
+std::unique_ptr<media::JpegDecodeAccelerator>
 GpuJpegDecodeAccelerator::CreateVaapiJDA(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner) {
-  scoped_ptr<media::JpegDecodeAccelerator> decoder;
+  std::unique_ptr<media::JpegDecodeAccelerator> decoder;
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
   decoder.reset(new VaapiJpegDecodeAccelerator(io_task_runner));
 #endif
@@ -412,7 +414,7 @@ bool GpuJpegDecodeAccelerator::IsSupported() {
       &GpuJpegDecodeAccelerator::CreateVaapiJDA,
   };
   for (const auto& create_jda_function : create_jda_fps) {
-    scoped_ptr<media::JpegDecodeAccelerator> accelerator =
+    std::unique_ptr<media::JpegDecodeAccelerator> accelerator =
         (*create_jda_function)(base::ThreadTaskRunnerHandle::Get());
     if (accelerator && accelerator->IsSupported())
       return true;

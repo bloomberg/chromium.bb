@@ -5,8 +5,9 @@
 #ifndef CONTENT_COMMON_SANDBOX_LINUX_SANDBOX_BPF_BASE_POLICY_LINUX_H_
 #define CONTENT_COMMON_SANDBOX_LINUX_SANDBOX_BPF_BASE_POLICY_LINUX_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl_forward.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/seccomp-bpf-helpers/baseline_policy.h"
@@ -41,7 +42,7 @@ class SandboxBPFBasePolicy : public sandbox::bpf_dsl::Policy {
 
  private:
   // Compose the BaselinePolicy from sandbox/.
-  scoped_ptr<sandbox::BaselinePolicy> baseline_policy_;
+  std::unique_ptr<sandbox::BaselinePolicy> baseline_policy_;
   DISALLOW_COPY_AND_ASSIGN(SandboxBPFBasePolicy);
 };
 

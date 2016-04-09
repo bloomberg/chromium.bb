@@ -12,6 +12,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 #include <vector>
 
@@ -19,7 +20,6 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
@@ -217,7 +217,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   // object on the main (GPU process) thread; we will record this object so we
   // can wait on it before reusing the buffer.
   void ReusePictureBufferTask(int32_t picture_buffer_id,
-                              scoped_ptr<EGLSyncKHRRef> egl_sync_ref);
+                              std::unique_ptr<EGLSyncKHRRef> egl_sync_ref);
 
   // Flush() task.  Child thread should not submit any more buffers until it
   // receives the NotifyFlushDone callback.  This task will schedule an empty
@@ -332,7 +332,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   // To expose client callbacks from VideoDecodeAccelerator.
   // NOTE: all calls to these objects *MUST* be executed on
   // child_task_runner_.
-  scoped_ptr<base::WeakPtrFactory<Client> > client_ptr_factory_;
+  std::unique_ptr<base::WeakPtrFactory<Client>> client_ptr_factory_;
   base::WeakPtr<Client> client_;
   // Callbacks to |decode_client_| must be executed on |decode_task_runner_|.
   base::WeakPtr<Client> decode_client_;
@@ -350,7 +350,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   // Decoder state machine state.
   State decoder_state_;
   // BitstreamBuffer we're presently reading.
-  scoped_ptr<BitstreamBufferRef> decoder_current_bitstream_buffer_;
+  std::unique_ptr<BitstreamBufferRef> decoder_current_bitstream_buffer_;
   // The V4L2Device this class is operating upon.
   scoped_refptr<V4L2Device> device_;
   // FlushTask() and ResetTask() should not affect buffers that have been
@@ -373,7 +373,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   std::queue<linked_ptr<BitstreamBufferRef> > decoder_input_queue_;
   // For H264 decode, hardware requires that we send it frame-sized chunks.
   // We'll need to parse the stream.
-  scoped_ptr<media::H264Parser> decoder_h264_parser_;
+  std::unique_ptr<media::H264Parser> decoder_h264_parser_;
   // Set if the decoder has a pending incomplete frame in an input buffer.
   bool decoder_partial_frame_pending_;
 

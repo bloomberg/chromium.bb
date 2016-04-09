@@ -48,7 +48,7 @@ class MediaChannel : public IPC::Listener, public IPC::Sender {
                             IPC::Message* reply_message);
 
   gpu::GpuChannel* const channel_;
-  scoped_ptr<GpuJpegDecodeAccelerator> jpeg_decoder_;
+  std::unique_ptr<GpuJpegDecodeAccelerator> jpeg_decoder_;
   DISALLOW_COPY_AND_ASSIGN(MediaChannel);
 };
 

@@ -78,7 +78,7 @@ class H264ConfigChangeDetector {
   // we want to honor after we see an IDR slice.
   bool pending_config_changed_;
 
-  scoped_ptr<media::H264Parser> parser_;
+  std::unique_ptr<media::H264Parser> parser_;
 
   DISALLOW_COPY_AND_ASSIGN(H264ConfigChangeDetector);
 };
@@ -470,7 +470,7 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // when these changes occur then, the decoder works fine. The
   // H264ConfigChangeDetector class provides functionality to check if the
   // stream configuration changed.
-  scoped_ptr<H264ConfigChangeDetector> config_change_detector_;
+  std::unique_ptr<H264ConfigChangeDetector> config_change_detector_;
 
   // Contains the initialization parameters for the video.
   Config config_;

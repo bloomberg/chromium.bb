@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/common/sandbox_linux/sandbox_linux.h"
+
 #include <dirent.h>
 #include <fcntl.h>
 #include <stdint.h>
@@ -12,6 +14,7 @@
 #include <unistd.h>
 
 #include <limits>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -22,14 +25,13 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_linux.h"
@@ -113,7 +115,7 @@ LinuxSandbox::LinuxSandbox()
     LOG(FATAL) << "Failed to instantiate the setuid sandbox client.";
   }
 #if defined(ANY_OF_AMTLU_SANITIZER)
-  sanitizer_args_ = make_scoped_ptr(new __sanitizer_sandbox_arguments);
+  sanitizer_args_ = base::WrapUnique(new __sanitizer_sandbox_arguments);
   *sanitizer_args_ = {0};
 #endif
 }

@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "cc/blink/context_provider_web_context.h"
@@ -27,7 +28,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
     : NON_EXPORTED_BASE(public cc_blink::ContextProviderWebContext) {
  public:
   static scoped_refptr<ContextProviderCommandBuffer> Create(
-      scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
+      std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
       CommandBufferContextType type);
 
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy();
@@ -51,7 +52,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
 
  protected:
   ContextProviderCommandBuffer(
-      scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
+      std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
       CommandBufferContextType type);
   ~ContextProviderCommandBuffer() override;
 
@@ -63,8 +64,8 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   base::ThreadChecker main_thread_checker_;
   base::ThreadChecker context_thread_checker_;
 
-  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d_;
-  scoped_ptr<GrContextForGLES2Interface> gr_context_;
+  std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d_;
+  std::unique_ptr<GrContextForGLES2Interface> gr_context_;
 
   cc::ContextProvider::Capabilities capabilities_;
   CommandBufferContextType context_type_;
@@ -75,7 +76,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   base::Lock context_lock_;
 
   class LostContextCallbackProxy;
-  scoped_ptr<LostContextCallbackProxy> lost_context_callback_proxy_;
+  std::unique_ptr<LostContextCallbackProxy> lost_context_callback_proxy_;
 };
 
 }  // namespace content

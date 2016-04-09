@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_FONT_LIST_H_
 #define CONTENT_COMMON_FONT_LIST_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace base {
 class ListValue;
@@ -31,7 +31,7 @@ extern const char kFontListSequenceToken[];
 //
 // Most callers will want to use the GetFontListAsync function in
 // content/browser/font_list_async.h which does an asynchronous call.
-scoped_ptr<base::ListValue> GetFontList_SlowBlocking();
+std::unique_ptr<base::ListValue> GetFontList_SlowBlocking();
 
 }  // namespace content
 

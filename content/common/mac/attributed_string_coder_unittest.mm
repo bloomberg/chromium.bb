@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "content/common/mac/attributed_string_coder.h"
+
 #include <AppKit/AppKit.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
-#import "content/common/mac/attributed_string_coder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
@@ -26,7 +28,7 @@ class AttributedStringCoderTest : public testing::Test {
   }
 
   NSAttributedString* EncodeAndDecode(NSAttributedString* str) {
-    scoped_ptr<const AttributedStringCoder::EncodedString> encoded_str(
+    std::unique_ptr<const AttributedStringCoder::EncodedString> encoded_str(
         AttributedStringCoder::Encode(str));
     return AttributedStringCoder::Decode(encoded_str.get());
   }

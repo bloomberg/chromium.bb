@@ -531,7 +531,7 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
     return true;
   }
 
-  scoped_ptr<SharedMemoryRegion> shm;
+  std::unique_ptr<SharedMemoryRegion> shm;
 
   if (pending_input_buf_index_ == -1) {
     // When |pending_input_buf_index_| is not -1, the buffer is already dequeued
@@ -939,13 +939,13 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecAsynchronously() {
 
 bool AndroidVideoDecodeAccelerator::ConfigureMediaCodecSynchronously() {
   state_ = WAITING_FOR_CODEC;
-  scoped_ptr<media::VideoCodecBridge> media_codec =
+  std::unique_ptr<media::VideoCodecBridge> media_codec =
       ConfigureMediaCodecOnAnyThread(codec_config_);
   OnCodecConfigured(std::move(media_codec));
   return !!media_codec_;
 }
 
-scoped_ptr<media::VideoCodecBridge>
+std::unique_ptr<media::VideoCodecBridge>
 AndroidVideoDecodeAccelerator::ConfigureMediaCodecOnAnyThread(
     scoped_refptr<CodecConfig> codec_config) {
   TRACE_EVENT0("media", "AVDA::ConfigureMediaCodec");
@@ -957,7 +957,7 @@ AndroidVideoDecodeAccelerator::ConfigureMediaCodecOnAnyThread(
   // |needs_protected_surface_| implies encrypted stream.
   DCHECK(!codec_config->needs_protected_surface_ || media_crypto);
 
-  return scoped_ptr<media::VideoCodecBridge>(
+  return std::unique_ptr<media::VideoCodecBridge>(
       media::VideoCodecBridge::CreateDecoder(
           codec_config->codec_, codec_config->needs_protected_surface_,
           codec_config->initial_expected_coded_size_,
@@ -965,7 +965,7 @@ AndroidVideoDecodeAccelerator::ConfigureMediaCodecOnAnyThread(
 }
 
 void AndroidVideoDecodeAccelerator::OnCodecConfigured(
-    scoped_ptr<media::VideoCodecBridge> media_codec) {
+    std::unique_ptr<media::VideoCodecBridge> media_codec) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(state_, WAITING_FOR_CODEC);
 

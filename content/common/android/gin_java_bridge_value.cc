@@ -4,6 +4,8 @@
 
 #include "content/common/android/gin_java_bridge_value.h"
 
+#include "base/memory/ptr_util.h"
+
 namespace content {
 
 namespace {
@@ -26,31 +28,31 @@ struct Header : public base::Pickle::Header {
 }
 
 // static
-scoped_ptr<base::BinaryValue> GinJavaBridgeValue::CreateUndefinedValue() {
+std::unique_ptr<base::BinaryValue> GinJavaBridgeValue::CreateUndefinedValue() {
   GinJavaBridgeValue gin_value(TYPE_UNDEFINED);
-  return make_scoped_ptr(gin_value.SerializeToBinaryValue());
+  return base::WrapUnique(gin_value.SerializeToBinaryValue());
 }
 
 // static
-scoped_ptr<base::BinaryValue> GinJavaBridgeValue::CreateNonFiniteValue(
+std::unique_ptr<base::BinaryValue> GinJavaBridgeValue::CreateNonFiniteValue(
     float in_value) {
   GinJavaBridgeValue gin_value(TYPE_NONFINITE);
   gin_value.pickle_.WriteFloat(in_value);
-  return make_scoped_ptr(gin_value.SerializeToBinaryValue());
+  return base::WrapUnique(gin_value.SerializeToBinaryValue());
 }
 
 // static
-scoped_ptr<base::BinaryValue> GinJavaBridgeValue::CreateNonFiniteValue(
+std::unique_ptr<base::BinaryValue> GinJavaBridgeValue::CreateNonFiniteValue(
     double in_value) {
   return CreateNonFiniteValue(static_cast<float>(in_value));
 }
 
 // static
-scoped_ptr<base::BinaryValue> GinJavaBridgeValue::CreateObjectIDValue(
+std::unique_ptr<base::BinaryValue> GinJavaBridgeValue::CreateObjectIDValue(
     int32_t in_value) {
   GinJavaBridgeValue gin_value(TYPE_OBJECT_ID);
   gin_value.pickle_.WriteInt(in_value);
-  return make_scoped_ptr(gin_value.SerializeToBinaryValue());
+  return base::WrapUnique(gin_value.SerializeToBinaryValue());
 }
 
 // static
@@ -71,9 +73,9 @@ bool GinJavaBridgeValue::ContainsGinJavaBridgeValue(const base::Value* value) {
 }
 
 // static
-scoped_ptr<const GinJavaBridgeValue> GinJavaBridgeValue::FromValue(
+std::unique_ptr<const GinJavaBridgeValue> GinJavaBridgeValue::FromValue(
     const base::Value* value) {
-  return scoped_ptr<const GinJavaBridgeValue>(
+  return std::unique_ptr<const GinJavaBridgeValue>(
       value->IsType(base::Value::TYPE_BINARY)
           ? new GinJavaBridgeValue(
                 reinterpret_cast<const base::BinaryValue*>(value))

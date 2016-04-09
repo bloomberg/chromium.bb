@@ -8,8 +8,8 @@
 #include <sys/stat.h>
 
 #include <limits>
+#include <memory>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
@@ -158,7 +158,7 @@ bool GetFontTable(int fd, uint32_t table_tag, off_t offset,
     // Read the table directory.
     static const size_t kTableEntrySize = 16;
     const size_t directory_size = num_tables * kTableEntrySize;
-    scoped_ptr<uint8_t[]> table_entries(new uint8_t[directory_size]);
+    std::unique_ptr<uint8_t[]> table_entries(new uint8_t[directory_size]);
     n = HANDLE_EINTR(pread(fd, table_entries.get(), directory_size,
                            12 /* skip the SFNT header */));
     if (n != base::checked_cast<ssize_t>(directory_size))

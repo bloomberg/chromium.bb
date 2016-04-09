@@ -49,7 +49,7 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
   while (1) {
     // Read a new frame header if one is not awaiting decoding already.
     if (!curr_frame_hdr_) {
-      scoped_ptr<media::Vp9FrameHeader> hdr(new media::Vp9FrameHeader());
+      std::unique_ptr<media::Vp9FrameHeader> hdr(new media::Vp9FrameHeader());
       media::Vp9Parser::Result res = parser_.ParseNextFrame(hdr.get());
       switch (res) {
         case media::Vp9Parser::kOk:

@@ -66,7 +66,7 @@ class HostDiscardableSharedMemoryManagerTest : public testing::Test {
 
   // HostDiscardableSharedMemoryManager requires a message loop.
   base::MessageLoop message_loop_;
-  scoped_ptr<TestHostDiscardableSharedMemoryManager> manager_;
+  std::unique_ptr<TestHostDiscardableSharedMemoryManager> manager_;
 };
 
 TEST_F(HostDiscardableSharedMemoryManagerTest, AllocateForChild) {
@@ -249,7 +249,7 @@ class HostDiscardableSharedMemoryManagerScheduleEnforceMemoryPolicyTest
 
   // HostDiscardableSharedMemoryManager requires a message loop.
   base::MessageLoop message_loop_;
-  scoped_ptr<HostDiscardableSharedMemoryManager> manager_;
+  std::unique_ptr<HostDiscardableSharedMemoryManager> manager_;
 };
 
 class SetMemoryLimitRunner : public base::DelegateSimpleThread::Delegate {

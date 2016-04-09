@@ -235,7 +235,7 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   std::set<int32_t> assigned_picture_ids_;
 
   // Texture IDs and image buffers of assigned pictures.
-  std::map<int32_t, scoped_ptr<PictureInfo>> picture_info_map_;
+  std::map<int32_t, std::unique_ptr<PictureInfo>> picture_info_map_;
 
   // Pictures ready to be rendered to.
   std::vector<int32_t> available_picture_ids_;

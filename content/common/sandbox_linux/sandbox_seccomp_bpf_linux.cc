@@ -10,6 +10,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -20,7 +22,6 @@
 #if defined(USE_SECCOMP_BPF)
 
 #include "base/files/scoped_file.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "content/common/sandbox_linux/bpf_cros_arm_gpu_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_gpu_policy_linux.h"
@@ -160,7 +161,7 @@ void RunSandboxSanityChecks(const std::string& process_type) {
   }
 }
 
-scoped_ptr<SandboxBPFBasePolicy> GetGpuProcessSandbox() {
+std::unique_ptr<SandboxBPFBasePolicy> GetGpuProcessSandbox() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   bool allow_sysv_shm = false;
@@ -170,13 +171,13 @@ scoped_ptr<SandboxBPFBasePolicy> GetGpuProcessSandbox() {
   }
 
   if (IsChromeOS() && IsArchitectureArm()) {
-    return scoped_ptr<SandboxBPFBasePolicy>(
+    return std::unique_ptr<SandboxBPFBasePolicy>(
         new CrosArmGpuProcessPolicy(allow_sysv_shm));
   } else {
     bool allow_mincore = command_line.HasSwitch(switches::kUseGL) &&
                          command_line.GetSwitchValueASCII(switches::kUseGL) ==
                              gfx::kGLImplementationEGLName;
-    return scoped_ptr<SandboxBPFBasePolicy>(
+    return std::unique_ptr<SandboxBPFBasePolicy>(
         new GpuProcessPolicy(allow_mincore));
   }
 }
@@ -185,7 +186,7 @@ scoped_ptr<SandboxBPFBasePolicy> GetGpuProcessSandbox() {
 bool StartBPFSandbox(const base::CommandLine& command_line,
                      const std::string& process_type,
                      base::ScopedFD proc_fd) {
-  scoped_ptr<SandboxBPFBasePolicy> policy;
+  std::unique_ptr<SandboxBPFBasePolicy> policy;
 
   if (process_type == switches::kGpuProcess) {
     policy.reset(GetGpuProcessSandbox().release());
@@ -285,7 +286,7 @@ bool SandboxSeccompBPF::StartSandbox(const std::string& process_type,
 #endif  // !defined(OS_NACL_NONSFI)
 
 bool SandboxSeccompBPF::StartSandboxWithExternalPolicy(
-    scoped_ptr<sandbox::bpf_dsl::Policy> policy,
+    std::unique_ptr<sandbox::bpf_dsl::Policy> policy,
     base::ScopedFD proc_fd) {
 #if defined(USE_SECCOMP_BPF)
   if (IsSeccompBPFDesired() && SupportsSandbox()) {
@@ -298,11 +299,12 @@ bool SandboxSeccompBPF::StartSandboxWithExternalPolicy(
 }
 
 #if !defined(OS_NACL_NONSFI)
-scoped_ptr<sandbox::bpf_dsl::Policy> SandboxSeccompBPF::GetBaselinePolicy() {
+std::unique_ptr<sandbox::bpf_dsl::Policy>
+SandboxSeccompBPF::GetBaselinePolicy() {
 #if defined(USE_SECCOMP_BPF)
-  return scoped_ptr<sandbox::bpf_dsl::Policy>(new BaselinePolicy);
+  return std::unique_ptr<sandbox::bpf_dsl::Policy>(new BaselinePolicy);
 #else
-  return scoped_ptr<sandbox::bpf_dsl::Policy>();
+  return std::unique_ptr<sandbox::bpf_dsl::Policy>();
 #endif  // defined(USE_SECCOMP_BPF)
 }
 #endif  // !defined(OS_NACL_NONSFI)

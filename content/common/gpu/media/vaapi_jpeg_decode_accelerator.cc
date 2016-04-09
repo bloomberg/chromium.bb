@@ -78,7 +78,7 @@ static unsigned int VaSurfaceFormatForJpeg(
 
 VaapiJpegDecodeAccelerator::DecodeRequest::DecodeRequest(
     int32_t bitstream_buffer_id,
-    scoped_ptr<SharedMemoryRegion> shm,
+    std::unique_ptr<SharedMemoryRegion> shm,
     const scoped_refptr<media::VideoFrame>& video_frame)
     : bitstream_buffer_id(bitstream_buffer_id),
       shm(std::move(shm)),
@@ -219,7 +219,7 @@ bool VaapiJpegDecodeAccelerator::OutputPicture(
 }
 
 void VaapiJpegDecodeAccelerator::DecodeTask(
-    const scoped_ptr<DecodeRequest>& request) {
+    const std::unique_ptr<DecodeRequest>& request) {
   DVLOG(3) << __func__;
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("jpeg", "DecodeTask");
@@ -292,7 +292,7 @@ void VaapiJpegDecodeAccelerator::Decode(
            << " size: " << bitstream_buffer.size();
 
   // SharedMemoryRegion will take over the |bitstream_buffer.handle()|.
-  scoped_ptr<SharedMemoryRegion> shm(
+  std::unique_ptr<SharedMemoryRegion> shm(
       new SharedMemoryRegion(bitstream_buffer, true));
 
   if (bitstream_buffer.id() < 0) {
@@ -307,7 +307,7 @@ void VaapiJpegDecodeAccelerator::Decode(
     return;
   }
 
-  scoped_ptr<DecodeRequest> request(
+  std::unique_ptr<DecodeRequest> request(
       new DecodeRequest(bitstream_buffer.id(), std::move(shm), video_frame));
 
   decoder_task_runner_->PostTask(

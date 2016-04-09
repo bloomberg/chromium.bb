@@ -10,6 +10,7 @@
 
 #include "base/base64.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -31,7 +32,7 @@ const char* kFieldSeparator = "|";
 
 TrialToken::~TrialToken() {}
 
-scoped_ptr<TrialToken> TrialToken::Parse(const std::string& token_text) {
+std::unique_ptr<TrialToken> TrialToken::Parse(const std::string& token_text) {
   if (token_text.empty()) {
     return nullptr;
   }
@@ -86,8 +87,8 @@ scoped_ptr<TrialToken> TrialToken::Parse(const std::string& token_text) {
   // Signed data is (origin + "|" + feature_name + "|" + expiry).
   std::string data = token_contents.substr(signature.length() + 1);
 
-  return make_scoped_ptr(new TrialToken(version, signature, data, origin,
-                                        feature_name, expiry_timestamp));
+  return base::WrapUnique(new TrialToken(version, signature, data, origin,
+                                         feature_name, expiry_timestamp));
 }
 
 bool TrialToken::IsAppropriate(const url::Origin& origin,

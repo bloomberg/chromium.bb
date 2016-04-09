@@ -176,7 +176,7 @@ struct V4L2SliceVideoDecodeAccelerator::BitstreamBufferRef {
   ~BitstreamBufferRef();
   const base::WeakPtr<VideoDecodeAccelerator::Client> client;
   const scoped_refptr<base::SingleThreadTaskRunner> client_task_runner;
-  const scoped_ptr<SharedMemoryRegion> shm;
+  const std::unique_ptr<SharedMemoryRegion> shm;
   off_t bytes_used;
   const int32_t input_id;
 };
@@ -1210,7 +1210,7 @@ void V4L2SliceVideoDecodeAccelerator::DecodeTask(
             << " size=" << bitstream_buffer.size();
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
-  scoped_ptr<BitstreamBufferRef> bitstream_record(new BitstreamBufferRef(
+  std::unique_ptr<BitstreamBufferRef> bitstream_record(new BitstreamBufferRef(
       decode_client_, decode_task_runner_,
       new SharedMemoryRegion(bitstream_buffer, true), bitstream_buffer.id()));
   if (!bitstream_record->shm->Map()) {
@@ -1537,7 +1537,7 @@ void V4L2SliceVideoDecodeAccelerator::ReusePictureBuffer(
     return;
   }
 
-  scoped_ptr<EGLSyncKHRRef> egl_sync_ref(
+  std::unique_ptr<EGLSyncKHRRef> egl_sync_ref(
       new EGLSyncKHRRef(egl_display_, egl_sync));
   decoder_thread_task_runner_->PostTask(
       FROM_HERE,
@@ -1548,7 +1548,7 @@ void V4L2SliceVideoDecodeAccelerator::ReusePictureBuffer(
 
 void V4L2SliceVideoDecodeAccelerator::ReusePictureBufferTask(
     int32_t picture_buffer_id,
-    scoped_ptr<EGLSyncKHRRef> egl_sync_ref) {
+    std::unique_ptr<EGLSyncKHRRef> egl_sync_ref) {
   DVLOGF(3) << "picture_buffer_id=" << picture_buffer_id;
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
@@ -2095,7 +2095,7 @@ bool V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::SubmitSlice(
   // TODO(posciak): Don't add start code back here, but have it passed from
   // the parser.
   size_t data_copy_size = size + 3;
-  scoped_ptr<uint8_t[]> data_copy(new uint8_t[data_copy_size]);
+  std::unique_ptr<uint8_t[]> data_copy(new uint8_t[data_copy_size]);
   memset(data_copy.get(), 0, data_copy_size);
   data_copy[2] = 0x01;
   memcpy(data_copy.get() + 3, data, size);

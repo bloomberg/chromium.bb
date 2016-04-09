@@ -210,7 +210,7 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
     ~InputBuffer();
 
     int32_t id;
-    scoped_ptr<SharedMemoryRegion> shm;
+    std::unique_ptr<SharedMemoryRegion> shm;
   };
 
   // Queue for incoming input buffers.
@@ -273,15 +273,15 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
 
   // To expose client callbacks from VideoDecodeAccelerator.
   // NOTE: all calls to these objects *MUST* be executed on message_loop_.
-  scoped_ptr<base::WeakPtrFactory<Client> > client_ptr_factory_;
+  std::unique_ptr<base::WeakPtrFactory<Client>> client_ptr_factory_;
   base::WeakPtr<Client> client_;
 
   // Accelerators come after vaapi_wrapper_ to ensure they are destroyed first.
-  scoped_ptr<VaapiH264Accelerator> h264_accelerator_;
-  scoped_ptr<VaapiVP8Accelerator> vp8_accelerator_;
-  scoped_ptr<VaapiVP9Accelerator> vp9_accelerator_;
+  std::unique_ptr<VaapiH264Accelerator> h264_accelerator_;
+  std::unique_ptr<VaapiVP8Accelerator> vp8_accelerator_;
+  std::unique_ptr<VaapiVP9Accelerator> vp9_accelerator_;
   // After *_accelerator_ to ensure correct destruction order.
-  scoped_ptr<AcceleratedVideoDecoder> decoder_;
+  std::unique_ptr<AcceleratedVideoDecoder> decoder_;
 
   base::Thread decoder_thread_;
   // Use this to post tasks to |decoder_thread_| instead of

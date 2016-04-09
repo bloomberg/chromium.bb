@@ -5,11 +5,11 @@
 #ifndef CONTENT_COMMON_SANDBOX_LINUX_SANDBOX_SECCOMP_BPF_LINUX_H_
 #define CONTENT_COMMON_SANDBOX_LINUX_SANDBOX_SECCOMP_BPF_LINUX_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 
 namespace content {
@@ -39,10 +39,10 @@ class SandboxSeccompBPF {
   // This is the API to enable a seccomp-bpf sandbox by using an
   // external policy.
   static bool StartSandboxWithExternalPolicy(
-      scoped_ptr<sandbox::bpf_dsl::Policy> policy,
+      std::unique_ptr<sandbox::bpf_dsl::Policy> policy,
       base::ScopedFD proc_fd);
   // The "baseline" policy can be a useful base to build a sandbox policy.
-  static scoped_ptr<sandbox::bpf_dsl::Policy> GetBaselinePolicy();
+  static std::unique_ptr<sandbox::bpf_dsl::Policy> GetBaselinePolicy();
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SandboxSeccompBPF);

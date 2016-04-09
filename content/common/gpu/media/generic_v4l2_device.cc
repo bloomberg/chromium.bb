@@ -217,7 +217,8 @@ EGLImageKHR GenericV4L2Device::CreateEGLImage(EGLDisplay egl_display,
     return EGL_NO_IMAGE_KHR;
   }
 
-  scoped_ptr<base::ScopedFD[]> dmabuf_fds(new base::ScopedFD[num_v4l2_planes]);
+  std::unique_ptr<base::ScopedFD[]> dmabuf_fds(
+      new base::ScopedFD[num_v4l2_planes]);
   // Export dmabuf fds so we can create an EGLImage from them.
   for (size_t i = 0; i < num_v4l2_planes; ++i) {
     struct v4l2_exportbuffer expbuf;

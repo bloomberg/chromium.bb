@@ -94,7 +94,8 @@ class CONTENT_EXPORT VaapiVideoEncodeAccelerator
   void InitializeTask();
   void EncodeTask(const scoped_refptr<media::VideoFrame>& frame,
                   bool force_keyframe);
-  void UseOutputBitstreamBufferTask(scoped_ptr<BitstreamBufferRef> buffer_ref);
+  void UseOutputBitstreamBufferTask(
+      std::unique_ptr<BitstreamBufferRef> buffer_ref);
   void RequestEncodingParametersChangeTask(uint32_t bitrate,
                                            uint32_t framerate);
   void DestroyTask();
@@ -204,7 +205,7 @@ class CONTENT_EXPORT VaapiVideoEncodeAccelerator
   bool encoding_parameters_changed_;
 
   // Job currently being prepared for encode.
-  scoped_ptr<EncodeJob> current_encode_job_;
+  std::unique_ptr<EncodeJob> current_encode_job_;
 
   // Current SPS, PPS and their packed versions. Packed versions are their NALUs
   // in AnnexB format *without* emulation prevention three-byte sequences
@@ -247,7 +248,7 @@ class CONTENT_EXPORT VaapiVideoEncodeAccelerator
   // To expose client callbacks from VideoEncodeAccelerator.
   // NOTE: all calls to these objects *MUST* be executed on
   // child_task_runner_.
-  scoped_ptr<base::WeakPtrFactory<Client> > client_ptr_factory_;
+  std::unique_ptr<base::WeakPtrFactory<Client>> client_ptr_factory_;
   base::WeakPtr<Client> client_;
 
   // WeakPtr to post from the encoder thread back to the ChildThread, as it may

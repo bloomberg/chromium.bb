@@ -50,7 +50,7 @@ class ContextTestBase : public testing::Test {
   gpu::ContextSupport* context_support_;
 
  private:
-  scoped_ptr<gpu::GLInProcessContext> context_;
+  std::unique_ptr<gpu::GLInProcessContext> context_;
 };
 
 }  // namespace

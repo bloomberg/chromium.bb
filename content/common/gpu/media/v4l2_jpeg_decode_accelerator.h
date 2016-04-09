@@ -97,7 +97,7 @@ class CONTENT_EXPORT V4L2JpegDecodeAccelerator
   void PostNotifyError(int32_t bitstream_buffer_id, Error error);
 
   // Run on |decoder_thread_| to enqueue the coming frame.
-  void DecodeTask(scoped_ptr<JobRecord> job_record);
+  void DecodeTask(std::unique_ptr<JobRecord> job_record);
 
   // Run on |decoder_thread_| to dequeue last frame and enqueue next frame.
   // This task is triggered by DevicePollTask. |event_pending| means that device

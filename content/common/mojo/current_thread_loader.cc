@@ -4,6 +4,8 @@
 
 #include "content/common/mojo/current_thread_loader.h"
 
+#include "base/memory/ptr_util.h"
+
 namespace content {
 
 CurrentThreadLoader::CurrentThreadLoader(const ApplicationFactory& factory)
@@ -18,7 +20,7 @@ void CurrentThreadLoader::Load(const std::string& name,
     factory_ = ApplicationFactory();
   }
 
-  connections_.push_back(make_scoped_ptr(
+  connections_.push_back(base::WrapUnique(
       new mojo::ShellConnection(shell_client_.get(), std::move(request))));
 }
 

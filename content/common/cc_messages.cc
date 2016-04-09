@@ -672,10 +672,9 @@ bool ParamTraits<cc::DelegatedFrameData>::Read(const base::Pickle* m,
         quad_list_size > kMaxQuadListSize ||
         shared_quad_state_list_size > kMaxSharedQuadStateListSize)
       return false;
-    scoped_ptr<cc::RenderPass> render_pass =
-        cc::RenderPass::Create(
-            static_cast<size_t>(shared_quad_state_list_size),
-            static_cast<size_t>(quad_list_size));
+    std::unique_ptr<cc::RenderPass> render_pass =
+        cc::RenderPass::Create(static_cast<size_t>(shared_quad_state_list_size),
+                               static_cast<size_t>(quad_list_size));
     if (!ReadParam(m, iter, render_pass.get()))
       return false;
     // Validate that each RenderPassDrawQuad points at a valid RenderPass

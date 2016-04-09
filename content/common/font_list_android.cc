@@ -8,8 +8,8 @@
 
 namespace content {
 
-scoped_ptr<base::ListValue> GetFontList_SlowBlocking() {
-  return scoped_ptr<base::ListValue>(new base::ListValue);
+std::unique_ptr<base::ListValue> GetFontList_SlowBlocking() {
+  return std::unique_ptr<base::ListValue>(new base::ListValue);
 }
 
 }  // namespace content

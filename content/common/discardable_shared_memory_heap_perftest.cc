@@ -37,7 +37,7 @@ TEST(DiscardableSharedMemoryHeapTest, SearchFreeLists) {
   int next_discardable_shared_memory_id = 0;
 
   for (size_t i = 0; i < kSegments; ++i) {
-    scoped_ptr<base::DiscardableSharedMemory> memory(
+    std::unique_ptr<base::DiscardableSharedMemory> memory(
         new base::DiscardableSharedMemory);
     ASSERT_TRUE(memory->CreateAndMap(segment_size));
     heap.MergeIntoFreeLists(heap.Grow(std::move(memory), segment_size,
@@ -71,7 +71,7 @@ TEST(DiscardableSharedMemoryHeapTest, SearchFreeLists) {
       // Search for a perfect fit if greater than kBlocks.
       size_t slack =
           random_blocks[i] < kBlocks ? kBlocks - random_blocks[i] : 0;
-      scoped_ptr<DiscardableSharedMemoryHeap::Span> span =
+      std::unique_ptr<DiscardableSharedMemoryHeap::Span> span =
           heap.SearchFreeLists(random_blocks[i], slack);
       if (span) {
         spans.push_back(new base::ScopedClosureRunner(

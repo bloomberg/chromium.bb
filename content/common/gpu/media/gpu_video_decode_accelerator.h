@@ -111,7 +111,7 @@ class GpuVideoDecodeAccelerator
   gpu::GpuCommandBufferStub* const stub_;
 
   // The underlying VideoDecodeAccelerator.
-  scoped_ptr<media::VideoDecodeAccelerator> video_decode_accelerator_;
+  std::unique_ptr<media::VideoDecodeAccelerator> video_decode_accelerator_;
 
   // Callback to return current GLContext, if available.
   GetGLContextCallback get_gl_context_cb_;

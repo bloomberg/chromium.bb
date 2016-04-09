@@ -6,10 +6,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "content/common/gpu/media/android_copying_backing_strategy.h"
 #include "content/common/gpu/media/android_video_decode_accelerator.h"
@@ -68,9 +69,9 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
     // AndroidVideoDecodeAccelerator::ConfigureMediaCodec() starts a timer task.
     message_loop_.reset(new base::MessageLoop());
 
-    scoped_ptr<gpu::gles2::MockGLES2Decoder> decoder(
+    std::unique_ptr<gpu::gles2::MockGLES2Decoder> decoder(
         new gpu::gles2::MockGLES2Decoder());
-    scoped_ptr<MockVideoDecodeAcceleratorClient> client(
+    std::unique_ptr<MockVideoDecodeAcceleratorClient> client(
         new MockVideoDecodeAcceleratorClient());
     accelerator_.reset(new AndroidVideoDecodeAccelerator(
         base::Bind(&MockMakeContextCurrent),
@@ -89,8 +90,8 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<media::VideoDecodeAccelerator> accelerator_;
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<media::VideoDecodeAccelerator> accelerator_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 };
 
 TEST_F(AndroidVideoDecodeAcceleratorTest, ConfigureUnsupportedCodec) {

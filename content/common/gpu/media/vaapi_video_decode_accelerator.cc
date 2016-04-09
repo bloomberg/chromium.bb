@@ -450,7 +450,7 @@ void VaapiVideoDecodeAccelerator::MapAndQueueNewInputBuffer(
   DVLOG(4) << "Mapping new input buffer id: " << bitstream_buffer.id()
            << " size: " << (int)bitstream_buffer.size();
 
-  scoped_ptr<SharedMemoryRegion> shm(
+  std::unique_ptr<SharedMemoryRegion> shm(
       new SharedMemoryRegion(bitstream_buffer, true));
   RETURN_AND_NOTIFY_ON_FAILURE(shm->Map(), "Failed to map input buffer",
                                UNREADABLE_INPUT, );

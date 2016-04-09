@@ -33,7 +33,8 @@ class MediaService {
 
  private:
   gpu::GpuChannelManager* const channel_manager_;
-  base::ScopedPtrHashMap<int32_t, scoped_ptr<MediaChannel>> media_channels_;
+  base::ScopedPtrHashMap<int32_t, std::unique_ptr<MediaChannel>>
+      media_channels_;
   DISALLOW_COPY_AND_ASSIGN(MediaService);
 };
 

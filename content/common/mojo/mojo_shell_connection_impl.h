@@ -5,10 +5,10 @@
 #ifndef CONTENT_COMMON_MOJO_SHELL_CONNECTION_IMPL_H_
 #define CONTENT_COMMON_MOJO_SHELL_CONNECTION_IMPL_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/shell/public/cpp/shell.h"
@@ -62,7 +62,7 @@ class MojoShellConnectionImpl : public MojoShellConnection,
   void RemoveListener(Listener* listener) override;
 
   const bool external_;
-  scoped_ptr<mojo::ShellConnection> shell_connection_;
+  std::unique_ptr<mojo::ShellConnection> shell_connection_;
   std::vector<Listener*> listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoShellConnectionImpl);

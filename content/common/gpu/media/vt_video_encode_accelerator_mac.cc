@@ -50,11 +50,11 @@ struct VTVideoEncodeAccelerator::EncodeOutput {
 
 struct VTVideoEncodeAccelerator::BitstreamBufferRef {
   BitstreamBufferRef(int32_t id,
-                     scoped_ptr<base::SharedMemory> shm,
+                     std::unique_ptr<base::SharedMemory> shm,
                      size_t size)
       : id(id), shm(std::move(shm)), size(size) {}
   const int32_t id;
-  const scoped_ptr<base::SharedMemory> shm;
+  const std::unique_ptr<base::SharedMemory> shm;
   const size_t size;
 
  private:
@@ -187,7 +187,7 @@ void VTVideoEncodeAccelerator::UseOutputBitstreamBuffer(
     return;
   }
 
-  scoped_ptr<base::SharedMemory> shm(
+  std::unique_ptr<base::SharedMemory> shm(
       new base::SharedMemory(buffer.handle(), false));
   if (!shm->Map(buffer.size())) {
     DLOG(ERROR) << "Failed mapping shared memory.";
@@ -195,7 +195,7 @@ void VTVideoEncodeAccelerator::UseOutputBitstreamBuffer(
     return;
   }
 
-  scoped_ptr<BitstreamBufferRef> buffer_ref(
+  std::unique_ptr<BitstreamBufferRef> buffer_ref(
       new BitstreamBufferRef(buffer.id(), std::move(shm), buffer.size()));
 
   encoder_thread_task_runner_->PostTask(
@@ -260,8 +260,8 @@ void VTVideoEncodeAccelerator::EncodeTask(
       frame->timestamp().InMicroseconds(), USEC_PER_SEC);
   // Wrap information we'll need after the frame is encoded in a heap object.
   // We'll get the pointer back from the VideoToolbox completion callback.
-  scoped_ptr<InProgressFrameEncode> request(new InProgressFrameEncode(
-      frame->timestamp(), ref_time));
+  std::unique_ptr<InProgressFrameEncode> request(
+      new InProgressFrameEncode(frame->timestamp(), ref_time));
 
   // We can pass the ownership of |request| to the encode callback if
   // successful. Otherwise let it fall out of scope.
@@ -278,12 +278,12 @@ void VTVideoEncodeAccelerator::EncodeTask(
 }
 
 void VTVideoEncodeAccelerator::UseOutputBitstreamBufferTask(
-    scoped_ptr<BitstreamBufferRef> buffer_ref) {
+    std::unique_ptr<BitstreamBufferRef> buffer_ref) {
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
 
   // If there is already EncodeOutput waiting, copy its output first.
   if (!encoder_output_queue_.empty()) {
-    scoped_ptr<VTVideoEncodeAccelerator::EncodeOutput> encode_output =
+    std::unique_ptr<VTVideoEncodeAccelerator::EncodeOutput> encode_output =
         std::move(encoder_output_queue_.front());
     encoder_output_queue_.pop_front();
     ReturnBitstreamBuffer(std::move(encode_output), std::move(buffer_ref));
@@ -356,13 +356,13 @@ void VTVideoEncodeAccelerator::CompressionCallback(void* encoder_opaque,
 
   // Release InProgressFrameEncode, since we don't have support to return
   // timestamps at this point.
-  scoped_ptr<InProgressFrameEncode> request(
+  std::unique_ptr<InProgressFrameEncode> request(
       reinterpret_cast<InProgressFrameEncode*>(request_opaque));
   request.reset();
 
   // EncodeOutput holds onto CMSampleBufferRef when posting task between
   // threads.
-  scoped_ptr<EncodeOutput> encode_output(new EncodeOutput(info, sbuf));
+  std::unique_ptr<EncodeOutput> encode_output(new EncodeOutput(info, sbuf));
 
   // This method is NOT called on |encoder_thread_|, so we still need to
   // post a task back to it to do work.
@@ -374,7 +374,7 @@ void VTVideoEncodeAccelerator::CompressionCallback(void* encoder_opaque,
 
 void VTVideoEncodeAccelerator::CompressionCallbackTask(
     OSStatus status,
-    scoped_ptr<EncodeOutput> encode_output) {
+    std::unique_ptr<EncodeOutput> encode_output) {
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
 
   if (status != noErr) {
@@ -390,15 +390,15 @@ void VTVideoEncodeAccelerator::CompressionCallbackTask(
     return;
   }
 
-  scoped_ptr<VTVideoEncodeAccelerator::BitstreamBufferRef> buffer_ref =
+  std::unique_ptr<VTVideoEncodeAccelerator::BitstreamBufferRef> buffer_ref =
       std::move(bitstream_buffer_queue_.front());
   bitstream_buffer_queue_.pop_front();
   ReturnBitstreamBuffer(std::move(encode_output), std::move(buffer_ref));
 }
 
 void VTVideoEncodeAccelerator::ReturnBitstreamBuffer(
-    scoped_ptr<EncodeOutput> encode_output,
-    scoped_ptr<VTVideoEncodeAccelerator::BitstreamBufferRef> buffer_ref) {
+    std::unique_ptr<EncodeOutput> encode_output,
+    std::unique_ptr<VTVideoEncodeAccelerator::BitstreamBufferRef> buffer_ref) {
   DVLOG(3) << __FUNCTION__;
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
 

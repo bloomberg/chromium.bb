@@ -101,10 +101,10 @@ struct VaapiVideoEncodeAccelerator::InputFrameRef {
 };
 
 struct VaapiVideoEncodeAccelerator::BitstreamBufferRef {
-  BitstreamBufferRef(int32_t id, scoped_ptr<SharedMemoryRegion> shm)
+  BitstreamBufferRef(int32_t id, std::unique_ptr<SharedMemoryRegion> shm)
       : id(id), shm(std::move(shm)) {}
   const int32_t id;
-  const scoped_ptr<SharedMemoryRegion> shm;
+  const std::unique_ptr<SharedMemoryRegion> shm;
 };
 
 media::VideoEncodeAccelerator::SupportedProfiles
@@ -674,13 +674,14 @@ void VaapiVideoEncodeAccelerator::UseOutputBitstreamBuffer(
     return;
   }
 
-  scoped_ptr<SharedMemoryRegion> shm(new SharedMemoryRegion(buffer, false));
+  std::unique_ptr<SharedMemoryRegion> shm(
+      new SharedMemoryRegion(buffer, false));
   if (!shm->Map()) {
     NOTIFY_ERROR(kPlatformFailureError, "Failed mapping shared memory.");
     return;
   }
 
-  scoped_ptr<BitstreamBufferRef> buffer_ref(
+  std::unique_ptr<BitstreamBufferRef> buffer_ref(
       new BitstreamBufferRef(buffer.id(), std::move(shm)));
 
   encoder_thread_task_runner_->PostTask(
@@ -690,7 +691,7 @@ void VaapiVideoEncodeAccelerator::UseOutputBitstreamBuffer(
 }
 
 void VaapiVideoEncodeAccelerator::UseOutputBitstreamBufferTask(
-    scoped_ptr<BitstreamBufferRef> buffer_ref) {
+    std::unique_ptr<BitstreamBufferRef> buffer_ref) {
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(state_, kUninitialized);
 

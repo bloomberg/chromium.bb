@@ -8,17 +8,16 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "build/build_config.h"
-
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/singleton.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "content/public/common/child_process_host.h"
 #include "ipc/ipc_listener.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -113,7 +112,7 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   ChildProcessHostDelegate* delegate_;
   base::Process peer_process_;
   bool opening_channel_;  // True while we're waiting the channel to be opened.
-  scoped_ptr<IPC::Channel> channel_;
+  std::unique_ptr<IPC::Channel> channel_;
   std::string channel_id_;
 
   // Holds all the IPC message filters.  Since this object lives on the IO

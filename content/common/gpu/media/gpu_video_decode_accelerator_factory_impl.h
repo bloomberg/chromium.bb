@@ -58,12 +58,12 @@ public:
   using GetGLES2DecoderCallback =
       base::Callback<base::WeakPtr<gpu::gles2::GLES2Decoder>(void)>;
 
-  static scoped_ptr<GpuVideoDecodeAcceleratorFactoryImpl> Create(
+  static std::unique_ptr<GpuVideoDecodeAcceleratorFactoryImpl> Create(
       const GetGLContextCallback& get_gl_context_cb,
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const BindGLImageCallback& bind_image_cb);
 
-  static scoped_ptr<GpuVideoDecodeAcceleratorFactoryImpl>
+  static std::unique_ptr<GpuVideoDecodeAcceleratorFactoryImpl>
   CreateWithGLES2Decoder(
       const GetGLContextCallback& get_gl_context_cb,
       const MakeGLContextCurrentCallback& make_context_current_cb,
@@ -73,7 +73,7 @@ public:
   static gpu::VideoDecodeAcceleratorCapabilities GetDecoderCapabilities(
       const gpu::GpuPreferences& gpu_preferences);
 
-  scoped_ptr<media::VideoDecodeAccelerator> CreateVDA(
+  std::unique_ptr<media::VideoDecodeAccelerator> CreateVDA(
       media::VideoDecodeAccelerator::Client* client,
       const media::VideoDecodeAccelerator::Config& config,
       const gpu::GpuPreferences& gpu_preferences);
@@ -86,25 +86,25 @@ public:
       const GetGLES2DecoderCallback& get_gles2_decoder_cb);
 
 #if defined(OS_WIN)
-  scoped_ptr<media::VideoDecodeAccelerator> CreateDXVAVDA(
+  std::unique_ptr<media::VideoDecodeAccelerator> CreateDXVAVDA(
       const gpu::GpuPreferences& gpu_preferences) const;
 #endif
 #if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
-  scoped_ptr<media::VideoDecodeAccelerator> CreateV4L2VDA(
+  std::unique_ptr<media::VideoDecodeAccelerator> CreateV4L2VDA(
       const gpu::GpuPreferences& gpu_preferences) const;
-  scoped_ptr<media::VideoDecodeAccelerator> CreateV4L2SVDA(
+  std::unique_ptr<media::VideoDecodeAccelerator> CreateV4L2SVDA(
       const gpu::GpuPreferences& gpu_preferences) const;
 #endif
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  scoped_ptr<media::VideoDecodeAccelerator> CreateVaapiVDA(
+  std::unique_ptr<media::VideoDecodeAccelerator> CreateVaapiVDA(
       const gpu::GpuPreferences& gpu_preferences) const;
 #endif
 #if defined(OS_MACOSX)
-  scoped_ptr<media::VideoDecodeAccelerator> CreateVTVDA(
+  std::unique_ptr<media::VideoDecodeAccelerator> CreateVTVDA(
       const gpu::GpuPreferences& gpu_preferences) const;
 #endif
 #if defined(OS_ANDROID)
-  scoped_ptr<media::VideoDecodeAccelerator> CreateAndroidVDA(
+  std::unique_ptr<media::VideoDecodeAccelerator> CreateAndroidVDA(
       const gpu::GpuPreferences& gpu_preferences) const;
 #endif
 

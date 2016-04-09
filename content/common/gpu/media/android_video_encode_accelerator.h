@@ -76,9 +76,9 @@ class CONTENT_EXPORT AndroidVideoEncodeAccelerator
 
   // VideoDecodeAccelerator::Client callbacks go here.  Invalidated once any
   // error triggers.
-  scoped_ptr<base::WeakPtrFactory<Client> > client_ptr_factory_;
+  std::unique_ptr<base::WeakPtrFactory<Client>> client_ptr_factory_;
 
-  scoped_ptr<media::VideoCodecBridge> media_codec_;
+  std::unique_ptr<media::VideoCodecBridge> media_codec_;
 
   // Bitstream buffers waiting to be populated & returned to the client.
   std::vector<media::BitstreamBuffer> available_bitstream_buffers_;

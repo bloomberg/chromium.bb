@@ -13,7 +13,7 @@ namespace content {
 bool TrialTokenValidator::ValidateToken(const std::string& token,
                                         const url::Origin& origin,
                                         base::StringPiece featureName) {
-  scoped_ptr<TrialToken> trial_token = TrialToken::Parse(token);
+  std::unique_ptr<TrialToken> trial_token = TrialToken::Parse(token);
 
   // TODO(iclelland): Allow for multiple signing keys, and iterate over all
   // active keys here. https://crbug.com/543220

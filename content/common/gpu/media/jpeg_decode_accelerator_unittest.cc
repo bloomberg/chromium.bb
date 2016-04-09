@@ -109,7 +109,7 @@ class JpegClient : public JpegDecodeAccelerator::Client {
   // JpegClient doesn't own |test_image_files_|.
   const std::vector<TestImageFile*>& test_image_files_;
 
-  scoped_ptr<JpegDecodeAccelerator> decoder_;
+  std::unique_ptr<JpegDecodeAccelerator> decoder_;
   ClientState state_;
 
   // Used to notify another thread about the state. JpegClient does not own
@@ -117,11 +117,11 @@ class JpegClient : public JpegDecodeAccelerator::Client {
   ClientStateNotification<ClientState>* note_;
 
   // Mapped memory of input file.
-  scoped_ptr<base::SharedMemory> in_shm_;
+  std::unique_ptr<base::SharedMemory> in_shm_;
   // Mapped memory of output buffer from hardware decoder.
-  scoped_ptr<base::SharedMemory> hw_out_shm_;
+  std::unique_ptr<base::SharedMemory> hw_out_shm_;
   // Mapped memory of output buffer from software decoder.
-  scoped_ptr<base::SharedMemory> sw_out_shm_;
+  std::unique_ptr<base::SharedMemory> sw_out_shm_;
 
   DISALLOW_COPY_AND_ASSIGN(JpegClient);
 };
@@ -323,15 +323,15 @@ class JpegDecodeAcceleratorTestEnvironment : public ::testing::Environment {
   void ReadTestJpegImage(base::FilePath& filename, TestImageFile* image_data);
 
   // Parsed data of |test_1280x720_jpeg_file_|.
-  scoped_ptr<TestImageFile> image_data_1280x720_black_;
+  std::unique_ptr<TestImageFile> image_data_1280x720_black_;
   // Parsed data of |test_640x368_jpeg_file_|.
-  scoped_ptr<TestImageFile> image_data_640x368_black_;
+  std::unique_ptr<TestImageFile> image_data_640x368_black_;
   // Parsed data of |test_640x360_jpeg_file_|.
-  scoped_ptr<TestImageFile> image_data_640x360_black_;
+  std::unique_ptr<TestImageFile> image_data_640x360_black_;
   // Parsed data of "peach_pi-1280x720.jpg".
-  scoped_ptr<TestImageFile> image_data_1280x720_default_;
+  std::unique_ptr<TestImageFile> image_data_1280x720_default_;
   // Parsed data of failure image.
-  scoped_ptr<TestImageFile> image_data_invalid_;
+  std::unique_ptr<TestImageFile> image_data_invalid_;
   // Parsed data from command line.
   ScopedVector<TestImageFile> image_data_user_;
 

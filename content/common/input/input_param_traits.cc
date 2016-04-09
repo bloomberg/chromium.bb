@@ -17,12 +17,12 @@
 namespace IPC {
 namespace {
 template <typename GestureType>
-scoped_ptr<content::SyntheticGestureParams> ReadGestureParams(
+std::unique_ptr<content::SyntheticGestureParams> ReadGestureParams(
     const base::Pickle* m,
     base::PickleIterator* iter) {
-  scoped_ptr<GestureType> gesture_params(new GestureType);
+  std::unique_ptr<GestureType> gesture_params(new GestureType);
   if (!ReadParam(m, iter, gesture_params.get()))
-    return scoped_ptr<content::SyntheticGestureParams>();
+    return std::unique_ptr<content::SyntheticGestureParams>();
 
   return std::move(gesture_params);
 }
@@ -91,7 +91,7 @@ bool ParamTraits<content::SyntheticGesturePacket>::Read(
   content::SyntheticGestureParams::GestureType gesture_type;
   if (!ReadParam(m, iter, &gesture_type))
     return false;
-  scoped_ptr<content::SyntheticGestureParams> gesture_params;
+  std::unique_ptr<content::SyntheticGestureParams> gesture_params;
   switch (gesture_type) {
     case content::SyntheticGestureParams::SMOOTH_SCROLL_GESTURE:
       gesture_params =

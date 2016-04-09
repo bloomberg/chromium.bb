@@ -19,7 +19,8 @@ namespace content {
 // the current thread.
 class CurrentThreadLoader : public mojo::shell::Loader {
  public:
-  using ApplicationFactory = base::Callback<scoped_ptr<mojo::ShellClient>()>;
+  using ApplicationFactory =
+      base::Callback<std::unique_ptr<mojo::ShellClient>()>;
 
   explicit CurrentThreadLoader(const ApplicationFactory& factory);
   ~CurrentThreadLoader() override;
@@ -34,9 +35,9 @@ class CurrentThreadLoader : public mojo::shell::Loader {
   ApplicationFactory factory_;
 
   // Our shared shell client, passed to each connection.
-  scoped_ptr<mojo::ShellClient> shell_client_;
+  std::unique_ptr<mojo::ShellClient> shell_client_;
 
-  std::vector<scoped_ptr<mojo::ShellConnection>> connections_;
+  std::vector<std::unique_ptr<mojo::ShellConnection>> connections_;
 
   DISALLOW_COPY_AND_ASSIGN(CurrentThreadLoader);
 };

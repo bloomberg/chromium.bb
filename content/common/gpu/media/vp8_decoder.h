@@ -8,9 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/gpu/media/accelerated_video_decoder.h"
 #include "content/common/gpu/media/vp8_picture.h"
 #include "media/filters/vp8_parser.h"
@@ -88,7 +89,7 @@ class CONTENT_EXPORT VP8Decoder : public AcceleratedVideoDecoder {
 
   media::Vp8Parser parser_;
 
-  scoped_ptr<media::Vp8FrameHeader> curr_frame_hdr_;
+  std::unique_ptr<media::Vp8FrameHeader> curr_frame_hdr_;
   scoped_refptr<VP8Picture> curr_pic_;
   scoped_refptr<VP8Picture> last_frame_;
   scoped_refptr<VP8Picture> golden_frame_;

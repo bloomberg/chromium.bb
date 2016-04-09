@@ -35,7 +35,7 @@ class RunnerThread : public base::SimpleThread {
         factory_(factory) {}
 
   void Run() override {
-    scoped_ptr<mojo::ApplicationRunner> runner(
+    std::unique_ptr<mojo::ApplicationRunner> runner(
         new mojo::ApplicationRunner(factory_.Run().release()));
     runner->Run(request_.PassMessagePipe().release().value(),
                 false /* init_base */);

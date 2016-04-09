@@ -4,8 +4,9 @@
 
 #include "content/common/origin_trials/trial_token.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/test/simple_test_clock.h"
@@ -155,20 +156,21 @@ class TrialTokenTest : public testing::Test {
 };
 
 TEST_F(TrialTokenTest, ParseEmptyString) {
-  scoped_ptr<TrialToken> empty_token = TrialToken::Parse("");
+  std::unique_ptr<TrialToken> empty_token = TrialToken::Parse("");
   EXPECT_FALSE(empty_token);
 }
 
 TEST_F(TrialTokenTest, ParseInvalidStrings) {
   for (size_t i = 0; i < kNumInvalidTokens; ++i) {
-    scoped_ptr<TrialToken> empty_token = TrialToken::Parse(kInvalidTokens[i]);
+    std::unique_ptr<TrialToken> empty_token =
+        TrialToken::Parse(kInvalidTokens[i]);
     EXPECT_FALSE(empty_token) << "Invalid trial token should not parse: "
                               << kInvalidTokens[i];
   }
 }
 
 TEST_F(TrialTokenTest, ParseValidToken) {
-  scoped_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
+  std::unique_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
   ASSERT_TRUE(token);
   EXPECT_EQ(kExpectedVersion, token->version());
   EXPECT_EQ(kExpectedFeatureName, token->feature_name());
@@ -179,7 +181,7 @@ TEST_F(TrialTokenTest, ParseValidToken) {
 }
 
 TEST_F(TrialTokenTest, ValidateValidToken) {
-  scoped_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
+  std::unique_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
   ASSERT_TRUE(token);
   EXPECT_TRUE(ValidateOrigin(token.get(), expected_origin_));
   EXPECT_FALSE(ValidateOrigin(token.get(), invalid_origin_));
@@ -197,7 +199,7 @@ TEST_F(TrialTokenTest, ValidateValidToken) {
 }
 
 TEST_F(TrialTokenTest, TokenIsAppropriateForOriginAndFeature) {
-  scoped_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
+  std::unique_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
   ASSERT_TRUE(token);
   EXPECT_TRUE(token->IsAppropriate(expected_origin_, kExpectedFeatureName));
   EXPECT_FALSE(token->IsAppropriate(expected_origin_,
@@ -210,33 +212,33 @@ TEST_F(TrialTokenTest, TokenIsAppropriateForOriginAndFeature) {
 }
 
 TEST_F(TrialTokenTest, ValidateValidSignature) {
-  scoped_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
+  std::unique_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
   ASSERT_TRUE(token);
   EXPECT_TRUE(ValidateSignature(token.get(), correct_public_key()));
 }
 
 TEST_F(TrialTokenTest, ValidateInvalidSignature) {
-  scoped_ptr<TrialToken> token = TrialToken::Parse(kInvalidSignatureToken);
+  std::unique_ptr<TrialToken> token = TrialToken::Parse(kInvalidSignatureToken);
   ASSERT_TRUE(token);
   EXPECT_FALSE(ValidateSignature(token.get(), correct_public_key()));
 }
 
 TEST_F(TrialTokenTest, ValidateTokenWithCorrectKey) {
-  scoped_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
+  std::unique_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
   ASSERT_TRUE(token);
   EXPECT_TRUE(token->IsValid(base::Time::FromDoubleT(kValidTimestamp),
                              correct_public_key()));
 }
 
 TEST_F(TrialTokenTest, ValidateSignatureWithIncorrectKey) {
-  scoped_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
+  std::unique_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
   ASSERT_TRUE(token);
   EXPECT_FALSE(token->IsValid(base::Time::FromDoubleT(kValidTimestamp),
                               incorrect_public_key()));
 }
 
 TEST_F(TrialTokenTest, ValidateWhenNotExpired) {
-  scoped_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
+  std::unique_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
   ASSERT_TRUE(token);
 }
 

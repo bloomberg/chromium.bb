@@ -4,6 +4,8 @@
 
 #include "content/common/gpu/media/dxva_video_decode_accelerator_win.h"
 
+#include <memory>
+
 #if !defined(OS_WIN)
 #error This file should only be built on Windows.
 #endif   // !defined(OS_WIN)
@@ -26,7 +28,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
@@ -612,7 +613,7 @@ struct DXVAVideoDecodeAccelerator::DXVAPictureBuffer {
   bool waiting_to_reuse_;
   media::PictureBuffer picture_buffer_;
   EGLSurface decoding_surface_;
-  scoped_ptr<gfx::GLFence> reuse_fence_;
+  std::unique_ptr<gfx::GLFence> reuse_fence_;
 
   HANDLE texture_share_handle_;
   base::win::ScopedComPtr<IDirect3DTexture9> decoding_texture_;
@@ -1686,7 +1687,7 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(media::VideoCodecProfile profile) {
     // Check version of DLL, version 6.1.7140 is blacklisted due to high crash
     // rates in browsers loading that DLL. If that is the version installed we
     // fall back to software decoding. See crbug/403440.
-    scoped_ptr<FileVersionInfo> version_info(
+    std::unique_ptr<FileVersionInfo> version_info(
         FileVersionInfo::CreateFileVersionInfoForModule(decoder_dll));
     RETURN_ON_FAILURE(version_info,
                       "unable to get version of msmpeg2vdec.dll",

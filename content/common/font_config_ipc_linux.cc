@@ -14,11 +14,11 @@
 #include <unistd.h>
 
 #include <functional>
+#include <memory>
 
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/threading/thread_restrictions.h"
@@ -117,7 +117,7 @@ static void DestroyMemoryMappedFile(const void*, void* context) {
 }
 
 SkMemoryStream* FontConfigIPC::mapFileDescriptorToStream(int fd) {
-  scoped_ptr<base::MemoryMappedFile> mapped_font_file(
+  std::unique_ptr<base::MemoryMappedFile> mapped_font_file(
       new base::MemoryMappedFile);
   base::ThreadRestrictions::ScopedAllowIO allow_mmap;
   mapped_font_file->Initialize(base::File(fd));

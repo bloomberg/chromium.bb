@@ -9,10 +9,10 @@ extern "C" {
 }
 
 #include <map>
+#include <memory>
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/kill.h"
 #include "content/common/sandbox_mac.h"
 #include "content/test/test_content_client.h"
@@ -136,8 +136,8 @@ MULTIPROCESS_TEST_MAIN(mac_sandbox_test_runner) {
   const char* test_data = getenv(kTestDataKey);
 
   // Find Test Function to run;
-  scoped_ptr<MacSandboxTestCase>
-      test_case(SandboxTestForName(sandbox_test_name));
+  std::unique_ptr<MacSandboxTestCase> test_case(
+      SandboxTestForName(sandbox_test_name));
   if (!test_case) {
     LOG(ERROR) << "Invalid sandbox test name (" << sandbox_test_name << ")";
     return -1;
