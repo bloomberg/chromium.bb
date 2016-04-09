@@ -13,7 +13,7 @@ using BrowserNonClientFrameViewBrowserTest = ExtensionBrowserTest;
 
 // Test is Flaky on Windows see crbug.com/600201.
 #if defined(OS_WIN)
-#define MAYBE_InactiveSeparatorColor FLAKY_InactiveSeparatorColor
+#define MAYBE_InactiveSeparatorColor DISABLED_InactiveSeparatorColor
 #else
 #define MAYBE_InactiveSeparatorColor InactiveSeparatorColor
 #endif
