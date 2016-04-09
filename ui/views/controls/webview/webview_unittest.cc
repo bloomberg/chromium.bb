@@ -457,4 +457,22 @@ TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_ClickToFocus) {
   EXPECT_TRUE(something_to_focus->HasFocus());
 }
 
+// Verifies that there is no crash in WebView destructor
+// if WebView is already removed from Widget.
+TEST_F(WebViewUnitTest, DetachedWebViewDestructor) {
+  // Init WebView with attached NativeView.
+  const scoped_ptr<content::WebContents> web_contents(CreateWebContents());
+  scoped_ptr<WebView> webview(new WebView(web_contents->GetBrowserContext()));
+  View* contents_view = top_level_widget()->GetContentsView();
+  contents_view->AddChildView(webview.get());
+  webview->SetWebContents(web_contents.get());
+
+  // Remove WebView from views hierarchy. NativeView should be detached
+  // from Widget.
+  contents_view->RemoveChildView(webview.get());
+  // Destroy WebView. NativeView should be detached secondary.
+  // There should be no crash.
+  webview.reset();
+}
+
 }  // namespace views
