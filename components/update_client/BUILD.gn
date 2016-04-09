@@ -24,6 +24,8 @@ source_set("update_client") {
     "crx_downloader.cc",
     "crx_downloader.h",
     "crx_update_item.h",
+    "persisted_data.cc",
+    "persisted_data.h",
     "ping_manager.cc",
     "ping_manager.h",
     "request_sender.cc",
@@ -54,6 +56,7 @@ source_set("update_client") {
     "//base",
     "//components/client_update_protocol",
     "//components/crx_file",
+    "//components/prefs",
     "//courgette:courgette_lib",
     "//crypto",
     "//net",
@@ -79,6 +82,7 @@ source_set("test_support") {
   ]
   deps = [
     "//base",
+    "//components/prefs",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
@@ -91,6 +95,7 @@ source_set("unit_tests") {
   sources = [
     "component_patcher_unittest.cc",
     "crx_downloader_unittest.cc",
+    "persisted_data_unittest.cc",
     "ping_manager_unittest.cc",
     "request_sender_unittest.cc",
     "update_checker_unittest.cc",
@@ -104,6 +109,8 @@ source_set("unit_tests") {
     ":test_support",
     ":update_client",
     "//base",
+    "//components/prefs",
+    "//components/prefs:test_support",
     "//courgette:courgette_lib",
     "//net:test_support",
     "//testing/gmock",

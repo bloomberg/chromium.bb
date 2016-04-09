@@ -10,9 +10,11 @@
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/prefs/pref_service.h"
 #include "components/update_client/action_update_check.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/crx_update_item.h"
+#include "components/update_client/persisted_data.h"
 #include "components/update_client/update_checker.h"
 
 namespace update_client {
@@ -54,8 +56,8 @@ UpdateEngine::UpdateEngine(
       update_checker_factory_(update_checker_factory),
       crx_downloader_factory_(crx_downloader_factory),
       ping_manager_(ping_manager),
-      notify_observers_callback_(notify_observers_callback) {
-}
+      metadata_(new PersistedData(config->GetPrefService())),
+      notify_observers_callback_(notify_observers_callback) {}
 
 UpdateEngine::~UpdateEngine() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -98,7 +100,7 @@ void UpdateEngine::Update(
 
   CrxUpdateItem update_item;
   scoped_ptr<ActionUpdateCheck> update_check_action(new ActionUpdateCheck(
-      (*update_context->update_checker_factory)(config_),
+      (*update_context->update_checker_factory)(config_, *metadata_),
       config_->GetBrowserVersion(), config_->ExtraRequestParams()));
 
   update_context->current_action.reset(update_check_action.release());

@@ -287,6 +287,7 @@ bool ParseAppTag(xmlNode* app,
 
 bool UpdateResponse::Parse(const std::string& response_xml) {
   results_.daystart_elapsed_seconds = kNoDaystart;
+  results_.daystart_elapsed_days = kNoDaystart;
   results_.list.clear();
   errors_.clear();
 
@@ -334,6 +335,11 @@ bool UpdateResponse::Parse(const std::string& response_xml) {
     int parsed_elapsed = kNoDaystart;
     if (base::StringToInt(elapsed_seconds, &parsed_elapsed)) {
       results_.daystart_elapsed_seconds = parsed_elapsed;
+    }
+    std::string elapsed_days = GetAttribute(first, "elapsed_days");
+    parsed_elapsed = kNoDaystart;
+    if (base::StringToInt(elapsed_days, &parsed_elapsed)) {
+      results_.daystart_elapsed_days = parsed_elapsed;
     }
   }
 

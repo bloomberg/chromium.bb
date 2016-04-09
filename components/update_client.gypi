@@ -44,6 +44,8 @@
         'update_client/crx_downloader.cc',
         'update_client/crx_downloader.h',
         'update_client/crx_update_item.h',
+        'update_client/persisted_data.cc',
+        'update_client/persisted_data.h',
         'update_client/ping_manager.cc',
         'update_client/ping_manager.h',
         'update_client/request_sender.cc',

@@ -109,6 +109,8 @@ class UpdateResponse {
 
     // This will be >= 0, or kNoDaystart if the <daystart> tag was not present.
     int daystart_elapsed_seconds;
+    // This will be >= 0, or kNoDaystart if the <daystart> tag was not present.
+    int daystart_elapsed_days;
     std::vector<Result> list;
   };
 

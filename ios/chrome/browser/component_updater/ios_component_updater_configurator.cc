@@ -48,6 +48,7 @@ class IOSConfigurator : public update_client::Configurator {
   bool UseCupSigning() const override;
   scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
       const override;
+  PrefService* GetPrefService() const override;
 
  private:
   friend class base::RefCountedThreadSafe<IOSConfigurator>;
@@ -150,6 +151,10 @@ IOSConfigurator::GetSequencedTaskRunner() const {
       ->GetSequencedTaskRunnerWithShutdownBehavior(
           web::WebThread::GetBlockingPool()->GetSequenceToken(),
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+}
+
+PrefService* IOSConfigurator::GetPrefService() const {
+  return nullptr;
 }
 
 }  // namespace

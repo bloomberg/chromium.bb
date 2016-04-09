@@ -17,6 +17,7 @@
 #include "net/url_request/url_request_test_util.h"
 
 class GURL;
+class PrefService;
 
 namespace base {
 class SequencedTaskRunner;
@@ -77,6 +78,7 @@ class TestConfigurator : public Configurator {
   bool UseCupSigning() const override;
   scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
       const override;
+  PrefService* GetPrefService() const override;
 
   void SetBrand(const std::string& brand);
   void SetOnDemandTime(int seconds);

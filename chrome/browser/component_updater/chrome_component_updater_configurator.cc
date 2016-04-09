@@ -13,6 +13,7 @@
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
 #endif
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_patcher_operation_out_of_process.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
@@ -21,6 +22,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #endif
 #include "components/component_updater/configurator_impl.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace component_updater {
@@ -55,6 +57,7 @@ class ChromeConfigurator : public update_client::Configurator {
   bool UseCupSigning() const override;
   scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
       const override;
+  PrefService* GetPrefService() const override;
 
  private:
   friend class base::RefCountedThreadSafe<ChromeConfigurator>;
@@ -170,6 +173,10 @@ ChromeConfigurator::GetSequencedTaskRunner() const {
       ->GetSequencedTaskRunnerWithShutdownBehavior(
           base::SequencedWorkerPool::GetSequenceToken(),
           base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+}
+
+PrefService* ChromeConfigurator::GetPrefService() const {
+  return g_browser_process->local_state();
 }
 
 }  // namespace

@@ -22,8 +22,10 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_checker.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/crx_update_item.h"
+#include "components/update_client/persisted_data.h"
 #include "components/update_client/ping_manager.h"
 #include "components/update_client/task_update.h"
 #include "components/update_client/update_checker.h"
@@ -251,6 +253,10 @@ scoped_refptr<UpdateClient> UpdateClientFactory(
   scoped_ptr<PingManager> ping_manager(new PingManager(config));
   return new UpdateClientImpl(config, std::move(ping_manager),
                               &UpdateChecker::Create, &CrxDownloader::Create);
+}
+
+void RegisterPrefs(PrefRegistrySimple* registry) {
+  PersistedData::RegisterPrefs(registry);
 }
 
 }  // namespace update_client

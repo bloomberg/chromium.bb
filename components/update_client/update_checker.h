@@ -19,6 +19,7 @@ class GURL;
 
 namespace update_client {
 
+class PersistedData;
 class Configurator;
 struct CrxUpdateItem;
 
@@ -30,7 +31,8 @@ class UpdateChecker {
                           int retry_after_sec)>;
 
   using Factory =
-      scoped_ptr<UpdateChecker> (*)(const scoped_refptr<Configurator>& config);
+      scoped_ptr<UpdateChecker> (*)(const scoped_refptr<Configurator>& config,
+                                    const PersistedData& persistent);
 
   virtual ~UpdateChecker() {}
 
@@ -43,7 +45,8 @@ class UpdateChecker {
       const UpdateCheckCallback& update_check_callback) = 0;
 
   static scoped_ptr<UpdateChecker> Create(
-      const scoped_refptr<Configurator>& config);
+      const scoped_refptr<Configurator>& config,
+      const PersistedData& persistent);
 
  protected:
   UpdateChecker() {}

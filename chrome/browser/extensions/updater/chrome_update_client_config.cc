@@ -9,6 +9,7 @@
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/common/channel_info.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 
 namespace extensions {
@@ -98,6 +99,10 @@ bool ChromeUpdateClientConfig::UseBackgroundDownloader() const {
 
 bool ChromeUpdateClientConfig::UseCupSigning() const {
   return impl_.UseCupSigning();
+}
+
+PrefService* ChromeUpdateClientConfig::GetPrefService() const {
+  return nullptr;
 }
 
 ChromeUpdateClientConfig::~ChromeUpdateClientConfig() {}

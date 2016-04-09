@@ -5,6 +5,7 @@
 #include "components/update_client/test_configurator.h"
 
 #include "base/version.h"
+#include "components/prefs/pref_service.h"
 #include "components/update_client/component_patcher_operation.h"
 #include "url/gurl.h"
 
@@ -151,6 +152,10 @@ scoped_refptr<base::SequencedTaskRunner>
 TestConfigurator::GetSequencedTaskRunner() const {
   DCHECK(worker_task_runner_.get());
   return worker_task_runner_;
+}
+
+PrefService* TestConfigurator::GetPrefService() const {
+  return nullptr;
 }
 
 }  // namespace update_client

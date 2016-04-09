@@ -77,6 +77,8 @@ class UpdateEngine {
   // TODO(sorin): refactor as a ref counted class.
   PingManager* ping_manager_;  // Not owned by this class.
 
+  std::unique_ptr<PersistedData> metadata_;
+
   // Called when CRX state changes occur.
   const NotifyObserversCallback notify_observers_callback_;
 

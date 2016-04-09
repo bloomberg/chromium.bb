@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 
 class GURL;
+class PrefService;
 
 namespace base {
 class SequencedTaskRunner;
@@ -110,6 +111,14 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
   // Gets a task runner to a blocking pool of threads suitable for worker jobs.
   virtual scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
       const = 0;
+
+  // Returns a PrefService that the update_client can use to store persistent
+  // update information. The PrefService must outlive the entire update_client,
+  // and be safe to access from the thread the update_client is constructed
+  // on.
+  // Returning null is safe and will disable any functionality that requires
+  // persistent storage.
+  virtual PrefService* GetPrefService() const = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<Configurator>;

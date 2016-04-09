@@ -43,6 +43,7 @@ class ChromeUpdateClientConfig : public UpdateClientConfig {
   bool DeltasEnabled() const override;
   bool UseBackgroundDownloader() const override;
   bool UseCupSigning() const override;
+  PrefService* GetPrefService() const override;
 
  protected:
   friend class base::RefCountedThreadSafe<ChromeUpdateClientConfig>;
