@@ -421,4 +421,9 @@ DEFINE_TRACE(MediaStream)
     MediaStreamDescriptorClient::trace(visitor);
 }
 
+MediaStream* toMediaStream(MediaStreamDescriptor* descriptor)
+{
+    return static_cast<MediaStream*>(descriptor->client());
+}
+
 } // namespace blink

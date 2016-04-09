@@ -104,6 +104,7 @@
 #include "content/renderer/media/render_media_log.h"
 #include "content/renderer/media/renderer_webmediaplayer_delegate.h"
 #include "content/renderer/media/user_media_client_impl.h"
+#include "content/renderer/media/web_media_element_source_utils.h"
 #include "content/renderer/media/webmediaplayer_ms.h"
 #include "content/renderer/mojo/service_registry_js_wrapper.h"
 #include "content/renderer/mojo_bindings_controller.h"
@@ -153,6 +154,7 @@
 #include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayerSource.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebStorageQuotaCallbacks.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -2411,7 +2413,7 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
 }
 
 blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
-    const blink::WebURL& url,
+    const blink::WebMediaPlayerSource& source,
     WebMediaPlayerClient* client,
     WebMediaPlayerEncryptedMediaClient* encrypted_client,
     WebContentDecryptionModule* initial_cdm,
@@ -2423,12 +2425,16 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
     contains_media_player_ = true;
   }
 #endif  // defined(VIDEO_HOLE)
-
-  blink::WebMediaStream web_stream(
-      blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url));
+  blink::WebMediaStream web_stream =
+      GetWebMediaStreamFromWebMediaPlayerSource(source);
   if (!web_stream.isNull())
     return CreateWebMediaPlayerForMediaStream(client, sink_id,
                                               frame_->getSecurityOrigin());
+
+  // If |source| was not a MediaStream, it must be a URL.
+  // TODO(guidou): Fix this when support for other srcObject types is added.
+  DCHECK(source.isURL());
+  blink::WebURL url = source.getAsURL();
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
 

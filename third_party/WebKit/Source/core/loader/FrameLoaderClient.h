@@ -69,7 +69,9 @@ class WebApplicationCacheHostClient;
 class WebCookieJar;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
+class WebMediaPlayerSource;
 class WebMediaSession;
+class WebMediaStream;
 class WebRTCPeerConnectionHandler;
 class WebServiceWorkerProvider;
 class WebSocketHandle;
@@ -161,7 +163,7 @@ public:
     virtual bool canCreatePluginWithoutRenderer(const String& mimeType) const = 0;
     virtual Widget* createPlugin(HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool loadManually, DetachedPluginPolicy) = 0;
 
-    virtual PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(HTMLMediaElement&, const WebURL&, WebMediaPlayerClient*) = 0;
+    virtual PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(HTMLMediaElement&, const WebMediaPlayerSource&, WebMediaPlayerClient*) = 0;
 
     virtual PassOwnPtr<WebMediaSession> createWebMediaSession() = 0;
 

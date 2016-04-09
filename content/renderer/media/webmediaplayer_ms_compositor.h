@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBMEDIAPLAYER_MS_COMPOSITOR_H
-#define CONTENT_RENDERER_MEDIA_WEBMEDIAPLAYER_MS_COMPOSITOR_H
+#ifndef CONTENT_RENDERER_MEDIA_WEBMEDIAPLAYER_MS_COMPOSITOR_H_
+#define CONTENT_RENDERER_MEDIA_WEBMEDIAPLAYER_MS_COMPOSITOR_H_
 
 #include <stddef.h>
 
@@ -23,7 +23,7 @@ class SingleThreadTaskRunner;
 }
 
 namespace blink {
-class WebURL;
+class WebMediaStream;
 }
 
 namespace gfx {
@@ -56,7 +56,7 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   // we enable algorithm or not.
   WebMediaPlayerMSCompositor(
       const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
-      const blink::WebURL& url,
+      const blink::WebMediaStream& web_stream,
       const base::WeakPtr<WebMediaPlayerMS>& player);
 
   ~WebMediaPlayerMSCompositor() override;
@@ -154,6 +154,6 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerMSCompositor);
 };
-}
+}  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBMEDIAPLAYER_MS_COMPOSITOR_H
+#endif  // CONTENT_RENDERER_MEDIA_WEBMEDIAPLAYER_MS_COMPOSITOR_H_

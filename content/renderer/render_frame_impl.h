@@ -421,7 +421,7 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,
                                  const blink::WebPluginParams& params) override;
   blink::WebMediaPlayer* createMediaPlayer(
-      const blink::WebURL& url,
+      const blink::WebMediaPlayerSource& source,
       blink::WebMediaPlayerClient* client,
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       blink::WebContentDecryptionModule* initial_cdm,

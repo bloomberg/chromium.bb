@@ -84,6 +84,7 @@
 #include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebInbandTextTrack.h"
+#include "public/platform/WebMediaStream.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackClient.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackState.h"
 #include "wtf/CurrentTime.h"
@@ -632,7 +633,7 @@ Node::InsertionNotificationRequest HTMLMediaElement::insertedInto(ContainerNode*
     HTMLElement::insertedInto(insertionPoint);
     if (insertionPoint->inShadowIncludingDocument()) {
         UseCounter::count(document(), UseCounter::HTMLMediaElementInDocument);
-        if (!getAttribute(srcAttr).isEmpty() && m_networkState == NETWORK_EMPTY) {
+        if ((!getAttribute(srcAttr).isEmpty() || m_srcObject.isMediaProviderObject()) && m_networkState == NETWORK_EMPTY) {
             m_ignorePreloadNone = false;
             invokeLoadAlgorithm();
         }
@@ -725,6 +726,18 @@ MediaError* HTMLMediaElement::error() const
 void HTMLMediaElement::setSrc(const AtomicString& url)
 {
     setAttribute(srcAttr, url);
+}
+
+void HTMLMediaElement::setSrcObject(const WebMediaPlayerSource& srcObject)
+{
+    // srcObject can be a media-provider object or null.
+    ASSERT(!srcObject.isURL());
+
+    // The srcObject IDL attribute, on setting, must set the element's assigned
+    // media provider object to the new value, and then invoke the element's
+    // media element load algorithm.
+    m_srcObject = srcObject;
+    invokeLoadAlgorithm();
 }
 
 HTMLMediaElement::NetworkState HTMLMediaElement::getNetworkState() const
@@ -905,68 +918,97 @@ void HTMLMediaElement::selectMediaResource()
 {
     WTF_LOG(Media, "HTMLMediaElement::selectMediaResource(%p)", this);
 
-    enum Mode { attribute, children };
+    enum Mode { Object, Attribute, Children, Nothing };
+    Mode mode = Nothing;
 
-    // 3 - If the media element has a src attribute, then let mode be attribute.
-    Mode mode = attribute;
-    if (!fastHasAttribute(srcAttr)) {
-        // Otherwise, if the media element does not have a src attribute but has a source
-        // element child, then let mode be children and let candidate be the first such
-        // source element child in tree order.
-        if (HTMLSourceElement* element = Traversal<HTMLSourceElement>::firstChild(*this)) {
-            mode = children;
-            m_nextChildNodeToConsider = element;
-            m_currentSourceNode = nullptr;
-        } else {
-            // Otherwise the media element has neither a src attribute nor a source element
-            // child: set the networkState to NETWORK_EMPTY, and abort these steps; the
-            // synchronous section ends.
-            m_loadState = WaitingForSource;
-            setShouldDelayLoadEvent(false);
-            setNetworkState(NETWORK_EMPTY);
-            updateDisplayState();
+    // 6 - If the media element has an assigned media provider object, then let
+    //     mode be object.
+    if (m_srcObject.isMediaProviderObject()) {
+        mode = Object;
+    } else if (fastHasAttribute(srcAttr)) {
+        // Otherwise, if the media element has no assigned media provider object
+        // but has a src attribute, then let mode be attribute.
+        mode = Attribute;
+    } else if (HTMLSourceElement* element = Traversal<HTMLSourceElement>::firstChild(*this)) {
+        // Otherwise, if the media element does not have an assigned media
+        // provider object and does not have a src attribute, but does have a
+        // source element child, then let mode be children and let candidate be
+        // the first such source element child in tree order.
+        mode = Children;
+        m_nextChildNodeToConsider = element;
+        m_currentSourceNode = nullptr;
+    } else {
+        // Otherwise the media element has no assigned media provider object and
+        // has neither a src attribute nor a source element child: set the
+        // networkState to NETWORK_EMPTY, and abort these steps; the synchronous
+        // section ends.
+        m_loadState = WaitingForSource;
+        setShouldDelayLoadEvent(false);
+        setNetworkState(NETWORK_EMPTY);
+        updateDisplayState();
 
-            WTF_LOG(Media, "HTMLMediaElement::selectMediaResource(%p), nothing to load", this);
-            return;
-        }
-    }
-
-    // 4 - Set the media element's delaying-the-load-event flag to true (this delays the load event),
-    // and set its networkState to NETWORK_LOADING.
-    setShouldDelayLoadEvent(true);
-    setNetworkState(NETWORK_LOADING);
-
-    // 5 - Queue a task to fire a simple event named loadstart at the media element.
-    scheduleEvent(EventTypeNames::loadstart);
-
-    // 6 - If mode is attribute, then run these substeps
-    if (mode == attribute) {
-        m_loadState = LoadingFromSrcAttr;
-
-        const AtomicString& srcValue = fastGetAttribute(srcAttr);
-        // If the src attribute's value is the empty string ... jump down to the failed step below
-        if (srcValue.isEmpty()) {
-            mediaLoadingFailed(WebMediaPlayer::NetworkStateFormatError);
-            WTF_LOG(Media, "HTMLMediaElement::selectMediaResource(%p), empty 'src'", this);
-            return;
-        }
-
-        KURL mediaURL = document().completeURL(srcValue);
-        if (!isSafeToLoadURL(mediaURL, Complain)) {
-            mediaLoadingFailed(WebMediaPlayer::NetworkStateFormatError);
-            return;
-        }
-
-        // No type is available when the url comes from the 'src' attribute so MediaPlayer
-        // will have to pick a media engine based on the file extension.
-        ContentType contentType((String()));
-        loadResource(mediaURL, contentType);
-        WTF_LOG(Media, "HTMLMediaElement::selectMediaResource(%p), using 'src' attribute url", this);
+        WTF_LOG(Media, "HTMLMediaElement::selectMediaResource(%p), nothing to load", this);
         return;
     }
 
-    // Otherwise, the source elements will be used
-    loadNextSourceChild();
+    // 7 - Set the media element's networkState to NETWORK_LOADING.
+    setNetworkState(NETWORK_LOADING);
+
+    // 8 - Queue a task to fire a simple event named loadstart at the media element.
+    scheduleEvent(EventTypeNames::loadstart);
+
+    // 9 - Run the appropriate steps...
+    switch (mode) {
+    case Object:
+        loadSourceFromObject();
+        WTF_LOG(Media, "HTMLMediaElement::selectMediaResource(%p), using 'srcObject' attribute", this);
+        break;
+    case Attribute:
+        loadSourceFromAttribute();
+        WTF_LOG(Media, "HTMLMediaElement::selectMediaResource(%p), using 'src' attribute url", this);
+        break;
+    case Children:
+        loadNextSourceChild();
+        WTF_LOG(Media, "HTMLMediaElement::selectMediaResource(%p), using source element", this);
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+}
+
+void HTMLMediaElement::loadSourceFromObject()
+{
+    ASSERT(m_srcObject.isMediaProviderObject());
+    m_loadState = LoadingFromSrcObject;
+
+    // No type is available when the resource comes from the 'srcObject'
+    // attribute.
+    ContentType contentType((String()));
+    loadResource(m_srcObject, contentType);
+}
+
+void HTMLMediaElement::loadSourceFromAttribute()
+{
+    m_loadState = LoadingFromSrcAttr;
+    const AtomicString& srcValue = fastGetAttribute(srcAttr);
+
+    // If the src attribute's value is the empty string ... jump down to the failed step below
+    if (srcValue.isEmpty()) {
+        mediaLoadingFailed(WebMediaPlayer::NetworkStateFormatError);
+        WTF_LOG(Media, "HTMLMediaElement::selectMediaResource(%p), empty 'src'", this);
+        return;
+    }
+
+    KURL mediaURL = document().completeURL(srcValue);
+    if (!isSafeToLoadURL(mediaURL, Complain)) {
+        mediaLoadingFailed(WebMediaPlayer::NetworkStateFormatError);
+        return;
+    }
+
+    // No type is available when the url comes from the 'src' attribute so
+    // MediaPlayer will have to pick a media engine based on the file extension.
+    ContentType contentType((String()));
+    loadResource(WebMediaPlayerSource(WebURL(mediaURL)), contentType);
 }
 
 void HTMLMediaElement::loadNextSourceChild()
@@ -982,15 +1024,18 @@ void HTMLMediaElement::loadNextSourceChild()
     resetMediaPlayerAndMediaSource();
 
     m_loadState = LoadingFromSourceElement;
-    loadResource(mediaURL, contentType);
+    loadResource(WebMediaPlayerSource(WebURL(mediaURL)), contentType);
 }
 
-void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType)
+void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source, ContentType& contentType)
 {
     ASSERT(isMainThread());
-    ASSERT(isSafeToLoadURL(url, Complain));
-
-    WTF_LOG(Media, "HTMLMediaElement::loadResource(%p, %s, %s)", this, urlForLoggingMedia(url).utf8().data(), contentType.raw().utf8().data());
+    KURL url;
+    if (source.isURL()) {
+        url = source.getAsURL();
+        ASSERT(isSafeToLoadURL(url, Complain));
+        WTF_LOG(Media, "HTMLMediaElement::loadResource(%p, %s, %s)", this, urlForLoggingMedia(url).utf8().data(), contentType.raw().utf8().data());
+    }
 
     LocalFrame* frame = document().frame();
     if (!frame) {
@@ -1027,8 +1072,10 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType)
 
     bool attemptLoad = true;
 
-    if (url.protocolIs(mediaSourceBlobProtocol)) {
-        if (isMediaStreamURL(url.getString())) {
+    bool isObjectOrBlobURL = source.isMediaProviderObject() || url.protocolIs(mediaSourceBlobProtocol);
+    if (isObjectOrBlobURL) {
+        bool isMediaStream = source.isMediaStream() || (source.isURL() && isMediaStreamURL(url.getString()));
+        if (isMediaStream) {
             m_autoplayHelper->removeUserGestureRequirement(GesturelessPlaybackEnabledByStream);
         } else {
             m_mediaSource = HTMLMediaSource::lookup(url.getString());
@@ -1044,7 +1091,8 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType)
         }
     }
 
-    if (attemptLoad && canLoadURL(url, contentType)) {
+    bool canLoadResource = source.isMediaProviderObject() || canLoadURL(url, contentType);
+    if (attemptLoad && canLoadResource) {
         ASSERT(!webMediaPlayer());
 
         if (effectivePreloadType() == WebMediaPlayer::PreloadNone) {
@@ -1068,24 +1116,33 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType)
 void HTMLMediaElement::startPlayerLoad()
 {
     ASSERT(!m_webMediaPlayer);
-    // Filter out user:pass as those two URL components aren't
-    // considered for media resource fetches (including for the CORS
-    // use-credentials mode.) That behavior aligns with Gecko, with IE
-    // being more restrictive and not allowing fetches to such URLs.
-    //
-    // Spec reference: http://whatwg.org/c/#concept-media-load-resource
-    //
-    // FIXME: when the HTML spec switches to specifying resource
-    // fetches in terms of Fetch (http://fetch.spec.whatwg.org), and
-    // along with that potentially also specifying a setting for its
-    // 'authentication flag' to control how user:pass embedded in a
-    // media resource URL should be treated, then update the handling
-    // here to match.
-    KURL requestURL = m_currentSrc;
-    if (!requestURL.user().isEmpty())
-        requestURL.setUser(String());
-    if (!requestURL.pass().isEmpty())
-        requestURL.setPass(String());
+
+    WebMediaPlayerSource source;
+    if (m_srcObject.isMediaProviderObject()) {
+        source = m_srcObject;
+    } else {
+        // Filter out user:pass as those two URL components aren't
+        // considered for media resource fetches (including for the CORS
+        // use-credentials mode.) That behavior aligns with Gecko, with IE
+        // being more restrictive and not allowing fetches to such URLs.
+        //
+        // Spec reference: http://whatwg.org/c/#concept-media-load-resource
+        //
+        // FIXME: when the HTML spec switches to specifying resource
+        // fetches in terms of Fetch (http://fetch.spec.whatwg.org), and
+        // along with that potentially also specifying a setting for its
+        // 'authentication flag' to control how user:pass embedded in a
+        // media resource URL should be treated, then update the handling
+        // here to match.
+        KURL requestURL = m_currentSrc;
+        if (!requestURL.user().isEmpty())
+            requestURL.setUser(String());
+        if (!requestURL.pass().isEmpty())
+            requestURL.setPass(String());
+
+        KURL kurl(ParsedURLString, requestURL);
+        source = WebMediaPlayerSource(WebURL(kurl));
+    }
 
     LocalFrame* frame = document().frame();
     // TODO(srirama.m): Figure out how frame can be null when
@@ -1095,8 +1152,7 @@ void HTMLMediaElement::startPlayerLoad()
         return;
     }
 
-    KURL kurl(ParsedURLString, requestURL);
-    m_webMediaPlayer = frame->loader().client()->createWebMediaPlayer(*this, kurl, this);
+    m_webMediaPlayer = frame->loader().client()->createWebMediaPlayer(*this, source, this);
     if (!m_webMediaPlayer) {
         mediaLoadingFailed(WebMediaPlayer::NetworkStateFormatError);
         return;
@@ -1112,7 +1168,7 @@ void HTMLMediaElement::startPlayerLoad()
 
     m_webMediaPlayer->setPreload(effectivePreloadType());
 
-    m_webMediaPlayer->load(loadType(), kurl, corsMode());
+    m_webMediaPlayer->load(loadType(), source, corsMode());
 
     if (isFullscreen()) {
         // This handles any transition to or from fullscreen overlay mode.
@@ -1205,7 +1261,7 @@ WebMediaPlayer::LoadType HTMLMediaElement::loadType() const
     if (m_mediaSource)
         return WebMediaPlayer::LoadTypeMediaSource;
 
-    if (isMediaStreamURL(m_currentSrc.getString()))
+    if (m_srcObject.isMediaStream() || isMediaStreamURL(m_currentSrc.getString()))
         return WebMediaPlayer::LoadTypeMediaStream;
 
     return WebMediaPlayer::LoadTypeURL;

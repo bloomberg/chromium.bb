@@ -152,7 +152,7 @@ Widget* EmptyFrameLoaderClient::createPlugin(HTMLPlugInElement*, const KURL&, co
     return nullptr;
 }
 
-PassOwnPtr<WebMediaPlayer> EmptyFrameLoaderClient::createWebMediaPlayer(HTMLMediaElement&, const WebURL&, WebMediaPlayerClient*)
+PassOwnPtr<WebMediaPlayer> EmptyFrameLoaderClient::createWebMediaPlayer(HTMLMediaElement&, const WebMediaPlayerSource&, WebMediaPlayerClient*)
 {
     return nullptr;
 }

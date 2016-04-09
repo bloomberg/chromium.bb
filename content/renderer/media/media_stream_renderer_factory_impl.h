@@ -16,7 +16,7 @@ class MediaStreamRendererFactoryImpl : public MediaStreamRendererFactory {
   ~MediaStreamRendererFactoryImpl() override;
 
   scoped_refptr<VideoFrameProvider> GetVideoFrameProvider(
-      const GURL& url,
+      const blink::WebMediaStream& web_stream,
       const base::Closure& error_cb,
       const VideoFrameProvider::RepaintCB& repaint_cb,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
@@ -24,7 +24,7 @@ class MediaStreamRendererFactoryImpl : public MediaStreamRendererFactory {
       media::GpuVideoAcceleratorFactories* gpu_factories) override;
 
   scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
-      const GURL& url,
+      const blink::WebMediaStream& web_stream,
       int render_frame_id,
       const std::string& device_id,
       const url::Origin& security_origin) override;

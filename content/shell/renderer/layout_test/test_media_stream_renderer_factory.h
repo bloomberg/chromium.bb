@@ -7,7 +7,6 @@
 
 #include "base/callback_forward.h"
 #include "content/public/renderer/media_stream_renderer_factory.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
 
 namespace content {
 
@@ -20,7 +19,7 @@ class TestMediaStreamRendererFactory : public MediaStreamRendererFactory {
 
   // MediaStreamRendererFactory implementation.
   scoped_refptr<VideoFrameProvider> GetVideoFrameProvider(
-      const GURL& url,
+      const blink::WebMediaStream& web_stream,
       const base::Closure& error_cb,
       const VideoFrameProvider::RepaintCB& repaint_cb,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
@@ -28,7 +27,7 @@ class TestMediaStreamRendererFactory : public MediaStreamRendererFactory {
       media::GpuVideoAcceleratorFactories* gpu_factories) override;
 
   scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
-      const GURL& url,
+      const blink::WebMediaStream& web_stream,
       int render_frame_id,
       const std::string& device_id,
       const url::Origin& security_origin) override;

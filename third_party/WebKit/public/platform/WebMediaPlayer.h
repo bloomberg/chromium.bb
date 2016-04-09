@@ -50,6 +50,7 @@ namespace blink {
 
 class WebAudioSourceProvider;
 class WebContentDecryptionModule;
+class WebMediaPlayerSource;
 class WebSecurityOrigin;
 class WebString;
 class WebURL;
@@ -106,7 +107,7 @@ public:
 
     virtual ~WebMediaPlayer() { }
 
-    virtual void load(LoadType, const WebURL&, CORSMode) = 0;
+    virtual void load(LoadType, const WebMediaPlayerSource&, CORSMode) = 0;
 
     // Playback controls.
     virtual void play() = 0;

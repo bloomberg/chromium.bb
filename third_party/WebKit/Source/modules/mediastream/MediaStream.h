@@ -116,6 +116,8 @@ private:
 
 typedef HeapVector<Member<MediaStream>> MediaStreamVector;
 
+MediaStream* toMediaStream(MediaStreamDescriptor*);
+
 } // namespace blink
 
 #endif // MediaStream_h

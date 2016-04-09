@@ -12,6 +12,7 @@
 #include "media/base/video_frame.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayerSource.h"
 
 namespace content {
 
@@ -273,7 +274,7 @@ class MockRenderFactory : public MediaStreamRendererFactory {
         message_loop_controller_(message_loop_controller) {}
 
   scoped_refptr<VideoFrameProvider> GetVideoFrameProvider(
-      const GURL& url,
+      const blink::WebMediaStream& web_stream,
       const base::Closure& error_cb,
       const VideoFrameProvider::RepaintCB& repaint_cb,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
@@ -285,7 +286,7 @@ class MockRenderFactory : public MediaStreamRendererFactory {
   }
 
   scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
-      const GURL& url,
+      const blink::WebMediaStream& web_stream,
       int render_frame_id,
       const std::string& device_id,
       const url::Origin& security_origin) override {
@@ -299,7 +300,7 @@ class MockRenderFactory : public MediaStreamRendererFactory {
 };
 
 scoped_refptr<VideoFrameProvider> MockRenderFactory::GetVideoFrameProvider(
-    const GURL& url,
+    const blink::WebMediaStream& web_stream,
     const base::Closure& error_cb,
     const VideoFrameProvider::RepaintCB& repaint_cb,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
@@ -435,7 +436,8 @@ MockVideoFrameProvider* WebMediaPlayerMSTest::LoadAndGetFrameProvider(
       *this, DoNetworkStateChanged(blink::WebMediaPlayer::NetworkStateLoading));
   EXPECT_CALL(
       *this, DoReadyStateChanged(blink::WebMediaPlayer::ReadyStateHaveNothing));
-  player_.load(blink::WebMediaPlayer::LoadTypeURL, blink::WebURL(),
+  player_.load(blink::WebMediaPlayer::LoadTypeURL,
+               blink::WebMediaPlayerSource(),
                blink::WebMediaPlayer::CORSModeUnspecified);
   compositor_ = player_.compositor_.get();
   EXPECT_TRUE(!!compositor_);

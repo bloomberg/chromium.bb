@@ -30,7 +30,7 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer,
   MockWebMediaPlayer()  = default;
   ~MockWebMediaPlayer() override = default;
 
-  void load(LoadType, const blink::WebURL&, CORSMode) override {}
+  void load(LoadType, const blink::WebMediaPlayerSource&, CORSMode) override {}
   void play() override {}
   void pause() override {}
   bool supportsSave() const override { return true; }

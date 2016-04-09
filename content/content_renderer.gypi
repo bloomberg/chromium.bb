@@ -351,6 +351,8 @@
       'renderer/media/video_capture_impl_manager.h',
       'renderer/media/video_capture_message_filter.cc',
       'renderer/media/video_capture_message_filter.h',
+      'renderer/media/web_media_element_source_utils.cc',
+      'renderer/media/web_media_element_source_utils.h',
       'renderer/media/webmediaplayer_ms.cc',
       'renderer/media/webmediaplayer_ms.h',
       'renderer/media/webmediaplayer_ms_compositor.cc',

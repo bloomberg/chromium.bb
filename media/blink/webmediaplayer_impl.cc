@@ -50,6 +50,7 @@
 #include "third_party/WebKit/public/platform/WebEncryptedMediaTypes.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerEncryptedMediaClient.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayerSource.h"
 #include "third_party/WebKit/public/platform/WebMediaSource.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
@@ -270,8 +271,12 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
       media_log_->CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
 }
 
-void WebMediaPlayerImpl::load(LoadType load_type, const blink::WebURL& url,
+void WebMediaPlayerImpl::load(LoadType load_type,
+                              const blink::WebMediaPlayerSource& source,
                               CORSMode cors_mode) {
+  // Only URL or MSE blob URL is supported.
+  DCHECK(source.isURL());
+  blink::WebURL url = source.getAsURL();
   DVLOG(1) << __FUNCTION__ << "(" << load_type << ", " << url << ", "
            << cors_mode << ")";
   if (!defer_load_cb_.is_null()) {

@@ -39,6 +39,7 @@
 #include "platform/audio/AudioSourceProvider.h"
 #include "public/platform/WebAudioSourceProviderClient.h"
 #include "public/platform/WebMediaPlayerClient.h"
+#include "public/platform/WebMediaPlayerSource.h"
 #include "public/platform/WebMimeRegistry.h"
 
 #if !ENABLE(OILPAN)
@@ -114,6 +115,8 @@ public:
     // network state
     void setSrc(const AtomicString&);
     const KURL& currentSrc() const { return m_currentSrc; }
+    void setSrcObject(const WebMediaPlayerSource&);
+    const WebMediaPlayerSource& getSrcObject() const { return m_srcObject; }
 
     enum NetworkState { NETWORK_EMPTY, NETWORK_IDLE, NETWORK_LOADING, NETWORK_NO_SOURCE };
     NetworkState getNetworkState() const;
@@ -366,11 +369,13 @@ private:
     void invokeResourceSelectionAlgorithm();
     void loadInternal();
     void selectMediaResource();
-    void loadResource(const KURL&, ContentType&);
+    void loadResource(const WebMediaPlayerSource&, ContentType&);
     void startPlayerLoad();
     void setPlayerPreload();
     WebMediaPlayer::LoadType loadType() const;
     void scheduleNextSourceChild();
+    void loadSourceFromObject();
+    void loadSourceFromAttribute();
     void loadNextSourceChild();
     void clearMediaPlayer();
     void clearMediaPlayerAndAudioSourceProviderClientWithoutLocking();
@@ -487,6 +492,7 @@ private:
     ReadyState m_readyState;
     ReadyState m_readyStateMaximum;
     KURL m_currentSrc;
+    WebMediaPlayerSource m_srcObject;
 
     Member<MediaError> m_error;
 
@@ -508,7 +514,7 @@ private:
     double m_defaultPlaybackStartPosition;
 
     // Loading state.
-    enum LoadState { WaitingForSource, LoadingFromSrcAttr, LoadingFromSourceElement };
+    enum LoadState { WaitingForSource, LoadingFromSrcObject, LoadingFromSrcAttr, LoadingFromSourceElement };
     LoadState m_loadState;
     Member<HTMLSourceElement> m_currentSourceNode;
     Member<Node> m_nextChildNodeToConsider;

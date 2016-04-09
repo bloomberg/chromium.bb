@@ -125,6 +125,7 @@
       "platform/WebMediaKeySystemMediaCapability.h",
       "platform/WebMediaPlayer.h",
       "platform/WebMediaPlayerClient.h",
+      "platform/WebMediaPlayerSource.h",
       "platform/WebMediaRecorderHandler.h",
       "platform/WebMediaRecorderHandlerClient.h",
       "platform/WebMediaSource.h",

@@ -15,8 +15,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/audio_hardware_config.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 
 namespace content {
@@ -60,14 +58,12 @@ MediaStreamRendererFactoryImpl::~MediaStreamRendererFactoryImpl() {
 
 scoped_refptr<VideoFrameProvider>
 MediaStreamRendererFactoryImpl::GetVideoFrameProvider(
-    const GURL& url,
+    const blink::WebMediaStream& web_stream,
     const base::Closure& error_cb,
     const VideoFrameProvider::RepaintCB& repaint_cb,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     media::GpuVideoAcceleratorFactories* gpu_factories) {
-  blink::WebMediaStream web_stream =
-      blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url);
   DCHECK(!web_stream.isNull());
 
   DVLOG(1) << "MediaStreamRendererFactoryImpl::GetVideoFrameProvider stream:"
@@ -87,13 +83,11 @@ MediaStreamRendererFactoryImpl::GetVideoFrameProvider(
 
 scoped_refptr<MediaStreamAudioRenderer>
 MediaStreamRendererFactoryImpl::GetAudioRenderer(
-    const GURL& url,
+    const blink::WebMediaStream& web_stream,
     int render_frame_id,
     const std::string& device_id,
     const url::Origin& security_origin) {
-  blink::WebMediaStream web_stream =
-      blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url);
-
+  DCHECK(!web_stream.isNull());
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
   web_stream.audioTracks(audio_tracks);
   if (audio_tracks.isEmpty())

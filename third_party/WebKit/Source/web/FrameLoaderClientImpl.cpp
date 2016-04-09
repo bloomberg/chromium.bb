@@ -75,6 +75,7 @@
 #include "platform/plugins/PluginData.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebApplicationCacheHost.h"
+#include "public/platform/WebMediaPlayerSource.h"
 #include "public/platform/WebMimeRegistry.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
 #include "public/platform/WebSecurityOrigin.h"
@@ -820,7 +821,7 @@ Widget* FrameLoaderClientImpl::createPlugin(
 
 PassOwnPtr<WebMediaPlayer> FrameLoaderClientImpl::createWebMediaPlayer(
     HTMLMediaElement& htmlMediaElement,
-    const WebURL& url,
+    const WebMediaPlayerSource& source,
     WebMediaPlayerClient* client)
 {
     WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(
@@ -835,7 +836,8 @@ PassOwnPtr<WebMediaPlayer> FrameLoaderClientImpl::createWebMediaPlayer(
 
     HTMLMediaElementEncryptedMedia& encryptedMedia = HTMLMediaElementEncryptedMedia::from(htmlMediaElement);
     WebString sinkId(HTMLMediaElementAudioOutputDevice::sinkId(htmlMediaElement));
-    return adoptPtr(webFrame->client()->createMediaPlayer(url, client, &encryptedMedia,
+    return adoptPtr(webFrame->client()->createMediaPlayer(source,
+        client, &encryptedMedia,
         encryptedMedia.contentDecryptionModule(), sinkId, webMediaSession));
 }
 

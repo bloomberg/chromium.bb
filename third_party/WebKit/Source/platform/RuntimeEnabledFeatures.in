@@ -204,6 +204,7 @@ Suborigins status=experimental
 // like to enable this always but can't until more websites fix this bug.
 // Chromium sets this conditionally (eg. based on the presence of a
 // touchscreen) in ApplyWebPreferences.
+SrcObject status=test
 Touch status=stable
 TrustedEvents status=stable
 TrustedEventsDefaultAction

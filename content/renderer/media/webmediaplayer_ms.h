@@ -85,7 +85,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   ~WebMediaPlayerMS() override;
 
   void load(LoadType load_type,
-            const blink::WebURL& url,
+            const blink::WebMediaPlayerSource& source,
             CORSMode cors_mode) override;
 
   // Playback controls.
