@@ -178,6 +178,16 @@ void PasswordManager::GenerationAvailableForForm(const PasswordForm& form) {
   }
 }
 
+void PasswordManager::OnPresaveGeneratedPassword(
+    const autofill::PasswordForm& form) {
+  DCHECK(client_->IsSavingAndFillingEnabledForCurrentPage());
+  PasswordFormManager* form_manager = GetMatchingPendingManager(form);
+  if (form_manager) {
+    form_manager->PresaveGeneratedPassword(form);
+    return;
+  }
+}
+
 void PasswordManager::SetHasGeneratedPasswordForForm(
     password_manager::PasswordManagerDriver* driver,
     const PasswordForm& form,
@@ -186,6 +196,8 @@ void PasswordManager::SetHasGeneratedPasswordForForm(
 
   PasswordFormManager* form_manager = GetMatchingPendingManager(form);
   if (form_manager) {
+    if (!password_is_generated)
+      form_manager->RemovePresavedPassword();
     form_manager->set_has_generated_password(password_is_generated);
     return;
   }

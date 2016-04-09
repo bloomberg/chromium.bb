@@ -107,6 +107,12 @@ class PasswordGenerationAgent : public content::RenderFrameObserver {
   // generation popup at this field.
   void OnUserTriggeredGeneratePassword();
 
+  // Creates a password form to presave a generated password. It copies behavior
+  // of CreatePasswordFormFromWebForm/FromUnownedInputElements, but takes
+  // |password_value| from |generation_element_| and empties |username_value|.
+  // If a form creating is failed, returns an empty unique_ptr.
+  std::unique_ptr<PasswordForm> CreatePasswordFormToPresave();
+
   // Stores forms that are candidates for account creation.
   AccountCreationFormDataList possible_account_creation_forms_;
 

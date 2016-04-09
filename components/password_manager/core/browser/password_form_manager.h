@@ -254,6 +254,15 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // Called when the user didn't interact with Update UI.
   void OnNoInteractionOnUpdate();
 
+  // Called when the user accepts a generated password or change it.
+  void PresaveGeneratedPassword(const autofill::PasswordForm& form);
+
+  // Called when the user removes the generated password.
+  void RemovePresavedPassword();
+
+  // Called after successful login on the form with a generated password.
+  void ReplacePresavedPasswordWithPendingCredentials(PasswordStore* store);
+
  private:
   // ManagerAction - What does the manager do with this form? Either it
   // fills it, or it doesn't. If it doesn't fill it, that's either
@@ -492,6 +501,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // (saved or updated) to a password store. It is calculated based on
   // |provisionally_saved_form_| and |best_matches_|.
   autofill::PasswordForm pending_credentials_;
+
+  // Stores the form with generated password till the user makes successful
+  // login or removes the generated password.
+  std::unique_ptr<autofill::PasswordForm> presaved_form_;
 
   // Whether pending_credentials_ stores a new login or is an update
   // to an existing one.

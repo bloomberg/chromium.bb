@@ -636,7 +636,10 @@ void PasswordFormManager::SaveAsNewLogin() {
 
   pending_credentials_.date_created = Time::Now();
   SanitizePossibleUsernames(&pending_credentials_);
-  password_store->AddLogin(pending_credentials_);
+  if (presaved_form_)
+    ReplacePresavedPasswordWithPendingCredentials(password_store);
+  else
+    password_store->AddLogin(pending_credentials_);
 
   UpdatePreferredLoginState(password_store);
 }
@@ -706,7 +709,9 @@ void PasswordFormManager::UpdateLogin() {
 
   bool password_was_updated = false;
   // Update the new preferred login.
-  if (!selected_username_.empty()) {
+  if (presaved_form_) {
+    ReplacePresavedPasswordWithPendingCredentials(password_store);
+  } else if (!selected_username_.empty()) {
     // Username has changed. We set this selected username as the real
     // username. Given that |username_value| is part of the Sync and
     // PasswordStore primary key, the old primary key must be supplied.
@@ -1398,6 +1403,42 @@ void PasswordFormManager::WipeStoreCopyIfOutdated() {
       preferred_match_ = nullptr;
     best_matches_.erase(credential_to_delete);
   }
+}
+
+void PasswordFormManager::PresaveGeneratedPassword(
+    const autofill::PasswordForm& form) {
+  PasswordStore* store = client_->GetPasswordStore();
+  if (!store) {
+    NOTREACHED();
+    return;
+  }
+  if (presaved_form_)
+    store->UpdateLoginWithPrimaryKey(form, *presaved_form_);
+  else
+    store->AddLogin(form);
+  presaved_form_.reset(new autofill::PasswordForm(form));
+}
+
+void PasswordFormManager::RemovePresavedPassword() {
+  if (!presaved_form_)
+    return;
+
+  PasswordStore* store = client_->GetPasswordStore();
+  if (!store) {
+    NOTREACHED();
+    return;
+  }
+  store->RemoveLogin(*presaved_form_);
+  presaved_form_.reset();
+}
+
+void PasswordFormManager::ReplacePresavedPasswordWithPendingCredentials(
+    PasswordStore* store) {
+  DCHECK(store);
+  DCHECK(presaved_form_);
+
+  store->UpdateLoginWithPrimaryKey(pending_credentials_, *presaved_form_);
+  presaved_form_.reset();
 }
 
 }  // namespace password_manager

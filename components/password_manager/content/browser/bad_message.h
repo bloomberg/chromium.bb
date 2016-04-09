@@ -25,6 +25,7 @@ enum class BadMessageReason {
   CPMD_BAD_ORIGIN_FOCUSED_PASSWORD_FORM_FOUND = 4,
   CPMD_BAD_ORIGIN_IN_PAGE_NAVIGATION = 5,
   CPMD_BAD_ORIGIN_PASSWORD_NO_LONGER_GENERATED = 6,
+  CPMD_BAD_ORIGIN_PRESAVE_GENERATED_PASSWORD = 7,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. ContentPasswordManagerDriver becomes CPMD) plus a unique

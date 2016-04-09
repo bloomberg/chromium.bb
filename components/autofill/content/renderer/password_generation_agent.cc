@@ -285,6 +285,35 @@ void PasswordGenerationAgent::OnPasswordAccepted(
     // an account creation form are always adjacent.
     render_frame()->GetRenderView()->GetWebView()->advanceFocus(false);
   }
+  std::unique_ptr<PasswordForm> presaved_form(CreatePasswordFormToPresave());
+  if (presaved_form) {
+    Send(new AutofillHostMsg_PresaveGeneratedPassword(routing_id(),
+                                                      *presaved_form));
+  }
+}
+
+std::unique_ptr<PasswordForm>
+PasswordGenerationAgent::CreatePasswordFormToPresave() {
+  DCHECK(!generation_element_.isNull());
+  // Since the form for presaving should match a form in the browser, create it
+  // with the same algorithm (to match html attributes, action, etc.), but
+  // change username and password values.
+  std::unique_ptr<PasswordForm> password_form;
+  if (!generation_element_.form().isNull()) {
+    password_form = CreatePasswordFormFromWebForm(generation_element_.form(),
+                                                  nullptr, nullptr);
+  } else {
+    password_form = CreatePasswordFormFromUnownedInputElements(
+        *render_frame()->GetWebFrame(), nullptr, nullptr);
+  }
+  if (password_form) {
+    // TODO(kolos): when we are good in username detection, save username
+    // as well.
+    password_form->username_value = base::string16();
+    password_form->password_value = generation_element_.value();
+  }
+
+  return password_form;
 }
 
 void PasswordGenerationAgent::OnFormsEligibleForGenerationFound(
@@ -413,9 +442,12 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
           password_generation::PASSWORD_DELETED);
       CopyElementValueToOtherInputElements(&element,
           &generation_form_data_->password_elements);
-      Send(new AutofillHostMsg_PasswordNoLongerGenerated(
-          routing_id(),
-          *generation_form_data_->form));
+      std::unique_ptr<PasswordForm> presaved_form(
+          CreatePasswordFormToPresave());
+      if (presaved_form) {
+        Send(new AutofillHostMsg_PasswordNoLongerGenerated(routing_id(),
+                                                           *presaved_form));
+      }
     }
 
     // Do not treat the password as generated, either here or in the browser.
@@ -429,6 +461,11 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
     // Mirror edits to any confirmation password fields.
     CopyElementValueToOtherInputElements(&element,
         &generation_form_data_->password_elements);
+    std::unique_ptr<PasswordForm> presaved_form(CreatePasswordFormToPresave());
+    if (presaved_form) {
+      Send(new AutofillHostMsg_PresaveGeneratedPassword(routing_id(),
+                                                        *presaved_form));
+    }
   } else if (element.value().length() > kMaximumOfferSize) {
     // User has rejected the feature and has started typing a password.
     HidePopup();

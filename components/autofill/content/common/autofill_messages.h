@@ -341,7 +341,12 @@ IPC_MESSAGE_ROUTED2(AutofillHostMsg_ShowPasswordEditingPopup,
 // Instructs the browser to hide any password generation popups.
 IPC_MESSAGE_ROUTED0(AutofillHostMsg_HidePasswordGenerationPopup)
 
-// Instructs the browsr that form no longer contains a generated password.
+// Instructs the browser to presave the form with generated password.
+IPC_MESSAGE_ROUTED1(AutofillHostMsg_PresaveGeneratedPassword,
+                    autofill::PasswordForm)
+
+// Instructs the browser that form no longer contains a generated password and
+// the presaved form should be removed.
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordNoLongerGenerated,
                     autofill::PasswordForm)
 
