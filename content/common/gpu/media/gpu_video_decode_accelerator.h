@@ -156,8 +156,10 @@ class GpuVideoDecodeAccelerator
   // |uncleared_textures_| is only accessed from the child thread.
   base::Lock debug_uncleared_textures_lock_;
 
-  // A map from picture buffer ID to TextureRef that have not been cleared.
-  std::map<int32_t, scoped_refptr<gpu::gles2::TextureRef>> uncleared_textures_;
+  // A map from picture buffer ID to set of TextureRefs that have not been
+  // cleared.
+  std::map<int32_t, std::vector<scoped_refptr<gpu::gles2::TextureRef>>>
+      uncleared_textures_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(GpuVideoDecodeAccelerator);
 };
