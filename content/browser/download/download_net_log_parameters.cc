@@ -43,12 +43,12 @@ static_assert(arraysize(download_danger_names) == DOWNLOAD_DANGER_TYPE_MAX,
 
 }  // namespace
 
-scoped_ptr<base::Value> ItemActivatedNetLogCallback(
+std::unique_ptr<base::Value> ItemActivatedNetLogCallback(
     const DownloadItem* download_item,
     DownloadType download_type,
     const std::string* file_name,
     net::NetLogCaptureMode capture_mode) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetString("type", download_type_names[download_type]);
   dict->SetString("id", base::UintToString(download_item->GetId()));
@@ -64,21 +64,21 @@ scoped_ptr<base::Value> ItemActivatedNetLogCallback(
   return std::move(dict);
 }
 
-scoped_ptr<base::Value> ItemCheckedNetLogCallback(
+std::unique_ptr<base::Value> ItemCheckedNetLogCallback(
     DownloadDangerType danger_type,
     net::NetLogCaptureMode capture_mode) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetString("danger_type", download_danger_names[danger_type]);
 
   return std::move(dict);
 }
 
-scoped_ptr<base::Value> ItemRenamedNetLogCallback(
+std::unique_ptr<base::Value> ItemRenamedNetLogCallback(
     const base::FilePath* old_filename,
     const base::FilePath* new_filename,
     net::NetLogCaptureMode capture_mode) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetString("old_filename", old_filename->AsUTF8Unsafe());
   dict->SetString("new_filename", new_filename->AsUTF8Unsafe());
@@ -86,11 +86,11 @@ scoped_ptr<base::Value> ItemRenamedNetLogCallback(
   return std::move(dict);
 }
 
-scoped_ptr<base::Value> ItemInterruptedNetLogCallback(
+std::unique_ptr<base::Value> ItemInterruptedNetLogCallback(
     DownloadInterruptReason reason,
     int64_t bytes_so_far,
     net::NetLogCaptureMode capture_mode) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetString("interrupt_reason", DownloadInterruptReasonToString(reason));
   dict->SetString("bytes_so_far", base::Int64ToString(bytes_so_far));
@@ -98,12 +98,12 @@ scoped_ptr<base::Value> ItemInterruptedNetLogCallback(
   return std::move(dict);
 }
 
-scoped_ptr<base::Value> ItemResumingNetLogCallback(
+std::unique_ptr<base::Value> ItemResumingNetLogCallback(
     bool user_initiated,
     DownloadInterruptReason reason,
     int64_t bytes_so_far,
     net::NetLogCaptureMode capture_mode) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetString("user_initiated", user_initiated ? "true" : "false");
   dict->SetString("interrupt_reason", DownloadInterruptReasonToString(reason));
@@ -112,11 +112,11 @@ scoped_ptr<base::Value> ItemResumingNetLogCallback(
   return std::move(dict);
 }
 
-scoped_ptr<base::Value> ItemCompletingNetLogCallback(
+std::unique_ptr<base::Value> ItemCompletingNetLogCallback(
     int64_t bytes_so_far,
     const std::string* final_hash,
     net::NetLogCaptureMode capture_mode) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetString("bytes_so_far", base::Int64ToString(bytes_so_far));
   dict->SetString("final_hash",
@@ -125,31 +125,31 @@ scoped_ptr<base::Value> ItemCompletingNetLogCallback(
   return std::move(dict);
 }
 
-scoped_ptr<base::Value> ItemFinishedNetLogCallback(
+std::unique_ptr<base::Value> ItemFinishedNetLogCallback(
     bool auto_opened,
     net::NetLogCaptureMode capture_mode) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetString("auto_opened", auto_opened ? "yes" : "no");
 
   return std::move(dict);
 }
 
-scoped_ptr<base::Value> ItemCanceledNetLogCallback(
+std::unique_ptr<base::Value> ItemCanceledNetLogCallback(
     int64_t bytes_so_far,
     net::NetLogCaptureMode capture_mode) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetString("bytes_so_far", base::Int64ToString(bytes_so_far));
 
   return std::move(dict);
 }
 
-scoped_ptr<base::Value> FileOpenedNetLogCallback(
+std::unique_ptr<base::Value> FileOpenedNetLogCallback(
     const base::FilePath* file_name,
     int64_t start_offset,
     net::NetLogCaptureMode capture_mode) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetString("file_name", file_name->AsUTF8Unsafe());
   dict->SetString("start_offset", base::Int64ToString(start_offset));
@@ -157,11 +157,11 @@ scoped_ptr<base::Value> FileOpenedNetLogCallback(
   return std::move(dict);
 }
 
-scoped_ptr<base::Value> FileStreamDrainedNetLogCallback(
+std::unique_ptr<base::Value> FileStreamDrainedNetLogCallback(
     size_t stream_size,
     size_t num_buffers,
     net::NetLogCaptureMode capture_mode) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetInteger("stream_size", static_cast<int>(stream_size));
   dict->SetInteger("num_buffers", static_cast<int>(num_buffers));
@@ -169,11 +169,11 @@ scoped_ptr<base::Value> FileStreamDrainedNetLogCallback(
   return std::move(dict);
 }
 
-scoped_ptr<base::Value> FileRenamedNetLogCallback(
+std::unique_ptr<base::Value> FileRenamedNetLogCallback(
     const base::FilePath* old_filename,
     const base::FilePath* new_filename,
     net::NetLogCaptureMode capture_mode) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetString("old_filename", old_filename->AsUTF8Unsafe());
   dict->SetString("new_filename", new_filename->AsUTF8Unsafe());
@@ -181,11 +181,11 @@ scoped_ptr<base::Value> FileRenamedNetLogCallback(
   return std::move(dict);
 }
 
-scoped_ptr<base::Value> FileErrorNetLogCallback(
+std::unique_ptr<base::Value> FileErrorNetLogCallback(
     const char* operation,
     net::Error net_error,
     net::NetLogCaptureMode capture_mode) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetString("operation", operation);
   dict->SetInteger("net_error", net_error);
@@ -193,12 +193,12 @@ scoped_ptr<base::Value> FileErrorNetLogCallback(
   return std::move(dict);
 }
 
-scoped_ptr<base::Value> FileInterruptedNetLogCallback(
+std::unique_ptr<base::Value> FileInterruptedNetLogCallback(
     const char* operation,
     int os_error,
     DownloadInterruptReason reason,
     net::NetLogCaptureMode capture_mode) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetString("operation", operation);
   if (os_error != 0)

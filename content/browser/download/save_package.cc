@@ -313,7 +313,7 @@ bool SavePackage::Init(
     return false;
   }
 
-  scoped_ptr<DownloadRequestHandleInterface> request_handle(
+  std::unique_ptr<DownloadRequestHandleInterface> request_handle(
       new SavePackageRequestHandle(AsWeakPtr()));
   // The download manager keeps ownership but adds us as an observer.
   download_manager_->CreateSavePackageDownloadItem(
@@ -376,7 +376,7 @@ void SavePackage::OnMHTMLGenerated(int64_t size) {
     // Must call OnAllDataSaved here in order for
     // GDataDownloadObserver::ShouldUpload() to return true.
     // ShouldCompleteDownload() may depend on the gdata uploader to finish.
-    download_->OnAllDataSaved(size, scoped_ptr<crypto::SecureHash>());
+    download_->OnAllDataSaved(size, std::unique_ptr<crypto::SecureHash>());
   }
 
   if (!download_manager_->GetDelegate()) {
@@ -783,7 +783,7 @@ void SavePackage::Finish() {
       if (save_type_ != SAVE_PAGE_TYPE_AS_MHTML) {
         download_->DestinationUpdate(all_save_items_count_, CurrentSpeed());
         download_->OnAllDataSaved(all_save_items_count_,
-                                  scoped_ptr<crypto::SecureHash>());
+                                  std::unique_ptr<crypto::SecureHash>());
       }
       download_->MarkAsComplete();
     }

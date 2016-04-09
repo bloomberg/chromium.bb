@@ -76,7 +76,7 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
 
   // Called when an interrupted download is resumed.
   virtual void ResumeInterruptedDownload(
-      scoped_ptr<content::DownloadUrlParameters> params,
+      std::unique_ptr<content::DownloadUrlParameters> params,
       uint32_t id);
 
   // For contextual issues like language and prefs.

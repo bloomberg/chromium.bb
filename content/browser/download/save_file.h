@@ -8,9 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/download/base_file.h"
 #include "content/browser/download/save_types.h"
 
@@ -50,7 +51,7 @@ class SaveFile {
 
  private:
   BaseFile file_;
-  scoped_ptr<const SaveFileCreateInfo> info_;
+  std::unique_ptr<const SaveFileCreateInfo> info_;
 
   DISALLOW_COPY_AND_ASSIGN(SaveFile);
 };

@@ -92,13 +92,9 @@ class BaseFileTest : public testing::Test {
   }
 
   bool InitializeFile() {
-    DownloadInterruptReason result =
-        base_file_->Initialize(base::FilePath(),
-                               temp_dir_.path(),
-                               base::File(),
-                               0,
-                               std::string(),
-                               scoped_ptr<crypto::SecureHash>());
+    DownloadInterruptReason result = base_file_->Initialize(
+        base::FilePath(), temp_dir_.path(), base::File(), 0, std::string(),
+        std::unique_ptr<crypto::SecureHash>());
     EXPECT_EQ(expected_error_, result);
     return result == DOWNLOAD_INTERRUPT_REASON_NONE;
   }
@@ -129,13 +125,10 @@ class BaseFileTest : public testing::Test {
     base::FilePath file_name;
     BaseFile file((net::BoundNetLog()));
 
-    EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-              file.Initialize(base::FilePath(),
-                              temp_dir_.path(),
-                              base::File(),
-                              0,
-                              std::string(),
-                              scoped_ptr<crypto::SecureHash>()));
+    EXPECT_EQ(
+        DOWNLOAD_INTERRUPT_REASON_NONE,
+        file.Initialize(base::FilePath(), temp_dir_.path(), base::File(), 0,
+                        std::string(), std::unique_ptr<crypto::SecureHash>()));
     file_name = file.full_path();
     EXPECT_NE(base::FilePath::StringType(), file_name.value());
 
@@ -153,12 +146,9 @@ class BaseFileTest : public testing::Test {
     EXPECT_NE(base::FilePath::StringType(), file_name.value());
     BaseFile duplicate_file((net::BoundNetLog()));
     EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-              duplicate_file.Initialize(file_name,
-                                        temp_dir_.path(),
-                                        base::File(),
-                                        0,
-                                        std::string(),
-                                        scoped_ptr<crypto::SecureHash>()));
+              duplicate_file.Initialize(file_name, temp_dir_.path(),
+                                        base::File(), 0, std::string(),
+                                        std::unique_ptr<crypto::SecureHash>()));
     // Write something into it.
     duplicate_file.AppendDataToFile(kTestData4, kTestDataLength4);
     // Detach the file so it isn't deleted on destruction of |duplicate_file|.
@@ -187,7 +177,7 @@ class BaseFileTest : public testing::Test {
 
   template <size_t SZ>
   static void ExpectHashValue(const uint8_t (&expected_hash)[SZ],
-                              scoped_ptr<crypto::SecureHash> hash_state) {
+                              std::unique_ptr<crypto::SecureHash> hash_state) {
     std::vector<uint8_t> hash_value(hash_state->GetHashLength());
     hash_state->Finish(&hash_value.front(), hash_value.size());
     ASSERT_EQ(SZ, hash_value.size());
@@ -196,7 +186,7 @@ class BaseFileTest : public testing::Test {
 
  protected:
   // BaseClass instance we are testing.
-  scoped_ptr<BaseFile> base_file_;
+  std::unique_ptr<BaseFile> base_file_;
 
   // Temporary directory for renamed downloads.
   base::ScopedTempDir temp_dir_;
@@ -299,7 +289,7 @@ TEST_F(BaseFileTest, MultipleWritesInterruptedWithHash) {
   ASSERT_TRUE(AppendDataToFile(kTestData1));
   ASSERT_TRUE(AppendDataToFile(kTestData2));
   // Get the hash state and file name.
-  scoped_ptr<crypto::SecureHash> hash_state = base_file_->Finish();
+  std::unique_ptr<crypto::SecureHash> hash_state = base_file_->Finish();
 
   base::FilePath new_file_path(temp_dir_.path().Append(
       base::FilePath(FILE_PATH_LITERAL("second_file"))));
@@ -434,12 +424,9 @@ TEST_F(BaseFileTest, WriteWithError) {
   base::File file(path, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_READ);
   base_file_.reset(new BaseFile(net::BoundNetLog()));
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-            base_file_->Initialize(path,
-                                   base::FilePath(),
-                                   std::move(file),
-                                   0,
+            base_file_->Initialize(path, base::FilePath(), std::move(file), 0,
                                    std::string(),
-                                   scoped_ptr<crypto::SecureHash>()));
+                                   std::unique_ptr<crypto::SecureHash>()));
 #if defined(OS_WIN)
   set_expected_error(DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED);
 #elif defined (OS_POSIX)
@@ -477,13 +464,11 @@ TEST_F(BaseFileTest, AppendToBaseFile) {
 
   // Use the file we've just created.
   base_file_.reset(new BaseFile(net::BoundNetLog()));
-  ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-            base_file_->Initialize(existing_file_name,
-                                   base::FilePath(),
-                                   base::File(),
-                                   kTestDataLength4,
-                                   std::string(),
-                                   scoped_ptr<crypto::SecureHash>()));
+  ASSERT_EQ(
+      DOWNLOAD_INTERRUPT_REASON_NONE,
+      base_file_->Initialize(existing_file_name, base::FilePath(), base::File(),
+                             kTestDataLength4, std::string(),
+                             std::unique_ptr<crypto::SecureHash>()));
 
   const base::FilePath file_name = base_file_->full_path();
   EXPECT_NE(base::FilePath::StringType(), file_name.value());
@@ -510,12 +495,9 @@ TEST_F(BaseFileTest, ReadonlyBaseFile) {
   // Try to overwrite it.
   base_file_.reset(new BaseFile(net::BoundNetLog()));
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED,
-            base_file_->Initialize(readonly_file_name,
-                                   base::FilePath(),
-                                   base::File(),
-                                   0,
-                                   std::string(),
-                                   scoped_ptr<crypto::SecureHash>()));
+            base_file_->Initialize(readonly_file_name, base::FilePath(),
+                                   base::File(), 0, std::string(),
+                                   std::unique_ptr<crypto::SecureHash>()));
 
   expect_in_progress_ = false;
 
@@ -540,12 +522,9 @@ TEST_F(BaseFileTest, ExistingBaseFileKnownHash) {
   std::string hash_so_far(std::begin(kHashOfTestData1),
                           std::end(kHashOfTestData1));
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-            base_file_->Initialize(file_path,
-                                   base::FilePath(),
-                                   base::File(),
-                                   kTestDataLength1,
-                                   hash_so_far,
-                                   scoped_ptr<crypto::SecureHash>()));
+            base_file_->Initialize(file_path, base::FilePath(), base::File(),
+                                   kTestDataLength1, hash_so_far,
+                                   std::unique_ptr<crypto::SecureHash>()));
   set_expected_data(kTestData1);
   ASSERT_TRUE(AppendDataToFile(kTestData2));
   ASSERT_TRUE(AppendDataToFile(kTestData3));
@@ -559,12 +538,9 @@ TEST_F(BaseFileTest, ExistingBaseFileUnknownHash) {
   ASSERT_TRUE(base::WriteFile(file_path, kTestData1, kTestDataLength1));
 
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-            base_file_->Initialize(file_path,
-                                   base::FilePath(),
-                                   base::File(),
-                                   kTestDataLength1,
-                                   std::string(),
-                                   scoped_ptr<crypto::SecureHash>()));
+            base_file_->Initialize(file_path, base::FilePath(), base::File(),
+                                   kTestDataLength1, std::string(),
+                                   std::unique_ptr<crypto::SecureHash>()));
   set_expected_data(kTestData1);
   ASSERT_TRUE(AppendDataToFile(kTestData2));
   ASSERT_TRUE(AppendDataToFile(kTestData3));
@@ -579,12 +555,9 @@ TEST_F(BaseFileTest, ExistingBaseFileIncorrectHash) {
   std::string hash_so_far(std::begin(kHashOfTestData1),
                           std::end(kHashOfTestData1));
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH,
-            base_file_->Initialize(file_path,
-                                   base::FilePath(),
-                                   base::File(),
-                                   kTestDataLength2,
-                                   hash_so_far,
-                                   scoped_ptr<crypto::SecureHash>()));
+            base_file_->Initialize(file_path, base::FilePath(), base::File(),
+                                   kTestDataLength2, hash_so_far,
+                                   std::unique_ptr<crypto::SecureHash>()));
   set_expected_error(DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH);
 }
 
@@ -607,13 +580,11 @@ TEST_F(BaseFileTest, ExistingBaseFileLargeSizeKnownHash) {
       0x41, 0x7c, 0xb3, 0x38, 0xd3, 0xf4, 0xe0, 0x78, 0x89, 0x46};
 
   ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-            base_file_->Initialize(file_path,
-                                   base::FilePath(),
-                                   base::File(),
+            base_file_->Initialize(file_path, base::FilePath(), base::File(),
                                    big_buffer.size(),
                                    std::string(std::begin(kExpectedPartialHash),
                                                std::end(kExpectedPartialHash)),
-                                   scoped_ptr<crypto::SecureHash>()));
+                                   std::unique_ptr<crypto::SecureHash>()));
   set_expected_data(big_buffer);  // Contents of the file on Open.
   ASSERT_TRUE(AppendDataToFile(big_buffer));
   ExpectHashValue(kExpectedFullHash, base_file_->Finish());
@@ -632,13 +603,11 @@ TEST_F(BaseFileTest, ExistingBaseFileLargeSizeIncorrectHash) {
       0x02, 0x12, 0xa4, 0x1e, 0x54, 0xb5, 0xe7, 0xc2, 0x8a, 0xe5};
 
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH,
-            base_file_->Initialize(file_path,
-                                   base::FilePath(),
-                                   base::File(),
+            base_file_->Initialize(file_path, base::FilePath(), base::File(),
                                    big_buffer.size(),
                                    std::string(std::begin(kExpectedPartialHash),
                                                std::end(kExpectedPartialHash)),
-                                   scoped_ptr<crypto::SecureHash>()));
+                                   std::unique_ptr<crypto::SecureHash>()));
   set_expected_error(DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH);
 }
 
@@ -648,12 +617,9 @@ TEST_F(BaseFileTest, ExistingBaseFileTooShort) {
   ASSERT_TRUE(base::WriteFile(file_path, kTestData1, kTestDataLength1));
 
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT,
-            base_file_->Initialize(file_path,
-                                   base::FilePath(),
-                                   base::File(),
-                                   kTestDataLength1 + 1,
-                                   std::string(),
-                                   scoped_ptr<crypto::SecureHash>()));
+            base_file_->Initialize(file_path, base::FilePath(), base::File(),
+                                   kTestDataLength1 + 1, std::string(),
+                                   std::unique_ptr<crypto::SecureHash>()));
   set_expected_error(DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT);
 }
 
@@ -668,12 +634,9 @@ TEST_F(BaseFileTest, ExistingBaseFileKnownHashTooLong) {
   std::string hash_so_far(std::begin(kHashOfTestData1),
                           std::end(kHashOfTestData1));
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-            base_file_->Initialize(file_path,
-                                   base::FilePath(),
-                                   base::File(),
-                                   kTestDataLength1,
-                                   hash_so_far,
-                                   scoped_ptr<crypto::SecureHash>()));
+            base_file_->Initialize(file_path, base::FilePath(), base::File(),
+                                   kTestDataLength1, hash_so_far,
+                                   std::unique_ptr<crypto::SecureHash>()));
   set_expected_data(kTestData1);  // Our starting position.
   ASSERT_TRUE(AppendDataToFile(kTestData2));
   ASSERT_TRUE(AppendDataToFile(kTestData3));
@@ -690,12 +653,9 @@ TEST_F(BaseFileTest, ExistingBaseFileUnknownHashTooLong) {
   ASSERT_TRUE(base::WriteFile(file_path, contents.data(), contents.size()));
 
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-            base_file_->Initialize(file_path,
-                                   base::FilePath(),
-                                   base::File(),
-                                   kTestDataLength1,
-                                   std::string(),
-                                   scoped_ptr<crypto::SecureHash>()));
+            base_file_->Initialize(file_path, base::FilePath(), base::File(),
+                                   kTestDataLength1, std::string(),
+                                   std::unique_ptr<crypto::SecureHash>()));
   set_expected_data(kTestData1);
   ASSERT_TRUE(AppendDataToFile(kTestData2));
   ASSERT_TRUE(AppendDataToFile(kTestData3));

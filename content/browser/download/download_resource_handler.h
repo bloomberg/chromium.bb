@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/download/download_request_core.h"
 #include "content/browser/loader/resource_handler.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -83,8 +83,8 @@ class CONTENT_EXPORT DownloadResourceHandler
 
   // DownloadRequestCore::Delegate
   void OnStart(
-      scoped_ptr<DownloadCreateInfo> download_create_info,
-      scoped_ptr<ByteStreamReader> stream_reader,
+      std::unique_ptr<DownloadCreateInfo> download_create_info,
+      std::unique_ptr<ByteStreamReader> stream_reader,
       const DownloadUrlParameters::OnStartedCallback& callback) override;
   void OnReadyToRead() override;
 
@@ -92,9 +92,9 @@ class CONTENT_EXPORT DownloadResourceHandler
   // thread before StartOnUIThread is called.
   // Created on IO thread, but only accessed on UI thread. |tab_info_| holds
   // the pointer until we pass it off to StartOnUIThread or DeleteSoon.
-  // Marked as a scoped_ptr<> to indicate ownership of the structure, but
+  // Marked as a std::unique_ptr<> to indicate ownership of the structure, but
   // deletion must occur on the IO thread.
-  scoped_ptr<DownloadTabInfo> tab_info_;
+  std::unique_ptr<DownloadTabInfo> tab_info_;
 
   DownloadRequestCore core_;
   DISALLOW_COPY_AND_ASSIGN(DownloadResourceHandler);

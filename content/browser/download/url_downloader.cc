@@ -70,9 +70,9 @@ class UrlDownloader::RequestHandle : public DownloadRequestHandleInterface {
 };
 
 // static
-scoped_ptr<UrlDownloader> UrlDownloader::BeginDownload(
+std::unique_ptr<UrlDownloader> UrlDownloader::BeginDownload(
     base::WeakPtr<DownloadManagerImpl> download_manager,
-    scoped_ptr<net::URLRequest> request,
+    std::unique_ptr<net::URLRequest> request,
     const Referrer& referrer) {
   if (!referrer.url.is_valid())
     request->SetReferrer(std::string());
@@ -84,14 +84,14 @@ scoped_ptr<UrlDownloader> UrlDownloader::BeginDownload(
 
   // From this point forward, the |UrlDownloader| is responsible for
   // |started_callback|.
-  scoped_ptr<UrlDownloader> downloader(
+  std::unique_ptr<UrlDownloader> downloader(
       new UrlDownloader(std::move(request), download_manager));
   downloader->Start();
 
   return downloader;
 }
 
-UrlDownloader::UrlDownloader(scoped_ptr<net::URLRequest> request,
+UrlDownloader::UrlDownloader(std::unique_ptr<net::URLRequest> request,
                              base::WeakPtr<DownloadManagerImpl> manager)
     : request_(std::move(request)),
       manager_(manager),
@@ -218,8 +218,8 @@ void UrlDownloader::ResponseCompleted() {
 }
 
 void UrlDownloader::OnStart(
-    scoped_ptr<DownloadCreateInfo> create_info,
-    scoped_ptr<ByteStreamReader> stream_reader,
+    std::unique_ptr<DownloadCreateInfo> create_info,
+    std::unique_ptr<ByteStreamReader> stream_reader,
     const DownloadUrlParameters::OnStartedCallback& callback) {
   create_info->request_handle.reset(
       new RequestHandle(weak_ptr_factory_.GetWeakPtr(), manager_,

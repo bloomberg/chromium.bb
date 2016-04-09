@@ -10,10 +10,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -39,9 +40,9 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // Note that the DownloadFileImpl automatically reads from the passed in
   // stream, and sends updates and status of those reads to the
   // DownloadDestinationObserver.
-  DownloadFileImpl(scoped_ptr<DownloadSaveInfo> save_info,
+  DownloadFileImpl(std::unique_ptr<DownloadSaveInfo> save_info,
                    const base::FilePath& default_downloads_directory,
-                   scoped_ptr<ByteStreamReader> byte_stream,
+                   std::unique_ptr<ByteStreamReader> byte_stream,
                    const net::BoundNetLog& bound_net_log,
                    base::WeakPtr<DownloadDestinationObserver> observer);
 
@@ -103,7 +104,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   };
 
   // Rename file_ based on |parameters|.
-  void RenameWithRetryInternal(scoped_ptr<RenameParameters> parameters);
+  void RenameWithRetryInternal(std::unique_ptr<RenameParameters> parameters);
 
   // Send an update on our progress.
   void SendUpdate();
@@ -118,7 +119,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // DownloadSaveInfo provided during construction. Since the DownloadFileImpl
   // can be created on any thread, this holds the save_info_ until it can be
   // used to initialize file_ on the FILE thread.
-  scoped_ptr<DownloadSaveInfo> save_info_;
+  std::unique_ptr<DownloadSaveInfo> save_info_;
 
   // The default directory for creating the download file.
   base::FilePath default_download_directory_;
@@ -127,10 +128,10 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // TODO(rdsmith): Move this into BaseFile; requires using the same
   // stream semantics in SavePackage.  Alternatively, replace SaveFile
   // with DownloadFile and get rid of BaseFile.
-  scoped_ptr<ByteStreamReader> stream_reader_;
+  std::unique_ptr<ByteStreamReader> stream_reader_;
 
   // Used to trigger progress updates.
-  scoped_ptr<base::RepeatingTimer> update_timer_;
+  std::unique_ptr<base::RepeatingTimer> update_timer_;
 
   // Statistics
   size_t bytes_seen_;

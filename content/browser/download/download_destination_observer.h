@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "crypto/secure_hash.h"
 
@@ -30,13 +30,14 @@ class DownloadDestinationObserver {
   virtual void DestinationUpdate(int64_t bytes_so_far,
                                  int64_t bytes_per_sec) = 0;
 
-  virtual void DestinationError(DownloadInterruptReason reason,
-                                int64_t bytes_so_far,
-                                scoped_ptr<crypto::SecureHash> hash_state) = 0;
+  virtual void DestinationError(
+      DownloadInterruptReason reason,
+      int64_t bytes_so_far,
+      std::unique_ptr<crypto::SecureHash> hash_state) = 0;
 
   virtual void DestinationCompleted(
       int64_t total_bytes,
-      scoped_ptr<crypto::SecureHash> hash_state) = 0;
+      std::unique_ptr<crypto::SecureHash> hash_state) = 0;
 };
 
 }  // namespace content

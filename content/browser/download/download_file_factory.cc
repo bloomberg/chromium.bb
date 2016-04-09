@@ -13,9 +13,9 @@ namespace content {
 DownloadFileFactory::~DownloadFileFactory() {}
 
 DownloadFile* DownloadFileFactory::CreateFile(
-    scoped_ptr<DownloadSaveInfo> save_info,
+    std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_downloads_directory,
-    scoped_ptr<ByteStreamReader> byte_stream,
+    std::unique_ptr<ByteStreamReader> byte_stream,
     const net::BoundNetLog& bound_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer) {
   return new DownloadFileImpl(std::move(save_info),

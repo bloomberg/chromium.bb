@@ -8,11 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/resource_handler.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -44,8 +44,8 @@ class CONTENT_EXPORT DownloadRequestCore
    public:
     virtual void OnReadyToRead() = 0;
     virtual void OnStart(
-        scoped_ptr<DownloadCreateInfo> download_create_info,
-        scoped_ptr<ByteStreamReader> stream_reader,
+        std::unique_ptr<DownloadCreateInfo> download_create_info,
+        std::unique_ptr<ByteStreamReader> stream_reader,
         const DownloadUrlParameters::OnStartedCallback& callback) = 0;
   };
 
@@ -102,7 +102,7 @@ class CONTENT_EXPORT DownloadRequestCore
 
   std::string DebugString() const;
 
-  static scoped_ptr<net::URLRequest> CreateRequestOnIOThread(
+  static std::unique_ptr<net::URLRequest> CreateRequestOnIOThread(
       uint32_t download_id,
       DownloadUrlParameters* params);
 
@@ -121,7 +121,7 @@ class CONTENT_EXPORT DownloadRequestCore
       const net::HttpResponseHeaders& http_headers,
       DownloadSaveInfo* save_info);
 
-  scoped_ptr<DownloadCreateInfo> CreateDownloadCreateInfo(
+  std::unique_ptr<DownloadCreateInfo> CreateDownloadCreateInfo(
       DownloadInterruptReason result);
 
   Delegate* delegate_;
@@ -129,18 +129,18 @@ class CONTENT_EXPORT DownloadRequestCore
 
   // "Passthrough" fields. These are only kept here so that they can be used to
   // populate the DownloadCreateInfo when the time comes.
-  scoped_ptr<DownloadSaveInfo> save_info_;
+  std::unique_ptr<DownloadSaveInfo> save_info_;
   uint32_t download_id_;
   DownloadUrlParameters::OnStartedCallback on_started_callback_;
 
   // Data flow
   scoped_refptr<net::IOBuffer> read_buffer_;    // From URLRequest.
-  scoped_ptr<ByteStreamWriter> stream_writer_;  // To rest of system.
+  std::unique_ptr<ByteStreamWriter> stream_writer_;  // To rest of system.
 
   // Keeps the system from sleeping while this is alive. If the
   // system enters power saving mode while a request is alive, it can cause the
   // request to fail and the associated download will be interrupted.
-  scoped_ptr<PowerSaveBlocker> power_save_blocker_;
+  std::unique_ptr<PowerSaveBlocker> power_save_blocker_;
 
   // The following are used to collect stats.
   base::TimeTicks download_start_time_;

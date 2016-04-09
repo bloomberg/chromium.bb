@@ -65,7 +65,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
         BrowserContext::GetDownloadManager(web_contents_->GetBrowserContext());
 
     RecordDownloadSource(INITIATED_BY_DRAG_N_DROP);
-    scoped_ptr<content::DownloadUrlParameters> params(
+    std::unique_ptr<content::DownloadUrlParameters> params(
         DownloadUrlParameters::FromWebContents(web_contents_, url_));
     params->set_referrer(referrer_);
     params->set_referrer_encoding(referrer_encoding_);

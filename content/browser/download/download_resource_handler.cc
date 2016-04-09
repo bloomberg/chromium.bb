@@ -36,9 +36,9 @@ namespace {
 // Static function in order to prevent any accidental accesses to
 // DownloadResourceHandler members from the UI thread.
 static void StartOnUIThread(
-    scoped_ptr<DownloadCreateInfo> info,
-    scoped_ptr<DownloadResourceHandler::DownloadTabInfo> tab_info,
-    scoped_ptr<ByteStreamReader> stream,
+    std::unique_ptr<DownloadCreateInfo> info,
+    std::unique_ptr<DownloadResourceHandler::DownloadTabInfo> tab_info,
+    std::unique_ptr<ByteStreamReader> stream,
     const DownloadUrlParameters::OnStartedCallback& started_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -79,7 +79,7 @@ void InitializeDownloadTabInfoOnUIThread(
 }
 
 void DeleteOnUIThread(
-    scoped_ptr<DownloadResourceHandler::DownloadTabInfo> tab_info) {}
+    std::unique_ptr<DownloadResourceHandler::DownloadTabInfo> tab_info) {}
 
 }  // namespace
 
@@ -168,8 +168,8 @@ void DownloadResourceHandler::ResumeRequest() {
 }
 
 void DownloadResourceHandler::OnStart(
-    scoped_ptr<DownloadCreateInfo> create_info,
-    scoped_ptr<ByteStreamReader> stream_reader,
+    std::unique_ptr<DownloadCreateInfo> create_info,
+    std::unique_ptr<ByteStreamReader> stream_reader,
     const DownloadUrlParameters::OnStartedCallback& callback) {
   // If the user cancels the download, then don't call start. Instead ignore the
   // download entirely.

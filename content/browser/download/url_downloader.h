@@ -7,7 +7,8 @@
 
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/memory/weak_ptr.h"
 #include "content/browser/download/download_request_core.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -25,13 +26,13 @@ class DownloadManagerImpl;
 class UrlDownloader : public net::URLRequest::Delegate,
                       public DownloadRequestCore::Delegate {
  public:
-  UrlDownloader(scoped_ptr<net::URLRequest> request,
+  UrlDownloader(std::unique_ptr<net::URLRequest> request,
                 base::WeakPtr<DownloadManagerImpl> manager);
   ~UrlDownloader() override;
 
-  static scoped_ptr<UrlDownloader> BeginDownload(
+  static std::unique_ptr<UrlDownloader> BeginDownload(
       base::WeakPtr<DownloadManagerImpl> download_manager,
-      scoped_ptr<net::URLRequest> request,
+      std::unique_ptr<net::URLRequest> request,
       const Referrer& referrer);
 
  private:
@@ -51,8 +52,8 @@ class UrlDownloader : public net::URLRequest::Delegate,
 
   // DownloadRequestCore::Delegate
   void OnStart(
-      scoped_ptr<DownloadCreateInfo> download_create_info,
-      scoped_ptr<ByteStreamReader> stream_reader,
+      std::unique_ptr<DownloadCreateInfo> download_create_info,
+      std::unique_ptr<ByteStreamReader> stream_reader,
       const DownloadUrlParameters::OnStartedCallback& callback) override;
   void OnReadyToRead() override;
 
@@ -65,7 +66,7 @@ class UrlDownloader : public net::URLRequest::Delegate,
   // UrlDownloader to be freed.
   void Destroy();
 
-  scoped_ptr<net::URLRequest> request_;
+  std::unique_ptr<net::URLRequest> request_;
   base::WeakPtr<DownloadManagerImpl> manager_;
   DownloadRequestCore core_;
 

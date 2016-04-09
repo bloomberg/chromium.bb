@@ -7,13 +7,15 @@
 #include <string>
 
 #include "base/format_macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 
 namespace content {
 
-DownloadCreateInfo::DownloadCreateInfo(const base::Time& start_time,
-                                       const net::BoundNetLog& bound_net_log,
-                                       scoped_ptr<DownloadSaveInfo> save_info)
+DownloadCreateInfo::DownloadCreateInfo(
+    const base::Time& start_time,
+    const net::BoundNetLog& bound_net_log,
+    std::unique_ptr<DownloadSaveInfo> save_info)
     : download_id(DownloadItem::kInvalidId),
       start_time(start_time),
       total_bytes(0),
@@ -26,7 +28,7 @@ DownloadCreateInfo::DownloadCreateInfo(const base::Time& start_time,
 DownloadCreateInfo::DownloadCreateInfo()
     : DownloadCreateInfo(base::Time(),
                          net::BoundNetLog(),
-                         make_scoped_ptr(new DownloadSaveInfo)) {}
+                         base::WrapUnique(new DownloadSaveInfo)) {}
 
 DownloadCreateInfo::~DownloadCreateInfo() {}
 

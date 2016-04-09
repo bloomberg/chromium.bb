@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -84,13 +84,14 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Constructing for the "Save Page As..." feature:
   // |bound_net_log| is constructed externally for our use.
-  DownloadItemImpl(DownloadItemImplDelegate* delegate,
-                   uint32_t id,
-                   const base::FilePath& path,
-                   const GURL& url,
-                   const std::string& mime_type,
-                   scoped_ptr<DownloadRequestHandleInterface> request_handle,
-                   const net::BoundNetLog& bound_net_log);
+  DownloadItemImpl(
+      DownloadItemImplDelegate* delegate,
+      uint32_t id,
+      const base::FilePath& path,
+      const GURL& url,
+      const std::string& mime_type,
+      std::unique_ptr<DownloadRequestHandleInterface> request_handle,
+      const net::BoundNetLog& bound_net_log);
 
   ~DownloadItemImpl() override;
 
@@ -180,8 +181,8 @@ class CONTENT_EXPORT DownloadItemImpl
   // parameters. It may be different from the DownloadCreateInfo used to create
   // the DownloadItem if Start() is being called in response for a download
   // resumption request.
-  virtual void Start(scoped_ptr<DownloadFile> download_file,
-                     scoped_ptr<DownloadRequestHandleInterface> req_handle,
+  virtual void Start(std::unique_ptr<DownloadFile> download_file,
+                     std::unique_ptr<DownloadRequestHandleInterface> req_handle,
                      const DownloadCreateInfo& new_create_info);
 
   // Needed because of intertwining with DownloadManagerImpl -------------------
@@ -208,7 +209,7 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual void SetTotalBytes(int64_t total_bytes);
 
   virtual void OnAllDataSaved(int64_t total_bytes,
-                              scoped_ptr<crypto::SecureHash> hash_state);
+                              std::unique_ptr<crypto::SecureHash> hash_state);
 
   // Called by SavePackage to display progress when the DownloadItem
   // should be considered complete.
@@ -216,11 +217,13 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // DownloadDestinationObserver
   void DestinationUpdate(int64_t bytes_so_far, int64_t bytes_per_sec) override;
-  void DestinationError(DownloadInterruptReason reason,
-                        int64_t bytes_so_far,
-                        scoped_ptr<crypto::SecureHash> hash_state) override;
-  void DestinationCompleted(int64_t total_bytes,
-                            scoped_ptr<crypto::SecureHash> hash_state) override;
+  void DestinationError(
+      DownloadInterruptReason reason,
+      int64_t bytes_so_far,
+      std::unique_ptr<crypto::SecureHash> hash_state) override;
+  void DestinationCompleted(
+      int64_t total_bytes,
+      std::unique_ptr<crypto::SecureHash> hash_state) override;
 
  private:
   // Fine grained states of a download.
@@ -440,13 +443,13 @@ class CONTENT_EXPORT DownloadItemImpl
   // interrupt reason allows, this partial state may be allowed to continue the
   // interrupted download upon resumption.
   void InterruptWithPartialState(int64_t bytes_so_far,
-                                 scoped_ptr<crypto::SecureHash> hash_state,
+                                 std::unique_ptr<crypto::SecureHash> hash_state,
                                  DownloadInterruptReason reason);
 
   void UpdateProgress(int64_t bytes_so_far, int64_t bytes_per_sec);
 
   // Set |hash_| and |hash_state_| based on |hash_state|.
-  void SetHashState(scoped_ptr<crypto::SecureHash> hash_state);
+  void SetHashState(std::unique_ptr<crypto::SecureHash> hash_state);
 
   // Destroy the DownloadFile object.  If |destroy_file| is true, the file is
   // destroyed with it.  Otherwise, DownloadFile::Detach() is called before
@@ -497,7 +500,7 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // The handle to the request information.  Used for operations outside the
   // download system.
-  scoped_ptr<DownloadRequestHandleInterface> request_handle_;
+  std::unique_ptr<DownloadRequestHandleInterface> request_handle_;
 
   std::string guid_;
 
@@ -622,7 +625,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // pointer may only be used or destroyed on the FILE thread.
   // This pointer will be non-null only while the DownloadItem is in
   // the IN_PROGRESS state.
-  scoped_ptr<DownloadFile> download_file_;
+  std::unique_ptr<DownloadFile> download_file_;
 
   // Full path to the downloaded or downloading file. This is the path to the
   // physical file, if one exists. The final target path is specified by
@@ -657,7 +660,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // In the event of an interruption, the DownloadDestinationObserver interface
   // exposes the partial hash state. This state can be held by the download item
   // in case it's needed for resumption.
-  scoped_ptr<crypto::SecureHash> hash_state_;
+  std::unique_ptr<crypto::SecureHash> hash_state_;
 
   // Contents of the Last-Modified header for the most recent server response.
   std::string last_modified_time_;

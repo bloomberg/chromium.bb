@@ -37,9 +37,9 @@ const int kInitialRenameRetryDelayMs = 200;
 const int kMaxRenameRetries = 3;
 
 DownloadFileImpl::DownloadFileImpl(
-    scoped_ptr<DownloadSaveInfo> save_info,
+    std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
-    scoped_ptr<ByteStreamReader> stream,
+    std::unique_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer)
     : file_(bound_net_log),
@@ -104,7 +104,7 @@ DownloadInterruptReason DownloadFileImpl::AppendDataToFile(
 void DownloadFileImpl::RenameAndUniquify(
     const base::FilePath& full_path,
     const RenameCompletionCallback& callback) {
-  scoped_ptr<RenameParameters> parameters(
+  std::unique_ptr<RenameParameters> parameters(
       new RenameParameters(UNIQUIFY, full_path, callback));
   RenameWithRetryInternal(std::move(parameters));
 }
@@ -115,7 +115,7 @@ void DownloadFileImpl::RenameAndAnnotate(
     const GURL& source_url,
     const GURL& referrer_url,
     const RenameCompletionCallback& callback) {
-  scoped_ptr<RenameParameters> parameters(new RenameParameters(
+  std::unique_ptr<RenameParameters> parameters(new RenameParameters(
       ANNOTATE_WITH_SOURCE_INFORMATION, full_path, callback));
   parameters->client_guid = client_guid;
   parameters->source_url = source_url;
@@ -139,7 +139,7 @@ bool DownloadFileImpl::ShouldRetryFailedRename(DownloadInterruptReason reason) {
 }
 
 void DownloadFileImpl::RenameWithRetryInternal(
-    scoped_ptr<RenameParameters> parameters) {
+    std::unique_ptr<RenameParameters> parameters) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   base::FilePath new_path = parameters->new_path;
@@ -299,7 +299,7 @@ void DownloadFileImpl::StreamActive() {
     stream_reader_->RegisterCallback(base::Closure());
     weak_factory_.InvalidateWeakPtrs();
     SendUpdate();  // Make info up to date before error.
-    scoped_ptr<crypto::SecureHash> hash_state = file_.Finish();
+    std::unique_ptr<crypto::SecureHash> hash_state = file_.Finish();
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -313,7 +313,7 @@ void DownloadFileImpl::StreamActive() {
     stream_reader_->RegisterCallback(base::Closure());
     weak_factory_.InvalidateWeakPtrs();
     SendUpdate();
-    scoped_ptr<crypto::SecureHash> hash_state = file_.Finish();
+    std::unique_ptr<crypto::SecureHash> hash_state = file_.Finish();
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,

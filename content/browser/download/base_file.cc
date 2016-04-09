@@ -42,7 +42,7 @@ DownloadInterruptReason BaseFile::Initialize(
     base::File file,
     int64_t bytes_so_far,
     const std::string& hash_so_far,
-    scoped_ptr<crypto::SecureHash> hash_state) {
+    std::unique_ptr<crypto::SecureHash> hash_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!detached_);
 
@@ -179,7 +179,7 @@ void BaseFile::Cancel() {
   Detach();
 }
 
-scoped_ptr<crypto::SecureHash> BaseFile::Finish() {
+std::unique_ptr<crypto::SecureHash> BaseFile::Finish() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   Close();
   return std::move(secure_hash_);
@@ -252,7 +252,7 @@ DownloadInterruptReason BaseFile::CalculatePartialHash(
   if (!hash_to_expect.empty()) {
     DCHECK_EQ(secure_hash_->GetHashLength(), hash_to_expect.size());
     DCHECK(buffer.size() >= secure_hash_->GetHashLength());
-    scoped_ptr<crypto::SecureHash> partial_hash(secure_hash_->Clone());
+    std::unique_ptr<crypto::SecureHash> partial_hash(secure_hash_->Clone());
     partial_hash->Finish(&buffer.front(), buffer.size());
 
     if (memcmp(&buffer.front(),

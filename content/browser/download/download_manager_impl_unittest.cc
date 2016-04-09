@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -15,7 +16,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
@@ -117,12 +117,12 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_METHOD3(UpdateProgress, void(int64_t, int64_t, const std::string&));
   MOCK_METHOD1(Cancel, void(bool));
   MOCK_METHOD0(MarkAsComplete, void());
-  void OnAllDataSaved(int64_t, scoped_ptr<crypto::SecureHash>) override {
+  void OnAllDataSaved(int64_t, std::unique_ptr<crypto::SecureHash>) override {
     NOTREACHED();
   }
   MOCK_METHOD0(OnDownloadedFileRemoved, void());
-  void Start(scoped_ptr<DownloadFile> download_file,
-             scoped_ptr<DownloadRequestHandleInterface> req_handle,
+  void Start(std::unique_ptr<DownloadFile> download_file,
+             std::unique_ptr<DownloadRequestHandleInterface> req_handle,
              const DownloadCreateInfo& create_info) override {
     MockStart(download_file.get(), req_handle.get());
   }
@@ -274,7 +274,7 @@ class MockDownloadItemFactory
       const base::FilePath& path,
       const GURL& url,
       const std::string& mime_type,
-      scoped_ptr<DownloadRequestHandleInterface> request_handle,
+      std::unique_ptr<DownloadRequestHandleInterface> request_handle,
       const net::BoundNetLog& bound_net_log) override;
 
  private:
@@ -371,7 +371,7 @@ DownloadItemImpl* MockDownloadItemFactory::CreateSavePageItem(
     const base::FilePath& path,
     const GURL& url,
     const std::string& mime_type,
-    scoped_ptr<DownloadRequestHandleInterface> request_handle,
+    std::unique_ptr<DownloadRequestHandleInterface> request_handle,
     const net::BoundNetLog& bound_net_log) {
   DCHECK(items_.find(download_id) == items_.end());
 
@@ -396,9 +396,9 @@ class MockDownloadFileFactory
                MockDownloadFile*(const DownloadSaveInfo&, ByteStreamReader*));
 
   virtual DownloadFile* CreateFile(
-      scoped_ptr<DownloadSaveInfo> save_info,
+      std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
-      scoped_ptr<ByteStreamReader> byte_stream,
+      std::unique_ptr<ByteStreamReader> byte_stream,
       const net::BoundNetLog& bound_net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override {
     return MockCreateFile(*save_info, byte_stream.get());
@@ -450,9 +450,10 @@ class MockBrowserContext : public BrowserContext {
     return nullptr;
   }
 
-  scoped_ptr<ZoomLevelDelegate> CreateZoomLevelDelegate(
+  std::unique_ptr<ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& path) override {
-    return scoped_ptr<ZoomLevelDelegate>(CreateZoomLevelDelegateMock(path));
+    return std::unique_ptr<ZoomLevelDelegate>(
+        CreateZoomLevelDelegateMock(path));
   }
 };
 
@@ -510,9 +511,11 @@ class DownloadManagerTest : public testing::Test {
     download_manager_.reset(new DownloadManagerImpl(
                                 NULL, mock_browser_context_.get()));
     download_manager_->SetDownloadItemFactoryForTesting(
-        scoped_ptr<DownloadItemFactory>(mock_download_item_factory_.get()));
+        std::unique_ptr<DownloadItemFactory>(
+            mock_download_item_factory_.get()));
     download_manager_->SetDownloadFileFactoryForTesting(
-        scoped_ptr<DownloadFileFactory>(mock_download_file_factory_.get()));
+        std::unique_ptr<DownloadFileFactory>(
+            mock_download_file_factory_.get()));
     observer_.reset(new MockDownloadManagerObserver());
     download_manager_->AddObserver(observer_.get());
     download_manager_->SetDelegate(mock_download_manager_delegate_.get());
@@ -557,8 +560,8 @@ class DownloadManagerTest : public testing::Test {
     // Satisfy expectation.  If the item is created in StartDownload(),
     // we call Start on it immediately, so we need to set that expectation
     // in the factory.
-    scoped_ptr<DownloadRequestHandleInterface> req_handle;
-    item.Start(scoped_ptr<DownloadFile>(), std::move(req_handle), info);
+    std::unique_ptr<DownloadRequestHandleInterface> req_handle;
+    item.Start(std::unique_ptr<DownloadFile>(), std::move(req_handle), info);
     DCHECK(id < download_urls_.size());
     EXPECT_CALL(item, GetURL()).WillRepeatedly(ReturnRef(download_urls_[id]));
 
@@ -606,7 +609,7 @@ class DownloadManagerTest : public testing::Test {
 
  protected:
   // Key test variable; we'll keep it available to sub-classes.
-  scoped_ptr<DownloadManagerImpl> download_manager_;
+  std::unique_ptr<DownloadManagerImpl> download_manager_;
   base::WeakPtr<MockDownloadFileFactory> mock_download_file_factory_;
 
   // Target detetermined callback.
@@ -623,9 +626,9 @@ class DownloadManagerTest : public testing::Test {
   TestBrowserThread ui_thread_;
   TestBrowserThread file_thread_;
   base::WeakPtr<MockDownloadItemFactory> mock_download_item_factory_;
-  scoped_ptr<MockDownloadManagerDelegate> mock_download_manager_delegate_;
-  scoped_ptr<MockBrowserContext> mock_browser_context_;
-  scoped_ptr<MockDownloadManagerObserver> observer_;
+  std::unique_ptr<MockDownloadManagerDelegate> mock_download_manager_delegate_;
+  std::unique_ptr<MockBrowserContext> mock_browser_context_;
+  std::unique_ptr<MockDownloadManagerObserver> observer_;
   uint32_t next_download_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerTest);
@@ -633,8 +636,8 @@ class DownloadManagerTest : public testing::Test {
 
 // Confirm the appropriate invocations occur when you start a download.
 TEST_F(DownloadManagerTest, StartDownload) {
-  scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
-  scoped_ptr<ByteStreamReader> stream(new MockByteStreamReader);
+  std::unique_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
+  std::unique_ptr<ByteStreamReader> stream(new MockByteStreamReader);
   uint32_t local_id(5);  // Random value
   base::FilePath download_path(FILE_PATH_LITERAL("download/path"));
 

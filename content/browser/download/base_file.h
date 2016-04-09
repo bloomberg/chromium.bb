@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/files/file.h"
@@ -16,7 +17,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -80,12 +80,13 @@ class CONTENT_EXPORT BaseFile {
   //     non-zero). If specified, BaseFile will assume that the bytes up to
   //     |bytes_so_far| has been accurately hashed into |hash_state| and will
   //     ignore |hash_so_far|.
-  DownloadInterruptReason Initialize(const base::FilePath& full_path,
-                                     const base::FilePath& default_directory,
-                                     base::File file,
-                                     int64_t bytes_so_far,
-                                     const std::string& hash_so_far,
-                                     scoped_ptr<crypto::SecureHash> hash_state);
+  DownloadInterruptReason Initialize(
+      const base::FilePath& full_path,
+      const base::FilePath& default_directory,
+      base::File file,
+      int64_t bytes_so_far,
+      const std::string& hash_so_far,
+      std::unique_ptr<crypto::SecureHash> hash_state);
 
   // Write a new chunk of data to the file. Returns a DownloadInterruptReason
   // indicating the result of the operation.
@@ -112,7 +113,7 @@ class CONTENT_EXPORT BaseFile {
   // Indicate that the download has finished. No new data will be received.
   // Returns the SecureHash object representing the state of the hash function
   // at the end of the operation.
-  scoped_ptr<crypto::SecureHash> Finish();
+  std::unique_ptr<crypto::SecureHash> Finish();
 
   // Informs the OS that this file came from the internet. Returns a
   // DownloadInterruptReason indicating the result of the operation.
@@ -213,7 +214,7 @@ class CONTENT_EXPORT BaseFile {
   int64_t bytes_so_far_ = 0;
 
   // Used to calculate hash for the file when calculate_hash_ is set.
-  scoped_ptr<crypto::SecureHash> secure_hash_;
+  std::unique_ptr<crypto::SecureHash> secure_hash_;
 
   // Start time for calculating speed.
   base::TimeTicks start_tick_;

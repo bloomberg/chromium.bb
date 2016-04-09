@@ -12,6 +12,7 @@
 #include "base/debug/alias.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
@@ -51,15 +52,15 @@
 namespace content {
 namespace {
 
-scoped_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> BeginDownload(
-    scoped_ptr<DownloadUrlParameters> params,
+std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> BeginDownload(
+    std::unique_ptr<DownloadUrlParameters> params,
     uint32_t download_id,
     base::WeakPtr<DownloadManagerImpl> download_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  scoped_ptr<net::URLRequest> url_request =
+  std::unique_ptr<net::URLRequest> url_request =
       DownloadRequestCore::CreateRequestOnIOThread(download_id, params.get());
-  scoped_ptr<storage::BlobDataHandle> blob_data_handle =
+  std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
       params->GetBlobDataHandle();
   if (blob_data_handle) {
     storage::BlobProtocolHandler::SetRequestedBlobDataHandle(
@@ -86,12 +87,12 @@ scoped_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> BeginDownload(
       return nullptr;
 
     // Otherwise, create an interrupted download.
-    scoped_ptr<DownloadCreateInfo> failed_created_info(
+    std::unique_ptr<DownloadCreateInfo> failed_created_info(
         new DownloadCreateInfo(base::Time::Now(), net::BoundNetLog(),
-                               make_scoped_ptr(new DownloadSaveInfo)));
+                               base::WrapUnique(new DownloadSaveInfo)));
     failed_created_info->url_chain.push_back(params->url());
     failed_created_info->result = reason;
-    scoped_ptr<ByteStreamReader> empty_byte_stream;
+    std::unique_ptr<ByteStreamReader> empty_byte_stream;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&DownloadManager::StartDownload, download_manager,
@@ -100,7 +101,7 @@ scoped_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> BeginDownload(
     return nullptr;
   }
 
-  return scoped_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread>(
+  return std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread>(
       UrlDownloader::BeginDownload(download_manager, std::move(url_request),
                                    params->referrer())
           .release());
@@ -170,7 +171,7 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
       const base::FilePath& path,
       const GURL& url,
       const std::string& mime_type,
-      scoped_ptr<DownloadRequestHandleInterface> request_handle,
+      std::unique_ptr<DownloadRequestHandleInterface> request_handle,
       const net::BoundNetLog& bound_net_log) override {
     return new DownloadItemImpl(delegate, download_id, path, url, mime_type,
                                 std::move(request_handle), bound_net_log);
@@ -308,8 +309,8 @@ void DownloadManagerImpl::Shutdown() {
 }
 
 void DownloadManagerImpl::StartDownload(
-    scoped_ptr<DownloadCreateInfo> info,
-    scoped_ptr<ByteStreamReader> stream,
+    std::unique_ptr<DownloadCreateInfo> info,
+    std::unique_ptr<ByteStreamReader> stream,
     const DownloadUrlParameters::OnStartedCallback& on_started) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(info);
@@ -331,8 +332,8 @@ void DownloadManagerImpl::StartDownload(
 }
 
 void DownloadManagerImpl::StartDownloadWithId(
-    scoped_ptr<DownloadCreateInfo> info,
-    scoped_ptr<ByteStreamReader> stream,
+    std::unique_ptr<DownloadCreateInfo> info,
+    std::unique_ptr<ByteStreamReader> stream,
     const DownloadUrlParameters::OnStartedCallback& on_started,
     bool new_download,
     uint32_t id) {
@@ -369,7 +370,7 @@ void DownloadManagerImpl::StartDownloadWithId(
                           &default_download_directory, &skip_dir_check);
   }
 
-  scoped_ptr<DownloadFile> download_file;
+  std::unique_ptr<DownloadFile> download_file;
 
   if (info->result == DOWNLOAD_INTERRUPT_REASON_NONE) {
     DCHECK(stream.get());
@@ -436,7 +437,7 @@ void DownloadManagerImpl::CreateSavePackageDownloadItem(
     const base::FilePath& main_file_path,
     const GURL& page_url,
     const std::string& mime_type,
-    scoped_ptr<DownloadRequestHandleInterface> request_handle,
+    std::unique_ptr<DownloadRequestHandleInterface> request_handle,
     const DownloadItemImplCreated& item_created) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GetNextId(base::Bind(
@@ -449,7 +450,7 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
     const base::FilePath& main_file_path,
     const GURL& page_url,
     const std::string& mime_type,
-    scoped_ptr<DownloadRequestHandleInterface> request_handle,
+    std::unique_ptr<DownloadRequestHandleInterface> request_handle,
     const DownloadItemImplCreated& item_created,
     uint32_t id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -479,7 +480,7 @@ void DownloadManagerImpl::OnSavePackageSuccessfullyFinished(
 // ResourceDispatcherHost, and let it send us responses like a regular
 // download.
 void DownloadManagerImpl::ResumeInterruptedDownload(
-    scoped_ptr<content::DownloadUrlParameters> params,
+    std::unique_ptr<content::DownloadUrlParameters> params,
     uint32_t id) {
   RecordDownloadSource(INITIATED_BY_RESUMPTION);
   BrowserThread::PostTaskAndReplyWithResult(
@@ -491,12 +492,12 @@ void DownloadManagerImpl::ResumeInterruptedDownload(
 }
 
 void DownloadManagerImpl::SetDownloadItemFactoryForTesting(
-    scoped_ptr<DownloadItemFactory> item_factory) {
+    std::unique_ptr<DownloadItemFactory> item_factory) {
   item_factory_ = std::move(item_factory);
 }
 
 void DownloadManagerImpl::SetDownloadFileFactoryForTesting(
-    scoped_ptr<DownloadFileFactory> file_factory) {
+    std::unique_ptr<DownloadFileFactory> file_factory) {
   file_factory_ = std::move(file_factory);
 }
 
@@ -517,7 +518,8 @@ void DownloadManagerImpl::DownloadRemoved(DownloadItemImpl* download) {
 }
 
 void DownloadManagerImpl::AddUrlDownloader(
-    scoped_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> downloader) {
+    std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread>
+        downloader) {
   if (downloader)
     url_downloaders_.push_back(std::move(downloader));
 }
@@ -588,7 +590,7 @@ int DownloadManagerImpl::RemoveAllDownloads() {
 }
 
 void DownloadManagerImpl::DownloadUrl(
-    scoped_ptr<DownloadUrlParameters> params) {
+    std::unique_ptr<DownloadUrlParameters> params) {
   if (params->post_id() >= 0) {
     // Check this here so that the traceback is more useful.
     DCHECK(params->prefer_cache());

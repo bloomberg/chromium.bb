@@ -31,6 +31,7 @@
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -81,14 +82,14 @@ void DeleteDownloadedFileDone(
 // takes ownership of the DownloadFile and hence implicitly destroys it
 // at the end of the function.
 static base::FilePath DownloadFileDetach(
-    scoped_ptr<DownloadFile> download_file) {
+    std::unique_ptr<DownloadFile> download_file) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::FilePath full_path = download_file->FullPath();
   download_file->Detach();
   return full_path;
 }
 
-static void DownloadFileCancel(scoped_ptr<DownloadFile> download_file) {
+static void DownloadFileCancel(std::unique_ptr<DownloadFile> download_file) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   download_file->Cancel();
 }
@@ -210,7 +211,7 @@ DownloadItemImpl::DownloadItemImpl(
     const base::FilePath& path,
     const GURL& url,
     const std::string& mime_type,
-    scoped_ptr<DownloadRequestHandleInterface> request_handle,
+    std::unique_ptr<DownloadRequestHandleInterface> request_handle,
     const net::BoundNetLog& bound_net_log)
     : is_save_package_download_(true),
       request_handle_(std::move(request_handle)),
@@ -997,7 +998,7 @@ void DownloadItemImpl::SetTotalBytes(int64_t total_bytes) {
 
 void DownloadItemImpl::OnAllDataSaved(
     int64_t total_bytes,
-    scoped_ptr<crypto::SecureHash> hash_state) {
+    std::unique_ptr<crypto::SecureHash> hash_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!all_data_saved_);
   all_data_saved_ = true;
@@ -1051,7 +1052,7 @@ void DownloadItemImpl::DestinationUpdate(int64_t bytes_so_far,
 void DownloadItemImpl::DestinationError(
     DownloadInterruptReason reason,
     int64_t bytes_so_far,
-    scoped_ptr<crypto::SecureHash> secure_hash) {
+    std::unique_ptr<crypto::SecureHash> secure_hash) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // If the download is in any other state we don't expect any
   // DownloadDestinationObserver callbacks. An interruption or a cancellation
@@ -1078,7 +1079,7 @@ void DownloadItemImpl::DestinationError(
 
 void DownloadItemImpl::DestinationCompleted(
     int64_t total_bytes,
-    scoped_ptr<crypto::SecureHash> secure_hash) {
+    std::unique_ptr<crypto::SecureHash> secure_hash) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // If the download is in any other state we don't expect any
   // DownloadDestinationObserver callbacks. An interruption or a cancellation
@@ -1131,8 +1132,8 @@ void DownloadItemImpl::Init(bool active,
 
 // We're starting the download.
 void DownloadItemImpl::Start(
-    scoped_ptr<DownloadFile> file,
-    scoped_ptr<DownloadRequestHandleInterface> req_handle,
+    std::unique_ptr<DownloadFile> file,
+    std::unique_ptr<DownloadRequestHandleInterface> req_handle,
     const DownloadCreateInfo& new_create_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!download_file_.get());
@@ -1172,10 +1173,10 @@ void DownloadItemImpl::Start(
     DCHECK(new_create_info.save_info);
 
     int64_t offset = new_create_info.save_info->offset;
-    scoped_ptr<crypto::SecureHash> hash_state =
-        make_scoped_ptr(new_create_info.save_info->hash_state
-                            ? new_create_info.save_info->hash_state->Clone()
-                            : nullptr);
+    std::unique_ptr<crypto::SecureHash> hash_state =
+        base::WrapUnique(new_create_info.save_info->hash_state
+                             ? new_create_info.save_info->hash_state->Clone()
+                             : nullptr);
 
     // Interrupted downloads also need a target path.
     if (target_path_.empty()) {
@@ -1511,12 +1512,12 @@ void DownloadItemImpl::Completed() {
 
 void DownloadItemImpl::InterruptAndDiscardPartialState(
     DownloadInterruptReason reason) {
-  InterruptWithPartialState(0, scoped_ptr<crypto::SecureHash>(), reason);
+  InterruptWithPartialState(0, std::unique_ptr<crypto::SecureHash>(), reason);
 }
 
 void DownloadItemImpl::InterruptWithPartialState(
     int64_t bytes_so_far,
-    scoped_ptr<crypto::SecureHash> hash_state,
+    std::unique_ptr<crypto::SecureHash> hash_state,
     DownloadInterruptReason reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(DOWNLOAD_INTERRUPT_REASON_NONE, reason);
@@ -1642,14 +1643,15 @@ void DownloadItemImpl::UpdateProgress(int64_t bytes_so_far,
     total_bytes_ = 0;
 }
 
-void DownloadItemImpl::SetHashState(scoped_ptr<crypto::SecureHash> hash_state) {
+void DownloadItemImpl::SetHashState(
+    std::unique_ptr<crypto::SecureHash> hash_state) {
   hash_state_ = std::move(hash_state);
   if (!hash_state_) {
     hash_.clear();
     return;
   }
 
-  scoped_ptr<crypto::SecureHash> clone_of_hash_state(hash_state_->Clone());
+  std::unique_ptr<crypto::SecureHash> clone_of_hash_state(hash_state_->Clone());
   std::vector<char> hash_value(clone_of_hash_state->GetHashLength());
   clone_of_hash_state->Finish(&hash_value.front(), hash_value.size());
   hash_.assign(hash_value.begin(), hash_value.end());
@@ -1898,8 +1900,9 @@ void DownloadItemImpl::ResumeInterruptedDownload() {
   // are consistently routed through the no-renderer code paths so that the
   // request will not be dropped if the WebContents (and by extension, the
   // associated renderer) goes away before a response is received.
-  scoped_ptr<DownloadUrlParameters> download_params(new DownloadUrlParameters(
-      GetURL(), -1, -1, -1, GetBrowserContext()->GetResourceContext()));
+  std::unique_ptr<DownloadUrlParameters> download_params(
+      new DownloadUrlParameters(GetURL(), -1, -1, -1,
+                                GetBrowserContext()->GetResourceContext()));
   download_params->set_file_path(GetFullPath());
   download_params->set_offset(GetReceivedBytes());
   download_params->set_last_modified(GetLastModifiedTime());

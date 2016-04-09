@@ -66,15 +66,16 @@ class MockByteStreamReader : public ByteStreamReader {
 class MockDownloadDestinationObserver : public DownloadDestinationObserver {
  public:
   MOCK_METHOD2(DestinationUpdate, void(int64_t, int64_t));
-  void DestinationError(DownloadInterruptReason reason,
-                        int64_t bytes_so_far,
-                        scoped_ptr<crypto::SecureHash> hash_state) override {
+  void DestinationError(
+      DownloadInterruptReason reason,
+      int64_t bytes_so_far,
+      std::unique_ptr<crypto::SecureHash> hash_state) override {
     MockDestinationError(
         reason, bytes_so_far, GetHexEncodedHashValue(hash_state.get()));
   }
   void DestinationCompleted(
       int64_t total_bytes,
-      scoped_ptr<crypto::SecureHash> hash_state) override {
+      std::unique_ptr<crypto::SecureHash> hash_state) override {
     MockDestinationCompleted(total_bytes,
                              GetHexEncodedHashValue(hash_state.get()));
   }
@@ -97,9 +98,9 @@ enum DownloadFileRenameMethodType { RENAME_AND_UNIQUIFY, RENAME_AND_ANNOTATE };
 // retries renames failed due to ACCESS_DENIED.
 class TestDownloadFileImpl : public DownloadFileImpl {
  public:
-  TestDownloadFileImpl(scoped_ptr<DownloadSaveInfo> save_info,
+  TestDownloadFileImpl(std::unique_ptr<DownloadSaveInfo> save_info,
                        const base::FilePath& default_downloads_directory,
-                       scoped_ptr<ByteStreamReader> stream,
+                       std::unique_ptr<ByteStreamReader> stream,
                        const net::BoundNetLog& bound_net_log,
                        base::WeakPtr<DownloadDestinationObserver> observer)
       : DownloadFileImpl(std::move(save_info),
@@ -187,13 +188,11 @@ class DownloadFileTest : public testing::Test {
         .WillOnce(Invoke(this, &DownloadFileTest::RegisterCallback))
         .RetiresOnSaturation();
 
-    scoped_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
-    download_file_.reset(
-        new TestDownloadFileImpl(std::move(save_info),
-                                 base::FilePath(),
-                                 scoped_ptr<ByteStreamReader>(input_stream_),
-                                 net::BoundNetLog(),
-                                 observer_factory_.GetWeakPtr()));
+    std::unique_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
+    download_file_.reset(new TestDownloadFileImpl(
+        std::move(save_info), base::FilePath(),
+        std::unique_ptr<ByteStreamReader>(input_stream_), net::BoundNetLog(),
+        observer_factory_.GetWeakPtr()));
 
     EXPECT_CALL(*input_stream_, Read(_, _))
         .WillOnce(Return(ByteStreamReader::STREAM_EMPTY))
@@ -355,11 +354,11 @@ class DownloadFileTest : public testing::Test {
     return result_reason;
   }
 
-  scoped_ptr<StrictMock<MockDownloadDestinationObserver> > observer_;
+  std::unique_ptr<StrictMock<MockDownloadDestinationObserver>> observer_;
   base::WeakPtrFactory<DownloadDestinationObserver> observer_factory_;
 
   // DownloadFile instance we are testing.
-  scoped_ptr<DownloadFile> download_file_;
+  std::unique_ptr<DownloadFile> download_file_;
 
   // Stream for sending data into the download file.
   // Owned by download_file_; will be alive for lifetime of download_file_.

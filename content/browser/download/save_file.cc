@@ -26,12 +26,8 @@ SaveFile::~SaveFile() {
 }
 
 DownloadInterruptReason SaveFile::Initialize() {
-  return file_.Initialize(base::FilePath(),
-                          base::FilePath(),
-                          base::File(),
-                          0,
-                          std::string(),
-                          scoped_ptr<crypto::SecureHash>());
+  return file_.Initialize(base::FilePath(), base::FilePath(), base::File(), 0,
+                          std::string(), std::unique_ptr<crypto::SecureHash>());
 }
 
 DownloadInterruptReason SaveFile::AppendDataToFile(const char* data,
