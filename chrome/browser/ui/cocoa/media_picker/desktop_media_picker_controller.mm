@@ -161,6 +161,7 @@ const int kExcessButtonPadding = 6;
     [audioShareCheckbox_
         setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
     [audioShareCheckbox_ setButtonType:NSSwitchButton];
+    audioShareState_ = NSOnState;
     [audioShareCheckbox_
         setTitle:l10n_util::GetNSString(IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE)];
     [audioShareCheckbox_ sizeToFit];
@@ -329,7 +330,11 @@ const int kExcessButtonPadding = 6;
   // On Mac, the checkbox will enabled for tab sharing, namely
   // TYPE_WEB_CONTENTS.
   if ([indexes count] == 0) {
-    [audioShareCheckbox_ setEnabled:NO];
+    if ([audioShareCheckbox_ isEnabled]) {
+      [audioShareCheckbox_ setEnabled:NO];
+      audioShareState_ = [audioShareCheckbox_ state];
+      [audioShareCheckbox_ setState:NSOffState];
+    }
     [audioShareCheckbox_
         setToolTip:l10n_util::GetNSString(
                        IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_TOOLTIP_MAC)];
@@ -341,13 +346,20 @@ const int kExcessButtonPadding = 6;
   switch ([item sourceID].type) {
     case content::DesktopMediaID::TYPE_SCREEN:
     case content::DesktopMediaID::TYPE_WINDOW:
-      [audioShareCheckbox_ setEnabled:NO];
+      if ([audioShareCheckbox_ isEnabled]) {
+        [audioShareCheckbox_ setEnabled:NO];
+        audioShareState_ = [audioShareCheckbox_ state];
+        [audioShareCheckbox_ setState:NSOffState];
+      }
       [audioShareCheckbox_
           setToolTip:l10n_util::GetNSString(
                          IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_TOOLTIP_MAC)];
       break;
     case content::DesktopMediaID::TYPE_WEB_CONTENTS:
-      [audioShareCheckbox_ setEnabled:YES];
+      if (![audioShareCheckbox_ isEnabled]) {
+        [audioShareCheckbox_ setEnabled:YES];
+        [audioShareCheckbox_ setState:audioShareState_];
+      }
       [audioShareCheckbox_ setToolTip:@""];
       break;
     case content::DesktopMediaID::TYPE_NONE:

@@ -33,7 +33,9 @@
   NSButton* cancelButton_;  // weak; owned by contentView
 
   // The checkbox for audio share.
+  // |audioShareState_| records the state when check box is disabled.
   base::scoped_nsobject<NSButton> audioShareCheckbox_;
+  NSCellStateValue audioShareState_;
 
   // Provides source information (including thumbnails) to fill up |items_| and
   // to render in |sourceBrowser_|.

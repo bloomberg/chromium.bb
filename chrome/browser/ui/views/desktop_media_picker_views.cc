@@ -401,6 +401,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
       app_name_(app_name),
       description_label_(new views::Label()),
       audio_share_checkbox_(nullptr),
+      audio_share_checked_(true),
       sources_scroll_view_(views::ScrollView::CreateScrollViewWithBorder()),
       sources_list_view_(
           new DesktopMediaListView(this, std::move(media_list))) {
@@ -557,10 +558,17 @@ void DesktopMediaPickerDialogView::OnSelectionChanged() {
 
     if (source.type == DesktopMediaID::TYPE_SCREEN ||
         source.type == DesktopMediaID::TYPE_WEB_CONTENTS) {
-      audio_share_checkbox_->SetEnabled(true);
+      if (!audio_share_checkbox_->enabled()) {
+        audio_share_checkbox_->SetEnabled(true);
+        audio_share_checkbox_->SetChecked(audio_share_checked_);
+      }
       audio_share_checkbox_->SetTooltipText(base::string16());
     } else if (source.type == DesktopMediaID::TYPE_WINDOW) {
-      audio_share_checkbox_->SetEnabled(false);
+      if (audio_share_checkbox_->enabled()) {
+        audio_share_checkbox_->SetEnabled(false);
+        audio_share_checked_ = audio_share_checkbox_->checked();
+        audio_share_checkbox_->SetChecked(false);
+      }
       audio_share_checkbox_->SetTooltipText(l10n_util::GetStringUTF16(
           IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_TOOLTIP_WINDOW));
     } else {

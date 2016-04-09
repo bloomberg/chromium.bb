@@ -152,7 +152,12 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView {
   base::string16 app_name_;
 
   views::Label* description_label_;
+
+  // |audio_share_checked_| records whether the user permits audio, when
+  // |audio_share_checkbox_| is disabled.
   views::Checkbox* audio_share_checkbox_;
+  bool audio_share_checked_;
+
   views::ScrollView* sources_scroll_view_;
   DesktopMediaListView* sources_list_view_;
 
