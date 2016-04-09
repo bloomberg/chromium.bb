@@ -4,9 +4,9 @@
 
 #include "content/renderer/service_worker/service_worker_type_util.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
@@ -38,8 +38,9 @@ class HeaderVisitor : public blink::WebHTTPHeaderVisitor {
   ServiceWorkerHeaderMap* headers_;
 };
 
-scoped_ptr<HeaderVisitor> MakeHeaderVisitor(ServiceWorkerHeaderMap* headers) {
-  return scoped_ptr<HeaderVisitor>(new HeaderVisitor(headers));
+std::unique_ptr<HeaderVisitor> MakeHeaderVisitor(
+    ServiceWorkerHeaderMap* headers) {
+  return std::unique_ptr<HeaderVisitor>(new HeaderVisitor(headers));
 }
 
 }  // namespace

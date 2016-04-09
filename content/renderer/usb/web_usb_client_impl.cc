@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/move.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/mojo/type_converters.h"
@@ -39,7 +38,7 @@ const char kNoServiceError[] = "USB service unavailable.";
 // for any type |T|.
 template <typename CallbacksType>
 void RejectCallbacksWithError(const blink::WebUSBError& error,
-                              scoped_ptr<CallbacksType> callbacks) {
+                              std::unique_ptr<CallbacksType> callbacks) {
   callbacks->onError(error);
 }
 

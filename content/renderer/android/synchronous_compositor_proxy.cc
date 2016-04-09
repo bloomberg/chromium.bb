@@ -128,7 +128,7 @@ void SynchronousCompositorProxy::DidActivatePendingTree() {
 
 void SynchronousCompositorProxy::DeliverMessages() {
   DCHECK(output_surface_);
-  std::vector<scoped_ptr<IPC::Message>> messages;
+  std::vector<std::unique_ptr<IPC::Message>> messages;
   output_surface_->GetMessagesToDeliver(&messages);
   for (auto& msg : messages) {
     Send(msg.release());

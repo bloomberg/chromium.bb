@@ -5,7 +5,8 @@
 #ifndef CONTENT_RENDERER_DEVTOOLS_RENDER_WIDGET_SCREEN_METRICS_EMULATOR_H_
 #define CONTENT_RENDERER_DEVTOOLS_RENDER_WIDGET_SCREEN_METRICS_EMULATOR_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/common/resize_params.h"
 #include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 

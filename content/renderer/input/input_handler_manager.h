@@ -114,7 +114,7 @@ class CONTENT_EXPORT InputHandlerManager {
                                                  blink::WebInputEvent::Type);
 
   typedef base::ScopedPtrHashMap<int,  // routing_id
-                                 scoped_ptr<InputHandlerWrapper>>
+                                 std::unique_ptr<InputHandlerWrapper>>
       InputHandlerMap;
   InputHandlerMap input_handlers_;
 

@@ -5,9 +5,9 @@
 #ifndef CONTENT_RENDERER_HISTORY_SERIALIZATION_H_
 #define CONTENT_RENDERER_HISTORY_SERIALIZATION_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
 namespace blink {
@@ -21,7 +21,7 @@ class PageState;
 CONTENT_EXPORT PageState HistoryEntryToPageState(HistoryEntry* entry);
 CONTENT_EXPORT PageState SingleHistoryItemToPageState(
     const blink::WebHistoryItem& item);
-CONTENT_EXPORT scoped_ptr<HistoryEntry> PageStateToHistoryEntry(
+CONTENT_EXPORT std::unique_ptr<HistoryEntry> PageStateToHistoryEntry(
     const PageState& state);
 
 }  // namespace content

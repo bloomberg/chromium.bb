@@ -196,7 +196,7 @@ int32_t PepperVideoDecoderHost::OnHostMsgGetShm(
     return PP_ERROR_FAILED;
 
   content::RenderThread* render_thread = content::RenderThread::Get();
-  scoped_ptr<base::SharedMemory> shm(
+  std::unique_ptr<base::SharedMemory> shm(
       render_thread->HostAllocateSharedMemoryBuffer(shm_size));
   if (!shm || !shm->Map(shm_size))
     return PP_ERROR_FAILED;
@@ -481,7 +481,7 @@ bool PepperVideoDecoderHost::TryFallbackToSoftwareDecoder() {
   uint32_t shim_texture_pool_size = media::limits::kMaxVideoFrames + 1;
   shim_texture_pool_size = std::max(shim_texture_pool_size,
                                     min_picture_count_);
-  scoped_ptr<VideoDecoderShim> new_decoder(
+  std::unique_ptr<VideoDecoderShim> new_decoder(
       new VideoDecoderShim(this, shim_texture_pool_size));
   if (!new_decoder->Initialize(profile_, this))
     return false;

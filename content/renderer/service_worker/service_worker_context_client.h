@@ -9,13 +9,13 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/id_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/child/webmessageportchannel_impl.h"
@@ -257,7 +257,7 @@ class ServiceWorkerContextClient
 
   // Initialized on the worker thread in workerContextStarted and
   // destructed on the worker thread in willDestroyWorkerContext.
-  scoped_ptr<WorkerContextData> context_;
+  std::unique_ptr<WorkerContextData> context_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextClient);
 };

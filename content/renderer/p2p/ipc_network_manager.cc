@@ -94,7 +94,7 @@ void IpcNetworkManager::OnNetworkListChanged(
     DCHECK(!ip_address.IsNil());
 
     rtc::IPAddress prefix = rtc::TruncateIP(ip_address, it->prefix_length);
-    scoped_ptr<rtc::Network> network(
+    std::unique_ptr<rtc::Network> network(
         new rtc::Network(it->name, it->name, prefix, it->prefix_length,
                          ConvertConnectionTypeToAdapterType(it->type)));
     network->set_default_local_address_provider(this);

@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device_motion_event_pump.h"
+#include "content/renderer/device_sensors/device_motion_event_pump.h"
 
 #include <string.h>
+
+#include <memory>
 
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/common/device_sensors/device_motion_hardware_buffer.h"
@@ -119,8 +120,8 @@ class DeviceMotionEventPumpTest : public testing::Test {
   base::SharedMemoryHandle handle() { return handle_; }
 
  private:
-  scoped_ptr<MockDeviceMotionListener> listener_;
-  scoped_ptr<DeviceMotionEventPumpForTesting> motion_pump_;
+  std::unique_ptr<MockDeviceMotionListener> listener_;
+  std::unique_ptr<DeviceMotionEventPumpForTesting> motion_pump_;
   base::SharedMemoryHandle handle_;
   base::SharedMemory shared_memory_;
   DeviceMotionHardwareBuffer* buffer_;

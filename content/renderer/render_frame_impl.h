@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -16,7 +17,6 @@
 #include "base/id_map.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process_handle.h"
@@ -387,7 +387,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebFrame* frame,
       const WebPluginInfo& info,
       const blink::WebPluginParams& params,
-      scoped_ptr<PluginInstanceThrottler> throttler) override;
+      std::unique_ptr<PluginInstanceThrottler> throttler) override;
   void LoadURLExternally(const blink::WebURLRequest& request,
                          blink::WebNavigationPolicy policy) override;
   void ExecuteJavaScript(const base::string16& javascript) override;
@@ -642,7 +642,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(creis): Remove when the only caller, the HistoryController, is no
   // more.
   void SetPendingNavigationParams(
-      scoped_ptr<NavigationParams> navigation_params);
+      std::unique_ptr<NavigationParams> navigation_params);
 
   media::MediaPermission* GetMediaPermission();
 
@@ -830,10 +830,11 @@ class CONTENT_EXPORT RenderFrameImpl
   // |request_params| received by the browser. |stream_params| should be non
   // null and created from the information provided by the browser.
   // |start_params| is not used.
-  void NavigateInternal(const CommonNavigationParams& common_params,
-                        const StartNavigationParams& start_params,
-                        const RequestNavigationParams& request_params,
-                        scoped_ptr<StreamOverrideParameters> stream_params);
+  void NavigateInternal(
+      const CommonNavigationParams& common_params,
+      const StartNavigationParams& start_params,
+      const RequestNavigationParams& request_params,
+      std::unique_ptr<StreamOverrideParameters> stream_params);
 
   // Update current main frame's encoding and send it to browser window.
   // Since we want to let users see the right encoding info from menu
@@ -887,7 +888,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebSecurityOrigin& security_origin);
 
   // Creates a factory object used for creating audio and video renderers.
-  scoped_ptr<MediaStreamRendererFactory> CreateRendererFactory();
+  std::unique_ptr<MediaStreamRendererFactory> CreateRendererFactory();
 
   // Does preparation for the navigation to |url|.
   void PrepareRenderViewForNavigation(
@@ -1042,7 +1043,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // Temporarily holds state pertaining to a navigation that has been initiated
   // until the NavigationState corresponding to the new navigation is created in
   // didCreateDataSource().
-  scoped_ptr<NavigationParams> pending_navigation_params_;
+  std::unique_ptr<NavigationParams> pending_navigation_params_;
 
   // Stores the current history item for this frame, so that updates to it can
   // be reported to the browser process via SendUpdateState.
@@ -1107,14 +1108,15 @@ class CONTENT_EXPORT RenderFrameImpl
   UserMediaClientImpl* web_user_media_client_;
 
   // EncryptedMediaClient attached to this frame; lazily initialized.
-  scoped_ptr<media::WebEncryptedMediaClientImpl> web_encrypted_media_client_;
+  std::unique_ptr<media::WebEncryptedMediaClientImpl>
+      web_encrypted_media_client_;
 
   // The media permission dispatcher attached to this frame.
-  scoped_ptr<MediaPermissionDispatcher> media_permission_dispatcher_;
+  std::unique_ptr<MediaPermissionDispatcher> media_permission_dispatcher_;
 
 #if defined(ENABLE_MOJO_MEDIA)
   // The media interface provider attached to this frame, lazily initialized.
-  scoped_ptr<MediaInterfaceProvider> media_interface_provider_;
+  std::unique_ptr<MediaInterfaceProvider> media_interface_provider_;
 #endif
 
   // MidiClient attached to this frame; lazily initialized.
@@ -1139,8 +1141,8 @@ class CONTENT_EXPORT RenderFrameImpl
 #endif
 
   // The CDM and decoder factory attached to this frame, lazily initialized.
-  scoped_ptr<media::CdmFactory> cdm_factory_;
-  scoped_ptr<media::DecoderFactory> decoder_factory_;
+  std::unique_ptr<media::CdmFactory> cdm_factory_;
+  std::unique_ptr<media::DecoderFactory> decoder_factory_;
 
   // Media resource cache, lazily initialized.
   linked_ptr<media::UrlIndex> url_index_;
@@ -1188,13 +1190,13 @@ class CONTENT_EXPORT RenderFrameImpl
   // AccessibilityModeOff.
   RendererAccessibility* renderer_accessibility_;
 
-  scoped_ptr<PermissionDispatcher> permission_client_;
+  std::unique_ptr<PermissionDispatcher> permission_client_;
 
-  scoped_ptr<blink::WebAppBannerClient> app_banner_client_;
+  std::unique_ptr<blink::WebAppBannerClient> app_banner_client_;
 
-  scoped_ptr<blink::WebBluetooth> bluetooth_;
+  std::unique_ptr<blink::WebBluetooth> bluetooth_;
 
-  scoped_ptr<blink::WebUSBClient> usb_client_;
+  std::unique_ptr<blink::WebUSBClient> usb_client_;
 
   // Manages play, pause notifications for WebMediaPlayer implementations; its
   // lifetime is tied to the RenderFrame via the RenderFrameObserver interface.
@@ -1213,12 +1215,12 @@ class CONTENT_EXPORT RenderFrameImpl
 
 #if defined(ENABLE_WEBVR)
   // The VR dispatcher attached to the frame, lazily initialized.
-  scoped_ptr<VRDispatcher> vr_dispatcher_;
+  std::unique_ptr<VRDispatcher> vr_dispatcher_;
 #endif
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   // The external popup for the currently showing select popup.
-  scoped_ptr<ExternalPopupMenu> external_popup_menu_;
+  std::unique_ptr<ExternalPopupMenu> external_popup_menu_;
 #endif
 
   FrameBlameContext* blame_context_;  // Not owned.

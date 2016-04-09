@@ -145,7 +145,7 @@ void PresentationDispatcher::sendString(
     return;
   }
 
-  message_request_queue_.push(make_scoped_ptr(
+  message_request_queue_.push(base::WrapUnique(
       CreateSendTextMessageRequest(presentationUrl, presentationId, message)));
   // Start processing request if only one in the queue.
   if (message_request_queue_.size() == 1)
@@ -164,7 +164,7 @@ void PresentationDispatcher::sendArrayBuffer(
     return;
   }
 
-  message_request_queue_.push(make_scoped_ptr(CreateSendBinaryMessageRequest(
+  message_request_queue_.push(base::WrapUnique(CreateSendBinaryMessageRequest(
       presentationUrl, presentationId,
       mojom::PresentationMessageType::ARRAY_BUFFER, data, length)));
   // Start processing request if only one in the queue.
@@ -184,7 +184,7 @@ void PresentationDispatcher::sendBlobData(
     return;
   }
 
-  message_request_queue_.push(make_scoped_ptr(CreateSendBinaryMessageRequest(
+  message_request_queue_.push(base::WrapUnique(CreateSendBinaryMessageRequest(
       presentationUrl, presentationId, mojom::PresentationMessageType::BLOB,
       data, length)));
   // Start processing request if only one in the queue.
@@ -248,7 +248,7 @@ void PresentationDispatcher::getAvailability(
   auto status_it = availability_status_.find(availability_url);
   if (status_it == availability_status_.end()) {
     status = new AvailabilityStatus(availability_url);
-    availability_status_[availability_url] = make_scoped_ptr(status);
+    availability_status_[availability_url] = base::WrapUnique(status);
   } else {
     status = status_it->second.get();
   }
@@ -423,7 +423,7 @@ void PresentationDispatcher::OnSessionMessagesReceived(
   for (size_t i = 0; i < messages.size(); ++i) {
     // Note: Passing batches of messages to the Blink layer would be more
     // efficient.
-    scoped_ptr<PresentationConnectionClient> session_client(
+    std::unique_ptr<PresentationConnectionClient> session_client(
         new PresentationConnectionClient(session_info->url, session_info->id));
     switch (messages[i]->type) {
       case mojom::PresentationMessageType::TEXT: {

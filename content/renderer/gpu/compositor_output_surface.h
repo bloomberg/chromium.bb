@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/platform_thread.h"
@@ -50,7 +51,7 @@ class CompositorOutputSurface
 #if defined(ENABLE_VULKAN)
       const scoped_refptr<cc::VulkanContextProvider>& vulkan_context_provider,
 #endif
-      scoped_ptr<cc::SoftwareOutputDevice> software,
+      std::unique_ptr<cc::SoftwareOutputDevice> software,
       scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue,
       bool use_swap_compositor_frame_message);
   ~CompositorOutputSurface() override;
@@ -62,7 +63,7 @@ class CompositorOutputSurface
 
  protected:
   void ShortcutSwapAck(uint32_t output_surface_id,
-                       scoped_ptr<cc::GLFrameData> gl_frame_data);
+                       std::unique_ptr<cc::GLFrameData> gl_frame_data);
   virtual void OnSwapAck(uint32_t output_surface_id,
                          const cc::CompositorFrameAck& ack);
   virtual void OnReclaimResources(uint32_t output_surface_id,
@@ -106,7 +107,7 @@ class CompositorOutputSurface
 
   // TODO(danakj): Remove this when crbug.com/311404
   bool layout_test_mode_;
-  scoped_ptr<cc::CompositorFrameAck> layout_test_previous_frame_ack_;
+  std::unique_ptr<cc::CompositorFrameAck> layout_test_previous_frame_ack_;
   base::WeakPtrFactory<CompositorOutputSurface> weak_ptrs_;
 };
 

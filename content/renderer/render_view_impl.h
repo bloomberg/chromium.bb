@@ -10,6 +10,7 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -17,7 +18,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/id_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process.h"
@@ -891,7 +891,7 @@ class CONTENT_EXPORT RenderViewImpl
   // Mouse Lock dispatcher attached to this view.
   MouseLockDispatcher* mouse_lock_dispatcher_;
 
-  scoped_ptr<HistoryController> history_controller_;
+  std::unique_ptr<HistoryController> history_controller_;
 
 #if defined(OS_ANDROID)
   // Android Specific ---------------------------------------------------------
@@ -901,10 +901,10 @@ class CONTENT_EXPORT RenderViewImpl
   size_t expected_content_intent_id_;
 
   // List of click-based content detectors.
-  std::vector<scoped_ptr<ContentDetector>> content_detectors_;
+  std::vector<std::unique_ptr<ContentDetector>> content_detectors_;
 
   // A date/time picker object for date and time related input elements.
-  scoped_ptr<RendererDateTimePicker> date_time_picker_client_;
+  std::unique_ptr<RendererDateTimePicker> date_time_picker_client_;
 #endif
 
   // Plugins -------------------------------------------------------------------
@@ -934,7 +934,7 @@ class CONTENT_EXPORT RenderViewImpl
   // callback, and the remaining elements are the other file chooser completion
   // still waiting to be run (in order).
   struct PendingFileChooser;
-  std::deque<scoped_ptr<PendingFileChooser>> file_chooser_completions_;
+  std::deque<std::unique_ptr<PendingFileChooser>> file_chooser_completions_;
 
   // The current directory enumeration callback
   std::map<int, blink::WebFileChooserCompletion*> enumeration_completions_;
@@ -954,7 +954,7 @@ class CONTENT_EXPORT RenderViewImpl
   base::ObserverList<RenderViewObserver> observers_;
 
   // Wraps the |webwidget_| as a MouseLockDispatcher::LockTarget interface.
-  scoped_ptr<MouseLockDispatcher::LockTarget> webwidget_mouse_lock_target_;
+  std::unique_ptr<MouseLockDispatcher::LockTarget> webwidget_mouse_lock_target_;
 
   // This field stores drag/drop related info for the event that is currently
   // being handled. If the current event results in starting a drag/drop
@@ -963,7 +963,7 @@ class CONTENT_EXPORT RenderViewImpl
 
   // NOTE: stats_collection_observer_ should be the last members because their
   // constructors call the AddObservers method of RenderViewImpl.
-  scoped_ptr<StatsCollectionObserver> stats_collection_observer_;
+  std::unique_ptr<StatsCollectionObserver> stats_collection_observer_;
 
   typedef std::map<cc::SharedBitmapId, cc::SharedBitmap*> BitmapMap;
   BitmapMap disambiguation_bitmaps_;

@@ -90,8 +90,8 @@ class DeviceLightEventPumpTest : public testing::Test {
   DeviceLightHardwareBuffer* buffer() { return buffer_; }
 
  private:
-  scoped_ptr<MockDeviceLightListener> listener_;
-  scoped_ptr<DeviceLightEventPumpForTesting> light_pump_;
+  std::unique_ptr<MockDeviceLightListener> listener_;
+  std::unique_ptr<DeviceLightEventPumpForTesting> light_pump_;
   base::SharedMemoryHandle handle_;
   base::SharedMemory shared_memory_;
   DeviceLightHardwareBuffer* buffer_;

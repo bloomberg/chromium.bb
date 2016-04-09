@@ -5,7 +5,8 @@
 #ifndef CONTENT_RENDERER_GEOLOCATION_DISPATCHER_H_
 #define CONTENT_RENDERER_GEOLOCATION_DISPATCHER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/platform/modules/geolocation/geolocation.mojom.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission.mojom.h"
@@ -51,9 +52,9 @@ class GeolocationDispatcher
   void OnPermissionSet(int permission_request_id,
                        blink::mojom::PermissionStatus status);
 
-  scoped_ptr<blink::WebGeolocationController> controller_;
+  std::unique_ptr<blink::WebGeolocationController> controller_;
 
-  scoped_ptr<blink::WebGeolocationPermissionRequestManager>
+  std::unique_ptr<blink::WebGeolocationPermissionRequestManager>
       pending_permissions_;
   blink::mojom::GeolocationServicePtr geolocation_service_;
   bool enable_high_accuracy_;

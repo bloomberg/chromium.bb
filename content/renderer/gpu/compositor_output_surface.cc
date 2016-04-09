@@ -36,7 +36,7 @@ CompositorOutputSurface::CompositorOutputSurface(
 #if defined(ENABLE_VULKAN)
     const scoped_refptr<cc::VulkanContextProvider>& vulkan_context_provider,
 #endif
-    scoped_ptr<cc::SoftwareOutputDevice> software_device,
+    std::unique_ptr<cc::SoftwareOutputDevice> software_device,
     scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue,
     bool use_swap_compositor_frame_message)
     : OutputSurface(context_provider,
@@ -97,7 +97,7 @@ void CompositorOutputSurface::DetachFromClient() {
 
 void CompositorOutputSurface::ShortcutSwapAck(
     uint32_t output_surface_id,
-    scoped_ptr<cc::GLFrameData> gl_frame_data) {
+    std::unique_ptr<cc::GLFrameData> gl_frame_data) {
   if (!layout_test_previous_frame_ack_) {
     layout_test_previous_frame_ack_.reset(new cc::CompositorFrameAck);
     layout_test_previous_frame_ack_->gl_frame_data.reset(new cc::GLFrameData);
@@ -143,10 +143,11 @@ void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
     return;
   } else {
     {
-      std::vector<scoped_ptr<IPC::Message>> messages;
+      std::vector<std::unique_ptr<IPC::Message>> messages;
       std::vector<IPC::Message> messages_to_deliver_with_frame;
-      scoped_ptr<FrameSwapMessageQueue::SendMessageScope> send_message_scope =
-          frame_swap_message_queue_->AcquireSendMessageScope();
+      std::unique_ptr<FrameSwapMessageQueue::SendMessageScope>
+          send_message_scope =
+              frame_swap_message_queue_->AcquireSendMessageScope();
       frame_swap_message_queue_->DrainMessages(&messages);
       FrameSwapMessageQueue::TransferMessages(&messages,
                                               &messages_to_deliver_with_frame);

@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "ppapi/c/dev/ppb_device_ref_dev.h"
@@ -101,8 +101,8 @@ class CONTENT_EXPORT PepperDeviceEnumerationHostHelper {
   PP_DeviceType_Dev device_type_;
   GURL document_url_;
 
-  scoped_ptr<ScopedRequest> enumerate_;
-  scoped_ptr<ScopedRequest> monitor_;
+  std::unique_ptr<ScopedRequest> enumerate_;
+  std::unique_ptr<ScopedRequest> monitor_;
 
   ppapi::host::ReplyMessageContext enumerate_devices_context_;
 

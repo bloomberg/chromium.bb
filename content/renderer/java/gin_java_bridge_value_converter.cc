@@ -10,6 +10,7 @@
 #include <cmath>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "content/common/android/gin_java_bridge_value.h"
 #include "content/renderer/java/gin_java_bridge_object.h"
@@ -34,10 +35,10 @@ v8::Local<v8::Value> GinJavaBridgeValueConverter::ToV8Value(
   return converter_->ToV8Value(value, context);
 }
 
-scoped_ptr<base::Value> GinJavaBridgeValueConverter::FromV8Value(
+std::unique_ptr<base::Value> GinJavaBridgeValueConverter::FromV8Value(
     v8::Local<v8::Value> value,
     v8::Local<v8::Context> context) const {
-  return make_scoped_ptr(converter_->FromV8Value(value, context));
+  return base::WrapUnique(converter_->FromV8Value(value, context));
 }
 
 bool GinJavaBridgeValueConverter::FromV8Object(
@@ -59,7 +60,7 @@ namespace {
 class TypedArraySerializer {
  public:
   virtual ~TypedArraySerializer() {}
-  static scoped_ptr<TypedArraySerializer> Create(
+  static std::unique_ptr<TypedArraySerializer> Create(
       v8::Local<v8::TypedArray> typed_array);
   virtual void serializeTo(char* data,
                            size_t data_length,
@@ -71,9 +72,9 @@ class TypedArraySerializer {
 template <typename ElementType, typename ListType>
 class TypedArraySerializerImpl : public TypedArraySerializer {
  public:
-  static scoped_ptr<TypedArraySerializer> Create(
+  static std::unique_ptr<TypedArraySerializer> Create(
       v8::Local<v8::TypedArray> typed_array) {
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new TypedArraySerializerImpl<ElementType, ListType>(typed_array));
   }
 
@@ -100,7 +101,7 @@ class TypedArraySerializerImpl : public TypedArraySerializer {
 };
 
 // static
-scoped_ptr<TypedArraySerializer> TypedArraySerializer::Create(
+std::unique_ptr<TypedArraySerializer> TypedArraySerializer::Create(
     v8::Local<v8::TypedArray> typed_array) {
   if (typed_array->IsInt8Array() ||
       typed_array->IsUint8Array() ||
@@ -116,7 +117,7 @@ scoped_ptr<TypedArraySerializer> TypedArraySerializer::Create(
     return TypedArraySerializerImpl<double, double>::Create(typed_array);
   }
   NOTREACHED();
-  return scoped_ptr<TypedArraySerializer>();
+  return std::unique_ptr<TypedArraySerializer>();
 }
 
 }  // namespace
@@ -144,7 +145,7 @@ bool GinJavaBridgeValueConverter::FromV8ArrayBuffer(
 
   base::ListValue* result = new base::ListValue();
   *out = result;
-  scoped_ptr<TypedArraySerializer> serializer(
+  std::unique_ptr<TypedArraySerializer> serializer(
       TypedArraySerializer::Create(value.As<v8::TypedArray>()));
   serializer->serializeTo(data, data_length, result);
   return true;

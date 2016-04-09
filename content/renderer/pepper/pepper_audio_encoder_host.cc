@@ -72,7 +72,7 @@ class PepperAudioEncoderHost::AudioEncoderImpl {
   void RequestBitrateChange(uint32_t bitrate);
 
  private:
-  scoped_ptr<uint8_t[]> encoder_memory_;
+  std::unique_ptr<uint8_t[]> encoder_memory_;
   OpusEncoder* opus_encoder_;
 
   // Initialization parameters, only valid if |encoder_memory_| is not
@@ -116,7 +116,7 @@ bool PepperAudioEncoderHost::AudioEncoderImpl::Initialize(
   if (encoder_size < 1)
     return false;
 
-  scoped_ptr<uint8_t[]> encoder_memory(new uint8_t[encoder_size]);
+  std::unique_ptr<uint8_t[]> encoder_memory(new uint8_t[encoder_size]);
   opus_encoder_ = reinterpret_cast<OpusEncoder*>(encoder_memory.get());
 
   if (opus_encoder_init(opus_encoder_, parameters.input_sample_rate,
@@ -222,7 +222,7 @@ int32_t PepperAudioEncoderHost::OnHostMsgInitialize(
   if (!IsInitializationValid(parameters))
     return PP_ERROR_NOTSUPPORTED;
 
-  scoped_ptr<AudioEncoderImpl> encoder(new AudioEncoderImpl);
+  std::unique_ptr<AudioEncoderImpl> encoder(new AudioEncoderImpl);
   if (!encoder->Initialize(parameters))
     return PP_ERROR_FAILED;
   if (!AllocateBuffers(parameters, encoder->GetNumberOfSamplesPerFrame()))
@@ -364,12 +364,12 @@ bool PepperAudioEncoderHost::AllocateBuffers(
       !total_bitstream_memory_size.IsValid())
     return false;
 
-  scoped_ptr<base::SharedMemory> audio_memory(
+  std::unique_ptr<base::SharedMemory> audio_memory(
       RenderThreadImpl::current()->HostAllocateSharedMemoryBuffer(
           total_audio_memory_size.ValueOrDie()));
   if (!audio_memory)
     return false;
-  scoped_ptr<ppapi::MediaStreamBufferManager> audio_buffer_manager(
+  std::unique_ptr<ppapi::MediaStreamBufferManager> audio_buffer_manager(
       new ppapi::MediaStreamBufferManager(this));
   if (!audio_buffer_manager->SetBuffers(kDefaultNumberOfAudioBuffers,
                                         total_audio_buffer_size.ValueOrDie(),
@@ -388,12 +388,12 @@ bool PepperAudioEncoderHost::AllocateBuffers(
     buffer->data_size = audio_buffer_size.ValueOrDie();
   }
 
-  scoped_ptr<base::SharedMemory> bitstream_memory(
+  std::unique_ptr<base::SharedMemory> bitstream_memory(
       RenderThreadImpl::current()->HostAllocateSharedMemoryBuffer(
           total_bitstream_memory_size.ValueOrDie()));
   if (!bitstream_memory)
     return false;
-  scoped_ptr<ppapi::MediaStreamBufferManager> bitstream_buffer_manager(
+  std::unique_ptr<ppapi::MediaStreamBufferManager> bitstream_buffer_manager(
       new ppapi::MediaStreamBufferManager(this));
   if (!bitstream_buffer_manager->SetBuffers(kDefaultNumberOfAudioBuffers,
                                             bitstream_buffer_size.ValueOrDie(),
@@ -494,8 +494,9 @@ void PepperAudioEncoderHost::Close() {
 
 // static
 void PepperAudioEncoderHost::StopAudioEncoder(
-    scoped_ptr<AudioEncoderImpl> encoder,
-    scoped_ptr<ppapi::MediaStreamBufferManager> audio_buffer_manager,
-    scoped_ptr<ppapi::MediaStreamBufferManager> bitstream_buffer_manager) {}
+    std::unique_ptr<AudioEncoderImpl> encoder,
+    std::unique_ptr<ppapi::MediaStreamBufferManager> audio_buffer_manager,
+    std::unique_ptr<ppapi::MediaStreamBufferManager> bitstream_buffer_manager) {
+}
 
 }  // namespace content

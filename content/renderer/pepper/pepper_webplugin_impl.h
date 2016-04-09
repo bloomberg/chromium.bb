@@ -5,11 +5,11 @@
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_WEBPLUGIN_IMPL_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_WEBPLUGIN_IMPL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "ppapi/c/pp_var.h"
@@ -36,7 +36,7 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   PepperWebPluginImpl(PluginModule* module,
                       const blink::WebPluginParams& params,
                       RenderFrameImpl* render_frame,
-                      scoped_ptr<PluginInstanceThrottlerImpl> throttler);
+                      std::unique_ptr<PluginInstanceThrottlerImpl> throttler);
 
   PepperPluginInstanceImpl* instance() { return instance_.get(); }
 
@@ -89,11 +89,12 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   virtual ~PepperWebPluginImpl();
   struct InitData;
 
-  scoped_ptr<InitData> init_data_;  // Cleared upon successful initialization.
+  std::unique_ptr<InitData>
+      init_data_;  // Cleared upon successful initialization.
   // True if the instance represents the entire document in a frame instead of
   // being an embedded resource.
   bool full_frame_;
-  scoped_ptr<PluginInstanceThrottlerImpl> throttler_;
+  std::unique_ptr<PluginInstanceThrottlerImpl> throttler_;
   scoped_refptr<PepperPluginInstanceImpl> instance_;
   gfx::Rect plugin_rect_;
   PP_Var instance_object_;

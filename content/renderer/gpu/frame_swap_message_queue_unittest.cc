@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,41 +21,42 @@ class FrameSwapMessageQueueTest : public testing::Test {
         queue_(new FrameSwapMessageQueue()) {}
 
  protected:
-  void QueueNextSwapMessage(scoped_ptr<IPC::Message> msg) {
+  void QueueNextSwapMessage(std::unique_ptr<IPC::Message> msg) {
     queue_->QueueMessageForFrame(MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP, 0,
                                  std::move(msg), NULL);
   }
 
-  void QueueNextSwapMessage(scoped_ptr<IPC::Message> msg, bool* first) {
+  void QueueNextSwapMessage(std::unique_ptr<IPC::Message> msg, bool* first) {
     queue_->QueueMessageForFrame(MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP, 0,
                                  std::move(msg), first);
   }
 
   void QueueVisualStateMessage(int source_frame_number,
-                               scoped_ptr<IPC::Message> msg) {
+                               std::unique_ptr<IPC::Message> msg) {
     queue_->QueueMessageForFrame(MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE,
                                  source_frame_number, std::move(msg), NULL);
   }
 
   void QueueVisualStateMessage(int source_frame_number,
-                               scoped_ptr<IPC::Message> msg,
+                               std::unique_ptr<IPC::Message> msg,
                                bool* first) {
     queue_->QueueMessageForFrame(MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE,
                                  source_frame_number, std::move(msg), first);
   }
 
   void DrainMessages(int source_frame_number,
-                     std::vector<scoped_ptr<IPC::Message>>* messages) {
+                     std::vector<std::unique_ptr<IPC::Message>>* messages) {
     messages->clear();
     queue_->DidActivate(source_frame_number);
     queue_->DidSwap(source_frame_number);
-    scoped_ptr<FrameSwapMessageQueue::SendMessageScope> send_message_scope =
-        queue_->AcquireSendMessageScope();
+    std::unique_ptr<FrameSwapMessageQueue::SendMessageScope>
+        send_message_scope = queue_->AcquireSendMessageScope();
     queue_->DrainMessages(messages);
   }
 
-  bool HasMessageForId(const std::vector<scoped_ptr<IPC::Message>>& messages,
-                       int routing_id) {
+  bool HasMessageForId(
+      const std::vector<std::unique_ptr<IPC::Message>>& messages,
+      int routing_id) {
     for (const auto& msg : messages) {
       if (msg->routing_id() == routing_id)
         return true;
@@ -62,8 +64,8 @@ class FrameSwapMessageQueueTest : public testing::Test {
     return false;
   }
 
-  scoped_ptr<IPC::Message> CloneMessage(const IPC::Message& other) {
-    return make_scoped_ptr(new IPC::Message(other));
+  std::unique_ptr<IPC::Message> CloneMessage(const IPC::Message& other) {
+    return base::WrapUnique(new IPC::Message(other));
   }
 
   void TestDidNotSwap(cc::SwapPromise::DidNotSwapReason reason);
@@ -75,14 +77,14 @@ class FrameSwapMessageQueueTest : public testing::Test {
 };
 
 TEST_F(FrameSwapMessageQueueTest, TestEmptyQueueDrain) {
-  std::vector<scoped_ptr<IPC::Message>> messages;
+  std::vector<std::unique_ptr<IPC::Message>> messages;
 
   DrainMessages(0, &messages);
   ASSERT_TRUE(messages.empty());
 }
 
 TEST_F(FrameSwapMessageQueueTest, TestEmpty) {
-  std::vector<scoped_ptr<IPC::Message>> messages;
+  std::vector<std::unique_ptr<IPC::Message>> messages;
   ASSERT_TRUE(queue_->Empty());
   QueueNextSwapMessage(CloneMessage(first_message_));
   ASSERT_FALSE(queue_->Empty());
@@ -96,7 +98,7 @@ TEST_F(FrameSwapMessageQueueTest, TestEmpty) {
 }
 
 TEST_F(FrameSwapMessageQueueTest, TestQueueMessageFirst) {
-  std::vector<scoped_ptr<IPC::Message>> messages;
+  std::vector<std::unique_ptr<IPC::Message>> messages;
   bool visual_state_first = false;
   bool next_swap_first = false;
 
@@ -125,7 +127,7 @@ TEST_F(FrameSwapMessageQueueTest, TestQueueMessageFirst) {
 }
 
 TEST_F(FrameSwapMessageQueueTest, TestNextSwapMessageSentWithNextFrame) {
-  std::vector<scoped_ptr<IPC::Message>> messages;
+  std::vector<std::unique_ptr<IPC::Message>> messages;
 
   DrainMessages(1, &messages);
   QueueNextSwapMessage(CloneMessage(first_message_));
@@ -139,7 +141,7 @@ TEST_F(FrameSwapMessageQueueTest, TestNextSwapMessageSentWithNextFrame) {
 }
 
 TEST_F(FrameSwapMessageQueueTest, TestNextSwapMessageSentWithCurrentFrame) {
-  std::vector<scoped_ptr<IPC::Message>> messages;
+  std::vector<std::unique_ptr<IPC::Message>> messages;
 
   DrainMessages(1, &messages);
   QueueNextSwapMessage(CloneMessage(first_message_));
@@ -154,7 +156,7 @@ TEST_F(FrameSwapMessageQueueTest, TestNextSwapMessageSentWithCurrentFrame) {
 
 TEST_F(FrameSwapMessageQueueTest,
        TestDrainsVisualStateMessagesForCorrespondingFrames) {
-  std::vector<scoped_ptr<IPC::Message>> messages;
+  std::vector<std::unique_ptr<IPC::Message>> messages;
 
   QueueVisualStateMessage(1, CloneMessage(first_message_));
   QueueVisualStateMessage(2, CloneMessage(second_message_));
@@ -178,7 +180,7 @@ TEST_F(FrameSwapMessageQueueTest,
 
 TEST_F(FrameSwapMessageQueueTest,
        TestQueueNextSwapMessagePreservesFifoOrdering) {
-  std::vector<scoped_ptr<IPC::Message>> messages;
+  std::vector<std::unique_ptr<IPC::Message>> messages;
 
   QueueNextSwapMessage(CloneMessage(first_message_));
   QueueNextSwapMessage(CloneMessage(second_message_));
@@ -190,7 +192,7 @@ TEST_F(FrameSwapMessageQueueTest,
 
 TEST_F(FrameSwapMessageQueueTest,
        TestQueueVisualStateMessagePreservesFifoOrdering) {
-  std::vector<scoped_ptr<IPC::Message>> messages;
+  std::vector<std::unique_ptr<IPC::Message>> messages;
 
   QueueVisualStateMessage(1, CloneMessage(first_message_));
   QueueVisualStateMessage(1, CloneMessage(second_message_));
@@ -202,7 +204,7 @@ TEST_F(FrameSwapMessageQueueTest,
 
 void FrameSwapMessageQueueTest::TestDidNotSwap(
     cc::SwapPromise::DidNotSwapReason reason) {
-  std::vector<scoped_ptr<IPC::Message>> messages;
+  std::vector<std::unique_ptr<IPC::Message>> messages;
 
   QueueNextSwapMessage(CloneMessage(first_message_));
   QueueVisualStateMessage(2, CloneMessage(second_message_));
@@ -262,7 +264,7 @@ class NotifiesDeletionMessage : public IPC::Message {
 
 TEST_F(FrameSwapMessageQueueTest, TestDeletesNextSwapMessage) {
   bool message_deleted = false;
-  QueueNextSwapMessage(make_scoped_ptr(
+  QueueNextSwapMessage(base::WrapUnique(
       new NotifiesDeletionMessage(&message_deleted, first_message_)));
   queue_ = NULL;
   ASSERT_TRUE(message_deleted);
@@ -270,18 +272,16 @@ TEST_F(FrameSwapMessageQueueTest, TestDeletesNextSwapMessage) {
 
 TEST_F(FrameSwapMessageQueueTest, TestDeletesVisualStateMessage) {
   bool message_deleted = false;
-  QueueVisualStateMessage(1,
-                          make_scoped_ptr(new NotifiesDeletionMessage(
-                              &message_deleted, first_message_)));
+  QueueVisualStateMessage(1, base::WrapUnique(new NotifiesDeletionMessage(
+                                 &message_deleted, first_message_)));
   queue_ = NULL;
   ASSERT_TRUE(message_deleted);
 }
 
 TEST_F(FrameSwapMessageQueueTest, TestDeletesQueuedVisualStateMessage) {
   bool message_deleted = false;
-  QueueVisualStateMessage(1,
-                          make_scoped_ptr(new NotifiesDeletionMessage(
-                              &message_deleted, first_message_)));
+  QueueVisualStateMessage(1, base::WrapUnique(new NotifiesDeletionMessage(
+                                 &message_deleted, first_message_)));
   queue_->DidActivate(1);
   queue_->DidSwap(1);
   queue_ = NULL;

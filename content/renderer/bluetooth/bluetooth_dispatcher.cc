@@ -11,7 +11,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/child/thread_safe_sender.h"
@@ -50,7 +49,7 @@ struct BluetoothPrimaryServiceRequest {
 
   blink::WebString device_id;
   blink::WebString service_uuid;
-  scoped_ptr<blink::WebBluetoothGetPrimaryServiceCallbacks> callbacks;
+  std::unique_ptr<blink::WebBluetoothGetPrimaryServiceCallbacks> callbacks;
 };
 
 struct BluetoothCharacteristicRequest {
@@ -65,7 +64,7 @@ struct BluetoothCharacteristicRequest {
 
   blink::WebString service_instance_id;
   blink::WebString characteristic_uuid;
-  scoped_ptr<blink::WebBluetoothGetCharacteristicCallbacks> callbacks;
+  std::unique_ptr<blink::WebBluetoothGetCharacteristicCallbacks> callbacks;
 };
 
 struct BluetoothCharacteristicsRequest {
@@ -76,7 +75,7 @@ struct BluetoothCharacteristicsRequest {
   ~BluetoothCharacteristicsRequest() {}
 
   blink::WebString service_instance_id;
-  scoped_ptr<blink::WebBluetoothGetCharacteristicsCallbacks> callbacks;
+  std::unique_ptr<blink::WebBluetoothGetCharacteristicsCallbacks> callbacks;
 };
 
 // Struct that holds a pending Start/StopNotifications request.
@@ -103,7 +102,7 @@ struct BluetoothNotificationsRequest {
   // characteristicObjectRemoved will null any pointers to the object
   // and queue a stop notifications request if necessary.
   blink::WebBluetoothRemoteGATTCharacteristic* characteristic;
-  scoped_ptr<blink::WebBluetoothNotificationsCallbacks> callbacks;
+  std::unique_ptr<blink::WebBluetoothNotificationsCallbacks> callbacks;
   NotificationsRequestType type;
 };
 

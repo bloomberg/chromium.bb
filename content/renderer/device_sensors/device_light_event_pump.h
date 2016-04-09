@@ -5,8 +5,9 @@
 #ifndef CONTENT_RENDERER_DEVICE_SENSORS_DEVICE_LIGHT_EVENT_PUMP_H_
 #define CONTENT_RENDERER_DEVICE_SENSORS_DEVICE_LIGHT_EVENT_PUMP_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/device_sensors/device_light_data.h"
 #include "content/renderer/device_sensors/device_sensor_event_pump.h"
 #include "content/renderer/shared_memory_seqlock_reader.h"
@@ -46,7 +47,7 @@ class CONTENT_EXPORT DeviceLightEventPump
  private:
   bool ShouldFireEvent(double data) const;
 
-  scoped_ptr<DeviceLightSharedMemoryReader> reader_;
+  std::unique_ptr<DeviceLightSharedMemoryReader> reader_;
   double last_seen_data_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceLightEventPump);

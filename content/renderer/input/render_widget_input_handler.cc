@@ -188,8 +188,8 @@ void RenderWidgetInputHandler::HandleInputEvent(
 
   // Calls into |didOverscroll()| while handling this event will populate
   // |event_overscroll|, which in turn will be bundled with the event ack.
-  scoped_ptr<DidOverscrollParams> event_overscroll;
-  base::AutoReset<scoped_ptr<DidOverscrollParams>*>
+  std::unique_ptr<DidOverscrollParams> event_overscroll;
+  base::AutoReset<std::unique_ptr<DidOverscrollParams>*>
       handling_event_overscroll_resetter(&handling_event_overscroll_,
                                          &event_overscroll);
 
@@ -241,7 +241,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
   if (!start_time.is_null())
     LogInputEventLatencyUma(input_event, start_time);
 
-  scoped_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor;
+  std::unique_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor;
   ui::LatencyInfo swap_latency_info(latency_info);
 
   if (widget_->compositor()) {
@@ -411,7 +411,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
   if ((dispatch_type == DISPATCH_TYPE_BLOCKING ||
        dispatch_type == DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN) &&
       can_send_ack) {
-    scoped_ptr<InputEventAck> response(new InputEventAck(
+    std::unique_ptr<InputEventAck> response(new InputEventAck(
         input_event.type, ack_result, swap_latency_info,
         std::move(event_overscroll),
         WebInputEventTraits::GetUniqueTouchEventId(input_event)));
@@ -489,7 +489,7 @@ void RenderWidgetInputHandler::DidOverscrollFromBlink(
     const WebFloatSize& accumulatedRootOverScroll,
     const WebFloatPoint& position,
     const WebFloatSize& velocity) {
-  scoped_ptr<DidOverscrollParams> params(new DidOverscrollParams());
+  std::unique_ptr<DidOverscrollParams> params(new DidOverscrollParams());
   params->accumulated_overscroll = gfx::Vector2dF(
       accumulatedRootOverScroll.width, accumulatedRootOverScroll.height);
   params->latest_overscroll_delta =
@@ -515,7 +515,7 @@ bool RenderWidgetInputHandler::SendAckForMouseMoveFromDebugger() {
     // If we pause multiple times during a single mouse move event, we should
     // only send ACK once.
     if (!ignore_ack_for_mouse_move_from_debugger_) {
-      scoped_ptr<InputEventAck> ack(new InputEventAck(
+      std::unique_ptr<InputEventAck> ack(new InputEventAck(
           handling_event_type_, INPUT_EVENT_ACK_STATE_CONSUMED));
       delegate_->OnInputEventAck(std::move(ack));
       return true;

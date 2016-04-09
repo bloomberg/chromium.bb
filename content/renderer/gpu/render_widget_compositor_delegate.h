@@ -36,10 +36,12 @@ class CONTENT_EXPORT RenderWidgetCompositorDelegate {
   virtual void BeginMainFrame(double frame_time_sec) = 0;
 
   // Requests an OutputSurface to render into.
-  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(bool fallback) = 0;
+  virtual std::unique_ptr<cc::OutputSurface> CreateOutputSurface(
+      bool fallback) = 0;
 
   // Requests an external BeginFrameSource from the delegate.
-  virtual scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource() = 0;
+  virtual std::unique_ptr<cc::BeginFrameSource>
+  CreateExternalBeginFrameSource() = 0;
 
   // Notifies that the draw commands for a committed frame have been issued.
   virtual void DidCommitAndDrawCompositorFrame() = 0;
@@ -77,8 +79,9 @@ class CONTENT_EXPORT RenderWidgetCompositorDelegate {
 
   // Called by the compositor to request the delegate to record frame timing.
   virtual void RecordFrameTimingEvents(
-      scoped_ptr<cc::FrameTimingTracker::CompositeTimingSet> composite_events,
-      scoped_ptr<cc::FrameTimingTracker::MainFrameTimingSet>
+      std::unique_ptr<cc::FrameTimingTracker::CompositeTimingSet>
+          composite_events,
+      std::unique_ptr<cc::FrameTimingTracker::MainFrameTimingSet>
           main_frame_events) = 0;
 
   // Requests that the client schedule a composite now, and calculate

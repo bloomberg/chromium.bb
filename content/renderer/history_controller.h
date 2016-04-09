@@ -35,11 +35,11 @@
 #ifndef CONTENT_RENDERER_HISTORY_CONTROLLER_H_
 #define CONTENT_RENDERER_HISTORY_CONTROLLER_H_
 
+#include <memory>
 #include <utility>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/renderer/history_entry.h"
 #include "third_party/WebKit/public/web/WebHistoryCommitType.h"
@@ -113,15 +113,15 @@ class CONTENT_EXPORT HistoryController {
   explicit HistoryController(RenderViewImpl* render_view);
   ~HistoryController();
 
-  void set_provisional_entry(scoped_ptr<HistoryEntry> entry) {
+  void set_provisional_entry(std::unique_ptr<HistoryEntry> entry) {
     provisional_entry_ = std::move(entry);
   }
 
   // Return true if the main frame ended up loading a request as part of the
   // history navigation.
   bool GoToEntry(blink::WebLocalFrame* main_frame,
-                 scoped_ptr<HistoryEntry> entry,
-                 scoped_ptr<NavigationParams> navigation_params,
+                 std::unique_ptr<HistoryEntry> entry,
+                 std::unique_ptr<NavigationParams> navigation_params,
                  blink::WebCachePolicy cache_policy);
 
   void UpdateForCommit(RenderFrameImpl* frame,
@@ -149,16 +149,16 @@ class CONTENT_EXPORT HistoryController {
   RenderViewImpl* render_view_;
 
   // A HistoryEntry representing the currently-loaded page.
-  scoped_ptr<HistoryEntry> current_entry_;
+  std::unique_ptr<HistoryEntry> current_entry_;
   // A HistoryEntry representing the page that is being loaded, or an empty
   // scoped_ptr if no page is being loaded.
-  scoped_ptr<HistoryEntry> provisional_entry_;
+  std::unique_ptr<HistoryEntry> provisional_entry_;
   // The NavigationParams corresponding to the last load that was initiated by
   // |GoToEntry|. This is kept around so that it can be passed into existing
   // frames modified during a history navigation in GoToEntry(), and can be
   // passed into frames created after the commit that resulted from the
   // navigation in GetItemForNewChildFrame().
-  scoped_ptr<NavigationParams> navigation_params_;
+  std::unique_ptr<NavigationParams> navigation_params_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryController);
 };

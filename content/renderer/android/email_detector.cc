@@ -4,8 +4,9 @@
 
 #include "content/renderer/android/email_detector.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/renderer/android_content_detection_prefixes.h"
 #include "net/base/escape.h"
@@ -52,11 +53,8 @@ bool EmailDetector::FindContent(const base::string16::const_iterator& begin,
   icu::UnicodeString pattern(kEmailRegex);
   icu::UnicodeString input(utf16_input.data(), utf16_input.length());
   UErrorCode status = U_ZERO_ERROR;
-  scoped_ptr<icu::RegexMatcher> matcher(
-      new icu::RegexMatcher(pattern,
-                            input,
-                            UREGEX_CASE_INSENSITIVE,
-                            status));
+  std::unique_ptr<icu::RegexMatcher> matcher(
+      new icu::RegexMatcher(pattern, input, UREGEX_CASE_INSENSITIVE, status));
   if (matcher->find()) {
     *start_pos = matcher->start(status);
     DCHECK(U_SUCCESS(status));

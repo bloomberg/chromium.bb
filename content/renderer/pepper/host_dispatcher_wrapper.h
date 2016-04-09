@@ -69,8 +69,8 @@ class HostDispatcherWrapper {
   ppapi::PpapiPermissions permissions_;
   bool is_external_;
 
-  scoped_ptr<ppapi::proxy::HostDispatcher> dispatcher_;
-  scoped_ptr<ppapi::proxy::ProxyChannel::Delegate> dispatcher_delegate_;
+  std::unique_ptr<ppapi::proxy::HostDispatcher> dispatcher_;
+  std::unique_ptr<ppapi::proxy::ProxyChannel::Delegate> dispatcher_delegate_;
   // We hold the hung_plugin_filter_ to guarantee it outlives |dispatcher_|,
   // since it is an observer of |dispatcher_| for sync calls.
   scoped_refptr<PepperHungPluginFilter> hung_plugin_filter_;

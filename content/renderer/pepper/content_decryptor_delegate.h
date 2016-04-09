@@ -60,28 +60,28 @@ class ContentDecryptorDelegate {
       const media::SessionKeysChangeCB& session_keys_change_cb,
       const media::SessionExpirationUpdateCB& session_expiration_update_cb,
       const base::Closure& fatal_plugin_error_cb,
-      scoped_ptr<media::SimpleCdmPromise> promise);
+      std::unique_ptr<media::SimpleCdmPromise> promise);
 
   void InstanceCrashed();
 
   // Provides access to PPP_ContentDecryptor_Private.
   void SetServerCertificate(const std::vector<uint8_t>& certificate,
-                            scoped_ptr<media::SimpleCdmPromise> promise);
+                            std::unique_ptr<media::SimpleCdmPromise> promise);
   void CreateSessionAndGenerateRequest(
       media::MediaKeys::SessionType session_type,
       media::EmeInitDataType init_data_type,
       const std::vector<uint8_t>& init_data,
-      scoped_ptr<media::NewSessionCdmPromise> promise);
+      std::unique_ptr<media::NewSessionCdmPromise> promise);
   void LoadSession(media::MediaKeys::SessionType session_type,
                    const std::string& session_id,
-                   scoped_ptr<media::NewSessionCdmPromise> promise);
+                   std::unique_ptr<media::NewSessionCdmPromise> promise);
   void UpdateSession(const std::string& session_id,
                      const std::vector<uint8_t>& response,
-                     scoped_ptr<media::SimpleCdmPromise> promise);
+                     std::unique_ptr<media::SimpleCdmPromise> promise);
   void CloseSession(const std::string& session_id,
-                    scoped_ptr<media::SimpleCdmPromise> promise);
+                    std::unique_ptr<media::SimpleCdmPromise> promise);
   void RemoveSession(const std::string& session_id,
-                     scoped_ptr<media::SimpleCdmPromise> promise);
+                     std::unique_ptr<media::SimpleCdmPromise> promise);
   bool Decrypt(media::Decryptor::StreamType stream_type,
                const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
                const media::Decryptor::DecryptCB& decrypt_cb);

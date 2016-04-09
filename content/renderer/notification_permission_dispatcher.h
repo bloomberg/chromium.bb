@@ -5,8 +5,9 @@
 #ifndef CONTENT_RENDERER_NOTIFICATION_PERMISSION_DISPATCHER_H_
 #define CONTENT_RENDERER_NOTIFICATION_PERMISSION_DISPATCHER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission.mojom.h"
 
@@ -33,7 +34,7 @@ class NotificationPermissionDispatcher : public RenderFrameObserver {
 
  private:
   void OnPermissionRequestComplete(
-      scoped_ptr<blink::WebNotificationPermissionCallback> callback,
+      std::unique_ptr<blink::WebNotificationPermissionCallback> callback,
       blink::mojom::PermissionStatus status);
 
   blink::mojom::PermissionServicePtr permission_service_;

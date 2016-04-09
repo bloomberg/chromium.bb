@@ -296,7 +296,7 @@ void CacheStorageDispatcher::OnCacheStorageOpenSuccess(int thread_id,
                                                        int request_id,
                                                        int cache_id) {
   DCHECK_EQ(thread_id, CurrentWorkerId());
-  scoped_ptr<WebCache> web_cache(
+  std::unique_ptr<WebCache> web_cache(
       new WebCache(weak_factory_.GetWeakPtr(), cache_id));
   web_caches_.AddWithID(web_cache.get(), cache_id);
   UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Open",

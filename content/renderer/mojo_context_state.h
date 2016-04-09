@@ -5,11 +5,11 @@
 #ifndef CONTENT_RENDERER_MOJO_CONTEXT_STATE_H_
 #define CONTENT_RENDERER_MOJO_CONTEXT_STATE_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "gin/modules/module_registry_observer.h"
 #include "v8/include/v8.h"
@@ -71,7 +71,7 @@ class MojoContextState : public gin::ModuleRegistryObserver {
   bool module_added_;
 
   // Executes the script from gin.
-  scoped_ptr<MojoMainRunner> runner_;
+  std::unique_ptr<MojoMainRunner> runner_;
 
   // Set of fetchers we're waiting on to download script.
   ScopedVector<ResourceFetcher> module_fetchers_;

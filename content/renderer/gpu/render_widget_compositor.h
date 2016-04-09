@@ -53,7 +53,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
  public:
   // Attempt to construct and initialize a compositor instance for the widget
   // with the given settings. Returns NULL if initialization fails.
-  static scoped_ptr<RenderWidgetCompositor> Create(
+  static std::unique_ptr<RenderWidgetCompositor> Create(
       RenderWidgetCompositorDelegate* delegate,
       float device_scale_factor,
       CompositorDependencies* compositor_deps);
@@ -74,11 +74,11 @@ class CONTENT_EXPORT RenderWidgetCompositor
   // LatencyInfoSwapPromiseMonitor, if SetNeedsCommit() or
   // SetNeedsUpdateLayers() is called on LayerTreeHost, the original latency
   // info will be turned into a LatencyInfoSwapPromise.
-  scoped_ptr<cc::SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
+  std::unique_ptr<cc::SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency);
   // Calling QueueSwapPromise() to directly queue a SwapPromise into
   // LayerTreeHost.
-  void QueueSwapPromise(scoped_ptr<cc::SwapPromise> swap_promise);
+  void QueueSwapPromise(std::unique_ptr<cc::SwapPromise> swap_promise);
   int GetSourceFrameNumber() const;
   void SetNeedsUpdateLayers();
   void SetNeedsCommit();
@@ -86,9 +86,9 @@ class CONTENT_EXPORT RenderWidgetCompositor
   const cc::Layer* GetRootLayer() const;
   int ScheduleMicroBenchmark(
       const std::string& name,
-      scoped_ptr<base::Value> value,
-      const base::Callback<void(scoped_ptr<base::Value>)>& callback);
-  bool SendMessageToMicroBenchmark(int id, scoped_ptr<base::Value> value);
+      std::unique_ptr<base::Value> value,
+      const base::Callback<void(std::unique_ptr<base::Value>)>& callback);
+  bool SendMessageToMicroBenchmark(int id, std::unique_ptr<base::Value> value);
   void SetSurfaceIdNamespace(uint32_t surface_id_namespace);
   void OnHandleCompositorProto(const std::vector<uint8_t>& proto);
   cc::ManagedMemoryPolicy GetGpuMemoryPolicy(
@@ -173,9 +173,10 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void DidCompleteSwapBuffers() override;
   void DidCompletePageScaleAnimation() override;
   void RecordFrameTimingEvents(
-      scoped_ptr<cc::FrameTimingTracker::CompositeTimingSet> composite_events,
-      scoped_ptr<cc::FrameTimingTracker::MainFrameTimingSet> main_frame_events)
-      override;
+      std::unique_ptr<cc::FrameTimingTracker::CompositeTimingSet>
+          composite_events,
+      std::unique_ptr<cc::FrameTimingTracker::MainFrameTimingSet>
+          main_frame_events) override;
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void RequestScheduleAnimation() override;
@@ -209,11 +210,11 @@ class CONTENT_EXPORT RenderWidgetCompositor
   int num_failed_recreate_attempts_;
   RenderWidgetCompositorDelegate* const delegate_;
   CompositorDependencies* const compositor_deps_;
-  scoped_ptr<cc::LayerTreeHost> layer_tree_host_;
+  std::unique_ptr<cc::LayerTreeHost> layer_tree_host_;
   bool never_visible_;
 
   blink::WebLayoutAndPaintAsyncCallback* layout_and_paint_async_callback_;
-  scoped_ptr<cc::CopyOutputRequest> temporary_copy_output_request_;
+  std::unique_ptr<cc::CopyOutputRequest> temporary_copy_output_request_;
 
   cc::RemoteProtoChannel::ProtoReceiver* remote_proto_channel_receiver_;
 

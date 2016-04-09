@@ -48,10 +48,9 @@ bool CheckPPFloatRect(const PP_FloatRect& rect, float width, float height) {
             rect.point.y + rect.size.height <= height + kEpsilon);
 }
 
-int32_t VerifyCommittedLayer(
-    const ppapi::CompositorLayerData* old_layer,
-    const ppapi::CompositorLayerData* new_layer,
-    scoped_ptr<base::SharedMemory>* image_shm) {
+int32_t VerifyCommittedLayer(const ppapi::CompositorLayerData* old_layer,
+                             const ppapi::CompositorLayerData* new_layer,
+                             std::unique_ptr<base::SharedMemory>* image_shm) {
   if (!new_layer->is_valid())
     return PP_ERROR_BADARGUMENT;
 
@@ -191,8 +190,8 @@ void PepperCompositorHost::ViewInitiatedPaint() {
 
 void PepperCompositorHost::ImageReleased(
     int32_t id,
-    scoped_ptr<base::SharedMemory> shared_memory,
-    scoped_ptr<cc::SharedBitmap> bitmap,
+    std::unique_ptr<base::SharedMemory> shared_memory,
+    std::unique_ptr<cc::SharedBitmap> bitmap,
     const gpu::SyncToken& sync_token,
     bool is_lost) {
   bitmap.reset();
@@ -220,7 +219,7 @@ void PepperCompositorHost::UpdateLayer(
     const scoped_refptr<cc::Layer>& layer,
     const ppapi::CompositorLayerData* old_layer,
     const ppapi::CompositorLayerData* new_layer,
-    scoped_ptr<base::SharedMemory> image_shm) {
+    std::unique_ptr<base::SharedMemory> image_shm) {
   // Always update properties on cc::Layer, because cc::Layer
   // will ignore any setting with unchanged value.
   layer->SetIsDrawable(true);
@@ -307,7 +306,7 @@ void PepperCompositorHost::UpdateLayer(
       DCHECK_EQ(rv, PP_TRUE);
       DCHECK_EQ(desc.stride, desc.size.width * 4);
       DCHECK_EQ(desc.format, PP_IMAGEDATAFORMAT_RGBA_PREMUL);
-      scoped_ptr<cc::SharedBitmap> bitmap =
+      std::unique_ptr<cc::SharedBitmap> bitmap =
           ChildThreadImpl::current()
               ->shared_bitmap_manager()
               ->GetBitmapForSharedMemory(image_shm.get());
@@ -353,9 +352,9 @@ int32_t PepperCompositorHost::OnHostMsgCommitLayers(
   if (commit_layers_reply_context_.is_valid())
     return PP_ERROR_INPROGRESS;
 
-  scoped_ptr<scoped_ptr<base::SharedMemory>[]> image_shms;
+  std::unique_ptr<std::unique_ptr<base::SharedMemory>[]> image_shms;
   if (layers.size() > 0) {
-    image_shms.reset(new scoped_ptr<base::SharedMemory>[layers.size()]);
+    image_shms.reset(new std::unique_ptr<base::SharedMemory>[layers.size()]);
     if (!image_shms)
       return PP_ERROR_NOMEMORY;
     // Verfiy the layers first, if an error happens, we will return the error to

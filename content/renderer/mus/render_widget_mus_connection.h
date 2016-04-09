@@ -25,7 +25,7 @@ class CONTENT_EXPORT RenderWidgetMusConnection
   void Bind(mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request);
 
   // Create a cc output surface.
-  scoped_ptr<cc::OutputSurface> CreateOutputSurface();
+  std::unique_ptr<cc::OutputSurface> CreateOutputSurface();
 
   static RenderWidgetMusConnection* Get(int routing_id);
 
@@ -51,7 +51,7 @@ class CONTENT_EXPORT RenderWidgetMusConnection
                                     bool event_processed) override;
   void OnDidHandleKeyEvent() override;
   void OnDidOverscroll(const DidOverscrollParams& params) override;
-  void OnInputEventAck(scoped_ptr<InputEventAck> input_event_ack) override;
+  void OnInputEventAck(std::unique_ptr<InputEventAck> input_event_ack) override;
   void NotifyInputEventHandled(
       blink::WebInputEvent::Type handled_type) override;
   void SetInputHandler(RenderWidgetInputHandler* input_handler) override;
@@ -61,12 +61,12 @@ class CONTENT_EXPORT RenderWidgetMusConnection
   bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
 
   void OnConnectionLost();
-  void OnWindowInputEvent(scoped_ptr<blink::WebInputEvent> input_event,
+  void OnWindowInputEvent(std::unique_ptr<blink::WebInputEvent> input_event,
                           const base::Callback<void(bool)>& ack);
 
   const int routing_id_;
   RenderWidgetInputHandler* input_handler_;
-  scoped_ptr<mus::WindowSurfaceBinding> window_surface_binding_;
+  std::unique_ptr<mus::WindowSurfaceBinding> window_surface_binding_;
   scoped_refptr<CompositorMusConnection> compositor_mus_connection_;
 
   base::Callback<void(bool)> pending_ack_;

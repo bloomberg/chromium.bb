@@ -5,9 +5,10 @@
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_AUDIO_OUTPUT_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_AUDIO_OUTPUT_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/audio/audio_output_ipc.h"
 
 namespace media {
@@ -80,7 +81,7 @@ class PepperPlatformAudioOutput
 
   // Used to send/receive IPC. THIS MUST ONLY BE ACCESSED ON THE
   // I/O thread except to send messages and get the message loop.
-  scoped_ptr<media::AudioOutputIPC> ipc_;
+  std::unique_ptr<media::AudioOutputIPC> ipc_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

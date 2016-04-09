@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
@@ -52,8 +53,8 @@ class PepperCompositorHost : public ppapi::host::ResourceHost {
 
  private:
   void ImageReleased(int32_t id,
-                     scoped_ptr<base::SharedMemory> shared_memory,
-                     scoped_ptr<cc::SharedBitmap> bitmap,
+                     std::unique_ptr<base::SharedMemory> shared_memory,
+                     std::unique_ptr<cc::SharedBitmap> bitmap,
                      const gpu::SyncToken& sync_token,
                      bool is_lost);
   void ResourceReleased(int32_t id,
@@ -63,7 +64,7 @@ class PepperCompositorHost : public ppapi::host::ResourceHost {
   void UpdateLayer(const scoped_refptr<cc::Layer>& layer,
                    const ppapi::CompositorLayerData* old_layer,
                    const ppapi::CompositorLayerData* new_layer,
-                   scoped_ptr<base::SharedMemory> image_shm);
+                   std::unique_ptr<base::SharedMemory> image_shm);
 
   // ResourceMessageHandler overrides:
   int32_t OnResourceMessageReceived(

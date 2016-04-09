@@ -77,7 +77,7 @@ bool MainThreadEventQueue::HandleEvent(
 void MainThreadEventQueue::EventHandled(blink::WebInputEvent::Type type) {
   if (type == blink::WebInputEvent::MouseWheel) {
     if (!wheel_events_.empty()) {
-      scoped_ptr<PendingMouseWheelEvent> event = wheel_events_.Pop();
+      std::unique_ptr<PendingMouseWheelEvent> event = wheel_events_.Pop();
       client_->SendEventToMainThread(routing_id_, &event->event, event->latency,
                                      event->type);
     } else {
@@ -85,7 +85,7 @@ void MainThreadEventQueue::EventHandled(blink::WebInputEvent::Type type) {
     }
   } else if (blink::WebInputEvent::isTouchEventType(type)) {
     if (!touch_events_.empty()) {
-      scoped_ptr<PendingTouchEvent> event = touch_events_.Pop();
+      std::unique_ptr<PendingTouchEvent> event = touch_events_.Pop();
       client_->SendEventToMainThread(routing_id_, &event->event, event->latency,
                                      event->type);
     } else {

@@ -5,9 +5,9 @@
 #include "content/renderer/screen_orientation/screen_orientation_dispatcher.h"
 
 #include <list>
+#include <memory>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/screen_orientation_messages.h"
 #include "content/public/test/test_utils.h"
 #include "ipc/ipc_test_sink.h"
@@ -100,7 +100,7 @@ class ScreenOrientationDispatcherTest : public testing::Test {
   }
 
   IPC::TestSink sink_;
-  scoped_ptr<ScreenOrientationDispatcher> dispatcher_;
+  std::unique_ptr<ScreenOrientationDispatcher> dispatcher_;
 };
 
 // Test that calling lockOrientation() followed by unlockOrientation() cancel

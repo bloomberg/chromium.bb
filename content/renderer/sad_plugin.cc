@@ -5,8 +5,8 @@
 #include "content/renderer/sad_plugin.h"
 
 #include <algorithm>
+#include <memory>
 
-#include "base/memory/scoped_ptr.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/geometry/rect.h"
 

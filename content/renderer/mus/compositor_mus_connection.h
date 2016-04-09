@@ -41,7 +41,7 @@ class CONTENT_EXPORT CompositorMusConnection
   // Attaches the provided |surface_binding| with the mus::Window for the
   // renderer once it becomes available.
   void AttachSurfaceOnMainThread(
-      scoped_ptr<mus::WindowSurfaceBinding> surface_binding);
+      std::unique_ptr<mus::WindowSurfaceBinding> surface_binding);
 
  private:
   friend class CompositorMusConnectionTest;
@@ -50,7 +50,7 @@ class CONTENT_EXPORT CompositorMusConnection
   ~CompositorMusConnection() override;
 
   void AttachSurfaceOnCompositorThread(
-      scoped_ptr<mus::WindowSurfaceBinding> surface_binding);
+      std::unique_ptr<mus::WindowSurfaceBinding> surface_binding);
 
   void CreateWindowTreeConnectionOnCompositorThread(
       mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request);
@@ -58,7 +58,7 @@ class CONTENT_EXPORT CompositorMusConnection
   void OnConnectionLostOnMainThread();
 
   void OnWindowInputEventOnMainThread(
-      scoped_ptr<blink::WebInputEvent> web_event,
+      std::unique_ptr<blink::WebInputEvent> web_event,
       const base::Callback<void(bool)>& ack);
 
   void OnWindowInputEventAckOnMainThread(const base::Callback<void(bool)>& ack,
@@ -72,14 +72,14 @@ class CONTENT_EXPORT CompositorMusConnection
   void OnWindowInputEvent(
       mus::Window* window,
       const ui::Event& event,
-      scoped_ptr<base::Callback<void(bool)>>* ack_callback) override;
+      std::unique_ptr<base::Callback<void(bool)>>* ack_callback) override;
 
   const int routing_id_;
   mus::Window* root_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   InputHandlerManager* const input_handler_manager_;
-  scoped_ptr<mus::WindowSurfaceBinding> window_surface_binding_;
+  std::unique_ptr<mus::WindowSurfaceBinding> window_surface_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorMusConnection);
 };

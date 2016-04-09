@@ -186,9 +186,10 @@ void SynchronousCompositorFilter::CheckIsReady(int routing_id) {
   Entry& entry = entry_map_[routing_id];
   if (filter_ready_ && entry.IsReady()) {
     DCHECK(!sync_compositor_map_.contains(routing_id));
-    scoped_ptr<SynchronousCompositorProxy> proxy(new SynchronousCompositorProxy(
-        routing_id, this, entry.begin_frame_source,
-        entry.synchronous_input_handler_proxy, &input_handler_));
+    std::unique_ptr<SynchronousCompositorProxy> proxy(
+        new SynchronousCompositorProxy(
+            routing_id, this, entry.begin_frame_source,
+            entry.synchronous_input_handler_proxy, &input_handler_));
     if (entry.output_surface)
       proxy->SetOutputSurface(entry.output_surface);
     sync_compositor_map_.add(routing_id, std::move(proxy));

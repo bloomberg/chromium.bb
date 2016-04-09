@@ -5,8 +5,9 @@
 #ifndef CONTENT_RENDERER_GAMEPAD_SHARED_MEMORY_READER_H_
 #define CONTENT_RENDERER_GAMEPAD_SHARED_MEMORY_READER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "content/common/gamepad_messages.h"
 #include "content/public/renderer/renderer_gamepad_provider.h"
@@ -36,7 +37,7 @@ class GamepadSharedMemoryReader : public RendererGamepadProvider {
   void OnGamepadDisconnected(int index, const blink::WebGamepad& gamepad);
 
   base::SharedMemoryHandle renderer_shared_memory_handle_;
-  scoped_ptr<base::SharedMemory> renderer_shared_memory_;
+  std::unique_ptr<base::SharedMemory> renderer_shared_memory_;
   GamepadHardwareBuffer* gamepad_hardware_buffer_;
 
   bool ever_interacted_with_;

@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/pepper/fullscreen_container.h"
 #include "content/renderer/render_widget_fullscreen.h"
@@ -82,7 +83,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
 
   blink::WebLayer* layer_;
 
-  scoped_ptr<MouseLockDispatcher> mouse_lock_dispatcher_;
+  std::unique_ptr<MouseLockDispatcher> mouse_lock_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetFullscreenPepper);
 };

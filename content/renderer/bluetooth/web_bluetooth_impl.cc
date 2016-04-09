@@ -4,6 +4,7 @@
 
 #include "content/renderer/bluetooth/web_bluetooth_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/child/mojo/type_converters.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/public/common/service_registry.h"
@@ -79,7 +80,7 @@ void WebBluetoothImpl::writeValue(
       mojo::Array<uint8_t>::From(value),
       base::Bind(&WebBluetoothImpl::OnWriteValueComplete,
                  base::Unretained(this), value,
-                 base::Passed(make_scoped_ptr(callbacks))));
+                 base::Passed(base::WrapUnique(callbacks))));
 }
 
 void WebBluetoothImpl::startNotifications(
@@ -114,7 +115,7 @@ void WebBluetoothImpl::registerCharacteristicObject(
 
 void WebBluetoothImpl::OnWriteValueComplete(
     const blink::WebVector<uint8_t>& value,
-    scoped_ptr<blink::WebBluetoothWriteValueCallbacks> callbacks,
+    std::unique_ptr<blink::WebBluetoothWriteValueCallbacks> callbacks,
     blink::mojom::WebBluetoothError error) {
   if (error == blink::mojom::WebBluetoothError::SUCCESS) {
     callbacks->onSuccess(value);

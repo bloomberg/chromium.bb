@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -18,7 +19,7 @@
 #include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/process/kill.h"
@@ -722,14 +723,14 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
     main_render_frame_->Initialize();
 
 #if defined(OS_ANDROID)
-  content_detectors_.push_back(make_scoped_ptr(new AddressDetector()));
+  content_detectors_.push_back(base::WrapUnique(new AddressDetector()));
   const std::string& contry_iso =
       params.renderer_preferences.network_contry_iso;
   if (!contry_iso.empty()) {
     content_detectors_.push_back(
-        make_scoped_ptr(new PhoneNumberDetector(contry_iso)));
+        base::WrapUnique(new PhoneNumberDetector(contry_iso)));
   }
-  content_detectors_.push_back(make_scoped_ptr(new EmailDetector()));
+  content_detectors_.push_back(base::WrapUnique(new EmailDetector()));
 #endif
 
   RenderThread::Get()->AddRoute(GetRoutingID(), this);
@@ -1492,7 +1493,7 @@ void RenderViewImpl::OnForceRedraw(int id) {
                                   0,
                                   id);
   }
-  scoped_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor;
+  std::unique_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor;
   if (RenderWidgetCompositor* rwc = compositor()) {
     latency_info_swap_promise_monitor =
         rwc->CreateLatencyInfoSwapPromiseMonitor(&latency_info);
@@ -2946,7 +2947,7 @@ bool RenderViewImpl::ScheduleFileChooser(
   }
 
   file_chooser_completions_.push_back(
-      make_scoped_ptr(new PendingFileChooser(params, completion)));
+      base::WrapUnique(new PendingFileChooser(params, completion)));
   if (file_chooser_completions_.size() == 1) {
     // Actually show the browse dialog when this is the first request.
     Send(new ViewHostMsg_RunFileChooser(GetRoutingID(), params));
@@ -3148,7 +3149,7 @@ bool RenderViewImpl::didTapMultipleTargets(
           gfx::ScaleToCeiledSize(zoom_rect.size(), new_total_scale);
       cc::SharedBitmapManager* manager =
           RenderThreadImpl::current()->shared_bitmap_manager();
-      scoped_ptr<cc::SharedBitmap> shared_bitmap =
+      std::unique_ptr<cc::SharedBitmap> shared_bitmap =
           manager->AllocateSharedBitmap(canvas_size);
       CHECK(!!shared_bitmap);
       {

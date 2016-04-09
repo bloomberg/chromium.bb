@@ -70,7 +70,7 @@ class PPB_VideoDecoder_Impl : public ppapi::PPB_VideoDecoder_Shared,
 
   // This is NULL before initialization, and after destruction.
   // Holds a GpuVideoDecodeAcceleratorHost.
-  scoped_ptr<media::VideoDecodeAccelerator> decoder_;
+  std::unique_ptr<media::VideoDecodeAccelerator> decoder_;
 
   // The interface to use when making calls on the plugin. For the most part,
   // methods should not use this directly but should call GetPPP() instead.

@@ -6,10 +6,10 @@
 #define CONTENT_RENDERER_MANIFEST_MANIFEST_MANAGER_H_
 
 #include <list>
+#include <memory>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/common/manifest.h"
 #include "content/public/renderer/render_frame_observer.h"
 
@@ -64,7 +64,7 @@ class ManifestManager : public RenderFrameObserver {
                                const std::string& data);
   void ResolveCallbacks(ResolveState state);
 
-  scoped_ptr<ManifestFetcher> fetcher_;
+  std::unique_ptr<ManifestFetcher> fetcher_;
 
   // Whether the RenderFrame may have an associated Manifest. If true, the frame
   // may have a manifest, if false, it can't have one. This boolean is true when

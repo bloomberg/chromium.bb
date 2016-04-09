@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -17,7 +18,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -212,7 +212,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool Initialize(const std::vector<std::string>& arg_names,
                   const std::vector<std::string>& arg_values,
                   bool full_frame,
-                  scoped_ptr<PluginInstanceThrottlerImpl> throttler);
+                  std::unique_ptr<PluginInstanceThrottlerImpl> throttler);
   bool HandleDocumentLoad(const blink::WebURLResponse& response);
   bool HandleInputEvent(const blink::WebInputEvent& event,
                         blink::WebCursorInfo* cursor_info);
@@ -535,7 +535,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // cc::TextureLayerClient implementation.
   bool PrepareTextureMailbox(
       cc::TextureMailbox* mailbox,
-      scoped_ptr<cc::SingleReleaseCallback>* release_callback,
+      std::unique_ptr<cc::SingleReleaseCallback>* release_callback,
       bool use_shared_memory) override;
 
   // RenderFrameObserver
@@ -576,7 +576,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
    private:
     std::list<std::string> data_;
     bool finished_loading_;
-    scoped_ptr<blink::WebURLError> error_;
+    std::unique_ptr<blink::WebURLError> error_;
   };
 
   // Implements PPB_Gamepad_API. This is just to avoid having an excessive
@@ -702,12 +702,12 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   RenderFrameImpl* render_frame_;
   base::Closure instance_deleted_callback_;
   scoped_refptr<PluginModule> module_;
-  scoped_ptr<ppapi::PPP_Instance_Combined> instance_interface_;
+  std::unique_ptr<ppapi::PPP_Instance_Combined> instance_interface_;
   // If this is the NaCl plugin, we create a new module when we switch to the
   // IPC-based PPAPI proxy. Store the original module and instance interface
   // so we can shut down properly.
   scoped_refptr<PluginModule> original_module_;
-  scoped_ptr<ppapi::PPP_Instance_Combined> original_instance_interface_;
+  std::unique_ptr<ppapi::PPP_Instance_Combined> original_instance_interface_;
 
   PP_Instance pp_instance_;
 
@@ -715,7 +715,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   blink::WebPluginContainer* container_;
   scoped_refptr<cc::Layer> compositor_layer_;
   scoped_refptr<cc::TextureLayer> texture_layer_;
-  scoped_ptr<blink::WebLayer> web_layer_;
+  std::unique_ptr<blink::WebLayer> web_layer_;
   bool layer_bound_to_fullscreen_;
   bool layer_is_hardware_;
 
@@ -734,7 +734,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool javascript_used_;
 
   // Responsible for turning on throttling if Power Saver is on.
-  scoped_ptr<PluginInstanceThrottlerImpl> throttler_;
+  std::unique_ptr<PluginInstanceThrottlerImpl> throttler_;
 
   // Indicates whether this is a full frame instance, which means it represents
   // an entire document rather than an embed tag.
@@ -771,7 +771,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   int find_identifier_;
 
   // Helper object that creates resources.
-  scoped_ptr<ppapi::thunk::ResourceCreationAPI> resource_creation_;
+  std::unique_ptr<ppapi::thunk::ResourceCreationAPI> resource_creation_;
 
   // The plugin-provided interfaces.
   // When adding PPP interfaces, make sure to reset them in ResetAsProxied.
@@ -820,7 +820,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   const PPP_Graphics3D* plugin_graphics_3d_interface_;
 
   // Contains the cursor if it's set by the plugin.
-  scoped_ptr<blink::WebCursorInfo> cursor_;
+  std::unique_ptr<blink::WebCursorInfo> cursor_;
 
   // Set to true if this plugin thinks it will always be on top. This allows us
   // to use a more optimized painting path in some cases.
@@ -905,12 +905,12 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   blink::WebURLLoaderClient* document_loader_;
   // State for deferring document loads. Used only by external instances.
   blink::WebURLResponse external_document_response_;
-  scoped_ptr<ExternalDocumentLoader> external_document_loader_;
+  std::unique_ptr<ExternalDocumentLoader> external_document_loader_;
   bool external_document_load_;
 
   // The ContentDecryptorDelegate forwards PPP_ContentDecryptor_Private
   // calls and handles PPB_ContentDecryptor_Private calls.
-  scoped_ptr<ContentDecryptorDelegate> content_decryptor_delegate_;
+  std::unique_ptr<ContentDecryptorDelegate> content_decryptor_delegate_;
 
   // The link currently under the cursor.
   base::string16 link_under_cursor_;
@@ -919,7 +919,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // Isolate in which this Instance was created when interacting with v8.
   v8::Isolate* isolate_;
 
-  scoped_ptr<MouseLockDispatcher::LockTarget> lock_target_;
+  std::unique_ptr<MouseLockDispatcher::LockTarget> lock_target_;
 
   bool is_deleted_;
 

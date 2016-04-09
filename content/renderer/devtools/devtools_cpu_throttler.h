@@ -5,8 +5,9 @@
 #ifndef CONTENT_RENDERER_DEVTOOLS_DEVTOOLS_CPU_THROTTLER_H_
 #define CONTENT_RENDERER_DEVTOOLS_DEVTOOLS_CPU_THROTTLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -21,7 +22,7 @@ class CONTENT_EXPORT DevToolsCPUThrottler final {
   void SetThrottlingRate(double rate);
 
  private:
-  scoped_ptr<CPUThrottlingThread> throttling_thread_;
+  std::unique_ptr<CPUThrottlingThread> throttling_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsCPUThrottler);
 };

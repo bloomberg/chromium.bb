@@ -6,12 +6,12 @@
 #define CONTENT_RENDERER_GPU_FRAME_SWAP_MESSAGE_QUEUE_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/auto_reset.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
 #include "cc/output/swap_promise.h"
@@ -47,7 +47,7 @@ class CONTENT_EXPORT FrameSwapMessageQueue
   //              enqueued for the given source_frame_number.
   void QueueMessageForFrame(MessageDeliveryPolicy policy,
                             int source_frame_number,
-                            scoped_ptr<IPC::Message> msg,
+                            std::unique_ptr<IPC::Message> msg,
                             bool* is_first);
 
   // Returns true if there are no messages in the queue.
@@ -74,7 +74,7 @@ class CONTENT_EXPORT FrameSwapMessageQueue
   //            messages.
   void DidNotSwap(int source_frame_number,
                   cc::SwapPromise::DidNotSwapReason reason,
-                  std::vector<scoped_ptr<IPC::Message>>* messages);
+                  std::vector<std::unique_ptr<IPC::Message>>* messages);
 
   // A SendMessageScope object must be held by the caller when this method is
   // called.
@@ -82,17 +82,18 @@ class CONTENT_EXPORT FrameSwapMessageQueue
   // |messages| vector to store messages, it's not cleared, only appended to.
   //            The method will append messages queued for frame numbers lower
   //            or equal to |source_frame_number|
-  void DrainMessages(std::vector<scoped_ptr<IPC::Message>>* messages);
+  void DrainMessages(std::vector<std::unique_ptr<IPC::Message>>* messages);
 
   // SendMessageScope is used to make sure that messages sent from different
   // threads (impl/main) are scheduled in the right order on the IO threads.
   //
   // Returns an object that must be kept in scope till an IPC message containing
   // |messages| is sent.
-  scoped_ptr<SendMessageScope> AcquireSendMessageScope();
+  std::unique_ptr<SendMessageScope> AcquireSendMessageScope();
 
-  static void TransferMessages(std::vector<scoped_ptr<IPC::Message>>* source,
-                               std::vector<IPC::Message>* dest);
+  static void TransferMessages(
+      std::vector<std::unique_ptr<IPC::Message>>* source,
+      std::vector<IPC::Message>* dest);
 
  private:
   friend class base::RefCountedThreadSafe<FrameSwapMessageQueue>;
@@ -102,9 +103,9 @@ class CONTENT_EXPORT FrameSwapMessageQueue
   ~FrameSwapMessageQueue();
 
   mutable base::Lock lock_;
-  scoped_ptr<FrameSwapMessageSubQueue> visual_state_queue_;
-  scoped_ptr<FrameSwapMessageSubQueue> swap_queue_;
-  std::vector<scoped_ptr<IPC::Message>> next_drain_messages_;
+  std::unique_ptr<FrameSwapMessageSubQueue> visual_state_queue_;
+  std::unique_ptr<FrameSwapMessageSubQueue> swap_queue_;
+  std::vector<std::unique_ptr<IPC::Message>> next_drain_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameSwapMessageQueue);
 };

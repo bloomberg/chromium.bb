@@ -19,6 +19,7 @@
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
@@ -506,7 +507,7 @@ bool IsTopLevelNavigation(WebFrame* frame) {
 
 WebURLRequest CreateURLRequestForNavigation(
     const CommonNavigationParams& common_params,
-    scoped_ptr<StreamOverrideParameters> stream_override,
+    std::unique_ptr<StreamOverrideParameters> stream_override,
     bool is_view_source_mode_enabled) {
   WebURLRequest request(common_params.url);
   if (is_view_source_mode_enabled)
@@ -1483,7 +1484,7 @@ void RenderFrameImpl::OnNavigate(
   TRACE_EVENT2("navigation", "RenderFrameImpl::OnNavigate", "id", routing_id_,
                "url", common_params.url.possibly_invalid_spec());
   NavigateInternal(common_params, start_params, request_params,
-                   scoped_ptr<StreamOverrideParameters>());
+                   std::unique_ptr<StreamOverrideParameters>());
 }
 
 void RenderFrameImpl::BindServiceRegistry(
@@ -1498,7 +1499,7 @@ ManifestManager* RenderFrameImpl::manifest_manager() {
 }
 
 void RenderFrameImpl::SetPendingNavigationParams(
-    scoped_ptr<NavigationParams> navigation_params) {
+    std::unique_ptr<NavigationParams> navigation_params) {
   pending_navigation_params_ = std::move(navigation_params);
 }
 
@@ -1818,7 +1819,7 @@ void RenderFrameImpl::OnJavaScriptExecuteRequestForTests(
 
   // A bunch of tests expect to run code in the context of a user gesture, which
   // can grant additional privileges (e.g. the ability to create popups).
-  scoped_ptr<blink::WebScopedUserGesture> gesture(
+  std::unique_ptr<blink::WebScopedUserGesture> gesture(
       has_user_gesture ? new blink::WebScopedUserGesture : nullptr);
   v8::HandleScope handle_scope(blink::mainThreadIsolate());
   v8::Local<v8::Value> result =
@@ -1887,7 +1888,7 @@ void RenderFrameImpl::JavaScriptIsolatedWorldRequest::completed(
       converter.SetDateAllowed(true);
       converter.SetRegExpAllowed(true);
       for (const auto& value : result) {
-        scoped_ptr<base::Value> result_value(
+        std::unique_ptr<base::Value> result_value(
             converter.FromV8Value(value, context));
         list.Append(result_value ? std::move(result_value)
                                  : base::Value::CreateNullValue());
@@ -1915,7 +1916,7 @@ void RenderFrameImpl::HandleJavascriptExecutionResult(
       V8ValueConverterImpl converter;
       converter.SetDateAllowed(true);
       converter.SetRegExpAllowed(true);
-      scoped_ptr<base::Value> result_value(
+      std::unique_ptr<base::Value> result_value(
           converter.FromV8Value(result, context));
       list.Set(0, result_value ? std::move(result_value)
                                : base::Value::CreateNullValue());
@@ -2074,7 +2075,7 @@ void RenderFrameImpl::OnPostMessageEvent(
     V8ValueConverterImpl converter;
     converter.SetDateAllowed(true);
     converter.SetRegExpAllowed(true);
-    scoped_ptr<base::Value> value(new base::StringValue(params.data));
+    std::unique_ptr<base::Value> value(new base::StringValue(params.data));
     v8::Local<v8::Value> result_value = converter.ToV8Value(value.get(),
                                                              context);
     serialized_script_value = WebSerializedScriptValue::serialize(result_value);
@@ -2240,7 +2241,7 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
     blink::WebFrame* frame,
     const WebPluginInfo& info,
     const blink::WebPluginParams& params,
-    scoped_ptr<content::PluginInstanceThrottler> throttler) {
+    std::unique_ptr<content::PluginInstanceThrottler> throttler) {
   DCHECK_EQ(frame_, frame);
 #if defined(ENABLE_PLUGINS)
   if (info.type == WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN) {
@@ -2259,7 +2260,7 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
     if (pepper_module.get()) {
       return new PepperWebPluginImpl(
           pepper_module.get(), params, this,
-          make_scoped_ptr(
+          base::WrapUnique(
               static_cast<PluginInstanceThrottlerImpl*>(throttler.release())));
     }
   }
@@ -2463,10 +2464,10 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 #endif  // defined(OS_ANDROID)
 
 #if defined(ENABLE_MOJO_RENDERER)
-  scoped_ptr<media::RendererFactory> media_renderer_factory(
+  std::unique_ptr<media::RendererFactory> media_renderer_factory(
       new media::MojoRendererFactory(GetMediaInterfaceProvider()));
 #else
-  scoped_ptr<media::RendererFactory> media_renderer_factory =
+  std::unique_ptr<media::RendererFactory> media_renderer_factory =
       GetContentClient()->renderer()->CreateMediaRendererFactory(
           this, render_thread->GetGpuFactories(), media_log);
 
@@ -3731,7 +3732,7 @@ void RenderFrameImpl::willSendRequest(
   // PlzNavigate: there may also be a stream url associated with the request.
   WebString custom_user_agent;
   WebString requested_with;
-  scoped_ptr<StreamOverrideParameters> stream_override;
+  std::unique_ptr<StreamOverrideParameters> stream_override;
   if (request.getExtraData()) {
     RequestExtraData* old_extra_data =
         static_cast<RequestExtraData*>(request.getExtraData());
@@ -4614,7 +4615,7 @@ void RenderFrameImpl::OnCommitNavigation(
   CHECK(IsBrowserSideNavigationEnabled());
   // This will override the url requested by the WebURLLoader, as well as
   // provide it with the response to the request.
-  scoped_ptr<StreamOverrideParameters> stream_override(
+  std::unique_ptr<StreamOverrideParameters> stream_override(
       new StreamOverrideParameters());
   stream_override->stream_url = stream_url;
   stream_override->response = response;
@@ -4655,7 +4656,7 @@ void RenderFrameImpl::OnFailedNavigation(
   blink::WebURLError error =
       CreateWebURLError(common_params.url, has_stale_copy_in_cache, error_code);
   WebURLRequest failed_request = CreateURLRequestForNavigation(
-      common_params, scoped_ptr<StreamOverrideParameters>(),
+      common_params, std::unique_ptr<StreamOverrideParameters>(),
       frame_->isViewSourceModeEnabled());
   SendFailedProvisionalLoad(failed_request, error, frame_);
 
@@ -5216,7 +5217,7 @@ void RenderFrameImpl::NavigateInternal(
     const CommonNavigationParams& common_params,
     const StartNavigationParams& start_params,
     const RequestNavigationParams& request_params,
-    scoped_ptr<StreamOverrideParameters> stream_params) {
+    std::unique_ptr<StreamOverrideParameters> stream_params) {
   bool browser_side_navigation = IsBrowserSideNavigationEnabled();
 
   // Lower bound for browser initiated navigation start time.
@@ -5316,7 +5317,7 @@ void RenderFrameImpl::NavigateInternal(
     // which should be the case because history navigations are routed via the
     // browser.
     DCHECK_NE(0, request_params.nav_entry_id);
-    scoped_ptr<HistoryEntry> entry =
+    std::unique_ptr<HistoryEntry> entry =
         PageStateToHistoryEntry(request_params.page_state);
     if (entry) {
       if (!SiteIsolationPolicy::UseSubframeNavigationEntries()) {
@@ -5325,7 +5326,7 @@ void RenderFrameImpl::NavigateInternal(
         // process.
         DCHECK(!frame_->parent());
         DCHECK(!browser_side_navigation);
-        scoped_ptr<NavigationParams> navigation_params(
+        std::unique_ptr<NavigationParams> navigation_params(
             new NavigationParams(*pending_navigation_params_.get()));
         has_history_navigation_in_frame =
             render_view_->history_controller()->GoToEntry(
@@ -5516,7 +5517,7 @@ void RenderFrameImpl::InitializeUserMediaClient() {
   DCHECK(!web_user_media_client_);
   web_user_media_client_ = new UserMediaClientImpl(
       this, RenderThreadImpl::current()->GetPeerConnectionDependencyFactory(),
-      make_scoped_ptr(new MediaStreamDispatcher(this)));
+      base::WrapUnique(new MediaStreamDispatcher(this)));
 #endif
 }
 
@@ -5548,17 +5549,17 @@ WebMediaPlayer* RenderFrameImpl::CreateWebMediaPlayerForMediaStream(
 #endif  // defined(ENABLE_WEBRTC)
 }
 
-scoped_ptr<MediaStreamRendererFactory>
+std::unique_ptr<MediaStreamRendererFactory>
 RenderFrameImpl::CreateRendererFactory() {
-  scoped_ptr<MediaStreamRendererFactory> factory =
+  std::unique_ptr<MediaStreamRendererFactory> factory =
       GetContentClient()->renderer()->CreateMediaStreamRendererFactory();
   if (factory.get())
     return factory;
 #if defined(ENABLE_WEBRTC)
-  return scoped_ptr<MediaStreamRendererFactory>(
+  return std::unique_ptr<MediaStreamRendererFactory>(
       new MediaStreamRendererFactoryImpl());
 #else
-  return scoped_ptr<MediaStreamRendererFactory>(
+  return std::unique_ptr<MediaStreamRendererFactory>(
       static_cast<MediaStreamRendererFactory*>(NULL));
 #endif
 }

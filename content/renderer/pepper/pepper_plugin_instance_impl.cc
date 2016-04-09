@@ -303,9 +303,9 @@ bool SecurityOriginForInstance(PP_Instance instance_id,
 // Convert the given vector to an array of C-strings. The strings in the
 // returned vector are only guaranteed valid so long as the vector of strings
 // is not modified.
-scoped_ptr<const char* []> StringVectorToArgArray(
+std::unique_ptr<const char* []> StringVectorToArgArray(
     const std::vector<std::string>& vector) {
-  scoped_ptr<const char * []> array(new const char* [vector.size()]);
+  std::unique_ptr<const char* []> array(new const char*[vector.size()]);
   for (size_t i = 0; i < vector.size(); ++i)
     array[i] = vector[i].c_str();
   return array;
@@ -821,7 +821,7 @@ bool PepperPluginInstanceImpl::Initialize(
     const std::vector<std::string>& arg_names,
     const std::vector<std::string>& arg_values,
     bool full_frame,
-    scoped_ptr<PluginInstanceThrottlerImpl> throttler) {
+    std::unique_ptr<PluginInstanceThrottlerImpl> throttler) {
   DCHECK(!throttler_);
 
   if (!render_frame_)
@@ -846,8 +846,8 @@ bool PepperPluginInstanceImpl::Initialize(
 
   argn_ = arg_names;
   argv_ = arg_values;
-  scoped_ptr<const char * []> argn_array(StringVectorToArgArray(argn_));
-  scoped_ptr<const char * []> argv_array(StringVectorToArgArray(argv_));
+  std::unique_ptr<const char* []> argn_array(StringVectorToArgArray(argn_));
+  std::unique_ptr<const char* []> argv_array(StringVectorToArgArray(argv_));
   auto weak_this = weak_factory_.GetWeakPtr();
   bool success = PP_ToBool(instance_interface_->DidCreate(
       pp_instance(), argn_.size(), argn_array.get(), argv_array.get()));
@@ -908,7 +908,7 @@ bool PepperPluginInstanceImpl::HandleDocumentLoad(
   // PpapiHost now owns the pointer to loader_host, so we don't have to worry
   // about managing it.
   int pending_host_id = host_impl->GetPpapiHost()->AddPendingResourceHost(
-      scoped_ptr<ppapi::host::ResourceHost>(loader_host));
+      std::unique_ptr<ppapi::host::ResourceHost>(loader_host));
   DCHECK(pending_host_id);
 
   DataFromWebURLResponse(
@@ -1137,7 +1137,7 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
         (input_event_mask_ & event_class)) {
       // Actually send the event.
       std::vector<ppapi::InputEventData> events;
-      scoped_ptr<const WebInputEvent> event_in_dip(
+      std::unique_ptr<const WebInputEvent> event_in_dip(
           ui::ScaleWebInputEvent(event, viewport_to_dip_scale_));
       if (event_in_dip)
         CreateInputEventData(*event_in_dip.get(), &events);
@@ -2074,7 +2074,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
 
 bool PepperPluginInstanceImpl::PrepareTextureMailbox(
     cc::TextureMailbox* mailbox,
-    scoped_ptr<cc::SingleReleaseCallback>* release_callback,
+    std::unique_ptr<cc::SingleReleaseCallback>* release_callback,
     bool use_shared_memory) {
   if (!bound_graphics_2d_platform_)
     return false;
@@ -2151,10 +2151,12 @@ void PepperPluginInstanceImpl::SimulateInputEvent(
   if (handled)
     return;
 
-  std::vector<scoped_ptr<WebInputEvent>> events = CreateSimulatedWebInputEvents(
-      input_event, view_data_.rect.point.x + view_data_.rect.size.width / 2,
-      view_data_.rect.point.y + view_data_.rect.size.height / 2);
-  for (std::vector<scoped_ptr<WebInputEvent>>::iterator it = events.begin();
+  std::vector<std::unique_ptr<WebInputEvent>> events =
+      CreateSimulatedWebInputEvents(
+          input_event, view_data_.rect.point.x + view_data_.rect.size.width / 2,
+          view_data_.rect.point.y + view_data_.rect.size.height / 2);
+  for (std::vector<std::unique_ptr<WebInputEvent>>::iterator it =
+           events.begin();
        it != events.end(); ++it) {
     web_view->handleInputEvent(*it->get());
   }
@@ -2704,7 +2706,7 @@ PP_Bool PepperPluginInstanceImpl::SetCursor(PP_Instance instance,
   if (!auto_mapper.is_valid())
     return PP_FALSE;
 
-  scoped_ptr<WebCursorInfo> custom_cursor(
+  std::unique_ptr<WebCursorInfo> custom_cursor(
       new WebCursorInfo(WebCursorInfo::TypeCustom));
   custom_cursor->hotSpot.x = hot_spot->x;
   custom_cursor->hotSpot.y = hot_spot->y;
@@ -2920,8 +2922,8 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::ResetAsProxied(
   plugin_textinput_interface_ = NULL;
 
   // Re-send the DidCreate event via the proxy.
-  scoped_ptr<const char * []> argn_array(StringVectorToArgArray(argn_));
-  scoped_ptr<const char * []> argv_array(StringVectorToArgArray(argv_));
+  std::unique_ptr<const char* []> argn_array(StringVectorToArgArray(argn_));
+  std::unique_ptr<const char* []> argv_array(StringVectorToArgArray(argv_));
   if (!instance_interface_->DidCreate(
           pp_instance(), argn_.size(), argn_array.get(), argv_array.get()))
     return PP_EXTERNAL_PLUGIN_ERROR_INSTANCE;
@@ -3160,7 +3162,7 @@ int PepperPluginInstanceImpl::MakePendingFileRefRendererHost(
   PepperFileRefRendererHost* file_ref_host(
       new PepperFileRefRendererHost(host_impl, pp_instance(), 0, path));
   return host_impl->GetPpapiHost()->AddPendingResourceHost(
-      scoped_ptr<ppapi::host::ResourceHost>(file_ref_host));
+      std::unique_ptr<ppapi::host::ResourceHost>(file_ref_host));
 }
 
 void PepperPluginInstanceImpl::SetEmbedProperty(PP_Var key, PP_Var value) {

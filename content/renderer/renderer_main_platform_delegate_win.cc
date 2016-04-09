@@ -6,9 +6,10 @@
 
 #include <dwrite.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/win_util.h"
@@ -65,7 +66,7 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
     // After TimeZone::createDefault is called once here, the timezone ID is
     // cached and there's no more need to access the registry. If the sandbox
     // is disabled, we don't have to make this dummy call.
-    scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
+    std::unique_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
 
     if (use_direct_write) {
       InitializeDWriteFontProxy();

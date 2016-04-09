@@ -176,8 +176,9 @@ bool PP_HardwareAccelerationCompatible(bool accelerated,
 
 }  // namespace
 
-PepperVideoEncoderHost::ShmBuffer::ShmBuffer(uint32_t id,
-                                             scoped_ptr<base::SharedMemory> shm)
+PepperVideoEncoderHost::ShmBuffer::ShmBuffer(
+    uint32_t id,
+    std::unique_ptr<base::SharedMemory> shm)
     : id(id), shm(std::move(shm)), in_use(true) {
   DCHECK(this->shm);
 }
@@ -377,7 +378,7 @@ void PepperVideoEncoderHost::RequireBitstreamBuffers(
   frame_count_ = frame_count;
 
   for (uint32_t i = 0; i < kDefaultNumberOfBitstreamBuffers; ++i) {
-    scoped_ptr<base::SharedMemory> shm(
+    std::unique_ptr<base::SharedMemory> shm(
         RenderThread::Get()->HostAllocateSharedMemoryBuffer(
             output_buffer_size));
 
@@ -575,7 +576,7 @@ void PepperVideoEncoderHost::AllocateVideoFrames() {
   size *= frame_count_;
   uint32_t total_size = size.ValueOrDie();
 
-  scoped_ptr<base::SharedMemory> shm(
+  std::unique_ptr<base::SharedMemory> shm(
       RenderThreadImpl::current()->HostAllocateSharedMemoryBuffer(total_size));
   if (!shm ||
       !buffer_manager_.SetBuffers(frame_count_, buffer_size_aligned,

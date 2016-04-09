@@ -6,9 +6,9 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/pepper_file_util.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread_impl.h"
@@ -144,7 +144,7 @@ bool ImageDataPlatformBackend::Init(PPB_ImageData_Impl* impl,
   width_ = width;
   height_ = height;
   uint32_t buffer_size = width_ * height_ * 4;
-  scoped_ptr<base::SharedMemory> shared_memory =
+  std::unique_ptr<base::SharedMemory> shared_memory =
       RenderThread::Get()->HostAllocateSharedMemoryBuffer(buffer_size);
   if (!shared_memory)
     return false;

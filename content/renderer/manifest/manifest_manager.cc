@@ -160,7 +160,7 @@ void ManifestManager::OnManifestFetchComplete(
 
   fetcher_.reset();
 
-  for (const scoped_ptr<ManifestParser::ErrorInfo>& error_info :
+  for (const std::unique_ptr<ManifestParser::ErrorInfo>& error_info :
        parser.errors()) {
     blink::WebConsoleMessage message;
     message.level = blink::WebConsoleMessage::LevelError;

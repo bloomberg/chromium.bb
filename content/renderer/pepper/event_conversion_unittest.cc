@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/pepper/event_conversion.h"
+
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
-#include "content/renderer/pepper/event_conversion.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -53,7 +55,8 @@ TEST_F(EventConversionTest, TouchStart) {
   ASSERT_EQ(1U, pp_event.changed_touches.size());
   ASSERT_EQ(1U, pp_event.target_touches.size());
 
-  scoped_ptr<blink::WebInputEvent> event_out(CreateWebInputEvent(pp_event));
+  std::unique_ptr<blink::WebInputEvent> event_out(
+      CreateWebInputEvent(pp_event));
   const blink::WebTouchEvent* touch_out =
       static_cast<const blink::WebTouchEvent*>(event_out.get());
   ASSERT_TRUE(touch_out);
@@ -80,7 +83,8 @@ TEST_F(EventConversionTest, TouchMove) {
   ASSERT_EQ(1U, pp_event.changed_touches.size());
   ASSERT_EQ(2U, pp_event.target_touches.size());
 
-  scoped_ptr<blink::WebInputEvent> event_out(CreateWebInputEvent(pp_event));
+  std::unique_ptr<blink::WebInputEvent> event_out(
+      CreateWebInputEvent(pp_event));
   const blink::WebTouchEvent* touch_out =
       static_cast<const blink::WebTouchEvent*>(event_out.get());
   ASSERT_TRUE(touch_out);
@@ -107,7 +111,8 @@ TEST_F(EventConversionTest, TouchEnd) {
   ASSERT_EQ(1U, pp_event.changed_touches.size());
   ASSERT_EQ(2U, pp_event.target_touches.size());
 
-  scoped_ptr<blink::WebInputEvent> event_out(CreateWebInputEvent(pp_event));
+  std::unique_ptr<blink::WebInputEvent> event_out(
+      CreateWebInputEvent(pp_event));
   const blink::WebTouchEvent* touch_out =
       static_cast<const blink::WebTouchEvent*>(event_out.get());
   ASSERT_TRUE(touch_out);
@@ -135,7 +140,8 @@ TEST_F(EventConversionTest, TouchCancel) {
   ASSERT_EQ(2U, pp_event.changed_touches.size());
   ASSERT_EQ(2U, pp_event.target_touches.size());
 
-  scoped_ptr<blink::WebInputEvent> event_out(CreateWebInputEvent(pp_event));
+  std::unique_ptr<blink::WebInputEvent> event_out(
+      CreateWebInputEvent(pp_event));
   const blink::WebTouchEvent* touch_out =
       static_cast<const blink::WebTouchEvent*>(event_out.get());
   ASSERT_TRUE(touch_out);

@@ -21,7 +21,7 @@ namespace {
 const char kMojoContextStateKey[] = "MojoContextState";
 
 struct MojoContextStateData : public base::SupportsUserData::Data {
-  scoped_ptr<MojoContextState> state;
+  std::unique_ptr<MojoContextState> state;
 };
 
 }  // namespace

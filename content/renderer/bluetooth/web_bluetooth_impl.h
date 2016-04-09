@@ -80,7 +80,7 @@ class CONTENT_EXPORT WebBluetoothImpl
  private:
   void OnWriteValueComplete(
       const blink::WebVector<uint8_t>& value,
-      scoped_ptr<blink::WebBluetoothWriteValueCallbacks> callbacks,
+      std::unique_ptr<blink::WebBluetoothWriteValueCallbacks> callbacks,
       blink::mojom::WebBluetoothError error);
 
   BluetoothDispatcher* GetDispatcher();

@@ -60,7 +60,7 @@ PepperWebPluginImpl::PepperWebPluginImpl(
     PluginModule* plugin_module,
     const WebPluginParams& params,
     RenderFrameImpl* render_frame,
-    scoped_ptr<PluginInstanceThrottlerImpl> throttler)
+    std::unique_ptr<PluginInstanceThrottlerImpl> throttler)
     : init_data_(new InitData()),
       full_frame_(params.loadManually),
       throttler_(std::move(throttler)),

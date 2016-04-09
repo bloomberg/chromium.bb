@@ -7,9 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "content/common/shared_memory_seqlock_buffer.h"
 
@@ -30,7 +31,7 @@ class SharedMemorySeqLockReaderBase  {
 
   static const int kMaximumContentionCount = 10;
   base::SharedMemoryHandle renderer_shared_memory_handle_;
-  scoped_ptr<base::SharedMemory> renderer_shared_memory_;
+  std::unique_ptr<base::SharedMemory> renderer_shared_memory_;
 };
 
 }  // namespace internal
@@ -63,7 +64,7 @@ class SharedMemorySeqLockReader
 
  private:
   SharedMemorySeqLockBuffer<Data>* buffer_;
-  scoped_ptr<Data> temp_buffer_;
+  std::unique_ptr<Data> temp_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedMemorySeqLockReader);
 };

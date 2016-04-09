@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -77,12 +78,12 @@ void InputEventFilter::DidOverscroll(int routing_id,
     return;
   }
 
-  SendMessage(scoped_ptr<IPC::Message>(
+  SendMessage(std::unique_ptr<IPC::Message>(
       new InputHostMsg_DidOverscroll(routing_id, params)));
 }
 
 void InputEventFilter::DidStopFlinging(int routing_id) {
-  SendMessage(make_scoped_ptr(new InputHostMsg_DidStopFlinging(routing_id)));
+  SendMessage(base::WrapUnique(new InputHostMsg_DidStopFlinging(routing_id)));
 }
 
 void InputEventFilter::NotifyInputEventHandled(
@@ -170,8 +171,8 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
 
   // Intercept |DidOverscroll| notifications, bundling any triggered overscroll
   // response with the input event ack.
-  scoped_ptr<DidOverscrollParams> overscroll_params;
-  base::AutoReset<scoped_ptr<DidOverscrollParams>*>
+  std::unique_ptr<DidOverscrollParams> overscroll_params;
+  base::AutoReset<std::unique_ptr<DidOverscrollParams>*>
       auto_reset_current_overscroll_params(
           &current_overscroll_params_, send_ack ? &overscroll_params : NULL);
 
@@ -192,11 +193,11 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
   InputEventAck ack(event->type, ack_state, latency_info,
                     std::move(overscroll_params),
                     WebInputEventTraits::GetUniqueTouchEventId(*event));
-  SendMessage(scoped_ptr<IPC::Message>(
+  SendMessage(std::unique_ptr<IPC::Message>(
       new InputHostMsg_HandleInputEvent_ACK(routing_id, ack)));
 }
 
-void InputEventFilter::SendMessage(scoped_ptr<IPC::Message> message) {
+void InputEventFilter::SendMessage(std::unique_ptr<IPC::Message> message) {
   DCHECK(target_task_runner_->BelongsToCurrentThread());
 
   io_task_runner_->PostTask(
@@ -204,7 +205,8 @@ void InputEventFilter::SendMessage(scoped_ptr<IPC::Message> message) {
                             base::Passed(&message)));
 }
 
-void InputEventFilter::SendMessageOnIOThread(scoped_ptr<IPC::Message> message) {
+void InputEventFilter::SendMessageOnIOThread(
+    std::unique_ptr<IPC::Message> message) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (!sender_)

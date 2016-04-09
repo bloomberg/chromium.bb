@@ -4,9 +4,10 @@
 
 #include "content/renderer/mus/compositor_mus_connection.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "components/mus/public/cpp/tests/test_window.h"
@@ -190,7 +191,7 @@ void TestRenderWidgetInputHandler::HandleInputEvent(
     const ui::LatencyInfo& latency_info,
     content::InputEventDispatchType dispatch_type) {
   if (delegate_) {
-    scoped_ptr<content::InputEventAck> ack(
+    std::unique_ptr<content::InputEventAck> ack(
         new content::InputEventAck(input_event.type, state_));
     delegate_->OnInputEventAck(std::move(ack));
   }
@@ -210,12 +211,13 @@ class CompositorMusConnectionTest : public testing::Test {
 
   // Returns a valid key event, so that it can be converted to a web event by
   // CompositorMusConnection.
-  scoped_ptr<ui::Event> GenerateKeyEvent();
+  std::unique_ptr<ui::Event> GenerateKeyEvent();
 
   // Calls CompositorMusConnection::OnWindowInputEvent.
-  void OnWindowInputEvent(mus::Window* window,
-                          const ui::Event& event,
-                          scoped_ptr<base::Callback<void(bool)>>* ack_callback);
+  void OnWindowInputEvent(
+      mus::Window* window,
+      const ui::Event& event,
+      std::unique_ptr<base::Callback<void(bool)>>* ack_callback);
 
   // Confirms the state of pending tasks enqueued on each task runner, and runs
   // until idle.
@@ -258,21 +260,21 @@ class CompositorMusConnectionTest : public testing::Test {
   scoped_refptr<CompositorMusConnection> compositor_connection_;
 
   // Test implementations, to control input given to |compositor_connection_|.
-  scoped_ptr<TestInputHandlerManager> input_handler_manager_;
-  scoped_ptr<TestRenderWidgetInputHandler> render_widget_input_handler_;
+  std::unique_ptr<TestInputHandlerManager> input_handler_manager_;
+  std::unique_ptr<TestRenderWidgetInputHandler> render_widget_input_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorMusConnectionTest);
 };
 
-scoped_ptr<ui::Event> CompositorMusConnectionTest::GenerateKeyEvent() {
-  return scoped_ptr<ui::Event>(new ui::KeyEvent(
+std::unique_ptr<ui::Event> CompositorMusConnectionTest::GenerateKeyEvent() {
+  return std::unique_ptr<ui::Event>(new ui::KeyEvent(
       ui::ET_KEY_PRESSED, ui::KeyboardCode::VKEY_A, ui::EF_NONE));
 }
 
 void CompositorMusConnectionTest::OnWindowInputEvent(
     mus::Window* window,
     const ui::Event& event,
-    scoped_ptr<base::Callback<void(bool)>>* ack_callback) {
+    std::unique_ptr<base::Callback<void(bool)>>* ack_callback) {
   compositor_connection_->OnWindowInputEvent(window, event, ack_callback);
 }
 
@@ -330,9 +332,9 @@ TEST_F(CompositorMusConnectionTest, NotConsumed) {
       InputEventAckState::INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
   mus::TestWindow test_window;
-  scoped_ptr<ui::Event> event(GenerateKeyEvent());
+  std::unique_ptr<ui::Event> event(GenerateKeyEvent());
   scoped_refptr<TestCallback> test_callback(new TestCallback);
-  scoped_ptr<base::Callback<void(bool)>> ack_callback(
+  std::unique_ptr<base::Callback<void(bool)>> ack_callback(
       new base::Callback<void(bool)>(
           base::Bind(&::TestCallback::BoolCallback, test_callback)));
 
@@ -357,9 +359,9 @@ TEST_F(CompositorMusConnectionTest, Consumed) {
   input_handler->set_state(InputEventAckState::INPUT_EVENT_ACK_STATE_CONSUMED);
 
   mus::TestWindow test_window;
-  scoped_ptr<ui::Event> event(GenerateKeyEvent());
+  std::unique_ptr<ui::Event> event(GenerateKeyEvent());
   scoped_refptr<TestCallback> test_callback(new TestCallback);
-  scoped_ptr<base::Callback<void(bool)>> ack_callback(
+  std::unique_ptr<base::Callback<void(bool)>> ack_callback(
       new base::Callback<void(bool)>(
           base::Bind(&::TestCallback::BoolCallback, test_callback)));
 
@@ -379,9 +381,9 @@ TEST_F(CompositorMusConnectionTest, Consumed) {
 // arrives, that only the most recent ack is fired.
 TEST_F(CompositorMusConnectionTest, LostAck) {
   mus::TestWindow test_window;
-  scoped_ptr<ui::Event> event1(GenerateKeyEvent());
+  std::unique_ptr<ui::Event> event1(GenerateKeyEvent());
   scoped_refptr<TestCallback> test_callback1(new TestCallback);
-  scoped_ptr<base::Callback<void(bool)>> ack_callback1(
+  std::unique_ptr<base::Callback<void(bool)>> ack_callback1(
       new base::Callback<void(bool)>(
           base::Bind(&::TestCallback::BoolCallback, test_callback1)));
 
@@ -396,9 +398,9 @@ TEST_F(CompositorMusConnectionTest, LostAck) {
   input_handler->set_delegate(connection());
   input_handler->set_state(InputEventAckState::INPUT_EVENT_ACK_STATE_CONSUMED);
 
-  scoped_ptr<ui::Event> event2(GenerateKeyEvent());
+  std::unique_ptr<ui::Event> event2(GenerateKeyEvent());
   scoped_refptr<TestCallback> test_callback2(new TestCallback);
-  scoped_ptr<base::Callback<void(bool)>> ack_callback2(
+  std::unique_ptr<base::Callback<void(bool)>> ack_callback2(
       new base::Callback<void(bool)>(
           base::Bind(&::TestCallback::BoolCallback, test_callback2)));
   OnWindowInputEvent(&test_window, *event2.get(), &ack_callback2);
@@ -418,9 +420,9 @@ TEST_F(CompositorMusConnectionTest, InputHandlerConsumes) {
   input_handler_manager()->SetHandleInputEventResult(
       InputEventAckState::INPUT_EVENT_ACK_STATE_CONSUMED);
   mus::TestWindow test_window;
-  scoped_ptr<ui::Event> event(GenerateKeyEvent());
+  std::unique_ptr<ui::Event> event(GenerateKeyEvent());
   scoped_refptr<TestCallback> test_callback(new TestCallback);
-  scoped_ptr<base::Callback<void(bool)>> ack_callback(
+  std::unique_ptr<base::Callback<void(bool)>> ack_callback(
       new base::Callback<void(bool)>(
           base::Bind(&::TestCallback::BoolCallback, test_callback)));
 
@@ -440,7 +442,7 @@ TEST_F(CompositorMusConnectionTest, RendererWillNotSendAck) {
                          gfx::Point(), ui::EF_NONE, 0, ui::EventTimeForNow());
 
   scoped_refptr<TestCallback> test_callback(new TestCallback);
-  scoped_ptr<base::Callback<void(bool)>> ack_callback(
+  std::unique_ptr<base::Callback<void(bool)>> ack_callback(
       new base::Callback<void(bool)>(
           base::Bind(&::TestCallback::BoolCallback, test_callback)));
 

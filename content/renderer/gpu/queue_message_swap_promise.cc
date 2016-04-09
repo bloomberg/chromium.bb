@@ -53,7 +53,7 @@ void QueueMessageSwapPromise::DidNotSwap(DidNotSwapReason reason) {
 #if DCHECK_IS_ON()
   DCHECK(!completed_);
 #endif
-  std::vector<scoped_ptr<IPC::Message>> messages;
+  std::vector<std::unique_ptr<IPC::Message>> messages;
   message_queue_->DidNotSwap(source_frame_number_, reason, &messages);
   for (auto& msg : messages) {
     message_sender_->Send(msg.release());

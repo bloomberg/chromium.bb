@@ -132,7 +132,7 @@ class PepperURLLoaderHost : public ppapi::host::ResourceHost,
   // always NULL check this value before using it. In the case of a main
   // document load, you would call the functions on the document to cancel the
   // load, etc. since there is no loader.
-  scoped_ptr<blink::WebURLLoader> loader_;
+  std::unique_ptr<blink::WebURLLoader> loader_;
 
   int64_t bytes_sent_;
   int64_t total_bytes_to_be_sent_;

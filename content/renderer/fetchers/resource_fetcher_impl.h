@@ -5,12 +5,12 @@
 #ifndef CONTENT_RENDERER_FETCHERS_RESOURCE_FETCHER_IMPL_H_
 #define CONTENT_RENDERER_FETCHERS_RESOURCE_FETCHER_IMPL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "content/public/renderer/resource_fetcher.h"
 #include "content/renderer/fetchers/web_url_loader_client_impl.h"
@@ -60,7 +60,7 @@ class ResourceFetcherImpl : public ResourceFetcher,
   void OnLoadComplete() override;
   void Cancel() override;
 
-  scoped_ptr<blink::WebURLLoader> loader_;
+  std::unique_ptr<blink::WebURLLoader> loader_;
 
   // Options to send to the loader.
   blink::WebURLLoaderOptions options_;

@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "media/video/video_encode_accelerator.h"
 
@@ -63,7 +63,7 @@ class VideoEncoderShim : public media::VideoEncodeAccelerator {
                               bool key_frame);
   void OnNotifyError(media::VideoEncodeAccelerator::Error error);
 
-  scoped_ptr<EncoderImpl> encoder_impl_;
+  std::unique_ptr<EncoderImpl> encoder_impl_;
 
   PepperVideoEncoderHost* host_;
 

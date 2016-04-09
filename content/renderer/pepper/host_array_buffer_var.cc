@@ -7,8 +7,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
 #include "content/common/pepper_file_util.h"
@@ -62,7 +63,7 @@ bool HostArrayBufferVar::CopyToNewShmem(
     PP_Instance instance,
     int* host_shm_handle_id,
     base::SharedMemoryHandle* plugin_shm_handle) {
-  scoped_ptr<base::SharedMemory> shm(
+  std::unique_ptr<base::SharedMemory> shm(
       RenderThread::Get()
           ->HostAllocateSharedMemoryBuffer(ByteLength())
           .release());

@@ -7,13 +7,14 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+
+#include <memory>
 #include <set>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -552,7 +553,7 @@ PluginModule::~PluginModule() {
 }
 
 void PluginModule::SetRendererPpapiHost(
-    scoped_ptr<RendererPpapiHostImpl> host) {
+    std::unique_ptr<RendererPpapiHostImpl> host) {
   renderer_ppapi_host_ = std::move(host);
 }
 
@@ -721,7 +722,7 @@ RendererPpapiHostImpl* PluginModule::CreateOutOfProcessModule(
     bool is_external) {
   scoped_refptr<PepperHungPluginFilter> hung_filter(new PepperHungPluginFilter(
       path, render_frame->GetRoutingID(), plugin_child_id));
-  scoped_ptr<HostDispatcherWrapper> dispatcher(new HostDispatcherWrapper(
+  std::unique_ptr<HostDispatcherWrapper> dispatcher(new HostDispatcherWrapper(
       this, peer_pid, plugin_child_id, permissions, is_external));
   if (!dispatcher->Init(channel_handle,
                         &GetInterface,

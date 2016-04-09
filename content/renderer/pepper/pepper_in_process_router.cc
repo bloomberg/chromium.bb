@@ -101,7 +101,7 @@ bool PepperInProcessRouter::OnPluginMsgReceived(const IPC::Message& msg) {
 }
 
 bool PepperInProcessRouter::SendToHost(IPC::Message* msg) {
-  scoped_ptr<IPC::Message> message(msg);
+  std::unique_ptr<IPC::Message> message(msg);
 
   if (!message->is_sync()) {
     // If this is a resource destroyed message, post a task to dispatch it.
@@ -137,7 +137,7 @@ bool PepperInProcessRouter::SendToHost(IPC::Message* msg) {
 }
 
 bool PepperInProcessRouter::SendToPlugin(IPC::Message* msg) {
-  scoped_ptr<IPC::Message> message(msg);
+  std::unique_ptr<IPC::Message> message(msg);
   CHECK(!msg->is_sync());
   if (IPC::SyncMessage::IsMessageReplyTo(*message, pending_message_id_)) {
     if (!msg->is_reply_error())

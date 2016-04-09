@@ -92,7 +92,7 @@ bool GinJavaBridgeDispatcher::HasJavaMethod(ObjectID object_id,
   return result;
 }
 
-scoped_ptr<base::Value> GinJavaBridgeDispatcher::InvokeJavaMethod(
+std::unique_ptr<base::Value> GinJavaBridgeDispatcher::InvokeJavaMethod(
     ObjectID object_id,
     const std::string& method_name,
     const base::ListValue& arguments,
@@ -107,9 +107,9 @@ scoped_ptr<base::Value> GinJavaBridgeDispatcher::InvokeJavaMethod(
                                             error));
   base::Value* result;
   if (result_wrapper.Get(0, &result)) {
-    return scoped_ptr<base::Value>(result->DeepCopy());
+    return std::unique_ptr<base::Value>(result->DeepCopy());
   } else {
-    return scoped_ptr<base::Value>();
+    return std::unique_ptr<base::Value>();
   }
 }
 

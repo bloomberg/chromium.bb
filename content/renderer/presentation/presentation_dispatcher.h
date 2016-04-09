@@ -9,12 +9,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <queue>
 
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/presentation/presentation_service.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -133,7 +133,7 @@ class CONTENT_EXPORT PresentationDispatcher
 
   // Message requests are queued here and only one message at a time is sent
   // over mojo channel.
-  using MessageRequestQueue = std::queue<scoped_ptr<SendMessageRequest>>;
+  using MessageRequestQueue = std::queue<std::unique_ptr<SendMessageRequest>>;
   MessageRequestQueue message_request_queue_;
 
   enum class ListeningState {
@@ -159,7 +159,8 @@ class CONTENT_EXPORT PresentationDispatcher
     AvailabilityObserversSet availability_observers;
   };
 
-  std::map<std::string, scoped_ptr<AvailabilityStatus>> availability_status_;
+  std::map<std::string, std::unique_ptr<AvailabilityStatus>>
+      availability_status_;
 
   // Updates the listening state of availability for |status| and notifies the
   // client.

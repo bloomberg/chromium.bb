@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/java/gin_java_bridge_value_converter.h"
+
 #include <stddef.h>
 
 #include <cmath>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "content/common/android/gin_java_bridge_value.h"
-#include "content/renderer/java/gin_java_bridge_value_converter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
@@ -43,27 +44,27 @@ TEST_F(GinJavaBridgeValueConverterTest, BasicValues) {
       v8::Local<v8::Context>::New(isolate_, context_);
   v8::Context::Scope context_scope(context);
 
-  scoped_ptr<GinJavaBridgeValueConverter> converter(
+  std::unique_ptr<GinJavaBridgeValueConverter> converter(
       new GinJavaBridgeValueConverter());
 
   v8::Local<v8::Primitive> v8_undefined(v8::Undefined(isolate_));
-  scoped_ptr<base::Value> undefined(
+  std::unique_ptr<base::Value> undefined(
       converter->FromV8Value(v8_undefined, context));
   ASSERT_TRUE(undefined.get());
   EXPECT_TRUE(GinJavaBridgeValue::ContainsGinJavaBridgeValue(undefined.get()));
-  scoped_ptr<const GinJavaBridgeValue> undefined_value(
+  std::unique_ptr<const GinJavaBridgeValue> undefined_value(
       GinJavaBridgeValue::FromValue(undefined.get()));
   ASSERT_TRUE(undefined_value.get());
   EXPECT_TRUE(undefined_value->IsType(GinJavaBridgeValue::TYPE_UNDEFINED));
 
   v8::Local<v8::Number> v8_infinity(
       v8::Number::New(isolate_, std::numeric_limits<double>::infinity()));
-  scoped_ptr<base::Value> infinity(
+  std::unique_ptr<base::Value> infinity(
       converter->FromV8Value(v8_infinity, context));
   ASSERT_TRUE(infinity.get());
   EXPECT_TRUE(
       GinJavaBridgeValue::ContainsGinJavaBridgeValue(infinity.get()));
-  scoped_ptr<const GinJavaBridgeValue> infinity_value(
+  std::unique_ptr<const GinJavaBridgeValue> infinity_value(
       GinJavaBridgeValue::FromValue(infinity.get()));
   ASSERT_TRUE(infinity_value.get());
   float native_float;
@@ -79,16 +80,16 @@ TEST_F(GinJavaBridgeValueConverterTest, ArrayBuffer) {
       v8::Local<v8::Context>::New(isolate_, context_);
   v8::Context::Scope context_scope(context);
 
-  scoped_ptr<GinJavaBridgeValueConverter> converter(
+  std::unique_ptr<GinJavaBridgeValueConverter> converter(
       new GinJavaBridgeValueConverter());
 
   v8::Local<v8::ArrayBuffer> v8_array_buffer(
       v8::ArrayBuffer::New(isolate_, 0));
-  scoped_ptr<base::Value> undefined(
+  std::unique_ptr<base::Value> undefined(
       converter->FromV8Value(v8_array_buffer, context));
   ASSERT_TRUE(undefined.get());
   EXPECT_TRUE(GinJavaBridgeValue::ContainsGinJavaBridgeValue(undefined.get()));
-  scoped_ptr<const GinJavaBridgeValue> undefined_value(
+  std::unique_ptr<const GinJavaBridgeValue> undefined_value(
       GinJavaBridgeValue::FromValue(undefined.get()));
   ASSERT_TRUE(undefined_value.get());
   EXPECT_TRUE(undefined_value->IsType(GinJavaBridgeValue::TYPE_UNDEFINED));
@@ -102,7 +103,7 @@ TEST_F(GinJavaBridgeValueConverterTest, TypedArrays) {
   v8::MicrotasksScope microtasks_scope(
       isolate_, v8::MicrotasksScope::kDoNotRunMicrotasks);
 
-  scoped_ptr<GinJavaBridgeValueConverter> converter(
+  std::unique_ptr<GinJavaBridgeValueConverter> converter(
       new GinJavaBridgeValueConverter());
 
   const char* source_template = "(function() {"
@@ -124,7 +125,7 @@ TEST_F(GinJavaBridgeValueConverterTest, TypedArrays) {
         base::StringPrintf(
             source_template, array_types[i], typed_array_type).c_str())));
     v8::Local<v8::Value> v8_typed_array = script->Run();
-    scoped_ptr<base::Value> list_value(
+    std::unique_ptr<base::Value> list_value(
         converter->FromV8Value(v8_typed_array, context));
     ASSERT_TRUE(list_value.get()) << typed_array_type;
     EXPECT_TRUE(list_value->IsType(base::Value::TYPE_LIST)) << typed_array_type;

@@ -6,13 +6,13 @@
 #define CONTENT_RENDERER_PEPPER_PLUGIN_MODULE_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/native_library.h"
 #include "base/process/process.h"
@@ -77,7 +77,7 @@ class CONTENT_EXPORT PluginModule : public base::RefCounted<PluginModule>,
   // Sets the given class as being associated with this module. It will be
   // deleted when the module is destroyed. You can only set it once, subsequent
   // sets will assert.
-  void SetRendererPpapiHost(scoped_ptr<RendererPpapiHostImpl> host);
+  void SetRendererPpapiHost(std::unique_ptr<RendererPpapiHostImpl> host);
 
   // Initializes this module as an internal plugin with the given entrypoints.
   // This is used for "plugins" compiled into Chrome. Returns true on success.
@@ -223,7 +223,7 @@ class CONTENT_EXPORT PluginModule : public base::RefCounted<PluginModule>,
   // entrypoints in that case).
   bool InitializeModule(const PepperPluginInfo::EntryPoints& entry_points);
 
-  scoped_ptr<RendererPpapiHostImpl> renderer_ppapi_host_;
+  std::unique_ptr<RendererPpapiHostImpl> renderer_ppapi_host_;
 
   // Tracker for completion callbacks, used mainly to ensure that all callbacks
   // are properly aborted on module shutdown.
@@ -241,7 +241,7 @@ class CONTENT_EXPORT PluginModule : public base::RefCounted<PluginModule>,
   // Manages the out of process proxy interface. The presence of this
   // pointer indicates that the plugin is running out of process and that the
   // entry_points_ aren't valid.
-  scoped_ptr<HostDispatcherWrapper> host_dispatcher_wrapper_;
+  std::unique_ptr<HostDispatcherWrapper> host_dispatcher_wrapper_;
 
   // Non-owning pointer to the broker for this plugin module, if one exists.
   // It is populated and cleared in the main thread.

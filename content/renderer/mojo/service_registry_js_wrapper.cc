@@ -4,9 +4,9 @@
 
 #include "content/renderer/mojo/service_registry_js_wrapper.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "content/common/mojo/service_registry_impl.h"
 #include "content/public/common/service_registry.h"
 #include "mojo/edk/js/handle.h"

@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/numerics/safe_math.h"
 #include "content/common/content_export.h"
@@ -71,9 +72,10 @@ class CONTENT_EXPORT PepperAudioEncoderHost
   void Close();
 
   static void StopAudioEncoder(
-      scoped_ptr<AudioEncoderImpl> encoder,
-      scoped_ptr<ppapi::MediaStreamBufferManager> audio_buffer_manager,
-      scoped_ptr<ppapi::MediaStreamBufferManager> bitstream_buffer_manager);
+      std::unique_ptr<AudioEncoderImpl> encoder,
+      std::unique_ptr<ppapi::MediaStreamBufferManager> audio_buffer_manager,
+      std::unique_ptr<ppapi::MediaStreamBufferManager>
+          bitstream_buffer_manager);
 
   // Non-owning pointer.
   RendererPpapiHost* renderer_ppapi_host_;
@@ -91,16 +93,16 @@ class CONTENT_EXPORT PepperAudioEncoderHost
   int32_t encoder_last_error_;
 
   // Manages buffers containing audio samples from the plugin.
-  scoped_ptr<ppapi::MediaStreamBufferManager> audio_buffer_manager_;
+  std::unique_ptr<ppapi::MediaStreamBufferManager> audio_buffer_manager_;
 
   // Manages buffers containing encoded audio from the browser.
-  scoped_ptr<ppapi::MediaStreamBufferManager> bitstream_buffer_manager_;
+  std::unique_ptr<ppapi::MediaStreamBufferManager> bitstream_buffer_manager_;
 
   // Media task runner used to run the encoder.
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
 
   // The encoder actually doing the work.
-  scoped_ptr<AudioEncoderImpl> encoder_;
+  std::unique_ptr<AudioEncoderImpl> encoder_;
 
   base::WeakPtrFactory<PepperAudioEncoderHost> weak_ptr_factory_;
 

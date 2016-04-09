@@ -124,7 +124,7 @@ class EvilFetcherDelegate : public FetcherDelegate {
   }
 
  private:
-  scoped_ptr<ResourceFetcher> fetcher_;
+  std::unique_ptr<ResourceFetcher> fetcher_;
 };
 
 class ResourceFetcherTests : public ContentBrowserTest {
@@ -151,8 +151,8 @@ class ResourceFetcherTests : public ContentBrowserTest {
   void ResourceFetcherDownloadOnRenderer(const GURL& url) {
     WebFrame* frame = GetRenderView()->GetWebView()->mainFrame();
 
-    scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
-    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
+    std::unique_ptr<FetcherDelegate> delegate(new FetcherDelegate);
+    std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
     fetcher->Start(frame,
                    WebURLRequest::RequestContextInternal,
                    WebURLRequest::FrameTypeNone,
@@ -170,8 +170,8 @@ class ResourceFetcherTests : public ContentBrowserTest {
   void ResourceFetcher404OnRenderer(const GURL& url) {
     WebFrame* frame = GetRenderView()->GetWebView()->mainFrame();
 
-    scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
-    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
+    std::unique_ptr<FetcherDelegate> delegate(new FetcherDelegate);
+    std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
     fetcher->Start(frame,
                    WebURLRequest::RequestContextInternal,
                    WebURLRequest::FrameTypeNone,
@@ -189,8 +189,8 @@ class ResourceFetcherTests : public ContentBrowserTest {
 
     // Try to fetch a page on a site that doesn't exist.
     GURL url("http://localhost:1339/doesnotexist");
-    scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
-    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
+    std::unique_ptr<FetcherDelegate> delegate(new FetcherDelegate);
+    std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
     fetcher->Start(frame,
                    WebURLRequest::RequestContextInternal,
                    WebURLRequest::FrameTypeNone,
@@ -210,8 +210,8 @@ class ResourceFetcherTests : public ContentBrowserTest {
   void ResourceFetcherTimeoutOnRenderer(const GURL& url) {
     WebFrame* frame = GetRenderView()->GetWebView()->mainFrame();
 
-    scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
-    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
+    std::unique_ptr<FetcherDelegate> delegate(new FetcherDelegate);
+    std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
     fetcher->Start(frame,
                    WebURLRequest::RequestContextInternal,
                    WebURLRequest::FrameTypeNone,
@@ -232,8 +232,8 @@ class ResourceFetcherTests : public ContentBrowserTest {
   void ResourceFetcherDeletedInCallbackOnRenderer(const GURL& url) {
     WebFrame* frame = GetRenderView()->GetWebView()->mainFrame();
 
-    scoped_ptr<EvilFetcherDelegate> delegate(new EvilFetcherDelegate);
-    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
+    std::unique_ptr<EvilFetcherDelegate> delegate(new EvilFetcherDelegate);
+    std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
     fetcher->Start(frame,
                    WebURLRequest::RequestContextInternal,
                    WebURLRequest::FrameTypeNone,
@@ -251,8 +251,8 @@ class ResourceFetcherTests : public ContentBrowserTest {
 
     WebFrame* frame = GetRenderView()->GetWebView()->mainFrame();
 
-    scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
-    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
+    std::unique_ptr<FetcherDelegate> delegate(new FetcherDelegate);
+    std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
     fetcher->SetMethod("POST");
     fetcher->SetBody(kBody);
     fetcher->Start(frame,
@@ -272,8 +272,8 @@ class ResourceFetcherTests : public ContentBrowserTest {
 
     WebFrame* frame = GetRenderView()->GetWebView()->mainFrame();
 
-    scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
-    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
+    std::unique_ptr<FetcherDelegate> delegate(new FetcherDelegate);
+    std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
     fetcher->SetHeader("header", kHeader);
     fetcher->Start(frame,
                    WebURLRequest::RequestContextInternal,

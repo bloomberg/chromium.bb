@@ -114,8 +114,8 @@ class DeviceOrientationEventPumpTest : public testing::Test {
   DeviceOrientationHardwareBuffer* buffer() { return buffer_; }
 
  private:
-  scoped_ptr<MockDeviceOrientationListener> listener_;
-  scoped_ptr<DeviceOrientationEventPumpForTesting> orientation_pump_;
+  std::unique_ptr<MockDeviceOrientationListener> listener_;
+  std::unique_ptr<DeviceOrientationEventPumpForTesting> orientation_pump_;
   base::SharedMemoryHandle handle_;
   base::SharedMemory shared_memory_;
   DeviceOrientationHardwareBuffer* buffer_;

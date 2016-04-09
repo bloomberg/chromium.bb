@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
@@ -14,7 +15,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/managed_memory_policy.h"
@@ -90,7 +90,8 @@ class SynchronousCompositorOutputSurface
   void DemandDrawSw(SkCanvas* canvas);
   void SetMemoryPolicy(size_t bytes_limit);
   void SetTreeActivationCallback(const base::Closure& callback);
-  void GetMessagesToDeliver(std::vector<scoped_ptr<IPC::Message>>* messages);
+  void GetMessagesToDeliver(
+      std::vector<std::unique_ptr<IPC::Message>>* messages);
 
   size_t GetMemoryPolicy() const {
     return memory_policy_.bytes_limit_when_visible;

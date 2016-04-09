@@ -116,7 +116,7 @@ class CONTENT_EXPORT RasterWorkerPool : public base::TaskRunner,
   bool ShouldRunTaskForCategoryWithLockAcquired(cc::TaskCategory category);
 
   // The actual threads where work is done.
-  std::vector<scoped_ptr<base::SimpleThread>> threads_;
+  std::vector<std::unique_ptr<base::SimpleThread>> threads_;
 
   // Lock to exclusively access all the following members that are used to
   // implement the TaskRunner and TaskGraphRunner interfaces.

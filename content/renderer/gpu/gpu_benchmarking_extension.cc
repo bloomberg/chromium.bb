@@ -5,6 +5,7 @@
 #include "content/renderer/gpu/gpu_benchmarking_extension.h"
 
 #include <stddef.h>
+
 #include <string>
 #include <utility>
 
@@ -13,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "cc/layers/layer.h"
 #include "content/common/child_process_messages.h"
@@ -282,17 +284,16 @@ class GpuBenchmarkingContext {
   DISALLOW_COPY_AND_ASSIGN(GpuBenchmarkingContext);
 };
 
-void OnMicroBenchmarkCompleted(
-    CallbackAndContext* callback_and_context,
-    scoped_ptr<base::Value> result) {
+void OnMicroBenchmarkCompleted(CallbackAndContext* callback_and_context,
+                               std::unique_ptr<base::Value> result) {
   v8::Isolate* isolate = callback_and_context->isolate();
   v8::HandleScope scope(isolate);
   v8::Local<v8::Context> context = callback_and_context->GetContext();
   v8::Context::Scope context_scope(context);
   WebLocalFrame* frame = WebLocalFrame::frameForContext(context);
   if (frame) {
-    scoped_ptr<V8ValueConverter> converter =
-        make_scoped_ptr(V8ValueConverter::create());
+    std::unique_ptr<V8ValueConverter> converter =
+        base::WrapUnique(V8ValueConverter::create());
     v8::Local<v8::Value> value = converter->ToV8Value(result.get(), context);
     v8::Local<v8::Value> argv[] = { value };
 
@@ -350,7 +351,7 @@ bool BeginSmoothScroll(v8::Isolate* isolate,
       new CallbackAndContext(
           isolate, callback, context.web_frame()->mainWorldScriptContext());
 
-  scoped_ptr<SyntheticSmoothScrollGestureParams> gesture_params(
+  std::unique_ptr<SyntheticSmoothScrollGestureParams> gesture_params(
       new SyntheticSmoothScrollGestureParams);
 
   if (gesture_source_type < 0 ||
@@ -420,7 +421,7 @@ bool BeginSmoothDrag(v8::Isolate* isolate,
       new CallbackAndContext(isolate, callback,
                              context.web_frame()->mainWorldScriptContext());
 
-  scoped_ptr<SyntheticSmoothDragGestureParams> gesture_params(
+  std::unique_ptr<SyntheticSmoothDragGestureParams> gesture_params(
       new SyntheticSmoothDragGestureParams);
 
   // Convert coordinates from CSS pixels to density independent pixels (DIPs).
@@ -701,7 +702,7 @@ bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {
                              callback,
                              context.web_frame()->mainWorldScriptContext());
 
-  scoped_ptr<SyntheticSmoothScrollGestureParams> gesture_params(
+  std::unique_ptr<SyntheticSmoothScrollGestureParams> gesture_params(
       new SyntheticSmoothScrollGestureParams);
 
   gesture_params->speed_in_pixels_s = speed_in_pixels_s;
@@ -765,7 +766,7 @@ bool GpuBenchmarking::PinchBy(gin::Arguments* args) {
     return false;
   }
 
-  scoped_ptr<SyntheticPinchGestureParams> gesture_params(
+  std::unique_ptr<SyntheticPinchGestureParams> gesture_params(
       new SyntheticPinchGestureParams);
 
   // TODO(bokan): Remove page scale here when change land in Catapult.
@@ -849,7 +850,7 @@ bool GpuBenchmarking::Tap(gin::Arguments* args) {
     return false;
   }
 
-  scoped_ptr<SyntheticTapGestureParams> gesture_params(
+  std::unique_ptr<SyntheticTapGestureParams> gesture_params(
       new SyntheticTapGestureParams);
 
   // Convert coordinates from CSS pixels to density independent pixels (DIPs).
@@ -906,11 +907,11 @@ int GpuBenchmarking::RunMicroBenchmark(gin::Arguments* args) {
                              callback,
                              context.web_frame()->mainWorldScriptContext());
 
-  scoped_ptr<V8ValueConverter> converter =
-      make_scoped_ptr(V8ValueConverter::create());
+  std::unique_ptr<V8ValueConverter> converter =
+      base::WrapUnique(V8ValueConverter::create());
   v8::Local<v8::Context> v8_context = callback_and_context->GetContext();
-  scoped_ptr<base::Value> value =
-      make_scoped_ptr(converter->FromV8Value(arguments, v8_context));
+  std::unique_ptr<base::Value> value =
+      base::WrapUnique(converter->FromV8Value(arguments, v8_context));
 
   return context.compositor()->ScheduleMicroBenchmark(
       name, std::move(value),
@@ -925,12 +926,12 @@ bool GpuBenchmarking::SendMessageToMicroBenchmark(
   if (!context.Init(true))
     return false;
 
-  scoped_ptr<V8ValueConverter> converter =
-      make_scoped_ptr(V8ValueConverter::create());
+  std::unique_ptr<V8ValueConverter> converter =
+      base::WrapUnique(V8ValueConverter::create());
   v8::Local<v8::Context> v8_context =
       context.web_frame()->mainWorldScriptContext();
-  scoped_ptr<base::Value> value =
-      make_scoped_ptr(converter->FromV8Value(message, v8_context));
+  std::unique_ptr<base::Value> value =
+      base::WrapUnique(converter->FromV8Value(message, v8_context));
 
   return context.compositor()->SendMessageToMicroBenchmark(id,
                                                            std::move(value));

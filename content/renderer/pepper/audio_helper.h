@@ -8,8 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -50,9 +51,9 @@ class AudioHelper {
   // querying from the callback. The proxy uses this to get the handles to the
   // other process instead of mapping them in the renderer. These will be
   // invalid all other times.
-  scoped_ptr<base::SharedMemory> shared_memory_for_create_callback_;
+  std::unique_ptr<base::SharedMemory> shared_memory_for_create_callback_;
   size_t shared_memory_size_for_create_callback_;
-  scoped_ptr<base::SyncSocket> socket_for_create_callback_;
+  std::unique_ptr<base::SyncSocket> socket_for_create_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioHelper);
 };

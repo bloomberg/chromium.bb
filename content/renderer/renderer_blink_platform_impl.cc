@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
@@ -300,7 +301,7 @@ blink::WebURLLoader* RendererBlinkPlatformImpl::createURLLoader() {
   // data URLs to bypass the ResourceDispatcher.
   return new content::WebURLLoaderImpl(
       child_thread ? child_thread->resource_dispatcher() : NULL,
-      make_scoped_ptr(currentThread()->getWebTaskRunner()->clone()));
+      base::WrapUnique(currentThread()->getWebTaskRunner()->clone()));
 }
 
 blink::WebThread* RendererBlinkPlatformImpl::currentThread() {
@@ -1053,7 +1054,7 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
   gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
   WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
 
-  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
+  std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
           gpu_channel_host.get(), attributes, gpu_preference, share_resources,
           automatic_flushes, GURL(top_document_web_url), limits,
@@ -1190,7 +1191,7 @@ RendererBlinkPlatformImpl::CreatePlatformEventObserverFromType(
 
 void RendererBlinkPlatformImpl::SetPlatformEventObserverForTesting(
     blink::WebPlatformEventType type,
-    scoped_ptr<PlatformEventObserverBase> observer) {
+    std::unique_ptr<PlatformEventObserverBase> observer) {
   if (platform_event_observers_.Lookup(type))
     platform_event_observers_.Remove(type);
   platform_event_observers_.AddWithID(observer.release(), type);

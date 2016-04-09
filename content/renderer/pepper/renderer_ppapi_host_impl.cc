@@ -48,7 +48,7 @@ RendererPpapiHostImpl::RendererPpapiHostImpl(
       is_external_plugin_host_(false) {
   // Hook the PpapiHost up to the dispatcher for out-of-process communication.
   ppapi_host_.reset(new ppapi::host::PpapiHost(dispatcher, permissions));
-  ppapi_host_->AddHostFactoryFilter(scoped_ptr<ppapi::host::HostFactory>(
+  ppapi_host_->AddHostFactoryFilter(std::unique_ptr<ppapi::host::HostFactory>(
       new ContentRendererPepperHostFactory(this)));
   dispatcher->AddFilter(ppapi_host_.get());
   is_running_in_process_ = false;
@@ -63,7 +63,7 @@ RendererPpapiHostImpl::RendererPpapiHostImpl(
   in_process_router_.reset(new PepperInProcessRouter(this));
   ppapi_host_.reset(new ppapi::host::PpapiHost(
       in_process_router_->GetRendererToPluginSender(), permissions));
-  ppapi_host_->AddHostFactoryFilter(scoped_ptr<ppapi::host::HostFactory>(
+  ppapi_host_->AddHostFactoryFilter(std::unique_ptr<ppapi::host::HostFactory>(
       new ContentRendererPepperHostFactory(this)));
   is_running_in_process_ = true;
 }
@@ -85,7 +85,7 @@ RendererPpapiHostImpl* RendererPpapiHostImpl::CreateOnModuleForOutOfProcess(
       new RendererPpapiHostImpl(module, dispatcher, permissions);
 
   // Takes ownership of pointer.
-  module->SetRendererPpapiHost(scoped_ptr<RendererPpapiHostImpl>(result));
+  module->SetRendererPpapiHost(std::unique_ptr<RendererPpapiHostImpl>(result));
 
   return result;
 }
@@ -99,7 +99,7 @@ RendererPpapiHostImpl* RendererPpapiHostImpl::CreateOnModuleForInProcess(
       new RendererPpapiHostImpl(module, permissions);
 
   // Takes ownership of pointer.
-  module->SetRendererPpapiHost(scoped_ptr<RendererPpapiHostImpl>(result));
+  module->SetRendererPpapiHost(std::unique_ptr<RendererPpapiHostImpl>(result));
 
   return result;
 }
@@ -117,10 +117,10 @@ RendererPpapiHostImpl* RendererPpapiHostImpl::GetForPPInstance(
   return instance->module()->renderer_ppapi_host();
 }
 
-scoped_ptr<ppapi::thunk::ResourceCreationAPI>
+std::unique_ptr<ppapi::thunk::ResourceCreationAPI>
 RendererPpapiHostImpl::CreateInProcessResourceCreationAPI(
     PepperPluginInstanceImpl* instance) {
-  return scoped_ptr<ppapi::thunk::ResourceCreationAPI>(
+  return std::unique_ptr<ppapi::thunk::ResourceCreationAPI>(
       new PepperInProcessResourceCreation(this, instance));
 }
 

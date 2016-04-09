@@ -9,12 +9,12 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
 #include "media/video/video_decode_accelerator.h"
@@ -121,7 +121,7 @@ class CONTENT_EXPORT PepperVideoDecoderHost
 
   media::VideoCodecProfile profile_;
 
-  scoped_ptr<media::VideoDecodeAccelerator> decoder_;
+  std::unique_ptr<media::VideoDecodeAccelerator> decoder_;
 
   bool software_fallback_allowed_ = false;
   bool software_fallback_used_ = false;

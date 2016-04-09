@@ -656,7 +656,7 @@ class VideoDecoderShim::DecoderImpl {
 
   // WeakPtr is bound to main_message_loop_. Use only in shim callbacks.
   base::WeakPtr<VideoDecoderShim> shim_;
-  scoped_ptr<media::VideoDecoder> decoder_;
+  std::unique_ptr<media::VideoDecoder> decoder_;
   bool initialized_ = false;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   // Queue of decodes waiting for the decoder.
@@ -695,7 +695,7 @@ void VideoDecoderShim::DecoderImpl::Initialize(
 
 #if !defined(MEDIA_DISABLE_FFMPEG) && !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
   {
-    scoped_ptr<media::FFmpegVideoDecoder> ffmpeg_video_decoder(
+    std::unique_ptr<media::FFmpegVideoDecoder> ffmpeg_video_decoder(
         new media::FFmpegVideoDecoder());
     ffmpeg_video_decoder->set_decode_nalus(true);
     decoder_ = std::move(ffmpeg_video_decoder);
@@ -730,7 +730,8 @@ void VideoDecoderShim::DecoderImpl::Reset() {
   // Abort all pending decodes.
   while (!pending_decodes_.empty()) {
     const PendingDecode& decode = pending_decodes_.front();
-    scoped_ptr<PendingFrame> pending_frame(new PendingFrame(decode.decode_id));
+    std::unique_ptr<PendingFrame> pending_frame(
+        new PendingFrame(decode.decode_id));
     main_task_runner_->PostTask(
         FROM_HERE, base::Bind(&VideoDecoderShim::OnDecodeComplete, shim_, PP_OK,
                               decode.decode_id));
@@ -809,7 +810,7 @@ void VideoDecoderShim::DecoderImpl::OnOutputComplete(
   // call is pending.
   DCHECK(awaiting_decoder_);
 
-  scoped_ptr<PendingFrame> pending_frame;
+  std::unique_ptr<PendingFrame> pending_frame;
   if (!frame->metadata()->IsTrue(media::VideoFrameMetadata::END_OF_STREAM))
     pending_frame.reset(new PendingFrame(decode_id_, frame));
   else
@@ -1011,7 +1012,7 @@ void VideoDecoderShim::OnDecodeComplete(int32_t result, uint32_t decode_id) {
     NotifyCompletedDecodes();
 }
 
-void VideoDecoderShim::OnOutputComplete(scoped_ptr<PendingFrame> frame) {
+void VideoDecoderShim::OnOutputComplete(std::unique_ptr<PendingFrame> frame) {
   DCHECK(RenderThreadImpl::current());
   DCHECK(host_);
 
@@ -1052,7 +1053,7 @@ void VideoDecoderShim::SendPictures() {
   DCHECK(RenderThreadImpl::current());
   DCHECK(host_);
   while (!pending_frames_.empty() && !available_textures_.empty()) {
-    const scoped_ptr<PendingFrame>& frame = pending_frames_.front();
+    const std::unique_ptr<PendingFrame>& frame = pending_frames_.front();
 
     TextureIdSet::iterator it = available_textures_.begin();
     uint32_t texture_id = *it;

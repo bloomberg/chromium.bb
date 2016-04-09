@@ -148,7 +148,7 @@ void PepperBroker::Disconnect(PPB_Broker_Impl* client) {
 void PepperBroker::OnBrokerChannelConnected(
     base::ProcessId broker_pid,
     const IPC::ChannelHandle& channel_handle) {
-  scoped_ptr<PepperBrokerDispatcherWrapper> dispatcher(
+  std::unique_ptr<PepperBrokerDispatcherWrapper> dispatcher(
       new PepperBrokerDispatcherWrapper);
   if (!dispatcher->Init(broker_pid, channel_handle)) {
     ReportFailureToClients(PP_ERROR_FAILED);
@@ -234,8 +234,8 @@ void PepperBroker::ConnectPluginToBroker(PPB_Broker_Impl* client) {
 
   // The socket objects will be deleted when this function exits, closing the
   // handles. Any uses of the socket must duplicate them.
-  scoped_ptr<base::SyncSocket> broker_socket(new base::SyncSocket());
-  scoped_ptr<base::SyncSocket> plugin_socket(new base::SyncSocket());
+  std::unique_ptr<base::SyncSocket> broker_socket(new base::SyncSocket());
+  std::unique_ptr<base::SyncSocket> plugin_socket(new base::SyncSocket());
   if (base::SyncSocket::CreatePair(broker_socket.get(), plugin_socket.get())) {
     result = dispatcher_->SendHandleToBroker(client->pp_instance(),
                                              broker_socket->handle());

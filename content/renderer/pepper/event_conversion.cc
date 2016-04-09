@@ -8,9 +8,10 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <memory>
+
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -583,7 +584,7 @@ void CreateInputEventData(const WebInputEvent& event,
 }
 
 WebInputEvent* CreateWebInputEvent(const InputEventData& event) {
-  scoped_ptr<WebInputEvent> web_input_event;
+  std::unique_ptr<WebInputEvent> web_input_event;
   switch (event.event_type) {
     case PP_INPUTEVENT_TYPE_UNDEFINED:
       return NULL;
@@ -627,12 +628,12 @@ WebInputEvent* CreateWebInputEvent(const InputEventData& event) {
 
 // Generate a coherent sequence of input events to simulate a user event.
 // From src/components/test_runner/event_sender.cc.
-std::vector<scoped_ptr<WebInputEvent>> CreateSimulatedWebInputEvents(
+std::vector<std::unique_ptr<WebInputEvent>> CreateSimulatedWebInputEvents(
     const ppapi::InputEventData& event,
     int plugin_x,
     int plugin_y) {
-  std::vector<scoped_ptr<WebInputEvent>> events;
-  scoped_ptr<WebInputEvent> original_event(CreateWebInputEvent(event));
+  std::vector<std::unique_ptr<WebInputEvent>> events;
+  std::unique_ptr<WebInputEvent> original_event(CreateWebInputEvent(event));
 
   switch (event.event_type) {
     case PP_INPUTEVENT_TYPE_MOUSEDOWN:
@@ -683,8 +684,8 @@ std::vector<scoped_ptr<WebInputEvent>> CreateSimulatedWebInputEvents(
                  &generate_char);
 
       // Synthesize key down and key up events in all cases.
-      scoped_ptr<WebKeyboardEvent> key_down_event(new WebKeyboardEvent());
-      scoped_ptr<WebKeyboardEvent> key_up_event(new WebKeyboardEvent());
+      std::unique_ptr<WebKeyboardEvent> key_down_event(new WebKeyboardEvent());
+      std::unique_ptr<WebKeyboardEvent> key_up_event(new WebKeyboardEvent());
 
       key_down_event->type = WebInputEvent::RawKeyDown;
       key_down_event->windowsKeyCode = code;

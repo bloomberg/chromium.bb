@@ -5,8 +5,9 @@
 #ifndef CONTENT_RENDERER_JAVA_GIN_JAVA_BRIDGE_VALUE_CONVERTER_H_
 #define CONTENT_RENDERER_JAVA_GIN_JAVA_BRIDGE_VALUE_CONVERTER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/child/v8_value_converter.h"
 
@@ -20,7 +21,7 @@ class GinJavaBridgeValueConverter : public content::V8ValueConverter::Strategy {
   CONTENT_EXPORT v8::Local<v8::Value> ToV8Value(
       const base::Value* value,
       v8::Local<v8::Context> context) const;
-  CONTENT_EXPORT scoped_ptr<base::Value> FromV8Value(
+  CONTENT_EXPORT std::unique_ptr<base::Value> FromV8Value(
       v8::Local<v8::Value> value,
       v8::Local<v8::Context> context) const;
 
@@ -37,7 +38,7 @@ class GinJavaBridgeValueConverter : public content::V8ValueConverter::Strategy {
   bool FromV8Undefined(base::Value** out) const override;
 
  private:
-  scoped_ptr<V8ValueConverter> converter_;
+  std::unique_ptr<V8ValueConverter> converter_;
 
   DISALLOW_COPY_AND_ASSIGN(GinJavaBridgeValueConverter);
 };

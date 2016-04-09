@@ -61,7 +61,7 @@ v8::Local<v8::Value> GinJavaFunctionInvocationHelper::Invoke(
     v8::Local<v8::Context> context = args->isolate()->GetCurrentContext();
     v8::Local<v8::Value> val;
     while (args->GetNext(&val)) {
-      scoped_ptr<base::Value> arg(converter_->FromV8Value(val, context));
+      std::unique_ptr<base::Value> arg(converter_->FromV8Value(val, context));
       if (arg.get()) {
         arguments.Append(arg.release());
       } else {
@@ -71,7 +71,7 @@ v8::Local<v8::Value> GinJavaFunctionInvocationHelper::Invoke(
   }
 
   GinJavaBridgeError error;
-  scoped_ptr<base::Value> result = dispatcher_->InvokeJavaMethod(
+  std::unique_ptr<base::Value> result = dispatcher_->InvokeJavaMethod(
       object->object_id(), method_name_, arguments, &error);
   if (!result.get()) {
     args->isolate()->ThrowException(v8::Exception::Error(gin::StringToV8(
@@ -83,7 +83,7 @@ v8::Local<v8::Value> GinJavaFunctionInvocationHelper::Invoke(
                                  args->isolate()->GetCurrentContext());
   }
 
-  scoped_ptr<const GinJavaBridgeValue> gin_value =
+  std::unique_ptr<const GinJavaBridgeValue> gin_value =
       GinJavaBridgeValue::FromValue(result.get());
   if (gin_value->IsType(GinJavaBridgeValue::TYPE_OBJECT_ID)) {
     GinJavaBridgeObject* result = NULL;

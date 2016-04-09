@@ -23,7 +23,7 @@ DelegatedCompositorOutputSurface::DelegatedCompositorOutputSurface(
 #if defined(ENABLE_VULKAN)
                               vulkan_context_provider,
 #endif
-                              scoped_ptr<cc::SoftwareOutputDevice>(),
+                              std::unique_ptr<cc::SoftwareOutputDevice>(),
                               swap_frame_message_queue,
                               true) {
   capabilities_.delegated_rendering = true;

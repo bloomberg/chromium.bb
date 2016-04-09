@@ -532,10 +532,11 @@ int32_t PepperGraphics2DHost::OnHostMsgReadImageData(
   return ReadImageData(image, &top_left) ? PP_OK : PP_ERROR_FAILED;
 }
 
-void PepperGraphics2DHost::ReleaseCallback(scoped_ptr<cc::SharedBitmap> bitmap,
-                                           const gfx::Size& bitmap_size,
-                                           const gpu::SyncToken& sync_token,
-                                           bool lost_resource) {
+void PepperGraphics2DHost::ReleaseCallback(
+    std::unique_ptr<cc::SharedBitmap> bitmap,
+    const gfx::Size& bitmap_size,
+    const gpu::SyncToken& sync_token,
+    bool lost_resource) {
   cached_bitmap_.reset();
   // Only keep around a cached bitmap if the plugin is currently drawing (has
   // need_flush_ack_ set).
@@ -546,12 +547,12 @@ void PepperGraphics2DHost::ReleaseCallback(scoped_ptr<cc::SharedBitmap> bitmap,
 
 bool PepperGraphics2DHost::PrepareTextureMailbox(
     cc::TextureMailbox* mailbox,
-    scoped_ptr<cc::SingleReleaseCallback>* release_callback) {
+    std::unique_ptr<cc::SingleReleaseCallback>* release_callback) {
   if (!texture_mailbox_modified_)
     return false;
   // TODO(jbauman): Send image_data_ through mailbox to avoid copy.
   gfx::Size pixel_image_size(image_data_->width(), image_data_->height());
-  scoped_ptr<cc::SharedBitmap> shared_bitmap;
+  std::unique_ptr<cc::SharedBitmap> shared_bitmap;
   if (cached_bitmap_) {
     if (cached_bitmap_size_ == pixel_image_size)
       shared_bitmap = std::move(cached_bitmap_);

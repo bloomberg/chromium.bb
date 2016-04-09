@@ -4,7 +4,8 @@
 
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -39,8 +40,8 @@ class EmbeddedWorkerDispatcher::WorkerWrapper {
 
  private:
   ScopedChildProcessReference process_ref_;
-  scoped_ptr<blink::WebEmbeddedWorker> worker_;
-  scoped_ptr<EmbeddedWorkerDevToolsAgent> dev_tools_agent_;
+  std::unique_ptr<blink::WebEmbeddedWorker> worker_;
+  std::unique_ptr<EmbeddedWorkerDevToolsAgent> dev_tools_agent_;
 };
 
 EmbeddedWorkerDispatcher::EmbeddedWorkerDispatcher() : weak_factory_(this) {}
@@ -78,16 +79,14 @@ void EmbeddedWorkerDispatcher::OnStartWorker(
     const EmbeddedWorkerMsg_StartWorker_Params& params) {
   DCHECK(!workers_.Lookup(params.embedded_worker_id));
   TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerDispatcher::OnStartWorker");
-  scoped_ptr<WorkerWrapper> wrapper(
-      new WorkerWrapper(blink::WebEmbeddedWorker::create(
-                            new ServiceWorkerContextClient(
-                                params.embedded_worker_id,
-                                params.service_worker_version_id,
-                                params.scope,
-                                params.script_url,
-                                params.worker_devtools_agent_route_id),
-                            NULL),
-                        params.worker_devtools_agent_route_id));
+  std::unique_ptr<WorkerWrapper> wrapper(new WorkerWrapper(
+      blink::WebEmbeddedWorker::create(
+          new ServiceWorkerContextClient(params.embedded_worker_id,
+                                         params.service_worker_version_id,
+                                         params.scope, params.script_url,
+                                         params.worker_devtools_agent_route_id),
+          NULL),
+      params.worker_devtools_agent_route_id));
 
   blink::WebEmbeddedWorkerStartData start_data;
   start_data.scriptURL = params.script_url;

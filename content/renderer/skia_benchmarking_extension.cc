@@ -49,7 +49,7 @@ bool DecodeBitmap(const void* buffer, size_t size, SkBitmap* bm) {
   if (gfx::PNGCodec::Decode(data, size, bm))
     return true;
   // Try JPEG.
-  scoped_ptr<SkBitmap> decoded_jpeg(gfx::JPEGCodec::Decode(data, size));
+  std::unique_ptr<SkBitmap> decoded_jpeg(gfx::JPEGCodec::Decode(data, size));
   if (decoded_jpeg) {
     *bm = *decoded_jpeg;
     return true;
@@ -57,15 +57,16 @@ bool DecodeBitmap(const void* buffer, size_t size, SkBitmap* bm) {
   return false;
 }
 
-scoped_ptr<base::Value> ParsePictureArg(v8::Isolate* isolate,
-                                        v8::Local<v8::Value> arg) {
-  scoped_ptr<content::V8ValueConverter> converter(
+std::unique_ptr<base::Value> ParsePictureArg(v8::Isolate* isolate,
+                                             v8::Local<v8::Value> arg) {
+  std::unique_ptr<content::V8ValueConverter> converter(
       content::V8ValueConverter::create());
-  return scoped_ptr<base::Value>(
+  return std::unique_ptr<base::Value>(
       converter->FromV8Value(arg, isolate->GetCurrentContext()));
 }
 
-scoped_ptr<Picture> CreatePictureFromEncodedString(const std::string& encoded) {
+std::unique_ptr<Picture> CreatePictureFromEncodedString(
+    const std::string& encoded) {
   std::string decoded;
   base::Base64Decode(encoded, &decoded);
   SkMemoryStream stream(decoded.data(), decoded.size());
@@ -75,15 +76,15 @@ scoped_ptr<Picture> CreatePictureFromEncodedString(const std::string& encoded) {
   if (!skpicture)
     return nullptr;
 
-  scoped_ptr<Picture> picture(new Picture);
+  std::unique_ptr<Picture> picture(new Picture);
   picture->layer_rect = gfx::SkIRectToRect(skpicture->cullRect().roundOut());
   picture->picture = std::move(skpicture);
   return picture;
 }
 
-scoped_ptr<Picture> ParsePictureStr(v8::Isolate* isolate,
-                                    v8::Local<v8::Value> arg) {
-  scoped_ptr<base::Value> picture_value = ParsePictureArg(isolate, arg);
+std::unique_ptr<Picture> ParsePictureStr(v8::Isolate* isolate,
+                                         v8::Local<v8::Value> arg) {
+  std::unique_ptr<base::Value> picture_value = ParsePictureArg(isolate, arg);
   if (!picture_value)
     return nullptr;
   // Decode the picture from base64.
@@ -93,9 +94,9 @@ scoped_ptr<Picture> ParsePictureStr(v8::Isolate* isolate,
   return CreatePictureFromEncodedString(encoded);
 }
 
-scoped_ptr<Picture> ParsePictureHash(v8::Isolate* isolate,
-                                     v8::Local<v8::Value> arg) {
-  scoped_ptr<base::Value> picture_value = ParsePictureArg(isolate, arg);
+std::unique_ptr<Picture> ParsePictureHash(v8::Isolate* isolate,
+                                          v8::Local<v8::Value> arg) {
+  std::unique_ptr<base::Value> picture_value = ParsePictureArg(isolate, arg);
   if (!picture_value)
     return nullptr;
   const base::DictionaryValue* value = nullptr;
@@ -179,7 +180,7 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
     return;
   v8::Local<v8::Value> picture_handle;
   args->GetNext(&picture_handle);
-  scoped_ptr<Picture> picture = ParsePictureHash(isolate, picture_handle);
+  std::unique_ptr<Picture> picture = ParsePictureHash(isolate, picture_handle);
   if (!picture.get())
     return;
 
@@ -192,9 +193,9 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
   if (!args->PeekNext().IsEmpty()) {
     v8::Local<v8::Value> params;
     args->GetNext(&params);
-    scoped_ptr<content::V8ValueConverter> converter(
+    std::unique_ptr<content::V8ValueConverter> converter(
         content::V8ValueConverter::create());
-    scoped_ptr<base::Value> params_value(
+    std::unique_ptr<base::Value> params_value(
         converter->FromV8Value(params, context));
 
     const base::DictionaryValue* params_dict = NULL;
@@ -263,7 +264,7 @@ void SkiaBenchmarking::GetOps(gin::Arguments* args) {
     return;
   v8::Local<v8::Value> picture_handle;
   args->GetNext(&picture_handle);
-  scoped_ptr<Picture> picture = ParsePictureHash(isolate, picture_handle);
+  std::unique_ptr<Picture> picture = ParsePictureHash(isolate, picture_handle);
   if (!picture.get())
     return;
 
@@ -272,7 +273,7 @@ void SkiaBenchmarking::GetOps(gin::Arguments* args) {
   picture->picture->playback(&benchmarking_canvas);
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
-  scoped_ptr<content::V8ValueConverter> converter(
+  std::unique_ptr<content::V8ValueConverter> converter(
       content::V8ValueConverter::create());
 
   args->Return(converter->ToV8Value(&benchmarking_canvas.Commands(), context));
@@ -284,7 +285,7 @@ void SkiaBenchmarking::GetOpTimings(gin::Arguments* args) {
     return;
   v8::Local<v8::Value> picture_handle;
   args->GetNext(&picture_handle);
-  scoped_ptr<Picture> picture = ParsePictureHash(isolate, picture_handle);
+  std::unique_ptr<Picture> picture = ParsePictureHash(isolate, picture_handle);
   if (!picture.get())
     return;
 
@@ -325,7 +326,7 @@ void SkiaBenchmarking::GetInfo(gin::Arguments* args) {
     return;
   v8::Local<v8::Value> picture_handle;
   args->GetNext(&picture_handle);
-  scoped_ptr<Picture> picture = ParsePictureStr(isolate, picture_handle);
+  std::unique_ptr<Picture> picture = ParsePictureStr(isolate, picture_handle);
   if (!picture.get())
     return;
 

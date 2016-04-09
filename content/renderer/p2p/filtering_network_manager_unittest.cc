@@ -5,12 +5,13 @@
 #include "content/renderer/p2p/filtering_network_manager.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/renderer/p2p/empty_network_manager.h"
@@ -71,7 +72,7 @@ class MockNetworkManager : public rtc::NetworkManager {
 
  private:
   bool sent_first_update_ = false;
-  scoped_ptr<rtc::Network> network_;
+  std::unique_ptr<rtc::Network> network_;
 };
 
 class MockMediaPermission : public media::MediaPermission {
@@ -201,10 +202,10 @@ class FilteringNetworkManagerTest : public testing::Test,
   void clear_callback_called() { callback_called_ = false; }
 
   bool callback_called_ = false;
-  scoped_ptr<rtc::NetworkManager> network_manager_;
-  scoped_ptr<MockNetworkManager> mock_network_manager_;
+  std::unique_ptr<rtc::NetworkManager> network_manager_;
+  std::unique_ptr<MockNetworkManager> mock_network_manager_;
 
-  scoped_ptr<MockMediaPermission> media_permission_;
+  std::unique_ptr<MockMediaPermission> media_permission_;
 
   NetworkList network_list_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;

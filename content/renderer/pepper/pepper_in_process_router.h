@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/connection.h"
@@ -78,19 +79,19 @@ class PepperInProcessRouter {
   RendererPpapiHostImpl* host_impl_;
 
   class Channel;
-  scoped_ptr<Channel> browser_channel_;
+  std::unique_ptr<Channel> browser_channel_;
 
   // Renderer -> plugin channel.
-  scoped_ptr<Channel> host_to_plugin_router_;
+  std::unique_ptr<Channel> host_to_plugin_router_;
 
   // Plugin -> renderer channel.
-  scoped_ptr<Channel> plugin_to_host_router_;
+  std::unique_ptr<Channel> plugin_to_host_router_;
 
   // Pending sync message id.
   int pending_message_id_;
 
   // Reply deserializer of the pending sync message.
-  scoped_ptr<IPC::MessageReplyDeserializer> reply_deserializer_;
+  std::unique_ptr<IPC::MessageReplyDeserializer> reply_deserializer_;
 
   // Reply result of the pending sync message.
   bool reply_result_;

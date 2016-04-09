@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
-#include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/host_var_tracker.h"
+
+#include <memory>
+
+#include "base/macros.h"
+#include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/mock_resource.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_try_catch.h"

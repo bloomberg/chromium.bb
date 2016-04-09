@@ -188,7 +188,7 @@ class ResourceDispatchThrottlerTest : public testing::Test, public IPC::Sender {
   ScopedMessages sent_messages_;
 
  private:
-  scoped_ptr<ResourceDispatchThrottlerForTest> throttler_;
+  std::unique_ptr<ResourceDispatchThrottlerForTest> throttler_;
   RendererSchedulerForTest scheduler_;
   int last_request_id_;
   bool flush_scheduled_;

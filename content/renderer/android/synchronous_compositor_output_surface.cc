@@ -70,7 +70,7 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
     : cc::OutputSurface(
           context_provider,
           worker_context_provider,
-          scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareDevice(this))),
+          std::unique_ptr<cc::SoftwareOutputDevice>(new SoftwareDevice(this))),
       routing_id_(routing_id),
       output_surface_id_(output_surface_id),
       registry_(registry),
@@ -259,9 +259,9 @@ void SynchronousCompositorOutputSurface::SetTreeActivationCallback(
 }
 
 void SynchronousCompositorOutputSurface::GetMessagesToDeliver(
-    std::vector<scoped_ptr<IPC::Message>>* messages) {
+    std::vector<std::unique_ptr<IPC::Message>>* messages) {
   DCHECK(CalledOnValidThread());
-  scoped_ptr<FrameSwapMessageQueue::SendMessageScope> send_message_scope =
+  std::unique_ptr<FrameSwapMessageQueue::SendMessageScope> send_message_scope =
       frame_swap_message_queue_->AcquireSendMessageScope();
   frame_swap_message_queue_->DrainMessages(messages);
 }

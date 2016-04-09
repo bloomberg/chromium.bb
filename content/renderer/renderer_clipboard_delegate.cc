@@ -127,7 +127,7 @@ bool RendererClipboardDelegate::WriteImage(ui::ClipboardType clipboard_type,
   DCHECK_EQ(bitmap.colorType(), kN32_SkColorType);
 
   const gfx::Size size(bitmap.width(), bitmap.height());
-  scoped_ptr<base::SharedMemory> shared_buf;
+  std::unique_ptr<base::SharedMemory> shared_buf;
   {
     SkAutoLockPixels locked(bitmap);
     void* pixels = bitmap.getPixels();

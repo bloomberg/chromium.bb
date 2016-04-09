@@ -373,7 +373,7 @@ class RenderViewImplTest : public RenderViewTest {
   }
 
  private:
-  scoped_ptr<MockKeyboard> mock_keyboard_;
+  std::unique_ptr<MockKeyboard> mock_keyboard_;
 };
 
 class DevToolsAgentTest : public RenderViewImplTest {
@@ -406,8 +406,9 @@ class DevToolsAgentTest : public RenderViewImplTest {
 
   void OnDevToolsMessage(
       int, int, const std::string& message, const std::string&) {
-    scoped_ptr<base::DictionaryValue> root(static_cast<base::DictionaryValue*>(
-        base::JSONReader::Read(message).release()));
+    std::unique_ptr<base::DictionaryValue> root(
+        static_cast<base::DictionaryValue*>(
+            base::JSONReader::Read(message).release()));
     int id;
     if (!root->GetInteger("id", &id)) {
       std::string notification;
@@ -621,7 +622,7 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
 
   // Check post data sent to browser matches
   EXPECT_TRUE(base::get<0>(host_nav_params).page_state.IsValid());
-  scoped_ptr<HistoryEntry> entry =
+  std::unique_ptr<HistoryEntry> entry =
       PageStateToHistoryEntry(base::get<0>(host_nav_params).page_state);
   blink::WebHTTPBody body = entry->root().httpBody();
   blink::WebHTTPBody::Element element;

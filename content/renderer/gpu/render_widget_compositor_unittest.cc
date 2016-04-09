@@ -8,6 +8,7 @@
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "cc/output/begin_frame_args.h"
@@ -71,9 +72,9 @@ class RenderWidgetCompositorTest : public testing::Test {
  protected:
   base::MessageLoop loop_;
   MockRenderThread render_thread_;
-  scoped_ptr<FakeCompositorDependencies> compositor_deps_;
+  std::unique_ptr<FakeCompositorDependencies> compositor_deps_;
   scoped_refptr<TestRenderWidget> render_widget_;
-  scoped_ptr<RenderWidgetCompositor> render_widget_compositor_;
+  std::unique_ptr<RenderWidgetCompositor> render_widget_compositor_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetCompositorTest);
@@ -101,7 +102,8 @@ class RenderWidgetOutputSurface : public TestRenderWidget {
       : TestRenderWidget(compositor_deps), compositor_(NULL) {}
   void SetCompositor(RenderWidgetCompositorOutputSurface* compositor);
 
-  scoped_ptr<cc::OutputSurface> CreateOutputSurface(bool fallback) override;
+  std::unique_ptr<cc::OutputSurface> CreateOutputSurface(
+      bool fallback) override;
 
  protected:
   ~RenderWidgetOutputSurface() override {}
@@ -137,14 +139,14 @@ class RenderWidgetCompositorOutputSurface : public RenderWidgetCompositor {
 
   using RenderWidgetCompositor::Initialize;
 
-  scoped_ptr<cc::OutputSurface> CreateOutputSurface(bool fallback) {
+  std::unique_ptr<cc::OutputSurface> CreateOutputSurface(bool fallback) {
     EXPECT_EQ(num_requests_since_last_success_ >
                   OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK,
               fallback);
     last_create_was_fallback_ = fallback;
     bool success = num_failures_ >= num_failures_before_success_;
     if (success) {
-      scoped_ptr<cc::TestWebGraphicsContext3D> context =
+      std::unique_ptr<cc::TestWebGraphicsContext3D> context =
           cc::TestWebGraphicsContext3D::Create();
       // Image support required for synchronous compositing.
       context->set_support_image(true);
@@ -153,7 +155,7 @@ class RenderWidgetCompositorOutputSurface : public RenderWidgetCompositor {
     }
     return use_null_output_surface_
                ? nullptr
-               : make_scoped_ptr(new cc::FailureOutputSurface(true));
+               : base::WrapUnique(new cc::FailureOutputSurface(true));
   }
 
   // Force a new output surface to be created.
@@ -268,16 +270,17 @@ class RenderWidgetCompositorOutputSurfaceTest : public testing::Test {
  protected:
   base::MessageLoop ye_olde_message_loope_;
   MockRenderThread render_thread_;
-  scoped_ptr<FakeCompositorDependencies> compositor_deps_;
+  std::unique_ptr<FakeCompositorDependencies> compositor_deps_;
   scoped_refptr<RenderWidgetOutputSurface> render_widget_;
-  scoped_ptr<RenderWidgetCompositorOutputSurface> render_widget_compositor_;
+  std::unique_ptr<RenderWidgetCompositorOutputSurface>
+      render_widget_compositor_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetCompositorOutputSurfaceTest);
 };
 
-scoped_ptr<cc::OutputSurface> RenderWidgetOutputSurface::CreateOutputSurface(
-    bool fallback) {
+std::unique_ptr<cc::OutputSurface>
+RenderWidgetOutputSurface::CreateOutputSurface(bool fallback) {
   return compositor_->CreateOutputSurface(fallback);
 }
 

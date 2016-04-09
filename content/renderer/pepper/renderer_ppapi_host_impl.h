@@ -5,8 +5,9 @@
 #ifndef CONTENT_RENDERER_PEPPER_RENDERER_PPAPI_HOST_IMPL_H_
 #define CONTENT_RENDERER_PEPPER_RENDERER_PPAPI_HOST_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/content_renderer_pepper_host_factory.h"
 #include "ppapi/host/ppapi_host.h"
@@ -68,8 +69,8 @@ class RendererPpapiHostImpl : public RendererPpapiHost {
   // host impl should outlive the returned pointer. Since the resource
   // creation object is associated with the instance, this will generally
   // happen automatically.
-  scoped_ptr<ppapi::thunk::ResourceCreationAPI>
-      CreateInProcessResourceCreationAPI(PepperPluginInstanceImpl* instance);
+  std::unique_ptr<ppapi::thunk::ResourceCreationAPI>
+  CreateInProcessResourceCreationAPI(PepperPluginInstanceImpl* instance);
 
   PepperPluginInstanceImpl* GetPluginInstanceImpl(PP_Instance instance) const;
 
@@ -124,10 +125,10 @@ class RendererPpapiHostImpl : public RendererPpapiHost {
   // Will be null when running in-process. Non-owning pointer.
   ppapi::proxy::HostDispatcher* dispatcher_;
 
-  scoped_ptr<ppapi::host::PpapiHost> ppapi_host_;
+  std::unique_ptr<ppapi::host::PpapiHost> ppapi_host_;
 
   // Null when running out-of-process.
-  scoped_ptr<PepperInProcessRouter> in_process_router_;
+  std::unique_ptr<PepperInProcessRouter> in_process_router_;
 
   // Whether the plugin is running in process.
   bool is_running_in_process_;

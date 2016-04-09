@@ -42,8 +42,8 @@ class CONTENT_EXPORT PepperBrokerDispatcherWrapper {
                              base::SyncSocket::Handle handle);
 
  private:
-  scoped_ptr<ppapi::proxy::BrokerDispatcher> dispatcher_;
-  scoped_ptr<ppapi::proxy::ProxyChannel::Delegate> dispatcher_delegate_;
+  std::unique_ptr<ppapi::proxy::BrokerDispatcher> dispatcher_;
+  std::unique_ptr<ppapi::proxy::ProxyChannel::Delegate> dispatcher_delegate_;
 };
 
 class PepperBroker : public base::RefCountedThreadSafe<PepperBroker> {
@@ -87,7 +87,7 @@ class PepperBroker : public base::RefCountedThreadSafe<PepperBroker> {
   // Connects the plugin to the broker via a pipe.
   void ConnectPluginToBroker(PPB_Broker_Impl* client);
 
-  scoped_ptr<PepperBrokerDispatcherWrapper> dispatcher_;
+  std::unique_ptr<PepperBrokerDispatcherWrapper> dispatcher_;
 
   // A map of pointers to objects that have requested a connection to the weak
   // pointer we can use to reference them. The mapping is needed so we can clean

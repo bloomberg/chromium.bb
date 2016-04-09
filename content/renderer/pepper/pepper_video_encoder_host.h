@@ -8,9 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
 #include "media/video/video_encode_accelerator.h"
@@ -50,7 +51,7 @@ class CONTENT_EXPORT PepperVideoEncoderHost
 
   // Shared memory buffers.
   struct ShmBuffer {
-    ShmBuffer(uint32_t id, scoped_ptr<base::SharedMemory> shm);
+    ShmBuffer(uint32_t id, std::unique_ptr<base::SharedMemory> shm);
     ~ShmBuffer();
 
     media::BitstreamBuffer ToBitstreamBuffer();
@@ -58,7 +59,7 @@ class CONTENT_EXPORT PepperVideoEncoderHost
     // Index of the buffer in the ScopedVector. Buffers have the same id in
     // the plugin and the host.
     uint32_t id;
-    scoped_ptr<base::SharedMemory> shm;
+    std::unique_ptr<base::SharedMemory> shm;
     bool in_use;
   };
 
@@ -130,9 +131,9 @@ class CONTENT_EXPORT PepperVideoEncoderHost
   ppapi::MediaStreamBufferManager buffer_manager_;
 
   scoped_refptr<gpu::GpuChannelHost> channel_;
-  scoped_ptr<gpu::CommandBufferProxyImpl> command_buffer_;
+  std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_;
 
-  scoped_ptr<media::VideoEncodeAccelerator> encoder_;
+  std::unique_ptr<media::VideoEncodeAccelerator> encoder_;
 
   // Whether the encoder has been successfully initialized.
   bool initialized_;

@@ -91,8 +91,8 @@ bool DOMFileSystemToResource(
     RendererPpapiHost* host,
     const blink::WebDOMFileSystem& dom_file_system,
     int* pending_renderer_id,
-    scoped_ptr<IPC::Message>* create_message,
-    scoped_ptr<IPC::Message>* browser_host_create_message) {
+    std::unique_ptr<IPC::Message>* create_message,
+    std::unique_ptr<IPC::Message>* browser_host_create_message) {
   DCHECK(!dom_file_system.isNull());
 
   PP_FileSystemType file_system_type =
@@ -108,7 +108,7 @@ bool DOMFileSystemToResource(
   }
 
   *pending_renderer_id = host->GetPpapiHost()->AddPendingResourceHost(
-      scoped_ptr<ppapi::host::ResourceHost>(new PepperFileSystemHost(
+      std::unique_ptr<ppapi::host::ResourceHost>(new PepperFileSystemHost(
           host, instance, 0, root_url, file_system_type)));
   if (*pending_renderer_id == 0)
     return false;
@@ -163,7 +163,7 @@ bool DOMMediaStreamTrackToResource(
     RendererPpapiHost* host,
     const blink::WebDOMMediaStreamTrack& dom_media_stream_track,
     int* pending_renderer_id,
-    scoped_ptr<IPC::Message>* create_message) {
+    std::unique_ptr<IPC::Message>* create_message) {
   DCHECK(!dom_media_stream_track.isNull());
   *pending_renderer_id = 0;
 #if defined(ENABLE_WEBRTC)
@@ -172,7 +172,7 @@ bool DOMMediaStreamTrackToResource(
 
   if (track.source().getType() == blink::WebMediaStreamSource::TypeVideo) {
     *pending_renderer_id = host->GetPpapiHost()->AddPendingResourceHost(
-        scoped_ptr<ppapi::host::ResourceHost>(
+        std::unique_ptr<ppapi::host::ResourceHost>(
             new PepperMediaStreamVideoTrackHost(host, instance, 0, track)));
     if (*pending_renderer_id == 0)
       return false;
@@ -183,7 +183,7 @@ bool DOMMediaStreamTrackToResource(
   } else if (track.source().getType() ==
              blink::WebMediaStreamSource::TypeAudio) {
     *pending_renderer_id = host->GetPpapiHost()->AddPendingResourceHost(
-        scoped_ptr<ppapi::host::ResourceHost>(
+        std::unique_ptr<ppapi::host::ResourceHost>(
             new PepperMediaStreamAudioTrackHost(host, instance, 0, track)));
     if (*pending_renderer_id == 0)
       return false;
@@ -223,8 +223,8 @@ bool ResourceConverterImpl::FromV8Value(v8::Local<v8::Object> val,
       blink::WebDOMFileSystem::fromV8Value(val);
   if (!dom_file_system.isNull()) {
     int pending_renderer_id;
-    scoped_ptr<IPC::Message> create_message;
-    scoped_ptr<IPC::Message> browser_host_create_message;
+    std::unique_ptr<IPC::Message> create_message;
+    std::unique_ptr<IPC::Message> browser_host_create_message;
     if (!DOMFileSystemToResource(instance_,
                                  host,
                                  dom_file_system,
@@ -247,7 +247,7 @@ bool ResourceConverterImpl::FromV8Value(v8::Local<v8::Object> val,
       blink::WebDOMMediaStreamTrack::fromV8Value(val);
   if (!dom_media_stream_track.isNull()) {
     int pending_renderer_id;
-    scoped_ptr<IPC::Message> create_message;
+    std::unique_ptr<IPC::Message> create_message;
     if (!DOMMediaStreamTrackToResource(instance_,
                                        host,
                                        dom_media_stream_track,

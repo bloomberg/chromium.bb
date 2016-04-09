@@ -5,8 +5,9 @@
 #ifndef CONTENT_RENDERER_DEVICE_SENSORS_DEVICE_ORIENTATION_EVENT_PUMP_H_
 #define CONTENT_RENDERER_DEVICE_SENSORS_DEVICE_ORIENTATION_EVENT_PUMP_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/renderer/device_sensors/device_sensor_event_pump.h"
 #include "content/renderer/shared_memory_seqlock_reader.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationData.h"
@@ -45,7 +46,7 @@ class CONTENT_EXPORT DeviceOrientationEventPump
   bool ShouldFireEvent(const blink::WebDeviceOrientationData& data) const;
 
   blink::WebDeviceOrientationData data_;
-  scoped_ptr<DeviceOrientationSharedMemoryReader> reader_;
+  std::unique_ptr<DeviceOrientationSharedMemoryReader> reader_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOrientationEventPump);
 };

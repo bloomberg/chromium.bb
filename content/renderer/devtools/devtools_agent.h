@@ -5,11 +5,11 @@
 #ifndef CONTENT_RENDERER_DEVTOOLS_DEVTOOLS_AGENT_H_
 #define CONTENT_RENDERER_DEVTOOLS_DEVTOOLS_AGENT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -93,7 +93,7 @@ class CONTENT_EXPORT DevToolsAgent
   RenderFrameImpl* frame_;
   base::Callback<void(int, int, const std::string&, const std::string&)>
       send_protocol_message_callback_for_test_;
-  scoped_ptr<DevToolsCPUThrottler> cpu_throttler_;
+  std::unique_ptr<DevToolsCPUThrottler> cpu_throttler_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgent);
 };

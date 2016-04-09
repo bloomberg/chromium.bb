@@ -116,7 +116,7 @@ TEST_F(RendererAccessibilityTest, SendFullAccessibilityTreeOnReload) {
   LoadHTML(html.c_str());
 
   // Creating a RendererAccessibility should sent the tree to the browser.
-  scoped_ptr<TestRendererAccessibility> accessibility(
+  std::unique_ptr<TestRendererAccessibility> accessibility(
       new TestRendererAccessibility(frame()));
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
@@ -181,7 +181,7 @@ TEST_F(RendererAccessibilityTest, HideAccessibilityObject) {
       "</body>";
   LoadHTML(html.c_str());
 
-  scoped_ptr<TestRendererAccessibility> accessibility(
+  std::unique_ptr<TestRendererAccessibility> accessibility(
       new TestRendererAccessibility(frame()));
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
@@ -233,7 +233,7 @@ TEST_F(RendererAccessibilityTest, ShowAccessibilityObject) {
       "</body>";
   LoadHTML(html.c_str());
 
-  scoped_ptr<TestRendererAccessibility> accessibility(
+  std::unique_ptr<TestRendererAccessibility> accessibility(
       new TestRendererAccessibility(frame()));
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(3, CountAccessibilityNodesSentToBrowser());
@@ -277,7 +277,7 @@ TEST_F(RendererAccessibilityTest, DetachAccessibilityObject) {
       "</body>";
   LoadHTML(html.c_str());
 
-  scoped_ptr<TestRendererAccessibility> accessibility(
+  std::unique_ptr<TestRendererAccessibility> accessibility(
       new TestRendererAccessibility(frame()));
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(7, CountAccessibilityNodesSentToBrowser());

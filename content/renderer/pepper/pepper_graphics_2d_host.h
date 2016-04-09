@@ -77,7 +77,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
 
   bool PrepareTextureMailbox(
       cc::TextureMailbox* mailbox,
-      scoped_ptr<cc::SingleReleaseCallback>* release_callback);
+      std::unique_ptr<cc::SingleReleaseCallback>* release_callback);
   void AttachedToNewLayer();
 
   // Notifications about the view's progress painting.  See PluginInstance.
@@ -163,7 +163,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
                                      gfx::Rect* op_rect,
                                      gfx::Point* delta);
 
-  void ReleaseCallback(scoped_ptr<cc::SharedBitmap> bitmap,
+  void ReleaseCallback(std::unique_ptr<cc::SharedBitmap> bitmap,
                        const gfx::Size& bitmap_size,
                        const gpu::SyncToken& sync_token,
                        bool lost_resource);
@@ -206,7 +206,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
 
   // This is a bitmap that was recently released by the compositor and may be
   // used to transfer bytes to the compositor again.
-  scoped_ptr<cc::SharedBitmap> cached_bitmap_;
+  std::unique_ptr<cc::SharedBitmap> cached_bitmap_;
   gfx::Size cached_bitmap_size_;
 
   friend class PepperGraphics2DHostTest;

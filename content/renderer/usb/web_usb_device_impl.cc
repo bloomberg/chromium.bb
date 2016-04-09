@@ -38,12 +38,12 @@ const char kTransferFailed[] = "Transfer failed.";
 // for any type |T|.
 template <typename CallbacksType>
 void RejectWithError(const blink::WebUSBError& error,
-                     scoped_ptr<CallbacksType> callbacks) {
+                     std::unique_ptr<CallbacksType> callbacks) {
   callbacks->onError(error);
 }
 
 template <typename CallbacksType>
-void RejectWithTransferError(scoped_ptr<CallbacksType> callbacks) {
+void RejectWithTransferError(std::unique_ptr<CallbacksType> callbacks) {
   RejectWithError(blink::WebUSBError(blink::WebUSBError::Error::Network,
                                      base::ASCIIToUTF16(kTransferFailed)),
                   std::move(callbacks));
@@ -124,7 +124,8 @@ void OnTransferIn(
       RejectWithTransferError(std::move(scoped_callbacks));
       return;
   }
-  scoped_ptr<blink::WebUSBTransferInfo> info(new blink::WebUSBTransferInfo());
+  std::unique_ptr<blink::WebUSBTransferInfo> info(
+      new blink::WebUSBTransferInfo());
   info->status.assign(
       std::vector<blink::WebUSBTransferInfo::Status>(1, web_status));
   info->data.assign(data);
@@ -150,7 +151,8 @@ void OnTransferOut(
   }
   // TODO(rockot): Device::ControlTransferOut should expose the number of bytes
   // actually transferred so we can send it from here.
-  scoped_ptr<blink::WebUSBTransferInfo> info(new blink::WebUSBTransferInfo());
+  std::unique_ptr<blink::WebUSBTransferInfo> info(
+      new blink::WebUSBTransferInfo());
   info->status.assign(
       std::vector<blink::WebUSBTransferInfo::Status>(1, web_status));
   info->bytesTransferred.assign(std::vector<uint32_t>(1, bytes_written));
@@ -162,7 +164,8 @@ void OnIsochronousTransferIn(
     mojo::Array<uint8_t> data,
     mojo::Array<device::usb::IsochronousPacketPtr> packets) {
   auto scoped_callbacks = callbacks.PassCallbacks();
-  scoped_ptr<blink::WebUSBTransferInfo> info(new blink::WebUSBTransferInfo());
+  std::unique_ptr<blink::WebUSBTransferInfo> info(
+      new blink::WebUSBTransferInfo());
   info->data.assign(data);
   info->status =
       blink::WebVector<blink::WebUSBTransferInfo::Status>(packets.size());
@@ -193,7 +196,8 @@ void OnIsochronousTransferOut(
     ScopedWebCallbacks<blink::WebUSBDeviceTransferCallbacks> callbacks,
     mojo::Array<device::usb::IsochronousPacketPtr> packets) {
   auto scoped_callbacks = callbacks.PassCallbacks();
-  scoped_ptr<blink::WebUSBTransferInfo> info(new blink::WebUSBTransferInfo());
+  std::unique_ptr<blink::WebUSBTransferInfo> info(
+      new blink::WebUSBTransferInfo());
   info->status =
       blink::WebVector<blink::WebUSBTransferInfo::Status>(packets.size());
   info->bytesTransferred = blink::WebVector<uint32_t>(packets.size());

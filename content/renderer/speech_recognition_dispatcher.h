@@ -6,9 +6,9 @@
 #define CONTENT_RENDERER_SPEECH_RECOGNITION_DISPATCHER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "content/public/common/speech_recognition_result.h"
@@ -84,7 +84,7 @@ class SpeechRecognitionDispatcher : public RenderViewObserver,
   blink::WebMediaStreamTrack audio_track_;
 
   // Audio sink used to provide audio from the track.
-  scoped_ptr<SpeechRecognitionAudioSink> speech_audio_sink_;
+  std::unique_ptr<SpeechRecognitionAudioSink> speech_audio_sink_;
 #endif
 
   typedef std::map<int, blink::WebSpeechRecognitionHandle> HandleMap;

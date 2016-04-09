@@ -85,8 +85,8 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   ~InputEventFilter() override;
 
   void ForwardToHandler(const IPC::Message& message);
-  void SendMessage(scoped_ptr<IPC::Message> message);
-  void SendMessageOnIOThread(scoped_ptr<IPC::Message> message);
+  void SendMessage(std::unique_ptr<IPC::Message> message);
+  void SendMessageOnIOThread(std::unique_ptr<IPC::Message> message);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   base::Callback<void(const IPC::Message&)> main_listener_;
@@ -106,14 +106,14 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   std::set<int> routes_;
 
   using RouteQueueMap =
-      std::unordered_map<int, scoped_ptr<MainThreadEventQueue>>;
+      std::unordered_map<int, std::unique_ptr<MainThreadEventQueue>>;
   RouteQueueMap route_queues_;
 
   // Used to intercept overscroll notifications while an event is being
   // dispatched.  If the event causes overscroll, the overscroll metadata can be
   // bundled in the event ack, saving an IPC.  Note that we must continue
   // supporting overscroll IPC notifications due to fling animation updates.
-  scoped_ptr<DidOverscrollParams>* current_overscroll_params_;
+  std::unique_ptr<DidOverscrollParams>* current_overscroll_params_;
 };
 
 }  // namespace content

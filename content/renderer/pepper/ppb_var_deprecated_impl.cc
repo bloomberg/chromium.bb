@@ -75,7 +75,7 @@ class ObjectAccessor {
  private:
   V8ObjectVar* object_var_;
   PepperPluginInstanceImpl* instance_;
-  scoped_ptr<V8VarConverter> converter_;
+  std::unique_ptr<V8VarConverter> converter_;
 };
 
 bool IsValidIdentifer(PP_Var identifier, PP_Var* exception) {
@@ -253,7 +253,7 @@ PP_Var CallDeprecatedInternal(PP_Var var,
     return PP_MakeUndefined();
   }
 
-  scoped_ptr<v8::Local<v8::Value>[] > converted_args(
+  std::unique_ptr<v8::Local<v8::Value>[]> converted_args(
       new v8::Local<v8::Value>[argc]);
   for (uint32_t i = 0; i < argc; ++i) {
     converted_args[i] = try_catch.ToV8(argv[i]);

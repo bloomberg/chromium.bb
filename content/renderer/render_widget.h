@@ -10,12 +10,12 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -185,8 +185,10 @@ class CONTENT_EXPORT RenderWidget
                            float page_scale,
                            float top_controls_delta) override;
   void BeginMainFrame(double frame_time_sec) override;
-  scoped_ptr<cc::OutputSurface> CreateOutputSurface(bool fallback) override;
-  scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource() override;
+  std::unique_ptr<cc::OutputSurface> CreateOutputSurface(
+      bool fallback) override;
+  std::unique_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource()
+      override;
   void DidCommitAndDrawCompositorFrame() override;
   void DidCommitCompositorFrame() override;
   void DidCompletePageScaleAnimation() override;
@@ -198,9 +200,10 @@ class CONTENT_EXPORT RenderWidget
   void OnSwapBuffersComplete() override;
   void OnSwapBuffersPosted() override;
   void RecordFrameTimingEvents(
-      scoped_ptr<cc::FrameTimingTracker::CompositeTimingSet> composite_events,
-      scoped_ptr<cc::FrameTimingTracker::MainFrameTimingSet> main_frame_events)
-      override;
+      std::unique_ptr<cc::FrameTimingTracker::CompositeTimingSet>
+          composite_events,
+      std::unique_ptr<cc::FrameTimingTracker::MainFrameTimingSet>
+          main_frame_events) override;
   void RequestScheduleAnimation() override;
   void UpdateVisualState() override;
   void WillBeginCompositorFrame() override;
@@ -217,7 +220,7 @@ class CONTENT_EXPORT RenderWidget
 
   void OnDidHandleKeyEvent() override;
   void OnDidOverscroll(const DidOverscrollParams& params) override;
-  void OnInputEventAck(scoped_ptr<InputEventAck> input_event_ack) override;
+  void OnInputEventAck(std::unique_ptr<InputEventAck> input_event_ack) override;
   void NotifyInputEventHandled(
       blink::WebInputEvent::Type handled_type) override;
   void SetInputHandler(RenderWidgetInputHandler* input_handler) override;
@@ -307,7 +310,7 @@ class CONTENT_EXPORT RenderWidget
   // Send a synthetic gesture to the browser to be queued to the synthetic
   // gesture controller.
   void QueueSyntheticGesture(
-      scoped_ptr<SyntheticGestureParams> gesture_params,
+      std::unique_ptr<SyntheticGestureParams> gesture_params,
       const SyntheticGestureCompletionCallback& callback);
 
   // Deliveres |message| together with compositor state change updates. The
@@ -512,7 +515,7 @@ class CONTENT_EXPORT RenderWidget
 
   // QueueMessage implementation extracted into a static method for easy
   // testing.
-  static scoped_ptr<cc::SwapPromise> QueueMessageImpl(
+  static std::unique_ptr<cc::SwapPromise> QueueMessageImpl(
       IPC::Message* msg,
       MessageDeliveryPolicy policy,
       FrameSwapMessageQueue* frame_swap_message_queue,
@@ -559,8 +562,8 @@ class CONTENT_EXPORT RenderWidget
   void didUpdateTextOfFocusedElementByNonUserInput() override;
 
   // Creates a 3D context associated with this view.
-  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateGraphicsContext3D(
-      gpu::GpuChannelHost* gpu_channel_host);
+  std::unique_ptr<WebGraphicsContext3DCommandBufferImpl>
+  CreateGraphicsContext3D(gpu::GpuChannelHost* gpu_channel_host);
 
   // Sends an ACK to the browser process during the next compositor frame.
   void OnWaitNextFrameForTests(int routing_id);
@@ -581,7 +584,7 @@ class CONTENT_EXPORT RenderWidget
   RenderWidgetOwnerDelegate* owner_delegate_;
 
   // This is lazily constructed and must not outlive webwidget_.
-  scoped_ptr<RenderWidgetCompositor> compositor_;
+  std::unique_ptr<RenderWidgetCompositor> compositor_;
 
   // Set to the ID of the view that initiated creating this view, if any. When
   // the view was initiated by the browser (the common case), this will be
@@ -703,7 +706,7 @@ class CONTENT_EXPORT RenderWidget
   gfx::Rect view_screen_rect_;
   gfx::Rect window_screen_rect_;
 
-  scoped_ptr<RenderWidgetInputHandler> input_handler_;
+  std::unique_ptr<RenderWidgetInputHandler> input_handler_;
 
   // The time spent in input handlers this frame. Used to throttle input acks.
   base::TimeDelta total_input_handling_time_this_frame_;
@@ -738,7 +741,7 @@ class CONTENT_EXPORT RenderWidget
   std::deque<blink::WebTextInputInfo> text_input_info_history_;
 #endif
 
-  scoped_ptr<RenderWidgetScreenMetricsEmulator> screen_metrics_emulator_;
+  std::unique_ptr<RenderWidgetScreenMetricsEmulator> screen_metrics_emulator_;
 
   // Popups may be displaced when screen metrics emulation is enabled.
   // These values are used to properly adjust popup position.
@@ -747,7 +750,7 @@ class CONTENT_EXPORT RenderWidget
   float popup_origin_scale_for_emulation_;
 
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
-  scoped_ptr<ResizingModeSelector> resizing_mode_selector_;
+  std::unique_ptr<ResizingModeSelector> resizing_mode_selector_;
 
   // Lists of RenderFrameProxy objects that need to be notified of
   // compositing-related events (e.g. DidCommitCompositorFrame).
@@ -764,7 +767,7 @@ class CONTENT_EXPORT RenderWidget
   bool has_host_context_menu_location_;
   gfx::Point host_context_menu_location_;
 
-  scoped_ptr<scheduler::RenderWidgetSchedulingState>
+  std::unique_ptr<scheduler::RenderWidgetSchedulingState>
       render_widget_scheduling_state_;
 
  private:

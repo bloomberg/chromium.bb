@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
@@ -46,7 +47,7 @@ class PPB_Buffer_Impl : public ppapi::Resource,
   explicit PPB_Buffer_Impl(PP_Instance instance);
   bool Init(uint32_t size);
 
-  scoped_ptr<base::SharedMemory> shared_memory_;
+  std::unique_ptr<base::SharedMemory> shared_memory_;
   uint32_t size_;
   int map_count_;
 

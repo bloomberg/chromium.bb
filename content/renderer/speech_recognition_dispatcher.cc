@@ -272,7 +272,7 @@ void SpeechRecognitionDispatcher::OnAudioReceiverReady(
 
   // The instantiation and type of SyncSocket is up to the client since it
   // is dependency injected to the SpeechRecognitionAudioSink.
-  scoped_ptr<base::SyncSocket> socket(new base::CancelableSyncSocket(
+  std::unique_ptr<base::SyncSocket> socket(new base::CancelableSyncSocket(
       base::SyncSocket::UnwrapHandle(descriptor)));
 
   speech_audio_sink_.reset(new SpeechRecognitionAudioSink(

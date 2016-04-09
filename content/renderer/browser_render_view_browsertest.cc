@@ -84,7 +84,7 @@ void InterceptNetworkTransactions(net::URLRequestContextGetter* getter,
   net::HttpCache* cache(
       getter->GetURLRequestContext()->http_transaction_factory()->GetCache());
   DCHECK(cache);
-  scoped_ptr<net::FailingHttpTransactionFactory> factory(
+  std::unique_ptr<net::FailingHttpTransactionFactory> factory(
       new net::FailingHttpTransactionFactory(cache->GetSession(), error));
   // Throw away old version; since this is a browser test, there is no
   // need to restore the old state.
@@ -100,7 +100,7 @@ void CallOnUIThreadValidatingReturn(const base::Closure& callback,
 
 // Must be called on IO thread.  The callback will be called on
 // completion of cache clearing on the UI thread.
-void BackendClearCache(scoped_ptr<disk_cache::Backend*> backend,
+void BackendClearCache(std::unique_ptr<disk_cache::Backend*> backend,
                        const base::Closure& callback,
                        int rv) {
   DCHECK(*backend);
@@ -117,7 +117,7 @@ void ClearCache(net::URLRequestContextGetter* getter,
   net::HttpCache* cache(
       getter->GetURLRequestContext()->http_transaction_factory()->GetCache());
   DCHECK(cache);
-  scoped_ptr<disk_cache::Backend*> backend(new disk_cache::Backend*);
+  std::unique_ptr<disk_cache::Backend*> backend(new disk_cache::Backend*);
   *backend = NULL;
   disk_cache::Backend** backend_ptr = backend.get();
 

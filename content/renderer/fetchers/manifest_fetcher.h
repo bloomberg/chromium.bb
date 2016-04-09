@@ -5,11 +5,11 @@
 #ifndef CONTENT_RENDERER_FETCHERS_MANIFEST_FETCHER_H_
 #define CONTENT_RENDERER_FETCHERS_MANIFEST_FETCHER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 
@@ -49,7 +49,7 @@ class CONTENT_EXPORT ManifestFetcher {
 
   bool completed_;
   Callback callback_;
-  scoped_ptr<ResourceFetcher> fetcher_;
+  std::unique_ptr<ResourceFetcher> fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestFetcher);
 };

@@ -39,7 +39,7 @@ CompositorMusConnection::CompositorMusConnection(
 }
 
 void CompositorMusConnection::AttachSurfaceOnMainThread(
-    scoped_ptr<mus::WindowSurfaceBinding> surface_binding) {
+    std::unique_ptr<mus::WindowSurfaceBinding> surface_binding) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   compositor_task_runner_->PostTask(
       FROM_HERE,
@@ -50,7 +50,7 @@ void CompositorMusConnection::AttachSurfaceOnMainThread(
 CompositorMusConnection::~CompositorMusConnection() {}
 
 void CompositorMusConnection::AttachSurfaceOnCompositorThread(
-    scoped_ptr<mus::WindowSurfaceBinding> surface_binding) {
+    std::unique_ptr<mus::WindowSurfaceBinding> surface_binding) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
   window_surface_binding_ = std::move(surface_binding);
   if (root_) {
@@ -77,7 +77,7 @@ void CompositorMusConnection::OnConnectionLostOnMainThread() {
 }
 
 void CompositorMusConnection::OnWindowInputEventOnMainThread(
-    scoped_ptr<blink::WebInputEvent> web_event,
+    std::unique_ptr<blink::WebInputEvent> web_event,
     const base::Callback<void(bool)>& ack) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   RenderWidgetMusConnection* connection =
@@ -117,11 +117,12 @@ void CompositorMusConnection::OnEmbed(mus::Window* root) {
 void CompositorMusConnection::OnWindowInputEvent(
     mus::Window* window,
     const ui::Event& event,
-    scoped_ptr<base::Callback<void(bool)>>* ack_callback) {
+    std::unique_ptr<base::Callback<void(bool)>>* ack_callback) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
   // TODO(moshayedi): Convert ui::Event directly to blink::WebInputEvent.
-  scoped_ptr<blink::WebInputEvent> web_event(
-      mus::mojom::Event::From(event).To<scoped_ptr<blink::WebInputEvent>>());
+  std::unique_ptr<blink::WebInputEvent> web_event(
+      mus::mojom::Event::From(event)
+          .To<std::unique_ptr<blink::WebInputEvent>>());
   // TODO(sad): We probably need to plumb LatencyInfo through Mus.
   ui::LatencyInfo info;
   InputEventAckState ack_state = input_handler_manager_->HandleInputEvent(

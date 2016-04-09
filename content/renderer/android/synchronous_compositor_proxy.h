@@ -141,7 +141,7 @@ class SynchronousCompositorProxy
 
   // From browser.
   size_t bytes_limit_;
-  scoped_ptr<SharedMemoryWithSize> software_draw_shm_;
+  std::unique_ptr<SharedMemoryWithSize> software_draw_shm_;
 
   // To browser.
   mutable uint32_t version_;  // Mustable so PopulateCommonParams can be const.

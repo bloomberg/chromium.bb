@@ -5,7 +5,8 @@
 #ifndef CONTENT_RENDERER_INPUT_RENDER_WIDGET_INPUT_HANDLER_DELEGATE_H_
 #define CONTENT_RENDERER_INPUT_RENDER_WIDGET_INPUT_HANDLER_DELEGATE_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack.h"
 
@@ -63,7 +64,8 @@ class CONTENT_EXPORT RenderWidgetInputHandlerDelegate {
   virtual void OnDidOverscroll(const DidOverscrollParams& params) = 0;
 
   // Called when an ACK is ready to be sent to the input event provider.
-  virtual void OnInputEventAck(scoped_ptr<InputEventAck> input_event_ack) = 0;
+  virtual void OnInputEventAck(
+      std::unique_ptr<InputEventAck> input_event_ack) = 0;
 
   // Called when an event with a notify dispatch type
   // (DISPATCH_TYPE_*_NOTIFY_MAIN) of |handled_type| has been processed

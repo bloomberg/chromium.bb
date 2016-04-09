@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <cmath>
+#include <memory>
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -171,7 +171,7 @@ class V8VarConverterTest : public testing::Test {
       : isolate_(v8::Isolate::GetCurrent()) {
     PP_Instance dummy = 1234;
     converter_.reset(new V8VarConverter(
-        dummy, scoped_ptr<ResourceConverter>(new MockResourceConverter)));
+        dummy, std::unique_ptr<ResourceConverter>(new MockResourceConverter)));
   }
   ~V8VarConverterTest() override {}
 
@@ -233,7 +233,7 @@ class V8VarConverterTest : public testing::Test {
   // Context for the JavaScript in the test.
   v8::Persistent<v8::Context> context_;
 
-  scoped_ptr<V8VarConverter> converter_;
+  std::unique_ptr<V8VarConverter> converter_;
 
  private:
   base::MessageLoop message_loop_;  // Required to receive callbacks.

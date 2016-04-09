@@ -52,7 +52,7 @@ void RunMain(base::WeakPtr<gin::Runner> runner,
 using ModuleSourceMap =
     std::map<std::string, scoped_refptr<base::RefCountedMemory>>;
 
-base::LazyInstance<scoped_ptr<ModuleSourceMap>>::Leaky g_module_sources;
+base::LazyInstance<std::unique_ptr<ModuleSourceMap>>::Leaky g_module_sources;
 
 scoped_refptr<base::RefCountedMemory> GetBuiltinModuleData(
     const std::string& path) {
@@ -70,7 +70,7 @@ scoped_refptr<base::RefCountedMemory> GetBuiltinModuleData(
     { mojo::kValidatorModuleName, IDR_MOJO_VALIDATOR_JS },
   };
 
-  scoped_ptr<ModuleSourceMap>& module_sources = g_module_sources.Get();
+  std::unique_ptr<ModuleSourceMap>& module_sources = g_module_sources.Get();
   if (!module_sources) {
     // Initialize the module source map on first access.
     module_sources.reset(new ModuleSourceMap);
@@ -186,7 +186,7 @@ void MojoContextState::OnFetchModuleComplete(
   DCHECK_EQ(module_prefix_ + id, response.url().string().utf8());
   // We can't delete fetch right now as the arguments to this function come from
   // it and are used below. Instead use a scope_ptr to cleanup.
-  scoped_ptr<ResourceFetcher> deleter(fetcher);
+  std::unique_ptr<ResourceFetcher> deleter(fetcher);
   module_fetchers_.weak_erase(
       std::find(module_fetchers_.begin(), module_fetchers_.end(), fetcher));
   if (data.empty()) {

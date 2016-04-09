@@ -97,7 +97,7 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
   gpu::SyncToken sync_token_;
   bool has_alpha_;
   scoped_refptr<gpu::GpuChannelHost> channel_;
-  scoped_ptr<gpu::CommandBufferProxyImpl> command_buffer_;
+  std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_;
 
   base::WeakPtrFactory<PPB_Graphics3D_Impl> weak_ptr_factory_;
 

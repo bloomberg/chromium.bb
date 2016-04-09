@@ -100,7 +100,7 @@ PepperURLLoaderHost::~PepperURLLoaderHost() {
   // re-entering the scoped_ptr destructor with the same scoped_ptr object
   // via loader_.reset(). Be sure that loader_ is first NULL then destroy
   // the scoped_ptr. See http://crbug.com/159429.
-  scoped_ptr<blink::WebURLLoader> for_destruction_only(loader_.release());
+  std::unique_ptr<blink::WebURLLoader> for_destruction_only(loader_.release());
 }
 
 int32_t PepperURLLoaderHost::OnResourceMessageReceived(

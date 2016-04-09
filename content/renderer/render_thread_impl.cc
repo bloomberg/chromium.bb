@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory_allocator.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -251,8 +252,8 @@ class WebThreadForCompositor : public WebThreadImplForWorkerScheduler {
 
  private:
   // WebThreadImplForWorkerScheduler:
-  scoped_ptr<scheduler::WorkerScheduler> CreateWorkerScheduler() override {
-    return make_scoped_ptr(new scheduler::CompositorWorkerScheduler(thread()));
+  std::unique_ptr<scheduler::WorkerScheduler> CreateWorkerScheduler() override {
+    return base::WrapUnique(new scheduler::CompositorWorkerScheduler(thread()));
   }
 
   DISALLOW_COPY_AND_ASSIGN(WebThreadForCompositor);
@@ -326,7 +327,7 @@ void AddHistogramSample(void* hist, int sample) {
   histogram->Add(sample);
 }
 
-scoped_ptr<cc::SharedBitmap> AllocateSharedBitmapFunction(
+std::unique_ptr<cc::SharedBitmap> AllocateSharedBitmapFunction(
     const gfx::Size& size) {
   return ChildThreadImpl::current()->shared_bitmap_manager()->
       AllocateSharedBitmap(size);
@@ -570,7 +571,7 @@ bool RenderThreadImpl::HistogramCustomizer::IsAlexaTop10NonGoogleSite(
 // static
 RenderThreadImpl* RenderThreadImpl::Create(
     const InProcessChildThreadParams& params) {
-  scoped_ptr<scheduler::RendererScheduler> renderer_scheduler =
+  std::unique_ptr<scheduler::RendererScheduler> renderer_scheduler =
       scheduler::RendererScheduler::Create();
   scoped_refptr<base::SingleThreadTaskRunner> test_task_counter;
   return new RenderThreadImpl(
@@ -579,8 +580,8 @@ RenderThreadImpl* RenderThreadImpl::Create(
 
 // static
 RenderThreadImpl* RenderThreadImpl::Create(
-    scoped_ptr<base::MessageLoop> main_message_loop,
-    scoped_ptr<scheduler::RendererScheduler> renderer_scheduler) {
+    std::unique_ptr<base::MessageLoop> main_message_loop,
+    std::unique_ptr<scheduler::RendererScheduler> renderer_scheduler) {
   return new RenderThreadImpl(std::move(main_message_loop),
                               std::move(renderer_scheduler));
 }
@@ -591,7 +592,7 @@ RenderThreadImpl* RenderThreadImpl::current() {
 
 RenderThreadImpl::RenderThreadImpl(
     const InProcessChildThreadParams& params,
-    scoped_ptr<scheduler::RendererScheduler> scheduler,
+    std::unique_ptr<scheduler::RendererScheduler> scheduler,
     scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue)
     : ChildThreadImpl(Options::Builder()
                           .InBrowserProcess(params)
@@ -605,11 +606,10 @@ RenderThreadImpl::RenderThreadImpl(
 // When we run plugins in process, we actually run them on the render thread,
 // which means that we need to make the render thread pump UI events.
 RenderThreadImpl::RenderThreadImpl(
-    scoped_ptr<base::MessageLoop> main_message_loop,
-    scoped_ptr<scheduler::RendererScheduler> scheduler)
-    : ChildThreadImpl(Options::Builder()
-                          .UseMojoChannel(ShouldUseMojoChannel())
-                          .Build()),
+    std::unique_ptr<base::MessageLoop> main_message_loop,
+    std::unique_ptr<scheduler::RendererScheduler> scheduler)
+    : ChildThreadImpl(
+          Options::Builder().UseMojoChannel(ShouldUseMojoChannel()).Build()),
       renderer_scheduler_(std::move(scheduler)),
       main_message_loop_(std::move(main_message_loop)),
       raster_worker_pool_(new RasterWorkerPool()) {
@@ -1339,8 +1339,8 @@ void RenderThreadImpl::RecordComputedAction(const std::string& action) {
   Send(new ViewHostMsg_UserMetricsRecordAction(action));
 }
 
-scoped_ptr<base::SharedMemory>
-    RenderThreadImpl::HostAllocateSharedMemoryBuffer(size_t size) {
+std::unique_ptr<base::SharedMemory>
+RenderThreadImpl::HostAllocateSharedMemoryBuffer(size_t size) {
   return ChildThreadImpl::AllocateSharedMemory(size, thread_safe_sender());
 }
 
@@ -1489,7 +1489,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
   return nullptr;
 }
 
-scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
+std::unique_ptr<WebGraphicsContext3DCommandBufferImpl>
 RenderThreadImpl::CreateOffscreenContext3d() {
   // This is used to create a few different offscreen contexts:
   // - The shared main thread context (offscreen) used by blink for canvas
@@ -1508,7 +1508,7 @@ RenderThreadImpl::CreateOffscreenContext3d() {
   bool automatic_flushes = false;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(EstablishGpuChannelSync(
       CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
-  return make_scoped_ptr(
+  return base::WrapUnique(
       WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
           gpu_channel_host.get(), attributes, gfx::PreferIntegratedGpu,
           share_resources, automatic_flushes,
@@ -1676,7 +1676,7 @@ cc::ContextProvider* RenderThreadImpl::GetSharedMainThreadContextProvider() {
   return SharedMainThreadContextProvider().get();
 }
 
-scoped_ptr<cc::BeginFrameSource>
+std::unique_ptr<cc::BeginFrameSource>
 RenderThreadImpl::CreateExternalBeginFrameSource(int routing_id) {
 #if defined(OS_ANDROID)
   if (SynchronousCompositorFactory* factory =
@@ -1684,11 +1684,11 @@ RenderThreadImpl::CreateExternalBeginFrameSource(int routing_id) {
     DCHECK(!sync_compositor_message_filter_);
     return factory->CreateExternalBeginFrameSource(routing_id);
   } else if (sync_compositor_message_filter_) {
-    return make_scoped_ptr(new SynchronousCompositorExternalBeginFrameSource(
+    return base::WrapUnique(new SynchronousCompositorExternalBeginFrameSource(
         routing_id, sync_compositor_message_filter_.get()));
   }
 #endif
-  return make_scoped_ptr(new CompositorExternalBeginFrameSource(
+  return base::WrapUnique(new CompositorExternalBeginFrameSource(
       compositor_message_filter_.get(), sync_message_filter(), routing_id));
 }
 
@@ -1718,7 +1718,7 @@ RenderThreadImpl::GetIOThreadTaskRunner() {
   return io_thread_task_runner_;
 }
 
-scoped_ptr<base::SharedMemory> RenderThreadImpl::AllocateSharedMemory(
+std::unique_ptr<base::SharedMemory> RenderThreadImpl::AllocateSharedMemory(
     size_t size) {
   return HostAllocateSharedMemoryBuffer(size);
 }
@@ -1870,7 +1870,7 @@ blink::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(
     media_stream_center_ = GetContentClient()->renderer()
         ->OverrideCreateWebMediaStreamCenter(client);
     if (!media_stream_center_) {
-      scoped_ptr<MediaStreamCenter> media_stream_center(
+      std::unique_ptr<MediaStreamCenter> media_stream_center(
           new MediaStreamCenter(client, GetPeerConnectionDependencyFactory()));
       media_stream_center_ = media_stream_center.release();
     }

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <stack>
 #include <string>
 
@@ -15,7 +16,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/host_array_buffer_var.h"
 #include "content/renderer/pepper/host_globals.h"
@@ -240,7 +240,7 @@ bool GetOrCreateVar(v8::Local<v8::Value> val,
     // 3) If the object is an array, return an ArrayVar.
     // 4) If the object can be converted to a resource, return the ResourceVar.
     // 5) Otherwise return a DictionaryVar.
-    scoped_ptr<blink::WebArrayBuffer> web_array_buffer(
+    std::unique_ptr<blink::WebArrayBuffer> web_array_buffer(
         blink::WebArrayBufferConverter::createFromV8Value(val, isolate));
     if (web_array_buffer.get()) {
       scoped_refptr<HostArrayBufferVar> buffer_var(
@@ -290,8 +290,9 @@ V8VarConverter::V8VarConverter(PP_Instance instance,
   resource_converter_.reset(new ResourceConverterImpl(instance));
 }
 
-V8VarConverter::V8VarConverter(PP_Instance instance,
-                               scoped_ptr<ResourceConverter> resource_converter)
+V8VarConverter::V8VarConverter(
+    PP_Instance instance,
+    std::unique_ptr<ResourceConverter> resource_converter)
     : instance_(instance),
       object_vars_allowed_(kDisallowObjectVars),
       resource_converter_(resource_converter.release()) {}

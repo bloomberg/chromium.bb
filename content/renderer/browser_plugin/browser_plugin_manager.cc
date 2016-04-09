@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
-#include "base/memory/scoped_ptr.h"
+
+#include <memory>
+
 #include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/frame_messages.h"

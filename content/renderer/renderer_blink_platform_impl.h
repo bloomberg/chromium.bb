@@ -8,10 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "cc/blink/web_compositor_support_impl.h"
 #include "content/child/blink_platform_impl.h"
@@ -203,7 +204,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // Note that |observer| will be owned by this object after the call.
   void SetPlatformEventObserverForTesting(
       blink::WebPlatformEventType type,
-      scoped_ptr<PlatformEventObserverBase> observer);
+      std::unique_ptr<PlatformEventObserverBase> observer);
 
   // Disables the WebSandboxSupport implementation for testing.
   // Tests that do not set up a full sandbox environment should call
@@ -243,20 +244,20 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void SendFakeDeviceEventDataForTesting(blink::WebPlatformEventType type);
   device::VibrationManagerPtr& GetConnectedVibrationManagerService();
 
-  scoped_ptr<blink::WebThread> main_thread_;
+  std::unique_ptr<blink::WebThread> main_thread_;
 
-  scoped_ptr<RendererClipboardDelegate> clipboard_delegate_;
-  scoped_ptr<WebClipboardImpl> clipboard_;
+  std::unique_ptr<RendererClipboardDelegate> clipboard_delegate_;
+  std::unique_ptr<WebClipboardImpl> clipboard_;
 
   class FileUtilities;
-  scoped_ptr<FileUtilities> file_utilities_;
+  std::unique_ptr<FileUtilities> file_utilities_;
 
   class MimeRegistry;
-  scoped_ptr<MimeRegistry> mime_registry_;
+  std::unique_ptr<MimeRegistry> mime_registry_;
 
 #if !defined(OS_ANDROID) && !defined(OS_WIN)
   class SandboxSupport;
-  scoped_ptr<SandboxSupport> sandbox_support_;
+  std::unique_ptr<SandboxSupport> sandbox_support_;
 #endif
 
   // This counter keeps track of the number of times sudden termination is
@@ -268,15 +269,15 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // If true, then a GetPlugins call is allowed to rescan the disk.
   bool plugin_refresh_allowed_;
 
-  scoped_ptr<blink::WebIDBFactory> web_idb_factory_;
+  std::unique_ptr<blink::WebIDBFactory> web_idb_factory_;
 
-  scoped_ptr<blink::WebBlobRegistry> blob_registry_;
+  std::unique_ptr<blink::WebBlobRegistry> blob_registry_;
 
   WebPublicSuffixListImpl public_suffix_list_;
 
-  scoped_ptr<DeviceLightEventPump> device_light_event_pump_;
-  scoped_ptr<DeviceMotionEventPump> device_motion_event_pump_;
-  scoped_ptr<DeviceOrientationEventPump> device_orientation_event_pump_;
+  std::unique_ptr<DeviceLightEventPump> device_light_event_pump_;
+  std::unique_ptr<DeviceMotionEventPump> device_motion_event_pump_;
+  std::unique_ptr<DeviceOrientationEventPump> device_orientation_event_pump_;
 
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
@@ -284,11 +285,11 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<QuotaMessageFilter> quota_message_filter_;
 
-  scoped_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
+  std::unique_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
 
   cc_blink::WebCompositorSupportImpl compositor_support_;
 
-  scoped_ptr<blink::WebScrollbarBehavior> web_scrollbar_behavior_;
+  std::unique_ptr<blink::WebScrollbarBehavior> web_scrollbar_behavior_;
 
   // Handle to the Vibration mojo service.
   device::VibrationManagerPtr vibration_manager_;
@@ -300,9 +301,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   WebTrialTokenValidatorImpl trial_token_validator_;
 
-  scoped_ptr<LocalStorageCachedAreas> local_storage_cached_areas_;
+  std::unique_ptr<LocalStorageCachedAreas> local_storage_cached_areas_;
 
-  scoped_ptr<BlinkServiceRegistryImpl> blink_service_registry_;
+  std::unique_ptr<BlinkServiceRegistryImpl> blink_service_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererBlinkPlatformImpl);
 };

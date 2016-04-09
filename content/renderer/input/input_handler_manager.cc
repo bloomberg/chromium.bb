@@ -104,7 +104,7 @@ void InputHandlerManager::AddInputHandlerOnCompositorThread(
   TRACE_EVENT1("input",
       "InputHandlerManager::AddInputHandlerOnCompositorThread",
       "result", "AddingRoute");
-  scoped_ptr<InputHandlerWrapper> wrapper(new InputHandlerWrapper(
+  std::unique_ptr<InputHandlerWrapper> wrapper(new InputHandlerWrapper(
       this, routing_id, main_task_runner, input_handler, render_view_impl,
       enable_smooth_scrolling, enable_wheel_gestures));
   client_->DidAddInputHandler(routing_id);

@@ -7,8 +7,9 @@
 
 #include "third_party/WebKit/public/web/WebPlugin.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/renderer/mouse_lock_dispatcher.h"

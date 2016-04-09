@@ -5,8 +5,9 @@
 #ifndef CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_FACTORY_H_
 #define CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_FACTORY_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/config/gpu_info.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
@@ -48,7 +49,7 @@ class SynchronousCompositorFactory {
 
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorTaskRunner() = 0;
-  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
+  virtual std::unique_ptr<cc::OutputSurface> CreateOutputSurface(
       int routing_id,
       uint32_t output_surface_id,
       const scoped_refptr<FrameSwapMessageQueue>& frame_swap_message_queue,
@@ -60,7 +61,7 @@ class SynchronousCompositorFactory {
   virtual SynchronousInputHandlerProxyClient*
   GetSynchronousInputHandlerProxyClient() = 0;
 
-  virtual scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
+  virtual std::unique_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) = 0;
 
  protected:

@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
@@ -93,7 +93,7 @@ class CONTENT_EXPORT PepperWebSocketHost
 
   // Keeps the WebKit side WebSocket object. This is used for calling WebKit
   // side functions via WebKit API.
-  scoped_ptr<blink::WebPepperSocket> websocket_;
+  std::unique_ptr<blink::WebPepperSocket> websocket_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperWebSocketHost);
 };

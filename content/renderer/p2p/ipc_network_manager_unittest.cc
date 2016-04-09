@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
 #include "content/renderer/p2p/ipc_network_manager.h"
+
+#include <memory>
+
 #include "content/renderer/p2p/network_list_manager.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_change_notifier.h"
@@ -41,8 +43,8 @@ class IpcNetworkManagerTest : public testing::Test {
         network_manager_(new IpcNetworkManager(network_list_manager_.get())) {}
 
  protected:
-  scoped_ptr<MockP2PSocketDispatcher> network_list_manager_;
-  scoped_ptr<IpcNetworkManager> network_manager_;
+  std::unique_ptr<MockP2PSocketDispatcher> network_list_manager_;
+  std::unique_ptr<IpcNetworkManager> network_manager_;
 };
 
 // Test overall logic of IpcNetworkManager on OnNetworkListChanged

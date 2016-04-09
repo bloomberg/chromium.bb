@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "content/common/content_export.h"
 #include "ppapi/c/ppb_image_data.h"
@@ -108,7 +109,7 @@ class CONTENT_EXPORT PPB_ImageData_Impl
   PP_ImageDataFormat format_;
   int width_;
   int height_;
-  scoped_ptr<Backend> backend_;
+  std::unique_ptr<Backend> backend_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_ImageData_Impl);
 };
@@ -141,7 +142,7 @@ class ImageDataPlatformBackend : public PPB_ImageData_Impl::Backend {
   // swapped with another.
   int width_;
   int height_;
-  scoped_ptr<TransportDIB> dib_;
+  std::unique_ptr<TransportDIB> dib_;
 
   // When the device is mapped, this is the image. Null when umapped.
   sk_sp<SkCanvas> mapped_canvas_;
@@ -171,7 +172,7 @@ class ImageDataSimpleBackend : public PPB_ImageData_Impl::Backend {
   const SkBitmap* GetMappedBitmap() const override;
 
  private:
-  scoped_ptr<base::SharedMemory> shared_memory_;
+  std::unique_ptr<base::SharedMemory> shared_memory_;
   // skia_bitmap_ is backed by shared_memory_.
   SkBitmap skia_bitmap_;
   sk_sp<SkCanvas> skia_canvas_;

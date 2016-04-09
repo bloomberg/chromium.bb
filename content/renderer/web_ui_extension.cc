@@ -4,7 +4,8 @@
 
 #include "content/renderer/web_ui_extension.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/values.h"
 #include "content/common/view_messages.h"
 #include "content/public/child/v8_value_converter.h"
@@ -96,7 +97,7 @@ void WebUIExtension::Send(gin::Arguments* args) {
 
   // If they've provided an optional message parameter, convert that into a
   // Value to send to the browser process.
-  scoped_ptr<base::ListValue> content;
+  std::unique_ptr<base::ListValue> content;
   if (args->PeekNext().IsEmpty() || args->PeekNext()->IsUndefined()) {
     content.reset(new base::ListValue());
   } else {
@@ -106,7 +107,7 @@ void WebUIExtension::Send(gin::Arguments* args) {
       return;
     }
 
-    scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+    std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
 
     base::Value* value =
         converter->FromV8Value(obj, frame->mainWorldScriptContext());

@@ -5,10 +5,10 @@
 #ifndef CONTENT_RENDERER_INTERNAL_DOCUMENT_STATE_DATA_H_
 #define CONTENT_RENDERER_INTERNAL_DOCUMENT_STATE_DATA_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "url/gurl.h"

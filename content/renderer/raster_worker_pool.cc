@@ -134,7 +134,7 @@ void RasterWorkerPool::Start(int num_threads) {
   foreground_categories.push_back(cc::TASK_CATEGORY_FOREGROUND);
 
   for (int i = 0; i < num_threads; i++) {
-    scoped_ptr<base::SimpleThread> thread(new RasterWorkerPoolThread(
+    std::unique_ptr<base::SimpleThread> thread(new RasterWorkerPoolThread(
         base::StringPrintf("CompositorTileWorker%u",
                            static_cast<unsigned>(threads_.size() + 1))
             .c_str(),
@@ -154,7 +154,7 @@ void RasterWorkerPool::Start(int num_threads) {
   thread_options.set_priority(base::ThreadPriority::BACKGROUND);
 #endif
 
-  scoped_ptr<base::SimpleThread> thread(new RasterWorkerPoolThread(
+  std::unique_ptr<base::SimpleThread> thread(new RasterWorkerPoolThread(
       "CompositorTileWorkerBackground", thread_options, this,
       background_categories, &has_ready_to_run_background_tasks_cv_));
   thread->Start();

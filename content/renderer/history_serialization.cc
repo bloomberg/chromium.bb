@@ -198,12 +198,13 @@ PageState SingleHistoryItemToPageState(const WebHistoryItem& item) {
   return PageState::CreateFromEncodedData(encoded_data);
 }
 
-scoped_ptr<HistoryEntry> PageStateToHistoryEntry(const PageState& page_state) {
+std::unique_ptr<HistoryEntry> PageStateToHistoryEntry(
+    const PageState& page_state) {
   ExplodedPageState state;
   if (!DecodePageState(page_state.ToEncodedData(), &state))
-    return scoped_ptr<HistoryEntry>();
+    return std::unique_ptr<HistoryEntry>();
 
-  scoped_ptr<HistoryEntry> entry(new HistoryEntry());
+  std::unique_ptr<HistoryEntry> entry(new HistoryEntry());
   RecursivelyGenerateHistoryItem(state.top, entry->root_history_node());
 
   return entry;

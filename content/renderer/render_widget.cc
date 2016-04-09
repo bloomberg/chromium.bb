@@ -4,6 +4,7 @@
 
 #include "content/renderer/render_widget.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -12,7 +13,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -645,7 +646,7 @@ void RenderWidget::OnWasShown(bool needs_repainting,
   // Generate a full repaint.
   if (compositor_) {
     ui::LatencyInfo swap_latency_info(latency_info);
-    scoped_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor(
+    std::unique_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor(
         compositor_->CreateLatencyInfoSwapPromiseMonitor(&swap_latency_info));
     compositor_->SetNeedsForcedRedraw();
   }
@@ -702,7 +703,8 @@ void RenderWidget::BeginMainFrame(double frame_time_sec) {
   webwidget_->beginFrame(frame_time_sec);
 }
 
-scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
+std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
+    bool fallback) {
   DCHECK(webwidget_);
   // For widgets that are never visible, we don't start the compositor, so we
   // never get a request for a cc::OutputSurface.
@@ -749,10 +751,11 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
     vulkan_context_provider = cc::VulkanInProcessContextProvider::Create();
     if (vulkan_context_provider) {
       uint32_t output_surface_id = next_output_surface_id_++;
-      return scoped_ptr<cc::OutputSurface>(new DelegatedCompositorOutputSurface(
-          routing_id(), output_surface_id, context_provider,
-          worker_context_provider, vulkan_context_provider,
-          frame_swap_message_queue_));
+      return std::unique_ptr<cc::OutputSurface>(
+          new DelegatedCompositorOutputSurface(
+              routing_id(), output_surface_id, context_provider,
+              worker_context_provider, vulkan_context_provider,
+              frame_swap_message_queue_));
     }
 #endif
 
@@ -776,7 +779,7 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
           context_provider, worker_context_provider);
     } else if (RenderThreadImpl::current()->sync_compositor_message_filter()) {
       uint32_t output_surface_id = next_output_surface_id_++;
-      return make_scoped_ptr(new SynchronousCompositorOutputSurface(
+      return base::WrapUnique(new SynchronousCompositorOutputSurface(
           context_provider, worker_context_provider, routing_id(),
           output_surface_id, content::RenderThreadImpl::current()
                                  ->sync_compositor_message_filter(),
@@ -792,7 +795,7 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   if (!RenderThreadImpl::current() ||
       !RenderThreadImpl::current()->layout_test_mode()) {
     DCHECK(compositor_deps_->GetCompositorImplThreadTaskRunner());
-    return make_scoped_ptr(new DelegatedCompositorOutputSurface(
+    return base::WrapUnique(new DelegatedCompositorOutputSurface(
         routing_id(), output_surface_id, context_provider,
         worker_context_provider,
 #if defined(ENABLE_VULKAN)
@@ -802,10 +805,10 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   }
 
   if (!context_provider.get()) {
-    scoped_ptr<cc::SoftwareOutputDevice> software_device(
+    std::unique_ptr<cc::SoftwareOutputDevice> software_device(
         new cc::SoftwareOutputDevice());
 
-    return make_scoped_ptr(new CompositorOutputSurface(
+    return base::WrapUnique(new CompositorOutputSurface(
         routing_id(), output_surface_id, nullptr, nullptr,
 #if defined(ENABLE_VULKAN)
         nullptr,
@@ -813,12 +816,12 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
         std::move(software_device), frame_swap_message_queue_, true));
   }
 
-  return make_scoped_ptr(new MailboxOutputSurface(
+  return base::WrapUnique(new MailboxOutputSurface(
       routing_id(), output_surface_id, context_provider,
       worker_context_provider, frame_swap_message_queue_, cc::RGBA_8888));
 }
 
-scoped_ptr<cc::BeginFrameSource>
+std::unique_ptr<cc::BeginFrameSource>
 RenderWidget::CreateExternalBeginFrameSource() {
   return compositor_deps_->CreateExternalBeginFrameSource(routing_id_);
 }
@@ -896,8 +899,10 @@ void RenderWidget::OnSwapBuffersPosted() {
 }
 
 void RenderWidget::RecordFrameTimingEvents(
-    scoped_ptr<cc::FrameTimingTracker::CompositeTimingSet> composite_events,
-    scoped_ptr<cc::FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
+    std::unique_ptr<cc::FrameTimingTracker::CompositeTimingSet>
+        composite_events,
+    std::unique_ptr<cc::FrameTimingTracker::MainFrameTimingSet>
+        main_frame_events) {
   for (const auto& composite_event : *composite_events) {
     int64_t frameId = composite_event.first;
     const std::vector<cc::FrameTimingTracker::CompositeTimingEvent>& events =
@@ -1014,7 +1019,8 @@ void RenderWidget::OnDidOverscroll(const DidOverscrollParams& params) {
   Send(new InputHostMsg_DidOverscroll(routing_id_, params));
 }
 
-void RenderWidget::OnInputEventAck(scoped_ptr<InputEventAck> input_event_ack) {
+void RenderWidget::OnInputEventAck(
+    std::unique_ptr<InputEventAck> input_event_ack) {
   Send(new InputHostMsg_HandleInputEvent_ACK(routing_id_, *input_event_ack));
 }
 
@@ -1316,19 +1322,18 @@ void RenderWidget::ScheduleCompositeWithForcedRedraw() {
 }
 
 // static
-scoped_ptr<cc::SwapPromise> RenderWidget::QueueMessageImpl(
+std::unique_ptr<cc::SwapPromise> RenderWidget::QueueMessageImpl(
     IPC::Message* msg,
     MessageDeliveryPolicy policy,
     FrameSwapMessageQueue* frame_swap_message_queue,
     scoped_refptr<IPC::SyncMessageFilter> sync_message_filter,
     int source_frame_number) {
   bool first_message_for_frame = false;
-  frame_swap_message_queue->QueueMessageForFrame(policy,
-                                                 source_frame_number,
-                                                 make_scoped_ptr(msg),
+  frame_swap_message_queue->QueueMessageForFrame(policy, source_frame_number,
+                                                 base::WrapUnique(msg),
                                                  &first_message_for_frame);
   if (first_message_for_frame) {
-    scoped_ptr<cc::SwapPromise> promise(new QueueMessageSwapPromise(
+    std::unique_ptr<cc::SwapPromise> promise(new QueueMessageSwapPromise(
         sync_message_filter, frame_swap_message_queue, source_frame_number));
     return promise;
   }
@@ -1343,10 +1348,8 @@ void RenderWidget::QueueMessage(IPC::Message* msg,
     return;
   }
 
-  scoped_ptr<cc::SwapPromise> swap_promise =
-      QueueMessageImpl(msg,
-                       policy,
-                       frame_swap_message_queue_.get(),
+  std::unique_ptr<cc::SwapPromise> swap_promise =
+      QueueMessageImpl(msg, policy, frame_swap_message_queue_.get(),
                        RenderThreadImpl::current()->sync_message_filter(),
                        compositor_->GetSourceFrameNumber());
 
@@ -1431,7 +1434,7 @@ void RenderWidget::closeWidgetSoon() {
 }
 
 void RenderWidget::QueueSyntheticGesture(
-    scoped_ptr<SyntheticGestureParams> gesture_params,
+    std::unique_ptr<SyntheticGestureParams> gesture_params,
     const SyntheticGestureCompletionCallback& callback) {
   DCHECK(!callback.is_null());
 
@@ -2093,7 +2096,7 @@ void RenderWidget::didUpdateTextOfFocusedElementByNonUserInput() {
 #endif
 }
 
-scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
+std::unique_ptr<WebGraphicsContext3DCommandBufferImpl>
 RenderWidget::CreateGraphicsContext3D(gpu::GpuChannelHost* gpu_channel_host) {
   // This is for an offscreen context for raster in the compositor. So the
   // default framebuffer doesn't need alpha, depth, stencil, antialiasing.
@@ -2143,7 +2146,7 @@ RenderWidget::CreateGraphicsContext3D(gpu::GpuChannelHost* gpu_channel_host) {
   bool share_resources = true;
   bool automatic_flushes = false;
 
-  return make_scoped_ptr(new WebGraphicsContext3DCommandBufferImpl(
+  return base::WrapUnique(new WebGraphicsContext3DCommandBufferImpl(
       gpu::kNullSurfaceHandle, GetURLForGraphicsContext3D(), gpu_channel_host,
       attributes, gfx::PreferIntegratedGpu, share_resources, automatic_flushes,
       limits, nullptr));

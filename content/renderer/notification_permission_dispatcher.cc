@@ -31,7 +31,7 @@ void NotificationPermissionDispatcher::RequestPermission(
         mojo::GetProxy(&permission_service_));
   }
 
-  scoped_ptr<WebNotificationPermissionCallback> owned_callback(callback);
+  std::unique_ptr<WebNotificationPermissionCallback> owned_callback(callback);
 
   // base::Unretained is safe here because the Mojo channel, with associated
   // callbacks, will be deleted before the "this" instance is deleted.
@@ -43,7 +43,7 @@ void NotificationPermissionDispatcher::RequestPermission(
 }
 
 void NotificationPermissionDispatcher::OnPermissionRequestComplete(
-    scoped_ptr<WebNotificationPermissionCallback> callback,
+    std::unique_ptr<WebNotificationPermissionCallback> callback,
     blink::mojom::PermissionStatus status) {
   DCHECK(callback);
 
