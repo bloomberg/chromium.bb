@@ -15,8 +15,6 @@ class WebCacheRenderProcessObserver;
 }
 
 namespace blimp {
-class BlimpImageSerializationProcessor;
-
 namespace engine {
 
 class BlimpContentRendererClient : public content::ContentRendererClient {
