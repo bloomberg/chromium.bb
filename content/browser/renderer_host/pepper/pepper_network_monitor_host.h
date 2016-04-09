@@ -36,7 +36,7 @@ class CONTENT_EXPORT PepperNetworkMonitorHost
   void OnPermissionCheckResult(bool can_use_network_monitor);
 
   void GetAndSendNetworkList();
-  void SendNetworkList(scoped_ptr<net::NetworkInterfaceList> list);
+  void SendNetworkList(std::unique_ptr<net::NetworkInterfaceList> list);
 
   ppapi::host::ReplyMessageContext reply_context_;
 

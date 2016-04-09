@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller.h"
+
+#include <memory>
+
+#include "base/macros.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -144,7 +146,7 @@ class TapSuppressionControllerTest : public testing::Test {
     return config;
   }
 
-  scoped_ptr<MockTapSuppressionController> tap_suppression_controller_;
+  std::unique_ptr<MockTapSuppressionController> tap_suppression_controller_;
 };
 
 // Test TapSuppressionController for when GestureFlingCancel Ack comes before

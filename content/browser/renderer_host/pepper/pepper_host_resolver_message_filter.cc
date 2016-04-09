@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_lookup_request.h"
 #include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
@@ -170,7 +171,8 @@ void PepperHostResolverMessageFilter::DoResolve(
       net::HostPortPair(host_port.host, host_port.port));
   PrepareRequestInfo(hint, &request_info);
 
-  scoped_ptr<ReplyMessageContext> bound_info(new ReplyMessageContext(context));
+  std::unique_ptr<ReplyMessageContext> bound_info(
+      new ReplyMessageContext(context));
 
   // The lookup request will delete itself on completion.
   PepperLookupRequest<ReplyMessageContext>* lookup_request =

@@ -26,7 +26,7 @@ P2PMessageThrottler::P2PMessageThrottler()
 P2PMessageThrottler::~P2PMessageThrottler() {
 }
 
-void P2PMessageThrottler::SetTiming(scoped_ptr<rtc::Timing> timing) {
+void P2PMessageThrottler::SetTiming(std::unique_ptr<rtc::Timing> timing) {
   timing_ = std::move(timing);
 }
 

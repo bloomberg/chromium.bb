@@ -5,11 +5,11 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_SANDBOX_HOST_LINUX_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_SANDBOX_HOST_LINUX_H_
 
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/simple_thread.h"
 #include "content/browser/renderer_host/sandbox_ipc_linux.h"
 #include "content/common/content_export.h"
@@ -49,8 +49,8 @@ class CONTENT_EXPORT RenderSandboxHostLinux {
   int renderer_socket_;
   int childs_lifeline_fd_;
 
-  scoped_ptr<SandboxIPCHandler> ipc_handler_;
-  scoped_ptr<base::DelegateSimpleThread> ipc_thread_;
+  std::unique_ptr<SandboxIPCHandler> ipc_handler_;
+  std::unique_ptr<base::DelegateSimpleThread> ipc_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderSandboxHostLinux);
 };

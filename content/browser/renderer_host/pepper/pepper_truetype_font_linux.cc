@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/renderer_host/pepper/pepper_truetype_font.h"
+
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sys_byteorder.h"
 #include "content/browser/renderer_host/font_utils_linux.h"
-#include "content/browser/renderer_host/pepper/pepper_truetype_font.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -102,7 +104,7 @@ int32_t PepperTrueTypeFontLinux::GetTableTags(std::vector<uint32_t>* tags) {
   static const size_t kFontHeaderSize = 12;
   static const size_t kTableEntrySize = 16;
   output_length = num_tables * kTableEntrySize;
-  scoped_ptr<uint8_t[]> table_entries(new uint8_t[output_length]);
+  std::unique_ptr<uint8_t[]> table_entries(new uint8_t[output_length]);
   // Get the table directory entries, which follow the font header.
   if (!GetFontTable(fd_.get(),
                     0 /* tag */,

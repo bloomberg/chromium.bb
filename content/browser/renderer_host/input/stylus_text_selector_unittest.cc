@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/renderer_host/input/stylus_text_selector.h"
+
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "content/browser/renderer_host/input/stylus_text_selector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/motion_event.h"
@@ -56,7 +57,7 @@ class StylusTextSelectorTest : public testing::Test,
   }
 
  protected:
-  scoped_ptr<StylusTextSelector> selector_;
+  std::unique_ptr<StylusTextSelector> selector_;
   std::vector<std::string> event_log_;
 };
 

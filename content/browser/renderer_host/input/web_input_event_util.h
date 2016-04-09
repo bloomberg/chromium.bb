@@ -5,7 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_WEB_INPUT_EVENT_UTIL_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_WEB_INPUT_EVENT_UTIL_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"

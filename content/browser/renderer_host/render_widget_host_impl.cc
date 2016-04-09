@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 
 #include <math.h>
+
 #include <set>
 #include <utility>
 
@@ -16,6 +17,7 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
@@ -268,8 +270,9 @@ RenderWidgetHostImpl* RenderWidgetHostImpl::FromID(
 }
 
 // static
-scoped_ptr<RenderWidgetHostIterator> RenderWidgetHost::GetRenderWidgetHosts() {
-  scoped_ptr<RenderWidgetHostIteratorImpl> hosts(
+std::unique_ptr<RenderWidgetHostIterator>
+RenderWidgetHost::GetRenderWidgetHosts() {
+  std::unique_ptr<RenderWidgetHostIteratorImpl> hosts(
       new RenderWidgetHostIteratorImpl());
   for (auto& it : g_routing_id_widget_map.Get()) {
     RenderWidgetHost* widget = it.second;
@@ -289,9 +292,9 @@ scoped_ptr<RenderWidgetHostIterator> RenderWidgetHost::GetRenderWidgetHosts() {
 }
 
 // static
-scoped_ptr<RenderWidgetHostIterator>
+std::unique_ptr<RenderWidgetHostIterator>
 RenderWidgetHostImpl::GetAllRenderWidgetHosts() {
-  scoped_ptr<RenderWidgetHostIteratorImpl> hosts(
+  std::unique_ptr<RenderWidgetHostIteratorImpl> hosts(
       new RenderWidgetHostIteratorImpl());
   for (auto& it : g_routing_id_widget_map.Get())
     hosts->Add(it.second);
@@ -478,7 +481,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
 
 bool RenderWidgetHostImpl::Send(IPC::Message* msg) {
   if (IPC_MESSAGE_ID_CLASS(msg->type()) == InputMsgStart)
-    return input_router_->SendInput(make_scoped_ptr(msg));
+    return input_router_->SendInput(base::WrapUnique(msg));
 
   return process_->Send(msg);
 }
@@ -616,7 +619,7 @@ void RenderWidgetHostImpl::SetInitialRenderSizeParams(
     const ResizeParams& resize_params) {
   resize_ack_pending_ = resize_params.needs_resize_ack;
 
-  old_resize_params_ = make_scoped_ptr(new ResizeParams(resize_params));
+  old_resize_params_ = base::WrapUnique(new ResizeParams(resize_params));
 }
 
 void RenderWidgetHostImpl::WasResized() {
@@ -629,7 +632,7 @@ void RenderWidgetHostImpl::WasResized() {
     return;
   }
 
-  scoped_ptr<ResizeParams> params(new ResizeParams);
+  std::unique_ptr<ResizeParams> params(new ResizeParams);
   if (color_profile_out_of_date_)
     DispatchColorProfile();
   if (!GetResizeParams(params.get()))
@@ -1165,7 +1168,7 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
 }
 
 void RenderWidgetHostImpl::QueueSyntheticGesture(
-    scoped_ptr<SyntheticGesture> synthetic_gesture,
+    std::unique_ptr<SyntheticGesture> synthetic_gesture,
     const base::Callback<void(SyntheticGesture::Result)>& on_complete) {
   if (!synthetic_gesture_controller_ && view_) {
     synthetic_gesture_controller_.reset(
@@ -1562,7 +1565,7 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   ViewHostMsg_SwapCompositorFrame::Param param;
   if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
     return false;
-  scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+  std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
   uint32_t output_surface_id = base::get<0>(param);
   base::get<1>(param).AssignTo(frame.get());
   std::vector<IPC::Message> messages_to_deliver_with_frame;
@@ -1781,7 +1784,7 @@ void RenderWidgetHostImpl::OnShowDisambiguationPopup(
   DCHECK(!rect_pixels.IsEmpty());
   DCHECK(!size.IsEmpty());
 
-  scoped_ptr<cc::SharedBitmap> bitmap =
+  std::unique_ptr<cc::SharedBitmap> bitmap =
       HostSharedBitmapManager::current()->GetSharedBitmapFromId(size, id);
   if (!bitmap) {
     bad_message::ReceivedBadMessage(GetProcess(),

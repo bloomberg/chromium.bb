@@ -623,7 +623,7 @@ void TouchEventQueue::ForwardNextEventToRenderer() {
 
 void TouchEventQueue::FlushPendingAsyncTouchmove() {
   DCHECK(!dispatching_touch_);
-  scoped_ptr<TouchEventWithLatencyInfo> touch =
+  std::unique_ptr<TouchEventWithLatencyInfo> touch =
       std::move(pending_async_touchmove_);
   touch->event.cancelable = false;
   touch_queue_.push_front(new CoalescedWebTouchEvent(*touch, true));
@@ -730,7 +730,7 @@ void TouchEventQueue::PopTouchEventToClient(
 
 void TouchEventQueue::AckTouchEventToClient(
     InputEventAckState ack_result,
-    scoped_ptr<CoalescedWebTouchEvent> acked_event,
+    std::unique_ptr<CoalescedWebTouchEvent> acked_event,
     const ui::LatencyInfo* optional_latency_info) {
   DCHECK(acked_event);
   DCHECK(!dispatching_touch_ack_);
@@ -742,9 +742,9 @@ void TouchEventQueue::AckTouchEventToClient(
   acked_event->DispatchAckToClient(ack_result, optional_latency_info, client_);
 }
 
-scoped_ptr<CoalescedWebTouchEvent> TouchEventQueue::PopTouchEvent() {
+std::unique_ptr<CoalescedWebTouchEvent> TouchEventQueue::PopTouchEvent() {
   DCHECK(!touch_queue_.empty());
-  scoped_ptr<CoalescedWebTouchEvent> event(touch_queue_.front());
+  std::unique_ptr<CoalescedWebTouchEvent> event(touch_queue_.front());
   touch_queue_.pop_front();
   return event;
 }

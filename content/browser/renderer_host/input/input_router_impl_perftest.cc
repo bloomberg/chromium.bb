@@ -5,8 +5,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/input/input_ack_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
@@ -334,10 +335,10 @@ class InputRouterImplPerfTest : public testing::Test {
 
  private:
   int64_t last_input_id_;
-  scoped_ptr<NullIPCSender> sender_;
-  scoped_ptr<NullInputRouterClient> client_;
-  scoped_ptr<NullInputAckHandler> ack_handler_;
-  scoped_ptr<InputRouterImpl> input_router_;
+  std::unique_ptr<NullIPCSender> sender_;
+  std::unique_ptr<NullInputRouterClient> client_;
+  std::unique_ptr<NullInputAckHandler> ack_handler_;
+  std::unique_ptr<InputRouterImpl> input_router_;
   base::MessageLoopForUI message_loop_;
 };
 

@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/input/synthetic_pointer.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/browser/renderer_host/input/synthetic_mouse_pointer.h"
 #include "content/browser/renderer_host/input/synthetic_touch_pointer.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -14,15 +15,15 @@ SyntheticPointer::SyntheticPointer() {}
 SyntheticPointer::~SyntheticPointer() {}
 
 // static
-scoped_ptr<SyntheticPointer> SyntheticPointer::Create(
+std::unique_ptr<SyntheticPointer> SyntheticPointer::Create(
     SyntheticGestureParams::GestureSourceType gesture_source_type) {
   if (gesture_source_type == SyntheticGestureParams::TOUCH_INPUT) {
-    return make_scoped_ptr(new SyntheticTouchPointer());
+    return base::WrapUnique(new SyntheticTouchPointer());
   } else if (gesture_source_type == SyntheticGestureParams::MOUSE_INPUT) {
-    return make_scoped_ptr(new SyntheticMousePointer());
+    return base::WrapUnique(new SyntheticMousePointer());
   } else {
     NOTREACHED() << "Invalid gesture source type";
-    return scoped_ptr<SyntheticPointer>();
+    return std::unique_ptr<SyntheticPointer>();
   }
 }
 

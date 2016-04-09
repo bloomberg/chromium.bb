@@ -5,6 +5,7 @@
 #include "content/browser/cache_storage/cache_storage_manager.h"
 
 #include <stdint.h>
+
 #include <map>
 #include <string>
 #include <utility>
@@ -14,6 +15,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/id_map.h"
+#include "base/memory/ptr_util.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -101,7 +103,7 @@ void GetOriginsForHostDidListOrigins(
 void EmptyQuotaStatusCallback(storage::QuotaStatusCode code) {}
 
 void AllOriginSizesReported(
-    scoped_ptr<std::vector<CacheStorageUsageInfo>> usages,
+    std::unique_ptr<std::vector<CacheStorageUsageInfo>> usages,
     const CacheStorageContext::GetUsageInfoCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -121,7 +123,7 @@ void OneOriginSizeReported(const base::Closure& callback,
 }  // namespace
 
 // static
-scoped_ptr<CacheStorageManager> CacheStorageManager::Create(
+std::unique_ptr<CacheStorageManager> CacheStorageManager::Create(
     const base::FilePath& path,
     scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy) {
@@ -131,14 +133,14 @@ scoped_ptr<CacheStorageManager> CacheStorageManager::Create(
                     .AppendASCII("CacheStorage");
   }
 
-  return make_scoped_ptr(new CacheStorageManager(
+  return base::WrapUnique(new CacheStorageManager(
       root_path, std::move(cache_task_runner), std::move(quota_manager_proxy)));
 }
 
 // static
-scoped_ptr<CacheStorageManager> CacheStorageManager::Create(
+std::unique_ptr<CacheStorageManager> CacheStorageManager::Create(
     CacheStorageManager* old_manager) {
-  scoped_ptr<CacheStorageManager> manager(new CacheStorageManager(
+  std::unique_ptr<CacheStorageManager> manager(new CacheStorageManager(
       old_manager->root_path(), old_manager->cache_task_runner(),
       old_manager->quota_manager_proxy_.get()));
   // These values may be NULL, in which case this will be called again later by
@@ -194,7 +196,7 @@ void CacheStorageManager::EnumerateCaches(
 void CacheStorageManager::MatchCache(
     const GURL& origin,
     const std::string& cache_name,
-    scoped_ptr<ServiceWorkerFetchRequest> request,
+    std::unique_ptr<ServiceWorkerFetchRequest> request,
     const CacheStorageCache::ResponseCallback& callback) {
   CacheStorage* cache_storage = FindOrCreateCacheStorage(origin);
 
@@ -203,7 +205,7 @@ void CacheStorageManager::MatchCache(
 
 void CacheStorageManager::MatchAllCaches(
     const GURL& origin,
-    scoped_ptr<ServiceWorkerFetchRequest> request,
+    std::unique_ptr<ServiceWorkerFetchRequest> request,
     const CacheStorageCache::ResponseCallback& callback) {
   CacheStorage* cache_storage = FindOrCreateCacheStorage(origin);
 
@@ -226,7 +228,7 @@ void CacheStorageManager::GetAllOriginsUsage(
     const CacheStorageContext::GetUsageInfoCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  scoped_ptr<std::vector<CacheStorageUsageInfo>> usages(
+  std::unique_ptr<std::vector<CacheStorageUsageInfo>> usages(
       new std::vector<CacheStorageUsageInfo>());
 
   if (IsMemoryBacked()) {
@@ -249,7 +251,7 @@ void CacheStorageManager::GetAllOriginsUsage(
 }
 
 void CacheStorageManager::GetAllOriginsUsageGetSizes(
-    scoped_ptr<std::vector<CacheStorageUsageInfo>> usages,
+    std::unique_ptr<std::vector<CacheStorageUsageInfo>> usages,
     const CacheStorageContext::GetUsageInfoCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(usages);
@@ -343,7 +345,7 @@ void CacheStorageManager::DeleteOriginData(
   cache_storage->GetSizeThenCloseAllCaches(
       base::Bind(&CacheStorageManager::DeleteOriginDidClose,
                  weak_ptr_factory_.GetWeakPtr(), origin, callback,
-                 base::Passed(make_scoped_ptr(cache_storage))));
+                 base::Passed(base::WrapUnique(cache_storage))));
 }
 
 void CacheStorageManager::DeleteOriginData(const GURL& origin) {
@@ -354,7 +356,7 @@ void CacheStorageManager::DeleteOriginData(const GURL& origin) {
 void CacheStorageManager::DeleteOriginDidClose(
     const GURL& origin,
     const storage::QuotaClient::DeletionCallback& callback,
-    scoped_ptr<CacheStorage> cache_storage,
+    std::unique_ptr<CacheStorage> cache_storage,
     int64_t origin_size) {
   // TODO(jkarlin): Deleting the storage leaves any unfinished operations
   // hanging, resulting in unresolved promises. Fix this by returning early from
@@ -404,7 +406,7 @@ CacheStorage* CacheStorageManager::FindOrCreateCacheStorage(
         cache_task_runner_.get(), request_context_getter_, quota_manager_proxy_,
         blob_context_, origin);
     cache_storage_map_.insert(
-        std::make_pair(origin, make_scoped_ptr(cache_storage)));
+        std::make_pair(origin, base::WrapUnique(cache_storage)));
     return cache_storage;
   }
   return it->second.get();

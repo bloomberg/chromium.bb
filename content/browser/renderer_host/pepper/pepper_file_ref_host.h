@@ -103,7 +103,7 @@ class CONTENT_EXPORT PepperFileRefHost
   int32_t OnGetAbsolutePath(ppapi::host::HostMessageContext* context);
 
   BrowserPpapiHost* host_;
-  scoped_ptr<PepperFileRefBackend> backend_;
+  std::unique_ptr<PepperFileRefBackend> backend_;
   base::WeakPtr<PepperFileSystemBrowserHost> file_system_host_;
   PP_FileSystemType fs_type_;
 

@@ -446,11 +446,11 @@ bool RenderWidgetHostViewMac::DelegatedFrameCanCreateResizeLock() const {
   return false;
 }
 
-scoped_ptr<ResizeLock>
+std::unique_ptr<ResizeLock>
 RenderWidgetHostViewMac::DelegatedFrameHostCreateResizeLock(
     bool defer_compositor_lock) {
   NOTREACHED();
-  return scoped_ptr<ResizeLock>();
+  return std::unique_ptr<ResizeLock>();
 }
 
 void RenderWidgetHostViewMac::DelegatedFrameHostResizeLockWasReleased() {
@@ -1242,7 +1242,7 @@ bool RenderWidgetHostViewMac::CanCopyToVideoFrame() const {
 }
 
 void RenderWidgetHostViewMac::BeginFrameSubscription(
-    scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
+    std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
   DCHECK(delegated_frame_host_);
   delegated_frame_host_->BeginFrameSubscription(std::move(subscriber));
 }
@@ -1423,7 +1423,7 @@ bool RenderWidgetHostViewMac::HasAcceleratedSurface(
 
 void RenderWidgetHostViewMac::OnSwapCompositorFrame(
     uint32_t output_surface_id,
-    scoped_ptr<cc::CompositorFrame> frame) {
+    std::unique_ptr<cc::CompositorFrame> frame) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewMac::OnSwapCompositorFrame");
 
   last_scroll_offset_ = frame->metadata.root_scroll_offset;
@@ -1553,11 +1553,11 @@ void RenderWidgetHostViewMac::GestureEventAck(
   }
 }
 
-scoped_ptr<SyntheticGestureTarget>
+std::unique_ptr<SyntheticGestureTarget>
 RenderWidgetHostViewMac::CreateSyntheticGestureTarget() {
   RenderWidgetHostImpl* host =
       RenderWidgetHostImpl::From(GetRenderWidgetHost());
-  return scoped_ptr<SyntheticGestureTarget>(
+  return std::unique_ptr<SyntheticGestureTarget>(
       new SyntheticGestureTargetMac(host, cocoa_view_));
 }
 

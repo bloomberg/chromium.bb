@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCHSCREEN_TAP_SUPPRESSION_CONTROLLER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCHSCREEN_TAP_SUPPRESSION_CONTROLLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller_client.h"
@@ -43,7 +44,7 @@ class TouchscreenTapSuppressionController
 
   GestureEventQueue* gesture_event_queue_;
 
-  typedef scoped_ptr<GestureEventWithLatencyInfo> ScopedGestureEvent;
+  typedef std::unique_ptr<GestureEventWithLatencyInfo> ScopedGestureEvent;
   ScopedGestureEvent stashed_tap_down_;
   ScopedGestureEvent stashed_show_press_;
 

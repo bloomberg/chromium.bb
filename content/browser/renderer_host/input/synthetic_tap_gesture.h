@@ -37,7 +37,7 @@ class CONTENT_EXPORT SyntheticTapGesture : public SyntheticGesture {
   base::TimeDelta GetDuration() const;
 
   SyntheticTapGestureParams params_;
-  scoped_ptr<SyntheticPointer> synthetic_pointer_;
+  std::unique_ptr<SyntheticPointer> synthetic_pointer_;
   base::TimeTicks start_time_;
   SyntheticGestureParams::GestureSourceType gesture_source_type_;
   GestureState state_;

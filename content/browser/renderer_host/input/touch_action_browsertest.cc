@@ -147,7 +147,7 @@ class TouchActionBrowserTest : public ContentBrowserTest {
 
     runner_ = new MessageLoopRunner();
 
-    scoped_ptr<SyntheticSmoothScrollGesture> gesture(
+    std::unique_ptr<SyntheticSmoothScrollGesture> gesture(
         new SyntheticSmoothScrollGesture(params));
     GetWidgetHost()->QueueSyntheticGesture(
         std::move(gesture),

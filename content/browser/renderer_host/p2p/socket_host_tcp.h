@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "content/browser/renderer_host/p2p/socket_host.h"
 #include "content/common/p2p_socket_type.h"
@@ -88,7 +88,7 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
 
   P2PHostAndIPEndPoint remote_address_;
 
-  scoped_ptr<net::StreamSocket> socket_;
+  std::unique_ptr<net::StreamSocket> socket_;
   scoped_refptr<net::GrowableIOBuffer> read_buffer_;
   std::queue<scoped_refptr<net::DrainableIOBuffer> > write_queue_;
   scoped_refptr<net::DrainableIOBuffer> write_buffer_;

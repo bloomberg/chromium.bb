@@ -87,7 +87,7 @@ class CONTENT_EXPORT MouseWheelEventQueue {
 
   typedef std::deque<QueuedWebMouseWheelEvent*> WheelEventQueue;
   WheelEventQueue wheel_queue_;
-  scoped_ptr<QueuedWebMouseWheelEvent> event_sent_for_gesture_ack_;
+  std::unique_ptr<QueuedWebMouseWheelEvent> event_sent_for_gesture_ack_;
 
   // True if a non-synthetic GSB needs to be sent before a GSU is sent.
   bool needs_scroll_begin_;

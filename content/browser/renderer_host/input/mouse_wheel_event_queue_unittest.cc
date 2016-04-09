@@ -5,10 +5,11 @@
 #include "content/browser/renderer_host/input/mouse_wheel_event_queue.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -130,14 +131,14 @@ class MouseWheelEventQueueTest : public testing::Test,
   void SendMouseWheelEventImmediately(
       const MouseWheelEventWithLatencyInfo& event) override {
     WebMouseWheelEvent* cloned_event = new WebMouseWheelEvent();
-    scoped_ptr<WebInputEvent> cloned_event_holder(cloned_event);
+    std::unique_ptr<WebInputEvent> cloned_event_holder(cloned_event);
     *cloned_event = event.event;
     sent_events_.push_back(std::move(cloned_event_holder));
   }
 
   void ForwardGestureEvent(const blink::WebGestureEvent& event) override {
     WebGestureEvent* cloned_event = new WebGestureEvent();
-    scoped_ptr<WebInputEvent> cloned_event_holder(cloned_event);
+    std::unique_ptr<WebInputEvent> cloned_event_holder(cloned_event);
     *cloned_event = event;
     sent_events_.push_back(std::move(cloned_event_holder));
   }
@@ -159,11 +160,11 @@ class MouseWheelEventQueueTest : public testing::Test,
 
   bool event_in_flight() const { return queue_->event_in_flight(); }
 
-  std::vector<scoped_ptr<WebInputEvent>>& all_sent_events() {
+  std::vector<std::unique_ptr<WebInputEvent>>& all_sent_events() {
     return sent_events_;
   }
 
-  const scoped_ptr<WebInputEvent>& sent_input_event(size_t index) {
+  const std::unique_ptr<WebInputEvent>& sent_input_event(size_t index) {
     return sent_events_[index];
   }
   const WebGestureEvent* sent_gesture_event(size_t index) {
@@ -368,8 +369,8 @@ class MouseWheelEventQueueTest : public testing::Test,
     EXPECT_EQ(2U, GetAndResetSentEventCount());
   }
 
-  scoped_ptr<MouseWheelEventQueue> queue_;
-  std::vector<scoped_ptr<WebInputEvent>> sent_events_;
+  std::unique_ptr<MouseWheelEventQueue> queue_;
+  std::vector<std::unique_ptr<WebInputEvent>> sent_events_;
   size_t acked_event_count_;
   InputEventAckState last_acked_event_state_;
   base::MessageLoopForUI message_loop_;

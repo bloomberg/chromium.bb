@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/renderer_host/pepper/pepper_gamepad_host.h"
+
 #include <stddef.h>
 #include <string.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/browser/gamepad/gamepad_test_helpers.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_test.h"
-#include "content/browser/renderer_host/pepper/pepper_gamepad_host.h"
 #include "content/common/gamepad_hardware_buffer.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/host_message_context.h"
@@ -38,7 +40,7 @@ class PepperGamepadHostTest : public testing::Test,
   GamepadService* gamepad_service() { return service_->gamepad_service(); }
 
  protected:
-  scoped_ptr<GamepadServiceTestConstructor> service_;
+  std::unique_ptr<GamepadServiceTestConstructor> service_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperGamepadHostTest);
 };

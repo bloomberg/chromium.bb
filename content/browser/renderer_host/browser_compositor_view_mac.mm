@@ -31,7 +31,7 @@ bool g_has_shut_down = false;
 uint32_t g_placeholder_count = 0;
 
 // A spare BrowserCompositorMac kept around for recycling.
-base::LazyInstance<scoped_ptr<BrowserCompositorMac>>
+base::LazyInstance<std::unique_ptr<BrowserCompositorMac>>
     g_recyclable_browser_compositor;
 
 }  // namespace
@@ -67,16 +67,16 @@ void BrowserCompositorMac::OnCompositingDidCommit(
 }
 
 // static
-scoped_ptr<BrowserCompositorMac> BrowserCompositorMac::Create() {
+std::unique_ptr<BrowserCompositorMac> BrowserCompositorMac::Create() {
   DCHECK(ui::WindowResizeHelperMac::Get()->task_runner());
   if (g_recyclable_browser_compositor.Get())
     return std::move(g_recyclable_browser_compositor.Get());
-  return scoped_ptr<BrowserCompositorMac>(new BrowserCompositorMac);
+  return std::unique_ptr<BrowserCompositorMac>(new BrowserCompositorMac);
 }
 
 // static
 void BrowserCompositorMac::Recycle(
-    scoped_ptr<BrowserCompositorMac> compositor) {
+    std::unique_ptr<BrowserCompositorMac> compositor) {
   DCHECK(compositor);
   content::ImageTransportFactory::GetInstance()
       ->SetCompositorSuspendedForRecycle(compositor->compositor(), true);

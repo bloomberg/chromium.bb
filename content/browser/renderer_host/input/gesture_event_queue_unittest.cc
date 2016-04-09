@@ -5,12 +5,13 @@
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -54,7 +55,8 @@ class GestureEventQueueTest : public testing::Test,
       const GestureEventWithLatencyInfo& event) override {
     ++sent_gesture_event_count_;
     if (sync_ack_result_) {
-      scoped_ptr<InputEventAckState> ack_result = std::move(sync_ack_result_);
+      std::unique_ptr<InputEventAckState> ack_result =
+          std::move(sync_ack_result_);
       SendInputEventACK(event.event.type, *ack_result);
     }
   }
@@ -189,12 +191,12 @@ class GestureEventQueueTest : public testing::Test,
   }
 
  private:
-  scoped_ptr<GestureEventQueue> queue_;
+  std::unique_ptr<GestureEventQueue> queue_;
   size_t acked_gesture_event_count_;
   size_t sent_gesture_event_count_;
   WebGestureEvent last_acked_event_;
-  scoped_ptr<InputEventAckState> sync_ack_result_;
-  scoped_ptr<WebGestureEvent> sync_followup_event_;
+  std::unique_ptr<InputEventAckState> sync_ack_result_;
+  std::unique_ptr<WebGestureEvent> sync_followup_event_;
   base::MessageLoopForUI message_loop_;
 };
 
@@ -872,7 +874,7 @@ TEST_F(GestureEventQueueTest, SimpleSyncAck) {
 
 // Tests an event with an synchronous ack which enqueues an additional event.
 TEST_F(GestureEventQueueTest, SyncAckQueuesEvent) {
-  scoped_ptr<WebGestureEvent> queued_event;
+  std::unique_ptr<WebGestureEvent> queued_event;
   set_synchronous_ack(INPUT_EVENT_ACK_STATE_CONSUMED);
   set_sync_followup_event(WebInputEvent::GestureShowPress,
                           blink::WebGestureDeviceTouchscreen);

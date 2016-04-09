@@ -9,13 +9,13 @@
 #include <stdint.h>
 
 #include <deque>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "content/browser/renderer_host/p2p/socket_host.h"
 #include "content/common/content_export.h"
@@ -85,7 +85,7 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
                         base::TimeTicks send_time,
                         int result);
 
-  scoped_ptr<net::DatagramServerSocket> socket_;
+  std::unique_ptr<net::DatagramServerSocket> socket_;
   scoped_refptr<net::IOBuffer> recv_buffer_;
   net::IPEndPoint recv_address_;
 

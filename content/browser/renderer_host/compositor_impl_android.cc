@@ -7,6 +7,7 @@
 #include <android/bitmap.h>
 #include <android/native_window_jni.h>
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/android/jni_android.h"
@@ -18,6 +19,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -153,7 +155,7 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface,
   base::CancelableCallback<void(const std::vector<ui::LatencyInfo>&,
                                 gfx::SwapResult)>
       swap_buffers_completion_callback_;
-  scoped_ptr<cc::OverlayCandidateValidator> overlay_candidate_validator_;
+  std::unique_ptr<cc::OverlayCandidateValidator> overlay_candidate_validator_;
 };
 
 class ExternalBeginFrameSource : public cc::BeginFrameSourceBase,
@@ -231,8 +233,9 @@ cc::SurfaceManager* CompositorImpl::GetSurfaceManager() {
 }
 
 // static
-scoped_ptr<cc::SurfaceIdAllocator> CompositorImpl::CreateSurfaceIdAllocator() {
-  scoped_ptr<cc::SurfaceIdAllocator> allocator(
+std::unique_ptr<cc::SurfaceIdAllocator>
+CompositorImpl::CreateSurfaceIdAllocator() {
+  std::unique_ptr<cc::SurfaceIdAllocator> allocator(
       new cc::SurfaceIdAllocator(++g_surface_id_namespace));
   cc::SurfaceManager* manager = GetSurfaceManager();
   DCHECK(manager);
@@ -409,7 +412,7 @@ void CompositorImpl::SetNeedsComposite() {
   host_->SetNeedsAnimate();
 }
 
-static scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
+static std::unique_ptr<WebGraphicsContext3DCommandBufferImpl>
 CreateGpuProcessViewContext(
     const scoped_refptr<gpu::GpuChannelHost>& gpu_channel_host,
     const gpu::gles2::ContextCreationAttribHelper& attributes,
@@ -432,7 +435,7 @@ CreateGpuProcessViewContext(
   gpu::SurfaceHandle surface_handle = tracker->GetSurfaceHandle(surface_id);
   bool share_resources = true;
   bool automatic_flushes = false;
-  return make_scoped_ptr(new WebGraphicsContext3DCommandBufferImpl(
+  return base::WrapUnique(new WebGraphicsContext3DCommandBufferImpl(
       surface_handle, url, gpu_channel_host.get(), attributes,
       gfx::PreferIntegratedGpu, share_resources, automatic_flushes, limits,
       nullptr));
@@ -547,7 +550,7 @@ void CompositorImpl::CreateOutputSurface() {
           DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT));
   DCHECK(context_provider.get());
 
-  scoped_ptr<cc::OutputSurface> real_output_surface(
+  std::unique_ptr<cc::OutputSurface> real_output_surface(
       new OutputSurfaceWithoutParent(
           this, context_provider,
           base::Bind(&CompositorImpl::PopulateGpuCapabilities,
@@ -560,9 +563,9 @@ void CompositorImpl::CreateOutputSurface() {
                                     BrowserGpuMemoryBufferManager::current(),
                                     host_->settings().renderer_settings,
                                     base::ThreadTaskRunnerHandle::Get()));
-  scoped_ptr<cc::SurfaceDisplayOutputSurface> surface_output_surface(
-      new cc::SurfaceDisplayOutputSurface(
-          manager, surface_id_allocator_.get(), context_provider, nullptr));
+  std::unique_ptr<cc::SurfaceDisplayOutputSurface> surface_output_surface(
+      new cc::SurfaceDisplayOutputSurface(manager, surface_id_allocator_.get(),
+                                          context_provider, nullptr));
 
   display_client_->set_surface_output_surface(surface_output_surface.get());
   surface_output_surface->set_display_client(display_client_.get());
@@ -623,7 +626,7 @@ void CompositorImpl::DidCommit() {
 }
 
 void CompositorImpl::RequestCopyOfOutputOnRootLayer(
-    scoped_ptr<cc::CopyOutputRequest> request) {
+    std::unique_ptr<cc::CopyOutputRequest> request) {
   root_layer_->RequestCopyOfOutput(std::move(request));
 }
 

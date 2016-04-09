@@ -1003,7 +1003,7 @@ bool RenderWidgetHostViewAura::CanCopyToVideoFrame() const {
 }
 
 void RenderWidgetHostViewAura::BeginFrameSubscription(
-    scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
+    std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
   delegated_frame_host_->BeginFrameSubscription(std::move(subscriber));
 }
 
@@ -1030,7 +1030,7 @@ void RenderWidgetHostViewAura::OnLegacyWindowDestroyed() {
 
 void RenderWidgetHostViewAura::OnSwapCompositorFrame(
     uint32_t output_surface_id,
-    scoped_ptr<cc::CompositorFrame> frame) {
+    std::unique_ptr<cc::CompositorFrame> frame) {
   TRACE_EVENT0("content", "RenderWidgetHostViewAura::OnSwapCompositorFrame");
 
   last_scroll_offset_ = frame->metadata.root_scroll_offset;
@@ -1181,9 +1181,9 @@ void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
   }
 }
 
-scoped_ptr<SyntheticGestureTarget>
+std::unique_ptr<SyntheticGestureTarget>
 RenderWidgetHostViewAura::CreateSyntheticGestureTarget() {
-  return scoped_ptr<SyntheticGestureTarget>(
+  return std::unique_ptr<SyntheticGestureTarget>(
       new SyntheticGestureTargetAura(host_));
 }
 
@@ -2566,7 +2566,7 @@ bool RenderWidgetHostViewAura::OnShowContextMenu(
 }
 
 void RenderWidgetHostViewAura::SetSelectionControllerClientForTest(
-    scoped_ptr<TouchSelectionControllerClientAura> client) {
+    std::unique_ptr<TouchSelectionControllerClientAura> client) {
   selection_controller_client_.swap(client);
   CreateSelectionController();
   disable_input_event_router_for_testing_ = true;
@@ -2774,7 +2774,7 @@ void RenderWidgetHostViewAura::HandleGestureForTouchSelection(
       if (!last_context_menu_params_)
         break;
 
-      scoped_ptr<ContextMenuParams> context_menu_params =
+      std::unique_ptr<ContextMenuParams> context_menu_params =
           std::move(last_context_menu_params_);
 
       // On Windows we want to display the context menu when the long press
@@ -2821,7 +2821,7 @@ void RenderWidgetHostViewAura::ForwardMouseEventToParent(
 
   // Take a copy of |event|, to avoid ConvertLocationToTarget mutating the
   // event.
-  scoped_ptr<ui::Event> event_copy = ui::Event::Clone(*event);
+  std::unique_ptr<ui::Event> event_copy = ui::Event::Clone(*event);
   ui::MouseEvent* mouse_event = static_cast<ui::MouseEvent*>(event_copy.get());
   mouse_event->ConvertLocationToTarget(window_, window_->parent());
   window_->parent()->delegate()->OnMouseEvent(mouse_event);
@@ -2874,14 +2874,12 @@ bool RenderWidgetHostViewAura::DelegatedFrameCanCreateResizeLock() const {
 #endif
 }
 
-scoped_ptr<ResizeLock>
+std::unique_ptr<ResizeLock>
 RenderWidgetHostViewAura::DelegatedFrameHostCreateResizeLock(
     bool defer_compositor_lock) {
   gfx::Size desired_size = window_->bounds().size();
-  return scoped_ptr<ResizeLock>(new CompositorResizeLock(
-      window_->GetHost(),
-      desired_size,
-      defer_compositor_lock,
+  return std::unique_ptr<ResizeLock>(new CompositorResizeLock(
+      window_->GetHost(), desired_size, defer_compositor_lock,
       base::TimeDelta::FromMilliseconds(kResizeLockTimeoutMs)));
 }
 

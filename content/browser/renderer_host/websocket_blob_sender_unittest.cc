@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -120,7 +121,7 @@ class WebSocketBlobSenderTest : public ::testing::Test {
   // This method can be overriden to use a different channel implementation.
   virtual void SetUpSender() {
     fake_channel_ = new FakeChannel;
-    sender_.reset(new WebSocketBlobSender(make_scoped_ptr(fake_channel_)));
+    sender_.reset(new WebSocketBlobSender(base::WrapUnique(fake_channel_)));
     fake_channel_->set_notify_new_quota(base::Bind(
         &WebSocketBlobSender::OnNewSendQuota, base::Unretained(sender_.get())));
   }
@@ -136,8 +137,8 @@ class WebSocketBlobSenderTest : public ::testing::Test {
   }
 
   // |string| is copied.
-  scoped_ptr<BlobHandle> CreateMemoryBackedBlob(const char* string) {
-    scoped_ptr<BlobHandle> handle =
+  std::unique_ptr<BlobHandle> CreateMemoryBackedBlob(const char* string) {
+    std::unique_ptr<BlobHandle> handle =
         chrome_blob_storage_context_->CreateMemoryBackedBlob(string,
                                                              strlen(string));
     EXPECT_TRUE(handle);
@@ -182,13 +183,13 @@ class WebSocketBlobSenderTest : public ::testing::Test {
   scoped_refptr<ChromeBlobStorageContext> chrome_blob_storage_context_;
   // |fake_channel_| is owned by |sender_|.
   FakeChannel* fake_channel_;
-  scoped_ptr<WebSocketBlobSender> sender_;
+  std::unique_ptr<WebSocketBlobSender> sender_;
 };
 
 TEST_F(WebSocketBlobSenderTest, Construction) {}
 
 TEST_F(WebSocketBlobSenderTest, EmptyBlob) {
-  scoped_ptr<BlobHandle> handle = CreateMemoryBackedBlob("");
+  std::unique_ptr<BlobHandle> handle = CreateMemoryBackedBlob("");
 
   // The APIs allow for this to be asynchronous but that is unlikely in
   // practice.
@@ -201,7 +202,7 @@ TEST_F(WebSocketBlobSenderTest, EmptyBlob) {
 }
 
 TEST_F(WebSocketBlobSenderTest, SmallBlob) {
-  scoped_ptr<BlobHandle> handle = CreateMemoryBackedBlob(kBanana);
+  std::unique_ptr<BlobHandle> handle = CreateMemoryBackedBlob(kBanana);
 
   EXPECT_EQ(net::OK, Start(handle->GetUUID(), UINT64_C(6), NotCalled()));
   EXPECT_TRUE(fake_channel_->got_fin());
@@ -210,7 +211,7 @@ TEST_F(WebSocketBlobSenderTest, SmallBlob) {
 }
 
 TEST_F(WebSocketBlobSenderTest, SizeMismatch) {
-  scoped_ptr<BlobHandle> handle = CreateMemoryBackedBlob(kBanana);
+  std::unique_ptr<BlobHandle> handle = CreateMemoryBackedBlob(kBanana);
 
   EXPECT_EQ(net::ERR_UPLOAD_FILE_CHANGED,
             Start(handle->GetUUID(), UINT64_C(5), NotCalled()));
@@ -224,7 +225,7 @@ TEST_F(WebSocketBlobSenderTest, InvalidUUID) {
 
 TEST_F(WebSocketBlobSenderTest, LargeMessage) {
   std::string message(kInitialQuota + 10, 'a');
-  scoped_ptr<BlobHandle> handle = CreateMemoryBackedBlob(message.c_str());
+  std::unique_ptr<BlobHandle> handle = CreateMemoryBackedBlob(message.c_str());
 
   base::RunLoop run_loop;
   int rv = Start(handle->GetUUID(), message.size(),
@@ -241,7 +242,7 @@ TEST_F(WebSocketBlobSenderTest, LargeMessage) {
 // A message exactly equal to the available quota should be sent in one frame.
 TEST_F(WebSocketBlobSenderTest, ExactSizeMessage) {
   std::string message(kInitialQuota, 'a');
-  scoped_ptr<BlobHandle> handle = CreateMemoryBackedBlob(message.c_str());
+  std::unique_ptr<BlobHandle> handle = CreateMemoryBackedBlob(message.c_str());
 
   EXPECT_EQ(net::OK, Start(handle->GetUUID(), message.size(), NotCalled()));
   EXPECT_EQ(1, fake_channel_->frames_sent());
@@ -254,7 +255,7 @@ TEST_F(WebSocketBlobSenderTest, ExactSizeMessage) {
 // object will be destroyed. It needs to handle this case without error.
 TEST_F(WebSocketBlobSenderTest, AbortedSend) {
   std::string message(kInitialQuota + 10, 'a');
-  scoped_ptr<BlobHandle> handle = CreateMemoryBackedBlob(message.c_str());
+  std::unique_ptr<BlobHandle> handle = CreateMemoryBackedBlob(message.c_str());
 
   int rv = Start(handle->GetUUID(), message.size(), NotCalled());
   EXPECT_EQ(net::ERR_IO_PENDING, rv);
@@ -265,7 +266,7 @@ TEST_F(WebSocketBlobSenderTest, AbortedSend) {
 TEST_F(WebSocketBlobSenderTest, InvalidFileBackedBlob) {
   base::FilePath path(FILE_PATH_LITERAL(
       "WebSocketBlobSentTest.InvalidFileBackedBlob.NonExistentFile"));
-  scoped_ptr<BlobHandle> handle =
+  std::unique_ptr<BlobHandle> handle =
       chrome_blob_storage_context_->CreateFileBackedBlob(path, 0u, 32u,
                                                          base::Time::Now());
   EXPECT_TRUE(handle);
@@ -294,7 +295,8 @@ class WebSocketFileBackedBlobSenderTest : public WebSocketBlobSenderTest {
     ASSERT_TRUE(base::GetFileInfo(path, info));
   }
 
-  scoped_ptr<BlobHandle> CreateFileBackedBlob(const std::string& contents) {
+  std::unique_ptr<BlobHandle> CreateFileBackedBlob(
+      const std::string& contents) {
     base::FilePath path = temp_dir_.path().AppendASCII("blob.dat");
     base::File::Info info;
     CreateFile(contents, path, &info);
@@ -308,7 +310,7 @@ class WebSocketFileBackedBlobSenderTest : public WebSocketBlobSenderTest {
 };
 
 TEST_F(WebSocketFileBackedBlobSenderTest, EmptyBlob) {
-  scoped_ptr<BlobHandle> handle = CreateFileBackedBlob("");
+  std::unique_ptr<BlobHandle> handle = CreateFileBackedBlob("");
   ASSERT_TRUE(handle);
 
   TestCompletionCallback callback;
@@ -320,7 +322,7 @@ TEST_F(WebSocketFileBackedBlobSenderTest, EmptyBlob) {
 }
 
 TEST_F(WebSocketFileBackedBlobSenderTest, SizeMismatch) {
-  scoped_ptr<BlobHandle> handle = CreateFileBackedBlob(kBanana);
+  std::unique_ptr<BlobHandle> handle = CreateFileBackedBlob(kBanana);
   ASSERT_TRUE(handle);
 
   TestCompletionCallback callback;
@@ -337,7 +339,7 @@ TEST_F(WebSocketFileBackedBlobSenderTest, LargeMessage) {
   while (message.size() <= kInitialQuota) {
     message = message + message;
   }
-  scoped_ptr<BlobHandle> handle = CreateFileBackedBlob(message);
+  std::unique_ptr<BlobHandle> handle = CreateFileBackedBlob(message);
   ASSERT_TRUE(handle);
 
   TestCompletionCallback callback;
@@ -350,7 +352,7 @@ TEST_F(WebSocketFileBackedBlobSenderTest, LargeMessage) {
 // The WebSocketBlobSender needs to handle a connection close while doing file
 // IO cleanly.
 TEST_F(WebSocketFileBackedBlobSenderTest, Aborted) {
-  scoped_ptr<BlobHandle> handle = CreateFileBackedBlob(kBanana);
+  std::unique_ptr<BlobHandle> handle = CreateFileBackedBlob(kBanana);
 
   int rv = Start(handle->GetUUID(), UINT64_C(6), NotCalled());
   EXPECT_EQ(net::ERR_IO_PENDING, rv);
@@ -360,7 +362,7 @@ TEST_F(WebSocketFileBackedBlobSenderTest, Aborted) {
 class DeletingFakeChannel : public WebSocketBlobSender::Channel {
  public:
   explicit DeletingFakeChannel(
-      scoped_ptr<WebSocketBlobSender>* sender_to_delete)
+      std::unique_ptr<WebSocketBlobSender>* sender_to_delete)
       : sender_(sender_to_delete) {}
 
   size_t GetSendQuota() const override { return kInitialQuota; }
@@ -372,21 +374,21 @@ class DeletingFakeChannel : public WebSocketBlobSender::Channel {
   }
 
  private:
-  scoped_ptr<WebSocketBlobSender>* sender_;
+  std::unique_ptr<WebSocketBlobSender>* sender_;
 };
 
 class WebSocketBlobSenderDeletingTest : public WebSocketBlobSenderTest {
  protected:
   void SetUpSender() override {
     sender_.reset(new WebSocketBlobSender(
-        make_scoped_ptr(new DeletingFakeChannel(&sender_))));
+        base::WrapUnique(new DeletingFakeChannel(&sender_))));
   }
 };
 
 // This test only does something useful when run under AddressSanitizer or a
 // similar tool that can detect use-after-free bugs.
 TEST_F(WebSocketBlobSenderDeletingTest, SenderDeleted) {
-  scoped_ptr<BlobHandle> handle = CreateMemoryBackedBlob(kBanana);
+  std::unique_ptr<BlobHandle> handle = CreateMemoryBackedBlob(kBanana);
 
   EXPECT_EQ(net::ERR_CONNECTION_RESET,
             Start(handle->GetUUID(), UINT64_C(6), NotCalled()));
@@ -423,7 +425,7 @@ class WebSocketBlobSenderSynchronousTest : public WebSocketBlobSenderTest {
   void SetUpSender() override {
     synchronous_fake_channel_ = new SynchronousFakeChannel;
     sender_.reset(
-        new WebSocketBlobSender(make_scoped_ptr(synchronous_fake_channel_)));
+        new WebSocketBlobSender(base::WrapUnique(synchronous_fake_channel_)));
     synchronous_fake_channel_->set_notify_new_quota(base::Bind(
         &WebSocketBlobSender::OnNewSendQuota, base::Unretained(sender_.get())));
   }
@@ -433,7 +435,7 @@ class WebSocketBlobSenderSynchronousTest : public WebSocketBlobSenderTest {
 
 TEST_F(WebSocketBlobSenderSynchronousTest, LargeMessage) {
   std::string message(kInitialQuota + 10, 'a');
-  scoped_ptr<BlobHandle> handle = CreateMemoryBackedBlob(message.c_str());
+  std::unique_ptr<BlobHandle> handle = CreateMemoryBackedBlob(message.c_str());
 
   int rv = Start(handle->GetUUID(), message.size(), NotCalled());
   EXPECT_EQ(net::OK, rv);

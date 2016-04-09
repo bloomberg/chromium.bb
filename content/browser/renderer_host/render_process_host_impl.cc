@@ -807,7 +807,7 @@ bool RenderProcessHostImpl::Init() {
   return true;
 }
 
-scoped_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
+std::unique_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
     const std::string& channel_id) {
   scoped_refptr<base::SingleThreadTaskRunner> runner =
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
@@ -1123,7 +1123,7 @@ ServiceRegistry* RenderProcessHostImpl::GetServiceRegistry() {
   return mojo_application_host_->service_registry();
 }
 
-scoped_ptr<base::SharedPersistentMemoryAllocator>
+std::unique_ptr<base::SharedPersistentMemoryAllocator>
 RenderProcessHostImpl::TakeMetricsAllocator() {
   return std::move(metrics_allocator_);
 }
@@ -2388,7 +2388,7 @@ void RenderProcessHostImpl::CreateSharedRendererHistogramAllocator() {
     return;
 
   // TODO(bcwhite): Update this with the correct memory size.
-  scoped_ptr<base::SharedMemory> shm(new base::SharedMemory());
+  std::unique_ptr<base::SharedMemory> shm(new base::SharedMemory());
   shm->CreateAndMapAnonymous(2 << 20);  // 2 MiB
   metrics_allocator_.reset(new base::SharedPersistentMemoryAllocator(
       std::move(shm), GetID(), "RendererMetrics", /*readonly=*/false));
@@ -2484,7 +2484,7 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
 
 size_t RenderProcessHost::GetActiveViewCount() {
   size_t num_active_views = 0;
-  scoped_ptr<RenderWidgetHostIterator> widgets(
+  std::unique_ptr<RenderWidgetHostIterator> widgets(
       RenderWidgetHost::GetRenderWidgetHosts());
   while (RenderWidgetHost* widget = widgets->GetNextHost()) {
     // Count only RenderWidgetHosts in this process.
@@ -2819,7 +2819,7 @@ BluetoothDispatcherHost* RenderProcessHostImpl::GetBluetoothDispatcherHost() {
 
 void RenderProcessHostImpl::RecomputeAndUpdateWebKitPreferences() {
   // We are updating all widgets including swapped out ones.
-  scoped_ptr<RenderWidgetHostIterator> widgets(
+  std::unique_ptr<RenderWidgetHostIterator> widgets(
       RenderWidgetHostImpl::GetAllRenderWidgetHosts());
   while (RenderWidgetHost* widget = widgets->GetNextHost()) {
     RenderViewHost* rvh = RenderViewHost::From(widget);

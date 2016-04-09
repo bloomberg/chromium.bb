@@ -208,12 +208,13 @@ RenderViewHostImpl* RenderViewHostImpl::From(RenderWidgetHost* rwh) {
   return rvh;
 }
 
-RenderViewHostImpl::RenderViewHostImpl(SiteInstance* instance,
-                                       scoped_ptr<RenderWidgetHostImpl> widget,
-                                       RenderViewHostDelegate* delegate,
-                                       int32_t main_frame_routing_id,
-                                       bool swapped_out,
-                                       bool has_initialized_audio_host)
+RenderViewHostImpl::RenderViewHostImpl(
+    SiteInstance* instance,
+    std::unique_ptr<RenderWidgetHostImpl> widget,
+    RenderViewHostDelegate* delegate,
+    int32_t main_frame_routing_id,
+    bool swapped_out,
+    bool has_initialized_audio_host)
     : render_widget_host_(std::move(widget)),
       frames_ref_count_(0),
       delegate_(delegate),

@@ -8,13 +8,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/ssl_context_helper.h"
@@ -69,7 +69,7 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   PepperTCPSocketMessageFilter(BrowserPpapiHostImpl* host,
                                PP_Instance instance,
                                ppapi::TCPSocketVersion version,
-                               scoped_ptr<net::TCPSocket> socket);
+                               std::unique_ptr<net::TCPSocket> socket);
 
   static size_t GetNumInstances();
 
@@ -153,7 +153,7 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
                         int32_t pp_result);
   void OnFirewallHoleOpened(const ppapi::host::ReplyMessageContext& context,
                             int32_t result,
-                            scoped_ptr<chromeos::FirewallHole> hole);
+                            std::unique_ptr<chromeos::FirewallHole> hole);
 #endif  // defined(OS_CHROMEOS)
 
   void SendBindReply(const ppapi::host::ReplyMessageContext& context,
@@ -215,11 +215,12 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   PP_NetAddress_Private bind_input_addr_;
 
 #if defined(OS_CHROMEOS)
-  scoped_ptr<chromeos::FirewallHole, content::BrowserThread::DeleteOnUIThread>
+  std::unique_ptr<chromeos::FirewallHole,
+                  content::BrowserThread::DeleteOnUIThread>
       firewall_hole_;
 #endif  // defined(OS_CHROMEOS)
 
-  scoped_ptr<net::SingleRequestHostResolver> resolver_;
+  std::unique_ptr<net::SingleRequestHostResolver> resolver_;
 
   // Bitwise-or of SocketOption flags. This stores the state about whether
   // each option is set before Connect() is called.
@@ -238,9 +239,9 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   size_t address_index_;
 
   // Non-null unless an SSL connection is requested.
-  scoped_ptr<net::TCPSocket> socket_;
+  std::unique_ptr<net::TCPSocket> socket_;
   // Non-null if an SSL connection is requested.
-  scoped_ptr<net::SSLClientSocket> ssl_socket_;
+  std::unique_ptr<net::SSLClientSocket> ssl_socket_;
 
   scoped_refptr<net::IOBuffer> read_buffer_;
 
@@ -253,7 +254,7 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   scoped_refptr<SSLContextHelper> ssl_context_helper_;
 
   bool pending_accept_;
-  scoped_ptr<net::TCPSocket> accepted_socket_;
+  std::unique_ptr<net::TCPSocket> accepted_socket_;
   net::IPEndPoint accepted_address_;
 
   // If the plugin is throttled, we defer completing socket reads until

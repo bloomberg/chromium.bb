@@ -29,7 +29,7 @@ class CONTENT_EXPORT SyntheticPinchGesture : public SyntheticGesture {
 
  private:
   SyntheticPinchGestureParams params_;
-  scoped_ptr<SyntheticGesture> lazy_gesture_;
+  std::unique_ptr<SyntheticGesture> lazy_gesture_;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticPinchGesture);
 };

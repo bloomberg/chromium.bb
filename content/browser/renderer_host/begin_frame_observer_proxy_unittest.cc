@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/renderer_host/begin_frame_observer_proxy.h"
+
 #include <algorithm>
 #include <list>
+#include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/test_simple_task_runner.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/test/begin_frame_args_test.h"
-#include "content/browser/renderer_host/begin_frame_observer_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
@@ -51,7 +52,7 @@ class BeginFrameObserverProxyTest : public testing::Test {
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
-  scoped_ptr<ui::Compositor> compositor_;
+  std::unique_ptr<ui::Compositor> compositor_;
 };
 
 }  // namespace

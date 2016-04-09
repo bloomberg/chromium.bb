@@ -118,7 +118,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMus : public RenderWidgetHostViewBase {
 
   aura::Window* aura_window_;
 
-  scoped_ptr<mus::ScopedWindowPtr> mus_window_;
+  std::unique_ptr<mus::ScopedWindowPtr> mus_window_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMus);
 };

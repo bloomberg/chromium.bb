@@ -282,17 +282,17 @@ base::WeakPtr<RenderWidgetHostViewBase> RenderWidgetHostViewBase::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-scoped_ptr<SyntheticGestureTarget>
+std::unique_ptr<SyntheticGestureTarget>
 RenderWidgetHostViewBase::CreateSyntheticGestureTarget() {
   RenderWidgetHostImpl* host =
       RenderWidgetHostImpl::From(GetRenderWidgetHost());
-  return scoped_ptr<SyntheticGestureTarget>(
+  return std::unique_ptr<SyntheticGestureTarget>(
       new SyntheticGestureTargetBase(host));
 }
 
 // Base implementation is unimplemented.
 void RenderWidgetHostViewBase::BeginFrameSubscription(
-    scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
+    std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
   NOTREACHED();
 }
 

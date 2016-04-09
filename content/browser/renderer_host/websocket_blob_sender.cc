@@ -58,7 +58,7 @@ std::ostream& operator<<(std::ostream& os, WebSocketBlobSender::State state) {
   return os << kStateStrings[static_cast<int>(state)];
 }
 
-WebSocketBlobSender::WebSocketBlobSender(scoped_ptr<Channel> channel)
+WebSocketBlobSender::WebSocketBlobSender(std::unique_ptr<Channel> channel)
     : channel_(std::move(channel)) {}
 
 WebSocketBlobSender::~WebSocketBlobSender() {}
@@ -74,7 +74,7 @@ int WebSocketBlobSender::Start(
   DCHECK(context);
   DCHECK(channel_state);
   DCHECK(!reader_);
-  scoped_ptr<storage::BlobDataHandle> data_handle(
+  std::unique_ptr<storage::BlobDataHandle> data_handle(
       context->GetBlobDataFromUUID(uuid));
   if (!data_handle)
     return net::ERR_INVALID_HANDLE;

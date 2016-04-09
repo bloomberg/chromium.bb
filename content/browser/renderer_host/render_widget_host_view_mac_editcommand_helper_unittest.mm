@@ -105,7 +105,7 @@ class RenderWidgetHostViewMacEditCommandHelperTest : public PlatformTest {
  protected:
   void SetUp() override {
     ImageTransportFactory::InitializeForUnitTests(
-        scoped_ptr<ImageTransportFactory>(
+        std::unique_ptr<ImageTransportFactory>(
             new NoTransportImageTransportFactory));
   }
   void TearDown() override { ImageTransportFactory::Terminate(); }

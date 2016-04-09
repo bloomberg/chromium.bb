@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_LOOKUP_REQUEST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_LOOKUP_REQUEST_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/dns/host_resolver.h"
@@ -55,7 +56,7 @@ class PepperLookupRequest {
   net::SingleRequestHostResolver resolver_;
   net::HostResolver::RequestInfo request_info_;
   net::RequestPriority priority_;
-  scoped_ptr<T> bound_info_;
+  std::unique_ptr<T> bound_info_;
   LookupRequestCallback callback_;
 
   net::AddressList addresses_;

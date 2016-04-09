@@ -303,9 +303,9 @@ void TouchSelectionControllerClientAura::OnSelectionEvent(
   };
 }
 
-scoped_ptr<ui::TouchHandleDrawable>
+std::unique_ptr<ui::TouchHandleDrawable>
 TouchSelectionControllerClientAura::CreateDrawable() {
-  return scoped_ptr<ui::TouchHandleDrawable>(
+  return std::unique_ptr<ui::TouchHandleDrawable>(
       new ui::TouchHandleDrawableAura(rwhva_->GetNativeView()));
 }
 

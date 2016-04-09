@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/sparse_histogram.h"
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/browser/tracing/trace_message_filter.h"
@@ -60,7 +61,7 @@ BrowserPpapiHostImpl::BrowserPpapiHostImpl(
       external_plugin_(external_plugin),
       ssl_context_helper_(new SSLContextHelper()) {
   message_filter_ = new HostMessageFilter(ppapi_host_.get(), this);
-  ppapi_host_->AddHostFactoryFilter(scoped_ptr<ppapi::host::HostFactory>(
+  ppapi_host_->AddHostFactoryFilter(std::unique_ptr<ppapi::host::HostFactory>(
       new ContentBrowserPepperHostFactory(this)));
 }
 
@@ -154,7 +155,7 @@ void BrowserPpapiHostImpl::AddInstance(
     const PepperRendererInstanceData& renderer_instance_data) {
   DCHECK(!instance_map_.contains(instance));
   instance_map_.add(instance,
-                    make_scoped_ptr(new InstanceData(renderer_instance_data)));
+                    base::WrapUnique(new InstanceData(renderer_instance_data)));
 }
 
 void BrowserPpapiHostImpl::DeleteInstance(PP_Instance instance) {

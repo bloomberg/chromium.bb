@@ -84,7 +84,7 @@ TEST_F(RenderViewHostTest, CreateFullscreenWidget) {
 // Ensure we do not grant bindings to a process shared with unprivileged views.
 TEST_F(RenderViewHostTest, DontGrantBindingsToSharedProcess) {
   // Create another view in the same process.
-  scoped_ptr<TestWebContents> new_web_contents(
+  std::unique_ptr<TestWebContents> new_web_contents(
       TestWebContents::Create(browser_context(), rvh()->GetSiteInstance()));
 
   rvh()->AllowBindings(BINDINGS_POLICY_WEB_UI);

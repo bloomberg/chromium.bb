@@ -82,14 +82,14 @@ class CONTENT_EXPORT CacheStorage {
 
   // Calls match on the cache with the given |cache_name|.
   void MatchCache(const std::string& cache_name,
-                  scoped_ptr<ServiceWorkerFetchRequest> request,
+                  std::unique_ptr<ServiceWorkerFetchRequest> request,
                   const CacheStorageCache::ResponseCallback& callback);
 
   // Calls match on all of the caches in parallel, calling |callback| with the
   // response from the first cache (in order of cache creation) to have the
   // entry. If no response is found then |callback| is called with
   // CACHE_STORAGE_ERROR_NOT_FOUND.
-  void MatchAllCaches(scoped_ptr<ServiceWorkerFetchRequest> request,
+  void MatchAllCaches(std::unique_ptr<ServiceWorkerFetchRequest> request,
                       const CacheStorageCache::ResponseCallback& callback);
 
   // Sums the sizes of each cache and closes them. Runs |callback| with the
@@ -129,7 +129,7 @@ class CONTENT_EXPORT CacheStorage {
   void LazyInit();
   void LazyInitImpl();
   void LazyInitDidLoadIndex(
-      scoped_ptr<std::vector<std::string>> indexed_cache_names);
+      std::unique_ptr<std::vector<std::string>> indexed_cache_names);
 
   // The Open and CreateCache callbacks are below.
   void OpenCacheImpl(const std::string& cache_name,
@@ -166,26 +166,26 @@ class CONTENT_EXPORT CacheStorage {
 
   // The MatchCache callbacks are below.
   void MatchCacheImpl(const std::string& cache_name,
-                      scoped_ptr<ServiceWorkerFetchRequest> request,
+                      std::unique_ptr<ServiceWorkerFetchRequest> request,
                       const CacheStorageCache::ResponseCallback& callback);
   void MatchCacheDidMatch(scoped_refptr<CacheStorageCache> cache,
                           const CacheStorageCache::ResponseCallback& callback,
                           CacheStorageError error,
-                          scoped_ptr<ServiceWorkerResponse> response,
-                          scoped_ptr<storage::BlobDataHandle> handle);
+                          std::unique_ptr<ServiceWorkerResponse> response,
+                          std::unique_ptr<storage::BlobDataHandle> handle);
 
   // The MatchAllCaches callbacks are below.
-  void MatchAllCachesImpl(scoped_ptr<ServiceWorkerFetchRequest> request,
+  void MatchAllCachesImpl(std::unique_ptr<ServiceWorkerFetchRequest> request,
                           const CacheStorageCache::ResponseCallback& callback);
   void MatchAllCachesDidMatch(
       scoped_refptr<CacheStorageCache> cache,
       CacheMatchResponse* out_match_response,
       const base::Closure& barrier_closure,
       CacheStorageError error,
-      scoped_ptr<ServiceWorkerResponse> service_worker_response,
-      scoped_ptr<storage::BlobDataHandle> handle);
+      std::unique_ptr<ServiceWorkerResponse> service_worker_response,
+      std::unique_ptr<storage::BlobDataHandle> handle);
   void MatchAllCachesDidMatchAll(
-      scoped_ptr<std::vector<CacheMatchResponse>> match_responses,
+      std::unique_ptr<std::vector<CacheMatchResponse>> match_responses,
       const CacheStorageCache::ResponseCallback& callback);
 
   void GetSizeThenCloseAllCachesImpl(const SizeCallback& callback);
@@ -205,8 +205,8 @@ class CONTENT_EXPORT CacheStorage {
   void PendingResponseCallback(
       const CacheStorageCache::ResponseCallback& callback,
       CacheStorageError error,
-      scoped_ptr<ServiceWorkerResponse> response,
-      scoped_ptr<storage::BlobDataHandle> blob_data_handle);
+      std::unique_ptr<ServiceWorkerResponse> response,
+      std::unique_ptr<storage::BlobDataHandle> blob_data_handle);
 
   void PendingSizeCallback(const SizeCallback& callback, int64_t size);
 
@@ -215,7 +215,7 @@ class CONTENT_EXPORT CacheStorage {
   bool initializing_;
 
   // The pending operation scheduler.
-  scoped_ptr<CacheStorageScheduler> scheduler_;
+  std::unique_ptr<CacheStorageScheduler> scheduler_;
 
   // The map of cache names to CacheStorageCache objects.
   CacheMap cache_map_;
@@ -233,7 +233,7 @@ class CONTENT_EXPORT CacheStorage {
   bool memory_only_;
 
   // Performs backend specific operations (memory vs disk).
-  scoped_ptr<CacheLoader> cache_loader_;
+  std::unique_ptr<CacheLoader> cache_loader_;
 
   // Holds ref pointers to recently opened caches so that they can be reused
   // without having the open the cache again.

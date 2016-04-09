@@ -5,11 +5,12 @@
 #include "content/browser/renderer_host/input/touch_event_queue.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -71,12 +72,12 @@ class TouchEventQueueTest : public testing::Test,
     last_acked_event_ = event.event;
     last_acked_event_state_ = ack_result;
     if (followup_touch_event_) {
-      scoped_ptr<WebTouchEvent> followup_touch_event =
+      std::unique_ptr<WebTouchEvent> followup_touch_event =
           std::move(followup_touch_event_);
       SendTouchEvent(*followup_touch_event);
     }
     if (followup_gesture_event_) {
-      scoped_ptr<WebGestureEvent> followup_gesture_event =
+      std::unique_ptr<WebGestureEvent> followup_gesture_event =
           std::move(followup_gesture_event_);
       queue_->OnGestureScrollEvent(
           GestureEventWithLatencyInfo(*followup_gesture_event,
@@ -323,15 +324,15 @@ class TouchEventQueueTest : public testing::Test,
     queue_->OnHasTouchEventHandlers(true);
   }
 
-  scoped_ptr<TouchEventQueue> queue_;
+  std::unique_ptr<TouchEventQueue> queue_;
   size_t acked_event_count_;
   WebTouchEvent last_acked_event_;
   std::vector<WebTouchEvent> sent_events_;
   InputEventAckState last_acked_event_state_;
   SyntheticWebTouchEvent touch_event_;
-  scoped_ptr<WebTouchEvent> followup_touch_event_;
-  scoped_ptr<WebGestureEvent> followup_gesture_event_;
-  scoped_ptr<InputEventAckState> sync_ack_result_;
+  std::unique_ptr<WebTouchEvent> followup_touch_event_;
+  std::unique_ptr<WebGestureEvent> followup_gesture_event_;
+  std::unique_ptr<InputEventAckState> sync_ack_result_;
   double slop_length_dips_;
   gfx::PointF anchor_;
   base::MessageLoopForUI message_loop_;

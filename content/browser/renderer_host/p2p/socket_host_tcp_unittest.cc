@@ -66,7 +66,7 @@ class P2PSocketHostTcpTestBase : public testing::Test {
 
   std::string sent_data_;
   FakeSocket* socket_;  // Owned by |socket_host_|.
-  scoped_ptr<P2PSocketHostTcpBase> socket_host_;
+  std::unique_ptr<P2PSocketHostTcpBase> socket_host_;
   MockIPCSender sender_;
 
   net::IPEndPoint local_address_;

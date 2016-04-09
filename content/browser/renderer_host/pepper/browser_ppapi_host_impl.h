@@ -145,7 +145,7 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   // Reports plugin activity to the callback set with SetOnKeepaliveCallback.
   void OnKeepalive();
 
-  scoped_ptr<ppapi::host::PpapiHost> ppapi_host_;
+  std::unique_ptr<ppapi::host::PpapiHost> ppapi_host_;
   base::Process plugin_process_;
   std::string plugin_name_;
   base::FilePath plugin_path_;
@@ -161,7 +161,8 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   scoped_refptr<SSLContextHelper> ssl_context_helper_;
 
   // Tracks all PP_Instances in this plugin and associated data.
-  base::ScopedPtrHashMap<PP_Instance, scoped_ptr<InstanceData>> instance_map_;
+  base::ScopedPtrHashMap<PP_Instance, std::unique_ptr<InstanceData>>
+      instance_map_;
 
   scoped_refptr<HostMessageFilter> message_filter_;
 

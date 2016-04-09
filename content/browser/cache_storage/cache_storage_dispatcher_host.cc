@@ -190,7 +190,7 @@ void CacheStorageDispatcherHost::OnCacheStorageMatch(
     bad_message::ReceivedBadMessage(this, bad_message::CSDH_INVALID_ORIGIN);
     return;
   }
-  scoped_ptr<ServiceWorkerFetchRequest> scoped_request(
+  std::unique_ptr<ServiceWorkerFetchRequest> scoped_request(
       new ServiceWorkerFetchRequest(request.url, request.method,
                                     request.headers, request.referrer,
                                     request.is_reload));
@@ -223,7 +223,7 @@ void CacheStorageDispatcherHost::OnCacheMatch(
   }
 
   scoped_refptr<CacheStorageCache> cache = it->second;
-  scoped_ptr<ServiceWorkerFetchRequest> scoped_request(
+  std::unique_ptr<ServiceWorkerFetchRequest> scoped_request(
       new ServiceWorkerFetchRequest(request.url, request.method,
                                     request.headers, request.referrer,
                                     request.is_reload));
@@ -248,13 +248,13 @@ void CacheStorageDispatcherHost::OnCacheMatchAll(
   scoped_refptr<CacheStorageCache> cache = it->second;
   if (request.url.is_empty()) {
     cache->MatchAll(
-        scoped_ptr<ServiceWorkerFetchRequest>(), match_params,
+        std::unique_ptr<ServiceWorkerFetchRequest>(), match_params,
         base::Bind(&CacheStorageDispatcherHost::OnCacheMatchAllCallback, this,
                    thread_id, request_id, cache));
     return;
   }
 
-  scoped_ptr<ServiceWorkerFetchRequest> scoped_request(
+  std::unique_ptr<ServiceWorkerFetchRequest> scoped_request(
       new ServiceWorkerFetchRequest(request.url, request.method,
                                     request.headers, request.referrer,
                                     request.is_reload));
@@ -384,8 +384,8 @@ void CacheStorageDispatcherHost::OnCacheStorageMatchCallback(
     int thread_id,
     int request_id,
     CacheStorageError error,
-    scoped_ptr<ServiceWorkerResponse> response,
-    scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
+    std::unique_ptr<ServiceWorkerResponse> response,
+    std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {
   if (error != CACHE_STORAGE_OK) {
     Send(new CacheStorageMsg_CacheStorageMatchError(
         thread_id, request_id, ToWebServiceWorkerCacheError(error)));
@@ -404,8 +404,8 @@ void CacheStorageDispatcherHost::OnCacheMatchCallback(
     int request_id,
     scoped_refptr<CacheStorageCache> cache,
     CacheStorageError error,
-    scoped_ptr<ServiceWorkerResponse> response,
-    scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
+    std::unique_ptr<ServiceWorkerResponse> response,
+    std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {
   if (error != CACHE_STORAGE_OK) {
     Send(new CacheStorageMsg_CacheMatchError(
         thread_id, request_id, ToWebServiceWorkerCacheError(error)));
@@ -423,11 +423,11 @@ void CacheStorageDispatcherHost::OnCacheMatchAllCallbackAdapter(
     int request_id,
     scoped_refptr<CacheStorageCache> cache,
     CacheStorageError error,
-    scoped_ptr<ServiceWorkerResponse> response,
-    scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
-  scoped_ptr<CacheStorageCache::Responses> responses(
+    std::unique_ptr<ServiceWorkerResponse> response,
+    std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {
+  std::unique_ptr<CacheStorageCache::Responses> responses(
       new CacheStorageCache::Responses);
-  scoped_ptr<CacheStorageCache::BlobDataHandles> blob_data_handles(
+  std::unique_ptr<CacheStorageCache::BlobDataHandles> blob_data_handles(
       new CacheStorageCache::BlobDataHandles);
   if (error == CACHE_STORAGE_OK) {
     DCHECK(response);
@@ -444,8 +444,8 @@ void CacheStorageDispatcherHost::OnCacheMatchAllCallback(
     int request_id,
     scoped_refptr<CacheStorageCache> cache,
     CacheStorageError error,
-    scoped_ptr<CacheStorageCache::Responses> responses,
-    scoped_ptr<CacheStorageCache::BlobDataHandles> blob_data_handles) {
+    std::unique_ptr<CacheStorageCache::Responses> responses,
+    std::unique_ptr<CacheStorageCache::BlobDataHandles> blob_data_handles) {
   if (error != CACHE_STORAGE_OK && error != CACHE_STORAGE_ERROR_NOT_FOUND) {
     Send(new CacheStorageMsg_CacheMatchAllError(
         thread_id, request_id, ToWebServiceWorkerCacheError(error)));
@@ -464,7 +464,7 @@ void CacheStorageDispatcherHost::OnCacheKeysCallback(
     int request_id,
     scoped_refptr<CacheStorageCache> cache,
     CacheStorageError error,
-    scoped_ptr<CacheStorageCache::Requests> requests) {
+    std::unique_ptr<CacheStorageCache::Requests> requests) {
   if (error != CACHE_STORAGE_OK) {
     Send(new CacheStorageMsg_CacheKeysError(
         thread_id, request_id, ToWebServiceWorkerCacheError(error)));

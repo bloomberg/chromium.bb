@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_GESTURE_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_GESTURE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/input/synthetic_gesture_params.h"
@@ -31,7 +32,7 @@ class CONTENT_EXPORT SyntheticGesture {
   SyntheticGesture();
   virtual ~SyntheticGesture();
 
-  static scoped_ptr<SyntheticGesture> Create(
+  static std::unique_ptr<SyntheticGesture> Create(
       const SyntheticGestureParams& gesture_params);
 
   enum Result {

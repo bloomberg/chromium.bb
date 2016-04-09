@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "build/build_config.h"
@@ -96,7 +97,7 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
     BrowserPpapiHostImpl* host,
     PP_Instance instance,
     TCPSocketVersion version,
-    scoped_ptr<net::TCPSocket> socket)
+    std::unique_ptr<net::TCPSocket> socket)
     : version_(version),
       external_plugin_(host->external_plugin()),
       render_process_id_(0),
@@ -322,8 +323,9 @@ int32_t PepperTCPSocketMessageFilter::OnMsgSSLHandshake(
   if (socket_->GetPeerAddress(&peer_address) != net::OK)
     return PP_ERROR_FAILED;
 
-  scoped_ptr<net::ClientSocketHandle> handle(new net::ClientSocketHandle());
-  handle->SetSocket(make_scoped_ptr<net::StreamSocket>(
+  std::unique_ptr<net::ClientSocketHandle> handle(
+      new net::ClientSocketHandle());
+  handle->SetSocket(base::WrapUnique<net::StreamSocket>(
       new net::TCPClientSocket(std::move(socket_), peer_address)));
   net::ClientSocketFactory* factory =
       net::ClientSocketFactory::GetDefaultFactory();
@@ -969,7 +971,7 @@ void PepperTCPSocketMessageFilter::OpenFirewallHole(
 void PepperTCPSocketMessageFilter::OnFirewallHoleOpened(
     const ppapi::host::ReplyMessageContext& context,
     int32_t result,
-    scoped_ptr<chromeos::FirewallHole> hole) {
+    std::unique_ptr<chromeos::FirewallHole> hole) {
   LOG_IF(WARNING, !hole.get()) << "Firewall hole could not be opened.";
   firewall_hole_.reset(hole.release());
 
@@ -1018,7 +1020,7 @@ void PepperTCPSocketMessageFilter::OnAcceptCompleted(
   // |factory_| is guaranteed to be non-NULL here. Only those instances created
   // in CONNECTED state have a NULL |factory_|, while getting here requires
   // LISTENING state.
-  scoped_ptr<ppapi::host::ResourceHost> host =
+  std::unique_ptr<ppapi::host::ResourceHost> host =
       factory_->CreateAcceptedTCPSocket(instance_, version_,
                                         std::move(accepted_socket_));
   if (!host) {

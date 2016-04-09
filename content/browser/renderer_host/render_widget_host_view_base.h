@@ -8,12 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/kill.h"
 #include "base/timer/timer.h"
@@ -95,7 +95,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   gfx::Size GetVisibleViewportSize() const override;
   void SetInsets(const gfx::Insets& insets) override;
   void BeginFrameSubscription(
-      scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) override;
+      std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) override;
   void EndFrameSubscription() override;
 
   // This only needs to be overridden by RenderWidgetHostViewBase subclasses
@@ -185,7 +185,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   // Create a platform specific SyntheticGestureTarget implementation that will
   // be used to inject synthetic input events.
-  virtual scoped_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget();
+  virtual std::unique_ptr<SyntheticGestureTarget>
+  CreateSyntheticGestureTarget();
 
   // Create a BrowserAccessibilityManager for a frame in this view.
   // If |for_root_frame| is true, creates a BrowserAccessibilityManager
@@ -202,8 +203,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Informs that the focused DOM node has changed.
   virtual void FocusedNodeChanged(bool is_editable_node) {}
 
-  virtual void OnSwapCompositorFrame(uint32_t output_surface_id,
-                                     scoped_ptr<cc::CompositorFrame> frame) {}
+  virtual void OnSwapCompositorFrame(
+      uint32_t output_surface_id,
+      std::unique_ptr<cc::CompositorFrame> frame) {}
 
   // This method exists to allow removing of displayed graphics, after a new
   // page has been loaded, to prevent the displayed URL from being out of sync
@@ -456,7 +458,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   base::ObserverList<RenderWidgetHostViewBaseObserver> observers_;
 
   // The last reported input state by the RenderWidget.
-  scoped_ptr<TextInputState> text_input_state_;
+  std::unique_ptr<TextInputState> text_input_state_;
 
   base::WeakPtrFactory<RenderWidgetHostViewBase> weak_factory_;
 

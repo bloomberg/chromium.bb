@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/input_router.h"
@@ -60,7 +60,7 @@ class CONTENT_EXPORT InputRouterImpl
   ~InputRouterImpl() override;
 
   // InputRouter
-  bool SendInput(scoped_ptr<IPC::Message> message) override;
+  bool SendInput(std::unique_ptr<IPC::Message> message) override;
   void SendMouseEvent(const MouseEventWithLatencyInfo& mouse_event) override;
   void SendWheelEvent(
       const MouseWheelEventWithLatencyInfo& wheel_event) override;
@@ -109,8 +109,8 @@ class CONTENT_EXPORT InputRouterImpl
   void OnMouseWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
                             InputEventAckState ack_result) override;
 
-  bool SendMoveCaret(scoped_ptr<IPC::Message> message);
-  bool SendSelectMessage(scoped_ptr<IPC::Message> message);
+  bool SendMoveCaret(std::unique_ptr<IPC::Message> message);
+  bool SendSelectMessage(std::unique_ptr<IPC::Message> message);
   bool Send(IPC::Message* message);
 
   // Filters and forwards |input_event| to the appropriate handler.
@@ -216,7 +216,7 @@ class CONTENT_EXPORT InputRouterImpl
   bool move_caret_pending_;
 
   // (Similar to |next_mouse_move_|.) The next MoveCaret to send, if any.
-  scoped_ptr<IPC::Message> next_move_caret_;
+  std::unique_ptr<IPC::Message> next_move_caret_;
 
   // True if a mouse move event was sent to the render view and we are waiting
   // for a corresponding InputHostMsg_HandleInputEvent_ACK message.
@@ -224,7 +224,7 @@ class CONTENT_EXPORT InputRouterImpl
 
   // The next mouse move event to send (only non-null while mouse_move_pending_
   // is true).
-  scoped_ptr<MouseEventWithLatencyInfo> next_mouse_move_;
+  std::unique_ptr<MouseEventWithLatencyInfo> next_mouse_move_;
   MouseEventWithLatencyInfo current_mouse_move_;
 
   // A queue of keyboard events. We can't trust data from the renderer so we

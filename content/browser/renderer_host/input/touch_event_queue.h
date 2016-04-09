@@ -157,12 +157,13 @@ class CONTENT_EXPORT TouchEventQueue {
 
   // Ack all coalesced events in |acked_event| to the client with |ack_result|,
   // updating the acked events with |optional_latency_info| if it exists.
-  void AckTouchEventToClient(InputEventAckState ack_result,
-                             scoped_ptr<CoalescedWebTouchEvent> acked_event,
-                             const ui::LatencyInfo* optional_latency_info);
+  void AckTouchEventToClient(
+      InputEventAckState ack_result,
+      std::unique_ptr<CoalescedWebTouchEvent> acked_event,
+      const ui::LatencyInfo* optional_latency_info);
 
   // Safely pop the head of the queue.
-  scoped_ptr<CoalescedWebTouchEvent> PopTouchEvent();
+  std::unique_ptr<CoalescedWebTouchEvent> PopTouchEvent();
 
   // Dispatch |touch| to the client. Before dispatching, updates pointer
   // states in touchmove events for pointers that have not changed position.
@@ -214,11 +215,11 @@ class CONTENT_EXPORT TouchEventQueue {
   bool drop_remaining_touches_in_sequence_;
 
   // Optional handler for timed-out touch event acks.
-  scoped_ptr<TouchTimeoutHandler> timeout_handler_;
+  std::unique_ptr<TouchTimeoutHandler> timeout_handler_;
 
   // Suppression of TouchMove's within a slop region when a sequence has not yet
   // been preventDefaulted.
-  scoped_ptr<TouchMoveSlopSuppressor> touchmove_slop_suppressor_;
+  std::unique_ptr<TouchMoveSlopSuppressor> touchmove_slop_suppressor_;
 
   // Whether touch events should remain buffered and dispatched asynchronously
   // while a scroll sequence is active.  In this mode, touchmove's are throttled
@@ -226,7 +227,7 @@ class CONTENT_EXPORT TouchEventQueue {
   // until a sufficient time period has elapsed since the last sent touch event.
   // For details see the design doc at http://goo.gl/lVyJAa.
   bool send_touch_events_async_;
-  scoped_ptr<TouchEventWithLatencyInfo> pending_async_touchmove_;
+  std::unique_ptr<TouchEventWithLatencyInfo> pending_async_touchmove_;
 
   // For uncancelable touch moves, not only we send a fake ack, but also a real
   // ack from render, which we use to decide when to send the next async
@@ -241,7 +242,7 @@ class CONTENT_EXPORT TouchEventQueue {
   double last_sent_touch_timestamp_sec_;
 
   // Event is saved to compare pointer positions for new touchmove events.
-  scoped_ptr<blink::WebTouchEvent> last_sent_touchevent_;
+  std::unique_ptr<blink::WebTouchEvent> last_sent_touchevent_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEventQueue);
 };

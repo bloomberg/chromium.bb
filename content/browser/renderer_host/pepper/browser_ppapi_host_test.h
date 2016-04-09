@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_BROWSER_PPAPI_HOST_TEST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_BROWSER_PPAPI_HOST_TEST_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "ppapi/proxy/resource_message_test_sink.h"
 
@@ -27,7 +28,7 @@ class BrowserPpapiHostTest {
  private:
   ppapi::proxy::ResourceMessageTestSink sink_;
 
-  scoped_ptr<BrowserPpapiHostImpl> ppapi_host_;
+  std::unique_ptr<BrowserPpapiHostImpl> ppapi_host_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPpapiHostTest);
 };

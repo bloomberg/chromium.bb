@@ -81,7 +81,7 @@ TEST_F(PepperPrintingHostTest, GetDefaultPrintSettings) {
                                             PP_PRINTOUTPUTFORMAT_PDF};
 
   // Construct the resource host.
-  scoped_ptr<PepperPrintSettingsManager> manager(
+  std::unique_ptr<PepperPrintSettingsManager> manager(
       new MockPepperPrintSettingsManager(expected_settings));
   PepperPrintingHost printing(GetBrowserPpapiHost()->GetPpapiHost(),
                               pp_instance, pp_resource, std::move(manager));

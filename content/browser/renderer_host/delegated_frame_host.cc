@@ -11,6 +11,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/default_tick_clock.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
@@ -151,7 +152,7 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
     return;
   }
 
-  scoped_ptr<cc::CopyOutputRequest> request =
+  std::unique_ptr<cc::CopyOutputRequest> request =
       cc::CopyOutputRequest::CreateRequest(
           base::Bind(&CopyFromCompositingSurfaceHasResult, output_size,
                      preferred_color_type, callback));
@@ -169,7 +170,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceToVideoFrame(
     return;
   }
 
-  scoped_ptr<cc::CopyOutputRequest> request =
+  std::unique_ptr<cc::CopyOutputRequest> request =
       cc::CopyOutputRequest::CreateRequest(base::Bind(
           &DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo,
           AsWeakPtr(),  // For caching the ReadbackYUVInterface on this class.
@@ -189,7 +190,7 @@ bool DelegatedFrameHost::CanCopyToVideoFrame() const {
 }
 
 void DelegatedFrameHost::BeginFrameSubscription(
-    scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
+    std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
   frame_subscriber_ = std::move(subscriber);
 }
 
@@ -341,7 +342,7 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
     subscriber_texture = new OwnedMailbox(helper);
   }
 
-  scoped_ptr<cc::CopyOutputRequest> request =
+  std::unique_ptr<cc::CopyOutputRequest> request =
       cc::CopyOutputRequest::CreateRequest(base::Bind(
           &DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo,
           AsWeakPtr(), subscriber_texture, frame,
@@ -375,7 +376,7 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
 
 void DelegatedFrameHost::SwapDelegatedFrame(
     uint32_t output_surface_id,
-    scoped_ptr<cc::CompositorFrame> frame) {
+    std::unique_ptr<cc::CompositorFrame> frame) {
   DCHECK(frame->delegated_frame_data.get());
   cc::DelegatedFrameData* frame_data = frame->delegated_frame_data.get();
   float frame_device_scale_factor = frame->metadata.device_scale_factor;
@@ -445,7 +446,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
     cc::SurfaceManager* manager = factory->GetSurfaceManager();
     if (!surface_factory_) {
-      surface_factory_ = make_scoped_ptr(new cc::SurfaceFactory(manager, this));
+      surface_factory_ =
+          base::WrapUnique(new cc::SurfaceFactory(manager, this));
     }
     if (surface_id_.is_null() || frame_size != current_surface_size_ ||
         frame_size_in_dip != current_frame_size_in_dip_) {
@@ -585,7 +587,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceFinishedForVideo(
     base::WeakPtr<DelegatedFrameHost> dfh,
     const base::Callback<void(bool)>& callback,
     scoped_refptr<OwnedMailbox> subscriber_texture,
-    scoped_ptr<cc::SingleReleaseCallback> release_callback,
+    std::unique_ptr<cc::SingleReleaseCallback> release_callback,
     bool result) {
   callback.Run(result);
 
@@ -610,7 +612,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
     scoped_refptr<OwnedMailbox> subscriber_texture,
     scoped_refptr<media::VideoFrame> video_frame,
     const base::Callback<void(const gfx::Rect&, bool)>& callback,
-    scoped_ptr<cc::CopyOutputResult> result) {
+    std::unique_ptr<cc::CopyOutputResult> result) {
   base::ScopedClosureRunner scoped_callback_runner(
       base::Bind(callback, gfx::Rect(), false));
   base::ScopedClosureRunner scoped_return_subscriber_texture(base::Bind(
@@ -639,7 +641,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
 
   if (!result->HasTexture()) {
     DCHECK(result->HasBitmap());
-    scoped_ptr<SkBitmap> bitmap = result->TakeBitmap();
+    std::unique_ptr<SkBitmap> bitmap = result->TakeBitmap();
     // Scale the bitmap to the required size, if necessary.
     SkBitmap scaled_bitmap;
     if (result->size() != region_in_frame.size()) {
@@ -672,7 +674,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
     return;
 
   cc::TextureMailbox texture_mailbox;
-  scoped_ptr<cc::SingleReleaseCallback> release_callback;
+  std::unique_ptr<cc::SingleReleaseCallback> release_callback;
   result->TakeTexture(&texture_mailbox, &release_callback);
   DCHECK(texture_mailbox.IsTexture());
 
@@ -845,7 +847,7 @@ void DelegatedFrameHost::LockResources() {
 }
 
 void DelegatedFrameHost::RequestCopyOfOutput(
-    scoped_ptr<cc::CopyOutputRequest> request) {
+    std::unique_ptr<cc::CopyOutputRequest> request) {
   if (!request_copy_of_output_callback_for_testing_.is_null()) {
     request_copy_of_output_callback_for_testing_.Run(std::move(request));
   } else {

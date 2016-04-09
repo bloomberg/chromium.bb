@@ -70,7 +70,7 @@ int32_t FontMessageFilter::OnResourceMessageReceived(
 int32_t FontMessageFilter::OnHostMsgGetFontFamilies(
     ppapi::host::HostMessageContext* context) {
   // OK to use "slow blocking" version since we're on the blocking pool.
-  scoped_ptr<base::ListValue> list(GetFontList_SlowBlocking());
+  std::unique_ptr<base::ListValue> list(GetFontList_SlowBlocking());
 
   std::string output;
   for (size_t i = 0; i < list->GetSize(); i++) {

@@ -106,7 +106,7 @@ base::LazyInstance<gfx::ColorProfile>::Leaky g_color_profile =
     LAZY_INSTANCE_INITIALIZER;
 #endif
 
-void DownloadUrlOnUIThread(scoped_ptr<DownloadUrlParameters> parameters) {
+void DownloadUrlOnUIThread(std::unique_ptr<DownloadUrlParameters> parameters) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderProcessHost* render_process_host =
@@ -399,7 +399,7 @@ void RenderMessageFilter::DownloadUrl(int render_view_id,
   if (!resource_context_)
     return;
 
-  scoped_ptr<DownloadUrlParameters> parameters(
+  std::unique_ptr<DownloadUrlParameters> parameters(
       new DownloadUrlParameters(url, render_process_id_, render_view_id,
                                 render_frame_id, resource_context_));
   parameters->set_content_initiated(true);
@@ -604,7 +604,7 @@ void RenderMessageFilter::OnKeygen(uint32_t key_size_index,
 
 void RenderMessageFilter::PostKeygenToWorkerThread(
     IPC::Message* reply_msg,
-    scoped_ptr<net::KeygenHandler> keygen_handler) {
+    std::unique_ptr<net::KeygenHandler> keygen_handler) {
   VLOG(1) << "Dispatching keygen task to worker pool.";
   // Dispatch to worker pool, so we do not block the IO thread.
   if (!base::WorkerPool::PostTask(
@@ -621,7 +621,7 @@ void RenderMessageFilter::PostKeygenToWorkerThread(
 }
 
 void RenderMessageFilter::OnKeygenOnWorkerThread(
-    scoped_ptr<net::KeygenHandler> keygen_handler,
+    std::unique_ptr<net::KeygenHandler> keygen_handler,
     IPC::Message* reply_msg) {
   DCHECK(reply_msg);
 
@@ -677,7 +677,7 @@ void RenderMessageFilter::OnEstablishGpuChannel(
     CauseForGpuLaunch cause_for_gpu_launch,
     IPC::Message* reply_ptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  scoped_ptr<IPC::Message> reply(reply_ptr);
+  std::unique_ptr<IPC::Message> reply(reply_ptr);
 
 #if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
   // TODO(jbauman): Remove this when we know why renderer processes are
@@ -715,14 +715,14 @@ void RenderMessageFilter::OnEstablishGpuChannel(
 }
 
 void RenderMessageFilter::OnHasGpuProcess(IPC::Message* reply_ptr) {
-  scoped_ptr<IPC::Message> reply(reply_ptr);
+  std::unique_ptr<IPC::Message> reply(reply_ptr);
   GpuProcessHost::GetProcessHandles(
       base::Bind(&RenderMessageFilter::GetGpuProcessHandlesCallback,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&reply)));
 }
 
 void RenderMessageFilter::EstablishChannelCallback(
-    scoped_ptr<IPC::Message> reply,
+    std::unique_ptr<IPC::Message> reply,
     const IPC::ChannelHandle& channel,
     const gpu::GPUInfo& gpu_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -733,7 +733,7 @@ void RenderMessageFilter::EstablishChannelCallback(
 }
 
 void RenderMessageFilter::GetGpuProcessHandlesCallback(
-    scoped_ptr<IPC::Message> reply,
+    std::unique_ptr<IPC::Message> reply,
     const std::list<base::ProcessHandle>& handles) {
   bool has_gpu_process = handles.size() > 0;
   ChildProcessHostMsg_HasGpuProcess::WriteReplyParams(reply.get(),

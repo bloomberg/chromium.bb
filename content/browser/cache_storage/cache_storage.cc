@@ -5,6 +5,7 @@
 #include "content/browser/cache_storage/cache_storage.h"
 
 #include <stddef.h>
+
 #include <set>
 #include <string>
 #include <utility>
@@ -14,6 +15,7 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/guid.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -54,7 +56,7 @@ void SizeRetrievedFromCache(const scoped_refptr<CacheStorageCache>& cache,
   closure.Run();
 }
 
-void SizeRetrievedFromAllCaches(scoped_ptr<int64_t> accumulator,
+void SizeRetrievedFromAllCaches(std::unique_ptr<int64_t> accumulator,
                                 const CacheStorage::SizeCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, *accumulator));
@@ -69,8 +71,8 @@ struct CacheStorage::CacheMatchResponse {
   ~CacheMatchResponse() = default;
 
   CacheStorageError error;
-  scoped_ptr<ServiceWorkerResponse> service_worker_response;
-  scoped_ptr<storage::BlobDataHandle> blob_data_handle;
+  std::unique_ptr<ServiceWorkerResponse> service_worker_response;
+  std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
 };
 
 // Handles the loading and clean up of CacheStorageCache objects.
@@ -78,7 +80,7 @@ class CacheStorage::CacheLoader {
  public:
   typedef base::Callback<void(scoped_refptr<CacheStorageCache>)> CacheCallback;
   typedef base::Callback<void(bool)> BoolCallback;
-  typedef base::Callback<void(scoped_ptr<std::vector<std::string>>)>
+  typedef base::Callback<void(std::unique_ptr<std::vector<std::string>>)>
       StringVectorCallback;
 
   CacheLoader(
@@ -116,7 +118,7 @@ class CacheStorage::CacheLoader {
                           const BoolCallback& callback) = 0;
 
   // Loads the cache names from disk if applicable.
-  virtual void LoadIndex(scoped_ptr<std::vector<std::string>> cache_names,
+  virtual void LoadIndex(std::unique_ptr<std::vector<std::string>> cache_names,
                          const StringVectorCallback& callback) = 0;
 
  protected:
@@ -174,7 +176,7 @@ class CacheStorage::MemoryLoader : public CacheStorage::CacheLoader {
     callback.Run(false);
   }
 
-  void LoadIndex(scoped_ptr<std::vector<std::string>> cache_names,
+  void LoadIndex(std::unique_ptr<std::vector<std::string>> cache_names,
                  const StringVectorCallback& callback) override {
     callback.Run(std::move(cache_names));
   }
@@ -323,7 +325,7 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
     return base::ReplaceFile(tmp_path, index_path, NULL);
   }
 
-  void LoadIndex(scoped_ptr<std::vector<std::string>> names,
+  void LoadIndex(std::unique_ptr<std::vector<std::string>> names,
                  const StringVectorCallback& callback) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -341,12 +343,13 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
                    callback));
   }
 
-  void LoadIndexDidReadFile(scoped_ptr<std::vector<std::string>> names,
+  void LoadIndexDidReadFile(std::unique_ptr<std::vector<std::string>> names,
                             const StringVectorCallback& callback,
                             const std::string& serialized) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-    scoped_ptr<std::set<std::string>> cache_dirs(new std::set<std::string>);
+    std::unique_ptr<std::set<std::string>> cache_dirs(
+        new std::set<std::string>);
 
     CacheStorageIndex index;
     if (index.ParseFromString(serialized)) {
@@ -373,7 +376,7 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
   // |cache_dirs|. Runs on cache_task_runner_
   static void DeleteUnreferencedCachesInPool(
       const base::FilePath& cache_base_dir,
-      scoped_ptr<std::set<std::string>> cache_dirs) {
+      std::unique_ptr<std::set<std::string>> cache_dirs) {
     base::FileEnumerator file_enum(cache_base_dir, false /* recursive */,
                                    base::FileEnumerator::DIRECTORIES);
     std::vector<base::FilePath> dirs_to_delete;
@@ -561,7 +564,7 @@ void CacheStorage::EnumerateCaches(const StringsAndErrorCallback& callback) {
 
 void CacheStorage::MatchCache(
     const std::string& cache_name,
-    scoped_ptr<ServiceWorkerFetchRequest> request,
+    std::unique_ptr<ServiceWorkerFetchRequest> request,
     const CacheStorageCache::ResponseCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -581,7 +584,7 @@ void CacheStorage::MatchCache(
 }
 
 void CacheStorage::MatchAllCaches(
-    scoped_ptr<ServiceWorkerFetchRequest> request,
+    std::unique_ptr<ServiceWorkerFetchRequest> request,
     const CacheStorageCache::ResponseCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -660,7 +663,7 @@ void CacheStorage::LazyInitImpl() {
   // 3. Once each load is complete, update the map variables.
   // 4. Call the list of waiting callbacks.
 
-  scoped_ptr<std::vector<std::string>> indexed_cache_names(
+  std::unique_ptr<std::vector<std::string>> indexed_cache_names(
       new std::vector<std::string>());
 
   cache_loader_->LoadIndex(std::move(indexed_cache_names),
@@ -669,7 +672,7 @@ void CacheStorage::LazyInitImpl() {
 }
 
 void CacheStorage::LazyInitDidLoadIndex(
-    scoped_ptr<std::vector<std::string>> indexed_cache_names) {
+    std::unique_ptr<std::vector<std::string>> indexed_cache_names) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   for (size_t i = 0u, max = indexed_cache_names->size(); i < max; ++i) {
@@ -805,14 +808,14 @@ void CacheStorage::EnumerateCachesImpl(
 
 void CacheStorage::MatchCacheImpl(
     const std::string& cache_name,
-    scoped_ptr<ServiceWorkerFetchRequest> request,
+    std::unique_ptr<ServiceWorkerFetchRequest> request,
     const CacheStorageCache::ResponseCallback& callback) {
   scoped_refptr<CacheStorageCache> cache = GetLoadedCache(cache_name);
 
   if (!cache.get()) {
     callback.Run(CACHE_STORAGE_ERROR_CACHE_NAME_NOT_FOUND,
-                 scoped_ptr<ServiceWorkerResponse>(),
-                 scoped_ptr<storage::BlobDataHandle>());
+                 std::unique_ptr<ServiceWorkerResponse>(),
+                 std::unique_ptr<storage::BlobDataHandle>());
     return;
   }
 
@@ -827,13 +830,13 @@ void CacheStorage::MatchCacheDidMatch(
     scoped_refptr<CacheStorageCache> cache,
     const CacheStorageCache::ResponseCallback& callback,
     CacheStorageError error,
-    scoped_ptr<ServiceWorkerResponse> response,
-    scoped_ptr<storage::BlobDataHandle> handle) {
+    std::unique_ptr<ServiceWorkerResponse> response,
+    std::unique_ptr<storage::BlobDataHandle> handle) {
   callback.Run(error, std::move(response), std::move(handle));
 }
 
 void CacheStorage::MatchAllCachesImpl(
-    scoped_ptr<ServiceWorkerFetchRequest> request,
+    std::unique_ptr<ServiceWorkerFetchRequest> request,
     const CacheStorageCache::ResponseCallback& callback) {
   std::vector<CacheMatchResponse>* match_responses =
       new std::vector<CacheMatchResponse>(ordered_cache_names_.size());
@@ -842,14 +845,14 @@ void CacheStorage::MatchAllCachesImpl(
       ordered_cache_names_.size(),
       base::Bind(&CacheStorage::MatchAllCachesDidMatchAll,
                  weak_factory_.GetWeakPtr(),
-                 base::Passed(make_scoped_ptr(match_responses)), callback));
+                 base::Passed(base::WrapUnique(match_responses)), callback));
 
   for (size_t i = 0, max = ordered_cache_names_.size(); i < max; ++i) {
     scoped_refptr<CacheStorageCache> cache =
         GetLoadedCache(ordered_cache_names_[i]);
     DCHECK(cache.get());
 
-    cache->Match(make_scoped_ptr(new ServiceWorkerFetchRequest(*request)),
+    cache->Match(base::WrapUnique(new ServiceWorkerFetchRequest(*request)),
                  base::Bind(&CacheStorage::MatchAllCachesDidMatch,
                             weak_factory_.GetWeakPtr(), cache,
                             &match_responses->at(i), barrier_closure));
@@ -861,8 +864,8 @@ void CacheStorage::MatchAllCachesDidMatch(
     CacheMatchResponse* out_match_response,
     const base::Closure& barrier_closure,
     CacheStorageError error,
-    scoped_ptr<ServiceWorkerResponse> service_worker_response,
-    scoped_ptr<storage::BlobDataHandle> handle) {
+    std::unique_ptr<ServiceWorkerResponse> service_worker_response,
+    std::unique_ptr<storage::BlobDataHandle> handle) {
   out_match_response->error = error;
   out_match_response->service_worker_response =
       std::move(service_worker_response);
@@ -871,7 +874,7 @@ void CacheStorage::MatchAllCachesDidMatch(
 }
 
 void CacheStorage::MatchAllCachesDidMatchAll(
-    scoped_ptr<std::vector<CacheMatchResponse>> match_responses,
+    std::unique_ptr<std::vector<CacheMatchResponse>> match_responses,
     const CacheStorageCache::ResponseCallback& callback) {
   for (CacheMatchResponse& match_response : *match_responses) {
     if (match_response.error == CACHE_STORAGE_ERROR_NOT_FOUND)
@@ -882,8 +885,8 @@ void CacheStorage::MatchAllCachesDidMatchAll(
     return;
   }
   callback.Run(CACHE_STORAGE_ERROR_NOT_FOUND,
-               scoped_ptr<ServiceWorkerResponse>(),
-               scoped_ptr<storage::BlobDataHandle>());
+               std::unique_ptr<ServiceWorkerResponse>(),
+               std::unique_ptr<storage::BlobDataHandle>());
 }
 
 scoped_refptr<CacheStorageCache> CacheStorage::GetLoadedCache(
@@ -940,7 +943,7 @@ void CacheStorage::GetSizeThenCloseAllCachesImpl(const SizeCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(initialized_);
 
-  scoped_ptr<int64_t> accumulator(new int64_t(0));
+  std::unique_ptr<int64_t> accumulator(new int64_t(0));
   int64_t* accumulator_ptr = accumulator.get();
 
   base::Closure barrier_closure = base::BarrierClosure(
@@ -959,7 +962,7 @@ void CacheStorage::SizeImpl(const SizeCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(initialized_);
 
-  scoped_ptr<int64_t> accumulator(new int64_t(0));
+  std::unique_ptr<int64_t> accumulator(new int64_t(0));
   int64_t* accumulator_ptr = accumulator.get();
 
   base::Closure barrier_closure = base::BarrierClosure(
@@ -1018,8 +1021,8 @@ void CacheStorage::PendingStringsAndErrorCallback(
 void CacheStorage::PendingResponseCallback(
     const CacheStorageCache::ResponseCallback& callback,
     CacheStorageError error,
-    scoped_ptr<ServiceWorkerResponse> response,
-    scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
+    std::unique_ptr<ServiceWorkerResponse> response,
+    std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {
   base::WeakPtr<CacheStorage> cache_storage = weak_factory_.GetWeakPtr();
 
   callback.Run(error, std::move(response), std::move(blob_data_handle));

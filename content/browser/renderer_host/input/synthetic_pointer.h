@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_POINTER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_POINTER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
@@ -20,7 +21,7 @@ class CONTENT_EXPORT SyntheticPointer {
   SyntheticPointer();
   virtual ~SyntheticPointer();
 
-  static scoped_ptr<SyntheticPointer> Create(
+  static std::unique_ptr<SyntheticPointer> Create(
       SyntheticGestureParams::GestureSourceType gesture_source_type);
 
   virtual void DispatchEvent(SyntheticGestureTarget* target,

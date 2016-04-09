@@ -111,8 +111,8 @@ class CONTENT_EXPORT CacheStorageDispatcherHost : public BrowserMessageFilter {
       int thread_id,
       int request_id,
       CacheStorageError error,
-      scoped_ptr<ServiceWorkerResponse> response,
-      scoped_ptr<storage::BlobDataHandle> blob_data_handle);
+      std::unique_ptr<ServiceWorkerResponse> response,
+      std::unique_ptr<storage::BlobDataHandle> blob_data_handle);
 
   // Cache callbacks.
   void OnCacheMatchCallback(
@@ -120,32 +120,33 @@ class CONTENT_EXPORT CacheStorageDispatcherHost : public BrowserMessageFilter {
       int request_id,
       scoped_refptr<CacheStorageCache> cache,
       CacheStorageError error,
-      scoped_ptr<ServiceWorkerResponse> response,
-      scoped_ptr<storage::BlobDataHandle> blob_data_handle);
+      std::unique_ptr<ServiceWorkerResponse> response,
+      std::unique_ptr<storage::BlobDataHandle> blob_data_handle);
   void OnCacheMatchAllCallbackAdapter(
       int thread_id,
       int request_id,
       scoped_refptr<CacheStorageCache> cache,
       CacheStorageError error,
-      scoped_ptr<ServiceWorkerResponse> response,
-      scoped_ptr<storage::BlobDataHandle> blob_data_handle);
+      std::unique_ptr<ServiceWorkerResponse> response,
+      std::unique_ptr<storage::BlobDataHandle> blob_data_handle);
   void OnCacheMatchAllCallback(
       int thread_id,
       int request_id,
       scoped_refptr<CacheStorageCache> cache,
       CacheStorageError error,
-      scoped_ptr<std::vector<ServiceWorkerResponse>> responses,
-      scoped_ptr<CacheStorageCache::BlobDataHandles> blob_data_handles);
+      std::unique_ptr<std::vector<ServiceWorkerResponse>> responses,
+      std::unique_ptr<CacheStorageCache::BlobDataHandles> blob_data_handles);
   void OnCacheMatchAll(int thread_id,
                        int request_id,
                        int cache_id,
                        const ServiceWorkerFetchRequest& request,
                        const CacheStorageCacheQueryParams& match_params);
-  void OnCacheKeysCallback(int thread_id,
-                           int request_id,
-                           scoped_refptr<CacheStorageCache> cache,
-                           CacheStorageError error,
-                           scoped_ptr<CacheStorageCache::Requests> requests);
+  void OnCacheKeysCallback(
+      int thread_id,
+      int request_id,
+      scoped_refptr<CacheStorageCache> cache,
+      CacheStorageError error,
+      std::unique_ptr<CacheStorageCache::Requests> requests);
   void OnCacheBatchCallback(int thread_id,
                             int request_id,
                             scoped_refptr<CacheStorageCache> cache,

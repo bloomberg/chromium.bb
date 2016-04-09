@@ -151,7 +151,8 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
   GURL root_url_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
 
-  scoped_ptr<storage::FileSystemOperationRunner> file_system_operation_runner_;
+  std::unique_ptr<storage::FileSystemOperationRunner>
+      file_system_operation_runner_;
 
   // Used only for file systems with quota.
   // When a PepperFileIOHost calls OpenQuotaFile, we add the id and a non-owning

@@ -6,12 +6,13 @@
 #define CONTENT_BROWSER_RENDERER_HOST_LEGACY_RENDER_WIDGET_HOST_WIN_H_
 
 #include <atlbase.h>
-#include <atlwin.h>
 #include <atlcrack.h>
+#include <atlwin.h>
 #include <oleacc.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_comptr.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/rect.h"
@@ -155,7 +156,8 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   // This class provides functionality to register the legacy window as a
   // Direct Manipulation consumer. This allows us to support smooth scroll
   // in Chrome on Windows 10.
-  scoped_ptr<gfx::win::DirectManipulationHelper> direct_manipulation_helper_;
+  std::unique_ptr<gfx::win::DirectManipulationHelper>
+      direct_manipulation_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(LegacyRenderWidgetHostHWND);
 };

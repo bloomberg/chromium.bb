@@ -6,10 +6,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -181,9 +183,9 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   }
 
  private:
-  scoped_ptr<NativeWebKeyboardEvent> last_event_;
+  std::unique_ptr<NativeWebKeyboardEvent> last_event_;
   RenderWidgetHostImpl* rwh_;
-  scoped_ptr<TextInputState> text_input_state_;
+  std::unique_ptr<TextInputState> text_input_state_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHostDelegate);
 };
@@ -290,16 +292,16 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
 
   void UseFakeDispatcher() {
     dispatcher_ = new FakeWindowEventDispatcher(window()->GetHost());
-    scoped_ptr<aura::WindowEventDispatcher> dispatcher(dispatcher_);
+    std::unique_ptr<aura::WindowEventDispatcher> dispatcher(dispatcher_);
     aura::test::SetHostDispatcher(window()->GetHost(), std::move(dispatcher));
   }
 
   ~FakeRenderWidgetHostViewAura() override {}
 
-  scoped_ptr<ResizeLock> DelegatedFrameHostCreateResizeLock(
+  std::unique_ptr<ResizeLock> DelegatedFrameHostCreateResizeLock(
       bool defer_compositor_lock) override {
     gfx::Size desired_size = window()->bounds().size();
-    return scoped_ptr<ResizeLock>(
+    return std::unique_ptr<ResizeLock>(
         new FakeResizeLock(desired_size, defer_compositor_lock));
   }
 
@@ -312,7 +314,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
         window()->GetHost()->compositor());
   }
 
-  void InterceptCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request) {
+  void InterceptCopyOfOutput(std::unique_ptr<cc::CopyOutputRequest> request) {
     last_copy_request_ = std::move(request);
     if (last_copy_request_->has_texture_mailbox()) {
       // Give the resulting texture a size.
@@ -351,7 +353,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
 
   bool can_create_resize_lock_;
   gfx::Size last_frame_size_;
-  scoped_ptr<cc::CopyOutputRequest> last_copy_request_;
+  std::unique_ptr<cc::CopyOutputRequest> last_copy_request_;
   FakeWindowEventDispatcher* dispatcher_;
 };
 
@@ -410,7 +412,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
   void SetUpEnvironment() {
     ImageTransportFactory::InitializeForUnitTests(
-        scoped_ptr<ImageTransportFactory>(
+        std::unique_ptr<ImageTransportFactory>(
             new NoTransportImageTransportFactory));
     aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
     aura_test_helper_->SetUp(
@@ -424,7 +426,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     sink_ = &process_host_->sink();
 
     int32_t routing_id = process_host_->GetNextRoutingID();
-    delegates_.push_back(make_scoped_ptr(new MockRenderWidgetHostDelegate));
+    delegates_.push_back(base::WrapUnique(new MockRenderWidgetHostDelegate));
     parent_host_ = new RenderWidgetHostImpl(delegates_.back().get(),
                                             process_host_, routing_id, false);
     delegates_.back()->set_widget_host(parent_host_);
@@ -436,7 +438,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
                                           gfx::Rect());
 
     routing_id = process_host_->GetNextRoutingID();
-    delegates_.push_back(make_scoped_ptr(new MockRenderWidgetHostDelegate));
+    delegates_.push_back(base::WrapUnique(new MockRenderWidgetHostDelegate));
     widget_host_ = new RenderWidgetHostImpl(delegates_.back().get(),
                                             process_host_, routing_id, false);
     delegates_.back()->set_widget_host(widget_host_);
@@ -549,9 +551,9 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
   base::MessageLoopForUI message_loop_;
   BrowserThreadImpl browser_thread_for_ui_;
-  scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
-  scoped_ptr<BrowserContext> browser_context_;
-  std::vector<scoped_ptr<MockRenderWidgetHostDelegate>> delegates_;
+  std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
+  std::unique_ptr<BrowserContext> browser_context_;
+  std::vector<std::unique_ptr<MockRenderWidgetHostDelegate>> delegates_;
   MockRenderProcessHost* process_host_;
 
   // Tests should set these to NULL if they've already triggered their
@@ -803,7 +805,7 @@ class RenderWidgetHostViewAuraOverscrollTest
 
   SyntheticWebTouchEvent touch_event_;
 
-  scoped_ptr<TestOverscrollDelegate> overscroll_delegate_;
+  std::unique_ptr<TestOverscrollDelegate> overscroll_delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraOverscrollTest);
@@ -890,10 +892,10 @@ TEST_F(RenderWidgetHostViewAuraTest, ParentMovementUpdatesScreenRect) {
   aura::Window* root = parent_view_->GetNativeView()->GetRootWindow();
 
   aura::test::TestWindowDelegate delegate1, delegate2;
-  scoped_ptr<aura::Window> parent1(new aura::Window(&delegate1));
+  std::unique_ptr<aura::Window> parent1(new aura::Window(&delegate1));
   parent1->Init(ui::LAYER_TEXTURED);
   parent1->Show();
-  scoped_ptr<aura::Window> parent2(new aura::Window(&delegate2));
+  std::unique_ptr<aura::Window> parent2(new aura::Window(&delegate2));
   parent2->Init(ui::LAYER_TEXTURED);
   parent2->Show();
 
@@ -955,7 +957,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DestroyFullscreenOnBlur) {
   // destroyed.
   TestWindowObserver observer(window);
   aura::test::TestWindowDelegate delegate;
-  scoped_ptr<aura::Window> sibling(new aura::Window(&delegate));
+  std::unique_ptr<aura::Window> sibling(new aura::Window(&delegate));
   sibling->Init(ui::LAYER_TEXTURED);
   sibling->Show();
   window->parent()->AddChild(sibling.get());
@@ -1060,7 +1062,7 @@ TEST_F(RenderWidgetHostViewAuraTest, PopupClosesWhenParentLosesFocus) {
   TestWindowObserver observer(popup_window);
 
   aura::test::TestWindowDelegate delegate;
-  scoped_ptr<aura::Window> dialog_window(new aura::Window(&delegate));
+  std::unique_ptr<aura::Window> dialog_window(new aura::Window(&delegate));
   dialog_window->Init(ui::LAYER_TEXTURED);
   aura::client::ParentWindowWithContext(
       dialog_window.get(), popup_window, gfx::Rect());
@@ -1564,14 +1566,14 @@ TEST_F(RenderWidgetHostViewAuraTest, UpdateCursorIfOverSelf) {
   EXPECT_EQ(0, cursor_client.calls_to_set_cursor());
 }
 
-scoped_ptr<cc::CompositorFrame> MakeDelegatedFrame(float scale_factor,
-                                                   gfx::Size size,
-                                                   gfx::Rect damage) {
-  scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+std::unique_ptr<cc::CompositorFrame> MakeDelegatedFrame(float scale_factor,
+                                                        gfx::Size size,
+                                                        gfx::Rect damage) {
+  std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
   frame->metadata.device_scale_factor = scale_factor;
   frame->delegated_frame_data.reset(new cc::DelegatedFrameData);
 
-  scoped_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
+  std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
   pass->SetNew(
       cc::RenderPassId(1, 1), gfx::Rect(size), damage, gfx::Transform());
   frame->delegated_frame_data->render_pass_list.push_back(std::move(pass));
@@ -1683,7 +1685,7 @@ TEST_F(RenderWidgetHostViewAuraTest, RecreateLayers) {
 
   view_->OnSwapCompositorFrame(0,
                                MakeDelegatedFrame(1.f, view_size, view_rect));
-  scoped_ptr<ui::LayerTreeOwner> cloned_owner(
+  std::unique_ptr<ui::LayerTreeOwner> cloned_owner(
       wm::RecreateLayers(view_->GetNativeView()));
 
   cc::SurfaceId id = view_->GetDelegatedFrameHost()->SurfaceIdForTesting();
@@ -1713,7 +1715,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DelegatedFrameGutter) {
       gfx::Rect());
   view_->SetSize(large_size);
   view_->Show();
-  scoped_ptr<cc::CompositorFrame> frame =
+  std::unique_ptr<cc::CompositorFrame> frame =
       MakeDelegatedFrame(1.f, small_size, gfx::Rect(small_size));
   frame->metadata.root_background_color = SK_ColorRED;
   view_->OnSwapCompositorFrame(0, std::move(frame));
@@ -2002,15 +2004,15 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   gfx::Size frame_size = view_rect.size();
   DCHECK_EQ(0u, HostSharedBitmapManager::current()->AllocatedBitmapCount());
 
-  scoped_ptr<RenderWidgetHostImpl * []> hosts(
-      new RenderWidgetHostImpl* [renderer_count]);
-  scoped_ptr<FakeRenderWidgetHostViewAura * []> views(
-      new FakeRenderWidgetHostViewAura* [renderer_count]);
+  std::unique_ptr<RenderWidgetHostImpl* []> hosts(
+      new RenderWidgetHostImpl*[renderer_count]);
+  std::unique_ptr<FakeRenderWidgetHostViewAura* []> views(
+      new FakeRenderWidgetHostViewAura*[renderer_count]);
 
   // Create a bunch of renderers.
   for (size_t i = 0; i < renderer_count; ++i) {
     int32_t routing_id = process_host_->GetNextRoutingID();
-    delegates_.push_back(make_scoped_ptr(new MockRenderWidgetHostDelegate));
+    delegates_.push_back(base::WrapUnique(new MockRenderWidgetHostDelegate));
     hosts[i] = new RenderWidgetHostImpl(delegates_.back().get(), process_host_,
                                         routing_id, false);
     delegates_.back()->set_widget_host(hosts[i]);
@@ -2168,15 +2170,15 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
   gfx::Size frame_size = view_rect.size();
   DCHECK_EQ(0u, HostSharedBitmapManager::current()->AllocatedBitmapCount());
 
-  scoped_ptr<RenderWidgetHostImpl * []> hosts(
-      new RenderWidgetHostImpl* [renderer_count]);
-  scoped_ptr<FakeRenderWidgetHostViewAura * []> views(
-      new FakeRenderWidgetHostViewAura* [renderer_count]);
+  std::unique_ptr<RenderWidgetHostImpl* []> hosts(
+      new RenderWidgetHostImpl*[renderer_count]);
+  std::unique_ptr<FakeRenderWidgetHostViewAura* []> views(
+      new FakeRenderWidgetHostViewAura*[renderer_count]);
 
   // Create a bunch of renderers.
   for (size_t i = 0; i < renderer_count; ++i) {
     int32_t routing_id = process_host_->GetNextRoutingID();
-    delegates_.push_back(make_scoped_ptr(new MockRenderWidgetHostDelegate));
+    delegates_.push_back(base::WrapUnique(new MockRenderWidgetHostDelegate));
     hosts[i] = new RenderWidgetHostImpl(delegates_.back().get(), process_host_,
                                         routing_id, false);
     delegates_.back()->set_widget_host(hosts[i]);
@@ -2239,15 +2241,15 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
   gfx::Size frame_size = view_rect.size();
   DCHECK_EQ(0u, HostSharedBitmapManager::current()->AllocatedBitmapCount());
 
-  scoped_ptr<RenderWidgetHostImpl * []> hosts(
-      new RenderWidgetHostImpl* [renderer_count]);
-  scoped_ptr<FakeRenderWidgetHostViewAura * []> views(
-      new FakeRenderWidgetHostViewAura* [renderer_count]);
+  std::unique_ptr<RenderWidgetHostImpl* []> hosts(
+      new RenderWidgetHostImpl*[renderer_count]);
+  std::unique_ptr<FakeRenderWidgetHostViewAura* []> views(
+      new FakeRenderWidgetHostViewAura*[renderer_count]);
 
   // Create a bunch of renderers.
   for (size_t i = 0; i < renderer_count; ++i) {
     int32_t routing_id = process_host_->GetNextRoutingID();
-    delegates_.push_back(make_scoped_ptr(new MockRenderWidgetHostDelegate));
+    delegates_.push_back(base::WrapUnique(new MockRenderWidgetHostDelegate));
     hosts[i] = new RenderWidgetHostImpl(delegates_.back().get(), process_host_,
                                         routing_id, false);
     delegates_.back()->set_widget_host(hosts[i]);
@@ -2364,7 +2366,7 @@ class RenderWidgetHostViewAuraCopyRequestTest
         view_rect_.size(),
         base::Bind(&RenderWidgetHostViewAuraCopyRequestTest::CallbackMethod,
                    base::Unretained(this)));
-    view_->BeginFrameSubscription(make_scoped_ptr(frame_subscriber_));
+    view_->BeginFrameSubscription(base::WrapUnique(frame_subscriber_));
     ASSERT_EQ(0, callback_count_);
     ASSERT_FALSE(view_->last_copy_request_);
   }
@@ -2372,7 +2374,7 @@ class RenderWidgetHostViewAuraCopyRequestTest
   void InstallFakeTickClock() {
     // Create a fake tick clock and transfer ownership to the frame host.
     tick_clock_ = new base::SimpleTestTickClock();
-    view_->GetDelegatedFrameHost()->tick_clock_ = make_scoped_ptr(tick_clock_);
+    view_->GetDelegatedFrameHost()->tick_clock_ = base::WrapUnique(tick_clock_);
   }
 
   void OnSwapCompositorFrame() {
@@ -2386,10 +2388,10 @@ class RenderWidgetHostViewAuraCopyRequestTest
   }
 
   void ReleaseSwappedFrame() {
-    scoped_ptr<cc::CopyOutputRequest> request =
+    std::unique_ptr<cc::CopyOutputRequest> request =
         std::move(view_->last_copy_request_);
     request->SendTextureResult(view_rect_.size(), request->texture_mailbox(),
-                               scoped_ptr<cc::SingleReleaseCallback>());
+                               std::unique_ptr<cc::SingleReleaseCallback>());
     RunLoopUntilCallback();
   }
 
@@ -2499,7 +2501,7 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
 
   OnSwapCompositorFrame();
   EXPECT_EQ(1, callback_count_);
-  scoped_ptr<cc::CopyOutputRequest> request =
+  std::unique_ptr<cc::CopyOutputRequest> request =
       std::move(view_->last_copy_request_);
 
   // Destroy the RenderWidgetHostViewAura and ImageTransportFactory.
@@ -2508,7 +2510,7 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
   // Send the result after-the-fact.  It goes nowhere since DelegatedFrameHost
   // has been destroyed.
   request->SendTextureResult(view_rect_.size(), request->texture_mailbox(),
-                             scoped_ptr<cc::SingleReleaseCallback>());
+                             std::unique_ptr<cc::SingleReleaseCallback>());
 
   // Because the copy request callback may be holding state within it, that
   // state must handle the RWHVA and ImageTransportFactory going away before the
@@ -4276,7 +4278,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardMouseEvent) {
 
   // Set up test delegate and window hierarchy.
   aura::test::EventCountDelegate delegate;
-  scoped_ptr<aura::Window> parent(new aura::Window(&delegate));
+  std::unique_ptr<aura::Window> parent(new aura::Window(&delegate));
   parent->Init(ui::LAYER_TEXTURED);
   root->AddChild(parent.get());
   view_->InitAsChild(parent.get());
@@ -4345,7 +4347,7 @@ class RenderWidgetHostViewAuraWithViewHarnessTest
  protected:
   void SetUp() override {
     ImageTransportFactory::InitializeForUnitTests(
-        scoped_ptr<ImageTransportFactory>(
+        std::unique_ptr<ImageTransportFactory>(
             new NoTransportImageTransportFactory));
     RenderViewHostImplTestHarness::SetUp();
     // Delete the current RenderWidgetHostView instance before setting

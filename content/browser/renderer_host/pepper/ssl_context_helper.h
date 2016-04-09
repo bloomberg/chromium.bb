@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_SSL_CONTEXT_HELPER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_SSL_CONTEXT_HELPER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/ssl/ssl_config_service.h"
 
 namespace net {
@@ -31,10 +32,10 @@ class SSLContextHelper : public base::RefCounted<SSLContextHelper> {
   ~SSLContextHelper();
 
   // This is lazily created. Users should use GetCertVerifier to retrieve it.
-  scoped_ptr<net::CertVerifier> cert_verifier_;
+  std::unique_ptr<net::CertVerifier> cert_verifier_;
   // This is lazily created. Users should use GetTransportSecurityState to
   // retrieve it.
-  scoped_ptr<net::TransportSecurityState> transport_security_state_;
+  std::unique_ptr<net::TransportSecurityState> transport_security_state_;
 
   // The default SSL configuration settings are used, as opposed to Chrome's SSL
   // settings.

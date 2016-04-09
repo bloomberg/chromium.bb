@@ -26,7 +26,7 @@ class InputRouter : public IPC::Listener {
   // Send and take ownership of the the given InputMsg_*. This should be used
   // only for event types not associated with a WebInputEvent.  Returns true on
   // success and false otherwise.
-  virtual bool SendInput(scoped_ptr<IPC::Message> message) = 0;
+  virtual bool SendInput(std::unique_ptr<IPC::Message> message) = 0;
 
   // WebInputEvents
   virtual void SendMouseEvent(

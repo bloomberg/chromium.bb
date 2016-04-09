@@ -7,11 +7,11 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_SANDBOX_IPC_LINUX_H_
 #define CONTENT_BROWSER_RENDERER_HOST_SANDBOX_IPC_LINUX_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/threading/simple_thread.h"
 #include "skia/ext/skia_utils_base.h"

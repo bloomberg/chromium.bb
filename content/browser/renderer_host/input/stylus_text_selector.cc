@@ -14,7 +14,7 @@ using ui::MotionEvent;
 
 namespace content {
 namespace {
-scoped_ptr<GestureDetector> CreateGestureDetector(
+std::unique_ptr<GestureDetector> CreateGestureDetector(
     ui::GestureListener* listener) {
   GestureDetector::Config config =
       ui::GetGestureProviderConfig(
@@ -25,7 +25,7 @@ scoped_ptr<GestureDetector> CreateGestureDetector(
 
   // Doubletap, showpress and longpress detection are not required, and
   // should be explicitly disabled for efficiency.
-  scoped_ptr<ui::GestureDetector> detector(
+  std::unique_ptr<ui::GestureDetector> detector(
       new ui::GestureDetector(config, listener, null_double_tap_listener));
   detector->set_longpress_enabled(false);
   detector->set_showpress_enabled(false);

@@ -5,11 +5,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
@@ -94,7 +95,7 @@ class MockInputRouter : public InputRouter {
   ~MockInputRouter() override {}
 
   // InputRouter
-  bool SendInput(scoped_ptr<IPC::Message> message) override {
+  bool SendInput(std::unique_ptr<IPC::Message> message) override {
     send_event_called_ = true;
     return true;
   }
@@ -432,7 +433,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 
   bool unresponsive_timer_fired_;
 
-  scoped_ptr<TextInputState> text_input_state_;
+  std::unique_ptr<TextInputState> text_input_state_;
 };
 
 // RenderWidgetHostTest --------------------------------------------------------
@@ -467,7 +468,7 @@ class RenderWidgetHostTest : public testing::Test {
     process_ = new RenderWidgetHostProcess(browser_context_.get());
 #if defined(USE_AURA) || defined(OS_MACOSX)
     ImageTransportFactory::InitializeForUnitTests(
-        scoped_ptr<ImageTransportFactory>(
+        std::unique_ptr<ImageTransportFactory>(
             new NoTransportImageTransportFactory));
 #endif
 #if defined(USE_AURA)
@@ -632,12 +633,12 @@ class RenderWidgetHostTest : public testing::Test {
 
   base::MessageLoopForUI message_loop_;
 
-  scoped_ptr<TestBrowserContext> browser_context_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
   RenderWidgetHostProcess* process_;  // Deleted automatically by the widget.
-  scoped_ptr<MockRenderWidgetHostDelegate> delegate_;
-  scoped_ptr<MockRenderWidgetHost> host_;
-  scoped_ptr<TestView> view_;
-  scoped_ptr<gfx::Screen> screen_;
+  std::unique_ptr<MockRenderWidgetHostDelegate> delegate_;
+  std::unique_ptr<MockRenderWidgetHost> host_;
+  std::unique_ptr<TestView> view_;
+  std::unique_ptr<gfx::Screen> screen_;
   bool handle_key_press_event_;
   bool handle_mouse_event_;
   double last_simulated_event_time_seconds_;
@@ -848,7 +849,7 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
 #if !defined(OS_MACOSX)
 // Tests setting background transparency.
 TEST_F(RenderWidgetHostTest, Background) {
-  scoped_ptr<RenderWidgetHostViewBase> view;
+  std::unique_ptr<RenderWidgetHostViewBase> view;
 #if defined(USE_AURA)
   view.reset(new RenderWidgetHostViewAura(host_.get(), false));
   // TODO(derat): Call this on all platforms: http://crbug.com/102450.

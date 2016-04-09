@@ -167,11 +167,11 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   void OnEstablishGpuChannel(CauseForGpuLaunch, IPC::Message* reply);
   void OnHasGpuProcess(IPC::Message* reply);
   // Helper callbacks for the message handlers.
-  void EstablishChannelCallback(scoped_ptr<IPC::Message> reply,
+  void EstablishChannelCallback(std::unique_ptr<IPC::Message> reply,
                                 const IPC::ChannelHandle& channel,
                                 const gpu::GPUInfo& gpu_info);
   void GetGpuProcessHandlesCallback(
-      scoped_ptr<IPC::Message> reply,
+      std::unique_ptr<IPC::Message> reply,
       const std::list<base::ProcessHandle>& handles);
   // Used to ask the browser to allocate a block of shared memory for the
   // renderer to send back data in, since shared memory can't be created
@@ -210,10 +210,12 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
                 const GURL& url,
                 const GURL& top_origin,
                 IPC::Message* reply_msg);
-  void PostKeygenToWorkerThread(IPC::Message* reply_msg,
-                                scoped_ptr<net::KeygenHandler> keygen_handler);
-  void OnKeygenOnWorkerThread(scoped_ptr<net::KeygenHandler> keygen_handler,
-                              IPC::Message* reply_msg);
+  void PostKeygenToWorkerThread(
+      IPC::Message* reply_msg,
+      std::unique_ptr<net::KeygenHandler> keygen_handler);
+  void OnKeygenOnWorkerThread(
+      std::unique_ptr<net::KeygenHandler> keygen_handler,
+      IPC::Message* reply_msg);
   void OnMediaLogEvents(const std::vector<media::MediaLogEvent>&);
 
   bool CheckBenchmarkingEnabled() const;

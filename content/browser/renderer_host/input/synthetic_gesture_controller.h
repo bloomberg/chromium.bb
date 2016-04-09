@@ -5,12 +5,12 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_GESTURE_CONTROLLER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_GESTURE_CONTROLLER_H_
 
+#include <memory>
 #include <queue>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
@@ -27,13 +27,13 @@ class SyntheticGestureTarget;
 class CONTENT_EXPORT SyntheticGestureController {
  public:
   explicit SyntheticGestureController(
-      scoped_ptr<SyntheticGestureTarget> gesture_target);
+      std::unique_ptr<SyntheticGestureTarget> gesture_target);
   virtual ~SyntheticGestureController();
 
   typedef base::Callback<void(SyntheticGesture::Result)>
       OnGestureCompleteCallback;
   void QueueSyntheticGesture(
-      scoped_ptr<SyntheticGesture> synthetic_gesture,
+      std::unique_ptr<SyntheticGesture> synthetic_gesture,
       const OnGestureCompleteCallback& completion_callback);
 
   // Forward input events of the currently processed gesture.
@@ -49,8 +49,8 @@ class CONTENT_EXPORT SyntheticGestureController {
                    const OnGestureCompleteCallback& completion_callback,
                    SyntheticGesture::Result result);
 
-  scoped_ptr<SyntheticGestureTarget> gesture_target_;
-  scoped_ptr<SyntheticGesture::Result> pending_gesture_result_;
+  std::unique_ptr<SyntheticGestureTarget> gesture_target_;
+  std::unique_ptr<SyntheticGesture::Result> pending_gesture_result_;
 
   // A queue of gesture/callback pairs.  Implemented as two queues to
   // simplify the ownership of SyntheticGesture pointers.
@@ -58,8 +58,8 @@ class CONTENT_EXPORT SyntheticGestureController {
   public:
     GestureAndCallbackQueue();
     ~GestureAndCallbackQueue();
-    void Push(scoped_ptr<SyntheticGesture> gesture,
-        const OnGestureCompleteCallback& callback) {
+    void Push(std::unique_ptr<SyntheticGesture> gesture,
+              const OnGestureCompleteCallback& callback) {
       gestures_.push_back(std::move(gesture));
       callbacks_.push(callback);
     }

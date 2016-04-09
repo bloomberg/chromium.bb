@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "content/browser/renderer_host/p2p/socket_host.h"
 #include "content/common/content_export.h"
@@ -60,10 +60,10 @@ class CONTENT_EXPORT P2PSocketHostTcpServer : public P2PSocketHost {
   void OnAccepted(int result);
 
   const P2PSocketType client_type_;
-  scoped_ptr<net::ServerSocket> socket_;
+  std::unique_ptr<net::ServerSocket> socket_;
   net::IPEndPoint local_address_;
 
-  scoped_ptr<net::StreamSocket> accept_socket_;
+  std::unique_ptr<net::StreamSocket> accept_socket_;
   AcceptedSocketsMap accepted_sockets_;
 
   net::CompletionCallback accept_callback_;

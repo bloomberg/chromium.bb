@@ -156,7 +156,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   void Paste() override {}
   void SelectAll() override {}
 
-  scoped_ptr<TextInputState> text_input_state_;
+  std::unique_ptr<TextInputState> text_input_state_;
 };
 
 class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
@@ -235,7 +235,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     ImageTransportFactory::InitializeForUnitTests(
-        scoped_ptr<ImageTransportFactory>(
+        std::unique_ptr<ImageTransportFactory>(
             new NoTransportImageTransportFactory));
 
     // TestRenderViewHost's destruction assumes that its view is a
@@ -853,7 +853,7 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
   // Send an ACK for the first wheel event, so that the queue will be flushed.
   InputEventAck ack(blink::WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  scoped_ptr<IPC::Message> response(
+  std::unique_ptr<IPC::Message> response(
       new InputHostMsg_HandleInputEvent_ACK(0, ack));
   host->OnMessageReceived(*response);
 
@@ -903,7 +903,7 @@ TEST_F(RenderWidgetHostViewMacTest, IgnoreEmptyUnhandledWheelEvent) {
   // Indicate that the wheel event was unhandled.
   InputEventAck unhandled_ack(blink::WebInputEvent::MouseWheel,
                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  scoped_ptr<IPC::Message> response1(
+  std::unique_ptr<IPC::Message> response1(
       new InputHostMsg_HandleInputEvent_ACK(0, unhandled_ack));
   host->OnMessageReceived(*response1);
 
@@ -917,7 +917,7 @@ TEST_F(RenderWidgetHostViewMacTest, IgnoreEmptyUnhandledWheelEvent) {
   ASSERT_EQ(1U, process_host->sink().message_count());
 
   // Indicate that the wheel event was also unhandled.
-  scoped_ptr<IPC::Message> response2(
+  std::unique_ptr<IPC::Message> response2(
       new InputHostMsg_HandleInputEvent_ACK(0, unhandled_ack));
   host->OnMessageReceived(*response2);
 
@@ -964,7 +964,7 @@ TEST_F(RenderWidgetHostViewMacTest,
   // Indicate that the wheel event was unhandled.
   InputEventAck unhandled_ack(blink::WebInputEvent::MouseWheel,
                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  scoped_ptr<IPC::Message> response1(
+  std::unique_ptr<IPC::Message> response1(
       new InputHostMsg_HandleInputEvent_ACK(0, unhandled_ack));
   host->OnMessageReceived(*response1);
   ASSERT_EQ(2U, process_host->sink().message_count());
@@ -972,7 +972,7 @@ TEST_F(RenderWidgetHostViewMacTest,
 
   InputEventAck unhandled_scroll_ack(blink::WebInputEvent::GestureScrollUpdate,
                                      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  scoped_ptr<IPC::Message> scroll_response1(
+  std::unique_ptr<IPC::Message> scroll_response1(
       new InputHostMsg_HandleInputEvent_ACK(0, unhandled_scroll_ack));
   host->OnMessageReceived(*scroll_response1);
 
@@ -986,7 +986,7 @@ TEST_F(RenderWidgetHostViewMacTest,
   ASSERT_EQ(2U, process_host->sink().message_count());
 
   // Indicate that the wheel event was also unhandled.
-  scoped_ptr<IPC::Message> response2(
+  std::unique_ptr<IPC::Message> response2(
       new InputHostMsg_HandleInputEvent_ACK(0, unhandled_ack));
   host->OnMessageReceived(*response2);
 
@@ -1137,7 +1137,7 @@ TEST_F(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
   // We'll use this IPC message to ack events.
   InputEventAck ack(blink::WebInputEvent::GesturePinchUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  scoped_ptr<IPC::Message> response(
+  std::unique_ptr<IPC::Message> response(
       new InputHostMsg_HandleInputEvent_ACK(0, ack));
 
   // Do a gesture that crosses the threshold.

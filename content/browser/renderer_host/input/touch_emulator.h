@@ -80,7 +80,7 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   // Emulator is enabled iff gesture provider is created.
   // Disabled emulator does only process touch acks left from previous
   // emulation. It does not intercept any events.
-  scoped_ptr<ui::FilteredGestureProvider> gesture_provider_;
+  std::unique_ptr<ui::FilteredGestureProvider> gesture_provider_;
   ui::GestureProviderConfigType gesture_provider_config_type_;
   bool double_tap_enabled_;
 

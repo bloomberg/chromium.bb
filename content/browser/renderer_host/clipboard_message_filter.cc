@@ -4,11 +4,12 @@
 
 #include "content/browser/renderer_host/clipboard_message_filter.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -249,7 +250,7 @@ void ClipboardMessageFilter::OnWriteImage(ui::ClipboardType clipboard_type,
     return;
   }
 
-  scoped_ptr<base::SharedMemory> bitmap_buffer(
+  std::unique_ptr<base::SharedMemory> bitmap_buffer(
       new base::SharedMemory(handle, true));
 
   SkBitmap bitmap;

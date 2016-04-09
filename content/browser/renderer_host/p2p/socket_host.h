@@ -119,7 +119,7 @@ class CONTENT_EXPORT P2PSocketHost {
   void DumpRtpPacket(const char* packet, size_t length, bool incoming);
 
   // A helper to dump the packet on the IO thread.
-  void DumpRtpPacketOnIOThread(scoped_ptr<uint8_t[]> packet_header,
+  void DumpRtpPacketOnIOThread(std::unique_ptr<uint8_t[]> packet_header,
                                size_t header_length,
                                size_t packet_length,
                                bool incoming);

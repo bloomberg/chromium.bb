@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -89,10 +89,10 @@ class CONTENT_EXPORT WebSocketHost {
   void BlobSendComplete(int result);
 
   // non-NULL if and only if this object is currently in "blob sending mode".
-  scoped_ptr<WebSocketBlobSender> blob_sender_;
+  std::unique_ptr<WebSocketBlobSender> blob_sender_;
 
   // The channel we use to send events to the network.
-  scoped_ptr<net::WebSocketChannel> channel_;
+  std::unique_ptr<net::WebSocketChannel> channel_;
 
   // The WebSocketHostDispatcher that created this object.
   WebSocketDispatcherHost* const dispatcher_;

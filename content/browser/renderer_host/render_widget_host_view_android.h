@@ -9,13 +9,13 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <queue>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "cc/output/begin_frame_args.h"
@@ -150,15 +150,17 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
   bool LockMouse() override;
   void UnlockMouse() override;
-  void OnSwapCompositorFrame(uint32_t output_surface_id,
-                             scoped_ptr<cc::CompositorFrame> frame) override;
+  void OnSwapCompositorFrame(
+      uint32_t output_surface_id,
+      std::unique_ptr<cc::CompositorFrame> frame) override;
   void ClearCompositorFrame() override;
   void DidOverscroll(const DidOverscrollParams& params) override;
   void DidStopFlinging() override;
   uint32_t GetSurfaceIdNamespace() override;
   void ShowDisambiguationPopup(const gfx::Rect& rect_pixels,
                                const SkBitmap& zoomed_bitmap) override;
-  scoped_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget() override;
+  std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
+      override;
   void LockCompositingSurface() override;
   void UnlockCompositingSurface() override;
   void OnTextSurroundingSelectionResponse(const base::string16& content,
@@ -206,7 +208,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SelectBetweenCoordinates(const gfx::PointF& base,
                                 const gfx::PointF& extent) override;
   void OnSelectionEvent(ui::SelectionEventType event) override;
-  scoped_ptr<ui::TouchHandleDrawable> CreateDrawable() override;
+  std::unique_ptr<ui::TouchHandleDrawable> CreateDrawable() override;
 
   // Non-virtual methods
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);
@@ -266,9 +268,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void DestroyDelegatedContent();
   void CheckOutputSurfaceChanged(uint32_t output_surface_id);
-  void SubmitCompositorFrame(scoped_ptr<cc::CompositorFrame> frame_data);
+  void SubmitCompositorFrame(std::unique_ptr<cc::CompositorFrame> frame_data);
   void SwapDelegatedFrame(uint32_t output_surface_id,
-                          scoped_ptr<cc::CompositorFrame> frame_data);
+                          std::unique_ptr<cc::CompositorFrame> frame_data);
   void SendDelegatedFrameAck(uint32_t output_surface_id);
   void SendReturnedDelegatedResources(uint32_t output_surface_id);
 
@@ -289,7 +291,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       SkColorType color_type,
       const base::TimeTicks& start_time,
       const ReadbackRequestCallback& callback,
-      scoped_ptr<cc::CopyOutputResult> result);
+      std::unique_ptr<cc::CopyOutputResult> result);
 
   // DevTools ScreenCast support for Android WebView.
   void SynchronousCopyContents(const gfx::Rect& src_subrect_in_pixel,
@@ -305,10 +307,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // Drop any incoming frames from the renderer when there are locks on the
   // current frame.
   void RetainFrame(uint32_t output_surface_id,
-                   scoped_ptr<cc::CompositorFrame> frame);
+                   std::unique_ptr<cc::CompositorFrame> frame);
 
   void InternalSwapCompositorFrame(uint32_t output_surface_id,
-                                   scoped_ptr<cc::CompositorFrame> frame);
+                                   std::unique_ptr<cc::CompositorFrame> frame);
   void OnLostResources();
 
   enum VSyncRequestType {
@@ -349,8 +351,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   scoped_refptr<cc::Layer> layer_;
 
-  scoped_ptr<cc::SurfaceIdAllocator> id_allocator_;
-  scoped_ptr<cc::SurfaceFactory> surface_factory_;
+  std::unique_ptr<cc::SurfaceIdAllocator> id_allocator_;
+  std::unique_ptr<cc::SurfaceFactory> surface_factory_;
   cc::SurfaceId surface_id_;
   gfx::Size current_surface_size_;
   cc::ReturnedResourceArray surface_returned_resources_;
@@ -367,7 +369,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   std::queue<base::Closure> ack_callbacks_;
 
   // Used to control and render overscroll-related effects.
-  scoped_ptr<OverscrollControllerAndroid> overscroll_controller_;
+  std::unique_ptr<OverscrollControllerAndroid> overscroll_controller_;
 
   // Provides gesture synthesis given a stream of touch events (derived from
   // Android MotionEvent's) and touch event acks.
@@ -378,28 +380,28 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   // Manages selection handle rendering and manipulation.
   // This will always be NULL if |content_view_core_| is NULL.
-  scoped_ptr<ui::TouchSelectionController> selection_controller_;
+  std::unique_ptr<ui::TouchSelectionController> selection_controller_;
 
   // Size to use if we have no backing ContentViewCore
   gfx::Size default_size_;
 
   const bool using_browser_compositor_;
-  scoped_ptr<SynchronousCompositorBase> sync_compositor_;
+  std::unique_ptr<SynchronousCompositorBase> sync_compositor_;
 
-  scoped_ptr<DelegatedFrameEvictor> frame_evictor_;
+  std::unique_ptr<DelegatedFrameEvictor> frame_evictor_;
 
   size_t locks_on_frame_count_;
   bool observing_root_window_;
 
   struct LastFrameInfo {
     LastFrameInfo(uint32_t output_id,
-                  scoped_ptr<cc::CompositorFrame> output_frame);
+                  std::unique_ptr<cc::CompositorFrame> output_frame);
     ~LastFrameInfo();
     uint32_t output_surface_id;
-    scoped_ptr<cc::CompositorFrame> frame;
+    std::unique_ptr<cc::CompositorFrame> frame;
   };
 
-  scoped_ptr<LastFrameInfo> last_frame_info_;
+  std::unique_ptr<LastFrameInfo> last_frame_info_;
 
   TextSurroundingSelectionCallback text_surrounding_selection_callback_;
 

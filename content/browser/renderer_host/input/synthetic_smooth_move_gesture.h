@@ -93,7 +93,7 @@ class CONTENT_EXPORT SyntheticSmoothMoveGesture : public SyntheticGesture {
   bool MoveIsNoOp() const;
 
   SyntheticSmoothMoveGestureParams params_;
-  scoped_ptr<SyntheticPointer> synthetic_pointer_;
+  std::unique_ptr<SyntheticPointer> synthetic_pointer_;
   // Used for mouse input.
   gfx::Vector2d current_move_segment_total_delta_discrete_;
   // Used for touch input.

@@ -29,7 +29,7 @@ class CONTENT_EXPORT SyntheticSmoothScrollGesture : public SyntheticGesture {
       SyntheticGestureParams::GestureSourceType gesture_type,
       SyntheticGestureTarget* target);
 
-  scoped_ptr<SyntheticSmoothMoveGesture> move_gesture_;
+  std::unique_ptr<SyntheticSmoothMoveGesture> move_gesture_;
   SyntheticSmoothScrollGestureParams params_;
 };
 

@@ -246,7 +246,7 @@ void P2PSocketDispatcherHost::OnCreateSocket(
     return;
   }
 
-  scoped_ptr<P2PSocketHost> socket(P2PSocketHost::Create(
+  std::unique_ptr<P2PSocketHost> socket(P2PSocketHost::Create(
       this, socket_id, type, url_context_.get(), &throttler_));
 
   if (!socket) {
@@ -357,7 +357,7 @@ net::IPAddress P2PSocketDispatcherHost::GetDefaultLocalAddress(int family) {
   // Creation and connection of a UDP socket might be janky.
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  scoped_ptr<net::DatagramClientSocket> socket(
+  std::unique_ptr<net::DatagramClientSocket> socket(
       net::ClientSocketFactory::GetDefaultFactory()->CreateDatagramClientSocket(
           net::DatagramSocket::DEFAULT_BIND, net::RandIntCallback(), NULL,
           net::NetLog::Source()));

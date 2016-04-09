@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_CONTEXT_IMPL_H_
 #define CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_CONTEXT_IMPL_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/cache_storage_context.h"
 #include "content/public/browser/cache_storage_usage_info.h"
@@ -81,7 +82,7 @@ class CONTENT_EXPORT CacheStorageContextImpl
   bool is_incognito_ = false;
 
   // Only accessed on the IO thread.
-  scoped_ptr<CacheStorageManager> cache_manager_;
+  std::unique_ptr<CacheStorageManager> cache_manager_;
 };
 
 }  // namespace content

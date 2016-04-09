@@ -5,10 +5,11 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_CONTENT_BROWSER_PEPPER_HOST_FACTORY_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_CONTENT_BROWSER_PEPPER_HOST_FACTORY_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/socket/tcp_socket.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/host/host_factory.h"
@@ -29,7 +30,7 @@ class ContentBrowserPepperHostFactory : public ppapi::host::HostFactory {
 
   ~ContentBrowserPepperHostFactory() override;
 
-  scoped_ptr<ppapi::host::ResourceHost> CreateResourceHost(
+  std::unique_ptr<ppapi::host::ResourceHost> CreateResourceHost(
       ppapi::host::PpapiHost* host,
       PP_Resource resource,
       PP_Instance instance,
@@ -37,13 +38,13 @@ class ContentBrowserPepperHostFactory : public ppapi::host::HostFactory {
 
   // Creates ResourceHost for already accepted TCP |socket|. In the case of
   // failure returns wrapped NULL.
-  scoped_ptr<ppapi::host::ResourceHost> CreateAcceptedTCPSocket(
+  std::unique_ptr<ppapi::host::ResourceHost> CreateAcceptedTCPSocket(
       PP_Instance instance,
       ppapi::TCPSocketVersion version,
-      scoped_ptr<net::TCPSocket> socket);
+      std::unique_ptr<net::TCPSocket> socket);
 
  private:
-  scoped_ptr<ppapi::host::ResourceHost> CreateNewTCPSocket(
+  std::unique_ptr<ppapi::host::ResourceHost> CreateNewTCPSocket(
       PP_Instance instance,
       PP_Resource resource,
       ppapi::TCPSocketVersion version);

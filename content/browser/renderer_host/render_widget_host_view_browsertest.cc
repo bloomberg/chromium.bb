@@ -343,7 +343,7 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
   RenderWidgetHostViewBase* const view = GetRenderWidgetHostView();
 
   base::RunLoop run_loop;
-  scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber(
+  std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber(
       new FakeFrameSubscriber(base::Bind(
           &RenderWidgetHostViewBrowserTest::FrameDelivered,
           base::Unretained(this), base::ThreadTaskRunnerHandle::Get(),

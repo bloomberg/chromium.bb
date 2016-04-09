@@ -7,8 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
 namespace rtc {
@@ -27,13 +28,13 @@ class CONTENT_EXPORT P2PMessageThrottler {
   P2PMessageThrottler();
   virtual ~P2PMessageThrottler();
 
-  void SetTiming(scoped_ptr<rtc::Timing> timing);
+  void SetTiming(std::unique_ptr<rtc::Timing> timing);
   bool DropNextPacket(size_t packet_len);
   void SetSendIceBandwidth(int bandwith_kbps);
 
  private:
-  scoped_ptr<rtc::Timing> timing_;
-  scoped_ptr<rtc::RateLimiter> rate_limiter_;
+  std::unique_ptr<rtc::Timing> timing_;
+  std::unique_ptr<rtc::RateLimiter> rate_limiter_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PMessageThrottler);
 };

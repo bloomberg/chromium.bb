@@ -78,7 +78,7 @@ class RenderWidgetHostLatencyTrackerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostLatencyTrackerTest);
   const int kTestRoutingId = 3;
   const int kTestProcessId = 1;
-  scoped_ptr<base::HistogramTester> histogram_tester_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
   RenderWidgetHostLatencyTracker tracker_;
 };
 

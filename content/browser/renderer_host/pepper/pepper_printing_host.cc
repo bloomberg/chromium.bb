@@ -19,7 +19,7 @@ PepperPrintingHost::PepperPrintingHost(
     ppapi::host::PpapiHost* host,
     PP_Instance instance,
     PP_Resource resource,
-    scoped_ptr<PepperPrintSettingsManager> print_settings_manager)
+    std::unique_ptr<PepperPrintSettingsManager> print_settings_manager)
     : ResourceHost(host, instance, resource),
       print_settings_manager_(std::move(print_settings_manager)),
       weak_factory_(this) {}

@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/websocket_host.h"
 
 #include <inttypes.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -12,6 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -148,11 +150,12 @@ class WebSocketHost::WebSocketEventHandler final
                              const std::string& reason) override;
   ChannelState OnFailChannel(const std::string& message) override;
   ChannelState OnStartOpeningHandshake(
-      scoped_ptr<net::WebSocketHandshakeRequestInfo> request) override;
+      std::unique_ptr<net::WebSocketHandshakeRequestInfo> request) override;
   ChannelState OnFinishOpeningHandshake(
-      scoped_ptr<net::WebSocketHandshakeResponseInfo> response) override;
+      std::unique_ptr<net::WebSocketHandshakeResponseInfo> response) override;
   ChannelState OnSSLCertificateError(
-      scoped_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks,
+      std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks>
+          callbacks,
       const GURL& url,
       const net::SSLInfo& ssl_info,
       bool fatal) override;
@@ -161,7 +164,8 @@ class WebSocketHost::WebSocketEventHandler final
   class SSLErrorHandlerDelegate final : public SSLErrorHandler::Delegate {
    public:
     SSLErrorHandlerDelegate(
-        scoped_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks);
+        std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks>
+            callbacks);
     ~SSLErrorHandlerDelegate() override;
 
     base::WeakPtr<SSLErrorHandler::Delegate> GetWeakPtr();
@@ -171,7 +175,7 @@ class WebSocketHost::WebSocketEventHandler final
     void ContinueSSLRequest() override;
 
    private:
-    scoped_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks_;
+    std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks_;
     base::WeakPtrFactory<SSLErrorHandlerDelegate> weak_ptr_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(SSLErrorHandlerDelegate);
@@ -181,7 +185,7 @@ class WebSocketHost::WebSocketEventHandler final
   WebSocketHost* const host_;
   const int routing_id_;
   const int render_frame_id_;
-  scoped_ptr<SSLErrorHandlerDelegate> ssl_error_handler_delegate_;
+  std::unique_ptr<SSLErrorHandlerDelegate> ssl_error_handler_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketEventHandler);
 };
@@ -262,7 +266,7 @@ ChannelState WebSocketHost::WebSocketEventHandler::OnFailChannel(
 }
 
 ChannelState WebSocketHost::WebSocketEventHandler::OnStartOpeningHandshake(
-    scoped_ptr<net::WebSocketHandshakeRequestInfo> request) {
+    std::unique_ptr<net::WebSocketHandshakeRequestInfo> request) {
   bool should_send = dispatcher_->CanReadRawCookies();
   DVLOG(3) << "WebSocketEventHandler::OnStartOpeningHandshake "
            << "should_send=" << should_send;
@@ -286,7 +290,7 @@ ChannelState WebSocketHost::WebSocketEventHandler::OnStartOpeningHandshake(
 }
 
 ChannelState WebSocketHost::WebSocketEventHandler::OnFinishOpeningHandshake(
-    scoped_ptr<net::WebSocketHandshakeResponseInfo> response) {
+    std::unique_ptr<net::WebSocketHandshakeResponseInfo> response) {
   bool should_send = dispatcher_->CanReadRawCookies();
   DVLOG(3) << "WebSocketEventHandler::OnFinishOpeningHandshake "
            << "should_send=" << should_send;
@@ -312,7 +316,7 @@ ChannelState WebSocketHost::WebSocketEventHandler::OnFinishOpeningHandshake(
 }
 
 ChannelState WebSocketHost::WebSocketEventHandler::OnSSLCertificateError(
-    scoped_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks,
+    std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks,
     const GURL& url,
     const net::SSLInfo& ssl_info,
     bool fatal) {
@@ -330,7 +334,8 @@ ChannelState WebSocketHost::WebSocketEventHandler::OnSSLCertificateError(
 
 WebSocketHost::WebSocketEventHandler::SSLErrorHandlerDelegate::
     SSLErrorHandlerDelegate(
-        scoped_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks)
+        std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks>
+            callbacks)
     : callbacks_(std::move(callbacks)), weak_ptr_factory_(this) {}
 
 WebSocketHost::WebSocketEventHandler::SSLErrorHandlerDelegate::
@@ -427,7 +432,7 @@ void WebSocketHost::AddChannel(
 
   DCHECK(!channel_);
 
-  scoped_ptr<net::WebSocketEventInterface> event_interface(
+  std::unique_ptr<net::WebSocketEventInterface> event_interface(
       new WebSocketEventHandler(dispatcher_, this, routing_id_,
                                 render_frame_id));
   channel_.reset(new net::WebSocketChannel(std::move(event_interface),
@@ -463,7 +468,7 @@ void WebSocketHost::OnSendBlob(const std::string& uuid,
     return;
   }
   blob_sender_.reset(new WebSocketBlobSender(
-      make_scoped_ptr(new SendChannelImpl(channel_.get()))));
+      base::WrapUnique(new SendChannelImpl(channel_.get()))));
   StoragePartition* partition = dispatcher_->storage_partition();
   storage::FileSystemContext* file_system_context =
       partition->GetFileSystemContext();
@@ -545,7 +550,7 @@ void WebSocketHost::BlobSendComplete(int result) {
 
   // All paths through this method must reset blob_sender_, so take ownership
   // at the beginning.
-  scoped_ptr<WebSocketBlobSender> blob_sender(std::move(blob_sender_));
+  std::unique_ptr<WebSocketBlobSender> blob_sender(std::move(blob_sender_));
   switch (result) {
     case net::OK:
       ignore_result(dispatcher_->BlobSendComplete(routing_id_));

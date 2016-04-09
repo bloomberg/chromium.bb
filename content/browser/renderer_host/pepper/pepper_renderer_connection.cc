@@ -50,7 +50,7 @@ class PendingHostCreator : public base::RefCounted<PendingHostCreator> {
   // attached to a real resource.
   void AddPendingResourceHost(
       size_t index,
-      scoped_ptr<ppapi::host::ResourceHost> resource_host);
+      std::unique_ptr<ppapi::host::ResourceHost> resource_host);
 
  private:
   friend class base::RefCounted<PendingHostCreator>;
@@ -81,7 +81,7 @@ PendingHostCreator::PendingHostCreator(BrowserPpapiHostImpl* host,
 
 void PendingHostCreator::AddPendingResourceHost(
     size_t index,
-    scoped_ptr<ppapi::host::ResourceHost> resource_host) {
+    std::unique_ptr<ppapi::host::ResourceHost> resource_host) {
   pending_resource_host_ids_[index] =
       host_->GetPpapiHost()->AddPendingResourceHost(std::move(resource_host));
 }
@@ -173,7 +173,7 @@ void PepperRendererConnection::OnMsgCreateResourceHostsFromHost(
       host, this, routing_id, params.sequence(), nested_msgs.size());
   for (size_t i = 0; i < nested_msgs.size(); ++i) {
     const IPC::Message& nested_msg = nested_msgs[i];
-    scoped_ptr<ppapi::host::ResourceHost> resource_host;
+    std::unique_ptr<ppapi::host::ResourceHost> resource_host;
     if (host->IsValidInstance(instance)) {
       if (nested_msg.type() == PpapiHostMsg_FileRef_CreateForRawFS::ID) {
         // FileRef_CreateForRawFS is only permitted from the renderer. Because

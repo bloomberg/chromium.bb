@@ -150,7 +150,7 @@ class NonBlockingEventBrowserTest : public ContentBrowserTest {
     params.anchor = gfx::PointF(50, 50);
     params.distances.push_back(gfx::Vector2d(0, -45));
 
-    scoped_ptr<SyntheticSmoothScrollGesture> gesture(
+    std::unique_ptr<SyntheticSmoothScrollGesture> gesture(
         new SyntheticSmoothScrollGesture(params));
     GetWidgetHost()->QueueSyntheticGesture(
         std::move(gesture),

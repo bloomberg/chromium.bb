@@ -16,9 +16,9 @@ namespace content {
 namespace {
 
 template <typename GestureType, typename GestureParamsType>
-static scoped_ptr<SyntheticGesture> CreateGesture(
+static std::unique_ptr<SyntheticGesture> CreateGesture(
     const SyntheticGestureParams& gesture_params) {
-  return scoped_ptr<SyntheticGesture>(
+  return std::unique_ptr<SyntheticGesture>(
       new GestureType(*GestureParamsType::Cast(&gesture_params)));
 }
 
@@ -28,7 +28,7 @@ SyntheticGesture::SyntheticGesture() {}
 
 SyntheticGesture::~SyntheticGesture() {}
 
-scoped_ptr<SyntheticGesture> SyntheticGesture::Create(
+std::unique_ptr<SyntheticGesture> SyntheticGesture::Create(
     const SyntheticGestureParams& gesture_params) {
   switch (gesture_params.GetGestureType()) {
     case SyntheticGestureParams::SMOOTH_SCROLL_GESTURE:
@@ -48,7 +48,7 @@ scoped_ptr<SyntheticGesture> SyntheticGesture::Create(
                            SyntheticPointerActionParams>(gesture_params);
   }
   NOTREACHED() << "Invalid synthetic gesture type";
-  return scoped_ptr<SyntheticGesture>();
+  return std::unique_ptr<SyntheticGesture>();
 }
 
 }  // namespace content

@@ -187,14 +187,14 @@ class P2PSocketHostUdpTest : public testing::Test {
     dest1_ = ParseAddress(kTestIpAddress1, kTestPort1);
     dest2_ = ParseAddress(kTestIpAddress2, kTestPort2);
 
-    scoped_ptr<rtc::Timing> timing(new FakeTiming());
+    std::unique_ptr<rtc::Timing> timing(new FakeTiming());
     throttler_.SetTiming(std::move(timing));
   }
 
   P2PMessageThrottler throttler_;
   std::deque<FakeDatagramServerSocket::UDPPacket> sent_packets_;
   FakeDatagramServerSocket* socket_; // Owned by |socket_host_|.
-  scoped_ptr<P2PSocketHostUdp> socket_host_;
+  std::unique_ptr<P2PSocketHostUdp> socket_host_;
   MockIPCSender sender_;
 
   net::IPEndPoint local_address_;

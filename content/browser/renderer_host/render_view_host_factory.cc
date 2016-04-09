@@ -4,8 +4,10 @@
 
 #include "content/browser/renderer_host/render_view_host_factory.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 
@@ -48,7 +50,7 @@ RenderViewHost* RenderViewHostFactory::Create(
   }
   return new RenderViewHostImpl(
       instance,
-      make_scoped_ptr(new RenderWidgetHostImpl(
+      base::WrapUnique(new RenderWidgetHostImpl(
           widget_delegate, instance->GetProcess(), routing_id, hidden)),
       delegate, main_frame_routing_id, swapped_out,
       true /* has_initialized_audio_host */);

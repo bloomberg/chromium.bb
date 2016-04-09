@@ -9,8 +9,10 @@
 #include <IOSurface/IOSurface.h>
 #include <stddef.h>
 #include <stdint.h>
+
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -18,7 +20,6 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "cc/surfaces/surface_id.h"
@@ -66,14 +67,14 @@ class Layer;
                       RenderWidgetHostViewMacOwner,
                       NSTextInputClient> {
  @private
-  scoped_ptr<content::RenderWidgetHostViewMac> renderWidgetHostView_;
+  std::unique_ptr<content::RenderWidgetHostViewMac> renderWidgetHostView_;
   // This ivar is the cocoa delegate of the NSResponder.
   base::scoped_nsobject<NSObject<RenderWidgetHostViewMacDelegate>>
       responderDelegate_;
   BOOL canBeKeyView_;
   BOOL closeOnDeactivate_;
   BOOL opaque_;
-  scoped_ptr<content::RenderWidgetHostViewMacEditCommandHelper>
+  std::unique_ptr<content::RenderWidgetHostViewMacEditCommandHelper>
       editCommand_helper_;
 
   // Is YES if there was a mouse-down as yet unbalanced with a mouse-up.
@@ -150,7 +151,7 @@ class Layer;
   // the view that some as-yet-undefined gesture is starting. Capture the
   // information about the gesture's beginning event here. It will be used to
   // create a specific gesture begin event later.
-  scoped_ptr<blink::WebGestureEvent> gestureBeginEvent_;
+  std::unique_ptr<blink::WebGestureEvent> gestureBeginEvent_;
 
   // To avoid accidental pinches, require that a certain zoom threshold be
   // reached before forwarding it to the browser. Use |pinchUnusedAmount_| to
@@ -306,10 +307,11 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       const base::Callback<void(const gfx::Rect&, bool)>& callback) override;
   bool CanCopyToVideoFrame() const override;
   void BeginFrameSubscription(
-      scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) override;
+      std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) override;
   void EndFrameSubscription() override;
-  void OnSwapCompositorFrame(uint32_t output_surface_id,
-                             scoped_ptr<cc::CompositorFrame> frame) override;
+  void OnSwapCompositorFrame(
+      uint32_t output_surface_id,
+      std::unique_ptr<cc::CompositorFrame> frame) override;
   void ClearCompositorFrame() override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
@@ -329,7 +331,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result) override;
 
-  scoped_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget() override;
+  std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
+      override;
 
   uint32_t GetSurfaceIdNamespace() override;
   uint32_t SurfaceIdNamespaceAtPoint(cc::SurfaceHittestDelegate* delegate,
@@ -441,16 +444,16 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   BrowserCompositorViewState browser_compositor_state_;
 
   // Delegated frame management and compositor.
-  scoped_ptr<DelegatedFrameHost> delegated_frame_host_;
-  scoped_ptr<ui::Layer> root_layer_;
+  std::unique_ptr<DelegatedFrameHost> delegated_frame_host_;
+  std::unique_ptr<ui::Layer> root_layer_;
 
   // Container for ui::Compositor the CALayer tree drawn by it.
-  scoped_ptr<BrowserCompositorMac> browser_compositor_;
+  std::unique_ptr<BrowserCompositorMac> browser_compositor_;
 
   // Placeholder that is allocated while browser_compositor_ is NULL,
   // indicating that a BrowserCompositorViewMac may be allocated. This is to
   // help in recycling the internals of BrowserCompositorViewMac.
-  scoped_ptr<BrowserCompositorMacPlaceholder>
+  std::unique_ptr<BrowserCompositorMacPlaceholder>
       browser_compositor_placeholder_;
 
   // Set when the currently-displayed frame is the minimum scale. Used to
@@ -486,7 +489,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   bool DelegatedFrameHostIsVisible() const override;
   gfx::Size DelegatedFrameHostDesiredSizeInDIP() const override;
   bool DelegatedFrameCanCreateResizeLock() const override;
-  scoped_ptr<ResizeLock> DelegatedFrameHostCreateResizeLock(
+  std::unique_ptr<ResizeLock> DelegatedFrameHostCreateResizeLock(
       bool defer_compositor_lock) override;
   void DelegatedFrameHostResizeLockWasReleased() override;
   void DelegatedFrameHostSendCompositorSwapAck(

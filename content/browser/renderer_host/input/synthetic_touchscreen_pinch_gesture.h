@@ -48,7 +48,7 @@ class CONTENT_EXPORT SyntheticTouchscreenPinchGesture
   bool HasReachedTarget(const base::TimeTicks& timestamp) const;
 
   SyntheticPinchGestureParams params_;
-  scoped_ptr<SyntheticPointer> synthetic_pointer_;
+  std::unique_ptr<SyntheticPointer> synthetic_pointer_;
   float start_y_0_;
   float start_y_1_;
   float max_pointer_delta_0_;

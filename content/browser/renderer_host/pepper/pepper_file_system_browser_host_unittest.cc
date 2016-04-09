@@ -4,10 +4,10 @@
 
 #include "content/browser/renderer_host/pepper/pepper_file_system_browser_host.h"
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_test.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
@@ -38,7 +38,7 @@ class PepperFileSystemBrowserHostTest : public testing::Test,
   }
 
  private:
-  scoped_ptr<PepperFileSystemBrowserHost> host_;
+  std::unique_ptr<PepperFileSystemBrowserHost> host_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperFileSystemBrowserHostTest);
 };

@@ -5,13 +5,14 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_SOCKET_UTILS_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_SOCKET_UTILS_H_
 
+#include <memory>
+
 #include "build/build_config.h"
 #include "content/public/common/socket_permission_request.h"
 #include "ppapi/c/pp_stdint.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/ip_endpoint.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -60,7 +61,7 @@ bool GetCertificateFields(const char* der,
                           ppapi::PPB_X509Certificate_Fields* fields);
 
 #if defined(OS_CHROMEOS)
-typedef base::Callback<void(scoped_ptr<chromeos::FirewallHole>)>
+typedef base::Callback<void(std::unique_ptr<chromeos::FirewallHole>)>
     FirewallHoleOpenCallback;
 
 // Returns true if the open operation is in progress.

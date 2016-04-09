@@ -7,10 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -60,7 +61,7 @@ class CONTENT_EXPORT CompositorImpl
   static bool IsInitialized();
 
   static cc::SurfaceManager* GetSurfaceManager();
-  static scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator();
+  static std::unique_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator();
 
   void PopulateGpuCapabilities(gpu::Capabilities gpu_capabilities);
 
@@ -104,9 +105,10 @@ class CONTENT_EXPORT CompositorImpl
   void DidCompleteSwapBuffers() override;
   void DidCompletePageScaleAnimation() override {}
   void RecordFrameTimingEvents(
-      scoped_ptr<cc::FrameTimingTracker::CompositeTimingSet> composite_events,
-      scoped_ptr<cc::FrameTimingTracker::MainFrameTimingSet> main_frame_events)
-      override {}
+      std::unique_ptr<cc::FrameTimingTracker::CompositeTimingSet>
+          composite_events,
+      std::unique_ptr<cc::FrameTimingTracker::MainFrameTimingSet>
+          main_frame_events) override {}
 
   // LayerTreeHostSingleThreadClient implementation.
   void DidPostSwapBuffers() override;
@@ -114,7 +116,7 @@ class CONTENT_EXPORT CompositorImpl
 
   // WindowAndroidCompositor implementation.
   void RequestCopyOfOutputOnRootLayer(
-      scoped_ptr<cc::CopyOutputRequest> request) override;
+      std::unique_ptr<cc::CopyOutputRequest> request) override;
   void OnVSync(base::TimeTicks frame_time,
                base::TimeDelta vsync_period) override;
   void SetNeedsAnimate() override;
@@ -132,11 +134,11 @@ class CONTENT_EXPORT CompositorImpl
 
   // Destruction order matters here:
   base::ObserverList<VSyncObserver, true> observer_list_;
-  scoped_ptr<cc::LayerTreeHost> host_;
+  std::unique_ptr<cc::LayerTreeHost> host_;
   ui::ResourceManagerImpl resource_manager_;
 
-  scoped_ptr<cc::OnscreenDisplayClient> display_client_;
-  scoped_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
+  std::unique_ptr<cc::OnscreenDisplayClient> display_client_;
+  std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
 
   gfx::Size size_;
   bool has_transparent_background_;

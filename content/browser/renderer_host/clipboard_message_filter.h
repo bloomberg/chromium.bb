@@ -91,7 +91,7 @@ class CONTENT_EXPORT ClipboardMessageFilter : public BrowserMessageFilter {
   // thread.
   static ui::Clipboard* GetClipboard();
 
-  scoped_ptr<ui::ScopedClipboardWriter> clipboard_writer_;
+  std::unique_ptr<ui::ScopedClipboardWriter> clipboard_writer_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardMessageFilter);
 };

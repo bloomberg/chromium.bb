@@ -276,7 +276,7 @@ void ImeAdapterAndroid::SetCharacterBounds(
     return;
 
   const size_t coordinates_array_size = character_bounds.size() * 4;
-  scoped_ptr<float[]> coordinates_array(new float[coordinates_array_size]);
+  std::unique_ptr<float[]> coordinates_array(new float[coordinates_array_size]);
   for (size_t i = 0; i < character_bounds.size(); ++i) {
     const gfx::RectF& rect = character_bounds[i];
     const size_t coordinates_array_index = i * 4;

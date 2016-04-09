@@ -156,7 +156,7 @@ void P2PSocketHostTcpBase::OnConnected(int result) {
     state_ = STATE_TLS_CONNECTING;
     StartTls();
   } else if (IsPseudoTlsClientSocket(type_)) {
-    scoped_ptr<net::StreamSocket> transport_socket = std::move(socket_);
+    std::unique_ptr<net::StreamSocket> transport_socket = std::move(socket_);
     socket_.reset(
         new jingle_glue::FakeSSLClientSocket(std::move(transport_socket)));
     state_ = STATE_TLS_CONNECTING;
@@ -179,7 +179,7 @@ void P2PSocketHostTcpBase::StartTls() {
   DCHECK_EQ(state_, STATE_TLS_CONNECTING);
   DCHECK(socket_.get());
 
-  scoped_ptr<net::ClientSocketHandle> socket_handle(
+  std::unique_ptr<net::ClientSocketHandle> socket_handle(
       new net::ClientSocketHandle());
   socket_handle->SetSocket(std::move(socket_));
 

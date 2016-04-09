@@ -59,7 +59,7 @@ PepperPrintSettingsManager::Result ComputeDefaultPrintSettings() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   PrintingContextDelegate delegate;
-  scoped_ptr<printing::PrintingContext> context(
+  std::unique_ptr<printing::PrintingContext> context(
       printing::PrintingContext::Create(&delegate));
   if (!context.get() ||
       context->UseDefaultSettings() != printing::PrintingContext::OK) {

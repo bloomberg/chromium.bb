@@ -4,8 +4,9 @@
 
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
 
+#include <memory>
+
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"

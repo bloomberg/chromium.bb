@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_STYLUS_TEXT_SELECTOR_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_STYLUS_TEXT_SELECTOR_H_
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "ui/events/gesture_detection/gesture_listeners.h"
@@ -68,7 +69,7 @@ class CONTENT_EXPORT StylusTextSelector : public ui::SimpleGestureListener {
   bool dragged_;
   float anchor_x_;
   float anchor_y_;
-  scoped_ptr<ui::GestureDetector> gesture_detector_;
+  std::unique_ptr<ui::GestureDetector> gesture_detector_;
 
   DISALLOW_COPY_AND_ASSIGN(StylusTextSelector);
 };

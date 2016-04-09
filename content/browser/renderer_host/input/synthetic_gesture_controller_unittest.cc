@@ -6,10 +6,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
@@ -520,10 +521,10 @@ class SyntheticGestureControllerTestBase {
   void CreateControllerAndTarget() {
     target_ = new MockGestureTarget();
     controller_.reset(new SyntheticGestureController(
-        scoped_ptr<SyntheticGestureTarget>(target_)));
+        std::unique_ptr<SyntheticGestureTarget>(target_)));
   }
 
-  void QueueSyntheticGesture(scoped_ptr<SyntheticGesture> gesture) {
+  void QueueSyntheticGesture(std::unique_ptr<SyntheticGesture> gesture) {
     controller_->QueueSyntheticGesture(
         std::move(gesture),
         base::Bind(
@@ -553,7 +554,7 @@ class SyntheticGestureControllerTestBase {
   base::TimeDelta GetTotalTime() const { return time_ - start_time_; }
 
   MockSyntheticGestureTarget* target_;
-  scoped_ptr<SyntheticGestureController> controller_;
+  std::unique_ptr<SyntheticGestureController> controller_;
   base::TimeTicks start_time_;
   base::TimeTicks time_;
   int num_success_;
@@ -600,7 +601,7 @@ TEST_F(SyntheticGestureControllerTest, SingleGesture) {
   CreateControllerAndTarget<MockSyntheticGestureTarget>();
 
   bool finished = false;
-  scoped_ptr<MockSyntheticGesture> gesture(
+  std::unique_ptr<MockSyntheticGesture> gesture(
       new MockSyntheticGesture(&finished, 3));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -614,7 +615,7 @@ TEST_F(SyntheticGestureControllerTest, GestureFailed) {
   CreateControllerAndTarget<MockSyntheticGestureTarget>();
 
   bool finished = false;
-  scoped_ptr<MockSyntheticGesture> gesture(
+  std::unique_ptr<MockSyntheticGesture> gesture(
       new MockSyntheticGesture(&finished, 0));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -628,10 +629,10 @@ TEST_F(SyntheticGestureControllerTest, SuccessiveGestures) {
   CreateControllerAndTarget<MockSyntheticGestureTarget>();
 
   bool finished_1 = false;
-  scoped_ptr<MockSyntheticGesture> gesture_1(
+  std::unique_ptr<MockSyntheticGesture> gesture_1(
       new MockSyntheticGesture(&finished_1, 2));
   bool finished_2 = false;
-  scoped_ptr<MockSyntheticGesture> gesture_2(
+  std::unique_ptr<MockSyntheticGesture> gesture_2(
       new MockSyntheticGesture(&finished_2, 4));
 
   // Queue first gesture and wait for it to finish
@@ -655,10 +656,10 @@ TEST_F(SyntheticGestureControllerTest, TwoGesturesInFlight) {
   CreateControllerAndTarget<MockSyntheticGestureTarget>();
 
   bool finished_1 = false;
-  scoped_ptr<MockSyntheticGesture> gesture_1(
+  std::unique_ptr<MockSyntheticGesture> gesture_1(
       new MockSyntheticGesture(&finished_1, 2));
   bool finished_2 = false;
-  scoped_ptr<MockSyntheticGesture> gesture_2(
+  std::unique_ptr<MockSyntheticGesture> gesture_2(
       new MockSyntheticGesture(&finished_2, 4));
 
   QueueSyntheticGesture(std::move(gesture_1));
@@ -676,9 +677,9 @@ TEST_F(SyntheticGestureControllerTest, GestureCompletedOnDidFlushInput) {
   CreateControllerAndTarget<MockSyntheticGestureTarget>();
 
   bool finished_1, finished_2;
-  scoped_ptr<MockSyntheticGesture> gesture_1(
+  std::unique_ptr<MockSyntheticGesture> gesture_1(
       new MockSyntheticGesture(&finished_1, 2));
-  scoped_ptr<MockSyntheticGesture> gesture_2(
+  std::unique_ptr<MockSyntheticGesture> gesture_2(
       new MockSyntheticGesture(&finished_2, 4));
 
   QueueSyntheticGesture(std::move(gesture_1));
@@ -734,7 +735,7 @@ TEST_P(SyntheticGestureControllerTestWithParam,
   params.start_point.SetPoint(89, 32);
   params.distances.push_back(gfx::Vector2d(0, 123));
 
-  scoped_ptr<SyntheticSmoothMoveGesture> gesture(
+  std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
       new SyntheticSmoothMoveGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -763,7 +764,7 @@ TEST_P(SyntheticGestureControllerTestWithParam,
   params.start_point.SetPoint(12, -23);
   params.distances.push_back(gfx::Vector2d(-234, 0));
 
-  scoped_ptr<SyntheticSmoothMoveGesture> gesture(
+  std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
       new SyntheticSmoothMoveGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -808,7 +809,7 @@ TEST_F(SyntheticGestureControllerTest, SingleScrollGestureTouchDiagonal) {
   params.start_point.SetPoint(0, 7);
   params.distances.push_back(gfx::Vector2d(413, -83));
 
-  scoped_ptr<SyntheticSmoothMoveGesture> gesture(
+  std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
       new SyntheticSmoothMoveGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -834,7 +835,7 @@ TEST_F(SyntheticGestureControllerTest, SingleScrollGestureTouchLongStop) {
   params.prevent_fling = true;
   target_->set_pointer_assumed_stopped_time_ms(543);
 
-  scoped_ptr<SyntheticSmoothMoveGesture> gesture(
+  std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
       new SyntheticSmoothMoveGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -862,7 +863,7 @@ TEST_F(SyntheticGestureControllerTest, SingleScrollGestureTouchFling) {
 
   target_->set_pointer_assumed_stopped_time_ms(543);
 
-  scoped_ptr<SyntheticSmoothMoveGesture> gesture(
+  std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
       new SyntheticSmoothMoveGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -888,7 +889,7 @@ TEST_P(SyntheticGestureControllerTestWithParam,
   params.start_point.SetPoint(-32, 43);
   params.distances.push_back(gfx::Vector2d(0, 0));
 
-  scoped_ptr<SyntheticSmoothMoveGesture> gesture(
+  std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
       new SyntheticSmoothMoveGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -908,7 +909,7 @@ TEST_F(SyntheticGestureControllerTest, SingleScrollGestureMouseVertical) {
   params.start_point.SetPoint(432, 89);
   params.distances.push_back(gfx::Vector2d(0, -234));
 
-  scoped_ptr<SyntheticSmoothMoveGesture> gesture(
+  std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
       new SyntheticSmoothMoveGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -928,7 +929,7 @@ TEST_F(SyntheticGestureControllerTest, SingleScrollGestureMouseHorizontal) {
   params.start_point.SetPoint(90, 12);
   params.distances.push_back(gfx::Vector2d(345, 0));
 
-  scoped_ptr<SyntheticSmoothMoveGesture> gesture(
+  std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
       new SyntheticSmoothMoveGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -948,7 +949,7 @@ TEST_F(SyntheticGestureControllerTest, SingleScrollGestureMouseDiagonal) {
   params.start_point.SetPoint(90, 12);
   params.distances.push_back(gfx::Vector2d(-194, 303));
 
-  scoped_ptr<SyntheticSmoothMoveGesture> gesture(
+  std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
       new SyntheticSmoothMoveGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -969,7 +970,7 @@ TEST_F(SyntheticGestureControllerTest, MultiScrollGestureMouse) {
   params.distances.push_back(gfx::Vector2d(-129, 212));
   params.distances.push_back(gfx::Vector2d(8, -9));
 
-  scoped_ptr<SyntheticSmoothMoveGesture> gesture(
+  std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
       new SyntheticSmoothMoveGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -991,7 +992,7 @@ TEST_F(SyntheticGestureControllerTest, MultiScrollGestureMouseHorizontal) {
   params.distances.push_back(gfx::Vector2d(-129, 0));
   params.distances.push_back(gfx::Vector2d(79, 0));
 
-  scoped_ptr<SyntheticSmoothMoveGesture> gesture(
+  std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
       new SyntheticSmoothMoveGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -1037,7 +1038,7 @@ TEST_F(SyntheticGestureControllerTest, MultiScrollGestureTouch) {
   params.distances.push_back(gfx::Vector2d(234, 133));
   params.distances.push_back(gfx::Vector2d(-9, 78));
 
-  scoped_ptr<SyntheticSmoothMoveGesture> gesture(
+  std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
       new SyntheticSmoothMoveGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -1065,7 +1066,7 @@ TEST_P(SyntheticGestureControllerTestWithParam,
   params.distances.push_back(gfx::Vector2d(0, 133));
   params.distances.push_back(gfx::Vector2d(0, 78));
 
-  scoped_ptr<SyntheticSmoothMoveGesture> gesture(
+  std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
       new SyntheticSmoothMoveGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -1102,7 +1103,7 @@ TEST_F(SyntheticGestureControllerTest, SingleDragGestureMouseDiagonal) {
   params.start_point.SetPoint(0, 7);
   params.distances.push_back(gfx::Vector2d(413, -83));
 
-  scoped_ptr<SyntheticSmoothMoveGesture> gesture(
+  std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
       new SyntheticSmoothMoveGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -1122,7 +1123,7 @@ TEST_F(SyntheticGestureControllerTest, SingleDragGestureMouseZeroDistance) {
   params.start_point.SetPoint(-32, 43);
   params.distances.push_back(gfx::Vector2d(0, 0));
 
-  scoped_ptr<SyntheticSmoothMoveGesture> gesture(
+  std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
       new SyntheticSmoothMoveGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -1143,7 +1144,7 @@ TEST_F(SyntheticGestureControllerTest, MultiDragGestureMouse) {
   params.distances.push_back(gfx::Vector2d(234, 133));
   params.distances.push_back(gfx::Vector2d(-9, 78));
 
-  scoped_ptr<SyntheticSmoothMoveGesture> gesture(
+  std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
       new SyntheticSmoothMoveGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -1165,7 +1166,7 @@ TEST_F(SyntheticGestureControllerTest,
   params.distances.push_back(gfx::Vector2d(234, 133));
   params.speed_in_pixels_s = 800;
 
-  scoped_ptr<SyntheticSmoothDragGesture> gesture(
+  std::unique_ptr<SyntheticSmoothDragGesture> gesture(
       new SyntheticSmoothDragGesture(params));
   const base::TimeTicks timestamp;
   gesture->ForwardInputEvents(timestamp, target_);
@@ -1181,7 +1182,7 @@ TEST_F(SyntheticGestureControllerTest,
   params.distances.push_back(gfx::Vector2d(0, 123));
   params.speed_in_pixels_s = 800;
 
-  scoped_ptr<SyntheticSmoothDragGesture> gesture(
+  std::unique_ptr<SyntheticSmoothDragGesture> gesture(
       new SyntheticSmoothDragGesture(params));
   const base::TimeTicks timestamp;
   gesture->ForwardInputEvents(timestamp, target_);
@@ -1194,7 +1195,7 @@ TEST_F(SyntheticGestureControllerTest,
   SyntheticSmoothScrollGestureParams params;
   params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
 
-  scoped_ptr<SyntheticSmoothScrollGesture> gesture(
+  std::unique_ptr<SyntheticSmoothScrollGesture> gesture(
       new SyntheticSmoothScrollGesture(params));
   const base::TimeTicks timestamp;
   gesture->ForwardInputEvents(timestamp, target_);
@@ -1210,7 +1211,7 @@ TEST_F(SyntheticGestureControllerTest,
   params.distances.push_back(gfx::Vector2d(0, -234));
   params.speed_in_pixels_s = 800;
 
-  scoped_ptr<SyntheticSmoothScrollGesture> gesture(
+  std::unique_ptr<SyntheticSmoothScrollGesture> gesture(
       new SyntheticSmoothScrollGesture(params));
   const base::TimeTicks timestamp;
   gesture->ForwardInputEvents(timestamp, target_);
@@ -1225,7 +1226,7 @@ TEST_F(SyntheticGestureControllerTest,
   params.scale_factor = 2.3f;
   params.anchor.SetPoint(54, 89);
 
-  scoped_ptr<SyntheticTouchscreenPinchGesture> gesture(
+  std::unique_ptr<SyntheticTouchscreenPinchGesture> gesture(
       new SyntheticTouchscreenPinchGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -1248,7 +1249,7 @@ TEST_F(SyntheticGestureControllerTest,
   params.scale_factor = 0.4f;
   params.anchor.SetPoint(-12, 93);
 
-  scoped_ptr<SyntheticTouchscreenPinchGesture> gesture(
+  std::unique_ptr<SyntheticTouchscreenPinchGesture> gesture(
       new SyntheticTouchscreenPinchGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -1270,7 +1271,7 @@ TEST_F(SyntheticGestureControllerTest,
   params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
   params.scale_factor = 1.0f;
 
-  scoped_ptr<SyntheticTouchscreenPinchGesture> gesture(
+  std::unique_ptr<SyntheticTouchscreenPinchGesture> gesture(
       new SyntheticTouchscreenPinchGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -1292,7 +1293,7 @@ TEST_F(SyntheticGestureControllerTest, TouchpadPinchGestureTouchZoomIn) {
   params.scale_factor = 2.3f;
   params.anchor.SetPoint(54, 89);
 
-  scoped_ptr<SyntheticTouchpadPinchGesture> gesture(
+  std::unique_ptr<SyntheticTouchpadPinchGesture> gesture(
       new SyntheticTouchpadPinchGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -1314,7 +1315,7 @@ TEST_F(SyntheticGestureControllerTest, TouchpadPinchGestureTouchZoomOut) {
   params.scale_factor = 0.4f;
   params.anchor.SetPoint(-12, 93);
 
-  scoped_ptr<SyntheticTouchpadPinchGesture> gesture(
+  std::unique_ptr<SyntheticTouchpadPinchGesture> gesture(
       new SyntheticTouchpadPinchGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -1335,7 +1336,7 @@ TEST_F(SyntheticGestureControllerTest, TouchpadPinchGestureTouchNoScaling) {
   params.gesture_source_type = SyntheticGestureParams::MOUSE_INPUT;
   params.scale_factor = 1.0f;
 
-  scoped_ptr<SyntheticTouchpadPinchGesture> gesture(
+  std::unique_ptr<SyntheticTouchpadPinchGesture> gesture(
       new SyntheticTouchpadPinchGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
@@ -1359,7 +1360,8 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureExplicitTouch) {
   params.scale_factor = 2.3f;
   params.anchor.SetPoint(54, 89);
 
-  scoped_ptr<SyntheticPinchGesture> gesture(new SyntheticPinchGesture(params));
+  std::unique_ptr<SyntheticPinchGesture> gesture(
+      new SyntheticPinchGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
 
@@ -1377,7 +1379,8 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureExplicitMouse) {
   params.scale_factor = 2.3f;
   params.anchor.SetPoint(54, 89);
 
-  scoped_ptr<SyntheticPinchGesture> gesture(new SyntheticPinchGesture(params));
+  std::unique_ptr<SyntheticPinchGesture> gesture(
+      new SyntheticPinchGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
 
@@ -1395,7 +1398,8 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureDefaultTouch) {
   params.scale_factor = 2.3f;
   params.anchor.SetPoint(54, 89);
 
-  scoped_ptr<SyntheticPinchGesture> gesture(new SyntheticPinchGesture(params));
+  std::unique_ptr<SyntheticPinchGesture> gesture(
+      new SyntheticPinchGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
 
@@ -1413,7 +1417,8 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureDefaultMouse) {
   params.scale_factor = 2.3f;
   params.anchor.SetPoint(54, 89);
 
-  scoped_ptr<SyntheticPinchGesture> gesture(new SyntheticPinchGesture(params));
+  std::unique_ptr<SyntheticPinchGesture> gesture(
+      new SyntheticPinchGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
 
@@ -1429,7 +1434,7 @@ TEST_F(SyntheticGestureControllerTest, TapGestureTouch) {
   params.duration_ms = 123;
   params.position.SetPoint(87, -124);
 
-  scoped_ptr<SyntheticTapGesture> gesture(new SyntheticTapGesture(params));
+  std::unique_ptr<SyntheticTapGesture> gesture(new SyntheticTapGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
 
@@ -1452,7 +1457,7 @@ TEST_F(SyntheticGestureControllerTest, TapGestureMouse) {
   params.duration_ms = 79;
   params.position.SetPoint(98, 123);
 
-  scoped_ptr<SyntheticTapGesture> gesture(new SyntheticTapGesture(params));
+  std::unique_ptr<SyntheticTapGesture> gesture(new SyntheticTapGesture(params));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();
 
@@ -1477,7 +1482,7 @@ TEST_F(SyntheticGestureControllerTest, PointerTouchAction) {
   params.set_position(gfx::PointF(54, 89));
   SyntheticTouchPointer synthetic_pointer;
 
-  scoped_ptr<SyntheticPointerAction> gesture(
+  std::unique_ptr<SyntheticPointerAction> gesture(
       new SyntheticPointerAction(params, &synthetic_pointer));
   QueueSyntheticGesture(std::move(gesture));
   FlushInputUntilComplete();

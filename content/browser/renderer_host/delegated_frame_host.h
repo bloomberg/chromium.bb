@@ -58,7 +58,7 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
   virtual gfx::Size DelegatedFrameHostDesiredSizeInDIP() const = 0;
 
   virtual bool DelegatedFrameCanCreateResizeLock() const = 0;
-  virtual scoped_ptr<ResizeLock> DelegatedFrameHostCreateResizeLock(
+  virtual std::unique_ptr<ResizeLock> DelegatedFrameHostCreateResizeLock(
       bool defer_compositor_lock) = 0;
   virtual void DelegatedFrameHostResizeLockWasReleased() = 0;
 
@@ -123,7 +123,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   // Public interface exposed to RenderWidgetHostView.
 
   void SwapDelegatedFrame(uint32_t output_surface_id,
-                          scoped_ptr<cc::CompositorFrame> frame);
+                          std::unique_ptr<cc::CompositorFrame> frame);
   void ClearDelegatedFrame();
   void WasHidden();
   void WasShown(const ui::LatencyInfo& latency_info);
@@ -146,7 +146,7 @@ class CONTENT_EXPORT DelegatedFrameHost
       const base::Callback<void(const gfx::Rect&, bool)>& callback);
   bool CanCopyToVideoFrame() const;
   void BeginFrameSubscription(
-      scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber);
+      std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber);
   void EndFrameSubscription();
   bool HasFrameSubscriber() const { return !!frame_subscriber_; }
   uint32_t GetSurfaceIdNamespace();
@@ -173,7 +173,8 @@ class CONTENT_EXPORT DelegatedFrameHost
     return !!released_front_lock_.get();
   }
   void SetRequestCopyOfOutputCallbackForTesting(
-      const base::Callback<void(scoped_ptr<cc::CopyOutputRequest>)>& callback) {
+      const base::Callback<void(std::unique_ptr<cc::CopyOutputRequest>)>&
+          callback) {
     request_copy_of_output_callback_for_testing_ = callback;
   }
 
@@ -191,7 +192,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   bool ShouldCreateResizeLock();
   void LockResources();
   void UnlockResources();
-  void RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request);
+  void RequestCopyOfOutput(std::unique_ptr<cc::CopyOutputRequest> request);
 
   bool ShouldSkipFrame(gfx::Size size_in_dip) const;
 
@@ -213,12 +214,12 @@ class CONTENT_EXPORT DelegatedFrameHost
       scoped_refptr<OwnedMailbox> subscriber_texture,
       scoped_refptr<media::VideoFrame> video_frame,
       const base::Callback<void(const gfx::Rect&, bool)>& callback,
-      scoped_ptr<cc::CopyOutputResult> result);
+      std::unique_ptr<cc::CopyOutputResult> result);
   static void CopyFromCompositingSurfaceFinishedForVideo(
       base::WeakPtr<DelegatedFrameHost> rwhva,
       const base::Callback<void(bool)>& callback,
       scoped_refptr<OwnedMailbox> subscriber_texture,
-      scoped_ptr<cc::SingleReleaseCallback> release_callback,
+      std::unique_ptr<cc::SingleReleaseCallback> release_callback,
       bool result);
   static void ReturnSubscriberTexture(
       base::WeakPtr<DelegatedFrameHost> rwhva,
@@ -245,7 +246,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   base::TimeDelta vsync_interval_;
 
   // Overridable tick clock used for testing functions using current time.
-  scoped_ptr<base::TickClock> tick_clock_;
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   // With delegated renderer, this is the last output surface, used to
   // disambiguate resources with the same id coming from different output
@@ -261,15 +262,15 @@ class CONTENT_EXPORT DelegatedFrameHost
   bool skipped_frames_;
   std::vector<ui::LatencyInfo> skipped_latency_info_list_;
 
-  scoped_ptr<ui::Layer> right_gutter_;
-  scoped_ptr<ui::Layer> bottom_gutter_;
+  std::unique_ptr<ui::Layer> right_gutter_;
+  std::unique_ptr<ui::Layer> bottom_gutter_;
 
   // This is the last root background color from a swapped frame.
   SkColor background_color_;
 
   // State for rendering into a Surface.
-  scoped_ptr<cc::SurfaceIdAllocator> id_allocator_;
-  scoped_ptr<cc::SurfaceFactory> surface_factory_;
+  std::unique_ptr<cc::SurfaceIdAllocator> id_allocator_;
+  std::unique_ptr<cc::SurfaceFactory> surface_factory_;
   cc::SurfaceId surface_id_;
   gfx::Size current_surface_size_;
   float current_scale_factor_;
@@ -281,7 +282,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   // size. It keeps track of the size we expect from the renderer, and locks the
   // compositor, as well as the UI for a short time to give a chance to the
   // renderer of producing a frame of the right size.
-  scoped_ptr<ResizeLock> resize_lock_;
+  std::unique_ptr<ResizeLock> resize_lock_;
 
   // Keeps track of the current frame size.
   gfx::Size current_frame_size_in_dip_;
@@ -303,18 +304,18 @@ class CONTENT_EXPORT DelegatedFrameHost
   base::TimeTicks last_draw_ended_;
 
   // Subscriber that listens to frame presentation events.
-  scoped_ptr<RenderWidgetHostViewFrameSubscriber> frame_subscriber_;
+  std::unique_ptr<RenderWidgetHostViewFrameSubscriber> frame_subscriber_;
   std::vector<scoped_refptr<OwnedMailbox>> idle_frame_subscriber_textures_;
 
   // Callback used to pass the output request to the layer or to a function
   // specified by a test.
-  base::Callback<void(scoped_ptr<cc::CopyOutputRequest>)>
+  base::Callback<void(std::unique_ptr<cc::CopyOutputRequest>)>
       request_copy_of_output_callback_for_testing_;
 
   // YUV readback pipeline.
-  scoped_ptr<content::ReadbackYUVInterface> yuv_readback_pipeline_;
+  std::unique_ptr<content::ReadbackYUVInterface> yuv_readback_pipeline_;
 
-  scoped_ptr<DelegatedFrameEvictor> delegated_frame_evictor_;
+  std::unique_ptr<DelegatedFrameEvictor> delegated_frame_evictor_;
 
   cc::BeginFrameSource* begin_frame_source_;
 };

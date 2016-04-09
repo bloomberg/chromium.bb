@@ -15,13 +15,13 @@
 namespace content {
 
 SyntheticGestureController::SyntheticGestureController(
-    scoped_ptr<SyntheticGestureTarget> gesture_target)
+    std::unique_ptr<SyntheticGestureTarget> gesture_target)
     : gesture_target_(std::move(gesture_target)) {}
 
 SyntheticGestureController::~SyntheticGestureController() {}
 
 void SyntheticGestureController::QueueSyntheticGesture(
-    scoped_ptr<SyntheticGesture> synthetic_gesture,
+    std::unique_ptr<SyntheticGesture> synthetic_gesture,
     const OnGestureCompleteCallback& completion_callback) {
   DCHECK(synthetic_gesture);
 

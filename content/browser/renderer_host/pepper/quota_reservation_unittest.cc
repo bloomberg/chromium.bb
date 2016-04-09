@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file.h"
@@ -13,7 +15,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -79,7 +80,8 @@ class QuotaReservationTest : public testing::Test {
     ASSERT_TRUE(work_dir_.CreateUniqueTempDir());
 
     reservation_manager_.reset(new QuotaReservationManager(
-        scoped_ptr<QuotaReservationManager::QuotaBackend>(new FakeBackend)));
+        std::unique_ptr<QuotaReservationManager::QuotaBackend>(
+            new FakeBackend)));
   }
 
   void TearDown() override {
@@ -120,7 +122,7 @@ class QuotaReservationTest : public testing::Test {
  private:
   base::MessageLoop message_loop_;
   base::ScopedTempDir work_dir_;
-  scoped_ptr<storage::QuotaReservationManager> reservation_manager_;
+  std::unique_ptr<storage::QuotaReservationManager> reservation_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaReservationTest);
 };

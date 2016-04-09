@@ -37,7 +37,7 @@ class FilterWithFakeSender : public DWriteFontProxyMessageFilter {
  private:
   ~FilterWithFakeSender() override = default;
 
-  scoped_ptr<IPC::Message> reply_message_;
+  std::unique_ptr<IPC::Message> reply_message_;
 };
 
 class DWriteFontProxyMessageFilterUnitTest : public testing::Test {
@@ -48,7 +48,7 @@ class DWriteFontProxyMessageFilterUnitTest : public testing::Test {
 
   void Send(IPC::SyncMessage* message) {
     std::unique_ptr<IPC::SyncMessage> deleter(message);
-    scoped_ptr<IPC::MessageReplyDeserializer> serializer(
+    std::unique_ptr<IPC::MessageReplyDeserializer> serializer(
         message->GetReplyDeserializer());
     filter_->OnMessageReceived(*message);
     base::RunLoop().RunUntilIdle();

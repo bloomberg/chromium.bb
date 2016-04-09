@@ -2,21 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/renderer_host/input/input_router_impl.h"
+
 #include <math.h>
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
-#include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/input/mock_input_ack_handler.h"
 #include "content/browser/renderer_host/input/mock_input_router_client.h"
 #include "content/common/content_constants_internal.h"
@@ -352,20 +354,20 @@ class InputRouterImplTest : public testing::Test {
   }
 
   InputRouterImpl::Config config_;
-  scoped_ptr<MockRenderProcessHost> process_;
-  scoped_ptr<MockInputRouterClient> client_;
-  scoped_ptr<MockInputAckHandler> ack_handler_;
-  scoped_ptr<InputRouterImpl> input_router_;
+  std::unique_ptr<MockRenderProcessHost> process_;
+  std::unique_ptr<MockInputRouterClient> client_;
+  std::unique_ptr<MockInputAckHandler> ack_handler_;
+  std::unique_ptr<InputRouterImpl> input_router_;
 
  private:
   base::MessageLoopForUI message_loop_;
   SyntheticWebTouchEvent touch_event_;
 
-  scoped_ptr<TestBrowserContext> browser_context_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
 };
 
 TEST_F(InputRouterImplTest, CoalescesRangeSelection) {
-  input_router_->SendInput(scoped_ptr<IPC::Message>(
+  input_router_->SendInput(std::unique_ptr<IPC::Message>(
       new InputMsg_SelectRange(0, gfx::Point(1, 2), gfx::Point(3, 4))));
   ExpectIPCMessageWithArg2<InputMsg_SelectRange>(
       process_->sink().GetMessageAt(0),
@@ -374,17 +376,17 @@ TEST_F(InputRouterImplTest, CoalescesRangeSelection) {
   EXPECT_EQ(1u, GetSentMessageCountAndResetSink());
 
   // Send two more messages without acking.
-  input_router_->SendInput(scoped_ptr<IPC::Message>(
+  input_router_->SendInput(std::unique_ptr<IPC::Message>(
       new InputMsg_SelectRange(0, gfx::Point(5, 6), gfx::Point(7, 8))));
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
 
-  input_router_->SendInput(scoped_ptr<IPC::Message>(
+  input_router_->SendInput(std::unique_ptr<IPC::Message>(
       new InputMsg_SelectRange(0, gfx::Point(9, 10), gfx::Point(11, 12))));
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
 
   // Now ack the first message.
   {
-    scoped_ptr<IPC::Message> response(new InputHostMsg_SelectRange_ACK(0));
+    std::unique_ptr<IPC::Message> response(new InputHostMsg_SelectRange_ACK(0));
     input_router_->OnMessageReceived(*response);
   }
 
@@ -397,14 +399,14 @@ TEST_F(InputRouterImplTest, CoalescesRangeSelection) {
 
   // Acking the coalesced msg should not send any more msg.
   {
-    scoped_ptr<IPC::Message> response(new InputHostMsg_SelectRange_ACK(0));
+    std::unique_ptr<IPC::Message> response(new InputHostMsg_SelectRange_ACK(0));
     input_router_->OnMessageReceived(*response);
   }
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
 }
 
 TEST_F(InputRouterImplTest, CoalescesMoveRangeSelectionExtent) {
-  input_router_->SendInput(scoped_ptr<IPC::Message>(
+  input_router_->SendInput(std::unique_ptr<IPC::Message>(
       new InputMsg_MoveRangeSelectionExtent(0, gfx::Point(1, 2))));
   ExpectIPCMessageWithArg1<InputMsg_MoveRangeSelectionExtent>(
       process_->sink().GetMessageAt(0),
@@ -412,17 +414,17 @@ TEST_F(InputRouterImplTest, CoalescesMoveRangeSelectionExtent) {
   EXPECT_EQ(1u, GetSentMessageCountAndResetSink());
 
   // Send two more messages without acking.
-  input_router_->SendInput(scoped_ptr<IPC::Message>(
+  input_router_->SendInput(std::unique_ptr<IPC::Message>(
       new InputMsg_MoveRangeSelectionExtent(0, gfx::Point(3, 4))));
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
 
-  input_router_->SendInput(scoped_ptr<IPC::Message>(
+  input_router_->SendInput(std::unique_ptr<IPC::Message>(
       new InputMsg_MoveRangeSelectionExtent(0, gfx::Point(5, 6))));
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
 
   // Now ack the first message.
   {
-    scoped_ptr<IPC::Message> response(
+    std::unique_ptr<IPC::Message> response(
         new InputHostMsg_MoveRangeSelectionExtent_ACK(0));
     input_router_->OnMessageReceived(*response);
   }
@@ -435,7 +437,7 @@ TEST_F(InputRouterImplTest, CoalescesMoveRangeSelectionExtent) {
 
   // Acking the coalesced msg should not send any more msg.
   {
-    scoped_ptr<IPC::Message> response(
+    std::unique_ptr<IPC::Message> response(
         new InputHostMsg_MoveRangeSelectionExtent_ACK(0));
     input_router_->OnMessageReceived(*response);
   }
@@ -444,7 +446,7 @@ TEST_F(InputRouterImplTest, CoalescesMoveRangeSelectionExtent) {
 
 TEST_F(InputRouterImplTest, InterleaveSelectRangeAndMoveRangeSelectionExtent) {
   // Send first message: SelectRange.
-  input_router_->SendInput(scoped_ptr<IPC::Message>(
+  input_router_->SendInput(std::unique_ptr<IPC::Message>(
       new InputMsg_SelectRange(0, gfx::Point(1, 2), gfx::Point(3, 4))));
   ExpectIPCMessageWithArg2<InputMsg_SelectRange>(
       process_->sink().GetMessageAt(0),
@@ -453,12 +455,12 @@ TEST_F(InputRouterImplTest, InterleaveSelectRangeAndMoveRangeSelectionExtent) {
   EXPECT_EQ(1u, GetSentMessageCountAndResetSink());
 
   // Send second message: MoveRangeSelectionExtent.
-  input_router_->SendInput(scoped_ptr<IPC::Message>(
+  input_router_->SendInput(std::unique_ptr<IPC::Message>(
       new InputMsg_MoveRangeSelectionExtent(0, gfx::Point(5, 6))));
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
 
   // Send third message: SelectRange.
-  input_router_->SendInput(scoped_ptr<IPC::Message>(
+  input_router_->SendInput(std::unique_ptr<IPC::Message>(
       new InputMsg_SelectRange(0, gfx::Point(7, 8), gfx::Point(9, 10))));
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
 
@@ -467,8 +469,7 @@ TEST_F(InputRouterImplTest, InterleaveSelectRangeAndMoveRangeSelectionExtent) {
 
   // Ack the first message.
   {
-    scoped_ptr<IPC::Message> response(
-        new InputHostMsg_SelectRange_ACK(0));
+    std::unique_ptr<IPC::Message> response(new InputHostMsg_SelectRange_ACK(0));
     input_router_->OnMessageReceived(*response);
   }
 
@@ -479,7 +480,7 @@ TEST_F(InputRouterImplTest, InterleaveSelectRangeAndMoveRangeSelectionExtent) {
 
   // Ack the second message.
   {
-    scoped_ptr<IPC::Message> response(
+    std::unique_ptr<IPC::Message> response(
         new InputHostMsg_MoveRangeSelectionExtent_ACK(0));
     input_router_->OnMessageReceived(*response);
   }
@@ -492,8 +493,7 @@ TEST_F(InputRouterImplTest, InterleaveSelectRangeAndMoveRangeSelectionExtent) {
 
   // Ack the third message.
   {
-    scoped_ptr<IPC::Message> response(
-        new InputHostMsg_SelectRange_ACK(0));
+    std::unique_ptr<IPC::Message> response(new InputHostMsg_SelectRange_ACK(0));
     input_router_->OnMessageReceived(*response);
   }
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
@@ -511,7 +511,7 @@ TEST_F(InputRouterImplTest,
   //  > SelectRange
   //  > MoveRangeSelectionExtent
 
-  input_router_->SendInput(scoped_ptr<IPC::Message>(
+  input_router_->SendInput(std::unique_ptr<IPC::Message>(
       new InputMsg_SelectRange(0, gfx::Point(1, 2), gfx::Point(3, 4))));
   ExpectIPCMessageWithArg2<InputMsg_SelectRange>(
       process_->sink().GetMessageAt(0),
@@ -519,34 +519,33 @@ TEST_F(InputRouterImplTest,
       gfx::Point(3, 4));
   EXPECT_EQ(1u, GetSentMessageCountAndResetSink());
 
-  input_router_->SendInput(scoped_ptr<IPC::Message>(
+  input_router_->SendInput(std::unique_ptr<IPC::Message>(
       new InputMsg_MoveRangeSelectionExtent(0, gfx::Point(5, 6))));
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
 
-  input_router_->SendInput(scoped_ptr<IPC::Message>(
+  input_router_->SendInput(std::unique_ptr<IPC::Message>(
       new InputMsg_MoveRangeSelectionExtent(0, gfx::Point(7, 8))));
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
 
-  input_router_->SendInput(scoped_ptr<IPC::Message>(
+  input_router_->SendInput(std::unique_ptr<IPC::Message>(
       new InputMsg_MoveRangeSelectionExtent(0, gfx::Point(9, 10))));
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
 
-  input_router_->SendInput(scoped_ptr<IPC::Message>(
+  input_router_->SendInput(std::unique_ptr<IPC::Message>(
       new InputMsg_SelectRange(0, gfx::Point(11, 12), gfx::Point(13, 14))));
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
 
-  input_router_->SendInput(scoped_ptr<IPC::Message>(
+  input_router_->SendInput(std::unique_ptr<IPC::Message>(
       new InputMsg_SelectRange(0, gfx::Point(15, 16), gfx::Point(17, 18))));
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
 
-  input_router_->SendInput(scoped_ptr<IPC::Message>(
+  input_router_->SendInput(std::unique_ptr<IPC::Message>(
       new InputMsg_MoveRangeSelectionExtent(0, gfx::Point(19, 20))));
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
 
   // Ack the first message.
   {
-    scoped_ptr<IPC::Message> response(
-        new InputHostMsg_SelectRange_ACK(0));
+    std::unique_ptr<IPC::Message> response(new InputHostMsg_SelectRange_ACK(0));
     input_router_->OnMessageReceived(*response);
   }
 
@@ -559,7 +558,7 @@ TEST_F(InputRouterImplTest,
 
   // Ack the second message.
   {
-    scoped_ptr<IPC::Message> response(
+    std::unique_ptr<IPC::Message> response(
         new InputHostMsg_MoveRangeSelectionExtent_ACK(0));
     input_router_->OnMessageReceived(*response);
   }
@@ -573,8 +572,7 @@ TEST_F(InputRouterImplTest,
 
   // Ack the third message.
   {
-    scoped_ptr<IPC::Message> response(
-        new InputHostMsg_SelectRange_ACK(0));
+    std::unique_ptr<IPC::Message> response(new InputHostMsg_SelectRange_ACK(0));
     input_router_->OnMessageReceived(*response);
   }
 
@@ -586,7 +584,7 @@ TEST_F(InputRouterImplTest,
 
   // Ack the fourth message.
   {
-    scoped_ptr<IPC::Message> response(
+    std::unique_ptr<IPC::Message> response(
         new InputHostMsg_MoveRangeSelectionExtent_ACK(0));
     input_router_->OnMessageReceived(*response);
   }
@@ -594,24 +592,24 @@ TEST_F(InputRouterImplTest,
 }
 
 TEST_F(InputRouterImplTest, CoalescesCaretMove) {
-  input_router_->SendInput(
-      scoped_ptr<IPC::Message>(new InputMsg_MoveCaret(0, gfx::Point(1, 2))));
+  input_router_->SendInput(std::unique_ptr<IPC::Message>(
+      new InputMsg_MoveCaret(0, gfx::Point(1, 2))));
   ExpectIPCMessageWithArg1<InputMsg_MoveCaret>(
       process_->sink().GetMessageAt(0), gfx::Point(1, 2));
   EXPECT_EQ(1u, GetSentMessageCountAndResetSink());
 
   // Send two more messages without acking.
-  input_router_->SendInput(
-      scoped_ptr<IPC::Message>(new InputMsg_MoveCaret(0, gfx::Point(5, 6))));
+  input_router_->SendInput(std::unique_ptr<IPC::Message>(
+      new InputMsg_MoveCaret(0, gfx::Point(5, 6))));
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
 
-  input_router_->SendInput(
-      scoped_ptr<IPC::Message>(new InputMsg_MoveCaret(0, gfx::Point(9, 10))));
+  input_router_->SendInput(std::unique_ptr<IPC::Message>(
+      new InputMsg_MoveCaret(0, gfx::Point(9, 10))));
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
 
   // Now ack the first message.
   {
-    scoped_ptr<IPC::Message> response(new InputHostMsg_MoveCaret_ACK(0));
+    std::unique_ptr<IPC::Message> response(new InputHostMsg_MoveCaret_ACK(0));
     input_router_->OnMessageReceived(*response);
   }
 
@@ -622,7 +620,7 @@ TEST_F(InputRouterImplTest, CoalescesCaretMove) {
 
   // Acking the coalesced msg should not send any more msg.
   {
-    scoped_ptr<IPC::Message> response(new InputHostMsg_MoveCaret_ACK(0));
+    std::unique_ptr<IPC::Message> response(new InputHostMsg_MoveCaret_ACK(0));
     input_router_->OnMessageReceived(*response);
   }
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());

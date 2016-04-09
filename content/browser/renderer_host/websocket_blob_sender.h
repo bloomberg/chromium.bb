@@ -7,13 +7,14 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <iosfwd>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "net/base/completion_callback.h"
 #include "net/websockets/websocket_event_interface.h"
@@ -65,7 +66,7 @@ class CONTENT_EXPORT WebSocketBlobSender final {
   };
 
   // |channel| will be destroyed when this object is.
-  explicit WebSocketBlobSender(scoped_ptr<Channel> channel);
+  explicit WebSocketBlobSender(std::unique_ptr<Channel> channel);
   ~WebSocketBlobSender();
 
   // Checks that the blob identified by |uuid| exists, has the size
@@ -128,8 +129,8 @@ class CONTENT_EXPORT WebSocketBlobSender final {
   uint64_t bytes_left_ = 0;
   net::CompletionCallback callback_;
   scoped_refptr<net::IOBuffer> buffer_;
-  scoped_ptr<storage::BlobReader> reader_;
-  const scoped_ptr<Channel> channel_;
+  std::unique_ptr<storage::BlobReader> reader_;
+  const std::unique_ptr<Channel> channel_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketBlobSender);
 };

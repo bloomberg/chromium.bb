@@ -403,9 +403,9 @@ void PepperUDPSocketMessageFilter::DoBind(
     return;
   }
 
-  scoped_ptr<net::UDPSocket> socket(new net::UDPSocket(
-      net::DatagramSocket::DEFAULT_BIND, net::RandIntCallback(),
-      NULL, net::NetLog::Source()));
+  std::unique_ptr<net::UDPSocket> socket(
+      new net::UDPSocket(net::DatagramSocket::DEFAULT_BIND,
+                         net::RandIntCallback(), NULL, net::NetLog::Source()));
 
   std::vector<uint8_t> address;
   uint16_t port;
@@ -511,7 +511,7 @@ void PepperUDPSocketMessageFilter::DoBind(
 }
 
 void PepperUDPSocketMessageFilter::OnBindComplete(
-    scoped_ptr<net::UDPSocket> socket,
+    std::unique_ptr<net::UDPSocket> socket,
     const ppapi::host::ReplyMessageContext& context,
     const PP_NetAddress_Private& net_address) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -535,7 +535,7 @@ void PepperUDPSocketMessageFilter::OpenFirewallHole(
 
 void PepperUDPSocketMessageFilter::OnFirewallHoleOpened(
     base::Closure bind_complete,
-    scoped_ptr<chromeos::FirewallHole> hole) {
+    std::unique_ptr<chromeos::FirewallHole> hole) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   LOG_IF(WARNING, !hole.get()) << "Firewall hole could not be opened.";
