@@ -416,14 +416,8 @@ void Surface::CommitSurfaceHierarchy() {
   }
 }
 
-gfx::Rect Surface::GetVisibleBounds() const {
-  // Simple clients expect the visible bounds "geometry" of a surface to match
-  // the input region bounds. To accommodate that we return the intersection
-  // of the layer bounds and the input region bounds.
-  SkIRect visible_bounds = input_region_.getBounds();
-  if (!visible_bounds.intersect(gfx::RectToSkIRect(gfx::Rect(layer()->size()))))
-    return gfx::Rect();
-  return gfx::SkIRectToRect(visible_bounds);
+gfx::Rect Surface::GetInputBounds() const {
+  return gfx::SkIRectToRect(input_region_.getBounds());
 }
 
 bool Surface::IsSynchronized() const {

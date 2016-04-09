@@ -473,7 +473,7 @@ gfx::Size ShellSurface::GetPreferredSize() const {
   if (!geometry_.IsEmpty())
     return geometry_.size();
 
-  return surface_ ? surface_->GetVisibleBounds().size() : gfx::Size();
+  return surface_ ? surface_->layer()->size() : gfx::Size();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -630,13 +630,11 @@ void ShellSurface::CreateShellSurfaceWidget() {
   params.parent = ash::Shell::GetContainer(
       ash::Shell::GetPrimaryRootWindow(), ash::kShellWindowId_DefaultContainer);
   if (!initial_bounds_.IsEmpty()) {
-    gfx::Point position(initial_bounds_.origin());
+    params.bounds = initial_bounds_;
     if (parent_) {
-      aura::Window::ConvertPointToTarget(GetMainSurface(parent_), params.parent,
-                                         &position);
+      aura::Window::ConvertRectToTarget(GetMainSurface(parent_), params.parent,
+                                        &params.bounds);
     }
-    params.bounds = gfx::Rect(position + GetVisibleBounds().OffsetFromOrigin(),
-                              initial_bounds_.size());
   }
   params.activatable = activatable_ ? views::Widget::InitParams::ACTIVATABLE_YES
                                     : views::Widget::InitParams::ACTIVATABLE_NO;
@@ -810,7 +808,7 @@ bool ShellSurface::IsResizing() const {
 
 gfx::Rect ShellSurface::GetVisibleBounds() const {
   // Use |geometry_| if set, otherwise use the visual bounds of the surface.
-  return geometry_.IsEmpty() ? surface_->GetVisibleBounds() : geometry_;
+  return geometry_.IsEmpty() ? gfx::Rect(surface_->layer()->size()) : geometry_;
 }
 
 gfx::Point ShellSurface::GetSurfaceOrigin() const {
