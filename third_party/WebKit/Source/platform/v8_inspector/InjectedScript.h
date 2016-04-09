@@ -109,9 +109,6 @@ private:
     InjectedScript(InspectedContext*, v8::Local<v8::Object>, PassOwnPtr<InjectedScriptNative>);
 
     v8::Local<v8::Value> v8Value() const;
-    v8::Local<v8::Value> callFunctionWithEvalEnabled(V8FunctionCall&, bool& hadException) const;
-    PassOwnPtr<protocol::Value> makeCall(V8FunctionCall&);
-    PassOwnPtr<protocol::Value> makeCallWithExceptionDetails(V8FunctionCall&, Maybe<protocol::Runtime::ExceptionDetails>*);
     v8::MaybeLocal<v8::Value> wrapValue(ErrorString*, v8::Local<v8::Value>, const String16& groupName, bool forceValueType, bool generatePreview) const;
     v8::MaybeLocal<v8::Object> callFunctionReturnObject(ErrorString*, V8FunctionCall&) const;
 

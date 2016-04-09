@@ -82,12 +82,6 @@ v8::Local<v8::Value> V8FunctionCall::call(bool& hadException, bool reportExcepti
     return result;
 }
 
-v8::Local<v8::Value> V8FunctionCall::call()
-{
-    bool hadException = false;
-    return call(hadException);
-}
-
 v8::Local<v8::Value> V8FunctionCall::callWithoutExceptionHandling()
 {
     v8::Local<v8::Object> thisObject = v8::Local<v8::Object>::Cast(m_value);

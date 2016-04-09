@@ -135,14 +135,22 @@ void InjectedScript::getProperties(ErrorString* errorString, v8::Local<v8::Objec
     function.appendArgument(accessorPropertiesOnly);
     function.appendArgument(generatePreview);
 
-    OwnPtr<protocol::Value> result = makeCallWithExceptionDetails(function, exceptionDetails);
-    if (exceptionDetails->isJust()) {
+    v8::TryCatch tryCatch(isolate());
+    v8::Local<v8::Value> resultValue = function.callWithoutExceptionHandling();
+    if (tryCatch.HasCaught()) {
+        *exceptionDetails = createExceptionDetails(tryCatch.Message());
         // FIXME: make properties optional
         *properties = Array<PropertyDescriptor>::create();
         return;
     }
+
+    OwnPtr<protocol::Value> protocolValue = toProtocolValue(function.context(), resultValue);
+    if (hasInternalError(errorString, !protocolValue))
+        return;
     protocol::ErrorSupport errors(errorString);
-    *properties = Array<PropertyDescriptor>::parse(result.get(), &errors);
+    OwnPtr<Array<PropertyDescriptor>> result = Array<PropertyDescriptor>::parse(protocolValue.get(), &errors);
+    if (!hasInternalError(errorString, errors.hasErrors()))
+        *properties = result.release();
 }
 
 void InjectedScript::releaseObject(const String16& objectId)
@@ -197,7 +205,7 @@ bool InjectedScript::wrapPropertyInArray(ErrorString* errorString, v8::Local<v8:
     function.appendArgument(forceValueType);
     function.appendArgument(generatePreview);
     bool hadException = false;
-    callFunctionWithEvalEnabled(function, hadException);
+    function.call(hadException);
     return !hasInternalError(errorString, hadException);
 }
 
@@ -210,7 +218,7 @@ bool InjectedScript::wrapObjectsInArray(ErrorString* errorString, v8::Local<v8::
     function.appendArgument(forceValueType);
     function.appendArgument(generatePreview);
     bool hadException = false;
-    callFunctionWithEvalEnabled(function, hadException);
+    function.call(hadException);
     return !hasInternalError(errorString, hadException);
 }
 
@@ -223,7 +231,7 @@ v8::MaybeLocal<v8::Value> InjectedScript::wrapValue(ErrorString* errorString, v8
     function.appendArgument(forceValueType);
     function.appendArgument(generatePreview);
     bool hadException = false;
-    v8::Local<v8::Value> r = callFunctionWithEvalEnabled(function, hadException);
+    v8::Local<v8::Value> r = function.call(hadException);
     if (hasInternalError(errorString, hadException || r.IsEmpty()))
         return v8::MaybeLocal<v8::Value>();
     return r;
@@ -240,7 +248,7 @@ PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapTable(v8::Local<
     else
         function.appendArgument(columns);
     bool hadException = false;
-    v8::Local<v8::Value>  r = callFunctionWithEvalEnabled(function, hadException);
+    v8::Local<v8::Value>  r = function.call(hadException);
     if (hadException)
         return nullptr;
     protocol::ErrorSupport errors;
@@ -267,7 +275,7 @@ void InjectedScript::releaseObjectGroup(const String16& objectGroup)
     if (objectGroup == "console") {
         V8FunctionCall function(m_context->debugger(), m_context->context(), v8Value(), "clearLastEvaluationResult");
         bool hadException = false;
-        callFunctionWithEvalEnabled(function, hadException);
+        function.call(hadException);
         ASSERT(!hadException);
     }
 }
@@ -277,7 +285,9 @@ void InjectedScript::setCustomObjectFormatterEnabled(bool enabled)
     v8::HandleScope handles(isolate());
     V8FunctionCall function(m_context->debugger(), m_context->context(), v8Value(), "setCustomObjectFormatterEnabled");
     function.appendArgument(enabled);
-    makeCall(function);
+    bool hadException = false;
+    function.call(hadException);
+    ASSERT(!hadException);
 }
 
 bool InjectedScript::canAccessInspectedWindow() const
@@ -291,61 +301,6 @@ bool InjectedScript::canAccessInspectedWindow() const
 v8::Local<v8::Value> InjectedScript::v8Value() const
 {
     return m_value.Get(isolate());
-}
-
-v8::Local<v8::Value> InjectedScript::callFunctionWithEvalEnabled(V8FunctionCall& function, bool& hadException) const
-{
-    v8::Local<v8::Context> localContext = m_context->context();
-    v8::Context::Scope scope(localContext);
-    bool evalIsDisabled = !localContext->IsCodeGenerationFromStringsAllowed();
-    // Temporarily enable allow evals for inspector.
-    if (evalIsDisabled)
-        localContext->AllowCodeGenerationFromStrings(true);
-    v8::Local<v8::Value> resultValue = function.call(hadException);
-    if (evalIsDisabled)
-        localContext->AllowCodeGenerationFromStrings(false);
-    return resultValue;
-}
-
-PassOwnPtr<protocol::Value> InjectedScript::makeCall(V8FunctionCall& function)
-{
-    OwnPtr<protocol::Value> result;
-    if (!canAccessInspectedWindow()) {
-        result = protocol::StringValue::create("Can not access given context.");
-        return nullptr;
-    }
-
-    bool hadException = false;
-    v8::Local<v8::Value> resultValue = callFunctionWithEvalEnabled(function, hadException);
-
-    ASSERT(!hadException);
-    if (!hadException) {
-        result = toProtocolValue(function.context(), resultValue);
-        if (!result)
-            result = protocol::StringValue::create("Object has too long reference chain");
-    } else {
-        result = protocol::StringValue::create("Exception while making a call.");
-    }
-    return result.release();
-}
-
-PassOwnPtr<protocol::Value> InjectedScript::makeCallWithExceptionDetails(V8FunctionCall& function, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
-{
-    OwnPtr<protocol::Value> result;
-    v8::HandleScope handles(isolate());
-    v8::Context::Scope scope(m_context->context());
-    v8::TryCatch tryCatch(isolate());
-    v8::Local<v8::Value> resultValue = function.callWithoutExceptionHandling();
-    if (tryCatch.HasCaught()) {
-        v8::Local<v8::Message> message = tryCatch.Message();
-        String16 text = !message.IsEmpty() ? toProtocolStringWithTypeCheck(message->Get()) : "Internal error";
-        *exceptionDetails = protocol::Runtime::ExceptionDetails::create().setText(text).build();
-    } else {
-        result = toProtocolValue(function.context(), resultValue);
-        if (!result)
-            result = protocol::StringValue::create("Object has too long reference chain");
-    }
-    return result.release();
 }
 
 bool InjectedScript::setLastEvaluationResult(ErrorString* errorString, v8::Local<v8::Value> value)
