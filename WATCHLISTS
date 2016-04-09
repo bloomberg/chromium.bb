@@ -866,6 +866,13 @@
     'version_assembly': {
       'filepath': 'chrome/app/version_assembly',
     },
+    'video_capture': {
+      'filepath': 'chrome/browser/media/.*(capture|media|webrtc)'\
+                  '|content/browser/renderer_host/media/.*(capture|media)'\
+                  '|content/renderer/media/.*(capture|media|webrtc)'\
+                  '|media/capture/'\
+                  '|media/muxers/',
+    },
     'views': {
       # Applies to all files and subdirs within this directory.
       'filepath': '^ui/views/',
@@ -878,6 +885,10 @@
                   'chrome/test/data/chromeos/virtual_keyboard/'\
                   'chrome/common/extensions/api/virtual_keyboard',
     },
+    'webrtc_browser_tests': {
+      'filepath': 'chrome/browser/media/.*webrtc.*browsertest|'\
+                  'content/browser/media/.*webrtc.*browsertest',
+    },
     'webrtc_media': {
       'filepath': 'chrome/browser/media/|'\
                   'content/browser/renderer_host/media/|'\
@@ -886,10 +897,6 @@
                   'media/base/android/|'\
                   'media/capture/|'\
                   'video.*_accelerat',
-    },
-    'webrtc_browser_tests': {
-      'filepath': 'chrome/browser/media/.*webrtc.*browsertest|'\
-                  'content/browser/media/.*webrtc.*browsertest',
     },
     'website_settings': {
       'filepath': 'chrome/browser/content_settings/'\
@@ -1157,6 +1164,18 @@
       'filepath': 'third_party/WebKit/Source/modules/quota/' \
                   '|third_party/WebKit/Source/web/.*Quota' \
                   '|third_party/WebKit/public/.*Quota'
+    },
+    'blink_mediacapturefromelement': {
+      'filepath': 'third_party/WebKit/Source/modules/mediacapture/' \
+                  '|third_party/WebKit/Source/platform/exported/WebCanvasCapture' \
+                  '|third_party/WebKit/LayoutTests/fast/mediacapturefromelement/' \
+                  '|third_party/WebKit/public/platform/WebCanvasCapture'
+    },
+    'blink_mediarecorder': {
+      'filepath': 'third_party/WebKit/Source/modules/mediarecorder/' \
+                  '|third_party/WebKit/Source/platform/exported/WebMediaRecorder' \
+                  '|third_party/WebKit/LayoutTests/fast/mediarecorder/' \
+                  '|third_party/WebKit/public/platform/WebMediaRecorder'
     },
     'blink_mediastream': {
       'filepath': 'third_party/WebKit/Source/modules/mediastream/' \
@@ -1555,13 +1574,13 @@
                  'glider+watch@chromium.org'],
     'version_assembly': ['caitkp+watch@chromium.org',
                          'gab+watch@chromium.org'],
+    'video_capture': ['mcasas+watch+vc@chromium.org'],
     'views': ['tfarina@chromium.org'],
     'virtual_keyboard': ['dfaden+virtualkb@google.com',
                          'groby+virtualkb@chromium.org'],
-    'webrtc_media': ['mcasas+watch@chromium.org',
-                     'posciak+watch@chromium.org'],
     'webrtc_browser_tests': ['phoglund+watch@chromium.org',
                              'tnakamura+watch@chromium.org'],
+    'webrtc_media': ['posciak+watch@chromium.org'],
     'website_settings': ['markusheintz@chromium.org',
                          'raymes+watch@chromium.org',
                          'msramek+watch@chromium.org'],
@@ -1705,7 +1724,12 @@
     'blink_viewport_interaction': [ 'kenneth.christiansen@gmail.com' ],
     'blink_webcomponents': [ 'webcomponents-bugzilla@chromium.org',
                              'dglazkov+blink@chromium.org' ],
-    'blink_mediastream': [ 'tommyw+watchlist@chromium.org' ],
+    'blink_mediacapturefromelement': [ 'emircan+watch+capturefromdom@chromium.org',
+                                       'mcasas+watch+capturefromdom@chromium.org' ],
+    'blink_mediarecorder': [ 'emircan+watch+mediarecorder@chromium.org',
+                             'mcasas+watch+mediarecorder@chromium.org' ],
+    'blink_mediastream': [ 'tommyw+watchlist@chromium.org',
+                           'mcasas+watch+mediastream@chromium.org' ],
     'blink_navigator_content_utils': [ 'gyuyoung.kim@chromium.org' ],
     'blink_notifications': [ 'peter@chromium.org' ],
     'blink_geolocation': [ 'mvanouwerkerk+watch@chromium.org',
