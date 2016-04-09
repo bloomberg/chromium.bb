@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include <memory>
-#include <ostream>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -33,7 +32,7 @@ enum class CredentialType {
   CREDENTIAL_TYPE_LAST = CREDENTIAL_TYPE_FEDERATED
 };
 
-std::ostream& operator<<(std::ostream& os, CredentialType value);
+std::ostream& operator<<(std::ostream& out, CredentialType type);
 
 struct CredentialInfo {
   CredentialInfo();

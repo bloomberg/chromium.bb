@@ -117,7 +117,7 @@ void CredentialManager::CredentialsRequested(
   // Invoked when the page invokes navigator.credentials.request(), this
   // function will attempt to retrieve a Credential from the PasswordStore that
   // meets the specified parameters and, if successful, send it back to the page
-  // via SendCredentialByID.
+  // via SendCredential.
   DCHECK_GE(request_id, 0);
   password_manager::PasswordStore* store = GetPasswordStore();
 
@@ -139,7 +139,7 @@ void CredentialManager::CredentialsRequested(
   // available, send back an empty credential.
   if (zero_click_only && !IsZeroClickAllowed()) {
     base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&CredentialManager::SendCredentialByID,
+        FROM_HERE, base::Bind(&CredentialManager::SendCredential,
                               weak_factory_.GetWeakPtr(), request_id,
                               password_manager::CredentialInfo()));
     return;
@@ -161,9 +161,8 @@ void CredentialManager::CredentialsRequested(
   std::vector<std::string> realms;
   pending_request_.reset(
       new password_manager::CredentialManagerPendingRequestTask(
-          this, base::Bind(&CredentialManager::SendCredentialByID,
-                           base::Unretained(this), request_id),
-          zero_click_only, page_url, true, federation_urls, realms));
+          this, request_id, zero_click_only, page_url, true, federation_urls,
+          realms));
   store->GetAutofillableLogins(pending_request_.get());
 }
 
@@ -270,12 +269,6 @@ GURL CredentialManager::GetOrigin() const {
 }
 
 void CredentialManager::SendCredential(
-    const password_manager::SendCredentialCallback& send_callback,
-    const password_manager::CredentialInfo& credential) {
-  send_callback.Run(credential);
-}
-
-void CredentialManager::SendCredentialByID(
     int request_id,
     const password_manager::CredentialInfo& credential) {
   // Invoked when the asynchronous interaction with the PasswordStore completes,
@@ -291,9 +284,8 @@ void CredentialManager::SendCredentialByID(
                 }];
 }
 
-void CredentialManager::SendPasswordForm(
-    const password_manager::SendCredentialCallback& send_callback,
-    const autofill::PasswordForm* form) {
+void CredentialManager::SendPasswordForm(int request_id,
+                                         const autofill::PasswordForm* form) {
   password_manager::CredentialInfo info;
   if (form) {
     password_manager::CredentialType type_to_return =
@@ -303,7 +295,7 @@ void CredentialManager::SendPasswordForm(
     info = password_manager::CredentialInfo(*form, type_to_return);
     // TODO(vasilii): update |skip_zero_click| in the store (crbug.com/594110).
   }
-  SendCredential(send_callback, info);
+  SendCredential(request_id, info);
 }
 
 password_manager::PasswordManagerClient* CredentialManager::client() const {

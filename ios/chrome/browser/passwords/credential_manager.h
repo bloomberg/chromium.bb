@@ -58,11 +58,9 @@ class CredentialManager
   bool IsZeroClickAllowed() const override;
   GURL GetOrigin() const override;
   void SendCredential(
-      const password_manager::SendCredentialCallback& send_callback,
+      int id,
       const password_manager::CredentialInfo& credential) override;
-  void SendPasswordForm(
-      const password_manager::SendCredentialCallback& send_callback,
-      const autofill::PasswordForm* form) override;
+  void SendPasswordForm(int id, const autofill::PasswordForm* form) override;
   password_manager::PasswordManagerClient* client() const override;
   autofill::PasswordForm GetSynthesizedFormForOrigin() const override;
 
@@ -85,9 +83,6 @@ class CredentialManager
     // The page origin is untrusted.
     ERROR_TYPE_SECURITY_ERROR_UNTRUSTED_ORIGIN,
   };
-
-  void SendCredentialByID(int request_id,
-                          const password_manager::CredentialInfo& credential);
 
   // Sends a message via |js_manager_| to resolve the JavaScript Promise
   // associated with |request_id|. Invoked after a page-initiated credential

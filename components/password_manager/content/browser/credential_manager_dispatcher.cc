@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/content/browser/credential_manager_impl.h"
+#include "components/password_manager/content/browser/credential_manager_dispatcher.h"
 
 #include <utility>
 
@@ -12,65 +12,68 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
-#include "components/password_manager/content/public/cpp/type_converters.h"
+#include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "mojo/common/url_type_converters.h"
+#include "ipc/ipc_message_macros.h"
 
 namespace password_manager {
 
-namespace {
+// CredentialManagerDispatcher -------------------------------------------------
 
-void RunMojoGetCallback(const mojom::CredentialManager::GetCallback& callback,
-                        const CredentialInfo& info) {
-  mojom::CredentialInfoPtr credential = mojom::CredentialInfo::From(info);
-  callback.Run(mojom::CredentialManagerError::SUCCESS, std::move(credential));
-}
-
-}  // namespace
-
-// CredentialManagerImpl -------------------------------------------------
-
-CredentialManagerImpl::CredentialManagerImpl(content::WebContents* web_contents,
-                                             PasswordManagerClient* client)
+CredentialManagerDispatcher::CredentialManagerDispatcher(
+    content::WebContents* web_contents,
+    PasswordManagerClient* client)
     : WebContentsObserver(web_contents), client_(client), weak_factory_(this) {
   DCHECK(web_contents);
   auto_signin_enabled_.Init(prefs::kCredentialsEnableAutosignin,
                             client_->GetPrefs());
 }
 
-CredentialManagerImpl::~CredentialManagerImpl() {}
-
-void CredentialManagerImpl::BindRequest(
-    mojom::CredentialManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+CredentialManagerDispatcher::~CredentialManagerDispatcher() {
 }
 
-void CredentialManagerImpl::Store(mojom::CredentialInfoPtr credential,
-                                  const StoreCallback& callback) {
-  CredentialInfo info = credential.To<CredentialInfo>();
-  DCHECK_NE(CredentialType::CREDENTIAL_TYPE_EMPTY, info.type);
+bool CredentialManagerDispatcher::OnMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(CredentialManagerDispatcher, message)
+    IPC_MESSAGE_HANDLER(CredentialManagerHostMsg_Store, OnStore);
+    IPC_MESSAGE_HANDLER(CredentialManagerHostMsg_RequireUserMediation,
+                        OnRequireUserMediation);
+    IPC_MESSAGE_HANDLER(CredentialManagerHostMsg_RequestCredential,
+                        OnRequestCredential);
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
 
-  // Send acknowledge response back.
-  callback.Run();
+void CredentialManagerDispatcher::OnStore(
+    int request_id,
+    const password_manager::CredentialInfo& credential) {
+  DCHECK(credential.type != CredentialType::CREDENTIAL_TYPE_EMPTY);
+  DCHECK(request_id);
+  web_contents()->GetRenderViewHost()->Send(
+      new CredentialManagerMsg_AcknowledgeStore(
+          web_contents()->GetRenderViewHost()->GetRoutingID(), request_id));
 
   if (!client_->IsSavingAndFillingEnabledForCurrentPage())
     return;
 
   std::unique_ptr<autofill::PasswordForm> form(
       CreatePasswordFormFromCredentialInfo(
-          info, web_contents()->GetLastCommittedURL().GetOrigin()));
+          credential, web_contents()->GetLastCommittedURL().GetOrigin()));
   form->skip_zero_click = !IsZeroClickAllowed();
 
   form_manager_.reset(new CredentialManagerPasswordFormManager(
       client_, GetDriver(), *form, this));
 }
 
-void CredentialManagerImpl::OnProvisionalSaveComplete() {
+void CredentialManagerDispatcher::OnProvisionalSaveComplete() {
   DCHECK(form_manager_);
   DCHECK(client_->IsSavingAndFillingEnabledForCurrentPage());
   const autofill::PasswordForm& form = form_manager_->pending_credentials();
@@ -102,27 +105,30 @@ void CredentialManagerImpl::OnProvisionalSaveComplete() {
       false);
 }
 
-void CredentialManagerImpl::RequireUserMediation(
-    const RequireUserMediationCallback& callback) {
+void CredentialManagerDispatcher::OnRequireUserMediation(int request_id) {
+  DCHECK(request_id);
+
   PasswordStore* store = GetPasswordStore();
   if (!store || !IsUpdatingCredentialAllowed()) {
-    callback.Run();
+    web_contents()->GetRenderViewHost()->Send(
+        new CredentialManagerMsg_AcknowledgeRequireUserMediation(
+            web_contents()->GetRenderViewHost()->GetRoutingID(), request_id));
     return;
   }
 
   if (store->affiliated_match_helper()) {
     store->affiliated_match_helper()->GetAffiliatedAndroidRealms(
         GetSynthesizedFormForOrigin(),
-        base::Bind(&CredentialManagerImpl::ScheduleRequireMediationTask,
-                   weak_factory_.GetWeakPtr(), callback));
+        base::Bind(&CredentialManagerDispatcher::ScheduleRequireMediationTask,
+                   weak_factory_.GetWeakPtr(), request_id));
   } else {
     std::vector<std::string> no_affiliated_realms;
-    ScheduleRequireMediationTask(callback, no_affiliated_realms);
+    ScheduleRequireMediationTask(request_id, no_affiliated_realms);
   }
 }
 
-void CredentialManagerImpl::ScheduleRequireMediationTask(
-    const RequireUserMediationCallback& callback,
+void CredentialManagerDispatcher::ScheduleRequireMediationTask(
+    int request_id,
     const std::vector<std::string>& android_realms) {
   DCHECK(GetPasswordStore());
   if (!pending_require_user_mediation_) {
@@ -132,8 +138,7 @@ void CredentialManagerImpl::ScheduleRequireMediationTask(
             android_realms));
 
     // This will result in a callback to
-    // CredentialManagerPendingRequireUserMediationTask::
-    // OnGetPasswordStoreResults().
+    // CredentialManagerPendingRequireUserMediationTask::OnGetPasswordStoreResults().
     GetPasswordStore()->GetAutofillableLogins(
         pending_require_user_mediation_.get());
   } else {
@@ -141,21 +146,25 @@ void CredentialManagerImpl::ScheduleRequireMediationTask(
         web_contents()->GetLastCommittedURL().GetOrigin());
   }
 
-  // Send acknowledge response back.
-  callback.Run();
+  web_contents()->GetRenderViewHost()->Send(
+      new CredentialManagerMsg_AcknowledgeRequireUserMediation(
+          web_contents()->GetRenderViewHost()->GetRoutingID(), request_id));
 }
 
-void CredentialManagerImpl::Get(bool zero_click_only,
-                                bool include_passwords,
-                                mojo::Array<mojo::String> federations,
-                                const GetCallback& callback) {
+void CredentialManagerDispatcher::OnRequestCredential(
+    int request_id,
+    bool zero_click_only,
+    bool include_passwords,
+    const std::vector<GURL>& federations) {
+  DCHECK(request_id);
   PasswordStore* store = GetPasswordStore();
   if (pending_request_ || !store) {
-    // Callback error.
-    callback.Run(pending_request_
-                     ? mojom::CredentialManagerError::PENDINGREQUEST
-                     : mojom::CredentialManagerError::PASSWORDSTOREUNAVAILABLE,
-                 nullptr);
+    web_contents()->GetRenderViewHost()->Send(
+        new CredentialManagerMsg_RejectCredentialRequest(
+            web_contents()->GetRenderViewHost()->GetRoutingID(), request_id,
+            pending_request_
+                ? blink::WebCredentialManagerPendingRequestError
+                : blink::WebCredentialManagerPasswordStoreUnavailableError));
     return;
   }
 
@@ -163,35 +172,35 @@ void CredentialManagerImpl::Get(bool zero_click_only,
   // the current page has TLS errors.
   if ((zero_click_only && !IsZeroClickAllowed()) ||
       client_->DidLastPageLoadEncounterSSLErrors()) {
-    // Callback with empty credential info.
-    callback.Run(mojom::CredentialManagerError::SUCCESS,
-                 mojom::CredentialInfo::New());
+    web_contents()->GetRenderViewHost()->Send(
+        new CredentialManagerMsg_SendCredential(
+            web_contents()->GetRenderViewHost()->GetRoutingID(), request_id,
+            CredentialInfo()));
     return;
   }
 
   if (store->affiliated_match_helper()) {
     store->affiliated_match_helper()->GetAffiliatedAndroidRealms(
         GetSynthesizedFormForOrigin(),
-        base::Bind(&CredentialManagerImpl::ScheduleRequestTask,
-                   weak_factory_.GetWeakPtr(), callback, zero_click_only,
-                   include_passwords, federations.To<std::vector<GURL>>()));
+        base::Bind(&CredentialManagerDispatcher::ScheduleRequestTask,
+                   weak_factory_.GetWeakPtr(), request_id, zero_click_only,
+                   include_passwords, federations));
   } else {
     std::vector<std::string> no_affiliated_realms;
-    ScheduleRequestTask(callback, zero_click_only, include_passwords,
-                        federations.To<std::vector<GURL>>(),
-                        no_affiliated_realms);
+    ScheduleRequestTask(request_id, zero_click_only, include_passwords,
+                        federations, no_affiliated_realms);
   }
 }
 
-void CredentialManagerImpl::ScheduleRequestTask(
-    const GetCallback& callback,
+void CredentialManagerDispatcher::ScheduleRequestTask(
+    int request_id,
     bool zero_click_only,
     bool include_passwords,
     const std::vector<GURL>& federations,
     const std::vector<std::string>& android_realms) {
   DCHECK(GetPasswordStore());
   pending_request_.reset(new CredentialManagerPendingRequestTask(
-      this, base::Bind(&RunMojoGetCallback, callback), zero_click_only,
+      this, request_id, zero_click_only,
       web_contents()->GetLastCommittedURL().GetOrigin(), include_passwords,
       federations, android_realms));
 
@@ -200,19 +209,19 @@ void CredentialManagerImpl::ScheduleRequestTask(
   GetPasswordStore()->GetAutofillableLogins(pending_request_.get());
 }
 
-PasswordStore* CredentialManagerImpl::GetPasswordStore() {
+PasswordStore* CredentialManagerDispatcher::GetPasswordStore() {
   return client_ ? client_->GetPasswordStore() : nullptr;
 }
 
-bool CredentialManagerImpl::IsZeroClickAllowed() const {
+bool CredentialManagerDispatcher::IsZeroClickAllowed() const {
   return *auto_signin_enabled_ && !client_->IsOffTheRecord();
 }
 
-GURL CredentialManagerImpl::GetOrigin() const {
+GURL CredentialManagerDispatcher::GetOrigin() const {
   return web_contents()->GetLastCommittedURL().GetOrigin();
 }
 
-base::WeakPtr<PasswordManagerDriver> CredentialManagerImpl::GetDriver() {
+base::WeakPtr<PasswordManagerDriver> CredentialManagerDispatcher::GetDriver() {
   ContentPasswordManagerDriverFactory* driver_factory =
       ContentPasswordManagerDriverFactory::FromWebContents(web_contents());
   DCHECK(driver_factory);
@@ -221,18 +230,20 @@ base::WeakPtr<PasswordManagerDriver> CredentialManagerImpl::GetDriver() {
   return driver->AsWeakPtr();
 }
 
-void CredentialManagerImpl::SendCredential(
-    const SendCredentialCallback& send_callback,
-    const CredentialInfo& info) {
+void CredentialManagerDispatcher::SendCredential(int request_id,
+                                                 const CredentialInfo& info) {
   DCHECK(pending_request_);
-  DCHECK(send_callback.Equals(pending_request_->send_callback()));
+  DCHECK_EQ(pending_request_->id(), request_id);
 
-  send_callback.Run(info);
+  web_contents()->GetRenderViewHost()->Send(
+      new CredentialManagerMsg_SendCredential(
+          web_contents()->GetRenderViewHost()->GetRoutingID(),
+          pending_request_->id(), info));
   pending_request_.reset();
 }
 
-void CredentialManagerImpl::SendPasswordForm(
-    const SendCredentialCallback& send_callback,
+void CredentialManagerDispatcher::SendPasswordForm(
+    int request_id,
     const autofill::PasswordForm* form) {
   CredentialInfo info;
   if (form) {
@@ -250,15 +261,15 @@ void CredentialManagerImpl::SendPasswordForm(
       }
     }
   }
-  SendCredential(send_callback, info);
+  SendCredential(request_id, info);
 }
 
-PasswordManagerClient* CredentialManagerImpl::client() const {
+PasswordManagerClient* CredentialManagerDispatcher::client() const {
   return client_;
 }
 
-autofill::PasswordForm CredentialManagerImpl::GetSynthesizedFormForOrigin()
-    const {
+autofill::PasswordForm
+CredentialManagerDispatcher::GetSynthesizedFormForOrigin() const {
   autofill::PasswordForm synthetic_form;
   synthetic_form.origin = web_contents()->GetLastCommittedURL().GetOrigin();
   synthetic_form.signon_realm = synthetic_form.origin.spec();
@@ -268,12 +279,12 @@ autofill::PasswordForm CredentialManagerImpl::GetSynthesizedFormForOrigin()
   return synthetic_form;
 }
 
-void CredentialManagerImpl::DoneRequiringUserMediation() {
+void CredentialManagerDispatcher::DoneRequiringUserMediation() {
   DCHECK(pending_require_user_mediation_);
   pending_require_user_mediation_.reset();
 }
 
-bool CredentialManagerImpl::IsUpdatingCredentialAllowed() const {
+bool CredentialManagerDispatcher::IsUpdatingCredentialAllowed() const {
   return !client_->DidLastPageLoadEncounterSSLErrors() &&
          !client_->IsOffTheRecord();
 }
