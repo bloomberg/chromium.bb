@@ -352,7 +352,7 @@ void LayoutObject::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
     // To avoid the problem altogether, detect early if we're inside a hidden SVG subtree
     // and stop creating layers at all for these cases - they're not used anyways.
     if (newChild->hasLayer() && !layerCreationAllowedForSubtree())
-        toLayoutBoxModelObject(newChild)->layer()->removeOnlyThisLayer();
+        toLayoutBoxModelObject(newChild)->layer()->removeOnlyThisLayerAfterStyleChange();
 }
 
 void LayoutObject::removeChild(LayoutObject* oldChild)

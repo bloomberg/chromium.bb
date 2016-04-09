@@ -231,8 +231,8 @@ public:
     void addChild(PaintLayer* newChild, PaintLayer* beforeChild = 0);
     PaintLayer* removeChild(PaintLayer*);
 
-    void removeOnlyThisLayer();
-    void insertOnlyThisLayer();
+    void removeOnlyThisLayerAfterStyleChange();
+    void insertOnlyThisLayerAfterStyleChange();
 
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle);
 
@@ -660,6 +660,7 @@ public:
 
     // Used to skip PaintPhaseDescendantOutlinesOnly for layers that have never had descendant outlines.
     // Once it's set we never clear it because it's not easy to track if all outlines have been removed.
+    // For more details, see core/paint/REAME.md#Empty paint phase optimization.
     bool needsPaintPhaseDescendantOutlines() const { return m_needsPaintPhaseDescendantOutlines; }
     void setNeedsPaintPhaseDescendantOutlines() { ASSERT(isSelfPaintingLayer()); m_needsPaintPhaseDescendantOutlines = true; }
 
@@ -760,6 +761,13 @@ private:
         if (!m_rareData)
             m_rareData = adoptPtr(new PaintLayerRareData);
         return *m_rareData;
+    }
+
+    void mergeNeedsPaintPhaseFlagsFrom(const PaintLayer& layer)
+    {
+        m_needsPaintPhaseDescendantOutlines |= layer.m_needsPaintPhaseDescendantOutlines;
+        m_needsPaintPhaseFloat |= layer.m_needsPaintPhaseFloat;
+        m_needsPaintPhaseDescendantBlockBackgrounds |= layer.m_needsPaintPhaseDescendantBlockBackgrounds;
     }
 
     unsigned m_layerType : 2; // PaintLayerType

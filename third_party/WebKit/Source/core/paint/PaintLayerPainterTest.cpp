@@ -364,7 +364,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground)
 TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerRemoval)
 {
     setBodyInnerHTML(
-        "<div id='layer' style='opacity: 0.5'>"
+        "<div id='layer' style='position: relative'>"
         "  <div style='height: 100px'>"
         "    <div style='height: 20px; outline: 1px solid red; background-color: green'>outline and background</div>"
         "    <div style='float: left'>float</div>"
@@ -383,13 +383,41 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerRemoval)
     EXPECT_FALSE(htmlLayer.needsPaintPhaseFloat());
     EXPECT_FALSE(htmlLayer.needsPaintPhaseDescendantBlockBackgrounds());
 
-    toHTMLElement(layerDiv.node())->setAttribute(HTMLNames::styleAttr, "opacity: 1");
+    toHTMLElement(layerDiv.node())->setAttribute(HTMLNames::styleAttr, "");
     document().view()->updateAllLifecyclePhases();
 
     EXPECT_FALSE(layerDiv.hasLayer());
     EXPECT_TRUE(htmlLayer.needsPaintPhaseDescendantOutlines());
     EXPECT_TRUE(htmlLayer.needsPaintPhaseFloat());
     EXPECT_TRUE(htmlLayer.needsPaintPhaseDescendantBlockBackgrounds());
+}
+
+TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerAddition)
+{
+    setBodyInnerHTML(
+        "<div id='will-be-layer'>"
+        "  <div style='height: 100px'>"
+        "    <div style='height: 20px; outline: 1px solid red; background-color: green'>outline and background</div>"
+        "    <div style='float: left'>float</div>"
+        "  </div>"
+        "</div>");
+
+    LayoutBlock& layerDiv = *toLayoutBlock(document().getElementById("will-be-layer")->layoutObject());
+    EXPECT_FALSE(layerDiv.hasLayer());
+
+    PaintLayer& htmlLayer = *toLayoutBlock(document().documentElement()->layoutObject())->layer();
+    EXPECT_TRUE(htmlLayer.needsPaintPhaseDescendantOutlines());
+    EXPECT_TRUE(htmlLayer.needsPaintPhaseFloat());
+    EXPECT_TRUE(htmlLayer.needsPaintPhaseDescendantBlockBackgrounds());
+
+    toHTMLElement(layerDiv.node())->setAttribute(HTMLNames::styleAttr, "position: relative");
+    document().view()->updateAllLifecyclePhases();
+    ASSERT_TRUE(layerDiv.hasLayer());
+    PaintLayer& layer = *layerDiv.layer();
+    ASSERT_TRUE(layer.isSelfPaintingLayer());
+    EXPECT_TRUE(layer.needsPaintPhaseDescendantOutlines());
+    EXPECT_TRUE(layer.needsPaintPhaseFloat());
+    EXPECT_TRUE(layer.needsPaintPhaseDescendantBlockBackgrounds());
 }
 
 } // namespace blink

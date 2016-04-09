@@ -217,7 +217,7 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
         PaintLayer* parentLayer = layer()->parent();
         setHasTransformRelatedProperty(false); // Either a transform wasn't specified or the object doesn't support transforms, so just null out the bit.
         setHasReflection(false);
-        layer()->removeOnlyThisLayer(); // calls destroyLayer() which clears m_layer
+        layer()->removeOnlyThisLayerAfterStyleChange(); // calls destroyLayer() which clears m_layer
         if (wasFloatingBeforeStyleChanged && isFloating())
             setChildNeedsLayout();
         if (hadTransform)
@@ -295,20 +295,10 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
 
 void LayoutBoxModelObject::createLayer(PaintLayerType type)
 {
-    // If the current paint invalidation container is not a stacking context and this object is
-    // stacked content, creating this layer may cause this object and its
-    // descendants to change paint invalidation container. Therefore we must eagerly invalidate
-    // them on the original paint invalidation container before creating the layer.
-    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && isRooted() && styleRef().isStacked()) {
-        const LayoutBoxModelObject& currentPaintInvalidationContainer = containerForPaintInvalidation();
-        if (!currentPaintInvalidationContainer.styleRef().isStackingContext())
-            invalidatePaintIncludingNonSelfPaintingLayerDescendants(currentPaintInvalidationContainer);
-    }
-
     ASSERT(!m_layer);
     m_layer = adoptPtr(new PaintLayer(this, type));
     setHasLayer(true);
-    m_layer->insertOnlyThisLayer();
+    m_layer->insertOnlyThisLayerAfterStyleChange();
 }
 
 void LayoutBoxModelObject::destroyLayer()
