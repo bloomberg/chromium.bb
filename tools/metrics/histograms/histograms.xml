@@ -54934,6 +54934,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="UMA.LogLoadComplete called">
+  <obsolete>
+    No longer tracked.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <summary>
     Simple counter of the number of times LogLoadComplete was called (bug
@@ -55180,6 +55183,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="UMA.UsedResetVariationsFlag" enum="BooleanUsage">
+  <obsolete>
+    No longer tracked.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <summary>
     Log whether the --reset-variation-state flag was set before the low entropy
