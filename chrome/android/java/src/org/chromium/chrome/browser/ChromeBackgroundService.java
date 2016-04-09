@@ -14,10 +14,12 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsLauncher;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.precache.PrecacheController;
 
 /**
@@ -39,6 +41,10 @@ public class ChromeBackgroundService extends GcmTaskService {
                 switch(params.getTag()) {
                     case BackgroundSyncLauncher.TASK_TAG:
                         handleBackgroundSyncEvent(context);
+                        break;
+
+                    case OfflinePageUtils.TASK_TAG:
+                        handleOfflinePageBackgroundLoad(context);
                         break;
 
                     case SnippetsLauncher.TASK_TAG_WIFI_CHARGING:
@@ -100,6 +106,14 @@ public class ChromeBackgroundService extends GcmTaskService {
     @VisibleForTesting
     protected void precache(Context context, String tag) {
         PrecacheController.get(context).precache(tag);
+    }
+
+    private void handleOfflinePageBackgroundLoad(Context context) {
+        // Gather UMA data to measure how often the user's machine is amenable to background
+        // loading when we wake to do a task.
+        if (LibraryLoader.isInitialized()) {
+            OfflinePageUtils.recordWakeupUMA(context);
+        }
     }
 
     @VisibleForTesting

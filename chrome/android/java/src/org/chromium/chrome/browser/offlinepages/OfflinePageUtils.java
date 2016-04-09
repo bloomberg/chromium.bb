@@ -6,9 +6,13 @@ package org.chromium.chrome.browser.offlinepages;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.BatteryManager;
 import android.os.Environment;
 
 import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -19,6 +23,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.components.offlinepages.FeatureMode;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
@@ -27,6 +32,8 @@ import org.chromium.ui.base.PageTransition;
  */
 public class OfflinePageUtils {
     private static final String TAG = "OfflinePageUtils";
+    /** Background task tag to differentiate from other task types */
+    public static final String TASK_TAG = "OfflinePageUtils";
 
     private static final int SNACKBAR_DURATION = 6 * 1000; // 6 second
 
@@ -273,5 +280,49 @@ public class OfflinePageUtils {
                 RecordUserAction.record("OfflinePages.ReloadButtonNotClicked");
             }
         };
+    }
+
+    /**
+     * Records UMA data when the Offline Pages Background Load service awakens.
+     * @param context android context
+     */
+    public static void recordWakeupUMA(Context context) {
+        IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        // Note this is a sticky intent, so we aren't really registering a receiver, just getting
+        // the sticky intent.  That means that we don't need to unregister the filter later.
+        Intent batteryStatus = context.registerReceiver(null, filter);
+        if (batteryStatus == null) return;
+
+        // Report charging state.
+        RecordHistogram.recordBooleanHistogram(
+                "OfflinePages.Wakeup.ConnectedToPower", isPowerConnected(batteryStatus));
+
+        // Report battery percentage.
+        RecordHistogram.recordPercentageHistogram(
+                "OfflinePages.Wakeup.BatteryPercentage", batteryPercentage(batteryStatus));
+
+        // Report the default network found (or none, if we aren't connected).
+        int connectionType = NetworkChangeNotifier.getInstance().getCurrentConnectionType();
+        Log.d(TAG, "Found single network of type " + connectionType);
+        RecordHistogram.recordEnumeratedHistogram("OfflinePages.Wakeup.NetworkAvailable",
+                connectionType, ConnectionType.CONNECTION_LAST + 1);
+    }
+
+    private static boolean isPowerConnected(Intent batteryStatus) {
+        int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+        boolean isConnected = (status == BatteryManager.BATTERY_STATUS_CHARGING
+                || status == BatteryManager.BATTERY_STATUS_FULL);
+        Log.d(TAG, "Power connected is " + isConnected);
+        return isConnected;
+    }
+
+    private static int batteryPercentage(Intent batteryStatus) {
+        int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+        int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+        if (scale == 0) return 0;
+
+        int percentage = (int) Math.round(100 * level / (float) scale);
+        Log.d(TAG, "Battery Percentage is " + percentage);
+        return percentage;
     }
 }

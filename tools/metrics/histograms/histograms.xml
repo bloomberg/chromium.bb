@@ -33371,6 +33371,34 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.Wakeup.BatteryPercentage" units="%">
+  <owner>petewil@chromium.org</owner>
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Percentage of battery remaining when the offline page background loading
+    task wakes up to check for work.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.Wakeup.ConnectedToPower" enum="BooleanConnected">
+  <owner>petewil@chromium.org</owner>
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Whether the device is plugged in when the offline page background load task
+    wakes up to check or work.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.Wakeup.NetworkAvailable"
+    enum="NetworkConnectionType">
+  <owner>petewil@chromium.org</owner>
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Which network is available (if any) when the offling page background loading
+    task wakes up to check for work.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePolicy.SuccessfulResourceLoadPercentage" units="%">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -61703,6 +61731,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanCompleted" type="int">
   <int value="0" label="Not Completed"/>
   <int value="1" label="Completed"/>
+</enum>
+
+<enum name="BooleanConnected" type="int">
+  <int value="0" label="Not Connected"/>
+  <int value="1" label="Connected"/>
 </enum>
 
 <enum name="BooleanContainedMeCard" type="int">
