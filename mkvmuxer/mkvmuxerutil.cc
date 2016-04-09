@@ -173,8 +173,8 @@ uint64_t WriteSimpleBlock(IMkvWriter* writer, const Frame* const frame,
   if (writer->Write(frame->frame(), static_cast<uint32_t>(frame->length())))
     return 0;
 
-  return GetUIntSize(libwebm::kMkvSimpleBlock) + GetCodedUIntSize(size) + 4 +
-         frame->length();
+  return static_cast<uint64_t>(GetUIntSize(libwebm::kMkvSimpleBlock) +
+                               GetCodedUIntSize(size) + 4 + frame->length());
 }
 
 }  // namespace
@@ -229,7 +229,7 @@ uint64_t EbmlMasterElementSize(uint64_t type, uint64_t value) {
   // Datasize
   ebml_size += GetCodedUIntSize(value);
 
-  return ebml_size;
+  return static_cast<uint64_t>(ebml_size);
 }
 
 uint64_t EbmlElementSize(uint64_t type, int64_t value) {
@@ -242,7 +242,7 @@ uint64_t EbmlElementSize(uint64_t type, int64_t value) {
   // Size of Datasize
   ebml_size++;
 
-  return ebml_size;
+  return static_cast<uint64_t>(ebml_size);
 }
 
 uint64_t EbmlElementSize(uint64_t type, uint64_t value) {
@@ -251,10 +251,11 @@ uint64_t EbmlElementSize(uint64_t type, uint64_t value) {
 
 uint64_t EbmlElementSize(uint64_t type, uint64_t value, uint64_t fixed_size) {
   // Size of EBML ID
-  int32_t ebml_size = GetUIntSize(type);
+  uint64_t ebml_size = static_cast<uint64_t>(GetUIntSize(type));
 
   // Datasize
-  ebml_size += (fixed_size > 0) ? fixed_size : GetUIntSize(value);
+  ebml_size +=
+      (fixed_size > 0) ? fixed_size : static_cast<uint64_t>(GetUIntSize(value));
 
   // Size of Datasize
   ebml_size++;
@@ -264,7 +265,7 @@ uint64_t EbmlElementSize(uint64_t type, uint64_t value, uint64_t fixed_size) {
 
 uint64_t EbmlElementSize(uint64_t type, float /* value */) {
   // Size of EBML ID
-  uint64_t ebml_size = GetUIntSize(type);
+  uint64_t ebml_size = static_cast<uint64_t>(GetUIntSize(type));
 
   // Datasize
   ebml_size += sizeof(float);
@@ -280,7 +281,7 @@ uint64_t EbmlElementSize(uint64_t type, const char* value) {
     return 0;
 
   // Size of EBML ID
-  uint64_t ebml_size = GetUIntSize(type);
+  uint64_t ebml_size = static_cast<uint64_t>(GetUIntSize(type));
 
   // Datasize
   ebml_size += strlen(value);
@@ -296,7 +297,7 @@ uint64_t EbmlElementSize(uint64_t type, const uint8_t* value, uint64_t size) {
     return 0;
 
   // Size of EBML ID
-  uint64_t ebml_size = GetUIntSize(type);
+  uint64_t ebml_size = static_cast<uint64_t>(GetUIntSize(type));
 
   // Datasize
   ebml_size += size;
@@ -309,7 +310,7 @@ uint64_t EbmlElementSize(uint64_t type, const uint8_t* value, uint64_t size) {
 
 uint64_t EbmlDateElementSize(uint64_t type) {
   // Size of EBML ID
-  uint64_t ebml_size = GetUIntSize(type);
+  uint64_t ebml_size = static_cast<uint64_t>(GetUIntSize(type));
 
   // Datasize
   ebml_size += kDateElementSize;
@@ -447,7 +448,7 @@ bool WriteEbmlElement(IMkvWriter* writer, uint64_t type, uint64_t value,
   if (WriteID(writer, type))
     return false;
 
-  uint64_t size = GetUIntSize(value);
+  uint64_t size = static_cast<uint64_t>(GetUIntSize(value));
   if (fixed_size > 0) {
     if (size > fixed_size)
       return false;
