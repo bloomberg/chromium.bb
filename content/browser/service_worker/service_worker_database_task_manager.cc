@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/sequenced_task_runner.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/service_worker/service_worker_database_task_manager.h"
+
+#include "base/memory/ptr_util.h"
+#include "base/sequenced_task_runner.h"
 
 namespace content {
 
@@ -20,9 +21,9 @@ ServiceWorkerDatabaseTaskManagerImpl::ServiceWorkerDatabaseTaskManagerImpl(
 ServiceWorkerDatabaseTaskManagerImpl::~ServiceWorkerDatabaseTaskManagerImpl() {
 }
 
-scoped_ptr<ServiceWorkerDatabaseTaskManager>
+std::unique_ptr<ServiceWorkerDatabaseTaskManager>
 ServiceWorkerDatabaseTaskManagerImpl::Clone() {
-  return make_scoped_ptr(new ServiceWorkerDatabaseTaskManagerImpl(
+  return base::WrapUnique(new ServiceWorkerDatabaseTaskManagerImpl(
       task_runner_, shutdown_blocking_task_runner_));
 }
 
@@ -52,9 +53,9 @@ MockServiceWorkerDatabaseTaskManager::MockServiceWorkerDatabaseTaskManager(
 MockServiceWorkerDatabaseTaskManager::~MockServiceWorkerDatabaseTaskManager() {
 }
 
-scoped_ptr<ServiceWorkerDatabaseTaskManager>
+std::unique_ptr<ServiceWorkerDatabaseTaskManager>
 MockServiceWorkerDatabaseTaskManager::Clone() {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new MockServiceWorkerDatabaseTaskManager(task_runner_));
 }
 

@@ -1353,7 +1353,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
 
   StartTimeoutTimer();
 
-  scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params(
+  std::unique_ptr<EmbeddedWorkerMsg_StartWorker_Params> params(
       new EmbeddedWorkerMsg_StartWorker_Params());
   params->service_worker_version_id = version_id_;
   params->scope = scope_;

@@ -115,9 +115,9 @@ int ServiceWorkerCacheWriter::DoLoop(int status) {
 }
 
 ServiceWorkerCacheWriter::ServiceWorkerCacheWriter(
-    scoped_ptr<ServiceWorkerResponseReader> compare_reader,
-    scoped_ptr<ServiceWorkerResponseReader> copy_reader,
-    scoped_ptr<ServiceWorkerResponseWriter> writer)
+    std::unique_ptr<ServiceWorkerResponseReader> compare_reader,
+    std::unique_ptr<ServiceWorkerResponseReader> copy_reader,
+    std::unique_ptr<ServiceWorkerResponseWriter> writer)
     : state_(STATE_START),
       io_pending_(false),
       comparing_(false),
@@ -428,7 +428,7 @@ int ServiceWorkerCacheWriter::DoDone(int result) {
 // asynchronous completions.
 
 int ServiceWorkerCacheWriter::ReadInfoHelper(
-    const scoped_ptr<ServiceWorkerResponseReader>& reader,
+    const std::unique_ptr<ServiceWorkerResponseReader>& reader,
     HttpResponseInfoIOBuffer* buf) {
   net::CompletionCallback run_callback = base::Bind(
       &ServiceWorkerCacheWriter::AsyncDoLoop, weak_factory_.GetWeakPtr());
@@ -442,7 +442,7 @@ int ServiceWorkerCacheWriter::ReadInfoHelper(
 }
 
 int ServiceWorkerCacheWriter::ReadDataHelper(
-    const scoped_ptr<ServiceWorkerResponseReader>& reader,
+    const std::unique_ptr<ServiceWorkerResponseReader>& reader,
     net::IOBuffer* buf,
     int buf_len) {
   net::CompletionCallback run_callback = base::Bind(
@@ -458,7 +458,7 @@ int ServiceWorkerCacheWriter::ReadDataHelper(
 }
 
 int ServiceWorkerCacheWriter::WriteInfoHelper(
-    const scoped_ptr<ServiceWorkerResponseWriter>& writer,
+    const std::unique_ptr<ServiceWorkerResponseWriter>& writer,
     HttpResponseInfoIOBuffer* buf) {
   did_replace_ = true;
   net::CompletionCallback run_callback = base::Bind(
@@ -473,7 +473,7 @@ int ServiceWorkerCacheWriter::WriteInfoHelper(
 }
 
 int ServiceWorkerCacheWriter::WriteDataHelper(
-    const scoped_ptr<ServiceWorkerResponseWriter>& writer,
+    const std::unique_ptr<ServiceWorkerResponseWriter>& writer,
     net::IOBuffer* buf,
     int buf_len) {
   net::CompletionCallback run_callback = base::Bind(

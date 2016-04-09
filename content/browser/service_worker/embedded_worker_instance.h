@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -15,7 +16,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -112,7 +112,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // started and evaluated, or when an error occurs.
   // |params| should be populated with service worker version info needed
   // to start the worker.
-  void Start(scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
+  void Start(std::unique_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
              const StatusCallback& callback);
 
   // Stops the worker. It is invalid to call this when the worker is
@@ -197,7 +197,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
                          int embedded_worker_id);
 
   // Called back from StartTask after a process is allocated on the UI thread.
-  void OnProcessAllocated(scoped_ptr<WorkerProcessHandle> handle);
+  void OnProcessAllocated(std::unique_ptr<WorkerProcessHandle> handle);
 
   // Called back from StartTask after the worker is registered to
   // WorkerDevToolsManager.
@@ -282,9 +282,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   StartingPhase starting_phase_;
 
   // Current running information.
-  scoped_ptr<EmbeddedWorkerInstance::WorkerProcessHandle> process_handle_;
+  std::unique_ptr<EmbeddedWorkerInstance::WorkerProcessHandle> process_handle_;
   int thread_id_;
-  scoped_ptr<ServiceRegistryImpl> service_registry_;
+  std::unique_ptr<ServiceRegistryImpl> service_registry_;
 
   // Whether devtools is attached or not.
   bool devtools_attached_;
@@ -294,9 +294,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   bool network_accessed_for_script_;
 
   ListenerList listener_list_;
-  scoped_ptr<DevToolsProxy> devtools_proxy_;
+  std::unique_ptr<DevToolsProxy> devtools_proxy_;
 
-  scoped_ptr<StartTask> inflight_start_task_;
+  std::unique_ptr<StartTask> inflight_start_task_;
 
   // Used for UMA. The start time of the current start sequence step.
   base::TimeTicks step_time_;

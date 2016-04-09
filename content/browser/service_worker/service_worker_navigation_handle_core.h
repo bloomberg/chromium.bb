@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_NAVIGATION_HANDLE_CORE_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_NAVIGATION_HANDLE_CORE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 namespace content {
@@ -34,18 +35,18 @@ class ServiceWorkerNavigationHandleCore {
   // tracked by this ServiceWorkerNavigationHandleCore. Takes ownership of
   // |precreated_host|.
   void DidPreCreateProviderHost(
-      scoped_ptr<ServiceWorkerProviderHost> precreated_host);
+      std::unique_ptr<ServiceWorkerProviderHost> precreated_host);
 
   // Called when the renderer created a ServiceWorkerNetworkProvider matching
   // |precreated_host_|. This releases ownership of |precreated_host_|.
-  scoped_ptr<ServiceWorkerProviderHost> RetrievePreCreatedHost();
+  std::unique_ptr<ServiceWorkerProviderHost> RetrievePreCreatedHost();
 
   ServiceWorkerContextWrapper* context_wrapper() const {
     return context_wrapper_.get();
   }
 
  private:
-  scoped_ptr<ServiceWorkerProviderHost> precreated_host_;
+  std::unique_ptr<ServiceWorkerProviderHost> precreated_host_;
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
   base::WeakPtr<ServiceWorkerNavigationHandle> ui_handle_;
 

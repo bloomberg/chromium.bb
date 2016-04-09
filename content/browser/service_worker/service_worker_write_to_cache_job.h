@@ -137,8 +137,8 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   net::Error NotifyFinishedCaching(net::URLRequestStatus status,
                                    const std::string& status_message);
 
-  scoped_ptr<ServiceWorkerResponseReader> CreateCacheResponseReader();
-  scoped_ptr<ServiceWorkerResponseWriter> CreateCacheResponseWriter();
+  std::unique_ptr<ServiceWorkerResponseReader> CreateCacheResponseReader();
+  std::unique_ptr<ServiceWorkerResponseWriter> CreateCacheResponseWriter();
 
   ResourceType resource_type_;  // Differentiate main script and imports
   scoped_refptr<net::IOBuffer> io_buffer_;
@@ -147,11 +147,11 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   GURL url_;
   int64_t resource_id_;
   int64_t incumbent_resource_id_;
-  scoped_ptr<net::URLRequest> net_request_;
-  scoped_ptr<net::HttpResponseInfo> http_info_;
-  scoped_ptr<ServiceWorkerResponseWriter> writer_;
+  std::unique_ptr<net::URLRequest> net_request_;
+  std::unique_ptr<net::HttpResponseInfo> http_info_;
+  std::unique_ptr<ServiceWorkerResponseWriter> writer_;
   scoped_refptr<ServiceWorkerVersion> version_;
-  scoped_ptr<ServiceWorkerCacheWriter> cache_writer_;
+  std::unique_ptr<ServiceWorkerCacheWriter> cache_writer_;
   bool has_been_killed_;
   bool did_notify_started_;
   bool did_notify_finished_;

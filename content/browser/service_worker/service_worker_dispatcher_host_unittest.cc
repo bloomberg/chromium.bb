@@ -5,10 +5,12 @@
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/message_port_service.h"
@@ -96,7 +98,8 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void SetUp() override {
-    Initialize(make_scoped_ptr(new EmbeddedWorkerTestHelper(base::FilePath())));
+    Initialize(
+        base::WrapUnique(new EmbeddedWorkerTestHelper(base::FilePath())));
   }
 
   void TearDown() override {
@@ -110,7 +113,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     return helper_->context_wrapper();
   }
 
-  void Initialize(scoped_ptr<EmbeddedWorkerTestHelper> helper) {
+  void Initialize(std::unique_ptr<EmbeddedWorkerTestHelper> helper) {
     helper_.reset(helper.release());
     dispatcher_host_ = new TestingServiceWorkerDispatcherHost(
         helper_->mock_render_process_id(), context_wrapper(),
@@ -239,7 +242,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
 
   TestBrowserThreadBundle browser_thread_bundle_;
   content::MockResourceContext resource_context_;
-  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
+  std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<TestingServiceWorkerDispatcherHost> dispatcher_host_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
@@ -265,7 +268,7 @@ TEST_F(ServiceWorkerDispatcherHostTest,
       SetBrowserClientForTesting(&test_browser_client);
 
   const int64_t kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
+  std::unique_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/foo"));
   context()->AddProviderHost(std::move(host));
@@ -294,7 +297,7 @@ TEST_F(ServiceWorkerDispatcherHostTest,
 
 TEST_F(ServiceWorkerDispatcherHostTest, Register_HTTPS) {
   const int64_t kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
+  std::unique_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/foo"));
   context()->AddProviderHost(std::move(host));
@@ -307,7 +310,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, Register_HTTPS) {
 
 TEST_F(ServiceWorkerDispatcherHostTest, Register_NonSecureTransportLocalhost) {
   const int64_t kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
+  std::unique_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("http://127.0.0.3:81/foo"));
   context()->AddProviderHost(std::move(host));
@@ -320,7 +323,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, Register_NonSecureTransportLocalhost) {
 
 TEST_F(ServiceWorkerDispatcherHostTest, Register_InvalidScopeShouldFail) {
   const int64_t kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
+  std::unique_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/foo"));
   context()->AddProviderHost(std::move(host));
@@ -332,7 +335,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, Register_InvalidScopeShouldFail) {
 
 TEST_F(ServiceWorkerDispatcherHostTest, Register_InvalidScriptShouldFail) {
   const int64_t kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
+  std::unique_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/foo"));
   context()->AddProviderHost(std::move(host));
@@ -343,7 +346,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, Register_InvalidScriptShouldFail) {
 
 TEST_F(ServiceWorkerDispatcherHostTest, Register_NonSecureOriginShouldFail) {
   const int64_t kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
+  std::unique_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("http://www.example.com/foo"));
   context()->AddProviderHost(std::move(host));
@@ -356,7 +359,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, Register_NonSecureOriginShouldFail) {
 
 TEST_F(ServiceWorkerDispatcherHostTest, Register_CrossOriginShouldFail) {
   const int64_t kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
+  std::unique_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/foo"));
   context()->AddProviderHost(std::move(host));
@@ -400,7 +403,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, Register_CrossOriginShouldFail) {
 
 TEST_F(ServiceWorkerDispatcherHostTest, Register_BadCharactersShouldFail) {
   const int64_t kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
+  std::unique_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/"));
   context()->AddProviderHost(std::move(host));
@@ -433,7 +436,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, Register_BadCharactersShouldFail) {
 TEST_F(ServiceWorkerDispatcherHostTest,
        Register_FileSystemDocumentShouldFail) {
   const int64_t kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
+  std::unique_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("filesystem:https://www.example.com/temporary/a"));
   context()->AddProviderHost(std::move(host));
@@ -457,7 +460,7 @@ TEST_F(ServiceWorkerDispatcherHostTest,
 TEST_F(ServiceWorkerDispatcherHostTest,
        Register_FileSystemScriptOrScopeShouldFail) {
   const int64_t kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
+  std::unique_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/temporary/"));
   context()->AddProviderHost(std::move(host));
@@ -524,7 +527,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
 
 TEST_F(ServiceWorkerDispatcherHostTest, GetRegistration_SameOrigin) {
   const int64_t kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
+  std::unique_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/foo"));
   context()->AddProviderHost(std::move(host));
@@ -536,7 +539,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, GetRegistration_SameOrigin) {
 
 TEST_F(ServiceWorkerDispatcherHostTest, GetRegistration_CrossOriginShouldFail) {
   const int64_t kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
+  std::unique_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/foo"));
   context()->AddProviderHost(std::move(host));
@@ -548,7 +551,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, GetRegistration_CrossOriginShouldFail) {
 TEST_F(ServiceWorkerDispatcherHostTest,
        GetRegistration_InvalidScopeShouldFail) {
   const int64_t kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
+  std::unique_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/foo"));
   context()->AddProviderHost(std::move(host));
@@ -560,7 +563,7 @@ TEST_F(ServiceWorkerDispatcherHostTest,
 TEST_F(ServiceWorkerDispatcherHostTest,
        GetRegistration_NonSecureOriginShouldFail) {
   const int64_t kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
+  std::unique_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("http://www.example.com/foo"));
   context()->AddProviderHost(std::move(host));
@@ -582,7 +585,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, GetRegistration_EarlyContextDeletion) {
 
 TEST_F(ServiceWorkerDispatcherHostTest, GetRegistrations_SecureOrigin) {
   const int64_t kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
+  std::unique_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/foo"));
   context()->AddProviderHost(std::move(host));
@@ -593,7 +596,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, GetRegistrations_SecureOrigin) {
 TEST_F(ServiceWorkerDispatcherHostTest,
        GetRegistrations_NonSecureOriginShouldFail) {
   const int64_t kProviderId = 99;  // Dummy value
-  scoped_ptr<ServiceWorkerProviderHost> host(
+  std::unique_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("http://www.example.com/foo"));
   context()->AddProviderHost(std::move(host));
@@ -699,7 +702,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent_Fail) {
   GURL pattern = GURL("http://www.example.com/");
   GURL script_url = GURL("http://www.example.com/service_worker.js");
 
-  Initialize(make_scoped_ptr(new FailToStartWorkerTestHelper));
+  Initialize(base::WrapUnique(new FailToStartWorkerTestHelper));
   SendProviderCreated(SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, pattern);
   SetUpRegistration(pattern, script_url);
 
@@ -740,7 +743,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, OnSetHostedVersionId) {
   GURL pattern = GURL("http://www.example.com/");
   GURL script_url = GURL("http://www.example.com/service_worker.js");
 
-  Initialize(make_scoped_ptr(new FailToStartWorkerTestHelper));
+  Initialize(base::WrapUnique(new FailToStartWorkerTestHelper));
   SendProviderCreated(SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, pattern);
   SetUpRegistration(pattern, script_url);
 

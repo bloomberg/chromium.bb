@@ -63,7 +63,7 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
     // queue, no new job is added. Returns the job in the queue, regardless of
     // whether it was newly added.
     ServiceWorkerRegisterJobBase* Push(
-        scoped_ptr<ServiceWorkerRegisterJobBase> job);
+        std::unique_ptr<ServiceWorkerRegisterJobBase> job);
 
     // Dooms the installing worker of the running register/update job if a
     // register/update job is scheduled to run after it. This corresponds to

@@ -8,6 +8,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
@@ -157,7 +158,7 @@ class ServiceWorkerContextTest : public ServiceWorkerContextObserver,
 
  protected:
   TestBrowserThreadBundle browser_thread_bundle_;
-  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
+  std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   std::vector<NotificationLog> notifications_;
 };
 
@@ -553,10 +554,10 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
       SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, context()->AsWeakPtr(), nullptr));
   host4->SetDocumentUrl(kOrigin2);
 
-  context()->AddProviderHost(make_scoped_ptr(host1));
-  context()->AddProviderHost(make_scoped_ptr(host2));
-  context()->AddProviderHost(make_scoped_ptr(host3));
-  context()->AddProviderHost(make_scoped_ptr(host4));
+  context()->AddProviderHost(base::WrapUnique(host1));
+  context()->AddProviderHost(base::WrapUnique(host2));
+  context()->AddProviderHost(base::WrapUnique(host3));
+  context()->AddProviderHost(base::WrapUnique(host4));
 
   // Iterate over all provider hosts.
   std::set<ServiceWorkerProviderHost*> results;

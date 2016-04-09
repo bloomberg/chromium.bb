@@ -4,15 +4,17 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
@@ -73,7 +75,7 @@ struct FetchResult {
   ServiceWorkerStatusCode status;
   ServiceWorkerFetchEventResult result;
   ServiceWorkerResponse response;
-  scoped_ptr<storage::BlobDataHandle> blob_data_handle;
+  std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
 };
 
 void RunAndQuit(const base::Closure& closure,
@@ -142,7 +144,7 @@ ServiceWorkerStorage::FindRegistrationCallback CreateFindRegistrationReceiver(
 void ReadResponseBody(std::string* body,
                       storage::BlobDataHandle* blob_data_handle) {
   ASSERT_TRUE(blob_data_handle);
-  scoped_ptr<storage::BlobDataSnapshot> data =
+  std::unique_ptr<storage::BlobDataSnapshot> data =
       blob_data_handle->CreateSnapshot();
   ASSERT_EQ(1U, data->items().size());
   *body = std::string(data->items()[0]->bytes(), data->items()[0]->length());
@@ -189,39 +191,40 @@ class WorkerActivatedObserver
   DISALLOW_COPY_AND_ASSIGN(WorkerActivatedObserver);
 };
 
-scoped_ptr<net::test_server::HttpResponse> VerifyServiceWorkerHeaderInRequest(
+std::unique_ptr<net::test_server::HttpResponse>
+VerifyServiceWorkerHeaderInRequest(
     const net::test_server::HttpRequest& request) {
   EXPECT_EQ(request.relative_url, "/service_worker/generated_sw.js");
   auto it = request.headers.find("Service-Worker");
   EXPECT_TRUE(it != request.headers.end());
   EXPECT_EQ("script", it->second);
 
-  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse());
   http_response->set_content_type("text/javascript");
   return std::move(http_response);
 }
 
-scoped_ptr<net::test_server::HttpResponse> VerifySaveDataHeaderInRequest(
+std::unique_ptr<net::test_server::HttpResponse> VerifySaveDataHeaderInRequest(
     const net::test_server::HttpRequest& request) {
   auto it = request.headers.find("Save-Data");
   EXPECT_NE(request.headers.end(), it);
   EXPECT_EQ("on", it->second);
 
-  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse());
   http_response->set_content_type("text/javascript");
   return std::move(http_response);
 }
 
-scoped_ptr<net::test_server::HttpResponse> VerifySaveDataHeaderNotInRequest(
-    const net::test_server::HttpRequest& request) {
+std::unique_ptr<net::test_server::HttpResponse>
+VerifySaveDataHeaderNotInRequest(const net::test_server::HttpRequest& request) {
   auto it = request.headers.find("Save-Data");
   EXPECT_EQ(request.headers.end(), it);
-  return make_scoped_ptr(new net::test_server::BasicHttpResponse());
+  return base::WrapUnique(new net::test_server::BasicHttpResponse());
 }
 
-scoped_ptr<net::test_server::HttpResponse>
+std::unique_ptr<net::test_server::HttpResponse>
 VerifySaveDataNotInAccessControlRequestHeader(
     const net::test_server::HttpRequest& request) {
   // Save-Data should be present.
@@ -229,7 +232,7 @@ VerifySaveDataNotInAccessControlRequestHeader(
   EXPECT_NE(request.headers.end(), it);
   EXPECT_EQ("on", it->second);
 
-  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse());
   if (request.method == net::test_server::METHOD_OPTIONS) {
     // Access-Control-Request-Headers should contain 'X-Custom-Header' and not
@@ -282,7 +285,7 @@ class LongLivedResourceInterceptor : public net::URLRequestInterceptor {
 void CreateLongLivedResourceInterceptors(
     const GURL& worker_url, const GURL& import_url) {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  scoped_ptr<net::URLRequestInterceptor> interceptor;
+  std::unique_ptr<net::URLRequestInterceptor> interceptor;
 
   interceptor.reset(new LongLivedResourceInterceptor(
       "importScripts('long_lived_import.js');"));
@@ -457,7 +460,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   void FetchOnRegisteredWorker(
       ServiceWorkerFetchEventResult* result,
       ServiceWorkerResponse* response,
-      scoped_ptr<storage::BlobDataHandle>* blob_data_handle) {
+      std::unique_ptr<storage::BlobDataHandle>* blob_data_handle) {
     blob_context_ = ChromeBlobStorageContext::GetFor(
         shell()->web_contents()->GetBrowserContext());
     bool prepare_result = false;
@@ -479,10 +482,11 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ASSERT_EQ(SERVICE_WORKER_OK, fetch_result.status);
   }
 
-  void FetchTestHelper(const std::string& worker_url,
-                       ServiceWorkerFetchEventResult* result,
-                       ServiceWorkerResponse* response,
-                       scoped_ptr<storage::BlobDataHandle>* blob_data_handle) {
+  void FetchTestHelper(
+      const std::string& worker_url,
+      ServiceWorkerFetchEventResult* result,
+      ServiceWorkerResponse* response,
+      std::unique_ptr<storage::BlobDataHandle>* blob_data_handle) {
     RunOnIOThread(
         base::Bind(&self::SetUpRegistrationOnIOThread, this, worker_url));
     FetchOnRegisteredWorker(result, response, blob_data_handle);
@@ -519,11 +523,12 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
 
   void AddControlleeOnIOThread() {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
-        33 /* dummy render process id */,
-        MSG_ROUTING_NONE /* render_frame_id */, 1 /* dummy provider_id */,
-        SERVICE_WORKER_PROVIDER_FOR_WINDOW, wrapper()->context()->AsWeakPtr(),
-        NULL));
+    std::unique_ptr<ServiceWorkerProviderHost> host(
+        new ServiceWorkerProviderHost(33 /* dummy render process id */,
+                                      MSG_ROUTING_NONE /* render_frame_id */,
+                                      1 /* dummy provider_id */,
+                                      SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+                                      wrapper()->context()->AsWeakPtr(), NULL));
     host->SetDocumentUrl(
         embedded_test_server()->GetURL("/service_worker/host"));
     host->AssociateRegistration(registration_.get(),
@@ -682,9 +687,10 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
                        bool* prepare_result,
                        FetchResult* result) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    scoped_ptr<ServiceWorkerFetchRequest> request(new ServiceWorkerFetchRequest(
-        embedded_test_server()->GetURL("/service_worker/empty.html"), "GET",
-        ServiceWorkerHeaderMap(), Referrer(), false));
+    std::unique_ptr<ServiceWorkerFetchRequest> request(
+        new ServiceWorkerFetchRequest(
+            embedded_test_server()->GetURL("/service_worker/empty.html"), "GET",
+            ServiceWorkerHeaderMap(), Referrer(), false));
     version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
     fetch_dispatcher_.reset(new ServiceWorkerFetchDispatcher(
         std::move(request), version_.get(), RESOURCE_TYPE_MAIN_FRAME,
@@ -737,7 +743,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
   scoped_refptr<ChromeBlobStorageContext> blob_context_;
-  scoped_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
+  std::unique_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
 };
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, StartAndStop) {
@@ -984,7 +990,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, TimeoutWorkerInEvent) {
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
   ServiceWorkerFetchEventResult result;
   ServiceWorkerResponse response;
-  scoped_ptr<storage::BlobDataHandle> blob_data_handle;
+  std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
   FetchTestHelper("/service_worker/fetch_event.js",
                   &result, &response, &blob_data_handle);
   ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, result);
@@ -1007,7 +1013,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   ServiceWorkerFetchEventResult result;
   ServiceWorkerResponse response1;
   ServiceWorkerResponse response2;
-  scoped_ptr<storage::BlobDataHandle> blob_data_handle;
+  std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
   const base::Time start_time(base::Time::Now());
 
   RunOnIOThread(
@@ -1035,7 +1041,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                        FetchEvent_respondWithRejection) {
   ServiceWorkerFetchEventResult result;
   ServiceWorkerResponse response;
-  scoped_ptr<storage::BlobDataHandle> blob_data_handle;
+  std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
 
   RunOnIOThread(base::Bind(&self::SetUpRegistrationOnIOThread, this,
                            "/service_worker/fetch_event_rejected.js"));

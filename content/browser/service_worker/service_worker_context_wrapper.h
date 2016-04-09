@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/service_worker_context.h"
@@ -200,7 +200,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   void InitInternal(
       const base::FilePath& user_data_directory,
-      scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager,
+      std::unique_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager,
       const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
       storage::QuotaManagerProxy* quota_manager_proxy,
       storage::SpecialStoragePolicy* special_storage_policy);
@@ -235,9 +235,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   const scoped_refptr<base::ObserverListThreadSafe<
       ServiceWorkerContextObserver>> observer_list_;
-  const scoped_ptr<ServiceWorkerProcessManager> process_manager_;
+  const std::unique_ptr<ServiceWorkerProcessManager> process_manager_;
   // Cleared in ShutdownOnIO():
-  scoped_ptr<ServiceWorkerContextCore> context_core_;
+  std::unique_ptr<ServiceWorkerContextCore> context_core_;
 
   // Initialized in Init(); true if the user data directory is empty.
   bool is_incognito_;

@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_HANDLE_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_HANDLE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/content_export.h"
@@ -35,7 +36,7 @@ class CONTENT_EXPORT ServiceWorkerHandle
  public:
   // Creates a handle for a live version. This may return nullptr if any of
   // |context|, |provider_host| and |version| is nullptr.
-  static scoped_ptr<ServiceWorkerHandle> Create(
+  static std::unique_ptr<ServiceWorkerHandle> Create(
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       ServiceWorkerVersion* version);

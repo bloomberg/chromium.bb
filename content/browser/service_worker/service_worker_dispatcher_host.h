@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/id_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
@@ -65,9 +65,9 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   // be destroyed.
   bool Send(IPC::Message* message) override;
 
-  void RegisterServiceWorkerHandle(scoped_ptr<ServiceWorkerHandle> handle);
+  void RegisterServiceWorkerHandle(std::unique_ptr<ServiceWorkerHandle> handle);
   void RegisterServiceWorkerRegistrationHandle(
-      scoped_ptr<ServiceWorkerRegistrationHandle> handle);
+      std::unique_ptr<ServiceWorkerRegistrationHandle> handle);
 
   ServiceWorkerHandle* FindServiceWorkerHandle(int provider_id,
                                                int64_t version_id);
@@ -247,7 +247,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   RegistrationHandleMap registration_handles_;
 
   bool channel_ready_;  // True after BrowserMessageFilter::sender_ != NULL.
-  std::vector<scoped_ptr<IPC::Message>> pending_messages_;
+  std::vector<std::unique_ptr<IPC::Message>> pending_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDispatcherHost);
 };

@@ -100,7 +100,7 @@ void ServiceWorkerScriptCacheMap::WriteMetadata(
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(data.size()));
   if (data.size())
     memmove(buffer->data(), &data[0], data.size());
-  scoped_ptr<ServiceWorkerResponseMetadataWriter> writer;
+  std::unique_ptr<ServiceWorkerResponseMetadataWriter> writer;
   writer = context_->storage()->CreateResponseMetadataWriter(
       found->second.resource_id);
   ServiceWorkerResponseMetadataWriter* raw_writer = writer.get();
@@ -117,7 +117,7 @@ void ServiceWorkerScriptCacheMap::ClearMetadata(
 }
 
 void ServiceWorkerScriptCacheMap::OnMetadataWritten(
-    scoped_ptr<ServiceWorkerResponseMetadataWriter> writer,
+    std::unique_ptr<ServiceWorkerResponseMetadataWriter> writer,
     const net::CompletionCallback& callback,
     int result) {
   callback.Run(result);

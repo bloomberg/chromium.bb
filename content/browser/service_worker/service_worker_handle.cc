@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_handle.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/service_worker/service_worker_messages.h"
@@ -36,15 +37,15 @@ GetWebServiceWorkerState(ServiceWorkerVersion* version) {
 
 }  // namespace
 
-scoped_ptr<ServiceWorkerHandle> ServiceWorkerHandle::Create(
+std::unique_ptr<ServiceWorkerHandle> ServiceWorkerHandle::Create(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     ServiceWorkerVersion* version) {
   if (!context || !provider_host || !version)
-    return scoped_ptr<ServiceWorkerHandle>();
+    return std::unique_ptr<ServiceWorkerHandle>();
   DCHECK(context->GetLiveRegistration(version->registration_id()));
-  return make_scoped_ptr(new ServiceWorkerHandle(
-      context, provider_host, version));
+  return base::WrapUnique(
+      new ServiceWorkerHandle(context, provider_host, version));
 }
 
 ServiceWorkerHandle::ServiceWorkerHandle(

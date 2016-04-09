@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/service_worker/service_worker_version.h"
+
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "content/browser/message_port_service.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
@@ -12,7 +15,6 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
-#include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -237,8 +239,8 @@ class ServiceWorkerVersionTest : public testing::Test {
         ->PatternHasProcessToRun(pattern_));
   }
 
-  virtual scoped_ptr<MessageReceiver> GetMessageReceiver() {
-    return make_scoped_ptr(new MessageReceiver());
+  virtual std::unique_ptr<MessageReceiver> GetMessageReceiver() {
+    return base::WrapUnique(new MessageReceiver());
   }
 
   void TearDown() override {
@@ -271,7 +273,7 @@ class ServiceWorkerVersionTest : public testing::Test {
   }
 
   TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<MessageReceiver> helper_;
+  std::unique_ptr<MessageReceiver> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
   GURL pattern_;
@@ -325,8 +327,8 @@ class ServiceWorkerFailToStartTest : public ServiceWorkerVersionTest {
     helper->set_start_mode(mode);
   }
 
-  scoped_ptr<MessageReceiver> GetMessageReceiver() override {
-    return make_scoped_ptr(new MessageReceiverDisallowStart());
+  std::unique_ptr<MessageReceiver> GetMessageReceiver() override {
+    return base::WrapUnique(new MessageReceiverDisallowStart());
   }
 
  private:
@@ -350,8 +352,8 @@ class ServiceWorkerStallInStoppingTest : public ServiceWorkerVersionTest {
  protected:
   ServiceWorkerStallInStoppingTest() : ServiceWorkerVersionTest() {}
 
-  scoped_ptr<MessageReceiver> GetMessageReceiver() override {
-    return make_scoped_ptr(new MessageReceiverDisallowStop());
+  std::unique_ptr<MessageReceiver> GetMessageReceiver() override {
+    return base::WrapUnique(new MessageReceiverDisallowStop());
   }
 
  private:
@@ -375,8 +377,8 @@ class ServiceWorkerVersionWithMojoTest : public ServiceWorkerVersionTest {
  protected:
   ServiceWorkerVersionWithMojoTest() : ServiceWorkerVersionTest() {}
 
-  scoped_ptr<MessageReceiver> GetMessageReceiver() override {
-    return make_scoped_ptr(new MessageReceiverMojoTestService());
+  std::unique_ptr<MessageReceiver> GetMessageReceiver() override {
+    return base::WrapUnique(new MessageReceiverMojoTestService());
   }
 
  private:
@@ -626,7 +628,7 @@ TEST_F(ServiceWorkerVersionTest, IdleTimeout) {
   // Adding a controllee resets the idle time.
   version_->idle_time_ -= kOneSecond;
   idle_time = version_->idle_time_;
-  scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
+  std::unique_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
       33 /* dummy render process id */, MSG_ROUTING_NONE /* render_frame_id */,
       1 /* dummy provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
       helper_->context()->AsWeakPtr(), NULL));

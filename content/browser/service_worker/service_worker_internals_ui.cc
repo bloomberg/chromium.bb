@@ -277,7 +277,7 @@ class ServiceWorkerInternalsUI::PartitionObserver
     args.push_back(new StringValue(base::Int64ToString(version_id)));
     args.push_back(new FundamentalValue(process_id));
     args.push_back(new FundamentalValue(thread_id));
-    scoped_ptr<DictionaryValue> value(new DictionaryValue());
+    std::unique_ptr<DictionaryValue> value(new DictionaryValue());
     value->SetString("message", info.error_message);
     value->SetInteger("lineNumber", info.line_number);
     value->SetInteger("columnNumber", info.column_number);
@@ -296,7 +296,7 @@ class ServiceWorkerInternalsUI::PartitionObserver
     args.push_back(new StringValue(base::Int64ToString(version_id)));
     args.push_back(new FundamentalValue(process_id));
     args.push_back(new FundamentalValue(thread_id));
-    scoped_ptr<DictionaryValue> value(new DictionaryValue());
+    std::unique_ptr<DictionaryValue> value(new DictionaryValue());
     value->SetInteger("sourceIdentifier", message.source_identifier);
     value->SetInteger("message_level", message.message_level);
     value->SetString("message", message.message);
@@ -423,7 +423,7 @@ void ServiceWorkerInternalsUI::AddContextFromStoragePartition(
     partition_id = observer->partition_id();
   } else {
     partition_id = next_partition_id_++;
-    scoped_ptr<PartitionObserver> new_observer(
+    std::unique_ptr<PartitionObserver> new_observer(
         new PartitionObserver(partition_id, web_ui()));
     context->AddObserver(new_observer.get());
     observers_.set(reinterpret_cast<uintptr_t>(partition),
@@ -440,7 +440,7 @@ void ServiceWorkerInternalsUI::AddContextFromStoragePartition(
 
 void ServiceWorkerInternalsUI::RemoveObserverFromStoragePartition(
     StoragePartition* partition) {
-  scoped_ptr<PartitionObserver> observer(
+  std::unique_ptr<PartitionObserver> observer(
       observers_.take_and_erase(reinterpret_cast<uintptr_t>(partition)));
   if (!observer.get())
     return;

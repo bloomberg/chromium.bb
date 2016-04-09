@@ -6,8 +6,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <limits>
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -15,7 +17,6 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
@@ -446,14 +447,14 @@ void ServiceWorkerURLRequestJob::StartRequest() {
   NOTREACHED();
 }
 
-scoped_ptr<ServiceWorkerFetchRequest>
+std::unique_ptr<ServiceWorkerFetchRequest>
 ServiceWorkerURLRequestJob::CreateFetchRequest() {
   std::string blob_uuid;
   uint64_t blob_size = 0;
   // The upload data in URLRequest may have been cleared while handing redirect.
   if (request_->has_upload())
     CreateRequestBodyBlob(&blob_uuid, &blob_size);
-  scoped_ptr<ServiceWorkerFetchRequest> request(
+  std::unique_ptr<ServiceWorkerFetchRequest> request(
       new ServiceWorkerFetchRequest());
   request->mode = request_mode_;
   request->is_main_resource_load = IsMainResourceLoad();
@@ -495,8 +496,8 @@ bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
     return false;
 
   // To ensure the blobs stick around until the end of the reading.
-  std::vector<scoped_ptr<storage::BlobDataHandle>> handles;
-  std::vector<scoped_ptr<storage::BlobDataSnapshot>> snapshots;
+  std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
+  std::vector<std::unique_ptr<storage::BlobDataSnapshot>> snapshots;
   // TODO(dmurph): Allow blobs to be added below, so that the context can
   // efficiently re-use blob items for the new blob.
   std::vector<const ResourceRequestBody::Element*> resolved_elements;
@@ -505,9 +506,10 @@ bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
       resolved_elements.push_back(&element);
       continue;
     }
-    scoped_ptr<storage::BlobDataHandle> handle =
+    std::unique_ptr<storage::BlobDataHandle> handle =
         blob_storage_context_->GetBlobDataFromUUID(element.blob_uuid());
-    scoped_ptr<storage::BlobDataSnapshot> snapshot = handle->CreateSnapshot();
+    std::unique_ptr<storage::BlobDataSnapshot> snapshot =
+        handle->CreateSnapshot();
     if (snapshot->items().empty())
       continue;
     const auto& items = snapshot->items();
@@ -688,7 +690,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   // Set up a request for reading the blob.
   if (!response.blob_uuid.empty() && blob_storage_context_) {
     SetResponseBodyType(BLOB);
-    scoped_ptr<storage::BlobDataHandle> blob_data_handle =
+    std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
         blob_storage_context_->GetBlobDataFromUUID(response.blob_uuid);
     if (!blob_data_handle) {
       // The renderer gave us a bad blob UUID.

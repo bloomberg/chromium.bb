@@ -68,7 +68,7 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
   static ForeignFetchRequestHandler* GetHandler(net::URLRequest* request);
 
   // Creates a protocol interceptor for foreign fetch.
-  static scoped_ptr<net::URLRequestInterceptor> CreateInterceptor(
+  static std::unique_ptr<net::URLRequestInterceptor> CreateInterceptor(
       ResourceContext* resource_context);
 
   ~ForeignFetchRequestHandler() override;

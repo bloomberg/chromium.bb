@@ -181,7 +181,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   void StartRequest();
 
   // Creates ServiceWorkerFetchRequest from |request_| and |body_|.
-  scoped_ptr<ServiceWorkerFetchRequest> CreateFetchRequest();
+  std::unique_ptr<ServiceWorkerFetchRequest> CreateFetchRequest();
 
   // Creates BlobDataHandle of the request body from |body_|. This handle
   // |request_body_blob_data_handle_| will be deleted when
@@ -244,19 +244,19 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   bool is_started_;
 
   net::HttpByteRange byte_range_;
-  scoped_ptr<net::HttpResponseInfo> range_response_info_;
-  scoped_ptr<net::HttpResponseInfo> http_response_info_;
+  std::unique_ptr<net::HttpResponseInfo> range_response_info_;
+  std::unique_ptr<net::HttpResponseInfo> http_response_info_;
   // Headers that have not yet been committed to |http_response_info_|.
   scoped_refptr<net::HttpResponseHeaders> http_response_headers_;
   GURL response_url_;
   blink::WebServiceWorkerResponseType service_worker_response_type_;
 
   // Used when response type is FORWARD_TO_SERVICE_WORKER.
-  scoped_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
+  std::unique_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
   std::string client_id_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   const ResourceContext* resource_context_;
-  scoped_ptr<net::URLRequest> blob_request_;
+  std::unique_ptr<net::URLRequest> blob_request_;
   scoped_refptr<Stream> stream_;
   GURL waiting_stream_url_;
   scoped_refptr<net::IOBuffer> stream_pending_buffer_;
@@ -272,7 +272,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   // ResourceRequestBody has a collection of BlobDataHandles attached to it
   // using the userdata mechanism. So we have to keep it not to free the blobs.
   scoped_refptr<ResourceRequestBody> body_;
-  scoped_ptr<storage::BlobDataHandle> request_body_blob_data_handle_;
+  std::unique_ptr<storage::BlobDataHandle> request_body_blob_data_handle_;
   scoped_refptr<ServiceWorkerVersion> streaming_version_;
   ServiceWorkerFetchType fetch_type_;
 

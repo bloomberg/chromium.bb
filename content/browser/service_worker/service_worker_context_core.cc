@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -74,7 +75,7 @@ bool IsSameOriginWindowProviderHost(const GURL& origin,
 // Returns true if any of the frames specified by |frames| is a top-level frame.
 // |frames| is a vector of (render process id, frame id) pairs.
 bool FrameListContainsMainFrameOnUI(
-    scoped_ptr<std::vector<std::pair<int, int>>> frames) {
+    std::unique_ptr<std::vector<std::pair<int, int>>> frames) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (const auto& frame : *frames) {
@@ -211,7 +212,7 @@ bool ServiceWorkerContextCore::ProviderHostIterator::
 
 ServiceWorkerContextCore::ServiceWorkerContextCore(
     const base::FilePath& path,
-    scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager,
+    std::unique_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager,
     const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
     storage::QuotaManagerProxy* quota_manager_proxy,
     storage::SpecialStoragePolicy* special_storage_policy,
@@ -275,7 +276,7 @@ ServiceWorkerProviderHost* ServiceWorkerContextCore::GetProviderHost(
 }
 
 void ServiceWorkerContextCore::AddProviderHost(
-    scoped_ptr<ServiceWorkerProviderHost> host) {
+    std::unique_ptr<ServiceWorkerProviderHost> host) {
   ServiceWorkerProviderHost* host_ptr = host.release();   // we take ownership
   ProviderMap* map = GetProviderMapForProcess(host_ptr->process_id());
   if (!map) {
@@ -298,15 +299,15 @@ void ServiceWorkerContextCore::RemoveAllProviderHostsForProcess(
     providers_->Remove(process_id);
 }
 
-scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator>
+std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator>
 ServiceWorkerContextCore::GetProviderHostIterator() {
-  return make_scoped_ptr(new ProviderHostIterator(
+  return base::WrapUnique(new ProviderHostIterator(
       providers_.get(), ProviderHostIterator::ProviderHostPredicate()));
 }
 
-scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator>
+std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator>
 ServiceWorkerContextCore::GetClientProviderHostIterator(const GURL& origin) {
-  return make_scoped_ptr(new ProviderHostIterator(
+  return base::WrapUnique(new ProviderHostIterator(
       providers_.get(), base::Bind(IsSameOriginClientProviderHost, origin)));
 }
 
@@ -323,7 +324,7 @@ void ServiceWorkerContextCore::HasMainFrameProviderHost(
     return;
   }
 
-  scoped_ptr<std::vector<std::pair<int, int>>> render_frames(
+  std::unique_ptr<std::vector<std::pair<int, int>>> render_frames(
       new std::vector<std::pair<int, int>>());
 
   while (!provider_host_iterator.IsAtEnd()) {
@@ -625,9 +626,9 @@ void ServiceWorkerContextCore::DeleteAndStartOver(
   storage_->DeleteAndStartOver(callback);
 }
 
-scoped_ptr<ServiceWorkerProviderHost>
-ServiceWorkerContextCore::TransferProviderHostOut(
-    int process_id, int provider_id) {
+std::unique_ptr<ServiceWorkerProviderHost>
+ServiceWorkerContextCore::TransferProviderHostOut(int process_id,
+                                                  int provider_id) {
   ProviderMap* map = GetProviderMapForProcess(process_id);
   ServiceWorkerProviderHost* transferee = map->Lookup(provider_id);
   ServiceWorkerProviderHost* replacement =
@@ -639,12 +640,13 @@ ServiceWorkerContextCore::TransferProviderHostOut(
                                     transferee->dispatcher_host());
   map->Replace(provider_id, replacement);
   transferee->PrepareForCrossSiteTransfer();
-  return make_scoped_ptr(transferee);
+  return base::WrapUnique(transferee);
 }
 
 void ServiceWorkerContextCore::TransferProviderHostIn(
-    int new_process_id, int new_provider_id,
-    scoped_ptr<ServiceWorkerProviderHost> transferee) {
+    int new_process_id,
+    int new_provider_id,
+    std::unique_ptr<ServiceWorkerProviderHost> transferee) {
   ProviderMap* map = GetProviderMapForProcess(new_process_id);
   ServiceWorkerProviderHost* temp = map->Lookup(new_provider_id);
   if (!temp)

@@ -34,7 +34,7 @@ ServiceWorkerNavigationHandleCore::~ServiceWorkerNavigationHandleCore() {
 }
 
 void ServiceWorkerNavigationHandleCore::DidPreCreateProviderHost(
-    scoped_ptr<ServiceWorkerProviderHost> precreated_host) {
+    std::unique_ptr<ServiceWorkerProviderHost> precreated_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(precreated_host.get());
   DCHECK(context_wrapper_->context());
@@ -49,7 +49,7 @@ void ServiceWorkerNavigationHandleCore::DidPreCreateProviderHost(
           ui_handle_, precreated_host_->provider_id()));
 }
 
-scoped_ptr<ServiceWorkerProviderHost>
+std::unique_ptr<ServiceWorkerProviderHost>
 ServiceWorkerNavigationHandleCore::RetrievePreCreatedHost() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(precreated_host_);

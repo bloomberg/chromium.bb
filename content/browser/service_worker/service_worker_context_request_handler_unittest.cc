@@ -48,10 +48,12 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
         registration_.get(), script_url_, 1L, context()->AsWeakPtr());
 
     // An empty host.
-    scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
-        helper_->mock_render_process_id(),
-        MSG_ROUTING_NONE /* render_frame_id */, 1 /* provider_id */,
-        SERVICE_WORKER_PROVIDER_FOR_WINDOW, context()->AsWeakPtr(), nullptr));
+    std::unique_ptr<ServiceWorkerProviderHost> host(
+        new ServiceWorkerProviderHost(helper_->mock_render_process_id(),
+                                      MSG_ROUTING_NONE /* render_frame_id */,
+                                      1 /* provider_id */,
+                                      SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+                                      context()->AsWeakPtr(), nullptr));
     provider_host_ = host->AsWeakPtr();
     context()->AddProviderHost(std::move(host));
 
@@ -69,7 +71,7 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
 
  protected:
   TestBrowserThreadBundle browser_thread_bundle_;
-  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
+  std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
@@ -88,15 +90,14 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateBefore24Hours) {
 
   // Conduct a resource fetch for the main script.
   const GURL kScriptUrl("http://host/script.js");
-  scoped_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
+  std::unique_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
       kScriptUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
-  scoped_ptr<ServiceWorkerContextRequestHandler> handler(
+  std::unique_ptr<ServiceWorkerContextRequestHandler> handler(
       new ServiceWorkerContextRequestHandler(
-          context()->AsWeakPtr(),
-          provider_host_,
+          context()->AsWeakPtr(), provider_host_,
           base::WeakPtr<storage::BlobStorageContext>(),
           RESOURCE_TYPE_SERVICE_WORKER));
-  scoped_ptr<net::URLRequestJob> job(
+  std::unique_ptr<net::URLRequestJob> job(
       handler->MaybeCreateJob(request.get(), nullptr, nullptr));
   ASSERT_TRUE(job.get());
   ServiceWorkerWriteToCacheJob* sw_job =
@@ -116,15 +117,14 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateAfter24Hours) {
 
   // Conduct a resource fetch for the main script.
   const GURL kScriptUrl("http://host/script.js");
-  scoped_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
+  std::unique_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
       kScriptUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
-  scoped_ptr<ServiceWorkerContextRequestHandler> handler(
+  std::unique_ptr<ServiceWorkerContextRequestHandler> handler(
       new ServiceWorkerContextRequestHandler(
-          context()->AsWeakPtr(),
-          provider_host_,
+          context()->AsWeakPtr(), provider_host_,
           base::WeakPtr<storage::BlobStorageContext>(),
           RESOURCE_TYPE_SERVICE_WORKER));
-  scoped_ptr<net::URLRequestJob> job(
+  std::unique_ptr<net::URLRequestJob> job(
       handler->MaybeCreateJob(request.get(), nullptr, nullptr));
   ASSERT_TRUE(job.get());
   ServiceWorkerWriteToCacheJob* sw_job =
@@ -144,14 +144,14 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateForceBypassCache) {
 
   // Conduct a resource fetch for the main script.
   const GURL kScriptUrl("http://host/script.js");
-  scoped_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
+  std::unique_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
       kScriptUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
-  scoped_ptr<ServiceWorkerContextRequestHandler> handler(
+  std::unique_ptr<ServiceWorkerContextRequestHandler> handler(
       new ServiceWorkerContextRequestHandler(
           context()->AsWeakPtr(), provider_host_,
           base::WeakPtr<storage::BlobStorageContext>(),
           RESOURCE_TYPE_SERVICE_WORKER));
-  scoped_ptr<net::URLRequestJob> job(
+  std::unique_ptr<net::URLRequestJob> job(
       handler->MaybeCreateJob(request.get(), nullptr, nullptr));
   ASSERT_TRUE(job.get());
   ServiceWorkerWriteToCacheJob* sw_job =
@@ -168,14 +168,14 @@ TEST_F(ServiceWorkerContextRequestHandlerTest,
 
   // Conduct a resource fetch for the main script.
   const GURL kScriptUrl("http://host/script.js");
-  scoped_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
+  std::unique_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
       kScriptUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
-  scoped_ptr<ServiceWorkerContextRequestHandler> handler(
+  std::unique_ptr<ServiceWorkerContextRequestHandler> handler(
       new ServiceWorkerContextRequestHandler(
           context()->AsWeakPtr(), provider_host_,
           base::WeakPtr<storage::BlobStorageContext>(),
           RESOURCE_TYPE_SERVICE_WORKER));
-  scoped_ptr<net::URLRequestJob> job(
+  std::unique_ptr<net::URLRequestJob> job(
       handler->MaybeCreateJob(request.get(), nullptr, nullptr));
   ASSERT_TRUE(job.get());
   ServiceWorkerWriteToCacheJob* sw_job =

@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/service_worker/service_worker_provider_host.h"
+
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -32,20 +34,22 @@ class ServiceWorkerProviderHostTest : public testing::Test {
         GURL("http://www.example.com/example"), 2L, context_->AsWeakPtr());
 
     // Prepare provider hosts (for the same process).
-    scoped_ptr<ServiceWorkerProviderHost> host1(new ServiceWorkerProviderHost(
-        helper_->mock_render_process_id(), MSG_ROUTING_NONE,
-        1 /* provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-        context_->AsWeakPtr(), NULL));
+    std::unique_ptr<ServiceWorkerProviderHost> host1(
+        new ServiceWorkerProviderHost(helper_->mock_render_process_id(),
+                                      MSG_ROUTING_NONE, 1 /* provider_id */,
+                                      SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+                                      context_->AsWeakPtr(), NULL));
     host1->SetDocumentUrl(GURL("http://www.example.com/example1.html"));
-    scoped_ptr<ServiceWorkerProviderHost> host2(new ServiceWorkerProviderHost(
-        helper_->mock_render_process_id(), MSG_ROUTING_NONE,
-        2 /* provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-        context_->AsWeakPtr(), NULL));
+    std::unique_ptr<ServiceWorkerProviderHost> host2(
+        new ServiceWorkerProviderHost(helper_->mock_render_process_id(),
+                                      MSG_ROUTING_NONE, 2 /* provider_id */,
+                                      SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+                                      context_->AsWeakPtr(), NULL));
     host2->SetDocumentUrl(GURL("http://www.example.com/example2.html"));
     provider_host1_ = host1->AsWeakPtr();
     provider_host2_ = host2->AsWeakPtr();
-    context_->AddProviderHost(make_scoped_ptr(host1.release()));
-    context_->AddProviderHost(make_scoped_ptr(host2.release()));
+    context_->AddProviderHost(base::WrapUnique(host1.release()));
+    context_->AddProviderHost(base::WrapUnique(host2.release()));
   }
 
   void TearDown() override {
@@ -59,7 +63,7 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
+  std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   ServiceWorkerContextCore* context_;
   scoped_refptr<ServiceWorkerRegistration> registration1_;
   scoped_refptr<ServiceWorkerRegistration> registration2_;

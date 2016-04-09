@@ -58,7 +58,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Used to pre-create a ServiceWorkerProviderHost for a navigation. The
   // ServiceWorkerNetworkProvider will later be created in the renderer, should
   // the navigation succeed.
-  static scoped_ptr<ServiceWorkerProviderHost> PreCreateNavigationHost(
+  static std::unique_ptr<ServiceWorkerProviderHost> PreCreateNavigationHost(
       base::WeakPtr<ServiceWorkerContextCore> context);
 
   // When this provider host is for a Service Worker context, |route_id| is
@@ -137,7 +137,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Returns a handler for a request, the handler may return NULL if
   // the request doesn't require special handling.
-  scoped_ptr<ServiceWorkerRequestHandler> CreateRequestHandler(
+  std::unique_ptr<ServiceWorkerRequestHandler> CreateRequestHandler(
       FetchRequestMode request_mode,
       FetchCredentialsMode credentials_mode,
       FetchRedirectMode redirect_mode,
@@ -321,7 +321,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // URL starts with.
   ServiceWorkerRegistrationMap matching_registrations_;
 
-  scoped_ptr<OneShotGetReadyCallback> get_ready_callback_;
+  std::unique_ptr<OneShotGetReadyCallback> get_ready_callback_;
   scoped_refptr<ServiceWorkerVersion> controlling_version_;
   scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
   base::WeakPtr<ServiceWorkerContextCore> context_;

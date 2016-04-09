@@ -184,7 +184,7 @@ void ServiceWorkerRegistration::ClaimClients() {
   DCHECK(context_);
   DCHECK(active_version());
 
-  for (scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
+  for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
            context_->GetProviderHostIterator();
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* host = it->GetProviderHost();
@@ -297,7 +297,7 @@ void ServiceWorkerRegistration::DeleteVersion(
 
   UnsetVersion(version.get());
 
-  for (scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
+  for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
            context_->GetProviderHostIterator();
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* host = it->GetProviderHost();

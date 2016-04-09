@@ -478,7 +478,7 @@ net::Error ServiceWorkerWriteToCacheJob::NotifyFinishedCaching(
   return result;
 }
 
-scoped_ptr<ServiceWorkerResponseReader>
+std::unique_ptr<ServiceWorkerResponseReader>
 ServiceWorkerWriteToCacheJob::CreateCacheResponseReader() {
   if (incumbent_resource_id_ == kInvalidServiceWorkerResourceId ||
       !version_->pause_after_download()) {
@@ -487,7 +487,7 @@ ServiceWorkerWriteToCacheJob::CreateCacheResponseReader() {
   return context_->storage()->CreateResponseReader(incumbent_resource_id_);
 }
 
-scoped_ptr<ServiceWorkerResponseWriter>
+std::unique_ptr<ServiceWorkerResponseWriter>
 ServiceWorkerWriteToCacheJob::CreateCacheResponseWriter() {
   return context_->storage()->CreateResponseWriter(resource_id_);
 }

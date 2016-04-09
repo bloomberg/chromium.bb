@@ -6,8 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -74,7 +76,7 @@ class ServiceWorkerReadFromCacheJobTest : public testing::Test {
     // The |test_job_factory_| takes ownership of the interceptor.
     test_job_interceptor_ = new net::TestJobInterceptor();
     EXPECT_TRUE(test_job_factory_.SetProtocolHandler(
-        url::kHttpScheme, make_scoped_ptr(test_job_interceptor_)));
+        url::kHttpScheme, base::WrapUnique(test_job_interceptor_)));
     url_request_context_->set_job_factory(&test_job_factory_);
 
     url_request_context_->Init();
@@ -107,10 +109,10 @@ class ServiceWorkerReadFromCacheJobTest : public testing::Test {
     std::string headers(kHttpHeaders, arraysize(kHttpHeaders));
     scoped_refptr<net::IOBuffer> body(new net::WrappedIOBuffer(kHttpBody));
 
-    scoped_ptr<ServiceWorkerResponseWriter> writer =
+    std::unique_ptr<ServiceWorkerResponseWriter> writer =
         context()->storage()->CreateResponseWriter(resource_id);
 
-    scoped_ptr<net::HttpResponseInfo> info(new net::HttpResponseInfo);
+    std::unique_ptr<net::HttpResponseInfo> info(new net::HttpResponseInfo);
     info->request_time = base::Time::Now();
     info->response_time = base::Time::Now();
     info->was_cached = false;
@@ -169,7 +171,7 @@ class ServiceWorkerReadFromCacheJobTest : public testing::Test {
 
  protected:
   TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
+  std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
 
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
@@ -180,16 +182,17 @@ class ServiceWorkerReadFromCacheJobTest : public testing::Test {
   net::TestJobInterceptor* test_job_interceptor_;
   net::URLRequestJobFactoryImpl test_job_factory_;
 
-  scoped_ptr<net::TestURLRequestContext> url_request_context_;
+  std::unique_ptr<net::TestURLRequestContext> url_request_context_;
   MockURLRequestDelegate delegate_;
 };
 
 TEST_F(ServiceWorkerReadFromCacheJobTest, ReadMainScript) {
   // Read the main script from the diskcache.
-  scoped_ptr<net::URLRequest> request = url_request_context_->CreateRequest(
-      main_script_.url, net::DEFAULT_PRIORITY, &delegate_);
+  std::unique_ptr<net::URLRequest> request =
+      url_request_context_->CreateRequest(main_script_.url,
+                                          net::DEFAULT_PRIORITY, &delegate_);
   test_job_interceptor_->set_main_intercept_job(
-      make_scoped_ptr(new ServiceWorkerReadFromCacheJob(
+      base::WrapUnique(new ServiceWorkerReadFromCacheJob(
           request.get(), nullptr /* NetworkDelegate */,
           RESOURCE_TYPE_SERVICE_WORKER, context()->AsWeakPtr(), version_,
           main_script_.resource_id)));
@@ -203,10 +206,11 @@ TEST_F(ServiceWorkerReadFromCacheJobTest, ReadMainScript) {
 
 TEST_F(ServiceWorkerReadFromCacheJobTest, ReadImportedScript) {
   // Read the imported script from the diskcache.
-  scoped_ptr<net::URLRequest> request = url_request_context_->CreateRequest(
-      imported_script_.url, net::DEFAULT_PRIORITY, &delegate_);
+  std::unique_ptr<net::URLRequest> request =
+      url_request_context_->CreateRequest(imported_script_.url,
+                                          net::DEFAULT_PRIORITY, &delegate_);
   test_job_interceptor_->set_main_intercept_job(
-      make_scoped_ptr(new ServiceWorkerReadFromCacheJob(
+      base::WrapUnique(new ServiceWorkerReadFromCacheJob(
           request.get(), nullptr /* NetworkDelegate */, RESOURCE_TYPE_SCRIPT,
           context()->AsWeakPtr(), version_, imported_script_.resource_id)));
   StartAndWaitForRequest(request.get());
@@ -221,12 +225,13 @@ TEST_F(ServiceWorkerReadFromCacheJobTest, ResourceNotFound) {
   ASSERT_EQ(SERVICE_WORKER_OK, FindRegistration());
 
   // Try to read a nonexistent resource from the diskcache.
-  scoped_ptr<net::URLRequest> request = url_request_context_->CreateRequest(
-      GURL("http://example.com/nonexistent"), net::DEFAULT_PRIORITY,
-      &delegate_);
+  std::unique_ptr<net::URLRequest> request =
+      url_request_context_->CreateRequest(
+          GURL("http://example.com/nonexistent"), net::DEFAULT_PRIORITY,
+          &delegate_);
   const int64_t kNonexistentResourceId = 100;
   test_job_interceptor_->set_main_intercept_job(
-      make_scoped_ptr(new ServiceWorkerReadFromCacheJob(
+      base::WrapUnique(new ServiceWorkerReadFromCacheJob(
           request.get(), nullptr /* NetworkDelegate */,
           RESOURCE_TYPE_SERVICE_WORKER, context()->AsWeakPtr(), version_,
           kNonexistentResourceId)));

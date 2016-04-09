@@ -126,8 +126,8 @@ class ServiceWorkerHandleTest : public testing::Test {
   TestBrowserThreadBundle browser_thread_bundle_;
   MockResourceContext resource_context_;
 
-  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
-  scoped_ptr<ServiceWorkerProviderHost> provider_host_;
+  std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
+  std::unique_ptr<ServiceWorkerProviderHost> provider_host_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
   scoped_refptr<TestingServiceWorkerDispatcherHost> dispatcher_host_;
@@ -137,10 +137,9 @@ class ServiceWorkerHandleTest : public testing::Test {
 };
 
 TEST_F(ServiceWorkerHandleTest, OnVersionStateChanged) {
-  scoped_ptr<ServiceWorkerHandle> handle =
+  std::unique_ptr<ServiceWorkerHandle> handle =
       ServiceWorkerHandle::Create(helper_->context()->AsWeakPtr(),
-                                  provider_host_->AsWeakPtr(),
-                                  version_.get());
+                                  provider_host_->AsWeakPtr(), version_.get());
 
   // Start the worker, and then...
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;

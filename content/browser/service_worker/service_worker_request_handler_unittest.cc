@@ -50,9 +50,11 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
                                         context()->AsWeakPtr());
 
     // An empty host.
-    scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
-        helper_->mock_render_process_id(), MSG_ROUTING_NONE, kMockProviderId,
-        SERVICE_WORKER_PROVIDER_FOR_WINDOW, context()->AsWeakPtr(), nullptr));
+    std::unique_ptr<ServiceWorkerProviderHost> host(
+        new ServiceWorkerProviderHost(helper_->mock_render_process_id(),
+                                      MSG_ROUTING_NONE, kMockProviderId,
+                                      SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+                                      context()->AsWeakPtr(), nullptr));
     host->SetDocumentUrl(GURL("http://host/scope/"));
     provider_host_ = host->AsWeakPtr();
     context()->AddProviderHost(std::move(host));
@@ -87,8 +89,9 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
                               bool skip_service_worker,
                               ResourceType resource_type) {
     const GURL kDocUrl(url);
-    scoped_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
-        kDocUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
+    std::unique_ptr<net::URLRequest> request =
+        url_request_context_.CreateRequest(kDocUrl, net::DEFAULT_PRIORITY,
+                                           &url_request_delegate_);
     request->set_method(method);
     ServiceWorkerRequestHandler::InitializeHandler(
         request.get(), context_wrapper(), &blob_storage_context_,
@@ -102,7 +105,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
 
  protected:
   TestBrowserThreadBundle browser_thread_bundle_;
-  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
+  std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;

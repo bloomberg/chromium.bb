@@ -89,7 +89,7 @@ void VerifyResourceRecords(const std::vector<Resource>& expected,
 TEST(ServiceWorkerDatabaseTest, OpenDatabase) {
   base::ScopedTempDir database_dir;
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());
-  scoped_ptr<ServiceWorkerDatabase> database(
+  std::unique_ptr<ServiceWorkerDatabase> database(
       CreateDatabase(database_dir.path()));
 
   // Should be false because the database does not exist at the path.
@@ -103,7 +103,7 @@ TEST(ServiceWorkerDatabaseTest, OpenDatabase) {
 }
 
 TEST(ServiceWorkerDatabaseTest, OpenDatabase_InMemory) {
-  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
   // Should be false because the database does not exist in memory.
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
@@ -119,7 +119,7 @@ TEST(ServiceWorkerDatabaseTest, OpenDatabase_InMemory) {
 
 TEST(ServiceWorkerDatabaseTest, DatabaseVersion_ValidSchemaVersion) {
   GURL origin("http://example.com");
-  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->LazyOpen(true));
 
   // Opening a new database does not write anything, so its schema version
@@ -149,7 +149,7 @@ TEST(ServiceWorkerDatabaseTest, DatabaseVersion_ValidSchemaVersion) {
 TEST(ServiceWorkerDatabaseTest, DatabaseVersion_ObsoleteSchemaVersion) {
   base::ScopedTempDir database_dir;
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());
-  scoped_ptr<ServiceWorkerDatabase> database(
+  std::unique_ptr<ServiceWorkerDatabase> database(
       CreateDatabase(database_dir.path()));
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->LazyOpen(true));
 
@@ -189,7 +189,7 @@ TEST(ServiceWorkerDatabaseTest, DatabaseVersion_ObsoleteSchemaVersion) {
 TEST(ServiceWorkerDatabaseTest, DatabaseVersion_CorruptedSchemaVersion) {
   base::ScopedTempDir database_dir;
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());
-  scoped_ptr<ServiceWorkerDatabase> database(
+  std::unique_ptr<ServiceWorkerDatabase> database(
       CreateDatabase(database_dir.path()));
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->LazyOpen(true));
 
@@ -228,7 +228,7 @@ TEST(ServiceWorkerDatabaseTest, DatabaseVersion_CorruptedSchemaVersion) {
 TEST(ServiceWorkerDatabaseTest, GetNextAvailableIds) {
   base::ScopedTempDir database_dir;
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());
-  scoped_ptr<ServiceWorkerDatabase> database(
+  std::unique_ptr<ServiceWorkerDatabase> database(
       CreateDatabase(database_dir.path()));
 
   GURL origin("http://example.com");
@@ -327,7 +327,7 @@ TEST(ServiceWorkerDatabaseTest, GetNextAvailableIds) {
 }
 
 TEST(ServiceWorkerDatabaseTest, GetOriginsWithRegistrations) {
-  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
   std::set<GURL> origins;
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
@@ -431,7 +431,7 @@ TEST(ServiceWorkerDatabaseTest, GetOriginsWithRegistrations) {
 }
 
 TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
-  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
   GURL origin1("http://example.com");
   GURL origin2("https://www.example.com");
@@ -540,7 +540,7 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
 }
 
 TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
-  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
   std::vector<RegistrationData> registrations;
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
@@ -613,7 +613,7 @@ TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
 }
 
 TEST(ServiceWorkerDatabaseTest, Registration_Basic) {
-  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
   GURL origin("http://example.com");
   RegistrationData data;
@@ -700,7 +700,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_Basic) {
 }
 
 TEST(ServiceWorkerDatabaseTest, DeleteNonExistentRegistration) {
-  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
   GURL origin("http://example.com");
   RegistrationData data;
@@ -750,7 +750,7 @@ TEST(ServiceWorkerDatabaseTest, DeleteNonExistentRegistration) {
 }
 
 TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
-  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
   GURL origin("http://example.com");
   RegistrationData data;
@@ -824,7 +824,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
 }
 
 TEST(ServiceWorkerDatabaseTest, Registration_Multiple) {
-  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
   GURL origin("http://example.com");
 
   ServiceWorkerDatabase::RegistrationData deleted_version;
@@ -929,7 +929,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_Multiple) {
 }
 
 TEST(ServiceWorkerDatabaseTest, Registration_UninitializedDatabase) {
-  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
   const GURL origin("http://example.com");
 
   // Should be failed because the database does not exist.
@@ -975,7 +975,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_UninitializedDatabase) {
 }
 
 TEST(ServiceWorkerDatabaseTest, UserData_Basic) {
-  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
   const GURL kOrigin("http://example.com");
 
   // Add a registration.
@@ -1043,7 +1043,7 @@ TEST(ServiceWorkerDatabaseTest, UserData_Basic) {
 }
 
 TEST(ServiceWorkerDatabaseTest, UserData_DataIsolation) {
-  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
   const GURL kOrigin("http://example.com");
 
   // Add registration 1.
@@ -1134,7 +1134,7 @@ TEST(ServiceWorkerDatabaseTest, UserData_DataIsolation) {
 }
 
 TEST(ServiceWorkerDatabaseTest, UserData_DeleteRegistration) {
-  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
   const GURL kOrigin("http://example.com");
 
   // Add registration 1.
@@ -1211,7 +1211,7 @@ TEST(ServiceWorkerDatabaseTest, UserData_DeleteRegistration) {
 }
 
 TEST(ServiceWorkerDatabaseTest, UserData_UninitializedDatabase) {
-  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
   const GURL kOrigin("http://example.com");
 
   // Should be failed because the database does not exist.
@@ -1243,7 +1243,7 @@ TEST(ServiceWorkerDatabaseTest, UserData_UninitializedDatabase) {
 }
 
 TEST(ServiceWorkerDatabaseTest, UpdateVersionToActive) {
-  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
   GURL origin("http://example.com");
 
   ServiceWorkerDatabase::RegistrationData deleted_version;
@@ -1304,7 +1304,7 @@ TEST(ServiceWorkerDatabaseTest, UpdateVersionToActive) {
 }
 
 TEST(ServiceWorkerDatabaseTest, UpdateLastCheckTime) {
-  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
   GURL origin("http://example.com");
   ServiceWorkerDatabase::RegistrationData deleted_version;
   std::vector<int64_t> newly_purgeable_resources;
@@ -1367,7 +1367,7 @@ TEST(ServiceWorkerDatabaseTest, UpdateLastCheckTime) {
 }
 
 TEST(ServiceWorkerDatabaseTest, UncommittedAndPurgeableResourceIds) {
-  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
   // Write {1, 2, 3} into the uncommitted list.
   std::set<int64_t> ids1;
@@ -1420,7 +1420,7 @@ TEST(ServiceWorkerDatabaseTest, UncommittedAndPurgeableResourceIds) {
 }
 
 TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
-  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
   ServiceWorkerDatabase::RegistrationData deleted_version;
   std::vector<int64_t> newly_purgeable_resources;
 
@@ -1583,7 +1583,7 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
 TEST(ServiceWorkerDatabaseTest, DestroyDatabase) {
   base::ScopedTempDir database_dir;
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());
-  scoped_ptr<ServiceWorkerDatabase> database(
+  std::unique_ptr<ServiceWorkerDatabase> database(
       CreateDatabase(database_dir.path()));
 
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->LazyOpen(true));
@@ -1594,7 +1594,7 @@ TEST(ServiceWorkerDatabaseTest, DestroyDatabase) {
 }
 
 TEST(ServiceWorkerDatabaseTest, GetOriginsWithForeignFetchRegistrations) {
-  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
   std::set<GURL> origins;
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,

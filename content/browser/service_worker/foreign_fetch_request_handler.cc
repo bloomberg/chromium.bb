@@ -69,10 +69,11 @@ void ForeignFetchRequestHandler::InitializeHandler(
 
   // Any more precise checks to see if the request should be intercepted are
   // asynchronous, so just create our handler in all cases.
-  scoped_ptr<ForeignFetchRequestHandler> handler(new ForeignFetchRequestHandler(
-      context_wrapper, blob_storage_context->AsWeakPtr(), request_mode,
-      credentials_mode, redirect_mode, resource_type, request_context_type,
-      frame_type, body));
+  std::unique_ptr<ForeignFetchRequestHandler> handler(
+      new ForeignFetchRequestHandler(
+          context_wrapper, blob_storage_context->AsWeakPtr(), request_mode,
+          credentials_mode, redirect_mode, resource_type, request_context_type,
+          frame_type, body));
   request->SetUserData(&kUserDataKey, handler.release());
 }
 
@@ -82,10 +83,10 @@ ForeignFetchRequestHandler* ForeignFetchRequestHandler::GetHandler(
       request->GetUserData(&kUserDataKey));
 }
 
-scoped_ptr<net::URLRequestInterceptor>
+std::unique_ptr<net::URLRequestInterceptor>
 ForeignFetchRequestHandler::CreateInterceptor(
     ResourceContext* resource_context) {
-  return scoped_ptr<net::URLRequestInterceptor>(
+  return std::unique_ptr<net::URLRequestInterceptor>(
       new ForeignFetchRequestInterceptor(resource_context));
 }
 

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -15,7 +16,6 @@
 #include "base/files/file_path.h"
 #include "base/id_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "content/browser/service_worker/service_worker_info.h"
@@ -98,8 +98,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
     ProcessToProviderMap* map_;
     ProviderHostPredicate predicate_;
-    scoped_ptr<ProcessToProviderMap::iterator> process_iterator_;
-    scoped_ptr<ProviderMap::iterator> provider_host_iterator_;
+    std::unique_ptr<ProcessToProviderMap::iterator> process_iterator_;
+    std::unique_ptr<ProviderMap::iterator> provider_host_iterator_;
 
     DISALLOW_COPY_AND_ASSIGN(ProviderHostIterator);
   };
@@ -112,7 +112,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // be called on the thread which called AddObserver() of |observer_list|.
   ServiceWorkerContextCore(
       const base::FilePath& user_data_directory,
-      scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_runner_manager,
+      std::unique_ptr<ServiceWorkerDatabaseTaskManager>
+          database_task_runner_manager,
       const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
       storage::QuotaManagerProxy* quota_manager_proxy,
       storage::SpecialStoragePolicy* special_storage_policy,
@@ -155,15 +156,16 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   // The context class owns the set of ProviderHosts.
   ServiceWorkerProviderHost* GetProviderHost(int process_id, int provider_id);
-  void AddProviderHost(scoped_ptr<ServiceWorkerProviderHost> provider_host);
+  void AddProviderHost(
+      std::unique_ptr<ServiceWorkerProviderHost> provider_host);
   void RemoveProviderHost(int process_id, int provider_id);
   void RemoveAllProviderHostsForProcess(int process_id);
-  scoped_ptr<ProviderHostIterator> GetProviderHostIterator();
+  std::unique_ptr<ProviderHostIterator> GetProviderHostIterator();
 
   // Returns a ProviderHost iterator for all ServiceWorker clients for
   // the |origin|.  This only returns ProviderHosts that are of CONTROLLEE
   // and belong to the |origin|.
-  scoped_ptr<ProviderHostIterator> GetClientProviderHostIterator(
+  std::unique_ptr<ProviderHostIterator> GetClientProviderHostIterator(
       const GURL& origin);
 
   // Runs the callback with true if there is a ProviderHost for |origin| of type
@@ -261,13 +263,13 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void DeleteAndStartOver(const StatusCallback& callback);
 
   // Methods to support cross site navigations.
-  scoped_ptr<ServiceWorkerProviderHost> TransferProviderHostOut(
+  std::unique_ptr<ServiceWorkerProviderHost> TransferProviderHostOut(
       int process_id,
       int provider_id);
   void TransferProviderHostIn(
       int new_process_id,
       int new_host_id,
-      scoped_ptr<ServiceWorkerProviderHost> provider_host);
+      std::unique_ptr<ServiceWorkerProviderHost> provider_host);
 
   void ClearAllServiceWorkersForTest(const base::Closure& callback);
 
@@ -332,11 +334,11 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // because the Wrapper::Shutdown call that hops threads to destroy |this| uses
   // Bind() to hold a reference to |wrapper_| until |this| is fully destroyed.
   ServiceWorkerContextWrapper* wrapper_;
-  scoped_ptr<ProcessToProviderMap> providers_;
-  scoped_ptr<ProviderByClientUUIDMap> provider_by_uuid_;
-  scoped_ptr<ServiceWorkerStorage> storage_;
+  std::unique_ptr<ProcessToProviderMap> providers_;
+  std::unique_ptr<ProviderByClientUUIDMap> provider_by_uuid_;
+  std::unique_ptr<ServiceWorkerStorage> storage_;
   scoped_refptr<EmbeddedWorkerRegistry> embedded_worker_registry_;
-  scoped_ptr<ServiceWorkerJobCoordinator> job_coordinator_;
+  std::unique_ptr<ServiceWorkerJobCoordinator> job_coordinator_;
   std::map<int64_t, ServiceWorkerRegistration*> live_registrations_;
   std::map<int64_t, ServiceWorkerVersion*> live_versions_;
   std::map<int64_t, scoped_refptr<ServiceWorkerVersion>> protected_versions_;

@@ -73,11 +73,11 @@ class CONTENT_EXPORT ServiceWorkerReadFromCacheJob
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
   scoped_refptr<ServiceWorkerVersion> version_;
-  scoped_ptr<ServiceWorkerResponseReader> reader_;
+  std::unique_ptr<ServiceWorkerResponseReader> reader_;
   scoped_refptr<HttpResponseInfoIOBuffer> http_info_io_buffer_;
-  scoped_ptr<net::HttpResponseInfo> http_info_;
+  std::unique_ptr<net::HttpResponseInfo> http_info_;
   net::HttpByteRange range_requested_;
-  scoped_ptr<net::HttpResponseInfo> range_response_info_;
+  std::unique_ptr<net::HttpResponseInfo> range_response_info_;
   bool has_been_killed_ = false;
 
   base::WeakPtrFactory<ServiceWorkerReadFromCacheJob> weak_factory_;

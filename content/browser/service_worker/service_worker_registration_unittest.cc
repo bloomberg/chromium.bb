@@ -74,7 +74,7 @@ class ServiceWorkerRegistrationTest : public testing::Test {
   };
 
  private:
-  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
+  std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   TestBrowserThreadBundle thread_bundle_;
 };
 
@@ -152,7 +152,7 @@ TEST_F(ServiceWorkerRegistrationTest, FailedRegistrationNoCrash) {
   scoped_refptr<ServiceWorkerRegistration> registration =
       new ServiceWorkerRegistration(kScope, kRegistrationId,
                                     context()->AsWeakPtr());
-  scoped_ptr<ServiceWorkerRegistrationHandle> handle(
+  std::unique_ptr<ServiceWorkerRegistrationHandle> handle(
       new ServiceWorkerRegistrationHandle(
           context()->AsWeakPtr(), base::WeakPtr<ServiceWorkerProviderHost>(),
           registration.get()));

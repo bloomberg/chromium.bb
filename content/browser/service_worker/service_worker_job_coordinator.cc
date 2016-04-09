@@ -5,9 +5,11 @@
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "content/browser/service_worker/service_worker_register_job_base.h"
 
@@ -33,7 +35,7 @@ ServiceWorkerJobCoordinator::JobQueue::~JobQueue() {
 }
 
 ServiceWorkerRegisterJobBase* ServiceWorkerJobCoordinator::JobQueue::Push(
-    scoped_ptr<ServiceWorkerRegisterJobBase> job) {
+    std::unique_ptr<ServiceWorkerRegisterJobBase> job) {
   if (jobs_.empty()) {
     jobs_.push_back(job.release());
     StartOneJob();
@@ -109,7 +111,7 @@ void ServiceWorkerJobCoordinator::Register(
     const GURL& script_url,
     ServiceWorkerProviderHost* provider_host,
     const ServiceWorkerRegisterJob::RegistrationCallback& callback) {
-  scoped_ptr<ServiceWorkerRegisterJobBase> job(
+  std::unique_ptr<ServiceWorkerRegisterJobBase> job(
       new ServiceWorkerRegisterJob(context_, pattern, script_url));
   ServiceWorkerRegisterJob* queued_job = static_cast<ServiceWorkerRegisterJob*>(
       job_queues_[pattern].Push(std::move(job)));
@@ -119,7 +121,7 @@ void ServiceWorkerJobCoordinator::Register(
 void ServiceWorkerJobCoordinator::Unregister(
     const GURL& pattern,
     const ServiceWorkerUnregisterJob::UnregistrationCallback& callback) {
-  scoped_ptr<ServiceWorkerRegisterJobBase> job(
+  std::unique_ptr<ServiceWorkerRegisterJobBase> job(
       new ServiceWorkerUnregisterJob(context_, pattern));
   ServiceWorkerUnregisterJob* queued_job =
       static_cast<ServiceWorkerUnregisterJob*>(
@@ -133,7 +135,7 @@ void ServiceWorkerJobCoordinator::Update(
   DCHECK(registration);
   DCHECK(registration->GetNewestVersion());
   job_queues_[registration->pattern()].Push(
-      make_scoped_ptr<ServiceWorkerRegisterJobBase>(
+      base::WrapUnique<ServiceWorkerRegisterJobBase>(
           new ServiceWorkerRegisterJob(context_, registration,
                                        force_bypass_cache,
                                        false /* skip_script_comparison */)));
@@ -149,7 +151,7 @@ void ServiceWorkerJobCoordinator::Update(
   DCHECK(registration->GetNewestVersion());
   ServiceWorkerRegisterJob* queued_job = static_cast<ServiceWorkerRegisterJob*>(
       job_queues_[registration->pattern()].Push(
-          make_scoped_ptr<ServiceWorkerRegisterJobBase>(
+          base::WrapUnique<ServiceWorkerRegisterJobBase>(
               new ServiceWorkerRegisterJob(context_, registration,
                                            force_bypass_cache,
                                            skip_script_comparison))));

@@ -144,10 +144,10 @@ int WriteResponse(ServiceWorkerStorage* storage,
                   const std::string& headers,
                   IOBuffer* body,
                   int length) {
-  scoped_ptr<ServiceWorkerResponseWriter> writer =
+  std::unique_ptr<ServiceWorkerResponseWriter> writer =
       storage->CreateResponseWriter(id);
 
-  scoped_ptr<net::HttpResponseInfo> info(new net::HttpResponseInfo);
+  std::unique_ptr<net::HttpResponseInfo> info(new net::HttpResponseInfo);
   info->request_time = base::Time::Now();
   info->response_time = base::Time::Now();
   info->was_cached = false;
@@ -188,7 +188,7 @@ int WriteBasicResponse(ServiceWorkerStorage* storage, int64_t id) {
 int ReadResponseInfo(ServiceWorkerStorage* storage,
                      int64_t id,
                      HttpResponseInfoIOBuffer* info_buffer) {
-  scoped_ptr<ServiceWorkerResponseReader> reader =
+  std::unique_ptr<ServiceWorkerResponseReader> reader =
       storage->CreateResponseReader(id);
   TestCompletionCallback cb;
   reader->ReadInfo(info_buffer, cb.callback());
@@ -199,7 +199,7 @@ bool VerifyBasicResponse(ServiceWorkerStorage* storage,
                          int64_t id,
                          bool expected_positive_result) {
   const std::string kExpectedHttpBody("Hello");
-  scoped_ptr<ServiceWorkerResponseReader> reader =
+  std::unique_ptr<ServiceWorkerResponseReader> reader =
       storage->CreateResponseReader(id);
   scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =
       new HttpResponseInfoIOBuffer();
@@ -234,7 +234,7 @@ int WriteResponseMetadata(ServiceWorkerStorage* storage,
                           int64_t id,
                           const std::string& metadata) {
   scoped_refptr<IOBuffer> body_buffer(new WrappedIOBuffer(metadata.data()));
-  scoped_ptr<ServiceWorkerResponseMetadataWriter> metadata_writer =
+  std::unique_ptr<ServiceWorkerResponseMetadataWriter> metadata_writer =
       storage->CreateResponseMetadataWriter(id);
   TestCompletionCallback cb;
   metadata_writer->WriteMetadata(body_buffer.get(), metadata.length(),
@@ -262,7 +262,7 @@ int ClearMetadata(ServiceWorkerVersion* version, const GURL& url) {
 bool VerifyResponseMetadata(ServiceWorkerStorage* storage,
                             int64_t id,
                             const std::string& expected_metadata) {
-  scoped_ptr<ServiceWorkerResponseReader> reader =
+  std::unique_ptr<ServiceWorkerResponseReader> reader =
       storage->CreateResponseReader(id);
   scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =
       new HttpResponseInfoIOBuffer();
@@ -506,7 +506,7 @@ class ServiceWorkerStorageTest : public testing::Test {
 
   // user_data_directory_ must be declared first to preserve destructor order.
   base::ScopedTempDir user_data_directory_;
-  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
+  std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   TestBrowserThreadBundle browser_thread_bundle_;
 };
 
@@ -1221,7 +1221,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   registration_->SetActiveVersion(registration_->waiting_version());
   storage()->UpdateToActiveState(
       registration_.get(), base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
-  scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
+  std::unique_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
       33 /* dummy render process id */, MSG_ROUTING_NONE,
       1 /* dummy provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
       context()->AsWeakPtr(), NULL));
@@ -1272,7 +1272,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   registration_->SetWaitingVersion(NULL);
   storage()->UpdateToActiveState(
       registration_.get(), base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
-  scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
+  std::unique_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
       33 /* dummy render process id */, MSG_ROUTING_NONE,
       1 /* dummy provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
       context()->AsWeakPtr(), NULL));
@@ -1431,7 +1431,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   registration_->SetActiveVersion(registration_->waiting_version());
   storage()->UpdateToActiveState(
       registration_.get(), base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
-  scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
+  std::unique_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
       33 /* dummy render process id */, MSG_ROUTING_NONE,
       1 /* dummy provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
       context()->AsWeakPtr(), NULL));

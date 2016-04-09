@@ -6,13 +6,13 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_EMBEDDED_WORKER_REGISTRY_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
@@ -55,11 +55,11 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
 
   // Creates and removes a new worker instance entry for bookkeeping.
   // This doesn't actually start or stop the worker.
-  scoped_ptr<EmbeddedWorkerInstance> CreateWorker();
+  std::unique_ptr<EmbeddedWorkerInstance> CreateWorker();
 
   // Called from EmbeddedWorkerInstance, relayed to the child process.
   ServiceWorkerStatusCode SendStartWorker(
-      scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
+      std::unique_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
       int process_id);
   ServiceWorkerStatusCode StopWorker(int process_id,
                                      int embedded_worker_id);

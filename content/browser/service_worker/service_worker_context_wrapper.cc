@@ -114,7 +114,7 @@ void ServiceWorkerContextWrapper::Init(
 
   is_incognito_ = user_data_directory.empty();
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
-  scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager(
+  std::unique_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager(
       new ServiceWorkerDatabaseTaskManagerImpl(pool));
   scoped_refptr<base::SingleThreadTaskRunner> disk_cache_thread =
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE);
@@ -666,7 +666,7 @@ bool ServiceWorkerContextWrapper::OriginHasForeignFetchRegistrations(
 
 void ServiceWorkerContextWrapper::InitInternal(
     const base::FilePath& user_data_directory,
-    scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager,
+    std::unique_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager,
     const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
     storage::QuotaManagerProxy* quota_manager_proxy,
     storage::SpecialStoragePolicy* special_storage_policy) {

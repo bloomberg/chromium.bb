@@ -4,10 +4,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -202,7 +204,7 @@ class MockHttpProtocolHandler
 
 class ResponseVerifier : public base::RefCounted<ResponseVerifier> {
  public:
-  ResponseVerifier(scoped_ptr<ServiceWorkerResponseReader> reader,
+  ResponseVerifier(std::unique_ptr<ServiceWorkerResponseReader> reader,
                    const std::string& expected,
                    const base::Callback<void(bool)> callback)
       : reader_(reader.release()), expected_(expected), callback_(callback) {}
@@ -256,7 +258,7 @@ class ResponseVerifier : public base::RefCounted<ResponseVerifier> {
   friend class base::RefCounted<ResponseVerifier>;
   ~ResponseVerifier() {}
 
-  scoped_ptr<ServiceWorkerResponseReader> reader_;
+  std::unique_ptr<ServiceWorkerResponseReader> reader_;
   const std::string expected_;
   base::Callback<void(bool)> callback_;
   scoped_refptr<HttpResponseInfoIOBuffer> info_buffer_;
@@ -277,9 +279,10 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
       int process_id,
       int provider_id,
       const scoped_refptr<ServiceWorkerVersion>& version) {
-    scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
-        process_id, MSG_ROUTING_NONE, provider_id,
-        SERVICE_WORKER_PROVIDER_FOR_WORKER, context()->AsWeakPtr(), nullptr));
+    std::unique_ptr<ServiceWorkerProviderHost> host(
+        new ServiceWorkerProviderHost(process_id, MSG_ROUTING_NONE, provider_id,
+                                      SERVICE_WORKER_PROVIDER_FOR_WORKER,
+                                      context()->AsWeakPtr(), nullptr));
     base::WeakPtr<ServiceWorkerProviderHost> provider_host = host->AsWeakPtr();
     context()->AddProviderHost(std::move(host));
     provider_host->running_hosted_version_ = version;
@@ -297,7 +300,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     mock_protocol_handler_ = new MockHttpProtocolHandler(&resource_context_);
     url_request_job_factory_.reset(new net::URLRequestJobFactoryImpl);
     url_request_job_factory_->SetProtocolHandler(
-        "https", make_scoped_ptr(mock_protocol_handler_));
+        "https", base::WrapUnique(mock_protocol_handler_));
     url_request_context_->set_job_factory(url_request_job_factory_.get());
 
     request_ = url_request_context_->CreateRequest(
@@ -394,7 +397,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
   void VerifyResource(int id, const std::string& expected) {
     ASSERT_NE(kInvalidServiceWorkerResourceId, id);
     bool is_equal = false;
-    scoped_ptr<ServiceWorkerResponseReader> reader =
+    std::unique_ptr<ServiceWorkerResponseReader> reader =
         context()->storage()->CreateResponseReader(id);
     scoped_refptr<ResponseVerifier> verifier = new ResponseVerifier(
         std::move(reader), expected, CreateReceiverOnCurrentThread(&is_equal));
@@ -413,13 +416,13 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
 
  protected:
   TestBrowserThreadBundle browser_thread_bundle_;
-  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
+  std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
-  scoped_ptr<net::URLRequestContext> url_request_context_;
-  scoped_ptr<net::URLRequestJobFactoryImpl> url_request_job_factory_;
-  scoped_ptr<net::URLRequest> request_;
+  std::unique_ptr<net::URLRequestContext> url_request_context_;
+  std::unique_ptr<net::URLRequestJobFactoryImpl> url_request_job_factory_;
+  std::unique_ptr<net::URLRequest> request_;
   MockHttpProtocolHandler* mock_protocol_handler_;
 
   storage::BlobStorageContext blob_storage_context_;

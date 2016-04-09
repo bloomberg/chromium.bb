@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REQUEST_HANDLER_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REQUEST_HANDLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
@@ -84,7 +85,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       net::URLRequest* request);
 
   // Creates a protocol interceptor for ServiceWorker.
-  static scoped_ptr<net::URLRequestInterceptor> CreateInterceptor(
+  static std::unique_ptr<net::URLRequestInterceptor> CreateInterceptor(
       ResourceContext* resource_context);
 
   // Returns true if the request falls into the scope of a ServiceWorker.
@@ -128,7 +129,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
   ResourceType resource_type_;
 
  private:
-  scoped_ptr<ServiceWorkerProviderHost> host_for_cross_site_transfer_;
+  std::unique_ptr<ServiceWorkerProviderHost> host_for_cross_site_transfer_;
   int old_process_id_;
   int old_provider_id_;
 

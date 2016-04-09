@@ -5,10 +5,12 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -111,29 +113,26 @@ ServiceWorkerStorage::~ServiceWorkerStorage() {
 }
 
 // static
-scoped_ptr<ServiceWorkerStorage> ServiceWorkerStorage::Create(
+std::unique_ptr<ServiceWorkerStorage> ServiceWorkerStorage::Create(
     const base::FilePath& path,
     const base::WeakPtr<ServiceWorkerContextCore>& context,
-    scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager,
+    std::unique_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager,
     const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
     storage::QuotaManagerProxy* quota_manager_proxy,
     storage::SpecialStoragePolicy* special_storage_policy) {
-  return make_scoped_ptr(new ServiceWorkerStorage(
+  return base::WrapUnique(new ServiceWorkerStorage(
       path, context, std::move(database_task_manager), disk_cache_thread,
       quota_manager_proxy, special_storage_policy));
 }
 
 // static
-scoped_ptr<ServiceWorkerStorage> ServiceWorkerStorage::Create(
+std::unique_ptr<ServiceWorkerStorage> ServiceWorkerStorage::Create(
     const base::WeakPtr<ServiceWorkerContextCore>& context,
     ServiceWorkerStorage* old_storage) {
-  return make_scoped_ptr(
-      new ServiceWorkerStorage(old_storage->path_,
-                               context,
-                               old_storage->database_task_manager_->Clone(),
-                               old_storage->disk_cache_thread_,
-                               old_storage->quota_manager_proxy_.get(),
-                               old_storage->special_storage_policy_.get()));
+  return base::WrapUnique(new ServiceWorkerStorage(
+      old_storage->path_, context, old_storage->database_task_manager_->Clone(),
+      old_storage->disk_cache_thread_, old_storage->quota_manager_proxy_.get(),
+      old_storage->special_storage_policy_.get()));
 }
 
 void ServiceWorkerStorage::FindRegistrationForDocument(
@@ -517,21 +516,21 @@ void ServiceWorkerStorage::DeleteRegistration(int64_t registration_id,
     registration->set_is_deleted(true);
 }
 
-scoped_ptr<ServiceWorkerResponseReader>
+std::unique_ptr<ServiceWorkerResponseReader>
 ServiceWorkerStorage::CreateResponseReader(int64_t resource_id) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new ServiceWorkerResponseReader(resource_id, disk_cache()->GetWeakPtr()));
 }
 
-scoped_ptr<ServiceWorkerResponseWriter>
+std::unique_ptr<ServiceWorkerResponseWriter>
 ServiceWorkerStorage::CreateResponseWriter(int64_t resource_id) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new ServiceWorkerResponseWriter(resource_id, disk_cache()->GetWeakPtr()));
 }
 
-scoped_ptr<ServiceWorkerResponseMetadataWriter>
+std::unique_ptr<ServiceWorkerResponseMetadataWriter>
 ServiceWorkerStorage::CreateResponseMetadataWriter(int64_t resource_id) {
-  return make_scoped_ptr(new ServiceWorkerResponseMetadataWriter(
+  return base::WrapUnique(new ServiceWorkerResponseMetadataWriter(
       resource_id, disk_cache()->GetWeakPtr()));
 }
 
@@ -780,7 +779,7 @@ void ServiceWorkerStorage::PurgeResources(const ResourceList& resources) {
 ServiceWorkerStorage::ServiceWorkerStorage(
     const base::FilePath& path,
     base::WeakPtr<ServiceWorkerContextCore> context,
-    scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager,
+    std::unique_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager,
     const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
     storage::QuotaManagerProxy* quota_manager_proxy,
     storage::SpecialStoragePolicy* special_storage_policy)
@@ -841,7 +840,7 @@ bool ServiceWorkerStorage::LazyInitialize(const base::Closure& callback) {
 }
 
 void ServiceWorkerStorage::DidReadInitialData(
-    scoped_ptr<InitialData> data,
+    std::unique_ptr<InitialData> data,
     ServiceWorkerDatabase::Status status) {
   DCHECK(data);
   DCHECK_EQ(INITIALIZING, state_);
@@ -1471,7 +1470,7 @@ void ServiceWorkerStorage::ReadInitialDataFromDB(
     scoped_refptr<base::SequencedTaskRunner> original_task_runner,
     const InitializeCallback& callback) {
   DCHECK(database);
-  scoped_ptr<ServiceWorkerStorage::InitialData> data(
+  std::unique_ptr<ServiceWorkerStorage::InitialData> data(
       new ServiceWorkerStorage::InitialData());
 
   ServiceWorkerDatabase::Status status =

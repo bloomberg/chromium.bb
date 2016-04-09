@@ -8,10 +8,10 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "net/base/io_buffer.h"
@@ -45,9 +45,9 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
   // unconditionally write back data supplied to |MaybeWriteHeaders| and
   // |MaybeWriteData|.
   ServiceWorkerCacheWriter(
-      scoped_ptr<ServiceWorkerResponseReader> compare_reader,
-      scoped_ptr<ServiceWorkerResponseReader> copy_reader,
-      scoped_ptr<ServiceWorkerResponseWriter> writer);
+      std::unique_ptr<ServiceWorkerResponseReader> compare_reader,
+      std::unique_ptr<ServiceWorkerResponseReader> copy_reader,
+      std::unique_ptr<ServiceWorkerResponseWriter> writer);
 
   ~ServiceWorkerCacheWriter();
 
@@ -167,16 +167,18 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
   //   a) Return ERR_IO_PENDING, and schedule a callback to run the state
   //      machine's Run() later, or
   //   b) Return some other value and do not schedule a callback.
-  int ReadInfoHelper(const scoped_ptr<ServiceWorkerResponseReader>& reader,
+  int ReadInfoHelper(const std::unique_ptr<ServiceWorkerResponseReader>& reader,
                      HttpResponseInfoIOBuffer* buf);
-  int ReadDataHelper(const scoped_ptr<ServiceWorkerResponseReader>& reader,
+  int ReadDataHelper(const std::unique_ptr<ServiceWorkerResponseReader>& reader,
                      net::IOBuffer* buf,
                      int buf_len);
-  int WriteInfoHelper(const scoped_ptr<ServiceWorkerResponseWriter>& writer,
-                      HttpResponseInfoIOBuffer* buf);
-  int WriteDataHelper(const scoped_ptr<ServiceWorkerResponseWriter>& writer,
-                      net::IOBuffer* buf,
-                      int buf_len);
+  int WriteInfoHelper(
+      const std::unique_ptr<ServiceWorkerResponseWriter>& writer,
+      HttpResponseInfoIOBuffer* buf);
+  int WriteDataHelper(
+      const std::unique_ptr<ServiceWorkerResponseWriter>& writer,
+      net::IOBuffer* buf,
+      int buf_len);
 
   // Callback used by the above helpers for their IO operations. This is only
   // run when those IO operations complete asynchronously, in which case it
@@ -210,9 +212,9 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
 
   size_t compare_offset_;
 
-  scoped_ptr<ServiceWorkerResponseReader> compare_reader_;
-  scoped_ptr<ServiceWorkerResponseReader> copy_reader_;
-  scoped_ptr<ServiceWorkerResponseWriter> writer_;
+  std::unique_ptr<ServiceWorkerResponseReader> compare_reader_;
+  std::unique_ptr<ServiceWorkerResponseReader> copy_reader_;
+  std::unique_ptr<ServiceWorkerResponseWriter> writer_;
   base::WeakPtrFactory<ServiceWorkerCacheWriter> weak_factory_;
 };
 

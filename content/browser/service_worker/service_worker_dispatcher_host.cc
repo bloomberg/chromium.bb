@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -126,7 +127,7 @@ void ServiceWorkerDispatcherHost::OnFilterAdded(IPC::Sender* sender) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnFilterAdded");
   channel_ready_ = true;
-  std::vector<scoped_ptr<IPC::Message>> messages;
+  std::vector<std::unique_ptr<IPC::Message>> messages;
   messages.swap(pending_messages_);
   for (auto& message : messages) {
     BrowserMessageFilter::Send(message.release());
@@ -222,18 +223,18 @@ bool ServiceWorkerDispatcherHost::Send(IPC::Message* message) {
     return true;
   }
 
-  pending_messages_.push_back(make_scoped_ptr(message));
+  pending_messages_.push_back(base::WrapUnique(message));
   return true;
 }
 
 void ServiceWorkerDispatcherHost::RegisterServiceWorkerHandle(
-    scoped_ptr<ServiceWorkerHandle> handle) {
+    std::unique_ptr<ServiceWorkerHandle> handle) {
   int handle_id = handle->handle_id();
   handles_.AddWithID(handle.release(), handle_id);
 }
 
 void ServiceWorkerDispatcherHost::RegisterServiceWorkerRegistrationHandle(
-    scoped_ptr<ServiceWorkerRegistrationHandle> handle) {
+    std::unique_ptr<ServiceWorkerRegistrationHandle> handle) {
   int handle_id = handle->handle_id();
   registration_handles_.AddWithID(handle.release(), handle_id);
 }
@@ -266,7 +267,7 @@ ServiceWorkerDispatcherHost::GetOrCreateRegistrationHandle(
     return existing_handle;
   }
 
-  scoped_ptr<ServiceWorkerRegistrationHandle> new_handle(
+  std::unique_ptr<ServiceWorkerRegistrationHandle> new_handle(
       new ServiceWorkerRegistrationHandle(GetContext()->AsWeakPtr(),
                                           provider_host, registration));
   ServiceWorkerRegistrationHandle* new_handle_ptr = new_handle.get();
@@ -781,7 +782,7 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
     return;
   }
 
-  scoped_ptr<ServiceWorkerProviderHost> provider_host;
+  std::unique_ptr<ServiceWorkerProviderHost> provider_host;
   if (IsBrowserSideNavigationEnabled() &&
       ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id)) {
     // PlzNavigate
@@ -804,10 +805,10 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
           this, bad_message::SWDH_PROVIDER_CREATED_NO_HOST);
       return;
     }
-    provider_host =
-        scoped_ptr<ServiceWorkerProviderHost>(new ServiceWorkerProviderHost(
-            render_process_id_, route_id, provider_id, provider_type,
-            GetContext()->AsWeakPtr(), this));
+    provider_host = std::unique_ptr<ServiceWorkerProviderHost>(
+        new ServiceWorkerProviderHost(render_process_id_, route_id, provider_id,
+                                      provider_type, GetContext()->AsWeakPtr(),
+                                      this));
   }
   GetContext()->AddProviderHost(std::move(provider_host));
 }

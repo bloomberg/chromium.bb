@@ -261,7 +261,7 @@ class LinkHeaderServiceWorkerTest : public ::testing::Test {
 
   void ProcessLinkHeader(const GURL& request_url,
                          const std::string& link_header) {
-    scoped_ptr<net::URLRequest> request = request_context_.CreateRequest(
+    std::unique_ptr<net::URLRequest> request = request_context_.CreateRequest(
         request_url, net::DEFAULT_PRIORITY, &request_delegate_);
     ResourceRequestInfo::AllocateForTesting(
         request.get(), RESOURCE_TYPE_SCRIPT, &resource_context_,
@@ -286,7 +286,7 @@ class LinkHeaderServiceWorkerTest : public ::testing::Test {
 
  private:
   TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
+  std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   net::TestURLRequestContext request_context_;
   net::TestDelegate request_delegate_;
   MockResourceContext resource_context_;

@@ -5,12 +5,14 @@
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -206,11 +208,11 @@ class MockHttpProtocolHandler
 
 // Returns a BlobProtocolHandler that uses |blob_storage_context|. Caller owns
 // the memory.
-scoped_ptr<storage::BlobProtocolHandler> CreateMockBlobProtocolHandler(
+std::unique_ptr<storage::BlobProtocolHandler> CreateMockBlobProtocolHandler(
     storage::BlobStorageContext* blob_storage_context) {
   // The FileSystemContext and task runner are not actually used but a
   // task runner is needed to avoid a DCHECK in BlobURLRequestJob ctor.
-  return make_scoped_ptr(new storage::BlobProtocolHandler(
+  return base::WrapUnique(new storage::BlobProtocolHandler(
       blob_storage_context, nullptr,
       base::ThreadTaskRunnerHandle::Get().get()));
 }
@@ -272,7 +274,7 @@ class ServiceWorkerURLRequestJobTest
       version_->SetMainScriptHttpResponseInfo(http_info);
     }
 
-    scoped_ptr<ServiceWorkerProviderHost> provider_host(
+    std::unique_ptr<ServiceWorkerProviderHost> provider_host(
         new ServiceWorkerProviderHost(
             helper_->mock_render_process_id(), MSG_ROUTING_NONE, kProviderID,
             SERVICE_WORKER_PROVIDER_FOR_WINDOW, helper_->context()->AsWeakPtr(),
@@ -293,7 +295,7 @@ class ServiceWorkerURLRequestJobTest
     url_request_job_factory_.reset(new net::URLRequestJobFactoryImpl);
     url_request_job_factory_->SetProtocolHandler(
         "http",
-        make_scoped_ptr(new MockHttpProtocolHandler(
+        base::WrapUnique(new MockHttpProtocolHandler(
             provider_host->AsWeakPtr(), browser_context_->GetResourceContext(),
             blob_storage_context->AsWeakPtr(), this)));
     url_request_job_factory_->SetProtocolHandler(
@@ -401,17 +403,17 @@ class ServiceWorkerURLRequestJobTest
 
   TestBrowserThreadBundle thread_bundle_;
 
-  scoped_ptr<TestBrowserContext> browser_context_;
-  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
+  std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
 
-  scoped_ptr<net::URLRequestJobFactoryImpl> url_request_job_factory_;
+  std::unique_ptr<net::URLRequestJobFactoryImpl> url_request_job_factory_;
   net::URLRequestContext url_request_context_;
   MockURLRequestDelegate url_request_delegate_;
-  scoped_ptr<net::URLRequest> request_;
+  std::unique_ptr<net::URLRequest> request_;
 
-  scoped_ptr<storage::BlobDataBuilder> blob_data_;
+  std::unique_ptr<storage::BlobDataBuilder> blob_data_;
 
   TestCallbackTracker callback_tracker_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
@@ -549,7 +551,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, BlobResponse) {
     blob_data_->AppendData(kTestData);
     expected_response += kTestData;
   }
-  scoped_ptr<storage::BlobDataHandle> blob_handle =
+  std::unique_ptr<storage::BlobDataHandle> blob_handle =
       blob_storage_context->context()->AddFinishedBlob(blob_data_.get());
   SetUpWithHelper(
       new BlobResponder(blob_handle->uuid(), expected_response.size()));

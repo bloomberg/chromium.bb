@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -323,7 +324,7 @@ class ServiceWorkerCacheWriterTest : public ::testing::Test {
   ~ServiceWorkerCacheWriterTest() override {}
 
   MockServiceWorkerResponseReader* ExpectReader() {
-    scoped_ptr<MockServiceWorkerResponseReader> reader(
+    std::unique_ptr<MockServiceWorkerResponseReader> reader(
         new MockServiceWorkerResponseReader);
     MockServiceWorkerResponseReader* borrowed_reader = reader.get();
     readers_.push_back(std::move(reader));
@@ -331,7 +332,7 @@ class ServiceWorkerCacheWriterTest : public ::testing::Test {
   }
 
   MockServiceWorkerResponseWriter* ExpectWriter() {
-    scoped_ptr<MockServiceWorkerResponseWriter> writer(
+    std::unique_ptr<MockServiceWorkerResponseWriter> writer(
         new MockServiceWorkerResponseWriter);
     MockServiceWorkerResponseWriter* borrowed_writer = writer.get();
     writers_.push_back(std::move(writer));
@@ -340,32 +341,34 @@ class ServiceWorkerCacheWriterTest : public ::testing::Test {
 
   // This should be called after ExpectReader() and ExpectWriter().
   void Initialize() {
-    scoped_ptr<ServiceWorkerResponseReader> compare_reader(CreateReader());
-    scoped_ptr<ServiceWorkerResponseReader> copy_reader(CreateReader());
-    scoped_ptr<ServiceWorkerResponseWriter> writer(CreateWriter());
+    std::unique_ptr<ServiceWorkerResponseReader> compare_reader(CreateReader());
+    std::unique_ptr<ServiceWorkerResponseReader> copy_reader(CreateReader());
+    std::unique_ptr<ServiceWorkerResponseWriter> writer(CreateWriter());
     cache_writer_.reset(new ServiceWorkerCacheWriter(
         std::move(compare_reader), std::move(copy_reader), std::move(writer)));
   }
 
  protected:
-  std::list<scoped_ptr<MockServiceWorkerResponseReader>> readers_;
-  std::list<scoped_ptr<MockServiceWorkerResponseWriter>> writers_;
-  scoped_ptr<ServiceWorkerCacheWriter> cache_writer_;
+  std::list<std::unique_ptr<MockServiceWorkerResponseReader>> readers_;
+  std::list<std::unique_ptr<MockServiceWorkerResponseWriter>> writers_;
+  std::unique_ptr<ServiceWorkerCacheWriter> cache_writer_;
   bool write_complete_ = false;
   net::Error last_error_;
 
-  scoped_ptr<ServiceWorkerResponseReader> CreateReader() {
+  std::unique_ptr<ServiceWorkerResponseReader> CreateReader() {
     if (readers_.empty())
-      return make_scoped_ptr<ServiceWorkerResponseReader>(nullptr);
-    scoped_ptr<ServiceWorkerResponseReader> reader(std::move(readers_.front()));
+      return base::WrapUnique<ServiceWorkerResponseReader>(nullptr);
+    std::unique_ptr<ServiceWorkerResponseReader> reader(
+        std::move(readers_.front()));
     readers_.pop_front();
     return reader;
   }
 
-  scoped_ptr<ServiceWorkerResponseWriter> CreateWriter() {
+  std::unique_ptr<ServiceWorkerResponseWriter> CreateWriter() {
     if (writers_.empty())
-      return make_scoped_ptr<ServiceWorkerResponseWriter>(nullptr);
-    scoped_ptr<ServiceWorkerResponseWriter> writer(std::move(writers_.front()));
+      return base::WrapUnique<ServiceWorkerResponseWriter>(nullptr);
+    std::unique_ptr<ServiceWorkerResponseWriter> writer(
+        std::move(writers_.front()));
     writers_.pop_front();
     return writer;
   }

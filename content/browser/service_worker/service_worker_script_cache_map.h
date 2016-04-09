@@ -75,9 +75,10 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
       base::WeakPtr<ServiceWorkerContextCore> context);
   ~ServiceWorkerScriptCacheMap();
 
-  void OnMetadataWritten(scoped_ptr<ServiceWorkerResponseMetadataWriter> writer,
-                         const net::CompletionCallback& callback,
-                         int result);
+  void OnMetadataWritten(
+      std::unique_ptr<ServiceWorkerResponseMetadataWriter> writer,
+      const net::CompletionCallback& callback,
+      int result);
 
   ServiceWorkerVersion* owner_;
   base::WeakPtr<ServiceWorkerContextCore> context_;

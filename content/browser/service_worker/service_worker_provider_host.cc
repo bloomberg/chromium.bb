@@ -45,15 +45,16 @@ ServiceWorkerProviderHost::OneShotGetReadyCallback::~OneShotGetReadyCallback() {
 }
 
 // static
-scoped_ptr<ServiceWorkerProviderHost>
+std::unique_ptr<ServiceWorkerProviderHost>
 ServiceWorkerProviderHost::PreCreateNavigationHost(
     base::WeakPtr<ServiceWorkerContextCore> context) {
   CHECK(IsBrowserSideNavigationEnabled());
   // Generate a new browser-assigned id for the host.
   int provider_id = g_next_navigation_provider_id--;
-  return scoped_ptr<ServiceWorkerProviderHost>(new ServiceWorkerProviderHost(
-      ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE, provider_id,
-      SERVICE_WORKER_PROVIDER_FOR_WINDOW, context, nullptr));
+  return std::unique_ptr<ServiceWorkerProviderHost>(
+      new ServiceWorkerProviderHost(
+          ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE, provider_id,
+          SERVICE_WORKER_PROVIDER_FOR_WINDOW, context, nullptr));
 }
 
 ServiceWorkerProviderHost::ServiceWorkerProviderHost(
@@ -317,7 +318,7 @@ void ServiceWorkerProviderHost::NotifyControllerLost() {
   SetControllerVersionAttribute(nullptr, true /* notify_controllerchange */);
 }
 
-scoped_ptr<ServiceWorkerRequestHandler>
+std::unique_ptr<ServiceWorkerRequestHandler>
 ServiceWorkerProviderHost::CreateRequestHandler(
     FetchRequestMode request_mode,
     FetchCredentialsMode credentials_mode,
@@ -328,19 +329,19 @@ ServiceWorkerProviderHost::CreateRequestHandler(
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
     scoped_refptr<ResourceRequestBody> body) {
   if (IsHostToRunningServiceWorker()) {
-    return scoped_ptr<ServiceWorkerRequestHandler>(
+    return std::unique_ptr<ServiceWorkerRequestHandler>(
         new ServiceWorkerContextRequestHandler(
             context_, AsWeakPtr(), blob_storage_context, resource_type));
   }
   if (ServiceWorkerUtils::IsMainResourceType(resource_type) ||
       controlling_version()) {
-    return scoped_ptr<ServiceWorkerRequestHandler>(
+    return std::unique_ptr<ServiceWorkerRequestHandler>(
         new ServiceWorkerControlleeRequestHandler(
             context_, AsWeakPtr(), blob_storage_context, request_mode,
             credentials_mode, redirect_mode, resource_type,
             request_context_type, frame_type, body));
   }
-  return scoped_ptr<ServiceWorkerRequestHandler>();
+  return std::unique_ptr<ServiceWorkerRequestHandler>();
 }
 
 ServiceWorkerObjectInfo
@@ -356,7 +357,7 @@ ServiceWorkerProviderHost::GetOrCreateServiceWorkerHandle(
     return handle->GetObjectInfo();
   }
 
-  scoped_ptr<ServiceWorkerHandle> new_handle(
+  std::unique_ptr<ServiceWorkerHandle> new_handle(
       ServiceWorkerHandle::Create(context_, AsWeakPtr(), version));
   handle = new_handle.get();
   dispatcher_host_->RegisterServiceWorkerHandle(std::move(new_handle));

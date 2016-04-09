@@ -351,7 +351,8 @@ ServiceWorkerDatabase::GetOriginsWithRegistrations(std::set<GURL>* origins) {
     return status;
 
   {
-    scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+    std::unique_ptr<leveldb::Iterator> itr(
+        db_->NewIterator(leveldb::ReadOptions()));
     for (itr->Seek(kUniqueOriginKey); itr->Valid(); itr->Next()) {
       status = LevelDBStatusToStatus(itr->status());
       if (status != STATUS_OK) {
@@ -391,7 +392,8 @@ ServiceWorkerDatabase::GetOriginsWithForeignFetchRegistrations(
     return status;
 
   {
-    scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+    std::unique_ptr<leveldb::Iterator> itr(
+        db_->NewIterator(leveldb::ReadOptions()));
     for (itr->Seek(kForeignFetchOriginKey); itr->Valid(); itr->Next()) {
       status = LevelDBStatusToStatus(itr->status());
       if (status != STATUS_OK) {
@@ -434,7 +436,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetRegistrationsForOrigin(
 
   std::string prefix = CreateRegistrationKeyPrefix(origin);
   {
-    scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+    std::unique_ptr<leveldb::Iterator> itr(
+        db_->NewIterator(leveldb::ReadOptions()));
     for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
       status = LevelDBStatusToStatus(itr->status());
       if (status != STATUS_OK) {
@@ -486,7 +489,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetAllRegistrations(
     return status;
 
   {
-    scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+    std::unique_ptr<leveldb::Iterator> itr(
+        db_->NewIterator(leveldb::ReadOptions()));
     for (itr->Seek(kRegKeyPrefix); itr->Valid(); itr->Next()) {
       status = LevelDBStatusToStatus(itr->status());
       if (status != STATUS_OK) {
@@ -881,7 +885,8 @@ ServiceWorkerDatabase::ReadUserDataForAllRegistrations(
 
   std::string key_prefix = CreateHasUserDataKeyPrefix(user_data_name);
   {
-    scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+    std::unique_ptr<leveldb::Iterator> itr(
+        db_->NewIterator(leveldb::ReadOptions()));
     for (itr->Seek(key_prefix); itr->Valid(); itr->Next()) {
       status = LevelDBStatusToStatus(itr->status());
       if (status != STATUS_OK) {
@@ -1256,7 +1261,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadResourceRecords(
   const std::string prefix = CreateResourceRecordKeyPrefix(version_id);
 
   {
-    scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+    std::unique_ptr<leveldb::Iterator> itr(
+        db_->NewIterator(leveldb::ReadOptions()));
     for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
       Status status = LevelDBStatusToStatus(itr->status());
       if (status != STATUS_OK) {
@@ -1344,7 +1350,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteResourceRecords(
   const std::string prefix = CreateResourceRecordKeyPrefix(version_id);
 
   {
-    scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+    std::unique_ptr<leveldb::Iterator> itr(
+        db_->NewIterator(leveldb::ReadOptions()));
     for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
       status = LevelDBStatusToStatus(itr->status());
       if (status != STATUS_OK)
@@ -1388,7 +1395,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadResourceIds(
     return status;
 
   {
-    scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+    std::unique_ptr<leveldb::Iterator> itr(
+        db_->NewIterator(leveldb::ReadOptions()));
     for (itr->Seek(id_key_prefix); itr->Valid(); itr->Next()) {
       status = LevelDBStatusToStatus(itr->status());
       if (status != STATUS_OK) {
@@ -1466,7 +1474,8 @@ ServiceWorkerDatabase::DeleteUserDataForRegistration(
   const std::string prefix = CreateUserDataKeyPrefix(registration_id);
 
   {
-    scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+    std::unique_ptr<leveldb::Iterator> itr(
+        db_->NewIterator(leveldb::ReadOptions()));
     for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
       status = LevelDBStatusToStatus(itr->status());
       if (status != STATUS_OK)

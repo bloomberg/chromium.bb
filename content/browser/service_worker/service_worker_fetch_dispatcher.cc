@@ -34,7 +34,7 @@ EventType ResourceTypeToEventType(ResourceType resource_type) {
 }  // namespace
 
 ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
-    scoped_ptr<ServiceWorkerFetchRequest> request,
+    std::unique_ptr<ServiceWorkerFetchRequest> request,
     ServiceWorkerVersion* version,
     ResourceType resource_type,
     const base::Closure& prepare_callback,

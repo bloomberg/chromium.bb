@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -34,7 +35,7 @@ namespace {
 
 using OpenURLCallback = base::Callback<void(int, int)>;
 using GetWindowClientsCallback =
-    base::Callback<void(scoped_ptr<ServiceWorkerClients>)>;
+    base::Callback<void(std::unique_ptr<ServiceWorkerClients>)>;
 
 // The OpenURLObserver class is a WebContentsObserver that will wait for a
 // WebContents to be initialized, run the |callback| passed to its constructor
@@ -242,7 +243,7 @@ void DidNavigate(const base::WeakPtr<ServiceWorkerContextCore>& context,
     return;
   }
 
-  for (scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
+  for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
            context->GetClientProviderHostIterator(origin);
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* provider_host = it->GetProviderHost();
@@ -299,7 +300,7 @@ void OnGetWindowClientsOnUI(
     const GetWindowClientsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  scoped_ptr<ServiceWorkerClients> clients(new ServiceWorkerClients);
+  std::unique_ptr<ServiceWorkerClients> clients(new ServiceWorkerClients);
   for (const auto& it : clients_info) {
     ServiceWorkerClientInfo info = GetWindowClientInfoOnUI(
         base::get<0>(it), base::get<1>(it), base::get<2>(it));
@@ -360,7 +361,7 @@ void GetNonWindowClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
 void DidGetWindowClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
                          const ServiceWorkerClientQueryOptions& options,
                          const ClientsCallback& callback,
-                         scoped_ptr<ServiceWorkerClients> clients) {
+                         std::unique_ptr<ServiceWorkerClients> clients) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (options.client_type == blink::WebServiceWorkerClientTypeAll)
     GetNonWindowClients(controller, options, clients.get());
@@ -388,7 +389,7 @@ void GetWindowClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
 
   if (clients_info.empty()) {
     DidGetWindowClients(controller, options, callback,
-                        make_scoped_ptr(new ServiceWorkerClients));
+                        base::WrapUnique(new ServiceWorkerClients));
     return;
   }
 

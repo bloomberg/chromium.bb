@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/service_worker/service_worker_process_manager.h"
+
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "content/browser/service_worker/service_worker_process_manager.h"
 #include "content/common/service_worker/embedded_worker_settings.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -52,13 +54,13 @@ class ServiceWorkerProcessManagerTest : public testing::Test {
     process_manager_.reset();
   }
 
-  scoped_ptr<MockRenderProcessHost> CreateRenderProcessHost() {
-    return make_scoped_ptr(new MockRenderProcessHost(browser_context_.get()));
+  std::unique_ptr<MockRenderProcessHost> CreateRenderProcessHost() {
+    return base::WrapUnique(new MockRenderProcessHost(browser_context_.get()));
   }
 
  protected:
-  scoped_ptr<TestBrowserContext> browser_context_;
-  scoped_ptr<ServiceWorkerProcessManager> process_manager_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
+  std::unique_ptr<ServiceWorkerProcessManager> process_manager_;
   GURL pattern_;
   GURL script_url_;
 
@@ -88,9 +90,9 @@ TEST_F(ServiceWorkerProcessManagerTest, SortProcess) {
 }
 
 TEST_F(ServiceWorkerProcessManagerTest, FindAvailableProcess) {
-  scoped_ptr<MockRenderProcessHost> host1(CreateRenderProcessHost());
-  scoped_ptr<MockRenderProcessHost> host2(CreateRenderProcessHost());
-  scoped_ptr<MockRenderProcessHost> host3(CreateRenderProcessHost());
+  std::unique_ptr<MockRenderProcessHost> host1(CreateRenderProcessHost());
+  std::unique_ptr<MockRenderProcessHost> host2(CreateRenderProcessHost());
+  std::unique_ptr<MockRenderProcessHost> host3(CreateRenderProcessHost());
 
   // Process 1 has 2 refs, 2 has 3 refs and 3 has 1 ref.
   process_manager_->AddProcessReferenceToPattern(pattern_, host1->GetID());
@@ -128,8 +130,8 @@ TEST_F(ServiceWorkerProcessManagerTest,
   GURL scope2("http://example.com/scope2");
 
   // Set up mock renderer process hosts.
-  scoped_ptr<MockRenderProcessHost> host1(CreateRenderProcessHost());
-  scoped_ptr<MockRenderProcessHost> host2(CreateRenderProcessHost());
+  std::unique_ptr<MockRenderProcessHost> host1(CreateRenderProcessHost());
+  std::unique_ptr<MockRenderProcessHost> host2(CreateRenderProcessHost());
   process_manager_->AddProcessReferenceToPattern(scope1, host1->GetID());
   process_manager_->AddProcessReferenceToPattern(scope2, host2->GetID());
   ASSERT_EQ(0, host1->worker_ref_count());

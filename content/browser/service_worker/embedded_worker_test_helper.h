@@ -169,8 +169,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
   MessagePortMessageFilter* NewMessagePortMessageFilter();
 
-  scoped_ptr<TestBrowserContext> browser_context_;
-  scoped_ptr<MockRenderProcessHost> render_process_host_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
+  std::unique_ptr<MockRenderProcessHost> render_process_host_;
 
   scoped_refptr<ServiceWorkerContextWrapper> wrapper_;
 
@@ -186,7 +186,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
   // Stores the ServiceRegistries that are associated with each individual
   // service worker.
-  base::ScopedPtrHashMap<int, scoped_ptr<ServiceRegistryImpl>>
+  base::ScopedPtrHashMap<int, std::unique_ptr<ServiceRegistryImpl>>
       thread_id_service_registry_map_;
 
   // Updated each time MessageToWorker message is received.

@@ -130,10 +130,10 @@ class ServiceWorkerJobTest : public testing::Test {
   scoped_refptr<ServiceWorkerRegistration> FindRegistrationForPattern(
       const GURL& pattern,
       ServiceWorkerStatusCode expected_status = SERVICE_WORKER_OK);
-  scoped_ptr<ServiceWorkerProviderHost> CreateControllee();
+  std::unique_ptr<ServiceWorkerProviderHost> CreateControllee();
 
   TestBrowserThreadBundle browser_thread_bundle_;
-  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
+  std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
 };
 
 scoped_refptr<ServiceWorkerRegistration> ServiceWorkerJobTest::RunRegisterJob(
@@ -178,11 +178,14 @@ ServiceWorkerJobTest::FindRegistrationForPattern(
   return registration;
 }
 
-scoped_ptr<ServiceWorkerProviderHost> ServiceWorkerJobTest::CreateControllee() {
-  return scoped_ptr<ServiceWorkerProviderHost>(new ServiceWorkerProviderHost(
-      33 /* dummy render_process id */, MSG_ROUTING_NONE /* render_frame_id */,
-      1 /* dummy provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-      helper_->context()->AsWeakPtr(), NULL));
+std::unique_ptr<ServiceWorkerProviderHost>
+ServiceWorkerJobTest::CreateControllee() {
+  return std::unique_ptr<ServiceWorkerProviderHost>(
+      new ServiceWorkerProviderHost(33 /* dummy render_process id */,
+                                    MSG_ROUTING_NONE /* render_frame_id */,
+                                    1 /* dummy provider_id */,
+                                    SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+                                    helper_->context()->AsWeakPtr(), NULL));
 }
 
 TEST_F(ServiceWorkerJobTest, SameDocumentSameRegistration) {
@@ -691,7 +694,7 @@ TEST_F(ServiceWorkerJobTest,
                      GURL("http://www.example.com/service_worker.js"));
   ASSERT_TRUE(registration.get());
 
-  scoped_ptr<ServiceWorkerProviderHost> host = CreateControllee();
+  std::unique_ptr<ServiceWorkerProviderHost> host = CreateControllee();
   registration->active_version()->AddControllee(host.get());
 
   scoped_refptr<ServiceWorkerVersion> version = registration->active_version();
@@ -734,10 +737,10 @@ void WriteResponse(ServiceWorkerStorage* storage,
                    const std::string& headers,
                    IOBuffer* body,
                    int length) {
-  scoped_ptr<ServiceWorkerResponseWriter> writer =
+  std::unique_ptr<ServiceWorkerResponseWriter> writer =
       storage->CreateResponseWriter(id);
 
-  scoped_ptr<net::HttpResponseInfo> info(new net::HttpResponseInfo);
+  std::unique_ptr<net::HttpResponseInfo> info(new net::HttpResponseInfo);
   info->request_time = base::Time::Now();
   info->response_time = base::Time::Now();
   info->was_cached = false;
@@ -1186,7 +1189,7 @@ TEST_F(ServiceWorkerJobTest, Update_UninstallingRegistration) {
                      GURL("http://www.example.com/service_worker.js"));
 
   // Add a controllee and queue an unregister to force the uninstalling state.
-  scoped_ptr<ServiceWorkerProviderHost> host = CreateControllee();
+  std::unique_ptr<ServiceWorkerProviderHost> host = CreateControllee();
   ServiceWorkerVersion* active_version = registration->active_version();
   active_version->AddControllee(host.get());
   job_coordinator()->Unregister(GURL("http://www.example.com/one/"),
@@ -1215,7 +1218,7 @@ TEST_F(ServiceWorkerJobTest, RegisterWhileUninstalling) {
       RunRegisterJob(pattern, script1);
 
   // Add a controllee and queue an unregister to force the uninstalling state.
-  scoped_ptr<ServiceWorkerProviderHost> host = CreateControllee();
+  std::unique_ptr<ServiceWorkerProviderHost> host = CreateControllee();
   scoped_refptr<ServiceWorkerVersion> old_version =
       registration->active_version();
   old_version->AddControllee(host.get());
@@ -1259,7 +1262,7 @@ TEST_F(ServiceWorkerJobTest, RegisterAndUnregisterWhileUninstalling) {
       RunRegisterJob(pattern, script1);
 
   // Add a controllee and queue an unregister to force the uninstalling state.
-  scoped_ptr<ServiceWorkerProviderHost> host = CreateControllee();
+  std::unique_ptr<ServiceWorkerProviderHost> host = CreateControllee();
   scoped_refptr<ServiceWorkerVersion> old_version =
       registration->active_version();
   old_version->AddControllee(host.get());
@@ -1307,7 +1310,7 @@ TEST_F(ServiceWorkerJobTest, RegisterSameScriptMultipleTimesWhileUninstalling) {
       RunRegisterJob(pattern, script1);
 
   // Add a controllee and queue an unregister to force the uninstalling state.
-  scoped_ptr<ServiceWorkerProviderHost> host = CreateControllee();
+  std::unique_ptr<ServiceWorkerProviderHost> host = CreateControllee();
   scoped_refptr<ServiceWorkerVersion> old_version =
       registration->active_version();
   old_version->AddControllee(host.get());
@@ -1352,7 +1355,7 @@ TEST_F(ServiceWorkerJobTest, RegisterMultipleTimesWhileUninstalling) {
       RunRegisterJob(pattern, script1);
 
   // Add a controllee and queue an unregister to force the uninstalling state.
-  scoped_ptr<ServiceWorkerProviderHost> host = CreateControllee();
+  std::unique_ptr<ServiceWorkerProviderHost> host = CreateControllee();
   scoped_refptr<ServiceWorkerVersion> first_version =
       registration->active_version();
   first_version->AddControllee(host.get());
@@ -1440,7 +1443,7 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall) {
       RunRegisterJob(pattern, script1);
 
   // Add a controllee and queue an unregister to force the uninstalling state.
-  scoped_ptr<ServiceWorkerProviderHost> host = CreateControllee();
+  std::unique_ptr<ServiceWorkerProviderHost> host = CreateControllee();
   scoped_refptr<ServiceWorkerVersion> old_version =
       registration->active_version();
   old_version->AddControllee(host.get());
@@ -1480,7 +1483,7 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringRejectedInstall) {
       RunRegisterJob(pattern, script1);
 
   // Add a controllee and queue an unregister to force the uninstalling state.
-  scoped_ptr<ServiceWorkerProviderHost> host = CreateControllee();
+  std::unique_ptr<ServiceWorkerProviderHost> host = CreateControllee();
   scoped_refptr<ServiceWorkerVersion> old_version =
       registration->active_version();
   old_version->AddControllee(host.get());
@@ -1516,7 +1519,7 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall_RejectActivate) {
       RunRegisterJob(pattern, script1);
 
   // Add a controllee and queue an unregister to force the uninstalling state.
-  scoped_ptr<ServiceWorkerProviderHost> host = CreateControllee();
+  std::unique_ptr<ServiceWorkerProviderHost> host = CreateControllee();
   scoped_refptr<ServiceWorkerVersion> old_version =
       registration->active_version();
   old_version->AddControllee(host.get());

@@ -27,11 +27,12 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
                               const scoped_refptr<ServiceWorkerVersion>&)>
       FetchCallback;
 
-  ServiceWorkerFetchDispatcher(scoped_ptr<ServiceWorkerFetchRequest> request,
-                               ServiceWorkerVersion* version,
-                               ResourceType resource_type,
-                               const base::Closure& prepare_callback,
-                               const FetchCallback& fetch_callback);
+  ServiceWorkerFetchDispatcher(
+      std::unique_ptr<ServiceWorkerFetchRequest> request,
+      ServiceWorkerVersion* version,
+      ResourceType resource_type,
+      const base::Closure& prepare_callback,
+      const FetchCallback& fetch_callback);
   ~ServiceWorkerFetchDispatcher();
 
   // Dispatches a fetch event to the |version| given in ctor, and fires
@@ -53,7 +54,7 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   scoped_refptr<ServiceWorkerVersion> version_;
   base::Closure prepare_callback_;
   FetchCallback fetch_callback_;
-  scoped_ptr<ServiceWorkerFetchRequest> request_;
+  std::unique_ptr<ServiceWorkerFetchRequest> request_;
   ResourceType resource_type_;
   base::WeakPtrFactory<ServiceWorkerFetchDispatcher> weak_factory_;
 

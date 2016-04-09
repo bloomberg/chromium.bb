@@ -66,7 +66,8 @@ void ServiceWorkerContextWatcher::OnStoredRegistrationsOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   context_->AddObserver(this);
 
-  base::ScopedPtrHashMap<int64_t, scoped_ptr<ServiceWorkerRegistrationInfo>>
+  base::ScopedPtrHashMap<int64_t,
+                         std::unique_ptr<ServiceWorkerRegistrationInfo>>
       registration_info_map;
   for (const auto& registration : stored_registrations)
     StoreRegistrationInfo(registration, &registration_info_map);
@@ -108,13 +109,14 @@ ServiceWorkerContextWatcher::~ServiceWorkerContextWatcher() {
 
 void ServiceWorkerContextWatcher::StoreRegistrationInfo(
     const ServiceWorkerRegistrationInfo& registration_info,
-    base::ScopedPtrHashMap<int64_t, scoped_ptr<ServiceWorkerRegistrationInfo>>*
+    base::ScopedPtrHashMap<int64_t,
+                           std::unique_ptr<ServiceWorkerRegistrationInfo>>*
         info_map) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (registration_info.registration_id == kInvalidServiceWorkerRegistrationId)
     return;
   info_map->set(registration_info.registration_id,
-                scoped_ptr<ServiceWorkerRegistrationInfo>(
+                std::unique_ptr<ServiceWorkerRegistrationInfo>(
                     new ServiceWorkerRegistrationInfo(registration_info)));
   StoreVersionInfo(registration_info.active_version);
   StoreVersionInfo(registration_info.waiting_version);
@@ -127,7 +129,7 @@ void ServiceWorkerContextWatcher::StoreVersionInfo(
   if (version_info.version_id == kInvalidServiceWorkerVersionId)
     return;
   version_info_map_.set(version_info.version_id,
-                        scoped_ptr<ServiceWorkerVersionInfo>(
+                        std::unique_ptr<ServiceWorkerVersionInfo>(
                             new ServiceWorkerVersionInfo(version_info)));
 }
 
@@ -172,7 +174,8 @@ void ServiceWorkerContextWatcher::OnNewLiveVersion(int64_t version_id,
     return;
   }
 
-  scoped_ptr<ServiceWorkerVersionInfo> version(new ServiceWorkerVersionInfo());
+  std::unique_ptr<ServiceWorkerVersionInfo> version(
+      new ServiceWorkerVersionInfo());
   version->version_id = version_id;
   version->registration_id = registration_id;
   version->script_url = script_url;
