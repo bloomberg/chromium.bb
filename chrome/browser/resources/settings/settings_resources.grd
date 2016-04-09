@@ -98,6 +98,13 @@
       <structure name="IDR_SETTINGS_STARTUP_URLS_PAGE_BROWSER_PROXY_HTML"
                  file="on_startup_page/startup_urls_page_browser_proxy.html"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_STARTUP_URL_DIALOG_JS"
+                 file="on_startup_page/startup_url_dialog.js"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_STARTUP_URL_DIALOG_HTML"
+                 file="on_startup_page/startup_url_dialog.html"
+                 type="chrome_html"
+                 allowexternalscript="true" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_MAIN_CSS"
                  file="settings_main/settings_main.css"
                  type="chrome_html" />

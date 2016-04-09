@@ -363,6 +363,6 @@ CrSettingsStartupUrlsPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsStartupUrlsPageTest', 'Validity', function() {
+TEST_F('CrSettingsStartupUrlsPageTest', 'StartupUrlsPage', function() {
   mocha.run();
 });

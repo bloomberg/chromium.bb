@@ -1,0 +1,30 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="chrome://md-settings/i18n_setup.html">
+<link rel="import" href="chrome://md-settings/on_startup_page/startup_urls_page_browser_proxy.html">
+<link rel="import" href="chrome://md-settings/settings_dialog.html">
+
+<dom-module id="settings-startup-url-dialog">
+  <template>
+    <style include="settings-shared"></style>
+    <settings-dialog id="dialog">
+      <div class="title">$i18n{onStartupAddNewPage}</div>
+      <div class="body">
+        <paper-input always-float-label id="url"
+            value="{{url_}}" on-input="validate_">
+          $i18n{onStartupSiteUrl}
+        </paper-input>
+      </div>
+      <div class="button-container">
+        <div class="action-buttons">
+          <paper-button class="cancel-button" on-tap="onCancelTap_"
+              id="cancel">$i18n{cancel}</paper-button>
+          <paper-button id="add" class="action-button" on-tap="onAddTap_"
+            disabled>$i18n{add}</paper-button>
+        </div>
+      </div>
+    </settings-dialog>
+  </template>
+  <script src="startup_url_dialog.js"></script>
+</dom-module>

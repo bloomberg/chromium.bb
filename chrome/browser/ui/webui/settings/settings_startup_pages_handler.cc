@@ -81,15 +81,17 @@ void StartupPagesHandler::OnItemsRemoved(int start, int length) {
 }
 
 void StartupPagesHandler::HandleAddStartupPage(const base::ListValue* args) {
+  CHECK_EQ(2U, args->GetSize());
+
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+
   std::string url_string;
-  if (!args->GetString(0, &url_string)) {
-    NOTREACHED();
-    return;
-  }
+  CHECK(args->GetString(1, &url_string));
 
   GURL url;
   if (!settings_utils::FixupAndValidateStartupPage(url_string, &url)) {
-    NOTREACHED();
+    ResolveJavascriptCallback(*callback_id, base::FundamentalValue(false));
     return;
   }
 
@@ -100,6 +102,7 @@ void StartupPagesHandler::HandleAddStartupPage(const base::ListValue* args) {
 
   startup_custom_pages_table_model_.Add(index, url);
   SaveStartupPagesPref();
+  ResolveJavascriptCallback(*callback_id, base::FundamentalValue(true));
 }
 
 void StartupPagesHandler::HandleOnStartupPrefsPageLoad(
