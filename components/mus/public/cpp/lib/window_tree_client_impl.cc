@@ -183,7 +183,7 @@ void WindowTreeClientImpl::WaitForEmbed() {
 
 void WindowTreeClientImpl::DestroyWindow(Window* window) {
   DCHECK(tree_);
-  const uint32_t change_id = ScheduleInFlightChange(make_scoped_ptr(
+  const uint32_t change_id = ScheduleInFlightChange(base::WrapUnique(
       new CrashInFlightChange(window, ChangeType::DELETE_WINDOW)));
   tree_->DeleteWindow(change_id, window->id());
 }
@@ -191,13 +191,13 @@ void WindowTreeClientImpl::DestroyWindow(Window* window) {
 void WindowTreeClientImpl::AddChild(Window* parent, Id child_id) {
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(
-      make_scoped_ptr(new CrashInFlightChange(parent, ChangeType::ADD_CHILD)));
+      base::WrapUnique(new CrashInFlightChange(parent, ChangeType::ADD_CHILD)));
   tree_->AddWindow(change_id, parent->id(), child_id);
 }
 
 void WindowTreeClientImpl::RemoveChild(Window* parent, Id child_id) {
   DCHECK(tree_);
-  const uint32_t change_id = ScheduleInFlightChange(make_scoped_ptr(
+  const uint32_t change_id = ScheduleInFlightChange(base::WrapUnique(
       new CrashInFlightChange(parent, ChangeType::REMOVE_CHILD)));
   tree_->RemoveWindowFromParent(change_id, child_id);
 }
@@ -205,7 +205,7 @@ void WindowTreeClientImpl::RemoveChild(Window* parent, Id child_id) {
 void WindowTreeClientImpl::AddTransientWindow(Window* window,
                                               Id transient_window_id) {
   DCHECK(tree_);
-  const uint32_t change_id = ScheduleInFlightChange(make_scoped_ptr(
+  const uint32_t change_id = ScheduleInFlightChange(base::WrapUnique(
       new CrashInFlightChange(window, ChangeType::ADD_TRANSIENT_WINDOW)));
   tree_->AddTransientWindow(change_id, window->id(), transient_window_id);
 }
@@ -213,7 +213,7 @@ void WindowTreeClientImpl::AddTransientWindow(Window* window,
 void WindowTreeClientImpl::RemoveTransientWindowFromParent(Window* window) {
   DCHECK(tree_);
   const uint32_t change_id =
-      ScheduleInFlightChange(make_scoped_ptr(new CrashInFlightChange(
+      ScheduleInFlightChange(base::WrapUnique(new CrashInFlightChange(
           window, ChangeType::REMOVE_TRANSIENT_WINDOW_FROM_PARENT)));
   tree_->RemoveTransientWindowFromParent(change_id, window->id());
 }
@@ -221,7 +221,7 @@ void WindowTreeClientImpl::RemoveTransientWindowFromParent(Window* window) {
 void WindowTreeClientImpl::SetModal(Window* window) {
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(
-      make_scoped_ptr(new InFlightSetModalChange(window)));
+      base::WrapUnique(new InFlightSetModalChange(window)));
   tree_->SetModal(change_id, window->id());
 }
 
@@ -230,7 +230,7 @@ void WindowTreeClientImpl::Reorder(Window* window,
                                    mojom::OrderDirection direction) {
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(
-      make_scoped_ptr(new CrashInFlightChange(window, ChangeType::REORDER)));
+      base::WrapUnique(new CrashInFlightChange(window, ChangeType::REORDER)));
   tree_->ReorderWindow(change_id, window->id(), relative_window_id, direction);
 }
 
@@ -245,7 +245,7 @@ void WindowTreeClientImpl::SetBounds(Window* window,
                                      const gfx::Rect& bounds) {
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(
-      make_scoped_ptr(new InFlightBoundsChange(window, old_bounds)));
+      base::WrapUnique(new InFlightBoundsChange(window, old_bounds)));
   tree_->SetWindowBounds(change_id, window->id(), mojo::Rect::From(bounds));
 }
 
@@ -256,7 +256,7 @@ void WindowTreeClientImpl::SetCapture(Window* window) {
   if (capture_window_ == window)
     return;
   const uint32_t change_id = ScheduleInFlightChange(
-      make_scoped_ptr(new InFlightCaptureChange(this, capture_window_)));
+      base::WrapUnique(new InFlightCaptureChange(this, capture_window_)));
   tree_->SetCapture(change_id, window->id());
   LocalSetCapture(window);
 }
@@ -268,7 +268,7 @@ void WindowTreeClientImpl::ReleaseCapture(Window* window) {
   if (capture_window_ != window)
     return;
   const uint32_t change_id = ScheduleInFlightChange(
-      make_scoped_ptr(new InFlightCaptureChange(this, window)));
+      base::WrapUnique(new InFlightCaptureChange(this, window)));
   tree_->ReleaseCapture(change_id, window->id());
   LocalSetCapture(nullptr);
 }
@@ -288,7 +288,7 @@ void WindowTreeClientImpl::SetFocus(Window* window) {
   // we got a connection.
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(
-      make_scoped_ptr(new InFlightFocusChange(this, focused_window_)));
+      base::WrapUnique(new InFlightFocusChange(this, focused_window_)));
   tree_->SetFocus(change_id, window ? window->id() : 0);
   LocalSetFocus(window);
 }
@@ -307,7 +307,7 @@ void WindowTreeClientImpl::SetPredefinedCursor(Id window_id,
     return;
 
   // We make an inflight change thing here.
-  const uint32_t change_id = ScheduleInFlightChange(make_scoped_ptr(
+  const uint32_t change_id = ScheduleInFlightChange(base::WrapUnique(
       new InFlightPredefinedCursorChange(window, window->predefined_cursor())));
   tree_->SetPredefinedCursor(change_id, window_id, cursor_id);
 }
@@ -315,7 +315,7 @@ void WindowTreeClientImpl::SetPredefinedCursor(Id window_id,
 void WindowTreeClientImpl::SetVisible(Window* window, bool visible) {
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(
-      make_scoped_ptr(new InFlightVisibleChange(window, !visible)));
+      base::WrapUnique(new InFlightVisibleChange(window, !visible)));
   tree_->SetWindowVisibility(change_id, window->id(), visible);
 }
 
@@ -336,7 +336,7 @@ void WindowTreeClientImpl::SetProperty(Window* window,
     old_value = mojo::Array<uint8_t>::From(window->properties_[name]);
 
   const uint32_t change_id = ScheduleInFlightChange(
-      make_scoped_ptr(new InFlightPropertyChange(window, name, old_value)));
+      base::WrapUnique(new InFlightPropertyChange(window, name, old_value)));
   tree_->SetWindowProperty(change_id, window->id(), mojo::String(name),
                            std::move(data));
 }
@@ -469,7 +469,7 @@ Window* WindowTreeClientImpl::NewWindowImpl(
     window->properties_ = *properties;
   AddWindow(window);
 
-  const uint32_t change_id = ScheduleInFlightChange(make_scoped_ptr(
+  const uint32_t change_id = ScheduleInFlightChange(base::WrapUnique(
       new CrashInFlightChange(window, type == NewWindowType::CHILD
                                           ? ChangeType::NEW_WINDOW
                                           : ChangeType::NEW_TOP_LEVEL_WINDOW)));
