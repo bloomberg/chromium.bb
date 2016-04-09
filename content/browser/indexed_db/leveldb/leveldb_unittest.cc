@@ -47,7 +47,7 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   std::string got_value;
   SimpleComparator comparator;
 
-  scoped_ptr<LevelDBDatabase> leveldb;
+  std::unique_ptr<LevelDBDatabase> leveldb;
   LevelDBDatabase::Open(temp_directory.path(), &comparator, &leveldb);
   EXPECT_TRUE(leveldb);
   put_value = value;
@@ -96,7 +96,7 @@ TEST(LevelDBDatabaseTest, Transaction) {
   std::string put_value;
   SimpleComparator comparator;
 
-  scoped_ptr<LevelDBDatabase> leveldb;
+  std::unique_ptr<LevelDBDatabase> leveldb;
   LevelDBDatabase::Open(temp_directory.path(), &comparator, &leveldb);
   EXPECT_TRUE(leveldb);
 
@@ -162,7 +162,7 @@ TEST(LevelDBDatabaseTest, TransactionIterator) {
   std::string put_value;
   SimpleComparator comparator;
 
-  scoped_ptr<LevelDBDatabase> leveldb;
+  std::unique_ptr<LevelDBDatabase> leveldb;
   LevelDBDatabase::Open(temp_directory.path(), &comparator, &leveldb);
   EXPECT_TRUE(leveldb);
 
@@ -179,7 +179,7 @@ TEST(LevelDBDatabaseTest, TransactionIterator) {
   s = leveldb->Remove(key2);
   EXPECT_TRUE(s.ok());
 
-  scoped_ptr<LevelDBIterator> it = transaction->CreateIterator();
+  std::unique_ptr<LevelDBIterator> it = transaction->CreateIterator();
 
   it->Seek(std::string());
 
@@ -213,7 +213,7 @@ TEST(LevelDBDatabaseTest, TransactionCommitTest) {
   SimpleComparator comparator;
   bool found;
 
-  scoped_ptr<LevelDBDatabase> leveldb;
+  std::unique_ptr<LevelDBDatabase> leveldb;
   LevelDBDatabase::Open(temp_directory.path(), &comparator, &leveldb);
   EXPECT_TRUE(leveldb);
 

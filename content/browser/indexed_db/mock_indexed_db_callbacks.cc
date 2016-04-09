@@ -28,7 +28,7 @@ void MockIndexedDBCallbacks::OnSuccess(const std::vector<base::string16>&) {}
 void MockIndexedDBCallbacks::OnSuccess(const IndexedDBKey& key) {}
 
 void MockIndexedDBCallbacks::OnSuccess(
-    scoped_ptr<IndexedDBConnection> connection,
+    std::unique_ptr<IndexedDBConnection> connection,
     const IndexedDBDatabaseMetadata& metadata) {
   connection_ = std::move(connection);
 }

@@ -5,7 +5,8 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_FACTORY_H_
 #define CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_FACTORY_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/common/content_export.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
@@ -23,7 +24,7 @@ class CONTENT_EXPORT LevelDBFactory {
   virtual ~LevelDBFactory() {}
   virtual leveldb::Status OpenLevelDB(const base::FilePath& file_name,
                                       const LevelDBComparator* comparator,
-                                      scoped_ptr<LevelDBDatabase>* db,
+                                      std::unique_ptr<LevelDBDatabase>* db,
                                       bool* is_disk_full) = 0;
   virtual leveldb::Status DestroyLevelDB(const base::FilePath& file_name) = 0;
 };

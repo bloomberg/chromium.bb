@@ -574,7 +574,7 @@ TEST(IndexedDBLevelDBCodingTest, DecodeDouble) {
 
 TEST(IndexedDBLevelDBCodingTest, EncodeDecodeIDBKey) {
   IndexedDBKey expected_key;
-  scoped_ptr<IndexedDBKey> decoded_key;
+  std::unique_ptr<IndexedDBKey> decoded_key;
   std::string v;
   StringPiece slice;
 

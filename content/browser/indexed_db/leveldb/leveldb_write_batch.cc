@@ -4,14 +4,15 @@
 
 #include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace content {
 
-scoped_ptr<LevelDBWriteBatch> LevelDBWriteBatch::Create() {
-  return make_scoped_ptr(new LevelDBWriteBatch);
+std::unique_ptr<LevelDBWriteBatch> LevelDBWriteBatch::Create() {
+  return base::WrapUnique(new LevelDBWriteBatch);
 }
 
 LevelDBWriteBatch::LevelDBWriteBatch()

@@ -24,14 +24,14 @@ class MockIndexedDBCallbacks : public IndexedDBCallbacks {
   void OnSuccess(int64_t result) override;
   void OnSuccess(const std::vector<base::string16>& result) override;
   void OnSuccess(const IndexedDBKey& key) override;
-  void OnSuccess(scoped_ptr<IndexedDBConnection> connection,
+  void OnSuccess(std::unique_ptr<IndexedDBConnection> connection,
                  const IndexedDBDatabaseMetadata& metadata) override;
   IndexedDBConnection* connection() { return connection_.get(); }
 
  protected:
   ~MockIndexedDBCallbacks() override;
 
-  scoped_ptr<IndexedDBConnection> connection_;
+  std::unique_ptr<IndexedDBConnection> connection_;
 
  private:
   bool expect_connection_;

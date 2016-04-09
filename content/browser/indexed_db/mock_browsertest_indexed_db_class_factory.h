@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
@@ -54,7 +54,7 @@ class MockBrowserTestIndexedDBClassFactory : public IndexedDBClassFactory {
       IndexedDBBackingStore::Transaction* backing_store_transaction) override;
   LevelDBTransaction* CreateLevelDBTransaction(LevelDBDatabase* db) override;
   LevelDBIteratorImpl* CreateIteratorImpl(
-      scoped_ptr<leveldb::Iterator> iterator) override;
+      std::unique_ptr<leveldb::Iterator> iterator) override;
 
   void FailOperation(FailClass failure_class,
                      FailMethod failure_method,

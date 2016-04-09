@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 #include <set>
 #include <stack>
@@ -14,7 +15,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
@@ -167,7 +167,7 @@ class CONTENT_EXPORT IndexedDBTransaction
   TaskQueue preemptive_task_queue_;
   TaskStack abort_task_stack_;
 
-  scoped_ptr<IndexedDBBackingStore::Transaction> transaction_;
+  std::unique_ptr<IndexedDBBackingStore::Transaction> transaction_;
   bool backing_store_transaction_begun_;
 
   bool should_process_queue_;

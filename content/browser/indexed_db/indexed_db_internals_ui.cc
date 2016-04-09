@@ -104,7 +104,8 @@ void IndexedDBInternalsUI::GetAllOriginsOnIndexedDBThread(
   IndexedDBContextImpl* context_impl =
       static_cast<IndexedDBContextImpl*>(context.get());
 
-  scoped_ptr<base::ListValue> info_list(context_impl->GetAllOriginsDetails());
+  std::unique_ptr<base::ListValue> info_list(
+      context_impl->GetAllOriginsDetails());
   bool is_incognito = context_impl->is_incognito();
 
   BrowserThread::PostTask(
@@ -116,8 +117,9 @@ void IndexedDBInternalsUI::GetAllOriginsOnIndexedDBThread(
                  is_incognito ? base::FilePath() : context_path));
 }
 
-void IndexedDBInternalsUI::OnOriginsReady(scoped_ptr<base::ListValue> origins,
-                                          const base::FilePath& path) {
+void IndexedDBInternalsUI::OnOriginsReady(
+    std::unique_ptr<base::ListValue> origins,
+    const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   web_ui()->CallJavascriptFunction(
       "indexeddb.onOriginsReady", *origins, base::StringValue(path.value()));
@@ -295,7 +297,7 @@ void IndexedDBInternalsUI::OnDownloadDataReady(
   const GURL url = GURL(FILE_PATH_LITERAL("file://") + zip_path.value());
   BrowserContext* browser_context =
       web_ui()->GetWebContents()->GetBrowserContext();
-  scoped_ptr<DownloadUrlParameters> dl_params(
+  std::unique_ptr<DownloadUrlParameters> dl_params(
       DownloadUrlParameters::FromWebContents(web_ui()->GetWebContents(), url));
   DownloadManager* dlm = BrowserContext::GetDownloadManager(browser_context);
 

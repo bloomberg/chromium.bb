@@ -293,8 +293,8 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   BlobDataHandleMap blob_data_handle_map_;
 
   // Only access on IndexedDB thread.
-  scoped_ptr<DatabaseDispatcherHost> database_dispatcher_host_;
-  scoped_ptr<CursorDispatcherHost> cursor_dispatcher_host_;
+  std::unique_ptr<DatabaseDispatcherHost> database_dispatcher_host_;
+  std::unique_ptr<CursorDispatcherHost> cursor_dispatcher_host_;
 
   // Used to set file permissions for blob storage.
   int ipc_process_id_;

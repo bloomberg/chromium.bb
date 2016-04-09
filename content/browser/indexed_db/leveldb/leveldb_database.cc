@@ -5,13 +5,15 @@
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
 
 #include <stdint.h>
+
 #include <cerrno>
+#include <memory>
 #include <utility>
 
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -114,7 +116,7 @@ static leveldb::Status OpenDB(
     leveldb::Env* env,
     const base::FilePath& path,
     leveldb::DB** db,
-    scoped_ptr<const leveldb::FilterPolicy>* filter_policy) {
+    std::unique_ptr<const leveldb::FilterPolicy>* filter_policy) {
   filter_policy->reset(leveldb::NewBloomFilterPolicy(10));
   leveldb::Options options;
   options.comparator = comparator;
@@ -157,16 +159,16 @@ class LockImpl : public LevelDBLock {
 };
 }  // namespace
 
-scoped_ptr<LevelDBLock> LevelDBDatabase::LockForTesting(
+std::unique_ptr<LevelDBLock> LevelDBDatabase::LockForTesting(
     const base::FilePath& file_name) {
   leveldb::Env* env = LevelDBEnv::Get();
   base::FilePath lock_path = file_name.AppendASCII("LOCK");
   leveldb::FileLock* lock = NULL;
   leveldb::Status status = env->LockFile(lock_path.AsUTF8Unsafe(), &lock);
   if (!status.ok())
-    return scoped_ptr<LevelDBLock>();
+    return std::unique_ptr<LevelDBLock>();
   DCHECK(lock);
-  return scoped_ptr<LevelDBLock>(new LockImpl(env, lock));
+  return std::unique_ptr<LevelDBLock>(new LockImpl(env, lock));
 }
 
 static int CheckFreeSpace(const char* const type,
@@ -280,16 +282,16 @@ static void HistogramLevelDBError(const std::string& histogram_name,
 
 leveldb::Status LevelDBDatabase::Open(const base::FilePath& file_name,
                                       const LevelDBComparator* comparator,
-                                      scoped_ptr<LevelDBDatabase>* result,
+                                      std::unique_ptr<LevelDBDatabase>* result,
                                       bool* is_disk_full) {
   IDB_TRACE("LevelDBDatabase::Open");
   base::TimeTicks begin_time = base::TimeTicks::Now();
 
-  scoped_ptr<ComparatorAdapter> comparator_adapter(
+  std::unique_ptr<ComparatorAdapter> comparator_adapter(
       new ComparatorAdapter(comparator));
 
   leveldb::DB* db;
-  scoped_ptr<const leveldb::FilterPolicy> filter_policy;
+  std::unique_ptr<const leveldb::FilterPolicy> filter_policy;
   const leveldb::Status s = OpenDB(comparator_adapter.get(), LevelDBEnv::Get(),
                                    file_name, &db, &filter_policy);
 
@@ -312,7 +314,7 @@ leveldb::Status LevelDBDatabase::Open(const base::FilePath& file_name,
   CheckFreeSpace("Success", file_name);
 
   (*result).reset(new LevelDBDatabase);
-  (*result)->db_ = make_scoped_ptr(db);
+  (*result)->db_ = base::WrapUnique(db);
   (*result)->comparator_adapter_ = std::move(comparator_adapter);
   (*result)->comparator_ = comparator;
   (*result)->filter_policy_ = std::move(filter_policy);
@@ -321,14 +323,15 @@ leveldb::Status LevelDBDatabase::Open(const base::FilePath& file_name,
   return s;
 }
 
-scoped_ptr<LevelDBDatabase> LevelDBDatabase::OpenInMemory(
+std::unique_ptr<LevelDBDatabase> LevelDBDatabase::OpenInMemory(
     const LevelDBComparator* comparator) {
-  scoped_ptr<ComparatorAdapter> comparator_adapter(
+  std::unique_ptr<ComparatorAdapter> comparator_adapter(
       new ComparatorAdapter(comparator));
-  scoped_ptr<leveldb::Env> in_memory_env(leveldb::NewMemEnv(LevelDBEnv::Get()));
+  std::unique_ptr<leveldb::Env> in_memory_env(
+      leveldb::NewMemEnv(LevelDBEnv::Get()));
 
   leveldb::DB* db;
-  scoped_ptr<const leveldb::FilterPolicy> filter_policy;
+  std::unique_ptr<const leveldb::FilterPolicy> filter_policy;
   const leveldb::Status s = OpenDB(comparator_adapter.get(),
                                    in_memory_env.get(),
                                    base::FilePath(),
@@ -337,12 +340,12 @@ scoped_ptr<LevelDBDatabase> LevelDBDatabase::OpenInMemory(
 
   if (!s.ok()) {
     LOG(ERROR) << "Failed to open in-memory LevelDB database: " << s.ToString();
-    return scoped_ptr<LevelDBDatabase>();
+    return std::unique_ptr<LevelDBDatabase>();
   }
 
-  scoped_ptr<LevelDBDatabase> result(new LevelDBDatabase);
+  std::unique_ptr<LevelDBDatabase> result(new LevelDBDatabase);
   result->env_ = std::move(in_memory_env);
-  result->db_ = make_scoped_ptr(db);
+  result->db_ = base::WrapUnique(db);
   result->comparator_adapter_ = std::move(comparator_adapter);
   result->comparator_ = comparator;
   result->filter_policy_ = std::move(filter_policy);
@@ -417,15 +420,15 @@ leveldb::Status LevelDBDatabase::Write(const LevelDBWriteBatch& write_batch) {
   return s;
 }
 
-scoped_ptr<LevelDBIterator> LevelDBDatabase::CreateIterator(
+std::unique_ptr<LevelDBIterator> LevelDBDatabase::CreateIterator(
     const LevelDBSnapshot* snapshot) {
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;  // TODO(jsbell): Disable this if the
                                          // performance impact is too great.
   read_options.snapshot = snapshot ? snapshot->snapshot_ : 0;
 
-  scoped_ptr<leveldb::Iterator> i(db_->NewIterator(read_options));
-  return scoped_ptr<LevelDBIterator>(
+  std::unique_ptr<leveldb::Iterator> i(db_->NewIterator(read_options));
+  return std::unique_ptr<LevelDBIterator>(
       IndexedDBClassFactory::Get()->CreateIteratorImpl(std::move(i)));
 }
 

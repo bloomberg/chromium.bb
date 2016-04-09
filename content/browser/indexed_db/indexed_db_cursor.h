@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
@@ -24,14 +24,14 @@ class IndexedDBTransaction;
 class CONTENT_EXPORT IndexedDBCursor
     : NON_EXPORTED_BASE(public base::RefCounted<IndexedDBCursor>) {
  public:
-  IndexedDBCursor(scoped_ptr<IndexedDBBackingStore::Cursor> cursor,
+  IndexedDBCursor(std::unique_ptr<IndexedDBBackingStore::Cursor> cursor,
                   indexed_db::CursorType cursor_type,
                   blink::WebIDBTaskType task_type,
                   IndexedDBTransaction* transaction);
 
   void Advance(uint32_t count, scoped_refptr<IndexedDBCallbacks> callbacks);
-  void Continue(scoped_ptr<IndexedDBKey> key,
-                scoped_ptr<IndexedDBKey> primary_key,
+  void Continue(std::unique_ptr<IndexedDBKey> key,
+                std::unique_ptr<IndexedDBKey> primary_key,
                 scoped_refptr<IndexedDBCallbacks> callbacks);
   void PrefetchContinue(int number_to_fetch,
                         scoped_refptr<IndexedDBCallbacks> callbacks);
@@ -45,8 +45,8 @@ class CONTENT_EXPORT IndexedDBCursor
   }
   void Close();
 
-  void CursorIterationOperation(scoped_ptr<IndexedDBKey> key,
-                                scoped_ptr<IndexedDBKey> primary_key,
+  void CursorIterationOperation(std::unique_ptr<IndexedDBKey> key,
+                                std::unique_ptr<IndexedDBKey> primary_key,
                                 scoped_refptr<IndexedDBCallbacks> callbacks,
                                 IndexedDBTransaction* transaction);
   void CursorAdvanceOperation(uint32_t count,
@@ -67,9 +67,9 @@ class CONTENT_EXPORT IndexedDBCursor
   const scoped_refptr<IndexedDBTransaction> transaction_;
 
   // Must be destroyed before transaction_.
-  scoped_ptr<IndexedDBBackingStore::Cursor> cursor_;
+  std::unique_ptr<IndexedDBBackingStore::Cursor> cursor_;
   // Must be destroyed before transaction_.
-  scoped_ptr<IndexedDBBackingStore::Cursor> saved_cursor_;
+  std::unique_ptr<IndexedDBBackingStore::Cursor> saved_cursor_;
 
   bool closed_;
 

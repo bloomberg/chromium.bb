@@ -8,6 +8,7 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
@@ -366,7 +367,7 @@ bool DecodeBinary(StringPiece* slice, std::string* value) {
   return true;
 }
 
-bool DecodeIDBKey(StringPiece* slice, scoped_ptr<IndexedDBKey>* value) {
+bool DecodeIDBKey(StringPiece* slice, std::unique_ptr<IndexedDBKey>* value) {
   if (slice->empty())
     return false;
 
@@ -375,7 +376,7 @@ bool DecodeIDBKey(StringPiece* slice, scoped_ptr<IndexedDBKey>* value) {
 
   switch (type) {
     case kIndexedDBKeyNullTypeByte:
-      *value = make_scoped_ptr(new IndexedDBKey());
+      *value = base::WrapUnique(new IndexedDBKey());
       return true;
 
     case kIndexedDBKeyArrayTypeByte: {
@@ -384,40 +385,40 @@ bool DecodeIDBKey(StringPiece* slice, scoped_ptr<IndexedDBKey>* value) {
         return false;
       IndexedDBKey::KeyArray array;
       while (length--) {
-        scoped_ptr<IndexedDBKey> key;
+        std::unique_ptr<IndexedDBKey> key;
         if (!DecodeIDBKey(slice, &key))
           return false;
         array.push_back(*key);
       }
-      *value = make_scoped_ptr(new IndexedDBKey(array));
+      *value = base::WrapUnique(new IndexedDBKey(array));
       return true;
     }
     case kIndexedDBKeyBinaryTypeByte: {
       std::string binary;
       if (!DecodeBinary(slice, &binary))
         return false;
-      *value = make_scoped_ptr(new IndexedDBKey(binary));
+      *value = base::WrapUnique(new IndexedDBKey(binary));
       return true;
     }
     case kIndexedDBKeyStringTypeByte: {
       base::string16 s;
       if (!DecodeStringWithLength(slice, &s))
         return false;
-      *value = make_scoped_ptr(new IndexedDBKey(s));
+      *value = base::WrapUnique(new IndexedDBKey(s));
       return true;
     }
     case kIndexedDBKeyDateTypeByte: {
       double d;
       if (!DecodeDouble(slice, &d))
         return false;
-      *value = make_scoped_ptr(new IndexedDBKey(d, WebIDBKeyTypeDate));
+      *value = base::WrapUnique(new IndexedDBKey(d, WebIDBKeyTypeDate));
       return true;
     }
     case kIndexedDBKeyNumberTypeByte: {
       double d;
       if (!DecodeDouble(slice, &d))
         return false;
-      *value = make_scoped_ptr(new IndexedDBKey(d, WebIDBKeyTypeNumber));
+      *value = base::WrapUnique(new IndexedDBKey(d, WebIDBKeyTypeNumber));
       return true;
     }
   }
@@ -1641,8 +1642,8 @@ std::string ObjectStoreDataKey::Encode(int64_t database_id,
   return Encode(database_id, object_store_id, encoded_key);
 }
 
-scoped_ptr<IndexedDBKey> ObjectStoreDataKey::user_key() const {
-  scoped_ptr<IndexedDBKey> key;
+std::unique_ptr<IndexedDBKey> ObjectStoreDataKey::user_key() const {
+  std::unique_ptr<IndexedDBKey> key;
   StringPiece slice(encoded_user_key_);
   if (!DecodeIDBKey(&slice, &key)) {
     // TODO(jsbell): Return error.
@@ -1685,8 +1686,8 @@ std::string ExistsEntryKey::Encode(int64_t database_id,
   return Encode(database_id, object_store_id, encoded_key);
 }
 
-scoped_ptr<IndexedDBKey> ExistsEntryKey::user_key() const {
-  scoped_ptr<IndexedDBKey> key;
+std::unique_ptr<IndexedDBKey> ExistsEntryKey::user_key() const {
+  std::unique_ptr<IndexedDBKey> key;
   StringPiece slice(encoded_user_key_);
   if (!DecodeIDBKey(&slice, &key)) {
     // TODO(jsbell): Return error.
@@ -1884,8 +1885,8 @@ int64_t IndexDataKey::IndexId() const {
   return index_id_;
 }
 
-scoped_ptr<IndexedDBKey> IndexDataKey::user_key() const {
-  scoped_ptr<IndexedDBKey> key;
+std::unique_ptr<IndexedDBKey> IndexDataKey::user_key() const {
+  std::unique_ptr<IndexedDBKey> key;
   StringPiece slice(encoded_user_key_);
   if (!DecodeIDBKey(&slice, &key)) {
     // TODO(jsbell): Return error.
@@ -1893,8 +1894,8 @@ scoped_ptr<IndexedDBKey> IndexDataKey::user_key() const {
   return key;
 }
 
-scoped_ptr<IndexedDBKey> IndexDataKey::primary_key() const {
-  scoped_ptr<IndexedDBKey> key;
+std::unique_ptr<IndexedDBKey> IndexDataKey::primary_key() const {
+  std::unique_ptr<IndexedDBKey> key;
   StringPiece slice(encoded_primary_key_);
   if (!DecodeIDBKey(&slice, &key)) {
     // TODO(jsbell): Return error.

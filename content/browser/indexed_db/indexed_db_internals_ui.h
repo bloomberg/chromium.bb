@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -36,7 +36,7 @@ class IndexedDBInternalsUI : public WebUIController {
   void GetAllOrigins(const base::ListValue* args);
   void GetAllOriginsOnIndexedDBThread(scoped_refptr<IndexedDBContext> context,
                                       const base::FilePath& context_path);
-  void OnOriginsReady(scoped_ptr<base::ListValue> origins,
+  void OnOriginsReady(std::unique_ptr<base::ListValue> origins,
                       const base::FilePath& path);
 
   void AddContextFromStoragePartition(StoragePartition* partition);

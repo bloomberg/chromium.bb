@@ -117,7 +117,7 @@ class IndexedDBActiveBlobRegistryTest : public testing::Test {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_refptr<RegistryTestMockFactory> factory_;
   scoped_refptr<MockIDBBackingStore> backing_store_;
-  scoped_ptr<IndexedDBActiveBlobRegistry> registry_;
+  std::unique_ptr<IndexedDBActiveBlobRegistry> registry_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBActiveBlobRegistryTest);
 };

@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/indexed_db/list_set.h"
+
+#include <memory>
+
+#include "base/memory/ref_counted.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -146,9 +148,9 @@ TEST(ListSetTest, ListSetObject) {
 }
 
 TEST(ListSetTest, ListSetPointer) {
-  scoped_ptr<Wrapped<int> > w0(new Wrapped<int>(0));
-  scoped_ptr<Wrapped<int> > w1(new Wrapped<int>(1));
-  scoped_ptr<Wrapped<int> > w2(new Wrapped<int>(2));
+  std::unique_ptr<Wrapped<int>> w0(new Wrapped<int>(0));
+  std::unique_ptr<Wrapped<int>> w1(new Wrapped<int>(1));
+  std::unique_ptr<Wrapped<int>> w2(new Wrapped<int>(2));
 
   list_set<Wrapped<int>*> set;
   EXPECT_EQ(0u, set.size());

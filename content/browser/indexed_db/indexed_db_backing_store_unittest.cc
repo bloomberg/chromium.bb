@@ -51,7 +51,7 @@ class DefaultLevelDBFactory : public LevelDBFactory {
   DefaultLevelDBFactory() {}
   leveldb::Status OpenLevelDB(const base::FilePath& file_name,
                               const LevelDBComparator* comparator,
-                              scoped_ptr<LevelDBDatabase>* db,
+                              std::unique_ptr<LevelDBDatabase>* db,
                               bool* is_disk_full) override {
     return LevelDBDatabase::Open(file_name, comparator, db, is_disk_full);
   }
@@ -75,7 +75,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
       leveldb::Status* status) {
     DCHECK(!path_base.empty());
 
-    scoped_ptr<LevelDBComparator> comparator(new Comparator());
+    std::unique_ptr<LevelDBComparator> comparator(new Comparator());
 
     if (!base::CreateDirectory(path_base)) {
       *status = leveldb::Status::IOError("Unable to create base dir");
@@ -85,7 +85,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
     const base::FilePath file_path = path_base.AppendASCII("test_db_path");
     const base::FilePath blob_path = path_base.AppendASCII("test_blob_path");
 
-    scoped_ptr<LevelDBDatabase> db;
+    std::unique_ptr<LevelDBDatabase> db;
     bool is_disk_full = false;
     *status = leveldb_factory->OpenLevelDB(
         file_path, comparator.get(), &db, &is_disk_full);
@@ -156,8 +156,8 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
                                 const GURL& origin_url,
                                 const base::FilePath& blob_path,
                                 net::URLRequestContext* request_context,
-                                scoped_ptr<LevelDBDatabase> db,
-                                scoped_ptr<LevelDBComparator> comparator,
+                                std::unique_ptr<LevelDBDatabase> db,
+                                std::unique_ptr<LevelDBComparator> comparator,
                                 base::SequencedTaskRunner* task_runner)
       : IndexedDBBackingStore(indexed_db_factory,
                               origin_url,
@@ -820,7 +820,7 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
     EXPECT_TRUE(s.ok());
     EXPECT_EQ(m_value1.bits, result_value.bits);
 
-    scoped_ptr<IndexedDBKey> new_primary_key;
+    std::unique_ptr<IndexedDBKey> new_primary_key;
     s = backing_store_->GetPrimaryKeyViaIndex(&transaction2,
                                               high_database_id,
                                               high_object_store_id,
@@ -903,7 +903,7 @@ TEST_F(IndexedDBBackingStoreTest, InvalidIds) {
       &transaction1, 0, object_store_id, m_key1, &result_value);
   EXPECT_FALSE(s.ok());
 
-  scoped_ptr<IndexedDBKey> new_primary_key;
+  std::unique_ptr<IndexedDBKey> new_primary_key;
   s = backing_store_->GetPrimaryKeyViaIndex(&transaction1,
                                             database_id,
                                             object_store_id,

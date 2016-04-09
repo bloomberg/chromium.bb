@@ -104,7 +104,7 @@ bool IndexWriter::AddingKeyAllowed(
     return true;
   }
 
-  scoped_ptr<IndexedDBKey> found_primary_key;
+  std::unique_ptr<IndexedDBKey> found_primary_key;
   bool found = false;
   leveldb::Status s = backing_store->KeyExistsInIndex(transaction,
                                                       database_id,
@@ -147,7 +147,7 @@ bool MakeIndexWriters(
     if (key_was_generated && (index.key_path == object_store.key_path))
       keys.second.push_back(primary_key);
 
-    scoped_ptr<IndexWriter> index_writer(new IndexWriter(index, keys));
+    std::unique_ptr<IndexWriter> index_writer(new IndexWriter(index, keys));
     bool can_add_keys = false;
     bool backing_store_success =
         index_writer->VerifyIndexKeys(backing_store,

@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -15,7 +16,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "content/common/indexed_db/indexed_db_key.h"
@@ -67,7 +67,7 @@ CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeDouble(base::StringPiece* slice,
                                                     double* value);
 CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeIDBKey(
     base::StringPiece* slice,
-    scoped_ptr<IndexedDBKey>* value);
+    std::unique_ptr<IndexedDBKey>* value);
 CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeIDBKeyPath(
     base::StringPiece* slice,
     IndexedDBKeyPath* value);
@@ -394,7 +394,8 @@ class ObjectStoreDataKey {
   static std::string Encode(int64_t database_id,
                             int64_t object_store_id,
                             const IndexedDBKey& user_key);
-  scoped_ptr<IndexedDBKey> user_key() const;
+  std::unique_ptr<IndexedDBKey> user_key() const;
+
  private:
   std::string encoded_user_key_;
 };
@@ -411,7 +412,7 @@ class ExistsEntryKey {
   static std::string Encode(int64_t database_id,
                             int64_t object_store_id,
                             const IndexedDBKey& user_key);
-  scoped_ptr<IndexedDBKey> user_key() const;
+  std::unique_ptr<IndexedDBKey> user_key() const;
 
  private:
   static const int64_t kSpecialIndexNumber;
@@ -480,8 +481,8 @@ class IndexDataKey {
   int64_t DatabaseId() const;
   int64_t ObjectStoreId() const;
   int64_t IndexId() const;
-  scoped_ptr<IndexedDBKey> user_key() const;
-  scoped_ptr<IndexedDBKey> primary_key() const;
+  std::unique_ptr<IndexedDBKey> user_key() const;
+  std::unique_ptr<IndexedDBKey> primary_key() const;
 
  private:
   int64_t database_id_;

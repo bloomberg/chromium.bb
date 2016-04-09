@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -17,7 +18,6 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/public/browser/indexed_db_context.h"
@@ -155,7 +155,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  scoped_ptr<std::set<GURL> > origin_set_;
+  std::unique_ptr<std::set<GURL>> origin_set_;
   OriginToSizeMap origin_size_map_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBContextImpl);

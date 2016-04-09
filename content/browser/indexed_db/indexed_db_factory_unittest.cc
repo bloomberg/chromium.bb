@@ -434,7 +434,7 @@ class UpgradeNeededCallbacks : public MockIndexedDBCallbacks {
  public:
   UpgradeNeededCallbacks() {}
 
-  void OnSuccess(scoped_ptr<IndexedDBConnection> connection,
+  void OnSuccess(std::unique_ptr<IndexedDBConnection> connection,
                  const IndexedDBDatabaseMetadata& metadata) override {
     EXPECT_TRUE(connection_.get());
     EXPECT_FALSE(connection.get());
@@ -442,7 +442,7 @@ class UpgradeNeededCallbacks : public MockIndexedDBCallbacks {
 
   void OnUpgradeNeeded(
       int64_t old_version,
-      scoped_ptr<IndexedDBConnection> connection,
+      std::unique_ptr<IndexedDBConnection> connection,
       const content::IndexedDBDatabaseMetadata& metadata) override {
     connection_ = std::move(connection);
   }

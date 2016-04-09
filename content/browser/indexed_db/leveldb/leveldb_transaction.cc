@@ -5,6 +5,7 @@
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
@@ -97,7 +98,7 @@ leveldb::Status LevelDBTransaction::Commit() {
   }
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
-  scoped_ptr<LevelDBWriteBatch> write_batch = LevelDBWriteBatch::Create();
+  std::unique_ptr<LevelDBWriteBatch> write_batch = LevelDBWriteBatch::Create();
 
   auto it = data_.begin();
   while (it != data_.end()) {
@@ -127,13 +128,13 @@ void LevelDBTransaction::Rollback() {
   Clear();
 }
 
-scoped_ptr<LevelDBIterator> LevelDBTransaction::CreateIterator() {
+std::unique_ptr<LevelDBIterator> LevelDBTransaction::CreateIterator() {
   return TransactionIterator::Create(this);
 }
 
-scoped_ptr<LevelDBTransaction::DataIterator>
+std::unique_ptr<LevelDBTransaction::DataIterator>
 LevelDBTransaction::DataIterator::Create(LevelDBTransaction* transaction) {
-  return make_scoped_ptr(new DataIterator(transaction));
+  return base::WrapUnique(new DataIterator(transaction));
 }
 
 bool LevelDBTransaction::DataIterator::IsValid() const {
@@ -190,10 +191,10 @@ LevelDBTransaction::DataIterator::DataIterator(LevelDBTransaction* transaction)
     : data_(&transaction->data_),
       iterator_(data_->end()) {}
 
-scoped_ptr<LevelDBTransaction::TransactionIterator>
+std::unique_ptr<LevelDBTransaction::TransactionIterator>
 LevelDBTransaction::TransactionIterator::Create(
     scoped_refptr<LevelDBTransaction> transaction) {
-  return make_scoped_ptr(new TransactionIterator(transaction));
+  return base::WrapUnique(new TransactionIterator(transaction));
 }
 
 LevelDBTransaction::TransactionIterator::TransactionIterator(
@@ -453,9 +454,9 @@ void LevelDBTransaction::NotifyIterators() {
     transaction_iterator->DataChanged();
 }
 
-scoped_ptr<LevelDBDirectTransaction> LevelDBDirectTransaction::Create(
+std::unique_ptr<LevelDBDirectTransaction> LevelDBDirectTransaction::Create(
     LevelDBDatabase* db) {
-  return make_scoped_ptr(new LevelDBDirectTransaction(db));
+  return base::WrapUnique(new LevelDBDirectTransaction(db));
 }
 
 LevelDBDirectTransaction::LevelDBDirectTransaction(LevelDBDatabase* db)

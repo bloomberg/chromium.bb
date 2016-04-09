@@ -19,7 +19,7 @@
 namespace content {
 
 IndexedDBCursor::IndexedDBCursor(
-    scoped_ptr<IndexedDBBackingStore::Cursor> cursor,
+    std::unique_ptr<IndexedDBBackingStore::Cursor> cursor,
     indexed_db::CursorType cursor_type,
     blink::WebIDBTaskType task_type,
     IndexedDBTransaction* transaction)
@@ -35,8 +35,8 @@ IndexedDBCursor::~IndexedDBCursor() {
   transaction_->UnregisterOpenCursor(this);
 }
 
-void IndexedDBCursor::Continue(scoped_ptr<IndexedDBKey> key,
-                               scoped_ptr<IndexedDBKey> primary_key,
+void IndexedDBCursor::Continue(std::unique_ptr<IndexedDBKey> key,
+                               std::unique_ptr<IndexedDBKey> primary_key,
                                scoped_refptr<IndexedDBCallbacks> callbacks) {
   IDB_TRACE("IndexedDBCursor::Continue");
 
@@ -78,8 +78,8 @@ void IndexedDBCursor::CursorAdvanceOperation(
 }
 
 void IndexedDBCursor::CursorIterationOperation(
-    scoped_ptr<IndexedDBKey> key,
-    scoped_ptr<IndexedDBKey> primary_key,
+    std::unique_ptr<IndexedDBKey> key,
+    std::unique_ptr<IndexedDBKey> primary_key,
     scoped_refptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* /*transaction*/) {
   IDB_TRACE("IndexedDBCursor::CursorIterationOperation");

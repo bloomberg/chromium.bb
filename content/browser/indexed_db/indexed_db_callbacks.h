@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
@@ -66,9 +66,9 @@ class CONTENT_EXPORT IndexedDBCallbacks
                           std::string data_loss_message);
   virtual void OnUpgradeNeeded(
       int64_t old_version,
-      scoped_ptr<IndexedDBConnection> connection,
+      std::unique_ptr<IndexedDBConnection> connection,
       const content::IndexedDBDatabaseMetadata& metadata);
-  virtual void OnSuccess(scoped_ptr<IndexedDBConnection> connection,
+  virtual void OnSuccess(std::unique_ptr<IndexedDBConnection> connection,
                          const content::IndexedDBDatabaseMetadata& metadata);
 
   // IndexedDBDatabase::OpenCursor

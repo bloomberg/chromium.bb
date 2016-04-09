@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_ITERATOR_IMPL_H_
 #define CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_ITERATOR_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/indexed_db/leveldb/leveldb_iterator.h"
 #include "content/common/content_export.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
@@ -25,7 +26,7 @@ class CONTENT_EXPORT LevelDBIteratorImpl : public content::LevelDBIterator {
   base::StringPiece Value() const override;
 
  protected:
-  explicit LevelDBIteratorImpl(scoped_ptr<leveldb::Iterator> iterator);
+  explicit LevelDBIteratorImpl(std::unique_ptr<leveldb::Iterator> iterator);
 
  private:
   void CheckStatus();
@@ -33,7 +34,7 @@ class CONTENT_EXPORT LevelDBIteratorImpl : public content::LevelDBIterator {
   friend class IndexedDBClassFactory;
   friend class MockBrowserTestIndexedDBClassFactory;
 
-  scoped_ptr<leveldb::Iterator> iterator_;
+  std::unique_ptr<leveldb::Iterator> iterator_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBIteratorImpl);
 };

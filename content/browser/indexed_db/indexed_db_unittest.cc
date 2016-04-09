@@ -138,7 +138,7 @@ class ForceCloseDBCallbacks : public IndexedDBCallbacks {
 
   void OnSuccess() override {}
   void OnSuccess(const std::vector<base::string16>&) override {}
-  void OnSuccess(scoped_ptr<IndexedDBConnection> connection,
+  void OnSuccess(std::unique_ptr<IndexedDBConnection> connection,
                  const IndexedDBDatabaseMetadata& metadata) override {
     connection_ = std::move(connection);
     idb_context_->ConnectionOpened(origin_url_, connection_.get());
@@ -152,7 +152,7 @@ class ForceCloseDBCallbacks : public IndexedDBCallbacks {
  private:
   scoped_refptr<IndexedDBContextImpl> idb_context_;
   GURL origin_url_;
-  scoped_ptr<IndexedDBConnection> connection_;
+  std::unique_ptr<IndexedDBConnection> connection_;
   DISALLOW_COPY_AND_ASSIGN(ForceCloseDBCallbacks);
 };
 
@@ -240,7 +240,7 @@ TEST_F(IndexedDBTest, DeleteFailsIfDirectoryLocked) {
   base::FilePath test_path = idb_context->GetFilePathForTesting(kTestOrigin);
   ASSERT_TRUE(base::CreateDirectory(test_path));
 
-  scoped_ptr<LevelDBLock> lock =
+  std::unique_ptr<LevelDBLock> lock =
       LevelDBDatabase::LockForTesting(test_path);
   ASSERT_TRUE(lock);
 

@@ -5,7 +5,8 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_WRITE_BATCH_H_
 #define CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_WRITE_BATCH_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string_piece.h"
 
 namespace leveldb {
@@ -18,7 +19,7 @@ namespace content {
 // This class holds a collection of updates to apply atomically to a database.
 class LevelDBWriteBatch {
  public:
-  static scoped_ptr<LevelDBWriteBatch> Create();
+  static std::unique_ptr<LevelDBWriteBatch> Create();
   ~LevelDBWriteBatch();
 
   void Put(const base::StringPiece& key, const base::StringPiece& value);
@@ -30,7 +31,7 @@ class LevelDBWriteBatch {
   friend class LevelDBDatabase;
   LevelDBWriteBatch();
 
-  scoped_ptr<leveldb::WriteBatch> write_batch_;
+  std::unique_ptr<leveldb::WriteBatch> write_batch_;
 };
 
 }  // namespace content

@@ -10,9 +10,10 @@
 #include <algorithm>
 #include <iterator>
 #include <list>
+#include <memory>
 #include <set>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 
 //
 // A container class that provides fast containment test (like a set)
@@ -156,10 +157,10 @@ class list_set {
   std::set<T> set_;
 };
 
-// Prevent instantiation of list_set<scoped_ptr<T>> as the current
+// Prevent instantiation of list_set<std::unique_ptr<T>> as the current
 // implementation would fail.
 // TODO(jsbell): Support scoped_ptr through specialization.
 template <typename T>
-class list_set<scoped_ptr<T> >;
+class list_set<std::unique_ptr<T>>;
 
 #endif  // CONTENT_BROWSER_INDEXED_DB_LIST_SET_H_

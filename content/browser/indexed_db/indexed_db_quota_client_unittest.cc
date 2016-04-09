@@ -166,7 +166,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_refptr<IndexedDBContextImpl> idb_context_;
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestBrowserContext> browser_context_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
   storage::QuotaStatusCode delete_status_;
   base::WeakPtrFactory<IndexedDBQuotaClientTest> weak_factory_;
 

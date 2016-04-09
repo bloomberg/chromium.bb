@@ -52,7 +52,7 @@ LevelDBTransaction* IndexedDBClassFactory::CreateLevelDBTransaction(
 }
 
 content::LevelDBIteratorImpl* IndexedDBClassFactory::CreateIteratorImpl(
-    scoped_ptr<leveldb::Iterator> iterator) {
+    std::unique_ptr<leveldb::Iterator> iterator) {
   return new LevelDBIteratorImpl(std::move(iterator));
 }
 

@@ -581,7 +581,7 @@ static void CorruptIndexedDBDatabase(
 
 const std::string s_corrupt_db_test_prefix = "/corrupt/test/";
 
-static scoped_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
+static std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
     IndexedDBContextImpl* context,
     const GURL& origin_url,
     const std::string& path,
@@ -591,7 +591,7 @@ static scoped_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
   if (path.find(s_corrupt_db_test_prefix) != std::string::npos)
     request_path = request.relative_url.substr(s_corrupt_db_test_prefix.size());
   else
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return std::unique_ptr<net::test_server::HttpResponse>();
 
   // Remove the query string if present.
   std::string request_query;
@@ -611,7 +611,7 @@ static scoped_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
                                                &signal_when_finished));
     signal_when_finished.Wait();
 
-    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+    std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse);
     http_response->set_code(net::HTTP_OK);
     return std::move(http_response);
@@ -677,7 +677,7 @@ static scoped_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
 
     test->FailOperation(failure_class, failure_method, instance_num, call_num);
 
-    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+    std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse);
     http_response->set_code(net::HTTP_OK);
     return std::move(http_response);
@@ -686,12 +686,12 @@ static scoped_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
   // A request for a test resource
   base::FilePath resource_path =
       content::GetTestFilePath("indexeddb", request_path.c_str());
-  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_OK);
   std::string file_contents;
   if (!base::ReadFileToString(resource_path, &file_contents))
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return std::unique_ptr<net::test_server::HttpResponse>();
   http_response->set_content(file_contents);
   return std::move(http_response);
 }

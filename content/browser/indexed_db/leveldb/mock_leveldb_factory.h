@@ -18,7 +18,7 @@ class MockLevelDBFactory : public LevelDBFactory {
   MOCK_METHOD4(OpenLevelDB,
                leveldb::Status(const base::FilePath& file_name,
                                const LevelDBComparator* comparator,
-                               scoped_ptr<LevelDBDatabase>* db,
+                               std::unique_ptr<LevelDBDatabase>* db,
                                bool* is_disk_full));
   MOCK_METHOD1(DestroyLevelDB,
                leveldb::Status(const base::FilePath& file_name));

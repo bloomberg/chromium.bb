@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/common/content_export.h"
@@ -55,7 +55,7 @@ class CONTENT_EXPORT IndexedDBClassFactory {
       IndexedDBBackingStore::Transaction* backing_store_transaction);
 
   virtual LevelDBIteratorImpl* CreateIteratorImpl(
-      scoped_ptr<leveldb::Iterator> iterator);
+      std::unique_ptr<leveldb::Iterator> iterator);
   virtual LevelDBTransaction* CreateLevelDBTransaction(LevelDBDatabase* db);
 
  protected:

@@ -166,7 +166,8 @@ const std::string LevelDBTraceTransaction::s_class_name = "LevelDBTransaction";
 
 class LevelDBTraceIteratorImpl : public LevelDBIteratorImpl {
  public:
-  LevelDBTraceIteratorImpl(scoped_ptr<leveldb::Iterator> iterator, int inst_num)
+  LevelDBTraceIteratorImpl(std::unique_ptr<leveldb::Iterator> iterator,
+                           int inst_num)
       : LevelDBIteratorImpl(std::move(iterator)),
         is_valid_tracer_(s_class_name, "IsValid", inst_num),
         seek_to_last_tracer_(s_class_name, "SeekToLast", inst_num),
@@ -222,7 +223,7 @@ const std::string LevelDBTraceIteratorImpl::s_class_name = "LevelDBIterator";
 
 class LevelDBTestIteratorImpl : public content::LevelDBIteratorImpl {
  public:
-  LevelDBTestIteratorImpl(scoped_ptr<leveldb::Iterator> iterator,
+  LevelDBTestIteratorImpl(std::unique_ptr<leveldb::Iterator> iterator,
                           FailMethod fail_method,
                           int fail_on_call_num)
       : LevelDBIteratorImpl(std::move(iterator)),
@@ -298,7 +299,7 @@ MockBrowserTestIndexedDBClassFactory::CreateLevelDBTransaction(
 }
 
 LevelDBIteratorImpl* MockBrowserTestIndexedDBClassFactory::CreateIteratorImpl(
-    scoped_ptr<leveldb::Iterator> iterator) {
+    std::unique_ptr<leveldb::Iterator> iterator) {
   instance_count_[FAIL_CLASS_LEVELDB_ITERATOR] =
       instance_count_[FAIL_CLASS_LEVELDB_ITERATOR] + 1;
   if (only_trace_calls_) {
