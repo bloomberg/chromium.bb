@@ -57,7 +57,6 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/utility/partial_screenshot_controller.h"
-#include "ash/wm/app_list_controller.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/ash_native_cursor_manager.h"
 #include "ash/wm/coordinate_conversion.h"
@@ -85,6 +84,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/app_list/shower/app_list_shower.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
@@ -298,19 +298,15 @@ void Shell::ShowAppList(aura::Window* window) {
   // If the context window is not given, show it on the target root window.
   if (!window)
     window = GetTargetRootWindow();
-  if (!app_list_controller_)
-    app_list_controller_.reset(new AppListController);
-  app_list_controller_->Show(window);
+  delegate_->GetAppListShower()->Show(window);
 }
 
 void Shell::DismissAppList() {
-  if (!app_list_controller_)
-    return;
-  app_list_controller_->Dismiss();
+  delegate_->GetAppListShower()->Dismiss();
 }
 
 void Shell::ToggleAppList(aura::Window* window) {
-  if (app_list_controller_ && app_list_controller_->IsVisible()) {
+  if (delegate_->GetAppListShower()->IsVisible()) {
     DismissAppList();
     return;
   }
@@ -319,17 +315,7 @@ void Shell::ToggleAppList(aura::Window* window) {
 }
 
 bool Shell::GetAppListTargetVisibility() const {
-  return app_list_controller_.get() &&
-      app_list_controller_->GetTargetVisibility();
-}
-
-aura::Window* Shell::GetAppListWindow() {
-  return app_list_controller_.get() ? app_list_controller_->GetWindow()
-                                    : nullptr;
-}
-
-app_list::AppListView* Shell::GetAppListView() {
-  return app_list_controller_.get() ? app_list_controller_->GetView() : nullptr;
+  return delegate_->GetAppListShower()->GetTargetVisibility();
 }
 
 bool Shell::IsSystemModalWindowOpen() const {
@@ -717,12 +703,6 @@ Shell::~Shell() {
   // Destroy maximize mode controller early on since it has some observers which
   // need to be removed.
   maximize_mode_controller_.reset();
-
-  // AppList needs to be released before shelf layout manager, which is
-  // destroyed with shelf container in the loop below. However, app list
-  // container is now on top of shelf container and released after it.
-  // TODO(xiyuan): Move it back when app list container is no longer needed.
-  app_list_controller_.reset();
 
 #if defined(OS_CHROMEOS)
   // Destroy the LastWindowClosedLogoutReminder before the

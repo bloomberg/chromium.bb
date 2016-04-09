@@ -15,6 +15,11 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 
+namespace app_list {
+class AppListShowerDelegateFactory;
+class AppListShowerImpl;
+}
+
 namespace keyboard {
 class KeyboardUI;
 }
@@ -48,7 +53,7 @@ class TestShellDelegate : public ShellDelegate {
   void RemoveVirtualKeyboardStateObserver(
       VirtualKeyboardStateObserver* observer) override;
   void OpenUrl(const GURL& url) override;
-  app_list::AppListViewDelegate* GetAppListViewDelegate() override;
+  app_list::AppListShower* GetAppListShower() override;
   ShelfDelegate* CreateShelfDelegate(ShelfModel* model) override;
   SystemTrayDelegate* CreateSystemTrayDelegate() override;
   UserWallpaperDelegate* CreateUserWallpaperDelegate() override;
@@ -64,6 +69,10 @@ class TestShellDelegate : public ShellDelegate {
 
   int num_exit_requests() const { return num_exit_requests_; }
 
+  app_list::AppListShowerImpl* app_list_shower() {
+    return app_list_shower_.get();
+  }
+
   void SetMediaCaptureState(MediaCaptureState state);
   void SetForceMaximizeOnFirstRun(bool maximize) {
     force_maximize_on_first_run_ = maximize;
@@ -74,7 +83,9 @@ class TestShellDelegate : public ShellDelegate {
   bool multi_profiles_enabled_;
   bool force_maximize_on_first_run_;
 
-  std::unique_ptr<app_list::AppListViewDelegate> app_list_view_delegate_;
+  std::unique_ptr<app_list::AppListShowerDelegateFactory>
+      app_list_shower_delegate_factory_;
+  std::unique_ptr<app_list::AppListShowerImpl> app_list_shower_;
 
   base::ObserverList<ash::VirtualKeyboardStateObserver>
       keyboard_state_observer_list_;

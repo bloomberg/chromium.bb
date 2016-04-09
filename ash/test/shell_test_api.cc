@@ -9,6 +9,7 @@
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 
 namespace ash {
 namespace test {
@@ -43,8 +44,8 @@ DragDropController* ShellTestApi::drag_drop_controller() {
   return shell_->drag_drop_controller_.get();
 }
 
-AppListController* ShellTestApi::app_list_controller() {
-  return shell_->app_list_controller_.get();
+app_list::AppListShower* ShellTestApi::app_list_shower() {
+  return shell_->delegate_->GetAppListShower();
 }
 
 void ShellTestApi::DisableDisplayAnimator() {

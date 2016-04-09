@@ -632,6 +632,10 @@
       'browser/ui/cocoa/web_contents_modal_dialog_manager_views_mac_browsertest.mm',
       'browser/ui/cocoa/website_settings/permission_bubble_cocoa_browser_test.mm',
     ],
+    'chrome_browser_app_list_ash_test_support_sources': [
+      'browser/ui/ash/app_list/test/app_list_service_ash_test_api.cc',
+      'browser/ui/ash/app_list/test/app_list_service_ash_test_api.h',
+    ],
     'chrome_browser_tests_ash_sources': [
       'browser/ui/ash/accelerator_commands_browsertest.cc',
       'browser/ui/ash/accelerator_controller_browsertest.cc',
@@ -2380,6 +2384,16 @@
           'sources': [ '<@(chrome_browser_tests_ash_sources)' ],
           'dependencies': [
             '../ash/ash.gyp:ash_test_support',
+          ],
+          'conditions': [
+            ['enable_app_list==1', {
+              'sources': [
+                '<@(chrome_browser_app_list_ash_test_support_sources)'
+              ],
+              'dependencies': [
+                '../ui/app_list/shower/app_list_shower.gyp:app_list_shower_test_support',
+              ],
+            }],
           ],
         }],
         ['use_aura==1 or toolkit_views==1', {

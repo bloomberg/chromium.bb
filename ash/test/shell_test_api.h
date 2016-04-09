@@ -7,8 +7,11 @@
 
 #include "base/macros.h"
 
+namespace app_list {
+class AppListShower;
+}
+
 namespace ash {
-class AppListController;
 class AshNativeCursorManager;
 class DragDropController;
 class MaximizeModeWindowManager;
@@ -35,7 +38,7 @@ public:
   AshNativeCursorManager* ash_native_cursor_manager();
   ShelfModel* shelf_model();
   DragDropController* drag_drop_controller();
-  AppListController* app_list_controller();
+  app_list::AppListShower* app_list_shower();
   MaximizeModeWindowManager* maximize_mode_window_manager();
   void DisableDisplayAnimator();
 

@@ -10,25 +10,25 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "extensions/common/extension.h"
+#include "ui/app_list/shower/app_list_shower_impl.h"
 #include "ui/app_list/views/app_list_view.h"
 
-AppListControllerDelegateAsh::AppListControllerDelegateAsh() {}
+AppListControllerDelegateAsh::AppListControllerDelegateAsh(
+    app_list::AppListShowerImpl* app_list_shower)
+    : app_list_shower_(app_list_shower) {}
 
 AppListControllerDelegateAsh::~AppListControllerDelegateAsh() {}
 
 void AppListControllerDelegateAsh::DismissView() {
-  DCHECK(ash::Shell::HasInstance());
-  ash::Shell::GetInstance()->DismissAppList();
+  app_list_shower_->Dismiss();
 }
 
 gfx::NativeWindow AppListControllerDelegateAsh::GetAppListWindow() {
-  DCHECK(ash::Shell::HasInstance());
-  return ash::Shell::GetInstance()->GetAppListWindow();
+  return app_list_shower_->GetWindow();
 }
 
 gfx::Rect AppListControllerDelegateAsh::GetAppListBounds() {
-  app_list::AppListView* app_list_view =
-      ash::Shell::GetInstance()->GetAppListView();
+  app_list::AppListView* app_list_view = app_list_shower_->GetView();
   if (app_list_view)
     return app_list_view->GetBoundsInScreen();
   return gfx::Rect();
@@ -59,15 +59,13 @@ AppListControllerDelegate::Pinnable AppListControllerDelegateAsh::GetPinnable(
 }
 
 void AppListControllerDelegateAsh::OnShowChildDialog() {
-  app_list::AppListView* app_list_view =
-      ash::Shell::GetInstance()->GetAppListView();
+  app_list::AppListView* app_list_view = app_list_shower_->GetView();
   if (app_list_view)
     app_list_view->SetAppListOverlayVisible(true);
 }
 
 void AppListControllerDelegateAsh::OnCloseChildDialog() {
-  app_list::AppListView* app_list_view =
-      ash::Shell::GetInstance()->GetAppListView();
+  app_list::AppListView* app_list_view = app_list_shower_->GetView();
   if (app_list_view)
     app_list_view->SetAppListOverlayVisible(false);
 }
