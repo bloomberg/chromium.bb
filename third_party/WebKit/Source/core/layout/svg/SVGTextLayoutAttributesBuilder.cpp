@@ -35,33 +35,25 @@ void updateLayoutAttributes(LayoutSVGInlineText& text, unsigned& valueListPositi
 
     const Vector<SVGTextMetrics>& metricsList = text.metricsList();
     auto metricsEnd = metricsList.end();
-    unsigned surrogatePairCharacters = 0;
-    unsigned skippedWhitespace = 0;
     unsigned currentPosition = 0;
     for (auto metrics = metricsList.begin(); metrics != metricsEnd; currentPosition += metrics->length(), ++metrics) {
-        if (metrics->isEmpty()) {
-            skippedWhitespace++;
+        if (metrics->isEmpty())
             continue;
-        }
 
-        unsigned currentValueListPosition = valueListPosition - skippedWhitespace - surrogatePairCharacters + currentPosition + 1;
-        auto it = allCharactersMap.find(currentValueListPosition);
+        auto it = allCharactersMap.find(valueListPosition + 1);
         if (it != allCharactersMap.end())
             attributes.characterDataMap().set(currentPosition + 1, it->value);
 
-        // At the moment, only surrogates will be length == 2 (or even > 1).
-        if (metrics->length() == 2)
-            surrogatePairCharacters++;
+        // Increase the position in the value/attribute list with one for each
+        // "character unit" (that will be displayed.)
+        valueListPosition++;
     }
-
-    // TODO(fs): currentPosition ought to always equal text.textLength() here.
-    valueListPosition += currentPosition - skippedWhitespace;
 }
 
 } // namespace
 
 SVGTextLayoutAttributesBuilder::SVGTextLayoutAttributesBuilder()
-    : m_textLength(0)
+    : m_characterCount(0)
 {
 }
 
@@ -88,34 +80,26 @@ void SVGTextLayoutAttributesBuilder::buildLayoutAttributesForTextRoot(LayoutSVGT
     m_characterDataMap.clear();
 
     if (m_textPositions.isEmpty()) {
-        m_textLength = 0;
-        UChar lastCharacter = ' ';
-        collectTextPositioningElements(textRoot, lastCharacter);
+        m_characterCount = 0;
+        collectTextPositioningElements(textRoot);
     }
 
-    if (!m_textLength)
+    if (!m_characterCount)
         return;
 
     buildCharacterDataMap(textRoot);
     buildLayoutAttributes(textRoot);
 }
 
-static inline void processLayoutSVGInlineText(LayoutSVGInlineText* text, unsigned& atCharacter, UChar& lastCharacter)
+static inline unsigned countCharactersInTextNode(const LayoutSVGInlineText& text)
 {
-    if (text->style()->whiteSpace() == PRE) {
-        atCharacter += text->textLength();
-        return;
-    }
-
-    unsigned textLength = text->textLength();
-    for (unsigned textPosition = 0; textPosition < textLength; ++textPosition) {
-        UChar currentCharacter = text->characterAt(textPosition);
-        if (currentCharacter == ' ' && lastCharacter == ' ')
+    unsigned numCharacters = 0;
+    for (const SVGTextMetrics& metrics : text.metricsList()) {
+        if (metrics.isEmpty())
             continue;
-
-        lastCharacter = currentCharacter;
-        ++atCharacter;
+        numCharacters++;
     }
+    return numCharacters;
 }
 
 static SVGTextPositioningElement* positioningElementFromLayoutObject(LayoutObject& layoutObject)
@@ -129,13 +113,13 @@ static SVGTextPositioningElement* positioningElementFromLayoutObject(LayoutObjec
     return isSVGTextPositioningElement(*node) ? toSVGTextPositioningElement(node) : nullptr;
 }
 
-void SVGTextLayoutAttributesBuilder::collectTextPositioningElements(LayoutBoxModelObject& start, UChar& lastCharacter)
+void SVGTextLayoutAttributesBuilder::collectTextPositioningElements(LayoutBoxModelObject& start)
 {
     ASSERT(!start.isSVGText() || m_textPositions.isEmpty());
 
     for (LayoutObject* child = start.slowFirstChild(); child; child = child->nextSibling()) {
         if (child->isSVGInlineText()) {
-            processLayoutSVGInlineText(toLayoutSVGInlineText(child), m_textLength, lastCharacter);
+            m_characterCount += countCharactersInTextNode(toLayoutSVGInlineText(*child));
             continue;
         }
 
@@ -146,9 +130,9 @@ void SVGTextLayoutAttributesBuilder::collectTextPositioningElements(LayoutBoxMod
         SVGTextPositioningElement* element = positioningElementFromLayoutObject(inlineChild);
         unsigned atPosition = m_textPositions.size();
         if (element)
-            m_textPositions.append(TextPosition(element, m_textLength));
+            m_textPositions.append(TextPosition(element, m_characterCount));
 
-        collectTextPositioningElements(inlineChild, lastCharacter);
+        collectTextPositioningElements(inlineChild);
 
         if (!element)
             continue;
@@ -156,7 +140,7 @@ void SVGTextLayoutAttributesBuilder::collectTextPositioningElements(LayoutBoxMod
         // Update text position, after we're back from recursion.
         TextPosition& position = m_textPositions[atPosition];
         ASSERT(!position.length);
-        position.length = m_textLength - position.start;
+        position.length = m_characterCount - position.start;
     }
 }
 
@@ -166,7 +150,7 @@ void SVGTextLayoutAttributesBuilder::buildCharacterDataMap(LayoutSVGText& textRo
     ASSERT(outermostTextElement);
 
     // Grab outermost <text> element value lists and insert them in the character data map.
-    TextPosition wholeTextPosition(outermostTextElement, 0, m_textLength);
+    TextPosition wholeTextPosition(outermostTextElement, 0, m_characterCount);
     fillCharacterDataMap(wholeTextPosition);
 
     // Fill character data map using child text positioning elements in top-down order.

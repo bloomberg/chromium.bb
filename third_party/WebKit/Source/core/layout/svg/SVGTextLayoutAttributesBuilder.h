@@ -73,11 +73,11 @@ public:
 private:
     void buildCharacterDataMap(LayoutSVGText&);
     void buildLayoutAttributes(LayoutSVGText&) const;
-    void collectTextPositioningElements(LayoutBoxModelObject&, UChar& lastCharacter);
+    void collectTextPositioningElements(LayoutBoxModelObject&);
     void fillCharacterDataMap(const TextPosition&);
 
 private:
-    unsigned m_textLength;
+    unsigned m_characterCount;
     PersistentHeapVector<TextPosition> m_textPositions;
     SVGCharacterDataMap m_characterDataMap;
 };
