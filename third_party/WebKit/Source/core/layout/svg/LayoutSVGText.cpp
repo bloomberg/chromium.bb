@@ -296,6 +296,10 @@ RootInlineBox* LayoutSVGText::createRootInlineBox()
 
 bool LayoutSVGText::nodeAtFloatPoint(HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
 {
+    // We only draw in the foreground phase, so we only hit-test then.
+    if (hitTestAction != HitTestForeground)
+        return false;
+
     PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_TEXT_HITTESTING, result.hitTestRequest(), style()->pointerEvents());
     bool isVisible = (style()->visibility() == VISIBLE);
     if (isVisible || !hitRules.requireVisible) {
@@ -306,11 +310,17 @@ bool LayoutSVGText::nodeAtFloatPoint(HitTestResult& result, const FloatPoint& po
             if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(this, localToSVGParentTransform(), pointInParent, localPoint))
                 return false;
 
-            if (hitRules.canHitBoundingBox && !objectBoundingBox().contains(localPoint))
-                return false;
-
             HitTestLocation hitTestLocation(localPoint);
-            return LayoutBlock::nodeAtPoint(result, hitTestLocation, LayoutPoint(), hitTestAction);
+            if (LayoutBlock::nodeAtPoint(result, hitTestLocation, LayoutPoint(), hitTestAction))
+                return true;
+
+            // Consider the bounding box if requested.
+            if (hitRules.canHitBoundingBox && objectBoundingBox().contains(localPoint)) {
+                const LayoutPoint& localLayoutPoint = roundedLayoutPoint(localPoint);
+                updateHitTestResult(result, localLayoutPoint);
+                if (result.addNodeToListBasedTestResult(node(), localLayoutPoint) == StopHitTesting)
+                    return true;
+            }
         }
     }
 

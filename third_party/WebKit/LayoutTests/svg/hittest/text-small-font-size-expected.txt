@@ -1,0 +1,5 @@
+SELECT
+ This is a testharness.js-based test.
+PASS Hit-test of <text> does not hit-test the "background" (w/ small font size) 
+Harness: the test ran to completion.
+

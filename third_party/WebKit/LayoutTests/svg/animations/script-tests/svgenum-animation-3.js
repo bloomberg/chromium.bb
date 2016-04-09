@@ -1,6 +1,9 @@
 description("Test SVGLengthAdjustType enumeration animations");
 createSVGTestCase();
 
+// Initiate the test by clicking at (1, 50) - the 'S'.
+window.clickX = 1;
+
 // Setup test document
 var text = createSVGElement("text");
 text.setAttribute("id", "text");
