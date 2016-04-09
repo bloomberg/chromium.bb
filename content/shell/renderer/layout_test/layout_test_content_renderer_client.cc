@@ -167,7 +167,7 @@ WebThemeEngine* LayoutTestContentRendererClient::OverrideThemeEngine() {
       ->ThemeEngine();
 }
 
-scoped_ptr<blink::WebAppBannerClient>
+std::unique_ptr<blink::WebAppBannerClient>
 LayoutTestContentRendererClient::CreateAppBannerClient(
     RenderFrame* render_frame) {
   test_runner::WebTestInterfaces* interfaces =
@@ -175,10 +175,10 @@ LayoutTestContentRendererClient::CreateAppBannerClient(
   return interfaces->CreateAppBannerClient();
 }
 
-scoped_ptr<MediaStreamRendererFactory>
+std::unique_ptr<MediaStreamRendererFactory>
 LayoutTestContentRendererClient::CreateMediaStreamRendererFactory() {
 #if defined(ENABLE_WEBRTC)
-  return scoped_ptr<MediaStreamRendererFactory>(
+  return std::unique_ptr<MediaStreamRendererFactory>(
       new TestMediaStreamRendererFactory());
 #else
   return nullptr;

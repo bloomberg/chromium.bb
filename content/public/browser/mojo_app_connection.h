@@ -5,9 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_MOJO_APP_CONNECTION_H_
 #define CONTENT_PUBLIC_BROWSER_MOJO_APP_CONNECTION_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -31,7 +31,7 @@ class CONTENT_EXPORT MojoAppConnection {
   // |requestor_name| to identify the requestor and |context|'s mojo userid to
   // specify a profile specific application instantiation. This may be called
   // from any thread.
-  static scoped_ptr<MojoAppConnection> Create(
+  static std::unique_ptr<MojoAppConnection> Create(
       const std::string& user_id,
       const std::string& name,
       const std::string& requestor_name);

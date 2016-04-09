@@ -6,12 +6,13 @@
 #define CONTENT_PUBLIC_TEST_TEST_DOWNLOAD_REQUEST_HANDLER_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <queue>
 
 #include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/base/completion_callback.h"

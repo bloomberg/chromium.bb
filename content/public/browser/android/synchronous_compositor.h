@@ -57,7 +57,7 @@ class CONTENT_EXPORT SynchronousCompositor {
     Frame& operator=(Frame&& rhs);
 
     uint32_t output_surface_id;
-    scoped_ptr<cc::CompositorFrame> frame;
+    std::unique_ptr<cc::CompositorFrame> frame;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Frame);

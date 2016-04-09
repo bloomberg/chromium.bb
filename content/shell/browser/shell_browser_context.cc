@@ -81,7 +81,7 @@ void ShellBrowserContext::InitWhileIOAllowed() {
   CHECK(PathService::Get(base::DIR_LOCAL_APP_DATA, &path_));
   path_ = path_.Append(std::wstring(L"content_shell"));
 #elif defined(OS_LINUX)
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   base::FilePath config_dir(
       base::nix::GetXDGDirectory(env.get(),
                                  base::nix::kXdgConfigHomeEnvVar,
@@ -102,9 +102,9 @@ void ShellBrowserContext::InitWhileIOAllowed() {
   BrowserContext::Initialize(this, path_);
 }
 
-scoped_ptr<ZoomLevelDelegate> ShellBrowserContext::CreateZoomLevelDelegate(
+std::unique_ptr<ZoomLevelDelegate> ShellBrowserContext::CreateZoomLevelDelegate(
     const base::FilePath&) {
-  return scoped_ptr<ZoomLevelDelegate>();
+  return std::unique_ptr<ZoomLevelDelegate>();
 }
 
 base::FilePath ShellBrowserContext::GetPath() const {

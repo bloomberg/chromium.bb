@@ -5,8 +5,9 @@
 #ifndef CONTENT_GPU_IN_PROCESS_GPU_THREAD_H_
 #define CONTENT_GPU_IN_PROCESS_GPU_THREAD_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/common/in_process_child_thread_params.h"
@@ -44,12 +45,12 @@ class InProcessGpuThread : public base::Thread {
   const gpu::GpuPreferences gpu_preferences_;
 
   // Can be null if overridden.
-  scoped_ptr<gpu::SyncPointManager> sync_point_manager_;
+  std::unique_ptr<gpu::SyncPointManager> sync_point_manager_;
 
   // Non-owning.
   gpu::SyncPointManager* sync_point_manager_override_;
 
-  scoped_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
+  std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessGpuThread);
 };

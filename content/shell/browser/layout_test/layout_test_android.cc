@@ -4,13 +4,14 @@
 
 #include "content/shell/browser/layout_test/layout_test_android.h"
 
+#include <memory>
+
 #include "base/android/context_utils.h"
 #include "base/android/fifo_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "content/public/test/nested_message_pump_android.h"
 #include "content/shell/common/shell_switches.h"
@@ -32,8 +33,9 @@ void EnsureCreateFIFO(const base::FilePath& path) {
     << "Unable to create the Android's FIFO: " << path.value().c_str();
 }
 
-scoped_ptr<base::MessagePump> CreateMessagePumpForUI() {
-  return scoped_ptr<base::MessagePump>(new content::NestedMessagePumpAndroid());
+std::unique_ptr<base::MessagePump> CreateMessagePumpForUI() {
+  return std::unique_ptr<base::MessagePump>(
+      new content::NestedMessagePumpAndroid());
 }
 
 }  // namespace

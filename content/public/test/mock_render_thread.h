@@ -65,7 +65,7 @@ class MockRenderThread : public RenderThread {
       ResourceDispatcherDelegate* delegate) override;
   void RecordAction(const base::UserMetricsAction& action) override;
   void RecordComputedAction(const std::string& action) override;
-  scoped_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
+  std::unique_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
       size_t buffer_size) override;
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
   void RegisterExtension(v8::Extension* extension) override;
@@ -149,7 +149,7 @@ class MockRenderThread : public RenderThread {
   int32_t new_frame_routing_id_;
 
   // The last known good deserializer for sync messages.
-  scoped_ptr<IPC::MessageReplyDeserializer> reply_deserializer_;
+  std::unique_ptr<IPC::MessageReplyDeserializer> reply_deserializer_;
 
   // A list of message filters added to this thread.
   std::vector<scoped_refptr<IPC::MessageFilter> > filters_;
@@ -158,7 +158,7 @@ class MockRenderThread : public RenderThread {
   base::ObserverList<RenderProcessObserver> observers_;
 
   cc::TestSharedBitmapManager shared_bitmap_manager_;
-  scoped_ptr<ServiceRegistry> service_registry_;
+  std::unique_ptr<ServiceRegistry> service_registry_;
 };
 
 }  // namespace content

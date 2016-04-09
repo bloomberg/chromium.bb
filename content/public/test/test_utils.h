@@ -5,10 +5,11 @@
 #ifndef CONTENT_PUBLIC_TEST_TEST_UTILS_H_
 #define CONTENT_PUBLIC_TEST_TEST_UTILS_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_child_process_observer.h"
@@ -64,8 +65,9 @@ base::Closure GetQuitTaskForRunLoop(base::RunLoop* run_loop);
 // MessageLoop. When the result is available, it is returned.
 // This should not be used; the use of the ExecuteScript functions in
 // browser_test_utils is preferable.
-scoped_ptr<base::Value> ExecuteScriptAndGetValue(
-    RenderFrameHost* render_frame_host, const std::string& script);
+std::unique_ptr<base::Value> ExecuteScriptAndGetValue(
+    RenderFrameHost* render_frame_host,
+    const std::string& script);
 
 // Returns true if all sites are isolated. Typically used to bail from a test
 // that is incompatible with --site-per-process.
@@ -256,7 +258,7 @@ class RenderFrameDeletedObserver : public WebContentsObserver {
   int process_id_;
   int routing_id_;
   bool deleted_;
-  scoped_ptr<base::RunLoop> runner_;
+  std::unique_ptr<base::RunLoop> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameDeletedObserver);
 };

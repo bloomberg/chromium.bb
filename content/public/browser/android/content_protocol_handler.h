@@ -5,8 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_ANDROID_CONTENT_PROTOCOL_HANDLER_H_
 #define CONTENT_PUBLIC_BROWSER_ANDROID_CONTENT_PROTOCOL_HANDLER_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "net/url_request/url_request_job_factory.h"
 
@@ -21,7 +22,7 @@ class CONTENT_EXPORT ContentProtocolHandler :
     public net::URLRequestJobFactory::ProtocolHandler {
  public:
   // Creates and returns a ContentProtocolHandler instance.
-  static scoped_ptr<ContentProtocolHandler> Create(
+  static std::unique_ptr<ContentProtocolHandler> Create(
       const scoped_refptr<base::TaskRunner>& content_task_runner);
 
   ~ContentProtocolHandler() override {}

@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/callback_forward.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
@@ -96,7 +96,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // ownership of the pointer.
   static void GarbageCollectStoragePartitions(
       BrowserContext* browser_context,
-      scoped_ptr<base::hash_set<base::FilePath> > active_paths,
+      std::unique_ptr<base::hash_set<base::FilePath>> active_paths,
       const base::Closure& done);
 
   // DON'T USE THIS. GetDefaultStoragePartition() is going away.
@@ -104,7 +104,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   static content::StoragePartition* GetDefaultStoragePartition(
       BrowserContext* browser_context);
 
-  typedef base::Callback<void(scoped_ptr<BlobHandle>)> BlobCallback;
+  typedef base::Callback<void(std::unique_ptr<BlobHandle>)> BlobCallback;
 
   // |callback| returns a nullptr scoped_ptr on failure.
   static void CreateMemoryBackedBlob(BrowserContext* browser_context,
@@ -157,7 +157,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
 
   // Creates a delegate to initialize a HostZoomMap and persist its information.
   // This is called during creation of each StoragePartition.
-  virtual scoped_ptr<ZoomLevelDelegate> CreateZoomLevelDelegate(
+  virtual std::unique_ptr<ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) = 0;
 
   // Returns the path of the directory where this context's data is stored.

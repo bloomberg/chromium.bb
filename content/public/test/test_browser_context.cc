@@ -62,7 +62,7 @@ void TestBrowserContext::SetSpecialStoragePolicy(
 }
 
 void TestBrowserContext::SetPermissionManager(
-    scoped_ptr<PermissionManager> permission_manager) {
+    std::unique_ptr<PermissionManager> permission_manager) {
   permission_manager_ = std::move(permission_manager);
 }
 
@@ -70,9 +70,9 @@ base::FilePath TestBrowserContext::GetPath() const {
   return browser_context_dir_.path();
 }
 
-scoped_ptr<ZoomLevelDelegate> TestBrowserContext::CreateZoomLevelDelegate(
+std::unique_ptr<ZoomLevelDelegate> TestBrowserContext::CreateZoomLevelDelegate(
     const base::FilePath& partition_path) {
-  return scoped_ptr<ZoomLevelDelegate>();
+  return std::unique_ptr<ZoomLevelDelegate>();
 }
 
 bool TestBrowserContext::IsOffTheRecord() const {

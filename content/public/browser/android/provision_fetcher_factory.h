@@ -5,7 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_ANDROID_PROVISION_FETCHER_FACTORY_H
 #define CONTENT_PUBLIC_BROWSER_ANDROID_PROVISION_FETCHER_FACTORY_H
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/common/content_export.h"
 
 namespace media {
@@ -21,7 +22,7 @@ namespace content {
 // Factory method for media::ProvisionFetcher objects.
 
 CONTENT_EXPORT
-scoped_ptr<media::ProvisionFetcher> CreateProvisionFetcher(
+std::unique_ptr<media::ProvisionFetcher> CreateProvisionFetcher(
     net::URLRequestContextGetter* context_getter);
 
 }  // namespace content

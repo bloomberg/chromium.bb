@@ -153,7 +153,7 @@ JavaScriptDialogManager* WebContentsDelegate::GetJavaScriptDialogManager(
   return nullptr;
 }
 
-scoped_ptr<BluetoothChooser> WebContentsDelegate::RunBluetoothChooser(
+std::unique_ptr<BluetoothChooser> WebContentsDelegate::RunBluetoothChooser(
     RenderFrameHost* frame,
     const BluetoothChooser::EventHandler& event_handler) {
   return nullptr;
@@ -186,9 +186,8 @@ void WebContentsDelegate::RequestMediaAccessPermission(
     const MediaResponseCallback& callback) {
   LOG(ERROR) << "WebContentsDelegate::RequestMediaAccessPermission: "
              << "Not supported.";
-  callback.Run(MediaStreamDevices(),
-               MEDIA_DEVICE_NOT_SUPPORTED,
-               scoped_ptr<MediaStreamUI>());
+  callback.Run(MediaStreamDevices(), MEDIA_DEVICE_NOT_SUPPORTED,
+               std::unique_ptr<MediaStreamUI>());
 }
 
 bool WebContentsDelegate::CheckMediaAccessPermission(

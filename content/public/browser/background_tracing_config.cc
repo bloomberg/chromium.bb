@@ -13,7 +13,7 @@ BackgroundTracingConfig::BackgroundTracingConfig(TracingMode tracing_mode)
 
 BackgroundTracingConfig::~BackgroundTracingConfig() {}
 
-scoped_ptr<BackgroundTracingConfig> BackgroundTracingConfig::FromDict(
+std::unique_ptr<BackgroundTracingConfig> BackgroundTracingConfig::FromDict(
     const base::DictionaryValue* dict) {
   return BackgroundTracingConfigImpl::FromDict(dict);
 }

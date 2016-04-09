@@ -50,7 +50,7 @@ void LayoutTestNotificationManager::DisplayNotification(
     const GURL& origin,
     const PlatformNotificationData& notification_data,
     const NotificationResources& notification_resources,
-    scoped_ptr<DesktopNotificationDelegate> delegate,
+    std::unique_ptr<DesktopNotificationDelegate> delegate,
     base::Closure* cancel_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::string title = base::UTF16ToUTF8(notification_data.title);

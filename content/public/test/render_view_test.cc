@@ -9,6 +9,7 @@
 #include <cctype>
 
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -387,8 +388,8 @@ void RenderViewTest::TearDown() {
 
   render_thread_->SendCloseMessage();
 
-  scoped_ptr<blink::WebLeakDetector> leak_detector =
-      make_scoped_ptr(blink::WebLeakDetector::create(this));
+  std::unique_ptr<blink::WebLeakDetector> leak_detector =
+      base::WrapUnique(blink::WebLeakDetector::create(this));
 
   leak_detector->prepareForLeakDetection(view_->GetWebView()->mainFrame());
 
@@ -604,7 +605,7 @@ void RenderViewTest::Resize(gfx::Size new_size,
   params.resizer_rect = resizer_rect;
   params.is_fullscreen_granted = is_fullscreen_granted;
   params.display_mode = blink::WebDisplayModeBrowser;
-  scoped_ptr<IPC::Message> resize_message(new ViewMsg_Resize(0, params));
+  std::unique_ptr<IPC::Message> resize_message(new ViewMsg_Resize(0, params));
   OnMessageReceived(*resize_message);
 }
 
@@ -692,8 +693,8 @@ ContentRendererClient* RenderViewTest::CreateContentRendererClient() {
   return new ContentRendererClient;
 }
 
-scoped_ptr<ResizeParams> RenderViewTest::InitialSizeParams() {
-  return make_scoped_ptr(new ResizeParams());
+std::unique_ptr<ResizeParams> RenderViewTest::InitialSizeParams() {
+  return base::WrapUnique(new ResizeParams());
 }
 
 void RenderViewTest::GoToOffset(int offset,

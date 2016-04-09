@@ -94,7 +94,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void ResumeDeferredNavigation(const GlobalRequestID& request_id) override;
   void NotifyTimezoneChange(const std::string& zone_id) override;
   ServiceRegistry* GetServiceRegistry() override;
-  scoped_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
+  std::unique_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() const override;
   bool SubscribeUniformEnabled() const override;
@@ -131,7 +131,7 @@ class MockRenderProcessHost : public RenderProcessHost {
     is_process_backgrounded_ = is_process_backgrounded;
   }
 
-  void SetProcessHandle(scoped_ptr<base::ProcessHandle> new_handle) {
+  void SetProcessHandle(std::unique_ptr<base::ProcessHandle> new_handle) {
     process_handle = std::move(new_handle);
   }
 
@@ -140,7 +140,7 @@ class MockRenderProcessHost : public RenderProcessHost {
 
   int worker_ref_count() const { return worker_ref_count_; }
 
-  void SetServiceRegistry(scoped_ptr<ServiceRegistry> service_registry) {
+  void SetServiceRegistry(std::unique_ptr<ServiceRegistry> service_registry) {
     service_registry_ = std::move(service_registry);
   }
 
@@ -161,9 +161,9 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool deletion_callback_called_;
   bool is_for_guests_only_;
   bool is_process_backgrounded_;
-  scoped_ptr<base::ProcessHandle> process_handle;
+  std::unique_ptr<base::ProcessHandle> process_handle;
   int worker_ref_count_;
-  scoped_ptr<ServiceRegistry> service_registry_;
+  std::unique_ptr<ServiceRegistry> service_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);
 };

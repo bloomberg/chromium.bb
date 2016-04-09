@@ -110,8 +110,8 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
   // Returns the id assigned to the download.  If the DownloadCreateInfo
   // specifies an id, that id will be used.
   virtual void StartDownload(
-      scoped_ptr<DownloadCreateInfo> info,
-      scoped_ptr<ByteStreamReader> stream,
+      std::unique_ptr<DownloadCreateInfo> info,
+      std::unique_ptr<ByteStreamReader> stream,
       const DownloadUrlParameters::OnStartedCallback& on_started) = 0;
 
   // Remove downloads whose URLs match the |url_filter| and are within
@@ -128,7 +128,8 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
   virtual int RemoveAllDownloads() = 0;
 
   // See DownloadUrlParameters for details about controlling the download.
-  virtual void DownloadUrl(scoped_ptr<DownloadUrlParameters> parameters) = 0;
+  virtual void DownloadUrl(
+      std::unique_ptr<DownloadUrlParameters> parameters) = 0;
 
   // Allow objects to observe the download creation process.
   virtual void AddObserver(Observer* observer) = 0;

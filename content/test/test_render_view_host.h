@@ -88,8 +88,9 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   bool IsSpeaking() const override;
   void StopSpeaking() override;
 #endif  // defined(OS_MACOSX)
-  void OnSwapCompositorFrame(uint32_t output_surface_id,
-                             scoped_ptr<cc::CompositorFrame> frame) override;
+  void OnSwapCompositorFrame(
+      uint32_t output_surface_id,
+      std::unique_ptr<cc::CompositorFrame> frame) override;
   void ClearCompositorFrame() override {}
 
   // RenderWidgetHostViewBase implementation.
@@ -189,7 +190,7 @@ class TestRenderViewHost
       public RenderViewHostTester {
  public:
   TestRenderViewHost(SiteInstance* instance,
-                     scoped_ptr<RenderWidgetHostImpl> widget,
+                     std::unique_ptr<RenderWidgetHostImpl> widget,
                      RenderViewHostDelegate* delegate,
                      int32_t main_frame_routing_id,
                      bool swapped_out);
@@ -304,7 +305,7 @@ class RenderViewHostImplTestHarness : public RenderViewHostTestHarness {
   TestRenderFrameHost* main_test_rfh();
 
  private:
-  typedef scoped_ptr<ui::test::ScopedSetSupportedScaleFactors>
+  typedef std::unique_ptr<ui::test::ScopedSetSupportedScaleFactors>
       ScopedSetSupportedScaleFactors;
   ScopedSetSupportedScaleFactors scoped_set_supported_scale_factors_;
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostImplTestHarness);

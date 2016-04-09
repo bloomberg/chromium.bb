@@ -5,8 +5,9 @@
 #ifndef CONTENT_TEST_BROWSER_SIDE_NAVIGATION_TEST_UTILS_H_
 #define CONTENT_TEST_BROWSER_SIDE_NAVIGATION_TEST_UTILS_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace content {
 
@@ -24,7 +25,7 @@ void BrowserSideNavigationTearDown();
 
 // Returns an empty stream. Used when faking a navigation commit notification
 // from the IO thread with a TestNavigationURLLoader.
-scoped_ptr<StreamHandle> MakeEmptyStream();
+std::unique_ptr<StreamHandle> MakeEmptyStream();
 
 // If a test needs to run with browser side navigation enabled, call this
 // function before doing any setup. In particular, for tests inheriting from

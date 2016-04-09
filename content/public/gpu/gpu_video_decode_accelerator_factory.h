@@ -58,12 +58,13 @@ class CONTENT_EXPORT GpuVideoDecodeAcceleratorFactory {
       base::Callback<base::WeakPtr<gpu::gles2::GLES2Decoder>(void)>;
 
   // Create a factory capable of producing VDA instances for current platform.
-  static scoped_ptr<GpuVideoDecodeAcceleratorFactory> Create(
+  static std::unique_ptr<GpuVideoDecodeAcceleratorFactory> Create(
       const GetGLContextCallback& get_gl_context_cb,
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const BindGLImageCallback& bind_image_cb);
 
-  static scoped_ptr<GpuVideoDecodeAcceleratorFactory> CreateWithGLES2Decoder(
+  static std::unique_ptr<GpuVideoDecodeAcceleratorFactory>
+  CreateWithGLES2Decoder(
       const GetGLContextCallback& get_gl_context_cb,
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const BindGLImageCallback& bind_image_cb,
@@ -74,7 +75,7 @@ class CONTENT_EXPORT GpuVideoDecodeAcceleratorFactory {
 
   // Create a VDA for the current platform for |client| with the given |config|
   // and for given |gpu_preferences|. Return nullptr on failure.
-  virtual scoped_ptr<media::VideoDecodeAccelerator> CreateVDA(
+  virtual std::unique_ptr<media::VideoDecodeAccelerator> CreateVDA(
       media::VideoDecodeAccelerator::Client* client,
       const media::VideoDecodeAccelerator::Config& config);
 
@@ -83,9 +84,9 @@ class CONTENT_EXPORT GpuVideoDecodeAcceleratorFactory {
   // GpuVideoDecodeAcceleratorFactoryImpl implements
   // GpuVideoDecodeAcceleratorFactory, see crbug.com/597150 and related.
   GpuVideoDecodeAcceleratorFactory(
-      scoped_ptr<GpuVideoDecodeAcceleratorFactoryImpl> gvdafactory_impl);
+      std::unique_ptr<GpuVideoDecodeAcceleratorFactoryImpl> gvdafactory_impl);
 
-  scoped_ptr<GpuVideoDecodeAcceleratorFactoryImpl> gvdafactory_impl_;
+  std::unique_ptr<GpuVideoDecodeAcceleratorFactoryImpl> gvdafactory_impl_;
 };
 
 }  // namespace content

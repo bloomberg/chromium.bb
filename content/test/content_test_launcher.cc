@@ -40,8 +40,8 @@
 namespace content {
 
 #if defined(OS_ANDROID)
-scoped_ptr<base::MessagePump> CreateMessagePumpForUI() {
-  return scoped_ptr<base::MessagePump>(new NestedMessagePumpAndroid());
+std::unique_ptr<base::MessagePump> CreateMessagePumpForUI() {
+  return std::unique_ptr<base::MessagePump>(new NestedMessagePumpAndroid());
 };
 #endif
 
@@ -89,8 +89,8 @@ class ContentBrowserTestSuite : public ContentTestSuiteBase {
   }
 
 #if defined(OS_ANDROID)
-  scoped_ptr<ShellContentClient> content_client_;
-  scoped_ptr<ShellContentBrowserClient> browser_content_client_;
+  std::unique_ptr<ShellContentClient> content_client_;
+  std::unique_ptr<ShellContentBrowserClient> browser_content_client_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ContentBrowserTestSuite);

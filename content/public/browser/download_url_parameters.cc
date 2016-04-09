@@ -37,10 +37,10 @@ DownloadUrlParameters::~DownloadUrlParameters() {
 }
 
 // static
-scoped_ptr<DownloadUrlParameters> DownloadUrlParameters::FromWebContents(
+std::unique_ptr<DownloadUrlParameters> DownloadUrlParameters::FromWebContents(
     WebContents* web_contents,
     const GURL& url) {
-  return scoped_ptr<DownloadUrlParameters>(new DownloadUrlParameters(
+  return std::unique_ptr<DownloadUrlParameters>(new DownloadUrlParameters(
       url, web_contents->GetRenderProcessHost()->GetID(),
       web_contents->GetRenderViewHost()->GetRoutingID(),
       web_contents->GetMainFrame()->GetRoutingID(),

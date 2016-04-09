@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "content/test/test_render_frame_host.h"
 
 namespace content {
@@ -18,7 +19,7 @@ TestRenderFrameHostFactory::~TestRenderFrameHostFactory() {
   RenderFrameHostFactory::UnregisterFactory();
 }
 
-scoped_ptr<RenderFrameHostImpl>
+std::unique_ptr<RenderFrameHostImpl>
 TestRenderFrameHostFactory::CreateRenderFrameHost(
     SiteInstance* site_instance,
     RenderViewHostImpl* render_view_host,
@@ -29,7 +30,7 @@ TestRenderFrameHostFactory::CreateRenderFrameHost(
     int32_t routing_id,
     int32_t widget_routing_id,
     bool hidden) {
-  return make_scoped_ptr(new TestRenderFrameHost(
+  return base::WrapUnique(new TestRenderFrameHost(
       site_instance, render_view_host, delegate, rwh_delegate, frame_tree,
       frame_tree_node, routing_id, widget_routing_id, hidden));
 }

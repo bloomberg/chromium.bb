@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -21,7 +23,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/statistics_recorder.h"
@@ -786,11 +787,11 @@ class ContentMainRunnerImpl : public ContentMainRunner {
   // The delegate will outlive this object.
   ContentMainDelegate* delegate_;
 
-  scoped_ptr<base::AtExitManager> exit_manager_;
+  std::unique_ptr<base::AtExitManager> exit_manager_;
 #if defined(OS_WIN)
   sandbox::SandboxInterfaceInfo sandbox_info_;
 #elif defined(OS_MACOSX)
-  scoped_ptr<base::mac::ScopedNSAutoreleasePool> autorelease_pool_;
+  std::unique_ptr<base::mac::ScopedNSAutoreleasePool> autorelease_pool_;
 #endif
 
   base::Closure* ui_task_;

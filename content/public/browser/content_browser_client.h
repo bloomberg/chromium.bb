@@ -8,12 +8,12 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -452,7 +452,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Gives the embedder a chance to register a custom QuotaEvictionPolicy for
   // temporary storage.
-  virtual scoped_ptr<storage::QuotaEvictionPolicy>
+  virtual std::unique_ptr<storage::QuotaEvictionPolicy>
   GetTemporaryStorageEvictionPolicy(BrowserContext* context);
 
   // Informs the embedder that a certificate error has occured.  If
@@ -479,7 +479,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void SelectClientCertificate(
       WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
-      scoped_ptr<ClientCertificateDelegate> delegate);
+      std::unique_ptr<ClientCertificateDelegate> delegate);
 
   // Adds a new installable certificate or private key.
   // Typically used to install an X.509 user certificate.
@@ -650,7 +650,8 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderFrameHost* render_frame_host) {}
 
   using StaticMojoApplicationMap =
-      std::map<std::string, base::Callback<scoped_ptr<mojo::ShellClient>()>>;
+      std::map<std::string,
+               base::Callback<std::unique_ptr<mojo::ShellClient>()>>;
 
   // Registers Mojo applications to be loaded in the browser process by the
   // browser's global Mojo shell.
@@ -706,7 +707,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Creates and returns a factory used for creating CDM instances for playing
   // protected content.
-  virtual scoped_ptr<media::CdmFactory> CreateCdmFactory();
+  virtual std::unique_ptr<media::CdmFactory> CreateCdmFactory();
 
   // Populates |mappings| with all files that need to be mapped before launching
   // a child process.

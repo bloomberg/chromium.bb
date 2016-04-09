@@ -5,7 +5,8 @@
 #ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_CONTENT_RENDERER_CLIENT_H_
 #define CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_CONTENT_RENDERER_CLIENT_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/shell/renderer/shell_content_renderer_client.h"
 
 namespace content {
@@ -31,14 +32,14 @@ class LayoutTestContentRendererClient : public ShellContentRendererClient {
   blink::WebAudioDevice* OverrideCreateAudioDevice(double sample_rate) override;
   blink::WebClipboard* OverrideWebClipboard() override;
   blink::WebThemeEngine* OverrideThemeEngine() override;
-  scoped_ptr<blink::WebAppBannerClient> CreateAppBannerClient(
+  std::unique_ptr<blink::WebAppBannerClient> CreateAppBannerClient(
       RenderFrame* render_frame) override;
-  scoped_ptr<MediaStreamRendererFactory> CreateMediaStreamRendererFactory()
+  std::unique_ptr<MediaStreamRendererFactory> CreateMediaStreamRendererFactory()
       override;
 
  private:
-  scoped_ptr<LayoutTestRenderProcessObserver> shell_observer_;
-  scoped_ptr<MockWebClipboardImpl> clipboard_;
+  std::unique_ptr<LayoutTestRenderProcessObserver> shell_observer_;
+  std::unique_ptr<MockWebClipboardImpl> clipboard_;
 };
 
 }  // namespace content

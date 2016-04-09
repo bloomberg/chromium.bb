@@ -15,7 +15,7 @@ MessagePortMessage::MessagePortMessage(const base::string16& message)
     : message_as_string(message) {
 }
 
-MessagePortMessage::MessagePortMessage(scoped_ptr<base::Value> message) {
+MessagePortMessage::MessagePortMessage(std::unique_ptr<base::Value> message) {
   message_as_value.Append(message.release());
 }
 

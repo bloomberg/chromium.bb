@@ -5,6 +5,7 @@
 #include "content/shell/browser/layout_test/layout_test_browser_main.h"
 
 #include <iostream>
+#include <memory>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -12,7 +13,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -36,9 +36,10 @@
 
 namespace {
 
-bool RunOneTest(const content::TestInfo& test_info,
-                bool* ran_at_least_once,
-                const scoped_ptr<content::BrowserMainRunner>& main_runner) {
+bool RunOneTest(
+    const content::TestInfo& test_info,
+    bool* ran_at_least_once,
+    const std::unique_ptr<content::BrowserMainRunner>& main_runner) {
   if (!content::BlinkTestController::Get()->PrepareForLayoutTest(
           test_info.url, test_info.current_working_directory,
           test_info.enable_pixel_dumping, test_info.expected_pixel_hash)) {
@@ -67,7 +68,7 @@ bool RunOneTest(const content::TestInfo& test_info,
   return true;
 }
 
-int RunTests(const scoped_ptr<content::BrowserMainRunner>& main_runner) {
+int RunTests(const std::unique_ptr<content::BrowserMainRunner>& main_runner) {
   content::BlinkTestController test_controller;
   {
     // We're outside of the message loop here, and this is a test.
@@ -84,7 +85,7 @@ int RunTests(const scoped_ptr<content::BrowserMainRunner>& main_runner) {
       base::CommandLine::ForCurrentProcess()->GetArgs();
   content::TestInfoExtractor test_extractor(args);
   bool ran_at_least_once = false;
-  scoped_ptr<content::TestInfo> test_info;
+  std::unique_ptr<content::TestInfo> test_info;
   while ((test_info = test_extractor.GetNextTest())) {
     if (!RunOneTest(*test_info, &ran_at_least_once, main_runner))
       break;
@@ -110,7 +111,7 @@ int RunTests(const scoped_ptr<content::BrowserMainRunner>& main_runner) {
 // Main routine for running as the Browser process.
 int LayoutTestBrowserMain(
     const content::MainFunctionParams& parameters,
-    const scoped_ptr<content::BrowserMainRunner>& main_runner) {
+    const std::unique_ptr<content::BrowserMainRunner>& main_runner) {
   base::ScopedTempDir browser_context_path_for_layout_tests;
 
   CHECK(browser_context_path_for_layout_tests.CreateUniqueTempDir());

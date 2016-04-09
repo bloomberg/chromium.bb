@@ -6,10 +6,10 @@
 #define CONTENT_PUBLIC_BROWSER_APPCACHE_SERVICE_H_
 
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/common/appcache_info.h"
 #include "net/base/completion_callback.h"

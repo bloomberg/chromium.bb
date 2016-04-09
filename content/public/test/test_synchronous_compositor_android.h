@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
@@ -44,7 +44,7 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
   void OnComputeScroll(base::TimeTicks animate_time) override {}
 
   void SetHardwareFrame(uint32_t output_surface_id,
-                        scoped_ptr<cc::CompositorFrame> frame);
+                        std::unique_ptr<cc::CompositorFrame> frame);
 
   struct ReturnedResources {
     ReturnedResources();

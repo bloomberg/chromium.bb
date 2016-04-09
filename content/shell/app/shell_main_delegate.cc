@@ -273,7 +273,7 @@ int ShellMainDelegate::RunProcess(
 #if !defined(OS_ANDROID)
   // Android stores the BrowserMainRunner instance as a scoped member pointer
   // on the ShellMainDelegate class because of different object lifetime.
-  scoped_ptr<BrowserMainRunner> browser_runner_;
+  std::unique_ptr<BrowserMainRunner> browser_runner_;
 #endif
 
   base::trace_event::TraceLog::GetInstance()->SetProcessName("Browser");

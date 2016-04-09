@@ -6,13 +6,13 @@
 #define CONTENT_SHELL_BROWSER_LAYOUT_TEST_BLINK_TEST_CONTROLLER_H_
 
 #include <map>
+#include <memory>
 #include <ostream>
 #include <string>
 
 #include "base/cancelable_callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
@@ -139,7 +139,7 @@ class BlinkTestController : public base::NonThreadSafe,
   void OpenURL(const GURL& url);
   void TestFinishedInSecondaryRenderer();
   bool IsMainWindow(WebContents* web_contents) const;
-  scoped_ptr<BluetoothChooser> RunBluetoothChooser(
+  std::unique_ptr<BluetoothChooser> RunBluetoothChooser(
       RenderFrameHost* frame,
       const BluetoothChooser::EventHandler& event_handler);
 
@@ -216,7 +216,7 @@ class BlinkTestController : public base::NonThreadSafe,
   void OnSendBluetoothManualChooserEvent(const std::string& event,
                                          const std::string& argument);
 
-  scoped_ptr<BlinkTestResultPrinter> printer_;
+  std::unique_ptr<BlinkTestResultPrinter> printer_;
 
   base::FilePath current_working_directory_;
   base::FilePath temp_path_;
@@ -256,7 +256,7 @@ class BlinkTestController : public base::NonThreadSafe,
 
   LayoutTestDevToolsFrontend* devtools_frontend_;
 
-  scoped_ptr<LayoutTestBluetoothChooserFactory> bluetooth_chooser_factory_;
+  std::unique_ptr<LayoutTestBluetoothChooserFactory> bluetooth_chooser_factory_;
 
   // Map from frame_tree_node_id into frame-specific dumps.
   std::map<int, std::string> frame_to_layout_dump_map_;

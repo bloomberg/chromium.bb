@@ -129,16 +129,15 @@ void MockRenderThread::RecordAction(const base::UserMetricsAction& action) {
 void MockRenderThread::RecordComputedAction(const std::string& action) {
 }
 
-scoped_ptr<base::SharedMemory>
-    MockRenderThread::HostAllocateSharedMemoryBuffer(
-        size_t buffer_size) {
-  scoped_ptr<base::SharedMemory> shared_buf(new base::SharedMemory);
+std::unique_ptr<base::SharedMemory>
+MockRenderThread::HostAllocateSharedMemoryBuffer(size_t buffer_size) {
+  std::unique_ptr<base::SharedMemory> shared_buf(new base::SharedMemory);
   if (!shared_buf->CreateAnonymous(buffer_size)) {
     NOTREACHED() << "Cannot map shared memory buffer";
-    return scoped_ptr<base::SharedMemory>();
+    return std::unique_ptr<base::SharedMemory>();
   }
 
-  return scoped_ptr<base::SharedMemory>(shared_buf.release());
+  return std::unique_ptr<base::SharedMemory>(shared_buf.release());
 }
 
 cc::SharedBitmapManager* MockRenderThread::GetSharedBitmapManager() {

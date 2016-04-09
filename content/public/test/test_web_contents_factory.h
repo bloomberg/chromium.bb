@@ -5,8 +5,9 @@
 #ifndef CONTENT_PUBLIC_TEST_TEST_WEB_CONTENTS_FACTORY_H_
 #define CONTENT_PUBLIC_TEST_TEST_WEB_CONTENTS_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 
 namespace content {
@@ -37,7 +38,7 @@ class TestWebContentsFactory {
 
  private:
   // The test factory (and friends) for creating test web contents.
-  scoped_ptr<RenderViewHostTestEnabler> rvh_enabler_;
+  std::unique_ptr<RenderViewHostTestEnabler> rvh_enabler_;
 
   // The vector of web contents that this class created.
   ScopedVector<WebContents> web_contents_;

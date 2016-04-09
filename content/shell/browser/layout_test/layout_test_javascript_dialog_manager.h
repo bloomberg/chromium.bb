@@ -5,10 +5,11 @@
 #ifndef CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_JAVASCRIPT_DIALOG_MANAGER_H_
 #define CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_JAVASCRIPT_DIALOG_MANAGER_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
 
 namespace content {

@@ -5,7 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BACKGROUND_TRACING_MANAGER_H_
 #define CONTENT_PUBLIC_BROWSER_BACKGROUND_TRACING_MANAGER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/trace_event/trace_event_impl.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
@@ -32,7 +33,7 @@ class BackgroundTracingManager {
   // Example:
   //
   // void Upload(const scoped_refptr<base::RefCountedString>& data,
-  //             scoped_ptr<base::DictionaryValue>,
+  //             std::unique_ptr<base::DictionaryValue>,
   //             base::Closure done_callback) {
   //   BrowserThread::PostTaskAndReply(
   //       BrowserThread::FILE,
@@ -43,8 +44,9 @@ class BackgroundTracingManager {
   // }
   //
   typedef base::Callback<void(const scoped_refptr<base::RefCountedString>&,
-                              scoped_ptr<const base::DictionaryValue>,
-                              base::Closure)> ReceiveCallback;
+                              std::unique_ptr<const base::DictionaryValue>,
+                              base::Closure)>
+      ReceiveCallback;
 
   // Set the triggering rules for when to start recording.
   //
@@ -65,9 +67,10 @@ class BackgroundTracingManager {
     NO_DATA_FILTERING,
     ANONYMIZE_DATA,
   };
-  virtual bool SetActiveScenario(scoped_ptr<BackgroundTracingConfig> config,
-                                 const ReceiveCallback& receive_callback,
-                                 DataFiltering data_filtering) = 0;
+  virtual bool SetActiveScenario(
+      std::unique_ptr<BackgroundTracingConfig> config,
+      const ReceiveCallback& receive_callback,
+      DataFiltering data_filtering) = 0;
 
   // Notifies the caller when the manager is idle (not recording or uploading),
   // so that a call to SetActiveScenario() is likely to succeed.

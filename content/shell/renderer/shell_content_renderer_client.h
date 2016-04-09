@@ -5,8 +5,9 @@
 #ifndef CONTENT_SHELL_RENDERER_SHELL_CONTENT_RENDERER_CLIENT_H_
 #define CONTENT_SHELL_RENDERER_SHELL_CONTENT_RENDERER_CLIENT_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/content_renderer_client.h"
 
 namespace web_cache {
@@ -30,7 +31,7 @@ class ShellContentRendererClient : public ContentRendererClient {
   bool IsPluginAllowedToUseDevChannelAPIs() override;
 
  private:
-  scoped_ptr<web_cache::WebCacheRenderProcessObserver> web_cache_observer_;
+  std::unique_ptr<web_cache::WebCacheRenderProcessObserver> web_cache_observer_;
 };
 
 }  // namespace content

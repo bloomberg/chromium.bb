@@ -18,7 +18,7 @@ void CreateVideoEncodeAccelerator(
   media::GpuVideoAcceleratorFactories* gpu_factories =
       RenderThreadImpl::current()->GetGpuFactories();
   if (!gpu_factories || !gpu_factories->IsGpuVideoAcceleratorEnabled()) {
-    callback.Run(NULL, scoped_ptr<media::VideoEncodeAccelerator>());
+    callback.Run(NULL, std::unique_ptr<media::VideoEncodeAccelerator>());
     return;
   }
 

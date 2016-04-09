@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/shell/browser/shell_network_delegate.h"
@@ -36,9 +36,9 @@ ShellURLRequestContextGetter::ShellURLRequestContextGetter(
 ShellURLRequestContextGetter::~ShellURLRequestContextGetter() {
 }
 
-scoped_ptr<net::NetworkDelegate>
+std::unique_ptr<net::NetworkDelegate>
 ShellURLRequestContextGetter::CreateNetworkDelegate() {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new ShellNetworkDelegate(browser_context_, extension_info_map_));
 }
 

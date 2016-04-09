@@ -7,8 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/common/console_message_level.h"
@@ -126,7 +127,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
       blink::WebFrame* frame,
       const WebPluginInfo& info,
       const blink::WebPluginParams& params,
-      scoped_ptr<PluginInstanceThrottler> throttler) = 0;
+      std::unique_ptr<PluginInstanceThrottler> throttler) = 0;
 
   // The client should handle the navigation externally.
   virtual void LoadURLExternally(const blink::WebURLRequest& request,

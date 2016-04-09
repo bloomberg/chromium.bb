@@ -16,13 +16,14 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/native_library.h"
 #include "base/pickle.h"
@@ -335,7 +336,7 @@ static void ZygotePreSandboxInit() {
   // Olson timezone ID by accessing the zoneinfo files on disk. After
   // TimeZone::createDefault is called once here, the timezone ID is
   // cached and there's no more need to access the file system.
-  scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
+  std::unique_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
 
 #if defined(ARCH_CPU_ARM_FAMILY)
   // On ARM, BoringSSL requires access to /proc/cpuinfo to determine processor
@@ -455,7 +456,7 @@ static int g_sanitizer_message_length = 1 * 1024 * 1024;
 // A helper process which collects code coverage data from the renderers over a
 // socket and dumps it to a file. See http://crbug.com/336212 for discussion.
 static void SanitizerCoverageHelper(int socket_fd, int file_fd) {
-  scoped_ptr<char[]> buffer(new char[g_sanitizer_message_length]);
+  std::unique_ptr<char[]> buffer(new char[g_sanitizer_message_length]);
   while (true) {
     ssize_t received_size = HANDLE_EINTR(
         recv(socket_fd, buffer.get(), g_sanitizer_message_length, 0));

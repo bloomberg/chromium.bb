@@ -52,7 +52,8 @@ class TracingController {
     // StopTracing is called, which may override metadata that you would
     // set beforehand in case of key collision.
     virtual void AddMetadata(const base::DictionaryValue& data);
-    virtual scoped_ptr<const base::DictionaryValue> GetMetadataCopy() const;
+    virtual std::unique_ptr<const base::DictionaryValue> GetMetadataCopy()
+        const;
     virtual void SetMetadataFilterPredicate(
         const MetadataFilterPredicate& metadata_filter_predicate);
     virtual void Close() {}
@@ -82,8 +83,8 @@ class TracingController {
    public:
     virtual void ReceiveTraceChunk(const std::string& chunk) {}
     virtual void ReceiveTraceFinalContents(
-      scoped_ptr<const base::DictionaryValue> metadata,
-      const std::string& contents) {}
+        std::unique_ptr<const base::DictionaryValue> metadata,
+        const std::string& contents) {}
 
    protected:
     friend class base::RefCountedThreadSafe<TraceDataEndpoint>;
@@ -93,7 +94,7 @@ class TracingController {
   // Create a trace sink that may be supplied to StopTracing
   // to capture the trace data as a string.
   CONTENT_EXPORT static scoped_refptr<TraceDataSink> CreateStringSink(
-      const base::Callback<void(scoped_ptr<const base::DictionaryValue>,
+      const base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
                                 base::RefCountedString*)>& callback);
 
   CONTENT_EXPORT static scoped_refptr<TraceDataSink> CreateCompressedStringSink(
@@ -108,7 +109,7 @@ class TracingController {
   // Create an endpoint that may be supplied to any TraceDataSink to
   // dump the trace data to a callback.
   CONTENT_EXPORT static scoped_refptr<TraceDataEndpoint> CreateCallbackEndpoint(
-      const base::Callback<void(scoped_ptr<const base::DictionaryValue>,
+      const base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
                                 base::RefCountedString*)>& callback);
 
   // Create an endpoint that may be supplied to any TraceDataSink to

@@ -5,9 +5,10 @@
 #ifndef CONTENT_TEST_CONTENT_TEST_SUITE_H_
 #define CONTENT_TEST_CONTENT_TEST_SUITE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/public/test/content_test_suite_base.h"
 
@@ -36,7 +37,7 @@ class ContentTestSuite : public ContentTestSuiteBase {
   base::win::ScopedCOMInitializer com_initializer_;
 #endif
 #if defined(USE_OZONE)
-  scoped_ptr<ui::ClientNativePixmapFactory> client_native_pixmap_factory_;
+  std::unique_ptr<ui::ClientNativePixmapFactory> client_native_pixmap_factory_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ContentTestSuite);

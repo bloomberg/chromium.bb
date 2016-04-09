@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -94,7 +95,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
 #endif
 
   scoped_refptr<base::SingleThreadTaskRunner> dummy_task_runner;
-  scoped_ptr<base::ThreadTaskRunnerHandle> dummy_task_runner_handle;
+  std::unique_ptr<base::ThreadTaskRunnerHandle> dummy_task_runner_handle;
   if (!base::ThreadTaskRunnerHandle::IsSet()) {
     // Dummy task runner is initialized here because the blink::initialize
     // creates IsolateHolder which needs the current task runner handle. There
@@ -107,13 +108,13 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
     dummy_task_runner_handle.reset(
         new base::ThreadTaskRunnerHandle(dummy_task_runner));
   }
-  renderer_scheduler_ = make_scoped_ptr(new scheduler::RendererSchedulerImpl(
+  renderer_scheduler_ = base::WrapUnique(new scheduler::RendererSchedulerImpl(
       scheduler::LazySchedulerMessageLoopDelegateForTests::Create()));
   web_thread_ = renderer_scheduler_->CreateMainThread();
 
   // Set up a FeatureList instance, so that code using that API will not hit a
   // an error that it's not set. Cleared by ClearInstanceForTesting() below.
-  base::FeatureList::SetInstance(make_scoped_ptr(new base::FeatureList));
+  base::FeatureList::SetInstance(base::WrapUnique(new base::FeatureList));
 
   blink::initialize(this);
   blink::setLayoutTestMode(true);

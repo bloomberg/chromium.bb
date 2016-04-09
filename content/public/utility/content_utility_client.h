@@ -6,9 +6,9 @@
 #define CONTENT_PUBLIC_UTILITY_CONTENT_UTILITY_CLIENT_H_
 
 #include <map>
+#include <memory>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/common/content_client.h"
 
 class GURL;
@@ -25,7 +25,8 @@ class ServiceRegistry;
 class CONTENT_EXPORT ContentUtilityClient {
  public:
   using StaticMojoApplicationMap =
-      std::map<std::string, base::Callback<scoped_ptr<mojo::ShellClient>()>>;
+      std::map<std::string,
+               base::Callback<std::unique_ptr<mojo::ShellClient>()>>;
 
   virtual ~ContentUtilityClient() {}
 

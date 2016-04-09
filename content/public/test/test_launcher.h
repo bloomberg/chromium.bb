@@ -5,10 +5,10 @@
 #ifndef CONTENT_PUBLIC_TEST_TEST_LAUNCHER_H_
 #define CONTENT_PUBLIC_TEST_TEST_LAUNCHER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/launcher/test_launcher.h"
 
 namespace base {
@@ -57,7 +57,7 @@ class TestLauncherDelegate {
   // once the test process is launched.
   //
   // NOTE: this is not called if --single_process is supplied.
-  virtual scoped_ptr<TestState> PreRunTest(
+  virtual std::unique_ptr<TestState> PreRunTest(
       base::CommandLine* command_line,
       base::TestLauncher::LaunchOptions* test_launch_options);
 

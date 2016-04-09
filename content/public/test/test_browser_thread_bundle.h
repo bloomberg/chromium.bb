@@ -42,8 +42,9 @@
 #ifndef CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_BUNDLE_H_
 #define CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_BUNDLE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class MessageLoop;
@@ -82,14 +83,14 @@ class TestBrowserThreadBundle {
  private:
   void Init();
 
-  scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<TestBrowserThread> ui_thread_;
-  scoped_ptr<TestBrowserThread> db_thread_;
-  scoped_ptr<TestBrowserThread> file_thread_;
-  scoped_ptr<TestBrowserThread> file_user_blocking_thread_;
-  scoped_ptr<TestBrowserThread> process_launcher_thread_;
-  scoped_ptr<TestBrowserThread> cache_thread_;
-  scoped_ptr<TestBrowserThread> io_thread_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<TestBrowserThread> ui_thread_;
+  std::unique_ptr<TestBrowserThread> db_thread_;
+  std::unique_ptr<TestBrowserThread> file_thread_;
+  std::unique_ptr<TestBrowserThread> file_user_blocking_thread_;
+  std::unique_ptr<TestBrowserThread> process_launcher_thread_;
+  std::unique_ptr<TestBrowserThread> cache_thread_;
+  std::unique_ptr<TestBrowserThread> io_thread_;
 
   int options_;
   bool threads_started_;

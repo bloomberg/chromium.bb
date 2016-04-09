@@ -5,12 +5,12 @@
 #ifndef CONTENT_PUBLIC_BROWSER_DEVTOOLS_AGENT_HOST_H_
 #define CONTENT_PUBLIC_BROWSER_DEVTOOLS_AGENT_HOST_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/devtools_agent_host_client.h"
 #include "url/gurl.h"
@@ -93,7 +93,7 @@ class CONTENT_EXPORT DevToolsAgentHost
       DevToolsExternalAgentProxyDelegate* delegate);
 
   using CreateServerSocketCallback =
-      base::Callback<scoped_ptr<net::ServerSocket>(std::string*)>;
+      base::Callback<std::unique_ptr<net::ServerSocket>(std::string*)>;
 
   // Creates DevToolsAgentHost for the browser, which works with browser-wide
   // debugging protocol.

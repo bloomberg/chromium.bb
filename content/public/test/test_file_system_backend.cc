@@ -170,7 +170,7 @@ TestFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
 }
 
 void TestFileSystemBackend::InitializeCopyOrMoveFileValidatorFactory(
-    scoped_ptr<storage::CopyOrMoveFileValidatorFactory> factory) {
+    std::unique_ptr<storage::CopyOrMoveFileValidatorFactory> factory) {
   if (!copy_or_move_file_validator_factory_)
     copy_or_move_file_validator_factory_ = std::move(factory);
 }
@@ -179,7 +179,7 @@ FileSystemOperation* TestFileSystemBackend::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context,
     base::File::Error* error_code) const {
-  scoped_ptr<FileSystemOperationContext> operation_context(
+  std::unique_ptr<FileSystemOperationContext> operation_context(
       new FileSystemOperationContext(context));
   operation_context->set_update_observers(*GetUpdateObservers(url.type()));
   operation_context->set_change_observers(*GetChangeObservers(url.type()));
@@ -197,26 +197,26 @@ bool TestFileSystemBackend::HasInplaceCopyImplementation(
   return true;
 }
 
-scoped_ptr<storage::FileStreamReader>
+std::unique_ptr<storage::FileStreamReader>
 TestFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,
     int64_t offset,
     int64_t max_bytes_to_read,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
-  return scoped_ptr<storage::FileStreamReader>(
+  return std::unique_ptr<storage::FileStreamReader>(
       storage::FileStreamReader::CreateForFileSystemFile(
           context, url, offset, expected_modification_time));
 }
 
-scoped_ptr<storage::FileStreamWriter>
+std::unique_ptr<storage::FileStreamWriter>
 TestFileSystemBackend::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64_t offset,
     FileSystemContext* context) const {
-  return scoped_ptr<storage::FileStreamWriter>(
-      new storage::SandboxFileStreamWriter(
-          context, url, offset, *GetUpdateObservers(url.type())));
+  return std::unique_ptr<storage::FileStreamWriter>(
+      new storage::SandboxFileStreamWriter(context, url, offset,
+                                           *GetUpdateObservers(url.type())));
 }
 
 storage::FileSystemQuotaUtil* TestFileSystemBackend::GetQuotaUtil() {

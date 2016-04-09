@@ -4,6 +4,7 @@
 
 #include "content/public/gpu/gpu_video_decode_accelerator_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator_factory_impl.h"
 #include "content/gpu/gpu_child_thread.h"
 
@@ -12,7 +13,7 @@ namespace content {
 GpuVideoDecodeAcceleratorFactory::~GpuVideoDecodeAcceleratorFactory() {}
 
 // static
-scoped_ptr<GpuVideoDecodeAcceleratorFactory>
+std::unique_ptr<GpuVideoDecodeAcceleratorFactory>
 GpuVideoDecodeAcceleratorFactory::Create(
     const GetGLContextCallback& get_gl_context_cb,
     const MakeGLContextCurrentCallback& make_context_current_cb,
@@ -22,12 +23,12 @@ GpuVideoDecodeAcceleratorFactory::Create(
   if (!gvdafactory_impl)
     return nullptr;
 
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new GpuVideoDecodeAcceleratorFactory(std::move(gvdafactory_impl)));
 }
 
 // static
-scoped_ptr<GpuVideoDecodeAcceleratorFactory>
+std::unique_ptr<GpuVideoDecodeAcceleratorFactory>
 GpuVideoDecodeAcceleratorFactory::CreateWithGLES2Decoder(
     const GetGLContextCallback& get_gl_context_cb,
     const MakeGLContextCurrentCallback& make_context_current_cb,
@@ -40,7 +41,7 @@ GpuVideoDecodeAcceleratorFactory::CreateWithGLES2Decoder(
   if (!gvdafactory_impl)
     return nullptr;
 
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new GpuVideoDecodeAcceleratorFactory(std::move(gvdafactory_impl)));
 }
 
@@ -53,7 +54,7 @@ GpuVideoDecodeAcceleratorFactory::GetDecoderCapabilities() {
       gpu_preferences);
 }
 
-scoped_ptr<media::VideoDecodeAccelerator>
+std::unique_ptr<media::VideoDecodeAccelerator>
 GpuVideoDecodeAcceleratorFactory::CreateVDA(
     media::VideoDecodeAccelerator::Client* client,
     const media::VideoDecodeAccelerator::Config& config) {
@@ -66,7 +67,7 @@ GpuVideoDecodeAcceleratorFactory::CreateVDA(
 }
 
 GpuVideoDecodeAcceleratorFactory::GpuVideoDecodeAcceleratorFactory(
-    scoped_ptr<GpuVideoDecodeAcceleratorFactoryImpl> gvdafactory_impl)
+    std::unique_ptr<GpuVideoDecodeAcceleratorFactoryImpl> gvdafactory_impl)
     : gvdafactory_impl_(std::move(gvdafactory_impl)) {}
 
 }  // namespace content

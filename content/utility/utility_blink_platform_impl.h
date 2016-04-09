@@ -5,8 +5,9 @@
 #ifndef CONTENT_UTILITY_UTILITY_BLINK_PLATFORM_IMPL_H_
 #define CONTENT_UTILITY_UTILITY_BLINK_PLATFORM_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/child/blink_platform_impl.h"
 
 namespace content {
@@ -22,7 +23,7 @@ class UtilityBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebThread* currentThread() override;
 
  private:
-  scoped_ptr<WebThreadImplForUtilityThread> main_thread_;
+  std::unique_ptr<WebThreadImplForUtilityThread> main_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityBlinkPlatformImpl);
 };

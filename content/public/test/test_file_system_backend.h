@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "storage/browser/fileapi/async_file_util_adapter.h"
 #include "storage/browser/fileapi/file_system_backend.h"
 #include "storage/browser/fileapi/task_runner_bound_observer_list.h"
@@ -56,13 +57,13 @@ class TestFileSystemBackend : public storage::FileSystemBackend {
   bool SupportsStreaming(const storage::FileSystemURL& url) const override;
   bool HasInplaceCopyImplementation(
       storage::FileSystemType type) const override;
-  scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
+  std::unique_ptr<storage::FileStreamReader> CreateFileStreamReader(
       const storage::FileSystemURL& url,
       int64_t offset,
       int64_t max_bytes_to_read,
       const base::Time& expected_modification_time,
       storage::FileSystemContext* context) const override;
-  scoped_ptr<storage::FileStreamWriter> CreateFileStreamWriter(
+  std::unique_ptr<storage::FileStreamWriter> CreateFileStreamWriter(
       const storage::FileSystemURL& url,
       int64_t offset,
       storage::FileSystemContext* context) const override;
@@ -77,7 +78,7 @@ class TestFileSystemBackend : public storage::FileSystemBackend {
   // Initialize the CopyOrMoveFileValidatorFactory. Invalid to call more than
   // once.
   void InitializeCopyOrMoveFileValidatorFactory(
-      scoped_ptr<storage::CopyOrMoveFileValidatorFactory> factory);
+      std::unique_ptr<storage::CopyOrMoveFileValidatorFactory> factory);
 
   void AddFileChangeObserver(storage::FileChangeObserver* observer);
 
@@ -93,13 +94,13 @@ class TestFileSystemBackend : public storage::FileSystemBackend {
 
   base::FilePath base_path_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  scoped_ptr<storage::AsyncFileUtilAdapter> file_util_;
-  scoped_ptr<QuotaUtil> quota_util_;
+  std::unique_ptr<storage::AsyncFileUtilAdapter> file_util_;
+  std::unique_ptr<QuotaUtil> quota_util_;
   storage::UpdateObserverList update_observers_;
   storage::ChangeObserverList change_observers_;
 
   bool require_copy_or_move_validator_;
-  scoped_ptr<storage::CopyOrMoveFileValidatorFactory>
+  std::unique_ptr<storage::CopyOrMoveFileValidatorFactory>
       copy_or_move_file_validator_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFileSystemBackend);

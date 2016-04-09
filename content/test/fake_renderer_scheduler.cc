@@ -14,7 +14,7 @@ FakeRendererScheduler::FakeRendererScheduler() {
 FakeRendererScheduler::~FakeRendererScheduler() {
 }
 
-scoped_ptr<blink::WebThread> FakeRendererScheduler::CreateMainThread() {
+std::unique_ptr<blink::WebThread> FakeRendererScheduler::CreateMainThread() {
   return nullptr;
 }
 
@@ -50,7 +50,7 @@ scoped_refptr<scheduler::TaskQueue> FakeRendererScheduler::NewTimerTaskRunner(
   return nullptr;
 }
 
-scoped_ptr<scheduler::RenderWidgetSchedulingState>
+std::unique_ptr<scheduler::RenderWidgetSchedulingState>
 FakeRendererScheduler::NewRenderWidgetSchedulingState() {
   return nullptr;
 }

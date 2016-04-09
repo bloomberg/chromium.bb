@@ -4,8 +4,9 @@
 
 #include "content/public/test/sandbox_file_system_test_helper.h"
 
+#include <memory>
+
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_file_system_context.h"
@@ -76,7 +77,7 @@ base::FilePath SandboxFileSystemTestHelper::GetLocalPath(
     const base::FilePath& path) {
   DCHECK(file_util_);
   base::FilePath local_path;
-  scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
+  std::unique_ptr<FileSystemOperationContext> context(NewOperationContext());
   file_util_->GetLocalFilePath(context.get(), CreateURL(path), &local_path);
   return local_path;
 }

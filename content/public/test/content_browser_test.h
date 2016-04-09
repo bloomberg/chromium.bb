@@ -5,7 +5,8 @@
 #ifndef CONTENT_PUBLIC_TEST_CONTENT_BROWSER_TEST_H_
 #define CONTENT_PUBLIC_TEST_CONTENT_BROWSER_TEST_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "build/build_config.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
@@ -43,7 +44,7 @@ class ContentBrowserTest : public BrowserTestBase {
 #if defined(OS_ANDROID)
   // For all other platforms, this is done automatically when calling into
   // ContentMain. For Android we set things up manually.
-  scoped_ptr<ShellMainDelegate> shell_main_delegate_;
+  std::unique_ptr<ShellMainDelegate> shell_main_delegate_;
 #endif
 };
 

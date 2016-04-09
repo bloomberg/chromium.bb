@@ -6,11 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/md5.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
@@ -177,7 +178,7 @@ void ImageDecoderTest::TestWebKitImageDecoder(
   std::vector<char> image_contents;
   ReadFileToVector(image_path, &image_contents);
   EXPECT_TRUE(image_contents.size());
-  scoped_ptr<blink::WebImageDecoder> decoder(CreateWebKitImageDecoder());
+  std::unique_ptr<blink::WebImageDecoder> decoder(CreateWebKitImageDecoder());
   EXPECT_FALSE(decoder->isFailed());
 
 #if !defined(CALCULATE_MD5_SUMS)

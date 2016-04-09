@@ -26,8 +26,8 @@ namespace extensions {
 
 class InfoMap;
 
-class ShellURLRequestContextGetter :
-  public content::ShellURLRequestContextGetter {
+class ShellURLRequestContextGetter
+    : public content::ShellURLRequestContextGetter {
  public:
   ShellURLRequestContextGetter(
       content::BrowserContext* browser_context,
@@ -41,16 +41,16 @@ class ShellURLRequestContextGetter :
       InfoMap* extension_info_map);
 
   // content::ShellURLRequestContextGetter implementation.
-  scoped_ptr<net::NetworkDelegate> CreateNetworkDelegate() override;
+  std::unique_ptr<net::NetworkDelegate> CreateNetworkDelegate() override;
 
-protected:
- ~ShellURLRequestContextGetter() override;
+ protected:
+  ~ShellURLRequestContextGetter() override;
 
-private:
+ private:
   content::BrowserContext* browser_context_;
   InfoMap* extension_info_map_;
 
-private:
+ private:
   DISALLOW_COPY_AND_ASSIGN(ShellURLRequestContextGetter);
 };
 

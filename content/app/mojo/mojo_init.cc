@@ -4,9 +4,10 @@
 
 #include "content/app/mojo/mojo_init.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_channel.h"
 #include "mojo/edk/embedder/embedder.h"

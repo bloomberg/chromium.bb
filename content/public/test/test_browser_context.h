@@ -5,12 +5,13 @@
 #ifndef CONTENT_PUBLIC_TEST_TEST_BROWSER_CONTEXT_H_
 #define CONTENT_PUBLIC_TEST_TEST_BROWSER_CONTEXT_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_context.h"
 
 namespace content {
@@ -30,10 +31,11 @@ class TestBrowserContext : public BrowserContext {
   base::FilePath TakePath();
 
   void SetSpecialStoragePolicy(storage::SpecialStoragePolicy* policy);
-  void SetPermissionManager(scoped_ptr<PermissionManager> permission_manager);
+  void SetPermissionManager(
+      std::unique_ptr<PermissionManager> permission_manager);
 
   base::FilePath GetPath() const override;
-  scoped_ptr<ZoomLevelDelegate> CreateZoomLevelDelegate(
+  std::unique_ptr<ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
   bool IsOffTheRecord() const override;
   DownloadManagerDelegate* GetDownloadManagerDelegate() override;
@@ -63,11 +65,11 @@ class TestBrowserContext : public BrowserContext {
  private:
   base::ScopedTempDir browser_context_dir_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
-  scoped_ptr<MockResourceContext> resource_context_;
+  std::unique_ptr<MockResourceContext> resource_context_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
-  scoped_ptr<MockSSLHostStateDelegate> ssl_host_state_delegate_;
-  scoped_ptr<PermissionManager> permission_manager_;
-  scoped_ptr<MockBackgroundSyncController> background_sync_controller_;
+  std::unique_ptr<MockSSLHostStateDelegate> ssl_host_state_delegate_;
+  std::unique_ptr<PermissionManager> permission_manager_;
+  std::unique_ptr<MockBackgroundSyncController> background_sync_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserContext);
 };

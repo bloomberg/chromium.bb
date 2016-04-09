@@ -5,7 +5,8 @@
 #ifndef CONTENT_TEST_TEST_NAVIGATION_URL_LOADER_H_
 #define CONTENT_TEST_TEST_NAVIGATION_URL_LOADER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/memory/weak_ptr.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_url_loader.h"
@@ -28,7 +29,7 @@ class TestNavigationURLLoader
     : public NavigationURLLoader,
       public base::SupportsWeakPtr<TestNavigationURLLoader> {
  public:
-  TestNavigationURLLoader(scoped_ptr<NavigationRequestInfo> request_info,
+  TestNavigationURLLoader(std::unique_ptr<NavigationRequestInfo> request_info,
                           NavigationURLLoaderDelegate* delegate);
 
   // NavigationURLLoader implementation.
@@ -44,7 +45,7 @@ class TestNavigationURLLoader
   void CallOnRequestRedirected(const net::RedirectInfo& redirect_info,
                                const scoped_refptr<ResourceResponse>& response);
   void CallOnResponseStarted(const scoped_refptr<ResourceResponse>& response,
-                             scoped_ptr<StreamHandle> body);
+                             std::unique_ptr<StreamHandle> body);
 
   int redirect_count() { return redirect_count_; }
 
@@ -53,7 +54,7 @@ class TestNavigationURLLoader
  private:
   ~TestNavigationURLLoader() override;
 
-  scoped_ptr<NavigationRequestInfo> request_info_;
+  std::unique_ptr<NavigationRequestInfo> request_info_;
   NavigationURLLoaderDelegate* delegate_;
   int redirect_count_;
   bool response_proceeded_;

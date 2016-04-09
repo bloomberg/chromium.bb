@@ -58,7 +58,7 @@ bool TestSynchronousCompositor::DemandDrawSw(SkCanvas* canvas) {
 
 void TestSynchronousCompositor::SetHardwareFrame(
     uint32_t output_surface_id,
-    scoped_ptr<cc::CompositorFrame> frame) {
+    std::unique_ptr<cc::CompositorFrame> frame) {
   hardware_frame_.output_surface_id = output_surface_id;
   hardware_frame_.frame = std::move(frame);
 }

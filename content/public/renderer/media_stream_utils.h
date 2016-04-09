@@ -5,8 +5,9 @@
 #ifndef CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_UTILS_H_
 #define CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_UTILS_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "media/base/channel_layout.h"
 #include "media/base/video_capture_types.h"
@@ -30,7 +31,7 @@ namespace content {
 // |is_readonly| should be true if the format of the data cannot be changed by
 //     MediaTrackConstraints.
 CONTENT_EXPORT bool AddVideoTrackToMediaStream(
-    scoped_ptr<media::VideoCapturerSource> video_source,
+    std::unique_ptr<media::VideoCapturerSource> video_source,
     bool is_remote,
     bool is_readonly,
     blink::WebMediaStream* web_media_stream);

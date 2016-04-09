@@ -135,7 +135,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
   LinuxSandbox::InitializeSandbox();
 #endif
 
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   feature_list->InitializeFromCommandLine(
       command_line.GetSwitchValueASCII(switches::kEnableFeatures),
       command_line.GetSwitchValueASCII(switches::kDisableFeatures));

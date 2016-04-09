@@ -5,8 +5,9 @@
 #ifndef CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_H_
 #define CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace base {
@@ -54,7 +55,7 @@ class TestBrowserThread {
   base::Thread* DeprecatedGetThreadObject();
 
  private:
-  scoped_ptr<TestBrowserThreadImpl> impl_;
+  std::unique_ptr<TestBrowserThreadImpl> impl_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserThread);
 };

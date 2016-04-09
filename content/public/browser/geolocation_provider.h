@@ -5,8 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_GEOLOCATION_PROVIDER_H_
 #define CONTENT_PUBLIC_BROWSER_GEOLOCATION_PROVIDER_H_
 
+#include <memory>
+
 #include "base/callback_list.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -34,7 +35,7 @@ class GeolocationProvider {
   // |enable_high_accuracy| is used as a 'hint' for the provider preferences for
   // this particular observer, however the observer could receive updates for
   // best available locations from any active provider whilst it is registered.
-  virtual scoped_ptr<Subscription> AddLocationUpdateCallback(
+  virtual std::unique_ptr<Subscription> AddLocationUpdateCallback(
       const LocationUpdateCallback& callback,
       bool enable_high_accuracy) = 0;
 

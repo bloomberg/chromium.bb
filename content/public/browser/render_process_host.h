@@ -229,10 +229,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
       base::Callback<void(const std::string&)> callback) = 0;
   virtual void ClearWebRtcLogMessageCallback() = 0;
 
-  typedef base::Callback<void(scoped_ptr<uint8_t[]> packet_header,
+  typedef base::Callback<void(std::unique_ptr<uint8_t[]> packet_header,
                               size_t header_length,
                               size_t packet_length,
-                              bool incoming)> WebRtcRtpPacketCallback;
+                              bool incoming)>
+      WebRtcRtpPacketCallback;
 
   typedef base::Callback<void(bool incoming, bool outgoing)>
       WebRtcStopRtpDumpCallback;
@@ -261,7 +262,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // between the Renderer and the Browser, the allocator is created when the
   // process is created and later retrieved by the SubprocessMetricsProvider
   // for management.
-  virtual scoped_ptr<base::SharedPersistentMemoryAllocator>
+  virtual std::unique_ptr<base::SharedPersistentMemoryAllocator>
   TakeMetricsAllocator() = 0;
 
   // PlzNavigate

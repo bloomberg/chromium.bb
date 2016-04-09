@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -35,7 +35,7 @@ class NavigationEntry {
  public:
   virtual ~NavigationEntry() {}
 
-  CONTENT_EXPORT static scoped_ptr<NavigationEntry> Create();
+  CONTENT_EXPORT static std::unique_ptr<NavigationEntry> Create();
 
   // Page-related stuff --------------------------------------------------------
 

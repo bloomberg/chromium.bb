@@ -4,9 +4,10 @@
 
 #include "content/public/test/content_test_suite_base.h"
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/test/test_suite.h"
 #include "base/threading/sequenced_worker_pool.h"

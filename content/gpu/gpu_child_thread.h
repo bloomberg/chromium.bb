@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
@@ -165,9 +165,9 @@ class GpuChildThread : public ChildThreadImpl,
   // Non-owning.
   gpu::SyncPointManager* sync_point_manager_;
 
-  scoped_ptr<gpu::GpuChannelManager> gpu_channel_manager_;
+  std::unique_ptr<gpu::GpuChannelManager> gpu_channel_manager_;
 
-  scoped_ptr<MediaService> media_service_;
+  std::unique_ptr<MediaService> media_service_;
 
   // Information about the GPU, such as device and vendor ID.
   gpu::GPUInfo gpu_info_;
@@ -182,7 +182,7 @@ class GpuChildThread : public ChildThreadImpl,
   gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
 
   // Process control for Mojo application hosting.
-  scoped_ptr<GpuProcessControlImpl> process_control_;
+  std::unique_ptr<GpuProcessControlImpl> process_control_;
 
   // Bindings to the mojom::ProcessControl impl.
   mojo::BindingSet<mojom::ProcessControl> process_control_bindings_;

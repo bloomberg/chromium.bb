@@ -67,7 +67,7 @@ struct RendererPreferences;
 // (usually HTML) in a rectangular area.
 //
 // Instantiating one is simple:
-//   scoped_ptr<content::WebContents> web_contents(
+//   std::unique_ptr<content::WebContents> web_contents(
 //       content::WebContents::Create(
 //           content::WebContents::CreateParams(browser_context)));
 //   gfx::NativeView view = web_contents->GetNativeView();
@@ -76,7 +76,8 @@ struct RendererPreferences;
 //
 // That's it; go to your kitchen, grab a scone, and chill. WebContents will do
 // all the multi-process stuff behind the scenes. More details are at
-// http://www.chromium.org/developers/design-documents/multi-process-architecture .
+// http://www.chromium.org/developers/design-documents/multi-process-architecture
+// .
 //
 // Each WebContents has exactly one NavigationController; each
 // NavigationController belongs to one WebContents. The NavigationController can

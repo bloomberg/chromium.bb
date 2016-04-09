@@ -5,10 +5,11 @@
 #ifndef CONTENT_RENDERER_RASTER_WORKER_POOL_H_
 #define CONTENT_RENDERER_RASTER_WORKER_POOL_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/task_runner.h"

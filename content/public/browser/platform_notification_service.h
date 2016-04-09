@@ -6,12 +6,13 @@
 #define CONTENT_PUBLIC_BROWSER_PLATFORM_NOTIFICATION_SERVICE_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h"
 
@@ -57,7 +58,7 @@ class CONTENT_EXPORT PlatformNotificationService {
       const GURL& origin,
       const PlatformNotificationData& notification_data,
       const NotificationResources& notification_resources,
-      scoped_ptr<DesktopNotificationDelegate> delegate,
+      std::unique_ptr<DesktopNotificationDelegate> delegate,
       base::Closure* cancel_callback) = 0;
 
   // Displays the persistent notification described in |notification_data| to

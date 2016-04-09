@@ -24,13 +24,13 @@ class CONTENT_EXPORT ResourceDispatcherDelegate {
  public:
   virtual ~ResourceDispatcherDelegate() {}
 
-  virtual scoped_ptr<RequestPeer> OnRequestComplete(
-      scoped_ptr<RequestPeer> current_peer,
+  virtual std::unique_ptr<RequestPeer> OnRequestComplete(
+      std::unique_ptr<RequestPeer> current_peer,
       ResourceType resource_type,
       int error_code) = 0;
 
-  virtual scoped_ptr<RequestPeer> OnReceivedResponse(
-      scoped_ptr<RequestPeer> current_peer,
+  virtual std::unique_ptr<RequestPeer> OnReceivedResponse(
+      std::unique_ptr<RequestPeer> current_peer,
       const std::string& mime_type,
       const GURL& url) = 0;
 };

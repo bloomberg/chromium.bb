@@ -5,7 +5,7 @@
 #ifndef CONTENT_SHELL_BROWSER_SHELL_BROWSER_MAIN_H_
 #define CONTENT_SHELL_BROWSER_SHELL_BROWSER_MAIN_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace content {
 class BrowserMainRunner;
@@ -14,6 +14,6 @@ struct MainFunctionParams;
 
 int ShellBrowserMain(
     const content::MainFunctionParams& parameters,
-    const scoped_ptr<content::BrowserMainRunner>& main_runner);
+    const std::unique_ptr<content::BrowserMainRunner>& main_runner);
 
 #endif  // CONTENT_SHELL_BROWSER_SHELL_BROWSER_MAIN_H_

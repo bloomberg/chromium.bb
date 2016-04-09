@@ -70,10 +70,10 @@ class ScriptCallback {
   virtual ~ScriptCallback() { }
   void ResultCallback(const base::Value* result);
 
-  scoped_ptr<base::Value> result() { return std::move(result_); }
+  std::unique_ptr<base::Value> result() { return std::move(result_); }
 
  private:
-  scoped_ptr<base::Value> result_;
+  std::unique_ptr<base::Value> result_;
 
   DISALLOW_COPY_AND_ASSIGN(ScriptCallback);
 };
@@ -181,8 +181,9 @@ base::Closure GetQuitTaskForRunLoop(base::RunLoop* run_loop) {
                     kNumQuitDeferrals);
 }
 
-scoped_ptr<base::Value> ExecuteScriptAndGetValue(
-    RenderFrameHost* render_frame_host, const std::string& script) {
+std::unique_ptr<base::Value> ExecuteScriptAndGetValue(
+    RenderFrameHost* render_frame_host,
+    const std::string& script) {
   ScriptCallback observer;
 
   render_frame_host->ExecuteJavaScriptForTests(

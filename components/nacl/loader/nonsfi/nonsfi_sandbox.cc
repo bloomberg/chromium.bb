@@ -15,6 +15,7 @@
 #include <sys/time.h>
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/public/common/sandbox_init.h"

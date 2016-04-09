@@ -5,9 +5,9 @@
 #include "content/shell/browser/shell_browser_main.h"
 
 #include <iostream>
+#include <memory>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -19,7 +19,7 @@
 // Main routine for running as the Browser process.
 int ShellBrowserMain(
     const content::MainFunctionParams& parameters,
-    const scoped_ptr<content::BrowserMainRunner>& main_runner) {
+    const std::unique_ptr<content::BrowserMainRunner>& main_runner) {
   int exit_code = main_runner->Initialize(parameters);
   DCHECK_LT(exit_code, 0)
       << "BrowserMainRunner::Initialize failed in ShellBrowserMain";

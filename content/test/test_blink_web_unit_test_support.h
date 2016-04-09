@@ -5,10 +5,11 @@
 #ifndef CONTENT_TEST_TEST_BLINK_WEB_UNIT_TEST_SUPPORT_H_
 #define CONTENT_TEST_TEST_BLINK_WEB_UNIT_TEST_SUPPORT_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "cc/blink/web_compositor_support_impl.h"
 #include "content/child/blink_platform_impl.h"
@@ -79,13 +80,13 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
  private:
   MockWebBlobRegistryImpl blob_registry_;
   SimpleWebMimeRegistryImpl mime_registry_;
-  scoped_ptr<MockWebClipboardImpl> mock_clipboard_;
+  std::unique_ptr<MockWebClipboardImpl> mock_clipboard_;
   WebFileUtilitiesImpl file_utilities_;
   base::ScopedTempDir file_system_root_;
-  scoped_ptr<blink::WebURLLoaderMockFactory> url_loader_factory_;
+  std::unique_ptr<blink::WebURLLoaderMockFactory> url_loader_factory_;
   cc_blink::WebCompositorSupportImpl compositor_support_;
-  scoped_ptr<scheduler::RendererScheduler> renderer_scheduler_;
-  scoped_ptr<blink::WebThread> web_thread_;
+  std::unique_ptr<scheduler::RendererScheduler> renderer_scheduler_;
+  std::unique_ptr<blink::WebThread> web_thread_;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   blink::WebThemeEngine* active_theme_engine_ = nullptr;

@@ -38,7 +38,8 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
   PlatformNotificationService* GetPlatformNotificationService() override;
 
  private:
-  scoped_ptr<LayoutTestNotificationManager> layout_test_notification_manager_;
+  std::unique_ptr<LayoutTestNotificationManager>
+      layout_test_notification_manager_;
 };
 
 }  // content

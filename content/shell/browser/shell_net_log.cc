@@ -21,7 +21,8 @@ namespace content {
 namespace {
 
 base::DictionaryValue* GetShellConstants(const std::string& app_name) {
-  scoped_ptr<base::DictionaryValue> constants_dict = net::GetNetConstants();
+  std::unique_ptr<base::DictionaryValue> constants_dict =
+      net::GetNetConstants();
 
   // Add a dictionary with client information
   base::DictionaryValue* dict = new base::DictionaryValue();
@@ -64,7 +65,7 @@ ShellNetLog::ShellNetLog(const std::string& app_name) {
       LOG(ERROR) << "Could not open file " << log_path.value()
                  << " for net logging";
     } else {
-      scoped_ptr<base::Value> constants(GetShellConstants(app_name));
+      std::unique_ptr<base::Value> constants(GetShellConstants(app_name));
       write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
       write_to_file_observer_->StartObserving(this, std::move(file),
                                               constants.get(), nullptr);

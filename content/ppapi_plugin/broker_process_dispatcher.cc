@@ -6,9 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
@@ -47,7 +48,7 @@ void GetPermissionSettingsCallback(
     PP_Flash_BrowserOperations_Permission default_permission,
     uint32_t site_count,
     const PP_Flash_BrowserOperations_SiteSetting sites[]) {
-  scoped_ptr<GetPermissionSettingsContext> context(
+  std::unique_ptr<GetPermissionSettingsContext> context(
       reinterpret_cast<GetPermissionSettingsContext*>(user_data));
 
   if (!context->dispatcher.get())
@@ -300,7 +301,7 @@ bool BrokerProcessDispatcher::SetSitePermission(
     return true;
 
   std::string data_str = ConvertPluginDataPath(plugin_data_path);
-  scoped_ptr<PP_Flash_BrowserOperations_SiteSetting[]> site_array(
+  std::unique_ptr<PP_Flash_BrowserOperations_SiteSetting[]> site_array(
       new PP_Flash_BrowserOperations_SiteSetting[sites.size()]);
 
   for (size_t i = 0; i < sites.size(); ++i) {

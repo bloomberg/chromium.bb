@@ -285,7 +285,7 @@ class CONTENT_EXPORT BrowserThread {
   //   ~Foo();
   //
   // Sample usage with scoped_ptr:
-  // scoped_ptr<Foo, BrowserThread::DeleteOnIOThread> ptr;
+  // std::unique_ptr<Foo, BrowserThread::DeleteOnIOThread> ptr;
   struct DeleteOnUIThread : public DeleteOnThread<UI> { };
   struct DeleteOnIOThread : public DeleteOnThread<IO> { };
   struct DeleteOnFileThread : public DeleteOnThread<FILE> { };

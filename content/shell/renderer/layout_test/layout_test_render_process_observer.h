@@ -5,10 +5,11 @@
 #ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_RENDER_PROCESS_OBSERVER_H_
 #define CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_RENDER_PROCESS_OBSERVER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "ipc/ipc_platform_file.h"
 
@@ -55,7 +56,7 @@ class LayoutTestRenderProcessObserver : public RenderProcessObserver {
 
   BlinkTestRunner* main_test_runner_;
   test_runner::WebTestDelegate* test_delegate_;
-  scoped_ptr<test_runner::WebTestInterfaces> test_interfaces_;
+  std::unique_ptr<test_runner::WebTestInterfaces> test_interfaces_;
 
   base::FilePath webkit_source_dir_;
 

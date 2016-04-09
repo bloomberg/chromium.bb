@@ -387,7 +387,7 @@ bool BlinkTestController::IsMainWindow(WebContents* web_contents) const {
   return main_window_ && web_contents == main_window_->web_contents();
 }
 
-scoped_ptr<BluetoothChooser> BlinkTestController::RunBluetoothChooser(
+std::unique_ptr<BluetoothChooser> BlinkTestController::RunBluetoothChooser(
     RenderFrameHost* frame,
     const BluetoothChooser::EventHandler& event_handler) {
   if (bluetooth_chooser_factory_) {

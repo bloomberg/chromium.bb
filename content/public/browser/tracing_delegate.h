@@ -5,10 +5,10 @@
 #ifndef CONTENT_PUBLIC_BROWSER_TRACING_DELEGATE_H_
 #define CONTENT_PUBLIC_BROWSER_TRACING_DELEGATE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
 namespace base {
@@ -34,7 +34,7 @@ class CONTENT_EXPORT TracingDelegate {
   virtual ~TracingDelegate() {}
 
   // Provide trace uploading functionality; see trace_uploader.h.
-  virtual scoped_ptr<TraceUploader> GetTraceUploader(
+  virtual std::unique_ptr<TraceUploader> GetTraceUploader(
       net::URLRequestContextGetter* request_context) = 0;
 
   // This can be used to veto a particular background tracing scenario.

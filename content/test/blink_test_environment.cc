@@ -82,9 +82,9 @@ class TestEnvironment {
   }
 
  private:
-  scoped_ptr<MessageLoopType> main_message_loop_;
-  scoped_ptr<TestBlinkWebUnitTestSupport> blink_test_support_;
-  scoped_ptr<TestContentClientInitializer> content_initializer_;
+  std::unique_ptr<MessageLoopType> main_message_loop_;
+  std::unique_ptr<TestBlinkWebUnitTestSupport> blink_test_support_;
+  std::unique_ptr<TestContentClientInitializer> content_initializer_;
   base::TestDiscardableMemoryAllocator discardable_memory_allocator_;
 };
 

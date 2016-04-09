@@ -5,8 +5,9 @@
 #ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_LEAK_DETECTOR_H_
 #define CONTENT_SHELL_RENDERER_LAYOUT_TEST_LEAK_DETECTOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/shell/common/leak_detection_result.h"
 #include "third_party/WebKit/public/web/WebLeakDetector.h"
 
@@ -36,7 +37,7 @@ class LeakDetector : public blink::WebLeakDetectorClient {
 
  private:
   BlinkTestRunner* test_runner_;
-  scoped_ptr<blink::WebLeakDetector> web_leak_detector_;
+  std::unique_ptr<blink::WebLeakDetector> web_leak_detector_;
   blink::WebLeakDetectorClient::Result previous_result_;
 
   DISALLOW_COPY_AND_ASSIGN(LeakDetector);

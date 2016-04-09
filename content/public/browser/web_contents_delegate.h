@@ -357,7 +357,7 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Shows a chooser for the user to select a nearby Bluetooth device. The
   // observer must live at least as long as the returned chooser object.
-  virtual scoped_ptr<BluetoothChooser> RunBluetoothChooser(
+  virtual std::unique_ptr<BluetoothChooser> RunBluetoothChooser(
       RenderFrameHost* frame,
       const BluetoothChooser::EventHandler& event_handler);
 

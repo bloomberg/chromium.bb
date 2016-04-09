@@ -6,12 +6,12 @@
 #define CONTENT_SHELL_RENDERER_LAYOUT_TEST_BLINK_TEST_RUNNER_H_
 
 #include <deque>
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/test_runner/test_preferences.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "content/public/common/page_state.h"
@@ -215,7 +215,7 @@ class BlinkTestRunner : public RenderViewObserver,
 
   bool focus_on_next_commit_;
 
-  scoped_ptr<LeakDetector> leak_detector_;
+  std::unique_ptr<LeakDetector> leak_detector_;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkTestRunner);
 };

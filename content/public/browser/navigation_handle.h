@@ -5,7 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_NAVIGATION_HANDLE_H_
 #define CONTENT_PUBLIC_BROWSER_NAVIGATION_HANDLE_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/referrer.h"
@@ -139,7 +140,7 @@ class CONTENT_EXPORT NavigationHandle {
   //
   // The following methods should be used exclusively for writing unit tests.
 
-  static scoped_ptr<NavigationHandle> CreateNavigationHandleForTesting(
+  static std::unique_ptr<NavigationHandle> CreateNavigationHandleForTesting(
       const GURL& url,
       RenderFrameHost* render_frame_host);
 
@@ -151,7 +152,7 @@ class CONTENT_EXPORT NavigationHandle {
   // ContentBrowserClient::CreateThrottlesForNavigation. This ensures proper
   // ordering of the throttles.
   virtual void RegisterThrottleForTesting(
-      scoped_ptr<NavigationThrottle> navigation_throttle) = 0;
+      std::unique_ptr<NavigationThrottle> navigation_throttle) = 0;
 
   // Simulates the network request starting.
   virtual NavigationThrottle::ThrottleCheckResult

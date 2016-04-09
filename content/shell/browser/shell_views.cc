@@ -371,8 +371,8 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
   views::LabelButton* refresh_button_;
   views::LabelButton* stop_button_;
   views::Textfield* url_entry_;
-  scoped_ptr<ContextMenuModel> context_menu_model_;
-  scoped_ptr<views::MenuRunner> context_menu_runner_;
+  std::unique_ptr<ContextMenuModel> context_menu_model_;
+  std::unique_ptr<views::MenuRunner> context_menu_runner_;
 
   // Contents view contains the web contents view
   View* contents_view_;

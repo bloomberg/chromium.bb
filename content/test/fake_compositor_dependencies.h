@@ -38,7 +38,7 @@ class FakeCompositorDependencies : public CompositorDependencies {
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   scheduler::RendererScheduler* GetRendererScheduler() override;
   cc::ContextProvider* GetSharedMainThreadContextProvider() override;
-  scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
+  std::unique_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) override;
   cc::ImageSerializationProcessor* GetImageSerializationProcessor() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;

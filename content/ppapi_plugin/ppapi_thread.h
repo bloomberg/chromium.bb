@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "base/scoped_native_library.h"
 #include "build/build_config.h"
@@ -163,7 +163,7 @@ class PpapiThread : public ChildThreadImpl,
   uint32_t next_plugin_dispatcher_id_;
 
   // The BlinkPlatformImpl implementation.
-  scoped_ptr<PpapiBlinkPlatformImpl> blink_platform_impl_;
+  std::unique_ptr<PpapiBlinkPlatformImpl> blink_platform_impl_;
 
 #if defined(OS_WIN)
   // Caches the handle to the peer process if this is a broker.

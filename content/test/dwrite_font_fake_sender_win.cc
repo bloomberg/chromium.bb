@@ -68,8 +68,8 @@ FakeFontCollection::ReplySender::ReplySender(FakeFontCollection* collection)
 
 FakeFontCollection::ReplySender::~ReplySender() = default;
 
-scoped_ptr<IPC::Message>& FakeFontCollection::ReplySender::OnMessageReceived(
-    const IPC::Message& msg) {
+std::unique_ptr<IPC::Message>&
+FakeFontCollection::ReplySender::OnMessageReceived(const IPC::Message& msg) {
   reply_.reset();
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ReplySender, msg)
@@ -122,11 +122,11 @@ bool FakeFontCollection::FakeSender::Send(IPC::Message* message) {
   else
     incoming_message.reset(message);  // Ensure message is deleted.
   std::unique_ptr<ReplySender> sender = collection_->GetReplySender();
-  scoped_ptr<IPC::Message> reply;
+  std::unique_ptr<IPC::Message> reply;
   reply.swap(sender->OnMessageReceived(*message));
 
   IPC::SyncMessage* sync_message = reinterpret_cast<IPC::SyncMessage*>(message);
-  scoped_ptr<IPC::MessageReplyDeserializer> serializer(
+  std::unique_ptr<IPC::MessageReplyDeserializer> serializer(
       sync_message->GetReplyDeserializer());
   serializer->SerializeOutputParameters(*(reply.get()));
   return true;

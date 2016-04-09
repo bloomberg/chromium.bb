@@ -409,7 +409,7 @@ JavaScriptDialogManager* Shell::GetJavaScriptDialogManager(
   return dialog_manager_.get();
 }
 
-scoped_ptr<BluetoothChooser> Shell::RunBluetoothChooser(
+std::unique_ptr<BluetoothChooser> Shell::RunBluetoothChooser(
     RenderFrameHost* frame,
     const BluetoothChooser::EventHandler& event_handler) {
   if (switches::IsRunLayoutTestSwitchPresent()) {

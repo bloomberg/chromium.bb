@@ -5,12 +5,10 @@
 #ifndef CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_BLUETOOTH_CHOOSER_FACTORY_H_
 #define CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_BLUETOOTH_CHOOSER_FACTORY_H_
 
-#include "content/public/browser/bluetooth_chooser.h"
-
+#include <memory>
 #include <set>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/bluetooth_chooser.h"
 
@@ -27,7 +25,7 @@ class LayoutTestBluetoothChooserFactory {
   LayoutTestBluetoothChooserFactory();
   ~LayoutTestBluetoothChooserFactory();
 
-  scoped_ptr<BluetoothChooser> RunBluetoothChooser(
+  std::unique_ptr<BluetoothChooser> RunBluetoothChooser(
       RenderFrameHost* frame,
       const BluetoothChooser::EventHandler& event_handler);
 

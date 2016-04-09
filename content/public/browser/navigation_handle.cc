@@ -21,16 +21,18 @@ WebContents* NavigationHandle::GetWebContents() {
 }
 
 // static
-scoped_ptr<NavigationHandle> NavigationHandle::CreateNavigationHandleForTesting(
+std::unique_ptr<NavigationHandle>
+NavigationHandle::CreateNavigationHandleForTesting(
     const GURL& url,
     RenderFrameHost* render_frame_host) {
-  scoped_ptr<NavigationHandleImpl> handle_impl = NavigationHandleImpl::Create(
-      url,
-      static_cast<RenderFrameHostImpl*>(render_frame_host)->frame_tree_node(),
-      false,  // is_synchronous
-      false,  // is_srcdoc
-      base::TimeTicks::Now(), 0);
-  return scoped_ptr<NavigationHandle>(std::move(handle_impl));
+  std::unique_ptr<NavigationHandleImpl> handle_impl =
+      NavigationHandleImpl::Create(
+          url, static_cast<RenderFrameHostImpl*>(render_frame_host)
+                   ->frame_tree_node(),
+          false,  // is_synchronous
+          false,  // is_srcdoc
+          base::TimeTicks::Now(), 0);
+  return std::unique_ptr<NavigationHandle>(std::move(handle_impl));
 }
 
 }  // namespace content

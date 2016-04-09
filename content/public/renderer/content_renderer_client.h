@@ -8,12 +8,12 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/public/common/content_client.h"
@@ -257,13 +257,13 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual bool AllowPepperMediaStreamAPI(const GURL& url);
 
   // Allows an embedder to provide a media::RendererFactory.
-  virtual scoped_ptr<media::RendererFactory> CreateMediaRendererFactory(
+  virtual std::unique_ptr<media::RendererFactory> CreateMediaRendererFactory(
       RenderFrame* render_frame,
       media::GpuVideoAcceleratorFactories* gpu_factories,
       const scoped_refptr<media::MediaLog>& media_log);
 
   // Allows an embedder to provide a MediaStreamRendererFactory.
-  virtual scoped_ptr<MediaStreamRendererFactory>
+  virtual std::unique_ptr<MediaStreamRendererFactory>
   CreateMediaStreamRendererFactory();
 
   // Allows an embedder to provde a cc::ImageSerializationProcessor.
@@ -309,7 +309,7 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual void RecordRapporURL(const std::string& metric, const GURL& url) {}
 
   // Allows an embedder to provide a blink::WebAppBannerClient.
-  virtual scoped_ptr<blink::WebAppBannerClient> CreateAppBannerClient(
+  virtual std::unique_ptr<blink::WebAppBannerClient> CreateAppBannerClient(
       RenderFrame* render_frame);
 
   // Gives the embedder a chance to add properties to the context menu.

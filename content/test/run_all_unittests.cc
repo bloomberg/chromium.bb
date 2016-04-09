@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
       new content::ContentTestSuite(argc, argv));
   content::InitializeMojo();
   base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
-  scoped_ptr<mojo::edk::test::ScopedIPCSupport> ipc_support;
+  std::unique_ptr<mojo::edk::test::ScopedIPCSupport> ipc_support;
   ipc_support.reset(
       new mojo::edk::test::ScopedIPCSupport(test_io_thread.task_runner()));
 

@@ -5,9 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_POWER_SAVE_BLOCKER_H_
 #define CONTENT_PUBLIC_BROWSER_POWER_SAVE_BLOCKER_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -48,9 +48,10 @@ class CONTENT_EXPORT PowerSaveBlocker {
   // |reason| and |description| (a more-verbose, human-readable justification of
   // the blocking) may be provided to the underlying system APIs on some
   // platforms.
-  static scoped_ptr<PowerSaveBlocker> Create(PowerSaveBlockerType type,
-                                             Reason reason,
-                                             const std::string& description);
+  static std::unique_ptr<PowerSaveBlocker> Create(
+      PowerSaveBlockerType type,
+      Reason reason,
+      const std::string& description);
 };
 
 }  // namespace content

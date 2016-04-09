@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "media/audio/audio_parameters.h"
 #include "ui/gfx/native_widget_types.h"
@@ -264,10 +264,10 @@ class MediaStreamUI {
 };
 
 // Callback used return results of media access requests.
-typedef base::Callback<void(
-    const MediaStreamDevices& devices,
-    content::MediaStreamRequestResult result,
-    scoped_ptr<MediaStreamUI> ui)> MediaResponseCallback;
+typedef base::Callback<void(const MediaStreamDevices& devices,
+                            content::MediaStreamRequestResult result,
+                            std::unique_ptr<MediaStreamUI> ui)>
+    MediaResponseCallback;
 
 }  // namespace content
 

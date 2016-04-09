@@ -5,8 +5,9 @@
 #ifndef CONTENT_PUBLIC_RENDERER_PLUGIN_INSTANCE_THROTTLER_H_
 #define CONTENT_PUBLIC_RENDERER_PLUGIN_INSTANCE_THROTTLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
 namespace blink {
@@ -71,7 +72,7 @@ class CONTENT_EXPORT PluginInstanceThrottler {
     virtual void OnThrottlerDestroyed() {}
   };
 
-  static scoped_ptr<PluginInstanceThrottler> Create();
+  static std::unique_ptr<PluginInstanceThrottler> Create();
 
   static void RecordUnthrottleMethodMetric(PowerSaverUnthrottleMethod method);
 

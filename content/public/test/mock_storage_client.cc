@@ -4,9 +4,10 @@
 
 #include "content/public/test/mock_storage_client.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"

@@ -5,9 +5,10 @@
 #ifndef CONTENT_TEST_PPAPI_UNITTEST_H_
 #define CONTENT_TEST_PPAPI_UNITTEST_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -45,7 +46,7 @@ class PpapiUnittest : public testing::Test {
   scoped_refptr<PluginModule> module_;
   scoped_refptr<PepperPluginInstanceImpl> instance_;
 
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiUnittest);
 };

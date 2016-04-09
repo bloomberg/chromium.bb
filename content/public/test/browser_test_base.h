@@ -132,10 +132,10 @@ class BrowserTestBase : public testing::Test {
   void ProxyRunTestOnMainThreadLoop();
 
   // Testing server, started on demand.
-  scoped_ptr<net::SpawnedTestServer> spawned_test_server_;
+  std::unique_ptr<net::SpawnedTestServer> spawned_test_server_;
 
   // Embedded test server, cheap to create, started on demand.
-  scoped_ptr<net::EmbeddedTestServer> embedded_test_server_;
+  std::unique_ptr<net::EmbeddedTestServer> embedded_test_server_;
 
   // Host resolver used during tests.
   scoped_refptr<net::RuleBasedHostResolverProc> rule_based_resolver_;

@@ -5,6 +5,7 @@
 #include "content/shell/browser/layout_test/layout_test_bluetooth_chooser_factory.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/render_frame_host.h"
 #include "url/origin.h"
@@ -99,7 +100,7 @@ LayoutTestBluetoothChooserFactory::~LayoutTestBluetoothChooserFactory() {
   SendEvent(BluetoothChooser::Event::CANCELLED, "");
 }
 
-scoped_ptr<BluetoothChooser>
+std::unique_ptr<BluetoothChooser>
 LayoutTestBluetoothChooserFactory::RunBluetoothChooser(
     RenderFrameHost* frame,
     const BluetoothChooser::EventHandler& event_handler) {
@@ -109,7 +110,7 @@ LayoutTestBluetoothChooserFactory::RunBluetoothChooser(
   event += origin.Serialize();
   event += ")";
   events_.push_back(event);
-  return make_scoped_ptr(new Chooser(weak_this_.GetWeakPtr(), event_handler));
+  return base::WrapUnique(new Chooser(weak_this_.GetWeakPtr(), event_handler));
 }
 
 std::vector<std::string>

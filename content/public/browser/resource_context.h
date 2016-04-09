@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
@@ -43,7 +43,7 @@ class CONTENT_EXPORT ResourceContext : public base::SupportsUserData {
   virtual net::URLRequestContext* GetRequestContext() = 0;
 
   // Get platform ClientCertStore. May return nullptr.
-  virtual scoped_ptr<net::ClientCertStore> CreateClientCertStore();
+  virtual std::unique_ptr<net::ClientCertStore> CreateClientCertStore();
 
   // Create a platform KeygenHandler and pass it to |callback|. The |callback|
   // may be run synchronously.
@@ -51,7 +51,8 @@ class CONTENT_EXPORT ResourceContext : public base::SupportsUserData {
       uint32_t key_size_in_bits,
       const std::string& challenge_string,
       const GURL& url,
-      const base::Callback<void(scoped_ptr<net::KeygenHandler>)>& callback);
+      const base::Callback<void(std::unique_ptr<net::KeygenHandler>)>&
+          callback);
 
   // Returns a callback that can be invoked to get a random salt
   // string that is used for creating media device IDs.  The salt

@@ -5,11 +5,11 @@
 #ifndef CONTENT_SHELL_BROWSER_SHELL_CONTENT_BROWSER_CLIENT_H_
 #define CONTENT_SHELL_BROWSER_SHELL_CONTENT_BROWSER_CLIENT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/shell/browser/shell_resource_dispatcher_host_delegate.h"
@@ -51,7 +51,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   void SelectClientCertificate(
       WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
-      scoped_ptr<ClientCertificateDelegate> delegate) override;
+      std::unique_ptr<ClientCertificateDelegate> delegate) override;
 
   SpeechRecognitionManagerDelegate* CreateSpeechRecognitionManagerDelegate()
       override;
@@ -98,7 +98,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
 
  protected:
   void set_resource_dispatcher_host_delegate(
-      scoped_ptr<ShellResourceDispatcherHostDelegate> delegate) {
+      std::unique_ptr<ShellResourceDispatcherHostDelegate> delegate) {
     resource_dispatcher_host_delegate_ = std::move(delegate);
   }
 
@@ -107,8 +107,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   }
 
  private:
-
-  scoped_ptr<ShellResourceDispatcherHostDelegate>
+  std::unique_ptr<ShellResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
 
   base::Closure select_client_certificate_callback_;

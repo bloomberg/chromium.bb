@@ -5,11 +5,11 @@
 #ifndef CONTENT_PUBLIC_BROWSER_PRESENTATION_SERVICE_DELEGATE_H_
 #define CONTENT_PUBLIC_BROWSER_PRESENTATION_SERVICE_DELEGATE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/presentation_session.h"
@@ -186,7 +186,7 @@ class CONTENT_EXPORT PresentationServiceDelegate {
   virtual void SendMessage(int render_process_id,
                            int render_frame_id,
                            const content::PresentationSessionInfo& session,
-                           scoped_ptr<PresentationSessionMessage> message,
+                           std::unique_ptr<PresentationSessionMessage> message,
                            const SendMessageCallback& send_message_cb) = 0;
 
   // Continuously listen for state changes for a PresentationConnection in a

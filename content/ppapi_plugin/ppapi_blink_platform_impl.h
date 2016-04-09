@@ -7,8 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/child/blink_platform_impl.h"
 
@@ -56,7 +57,7 @@ class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
  private:
 #if !defined(OS_ANDROID) && !defined(OS_WIN)
   class SandboxSupport;
-  scoped_ptr<SandboxSupport> sandbox_support_;
+  std::unique_ptr<SandboxSupport> sandbox_support_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PpapiBlinkPlatformImpl);

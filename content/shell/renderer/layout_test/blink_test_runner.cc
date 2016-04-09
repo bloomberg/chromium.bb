@@ -5,9 +5,11 @@
 #include "content/shell/renderer/layout_test/blink_test_runner.h"
 
 #include <stddef.h>
+
 #include <algorithm>
 #include <clocale>
 #include <cmath>
+#include <memory>
 #include <utility>
 
 #include "base/base64.h"
@@ -18,7 +20,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/md5.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -162,7 +164,7 @@ class MockGamepadProvider : public RendererGamepadProvider {
   void SendStopMessage() override {}
 
  private:
-  scoped_ptr<test_runner::GamepadController> controller_;
+  std::unique_ptr<test_runner::GamepadController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MockGamepadProvider);
 };
@@ -228,7 +230,8 @@ void BlinkTestRunner::SetEditCommand(const std::string& name,
 
 void BlinkTestRunner::SetGamepadProvider(
     test_runner::GamepadController* controller) {
-  scoped_ptr<MockGamepadProvider> provider(new MockGamepadProvider(controller));
+  std::unique_ptr<MockGamepadProvider> provider(
+      new MockGamepadProvider(controller));
   SetMockGamepadProvider(std::move(provider));
 }
 
@@ -706,7 +709,7 @@ bool BlinkTestRunner::AddMediaStreamVideoSourceAndTrack(
   DCHECK(stream);
 #if defined(ENABLE_WEBRTC)
   return AddVideoTrackToMediaStream(
-      make_scoped_ptr(new MockVideoCapturerSource()),
+      base::WrapUnique(new MockVideoCapturerSource()),
       false,  // is_remote
       false,  // is_readonly
       stream);

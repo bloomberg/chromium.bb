@@ -5,8 +5,9 @@
 #ifndef CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_BROWSER_MAIN_PARTS_H_
 #define CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_BROWSER_MAIN_PARTS_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
 
@@ -38,7 +39,7 @@ class LayoutTestBrowserMainParts : public ShellBrowserMainParts {
   void InitializeMessageLoopContext() override;
 
 #if defined(ENABLE_PLUGINS)
-  scoped_ptr<ShellPluginServiceFilter> plugin_service_filter_;
+  std::unique_ptr<ShellPluginServiceFilter> plugin_service_filter_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(LayoutTestBrowserMainParts);

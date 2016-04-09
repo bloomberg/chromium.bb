@@ -47,12 +47,13 @@ class LayoutTestNotificationManager : public PlatformNotificationService {
       ResourceContext* resource_context,
       const GURL& origin,
       int render_process_id) override;
-  void DisplayNotification(BrowserContext* browser_context,
-                           const GURL& origin,
-                           const PlatformNotificationData& notification_data,
-                           const NotificationResources& notification_resources,
-                           scoped_ptr<DesktopNotificationDelegate> delegate,
-                           base::Closure* cancel_callback) override;
+  void DisplayNotification(
+      BrowserContext* browser_context,
+      const GURL& origin,
+      const PlatformNotificationData& notification_data,
+      const NotificationResources& notification_resources,
+      std::unique_ptr<DesktopNotificationDelegate> delegate,
+      base::Closure* cancel_callback) override;
   void DisplayPersistentNotification(
       BrowserContext* browser_context,
       int64_t persistent_notification_id,

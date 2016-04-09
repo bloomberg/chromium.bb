@@ -5,9 +5,9 @@
 #ifndef CONTENT_PUBLIC_COMMON_MESSAGE_PORT_TYPES_H_
 #define CONTENT_PUBLIC_COMMON_MESSAGE_PORT_TYPES_H_
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
@@ -21,7 +21,7 @@ namespace content {
 struct CONTENT_EXPORT MessagePortMessage {
   MessagePortMessage();
   explicit MessagePortMessage(const base::string16& message);
-  explicit MessagePortMessage(scoped_ptr<base::Value> message);
+  explicit MessagePortMessage(std::unique_ptr<base::Value> message);
   MessagePortMessage(const MessagePortMessage& other);
   MessagePortMessage& operator=(const MessagePortMessage& other);
   ~MessagePortMessage();

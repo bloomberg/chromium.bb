@@ -5,8 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_FONT_LIST_ASYNC_H_
 #define CONTENT_PUBLIC_BROWSER_FONT_LIST_ASYNC_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
 namespace base {
@@ -23,7 +24,7 @@ namespace content {
 // any thread that has a BrowserThread::ID. The callback will be executed on
 // the calling thread.
 CONTENT_EXPORT void GetFontListAsync(
-    const base::Callback<void(scoped_ptr<base::ListValue>)>& callback);
+    const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback);
 
 }  // namespace content
 

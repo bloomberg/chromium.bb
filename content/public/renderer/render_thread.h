@@ -77,7 +77,7 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
 
   // Asks the host to create a block of shared memory for the renderer.
   // The shared memory allocated by the host is returned back.
-  virtual scoped_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
+  virtual std::unique_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
       size_t buffer_size) = 0;
 
   virtual cc::SharedBitmapManager* GetSharedBitmapManager() = 0;

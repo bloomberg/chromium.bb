@@ -5,11 +5,12 @@
 #ifndef CONTENT_SHELL_BROWSER_SHELL_BROWSER_CONTEXT_H_
 #define CONTENT_SHELL_BROWSER_SHELL_BROWSER_CONTEXT_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
@@ -40,7 +41,7 @@ class ShellBrowserContext : public BrowserContext {
 
   // BrowserContext implementation.
   base::FilePath GetPath() const override;
-  scoped_ptr<ZoomLevelDelegate> CreateZoomLevelDelegate(
+  std::unique_ptr<ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
   bool IsOffTheRecord() const override;
   DownloadManagerDelegate* GetDownloadManagerDelegate() override;
@@ -104,11 +105,11 @@ class ShellBrowserContext : public BrowserContext {
   bool ignore_certificate_errors() const { return ignore_certificate_errors_; }
   net::NetLog* net_log() const { return net_log_; }
 
-  scoped_ptr<ShellResourceContext> resource_context_;
+  std::unique_ptr<ShellResourceContext> resource_context_;
   bool ignore_certificate_errors_;
-  scoped_ptr<ShellDownloadManagerDelegate> download_manager_delegate_;
-  scoped_ptr<PermissionManager> permission_manager_;
-  scoped_ptr<BackgroundSyncController> background_sync_controller_;
+  std::unique_ptr<ShellDownloadManagerDelegate> download_manager_delegate_;
+  std::unique_ptr<PermissionManager> permission_manager_;
+  std::unique_ptr<BackgroundSyncController> background_sync_controller_;
 
  private:
   // Performs initialization of the ShellBrowserContext while IO is still

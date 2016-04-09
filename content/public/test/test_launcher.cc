@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -20,7 +21,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -155,7 +155,7 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
   void GTestCallback(base::TestLauncher* test_launcher,
                      const std::vector<std::string>& test_names,
                      const std::string& test_name,
-                     scoped_ptr<TestState> test_state,
+                     std::unique_ptr<TestState> test_state,
                      int exit_code,
                      const base::TimeDelta& elapsed_time,
                      bool was_timeout,
@@ -352,7 +352,7 @@ void WrapperTestLauncherDelegate::DoRunTests(
   base::TestLauncher::LaunchOptions test_launch_options;
   test_launch_options.flags = base::TestLauncher::USE_JOB_OBJECTS |
                               base::TestLauncher::ALLOW_BREAKAWAY_FROM_JOB;
-  scoped_ptr<TestState> test_state_ptr =
+  std::unique_ptr<TestState> test_state_ptr =
       launcher_delegate_->PreRunTest(&cmd_line, &test_launch_options);
   CHECK(launcher_delegate_->AdjustChildProcessCommandLine(
             &cmd_line, user_data_dir_map_[test_name_no_pre]));
@@ -415,7 +415,7 @@ void WrapperTestLauncherDelegate::GTestCallback(
     base::TestLauncher* test_launcher,
     const std::vector<std::string>& test_names,
     const std::string& test_name,
-    scoped_ptr<TestState> test_state,
+    std::unique_ptr<TestState> test_state,
     int exit_code,
     const base::TimeDelta& elapsed_time,
     bool was_timeout,
@@ -466,7 +466,7 @@ const char kRunManualTestsFlag[] = "run-manual";
 
 const char kSingleProcessTestsFlag[]   = "single_process";
 
-scoped_ptr<TestState> TestLauncherDelegate::PreRunTest(
+std::unique_ptr<TestState> TestLauncherDelegate::PreRunTest(
     base::CommandLine* command_line,
     base::TestLauncher::LaunchOptions* test_launch_options) {
   return nullptr;
@@ -493,7 +493,7 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
     return 0;
   }
 
-  scoped_ptr<ContentMainDelegate> chrome_main_delegate(
+  std::unique_ptr<ContentMainDelegate> chrome_main_delegate(
       launcher_delegate->CreateContentMainDelegate());
   ContentMainParams params(chrome_main_delegate.get());
 

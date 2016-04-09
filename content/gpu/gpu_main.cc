@@ -189,14 +189,14 @@ int GpuMain(const MainFunctionParams& parameters) {
   // We need a UI loop so that we can grab the Expose events. See GLSurfaceGLX
   // and https://crbug.com/326995.
   base::MessageLoop main_message_loop(base::MessageLoop::TYPE_UI);
-  scoped_ptr<ui::PlatformEventSource> event_source =
+  std::unique_ptr<ui::PlatformEventSource> event_source =
       ui::PlatformEventSource::CreateDefault();
 #elif defined(OS_LINUX)
   base::MessageLoop main_message_loop(base::MessageLoop::TYPE_DEFAULT);
 #elif defined(OS_MACOSX)
   // This is necessary for CoreAnimation layers hosted in the GPU process to be
   // drawn. See http://crbug.com/312462.
-  scoped_ptr<base::MessagePump> pump(new base::MessagePumpCFRunLoop());
+  std::unique_ptr<base::MessagePump> pump(new base::MessagePumpCFRunLoop());
   base::MessageLoop main_message_loop(std::move(pump));
 #else
   base::MessageLoop main_message_loop(base::MessageLoop::TYPE_IO);
@@ -379,7 +379,7 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   logging::SetLogMessageHandler(NULL);
 
-  scoped_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory;
+  std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory;
   if (gpu::GetNativeGpuMemoryBufferType() != gfx::EMPTY_BUFFER)
     gpu_memory_buffer_factory = gpu::GpuMemoryBufferFactory::CreateNativeType();
 

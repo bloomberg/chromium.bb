@@ -6,11 +6,12 @@
 #define CONTENT_TEST_TEST_BACKGROUND_SYNC_MANAGER_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 

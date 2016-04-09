@@ -416,7 +416,7 @@ class WebContentsAddedObserver {
   base::Callback<void(WebContents*)> web_contents_created_callback_;
 
   WebContents* web_contents_;
-  scoped_ptr<RenderViewCreatedObserver> child_observer_;
+  std::unique_ptr<RenderViewCreatedObserver> child_observer_;
   scoped_refptr<MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsAddedObserver);
@@ -475,7 +475,7 @@ class MainThreadFrameObserver : public IPC::Listener {
   void Quit();
 
   RenderWidgetHost* render_widget_host_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   int routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MainThreadFrameObserver);

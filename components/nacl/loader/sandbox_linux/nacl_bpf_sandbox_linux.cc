@@ -22,7 +22,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
-
+#include "base/memory/scoped_ptr.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/common/sandbox_init.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"

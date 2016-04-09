@@ -70,8 +70,7 @@ bool ResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
 
 void ResourceDispatcherHostDelegate::OnStreamCreated(
     net::URLRequest* request,
-    scoped_ptr<content::StreamInfo> stream) {
-}
+    std::unique_ptr<content::StreamInfo> stream) {}
 
 void ResourceDispatcherHostDelegate::OnResponseStarted(
     net::URLRequest* request,

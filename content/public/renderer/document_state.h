@@ -5,10 +5,10 @@
 #ifndef CONTENT_PUBLIC_RENDERER_DOCUMENT_STATE_H_
 #define CONTENT_PUBLIC_RENDERER_DOCUMENT_STATE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -239,7 +239,7 @@ class CONTENT_EXPORT DocumentState
 
   LoadType load_type_;
 
-  scoped_ptr<NavigationState> navigation_state_;
+  std::unique_ptr<NavigationState> navigation_state_;
 
   bool can_load_local_resources_;
 };

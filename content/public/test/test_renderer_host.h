@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "content/public/browser/render_frame_host.h"
@@ -179,9 +180,9 @@ class RenderViewHostTestEnabler {
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostTestEnabler);
   friend class RenderViewHostTestHarness;
 
-  scoped_ptr<MockRenderProcessHostFactory> rph_factory_;
-  scoped_ptr<TestRenderViewHostFactory> rvh_factory_;
-  scoped_ptr<TestRenderFrameHostFactory> rfh_factory_;
+  std::unique_ptr<MockRenderProcessHostFactory> rph_factory_;
+  std::unique_ptr<TestRenderViewHostFactory> rvh_factory_;
+  std::unique_ptr<TestRenderFrameHostFactory> rfh_factory_;
 };
 
 // RenderViewHostTestHarness ---------------------------------------------------
@@ -267,18 +268,18 @@ class RenderViewHostTestHarness : public testing::Test {
 
  private:
   int thread_bundle_options_;
-  scoped_ptr<TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
 
-  scoped_ptr<ContentBrowserSanityChecker> sanity_checker_;
+  std::unique_ptr<ContentBrowserSanityChecker> sanity_checker_;
 
-  scoped_ptr<BrowserContext> browser_context_;
+  std::unique_ptr<BrowserContext> browser_context_;
 
-  scoped_ptr<WebContents> contents_;
+  std::unique_ptr<WebContents> contents_;
 #if defined(OS_WIN)
-  scoped_ptr<ui::ScopedOleInitializer> ole_initializer_;
+  std::unique_ptr<ui::ScopedOleInitializer> ole_initializer_;
 #endif
 #if defined(USE_AURA)
-  scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
+  std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
 #endif
   RenderViewHostTestEnabler rvh_test_enabler_;
 

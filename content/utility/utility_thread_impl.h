@@ -5,12 +5,12 @@
 #ifndef CONTENT_UTILITY_UTILITY_THREAD_IMPL_H_
 #define CONTENT_UTILITY_UTILITY_THREAD_IMPL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/content_export.h"
@@ -62,10 +62,10 @@ class UtilityThreadImpl : public UtilityThread,
   // True when we're running in batch mode.
   bool batch_mode_;
 
-  scoped_ptr<UtilityBlinkPlatformImpl> blink_platform_impl_;
+  std::unique_ptr<UtilityBlinkPlatformImpl> blink_platform_impl_;
 
   // Process control for Mojo application hosting.
-  scoped_ptr<UtilityProcessControlImpl> process_control_;
+  std::unique_ptr<UtilityProcessControlImpl> process_control_;
 
   // Bindings to the mojom::ProcessControl impl.
   mojo::BindingSet<mojom::ProcessControl> process_control_bindings_;

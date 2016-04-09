@@ -5,9 +5,10 @@
 #ifndef CONTENT_PUBLIC_BROWSER_STREAM_INFO_H_
 #define CONTENT_PUBLIC_BROWSER_STREAM_INFO_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
@@ -28,7 +29,7 @@ struct CONTENT_EXPORT StreamInfo {
   ~StreamInfo();
 
   // The handle to the stream itself.
-  scoped_ptr<StreamHandle> handle;
+  std::unique_ptr<StreamHandle> handle;
 
   // The original URL being redirected to this stream.
   GURL original_url;

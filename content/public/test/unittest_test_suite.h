@@ -5,8 +5,9 @@
 #ifndef CONTENT_PUBLIC_TEST_UNITTEST_TEST_SUITE_H_
 #define CONTENT_PUBLIC_TEST_UNITTEST_TEST_SUITE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -30,9 +31,9 @@ class UnitTestTestSuite {
   int Run();
 
  private:
-  scoped_ptr<base::TestSuite> test_suite_;
+  std::unique_ptr<base::TestSuite> test_suite_;
 
-  scoped_ptr<TestBlinkWebUnitTestSupport> blink_test_support_;
+  std::unique_ptr<TestBlinkWebUnitTestSupport> blink_test_support_;
 
   DISALLOW_COPY_AND_ASSIGN(UnitTestTestSuite);
 };

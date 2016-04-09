@@ -5,11 +5,12 @@
 #ifndef CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_URL_REQUEST_CONTEXT_GETTER_H_
 #define CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_URL_REQUEST_CONTEXT_GETTER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/shell/browser/shell_url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -44,9 +45,9 @@ class LayoutTestURLRequestContextGetter : public ShellURLRequestContextGetter {
   ~LayoutTestURLRequestContextGetter() override;
 
   // ShellURLRequestContextGetter implementation.
-  scoped_ptr<net::NetworkDelegate> CreateNetworkDelegate() override;
-  scoped_ptr<net::ProxyConfigService> GetProxyConfigService() override;
-  scoped_ptr<net::ProxyService> GetProxyService() override;
+  std::unique_ptr<net::NetworkDelegate> CreateNetworkDelegate() override;
+  std::unique_ptr<net::ProxyConfigService> GetProxyConfigService() override;
+  std::unique_ptr<net::ProxyService> GetProxyService() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayoutTestURLRequestContextGetter);

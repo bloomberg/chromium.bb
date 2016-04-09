@@ -4,11 +4,11 @@
 
 #include "content/public/renderer/media_stream_utils.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/guid.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_audio_source.h"
@@ -25,7 +25,7 @@
 namespace content {
 
 bool AddVideoTrackToMediaStream(
-    scoped_ptr<media::VideoCapturerSource> video_source,
+    std::unique_ptr<media::VideoCapturerSource> video_source,
     bool is_remote,
     bool is_readonly,
     blink::WebMediaStream* web_media_stream) {
@@ -94,7 +94,7 @@ bool AddAudioTrackToMediaStream(
     // TODO(miu): In an upcoming change, a source purposed for passing audio
     // directly (i.e., without modification) will replace this "hacky" use of
     // WebRtcAudioCapturer.  http://crbug.com/577881
-    scoped_ptr<WebRtcAudioCapturer> capturer(
+    std::unique_ptr<WebRtcAudioCapturer> capturer(
         WebRtcAudioCapturer::CreateCapturer(-1, StreamDeviceInfo(), constraints,
                                             nullptr, media_stream_source));
     capturer->SetCapturerSource(std::move(audio_source), params);

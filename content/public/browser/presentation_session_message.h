@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -32,7 +32,7 @@ struct CONTENT_EXPORT PresentationSessionMessage {
   bool is_binary() const;
   const PresentationMessageType type;
   std::string message;
-  scoped_ptr<std::vector<uint8_t>> data;
+  std::unique_ptr<std::vector<uint8_t>> data;
 };
 
 }  // namespace content

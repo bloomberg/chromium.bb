@@ -5,9 +5,10 @@
 #ifndef CONTENT_SHELL_APP_SHELL_MAIN_DELEGATE_H_
 #define CONTENT_SHELL_APP_SHELL_MAIN_DELEGATE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/public/app/content_main_delegate.h"
 
@@ -41,13 +42,13 @@ class ShellMainDelegate : public ContentMainDelegate {
   static void InitializeResourceBundle();
 
  private:
-  scoped_ptr<ShellContentBrowserClient> browser_client_;
-  scoped_ptr<ShellContentRendererClient> renderer_client_;
-  scoped_ptr<ShellContentUtilityClient> utility_client_;
-  scoped_ptr<ContentClient> content_client_;
+  std::unique_ptr<ShellContentBrowserClient> browser_client_;
+  std::unique_ptr<ShellContentRendererClient> renderer_client_;
+  std::unique_ptr<ShellContentUtilityClient> utility_client_;
+  std::unique_ptr<ContentClient> content_client_;
 
 #if defined(OS_ANDROID)
-  scoped_ptr<BrowserMainRunner> browser_runner_;
+  std::unique_ptr<BrowserMainRunner> browser_runner_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ShellMainDelegate);

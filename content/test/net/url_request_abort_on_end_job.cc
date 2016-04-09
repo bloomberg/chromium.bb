@@ -50,7 +50,7 @@ void AddUrlHandlerOnIOThread() {
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
   filter->AddUrlInterceptor(
       GURL(URLRequestAbortOnEndJob::k400AbortOnEndUrl),
-      scoped_ptr<net::URLRequestInterceptor>(new Interceptor()));
+      std::unique_ptr<net::URLRequestInterceptor>(new Interceptor()));
 }
 
 }  // anonymous namespace

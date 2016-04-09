@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/layers/texture_layer.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 
@@ -75,7 +75,7 @@ void FetchManifest(blink::WebView* view, const GURL& url,
                    const FetchManifestCallback&);
 
 // Sets gamepad provider to be used for layout tests.
-void SetMockGamepadProvider(scoped_ptr<RendererGamepadProvider> provider);
+void SetMockGamepadProvider(std::unique_ptr<RendererGamepadProvider> provider);
 
 // Sets a double that should be used when registering
 // a listener through BlinkPlatformImpl::setDeviceLightListener().

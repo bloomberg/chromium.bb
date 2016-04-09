@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -142,7 +142,7 @@ class Shell : public WebContentsDelegate,
   void DidNavigateMainFramePostCommit(WebContents* web_contents) override;
   JavaScriptDialogManager* GetJavaScriptDialogManager(
       WebContents* source) override;
-  scoped_ptr<BluetoothChooser> RunBluetoothChooser(
+  std::unique_ptr<BluetoothChooser> RunBluetoothChooser(
       RenderFrameHost* frame,
       const BluetoothChooser::EventHandler& event_handler) override;
 #if defined(OS_MACOSX)
@@ -228,11 +228,11 @@ class Shell : public WebContentsDelegate,
   void InnerShowDevTools();
   void OnDevToolsWebContentsDestroyed();
 
-  scoped_ptr<ShellJavaScriptDialogManager> dialog_manager_;
+  std::unique_ptr<ShellJavaScriptDialogManager> dialog_manager_;
 
-  scoped_ptr<WebContents> web_contents_;
+  std::unique_ptr<WebContents> web_contents_;
 
-  scoped_ptr<DevToolsWebContentsObserver> devtools_observer_;
+  std::unique_ptr<DevToolsWebContentsObserver> devtools_observer_;
   ShellDevToolsFrontend* devtools_frontend_;
 
   bool is_fullscreen_;

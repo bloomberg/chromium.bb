@@ -397,9 +397,10 @@ void TestNavigationManager::DidStartNavigation(NavigationHandle* handle) {
     return;
 
   handle_ = handle;
-  scoped_ptr<NavigationThrottle> throttle(new TestNavigationManagerThrottle(
-      handle_, base::Bind(&TestNavigationManager::OnWillStartRequest,
-                          weak_factory_.GetWeakPtr())));
+  std::unique_ptr<NavigationThrottle> throttle(
+      new TestNavigationManagerThrottle(
+          handle_, base::Bind(&TestNavigationManager::OnWillStartRequest,
+                              weak_factory_.GetWeakPtr())));
   handle_->RegisterThrottleForTesting(std::move(throttle));
 }
 

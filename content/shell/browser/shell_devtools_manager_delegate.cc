@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -63,12 +64,12 @@ class UnixDomainServerSocketFactory
 
  private:
   // DevToolsHttpHandler::ServerSocketFactory.
-  scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
-    scoped_ptr<net::UnixDomainServerSocket> socket(
+  std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
+    std::unique_ptr<net::UnixDomainServerSocket> socket(
         new net::UnixDomainServerSocket(base::Bind(&CanUserConnectToDevTools),
                                         true /* use_abstract_namespace */));
     if (socket->BindAndListen(socket_name_, kBackLog) != net::OK)
-      return scoped_ptr<net::ServerSocket>();
+      return std::unique_ptr<net::ServerSocket>();
 
     return std::move(socket);
   }
@@ -86,11 +87,11 @@ class TCPServerSocketFactory
 
  private:
   // DevToolsHttpHandler::ServerSocketFactory.
-  scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
-    scoped_ptr<net::ServerSocket> socket(
+  std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
+    std::unique_ptr<net::ServerSocket> socket(
         new net::TCPServerSocket(nullptr, net::NetLog::Source()));
     if (socket->ListenWithAddressAndPort(address_, port_, kBackLog) != net::OK)
-      return scoped_ptr<net::ServerSocket>();
+      return std::unique_ptr<net::ServerSocket>();
 
     return socket;
   }
@@ -102,7 +103,7 @@ class TCPServerSocketFactory
 };
 #endif
 
-scoped_ptr<DevToolsHttpHandler::ServerSocketFactory>
+std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory>
 CreateSocketFactory() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -112,7 +113,7 @@ CreateSocketFactory() {
     socket_name = command_line.GetSwitchValueASCII(
         switches::kRemoteDebuggingSocketName);
   }
-  return scoped_ptr<DevToolsHttpHandler::ServerSocketFactory>(
+  return std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory>(
       new UnixDomainServerSocketFactory(socket_name));
 #else
   // See if the user specified a port on the command line (useful for
@@ -129,18 +130,18 @@ CreateSocketFactory() {
       DLOG(WARNING) << "Invalid http debugger port number " << temp_port;
     }
   }
-  return scoped_ptr<DevToolsHttpHandler::ServerSocketFactory>(
+  return std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory>(
       new TCPServerSocketFactory("127.0.0.1", port));
 #endif
 }
 
-scoped_ptr<devtools_discovery::DevToolsTargetDescriptor>
+std::unique_ptr<devtools_discovery::DevToolsTargetDescriptor>
 CreateNewShellTarget(BrowserContext* browser_context, const GURL& url) {
   Shell* shell = Shell::CreateNewWindow(browser_context,
                                         url,
                                         nullptr,
                                         gfx::Size());
-  return make_scoped_ptr(new devtools_discovery::BasicTargetDescriptor(
+  return base::WrapUnique(new devtools_discovery::BasicTargetDescriptor(
       DevToolsAgentHost::GetOrCreateFor(shell->web_contents())));
 }
 

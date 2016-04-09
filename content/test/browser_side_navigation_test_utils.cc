@@ -35,13 +35,13 @@ class BrowserSideNavigationTestUtils {
   StreamRegistry* stream_registry() { return stream_registry_.get();}
 
  private:
-  scoped_ptr<StreamRegistry> stream_registry_;
-  scoped_ptr<TestNavigationURLLoaderFactory> loader_factory_;
+  std::unique_ptr<StreamRegistry> stream_registry_;
+  std::unique_ptr<TestNavigationURLLoaderFactory> loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserSideNavigationTestUtils);
 };
 
-base::LazyInstance<scoped_ptr<BrowserSideNavigationTestUtils>>
+base::LazyInstance<std::unique_ptr<BrowserSideNavigationTestUtils>>
     browser_side_navigation_test_utils;
 
 }  // namespace
@@ -57,7 +57,7 @@ void BrowserSideNavigationTearDown() {
   browser_side_navigation_test_utils.Get().reset(nullptr);
 }
 
-scoped_ptr<StreamHandle> MakeEmptyStream() {
+std::unique_ptr<StreamHandle> MakeEmptyStream() {
   GURL url(std::string(url::kBlobScheme) + "://" + base::GenerateGUID());
   StreamRegistry* stream_registry =
       browser_side_navigation_test_utils.Get()->stream_registry();

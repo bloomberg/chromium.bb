@@ -26,9 +26,9 @@ namespace {
 // A class that performs file operations and injects errors.
 class DownloadFileWithError: public DownloadFileImpl {
  public:
-  DownloadFileWithError(scoped_ptr<DownloadSaveInfo> save_info,
+  DownloadFileWithError(std::unique_ptr<DownloadSaveInfo> save_info,
                         const base::FilePath& default_download_directory,
-                        scoped_ptr<ByteStreamReader> byte_stream,
+                        std::unique_ptr<ByteStreamReader> byte_stream,
                         const net::BoundNetLog& bound_net_log,
                         base::WeakPtr<DownloadDestinationObserver> observer,
                         const TestFileErrorInjector::FileErrorInfo& error_info,
@@ -95,9 +95,9 @@ static void RenameErrorCallback(
 }
 
 DownloadFileWithError::DownloadFileWithError(
-    scoped_ptr<DownloadSaveInfo> save_info,
+    std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
-    scoped_ptr<ByteStreamReader> byte_stream,
+    std::unique_ptr<ByteStreamReader> byte_stream,
     const net::BoundNetLog& bound_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer,
     const TestFileErrorInjector::FileErrorInfo& error_info,
@@ -249,9 +249,9 @@ class DownloadFileWithErrorFactory : public DownloadFileFactory {
 
   // DownloadFileFactory interface.
   DownloadFile* CreateFile(
-      scoped_ptr<DownloadSaveInfo> save_info,
+      std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
-      scoped_ptr<ByteStreamReader> byte_stream,
+      std::unique_ptr<ByteStreamReader> byte_stream,
       const net::BoundNetLog& bound_net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override;
 
@@ -279,9 +279,9 @@ DownloadFileWithErrorFactory::DownloadFileWithErrorFactory(
 DownloadFileWithErrorFactory::~DownloadFileWithErrorFactory() {}
 
 DownloadFile* DownloadFileWithErrorFactory::CreateFile(
-    scoped_ptr<DownloadSaveInfo> save_info,
+    std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
-    scoped_ptr<ByteStreamReader> byte_stream,
+    std::unique_ptr<ByteStreamReader> byte_stream,
     const net::BoundNetLog& bound_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer) {
   return new DownloadFileWithError(std::move(save_info),
@@ -310,8 +310,7 @@ TestFileErrorInjector::TestFileErrorInjector(DownloadManager* download_manager)
       base::Bind(&TestFileErrorInjector::RecordDownloadFileDestruction, this));
 
   // We will transfer ownership of the factory to the download manager.
-  scoped_ptr<DownloadFileFactory> download_file_factory(
-      created_factory_);
+  std::unique_ptr<DownloadFileFactory> download_file_factory(created_factory_);
 
   download_manager_->SetDownloadFileFactoryForTesting(
       std::move(download_file_factory));

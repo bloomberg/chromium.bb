@@ -5,10 +5,11 @@
 #ifndef CONTENT_SHELL_BROWSER_SHELL_DEVTOOLS_FRONTEND_H_
 #define CONTENT_SHELL_BROWSER_SHELL_DEVTOOLS_FRONTEND_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -72,7 +73,7 @@ class ShellDevToolsFrontend : public WebContentsObserver,
   Shell* frontend_shell_;
   WebContents* inspected_contents_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
-  scoped_ptr<DevToolsFrontendHost> frontend_host_;
+  std::unique_ptr<DevToolsFrontendHost> frontend_host_;
   using PendingRequestsMap = std::map<const net::URLFetcher*, int>;
   PendingRequestsMap pending_requests_;
   base::DictionaryValue preferences_;

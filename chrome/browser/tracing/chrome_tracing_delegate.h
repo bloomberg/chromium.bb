@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_TRACING_CHROME_TRACING_DELEGATE_H_
 #define CHROME_BROWSER_TRACING_CHROME_TRACING_DELEGATE_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "content/public/browser/tracing_delegate.h"
 

@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "crypto/secure_hash.h"
 
@@ -42,7 +43,7 @@ struct CONTENT_EXPORT DownloadSaveInfo {
 
   // The state of the hash. If specified, this hash state must indicate the
   // state of the partial file for the first |offset| bytes.
-  scoped_ptr<crypto::SecureHash> hash_state;
+  std::unique_ptr<crypto::SecureHash> hash_state;
 
   // SHA-256 hash of the first |offset| bytes of the file. Only used if |offset|
   // is non-zero and either |file_path| or |file| specifies the file which

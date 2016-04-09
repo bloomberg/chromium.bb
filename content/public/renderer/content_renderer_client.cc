@@ -167,7 +167,7 @@ void ContentRendererClient::AddKeySystems(
     std::vector<media::KeySystemInfo>* key_systems) {
 }
 
-scoped_ptr<media::RendererFactory>
+std::unique_ptr<media::RendererFactory>
 ContentRendererClient::CreateMediaRendererFactory(
     RenderFrame* render_frame,
     media::GpuVideoAcceleratorFactories* gpu_factories,
@@ -175,7 +175,7 @@ ContentRendererClient::CreateMediaRendererFactory(
   return nullptr;
 }
 
-scoped_ptr<MediaStreamRendererFactory>
+std::unique_ptr<MediaStreamRendererFactory>
 ContentRendererClient::CreateMediaStreamRendererFactory() {
   return nullptr;
 }
@@ -220,7 +220,7 @@ BrowserPluginDelegate* ContentRendererClient::CreateBrowserPluginDelegate(
   return nullptr;
 }
 
-scoped_ptr<blink::WebAppBannerClient>
+std::unique_ptr<blink::WebAppBannerClient>
 ContentRendererClient::CreateAppBannerClient(RenderFrame* render_frame) {
   return nullptr;
 }

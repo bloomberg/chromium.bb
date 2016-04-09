@@ -44,12 +44,12 @@ class RenderThreadImplBrowserIPCTestHelper {
   void SetupIpcThread();
   void SetupMojo();
 
-  scoped_ptr<IPC::ChannelProxy> channel_;
-  scoped_ptr<base::Thread> ipc_thread_;
-  scoped_ptr<base::MessageLoopForIO> message_loop_;
-  scoped_ptr<DummyListener> dummy_listener_;
-  scoped_ptr<IPC::ScopedIPCSupport> ipc_support_;
-  scoped_ptr<MojoApplicationHost> mojo_application_host_;
+  std::unique_ptr<IPC::ChannelProxy> channel_;
+  std::unique_ptr<base::Thread> ipc_thread_;
+  std::unique_ptr<base::MessageLoopForIO> message_loop_;
+  std::unique_ptr<DummyListener> dummy_listener_;
+  std::unique_ptr<IPC::ScopedIPCSupport> ipc_support_;
+  std::unique_ptr<MojoApplicationHost> mojo_application_host_;
   mojo::ScopedMessagePipeHandle message_pipe_handle_;
   std::string channel_id_;
 };

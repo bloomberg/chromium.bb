@@ -263,7 +263,7 @@ ServiceRegistry* MockRenderProcessHost::GetServiceRegistry() {
   return service_registry_.get();
 }
 
-scoped_ptr<base::SharedPersistentMemoryAllocator>
+std::unique_ptr<base::SharedPersistentMemoryAllocator>
 MockRenderProcessHost::TakeMetricsAllocator() {
   return nullptr;
 }

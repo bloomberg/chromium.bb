@@ -4,6 +4,7 @@
 
 #include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -81,7 +82,7 @@ void LayoutTestContentBrowserClient::OverrideWebkitPrefs(
 
 void LayoutTestContentBrowserClient::ResourceDispatcherHostCreated() {
   set_resource_dispatcher_host_delegate(
-      make_scoped_ptr(new LayoutTestResourceDispatcherHostDelegate));
+      base::WrapUnique(new LayoutTestResourceDispatcherHostDelegate));
   ResourceDispatcherHost::Get()->SetDelegate(
       resource_dispatcher_host_delegate());
 }

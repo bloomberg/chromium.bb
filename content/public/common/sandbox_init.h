@@ -5,8 +5,9 @@
 #ifndef CONTENT_PUBLIC_COMMON_SANDBOX_INIT_H_
 #define CONTENT_PUBLIC_COMMON_SANDBOX_INIT_H_
 
+#include <memory>
+
 #include "base/files/scoped_file.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
@@ -97,12 +98,12 @@ class SandboxInitializerDelegate;
 // /proc, |proc_fd| must be a valid file descriptor to /proc/.
 // Returns true if the sandbox has been properly engaged.
 CONTENT_EXPORT bool InitializeSandbox(
-    scoped_ptr<sandbox::bpf_dsl::Policy> policy,
+    std::unique_ptr<sandbox::bpf_dsl::Policy> policy,
     base::ScopedFD proc_fd);
 
 // Return a "baseline" policy. This is used by a SandboxInitializerDelegate to
 // implement a policy that is derived from the baseline.
-CONTENT_EXPORT scoped_ptr<sandbox::bpf_dsl::Policy>
+CONTENT_EXPORT std::unique_ptr<sandbox::bpf_dsl::Policy>
 GetBPFSandboxBaselinePolicy();
 #endif  // defined(OS_LINUX) || defined(OS_NACL_NONSFI)
 

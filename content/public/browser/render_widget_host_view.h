@@ -5,7 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_H_
 #define CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
@@ -153,7 +154,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // |subscriber| is now owned by this object, it will be called only on the
   // UI thread.
   virtual void BeginFrameSubscription(
-      scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) = 0;
+      std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) = 0;
 
   // End subscribing for frame presentation events. FrameSubscriber will be
   // deleted after this call.

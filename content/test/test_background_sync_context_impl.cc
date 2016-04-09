@@ -4,6 +4,7 @@
 
 #include "content/test/test_background_sync_context_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/test/test_background_sync_manager.h"
@@ -17,7 +18,7 @@ void TestBackgroundSyncContextImpl::CreateBackgroundSyncManager(
 
   TestBackgroundSyncManager* manager = new TestBackgroundSyncManager(context);
   set_background_sync_manager_for_testing(
-      make_scoped_ptr<BackgroundSyncManager>(manager));
+      base::WrapUnique<BackgroundSyncManager>(manager));
 }
 
 }  // namespace content

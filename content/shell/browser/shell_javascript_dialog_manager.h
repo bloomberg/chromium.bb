@@ -5,10 +5,11 @@
 #ifndef CONTENT_SHELL_BROWSER_SHELL_JAVASCRIPT_DIALOG_MANAGER_H_
 #define CONTENT_SHELL_BROWSER_SHELL_JAVASCRIPT_DIALOG_MANAGER_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 
@@ -52,7 +53,7 @@ class ShellJavaScriptDialogManager : public JavaScriptDialogManager {
  private:
 #if defined(OS_MACOSX) || defined(OS_WIN)
   // The dialog being shown. No queueing.
-  scoped_ptr<ShellJavaScriptDialog> dialog_;
+  std::unique_ptr<ShellJavaScriptDialog> dialog_;
 #else
   // TODO: implement ShellJavaScriptDialog for other platforms, drop this #if
 #endif

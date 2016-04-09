@@ -9,12 +9,12 @@
 #include <stdint.h>
 #include <wrl.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
@@ -97,7 +97,7 @@ class FakeFontCollection : public base::RefCounted<FakeFontCollection> {
 
     ~ReplySender() override;
 
-    scoped_ptr<IPC::Message>& OnMessageReceived(const IPC::Message& msg);
+    std::unique_ptr<IPC::Message>& OnMessageReceived(const IPC::Message& msg);
 
     bool Send(IPC::Message* msg) override;
 
@@ -114,7 +114,7 @@ class FakeFontCollection : public base::RefCounted<FakeFontCollection> {
 
    private:
     scoped_refptr<FakeFontCollection> collection_;
-    scoped_ptr<IPC::Message> reply_;
+    std::unique_ptr<IPC::Message> reply_;
 
     DISALLOW_COPY_AND_ASSIGN(ReplySender);
   };

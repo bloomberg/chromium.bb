@@ -137,17 +137,17 @@ class InterstitialObserver : public content::WebContentsObserver {
 };
 
 // Specifying a prototype so that we can add the WARN_UNUSED_RESULT attribute.
-bool ExecuteScriptHelper(
-    RenderFrameHost* render_frame_host,
-    const std::string& original_script,
-    scoped_ptr<base::Value>* result) WARN_UNUSED_RESULT;
+bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
+                         const std::string& original_script,
+                         std::unique_ptr<base::Value>* result)
+    WARN_UNUSED_RESULT;
 
 // Executes the passed |original_script| in the frame specified by
 // |render_frame_host|.  If |result| is not NULL, stores the value that the
 // evaluation of the script in |result|.  Returns true on success.
 bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
                          const std::string& original_script,
-                         scoped_ptr<base::Value>* result) {
+                         std::unique_ptr<base::Value>* result) {
   // TODO(jcampan): we should make the domAutomationController not require an
   //                automation id.
   std::string script =
@@ -179,13 +179,13 @@ bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
 bool ExecuteScriptInIsolatedWorldHelper(RenderFrameHost* render_frame_host,
                                         const int world_id,
                                         const std::string& original_script,
-                                        scoped_ptr<base::Value>* result)
+                                        std::unique_ptr<base::Value>* result)
     WARN_UNUSED_RESULT;
 
 bool ExecuteScriptInIsolatedWorldHelper(RenderFrameHost* render_frame_host,
                                         const int world_id,
                                         const std::string& original_script,
-                                        scoped_ptr<base::Value>* result) {
+                                        std::unique_ptr<base::Value>* result) {
   std::string script =
       "window.domAutomationController.setAutomationId(0);" + original_script;
   DOMOperationObserver dom_op_observer(render_frame_host);
@@ -285,13 +285,13 @@ void SetCookieOnIOThread(const GURL& url,
       base::Bind(&SetCookieCallback, result, event));
 }
 
-scoped_ptr<net::test_server::HttpResponse> CrossSiteRedirectResponseHandler(
-    const GURL& server_base_url,
-    const net::test_server::HttpRequest& request) {
+std::unique_ptr<net::test_server::HttpResponse>
+CrossSiteRedirectResponseHandler(const GURL& server_base_url,
+                                 const net::test_server::HttpRequest& request) {
   std::string prefix("/cross-site/");
   if (!base::StartsWith(request.relative_url, prefix,
                         base::CompareCase::SENSITIVE))
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return std::unique_ptr<net::test_server::HttpResponse>();
 
   std::string params = request.relative_url.substr(prefix.length());
 
@@ -299,7 +299,7 @@ scoped_ptr<net::test_server::HttpResponse> CrossSiteRedirectResponseHandler(
   // one '/' character is expected.
   size_t slash = params.find('/');
   if (slash == std::string::npos)
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return std::unique_ptr<net::test_server::HttpResponse>();
 
   // Replace the host of the URL with the one passed in the URL.
   GURL::Replacements replace_host;
@@ -311,7 +311,7 @@ scoped_ptr<net::test_server::HttpResponse> CrossSiteRedirectResponseHandler(
   GURL redirect_target(redirect_server.Resolve(path));
   DCHECK(redirect_target.is_valid());
 
-  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
   http_response->AddCustomHeader("Location", redirect_target.spec());
@@ -663,7 +663,7 @@ bool ExecuteScript(const ToRenderFrameHost& adapter,
 bool ExecuteScriptAndExtractInt(const ToRenderFrameHost& adapter,
                                 const std::string& script, int* result) {
   DCHECK(result);
-  scoped_ptr<base::Value> value;
+  std::unique_ptr<base::Value> value;
   if (!ExecuteScriptHelper(adapter.render_frame_host(), script, &value) ||
       !value.get()) {
     return false;
@@ -675,7 +675,7 @@ bool ExecuteScriptAndExtractInt(const ToRenderFrameHost& adapter,
 bool ExecuteScriptAndExtractBool(const ToRenderFrameHost& adapter,
                                  const std::string& script, bool* result) {
   DCHECK(result);
-  scoped_ptr<base::Value> value;
+  std::unique_ptr<base::Value> value;
   if (!ExecuteScriptHelper(adapter.render_frame_host(), script, &value) ||
       !value.get()) {
     return false;
@@ -690,7 +690,7 @@ bool ExecuteScriptInIsolatedWorldAndExtractBool(
     const std::string& script,
     bool* result) {
   DCHECK(result);
-  scoped_ptr<base::Value> value;
+  std::unique_ptr<base::Value> value;
   if (!ExecuteScriptInIsolatedWorldHelper(adapter.render_frame_host(), world_id,
                                           script, &value) ||
       !value.get()) {
@@ -704,7 +704,7 @@ bool ExecuteScriptAndExtractString(const ToRenderFrameHost& adapter,
                                    const std::string& script,
                                    std::string* result) {
   DCHECK(result);
-  scoped_ptr<base::Value> value;
+  std::unique_ptr<base::Value> value;
   if (!ExecuteScriptHelper(adapter.render_frame_host(), script, &value) ||
       !value.get()) {
     return false;
@@ -1113,7 +1113,7 @@ bool FrameWatcher::OnMessageReceived(const IPC::Message& message) {
     ViewHostMsg_SwapCompositorFrame::Param param;
     if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
       return false;
-    scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+    std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
     base::get<1>(param).AssignTo(frame.get());
 
     BrowserThread::PostTask(
