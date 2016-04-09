@@ -246,7 +246,7 @@ void ShellSurface::Maximize() {
   TRACE_EVENT0("exo", "ShellSurface::Maximize");
 
   if (!widget_)
-    CreateShellSurfaceWidget();
+    CreateShellSurfaceWidget(ui::SHOW_STATE_MAXIMIZED);
 
   // Note: This will ask client to configure its surface even if already
   // maximized.
@@ -270,7 +270,7 @@ void ShellSurface::SetFullscreen(bool fullscreen) {
   TRACE_EVENT1("exo", "ShellSurface::SetFullscreen", "fullscreen", fullscreen);
 
   if (!widget_)
-    CreateShellSurfaceWidget();
+    CreateShellSurfaceWidget(ui::SHOW_STATE_FULLSCREEN);
 
   // Note: This will ask client to configure its surface even if fullscreen
   // state doesn't change.
@@ -365,7 +365,7 @@ void ShellSurface::OnSurfaceCommit() {
   geometry_ = pending_geometry_;
 
   if (enabled() && !widget_)
-    CreateShellSurfaceWidget();
+    CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
 
   // Apply the accumulated pending origin offset to reflect acknowledged
   // configure requests.
@@ -631,7 +631,7 @@ void ShellSurface::OnMouseEvent(ui::MouseEvent* event) {
 ////////////////////////////////////////////////////////////////////////////////
 // ShellSurface, private:
 
-void ShellSurface::CreateShellSurfaceWidget() {
+void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
   DCHECK(enabled());
   DCHECK(!widget_);
 
@@ -641,7 +641,7 @@ void ShellSurface::CreateShellSurfaceWidget() {
   params.delegate = this;
   params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.show_state = ui::SHOW_STATE_NORMAL;
+  params.show_state = show_state;
   params.parent = ash::Shell::GetContainer(
       ash::Shell::GetPrimaryRootWindow(), ash::kShellWindowId_DefaultContainer);
   if (!initial_bounds_.IsEmpty()) {
@@ -672,12 +672,14 @@ void ShellSurface::CreateShellSurfaceWidget() {
   if (parent_)
     wm::AddTransientChild(parent_, widget_->GetNativeWindow());
 
-  // Ash manages the position of a top-level shell surfaces unless
-  // |initial_bounds_| has been set.
-  if (initial_bounds_.IsEmpty()) {
-    ash::wm::GetWindowState(widget_->GetNativeWindow())
-        ->set_window_position_managed(true);
-  }
+  // Allow Ash to manage the position of a top-level shell surfaces if show
+  // state is one that allows auto positioning and |initial_bounds_| has
+  // not been set.
+  ash::wm::GetWindowState(widget_->GetNativeWindow())
+      ->set_window_position_managed(
+          ash::wm::ToWindowShowState(
+              ash::wm::WINDOW_STATE_TYPE_AUTO_POSITIONED) == show_state &&
+          initial_bounds_.IsEmpty());
 }
 
 void ShellSurface::Configure() {

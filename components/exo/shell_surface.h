@@ -183,8 +183,9 @@ class ShellSurface : public SurfaceDelegate,
     int resize_component;
   };
 
-  // Creates the |widget_| for |surface_|.
-  void CreateShellSurfaceWidget();
+  // Creates the |widget_| for |surface_|. |show_state| is the initial state
+  // of the widget (e.g. maximized).
+  void CreateShellSurfaceWidget(ui::WindowShowState show_state);
 
   // Asks the client to configure its surface.
   void Configure();
