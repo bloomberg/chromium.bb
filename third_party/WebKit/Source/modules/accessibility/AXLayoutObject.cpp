@@ -1617,7 +1617,7 @@ AXObject* AXLayoutObject::rawNextSibling() const
         // Case 4: node is an inline with a continuation. Next sibling is the next sibling of the end
         // of the continuation chain.
         nextSibling = endOfContinuations(m_layoutObject)->nextSibling();
-    } else if (isInlineWithContinuation(m_layoutObject->parent())) {
+    } else if (m_layoutObject->parent() && isInlineWithContinuation(m_layoutObject->parent())) {
         // Case 5: node has no next sibling, and its parent is an inline with a continuation.
         LayoutObject* continuation = toLayoutInline(m_layoutObject->parent())->continuation();
 
