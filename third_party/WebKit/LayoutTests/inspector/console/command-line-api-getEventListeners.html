@@ -34,6 +34,7 @@ function listener2()
 
 document.getElementById("inner").addEventListener("keydown", listener1, false);
 document.getElementById("inner").addEventListener("keydown", listener2, true);
+document.getElementById("inner").addEventListener("wheel", listener2, {"passive": true});
 document.getElementById("outer").addEventListener("mousemove", listener1, false);
 document.getElementById("outer").addEventListener("mousedown", listener2, true);
 document.getElementById("outer").addEventListener("keydown", listener2, true);
@@ -82,6 +83,7 @@ function runTestsInPage(getEventListeners)
     var innerListeners = getEventListeners(document.getElementById("inner"));
     dumpObject(innerListeners);
     innerListeners.keydown[0].remove();
+    innerListeners.wheel[0].remove();
     output("- inner after a removal -");
     dumpObject(getEventListeners(document.getElementById("inner")));
     output("- outer -");

@@ -14,6 +14,7 @@ function setupEventListeners()
     div.id = "div-in-iframe";
     div.addEventListener("hover", f, true);
     body.appendChild(div);
+    body.addEventListener("wheel", f, {"passive": true});
 }
 
 function test()

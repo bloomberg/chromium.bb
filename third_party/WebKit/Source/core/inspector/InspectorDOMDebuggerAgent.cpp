@@ -113,7 +113,7 @@ void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(v8::Isolate* isolate
             v8::Local<v8::Object> handler = v8Listener->getListenerObject(executionContext);
             if (handler.IsEmpty())
                 continue;
-            eventInformation.append(V8EventListenerInfo(type, listeners->at(k).useCapture, handler));
+            eventInformation.append(V8EventListenerInfo(type, listeners->at(k).useCapture, listeners->at(k).passive, handler));
         }
     }
 }
@@ -398,6 +398,7 @@ PassOwnPtr<protocol::DOMDebugger::EventListener> InspectorDOMDebuggerAgent::buil
     OwnPtr<protocol::DOMDebugger::EventListener> value = protocol::DOMDebugger::EventListener::create()
         .setType(info.eventType)
         .setUseCapture(info.useCapture)
+        .setPassive(info.passive)
         .setLocation(location.release()).build();
     if (!objectGroupId.isEmpty()) {
         value->setHandler(m_runtimeAgent->wrapObject(context, function, objectGroupId));

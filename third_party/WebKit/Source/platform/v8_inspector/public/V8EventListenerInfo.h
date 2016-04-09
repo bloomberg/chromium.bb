@@ -14,15 +14,17 @@ namespace blink {
 
 class V8EventListenerInfo {
 public:
-    V8EventListenerInfo(const String16& eventType, bool useCapture, v8::Local<v8::Object> handler)
+    V8EventListenerInfo(const String16& eventType, bool useCapture, bool passive, v8::Local<v8::Object> handler)
         : eventType(eventType)
         , useCapture(useCapture)
+        , passive(passive)
         , handler(handler)
     {
     }
 
     const String16 eventType;
     bool useCapture;
+    bool passive;
     v8::Local<v8::Object> handler;
 
 };

@@ -12,6 +12,7 @@ Dumping listeners
 == normal
 [expanded] WindowRemoveevent-listeners-framework-with-service-worker.html:56
     useCapture: false
+    passive: false
     handler: function onload(event) {
   runTest()
 }

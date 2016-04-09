@@ -30,6 +30,9 @@ function setupEventListeners()
     EventListenerImpl.prototype.toString = function() { return "EventListenerImpl"; }
     EventListenerImpl.prototype.handleEvent = function() { console.log("click - document - handleEvent"); }
     new EventListenerImpl();
+    document.body.addEventListener("wheel", f, {"passive": true});
+    document.body.addEventListener("wheel", f, {"passive": true, "capture": true});
+    document.body.removeEventListener("wheel", f, {"passive": true, "capture": true});
 }
 
 function test()

@@ -7,6 +7,7 @@ Inspect Me
 == frameworkInternal
 [expanded] button#inspectedNodeRemoveevent-listener-sidebar-custom-framework.html:23
     useCapture: false
+    passive: false
     handler: function internalHandler(e)
     {
         console.log("I'm internal event handler");
@@ -20,6 +21,7 @@ Inspect Me
 == frameworkUser
 [expanded] button#inspectedNodeevent-listener-sidebar-custom-framework.html:13
     useCapture: true
+    passive: false
     handler: function customFirstEventListener(e)
     {
         console.log("I'm first custom event listener");
@@ -29,6 +31,7 @@ Inspect Me
 == frameworkUser
 [expanded] button#inspectedNodeevent-listener-sidebar-custom-framework.html:18
     useCapture: false
+    passive: false
     handler: function customSecondEventListener(e)
     {
         console.log("I'm second custom event listener");
@@ -39,6 +42,7 @@ Inspect Me
 == normal
 [expanded] button#inspectedNodeRemoveevent-listener-sidebar-custom-framework.html:23
     useCapture: false
+    passive: false
     handler: function internalHandler(e)
     {
         console.log("I'm internal event handler");
@@ -54,7 +58,7 @@ Framework Event Listeners API Errors:
 	internal handler isn't a function or empty
 	internal handler isn't a function or empty
 	fetcher call produced error: Error in getter
-	event listener's type isn't string or empty, event listener's useCapture isn't boolean or undefined, event listener's handler isn't a function or empty
+	event listener's type isn't string or empty, event listener's useCapture isn't boolean or undefined, event listener's passive isn't boolean or undefined, event listener's handler isn't a function or empty
 	Error in getter
 	Error in getter
 	internal handler isn't a function or empty
