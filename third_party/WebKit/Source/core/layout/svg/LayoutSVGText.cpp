@@ -79,6 +79,14 @@ LayoutSVGText::~LayoutSVGText()
     ASSERT(m_layoutAttributes.isEmpty());
 }
 
+void LayoutSVGText::willBeDestroyed()
+{
+    m_layoutAttributes.clear();
+    m_layoutAttributesBuilder.clearTextPositioningElements();
+
+    LayoutSVGBlock::willBeDestroyed();
+}
+
 bool LayoutSVGText::isChildAllowed(LayoutObject* child, const ComputedStyle&) const
 {
     return child->isSVGInline() || (child->isText() && SVGLayoutSupport::isLayoutableTextNode(child));
@@ -123,14 +131,7 @@ void LayoutSVGText::subtreeChildWasAdded()
     // The positioning elements cache depends on the size of each text layoutObject in the
     // subtree. If this changes, clear the cache. It will be rebuilt on the next layout.
     invalidatePositioningValues(LayoutInvalidationReason::ChildChanged);
-}
-
-void LayoutSVGText::willBeDestroyed()
-{
-    m_layoutAttributes.clear();
-    m_layoutAttributesBuilder.clearTextPositioningElements();
-
-    LayoutSVGBlock::willBeDestroyed();
+    setNeedsTextMetricsUpdate();
 }
 
 void LayoutSVGText::subtreeChildWillBeRemoved()
@@ -159,6 +160,7 @@ void LayoutSVGText::subtreeTextDidChange()
     // the subtree. If this changes, clear the cache and mark it for rebuilding
     // in the next layout.
     invalidatePositioningValues(LayoutInvalidationReason::TextChanged);
+    setNeedsTextMetricsUpdate();
 }
 
 static inline void updateFontInAllDescendants(LayoutSVGText& textRoot, SVGTextLayoutAttributesBuilder* builder = nullptr)
