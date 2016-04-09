@@ -32,7 +32,9 @@ _COMMON_CLOSURE_ARGS = _GYPI_DICT["closure_args"] + \
 
 class CompilerTest(unittest.TestCase):
   _ASSERT_DEFINITION = Processor(_ASSERT_JS).contents
-  _CR_DEFINE_DEFINITION = (Processor(_PROMISE_RESOLVER_JS).contents +
+  _PROMISE_RESOLVER_DEFINITION = (_ASSERT_DEFINITION +
+                                  Processor(_PROMISE_RESOLVER_JS).contents)
+  _CR_DEFINE_DEFINITION = (_PROMISE_RESOLVER_DEFINITION +
                            Processor(_CR_JS).contents)
   _CR_UI_DECORATE_DEFINITION = Processor(_CR_UI_JS).contents
 

@@ -60,6 +60,7 @@
     },
     {
       'target_name': 'promise_resolver',
+      'dependencies': ['assert'],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {

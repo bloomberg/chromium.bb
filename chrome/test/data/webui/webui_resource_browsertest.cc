@@ -239,3 +239,9 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, UtilTest) {
   AddLibrary(IDR_WEBUI_JS_UTIL);
   LoadFile(base::FilePath(FILE_PATH_LITERAL("util_test.html")));
 }
+
+IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, PromiseResolverTest) {
+  AddLibrary(IDR_WEBUI_JS_ASSERT);
+  AddLibrary(IDR_WEBUI_JS_PROMISE_RESOLVER);
+  LoadFile(base::FilePath(FILE_PATH_LITERAL("promise_resolver_test.html")));
+}

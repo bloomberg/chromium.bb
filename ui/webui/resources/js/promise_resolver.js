@@ -21,15 +21,29 @@
  * @template T
  */
 function PromiseResolver() {
-  /** @type {function(T): void} */
-  this.resolve;
+  /** @private {function(T): void} */
+  this.resolve_;
 
-  /** @type {function(*=): void} */
-  this.reject;
+  /** @private {function(*=): void} */
+  this.reject_;
 
-  /** @type {!Promise<T>} */
-  this.promise = new Promise(function(resolve, reject) {
-    this.resolve = resolve;
-    this.reject = reject;
+  /** @private {!Promise<T>} */
+  this.promise_ = new Promise(function(resolve, reject) {
+    this.resolve_ = resolve;
+    this.reject_ = reject;
   }.bind(this));
 }
+
+PromiseResolver.prototype = {
+  /** @return {!Promise<T>} */
+  get promise() { return this.promise_; },
+  set promise(p) { assertNotReached(); },
+
+  /** @return {function(T): void} */
+  get resolve() { return this.resolve_; },
+  set resolve(r) { assertNotReached(); },
+
+  /** @return {function(*=): void} */
+  get reject() { return this.reject_; },
+  set reject(s) { assertNotReached(); },
+};
