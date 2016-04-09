@@ -1136,7 +1136,10 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param downloadGuid GUID of the download.
      */
     void cancelDownload(String downloadGuid) {
-        nativeCancelDownload(getNativeDownloadManagerService(), downloadGuid);
+        DownloadProgress progress = mDownloadProgressMap.get(downloadGuid);
+        boolean isOffTheRecord = progress == null
+                ? false : progress.mDownloadItem.getDownloadInfo().isOffTheRecord();
+        nativeCancelDownload(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord);
     }
 
     /**
@@ -1287,6 +1290,6 @@ public class DownloadManagerService extends BroadcastReceiver implements
     private native void nativeResumeDownload(
             long nativeDownloadManagerService, String downloadGuid);
     private native void nativeCancelDownload(
-            long nativeDownloadManagerService, String downloadGuid);
+            long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord);
     private native void nativePauseDownload(long nativeDownloadManagerService, String downloadGuid);
 }

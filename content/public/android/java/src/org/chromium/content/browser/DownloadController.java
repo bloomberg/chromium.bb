@@ -149,7 +149,7 @@ public class DownloadController {
     @CalledByNative
     private void onDownloadInterrupted(String url, String mimeType, String filename, String path,
             long contentLength, int notificationId, String downloadGuid, boolean isResumable,
-            boolean isAutoResumable) {
+            boolean isAutoResumable, boolean isOffTheRecord) {
         if (sDownloadNotificationService == null) return;
         DownloadInfo downloadInfo = new DownloadInfo.Builder()
                 .setUrl(url)
@@ -161,6 +161,7 @@ public class DownloadController {
                 .setNotificationId(notificationId)
                 .setDownloadGuid(downloadGuid)
                 .setIsResumable(isResumable)
+                .setIsOffTheRecord(isOffTheRecord)
                 .build();
         sDownloadNotificationService.onDownloadInterrupted(downloadInfo, isAutoResumable);
     }
@@ -191,7 +192,8 @@ public class DownloadController {
     @CalledByNative
     private void onDownloadUpdated(String url, String mimeType, String filename, String path,
             long contentLength, int notificationId, String downloadGuid, int percentCompleted,
-            long timeRemainingInMs, boolean hasUserGesture, boolean isPaused, boolean isResumable) {
+            long timeRemainingInMs, boolean hasUserGesture, boolean isPaused,
+            boolean isOffTheRecord) {
         if (sDownloadNotificationService == null) return;
         DownloadInfo downloadInfo = new DownloadInfo.Builder()
                 .setUrl(url)
@@ -206,7 +208,8 @@ public class DownloadController {
                 .setTimeRemainingInMillis(timeRemainingInMs)
                 .setHasUserGesture(hasUserGesture)
                 .setIsPaused(isPaused)
-                .setIsResumable(isResumable)
+                .setIsResumable(!isOffTheRecord)
+                .setIsOffTheRecord(isOffTheRecord)
                 .build();
         sDownloadNotificationService.onDownloadUpdated(downloadInfo);
     }

@@ -480,8 +480,7 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
           item->GetReceivedBytes(), item->GetId(), jguid.obj(),
           item->PercentComplete(), time_delta.InMilliseconds(),
           item->HasUserGesture(), item->IsPaused(),
-          // Get all requirements that allows a download to be resumable.
-          !item->GetBrowserContext()->IsOffTheRecord());
+          item->GetBrowserContext()->IsOffTheRecord());
       break;
     }
     case DownloadItem::COMPLETE:
@@ -509,7 +508,8 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
           env, GetJavaObject()->Controller(env).obj(), jurl.obj(),
           jmime_type.obj(), jfilename.obj(), jpath.obj(),
           item->GetReceivedBytes(), item->GetId(), jguid.obj(),
-          item->CanResume(), IsInterruptedDownloadAutoResumable(item));
+          item->CanResume(), IsInterruptedDownloadAutoResumable(item),
+          item->GetBrowserContext()->IsOffTheRecord());
       item->RemoveObserver(this);
       break;
     case DownloadItem::MAX_DOWNLOAD_STATE:

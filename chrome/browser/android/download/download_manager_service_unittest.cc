@@ -27,20 +27,42 @@ class DownloadManagerDelegate;
 struct DownloadCreateInfo;
 }
 
+class MockDownloadManagerService : public DownloadManagerService {
+ public:
+  MockDownloadManagerService()
+     : DownloadManagerService(base::android::AttachCurrentThread(), nullptr) {
+    ON_CALL(manager_, GetDownloadByGuid(_)).WillByDefault(
+        ::testing::Invoke(this,
+                          &MockDownloadManagerService::GetDownloadByGuid));
+  }
+
+  void CreateDownloadItem(bool can_resume) {
+    download_.reset(new content::MockDownloadItem());
+    ON_CALL(*download_, CanResume()).WillByDefault(
+        ::testing::Return(can_resume));
+  }
+
+ protected:
+  content::DownloadItem* GetDownloadByGuid(const std::string&) {
+    return download_.get();
+  }
+
+  content::DownloadManager* GetDownloadManager(
+      bool is_off_the_record) override {
+    return &manager_;
+  }
+
+ private:
+  std::unique_ptr<content::MockDownloadItem> download_;
+  content::MockDownloadManager manager_;
+};
+
 class DownloadManagerServiceTest : public testing::Test {
  public:
   DownloadManagerServiceTest()
-      : service_(
-            new DownloadManagerService(base::android::AttachCurrentThread(),
-                                       nullptr,
-                                       &manager_)),
+      : service_(new MockDownloadManagerService()),
         finished_(false),
-        success_(false) {
-    ON_CALL(manager_, GetDownloadByGuid(_))
-        .WillByDefault(
-            ::testing::Invoke(this,
-                              &DownloadManagerServiceTest::GetDownloadByGuid));
-  }
+        success_(false) {}
 
   void OnResumptionDone(bool success) {
     finished_ = true;
@@ -62,21 +84,9 @@ class DownloadManagerServiceTest : public testing::Test {
       message_loop_.RunUntilIdle();
   }
 
-  void CreateDownloadItem(bool can_resume) {
-    download_.reset(new content::MockDownloadItem());
-    ON_CALL(*download_, CanResume())
-        .WillByDefault(::testing::Return(can_resume));
-  }
-
  protected:
-  content::DownloadItem* GetDownloadByGuid(const std::string&) {
-    return download_.get();
-  }
-
   base::MessageLoop message_loop_;
-  std::unique_ptr<content::MockDownloadItem> download_;
-  content::MockDownloadManager manager_;
-  DownloadManagerService* service_;
+  MockDownloadManagerService* service_;
   bool finished_;
   bool success_;
 
@@ -86,14 +96,14 @@ class DownloadManagerServiceTest : public testing::Test {
 // Test that resumption succeeds if the download item is found and can be
 // resumed.
 TEST_F(DownloadManagerServiceTest, ResumptionWithResumableItem) {
-  CreateDownloadItem(true);
+  service_->CreateDownloadItem(true);
   StartDownload("0000");
   EXPECT_TRUE(success_);
 }
 
 // Test that resumption fails if the target download item is not resumable.
 TEST_F(DownloadManagerServiceTest, ResumptionWithNonResumableItem) {
-  CreateDownloadItem(false);
+  service_->CreateDownloadItem(false);
   StartDownload("0000");
   EXPECT_FALSE(success_);
 }

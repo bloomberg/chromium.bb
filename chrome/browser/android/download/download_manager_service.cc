@@ -28,10 +28,8 @@ bool DownloadManagerService::RegisterDownloadManagerService(JNIEnv* env) {
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  content::DownloadManager* manager =
-      content::BrowserContext::GetDownloadManager(profile);
   DownloadManagerService* service =
-      new DownloadManagerService(env, jobj, manager);
+      new DownloadManagerService(env, jobj);
   DownloadService* download_service =
       DownloadServiceFactory::GetForBrowserContext(profile);
   DownloadHistory* history = download_service->GetDownloadHistory();
@@ -42,20 +40,14 @@ static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
 
 DownloadManagerService::DownloadManagerService(
     JNIEnv* env,
-    jobject obj,
-    content::DownloadManager* manager)
+    jobject obj)
     : java_ref_(env, obj),
-      manager_(manager),
       is_history_query_complete_(false) {
   content::DownloadControllerAndroid::Get()->SetDefaultDownloadFileName(
       l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME));
-  manager_->AddObserver(this);
 }
 
-DownloadManagerService::~DownloadManagerService() {
-  if (manager_)
-    manager_->RemoveObserver(this);
-}
+DownloadManagerService::~DownloadManagerService() {}
 
 void DownloadManagerService::ResumeDownload(
     JNIEnv* env,
@@ -82,17 +74,20 @@ void DownloadManagerService::PauseDownload(
 void DownloadManagerService::CancelDownload(
     JNIEnv* env,
     jobject obj,
-    const JavaParamRef<jstring>& jdownload_guid) {
+    const JavaParamRef<jstring>& jdownload_guid,
+    bool is_off_the_record) {
   std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
+  // Incognito download can only be cancelled in the same browser session, no
+  // need to wait for download history.
+  if (is_off_the_record) {
+    CancelDownloadInternal(download_guid, true);
+    return;
+  }
+
   if (is_history_query_complete_)
-    CancelDownloadInternal(download_guid);
+    CancelDownloadInternal(download_guid, false);
   else
     EnqueueDownloadAction(download_guid, CANCEL);
-}
-
-void DownloadManagerService::ManagerGoingDown(
-    content::DownloadManager* manager) {
-  manager_ = nullptr;
 }
 
 void DownloadManagerService::OnHistoryQueryComplete() {
@@ -109,7 +104,7 @@ void DownloadManagerService::OnHistoryQueryComplete() {
         PauseDownloadInternal(download_guid);
         break;
       case CANCEL:
-        CancelDownloadInternal(download_guid);
+        CancelDownloadInternal(download_guid, false);
         break;
       default:
         NOTREACHED();
@@ -121,11 +116,12 @@ void DownloadManagerService::OnHistoryQueryComplete() {
 
 void DownloadManagerService::ResumeDownloadInternal(
     const std::string& download_guid) {
-  if (!manager_) {
+  content::DownloadManager* manager = GetDownloadManager(false);
+  if (!manager) {
     OnResumptionFailed(download_guid);
     return;
   }
-  content::DownloadItem* item = manager_->GetDownloadByGuid(download_guid);
+  content::DownloadItem* item = manager->GetDownloadByGuid(download_guid);
   if (!item) {
     OnResumptionFailed(download_guid);
     return;
@@ -141,10 +137,11 @@ void DownloadManagerService::ResumeDownloadInternal(
 }
 
 void DownloadManagerService::CancelDownloadInternal(
-    const std::string& download_guid) {
-  if (!manager_)
+    const std::string& download_guid, bool is_off_the_record) {
+  content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
+  if (!manager)
     return;
-  content::DownloadItem* item = manager_->GetDownloadByGuid(download_guid);
+  content::DownloadItem* item = manager->GetDownloadByGuid(download_guid);
   if (item) {
     item->Cancel(true);
     item->RemoveObserver(content::DownloadControllerAndroid::Get());
@@ -153,9 +150,10 @@ void DownloadManagerService::CancelDownloadInternal(
 
 void DownloadManagerService::PauseDownloadInternal(
     const std::string& download_guid) {
-  if (!manager_)
+  content::DownloadManager* manager = GetDownloadManager(false);
+  if (!manager)
     return;
-  content::DownloadItem* item = manager_->GetDownloadByGuid(download_guid);
+  content::DownloadItem* item = manager->GetDownloadByGuid(download_guid);
   if (item)
     item->Pause();
   item->RemoveObserver(content::DownloadControllerAndroid::Get());
@@ -204,4 +202,12 @@ void DownloadManagerService::OnResumptionFailedInternal(
   }
   if (!resume_callback_for_testing_.is_null())
     resume_callback_for_testing_.Run(false);
+}
+
+content::DownloadManager* DownloadManagerService::GetDownloadManager(
+    bool is_off_the_record) {
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  if (is_off_the_record)
+    profile = profile->GetOffTheRecordProfile();
+  return content::BrowserContext::GetDownloadManager(profile);
 }

@@ -23,15 +23,13 @@ class DownloadItem;
 
 // Native side of DownloadManagerService.java. The native object is owned by its
 // Java object.
-class DownloadManagerService : public content::DownloadManager::Observer,
-                               public DownloadHistory::Observer {
+class DownloadManagerService : public DownloadHistory::Observer {
  public:
   // JNI registration.
   static bool RegisterDownloadManagerService(JNIEnv* env);
 
   DownloadManagerService(JNIEnv* env,
-                         jobject jobj,
-                         content::DownloadManager* manager);
+                         jobject jobj);
   ~DownloadManagerService() override;
 
   // Called to resume downloading the item that has GUID equal to
@@ -44,7 +42,8 @@ class DownloadManagerService : public content::DownloadManager::Observer,
   // If the DownloadItem is not yet created, retry after a while.
   void CancelDownload(JNIEnv* env,
                       jobject obj,
-                      const JavaParamRef<jstring>& jdownload_guid);
+                      const JavaParamRef<jstring>& jdownload_guid,
+                      bool is_off_the_record);
 
   // Called to pause a download item that has GUID equal to |jdownload_guid|.
   // If the DownloadItem is not yet created, do nothing as it is already paused.
@@ -52,11 +51,12 @@ class DownloadManagerService : public content::DownloadManager::Observer,
                      jobject obj,
                      const JavaParamRef<jstring>& jdownload_guid);
 
-  // content::DownloadManager::Observer methods.
-  void ManagerGoingDown(content::DownloadManager* manager) override;
-
   // DownloadHistory::Observer methods.
   void OnHistoryQueryComplete() override;
+
+ protected:
+  // Called to get the content::DownloadManager instance.
+  virtual content::DownloadManager* GetDownloadManager(bool is_off_the_record);
 
  private:
   // For testing.
@@ -66,7 +66,8 @@ class DownloadManagerService : public content::DownloadManager::Observer,
   void ResumeDownloadInternal(const std::string& download_guid);
 
   // Helper function to cancel a download.
-  void CancelDownloadInternal(const std::string& download_guid);
+  void CancelDownloadInternal(const std::string& download_guid,
+                              bool is_off_the_record);
 
   // Helper function to pause a download.
   void PauseDownloadInternal(const std::string& download_guid);
@@ -83,9 +84,6 @@ class DownloadManagerService : public content::DownloadManager::Observer,
 
   // Reference to the Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
-
-  // Download manager this class observes
-  content::DownloadManager* manager_;
 
   bool is_history_query_complete_;
 

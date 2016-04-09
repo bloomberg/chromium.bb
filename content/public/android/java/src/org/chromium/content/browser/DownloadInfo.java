@@ -27,6 +27,7 @@ public final class DownloadInfo {
     private final long mTimeRemainingInMillis;
     private final boolean mIsResumable;
     private final boolean mIsPaused;
+    private final boolean mIsOffTheRecord;
 
     private DownloadInfo(Builder builder) {
         mUrl = builder.mUrl;
@@ -48,6 +49,7 @@ public final class DownloadInfo {
         mTimeRemainingInMillis = builder.mTimeRemainingInMillis;
         mIsResumable = builder.mIsResumable;
         mIsPaused = builder.mIsPaused;
+        mIsOffTheRecord = builder.mIsOffTheRecord;
     }
 
     public String getUrl() {
@@ -129,6 +131,10 @@ public final class DownloadInfo {
         return mIsPaused;
     }
 
+    public boolean isOffTheRecord() {
+        return mIsOffTheRecord;
+    }
+
     /**
      * Helper class for building the DownloadInfo object.
      */
@@ -151,7 +157,8 @@ public final class DownloadInfo {
         private int mPercentCompleted = -1;
         private long mTimeRemainingInMillis;
         private boolean mIsResumable = true;
-        private boolean mIsPaused = false;
+        private boolean mIsPaused;
+        private boolean mIsOffTheRecord;
 
         public Builder setUrl(String url) {
             mUrl = url;
@@ -249,6 +256,11 @@ public final class DownloadInfo {
             return this;
         }
 
+        public Builder setIsOffTheRecord(boolean isOffTheRecord) {
+            mIsOffTheRecord = isOffTheRecord;
+            return this;
+        }
+
         public DownloadInfo build() {
             return new DownloadInfo(this);
         }
@@ -278,7 +290,8 @@ public final class DownloadInfo {
                     .setPercentCompleted(downloadInfo.getPercentCompleted())
                     .setTimeRemainingInMillis(downloadInfo.getTimeRemainingInMillis())
                     .setIsResumable(downloadInfo.isResumable())
-                    .setIsPaused(downloadInfo.isPaused());
+                    .setIsPaused(downloadInfo.isPaused())
+                    .setIsOffTheRecord(downloadInfo.isOffTheRecord());
             return builder;
         }
 
