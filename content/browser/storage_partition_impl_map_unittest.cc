@@ -69,7 +69,7 @@ TEST(StoragePartitionImplMapTest, GarbageCollect) {
   base::MessageLoop message_loop;
   StoragePartitionImplMap storage_partition_impl_map(&browser_context);
 
-  scoped_ptr<base::hash_set<base::FilePath> > active_paths(
+  std::unique_ptr<base::hash_set<base::FilePath>> active_paths(
       new base::hash_set<base::FilePath>);
 
   base::FilePath active_path = browser_context.GetPath().Append(

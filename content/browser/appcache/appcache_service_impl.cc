@@ -294,7 +294,7 @@ class AppCacheServiceImpl::CheckResponseHelper : AsyncHelper {
   // Internals used to perform the checks.
   const int kIOBufferSize;
   scoped_refptr<AppCache> cache_;
-  scoped_ptr<AppCacheResponseReader> response_reader_;
+  std::unique_ptr<AppCacheResponseReader> response_reader_;
   scoped_refptr<HttpResponseInfoIOBuffer> info_buffer_;
   scoped_refptr<net::IOBuffer> data_buffer_;
   int64_t expected_total_size_;
@@ -389,7 +389,7 @@ void AppCacheServiceImpl::CheckResponseHelper::OnReadDataComplete(int result) {
 // AppCacheStorageReference ------
 
 AppCacheStorageReference::AppCacheStorageReference(
-    scoped_ptr<AppCacheStorage> storage)
+    std::unique_ptr<AppCacheStorage> storage)
     : storage_(std::move(storage)) {}
 AppCacheStorageReference::~AppCacheStorageReference() {}
 

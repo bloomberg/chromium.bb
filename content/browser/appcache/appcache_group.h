@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -15,7 +16,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -181,7 +181,7 @@ class CONTENT_EXPORT AppCacheGroup
   QueuedUpdates queued_updates_;
   base::ObserverList<UpdateObserver> queued_observers_;
   base::CancelableClosure restart_update_task_;
-  scoped_ptr<HostObserver> host_observer_;
+  std::unique_ptr<HostObserver> host_observer_;
 
   // True if we're in our destructor.
   bool is_in_dtor_;

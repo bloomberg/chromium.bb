@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_CHROMEOS_H_
 #define CONTENT_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_CHROMEOS_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/geolocation/wifi_data_provider.h"
 #include "content/browser/geolocation/wifi_polling_policy.h"
 
@@ -47,7 +48,7 @@ class CONTENT_EXPORT WifiDataProviderChromeOs : public WifiDataProvider {
   bool GetAccessPointData(WifiData::AccessPointDataSet* data);
 
   // Controls the polling update interval. (client thread)
-  scoped_ptr<WifiPollingPolicy> polling_policy_;
+  std::unique_ptr<WifiPollingPolicy> polling_policy_;
 
   // The latest wifi data. (client thread)
   WifiData wifi_data_;

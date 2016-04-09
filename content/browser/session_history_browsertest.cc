@@ -27,14 +27,14 @@ namespace content {
 namespace {
 
 // Handles |request| by serving a response with title set to request contents.
-scoped_ptr<net::test_server::HttpResponse> HandleEchoTitleRequest(
+std::unique_ptr<net::test_server::HttpResponse> HandleEchoTitleRequest(
     const std::string& echotitle_path,
     const net::test_server::HttpRequest& request) {
   if (!base::StartsWith(request.relative_url, echotitle_path,
                         base::CompareCase::SENSITIVE))
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return std::unique_ptr<net::test_server::HttpResponse>();
 
-  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_OK);
   http_response->set_content(

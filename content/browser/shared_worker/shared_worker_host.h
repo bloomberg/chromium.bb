@@ -6,10 +6,10 @@
 #define CONTENT_BROWSER_SHARED_WORKER_SHARED_WORKER_HOST_H_
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -62,7 +62,8 @@ class SharedWorkerHost {
   void WorkerScriptLoadFailed();
   void WorkerConnected(int message_port_id);
   void WorkerContextDestroyed();
-  void AllowFileSystem(const GURL& url, scoped_ptr<IPC::Message> reply_msg);
+  void AllowFileSystem(const GURL& url,
+                       std::unique_ptr<IPC::Message> reply_msg);
   void AllowIndexedDB(const GURL& url,
                       const base::string16& name,
                       bool* result);
@@ -115,9 +116,9 @@ class SharedWorkerHost {
   void SetMessagePortID(SharedWorkerMessageFilter* filter,
                         int route_id,
                         int message_port_id);
-  void AllowFileSystemResponse(scoped_ptr<IPC::Message> reply_msg,
+  void AllowFileSystemResponse(std::unique_ptr<IPC::Message> reply_msg,
                                bool allowed);
-  scoped_ptr<SharedWorkerInstance> instance_;
+  std::unique_ptr<SharedWorkerInstance> instance_;
   scoped_refptr<WorkerDocumentSet> worker_document_set_;
   FilterList filters_;
   SharedWorkerMessageFilter* container_render_filter_;

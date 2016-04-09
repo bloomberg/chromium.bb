@@ -4,7 +4,8 @@
 
 #include "content/browser/browser_main.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/trace_event/trace_event.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -36,7 +37,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventBrowserProcessSortIndex);
 
-  scoped_ptr<BrowserMainRunner> main_runner(BrowserMainRunner::Create());
+  std::unique_ptr<BrowserMainRunner> main_runner(BrowserMainRunner::Create());
 
   int exit_code = main_runner->Initialize(parameters);
   if (exit_code >= 0)

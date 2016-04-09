@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "content/browser/android/java/gin_java_bound_object_delegate.h"
 #include "content/browser/android/java/gin_java_bridge_message_filter.h"
@@ -334,14 +335,13 @@ void GinJavaBridgeDispatcherHost::OnInvokeMethod(
   }
   scoped_refptr<GinJavaMethodInvocationHelper> result =
       new GinJavaMethodInvocationHelper(
-          make_scoped_ptr(new GinJavaBoundObjectDelegate(object)),
-          method_name,
+          base::WrapUnique(new GinJavaBoundObjectDelegate(object)), method_name,
           arguments);
   result->Init(this);
   result->Invoke();
   *error_code = result->GetInvocationError();
   if (result->HoldsPrimitiveResult()) {
-    scoped_ptr<base::ListValue> result_copy(
+    std::unique_ptr<base::ListValue> result_copy(
         result->GetPrimitiveResult().DeepCopy());
     wrapped_result->Swap(result_copy.get());
   } else if (!result->GetObjectResult().is_null()) {

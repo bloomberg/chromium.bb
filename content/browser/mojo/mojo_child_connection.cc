@@ -31,20 +31,21 @@ const char kMojoRenderProcessHostConnection[] =
 
 class RenderProcessHostConnection : public base::SupportsUserData::Data {
  public:
-  explicit RenderProcessHostConnection(scoped_ptr<mojo::Connection> connection)
+  explicit RenderProcessHostConnection(
+      std::unique_ptr<mojo::Connection> connection)
       : connection_(std::move(connection)) {}
   ~RenderProcessHostConnection() override {}
 
   mojo::Connection* get() const { return connection_.get(); }
 
  private:
-  scoped_ptr<mojo::Connection> connection_;
+  std::unique_ptr<mojo::Connection> connection_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostConnection);
 };
 
 void SetMojoConnection(RenderProcessHost* render_process_host,
-                       scoped_ptr<mojo::Connection> connection) {
+                       std::unique_ptr<mojo::Connection> connection) {
   render_process_host->SetUserData(
       kMojoRenderProcessHostConnection,
       new RenderProcessHostConnection(std::move(connection)));
@@ -117,7 +118,7 @@ std::string MojoConnectToChild(int child_process_id,
   mojo::Connector::ConnectParams params(target);
   params.set_client_process_connection(std::move(client),
                                        std::move(pid_receiver_request));
-  scoped_ptr<mojo::Connection> connection =
+  std::unique_ptr<mojo::Connection> connection =
       MojoShellConnection::Get()->GetConnector()->Connect(&params);
 
   // Store the connection on the RPH so client code can access it later via

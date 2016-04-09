@@ -5,6 +5,8 @@
 #include "content/browser/appcache/appcache_storage_impl.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <stack>
 #include <utility>
 
@@ -15,7 +17,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"
@@ -133,7 +135,7 @@ class MockHttpServerJobFactory
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   MockHttpServerJobFactory(
-      scoped_ptr<net::URLRequestInterceptor> appcache_start_interceptor)
+      std::unique_ptr<net::URLRequestInterceptor> appcache_start_interceptor)
       : appcache_start_interceptor_(std::move(appcache_start_interceptor)) {}
 
   net::URLRequestJob* MaybeCreateJob(
@@ -147,7 +149,7 @@ class MockHttpServerJobFactory
     return MockHttpServer::CreateJob(request, network_delegate);
   }
  private:
-  scoped_ptr<net::URLRequestInterceptor> appcache_start_interceptor_;
+  std::unique_ptr<net::URLRequestInterceptor> appcache_start_interceptor_;
 };
 
 class IOThread : public base::Thread {
@@ -163,11 +165,11 @@ class IOThread : public base::Thread {
   }
 
   void Init() override {
-    scoped_ptr<net::URLRequestJobFactoryImpl> factory(
+    std::unique_ptr<net::URLRequestJobFactoryImpl> factory(
         new net::URLRequestJobFactoryImpl());
     factory->SetProtocolHandler(
-        "http", make_scoped_ptr(new MockHttpServerJobFactory(
-                    make_scoped_ptr(new AppCacheInterceptor()))));
+        "http", base::WrapUnique(new MockHttpServerJobFactory(
+                    base::WrapUnique(new AppCacheInterceptor()))));
     job_factory_ = std::move(factory);
     request_context_.reset(new net::TestURLRequestContext());
     request_context_->set_job_factory(job_factory_.get());
@@ -179,12 +181,12 @@ class IOThread : public base::Thread {
   }
 
  private:
-  scoped_ptr<net::URLRequestJobFactory> job_factory_;
-  scoped_ptr<net::URLRequestContext> request_context_;
+  std::unique_ptr<net::URLRequestJobFactory> job_factory_;
+  std::unique_ptr<net::URLRequestContext> request_context_;
 };
 
-scoped_ptr<IOThread> io_thread;
-scoped_ptr<base::Thread> db_thread;
+std::unique_ptr<IOThread> io_thread;
+std::unique_ptr<base::Thread> db_thread;
 
 }  // namespace
 
@@ -1879,10 +1881,10 @@ class AppCacheStorageImplTest : public testing::Test {
 
   // Data members --------------------------------------------------
 
-  scoped_ptr<base::WaitableEvent> test_finished_event_;
+  std::unique_ptr<base::WaitableEvent> test_finished_event_;
   std::stack<base::Closure> task_stack_;
-  scoped_ptr<AppCacheServiceImpl> service_;
-  scoped_ptr<MockStorageDelegate> delegate_;
+  std::unique_ptr<AppCacheServiceImpl> service_;
+  std::unique_ptr<MockStorageDelegate> delegate_;
   scoped_refptr<MockQuotaManagerProxy> mock_quota_manager_proxy_;
   scoped_refptr<AppCacheGroup> group_;
   scoped_refptr<AppCache> cache_;
@@ -1890,11 +1892,11 @@ class AppCacheStorageImplTest : public testing::Test {
 
   // Specifically for the Reinitalize test.
   base::ScopedTempDir temp_directory_;
-  scoped_ptr<MockServiceObserver> observer_;
+  std::unique_ptr<MockServiceObserver> observer_;
   MockAppCacheFrontend frontend_;
-  scoped_ptr<AppCacheBackendImpl> backend_;
+  std::unique_ptr<AppCacheBackendImpl> backend_;
   net::TestDelegate request_delegate_;
-  scoped_ptr<net::URLRequest> request_;
+  std::unique_ptr<net::URLRequest> request_;
 };
 
 

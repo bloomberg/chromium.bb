@@ -48,7 +48,7 @@ class CONTENT_EXPORT StreamURLRequestJob
   bool headers_set_;
   scoped_refptr<net::IOBuffer> pending_buffer_;
   int pending_buffer_size_;
-  scoped_ptr<net::HttpResponseInfo> response_info_;
+  std::unique_ptr<net::HttpResponseInfo> response_info_;
 
   int total_bytes_read_;
   int max_range_;

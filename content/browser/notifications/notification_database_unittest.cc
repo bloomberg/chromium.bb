@@ -97,7 +97,7 @@ class NotificationDatabaseTest : public ::testing::Test {
 };
 
 TEST_F(NotificationDatabaseTest, OpenCloseMemory) {
-  scoped_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
 
   // Should return false because the database does not exist in memory.
   EXPECT_EQ(NotificationDatabase::STATUS_ERROR_NOT_FOUND,
@@ -121,7 +121,7 @@ TEST_F(NotificationDatabaseTest, OpenCloseFileSystem) {
   base::ScopedTempDir database_dir;
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());
 
-  scoped_ptr<NotificationDatabase> database(
+  std::unique_ptr<NotificationDatabase> database(
       CreateDatabaseOnFileSystem(database_dir.path()));
 
   // Should return false because the database does not exist on the file system.
@@ -146,7 +146,7 @@ TEST_F(NotificationDatabaseTest, DestroyDatabase) {
   base::ScopedTempDir database_dir;
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());
 
-  scoped_ptr<NotificationDatabase> database(
+  std::unique_ptr<NotificationDatabase> database(
       CreateDatabaseOnFileSystem(database_dir.path()));
 
   EXPECT_EQ(NotificationDatabase::STATUS_OK,
@@ -168,7 +168,7 @@ TEST_F(NotificationDatabaseTest, NotificationIdIncrements) {
   base::ScopedTempDir database_dir;
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());
 
-  scoped_ptr<NotificationDatabase> database(
+  std::unique_ptr<NotificationDatabase> database(
       CreateDatabaseOnFileSystem(database_dir.path()));
 
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
@@ -200,7 +200,7 @@ TEST_F(NotificationDatabaseTest, NotificationIdIncrements) {
 }
 
 TEST_F(NotificationDatabaseTest, NotificationIdIncrementsStorage) {
-  scoped_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->Open(true /* create_if_missing */));
 
@@ -225,7 +225,7 @@ TEST_F(NotificationDatabaseTest, NotificationIdCorruption) {
   base::ScopedTempDir database_dir;
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());
 
-  scoped_ptr<NotificationDatabase> database(
+  std::unique_ptr<NotificationDatabase> database(
       CreateDatabaseOnFileSystem(database_dir.path()));
 
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
@@ -253,7 +253,7 @@ TEST_F(NotificationDatabaseTest, NotificationIdCorruption) {
 }
 
 TEST_F(NotificationDatabaseTest, ReadInvalidNotificationData) {
-  scoped_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->Open(true /* create_if_missing */));
 
@@ -267,7 +267,7 @@ TEST_F(NotificationDatabaseTest, ReadInvalidNotificationData) {
 }
 
 TEST_F(NotificationDatabaseTest, ReadNotificationDataDifferentOrigin) {
-  scoped_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->Open(true /* create_if_missing */));
 
@@ -299,7 +299,7 @@ TEST_F(NotificationDatabaseTest, ReadNotificationDataDifferentOrigin) {
 }
 
 TEST_F(NotificationDatabaseTest, ReadNotificationDataReflection) {
-  scoped_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->Open(true /* create_if_missing */));
 
@@ -356,7 +356,7 @@ TEST_F(NotificationDatabaseTest, ReadNotificationDataReflection) {
 }
 
 TEST_F(NotificationDatabaseTest, ReadWriteMultipleNotificationData) {
-  scoped_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->Open(true /* create_if_missing */));
 
@@ -385,7 +385,7 @@ TEST_F(NotificationDatabaseTest, ReadWriteMultipleNotificationData) {
 }
 
 TEST_F(NotificationDatabaseTest, DeleteInvalidNotificationData) {
-  scoped_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->Open(true /* create_if_missing */));
 
@@ -395,7 +395,7 @@ TEST_F(NotificationDatabaseTest, DeleteInvalidNotificationData) {
 }
 
 TEST_F(NotificationDatabaseTest, DeleteNotificationDataSameOrigin) {
-  scoped_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->Open(true /* create_if_missing */));
 
@@ -423,7 +423,7 @@ TEST_F(NotificationDatabaseTest, DeleteNotificationDataSameOrigin) {
 }
 
 TEST_F(NotificationDatabaseTest, DeleteNotificationDataDifferentOrigin) {
-  scoped_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->Open(true /* create_if_missing */));
 
@@ -450,7 +450,7 @@ TEST_F(NotificationDatabaseTest, DeleteNotificationDataDifferentOrigin) {
 }
 
 TEST_F(NotificationDatabaseTest, ReadAllNotificationData) {
-  scoped_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->Open(true /* create_if_missing */));
 
@@ -464,7 +464,7 @@ TEST_F(NotificationDatabaseTest, ReadAllNotificationData) {
 }
 
 TEST_F(NotificationDatabaseTest, ReadAllNotificationDataEmpty) {
-  scoped_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->Open(true /* create_if_missing */));
 
@@ -476,7 +476,7 @@ TEST_F(NotificationDatabaseTest, ReadAllNotificationDataEmpty) {
 }
 
 TEST_F(NotificationDatabaseTest, ReadAllNotificationDataForOrigin) {
-  scoped_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->Open(true /* create_if_missing */));
 
@@ -493,7 +493,7 @@ TEST_F(NotificationDatabaseTest, ReadAllNotificationDataForOrigin) {
 
 TEST_F(NotificationDatabaseTest,
        ReadAllNotificationDataForServiceWorkerRegistration) {
-  scoped_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->Open(true /* create_if_missing */));
 
@@ -510,7 +510,7 @@ TEST_F(NotificationDatabaseTest,
 }
 
 TEST_F(NotificationDatabaseTest, DeleteAllNotificationDataForOrigin) {
-  scoped_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->Open(true /* create_if_missing */));
 
@@ -533,7 +533,7 @@ TEST_F(NotificationDatabaseTest, DeleteAllNotificationDataForOrigin) {
 }
 
 TEST_F(NotificationDatabaseTest, DeleteAllNotificationDataForOriginEmpty) {
-  scoped_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->Open(true /* create_if_missing */));
 
@@ -549,7 +549,7 @@ TEST_F(NotificationDatabaseTest, DeleteAllNotificationDataForOriginEmpty) {
 
 TEST_F(NotificationDatabaseTest,
        DeleteAllNotificationDataForServiceWorkerRegistration) {
-  scoped_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->Open(true /* create_if_missing */));
 

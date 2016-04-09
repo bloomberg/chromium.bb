@@ -27,7 +27,7 @@ GamepadService::GamepadService()
   SetInstance(this);
 }
 
-GamepadService::GamepadService(scoped_ptr<GamepadDataFetcher> fetcher)
+GamepadService::GamepadService(std::unique_ptr<GamepadDataFetcher> fetcher)
     : provider_(new GamepadProvider(std::move(fetcher))),
       num_active_consumers_(0),
       gesture_callback_pending_(false) {

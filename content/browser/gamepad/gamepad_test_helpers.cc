@@ -54,7 +54,7 @@ GamepadServiceTestConstructor::GamepadServiceTestConstructor(
     const blink::WebGamepads& test_data) {
   data_fetcher_ = new MockGamepadDataFetcher(test_data);
   gamepad_service_ =
-      new GamepadService(scoped_ptr<GamepadDataFetcher>(data_fetcher_));
+      new GamepadService(std::unique_ptr<GamepadDataFetcher>(data_fetcher_));
 }
 
 GamepadServiceTestConstructor::~GamepadServiceTestConstructor() {

@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/geolocation/geolocation_provider_impl.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "content/browser/geolocation/geolocation_provider_impl.h"
 #include "content/browser/geolocation/mock_location_arbitrator.h"
 #include "content/public/browser/access_token_store.h"
 #include "content/public/browser/browser_thread.h"
@@ -38,18 +41,18 @@ class LocationProviderForTestArbitrator : public GeolocationProviderImpl {
 
  protected:
   // GeolocationProviderImpl implementation:
-  scoped_ptr<LocationArbitrator> CreateArbitrator() override;
+  std::unique_ptr<LocationArbitrator> CreateArbitrator() override;
 
  private:
   // An alias to the arbitrator stored in the super class, where it is owned.
   MockLocationArbitrator* mock_arbitrator_;
 };
 
-scoped_ptr<LocationArbitrator>
+std::unique_ptr<LocationArbitrator>
 LocationProviderForTestArbitrator::CreateArbitrator() {
   DCHECK(mock_arbitrator_ == NULL);
   mock_arbitrator_ = new MockLocationArbitrator;
-  return make_scoped_ptr(mock_arbitrator_);
+  return base::WrapUnique(mock_arbitrator_);
 }
 
 class GeolocationObserver {
@@ -136,7 +139,7 @@ class GeolocationProviderTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   TestBrowserThread ui_thread_;
-  scoped_ptr<LocationProviderForTestArbitrator> provider_;
+  std::unique_ptr<LocationProviderForTestArbitrator> provider_;
 };
 
 
@@ -179,7 +182,7 @@ TEST_F(GeolocationProviderTest, StartStop) {
   EXPECT_FALSE(provider()->IsRunning());
   GeolocationProviderImpl::LocationUpdateCallback callback =
       base::Bind(&DummyFunction);
-  scoped_ptr<content::GeolocationProvider::Subscription> subscription =
+  std::unique_ptr<content::GeolocationProvider::Subscription> subscription =
       provider()->AddLocationUpdateCallback(callback, false);
   EXPECT_TRUE(provider()->IsRunning());
   EXPECT_TRUE(ProvidersStarted());
@@ -202,7 +205,7 @@ TEST_F(GeolocationProviderTest, StalePositionNotSent) {
       &MockGeolocationObserver::OnLocationUpdate,
       base::Unretained(&first_observer));
   EXPECT_CALL(first_observer, OnLocationUpdate(GeopositionEq(first_position)));
-  scoped_ptr<content::GeolocationProvider::Subscription> subscription =
+  std::unique_ptr<content::GeolocationProvider::Subscription> subscription =
       provider()->AddLocationUpdateCallback(first_callback, false);
   SendMockLocation(first_position);
   base::MessageLoop::current()->Run();
@@ -223,7 +226,7 @@ TEST_F(GeolocationProviderTest, StalePositionNotSent) {
   GeolocationProviderImpl::LocationUpdateCallback second_callback = base::Bind(
       &MockGeolocationObserver::OnLocationUpdate,
       base::Unretained(&second_observer));
-  scoped_ptr<content::GeolocationProvider::Subscription> subscription2 =
+  std::unique_ptr<content::GeolocationProvider::Subscription> subscription2 =
       provider()->AddLocationUpdateCallback(second_callback, false);
   base::MessageLoop::current()->RunUntilIdle();
 
@@ -248,7 +251,7 @@ TEST_F(GeolocationProviderTest, OverrideLocationForTesting) {
   GeolocationProviderImpl::LocationUpdateCallback callback = base::Bind(
       &MockGeolocationObserver::OnLocationUpdate,
       base::Unretained(&mock_observer));
-  scoped_ptr<content::GeolocationProvider::Subscription> subscription =
+  std::unique_ptr<content::GeolocationProvider::Subscription> subscription =
       provider()->AddLocationUpdateCallback(callback, false);
   subscription.reset();
   // Wait for the providers to be stopped now that all clients are gone.

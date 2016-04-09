@@ -7,9 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "net/base/io_buffer.h"
 
@@ -62,8 +63,8 @@ namespace content {
 //
 //    void OriginatingClass::Initialize() {
 //      // Create a stream for sending bytes from IO->FILE threads.
-//      scoped_ptr<ByteStreamWriter> writer;
-//      scoped_ptr<ByteStreamReader> reader;
+//      std::unique_ptr<ByteStreamWriter> writer;
+//      std::unique_ptr<ByteStreamReader> reader;
 //      CreateByteStream(
 //          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
 //          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
@@ -82,7 +83,7 @@ namespace content {
 //    // thread.
 //    void OriginatingClass::SpaceAvailable() {
 //      while (<data available>) {
-//        scoped_ptr<net::IOBuffer> buffer;
+//        std::unique_ptr<net::IOBuffer> buffer;
 //        size_t buffer_length;
 //        // Create IOBuffer, fill in with data, and set buffer_length.
 //        if (!writer->Write(buffer, buffer_length)) {
@@ -197,8 +198,8 @@ CONTENT_EXPORT void CreateByteStream(
     scoped_refptr<base::SequencedTaskRunner> input_task_runner,
     scoped_refptr<base::SequencedTaskRunner> output_task_runner,
     size_t buffer_size,
-    scoped_ptr<ByteStreamWriter>* input,
-    scoped_ptr<ByteStreamReader>* output);
+    std::unique_ptr<ByteStreamWriter>* input,
+    std::unique_ptr<ByteStreamReader>* output);
 
 }  // namespace content
 

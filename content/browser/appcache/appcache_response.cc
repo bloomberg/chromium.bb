@@ -41,7 +41,7 @@ class WrappedPickleIOBuffer : public net::WrappedIOBuffer {
  private:
   ~WrappedPickleIOBuffer() override {}
 
-  scoped_ptr<const base::Pickle> pickle_;
+  std::unique_ptr<const base::Pickle> pickle_;
 };
 
 }  // anon namespace
@@ -268,7 +268,7 @@ void AppCacheResponseReader::OnIOComplete(int result) {
     } else if (info_buffer_.get()) {
       // Deserialize the http info structure, ensuring we got headers.
       base::Pickle pickle(buffer_->data(), result);
-      scoped_ptr<net::HttpResponseInfo> info(new net::HttpResponseInfo);
+      std::unique_ptr<net::HttpResponseInfo> info(new net::HttpResponseInfo);
       bool response_truncated = false;
       if (!info->InitFromPickle(pickle, &response_truncated) ||
           !info->headers.get()) {

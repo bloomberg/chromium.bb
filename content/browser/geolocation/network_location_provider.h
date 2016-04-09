@@ -9,10 +9,10 @@
 
 #include <list>
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/threading/non_thread_safe.h"
@@ -124,10 +124,10 @@ class NetworkLocationProvider
   bool is_new_data_available_;
 
   // The network location request object, and the url it uses.
-  scoped_ptr<NetworkLocationRequest> request_;
+  std::unique_ptr<NetworkLocationRequest> request_;
 
   // The cache of positions.
-  scoped_ptr<PositionCache> position_cache_;
+  std::unique_ptr<PositionCache> position_cache_;
 
   base::WeakPtrFactory<NetworkLocationProvider> weak_factory_;
 

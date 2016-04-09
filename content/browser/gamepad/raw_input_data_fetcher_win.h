@@ -5,24 +5,23 @@
 #ifndef CONTENT_BROWSER_GAMEPAD_RAW_INPUT_DATA_FETCHER_WIN_H_
 #define CONTENT_BROWSER_GAMEPAD_RAW_INPUT_DATA_FETCHER_WIN_H_
 
-#include "build/build_config.h"
-
 #include <stdint.h>
 #include <stdlib.h>
 #include <Unknwn.h>
 #include <WinDef.h>
 #include <windows.h>
-
 #include <hidsdi.h>
+
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/scoped_native_library.h"
 #include "base/win/message_window.h"
+#include "build/build_config.h"
 #include "content/browser/gamepad/gamepad_data_fetcher.h"
 #include "content/browser/gamepad/gamepad_standard_mappings.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
@@ -41,7 +40,7 @@ struct RawGamepadInfo {
   ~RawGamepadInfo();
 
   HANDLE handle;
-  scoped_ptr<uint8_t[]> ppd_buffer;
+  std::unique_ptr<uint8_t[]> ppd_buffer;
   PHIDP_PREPARSED_DATA preparsed_data;
 
   uint32_t report_id;
@@ -120,7 +119,7 @@ class RawInputDataFetcher
   bool GetHidDllFunctions();
 
   base::ScopedNativeLibrary hid_dll_;
-  scoped_ptr<base::win::MessageWindow> window_;
+  std::unique_ptr<base::win::MessageWindow> window_;
   bool rawinput_available_;
   bool filter_xinput_;
   bool events_monitored_;

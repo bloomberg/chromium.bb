@@ -51,8 +51,9 @@ class CONTENT_EXPORT StoragePartitionImplMap
   //
   // The |done| closure is executed on the calling thread when garbage
   // collection is complete.
-  void GarbageCollect(scoped_ptr<base::hash_set<base::FilePath> > active_paths,
-                      const base::Closure& done);
+  void GarbageCollect(
+      std::unique_ptr<base::hash_set<base::FilePath>> active_paths,
+      const base::Closure& done);
 
   void ForEach(const BrowserContext::StoragePartitionCallback& callback);
 

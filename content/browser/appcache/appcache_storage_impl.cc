@@ -82,7 +82,7 @@ void ClearSessionOnlyOrigins(
     AppCacheDatabase* database,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
     bool force_keep_session_state) {
-  scoped_ptr<AppCacheDatabase> database_to_delete(database);
+  std::unique_ptr<AppCacheDatabase> database_to_delete(database);
 
   // If saving session state, only delete the database.
   if (force_keep_session_state)

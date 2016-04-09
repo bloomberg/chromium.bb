@@ -923,11 +923,11 @@ BrowserAccessibilityWin
     std::vector<int32_t> hyperlinks;
   };
 
-  scoped_ptr<WinAttributes> win_attributes_;
+  std::unique_ptr<WinAttributes> win_attributes_;
 
   // Only valid during the scope of a IA2_EVENT_TEXT_REMOVED or
   // IA2_EVENT_TEXT_INSERTED event.
-  scoped_ptr<WinAttributes> old_win_attributes_;
+  std::unique_ptr<WinAttributes> old_win_attributes_;
 
   // Relationships between this node and other nodes.
   std::vector<BrowserAccessibilityRelation*> relations_;

@@ -17,11 +17,11 @@ namespace content {
 typedef RenderViewHostTestHarness WebDragSourceMacTest;
 
 TEST_F(WebDragSourceMacTest, DragInvalidlyEscapedBookmarklet) {
-  scoped_ptr<WebContents> contents(CreateTestWebContents());
+  std::unique_ptr<WebContents> contents(CreateTestWebContents());
   base::scoped_nsobject<NSView> view(
       [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 10, 10)]);
 
-  scoped_ptr<DropData> dropData(new DropData);
+  std::unique_ptr<DropData> dropData(new DropData);
   dropData->url = GURL("javascript:%");
 
   WebContentsImpl* contentsImpl = static_cast<WebContentsImpl*>(contents.get());

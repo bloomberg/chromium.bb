@@ -5,10 +5,11 @@
 #ifndef CONTENT_BROWSER_TRACING_ETW_SYSTEM_EVENT_CONSUMER_WIN_H_
 #define CONTENT_BROWSER_TRACING_ETW_SYSTEM_EVENT_CONSUMER_WIN_H_
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/tracing_agent.h"
 #include "base/values.h"
@@ -69,7 +70,7 @@ class EtwSystemEventConsumer
   void TraceAndConsumeOnThread();
   void FlushOnThread(const StopAgentTracingCallback& callback);
 
-  scoped_ptr<base::ListValue> events_;
+  std::unique_ptr<base::ListValue> events_;
   base::Thread thread_;
   TRACEHANDLE session_handle_;
   base::win::EtwTraceProperties properties_;

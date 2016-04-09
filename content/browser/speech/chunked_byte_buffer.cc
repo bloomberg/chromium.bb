@@ -103,10 +103,10 @@ bool ChunkedByteBuffer::HasChunks() const {
   return !chunks_.empty();
 }
 
-scoped_ptr<std::vector<uint8_t>> ChunkedByteBuffer::PopChunk() {
+std::unique_ptr<std::vector<uint8_t>> ChunkedByteBuffer::PopChunk() {
   if (chunks_.empty())
-    return scoped_ptr<std::vector<uint8_t>>();
-  scoped_ptr<Chunk> chunk(*chunks_.begin());
+    return std::unique_ptr<std::vector<uint8_t>>();
+  std::unique_ptr<Chunk> chunk(*chunks_.begin());
   chunks_.weak_erase(chunks_.begin());
   DCHECK_EQ(chunk->header.size(), kHeaderLength);
   DCHECK_EQ(chunk->content->size(), chunk->ExpectedContentLength());

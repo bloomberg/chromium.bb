@@ -7,9 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/file_descriptor_info.h"
 
@@ -17,7 +17,7 @@ namespace content {
 
 class FileDescriptorInfoImpl : public FileDescriptorInfo {
  public:
-  CONTENT_EXPORT static scoped_ptr<FileDescriptorInfo> Create();
+  CONTENT_EXPORT static std::unique_ptr<FileDescriptorInfo> Create();
 
   ~FileDescriptorInfoImpl() override;
   void Share(int id, base::PlatformFile fd) override;

@@ -830,7 +830,7 @@ void WebContentsViewAura::StartDragging(
   if (!image.isNull())
     drag_utils::SetDragImageOnDataObject(image, image_offset, &data);
 
-  scoped_ptr<WebDragSourceAura> drag_source(
+  std::unique_ptr<WebDragSourceAura> drag_source(
       new WebDragSourceAura(GetNativeView(), web_contents_));
 
   // We need to enable recursive tasks on the message loop so we can get

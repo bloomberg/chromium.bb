@@ -53,7 +53,7 @@ void DevToolsProtocolClient::SendMessage(int session_id,
 
 void DevToolsProtocolClient::SendNotification(
     const std::string& method,
-    scoped_ptr<base::DictionaryValue> params) {
+    std::unique_ptr<base::DictionaryValue> params) {
   base::DictionaryValue notification;
   notification.SetString(kMethodParam, method);
   if (params)
@@ -66,7 +66,7 @@ void DevToolsProtocolClient::SendNotification(
 
 void DevToolsProtocolClient::SendSuccess(
     DevToolsCommandId command_id,
-    scoped_ptr<base::DictionaryValue> params) {
+    std::unique_ptr<base::DictionaryValue> params) {
   base::DictionaryValue response;
   response.SetInteger(kIdParam, command_id.call_id);
 

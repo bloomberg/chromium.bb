@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "content/browser/tracing/background_tracing_config_impl.h"
 #include "content/browser/tracing/background_tracing_rule.h"
@@ -23,22 +24,22 @@ class BackgroundTracingConfigTest : public testing::Test {
   TestBrowserThread ui_thread_;
 };
 
-scoped_ptr<BackgroundTracingConfigImpl> ReadFromJSONString(
+std::unique_ptr<BackgroundTracingConfigImpl> ReadFromJSONString(
     const std::string& json_text) {
-  scoped_ptr<base::Value> json_value(base::JSONReader::Read(json_text));
+  std::unique_ptr<base::Value> json_value(base::JSONReader::Read(json_text));
 
   base::DictionaryValue* dict = NULL;
   if (json_value)
     json_value->GetAsDictionary(&dict);
 
-  scoped_ptr<BackgroundTracingConfigImpl> config(
+  std::unique_ptr<BackgroundTracingConfigImpl> config(
       static_cast<BackgroundTracingConfigImpl*>(
           BackgroundTracingConfig::FromDict(dict).release()));
   return config;
 }
 
 std::string ConfigToString(const BackgroundTracingConfig* config) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   config->IntoDict(dict.get());
 
@@ -49,7 +50,7 @@ std::string ConfigToString(const BackgroundTracingConfig* config) {
 }
 
 std::string RuleToString(const BackgroundTracingRule* rule) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   rule->IntoDict(dict.get());
 
@@ -167,7 +168,7 @@ TEST_F(BackgroundTracingConfigTest, ReactiveConfigFromInvalidString) {
 }
 
 TEST_F(BackgroundTracingConfigTest, PreemptiveConfigFromValidString) {
-  scoped_ptr<BackgroundTracingConfigImpl> config;
+  std::unique_ptr<BackgroundTracingConfigImpl> config;
 
   config = ReadFromJSONString(
       "{\"mode\":\"PREEMPTIVE_TRACING_MODE\", \"category\": "
@@ -270,7 +271,7 @@ TEST_F(BackgroundTracingConfigTest, PreemptiveConfigFromValidString) {
 }
 
 TEST_F(BackgroundTracingConfigTest, ValidPreemptiveCategoryToString) {
-  scoped_ptr<BackgroundTracingConfigImpl> config = ReadFromJSONString(
+  std::unique_ptr<BackgroundTracingConfigImpl> config = ReadFromJSONString(
       "{\"mode\":\"PREEMPTIVE_TRACING_MODE\", \"category\": "
       "\"BENCHMARK\",\"configs\": [{\"rule\": "
       "\"MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED\", \"trigger_name\":\"foo\"}]}");
@@ -301,14 +302,14 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveCategoryToString) {
             "\"MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED\",\"trigger_name\":"
             "\"foo\"}],\"mode\":\"PREEMPTIVE_TRACING_MODE\"}");
     EXPECT_EQ(ConfigToString(config.get()), expected.c_str());
-    scoped_ptr<BackgroundTracingConfigImpl> config2 =
+    std::unique_ptr<BackgroundTracingConfigImpl> config2 =
         ReadFromJSONString(expected);
     EXPECT_EQ(config->category_preset(), config2->category_preset());
   }
 }
 
 TEST_F(BackgroundTracingConfigTest, ReactiveConfigFromValidString) {
-  scoped_ptr<BackgroundTracingConfigImpl> config;
+  std::unique_ptr<BackgroundTracingConfigImpl> config;
 
   config = ReadFromJSONString(
       "{\"mode\":\"REACTIVE_TRACING_MODE\",\"configs\": [{\"rule\": "
@@ -378,7 +379,7 @@ TEST_F(BackgroundTracingConfigTest, ReactiveConfigFromValidString) {
 }
 
 TEST_F(BackgroundTracingConfigTest, ValidPreemptiveConfigToString) {
-  scoped_ptr<BackgroundTracingConfigImpl> config(
+  std::unique_ptr<BackgroundTracingConfigImpl> config(
       new BackgroundTracingConfigImpl(BackgroundTracingConfig::PREEMPTIVE));
 
   // Default values
@@ -397,7 +398,7 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveConfigToString) {
         new BackgroundTracingConfigImpl(BackgroundTracingConfig::PREEMPTIVE));
     config->set_category_preset(BackgroundTracingConfigImpl::BENCHMARK_DEEP);
 
-    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
     dict->SetString("trigger_name", "foo");
     config->AddPreemptiveRule(dict.get());
@@ -413,7 +414,7 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveConfigToString) {
         new BackgroundTracingConfigImpl(BackgroundTracingConfig::PREEMPTIVE));
     config->set_category_preset(BackgroundTracingConfigImpl::BENCHMARK_DEEP);
 
-    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
     dict->SetString("trigger_name", "foo");
     dict->SetDouble("trigger_chance", 0.5);
@@ -431,7 +432,7 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveConfigToString) {
         new BackgroundTracingConfigImpl(BackgroundTracingConfig::PREEMPTIVE));
     config->set_category_preset(BackgroundTracingConfigImpl::BENCHMARK_DEEP);
 
-    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
     dict->SetString("trigger_name", "foo1");
     config->AddPreemptiveRule(dict.get());
@@ -451,7 +452,8 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveConfigToString) {
     config.reset(
         new BackgroundTracingConfigImpl(BackgroundTracingConfig::PREEMPTIVE));
 
-    scoped_ptr<base::DictionaryValue> second_dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> second_dict(
+        new base::DictionaryValue());
     second_dict->SetString(
         "rule", "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE");
     second_dict->SetString("histogram_name", "foo");
@@ -471,7 +473,8 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveConfigToString) {
     config.reset(
         new BackgroundTracingConfigImpl(BackgroundTracingConfig::PREEMPTIVE));
 
-    scoped_ptr<base::DictionaryValue> second_dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> second_dict(
+        new base::DictionaryValue());
     second_dict->SetString(
         "rule", "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE");
     second_dict->SetString("histogram_name", "foo");
@@ -493,7 +496,7 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveConfigToString) {
         new BackgroundTracingConfigImpl(BackgroundTracingConfig::PREEMPTIVE));
     config->set_category_preset(BackgroundTracingConfigImpl::BENCHMARK_DEEP);
 
-    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
     dict->SetString("trigger_name", "foo1");
     config->AddPreemptiveRule(dict.get());
@@ -513,13 +516,13 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveConfigToString) {
 }
 
 TEST_F(BackgroundTracingConfigTest, InvalidPreemptiveConfigToString) {
-  scoped_ptr<BackgroundTracingConfigImpl> config;
+  std::unique_ptr<BackgroundTracingConfigImpl> config;
 
   {
     config.reset(
         new BackgroundTracingConfigImpl(BackgroundTracingConfig::PREEMPTIVE));
 
-    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_BROWSER_STARTUP_COMPLETE");
     config->AddPreemptiveRule(dict.get());
 
@@ -532,7 +535,8 @@ TEST_F(BackgroundTracingConfigTest, InvalidPreemptiveConfigToString) {
     config.reset(
         new BackgroundTracingConfigImpl(BackgroundTracingConfig::PREEMPTIVE));
 
-    scoped_ptr<base::DictionaryValue> second_dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> second_dict(
+        new base::DictionaryValue());
     second_dict->SetString(
         "rule", "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE");
     second_dict->SetString("histogram_name", "foo");
@@ -547,7 +551,8 @@ TEST_F(BackgroundTracingConfigTest, InvalidPreemptiveConfigToString) {
     config.reset(
         new BackgroundTracingConfigImpl(BackgroundTracingConfig::PREEMPTIVE));
 
-    scoped_ptr<base::DictionaryValue> second_dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> second_dict(
+        new base::DictionaryValue());
     second_dict->SetString(
         "rule", "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE");
     second_dict->SetString("histogram_name", "foo");
@@ -561,7 +566,7 @@ TEST_F(BackgroundTracingConfigTest, InvalidPreemptiveConfigToString) {
 }
 
 TEST_F(BackgroundTracingConfigTest, ValidReactiveConfigToString) {
-  scoped_ptr<BackgroundTracingConfigImpl> config(
+  std::unique_ptr<BackgroundTracingConfigImpl> config(
       new BackgroundTracingConfigImpl(BackgroundTracingConfig::REACTIVE));
 
   // Default values
@@ -572,7 +577,7 @@ TEST_F(BackgroundTracingConfigTest, ValidReactiveConfigToString) {
     config.reset(
         new BackgroundTracingConfigImpl(BackgroundTracingConfig::REACTIVE));
 
-    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetString("rule", "TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL");
     dict->SetString("trigger_name", "foo");
     config->AddReactiveRule(dict.get(),
@@ -588,7 +593,7 @@ TEST_F(BackgroundTracingConfigTest, ValidReactiveConfigToString) {
     config.reset(
         new BackgroundTracingConfigImpl(BackgroundTracingConfig::REACTIVE));
 
-    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetString("rule", "TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL");
     dict->SetString("trigger_name", "foo1");
     config->AddReactiveRule(dict.get(),

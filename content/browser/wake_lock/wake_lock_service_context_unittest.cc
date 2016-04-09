@@ -4,7 +4,8 @@
 
 #include "content/browser/wake_lock/wake_lock_service_context.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/process/kill.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_frame_host.h"

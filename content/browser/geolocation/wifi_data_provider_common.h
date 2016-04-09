@@ -8,9 +8,10 @@
 #include <assert.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "content/browser/geolocation/wifi_data_provider.h"
@@ -67,10 +68,10 @@ class CONTENT_EXPORT WifiDataProviderCommon : public WifiDataProvider {
   bool is_first_scan_complete_;
 
   // Underlying OS wifi API.
-  scoped_ptr<WlanApiInterface> wlan_api_;
+  std::unique_ptr<WlanApiInterface> wlan_api_;
 
   // Controls the polling update interval.
-  scoped_ptr<WifiPollingPolicy> polling_policy_;
+  std::unique_ptr<WifiPollingPolicy> polling_policy_;
 
   // Holder for delayed tasks; takes care of cleanup.
   base::WeakPtrFactory<WifiDataProviderCommon> weak_factory_;

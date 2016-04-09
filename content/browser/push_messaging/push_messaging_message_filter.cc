@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -968,10 +969,11 @@ void PushMessagingMessageFilter::Core::Send(IPC::Message* message) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&PushMessagingMessageFilter::SendIPC, io_parent_,
-                 base::Passed(make_scoped_ptr(message))));
+                 base::Passed(base::WrapUnique(message))));
 }
 
-void PushMessagingMessageFilter::SendIPC(scoped_ptr<IPC::Message> message) {
+void PushMessagingMessageFilter::SendIPC(
+    std::unique_ptr<IPC::Message> message) {
   Send(message.release());
 }
 

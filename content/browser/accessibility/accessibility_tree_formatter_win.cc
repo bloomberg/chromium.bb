@@ -189,14 +189,14 @@ void AccessibilityTreeFormatterWin::AddProperties(
 
   IAccessibleStateToStringVector(ia_state, &state_strings);
   IAccessible2StateToStringVector(ax_object->ia2_state(), &state_strings);
-  scoped_ptr<base::ListValue> states(new base::ListValue());
+  std::unique_ptr<base::ListValue> states(new base::ListValue());
   for (const base::string16& state_string : state_strings)
     states->AppendString(base::UTF16ToUTF8(state_string));
   dict->Set("states", std::move(states));
 
   const std::vector<base::string16>& ia2_attributes =
       ax_object->ia2_attributes();
-  scoped_ptr<base::ListValue> attributes(new base::ListValue());
+  std::unique_ptr<base::ListValue> attributes(new base::ListValue());
   for (const base::string16& ia2_attribute : ia2_attributes)
     attributes->AppendString(base::UTF16ToUTF8(ia2_attribute));
   dict->Set("attributes", std::move(attributes));
@@ -204,7 +204,7 @@ void AccessibilityTreeFormatterWin::AddProperties(
   ax_object->ComputeStylesIfNeeded();
   const std::map<int, std::vector<base::string16>>& ia2_text_attributes =
       ax_object->offset_to_text_attributes();
-  scoped_ptr<base::ListValue> text_attributes(new base::ListValue());
+  std::unique_ptr<base::ListValue> text_attributes(new base::ListValue());
   for (const auto& style_span : ia2_text_attributes) {
     int start_offset = style_span.first;
     text_attributes->AppendString("offset:" + base::IntToString(start_offset));

@@ -164,7 +164,7 @@ void AXTreeSnapshotCallback(const ScopedJavaGlobalRef<jobject>& callback,
     Java_WebContentsImpl_onAccessibilitySnapshot(env, nullptr, callback.obj());
     return;
   }
-  scoped_ptr<BrowserAccessibilityManagerAndroid> manager(
+  std::unique_ptr<BrowserAccessibilityManagerAndroid> manager(
       static_cast<BrowserAccessibilityManagerAndroid*>(
           BrowserAccessibilityManager::Create(result, nullptr)));
   manager->set_prune_tree_for_screen_reader(false);

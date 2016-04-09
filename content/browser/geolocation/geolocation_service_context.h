@@ -42,7 +42,7 @@ class GeolocationServiceContext {
 
   // Enables geolocation override. This method can be used to trigger possible
   // location-specific behavior in a particular context.
-  void SetOverride(scoped_ptr<Geoposition> geoposition);
+  void SetOverride(std::unique_ptr<Geoposition> geoposition);
 
   // Disables geolocation override.
   void ClearOverride();
@@ -51,7 +51,7 @@ class GeolocationServiceContext {
   ScopedVector<GeolocationServiceImpl> services_;
   bool paused_;
 
-  scoped_ptr<Geoposition> geoposition_override_;
+  std::unique_ptr<Geoposition> geoposition_override_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationServiceContext);
 };

@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/geolocation/geolocation_provider_impl.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/modules/geolocation/geolocation.mojom.h"
@@ -56,7 +57,7 @@ class GeolocationServiceImpl : public blink::mojom::GeolocationService {
 
   // Owns this object.
   GeolocationServiceContext* context_;
-  scoped_ptr<GeolocationProvider::Subscription> geolocation_subscription_;
+  std::unique_ptr<GeolocationProvider::Subscription> geolocation_subscription_;
 
   // Callback that allows the instantiator of this class to be notified on
   // position updates.

@@ -5,10 +5,11 @@
 #ifndef CONTENT_BROWSER_ANDROID_CONTENT_VIEW_RENDER_VIEW_H_
 #define CONTENT_BROWSER_ANDROID_CONTENT_VIEW_RENDER_VIEW_H_
 
+#include <memory>
+
 #include "base/android/jni_weak_ref.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/android/compositor_client.h"
 #include "ui/gfx/native_widget_types.h"
@@ -60,7 +61,7 @@ class ContentViewRenderView : public CompositorClient {
 
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
 
-  scoped_ptr<content::Compositor> compositor_;
+  std::unique_ptr<content::Compositor> compositor_;
 
   gfx::NativeWindow root_window_;
   int current_surface_format_;

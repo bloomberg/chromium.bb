@@ -201,7 +201,7 @@ void NetworkHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
   host_ = host;
 }
 
-void NetworkHandler::SetClient(scoped_ptr<Client> client) {
+void NetworkHandler::SetClient(std::unique_ptr<Client> client) {
   client_.swap(client);
 }
 

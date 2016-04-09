@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_FORWARDING_AGENT_HOST_H_
 #define CONTENT_BROWSER_DEVTOOLS_FORWARDING_AGENT_HOST_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
@@ -38,7 +39,7 @@ class ForwardingAgentHost
   bool Activate() override;
   bool Close() override;
 
-  scoped_ptr<DevToolsExternalAgentProxyDelegate> delegate_;
+  std::unique_ptr<DevToolsExternalAgentProxyDelegate> delegate_;
 };
 
 }  // namespace content

@@ -6,9 +6,9 @@
 #define CONTENT_BROWSER_DEVICE_SENSORS_DATA_FETCHER_SHARED_MEMORY_BASE_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "content/browser/device_sensors/device_sensors_consts.h"
@@ -89,7 +89,7 @@ class CONTENT_EXPORT DataFetcherSharedMemoryBase {
 
   unsigned started_consumers_;
 
-  scoped_ptr<PollingThread> polling_thread_;
+  std::unique_ptr<PollingThread> polling_thread_;
 
   // Owning pointers. Objects in the map are deleted in dtor.
   typedef std::map<ConsumerType, base::SharedMemory*> SharedMemoryMap;

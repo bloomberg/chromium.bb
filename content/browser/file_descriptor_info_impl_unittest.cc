@@ -39,7 +39,7 @@ typedef testing::Test FileDescriptorInfoTest;
 
 TEST_F(FileDescriptorInfoTest, Transfer) {
   int testingId = 42;
-  scoped_ptr<FileDescriptorInfo> target(FileDescriptorInfoImpl::Create());
+  std::unique_ptr<FileDescriptorInfo> target(FileDescriptorInfoImpl::Create());
   base::ScopedFD fd(GetSafeFd());
 
   int raw_fd = fd.get();
@@ -55,7 +55,7 @@ TEST_F(FileDescriptorInfoTest, Transfer) {
 
 TEST_F(FileDescriptorInfoTest, Share) {
   int testingId = 42;
-  scoped_ptr<FileDescriptorInfo> target(FileDescriptorInfoImpl::Create());
+  std::unique_ptr<FileDescriptorInfo> target(FileDescriptorInfoImpl::Create());
   base::ScopedFD fd(GetSafeFd());
 
   int raw_fd = fd.get();
@@ -72,7 +72,7 @@ TEST_F(FileDescriptorInfoTest, Share) {
 TEST_F(FileDescriptorInfoTest, GetMappingWithIDAdjustment) {
   int testingId1 = 42;
   int testingId2 = 43;
-  scoped_ptr<FileDescriptorInfo> target(FileDescriptorInfoImpl::Create());
+  std::unique_ptr<FileDescriptorInfo> target(FileDescriptorInfoImpl::Create());
 
   target->Transfer(testingId1, base::ScopedFD(GetSafeFd()));
   target->Transfer(testingId2, base::ScopedFD(GetSafeFd()));

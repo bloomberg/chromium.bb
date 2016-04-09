@@ -42,7 +42,7 @@ TEST(ChunkedByteBufferTest, BasicTest) {
   EXPECT_TRUE(buffer.HasChunks());
 
   // Remove and check chunk 1.
-  scoped_ptr<ByteVector> chunk;
+  std::unique_ptr<ByteVector> chunk;
   chunk = buffer.PopChunk();
   EXPECT_TRUE(chunk != NULL);
   EXPECT_EQ(4U, chunk->size());

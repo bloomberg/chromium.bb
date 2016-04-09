@@ -135,7 +135,7 @@ bool SynchronousCompositorHost::DemandDrawSwInProc(SkCanvas* canvas) {
   PopulateCommonParams(&common_browser_params);
   SyncCompositorCommonRendererParams common_renderer_params;
   bool success = false;
-  scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+  std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
   ScopedSetSkCanvas set_sk_canvas(canvas);
   SyncCompositorDemandDrawSwParams params;  // Unused.
   if (!sender_->Send(new SyncCompositorMsg_DemandDrawSw(
@@ -199,7 +199,7 @@ bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas) {
   if (!software_draw_shm_)
     return false;
 
-  scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+  std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
   SyncCompositorCommonBrowserParams common_browser_params;
   PopulateCommonParams(&common_browser_params);
   SyncCompositorCommonRendererParams common_renderer_params;
@@ -238,7 +238,7 @@ void SynchronousCompositorHost::SetSoftwareDrawSharedMemoryIfNeeded(
       software_draw_shm_->buffer_size == buffer_size)
     return;
   software_draw_shm_.reset();
-  scoped_ptr<SharedMemoryWithSize> software_draw_shm(
+  std::unique_ptr<SharedMemoryWithSize> software_draw_shm(
       new SharedMemoryWithSize(stride, buffer_size));
   {
     TRACE_EVENT1("browser", "AllocateSharedMemory", "buffer_size", buffer_size);

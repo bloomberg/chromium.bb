@@ -757,12 +757,12 @@ class AppCacheResponseTest : public testing::Test {
 
   // Data members
 
-  scoped_ptr<base::WaitableEvent> test_finished_event_;
-  scoped_ptr<MockStorageDelegate> storage_delegate_;
-  scoped_ptr<MockAppCacheService> service_;
+  std::unique_ptr<base::WaitableEvent> test_finished_event_;
+  std::unique_ptr<MockStorageDelegate> storage_delegate_;
+  std::unique_ptr<MockAppCacheService> service_;
   std::stack<std::pair<base::Closure, bool> > task_stack_;
 
-  scoped_ptr<AppCacheResponseReader> reader_;
+  std::unique_ptr<AppCacheResponseReader> reader_;
   scoped_refptr<HttpResponseInfoIOBuffer> read_info_buffer_;
   scoped_refptr<IOBuffer> read_buffer_;
   int expected_read_result_;
@@ -771,8 +771,8 @@ class AppCacheResponseTest : public testing::Test {
   bool read_callback_was_called_;
 
   int64_t written_response_id_;
-  scoped_ptr<AppCacheResponseWriter> writer_;
-  scoped_ptr<AppCacheResponseMetadataWriter> metadata_writer_;
+  std::unique_ptr<AppCacheResponseWriter> writer_;
+  std::unique_ptr<AppCacheResponseMetadataWriter> metadata_writer_;
   scoped_refptr<HttpResponseInfoIOBuffer> write_info_buffer_;
   scoped_refptr<IOBuffer> write_buffer_;
   int expected_write_result_;
@@ -780,11 +780,11 @@ class AppCacheResponseTest : public testing::Test {
   int writer_deletion_count_down_;
   bool write_callback_was_called_;
 
-  static scoped_ptr<base::Thread> io_thread_;
+  static std::unique_ptr<base::Thread> io_thread_;
 };
 
 // static
-scoped_ptr<base::Thread> AppCacheResponseTest::io_thread_;
+std::unique_ptr<base::Thread> AppCacheResponseTest::io_thread_;
 
 TEST_F(AppCacheResponseTest, ReadNonExistentResponse) {
   RunTestOnIOThread(&AppCacheResponseTest::ReadNonExistentResponse);

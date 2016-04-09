@@ -109,9 +109,9 @@ AppCacheExecutableHandler* AppCache::GetOrCreateExecutableHandler(
     return NULL;
 
   DCHECK(storage_->service()->handler_factory());
-  scoped_ptr<AppCacheExecutableHandler> own_ptr =
-      storage_->service()->handler_factory()->
-          CreateHandler(handler_url, handler_source);
+  std::unique_ptr<AppCacheExecutableHandler> own_ptr =
+      storage_->service()->handler_factory()->CreateHandler(handler_url,
+                                                            handler_source);
   handler = own_ptr.release();
   if (!handler)
     return NULL;

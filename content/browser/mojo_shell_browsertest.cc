@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "content/browser/mojo/mojo_shell_context.h"
 #include "content/public/browser/browser_context.h"
@@ -34,8 +35,8 @@ class MojoShellTest : public ContentBrowserTest {
   }
 
  private:
-  static scoped_ptr<mojo::ShellClient> CreateTestApp() {
-    return scoped_ptr<mojo::ShellClient>(new TestMojoApp);
+  static std::unique_ptr<mojo::ShellClient> CreateTestApp() {
+    return std::unique_ptr<mojo::ShellClient>(new TestMojoApp);
   }
 
   MojoShellContext::StaticApplicationMap test_apps_;

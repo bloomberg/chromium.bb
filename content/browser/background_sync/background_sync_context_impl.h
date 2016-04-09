@@ -5,11 +5,11 @@
 #ifndef CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_CONTEXT_IMPL_H_
 #define CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_CONTEXT_IMPL_H_
 
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/background_sync_service.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/background_sync_context.h"
@@ -51,7 +51,7 @@ class CONTENT_EXPORT BackgroundSyncContextImpl : public BackgroundSyncContext {
   ~BackgroundSyncContextImpl() override;
 
   void set_background_sync_manager_for_testing(
-      scoped_ptr<BackgroundSyncManager> manager);
+      std::unique_ptr<BackgroundSyncManager> manager);
 
  private:
   friend class BackgroundSyncServiceImplTest;
@@ -65,7 +65,7 @@ class CONTENT_EXPORT BackgroundSyncContextImpl : public BackgroundSyncContext {
   void ShutdownOnIO();
 
   // Only accessed on the IO thread.
-  scoped_ptr<BackgroundSyncManager> background_sync_manager_;
+  std::unique_ptr<BackgroundSyncManager> background_sync_manager_;
 
   // The services are owned by this. They're either deleted
   // during ShutdownOnIO or when the channel is closed via

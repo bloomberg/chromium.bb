@@ -34,9 +34,9 @@ const char* kHeightDictAttr = "height";
 const char* kRangeLocDictAttr = "loc";
 const char* kRangeLenDictAttr = "len";
 
-scoped_ptr<base::DictionaryValue> PopulatePosition(
+std::unique_ptr<base::DictionaryValue> PopulatePosition(
     const BrowserAccessibility& node) {
-  scoped_ptr<base::DictionaryValue> position(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> position(new base::DictionaryValue);
   // The NSAccessibility position of an object is in global coordinates and
   // based on the lower-left corner of the object. To make this easier and less
   // confusing, convert it to local window coordinates using the top-left
@@ -60,17 +60,17 @@ scoped_ptr<base::DictionaryValue> PopulatePosition(
   return position;
 }
 
-scoped_ptr<base::DictionaryValue>
-PopulateSize(const BrowserAccessibilityCocoa* cocoa_node) {
-  scoped_ptr<base::DictionaryValue> size(new base::DictionaryValue);
+std::unique_ptr<base::DictionaryValue> PopulateSize(
+    const BrowserAccessibilityCocoa* cocoa_node) {
+  std::unique_ptr<base::DictionaryValue> size(new base::DictionaryValue);
   NSSize node_size = [[cocoa_node size] sizeValue];
   size->SetInteger(kHeightDictAttr, static_cast<int>(node_size.height));
   size->SetInteger(kWidthDictAttr, static_cast<int>(node_size.width));
   return size;
 }
 
-scoped_ptr<base::DictionaryValue> PopulateRange(NSRange range) {
-  scoped_ptr<base::DictionaryValue> rangeDict(new base::DictionaryValue);
+std::unique_ptr<base::DictionaryValue> PopulateRange(NSRange range) {
+  std::unique_ptr<base::DictionaryValue> rangeDict(new base::DictionaryValue);
   rangeDict->SetInteger(kRangeLocDictAttr, static_cast<int>(range.location));
   rangeDict->SetInteger(kRangeLenDictAttr, static_cast<int>(range.length));
   return rangeDict;
@@ -83,16 +83,16 @@ bool IsRangeValue(id value) {
   return 0 == strcmp([value objCType], @encode(NSRange));
 }
 
-scoped_ptr<base::Value> PopulateObject(id value);
+std::unique_ptr<base::Value> PopulateObject(id value);
 
-scoped_ptr<base::ListValue> PopulateArray(NSArray* array) {
-  scoped_ptr<base::ListValue> list(new base::ListValue);
+std::unique_ptr<base::ListValue> PopulateArray(NSArray* array) {
+  std::unique_ptr<base::ListValue> list(new base::ListValue);
   for (NSUInteger i = 0; i < [array count]; i++)
     list->Append(PopulateObject([array objectAtIndex:i]).release());
   return list;
 }
 
-scoped_ptr<base::StringValue> StringForBrowserAccessibility(
+std::unique_ptr<base::StringValue> StringForBrowserAccessibility(
     BrowserAccessibilityCocoa* obj) {
   NSMutableArray* tokens = [[NSMutableArray alloc] init];
 
@@ -122,23 +122,23 @@ scoped_ptr<base::StringValue> StringForBrowserAccessibility(
   }
 
   NSString* result = [tokens componentsJoinedByString:@" "];
-  return scoped_ptr<base::StringValue>(
+  return std::unique_ptr<base::StringValue>(
       new base::StringValue(SysNSStringToUTF16(result)));
 }
 
-scoped_ptr<base::Value> PopulateObject(id value) {
+std::unique_ptr<base::Value> PopulateObject(id value) {
   if ([value isKindOfClass:[NSArray class]])
-    return scoped_ptr<base::Value>(PopulateArray((NSArray*) value));
+    return std::unique_ptr<base::Value>(PopulateArray((NSArray*)value));
   if (IsRangeValue(value))
-    return scoped_ptr<base::Value>(PopulateRange([value rangeValue]));
+    return std::unique_ptr<base::Value>(PopulateRange([value rangeValue]));
   if ([value isKindOfClass:[BrowserAccessibilityCocoa class]]) {
     std::string str;
     StringForBrowserAccessibility(value)->GetAsString(&str);
-    return scoped_ptr<base::Value>(StringForBrowserAccessibility(
-        (BrowserAccessibilityCocoa*) value));
+    return std::unique_ptr<base::Value>(
+        StringForBrowserAccessibility((BrowserAccessibilityCocoa*)value));
   }
 
-  return scoped_ptr<base::Value>(new base::StringValue(
+  return std::unique_ptr<base::Value>(new base::StringValue(
       SysNSStringToUTF16([NSString stringWithFormat:@"%@", value])));
 }
 

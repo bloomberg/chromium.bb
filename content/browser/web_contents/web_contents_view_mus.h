@@ -5,10 +5,10 @@
 #ifndef CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_MUS_H_
 #define CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_MUS_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "components/mus/public/cpp/scoped_window_ptr.h"
 #include "components/mus/public/cpp/window.h"
@@ -107,9 +107,9 @@ class WebContentsViewMus : public WebContentsView,
   // The WebContentsImpl whose contents we display.
   WebContentsImpl* web_contents_;
 
-  scoped_ptr<WebContentsViewDelegate> delegate_;
-  scoped_ptr<aura::Window> aura_window_;
-  scoped_ptr<mus::ScopedWindowPtr> mus_window_;
+  std::unique_ptr<WebContentsViewDelegate> delegate_;
+  std::unique_ptr<aura::Window> aura_window_;
+  std::unique_ptr<mus::ScopedWindowPtr> mus_window_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewMus);
 };

@@ -18,7 +18,7 @@ class ContentViewCore;
 // Touch handle drawable backed by an Android PopupWindow.
 class PopupTouchHandleDrawable : public ui::TouchHandleDrawable {
  public:
-  static scoped_ptr<PopupTouchHandleDrawable> Create(
+  static std::unique_ptr<PopupTouchHandleDrawable> Create(
       ContentViewCore* content_view_core);
   ~PopupTouchHandleDrawable() override;
 

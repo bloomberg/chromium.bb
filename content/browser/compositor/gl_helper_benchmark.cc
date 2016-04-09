@@ -110,10 +110,10 @@ class GLHelperTest : public testing::Test {
     base::CloseFile(f);
   }
 
-  scoped_ptr<gpu::GLInProcessContext> context_;
+  std::unique_ptr<gpu::GLInProcessContext> context_;
   gpu::gles2::GLES2Interface* gl_;
-  scoped_ptr<content::GLHelper> helper_;
-  scoped_ptr<content::GLHelperScaling> helper_scaling_;
+  std::unique_ptr<content::GLHelper> helper_;
+  std::unique_ptr<content::GLHelperScaling> helper_scaling_;
   std::deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;
 };
 
@@ -151,7 +151,7 @@ TEST_F(GLHelperTest, ScaleBenchmark) {
                         input.getPixels());
 
         gfx::Rect src_subrect(0, 0, src_size.width(), src_size.height());
-        scoped_ptr<content::GLHelper::ScalerInterface> scaler(
+        std::unique_ptr<content::GLHelper::ScalerInterface> scaler(
             helper_->CreateScaler(kQualities[q], src_size, src_subrect,
                                   dst_size, false, false));
         // Scale once beforehand before we start measuring.

@@ -65,7 +65,7 @@ class PowerUsageMonitorTest : public testing::Test {
   void SetUp() override {
     monitor_.reset(new PowerUsageMonitor);
     // PowerUsageMonitor assumes ownership.
-    scoped_ptr<SystemInterfaceForTest> test_interface(
+    std::unique_ptr<SystemInterfaceForTest> test_interface(
         new SystemInterfaceForTest());
     system_interface_ = test_interface.get();
     monitor_->SetSystemInterfaceForTest(std::move(test_interface));
@@ -87,7 +87,7 @@ class PowerUsageMonitorTest : public testing::Test {
         NOTIFICATION_RENDERER_PROCESS_CLOSED, kDummyRenderProcessHostID);
   }
 
-  scoped_ptr<PowerUsageMonitor> monitor_;
+  std::unique_ptr<PowerUsageMonitor> monitor_;
   SystemInterfaceForTest* system_interface_;
   TestBrowserThreadBundle thread_bundle_;
 };

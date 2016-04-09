@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/browser/appcache/appcache_entry.h"
@@ -97,7 +98,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
 
   // Helper method to create an AppCacheURLRequestJob and populate job_.
   // Caller takes ownership of returned value.
-  scoped_ptr<AppCacheURLRequestJob> CreateJob(
+  std::unique_ptr<AppCacheURLRequestJob> CreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate);
 
@@ -111,7 +112,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // Main-resource loading -------------------------------------
   // Frame and SharedWorker main resources are handled here.
 
-  scoped_ptr<AppCacheURLRequestJob> MaybeLoadMainResource(
+  std::unique_ptr<AppCacheURLRequestJob> MaybeLoadMainResource(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate);
 
@@ -127,7 +128,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // Sub-resource loading -------------------------------------
   // Dedicated worker and all manner of sub-resources are handled here.
 
-  scoped_ptr<AppCacheURLRequestJob> MaybeLoadSubResource(
+  std::unique_ptr<AppCacheURLRequestJob> MaybeLoadSubResource(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate);
   void ContinueMaybeLoadSubResource();
@@ -181,7 +182,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
 
   // During a cross site navigation, we transfer ownership the AppcacheHost
   // from the old processes structures over to the new structures.
-  scoped_ptr<AppCacheHost> host_for_cross_site_transfer_;
+  std::unique_ptr<AppCacheHost> host_for_cross_site_transfer_;
   int old_process_id_;
   int old_host_id_;
 

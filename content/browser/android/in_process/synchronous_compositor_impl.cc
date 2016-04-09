@@ -334,7 +334,7 @@ void SynchronousCompositorImpl::DidBecomeCurrent() {
 }
 
 void SynchronousCompositorImpl::DeliverMessages() {
-  std::vector<scoped_ptr<IPC::Message>> messages;
+  std::vector<std::unique_ptr<IPC::Message>> messages;
   output_surface_->GetMessagesToDeliver(&messages);
   RenderProcessHost* rph = rwhva_->GetRenderWidgetHost()->GetProcess();
   for (const auto& msg : messages) {

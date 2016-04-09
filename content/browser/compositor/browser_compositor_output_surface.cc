@@ -21,27 +21,27 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     const scoped_refptr<cc::ContextProvider>& context_provider,
     const scoped_refptr<cc::ContextProvider>& worker_context_provider,
     const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
-    scoped_ptr<BrowserCompositorOverlayCandidateValidator>
+    std::unique_ptr<BrowserCompositorOverlayCandidateValidator>
         overlay_candidate_validator)
     : OutputSurface(context_provider, worker_context_provider),
       vsync_manager_(vsync_manager),
       reflector_(nullptr),
       use_begin_frame_scheduling_(
-          base::CommandLine::ForCurrentProcess()
-              ->HasSwitch(cc::switches::kEnableBeginFrameScheduling)) {
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              cc::switches::kEnableBeginFrameScheduling)) {
   overlay_candidate_validator_ = std::move(overlay_candidate_validator);
   Initialize();
 }
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
-    scoped_ptr<cc::SoftwareOutputDevice> software_device,
+    std::unique_ptr<cc::SoftwareOutputDevice> software_device,
     const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
     : OutputSurface(std::move(software_device)),
       vsync_manager_(vsync_manager),
       reflector_(nullptr),
       use_begin_frame_scheduling_(
-          base::CommandLine::ForCurrentProcess()
-              ->HasSwitch(cc::switches::kEnableBeginFrameScheduling)) {
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              cc::switches::kEnableBeginFrameScheduling)) {
   Initialize();
 }
 

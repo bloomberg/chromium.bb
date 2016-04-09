@@ -24,13 +24,13 @@ class TetheringHandler {
  public:
   using Response = DevToolsProtocolClient::Response;
   using CreateServerSocketCallback =
-      base::Callback<scoped_ptr<net::ServerSocket>(std::string*)>;
+      base::Callback<std::unique_ptr<net::ServerSocket>(std::string*)>;
 
   TetheringHandler(const CreateServerSocketCallback& socket_callback,
                    scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~TetheringHandler();
 
-  void SetClient(scoped_ptr<Client> client);
+  void SetClient(std::unique_ptr<Client> client);
 
   Response Bind(DevToolsCommandId command_id, int port);
   Response Unbind(DevToolsCommandId command_id, int port);
@@ -46,7 +46,7 @@ class TetheringHandler {
   void SendInternalError(DevToolsCommandId command_id,
                          const std::string& message);
 
-  scoped_ptr<Client> client_;
+  std::unique_ptr<Client> client_;
   CreateServerSocketCallback socket_callback_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   bool is_active_;

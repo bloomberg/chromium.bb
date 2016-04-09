@@ -136,7 +136,7 @@ void PageHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
   }
 }
 
-void PageHandler::SetClient(scoped_ptr<Client> client) {
+void PageHandler::SetClient(std::unique_ptr<Client> client) {
   client_.swap(client);
 }
 

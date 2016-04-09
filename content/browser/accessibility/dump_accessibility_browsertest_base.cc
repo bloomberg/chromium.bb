@@ -93,7 +93,7 @@ void DumpAccessibilityTestBase::SetUpOnMainThread() {
 
 base::string16
 DumpAccessibilityTestBase::DumpUnfilteredAccessibilityTreeAsString() {
-  scoped_ptr<AccessibilityTreeFormatter> formatter(
+  std::unique_ptr<AccessibilityTreeFormatter> formatter(
       CreateAccessibilityTreeFormatter());
   std::vector<Filter> filters;
   filters.push_back(Filter(base::ASCIIToUTF16("*"), Filter::ALLOW));

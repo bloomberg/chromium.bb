@@ -185,7 +185,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
   base::MessageLoopForIO message_loop_;
   BrowserThreadImpl io_thread_;
   scoped_refptr<SpeechRecognizerImpl> recognizer_;
-  scoped_ptr<AudioManager> audio_manager_;
+  std::unique_ptr<AudioManager> audio_manager_;
   bool recognition_started_;
   bool recognition_ended_;
   bool result_received_;
@@ -197,7 +197,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
   net::TestURLFetcherFactory url_fetcher_factory_;
   TestAudioInputControllerFactory audio_input_controller_factory_;
   std::vector<uint8_t> audio_packet_;
-  scoped_ptr<media::AudioBus> audio_bus_;
+  std::unique_ptr<media::AudioBus> audio_bus_;
   int bytes_per_sample_;
   float volume_;
   float noise_volume_;

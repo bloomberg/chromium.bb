@@ -39,7 +39,7 @@ class BackgroundTracingManagerUploadConfigWrapper {
   }
 
   void Upload(const scoped_refptr<base::RefCountedString>& file_contents,
-              scoped_ptr<const base::DictionaryValue> metadata,
+              std::unique_ptr<const base::DictionaryValue> metadata,
               base::Callback<void()> done_callback) {
     receive_count_ += 1;
     EXPECT_TRUE(file_contents);
@@ -97,36 +97,38 @@ void StartedFinalizingCallback(base::Closure callback,
     callback.Run();
 }
 
-scoped_ptr<BackgroundTracingConfig> CreatePreemptiveConfig() {
+std::unique_ptr<BackgroundTracingConfig> CreatePreemptiveConfig() {
   base::DictionaryValue dict;
 
   dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
   dict.SetString("category", "BENCHMARK");
 
-  scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
   {
-    scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> rules_dict(
+        new base::DictionaryValue());
     rules_dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
     rules_dict->SetString("trigger_name", "preemptive_test");
     rules_list->Append(std::move(rules_dict));
   }
   dict.Set("configs", std::move(rules_list));
 
-  scoped_ptr<BackgroundTracingConfig> config(
+  std::unique_ptr<BackgroundTracingConfig> config(
       BackgroundTracingConfigImpl::FromDict(&dict));
 
   EXPECT_TRUE(config);
   return config;
 }
 
-scoped_ptr<BackgroundTracingConfig> CreateReactiveConfig() {
+std::unique_ptr<BackgroundTracingConfig> CreateReactiveConfig() {
   base::DictionaryValue dict;
 
   dict.SetString("mode", "REACTIVE_TRACING_MODE");
 
-  scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
   {
-    scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> rules_dict(
+        new base::DictionaryValue());
     rules_dict->SetString("rule", "TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL");
     rules_dict->SetString("trigger_name", "reactive_test");
     rules_dict->SetString("category", "BENCHMARK");
@@ -134,7 +136,7 @@ scoped_ptr<BackgroundTracingConfig> CreateReactiveConfig() {
   }
   dict.Set("configs", std::move(rules_list));
 
-  scoped_ptr<BackgroundTracingConfig> config(
+  std::unique_ptr<BackgroundTracingConfig> config(
       BackgroundTracingConfigImpl::FromDict(&dict));
 
   EXPECT_TRUE(config);
@@ -162,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         run_loop.QuitClosure());
 
-    scoped_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
+    std::unique_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
 
     BackgroundTracingManager::TriggerHandle handle =
         BackgroundTracingManager::
@@ -194,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         run_loop.QuitClosure());
 
-    scoped_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
+    std::unique_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
 
     content::BackgroundTracingManager::TriggerHandle handle =
         content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
@@ -246,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
       wait_for_upload.QuitClosure());
 
-  scoped_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
+  std::unique_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
 
   content::BackgroundTracingManager::TriggerHandle handle =
       content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
@@ -290,7 +292,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
       wait_for_upload.QuitClosure());
 
-  scoped_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
+  std::unique_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
 
   content::BackgroundTracingManager::TriggerHandle handle =
       content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
@@ -334,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
       wait_for_upload.QuitClosure());
 
-  scoped_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
+  std::unique_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
 
   content::BackgroundTracingManager::TriggerHandle handle =
       content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
@@ -379,15 +381,17 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
     dict.SetString("category", "BENCHMARK");
 
-    scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+    std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
     {
-      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      std::unique_ptr<base::DictionaryValue> rules_dict(
+          new base::DictionaryValue());
       rules_dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
       rules_dict->SetString("trigger_name", "test1");
       rules_list->Append(std::move(rules_dict));
     }
     {
-      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      std::unique_ptr<base::DictionaryValue> rules_dict(
+          new base::DictionaryValue());
       rules_dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
       rules_dict->SetString("trigger_name", "test2");
       rules_list->Append(std::move(rules_dict));
@@ -395,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
     dict.Set("configs", std::move(rules_list));
 
-    scoped_ptr<BackgroundTracingConfig> config(
+    std::unique_ptr<BackgroundTracingConfig> config(
         BackgroundTracingConfigImpl::FromDict(&dict));
     EXPECT_TRUE(config);
 
@@ -438,9 +442,10 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
     dict.SetString("category", "BENCHMARK");
 
-    scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+    std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
     {
-      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      std::unique_ptr<base::DictionaryValue> rules_dict(
+          new base::DictionaryValue());
       rules_dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
       rules_dict->SetString("trigger_name", "test2");
       rules_list->Append(std::move(rules_dict));
@@ -449,7 +454,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     dict.Set("configs", std::move(rules_list));
     dict.SetString("enable_blink_features", "FasterWeb1,FasterWeb2");
     dict.SetString("disable_blink_features", "SlowerWeb1,SlowerWeb2");
-    scoped_ptr<BackgroundTracingConfig> config(
+    std::unique_ptr<BackgroundTracingConfig> config(
         BackgroundTracingConfigImpl::FromDict(&dict));
     EXPECT_TRUE(config);
 
@@ -485,9 +490,10 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
   dict.SetString("category", "BENCHMARK");
 
-  scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
   {
-    scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> rules_dict(
+        new base::DictionaryValue());
     rules_dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
     rules_dict->SetString("trigger_name", "test2");
     rules_list->Append(std::move(rules_dict));
@@ -496,7 +502,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   dict.Set("configs", std::move(rules_list));
   dict.SetString("enable_blink_features", "FasterWeb1,FasterWeb2");
   dict.SetString("disable_blink_features", "SlowerWeb1,SlowerWeb2");
-  scoped_ptr<BackgroundTracingConfig> config(
+  std::unique_ptr<BackgroundTracingConfig> config(
       BackgroundTracingConfigImpl::FromDict(&dict));
   EXPECT_TRUE(config);
 
@@ -526,9 +532,10 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
     dict.SetString("category", "BENCHMARK");
 
-    scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+    std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
     {
-      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      std::unique_ptr<base::DictionaryValue> rules_dict(
+          new base::DictionaryValue());
       rules_dict->SetString(
           "rule", "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE");
       rules_dict->SetString("histogram_name", "fake");
@@ -539,7 +546,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
     dict.Set("configs", std::move(rules_list));
 
-    scoped_ptr<BackgroundTracingConfig> config(
+    std::unique_ptr<BackgroundTracingConfig> config(
         BackgroundTracingConfigImpl::FromDict(&dict));
     EXPECT_TRUE(config);
 
@@ -586,7 +593,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         (base::Closure()));
 
-    scoped_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
+    std::unique_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
 
     content::BackgroundTracingManager::TriggerHandle handle =
         content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
@@ -613,7 +620,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         (base::Closure()));
 
-    scoped_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
+    std::unique_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
 
     content::BackgroundTracingManager::TriggerHandle handle =
         content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
@@ -646,7 +653,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         (base::Closure()));
 
-    scoped_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
+    std::unique_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
 
     content::BackgroundTracingManager::TriggerHandle handle =
         content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
@@ -687,9 +694,10 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
     dict.SetString("category", "BENCHMARK");
 
-    scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+    std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
     {
-      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      std::unique_ptr<base::DictionaryValue> rules_dict(
+          new base::DictionaryValue());
       rules_dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
       rules_dict->SetString("trigger_name", "preemptive_test");
       rules_dict->SetDouble("trigger_chance", 0.0);
@@ -697,7 +705,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     }
     dict.Set("configs", std::move(rules_list));
 
-    scoped_ptr<BackgroundTracingConfig> config(
+    std::unique_ptr<BackgroundTracingConfig> config(
         BackgroundTracingConfigImpl::FromDict(&dict));
 
     EXPECT_TRUE(config);
@@ -737,9 +745,10 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
     dict.SetString("mode", "REACTIVE_TRACING_MODE");
 
-    scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+    std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
     {
-      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      std::unique_ptr<base::DictionaryValue> rules_dict(
+          new base::DictionaryValue());
       rules_dict->SetString("rule",
                             "TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL");
       rules_dict->SetString("trigger_name", "reactive_test1");
@@ -750,7 +759,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     }
     dict.Set("configs", std::move(rules_list));
 
-    scoped_ptr<BackgroundTracingConfig> config(
+    std::unique_ptr<BackgroundTracingConfig> config(
         BackgroundTracingConfigImpl::FromDict(&dict));
 
     EXPECT_TRUE(config);
@@ -791,9 +800,10 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
     dict.SetString("category", "BENCHMARK");
 
-    scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+    std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
     {
-      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      std::unique_ptr<base::DictionaryValue> rules_dict(
+          new base::DictionaryValue());
       rules_dict->SetString(
           "rule", "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE");
       rules_dict->SetString("histogram_name", "fake");
@@ -803,7 +813,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
     dict.Set("configs", std::move(rules_list));
 
-    scoped_ptr<BackgroundTracingConfig> config(
+    std::unique_ptr<BackgroundTracingConfig> config(
         BackgroundTracingConfigImpl::FromDict(&dict));
     EXPECT_TRUE(config);
 
@@ -835,9 +845,10 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
     dict.SetString("category", "BENCHMARK");
 
-    scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+    std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
     {
-      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      std::unique_ptr<base::DictionaryValue> rules_dict(
+          new base::DictionaryValue());
       rules_dict->SetString(
           "rule", "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE");
       rules_dict->SetString("histogram_name", "fake");
@@ -847,7 +858,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
     dict.Set("configs", std::move(rules_list));
 
-    scoped_ptr<BackgroundTracingConfig> config(
+    std::unique_ptr<BackgroundTracingConfig> config(
         BackgroundTracingConfigImpl::FromDict(&dict));
     EXPECT_TRUE(config);
 
@@ -880,9 +891,10 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
     dict.SetString("category", "BENCHMARK");
 
-    scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+    std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
     {
-      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      std::unique_ptr<base::DictionaryValue> rules_dict(
+          new base::DictionaryValue());
       rules_dict->SetString(
           "rule", "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE");
       rules_dict->SetString("histogram_name", "fake");
@@ -893,7 +905,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
     dict.Set("configs", std::move(rules_list));
 
-    scoped_ptr<BackgroundTracingConfig> config(
+    std::unique_ptr<BackgroundTracingConfig> config(
         BackgroundTracingConfigImpl::FromDict(&dict));
     EXPECT_TRUE(config);
 
@@ -924,16 +936,17 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
     dict.SetString("category", "BENCHMARK");
 
-    scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+    std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
     {
-      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      std::unique_ptr<base::DictionaryValue> rules_dict(
+          new base::DictionaryValue());
       rules_dict->SetString("rule", "INVALID_RULE");
       rules_list->Append(std::move(rules_dict));
     }
 
     dict.Set("configs", std::move(rules_list));
 
-    scoped_ptr<BackgroundTracingConfig> config(
+    std::unique_ptr<BackgroundTracingConfig> config(
         BackgroundTracingConfigImpl::FromDict(&dict));
     // An invalid config should always return a nullptr here.
     EXPECT_FALSE(config);
@@ -950,7 +963,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         run_loop.QuitClosure());
 
-    scoped_ptr<BackgroundTracingConfig> config = CreateReactiveConfig();
+    std::unique_ptr<BackgroundTracingConfig> config = CreateReactiveConfig();
 
     BackgroundTracingManager::TriggerHandle handle =
         BackgroundTracingManager::
@@ -984,7 +997,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         run_loop.QuitClosure());
 
-    scoped_ptr<BackgroundTracingConfig> config = CreateReactiveConfig();
+    std::unique_ptr<BackgroundTracingConfig> config = CreateReactiveConfig();
 
     BackgroundTracingManager::TriggerHandle handle =
         BackgroundTracingManager::
@@ -1022,9 +1035,10 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     base::DictionaryValue dict;
     dict.SetString("mode", "REACTIVE_TRACING_MODE");
 
-    scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+    std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
     {
-      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      std::unique_ptr<base::DictionaryValue> rules_dict(
+          new base::DictionaryValue());
       rules_dict->SetString("rule",
                             "TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL");
       rules_dict->SetString("trigger_name", "reactive_test1");
@@ -1032,7 +1046,8 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
       rules_list->Append(std::move(rules_dict));
     }
     {
-      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      std::unique_ptr<base::DictionaryValue> rules_dict(
+          new base::DictionaryValue());
       rules_dict->SetString("rule",
                             "TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL");
       rules_dict->SetString("trigger_name", "reactive_test2");
@@ -1041,7 +1056,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     }
     dict.Set("configs", std::move(rules_list));
 
-    scoped_ptr<BackgroundTracingConfig> config(
+    std::unique_ptr<BackgroundTracingConfig> config(
         BackgroundTracingConfigImpl::FromDict(&dict));
 
     BackgroundTracingManager::TriggerHandle handle1 =
@@ -1086,7 +1101,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         run_loop.QuitClosure());
 
-    scoped_ptr<BackgroundTracingConfig> config = CreateReactiveConfig();
+    std::unique_ptr<BackgroundTracingConfig> config = CreateReactiveConfig();
 
     BackgroundTracingManager::TriggerHandle handle =
         BackgroundTracingManager::

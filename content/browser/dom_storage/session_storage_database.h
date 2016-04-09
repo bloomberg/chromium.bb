@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/common/dom_storage/dom_storage_types.h"
@@ -191,7 +191,7 @@ class CONTENT_EXPORT SessionStorageDatabase :
   static std::string MapKey(const std::string& map_id, const std::string& key);
   static const char* NextMapIdKey();
 
-  scoped_ptr<leveldb::DB> db_;
+  std::unique_ptr<leveldb::DB> db_;
   base::FilePath file_path_;
 
   // For protecting the database opening code. Also guards the variables below.

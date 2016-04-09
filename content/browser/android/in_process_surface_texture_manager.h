@@ -7,9 +7,10 @@
 
 #include "gpu/ipc/common/android/surface_texture_manager.h"
 
+#include <memory>
+
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
@@ -46,7 +47,7 @@ class CONTENT_EXPORT InProcessSurfaceTextureManager
   ~InProcessSurfaceTextureManager() override;
 
   using SurfaceTextureMap =
-      base::ScopedPtrHashMap<int, scoped_ptr<gfx::ScopedJavaSurface>>;
+      base::ScopedPtrHashMap<int, std::unique_ptr<gfx::ScopedJavaSurface>>;
   SurfaceTextureMap surface_textures_;
   base::Lock lock_;
 

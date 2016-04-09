@@ -43,7 +43,7 @@ class AppCacheDiskCacheTest : public testing::Test {
   }
 
   base::ScopedTempDir directory_;
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
   scoped_refptr<base::SingleThreadTaskRunner> cache_thread_;
   net::CompletionCallback completion_callback_;
   std::vector<int> completion_results_;
@@ -56,7 +56,7 @@ TEST_F(AppCacheDiskCacheTest, DisablePriorToInitCompletion) {
 
   // Create an instance and start it initializing, queue up
   // one of each kind of "entry" function.
-  scoped_ptr<AppCacheDiskCache> disk_cache(new AppCacheDiskCache);
+  std::unique_ptr<AppCacheDiskCache> disk_cache(new AppCacheDiskCache);
   EXPECT_FALSE(disk_cache->is_disabled());
   disk_cache->InitWithDiskBackend(
       directory_.path(), k10MBytes, false, cache_thread_, completion_callback_);
@@ -87,7 +87,7 @@ TEST_F(AppCacheDiskCacheTest, DisablePriorToInitCompletion) {
 
 TEST_F(AppCacheDiskCacheTest, DisableAfterInitted) {
   // Create an instance and let it fully init.
-  scoped_ptr<AppCacheDiskCache> disk_cache(new AppCacheDiskCache);
+  std::unique_ptr<AppCacheDiskCache> disk_cache(new AppCacheDiskCache);
   EXPECT_FALSE(disk_cache->is_disabled());
   disk_cache->InitWithDiskBackend(
       directory_.path(), k10MBytes, false, cache_thread_, completion_callback_);
@@ -122,7 +122,7 @@ TEST_F(AppCacheDiskCacheTest, DisableAfterInitted) {
 // Flaky on Android: http://crbug.com/339534
 TEST_F(AppCacheDiskCacheTest, DISABLED_DisableWithEntriesOpen) {
   // Create an instance and let it fully init.
-  scoped_ptr<AppCacheDiskCache> disk_cache(new AppCacheDiskCache);
+  std::unique_ptr<AppCacheDiskCache> disk_cache(new AppCacheDiskCache);
   EXPECT_FALSE(disk_cache->is_disabled());
   disk_cache->InitWithDiskBackend(
       directory_.path(), k10MBytes, false, cache_thread_, completion_callback_);

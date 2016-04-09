@@ -6,9 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "dbus/message.h"
@@ -113,7 +114,7 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
   scoped_refptr<dbus::MockObjectProxy> mock_access_point_proxy_;
   scoped_refptr<dbus::MockObjectProxy> mock_device_proxy_;
   scoped_refptr<WifiDataProviderLinux>  wifi_provider_linux_;
-  scoped_ptr<WifiDataProviderCommon::WlanApiInterface> wlan_api_;
+  std::unique_ptr<WifiDataProviderCommon::WlanApiInterface> wlan_api_;
 
  private:
   // Creates a response for |mock_network_manager_proxy_|.
@@ -127,7 +128,7 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
       object_paths.push_back(
           dbus::ObjectPath("/org/freedesktop/NetworkManager/Devices/0"));
 
-      scoped_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
+      std::unique_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
       dbus::MessageWriter writer(response.get());
       writer.AppendArrayOfObjectPaths(object_paths);
       return response.release();
@@ -148,7 +149,8 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
       if (reader.PopString(&interface_name) &&
           reader.PopString(&property_name)) {
         // The device type is asked. Respond that the device type is wifi.
-        scoped_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
+        std::unique_ptr<dbus::Response> response =
+            dbus::Response::CreateEmpty();
         dbus::MessageWriter writer(response.get());
         // This matches NM_DEVICE_TYPE_WIFI in wifi_data_provider_linux.cc.
         const int kDeviceTypeWifi = 2;
@@ -159,7 +161,7 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
                "org.freedesktop.NetworkManager.Device.Wireless" &&
                method_call->GetMember() == "GetAccessPoints") {
       // The list of access points is asked. Return the object path.
-      scoped_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
+      std::unique_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
       dbus::MessageWriter writer(response.get());
       std::vector<dbus::ObjectPath> object_paths;
       object_paths.push_back(
@@ -184,7 +186,8 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
       std::string property_name;
       if (reader.PopString(&interface_name) &&
           reader.PopString(&property_name)) {
-        scoped_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
+        std::unique_ptr<dbus::Response> response =
+            dbus::Response::CreateEmpty();
         dbus::MessageWriter writer(response.get());
 
         if (property_name == "Ssid") {

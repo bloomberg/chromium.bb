@@ -78,7 +78,7 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
 
   switch (entry.type()) {
     case net::NetLog::TYPE_HTTP_TRANSACTION_SEND_REQUEST_HEADERS: {
-      scoped_ptr<base::Value> event_params(entry.ParametersToValue());
+      std::unique_ptr<base::Value> event_params(entry.ParametersToValue());
       std::string request_line;
       net::HttpRequestHeaders request_headers;
 
@@ -100,7 +100,7 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
       break;
     }
     case net::NetLog::TYPE_HTTP_TRANSACTION_HTTP2_SEND_REQUEST_HEADERS: {
-      scoped_ptr<base::Value> event_params(entry.ParametersToValue());
+      std::unique_ptr<base::Value> event_params(entry.ParametersToValue());
       net::SpdyHeaderBlock request_headers;
 
       if (!net::SpdyHeaderBlockFromNetLogParam(event_params.get(),
@@ -121,7 +121,7 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
       break;
     }
     case net::NetLog::TYPE_HTTP_TRANSACTION_READ_RESPONSE_HEADERS: {
-      scoped_ptr<base::Value> event_params(entry.ParametersToValue());
+      std::unique_ptr<base::Value> event_params(entry.ParametersToValue());
 
       scoped_refptr<net::HttpResponseHeaders> response_headers;
 

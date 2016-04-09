@@ -126,7 +126,7 @@ int GetModifierFlags() {
   currentRVH_ = webContents_->GetRenderViewHost();
 
   // Fill out a DropData from pasteboard.
-  scoped_ptr<DropData> dropData;
+  std::unique_ptr<DropData> dropData;
   dropData.reset(new DropData());
   [self populateDropData:dropData.get()
              fromPasteboard:[info draggingPasteboard]];

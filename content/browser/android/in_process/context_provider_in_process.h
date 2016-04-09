@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "cc/blink/context_provider_web_context.h"
@@ -29,13 +29,13 @@ class ContextProviderInProcess
     : NON_EXPORTED_BASE(public cc_blink::ContextProviderWebContext) {
  public:
   static scoped_refptr<ContextProviderInProcess> Create(
-      scoped_ptr<gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl>
+      std::unique_ptr<gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl>
           context3d,
       const std::string& debug_name);
 
  private:
   ContextProviderInProcess(
-      scoped_ptr<gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl>
+      std::unique_ptr<gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl>
           context3d,
       const std::string& debug_name);
   ~ContextProviderInProcess() override;
@@ -63,16 +63,16 @@ class ContextProviderInProcess
   base::ThreadChecker main_thread_checker_;
   base::ThreadChecker context_thread_checker_;
 
-  scoped_ptr<gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl>
+  std::unique_ptr<gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl>
       context3d_;
-  scoped_ptr<GrContextForGLES2Interface> gr_context_;
+  std::unique_ptr<GrContextForGLES2Interface> gr_context_;
 
   LostContextCallback lost_context_callback_;
 
   base::Lock context_lock_;
   std::string debug_name_;
   class LostContextCallbackProxy;
-  scoped_ptr<LostContextCallbackProxy> lost_context_callback_proxy_;
+  std::unique_ptr<LostContextCallbackProxy> lost_context_callback_proxy_;
 
   cc::ContextProvider::Capabilities capabilities_;
 

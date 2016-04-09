@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_FRAME_TRACE_RECORDER_H_
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_FRAME_TRACE_RECORDER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 namespace cc {
@@ -33,7 +34,7 @@ class DevToolsFrameTraceRecorder {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DevToolsFrameTraceRecorder);
-  scoped_ptr<cc::CompositorFrameMetadata> last_metadata_;
+  std::unique_ptr<cc::CompositorFrameMetadata> last_metadata_;
 };
 
 }  // namespace content

@@ -535,8 +535,8 @@ class QuotaDatabaseTest : public testing::Test {
       const base::FilePath& kDbFile,
       const QuotaTableEntry* entries,
       size_t entries_size) {
-    scoped_ptr<sql::Connection> db(new sql::Connection);
-    scoped_ptr<sql::MetaTable> meta_table(new sql::MetaTable);
+    std::unique_ptr<sql::Connection> db(new sql::Connection);
+    std::unique_ptr<sql::MetaTable> meta_table(new sql::MetaTable);
 
     // V2 schema definitions.
     static const int kCurrentVersion = 2;

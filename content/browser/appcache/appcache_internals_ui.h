@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_storage.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
@@ -71,7 +71,7 @@ class AppCacheInternalsUI : public WebUIController {
     void OnResponseDataReadComplete(
         const ResponseEnquiry& response_enquiry,
         scoped_refptr<AppCacheResponseInfo> response_info,
-        scoped_ptr<AppCacheResponseReader> reader,
+        std::unique_ptr<AppCacheResponseReader> reader,
         scoped_refptr<net::IOBuffer> response_data,
         int net_result_code);
     void Initialize(
@@ -109,7 +109,7 @@ class AppCacheInternalsUI : public WebUIController {
   void OnAppCacheDetailsReady(
       const base::FilePath& partition_path,
       const std::string& manifest_url,
-      scoped_ptr<AppCacheResourceInfoVector> resource_info_vector);
+      std::unique_ptr<AppCacheResourceInfoVector> resource_info_vector);
   void OnFileDetailsReady(const Proxy::ResponseEnquiry& response_enquiry,
                           scoped_refptr<AppCacheResponseInfo> response_info,
                           scoped_refptr<net::IOBuffer> response_data,

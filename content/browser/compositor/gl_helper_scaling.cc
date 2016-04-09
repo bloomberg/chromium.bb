@@ -169,7 +169,7 @@ class ScalerImpl : public GLHelper::ScalerInterface,
     ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(
         gl_, dst_framebuffer_);
     DCHECK_GT(dest_textures.size(), 0U);
-    scoped_ptr<GLenum[]> buffers(new GLenum[dest_textures.size()]);
+    std::unique_ptr<GLenum[]> buffers(new GLenum[dest_textures.size()]);
     for (size_t t = 0; t < dest_textures.size(); t++) {
       ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, dest_textures[t]);
       gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + t,
@@ -232,7 +232,7 @@ class ScalerImpl : public GLHelper::ScalerInterface,
   GLuint intermediate_texture_;
   scoped_refptr<ShaderProgram> shader_program_;
   ScopedFramebuffer dst_framebuffer_;
-  scoped_ptr<ScalerImpl> subscaler_;
+  std::unique_ptr<ScalerImpl> subscaler_;
 };
 
 GLHelperScaling::ScalerStage::ScalerStage(ShaderType shader_,

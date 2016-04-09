@@ -23,8 +23,8 @@ enum LmuFunctionIndex {
 }  // namespace
 
 // static
-scoped_ptr<AmbientLightSensor> AmbientLightSensor::Create() {
-  scoped_ptr<AmbientLightSensor> light_sensor(new AmbientLightSensor);
+std::unique_ptr<AmbientLightSensor> AmbientLightSensor::Create() {
+  std::unique_ptr<AmbientLightSensor> light_sensor(new AmbientLightSensor);
   return light_sensor->Init() ? std::move(light_sensor) : nullptr;
 }
 

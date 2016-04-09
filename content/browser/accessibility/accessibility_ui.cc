@@ -99,9 +99,9 @@ bool HandleRequestCallback(BrowserContext* current_context,
                            const WebUIDataSource::GotDataCallback& callback) {
   if (path != kDataFile)
     return false;
-  scoped_ptr<base::ListValue> rvh_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> rvh_list(new base::ListValue());
 
-  scoped_ptr<RenderWidgetHostIterator> widgets(
+  std::unique_ptr<RenderWidgetHostIterator> widgets(
       RenderWidgetHost::GetRenderWidgetHosts());
 
   while (RenderWidgetHost* widget = widgets->GetNextHost()) {
@@ -226,7 +226,7 @@ void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {
 
   RenderViewHost* rvh = RenderViewHost::FromID(process_id, route_id);
   if (!rvh) {
-    scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
     result->SetInteger(kProcessIdField, process_id);
     result->SetInteger(kRouteIdField, route_id);
     result->Set("error", new base::StringValue("Renderer no longer exists."));
@@ -234,10 +234,10 @@ void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {
     return;
   }
 
-  scoped_ptr<base::DictionaryValue> result(BuildTargetDescriptor(rvh));
+  std::unique_ptr<base::DictionaryValue> result(BuildTargetDescriptor(rvh));
   auto web_contents = static_cast<WebContentsImpl*>(
       WebContents::FromRenderViewHost(rvh));
-  scoped_ptr<AccessibilityTreeFormatter> formatter;
+  std::unique_ptr<AccessibilityTreeFormatter> formatter;
   if (g_show_internal_accessibility_tree)
     formatter.reset(new AccessibilityTreeFormatterBlink());
   else

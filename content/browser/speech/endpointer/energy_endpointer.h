@@ -39,10 +39,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/speech/endpointer/energy_endpointer_params.h"
 #include "content/common/content_export.h"
 
@@ -125,7 +125,7 @@ class CONTENT_EXPORT EnergyEndpointer {
   float sample_rate_;  // Sampling rate.
 
   // Ring buffers to hold the speech activity history.
-  scoped_ptr<HistoryRing> history_;
+  std::unique_ptr<HistoryRing> history_;
 
   // Configuration parameters.
   EnergyEndpointerParams params_;

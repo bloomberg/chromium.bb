@@ -19,7 +19,7 @@ InspectorHandler::InspectorHandler()
 InspectorHandler::~InspectorHandler() {
 }
 
-void InspectorHandler::SetClient(scoped_ptr<Client> client) {
+void InspectorHandler::SetClient(std::unique_ptr<Client> client) {
   client_.swap(client);
 }
 

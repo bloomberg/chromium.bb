@@ -5,10 +5,10 @@
 #ifndef CONTENT_BROWSER_ZYGOTE_HOST_ZYGOTE_COMMUNICATION_LINUX_H_
 #define CONTENT_BROWSER_ZYGOTE_HOST_ZYGOTE_COMMUNICATION_LINUX_H_
 
+#include <memory>
 #include <set>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/process/kill.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
@@ -26,7 +26,7 @@ class CONTENT_EXPORT ZygoteCommunication {
   // Tries to start a process of type indicated by process_type.
   // Returns its pid on success, otherwise base::kNullProcessHandle;
   pid_t ForkRequest(const std::vector<std::string>& command_line,
-                    scoped_ptr<FileDescriptorInfo> mapping,
+                    std::unique_ptr<FileDescriptorInfo> mapping,
                     const std::string& process_type);
 
   void EnsureProcessTerminated(pid_t process);

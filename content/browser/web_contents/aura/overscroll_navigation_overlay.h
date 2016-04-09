@@ -73,18 +73,20 @@ class CONTENT_EXPORT OverscrollNavigationOverlay
 
   // Creates a window that shows a history-screenshot and is stacked relative to
   // the current overscroll |direction_| with the given |bounds|.
-  scoped_ptr<aura::Window> CreateOverlayWindow(const gfx::Rect& bounds);
+  std::unique_ptr<aura::Window> CreateOverlayWindow(const gfx::Rect& bounds);
 
   // Returns an image with the history-screenshot for the previous or next page,
   // according to the given |direction|.
   const gfx::Image GetImageForDirection(NavigationDirection direction) const;
 
   // Overridden from OverscrollWindowAnimation::Delegate:
-  scoped_ptr<aura::Window> CreateFrontWindow(const gfx::Rect& bounds) override;
-  scoped_ptr<aura::Window> CreateBackWindow(const gfx::Rect& bounds) override;
+  std::unique_ptr<aura::Window> CreateFrontWindow(
+      const gfx::Rect& bounds) override;
+  std::unique_ptr<aura::Window> CreateBackWindow(
+      const gfx::Rect& bounds) override;
   aura::Window* GetMainWindow() const override;
   void OnOverscrollCompleting() override;
-  void OnOverscrollCompleted(scoped_ptr<aura::Window> window) override;
+  void OnOverscrollCompleted(std::unique_ptr<aura::Window> window) override;
   void OnOverscrollCancelled() override;
 
   // Overridden from WebContentsObserver:
@@ -99,7 +101,7 @@ class CONTENT_EXPORT OverscrollNavigationOverlay
 
   // The overlay window that shows a screenshot during an overscroll gesture and
   // handles overscroll events during the second overscroll case.
-  scoped_ptr<aura::Window> window_;
+  std::unique_ptr<aura::Window> window_;
 
   bool loading_complete_;
   bool received_paint_update_;
@@ -110,7 +112,7 @@ class CONTENT_EXPORT OverscrollNavigationOverlay
   GURL pending_entry_url_;
 
   // Manages the overscroll animations.
-  scoped_ptr<OverscrollWindowAnimation> owa_;
+  std::unique_ptr<OverscrollWindowAnimation> owa_;
 
   // The window that hosts the web contents.
   aura::Window* web_contents_window_;

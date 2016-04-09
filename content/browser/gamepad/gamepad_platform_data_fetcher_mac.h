@@ -5,19 +5,19 @@
 #ifndef CONTENT_BROWSER_GAMEPAD_GAMEPAD_PLATFORM_DATA_FETCHER_MAC_H_
 #define CONTENT_BROWSER_GAMEPAD_GAMEPAD_PLATFORM_DATA_FETCHER_MAC_H_
 
+#include <CoreFoundation/CoreFoundation.h>
+#include <IOKit/hid/IOHIDManager.h>
 #include <stddef.h>
+
+#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/browser/gamepad/gamepad_data_fetcher.h"
 #include "content/browser/gamepad/xbox_data_fetcher_mac.h"
 #include "content/common/gamepad_hardware_buffer.h"
-
-#include <CoreFoundation/CoreFoundation.h>
-#include <IOKit/hid/IOHIDManager.h>
 
 #if defined(__OBJC__)
 @class NSArray;
@@ -74,7 +74,7 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher,
 
   void SanitizeGamepadData(size_t index, blink::WebGamepad* pad);
 
-  scoped_ptr<XboxDataFetcher> xbox_fetcher_;
+  std::unique_ptr<XboxDataFetcher> xbox_fetcher_;
 
   // Side-band data that's not passed to the consumer, but we need to maintain
   // to update data_.

@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/power_save_blocker_impl.h"
-
 #include <X11/Xlib.h>
-#include <stdint.h>
 #include <X11/extensions/dpms.h>
 #include <X11/extensions/scrnsaver.h>
+#include <stdint.h>
+
+#include <memory>
+
+#include "content/browser/power_save_blocker_impl.h"
 // Xlib #defines Status, but we can't have that for some of our headers.
 #ifdef Status
 #undef Status
@@ -21,7 +23,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/nix/xdg_util.h"
 #include "base/synchronization/lock.h"
@@ -236,8 +237,8 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
   bus_ = new dbus::Bus(options);
 
   scoped_refptr<dbus::ObjectProxy> object_proxy;
-  scoped_ptr<dbus::MethodCall> method_call;
-  scoped_ptr<dbus::MessageWriter> message_writer;
+  std::unique_ptr<dbus::MethodCall> method_call;
+  std::unique_ptr<dbus::MessageWriter> message_writer;
 
   switch (api_) {
     case NO_API:
@@ -347,7 +348,7 @@ void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
   }
 
   scoped_refptr<dbus::ObjectProxy> object_proxy;
-  scoped_ptr<dbus::MethodCall> method_call;
+  std::unique_ptr<dbus::MethodCall> method_call;
 
   switch (api_) {
     case NO_API:
@@ -448,7 +449,7 @@ bool PowerSaveBlockerImpl::Delegate::XSSAvailable() {
 // static
 DBusAPI PowerSaveBlockerImpl::Delegate::SelectAPI() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   switch (base::nix::GetDesktopEnvironment(env.get())) {
     case base::nix::DESKTOP_ENVIRONMENT_GNOME:
     case base::nix::DESKTOP_ENVIRONMENT_UNITY:

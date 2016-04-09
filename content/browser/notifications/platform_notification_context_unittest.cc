@@ -228,7 +228,7 @@ TEST_F(PlatformNotificationContextTest, DeleteNotification) {
 }
 
 TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
-  scoped_ptr<EmbeddedWorkerTestHelper> embedded_worker_test_helper(
+  std::unique_ptr<EmbeddedWorkerTestHelper> embedded_worker_test_helper(
       new EmbeddedWorkerTestHelper(base::FilePath()));
 
   // Manually create the PlatformNotificationContextImpl so that the Service

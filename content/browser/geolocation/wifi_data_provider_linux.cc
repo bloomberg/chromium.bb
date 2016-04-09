@@ -11,8 +11,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/geolocation/wifi_data_provider_manager.h"
@@ -74,7 +75,7 @@ class NetworkManagerWlanApi : public WifiDataProviderCommon::WlanApiInterface {
   // Internal method used by |GetAccessPointsForAdapter|, given a wifi access
   // point proxy retrieves the named property and returns it. Returns NULL in
   // a scoped_ptr if the property could not be read.
-  scoped_ptr<dbus::Response> GetAccessPointProperty(
+  std::unique_ptr<dbus::Response> GetAccessPointProperty(
       dbus::ObjectProxy* proxy,
       const std::string& property_name);
 
@@ -149,10 +150,8 @@ bool NetworkManagerWlanApi::GetAccessPointData(
     dbus::MessageWriter builder(&method_call);
     builder.AppendString("org.freedesktop.NetworkManager.Device");
     builder.AppendString("DeviceType");
-    scoped_ptr<dbus::Response> response(
-        device_proxy->CallMethodAndBlock(
-            &method_call,
-            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
+    std::unique_ptr<dbus::Response> response(device_proxy->CallMethodAndBlock(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
     if (!response) {
       LOG(WARNING) << "Failed to get the device type for "
                    << device_path.value();
@@ -181,10 +180,9 @@ bool NetworkManagerWlanApi::GetAccessPointData(
 bool NetworkManagerWlanApi::GetAdapterDeviceList(
     std::vector<dbus::ObjectPath>* device_paths) {
   dbus::MethodCall method_call(kNetworkManagerInterface, "GetDevices");
-  scoped_ptr<dbus::Response> response(
+  std::unique_ptr<dbus::Response> response(
       network_manager_proxy_->CallMethodAndBlock(
-          &method_call,
-          dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
+          &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
   if (!response) {
     LOG(WARNING) << "Failed to get the device list";
     return false;
@@ -209,10 +207,8 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
   dbus::MethodCall method_call(
       "org.freedesktop.NetworkManager.Device.Wireless",
       "GetAccessPoints");
-  scoped_ptr<dbus::Response> response(
-      device_proxy->CallMethodAndBlock(
-          &method_call,
-          dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
+  std::unique_ptr<dbus::Response> response(device_proxy->CallMethodAndBlock(
+      &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
   if (!response) {
     LOG(WARNING) << "Failed to get access points data for "
                  << adapter_path.value();
@@ -239,7 +235,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
 
     AccessPointData access_point_data;
     {
-      scoped_ptr<dbus::Response> response(
+      std::unique_ptr<dbus::Response> response(
           GetAccessPointProperty(access_point_proxy, "Ssid"));
       if (!response)
         continue;
@@ -263,7 +259,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
     }
 
     { // Read the mac address
-      scoped_ptr<dbus::Response> response(
+      std::unique_ptr<dbus::Response> response(
           GetAccessPointProperty(access_point_proxy, "HwAddress"));
       if (!response)
         continue;
@@ -287,7 +283,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
     }
 
     {  // Read signal strength.
-      scoped_ptr<dbus::Response> response(
+      std::unique_ptr<dbus::Response> response(
           GetAccessPointProperty(access_point_proxy, "Strength"));
       if (!response)
         continue;
@@ -303,7 +299,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
     }
 
     { // Read the channel
-      scoped_ptr<dbus::Response> response(
+      std::unique_ptr<dbus::Response> response(
           GetAccessPointProperty(access_point_proxy, "Frequency"));
       if (!response)
         continue;
@@ -330,16 +326,16 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
   return true;
 }
 
-scoped_ptr<dbus::Response> NetworkManagerWlanApi::GetAccessPointProperty(
+std::unique_ptr<dbus::Response> NetworkManagerWlanApi::GetAccessPointProperty(
     dbus::ObjectProxy* access_point_proxy,
     const std::string& property_name) {
   dbus::MethodCall method_call(DBUS_INTERFACE_PROPERTIES, "Get");
   dbus::MessageWriter builder(&method_call);
   builder.AppendString("org.freedesktop.NetworkManager.AccessPoint");
   builder.AppendString(property_name);
-  scoped_ptr<dbus::Response> response = access_point_proxy->CallMethodAndBlock(
-      &method_call,
-      dbus::ObjectProxy::TIMEOUT_USE_DEFAULT);
+  std::unique_ptr<dbus::Response> response =
+      access_point_proxy->CallMethodAndBlock(
+          &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT);
   if (!response) {
     LOG(WARNING) << "Failed to get property for " << property_name;
   }
@@ -361,7 +357,7 @@ WifiDataProviderLinux::~WifiDataProviderLinux() {
 
 WifiDataProviderCommon::WlanApiInterface*
 WifiDataProviderLinux::NewWlanApi() {
-  scoped_ptr<NetworkManagerWlanApi> wlan_api(new NetworkManagerWlanApi);
+  std::unique_ptr<NetworkManagerWlanApi> wlan_api(new NetworkManagerWlanApi);
   if (wlan_api->Init())
     return wlan_api.release();
   return NULL;
@@ -376,7 +372,7 @@ WifiPollingPolicy* WifiDataProviderLinux::NewPollingPolicy() {
 
 WifiDataProviderCommon::WlanApiInterface*
 WifiDataProviderLinux::NewWlanApiForTesting(dbus::Bus* bus) {
-  scoped_ptr<NetworkManagerWlanApi> wlan_api(new NetworkManagerWlanApi);
+  std::unique_ptr<NetworkManagerWlanApi> wlan_api(new NetworkManagerWlanApi);
   if (wlan_api->InitWithBus(bus))
     return wlan_api.release();
   return NULL;

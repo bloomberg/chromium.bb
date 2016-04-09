@@ -7,8 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/web_contents/web_contents_view_overscroll_animator_mac.h"
 
 namespace overscroll_animator {
@@ -52,7 +53,7 @@ class WebContentsPaintObserver;
 
   // An observer that reports the first non-empty paint of a WebContents. This
   // is used when completing an overscroll animation.
-  scoped_ptr<overscroll_animator::WebContentsPaintObserver> observer_;
+  std::unique_ptr<overscroll_animator::WebContentsPaintObserver> observer_;
 }
 @end
 

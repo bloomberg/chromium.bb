@@ -12,9 +12,9 @@ namespace {
 
 // Array component type names are similar to JNI type names, except for using
 // dots as namespace separators in class names.
-scoped_ptr<JavaType> CreateFromArrayComponentTypeName(
+std::unique_ptr<JavaType> CreateFromArrayComponentTypeName(
     const std::string& type_name) {
-  scoped_ptr<JavaType> result(new JavaType());
+  std::unique_ptr<JavaType> result(new JavaType());
   DCHECK(!type_name.empty());
   switch (type_name[0]) {
     case 'Z':

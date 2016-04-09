@@ -39,7 +39,7 @@ class AppCacheDiskCache::CreateBackendCallbackShim
       appcache_diskcache_->OnCreateBackendComplete(rv);
   }
 
-  scoped_ptr<disk_cache::Backend> backend_ptr_;  // Accessed directly.
+  std::unique_ptr<disk_cache::Backend> backend_ptr_;  // Accessed directly.
 
  private:
   friend class base::RefCounted<CreateBackendCallbackShim>;

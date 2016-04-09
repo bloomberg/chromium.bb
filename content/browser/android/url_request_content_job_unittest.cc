@@ -7,9 +7,9 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_file_util.h"
@@ -149,7 +149,7 @@ void URLRequestContentJobTest::RunRequest(const Range* range) {
   CallbacksJobFactory factory(path, &observer_);
   context_.set_job_factory(&factory);
 
-  scoped_ptr<net::URLRequest> request(context_.CreateRequest(
+  std::unique_ptr<net::URLRequest> request(context_.CreateRequest(
       GURL(path.value()), net::DEFAULT_PRIORITY, &delegate_));
   int expected_length = file_size;
   if (range) {

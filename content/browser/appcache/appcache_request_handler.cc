@@ -78,7 +78,7 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadResource(
   found_manifest_url_ = GURL();
   found_network_namespace_ = false;
 
-  scoped_ptr<AppCacheURLRequestJob> job;
+  std::unique_ptr<AppCacheURLRequestJob> job;
   if (is_main_resource())
     job = MaybeLoadMainResource(request, network_delegate);
   else
@@ -113,7 +113,7 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForRedirect(
 
   DCHECK(!job_.get());  // our jobs never generate redirects
 
-  scoped_ptr<AppCacheURLRequestJob> job;
+  std::unique_ptr<AppCacheURLRequestJob> job;
   if (found_fallback_entry_.has_response_id()) {
     // 6.9.6, step 4: If this results in a redirect to another origin,
     // get the resource of the fallback entry.
@@ -170,7 +170,8 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForResponse(
 
   // 6.9.6, step 4: If this results in a 4xx or 5xx status code
   // or there were network errors, get the resource of the fallback entry.
-  scoped_ptr<AppCacheURLRequestJob> job = CreateJob(request, network_delegate);
+  std::unique_ptr<AppCacheURLRequestJob> job =
+      CreateJob(request, network_delegate);
   DeliverAppCachedResponse(
       found_fallback_entry_, found_cache_id_, found_group_id_,
       found_manifest_url_, true, found_namespace_entry_url_);
@@ -277,10 +278,10 @@ void AppCacheRequestHandler::OnPrepareToRestart() {
   job_.reset();
 }
 
-scoped_ptr<AppCacheURLRequestJob> AppCacheRequestHandler::CreateJob(
+std::unique_ptr<AppCacheURLRequestJob> AppCacheRequestHandler::CreateJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) {
-  scoped_ptr<AppCacheURLRequestJob> job(new AppCacheURLRequestJob(
+  std::unique_ptr<AppCacheURLRequestJob> job(new AppCacheURLRequestJob(
       request, network_delegate, storage(), host_, is_main_resource(),
       base::Bind(&AppCacheRequestHandler::OnPrepareToRestart,
                  base::Unretained(this))));
@@ -290,7 +291,8 @@ scoped_ptr<AppCacheURLRequestJob> AppCacheRequestHandler::CreateJob(
 
 // Main-resource handling ----------------------------------------------
 
-scoped_ptr<AppCacheURLRequestJob> AppCacheRequestHandler::MaybeLoadMainResource(
+std::unique_ptr<AppCacheURLRequestJob>
+AppCacheRequestHandler::MaybeLoadMainResource(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) {
   DCHECK(!job_.get());
@@ -314,7 +316,8 @@ scoped_ptr<AppCacheURLRequestJob> AppCacheRequestHandler::MaybeLoadMainResource(
 
   // We may have to wait for our storage query to complete, but
   // this query can also complete syncrhonously.
-  scoped_ptr<AppCacheURLRequestJob> job = CreateJob(request, network_delegate);
+  std::unique_ptr<AppCacheURLRequestJob> job =
+      CreateJob(request, network_delegate);
   storage()->FindResponseForMainRequest(
       request->url(), preferred_manifest_url, this);
   return job;
@@ -392,7 +395,8 @@ void AppCacheRequestHandler::OnMainResponseFound(
 
 // Sub-resource handling ----------------------------------------------
 
-scoped_ptr<AppCacheURLRequestJob> AppCacheRequestHandler::MaybeLoadSubResource(
+std::unique_ptr<AppCacheURLRequestJob>
+AppCacheRequestHandler::MaybeLoadSubResource(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) {
   DCHECK(!job_.get());
@@ -410,7 +414,8 @@ scoped_ptr<AppCacheURLRequestJob> AppCacheRequestHandler::MaybeLoadSubResource(
     return nullptr;
   }
 
-  scoped_ptr<AppCacheURLRequestJob> job = CreateJob(request, network_delegate);
+  std::unique_ptr<AppCacheURLRequestJob> job =
+      CreateJob(request, network_delegate);
   ContinueMaybeLoadSubResource();
   return job;
 }

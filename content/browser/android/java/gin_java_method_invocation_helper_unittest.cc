@@ -113,10 +113,9 @@ TEST_F(GinJavaMethodInvocationHelperTest, RetrievalOfObjectsNoObjects) {
 
   scoped_refptr<GinJavaMethodInvocationHelper> helper =
       new GinJavaMethodInvocationHelper(
-          scoped_ptr<GinJavaMethodInvocationHelper::ObjectDelegate>(
+          std::unique_ptr<GinJavaMethodInvocationHelper::ObjectDelegate>(
               new NullObjectDelegate()),
-          "foo",
-          no_objects);
+          "foo", no_objects);
   CountingDispatcherDelegate counter;
   helper->Init(&counter);
   counter.AssertInvocationsCount(0, 0);
@@ -147,10 +146,9 @@ TEST_F(GinJavaMethodInvocationHelperTest, RetrievalOfObjectsHaveObjects) {
 
   scoped_refptr<GinJavaMethodInvocationHelper> helper =
       new GinJavaMethodInvocationHelper(
-          scoped_ptr<GinJavaMethodInvocationHelper::ObjectDelegate>(
+          std::unique_ptr<GinJavaMethodInvocationHelper::ObjectDelegate>(
               new NullObjectDelegate()),
-          "foo",
-          objects);
+          "foo", objects);
   CountingDispatcherDelegate counter;
   helper->Init(&counter);
   counter.AssertInvocationsCount(1, 6);
@@ -194,7 +192,7 @@ class ObjectIsGoneObjectDelegate : public NullObjectDelegate {
   const std::string& get_method_name() { return method_->name(); }
 
  protected:
-  scoped_ptr<JavaMethod> method_;
+  std::unique_ptr<JavaMethod> method_;
   bool get_local_ref_called_;
 
  private:
@@ -209,10 +207,9 @@ TEST_F(GinJavaMethodInvocationHelperTest, HandleObjectIsGone) {
       new ObjectIsGoneObjectDelegate();
   scoped_refptr<GinJavaMethodInvocationHelper> helper =
       new GinJavaMethodInvocationHelper(
-          scoped_ptr<GinJavaMethodInvocationHelper::ObjectDelegate>(
+          std::unique_ptr<GinJavaMethodInvocationHelper::ObjectDelegate>(
               object_delegate),
-          object_delegate->get_method_name(),
-          no_objects);
+          object_delegate->get_method_name(), no_objects);
   NullDispatcherDelegate dispatcher;
   helper->Init(&dispatcher);
   EXPECT_FALSE(object_delegate->get_local_ref_called());
@@ -260,10 +257,9 @@ TEST_F(GinJavaMethodInvocationHelperTest, HandleMethodNotFound) {
       new MethodNotFoundObjectDelegate();
   scoped_refptr<GinJavaMethodInvocationHelper> helper =
       new GinJavaMethodInvocationHelper(
-          scoped_ptr<GinJavaMethodInvocationHelper::ObjectDelegate>(
+          std::unique_ptr<GinJavaMethodInvocationHelper::ObjectDelegate>(
               object_delegate),
-          "foo",
-          no_objects);
+          "foo", no_objects);
   NullDispatcherDelegate dispatcher;
   helper->Init(&dispatcher);
   EXPECT_FALSE(object_delegate->find_method_called());
@@ -317,10 +313,9 @@ TEST_F(GinJavaMethodInvocationHelperTest, HandleGetClassInvocation) {
       new GetClassObjectDelegate();
   scoped_refptr<GinJavaMethodInvocationHelper> helper =
       new GinJavaMethodInvocationHelper(
-          scoped_ptr<GinJavaMethodInvocationHelper::ObjectDelegate>(
+          std::unique_ptr<GinJavaMethodInvocationHelper::ObjectDelegate>(
               object_delegate),
-          "foo",
-          no_objects);
+          "foo", no_objects);
   NullDispatcherDelegate dispatcher;
   helper->Init(&dispatcher);
   EXPECT_FALSE(object_delegate->find_method_called());

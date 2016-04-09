@@ -8,8 +8,9 @@
 #include <IOKit/IOKitLib.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace content {
 
@@ -17,7 +18,7 @@ namespace content {
 class AmbientLightSensor {
  public:
   // Create AmbientLightSensor object, return NULL if no valid is sensor found.
-  static scoped_ptr<AmbientLightSensor> Create();
+  static std::unique_ptr<AmbientLightSensor> Create();
 
   ~AmbientLightSensor();
 

@@ -5,11 +5,11 @@
 #ifndef CONTENT_BROWSER_SPEECH_GOOGLE_ONE_SHOT_REMOTE_ENGINE_H_
 #define CONTENT_BROWSER_SPEECH_GOOGLE_ONE_SHOT_REMOTE_ENGINE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/speech/audio_encoder.h"
 #include "content/browser/speech/speech_recognition_engine.h"
 #include "content/common/content_export.h"
@@ -49,9 +49,9 @@ class CONTENT_EXPORT GoogleOneShotRemoteEngine
 
  private:
   SpeechRecognitionEngineConfig config_;
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
   scoped_refptr<net::URLRequestContextGetter> url_context_;
-  scoped_ptr<AudioEncoder> encoder_;
+  std::unique_ptr<AudioEncoder> encoder_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleOneShotRemoteEngine);
 };

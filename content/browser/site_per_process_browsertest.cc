@@ -3150,7 +3150,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginUpdatesReachProxies) {
   // JavaScript.  Instead, try to navigate the second frame from the first
   // frame.  This should fail with a console error message, which should
   // contain the second frame's updated origin (see blink::Frame::canNavigate).
-  scoped_ptr<ConsoleObserverDelegate> console_delegate(
+  std::unique_ptr<ConsoleObserverDelegate> console_delegate(
       new ConsoleObserverDelegate(
           shell()->web_contents(),
           "Unsafe JavaScript attempt to initiate navigation*"));
@@ -4705,7 +4705,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   gfx::Point center(150, 150);
   params.position = gfx::PointF(center.x(), center.y());
   params.duration_ms = 100;
-  scoped_ptr<SyntheticTapGesture> gesture(new SyntheticTapGesture(params));
+  std::unique_ptr<SyntheticTapGesture> gesture(new SyntheticTapGesture(params));
 
   scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner();
 
@@ -6114,7 +6114,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframeDisplayNone) {
                     "document.querySelector('iframe').style.display = 'none'"));
 
   // Waits until pending frames are done.
-  scoped_ptr<MainThreadFrameObserver> observer(
+  std::unique_ptr<MainThreadFrameObserver> observer(
       new MainThreadFrameObserver(root_render_widget_host));
   observer->Wait();
 

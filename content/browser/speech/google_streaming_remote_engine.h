@@ -8,12 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/browser/speech/audio_encoder.h"
 #include "content/browser/speech/chunked_byte_buffer.h"
@@ -119,7 +119,7 @@ class CONTENT_EXPORT GoogleStreamingRemoteEngine
     scoped_refptr<const AudioChunk> audio_data;
 
     // In case of EVENT_DOWNSTREAM_RESPONSE, hold the current chunk bytes.
-    scoped_ptr<std::vector<uint8_t>> response;
+    std::unique_ptr<std::vector<uint8_t>> response;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(FSMEventArgs);
@@ -158,11 +158,11 @@ class CONTENT_EXPORT GoogleStreamingRemoteEngine
   void UploadAudioChunk(const std::string& data, FrameType type, bool is_final);
 
   SpeechRecognitionEngineConfig config_;
-  scoped_ptr<net::URLFetcher> upstream_fetcher_;
-  scoped_ptr<net::URLFetcher> downstream_fetcher_;
+  std::unique_ptr<net::URLFetcher> upstream_fetcher_;
+  std::unique_ptr<net::URLFetcher> downstream_fetcher_;
   scoped_refptr<net::URLRequestContextGetter> url_context_;
-  scoped_ptr<AudioEncoder> encoder_;
-  scoped_ptr<AudioEncoder> preamble_encoder_;
+  std::unique_ptr<AudioEncoder> encoder_;
+  std::unique_ptr<AudioEncoder> preamble_encoder_;
   ChunkedByteBuffer chunked_byte_buffer_;
   size_t previous_response_length_;
   bool got_last_definitive_result_;

@@ -62,7 +62,7 @@ void SelectCertificateOnUIThread(
     const base::WeakPtr<SSLClientAuthHandler>& handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  scoped_ptr<ClientCertificateDelegate> delegate(
+  std::unique_ptr<ClientCertificateDelegate> delegate(
       new ClientCertificateDelegateImpl(handler));
 
   RenderFrameHost* rfh =
@@ -82,7 +82,7 @@ void SelectCertificateOnUIThread(
 class SSLClientAuthHandler::Core : public base::RefCountedThreadSafe<Core> {
  public:
   Core(const base::WeakPtr<SSLClientAuthHandler>& handler,
-       scoped_ptr<net::ClientCertStore> client_cert_store,
+       std::unique_ptr<net::ClientCertStore> client_cert_store,
        net::SSLCertRequestInfo* cert_request_info)
       : handler_(handler),
         client_cert_store_(std::move(client_cert_store)),
@@ -116,12 +116,12 @@ class SSLClientAuthHandler::Core : public base::RefCountedThreadSafe<Core> {
   }
 
   base::WeakPtr<SSLClientAuthHandler> handler_;
-  scoped_ptr<net::ClientCertStore> client_cert_store_;
+  std::unique_ptr<net::ClientCertStore> client_cert_store_;
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
 };
 
 SSLClientAuthHandler::SSLClientAuthHandler(
-    scoped_ptr<net::ClientCertStore> client_cert_store,
+    std::unique_ptr<net::ClientCertStore> client_cert_store,
     net::URLRequest* request,
     net::SSLCertRequestInfo* cert_request_info,
     SSLClientAuthHandler::Delegate* delegate)

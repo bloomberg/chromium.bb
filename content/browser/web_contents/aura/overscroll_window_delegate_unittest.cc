@@ -98,7 +98,7 @@ class OverscrollWindowDelegateTest : public aura::test::AuraTestBase,
   }
 
   // Window in which the overscroll window delegate is installed.
-  scoped_ptr<aura::Window> window_;
+  std::unique_ptr<aura::Window> window_;
 
   // State flags.
   bool overscroll_complete_;

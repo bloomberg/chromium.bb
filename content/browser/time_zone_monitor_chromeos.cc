@@ -31,8 +31,8 @@ class TimeZoneMonitorChromeOS
 };
 
 // static
-scoped_ptr<TimeZoneMonitor> TimeZoneMonitor::Create() {
-  return scoped_ptr<TimeZoneMonitor>(new TimeZoneMonitorChromeOS());
+std::unique_ptr<TimeZoneMonitor> TimeZoneMonitor::Create() {
+  return std::unique_ptr<TimeZoneMonitor>(new TimeZoneMonitorChromeOS());
 }
 
 }  // namespace content

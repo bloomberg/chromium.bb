@@ -42,7 +42,7 @@ class ContextProviderInProcess::LostContextCallbackProxy
 
 // static
 scoped_refptr<ContextProviderInProcess> ContextProviderInProcess::Create(
-    scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d,
+    std::unique_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d,
     const std::string& debug_name) {
   if (!context3d)
     return nullptr;
@@ -50,7 +50,7 @@ scoped_refptr<ContextProviderInProcess> ContextProviderInProcess::Create(
 }
 
 ContextProviderInProcess::ContextProviderInProcess(
-    scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d,
+    std::unique_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d,
     const std::string& debug_name)
     : context3d_(std::move(context3d)), debug_name_(debug_name) {
   DCHECK(main_thread_checker_.CalledOnValidThread());

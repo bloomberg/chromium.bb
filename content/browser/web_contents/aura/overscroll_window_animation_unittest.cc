@@ -66,11 +66,13 @@ class OverscrollWindowAnimationTest
   }
 
   // OverscrollWindowAnimation::Delegate:
-  scoped_ptr<aura::Window> CreateFrontWindow(const gfx::Rect& bounds) override {
+  std::unique_ptr<aura::Window> CreateFrontWindow(
+      const gfx::Rect& bounds) override {
     return CreateSlideWindow(bounds);
   }
 
-  scoped_ptr<aura::Window> CreateBackWindow(const gfx::Rect& bounds) override {
+  std::unique_ptr<aura::Window> CreateBackWindow(
+      const gfx::Rect& bounds) override {
     return CreateSlideWindow(bounds);
   }
 
@@ -78,7 +80,7 @@ class OverscrollWindowAnimationTest
 
   void OnOverscrollCompleting() override { overscroll_completing_ = true; }
 
-  void OnOverscrollCompleted(scoped_ptr<aura::Window> window) override {
+  void OnOverscrollCompleted(std::unique_ptr<aura::Window> window) override {
     overscroll_completed_ = true;
   }
 
@@ -86,12 +88,12 @@ class OverscrollWindowAnimationTest
 
  private:
   // The overscroll window animation under test.
-  scoped_ptr<OverscrollWindowAnimation> owa_;
+  std::unique_ptr<OverscrollWindowAnimation> owa_;
 
-  scoped_ptr<aura::Window> CreateSlideWindow(const gfx::Rect& bounds) {
+  std::unique_ptr<aura::Window> CreateSlideWindow(const gfx::Rect& bounds) {
     overscroll_started_ = true;
     if (create_window_) {
-      scoped_ptr<aura::Window> window(
+      std::unique_ptr<aura::Window> window(
           CreateNormalWindow(++last_window_id_, root_window(), nullptr));
       window->SetBounds(bounds);
       return window;
@@ -111,7 +113,7 @@ class OverscrollWindowAnimationTest
   int last_window_id_;
 
   // The dummy target window we provide.
-  scoped_ptr<aura::Window> main_window_;
+  std::unique_ptr<aura::Window> main_window_;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollWindowAnimationTest);
 };

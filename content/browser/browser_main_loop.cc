@@ -5,6 +5,7 @@
 #include "content/browser/browser_main_loop.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -14,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_monitor.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/pending_task.h"
@@ -196,7 +198,7 @@ void SetupSandbox(const base::CommandLine& parsed_command_line) {
   TRACE_EVENT0("startup", "SetupSandbox");
   base::FilePath sandbox_binary;
 
-  scoped_ptr<sandbox::SetuidSandboxHost> setuid_sandbox_host(
+  std::unique_ptr<sandbox::SetuidSandboxHost> setuid_sandbox_host(
       sandbox::SetuidSandboxHost::Create());
 
   const bool want_setuid_sandbox =
@@ -298,45 +300,47 @@ void OnStoppedStartupTracing(const base::FilePath& trace_file) {
 MSVC_DISABLE_OPTIMIZE()
 MSVC_PUSH_DISABLE_WARNING(4748)
 
-NOINLINE void ResetThread_DB(scoped_ptr<BrowserProcessSubThread> thread) {
+NOINLINE void ResetThread_DB(std::unique_ptr<BrowserProcessSubThread> thread) {
   volatile int inhibit_comdat = __LINE__;
   ALLOW_UNUSED_LOCAL(inhibit_comdat);
   thread.reset();
 }
 
-NOINLINE void ResetThread_FILE(scoped_ptr<BrowserProcessSubThread> thread) {
+NOINLINE void ResetThread_FILE(
+    std::unique_ptr<BrowserProcessSubThread> thread) {
   volatile int inhibit_comdat = __LINE__;
   ALLOW_UNUSED_LOCAL(inhibit_comdat);
   thread.reset();
 }
 
 NOINLINE void ResetThread_FILE_USER_BLOCKING(
-    scoped_ptr<BrowserProcessSubThread> thread) {
+    std::unique_ptr<BrowserProcessSubThread> thread) {
   volatile int inhibit_comdat = __LINE__;
   ALLOW_UNUSED_LOCAL(inhibit_comdat);
   thread.reset();
 }
 
 NOINLINE void ResetThread_PROCESS_LAUNCHER(
-    scoped_ptr<BrowserProcessSubThread> thread) {
+    std::unique_ptr<BrowserProcessSubThread> thread) {
   volatile int inhibit_comdat = __LINE__;
   ALLOW_UNUSED_LOCAL(inhibit_comdat);
   thread.reset();
 }
 
-NOINLINE void ResetThread_CACHE(scoped_ptr<BrowserProcessSubThread> thread) {
+NOINLINE void ResetThread_CACHE(
+    std::unique_ptr<BrowserProcessSubThread> thread) {
   volatile int inhibit_comdat = __LINE__;
   ALLOW_UNUSED_LOCAL(inhibit_comdat);
   thread.reset();
 }
 
-NOINLINE void ResetThread_IO(scoped_ptr<BrowserProcessSubThread> thread) {
+NOINLINE void ResetThread_IO(std::unique_ptr<BrowserProcessSubThread> thread) {
   volatile int inhibit_comdat = __LINE__;
   ALLOW_UNUSED_LOCAL(inhibit_comdat);
   thread.reset();
 }
 
-NOINLINE void ResetThread_IndexedDb(scoped_ptr<base::Thread> thread) {
+NOINLINE void ResetThread_IndexedDb(std::unique_ptr<base::Thread> thread) {
   volatile int inhibit_comdat = __LINE__;
   ALLOW_UNUSED_LOCAL(inhibit_comdat);
   thread.reset();
@@ -385,7 +389,7 @@ class BrowserMainLoop::MemoryObserver : public base::MessageLoop::TaskObserver {
   void WillProcessTask(const base::PendingTask& pending_task) override {}
 
   void DidProcessTask(const base::PendingTask& pending_task) override {
-    scoped_ptr<base::ProcessMetrics> process_metrics(
+    std::unique_ptr<base::ProcessMetrics> process_metrics(
         base::ProcessMetrics::CreateCurrentProcessMetrics());
     size_t private_bytes;
     process_metrics->GetMemoryBytes(&private_bytes, NULL);
@@ -546,8 +550,8 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
   }
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:PowerMonitor");
-    scoped_ptr<base::PowerMonitorSource> power_monitor_source(
-      new base::PowerMonitorDeviceSource());
+    std::unique_ptr<base::PowerMonitorSource> power_monitor_source(
+        new base::PowerMonitorDeviceSource());
     power_monitor_.reset(
         new base::PowerMonitor(std::move(power_monitor_source)));
   }
@@ -758,13 +762,12 @@ void BrowserMainLoop::CreateStartupTasks() {
   // First time through, we really want to create all the tasks
   if (!startup_task_runner_.get()) {
 #if defined(OS_ANDROID)
-    startup_task_runner_ = make_scoped_ptr(
+    startup_task_runner_ = base::WrapUnique(
         new StartupTaskRunner(base::Bind(&BrowserStartupComplete),
                               base::ThreadTaskRunnerHandle::Get()));
 #else
-    startup_task_runner_ = make_scoped_ptr(
-        new StartupTaskRunner(base::Callback<void(int)>(),
-                              base::ThreadTaskRunnerHandle::Get()));
+    startup_task_runner_ = base::WrapUnique(new StartupTaskRunner(
+        base::Callback<void(int)>(), base::ThreadTaskRunnerHandle::Get()));
 #endif
     StartupTask pre_create_threads =
         base::Bind(&BrowserMainLoop::PreCreateThreads, base::Unretained(this));
@@ -819,7 +822,7 @@ int BrowserMainLoop::CreateThreads() {
   for (size_t thread_id = BrowserThread::UI + 1;
        thread_id < BrowserThread::ID_COUNT;
        ++thread_id) {
-    scoped_ptr<BrowserProcessSubThread>* thread_to_start = NULL;
+    std::unique_ptr<BrowserProcessSubThread>* thread_to_start = NULL;
     base::Thread::Options options;
 
     switch (thread_id) {

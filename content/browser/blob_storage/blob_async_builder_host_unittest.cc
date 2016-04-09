@@ -86,9 +86,10 @@ class BlobAsyncBuilderHostTest : public testing::Test {
   }
 
   void RequestMemoryCallback(
-      scoped_ptr<std::vector<storage::BlobItemBytesRequest>> requests,
-      scoped_ptr<std::vector<base::SharedMemoryHandle>> shared_memory_handles,
-      scoped_ptr<std::vector<base::File>> files) {
+      std::unique_ptr<std::vector<storage::BlobItemBytesRequest>> requests,
+      std::unique_ptr<std::vector<base::SharedMemoryHandle>>
+          shared_memory_handles,
+      std::unique_ptr<std::vector<base::File>> files) {
     requests_ = std::move(*requests);
     memory_handles_ = std::move(*shared_memory_handles);
     request_called_ = true;
@@ -129,7 +130,7 @@ class BlobAsyncBuilderHostTest : public testing::Test {
   std::vector<base::SharedMemoryHandle> memory_handles_;
   std::set<std::string> completed_blob_uuid_set_;
 
-  scoped_ptr<BlobDataHandle> completed_blob_handle_;
+  std::unique_ptr<BlobDataHandle> completed_blob_handle_;
 };
 
 // The 'shortcut' method is when the data is included in the initial IPCs and
@@ -153,10 +154,11 @@ TEST_F(BlobAsyncBuilderHostTest, TestShortcut) {
 
   EXPECT_FALSE(request_called_);
   EXPECT_EQ(0u, host_.blob_building_count());
-  scoped_ptr<BlobDataHandle> handle = context_.GetBlobDataFromUUID(kBlobUUID);
+  std::unique_ptr<BlobDataHandle> handle =
+      context_.GetBlobDataFromUUID(kBlobUUID);
   EXPECT_FALSE(handle->IsBeingBuilt());
   EXPECT_FALSE(handle->IsBroken());
-  scoped_ptr<BlobDataSnapshot> data = handle->CreateSnapshot();
+  std::unique_ptr<BlobDataSnapshot> data = handle->CreateSnapshot();
   EXPECT_EQ(expected, *data);
   data.reset();
   handle.reset();
@@ -257,11 +259,11 @@ TEST_F(BlobAsyncBuilderHostTest, TestMultipleSharedMemRequests) {
             host_.OnMemoryResponses(kBlobUUID, responses, &context_));
   EXPECT_FALSE(request_called_);
   EXPECT_EQ(0u, host_.blob_building_count());
-  scoped_ptr<BlobDataHandle> blob_handle =
+  std::unique_ptr<BlobDataHandle> blob_handle =
       context_.GetBlobDataFromUUID(kBlobUUID);
   EXPECT_FALSE(blob_handle->IsBeingBuilt());
   EXPECT_FALSE(blob_handle->IsBroken());
-  scoped_ptr<BlobDataSnapshot> blob_data = blob_handle->CreateSnapshot();
+  std::unique_ptr<BlobDataSnapshot> blob_data = blob_handle->CreateSnapshot();
   EXPECT_EQ(expected, *blob_data);
 };
 
@@ -285,7 +287,7 @@ TEST_F(BlobAsyncBuilderHostTest, TestBasicIPCAndStopBuilding) {
                            &context_);
 
   // Check that we're broken, and then remove the blob.
-  scoped_ptr<BlobDataHandle> blob_handle =
+  std::unique_ptr<BlobDataHandle> blob_handle =
       context_.GetBlobDataFromUUID(kBlobUUID);
   EXPECT_FALSE(blob_handle->IsBeingBuilt());
   EXPECT_TRUE(blob_handle->IsBroken());
@@ -316,7 +318,7 @@ TEST_F(BlobAsyncBuilderHostTest, TestBasicIPCAndStopBuilding) {
   blob_handle = context_.GetBlobDataFromUUID(kBlobUUID);
   EXPECT_FALSE(blob_handle->IsBeingBuilt());
   EXPECT_FALSE(blob_handle->IsBroken());
-  scoped_ptr<BlobDataSnapshot> blob_data = blob_handle->CreateSnapshot();
+  std::unique_ptr<BlobDataSnapshot> blob_data = blob_handle->CreateSnapshot();
   EXPECT_EQ(expected, *blob_data);
 };
 
@@ -346,11 +348,11 @@ TEST_F(BlobAsyncBuilderHostTest, TestBreakingAllBuilding) {
                            base::Unretained(this))));
   EXPECT_TRUE(request_called_);
 
-  scoped_ptr<BlobDataHandle> blob_handle1 =
+  std::unique_ptr<BlobDataHandle> blob_handle1 =
       context_.GetBlobDataFromUUID(kBlob1);
-  scoped_ptr<BlobDataHandle> blob_handle2 =
+  std::unique_ptr<BlobDataHandle> blob_handle2 =
       context_.GetBlobDataFromUUID(kBlob2);
-  scoped_ptr<BlobDataHandle> blob_handle3 =
+  std::unique_ptr<BlobDataHandle> blob_handle3 =
       context_.GetBlobDataFromUUID(kBlob2);
   EXPECT_TRUE(blob_handle1->IsBeingBuilt() && blob_handle2->IsBeingBuilt() &&
               blob_handle3->IsBeingBuilt());

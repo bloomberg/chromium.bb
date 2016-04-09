@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_OUTPUT_SURFACE_H_
 #define CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_OUTPUT_SURFACE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "build/build_config.h"
 #include "cc/output/output_surface.h"
@@ -69,12 +70,12 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
       const scoped_refptr<cc::ContextProvider>& context,
       const scoped_refptr<cc::ContextProvider>& worker_context,
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
-      scoped_ptr<BrowserCompositorOverlayCandidateValidator>
+      std::unique_ptr<BrowserCompositorOverlayCandidateValidator>
           overlay_candidate_validator);
 
   // Constructor used by the software implementation.
   BrowserCompositorOutputSurface(
-      scoped_ptr<cc::SoftwareOutputDevice> software_device,
+      std::unique_ptr<cc::SoftwareOutputDevice> software_device,
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager);
 
   scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
@@ -86,7 +87,7 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
  private:
   void Initialize();
 
-  scoped_ptr<BrowserCompositorOverlayCandidateValidator>
+  std::unique_ptr<BrowserCompositorOverlayCandidateValidator>
       overlay_candidate_validator_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserCompositorOutputSurface);

@@ -262,7 +262,7 @@ void ServiceWorkerHandler::SetRenderFrameHost(
       partition->GetServiceWorkerContext());
 }
 
-void ServiceWorkerHandler::SetClient(scoped_ptr<Client> client) {
+void ServiceWorkerHandler::SetClient(std::unique_ptr<Client> client) {
   client_.swap(client);
 }
 

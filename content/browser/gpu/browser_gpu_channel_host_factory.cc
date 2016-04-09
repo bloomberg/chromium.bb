@@ -268,11 +268,11 @@ BrowserGpuChannelHostFactory::GetIOThreadTaskRunner() {
   return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
 }
 
-scoped_ptr<base::SharedMemory>
+std::unique_ptr<base::SharedMemory>
 BrowserGpuChannelHostFactory::AllocateSharedMemory(size_t size) {
-  scoped_ptr<base::SharedMemory> shm(new base::SharedMemory());
+  std::unique_ptr<base::SharedMemory> shm(new base::SharedMemory());
   if (!shm->CreateAnonymous(size))
-    return scoped_ptr<base::SharedMemory>();
+    return std::unique_ptr<base::SharedMemory>();
   return shm;
 }
 

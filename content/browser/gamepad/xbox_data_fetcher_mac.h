@@ -10,13 +10,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ioobject.h"
 #include "base/mac/scoped_ioplugininterface.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 class XboxController {
  public:
@@ -119,7 +119,7 @@ class XboxController {
   // byte header (type, total length) so we can reframe the packet data
   // ourselves.
   uint16_t read_buffer_size_;
-  scoped_ptr<uint8_t[]> read_buffer_;
+  std::unique_ptr<uint8_t[]> read_buffer_;
 
   // The pattern that the LEDs on the device are currently displaying, or
   // LED_NUM_PATTERNS if unknown.

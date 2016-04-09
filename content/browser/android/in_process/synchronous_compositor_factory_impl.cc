@@ -5,10 +5,12 @@
 #include "content/browser/android/in_process/synchronous_compositor_factory_impl.h"
 
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
 #include "base/sys_info.h"
 #include "base/thread_task_runner_handle.h"
@@ -42,7 +44,8 @@ namespace content {
 namespace {
 
 struct ContextHolder {
-  scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> command_buffer;
+  std::unique_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
+      command_buffer;
   gpu::GLInProcessContext* gl_in_process_context;
 };
 
@@ -51,17 +54,18 @@ ContextHolder CreateContextHolder(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
     const gpu::GLInProcessContextSharedMemoryLimits& mem_limits) {
   bool is_offscreen = true;
-  scoped_ptr<gpu::GLInProcessContext> context(gpu::GLInProcessContext::Create(
-      service, nullptr /* surface */, is_offscreen, gfx::kNullAcceleratedWidget,
-      gfx::Size(1, 1), nullptr /* share_context */, attributes,
-      gfx::PreferDiscreteGpu, mem_limits,
-      BrowserGpuMemoryBufferManager::current(), nullptr));
+  std::unique_ptr<gpu::GLInProcessContext> context(
+      gpu::GLInProcessContext::Create(
+          service, nullptr /* surface */, is_offscreen,
+          gfx::kNullAcceleratedWidget, gfx::Size(1, 1),
+          nullptr /* share_context */, attributes, gfx::PreferDiscreteGpu,
+          mem_limits, BrowserGpuMemoryBufferManager::current(), nullptr));
 
   gpu::GLInProcessContext* context_ptr = context.get();
 
   ContextHolder holder;
   holder.command_buffer =
-      scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>(
+      std::unique_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>(
           WebGraphicsContext3DInProcessCommandBufferImpl::WrapContext(
               std::move(context), attributes));
   holder.gl_in_process_context = context_ptr;
@@ -86,14 +90,14 @@ SynchronousCompositorFactoryImpl::GetCompositorTaskRunner() {
   return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
 }
 
-scoped_ptr<cc::OutputSurface>
+std::unique_ptr<cc::OutputSurface>
 SynchronousCompositorFactoryImpl::CreateOutputSurface(
     int routing_id,
     uint32_t output_surface_id,
     const scoped_refptr<FrameSwapMessageQueue>& frame_swap_message_queue,
     const scoped_refptr<cc::ContextProvider>& onscreen_context,
     const scoped_refptr<cc::ContextProvider>& worker_context) {
-  return make_scoped_ptr(new SynchronousCompositorOutputSurface(
+  return base::WrapUnique(new SynchronousCompositorOutputSurface(
       onscreen_context, worker_context, routing_id, output_surface_id,
       SynchronousCompositorRegistryInProc::GetInstance(),
       frame_swap_message_queue));
@@ -109,10 +113,10 @@ SynchronousCompositorFactoryImpl::GetSynchronousInputHandlerProxyClient() {
   return synchronous_input_event_filter();
 }
 
-scoped_ptr<cc::BeginFrameSource>
+std::unique_ptr<cc::BeginFrameSource>
 SynchronousCompositorFactoryImpl::CreateExternalBeginFrameSource(
     int routing_id) {
-  return make_scoped_ptr(new SynchronousCompositorExternalBeginFrameSource(
+  return base::WrapUnique(new SynchronousCompositorExternalBeginFrameSource(
       routing_id, SynchronousCompositorRegistryInProc::GetInstance()));
 }
 

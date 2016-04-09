@@ -246,7 +246,7 @@ class GeofencingManagerTest : public testing::Test {
 
  protected:
   TestBrowserThreadBundle threads_;
-  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
+  std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   TestGeofencingService* service_;
   scoped_refptr<GeofencingManager> manager_;
 

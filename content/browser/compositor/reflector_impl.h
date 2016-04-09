@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_REFLECTOR_IMPL_H_
 #define CONTENT_BROWSER_COMPOSITOR_REFLECTOR_IMPL_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/id_map.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"

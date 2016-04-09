@@ -28,7 +28,7 @@ IOHandler::IOHandler(DevToolsIOContext* io_context)
 
 IOHandler::~IOHandler() {}
 
-void IOHandler::SetClient(scoped_ptr<Client> client) {
+void IOHandler::SetClient(std::unique_ptr<Client> client) {
   client_.swap(client);
 }
 

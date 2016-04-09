@@ -5,10 +5,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_bstr.h"
@@ -367,7 +367,7 @@ AccessibilityWinBrowserTest::GetAllAccessibleChildren(
   if (child_count <= 0)
       return std::vector<base::win::ScopedVariant>();
 
-  scoped_ptr<VARIANT[]> children_array(new VARIANT[child_count]);
+  std::unique_ptr<VARIANT[]> children_array(new VARIANT[child_count]);
   LONG obtained_count = 0;
   hr = AccessibleChildren(
       element, 0, child_count, children_array.get(), &obtained_count);
@@ -667,10 +667,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Set focus to the radio group.
-  scoped_ptr<AccessibilityNotificationWaiter> waiter(
-      new AccessibilityNotificationWaiter(
-          shell(), AccessibilityModeComplete,
-          ui::AX_EVENT_FOCUS));
+  std::unique_ptr<AccessibilityNotificationWaiter> waiter(
+      new AccessibilityNotificationWaiter(shell(), AccessibilityModeComplete,
+                                          ui::AX_EVENT_FOCUS));
   ExecuteScript(L"document.body.children[0].focus()");
   waiter->WaitForNotification();
 
@@ -712,10 +711,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Check the checkbox.
-  scoped_ptr<AccessibilityNotificationWaiter> waiter(
-      new AccessibilityNotificationWaiter(
-          shell(), AccessibilityModeComplete,
-          ui::AX_EVENT_CHECKED_STATE_CHANGED));
+  std::unique_ptr<AccessibilityNotificationWaiter> waiter(
+      new AccessibilityNotificationWaiter(shell(), AccessibilityModeComplete,
+                                          ui::AX_EVENT_CHECKED_STATE_CHANGED));
   ExecuteScript(L"document.body.children[0].checked=true");
   waiter->WaitForNotification();
 
@@ -739,11 +737,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Change the children of the document body.
-  scoped_ptr<AccessibilityNotificationWaiter> waiter(
-      new AccessibilityNotificationWaiter(
-          shell(),
-          AccessibilityModeComplete,
-          ui::AX_EVENT_CHILDREN_CHANGED));
+  std::unique_ptr<AccessibilityNotificationWaiter> waiter(
+      new AccessibilityNotificationWaiter(shell(), AccessibilityModeComplete,
+                                          ui::AX_EVENT_CHILDREN_CHANGED));
   ExecuteScript(L"document.body.innerHTML='<b>new text</b>'");
   waiter->WaitForNotification();
 
@@ -766,10 +762,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Change the children of the document body.
-  scoped_ptr<AccessibilityNotificationWaiter> waiter(
-      new AccessibilityNotificationWaiter(
-          shell(), AccessibilityModeComplete,
-          ui::AX_EVENT_CHILDREN_CHANGED));
+  std::unique_ptr<AccessibilityNotificationWaiter> waiter(
+      new AccessibilityNotificationWaiter(shell(), AccessibilityModeComplete,
+                                          ui::AX_EVENT_CHILDREN_CHANGED));
   ExecuteScript(L"document.body.children[0].style.visibility='visible'");
   waiter->WaitForNotification();
 
@@ -799,10 +794,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Focus the div in the document
-  scoped_ptr<AccessibilityNotificationWaiter> waiter(
-      new AccessibilityNotificationWaiter(
-          shell(), AccessibilityModeComplete,
-          ui::AX_EVENT_FOCUS));
+  std::unique_ptr<AccessibilityNotificationWaiter> waiter(
+      new AccessibilityNotificationWaiter(shell(), AccessibilityModeComplete,
+                                          ui::AX_EVENT_FOCUS));
   ExecuteScript(L"document.body.children[0].focus()");
   waiter->WaitForNotification();
 
@@ -849,10 +843,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Set the value of the text control
-  scoped_ptr<AccessibilityNotificationWaiter> waiter(
-      new AccessibilityNotificationWaiter(
-          shell(), AccessibilityModeComplete,
-          ui::AX_EVENT_VALUE_CHANGED));
+  std::unique_ptr<AccessibilityNotificationWaiter> waiter(
+      new AccessibilityNotificationWaiter(shell(), AccessibilityModeComplete,
+                                          ui::AX_EVENT_VALUE_CHANGED));
   ExecuteScript(L"document.body.children[0].value='new value'");
   waiter->WaitForNotification();
 

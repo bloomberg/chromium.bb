@@ -53,13 +53,13 @@ class CONTENT_EXPORT DataFetcherSharedMemory
 #endif
 
 #if defined(OS_CHROMEOS)
-  scoped_ptr<SensorManagerChromeOS> sensor_manager_;
+  std::unique_ptr<SensorManagerChromeOS> sensor_manager_;
 #elif defined(OS_MACOSX)
   void Fetch(unsigned consumer_bitmask) override;
   FetcherType GetType() const override;
 
-  scoped_ptr<AmbientLightSensor> ambient_light_sensor_;
-  scoped_ptr<SuddenMotionSensor> sudden_motion_sensor_;
+  std::unique_ptr<AmbientLightSensor> ambient_light_sensor_;
+  std::unique_ptr<SuddenMotionSensor> sudden_motion_sensor_;
 #elif defined(OS_WIN)
   class SensorEventSink;
   class SensorEventSinkMotion;

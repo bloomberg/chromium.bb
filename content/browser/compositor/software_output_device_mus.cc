@@ -56,8 +56,9 @@ void SoftwareOutputDeviceMus::EndPaint() {
 
   // TODO(rjkroege): This makes an additional copy. Improve the
   // bitmap_uploader API to remove.
-  scoped_ptr<std::vector<unsigned char>> data(new std::vector<unsigned char>(
-      pixels, pixels + rowBytes * viewport_pixel_size_.height()));
+  std::unique_ptr<std::vector<unsigned char>> data(
+      new std::vector<unsigned char>(
+          pixels, pixels + rowBytes * viewport_pixel_size_.height()));
   uploader->SetBitmap(viewport_pixel_size_.width(),
                       viewport_pixel_size_.height(), std::move(data),
                       bitmap_uploader::BitmapUploader::BGRA);

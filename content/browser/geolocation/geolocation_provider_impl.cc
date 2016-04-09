@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"
 #include "content/browser/geolocation/location_arbitrator_impl.h"
@@ -20,12 +21,12 @@ GeolocationProvider* GeolocationProvider::GetInstance() {
   return GeolocationProviderImpl::GetInstance();
 }
 
-scoped_ptr<GeolocationProvider::Subscription>
+std::unique_ptr<GeolocationProvider::Subscription>
 GeolocationProviderImpl::AddLocationUpdateCallback(
     const LocationUpdateCallback& callback,
     bool enable_high_accuracy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_ptr<GeolocationProvider::Subscription> subscription;
+  std::unique_ptr<GeolocationProvider::Subscription> subscription;
   if (enable_high_accuracy) {
     subscription = high_accuracy_callbacks_.Add(callback);
   } else {
@@ -169,10 +170,11 @@ void GeolocationProviderImpl::CleanUp() {
   arbitrator_.reset();
 }
 
-scoped_ptr<LocationArbitrator> GeolocationProviderImpl::CreateArbitrator() {
+std::unique_ptr<LocationArbitrator>
+GeolocationProviderImpl::CreateArbitrator() {
   LocationArbitratorImpl::LocationUpdateCallback callback = base::Bind(
       &GeolocationProviderImpl::OnLocationUpdate, base::Unretained(this));
-  return make_scoped_ptr(new LocationArbitratorImpl(callback));
+  return base::WrapUnique(new LocationArbitratorImpl(callback));
 }
 
 }  // namespace content

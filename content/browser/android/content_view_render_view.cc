@@ -4,12 +4,16 @@
 
 #include "content/browser/android/content_view_render_view.h"
 
+#include <android/bitmap.h>
+#include <android/native_window_jni.h>
+
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "cc/layers/layer.h"
 #include "content/browser/android/content_view_core_impl.h"
@@ -18,9 +22,6 @@
 #include "jni/ContentViewRenderView_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/size.h"
-
-#include <android/bitmap.h>
-#include <android/native_window_jni.h>
 
 using base::android::ScopedJavaLocalRef;
 

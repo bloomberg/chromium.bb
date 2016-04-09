@@ -75,7 +75,7 @@ class BatteryMonitorImplTest : public ContentBrowserTest {
 
     // We keep a raw pointer to the FakeBatteryManager, which we expect to
     // remain valid for the lifetime of the BatteryStatusService.
-    scoped_ptr<FakeBatteryManager> battery_manager(new FakeBatteryManager(
+    std::unique_ptr<FakeBatteryManager> battery_manager(new FakeBatteryManager(
         battery_service_->GetUpdateCallbackForTesting()));
     battery_manager_ = battery_manager.get();
 
@@ -84,7 +84,7 @@ class BatteryMonitorImplTest : public ContentBrowserTest {
 
   void TearDown() override {
     battery_service_->SetBatteryManagerForTesting(
-        scoped_ptr<device::BatteryStatusManager>());
+        std::unique_ptr<device::BatteryStatusManager>());
     battery_manager_ = NULL;
   }
 

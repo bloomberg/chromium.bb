@@ -36,7 +36,7 @@ namespace content {
 WebContentsViewGuest::WebContentsViewGuest(
     WebContentsImpl* web_contents,
     BrowserPluginGuest* guest,
-    scoped_ptr<WebContentsView> platform_view,
+    std::unique_ptr<WebContentsView> platform_view,
     RenderViewHostDelegateView** delegate_view)
     : web_contents_(web_contents),
       guest_(guest),

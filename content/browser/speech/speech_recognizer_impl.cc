@@ -55,8 +55,8 @@ class SpeechRecognizerImpl::OnDataConverter
   // parameters.
   AudioConverter audio_converter_;
 
-  scoped_ptr<AudioBus> input_bus_;
-  scoped_ptr<AudioBus> output_bus_;
+  std::unique_ptr<AudioBus> input_bus_;
+  std::unique_ptr<AudioBus> output_bus_;
   const AudioParameters input_parameters_;
   const AudioParameters output_parameters_;
   bool data_was_converted_;

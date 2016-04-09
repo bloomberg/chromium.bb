@@ -20,11 +20,11 @@ void OnGotInstanceID(mojo::shell::mojom::ConnectResult result,
 }  // namespace
 
 // static
-scoped_ptr<MojoAppConnection> MojoAppConnection::Create(
+std::unique_ptr<MojoAppConnection> MojoAppConnection::Create(
     const std::string& user_id,
     const std::string& name,
     const std::string& requestor_name) {
-  return scoped_ptr<MojoAppConnection>(
+  return std::unique_ptr<MojoAppConnection>(
       new MojoAppConnectionImpl(user_id, name, requestor_name));
 }
 

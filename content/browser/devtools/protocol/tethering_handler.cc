@@ -27,7 +27,7 @@ const int kMaxTetheringPort = 32767;
 
 using Response = DevToolsProtocolClient::Response;
 using CreateServerSocketCallback =
-    base::Callback<scoped_ptr<net::ServerSocket>(std::string*)>;
+    base::Callback<std::unique_ptr<net::ServerSocket>(std::string*)>;
 
 class SocketPump {
  public:
@@ -146,9 +146,9 @@ class SocketPump {
 
 
  private:
-  scoped_ptr<net::StreamSocket> client_socket_;
-  scoped_ptr<net::ServerSocket> server_socket_;
-  scoped_ptr<net::StreamSocket> accepted_socket_;
+  std::unique_ptr<net::StreamSocket> client_socket_;
+  std::unique_ptr<net::ServerSocket> server_socket_;
+  std::unique_ptr<net::StreamSocket> accepted_socket_;
   int pending_writes_;
   bool pending_destruction_;
 };
@@ -217,8 +217,8 @@ class BoundSocket {
 
   AcceptedCallback accepted_callback_;
   CreateServerSocketCallback socket_callback_;
-  scoped_ptr<net::ServerSocket> socket_;
-  scoped_ptr<net::StreamSocket> accept_socket_;
+  std::unique_ptr<net::ServerSocket> socket_;
+  std::unique_ptr<net::StreamSocket> accept_socket_;
   uint16_t port_;
 };
 
@@ -268,7 +268,7 @@ void TetheringHandler::TetheringImpl::Bind(DevToolsCommandId command_id,
 
   BoundSocket::AcceptedCallback callback = base::Bind(
       &TetheringHandler::TetheringImpl::Accepted, base::Unretained(this));
-  scoped_ptr<BoundSocket> bound_socket(
+  std::unique_ptr<BoundSocket> bound_socket(
       new BoundSocket(callback, socket_callback_));
   if (!bound_socket->Listen(port)) {
     SendInternalError(command_id, "Could not bind port");
@@ -338,7 +338,7 @@ TetheringHandler::~TetheringHandler() {
   }
 }
 
-void TetheringHandler::SetClient(scoped_ptr<Client> client) {
+void TetheringHandler::SetClient(std::unique_ptr<Client> client) {
   client_.swap(client);
 }
 

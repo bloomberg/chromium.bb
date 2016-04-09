@@ -37,7 +37,7 @@ class PageHandler : public NotificationObserver {
   ~PageHandler() override;
 
   void SetRenderFrameHost(RenderFrameHostImpl* host);
-  void SetClient(scoped_ptr<Client> client);
+  void SetClient(std::unique_ptr<Client> client);
   void Detached();
   void OnSwapCompositorFrame(const cc::CompositorFrameMetadata& frame_metadata);
   void OnSynchronousSwapCompositorFrame(const cc::CompositorFrameMetadata&
@@ -118,10 +118,10 @@ class PageHandler : public NotificationObserver {
   int frame_counter_;
   int frames_in_flight_;
 
-  scoped_ptr<ColorPicker> color_picker_;
+  std::unique_ptr<ColorPicker> color_picker_;
 
   RenderFrameHostImpl* host_;
-  scoped_ptr<Client> client_;
+  std::unique_ptr<Client> client_;
   NotificationRegistrar registrar_;
   base::WeakPtrFactory<PageHandler> weak_factory_;
 

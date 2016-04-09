@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/compositor/owned_mailbox.h"
 #include "content/common/content_export.h"
 
@@ -39,7 +40,7 @@ class CONTENT_EXPORT ReflectorTexture {
 
  private:
   scoped_refptr<OwnedMailbox> mailbox_;
-  scoped_ptr<GLHelper> gl_helper_;
+  std::unique_ptr<GLHelper> gl_helper_;
   uint32_t texture_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ReflectorTexture);

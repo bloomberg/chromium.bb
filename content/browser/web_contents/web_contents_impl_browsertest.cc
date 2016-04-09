@@ -283,7 +283,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   https_server.ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(https_server.Start());
 
-  scoped_ptr<RenderViewSizeDelegate> delegate(new RenderViewSizeDelegate());
+  std::unique_ptr<RenderViewSizeDelegate> delegate(
+      new RenderViewSizeDelegate());
   shell()->web_contents()->SetDelegate(delegate.get());
   ASSERT_TRUE(shell()->web_contents()->GetDelegate() == delegate.get());
 
@@ -468,7 +469,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        LoadingStateChangedForSameDocumentNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  scoped_ptr<LoadingStateChangedDelegate> delegate(
+  std::unique_ptr<LoadingStateChangedDelegate> delegate(
       new LoadingStateChangedDelegate());
   shell()->web_contents()->SetDelegate(delegate.get());
 
@@ -547,7 +548,7 @@ struct LoadProgressDelegateAndObserver : public WebContentsDelegate,
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, LoadProgress) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  scoped_ptr<LoadProgressDelegateAndObserver> delegate(
+  std::unique_ptr<LoadProgressDelegateAndObserver> delegate(
       new LoadProgressDelegateAndObserver(shell()));
 
   NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
@@ -569,7 +570,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, LoadProgress) {
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, LoadProgressWithFrames) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  scoped_ptr<LoadProgressDelegateAndObserver> delegate(
+  std::unique_ptr<LoadProgressDelegateAndObserver> delegate(
       new LoadProgressDelegateAndObserver(shell()));
 
   NavigateToURL(shell(),
@@ -604,7 +605,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   const GURL kURL2 = embedded_test_server()->GetURL("/title2.html");
   NavigationStallDelegate stall_delegate(kURL2);
   ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
-  scoped_ptr<LoadProgressDelegateAndObserver> delegate(
+  std::unique_ptr<LoadProgressDelegateAndObserver> delegate(
       new LoadProgressDelegateAndObserver(shell()));
   shell()->LoadURL(kURL2);
   EXPECT_TRUE(delegate->did_start_loading);
@@ -664,7 +665,7 @@ struct FirstVisuallyNonEmptyPaintObserver : public WebContentsObserver {
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        MAYBE_FirstVisuallyNonEmptyPaint) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  scoped_ptr<FirstVisuallyNonEmptyPaintObserver> observer(
+  std::unique_ptr<FirstVisuallyNonEmptyPaintObserver> observer(
       new FirstVisuallyNonEmptyPaintObserver(shell()));
 
   NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));

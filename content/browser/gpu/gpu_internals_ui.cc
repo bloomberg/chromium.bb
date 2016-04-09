@@ -203,7 +203,7 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
   basic_info->Append(NewDescriptionValuePair("Window manager",
                                              ui::GuessWindowManagerName()));
   {
-    scoped_ptr<base::Environment> env(base::Environment::Create());
+    std::unique_ptr<base::Environment> env(base::Environment::Create());
     std::string value;
     const char kXDGCurrentDesktop[] = "XDG_CURRENT_DESKTOP";
     if (env->GetVar(kXDGCurrentDesktop, &value))
@@ -240,7 +240,7 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
   info->Set("basic_info", basic_info);
 
 #if defined(OS_WIN)
-  scoped_ptr<base::Value> dx_info = base::Value::CreateNullValue();
+  std::unique_ptr<base::Value> dx_info = base::Value::CreateNullValue();
   if (gpu_info.dx_diagnostics.children.size())
     dx_info.reset(DxDiagNodeToList(gpu_info.dx_diagnostics));
   info->Set("diagnostics", std::move(dx_info));
@@ -501,8 +501,8 @@ base::Value* GpuMessageHandler::OnRequestLogMessages(const base::ListValue*) {
 
 void GpuMessageHandler::OnGpuInfoUpdate() {
   // Get GPU Info.
-  scoped_ptr<base::DictionaryValue> gpu_info_val(GpuInfoAsDictionaryValue());
-
+  std::unique_ptr<base::DictionaryValue> gpu_info_val(
+      GpuInfoAsDictionaryValue());
 
   // Add in blacklisting features
   base::DictionaryValue* feature_status = new base::DictionaryValue;

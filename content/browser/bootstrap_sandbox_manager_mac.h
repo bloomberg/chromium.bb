@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_BOOTSTRAP_SANDBOX_MANAGER_MAC_H_
 #define CONTENT_BROWSER_BOOTSTRAP_SANDBOX_MANAGER_MAC_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -60,7 +61,7 @@ class BootstrapSandboxManager : public BrowserChildProcessObserver,
 
   void AddBaselinePolicy(sandbox::BootstrapSandboxPolicy* policy);
 
-  scoped_ptr<sandbox::BootstrapSandbox> sandbox_;
+  std::unique_ptr<sandbox::BootstrapSandbox> sandbox_;
 
   DISALLOW_COPY_AND_ASSIGN(BootstrapSandboxManager);
 };

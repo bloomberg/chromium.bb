@@ -54,7 +54,7 @@ class CONTENT_EXPORT ScreenOrientationDispatcherHostImpl
                        RenderFrameHost* render_frame_host,
                        blink::WebLockOrientationError error);
 
-  scoped_ptr<ScreenOrientationProvider> provider_;
+  std::unique_ptr<ScreenOrientationProvider> provider_;
 
   struct LockInformation {
     LockInformation(int request_id, int process_id, int routing_id);

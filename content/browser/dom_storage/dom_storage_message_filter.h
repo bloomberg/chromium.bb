@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -83,7 +84,7 @@ class DOMStorageMessageFilter
       const base::NullableString16& old_value);
 
   scoped_refptr<DOMStorageContextImpl> context_;
-  scoped_ptr<DOMStorageHost> host_;
+  std::unique_ptr<DOMStorageHost> host_;
   int connection_dispatching_message_for_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageMessageFilter);

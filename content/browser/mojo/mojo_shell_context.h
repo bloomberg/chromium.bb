@@ -6,12 +6,12 @@
 #define CONTENT_BROWSER_MOJO_MOJO_SHELL_CONTEXT_H_
 
 #include <map>
+#include <memory>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "mojo/shell/public/interfaces/connector.mojom.h"
@@ -32,7 +32,8 @@ namespace content {
 class CONTENT_EXPORT MojoShellContext {
  public:
   using StaticApplicationMap =
-      std::map<std::string, base::Callback<scoped_ptr<mojo::ShellClient>()>>;
+      std::map<std::string,
+               base::Callback<std::unique_ptr<mojo::ShellClient>()>>;
 
   MojoShellContext(scoped_refptr<base::SingleThreadTaskRunner> file_thread,
                    scoped_refptr<base::SingleThreadTaskRunner> db_thread);
@@ -65,11 +66,11 @@ class CONTENT_EXPORT MojoShellContext {
       mojo::shell::mojom::InterfaceProviderPtr exposed_services,
       const mojo::shell::mojom::Connector::ConnectCallback& callback);
 
-  static base::LazyInstance<scoped_ptr<Proxy>> proxy_;
+  static base::LazyInstance<std::unique_ptr<Proxy>> proxy_;
 
-  scoped_ptr<BuiltinManifestProvider> manifest_provider_;
-  scoped_ptr<catalog::Factory> catalog_;
-  scoped_ptr<mojo::shell::Shell> shell_;
+  std::unique_ptr<BuiltinManifestProvider> manifest_provider_;
+  std::unique_ptr<catalog::Factory> catalog_;
+  std::unique_ptr<mojo::shell::Shell> shell_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoShellContext);
 };

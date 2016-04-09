@@ -5,11 +5,12 @@
 #include "content/browser/background_sync/background_sync_service_impl.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "content/browser/background_sync/background_sync_context_impl.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
@@ -118,7 +119,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   void CreateTestHelper() {
     embedded_worker_helper_.reset(
         new EmbeddedWorkerTestHelper(base::FilePath()));
-    scoped_ptr<MockPermissionManager> mock_permission_manager(
+    std::unique_ptr<MockPermissionManager> mock_permission_manager(
         new testing::NiceMock<MockPermissionManager>());
     ON_CALL(*mock_permission_manager,
             GetPermissionStatus(PermissionType::BACKGROUND_SYNC, _, _))
@@ -203,10 +204,10 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  scoped_ptr<TestBrowserThreadBundle> thread_bundle_;
-  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  scoped_ptr<EmbeddedWorkerTestHelper> embedded_worker_helper_;
-  scoped_ptr<StoragePartitionImpl> storage_partition_impl_;
+  std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
+  std::unique_ptr<EmbeddedWorkerTestHelper> embedded_worker_helper_;
+  std::unique_ptr<StoragePartitionImpl> storage_partition_impl_;
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
   int64_t sw_registration_id_;
   scoped_refptr<ServiceWorkerRegistration> sw_registration_;

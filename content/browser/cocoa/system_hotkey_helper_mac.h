@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_COCOA_SYSTEM_HOTKEY_HELPER_MAC_H_
 #define CONTENT_BROWSER_COCOA_SYSTEM_HOTKEY_HELPER_MAC_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 
@@ -48,7 +49,7 @@ class SystemHotkeyHelperMac {
   // Parses the system hotkeys from the plist stored in |dictionary|.
   void FileDidLoad(NSDictionary* dictionary);
 
-  scoped_ptr<SystemHotkeyMap> map_;
+  std::unique_ptr<SystemHotkeyMap> map_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemHotkeyHelperMac);
 };

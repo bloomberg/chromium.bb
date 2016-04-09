@@ -131,7 +131,7 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
     SpeechRecognitionSessionConfig config;
     SpeechRecognitionSessionContext context;
     scoped_refptr<SpeechRecognizer> recognizer;
-    scoped_ptr<MediaStreamUIProxy> ui;
+    std::unique_ptr<MediaStreamUIProxy> ui;
   };
 
   // Callback issued by the SpeechRecognitionManagerDelegate for reporting
@@ -143,9 +143,10 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
   // Callback to get back the result of a media request. |devices| is an array
   // of devices approved to be used for the request, |devices| is empty if the
   // users deny the request.
-  void MediaRequestPermissionCallback(int session_id,
-                                      const MediaStreamDevices& devices,
-                                      scoped_ptr<MediaStreamUIProxy> stream_ui);
+  void MediaRequestPermissionCallback(
+      int session_id,
+      const MediaStreamDevices& devices,
+      std::unique_ptr<MediaStreamUIProxy> stream_ui);
 
   // Entry point for pushing any external event into the session handling FSM.
   void DispatchEvent(int session_id, FSMEvent event);
@@ -180,7 +181,7 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
   int primary_session_id_;
   int last_session_id_;
   bool is_dispatching_event_;
-  scoped_ptr<SpeechRecognitionManagerDelegate> delegate_;
+  std::unique_ptr<SpeechRecognitionManagerDelegate> delegate_;
 
   // Used for posting asynchronous tasks (on the IO thread) without worrying
   // about this class being destroyed in the meanwhile (due to browser shutdown)

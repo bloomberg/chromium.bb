@@ -141,7 +141,7 @@ void NotificationMessageFilter::OnShowPlatformNotification(
     return;
   }
 
-  scoped_ptr<DesktopNotificationDelegate> delegate(
+  std::unique_ptr<DesktopNotificationDelegate> delegate(
       new PageNotificationDelegate(process_id_, notification_id));
 
   PlatformNotificationService* service =

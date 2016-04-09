@@ -8,13 +8,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/process/kill.h"
 #include "base/synchronization/lock.h"
@@ -213,7 +213,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
   ~GpuDataManagerImpl() override;
 
   mutable base::Lock lock_;
-  scoped_ptr<GpuDataManagerImplPrivate> private_;
+  std::unique_ptr<GpuDataManagerImplPrivate> private_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImpl);
 };

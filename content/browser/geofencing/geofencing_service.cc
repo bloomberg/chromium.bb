@@ -140,7 +140,7 @@ void GeofencingServiceImpl::UnregisterRegion(
 }
 
 void GeofencingServiceImpl::SetProviderForTesting(
-    scoped_ptr<GeofencingProvider> provider) {
+    std::unique_ptr<GeofencingProvider> provider) {
   DCHECK(!provider_.get());
   provider_ = std::move(provider);
 }

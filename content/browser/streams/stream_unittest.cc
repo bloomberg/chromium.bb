@@ -34,7 +34,7 @@ class StreamTest : public testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
-  scoped_ptr<StreamRegistry> registry_;
+  std::unique_ptr<StreamRegistry> registry_;
 
  private:
   int producing_seed_key_;
@@ -132,9 +132,9 @@ TEST_F(StreamTest, SetAndRemoveRegisterObserver) {
   TestStreamWriter writer2;
   GURL url1("blob://stream1");
   GURL url2("blob://stream2");
-  scoped_ptr<TestStreamObserver> observer1(
+  std::unique_ptr<TestStreamObserver> observer1(
       new TestStreamObserver(url1, registry_.get()));
-  scoped_ptr<TestStreamObserver> observer2(
+  std::unique_ptr<TestStreamObserver> observer2(
       new TestStreamObserver(url2, registry_.get()));
   scoped_refptr<Stream> stream1(new Stream(registry_.get(), &writer1, url1));
   EXPECT_TRUE(observer1->registered());

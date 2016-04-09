@@ -73,7 +73,7 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   //     "children": [ ]
   //   } ]
   // }
-  scoped_ptr<base::DictionaryValue> BuildAccessibilityTree(
+  std::unique_ptr<base::DictionaryValue> BuildAccessibilityTree(
       BrowserAccessibility* root);
 
   // Dumps a BrowserAccessibility tree into a string.

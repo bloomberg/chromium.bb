@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_DEVICE_SENSORS_DEVICE_INERTIAL_SENSOR_SERVICE_H_
 #define CONTENT_BROWSER_DEVICE_SENSORS_DEVICE_INERTIAL_SENSOR_SERVICE_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/singleton.h"
 #include "base/threading/thread_checker.h"
@@ -61,7 +62,7 @@ class CONTENT_EXPORT DeviceInertialSensorService {
   int num_orientation_readers_;
   int num_orientation_absolute_readers_;
   bool is_shutdown_;
-  scoped_ptr<DataFetcherSharedMemory> data_fetcher_;
+  std::unique_ptr<DataFetcherSharedMemory> data_fetcher_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceInertialSensorService);

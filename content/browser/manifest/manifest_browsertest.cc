@@ -117,8 +117,8 @@ class ManifestBrowserTest : public ContentBrowserTest  {
 
  private:
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
-  scoped_ptr<MockWebContentsDelegate> mock_web_contents_delegate_;
-  scoped_ptr<net::EmbeddedTestServer> cors_embedded_test_server_;
+  std::unique_ptr<MockWebContentsDelegate> mock_web_contents_delegate_;
+  std::unique_ptr<net::EmbeddedTestServer> cors_embedded_test_server_;
   Manifest manifest_;
   int console_error_count_;
   bool has_manifest_;
@@ -344,7 +344,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CORSManifestWithAcessControls) {
 // If a page's manifest is in an insecure origin while the page is in a secure
 // origin, requesting the manifest should return the empty manifest.
 IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, MixedContentManifest) {
-  scoped_ptr<net::EmbeddedTestServer> https_server(
+  std::unique_ptr<net::EmbeddedTestServer> https_server(
       new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
   https_server->ServeFilesFromSourceDirectory("content/test/data");
 
@@ -487,10 +487,10 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, AnchorNavigation) {
 
 namespace {
 
-scoped_ptr<net::test_server::HttpResponse> CustomHandleRequestForCookies(
+std::unique_ptr<net::test_server::HttpResponse> CustomHandleRequestForCookies(
     const net::test_server::HttpRequest& request) {
   if (request.relative_url == "/index.html") {
-    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+    std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse());
     http_response->set_code(net::HTTP_OK);
     http_response->set_content_type("text/html");
@@ -503,9 +503,9 @@ scoped_ptr<net::test_server::HttpResponse> CustomHandleRequestForCookies(
 
   const auto& iter = request.headers.find("Cookie");
   if (iter == request.headers.end() || request.relative_url != "/manifest.json")
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return std::unique_ptr<net::test_server::HttpResponse>();
 
-  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse());
   http_response->set_code(net::HTTP_OK);
   http_response->set_content_type("application/json");
@@ -520,7 +520,7 @@ scoped_ptr<net::test_server::HttpResponse> CustomHandleRequestForCookies(
 // This tests that when fetching a Manifest with 'use-credentials' set, the
 // cookies associated with it are passed along the request.
 IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, UseCredentialsSendCookies) {
-  scoped_ptr<net::EmbeddedTestServer> custom_embedded_test_server(
+  std::unique_ptr<net::EmbeddedTestServer> custom_embedded_test_server(
       new net::EmbeddedTestServer());
   custom_embedded_test_server->RegisterRequestHandler(
       base::Bind(&CustomHandleRequestForCookies));
@@ -549,10 +549,10 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, UseCredentialsSendCookies) {
 
 namespace {
 
-scoped_ptr<net::test_server::HttpResponse> CustomHandleRequestForNoCookies(
+std::unique_ptr<net::test_server::HttpResponse> CustomHandleRequestForNoCookies(
     const net::test_server::HttpRequest& request) {
   if (request.relative_url == "/index.html") {
-    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+    std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse());
     http_response->set_code(net::HTTP_OK);
     http_response->set_content_type("text/html");
@@ -563,9 +563,9 @@ scoped_ptr<net::test_server::HttpResponse> CustomHandleRequestForNoCookies(
 
   const auto& iter = request.headers.find("Cookie");
   if (iter != request.headers.end() || request.relative_url != "/manifest.json")
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return std::unique_ptr<net::test_server::HttpResponse>();
 
-  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse());
   http_response->set_code(net::HTTP_OK);
   http_response->set_content_type("application/json");
@@ -579,7 +579,7 @@ scoped_ptr<net::test_server::HttpResponse> CustomHandleRequestForNoCookies(
 // This tests that when fetching a Manifest without 'use-credentials' set, the
 // cookies associated with it are not passed along the request.
 IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, NoUseCredentialsNoCookies) {
-  scoped_ptr<net::EmbeddedTestServer> custom_embedded_test_server(
+  std::unique_ptr<net::EmbeddedTestServer> custom_embedded_test_server(
       new net::EmbeddedTestServer());
   custom_embedded_test_server->RegisterRequestHandler(
       base::Bind(&CustomHandleRequestForNoCookies));

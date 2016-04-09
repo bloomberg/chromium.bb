@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -34,18 +35,17 @@ AccessibilityTreeFormatter::AccessibilityTreeFormatter()
 AccessibilityTreeFormatter::~AccessibilityTreeFormatter() {
 }
 
-scoped_ptr<base::DictionaryValue>
-AccessibilityTreeFormatter::BuildAccessibilityTree(
-    BrowserAccessibility* root) {
+std::unique_ptr<base::DictionaryValue>
+AccessibilityTreeFormatter::BuildAccessibilityTree(BrowserAccessibility* root) {
   CHECK(root);
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   RecursiveBuildAccessibilityTree(*root, dict.get());
   return dict;
 }
 
 void AccessibilityTreeFormatter::FormatAccessibilityTree(
     BrowserAccessibility* root, base::string16* contents) {
-  scoped_ptr<base::DictionaryValue> dict = BuildAccessibilityTree(root);
+  std::unique_ptr<base::DictionaryValue> dict = BuildAccessibilityTree(root);
   RecursiveFormatAccessibilityTree(*(dict.get()), contents);
 }
 

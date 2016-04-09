@@ -4,8 +4,9 @@
 
 #include "content/browser/device_sensors/sensor_manager_android.h"
 
+#include <memory>
+
 #include "base/android/jni_android.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/device_sensors/device_sensors_consts.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -61,10 +62,10 @@ class AndroidSensorManagerTest : public testing::Test {
     ASSERT_TRUE(buffer->data.hasGamma);
   }
 
-  scoped_ptr<DeviceLightHardwareBuffer> light_buffer_;
-  scoped_ptr<DeviceMotionHardwareBuffer> motion_buffer_;
-  scoped_ptr<DeviceOrientationHardwareBuffer> orientation_buffer_;
-  scoped_ptr<DeviceOrientationHardwareBuffer> orientation_absolute_buffer_;
+  std::unique_ptr<DeviceLightHardwareBuffer> light_buffer_;
+  std::unique_ptr<DeviceMotionHardwareBuffer> motion_buffer_;
+  std::unique_ptr<DeviceOrientationHardwareBuffer> orientation_buffer_;
+  std::unique_ptr<DeviceOrientationHardwareBuffer> orientation_absolute_buffer_;
   content::TestBrowserThreadBundle thread_bundle_;
 };
 

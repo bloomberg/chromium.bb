@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -104,7 +105,7 @@ class DOMStorageContextWrapper::MojoState {
                         mojom::LevelDBWrapperRequest request);
 
   // Maps between an origin and its prefixed LevelDB view.
-  std::map<url::Origin, scoped_ptr<LevelDBWrapperImpl>> level_db_wrappers_;
+  std::map<url::Origin, std::unique_ptr<LevelDBWrapperImpl>> level_db_wrappers_;
 
   std::string mojo_user_id_;
   base::FilePath subdirectory_;
@@ -115,7 +116,7 @@ class DOMStorageContextWrapper::MojoState {
     CONNECTION_FINISHED
   } connection_state_;
 
-  scoped_ptr<MojoAppConnection> profile_app_connection_;
+  std::unique_ptr<MojoAppConnection> profile_app_connection_;
   profile::ProfileServicePtr profile_service_;
   filesystem::DirectoryPtr directory_;
 
@@ -215,13 +216,11 @@ void DOMStorageContextWrapper::MojoState::BindLocalStorage(
     mojom::LevelDBWrapperRequest request) {
   auto found = level_db_wrappers_.find(origin);
   if (found == level_db_wrappers_.end()) {
-    level_db_wrappers_[origin] = make_scoped_ptr(new LevelDBWrapperImpl(
-        database_.get(),
-        origin.Serialize(),
+    level_db_wrappers_[origin] = base::WrapUnique(new LevelDBWrapperImpl(
+        database_.get(), origin.Serialize(),
         kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance,
         base::Bind(&MojoState::OnLevelDDWrapperHasNoBindings,
-                   base::Unretained(this),
-                   origin)));
+                   base::Unretained(this), origin)));
     found = level_db_wrappers_.find(origin);
   }
 

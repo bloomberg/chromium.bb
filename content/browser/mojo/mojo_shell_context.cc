@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -235,7 +236,7 @@ class MojoShellContext::Proxy {
 };
 
 // static
-base::LazyInstance<scoped_ptr<MojoShellContext::Proxy>>
+base::LazyInstance<std::unique_ptr<MojoShellContext::Proxy>>
     MojoShellContext::proxy_ = LAZY_INSTANCE_INITIALIZER;
 
 void MojoShellContext::SetApplicationsForTest(
@@ -250,7 +251,7 @@ MojoShellContext::MojoShellContext(
 
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
-  scoped_ptr<mojo::shell::NativeRunnerFactory> native_runner_factory(
+  std::unique_ptr<mojo::shell::NativeRunnerFactory> native_runner_factory(
       new mojo::shell::InProcessNativeRunnerFactory(
           BrowserThread::GetBlockingPool()));
   manifest_provider_.reset(new BuiltinManifestProvider);
@@ -259,7 +260,7 @@ MojoShellContext::MojoShellContext(
   shell_.reset(new mojo::shell::Shell(std::move(native_runner_factory),
                                       catalog_->TakeShellClient()));
   shell_->set_default_loader(
-      scoped_ptr<mojo::shell::Loader>(new DefaultLoader));
+      std::unique_ptr<mojo::shell::Loader>(new DefaultLoader));
 
   StaticApplicationMap apps;
   GetContentClient()->browser()->RegisterInProcessMojoApplications(&apps);
@@ -270,8 +271,8 @@ MojoShellContext::MojoShellContext(
       apps[entry.first] = entry.second;
   }
   for (const auto& entry : apps) {
-    shell_->SetLoaderForName(
-        make_scoped_ptr(new StaticLoader(entry.second)), entry.first);
+    shell_->SetLoaderForName(base::WrapUnique(new StaticLoader(entry.second)),
+                             entry.first);
   }
 
   ContentBrowserClient::OutOfProcessMojoApplicationMap sandboxed_apps;
@@ -279,10 +280,9 @@ MojoShellContext::MojoShellContext(
       ->browser()
       ->RegisterOutOfProcessMojoApplications(&sandboxed_apps);
   for (const auto& app : sandboxed_apps) {
-    shell_->SetLoaderForName(
-        make_scoped_ptr(
-            new UtilityProcessLoader(app.second, true /* use_sandbox */)),
-        app.first);
+    shell_->SetLoaderForName(base::WrapUnique(new UtilityProcessLoader(
+                                 app.second, true /* use_sandbox */)),
+                             app.first);
   }
 
   ContentBrowserClient::OutOfProcessMojoApplicationMap unsandboxed_apps;
@@ -290,22 +290,22 @@ MojoShellContext::MojoShellContext(
       ->browser()
       ->RegisterUnsandboxedOutOfProcessMojoApplications(&unsandboxed_apps);
   for (const auto& app : unsandboxed_apps) {
-    shell_->SetLoaderForName(
-        make_scoped_ptr(
-            new UtilityProcessLoader(app.second, false /* use_sandbox */)),
-        app.first);
+    shell_->SetLoaderForName(base::WrapUnique(new UtilityProcessLoader(
+                                 app.second, false /* use_sandbox */)),
+                             app.first);
   }
 
 #if (ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-  shell_->SetLoaderForName(make_scoped_ptr(new GpuProcessLoader), "mojo:media");
+  shell_->SetLoaderForName(base::WrapUnique(new GpuProcessLoader),
+                           "mojo:media");
 #endif
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kMojoLocalStorage)) {
-    base::Callback<scoped_ptr<mojo::ShellClient>()> profile_callback =
+    base::Callback<std::unique_ptr<mojo::ShellClient>()> profile_callback =
         base::Bind(&profile::CreateProfileApp, file_thread, db_thread);
     shell_->SetLoaderForName(
-        make_scoped_ptr(new CurrentThreadLoader(profile_callback)),
+        base::WrapUnique(new CurrentThreadLoader(profile_callback)),
         "mojo:profile");
   }
 
@@ -341,7 +341,8 @@ void MojoShellContext::ConnectToApplicationOnOwnThread(
     mojo::shell::mojom::InterfaceProviderRequest request,
     mojo::shell::mojom::InterfaceProviderPtr exposed_services,
     const mojo::shell::mojom::Connector::ConnectCallback& callback) {
-  scoped_ptr<mojo::shell::ConnectParams> params(new mojo::shell::ConnectParams);
+  std::unique_ptr<mojo::shell::ConnectParams> params(
+      new mojo::shell::ConnectParams);
   mojo::Identity source_id(requestor_name, user_id);
   params->set_source(source_id);
   params->set_target(mojo::Identity(name, user_id));

@@ -208,7 +208,7 @@ WebBluetoothError TranslateGATTError(
 }
 
 void StopDiscoverySession(
-    scoped_ptr<device::BluetoothDiscoverySession> discovery_session) {
+    std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
   // Nothing goes wrong if the discovery session fails to stop, and we don't
   // need to wait for it before letting the user's script proceed, so we ignore
   // the results here.
@@ -385,12 +385,12 @@ struct BluetoothDispatcherHost::RequestDeviceSession {
     }
   }
 
-  scoped_ptr<device::BluetoothDiscoveryFilter> ComputeScanFilter() const {
+  std::unique_ptr<device::BluetoothDiscoveryFilter> ComputeScanFilter() const {
     std::set<BluetoothUUID> services;
     for (const BluetoothScanFilter& filter : filters) {
       services.insert(filter.services.begin(), filter.services.end());
     }
-    scoped_ptr<device::BluetoothDiscoveryFilter> discovery_filter(
+    std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter(
         new device::BluetoothDiscoveryFilter(
             device::BluetoothDiscoveryFilter::TRANSPORT_DUAL));
     for (const BluetoothUUID& service : services) {
@@ -405,8 +405,8 @@ struct BluetoothDispatcherHost::RequestDeviceSession {
   const url::Origin origin;
   const std::vector<BluetoothScanFilter> filters;
   const std::vector<BluetoothUUID> optional_services;
-  scoped_ptr<BluetoothChooser> chooser;
-  scoped_ptr<device::BluetoothDiscoverySession> discovery_session;
+  std::unique_ptr<BluetoothChooser> chooser;
+  std::unique_ptr<device::BluetoothDiscoverySession> discovery_session;
 };
 
 BluetoothDispatcherHost::CacheQueryResult::CacheQueryResult() {}
@@ -476,7 +476,7 @@ bool BluetoothDispatcherHost::ConnectedDevicesMap::HasActiveConnection(
 void BluetoothDispatcherHost::ConnectedDevicesMap::InsertOrReplace(
     int frame_routing_id,
     const std::string& device_id,
-    scoped_ptr<device::BluetoothGattConnection> connection) {
+    std::unique_ptr<device::BluetoothGattConnection> connection) {
   auto connection_iter = device_id_to_connection_map_.find(device_id);
   if (connection_iter == device_id_to_connection_map_.end()) {
     IncrementBluetoothConnectedDeviceCount(frame_routing_id);
@@ -1310,7 +1310,7 @@ void BluetoothDispatcherHost::OnRequestDeviceImpl(
 
 void BluetoothDispatcherHost::OnDiscoverySessionStarted(
     int chooser_id,
-    scoped_ptr<device::BluetoothDiscoverySession> discovery_session) {
+    std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   VLOG(1) << "Started discovery session for " << chooser_id;
   if (RequestDeviceSession* session =
@@ -1472,7 +1472,7 @@ void BluetoothDispatcherHost::OnGATTConnectionCreated(
     int frame_routing_id,
     const std::string& device_id,
     base::TimeTicks start_time,
-    scoped_ptr<device::BluetoothGattConnection> connection) {
+    std::unique_ptr<device::BluetoothGattConnection> connection) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RecordConnectGATTTimeSuccess(base::TimeTicks::Now() - start_time);
   RecordConnectGATTOutcome(UMAConnectGATTOutcome::SUCCESS);
@@ -1539,7 +1539,7 @@ void BluetoothDispatcherHost::OnCharacteristicReadValueError(
 void BluetoothDispatcherHost::OnStartNotifySessionSuccess(
     int thread_id,
     int request_id,
-    scoped_ptr<device::BluetoothGattNotifySession> notify_session) {
+    std::unique_ptr<device::BluetoothGattNotifySession> notify_session) {
   RecordStartNotificationsOutcome(UMAGATTOperationOutcome::SUCCESS);
 
   // Copy Characteristic Instance ID before passing scoped pointer because

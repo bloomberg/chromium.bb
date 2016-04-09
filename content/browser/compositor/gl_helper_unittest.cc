@@ -124,7 +124,7 @@ class GLHelperTest : public testing::Test {
     json_data.append("]");
 
     std::string error_msg;
-    scoped_ptr<base::Value> trace_data =
+    std::unique_ptr<base::Value> trace_data =
         base::JSONReader::ReadAndReturnError(json_data, 0, NULL, &error_msg);
     CHECK(trace_data) << "JSON parsing failed (" << error_msg
                       << ") JSON data:" << std::endl
@@ -674,10 +674,10 @@ class GLHelperTest : public testing::Test {
   }
 
   // Creates an RGBA SkBitmap
-  scoped_ptr<SkBitmap> CreateTestBitmap(int width,
-                                        int height,
-                                        int test_pattern) {
-    scoped_ptr<SkBitmap> bitmap(new SkBitmap);
+  std::unique_ptr<SkBitmap> CreateTestBitmap(int width,
+                                             int height,
+                                             int test_pattern) {
+    std::unique_ptr<SkBitmap> bitmap(new SkBitmap);
     bitmap->allocPixels(SkImageInfo::Make(width, height, kRGBA_8888_SkColorType,
                                           kPremul_SkAlphaType));
 
@@ -739,7 +739,7 @@ class GLHelperTest : public testing::Test {
     gl_->GenTextures(1, &src_texture);
     GLuint framebuffer;
     gl_->GenFramebuffers(1, &framebuffer);
-    scoped_ptr<SkBitmap> input_pixels =
+    std::unique_ptr<SkBitmap> input_pixels =
         CreateTestBitmap(xsize, ysize, test_pattern);
     BindTextureAndFrameBuffer(src_texture, framebuffer, input_pixels.get(),
                               xsize, ysize);
@@ -818,7 +818,7 @@ class GLHelperTest : public testing::Test {
     gl_->GenTextures(1, &src_texture);
     GLuint framebuffer;
     gl_->GenFramebuffers(1, &framebuffer);
-    scoped_ptr<SkBitmap> input_pixels =
+    std::unique_ptr<SkBitmap> input_pixels =
         CreateTestBitmap(xsize, ysize, test_pattern);
     BindTextureAndFrameBuffer(src_texture, framebuffer, input_pixels.get(),
                               xsize, ysize);
@@ -1306,7 +1306,7 @@ class GLHelperTest : public testing::Test {
         "pattern: %d %s %s",
         xsize, ysize, output_xsize, output_ysize, xmargin, ymargin,
         test_pattern, flip ? "flip" : "noflip", flip ? "mrt" : "nomrt");
-    scoped_ptr<ReadbackYUVInterface> yuv_reader(
+    std::unique_ptr<ReadbackYUVInterface> yuv_reader(
         helper_->CreateReadbackPipelineYUV(
             quality, gfx::Size(xsize, ysize), gfx::Rect(0, 0, xsize, ysize),
             gfx::Size(xsize, ysize), flip, use_mrt));
@@ -1573,10 +1573,10 @@ class GLHelperTest : public testing::Test {
                    "8x1 -> 1x1 bilinear4 X\n");
   }
 
-  scoped_ptr<gpu::GLInProcessContext> context_;
+  std::unique_ptr<gpu::GLInProcessContext> context_;
   gpu::gles2::GLES2Interface* gl_;
-  scoped_ptr<content::GLHelper> helper_;
-  scoped_ptr<content::GLHelperScaling> helper_scaling_;
+  std::unique_ptr<content::GLHelper> helper_;
+  std::unique_ptr<content::GLHelperScaling> helper_scaling_;
   std::deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;
 };
 

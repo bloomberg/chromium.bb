@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_STREAMS_STREAM_CONTEXT_H_
 #define CONTENT_BROWSER_STREAMS_STREAM_CONTEXT_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/content_export.h"
 
@@ -45,7 +46,7 @@ class StreamContext
 
   void DeleteOnCorrectThread() const;
 
-  scoped_ptr<StreamRegistry> registry_;
+  std::unique_ptr<StreamRegistry> registry_;
 };
 
 struct StreamContextDeleter {

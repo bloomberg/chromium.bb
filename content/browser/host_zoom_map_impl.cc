@@ -281,7 +281,7 @@ void HostZoomMapImpl::SetDefaultZoomLevel(double level) {
   default_zoom_level_ = level;
 }
 
-scoped_ptr<HostZoomMap::Subscription>
+std::unique_ptr<HostZoomMap::Subscription>
 HostZoomMapImpl::AddZoomLevelChangedCallback(
     const ZoomLevelChangedCallback& callback) {
   return zoom_level_changed_callbacks_.Add(callback);

@@ -13,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
@@ -45,7 +46,6 @@
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
-
 #include "url/url_util.h"
 
 namespace content {
@@ -458,7 +458,7 @@ void GetMimeTypeOnUI(URLDataSourceImpl* source,
 namespace {
 
 bool IsValidNetworkErrorCode(int error_code) {
-  scoped_ptr<base::DictionaryValue> error_codes = net::GetNetConstants();
+  std::unique_ptr<base::DictionaryValue> error_codes = net::GetNetConstants();
   const base::DictionaryValue* net_error_codes_dict = nullptr;
 
   for (base::DictionaryValue::Iterator itr(*error_codes); !itr.IsAtEnd();
@@ -573,13 +573,13 @@ URLDataManagerBackend::~URLDataManagerBackend() {
 }
 
 // static
-scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>
 URLDataManagerBackend::CreateProtocolHandler(
     content::ResourceContext* resource_context,
     bool is_incognito,
     ChromeBlobStorageContext* blob_storage_context) {
   DCHECK(resource_context);
-  return make_scoped_ptr(new ChromeProtocolHandler(
+  return base::WrapUnique(new ChromeProtocolHandler(
       resource_context, is_incognito, blob_storage_context));
 }
 

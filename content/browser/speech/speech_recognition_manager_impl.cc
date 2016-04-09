@@ -229,7 +229,7 @@ void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
 void SpeechRecognitionManagerImpl::MediaRequestPermissionCallback(
     int session_id,
     const MediaStreamDevices& devices,
-    scoped_ptr<MediaStreamUIProxy> stream_ui) {
+    std::unique_ptr<MediaStreamUIProxy> stream_ui) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   SessionsTable::iterator iter = sessions_.find(session_id);

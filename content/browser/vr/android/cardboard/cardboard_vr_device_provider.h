@@ -6,9 +6,9 @@
 #define CONTENT_BROWSER_VR_CARDBOARD_VR_DEVICE_PROVIDER_H
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/vr/vr_device.h"
 #include "content/browser/vr/vr_device_provider.h"
 
@@ -23,7 +23,7 @@ class CardboardVRDeviceProvider : public VRDeviceProvider {
   void Initialize() override;
 
  private:
-  scoped_ptr<VRDevice> cardboard_device_;
+  std::unique_ptr<VRDevice> cardboard_device_;
 
   DISALLOW_COPY_AND_ASSIGN(CardboardVRDeviceProvider);
 };

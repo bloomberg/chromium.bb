@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_TRACING_POWER_TRACING_AGENT_H_
 #define CONTENT_BROWSER_TRACING_POWER_TRACING_AGENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/tracing_agent.h"
 #include "content/public/browser/browser_thread.h"
@@ -68,7 +69,7 @@ class PowerTracingAgent : public base::trace_event::TracingAgent,
 
   // All interactions with the BattOrAgent (after construction) must happen on
   // the IO thread.
-  scoped_ptr<battor::BattOrAgent, BrowserThread::DeleteOnIOThread>
+  std::unique_ptr<battor::BattOrAgent, BrowserThread::DeleteOnIOThread>
       battor_agent_;
 
   StartAgentTracingCallback start_tracing_callback_;

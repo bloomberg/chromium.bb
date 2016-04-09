@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/browser/vr/vr_device.h"
 #include "content/browser/vr/vr_device_provider.h"
@@ -39,13 +39,13 @@ class VRDeviceManager : public mojom::VRService {
 
   VRDeviceManager();
   // Constructor for testing.
-  explicit VRDeviceManager(scoped_ptr<VRDeviceProvider> provider);
+  explicit VRDeviceManager(std::unique_ptr<VRDeviceProvider> provider);
 
   static void SetInstance(VRDeviceManager* service);
   static bool HasInstance();
 
   void InitializeProviders();
-  void RegisterProvider(scoped_ptr<VRDeviceProvider> provider);
+  void RegisterProvider(std::unique_ptr<VRDeviceProvider> provider);
 
   // mojom::VRService implementation
   void GetDevices(const GetDevicesCallback& callback) override;

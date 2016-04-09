@@ -85,7 +85,7 @@ Response EmulationHandler::SetGeolocationOverride(
 
   GeolocationServiceContext* geolocation_context =
       GetWebContents()->GetGeolocationServiceContext();
-  scoped_ptr<Geoposition> geoposition(new Geoposition());
+  std::unique_ptr<Geoposition> geoposition(new Geoposition());
   if (latitude && longitude && accuracy) {
     geoposition->latitude = *latitude;
     geoposition->longitude = *longitude;
@@ -146,7 +146,7 @@ Response EmulationHandler::SetDeviceMetricsOverride(
     const int* screen_height,
     const int* position_x,
     const int* position_y,
-    const scoped_ptr<base::DictionaryValue>& screen_orientation) {
+    const std::unique_ptr<base::DictionaryValue>& screen_orientation) {
   const static int max_size = 10000000;
   const static double max_scale = 10;
   const static int max_orientation_angle = 360;

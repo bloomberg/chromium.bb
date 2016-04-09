@@ -5,13 +5,15 @@
 #include "content/browser/background_sync/background_sync_manager.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -123,7 +125,7 @@ class BackgroundSyncManagerTest : public testing::Test {
     // extra SW stuff.
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
 
-    scoped_ptr<MockPermissionManager> mock_permission_manager(
+    std::unique_ptr<MockPermissionManager> mock_permission_manager(
         new testing::NiceMock<MockPermissionManager>());
     ON_CALL(*mock_permission_manager,
             GetPermissionStatus(PermissionType::BACKGROUND_SYNC, _, _))
@@ -198,7 +200,7 @@ class BackgroundSyncManagerTest : public testing::Test {
   void StatusAndRegistrationCallback(
       bool* was_called,
       BackgroundSyncStatus status,
-      scoped_ptr<BackgroundSyncRegistration> registration) {
+      std::unique_ptr<BackgroundSyncRegistration> registration) {
     *was_called = true;
     callback_status_ = status;
     callback_registration_ = std::move(registration);
@@ -207,7 +209,7 @@ class BackgroundSyncManagerTest : public testing::Test {
   void StatusAndRegistrationsCallback(
       bool* was_called,
       BackgroundSyncStatus status,
-      scoped_ptr<ScopedVector<BackgroundSyncRegistration>> registrations) {
+      std::unique_ptr<ScopedVector<BackgroundSyncRegistration>> registrations) {
     *was_called = true;
     callback_status_ = status;
     callback_registrations_ = std::move(registrations);
@@ -225,7 +227,7 @@ class BackgroundSyncManagerTest : public testing::Test {
     background_sync_manager_.reset(test_background_sync_manager_);
 
     test_clock_ = new base::SimpleTestClock();
-    background_sync_manager_->set_clock(make_scoped_ptr(test_clock_));
+    background_sync_manager_->set_clock(base::WrapUnique(test_clock_));
 
     // Many tests do not expect the sync event to fire immediately after
     // register (and cleanup up the sync registrations).  Tests can control when
@@ -407,10 +409,10 @@ class BackgroundSyncManagerTest : public testing::Test {
   }
 
   TestBrowserThreadBundle browser_thread_bundle_;
-  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
-  scoped_ptr<BackgroundSyncManager> background_sync_manager_;
-  scoped_ptr<StoragePartitionImpl> storage_partition_impl_;
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
+  std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
+  std::unique_ptr<BackgroundSyncManager> background_sync_manager_;
+  std::unique_ptr<StoragePartitionImpl> storage_partition_impl_;
   TestBackgroundSyncManager* test_background_sync_manager_ = nullptr;
   base::SimpleTestClock* test_clock_ = nullptr;
 
@@ -424,8 +426,9 @@ class BackgroundSyncManagerTest : public testing::Test {
 
   // Callback values.
   BackgroundSyncStatus callback_status_ = BACKGROUND_SYNC_STATUS_OK;
-  scoped_ptr<BackgroundSyncRegistration> callback_registration_;
-  scoped_ptr<ScopedVector<BackgroundSyncRegistration>> callback_registrations_;
+  std::unique_ptr<BackgroundSyncRegistration> callback_registration_;
+  std::unique_ptr<ScopedVector<BackgroundSyncRegistration>>
+      callback_registrations_;
   ServiceWorkerStatusCode callback_sw_status_code_ = SERVICE_WORKER_OK;
   int sync_events_called_ = 0;
   ServiceWorkerVersion::StatusCallback sync_fired_callback_;

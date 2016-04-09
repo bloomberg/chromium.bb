@@ -166,7 +166,7 @@ void EtwSystemEventConsumer::AddSyncEventToBuffer() {
   now_in_us.QuadPart = now.ToInternalValue();
 
   // Add fields to the event.
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->Set("guid", new base::StringValue("ClockSync"));
   value->Set("walltime", new base::StringValue(
       base::StringPrintf("%08X%08X",
@@ -184,7 +184,7 @@ void EtwSystemEventConsumer::AddSyncEventToBuffer() {
 void EtwSystemEventConsumer::AppendEventToBuffer(EVENT_TRACE* event) {
   using base::FundamentalValue;
 
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
 
   // Add header fields to the event.
   LARGE_INTEGER ts_us;
@@ -230,7 +230,7 @@ void EtwSystemEventConsumer::TraceAndConsumeOnThread() {
 void EtwSystemEventConsumer::FlushOnThread(
     const StopAgentTracingCallback& callback) {
   // Add the header information to the stream.
-  scoped_ptr<base::DictionaryValue> header(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> header(new base::DictionaryValue());
   header->Set("name", new base::StringValue("ETW"));
 
   // Release and pass the events buffer.

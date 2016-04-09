@@ -59,7 +59,7 @@ class TracingControllerTestEndpoint
     : public TracingController::TraceDataEndpoint {
  public:
   TracingControllerTestEndpoint(
-      base::Callback<void(scoped_ptr<const base::DictionaryValue>,
+      base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
                           base::RefCountedString*)> done_callback)
       : done_callback_(done_callback) {}
 
@@ -69,7 +69,7 @@ class TracingControllerTestEndpoint
   }
 
   void ReceiveTraceFinalContents(
-      scoped_ptr<const base::DictionaryValue> metadata,
+      std::unique_ptr<const base::DictionaryValue> metadata,
       const std::string& contents) override {
     EXPECT_EQ(trace_, contents);
 
@@ -87,8 +87,9 @@ class TracingControllerTestEndpoint
   ~TracingControllerTestEndpoint() override {}
 
   std::string trace_;
-  base::Callback<void(scoped_ptr<const base::DictionaryValue>,
-                      base::RefCountedString*)> done_callback_;
+  base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
+                      base::RefCountedString*)>
+      done_callback_;
 };
 
 class TracingControllerTest : public ContentBrowserTest {
@@ -122,7 +123,7 @@ class TracingControllerTest : public ContentBrowserTest {
 
   void StopTracingStringDoneCallbackTest(
       base::Closure quit_callback,
-      scoped_ptr<const base::DictionaryValue> metadata,
+      std::unique_ptr<const base::DictionaryValue> metadata,
       base::RefCountedString* data) {
     disable_recording_done_callback_count_++;
     last_metadata_.reset(metadata.release());
@@ -186,11 +187,11 @@ class TracingControllerTest : public ContentBrowserTest {
 
     {
       base::RunLoop run_loop;
-      base::Callback<void(scoped_ptr<const base::DictionaryValue>,
-                          base::RefCountedString*)> callback = base::Bind(
-          &TracingControllerTest::StopTracingStringDoneCallbackTest,
-          base::Unretained(this),
-          run_loop.QuitClosure());
+      base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
+                          base::RefCountedString*)>
+          callback = base::Bind(
+              &TracingControllerTest::StopTracingStringDoneCallbackTest,
+              base::Unretained(this), run_loop.QuitClosure());
       bool result = controller->StopTracing(
           TracingController::CreateStringSink(callback));
       ASSERT_TRUE(result);
@@ -224,11 +225,11 @@ class TracingControllerTest : public ContentBrowserTest {
 
     {
       base::RunLoop run_loop;
-      base::Callback<void(scoped_ptr<const base::DictionaryValue>,
-                          base::RefCountedString*)> callback = base::Bind(
-          &TracingControllerTest::StopTracingStringDoneCallbackTest,
-          base::Unretained(this),
-          run_loop.QuitClosure());
+      base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
+                          base::RefCountedString*)>
+          callback = base::Bind(
+              &TracingControllerTest::StopTracingStringDoneCallbackTest,
+              base::Unretained(this), run_loop.QuitClosure());
 
       scoped_refptr<TracingController::TraceDataSink> trace_data_sink =
           TracingController::CreateStringSink(callback);
@@ -264,10 +265,11 @@ class TracingControllerTest : public ContentBrowserTest {
 
     {
       base::RunLoop run_loop;
-      base::Callback<void(scoped_ptr<const base::DictionaryValue>,
-                          base::RefCountedString*)> callback = base::Bind(
-          &TracingControllerTest::StopTracingStringDoneCallbackTest,
-          base::Unretained(this), run_loop.QuitClosure());
+      base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
+                          base::RefCountedString*)>
+          callback = base::Bind(
+              &TracingControllerTest::StopTracingStringDoneCallbackTest,
+              base::Unretained(this), run_loop.QuitClosure());
       bool result = controller->StopTracing(
           TracingController::CreateCompressedStringSink(
               new TracingControllerTestEndpoint(callback)));
@@ -347,7 +349,7 @@ class TracingControllerTest : public ContentBrowserTest {
   int enable_recording_done_callback_count_;
   int disable_recording_done_callback_count_;
   base::FilePath last_actual_recording_file_path_;
-  scoped_ptr<const base::DictionaryValue> last_metadata_;
+  std::unique_ptr<const base::DictionaryValue> last_metadata_;
   std::string last_data_;
 };
 

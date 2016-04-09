@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/geolocation/wifi_data_provider_common.h"
+
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/thread_task_runner_handle.h"
-#include "content/browser/geolocation/wifi_data_provider_common.h"
 #include "content/browser/geolocation/wifi_data_provider_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -76,8 +78,8 @@ class WifiDataProviderCommonWithMock : public WifiDataProviderCommon {
     return new_polling_policy_.release();
   }
 
-  scoped_ptr<MockWlanApi> new_wlan_api_;
-  scoped_ptr<MockPollingPolicy> new_polling_policy_;
+  std::unique_ptr<MockWlanApi> new_wlan_api_;
+  std::unique_ptr<MockPollingPolicy> new_polling_policy_;
 
  private:
   ~WifiDataProviderCommonWithMock() override {}
@@ -125,7 +127,7 @@ class GeolocationWifiDataProviderCommonTest : public testing::Test {
  protected:
   TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   WifiDataProviderManager::WifiDataUpdateCallback wifi_data_callback_;
   scoped_refptr<WifiDataProviderCommonWithMock> provider_;
   MockWlanApi* wlan_api_;

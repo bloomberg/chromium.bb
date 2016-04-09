@@ -24,8 +24,8 @@ void EntryCloser(disk_cache::Entry* entry) {
   entry->Close();
 }
 
-void FreeDiskCacheIterator(scoped_ptr<disk_cache::Backend::Iterator> iterator) {
-}
+void FreeDiskCacheIterator(
+    std::unique_ptr<disk_cache::Backend::Iterator> iterator) {}
 
 }  // namespace
 
@@ -99,7 +99,7 @@ class ShaderDiskReadHelper
 
   base::WeakPtr<ShaderDiskCache> cache_;
   OpType op_type_;
-  scoped_ptr<disk_cache::Backend::Iterator> iter_;
+  std::unique_ptr<disk_cache::Backend::Iterator> iter_;
   scoped_refptr<net::IOBufferWithSize> buf_;
   int host_id_;
   disk_cache::Entry* entry_;

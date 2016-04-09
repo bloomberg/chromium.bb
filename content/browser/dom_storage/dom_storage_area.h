@@ -8,13 +8,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
@@ -171,11 +171,11 @@ class CONTENT_EXPORT DOMStorageArea
   base::FilePath directory_;
   scoped_refptr<DOMStorageTaskRunner> task_runner_;
   scoped_refptr<DOMStorageMap> map_;
-  scoped_ptr<DOMStorageDatabaseAdapter> backing_;
+  std::unique_ptr<DOMStorageDatabaseAdapter> backing_;
   scoped_refptr<SessionStorageDatabase> session_storage_backing_;
   bool is_initial_import_done_;
   bool is_shutdown_;
-  scoped_ptr<CommitBatch> commit_batch_;
+  std::unique_ptr<CommitBatch> commit_batch_;
   int commit_batches_in_flight_;
   base::TimeTicks start_time_;
   RateLimiter data_rate_limiter_;

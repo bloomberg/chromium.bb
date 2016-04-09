@@ -5,10 +5,12 @@
 #include "content/browser/devtools/protocol/system_info_handler.h"
 
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "gpu/config/gpu_feature_type.h"
@@ -145,7 +147,7 @@ SystemInfoHandler::SystemInfoHandler()
 SystemInfoHandler::~SystemInfoHandler() {
 }
 
-void SystemInfoHandler::SetClient(scoped_ptr<Client> client) {
+void SystemInfoHandler::SetClient(std::unique_ptr<Client> client) {
   client_.swap(client);
 }
 
@@ -197,7 +199,8 @@ void SystemInfoHandler::SendGetInfoResponse(DevToolsCommandId command_id) {
   for (const auto& device : gpu_info.secondary_gpus)
     devices.push_back(GPUDeviceToProtocol(device));
 
-  scoped_ptr<base::DictionaryValue> aux_attributes(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> aux_attributes(
+      new base::DictionaryValue);
   AuxGPUInfoEnumerator enumerator(aux_attributes.get());
   gpu_info.EnumerateFields(&enumerator);
 
@@ -205,7 +208,7 @@ void SystemInfoHandler::SendGetInfoResponse(DevToolsCommandId command_id) {
       GPUInfo::Create()
           ->set_devices(devices)
           ->set_aux_attributes(std::move(aux_attributes))
-          ->set_feature_status(make_scoped_ptr(GetFeatureStatus()))
+          ->set_feature_status(base::WrapUnique(GetFeatureStatus()))
           ->set_driver_bug_workarounds(GetDriverBugWorkarounds());
 
   client_->SendGetInfoResponse(

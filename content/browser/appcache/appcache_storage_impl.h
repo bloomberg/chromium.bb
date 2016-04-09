@@ -180,7 +180,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
   // disk cache and cannot continue.
   bool is_disabled_;
 
-  scoped_ptr<AppCacheDiskCache> disk_cache_;
+  std::unique_ptr<AppCacheDiskCache> disk_cache_;
   base::OneShotTimer lazy_commit_timer_;
 
   // Used to short-circuit certain operations without having to schedule

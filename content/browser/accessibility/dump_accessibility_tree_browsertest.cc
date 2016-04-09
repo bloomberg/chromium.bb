@@ -102,7 +102,7 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
   }
 
   std::vector<std::string> Dump() override {
-    scoped_ptr<AccessibilityTreeFormatter> formatter(
+    std::unique_ptr<AccessibilityTreeFormatter> formatter(
         CreateAccessibilityTreeFormatter());
     formatter->SetFilters(filters_);
     base::string16 actual_contents_utf16;

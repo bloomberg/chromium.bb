@@ -22,7 +22,7 @@ class SecurityHandler : public WebContentsObserver {
   SecurityHandler();
   ~SecurityHandler() override;
 
-  void SetClient(scoped_ptr<Client> client);
+  void SetClient(std::unique_ptr<Client> client);
   void SetRenderFrameHost(RenderFrameHost* host);
 
   Response Enable();
@@ -36,7 +36,7 @@ class SecurityHandler : public WebContentsObserver {
       SecurityStyle security_style,
       const SecurityStyleExplanations& security_style_explanations) override;
 
-  scoped_ptr<Client> client_;
+  std::unique_ptr<Client> client_;
   bool enabled_;
   RenderFrameHost* host_;
 

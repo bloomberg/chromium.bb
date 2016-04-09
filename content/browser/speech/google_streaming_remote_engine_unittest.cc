@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/speech/google_streaming_remote_engine.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 
 #include "base/big_endian.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
 #include "content/browser/speech/audio_buffer.h"
-#include "content/browser/speech/google_streaming_remote_engine.h"
 #include "content/browser/speech/proto/google_streaming_api.pb.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
@@ -94,7 +95,7 @@ class GoogleStreamingRemoteEngineTest : public SpeechRecognitionEngineDelegate,
   void ExpectFramedChunk(const std::string& chunk, uint32_t type);
   void CloseMockDownstream(DownstreamError error);
 
-  scoped_ptr<GoogleStreamingRemoteEngine> engine_under_test_;
+  std::unique_ptr<GoogleStreamingRemoteEngine> engine_under_test_;
   TestURLFetcherFactory url_fetcher_factory_;
   size_t last_number_of_upstream_chunks_seen_;
   base::MessageLoop message_loop_;

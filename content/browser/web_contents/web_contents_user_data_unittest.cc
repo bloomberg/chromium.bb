@@ -4,7 +4,8 @@
 
 #include "content/public/browser/web_contents_user_data.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
@@ -64,7 +65,7 @@ TEST_F(WebContentsUserDataTest, OneInstanceTwoAttachments) {
 
 TEST_F(WebContentsUserDataTest, TwoInstancesOneAttachment) {
   WebContents* contents1 = web_contents();
-  scoped_ptr<WebContents> contents2(
+  std::unique_ptr<WebContents> contents2(
       WebContentsTester::CreateTestWebContents(browser_context(), NULL));
 
   WebContentsAttachedClass1* one_class =

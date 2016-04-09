@@ -103,7 +103,7 @@ class DumpAccessibilityTestBase : public ContentBrowserTest {
 #endif
 
   // The current AccessibilityTreeFormatter.
-  scoped_ptr<AccessibilityTreeFormatter> formatter_;
+  std::unique_ptr<AccessibilityTreeFormatter> formatter_;
 
   // Whether we're doing a native pass or internal/blink tree pass.
   bool is_blink_pass_;

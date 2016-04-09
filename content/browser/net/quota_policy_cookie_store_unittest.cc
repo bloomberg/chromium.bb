@@ -121,7 +121,7 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
   }
 
   TestBrowserThreadBundle bundle_;
-  scoped_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
+  std::unique_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
   base::WaitableEvent loaded_event_;
   base::WaitableEvent destroy_event_;
   base::ScopedTempDir temp_dir_;

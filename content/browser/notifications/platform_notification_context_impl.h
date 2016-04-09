@@ -148,7 +148,7 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  scoped_ptr<NotificationDatabase> database_;
+  std::unique_ptr<NotificationDatabase> database_;
 
   // Indicates whether the database should be pruned when it's opened.
   bool prune_database_on_open_ = false;

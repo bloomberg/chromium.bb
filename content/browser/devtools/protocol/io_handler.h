@@ -26,7 +26,7 @@ class IOHandler {
   explicit IOHandler(DevToolsIOContext* io_context);
   ~IOHandler();
 
-  void SetClient(scoped_ptr<Client> client);
+  void SetClient(std::unique_ptr<Client> client);
 
   // Protocol methods.
   Response Read(DevToolsCommandId command_id, const std::string& handle,
@@ -37,7 +37,7 @@ class IOHandler {
   void ReadComplete(DevToolsCommandId command_id,
       const scoped_refptr<base::RefCountedString>& data, int status);
 
-  scoped_ptr<Client> client_;
+  std::unique_ptr<Client> client_;
   DevToolsIOContext* io_context_;
   base::WeakPtrFactory<IOHandler> weak_factory_;
 

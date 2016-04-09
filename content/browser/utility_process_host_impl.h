@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_UTILITY_PROCESS_HOST_IMPL_H_
 #define CONTENT_BROWSER_UTILITY_PROCESS_HOST_IMPL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
@@ -105,14 +105,14 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   // process in the task manager.
   base::string16 name_;
 
-  scoped_ptr<BrowserChildProcessHostImpl> process_;
+  std::unique_ptr<BrowserChildProcessHostImpl> process_;
 
   // Used in single-process mode instead of process_.
-  scoped_ptr<base::Thread> in_process_thread_;
+  std::unique_ptr<base::Thread> in_process_thread_;
 
   // Browser-side Mojo endpoint which sets up a Mojo channel with the child
   // process and contains the browser's ServiceRegistry.
-  scoped_ptr<MojoApplicationHost> mojo_application_host_;
+  std::unique_ptr<MojoApplicationHost> mojo_application_host_;
 
   // Used to vend weak pointers, and should always be declared last.
   base::WeakPtrFactory<UtilityProcessHostImpl> weak_ptr_factory_;

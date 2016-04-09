@@ -34,8 +34,8 @@ class TimeZoneMonitorMac : public TimeZoneMonitor {
 };
 
 // static
-scoped_ptr<TimeZoneMonitor> TimeZoneMonitor::Create() {
-  return scoped_ptr<TimeZoneMonitor>(new TimeZoneMonitorMac());
+std::unique_ptr<TimeZoneMonitor> TimeZoneMonitor::Create() {
+  return std::unique_ptr<TimeZoneMonitor>(new TimeZoneMonitorMac());
 }
 
 }  // namespace content

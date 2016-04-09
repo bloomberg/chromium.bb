@@ -687,7 +687,7 @@ TEST_F(WebContentsImplTest, NavigateTwoTabsCrossSite) {
                               ui::PAGE_TRANSITION_TYPED);
 
   // Open a new contents with the same SiteInstance, navigated to the same site.
-  scoped_ptr<TestWebContents> contents2(
+  std::unique_ptr<TestWebContents> contents2(
       TestWebContents::Create(browser_context(), instance1));
   contents2->GetController().LoadURL(url, Referrer(),
                                      ui::PAGE_TRANSITION_TYPED,
@@ -848,8 +848,8 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredSitelessUrl) {
   // SiteInstance.
   browser_client.set_assign_site_for_url(false);
   const GURL native_url("non-site-url://stuffandthings");
-  std::vector<scoped_ptr<NavigationEntry>> entries;
-  scoped_ptr<NavigationEntry> new_entry =
+  std::vector<std::unique_ptr<NavigationEntry>> entries;
+  std::unique_ptr<NavigationEntry> new_entry =
       NavigationControllerImpl::CreateNavigationEntry(
           native_url, Referrer(), ui::PAGE_TRANSITION_LINK, false,
           std::string(), browser_context());
@@ -898,8 +898,8 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredRegularUrl) {
   // ShouldAssignSiteForUrl override is disabled (i.e. returns true).
   browser_client.set_assign_site_for_url(true);
   const GURL regular_url("http://www.yahoo.com");
-  std::vector<scoped_ptr<NavigationEntry>> entries;
-  scoped_ptr<NavigationEntry> new_entry =
+  std::vector<std::unique_ptr<NavigationEntry>> entries;
+  std::unique_ptr<NavigationEntry> new_entry =
       NavigationControllerImpl::CreateNavigationEntry(
           regular_url, Referrer(), ui::PAGE_TRANSITION_LINK, false,
           std::string(), browser_context());
@@ -960,7 +960,7 @@ TEST_F(WebContentsImplTest, FindOpenerRVHWhenPending) {
   // While it is still pending, simulate opening a new tab with the first tab
   // as its opener.  This will call CreateOpenerProxies on the opener to ensure
   // that an RVH exists.
-  scoped_ptr<TestWebContents> popup(
+  std::unique_ptr<TestWebContents> popup(
       TestWebContents::Create(browser_context(), instance));
   popup->SetOpener(contents());
   contents()->GetRenderManager()->CreateOpenerProxies(instance, nullptr);
@@ -999,7 +999,7 @@ TEST_F(WebContentsImplTest, CrossSiteComparesAgainstCurrentPage) {
                               ui::PAGE_TRANSITION_TYPED);
 
   // Open a related contents to a second site.
-  scoped_ptr<TestWebContents> contents2(
+  std::unique_ptr<TestWebContents> contents2(
       TestWebContents::Create(browser_context(), instance1));
   const GURL url2("http://www.yahoo.com");
   contents2->GetController().LoadURL(url2, Referrer(),
@@ -2544,7 +2544,7 @@ TEST_F(WebContentsImplTest, CopyStateFromAndPruneSourceInterstitial) {
 
   // Create another NavigationController.
   GURL url3("http://foo2");
-  scoped_ptr<TestWebContents> other_contents(
+  std::unique_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
@@ -2569,7 +2569,7 @@ TEST_F(WebContentsImplTest, CopyStateFromAndPruneTargetInterstitial) {
   contents()->NavigateAndCommit(url1);
 
   // Create another NavigationController.
-  scoped_ptr<TestWebContents> other_contents(
+  std::unique_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
 
@@ -2619,7 +2619,7 @@ TEST_F(WebContentsImplTest, FilterURLs) {
   EXPECT_EQ(url_normalized, observer.last_url());
 
   // Create and navigate another WebContents.
-  scoped_ptr<TestWebContents> other_contents(
+  std::unique_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
   TestWebContentsObserver other_observer(other_contents.get());
   other_contents->NavigateAndCommit(url_normalized);
@@ -2633,7 +2633,7 @@ TEST_F(WebContentsImplTest, FilterURLs) {
 // Test that if a pending contents is deleted before it is shown, we don't
 // crash.
 TEST_F(WebContentsImplTest, PendingContents) {
-  scoped_ptr<TestWebContents> other_contents(
+  std::unique_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
   contents()->AddPendingContents(other_contents.get());
   int route_id = other_contents->GetRenderViewHost()->GetRoutingID();
@@ -2793,7 +2793,7 @@ class ContentsZoomChangedDelegate : public WebContentsDelegate {
 TEST_F(WebContentsImplTest, HandleWheelEvent) {
   using blink::WebInputEvent;
 
-  scoped_ptr<ContentsZoomChangedDelegate> delegate(
+  std::unique_ptr<ContentsZoomChangedDelegate> delegate(
       new ContentsZoomChangedDelegate());
   contents()->SetDelegate(delegate.get());
 
@@ -2873,12 +2873,12 @@ TEST_F(WebContentsImplTest, ActiveContentsCountBasic) {
   EXPECT_EQ(0u, instance1->GetRelatedActiveContentsCount());
   EXPECT_EQ(0u, instance2->GetRelatedActiveContentsCount());
 
-  scoped_ptr<TestWebContents> contents1(
+  std::unique_ptr<TestWebContents> contents1(
       TestWebContents::Create(browser_context(), instance1.get()));
   EXPECT_EQ(1u, instance1->GetRelatedActiveContentsCount());
   EXPECT_EQ(1u, instance2->GetRelatedActiveContentsCount());
 
-  scoped_ptr<TestWebContents> contents2(
+  std::unique_ptr<TestWebContents> contents2(
       TestWebContents::Create(browser_context(), instance1.get()));
   EXPECT_EQ(2u, instance1->GetRelatedActiveContentsCount());
   EXPECT_EQ(2u, instance2->GetRelatedActiveContentsCount());
@@ -2900,7 +2900,7 @@ TEST_F(WebContentsImplTest, ActiveContentsCountNavigate) {
 
   EXPECT_EQ(0u, instance->GetRelatedActiveContentsCount());
 
-  scoped_ptr<TestWebContents> contents(
+  std::unique_ptr<TestWebContents> contents(
       TestWebContents::Create(browser_context(), instance.get()));
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
 
@@ -2948,7 +2948,7 @@ TEST_F(WebContentsImplTest, ActiveContentsCountChangeBrowsingInstance) {
 
   EXPECT_EQ(0u, instance->GetRelatedActiveContentsCount());
 
-  scoped_ptr<TestWebContents> contents(
+  std::unique_ptr<TestWebContents> contents(
       TestWebContents::Create(browser_context(), instance.get()));
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
 

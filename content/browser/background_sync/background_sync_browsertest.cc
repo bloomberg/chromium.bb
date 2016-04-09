@@ -72,7 +72,7 @@ void RegistrationPendingDidGetSyncRegistration(
     const std::string& tag,
     const base::Callback<void(bool)>& callback,
     BackgroundSyncStatus error_type,
-    scoped_ptr<ScopedVector<BackgroundSyncRegistration>> registrations) {
+    std::unique_ptr<ScopedVector<BackgroundSyncRegistration>> registrations) {
   ASSERT_EQ(BACKGROUND_SYNC_STATUS_OK, error_type);
   // Find the right registration in the list and check its status.
   for (const BackgroundSyncRegistration* registration : *registrations) {
@@ -207,7 +207,7 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
   net::EmbeddedTestServer* https_server() { return https_server_.get(); }
 
  private:
-  scoped_ptr<net::EmbeddedTestServer> https_server_;
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
   Shell* shell_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncBrowserTest);

@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/appcache/appcache_url_request_job.h"
+
 #include <stdint.h>
 #include <string.h>
 
+#include <memory>
 #include <stack>
 #include <utility>
 
@@ -15,7 +18,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/pickle.h"
 #include "base/single_thread_task_runner.h"
@@ -23,7 +25,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "content/browser/appcache/appcache_response.h"
-#include "content/browser/appcache/appcache_url_request_job.h"
 #include "content/browser/appcache/mock_appcache_service.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -70,7 +71,9 @@ class MockURLRequestJobFactory : public net::URLRequestJobFactory {
 
   ~MockURLRequestJobFactory() override { DCHECK(!job_); }
 
-  void SetJob(scoped_ptr<net::URLRequestJob> job) { job_ = std::move(job); }
+  void SetJob(std::unique_ptr<net::URLRequestJob> job) {
+    job_ = std::move(job);
+  }
 
   bool has_job() const { return job_.get() != nullptr; }
 
@@ -115,7 +118,7 @@ class MockURLRequestJobFactory : public net::URLRequestJobFactory {
 
  private:
   // This is mutable because MaybeCreateJobWithProtocolHandler is const.
-  mutable scoped_ptr<net::URLRequestJob> job_;
+  mutable std::unique_ptr<net::URLRequestJob> job_;
 };
 
 }  // namespace
@@ -455,7 +458,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
     // Create an instance and see that it looks as expected.
 
-    scoped_ptr<AppCacheURLRequestJob> job(
+    std::unique_ptr<AppCacheURLRequestJob> job(
         new AppCacheURLRequestJob(request_.get(), nullptr, storage, nullptr,
                                   false, base::Bind(&ExpectNotRestarted)));
     EXPECT_TRUE(job->is_waiting());
@@ -474,13 +477,13 @@ class AppCacheURLRequestJobTest : public testing::Test {
   // DeliveryOrders -----------------------------------------------------
   void DeliveryOrders() {
     AppCacheStorage* storage = service_->storage();
-    scoped_ptr<net::URLRequest> request(empty_context_->CreateRequest(
+    std::unique_ptr<net::URLRequest> request(empty_context_->CreateRequest(
         GURL("http://blah/"), net::DEFAULT_PRIORITY, nullptr));
 
     // Create an instance, give it a delivery order and see that
     // it looks as expected.
 
-    scoped_ptr<AppCacheURLRequestJob> job(
+    std::unique_ptr<AppCacheURLRequestJob> job(
         new AppCacheURLRequestJob(request.get(), nullptr, storage, nullptr,
                                   false, base::Bind(&ExpectNotRestarted)));
     job->DeliverErrorResponse();
@@ -530,7 +533,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
     // Set up to create an AppCacheURLRequestJob with orders to deliver
     // a network response.
-    scoped_ptr<AppCacheURLRequestJob> mock_job(new AppCacheURLRequestJob(
+    std::unique_ptr<AppCacheURLRequestJob> mock_job(new AppCacheURLRequestJob(
         request_.get(), nullptr, storage, nullptr, false,
         base::Bind(&SetIfCalled, &restart_callback_invoked_)));
     mock_job->DeliverNetworkResponse();
@@ -568,7 +571,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
     // Setup to create an AppCacheURLRequestJob with orders to deliver
     // a network response.
-    scoped_ptr<AppCacheURLRequestJob> mock_job(
+    std::unique_ptr<AppCacheURLRequestJob> mock_job(
         new AppCacheURLRequestJob(request_.get(), nullptr, storage, nullptr,
                                   false, base::Bind(&ExpectNotRestarted)));
     mock_job->DeliverErrorResponse();
@@ -620,7 +623,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
     // Setup to create an AppCacheURLRequestJob with orders to deliver
     // a network response.
-    scoped_ptr<AppCacheURLRequestJob> job(
+    std::unique_ptr<AppCacheURLRequestJob> job(
         new AppCacheURLRequestJob(request_.get(), NULL, storage, NULL, false,
                                   base::Bind(&ExpectNotRestarted)));
 
@@ -741,7 +744,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     request_->SetExtraRequestHeaders(extra_headers);
 
     // Create job with orders to deliver an appcached entry.
-    scoped_ptr<AppCacheURLRequestJob> job(
+    std::unique_ptr<AppCacheURLRequestJob> job(
         new AppCacheURLRequestJob(request_.get(), NULL, storage, NULL, false,
                                   base::Bind(&ExpectNotRestarted)));
     job->DeliverAppCachedResponse(
@@ -832,19 +835,19 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
   // Data members --------------------------------------------------------
 
-  scoped_ptr<base::WaitableEvent> test_finished_event_;
-  scoped_ptr<MockStorageDelegate> storage_delegate_;
-  scoped_ptr<MockAppCacheService> service_;
+  std::unique_ptr<base::WaitableEvent> test_finished_event_;
+  std::unique_ptr<MockStorageDelegate> storage_delegate_;
+  std::unique_ptr<MockAppCacheService> service_;
   std::stack<std::pair<base::Closure, bool> > task_stack_;
 
-  scoped_ptr<AppCacheResponseReader> reader_;
+  std::unique_ptr<AppCacheResponseReader> reader_;
   scoped_refptr<HttpResponseInfoIOBuffer> read_info_buffer_;
   scoped_refptr<IOBuffer> read_buffer_;
   int expected_read_result_;
   int reader_deletion_count_down_;
 
   int64_t written_response_id_;
-  scoped_ptr<AppCacheResponseWriter> writer_;
+  std::unique_ptr<AppCacheResponseWriter> writer_;
   scoped_refptr<HttpResponseInfoIOBuffer> write_info_buffer_;
   scoped_refptr<IOBuffer> write_buffer_;
   int expected_write_result_;
@@ -852,16 +855,16 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
   bool restart_callback_invoked_;
 
-  scoped_ptr<MockURLRequestJobFactory> job_factory_;
-  scoped_ptr<net::URLRequestContext> empty_context_;
-  scoped_ptr<net::URLRequest> request_;
-  scoped_ptr<MockURLRequestDelegate> url_request_delegate_;
+  std::unique_ptr<MockURLRequestJobFactory> job_factory_;
+  std::unique_ptr<net::URLRequestContext> empty_context_;
+  std::unique_ptr<net::URLRequest> request_;
+  std::unique_ptr<MockURLRequestDelegate> url_request_delegate_;
 
-  static scoped_ptr<base::Thread> io_thread_;
+  static std::unique_ptr<base::Thread> io_thread_;
 };
 
 // static
-scoped_ptr<base::Thread> AppCacheURLRequestJobTest::io_thread_;
+std::unique_ptr<base::Thread> AppCacheURLRequestJobTest::io_thread_;
 
 TEST_F(AppCacheURLRequestJobTest, Basic) {
   RunTestOnIOThread(&AppCacheURLRequestJobTest::Basic);

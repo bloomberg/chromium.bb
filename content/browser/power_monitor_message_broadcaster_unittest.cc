@@ -52,7 +52,7 @@ class PowerMonitorMessageBroadcasterTest : public testing::Test {
   PowerMonitorMessageBroadcasterTest() {
     power_monitor_source_ = new base::PowerMonitorTestSource();
     power_monitor_.reset(new base::PowerMonitor(
-        scoped_ptr<base::PowerMonitorSource>(power_monitor_source_)));
+        std::unique_ptr<base::PowerMonitorSource>(power_monitor_source_)));
   }
   ~PowerMonitorMessageBroadcasterTest() override {}
 
@@ -61,7 +61,7 @@ class PowerMonitorMessageBroadcasterTest : public testing::Test {
 
  private:
   base::PowerMonitorTestSource* power_monitor_source_;
-  scoped_ptr<base::PowerMonitor> power_monitor_;
+  std::unique_ptr<base::PowerMonitor> power_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMonitorMessageBroadcasterTest);
 };

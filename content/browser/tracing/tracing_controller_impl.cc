@@ -108,8 +108,9 @@ std::string GetClockString() {
   return std::string();
 }
 
-scoped_ptr<base::DictionaryValue> GenerateTracingMetadataDict()  {
-  scoped_ptr<base::DictionaryValue> metadata_dict(new base::DictionaryValue());
+std::unique_ptr<base::DictionaryValue> GenerateTracingMetadataDict() {
+  std::unique_ptr<base::DictionaryValue> metadata_dict(
+      new base::DictionaryValue());
 
   metadata_dict->SetString("network-type", GetNetworkTypeString());
   metadata_dict->SetString("product-version", GetContentClient()->GetProduct());
@@ -158,7 +159,7 @@ scoped_ptr<base::DictionaryValue> GenerateTracingMetadataDict()  {
   metadata_dict->SetString("gpu-gl-renderer", gpu_info.gl_renderer);
 #endif
 
-  scoped_ptr<TracingDelegate> delegate(
+  std::unique_ptr<TracingDelegate> delegate(
       GetContentClient()->browser()->GetTracingDelegate());
   if (delegate)
     delegate->GenerateMetadataDict(metadata_dict.get());
@@ -348,7 +349,7 @@ bool TracingControllerImpl::StopTracing(
   if (trace_data_sink) {
     if (TraceLog::GetInstance()->GetCurrentTraceConfig()
         .IsArgumentFilterEnabled()) {
-      scoped_ptr<TracingDelegate> delegate(
+      std::unique_ptr<TracingDelegate> delegate(
           GetContentClient()->browser()->GetTracingDelegate());
       if (delegate) {
         trace_data_sink->SetMetadataFilterPredicate(

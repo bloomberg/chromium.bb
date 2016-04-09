@@ -23,7 +23,7 @@ class SystemInfoHandler {
   SystemInfoHandler();
   ~SystemInfoHandler();
 
-  void SetClient(scoped_ptr<Client> client);
+  void SetClient(std::unique_ptr<Client> client);
 
   Response GetInfo(DevToolsCommandId command_id);
 
@@ -47,7 +47,7 @@ class SystemInfoHandler {
   mutable base::Lock lock_;
   std::set<int> active_observers_;
 
-  scoped_ptr<Client> client_;
+  std::unique_ptr<Client> client_;
   base::WeakPtrFactory<SystemInfoHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemInfoHandler);

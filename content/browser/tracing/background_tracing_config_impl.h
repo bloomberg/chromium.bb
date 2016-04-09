@@ -53,12 +53,12 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
       const base::DictionaryValue* dict,
       BackgroundTracingConfigImpl::CategoryPreset category_preset);
 
-  static scoped_ptr<BackgroundTracingConfigImpl> PreemptiveFromDict(
+  static std::unique_ptr<BackgroundTracingConfigImpl> PreemptiveFromDict(
       const base::DictionaryValue* dict);
-  static scoped_ptr<BackgroundTracingConfigImpl> ReactiveFromDict(
+  static std::unique_ptr<BackgroundTracingConfigImpl> ReactiveFromDict(
       const base::DictionaryValue* dict);
 
-  static scoped_ptr<BackgroundTracingConfigImpl> FromDict(
+  static std::unique_ptr<BackgroundTracingConfigImpl> FromDict(
       const base::DictionaryValue* dict);
 
   static std::string CategoryPresetToString(

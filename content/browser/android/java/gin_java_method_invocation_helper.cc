@@ -30,7 +30,7 @@ const int kObjectGetClassInvocationAttemptLogTag = 70151;
 }  // namespace
 
 GinJavaMethodInvocationHelper::GinJavaMethodInvocationHelper(
-    scoped_ptr<ObjectDelegate> object,
+    std::unique_ptr<ObjectDelegate> object,
     const std::string& method_name,
     const base::ListValue& arguments)
     : object_(std::move(object)),
@@ -92,7 +92,7 @@ bool GinJavaMethodInvocationHelper::AppendObjectRef(
     const base::Value* raw_value) {
   if (!GinJavaBridgeValue::ContainsGinJavaBridgeValue(raw_value))
     return false;
-  scoped_ptr<const GinJavaBridgeValue> value(
+  std::unique_ptr<const GinJavaBridgeValue> value(
       GinJavaBridgeValue::FromValue(raw_value));
   if (!value->IsType(GinJavaBridgeValue::TYPE_OBJECT_ID))
     return false;

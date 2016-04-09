@@ -80,7 +80,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
   // An inner class to keep all mojo-ish details together and not bleed them
   // through the public interface.
   class MojoState;
-  scoped_ptr<MojoState> mojo_state_;
+  std::unique_ptr<MojoState> mojo_state_;
 
   scoped_refptr<DOMStorageContextImpl> context_;
 

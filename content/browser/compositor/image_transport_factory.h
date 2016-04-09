@@ -5,10 +5,10 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_IMAGE_TRANSPORT_FACTORY_H_
 #define CONTENT_BROWSER_COMPOSITOR_IMAGE_TRANSPORT_FACTORY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "content/common/content_export.h"
@@ -64,7 +64,8 @@ class CONTENT_EXPORT ImageTransportFactory {
 
   // Initializes the global transport factory for unit tests using the provided
   // context factory.
-  static void InitializeForUnitTests(scoped_ptr<ImageTransportFactory> factory);
+  static void InitializeForUnitTests(
+      std::unique_ptr<ImageTransportFactory> factory);
 
   // Terminates the global transport factory.
   static void Terminate();

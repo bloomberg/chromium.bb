@@ -4,7 +4,9 @@
 
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator_android.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "cc/output/overlay_processor.h"
 #include "cc/output/overlay_strategy_underlay.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -19,7 +21,8 @@ BrowserCompositorOverlayCandidateValidatorAndroid::
 
 void BrowserCompositorOverlayCandidateValidatorAndroid::GetStrategies(
     cc::OverlayProcessor::StrategyList* strategies) {
-  strategies->push_back(make_scoped_ptr(new cc::OverlayStrategyUnderlay(this)));
+  strategies->push_back(
+      base::WrapUnique(new cc::OverlayStrategyUnderlay(this)));
 }
 
 void BrowserCompositorOverlayCandidateValidatorAndroid::CheckOverlaySupport(

@@ -63,8 +63,8 @@ class CONTENT_EXPORT AppCacheBackendImpl {
   // Methods to support cross site navigations. Hosts are transferred
   // from process to process accordingly, deparented from the old
   // processes backend and reparented to the new.
-  scoped_ptr<AppCacheHost> TransferHostOut(int host_id);
-  void TransferHostIn(int new_host_id, scoped_ptr<AppCacheHost> host);
+  std::unique_ptr<AppCacheHost> TransferHostOut(int host_id);
+  void TransferHostIn(int new_host_id, std::unique_ptr<AppCacheHost> host);
 
  private:
   AppCacheServiceImpl* service_;

@@ -5,13 +5,13 @@
 #ifndef CONTENT_BROWSER_GAMEPAD_GAMEPAD_PROVIDER_H_
 #define CONTENT_BROWSER_GAMEPAD_GAMEPAD_PROVIDER_H_
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
@@ -35,7 +35,7 @@ class CONTENT_EXPORT GamepadProvider :
   GamepadProvider();
 
   // Manually specifies the data fetcher. Used for testing.
-  explicit GamepadProvider(scoped_ptr<GamepadDataFetcher> fetcher);
+  explicit GamepadProvider(std::unique_ptr<GamepadDataFetcher> fetcher);
 
   ~GamepadProvider() override;
 
@@ -59,11 +59,11 @@ class CONTENT_EXPORT GamepadProvider :
   void OnDevicesChanged(base::SystemMonitor::DeviceType type) override;
 
  private:
-  void Initialize(scoped_ptr<GamepadDataFetcher> fetcher);
+  void Initialize(std::unique_ptr<GamepadDataFetcher> fetcher);
 
   // Method for setting up the platform-specific data fetcher. Takes ownership
   // of |fetcher|.
-  void DoInitializePollingThread(scoped_ptr<GamepadDataFetcher> fetcher);
+  void DoInitializePollingThread(std::unique_ptr<GamepadDataFetcher> fetcher);
 
   // Method for sending pause hints to the low-level data fetcher. Runs on
   // polling_thread_.
@@ -147,16 +147,16 @@ class CONTENT_EXPORT GamepadProvider :
   };
 
   // Used to detect connections and disconnections.
-  scoped_ptr<PadState[]> pad_states_;
+  std::unique_ptr<PadState[]> pad_states_;
 
   // Only used on the polling thread.
-  scoped_ptr<GamepadDataFetcher> data_fetcher_;
+  std::unique_ptr<GamepadDataFetcher> data_fetcher_;
 
   base::Lock shared_memory_lock_;
   base::SharedMemory gamepad_shared_memory_;
 
   // Polling is done on this background thread.
-  scoped_ptr<base::Thread> polling_thread_;
+  std::unique_ptr<base::Thread> polling_thread_;
 
   static GamepadProvider* instance_;
 

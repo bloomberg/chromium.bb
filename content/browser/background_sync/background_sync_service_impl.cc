@@ -127,7 +127,7 @@ void BackgroundSyncServiceImpl::GetRegistrations(
 void BackgroundSyncServiceImpl::OnRegisterResult(
     const RegisterCallback& callback,
     BackgroundSyncStatus status,
-    scoped_ptr<BackgroundSyncRegistration> result) {
+    std::unique_ptr<BackgroundSyncRegistration> result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (status != BACKGROUND_SYNC_STATUS_OK) {
@@ -146,7 +146,8 @@ void BackgroundSyncServiceImpl::OnRegisterResult(
 void BackgroundSyncServiceImpl::OnGetRegistrationsResult(
     const GetRegistrationsCallback& callback,
     BackgroundSyncStatus status,
-    scoped_ptr<ScopedVector<BackgroundSyncRegistration>> result_registrations) {
+    std::unique_ptr<ScopedVector<BackgroundSyncRegistration>>
+        result_registrations) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(result_registrations);
 

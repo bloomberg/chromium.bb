@@ -182,7 +182,7 @@ bool CoreWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
 }
 
 WifiDataProviderCommon::WlanApiInterface* NewCoreWlanApi() {
-  scoped_ptr<CoreWlanApi> self(new CoreWlanApi);
+  std::unique_ptr<CoreWlanApi> self(new CoreWlanApi);
   if (self->Init())
     return self.release();
 

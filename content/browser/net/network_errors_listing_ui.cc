@@ -23,8 +23,8 @@ namespace content {
 
 namespace {
 
-scoped_ptr<base::ListValue> GetNetworkErrorData() {
-  scoped_ptr<base::DictionaryValue> error_codes = net::GetNetConstants();
+std::unique_ptr<base::ListValue> GetNetworkErrorData() {
+  std::unique_ptr<base::DictionaryValue> error_codes = net::GetNetConstants();
   const base::DictionaryValue* net_error_codes_dict = nullptr;
 
   for (base::DictionaryValue::Iterator itr(*error_codes); !itr.IsAtEnd();
@@ -35,7 +35,7 @@ scoped_ptr<base::ListValue> GetNetworkErrorData() {
     }
   }
 
-  scoped_ptr<base::ListValue> error_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> error_list(new base::ListValue());
 
   for (base::DictionaryValue::Iterator itr(*net_error_codes_dict);
             !itr.IsAtEnd(); itr.Advance()) {

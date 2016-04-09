@@ -32,7 +32,7 @@ class SharedWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
   friend class SharedWorkerDevToolsManagerTest;
 
   ~SharedWorkerDevToolsAgentHost() override;
-  scoped_ptr<SharedWorkerInstance> shared_worker_;
+  std::unique_ptr<SharedWorkerInstance> shared_worker_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerDevToolsAgentHost);
 };

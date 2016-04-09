@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_GAMEPAD_GAMEPAD_PLATFORM_DATA_FETCHER_WIN_H_
 #define CONTENT_BROWSER_GAMEPAD_GAMEPAD_PLATFORM_DATA_FETCHER_WIN_H_
 
+#include <memory>
+
 #include "build/build_config.h"
 
 #ifndef WIN32_LEAN_AND_MEAN
@@ -18,7 +20,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/scoped_native_library.h"
@@ -86,7 +87,7 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
   };
   PlatformPadState platform_pad_state_[blink::WebGamepads::itemsLengthCap];
 
-  scoped_ptr<RawInputDataFetcher> raw_input_fetcher_;
+  std::unique_ptr<RawInputDataFetcher> raw_input_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadPlatformDataFetcherWin);
 };

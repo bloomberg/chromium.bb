@@ -32,7 +32,7 @@ void ImageTransportFactory::Initialize() {
 }
 
 void ImageTransportFactory::InitializeForUnitTests(
-    scoped_ptr<ImageTransportFactory> factory) {
+    std::unique_ptr<ImageTransportFactory> factory) {
   DCHECK(!g_factory);
   DCHECK(!g_initialized_for_unit_tests);
   g_initialized_for_unit_tests = true;

@@ -26,13 +26,13 @@ void TimeZoneMonitor::NotifyRenderers() {
 #if defined(OS_CHROMEOS)
   // On CrOS, ICU's default tz is already set to a new zone. No
   // need to redetect it with detectHostTimeZone().
-  scoped_ptr<icu::TimeZone> new_zone(icu::TimeZone::createDefault());
+  std::unique_ptr<icu::TimeZone> new_zone(icu::TimeZone::createDefault());
 #else
   icu::TimeZone* new_zone = icu::TimeZone::detectHostTimeZone();
 #if defined(OS_LINUX)
   // We get here multiple times on Linux per a single tz change, but
   // want to update the ICU default zone and notify renderer only once.
-  scoped_ptr<icu::TimeZone> current_zone(icu::TimeZone::createDefault());
+  std::unique_ptr<icu::TimeZone> current_zone(icu::TimeZone::createDefault());
   if (*current_zone == *new_zone) {
     VLOG(1) << "timezone already updated";
     delete new_zone;

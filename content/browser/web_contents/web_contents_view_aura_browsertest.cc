@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -248,7 +249,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
   // Executes the javascript synchronously and makes sure the returned value is
   // freed properly.
   void ExecuteSyncJSFunction(RenderFrameHost* rfh, const std::string& jscript) {
-    scoped_ptr<base::Value> value =
+    std::unique_ptr<base::Value> value =
         content::ExecuteScriptAndGetValue(rfh, jscript);
   }
 
@@ -269,7 +270,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     NavigationControllerImpl* controller = &web_contents->GetController();
 
     screenshot_manager_ = new ScreenshotTracker(controller);
-    controller->SetScreenshotManager(make_scoped_ptr(screenshot_manager_));
+    controller->SetScreenshotManager(base::WrapUnique(screenshot_manager_));
 
     frame_watcher_ = new FrameWatcher();
     frame_watcher_->AttachTo(shell()->web_contents());
@@ -290,7 +291,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     EXPECT_FALSE(controller.CanGoBack());
     EXPECT_FALSE(controller.CanGoForward());
     int index = -1;
-    scoped_ptr<base::Value> value =
+    std::unique_ptr<base::Value> value =
         content::ExecuteScriptAndGetValue(main_frame, "get_current()");
     ASSERT_TRUE(value->GetAsInteger(&index));
     EXPECT_EQ(0, index);
@@ -372,7 +373,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
         static_cast<WebContentsImpl*>(shell()->web_contents());
     RenderFrameHost* main_frame = web_contents->GetMainFrame();
     int index = -1;
-    scoped_ptr<base::Value> value;
+    std::unique_ptr<base::Value> value;
     value = content::ExecuteScriptAndGetValue(main_frame, "get_current()");
     if (!value->GetAsInteger(&index))
       index = -1;
@@ -765,7 +766,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
                        DISABLED_ContentWindowReparent) {
   ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/overscroll_navigation.html"));
 
-  scoped_ptr<aura::Window> window(new aura::Window(NULL));
+  std::unique_ptr<aura::Window> window(new aura::Window(NULL));
   window->Init(ui::LAYER_NOT_DRAWN);
 
   WebContentsImpl* web_contents =
@@ -888,7 +889,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, HideContentOnParenHide) {
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, WebContentsViewReparent) {
   ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/overscroll_navigation.html"));
 
-  scoped_ptr<aura::Window> window(new aura::Window(NULL));
+  std::unique_ptr<aura::Window> window(new aura::Window(NULL));
   window->Init(ui::LAYER_NOT_DRAWN);
 
   RenderWidgetHostViewAura* rwhva =

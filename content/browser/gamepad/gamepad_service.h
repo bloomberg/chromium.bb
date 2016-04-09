@@ -5,11 +5,11 @@
 #ifndef CONTENT_BROWSER_GAMEPAD_GAMEPAD_SERVICE_H_
 #define CONTENT_BROWSER_GAMEPAD_GAMEPAD_SERVICE_H_
 
+#include <memory>
 #include <set>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/singleton.h"
 #include "base/threading/thread_checker.h"
@@ -88,7 +88,7 @@ class CONTENT_EXPORT GamepadService {
 
   // Constructor for testing. This specifies the data fetcher to use for a
   // provider, bypassing the default platform one.
-  GamepadService(scoped_ptr<GamepadDataFetcher> fetcher);
+  GamepadService(std::unique_ptr<GamepadDataFetcher> fetcher);
 
   virtual ~GamepadService();
 
@@ -111,7 +111,7 @@ class CONTENT_EXPORT GamepadService {
     mutable bool did_observe_user_gesture;
   };
 
-  scoped_ptr<GamepadProvider> provider_;
+  std::unique_ptr<GamepadProvider> provider_;
 
   base::ThreadChecker thread_checker_;
 

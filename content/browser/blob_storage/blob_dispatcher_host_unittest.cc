@@ -4,10 +4,10 @@
 
 #include "content/browser/blob_storage/blob_dispatcher_host.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/run_loop.h"
 #include "base/tuple.h"
@@ -164,7 +164,8 @@ class BlobDispatcherHostTest : public testing::Test {
 
   void ExpectHandleEqualsData(BlobDataHandle* handle,
                               const std::vector<DataElement>& data) {
-    scoped_ptr<storage::BlobDataSnapshot> snapshot = handle->CreateSnapshot();
+    std::unique_ptr<storage::BlobDataSnapshot> snapshot =
+        handle->CreateSnapshot();
     EXPECT_FALSE(handle->IsBeingBuilt());
     for (size_t i = 0; i < data.size(); i++) {
       const DataElement& expected = data[i];
@@ -276,7 +277,7 @@ TEST_F(BlobDispatcherHostTest, Shortcut) {
   const std::string kId = "uuid1";
   AsyncShortcutBlobTransfer(kId);
   EXPECT_TRUE(context_->registry().HasEntry(kId));
-  scoped_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
+  std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
   EXPECT_TRUE(handle);
 
   DataElement expected;
@@ -289,7 +290,7 @@ TEST_F(BlobDispatcherHostTest, RegularTransfer) {
   const std::string kId = "uuid1";
   AsyncBlobTransfer(kId);
   EXPECT_TRUE(context_->registry().HasEntry(kId));
-  scoped_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
+  std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
   EXPECT_TRUE(handle);
 
   DataElement expected;
@@ -349,7 +350,7 @@ TEST_F(BlobDispatcherHostTest, SharedMemoryTransfer) {
                             std::set<std::string>());
 
   // Grab the handle.
-  scoped_ptr<BlobDataHandle> blob_data_handle =
+  std::unique_ptr<BlobDataHandle> blob_data_handle =
       context_->GetBlobDataFromUUID(kId);
   bool built = false;
   IPCBlobCreationCancelCode error_code = IPCBlobCreationCancelCode::UNKNOWN;
@@ -421,7 +422,7 @@ TEST_F(BlobDispatcherHostTest, SharedMemoryTransfer) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(built) << "Error code: " << static_cast<int>(error_code);
   EXPECT_TRUE(context_->registry().HasEntry(kId));
-  scoped_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
+  std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
   EXPECT_TRUE(handle);
 
   DataElement expected;
@@ -459,7 +460,7 @@ TEST_F(BlobDispatcherHostTest, OnCancelBuildingBlob) {
   EXPECT_TRUE(host_->IsInUseInHost(kId));
   EXPECT_FALSE(IsBeingBuiltInHost(kId));
   // Check that's it's broken.
-  scoped_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
+  std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
   EXPECT_TRUE(handle->IsBroken());
   handle.reset();
   base::RunLoop().RunUntilIdle();
@@ -490,14 +491,14 @@ TEST_F(BlobDispatcherHostTest, BlobDataWithHostDeletion) {
   // Build up a basic blob.
   const std::string kId("id");
   AsyncShortcutBlobTransfer(kId);
-  scoped_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
+  std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
   EXPECT_TRUE(handle);
 
   // Kill the host.
   host_ = nullptr;
   base::RunLoop().RunUntilIdle();
   // Should still be there due to the handle.
-  scoped_ptr<BlobDataHandle> another_handle =
+  std::unique_ptr<BlobDataHandle> another_handle =
       context_->GetBlobDataFromUUID(kId);
   EXPECT_TRUE(another_handle);
 
@@ -519,7 +520,7 @@ TEST_F(BlobDispatcherHostTest, BlobReferenceWhileConstructing) {
                             std::set<std::string>());
 
   // Grab the handle.
-  scoped_ptr<BlobDataHandle> blob_data_handle =
+  std::unique_ptr<BlobDataHandle> blob_data_handle =
       context_->GetBlobDataFromUUID(kId);
   EXPECT_TRUE(blob_data_handle);
   EXPECT_TRUE(blob_data_handle->IsBeingBuilt());
@@ -556,7 +557,7 @@ TEST_F(BlobDispatcherHostTest, BlobReferenceWhileShortcutConstructing) {
                             std::set<std::string>());
 
   // Grab the handle.
-  scoped_ptr<BlobDataHandle> blob_data_handle =
+  std::unique_ptr<BlobDataHandle> blob_data_handle =
       context_->GetBlobDataFromUUID(kId);
   EXPECT_TRUE(blob_data_handle);
   EXPECT_TRUE(blob_data_handle->IsBeingBuilt());
@@ -584,7 +585,7 @@ TEST_F(BlobDispatcherHostTest, BlobReferenceWhileConstructingCancelled) {
                             std::set<std::string>());
 
   // Grab the handle.
-  scoped_ptr<BlobDataHandle> blob_data_handle =
+  std::unique_ptr<BlobDataHandle> blob_data_handle =
       context_->GetBlobDataFromUUID(kId);
   EXPECT_TRUE(blob_data_handle);
   EXPECT_TRUE(blob_data_handle->IsBeingBuilt());
@@ -636,7 +637,7 @@ TEST_F(BlobDispatcherHostTest, DecrementRefAfterRegister) {
   host_->OnRegisterBlobUUID(kId, std::string(kContentType),
                             std::string(kContentDisposition),
                             std::set<std::string>());
-  scoped_ptr<BlobDataHandle> blob_data_handle =
+  std::unique_ptr<BlobDataHandle> blob_data_handle =
       context_->GetBlobDataFromUUID(kId);
   host_->OnDecrementBlobRefCount(kId);
   EXPECT_TRUE(context_->registry().HasEntry(kId));
@@ -695,7 +696,7 @@ TEST_F(BlobDispatcherHostTest, DecrementRefAfterOnStart) {
   sink_.ClearMessages();
   EXPECT_TRUE(context_->registry().HasEntry(kId));
   // Grab the handle before decrementing.
-  scoped_ptr<BlobDataHandle> blob_data_handle =
+  std::unique_ptr<BlobDataHandle> blob_data_handle =
       context_->GetBlobDataFromUUID(kId);
   host_->OnDecrementBlobRefCount(kId);
   EXPECT_TRUE(context_->registry().HasEntry(kId));
@@ -729,7 +730,7 @@ TEST_F(BlobDispatcherHostTest, DecrementRefAfterOnStartWithHandle) {
                             std::set<std::string>());
   EXPECT_FALSE(host_->shutdown_for_bad_message_);
 
-  scoped_ptr<BlobDataHandle> blob_data_handle =
+  std::unique_ptr<BlobDataHandle> blob_data_handle =
       context_->GetBlobDataFromUUID(kId);
   EXPECT_TRUE(blob_data_handle->IsBeingBuilt());
   bool built = true;
@@ -782,7 +783,7 @@ TEST_F(BlobDispatcherHostTest, HostDisconnectAfterRegisterWithHandle) {
                             std::string(kContentDisposition),
                             std::set<std::string>());
 
-  scoped_ptr<BlobDataHandle> blob_data_handle =
+  std::unique_ptr<BlobDataHandle> blob_data_handle =
       context_->GetBlobDataFromUUID(kId);
   EXPECT_TRUE(blob_data_handle->IsBeingBuilt());
   bool built = true;
@@ -797,7 +798,7 @@ TEST_F(BlobDispatcherHostTest, HostDisconnectAfterRegisterWithHandle) {
   EXPECT_EQ(IPCBlobCreationCancelCode::SOURCE_DIED_IN_TRANSIT, error_code);
 
   // Should still be there due to the handle.
-  scoped_ptr<BlobDataHandle> another_handle =
+  std::unique_ptr<BlobDataHandle> another_handle =
       context_->GetBlobDataFromUUID(kId);
   EXPECT_TRUE(another_handle);
 
@@ -1044,7 +1045,7 @@ TEST_F(BlobDispatcherHostTest, BuildingReferenceChain) {
   sink_.ClearMessages();
 
   // Finally check that our data is correct in the child elements.
-  scoped_ptr<BlobDataHandle> handle =
+  std::unique_ptr<BlobDataHandle> handle =
       context_->GetBlobDataFromUUID(kDifferentHostReferencingId);
   ExpectHandleEqualsData(handle.get(), elements);
 }
@@ -1152,14 +1153,15 @@ TEST_F(BlobDispatcherHostTest, BuildingReferenceChainWithSourceDeath) {
   // Grab handles & add listeners.
   bool built = true;
   IPCBlobCreationCancelCode error_code = IPCBlobCreationCancelCode::UNKNOWN;
-  scoped_ptr<BlobDataHandle> blob_handle = context_->GetBlobDataFromUUID(kId);
+  std::unique_ptr<BlobDataHandle> blob_handle =
+      context_->GetBlobDataFromUUID(kId);
   blob_handle->RunOnConstructionComplete(
       base::Bind(&ConstructionCompletePopulator, &built, &error_code));
 
   bool same_host_built = true;
   IPCBlobCreationCancelCode same_host_error_code =
       IPCBlobCreationCancelCode::UNKNOWN;
-  scoped_ptr<BlobDataHandle> same_host_blob_handle =
+  std::unique_ptr<BlobDataHandle> same_host_blob_handle =
       context_->GetBlobDataFromUUID(kSameHostReferencingId);
   same_host_blob_handle->RunOnConstructionComplete(base::Bind(
       &ConstructionCompletePopulator, &same_host_built, &same_host_error_code));
@@ -1167,7 +1169,7 @@ TEST_F(BlobDispatcherHostTest, BuildingReferenceChainWithSourceDeath) {
   bool other_host_built = true;
   IPCBlobCreationCancelCode other_host_error_code =
       IPCBlobCreationCancelCode::UNKNOWN;
-  scoped_ptr<BlobDataHandle> other_host_blob_handle =
+  std::unique_ptr<BlobDataHandle> other_host_blob_handle =
       context_->GetBlobDataFromUUID(kDifferentHostReferencingId);
   other_host_blob_handle->RunOnConstructionComplete(
       base::Bind(&ConstructionCompletePopulator, &other_host_built,

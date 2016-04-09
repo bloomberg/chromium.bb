@@ -5,10 +5,10 @@
 #ifndef CONTENT_BROWSER_SSL_SSL_MANAGER_H_
 #define CONTENT_BROWSER_SSL_SSL_MANAGER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/ssl/ssl_policy_backend.h"
@@ -104,7 +104,7 @@ class CONTENT_EXPORT SSLManager {
   SSLPolicyBackend backend_;
 
   // The SSLPolicy instance for this manager.
-  scoped_ptr<SSLPolicy> policy_;
+  std::unique_ptr<SSLPolicy> policy_;
 
   // The NavigationController that owns this SSLManager.  We are responsible
   // for the security UI of this tab.

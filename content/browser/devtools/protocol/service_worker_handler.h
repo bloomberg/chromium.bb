@@ -42,7 +42,7 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   ~ServiceWorkerHandler() override;
 
   void SetRenderFrameHost(RenderFrameHostImpl* render_frame_host);
-  void SetClient(scoped_ptr<Client> client);
+  void SetClient(std::unique_ptr<Client> client);
   void UpdateHosts();
   void Detached();
 
@@ -92,7 +92,7 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   void ClearForceUpdate();
 
   scoped_refptr<ServiceWorkerContextWrapper> context_;
-  scoped_ptr<Client> client_;
+  std::unique_ptr<Client> client_;
   ServiceWorkerDevToolsAgentHost::Map attached_hosts_;
   bool enabled_;
   std::set<GURL> urls_;

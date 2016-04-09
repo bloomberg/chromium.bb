@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_WEB_CONTENTS_AURA_OVERSCROLL_WINDOW_ANIMATION_H_
 #define CONTENT_BROWSER_WEB_CONTENTS_AURA_OVERSCROLL_WINDOW_ANIMATION_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
 #include "content/common/content_export.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -48,9 +49,9 @@ class CONTENT_EXPORT OverscrollWindowAnimation
     virtual ~Delegate() {}
 
     // Create a slide window with the given |bounds| relative to its parent.
-    virtual scoped_ptr<aura::Window> CreateFrontWindow(
+    virtual std::unique_ptr<aura::Window> CreateFrontWindow(
         const gfx::Rect& bounds) = 0;
-    virtual scoped_ptr<aura::Window> CreateBackWindow(
+    virtual std::unique_ptr<aura::Window> CreateBackWindow(
         const gfx::Rect& bounds) = 0;
 
     // Returns the main window that participates in the animation. The delegate
@@ -63,7 +64,8 @@ class CONTENT_EXPORT OverscrollWindowAnimation
 
     // Called when the animation has been completed. The slide window is
     // transferred to the delegate.
-    virtual void OnOverscrollCompleted(scoped_ptr<aura::Window> window) = 0;
+    virtual void OnOverscrollCompleted(
+        std::unique_ptr<aura::Window> window) = 0;
 
     // Called when the overscroll gesture has been cancelled, after the cancel
     // animation finishes.
@@ -107,10 +109,10 @@ class CONTENT_EXPORT OverscrollWindowAnimation
   void OnImplicitAnimationsCompleted() override;
 
   // We own the window created for the animation.
-  scoped_ptr<aura::Window> slide_window_;
+  std::unique_ptr<aura::Window> slide_window_;
 
   // Shadow shown under the animated layer.
-  scoped_ptr<ShadowLayerDelegate> shadow_;
+  std::unique_ptr<ShadowLayerDelegate> shadow_;
 
   // Delegate that provides the animation target and is notified of the
   // animation state.

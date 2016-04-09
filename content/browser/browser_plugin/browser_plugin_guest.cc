@@ -556,7 +556,7 @@ IPC::Message* BrowserPluginGuest::UpdateInstanceIdIfNecessary(
   if (!browser_plugin_instance_id())
     return msg;
 
-  scoped_ptr<IPC::Message> new_msg(
+  std::unique_ptr<IPC::Message> new_msg(
       new IPC::Message(msg->routing_id(), msg->type(), msg->priority()));
   new_msg->WriteInt(browser_plugin_instance_id());
 

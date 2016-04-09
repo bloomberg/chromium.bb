@@ -7,10 +7,10 @@
 #include <string.h>
 
 #include <list>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -141,7 +141,7 @@ class SpeechRecognitionBrowserTest :
       bool fill_with_noise) {
     DCHECK(controller.get());
     const media::AudioParameters& audio_params = controller->audio_parameters();
-    scoped_ptr<uint8_t[]> audio_buffer(new uint8_t[buffer_size]);
+    std::unique_ptr<uint8_t[]> audio_buffer(new uint8_t[buffer_size]);
     if (fill_with_noise) {
       for (size_t i = 0; i < buffer_size; ++i)
         audio_buffer[i] =
@@ -150,7 +150,7 @@ class SpeechRecognitionBrowserTest :
       memset(audio_buffer.get(), 0, buffer_size);
     }
 
-    scoped_ptr<media::AudioBus> audio_bus =
+    std::unique_ptr<media::AudioBus> audio_bus =
         media::AudioBus::Create(audio_params);
     audio_bus->FromInterleaved(&audio_buffer.get()[0],
                                audio_bus->frames(),
@@ -189,7 +189,7 @@ class SpeechRecognitionBrowserTest :
   }
 
   StreamingServerState streaming_server_state_;
-  scoped_ptr<MockGoogleStreamingServer> mock_streaming_server_;
+  std::unique_ptr<MockGoogleStreamingServer> mock_streaming_server_;
   media::TestAudioInputControllerFactory test_audio_input_controller_factory_;
 };
 

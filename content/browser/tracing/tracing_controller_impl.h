@@ -171,7 +171,7 @@ class TracingControllerImpl
   int pending_start_tracing_ack_count_;
   base::OneShotTimer start_tracing_timer_;
   StartTracingDoneCallback start_tracing_done_callback_;
-  scoped_ptr<base::trace_event::TraceConfig> start_tracing_trace_config_;
+  std::unique_ptr<base::trace_event::TraceConfig> start_tracing_trace_config_;
 
   // Pending acks for StopTracing.
   int pending_stop_tracing_ack_count_;

@@ -39,8 +39,8 @@ class OverscrollTestWebContents : public TestWebContents {
   static OverscrollTestWebContents* Create(
       BrowserContext* browser_context,
       scoped_refptr<SiteInstance> instance,
-      scoped_ptr<aura::Window> fake_native_view,
-      scoped_ptr<aura::Window> fake_contents_window) {
+      std::unique_ptr<aura::Window> fake_native_view,
+      std::unique_ptr<aura::Window> fake_contents_window) {
     OverscrollTestWebContents* web_contents = new OverscrollTestWebContents(
         browser_context, std::move(fake_native_view),
         std::move(fake_contents_window));
@@ -66,16 +66,16 @@ class OverscrollTestWebContents : public TestWebContents {
  protected:
   explicit OverscrollTestWebContents(
       BrowserContext* browser_context,
-      scoped_ptr<aura::Window> fake_native_view,
-      scoped_ptr<aura::Window> fake_contents_window)
+      std::unique_ptr<aura::Window> fake_native_view,
+      std::unique_ptr<aura::Window> fake_contents_window)
       : TestWebContents(browser_context),
         fake_native_view_(std::move(fake_native_view)),
         fake_contents_window_(std::move(fake_contents_window)),
         is_being_destroyed_(false) {}
 
  private:
-  scoped_ptr<aura::Window> fake_native_view_;
-  scoped_ptr<aura::Window> fake_contents_window_;
+  std::unique_ptr<aura::Window> fake_native_view_;
+  std::unique_ptr<aura::Window> fake_contents_window_;
   bool is_being_destroyed_;
 };
 
@@ -111,7 +111,7 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
   void PerformBackNavigationViaSliderCallbacks() {
     // Sets slide direction to BACK, sets screenshot from NavEntry at
     // offset -1 on layer_delegate_.
-    scoped_ptr<aura::Window> window(
+    std::unique_ptr<aura::Window> window(
         GetOverlay()->CreateBackWindow(GetBackSlideWindowBounds()));
     bool window_created = !!window;
     // Performs BACK navigation, sets image from layer_delegate_ on
@@ -155,13 +155,14 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
     RenderViewHostImplTestHarness::SetUp();
 
     // Set up the fake web contents native view.
-    scoped_ptr<aura::Window> fake_native_view(new aura::Window(nullptr));
+    std::unique_ptr<aura::Window> fake_native_view(new aura::Window(nullptr));
     fake_native_view->Init(ui::LAYER_SOLID_COLOR);
     root_window()->AddChild(fake_native_view.get());
     fake_native_view->SetBounds(gfx::Rect(root_window()->bounds().size()));
 
     // Set up the fake contents window.
-    scoped_ptr<aura::Window> fake_contents_window(new aura::Window(nullptr));
+    std::unique_ptr<aura::Window> fake_contents_window(
+        new aura::Window(nullptr));
     fake_contents_window->Init(ui::LAYER_SOLID_COLOR);
     root_window()->AddChild(fake_contents_window.get());
     fake_contents_window->SetBounds(gfx::Rect(root_window()->bounds().size()));
@@ -216,7 +217,7 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
   const GURL third_;
   const GURL fourth_;
 
-  scoped_ptr<OverscrollNavigationOverlay> overlay_;
+  std::unique_ptr<OverscrollNavigationOverlay> overlay_;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollNavigationOverlayTest);
 };
@@ -250,7 +251,7 @@ TEST_F(OverscrollNavigationOverlayTest, CannotNavigate) {
 // Tests that if a navigation is cancelled, no navigation is performed and the
 // state is restored.
 TEST_F(OverscrollNavigationOverlayTest, CancelNavigation) {
-  scoped_ptr<aura::Window> window =
+  std::unique_ptr<aura::Window> window =
       GetOverlay()->CreateBackWindow(GetBackSlideWindowBounds());
   EXPECT_EQ(GetOverlay()->direction_, OverscrollNavigationOverlay::BACK);
 
@@ -263,7 +264,7 @@ TEST_F(OverscrollNavigationOverlayTest, CancelNavigation) {
 // first one worked correctly.
 TEST_F(OverscrollNavigationOverlayTest, CancelAfterSuccessfulNavigation) {
   PerformBackNavigationViaSliderCallbacks();
-  scoped_ptr<aura::Window> wrapper =
+  std::unique_ptr<aura::Window> wrapper =
       GetOverlay()->CreateBackWindow(GetBackSlideWindowBounds());
   EXPECT_EQ(GetOverlay()->direction_, OverscrollNavigationOverlay::BACK);
 

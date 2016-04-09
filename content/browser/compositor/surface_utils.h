@@ -5,7 +5,8 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_SURFACE_UTILS_H_
 #define CONTENT_BROWSER_COMPOSITOR_SURFACE_UTILS_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/common/content_export.h"
 #include "content/public/browser/readback_types.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -19,7 +20,7 @@ class SurfaceManager;
 
 namespace content {
 
-scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator();
+std::unique_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator();
 
 CONTENT_EXPORT
 cc::SurfaceManager* GetSurfaceManager();
@@ -28,7 +29,7 @@ void CopyFromCompositingSurfaceHasResult(
     const gfx::Size& dst_size_in_pixel,
     const SkColorType color_type,
     const ReadbackRequestCallback& callback,
-    scoped_ptr<cc::CopyOutputResult> result);
+    std::unique_ptr<cc::CopyOutputResult> result);
 
 }  // namespace content
 

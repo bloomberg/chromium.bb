@@ -276,7 +276,7 @@ bool SessionStorageDatabase::ReadNamespacesAndOrigins(
   options.snapshot = db_->GetSnapshot();
 
   std::string namespace_prefix = NamespacePrefix();
-  scoped_ptr<leveldb::Iterator> it(db_->NewIterator(options));
+  std::unique_ptr<leveldb::Iterator> it(db_->NewIterator(options));
   it->Seek(namespace_prefix);
   // If the key is not found, the status of the iterator won't be IsNotFound(),
   // but the iterator will be invalid.
@@ -447,7 +447,8 @@ bool SessionStorageDatabase::GetAreasInNamespace(
     const std::string& namespace_id,
     std::map<std::string, std::string>* areas) {
   std::string namespace_start_key = NamespaceStartKey(namespace_id);
-  scoped_ptr<leveldb::Iterator> it(db_->NewIterator(leveldb::ReadOptions()));
+  std::unique_ptr<leveldb::Iterator> it(
+      db_->NewIterator(leveldb::ReadOptions()));
   it->Seek(namespace_start_key);
   // If the key is not found, the status of the iterator won't be IsNotFound(),
   // but the iterator will be invalid.
@@ -500,7 +501,8 @@ bool SessionStorageDatabase::DeleteAreaHelper(
   // If this was the only area in the namespace, delete the namespace start key,
   // too.
   std::string namespace_start_key = NamespaceStartKey(namespace_id);
-  scoped_ptr<leveldb::Iterator> it(db_->NewIterator(leveldb::ReadOptions()));
+  std::unique_ptr<leveldb::Iterator> it(
+      db_->NewIterator(leveldb::ReadOptions()));
   it->Seek(namespace_start_key);
   if (!ConsistencyCheck(it->Valid()))
     return false;
@@ -559,7 +561,7 @@ bool SessionStorageDatabase::ReadMap(const std::string& map_id,
                                      const leveldb::ReadOptions& options,
                                      DOMStorageValuesMap* result,
                                      bool only_keys) {
-  scoped_ptr<leveldb::Iterator> it(db_->NewIterator(options));
+  std::unique_ptr<leveldb::Iterator> it(db_->NewIterator(options));
   std::string map_start_key = MapRefCountKey(map_id);
   it->Seek(map_start_key);
   // If the key is not found, the status of the iterator won't be IsNotFound(),

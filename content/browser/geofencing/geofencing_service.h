@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/geofencing_types.h"
 
@@ -78,7 +78,7 @@ class CONTENT_EXPORT GeofencingServiceImpl
   GeofencingServiceImpl();
   ~GeofencingServiceImpl() override;
 
-  void SetProviderForTesting(scoped_ptr<GeofencingProvider> provider);
+  void SetProviderForTesting(std::unique_ptr<GeofencingProvider> provider);
   int RegistrationCountForTesting();
 
  private:
@@ -100,7 +100,7 @@ class CONTENT_EXPORT GeofencingServiceImpl
 
   int64_t next_registration_id_;
   RegistrationsMap registrations_;
-  scoped_ptr<GeofencingProvider> provider_;
+  std::unique_ptr<GeofencingProvider> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(GeofencingServiceImpl);
 };

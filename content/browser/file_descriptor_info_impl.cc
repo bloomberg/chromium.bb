@@ -11,8 +11,8 @@
 namespace content {
 
 // static
-scoped_ptr<FileDescriptorInfo> FileDescriptorInfoImpl::Create() {
-  return scoped_ptr<FileDescriptorInfo>(new FileDescriptorInfoImpl());
+std::unique_ptr<FileDescriptorInfo> FileDescriptorInfoImpl::Create() {
+  return std::unique_ptr<FileDescriptorInfo>(new FileDescriptorInfoImpl());
 }
 
 FileDescriptorInfoImpl::FileDescriptorInfoImpl() {

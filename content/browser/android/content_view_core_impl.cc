@@ -505,7 +505,7 @@ void ContentViewCoreImpl::ShowSelectPopupMenu(
   // given |selected_item| as is.
   ScopedJavaLocalRef<jintArray> selected_array;
   if (multiple) {
-    scoped_ptr<jint[]> native_selected_array(new jint[items.size()]);
+    std::unique_ptr<jint[]> native_selected_array(new jint[items.size()]);
     size_t selected_count = 0;
     for (size_t i = 0; i < items.size(); ++i) {
       if (items[i].checked)

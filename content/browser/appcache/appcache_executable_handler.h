@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_EXECUTABLE_HANDLER_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_EXECUTABLE_HANDLER_H_
 
+#include <memory>
+
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
@@ -42,8 +43,9 @@ class CONTENT_EXPORT AppCacheExecutableHandler {
 // A factory to produce instances.
 class CONTENT_EXPORT AppCacheExecutableHandlerFactory {
  public:
-  virtual scoped_ptr<AppCacheExecutableHandler> CreateHandler(
-      const GURL& handler_url, net::IOBuffer* handler_source) = 0;
+  virtual std::unique_ptr<AppCacheExecutableHandler> CreateHandler(
+      const GURL& handler_url,
+      net::IOBuffer* handler_source) = 0;
 
  protected:
   virtual ~AppCacheExecutableHandlerFactory() {}

@@ -33,10 +33,10 @@ class CONTENT_EXPORT BackgroundTracingRule {
   // Probability that we should allow a tigger to  happen.
   double trigger_chance() const { return trigger_chance_; }
 
-  static scoped_ptr<BackgroundTracingRule> PreemptiveRuleFromDict(
+  static std::unique_ptr<BackgroundTracingRule> PreemptiveRuleFromDict(
       const base::DictionaryValue* dict);
 
-  static scoped_ptr<BackgroundTracingRule> ReactiveRuleFromDict(
+  static std::unique_ptr<BackgroundTracingRule> ReactiveRuleFromDict(
       const base::DictionaryValue* dict,
       BackgroundTracingConfigImpl::CategoryPreset category_preset);
 

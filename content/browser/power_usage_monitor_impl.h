@@ -63,7 +63,7 @@ class CONTENT_EXPORT PowerUsageMonitor : public base::PowerObserver,
   // system boot.
   void Start();
 
-  void SetSystemInterfaceForTest(scoped_ptr<SystemInterface> interface);
+  void SetSystemInterfaceForTest(std::unique_ptr<SystemInterface> interface);
 
   // Overridden from base::PowerObserver:
   void OnPowerStateChange(bool on_battery_power) override;
@@ -93,12 +93,12 @@ class CONTENT_EXPORT PowerUsageMonitor : public base::PowerObserver,
   void CancelPendingHistogramReporting();
 
   device::BatteryStatusService::BatteryUpdateCallback callback_;
-  scoped_ptr<device::BatteryStatusService::BatteryUpdateSubscription>
+  std::unique_ptr<device::BatteryStatusService::BatteryUpdateSubscription>
       subscription_;
 
   NotificationRegistrar registrar_;
 
-  scoped_ptr<SystemInterface> system_interface_;
+  std::unique_ptr<SystemInterface> system_interface_;
 
   // True if monitoring was started (Start() called).
   bool started_;

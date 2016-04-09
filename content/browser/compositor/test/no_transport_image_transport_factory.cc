@@ -24,7 +24,7 @@ NoTransportImageTransportFactory::NoTransportImageTransportFactory()
           new ui::InProcessContextFactory(true, surface_manager_.get())) {}
 
 NoTransportImageTransportFactory::~NoTransportImageTransportFactory() {
-  scoped_ptr<GLHelper> lost_gl_helper = std::move(gl_helper_);
+  std::unique_ptr<GLHelper> lost_gl_helper = std::move(gl_helper_);
   FOR_EACH_OBSERVER(
       ImageTransportFactoryObserver, observer_list_, OnLostResources());
 }

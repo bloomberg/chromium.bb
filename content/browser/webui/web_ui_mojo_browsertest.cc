@@ -104,7 +104,7 @@ class TestWebUIController : public WebUIController {
 
  protected:
   base::RunLoop* run_loop_;
-  scoped_ptr<BrowserTargetImpl> browser_target_;
+  std::unique_ptr<BrowserTargetImpl> browser_target_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestWebUIController);

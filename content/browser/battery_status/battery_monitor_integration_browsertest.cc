@@ -82,7 +82,7 @@ class FakeBatteryMonitor : public device::BatteryMonitor {
     }
   }
 
-  scoped_ptr<BatteryUpdateSubscription> subscription_;
+  std::unique_ptr<BatteryUpdateSubscription> subscription_;
   mojo::StrongBinding<BatteryMonitor> binding_;
   BatteryStatusCallback callback_;
 };

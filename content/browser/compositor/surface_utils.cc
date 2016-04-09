@@ -30,9 +30,9 @@ namespace {
 #if !defined(OS_ANDROID) || defined(USE_AURA)
 void CopyFromCompositingSurfaceFinished(
     const content::ReadbackRequestCallback& callback,
-    scoped_ptr<cc::SingleReleaseCallback> release_callback,
-    scoped_ptr<SkBitmap> bitmap,
-    scoped_ptr<SkAutoLockPixels> bitmap_pixels_lock,
+    std::unique_ptr<cc::SingleReleaseCallback> release_callback,
+    std::unique_ptr<SkBitmap> bitmap,
+    std::unique_ptr<SkAutoLockPixels> bitmap_pixels_lock,
     bool result) {
   bitmap_pixels_lock.reset();
 
@@ -59,7 +59,7 @@ void PrepareTextureCopyOutputResult(
     const gfx::Size& dst_size_in_pixel,
     const SkColorType color_type,
     const content::ReadbackRequestCallback& callback,
-    scoped_ptr<cc::CopyOutputResult> result) {
+    std::unique_ptr<cc::CopyOutputResult> result) {
 #if defined(OS_ANDROID) && !defined(USE_AURA)
   // TODO(wjmaclean): See if there's an equivalent pathway for Android and
   // implement it here.
@@ -72,7 +72,7 @@ void PrepareTextureCopyOutputResult(
   // TODO(siva.gunturi): We should be able to validate the format here using
   // GLHelper::IsReadbackConfigSupported before we processs the result.
   // See crbug.com/415682 and crbug.com/415131.
-  scoped_ptr<SkBitmap> bitmap(new SkBitmap);
+  std::unique_ptr<SkBitmap> bitmap(new SkBitmap);
   if (!bitmap->tryAllocPixels(SkImageInfo::Make(
           dst_size_in_pixel.width(), dst_size_in_pixel.height(), color_type,
           kOpaque_SkAlphaType))) {
@@ -87,12 +87,12 @@ void PrepareTextureCopyOutputResult(
   if (!gl_helper)
     return;
 
-  scoped_ptr<SkAutoLockPixels> bitmap_pixels_lock(
+  std::unique_ptr<SkAutoLockPixels> bitmap_pixels_lock(
       new SkAutoLockPixels(*bitmap));
   uint8_t* pixels = static_cast<uint8_t*>(bitmap->getPixels());
 
   cc::TextureMailbox texture_mailbox;
-  scoped_ptr<cc::SingleReleaseCallback> release_callback;
+  std::unique_ptr<cc::SingleReleaseCallback> release_callback;
   result->TakeTexture(&texture_mailbox, &release_callback);
   DCHECK(texture_mailbox.IsTexture());
 
@@ -112,14 +112,14 @@ void PrepareBitmapCopyOutputResult(
     const gfx::Size& dst_size_in_pixel,
     const SkColorType preferred_color_type,
     const content::ReadbackRequestCallback& callback,
-    scoped_ptr<cc::CopyOutputResult> result) {
+    std::unique_ptr<cc::CopyOutputResult> result) {
   SkColorType color_type = preferred_color_type;
   if (color_type != kN32_SkColorType && color_type != kAlpha_8_SkColorType) {
     // Switch back to default colortype if format not supported.
     color_type = kN32_SkColorType;
   }
   DCHECK(result->HasBitmap());
-  scoped_ptr<SkBitmap> source = result->TakeBitmap();
+  std::unique_ptr<SkBitmap> source = result->TakeBitmap();
   DCHECK(source);
   SkBitmap scaled_bitmap;
   if (source->width() != dst_size_in_pixel.width() ||
@@ -158,7 +158,7 @@ void PrepareBitmapCopyOutputResult(
 
 namespace content {
 
-scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() {
+std::unique_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() {
 #if defined(OS_ANDROID)
   return CompositorImpl::CreateSurfaceIdAllocator();
 #else
@@ -180,7 +180,7 @@ void CopyFromCompositingSurfaceHasResult(
     const gfx::Size& dst_size_in_pixel,
     const SkColorType color_type,
     const ReadbackRequestCallback& callback,
-    scoped_ptr<cc::CopyOutputResult> result) {
+    std::unique_ptr<cc::CopyOutputResult> result) {
   if (result->IsEmpty() || result->size().IsEmpty()) {
     callback.Run(SkBitmap(), READBACK_FAILED);
     return;

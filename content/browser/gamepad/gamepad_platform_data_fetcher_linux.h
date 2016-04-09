@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/gamepad/gamepad_data_fetcher.h"
 
 extern "C" {
@@ -41,7 +41,7 @@ class GamepadPlatformDataFetcherLinux : public GamepadDataFetcher {
   // File descriptor for the /dev/input/js* devices. -1 if not in use.
   int device_fd_[blink::WebGamepads::itemsLengthCap];
 
-  scoped_ptr<device::UdevLinux> udev_;
+  std::unique_ptr<device::UdevLinux> udev_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadPlatformDataFetcherLinux);
 };

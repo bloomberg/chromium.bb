@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/compositor/reflector_impl.h"
+
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -10,7 +13,6 @@
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
-#include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/reflector_texture.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,12 +59,12 @@ class TestOverlayCandidatesOzone : public ui::OverlayCandidatesOzone {
 };
 #endif  // defined(USE_OZONE)
 
-scoped_ptr<BrowserCompositorOverlayCandidateValidator>
+std::unique_ptr<BrowserCompositorOverlayCandidateValidator>
 CreateTestValidatorOzone() {
 #if defined(USE_OZONE)
-  return scoped_ptr<BrowserCompositorOverlayCandidateValidator>(
+  return std::unique_ptr<BrowserCompositorOverlayCandidateValidator>(
       new BrowserCompositorOverlayCandidateValidatorOzone(
-          0, scoped_ptr<ui::OverlayCandidatesOzone>(
+          0, std::unique_ptr<ui::OverlayCandidatesOzone>(
                  new TestOverlayCandidatesOzone())));
 #else
   return nullptr;
@@ -109,7 +111,7 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
 #endif
 
  private:
-  scoped_ptr<ReflectorTexture> reflector_texture_;
+  std::unique_ptr<ReflectorTexture> reflector_texture_;
 };
 
 const gfx::Rect kSubRect(0, 0, 64, 64);
@@ -123,7 +125,7 @@ class ReflectorImplTest : public testing::Test {
     ui::ContextFactory* context_factory =
         ui::InitializeContextFactoryForTests(enable_pixel_output);
     ImageTransportFactory::InitializeForUnitTests(
-        scoped_ptr<ImageTransportFactory>(
+        std::unique_ptr<ImageTransportFactory>(
             new NoTransportImageTransportFactory));
     message_loop_.reset(new base::MessageLoop());
     task_runner_ = message_loop_->task_runner();
@@ -133,7 +135,7 @@ class ReflectorImplTest : public testing::Test {
     compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
     context_provider_ =
         cc::TestContextProvider::Create(cc::TestWebGraphicsContext3D::Create());
-    output_surface_ = scoped_ptr<TestOutputSurface>(
+    output_surface_ = std::unique_ptr<TestOutputSurface>(
         new TestOutputSurface(context_provider_, compositor_->vsync_manager()));
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
@@ -146,7 +148,7 @@ class ReflectorImplTest : public testing::Test {
   }
 
   void SetUpReflector() {
-    reflector_ = make_scoped_ptr(
+    reflector_ = base::WrapUnique(
         new ReflectorImpl(compositor_.get(), mirroring_layer_.get()));
     reflector_->OnSourceSurfaceReady(output_surface_.get());
   }
@@ -155,7 +157,7 @@ class ReflectorImplTest : public testing::Test {
     if (reflector_)
       reflector_->RemoveMirroringLayer(mirroring_layer_.get());
     cc::TextureMailbox mailbox;
-    scoped_ptr<cc::SingleReleaseCallback> release;
+    std::unique_ptr<cc::SingleReleaseCallback> release;
     if (mirroring_layer_->PrepareTextureMailbox(&mailbox, &release, false)) {
       release->Run(gpu::SyncToken(), false);
     }
@@ -170,13 +172,13 @@ class ReflectorImplTest : public testing::Test {
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   scoped_refptr<cc::ContextProvider> context_provider_;
   cc::FakeOutputSurfaceClient output_surface_client_;
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_ptr<ui::Compositor> compositor_;
-  scoped_ptr<ui::Layer> root_layer_;
-  scoped_ptr<ui::Layer> mirroring_layer_;
-  scoped_ptr<ReflectorImpl> reflector_;
-  scoped_ptr<TestOutputSurface> output_surface_;
+  std::unique_ptr<ui::Compositor> compositor_;
+  std::unique_ptr<ui::Layer> root_layer_;
+  std::unique_ptr<ui::Layer> mirroring_layer_;
+  std::unique_ptr<ReflectorImpl> reflector_;
+  std::unique_ptr<TestOutputSurface> output_surface_;
 };
 
 namespace {

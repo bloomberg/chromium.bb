@@ -172,7 +172,7 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     // There are two cases:
     // 1. Startup duration is not reached.
     // 2. Or startup duration is not specified for --trace-config-file flag.
-    scoped_ptr<BrowserShutdownProfileDumper> startup_profiler;
+    std::unique_ptr<BrowserShutdownProfileDumper> startup_profiler;
     if (main_loop_->is_tracing_startup_for_duration()) {
       main_loop_->StopStartupTracingTimer();
       if (main_loop_->startup_trace_file() !=
@@ -196,7 +196,7 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     // which will dump the traces to disc when it gets destroyed.
     const base::CommandLine& command_line =
         *base::CommandLine::ForCurrentProcess();
-    scoped_ptr<BrowserShutdownProfileDumper> shutdown_profiler;
+    std::unique_ptr<BrowserShutdownProfileDumper> shutdown_profiler;
     if (command_line.HasSwitch(switches::kTraceShutdown)) {
       shutdown_profiler.reset(new BrowserShutdownProfileDumper(
           BrowserShutdownProfileDumper::GetShutdownProfileFileName()));
@@ -235,10 +235,10 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
   // True if the runner has been shut down.
   bool is_shutdown_;
 
-  scoped_ptr<NotificationServiceImpl> notification_service_;
-  scoped_ptr<BrowserMainLoop> main_loop_;
+  std::unique_ptr<NotificationServiceImpl> notification_service_;
+  std::unique_ptr<BrowserMainLoop> main_loop_;
 #if defined(OS_WIN)
-  scoped_ptr<ui::ScopedOleInitializer> ole_initializer_;
+  std::unique_ptr<ui::ScopedOleInitializer> ole_initializer_;
 #endif
 
  private:

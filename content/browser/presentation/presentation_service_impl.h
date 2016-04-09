@@ -7,6 +7,7 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -14,7 +15,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
@@ -257,13 +257,13 @@ class CONTENT_EXPORT PresentationServiceImpl
   std::string default_presentation_url_;
 
   using ScreenAvailabilityListenerMap =
-      std::map<std::string, scoped_ptr<ScreenAvailabilityListenerImpl>>;
+      std::map<std::string, std::unique_ptr<ScreenAvailabilityListenerImpl>>;
   ScreenAvailabilityListenerMap screen_availability_listeners_;
 
   // For StartSession requests.
   // Set to a positive value when a StartSession request is being processed.
   int start_session_request_id_;
-  scoped_ptr<NewSessionMojoCallbackWrapper> pending_start_session_cb_;
+  std::unique_ptr<NewSessionMojoCallbackWrapper> pending_start_session_cb_;
 
   // For JoinSession requests.
   base::hash_map<int, linked_ptr<NewSessionMojoCallbackWrapper>>
@@ -271,12 +271,12 @@ class CONTENT_EXPORT PresentationServiceImpl
 
   // RAII binding of |this| to an Presentation interface request.
   // The binding is removed when binding_ is cleared or goes out of scope.
-  scoped_ptr<mojo::Binding<mojom::PresentationService>> binding_;
+  std::unique_ptr<mojo::Binding<mojom::PresentationService>> binding_;
 
   // There can be only one send message request at a time.
-  scoped_ptr<SendMessageMojoCallback> send_message_callback_;
+  std::unique_ptr<SendMessageMojoCallback> send_message_callback_;
 
-  scoped_ptr<SessionMessagesCallback> on_session_messages_callback_;
+  std::unique_ptr<SessionMessagesCallback> on_session_messages_callback_;
 
   // ID of the RenderFrameHost this object is associated with.
   int render_process_id_;

@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_MOJO_MOJO_APPLICATION_HOST_H_
 #define CONTENT_BROWSER_MOJO_MOJO_APPLICATION_HOST_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
 #include "content/common/application_setup.mojom.h"
@@ -58,13 +59,13 @@ class CONTENT_EXPORT MojoApplicationHost {
 
   bool did_activate_;
 
-  scoped_ptr<mojom::ApplicationSetup> application_setup_;
+  std::unique_ptr<mojom::ApplicationSetup> application_setup_;
   ServiceRegistryImpl service_registry_;
 
   scoped_refptr<base::TaskRunner> io_task_runner_override_;
 
 #if defined(OS_ANDROID)
-  scoped_ptr<ServiceRegistryAndroid> service_registry_android_;
+  std::unique_ptr<ServiceRegistryAndroid> service_registry_android_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(MojoApplicationHost);

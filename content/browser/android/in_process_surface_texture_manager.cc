@@ -10,6 +10,7 @@
 #include "base/android/jni_android.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -31,7 +32,7 @@ void InProcessSurfaceTextureManager::RegisterSurfaceTexture(
   DCHECK(surface_textures_.find(surface_texture_id) == surface_textures_.end());
   surface_textures_.add(
       surface_texture_id,
-      make_scoped_ptr(new gfx::ScopedJavaSurface(surface_texture)));
+      base::WrapUnique(new gfx::ScopedJavaSurface(surface_texture)));
 }
 
 void InProcessSurfaceTextureManager::UnregisterSurfaceTexture(

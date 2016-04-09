@@ -35,7 +35,7 @@ class InputHandler {
   virtual ~InputHandler();
 
   void SetRenderWidgetHost(RenderWidgetHostImpl* host);
-  void SetClient(scoped_ptr<Client> client);
+  void SetClient(std::unique_ptr<Client> client);
   void OnSwapCompositorFrame(const cc::CompositorFrameMetadata& frame_metadata);
 
   Response DispatchKeyEvent(const std::string& type,
@@ -124,7 +124,7 @@ class InputHandler {
                         SyntheticGesture::Result result);
 
   RenderWidgetHostImpl* host_;
-  scoped_ptr<Client> client_;
+  std::unique_ptr<Client> client_;
   float page_scale_factor_;
   gfx::SizeF scrollable_viewport_size_;
   base::WeakPtrFactory<InputHandler> weak_factory_;

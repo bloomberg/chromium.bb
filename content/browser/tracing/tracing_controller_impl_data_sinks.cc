@@ -21,14 +21,15 @@ const char kMetadataTraceLabel[] = "metadata";
 
 class StringTraceDataEndpoint : public TracingController::TraceDataEndpoint {
  public:
-  typedef base::Callback<void(scoped_ptr<const base::DictionaryValue>,
-                              base::RefCountedString*)> CompletionCallback;
+  typedef base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
+                              base::RefCountedString*)>
+      CompletionCallback;
 
   explicit StringTraceDataEndpoint(CompletionCallback callback)
       : completion_callback_(callback) {}
 
   void ReceiveTraceFinalContents(
-      scoped_ptr<const base::DictionaryValue> metadata,
+      std::unique_ptr<const base::DictionaryValue> metadata,
       const std::string& contents) override {
     std::string tmp = contents;
     scoped_refptr<base::RefCountedString> str =
@@ -66,9 +67,8 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
                    chunk_ptr));
   }
 
-  void ReceiveTraceFinalContents(
-      scoped_ptr<const base::DictionaryValue> ,
-      const std::string& contents) override {
+  void ReceiveTraceFinalContents(std::unique_ptr<const base::DictionaryValue>,
+                                 const std::string& contents) override {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&FileTraceDataEndpoint::CloseOnFileThread, this));
@@ -288,7 +288,7 @@ class CompressedStringTraceDataSink : public TracingController::TraceDataSink {
   }
 
   scoped_refptr<TracingController::TraceDataEndpoint> endpoint_;
-  scoped_ptr<z_stream> stream_;
+  std::unique_ptr<z_stream> stream_;
   bool already_tried_open_;
   std::string compressed_trace_data_;
 
@@ -324,12 +324,13 @@ void TracingController::TraceDataSink::SetMetadataFilterPredicate(
   metadata_filter_predicate_ = metadata_filter_predicate;
 }
 
-scoped_ptr<const base::DictionaryValue>
-    TracingController::TraceDataSink::GetMetadataCopy() const {
+std::unique_ptr<const base::DictionaryValue>
+TracingController::TraceDataSink::GetMetadataCopy() const {
   if (metadata_filter_predicate_.is_null())
-    return scoped_ptr<const base::DictionaryValue>(metadata_.DeepCopy());
+    return std::unique_ptr<const base::DictionaryValue>(metadata_.DeepCopy());
 
-  scoped_ptr<base::DictionaryValue> metadata_copy(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> metadata_copy(
+      new base::DictionaryValue);
   for (base::DictionaryValue::Iterator it(metadata_); !it.IsAtEnd();
        it.Advance()) {
     if (metadata_filter_predicate_.Run(it.key()))
@@ -342,7 +343,7 @@ scoped_ptr<const base::DictionaryValue>
 
 scoped_refptr<TracingController::TraceDataSink>
 TracingController::CreateStringSink(
-    const base::Callback<void(scoped_ptr<const base::DictionaryValue>,
+    const base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
                               base::RefCountedString*)>& callback) {
   return new StringTraceDataSink(new StringTraceDataEndpoint(callback));
 }
@@ -361,9 +362,9 @@ TracingController::CreateFileSink(const base::FilePath& file_path,
 }
 
 scoped_refptr<TracingController::TraceDataEndpoint>
-TracingController::CreateCallbackEndpoint(const base::Callback<
-    void(scoped_ptr<const base::DictionaryValue>,
-         base::RefCountedString*)>& callback) {
+TracingController::CreateCallbackEndpoint(
+    const base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
+                              base::RefCountedString*)>& callback) {
   return new StringTraceDataEndpoint(callback);
 }
 

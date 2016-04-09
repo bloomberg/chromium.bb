@@ -27,13 +27,13 @@ VRDeviceManager::VRDeviceManager()
       base::Bind(&VRDeviceManager::OnConnectionError, base::Unretained(this)));
 // Register VRDeviceProviders for the current platform
 #if defined(OS_ANDROID)
-  scoped_ptr<VRDeviceProvider> cardboard_provider(
+  std::unique_ptr<VRDeviceProvider> cardboard_provider(
       new CardboardVRDeviceProvider());
   RegisterProvider(std::move(cardboard_provider));
 #endif
 }
 
-VRDeviceManager::VRDeviceManager(scoped_ptr<VRDeviceProvider> provider)
+VRDeviceManager::VRDeviceManager(std::unique_ptr<VRDeviceProvider> provider)
     : vr_initialized_(false), keep_alive_(true) {
   thread_checker_.DetachFromThread();
   RegisterProvider(std::move(provider));
@@ -127,7 +127,8 @@ void VRDeviceManager::InitializeProviders() {
   vr_initialized_ = true;
 }
 
-void VRDeviceManager::RegisterProvider(scoped_ptr<VRDeviceProvider> provider) {
+void VRDeviceManager::RegisterProvider(
+    std::unique_ptr<VRDeviceProvider> provider) {
   providers_.push_back(make_linked_ptr(provider.release()));
 }
 

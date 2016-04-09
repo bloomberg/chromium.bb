@@ -6,10 +6,10 @@
 #define CONTENT_BROWSER_BLUETOOTH_BLUETOOTH_ALLOWED_DEVICES_MAP_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "url/origin.h"
 

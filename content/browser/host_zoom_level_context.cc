@@ -13,7 +13,7 @@
 namespace content {
 
 HostZoomLevelContext::HostZoomLevelContext(
-    scoped_ptr<ZoomLevelDelegate> zoom_level_delegate)
+    std::unique_ptr<ZoomLevelDelegate> zoom_level_delegate)
     : host_zoom_map_impl_(new HostZoomMapImpl()),
       zoom_level_delegate_(std::move(zoom_level_delegate)) {
   if (zoom_level_delegate_)

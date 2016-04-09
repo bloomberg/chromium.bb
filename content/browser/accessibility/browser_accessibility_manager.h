@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/ax_tree_id_registry.h"
 #include "content/common/content_export.h"
@@ -394,10 +394,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   BrowserAccessibilityDelegate* delegate_;
 
   // Factory to create BrowserAccessibility objects (for dependency injection).
-  scoped_ptr<BrowserAccessibilityFactory> factory_;
+  std::unique_ptr<BrowserAccessibilityFactory> factory_;
 
   // The underlying tree of accessibility objects.
-  scoped_ptr<ui::AXSerializableTree> tree_;
+  std::unique_ptr<ui::AXSerializableTree> tree_;
 
   // A mapping from a node id to its wrapper of type BrowserAccessibility.
   base::hash_map<int32_t, BrowserAccessibility*> id_wrapper_map_;

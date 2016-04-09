@@ -6,11 +6,11 @@
 #define CONTENT_BROWSER_WEBUI_WEB_UI_IMPL_H_
 
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_ui.h"
@@ -117,7 +117,7 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   // is used.
   const std::string frame_name_;
 
-  scoped_ptr<WebUIController> controller_;
+  std::unique_ptr<WebUIController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIImpl);
 };

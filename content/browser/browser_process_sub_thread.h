@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_BROWSER_PROCESS_SUB_THREAD_H_
 #define CONTENT_BROWSER_BROWSER_PROCESS_SUB_THREAD_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/common/content_export.h"
@@ -49,11 +50,11 @@ class CONTENT_EXPORT BrowserProcessSubThread : public BrowserThreadImpl {
   void IOThreadPreCleanUp();
 
 #if defined (OS_WIN)
-  scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
+  std::unique_ptr<base::win::ScopedCOMInitializer> com_initializer_;
 #endif
 
   // Each specialized thread has its own notification service.
-  scoped_ptr<NotificationService> notification_service_;
+  std::unique_ptr<NotificationService> notification_service_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessSubThread);
 };

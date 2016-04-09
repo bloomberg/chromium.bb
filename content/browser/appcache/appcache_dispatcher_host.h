@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
@@ -70,7 +70,7 @@ class AppCacheDispatcherHost : public BrowserMessageFilter {
   content::GetStatusCallback get_status_callback_;
   content::StartUpdateCallback start_update_callback_;
   content::SwapCacheCallback swap_cache_callback_;
-  scoped_ptr<IPC::Message> pending_reply_msg_;
+  std::unique_ptr<IPC::Message> pending_reply_msg_;
 
   // The corresponding ChildProcessHost object's id().
   int process_id_;

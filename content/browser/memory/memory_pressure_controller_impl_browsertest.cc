@@ -17,7 +17,7 @@ namespace content {
 
 MATCHER_P(IsSetSuppressedMessage, suppressed, "") {
   // Ensure that the message is deleted upon return.
-  scoped_ptr<IPC::Message> message(arg);
+  std::unique_ptr<IPC::Message> message(arg);
   if (message == nullptr)
     return false;
   MemoryMsg_SetPressureNotificationsSuppressed::Param param;
@@ -29,7 +29,7 @@ MATCHER_P(IsSetSuppressedMessage, suppressed, "") {
 
 MATCHER_P(IsSimulateMessage, level, "") {
   // Ensure that the message is deleted upon return.
-  scoped_ptr<IPC::Message> message(arg);
+  std::unique_ptr<IPC::Message> message(arg);
   if (message == nullptr)
     return false;
   MemoryMsg_SimulatePressureNotification::Param param;
@@ -40,7 +40,7 @@ MATCHER_P(IsSimulateMessage, level, "") {
 
 MATCHER_P(IsPressureMessage, level, "") {
   // Ensure that the message is deleted upon return.
-  scoped_ptr<IPC::Message> message(arg);
+  std::unique_ptr<IPC::Message> message(arg);
   if (message == nullptr)
     return false;
   MemoryMsg_PressureNotification::Param param;
@@ -216,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(MemoryPressureControllerImplBrowserTest,
                        SimulatePressureNotificationInAllProcesses) {
   scoped_refptr<MemoryMessageFilterForTesting> filter(
       new MemoryMessageFilterForTesting);
-  scoped_ptr<base::MemoryPressureListener> listener(
+  std::unique_ptr<base::MemoryPressureListener> listener(
       new base::MemoryPressureListener(
           base::Bind(&MemoryPressureControllerImplBrowserTest::OnMemoryPressure,
                      base::Unretained(this))));

@@ -5,13 +5,13 @@
 #include "content/browser/net/quota_policy_cookie_store.h"
 
 #include <list>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/profiler/scoped_tracker.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -129,13 +129,13 @@ CookieStoreConfig::CookieStoreConfig(
 CookieStoreConfig::~CookieStoreConfig() {
 }
 
-scoped_ptr<net::CookieStore> CreateCookieStore(
+std::unique_ptr<net::CookieStore> CreateCookieStore(
     const CookieStoreConfig& config) {
   // TODO(bcwhite): Remove ScopedTracker below once crbug.com/483686 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION("483686 content::CreateCookieStore"));
 
-  scoped_ptr<net::CookieMonster> cookie_monster;
+  std::unique_ptr<net::CookieMonster> cookie_monster;
 
   if (config.path.empty()) {
     // Empty path means in-memory store.

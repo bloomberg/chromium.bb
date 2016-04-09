@@ -392,7 +392,7 @@ jvalue CoerceJavaScriptNullOrUndefinedToJavaValue(JNIEnv* env,
                                                   bool coerce_to_string,
                                                   GinJavaBridgeError* error) {
   bool is_undefined = false;
-  scoped_ptr<const GinJavaBridgeValue> gin_value;
+  std::unique_ptr<const GinJavaBridgeValue> gin_value;
   if (GinJavaBridgeValue::ContainsGinJavaBridgeValue(value)) {
     gin_value = GinJavaBridgeValue::FromValue(value);
     if (gin_value->IsType(GinJavaBridgeValue::TYPE_UNDEFINED)) {
@@ -465,7 +465,7 @@ jobject CoerceJavaScriptListToArray(JNIEnv* env,
   if (!result) {
     return NULL;
   }
-  scoped_ptr<base::Value> null_value = base::Value::CreateNullValue();
+  std::unique_ptr<base::Value> null_value = base::Value::CreateNullValue();
   for (jsize i = 0; i < length; ++i) {
     const base::Value* value_element = null_value.get();
     list_value->Get(i, &value_element);
@@ -537,7 +537,7 @@ jobject CoerceJavaScriptDictionaryToArray(JNIEnv* env,
   if (!result) {
     return NULL;
   }
-  scoped_ptr<base::Value> null_value = base::Value::CreateNullValue();
+  std::unique_ptr<base::Value> null_value = base::Value::CreateNullValue();
   for (jsize i = 0; i < length; ++i) {
     const std::string key(base::IntToString(i));
     const base::Value* value_element = null_value.get();
@@ -573,7 +573,7 @@ jvalue CoerceJavaScriptObjectToJavaValue(JNIEnv* env,
   switch (target_type.type) {
     case JavaType::TypeObject: {
       if (GinJavaBridgeValue::ContainsGinJavaBridgeValue(value)) {
-        scoped_ptr<const GinJavaBridgeValue> gin_value(
+        std::unique_ptr<const GinJavaBridgeValue> gin_value(
             GinJavaBridgeValue::FromValue(value));
         DCHECK(gin_value);
         DCHECK(gin_value->IsType(GinJavaBridgeValue::TYPE_OBJECT_ID));
@@ -654,7 +654,7 @@ jvalue CoerceGinJavaBridgeValueToJavaValue(JNIEnv* env,
                                            const ObjectRefs& object_refs,
                                            GinJavaBridgeError* error) {
   DCHECK(GinJavaBridgeValue::ContainsGinJavaBridgeValue(value));
-  scoped_ptr<const GinJavaBridgeValue> gin_value(
+  std::unique_ptr<const GinJavaBridgeValue> gin_value(
       GinJavaBridgeValue::FromValue(value));
   switch (gin_value->GetType()) {
     case GinJavaBridgeValue::TYPE_UNDEFINED:

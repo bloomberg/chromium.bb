@@ -39,7 +39,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   // SynchronousCompositorFactory
   scoped_refptr<base::SingleThreadTaskRunner> GetCompositorTaskRunner()
       override;
-  scoped_ptr<cc::OutputSurface> CreateOutputSurface(
+  std::unique_ptr<cc::OutputSurface> CreateOutputSurface(
       int routing_id,
       uint32_t output_surface_id,
       const scoped_refptr<FrameSwapMessageQueue>& frame_swap_message_queue,
@@ -48,7 +48,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   InputHandlerManagerClient* GetInputHandlerManagerClient() override;
   SynchronousInputHandlerProxyClient* GetSynchronousInputHandlerProxyClient()
       override;
-  scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
+  std::unique_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) override;
 
   SynchronousInputEventFilter* synchronous_input_event_filter() {

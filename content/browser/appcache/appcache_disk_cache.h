@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/common/content_export.h"
 #include "net/disk_cache/disk_cache.h"
@@ -120,7 +120,7 @@ class CONTENT_EXPORT AppCacheDiskCache
   scoped_refptr<CreateBackendCallbackShim> create_backend_callback_;
   PendingCalls pending_calls_;
   OpenEntries open_entries_;
-  scoped_ptr<disk_cache::Backend> disk_cache_;
+  std::unique_ptr<disk_cache::Backend> disk_cache_;
 
   base::WeakPtrFactory<AppCacheDiskCache> weak_factory_;
 };

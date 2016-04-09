@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
@@ -91,8 +92,8 @@ class SharedWorkerDevToolsManagerTest : public testing::Test {
 
   base::MessageLoopForIO message_loop_;
   BrowserThreadImpl ui_thread_;
-  scoped_ptr<TestBrowserContext> browser_context_;
-  scoped_ptr<WorkerStoragePartition> partition_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
+  std::unique_ptr<WorkerStoragePartition> partition_;
   const WorkerStoragePartitionId partition_id_;
   SharedWorkerDevToolsManager* manager_;
 };
@@ -194,7 +195,8 @@ TEST_F(SharedWorkerDevToolsManagerTest, AttachTest) {
       blink::WebSharedWorkerCreationContextTypeNonsecure);
 
   // Created -> GetDevToolsAgentHost -> Register -> Started -> Destroyed
-  scoped_ptr<TestDevToolsClientHost> client_host1(new TestDevToolsClientHost());
+  std::unique_ptr<TestDevToolsClientHost> client_host1(
+      new TestDevToolsClientHost());
   CheckWorkerNotExist(2, 1);
   manager_->WorkerCreated(2, 1, instance1);
   CheckWorkerState(2, 1, WorkerState::WORKER_UNINSPECTED);
@@ -211,7 +213,8 @@ TEST_F(SharedWorkerDevToolsManagerTest, AttachTest) {
   EXPECT_EQ(agent_host1.get(), manager_->GetDevToolsAgentHostForWorker(2, 1));
 
   // Created -> Started -> GetDevToolsAgentHost -> Register -> Destroyed
-  scoped_ptr<TestDevToolsClientHost> client_host2(new TestDevToolsClientHost());
+  std::unique_ptr<TestDevToolsClientHost> client_host2(
+      new TestDevToolsClientHost());
   manager_->WorkerCreated(2, 2, instance2);
   CheckWorkerState(2, 2, WorkerState::WORKER_UNINSPECTED);
   manager_->WorkerReadyForInspection(2, 2);
@@ -270,7 +273,8 @@ TEST_F(SharedWorkerDevToolsManagerTest, ReattachTest) {
       blink::WebContentSecurityPolicyTypeReport, blink::WebAddressSpacePublic,
       browser_context_->GetResourceContext(), partition_id_,
       blink::WebSharedWorkerCreationContextTypeNonsecure);
-  scoped_ptr<TestDevToolsClientHost> client_host(new TestDevToolsClientHost());
+  std::unique_ptr<TestDevToolsClientHost> client_host(
+      new TestDevToolsClientHost());
   // Created -> GetDevToolsAgentHost -> Register -> Destroyed
   manager_->WorkerCreated(3, 1, instance);
   CheckWorkerState(3, 1, WorkerState::WORKER_UNINSPECTED);

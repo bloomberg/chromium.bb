@@ -46,8 +46,8 @@ class ServiceWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
 
  private:
   ~ServiceWorkerDevToolsAgentHost() override;
-  scoped_ptr<ServiceWorkerIdentifier> service_worker_;
-  scoped_ptr<devtools::network::NetworkHandler> network_handler_;
+  std::unique_ptr<ServiceWorkerIdentifier> service_worker_;
+  std::unique_ptr<devtools::network::NetworkHandler> network_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDevToolsAgentHost);
 };

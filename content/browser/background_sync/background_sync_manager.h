@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -16,7 +17,6 @@
 #include "base/callback_forward.h"
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/clock.h"
@@ -58,12 +58,12 @@ class CONTENT_EXPORT BackgroundSyncManager
   using StatusCallback = base::Callback<void(BackgroundSyncStatus)>;
   using StatusAndRegistrationCallback =
       base::Callback<void(BackgroundSyncStatus,
-                          scoped_ptr<BackgroundSyncRegistration>)>;
+                          std::unique_ptr<BackgroundSyncRegistration>)>;
   using StatusAndRegistrationsCallback = base::Callback<void(
       BackgroundSyncStatus,
-      scoped_ptr<ScopedVector<BackgroundSyncRegistration>>)>;
+      std::unique_ptr<ScopedVector<BackgroundSyncRegistration>>)>;
 
-  static scoped_ptr<BackgroundSyncManager> Create(
+  static std::unique_ptr<BackgroundSyncManager> Create(
       const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context);
   ~BackgroundSyncManager() override;
 
@@ -97,7 +97,7 @@ class CONTENT_EXPORT BackgroundSyncManager
     return network_observer_.get();
   }
 
-  void set_clock(scoped_ptr<base::Clock> clock) {
+  void set_clock(std::unique_ptr<base::Clock> clock) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     clock_ = std::move(clock);
   }
@@ -186,7 +186,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   void InitImpl(const base::Closure& callback);
   void InitDidGetControllerParameters(
       const base::Closure& callback,
-      scoped_ptr<BackgroundSyncParameters> parameters);
+      std::unique_ptr<BackgroundSyncParameters> parameters);
   void InitDidGetDataFromBackend(
       const base::Closure& callback,
       const std::vector<std::pair<int64_t, std::string>>& user_data,
@@ -285,11 +285,11 @@ class CONTENT_EXPORT BackgroundSyncManager
   void CompleteStatusAndRegistrationCallback(
       StatusAndRegistrationCallback callback,
       BackgroundSyncStatus status,
-      scoped_ptr<BackgroundSyncRegistration> registration);
+      std::unique_ptr<BackgroundSyncRegistration> registration);
   void CompleteStatusAndRegistrationsCallback(
       StatusAndRegistrationsCallback callback,
       BackgroundSyncStatus status,
-      scoped_ptr<ScopedVector<BackgroundSyncRegistration>> registrations);
+      std::unique_ptr<ScopedVector<BackgroundSyncRegistration>> registrations);
   base::Closure MakeEmptyCompletion();
   base::Closure MakeClosureCompletion(const base::Closure& callback);
   StatusAndRegistrationCallback MakeStatusAndRegistrationCompletion(
@@ -303,7 +303,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   CacheStorageScheduler op_scheduler_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
-  scoped_ptr<BackgroundSyncParameters> parameters_;
+  std::unique_ptr<BackgroundSyncParameters> parameters_;
 
   // True if the manager is disabled and registrations should fail.
   bool disabled_;
@@ -313,9 +313,9 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   base::CancelableCallback<void()> delayed_sync_task_;
 
-  scoped_ptr<BackgroundSyncNetworkObserver> network_observer_;
+  std::unique_ptr<BackgroundSyncNetworkObserver> network_observer_;
 
-  scoped_ptr<base::Clock> clock_;
+  std::unique_ptr<base::Clock> clock_;
 
   base::WeakPtrFactory<BackgroundSyncManager> weak_ptr_factory_;
 

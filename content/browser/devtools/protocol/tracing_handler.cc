@@ -48,10 +48,11 @@ std::string ConvertFromCamelCase(const std::string& in_str, char separator) {
   return out_str;
 }
 
-scoped_ptr<base::Value> ConvertDictKeyStyle(const base::Value& value) {
+std::unique_ptr<base::Value> ConvertDictKeyStyle(const base::Value& value) {
   const base::DictionaryValue* dict = nullptr;
   if (value.GetAsDictionary(&dict)) {
-    scoped_ptr<base::DictionaryValue> out_dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> out_dict(
+        new base::DictionaryValue());
     for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
          it.Advance()) {
       out_dict->Set(ConvertFromCamelCase(it.key(), '_'),
@@ -62,7 +63,7 @@ scoped_ptr<base::Value> ConvertDictKeyStyle(const base::Value& value) {
 
   const base::ListValue* list = nullptr;
   if (value.GetAsList(&list)) {
-    scoped_ptr<base::ListValue> out_list(new base::ListValue());
+    std::unique_ptr<base::ListValue> out_list(new base::ListValue());
     for (const auto& value : *list)
       out_list->Append(ConvertDictKeyStyle(*value));
     return std::move(out_list);
@@ -141,7 +142,7 @@ TracingHandler::TracingHandler(TracingHandler::Target target,
 TracingHandler::~TracingHandler() {
 }
 
-void TracingHandler::SetClient(scoped_ptr<Client> client) {
+void TracingHandler::SetClient(std::unique_ptr<Client> client) {
   client_.swap(client);
 }
 
@@ -177,7 +178,7 @@ Response TracingHandler::Start(
     const std::string* options,
     const double* buffer_usage_reporting_interval,
     const std::string* transfer_mode,
-    const scoped_ptr<base::DictionaryValue>& config) {
+    const std::unique_ptr<base::DictionaryValue>& config) {
   if (IsTracing())
     return Response::InternalError("Tracing is already started");
 
@@ -339,9 +340,9 @@ bool TracingHandler::IsStartupTracingActive() {
 // static
 base::trace_event::TraceConfig TracingHandler::GetTraceConfigFromDevToolsConfig(
     const base::DictionaryValue& devtools_config) {
-  scoped_ptr<base::Value> value = ConvertDictKeyStyle(devtools_config);
+  std::unique_ptr<base::Value> value = ConvertDictKeyStyle(devtools_config);
   DCHECK(value && value->IsType(base::Value::TYPE_DICTIONARY));
-  scoped_ptr<base::DictionaryValue> tracing_dict(
+  std::unique_ptr<base::DictionaryValue> tracing_dict(
       static_cast<base::DictionaryValue*>(value.release()));
 
   std::string mode;

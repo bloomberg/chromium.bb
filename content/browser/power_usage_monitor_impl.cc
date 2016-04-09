@@ -249,7 +249,7 @@ void PowerUsageMonitor::OnRenderProcessNotification(int type, int rph_id) {
 }
 
 void PowerUsageMonitor::SetSystemInterfaceForTest(
-    scoped_ptr<SystemInterface> interface) {
+    std::unique_ptr<SystemInterface> interface) {
   system_interface_ = std::move(interface);
 }
 

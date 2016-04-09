@@ -95,7 +95,7 @@ class ScalerHolder {
 
  private:
   TextureFrameBufferPair texture_and_framebuffer_;
-  scoped_ptr<content::GLHelper::ScalerInterface> scaler_;
+  std::unique_ptr<content::GLHelper::ScalerInterface> scaler_;
 
   DISALLOW_COPY_AND_ASSIGN(ScalerHolder);
 };
@@ -320,8 +320,8 @@ class GLHelper::CopyTextureToImpl
     GLHelper::ScalerQuality quality_;
     ReadbackSwizzle swizzle_;
     ScalerHolder scaler_;
-    scoped_ptr<content::GLHelperScaling::ShaderInterface> pass1_shader_;
-    scoped_ptr<content::GLHelperScaling::ShaderInterface> pass2_shader_;
+    std::unique_ptr<content::GLHelperScaling::ShaderInterface> pass1_shader_;
+    std::unique_ptr<content::GLHelperScaling::ShaderInterface> pass2_shader_;
     TextureFrameBufferPair y_;
     ScopedTexture uv_;
     TextureFrameBufferPair u_;
@@ -421,7 +421,7 @@ GLuint GLHelper::CopyTextureToImpl::ScaleTexture(
     gl_->TexImage2D(GL_TEXTURE_2D, 0, format, dst_size.width(),
                     dst_size.height(), 0, format, type, NULL);
   }
-  scoped_ptr<ScalerInterface> scaler(
+  std::unique_ptr<ScalerInterface> scaler(
       helper_->CreateScaler(quality, src_size, src_subrect, dst_size,
                             vertically_flip_texture, swizzle));
   scaler->Scale(src_texture, dst_texture);
@@ -447,7 +447,7 @@ GLuint GLHelper::CopyTextureToImpl::EncodeTextureAsGrayscale(
   }
 
   helper_->InitScalerImpl();
-  scoped_ptr<ScalerInterface> grayscale_scaler(
+  std::unique_ptr<ScalerInterface> grayscale_scaler(
       helper_->scaler_impl_.get()->CreatePlanarScaler(
           src_size,
           gfx::Rect(0, 0, (src_size.width() + 3) & ~3, src_size.height()),
@@ -802,7 +802,7 @@ GLuint GLHelper::CompileShaderFromSource(const GLchar* source, GLenum type) {
     GLint log_length = 0;
     gl_->GetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_length);
     if (log_length) {
-      scoped_ptr<GLchar[]> log(new GLchar[log_length]);
+      std::unique_ptr<GLchar[]> log(new GLchar[log_length]);
       GLsizei returned_log_length = 0;
       gl_->GetShaderInfoLog(shader, log_length, &returned_log_length,
                             log.get());

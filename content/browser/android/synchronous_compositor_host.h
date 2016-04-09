@@ -92,7 +92,7 @@ class SynchronousCompositorHost : public SynchronousCompositorBase {
   size_t bytes_limit_;
   uint32_t output_surface_id_from_last_draw_;
   cc::ReturnedResourceArray returned_resources_;
-  scoped_ptr<SharedMemoryWithSize> software_draw_shm_;
+  std::unique_ptr<SharedMemoryWithSize> software_draw_shm_;
 
   // Updated by both renderer and browser.
   gfx::ScrollOffset root_scroll_offset_;

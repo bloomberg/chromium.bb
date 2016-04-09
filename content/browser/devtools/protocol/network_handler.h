@@ -25,7 +25,7 @@ class NetworkHandler {
   virtual ~NetworkHandler();
 
   void SetRenderFrameHost(RenderFrameHostImpl* host);
-  void SetClient(scoped_ptr<Client> client);
+  void SetClient(std::unique_ptr<Client> client);
 
   Response ClearBrowserCache();
   Response ClearBrowserCookies();
@@ -50,7 +50,7 @@ class NetworkHandler {
   void SendDeleteCookieResponse(DevToolsCommandId command_id);
 
   RenderFrameHostImpl* host_;
-  scoped_ptr<Client> client_;
+  std::unique_ptr<Client> client_;
   base::WeakPtrFactory<NetworkHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHandler);

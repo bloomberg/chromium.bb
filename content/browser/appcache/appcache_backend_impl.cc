@@ -143,11 +143,12 @@ void AppCacheBackendImpl::GetResourceList(
   host->GetResourceList(resource_infos);
 }
 
-scoped_ptr<AppCacheHost> AppCacheBackendImpl::TransferHostOut(int host_id) {
+std::unique_ptr<AppCacheHost> AppCacheBackendImpl::TransferHostOut(
+    int host_id) {
   HostMap::iterator found = hosts_.find(host_id);
   if (found == hosts_.end()) {
     NOTREACHED();
-    return scoped_ptr<AppCacheHost>();
+    return std::unique_ptr<AppCacheHost>();
   }
 
   AppCacheHost* transferree = found->second;
@@ -157,11 +158,11 @@ scoped_ptr<AppCacheHost> AppCacheBackendImpl::TransferHostOut(int host_id) {
 
   // We give up ownership.
   transferree->PrepareForTransfer();
-  return scoped_ptr<AppCacheHost>(transferree);
+  return std::unique_ptr<AppCacheHost>(transferree);
 }
 
-void AppCacheBackendImpl::TransferHostIn(
-    int new_host_id, scoped_ptr<AppCacheHost> host) {
+void AppCacheBackendImpl::TransferHostIn(int new_host_id,
+                                         std::unique_ptr<AppCacheHost> host) {
   HostMap::iterator found = hosts_.find(new_host_id);
   if (found == hosts_.end()) {
     NOTREACHED();

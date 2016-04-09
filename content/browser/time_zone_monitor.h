@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_TIME_ZONE_MONITOR_H_
 #define CONTENT_BROWSER_TIME_ZONE_MONITOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace content {
 
@@ -31,7 +32,7 @@ class TimeZoneMonitor {
  public:
   // Returns a new TimeZoneMonitor object (likely a subclass) specific to the
   // platform.
-  static scoped_ptr<TimeZoneMonitor> Create();
+  static std::unique_ptr<TimeZoneMonitor> Create();
 
   virtual ~TimeZoneMonitor();
 

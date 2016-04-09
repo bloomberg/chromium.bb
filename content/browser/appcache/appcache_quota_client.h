@@ -7,11 +7,11 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/appcache/appcache_storage.h"
 #include "content/common/content_export.h"
 #include "net/base/completion_callback.h"
@@ -80,7 +80,7 @@ class AppCacheQuotaClient : public storage::QuotaClient {
   // And once it's ready, we can only handle one delete request at a time,
   // so we queue up additional requests while one is in already in progress.
   DeletionCallback current_delete_request_callback_;
-  scoped_ptr<net::CancelableCompletionCallback> service_delete_callback_;
+  std::unique_ptr<net::CancelableCompletionCallback> service_delete_callback_;
 
   AppCacheServiceImpl* service_;
   bool appcache_is_ready_;

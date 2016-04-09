@@ -5,10 +5,11 @@
 #ifndef CONTENT_BROWSER_BROWSER_MAIN_LOOP_H_
 #define CONTENT_BROWSER_BROWSER_MAIN_LOOP_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/browser/browser_process_sub_thread.h"
@@ -187,30 +188,30 @@ class CONTENT_EXPORT BrowserMainLoop {
   bool is_tracing_startup_for_duration_;
 
   // Members initialized in |MainMessageLoopStart()| ---------------------------
-  scoped_ptr<base::MessageLoop> main_message_loop_;
+  std::unique_ptr<base::MessageLoop> main_message_loop_;
 
   // Members initialized in |PostMainMessageLoopStart()| -----------------------
-  scoped_ptr<base::SystemMonitor> system_monitor_;
-  scoped_ptr<base::PowerMonitor> power_monitor_;
-  scoped_ptr<base::HighResolutionTimerManager> hi_res_timer_manager_;
-  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
+  std::unique_ptr<base::SystemMonitor> system_monitor_;
+  std::unique_ptr<base::PowerMonitor> power_monitor_;
+  std::unique_ptr<base::HighResolutionTimerManager> hi_res_timer_manager_;
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
   // Per-process listener for online state changes.
-  scoped_ptr<BrowserOnlineStateObserver> online_state_observer_;
+  std::unique_ptr<BrowserOnlineStateObserver> online_state_observer_;
 
-  scoped_ptr<base::trace_event::TraceEventSystemStatsMonitor>
+  std::unique_ptr<base::trace_event::TraceEventSystemStatsMonitor>
       system_stats_monitor_;
 
 #if defined(OS_WIN)
-  scoped_ptr<ScreenOrientationDelegate> screen_orientation_delegate_;
+  std::unique_ptr<ScreenOrientationDelegate> screen_orientation_delegate_;
 #endif
 
 #if defined(OS_ANDROID)
   // Android implementation of ScreenOrientationDelegate
-  scoped_ptr<ScreenOrientationDelegate> screen_orientation_delegate_;
+  std::unique_ptr<ScreenOrientationDelegate> screen_orientation_delegate_;
 #endif
 
-  scoped_ptr<MemoryObserver> memory_observer_;
+  std::unique_ptr<MemoryObserver> memory_observer_;
 
   // Members initialized in |InitStartupTracingForDuration()| ------------------
   base::FilePath startup_trace_file_;
@@ -221,53 +222,53 @@ class CONTENT_EXPORT BrowserMainLoop {
   // Members initialized in |Init()| -------------------------------------------
   // Destroy |parts_| before |main_message_loop_| (required) and before other
   // classes constructed in content (but after |main_thread_|).
-  scoped_ptr<BrowserMainParts> parts_;
+  std::unique_ptr<BrowserMainParts> parts_;
 
   // Members initialized in |InitializeMainThread()| ---------------------------
   // This must get destroyed before other threads that are created in |parts_|.
-  scoped_ptr<BrowserThreadImpl> main_thread_;
+  std::unique_ptr<BrowserThreadImpl> main_thread_;
 
   // Members initialized in |CreateStartupTasks()| -----------------------------
-  scoped_ptr<StartupTaskRunner> startup_task_runner_;
+  std::unique_ptr<StartupTaskRunner> startup_task_runner_;
 
   // Members initialized in |PreCreateThreads()| -------------------------------
   // Torn down in ShutdownThreadsAndCleanUp.
-  scoped_ptr<base::MemoryPressureMonitor> memory_pressure_monitor_;
+  std::unique_ptr<base::MemoryPressureMonitor> memory_pressure_monitor_;
 
   // Members initialized in |CreateThreads()| ----------------------------------
-  scoped_ptr<BrowserProcessSubThread> db_thread_;
-  scoped_ptr<BrowserProcessSubThread> file_user_blocking_thread_;
-  scoped_ptr<BrowserProcessSubThread> file_thread_;
-  scoped_ptr<BrowserProcessSubThread> process_launcher_thread_;
-  scoped_ptr<BrowserProcessSubThread> cache_thread_;
-  scoped_ptr<BrowserProcessSubThread> io_thread_;
+  std::unique_ptr<BrowserProcessSubThread> db_thread_;
+  std::unique_ptr<BrowserProcessSubThread> file_user_blocking_thread_;
+  std::unique_ptr<BrowserProcessSubThread> file_thread_;
+  std::unique_ptr<BrowserProcessSubThread> process_launcher_thread_;
+  std::unique_ptr<BrowserProcessSubThread> cache_thread_;
+  std::unique_ptr<BrowserProcessSubThread> io_thread_;
 
   // Members initialized in |BrowserThreadsStarted()| --------------------------
-  scoped_ptr<base::Thread> indexed_db_thread_;
-  scoped_ptr<MojoShellContext> mojo_shell_context_;
-  scoped_ptr<IPC::ScopedIPCSupport> mojo_ipc_support_;
+  std::unique_ptr<base::Thread> indexed_db_thread_;
+  std::unique_ptr<MojoShellContext> mojo_shell_context_;
+  std::unique_ptr<IPC::ScopedIPCSupport> mojo_ipc_support_;
 
   // |user_input_monitor_| has to outlive |audio_manager_|, so declared first.
-  scoped_ptr<media::UserInputMonitor> user_input_monitor_;
-  scoped_ptr<media::AudioManager> audio_manager_;
+  std::unique_ptr<media::UserInputMonitor> user_input_monitor_;
+  std::unique_ptr<media::AudioManager> audio_manager_;
 
-  scoped_ptr<media::midi::MidiManager> midi_manager_;
+  std::unique_ptr<media::midi::MidiManager> midi_manager_;
 
 #if defined(OS_WIN)
-  scoped_ptr<media::SystemMessageWindowWin> system_message_window_;
+  std::unique_ptr<media::SystemMessageWindowWin> system_message_window_;
 #elif defined(OS_LINUX) && defined(USE_UDEV)
-  scoped_ptr<media::DeviceMonitorLinux> device_monitor_linux_;
+  std::unique_ptr<media::DeviceMonitorLinux> device_monitor_linux_;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-  scoped_ptr<media::DeviceMonitorMac> device_monitor_mac_;
+  std::unique_ptr<media::DeviceMonitorMac> device_monitor_mac_;
 #endif
 #if defined(USE_OZONE)
-  scoped_ptr<ui::ClientNativePixmapFactory> client_native_pixmap_factory_;
+  std::unique_ptr<ui::ClientNativePixmapFactory> client_native_pixmap_factory_;
 #endif
 
-  scoped_ptr<ResourceDispatcherHostImpl> resource_dispatcher_host_;
-  scoped_ptr<MediaStreamManager> media_stream_manager_;
-  scoped_ptr<SpeechRecognitionManagerImpl> speech_recognition_manager_;
-  scoped_ptr<TimeZoneMonitor> time_zone_monitor_;
+  std::unique_ptr<ResourceDispatcherHostImpl> resource_dispatcher_host_;
+  std::unique_ptr<MediaStreamManager> media_stream_manager_;
+  std::unique_ptr<SpeechRecognitionManagerImpl> speech_recognition_manager_;
+  std::unique_ptr<TimeZoneMonitor> time_zone_monitor_;
 
   // DO NOT add members here. Add them to the right categories above.
 

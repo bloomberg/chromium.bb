@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu_process_launch_causes.h"
@@ -33,7 +33,8 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   // Overridden from gpu::GpuChannelHostFactory:
   bool IsMainThread() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() override;
-  scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t size) override;
+  std::unique_ptr<base::SharedMemory> AllocateSharedMemory(
+      size_t size) override;
 
   int GpuProcessHostId() { return gpu_host_id_; }
 #if !defined(OS_ANDROID)
@@ -64,9 +65,9 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
 
   const int gpu_client_id_;
   const uint64_t gpu_client_tracing_id_;
-  scoped_ptr<base::WaitableEvent> shutdown_event_;
+  std::unique_ptr<base::WaitableEvent> shutdown_event_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
-  scoped_ptr<BrowserGpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  std::unique_ptr<BrowserGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   int gpu_host_id_;
   scoped_refptr<EstablishRequest> pending_request_;
   std::vector<base::Closure> established_callbacks_;

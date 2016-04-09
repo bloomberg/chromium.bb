@@ -17,15 +17,15 @@ namespace {
 
 // Just executes the given callback with the parameter.
 void ReturnFontListToOriginalThread(
-    const base::Callback<void(scoped_ptr<base::ListValue>)>& callback,
-    scoped_ptr<base::ListValue> result) {
+    const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback,
+    std::unique_ptr<base::ListValue> result) {
   callback.Run(std::move(result));
 }
 
 void GetFontListInBlockingPool(
     BrowserThread::ID calling_thread_id,
-    const base::Callback<void(scoped_ptr<base::ListValue>)>& callback) {
-  scoped_ptr<base::ListValue> result(GetFontList_SlowBlocking());
+    const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {
+  std::unique_ptr<base::ListValue> result(GetFontList_SlowBlocking());
   BrowserThread::PostTask(calling_thread_id, FROM_HERE,
       base::Bind(&ReturnFontListToOriginalThread, callback,
                  base::Passed(&result)));
@@ -34,7 +34,7 @@ void GetFontListInBlockingPool(
 }  // namespace
 
 void GetFontListAsync(
-    const base::Callback<void(scoped_ptr<base::ListValue>)>& callback) {
+    const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {
   BrowserThread::ID id;
   bool well_known_thread = BrowserThread::GetCurrentThreadIdentifier(&id);
   DCHECK(well_known_thread)

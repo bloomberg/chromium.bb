@@ -6,10 +6,11 @@
 
 #include <windows.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/win/singleton_hwnd_observer.h"
 
 namespace content {
@@ -33,14 +34,14 @@ class TimeZoneMonitorWin : public TimeZoneMonitor {
     NotifyRenderers();
   }
 
-  scoped_ptr<gfx::SingletonHwndObserver> singleton_hwnd_observer_;
+  std::unique_ptr<gfx::SingletonHwndObserver> singleton_hwnd_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TimeZoneMonitorWin);
 };
 
 // static
-scoped_ptr<TimeZoneMonitor> TimeZoneMonitor::Create() {
-  return scoped_ptr<TimeZoneMonitor>(new TimeZoneMonitorWin());
+std::unique_ptr<TimeZoneMonitor> TimeZoneMonitor::Create() {
+  return std::unique_ptr<TimeZoneMonitor>(new TimeZoneMonitorWin());
 }
 
 }  // namespace content

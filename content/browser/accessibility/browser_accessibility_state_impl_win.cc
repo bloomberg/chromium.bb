@@ -4,13 +4,14 @@
 
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 
-#include <windows.h>
 #include <psapi.h>
 #include <stddef.h>
+#include <windows.h>
+
+#include <memory>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 
@@ -45,7 +46,7 @@ void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
   if (!EnumProcessModules(process, modules, 0, &bytes_required))
     return;
 
-  scoped_ptr<char[]> buffer(new char[bytes_required]);
+  std::unique_ptr<char[]> buffer(new char[bytes_required]);
   modules = reinterpret_cast<HMODULE*>(buffer.get());
   DWORD ignore;
   if (!EnumProcessModules(process, modules, bytes_required, &ignore))

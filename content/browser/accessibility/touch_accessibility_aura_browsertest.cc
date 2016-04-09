@@ -84,9 +84,9 @@ IN_PROC_BROWSER_TEST_F(TouchAccessibilityBrowserTest,
       gfx::Point location(bounds.x() + 50 * col + 25,
                           bounds.y() + 50 * row + 25);
       int flags = ui::EF_TOUCH_ACCESSIBILITY;
-      scoped_ptr<ui::Event> mouse_move_event(new ui::MouseEvent(
-          ui::ET_MOUSE_MOVED, location, location, ui::EventTimeForNow(),
-          flags, 0));
+      std::unique_ptr<ui::Event> mouse_move_event(
+          new ui::MouseEvent(ui::ET_MOUSE_MOVED, location, location,
+                             ui::EventTimeForNow(), flags, 0));
       ignore_result(dispatcher->OnEventFromSource(mouse_move_event.get()));
 
       // Wait until we get a hover event in the expected grid cell.

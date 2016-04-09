@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_OZONE_H_
 #define CONTENT_BROWSER_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_OZONE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -21,7 +22,7 @@ class CONTENT_EXPORT BrowserCompositorOverlayCandidateValidatorOzone
  public:
   BrowserCompositorOverlayCandidateValidatorOzone(
       gfx::AcceleratedWidget widget,
-      scoped_ptr<ui::OverlayCandidatesOzone> overlay_candidates);
+      std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates);
   ~BrowserCompositorOverlayCandidateValidatorOzone() override;
 
   // cc::OverlayCandidateValidator implementation.
@@ -34,7 +35,7 @@ class CONTENT_EXPORT BrowserCompositorOverlayCandidateValidatorOzone
 
  private:
   gfx::AcceleratedWidget widget_;
-  scoped_ptr<ui::OverlayCandidatesOzone> overlay_candidates_;
+  std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates_;
   bool software_mirror_active_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserCompositorOverlayCandidateValidatorOzone);

@@ -844,10 +844,9 @@ BrowserAccessibilityDelegate*
 
 ui::AXTreeUpdate
 BrowserAccessibilityManager::SnapshotAXTreeForTesting() {
-  scoped_ptr<ui::AXTreeSource<const ui::AXNode*,
-                              ui::AXNodeData,
-                              ui::AXTreeData> > tree_source(
-      tree_->CreateTreeSource());
+  std::unique_ptr<
+      ui::AXTreeSource<const ui::AXNode*, ui::AXNodeData, ui::AXTreeData>>
+      tree_source(tree_->CreateTreeSource());
   ui::AXTreeSerializer<const ui::AXNode*,
                        ui::AXNodeData,
                        ui::AXTreeData> serializer(tree_source.get());

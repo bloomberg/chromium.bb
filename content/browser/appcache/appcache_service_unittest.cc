@@ -83,7 +83,7 @@ class MockResponseReader : public AppCacheResponseReader {
                               weak_factory_.GetWeakPtr(), result));
   }
 
-  scoped_ptr<net::HttpResponseInfo> info_;
+  std::unique_ptr<net::HttpResponseInfo> info_;
   int info_size_;
   const char* data_;
   int data_size_;
@@ -128,7 +128,7 @@ class AppCacheServiceImplTest : public testing::Test {
   }
 
   void SetupMockGroup() {
-    scoped_ptr<net::HttpResponseInfo> info(MakeMockResponseInfo());
+    std::unique_ptr<net::HttpResponseInfo> info(MakeMockResponseInfo());
     const int kMockInfoSize = GetResponseInfoSize(info.get());
 
     // Create a mock group, cache, and entry and stuff them into mock storage.
@@ -183,7 +183,7 @@ class AppCacheServiceImplTest : public testing::Test {
   const GURL kOrigin;
   const GURL kManifestUrl;
 
-  scoped_ptr<AppCacheServiceImpl> service_;
+  std::unique_ptr<AppCacheServiceImpl> service_;
   int delete_result_;
   int delete_completion_count_;
   net::CompletionCallback deletion_callback_;
@@ -337,7 +337,7 @@ TEST_F(AppCacheServiceImplTest, ScheduleReinitialize) {
   const base::TimeDelta kOneHour(base::TimeDelta::FromHours(1));
 
   // Do things get initialized as expected?
-  scoped_ptr<AppCacheServiceImpl> service(new AppCacheServiceImpl(NULL));
+  std::unique_ptr<AppCacheServiceImpl> service(new AppCacheServiceImpl(NULL));
   EXPECT_TRUE(service->last_reinit_time_.is_null());
   EXPECT_FALSE(service->reinit_timer_.IsRunning());
   EXPECT_EQ(kNoDelay, service->next_reinit_delay_);

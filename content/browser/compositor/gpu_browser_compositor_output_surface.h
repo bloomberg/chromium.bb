@@ -33,7 +33,7 @@ class GpuBrowserCompositorOutputSurface
       const scoped_refptr<ContextProviderCommandBuffer>& context,
       const scoped_refptr<ContextProviderCommandBuffer>& worker_context,
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
-      scoped_ptr<BrowserCompositorOverlayCandidateValidator>
+      std::unique_ptr<BrowserCompositorOverlayCandidateValidator>
           overlay_candidate_validator);
 
   ~GpuBrowserCompositorOutputSurface() override;
@@ -76,7 +76,7 @@ class GpuBrowserCompositorOutputSurface
                                 base::TimeDelta interval)>
       update_vsync_parameters_callback_;
 
-  scoped_ptr<ReflectorTexture> reflector_texture_;
+  std::unique_ptr<ReflectorTexture> reflector_texture_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuBrowserCompositorOutputSurface);
 };

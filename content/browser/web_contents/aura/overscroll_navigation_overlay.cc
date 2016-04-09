@@ -53,7 +53,7 @@ class OverlayDismissAnimator
     : public ui::LayerAnimationObserver {
  public:
   // Takes ownership of the layer.
-  explicit OverlayDismissAnimator(scoped_ptr<ui::Layer> layer)
+  explicit OverlayDismissAnimator(std::unique_ptr<ui::Layer> layer)
       : layer_(std::move(layer)) {
     CHECK(layer_.get());
   }
@@ -85,7 +85,7 @@ class OverlayDismissAnimator
  private:
   ~OverlayDismissAnimator() override {}
 
-  scoped_ptr<ui::Layer> layer_;
+  std::unique_ptr<ui::Layer> layer_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayDismissAnimator);
 };
@@ -133,7 +133,7 @@ void OverscrollNavigationOverlay::StopObservingIfDone() {
 
   // OverlayDismissAnimator deletes the dismiss layer and itself when the
   // animation completes.
-  scoped_ptr<ui::Layer> dismiss_layer = window_->AcquireLayer();
+  std::unique_ptr<ui::Layer> dismiss_layer = window_->AcquireLayer();
   window_.reset();
   (new OverlayDismissAnimator(std::move(dismiss_layer)))->Animate();
   Observe(nullptr);
@@ -141,13 +141,13 @@ void OverscrollNavigationOverlay::StopObservingIfDone() {
   loading_complete_ = false;
 }
 
-scoped_ptr<aura::Window> OverscrollNavigationOverlay::CreateOverlayWindow(
+std::unique_ptr<aura::Window> OverscrollNavigationOverlay::CreateOverlayWindow(
     const gfx::Rect& bounds) {
   UMA_HISTOGRAM_ENUMERATION(
       "Overscroll.Started2", direction_, NAVIGATION_COUNT);
   OverscrollWindowDelegate* overscroll_delegate = new OverscrollWindowDelegate(
       owa_.get(), GetImageForDirection(direction_));
-  scoped_ptr<aura::Window> window(new aura::Window(overscroll_delegate));
+  std::unique_ptr<aura::Window> window(new aura::Window(overscroll_delegate));
   window->set_owned_by_parent(false);
   window->SetTransparent(true);
   window->Init(ui::LAYER_TEXTURED);
@@ -182,7 +182,7 @@ const gfx::Image OverscrollNavigationOverlay::GetImageForDirection(
   return gfx::Image();
 }
 
-scoped_ptr<aura::Window> OverscrollNavigationOverlay::CreateFrontWindow(
+std::unique_ptr<aura::Window> OverscrollNavigationOverlay::CreateFrontWindow(
     const gfx::Rect& bounds) {
   if (!web_contents_->GetController().CanGoForward())
     return nullptr;
@@ -190,7 +190,7 @@ scoped_ptr<aura::Window> OverscrollNavigationOverlay::CreateFrontWindow(
   return CreateOverlayWindow(bounds);
 }
 
-scoped_ptr<aura::Window> OverscrollNavigationOverlay::CreateBackWindow(
+std::unique_ptr<aura::Window> OverscrollNavigationOverlay::CreateBackWindow(
     const gfx::Rect& bounds) {
   if (!web_contents_->GetController().CanGoBack())
     return nullptr;
@@ -214,7 +214,7 @@ void OverscrollNavigationOverlay::OnOverscrollCompleting() {
 }
 
 void OverscrollNavigationOverlay::OnOverscrollCompleted(
-    scoped_ptr<aura::Window> window) {
+    std::unique_ptr<aura::Window> window) {
   DCHECK(direction_ != NONE);
   aura::Window* main_window = GetMainWindow();
   if (!main_window) {

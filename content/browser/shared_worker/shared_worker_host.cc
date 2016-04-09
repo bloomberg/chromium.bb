@@ -182,8 +182,9 @@ void SharedWorkerHost::WorkerConnected(int message_port_id) {
   }
 }
 
-void SharedWorkerHost::AllowFileSystem(const GURL& url,
-                                       scoped_ptr<IPC::Message> reply_msg) {
+void SharedWorkerHost::AllowFileSystem(
+    const GURL& url,
+    std::unique_ptr<IPC::Message> reply_msg) {
   if (!instance_)
     return;
   GetContentClient()->browser()->AllowWorkerFileSystem(
@@ -196,7 +197,7 @@ void SharedWorkerHost::AllowFileSystem(const GURL& url,
 }
 
 void SharedWorkerHost::AllowFileSystemResponse(
-    scoped_ptr<IPC::Message> reply_msg,
+    std::unique_ptr<IPC::Message> reply_msg,
     bool allowed) {
   WorkerProcessHostMsg_RequestFileSystemAccessSync::WriteReplyParams(
       reply_msg.get(),

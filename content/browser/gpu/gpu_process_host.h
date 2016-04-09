@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <queue>
 #include <set>
 #include <string>
@@ -15,7 +16,6 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
@@ -249,7 +249,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // true.
   gpu::GPUInfo gpu_info_;
 
-  scoped_ptr<base::Thread> in_process_gpu_thread_;
+  std::unique_ptr<base::Thread> in_process_gpu_thread_;
 
   // Whether we actually launched a GPU process.
   bool process_launched_;
@@ -272,7 +272,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   static bool crashed_before_;
   static int swiftshader_crash_count_;
 
-  scoped_ptr<BrowserChildProcessHostImpl> process_;
+  std::unique_ptr<BrowserChildProcessHostImpl> process_;
 
   // Track the URLs of the pages which have live offscreen contexts,
   // assumed to be associated with untrusted content such as WebGL.
@@ -293,7 +293,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   // Browser-side Mojo endpoint which sets up a Mojo channel with the child
   // process and contains the browser's ServiceRegistry.
-  scoped_ptr<MojoApplicationHost> mojo_application_host_;
+  std::unique_ptr<MojoApplicationHost> mojo_application_host_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);
 };

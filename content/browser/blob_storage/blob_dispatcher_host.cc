@@ -269,9 +269,9 @@ storage::BlobStorageContext* BlobDispatcherHost::context() {
 
 void BlobDispatcherHost::SendMemoryRequest(
     const std::string& uuid,
-    scoped_ptr<std::vector<storage::BlobItemBytesRequest>> requests,
-    scoped_ptr<std::vector<base::SharedMemoryHandle>> memory_handles,
-    scoped_ptr<std::vector<base::File>> files) {
+    std::unique_ptr<std::vector<storage::BlobItemBytesRequest>> requests,
+    std::unique_ptr<std::vector<base::SharedMemoryHandle>> memory_handles,
+    std::unique_ptr<std::vector<base::File>> files) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::vector<IPC::PlatformFileForTransit> file_handles;
   // TODO(dmurph): Support file-backed blob transportation.

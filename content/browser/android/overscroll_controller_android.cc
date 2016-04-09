@@ -6,6 +6,7 @@
 
 #include "base/android/build_info.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "cc/layers/layer.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "content/browser/android/content_view_core_impl.h"
@@ -62,35 +63,35 @@ float MinGlowAlphaToDisableRefresh() {
   return 1.01f;
 }
 
-scoped_ptr<EdgeEffectBase> CreateGlowEdgeEffect(
+std::unique_ptr<EdgeEffectBase> CreateGlowEdgeEffect(
     ui::ResourceManager* resource_manager,
     float dpi_scale) {
   DCHECK(resource_manager);
   if (IsAndroidLOrNewer())
-    return scoped_ptr<EdgeEffectBase>(new EdgeEffectL(resource_manager));
+    return std::unique_ptr<EdgeEffectBase>(new EdgeEffectL(resource_manager));
 
-  return scoped_ptr<EdgeEffectBase>(
+  return std::unique_ptr<EdgeEffectBase>(
       new EdgeEffect(resource_manager, dpi_scale));
 }
 
-scoped_ptr<OverscrollGlow> CreateGlowEffect(OverscrollGlowClient* client,
-                                            float dpi_scale) {
+std::unique_ptr<OverscrollGlow> CreateGlowEffect(OverscrollGlowClient* client,
+                                                 float dpi_scale) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableOverscrollEdgeEffect)) {
     return nullptr;
   }
 
-  return make_scoped_ptr(new OverscrollGlow(client));
+  return base::WrapUnique(new OverscrollGlow(client));
 }
 
-scoped_ptr<OverscrollRefresh> CreateRefreshEffect(
+std::unique_ptr<OverscrollRefresh> CreateRefreshEffect(
     OverscrollRefreshHandler* handler) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisablePullToRefreshEffect)) {
     return nullptr;
   }
 
-  return make_scoped_ptr(new OverscrollRefresh(handler));
+  return base::WrapUnique(new OverscrollRefresh(handler));
 }
 
 }  // namespace
@@ -268,7 +269,8 @@ void OverscrollControllerAndroid::Disable() {
   }
 }
 
-scoped_ptr<EdgeEffectBase> OverscrollControllerAndroid::CreateEdgeEffect() {
+std::unique_ptr<EdgeEffectBase>
+OverscrollControllerAndroid::CreateEdgeEffect() {
   return CreateGlowEdgeEffect(&compositor_->GetResourceManager(), dpi_scale_);
 }
 

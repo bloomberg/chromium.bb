@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_DOM_STORAGE_LOCAL_STORAGE_DATABASE_ADAPTER_H_
 #define CONTENT_BROWSER_DOM_STORAGE_LOCAL_STORAGE_DATABASE_ADAPTER_H_
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/dom_storage/dom_storage_database_adapter.h"
 #include "content/common/content_export.h"
 
@@ -41,7 +42,7 @@ class CONTENT_EXPORT LocalStorageDatabaseAdapter :
   FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaTest, DeleteOrigin);
   FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaTest, PurgeMemory);
 
-  scoped_ptr<DOMStorageDatabase> db_;
+  std::unique_ptr<DOMStorageDatabase> db_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalStorageDatabaseAdapter);
 };

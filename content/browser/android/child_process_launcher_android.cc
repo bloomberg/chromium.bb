@@ -6,13 +6,14 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/file_descriptor_info_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
@@ -89,7 +90,7 @@ static void SetSurfacePeer(
 }
 
 void LaunchDownloadProcess(base::CommandLine* cmd_line) {
-  scoped_ptr<base::CommandLine> cmd_line_deleter(cmd_line);
+  std::unique_ptr<base::CommandLine> cmd_line_deleter(cmd_line);
 
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
@@ -151,7 +152,7 @@ void StartDownloadProcessIfNecessary() {
 void StartChildProcess(
     const base::CommandLine::StringVector& argv,
     int child_process_id,
-    scoped_ptr<content::FileDescriptorInfo> files_to_register,
+    std::unique_ptr<content::FileDescriptorInfo> files_to_register,
     const std::map<int, base::MemoryMappedFile::Region>& regions,
     const StartChildProcessCallback& callback) {
   JNIEnv* env = AttachCurrentThread();

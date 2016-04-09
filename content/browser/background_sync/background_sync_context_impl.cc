@@ -69,7 +69,7 @@ BackgroundSyncManager* BackgroundSyncContextImpl::background_sync_manager()
 }
 
 void BackgroundSyncContextImpl::set_background_sync_manager_for_testing(
-    scoped_ptr<BackgroundSyncManager> manager) {
+    std::unique_ptr<BackgroundSyncManager> manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   background_sync_manager_ = std::move(manager);

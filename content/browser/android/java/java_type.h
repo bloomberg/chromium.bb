@@ -5,10 +5,10 @@
 #ifndef CONTENT_BROWSER_ANDROID_JAVA_JAVA_TYPE_H_
 #define CONTENT_BROWSER_ANDROID_JAVA_JAVA_TYPE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -49,7 +49,7 @@ struct CONTENT_EXPORT JavaType {
   };
 
   Type type;
-  scoped_ptr<JavaType> inner_type;  // Used for TypeArray only.
+  std::unique_ptr<JavaType> inner_type;  // Used for TypeArray only.
   std::string class_jni_name;  // Used for TypeString and TypeObject only.
   base::android::ScopedJavaGlobalRef<jclass> class_ref;  // TypeObject only.
 };

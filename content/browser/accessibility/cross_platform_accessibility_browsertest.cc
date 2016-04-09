@@ -75,7 +75,7 @@ class CrossPlatformAccessibilityBrowserTest : public ContentBrowserTest {
 
  private:
 #if defined(OS_WIN)
-  scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
+  std::unique_ptr<base::win::ScopedCOMInitializer> com_initializer_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(CrossPlatformAccessibilityBrowserTest);

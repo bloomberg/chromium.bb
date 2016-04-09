@@ -31,6 +31,7 @@ template_h = string.Template(header + """\
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "content/browser/devtools/protocol/devtools_protocol_client.h"
 
 namespace content {
@@ -49,7 +50,7 @@ base::Value* CreateValue(const T& param) {
 }
 
 template<class T>
-base::Value* CreateValue(scoped_ptr<T>& param) {
+base::Value* CreateValue(std::unique_ptr<T>& param) {
   return param.release();
 }
 
@@ -78,7 +79,7 @@ class DevToolsProtocolDispatcher {
  public:
   using CommandHandler =
       base::Callback<bool(DevToolsCommandId,
-                          scoped_ptr<base::DictionaryValue>)>;
+                          std::unique_ptr<base::DictionaryValue>)>;
 
   explicit DevToolsProtocolDispatcher(DevToolsProtocolDelegate* notifier);
   ~DevToolsProtocolDispatcher();
@@ -127,9 +128,9 @@ ${methods}\
     return new ${declared_name}Builder<kNoneSet>();
   }
 
-  scoped_ptr<base::DictionaryValue> ToValue() {
+  std::unique_ptr<base::DictionaryValue> ToValue() {
     static_assert(MASK == kAllSet, "required properties missing");
-    return make_scoped_ptr(dict_->DeepCopy());
+    return base::WrapUnique(dict_->DeepCopy());
   }
 
  private:
@@ -145,7 +146,7 @@ ${methods}\
     return reinterpret_cast<T*>(this);
   }
 
-  scoped_ptr<base::DictionaryValue> dict_;
+  std::unique_ptr<base::DictionaryValue> dict_;
 };
 
 typedef ${declared_name}Builder<0> ${declared_name};
@@ -237,7 +238,7 @@ tmpl_setter = string.Template("""\
 tmpl_callback = string.Template("""\
   bool On${Domain}${Command}(
       DevToolsCommandId command_id,
-      scoped_ptr<base::DictionaryValue> params);
+      std::unique_ptr<base::DictionaryValue> params);
 """)
 
 tmpl_field = string.Template("""\
@@ -319,22 +320,22 @@ tmpl_register = string.Template("""\
 """)
 
 tmpl_init_client = string.Template("""\
-  ${domain}_handler_->SetClient(make_scoped_ptr(
+  ${domain}_handler_->SetClient(base::WrapUnique(
       new devtools::${domain}::Client(notifier_)));
 """)
 
 tmpl_callback_impl = string.Template("""\
 bool DevToolsProtocolDispatcher::On${Domain}${Command}(
     DevToolsCommandId command_id,
-    scoped_ptr<base::DictionaryValue> params) {
+    std::unique_ptr<base::DictionaryValue> params) {
 ${prep}\
   Response response = ${domain}_handler_->${Command}(${args});
-  scoped_ptr<base::DictionaryValue> protocol_response;
+  std::unique_ptr<base::DictionaryValue> protocol_response;
   if (client_.SendError(command_id, response))
     return true;
   if (response.IsFallThrough())
     return false;
-  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
 ${wrap}\
   client_.SendSuccess(command_id, std::move(result));
   return true;
@@ -348,7 +349,7 @@ tmpl_wrap = string.Template("""\
 tmpl_callback_async_impl = string.Template("""\
 bool DevToolsProtocolDispatcher::On${Domain}${Command}(
     DevToolsCommandId command_id,
-    scoped_ptr<base::DictionaryValue> params) {
+    std::unique_ptr<base::DictionaryValue> params) {
 ${prep}\
   Response response = ${domain}_handler_->${Command}(${args});
   if (client_.SendError(command_id, response))
@@ -402,7 +403,7 @@ tmpl_arg_opt = string.Template(
     "${param}_found ? ${param_pass} : nullptr")
 
 tmpl_object_pass = string.Template(
-    "make_scoped_ptr<base::DictionaryValue>(${name}->DeepCopy())")
+    "base::WrapUnique<base::DictionaryValue>(${name}->DeepCopy())")
 
 tmpl_client_impl = string.Template("""\
 namespace ${domain} {
@@ -565,7 +566,7 @@ def ResolveArray(json, mapping):
 
 def ResolveObject(json, mapping):
   mapping["Type"] = "Dictionary"
-  mapping["storage_type"] = "scoped_ptr<base::DictionaryValue>"
+  mapping["storage_type"] = "std::unique_ptr<base::DictionaryValue>"
   mapping["raw_type"] = "base::DictionaryValue*"
   mapping["pass_template"] = tmpl_object_pass
   mapping["init"] = " = nullptr"
@@ -583,7 +584,7 @@ def ResolveObject(json, mapping):
     mapping["arg_out"] = "&out_%s" % mapping["param"]
   else:
     mapping["param_type"] = "base::DictionaryValue"
-    mapping["pass_type"] = "scoped_ptr<base::DictionaryValue>"
+    mapping["pass_type"] = "std::unique_ptr<base::DictionaryValue>"
     mapping["arg_out"] = "out_%s.get()" % mapping["param"]
   mapping["prep_req"] = tmpl_prep_req.substitute(mapping)
 

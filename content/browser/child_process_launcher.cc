@@ -4,6 +4,7 @@
 
 #include "content/browser/child_process_launcher.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -11,7 +12,6 @@
 #include "base/files/file_util.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
@@ -117,7 +117,7 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
                             mojo::edk::ScopedPlatformHandle client_handle,
                             base::CommandLine* cmd_line) {
   DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
-  scoped_ptr<SandboxedProcessLauncherDelegate> delegate_deleter(delegate);
+  std::unique_ptr<SandboxedProcessLauncherDelegate> delegate_deleter(delegate);
 #if !defined(OS_ANDROID)
   ZygoteHandle zygote = nullptr;
 #endif
@@ -130,7 +130,7 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
   base::EnvironmentMap env = delegate->GetEnvironment();
   base::ScopedFD ipcfd = delegate->TakeIpcFd();
 #endif
-  scoped_ptr<base::CommandLine> cmd_line_deleter(cmd_line);
+  std::unique_ptr<base::CommandLine> cmd_line_deleter(cmd_line);
   base::TimeTicks begin_launch_time = base::TimeTicks::Now();
 
   base::Process process;
@@ -153,7 +153,7 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
 #elif defined(OS_POSIX)
   std::string process_type =
       cmd_line->GetSwitchValueASCII(switches::kProcessType);
-  scoped_ptr<FileDescriptorInfo> files_to_register(
+  std::unique_ptr<FileDescriptorInfo> files_to_register(
       FileDescriptorInfoImpl::Create());
 
   base::ScopedFD mojo_fd(client_handle.release().handle);
@@ -304,7 +304,7 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
     broker->EnsureRunning();
 
     const SandboxType sandbox_type = delegate->GetSandboxType();
-    scoped_ptr<sandbox::PreExecDelegate> pre_exec_delegate;
+    std::unique_ptr<sandbox::PreExecDelegate> pre_exec_delegate;
     if (BootstrapSandboxManager::ShouldEnable()) {
       BootstrapSandboxManager* sandbox_manager =
           BootstrapSandboxManager::GetInstance();

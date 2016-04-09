@@ -118,9 +118,9 @@ class CONTENT_EXPORT BlobDispatcherHost : public BrowserMessageFilter {
 
   void SendMemoryRequest(
       const std::string& uuid,
-      scoped_ptr<std::vector<storage::BlobItemBytesRequest>> requests,
-      scoped_ptr<std::vector<base::SharedMemoryHandle>> memory_handles,
-      scoped_ptr<std::vector<base::File>> files);
+      std::unique_ptr<std::vector<storage::BlobItemBytesRequest>> requests,
+      std::unique_ptr<std::vector<base::SharedMemoryHandle>> memory_handles,
+      std::unique_ptr<std::vector<base::File>> files);
 
   // Send the appropriate IPC response to the renderer for the given result.
   void SendIPCResponse(const std::string& uuid,

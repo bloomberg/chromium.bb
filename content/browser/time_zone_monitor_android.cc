@@ -33,8 +33,8 @@ void TimeZoneMonitorAndroid::TimeZoneChangedFromJava(
 }
 
 // static
-scoped_ptr<TimeZoneMonitor> TimeZoneMonitor::Create() {
-  return scoped_ptr<TimeZoneMonitor>(new TimeZoneMonitorAndroid());
+std::unique_ptr<TimeZoneMonitor> TimeZoneMonitor::Create() {
+  return std::unique_ptr<TimeZoneMonitor>(new TimeZoneMonitorAndroid());
 }
 
 }  // namespace content

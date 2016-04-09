@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/streams/stream_url_request_job.h"
+
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_registry.h"
-#include "content/browser/streams/stream_url_request_job.h"
 #include "content/browser/streams/stream_write_observer.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_byte_range.h"
@@ -57,7 +59,7 @@ class StreamURLRequestJobTest : public testing::Test {
     registry_.reset(new StreamRegistry());
 
     url_request_job_factory_.SetProtocolHandler(
-        "blob", make_scoped_ptr(new MockProtocolHandler(registry_.get())));
+        "blob", base::WrapUnique(new MockProtocolHandler(registry_.get())));
     url_request_context_.set_job_factory(&url_request_job_factory_);
   }
 
@@ -93,11 +95,11 @@ class StreamURLRequestJobTest : public testing::Test {
 
  protected:
   base::MessageLoopForIO message_loop_;
-  scoped_ptr<StreamRegistry> registry_;
+  std::unique_ptr<StreamRegistry> registry_;
 
   net::URLRequestContext url_request_context_;
   net::URLRequestJobFactoryImpl url_request_job_factory_;
-  scoped_ptr<net::URLRequest> request_;
+  std::unique_ptr<net::URLRequest> request_;
 };
 
 TEST_F(StreamURLRequestJobTest, TestGetSimpleDataRequest) {

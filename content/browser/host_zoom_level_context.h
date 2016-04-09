@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_HOST_ZOOM_LEVEL_CONTEXT_H_
 #define CONTENT_BROWSER_HOST_ZOOM_LEVEL_CONTEXT_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/public/browser/zoom_level_delegate.h"
 
@@ -24,7 +25,7 @@ class HostZoomLevelContext
                                         HostZoomLevelContextDeleter> {
  public:
   explicit HostZoomLevelContext(
-      scoped_ptr<ZoomLevelDelegate> zoom_level_delegate);
+      std::unique_ptr<ZoomLevelDelegate> zoom_level_delegate);
 
   HostZoomMap* GetHostZoomMap() const { return host_zoom_map_impl_.get(); }
   ZoomLevelDelegate* GetZoomLevelDelegate() const {
@@ -42,10 +43,10 @@ class HostZoomLevelContext
 
   void DeleteOnCorrectThread() const;
 
-  scoped_ptr<HostZoomMapImpl> host_zoom_map_impl_;
+  std::unique_ptr<HostZoomMapImpl> host_zoom_map_impl_;
   // Release the delegate before the HostZoomMap, in case it is carrying
   // any HostZoomMap::Subscription pointers.
-  scoped_ptr<ZoomLevelDelegate> zoom_level_delegate_;
+  std::unique_ptr<ZoomLevelDelegate> zoom_level_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(HostZoomLevelContext);
 };

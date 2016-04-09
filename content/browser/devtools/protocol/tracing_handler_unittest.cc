@@ -57,9 +57,9 @@ const char kCustomTraceConfigStringDevToolsStyle[] =
 }
 
 TEST(TracingHandlerTest, GetTraceConfigFromDevToolsConfig) {
-  scoped_ptr<base::Value> value = base::JSONReader::Read(
-      kCustomTraceConfigStringDevToolsStyle);
-  scoped_ptr<base::DictionaryValue> devtools_style_dict(
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::Read(kCustomTraceConfigStringDevToolsStyle);
+  std::unique_ptr<base::DictionaryValue> devtools_style_dict(
       static_cast<base::DictionaryValue*>(value.release()));
 
   base::trace_event::TraceConfig trace_config =

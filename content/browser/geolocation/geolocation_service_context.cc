@@ -48,7 +48,7 @@ void GeolocationServiceContext::ResumeUpdates() {
 }
 
 void GeolocationServiceContext::SetOverride(
-    scoped_ptr<Geoposition> geoposition) {
+    std::unique_ptr<Geoposition> geoposition) {
   geoposition_override_.swap(geoposition);
   for (auto* service : services_) {
     service->SetOverride(*geoposition_override_.get());

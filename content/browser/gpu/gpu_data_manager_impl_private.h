@@ -234,8 +234,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   gpu::GPUInfo gpu_info_;
 
-  scoped_ptr<gpu::GpuBlacklist> gpu_blacklist_;
-  scoped_ptr<gpu::GpuDriverBugList> gpu_driver_bug_list_;
+  std::unique_ptr<gpu::GpuBlacklist> gpu_blacklist_;
+  std::unique_ptr<gpu::GpuDriverBugList> gpu_driver_bug_list_;
 
   const scoped_refptr<GpuDataManagerObserverList> observer_list_;
 

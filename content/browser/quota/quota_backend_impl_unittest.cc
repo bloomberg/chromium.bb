@@ -6,11 +6,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "storage/browser/fileapi/file_system_usage_cache.h"
 #include "storage/browser/fileapi/obfuscated_file_util.h"
@@ -148,11 +148,11 @@ class QuotaBackendImplTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   base::ScopedTempDir data_dir_;
-  scoped_ptr<leveldb::Env> in_memory_env_;
-  scoped_ptr<ObfuscatedFileUtil> file_util_;
+  std::unique_ptr<leveldb::Env> in_memory_env_;
+  std::unique_ptr<ObfuscatedFileUtil> file_util_;
   FileSystemUsageCache file_system_usage_cache_;
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
-  scoped_ptr<QuotaBackendImpl> backend_;
+  std::unique_ptr<QuotaBackendImpl> backend_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuotaBackendImplTest);

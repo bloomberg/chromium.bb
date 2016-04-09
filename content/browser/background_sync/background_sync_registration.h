@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/background_sync/background_sync.pb.h"
 #include "content/browser/background_sync/background_sync_registration_options.h"
@@ -68,9 +68,9 @@ namespace mojo {
 
 template <>
 struct CONTENT_EXPORT
-    TypeConverter<scoped_ptr<content::BackgroundSyncRegistration>,
+    TypeConverter<std::unique_ptr<content::BackgroundSyncRegistration>,
                   content::mojom::SyncRegistrationPtr> {
-  static scoped_ptr<content::BackgroundSyncRegistration> Convert(
+  static std::unique_ptr<content::BackgroundSyncRegistration> Convert(
       const content::mojom::SyncRegistrationPtr& input);
 };
 

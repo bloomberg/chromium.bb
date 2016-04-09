@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_WEB_CONTENTS_AURA_GESTURE_NAV_SIMPLE_H_
 #define CONTENT_BROWSER_WEB_CONTENTS_AURA_GESTURE_NAV_SIMPLE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
 
 namespace gfx {
@@ -44,9 +45,9 @@ class GestureNavSimple : public OverscrollControllerDelegate {
                               OverscrollMode new_mode) override;
 
   WebContentsImpl* web_contents_;
-  scoped_ptr<ui::Layer> clip_layer_;
-  scoped_ptr<ui::Layer> arrow_;
-  scoped_ptr<ArrowLayerDelegate> arrow_delegate_;
+  std::unique_ptr<ui::Layer> clip_layer_;
+  std::unique_ptr<ui::Layer> arrow_;
+  std::unique_ptr<ArrowLayerDelegate> arrow_delegate_;
   float completion_threshold_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureNavSimple);

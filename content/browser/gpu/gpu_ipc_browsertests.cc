@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
@@ -28,7 +29,7 @@ const content::CauseForGpuLaunch kInitCause =
     content::
         CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
 
-scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContext(
+std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContext(
     gpu::GpuChannelHost* gpu_channel_host) {
   // This is for an offscreen context, so the default framebuffer doesn't need
   // any alpha, depth, stencil, antialiasing.
@@ -41,7 +42,7 @@ scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContext(
   attributes.bind_generates_resource = false;
   bool share_resources = false;
   bool automatic_flushes = false;
-  return make_scoped_ptr(
+  return base::WrapUnique(
       WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
           gpu_channel_host, attributes, gfx::PreferIntegratedGpu,
           share_resources, automatic_flushes, GURL(),

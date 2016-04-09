@@ -63,7 +63,7 @@ SecurityHandler::SecurityHandler()
 SecurityHandler::~SecurityHandler() {
 }
 
-void SecurityHandler::SetClient(scoped_ptr<Client> client) {
+void SecurityHandler::SetClient(std::unique_ptr<Client> client) {
   client_.swap(client);
 }
 

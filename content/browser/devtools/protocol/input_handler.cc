@@ -141,7 +141,7 @@ void InputHandler::SetRenderWidgetHost(RenderWidgetHostImpl* host) {
   host_ = host;
 }
 
-void InputHandler::SetClient(scoped_ptr<Client> client) {
+void InputHandler::SetClient(std::unique_ptr<Client> client) {
   client_.swap(client);
 }
 

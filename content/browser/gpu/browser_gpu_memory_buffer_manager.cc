@@ -148,7 +148,7 @@ struct BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferRequest {
   gfx::BufferUsage usage;
   int client_id;
   int surface_id;
-  scoped_ptr<gfx::GpuMemoryBuffer> result;
+  std::unique_ptr<gfx::GpuMemoryBuffer> result;
 };
 
 struct BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandleRequest
@@ -236,7 +236,7 @@ uint32_t BrowserGpuMemoryBufferManager::GetImageTextureTarget(
   return GL_TEXTURE_2D;
 }
 
-scoped_ptr<gfx::GpuMemoryBuffer>
+std::unique_ptr<gfx::GpuMemoryBuffer>
 BrowserGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
                                                        gfx::BufferFormat format,
                                                        gfx::BufferUsage usage,
@@ -244,7 +244,7 @@ BrowserGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
   return AllocateGpuMemoryBufferForSurface(size, format, usage, surface_id);
 }
 
-scoped_ptr<gfx::GpuMemoryBuffer>
+std::unique_ptr<gfx::GpuMemoryBuffer>
 BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
@@ -408,7 +408,7 @@ bool BrowserGpuMemoryBufferManager::IsNativeGpuMemoryBufferConfiguration(
          native_configurations_.end();
 }
 
-scoped_ptr<gfx::GpuMemoryBuffer>
+std::unique_ptr<gfx::GpuMemoryBuffer>
 BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForSurface(
     const gfx::Size& size,
     gfx::BufferFormat format,

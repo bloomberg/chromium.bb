@@ -301,7 +301,8 @@ NotificationDatabase::ReadAllNotificationDataInternal(
   leveldb::Slice prefix_slice(prefix);
 
   NotificationDatabaseData notification_database_data;
-  scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(leveldb::ReadOptions()));
+  std::unique_ptr<leveldb::Iterator> iter(
+      db_->NewIterator(leveldb::ReadOptions()));
   for (iter->Seek(prefix_slice); iter->Valid(); iter->Next()) {
     if (!iter->key().starts_with(prefix_slice))
       break;
@@ -338,7 +339,8 @@ NotificationDatabase::DeleteAllNotificationDataInternal(
   leveldb::WriteBatch batch;
 
   NotificationDatabaseData notification_database_data;
-  scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(leveldb::ReadOptions()));
+  std::unique_ptr<leveldb::Iterator> iter(
+      db_->NewIterator(leveldb::ReadOptions()));
   for (iter->Seek(prefix_slice); iter->Valid(); iter->Next()) {
     if (!iter->key().starts_with(prefix_slice))
       break;

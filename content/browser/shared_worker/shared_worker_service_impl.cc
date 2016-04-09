@@ -5,6 +5,7 @@
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
 
 #include <stddef.h>
+
 #include <algorithm>
 #include <iterator>
 #include <set>
@@ -13,6 +14,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -129,7 +131,7 @@ class SharedWorkerServiceImpl::SharedWorkerPendingInstance {
   typedef ScopedVector<SharedWorkerPendingRequest> SharedWorkerPendingRequests;
 
   explicit SharedWorkerPendingInstance(
-      scoped_ptr<SharedWorkerInstance> instance)
+      std::unique_ptr<SharedWorkerInstance> instance)
       : instance_(std::move(instance)) {}
   ~SharedWorkerPendingInstance() {}
   SharedWorkerInstance* instance() { return instance_.get(); }
@@ -142,7 +144,7 @@ class SharedWorkerServiceImpl::SharedWorkerPendingInstance {
     }
     return NULL;
   }
-  void AddRequest(scoped_ptr<SharedWorkerPendingRequest> request_info) {
+  void AddRequest(std::unique_ptr<SharedWorkerPendingRequest> request_info) {
     requests_.push_back(request_info.release());
   }
   void RemoveRequest(int process_id) {
@@ -172,7 +174,7 @@ class SharedWorkerServiceImpl::SharedWorkerPendingInstance {
   }
 
  private:
-  scoped_ptr<SharedWorkerInstance> instance_;
+  std::unique_ptr<SharedWorkerInstance> instance_;
   SharedWorkerPendingRequests requests_;
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerPendingInstance);
 };
@@ -290,16 +292,13 @@ void SharedWorkerServiceImpl::CreateWorker(
     blink::WebWorkerCreationError* creation_error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   *creation_error = blink::WebWorkerCreationErrorNone;
-  scoped_ptr<SharedWorkerInstance> instance(new SharedWorkerInstance(
+  std::unique_ptr<SharedWorkerInstance> instance(new SharedWorkerInstance(
       params.url, params.name, params.content_security_policy,
       params.security_policy_type, params.creation_address_space,
       resource_context, partition_id, params.creation_context_type));
-  scoped_ptr<SharedWorkerPendingInstance::SharedWorkerPendingRequest> request(
-      new SharedWorkerPendingInstance::SharedWorkerPendingRequest(
-          filter,
-          route_id,
-          params.document_id,
-          filter->render_process_id(),
+  std::unique_ptr<SharedWorkerPendingInstance::SharedWorkerPendingRequest>
+      request(new SharedWorkerPendingInstance::SharedWorkerPendingRequest(
+          filter, route_id, params.document_id, filter->render_process_id(),
           params.render_frame_route_id));
   if (SharedWorkerPendingInstance* pending = FindPendingInstance(*instance)) {
     if (params.url != pending->instance()->url()) {
@@ -313,7 +312,7 @@ void SharedWorkerServiceImpl::CreateWorker(
     pending->AddRequest(std::move(request));
     return;
   }
-  scoped_ptr<SharedWorkerPendingInstance> pending_instance(
+  std::unique_ptr<SharedWorkerPendingInstance> pending_instance(
       new SharedWorkerPendingInstance(std::move(instance)));
   pending_instance->AddRequest(std::move(request));
   ReserveRenderProcessToCreateWorker(std::move(pending_instance),
@@ -354,9 +353,8 @@ void SharedWorkerServiceImpl::WorkerContextDestroyed(
     int worker_route_id,
     SharedWorkerMessageFilter* filter) {
   ScopedWorkerDependencyChecker checker(this);
-  scoped_ptr<SharedWorkerHost> host =
-      worker_hosts_.take_and_erase(std::make_pair(filter->render_process_id(),
-                                                  worker_route_id));
+  std::unique_ptr<SharedWorkerHost> host = worker_hosts_.take_and_erase(
+      std::make_pair(filter->render_process_id(), worker_route_id));
   if (!host)
     return;
   host->WorkerContextDestroyed();
@@ -380,9 +378,8 @@ void SharedWorkerServiceImpl::WorkerScriptLoadFailed(
     int worker_route_id,
     SharedWorkerMessageFilter* filter) {
   ScopedWorkerDependencyChecker checker(this);
-  scoped_ptr<SharedWorkerHost> host =
-      worker_hosts_.take_and_erase(std::make_pair(filter->render_process_id(),
-                                                  worker_route_id));
+  std::unique_ptr<SharedWorkerHost> host = worker_hosts_.take_and_erase(
+      std::make_pair(filter->render_process_id(), worker_route_id));
   if (!host)
     return;
   host->WorkerScriptLoadFailed();
@@ -402,7 +399,7 @@ void SharedWorkerServiceImpl::AllowFileSystem(
     IPC::Message* reply_msg,
     SharedWorkerMessageFilter* filter) {
   if (SharedWorkerHost* host = FindSharedWorkerHost(filter, worker_route_id)) {
-    host->AllowFileSystem(url, make_scoped_ptr(reply_msg));
+    host->AllowFileSystem(url, base::WrapUnique(reply_msg));
   } else {
     filter->Send(reply_msg);
     return;
@@ -433,7 +430,7 @@ void SharedWorkerServiceImpl::OnSharedWorkerMessageFilterClosing(
       remove_list.push_back(iter->first);
   }
   for (size_t i = 0; i < remove_list.size(); ++i) {
-    scoped_ptr<SharedWorkerHost> host =
+    std::unique_ptr<SharedWorkerHost> host =
         worker_hosts_.take_and_erase(remove_list[i]);
   }
 
@@ -456,7 +453,7 @@ void SharedWorkerServiceImpl::NotifyWorkerDestroyed(int worker_process_id,
 }
 
 void SharedWorkerServiceImpl::ReserveRenderProcessToCreateWorker(
-    scoped_ptr<SharedWorkerPendingInstance> pending_instance,
+    std::unique_ptr<SharedWorkerPendingInstance> pending_instance,
     blink::WebWorkerCreationError* creation_error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!FindPendingInstance(*pending_instance->instance()));
@@ -530,7 +527,7 @@ void SharedWorkerServiceImpl::RenderProcessReservedCallback(
   // ScopeWorkerDependencyChecker's destructor.
   ScopedWorkerDependencyChecker checker(
       this, base::Bind(&DecrementWorkerRefCount, worker_process_id));
-  scoped_ptr<SharedWorkerPendingInstance> pending_instance =
+  std::unique_ptr<SharedWorkerPendingInstance> pending_instance =
       pending_instances_.take_and_erase(pending_instance_id);
   if (!pending_instance)
     return;
@@ -557,7 +554,7 @@ void SharedWorkerServiceImpl::RenderProcessReservedCallback(
     ReserveRenderProcessToCreateWorker(std::move(pending_instance), NULL);
     return;
   }
-  scoped_ptr<SharedWorkerHost> host(new SharedWorkerHost(
+  std::unique_ptr<SharedWorkerHost> host(new SharedWorkerHost(
       pending_instance->release_instance(), filter, worker_route_id));
   pending_instance->RegisterToSharedWorkerHost(host.get());
   const GURL url = host->instance()->url();
@@ -578,7 +575,7 @@ void SharedWorkerServiceImpl::RenderProcessReserveFailedCallback(
     bool is_new_worker) {
   worker_hosts_.take_and_erase(
       std::make_pair(worker_process_id, worker_route_id));
-  scoped_ptr<SharedWorkerPendingInstance> pending_instance =
+  std::unique_ptr<SharedWorkerPendingInstance> pending_instance =
       pending_instances_.take_and_erase(pending_instance_id);
   if (!pending_instance)
     return;

@@ -158,13 +158,13 @@ class CONTENT_EXPORT AppCacheUpdateJob
     FetchType fetch_type_;
     int retry_503_attempts_;
     scoped_refptr<net::IOBuffer> buffer_;
-    scoped_ptr<net::URLRequest> request_;
+    std::unique_ptr<net::URLRequest> request_;
     AppCacheEntry existing_entry_;
     scoped_refptr<net::HttpResponseHeaders> existing_response_headers_;
     std::string manifest_data_;
     ResultType result_;
     int redirect_response_code_;
-    scoped_ptr<AppCacheResponseWriter> response_writer_;
+    std::unique_ptr<AppCacheResponseWriter> response_writer_;
   };  // class URLFetcher
 
   AppCacheResponseWriter* CreateResponseWriter();
@@ -317,11 +317,11 @@ class CONTENT_EXPORT AppCacheUpdateJob
 
   // Temporary storage of manifest response data for parsing and comparison.
   std::string manifest_data_;
-  scoped_ptr<net::HttpResponseInfo> manifest_response_info_;
-  scoped_ptr<AppCacheResponseWriter> manifest_response_writer_;
+  std::unique_ptr<net::HttpResponseInfo> manifest_response_info_;
+  std::unique_ptr<AppCacheResponseWriter> manifest_response_writer_;
   scoped_refptr<net::IOBuffer> read_manifest_buffer_;
   std::string loaded_manifest_data_;
-  scoped_ptr<AppCacheResponseReader> manifest_response_reader_;
+  std::unique_ptr<AppCacheResponseReader> manifest_response_reader_;
   bool manifest_has_valid_mime_type_;
 
   // New master entries added to the cache by this job, used to cleanup

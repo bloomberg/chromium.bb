@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/geofencing/geofencing_service.h"
+
 #include <stdint.h>
 
+#include "base/memory/ptr_util.h"
 #include "content/browser/geofencing/geofencing_provider.h"
 #include "content/browser/geofencing/geofencing_registration_delegate.h"
-#include "content/browser/geofencing/geofencing_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -77,7 +79,7 @@ class GeofencingServiceTest : public testing::Test {
 
   void SetProviderForTests() {
     provider_ = new MockGeofencingProvider();
-    service_->SetProviderForTesting(make_scoped_ptr(provider_));
+    service_->SetProviderForTesting(base::WrapUnique(provider_));
   }
 
   int RegistrationCount() { return service_->RegistrationCountForTesting(); }

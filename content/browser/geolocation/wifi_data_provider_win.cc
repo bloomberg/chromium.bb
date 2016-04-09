@@ -155,7 +155,7 @@ int PerformQuery(HANDLE adapter_handle,
                  DWORD buffer_size,
                  DWORD* bytes_out);
 bool ResizeBuffer(int requested_size,
-                  scoped_ptr<BYTE, base::FreeDeleter>* buffer);
+                  std::unique_ptr<BYTE, base::FreeDeleter>* buffer);
 // Gets the system directory and appends a trailing slash if not already
 // present.
 bool GetSystemDirectory(base::string16* path);
@@ -471,7 +471,7 @@ bool WindowsNdisApi::GetInterfaceDataNDIS(HANDLE adapter_handle,
                                           WifiData::AccessPointDataSet* data) {
   DCHECK(data);
 
-  scoped_ptr<BYTE, base::FreeDeleter> buffer(
+  std::unique_ptr<BYTE, base::FreeDeleter> buffer(
       static_cast<BYTE*>(malloc(oid_buffer_size_)));
   if (buffer == NULL) {
     return false;
@@ -601,7 +601,7 @@ int PerformQuery(HANDLE adapter_handle,
 }
 
 bool ResizeBuffer(int requested_size,
-                  scoped_ptr<BYTE, base::FreeDeleter>* buffer) {
+                  std::unique_ptr<BYTE, base::FreeDeleter>* buffer) {
   DCHECK_GT(requested_size, 0);
   DCHECK(buffer);
   if (requested_size > kMaximumBufferSize) {
@@ -621,7 +621,7 @@ bool GetSystemDirectory(base::string16* path) {
   if (buffer_size == 0) {
     return false;
   }
-  scoped_ptr<base::char16[]> buffer(new base::char16[buffer_size]);
+  std::unique_ptr<base::char16[]> buffer(new base::char16[buffer_size]);
 
   // Return value excludes terminating NULL.
   int characters_written = ::GetSystemDirectory(buffer.get(), buffer_size);

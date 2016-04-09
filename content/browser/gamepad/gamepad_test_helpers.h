@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_GAMEPAD_GAMEPAD_TEST_HELPERS_H_
 #define CONTENT_BROWSER_GAMEPAD_GAMEPAD_TEST_HELPERS_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"

@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/single_thread_task_runner.h"
 #include "content/browser/browser_thread_impl.h"
@@ -63,8 +64,8 @@ class BrowserThreadTest : public testing::Test {
   };
 
  private:
-  scoped_ptr<BrowserThreadImpl> ui_thread_;
-  scoped_ptr<BrowserThreadImpl> file_thread_;
+  std::unique_ptr<BrowserThreadImpl> ui_thread_;
+  std::unique_ptr<BrowserThreadImpl> file_thread_;
   // It's kind of ugly to make this mutable - solely so we can post the Quit
   // Task from Release(). This should be fixed.
   mutable base::MessageLoop loop_;

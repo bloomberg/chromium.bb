@@ -8,13 +8,13 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/geofencing/geofencing_registration_delegate.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_storage.h"
@@ -206,7 +206,7 @@ class CONTENT_EXPORT GeofencingManager
   RegistrationIdRegistrationMap registrations_by_id_;
 
   GeofencingService* service_;
-  scoped_ptr<MockGeofencingService> mock_service_;
+  std::unique_ptr<MockGeofencingService> mock_service_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
   DISALLOW_COPY_AND_ASSIGN(GeofencingManager);

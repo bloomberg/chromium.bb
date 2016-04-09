@@ -98,13 +98,14 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
     void InsertOrReplace(
         int frame_routing_id,
         const std::string& device_id,
-        scoped_ptr<device::BluetoothGattConnection> connection);
+        std::unique_ptr<device::BluetoothGattConnection> connection);
     void Remove(int frame_routing_id, const std::string& device_id);
     void IncrementBluetoothConnectedDeviceCount(int frame_routing_id);
     void DecrementBluetoothConnectedDeviceCount(int frame_routing_id);
 
     int render_process_id_;
-    std::unordered_map<std::string, scoped_ptr<device::BluetoothGattConnection>>
+    std::unordered_map<std::string,
+                       std::unique_ptr<device::BluetoothGattConnection>>
         device_id_to_connection_map_;
     // Keeps track of which frame is connected to which device so that
     // we can clean up the WebContents in our destructor.
@@ -207,7 +208,7 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // Callbacks for BluetoothAdapter::StartDiscoverySession.
   void OnDiscoverySessionStarted(
       int chooser_id,
-      scoped_ptr<device::BluetoothDiscoverySession> discovery_session);
+      std::unique_ptr<device::BluetoothDiscoverySession> discovery_session);
   void OnDiscoverySessionStartedError(int chooser_id);
 
   // BluetoothChooser::EventHandler:
@@ -229,7 +230,7 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
       int frame_routing_id,
       const std::string& device_id,
       base::TimeTicks start_time,
-      scoped_ptr<device::BluetoothGattConnection> connection);
+      std::unique_ptr<device::BluetoothGattConnection> connection);
   void OnCreateGATTConnectionError(
       int thread_id,
       int request_id,
@@ -257,7 +258,7 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   void OnStartNotifySessionSuccess(
       int thread_id,
       int request_id,
-      scoped_ptr<device::BluetoothGattNotifySession> notify_session);
+      std::unique_ptr<device::BluetoothGattNotifySession> notify_session);
   void OnStartNotifySessionFailed(
       int thread_id,
       int request_id,
@@ -320,7 +321,7 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // Map that matches characteristic_instance_id to notify session.
   // TODO(ortuno): Also key by thread_id once support for web workers,
   // is added: http://crbug.com/537372
-  std::map<std::string, scoped_ptr<device::BluetoothGattNotifySession>>
+  std::map<std::string, std::unique_ptr<device::BluetoothGattNotifySession>>
       characteristic_id_to_notify_session_;
 
   // Map of characteristic_instance_id to a set of thread ids.
@@ -342,7 +343,7 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   base::Timer discovery_session_timer_;
 
   // Retains BluetoothGattConnection objects to keep connections open.
-  scoped_ptr<ConnectedDevicesMap> connected_devices_map_;
+  std::unique_ptr<ConnectedDevicesMap> connected_devices_map_;
 
   // Map of device_address's to primary-services requests that need responses
   // when that device's service discovery completes.

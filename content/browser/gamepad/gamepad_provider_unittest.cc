@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/gamepad/gamepad_provider.h"
+
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/browser/gamepad/gamepad_data_fetcher.h"
-#include "content/browser/gamepad/gamepad_provider.h"
 #include "content/browser/gamepad/gamepad_test_helpers.h"
 #include "content/common/gamepad_hardware_buffer.h"
 #include "content/common/gamepad_messages.h"
@@ -49,7 +51,7 @@ class GamepadProviderTest : public testing::Test, public GamepadTestHelper {
   GamepadProvider* CreateProvider(const WebGamepads& test_data) {
     mock_data_fetcher_ = new MockGamepadDataFetcher(test_data);
     provider_.reset(new GamepadProvider(
-        scoped_ptr<GamepadDataFetcher>(mock_data_fetcher_)));
+        std::unique_ptr<GamepadDataFetcher>(mock_data_fetcher_)));
     return provider_.get();
   }
 
@@ -57,7 +59,7 @@ class GamepadProviderTest : public testing::Test, public GamepadTestHelper {
   GamepadProviderTest() {
   }
 
-  scoped_ptr<GamepadProvider> provider_;
+  std::unique_ptr<GamepadProvider> provider_;
 
   // Pointer owned by the provider.
   MockGamepadDataFetcher* mock_data_fetcher_;
@@ -94,7 +96,7 @@ TEST_F(GamepadProviderTest, MAYBE_PollingAccess) {
   // Renderer-side, pull data out of poll buffer.
   base::SharedMemoryHandle handle = provider->GetSharedMemoryHandleForProcess(
       base::GetCurrentProcessHandle());
-  scoped_ptr<base::SharedMemory> shared_memory(
+  std::unique_ptr<base::SharedMemory> shared_memory(
       new base::SharedMemory(handle, true));
   EXPECT_TRUE(shared_memory->Map(sizeof(GamepadHardwareBuffer)));
   void* mem = shared_memory->memory();

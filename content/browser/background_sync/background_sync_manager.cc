@@ -9,6 +9,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -46,7 +47,7 @@ void RecordFailureAndPostError(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback, status,
-                 base::Passed(scoped_ptr<BackgroundSyncRegistration>())));
+                 base::Passed(std::unique_ptr<BackgroundSyncRegistration>())));
 }
 
 // Returns nullptr if the browser context cannot be accessed for any reason.
@@ -126,9 +127,9 @@ void RunInBackgroundOnUIThread(
   }
 }
 
-scoped_ptr<BackgroundSyncParameters> GetControllerParameters(
+std::unique_ptr<BackgroundSyncParameters> GetControllerParameters(
     const scoped_refptr<ServiceWorkerContextWrapper>& sw_context_wrapper,
-    scoped_ptr<BackgroundSyncParameters> parameters) {
+    std::unique_ptr<BackgroundSyncParameters> parameters) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BackgroundSyncController* background_sync_controller =
@@ -173,14 +174,14 @@ BackgroundSyncManager::BackgroundSyncRegistrations::
 }
 
 // static
-scoped_ptr<BackgroundSyncManager> BackgroundSyncManager::Create(
+std::unique_ptr<BackgroundSyncManager> BackgroundSyncManager::Create(
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BackgroundSyncManager* sync_manager =
       new BackgroundSyncManager(service_worker_context);
   sync_manager->Init();
-  return make_scoped_ptr(sync_manager);
+  return base::WrapUnique(sync_manager);
 }
 
 BackgroundSyncManager::~BackgroundSyncManager() {
@@ -216,8 +217,9 @@ void BackgroundSyncManager::GetRegistrations(
         FROM_HERE,
         base::Bind(
             callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
-            base::Passed(scoped_ptr<ScopedVector<BackgroundSyncRegistration>>(
-                new ScopedVector<BackgroundSyncRegistration>()))));
+            base::Passed(
+                std::unique_ptr<ScopedVector<BackgroundSyncRegistration>>(
+                    new ScopedVector<BackgroundSyncRegistration>()))));
     return;
   }
 
@@ -300,7 +302,7 @@ void BackgroundSyncManager::InitImpl(const base::Closure& callback) {
     return;
   }
 
-  scoped_ptr<BackgroundSyncParameters> parameters_copy(
+  std::unique_ptr<BackgroundSyncParameters> parameters_copy(
       new BackgroundSyncParameters(*parameters_));
 
   BrowserThread::PostTaskAndReplyWithResult(
@@ -313,7 +315,7 @@ void BackgroundSyncManager::InitImpl(const base::Closure& callback) {
 
 void BackgroundSyncManager::InitDidGetControllerParameters(
     const base::Closure& callback,
-    scoped_ptr<BackgroundSyncParameters> updated_parameters) {
+    std::unique_ptr<BackgroundSyncParameters> updated_parameters) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   parameters_ = std::move(updated_parameters);
@@ -509,7 +511,7 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(callback, BACKGROUND_SYNC_STATUS_OK,
-                   base::Passed(make_scoped_ptr(new BackgroundSyncRegistration(
+                   base::Passed(base::WrapUnique(new BackgroundSyncRegistration(
                        *existing_registration)))));
     return;
   }
@@ -662,9 +664,9 @@ void BackgroundSyncManager::RegisterDidStore(
                   "failure.";
     BackgroundSyncMetrics::CountRegisterFailure(
         BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
-    DisableAndClearManager(
-        base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
-                   base::Passed(scoped_ptr<BackgroundSyncRegistration>())));
+    DisableAndClearManager(base::Bind(
+        callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
+        base::Passed(std::unique_ptr<BackgroundSyncRegistration>())));
     return;
   }
 
@@ -681,7 +683,7 @@ void BackgroundSyncManager::RegisterDidStore(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback, BACKGROUND_SYNC_STATUS_OK,
-                 base::Passed(make_scoped_ptr(
+                 base::Passed(base::WrapUnique(
                      new BackgroundSyncRegistration(new_registration)))));
 }
 
@@ -782,7 +784,7 @@ void BackgroundSyncManager::GetRegistrationsImpl(
     const StatusAndRegistrationsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  scoped_ptr<ScopedVector<BackgroundSyncRegistration>> out_registrations(
+  std::unique_ptr<ScopedVector<BackgroundSyncRegistration>> out_registrations(
       new ScopedVector<BackgroundSyncRegistration>());
 
   if (disabled_) {
@@ -1185,7 +1187,7 @@ void BackgroundSyncManager::CompleteOperationCallback(const CallbackT& callback,
 void BackgroundSyncManager::CompleteStatusAndRegistrationCallback(
     StatusAndRegistrationCallback callback,
     BackgroundSyncStatus status,
-    scoped_ptr<BackgroundSyncRegistration> registration) {
+    std::unique_ptr<BackgroundSyncRegistration> registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   callback.Run(status, std::move(registration));
@@ -1195,7 +1197,7 @@ void BackgroundSyncManager::CompleteStatusAndRegistrationCallback(
 void BackgroundSyncManager::CompleteStatusAndRegistrationsCallback(
     StatusAndRegistrationsCallback callback,
     BackgroundSyncStatus status,
-    scoped_ptr<ScopedVector<BackgroundSyncRegistration>> registrations) {
+    std::unique_ptr<ScopedVector<BackgroundSyncRegistration>> registrations) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   callback.Run(status, std::move(registrations));

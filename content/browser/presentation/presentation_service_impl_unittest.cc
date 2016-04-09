@@ -6,12 +6,13 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
@@ -126,7 +127,7 @@ class MockPresentationServiceDelegate : public PresentationServiceDelegate {
   void SendMessage(int render_process_id,
                    int render_frame_id,
                    const content::PresentationSessionInfo& session,
-                   scoped_ptr<PresentationSessionMessage> message_request,
+                   std::unique_ptr<PresentationSessionMessage> message_request,
                    const SendMessageCallback& send_message_cb) override {
     SendMessageRawPtr(render_process_id, render_frame_id, session,
                       message_request.release(), send_message_cb);
@@ -334,7 +335,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     }
 
     ScopedVector<PresentationSessionMessage> messages;
-    scoped_ptr<content::PresentationSessionMessage> message;
+    std::unique_ptr<content::PresentationSessionMessage> message;
     message.reset(
         new content::PresentationSessionMessage(PresentationMessageType::TEXT));
     message->message = text_msg;
@@ -357,11 +358,12 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
 
   MockPresentationServiceDelegate mock_delegate_;
 
-  scoped_ptr<PresentationServiceImpl> service_impl_;
+  std::unique_ptr<PresentationServiceImpl> service_impl_;
   mojo::InterfacePtr<mojom::PresentationService> service_ptr_;
 
   MockPresentationServiceClient mock_client_;
-  scoped_ptr<mojo::Binding<mojom::PresentationServiceClient>> client_binding_;
+  std::unique_ptr<mojo::Binding<mojom::PresentationServiceClient>>
+      client_binding_;
 
   base::Closure run_loop_quit_closure_;
   int default_session_started_count_;
@@ -686,7 +688,7 @@ TEST_F(PresentationServiceImplTest, SendStringMessage) {
   run_loop.Run();
 
   // Make sure |test_message| gets deleted.
-  scoped_ptr<PresentationSessionMessage> scoped_test_message(test_message);
+  std::unique_ptr<PresentationSessionMessage> scoped_test_message(test_message);
   EXPECT_TRUE(test_message);
   EXPECT_FALSE(test_message->is_binary());
   EXPECT_LE(test_message->message.size(), kMaxPresentationSessionMessageSize);
@@ -723,7 +725,7 @@ TEST_F(PresentationServiceImplTest, SendArrayBuffer) {
   run_loop.Run();
 
   // Make sure |test_message| gets deleted.
-  scoped_ptr<PresentationSessionMessage> scoped_test_message(test_message);
+  std::unique_ptr<PresentationSessionMessage> scoped_test_message(test_message);
   EXPECT_TRUE(test_message);
   EXPECT_TRUE(test_message->is_binary());
   EXPECT_EQ(PresentationMessageType::ARRAY_BUFFER, test_message->type);
@@ -796,7 +798,7 @@ TEST_F(PresentationServiceImplTest, SendBlobData) {
   run_loop.Run();
 
   // Make sure |test_message| gets deleted.
-  scoped_ptr<PresentationSessionMessage> scoped_test_message(test_message);
+  std::unique_ptr<PresentationSessionMessage> scoped_test_message(test_message);
   EXPECT_TRUE(test_message);
   EXPECT_TRUE(test_message->is_binary());
   EXPECT_EQ(PresentationMessageType::BLOB, test_message->type);

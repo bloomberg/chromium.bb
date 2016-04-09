@@ -13,6 +13,7 @@
 #endif
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -32,7 +33,6 @@
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
-#include "base/memory/scoped_ptr.h"
 #include "base/win/registry.h"
 #endif
 

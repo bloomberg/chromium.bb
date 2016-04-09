@@ -350,7 +350,7 @@ class StoragePartitionImplTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestBrowserContext> browser_context_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
   scoped_refptr<MockQuotaManager> quota_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(StoragePartitionImplTest);
@@ -395,7 +395,7 @@ class StoragePartitionShaderClearTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestBrowserContext> browser_context_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
 
   scoped_refptr<ShaderDiskCache> cache_;
 };
@@ -932,13 +932,13 @@ TEST(StoragePartitionImplStaticTest, CreatePredicateForHostCookies) {
       StoragePartitionImpl::CreatePredicateForHostCookies(url);
 
   base::Time now = base::Time::Now();
-  std::vector<scoped_ptr<CanonicalCookie>> valid_cookies;
+  std::vector<std::unique_ptr<CanonicalCookie>> valid_cookies;
   valid_cookies.push_back(CanonicalCookie::Create(url, "A=B", now, options));
   valid_cookies.push_back(CanonicalCookie::Create(url, "C=F", now, options));
   // We should match a different scheme with the same host.
   valid_cookies.push_back(CanonicalCookie::Create(url2, "A=B", now, options));
 
-  std::vector<scoped_ptr<CanonicalCookie>> invalid_cookies;
+  std::vector<std::unique_ptr<CanonicalCookie>> invalid_cookies;
   // We don't match domain cookies.
   invalid_cookies.push_back(
       CanonicalCookie::Create(url2, "A=B;domain=.example.com", now, options));

@@ -6,12 +6,12 @@
 #define CONTENT_BROWSER_GEOLOCATION_GEOLOCATION_PROVIDER_IMPL_H_
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/geolocation_provider.h"
@@ -29,7 +29,7 @@ class CONTENT_EXPORT GeolocationProviderImpl
       public base::Thread {
  public:
   // GeolocationProvider implementation:
-  scoped_ptr<GeolocationProvider::Subscription> AddLocationUpdateCallback(
+  std::unique_ptr<GeolocationProvider::Subscription> AddLocationUpdateCallback(
       const LocationUpdateCallback& callback,
       bool enable_high_accuracy) override;
   void UserDidOptIntoLocationServices() override;
@@ -55,7 +55,7 @@ class CONTENT_EXPORT GeolocationProviderImpl
 
   // Useful for injecting mock geolocation arbitrator in tests.
   // TODO(mvanouwerkerk): Use something like SetArbitratorForTesting instead.
-  virtual scoped_ptr<LocationArbitrator> CreateArbitrator();
+  virtual std::unique_ptr<LocationArbitrator> CreateArbitrator();
 
  private:
   bool OnGeolocationThread() const;
@@ -92,7 +92,7 @@ class CONTENT_EXPORT GeolocationProviderImpl
   bool ignore_location_updates_;
 
   // Only to be used on the geolocation thread.
-  scoped_ptr<LocationArbitrator> arbitrator_;
+  std::unique_ptr<LocationArbitrator> arbitrator_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationProviderImpl);
 };

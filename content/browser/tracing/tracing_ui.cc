@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -17,7 +18,6 @@
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -62,7 +62,7 @@ bool GetTracingOptions(const std::string& data64,
     return false;
   }
 
-  scoped_ptr<base::Value> optionsRaw = base::JSONReader::Read(data);
+  std::unique_ptr<base::Value> optionsRaw = base::JSONReader::Read(data);
   if (!optionsRaw) {
     LOG(ERROR) << "Options were not valid JSON";
     return false;
@@ -147,7 +147,7 @@ void OnTraceBufferStatusResult(const WebUIDataSource::GotDataCallback& callback,
 
 void TracingCallbackWrapperBase64(
     const WebUIDataSource::GotDataCallback& callback,
-    scoped_ptr<const base::DictionaryValue> metadata,
+    std::unique_ptr<const base::DictionaryValue> metadata,
     base::RefCountedString* data) {
   base::RefCountedString* data_base64 = new base::RefCountedString();
   base::Base64Encode(data->data(), &data_base64->data());

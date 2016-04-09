@@ -65,7 +65,7 @@ class WorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
   void WorkerCreated();
   void OnDispatchOnInspectorFrontend(const DevToolsMessageChunk& message);
 
-  scoped_ptr<DevToolsProtocolHandler> protocol_handler_;
+  std::unique_ptr<DevToolsProtocolHandler> protocol_handler_;
   DevToolsMessageChunkProcessor chunk_processor_;
   WorkerState state_;
   WorkerId worker_id_;

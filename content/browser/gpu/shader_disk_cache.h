@@ -90,7 +90,7 @@ class CONTENT_EXPORT ShaderDiskCache
   net::CompletionCallback available_callback_;
   net::CompletionCallback cache_complete_callback_;
 
-  scoped_ptr<disk_cache::Backend> backend_;
+  std::unique_ptr<disk_cache::Backend> backend_;
 
   scoped_refptr<ShaderDiskReadHelper> helper_;
   std::map<void*, scoped_refptr<ShaderDiskCacheEntry> > entry_map_;

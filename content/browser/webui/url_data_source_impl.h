@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_WEBUI_URL_DATA_SOURCE_IMPL_H_
 #define CONTENT_BROWSER_WEBUI_URL_DATA_SOURCE_IMPL_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/browser/webui/url_data_manager.h"
 #include "content/common/content_export.h"
@@ -90,7 +91,7 @@ class URLDataSourceImpl : public base::RefCountedThreadSafe<
   // source.
   URLDataManagerBackend* backend_;
 
-  scoped_ptr<URLDataSource> source_;
+  std::unique_ptr<URLDataSource> source_;
 };
 
 }  // namespace content

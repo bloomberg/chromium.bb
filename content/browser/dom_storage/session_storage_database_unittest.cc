@@ -184,7 +184,7 @@ bool SessionStorageDatabaseTest::IsMapValueKey(const std::string& key,
 
 void SessionStorageDatabaseTest::ReadData(DataMap* data) const {
   leveldb::DB* leveldb = db_->db_.get();
-  scoped_ptr<leveldb::Iterator> it(
+  std::unique_ptr<leveldb::Iterator> it(
       leveldb->NewIterator(leveldb::ReadOptions()));
   for (it->SeekToFirst(); it->Valid(); it->Next()) {
     (*data)[it->key().ToString()] = it->value().ToString();
@@ -298,7 +298,7 @@ void SessionStorageDatabaseTest::CheckEmptyDatabase() const {
 
 void SessionStorageDatabaseTest::DumpData() const {
   LOG(WARNING) << "---- Session storage contents";
-  scoped_ptr<leveldb::Iterator> it(
+  std::unique_ptr<leveldb::Iterator> it(
       db_->db_->NewIterator(leveldb::ReadOptions()));
   for (it->SeekToFirst(); it->Valid(); it->Next()) {
     int64_t dummy_map_id;

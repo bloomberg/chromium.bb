@@ -234,7 +234,7 @@ class PluginDataRemoverImpl::Context
     event_->Signal();
   }
 
-  scoped_ptr<base::WaitableEvent> event_;
+  std::unique_ptr<base::WaitableEvent> event_;
   // The point in time when we start removing data.
   base::Time remove_start_time_;
   // The point in time from which on we remove data.
@@ -250,7 +250,7 @@ class PluginDataRemoverImpl::Context
 
   // The channel is NULL until we have opened a connection to the plugin
   // process.
-  scoped_ptr<IPC::Channel> channel_;
+  std::unique_ptr<IPC::Channel> channel_;
 };
 
 

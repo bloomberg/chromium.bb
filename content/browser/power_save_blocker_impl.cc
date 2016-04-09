@@ -10,11 +10,11 @@ namespace content {
 PowerSaveBlocker::~PowerSaveBlocker() {}
 
 // static
-scoped_ptr<PowerSaveBlocker> PowerSaveBlocker::Create(
+std::unique_ptr<PowerSaveBlocker> PowerSaveBlocker::Create(
     PowerSaveBlockerType type,
     Reason reason,
     const std::string& description) {
-  return scoped_ptr<PowerSaveBlocker>(
+  return std::unique_ptr<PowerSaveBlocker>(
       new PowerSaveBlockerImpl(type, reason, description));
 }
 

@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "build/build_config.h"
@@ -118,9 +118,9 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
 
   ChildProcessData data_;
   BrowserChildProcessHostDelegate* delegate_;
-  scoped_ptr<ChildProcessHost> child_process_host_;
+  std::unique_ptr<ChildProcessHost> child_process_host_;
 
-  scoped_ptr<ChildProcessLauncher> child_process_;
+  std::unique_ptr<ChildProcessLauncher> child_process_;
 
   PowerMonitorMessageBroadcaster power_monitor_message_broadcaster_;
 

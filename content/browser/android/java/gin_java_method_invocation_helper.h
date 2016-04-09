@@ -55,7 +55,7 @@ class CONTENT_EXPORT GinJavaMethodInvocationHelper
     DISALLOW_COPY_AND_ASSIGN(ObjectDelegate);
   };
 
-  GinJavaMethodInvocationHelper(scoped_ptr<ObjectDelegate> object,
+  GinJavaMethodInvocationHelper(std::unique_ptr<ObjectDelegate> object,
                                 const std::string& method_name,
                                 const base::ListValue& arguments);
   void Init(DispatcherDelegate* dispatcher);
@@ -94,12 +94,12 @@ class CONTENT_EXPORT GinJavaMethodInvocationHelper
   typedef std::map<GinJavaBoundObject::ObjectID,
                    JavaObjectWeakGlobalRef> ObjectRefs;
 
-  scoped_ptr<ObjectDelegate> object_;
+  std::unique_ptr<ObjectDelegate> object_;
   const std::string method_name_;
-  scoped_ptr<base::ListValue> arguments_;
+  std::unique_ptr<base::ListValue> arguments_;
   ObjectRefs object_refs_;
   bool holds_primitive_result_;
-  scoped_ptr<base::ListValue> primitive_result_;
+  std::unique_ptr<base::ListValue> primitive_result_;
   GinJavaBridgeError invocation_error_;
   base::android::ScopedJavaGlobalRef<jobject> object_result_;
   base::android::ScopedJavaGlobalRef<jclass> safe_annotation_clazz_;

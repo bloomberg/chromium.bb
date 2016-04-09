@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/accessibility/one_shot_accessibility_tree_search.h"
+
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "content/browser/accessibility/one_shot_accessibility_tree_search.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -38,7 +40,7 @@ class MAYBE_OneShotAccessibilityTreeSearchTest : public testing::Test {
  protected:
   void SetUp() override;
 
-  scoped_ptr<BrowserAccessibilityManager> tree_;
+  std::unique_ptr<BrowserAccessibilityManager> tree_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MAYBE_OneShotAccessibilityTreeSearchTest);

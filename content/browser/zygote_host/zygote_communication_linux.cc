@@ -106,9 +106,10 @@ ssize_t ZygoteCommunication::ReadReply(void* buf, size_t buf_len) {
   return HANDLE_EINTR(read(control_fd_, buf, buf_len));
 }
 
-pid_t ZygoteCommunication::ForkRequest(const std::vector<std::string>& argv,
-                                       scoped_ptr<FileDescriptorInfo> mapping,
-                                       const std::string& process_type) {
+pid_t ZygoteCommunication::ForkRequest(
+    const std::vector<std::string>& argv,
+    std::unique_ptr<FileDescriptorInfo> mapping,
+    const std::string& process_type) {
   DCHECK(init_);
 
   base::Pickle pickle;
@@ -309,7 +310,7 @@ void ZygoteCommunication::Init() {
 
   base::ScopedFD dummy_fd;
   if (using_suid_sandbox) {
-    scoped_ptr<sandbox::SetuidSandboxHost> sandbox_host(
+    std::unique_ptr<sandbox::SetuidSandboxHost> sandbox_host(
         sandbox::SetuidSandboxHost::Create());
     sandbox_host->PrependWrapper(&cmd_line);
     sandbox_host->SetupLaunchOptions(&options, &fds_to_map, &dummy_fd);

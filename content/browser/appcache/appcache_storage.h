@@ -8,13 +8,13 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/appcache/appcache_working_set.h"
 #include "content/common/content_export.h"
 #include "net/base/completion_callback.h"
@@ -276,7 +276,7 @@ class CONTENT_EXPORT AppCacheStorage {
     GURL manifest_url_;
     int64_t group_id_;
     int64_t response_id_;
-    scoped_ptr<AppCacheResponseReader> reader_;
+    std::unique_ptr<AppCacheResponseReader> reader_;
     DelegateReferenceVector delegates_;
     scoped_refptr<HttpResponseInfoIOBuffer> info_buffer_;
   };

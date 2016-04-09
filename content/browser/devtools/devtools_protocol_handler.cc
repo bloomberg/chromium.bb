@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/public/browser/devtools_manager_delegate.h"
@@ -26,14 +27,15 @@ const int kStatusParseError = -32700;
 const int kStatusInvalidRequest = -32600;
 const int kStatusNoSuchMethod = -32601;
 
-scoped_ptr<base::DictionaryValue> TakeDictionary(base::DictionaryValue* dict,
-                                                 const std::string& key) {
-  scoped_ptr<base::Value> value;
+std::unique_ptr<base::DictionaryValue> TakeDictionary(
+    base::DictionaryValue* dict,
+    const std::string& key) {
+  std::unique_ptr<base::Value> value;
   dict->Remove(key, &value);
   base::DictionaryValue* result = nullptr;
   if (value)
     value.release()->GetAsDictionary(&result);
-  return make_scoped_ptr(result);
+  return base::WrapUnique(result);
 }
 
 }  // namespace
@@ -47,7 +49,8 @@ DevToolsProtocolHandler::~DevToolsProtocolHandler() {
 
 void DevToolsProtocolHandler::HandleMessage(int session_id,
                                             const std::string& message) {
-  scoped_ptr<base::DictionaryValue> command = ParseCommand(session_id, message);
+  std::unique_ptr<base::DictionaryValue> command =
+      ParseCommand(session_id, message);
   if (!command)
     return;
   if (PassCommandToDelegate(session_id, command.get()))
@@ -58,7 +61,8 @@ void DevToolsProtocolHandler::HandleMessage(int session_id,
 bool DevToolsProtocolHandler::HandleOptionalMessage(int session_id,
                                                     const std::string& message,
                                                     int* call_id) {
-  scoped_ptr<base::DictionaryValue> command = ParseCommand(session_id, message);
+  std::unique_ptr<base::DictionaryValue> command =
+      ParseCommand(session_id, message);
   if (!command)
     return true;
   if (PassCommandToDelegate(session_id, command.get()))
@@ -74,7 +78,7 @@ bool DevToolsProtocolHandler::PassCommandToDelegate(
   if (!delegate)
     return false;
 
-  scoped_ptr<base::DictionaryValue> response(
+  std::unique_ptr<base::DictionaryValue> response(
       delegate->HandleCommand(agent_host_, command));
   if (response) {
     client_.SendMessage(session_id, *response);
@@ -84,10 +88,10 @@ bool DevToolsProtocolHandler::PassCommandToDelegate(
   return false;
 }
 
-scoped_ptr<base::DictionaryValue> DevToolsProtocolHandler::ParseCommand(
+std::unique_ptr<base::DictionaryValue> DevToolsProtocolHandler::ParseCommand(
     int session_id,
     const std::string& message) {
-  scoped_ptr<base::Value> value = base::JSONReader::Read(message);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
   if (!value || !value->IsType(base::Value::TYPE_DICTIONARY)) {
     client_.SendError(
         DevToolsCommandId(DevToolsCommandId::kNoId, session_id),
@@ -95,8 +99,8 @@ scoped_ptr<base::DictionaryValue> DevToolsProtocolHandler::ParseCommand(
     return nullptr;
   }
 
-  scoped_ptr<base::DictionaryValue> command =
-      make_scoped_ptr(static_cast<base::DictionaryValue*>(value.release()));
+  std::unique_ptr<base::DictionaryValue> command =
+      base::WrapUnique(static_cast<base::DictionaryValue*>(value.release()));
   int call_id = DevToolsCommandId::kNoId;
   bool ok = command->GetInteger(kIdParam, &call_id) && call_id >= 0;
   if (!ok) {
@@ -120,7 +124,7 @@ scoped_ptr<base::DictionaryValue> DevToolsProtocolHandler::ParseCommand(
 
 void DevToolsProtocolHandler::HandleCommand(
     int session_id,
-    scoped_ptr<base::DictionaryValue> command) {
+    std::unique_ptr<base::DictionaryValue> command) {
   int call_id = DevToolsCommandId::kNoId;
   std::string method;
   command->GetInteger(kIdParam, &call_id);
@@ -141,7 +145,7 @@ void DevToolsProtocolHandler::HandleCommand(
 
 bool DevToolsProtocolHandler::HandleOptionalCommand(
     int session_id,
-    scoped_ptr<base::DictionaryValue> command,
+    std::unique_ptr<base::DictionaryValue> command,
     int* call_id) {
   *call_id = DevToolsCommandId::kNoId;
   std::string method;

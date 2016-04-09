@@ -8,13 +8,13 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_export.h"
@@ -234,8 +234,8 @@ class CONTENT_EXPORT AppCacheDatabase {
   void OnDatabaseError(int err, sql::Statement* stmt);
 
   base::FilePath db_file_path_;
-  scoped_ptr<sql::Connection> db_;
-  scoped_ptr<sql::MetaTable> meta_table_;
+  std::unique_ptr<sql::Connection> db_;
+  std::unique_ptr<sql::MetaTable> meta_table_;
   std::map<int64_t, base::Time> lazy_last_access_times_;
   bool is_disabled_;
   bool is_recreating_;

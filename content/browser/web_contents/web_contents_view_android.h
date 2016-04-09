@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_ANDROID_H_
 #define CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_ANDROID_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/public/browser/web_contents_view_delegate.h"
@@ -83,7 +84,7 @@ class WebContentsViewAndroid : public WebContentsView,
   ContentViewCoreImpl* content_view_core_;
 
   // Interface for extensions to WebContentsView. Used to show the context menu.
-  scoped_ptr<WebContentsViewDelegate> delegate_;
+  std::unique_ptr<WebContentsViewDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAndroid);
 };

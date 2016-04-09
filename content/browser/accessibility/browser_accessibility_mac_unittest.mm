@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/accessibility/browser_accessibility_mac.h"
+
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_cocoa.h"
-#include "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,7 +61,7 @@ class BrowserAccessibilityTest : public ui::CocoaTest {
   }
 
   base::scoped_nsobject<BrowserAccessibilityCocoa> accessibility_;
-  scoped_ptr<BrowserAccessibilityManager> manager_;
+  std::unique_ptr<BrowserAccessibilityManager> manager_;
 };
 
 // Standard hit test.

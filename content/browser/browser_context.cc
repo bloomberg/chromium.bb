@@ -123,9 +123,9 @@ void BrowserContext::AsyncObliterateStoragePartition(
 
 // static
 void BrowserContext::GarbageCollectStoragePartitions(
-      BrowserContext* browser_context,
-      scoped_ptr<base::hash_set<base::FilePath> > active_paths,
-      const base::Closure& done) {
+    BrowserContext* browser_context,
+    std::unique_ptr<base::hash_set<base::FilePath>> active_paths,
+    const base::Closure& done) {
   GetStoragePartitionMap(browser_context)
       ->GarbageCollect(std::move(active_paths), done);
 }

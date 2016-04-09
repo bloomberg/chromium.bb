@@ -40,11 +40,11 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
 
   void OnRegisterResult(const RegisterCallback& callback,
                         BackgroundSyncStatus status,
-                        scoped_ptr<BackgroundSyncRegistration> result);
+                        std::unique_ptr<BackgroundSyncRegistration> result);
   void OnGetRegistrationsResult(
       const GetRegistrationsCallback& callback,
       BackgroundSyncStatus status,
-      scoped_ptr<ScopedVector<BackgroundSyncRegistration>> result);
+      std::unique_ptr<ScopedVector<BackgroundSyncRegistration>> result);
 
   // Called when an error is detected on binding_.
   void OnConnectionError();

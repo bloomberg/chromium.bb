@@ -4,7 +4,8 @@
 
 #include "content/browser/android/deferred_download_observer.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/browser/android/download_controller_android_impl.h"
 #include "content/public/browser/web_contents.h"
 

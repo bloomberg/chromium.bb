@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -56,10 +56,10 @@ public:
 private:
   friend class AppCacheServiceImpl;
   friend class base::RefCounted<AppCacheStorageReference>;
-  AppCacheStorageReference(scoped_ptr<AppCacheStorage> storage);
+  AppCacheStorageReference(std::unique_ptr<AppCacheStorage> storage);
   ~AppCacheStorageReference();
 
-  scoped_ptr<AppCacheStorage> storage_;
+  std::unique_ptr<AppCacheStorage> storage_;
 };
 
 // Class that manages the application cache service. Sends notifications
@@ -203,7 +203,7 @@ class CONTENT_EXPORT AppCacheServiceImpl
   AppCachePolicy* appcache_policy_;
   AppCacheQuotaClient* quota_client_;
   AppCacheExecutableHandlerFactory* handler_factory_;
-  scoped_ptr<AppCacheStorage> storage_;
+  std::unique_ptr<AppCacheStorage> storage_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   PendingAsyncHelpers pending_helpers_;

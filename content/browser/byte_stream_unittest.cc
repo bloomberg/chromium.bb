@@ -103,8 +103,8 @@ ByteStreamTest::ByteStreamTest()
 // Confirm that filling and emptying the stream works properly, and that
 // we get full triggers when we expect.
 TEST_F(ByteStreamTest, ByteStream_PushBack) {
-  scoped_ptr<ByteStreamWriter> byte_stream_input;
-  scoped_ptr<ByteStreamReader> byte_stream_output;
+  std::unique_ptr<ByteStreamWriter> byte_stream_input;
+  std::unique_ptr<ByteStreamReader> byte_stream_output;
   CreateByteStream(message_loop_.task_runner(), message_loop_.task_runner(),
                    3 * 1024, &byte_stream_input, &byte_stream_output);
 
@@ -157,8 +157,8 @@ TEST_F(ByteStreamTest, ByteStream_PushBack) {
 // Confirm that Flush() method makes the writer to send written contents to
 // the reader.
 TEST_F(ByteStreamTest, ByteStream_Flush) {
-  scoped_ptr<ByteStreamWriter> byte_stream_input;
-  scoped_ptr<ByteStreamReader> byte_stream_output;
+  std::unique_ptr<ByteStreamWriter> byte_stream_input;
+  std::unique_ptr<ByteStreamReader> byte_stream_output;
   CreateByteStream(message_loop_.task_runner(), message_loop_.task_runner(),
                    1024, &byte_stream_input, &byte_stream_output);
 
@@ -196,8 +196,8 @@ TEST_F(ByteStreamTest, ByteStream_Flush) {
 // that we're getting pushback even when data's split across the two
 // objects
 TEST_F(ByteStreamTest, ByteStream_PushBackSplit) {
-  scoped_ptr<ByteStreamWriter> byte_stream_input;
-  scoped_ptr<ByteStreamReader> byte_stream_output;
+  std::unique_ptr<ByteStreamWriter> byte_stream_input;
+  std::unique_ptr<ByteStreamReader> byte_stream_output;
   CreateByteStream(message_loop_.task_runner(), message_loop_.task_runner(),
                    9 * 1024, &byte_stream_input, &byte_stream_output);
 
@@ -245,8 +245,8 @@ TEST_F(ByteStreamTest, ByteStream_PushBackSplit) {
 // Confirm that a Close() notification transmits in-order
 // with data on the stream.
 TEST_F(ByteStreamTest, ByteStream_CompleteTransmits) {
-  scoped_ptr<ByteStreamWriter> byte_stream_input;
-  scoped_ptr<ByteStreamReader> byte_stream_output;
+  std::unique_ptr<ByteStreamWriter> byte_stream_input;
+  std::unique_ptr<ByteStreamReader> byte_stream_output;
 
   scoped_refptr<net::IOBuffer> output_io_buffer;
   size_t output_length;
@@ -311,8 +311,8 @@ TEST_F(ByteStreamTest, ByteStream_SinkCallback) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner(
       new base::TestSimpleTaskRunner());
 
-  scoped_ptr<ByteStreamWriter> byte_stream_input;
-  scoped_ptr<ByteStreamReader> byte_stream_output;
+  std::unique_ptr<ByteStreamWriter> byte_stream_input;
+  std::unique_ptr<ByteStreamReader> byte_stream_output;
   CreateByteStream(message_loop_.task_runner(), task_runner, 10000,
                    &byte_stream_input, &byte_stream_output);
 
@@ -362,8 +362,8 @@ TEST_F(ByteStreamTest, ByteStream_SourceCallback) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner(
       new base::TestSimpleTaskRunner());
 
-  scoped_ptr<ByteStreamWriter> byte_stream_input;
-  scoped_ptr<ByteStreamReader> byte_stream_output;
+  std::unique_ptr<ByteStreamWriter> byte_stream_input;
+  std::unique_ptr<ByteStreamReader> byte_stream_output;
   CreateByteStream(task_runner, message_loop_.task_runner(), 10000,
                    &byte_stream_input, &byte_stream_output);
 
@@ -423,8 +423,8 @@ TEST_F(ByteStreamTest, ByteStream_SinkInterrupt) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner(
       new base::TestSimpleTaskRunner());
 
-  scoped_ptr<ByteStreamWriter> byte_stream_input;
-  scoped_ptr<ByteStreamReader> byte_stream_output;
+  std::unique_ptr<ByteStreamWriter> byte_stream_input;
+  std::unique_ptr<ByteStreamReader> byte_stream_output;
   CreateByteStream(message_loop_.task_runner(), task_runner, 10000,
                    &byte_stream_input, &byte_stream_output);
 
@@ -469,8 +469,8 @@ TEST_F(ByteStreamTest, ByteStream_SourceInterrupt) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner(
       new base::TestSimpleTaskRunner());
 
-  scoped_ptr<ByteStreamWriter> byte_stream_input;
-  scoped_ptr<ByteStreamReader> byte_stream_output;
+  std::unique_ptr<ByteStreamWriter> byte_stream_input;
+  std::unique_ptr<ByteStreamReader> byte_stream_output;
   CreateByteStream(task_runner, message_loop_.task_runner(), 10000,
                    &byte_stream_input, &byte_stream_output);
 
@@ -520,8 +520,8 @@ TEST_F(ByteStreamTest, ByteStream_ZeroCallback) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner(
       new base::TestSimpleTaskRunner());
 
-  scoped_ptr<ByteStreamWriter> byte_stream_input;
-  scoped_ptr<ByteStreamReader> byte_stream_output;
+  std::unique_ptr<ByteStreamWriter> byte_stream_input;
+  std::unique_ptr<ByteStreamReader> byte_stream_output;
   CreateByteStream(message_loop_.task_runner(), task_runner, 10000,
                    &byte_stream_input, &byte_stream_output);
 
@@ -539,8 +539,8 @@ TEST_F(ByteStreamTest, ByteStream_ZeroCallback) {
 }
 
 TEST_F(ByteStreamTest, ByteStream_CloseWithoutAnyWrite) {
-  scoped_ptr<ByteStreamWriter> byte_stream_input;
-  scoped_ptr<ByteStreamReader> byte_stream_output;
+  std::unique_ptr<ByteStreamWriter> byte_stream_input;
+  std::unique_ptr<ByteStreamReader> byte_stream_output;
   CreateByteStream(message_loop_.task_runner(), message_loop_.task_runner(),
                    3 * 1024, &byte_stream_input, &byte_stream_output);
 
@@ -554,8 +554,8 @@ TEST_F(ByteStreamTest, ByteStream_CloseWithoutAnyWrite) {
 }
 
 TEST_F(ByteStreamTest, ByteStream_FlushWithoutAnyWrite) {
-  scoped_ptr<ByteStreamWriter> byte_stream_input;
-  scoped_ptr<ByteStreamReader> byte_stream_output;
+  std::unique_ptr<ByteStreamWriter> byte_stream_input;
+  std::unique_ptr<ByteStreamReader> byte_stream_output;
   CreateByteStream(message_loop_.task_runner(), message_loop_.task_runner(),
                    3 * 1024, &byte_stream_input, &byte_stream_output);
 
@@ -575,8 +575,8 @@ TEST_F(ByteStreamTest, ByteStream_FlushWithoutAnyWrite) {
 }
 
 TEST_F(ByteStreamTest, ByteStream_WriteOverflow) {
-  scoped_ptr<ByteStreamWriter> byte_stream_input;
-  scoped_ptr<ByteStreamReader> byte_stream_output;
+  std::unique_ptr<ByteStreamWriter> byte_stream_input;
+  std::unique_ptr<ByteStreamReader> byte_stream_output;
   CreateByteStream(message_loop_.task_runner(), message_loop_.task_runner(),
                    std::numeric_limits<size_t>::max(), &byte_stream_input,
                    &byte_stream_output);

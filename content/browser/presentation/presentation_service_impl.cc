@@ -65,10 +65,10 @@ mojom::SessionMessagePtr ToMojoSessionMessage(
   return output;
 }
 
-scoped_ptr<PresentationSessionMessage> GetPresentationSessionMessage(
+std::unique_ptr<PresentationSessionMessage> GetPresentationSessionMessage(
     mojom::SessionMessagePtr input) {
   DCHECK(!input.is_null());
-  scoped_ptr<content::PresentationSessionMessage> output;
+  std::unique_ptr<content::PresentationSessionMessage> output;
   switch (input->type) {
     case mojom::PresentationMessageType::TEXT: {
       DCHECK(!input->message.is_null());
@@ -194,7 +194,7 @@ void PresentationServiceImpl::ListenForScreenAvailability(
   if (screen_availability_listeners_.count(availability_url))
     return;
 
-  scoped_ptr<ScreenAvailabilityListenerImpl> listener(
+  std::unique_ptr<ScreenAvailabilityListenerImpl> listener(
       new ScreenAvailabilityListenerImpl(availability_url, this));
   if (delegate_->AddScreenAvailabilityListener(
       render_process_id_,

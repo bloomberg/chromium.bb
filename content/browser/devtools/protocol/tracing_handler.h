@@ -41,7 +41,7 @@ class TracingHandler {
                  DevToolsIOContext* io_context);
   virtual ~TracingHandler();
 
-  void SetClient(scoped_ptr<Client> client);
+  void SetClient(std::unique_ptr<Client> client);
   void Detached();
 
   void OnTraceDataCollected(const std::string& trace_fragment);
@@ -54,7 +54,7 @@ class TracingHandler {
                  const std::string* options,
                  const double* buffer_usage_reporting_interval,
                  const std::string* transfer_mode,
-                 const scoped_ptr<base::DictionaryValue>& config);
+                 const std::unique_ptr<base::DictionaryValue>& config);
   Response End(DevToolsCommandId command_id);
   Response GetCategories(DevToolsCommandId command);
   Response RequestMemoryDump(DevToolsCommandId command_id);
@@ -80,10 +80,10 @@ class TracingHandler {
       GetTraceConfigFromDevToolsConfig(
           const base::DictionaryValue& devtools_config);
 
-  scoped_ptr<base::Timer> buffer_usage_poll_timer_;
+  std::unique_ptr<base::Timer> buffer_usage_poll_timer_;
   Target target_;
 
-  scoped_ptr<Client> client_;
+  std::unique_ptr<Client> client_;
   DevToolsIOContext* io_context_;
   int frame_tree_node_id_;
   bool did_initiate_recording_;

@@ -386,7 +386,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // The last tooltip that was set with SetTooltipText().
   base::string16 current_tooltip_text_;
 
-  scoped_ptr<EmbedderVisibilityObserver> embedder_visibility_observer_;
+  std::unique_ptr<EmbedderVisibilityObserver> embedder_visibility_observer_;
   WebContentsImpl* owner_web_contents_;
 
   // Indicates whether this guest has been attached to a container.
@@ -425,7 +425,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   // Text input type states.
   // Using scoped_ptr to avoid including the header file: view_messages.h.
-  scoped_ptr<const TextInputState> last_text_input_state_;
+  std::unique_ptr<const TextInputState> last_text_input_state_;
 
   // The is the routing ID for a swapped out RenderView for the guest
   // WebContents in the embedder's process.

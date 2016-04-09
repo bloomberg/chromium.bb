@@ -8,11 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
 
@@ -44,7 +44,7 @@ class CONTENT_EXPORT ChunkedByteBuffer {
 
   // If enough data is available, reads and removes the first complete chunk
   // from the buffer. Returns a NULL pointer if no complete chunk is available.
-  scoped_ptr<std::vector<uint8_t>> PopChunk();
+  std::unique_ptr<std::vector<uint8_t>> PopChunk();
 
   // Clears all the content of the buffer.
   void Clear();
@@ -58,7 +58,7 @@ class CONTENT_EXPORT ChunkedByteBuffer {
     ~Chunk();
 
     std::vector<uint8_t> header;
-    scoped_ptr<std::vector<uint8_t>> content;
+    std::unique_ptr<std::vector<uint8_t>> content;
     size_t ExpectedContentLength() const;
 
    private:
@@ -66,7 +66,7 @@ class CONTENT_EXPORT ChunkedByteBuffer {
   };
 
   ScopedVector<Chunk> chunks_;
-  scoped_ptr<Chunk> partial_chunk_;
+  std::unique_ptr<Chunk> partial_chunk_;
   size_t total_bytes_stored_;
 
   DISALLOW_COPY_AND_ASSIGN(ChunkedByteBuffer);

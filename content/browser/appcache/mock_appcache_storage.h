@@ -9,13 +9,13 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_disk_cache.h"
@@ -201,7 +201,7 @@ class MockAppCacheStorage : public AppCacheStorage {
   StoredGroupMap stored_groups_;
   StoredEvictionTimesMap stored_eviction_times_;
   DoomedResponseIds doomed_response_ids_;
-  scoped_ptr<AppCacheDiskCache> disk_cache_;
+  std::unique_ptr<AppCacheDiskCache> disk_cache_;
   std::deque<base::Closure> pending_tasks_;
 
   bool simulate_make_group_obsolete_failure_;
@@ -217,7 +217,7 @@ class MockAppCacheStorage : public AppCacheStorage {
   GURL simulated_found_manifest_url_;
   bool simulated_found_network_namespace_;
   scoped_refptr<AppCacheInfoCollection> simulated_appcache_info_;
-  scoped_ptr<AppCacheResponseReader> simulated_reader_;
+  std::unique_ptr<AppCacheResponseReader> simulated_reader_;
 
   base::WeakPtrFactory<MockAppCacheStorage> weak_factory_;
 

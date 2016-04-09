@@ -5,10 +5,11 @@
 #ifndef CONTENT_BROWSER_GEOLOCATION_NETWORK_LOCATION_REQUEST_H_
 #define CONTENT_BROWSER_GEOLOCATION_NETWORK_LOCATION_REQUEST_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "content/browser/geolocation/wifi_data_provider.h"
 #include "content/common/content_export.h"
@@ -61,7 +62,7 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
   scoped_refptr<net::URLRequestContextGetter> url_context_;
   LocationResponseCallback location_response_callback_;
   const GURL url_;
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   // Keep a copy of the data sent in the request, so we can refer back to it
   // when the response arrives.

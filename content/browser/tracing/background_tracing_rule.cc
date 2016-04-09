@@ -92,13 +92,13 @@ class NamedTriggerRule : public BackgroundTracingRule {
       : named_event_(named_event) {}
 
  public:
-  static scoped_ptr<BackgroundTracingRule> Create(
+  static std::unique_ptr<BackgroundTracingRule> Create(
       const base::DictionaryValue* dict) {
     std::string trigger_name;
     if (!dict->GetString(kConfigRuleTriggerNameKey, &trigger_name))
       return nullptr;
 
-    return scoped_ptr<BackgroundTracingRule>(
+    return std::unique_ptr<BackgroundTracingRule>(
         new NamedTriggerRule(trigger_name));
   }
 
@@ -132,7 +132,7 @@ class HistogramRule : public BackgroundTracingRule,
         trigger_delay_(trigger_delay) {}
 
  public:
-  static scoped_ptr<BackgroundTracingRule> Create(
+  static std::unique_ptr<BackgroundTracingRule> Create(
       const base::DictionaryValue* dict) {
     std::string histogram_name;
     if (!dict->GetString(kConfigRuleHistogramNameKey, &histogram_name))
@@ -161,7 +161,7 @@ class HistogramRule : public BackgroundTracingRule,
     int trigger_delay = -1;
     dict->GetInteger(kConfigRuleTriggerDelay, &trigger_delay);
 
-    return scoped_ptr<BackgroundTracingRule>(
+    return std::unique_ptr<BackgroundTracingRule>(
         new HistogramRule(histogram_name, histogram_lower_value,
                           histogram_upper_value, repeat, trigger_delay));
   }
@@ -263,14 +263,14 @@ class ReactiveTraceForNSOrTriggerOrFullRule : public BackgroundTracingRule {
       : named_event_(named_event), category_preset_(category_preset) {}
 
  public:
-  static scoped_ptr<BackgroundTracingRule> Create(
+  static std::unique_ptr<BackgroundTracingRule> Create(
       const base::DictionaryValue* dict,
       BackgroundTracingConfigImpl::CategoryPreset category_preset) {
     std::string trigger_name;
     if (!dict->GetString(kConfigRuleTriggerNameKey, &trigger_name))
       return nullptr;
 
-    return scoped_ptr<BackgroundTracingRule>(
+    return std::unique_ptr<BackgroundTracingRule>(
         new ReactiveTraceForNSOrTriggerOrFullRule(trigger_name,
                                                   category_preset));
   }
@@ -318,7 +318,7 @@ class ReactiveTraceAtRandomIntervalsRule : public BackgroundTracingRule {
   }
 
  public:
-  static scoped_ptr<BackgroundTracingRule> Create(
+  static std::unique_ptr<BackgroundTracingRule> Create(
       const base::DictionaryValue* dict,
       BackgroundTracingConfigImpl::CategoryPreset category_preset) {
     int timeout_min;
@@ -332,7 +332,7 @@ class ReactiveTraceAtRandomIntervalsRule : public BackgroundTracingRule {
     if (timeout_min > timeout_max)
       return nullptr;
 
-    return scoped_ptr<BackgroundTracingRule>(
+    return std::unique_ptr<BackgroundTracingRule>(
         new ReactiveTraceAtRandomIntervalsRule(category_preset, timeout_min,
                                                timeout_max));
   }
@@ -411,7 +411,8 @@ class ReactiveTraceAtRandomIntervalsRule : public BackgroundTracingRule {
 
 }  // namespace
 
-scoped_ptr<BackgroundTracingRule> BackgroundTracingRule::PreemptiveRuleFromDict(
+std::unique_ptr<BackgroundTracingRule>
+BackgroundTracingRule::PreemptiveRuleFromDict(
     const base::DictionaryValue* dict) {
   DCHECK(dict);
 
@@ -419,7 +420,7 @@ scoped_ptr<BackgroundTracingRule> BackgroundTracingRule::PreemptiveRuleFromDict(
   if (!dict->GetString(kConfigRuleKey, &type))
     return nullptr;
 
-  scoped_ptr<BackgroundTracingRule> tracing_rule;
+  std::unique_ptr<BackgroundTracingRule> tracing_rule;
   if (type == kPreemptiveConfigRuleMonitorNamed)
     tracing_rule = NamedTriggerRule::Create(dict);
   else if (type == kPreemptiveConfigRuleMonitorHistogram)
@@ -431,7 +432,8 @@ scoped_ptr<BackgroundTracingRule> BackgroundTracingRule::PreemptiveRuleFromDict(
   return tracing_rule;
 }
 
-scoped_ptr<BackgroundTracingRule> BackgroundTracingRule::ReactiveRuleFromDict(
+std::unique_ptr<BackgroundTracingRule>
+BackgroundTracingRule::ReactiveRuleFromDict(
     const base::DictionaryValue* dict,
     BackgroundTracingConfigImpl::CategoryPreset category_preset) {
   DCHECK(dict);
@@ -440,7 +442,7 @@ scoped_ptr<BackgroundTracingRule> BackgroundTracingRule::ReactiveRuleFromDict(
   if (!dict->GetString(kConfigRuleKey, &type))
     return nullptr;
 
-  scoped_ptr<BackgroundTracingRule> tracing_rule;
+  std::unique_ptr<BackgroundTracingRule> tracing_rule;
 
   if (type == kReactiveConfigRuleTraceOnNavigationUntilTriggerOrFull) {
     tracing_rule =

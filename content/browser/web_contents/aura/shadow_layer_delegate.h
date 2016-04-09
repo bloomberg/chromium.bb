@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_WEB_CONTENTS_AURA_SHADOW_LAYER_DELEGATE_H_
 #define CONTENT_BROWSER_WEB_CONTENTS_AURA_SHADOW_LAYER_DELEGATE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/compositor/layer_delegate.h"
 
 namespace aura {
@@ -38,7 +39,7 @@ class ShadowLayerDelegate : public ui::LayerDelegate {
   void OnDeviceScaleFactorChanged(float device_scale_factor) override;
   base::Closure PrepareForLayerBoundsChange() override;
 
-  scoped_ptr<ui::Layer> layer_;
+  std::unique_ptr<ui::Layer> layer_;
 
   DISALLOW_COPY_AND_ASSIGN(ShadowLayerDelegate);
 };

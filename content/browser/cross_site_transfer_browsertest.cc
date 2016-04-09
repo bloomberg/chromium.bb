@@ -130,7 +130,7 @@ class TrackingResourceDispatcherHostDelegate
   base::Closure run_loop_quit_closure_;
 
   // This lives on the UI thread.
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   // Set on the IO thread while |run_loop_| is non-nullptr, read on the UI
   // thread after deleting run_loop_.

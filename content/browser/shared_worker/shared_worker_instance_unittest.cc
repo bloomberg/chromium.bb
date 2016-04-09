@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/shared_worker/shared_worker_instance.h"
+
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/worker_storage_partition.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -39,8 +41,8 @@ class SharedWorkerInstanceTest : public testing::Test {
   }
 
   TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestBrowserContext> browser_context_;
-  scoped_ptr<WorkerStoragePartition> partition_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
+  std::unique_ptr<WorkerStoragePartition> partition_;
   const WorkerStoragePartitionId partition_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerInstanceTest);

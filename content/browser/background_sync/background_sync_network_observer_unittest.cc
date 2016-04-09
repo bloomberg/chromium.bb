@@ -30,8 +30,8 @@ class BackgroundSyncNetworkObserverTest : public testing::Test {
 
   TestBrowserThreadBundle browser_thread_bundle_;
 
-  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier;
-  scoped_ptr<BackgroundSyncNetworkObserver> network_observer_;
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier;
+  std::unique_ptr<BackgroundSyncNetworkObserver> network_observer_;
   int network_changed_count_;
 };
 

@@ -52,7 +52,7 @@ class EmulationHandler {
       const int* screen_height,
       const int* position_x,
       const int* position_y,
-      const scoped_ptr<base::DictionaryValue>& screen_orientation);
+      const std::unique_ptr<base::DictionaryValue>& screen_orientation);
   Response ClearDeviceMetricsOverride();
 
  private:

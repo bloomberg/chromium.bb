@@ -82,7 +82,7 @@ class CONTENT_EXPORT Stream : public base::RefCountedThreadSafe<Stream> {
   // and STREAM_COMPLETE if the stream is finalized and all data has been read.
   StreamState ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read);
 
-  scoped_ptr<StreamHandle> CreateHandle();
+  std::unique_ptr<StreamHandle> CreateHandle();
   void CloseHandle();
 
   // Indicates whether there is space in the buffer to add more data.
@@ -123,8 +123,8 @@ class CONTENT_EXPORT Stream : public base::RefCountedThreadSafe<Stream> {
   // in order to check memory usage.
   size_t last_total_buffered_bytes_;
 
-  scoped_ptr<ByteStreamWriter> writer_;
-  scoped_ptr<ByteStreamReader> reader_;
+  std::unique_ptr<ByteStreamWriter> writer_;
+  std::unique_ptr<ByteStreamReader> reader_;
 
   StreamRegistry* registry_;
   StreamReadObserver* read_observer_;

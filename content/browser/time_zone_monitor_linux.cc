@@ -159,8 +159,8 @@ TimeZoneMonitorLinux::~TimeZoneMonitorLinux() {
 }
 
 // static
-scoped_ptr<TimeZoneMonitor> TimeZoneMonitor::Create() {
-  return scoped_ptr<TimeZoneMonitor>(new TimeZoneMonitorLinux());
+std::unique_ptr<TimeZoneMonitor> TimeZoneMonitor::Create() {
+  return std::unique_ptr<TimeZoneMonitor>(new TimeZoneMonitorLinux());
 }
 
 }  // namespace content

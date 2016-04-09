@@ -6,12 +6,12 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "content/public/test/mock_storage_client.h"
@@ -224,8 +224,8 @@ class QuotaTemporaryStorageEvictorTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  scoped_ptr<MockQuotaEvictionHandler> quota_eviction_handler_;
-  scoped_ptr<QuotaTemporaryStorageEvictor> temporary_storage_evictor_;
+  std::unique_ptr<MockQuotaEvictionHandler> quota_eviction_handler_;
+  std::unique_ptr<QuotaTemporaryStorageEvictor> temporary_storage_evictor_;
 
   int num_get_usage_and_quota_for_eviction_;
 

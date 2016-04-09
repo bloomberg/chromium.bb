@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -12,7 +14,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -102,7 +103,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
 
 class FakeWriter {
  public:
-  explicit FakeWriter(scoped_ptr<OpenFileHandle> handle)
+  explicit FakeWriter(std::unique_ptr<OpenFileHandle> handle)
       : handle_(std::move(handle)),
         path_(handle_->platform_path()),
         max_written_offset_(handle_->GetEstimatedFileSize()),
@@ -158,7 +159,7 @@ class FakeWriter {
   }
 
  private:
-  scoped_ptr<OpenFileHandle> handle_;
+  std::unique_ptr<OpenFileHandle> handle_;
   base::FilePath path_;
   int64_t max_written_offset_;
   int64_t append_mode_write_amount_;
@@ -192,7 +193,8 @@ class QuotaReservationManagerTest : public testing::Test {
     file_path_ = work_dir_.path().Append(FILE_PATH_LITERAL("hoge"));
     SetFileSize(file_path_, kInitialFileSize);
 
-    scoped_ptr<QuotaReservationManager::QuotaBackend> backend(new FakeBackend);
+    std::unique_ptr<QuotaReservationManager::QuotaBackend> backend(
+        new FakeBackend);
     reservation_manager_.reset(new QuotaReservationManager(std::move(backend)));
   }
 
@@ -214,7 +216,7 @@ class QuotaReservationManagerTest : public testing::Test {
   base::MessageLoop message_loop_;
   base::ScopedTempDir work_dir_;
   base::FilePath file_path_;
-  scoped_ptr<QuotaReservationManager> reservation_manager_;
+  std::unique_ptr<QuotaReservationManager> reservation_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaReservationManagerTest);
 };
@@ -305,10 +307,10 @@ TEST_F(QuotaReservationManagerTest, MultipleClient) {
   RefreshReservation(reservation2.get(), 20);
   int64_t cached_reserved_quota2 = reservation2->remaining_quota();
 
-  scoped_ptr<FakeWriter> writer1(
+  std::unique_ptr<FakeWriter> writer1(
       new FakeWriter(reservation1->GetOpenFileHandle(file_path())));
 
-  scoped_ptr<FakeWriter> writer2(
+  std::unique_ptr<FakeWriter> writer2(
       new FakeWriter(reservation2->GetOpenFileHandle(file_path())));
 
   cached_reserved_quota1 -= writer1->Write(kInitialFileSize + 10);

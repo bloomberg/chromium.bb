@@ -4,10 +4,11 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
@@ -32,7 +33,7 @@ CONTENT_EXPORT
   NSView* contentsView_;
 
   // Our drop data. Should only be initialized once.
-  scoped_ptr<content::DropData> dropData_;
+  std::unique_ptr<content::DropData> dropData_;
 
   // The image to show as drag image. Can be nil.
   base::scoped_nsobject<NSImage> dragImage_;

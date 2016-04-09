@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
-#include "content/browser/geolocation/fake_access_token_store.h"
 #include "content/browser/geolocation/location_arbitrator_impl.h"
+
+#include <memory>
+
+#include "base/bind.h"
+#include "content/browser/geolocation/fake_access_token_store.h"
 #include "content/browser/geolocation/mock_location_provider.h"
 #include "content/public/common/geoposition.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -143,8 +145,8 @@ class GeolocationLocationArbitratorTest : public testing::Test {
   }
 
   scoped_refptr<FakeAccessTokenStore> access_token_store_;
-  scoped_ptr<MockLocationObserver> observer_;
-  scoped_ptr<TestingLocationArbitrator> arbitrator_;
+  std::unique_ptr<MockLocationObserver> observer_;
+  std::unique_ptr<TestingLocationArbitrator> arbitrator_;
   base::MessageLoop loop_;
 };
 
