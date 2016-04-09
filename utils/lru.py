@@ -28,6 +28,10 @@ class LRUDict(object):
     """False if dict is empty."""
     return bool(self._items)
 
+  def __iter__(self):
+    """Iterate over the keys."""
+    return self._items.__iter__()
+
   def __len__(self):
     """Number of items in the dict."""
     return len(self._items)

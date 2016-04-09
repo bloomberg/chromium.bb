@@ -1242,6 +1242,10 @@ class LocalCache(object):
     """Returns a set of all cached digests (always a new object)."""
     raise NotImplementedError()
 
+  def cleanup(self):
+    """Deletes any corrupted item from the cache and trims it if necessary."""
+    raise NotImplementedError()
+
   def touch(self, digest, size):
     """Ensures item is not corrupted and updates its LRU position.
 
@@ -1293,6 +1297,9 @@ class MemoryCache(LocalCache):
   def cached_set(self):
     with self._lock:
       return set(self._contents)
+
+  def cleanup(self):
+    pass
 
   def touch(self, digest, size):
     with self._lock:
@@ -1370,6 +1377,8 @@ class DiskCache(LocalCache):
     # The items that must not be evicted during this run since they were
     # referenced.
     self._protected = set()
+    # Cleanup operations done by self._load(), if any.
+    self._operations = []
     with tools.Profiler('Setup'):
       with self._lock:
         # self._load() calls self._trim() which initializes self._free_disk.
@@ -1401,6 +1410,27 @@ class DiskCache(LocalCache):
   def cached_set(self):
     with self._lock:
       return self._lru.keys_set()
+
+  def cleanup(self):
+    # At that point, the cache was already loaded, trimmed to respect cache
+    # policies and invalid files were deleted.
+    if self._evicted:
+      logging.info(
+          'Evicted items with the following sizes: %s', sorted(self._evicted))
+
+    # What remains to be done is to hash every single item to
+    # detect corruption, then save to ensure state.json is up to date.
+    # Sadly, on a 50Gb cache with 100mib/s I/O, this is still over 8 minutes.
+    # TODO(maruel): Let's revisit once directory metadata is stored in
+    # state.json so only the files that had been mapped since the last cleanup()
+    # call are manually verified.
+    #
+    #with self._lock:
+    #  for digest in self._lru:
+    #    if not isolated_format.is_valid_hash(
+    #        self._path(digest), self.hash_algo):
+    #      self.evict(digest)
+    #      logging.info('Deleted corrupted item: %s', digest)
 
   def touch(self, digest, size):
     """Verifies an actual file is valid.

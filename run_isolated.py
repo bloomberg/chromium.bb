@@ -495,6 +495,11 @@ def main(args):
       version=__version__,
       log_file=RUN_ISOLATED_LOG_FILE)
   parser.add_option(
+      '--clean', action='store_true',
+      help='Cleans the cache, trimming it necessary and remove corrupted items '
+           'and returns without executing anything; use with -v to know what '
+           'was done')
+  parser.add_option(
       '--json',
       help='dump output metadata to json file. When used, run_isolated returns '
            'non-zero only on internal failure')
@@ -525,16 +530,27 @@ def main(args):
 
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
-  if not options.isolated:
-    parser.error('--isolated is required.')
+
+  cache = isolateserver.process_cache_options(options)
+  if options.clean:
+    if options.isolated:
+      parser.error('Can\'t use --isolated with --clean.')
+    if options.isolate_server:
+      parser.error('Can\'t use --isolate-server with --clean.')
+    if options.json:
+      parser.error('Can\'t use --json with --clean.')
+    cache.cleanup()
+    return 0
+
   auth.process_auth_options(parser, options)
   isolateserver.process_isolate_server_options(parser, options, True)
 
-  cache = isolateserver.process_cache_options(options)
   if options.root_dir:
     options.root_dir = unicode(os.path.abspath(options.root_dir))
   if options.json:
     options.json = unicode(os.path.abspath(options.json))
+  if not options.isolated:
+    parser.error('--isolated is required.')
   with isolateserver.get_storage(
       options.isolate_server, options.namespace) as storage:
     # Hashing schemes used by |storage| and |cache| MUST match.
