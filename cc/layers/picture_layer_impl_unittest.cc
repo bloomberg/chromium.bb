@@ -229,10 +229,10 @@ class PictureLayerImplTest : public testing::Test {
 
     // Steal from the recycled tree if possible.
     LayerImpl* pending_root = pending_tree->root_layer();
-    scoped_ptr<FakePictureLayerImpl> pending_layer;
+    std::unique_ptr<FakePictureLayerImpl> pending_layer;
     DCHECK(!pending_root || pending_root->id() == root_id_);
     if (!pending_root) {
-      scoped_ptr<LayerImpl> new_pending_root =
+      std::unique_ptr<LayerImpl> new_pending_root =
           LayerImpl::Create(pending_tree, root_id_);
       pending_layer = FakePictureLayerImpl::Create(pending_tree, id_);
       if (!tile_size.IsEmpty())
@@ -393,7 +393,7 @@ class PictureLayerImplTest : public testing::Test {
   FakeImplTaskRunnerProvider task_runner_provider_;
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
-  scoped_ptr<OutputSurface> output_surface_;
+  std::unique_ptr<OutputSurface> output_surface_;
   FakeLayerTreeHostImpl host_impl_;
   int root_id_;
   int id_;
@@ -421,7 +421,7 @@ TEST_F(PictureLayerImplTest, TileGridAlignment) {
       FakeRasterSource::CreateFilled(layer_size);
 
   // Create an active recording source, but make sure it's not solid.
-  scoped_ptr<FakeRecordingSource> active_recording_source =
+  std::unique_ptr<FakeRecordingSource> active_recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_size);
   active_recording_source->SetLayerBounds(layer_size);
   active_recording_source->add_draw_rect(gfx::Rect(layer_size));
@@ -1294,7 +1294,7 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
   EXPECT_EQ(pending_layer_->num_tilings(), 1u);
 
   // Mask layers dont create low res since they always fit on one tile.
-  scoped_ptr<FakePictureLayerImpl> mask =
+  std::unique_ptr<FakePictureLayerImpl> mask =
       FakePictureLayerImpl::CreateMaskWithRasterSource(
           host_impl_.pending_tree(), 3, pending_raster_source);
   mask->SetBounds(layer_bounds);
@@ -1322,7 +1322,7 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
       FakeRasterSource::CreateFilled(layer_bounds);
   SetupPendingTree(valid_raster_source);
 
-  scoped_ptr<FakePictureLayerImpl> mask_ptr =
+  std::unique_ptr<FakePictureLayerImpl> mask_ptr =
       FakePictureLayerImpl::CreateMaskWithRasterSource(
           host_impl_.pending_tree(), 3, valid_raster_source);
   mask_ptr->SetBounds(layer_bounds);
@@ -1451,7 +1451,7 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
       FakeRasterSource::CreateFilled(layer_bounds);
   SetupPendingTree(valid_raster_source);
 
-  scoped_ptr<FakePictureLayerImpl> mask_ptr =
+  std::unique_ptr<FakePictureLayerImpl> mask_ptr =
       FakePictureLayerImpl::CreateMaskWithRasterSource(
           host_impl_.pending_tree(), 3, valid_raster_source);
   mask_ptr->SetBounds(layer_bounds);
@@ -1539,11 +1539,11 @@ TEST_F(PictureLayerImplTest, ClampTilesToMaxTileSize) {
   ResetTilingsAndRasterScales();
 
   // Change the max texture size on the output surface context.
-  scoped_ptr<TestWebGraphicsContext3D> context =
+  std::unique_ptr<TestWebGraphicsContext3D> context =
       TestWebGraphicsContext3D::Create();
   context->set_max_texture_size(140);
   host_impl_.DidLoseOutputSurface();
-  scoped_ptr<OutputSurface> new_output_surface =
+  std::unique_ptr<OutputSurface> new_output_surface =
       FakeOutputSurface::Create3d(std::move(context));
   host_impl_.SetVisible(true);
   host_impl_.InitializeRenderer(new_output_surface.get());
@@ -1579,11 +1579,11 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
   ResetTilingsAndRasterScales();
 
   // Change the max texture size on the output surface context.
-  scoped_ptr<TestWebGraphicsContext3D> context =
+  std::unique_ptr<TestWebGraphicsContext3D> context =
       TestWebGraphicsContext3D::Create();
   context->set_max_texture_size(140);
   host_impl_.DidLoseOutputSurface();
-  scoped_ptr<OutputSurface> new_output_surface =
+  std::unique_ptr<OutputSurface> new_output_surface =
       FakeOutputSurface::Create3d(std::move(context));
   host_impl_.SetVisible(true);
   host_impl_.InitializeRenderer(new_output_surface.get());
@@ -1607,7 +1607,7 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
 }
 
 TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
 
   gfx::Size layer_bounds(1300, 1900);
   gfx::Rect layer_rect(layer_bounds);
@@ -1632,7 +1632,7 @@ TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
 }
 
 TEST_F(PictureLayerImplTest, ResourcelessPartialRecording) {
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
 
   gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(700, 650);
@@ -1669,7 +1669,7 @@ TEST_F(PictureLayerImplTest, ResourcelessPartialRecording) {
 }
 
 TEST_F(PictureLayerImplTest, ResourcelessEmptyRecording) {
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
 
   gfx::Size layer_bounds(700, 650);
   scoped_refptr<FakeRasterSource> active_raster_source =
@@ -1689,7 +1689,7 @@ TEST_F(PictureLayerImplTest, ResourcelessEmptyRecording) {
 }
 
 TEST_F(PictureLayerImplTest, SolidColorLayerHasVisibleFullCoverage) {
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
 
   gfx::Size layer_bounds(1500, 1500);
   gfx::Rect visible_rect(250, 250, 1000, 1000);
@@ -1760,7 +1760,7 @@ TEST_F(NoLowResPictureLayerImplTest, MarkRequiredOffscreenTiles) {
   int num_visible = 0;
   int num_offscreen = 0;
 
-  scoped_ptr<TilingSetRasterQueueAll> queue(new TilingSetRasterQueueAll(
+  std::unique_ptr<TilingSetRasterQueueAll> queue(new TilingSetRasterQueueAll(
       pending_layer_->picture_layer_tiling_set(), false));
   for (; !queue->IsEmpty(); queue->Pop()) {
     const PrioritizedTile& prioritized_tile = queue->Top();
@@ -1843,7 +1843,7 @@ TEST_F(NoLowResPictureLayerImplTest,
   host_impl_.active_tree()->UpdateDrawProperties(update_lcd_text);
   active_layer_->draw_properties().visible_layer_rect = visible_layer_rect;
 
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer_->AppendQuads(render_pass.get(), &data);
@@ -1872,7 +1872,7 @@ TEST_F(PictureLayerImplTest, HighResTileIsComplete) {
       active_layer_->tilings()->tiling_at(0)->AllTilesForTesting();
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
 
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer_->AppendQuads(render_pass.get(), &data);
@@ -1896,7 +1896,7 @@ TEST_F(PictureLayerImplTest, HighResTileIsIncomplete) {
   SetupPendingTreeWithFixedTileSize(pending_raster_source, tile_size, Region());
   ActivateTree();
 
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer_->AppendQuads(render_pass.get(), &data);
@@ -1923,7 +1923,7 @@ TEST_F(PictureLayerImplTest, HighResTileIsIncompleteLowResComplete) {
       active_layer_->tilings()->tiling_at(1)->AllTilesForTesting();
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(low_tiles);
 
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer_->AppendQuads(render_pass.get(), &data);
@@ -1957,7 +1957,7 @@ TEST_F(PictureLayerImplTest, LowResTileIsIncomplete) {
       active_layer_->tilings()->tiling_at(1)->AllTilesForTesting();
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(low_tiles);
 
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer_->AppendQuads(render_pass.get(), &data);
@@ -2010,7 +2010,7 @@ TEST_F(PictureLayerImplTest,
       active_layer_->HighResTiling()->AllTilesForTesting();
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(high_tiles);
 
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer_->AppendQuads(render_pass.get(), &data);
@@ -2043,7 +2043,7 @@ TEST_F(PictureLayerImplTest, AppendQuadsDataForCheckerboard) {
   SetupPendingTreeWithFixedTileSize(pending_raster_source, tile_size, Region());
   ActivateTree();
 
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer_->AppendQuads(render_pass.get(), &data);
@@ -2232,7 +2232,7 @@ TEST_F(PictureLayerImplTest, ActivateUninitializedLayer) {
   host_impl_.CreatePendingTree();
   LayerTreeImpl* pending_tree = host_impl_.pending_tree();
 
-  scoped_ptr<FakePictureLayerImpl> pending_layer =
+  std::unique_ptr<FakePictureLayerImpl> pending_layer =
       FakePictureLayerImpl::CreateWithRasterSource(pending_tree, id_,
                                                    pending_raster_source);
   pending_layer->SetDrawsContent(true);
@@ -2895,7 +2895,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
   int low_res_tile_count = 0u;
   int high_res_tile_count = 0u;
   int high_res_now_tiles = 0u;
-  scoped_ptr<TilingSetRasterQueueAll> queue(new TilingSetRasterQueueAll(
+  std::unique_ptr<TilingSetRasterQueueAll> queue(new TilingSetRasterQueueAll(
       pending_layer_->picture_layer_tiling_set(), false));
   while (!queue->IsEmpty()) {
     PrioritizedTile prioritized_tile = queue->Top();
@@ -2934,7 +2934,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
   EXPECT_EQ(low_res_tile_count + high_res_tile_count + non_ideal_tile_count,
             static_cast<int>(unique_tiles.size()));
 
-  scoped_ptr<TilingSetRasterQueueRequired> required_queue(
+  std::unique_ptr<TilingSetRasterQueueRequired> required_queue(
       new TilingSetRasterQueueRequired(
           pending_layer_->picture_layer_tiling_set(),
           RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW));
@@ -3022,7 +3022,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueueActiveTree) {
   ActivateTree();
   EXPECT_EQ(2u, active_layer_->num_tilings());
 
-  scoped_ptr<TilingSetRasterQueueRequired> queue(
+  std::unique_ptr<TilingSetRasterQueueRequired> queue(
       new TilingSetRasterQueueRequired(
           active_layer_->picture_layer_tiling_set(),
           RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW));
@@ -3049,7 +3049,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueueRequiredNoHighRes) {
       pending_layer_->picture_layer_tiling_set()->FindTilingWithResolution(
           HIGH_RESOLUTION));
 
-  scoped_ptr<TilingSetRasterQueueRequired> queue(
+  std::unique_ptr<TilingSetRasterQueueRequired> queue(
       new TilingSetRasterQueueRequired(
           pending_layer_->picture_layer_tiling_set(),
           RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION));
@@ -3104,7 +3104,7 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
   EXPECT_GT(number_of_unmarked_tiles, 1u);
 
   // Tiles don't have resources yet.
-  scoped_ptr<TilingSetEvictionQueue> queue(
+  std::unique_ptr<TilingSetEvictionQueue> queue(
       new TilingSetEvictionQueue(pending_layer_->picture_layer_tiling_set()));
   EXPECT_TRUE(queue->IsEmpty());
 
@@ -3664,7 +3664,7 @@ TEST_F(NoLowResPictureLayerImplTest, ReleaseResources) {
 }
 
 TEST_F(PictureLayerImplTest, SharedQuadStateContainsMaxTilingScale) {
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
 
   gfx::Size layer_bounds(1000, 2000);
   host_impl_.SetViewportSize(gfx::Size(10000, 20000));
@@ -3749,7 +3749,7 @@ TEST_F(PictureLayerImplTestWithDelegatingRenderer,
   host_impl_.SetTreePriority(SAME_PRIORITY_FOR_BOTH_TREES);
   host_impl_.PrepareTiles();
 
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_HARDWARE, nullptr);
   active_layer_->AppendQuads(render_pass.get(), &data);
@@ -3781,7 +3781,7 @@ class OcclusionTrackingPictureLayerImplTest : public PictureLayerImplTest {
     size_t occluded_tile_count = 0u;
     PrioritizedTile last_tile;
 
-    scoped_ptr<TilingSetEvictionQueue> queue(
+    std::unique_ptr<TilingSetEvictionQueue> queue(
         new TilingSetEvictionQueue(layer->picture_layer_tiling_set()));
     while (!queue->IsEmpty()) {
       PrioritizedTile prioritized_tile = queue->Top();
@@ -3835,7 +3835,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   // No occlusion.
   int unoccluded_tile_count = 0;
-  scoped_ptr<TilingSetRasterQueueAll> queue(new TilingSetRasterQueueAll(
+  std::unique_ptr<TilingSetRasterQueueAll> queue(new TilingSetRasterQueueAll(
       pending_layer_->picture_layer_tiling_set(), false));
   while (!queue->IsEmpty()) {
     PrioritizedTile prioritized_tile = queue->Top();
@@ -4381,7 +4381,7 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
   scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
   FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
   TestTaskGraphRunner task_graph_runner;
-  scoped_ptr<FakeLayerTreeHost> host =
+  std::unique_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
   host->SetRootLayer(layer);
   RecordingSource* recording_source = layer->GetRecordingSourceForTesting();
@@ -4412,7 +4412,7 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
     host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
   }
 
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer_->AppendQuads(render_pass.get(), &data);
@@ -4444,7 +4444,7 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
   scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
   FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
   TestTaskGraphRunner task_graph_runner;
-  scoped_ptr<FakeLayerTreeHost> host =
+  std::unique_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
   host->SetRootLayer(layer);
   RecordingSource* recording_source = layer->GetRecordingSourceForTesting();
@@ -4780,7 +4780,7 @@ TEST_F(TileSizeTest, TileSizes) {
   host_impl_.CreatePendingTree();
 
   LayerTreeImpl* pending_tree = host_impl_.pending_tree();
-  scoped_ptr<FakePictureLayerImpl> layer =
+  std::unique_ptr<FakePictureLayerImpl> layer =
       FakePictureLayerImpl::Create(pending_tree, id_);
 
   host_impl_.SetViewportSize(gfx::Size(1000, 1000));

@@ -39,7 +39,7 @@ class CC_EXPORT PictureLayerTilingSet {
     size_t end;
   };
 
-  static scoped_ptr<PictureLayerTilingSet> Create(
+  static std::unique_ptr<PictureLayerTilingSet> Create(
       WhichTree tree,
       PictureLayerTilingClient* client,
       size_t tiling_interest_area_padding,
@@ -189,7 +189,7 @@ class CC_EXPORT PictureLayerTilingSet {
   void Remove(PictureLayerTiling* tiling);
   void VerifyTilings(const PictureLayerTilingSet* pending_twin_set) const;
 
-  std::vector<scoped_ptr<PictureLayerTiling>> tilings_;
+  std::vector<std::unique_ptr<PictureLayerTiling>> tilings_;
 
   const size_t tiling_interest_area_padding_;
   const float skewport_target_time_in_seconds_;

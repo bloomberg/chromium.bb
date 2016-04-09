@@ -31,7 +31,7 @@ class FakeFloatAnimationCurve : public FloatAnimationCurve {
 
   base::TimeDelta Duration() const override;
   float GetValue(base::TimeDelta now) const override;
-  scoped_ptr<AnimationCurve> Clone() const override;
+  std::unique_ptr<AnimationCurve> Clone() const override;
 
  private:
   base::TimeDelta duration_;
@@ -54,7 +54,7 @@ class FakeTransformTransition : public TransformAnimationCurve {
   bool MaximumTargetScale(bool forward_direction,
                           float* max_scale) const override;
 
-  scoped_ptr<AnimationCurve> Clone() const override;
+  std::unique_ptr<AnimationCurve> Clone() const override;
 
  private:
   base::TimeDelta duration_;
@@ -68,7 +68,7 @@ class FakeFloatTransition : public FloatAnimationCurve {
   base::TimeDelta Duration() const override;
   float GetValue(base::TimeDelta time) const override;
 
-  scoped_ptr<AnimationCurve> Clone() const override;
+  std::unique_ptr<AnimationCurve> Clone() const override;
 
  private:
   base::TimeDelta duration_;
@@ -173,11 +173,11 @@ int AddOpacityStepsToController(LayerAnimationController* target,
 
 void AddAnimationToLayerWithPlayer(int layer_id,
                                    scoped_refptr<AnimationTimeline> timeline,
-                                   scoped_ptr<Animation> animation);
+                                   std::unique_ptr<Animation> animation);
 void AddAnimationToLayerWithExistingPlayer(
     int layer_id,
     scoped_refptr<AnimationTimeline> timeline,
-    scoped_ptr<Animation> animation);
+    std::unique_ptr<Animation> animation);
 
 void RemoveAnimationFromLayerWithExistingPlayer(
     int layer_id,

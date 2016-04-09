@@ -5,11 +5,12 @@
 #ifndef CC_ANIMATION_ANIMATION_REGISTRAR_H_
 #define CC_ANIMATION_ANIMATION_REGISTRAR_H_
 
+#include <memory>
 #include <unordered_map>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
 
@@ -23,8 +24,8 @@ class CC_EXPORT AnimationRegistrar {
   using AnimationControllerMap =
       std::unordered_map<int, LayerAnimationController*>;
 
-  static scoped_ptr<AnimationRegistrar> Create() {
-    return make_scoped_ptr(new AnimationRegistrar());
+  static std::unique_ptr<AnimationRegistrar> Create() {
+    return base::WrapUnique(new AnimationRegistrar());
   }
 
   virtual ~AnimationRegistrar();
@@ -72,8 +73,8 @@ class CC_EXPORT AnimationRegistrar {
   bool UpdateAnimationState(bool start_ready_animations,
                             AnimationEvents* events);
 
-  scoped_ptr<AnimationEvents> CreateEvents();
-  void SetAnimationEvents(scoped_ptr<AnimationEvents> events);
+  std::unique_ptr<AnimationEvents> CreateEvents();
+  void SetAnimationEvents(std::unique_ptr<AnimationEvents> events);
 
  private:
   AnimationRegistrar();

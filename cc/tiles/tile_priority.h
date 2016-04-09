@@ -9,9 +9,9 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/cc_export.h"
 
@@ -29,7 +29,7 @@ enum WhichTree {
   LAST_TREE = 1
   // Be sure to update WhichTreeAsValue when adding new fields.
 };
-scoped_ptr<base::Value> WhichTreeAsValue(WhichTree tree);
+std::unique_ptr<base::Value> WhichTreeAsValue(WhichTree tree);
 
 enum TileResolution {
   LOW_RESOLUTION = 0 ,

@@ -4,6 +4,7 @@
 
 #include "cc/blink/web_scrollbar_layer_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "cc/blink/scrollbar_impl.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/layer.h"
@@ -32,10 +33,10 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
     blink::WebScrollbarThemeGeometry* geometry)
     : layer_(new WebLayerImpl(PaintedScrollbarLayer::Create(
 
-          scoped_ptr<cc::Scrollbar>(
-              new ScrollbarImpl(make_scoped_ptr(scrollbar),
+          std::unique_ptr<cc::Scrollbar>(
+              new ScrollbarImpl(base::WrapUnique(scrollbar),
                                 painter,
-                                make_scoped_ptr(geometry))),
+                                base::WrapUnique(geometry))),
           0))) {}
 
 WebScrollbarLayerImpl::WebScrollbarLayerImpl(

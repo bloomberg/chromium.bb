@@ -4,7 +4,8 @@
 
 #include "cc/blink/web_compositor_support_impl.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "cc/blink/web_content_layer_impl.h"
 #include "cc/blink/web_display_item_list_impl.h"
 #include "cc/blink/web_external_texture_layer_impl.h"

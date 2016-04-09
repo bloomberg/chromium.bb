@@ -47,15 +47,15 @@ class CC_EXPORT TextureLayer : public Layer {
 
     // Gets a ReleaseCallback that can be called from another thread. Note: the
     // caller must ensure the callback is called.
-    scoped_ptr<SingleReleaseCallbackImpl> GetCallbackForImplThread();
+    std::unique_ptr<SingleReleaseCallbackImpl> GetCallbackForImplThread();
 
    protected:
     friend class TextureLayer;
 
     // Protected visiblity so only TextureLayer and unit tests can create these.
-    static scoped_ptr<MainThreadReference> Create(
+    static std::unique_ptr<MainThreadReference> Create(
         const TextureMailbox& mailbox,
-        scoped_ptr<SingleReleaseCallback> release_callback);
+        std::unique_ptr<SingleReleaseCallback> release_callback);
     virtual ~TextureMailboxHolder();
 
    private:
@@ -63,7 +63,7 @@ class CC_EXPORT TextureLayer : public Layer {
     friend class MainThreadReference;
     explicit TextureMailboxHolder(
         const TextureMailbox& mailbox,
-        scoped_ptr<SingleReleaseCallback> release_callback);
+        std::unique_ptr<SingleReleaseCallback> release_callback);
 
     void InternalAddRef();
     void InternalRelease();
@@ -76,7 +76,7 @@ class CC_EXPORT TextureLayer : public Layer {
     // during commit where the main thread is blocked.
     unsigned internal_references_;
     TextureMailbox mailbox_;
-    scoped_ptr<SingleReleaseCallback> release_callback_;
+    std::unique_ptr<SingleReleaseCallback> release_callback_;
 
     // This lock guards the sync_token_ and is_lost_ fields because they can be
     // accessed on both the impl and main thread. We do this to ensure that the
@@ -99,7 +99,7 @@ class CC_EXPORT TextureLayer : public Layer {
   // Resets the texture.
   void ClearTexture();
 
-  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
   // Sets whether this texture should be Y-flipped at draw time. Defaults to
   // true.
@@ -129,8 +129,9 @@ class CC_EXPORT TextureLayer : public Layer {
   void SetBlendBackgroundColor(bool blend);
 
   // Code path for plugins which supply their own mailbox.
-  void SetTextureMailbox(const TextureMailbox& mailbox,
-                         scoped_ptr<SingleReleaseCallback> release_callback);
+  void SetTextureMailbox(
+      const TextureMailbox& mailbox,
+      std::unique_ptr<SingleReleaseCallback> release_callback);
 
   // Use this for special cases where the same texture is used to back the
   // TextureLayer across all frames.
@@ -152,7 +153,7 @@ class CC_EXPORT TextureLayer : public Layer {
  private:
   void SetTextureMailboxInternal(
       const TextureMailbox& mailbox,
-      scoped_ptr<SingleReleaseCallback> release_callback,
+      std::unique_ptr<SingleReleaseCallback> release_callback,
       bool requires_commit,
       bool allow_mailbox_reuse);
 
@@ -167,7 +168,7 @@ class CC_EXPORT TextureLayer : public Layer {
   bool premultiplied_alpha_;
   bool blend_background_color_;
 
-  scoped_ptr<TextureMailboxHolder::MainThreadReference> holder_ref_;
+  std::unique_ptr<TextureMailboxHolder::MainThreadReference> holder_ref_;
   bool needs_set_mailbox_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureLayer);

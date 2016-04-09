@@ -21,8 +21,8 @@ namespace cc {
 namespace {
 
 std::string CompositeToString(
-    scoped_ptr<FrameTimingTracker::CompositeTimingSet> timingset) {
-  scoped_ptr<base::trace_event::TracedValue> value(
+    std::unique_ptr<FrameTimingTracker::CompositeTimingSet> timingset) {
+  std::unique_ptr<base::trace_event::TracedValue> value(
       new base::trace_event::TracedValue());
   value->BeginArray("values");
   std::set<int> rect_ids;
@@ -48,8 +48,8 @@ std::string CompositeToString(
 }
 
 std::string MainFrameToString(
-    scoped_ptr<FrameTimingTracker::MainFrameTimingSet> timingset) {
-  scoped_ptr<base::trace_event::TracedValue> value(
+    std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> timingset) {
+  std::unique_ptr<base::trace_event::TracedValue> value(
       new base::trace_event::TracedValue());
   value->BeginArray("values");
   std::set<int> rect_ids;
@@ -82,7 +82,7 @@ TEST(FrameTimingTrackerTest, DefaultTrackerIsEmpty) {
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
 
-  scoped_ptr<FrameTimingTracker> tracker(
+  std::unique_ptr<FrameTimingTracker> tracker(
       FrameTimingTracker::Create(&host_impl));
   EXPECT_EQ("{\"values\":[]}",
             CompositeToString(tracker->GroupCompositeCountsByRectId()));
@@ -97,7 +97,7 @@ TEST(FrameTimingTrackerTest, NoFrameIdsIsEmpty) {
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
 
-  scoped_ptr<FrameTimingTracker> tracker(
+  std::unique_ptr<FrameTimingTracker> tracker(
       FrameTimingTracker::Create(&host_impl));
   std::vector<std::pair<int, int64_t>> ids;
   tracker->SaveTimeStamps(base::TimeTicks::FromInternalValue(100), ids);
@@ -112,7 +112,7 @@ TEST(FrameTimingTrackerTest, NoRectIdsYieldsNoMainFrameEvents) {
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
 
-  scoped_ptr<FrameTimingTracker> tracker(
+  std::unique_ptr<FrameTimingTracker> tracker(
       FrameTimingTracker::Create(&host_impl));
   tracker->SaveMainFrameTimeStamps(std::vector<int64_t>(),
                                    base::TimeTicks::FromInternalValue(100),
@@ -128,7 +128,7 @@ TEST(FrameTimingTrackerTest, OneFrameId) {
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
 
-  scoped_ptr<FrameTimingTracker> tracker(
+  std::unique_ptr<FrameTimingTracker> tracker(
       FrameTimingTracker::Create(&host_impl));
   std::vector<std::pair<int, int64_t>> ids;
   ids.push_back(std::make_pair(1, 2));
@@ -146,7 +146,7 @@ TEST(FrameTimingTrackerTest, OneMainFrameRect) {
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
 
-  scoped_ptr<FrameTimingTracker> tracker(
+  std::unique_ptr<FrameTimingTracker> tracker(
       FrameTimingTracker::Create(&host_impl));
   std::vector<int64_t> rect_ids;
   rect_ids.push_back(1);
@@ -166,7 +166,7 @@ TEST(FrameTimingTrackerTest, UnsortedTimestampsIds) {
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
 
-  scoped_ptr<FrameTimingTracker> tracker(
+  std::unique_ptr<FrameTimingTracker> tracker(
       FrameTimingTracker::Create(&host_impl));
   std::vector<std::pair<int, int64_t>> ids;
   ids.push_back(std::make_pair(1, 2));
@@ -188,7 +188,7 @@ TEST(FrameTimingTrackerTest, MainFrameUnsortedTimestamps) {
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
 
-  scoped_ptr<FrameTimingTracker> tracker(
+  std::unique_ptr<FrameTimingTracker> tracker(
       FrameTimingTracker::Create(&host_impl));
   std::vector<int64_t> rect_ids;
   rect_ids.push_back(2);
@@ -216,7 +216,7 @@ TEST(FrameTimingTrackerTest, MultipleFrameIds) {
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
 
-  scoped_ptr<FrameTimingTracker> tracker(
+  std::unique_ptr<FrameTimingTracker> tracker(
       FrameTimingTracker::Create(&host_impl));
 
   std::vector<std::pair<int, int64_t>> ids200;
@@ -255,7 +255,7 @@ TEST(FrameTimingTrackerTest, MultipleMainFrameEvents) {
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
 
-  scoped_ptr<FrameTimingTracker> tracker(
+  std::unique_ptr<FrameTimingTracker> tracker(
       FrameTimingTracker::Create(&host_impl));
 
   std::vector<int64_t> rect_ids200;

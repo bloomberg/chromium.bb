@@ -25,7 +25,7 @@ struct CC_EXPORT BeginMainFrameAndCommitState {
 
   unsigned int begin_frame_id;
   BeginFrameArgs begin_frame_args;
-  scoped_ptr<ScrollAndScaleSet> scroll_info;
+  std::unique_ptr<ScrollAndScaleSet> scroll_info;
   size_t memory_allocation_limit_bytes;
   bool evicted_ui_resources;
 

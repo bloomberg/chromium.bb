@@ -5,7 +5,8 @@
 #ifndef CC_TEST_FAKE_LAYER_TREE_HOST_CLIENT_H_
 #define CC_TEST_FAKE_LAYER_TREE_HOST_CLIENT_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "cc/input/input_handler.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -49,8 +50,8 @@ class FakeLayerTreeHostClient : public LayerTreeHostClient,
   void DidCompleteSwapBuffers() override {}
   void DidCompletePageScaleAnimation() override {}
   void RecordFrameTimingEvents(
-      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
+      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
       override {}
 
   // LayerTreeHostSingleThreadClient implementation.

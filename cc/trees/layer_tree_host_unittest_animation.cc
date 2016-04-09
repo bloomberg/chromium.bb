@@ -486,8 +486,8 @@ class LayerTreeHostAnimationTestLayerAddedWithAnimation
       player_->set_layer_animation_delegate(this);
 
       // Any valid AnimationCurve will do here.
-      scoped_ptr<AnimationCurve> curve(new FakeFloatAnimationCurve());
-      scoped_ptr<Animation> animation(
+      std::unique_ptr<AnimationCurve> curve(new FakeFloatAnimationCurve());
+      std::unique_ptr<Animation> animation(
           Animation::Create(std::move(curve), 1, 1, TargetProperty::OPACITY));
       player_->AddAnimation(std::move(animation));
 
@@ -730,11 +730,11 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
   void DidCommit() override {
     switch (layer_tree_host()->source_frame_number()) {
       case 1: {
-        scoped_ptr<ScrollOffsetAnimationCurve> curve(
+        std::unique_ptr<ScrollOffsetAnimationCurve> curve(
             ScrollOffsetAnimationCurve::Create(
                 gfx::ScrollOffset(500.f, 550.f),
                 EaseInOutTimingFunction::Create()));
-        scoped_ptr<Animation> animation(Animation::Create(
+        std::unique_ptr<Animation> animation(Animation::Create(
             std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
         animation->set_needs_synchronized_start_time(true);
         bool impl_scrolling_supported =
@@ -782,10 +782,10 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
     scroll_layer_->SetScrollOffset(gfx::ScrollOffset(100.0, 200.0));
     layer_tree_host()->root_layer()->AddChild(scroll_layer_);
 
-    scoped_ptr<ScrollOffsetAnimationCurve> curve(
+    std::unique_ptr<ScrollOffsetAnimationCurve> curve(
         ScrollOffsetAnimationCurve::Create(gfx::ScrollOffset(6500.f, 7500.f),
                                            EaseInOutTimingFunction::Create()));
-    scoped_ptr<Animation> animation(Animation::Create(
+    std::unique_ptr<Animation> animation(Animation::Create(
         std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
     animation->set_needs_synchronized_start_time(true);
 

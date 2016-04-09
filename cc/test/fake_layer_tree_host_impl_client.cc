@@ -12,6 +12,6 @@ bool FakeLayerTreeHostImplClient::IsInsideDraw() {
 }
 
 void FakeLayerTreeHostImplClient::PostAnimationEventsToMainThreadOnImplThread(
-    scoped_ptr<AnimationEvents> events) {}
+    std::unique_ptr<AnimationEvents> events) {}
 
 }  // namespace cc

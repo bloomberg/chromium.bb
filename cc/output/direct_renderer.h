@@ -106,7 +106,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
 
   static gfx::Size RenderPassTextureSize(const RenderPass* render_pass);
 
-  void FlushPolygons(std::deque<scoped_ptr<DrawPolygon>>* poly_list,
+  void FlushPolygons(std::deque<std::unique_ptr<DrawPolygon>>* poly_list,
                      DrawingFrame* frame,
                      const gfx::Rect& render_pass_scissor,
                      bool use_render_pass_scissor);
@@ -140,14 +140,16 @@ class CC_EXPORT DirectRenderer : public Renderer {
 
   virtual void CopyCurrentRenderPassToBitmap(
       DrawingFrame* frame,
-      scoped_ptr<CopyOutputRequest> request) = 0;
+      std::unique_ptr<CopyOutputRequest> request) = 0;
 
   // TODO(danakj): Just use a vector of pairs here? Hash map is way overkill.
-  std::unordered_map<RenderPassId, scoped_ptr<ScopedResource>, RenderPassIdHash>
+  std::unordered_map<RenderPassId,
+                     std::unique_ptr<ScopedResource>,
+                     RenderPassIdHash>
       render_pass_textures_;
   OutputSurface* output_surface_;
   ResourceProvider* resource_provider_;
-  scoped_ptr<OverlayProcessor> overlay_processor_;
+  std::unique_ptr<OverlayProcessor> overlay_processor_;
 
   // For use in coordinate conversion, this stores the output rect, viewport
   // rect (= unflipped version of glViewport rect), the size of target

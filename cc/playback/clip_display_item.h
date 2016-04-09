@@ -7,9 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/playback/display_item.h"
 #include "third_party/skia/include/core/SkRRect.h"

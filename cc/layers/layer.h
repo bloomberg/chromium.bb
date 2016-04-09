@@ -103,7 +103,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // first), then the callback is called with a nullptr/empty result. If the
   // request's source property is set, any prior uncommitted requests having the
   // same source will be aborted.
-  void RequestCopyOfOutput(scoped_ptr<CopyOutputRequest> request);
+  void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> request);
   bool HasCopyRequest() const {
     return !copy_requests_.empty();
   }
@@ -350,7 +350,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   virtual void SetIsMask(bool is_mask) {}
   virtual bool IsSuitableForGpuRasterization() const;
 
-  virtual scoped_ptr<base::trace_event::ConvertableToTraceFormat>
+  virtual std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
   TakeDebugInfo();
 
   void SetLayerClient(LayerClient* client) { client_ = client; }
@@ -409,7 +409,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   virtual sk_sp<SkPicture> GetPicture() const;
 
   // Constructs a LayerImpl of the correct runtime type for this Layer type.
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
+  virtual std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
 
   bool NeedsDisplayForTesting() const { return !update_rect_.IsEmpty(); }
   void ResetNeedsDisplayForTesting() { update_rect_ = gfx::Rect(); }
@@ -666,10 +666,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   FilterOperations background_filters_;
   LayerPositionConstraint position_constraint_;
   Layer* scroll_parent_;
-  scoped_ptr<std::set<Layer*>> scroll_children_;
+  std::unique_ptr<std::set<Layer*>> scroll_children_;
 
   Layer* clip_parent_;
-  scoped_ptr<std::set<Layer*>> clip_children_;
+  std::unique_ptr<std::set<Layer*>> clip_children_;
 
   gfx::Transform transform_;
   gfx::Point3F transform_origin_;
@@ -679,7 +679,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   LayerClient* client_;
 
-  std::vector<scoped_ptr<CopyOutputRequest>> copy_requests_;
+  std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests_;
 
   base::Closure did_scroll_callback_;
 

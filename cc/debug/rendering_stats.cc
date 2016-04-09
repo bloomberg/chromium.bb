@@ -50,9 +50,9 @@ RenderingStats::RenderingStats(const RenderingStats& other) = default;
 RenderingStats::~RenderingStats() {
 }
 
-scoped_ptr<base::trace_event::ConvertableToTraceFormat>
+std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 RenderingStats::AsTraceableData() const {
-  scoped_ptr<base::trace_event::TracedValue> record_data(
+  std::unique_ptr<base::trace_event::TracedValue> record_data(
       new base::trace_event::TracedValue());
   record_data->SetInteger("frame_count", frame_count);
   record_data->SetInteger("visible_content_area", visible_content_area);

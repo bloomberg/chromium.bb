@@ -112,7 +112,7 @@ void TileTaskWorkerPool::PlaybackToMemory(
                      "TileTaskWorkerPool::PlaybackToMemory::CompressETC1");
         DCHECK_EQ(size.width() % 4, 0);
         DCHECK_EQ(size.height() % 4, 0);
-        scoped_ptr<TextureCompressor> texture_compressor =
+        std::unique_ptr<TextureCompressor> texture_compressor =
             TextureCompressor::Create(TextureCompressor::kFormatETC1);
         texture_compressor->Compress(reinterpret_cast<const uint8_t*>(
                                          surface->peekPixels(nullptr, nullptr)),

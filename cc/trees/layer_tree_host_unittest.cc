@@ -11,6 +11,7 @@
 
 #include "base/auto_reset.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_task_runner_handle.h"
@@ -430,10 +431,11 @@ SINGLE_THREAD_TEST_F(LayerTreeHostTestReadyToDrawVisibility);
 
 class LayerTreeHostFreeWorkerContextResourcesTest : public LayerTreeHostTest {
  public:
-  scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
-    auto output_surface = make_scoped_ptr(new testing::StrictMock<
-        MockSetWorkerContextShouldAggressivelyFreeResourcesOutputSurface>(
-        delegating_renderer()));
+  std::unique_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
+    auto output_surface = base::WrapUnique(
+        new testing::StrictMock<
+            MockSetWorkerContextShouldAggressivelyFreeResourcesOutputSurface>(
+            delegating_renderer()));
 
     // At init, we expect one call to set visibility to true.
     testing::Expectation visibility_true =
@@ -1387,7 +1389,7 @@ class LayerTreeHostTestDamageWithScale : public LayerTreeHostTest {
   void SetupTree() override {
     client_.set_fill_with_nonsolid_color(true);
 
-    scoped_ptr<FakeRecordingSource> recording(new FakeRecordingSource);
+    std::unique_ptr<FakeRecordingSource> recording(new FakeRecordingSource);
     root_layer_ = FakePictureLayer::CreateWithRecordingSource(
         &client_, std::move(recording));
     root_layer_->SetBounds(gfx::Size(50, 50));
@@ -2308,8 +2310,8 @@ class MockIOSurfaceWebGraphicsContext3D : public TestWebGraphicsContext3D {
 
 class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
  protected:
-  scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
-    scoped_ptr<MockIOSurfaceWebGraphicsContext3D> mock_context_owned(
+  std::unique_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
+    std::unique_ptr<MockIOSurfaceWebGraphicsContext3D> mock_context_owned(
         new MockIOSurfaceWebGraphicsContext3D);
     mock_context_ = mock_context_owned.get();
 
@@ -2495,13 +2497,13 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
     client_.set_bounds(root_layer_->bounds());
   }
 
-  scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
+  std::unique_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
     if (delegating_renderer()) {
       return FakeOutputSurface::CreateDelegatingSoftware(
-          make_scoped_ptr(new SoftwareOutputDevice));
+          base::WrapUnique(new SoftwareOutputDevice));
     } else {
       return FakeOutputSurface::CreateSoftware(
-          make_scoped_ptr(new SoftwareOutputDevice));
+          base::WrapUnique(new SoftwareOutputDevice));
     }
   }
 
@@ -2660,7 +2662,7 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
         FakeScopedUIResource::Create(layer_tree_host());
   }
 
-  scoped_ptr<FakeScopedUIResource> ui_resources_[5];
+  std::unique_ptr<FakeScopedUIResource> ui_resources_[5];
   int num_ui_resources_;
 };
 
@@ -2668,9 +2670,10 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestUIResource);
 
 class PushPropertiesCountingLayerImpl : public LayerImpl {
  public:
-  static scoped_ptr<PushPropertiesCountingLayerImpl> Create(
-      LayerTreeImpl* tree_impl, int id) {
-    return make_scoped_ptr(new PushPropertiesCountingLayerImpl(tree_impl, id));
+  static std::unique_ptr<PushPropertiesCountingLayerImpl> Create(
+      LayerTreeImpl* tree_impl,
+      int id) {
+    return base::WrapUnique(new PushPropertiesCountingLayerImpl(tree_impl, id));
   }
 
   ~PushPropertiesCountingLayerImpl() override {}
@@ -2683,7 +2686,8 @@ class PushPropertiesCountingLayerImpl : public LayerImpl {
         layer)->push_properties_count_ = push_properties_count_;
   }
 
-  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override {
+  std::unique_ptr<LayerImpl> CreateLayerImpl(
+      LayerTreeImpl* tree_impl) override {
     return PushPropertiesCountingLayerImpl::Create(tree_impl, id());
   }
 
@@ -2717,7 +2721,8 @@ class PushPropertiesCountingLayer : public Layer {
   // Something to make this layer push properties, but no other layer.
   void MakePushProperties() { SetContentsOpaque(!contents_opaque()); }
 
-  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override {
+  std::unique_ptr<LayerImpl> CreateLayerImpl(
+      LayerTreeImpl* tree_impl) override {
     return PushPropertiesCountingLayerImpl::Create(tree_impl, id());
   }
 
@@ -3175,7 +3180,7 @@ class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
         // avoid causing a second commit to be scheduled. If a property change
         // is made during this, however, it needs to be pushed in the upcoming
         // commit.
-        scoped_ptr<base::AutoReset<bool>> ignore =
+        std::unique_ptr<base::AutoReset<bool>> ignore =
             scrollbar_layer_->IgnoreSetNeedsCommit();
 
         scrollbar_layer_->SetBounds(gfx::Size(30, 30));
@@ -4007,7 +4012,7 @@ class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
       : first_output_surface_memory_limit_(4321234),
         second_output_surface_memory_limit_(1234321) {}
 
-  scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
+  std::unique_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
     if (!first_context_provider_.get()) {
       first_context_provider_ = TestContextProvider::Create();
     } else {
@@ -4018,13 +4023,13 @@ class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
     scoped_refptr<TestContextProvider> provider(second_context_provider_.get()
                                                     ? second_context_provider_
                                                     : first_context_provider_);
-    scoped_ptr<FakeOutputSurface> output_surface;
+    std::unique_ptr<FakeOutputSurface> output_surface;
     if (delegating_renderer())
       output_surface = FakeOutputSurface::CreateDelegating3d(provider);
     else
       output_surface = FakeOutputSurface::Create3d(provider);
     output_surface->SetMemoryPolicyToSetAtBind(
-        make_scoped_ptr(new ManagedMemoryPolicy(
+        base::WrapUnique(new ManagedMemoryPolicy(
             second_context_provider_.get() ? second_output_surface_memory_limit_
                                            : first_output_surface_memory_limit_,
             gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
@@ -4149,12 +4154,12 @@ class PinnedLayerTreeSwapPromise : public LayerTreeHostTest {
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     int frame = host_impl->active_tree()->source_frame_number();
     if (frame == -1) {
-      host_impl->active_tree()->QueuePinnedSwapPromise(make_scoped_ptr(
+      host_impl->active_tree()->QueuePinnedSwapPromise(base::WrapUnique(
           new TestSwapPromise(&pinned_active_swap_promise_result_)));
       host_impl->pending_tree()->QueueSwapPromise(
-          make_scoped_ptr(new TestSwapPromise(&pending_swap_promise_result_)));
+          base::WrapUnique(new TestSwapPromise(&pending_swap_promise_result_)));
       host_impl->active_tree()->QueueSwapPromise(
-          make_scoped_ptr(new TestSwapPromise(&active_swap_promise_result_)));
+          base::WrapUnique(new TestSwapPromise(&active_swap_promise_result_)));
     }
   }
 
@@ -4193,7 +4198,7 @@ class LayerTreeHostTestBreakSwapPromise : public LayerTreeHostTest {
 
   void WillBeginMainFrame() override {
     ASSERT_LE(commit_count_, 2);
-    scoped_ptr<SwapPromise> swap_promise(
+    std::unique_ptr<SwapPromise> swap_promise(
         new TestSwapPromise(&swap_promise_result_[commit_count_]));
     layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
   }
@@ -4307,7 +4312,7 @@ class LayerTreeHostTestKeepSwapPromise : public LayerTreeTest {
       case 1:
         layer_->SetBounds(gfx::Size(10, 11));
         layer_tree_host()->QueueSwapPromise(
-            make_scoped_ptr(new TestSwapPromise(&swap_promise_result_)));
+            base::WrapUnique(new TestSwapPromise(&swap_promise_result_)));
         break;
       case 2:
         break;
@@ -4380,7 +4385,7 @@ class LayerTreeHostTestBreakSwapPromiseForVisibility
 
   void SetVisibleFalseAndQueueSwapPromise() {
     layer_tree_host()->SetVisible(false);
-    scoped_ptr<SwapPromise> swap_promise(
+    std::unique_ptr<SwapPromise> swap_promise(
         new TestSwapPromise(&swap_promise_result_));
     layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
   }
@@ -4424,7 +4429,7 @@ class LayerTreeHostTestBreakSwapPromiseForContext : public LayerTreeHostTest {
 
   void LoseOutputSurfaceAndQueueSwapPromise() {
     layer_tree_host()->DidLoseOutputSurface();
-    scoped_ptr<SwapPromise> swap_promise(
+    std::unique_ptr<SwapPromise> swap_promise(
         new TestSwapPromise(&swap_promise_result_));
     layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
   }
@@ -4503,9 +4508,8 @@ class LayerTreeHostTestSimpleSwapPromiseMonitor : public LayerTreeHostTest {
     int set_needs_redraw_count = 0;
 
     {
-      scoped_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-          new SimpleSwapPromiseMonitor(layer_tree_host(),
-                                       NULL,
+      std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
+          new SimpleSwapPromiseMonitor(layer_tree_host(), NULL,
                                        &set_needs_commit_count,
                                        &set_needs_redraw_count));
       layer_tree_host()->SetNeedsCommit();
@@ -4520,9 +4524,8 @@ class LayerTreeHostTestSimpleSwapPromiseMonitor : public LayerTreeHostTest {
     EXPECT_EQ(0, set_needs_redraw_count);
 
     {
-      scoped_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-          new SimpleSwapPromiseMonitor(layer_tree_host(),
-                                       NULL,
+      std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
+          new SimpleSwapPromiseMonitor(layer_tree_host(), NULL,
                                        &set_needs_commit_count,
                                        &set_needs_redraw_count));
       layer_tree_host()->SetNeedsUpdateLayers();
@@ -4531,9 +4534,8 @@ class LayerTreeHostTestSimpleSwapPromiseMonitor : public LayerTreeHostTest {
     }
 
     {
-      scoped_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-          new SimpleSwapPromiseMonitor(layer_tree_host(),
-                                       NULL,
+      std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
+          new SimpleSwapPromiseMonitor(layer_tree_host(), NULL,
                                        &set_needs_commit_count,
                                        &set_needs_redraw_count));
       layer_tree_host()->SetNeedsAnimate();
@@ -4585,7 +4587,7 @@ class LayerTreeHostTestHighResRequiredAfterEvictingUIResources
   void AfterTest() override {}
 
   FakeContentLayerClient client_;
-  scoped_ptr<FakeScopedUIResource> ui_resource_;
+  std::unique_ptr<FakeScopedUIResource> ui_resource_;
 };
 
 // This test is flaky, see http://crbug.com/386199
@@ -4601,7 +4603,8 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
-    scoped_ptr<FakeRecordingSource> recording_source(new FakeRecordingSource);
+    std::unique_ptr<FakeRecordingSource> recording_source(
+        new FakeRecordingSource);
     recording_source_ = recording_source.get();
 
     scoped_refptr<FakePictureLayer> layer =
@@ -4656,7 +4659,8 @@ class LayerTreeHostTestEmptyLayerGpuRasterization : public LayerTreeHostTest {
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
-    scoped_ptr<FakeRecordingSource> recording_source(new FakeRecordingSource);
+    std::unique_ptr<FakeRecordingSource> recording_source(
+        new FakeRecordingSource);
     recording_source_ = recording_source.get();
 
     scoped_refptr<FakePictureLayer> layer =
@@ -4713,7 +4717,8 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
-    scoped_ptr<FakeRecordingSource> recording_source(new FakeRecordingSource);
+    std::unique_ptr<FakeRecordingSource> recording_source(
+        new FakeRecordingSource);
     recording_source_ = recording_source.get();
 
     scoped_refptr<FakePictureLayer> layer =
@@ -4782,7 +4787,8 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
-    scoped_ptr<FakeRecordingSource> recording_source(new FakeRecordingSource);
+    std::unique_ptr<FakeRecordingSource> recording_source(
+        new FakeRecordingSource);
     recording_source_ = recording_source.get();
 
     scoped_refptr<FakePictureLayer> layer =
@@ -5097,20 +5103,20 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
 
   void BeginTest() override {
     // Successful composite.
-    scoped_ptr<SwapPromise> swap_promise0(
+    std::unique_ptr<SwapPromise> swap_promise0(
         new TestSwapPromise(&swap_promise_result_[0]));
     layer_tree_host()->QueueSwapPromise(std::move(swap_promise0));
     layer_tree_host()->Composite(base::TimeTicks::Now());
 
     // Fail to swap (no damage).
-    scoped_ptr<SwapPromise> swap_promise1(
+    std::unique_ptr<SwapPromise> swap_promise1(
         new TestSwapPromise(&swap_promise_result_[1]));
     layer_tree_host()->QueueSwapPromise(std::move(swap_promise1));
     layer_tree_host()->SetNeedsCommit();
     layer_tree_host()->Composite(base::TimeTicks::Now());
 
     // Fail to draw (not visible).
-    scoped_ptr<SwapPromise> swap_promise2(
+    std::unique_ptr<SwapPromise> swap_promise2(
         new TestSwapPromise(&swap_promise_result_[2]));
     layer_tree_host()->QueueSwapPromise(std::move(swap_promise2));
     layer_tree_host()->SetNeedsDisplayOnAllLayers();
@@ -5228,7 +5234,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     page_scale_layer->AddChild(pinch);
     root_clip->AddChild(page_scale_layer);
 
-    scoped_ptr<FakeRecordingSource> recording(new FakeRecordingSource);
+    std::unique_ptr<FakeRecordingSource> recording(new FakeRecordingSource);
     recording->SetPlaybackAllowedEvent(&playback_allowed_event_);
     scoped_refptr<FakePictureLayer> layer =
         FakePictureLayer::CreateWithRecordingSource(&client_,
@@ -5398,8 +5404,8 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestCrispUpAfterPinchEnds);
 class LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy
     : public LayerTreeHostTestCrispUpAfterPinchEnds {
  protected:
-  scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
-    scoped_ptr<TestWebGraphicsContext3D> context3d =
+  std::unique_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
+    std::unique_ptr<TestWebGraphicsContext3D> context3d =
         TestWebGraphicsContext3D::Create();
     context3d->set_support_image(true);
     context3d->set_support_sync_query(true);
@@ -5433,7 +5439,7 @@ class RasterizeWithGpuRasterizationCreatesResources : public LayerTreeHostTest {
     root->SetBounds(gfx::Size(500, 500));
     client_.set_bounds(root->bounds());
 
-    scoped_ptr<FakeRecordingSource> recording(new FakeRecordingSource);
+    std::unique_ptr<FakeRecordingSource> recording(new FakeRecordingSource);
     scoped_refptr<FakePictureLayer> layer =
         FakePictureLayer::CreateWithRecordingSource(&client_,
                                                     std::move(recording));
@@ -5474,7 +5480,7 @@ class GpuRasterizationRasterizesBorderTiles : public LayerTreeHostTest {
   void SetupTree() override {
     client_.set_fill_with_nonsolid_color(true);
 
-    scoped_ptr<FakeRecordingSource> recording(new FakeRecordingSource);
+    std::unique_ptr<FakeRecordingSource> recording(new FakeRecordingSource);
     scoped_refptr<FakePictureLayer> root =
         FakePictureLayer::CreateWithRecordingSource(&client_,
                                                     std::move(recording));
@@ -5530,7 +5536,7 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     page_scale_layer->AddChild(pinch);
     root_clip->AddChild(page_scale_layer);
 
-    scoped_ptr<FakeRecordingSource> recording(new FakeRecordingSource);
+    std::unique_ptr<FakeRecordingSource> recording(new FakeRecordingSource);
     recording->SetPlaybackAllowedEvent(&playback_allowed_event_);
     scoped_refptr<FakePictureLayer> layer =
         FakePictureLayer::CreateWithRecordingSource(&client_,
@@ -5785,7 +5791,7 @@ class LayerTreeHostTestFrameTimingRequestsSaveTimestamps
 
     // Check composite events.
     {
-      scoped_ptr<FrameTimingTracker::CompositeTimingSet> timing_set =
+      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> timing_set =
           tracker->GroupCompositeCountsByRectId();
       EXPECT_EQ(1u, timing_set->size());
       auto rect_1_it = timing_set->find(1);
@@ -5799,7 +5805,7 @@ class LayerTreeHostTestFrameTimingRequestsSaveTimestamps
 
     // Check main frame events.
     {
-      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> timing_set =
+      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> timing_set =
           tracker->GroupMainFrameCountsByRectId();
       EXPECT_EQ(2u, timing_set->size());
       auto rect_1_it = timing_set->find(1);
@@ -5924,7 +5930,7 @@ class LayerTreeHostTestUpdateCopyRequests : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
   }
 
-  static void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {}
+  static void CopyOutputCallback(std::unique_ptr<CopyOutputResult> result) {}
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 

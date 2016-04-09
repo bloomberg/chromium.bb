@@ -15,6 +15,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -126,7 +127,7 @@ class RasterTaskImpl : public RasterTask {
   uint64_t resource_content_id_;
   int source_frame_number_;
   const base::Callback<void(bool)> reply_;
-  scoped_ptr<RasterBuffer> raster_buffer_;
+  std::unique_ptr<RasterBuffer> raster_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterTaskImpl);
 };
@@ -255,9 +256,9 @@ class TaskSetFinishedTaskImpl : public TileTask {
 RasterTaskCompletionStats::RasterTaskCompletionStats()
     : completed_count(0u), canceled_count(0u) {}
 
-scoped_ptr<base::trace_event::ConvertableToTraceFormat>
+std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats) {
-  scoped_ptr<base::trace_event::TracedValue> state(
+  std::unique_ptr<base::trace_event::TracedValue> state(
       new base::trace_event::TracedValue());
   state->SetInteger("completed_count",
                     base::saturated_cast<int>(stats.completed_count));
@@ -267,7 +268,7 @@ RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats) {
 }
 
 // static
-scoped_ptr<TileManager> TileManager::Create(
+std::unique_ptr<TileManager> TileManager::Create(
     TileManagerClient* client,
     base::SequencedTaskRunner* task_runner,
     size_t scheduled_raster_task_limit,
@@ -275,7 +276,7 @@ scoped_ptr<TileManager> TileManager::Create(
   // TODO(vmpstr): |task_runner| is a raw pointer that is implicitly converted
   // into a scoped_refptr. Figure out whether to plumb a ref pointer or whether
   // tile manager can have a non-owning pointer and fix.
-  return make_scoped_ptr(new TileManager(
+  return base::WrapUnique(new TileManager(
       client, task_runner, scheduled_raster_task_limit, use_partial_raster));
 }
 
@@ -444,7 +445,7 @@ bool TileManager::PrepareTiles(
   CleanUpReleasedTiles();
 
   PrioritizedTileVector tiles_that_need_to_be_rasterized;
-  scoped_ptr<RasterTilePriorityQueue> raster_priority_queue(
+  std::unique_ptr<RasterTilePriorityQueue> raster_priority_queue(
       client_->BuildRasterQueue(global_state_.tree_priority,
                                 RasterTilePriorityQueue::Type::ALL));
   AssignGpuMemoryToTiles(raster_priority_queue.get(),
@@ -482,9 +483,9 @@ void TileManager::Flush() {
   flush_stats_ = RasterTaskCompletionStats();
 }
 
-scoped_ptr<base::trace_event::ConvertableToTraceFormat>
+std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 TileManager::BasicStateAsValue() const {
-  scoped_ptr<base::trace_event::TracedValue> value(
+  std::unique_ptr<base::trace_event::TracedValue> value(
       new base::trace_event::TracedValue());
   BasicStateAsValueInto(value.get());
   return std::move(value);
@@ -499,9 +500,9 @@ void TileManager::BasicStateAsValueInto(
   state->EndDictionary();
 }
 
-scoped_ptr<EvictionTilePriorityQueue>
+std::unique_ptr<EvictionTilePriorityQueue>
 TileManager::FreeTileResourcesUntilUsageIsWithinLimit(
-    scoped_ptr<EvictionTilePriorityQueue> eviction_priority_queue,
+    std::unique_ptr<EvictionTilePriorityQueue> eviction_priority_queue,
     const MemoryUsage& limit,
     MemoryUsage* usage) {
   while (usage->Exceeds(limit)) {
@@ -520,9 +521,9 @@ TileManager::FreeTileResourcesUntilUsageIsWithinLimit(
   return eviction_priority_queue;
 }
 
-scoped_ptr<EvictionTilePriorityQueue>
+std::unique_ptr<EvictionTilePriorityQueue>
 TileManager::FreeTileResourcesWithLowerPriorityUntilUsageIsWithinLimit(
-    scoped_ptr<EvictionTilePriorityQueue> eviction_priority_queue,
+    std::unique_ptr<EvictionTilePriorityQueue> eviction_priority_queue,
     const MemoryUsage& limit,
     const TilePriority& other_priority,
     MemoryUsage* usage) {
@@ -591,7 +592,7 @@ void TileManager::AssignGpuMemoryToTiles(
   MemoryUsage memory_usage(resource_pool_->memory_usage_bytes(),
                            resource_pool_->resource_count());
 
-  scoped_ptr<EvictionTilePriorityQueue> eviction_priority_queue;
+  std::unique_ptr<EvictionTilePriorityQueue> eviction_priority_queue;
   for (; !raster_priority_queue->IsEmpty(); raster_priority_queue->Pop()) {
     const PrioritizedTile& prioritized_tile = raster_priority_queue->Top();
     Tile* tile = prioritized_tile.tile();
@@ -953,7 +954,7 @@ void TileManager::SetTileTaskRunnerForTesting(
 
 bool TileManager::AreRequiredTilesReadyToDraw(
     RasterTilePriorityQueue::Type type) const {
-  scoped_ptr<RasterTilePriorityQueue> raster_priority_queue(
+  std::unique_ptr<RasterTilePriorityQueue> raster_priority_queue(
       client_->BuildRasterQueue(global_state_.tree_priority, type));
   // It is insufficient to check whether the raster queue we constructed is
   // empty. The reason for this is that there are situations (rasterize on
@@ -966,7 +967,7 @@ bool TileManager::AreRequiredTilesReadyToDraw(
   }
 
 #if DCHECK_IS_ON()
-  scoped_ptr<RasterTilePriorityQueue> all_queue(
+  std::unique_ptr<RasterTilePriorityQueue> all_queue(
       client_->BuildRasterQueue(global_state_.tree_priority, type));
   for (; !all_queue->IsEmpty(); all_queue->Pop()) {
     Tile* tile = all_queue->Top().tile();
@@ -1037,7 +1038,7 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
   // When OOM, keep re-assigning memory until we reach a steady state
   // where top-priority tiles are initialized.
   PrioritizedTileVector tiles_that_need_to_be_rasterized;
-  scoped_ptr<RasterTilePriorityQueue> raster_priority_queue(
+  std::unique_ptr<RasterTilePriorityQueue> raster_priority_queue(
       client_->BuildRasterQueue(global_state_.tree_priority,
                                 RasterTilePriorityQueue::Type::ALL));
   AssignGpuMemoryToTiles(raster_priority_queue.get(),
@@ -1102,7 +1103,7 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
 }
 
 bool TileManager::MarkTilesOutOfMemory(
-    scoped_ptr<RasterTilePriorityQueue> queue) const {
+    std::unique_ptr<RasterTilePriorityQueue> queue) const {
   // Mark required tiles as OOM so that we can activate/draw without them.
   if (queue->IsEmpty())
     return false;
@@ -1125,9 +1126,9 @@ bool TileManager::DetermineResourceRequiresSwizzle(const Tile* tile) const {
   return tile_task_runner_->GetResourceRequiresSwizzle(!tile->is_opaque());
 }
 
-scoped_ptr<base::trace_event::ConvertableToTraceFormat>
+std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 TileManager::ScheduledTasksStateAsValue() const {
-  scoped_ptr<base::trace_event::TracedValue> state(
+  std::unique_ptr<base::trace_event::TracedValue> state(
       new base::trace_event::TracedValue());
   state->BeginDictionary("tasks_pending");
   state->SetBoolean("ready_to_activate", signals_.ready_to_activate);

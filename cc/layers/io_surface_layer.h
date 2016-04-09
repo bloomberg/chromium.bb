@@ -19,7 +19,7 @@ class CC_EXPORT IOSurfaceLayer : public Layer {
 
   void SetIOSurfaceProperties(uint32_t io_surface_id, const gfx::Size& size);
 
-  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void PushPropertiesTo(LayerImpl* layer) override;
   bool Update() override;
 

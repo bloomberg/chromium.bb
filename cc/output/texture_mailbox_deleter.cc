@@ -48,13 +48,14 @@ TextureMailboxDeleter::~TextureMailboxDeleter() {
     impl_callbacks_.at(i)->Run(gpu::SyncToken(), true);
 }
 
-scoped_ptr<SingleReleaseCallback> TextureMailboxDeleter::GetReleaseCallback(
+std::unique_ptr<SingleReleaseCallback>
+TextureMailboxDeleter::GetReleaseCallback(
     scoped_refptr<ContextProvider> context_provider,
     unsigned texture_id) {
   // This callback owns the |context_provider|. It must be destroyed on the impl
   // thread. Upon destruction of this class, the callback must immediately be
   // destroyed.
-  scoped_ptr<SingleReleaseCallback> impl_callback =
+  std::unique_ptr<SingleReleaseCallback> impl_callback =
       SingleReleaseCallback::Create(base::Bind(
           &DeleteTextureOnImplThread, std::move(context_provider), texture_id));
 
@@ -68,7 +69,7 @@ scoped_ptr<SingleReleaseCallback> TextureMailboxDeleter::GetReleaseCallback(
 
   // Provide a callback for the main thread that posts back to the impl
   // thread.
-  scoped_ptr<SingleReleaseCallback> main_callback;
+  std::unique_ptr<SingleReleaseCallback> main_callback;
   if (impl_task_runner_) {
     main_callback = SingleReleaseCallback::Create(base::Bind(
         &PostTaskFromMainToImplThread, impl_task_runner_, run_impl_callback));

@@ -10,13 +10,14 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 
 namespace cc {
 
 // static
-scoped_ptr<BlockingTaskRunner> BlockingTaskRunner::Create(
+std::unique_ptr<BlockingTaskRunner> BlockingTaskRunner::Create(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return make_scoped_ptr(new BlockingTaskRunner(task_runner));
+  return base::WrapUnique(new BlockingTaskRunner(task_runner));
 }
 
 BlockingTaskRunner::BlockingTaskRunner(

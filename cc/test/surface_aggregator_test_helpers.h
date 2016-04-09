@@ -21,7 +21,7 @@ class RenderPass;
 class Surface;
 class TestRenderPass;
 
-typedef std::vector<scoped_ptr<RenderPass>> RenderPassList;
+typedef std::vector<std::unique_ptr<RenderPass>> RenderPassList;
 
 namespace test {
 

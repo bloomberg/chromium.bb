@@ -44,7 +44,7 @@ class ContiguousContainerBase::Buffer {
   const char* begin() const { return &data_[0]; }
 
   // begin() <= end_ <= begin() + capacity_
-  scoped_ptr<char[]> data_;
+  std::unique_ptr<char[]> data_;
   char* end_;
   size_t capacity_;
 };
@@ -136,7 +136,7 @@ ContiguousContainerBase::Buffer*
 ContiguousContainerBase::AllocateNewBufferForNextAllocation(
     size_t buffer_size) {
   DCHECK(buffers_.empty() || end_index_ == buffers_.size() - 1);
-  scoped_ptr<Buffer> new_buffer(new Buffer(buffer_size));
+  std::unique_ptr<Buffer> new_buffer(new Buffer(buffer_size));
   Buffer* buffer_to_return = new_buffer.get();
   buffers_.push_back(std::move(new_buffer));
   end_index_ = buffers_.size() - 1;

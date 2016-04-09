@@ -5,9 +5,10 @@
 #ifndef CC_TREES_DAMAGE_TRACKER_H_
 #define CC_TREES_DAMAGE_TRACKER_H_
 
+#include <memory>
 #include <vector>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer_collections.h"
 #include "ui/gfx/geometry/rect.h"
@@ -29,7 +30,7 @@ class RenderSurfaceImpl;
 // the screen to save GPU computation and bandwidth.
 class CC_EXPORT DamageTracker {
  public:
-  static scoped_ptr<DamageTracker> Create();
+  static std::unique_ptr<DamageTracker> Create();
   ~DamageTracker();
 
   void DidDrawDamagedArea() { current_damage_rect_ = gfx::Rect(); }

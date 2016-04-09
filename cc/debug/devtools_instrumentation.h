@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 
@@ -148,9 +149,9 @@ inline void DidRequestMainThreadFrame(int layer_tree_host_id) {
                        layer_tree_host_id);
 }
 
-inline scoped_ptr<base::trace_event::ConvertableToTraceFormat>
+inline std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 BeginMainThreadFrameData(int frame_id) {
-  scoped_ptr<base::trace_event::TracedValue> value(
+  std::unique_ptr<base::trace_event::TracedValue> value(
       new base::trace_event::TracedValue());
   value->SetInteger("frameId", frame_id);
   return std::move(value);
@@ -163,9 +164,9 @@ inline void WillBeginMainThreadFrame(int layer_tree_host_id, int frame_id) {
       internal::kData, BeginMainThreadFrameData(frame_id));
 }
 
-inline scoped_ptr<base::trace_event::ConvertableToTraceFormat>
+inline std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 NeedsBeginFrameData(bool needs_begin_frame) {
-  scoped_ptr<base::trace_event::TracedValue> value(
+  std::unique_ptr<base::trace_event::TracedValue> value(
       new base::trace_event::TracedValue());
   value->SetInteger("needsBeginFrame", needs_begin_frame);
   return std::move(value);

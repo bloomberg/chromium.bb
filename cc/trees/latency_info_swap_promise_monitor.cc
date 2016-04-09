@@ -53,14 +53,16 @@ LatencyInfoSwapPromiseMonitor::~LatencyInfoSwapPromiseMonitor() {
 
 void LatencyInfoSwapPromiseMonitor::OnSetNeedsCommitOnMain() {
   if (AddRenderingScheduledComponent(latency_, true /* on_main */)) {
-    scoped_ptr<SwapPromise> swap_promise(new LatencyInfoSwapPromise(*latency_));
+    std::unique_ptr<SwapPromise> swap_promise(
+        new LatencyInfoSwapPromise(*latency_));
     layer_tree_host_->QueueSwapPromise(std::move(swap_promise));
   }
 }
 
 void LatencyInfoSwapPromiseMonitor::OnSetNeedsRedrawOnImpl() {
   if (AddRenderingScheduledComponent(latency_, false /* on_main */)) {
-    scoped_ptr<SwapPromise> swap_promise(new LatencyInfoSwapPromise(*latency_));
+    std::unique_ptr<SwapPromise> swap_promise(
+        new LatencyInfoSwapPromise(*latency_));
     // Queue a pinned swap promise on the active tree. This will allow
     // measurement of the time to the next SwapBuffers(). The swap
     // promise is pinned so that it is not interrupted by new incoming
@@ -95,7 +97,7 @@ void LatencyInfoSwapPromiseMonitor::OnForwardScrollUpdateToMainThreadOnImpl() {
     new_latency.CopyLatencyFrom(
         *latency_,
         ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT);
-    scoped_ptr<SwapPromise> swap_promise(
+    std::unique_ptr<SwapPromise> swap_promise(
         new LatencyInfoSwapPromise(new_latency));
     layer_tree_host_impl_->QueueSwapPromiseForMainThreadScrollUpdate(
         std::move(swap_promise));

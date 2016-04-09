@@ -5,6 +5,7 @@
 #include "cc/test/fake_painted_scrollbar_layer.h"
 
 #include "base/auto_reset.h"
+#include "base/memory/ptr_util.h"
 #include "cc/test/fake_scrollbar.h"
 
 namespace cc {
@@ -22,7 +23,7 @@ scoped_refptr<FakePaintedScrollbarLayer> FakePaintedScrollbarLayer::Create(
 FakePaintedScrollbarLayer::FakePaintedScrollbarLayer(
     FakeScrollbar* fake_scrollbar,
     int scrolling_layer_id)
-    : PaintedScrollbarLayer(scoped_ptr<Scrollbar>(fake_scrollbar),
+    : PaintedScrollbarLayer(std::unique_ptr<Scrollbar>(fake_scrollbar),
                             scrolling_layer_id),
       update_count_(0),
       push_properties_count_(0),
@@ -44,9 +45,9 @@ void FakePaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   ++push_properties_count_;
 }
 
-scoped_ptr<base::AutoReset<bool>>
+std::unique_ptr<base::AutoReset<bool>>
 FakePaintedScrollbarLayer::IgnoreSetNeedsCommit() {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new base::AutoReset<bool>(&ignore_set_needs_commit_, true));
 }
 

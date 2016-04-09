@@ -24,7 +24,7 @@ SurfaceLayerImpl::~SurfaceLayerImpl() {
   layer_tree_impl()->RemoveSurfaceLayer(this);
 }
 
-scoped_ptr<LayerImpl> SurfaceLayerImpl::CreateLayerImpl(
+std::unique_ptr<LayerImpl> SurfaceLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return SurfaceLayerImpl::Create(tree_impl, id());
 }

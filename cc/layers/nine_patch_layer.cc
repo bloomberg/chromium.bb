@@ -21,7 +21,7 @@ NinePatchLayer::NinePatchLayer()
 
 NinePatchLayer::~NinePatchLayer() {}
 
-scoped_ptr<LayerImpl> NinePatchLayer::CreateLayerImpl(
+std::unique_ptr<LayerImpl> NinePatchLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return NinePatchLayerImpl::Create(tree_impl, id());
 }

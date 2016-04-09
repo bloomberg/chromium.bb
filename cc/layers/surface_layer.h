@@ -34,7 +34,7 @@ class CC_EXPORT SurfaceLayer : public Layer {
   void SetSurfaceId(SurfaceId surface_id, float scale, const gfx::Size& size);
 
   // Layer overrides.
-  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void SetLayerTreeHost(LayerTreeHost* host) override;
   void PushPropertiesTo(LayerImpl* layer) override;
 

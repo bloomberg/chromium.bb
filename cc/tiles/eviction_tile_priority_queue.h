@@ -32,11 +32,12 @@ class CC_EXPORT EvictionTilePriorityQueue {
   void Pop();
 
  private:
-  std::vector<scoped_ptr<TilingSetEvictionQueue>>& GetNextQueues();
-  const std::vector<scoped_ptr<TilingSetEvictionQueue>>& GetNextQueues() const;
+  std::vector<std::unique_ptr<TilingSetEvictionQueue>>& GetNextQueues();
+  const std::vector<std::unique_ptr<TilingSetEvictionQueue>>& GetNextQueues()
+      const;
 
-  std::vector<scoped_ptr<TilingSetEvictionQueue>> active_queues_;
-  std::vector<scoped_ptr<TilingSetEvictionQueue>> pending_queues_;
+  std::vector<std::unique_ptr<TilingSetEvictionQueue>> active_queues_;
+  std::vector<std::unique_ptr<TilingSetEvictionQueue>> pending_queues_;
   TreePriority tree_priority_;
 
   DISALLOW_COPY_AND_ASSIGN(EvictionTilePriorityQueue);

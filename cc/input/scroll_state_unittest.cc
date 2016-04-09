@@ -67,7 +67,7 @@ TEST_F(ScrollStateTest, CurrentNativeScrollingScrollable) {
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
 
-  scoped_ptr<LayerImpl> layer_impl =
+  std::unique_ptr<LayerImpl> layer_impl =
       LayerImpl::Create(host_impl.active_tree(), 1);
   ScrollNode* scroll_node =
       host_impl.active_tree()->property_trees()->scroll_tree.Node(

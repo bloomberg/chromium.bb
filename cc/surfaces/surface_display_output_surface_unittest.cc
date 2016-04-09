@@ -79,11 +79,11 @@ class SurfaceDisplayOutputSurfaceTest : public testing::Test {
   ~SurfaceDisplayOutputSurfaceTest() override {}
 
   void SwapBuffersWithDamage(const gfx::Rect& damage_rect_) {
-    scoped_ptr<RenderPass> render_pass(RenderPass::Create());
+    std::unique_ptr<RenderPass> render_pass(RenderPass::Create());
     render_pass->SetNew(RenderPassId(1, 1), display_rect_, damage_rect_,
                         gfx::Transform());
 
-    scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
+    std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
     frame_data->render_pass_list.push_back(std::move(render_pass));
 
     CompositorFrame frame;
@@ -102,7 +102,7 @@ class SurfaceDisplayOutputSurfaceTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<base::SimpleTestTickClock> now_src_;
+  std::unique_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
   SurfaceIdAllocator allocator_;
 

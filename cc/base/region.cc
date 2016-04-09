@@ -120,8 +120,8 @@ std::string Region::ToString() const {
   return result;
 }
 
-scoped_ptr<base::Value> Region::AsValue() const {
-  scoped_ptr<base::ListValue> result(new base::ListValue());
+std::unique_ptr<base::Value> Region::AsValue() const {
+  std::unique_ptr<base::ListValue> result(new base::ListValue());
   for (Iterator it(*this); it.has_rect(); it.next()) {
     gfx::Rect rect(it.rect());
     result->AppendInteger(rect.x());

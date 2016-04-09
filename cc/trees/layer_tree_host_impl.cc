@@ -17,6 +17,7 @@
 #include "base/auto_reset.h"
 #include "base/containers/small_map.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
@@ -164,7 +165,7 @@ LayerTreeHostImpl::FrameData::FrameData()
 
 LayerTreeHostImpl::FrameData::~FrameData() {}
 
-scoped_ptr<LayerTreeHostImpl> LayerTreeHostImpl::Create(
+std::unique_ptr<LayerTreeHostImpl> LayerTreeHostImpl::Create(
     const LayerTreeSettings& settings,
     LayerTreeHostImplClient* client,
     TaskRunnerProvider* task_runner_provider,
@@ -173,7 +174,7 @@ scoped_ptr<LayerTreeHostImpl> LayerTreeHostImpl::Create(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     TaskGraphRunner* task_graph_runner,
     int id) {
-  return make_scoped_ptr(new LayerTreeHostImpl(
+  return base::WrapUnique(new LayerTreeHostImpl(
       settings, client, task_runner_provider, rendering_stats_instrumentation,
       shared_bitmap_manager, gpu_memory_buffer_manager, task_graph_runner, id));
 }
@@ -494,7 +495,7 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
       gfx::SizeF(active_tree_->InnerViewportContainerLayer()->bounds());
 
   // Easing constants experimentally determined.
-  scoped_ptr<TimingFunction> timing_function =
+  std::unique_ptr<TimingFunction> timing_function =
       CubicBezierTimingFunction::Create(.8, 0, .3, .9);
 
   // TODO(miletus) : Pass in ScrollOffset.
@@ -587,10 +588,10 @@ bool LayerTreeHostImpl::DoTouchEventsBlockScrollAt(
   return layer_impl != NULL;
 }
 
-scoped_ptr<SwapPromiseMonitor>
+std::unique_ptr<SwapPromiseMonitor>
 LayerTreeHostImpl::CreateLatencyInfoSwapPromiseMonitor(
     ui::LatencyInfo* latency) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new LatencyInfoSwapPromiseMonitor(latency, NULL, this));
 }
 
@@ -604,7 +605,7 @@ ScrollElasticityHelper* LayerTreeHostImpl::CreateScrollElasticityHelper() {
 }
 
 void LayerTreeHostImpl::QueueSwapPromiseForMainThreadScrollUpdate(
-    scoped_ptr<SwapPromise> swap_promise) {
+    std::unique_ptr<SwapPromise> swap_promise) {
   swap_promises_for_main_thread_scroll_update_.push_back(
       std::move(swap_promise));
 }
@@ -653,7 +654,7 @@ void LayerTreeHostImpl::FrameData::AsValueInto(
 }
 
 void LayerTreeHostImpl::FrameData::AppendRenderPass(
-    scoped_ptr<RenderPass> render_pass) {
+    std::unique_ptr<RenderPass> render_pass) {
   render_passes.push_back(std::move(render_pass));
 }
 
@@ -757,7 +758,7 @@ static RenderPass* FindRenderPassById(const RenderPassList& list,
                                       RenderPassId id) {
   auto it = std::find_if(
       list.begin(), list.end(),
-      [id](const scoped_ptr<RenderPass>& p) { return p->id == id; });
+      [id](const std::unique_ptr<RenderPass>& p) { return p->id == id; });
   return it == list.end() ? nullptr : it->get();
 }
 
@@ -982,7 +983,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
 
   // Any copy requests left in the tree are not going to get serviced, and
   // should be aborted.
-  std::vector<scoped_ptr<CopyOutputRequest>> requests_to_abort;
+  std::vector<std::unique_ptr<CopyOutputRequest>> requests_to_abort;
   while (!active_tree_->LayersWithCopyOutputRequest().empty()) {
     LayerImpl* layer = active_tree_->LayersWithCopyOutputRequest().back();
     layer->TakeCopyRequestsAndTransformToTarget(&requests_to_abort);
@@ -1265,7 +1266,7 @@ void LayerTreeHostImpl::DidModifyTilePriorities() {
   client_->SetNeedsPrepareTilesOnImplThread();
 }
 
-scoped_ptr<RasterTilePriorityQueue> LayerTreeHostImpl::BuildRasterQueue(
+std::unique_ptr<RasterTilePriorityQueue> LayerTreeHostImpl::BuildRasterQueue(
     TreePriority tree_priority,
     RasterTilePriorityQueue::Type type) {
   TRACE_EVENT0("disabled-by-default-cc.debug",
@@ -1278,12 +1279,13 @@ scoped_ptr<RasterTilePriorityQueue> LayerTreeHostImpl::BuildRasterQueue(
                                          tree_priority, type);
 }
 
-scoped_ptr<EvictionTilePriorityQueue> LayerTreeHostImpl::BuildEvictionQueue(
-    TreePriority tree_priority) {
+std::unique_ptr<EvictionTilePriorityQueue>
+LayerTreeHostImpl::BuildEvictionQueue(TreePriority tree_priority) {
   TRACE_EVENT0("disabled-by-default-cc.debug",
                "LayerTreeHostImpl::BuildEvictionQueue");
 
-  scoped_ptr<EvictionTilePriorityQueue> queue(new EvictionTilePriorityQueue);
+  std::unique_ptr<EvictionTilePriorityQueue> queue(
+      new EvictionTilePriorityQueue);
   queue->Build(active_tree_->picture_layers(),
                pending_tree_ ? pending_tree_->picture_layers()
                              : std::vector<PictureLayerImpl*>(),
@@ -1656,7 +1658,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
     bool disable_picture_quad_image_filtering =
         IsActivelyScrolling() || animation_host_->NeedsAnimateLayers();
 
-    scoped_ptr<SoftwareRenderer> temp_software_renderer =
+    std::unique_ptr<SoftwareRenderer> temp_software_renderer =
         SoftwareRenderer::Create(this, &settings_.renderer_settings,
                                  output_surface_, NULL);
     temp_software_renderer->DrawFrame(
@@ -2011,7 +2013,7 @@ void LayerTreeHostImpl::ActivateSyncTree() {
   if (!tree_activation_callback_.is_null())
     tree_activation_callback_.Run();
 
-  scoped_ptr<PendingPageScaleAnimation> pending_page_scale_animation =
+  std::unique_ptr<PendingPageScaleAnimation> pending_page_scale_animation =
       active_tree_->TakePendingPageScaleAnimation();
   if (pending_page_scale_animation) {
     StartPageScaleAnimation(
@@ -2137,10 +2139,10 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
   CreateResourceAndTileTaskWorkerPool(&tile_task_worker_pool_, &resource_pool_);
 
   if (use_gpu_rasterization_) {
-    image_decode_controller_ = make_scoped_ptr(new GpuImageDecodeController);
+    image_decode_controller_ = base::WrapUnique(new GpuImageDecodeController);
   } else {
     image_decode_controller_ =
-        make_scoped_ptr(new SoftwareImageDecodeController(
+        base::WrapUnique(new SoftwareImageDecodeController(
             settings_.renderer_settings.preferred_tile_format));
   }
 
@@ -2155,8 +2157,8 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
 }
 
 void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
-    scoped_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
-    scoped_ptr<ResourcePool>* resource_pool) {
+    std::unique_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
+    std::unique_ptr<ResourcePool>* resource_pool) {
   DCHECK(GetTaskRunner());
   // TODO(vmpstr): Make this a DCHECK (or remove) when crbug.com/419086 is
   // resolved.
@@ -2246,8 +2248,8 @@ void LayerTreeHostImpl::RecordMainFrameTiming(
 }
 
 void LayerTreeHostImpl::PostFrameTimingEvents(
-    scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-    scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
+    std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+    std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
   client_->PostFrameTimingEventsOnImplThread(std::move(composite_events),
                                              std::move(main_frame_events));
 }
@@ -3318,8 +3320,8 @@ static void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
       ->scroll_tree.CollectScrollDeltas(scroll_info);
 }
 
-scoped_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
-  scoped_ptr<ScrollAndScaleSet> scroll_info(new ScrollAndScaleSet());
+std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
+  std::unique_ptr<ScrollAndScaleSet> scroll_info(new ScrollAndScaleSet());
 
   CollectScrollDeltas(scroll_info.get(), active_tree_->root_layer());
   scroll_info->page_scale_delta =
@@ -3432,7 +3434,7 @@ bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
 }
 
 void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
-  scoped_ptr<AnimationEvents> events = animation_host_->CreateEvents();
+  std::unique_ptr<AnimationEvents> events = animation_host_->CreateEvents();
 
   const bool has_active_animations = animation_host_->UpdateAnimationState(
       start_ready_animations, events.get());
@@ -3459,7 +3461,8 @@ void LayerTreeHostImpl::ActivateAnimations() {
 std::string LayerTreeHostImpl::LayerTreeAsJson() const {
   std::string str;
   if (active_tree_->root_layer()) {
-    scoped_ptr<base::Value> json(active_tree_->root_layer()->LayerTreeAsJson());
+    std::unique_ptr<base::Value> json(
+        active_tree_->root_layer()->LayerTreeAsJson());
     base::JSONWriter::WriteWithOptions(
         *json, base::JSONWriter::OPTIONS_PRETTY_PRINT, &str);
   }
@@ -3558,9 +3561,9 @@ base::TimeDelta LayerTreeHostImpl::CurrentBeginFrameInterval() const {
   return current_begin_frame_tracker_.Interval();
 }
 
-scoped_ptr<base::trace_event::ConvertableToTraceFormat>
+std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 LayerTreeHostImpl::AsValueWithFrame(FrameData* frame) const {
-  scoped_ptr<base::trace_event::TracedValue> state(
+  std::unique_ptr<base::trace_event::TracedValue> state(
       new base::trace_event::TracedValue());
   AsValueWithFrameInto(frame, state.get());
   return std::move(state);
@@ -3726,7 +3729,7 @@ void LayerTreeHostImpl::MarkUIResourceNotEvicted(UIResourceId uid) {
 }
 
 void LayerTreeHostImpl::ScheduleMicroBenchmark(
-    scoped_ptr<MicroBenchmarkImpl> benchmark) {
+    std::unique_ptr<MicroBenchmarkImpl> benchmark) {
   micro_benchmark_controller_.ScheduleRun(std::move(benchmark));
 }
 

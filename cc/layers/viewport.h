@@ -5,9 +5,10 @@
 #ifndef CC_LAYERS_VIEWPORT_H_
 #define CC_LAYERS_VIEWPORT_H_
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/layers/layer_impl.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -34,7 +35,7 @@ class CC_EXPORT Viewport {
     gfx::Vector2dF content_scrolled_delta;
   };
 
-  static scoped_ptr<Viewport> Create(LayerTreeHostImpl* host_impl);
+  static std::unique_ptr<Viewport> Create(LayerTreeHostImpl* host_impl);
 
   // Differs from scrolling in that only the visual viewport is moved, without
   // affecting the top controls or outer viewport.

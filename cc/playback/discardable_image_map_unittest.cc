@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "cc/base/region.h"
 #include "cc/test/fake_content_layer_client.h"
@@ -338,7 +339,7 @@ TEST_F(DiscardableImageMapTest, PaintDestroyedWhileImageIsDrawn) {
     DiscardableImageMap::ScopedMetadataGenerator generator(&image_map,
                                                            visible_rect.size());
     {
-      scoped_ptr<SkPaint> paint(new SkPaint());
+      std::unique_ptr<SkPaint> paint(new SkPaint());
       generator.canvas()->saveLayer(gfx::RectToSkRect(visible_rect),
                                     paint.get());
     }

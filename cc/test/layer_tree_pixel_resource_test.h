@@ -36,8 +36,8 @@ class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
 
   void CreateResourceAndTileTaskWorkerPool(
       LayerTreeHostImpl* host_impl,
-      scoped_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
-      scoped_ptr<ResourcePool>* resource_pool) override;
+      std::unique_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
+      std::unique_ptr<ResourcePool>* resource_pool) override;
 
   void RunPixelResourceTest(scoped_refptr<Layer> content_root,
                             base::FilePath file_name);

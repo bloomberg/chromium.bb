@@ -49,7 +49,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
  public:
   class ScopedUseGrContext;
 
-  static scoped_ptr<GLRenderer> Create(
+  static std::unique_ptr<GLRenderer> Create(
       RendererClient* client,
       const RendererSettings* settings,
       OutputSurface* output_surface,
@@ -88,7 +88,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   void GetFramebufferPixelsAsync(const DrawingFrame* frame,
                                  const gfx::Rect& rect,
-                                 scoped_ptr<CopyOutputRequest> request);
+                                 std::unique_ptr<CopyOutputRequest> request);
   void GetFramebufferTexture(unsigned texture_id,
                              ResourceFormat texture_format,
                              const gfx::Rect& device_rect);
@@ -118,7 +118,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void EnsureScissorTestDisabled() override;
   void CopyCurrentRenderPassToBitmap(
       DrawingFrame* frame,
-      scoped_ptr<CopyOutputRequest> request) override;
+      std::unique_ptr<CopyOutputRequest> request) override;
   void FinishDrawingQuadList() override;
 
   // Returns true if quad requires antialiasing and false otherwise.
@@ -169,7 +169,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       const gfx::Transform& contents_device_transform,
       const gfx::QuadF* clip_region,
       bool use_aa);
-  scoped_ptr<ScopedResource> GetBackdropTexture(const gfx::Rect& bounding_rect);
+  std::unique_ptr<ScopedResource> GetBackdropTexture(
+      const gfx::Rect& bounding_rect);
 
   static bool ShouldApplyBackgroundFilters(const RenderPassDrawQuad* quad);
   skia::RefPtr<SkImage> ApplyBackgroundFilters(
@@ -240,7 +241,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void InitializeSharedObjects();
   void CleanupSharedObjects();
 
-  typedef base::Callback<void(scoped_ptr<CopyOutputRequest> copy_request,
+  typedef base::Callback<void(std::unique_ptr<CopyOutputRequest> copy_request,
                               bool success)>
       AsyncGetFramebufferPixelsCleanupCallback;
   void FinishedReadback(unsigned source_buffer,
@@ -259,7 +260,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void ScheduleOverlays(DrawingFrame* frame);
 
   using OverlayResourceLockList =
-      std::vector<scoped_ptr<ResourceProvider::ScopedReadLockGL>>;
+      std::vector<std::unique_ptr<ResourceProvider::ScopedReadLockGL>>;
   OverlayResourceLockList pending_overlay_resources_;
   std::deque<OverlayResourceLockList> swapped_overlay_resources_;
 
@@ -267,8 +268,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   unsigned offscreen_framebuffer_id_;
 
-  scoped_ptr<StaticGeometryBinding> shared_geometry_;
-  scoped_ptr<DynamicGeometryBinding> clipped_geometry_;
+  std::unique_ptr<StaticGeometryBinding> shared_geometry_;
+  std::unique_ptr<DynamicGeometryBinding> clipped_geometry_;
   gfx::QuadF shared_geometry_quad_;
 
   // This block of bindings defines all of the programs used by the compositor
@@ -498,14 +499,16 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   int highp_threshold_cache_;
 
   struct PendingAsyncReadPixels;
-  std::vector<scoped_ptr<PendingAsyncReadPixels>> pending_async_read_pixels_;
+  std::vector<std::unique_ptr<PendingAsyncReadPixels>>
+      pending_async_read_pixels_;
 
-  scoped_ptr<ResourceProvider::ScopedWriteLockGL> current_framebuffer_lock_;
+  std::unique_ptr<ResourceProvider::ScopedWriteLockGL>
+      current_framebuffer_lock_;
 
   class SyncQuery;
-  std::deque<scoped_ptr<SyncQuery>> pending_sync_queries_;
-  std::deque<scoped_ptr<SyncQuery>> available_sync_queries_;
-  scoped_ptr<SyncQuery> current_sync_query_;
+  std::deque<std::unique_ptr<SyncQuery>> pending_sync_queries_;
+  std::deque<std::unique_ptr<SyncQuery>> available_sync_queries_;
+  std::unique_ptr<SyncQuery> current_sync_query_;
   bool use_sync_query_;
   bool use_blend_equation_advanced_;
   bool use_blend_equation_advanced_coherent_;

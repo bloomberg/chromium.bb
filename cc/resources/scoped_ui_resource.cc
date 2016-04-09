@@ -5,14 +5,15 @@
 #include "cc/resources/scoped_ui_resource.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {
 
-scoped_ptr<ScopedUIResource> ScopedUIResource::Create(
+std::unique_ptr<ScopedUIResource> ScopedUIResource::Create(
     LayerTreeHost* host,
     const UIResourceBitmap& bitmap) {
-  return make_scoped_ptr(new ScopedUIResource(host, bitmap));
+  return base::WrapUnique(new ScopedUIResource(host, bitmap));
 }
 
 ScopedUIResource::ScopedUIResource(LayerTreeHost* host,

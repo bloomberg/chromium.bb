@@ -42,7 +42,7 @@ class NinePatchLayerTest : public testing::Test {
 
   FakeLayerTreeHostClient fake_client_;
   TestTaskGraphRunner task_graph_runner_;
-  scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
+  std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
 };
 
 TEST_F(NinePatchLayerTest, SetLayerProperties) {
@@ -62,7 +62,7 @@ TEST_F(NinePatchLayerTest, SetLayerProperties) {
   EXPECT_FALSE(test_layer->DrawsContent());
 
   bool is_opaque = false;
-  scoped_ptr<ScopedUIResource> resource = ScopedUIResource::Create(
+  std::unique_ptr<ScopedUIResource> resource = ScopedUIResource::Create(
       layer_tree_host_.get(), UIResourceBitmap(gfx::Size(10, 10), is_opaque));
   gfx::Rect aperture(5, 5, 1, 1);
   bool fill_center = true;

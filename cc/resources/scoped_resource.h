@@ -5,9 +5,11 @@
 #ifndef CC_RESOURCES_SCOPED_RESOURCE_H_
 #define CC_RESOURCES_SCOPED_RESOURCE_H_
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/resource.h"
 
@@ -19,9 +21,9 @@ namespace cc {
 
 class CC_EXPORT ScopedResource : public Resource {
  public:
-  static scoped_ptr<ScopedResource> Create(
+  static std::unique_ptr<ScopedResource> Create(
       ResourceProvider* resource_provider) {
-    return make_scoped_ptr(new ScopedResource(resource_provider));
+    return base::WrapUnique(new ScopedResource(resource_provider));
   }
   virtual ~ScopedResource();
 

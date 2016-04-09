@@ -260,8 +260,8 @@ TEST(DrawPolygonSplitTest, BasicSplit) {
 
   EXPECT_EQ(BSP_SPLIT, DrawPolygon::SideCompare(polygon_b, polygon_a));
 
-  scoped_ptr<DrawPolygon> front_polygon;
-  scoped_ptr<DrawPolygon> back_polygon;
+  std::unique_ptr<DrawPolygon> front_polygon;
+  std::unique_ptr<DrawPolygon> back_polygon;
   polygon_b.Split(polygon_a, &front_polygon, &back_polygon);
   EXPECT_EQ(BSP_FRONT, DrawPolygon::SideCompare(*front_polygon, polygon_a));
   EXPECT_EQ(BSP_BACK, DrawPolygon::SideCompare(*back_polygon, polygon_a));
@@ -304,8 +304,8 @@ TEST(DrawPolygonSplitTest, AngledSplit) {
 
   EXPECT_EQ(BSP_SPLIT, DrawPolygon::SideCompare(polygon_a, polygon_b));
 
-  scoped_ptr<DrawPolygon> front_polygon;
-  scoped_ptr<DrawPolygon> back_polygon;
+  std::unique_ptr<DrawPolygon> front_polygon;
+  std::unique_ptr<DrawPolygon> back_polygon;
   polygon_a.Split(polygon_b, &front_polygon, &back_polygon);
   EXPECT_EQ(BSP_FRONT, DrawPolygon::SideCompare(*front_polygon, polygon_b));
   EXPECT_EQ(BSP_BACK, DrawPolygon::SideCompare(*back_polygon, polygon_b));

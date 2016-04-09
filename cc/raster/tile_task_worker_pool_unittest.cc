@@ -14,6 +14,7 @@
 #include "base/cancelable_callback.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "cc/base/unique_notifier.h"
@@ -88,7 +89,7 @@ class TestRasterTaskImpl : public RasterTask {
  private:
   const Resource* resource_;
   const Reply reply_;
-  scoped_ptr<RasterBuffer> raster_buffer_;
+  std::unique_ptr<RasterBuffer> raster_buffer_;
   scoped_refptr<RasterSource> raster_source_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRasterTaskImpl);
@@ -204,7 +205,7 @@ class TileTaskWorkerPoolTest
   }
 
   void AppendTask(unsigned id, const gfx::Size& size) {
-    scoped_ptr<ScopedResource> resource(
+    std::unique_ptr<ScopedResource> resource(
         ScopedResource::Create(resource_provider_.get()));
     resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
                        RGBA_8888);
@@ -223,7 +224,7 @@ class TileTaskWorkerPoolTest
   void AppendBlockingTask(unsigned id, base::Lock* lock) {
     const gfx::Size size(1, 1);
 
-    scoped_ptr<ScopedResource> resource(
+    std::unique_ptr<ScopedResource> resource(
         ScopedResource::Create(resource_provider_.get()));
     resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
                        RGBA_8888);
@@ -262,16 +263,15 @@ class TileTaskWorkerPoolTest
 
   void CreateSoftwareOutputSurfaceAndResourceProvider() {
     output_surface_ = FakeOutputSurface::CreateSoftware(
-        make_scoped_ptr(new SoftwareOutputDevice));
+        base::WrapUnique(new SoftwareOutputDevice));
     CHECK(output_surface_->BindToClient(&output_surface_client_));
     resource_provider_ = FakeResourceProvider::Create(
         output_surface_.get(), &shared_bitmap_manager_, nullptr);
   }
 
-  void OnTaskCompleted(
-      scoped_ptr<ScopedResource> resource,
-      unsigned id,
-      bool was_canceled) {
+  void OnTaskCompleted(std::unique_ptr<ScopedResource> resource,
+                       unsigned id,
+                       bool was_canceled) {
     RasterTaskResult result;
     result.id = id;
     result.canceled = was_canceled;
@@ -287,9 +287,9 @@ class TileTaskWorkerPoolTest
   scoped_refptr<TestContextProvider> context_provider_;
   scoped_refptr<TestContextProvider> worker_context_provider_;
   FakeOutputSurfaceClient output_surface_client_;
-  scoped_ptr<FakeOutputSurface> output_surface_;
-  scoped_ptr<ResourceProvider> resource_provider_;
-  scoped_ptr<TileTaskWorkerPool> tile_task_worker_pool_;
+  std::unique_ptr<FakeOutputSurface> output_surface_;
+  std::unique_ptr<ResourceProvider> resource_provider_;
+  std::unique_ptr<TileTaskWorkerPool> tile_task_worker_pool_;
   TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   TestSharedBitmapManager shared_bitmap_manager_;
   SynchronousTaskGraphRunner task_graph_runner_;

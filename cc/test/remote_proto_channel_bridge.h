@@ -23,7 +23,7 @@ class FakeRemoteProtoChannel : public RemoteProtoChannel {
   // RemoteProtoChannel implementation
   void SetProtoReceiver(ProtoReceiver* receiver) override;
 
-  virtual void OnProtoReceived(scoped_ptr<proto::CompositorMessage> proto);
+  virtual void OnProtoReceived(std::unique_ptr<proto::CompositorMessage> proto);
 
   bool HasReceiver() const;
 

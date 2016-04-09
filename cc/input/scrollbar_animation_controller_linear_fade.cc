@@ -4,20 +4,21 @@
 
 #include "cc/input/scrollbar_animation_controller_linear_fade.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/scrollbar_layer_impl_base.h"
 
 namespace cc {
 
-scoped_ptr<ScrollbarAnimationControllerLinearFade>
+std::unique_ptr<ScrollbarAnimationControllerLinearFade>
 ScrollbarAnimationControllerLinearFade::Create(
     int scroll_layer_id,
     ScrollbarAnimationControllerClient* client,
     base::TimeDelta delay_before_starting,
     base::TimeDelta resize_delay_before_starting,
     base::TimeDelta duration) {
-  return make_scoped_ptr(new ScrollbarAnimationControllerLinearFade(
+  return base::WrapUnique(new ScrollbarAnimationControllerLinearFade(
       scroll_layer_id, client, delay_before_starting,
       resize_delay_before_starting, duration));
 }

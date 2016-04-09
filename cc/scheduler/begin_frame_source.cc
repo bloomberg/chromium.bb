@@ -197,7 +197,7 @@ SyntheticBeginFrameSource::SyntheticBeginFrameSource(
 }
 
 SyntheticBeginFrameSource::SyntheticBeginFrameSource(
-    scoped_ptr<DelayBasedTimeSource> time_source)
+    std::unique_ptr<DelayBasedTimeSource> time_source)
     : time_source_(std::move(time_source)) {
   time_source_->SetClient(this);
 }

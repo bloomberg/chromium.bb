@@ -5,8 +5,9 @@
 #ifndef CC_TREES_TREE_SYNCHRONIZER_H_
 #define CC_TREES_TREE_SYNCHRONIZER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {

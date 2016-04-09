@@ -5,11 +5,11 @@
 #ifndef CC_ANIMATION_ANIMATION_HOST_H_
 #define CC_ANIMATION_ANIMATION_HOST_H_
 
+#include <memory>
 #include <unordered_map>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/animation/animation.h"
 #include "cc/base/cc_export.h"
@@ -45,7 +45,7 @@ enum class ThreadInstance { MAIN, IMPL };
 // we want to merge AnimationRegistrar into AnimationHost.
 class CC_EXPORT AnimationHost {
  public:
-  static scoped_ptr<AnimationHost> Create(ThreadInstance thread_instance);
+  static std::unique_ptr<AnimationHost> Create(ThreadInstance thread_instance);
   virtual ~AnimationHost();
 
   void AddAnimationTimeline(scoped_refptr<AnimationTimeline> timeline);
@@ -90,8 +90,8 @@ class CC_EXPORT AnimationHost {
   bool UpdateAnimationState(bool start_ready_animations,
                             AnimationEvents* events);
 
-  scoped_ptr<AnimationEvents> CreateEvents();
-  void SetAnimationEvents(scoped_ptr<AnimationEvents> events);
+  std::unique_ptr<AnimationEvents> CreateEvents();
+  void SetAnimationEvents(std::unique_ptr<AnimationEvents> events);
 
   bool ScrollOffsetAnimationWasInterrupted(int layer_id) const;
 
@@ -164,7 +164,7 @@ class CC_EXPORT AnimationHost {
   // if they are attached to the same element(layer). Note that Element can
   // contain many Layers.
   using LayerToElementAnimationsMap =
-      std::unordered_map<int, scoped_ptr<ElementAnimations>>;
+      std::unordered_map<int, std::unique_ptr<ElementAnimations>>;
   LayerToElementAnimationsMap layer_to_element_animations_map_;
 
   // A list of all timelines which this host owns.
@@ -172,11 +172,11 @@ class CC_EXPORT AnimationHost {
       std::unordered_map<int, scoped_refptr<AnimationTimeline>>;
   IdToTimelineMap id_to_timeline_map_;
 
-  scoped_ptr<AnimationRegistrar> animation_registrar_;
+  std::unique_ptr<AnimationRegistrar> animation_registrar_;
   MutatorHostClient* mutator_host_client_;
 
   class ScrollOffsetAnimations;
-  scoped_ptr<ScrollOffsetAnimations> scroll_offset_animations_;
+  std::unique_ptr<ScrollOffsetAnimations> scroll_offset_animations_;
 
   const ThreadInstance thread_instance_;
 

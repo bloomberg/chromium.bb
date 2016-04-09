@@ -20,7 +20,7 @@ namespace {
 void CheckDrawLayer(HeadsUpDisplayLayerImpl* layer,
                     ResourceProvider* resource_provider,
                     DrawMode draw_mode) {
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   bool will_draw = layer->WillDraw(draw_mode, resource_provider);
   if (will_draw)
@@ -37,13 +37,13 @@ TEST(HeadsUpDisplayLayerImplTest, ResourcelessSoftwareDrawAfterResourceLoss) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
+  std::unique_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
   host_impl.CreatePendingTree();
   host_impl.SetVisible(true);
   host_impl.InitializeRenderer(output_surface.get());
-  scoped_ptr<HeadsUpDisplayLayerImpl> layer_ptr =
+  std::unique_ptr<HeadsUpDisplayLayerImpl> layer_ptr =
       HeadsUpDisplayLayerImpl::Create(host_impl.pending_tree(), 1);
   layer_ptr->SetBounds(gfx::Size(100, 100));
 

@@ -26,7 +26,7 @@ class TileDrawQuad;
 
 class CC_EXPORT SoftwareRenderer : public DirectRenderer {
  public:
-  static scoped_ptr<SoftwareRenderer> Create(
+  static std::unique_ptr<SoftwareRenderer> Create(
       RendererClient* client,
       const RendererSettings* settings,
       OutputSurface* output_surface,
@@ -58,7 +58,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   void EnsureScissorTestDisabled() override;
   void CopyCurrentRenderPassToBitmap(
       DrawingFrame* frame,
-      scoped_ptr<CopyOutputRequest> request) override;
+      std::unique_ptr<CopyOutputRequest> request) override;
 
   SoftwareRenderer(RendererClient* client,
                    const RendererSettings* settings,
@@ -110,7 +110,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   SkCanvas* root_canvas_;
   SkCanvas* current_canvas_;
   SkPaint current_paint_;
-  scoped_ptr<ResourceProvider::ScopedWriteLockSoftware>
+  std::unique_ptr<ResourceProvider::ScopedWriteLockSoftware>
       current_framebuffer_lock_;
   skia::RefPtr<SkCanvas> current_framebuffer_canvas_;
 

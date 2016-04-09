@@ -5,9 +5,9 @@
 #ifndef CC_TEST_ANIMATION_TIMELINES_TEST_COMMON_H_
 #define CC_TEST_ANIMATION_TIMELINES_TEST_COMMON_H_
 
+#include <memory>
 #include <unordered_map>
 
-#include "base/memory/scoped_ptr.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_host.h"
@@ -19,7 +19,7 @@ namespace cc {
 
 class TestLayer {
  public:
-  static scoped_ptr<TestLayer> Create();
+  static std::unique_ptr<TestLayer> Create();
 
   void ClearMutatedProperties();
 
@@ -133,9 +133,10 @@ class TestHostClient : public MutatorHostClient {
   TestLayer* FindTestLayer(int layer_id, LayerTreeType tree_type) const;
 
  private:
-  scoped_ptr<AnimationHost> host_;
+  std::unique_ptr<AnimationHost> host_;
 
-  using LayerIdToTestLayer = std::unordered_map<int, scoped_ptr<TestLayer>>;
+  using LayerIdToTestLayer =
+      std::unordered_map<int, std::unique_ptr<TestLayer>>;
   LayerIdToTestLayer layers_in_active_tree_;
   LayerIdToTestLayer layers_in_pending_tree_;
 
@@ -158,7 +159,8 @@ class TestAnimationDelegate : public AnimationDelegate {
   void NotifyAnimationTakeover(base::TimeTicks monotonic_time,
                                TargetProperty::Type target_property,
                                double animation_start_time,
-                               scoped_ptr<AnimationCurve> curve) override {}
+                               std::unique_ptr<AnimationCurve> curve) override {
+  }
   bool started_;
   bool finished_;
 };

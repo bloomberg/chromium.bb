@@ -6,11 +6,11 @@
 #define CC_ANIMATION_LAYER_ANIMATION_CONTROLLER_H_
 
 #include <bitset>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "cc/animation/animation.h"
@@ -44,7 +44,7 @@ class CC_EXPORT LayerAnimationController
 
   int id() const { return id_; }
 
-  void AddAnimation(scoped_ptr<Animation> animation);
+  void AddAnimation(std::unique_ptr<Animation> animation);
   void PauseAnimation(int animation_id, base::TimeDelta time_offset);
   void RemoveAnimation(int animation_id);
   void AbortAnimation(int animation_id);
@@ -228,7 +228,7 @@ class CC_EXPORT LayerAnimationController
 
   AnimationRegistrar* registrar_;
   int id_;
-  std::vector<scoped_ptr<Animation>> animations_;
+  std::vector<std::unique_ptr<Animation>> animations_;
 
   // This is used to ensure that we don't spam the registrar.
   bool is_active_;

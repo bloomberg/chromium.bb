@@ -5,9 +5,10 @@
 #ifndef CC_LAYERS_EMPTY_CONTENT_LAYER_CLIENT_H_
 #define CC_LAYERS_EMPTY_CONTENT_LAYER_CLIENT_H_
 
+#include <memory>
+
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/content_layer_client.h"
 #include "ui/gfx/geometry/rect.h"

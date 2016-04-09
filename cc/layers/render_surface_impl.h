@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/quads/render_pass.h"
@@ -203,7 +203,7 @@ class CC_EXPORT RenderSurfaceImpl {
   // surface, and that ignores outside occlusion. This can point to itself.
   RenderSurfaceImpl* nearest_occlusion_immune_ancestor_;
 
-  scoped_ptr<DamageTracker> damage_tracker_;
+  std::unique_ptr<DamageTracker> damage_tracker_;
 
   // For LayerIteratorActions
   int target_render_surface_layer_index_history_;

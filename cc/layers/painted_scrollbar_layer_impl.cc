@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/memory/ptr_util.h"
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/layers/layer.h"
 #include "cc/quads/solid_color_draw_quad.h"
@@ -17,11 +18,11 @@
 
 namespace cc {
 
-scoped_ptr<PaintedScrollbarLayerImpl> PaintedScrollbarLayerImpl::Create(
+std::unique_ptr<PaintedScrollbarLayerImpl> PaintedScrollbarLayerImpl::Create(
     LayerTreeImpl* tree_impl,
     int id,
     ScrollbarOrientation orientation) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new PaintedScrollbarLayerImpl(tree_impl, id, orientation));
 }
 
@@ -41,7 +42,7 @@ PaintedScrollbarLayerImpl::PaintedScrollbarLayerImpl(
 
 PaintedScrollbarLayerImpl::~PaintedScrollbarLayerImpl() {}
 
-scoped_ptr<LayerImpl> PaintedScrollbarLayerImpl::CreateLayerImpl(
+std::unique_ptr<LayerImpl> PaintedScrollbarLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return PaintedScrollbarLayerImpl::Create(tree_impl, id(), orientation());
 }

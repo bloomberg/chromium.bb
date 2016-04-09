@@ -10,9 +10,10 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/renderer.h"
@@ -24,17 +25,17 @@ namespace cc {
 
 class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
  public:
-  static scoped_ptr<ResourcePool> CreateForGpuMemoryBufferResources(
+  static std::unique_ptr<ResourcePool> CreateForGpuMemoryBufferResources(
       ResourceProvider* resource_provider,
       base::SingleThreadTaskRunner* task_runner) {
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new ResourcePool(resource_provider, task_runner, true));
   }
 
-  static scoped_ptr<ResourcePool> Create(
+  static std::unique_ptr<ResourcePool> Create(
       ResourceProvider* resource_provider,
       base::SingleThreadTaskRunner* task_runner) {
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new ResourcePool(resource_provider, task_runner, false));
   }
 
@@ -80,9 +81,9 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
  private:
   class PoolResource : public ScopedResource {
    public:
-    static scoped_ptr<PoolResource> Create(
+    static std::unique_ptr<PoolResource> Create(
         ResourceProvider* resource_provider) {
-      return make_scoped_ptr(new PoolResource(resource_provider));
+      return base::WrapUnique(new PoolResource(resource_provider));
     }
     void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                       const ResourceProvider* resource_provider,
@@ -101,8 +102,8 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
     base::TimeTicks last_usage_;
   };
 
-  void DidFinishUsingResource(scoped_ptr<PoolResource> resource);
-  void DeleteResource(scoped_ptr<PoolResource> resource);
+  void DidFinishUsingResource(std::unique_ptr<PoolResource> resource);
+  void DeleteResource(std::unique_ptr<PoolResource> resource);
 
   // Functions which manage periodic eviction of expired resources.
   void ScheduleEvictExpiredResourcesIn(base::TimeDelta time_from_now);
@@ -120,11 +121,11 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
   size_t total_resource_count_;
 
   // Holds most recently used resources at the front of the queue.
-  using ResourceDeque = std::deque<scoped_ptr<PoolResource>>;
+  using ResourceDeque = std::deque<std::unique_ptr<PoolResource>>;
   ResourceDeque unused_resources_;
   ResourceDeque busy_resources_;
 
-  std::map<ResourceId, scoped_ptr<PoolResource>> in_use_resources_;
+  std::map<ResourceId, std::unique_ptr<PoolResource>> in_use_resources_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   bool evict_expired_resources_pending_;

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/quads/io_surface_draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
@@ -27,7 +28,7 @@
 namespace cc {
 
 // static
-scoped_ptr<VideoLayerImpl> VideoLayerImpl::Create(
+std::unique_ptr<VideoLayerImpl> VideoLayerImpl::Create(
     LayerTreeImpl* tree_impl,
     int id,
     VideoFrameProvider* provider,
@@ -39,7 +40,7 @@ scoped_ptr<VideoLayerImpl> VideoLayerImpl::Create(
       VideoFrameProviderClientImpl::Create(
           provider, tree_impl->GetVideoFrameControllerClient());
 
-  return make_scoped_ptr(new VideoLayerImpl(
+  return base::WrapUnique(new VideoLayerImpl(
       tree_impl, id, std::move(provider_client_impl), video_rotation));
 }
 
@@ -66,9 +67,9 @@ VideoLayerImpl::~VideoLayerImpl() {
   }
 }
 
-scoped_ptr<LayerImpl> VideoLayerImpl::CreateLayerImpl(
+std::unique_ptr<LayerImpl> VideoLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return make_scoped_ptr(new VideoLayerImpl(
+  return base::WrapUnique(new VideoLayerImpl(
       tree_impl, id(), provider_client_impl_, video_rotation_));
 }
 

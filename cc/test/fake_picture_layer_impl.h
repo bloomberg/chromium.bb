@@ -7,7 +7,9 @@
 
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/playback/raster_source.h"
 
@@ -15,51 +17,52 @@ namespace cc {
 
 class FakePictureLayerImpl : public PictureLayerImpl {
  public:
-  static scoped_ptr<FakePictureLayerImpl> Create(
-      LayerTreeImpl* tree_impl, int id) {
+  static std::unique_ptr<FakePictureLayerImpl> Create(LayerTreeImpl* tree_impl,
+                                                      int id) {
     bool is_mask = false;
-    return make_scoped_ptr(new FakePictureLayerImpl(tree_impl, id, is_mask));
+    return base::WrapUnique(new FakePictureLayerImpl(tree_impl, id, is_mask));
   }
 
-  static scoped_ptr<FakePictureLayerImpl> CreateMask(LayerTreeImpl* tree_impl,
-                                                     int id) {
+  static std::unique_ptr<FakePictureLayerImpl> CreateMask(
+      LayerTreeImpl* tree_impl,
+      int id) {
     bool is_mask = true;
-    return make_scoped_ptr(new FakePictureLayerImpl(tree_impl, id, is_mask));
+    return base::WrapUnique(new FakePictureLayerImpl(tree_impl, id, is_mask));
   }
 
   // Create layer from a raster source that covers the entire layer.
-  static scoped_ptr<FakePictureLayerImpl> CreateWithRasterSource(
+  static std::unique_ptr<FakePictureLayerImpl> CreateWithRasterSource(
       LayerTreeImpl* tree_impl,
       int id,
       scoped_refptr<RasterSource> raster_source) {
     bool is_mask = false;
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new FakePictureLayerImpl(tree_impl, id, raster_source, is_mask));
   }
 
   // Create layer from a raster source that only covers part of the layer.
-  static scoped_ptr<FakePictureLayerImpl> CreateWithPartialRasterSource(
+  static std::unique_ptr<FakePictureLayerImpl> CreateWithPartialRasterSource(
       LayerTreeImpl* tree_impl,
       int id,
       scoped_refptr<RasterSource> raster_source,
       const gfx::Size& layer_bounds) {
     bool is_mask = false;
-    return make_scoped_ptr(new FakePictureLayerImpl(
+    return base::WrapUnique(new FakePictureLayerImpl(
         tree_impl, id, raster_source, is_mask, layer_bounds));
   }
 
   // Create layer from a raster source that covers the entire layer and is a
   // mask.
-  static scoped_ptr<FakePictureLayerImpl> CreateMaskWithRasterSource(
+  static std::unique_ptr<FakePictureLayerImpl> CreateMaskWithRasterSource(
       LayerTreeImpl* tree_impl,
       int id,
       scoped_refptr<RasterSource> raster_source) {
     bool is_mask = true;
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new FakePictureLayerImpl(tree_impl, id, raster_source, is_mask));
   }
 
-  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void PushPropertiesTo(LayerImpl* layer_impl) override;
   void AppendQuads(RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;

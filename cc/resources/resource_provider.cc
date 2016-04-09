@@ -65,7 +65,7 @@ class IdAllocator {
 
   GLES2Interface* gl_;
   const size_t id_allocation_chunk_size_;
-  scoped_ptr<GLuint[]> ids_;
+  std::unique_ptr<GLuint[]> ids_;
   size_t next_id_index_;
 };
 
@@ -383,7 +383,7 @@ ResourceProvider::Child::Child(const Child& other) = default;
 
 ResourceProvider::Child::~Child() {}
 
-scoped_ptr<ResourceProvider> ResourceProvider::Create(
+std::unique_ptr<ResourceProvider> ResourceProvider::Create(
     OutputSurface* output_surface,
     SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -392,7 +392,7 @@ scoped_ptr<ResourceProvider> ResourceProvider::Create(
     size_t id_allocation_chunk_size,
     bool use_gpu_memory_buffer_resources,
     const std::vector<unsigned>& use_image_texture_targets) {
-  scoped_ptr<ResourceProvider> resource_provider(new ResourceProvider(
+  std::unique_ptr<ResourceProvider> resource_provider(new ResourceProvider(
       output_surface, shared_bitmap_manager, gpu_memory_buffer_manager,
       blocking_main_thread_task_runner, highp_threshold_min,
       id_allocation_chunk_size, use_gpu_memory_buffer_resources,
@@ -551,7 +551,7 @@ ResourceId ResourceProvider::CreateGLTexture(const gfx::Size& size,
 ResourceId ResourceProvider::CreateBitmap(const gfx::Size& size) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  scoped_ptr<SharedBitmap> bitmap =
+  std::unique_ptr<SharedBitmap> bitmap =
       shared_bitmap_manager_->AllocateSharedBitmap(size);
   uint8_t* pixels = bitmap->pixels();
   DCHECK(pixels);
@@ -586,7 +586,7 @@ ResourceId ResourceProvider::CreateResourceFromIOSurface(
 
 ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
     const TextureMailbox& mailbox,
-    scoped_ptr<SingleReleaseCallbackImpl> release_callback_impl,
+    std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl,
     bool read_lock_fences_enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Just store the information. Mailbox will be consumed in LockForRead().
@@ -622,7 +622,7 @@ ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
 
 ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
     const TextureMailbox& mailbox,
-    scoped_ptr<SingleReleaseCallbackImpl> release_callback_impl) {
+    std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl) {
   return CreateResourceFromTextureMailbox(
       mailbox, std::move(release_callback_impl), false);
 }
@@ -868,7 +868,7 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
 
   if (!resource->pixels && resource->has_shared_bitmap_id &&
       shared_bitmap_manager_) {
-    scoped_ptr<SharedBitmap> bitmap =
+    std::unique_ptr<SharedBitmap> bitmap =
         shared_bitmap_manager_->GetSharedBitmapFromId(
             resource->size, resource->shared_bitmap_id);
     if (bitmap) {

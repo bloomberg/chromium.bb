@@ -62,7 +62,7 @@ void ClipPathDisplayItem::ToProtobuf(
   // Just use skia's serialization method for the SkPath for now.
   size_t path_size = clip_path_.writeToMemory(nullptr);
   if (path_size > 0) {
-    scoped_ptr<uint8_t[]> buffer(new uint8_t[path_size]);
+    std::unique_ptr<uint8_t[]> buffer(new uint8_t[path_size]);
     clip_path_.writeToMemory(buffer.get());
     details->set_clip_path(buffer.get(), path_size);
   }

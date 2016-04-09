@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
@@ -381,21 +382,21 @@ CompositorTimingHistory::CompositorTimingHistory(
 CompositorTimingHistory::~CompositorTimingHistory() {
 }
 
-scoped_ptr<CompositorTimingHistory::UMAReporter>
+std::unique_ptr<CompositorTimingHistory::UMAReporter>
 CompositorTimingHistory::CreateUMAReporter(UMACategory category) {
   switch (category) {
     case RENDERER_UMA:
-      return make_scoped_ptr(new RendererUMAReporter);
+      return base::WrapUnique(new RendererUMAReporter);
       break;
     case BROWSER_UMA:
-      return make_scoped_ptr(new BrowserUMAReporter);
+      return base::WrapUnique(new BrowserUMAReporter);
       break;
     case NULL_UMA:
-      return make_scoped_ptr(new NullUMAReporter);
+      return base::WrapUnique(new NullUMAReporter);
       break;
   }
   NOTREACHED();
-  return make_scoped_ptr<CompositorTimingHistory::UMAReporter>(nullptr);
+  return base::WrapUnique<CompositorTimingHistory::UMAReporter>(nullptr);
 }
 
 void CompositorTimingHistory::AsValueInto(

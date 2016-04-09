@@ -20,25 +20,25 @@ class TestTaskGraphRunner;
 
 class FakeLayerTreeHost : public LayerTreeHost {
  public:
-  static scoped_ptr<FakeLayerTreeHost> Create(
+  static std::unique_ptr<FakeLayerTreeHost> Create(
       FakeLayerTreeHostClient* client,
       TestTaskGraphRunner* task_graph_runner);
-  static scoped_ptr<FakeLayerTreeHost> Create(
+  static std::unique_ptr<FakeLayerTreeHost> Create(
       FakeLayerTreeHostClient* client,
       TestTaskGraphRunner* task_graph_runner,
       const LayerTreeSettings& settings);
-  static scoped_ptr<FakeLayerTreeHost> Create(
+  static std::unique_ptr<FakeLayerTreeHost> Create(
       FakeLayerTreeHostClient* client,
       TestTaskGraphRunner* task_graph_runner,
       const LayerTreeSettings& settings,
       CompositorMode mode);
-  static scoped_ptr<FakeLayerTreeHost> Create(
+  static std::unique_ptr<FakeLayerTreeHost> Create(
       FakeLayerTreeHostClient* client,
       TestTaskGraphRunner* task_graph_runner,
       const LayerTreeSettings& settings,
       CompositorMode mode,
       InitParams params);
-  static scoped_ptr<FakeLayerTreeHost> Create(
+  static std::unique_ptr<FakeLayerTreeHost> Create(
       FakeLayerTreeHostClient* client,
       TestTaskGraphRunner* task_graph_runner,
       const LayerTreeSettings& settings,

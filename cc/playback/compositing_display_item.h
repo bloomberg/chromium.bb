@@ -8,7 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "cc/base/cc_export.h"
 #include "cc/playback/display_item.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
@@ -66,8 +68,8 @@ class CC_EXPORT EndCompositingDisplayItem : public DisplayItem {
   explicit EndCompositingDisplayItem(const proto::DisplayItem& proto);
   ~EndCompositingDisplayItem() override;
 
-  static scoped_ptr<EndCompositingDisplayItem> Create() {
-    return make_scoped_ptr(new EndCompositingDisplayItem());
+  static std::unique_ptr<EndCompositingDisplayItem> Create() {
+    return base::WrapUnique(new EndCompositingDisplayItem());
   }
 
   void ToProtobuf(proto::DisplayItem* proto,

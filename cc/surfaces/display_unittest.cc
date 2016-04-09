@@ -61,12 +61,12 @@ class DisplayTest : public testing::Test {
         task_runner_(new base::NullTaskRunner) {}
 
  protected:
-  void SetUpContext(scoped_ptr<TestWebGraphicsContext3D> context) {
+  void SetUpContext(std::unique_ptr<TestWebGraphicsContext3D> context) {
     if (context) {
       output_surface_ = FakeOutputSurface::Create3d(
           TestContextProvider::Create(std::move(context)));
     } else {
-      scoped_ptr<TestSoftwareOutputDevice> output_device(
+      std::unique_ptr<TestSoftwareOutputDevice> output_device(
           new TestSoftwareOutputDevice);
       software_output_device_ = output_device.get();
       output_surface_ =
@@ -77,10 +77,10 @@ class DisplayTest : public testing::Test {
   }
 
   void SubmitCompositorFrame(RenderPassList* pass_list, SurfaceId surface_id) {
-    scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
+    std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
     pass_list->swap(frame_data->render_pass_list);
 
-    scoped_ptr<CompositorFrame> frame(new CompositorFrame);
+    std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
     frame->delegated_frame_data = std::move(frame_data);
 
     factory_.SubmitCompositorFrame(surface_id, std::move(frame),
@@ -91,11 +91,11 @@ class DisplayTest : public testing::Test {
   FakeSurfaceFactoryClient surface_factory_client_;
   SurfaceFactory factory_;
   TestSoftwareOutputDevice* software_output_device_;
-  scoped_ptr<FakeOutputSurface> output_surface_;
+  std::unique_ptr<FakeOutputSurface> output_surface_;
   FakeOutputSurface* output_surface_ptr_;
   FakeBeginFrameSource fake_begin_frame_source_;
   scoped_refptr<base::NullTaskRunner> task_runner_;
-  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
 };
 
 class TestDisplayClient : public DisplayClient {
@@ -149,7 +149,7 @@ class TestDisplayScheduler : public DisplayScheduler {
   bool swapped;
 };
 
-void CopyCallback(bool* called, scoped_ptr<CopyOutputResult> result) {
+void CopyCallback(bool* called, std::unique_ptr<CopyOutputResult> result) {
   *called = true;
 }
 
@@ -185,7 +185,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
   // First draw from surface should have full damage.
   RenderPassList pass_list;
-  scoped_ptr<RenderPass> pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->output_rect = gfx::Rect(0, 0, 100, 100);
   pass->damage_rect = gfx::Rect(10, 10, 1, 1);
   pass->id = RenderPassId(1, 1);
@@ -325,10 +325,10 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
     pass_list.push_back(std::move(pass));
     scheduler.ResetDamageForTest();
-    scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
+    std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
     pass_list.swap(frame_data->render_pass_list);
 
-    scoped_ptr<CompositorFrame> frame(new CompositorFrame);
+    std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
     frame->delegated_frame_data = std::move(frame_data);
     frame->metadata.latency_info.push_back(ui::LatencyInfo());
 
@@ -358,10 +358,10 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
     pass_list.push_back(std::move(pass));
     scheduler.ResetDamageForTest();
-    scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
+    std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
     pass_list.swap(frame_data->render_pass_list);
 
-    scoped_ptr<CompositorFrame> frame(new CompositorFrame);
+    std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
     frame->delegated_frame_data = std::move(frame_data);
 
     factory_.SubmitCompositorFrame(surface_id, std::move(frame),
@@ -417,7 +417,7 @@ class MockedContext : public TestWebGraphicsContext3D {
 };
 
 TEST_F(DisplayTest, Finish) {
-  scoped_ptr<MockedContext> context(new MockedContext());
+  std::unique_ptr<MockedContext> context(new MockedContext());
   MockedContext* context_ptr = context.get();
   SetUpContext(std::move(context));
 
@@ -441,7 +441,7 @@ TEST_F(DisplayTest, Finish) {
 
   {
     RenderPassList pass_list;
-    scoped_ptr<RenderPass> pass = RenderPass::Create();
+    std::unique_ptr<RenderPass> pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 1, 1);
     pass->id = RenderPassId(1, 1);
@@ -467,7 +467,7 @@ TEST_F(DisplayTest, Finish) {
   EXPECT_CALL(*context_ptr, shallowFinishCHROMIUM()).Times(0);
   {
     RenderPassList pass_list;
-    scoped_ptr<RenderPass> pass = RenderPass::Create();
+    std::unique_ptr<RenderPass> pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 200, 200);
     pass->damage_rect = gfx::Rect(10, 10, 1, 1);
     pass->id = RenderPassId(1, 1);

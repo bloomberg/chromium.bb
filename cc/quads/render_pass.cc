@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
@@ -39,17 +40,18 @@ QuadList::QuadList(size_t default_size_to_reserve)
     : ListContainer<DrawQuad>(LargestDrawQuadSize(), default_size_to_reserve) {
 }
 
-scoped_ptr<RenderPass> RenderPass::Create() {
-  return make_scoped_ptr(new RenderPass());
+std::unique_ptr<RenderPass> RenderPass::Create() {
+  return base::WrapUnique(new RenderPass());
 }
 
-scoped_ptr<RenderPass> RenderPass::Create(size_t num_layers) {
-  return make_scoped_ptr(new RenderPass(num_layers));
+std::unique_ptr<RenderPass> RenderPass::Create(size_t num_layers) {
+  return base::WrapUnique(new RenderPass(num_layers));
 }
 
-scoped_ptr<RenderPass> RenderPass::Create(size_t shared_quad_state_list_size,
-                                          size_t quad_list_size) {
-  return make_scoped_ptr(
+std::unique_ptr<RenderPass> RenderPass::Create(
+    size_t shared_quad_state_list_size,
+    size_t quad_list_size) {
+  return base::WrapUnique(
       new RenderPass(shared_quad_state_list_size, quad_list_size));
 }
 
@@ -82,8 +84,8 @@ RenderPass::~RenderPass() {
       "cc::RenderPass", id.AsTracingId());
 }
 
-scoped_ptr<RenderPass> RenderPass::Copy(RenderPassId new_id) const {
-  scoped_ptr<RenderPass> copy_pass(
+std::unique_ptr<RenderPass> RenderPass::Copy(RenderPassId new_id) const {
+  std::unique_ptr<RenderPass> copy_pass(
       Create(shared_quad_state_list.size(), quad_list.size()));
   copy_pass->SetAll(new_id,
                     output_rect,
@@ -94,14 +96,14 @@ scoped_ptr<RenderPass> RenderPass::Copy(RenderPassId new_id) const {
 }
 
 // static
-void RenderPass::CopyAll(const std::vector<scoped_ptr<RenderPass>>& in,
-                         std::vector<scoped_ptr<RenderPass>>* out) {
+void RenderPass::CopyAll(const std::vector<std::unique_ptr<RenderPass>>& in,
+                         std::vector<std::unique_ptr<RenderPass>>* out) {
   for (const auto& source : in) {
     // Since we can't copy these, it's wrong to use CopyAll in a situation where
     // you may have copy_requests present.
     DCHECK_EQ(source->copy_requests.size(), 0u);
 
-    scoped_ptr<RenderPass> copy_pass(Create(
+    std::unique_ptr<RenderPass> copy_pass(Create(
         source->shared_quad_state_list.size(), source->quad_list.size()));
     copy_pass->SetAll(source->id,
                       source->output_rect,

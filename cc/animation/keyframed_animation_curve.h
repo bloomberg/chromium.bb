@@ -24,92 +24,93 @@ class CC_EXPORT Keyframe {
   }
 
  protected:
-  Keyframe(base::TimeDelta time, scoped_ptr<TimingFunction> timing_function);
+  Keyframe(base::TimeDelta time,
+           std::unique_ptr<TimingFunction> timing_function);
   virtual ~Keyframe();
 
  private:
   base::TimeDelta time_;
-  scoped_ptr<TimingFunction> timing_function_;
+  std::unique_ptr<TimingFunction> timing_function_;
 
   DISALLOW_COPY_AND_ASSIGN(Keyframe);
 };
 
 class CC_EXPORT ColorKeyframe : public Keyframe {
  public:
-  static scoped_ptr<ColorKeyframe> Create(
+  static std::unique_ptr<ColorKeyframe> Create(
       base::TimeDelta time,
       SkColor value,
-      scoped_ptr<TimingFunction> timing_function);
+      std::unique_ptr<TimingFunction> timing_function);
   ~ColorKeyframe() override;
 
   SkColor Value() const;
 
-  scoped_ptr<ColorKeyframe> Clone() const;
+  std::unique_ptr<ColorKeyframe> Clone() const;
 
  private:
   ColorKeyframe(base::TimeDelta time,
                 SkColor value,
-                scoped_ptr<TimingFunction> timing_function);
+                std::unique_ptr<TimingFunction> timing_function);
 
   SkColor value_;
 };
 
 class CC_EXPORT FloatKeyframe : public Keyframe {
  public:
-  static scoped_ptr<FloatKeyframe> Create(
+  static std::unique_ptr<FloatKeyframe> Create(
       base::TimeDelta time,
       float value,
-      scoped_ptr<TimingFunction> timing_function);
+      std::unique_ptr<TimingFunction> timing_function);
   ~FloatKeyframe() override;
 
   float Value() const;
 
-  scoped_ptr<FloatKeyframe> Clone() const;
+  std::unique_ptr<FloatKeyframe> Clone() const;
 
  private:
   FloatKeyframe(base::TimeDelta time,
                 float value,
-                scoped_ptr<TimingFunction> timing_function);
+                std::unique_ptr<TimingFunction> timing_function);
 
   float value_;
 };
 
 class CC_EXPORT TransformKeyframe : public Keyframe {
  public:
-  static scoped_ptr<TransformKeyframe> Create(
+  static std::unique_ptr<TransformKeyframe> Create(
       base::TimeDelta time,
       const TransformOperations& value,
-      scoped_ptr<TimingFunction> timing_function);
+      std::unique_ptr<TimingFunction> timing_function);
   ~TransformKeyframe() override;
 
   const TransformOperations& Value() const;
 
-  scoped_ptr<TransformKeyframe> Clone() const;
+  std::unique_ptr<TransformKeyframe> Clone() const;
 
  private:
   TransformKeyframe(base::TimeDelta time,
                     const TransformOperations& value,
-                    scoped_ptr<TimingFunction> timing_function);
+                    std::unique_ptr<TimingFunction> timing_function);
 
   TransformOperations value_;
 };
 
 class CC_EXPORT FilterKeyframe : public Keyframe {
  public:
-  static scoped_ptr<FilterKeyframe> Create(
+  static std::unique_ptr<FilterKeyframe> Create(
       base::TimeDelta time,
       const FilterOperations& value,
-      scoped_ptr<TimingFunction> timing_function);
+      std::unique_ptr<TimingFunction> timing_function);
   ~FilterKeyframe() override;
 
   const FilterOperations& Value() const;
 
-  scoped_ptr<FilterKeyframe> Clone() const;
+  std::unique_ptr<FilterKeyframe> Clone() const;
 
  private:
   FilterKeyframe(base::TimeDelta time,
                  const FilterOperations& value,
-                 scoped_ptr<TimingFunction> timing_function);
+                 std::unique_ptr<TimingFunction> timing_function);
 
   FilterOperations value_;
 };
@@ -117,18 +118,18 @@ class CC_EXPORT FilterKeyframe : public Keyframe {
 class CC_EXPORT KeyframedColorAnimationCurve : public ColorAnimationCurve {
  public:
   // It is required that the keyframes be sorted by time.
-  static scoped_ptr<KeyframedColorAnimationCurve> Create();
+  static std::unique_ptr<KeyframedColorAnimationCurve> Create();
 
   ~KeyframedColorAnimationCurve() override;
 
-  void AddKeyframe(scoped_ptr<ColorKeyframe> keyframe);
-  void SetTimingFunction(scoped_ptr<TimingFunction> timing_function) {
+  void AddKeyframe(std::unique_ptr<ColorKeyframe> keyframe);
+  void SetTimingFunction(std::unique_ptr<TimingFunction> timing_function) {
     timing_function_ = std::move(timing_function);
   }
 
   // AnimationCurve implementation
   base::TimeDelta Duration() const override;
-  scoped_ptr<AnimationCurve> Clone() const override;
+  std::unique_ptr<AnimationCurve> Clone() const override;
 
   // BackgrounColorAnimationCurve implementation
   SkColor GetValue(base::TimeDelta t) const override;
@@ -138,8 +139,8 @@ class CC_EXPORT KeyframedColorAnimationCurve : public ColorAnimationCurve {
 
   // Always sorted in order of increasing time. No two keyframes have the
   // same time.
-  std::vector<scoped_ptr<ColorKeyframe>> keyframes_;
-  scoped_ptr<TimingFunction> timing_function_;
+  std::vector<std::unique_ptr<ColorKeyframe>> keyframes_;
+  std::unique_ptr<TimingFunction> timing_function_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyframedColorAnimationCurve);
 };
@@ -147,18 +148,18 @@ class CC_EXPORT KeyframedColorAnimationCurve : public ColorAnimationCurve {
 class CC_EXPORT KeyframedFloatAnimationCurve : public FloatAnimationCurve {
  public:
   // It is required that the keyframes be sorted by time.
-  static scoped_ptr<KeyframedFloatAnimationCurve> Create();
+  static std::unique_ptr<KeyframedFloatAnimationCurve> Create();
 
   ~KeyframedFloatAnimationCurve() override;
 
-  void AddKeyframe(scoped_ptr<FloatKeyframe> keyframe);
-  void SetTimingFunction(scoped_ptr<TimingFunction> timing_function) {
+  void AddKeyframe(std::unique_ptr<FloatKeyframe> keyframe);
+  void SetTimingFunction(std::unique_ptr<TimingFunction> timing_function) {
     timing_function_ = std::move(timing_function);
   }
 
   // AnimationCurve implementation
   base::TimeDelta Duration() const override;
-  scoped_ptr<AnimationCurve> Clone() const override;
+  std::unique_ptr<AnimationCurve> Clone() const override;
 
   // FloatAnimationCurve implementation
   float GetValue(base::TimeDelta t) const override;
@@ -168,8 +169,8 @@ class CC_EXPORT KeyframedFloatAnimationCurve : public FloatAnimationCurve {
 
   // Always sorted in order of increasing time. No two keyframes have the
   // same time.
-  std::vector<scoped_ptr<FloatKeyframe>> keyframes_;
-  scoped_ptr<TimingFunction> timing_function_;
+  std::vector<std::unique_ptr<FloatKeyframe>> keyframes_;
+  std::unique_ptr<TimingFunction> timing_function_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyframedFloatAnimationCurve);
 };
@@ -178,18 +179,18 @@ class CC_EXPORT KeyframedTransformAnimationCurve
     : public TransformAnimationCurve {
  public:
   // It is required that the keyframes be sorted by time.
-  static scoped_ptr<KeyframedTransformAnimationCurve> Create();
+  static std::unique_ptr<KeyframedTransformAnimationCurve> Create();
 
   ~KeyframedTransformAnimationCurve() override;
 
-  void AddKeyframe(scoped_ptr<TransformKeyframe> keyframe);
-  void SetTimingFunction(scoped_ptr<TimingFunction> timing_function) {
+  void AddKeyframe(std::unique_ptr<TransformKeyframe> keyframe);
+  void SetTimingFunction(std::unique_ptr<TimingFunction> timing_function) {
     timing_function_ = std::move(timing_function);
   }
 
   // AnimationCurve implementation
   base::TimeDelta Duration() const override;
-  scoped_ptr<AnimationCurve> Clone() const override;
+  std::unique_ptr<AnimationCurve> Clone() const override;
 
   // TransformAnimationCurve implementation
   gfx::Transform GetValue(base::TimeDelta t) const override;
@@ -208,8 +209,8 @@ class CC_EXPORT KeyframedTransformAnimationCurve
 
   // Always sorted in order of increasing time. No two keyframes have the
   // same time.
-  std::vector<scoped_ptr<TransformKeyframe>> keyframes_;
-  scoped_ptr<TimingFunction> timing_function_;
+  std::vector<std::unique_ptr<TransformKeyframe>> keyframes_;
+  std::unique_ptr<TimingFunction> timing_function_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyframedTransformAnimationCurve);
 };
@@ -218,18 +219,18 @@ class CC_EXPORT KeyframedFilterAnimationCurve
     : public FilterAnimationCurve {
  public:
   // It is required that the keyframes be sorted by time.
-  static scoped_ptr<KeyframedFilterAnimationCurve> Create();
+  static std::unique_ptr<KeyframedFilterAnimationCurve> Create();
 
   ~KeyframedFilterAnimationCurve() override;
 
-  void AddKeyframe(scoped_ptr<FilterKeyframe> keyframe);
-  void SetTimingFunction(scoped_ptr<TimingFunction> timing_function) {
+  void AddKeyframe(std::unique_ptr<FilterKeyframe> keyframe);
+  void SetTimingFunction(std::unique_ptr<TimingFunction> timing_function) {
     timing_function_ = std::move(timing_function);
   }
 
   // AnimationCurve implementation
   base::TimeDelta Duration() const override;
-  scoped_ptr<AnimationCurve> Clone() const override;
+  std::unique_ptr<AnimationCurve> Clone() const override;
 
   // FilterAnimationCurve implementation
   FilterOperations GetValue(base::TimeDelta t) const override;
@@ -240,8 +241,8 @@ class CC_EXPORT KeyframedFilterAnimationCurve
 
   // Always sorted in order of increasing time. No two keyframes have the
   // same time.
-  std::vector<scoped_ptr<FilterKeyframe>> keyframes_;
-  scoped_ptr<TimingFunction> timing_function_;
+  std::vector<std::unique_ptr<FilterKeyframe>> keyframes_;
+  std::unique_ptr<TimingFunction> timing_function_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyframedFilterAnimationCurve);
 };

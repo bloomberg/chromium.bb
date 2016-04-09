@@ -96,7 +96,7 @@ void LayerAnimationController::RemoveAnimation(int animation_id) {
   // removed items in an unspecified state.
   auto animations_to_remove = std::stable_partition(
       animations_.begin(), animations_.end(),
-      [animation_id](const scoped_ptr<Animation>& animation) {
+      [animation_id](const std::unique_ptr<Animation>& animation) {
         return animation->id() != animation_id;
       });
   for (auto it = animations_to_remove; it != animations_.end(); ++it) {
@@ -288,7 +288,7 @@ void LayerAnimationController::ActivateAnimations() {
     animations_[i]->set_affects_active_observers(
         animations_[i]->affects_pending_observers());
   }
-  auto affects_no_observers = [](const scoped_ptr<Animation>& animation) {
+  auto affects_no_observers = [](const std::unique_ptr<Animation>& animation) {
     return !animation->affects_active_observers() &&
            !animation->affects_pending_observers();
   };
@@ -301,7 +301,8 @@ void LayerAnimationController::ActivateAnimations() {
     UpdatePotentiallyAnimatingTransform();
 }
 
-void LayerAnimationController::AddAnimation(scoped_ptr<Animation> animation) {
+void LayerAnimationController::AddAnimation(
+    std::unique_ptr<Animation> animation) {
   bool added_transform_animation =
       animation->target_property() == TargetProperty::TRANSFORM;
   animations_.push_back(std::move(animation));
@@ -440,7 +441,7 @@ void LayerAnimationController::NotifyAnimationTakeover(
     const AnimationEvent& event) {
   DCHECK(event.target_property == TargetProperty::SCROLL_OFFSET);
   if (layer_animation_delegate_) {
-    scoped_ptr<AnimationCurve> animation_curve = event.curve->Clone();
+    std::unique_ptr<AnimationCurve> animation_curve = event.curve->Clone();
     layer_animation_delegate_->NotifyAnimationTakeover(
         event.monotonic_time, event.target_property, event.animation_start_time,
         std::move(animation_curve));
@@ -723,7 +724,7 @@ void LayerAnimationController::PushNewAnimationsToImplThread(
     // The new animation should be set to run as soon as possible.
     Animation::RunState initial_run_state =
         Animation::WAITING_FOR_TARGET_AVAILABILITY;
-    scoped_ptr<Animation> to_add(
+    std::unique_ptr<Animation> to_add(
         animations_[i]->CloneAndInitialize(initial_run_state));
     DCHECK(!to_add->needs_synchronized_start_time());
     to_add->set_affects_active_observers(false);
@@ -757,7 +758,7 @@ void LayerAnimationController::RemoveAnimationsCompletedOnMainThread(
     }
   }
   auto affects_active_only_and_is_waiting_for_deletion = [](
-      const scoped_ptr<Animation>& animation) {
+      const std::unique_ptr<Animation>& animation) {
     return animation->run_state() == Animation::WAITING_FOR_DELETION &&
            !animation->affects_pending_observers();
   };
@@ -1081,12 +1082,13 @@ void LayerAnimationController::MarkAbortedAnimationsForDeletion(
 }
 
 void LayerAnimationController::PurgeAnimationsMarkedForDeletion() {
-  animations_.erase(std::remove_if(animations_.begin(), animations_.end(),
-                                   [](const scoped_ptr<Animation>& animation) {
-                                     return animation->run_state() ==
-                                            Animation::WAITING_FOR_DELETION;
-                                   }),
-                    animations_.end());
+  animations_.erase(
+      std::remove_if(animations_.begin(), animations_.end(),
+                     [](const std::unique_ptr<Animation>& animation) {
+                       return animation->run_state() ==
+                              Animation::WAITING_FOR_DELETION;
+                     }),
+      animations_.end());
 }
 
 void LayerAnimationController::TickAnimations(base::TimeTicks monotonic_time) {

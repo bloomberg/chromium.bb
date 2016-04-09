@@ -14,7 +14,7 @@ namespace cc {
 
 class RemoteChannelImplForTest : public RemoteChannelImpl {
  public:
-  static scoped_ptr<RemoteChannelImplForTest> Create(
+  static std::unique_ptr<RemoteChannelImplForTest> Create(
       TestHooks* test_hooks,
       LayerTreeHost* layer_tree_host,
       RemoteProtoChannel* remote_proto_channel,
@@ -28,11 +28,11 @@ class RemoteChannelImplForTest : public RemoteChannelImpl {
                            RemoteProtoChannel* remote_proto_channel,
                            TaskRunnerProvider* task_runner_provider);
 
-  scoped_ptr<ProxyImpl> CreateProxyImpl(
+  std::unique_ptr<ProxyImpl> CreateProxyImpl(
       ChannelImpl* channel_impl,
       LayerTreeHost* layer_tree_host,
       TaskRunnerProvider* task_runner_provider,
-      scoped_ptr<BeginFrameSource> external_begin_frame_source) override;
+      std::unique_ptr<BeginFrameSource> external_begin_frame_source) override;
 
   TestHooks* test_hooks_;
   ProxyImplForTest* proxy_impl_for_test_;

@@ -30,10 +30,10 @@ class CC_EXPORT MicroBenchmarkController {
 
   // Returns the id of the benchmark on success, 0 otherwise.
   int ScheduleRun(const std::string& micro_benchmark_name,
-                  scoped_ptr<base::Value> value,
+                  std::unique_ptr<base::Value> value,
                   const MicroBenchmark::DoneCallback& callback);
   // Returns true if the message was successfully delivered and handled.
-  bool SendMessage(int id, scoped_ptr<base::Value> value);
+  bool SendMessage(int id, std::unique_ptr<base::Value> value);
 
   void ScheduleImplBenchmarks(LayerTreeHostImpl* host_impl);
 
@@ -42,7 +42,7 @@ class CC_EXPORT MicroBenchmarkController {
   int GetNextIdAndIncrement();
 
   LayerTreeHost* host_;
-  std::vector<scoped_ptr<MicroBenchmark>> benchmarks_;
+  std::vector<std::unique_ptr<MicroBenchmark>> benchmarks_;
   static int next_id_;
   scoped_refptr<base::SingleThreadTaskRunner> main_controller_task_runner_;
 

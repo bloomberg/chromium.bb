@@ -6,11 +6,13 @@
 
 #include <limits>
 
+#include "base/memory/ptr_util.h"
+
 namespace cc {
 
 // static
-scoped_ptr<MemoryHistory> MemoryHistory::Create() {
-  return make_scoped_ptr(new MemoryHistory());
+std::unique_ptr<MemoryHistory> MemoryHistory::Create() {
+  return base::WrapUnique(new MemoryHistory());
 }
 
 MemoryHistory::MemoryHistory() {}

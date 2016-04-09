@@ -37,12 +37,13 @@
 namespace cc {
 namespace {
 
-LayerImpl* LayerImplForScrollAreaAndScrollbar(FakeLayerTreeHost* host,
-                                              scoped_ptr<Scrollbar> scrollbar,
-                                              bool reverse_order,
-                                              bool use_solid_color_scrollbar,
-                                              int thumb_thickness,
-                                              int track_start) {
+LayerImpl* LayerImplForScrollAreaAndScrollbar(
+    FakeLayerTreeHost* host,
+    std::unique_ptr<Scrollbar> scrollbar,
+    bool reverse_order,
+    bool use_solid_color_scrollbar,
+    int thumb_thickness,
+    int track_start) {
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
   scoped_refptr<Layer> child1 = Layer::Create();
   scoped_refptr<Layer> child2;
@@ -141,12 +142,12 @@ class ScrollbarLayerTest : public testing::Test {
   FakeLayerTreeHostClient fake_client_;
   TestTaskGraphRunner task_graph_runner_;
   LayerTreeSettings layer_tree_settings_;
-  scoped_ptr<FakeResourceTrackingLayerTreeHost> layer_tree_host_;
+  std::unique_ptr<FakeResourceTrackingLayerTreeHost> layer_tree_host_;
 };
 
 TEST_F(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
   // Create and attach a non-overlay scrollbar.
-  scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar);
+  std::unique_ptr<Scrollbar> scrollbar(new FakeScrollbar);
   LayerImpl* layer_impl_tree_root = LayerImplForScrollAreaAndScrollbar(
       layer_tree_host_.get(), std::move(scrollbar), false, false, 0, 0);
   PaintedScrollbarLayerImpl* scrollbar_layer_impl =
@@ -189,7 +190,7 @@ TEST_F(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
 }
 
 TEST_F(ScrollbarLayerTest, ScrollOffsetSynchronization) {
-  scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar);
+  std::unique_ptr<Scrollbar> scrollbar(new FakeScrollbar);
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
   scoped_refptr<Layer> scroll_layer = Layer::Create();
   scoped_refptr<Layer> content_layer = Layer::Create();
@@ -380,7 +381,7 @@ TEST_F(ScrollbarLayerTest, SolidColorDrawQuads) {
   const int kTrackStart = 1;
   const int kTrackLength = 100;
 
-  scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar(false, true, true));
+  std::unique_ptr<Scrollbar> scrollbar(new FakeScrollbar(false, true, true));
   LayerImpl* layer_impl_tree_root = LayerImplForScrollAreaAndScrollbar(
       layer_tree_host_.get(), std::move(scrollbar), false, true,
       kThumbThickness, kTrackStart);
@@ -394,7 +395,7 @@ TEST_F(ScrollbarLayerTest, SolidColorDrawQuads) {
 
   // Thickness should be overridden to 3.
   {
-    scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+    std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
     AppendQuadsData data;
     scrollbar_layer_impl->AppendQuads(render_pass.get(), &data);
 
@@ -409,7 +410,7 @@ TEST_F(ScrollbarLayerTest, SolidColorDrawQuads) {
   scrollbar_layer_impl->SetClipLayerLength(25.f);
   scrollbar_layer_impl->SetScrollLayerLength(125.f);
   {
-    scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+    std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
     AppendQuadsData data;
     scrollbar_layer_impl->AppendQuads(render_pass.get(), &data);
 
@@ -424,7 +425,7 @@ TEST_F(ScrollbarLayerTest, SolidColorDrawQuads) {
   scrollbar_layer_impl->SetClipLayerLength(125.f);
   scrollbar_layer_impl->SetScrollLayerLength(125.f);
   {
-    scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+    std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
     AppendQuadsData data;
     scrollbar_layer_impl->AppendQuads(render_pass.get(), &data);
 
@@ -440,7 +441,7 @@ TEST_F(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
   const int kTrackStart = 0;
   const int kTrackLength = 10;
 
-  scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar(false, true, true));
+  std::unique_ptr<Scrollbar> scrollbar(new FakeScrollbar(false, true, true));
 
   {
     scoped_refptr<Layer> layer_tree_root = Layer::Create();
@@ -478,7 +479,7 @@ TEST_F(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
   scrollbar_layer_impl->SetCurrentPos(4.f);
 
   {
-    scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+    std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
 
     AppendQuadsData data;
     scrollbar_layer_impl->AppendQuads(render_pass.get(), &data);
@@ -525,9 +526,9 @@ class ScrollbarLayerSolidColorThumbTest : public testing::Test {
   FakeImplTaskRunnerProvider task_runner_provider_;
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
-  scoped_ptr<FakeLayerTreeHostImpl> host_impl_;
-  scoped_ptr<SolidColorScrollbarLayerImpl> horizontal_scrollbar_layer_;
-  scoped_ptr<SolidColorScrollbarLayerImpl> vertical_scrollbar_layer_;
+  std::unique_ptr<FakeLayerTreeHostImpl> host_impl_;
+  std::unique_ptr<SolidColorScrollbarLayerImpl> horizontal_scrollbar_layer_;
+  std::unique_ptr<SolidColorScrollbarLayerImpl> vertical_scrollbar_layer_;
 };
 
 TEST_F(ScrollbarLayerSolidColorThumbTest, SolidColorThumbLength) {
@@ -606,7 +607,7 @@ class ScrollbarLayerTestMaxTextureSize : public LayerTreeTest {
     scroll_layer_ = Layer::Create();
     layer_tree_host()->root_layer()->AddChild(scroll_layer_);
 
-    scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar);
+    std::unique_ptr<Scrollbar> scrollbar(new FakeScrollbar);
     scrollbar_layer_ = PaintedScrollbarLayer::Create(std::move(scrollbar),
                                                      scroll_layer_->id());
     scrollbar_layer_->SetScrollLayer(scroll_layer_->id());
@@ -642,7 +643,7 @@ class ScrollbarLayerTestMaxTextureSize : public LayerTreeTest {
 };
 
 TEST_F(ScrollbarLayerTestMaxTextureSize, DirectRenderer) {
-  scoped_ptr<TestWebGraphicsContext3D> context =
+  std::unique_ptr<TestWebGraphicsContext3D> context =
       TestWebGraphicsContext3D::Create();
   int max_size = 0;
   context->getIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
@@ -651,7 +652,7 @@ TEST_F(ScrollbarLayerTestMaxTextureSize, DirectRenderer) {
 }
 
 TEST_F(ScrollbarLayerTestMaxTextureSize, DelegatingRenderer) {
-  scoped_ptr<TestWebGraphicsContext3D> context =
+  std::unique_ptr<TestWebGraphicsContext3D> context =
       TestWebGraphicsContext3D::Create();
   int max_size = 0;
   context->getIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
@@ -666,7 +667,7 @@ class ScrollbarLayerTestResourceCreationAndRelease : public ScrollbarLayerTest {
                           int expected_created,
                           int expected_deleted,
                           bool use_solid_color_scrollbar) {
-    scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar(false, true, false));
+    std::unique_ptr<Scrollbar> scrollbar(new FakeScrollbar(false, true, false));
     scoped_refptr<Layer> layer_tree_root = Layer::Create();
     scoped_refptr<Layer> content_layer = Layer::Create();
     scoped_refptr<Layer> scrollbar_layer;

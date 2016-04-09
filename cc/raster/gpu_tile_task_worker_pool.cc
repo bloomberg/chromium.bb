@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/playback/raster_source.h"
 #include "cc/raster/gpu_rasterizer.h"
@@ -89,14 +90,14 @@ class RasterBufferImpl : public RasterBuffer {
 }  // namespace
 
 // static
-scoped_ptr<TileTaskWorkerPool> GpuTileTaskWorkerPool::Create(
+std::unique_ptr<TileTaskWorkerPool> GpuTileTaskWorkerPool::Create(
     base::SequencedTaskRunner* task_runner,
     TaskGraphRunner* task_graph_runner,
     ContextProvider* context_provider,
     ResourceProvider* resource_provider,
     bool use_distance_field_text,
     int gpu_rasterization_msaa_sample_count) {
-  return make_scoped_ptr<TileTaskWorkerPool>(new GpuTileTaskWorkerPool(
+  return base::WrapUnique<TileTaskWorkerPool>(new GpuTileTaskWorkerPool(
       task_runner, task_graph_runner, context_provider, resource_provider,
       use_distance_field_text, gpu_rasterization_msaa_sample_count));
 }
@@ -178,16 +179,16 @@ void GpuTileTaskWorkerPool::CompleteTasks(const Task::Vector& tasks) {
   completed_tasks_.clear();
 }
 
-scoped_ptr<RasterBuffer> GpuTileTaskWorkerPool::AcquireBufferForRaster(
+std::unique_ptr<RasterBuffer> GpuTileTaskWorkerPool::AcquireBufferForRaster(
     const Resource* resource,
     uint64_t resource_content_id,
     uint64_t previous_content_id) {
-  return scoped_ptr<RasterBuffer>(new RasterBufferImpl(
+  return std::unique_ptr<RasterBuffer>(new RasterBufferImpl(
       rasterizer_.get(), resource, resource_content_id, previous_content_id));
 }
 
 void GpuTileTaskWorkerPool::ReleaseBufferForRaster(
-    scoped_ptr<RasterBuffer> buffer) {
+    std::unique_ptr<RasterBuffer> buffer) {
   // Nothing to do here. RasterBufferImpl destructor cleans up after itself.
 }
 

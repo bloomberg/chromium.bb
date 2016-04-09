@@ -5,7 +5,8 @@
 #ifndef CC_QUADS_CONTENT_DRAW_QUAD_BASE_H_
 #define CC_QUADS_CONTENT_DRAW_QUAD_BASE_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "cc/base/cc_export.h"
 #include "cc/quads/draw_quad.h"
 #include "ui/gfx/geometry/rect_f.h"

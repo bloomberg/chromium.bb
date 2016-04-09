@@ -42,7 +42,7 @@ FakeOutputSurface::FakeOutputSurface(
 }
 
 FakeOutputSurface::FakeOutputSurface(
-    scoped_ptr<SoftwareOutputDevice> software_device,
+    std::unique_ptr<SoftwareOutputDevice> software_device,
     bool delegated_rendering)
     : OutputSurface(std::move(software_device)),
       client_(NULL),
@@ -56,7 +56,7 @@ FakeOutputSurface::FakeOutputSurface(
 
 FakeOutputSurface::FakeOutputSurface(
     scoped_refptr<ContextProvider> context_provider,
-    scoped_ptr<SoftwareOutputDevice> software_device,
+    std::unique_ptr<SoftwareOutputDevice> software_device,
     bool delegated_rendering)
     : OutputSurface(context_provider, std::move(software_device)),
       client_(NULL),
@@ -145,7 +145,7 @@ OverlayCandidateValidator* FakeOutputSurface::GetOverlayCandidateValidator()
 }
 
 void FakeOutputSurface::SetMemoryPolicyToSetAtBind(
-    scoped_ptr<ManagedMemoryPolicy> memory_policy_to_set_at_bind) {
+    std::unique_ptr<ManagedMemoryPolicy> memory_policy_to_set_at_bind) {
   memory_policy_to_set_at_bind_.swap(memory_policy_to_set_at_bind);
 }
 

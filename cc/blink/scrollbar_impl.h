@@ -5,8 +5,9 @@
 #ifndef CC_BLINK_SCROLLBAR_IMPL_H_
 #define CC_BLINK_SCROLLBAR_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/input/scrollbar.h"
 #include "third_party/WebKit/public/platform/WebScrollbarThemePainter.h"
 
@@ -19,9 +20,9 @@ namespace cc_blink {
 
 class ScrollbarImpl : public cc::Scrollbar {
  public:
-  ScrollbarImpl(scoped_ptr<blink::WebScrollbar> scrollbar,
+  ScrollbarImpl(std::unique_ptr<blink::WebScrollbar> scrollbar,
                 blink::WebScrollbarThemePainter painter,
-                scoped_ptr<blink::WebScrollbarThemeGeometry> geometry);
+                std::unique_ptr<blink::WebScrollbarThemeGeometry> geometry);
   ~ScrollbarImpl() override;
 
   // cc::Scrollbar implementation.
@@ -40,9 +41,9 @@ class ScrollbarImpl : public cc::Scrollbar {
                  const gfx::Rect& content_rect) override;
 
  private:
-  scoped_ptr<blink::WebScrollbar> scrollbar_;
+  std::unique_ptr<blink::WebScrollbar> scrollbar_;
   blink::WebScrollbarThemePainter painter_;
-  scoped_ptr<blink::WebScrollbarThemeGeometry> geometry_;
+  std::unique_ptr<blink::WebScrollbarThemeGeometry> geometry_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollbarImpl);
 };

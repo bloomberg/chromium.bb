@@ -20,7 +20,7 @@ void IssueImplThreadRenderingStatsEvent(const RenderingStats& stats) {
 }
 
 void IssueDisplayRenderingStatsEvent() {
-  scoped_ptr<base::trace_event::TracedValue> record_data(
+  std::unique_ptr<base::trace_event::TracedValue> record_data(
       new base::trace_event::TracedValue());
   record_data->SetInteger("frame_count", 1);
   TRACE_EVENT_INSTANT1(

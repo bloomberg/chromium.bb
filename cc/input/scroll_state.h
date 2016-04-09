@@ -6,8 +6,8 @@
 #define CC_INPUT_SCROLL_STATE_H_
 
 #include <list>
+#include <memory>
 
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/input/scroll_state_data.h"
 #include "ui/gfx/geometry/point.h"

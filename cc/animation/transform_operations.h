@@ -5,11 +5,11 @@
 #ifndef CC_ANIMATION_TRANSFORM_OPERATIONS_H_
 #define CC_ANIMATION_TRANSFORM_OPERATIONS_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/animation/transform_operation.h"
 #include "cc/base/cc_export.h"
 #include "ui/gfx/transform.h"
@@ -108,7 +108,7 @@ class CC_EXPORT TransformOperations {
   bool ComputeDecomposedTransform() const;
 
   // For efficiency, we cache the decomposed transform.
-  mutable scoped_ptr<gfx::DecomposedTransform> decomposed_transform_;
+  mutable std::unique_ptr<gfx::DecomposedTransform> decomposed_transform_;
   mutable bool decomposed_transform_dirty_;
 
   DISALLOW_ASSIGN(TransformOperations);

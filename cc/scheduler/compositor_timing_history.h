@@ -5,8 +5,9 @@
 #ifndef CC_SCHEDULER_COMPOSITOR_TIMING_HISTORY_H_
 #define CC_SCHEDULER_COMPOSITOR_TIMING_HISTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/rolling_time_delta_history.h"
 
 namespace base {
@@ -85,7 +86,7 @@ class CC_EXPORT CompositorTimingHistory {
 
   bool ShouldReportUma() const;
 
-  static scoped_ptr<UMAReporter> CreateUMAReporter(UMACategory category);
+  static std::unique_ptr<UMAReporter> CreateUMAReporter(UMACategory category);
   virtual base::TimeTicks Now() const;
 
   bool using_synchronous_renderer_compositor_;
@@ -125,7 +126,7 @@ class CC_EXPORT CompositorTimingHistory {
   base::TimeTicks draw_start_time_;
   base::TimeTicks swap_start_time_;
 
-  scoped_ptr<UMAReporter> uma_reporter_;
+  std::unique_ptr<UMAReporter> uma_reporter_;
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
 
  private:

@@ -78,8 +78,8 @@ DrawPolygon::DrawPolygon(const DrawQuad* original_ref,
 DrawPolygon::~DrawPolygon() {
 }
 
-scoped_ptr<DrawPolygon> DrawPolygon::CreateCopy() {
-  scoped_ptr<DrawPolygon> new_polygon(new DrawPolygon());
+std::unique_ptr<DrawPolygon> DrawPolygon::CreateCopy() {
+  std::unique_ptr<DrawPolygon> new_polygon(new DrawPolygon());
   new_polygon->order_index_ = order_index_;
   new_polygon->original_ref_ = original_ref_;
   new_polygon->points_.reserve(points_.size());
@@ -257,8 +257,8 @@ void DrawPolygon::TransformToLayerSpace(
 }
 
 bool DrawPolygon::Split(const DrawPolygon& splitter,
-                        scoped_ptr<DrawPolygon>* front,
-                        scoped_ptr<DrawPolygon>* back) {
+                        std::unique_ptr<DrawPolygon>* front,
+                        std::unique_ptr<DrawPolygon>* back) {
   gfx::Point3F intersections[2];
   std::vector<gfx::Point3F> out_points[2];
   // vertex_before stores the index of the vertex before its matching
@@ -318,9 +318,9 @@ bool DrawPolygon::Split(const DrawPolygon& splitter,
 
   // Give both polygons the original splitting polygon's ID, so that they'll
   // still be sorted properly in co-planar instances.
-  scoped_ptr<DrawPolygon> poly1(
+  std::unique_ptr<DrawPolygon> poly1(
       new DrawPolygon(original_ref_, out_points[0], normal_, order_index_));
-  scoped_ptr<DrawPolygon> poly2(
+  std::unique_ptr<DrawPolygon> poly2(
       new DrawPolygon(original_ref_, out_points[1], normal_, order_index_));
 
   DCHECK_GE(poly1->points().size(), 3u);

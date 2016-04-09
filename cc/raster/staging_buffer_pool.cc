@@ -4,6 +4,9 @@
 
 #include "cc/raster/staging_buffer_pool.h"
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -118,12 +121,12 @@ void StagingBuffer::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
 }
 
 // static
-scoped_ptr<StagingBufferPool> StagingBufferPool::Create(
+std::unique_ptr<StagingBufferPool> StagingBufferPool::Create(
     base::SequencedTaskRunner* task_runner,
     ResourceProvider* resource_provider,
     bool use_partial_raster,
     int max_staging_buffer_usage_in_bytes) {
-  return make_scoped_ptr<StagingBufferPool>(
+  return base::WrapUnique(
       new StagingBufferPool(task_runner, resource_provider, use_partial_raster,
                             max_staging_buffer_usage_in_bytes));
 }
@@ -164,7 +167,7 @@ void StagingBufferPool::Shutdown() {
 }
 
 void StagingBufferPool::ReleaseStagingBuffer(
-    scoped_ptr<StagingBuffer> staging_buffer) {
+    std::unique_ptr<StagingBuffer> staging_buffer) {
   base::AutoLock lock(lock_);
 
   staging_buffer->last_usage = base::TimeTicks::Now();
@@ -181,7 +184,7 @@ bool StagingBufferPool::OnMemoryDump(
   for (const auto* buffer : buffers_) {
     auto in_free_buffers =
         std::find_if(free_buffers_.begin(), free_buffers_.end(),
-                     [buffer](const scoped_ptr<StagingBuffer>& b) {
+                     [buffer](const std::unique_ptr<StagingBuffer>& b) {
                        return b.get() == buffer;
                      });
     buffer->OnMemoryDump(pmd, buffer->format,
@@ -233,12 +236,12 @@ void StagingBufferPool::MarkStagingBufferAsBusy(
   free_staging_buffer_usage_in_bytes_ -= buffer_usage_in_bytes;
 }
 
-scoped_ptr<StagingBuffer> StagingBufferPool::AcquireStagingBuffer(
+std::unique_ptr<StagingBuffer> StagingBufferPool::AcquireStagingBuffer(
     const Resource* resource,
     uint64_t previous_content_id) {
   base::AutoLock lock(lock_);
 
-  scoped_ptr<StagingBuffer> staging_buffer;
+  std::unique_ptr<StagingBuffer> staging_buffer;
 
   ContextProvider* context_provider =
       resource_provider_->output_surface()->worker_context_provider();
@@ -287,7 +290,7 @@ scoped_ptr<StagingBuffer> StagingBufferPool::AcquireStagingBuffer(
   if (use_partial_raster_ && previous_content_id) {
     StagingBufferDeque::iterator it = std::find_if(
         free_buffers_.begin(), free_buffers_.end(),
-        [previous_content_id](const scoped_ptr<StagingBuffer>& buffer) {
+        [previous_content_id](const std::unique_ptr<StagingBuffer>& buffer) {
           return buffer->content_id == previous_content_id;
         });
     if (it != free_buffers_.end()) {
@@ -301,7 +304,7 @@ scoped_ptr<StagingBuffer> StagingBufferPool::AcquireStagingBuffer(
   if (!staging_buffer) {
     StagingBufferDeque::iterator it =
         std::find_if(free_buffers_.begin(), free_buffers_.end(),
-                     [resource](const scoped_ptr<StagingBuffer>& buffer) {
+                     [resource](const std::unique_ptr<StagingBuffer>& buffer) {
                        return buffer->size == resource->size() &&
                               buffer->format == resource->format();
                      });
@@ -314,7 +317,7 @@ scoped_ptr<StagingBuffer> StagingBufferPool::AcquireStagingBuffer(
 
   // Create new staging buffer if necessary.
   if (!staging_buffer) {
-    staging_buffer = make_scoped_ptr(
+    staging_buffer = base::WrapUnique(
         new StagingBuffer(resource->size(), resource->format()));
     AddStagingBuffer(staging_buffer.get(), resource->format());
   }

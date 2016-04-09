@@ -16,12 +16,12 @@ class ThreadedChannelForTest;
 // actions.
 class ProxyMainForTest : public ProxyMain {
  public:
-  static scoped_ptr<ProxyMainForTest> CreateThreaded(
+  static std::unique_ptr<ProxyMainForTest> CreateThreaded(
       TestHooks* test_hooks,
       LayerTreeHost* host,
       TaskRunnerProvider* task_runner_provider);
 
-  static scoped_ptr<ProxyMainForTest> CreateRemote(
+  static std::unique_ptr<ProxyMainForTest> CreateRemote(
       TestHooks* test_hooks,
       RemoteProtoChannel* remote_proto_channel,
       LayerTreeHost* host,
@@ -43,7 +43,7 @@ class ProxyMainForTest : public ProxyMain {
       const RendererCapabilities& capabilities) override;
   void BeginMainFrameNotExpectedSoon() override;
   void DidCommitAndDrawFrame() override;
-  void SetAnimationEvents(scoped_ptr<AnimationEvents> events) override;
+  void SetAnimationEvents(std::unique_ptr<AnimationEvents> events) override;
   void DidLoseOutputSurface() override;
   void RequestNewOutputSurface() override;
   void DidInitializeOutputSurface(
@@ -51,11 +51,11 @@ class ProxyMainForTest : public ProxyMain {
       const RendererCapabilities& capabilities) override;
   void DidCompletePageScaleAnimation() override;
   void PostFrameTimingEventsOnMain(
-      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
+      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
       override;
-  void BeginMainFrame(
-      scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) override;
+  void BeginMainFrame(std::unique_ptr<BeginMainFrameAndCommitState>
+                          begin_main_frame_state) override;
 
   TestHooks* test_hooks_;
   ThreadedChannelForTest* threaded_channel_for_test_;

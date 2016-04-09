@@ -149,7 +149,7 @@ class CC_EXPORT Tile {
   DISALLOW_COPY_AND_ASSIGN(Tile);
 };
 
-using ScopedTilePtr = scoped_ptr<Tile, Tile::Deleter>;
+using ScopedTilePtr = std::unique_ptr<Tile, Tile::Deleter>;
 
 }  // namespace cc
 

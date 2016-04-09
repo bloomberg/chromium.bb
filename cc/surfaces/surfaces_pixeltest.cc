@@ -58,7 +58,7 @@ SharedQuadState* CreateAndAppendTestSharedQuadState(
 TEST_F(SurfacesPixelTest, DrawSimpleFrame) {
   gfx::Rect rect(device_viewport_size_);
   RenderPassId id(1, 1);
-  scoped_ptr<RenderPass> pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetNew(id, rect, rect, gfx::Transform());
 
   CreateAndAppendTestSharedQuadState(
@@ -73,10 +73,11 @@ TEST_F(SurfacesPixelTest, DrawSimpleFrame) {
                      SK_ColorGREEN,
                      force_anti_aliasing_off);
 
-  scoped_ptr<DelegatedFrameData> delegated_frame_data(new DelegatedFrameData);
+  std::unique_ptr<DelegatedFrameData> delegated_frame_data(
+      new DelegatedFrameData);
   delegated_frame_data->render_pass_list.push_back(std::move(pass));
 
-  scoped_ptr<CompositorFrame> root_frame(new CompositorFrame);
+  std::unique_ptr<CompositorFrame> root_frame(new CompositorFrame);
   root_frame->delegated_frame_data = std::move(delegated_frame_data);
 
   SurfaceId root_surface_id = allocator_.GenerateId();
@@ -85,7 +86,7 @@ TEST_F(SurfacesPixelTest, DrawSimpleFrame) {
                                  SurfaceFactory::DrawCallback());
 
   SurfaceAggregator aggregator(&manager_, resource_provider_.get(), true);
-  scoped_ptr<CompositorFrame> aggregated_frame =
+  std::unique_ptr<CompositorFrame> aggregated_frame =
       aggregator.Aggregate(root_surface_id);
   factory_.Destroy(root_surface_id);
 
@@ -108,7 +109,7 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
   {
     gfx::Rect rect(device_viewport_size_);
     RenderPassId id(1, 1);
-    scoped_ptr<RenderPass> pass = RenderPass::Create();
+    std::unique_ptr<RenderPass> pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
     CreateAndAppendTestSharedQuadState(
@@ -130,10 +131,11 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
                        SK_ColorYELLOW,
                        force_anti_aliasing_off);
 
-    scoped_ptr<DelegatedFrameData> delegated_frame_data(new DelegatedFrameData);
+    std::unique_ptr<DelegatedFrameData> delegated_frame_data(
+        new DelegatedFrameData);
     delegated_frame_data->render_pass_list.push_back(std::move(pass));
 
-    scoped_ptr<CompositorFrame> root_frame(new CompositorFrame);
+    std::unique_ptr<CompositorFrame> root_frame(new CompositorFrame);
     root_frame->delegated_frame_data = std::move(delegated_frame_data);
 
     factory_.SubmitCompositorFrame(root_surface_id, std::move(root_frame),
@@ -143,7 +145,7 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
   {
     gfx::Rect rect(child_size);
     RenderPassId id(1, 1);
-    scoped_ptr<RenderPass> pass = RenderPass::Create();
+    std::unique_ptr<RenderPass> pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
     CreateAndAppendTestSharedQuadState(
@@ -158,10 +160,11 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
                        SK_ColorBLUE,
                        force_anti_aliasing_off);
 
-    scoped_ptr<DelegatedFrameData> delegated_frame_data(new DelegatedFrameData);
+    std::unique_ptr<DelegatedFrameData> delegated_frame_data(
+        new DelegatedFrameData);
     delegated_frame_data->render_pass_list.push_back(std::move(pass));
 
-    scoped_ptr<CompositorFrame> child_frame(new CompositorFrame);
+    std::unique_ptr<CompositorFrame> child_frame(new CompositorFrame);
     child_frame->delegated_frame_data = std::move(delegated_frame_data);
 
     factory_.SubmitCompositorFrame(child_surface_id, std::move(child_frame),
@@ -169,7 +172,7 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
   }
 
   SurfaceAggregator aggregator(&manager_, resource_provider_.get(), true);
-  scoped_ptr<CompositorFrame> aggregated_frame =
+  std::unique_ptr<CompositorFrame> aggregated_frame =
       aggregator.Aggregate(root_surface_id);
 
   bool discard_alpha = false;
@@ -204,7 +207,7 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
   {
     gfx::Rect rect(device_viewport_size_);
     RenderPassId id(1, 1);
-    scoped_ptr<RenderPass> pass = RenderPass::Create();
+    std::unique_ptr<RenderPass> pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
     gfx::Transform surface_transform;
@@ -229,10 +232,11 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
                                gfx::Rect(child_size),
                                right_child_id);
 
-    scoped_ptr<DelegatedFrameData> delegated_frame_data(new DelegatedFrameData);
+    std::unique_ptr<DelegatedFrameData> delegated_frame_data(
+        new DelegatedFrameData);
     delegated_frame_data->render_pass_list.push_back(std::move(pass));
 
-    scoped_ptr<CompositorFrame> root_frame(new CompositorFrame);
+    std::unique_ptr<CompositorFrame> root_frame(new CompositorFrame);
     root_frame->delegated_frame_data = std::move(delegated_frame_data);
 
     factory_.SubmitCompositorFrame(root_surface_id, std::move(root_frame),
@@ -242,7 +246,7 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
   {
     gfx::Rect rect(child_size);
     RenderPassId id(1, 1);
-    scoped_ptr<RenderPass> pass = RenderPass::Create();
+    std::unique_ptr<RenderPass> pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
     CreateAndAppendTestSharedQuadState(
@@ -265,10 +269,11 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
                               SK_ColorBLUE,
                               force_anti_aliasing_off);
 
-    scoped_ptr<DelegatedFrameData> delegated_frame_data(new DelegatedFrameData);
+    std::unique_ptr<DelegatedFrameData> delegated_frame_data(
+        new DelegatedFrameData);
     delegated_frame_data->render_pass_list.push_back(std::move(pass));
 
-    scoped_ptr<CompositorFrame> child_frame(new CompositorFrame);
+    std::unique_ptr<CompositorFrame> child_frame(new CompositorFrame);
     child_frame->delegated_frame_data = std::move(delegated_frame_data);
 
     factory_.SubmitCompositorFrame(left_child_id, std::move(child_frame),
@@ -278,7 +283,7 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
   {
     gfx::Rect rect(child_size);
     RenderPassId id(1, 1);
-    scoped_ptr<RenderPass> pass = RenderPass::Create();
+    std::unique_ptr<RenderPass> pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
     CreateAndAppendTestSharedQuadState(
@@ -301,10 +306,11 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
                               SK_ColorGREEN,
                               force_anti_aliasing_off);
 
-    scoped_ptr<DelegatedFrameData> delegated_frame_data(new DelegatedFrameData);
+    std::unique_ptr<DelegatedFrameData> delegated_frame_data(
+        new DelegatedFrameData);
     delegated_frame_data->render_pass_list.push_back(std::move(pass));
 
-    scoped_ptr<CompositorFrame> child_frame(new CompositorFrame);
+    std::unique_ptr<CompositorFrame> child_frame(new CompositorFrame);
     child_frame->delegated_frame_data = std::move(delegated_frame_data);
 
     factory_.SubmitCompositorFrame(right_child_id, std::move(child_frame),
@@ -312,7 +318,7 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
   }
 
   SurfaceAggregator aggregator(&manager_, resource_provider_.get(), true);
-  scoped_ptr<CompositorFrame> aggregated_frame =
+  std::unique_ptr<CompositorFrame> aggregated_frame =
       aggregator.Aggregate(root_surface_id);
 
   bool discard_alpha = false;

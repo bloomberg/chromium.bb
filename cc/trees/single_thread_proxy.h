@@ -29,9 +29,10 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
                                     NON_EXPORTED_BASE(LayerTreeHostImplClient),
                                     SchedulerClient {
  public:
-  static scoped_ptr<Proxy> Create(LayerTreeHost* layer_tree_host,
-                                  LayerTreeHostSingleThreadClient* client,
-                                  TaskRunnerProvider* task_runner_provider_);
+  static std::unique_ptr<Proxy> Create(
+      LayerTreeHost* layer_tree_host,
+      LayerTreeHostSingleThreadClient* client,
+      TaskRunnerProvider* task_runner_provider_);
   ~SingleThreadProxy() override;
 
   // Proxy implementation
@@ -52,7 +53,8 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   bool CommitRequested() const override;
   bool BeginMainFrameRequested() const override;
   void MainThreadHasStoppedFlinging() override {}
-  void Start(scoped_ptr<BeginFrameSource> external_begin_frame_source) override;
+  void Start(
+      std::unique_ptr<BeginFrameSource> external_begin_frame_source) override;
   void Stop() override;
   bool SupportsImplScrolling() const override;
   bool MainFrameWillHappenForTesting() override;
@@ -95,7 +97,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void SetNeedsCommitOnImplThread() override;
   void SetVideoNeedsBeginFrames(bool needs_begin_frames) override;
   void PostAnimationEventsToMainThreadOnImplThread(
-      scoped_ptr<AnimationEvents> events) override;
+      std::unique_ptr<AnimationEvents> events) override;
   bool IsInsideDraw() override;
   void RenewTreePriority() override {}
   void PostDelayedAnimationTaskOnImplThread(const base::Closure& task,
@@ -106,8 +108,8 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void DidCompletePageScaleAnimationOnImplThread() override;
   void OnDrawForOutputSurface(bool resourceless_software_draw) override;
   void PostFrameTimingEventsOnImplThread(
-      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
+      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
       override;
 
   void RequestNewOutputSurface();
@@ -141,19 +143,20 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
 
   // Used on the Thread, but checked on main thread during
   // initialization/shutdown.
-  scoped_ptr<LayerTreeHostImpl> layer_tree_host_impl_;
+  std::unique_ptr<LayerTreeHostImpl> layer_tree_host_impl_;
   RendererCapabilities renderer_capabilities_for_main_thread_;
 
   // Accessed from both threads.
-  scoped_ptr<BeginFrameSource> external_begin_frame_source_;
-  scoped_ptr<BeginFrameSource> unthrottled_begin_frame_source_;
-  scoped_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source_;
-  scoped_ptr<Scheduler> scheduler_on_impl_thread_;
+  std::unique_ptr<BeginFrameSource> external_begin_frame_source_;
+  std::unique_ptr<BeginFrameSource> unthrottled_begin_frame_source_;
+  std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source_;
+  std::unique_ptr<Scheduler> scheduler_on_impl_thread_;
 
   base::TimeDelta authoritative_vsync_interval_;
   base::TimeTicks last_vsync_timebase_;
 
-  scoped_ptr<BlockingTaskRunner::CapturePostTasks> commit_blocking_task_runner_;
+  std::unique_ptr<BlockingTaskRunner::CapturePostTasks>
+      commit_blocking_task_runner_;
   bool next_frame_is_newly_committed_frame_;
 
 #if DCHECK_IS_ON()

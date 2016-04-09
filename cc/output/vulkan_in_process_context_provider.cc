@@ -24,7 +24,8 @@ VulkanInProcessContextProvider::Create() {
 }
 
 bool VulkanInProcessContextProvider::Initialize() {
-  scoped_ptr<gpu::VulkanDeviceQueue> device_queue(new gpu::VulkanDeviceQueue);
+  std::unique_ptr<gpu::VulkanDeviceQueue> device_queue(
+      new gpu::VulkanDeviceQueue);
   if (device_queue->Initialize(
           gpu::VulkanDeviceQueue::GRAPHICS_QUEUE_FLAG |
           gpu::VulkanDeviceQueue::PRESENTATION_SUPPORT_QUEUE_FLAG)) {

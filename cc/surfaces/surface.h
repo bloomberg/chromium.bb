@@ -9,13 +9,13 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <unordered_set>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/quads/render_pass_id.h"
@@ -45,13 +45,13 @@ class CC_SURFACES_EXPORT Surface {
 
   SurfaceId surface_id() const { return surface_id_; }
 
-  void QueueFrame(scoped_ptr<CompositorFrame> frame,
+  void QueueFrame(std::unique_ptr<CompositorFrame> frame,
                   const DrawCallback& draw_callback);
-  void RequestCopyOfOutput(scoped_ptr<CopyOutputRequest> copy_request);
+  void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> copy_request);
   // Adds each CopyOutputRequest in the current frame to copy_requests. The
   // caller takes ownership of them.
   void TakeCopyOutputRequests(
-      std::multimap<RenderPassId, scoped_ptr<CopyOutputRequest>>*
+      std::multimap<RenderPassId, std::unique_ptr<CopyOutputRequest>>*
           copy_requests);
   // Returns the most recent frame that is eligible to be rendered.
   const CompositorFrame* GetEligibleFrame();
@@ -90,7 +90,7 @@ class CC_SURFACES_EXPORT Surface {
   SurfaceId surface_id_;
   base::WeakPtr<SurfaceFactory> factory_;
   // TODO(jamesr): Support multiple frames in flight.
-  scoped_ptr<CompositorFrame> current_frame_;
+  std::unique_ptr<CompositorFrame> current_frame_;
   int frame_index_;
   bool destroyed_;
   std::vector<SurfaceSequence> destruction_dependencies_;

@@ -5,8 +5,9 @@
 #ifndef CC_OUTPUT_COMPOSITOR_FRAME_ACK_H_
 #define CC_OUTPUT_COMPOSITOR_FRAME_ACK_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/gl_frame_data.h"
 #include "cc/resources/returned_resource.h"
@@ -19,7 +20,7 @@ class CC_EXPORT CompositorFrameAck {
   ~CompositorFrameAck();
 
   ReturnedResourceArray resources;
-  scoped_ptr<GLFrameData> gl_frame_data;
+  std::unique_ptr<GLFrameData> gl_frame_data;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameAck);

@@ -29,7 +29,7 @@ class ListContainerHelper::CharAllocator {
   // This class holds the raw memory chunk, as well as information about its
   // size and availability.
   struct InnerList {
-    scoped_ptr<char[]> data;
+    std::unique_ptr<char[]> data;
     // The number of elements in total the memory can hold. The difference
     // between capacity and size is the how many more elements this list can
     // hold.
@@ -66,7 +66,7 @@ class ListContainerHelper::CharAllocator {
       capacity = size;
 
       // Allocate the new data and update the iterator's pointer.
-      scoped_ptr<char[]> new_data(new char[size * step]);
+      std::unique_ptr<char[]> new_data(new char[size * step]);
       size_t position_offset = *position - Begin();
       *position = new_data.get() + position_offset;
 
@@ -240,7 +240,7 @@ class ListContainerHelper::CharAllocator {
 
  private:
   void AllocateNewList(size_t list_size) {
-    scoped_ptr<InnerList> new_list(new InnerList);
+    std::unique_ptr<InnerList> new_list(new InnerList);
     new_list->capacity = list_size;
     new_list->size = 0;
     new_list->step = element_size_;
@@ -248,7 +248,7 @@ class ListContainerHelper::CharAllocator {
     storage_.push_back(std::move(new_list));
   }
 
-  std::vector<scoped_ptr<InnerList>> storage_;
+  std::vector<std::unique_ptr<InnerList>> storage_;
   const size_t element_size_;
 
   // The number of elements in the list.

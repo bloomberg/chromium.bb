@@ -19,7 +19,7 @@ class PixelTestOutputSurface : public OutputSurface {
       scoped_refptr<ContextProvider> context_provider,
       bool flipped_output_surface);
   explicit PixelTestOutputSurface(
-      scoped_ptr<SoftwareOutputDevice> software_device);
+      std::unique_ptr<SoftwareOutputDevice> software_device);
 
   void Reshape(const gfx::Size& size, float scale_factor, bool alpha) override;
   bool HasExternalStencilTest() const override;

@@ -26,18 +26,20 @@ class FakeRecordingSource : public RecordingSource {
   FakeRecordingSource();
   ~FakeRecordingSource() override {}
 
-  static scoped_ptr<FakeRecordingSource> CreateRecordingSource(
+  static std::unique_ptr<FakeRecordingSource> CreateRecordingSource(
       const gfx::Rect& recorded_viewport,
       const gfx::Size& layer_bounds) {
-    scoped_ptr<FakeRecordingSource> recording_source(new FakeRecordingSource);
+    std::unique_ptr<FakeRecordingSource> recording_source(
+        new FakeRecordingSource);
     recording_source->SetRecordedViewport(recorded_viewport);
     recording_source->SetLayerBounds(layer_bounds);
     return recording_source;
   }
 
-  static scoped_ptr<FakeRecordingSource> CreateFilledRecordingSource(
+  static std::unique_ptr<FakeRecordingSource> CreateFilledRecordingSource(
       const gfx::Size& layer_bounds) {
-    scoped_ptr<FakeRecordingSource> recording_source(new FakeRecordingSource);
+    std::unique_ptr<FakeRecordingSource> recording_source(
+        new FakeRecordingSource);
     recording_source->SetRecordedViewport(gfx::Rect(layer_bounds));
     recording_source->SetLayerBounds(layer_bounds);
     return recording_source;

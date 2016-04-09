@@ -5,6 +5,7 @@
 #include "cc/raster/texture_compressor.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "cc/raster/texture_compressor_etc1.h"
 
 #if defined(ARCH_CPU_X86_FAMILY)
@@ -14,16 +15,16 @@
 
 namespace cc {
 
-scoped_ptr<TextureCompressor> TextureCompressor::Create(Format format) {
+std::unique_ptr<TextureCompressor> TextureCompressor::Create(Format format) {
   switch (format) {
     case kFormatETC1: {
 #if defined(ARCH_CPU_X86_FAMILY)
       base::CPU cpu;
       if (cpu.has_sse2()) {
-        return make_scoped_ptr(new TextureCompressorETC1SSE());
+        return base::WrapUnique(new TextureCompressorETC1SSE());
       }
 #endif
-      return make_scoped_ptr(new TextureCompressorETC1());
+      return base::WrapUnique(new TextureCompressorETC1());
     }
   }
 

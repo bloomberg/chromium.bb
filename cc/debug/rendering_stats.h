@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
@@ -59,7 +59,7 @@ struct CC_EXPORT RenderingStats {
   TimeDeltaList commit_to_activate_duration;
   TimeDeltaList commit_to_activate_duration_estimate;
 
-  scoped_ptr<base::trace_event::ConvertableToTraceFormat> AsTraceableData()
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsTraceableData()
       const;
   void Add(const RenderingStats& other);
 };

@@ -101,10 +101,10 @@ class DisplaySchedulerTest : public testing::Test {
 
   FakeBeginFrameSource fake_begin_frame_source_;
 
-  scoped_ptr<base::SimpleTestTickClock> now_src_;
+  std::unique_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<base::NullTaskRunner> task_runner_;
-  scoped_ptr<FakeDisplaySchedulerClient> client_;
-  scoped_ptr<TestDisplayScheduler> scheduler_;
+  std::unique_ptr<FakeDisplaySchedulerClient> client_;
+  std::unique_ptr<TestDisplayScheduler> scheduler_;
 };
 
 TEST_F(DisplaySchedulerTest, ResizeHasLateDeadlineUntilNewRootSurface) {

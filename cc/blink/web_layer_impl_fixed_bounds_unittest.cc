@@ -22,7 +22,7 @@ namespace cc_blink {
 namespace {
 
 TEST(WebLayerImplFixedBoundsTest, IdentityBounds) {
-  scoped_ptr<WebLayerImplFixedBounds> layer(new WebLayerImplFixedBounds());
+  std::unique_ptr<WebLayerImplFixedBounds> layer(new WebLayerImplFixedBounds());
   layer->SetFixedBounds(gfx::Size(100, 100));
   layer->setBounds(WebSize(100, 100));
   EXPECT_EQ(WebSize(100, 100), layer->bounds());
@@ -59,7 +59,7 @@ void CheckBoundsScaleSimple(WebLayerImplFixedBounds* layer,
 }
 
 TEST(WebLayerImplFixedBoundsTest, BoundsScaleSimple) {
-  scoped_ptr<WebLayerImplFixedBounds> layer(new WebLayerImplFixedBounds());
+  std::unique_ptr<WebLayerImplFixedBounds> layer(new WebLayerImplFixedBounds());
   CheckBoundsScaleSimple(layer.get(), WebSize(100, 200), gfx::Size(150, 250));
   // Change fixed_bounds.
   CheckBoundsScaleSimple(layer.get(), WebSize(100, 200), gfx::Size(75, 100));
@@ -87,7 +87,8 @@ void CompareFixedBoundsLayerAndNormalLayer(const WebFloatPoint& anchor_point,
   WebFloatPoint position(20, 30);
   gfx::Size fixed_bounds(160, 70);
 
-  scoped_ptr<WebLayerImplFixedBounds> root_layer(new WebLayerImplFixedBounds());
+  std::unique_ptr<WebLayerImplFixedBounds> root_layer(
+      new WebLayerImplFixedBounds());
 
   WebLayerImplFixedBounds* fixed_bounds_layer =
       new WebLayerImplFixedBounds(cc::PictureImageLayer::Create());
@@ -106,7 +107,7 @@ void CompareFixedBoundsLayerAndNormalLayer(const WebFloatPoint& anchor_point,
 
   cc::FakeLayerTreeHostClient client(cc::FakeLayerTreeHostClient::DIRECT_3D);
   cc::TestTaskGraphRunner task_graph_runner;
-  scoped_ptr<cc::FakeLayerTreeHost> host =
+  std::unique_ptr<cc::FakeLayerTreeHost> host =
       cc::FakeLayerTreeHost::Create(&client, &task_graph_runner);
   host->SetRootLayer(root_layer->layer());
 

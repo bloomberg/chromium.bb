@@ -4,15 +4,17 @@
 
 #include "cc/test/fake_mask_layer_impl.h"
 
+#include "base/memory/ptr_util.h"
+
 namespace cc {
 
 FakeMaskLayerImpl::FakeMaskLayerImpl(LayerTreeImpl* tree_impl, int id)
     : LayerImpl(tree_impl, id) {}
 
-scoped_ptr<FakeMaskLayerImpl> FakeMaskLayerImpl::Create(
+std::unique_ptr<FakeMaskLayerImpl> FakeMaskLayerImpl::Create(
     LayerTreeImpl* tree_impl,
     int id) {
-  return make_scoped_ptr(new FakeMaskLayerImpl(tree_impl, id));
+  return base::WrapUnique(new FakeMaskLayerImpl(tree_impl, id));
 }
 
 void FakeMaskLayerImpl::GetContentsResourceId(ResourceId* resource_id,

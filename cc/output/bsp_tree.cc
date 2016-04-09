@@ -4,25 +4,27 @@
 
 #include "cc/output/bsp_tree.h"
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "cc/base/container_util.h"
 #include "cc/output/bsp_compare_result.h"
 #include "cc/quads/draw_polygon.h"
 
 namespace cc {
 
-BspNode::BspNode(scoped_ptr<DrawPolygon> data) : node_data(std::move(data)) {}
+BspNode::BspNode(std::unique_ptr<DrawPolygon> data)
+    : node_data(std::move(data)) {}
 
 BspNode::~BspNode() {
 }
 
-BspTree::BspTree(std::deque<scoped_ptr<DrawPolygon>>* list) {
+BspTree::BspTree(std::deque<std::unique_ptr<DrawPolygon>>* list) {
   if (list->size() == 0)
     return;
 
-  root_ = make_scoped_ptr(new BspNode(PopFront(list)));
+  root_ = base::WrapUnique(new BspNode(PopFront(list)));
   BuildTree(root_.get(), list);
 }
 
@@ -32,10 +34,11 @@ BspTree::BspTree(std::deque<scoped_ptr<DrawPolygon>>* list) {
 // front when the heuristic decides that they're a better choice. This way we
 // can always simply just take from the front of the deque for our node's
 // data.
-void BspTree::BuildTree(BspNode* node,
-                        std::deque<scoped_ptr<DrawPolygon>>* polygon_list) {
-  std::deque<scoped_ptr<DrawPolygon>> front_list;
-  std::deque<scoped_ptr<DrawPolygon>> back_list;
+void BspTree::BuildTree(
+    BspNode* node,
+    std::deque<std::unique_ptr<DrawPolygon>>* polygon_list) {
+  std::deque<std::unique_ptr<DrawPolygon>> front_list;
+  std::deque<std::unique_ptr<DrawPolygon>> back_list;
 
   // We take in a list of polygons at this level of the tree, and have to
   // find a splitting plane, then classify polygons as either in front of
@@ -57,9 +60,9 @@ void BspTree::BuildTree(BspNode* node,
         break;
       case BSP_SPLIT:
       {
-        scoped_ptr<DrawPolygon> polygon;
-        scoped_ptr<DrawPolygon> new_front;
-        scoped_ptr<DrawPolygon> new_back;
+        std::unique_ptr<DrawPolygon> polygon;
+        std::unique_ptr<DrawPolygon> new_front;
+        std::unique_ptr<DrawPolygon> new_back;
         // Time to split this geometry, *it needs to be split by node_data.
         polygon = PopFront(polygon_list);
         bool split_result =
@@ -86,13 +89,13 @@ void BspTree::BuildTree(BspNode* node,
 
   // Build the back subtree using the front of the back_list as our splitter.
   if (back_list.size() > 0) {
-    node->back_child = make_scoped_ptr(new BspNode(PopFront(&back_list)));
+    node->back_child = base::WrapUnique(new BspNode(PopFront(&back_list)));
     BuildTree(node->back_child.get(), &back_list);
   }
 
   // Build the front subtree using the front of the front_list as our splitter.
   if (front_list.size() > 0) {
-    node->front_child = make_scoped_ptr(new BspNode(PopFront(&front_list)));
+    node->front_child = base::WrapUnique(new BspNode(PopFront(&front_list)));
     BuildTree(node->front_child.get(), &front_list);
   }
 }

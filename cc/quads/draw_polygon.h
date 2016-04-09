@@ -41,8 +41,8 @@ class CC_EXPORT DrawPolygon {
   // intersection points. Only when it returns true will front and back both be
   // valid new polygons that are on opposite sides of the splitting plane.
   bool Split(const DrawPolygon& splitter,
-             scoped_ptr<DrawPolygon>* front,
-             scoped_ptr<DrawPolygon>* back);
+             std::unique_ptr<DrawPolygon>* front,
+             std::unique_ptr<DrawPolygon>* back);
   float SignedPointDistance(const gfx::Point3F& point) const;
   // Checks polygon a against polygon b and returns which side it lies on, or
   // whether it crosses (necessitating a split in the BSP tree).
@@ -57,7 +57,7 @@ class CC_EXPORT DrawPolygon {
   const DrawQuad* original_ref() const { return original_ref_; }
   int order_index() const { return order_index_; }
   bool is_split() const { return is_split_; }
-  scoped_ptr<DrawPolygon> CreateCopy();
+  std::unique_ptr<DrawPolygon> CreateCopy();
 
   void RecomputeNormalForTesting();
 

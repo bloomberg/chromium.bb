@@ -18,8 +18,8 @@ class DelegatingRendererTest : public LayerTreeTest {
   DelegatingRendererTest() : LayerTreeTest(), output_surface_(NULL) {}
   ~DelegatingRendererTest() override {}
 
-  scoped_ptr<OutputSurface> CreateOutputSurface() override {
-    scoped_ptr<FakeOutputSurface> output_surface =
+  std::unique_ptr<OutputSurface> CreateOutputSurface() override {
+    std::unique_ptr<FakeOutputSurface> output_surface =
         FakeOutputSurface::CreateDelegating3d();
     output_surface_ = output_surface.get();
     return std::move(output_surface);

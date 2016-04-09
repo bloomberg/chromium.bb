@@ -5,8 +5,9 @@
 #ifndef CC_LAYERS_UI_RESOURCE_LAYER_H_
 #define CC_LAYERS_UI_RESOURCE_LAYER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer.h"
 #include "cc/resources/ui_resource_client.h"
@@ -54,7 +55,7 @@ class CC_EXPORT UIResourceLayer : public Layer {
 
   bool HasDrawableContent() const override;
 
-  scoped_ptr<UIResourceHolder> ui_resource_holder_;
+  std::unique_ptr<UIResourceHolder> ui_resource_holder_;
   SkBitmap bitmap_;
 
   gfx::PointF uv_top_left_;
@@ -62,7 +63,7 @@ class CC_EXPORT UIResourceLayer : public Layer {
   float vertex_opacity_[4];
 
  private:
-  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void RecreateUIResourceHolder();
 
   DISALLOW_COPY_AND_ASSIGN(UIResourceLayer);

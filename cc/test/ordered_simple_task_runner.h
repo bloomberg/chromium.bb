@@ -8,13 +8,13 @@
 #include <stddef.h>
 
 #include <limits>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/trace_event/trace_event.h"
@@ -38,7 +38,7 @@ class TestOrderablePendingTask : public base::TestPendingTask {
   bool operator<(const TestOrderablePendingTask& other) const;
 
   // base::trace_event tracing functionality
-  scoped_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
  private:
@@ -107,7 +107,7 @@ class OrderedSimpleTaskRunner : public base::SingleThreadTaskRunner {
   bool RunForPeriod(base::TimeDelta period);
 
   // base::trace_event tracing functionality
-  scoped_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
   virtual void AsValueInto(base::trace_event::TracedValue* state) const;
 
   // Common conditions to run for, exposed publicly to allow external users to

@@ -56,7 +56,8 @@ class LayerUtilsGetAnimationBoundsTest : public testing::Test {
 
  private:
   static LayerImpl* CreateTwoForkTree(LayerTreeHostImpl* host_impl) {
-    scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl->active_tree(), 1);
+    std::unique_ptr<LayerImpl> root =
+        LayerImpl::Create(host_impl->active_tree(), 1);
     LayerImpl* root_ptr = root.get();
     root->AddChild(LayerImpl::Create(host_impl->active_tree(), 2));
     root->children()[0]->AddChild(

@@ -40,14 +40,14 @@ scoped_refptr<TestContextProvider> TestContextProvider::CreateWorker() {
 
 // static
 scoped_refptr<TestContextProvider> TestContextProvider::Create(
-    scoped_ptr<TestWebGraphicsContext3D> context) {
+    std::unique_ptr<TestWebGraphicsContext3D> context) {
   if (!context)
     return NULL;
   return new TestContextProvider(std::move(context));
 }
 
 TestContextProvider::TestContextProvider(
-    scoped_ptr<TestWebGraphicsContext3D> context)
+    std::unique_ptr<TestWebGraphicsContext3D> context)
     : context3d_(std::move(context)),
       context_gl_(new TestGLES2Interface(context3d_.get())),
       bound_(false),

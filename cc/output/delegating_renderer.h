@@ -5,8 +5,9 @@
 #ifndef CC_OUTPUT_DELEGATING_RENDERER_H_
 #define CC_OUTPUT_DELEGATING_RENDERER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/renderer.h"
@@ -18,7 +19,7 @@ class ResourceProvider;
 
 class CC_EXPORT DelegatingRenderer : public Renderer {
  public:
-  static scoped_ptr<DelegatingRenderer> Create(
+  static std::unique_ptr<DelegatingRenderer> Create(
       RendererClient* client,
       const RendererSettings* settings,
       OutputSurface* output_surface,
@@ -49,7 +50,7 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
   OutputSurface* output_surface_;
   ResourceProvider* resource_provider_;
   RendererCapabilitiesImpl capabilities_;
-  scoped_ptr<DelegatedFrameData> delegated_frame_data_;
+  std::unique_ptr<DelegatedFrameData> delegated_frame_data_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatingRenderer);
 };

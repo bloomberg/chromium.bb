@@ -166,7 +166,7 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
 
 scoped_refptr<Layer> ParseTreeFromJson(std::string json,
                                        ContentLayerClient* content_client) {
-  scoped_ptr<base::Value> val = base::test::ParseJson(json);
+  std::unique_ptr<base::Value> val = base::test::ParseJson(json);
   return ParseTreeFromValue(val.get(), content_client);
 }
 

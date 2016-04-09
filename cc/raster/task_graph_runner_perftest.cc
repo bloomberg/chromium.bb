@@ -5,10 +5,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "cc/base/completion_event.h"
 #include "cc/debug/lap_timer.h"
@@ -49,7 +50,7 @@ class TaskGraphRunnerPerfTest : public testing::Test {
 
   // Overridden from testing::Test:
   void SetUp() override {
-    task_graph_runner_ = make_scoped_ptr(new SynchronousTaskGraphRunner);
+    task_graph_runner_ = base::WrapUnique(new SynchronousTaskGraphRunner);
     namespace_token_ = task_graph_runner_->GetNamespaceToken();
   }
   void TearDown() override { task_graph_runner_ = nullptr; }
@@ -272,7 +273,7 @@ class TaskGraphRunnerPerfTest : public testing::Test {
 
   // Test uses SynchronousTaskGraphRunner, as this implementation introduces
   // minimal additional complexity over the TaskGraphWorkQueue helpers.
-  scoped_ptr<SynchronousTaskGraphRunner> task_graph_runner_;
+  std::unique_ptr<SynchronousTaskGraphRunner> task_graph_runner_;
   NamespaceToken namespace_token_;
   LapTimer timer_;
 };

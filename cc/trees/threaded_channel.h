@@ -5,9 +5,10 @@
 #ifndef CC_TREES_THREADED_CHANNEL_H_
 #define CC_TREES_THREADED_CHANNEL_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/trees/channel_impl.h"
@@ -76,7 +77,7 @@ class ProxyMain;
 
 class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
  public:
-  static scoped_ptr<ThreadedChannel> Create(
+  static std::unique_ptr<ThreadedChannel> Create(
       ProxyMain* proxy_main,
       TaskRunnerProvider* task_runner_provider);
 
@@ -109,7 +110,7 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
                          bool hold_commit_for_activation) override;
   void SynchronouslyInitializeImpl(
       LayerTreeHost* layer_tree_host,
-      scoped_ptr<BeginFrameSource> external_begin_frame_source) override;
+      std::unique_ptr<BeginFrameSource> external_begin_frame_source) override;
   void SynchronouslyCloseImpl() override;
 
   // ChannelImpl Implementation
@@ -118,7 +119,7 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
       const RendererCapabilities& capabilities) override;
   void BeginMainFrameNotExpectedSoon() override;
   void DidCommitAndDrawFrame() override;
-  void SetAnimationEvents(scoped_ptr<AnimationEvents> events) override;
+  void SetAnimationEvents(std::unique_ptr<AnimationEvents> events) override;
   void DidLoseOutputSurface() override;
   void RequestNewOutputSurface() override;
   void DidInitializeOutputSurface(
@@ -126,22 +127,22 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
       const RendererCapabilities& capabilities) override;
   void DidCompletePageScaleAnimation() override;
   void PostFrameTimingEventsOnMain(
-      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
+      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
       override;
-  void BeginMainFrame(
-      scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) override;
+  void BeginMainFrame(std::unique_ptr<BeginMainFrameAndCommitState>
+                          begin_main_frame_state) override;
 
  protected:
   ThreadedChannel(ProxyMain* proxy_main,
                   TaskRunnerProvider* task_runner_provider);
 
   // Virtual for testing.
-  virtual scoped_ptr<ProxyImpl> CreateProxyImpl(
+  virtual std::unique_ptr<ProxyImpl> CreateProxyImpl(
       ChannelImpl* channel_impl,
       LayerTreeHost* layer_tree_host,
       TaskRunnerProvider* task_runner_provider,
-      scoped_ptr<BeginFrameSource> external_begin_frame_source);
+      std::unique_ptr<BeginFrameSource> external_begin_frame_source);
 
  private:
   // The members of this struct should be accessed on the main thread only.
@@ -158,15 +159,15 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
     explicit CompositorThreadOnly(base::WeakPtr<ProxyMain> proxy_main_weak_ptr);
     ~CompositorThreadOnly();
 
-    scoped_ptr<ProxyImpl> proxy_impl;
+    std::unique_ptr<ProxyImpl> proxy_impl;
 
-    // We use a scoped_ptr for the weak ptr factory here since the factory is
+    // We use a unique_ptr for the weak ptr factory here since the factory is
     // created after ProxyImpl is created in InitializeImplOnImpl. Since the
     // weak ptrs are needed only by the ThreadedChannel to safely post tasks on
     // ProxyImpl to be run on the impl thread, we avoid creating it in ProxyImpl
     // and ensure that it is destroyed before ProxyImpl during the impl-thread
     // tear down in CloseImplOnImpl.
-    scoped_ptr<base::WeakPtrFactory<ProxyImpl>> proxy_impl_weak_factory;
+    std::unique_ptr<base::WeakPtrFactory<ProxyImpl>> proxy_impl_weak_factory;
 
     // Used on the impl thread to queue calls to ProxyMain to be run on the main
     // thread. Since the weak pointer is invalidated after the impl-thread tear
@@ -180,7 +181,7 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
   void InitializeImplOnImpl(
       CompletionEvent* completion,
       LayerTreeHost* layer_tree_host,
-      scoped_ptr<BeginFrameSource> external_begin_frame_source);
+      std::unique_ptr<BeginFrameSource> external_begin_frame_source);
   void CloseImplOnImpl(CompletionEvent* completion);
 
   bool IsInitialized() const;

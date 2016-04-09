@@ -21,11 +21,11 @@ class RasterBuffer;
 
 class CC_EXPORT TileTaskClient {
  public:
-  virtual scoped_ptr<RasterBuffer> AcquireBufferForRaster(
+  virtual std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
       const Resource* resource,
       uint64_t resource_content_id,
       uint64_t previous_content_id) = 0;
-  virtual void ReleaseBufferForRaster(scoped_ptr<RasterBuffer> buffer) = 0;
+  virtual void ReleaseBufferForRaster(std::unique_ptr<RasterBuffer> buffer) = 0;
 
  protected:
   virtual ~TileTaskClient() {}

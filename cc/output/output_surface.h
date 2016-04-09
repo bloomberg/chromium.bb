@@ -6,10 +6,10 @@
 #define CC_OUTPUT_OUTPUT_SURFACE_H_
 
 #include <deque>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "cc/base/cc_export.h"
@@ -54,7 +54,7 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
 #if defined(ENABLE_VULKAN)
                 scoped_refptr<VulkanContextProvider> vulkan_context_provider,
 #endif
-                scoped_ptr<SoftwareOutputDevice> software_device);
+                std::unique_ptr<SoftwareOutputDevice> software_device);
   OutputSurface(scoped_refptr<ContextProvider> context_provider,
                 scoped_refptr<ContextProvider> worker_context_provider);
   explicit OutputSurface(scoped_refptr<ContextProvider> context_provider);
@@ -62,10 +62,10 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   explicit OutputSurface(
       scoped_refptr<VulkanContextProvider> vulkan_context_provider);
 #endif
-  explicit OutputSurface(scoped_ptr<SoftwareOutputDevice> software_device);
+  explicit OutputSurface(std::unique_ptr<SoftwareOutputDevice> software_device);
 
   OutputSurface(scoped_refptr<ContextProvider> context_provider,
-                scoped_ptr<SoftwareOutputDevice> software_device);
+                std::unique_ptr<SoftwareOutputDevice> software_device);
 
   ~OutputSurface() override;
 
@@ -193,7 +193,7 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
 #if defined(ENABLE_VULKAN)
   scoped_refptr<VulkanContextProvider> vulkan_context_provider_;
 #endif
-  scoped_ptr<SoftwareOutputDevice> software_device_;
+  std::unique_ptr<SoftwareOutputDevice> software_device_;
   gfx::Size surface_size_;
   float device_scale_factor_;
   bool has_alpha_;

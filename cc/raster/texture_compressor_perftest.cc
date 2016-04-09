@@ -77,7 +77,7 @@ class TextureCompressorPerfTest
 
  protected:
   LapTimer timer_;
-  scoped_ptr<TextureCompressor> compressor_;
+  std::unique_ptr<TextureCompressor> compressor_;
   uint8_t src_[kImageSizeInBytes];
   uint8_t dst_[kImageSizeInBytes];
 };

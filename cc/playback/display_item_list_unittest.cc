@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "cc/output/filter_operation.h"
 #include "cc/output/filter_operations.h"
 #include "cc/playback/clip_display_item.h"
@@ -80,9 +81,9 @@ void ValidateDisplayItemListSerialization(const gfx::Size& layer_size,
                                           scoped_refptr<DisplayItemList> list) {
   list->Finalize();
 
-  scoped_ptr<FakeImageSerializationProcessor>
+  std::unique_ptr<FakeImageSerializationProcessor>
       fake_image_serialization_processor =
-          make_scoped_ptr(new FakeImageSerializationProcessor);
+          base::WrapUnique(new FakeImageSerializationProcessor);
 
   // Serialize and deserialize the DisplayItemList.
   proto::DisplayItemList proto;

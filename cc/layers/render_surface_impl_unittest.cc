@@ -69,10 +69,10 @@ TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
   gfx::Size viewport_size(1000, 1000);
 
   LayerTestCommon::LayerImplTest impl;
-  scoped_ptr<LayerImpl> root =
+  std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(impl.host_impl()->active_tree(), 2);
   root->SetHasRenderSurface(true);
-  scoped_ptr<LayerImpl> surface =
+  std::unique_ptr<LayerImpl> surface =
       LayerImpl::Create(impl.host_impl()->active_tree(), 3);
   surface->SetBounds(layer_size);
   surface->SetHasRenderSurface(true);
@@ -86,7 +86,7 @@ TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
   surface->mask_layer()->SetDrawsContent(true);
   surface->mask_layer()->SetBounds(layer_size);
 
-  scoped_ptr<LayerImpl> child =
+  std::unique_ptr<LayerImpl> child =
       LayerImpl::Create(impl.host_impl()->active_tree(), 5);
   child->SetDrawsContent(true);
   child->SetBounds(layer_size);
@@ -102,7 +102,7 @@ TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
   LayerImpl* surface_raw =
       impl.host_impl()->active_tree()->root_layer()->children()[0];
   RenderSurfaceImpl* render_surface_impl = surface_raw->render_surface();
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData append_quads_data;
   render_surface_impl->AppendQuads(
       render_pass.get(), render_surface_impl->draw_transform(), Occlusion(),

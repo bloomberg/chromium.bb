@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <deque>
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -19,7 +20,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_provider.h"
@@ -86,7 +86,7 @@ class CC_EXPORT ResourceProvider
     RESOURCE_TYPE_BITMAP,
   };
 
-  static scoped_ptr<ResourceProvider> Create(
+  static std::unique_ptr<ResourceProvider> Create(
       OutputSurface* output_surface,
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -146,11 +146,11 @@ class CC_EXPORT ResourceProvider
   // Wraps an external texture mailbox into a GL resource.
   ResourceId CreateResourceFromTextureMailbox(
       const TextureMailbox& mailbox,
-      scoped_ptr<SingleReleaseCallbackImpl> release_callback_impl);
+      std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl);
 
   ResourceId CreateResourceFromTextureMailbox(
       const TextureMailbox& mailbox,
-      scoped_ptr<SingleReleaseCallbackImpl> release_callback_impl,
+      std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl,
       bool read_lock_fences_enabled);
 
   void DeleteResource(ResourceId id);
@@ -327,7 +327,7 @@ class CC_EXPORT ResourceProvider
    private:
     ResourceProvider* resource_provider_;
     ResourceProvider::Resource* resource_;
-    scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
+    std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
     base::ThreadChecker thread_checker_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGpuMemoryBuffer);
@@ -669,8 +669,8 @@ class CC_EXPORT ResourceProvider
   scoped_refptr<Fence> current_read_lock_fence_;
 
   const size_t id_allocation_chunk_size_;
-  scoped_ptr<IdAllocator> texture_id_allocator_;
-  scoped_ptr<IdAllocator> buffer_id_allocator_;
+  std::unique_ptr<IdAllocator> texture_id_allocator_;
+  std::unique_ptr<IdAllocator> buffer_id_allocator_;
 
   bool use_sync_query_;
   std::vector<unsigned> use_image_texture_targets_;

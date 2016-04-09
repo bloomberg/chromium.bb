@@ -5,12 +5,13 @@
 #ifndef CC_TREES_TASK_RUNNER_PROVIDER_H_
 #define CC_TREES_TASK_RUNNER_PROVIDER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -31,10 +32,10 @@ class BlockingTaskRunner;
 // Useful for assertion checks.
 class CC_EXPORT TaskRunnerProvider {
  public:
-  static scoped_ptr<TaskRunnerProvider> Create(
+  static std::unique_ptr<TaskRunnerProvider> Create(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new TaskRunnerProvider(main_task_runner, impl_task_runner));
   }
 
@@ -69,7 +70,7 @@ class CC_EXPORT TaskRunnerProvider {
  private:
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner_;
-  scoped_ptr<BlockingTaskRunner> blocking_main_thread_task_runner_;
+  std::unique_ptr<BlockingTaskRunner> blocking_main_thread_task_runner_;
 
 #if DCHECK_IS_ON()
   const base::PlatformThreadId main_thread_id_;

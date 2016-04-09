@@ -5,8 +5,9 @@
 #ifndef CC_INPUT_PAGE_SCALE_ANIMATION_H_
 #define CC_INPUT_PAGE_SCALE_ANIMATION_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -46,12 +47,12 @@ struct PendingPageScaleAnimation {
 class CC_EXPORT PageScaleAnimation {
  public:
   // Construct with the state at the beginning of the animation.
-  static scoped_ptr<PageScaleAnimation> Create(
+  static std::unique_ptr<PageScaleAnimation> Create(
       const gfx::Vector2dF& start_scroll_offset,
       float start_page_scale_factor,
       const gfx::SizeF& viewport_size,
       const gfx::SizeF& root_layer_size,
-      scoped_ptr<TimingFunction> timing_function);
+      std::unique_ptr<TimingFunction> timing_function);
 
   ~PageScaleAnimation();
 
@@ -95,7 +96,7 @@ class CC_EXPORT PageScaleAnimation {
                      float start_page_scale_factor,
                      const gfx::SizeF& viewport_size,
                      const gfx::SizeF& root_layer_size,
-                     scoped_ptr<TimingFunction> timing_function);
+                     std::unique_ptr<TimingFunction> timing_function);
 
  private:
   void ClampTargetScrollOffset();
@@ -125,7 +126,7 @@ class CC_EXPORT PageScaleAnimation {
   base::TimeTicks start_time_;
   base::TimeDelta duration_;
 
-  scoped_ptr<TimingFunction> timing_function_;
+  std::unique_ptr<TimingFunction> timing_function_;
 
   DISALLOW_COPY_AND_ASSIGN(PageScaleAnimation);
 };

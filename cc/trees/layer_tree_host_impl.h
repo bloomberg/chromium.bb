@@ -7,13 +7,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/synced_property.h"
@@ -111,7 +111,7 @@ class LayerTreeHostImplClient {
   virtual void SetNeedsPrepareTilesOnImplThread() = 0;
   virtual void SetVideoNeedsBeginFrames(bool needs_begin_frames) = 0;
   virtual void PostAnimationEventsToMainThreadOnImplThread(
-      scoped_ptr<AnimationEvents> events) = 0;
+      std::unique_ptr<AnimationEvents> events) = 0;
   virtual bool IsInsideDraw() = 0;
   virtual void RenewTreePriority() = 0;
   virtual void PostDelayedAnimationTaskOnImplThread(const base::Closure& task,
@@ -127,8 +127,9 @@ class LayerTreeHostImplClient {
   virtual void OnDrawForOutputSurface(bool resourceless_software_draw) = 0;
 
   virtual void PostFrameTimingEventsOnImplThread(
-      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) = 0;
+      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet>
+          main_frame_events) = 0;
 
  protected:
   virtual ~LayerTreeHostImplClient() {}
@@ -147,7 +148,7 @@ class CC_EXPORT LayerTreeHostImpl
       public MutatorHostClient,
       public base::SupportsWeakPtr<LayerTreeHostImpl> {
  public:
-  static scoped_ptr<LayerTreeHostImpl> Create(
+  static std::unique_ptr<LayerTreeHostImpl> Create(
       const LayerTreeSettings& settings,
       LayerTreeHostImplClient* client,
       TaskRunnerProvider* task_runner_provider,
@@ -196,7 +197,7 @@ class CC_EXPORT LayerTreeHostImpl
   EventListenerProperties GetEventListenerProperties(
       EventListenerClass event_class) const override;
   bool DoTouchEventsBlockScrollAt(const gfx::Point& viewport_port) override;
-  scoped_ptr<SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
+  std::unique_ptr<SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency) override;
   ScrollElasticityHelper* CreateScrollElasticityHelper() override;
 
@@ -223,7 +224,7 @@ class CC_EXPORT LayerTreeHostImpl
     bool has_no_damage;
 
     // RenderPassSink implementation.
-    void AppendRenderPass(scoped_ptr<RenderPass> render_pass) override;
+    void AppendRenderPass(std::unique_ptr<RenderPass> render_pass) override;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(FrameData);
@@ -328,10 +329,10 @@ class CC_EXPORT LayerTreeHostImpl
   void NotifyReadyToDraw() override;
   void NotifyAllTileTasksCompleted() override;
   void NotifyTileStateChanged(const Tile* tile) override;
-  scoped_ptr<RasterTilePriorityQueue> BuildRasterQueue(
+  std::unique_ptr<RasterTilePriorityQueue> BuildRasterQueue(
       TreePriority tree_priority,
       RasterTilePriorityQueue::Type type) override;
-  scoped_ptr<EvictionTilePriorityQueue> BuildEvictionQueue(
+  std::unique_ptr<EvictionTilePriorityQueue> BuildEvictionQueue(
       TreePriority tree_priority) override;
   void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) override;
 
@@ -441,7 +442,7 @@ class CC_EXPORT LayerTreeHostImpl
     return scroll_affects_scroll_handler_;
   }
   void QueueSwapPromiseForMainThreadScrollUpdate(
-      scoped_ptr<SwapPromise> swap_promise);
+      std::unique_ptr<SwapPromise> swap_promise);
 
   bool IsActivelyScrolling() const;
 
@@ -461,7 +462,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   const gfx::Transform& DrawTransform() const;
 
-  scoped_ptr<ScrollAndScaleSet> ProcessScrollDeltas();
+  std::unique_ptr<ScrollAndScaleSet> ProcessScrollDeltas();
 
   void set_max_memory_needed_bytes(size_t bytes) {
     max_memory_needed_bytes_ = bytes;
@@ -513,7 +514,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   void AsValueWithFrameInto(FrameData* frame,
                             base::trace_event::TracedValue* value) const;
-  scoped_ptr<base::trace_event::ConvertableToTraceFormat> AsValueWithFrame(
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValueWithFrame(
       FrameData* frame) const;
   void ActivationStateAsValueInto(base::trace_event::TracedValue* value) const;
 
@@ -541,7 +542,7 @@ class CC_EXPORT LayerTreeHostImpl
   gfx::Vector2dF ComputeScrollDelta(ScrollNode* scroll_node,
                                     const gfx::Vector2dF& delta);
 
-  void ScheduleMicroBenchmark(scoped_ptr<MicroBenchmarkImpl> benchmark);
+  void ScheduleMicroBenchmark(std::unique_ptr<MicroBenchmarkImpl> benchmark);
 
   CompositorFrameMetadata MakeCompositorFrameMetadata() const;
   // Viewport rectangle and clip in nonflipped window space.  These rects
@@ -570,8 +571,8 @@ class CC_EXPORT LayerTreeHostImpl
   bool CommitToActiveTree() const;
 
   virtual void CreateResourceAndTileTaskWorkerPool(
-      scoped_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
-      scoped_ptr<ResourcePool>* resource_pool);
+      std::unique_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
+      std::unique_ptr<ResourcePool>* resource_pool);
 
   bool prepare_tiles_needed() const { return tile_priorities_dirty_; }
 
@@ -606,8 +607,9 @@ class CC_EXPORT LayerTreeHostImpl
 
   // Post the given frame timing events to the requester.
   void PostFrameTimingEvents(
-      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events);
+      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet>
+          main_frame_events);
 
   base::SingleThreadTaskRunner* GetTaskRunner() const {
     DCHECK(task_runner_provider_);
@@ -737,42 +739,42 @@ class CC_EXPORT LayerTreeHostImpl
 
   OutputSurface* output_surface_;
 
-  scoped_ptr<ResourceProvider> resource_provider_;
+  std::unique_ptr<ResourceProvider> resource_provider_;
   bool content_is_suitable_for_gpu_rasterization_;
   bool has_gpu_rasterization_trigger_;
   bool use_gpu_rasterization_;
   bool use_msaa_;
   GpuRasterizationStatus gpu_rasterization_status_;
   bool tree_resources_for_gpu_rasterization_dirty_;
-  scoped_ptr<TileTaskWorkerPool> tile_task_worker_pool_;
-  scoped_ptr<ResourcePool> resource_pool_;
-  scoped_ptr<Renderer> renderer_;
-  scoped_ptr<ImageDecodeController> image_decode_controller_;
+  std::unique_ptr<TileTaskWorkerPool> tile_task_worker_pool_;
+  std::unique_ptr<ResourcePool> resource_pool_;
+  std::unique_ptr<Renderer> renderer_;
+  std::unique_ptr<ImageDecodeController> image_decode_controller_;
 
   GlobalStateThatImpactsTilePriority global_tile_state_;
 
   // Tree currently being drawn.
-  scoped_ptr<LayerTreeImpl> active_tree_;
+  std::unique_ptr<LayerTreeImpl> active_tree_;
 
   // In impl-side painting mode, tree with possibly incomplete rasterized
   // content. May be promoted to active by ActivatePendingTree().
-  scoped_ptr<LayerTreeImpl> pending_tree_;
+  std::unique_ptr<LayerTreeImpl> pending_tree_;
 
   // In impl-side painting mode, inert tree with layers that can be recycled
   // by the next sync from the main thread.
-  scoped_ptr<LayerTreeImpl> recycle_tree_;
+  std::unique_ptr<LayerTreeImpl> recycle_tree_;
 
   InputHandlerClient* input_handler_client_;
   bool did_lock_scrolling_layer_;
   bool wheel_scrolling_;
   bool scroll_affects_scroll_handler_;
   int scroll_layer_id_when_mouse_over_scrollbar_;
-  std::vector<scoped_ptr<SwapPromise>>
+  std::vector<std::unique_ptr<SwapPromise>>
       swap_promises_for_main_thread_scroll_update_;
 
   // An object to implement the ScrollElasticityHelper interface and
   // hold all state related to elasticity. May be NULL if never requested.
-  scoped_ptr<ScrollElasticityHelper> scroll_elasticity_helper_;
+  std::unique_ptr<ScrollElasticityHelper> scroll_elasticity_helper_;
 
   bool tile_priorities_dirty_;
 
@@ -782,22 +784,22 @@ class CC_EXPORT LayerTreeHostImpl
   ManagedMemoryPolicy cached_managed_memory_policy_;
 
   const bool is_synchronous_single_threaded_;
-  scoped_ptr<TileManager> tile_manager_;
+  std::unique_ptr<TileManager> tile_manager_;
 
   gfx::Vector2dF accumulated_root_overscroll_;
 
   bool pinch_gesture_active_;
   bool pinch_gesture_end_should_clear_scrolling_layer_;
 
-  scoped_ptr<TopControlsManager> top_controls_manager_;
+  std::unique_ptr<TopControlsManager> top_controls_manager_;
 
-  scoped_ptr<PageScaleAnimation> page_scale_animation_;
+  std::unique_ptr<PageScaleAnimation> page_scale_animation_;
 
-  scoped_ptr<FrameRateCounter> fps_counter_;
-  scoped_ptr<MemoryHistory> memory_history_;
-  scoped_ptr<DebugRectHistory> debug_rect_history_;
+  std::unique_ptr<FrameRateCounter> fps_counter_;
+  std::unique_ptr<MemoryHistory> memory_history_;
+  std::unique_ptr<DebugRectHistory> debug_rect_history_;
 
-  scoped_ptr<TextureMailboxDeleter> texture_mailbox_deleter_;
+  std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter_;
 
   // The maximum memory that would be used by the prioritized resource
   // manager, if there were no limit on memory usage.
@@ -826,17 +828,17 @@ class CC_EXPORT LayerTreeHostImpl
 
   gfx::Rect viewport_damage_rect_;
 
-  scoped_ptr<AnimationHost> animation_host_;
+  std::unique_ptr<AnimationHost> animation_host_;
   std::set<VideoFrameController*> video_frame_controllers_;
 
   // Map from scroll layer ID to scrollbar animation controller.
   // There is one animation controller per pair of overlay scrollbars.
-  std::unordered_map<int, scoped_ptr<ScrollbarAnimationController>>
+  std::unordered_map<int, std::unique_ptr<ScrollbarAnimationController>>
       scrollbar_animation_controllers_;
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
   MicroBenchmarkControllerImpl micro_benchmark_controller_;
-  scoped_ptr<SynchronousTaskGraphRunner>
+  std::unique_ptr<SynchronousTaskGraphRunner>
       single_thread_synchronous_task_graph_runner_;
 
   // Optional callback to notify of new tree activations.
@@ -852,9 +854,9 @@ class CC_EXPORT LayerTreeHostImpl
   bool requires_high_res_to_draw_;
   bool is_likely_to_require_a_draw_;
 
-  scoped_ptr<FrameTimingTracker> frame_timing_tracker_;
+  std::unique_ptr<FrameTimingTracker> frame_timing_tracker_;
 
-  scoped_ptr<Viewport> viewport_;
+  std::unique_ptr<Viewport> viewport_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

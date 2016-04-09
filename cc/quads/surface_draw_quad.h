@@ -5,7 +5,8 @@
 #ifndef CC_QUADS_SURFACE_DRAW_QUAD_H_
 #define CC_QUADS_SURFACE_DRAW_QUAD_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "cc/base/cc_export.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/surfaces/surface_id.h"

@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/animation/transform_operations.h"
+
 #include <stddef.h>
 
 #include <limits>
 #include <vector>
 
-#include "cc/animation/transform_operations.h"
+#include "base/memory/ptr_util.h"
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/tween.h"
@@ -19,26 +21,26 @@ namespace cc {
 namespace {
 
 TEST(TransformOperationTest, TransformTypesAreUnique) {
-  std::vector<scoped_ptr<TransformOperations>> transforms;
+  std::vector<std::unique_ptr<TransformOperations>> transforms;
 
-  scoped_ptr<TransformOperations> to_add(
-      make_scoped_ptr(new TransformOperations()));
+  std::unique_ptr<TransformOperations> to_add(
+      base::WrapUnique(new TransformOperations()));
   to_add->AppendTranslate(1, 0, 0);
   transforms.push_back(std::move(to_add));
 
-  to_add = make_scoped_ptr(new TransformOperations());
+  to_add = base::WrapUnique(new TransformOperations());
   to_add->AppendRotate(0, 0, 1, 2);
   transforms.push_back(std::move(to_add));
 
-  to_add = make_scoped_ptr(new TransformOperations());
+  to_add = base::WrapUnique(new TransformOperations());
   to_add->AppendScale(2, 2, 2);
   transforms.push_back(std::move(to_add));
 
-  to_add = make_scoped_ptr(new TransformOperations());
+  to_add = base::WrapUnique(new TransformOperations());
   to_add->AppendSkew(1, 0);
   transforms.push_back(std::move(to_add));
 
-  to_add = make_scoped_ptr(new TransformOperations());
+  to_add = base::WrapUnique(new TransformOperations());
   to_add->AppendPerspective(800);
   transforms.push_back(std::move(to_add));
 
@@ -91,53 +93,53 @@ TEST(TransformOperationTest, MatchTypesDifferentLength) {
   EXPECT_FALSE(translates.MatchesTypes(translates2));
 }
 
-std::vector<scoped_ptr<TransformOperations>> GetIdentityOperations() {
-  std::vector<scoped_ptr<TransformOperations>> operations;
-  scoped_ptr<TransformOperations> to_add(
-      make_scoped_ptr(new TransformOperations()));
+std::vector<std::unique_ptr<TransformOperations>> GetIdentityOperations() {
+  std::vector<std::unique_ptr<TransformOperations>> operations;
+  std::unique_ptr<TransformOperations> to_add(
+      base::WrapUnique(new TransformOperations()));
   operations.push_back(std::move(to_add));
 
-  to_add = make_scoped_ptr(new TransformOperations());
+  to_add = base::WrapUnique(new TransformOperations());
   to_add->AppendTranslate(0, 0, 0);
   operations.push_back(std::move(to_add));
 
-  to_add = make_scoped_ptr(new TransformOperations());
+  to_add = base::WrapUnique(new TransformOperations());
   to_add->AppendTranslate(0, 0, 0);
   to_add->AppendTranslate(0, 0, 0);
   operations.push_back(std::move(to_add));
 
-  to_add = make_scoped_ptr(new TransformOperations());
+  to_add = base::WrapUnique(new TransformOperations());
   to_add->AppendScale(1, 1, 1);
   operations.push_back(std::move(to_add));
 
-  to_add = make_scoped_ptr(new TransformOperations());
+  to_add = base::WrapUnique(new TransformOperations());
   to_add->AppendScale(1, 1, 1);
   to_add->AppendScale(1, 1, 1);
   operations.push_back(std::move(to_add));
 
-  to_add = make_scoped_ptr(new TransformOperations());
+  to_add = base::WrapUnique(new TransformOperations());
   to_add->AppendSkew(0, 0);
   operations.push_back(std::move(to_add));
 
-  to_add = make_scoped_ptr(new TransformOperations());
+  to_add = base::WrapUnique(new TransformOperations());
   to_add->AppendSkew(0, 0);
   to_add->AppendSkew(0, 0);
   operations.push_back(std::move(to_add));
 
-  to_add = make_scoped_ptr(new TransformOperations());
+  to_add = base::WrapUnique(new TransformOperations());
   to_add->AppendRotate(0, 0, 1, 0);
   operations.push_back(std::move(to_add));
 
-  to_add = make_scoped_ptr(new TransformOperations());
+  to_add = base::WrapUnique(new TransformOperations());
   to_add->AppendRotate(0, 0, 1, 0);
   to_add->AppendRotate(0, 0, 1, 0);
   operations.push_back(std::move(to_add));
 
-  to_add = make_scoped_ptr(new TransformOperations());
+  to_add = base::WrapUnique(new TransformOperations());
   to_add->AppendMatrix(gfx::Transform());
   operations.push_back(std::move(to_add));
 
-  to_add = make_scoped_ptr(new TransformOperations());
+  to_add = base::WrapUnique(new TransformOperations());
   to_add->AppendMatrix(gfx::Transform());
   to_add->AppendMatrix(gfx::Transform());
   operations.push_back(std::move(to_add));
@@ -167,7 +169,7 @@ TEST(TransformOperationTest, MatchTypesOrder) {
 }
 
 TEST(TransformOperationTest, NoneAlwaysMatches) {
-  std::vector<scoped_ptr<TransformOperations>> operations =
+  std::vector<std::unique_ptr<TransformOperations>> operations =
       GetIdentityOperations();
 
   TransformOperations none_operation;
@@ -503,7 +505,7 @@ TEST(TransformOperationTest, RotationToZeroDegSameAxes) {
 }
 
 TEST(TransformOperationTest, BlendRotationFromIdentity) {
-  std::vector<scoped_ptr<TransformOperations>> identity_operations =
+  std::vector<std::unique_ptr<TransformOperations>> identity_operations =
       GetIdentityOperations();
 
   for (size_t i = 0; i < identity_operations.size(); ++i) {
@@ -537,7 +539,7 @@ TEST(TransformOperationTest, BlendRotationFromIdentity) {
 }
 
 TEST(TransformOperationTest, BlendTranslationFromIdentity) {
-  std::vector<scoped_ptr<TransformOperations>> identity_operations =
+  std::vector<std::unique_ptr<TransformOperations>> identity_operations =
       GetIdentityOperations();
 
   for (size_t i = 0; i < identity_operations.size(); ++i) {
@@ -571,7 +573,7 @@ TEST(TransformOperationTest, BlendTranslationFromIdentity) {
 }
 
 TEST(TransformOperationTest, BlendScaleFromIdentity) {
-  std::vector<scoped_ptr<TransformOperations>> identity_operations =
+  std::vector<std::unique_ptr<TransformOperations>> identity_operations =
       GetIdentityOperations();
 
   for (size_t i = 0; i < identity_operations.size(); ++i) {
@@ -636,7 +638,7 @@ TEST(TransformOperationTest, BlendSkewFromEmpty) {
 }
 
 TEST(TransformOperationTest, BlendPerspectiveFromIdentity) {
-  std::vector<scoped_ptr<TransformOperations>> identity_operations =
+  std::vector<std::unique_ptr<TransformOperations>> identity_operations =
       GetIdentityOperations();
 
   for (size_t i = 0; i < identity_operations.size(); ++i) {
@@ -654,7 +656,7 @@ TEST(TransformOperationTest, BlendPerspectiveFromIdentity) {
 }
 
 TEST(TransformOperationTest, BlendRotationToIdentity) {
-  std::vector<scoped_ptr<TransformOperations>> identity_operations =
+  std::vector<std::unique_ptr<TransformOperations>> identity_operations =
       GetIdentityOperations();
 
   for (size_t i = 0; i < identity_operations.size(); ++i) {
@@ -672,7 +674,7 @@ TEST(TransformOperationTest, BlendRotationToIdentity) {
 }
 
 TEST(TransformOperationTest, BlendTranslationToIdentity) {
-  std::vector<scoped_ptr<TransformOperations>> identity_operations =
+  std::vector<std::unique_ptr<TransformOperations>> identity_operations =
       GetIdentityOperations();
 
   for (size_t i = 0; i < identity_operations.size(); ++i) {
@@ -690,7 +692,7 @@ TEST(TransformOperationTest, BlendTranslationToIdentity) {
 }
 
 TEST(TransformOperationTest, BlendScaleToIdentity) {
-  std::vector<scoped_ptr<TransformOperations>> identity_operations =
+  std::vector<std::unique_ptr<TransformOperations>> identity_operations =
       GetIdentityOperations();
 
   for (size_t i = 0; i < identity_operations.size(); ++i) {
@@ -723,7 +725,7 @@ TEST(TransformOperationTest, BlendSkewToEmpty) {
 }
 
 TEST(TransformOperationTest, BlendPerspectiveToIdentity) {
-  std::vector<scoped_ptr<TransformOperations>> identity_operations =
+  std::vector<std::unique_ptr<TransformOperations>> identity_operations =
       GetIdentityOperations();
 
   for (size_t i = 0; i < identity_operations.size(); ++i) {

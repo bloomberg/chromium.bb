@@ -4,6 +4,7 @@
 
 #include "cc/tiles/raster_tile_priority_queue_all.h"
 
+#include "base/memory/ptr_util.h"
 #include "cc/tiles/tiling_set_raster_queue_all.h"
 
 namespace cc {
@@ -15,8 +16,9 @@ class RasterOrderComparator {
   explicit RasterOrderComparator(TreePriority tree_priority)
       : tree_priority_(tree_priority) {}
 
-  bool operator()(const scoped_ptr<TilingSetRasterQueueAll>& a_queue,
-                  const scoped_ptr<TilingSetRasterQueueAll>& b_queue) const {
+  bool operator()(
+      const std::unique_ptr<TilingSetRasterQueueAll>& a_queue,
+      const std::unique_ptr<TilingSetRasterQueueAll>& b_queue) const {
     // Note that in this function, we have to return true if and only if
     // a is strictly lower priority than b.
     const TilePriority& a_priority = a_queue->Top().priority();
@@ -51,7 +53,7 @@ class RasterOrderComparator {
 void CreateTilingSetRasterQueues(
     const std::vector<PictureLayerImpl*>& layers,
     TreePriority tree_priority,
-    std::vector<scoped_ptr<TilingSetRasterQueueAll>>* queues) {
+    std::vector<std::unique_ptr<TilingSetRasterQueueAll>>* queues) {
   DCHECK(queues->empty());
 
   for (auto* layer : layers) {
@@ -60,8 +62,9 @@ void CreateTilingSetRasterQueues(
 
     PictureLayerTilingSet* tiling_set = layer->picture_layer_tiling_set();
     bool prioritize_low_res = tree_priority == SMOOTHNESS_TAKES_PRIORITY;
-    scoped_ptr<TilingSetRasterQueueAll> tiling_set_queue = make_scoped_ptr(
-        new TilingSetRasterQueueAll(tiling_set, prioritize_low_res));
+    std::unique_ptr<TilingSetRasterQueueAll> tiling_set_queue =
+        base::WrapUnique(
+            new TilingSetRasterQueueAll(tiling_set, prioritize_low_res));
     // Queues will only contain non empty tiling sets.
     if (!tiling_set_queue->IsEmpty())
       queues->push_back(std::move(tiling_set_queue));
@@ -116,15 +119,15 @@ void RasterTilePriorityQueueAll::Pop() {
   }
 }
 
-std::vector<scoped_ptr<TilingSetRasterQueueAll>>&
+std::vector<std::unique_ptr<TilingSetRasterQueueAll>>&
 RasterTilePriorityQueueAll::GetNextQueues() {
   const auto* const_this = static_cast<const RasterTilePriorityQueueAll*>(this);
   const auto& const_queues = const_this->GetNextQueues();
-  return const_cast<std::vector<scoped_ptr<TilingSetRasterQueueAll>>&>(
+  return const_cast<std::vector<std::unique_ptr<TilingSetRasterQueueAll>>&>(
       const_queues);
 }
 
-const std::vector<scoped_ptr<TilingSetRasterQueueAll>>&
+const std::vector<std::unique_ptr<TilingSetRasterQueueAll>>&
 RasterTilePriorityQueueAll::GetNextQueues() const {
   DCHECK(!IsEmpty());
 

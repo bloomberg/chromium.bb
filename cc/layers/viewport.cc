@@ -5,6 +5,7 @@
 #include "cc/layers/viewport.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "cc/input/top_controls_manager.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -14,9 +15,8 @@
 namespace cc {
 
 // static
-scoped_ptr<Viewport> Viewport::Create(
-    LayerTreeHostImpl* host_impl) {
-  return make_scoped_ptr(new Viewport(host_impl));
+std::unique_ptr<Viewport> Viewport::Create(LayerTreeHostImpl* host_impl) {
+  return base::WrapUnique(new Viewport(host_impl));
 }
 
 Viewport::Viewport(LayerTreeHostImpl* host_impl)

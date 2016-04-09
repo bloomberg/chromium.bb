@@ -4,6 +4,7 @@
 
 #include "cc/blink/web_external_texture_layer_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "cc/blink/web_external_bitmap_impl.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/texture_layer.h"
@@ -63,7 +64,7 @@ void WebExternalTextureLayerImpl::setNearestNeighbor(bool nearest_neighbor) {
 
 bool WebExternalTextureLayerImpl::PrepareTextureMailbox(
     cc::TextureMailbox* mailbox,
-    scoped_ptr<cc::SingleReleaseCallback>* release_callback,
+    std::unique_ptr<cc::SingleReleaseCallback>* release_callback,
     bool use_shared_memory) {
   blink::WebExternalTextureMailbox client_mailbox;
   WebExternalBitmapImpl* bitmap = nullptr;
@@ -72,7 +73,7 @@ bool WebExternalTextureLayerImpl::PrepareTextureMailbox(
     bitmap = AllocateBitmap();
   if (!client_->prepareMailbox(&client_mailbox, bitmap)) {
     if (bitmap)
-      free_bitmaps_.push_back(make_scoped_ptr(bitmap));
+      free_bitmaps_.push_back(base::WrapUnique(bitmap));
     return false;
   }
   gpu::Mailbox name;
@@ -134,7 +135,7 @@ void WebExternalTextureLayerImpl::DidReleaseMailbox(
          sizeof(sync_token));
   available_mailbox.validSyncToken = sync_token.HasData();
   if (bitmap)
-    layer->free_bitmaps_.push_back(make_scoped_ptr(bitmap));
+    layer->free_bitmaps_.push_back(base::WrapUnique(bitmap));
   layer->client_->mailboxReleased(available_mailbox, lost_resource);
 }
 

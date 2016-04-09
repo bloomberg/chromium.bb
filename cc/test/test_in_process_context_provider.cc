@@ -8,6 +8,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "cc/resources/platform_color.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
@@ -24,7 +25,7 @@
 namespace cc {
 
 // static
-scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
+std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
     TestGpuMemoryBufferManager* gpu_memory_buffer_manager,
     TestImageFactory* image_factory,
     gpu::GLInProcessContext* shared_context) {
@@ -42,8 +43,8 @@ scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
   attribs.bind_generates_resource = false;
   gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
-  scoped_ptr<gpu::GLInProcessContext> context =
-      make_scoped_ptr(gpu::GLInProcessContext::Create(
+  std::unique_ptr<gpu::GLInProcessContext> context =
+      base::WrapUnique(gpu::GLInProcessContext::Create(
           nullptr, nullptr, is_offscreen, gfx::kNullAcceleratedWidget,
           gfx::Size(1, 1), shared_context, attribs, gpu_preference,
           gpu::GLInProcessContextSharedMemoryLimits(),
@@ -53,7 +54,7 @@ scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
   return context;
 }
 
-scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext() {
+std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext() {
   return CreateTestInProcessContext(nullptr, nullptr, nullptr);
 }
 

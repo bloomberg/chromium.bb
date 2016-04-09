@@ -7,8 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {
@@ -171,7 +172,7 @@ class CC_EXPORT ListContainerHelper final {
   // Hands out memory location for an element at the end of data structure.
   void* Allocate(size_t size_of_actual_element_in_bytes);
 
-  scoped_ptr<CharAllocator> data_;
+  std::unique_ptr<CharAllocator> data_;
 
   DISALLOW_COPY_AND_ASSIGN(ListContainerHelper);
 };

@@ -4,6 +4,7 @@
 
 #include "cc/test/fake_layer_tree_host.h"
 
+#include "base/memory/ptr_util.h"
 #include "cc/animation/animation_host.h"
 #include "cc/layers/layer.h"
 #include "cc/test/fake_image_serialization_processor.h"
@@ -29,13 +30,13 @@ FakeLayerTreeHost::FakeLayerTreeHost(FakeLayerTreeHostClient* client,
   client_->SetLayerTreeHost(this);
 }
 
-scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
+std::unique_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
     FakeLayerTreeHostClient* client,
     TestTaskGraphRunner* task_graph_runner) {
   return Create(client, task_graph_runner, LayerTreeSettings());
 }
 
-scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
+std::unique_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
     FakeLayerTreeHostClient* client,
     TestTaskGraphRunner* task_graph_runner,
     const LayerTreeSettings& settings) {
@@ -43,7 +44,7 @@ scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
                 CompositorMode::SINGLE_THREADED);
 }
 
-scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
+std::unique_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
     FakeLayerTreeHostClient* client,
     TestTaskGraphRunner* task_graph_runner,
     const LayerTreeSettings& settings,
@@ -52,10 +53,10 @@ scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
   params.client = client;
   params.settings = &settings;
   params.task_graph_runner = task_graph_runner;
-  return make_scoped_ptr(new FakeLayerTreeHost(client, &params, mode));
+  return base::WrapUnique(new FakeLayerTreeHost(client, &params, mode));
 }
 
-scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
+std::unique_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
     FakeLayerTreeHostClient* client,
     TestTaskGraphRunner* task_graph_runner,
     const LayerTreeSettings& settings,
@@ -66,7 +67,7 @@ scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
   params.settings = &settings;
   params.task_graph_runner = task_graph_runner;
   params.image_serialization_processor = image_serialization_processor;
-  return make_scoped_ptr(new FakeLayerTreeHost(client, &params, mode));
+  return base::WrapUnique(new FakeLayerTreeHost(client, &params, mode));
 }
 
 FakeLayerTreeHost::~FakeLayerTreeHost() {

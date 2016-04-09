@@ -8,8 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/debug/ring_buffer.h"
 
@@ -18,7 +19,7 @@ namespace cc {
 // Maintains a history of memory for each frame.
 class MemoryHistory {
  public:
-  static scoped_ptr<MemoryHistory> Create();
+  static std::unique_ptr<MemoryHistory> Create();
 
   size_t HistorySize() const { return ring_buffer_.BufferSize(); }
 

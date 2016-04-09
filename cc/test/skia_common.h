@@ -5,8 +5,9 @@
 #ifndef CC_TEST_SKIA_COMMON_H_
 #define CC_TEST_SKIA_COMMON_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImage.h"

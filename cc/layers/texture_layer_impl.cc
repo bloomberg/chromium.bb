@@ -43,7 +43,7 @@ TextureLayerImpl::~TextureLayerImpl() { FreeTextureMailbox(); }
 
 void TextureLayerImpl::SetTextureMailbox(
     const TextureMailbox& mailbox,
-    scoped_ptr<SingleReleaseCallbackImpl> release_callback) {
+    std::unique_ptr<SingleReleaseCallbackImpl> release_callback) {
   DCHECK_EQ(mailbox.IsValid(), !!release_callback);
   FreeTextureMailbox();
   texture_mailbox_ = mailbox;
@@ -53,7 +53,7 @@ void TextureLayerImpl::SetTextureMailbox(
   SetNeedsPushProperties();
 }
 
-scoped_ptr<LayerImpl> TextureLayerImpl::CreateLayerImpl(
+std::unique_ptr<LayerImpl> TextureLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return TextureLayerImpl::Create(tree_impl, id());
 }

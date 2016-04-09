@@ -124,15 +124,15 @@ class PictureLayerTilingPerfTest : public testing::Test {
 
  private:
   FakePictureLayerTilingClient picture_layer_tiling_client_;
-  scoped_ptr<PictureLayerTiling> picture_layer_tiling_;
+  std::unique_ptr<PictureLayerTiling> picture_layer_tiling_;
 
   LapTimer timer_;
 
   scoped_refptr<ContextProvider> context_provider_;
   FakeOutputSurfaceClient output_surface_client_;
-  scoped_ptr<FakeOutputSurface> output_surface_;
-  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
-  scoped_ptr<ResourceProvider> resource_provider_;
+  std::unique_ptr<FakeOutputSurface> output_surface_;
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<ResourceProvider> resource_provider_;
 };
 
 TEST_F(PictureLayerTilingPerfTest, Invalidate) {

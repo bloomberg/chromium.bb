@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -16,7 +17,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
@@ -34,7 +34,7 @@ class TestContextSupport;
 
 class TestWebGraphicsContext3D {
  public:
-  static scoped_ptr<TestWebGraphicsContext3D> Create();
+  static std::unique_ptr<TestWebGraphicsContext3D> Create();
 
   virtual ~TestWebGraphicsContext3D();
 
@@ -419,7 +419,7 @@ class TestWebGraphicsContext3D {
     ~Buffer();
 
     GLenum target;
-    scoped_ptr<uint8_t[]> pixels;
+    std::unique_ptr<uint8_t[]> pixels;
     size_t size;
 
    private:
@@ -430,7 +430,7 @@ class TestWebGraphicsContext3D {
     Image();
     ~Image();
 
-    scoped_ptr<uint8_t[]> pixels;
+    std::unique_ptr<uint8_t[]> pixels;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Image);
@@ -445,7 +445,7 @@ class TestWebGraphicsContext3D {
     unsigned next_image_id;
     unsigned next_texture_id;
     unsigned next_renderbuffer_id;
-    std::unordered_map<unsigned, scoped_ptr<Buffer>> buffers;
+    std::unordered_map<unsigned, std::unique_ptr<Buffer>> buffers;
     std::unordered_set<unsigned> images;
     OrderedTextureMap textures;
     std::unordered_set<unsigned> renderbuffer_set;

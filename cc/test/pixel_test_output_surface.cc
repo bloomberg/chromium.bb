@@ -28,7 +28,7 @@ PixelTestOutputSurface::PixelTestOutputSurface(
 }
 
 PixelTestOutputSurface::PixelTestOutputSurface(
-    scoped_ptr<SoftwareOutputDevice> software_device)
+    std::unique_ptr<SoftwareOutputDevice> software_device)
     : OutputSurface(std::move(software_device)),
       external_stencil_test_(false) {}
 

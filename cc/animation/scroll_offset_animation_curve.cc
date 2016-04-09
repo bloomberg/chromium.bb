@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "cc/animation/timing_function.h"
 #include "cc/base/time_util.h"
 #include "ui/gfx/animation/tween.h"
@@ -63,7 +64,8 @@ static base::TimeDelta SegmentDuration(const gfx::Vector2dF& delta,
                                            base::Time::kMicrosecondsPerSecond);
 }
 
-static scoped_ptr<TimingFunction> EaseOutWithInitialVelocity(double velocity) {
+static std::unique_ptr<TimingFunction> EaseOutWithInitialVelocity(
+    double velocity) {
   // Clamp velocity to a sane value.
   velocity = std::min(std::max(velocity, -1000.0), 1000.0);
 
@@ -75,17 +77,17 @@ static scoped_ptr<TimingFunction> EaseOutWithInitialVelocity(double velocity) {
 
 }  // namespace
 
-scoped_ptr<ScrollOffsetAnimationCurve> ScrollOffsetAnimationCurve::Create(
+std::unique_ptr<ScrollOffsetAnimationCurve> ScrollOffsetAnimationCurve::Create(
     const gfx::ScrollOffset& target_value,
-    scoped_ptr<TimingFunction> timing_function,
+    std::unique_ptr<TimingFunction> timing_function,
     DurationBehavior duration_behavior) {
-  return make_scoped_ptr(new ScrollOffsetAnimationCurve(
+  return base::WrapUnique(new ScrollOffsetAnimationCurve(
       target_value, std::move(timing_function), duration_behavior));
 }
 
 ScrollOffsetAnimationCurve::ScrollOffsetAnimationCurve(
     const gfx::ScrollOffset& target_value,
-    scoped_ptr<TimingFunction> timing_function,
+    std::unique_ptr<TimingFunction> timing_function,
     DurationBehavior duration_behavior)
     : target_value_(target_value),
       timing_function_(std::move(timing_function)),
@@ -133,15 +135,15 @@ AnimationCurve::CurveType ScrollOffsetAnimationCurve::Type() const {
   return SCROLL_OFFSET;
 }
 
-scoped_ptr<AnimationCurve> ScrollOffsetAnimationCurve::Clone() const {
+std::unique_ptr<AnimationCurve> ScrollOffsetAnimationCurve::Clone() const {
   return CloneToScrollOffsetAnimationCurve();
 }
 
-scoped_ptr<ScrollOffsetAnimationCurve>
+std::unique_ptr<ScrollOffsetAnimationCurve>
 ScrollOffsetAnimationCurve::CloneToScrollOffsetAnimationCurve() const {
-  scoped_ptr<TimingFunction> timing_function(
+  std::unique_ptr<TimingFunction> timing_function(
       static_cast<TimingFunction*>(timing_function_->Clone().release()));
-  scoped_ptr<ScrollOffsetAnimationCurve> curve_clone =
+  std::unique_ptr<ScrollOffsetAnimationCurve> curve_clone =
       Create(target_value_, std::move(timing_function), duration_behavior_);
   curve_clone->initial_value_ = initial_value_;
   curve_clone->total_animation_duration_ = total_animation_duration_;

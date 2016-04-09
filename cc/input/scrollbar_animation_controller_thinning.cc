@@ -4,6 +4,7 @@
 
 #include "cc/input/scrollbar_animation_controller_thinning.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/scrollbar_layer_impl_base.h"
@@ -17,14 +18,14 @@ const float kDefaultMouseMoveDistanceToTriggerAnimation = 25.f;
 
 namespace cc {
 
-scoped_ptr<ScrollbarAnimationControllerThinning>
+std::unique_ptr<ScrollbarAnimationControllerThinning>
 ScrollbarAnimationControllerThinning::Create(
     int scroll_layer_id,
     ScrollbarAnimationControllerClient* client,
     base::TimeDelta delay_before_starting,
     base::TimeDelta resize_delay_before_starting,
     base::TimeDelta duration) {
-  return make_scoped_ptr(new ScrollbarAnimationControllerThinning(
+  return base::WrapUnique(new ScrollbarAnimationControllerThinning(
       scroll_layer_id, client, delay_before_starting,
       resize_delay_before_starting, duration));
 }

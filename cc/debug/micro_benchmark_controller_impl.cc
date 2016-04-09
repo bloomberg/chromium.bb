@@ -21,7 +21,7 @@ MicroBenchmarkControllerImpl::MicroBenchmarkControllerImpl(
 MicroBenchmarkControllerImpl::~MicroBenchmarkControllerImpl() {}
 
 void MicroBenchmarkControllerImpl::ScheduleRun(
-    scoped_ptr<MicroBenchmarkImpl> benchmark) {
+    std::unique_ptr<MicroBenchmarkImpl> benchmark) {
   benchmarks_.push_back(std::move(benchmark));
 }
 
@@ -37,7 +37,7 @@ void MicroBenchmarkControllerImpl::DidCompleteCommit() {
 void MicroBenchmarkControllerImpl::CleanUpFinishedBenchmarks() {
   benchmarks_.erase(
       std::remove_if(benchmarks_.begin(), benchmarks_.end(),
-                     [](const scoped_ptr<MicroBenchmarkImpl>& benchmark) {
+                     [](const std::unique_ptr<MicroBenchmarkImpl>& benchmark) {
                        return benchmark->IsDone();
                      }),
       benchmarks_.end());

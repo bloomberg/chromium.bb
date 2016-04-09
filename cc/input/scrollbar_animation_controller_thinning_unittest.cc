@@ -42,7 +42,7 @@ class ScrollbarAnimationControllerThinningTest
 
  protected:
   void SetUp() override {
-    scoped_ptr<LayerImpl> scroll_layer =
+    std::unique_ptr<LayerImpl> scroll_layer =
         LayerImpl::Create(host_impl_.active_tree(), 1);
     clip_layer_ = LayerImpl::Create(host_impl_.active_tree(), 3);
     scroll_layer->SetScrollClipLayer(clip_layer_->id());
@@ -71,9 +71,9 @@ class ScrollbarAnimationControllerThinningTest
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
-  scoped_ptr<ScrollbarAnimationControllerThinning> scrollbar_controller_;
-  scoped_ptr<LayerImpl> clip_layer_;
-  scoped_ptr<SolidColorScrollbarLayerImpl> scrollbar_layer_;
+  std::unique_ptr<ScrollbarAnimationControllerThinning> scrollbar_controller_;
+  std::unique_ptr<LayerImpl> clip_layer_;
+  std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar_layer_;
 
   base::Closure start_fade_;
   base::TimeDelta delay_;

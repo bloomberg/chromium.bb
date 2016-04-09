@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -19,7 +20,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
   GpuMemoryBufferImpl(const gfx::Size& size,
                       gfx::BufferFormat format,
-                      scoped_ptr<base::SharedMemory> shared_memory,
+                      std::unique_ptr<base::SharedMemory> shared_memory,
                       size_t offset,
                       size_t stride)
       : size_(size),
@@ -84,7 +85,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  private:
   const gfx::Size size_;
   gfx::BufferFormat format_;
-  scoped_ptr<base::SharedMemory> shared_memory_;
+  std::unique_ptr<base::SharedMemory> shared_memory_;
   size_t offset_;
   size_t stride_;
   bool mapped_;
@@ -106,22 +107,22 @@ void TestGpuMemoryBufferManager::SetGpuMemoryBufferIsInUseByMacOSWindowServer(
       ->SetIsInUseByMacOSWindowServer(in_use);
 }
 
-scoped_ptr<gfx::GpuMemoryBuffer>
+std::unique_ptr<gfx::GpuMemoryBuffer>
 TestGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
                                                     gfx::BufferFormat format,
                                                     gfx::BufferUsage usage,
                                                     int32_t surface_id) {
-  scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
+  std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
   const size_t buffer_size = gfx::BufferSizeForBufferFormat(size, format);
   if (!shared_memory->CreateAnonymous(buffer_size))
     return nullptr;
-  return make_scoped_ptr<gfx::GpuMemoryBuffer>(new GpuMemoryBufferImpl(
+  return base::WrapUnique<gfx::GpuMemoryBuffer>(new GpuMemoryBufferImpl(
       size, format, std::move(shared_memory), 0,
       base::checked_cast<int>(
           gfx::RowSizeForBufferFormat(size.width(), format, 0))));
 }
 
-scoped_ptr<gfx::GpuMemoryBuffer>
+std::unique_ptr<gfx::GpuMemoryBuffer>
 TestGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
@@ -129,9 +130,9 @@ TestGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
   if (handle.type != gfx::SHARED_MEMORY_BUFFER)
     return nullptr;
 
-  return make_scoped_ptr<gfx::GpuMemoryBuffer>(new GpuMemoryBufferImpl(
+  return base::WrapUnique<gfx::GpuMemoryBuffer>(new GpuMemoryBufferImpl(
       size, format,
-      make_scoped_ptr(new base::SharedMemory(handle.handle, false)),
+      base::WrapUnique(new base::SharedMemory(handle.handle, false)),
       handle.offset, handle.stride));
 }
 

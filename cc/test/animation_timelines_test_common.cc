@@ -4,6 +4,7 @@
 
 #include "cc/test/animation_timelines_test_common.h"
 
+#include "base/memory/ptr_util.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_player.h"
@@ -16,8 +17,8 @@
 
 namespace cc {
 
-scoped_ptr<TestLayer> TestLayer::Create() {
-  return make_scoped_ptr(new TestLayer());
+std::unique_ptr<TestLayer> TestLayer::Create() {
+  return base::WrapUnique(new TestLayer());
 }
 
 TestLayer::TestLayer() {
@@ -234,7 +235,7 @@ void AnimationTimelinesTest::ReleaseRefPtrs() {
 void AnimationTimelinesTest::AnimateLayersTransferEvents(
     base::TimeTicks time,
     unsigned expect_events) {
-  scoped_ptr<AnimationEvents> events =
+  std::unique_ptr<AnimationEvents> events =
       host_->animation_registrar()->CreateEvents();
 
   host_impl_->animation_registrar()->AnimateLayers(time);

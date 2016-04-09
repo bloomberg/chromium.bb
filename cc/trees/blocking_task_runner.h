@@ -5,11 +5,11 @@
 #ifndef CC_TREES_BLOCKING_TASK_RUNNER_H_
 #define CC_TREES_BLOCKING_TASK_RUNNER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
@@ -48,7 +48,7 @@ class CC_EXPORT BlockingTaskRunner {
   // |task_runner| will be used to run the tasks which are posted while we are
   // not capturing. |task_runner| should belong to same the thread on which
   // capturing is done.
-  static scoped_ptr<BlockingTaskRunner> Create(
+  static std::unique_ptr<BlockingTaskRunner> Create(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   ~BlockingTaskRunner();

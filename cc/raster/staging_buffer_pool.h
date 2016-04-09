@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <deque>
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
@@ -40,7 +41,7 @@ struct StagingBuffer {
 
   const gfx::Size size;
   const ResourceFormat format;
-  scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
+  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
   base::TimeTicks last_usage;
   unsigned texture_id;
   unsigned image_id;
@@ -53,7 +54,7 @@ class CC_EXPORT StagingBufferPool
  public:
   ~StagingBufferPool() final;
 
-  static scoped_ptr<StagingBufferPool> Create(
+  static std::unique_ptr<StagingBufferPool> Create(
       base::SequencedTaskRunner* task_runner,
       ResourceProvider* resource_provider,
       bool use_partial_raster,
@@ -64,9 +65,10 @@ class CC_EXPORT StagingBufferPool
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  scoped_ptr<StagingBuffer> AcquireStagingBuffer(const Resource* resource,
-                                                 uint64_t previous_content_id);
-  void ReleaseStagingBuffer(scoped_ptr<StagingBuffer> staging_buffer);
+  std::unique_ptr<StagingBuffer> AcquireStagingBuffer(
+      const Resource* resource,
+      uint64_t previous_content_id);
+  void ReleaseStagingBuffer(std::unique_ptr<StagingBuffer> staging_buffer);
 
  private:
   StagingBufferPool(base::SequencedTaskRunner* task_runner,
@@ -85,7 +87,8 @@ class CC_EXPORT StagingBufferPool
   void ReduceMemoryUsage();
   void ReleaseBuffersNotUsedSince(base::TimeTicks time);
 
-  scoped_ptr<base::trace_event::ConvertableToTraceFormat> StateAsValue() const;
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> StateAsValue()
+      const;
   void StagingStateAsValueInto(
       base::trace_event::TracedValue* staging_state) const;
 
@@ -97,7 +100,7 @@ class CC_EXPORT StagingBufferPool
   // |lock_| must be acquired when accessing the following members.
   using StagingBufferSet = std::set<const StagingBuffer*>;
   StagingBufferSet buffers_;
-  using StagingBufferDeque = std::deque<scoped_ptr<StagingBuffer>>;
+  using StagingBufferDeque = std::deque<std::unique_ptr<StagingBuffer>>;
   StagingBufferDeque free_buffers_;
   StagingBufferDeque busy_buffers_;
   const int max_staging_buffer_usage_in_bytes_;

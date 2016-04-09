@@ -5,10 +5,10 @@
 #ifndef CC_LAYERS_HEADS_UP_DISPLAY_LAYER_H_
 #define CC_LAYERS_HEADS_UP_DISPLAY_LAYER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer.h"
 #include "third_party/skia/include/core/SkTypeface.h"
@@ -26,7 +26,7 @@ class CC_EXPORT HeadsUpDisplayLayer : public Layer {
   void PrepareForCalculateDrawProperties(
       const gfx::Size& device_viewport, float device_scale_factor);
 
-  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
   void SetTypeForProtoSerialization(proto::LayerNode* proto) const override;
 

@@ -51,13 +51,13 @@ class LayerPerfTest : public testing::Test {
   FakeLayerTreeHostImpl host_impl_;
 
   FakeLayerTreeHostClient fake_client_;
-  scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
+  std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
   LapTimer timer_;
 };
 
 TEST_F(LayerPerfTest, PushPropertiesTo) {
   scoped_refptr<Layer> test_layer = Layer::Create();
-  scoped_ptr<LayerImpl> impl_layer =
+  std::unique_ptr<LayerImpl> impl_layer =
       LayerImpl::Create(host_impl_.active_tree(), 1);
 
   layer_tree_host_->SetRootLayer(test_layer);

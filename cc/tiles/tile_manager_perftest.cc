@@ -71,13 +71,13 @@ class FakeTileTaskRunnerImpl : public TileTaskRunner, public TileTaskClient {
   }
 
   // Overridden from TileTaskClient:
-  scoped_ptr<RasterBuffer> AcquireBufferForRaster(
+  std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
       const Resource* resource,
       uint64_t new_content_id,
       uint64_t previous_content_id) override {
     return nullptr;
   }
-  void ReleaseBufferForRaster(scoped_ptr<RasterBuffer> buffer) override {}
+  void ReleaseBufferForRaster(std::unique_ptr<RasterBuffer> buffer) override {}
 
  private:
   TileTask::Vector completed_tasks_;
@@ -166,7 +166,7 @@ class TileManagerPerfTest : public testing::Test {
     // Clear recycled tree.
     pending_tree->ClearLayers();
 
-    scoped_ptr<FakePictureLayerImpl> pending_layer =
+    std::unique_ptr<FakePictureLayerImpl> pending_layer =
         FakePictureLayerImpl::CreateWithRasterSource(pending_tree, id_,
                                                      raster_source);
     pending_layer->SetDrawsContent(true);
@@ -191,8 +191,9 @@ class TileManagerPerfTest : public testing::Test {
 
     timer_.Reset();
     do {
-      scoped_ptr<RasterTilePriorityQueue> queue(host_impl_.BuildRasterQueue(
-          priorities[priority_count], RasterTilePriorityQueue::Type::ALL));
+      std::unique_ptr<RasterTilePriorityQueue> queue(
+          host_impl_.BuildRasterQueue(priorities[priority_count],
+                                      RasterTilePriorityQueue::Type::ALL));
       priority_count = (priority_count + 1) % arraysize(priorities);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
@@ -220,8 +221,9 @@ class TileManagerPerfTest : public testing::Test {
     timer_.Reset();
     do {
       int count = tile_count;
-      scoped_ptr<RasterTilePriorityQueue> queue(host_impl_.BuildRasterQueue(
-          priorities[priority_count], RasterTilePriorityQueue::Type::ALL));
+      std::unique_ptr<RasterTilePriorityQueue> queue(
+          host_impl_.BuildRasterQueue(priorities[priority_count],
+                                      RasterTilePriorityQueue::Type::ALL));
       while (count--) {
         ASSERT_FALSE(queue->IsEmpty());
         ASSERT_TRUE(queue->Top().tile());
@@ -258,7 +260,7 @@ class TileManagerPerfTest : public testing::Test {
 
     timer_.Reset();
     do {
-      scoped_ptr<EvictionTilePriorityQueue> queue(
+      std::unique_ptr<EvictionTilePriorityQueue> queue(
           host_impl_.BuildEvictionQueue(priorities[priority_count]));
       priority_count = (priority_count + 1) % arraysize(priorities);
       timer_.NextLap();
@@ -293,7 +295,7 @@ class TileManagerPerfTest : public testing::Test {
     timer_.Reset();
     do {
       int count = tile_count;
-      scoped_ptr<EvictionTilePriorityQueue> queue(
+      std::unique_ptr<EvictionTilePriorityQueue> queue(
           host_impl_.BuildEvictionQueue(priorities[priority_count]));
       while (count--) {
         ASSERT_FALSE(queue->IsEmpty());
@@ -350,7 +352,7 @@ class TileManagerPerfTest : public testing::Test {
     scoped_refptr<FakeRasterSource> raster_source =
         FakeRasterSource::CreateFilled(layer_bounds);
     while (static_cast<int>(layers.size()) < layer_count) {
-      scoped_ptr<FakePictureLayerImpl> layer =
+      std::unique_ptr<FakePictureLayerImpl> layer =
           FakePictureLayerImpl::CreateWithRasterSource(
               host_impl_.pending_tree(), next_id, raster_source);
       layer->SetBounds(layer_bounds);
@@ -417,7 +419,7 @@ class TileManagerPerfTest : public testing::Test {
   int max_tiles_;
   int id_;
   FakeImplTaskRunnerProvider task_runner_provider_;
-  scoped_ptr<OutputSurface> output_surface_;
+  std::unique_ptr<OutputSurface> output_surface_;
   FakeLayerTreeHostImpl host_impl_;
   FakePictureLayerImpl* pending_root_layer_;
   FakePictureLayerImpl* active_root_layer_;

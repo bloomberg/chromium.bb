@@ -21,7 +21,7 @@ void TestTask(bool* result) {
 
 TEST(BlockingTaskRunnerTest, NoCapture) {
   bool did_run = false;
-  scoped_ptr<BlockingTaskRunner> runner(
+  std::unique_ptr<BlockingTaskRunner> runner(
       BlockingTaskRunner::Create(base::ThreadTaskRunnerHandle::Get()));
   runner->PostTask(FROM_HERE, base::Bind(&TestTask, &did_run));
   EXPECT_FALSE(did_run);
@@ -31,7 +31,7 @@ TEST(BlockingTaskRunnerTest, NoCapture) {
 
 TEST(BlockingTaskRunnerTest, Capture) {
   bool did_run = false;
-  scoped_ptr<BlockingTaskRunner> runner(
+  std::unique_ptr<BlockingTaskRunner> runner(
       BlockingTaskRunner::Create(base::ThreadTaskRunnerHandle::Get()));
   {
     BlockingTaskRunner::CapturePostTasks capture(runner.get());

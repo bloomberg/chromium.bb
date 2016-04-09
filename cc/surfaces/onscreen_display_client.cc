@@ -15,7 +15,7 @@
 namespace cc {
 
 OnscreenDisplayClient::OnscreenDisplayClient(
-    scoped_ptr<OutputSurface> output_surface,
+    std::unique_ptr<OutputSurface> output_surface,
     SurfaceManager* manager,
     SharedBitmapManager* bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,

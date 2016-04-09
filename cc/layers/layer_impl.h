@@ -9,13 +9,14 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "cc/animation/target_property.h"
 #include "cc/base/cc_export.h"
@@ -82,8 +83,8 @@ class CC_EXPORT LayerImpl {
 
   enum RenderingContextConstants { NO_RENDERING_CONTEXT = 0 };
 
-  static scoped_ptr<LayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
-    return make_scoped_ptr(new LayerImpl(tree_impl, id));
+  static std::unique_ptr<LayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
+    return base::WrapUnique(new LayerImpl(tree_impl, id));
   }
 
   virtual ~LayerImpl();
@@ -104,8 +105,8 @@ class CC_EXPORT LayerImpl {
   LayerImpl* parent() { return parent_; }
   LayerImplList& children() { return children_; }
   LayerImpl* child_at(size_t index) const { return children_[index]; }
-  void AddChild(scoped_ptr<LayerImpl> child);
-  scoped_ptr<LayerImpl> RemoveChildForTesting(LayerImpl* child);
+  void AddChild(std::unique_ptr<LayerImpl> child);
+  std::unique_ptr<LayerImpl> RemoveChildForTesting(LayerImpl* child);
   void SetParent(LayerImpl* parent);
 
   void SetScrollParent(LayerImpl* parent);
@@ -180,22 +181,23 @@ class CC_EXPORT LayerImpl {
     return clip_children_.get();
   }
 
-  void PassCopyRequests(std::vector<scoped_ptr<CopyOutputRequest>>* requests);
+  void PassCopyRequests(
+      std::vector<std::unique_ptr<CopyOutputRequest>>* requests);
   // Can only be called when the layer has a copy request.
   void TakeCopyRequestsAndTransformToTarget(
-      std::vector<scoped_ptr<CopyOutputRequest>>* request);
+      std::vector<std::unique_ptr<CopyOutputRequest>>* request);
   bool HasCopyRequest() const { return !copy_requests_.empty(); }
   bool InsideCopyRequest() const;
 
-  void SetMaskLayer(scoped_ptr<LayerImpl> mask_layer);
+  void SetMaskLayer(std::unique_ptr<LayerImpl> mask_layer);
   LayerImpl* mask_layer() { return mask_layer_; }
   const LayerImpl* mask_layer() const { return mask_layer_; }
-  scoped_ptr<LayerImpl> TakeMaskLayer();
+  std::unique_ptr<LayerImpl> TakeMaskLayer();
 
-  void SetReplicaLayer(scoped_ptr<LayerImpl> replica_layer);
+  void SetReplicaLayer(std::unique_ptr<LayerImpl> replica_layer);
   LayerImpl* replica_layer() { return replica_layer_; }
   const LayerImpl* replica_layer() const { return replica_layer_; }
-  scoped_ptr<LayerImpl> TakeReplicaLayer();
+  std::unique_ptr<LayerImpl> TakeReplicaLayer();
 
   bool has_mask() const { return !!mask_layer_; }
   bool has_replica() const { return !!replica_layer_; }
@@ -522,7 +524,7 @@ class CC_EXPORT LayerImpl {
   // ReleaseResources call.
   virtual void RecreateResources();
 
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
+  virtual std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
   virtual void PushPropertiesTo(LayerImpl* layer);
 
   virtual void GetAllPrioritizedTilesForTracing(
@@ -536,7 +538,7 @@ class CC_EXPORT LayerImpl {
   virtual void RunMicroBenchmark(MicroBenchmarkImpl* benchmark);
 
   void SetDebugInfo(
-      scoped_ptr<base::trace_event::ConvertableToTraceFormat> debug_info);
+      std::unique_ptr<base::trace_event::ConvertableToTraceFormat> debug_info);
 
   bool IsDrawnRenderSurfaceLayerListMember() const;
 
@@ -642,10 +644,10 @@ class CC_EXPORT LayerImpl {
   // used. If this pointer turns out to be too heavy, we could have this (and
   // the scroll parent above) be stored in a LayerImpl -> scroll_info
   // map somewhere.
-  scoped_ptr<std::set<LayerImpl*>> scroll_children_;
+  std::unique_ptr<std::set<LayerImpl*>> scroll_children_;
 
   LayerImpl* clip_parent_;
-  scoped_ptr<std::set<LayerImpl*>> clip_children_;
+  std::unique_ptr<std::set<LayerImpl*>> clip_children_;
 
   // mask_layer_ can be temporarily stolen during tree sync, we need this ID to
   // confirm newly assigned layer is still the previous one
@@ -749,16 +751,17 @@ class CC_EXPORT LayerImpl {
   // space.
   gfx::Rect damage_rect_;
 
-  std::vector<scoped_ptr<CopyOutputRequest>> copy_requests_;
+  std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests_;
 
   // Group of properties that need to be computed based on the layer tree
   // hierarchy before layers can be drawn.
   DrawProperties draw_properties_;
   PerformanceProperties<LayerImpl> performance_properties_;
 
-  scoped_ptr<base::trace_event::ConvertableToTraceFormat> owned_debug_info_;
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
+      owned_debug_info_;
   base::trace_event::ConvertableToTraceFormat* debug_info_;
-  scoped_ptr<RenderSurfaceImpl> render_surface_;
+  std::unique_ptr<RenderSurfaceImpl> render_surface_;
 
   bool force_render_surface_;
 

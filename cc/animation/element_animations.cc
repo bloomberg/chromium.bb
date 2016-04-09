@@ -5,6 +5,7 @@
 #include "cc/animation/element_animations.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_player.h"
 #include "cc/animation/animation_registrar.h"
@@ -56,12 +57,13 @@ class ElementAnimations::ValueObserver : public LayerAnimationValueObserver {
   DISALLOW_COPY_AND_ASSIGN(ValueObserver);
 };
 
-scoped_ptr<ElementAnimations> ElementAnimations::Create(AnimationHost* host) {
-  return make_scoped_ptr(new ElementAnimations(host));
+std::unique_ptr<ElementAnimations> ElementAnimations::Create(
+    AnimationHost* host) {
+  return base::WrapUnique(new ElementAnimations(host));
 }
 
 ElementAnimations::ElementAnimations(AnimationHost* host)
-    : players_list_(make_scoped_ptr(new PlayersList())), animation_host_(host) {
+    : players_list_(new PlayersList()), animation_host_(host) {
   DCHECK(animation_host_);
 }
 
@@ -211,7 +213,7 @@ void ElementAnimations::CreateActiveValueObserver() {
   DCHECK(layer_animation_controller_);
   DCHECK(!active_value_observer_);
   active_value_observer_ =
-      make_scoped_ptr(new ValueObserver(this, LayerTreeType::ACTIVE));
+      base::WrapUnique(new ValueObserver(this, LayerTreeType::ACTIVE));
   layer_animation_controller_->AddValueObserver(active_value_observer_.get());
 }
 
@@ -226,7 +228,7 @@ void ElementAnimations::CreatePendingValueObserver() {
   DCHECK(layer_animation_controller_);
   DCHECK(!pending_value_observer_);
   pending_value_observer_ =
-      make_scoped_ptr(new ValueObserver(this, LayerTreeType::PENDING));
+      base::WrapUnique(new ValueObserver(this, LayerTreeType::PENDING));
   layer_animation_controller_->AddValueObserver(pending_value_observer_.get());
 }
 
@@ -274,11 +276,11 @@ void ElementAnimations::NotifyAnimationTakeover(
     base::TimeTicks monotonic_time,
     TargetProperty::Type target_property,
     double animation_start_time,
-    scoped_ptr<AnimationCurve> curve) {
+    std::unique_ptr<AnimationCurve> curve) {
   DCHECK(curve);
   for (PlayersListNode* node = players_list_->head();
        node != players_list_->end(); node = node->next()) {
-    scoped_ptr<AnimationCurve> animation_curve = curve->Clone();
+    std::unique_ptr<AnimationCurve> animation_curve = curve->Clone();
     AnimationPlayer* player = node->value();
     player->NotifyAnimationTakeover(monotonic_time, target_property,
                                     animation_start_time,

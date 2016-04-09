@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/begin_frame_source_test.h"
@@ -199,7 +200,7 @@ TEST(BeginFrameSourceBaseTest, DetectAsValueIntoLoop) {
   obs.source_ = &source;
   source.AddObserver(&obs);
 
-  scoped_ptr<base::trace_event::TracedValue> state(
+  std::unique_ptr<base::trace_event::TracedValue> state(
       new base::trace_event::TracedValue());
   source.AsValueInto(state.get());
 }
@@ -223,10 +224,10 @@ class BackToBackBeginFrameSourceTest : public ::testing::Test {
   static const int64_t kDeadline;
   static const int64_t kInterval;
 
-  scoped_ptr<base::SimpleTestTickClock> now_src_;
+  std::unique_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
-  scoped_ptr<TestBackToBackBeginFrameSource> source_;
-  scoped_ptr<MockBeginFrameObserver> obs_;
+  std::unique_ptr<TestBackToBackBeginFrameSource> source_;
+  std::unique_ptr<MockBeginFrameObserver> obs_;
 
   void SetUp() override {
     now_src_.reset(new base::SimpleTestTickClock());
@@ -235,7 +236,8 @@ class BackToBackBeginFrameSourceTest : public ::testing::Test {
         make_scoped_refptr(new OrderedSimpleTaskRunner(now_src_.get(), false));
     source_.reset(
         new TestBackToBackBeginFrameSource(now_src_.get(), task_runner_.get()));
-    obs_ = make_scoped_ptr(new ::testing::StrictMock<MockBeginFrameObserver>());
+    obs_ =
+        base::WrapUnique(new ::testing::StrictMock<MockBeginFrameObserver>());
   }
 
   void TearDown() override { obs_.reset(); }
@@ -402,10 +404,10 @@ TEST_F(BackToBackBeginFrameSourceTest, DelayInPostedTaskProducesCorrectFrame) {
 // SyntheticBeginFrameSource testing ------------------------------------------
 class SyntheticBeginFrameSourceTest : public ::testing::Test {
  public:
-  scoped_ptr<base::SimpleTestTickClock> now_src_;
+  std::unique_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
-  scoped_ptr<TestSyntheticBeginFrameSource> source_;
-  scoped_ptr<MockBeginFrameObserver> obs_;
+  std::unique_ptr<TestSyntheticBeginFrameSource> source_;
+  std::unique_ptr<MockBeginFrameObserver> obs_;
 
   void SetUp() override {
     now_src_.reset(new base::SimpleTestTickClock());
@@ -415,7 +417,7 @@ class SyntheticBeginFrameSourceTest : public ::testing::Test {
     source_.reset(new TestSyntheticBeginFrameSource(
         now_src_.get(), task_runner_.get(),
         base::TimeDelta::FromMicroseconds(10000)));
-    obs_ = make_scoped_ptr(new MockBeginFrameObserver());
+    obs_ = base::WrapUnique(new MockBeginFrameObserver());
   }
 
   void TearDown() override { obs_.reset(); }

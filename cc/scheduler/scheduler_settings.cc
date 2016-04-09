@@ -24,9 +24,9 @@ SchedulerSettings::SchedulerSettings(const SchedulerSettings& other) = default;
 
 SchedulerSettings::~SchedulerSettings() {}
 
-scoped_ptr<base::trace_event::ConvertableToTraceFormat>
+std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 SchedulerSettings::AsValue() const {
-  scoped_ptr<base::trace_event::TracedValue> state(
+  std::unique_ptr<base::trace_event::TracedValue> state(
       new base::trace_event::TracedValue());
   state->SetBoolean("use_external_begin_frame_source",
                     use_external_begin_frame_source);

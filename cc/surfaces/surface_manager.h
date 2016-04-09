@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "cc/surfaces/surface_damage_observer.h"
@@ -36,7 +36,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
   void DeregisterSurface(SurfaceId surface_id);
 
   // Destroy the Surface once a set of sequence numbers has been satisfied.
-  void Destroy(scoped_ptr<Surface> surface);
+  void Destroy(std::unique_ptr<Surface> surface);
 
   Surface* GetSurfaceForId(SurfaceId surface_id);
 

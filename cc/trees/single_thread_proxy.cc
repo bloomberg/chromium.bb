@@ -5,6 +5,7 @@
 #include "cc/trees/single_thread_proxy.h"
 
 #include "base/auto_reset.h"
+#include "base/memory/ptr_util.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/animation/animation_events.h"
@@ -24,11 +25,11 @@
 
 namespace cc {
 
-scoped_ptr<Proxy> SingleThreadProxy::Create(
+std::unique_ptr<Proxy> SingleThreadProxy::Create(
     LayerTreeHost* layer_tree_host,
     LayerTreeHostSingleThreadClient* client,
     TaskRunnerProvider* task_runner_provider) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new SingleThreadProxy(layer_tree_host, client, task_runner_provider));
 }
 
@@ -56,7 +57,7 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host,
 }
 
 void SingleThreadProxy::Start(
-    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
+    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
   DebugScopedSetImplThread impl(task_runner_provider_);
   external_begin_frame_source_ = std::move(external_begin_frame_source);
 
@@ -66,7 +67,7 @@ void SingleThreadProxy::Start(
         layer_tree_host_->settings().ToSchedulerSettings());
     scheduler_settings.commit_to_active_tree = CommitToActiveTree();
 
-    scoped_ptr<CompositorTimingHistory> compositor_timing_history(
+    std::unique_ptr<CompositorTimingHistory> compositor_timing_history(
         new CompositorTimingHistory(
             scheduler_settings.using_synchronous_renderer_compositor,
             CompositorTimingHistory::BROWSER_UMA,
@@ -250,7 +251,7 @@ void SingleThreadProxy::DoCommit() {
 #if DCHECK_IS_ON()
     // In the single-threaded case, the scale and scroll deltas should never be
     // touched on the impl layer tree.
-    scoped_ptr<ScrollAndScaleSet> scroll_info =
+    std::unique_ptr<ScrollAndScaleSet> scroll_info =
         layer_tree_host_impl_->ProcessScrollDeltas();
     DCHECK(!scroll_info->scrolls.size());
     DCHECK_EQ(1.f, scroll_info->page_scale_delta);
@@ -423,7 +424,7 @@ void SingleThreadProxy::SetVideoNeedsBeginFrames(bool needs_begin_frames) {
 }
 
 void SingleThreadProxy::PostAnimationEventsToMainThreadOnImplThread(
-    scoped_ptr<AnimationEvents> events) {
+    std::unique_ptr<AnimationEvents> events) {
   TRACE_EVENT0(
       "cc", "SingleThreadProxy::PostAnimationEventsToMainThreadOnImplThread");
   DCHECK(task_runner_provider_->IsImplThread());
@@ -516,8 +517,8 @@ void SingleThreadProxy::OnDrawForOutputSurface(
 }
 
 void SingleThreadProxy::PostFrameTimingEventsOnImplThread(
-    scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-    scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
+    std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+    std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
   layer_tree_host_->RecordFrameTimingEvents(std::move(composite_events),
                                             std::move(main_frame_events));
 }

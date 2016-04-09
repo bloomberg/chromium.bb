@@ -184,7 +184,7 @@ struct CC_EXPORT ScrollAndScaleSet {
   float page_scale_delta;
   gfx::Vector2dF elastic_overscroll_delta;
   float top_controls_delta;
-  std::vector<scoped_ptr<SwapPromise>> swap_promises;
+  std::vector<std::unique_ptr<SwapPromise>> swap_promises;
 
   bool EqualsForTesting(const ScrollAndScaleSet& other) const;
   void ToProtobuf(proto::ScrollAndScaleSet* proto) const;

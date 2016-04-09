@@ -125,7 +125,7 @@ LayerTestCommon::LayerImplTest::LayerImplTest(const LayerTreeSettings& settings)
       host_(FakeLayerTreeHost::Create(&client_, &task_graph_runner_, settings)),
       render_pass_(RenderPass::Create()),
       layer_impl_id_(2) {
-  scoped_ptr<LayerImpl> root =
+  std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(host_->host_impl()->active_tree(), 1);
   host_->host_impl()->active_tree()->SetRootLayer(std::move(root));
   root_layer()->SetHasRenderSurface(true);
@@ -207,10 +207,10 @@ void LayerTestCommon::LayerImplTest::AppendSurfaceQuadsWithOcclusion(
       SK_ColorBLACK, 1.f, nullptr, &data, RenderPassId(1, 1));
 }
 
-void EmptyCopyOutputCallback(scoped_ptr<CopyOutputResult> result) {}
+void EmptyCopyOutputCallback(std::unique_ptr<CopyOutputResult> result) {}
 
 void LayerTestCommon::LayerImplTest::RequestCopyOfOutput() {
-  std::vector<scoped_ptr<CopyOutputRequest>> copy_requests;
+  std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests;
   copy_requests.push_back(
       CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
   root_layer()->PassCopyRequests(&copy_requests);

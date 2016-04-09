@@ -19,10 +19,10 @@ class ScrollbarThemeComposite;
 class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
                                         public Layer {
  public:
-  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
   static scoped_refptr<PaintedScrollbarLayer> Create(
-      scoped_ptr<Scrollbar> scrollbar,
+      std::unique_ptr<Scrollbar> scrollbar,
       int scroll_layer_id);
 
   bool OpacityCanAnimateOnImplThread() const override;
@@ -44,7 +44,8 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
   }
 
  protected:
-  PaintedScrollbarLayer(scoped_ptr<Scrollbar> scrollbar, int scroll_layer_id);
+  PaintedScrollbarLayer(std::unique_ptr<Scrollbar> scrollbar,
+                        int scroll_layer_id);
   ~PaintedScrollbarLayer() override;
 
   // For unit tests
@@ -77,7 +78,7 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
                                           const gfx::Rect& content_rect,
                                           ScrollbarPart part);
 
-  scoped_ptr<Scrollbar> scrollbar_;
+  std::unique_ptr<Scrollbar> scrollbar_;
   int scroll_layer_id_;
 
   float internal_contents_scale_;
@@ -92,8 +93,8 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
   bool is_overlay_;
   bool has_thumb_;
 
-  scoped_ptr<ScopedUIResource> track_resource_;
-  scoped_ptr<ScopedUIResource> thumb_resource_;
+  std::unique_ptr<ScopedUIResource> track_resource_;
+  std::unique_ptr<ScopedUIResource> thumb_resource_;
 
   float thumb_opacity_;
 

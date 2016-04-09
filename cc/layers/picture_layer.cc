@@ -31,7 +31,7 @@ PictureLayer::PictureLayer(ContentLayerClient* client)
       nearest_neighbor_(false) {}
 
 PictureLayer::PictureLayer(ContentLayerClient* client,
-                           scoped_ptr<RecordingSource> source)
+                           std::unique_ptr<RecordingSource> source)
     : PictureLayer(client) {
   recording_source_ = std::move(source);
 }
@@ -39,7 +39,8 @@ PictureLayer::PictureLayer(ContentLayerClient* client,
 PictureLayer::~PictureLayer() {
 }
 
-scoped_ptr<LayerImpl> PictureLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
+std::unique_ptr<LayerImpl> PictureLayer::CreateLayerImpl(
+    LayerTreeImpl* tree_impl) {
   return PictureLayerImpl::Create(tree_impl, id(), is_mask_);
 }
 
@@ -135,7 +136,7 @@ sk_sp<SkPicture> PictureLayer::GetPicture() const {
     return nullptr;
 
   gfx::Size layer_size = bounds();
-  scoped_ptr<RecordingSource> recording_source(new RecordingSource);
+  std::unique_ptr<RecordingSource> recording_source(new RecordingSource);
   Region recording_invalidation;
   recording_source->UpdateAndExpandInvalidation(
       client_, &recording_invalidation, layer_size, update_source_frame_number_,

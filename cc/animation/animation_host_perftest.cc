@@ -114,7 +114,7 @@ class AnimationHostPerfTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
+  std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
   scoped_refptr<Layer> root_layer_;
   LayerImpl* root_layer_impl_;
 

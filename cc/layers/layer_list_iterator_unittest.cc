@@ -4,8 +4,9 @@
 
 #include "cc/layers/layer_list_iterator.h"
 
+#include <memory>
+
 #include "base/containers/adapters.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
@@ -22,7 +23,7 @@ TEST(LayerListIteratorTest, VerifyTraversalOrder) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
+  std::unique_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
   host_impl.SetVisible(true);
@@ -37,13 +38,20 @@ TEST(LayerListIteratorTest, VerifyTraversalOrder) {
   //   +-6
   //   +-7
   // We expect to visit all seven layers in that order.
-  scoped_ptr<LayerImpl> layer1 = LayerImpl::Create(host_impl.active_tree(), 1);
-  scoped_ptr<LayerImpl> layer2 = LayerImpl::Create(host_impl.active_tree(), 2);
-  scoped_ptr<LayerImpl> layer3 = LayerImpl::Create(host_impl.active_tree(), 3);
-  scoped_ptr<LayerImpl> layer4 = LayerImpl::Create(host_impl.active_tree(), 4);
-  scoped_ptr<LayerImpl> layer5 = LayerImpl::Create(host_impl.active_tree(), 5);
-  scoped_ptr<LayerImpl> layer6 = LayerImpl::Create(host_impl.active_tree(), 6);
-  scoped_ptr<LayerImpl> layer7 = LayerImpl::Create(host_impl.active_tree(), 7);
+  std::unique_ptr<LayerImpl> layer1 =
+      LayerImpl::Create(host_impl.active_tree(), 1);
+  std::unique_ptr<LayerImpl> layer2 =
+      LayerImpl::Create(host_impl.active_tree(), 2);
+  std::unique_ptr<LayerImpl> layer3 =
+      LayerImpl::Create(host_impl.active_tree(), 3);
+  std::unique_ptr<LayerImpl> layer4 =
+      LayerImpl::Create(host_impl.active_tree(), 4);
+  std::unique_ptr<LayerImpl> layer5 =
+      LayerImpl::Create(host_impl.active_tree(), 5);
+  std::unique_ptr<LayerImpl> layer6 =
+      LayerImpl::Create(host_impl.active_tree(), 6);
+  std::unique_ptr<LayerImpl> layer7 =
+      LayerImpl::Create(host_impl.active_tree(), 7);
 
   layer2->AddChild(std::move(layer3));
   layer2->AddChild(std::move(layer4));
@@ -68,14 +76,15 @@ TEST(LayerListIteratorTest, VerifySingleLayer) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
+  std::unique_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
   host_impl.SetVisible(true);
   EXPECT_TRUE(host_impl.InitializeRenderer(output_surface.get()));
 
   // This test constructs a tree consisting of a single layer.
-  scoped_ptr<LayerImpl> layer1 = LayerImpl::Create(host_impl.active_tree(), 1);
+  std::unique_ptr<LayerImpl> layer1 =
+      LayerImpl::Create(host_impl.active_tree(), 1);
   host_impl.active_tree()->SetRootLayer(std::move(layer1));
 
   int i = 1;
@@ -102,7 +111,7 @@ TEST(LayerListReverseIteratorTest, VerifyTraversalOrder) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
+  std::unique_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
   host_impl.SetVisible(true);
@@ -117,13 +126,20 @@ TEST(LayerListReverseIteratorTest, VerifyTraversalOrder) {
   //   +-6
   //   +-7
   // We expect to visit all seven layers in reverse order.
-  scoped_ptr<LayerImpl> layer1 = LayerImpl::Create(host_impl.active_tree(), 1);
-  scoped_ptr<LayerImpl> layer2 = LayerImpl::Create(host_impl.active_tree(), 2);
-  scoped_ptr<LayerImpl> layer3 = LayerImpl::Create(host_impl.active_tree(), 3);
-  scoped_ptr<LayerImpl> layer4 = LayerImpl::Create(host_impl.active_tree(), 4);
-  scoped_ptr<LayerImpl> layer5 = LayerImpl::Create(host_impl.active_tree(), 5);
-  scoped_ptr<LayerImpl> layer6 = LayerImpl::Create(host_impl.active_tree(), 6);
-  scoped_ptr<LayerImpl> layer7 = LayerImpl::Create(host_impl.active_tree(), 7);
+  std::unique_ptr<LayerImpl> layer1 =
+      LayerImpl::Create(host_impl.active_tree(), 1);
+  std::unique_ptr<LayerImpl> layer2 =
+      LayerImpl::Create(host_impl.active_tree(), 2);
+  std::unique_ptr<LayerImpl> layer3 =
+      LayerImpl::Create(host_impl.active_tree(), 3);
+  std::unique_ptr<LayerImpl> layer4 =
+      LayerImpl::Create(host_impl.active_tree(), 4);
+  std::unique_ptr<LayerImpl> layer5 =
+      LayerImpl::Create(host_impl.active_tree(), 5);
+  std::unique_ptr<LayerImpl> layer6 =
+      LayerImpl::Create(host_impl.active_tree(), 6);
+  std::unique_ptr<LayerImpl> layer7 =
+      LayerImpl::Create(host_impl.active_tree(), 7);
 
   layer2->AddChild(std::move(layer3));
   layer2->AddChild(std::move(layer4));
@@ -150,14 +166,15 @@ TEST(LayerListReverseIteratorTest, VerifySingleLayer) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
+  std::unique_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
   host_impl.SetVisible(true);
   EXPECT_TRUE(host_impl.InitializeRenderer(output_surface.get()));
 
   // This test constructs a tree consisting of a single layer.
-  scoped_ptr<LayerImpl> layer1 = LayerImpl::Create(host_impl.active_tree(), 1);
+  std::unique_ptr<LayerImpl> layer1 =
+      LayerImpl::Create(host_impl.active_tree(), 1);
   host_impl.active_tree()->SetRootLayer(std::move(layer1));
 
   int i = 1;

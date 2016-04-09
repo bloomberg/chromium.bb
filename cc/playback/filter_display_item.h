@@ -7,7 +7,9 @@
 
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/filter_operations.h"
 #include "cc/playback/display_item.h"
@@ -50,8 +52,8 @@ class CC_EXPORT EndFilterDisplayItem : public DisplayItem {
   explicit EndFilterDisplayItem(const proto::DisplayItem& proto);
   ~EndFilterDisplayItem() override;
 
-  static scoped_ptr<EndFilterDisplayItem> Create() {
-    return make_scoped_ptr(new EndFilterDisplayItem());
+  static std::unique_ptr<EndFilterDisplayItem> Create() {
+    return base::WrapUnique(new EndFilterDisplayItem());
   }
 
   void ToProtobuf(proto::DisplayItem* proto,

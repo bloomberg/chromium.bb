@@ -80,7 +80,7 @@ HeadsUpDisplayLayerImpl::HeadsUpDisplayLayerImpl(LayerTreeImpl* tree_impl,
 
 HeadsUpDisplayLayerImpl::~HeadsUpDisplayLayerImpl() {}
 
-scoped_ptr<LayerImpl> HeadsUpDisplayLayerImpl::CreateLayerImpl(
+std::unique_ptr<LayerImpl> HeadsUpDisplayLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return HeadsUpDisplayLayerImpl::Create(tree_impl, id());
 }
@@ -94,7 +94,7 @@ void HeadsUpDisplayLayerImpl::AcquireResource(
     }
   }
 
-  scoped_ptr<ScopedResource> resource =
+  std::unique_ptr<ScopedResource> resource =
       ScopedResource::Create(resource_provider);
   resource->Allocate(internal_content_bounds_,
                      ResourceProvider::TEXTURE_HINT_IMMUTABLE,
@@ -106,7 +106,7 @@ void HeadsUpDisplayLayerImpl::ReleaseUnmatchedSizeResources(
     ResourceProvider* resource_provider) {
   auto it_erase =
       std::remove_if(resources_.begin(), resources_.end(),
-                     [this](const scoped_ptr<ScopedResource>& resource) {
+                     [this](const std::unique_ptr<ScopedResource>& resource) {
                        return internal_content_bounds_ != resource->size();
                      });
   resources_.erase(it_erase, resources_.end());

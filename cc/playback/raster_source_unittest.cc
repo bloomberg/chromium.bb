@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/playback/raster_source.h"
+
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
-#include "cc/playback/raster_source.h"
+#include <memory>
+
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/skia_common.h"
 #include "skia/ext/refptr.h"
@@ -21,7 +23,7 @@ namespace {
 TEST(RasterSourceTest, AnalyzeIsSolidUnscaled) {
   gfx::Size layer_bounds(400, 400);
 
-  scoped_ptr<FakeRecordingSource> recording_source =
+  std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
 
   SkPaint solid_paint;
@@ -92,7 +94,7 @@ TEST(RasterSourceTest, AnalyzeIsSolidUnscaled) {
 TEST(RasterSourceTest, AnalyzeIsSolidScaled) {
   gfx::Size layer_bounds(400, 400);
 
-  scoped_ptr<FakeRecordingSource> recording_source =
+  std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
 
   SkColor solid_color = SkColorSetARGB(255, 12, 23, 34);
@@ -163,7 +165,7 @@ TEST(RasterSourceTest, AnalyzeIsSolidScaled) {
 TEST(RasterSourceTest, AnalyzeIsSolidEmpty) {
   gfx::Size layer_bounds(400, 400);
 
-  scoped_ptr<FakeRecordingSource> recording_source =
+  std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->Rerecord();
 
@@ -181,7 +183,7 @@ TEST(RasterSourceTest, AnalyzeIsSolidEmpty) {
 TEST(RasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
   gfx::Size layer_bounds(512, 512);
 
-  scoped_ptr<FakeRecordingSource> recording_source =
+  std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
 
   skia::RefPtr<SkImage> discardable_image[2][2];
@@ -245,7 +247,7 @@ TEST(RasterSourceTest, RasterFullContents) {
   float contents_scale = 1.5f;
   float raster_divisions = 2.f;
 
-  scoped_ptr<FakeRecordingSource> recording_source =
+  std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->SetBackgroundColor(SK_ColorBLACK);
   recording_source->SetClearCanvasWithDebugColor(false);
@@ -311,7 +313,7 @@ TEST(RasterSourceTest, RasterPartialContents) {
   gfx::Size layer_bounds(3, 5);
   float contents_scale = 1.5f;
 
-  scoped_ptr<FakeRecordingSource> recording_source =
+  std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->SetBackgroundColor(SK_ColorGREEN);
   recording_source->SetClearCanvasWithDebugColor(false);
@@ -403,7 +405,7 @@ TEST(RasterSourceTest, RasterPartialClear) {
   gfx::Size partial_bounds(2, 4);
   float contents_scale = 1.5f;
 
-  scoped_ptr<FakeRecordingSource> recording_source =
+  std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->SetBackgroundColor(SK_ColorGREEN);
   recording_source->SetRequiresClear(true);
@@ -449,7 +451,7 @@ TEST(RasterSourceTest, RasterPartialClear) {
     }
   }
 
-  scoped_ptr<FakeRecordingSource> recording_source_light =
+  std::unique_ptr<FakeRecordingSource> recording_source_light =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source_light->SetBackgroundColor(SK_ColorGREEN);
   recording_source_light->SetRequiresClear(true);
@@ -492,7 +494,7 @@ TEST(RasterSourceTest, RasterContentsTransparent) {
   gfx::Size layer_bounds(5, 3);
   float contents_scale = 0.5f;
 
-  scoped_ptr<FakeRecordingSource> recording_source =
+  std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->SetBackgroundColor(SK_ColorTRANSPARENT);
   recording_source->SetRequiresClear(true);
@@ -524,7 +526,7 @@ TEST(RasterSourceTest, RasterContentsTransparent) {
 TEST(RasterSourceTest, GetPictureMemoryUsageIncludesClientReportedMemory) {
   const size_t kReportedMemoryUsageInBytes = 100 * 1024 * 1024;
   gfx::Size layer_bounds(5, 3);
-  scoped_ptr<FakeRecordingSource> recording_source =
+  std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->set_reported_memory_usage(kReportedMemoryUsageInBytes);
   recording_source->Rerecord();

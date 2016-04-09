@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/context_provider.h"
@@ -20,12 +21,12 @@
 
 namespace cc {
 
-scoped_ptr<DelegatingRenderer> DelegatingRenderer::Create(
+std::unique_ptr<DelegatingRenderer> DelegatingRenderer::Create(
     RendererClient* client,
     const RendererSettings* settings,
     OutputSurface* output_surface,
     ResourceProvider* resource_provider) {
-  return make_scoped_ptr(new DelegatingRenderer(
+  return base::WrapUnique(new DelegatingRenderer(
       client, settings, output_surface, resource_provider));
 }
 
@@ -81,7 +82,7 @@ void DelegatingRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
 
   DCHECK(!delegated_frame_data_);
 
-  delegated_frame_data_ = make_scoped_ptr(new DelegatedFrameData);
+  delegated_frame_data_ = base::WrapUnique(new DelegatedFrameData);
   DelegatedFrameData& out_data = *delegated_frame_data_;
   out_data.device_scale_factor = device_scale_factor;
   // Move the render passes and resources into the |out_frame|.

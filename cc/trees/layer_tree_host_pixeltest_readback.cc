@@ -60,8 +60,8 @@ class LayerTreeHostReadbackPixelTest
     RunPixelTestWithReadbackTarget(type, content_root, target, file_name);
   }
 
-  scoped_ptr<CopyOutputRequest> CreateCopyOutputRequest() override {
-    scoped_ptr<CopyOutputRequest> request;
+  std::unique_ptr<CopyOutputRequest> CreateCopyOutputRequest() override {
+    std::unique_ptr<CopyOutputRequest> request;
 
     if (readback_type_ == READBACK_BITMAP) {
       request = CopyOutputRequest::CreateBitmapRequest(
@@ -104,24 +104,24 @@ class LayerTreeHostReadbackPixelTest
     }
   }
 
-  void ReadbackResultAsBitmap(scoped_ptr<CopyOutputResult> result) {
+  void ReadbackResultAsBitmap(std::unique_ptr<CopyOutputResult> result) {
     EXPECT_TRUE(task_runner_provider()->IsMainThread());
     EXPECT_TRUE(result->HasBitmap());
     result_bitmap_ = result->TakeBitmap();
     EndTest();
   }
 
-  void ReadbackResultAsTexture(scoped_ptr<CopyOutputResult> result) {
+  void ReadbackResultAsTexture(std::unique_ptr<CopyOutputResult> result) {
     EXPECT_TRUE(task_runner_provider()->IsMainThread());
     EXPECT_TRUE(result->HasTexture());
 
     TextureMailbox texture_mailbox;
-    scoped_ptr<SingleReleaseCallback> release_callback;
+    std::unique_ptr<SingleReleaseCallback> release_callback;
     result->TakeTexture(&texture_mailbox, &release_callback);
     EXPECT_TRUE(texture_mailbox.IsValid());
     EXPECT_TRUE(texture_mailbox.IsTexture());
 
-    scoped_ptr<SkBitmap> bitmap =
+    std::unique_ptr<SkBitmap> bitmap =
         CopyTextureMailboxToBitmap(result->size(), texture_mailbox);
     release_callback->Run(gpu::SyncToken(), false);
 
@@ -134,8 +134,7 @@ class LayerTreeHostReadbackPixelTest
   int insert_copy_request_after_frame_count_;
 };
 
-void IgnoreReadbackResult(scoped_ptr<CopyOutputResult> result) {
-}
+void IgnoreReadbackResult(std::unique_ptr<CopyOutputResult> result) {}
 
 TEST_P(LayerTreeHostReadbackPixelTest, ReadbackRootLayer) {
   scoped_refptr<SolidColorLayer> background =

@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/animation/animation_curve.h"
@@ -32,15 +33,16 @@ static_assert(static_cast<int>(cc::Animation::LAST_RUN_STATE) + 1 ==
 
 namespace cc {
 
-scoped_ptr<Animation> Animation::Create(scoped_ptr<AnimationCurve> curve,
-                                        int animation_id,
-                                        int group_id,
-                                        TargetProperty::Type target_property) {
-  return make_scoped_ptr(
+std::unique_ptr<Animation> Animation::Create(
+    std::unique_ptr<AnimationCurve> curve,
+    int animation_id,
+    int group_id,
+    TargetProperty::Type target_property) {
+  return base::WrapUnique(
       new Animation(std::move(curve), animation_id, group_id, target_property));
 }
 
-Animation::Animation(scoped_ptr<AnimationCurve> curve,
+Animation::Animation(std::unique_ptr<AnimationCurve> curve,
                      int animation_id,
                      int group_id,
                      TargetProperty::Type target_property)
@@ -238,9 +240,9 @@ base::TimeDelta Animation::TrimTimeToCurrentIteration(
   return iteration_time;
 }
 
-scoped_ptr<Animation> Animation::CloneAndInitialize(
+std::unique_ptr<Animation> Animation::CloneAndInitialize(
     RunState initial_run_state) const {
-  scoped_ptr<Animation> to_return(
+  std::unique_ptr<Animation> to_return(
       new Animation(curve_->Clone(), id_, group_, target_property_));
   to_return->run_state_ = initial_run_state;
   to_return->iterations_ = iterations_;

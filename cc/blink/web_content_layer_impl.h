@@ -7,8 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/blink/cc_blink_export.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/content_layer_client.h"
@@ -43,7 +44,7 @@ class WebContentLayerImpl : public blink::WebContentLayer,
   bool FillsBoundsCompletely() const override;
   size_t GetApproximateUnsharedMemoryUsage() const override;
 
-  scoped_ptr<WebLayerImpl> layer_;
+  std::unique_ptr<WebLayerImpl> layer_;
   blink::WebContentLayerClient* client_;
 
  private:

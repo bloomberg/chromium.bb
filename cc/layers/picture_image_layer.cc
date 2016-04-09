@@ -27,7 +27,7 @@ PictureImageLayer::~PictureImageLayer() {
   ClearClient();
 }
 
-scoped_ptr<LayerImpl> PictureImageLayer::CreateLayerImpl(
+std::unique_ptr<LayerImpl> PictureImageLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return PictureImageLayerImpl::Create(tree_impl, id(), is_mask());
 }

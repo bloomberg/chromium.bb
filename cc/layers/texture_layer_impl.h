@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer_impl.h"
 
@@ -18,12 +19,13 @@ class ScopedResource;
 
 class CC_EXPORT TextureLayerImpl : public LayerImpl {
  public:
-  static scoped_ptr<TextureLayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
-    return make_scoped_ptr(new TextureLayerImpl(tree_impl, id));
+  static std::unique_ptr<TextureLayerImpl> Create(LayerTreeImpl* tree_impl,
+                                                  int id) {
+    return base::WrapUnique(new TextureLayerImpl(tree_impl, id));
   }
   ~TextureLayerImpl() override;
 
-  scoped_ptr<LayerImpl> CreateLayerImpl(
+  std::unique_ptr<LayerImpl> CreateLayerImpl(
       LayerTreeImpl* layer_tree_impl) override;
   void PushPropertiesTo(LayerImpl* layer) override;
 
@@ -52,7 +54,7 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
 
   void SetTextureMailbox(
       const TextureMailbox& mailbox,
-      scoped_ptr<SingleReleaseCallbackImpl> release_callback);
+      std::unique_ptr<SingleReleaseCallbackImpl> release_callback);
 
  private:
   TextureLayerImpl(LayerTreeImpl* tree_impl, int id);
@@ -69,10 +71,10 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   gfx::PointF uv_bottom_right_;
   float vertex_opacity_[4];
   // This is a resource that's a GL copy of a software texture mailbox.
-  scoped_ptr<ScopedResource> texture_copy_;
+  std::unique_ptr<ScopedResource> texture_copy_;
 
   TextureMailbox texture_mailbox_;
-  scoped_ptr<SingleReleaseCallbackImpl> release_callback_;
+  std::unique_ptr<SingleReleaseCallbackImpl> release_callback_;
   bool own_mailbox_;
   bool valid_texture_copy_;
 

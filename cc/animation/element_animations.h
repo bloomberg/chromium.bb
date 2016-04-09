@@ -5,10 +5,11 @@
 #ifndef CC_ANIMATION_ELEMENT_ANIMATIONS_H_
 #define CC_ANIMATION_ELEMENT_ANIMATIONS_H_
 
+#include <memory>
+
 #include "base/containers/linked_list.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/layer_animation_controller.h"
@@ -38,7 +39,7 @@ enum class LayerTreeType;
 class CC_EXPORT ElementAnimations : public AnimationDelegate,
                                     public LayerAnimationValueProvider {
  public:
-  static scoped_ptr<ElementAnimations> Create(AnimationHost* host);
+  static std::unique_ptr<ElementAnimations> Create(AnimationHost* host);
   ~ElementAnimations() override;
 
   int layer_id() const {
@@ -108,16 +109,16 @@ class CC_EXPORT ElementAnimations : public AnimationDelegate,
   void NotifyAnimationTakeover(base::TimeTicks monotonic_time,
                                TargetProperty::Type target_property,
                                double animation_start_time,
-                               scoped_ptr<AnimationCurve> curve) override;
+                               std::unique_ptr<AnimationCurve> curve) override;
 
   // LayerAnimationValueProvider implementation.
   gfx::ScrollOffset ScrollOffsetForAnimation() const override;
 
-  scoped_ptr<PlayersList> players_list_;
+  std::unique_ptr<PlayersList> players_list_;
 
   class ValueObserver;
-  scoped_ptr<ValueObserver> active_value_observer_;
-  scoped_ptr<ValueObserver> pending_value_observer_;
+  std::unique_ptr<ValueObserver> active_value_observer_;
+  std::unique_ptr<ValueObserver> pending_value_observer_;
 
   // LAC is owned by ElementAnimations (1:1 relationship).
   scoped_refptr<LayerAnimationController> layer_animation_controller_;

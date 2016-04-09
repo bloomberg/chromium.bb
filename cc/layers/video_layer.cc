@@ -22,7 +22,8 @@ VideoLayer::VideoLayer(VideoFrameProvider* provider,
 
 VideoLayer::~VideoLayer() {}
 
-scoped_ptr<LayerImpl> VideoLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
+std::unique_ptr<LayerImpl> VideoLayer::CreateLayerImpl(
+    LayerTreeImpl* tree_impl) {
   return VideoLayerImpl::Create(tree_impl, id(), provider_, video_rotation_);
 }
 

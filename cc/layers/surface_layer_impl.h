@@ -5,8 +5,10 @@
 #ifndef CC_LAYERS_SURFACE_LAYER_IMPL_H_
 #define CC_LAYERS_SURFACE_LAYER_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/surfaces/surface_id.h"
@@ -15,8 +17,9 @@ namespace cc {
 
 class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
  public:
-  static scoped_ptr<SurfaceLayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
-    return make_scoped_ptr(new SurfaceLayerImpl(tree_impl, id));
+  static std::unique_ptr<SurfaceLayerImpl> Create(LayerTreeImpl* tree_impl,
+                                                  int id) {
+    return base::WrapUnique(new SurfaceLayerImpl(tree_impl, id));
   }
   ~SurfaceLayerImpl() override;
 
@@ -26,7 +29,7 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   SurfaceId surface_id() const { return surface_id_; }
 
   // LayerImpl overrides.
-  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void PushPropertiesTo(LayerImpl* layer) override;
   void AppendQuads(RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;

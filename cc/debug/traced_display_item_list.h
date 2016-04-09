@@ -5,11 +5,11 @@
 #ifndef CC_DEBUG_TRACED_DISPLAY_ITEM_LIST_H_
 #define CC_DEBUG_TRACED_DISPLAY_ITEM_LIST_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/debug/traced_value.h"
 
@@ -20,10 +20,10 @@ class DisplayItemList;
 class TracedDisplayItemList
     : public base::trace_event::ConvertableToTraceFormat {
  public:
-  static scoped_ptr<ConvertableToTraceFormat> AsTraceableDisplayItemList(
+  static std::unique_ptr<ConvertableToTraceFormat> AsTraceableDisplayItemList(
       scoped_refptr<const DisplayItemList> list,
       bool include_items) {
-    return scoped_ptr<ConvertableToTraceFormat>(
+    return std::unique_ptr<ConvertableToTraceFormat>(
         new TracedDisplayItemList(list, include_items));
   }
   void AppendAsTraceFormat(std::string* out) const override;

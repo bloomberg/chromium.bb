@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "cc/animation/timing_function.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -43,13 +44,13 @@ namespace cc {
 using base::TimeTicks;
 using base::TimeDelta;
 
-scoped_ptr<PageScaleAnimation> PageScaleAnimation::Create(
+std::unique_ptr<PageScaleAnimation> PageScaleAnimation::Create(
     const gfx::Vector2dF& start_scroll_offset,
     float start_page_scale_factor,
     const gfx::SizeF& viewport_size,
     const gfx::SizeF& root_layer_size,
-    scoped_ptr<TimingFunction> timing_function) {
-  return make_scoped_ptr(new PageScaleAnimation(
+    std::unique_ptr<TimingFunction> timing_function) {
+  return base::WrapUnique(new PageScaleAnimation(
       start_scroll_offset, start_page_scale_factor, viewport_size,
       root_layer_size, std::move(timing_function)));
 }
@@ -59,7 +60,7 @@ PageScaleAnimation::PageScaleAnimation(
     float start_page_scale_factor,
     const gfx::SizeF& viewport_size,
     const gfx::SizeF& root_layer_size,
-    scoped_ptr<TimingFunction> timing_function)
+    std::unique_ptr<TimingFunction> timing_function)
     : start_page_scale_factor_(start_page_scale_factor),
       target_page_scale_factor_(0.f),
       start_scroll_offset_(start_scroll_offset),

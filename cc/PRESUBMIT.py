@@ -152,7 +152,7 @@ def CheckDoubleAngles(input_api, output_api, white_list=CC_SOURCE_FILES,
     return [output_api.PresubmitError('Use >> instead of > >:', items=errors)]
   return []
 
-def CheckScopedPtr(input_api, output_api,
+def CheckUniquePtr(input_api, output_api,
                    white_list=CC_SOURCE_FILES, black_list=None):
   black_list = tuple(black_list or input_api.DEFAULT_BLACK_LIST)
   source_file_filter = lambda x: input_api.FilterSourceFile(x,
@@ -162,20 +162,20 @@ def CheckScopedPtr(input_api, output_api,
   for f in input_api.AffectedSourceFiles(source_file_filter):
     for line_number, line in f.ChangedContents():
       # Disallow:
-      # return scoped_ptr<T>(foo);
-      # bar = scoped_ptr<T>(foo);
+      # return std::unique_ptr<T>(foo);
+      # bar = std::unique_ptr<T>(foo);
       # But allow:
-      # return scoped_ptr<T[]>(foo);
-      # bar = scoped_ptr<T[]>(foo);
-      if re.search(r'(=|\breturn)\s*scoped_ptr<.*?(?<!])>\([^)]+\)', line):
+      # return std::unique_ptr<T[]>(foo);
+      # bar = std::unique_ptr<T[]>(foo);
+      if re.search(r'(=|\breturn)\s*std::unique_ptr<.*?(?<!])>\([^)]+\)', line):
         errors.append(output_api.PresubmitError(
-          ('%s:%d uses explicit scoped_ptr constructor. ' +
-           'Use make_scoped_ptr() instead.') % (f.LocalPath(), line_number)))
+          ('%s:%d uses explicit std::unique_ptr constructor. ' +
+           'Use base::WrapUnique() instead.') % (f.LocalPath(), line_number)))
       # Disallow:
-      # scoped_ptr<T>()
-      if re.search(r'\bscoped_ptr<.*?>\(\)', line):
+      # std::unique_ptr<T>()
+      if re.search(r'\bstd::unique_ptr<.*?>\(\)', line):
         errors.append(output_api.PresubmitError(
-          '%s:%d uses scoped_ptr<T>(). Use nullptr instead.' %
+          '%s:%d uses std::unique_ptr<T>(). Use nullptr instead.' %
           (f.LocalPath(), line_number)))
   return errors
 
@@ -318,7 +318,7 @@ def CheckChangeOnUpload(input_api, output_api):
   results += CheckChangeLintsClean(input_api, output_api)
   results += CheckTodos(input_api, output_api)
   results += CheckDoubleAngles(input_api, output_api)
-  results += CheckScopedPtr(input_api, output_api)
+  results += CheckUniquePtr(input_api, output_api)
   results += CheckNamespace(input_api, output_api)
   results += CheckForUseOfWrongClock(input_api, output_api)
   results += FindUselessIfdefs(input_api, output_api)

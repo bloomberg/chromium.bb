@@ -5,8 +5,9 @@
 #ifndef CC_TEST_CC_TEST_SUITE_H_
 #define CC_TEST_CC_TEST_SUITE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/test_discardable_memory_allocator.h"
 #include "base/test/test_suite.h"
 
@@ -27,7 +28,7 @@ class CCTestSuite : public base::TestSuite {
   void Shutdown() override;
 
  private:
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 
   base::TestDiscardableMemoryAllocator discardable_memory_allocator_;
   DISALLOW_COPY_AND_ASSIGN(CCTestSuite);

@@ -4,6 +4,7 @@
 
 #include "cc/test/fake_scoped_ui_resource.h"
 
+#include "base/memory/ptr_util.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {
@@ -17,9 +18,9 @@ UIResourceBitmap CreateMockUIResourceBitmap() {
 
 }  // anonymous namespace
 
-scoped_ptr<FakeScopedUIResource> FakeScopedUIResource::Create(
+std::unique_ptr<FakeScopedUIResource> FakeScopedUIResource::Create(
     LayerTreeHost* host) {
-  return make_scoped_ptr(new FakeScopedUIResource(host));
+  return base::WrapUnique(new FakeScopedUIResource(host));
 }
 
 FakeScopedUIResource::FakeScopedUIResource(LayerTreeHost* host)

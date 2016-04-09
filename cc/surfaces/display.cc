@@ -54,7 +54,7 @@ Display::~Display() {
   }
 }
 
-bool Display::Initialize(scoped_ptr<OutputSurface> output_surface,
+bool Display::Initialize(std::unique_ptr<OutputSurface> output_surface,
                          DisplayScheduler* scheduler) {
   // TODO(enne): register/unregister BeginFrameSource with SurfaceManager here.
   output_surface_ = std::move(output_surface);
@@ -105,25 +105,26 @@ void Display::InitializeRenderer() {
   if (resource_provider_)
     return;
 
-  scoped_ptr<ResourceProvider> resource_provider = ResourceProvider::Create(
-      output_surface_.get(), bitmap_manager_, gpu_memory_buffer_manager_,
-      nullptr, settings_.highp_threshold_min,
-      settings_.texture_id_allocation_chunk_size,
-      settings_.use_gpu_memory_buffer_resources,
-      std::vector<unsigned>(static_cast<size_t>(gfx::BufferFormat::LAST) + 1,
-                            GL_TEXTURE_2D));
+  std::unique_ptr<ResourceProvider> resource_provider =
+      ResourceProvider::Create(
+          output_surface_.get(), bitmap_manager_, gpu_memory_buffer_manager_,
+          nullptr, settings_.highp_threshold_min,
+          settings_.texture_id_allocation_chunk_size,
+          settings_.use_gpu_memory_buffer_resources,
+          std::vector<unsigned>(
+              static_cast<size_t>(gfx::BufferFormat::LAST) + 1, GL_TEXTURE_2D));
   if (!resource_provider)
     return;
 
   if (output_surface_->context_provider()) {
-    scoped_ptr<GLRenderer> renderer = GLRenderer::Create(
+    std::unique_ptr<GLRenderer> renderer = GLRenderer::Create(
         this, &settings_, output_surface_.get(), resource_provider.get(),
         texture_mailbox_deleter_.get(), settings_.highp_threshold_min);
     if (!renderer)
       return;
     renderer_ = std::move(renderer);
   } else {
-    scoped_ptr<SoftwareRenderer> renderer = SoftwareRenderer::Create(
+    std::unique_ptr<SoftwareRenderer> renderer = SoftwareRenderer::Create(
         this, &settings_, output_surface_.get(), resource_provider.get());
     if (!renderer)
       return;
@@ -168,7 +169,7 @@ bool Display::DrawAndSwap() {
     return false;
   }
 
-  scoped_ptr<CompositorFrame> frame =
+  std::unique_ptr<CompositorFrame> frame =
       aggregator_->Aggregate(current_surface_id_);
   if (!frame) {
     TRACE_EVENT_INSTANT0("cc", "Empty aggregated frame.",

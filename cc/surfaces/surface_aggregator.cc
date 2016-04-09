@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
@@ -30,8 +31,9 @@ namespace {
 
 void MoveMatchingRequests(
     RenderPassId id,
-    std::multimap<RenderPassId, scoped_ptr<CopyOutputRequest>>* copy_requests,
-    std::vector<scoped_ptr<CopyOutputRequest>>* output_requests) {
+    std::multimap<RenderPassId, std::unique_ptr<CopyOutputRequest>>*
+        copy_requests,
+    std::vector<std::unique_ptr<CopyOutputRequest>>* output_requests) {
   auto request_range = copy_requests->equal_range(id);
   for (auto it = request_range.first; it != request_range.second; ++it) {
     DCHECK(it->second);
@@ -120,7 +122,7 @@ static void UnrefHelper(base::WeakPtr<SurfaceFactory> surface_factory,
 
 RenderPassId SurfaceAggregator::RemapPassId(RenderPassId surface_local_pass_id,
                                             SurfaceId surface_id) {
-  scoped_ptr<RenderPassIdAllocator>& allocator =
+  std::unique_ptr<RenderPassIdAllocator>& allocator =
       render_pass_allocator_map_[surface_id];
   if (!allocator)
     allocator.reset(new RenderPassIdAllocator(&next_render_pass_id_));
@@ -181,7 +183,7 @@ void SurfaceAggregator::HandleSurfaceQuad(
   if (!frame_data)
     return;
 
-  std::multimap<RenderPassId, scoped_ptr<CopyOutputRequest>> copy_requests;
+  std::multimap<RenderPassId, std::unique_ptr<CopyOutputRequest>> copy_requests;
   surface->TakeCopyOutputRequests(&copy_requests);
 
   const RenderPassList& render_pass_list = frame_data->render_pass_list;
@@ -209,7 +211,8 @@ void SurfaceAggregator::HandleSurfaceQuad(
 
     size_t sqs_size = source.shared_quad_state_list.size();
     size_t dq_size = source.quad_list.size();
-    scoped_ptr<RenderPass> copy_pass(RenderPass::Create(sqs_size, dq_size));
+    std::unique_ptr<RenderPass> copy_pass(
+        RenderPass::Create(sqs_size, dq_size));
 
     RenderPassId remapped_pass_id = RemapPassId(source.id, surface_id);
 
@@ -424,7 +427,7 @@ void SurfaceAggregator::CopyPasses(const DelegatedFrameData* frame_data,
                                    Surface* surface) {
   // The root surface is allowed to have copy output requests, so grab them
   // off its render passes.
-  std::multimap<RenderPassId, scoped_ptr<CopyOutputRequest>> copy_requests;
+  std::multimap<RenderPassId, std::unique_ptr<CopyOutputRequest>> copy_requests;
   surface->TakeCopyOutputRequests(&copy_requests);
 
   const RenderPassList& source_pass_list = frame_data->render_pass_list;
@@ -443,7 +446,8 @@ void SurfaceAggregator::CopyPasses(const DelegatedFrameData* frame_data,
 
     size_t sqs_size = source.shared_quad_state_list.size();
     size_t dq_size = source.quad_list.size();
-    scoped_ptr<RenderPass> copy_pass(RenderPass::Create(sqs_size, dq_size));
+    std::unique_ptr<RenderPass> copy_pass(
+        RenderPass::Create(sqs_size, dq_size));
 
     MoveMatchingRequests(source.id, &copy_requests, &copy_pass->copy_requests);
 
@@ -643,7 +647,8 @@ void SurfaceAggregator::CopyUndrawnSurfaces(PrewalkResult* prewalk_result) {
   }
 }
 
-scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(SurfaceId surface_id) {
+std::unique_ptr<CompositorFrame> SurfaceAggregator::Aggregate(
+    SurfaceId surface_id) {
   Surface* surface = manager_->GetSurfaceForId(surface_id);
   DCHECK(surface);
   contained_surfaces_[surface_id] = surface->frame_index();
@@ -652,8 +657,8 @@ scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(SurfaceId surface_id) {
     return nullptr;
   TRACE_EVENT0("cc", "SurfaceAggregator::Aggregate");
 
-  scoped_ptr<CompositorFrame> frame(new CompositorFrame);
-  frame->delegated_frame_data = make_scoped_ptr(new DelegatedFrameData);
+  std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
+  frame->delegated_frame_data = base::WrapUnique(new DelegatedFrameData);
 
   DCHECK(root_surface_frame->delegated_frame_data);
 

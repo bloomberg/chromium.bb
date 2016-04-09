@@ -7,8 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/debug/ring_buffer.h"
 
@@ -18,7 +19,7 @@ namespace cc {
 // intelligently compute average frames per second.
 class FrameRateCounter {
  public:
-  static scoped_ptr<FrameRateCounter> Create(bool has_impl_thread);
+  static std::unique_ptr<FrameRateCounter> Create(bool has_impl_thread);
 
   size_t current_frame_number() const { return ring_buffer_.CurrentIndex(); }
   int dropped_frame_count() const { return dropped_frame_count_; }

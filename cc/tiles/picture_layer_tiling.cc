@@ -13,6 +13,7 @@
 
 #include "base/containers/small_map.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -35,7 +36,7 @@ const float kMaxSoonBorderDistanceInScreenPixels = 312.f;
 
 }  // namespace
 
-scoped_ptr<PictureLayerTiling> PictureLayerTiling::Create(
+std::unique_ptr<PictureLayerTiling> PictureLayerTiling::Create(
     WhichTree tree,
     float contents_scale,
     scoped_refptr<RasterSource> raster_source,
@@ -43,7 +44,7 @@ scoped_ptr<PictureLayerTiling> PictureLayerTiling::Create(
     size_t tiling_interest_area_padding,
     float skewport_target_time_in_seconds,
     int skewport_extrapolation_limit_in_content_pixels) {
-  return make_scoped_ptr(new PictureLayerTiling(
+  return base::WrapUnique(new PictureLayerTiling(
       tree, contents_scale, raster_source, client, tiling_interest_area_padding,
       skewport_target_time_in_seconds,
       skewport_extrapolation_limit_in_content_pixels));

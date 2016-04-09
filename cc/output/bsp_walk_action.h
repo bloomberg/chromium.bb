@@ -5,9 +5,9 @@
 #ifndef CC_OUTPUT_BSP_WALK_ACTION_H_
 #define CC_OUTPUT_BSP_WALK_ACTION_H_
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "cc/output/direct_renderer.h"
 #include "cc/quads/draw_polygon.h"
 

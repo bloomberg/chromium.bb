@@ -24,7 +24,7 @@ class CC_EXPORT VideoLayer : public Layer {
   static scoped_refptr<VideoLayer> Create(VideoFrameProvider* provider,
                                           media::VideoRotation video_rotation);
 
-  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
   bool Update() override;
 

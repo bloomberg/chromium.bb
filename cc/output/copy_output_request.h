@@ -5,8 +5,10 @@
 #ifndef CC_OUTPUT_COPY_OUTPUT_REQUEST_H_
 #define CC_OUTPUT_COPY_OUTPUT_REQUEST_H_
 
+#include <memory>
+
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
@@ -19,21 +21,21 @@ class CopyOutputResult;
 
 class CC_EXPORT CopyOutputRequest {
  public:
-  typedef base::Callback<void(scoped_ptr<CopyOutputResult> result)>
+  typedef base::Callback<void(std::unique_ptr<CopyOutputResult> result)>
       CopyOutputRequestCallback;
 
-  static scoped_ptr<CopyOutputRequest> CreateEmptyRequest() {
-    return make_scoped_ptr(new CopyOutputRequest);
+  static std::unique_ptr<CopyOutputRequest> CreateEmptyRequest() {
+    return base::WrapUnique(new CopyOutputRequest);
   }
-  static scoped_ptr<CopyOutputRequest> CreateRequest(
+  static std::unique_ptr<CopyOutputRequest> CreateRequest(
       const CopyOutputRequestCallback& result_callback) {
-    return make_scoped_ptr(new CopyOutputRequest(false, result_callback));
+    return base::WrapUnique(new CopyOutputRequest(false, result_callback));
   }
-  static scoped_ptr<CopyOutputRequest> CreateBitmapRequest(
+  static std::unique_ptr<CopyOutputRequest> CreateBitmapRequest(
       const CopyOutputRequestCallback& result_callback) {
-    return make_scoped_ptr(new CopyOutputRequest(true, result_callback));
+    return base::WrapUnique(new CopyOutputRequest(true, result_callback));
   }
-  static scoped_ptr<CopyOutputRequest> CreateRelayRequest(
+  static std::unique_ptr<CopyOutputRequest> CreateRelayRequest(
       const CopyOutputRequest& original_request,
       const CopyOutputRequestCallback& result_callback);
 
@@ -67,12 +69,13 @@ class CC_EXPORT CopyOutputRequest {
   const TextureMailbox& texture_mailbox() const { return texture_mailbox_; }
 
   void SendEmptyResult();
-  void SendBitmapResult(scoped_ptr<SkBitmap> bitmap);
-  void SendTextureResult(const gfx::Size& size,
-                         const TextureMailbox& texture_mailbox,
-                         scoped_ptr<SingleReleaseCallback> release_callback);
+  void SendBitmapResult(std::unique_ptr<SkBitmap> bitmap);
+  void SendTextureResult(
+      const gfx::Size& size,
+      const TextureMailbox& texture_mailbox,
+      std::unique_ptr<SingleReleaseCallback> release_callback);
 
-  void SendResult(scoped_ptr<CopyOutputResult> result);
+  void SendResult(std::unique_ptr<CopyOutputResult> result);
 
  private:
   CopyOutputRequest();

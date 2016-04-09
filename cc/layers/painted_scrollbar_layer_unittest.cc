@@ -29,7 +29,7 @@ class MockScrollbar : public FakeScrollbar {
 TEST(PaintedScrollbarLayerTest, NeedsPaint) {
   FakeLayerTreeHostClient fake_client_(FakeLayerTreeHostClient::DIRECT_3D);
   TestTaskGraphRunner task_graph_runner_;
-  scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
+  std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
 
   layer_tree_host_ =
       FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_);
@@ -39,7 +39,7 @@ TEST(PaintedScrollbarLayerTest, NeedsPaint) {
 
   MockScrollbar* scrollbar = new MockScrollbar();
   scoped_refptr<PaintedScrollbarLayer> scrollbar_layer =
-      PaintedScrollbarLayer::Create(scoped_ptr<Scrollbar>(scrollbar), 1);
+      PaintedScrollbarLayer::Create(std::unique_ptr<Scrollbar>(scrollbar), 1);
 
   scrollbar_layer->SetIsDrawable(true);
   scrollbar_layer->SetBounds(gfx::Size(100, 100));

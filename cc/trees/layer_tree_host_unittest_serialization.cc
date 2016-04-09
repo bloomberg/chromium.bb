@@ -353,11 +353,11 @@ class LayerTreeHostSerializationTest : public testing::Test {
  private:
   TestTaskGraphRunner task_graph_runner_src_;
   FakeLayerTreeHostClient client_src_;
-  scoped_ptr<LayerTreeHost> layer_tree_host_src_;
+  std::unique_ptr<LayerTreeHost> layer_tree_host_src_;
 
   TestTaskGraphRunner task_graph_runner_dst_;
   FakeLayerTreeHostClient client_dst_;
-  scoped_ptr<LayerTreeHost> layer_tree_host_dst_;
+  std::unique_ptr<LayerTreeHost> layer_tree_host_dst_;
 };
 
 TEST_F(LayerTreeHostSerializationTest, AllMembersChanged) {

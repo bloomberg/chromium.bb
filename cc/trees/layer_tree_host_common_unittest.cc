@@ -10,6 +10,7 @@
 #include <set>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_player.h"
@@ -266,7 +267,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
                                   &task_graph_runner);
 
   gfx::Transform identity_matrix;
-  scoped_ptr<LayerImpl> sublayer_scoped_ptr(
+  std::unique_ptr<LayerImpl> sublayer_scoped_ptr(
       LayerImpl::Create(host_impl.active_tree(), 1));
   LayerImpl* sublayer = sublayer_scoped_ptr.get();
   sublayer->SetDrawsContent(true);
@@ -274,13 +275,13 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
                                gfx::PointF(), gfx::Size(500, 500), true, false,
                                false);
 
-  scoped_ptr<LayerImpl> scroll_layer_scoped_ptr(
+  std::unique_ptr<LayerImpl> scroll_layer_scoped_ptr(
       LayerImpl::Create(host_impl.active_tree(), 2));
   LayerImpl* scroll_layer = scroll_layer_scoped_ptr.get();
   SetLayerPropertiesForTesting(scroll_layer, identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(10, 20), true, false,
                                false);
-  scoped_ptr<LayerImpl> clip_layer_scoped_ptr(
+  std::unique_ptr<LayerImpl> clip_layer_scoped_ptr(
       LayerImpl::Create(host_impl.active_tree(), 4));
   LayerImpl* clip_layer = clip_layer_scoped_ptr.get();
 
@@ -299,7 +300,8 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
       ->scroll_tree.UpdateScrollOffsetBaseForTesting(scroll_layer_raw_ptr->id(),
                                                      kScrollOffset);
 
-  scoped_ptr<LayerImpl> root(LayerImpl::Create(host_impl.active_tree(), 3));
+  std::unique_ptr<LayerImpl> root(
+      LayerImpl::Create(host_impl.active_tree(), 3));
   SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(3, 4), true, false,
                                false);
@@ -619,7 +621,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForReplica) {
   LayerImpl* child = AddChild<LayerImpl>(parent);
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
   grand_child->SetDrawsContent(true);
-  scoped_ptr<LayerImpl> child_replica =
+  std::unique_ptr<LayerImpl> child_replica =
       LayerImpl::Create(host_impl()->active_tree(), 100);
 
   // One-time setup of root layer
@@ -716,9 +718,9 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
   LayerImpl* grand_child_of_rs2 = AddChild<LayerImpl>(child_of_rs2);
   grand_child_of_rs2->SetDrawsContent(true);
 
-  scoped_ptr<LayerImpl> replica_of_rs1 =
+  std::unique_ptr<LayerImpl> replica_of_rs1 =
       LayerImpl::Create(host_impl()->active_tree(), 101);
-  scoped_ptr<LayerImpl> replica_of_rs2 =
+  std::unique_ptr<LayerImpl> replica_of_rs2 =
       LayerImpl::Create(host_impl()->active_tree(), 102);
 
   // In combination with descendant draws content, opacity != 1 forces the layer
@@ -2696,8 +2698,8 @@ TEST_F(LayerTreeHostCommonTest,
                                false);
 
   // Add a transform animation with a start delay to |grand_child|.
-  scoped_ptr<Animation> animation = Animation::Create(
-      scoped_ptr<AnimationCurve>(new FakeTransformTransition(1.0)), 0, 1,
+  std::unique_ptr<Animation> animation = Animation::Create(
+      std::unique_ptr<AnimationCurve>(new FakeTransformTransition(1.0)), 0, 1,
       TargetProperty::TRANSFORM);
   animation->set_fill_mode(Animation::FILL_MODE_NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
@@ -3541,14 +3543,16 @@ TEST_F(LayerTreeHostCommonTest,
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
+  std::unique_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
-  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.active_tree(), 1);
-  scoped_ptr<LayerImpl> child = LayerImpl::Create(host_impl.active_tree(), 2);
-  scoped_ptr<LayerImpl> grand_child =
+  std::unique_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl.active_tree(), 1);
+  std::unique_ptr<LayerImpl> child =
+      LayerImpl::Create(host_impl.active_tree(), 2);
+  std::unique_ptr<LayerImpl> grand_child =
       LayerImpl::Create(host_impl.active_tree(), 3);
-  scoped_ptr<LayerImpl> occluding_child =
+  std::unique_ptr<LayerImpl> occluding_child =
       LayerImpl::Create(host_impl.active_tree(), 4);
   child->SetDrawsContent(true);
   grand_child->SetDrawsContent(true);
@@ -3780,7 +3784,7 @@ TEST_F(LayerTreeHostCommonTest, ClipChildWithSingularTransform) {
 
   clip_child->SetDrawsContent(true);
   clip_child->SetClipParent(clip_parent);
-  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
   clip_children->insert(clip_child);
   clip_parent->SetClipChildren(clip_children.release());
 
@@ -3817,7 +3821,7 @@ TEST_F(LayerTreeHostCommonTest,
   render_surface2->SetDrawsContent(true);
   clip_child->SetDrawsContent(true);
   clip_child->SetClipParent(clip_parent);
-  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
   clip_children->insert(clip_child);
   clip_parent->SetClipChildren(clip_children.release());
 
@@ -3857,7 +3861,7 @@ TEST_F(LayerTreeHostCommonTest, ClipRectOfSurfaceWhoseParentIsAClipChild) {
   render_surface2->SetDrawsContent(true);
   clip_child->SetDrawsContent(true);
   clip_child->SetClipParent(clip_parent);
-  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
   clip_children->insert(clip_child);
   clip_parent->SetClipChildren(clip_children.release());
 
@@ -3927,7 +3931,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectsMultipleSurfaces) {
   unclipped_desc_surface->SetDrawsContent(true);
   clipped_surface->SetDrawsContent(true);
   clip_child->SetClipParent(clip_parent);
-  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
   clip_children->insert(clip_child);
   clip_parent->SetClipChildren(clip_children.release());
 
@@ -3973,7 +3977,7 @@ TEST_F(LayerTreeHostCommonTest, RootClipPropagationToClippedSurface) {
   unclipped_desc_surface->SetDrawsContent(true);
   clipped_surface->SetDrawsContent(true);
   clip_child->SetClipParent(clip_parent);
-  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
   clip_children->insert(clip_child);
   clip_parent->SetClipChildren(clip_children.release());
 
@@ -4931,7 +4935,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
   gfx::Transform replica_transform;
   replica_transform.Scale(1.0, -1.0);
 
-  scoped_ptr<LayerImpl> replica =
+  std::unique_ptr<LayerImpl> replica =
       LayerImpl::Create(host_impl()->active_tree(), 7);
   SetLayerPropertiesForTesting(replica.get(), replica_transform, gfx::Point3F(),
                                gfx::PointF(2.f, 2.f), gfx::Size(10, 10), false,
@@ -5044,7 +5048,7 @@ TEST_F(LayerTreeHostCommonTest,
 
   gfx::Transform replica_transform;
   replica_transform.Scale(1.0, -1.0);
-  scoped_ptr<LayerImpl> replica =
+  std::unique_ptr<LayerImpl> replica =
       LayerImpl::Create(host_impl()->active_tree(), 7);
   SetLayerPropertiesForTesting(replica.get(), replica_transform, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(13, 11), false, true,
@@ -5149,7 +5153,8 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   FakeLayerTreeHostImpl host_impl(host()->settings(), &task_runner_provider,
                                   &shared_bitmap_manager, &task_graph_runner);
   host_impl.CreatePendingTree();
-  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.pending_tree(), 1);
+  std::unique_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl.pending_tree(), 1);
 
   const gfx::Transform identity_matrix;
   SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
@@ -5157,7 +5162,8 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
                                false);
   root->SetDrawsContent(true);
 
-  scoped_ptr<LayerImpl> child = LayerImpl::Create(host_impl.pending_tree(), 2);
+  std::unique_ptr<LayerImpl> child =
+      LayerImpl::Create(host_impl.pending_tree(), 2);
   SetLayerPropertiesForTesting(child.get(), identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(50, 50), true, false,
                                false);
@@ -5252,11 +5258,11 @@ class LCDTextTest : public LayerTreeHostCommonTestBase,
     can_use_lcd_text_ = std::tr1::get<0>(GetParam());
     layers_always_allowed_lcd_text_ = std::tr1::get<1>(GetParam());
 
-    scoped_ptr<LayerImpl> root_ptr =
+    std::unique_ptr<LayerImpl> root_ptr =
         LayerImpl::Create(host_impl_.active_tree(), 1);
-    scoped_ptr<LayerImpl> child_ptr =
+    std::unique_ptr<LayerImpl> child_ptr =
         LayerImpl::Create(host_impl_.active_tree(), 2);
-    scoped_ptr<LayerImpl> grand_child_ptr =
+    std::unique_ptr<LayerImpl> grand_child_ptr =
         LayerImpl::Create(host_impl_.active_tree(), 3);
 
     // Stash raw pointers to look at later.
@@ -5468,20 +5474,22 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayerImpl) {
   host_impl.CreatePendingTree();
   const gfx::Transform identity_matrix;
 
-  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.pending_tree(), 1);
+  std::unique_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl.pending_tree(), 1);
   LayerImpl* root_layer = root.get();
   SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(50, 50), true, false,
                                false);
   root->SetDrawsContent(true);
 
-  scoped_ptr<LayerImpl> child = LayerImpl::Create(host_impl.pending_tree(), 2);
+  std::unique_ptr<LayerImpl> child =
+      LayerImpl::Create(host_impl.pending_tree(), 2);
   SetLayerPropertiesForTesting(child.get(), identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(40, 40), true, false,
                                false);
   child->SetDrawsContent(true);
 
-  scoped_ptr<LayerImpl> grand_child =
+  std::unique_ptr<LayerImpl> grand_child =
       LayerImpl::Create(host_impl.pending_tree(), 3);
   SetLayerPropertiesForTesting(grand_child.get(), identity_matrix,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(30, 30),
@@ -5519,21 +5527,23 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayersImpl) {
   host_impl.CreatePendingTree();
   const gfx::Transform identity_matrix;
 
-  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.pending_tree(), 1);
+  std::unique_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl.pending_tree(), 1);
   SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(50, 50), true, false,
                                true);
   root->SetDrawsContent(true);
   LayerImpl* root_layer = root.get();
 
-  scoped_ptr<LayerImpl> child = LayerImpl::Create(host_impl.pending_tree(), 2);
+  std::unique_ptr<LayerImpl> child =
+      LayerImpl::Create(host_impl.pending_tree(), 2);
   SetLayerPropertiesForTesting(child.get(), identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(40, 40), true, false,
                                false);
   child->SetDrawsContent(true);
   child->SetHideLayerAndSubtree(true);
 
-  scoped_ptr<LayerImpl> grand_child =
+  std::unique_ptr<LayerImpl> grand_child =
       LayerImpl::Create(host_impl.pending_tree(), 3);
   SetLayerPropertiesForTesting(grand_child.get(), identity_matrix,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(30, 30),
@@ -5559,7 +5569,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayersImpl) {
   EXPECT_EQ(1, root_layer->render_surface()->layer_list().at(0)->id());
 }
 
-void EmptyCopyOutputCallback(scoped_ptr<CopyOutputResult> result) {}
+void EmptyCopyOutputCallback(std::unique_ptr<CopyOutputResult> result) {}
 
 TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   FakeImplTaskRunnerProvider task_runner_provider;
@@ -5570,14 +5580,15 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   host_impl.CreatePendingTree();
   const gfx::Transform identity_matrix;
 
-  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.pending_tree(), 1);
+  std::unique_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl.pending_tree(), 1);
   SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(50, 50), true, false,
                                true);
   root->SetDrawsContent(true);
   LayerImpl* root_layer = root.get();
 
-  scoped_ptr<LayerImpl> copy_grand_parent =
+  std::unique_ptr<LayerImpl> copy_grand_parent =
       LayerImpl::Create(host_impl.pending_tree(), 2);
   SetLayerPropertiesForTesting(copy_grand_parent.get(), identity_matrix,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(40, 40),
@@ -5585,7 +5596,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   copy_grand_parent->SetDrawsContent(true);
   LayerImpl* copy_grand_parent_layer = copy_grand_parent.get();
 
-  scoped_ptr<LayerImpl> copy_parent =
+  std::unique_ptr<LayerImpl> copy_parent =
       LayerImpl::Create(host_impl.pending_tree(), 3);
   SetLayerPropertiesForTesting(copy_parent.get(), identity_matrix,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(30, 30),
@@ -5593,7 +5604,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   copy_parent->SetDrawsContent(true);
   LayerImpl* copy_parent_layer = copy_parent.get();
 
-  scoped_ptr<LayerImpl> copy_request =
+  std::unique_ptr<LayerImpl> copy_request =
       LayerImpl::Create(host_impl.pending_tree(), 4);
   SetLayerPropertiesForTesting(copy_request.get(), identity_matrix,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(20, 20),
@@ -5601,7 +5612,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   copy_request->SetDrawsContent(true);
   LayerImpl* copy_layer = copy_request.get();
 
-  scoped_ptr<LayerImpl> copy_child =
+  std::unique_ptr<LayerImpl> copy_child =
       LayerImpl::Create(host_impl.pending_tree(), 5);
   SetLayerPropertiesForTesting(copy_child.get(), identity_matrix,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(20, 20),
@@ -5609,7 +5620,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   copy_child->SetDrawsContent(true);
   LayerImpl* copy_child_layer = copy_child.get();
 
-  scoped_ptr<LayerImpl> copy_grand_child =
+  std::unique_ptr<LayerImpl> copy_grand_child =
       LayerImpl::Create(host_impl.pending_tree(), 6);
   SetLayerPropertiesForTesting(copy_grand_child.get(), identity_matrix,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(20, 20),
@@ -5617,7 +5628,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   copy_child->SetDrawsContent(true);
   LayerImpl* copy_grand_child_layer = copy_grand_child.get();
 
-  scoped_ptr<LayerImpl> copy_grand_parent_sibling_before =
+  std::unique_ptr<LayerImpl> copy_grand_parent_sibling_before =
       LayerImpl::Create(host_impl.pending_tree(), 7);
   SetLayerPropertiesForTesting(copy_grand_parent_sibling_before.get(),
                                identity_matrix, gfx::Point3F(), gfx::PointF(),
@@ -5626,7 +5637,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   LayerImpl* copy_grand_parent_sibling_before_layer =
       copy_grand_parent_sibling_before.get();
 
-  scoped_ptr<LayerImpl> copy_grand_parent_sibling_after =
+  std::unique_ptr<LayerImpl> copy_grand_parent_sibling_after =
       LayerImpl::Create(host_impl.pending_tree(), 8);
   SetLayerPropertiesForTesting(copy_grand_parent_sibling_after.get(),
                                identity_matrix, gfx::Point3F(), gfx::PointF(),
@@ -5652,7 +5663,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   copy_grand_parent_sibling_after_layer->SetHideLayerAndSubtree(true);
   copy_grand_child_layer->SetHideLayerAndSubtree(true);
 
-  std::vector<scoped_ptr<CopyOutputRequest>> copy_requests;
+  std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests;
   copy_requests.push_back(
       CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
   copy_layer->PassCopyRequests(&copy_requests);
@@ -5732,13 +5743,14 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
   host_impl.CreatePendingTree();
   const gfx::Transform identity_matrix;
 
-  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.pending_tree(), 1);
+  std::unique_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl.pending_tree(), 1);
   SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(50, 50), true, false,
                                true);
   root->SetDrawsContent(true);
 
-  scoped_ptr<LayerImpl> copy_parent =
+  std::unique_ptr<LayerImpl> copy_parent =
       LayerImpl::Create(host_impl.pending_tree(), 2);
   SetLayerPropertiesForTesting(copy_parent.get(), identity_matrix,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(), true,
@@ -5746,21 +5758,21 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
   copy_parent->SetDrawsContent(true);
   copy_parent->SetMasksToBounds(true);
 
-  scoped_ptr<LayerImpl> copy_layer =
+  std::unique_ptr<LayerImpl> copy_layer =
       LayerImpl::Create(host_impl.pending_tree(), 3);
   SetLayerPropertiesForTesting(copy_layer.get(), identity_matrix,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(30, 30),
                                true, false, true);
   copy_layer->SetDrawsContent(true);
 
-  scoped_ptr<LayerImpl> copy_child =
+  std::unique_ptr<LayerImpl> copy_child =
       LayerImpl::Create(host_impl.pending_tree(), 4);
   SetLayerPropertiesForTesting(copy_child.get(), identity_matrix,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(20, 20),
                                true, false, false);
   copy_child->SetDrawsContent(true);
 
-  std::vector<scoped_ptr<CopyOutputRequest>> copy_requests;
+  std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests;
   copy_requests.push_back(
       CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
   copy_layer->PassCopyRequests(&copy_requests);
@@ -5837,7 +5849,7 @@ TEST_F(LayerTreeHostCommonTest, TransformedClipParent) {
   LayerImpl* clip_child = AddChild<LayerImpl>(intervening);
   clip_child->SetDrawsContent(true);
   clip_child->SetClipParent(clip_parent);
-  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
   clip_children->insert(clip_child);
   clip_parent->SetClipChildren(clip_children.release());
 
@@ -6087,7 +6099,7 @@ TEST_F(LayerTreeHostCommonTest, DescendantsOfClipChildren) {
   child->SetDrawsContent(true);
 
   clip_child->SetClipParent(clip_parent);
-  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
   clip_children->insert(clip_child);
   clip_parent->SetClipChildren(clip_children.release());
 
@@ -6148,7 +6160,7 @@ TEST_F(LayerTreeHostCommonTest,
   non_clip_child->SetDrawsContent(true);
 
   clip_child->SetClipParent(clip_parent);
-  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
   clip_children->insert(clip_child);
   clip_parent->SetClipChildren(clip_children.release());
 
@@ -6256,13 +6268,13 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
 
-  scoped_ptr<LayerImpl> root =
+  std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl.active_tree(), 12345);
-  scoped_ptr<LayerImpl> child1 =
+  std::unique_ptr<LayerImpl> child1 =
       LayerImpl::Create(host_impl.active_tree(), 123456);
-  scoped_ptr<LayerImpl> child2 =
+  std::unique_ptr<LayerImpl> child2 =
       LayerImpl::Create(host_impl.active_tree(), 1234567);
-  scoped_ptr<LayerImpl> child3 =
+  std::unique_ptr<LayerImpl> child3 =
       LayerImpl::Create(host_impl.active_tree(), 12345678);
 
   gfx::Transform identity_matrix;
@@ -6551,7 +6563,8 @@ TEST_F(LayerTreeHostCommonTest, ClippedByScrollParent) {
   scroll_parent_clip->SetMasksToBounds(true);
 
   scroll_child->SetScrollParent(scroll_parent);
-  scoped_ptr<std::set<LayerImpl*>> scroll_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> scroll_children(
+      new std::set<LayerImpl*>);
   scroll_children->insert(scroll_child);
   scroll_parent->SetScrollChildren(scroll_children.release());
 
@@ -6593,7 +6606,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollChildAndScrollParentDifferentTargets) {
   scroll_child->SetDrawsContent(true);
 
   scroll_child->SetScrollParent(scroll_parent);
-  scoped_ptr<std::set<LayerImpl*>> scroll_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> scroll_children(
+      new std::set<LayerImpl*>);
   scroll_children->insert(scroll_child);
   scroll_parent->SetScrollChildren(scroll_children.release());
 
@@ -6700,7 +6714,8 @@ TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollParent) {
   scroll_parent_clip->SetMasksToBounds(true);
 
   scroll_child->SetScrollParent(scroll_parent);
-  scoped_ptr<std::set<LayerImpl*>> scroll_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> scroll_children(
+      new std::set<LayerImpl*>);
   scroll_children->insert(scroll_child);
   scroll_parent->SetScrollChildren(scroll_children.release());
 
@@ -6760,7 +6775,8 @@ TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollGrandparent) {
   scroll_grandparent_clip->SetMasksToBounds(true);
 
   scroll_child->SetScrollParent(scroll_parent);
-  scoped_ptr<std::set<LayerImpl*>> scroll_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> scroll_children(
+      new std::set<LayerImpl*>);
   scroll_children->insert(scroll_child);
   scroll_parent->SetScrollChildren(scroll_children.release());
 
@@ -6849,7 +6865,8 @@ TEST_F(LayerTreeHostCommonTest, OutOfOrderClippingRequiresRSLLSorting) {
   scroll_grandparent_clip->SetMasksToBounds(true);
 
   scroll_child->SetScrollParent(scroll_parent);
-  scoped_ptr<std::set<LayerImpl*>> scroll_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> scroll_children(
+      new std::set<LayerImpl*>);
   scroll_children->insert(scroll_child);
   scroll_parent->SetScrollChildren(scroll_children.release());
 
@@ -6988,16 +7005,17 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
   host_impl.CreatePendingTree();
-  scoped_ptr<LayerImpl> root_ptr =
+  std::unique_ptr<LayerImpl> root_ptr =
       LayerImpl::Create(host_impl.active_tree(), 1);
   LayerImpl* root = root_ptr.get();
-  scoped_ptr<LayerImpl> container =
+  std::unique_ptr<LayerImpl> container =
       LayerImpl::Create(host_impl.active_tree(), 2);
   LayerImpl* container_layer = container.get();
-  scoped_ptr<LayerImpl> scroller =
+  std::unique_ptr<LayerImpl> scroller =
       LayerImpl::Create(host_impl.active_tree(), 3);
   LayerImpl* scroll_layer = scroller.get();
-  scoped_ptr<LayerImpl> fixed = LayerImpl::Create(host_impl.active_tree(), 4);
+  std::unique_ptr<LayerImpl> fixed =
+      LayerImpl::Create(host_impl.active_tree(), 4);
   LayerImpl* fixed_layer = fixed.get();
 
   container->SetIsContainerForFixedPositionLayers(true);
@@ -7178,10 +7196,10 @@ TEST_F(LayerTreeHostCommonTest,
 
 class AnimationScaleFactorTrackingLayerImpl : public LayerImpl {
  public:
-  static scoped_ptr<AnimationScaleFactorTrackingLayerImpl> Create(
+  static std::unique_ptr<AnimationScaleFactorTrackingLayerImpl> Create(
       LayerTreeImpl* tree_impl,
       int id) {
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new AnimationScaleFactorTrackingLayerImpl(tree_impl, id));
   }
 
@@ -7204,13 +7222,13 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   FakeLayerTreeHostImpl host_impl(settings, &task_runner_provider,
                                   &shared_bitmap_manager, &task_graph_runner);
   gfx::Transform identity_matrix;
-  scoped_ptr<AnimationScaleFactorTrackingLayerImpl> grand_parent =
+  std::unique_ptr<AnimationScaleFactorTrackingLayerImpl> grand_parent =
       AnimationScaleFactorTrackingLayerImpl::Create(host_impl.active_tree(), 1);
-  scoped_ptr<AnimationScaleFactorTrackingLayerImpl> parent =
+  std::unique_ptr<AnimationScaleFactorTrackingLayerImpl> parent =
       AnimationScaleFactorTrackingLayerImpl::Create(host_impl.active_tree(), 2);
-  scoped_ptr<AnimationScaleFactorTrackingLayerImpl> child =
+  std::unique_ptr<AnimationScaleFactorTrackingLayerImpl> child =
       AnimationScaleFactorTrackingLayerImpl::Create(host_impl.active_tree(), 3);
-  scoped_ptr<AnimationScaleFactorTrackingLayerImpl> grand_child =
+  std::unique_ptr<AnimationScaleFactorTrackingLayerImpl> grand_child =
       AnimationScaleFactorTrackingLayerImpl::Create(host_impl.active_tree(), 4);
 
   AnimationScaleFactorTrackingLayerImpl* parent_raw = parent.get();
@@ -7561,13 +7579,15 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
                                   &task_graph_runner);
   gfx::Transform identity_matrix;
 
-  scoped_ptr<LayerImpl> grand_parent =
+  std::unique_ptr<LayerImpl> grand_parent =
       LayerImpl::Create(host_impl.active_tree(), 1);
-  scoped_ptr<LayerImpl> parent = LayerImpl::Create(host_impl.active_tree(), 3);
-  scoped_ptr<LayerImpl> child = LayerImpl::Create(host_impl.active_tree(), 5);
-  scoped_ptr<LayerImpl> grand_child1 =
+  std::unique_ptr<LayerImpl> parent =
+      LayerImpl::Create(host_impl.active_tree(), 3);
+  std::unique_ptr<LayerImpl> child =
+      LayerImpl::Create(host_impl.active_tree(), 5);
+  std::unique_ptr<LayerImpl> grand_child1 =
       LayerImpl::Create(host_impl.active_tree(), 7);
-  scoped_ptr<LayerImpl> grand_child2 =
+  std::unique_ptr<LayerImpl> grand_child2 =
       LayerImpl::Create(host_impl.active_tree(), 9);
 
   LayerImpl* grand_parent_raw = grand_parent.get();
@@ -7706,7 +7726,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   EXPECT_EQ(expected, actual);
 
   // Add replica mask layer.
-  scoped_ptr<LayerImpl> replica_layer =
+  std::unique_ptr<LayerImpl> replica_layer =
       LayerImpl::Create(host_impl.active_tree(), 20);
   replica_layer->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 21));
   child_raw->SetReplicaLayer(std::move(replica_layer));
@@ -7813,11 +7833,14 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   FakeLayerTreeHostImpl host_impl(settings, &task_runner_provider,
                                   &shared_bitmap_manager, &task_graph_runner);
 
-  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.active_tree(), 1);
+  std::unique_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl.active_tree(), 1);
   LayerImpl* root_layer = root.get();
-  scoped_ptr<LayerImpl> child1 = LayerImpl::Create(host_impl.active_tree(), 2);
+  std::unique_ptr<LayerImpl> child1 =
+      LayerImpl::Create(host_impl.active_tree(), 2);
   LayerImpl* child1_layer = child1.get();
-  scoped_ptr<LayerImpl> child2 = LayerImpl::Create(host_impl.active_tree(), 3);
+  std::unique_ptr<LayerImpl> child2 =
+      LayerImpl::Create(host_impl.active_tree(), 3);
   LayerImpl* child2_layer = child2.get();
 
   root->AddChild(std::move(child1));
@@ -7841,7 +7864,7 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   child1_layer->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 4));
   child1_layer->SetDrawsContent(true);
 
-  scoped_ptr<LayerImpl> replica_layer =
+  std::unique_ptr<LayerImpl> replica_layer =
       LayerImpl::Create(host_impl.active_tree(), 5);
   replica_layer->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 6));
   child1_layer->SetReplicaLayer(std::move(replica_layer));
@@ -8283,7 +8306,7 @@ TEST_F(LayerTreeHostCommonTest, DelayedFilterAnimationCreatesRenderSurface) {
                                true, false);
   host()->SetRootLayer(root);
 
-  scoped_ptr<KeyframedFilterAnimationCurve> curve(
+  std::unique_ptr<KeyframedFilterAnimationCurve> curve(
       KeyframedFilterAnimationCurve::Create());
   FilterOperations start_filters;
   start_filters.Append(FilterOperation::CreateBrightnessFilter(0.1f));
@@ -8293,7 +8316,7 @@ TEST_F(LayerTreeHostCommonTest, DelayedFilterAnimationCreatesRenderSurface) {
       FilterKeyframe::Create(base::TimeDelta(), start_filters, nullptr));
   curve->AddKeyframe(FilterKeyframe::Create(
       base::TimeDelta::FromMilliseconds(100), end_filters, nullptr));
-  scoped_ptr<Animation> animation =
+  std::unique_ptr<Animation> animation =
       Animation::Create(std::move(curve), 0, 1, TargetProperty::FILTER);
   animation->set_fill_mode(Animation::FILL_MODE_NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
@@ -8568,7 +8591,8 @@ TEST_F(LayerTreeHostCommonTest, UpdateScrollChildPosition) {
 
   scroll_child->SetDrawsContent(true);
   scroll_child->SetScrollParent(scroll_parent);
-  scoped_ptr<std::set<LayerImpl*>> scroll_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> scroll_children(
+      new std::set<LayerImpl*>);
   scroll_children->insert(scroll_child);
   scroll_parent->SetScrollChildren(scroll_children.release());
   scroll_parent->SetDrawsContent(true);
@@ -8596,8 +8620,7 @@ TEST_F(LayerTreeHostCommonTest, UpdateScrollChildPosition) {
   EXPECT_EQ(gfx::Rect(0, 5, 25, 25), scroll_child->visible_layer_rect());
 }
 
-static void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
-}
+static void CopyOutputCallback(std::unique_ptr<CopyOutputResult> result) {}
 
 TEST_F(LayerTreeHostCommonTest, NumCopyRequestsInTargetSubtree) {
   // If the layer has a node in effect_tree, the return value of
@@ -8688,8 +8711,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   // Add a transform animation with a start delay. Now, even though |child| has
   // a singular transform, the subtree should still get processed.
   int animation_id = 0;
-  scoped_ptr<Animation> animation = Animation::Create(
-      scoped_ptr<AnimationCurve>(new FakeTransformTransition(1.0)),
+  std::unique_ptr<Animation> animation = Animation::Create(
+      std::unique_ptr<AnimationCurve>(new FakeTransformTransition(1.0)),
       animation_id, 1, TargetProperty::TRANSFORM);
   animation->set_fill_mode(Animation::FILL_MODE_NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
@@ -8717,7 +8740,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   // Add an opacity animation with a start delay.
   animation_id = 1;
   animation = Animation::Create(
-      scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
+      std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
       animation_id, 1, TargetProperty::OPACITY);
   animation->set_fill_mode(Animation::FILL_MODE_NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
@@ -8735,12 +8758,14 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
                                   &task_graph_runner);
 
   gfx::Transform identity;
-  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.active_tree(), 1);
-  scoped_ptr<LayerImpl> child = LayerImpl::Create(host_impl.active_tree(), 2);
-  scoped_ptr<LayerImpl> grandchild =
+  std::unique_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl.active_tree(), 1);
+  std::unique_ptr<LayerImpl> child =
+      LayerImpl::Create(host_impl.active_tree(), 2);
+  std::unique_ptr<LayerImpl> grandchild =
       LayerImpl::Create(host_impl.active_tree(), 3);
 
-  scoped_ptr<FakePictureLayerImpl> greatgrandchild(
+  std::unique_ptr<FakePictureLayerImpl> greatgrandchild(
       FakePictureLayerImpl::Create(host_impl.active_tree(), 4));
 
   child->SetDrawsContent(true);
@@ -8825,7 +8850,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   // Now, even though child has zero opacity, we will configure |grandchild| and
   // |greatgrandchild| in several ways that should force the subtree to be
   // processed anyhow.
-  std::vector<scoped_ptr<CopyOutputRequest>> requests;
+  std::vector<std::unique_ptr<CopyOutputRequest>> requests;
   requests.push_back(CopyOutputRequest::CreateEmptyRequest());
 
   grandchild_ptr->PassCopyRequests(&requests);
@@ -8846,7 +8871,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   EXPECT_EQ(gfx::Rect(10, 10), grandchild_ptr->visible_layer_rect());
   child_ptr->SetTransform(identity);
 
-  scoped_ptr<KeyframedTransformAnimationCurve> curve(
+  std::unique_ptr<KeyframedTransformAnimationCurve> curve(
       KeyframedTransformAnimationCurve::Create());
   TransformOperations start;
   start.AppendTranslate(1.f, 2.f, 3.f);
@@ -8858,7 +8883,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
       TransformKeyframe::Create(base::TimeDelta(), start, nullptr));
   curve->AddKeyframe(TransformKeyframe::Create(
       base::TimeDelta::FromSecondsD(1.0), operation, nullptr));
-  scoped_ptr<Animation> transform_animation(
+  std::unique_ptr<Animation> transform_animation(
       Animation::Create(std::move(curve), 3, 3, TargetProperty::TRANSFORM));
   scoped_refptr<AnimationPlayer> player(AnimationPlayer::Create(1));
   host_impl.active_tree()->animation_host()->RegisterPlayerForLayer(
@@ -8888,12 +8913,14 @@ TEST_F(LayerTreeHostCommonTest, SkippingPendingLayerImpl) {
 
   gfx::Transform identity;
   host_impl.CreatePendingTree();
-  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.pending_tree(), 1);
-  scoped_ptr<LayerImpl> child = LayerImpl::Create(host_impl.pending_tree(), 2);
-  scoped_ptr<LayerImpl> grandchild =
+  std::unique_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl.pending_tree(), 1);
+  std::unique_ptr<LayerImpl> child =
+      LayerImpl::Create(host_impl.pending_tree(), 2);
+  std::unique_ptr<LayerImpl> grandchild =
       LayerImpl::Create(host_impl.pending_tree(), 3);
 
-  scoped_ptr<FakePictureLayerImpl> greatgrandchild(
+  std::unique_ptr<FakePictureLayerImpl> greatgrandchild(
       FakePictureLayerImpl::Create(host_impl.pending_tree(), 4));
 
   child->SetDrawsContent(true);
@@ -8922,14 +8949,14 @@ TEST_F(LayerTreeHostCommonTest, SkippingPendingLayerImpl) {
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
   EXPECT_EQ(gfx::Rect(10, 10), grandchild_ptr->visible_layer_rect());
 
-  scoped_ptr<KeyframedFloatAnimationCurve> curve(
+  std::unique_ptr<KeyframedFloatAnimationCurve> curve(
       KeyframedFloatAnimationCurve::Create());
-  scoped_ptr<TimingFunction> func = EaseTimingFunction::Create();
+  std::unique_ptr<TimingFunction> func = EaseTimingFunction::Create();
   curve->AddKeyframe(
       FloatKeyframe::Create(base::TimeDelta(), 0.9f, std::move(func)));
   curve->AddKeyframe(
       FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0), 0.3f, nullptr));
-  scoped_ptr<Animation> animation(
+  std::unique_ptr<Animation> animation(
       Animation::Create(std::move(curve), 3, 3, TargetProperty::OPACITY));
   scoped_refptr<AnimationPlayer> player(AnimationPlayer::Create(1));
   host_impl.active_tree()->animation_host()->RegisterPlayerForLayer(
@@ -9186,7 +9213,7 @@ TEST_F(LayerTreeHostCommonTest,
   clip_parent->SetMasksToBounds(true);
   test_layer->SetDrawsContent(true);
   render_surface->SetClipParent(clip_parent);
-  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
   clip_children->insert(render_surface);
   clip_parent->SetClipChildren(clip_children.release());
   SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
@@ -9229,7 +9256,7 @@ TEST_F(LayerTreeHostCommonTest,
   clip_child->SetDrawsContent(true);
   child->SetDrawsContent(true);
   clip_child->SetClipParent(clip_parent);
-  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
   clip_children->insert(clip_child);
   clip_parent->SetClipChildren(clip_children.release());
   SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
@@ -9269,7 +9296,7 @@ TEST_F(LayerTreeHostCommonTest,
   test_layer1->SetDrawsContent(true);
   test_layer2->SetDrawsContent(true);
   clip_child->SetClipParent(clip_parent);
-  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
   clip_children->insert(clip_child);
   clip_parent->SetClipChildren(clip_children.release());
 
@@ -9312,7 +9339,7 @@ TEST_F(LayerTreeHostCommonTest, UnclippedClipParent) {
   clip_child->SetDrawsContent(true);
 
   clip_child->SetClipParent(clip_parent);
-  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
   clip_children->insert(clip_child);
   clip_parent->SetClipChildren(clip_children.release());
 
@@ -9356,7 +9383,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceContentRectWithMultipleSurfaces) {
   unclipped_desc_surface2->SetDrawsContent(true);
   clipped_surface->SetDrawsContent(true);
   clip_child->SetClipParent(clip_parent);
-  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
   clip_children->insert(clip_child);
   clip_parent->SetClipChildren(clip_children.release());
 
@@ -9410,7 +9437,7 @@ TEST_F(LayerTreeHostCommonTest, ClipBetweenClipChildTargetAndClipParentTarget) {
   clip_child->SetDrawsContent(true);
   unclipped_desc_surface->SetDrawsContent(true);
   clip_child->SetClipParent(clip_parent);
-  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
   clip_children->insert(clip_child);
   clip_parent->SetClipChildren(clip_children.release());
 
@@ -9455,7 +9482,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectForDescendantOfScaledSurface) {
   clip_child->SetDrawsContent(true);
   unclipped_desc_surface->SetDrawsContent(true);
   clip_child->SetClipParent(clip_parent);
-  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
   clip_children->insert(clip_child);
   clip_parent->SetClipChildren(clip_children.release());
 
@@ -9526,7 +9553,7 @@ TEST_F(LayerTreeHostCommonTest, ClipChildVisibleRect) {
   render_surface->SetDrawsContent(true);
   clip_child->SetDrawsContent(true);
   clip_child->SetClipParent(clip_parent);
-  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
   clip_children->insert(clip_child);
   clip_parent->SetClipChildren(clip_children.release());
 
@@ -9610,7 +9637,7 @@ TEST_F(LayerTreeHostCommonTest, TwoUnclippedRenderSurfaces) {
 
   const gfx::Transform identity_matrix;
   clip_child->SetClipParent(root);
-  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  std::unique_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
   clip_children->insert(clip_child);
   root->SetClipChildren(clip_children.release());
   root->SetMasksToBounds(true);

@@ -118,7 +118,7 @@ void AnimationPlayer::UnbindElementAnimations() {
   DCHECK(animations_.empty());
 }
 
-void AnimationPlayer::AddAnimation(scoped_ptr<Animation> animation) {
+void AnimationPlayer::AddAnimation(std::unique_ptr<Animation> animation) {
   DCHECK(animation->target_property() != TargetProperty::SCROLL_OFFSET ||
          (animation_host_ && animation_host_->SupportsScrollAnimations()));
 
@@ -144,11 +144,11 @@ void AnimationPlayer::RemoveAnimation(int animation_id) {
         animation_id);
     SetNeedsCommit();
   } else {
-    auto animations_to_remove =
-        std::remove_if(animations_.begin(), animations_.end(),
-                       [animation_id](const scoped_ptr<Animation>& animation) {
-                         return animation->id() == animation_id;
-                       });
+    auto animations_to_remove = std::remove_if(
+        animations_.begin(), animations_.end(),
+        [animation_id](const std::unique_ptr<Animation>& animation) {
+          return animation->id() == animation_id;
+        });
     animations_.erase(animations_to_remove, animations_.end());
   }
 }
@@ -169,7 +169,7 @@ void AnimationPlayer::AbortAnimations(TargetProperty::Type target_property,
   } else {
     auto animations_to_remove = std::remove_if(
         animations_.begin(), animations_.end(),
-        [target_property](const scoped_ptr<Animation>& animation) {
+        [target_property](const std::unique_ptr<Animation>& animation) {
           return animation->target_property() == target_property;
         });
     animations_.erase(animations_to_remove, animations_.end());
@@ -216,7 +216,7 @@ void AnimationPlayer::NotifyAnimationTakeover(
     base::TimeTicks monotonic_time,
     TargetProperty::Type target_property,
     double animation_start_time,
-    scoped_ptr<AnimationCurve> curve) {
+    std::unique_ptr<AnimationCurve> curve) {
   if (layer_animation_delegate_) {
     DCHECK(curve);
     layer_animation_delegate_->NotifyAnimationTakeover(

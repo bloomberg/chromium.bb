@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/test/ordered_simple_task_runner.h"
+
+#include <memory>
 #include <string>
 
 #include "base/cancelable_callback.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_pending_task.h"
-#include "cc/test/ordered_simple_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // We pass EXPECT_TRUE / EXPECT_FALSE macros rather than a boolean as on some
@@ -63,7 +64,7 @@ class OrderedSimpleTaskRunnerTest : public testing::Test {
 
  protected:
   std::string executed_tasks_;
-  scoped_ptr<base::SimpleTestTickClock> now_src_;
+  std::unique_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
 
   void PostTask(int task_num, base::TimeDelta delay) {

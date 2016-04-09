@@ -4,6 +4,7 @@
 
 #include "cc/layers/picture_image_layer_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/quads/draw_quad.h"
@@ -25,8 +26,9 @@ class TestablePictureImageLayerImpl : public PictureImageLayerImpl {
   TestablePictureImageLayerImpl(LayerTreeImpl* tree_impl, int id)
       : PictureImageLayerImpl(tree_impl, id, false) {}
 
-  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override {
-    return make_scoped_ptr(new TestablePictureImageLayerImpl(tree_impl, id()));
+  std::unique_ptr<LayerImpl> CreateLayerImpl(
+      LayerTreeImpl* tree_impl) override {
+    return base::WrapUnique(new TestablePictureImageLayerImpl(tree_impl, id()));
   }
 
   using PictureLayerImpl::UpdateIdealScales;
@@ -58,8 +60,9 @@ class PictureImageLayerImplTest : public testing::Test {
     host_impl_.InitializeRenderer(output_surface_.get());
   }
 
-  scoped_ptr<TestablePictureImageLayerImpl> CreateLayer(int id,
-                                                        WhichTree which_tree) {
+  std::unique_ptr<TestablePictureImageLayerImpl> CreateLayer(
+      int id,
+      WhichTree which_tree) {
     LayerTreeImpl* tree = nullptr;
     switch (which_tree) {
       case ACTIVE_TREE:
@@ -73,7 +76,7 @@ class PictureImageLayerImplTest : public testing::Test {
         new TestablePictureImageLayerImpl(tree, id);
     layer->raster_source_ = FakeRasterSource::CreateInfiniteFilled();
     layer->SetBounds(layer->raster_source_->GetSize());
-    return make_scoped_ptr(layer);
+    return base::WrapUnique(layer);
   }
 
   void SetupDrawPropertiesAndUpdateTiles(TestablePictureImageLayerImpl* layer,
@@ -99,12 +102,13 @@ class PictureImageLayerImplTest : public testing::Test {
   FakeImplTaskRunnerProvider task_runner_provider_;
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
-  scoped_ptr<OutputSurface> output_surface_;
+  std::unique_ptr<OutputSurface> output_surface_;
   FakeLayerTreeHostImpl host_impl_;
 };
 
 TEST_F(PictureImageLayerImplTest, CalculateContentsScale) {
-  scoped_ptr<TestablePictureImageLayerImpl> layer(CreateLayer(1, PENDING_TREE));
+  std::unique_ptr<TestablePictureImageLayerImpl> layer(
+      CreateLayer(1, PENDING_TREE));
   layer->SetDrawsContent(true);
 
   TestablePictureImageLayerImpl* layer_ptr = layer.get();
@@ -118,7 +122,7 @@ TEST_F(PictureImageLayerImplTest, CalculateContentsScale) {
 }
 
 TEST_F(PictureImageLayerImplTest, IgnoreIdealContentScale) {
-  scoped_ptr<TestablePictureImageLayerImpl> pending_layer(
+  std::unique_ptr<TestablePictureImageLayerImpl> pending_layer(
       CreateLayer(1, PENDING_TREE));
   pending_layer->SetDrawsContent(true);
 
@@ -161,7 +165,7 @@ TEST_F(PictureImageLayerImplTest, IgnoreIdealContentScale) {
       active_layer->tilings()->tiling_at(0)->AllTilesForTesting());
 
   // Draw.
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer->AppendQuads(render_pass.get(), &data);

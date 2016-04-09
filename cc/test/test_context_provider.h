@@ -8,9 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
@@ -25,15 +26,15 @@ class TestGLES2Interface;
 
 class TestContextProvider : public ContextProvider {
  public:
-  typedef base::Callback<scoped_ptr<TestWebGraphicsContext3D>(void)>
-    CreateCallback;
+  typedef base::Callback<std::unique_ptr<TestWebGraphicsContext3D>(void)>
+      CreateCallback;
 
   static scoped_refptr<TestContextProvider> Create();
   // Creates a worker context provider that can be used on any thread. This is
   // equivalent to: Create(); BindToCurrentThread(); SetupLock().
   static scoped_refptr<TestContextProvider> CreateWorker();
   static scoped_refptr<TestContextProvider> Create(
-      scoped_ptr<TestWebGraphicsContext3D> context);
+      std::unique_ptr<TestWebGraphicsContext3D> context);
 
   bool BindToCurrentThread() override;
   void DetachFromThread() override;
@@ -60,7 +61,8 @@ class TestContextProvider : public ContextProvider {
   void SetMaxTransferBufferUsageBytes(size_t max_transfer_buffer_usage_bytes);
 
  protected:
-  explicit TestContextProvider(scoped_ptr<TestWebGraphicsContext3D> context);
+  explicit TestContextProvider(
+      std::unique_ptr<TestWebGraphicsContext3D> context);
   ~TestContextProvider() override;
 
  private:
@@ -68,8 +70,8 @@ class TestContextProvider : public ContextProvider {
 
   TestContextSupport support_;
 
-  scoped_ptr<TestWebGraphicsContext3D> context3d_;
-  scoped_ptr<TestGLES2Interface> context_gl_;
+  std::unique_ptr<TestWebGraphicsContext3D> context3d_;
+  std::unique_ptr<TestGLES2Interface> context_gl_;
   bool bound_;
 
   base::ThreadChecker main_thread_checker_;

@@ -43,7 +43,7 @@ class CompositorTimingHistoryTest : public testing::Test {
   base::TimeTicks Now() { return now_; }
 
  protected:
-  scoped_ptr<RenderingStatsInstrumentation> rendering_stats_;
+  std::unique_ptr<RenderingStatsInstrumentation> rendering_stats_;
   TestCompositorTimingHistory timing_history_;
   base::TimeTicks now_;
 };

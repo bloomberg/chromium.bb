@@ -5,13 +5,14 @@
 #include "cc/debug/unittest_only_benchmark.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
 #include "cc/debug/unittest_only_benchmark_impl.h"
 
 namespace cc {
 
-UnittestOnlyBenchmark::UnittestOnlyBenchmark(scoped_ptr<base::Value> value,
+UnittestOnlyBenchmark::UnittestOnlyBenchmark(std::unique_ptr<base::Value> value,
                                              const DoneCallback& callback)
     : MicroBenchmark(callback),
       create_impl_benchmark_(false),
@@ -36,7 +37,7 @@ void UnittestOnlyBenchmark::DidUpdateLayers(LayerTreeHost* host) {
   NotifyDone(nullptr);
 }
 
-bool UnittestOnlyBenchmark::ProcessMessage(scoped_ptr<base::Value> value) {
+bool UnittestOnlyBenchmark::ProcessMessage(std::unique_ptr<base::Value> value) {
   base::DictionaryValue* message = nullptr;
   value->GetAsDictionary(&message);
   bool can_handle;
@@ -48,16 +49,17 @@ bool UnittestOnlyBenchmark::ProcessMessage(scoped_ptr<base::Value> value) {
   return false;
 }
 
-void UnittestOnlyBenchmark::RecordImplResults(scoped_ptr<base::Value> results) {
+void UnittestOnlyBenchmark::RecordImplResults(
+    std::unique_ptr<base::Value> results) {
   NotifyDone(std::move(results));
 }
 
-scoped_ptr<MicroBenchmarkImpl> UnittestOnlyBenchmark::CreateBenchmarkImpl(
+std::unique_ptr<MicroBenchmarkImpl> UnittestOnlyBenchmark::CreateBenchmarkImpl(
     scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner) {
   if (!create_impl_benchmark_)
-    return make_scoped_ptr<MicroBenchmarkImpl>(nullptr);
+    return base::WrapUnique<MicroBenchmarkImpl>(nullptr);
 
-  return make_scoped_ptr(new UnittestOnlyBenchmarkImpl(
+  return base::WrapUnique(new UnittestOnlyBenchmarkImpl(
       origin_task_runner, nullptr,
       base::Bind(&UnittestOnlyBenchmark::RecordImplResults,
                  weak_ptr_factory_.GetWeakPtr())));

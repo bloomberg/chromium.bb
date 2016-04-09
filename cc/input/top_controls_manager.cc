@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/timing_function.h"
 #include "cc/input/top_controls_manager_client.h"
@@ -25,13 +26,12 @@ const int64_t kShowHideMaxDurationMs = 200;
 }
 
 // static
-scoped_ptr<TopControlsManager> TopControlsManager::Create(
+std::unique_ptr<TopControlsManager> TopControlsManager::Create(
     TopControlsManagerClient* client,
     float top_controls_show_threshold,
     float top_controls_hide_threshold) {
-  return make_scoped_ptr(new TopControlsManager(client,
-                                                top_controls_show_threshold,
-                                                top_controls_hide_threshold));
+  return base::WrapUnique(new TopControlsManager(
+      client, top_controls_show_threshold, top_controls_hide_threshold));
 }
 
 TopControlsManager::TopControlsManager(TopControlsManagerClient* client,

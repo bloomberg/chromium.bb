@@ -62,7 +62,7 @@ class UIResourceLayerTest : public testing::Test {
 
   FakeLayerTreeHostClient fake_client_;
   TestTaskGraphRunner task_graph_runner_;
-  scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
+  std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
 };
 
 TEST_F(UIResourceLayerTest, SetBitmap) {
@@ -104,7 +104,7 @@ TEST_F(UIResourceLayerTest, SetUIResourceId) {
   EXPECT_FALSE(test_layer->DrawsContent());
 
   bool is_opaque = false;
-  scoped_ptr<ScopedUIResource> resource = ScopedUIResource::Create(
+  std::unique_ptr<ScopedUIResource> resource = ScopedUIResource::Create(
       layer_tree_host_.get(), UIResourceBitmap(gfx::Size(10, 10), is_opaque));
   test_layer->SetUIResourceId(resource->id());
   test_layer->Update();
@@ -113,7 +113,7 @@ TEST_F(UIResourceLayerTest, SetUIResourceId) {
 
   // ID is preserved even when you set ID first and attach it to the tree.
   layer_tree_host_->SetRootLayer(nullptr);
-  scoped_ptr<ScopedUIResource> shared_resource = ScopedUIResource::Create(
+  std::unique_ptr<ScopedUIResource> shared_resource = ScopedUIResource::Create(
       layer_tree_host_.get(), UIResourceBitmap(gfx::Size(5, 5), is_opaque));
   test_layer->SetUIResourceId(shared_resource->id());
   layer_tree_host_->SetRootLayer(test_layer);

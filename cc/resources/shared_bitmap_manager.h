@@ -5,8 +5,9 @@
 #ifndef CC_RESOURCES_SHARED_BITMAP_MANAGER_H_
 #define CC_RESOURCES_SHARED_BITMAP_MANAGER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/shared_bitmap.h"
 #include "ui/gfx/geometry/size.h"
@@ -18,8 +19,9 @@ class CC_EXPORT SharedBitmapManager {
   SharedBitmapManager() {}
   virtual ~SharedBitmapManager() {}
 
-  virtual scoped_ptr<SharedBitmap> AllocateSharedBitmap(const gfx::Size&) = 0;
-  virtual scoped_ptr<SharedBitmap> GetSharedBitmapFromId(
+  virtual std::unique_ptr<SharedBitmap> AllocateSharedBitmap(
+      const gfx::Size&) = 0;
+  virtual std::unique_ptr<SharedBitmap> GetSharedBitmapFromId(
       const gfx::Size&,
       const SharedBitmapId&) = 0;
 

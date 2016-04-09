@@ -94,14 +94,14 @@ TEST(VideoLayerImplTest, OccludesOtherLayers) {
   auto active_tree = impl.host_impl()->active_tree();
 
   // Create a video layer with no frame on top of another layer.
-  scoped_ptr<LayerImpl> layer_impl = LayerImpl::Create(active_tree, 3);
+  std::unique_ptr<LayerImpl> layer_impl = LayerImpl::Create(active_tree, 3);
   layer_impl->SetForceRenderSurface(true);
   layer_impl->SetBounds(layer_size);
   layer_impl->SetDrawsContent(true);
   const auto& draw_properties = layer_impl->draw_properties();
 
   FakeVideoFrameProvider provider;
-  scoped_ptr<VideoLayerImpl> video_layer_impl = VideoLayerImpl::Create(
+  std::unique_ptr<VideoLayerImpl> video_layer_impl = VideoLayerImpl::Create(
       active_tree, 4, &provider, media::VIDEO_ROTATION_0);
   video_layer_impl->SetBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);

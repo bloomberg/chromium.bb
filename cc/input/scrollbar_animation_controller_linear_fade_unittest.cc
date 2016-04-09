@@ -49,7 +49,7 @@ class ScrollbarAnimationControllerLinearFadeTest
     const bool kIsLeftSideVerticalScrollbar = false;
     const bool kIsOverlayScrollbar = true;  // Allow opacity animations.
 
-    scoped_ptr<LayerImpl> scroll_layer =
+    std::unique_ptr<LayerImpl> scroll_layer =
         LayerImpl::Create(host_impl_.active_tree(), 1);
     scrollbar_layer_ = SolidColorScrollbarLayerImpl::Create(
         host_impl_.active_tree(), 2, orientation(), kThumbThickness,
@@ -74,9 +74,9 @@ class ScrollbarAnimationControllerLinearFadeTest
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
-  scoped_ptr<ScrollbarAnimationControllerLinearFade> scrollbar_controller_;
-  scoped_ptr<LayerImpl> clip_layer_;
-  scoped_ptr<SolidColorScrollbarLayerImpl> scrollbar_layer_;
+  std::unique_ptr<ScrollbarAnimationControllerLinearFade> scrollbar_controller_;
+  std::unique_ptr<LayerImpl> clip_layer_;
+  std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar_layer_;
 
   base::Closure start_fade_;
   base::TimeDelta delay_;

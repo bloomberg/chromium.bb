@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_id_provider.h"
@@ -46,13 +47,13 @@ class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
   void ScrollAnimationCreate(int layer_id,
                              const gfx::ScrollOffset& target_offset,
                              const gfx::ScrollOffset& current_offset) {
-    scoped_ptr<ScrollOffsetAnimationCurve> curve =
+    std::unique_ptr<ScrollOffsetAnimationCurve> curve =
         ScrollOffsetAnimationCurve::Create(
             target_offset, EaseInOutTimingFunction::Create(),
             ScrollOffsetAnimationCurve::DurationBehavior::INVERSE_DELTA);
     curve->SetInitialValue(current_offset);
 
-    scoped_ptr<Animation> animation = Animation::Create(
+    std::unique_ptr<Animation> animation = Animation::Create(
         std::move(curve), AnimationIdProvider::NextAnimationId(),
         AnimationIdProvider::NextGroupId(), TargetProperty::SCROLL_OFFSET);
     animation->set_is_impl_only(true);
@@ -121,7 +122,8 @@ class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
   void NotifyAnimationTakeover(base::TimeTicks monotonic_time,
                                TargetProperty::Type target_property,
                                double animation_start_time,
-                               scoped_ptr<AnimationCurve> curve) override {}
+                               std::unique_ptr<AnimationCurve> curve) override {
+  }
 
  private:
   void ReattachScrollOffsetPlayerIfNeeded(int layer_id) {
@@ -144,9 +146,9 @@ class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(ScrollOffsetAnimations);
 };
 
-scoped_ptr<AnimationHost> AnimationHost::Create(
+std::unique_ptr<AnimationHost> AnimationHost::Create(
     ThreadInstance thread_instance) {
-  return make_scoped_ptr(new AnimationHost(thread_instance));
+  return base::WrapUnique(new AnimationHost(thread_instance));
 }
 
 AnimationHost::AnimationHost(ThreadInstance thread_instance)
@@ -155,7 +157,7 @@ AnimationHost::AnimationHost(ThreadInstance thread_instance)
       thread_instance_(thread_instance) {
   if (thread_instance_ == ThreadInstance::IMPL)
     scroll_offset_animations_ =
-        make_scoped_ptr(new ScrollOffsetAnimations(this));
+        base::WrapUnique(new ScrollOffsetAnimations(this));
 }
 
 AnimationHost::~AnimationHost() {
@@ -367,11 +369,12 @@ bool AnimationHost::UpdateAnimationState(bool start_ready_animations,
                                                     events);
 }
 
-scoped_ptr<AnimationEvents> AnimationHost::CreateEvents() {
+std::unique_ptr<AnimationEvents> AnimationHost::CreateEvents() {
   return animation_registrar_->CreateEvents();
 }
 
-void AnimationHost::SetAnimationEvents(scoped_ptr<AnimationEvents> events) {
+void AnimationHost::SetAnimationEvents(
+    std::unique_ptr<AnimationEvents> events) {
   return animation_registrar_->SetAnimationEvents(std::move(events));
 }
 

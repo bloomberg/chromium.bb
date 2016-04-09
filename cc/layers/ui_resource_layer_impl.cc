@@ -27,7 +27,7 @@ UIResourceLayerImpl::UIResourceLayerImpl(LayerTreeImpl* tree_impl, int id)
 
 UIResourceLayerImpl::~UIResourceLayerImpl() {}
 
-scoped_ptr<LayerImpl> UIResourceLayerImpl::CreateLayerImpl(
+std::unique_ptr<LayerImpl> UIResourceLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return UIResourceLayerImpl::Create(tree_impl, id());
 }

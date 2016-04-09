@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
+
+#include "base/memory/ptr_util.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -10,27 +12,22 @@
 
 namespace cc {
 
-scoped_ptr<SolidColorScrollbarLayerImpl> SolidColorScrollbarLayerImpl::Create(
-    LayerTreeImpl* tree_impl,
-    int id,
-    ScrollbarOrientation orientation,
-    int thumb_thickness,
-    int track_start,
-    bool is_left_side_vertical_scrollbar,
-    bool is_overlay) {
-  return make_scoped_ptr(
-      new SolidColorScrollbarLayerImpl(tree_impl,
-                                       id,
-                                       orientation,
-                                       thumb_thickness,
-                                       track_start,
-                                       is_left_side_vertical_scrollbar,
-                                       is_overlay));
+std::unique_ptr<SolidColorScrollbarLayerImpl>
+SolidColorScrollbarLayerImpl::Create(LayerTreeImpl* tree_impl,
+                                     int id,
+                                     ScrollbarOrientation orientation,
+                                     int thumb_thickness,
+                                     int track_start,
+                                     bool is_left_side_vertical_scrollbar,
+                                     bool is_overlay) {
+  return base::WrapUnique(new SolidColorScrollbarLayerImpl(
+      tree_impl, id, orientation, thumb_thickness, track_start,
+      is_left_side_vertical_scrollbar, is_overlay));
 }
 
 SolidColorScrollbarLayerImpl::~SolidColorScrollbarLayerImpl() {}
 
-scoped_ptr<LayerImpl> SolidColorScrollbarLayerImpl::CreateLayerImpl(
+std::unique_ptr<LayerImpl> SolidColorScrollbarLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return SolidColorScrollbarLayerImpl::Create(tree_impl,
                                               id(),

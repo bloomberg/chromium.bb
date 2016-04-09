@@ -6,9 +6,9 @@
 #define CC_TEST_SURFACE_HITTEST_TEST_HELPERS_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/quads/render_pass.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_hittest_delegate.h"
@@ -58,11 +58,12 @@ void CreateRenderPass(const RenderPassId& render_pass_id,
                       const gfx::Transform& transform_to_root_target,
                       RenderPassList* render_pass_list);
 
-scoped_ptr<CompositorFrame> CreateCompositorFrameWithRenderPassList(
+std::unique_ptr<CompositorFrame> CreateCompositorFrameWithRenderPassList(
     RenderPassList* render_pass_list);
 
-scoped_ptr<CompositorFrame> CreateCompositorFrame(const gfx::Rect& root_rect,
-                                                  RenderPass** render_pass);
+std::unique_ptr<CompositorFrame> CreateCompositorFrame(
+    const gfx::Rect& root_rect,
+    RenderPass** render_pass);
 
 class TestSurfaceHittestDelegate : public SurfaceHittestDelegate {
  public:

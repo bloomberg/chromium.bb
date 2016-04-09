@@ -15,10 +15,10 @@
 namespace cc {
 
 // static
-scoped_ptr<CopyOutputRequest> CopyOutputRequest::CreateRelayRequest(
+std::unique_ptr<CopyOutputRequest> CopyOutputRequest::CreateRelayRequest(
     const CopyOutputRequest& original_request,
     const CopyOutputRequestCallback& result_callback) {
-  scoped_ptr<CopyOutputRequest> relay = CreateRequest(result_callback);
+  std::unique_ptr<CopyOutputRequest> relay = CreateRequest(result_callback);
   relay->force_bitmap_result_ = original_request.force_bitmap_result_;
   relay->has_area_ = original_request.has_area_;
   relay->area_ = original_request.area_;
@@ -50,7 +50,7 @@ CopyOutputRequest::~CopyOutputRequest() {
     SendResult(CopyOutputResult::CreateEmptyResult());
 }
 
-void CopyOutputRequest::SendResult(scoped_ptr<CopyOutputResult> result) {
+void CopyOutputRequest::SendResult(std::unique_ptr<CopyOutputResult> result) {
   bool success = !result->IsEmpty();
   base::ResetAndReturn(&result_callback_).Run(std::move(result));
   TRACE_EVENT_ASYNC_END1("cc", "CopyOutputRequest", this, "success", success);
@@ -60,14 +60,14 @@ void CopyOutputRequest::SendEmptyResult() {
   SendResult(CopyOutputResult::CreateEmptyResult());
 }
 
-void CopyOutputRequest::SendBitmapResult(scoped_ptr<SkBitmap> bitmap) {
+void CopyOutputRequest::SendBitmapResult(std::unique_ptr<SkBitmap> bitmap) {
   SendResult(CopyOutputResult::CreateBitmapResult(std::move(bitmap)));
 }
 
 void CopyOutputRequest::SendTextureResult(
     const gfx::Size& size,
     const TextureMailbox& texture_mailbox,
-    scoped_ptr<SingleReleaseCallback> release_callback) {
+    std::unique_ptr<SingleReleaseCallback> release_callback) {
   DCHECK(texture_mailbox.IsTexture());
   SendResult(CopyOutputResult::CreateTextureResult(
       size, texture_mailbox, std::move(release_callback)));

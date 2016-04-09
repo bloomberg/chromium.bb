@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/blink/cc_blink_export.h"
 #include "third_party/WebKit/public/platform/WebExternalBitmap.h"
 
@@ -19,7 +20,7 @@ class SharedBitmap;
 
 namespace cc_blink {
 
-typedef scoped_ptr<cc::SharedBitmap>(*SharedBitmapAllocationFunction)(
+typedef std::unique_ptr<cc::SharedBitmap> (*SharedBitmapAllocationFunction)(
     const gfx::Size& size);
 
 // Sets the function that this will use to allocate shared memory.
@@ -39,7 +40,7 @@ class WebExternalBitmapImpl : public blink::WebExternalBitmap {
   cc::SharedBitmap* shared_bitmap() { return shared_bitmap_.get(); }
 
  private:
-  scoped_ptr<cc::SharedBitmap> shared_bitmap_;
+  std::unique_ptr<cc::SharedBitmap> shared_bitmap_;
   blink::WebSize size_;
 
   DISALLOW_COPY_AND_ASSIGN(WebExternalBitmapImpl);

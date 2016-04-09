@@ -122,20 +122,20 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
+  std::unique_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
   host_impl.SetVisible(true);
   EXPECT_TRUE(host_impl.InitializeRenderer(output_surface.get()));
-  scoped_ptr<LayerImpl> root_clip_ptr =
+  std::unique_ptr<LayerImpl> root_clip_ptr =
       LayerImpl::Create(host_impl.active_tree(), 1);
   LayerImpl* root_clip = root_clip_ptr.get();
-  scoped_ptr<LayerImpl> root_ptr =
+  std::unique_ptr<LayerImpl> root_ptr =
       LayerImpl::Create(host_impl.active_tree(), 2);
   LayerImpl* root = root_ptr.get();
   root_clip_ptr->AddChild(std::move(root_ptr));
   host_impl.active_tree()->SetRootLayer(std::move(root_clip_ptr));
-  scoped_ptr<LayerImpl> scroll_parent =
+  std::unique_ptr<LayerImpl> scroll_parent =
       LayerImpl::Create(host_impl.active_tree(), 3);
   LayerImpl* scroll_child = LayerImpl::Create(host_impl.active_tree(), 4).get();
   std::set<LayerImpl*>* scroll_children = new std::set<LayerImpl*>();
@@ -143,7 +143,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   scroll_children->insert(root);
   root->SetForceRenderSurface(true);
 
-  scoped_ptr<LayerImpl> clip_parent =
+  std::unique_ptr<LayerImpl> clip_parent =
       LayerImpl::Create(host_impl.active_tree(), 5);
   LayerImpl* clip_child = LayerImpl::Create(host_impl.active_tree(), 6).get();
   std::set<LayerImpl*>* clip_children = new std::set<LayerImpl*>();
@@ -278,7 +278,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
+  std::unique_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
   host_impl.SetVisible(true);
@@ -287,12 +287,12 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
       LayerImpl::Create(host_impl.active_tree(), 1));
   LayerImpl* root = host_impl.active_tree()->root_layer();
   root->SetHasRenderSurface(true);
-  scoped_ptr<LayerImpl> layer_ptr =
+  std::unique_ptr<LayerImpl> layer_ptr =
       LayerImpl::Create(host_impl.active_tree(), 2);
   LayerImpl* layer = layer_ptr.get();
   root->AddChild(std::move(layer_ptr));
   layer->SetScrollClipLayer(root->id());
-  scoped_ptr<LayerImpl> layer2_ptr =
+  std::unique_ptr<LayerImpl> layer2_ptr =
       LayerImpl::Create(host_impl.active_tree(), 3);
   LayerImpl* layer2 = layer2_ptr.get();
   root->AddChild(std::move(layer2_ptr));
@@ -426,7 +426,7 @@ TEST(LayerImplTest, SafeOpaqueBackgroundColor) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
+  std::unique_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
   host_impl.SetVisible(true);
@@ -468,7 +468,8 @@ TEST(LayerImplTest, TransformInvertibility) {
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
 
-  scoped_ptr<LayerImpl> layer = LayerImpl::Create(host_impl.active_tree(), 1);
+  std::unique_ptr<LayerImpl> layer =
+      LayerImpl::Create(host_impl.active_tree(), 1);
   EXPECT_TRUE(layer->transform().IsInvertible());
   EXPECT_TRUE(layer->transform_is_invertible());
 
@@ -658,7 +659,7 @@ TEST_F(LayerImplScrollTest, PushPropertiesToMirrorsCurrentScrollOffset) {
 
   scroll_tree(layer())->CollectScrollDeltasForTesting();
 
-  scoped_ptr<LayerImpl> pending_layer =
+  std::unique_ptr<LayerImpl> pending_layer =
       LayerImpl::Create(host_impl().sync_tree(), layer()->id());
   scroll_tree(pending_layer.get())
       ->UpdateScrollOffsetBaseForTesting(pending_layer->id(),

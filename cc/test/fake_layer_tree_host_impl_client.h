@@ -31,7 +31,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   void SetNeedsPrepareTilesOnImplThread() override {}
   void SetVideoNeedsBeginFrames(bool needs_begin_frames) override {}
   void PostAnimationEventsToMainThreadOnImplThread(
-      scoped_ptr<AnimationEvents> events) override;
+      std::unique_ptr<AnimationEvents> events) override;
   bool IsInsideDraw() override;
   void RenewTreePriority() override {}
   void PostDelayedAnimationTaskOnImplThread(const base::Closure& task,
@@ -42,8 +42,8 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   void DidCompletePageScaleAnimationOnImplThread() override {}
   void OnDrawForOutputSurface(bool resourceless_software_draw) override {}
   void PostFrameTimingEventsOnImplThread(
-      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
+      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
       override {}
 };
 

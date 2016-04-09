@@ -4,6 +4,7 @@
 
 #include "cc/test/animation_test_common.h"
 
+#include "base/memory/ptr_util.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_player.h"
@@ -31,10 +32,10 @@ int AddOpacityTransition(Target* target,
                          float start_opacity,
                          float end_opacity,
                          bool use_timing_function) {
-  scoped_ptr<KeyframedFloatAnimationCurve>
-      curve(KeyframedFloatAnimationCurve::Create());
+  std::unique_ptr<KeyframedFloatAnimationCurve> curve(
+      KeyframedFloatAnimationCurve::Create());
 
-  scoped_ptr<TimingFunction> func;
+  std::unique_ptr<TimingFunction> func;
   if (!use_timing_function)
     func = EaseTimingFunction::Create();
   if (duration > 0.0)
@@ -45,7 +46,7 @@ int AddOpacityTransition(Target* target,
 
   int id = AnimationIdProvider::NextAnimationId();
 
-  scoped_ptr<Animation> animation(Animation::Create(
+  std::unique_ptr<Animation> animation(Animation::Create(
       std::move(curve), id, AnimationIdProvider::NextGroupId(),
       TargetProperty::OPACITY));
   animation->set_needs_synchronized_start_time(true);
@@ -59,8 +60,8 @@ int AddAnimatedTransform(Target* target,
                          double duration,
                          TransformOperations start_operations,
                          TransformOperations operations) {
-  scoped_ptr<KeyframedTransformAnimationCurve>
-      curve(KeyframedTransformAnimationCurve::Create());
+  std::unique_ptr<KeyframedTransformAnimationCurve> curve(
+      KeyframedTransformAnimationCurve::Create());
 
   if (duration > 0.0) {
     curve->AddKeyframe(TransformKeyframe::Create(base::TimeDelta(),
@@ -72,7 +73,7 @@ int AddAnimatedTransform(Target* target,
 
   int id = AnimationIdProvider::NextAnimationId();
 
-  scoped_ptr<Animation> animation(Animation::Create(
+  std::unique_ptr<Animation> animation(Animation::Create(
       std::move(curve), id, AnimationIdProvider::NextGroupId(),
       TargetProperty::TRANSFORM));
   animation->set_needs_synchronized_start_time(true);
@@ -101,8 +102,8 @@ int AddAnimatedFilter(Target* target,
                       double duration,
                       float start_brightness,
                       float end_brightness) {
-  scoped_ptr<KeyframedFilterAnimationCurve>
-      curve(KeyframedFilterAnimationCurve::Create());
+  std::unique_ptr<KeyframedFilterAnimationCurve> curve(
+      KeyframedFilterAnimationCurve::Create());
 
   if (duration > 0.0) {
     FilterOperations start_filters;
@@ -119,7 +120,7 @@ int AddAnimatedFilter(Target* target,
 
   int id = AnimationIdProvider::NextAnimationId();
 
-  scoped_ptr<Animation> animation(Animation::Create(
+  std::unique_ptr<Animation> animation(Animation::Create(
       std::move(curve), id, AnimationIdProvider::NextGroupId(),
       TargetProperty::FILTER));
   animation->set_needs_synchronized_start_time(true);
@@ -146,8 +147,8 @@ float FakeFloatAnimationCurve::GetValue(base::TimeDelta now) const {
   return 0.0f;
 }
 
-scoped_ptr<AnimationCurve> FakeFloatAnimationCurve::Clone() const {
-  return make_scoped_ptr(new FakeFloatAnimationCurve);
+std::unique_ptr<AnimationCurve> FakeFloatAnimationCurve::Clone() const {
+  return base::WrapUnique(new FakeFloatAnimationCurve);
 }
 
 FakeTransformTransition::FakeTransformTransition(double duration)
@@ -189,8 +190,8 @@ bool FakeTransformTransition::MaximumTargetScale(bool forward_direction,
   return true;
 }
 
-scoped_ptr<AnimationCurve> FakeTransformTransition::Clone() const {
-  return make_scoped_ptr(new FakeTransformTransition(*this));
+std::unique_ptr<AnimationCurve> FakeTransformTransition::Clone() const {
+  return base::WrapUnique(new FakeTransformTransition(*this));
 }
 
 FakeFloatTransition::FakeFloatTransition(double duration, float from, float to)
@@ -258,8 +259,8 @@ gfx::ScrollOffset FakeLayerAnimationValueProvider::ScrollOffsetForAnimation()
   return scroll_offset_;
 }
 
-scoped_ptr<AnimationCurve> FakeFloatTransition::Clone() const {
-  return make_scoped_ptr(new FakeFloatTransition(*this));
+std::unique_ptr<AnimationCurve> FakeFloatTransition::Clone() const {
+  return base::WrapUnique(new FakeFloatTransition(*this));
 }
 
 int AddOpacityTransitionToController(LayerAnimationController* controller,
@@ -327,10 +328,10 @@ int AddOpacityStepsToController(LayerAnimationController* target,
                                 float start_opacity,
                                 float end_opacity,
                                 int num_steps) {
-  scoped_ptr<KeyframedFloatAnimationCurve> curve(
+  std::unique_ptr<KeyframedFloatAnimationCurve> curve(
       KeyframedFloatAnimationCurve::Create());
 
-  scoped_ptr<TimingFunction> func =
+  std::unique_ptr<TimingFunction> func =
       StepsTimingFunction::Create(num_steps, 0.5f);
   if (duration > 0.0)
     curve->AddKeyframe(FloatKeyframe::Create(base::TimeDelta(), start_opacity,
@@ -340,7 +341,7 @@ int AddOpacityStepsToController(LayerAnimationController* target,
 
   int id = AnimationIdProvider::NextAnimationId();
 
-  scoped_ptr<Animation> animation(Animation::Create(
+  std::unique_ptr<Animation> animation(Animation::Create(
       std::move(curve), id, AnimationIdProvider::NextGroupId(),
       TargetProperty::OPACITY));
   animation->set_needs_synchronized_start_time(true);
@@ -351,7 +352,7 @@ int AddOpacityStepsToController(LayerAnimationController* target,
 
 void AddAnimationToLayerWithPlayer(int layer_id,
                                    scoped_refptr<AnimationTimeline> timeline,
-                                   scoped_ptr<Animation> animation) {
+                                   std::unique_ptr<Animation> animation) {
   scoped_refptr<AnimationPlayer> player =
       AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
   timeline->AttachPlayer(player);
@@ -363,7 +364,7 @@ void AddAnimationToLayerWithPlayer(int layer_id,
 void AddAnimationToLayerWithExistingPlayer(
     int layer_id,
     scoped_refptr<AnimationTimeline> timeline,
-    scoped_ptr<Animation> animation) {
+    std::unique_ptr<Animation> animation) {
   LayerAnimationController* controller =
       timeline->animation_host()->GetControllerForLayerId(layer_id);
   DCHECK(controller);

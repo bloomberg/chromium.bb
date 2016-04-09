@@ -5,10 +5,11 @@
 #ifndef CC_SURFACES_DISPLAY_SCHEDULER_H_
 #define CC_SURFACES_DISPLAY_SCHEDULER_H_
 
+#include <memory>
+
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/surface_id.h"
@@ -70,7 +71,7 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
   base::TimeTicks begin_frame_deadline_task_time_;
 
   // TODO(tansell): Set this to something useful.
-  scoped_ptr<BeginFrameSource> begin_frame_source_for_children_;
+  std::unique_ptr<BeginFrameSource> begin_frame_source_for_children_;
 
   bool output_surface_lost_;
   bool root_surface_resources_locked_;

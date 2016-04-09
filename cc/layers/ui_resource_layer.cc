@@ -4,6 +4,7 @@
 
 #include "cc/layers/ui_resource_layer.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/ui_resource_layer_impl.h"
 #include "cc/resources/scoped_ui_resource.h"
@@ -17,9 +18,10 @@ namespace {
 
 class ScopedUIResourceHolder : public UIResourceLayer::UIResourceHolder {
  public:
-  static scoped_ptr<ScopedUIResourceHolder> Create(LayerTreeHost* host,
-                                            const SkBitmap& skbitmap) {
-    return make_scoped_ptr(new ScopedUIResourceHolder(host, skbitmap));
+  static std::unique_ptr<ScopedUIResourceHolder> Create(
+      LayerTreeHost* host,
+      const SkBitmap& skbitmap) {
+    return base::WrapUnique(new ScopedUIResourceHolder(host, skbitmap));
   }
   UIResourceId id() override { return resource_->id(); }
 
@@ -28,13 +30,13 @@ class ScopedUIResourceHolder : public UIResourceLayer::UIResourceHolder {
     resource_ = ScopedUIResource::Create(host, UIResourceBitmap(skbitmap));
   }
 
-  scoped_ptr<ScopedUIResource> resource_;
+  std::unique_ptr<ScopedUIResource> resource_;
 };
 
 class SharedUIResourceHolder : public UIResourceLayer::UIResourceHolder {
  public:
-  static scoped_ptr<SharedUIResourceHolder> Create(UIResourceId id) {
-    return make_scoped_ptr(new SharedUIResourceHolder(id));
+  static std::unique_ptr<SharedUIResourceHolder> Create(UIResourceId id) {
+    return base::WrapUnique(new SharedUIResourceHolder(id));
   }
 
   UIResourceId id() override { return id_; }
@@ -63,7 +65,7 @@ UIResourceLayer::UIResourceLayer()
 
 UIResourceLayer::~UIResourceLayer() {}
 
-scoped_ptr<LayerImpl> UIResourceLayer::CreateLayerImpl(
+std::unique_ptr<LayerImpl> UIResourceLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return UIResourceLayerImpl::Create(tree_impl, id());
 }

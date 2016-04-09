@@ -91,7 +91,7 @@ const char* PictureLayerImpl::LayerTypeAsString() const {
   return "cc::PictureLayerImpl";
 }
 
-scoped_ptr<LayerImpl> PictureLayerImpl::CreateLayerImpl(
+std::unique_ptr<LayerImpl> PictureLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return PictureLayerImpl::Create(tree_impl, id(), is_mask_);
 }
@@ -1161,7 +1161,7 @@ float PictureLayerImpl::MaximumTilingContentsScale() const {
   return std::max(max_contents_scale, MinimumContentsScale());
 }
 
-scoped_ptr<PictureLayerTilingSet>
+std::unique_ptr<PictureLayerTilingSet>
 PictureLayerImpl::CreatePictureLayerTilingSet() {
   const LayerTreeSettings& settings = layer_tree_impl()->settings();
   return PictureLayerTilingSet::Create(

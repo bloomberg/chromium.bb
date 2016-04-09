@@ -24,7 +24,7 @@ TEST(ScopedGpuRasterTest, RestoresUnpackAlignment) {
   EXPECT_EQ(4, unpack_alignment);
 
   {
-    scoped_ptr<ScopedGpuRaster> scoped_gpu_raster(
+    std::unique_ptr<ScopedGpuRaster> scoped_gpu_raster(
         new ScopedGpuRaster(provider.get()));
     gl->PixelStorei(GL_UNPACK_ALIGNMENT, 1);
     gl->GetIntegerv(GL_UNPACK_ALIGNMENT, &unpack_alignment);

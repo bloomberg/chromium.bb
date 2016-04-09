@@ -4,6 +4,7 @@
 
 #include "cc/output/software_renderer.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
 #include "cc/output/compositor_frame.h"
@@ -51,13 +52,13 @@ bool IsScaleAndIntegerTranslate(const SkMatrix& matrix) {
 
 }  // anonymous namespace
 
-scoped_ptr<SoftwareRenderer> SoftwareRenderer::Create(
+std::unique_ptr<SoftwareRenderer> SoftwareRenderer::Create(
     RendererClient* client,
     const RendererSettings* settings,
     OutputSurface* output_surface,
     ResourceProvider* resource_provider) {
-  return make_scoped_ptr(new SoftwareRenderer(
-      client, settings, output_surface, resource_provider));
+  return base::WrapUnique(new SoftwareRenderer(client, settings, output_surface,
+                                               resource_provider));
 }
 
 SoftwareRenderer::SoftwareRenderer(RendererClient* client,
@@ -149,8 +150,8 @@ bool SoftwareRenderer::BindFramebufferToTexture(
   // Explicitly release lock, otherwise we can crash when try to lock
   // same texture again.
   current_framebuffer_lock_ = nullptr;
-  current_framebuffer_lock_ = make_scoped_ptr(
-      new ResourceProvider::ScopedWriteLockSoftware(
+  current_framebuffer_lock_ =
+      base::WrapUnique(new ResourceProvider::ScopedWriteLockSoftware(
           resource_provider_, texture->id()));
   current_framebuffer_canvas_ =
       skia::AdoptRef(new SkCanvas(current_framebuffer_lock_->sk_bitmap()));
@@ -516,9 +517,9 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
                                       SkShader::kClamp_TileMode, &content_mat);
   }
 
-  scoped_ptr<ResourceProvider::ScopedReadLockSoftware> mask_lock;
+  std::unique_ptr<ResourceProvider::ScopedReadLockSoftware> mask_lock;
   if (quad->mask_resource_id()) {
-    mask_lock = scoped_ptr<ResourceProvider::ScopedReadLockSoftware>(
+    mask_lock = std::unique_ptr<ResourceProvider::ScopedReadLockSoftware>(
         new ResourceProvider::ScopedReadLockSoftware(resource_provider_,
                                                      quad->mask_resource_id()));
 
@@ -574,13 +575,13 @@ void SoftwareRenderer::DrawUnsupportedQuad(const DrawingFrame* frame,
 
 void SoftwareRenderer::CopyCurrentRenderPassToBitmap(
     DrawingFrame* frame,
-    scoped_ptr<CopyOutputRequest> request) {
+    std::unique_ptr<CopyOutputRequest> request) {
   gfx::Rect copy_rect = frame->current_render_pass->output_rect;
   if (request->has_area())
     copy_rect.Intersect(request->area());
   gfx::Rect window_copy_rect = MoveFromDrawToWindowSpace(frame, copy_rect);
 
-  scoped_ptr<SkBitmap> bitmap(new SkBitmap);
+  std::unique_ptr<SkBitmap> bitmap(new SkBitmap);
   bitmap->setInfo(SkImageInfo::MakeN32Premul(window_copy_rect.width(),
                                              window_copy_rect.height()));
   current_canvas_->readPixels(

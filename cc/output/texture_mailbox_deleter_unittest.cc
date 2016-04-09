@@ -15,7 +15,7 @@ namespace cc {
 namespace {
 
 TEST(TextureMailboxDeleterTest, Destroy) {
-  scoped_ptr<TextureMailboxDeleter> deleter(
+  std::unique_ptr<TextureMailboxDeleter> deleter(
       new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
 
   scoped_refptr<TestContextProvider> context_provider =
@@ -28,7 +28,7 @@ TEST(TextureMailboxDeleterTest, Destroy) {
   EXPECT_TRUE(context_provider->HasOneRef());
   EXPECT_EQ(1u, context_provider->TestContext3d()->NumTextures());
 
-  scoped_ptr<SingleReleaseCallback> cb =
+  std::unique_ptr<SingleReleaseCallback> cb =
       deleter->GetReleaseCallback(context_provider, texture_id);
   EXPECT_FALSE(context_provider->HasOneRef());
   EXPECT_EQ(1u, context_provider->TestContext3d()->NumTextures());
@@ -45,7 +45,8 @@ TEST(TextureMailboxDeleterTest, Destroy) {
 }
 
 TEST(TextureMailboxDeleterTest, NullTaskRunner) {
-  scoped_ptr<TextureMailboxDeleter> deleter(new TextureMailboxDeleter(nullptr));
+  std::unique_ptr<TextureMailboxDeleter> deleter(
+      new TextureMailboxDeleter(nullptr));
 
   scoped_refptr<TestContextProvider> context_provider =
       TestContextProvider::Create();
@@ -57,7 +58,7 @@ TEST(TextureMailboxDeleterTest, NullTaskRunner) {
   EXPECT_TRUE(context_provider->HasOneRef());
   EXPECT_EQ(1u, context_provider->TestContext3d()->NumTextures());
 
-  scoped_ptr<SingleReleaseCallback> cb =
+  std::unique_ptr<SingleReleaseCallback> cb =
       deleter->GetReleaseCallback(context_provider, texture_id);
   EXPECT_FALSE(context_provider->HasOneRef());
   EXPECT_EQ(1u, context_provider->TestContext3d()->NumTextures());

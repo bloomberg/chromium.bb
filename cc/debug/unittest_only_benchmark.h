@@ -16,19 +16,19 @@ namespace cc {
 
 class CC_EXPORT UnittestOnlyBenchmark : public MicroBenchmark {
  public:
-  UnittestOnlyBenchmark(scoped_ptr<base::Value> value,
+  UnittestOnlyBenchmark(std::unique_ptr<base::Value> value,
                         const DoneCallback& callback);
   ~UnittestOnlyBenchmark() override;
 
   void DidUpdateLayers(LayerTreeHost* host) override;
-  bool ProcessMessage(scoped_ptr<base::Value> value) override;
+  bool ProcessMessage(std::unique_ptr<base::Value> value) override;
 
  protected:
-  scoped_ptr<MicroBenchmarkImpl> CreateBenchmarkImpl(
+  std::unique_ptr<MicroBenchmarkImpl> CreateBenchmarkImpl(
       scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner) override;
 
  private:
-  void RecordImplResults(scoped_ptr<base::Value> results);
+  void RecordImplResults(std::unique_ptr<base::Value> results);
 
   bool create_impl_benchmark_;
   base::WeakPtrFactory<UnittestOnlyBenchmark> weak_ptr_factory_;

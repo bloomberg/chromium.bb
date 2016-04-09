@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "cc/base/switches.h"
 #include "cc/blink/web_display_item_list_impl.h"
 #include "cc/layers/picture_layer.h"
@@ -51,7 +52,7 @@ PaintingControlToWeb(
 
 WebContentLayerImpl::WebContentLayerImpl(blink::WebContentLayerClient* client)
     : client_(client) {
-  layer_ = make_scoped_ptr(new WebLayerImpl(PictureLayer::Create(this)));
+  layer_ = base::WrapUnique(new WebLayerImpl(PictureLayer::Create(this)));
   layer_->layer()->SetIsDrawable(true);
 }
 

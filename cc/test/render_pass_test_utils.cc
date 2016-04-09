@@ -27,7 +27,7 @@ RenderPass* AddRenderPass(RenderPassList* pass_list,
                           RenderPassId id,
                           const gfx::Rect& output_rect,
                           const gfx::Transform& root_transform) {
-  scoped_ptr<RenderPass> pass(RenderPass::Create());
+  std::unique_ptr<RenderPass> pass(RenderPass::Create());
   pass->SetNew(id, output_rect, output_rect, root_transform);
   RenderPass* saved = pass.get();
   pass_list->push_back(std::move(pass));
@@ -196,7 +196,7 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
   unsigned target = GL_TEXTURE_2D;
   gpu::Mailbox gpu_mailbox;
   memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
-  scoped_ptr<SingleReleaseCallbackImpl> callback =
+  std::unique_ptr<SingleReleaseCallbackImpl> callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback));
   TextureMailbox mailbox(gpu_mailbox, kSyncTokenForMailboxTextureQuad, target);
   ResourceId resource8 = resource_provider->CreateResourceFromTextureMailbox(

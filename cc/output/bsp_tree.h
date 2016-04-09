@@ -8,9 +8,9 @@
 #include <stddef.h>
 
 #include <deque>
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "cc/output/bsp_compare_result.h"
 #include "cc/quads/draw_polygon.h"
 
@@ -18,22 +18,22 @@ namespace cc {
 
 struct BspNode {
   // This represents the splitting plane.
-  scoped_ptr<DrawPolygon> node_data;
+  std::unique_ptr<DrawPolygon> node_data;
   // This represents any coplanar geometry we found while building the BSP.
-  std::vector<scoped_ptr<DrawPolygon>> coplanars_front;
-  std::vector<scoped_ptr<DrawPolygon>> coplanars_back;
+  std::vector<std::unique_ptr<DrawPolygon>> coplanars_front;
+  std::vector<std::unique_ptr<DrawPolygon>> coplanars_back;
 
-  scoped_ptr<BspNode> back_child;
-  scoped_ptr<BspNode> front_child;
+  std::unique_ptr<BspNode> back_child;
+  std::unique_ptr<BspNode> front_child;
 
-  explicit BspNode(scoped_ptr<DrawPolygon> data);
+  explicit BspNode(std::unique_ptr<DrawPolygon> data);
   ~BspNode();
 };
 
 class CC_EXPORT BspTree {
  public:
-  explicit BspTree(std::deque<scoped_ptr<DrawPolygon>>* list);
-  scoped_ptr<BspNode>& root() { return root_; }
+  explicit BspTree(std::deque<std::unique_ptr<DrawPolygon>>* list);
+  std::unique_ptr<BspNode>& root() { return root_; }
 
   template <typename ActionHandlerType>
   void TraverseWithActionHandler(ActionHandlerType* action_handler) const {
@@ -45,10 +45,10 @@ class CC_EXPORT BspTree {
   ~BspTree();
 
  private:
-  scoped_ptr<BspNode> root_;
+  std::unique_ptr<BspNode> root_;
 
-  void FromList(std::vector<scoped_ptr<DrawPolygon>>* list);
-  void BuildTree(BspNode* node, std::deque<scoped_ptr<DrawPolygon>>* data);
+  void FromList(std::vector<std::unique_ptr<DrawPolygon>>* list);
+  void BuildTree(BspNode* node, std::deque<std::unique_ptr<DrawPolygon>>* data);
 
   template <typename ActionHandlerType>
   void WalkInOrderAction(ActionHandlerType* action_handler,
@@ -62,8 +62,8 @@ class CC_EXPORT BspTree {
       const BspNode* node,
       const BspNode* first_child,
       const BspNode* second_child,
-      const std::vector<scoped_ptr<DrawPolygon>>& first_coplanars,
-      const std::vector<scoped_ptr<DrawPolygon>>& second_coplanars) const {
+      const std::vector<std::unique_ptr<DrawPolygon>>& first_coplanars,
+      const std::vector<std::unique_ptr<DrawPolygon>>& second_coplanars) const {
     if (first_child) {
       WalkInOrderRecursion(action_handler, first_child);
     }

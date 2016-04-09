@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/memory/ptr_util.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer_impl.h"
@@ -19,8 +20,8 @@
 
 namespace cc {
 
-scoped_ptr<DamageTracker> DamageTracker::Create() {
-  return make_scoped_ptr(new DamageTracker());
+std::unique_ptr<DamageTracker> DamageTracker::Create() {
+  return base::WrapUnique(new DamageTracker());
 }
 
 DamageTracker::DamageTracker()

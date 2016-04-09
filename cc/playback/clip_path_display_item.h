@@ -7,7 +7,9 @@
 
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "cc/base/cc_export.h"
 #include "cc/playback/display_item.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -51,8 +53,8 @@ class CC_EXPORT EndClipPathDisplayItem : public DisplayItem {
   explicit EndClipPathDisplayItem(const proto::DisplayItem& proto);
   ~EndClipPathDisplayItem() override;
 
-  static scoped_ptr<EndClipPathDisplayItem> Create() {
-    return make_scoped_ptr(new EndClipPathDisplayItem());
+  static std::unique_ptr<EndClipPathDisplayItem> Create() {
+    return base::WrapUnique(new EndClipPathDisplayItem());
   }
 
   void ToProtobuf(proto::DisplayItem* proto,

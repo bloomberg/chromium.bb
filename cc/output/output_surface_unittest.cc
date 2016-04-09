@@ -4,6 +4,7 @@
 
 #include "cc/output/output_surface.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface_client.h"
@@ -28,11 +29,12 @@ class TestOutputSurface : public OutputSurface {
                     scoped_refptr<ContextProvider> worker_context_provider)
       : OutputSurface(worker_context_provider) {}
 
-  explicit TestOutputSurface(scoped_ptr<SoftwareOutputDevice> software_device)
+  explicit TestOutputSurface(
+      std::unique_ptr<SoftwareOutputDevice> software_device)
       : OutputSurface(std::move(software_device)) {}
 
   TestOutputSurface(scoped_refptr<ContextProvider> context_provider,
-                    scoped_ptr<SoftwareOutputDevice> software_device)
+                    std::unique_ptr<SoftwareOutputDevice> software_device)
       : OutputSurface(context_provider, std::move(software_device)) {}
 
   void SwapBuffers(CompositorFrame* frame) override {
@@ -158,7 +160,7 @@ TEST(OutputSurfaceTest, SoftwareOutputDeviceBackbufferManagement) {
 
   // TestOutputSurface now owns software_output_device and has responsibility to
   // free it.
-  TestOutputSurface output_surface(make_scoped_ptr(software_output_device));
+  TestOutputSurface output_surface(base::WrapUnique(software_output_device));
 
   EXPECT_EQ(0, software_output_device->ensure_backbuffer_count());
   EXPECT_EQ(0, software_output_device->discard_backbuffer_count());

@@ -107,8 +107,8 @@ void LayerTreeHostPixelResourceTest::InitializeFromTestCase(
 
 void LayerTreeHostPixelResourceTest::CreateResourceAndTileTaskWorkerPool(
     LayerTreeHostImpl* host_impl,
-    scoped_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
-    scoped_ptr<ResourcePool>* resource_pool) {
+    std::unique_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
+    std::unique_ptr<ResourcePool>* resource_pool) {
   base::SingleThreadTaskRunner* task_runner =
       task_runner_provider()->HasImplThread()
           ? task_runner_provider()->ImplThreadTaskRunner()

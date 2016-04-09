@@ -98,7 +98,7 @@ class LayerTreeHostTilesPixelTest : public LayerTreePixelTest {
   }
 
   base::FilePath ref_file_;
-  scoped_ptr<SkBitmap> result_bitmap_;
+  std::unique_ptr<SkBitmap> result_bitmap_;
   RasterMode raster_mode_;
 };
 

@@ -24,14 +24,14 @@
 namespace cc {
 namespace {
 
-scoped_ptr<UIResourceLayerImpl> GenerateUIResourceLayer(
+std::unique_ptr<UIResourceLayerImpl> GenerateUIResourceLayer(
     FakeUIResourceLayerTreeHostImpl* host_impl,
     const gfx::Size& bitmap_size,
     const gfx::Size& layer_size,
     bool opaque,
     UIResourceId uid) {
   gfx::Rect visible_layer_rect(layer_size);
-  scoped_ptr<UIResourceLayerImpl> layer =
+  std::unique_ptr<UIResourceLayerImpl> layer =
       UIResourceLayerImpl::Create(host_impl->active_tree(), 1);
   layer->draw_properties().visible_layer_rect = visible_layer_rect;
   layer->SetBounds(layer_size);
@@ -46,9 +46,9 @@ scoped_ptr<UIResourceLayerImpl> GenerateUIResourceLayer(
   return layer;
 }
 
-void QuadSizeTest(scoped_ptr<UIResourceLayerImpl> layer,
+void QuadSizeTest(std::unique_ptr<UIResourceLayerImpl> layer,
                   size_t expected_quad_size) {
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
 
   AppendQuadsData data;
   layer->AppendQuads(render_pass.get(), &data);
@@ -62,7 +62,7 @@ TEST(UIResourceLayerImplTest, VerifyDrawQuads) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
+  std::unique_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   FakeUIResourceLayerTreeHostImpl host_impl(
       &task_runner_provider, &shared_bitmap_manager, &task_graph_runner);
   host_impl.SetVisible(true);
@@ -74,11 +74,8 @@ TEST(UIResourceLayerImplTest, VerifyDrawQuads) {
   size_t expected_quad_size = 1;
   bool opaque = true;
   UIResourceId uid = 1;
-  scoped_ptr<UIResourceLayerImpl> layer = GenerateUIResourceLayer(&host_impl,
-                                                                  bitmap_size,
-                                                                  layer_size,
-                                                                  opaque,
-                                                                  uid);
+  std::unique_ptr<UIResourceLayerImpl> layer =
+      GenerateUIResourceLayer(&host_impl, bitmap_size, layer_size, opaque, uid);
   QuadSizeTest(std::move(layer), expected_quad_size);
 
   // Make sure we're not appending quads when there are invalid values.
@@ -92,9 +89,9 @@ TEST(UIResourceLayerImplTest, VerifyDrawQuads) {
   QuadSizeTest(std::move(layer), expected_quad_size);
 }
 
-void OpaqueBoundsTest(scoped_ptr<UIResourceLayerImpl> layer,
-                 const gfx::Rect& expected_opaque_bounds) {
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+void OpaqueBoundsTest(std::unique_ptr<UIResourceLayerImpl> layer,
+                      const gfx::Rect& expected_opaque_bounds) {
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
 
   AppendQuadsData data;
   layer->AppendQuads(render_pass.get(), &data);
@@ -110,7 +107,7 @@ TEST(UIResourceLayerImplTest, VerifySetOpaqueOnSkBitmap) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
+  std::unique_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   FakeUIResourceLayerTreeHostImpl host_impl(
       &task_runner_provider, &shared_bitmap_manager, &task_graph_runner);
   host_impl.SetVisible(true);
@@ -120,11 +117,8 @@ TEST(UIResourceLayerImplTest, VerifySetOpaqueOnSkBitmap) {
   gfx::Size layer_size(100, 100);
   bool opaque = false;
   UIResourceId uid = 1;
-  scoped_ptr<UIResourceLayerImpl> layer = GenerateUIResourceLayer(&host_impl,
-                                                                  bitmap_size,
-                                                                  layer_size,
-                                                                  opaque,
-                                                                  uid);
+  std::unique_ptr<UIResourceLayerImpl> layer =
+      GenerateUIResourceLayer(&host_impl, bitmap_size, layer_size, opaque, uid);
   gfx::Rect expected_opaque_bounds;
   OpaqueBoundsTest(std::move(layer), expected_opaque_bounds);
 
@@ -142,7 +136,7 @@ TEST(UIResourceLayerImplTest, VerifySetOpaqueOnLayer) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
+  std::unique_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   FakeUIResourceLayerTreeHostImpl host_impl(
       &task_runner_provider, &shared_bitmap_manager, &task_graph_runner);
   host_impl.SetVisible(true);
@@ -152,7 +146,7 @@ TEST(UIResourceLayerImplTest, VerifySetOpaqueOnLayer) {
   gfx::Size layer_size(100, 100);
   bool skbitmap_opaque = false;
   UIResourceId uid = 1;
-  scoped_ptr<UIResourceLayerImpl> layer = GenerateUIResourceLayer(
+  std::unique_ptr<UIResourceLayerImpl> layer = GenerateUIResourceLayer(
       &host_impl, bitmap_size, layer_size, skbitmap_opaque, uid);
   layer->SetContentsOpaque(false);
   gfx::Rect expected_opaque_bounds;

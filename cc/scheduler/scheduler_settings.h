@@ -5,8 +5,9 @@
 #ifndef CC_SCHEDULER_SCHEDULER_SETTINGS_H_
 #define CC_SCHEDULER_SCHEDULER_SETTINGS_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "cc/base/cc_export.h"
@@ -37,7 +38,7 @@ class CC_EXPORT SchedulerSettings {
   int maximum_number_of_failed_draws_before_draw_is_forced;
   base::TimeDelta background_frame_interval;
 
-  scoped_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
 };
 
 }  // namespace cc

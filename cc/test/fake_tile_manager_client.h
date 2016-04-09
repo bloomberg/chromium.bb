@@ -21,10 +21,10 @@ class FakeTileManagerClient : public TileManagerClient {
   void NotifyReadyToDraw() override {}
   void NotifyAllTileTasksCompleted() override {}
   void NotifyTileStateChanged(const Tile* tile) override {}
-  scoped_ptr<RasterTilePriorityQueue> BuildRasterQueue(
+  std::unique_ptr<RasterTilePriorityQueue> BuildRasterQueue(
       TreePriority tree_priority,
       RasterTilePriorityQueue::Type type) override;
-  scoped_ptr<EvictionTilePriorityQueue> BuildEvictionQueue(
+  std::unique_ptr<EvictionTilePriorityQueue> BuildEvictionQueue(
       TreePriority tree_priority) override;
   void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) override {}
 };

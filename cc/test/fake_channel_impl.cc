@@ -9,6 +9,7 @@ namespace cc {
 
 FakeChannelImpl::FakeChannelImpl() {}
 
-void FakeChannelImpl::SetAnimationEvents(scoped_ptr<AnimationEvents> queue) {}
+void FakeChannelImpl::SetAnimationEvents(
+    std::unique_ptr<AnimationEvents> queue) {}
 
 }  // namespace cc

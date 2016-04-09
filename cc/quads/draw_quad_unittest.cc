@@ -43,11 +43,11 @@ TEST(DrawQuadTest, CopySharedQuadState) {
   SkXfermode::Mode blend_mode = SkXfermode::kMultiply_Mode;
   int sorting_context_id = 65536;
 
-  scoped_ptr<SharedQuadState> state(new SharedQuadState);
+  std::unique_ptr<SharedQuadState> state(new SharedQuadState);
   state->SetAll(quad_transform, layer_bounds, visible_layer_rect, clip_rect,
                 is_clipped, opacity, blend_mode, sorting_context_id);
 
-  scoped_ptr<SharedQuadState> copy(new SharedQuadState);
+  std::unique_ptr<SharedQuadState> copy(new SharedQuadState);
   copy->CopyFrom(state.get());
   EXPECT_EQ(quad_transform, copy->quad_to_target_transform);
   EXPECT_EQ(visible_layer_rect, copy->visible_quad_layer_rect);
@@ -85,7 +85,7 @@ void CompareDrawQuad(DrawQuad* quad,
 }
 
 #define CREATE_SHARED_STATE()                                              \
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();               \
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();          \
   SharedQuadState* shared_state(CreateSharedQuadState(render_pass.get())); \
   SharedQuadState* copy_shared_state =                                     \
       render_pass->CreateAndAppendSharedQuadState();                       \

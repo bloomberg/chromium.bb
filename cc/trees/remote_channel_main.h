@@ -22,7 +22,7 @@ class CompositorMessageToMain;
 class CC_EXPORT RemoteChannelMain : public ChannelMain,
                                     public RemoteProtoChannel::ProtoReceiver {
  public:
-  static scoped_ptr<RemoteChannelMain> Create(
+  static std::unique_ptr<RemoteChannelMain> Create(
       RemoteProtoChannel* remote_proto_channel,
       ProxyMain* proxy_main,
       TaskRunnerProvider* task_runner_provider);
@@ -54,11 +54,12 @@ class CC_EXPORT RemoteChannelMain : public ChannelMain,
                          bool hold_commit_for_activation) override;
   void SynchronouslyInitializeImpl(
       LayerTreeHost* layer_tree_host,
-      scoped_ptr<BeginFrameSource> external_begin_frame_source) override;
+      std::unique_ptr<BeginFrameSource> external_begin_frame_source) override;
   void SynchronouslyCloseImpl() override;
 
   // RemoteProtoChannel::ProtoReceiver implementation
-  void OnProtoReceived(scoped_ptr<proto::CompositorMessage> proto) override;
+  void OnProtoReceived(
+      std::unique_ptr<proto::CompositorMessage> proto) override;
 
  protected:
   RemoteChannelMain(RemoteProtoChannel* remote_proto_channel,

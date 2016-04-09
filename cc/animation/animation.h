@@ -5,8 +5,9 @@
 #ifndef CC_ANIMATION_ANIMATION_H_
 #define CC_ANIMATION_ANIMATION_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/animation/target_property.h"
 #include "cc/base/cc_export.h"
@@ -58,10 +59,11 @@ class CC_EXPORT Animation {
     FILL_MODE_BOTH
   };
 
-  static scoped_ptr<Animation> Create(scoped_ptr<AnimationCurve> curve,
-                                      int animation_id,
-                                      int group_id,
-                                      TargetProperty::Type target_property);
+  static std::unique_ptr<Animation> Create(
+      std::unique_ptr<AnimationCurve> curve,
+      int animation_id,
+      int group_id,
+      TargetProperty::Type target_property);
 
   virtual ~Animation();
 
@@ -144,7 +146,8 @@ class CC_EXPORT Animation {
   base::TimeDelta TrimTimeToCurrentIteration(
       base::TimeTicks monotonic_time) const;
 
-  scoped_ptr<Animation> CloneAndInitialize(RunState initial_run_state) const;
+  std::unique_ptr<Animation> CloneAndInitialize(
+      RunState initial_run_state) const;
 
   void set_is_controlling_instance_for_test(bool is_controlling_instance) {
     is_controlling_instance_ = is_controlling_instance;
@@ -167,14 +170,14 @@ class CC_EXPORT Animation {
   bool affects_pending_observers() const { return affects_pending_observers_; }
 
  private:
-  Animation(scoped_ptr<AnimationCurve> curve,
+  Animation(std::unique_ptr<AnimationCurve> curve,
             int animation_id,
             int group_id,
             TargetProperty::Type target_property);
 
   base::TimeDelta ConvertToActiveTime(base::TimeTicks monotonic_time) const;
 
-  scoped_ptr<AnimationCurve> curve_;
+  std::unique_ptr<AnimationCurve> curve_;
 
   // IDs must be unique.
   int id_;

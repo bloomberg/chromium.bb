@@ -5,8 +5,9 @@
 #ifndef CC_OUTPUT_SOFTWARE_OUTPUT_DEVICE_H_
 #define CC_OUTPUT_SOFTWARE_OUTPUT_DEVICE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/rect.h"
@@ -60,7 +61,7 @@ class CC_EXPORT SoftwareOutputDevice {
   float scale_factor_;
   gfx::Rect damage_rect_;
   sk_sp<SkSurface> surface_;
-  scoped_ptr<gfx::VSyncProvider> vsync_provider_;
+  std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDevice);

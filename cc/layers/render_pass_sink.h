@@ -5,7 +5,8 @@
 #ifndef CC_LAYERS_RENDER_PASS_SINK_H_
 #define CC_LAYERS_RENDER_PASS_SINK_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "cc/base/cc_export.h"
 
 namespace cc {
@@ -13,7 +14,7 @@ class RenderPass;
 
 class CC_EXPORT RenderPassSink {
  public:
-  virtual void AppendRenderPass(scoped_ptr<RenderPass> render_pass) = 0;
+  virtual void AppendRenderPass(std::unique_ptr<RenderPass> render_pass) = 0;
 
  protected:
   virtual ~RenderPassSink() {}

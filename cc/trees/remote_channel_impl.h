@@ -78,7 +78,7 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
                                     public RemoteProtoChannel::ProtoReceiver,
                                     public Proxy {
  public:
-  static scoped_ptr<RemoteChannelImpl> Create(
+  static std::unique_ptr<RemoteChannelImpl> Create(
       LayerTreeHost* layer_tree_host,
       RemoteProtoChannel* remote_proto_channel,
       TaskRunnerProvider* task_runner_provider);
@@ -91,11 +91,11 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
                     TaskRunnerProvider* task_runner_provider);
 
   // virtual for testing.
-  virtual scoped_ptr<ProxyImpl> CreateProxyImpl(
+  virtual std::unique_ptr<ProxyImpl> CreateProxyImpl(
       ChannelImpl* channel_impl,
       LayerTreeHost* layer_tree_host,
       TaskRunnerProvider* task_runner_provider,
-      scoped_ptr<BeginFrameSource> external_begin_frame_source);
+      std::unique_ptr<BeginFrameSource> external_begin_frame_source);
 
  private:
   struct MainThreadOnly {
@@ -123,8 +123,8 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
   };
 
   struct CompositorThreadOnly {
-    scoped_ptr<ProxyImpl> proxy_impl;
-    scoped_ptr<base::WeakPtrFactory<ProxyImpl>> proxy_impl_weak_factory;
+    std::unique_ptr<ProxyImpl> proxy_impl;
+    std::unique_ptr<base::WeakPtrFactory<ProxyImpl>> proxy_impl_weak_factory;
     base::WeakPtr<RemoteChannelImpl> remote_channel_weak_ptr;
 
     CompositorThreadOnly(
@@ -134,7 +134,8 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
 
   // called on main thread.
   // RemoteProtoChannel::ProtoReceiver implementation.
-  void OnProtoReceived(scoped_ptr<proto::CompositorMessage> proto) override;
+  void OnProtoReceived(
+      std::unique_ptr<proto::CompositorMessage> proto) override;
 
   // Proxy implementation
   void FinishAllRendering() override;
@@ -154,7 +155,8 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
   void MainThreadHasStoppedFlinging() override;
   bool CommitRequested() const override;
   bool BeginMainFrameRequested() const override;
-  void Start(scoped_ptr<BeginFrameSource> external_begin_frame_source) override;
+  void Start(
+      std::unique_ptr<BeginFrameSource> external_begin_frame_source) override;
   void Stop() override;
   bool SupportsImplScrolling() const override;
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames) override;
@@ -172,7 +174,7 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
       const RendererCapabilities& capabilities) override;
   void BeginMainFrameNotExpectedSoon() override;
   void DidCommitAndDrawFrame() override;
-  void SetAnimationEvents(scoped_ptr<AnimationEvents> queue) override;
+  void SetAnimationEvents(std::unique_ptr<AnimationEvents> queue) override;
   void DidLoseOutputSurface() override;
   void RequestNewOutputSurface() override;
   void DidInitializeOutputSurface(
@@ -180,13 +182,13 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
       const RendererCapabilities& capabilities) override;
   void DidCompletePageScaleAnimation() override;
   void PostFrameTimingEventsOnMain(
-      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
+      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
       override;
-  void BeginMainFrame(
-      scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) override;
+  void BeginMainFrame(std::unique_ptr<BeginMainFrameAndCommitState>
+                          begin_main_frame_state) override;
 
-  void SendMessageProto(scoped_ptr<proto::CompositorMessage> proto);
+  void SendMessageProto(std::unique_ptr<proto::CompositorMessage> proto);
 
   // called on main thread.
   void HandleProto(const proto::CompositorMessageToImpl& proto);
@@ -195,7 +197,7 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
   void DidInitializeOutputSurfaceOnMain(
       bool success,
       const RendererCapabilities& capabilities);
-  void SendMessageProtoOnMain(scoped_ptr<proto::CompositorMessage> proto);
+  void SendMessageProtoOnMain(std::unique_ptr<proto::CompositorMessage> proto);
   void PostSetNeedsRedrawToImpl(const gfx::Rect& damaged_rect);
 
   void InitializeImplOnImpl(CompletionEvent* completion,

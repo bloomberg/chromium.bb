@@ -34,11 +34,11 @@ class ResourcePoolTest : public testing::Test {
 
  protected:
   FakeOutputSurfaceClient output_surface_client_;
-  scoped_ptr<FakeOutputSurface> output_surface_;
-  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
-  scoped_ptr<ResourceProvider> resource_provider_;
+  std::unique_ptr<FakeOutputSurface> output_surface_;
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<ResourceProvider> resource_provider_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_ptr<ResourcePool> resource_pool_;
+  std::unique_ptr<ResourcePool> resource_pool_;
 };
 
 TEST_F(ResourcePoolTest, AcquireRelease) {

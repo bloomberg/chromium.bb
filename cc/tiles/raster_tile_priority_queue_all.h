@@ -34,11 +34,12 @@ class CC_EXPORT RasterTilePriorityQueueAll : public RasterTilePriorityQueue {
              const std::vector<PictureLayerImpl*>& pending_layers,
              TreePriority tree_priority);
 
-  std::vector<scoped_ptr<TilingSetRasterQueueAll>>& GetNextQueues();
-  const std::vector<scoped_ptr<TilingSetRasterQueueAll>>& GetNextQueues() const;
+  std::vector<std::unique_ptr<TilingSetRasterQueueAll>>& GetNextQueues();
+  const std::vector<std::unique_ptr<TilingSetRasterQueueAll>>& GetNextQueues()
+      const;
 
-  std::vector<scoped_ptr<TilingSetRasterQueueAll>> active_queues_;
-  std::vector<scoped_ptr<TilingSetRasterQueueAll>> pending_queues_;
+  std::vector<std::unique_ptr<TilingSetRasterQueueAll>> active_queues_;
+  std::vector<std::unique_ptr<TilingSetRasterQueueAll>> pending_queues_;
   TreePriority tree_priority_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterTilePriorityQueueAll);

@@ -15,7 +15,7 @@ namespace cc {
 class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
                                            public Layer {
  public:
-  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
   static scoped_refptr<SolidColorScrollbarLayer> Create(
       ScrollbarOrientation orientation,

@@ -23,7 +23,7 @@ void SynchronizeTreesInternal(LayerType* layer_root, LayerTreeImpl* tree_impl) {
   DCHECK(tree_impl);
 
   TRACE_EVENT0("cc", "TreeSynchronizer::SynchronizeTrees");
-  scoped_ptr<OwnedLayerImplList> old_layers(tree_impl->DetachLayers());
+  std::unique_ptr<OwnedLayerImplList> old_layers(tree_impl->DetachLayers());
 
   OwnedLayerImplMap old_layer_map;
   for (auto& it : *old_layers)
@@ -57,26 +57,26 @@ void TreeSynchronizer::SynchronizeTrees(LayerImpl* layer_root,
 }
 
 template <typename LayerType>
-scoped_ptr<LayerImpl> ReuseOrCreateLayerImpl(OwnedLayerImplMap* old_layers,
-                                             LayerType* layer,
-                                             LayerTreeImpl* tree_impl) {
+std::unique_ptr<LayerImpl> ReuseOrCreateLayerImpl(OwnedLayerImplMap* old_layers,
+                                                  LayerType* layer,
+                                                  LayerTreeImpl* tree_impl) {
   if (!layer)
     return nullptr;
-  scoped_ptr<LayerImpl> layer_impl = std::move((*old_layers)[layer->id()]);
+  std::unique_ptr<LayerImpl> layer_impl = std::move((*old_layers)[layer->id()]);
   if (!layer_impl)
     layer_impl = layer->CreateLayerImpl(tree_impl);
   return layer_impl;
 }
 
 template <typename LayerType>
-scoped_ptr<LayerImpl> SynchronizeTreesRecursiveInternal(
+std::unique_ptr<LayerImpl> SynchronizeTreesRecursiveInternal(
     OwnedLayerImplMap* old_layers,
     LayerType* layer,
     LayerTreeImpl* tree_impl) {
   if (!layer)
     return nullptr;
 
-  scoped_ptr<LayerImpl> layer_impl(
+  std::unique_ptr<LayerImpl> layer_impl(
       ReuseOrCreateLayerImpl(old_layers, layer, tree_impl));
 
   layer_impl->children().clear();
@@ -85,7 +85,7 @@ scoped_ptr<LayerImpl> SynchronizeTreesRecursiveInternal(
         old_layers, layer->child_at(i), tree_impl));
   }
 
-  scoped_ptr<LayerImpl> mask_layer = SynchronizeTreesRecursiveInternal(
+  std::unique_ptr<LayerImpl> mask_layer = SynchronizeTreesRecursiveInternal(
       old_layers, layer->mask_layer(), tree_impl);
   if (layer_impl->mask_layer() && mask_layer &&
       layer_impl->mask_layer() == mask_layer.get()) {
@@ -96,7 +96,7 @@ scoped_ptr<LayerImpl> SynchronizeTreesRecursiveInternal(
     layer_impl->SetMaskLayer(std::move(mask_layer));
   }
 
-  scoped_ptr<LayerImpl> replica_layer = SynchronizeTreesRecursiveInternal(
+  std::unique_ptr<LayerImpl> replica_layer = SynchronizeTreesRecursiveInternal(
       old_layers, layer->replica_layer(), tree_impl);
   if (layer_impl->replica_layer() && replica_layer &&
       layer_impl->replica_layer() == replica_layer.get()) {

@@ -63,28 +63,29 @@ void CreateRenderPass(const RenderPassId& render_pass_id,
                       const gfx::Rect& rect,
                       const gfx::Transform& transform_to_root_target,
                       RenderPassList* render_pass_list) {
-  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   render_pass->SetNew(render_pass_id, rect, rect, transform_to_root_target);
   render_pass_list->push_back(std::move(render_pass));
 }
 
-scoped_ptr<CompositorFrame> CreateCompositorFrameWithRenderPassList(
+std::unique_ptr<CompositorFrame> CreateCompositorFrameWithRenderPassList(
     RenderPassList* render_pass_list) {
-  scoped_ptr<DelegatedFrameData> root_delegated_frame_data(
+  std::unique_ptr<DelegatedFrameData> root_delegated_frame_data(
       new DelegatedFrameData);
   root_delegated_frame_data->render_pass_list.swap(*render_pass_list);
-  scoped_ptr<CompositorFrame> root_frame(new CompositorFrame);
+  std::unique_ptr<CompositorFrame> root_frame(new CompositorFrame);
   root_frame->delegated_frame_data = std::move(root_delegated_frame_data);
   return root_frame;
 }
 
-scoped_ptr<CompositorFrame> CreateCompositorFrame(const gfx::Rect& root_rect,
-                                                  RenderPass** render_pass) {
+std::unique_ptr<CompositorFrame> CreateCompositorFrame(
+    const gfx::Rect& root_rect,
+    RenderPass** render_pass) {
   RenderPassList render_pass_list;
   RenderPassId root_id(1, 1);
   CreateRenderPass(root_id, root_rect, gfx::Transform(), &render_pass_list);
 
-  scoped_ptr<CompositorFrame> root_frame =
+  std::unique_ptr<CompositorFrame> root_frame =
       CreateCompositorFrameWithRenderPassList(&render_pass_list);
 
   *render_pass =

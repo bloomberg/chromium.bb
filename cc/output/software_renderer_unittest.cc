@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/copy_output_request.h"
@@ -32,7 +33,7 @@ namespace {
 class SoftwareRendererTest : public testing::Test, public RendererClient {
  public:
   void InitializeRenderer(
-      scoped_ptr<SoftwareOutputDevice> software_output_device) {
+      std::unique_ptr<SoftwareOutputDevice> software_output_device) {
     output_surface_ =
         FakeOutputSurface::CreateSoftware(std::move(software_output_device));
     CHECK(output_surface_->BindToClient(&output_surface_client_));
@@ -53,10 +54,10 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
   // RendererClient implementation.
   void SetFullRootLayerDamage() override {}
 
-  scoped_ptr<SkBitmap> DrawAndCopyOutput(RenderPassList* list,
-                                         float device_scale_factor,
-                                         gfx::Rect device_viewport_rect) {
-    scoped_ptr<SkBitmap> bitmap_result;
+  std::unique_ptr<SkBitmap> DrawAndCopyOutput(RenderPassList* list,
+                                              float device_scale_factor,
+                                              gfx::Rect device_viewport_rect) {
+    std::unique_ptr<SkBitmap> bitmap_result;
     base::RunLoop loop;
 
     list->back()->copy_requests.push_back(
@@ -74,9 +75,9 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
     return bitmap_result;
   }
 
-  static void SaveBitmapResult(scoped_ptr<SkBitmap>* bitmap_result,
+  static void SaveBitmapResult(std::unique_ptr<SkBitmap>* bitmap_result,
                                const base::Closure& quit_closure,
-                               scoped_ptr<CopyOutputResult> result) {
+                               std::unique_ptr<CopyOutputResult> result) {
     DCHECK(result->HasBitmap());
     *bitmap_result = result->TakeBitmap();
     quit_closure.Run();
@@ -85,10 +86,10 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
  protected:
   RendererSettings settings_;
   FakeOutputSurfaceClient output_surface_client_;
-  scoped_ptr<FakeOutputSurface> output_surface_;
-  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
-  scoped_ptr<ResourceProvider> resource_provider_;
-  scoped_ptr<SoftwareRenderer> renderer_;
+  std::unique_ptr<FakeOutputSurface> output_surface_;
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<ResourceProvider> resource_provider_;
+  std::unique_ptr<SoftwareRenderer> renderer_;
 };
 
 TEST_F(SoftwareRendererTest, SolidColorQuad) {
@@ -98,10 +99,10 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
   gfx::Rect inner_rect(gfx::Point(1, 1), inner_size);
   gfx::Rect visible_rect(gfx::Point(1, 2), gfx::Size(98, 97));
 
-  InitializeRenderer(make_scoped_ptr(new SoftwareOutputDevice));
+  InitializeRenderer(base::WrapUnique(new SoftwareOutputDevice));
 
   RenderPassId root_render_pass_id = RenderPassId(1, 1);
-  scoped_ptr<RenderPass> root_render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> root_render_pass = RenderPass::Create();
   root_render_pass->SetNew(
       root_render_pass_id, outer_rect, outer_rect, gfx::Transform());
   SharedQuadState* shared_quad_state =
@@ -129,7 +130,7 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
 
   float device_scale_factor = 1.f;
   gfx::Rect device_viewport_rect(outer_size);
-  scoped_ptr<SkBitmap> output =
+  std::unique_ptr<SkBitmap> output =
       DrawAndCopyOutput(&list, device_scale_factor, device_viewport_rect);
   EXPECT_EQ(outer_rect.width(), output->info().width());
   EXPECT_EQ(outer_rect.height(), output->info().height());
@@ -148,7 +149,7 @@ TEST_F(SoftwareRendererTest, TileQuad) {
   gfx::Size inner_size(98, 98);
   gfx::Rect outer_rect(outer_size);
   gfx::Rect inner_rect(gfx::Point(1, 1), inner_size);
-  InitializeRenderer(make_scoped_ptr(new SoftwareOutputDevice));
+  InitializeRenderer(base::WrapUnique(new SoftwareOutputDevice));
 
   ResourceId resource_yellow = resource_provider()->CreateResource(
       outer_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
@@ -172,7 +173,7 @@ TEST_F(SoftwareRendererTest, TileQuad) {
   gfx::Rect root_rect = outer_rect;
 
   RenderPassId root_render_pass_id = RenderPassId(1, 1);
-  scoped_ptr<RenderPass> root_render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> root_render_pass = RenderPass::Create();
   root_render_pass->SetNew(
       root_render_pass_id, root_rect, root_rect, gfx::Transform());
   SharedQuadState* shared_quad_state =
@@ -201,7 +202,7 @@ TEST_F(SoftwareRendererTest, TileQuad) {
 
   float device_scale_factor = 1.f;
   gfx::Rect device_viewport_rect(outer_size);
-  scoped_ptr<SkBitmap> output =
+  std::unique_ptr<SkBitmap> output =
       DrawAndCopyOutput(&list, device_scale_factor, device_viewport_rect);
   EXPECT_EQ(outer_rect.width(), output->info().width());
   EXPECT_EQ(outer_rect.height(), output->info().height());
@@ -219,7 +220,7 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
   gfx::Rect tile_rect(tile_size);
   gfx::Rect visible_rect = tile_rect;
   visible_rect.Inset(1, 2, 3, 4);
-  InitializeRenderer(make_scoped_ptr(new SoftwareOutputDevice));
+  InitializeRenderer(base::WrapUnique(new SoftwareOutputDevice));
 
   ResourceId resource_cyan = resource_provider()->CreateResource(
       tile_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
@@ -238,7 +239,7 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
   gfx::Rect root_rect(tile_size);
 
   RenderPassId root_render_pass_id = RenderPassId(1, 1);
-  scoped_ptr<RenderPass> root_render_pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> root_render_pass = RenderPass::Create();
   root_render_pass->SetNew(
       root_render_pass_id, root_rect, root_rect, gfx::Transform());
   SharedQuadState* shared_quad_state =
@@ -263,7 +264,7 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
 
   float device_scale_factor = 1.f;
   gfx::Rect device_viewport_rect(tile_size);
-  scoped_ptr<SkBitmap> output =
+  std::unique_ptr<SkBitmap> output =
       DrawAndCopyOutput(&list, device_scale_factor, device_viewport_rect);
   EXPECT_EQ(tile_rect.width(), output->info().width());
   EXPECT_EQ(tile_rect.height(), output->info().height());
@@ -293,7 +294,7 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
   gfx::Rect device_viewport_rect(0, 0, 100, 100);
 
   settings_.should_clear_root_render_pass = false;
-  InitializeRenderer(make_scoped_ptr(new SoftwareOutputDevice));
+  InitializeRenderer(base::WrapUnique(new SoftwareOutputDevice));
 
   RenderPassList list;
 
@@ -305,7 +306,7 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
 
   renderer()->DecideRenderPassAllocationsForFrame(list);
 
-  scoped_ptr<SkBitmap> output =
+  std::unique_ptr<SkBitmap> output =
       DrawAndCopyOutput(&list, device_scale_factor, device_viewport_rect);
   EXPECT_EQ(device_viewport_rect.width(), output->info().width());
   EXPECT_EQ(device_viewport_rect.height(), output->info().height());
@@ -348,7 +349,7 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
 TEST_F(SoftwareRendererTest, RenderPassVisibleRect) {
   float device_scale_factor = 1.f;
   gfx::Rect device_viewport_rect(0, 0, 100, 100);
-  InitializeRenderer(make_scoped_ptr(new SoftwareOutputDevice));
+  InitializeRenderer(base::WrapUnique(new SoftwareOutputDevice));
 
   RenderPassList list;
 
@@ -372,7 +373,7 @@ TEST_F(SoftwareRendererTest, RenderPassVisibleRect) {
 
   renderer()->DecideRenderPassAllocationsForFrame(list);
 
-  scoped_ptr<SkBitmap> output =
+  std::unique_ptr<SkBitmap> output =
       DrawAndCopyOutput(&list, device_scale_factor, device_viewport_rect);
   EXPECT_EQ(device_viewport_rect.width(), output->info().width());
   EXPECT_EQ(device_viewport_rect.height(), output->info().height());

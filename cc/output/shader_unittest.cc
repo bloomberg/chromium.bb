@@ -15,8 +15,8 @@ namespace cc {
 TEST(ShaderTest, HighpThresholds) {
   // The test context always uses a mediump precision of 10 bits which
   // corresponds to a native highp threshold of 2^10 = 1024
-  scoped_ptr<TestWebGraphicsContext3D> stub_context =
-    TestWebGraphicsContext3D::Create();
+  std::unique_ptr<TestWebGraphicsContext3D> stub_context =
+      TestWebGraphicsContext3D::Create();
   TestGLES2Interface stub_gl(stub_context.get());
 
   int threshold_cache = 0;

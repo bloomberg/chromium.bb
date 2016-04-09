@@ -5,11 +5,11 @@
 #ifndef CC_TREES_PROXY_H_
 #define CC_TREES_PROXY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -69,7 +69,7 @@ class CC_EXPORT Proxy {
 
   // Must be called before using the proxy.
   virtual void Start(
-      scoped_ptr<BeginFrameSource> external_begin_frame_source) = 0;
+      std::unique_ptr<BeginFrameSource> external_begin_frame_source) = 0;
   virtual void Stop() = 0;   // Must be called before deleting the proxy.
 
   virtual bool SupportsImplScrolling() const = 0;

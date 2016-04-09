@@ -48,7 +48,7 @@ class SurfaceLayerTest : public testing::Test {
 
   FakeLayerTreeHostClient fake_client_;
   TestTaskGraphRunner task_graph_runner_;
-  scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
+  std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
 };
 
 void SatisfyCallback(SurfaceSequence* out, SurfaceSequence in) {
@@ -77,7 +77,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   layer_tree_host_->set_surface_id_namespace(1);
   layer_tree_host_->SetRootLayer(layer);
 
-  scoped_ptr<FakeLayerTreeHost> layer_tree_host2 =
+  std::unique_ptr<FakeLayerTreeHost> layer_tree_host2 =
       FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_);
   scoped_refptr<SurfaceLayer> layer2(SurfaceLayer::Create(
       base::Bind(&SatisfyCallback, &blank_change),

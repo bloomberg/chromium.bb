@@ -5,8 +5,9 @@
 #ifndef CC_OUTPUT_OVERLAY_PROCESSOR_H_
 #define CC_OUTPUT_OVERLAY_PROCESSOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/ca_layer_overlay.h"
 #include "cc/output/overlay_candidate.h"
@@ -29,7 +30,7 @@ class CC_EXPORT OverlayProcessor {
                          RenderPass* render_pass,
                          OverlayCandidateList* candidates) = 0;
   };
-  using StrategyList = std::vector<scoped_ptr<Strategy>>;
+  using StrategyList = std::vector<std::unique_ptr<Strategy>>;
 
   explicit OverlayProcessor(OutputSurface* surface);
   virtual ~OverlayProcessor();

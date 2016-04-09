@@ -46,7 +46,7 @@ class OcclusionTrackerPerfTest : public testing::Test {
     host_impl_->SetVisible(true);
     host_impl_->InitializeRenderer(output_surface_.get());
 
-    scoped_ptr<LayerImpl> root_layer = LayerImpl::Create(active_tree(), 1);
+    std::unique_ptr<LayerImpl> root_layer = LayerImpl::Create(active_tree(), 1);
     root_layer->SetForceRenderSurface(true);
     active_tree()->SetRootLayer(std::move(root_layer));
   }
@@ -73,8 +73,8 @@ class OcclusionTrackerPerfTest : public testing::Test {
   FakeRenderingStatsInstrumentation stats_;
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
-  scoped_ptr<OutputSurface> output_surface_;
-  scoped_ptr<LayerTreeHostImpl> host_impl_;
+  std::unique_ptr<OutputSurface> output_surface_;
+  std::unique_ptr<LayerTreeHostImpl> host_impl_;
 };
 
 TEST_F(OcclusionTrackerPerfTest, UnoccludedContentRect_FullyOccluded) {
@@ -86,7 +86,7 @@ TEST_F(OcclusionTrackerPerfTest, UnoccludedContentRect_FullyOccluded) {
   CreateHost();
   host_impl_->SetViewportSize(viewport_rect.size());
 
-  scoped_ptr<SolidColorLayerImpl> opaque_layer =
+  std::unique_ptr<SolidColorLayerImpl> opaque_layer =
       SolidColorLayerImpl::Create(active_tree(), 2);
   opaque_layer->SetBackgroundColor(SK_ColorRED);
   opaque_layer->SetContentsOpaque(true);
@@ -154,7 +154,7 @@ TEST_F(OcclusionTrackerPerfTest, UnoccludedContentRect_10OpaqueLayers) {
   host_impl_->SetViewportSize(viewport_rect.size());
 
   for (int i = 0; i < kNumOpaqueLayers; ++i) {
-    scoped_ptr<SolidColorLayerImpl> opaque_layer =
+    std::unique_ptr<SolidColorLayerImpl> opaque_layer =
         SolidColorLayerImpl::Create(active_tree(), 2 + i);
     opaque_layer->SetBackgroundColor(SK_ColorRED);
     opaque_layer->SetContentsOpaque(true);

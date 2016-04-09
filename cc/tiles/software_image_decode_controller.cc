@@ -11,6 +11,7 @@
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -347,7 +348,7 @@ void SoftwareImageDecodeController::DecodeImage(const ImageKey& key,
     decoded_images_.Erase(image_it);
   }
 
-  scoped_ptr<DecodedImage> decoded_image;
+  std::unique_ptr<DecodedImage> decoded_image;
   {
     base::AutoUnlock unlock(lock_);
     decoded_image = DecodeImageInternal(key, image);
@@ -383,7 +384,7 @@ void SoftwareImageDecodeController::DecodeImage(const ImageKey& key,
   SanityCheckState(__LINE__, true);
 }
 
-scoped_ptr<SoftwareImageDecodeController::DecodedImage>
+std::unique_ptr<SoftwareImageDecodeController::DecodedImage>
 SoftwareImageDecodeController::DecodeImageInternal(
     const ImageKey& key,
     const DrawImage& draw_image) {
@@ -397,7 +398,7 @@ SoftwareImageDecodeController::DecodeImageInternal(
   if (key.can_use_original_decode()) {
     SkImageInfo decoded_info =
         CreateImageInfo(image->width(), image->height(), format_);
-    scoped_ptr<base::DiscardableMemory> decoded_pixels;
+    std::unique_ptr<base::DiscardableMemory> decoded_pixels;
     {
       TRACE_EVENT0(
           "disabled-by-default-cc.debug",
@@ -422,7 +423,7 @@ SoftwareImageDecodeController::DecodeImageInternal(
       }
     }
 
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new DecodedImage(decoded_info, std::move(decoded_pixels),
                          SkSize::Make(0, 0), next_tracing_id_.GetNext()));
   }
@@ -469,7 +470,7 @@ SoftwareImageDecodeController::DecodeImageInternal(
   DCHECK(!key.target_size().IsEmpty());
   SkImageInfo scaled_info = CreateImageInfo(
       key.target_size().width(), key.target_size().height(), format_);
-  scoped_ptr<base::DiscardableMemory> scaled_pixels;
+  std::unique_ptr<base::DiscardableMemory> scaled_pixels;
   {
     TRACE_EVENT0(
         "disabled-by-default-cc.debug",
@@ -493,11 +494,11 @@ SoftwareImageDecodeController::DecodeImageInternal(
   }
 
   // Release the original sized decode. Any other intermediate result to release
-  // would be the subrect memory. However, that's in a scoped_ptr and will be
+  // would be the subrect memory. However, that's in a unique_ptr and will be
   // deleted automatically when we return.
   DrawWithImageFinished(original_size_draw_image, decoded_draw_image);
 
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new DecodedImage(scaled_info, std::move(scaled_pixels),
                        SkSize::Make(-key.src_rect().x(), -key.src_rect().y()),
                        next_tracing_id_.GetNext()));
@@ -529,7 +530,7 @@ DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDrawInternal(
   auto decoded_images_it = decoded_images_.Get(key);
   // If we found the image and it's locked, then return it. If it's not locked,
   // erase it from the cache since it might be put into the at-raster cache.
-  scoped_ptr<DecodedImage> scoped_decoded_image;
+  std::unique_ptr<DecodedImage> scoped_decoded_image;
   DecodedImage* decoded_image = nullptr;
   if (decoded_images_it != decoded_images_.end()) {
     decoded_image = decoded_images_it->second.get();
@@ -893,7 +894,7 @@ std::string ImageDecodeControllerKey::ToString() const {
 // DecodedImage
 SoftwareImageDecodeController::DecodedImage::DecodedImage(
     const SkImageInfo& info,
-    scoped_ptr<base::DiscardableMemory> memory,
+    std::unique_ptr<base::DiscardableMemory> memory,
     const SkSize& src_rect_offset,
     uint64_t tracing_id)
     : locked_(true),

@@ -5,7 +5,8 @@
 #ifndef CC_QUADS_SHARED_QUAD_STATE_H_
 #define CC_QUADS_SHARED_QUAD_STATE_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "cc/base/cc_export.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/geometry/rect.h"

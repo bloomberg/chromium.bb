@@ -11,7 +11,8 @@ namespace cc {
 
 class FakeMaskLayerImpl : public LayerImpl {
  public:
-  static scoped_ptr<FakeMaskLayerImpl> Create(LayerTreeImpl* tree_impl, int id);
+  static std::unique_ptr<FakeMaskLayerImpl> Create(LayerTreeImpl* tree_impl,
+                                                   int id);
 
   void GetContentsResourceId(ResourceId* resource_id,
                              gfx::Size* resource_size) const override;

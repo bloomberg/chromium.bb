@@ -14,12 +14,12 @@ namespace cc {
 // actions.
 class ProxyImplForTest : public ProxyImpl {
  public:
-  static scoped_ptr<ProxyImplForTest> Create(
+  static std::unique_ptr<ProxyImplForTest> Create(
       TestHooks* test_hooks,
       ChannelImpl* channel_impl,
       LayerTreeHost* layer_tree_host,
       TaskRunnerProvider* task_runner_provider,
-      scoped_ptr<BeginFrameSource> external_begin_frame_source);
+      std::unique_ptr<BeginFrameSource> external_begin_frame_source);
 
   using ProxyImpl::PostAnimationEventsToMainThreadOnImplThread;
   using ProxyImpl::DidLoseOutputSurfaceOnImplThread;
@@ -35,11 +35,12 @@ class ProxyImplForTest : public ProxyImpl {
     return last_begin_main_frame_args_;
   }
 
-  ProxyImplForTest(TestHooks* test_hooks,
-                   ChannelImpl* channel_impl,
-                   LayerTreeHost* layer_tree_host,
-                   TaskRunnerProvider* task_runner_provider,
-                   scoped_ptr<BeginFrameSource> external_begin_frame_source);
+  ProxyImplForTest(
+      TestHooks* test_hooks,
+      ChannelImpl* channel_impl,
+      LayerTreeHost* layer_tree_host,
+      TaskRunnerProvider* task_runner_provider,
+      std::unique_ptr<BeginFrameSource> external_begin_frame_source);
 
   void ScheduledActionSendBeginMainFrame(const BeginFrameArgs& args) override;
   DrawResult ScheduledActionDrawAndSwapIfPossible() override;

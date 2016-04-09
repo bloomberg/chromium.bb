@@ -8,6 +8,7 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
@@ -26,16 +27,16 @@ const base::TimeDelta kDeadlineFudgeFactor =
     base::TimeDelta::FromMicroseconds(1000);
 }
 
-scoped_ptr<Scheduler> Scheduler::Create(
+std::unique_ptr<Scheduler> Scheduler::Create(
     SchedulerClient* client,
     const SchedulerSettings& settings,
     int layer_tree_host_id,
     base::SingleThreadTaskRunner* task_runner,
     BeginFrameSource* begin_frame_source,
-    scoped_ptr<CompositorTimingHistory> compositor_timing_history) {
-  return make_scoped_ptr(new Scheduler(client, settings, layer_tree_host_id,
-                                       task_runner, begin_frame_source,
-                                       std::move(compositor_timing_history)));
+    std::unique_ptr<CompositorTimingHistory> compositor_timing_history) {
+  return base::WrapUnique(new Scheduler(client, settings, layer_tree_host_id,
+                                        task_runner, begin_frame_source,
+                                        std::move(compositor_timing_history)));
 }
 
 Scheduler::Scheduler(
@@ -44,7 +45,7 @@ Scheduler::Scheduler(
     int layer_tree_host_id,
     base::SingleThreadTaskRunner* task_runner,
     BeginFrameSource* begin_frame_source,
-    scoped_ptr<CompositorTimingHistory> compositor_timing_history)
+    std::unique_ptr<CompositorTimingHistory> compositor_timing_history)
     : settings_(settings),
       client_(client),
       layer_tree_host_id_(layer_tree_host_id),
@@ -741,9 +742,9 @@ void Scheduler::ProcessScheduledActions() {
   SetupNextBeginFrameIfNeeded();
 }
 
-scoped_ptr<base::trace_event::ConvertableToTraceFormat> Scheduler::AsValue()
-    const {
-  scoped_ptr<base::trace_event::TracedValue> state(
+std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
+Scheduler::AsValue() const {
+  std::unique_ptr<base::trace_event::TracedValue> state(
       new base::trace_event::TracedValue());
   AsValueInto(state.get());
   return std::move(state);

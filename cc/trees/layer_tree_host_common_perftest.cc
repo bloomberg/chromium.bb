@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/trees/layer_tree_host_common.h"
-
 #include <stddef.h>
 
 #include <deque>
+#include <memory>
 #include <sstream>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread.h"
@@ -26,6 +24,7 @@
 #include "cc/test/layer_tree_json_parser.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/paths.h"
+#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/perf/perf_test.h"
 
@@ -154,18 +153,18 @@ class BspTreePerfTest : public CalcDrawPropsTest {
     BuildLayerImplList(active_tree->root_layer(), &base_list);
 
     int polygon_counter = 0;
-    std::vector<scoped_ptr<DrawPolygon>> polygon_list;
+    std::vector<std::unique_ptr<DrawPolygon>> polygon_list;
     for (LayerImplList::iterator it = base_list.begin(); it != base_list.end();
          ++it) {
       DrawPolygon* draw_polygon = new DrawPolygon(
           NULL, gfx::RectF(gfx::SizeF((*it)->bounds())),
           (*it)->draw_properties().target_space_transform, polygon_counter++);
-      polygon_list.push_back(scoped_ptr<DrawPolygon>(draw_polygon));
+      polygon_list.push_back(std::unique_ptr<DrawPolygon>(draw_polygon));
     }
 
     timer_.Reset();
     do {
-      std::deque<scoped_ptr<DrawPolygon>> test_list;
+      std::deque<std::unique_ptr<DrawPolygon>> test_list;
       for (int i = 0; i < num_duplicates_; i++) {
         for (size_t i = 0; i < polygon_list.size(); i++) {
           test_list.push_back(polygon_list[i]->CreateCopy());

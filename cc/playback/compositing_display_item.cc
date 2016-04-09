@@ -40,7 +40,7 @@ CompositingDisplayItem::CompositingDisplayItem(
   const proto::CompositingDisplayItem& details = proto.compositing_item();
   uint8_t alpha = static_cast<uint8_t>(details.alpha());
   SkXfermode::Mode xfermode = SkXfermodeModeFromProto(details.mode());
-  scoped_ptr<SkRect> bounds;
+  std::unique_ptr<SkRect> bounds;
   if (details.has_bounds()) {
     bounds.reset(
         new SkRect(gfx::RectFToSkRect(ProtoToRectF(details.bounds()))));

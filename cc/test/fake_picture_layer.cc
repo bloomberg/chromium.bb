@@ -18,7 +18,7 @@ FakePictureLayer::FakePictureLayer(ContentLayerClient* client)
 }
 
 FakePictureLayer::FakePictureLayer(ContentLayerClient* client,
-                                   scoped_ptr<RecordingSource> source)
+                                   std::unique_ptr<RecordingSource> source)
     : PictureLayer(client, std::move(source)),
       update_count_(0),
       push_properties_count_(0),
@@ -29,7 +29,7 @@ FakePictureLayer::FakePictureLayer(ContentLayerClient* client,
 
 FakePictureLayer::~FakePictureLayer() {}
 
-scoped_ptr<LayerImpl> FakePictureLayer::CreateLayerImpl(
+std::unique_ptr<LayerImpl> FakePictureLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   if (is_mask())
     return FakePictureLayerImpl::CreateMask(tree_impl, layer_id_);

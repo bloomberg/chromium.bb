@@ -4,6 +4,7 @@
 
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator_android.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "cc/output/overlay_processor.h"
 #include "cc/output/overlay_strategy_underlay.h"
 #include "ui/gfx/geometry/rect_conversions.h"

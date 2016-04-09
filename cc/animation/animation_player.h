@@ -66,7 +66,7 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer>,
   void AttachLayer(int layer_id);
   void DetachLayer();
 
-  void AddAnimation(scoped_ptr<Animation> animation);
+  void AddAnimation(std::unique_ptr<Animation> animation);
   void PauseAnimation(int animation_id, double time_offset);
   void RemoveAnimation(int animation_id);
   void AbortAnimation(int animation_id);
@@ -88,7 +88,7 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer>,
   void NotifyAnimationTakeover(base::TimeTicks monotonic_time,
                                TargetProperty::Type target_property,
                                double animation_start_time,
-                               scoped_ptr<AnimationCurve> curve);
+                               std::unique_ptr<AnimationCurve> curve);
 
   // Whether this player has animations waiting to get sent to LAC.
   bool has_pending_animations_for_testing() const {
@@ -112,7 +112,7 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer>,
   // We accumulate added animations in animations_ container
   // if element_animations_ is a nullptr. It allows us to add/remove animations
   // to non-attached AnimationPlayers.
-  std::vector<scoped_ptr<Animation>> animations_;
+  std::vector<std::unique_ptr<Animation>> animations_;
 
   AnimationHost* animation_host_;
   AnimationTimeline* animation_timeline_;

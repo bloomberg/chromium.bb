@@ -5,6 +5,7 @@
 #include "cc/trees/remote_channel_impl.h"
 
 #include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "cc/animation/animation_events.h"
 #include "cc/proto/compositor_message.pb.h"
@@ -16,11 +17,11 @@
 
 namespace cc {
 
-scoped_ptr<RemoteChannelImpl> RemoteChannelImpl::Create(
+std::unique_ptr<RemoteChannelImpl> RemoteChannelImpl::Create(
     LayerTreeHost* layer_tree_host,
     RemoteProtoChannel* remote_proto_channel,
     TaskRunnerProvider* task_runner_provider) {
-  return make_scoped_ptr(new RemoteChannelImpl(
+  return base::WrapUnique(new RemoteChannelImpl(
       layer_tree_host, remote_proto_channel, task_runner_provider));
 }
 
@@ -43,11 +44,11 @@ RemoteChannelImpl::~RemoteChannelImpl() {
   main().remote_proto_channel->SetProtoReceiver(nullptr);
 }
 
-scoped_ptr<ProxyImpl> RemoteChannelImpl::CreateProxyImpl(
+std::unique_ptr<ProxyImpl> RemoteChannelImpl::CreateProxyImpl(
     ChannelImpl* channel_impl,
     LayerTreeHost* layer_tree_host,
     TaskRunnerProvider* task_runner_provider,
-    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
+    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
   DCHECK(task_runner_provider_->IsImplThread());
   DCHECK(!external_begin_frame_source);
   return ProxyImpl::Create(channel_impl, layer_tree_host, task_runner_provider,
@@ -55,7 +56,7 @@ scoped_ptr<ProxyImpl> RemoteChannelImpl::CreateProxyImpl(
 }
 
 void RemoteChannelImpl::OnProtoReceived(
-    scoped_ptr<proto::CompositorMessage> proto) {
+    std::unique_ptr<proto::CompositorMessage> proto) {
   DCHECK(task_runner_provider_->IsMainThread());
   DCHECK(main().started);
   DCHECK(proto->has_to_impl());
@@ -253,7 +254,7 @@ bool RemoteChannelImpl::BeginMainFrameRequested() const {
 }
 
 void RemoteChannelImpl::Start(
-    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
+    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
   DCHECK(task_runner_provider_->IsMainThread());
   DCHECK(!main().started);
   DCHECK(!external_begin_frame_source);
@@ -343,7 +344,8 @@ void RemoteChannelImpl::BeginMainFrameNotExpectedSoon() {}
 
 void RemoteChannelImpl::DidCommitAndDrawFrame() {}
 
-void RemoteChannelImpl::SetAnimationEvents(scoped_ptr<AnimationEvents> queue) {}
+void RemoteChannelImpl::SetAnimationEvents(
+    std::unique_ptr<AnimationEvents> queue) {}
 
 void RemoteChannelImpl::DidLoseOutputSurface() {
   DCHECK(task_runner_provider_->IsImplThread());
@@ -375,12 +377,13 @@ void RemoteChannelImpl::DidInitializeOutputSurface(
 void RemoteChannelImpl::DidCompletePageScaleAnimation() {}
 
 void RemoteChannelImpl::PostFrameTimingEventsOnMain(
-    scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-    scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {}
+    std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+    std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
+}
 
 void RemoteChannelImpl::BeginMainFrame(
-    scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) {
-  scoped_ptr<proto::CompositorMessage> proto;
+    std::unique_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) {
+  std::unique_ptr<proto::CompositorMessage> proto;
   proto.reset(new proto::CompositorMessage);
   proto::CompositorMessageToMain* to_main_proto = proto->mutable_to_main();
 
@@ -395,7 +398,7 @@ void RemoteChannelImpl::BeginMainFrame(
 }
 
 void RemoteChannelImpl::SendMessageProto(
-    scoped_ptr<proto::CompositorMessage> proto) {
+    std::unique_ptr<proto::CompositorMessage> proto) {
   DCHECK(task_runner_provider_->IsImplThread());
 
   MainThreadTaskRunner()->PostTask(
@@ -447,7 +450,7 @@ void RemoteChannelImpl::DidInitializeOutputSurfaceOnMain(
 }
 
 void RemoteChannelImpl::SendMessageProtoOnMain(
-    scoped_ptr<proto::CompositorMessage> proto) {
+    std::unique_ptr<proto::CompositorMessage> proto) {
   DCHECK(task_runner_provider_->IsMainThread());
   VLOG(1) << "Sending BeginMainFrame request to the engine.";
 
@@ -470,7 +473,7 @@ void RemoteChannelImpl::InitializeImplOnImpl(CompletionEvent* completion,
 
   impl().proxy_impl =
       CreateProxyImpl(this, layer_tree_host, task_runner_provider_, nullptr);
-  impl().proxy_impl_weak_factory = make_scoped_ptr(
+  impl().proxy_impl_weak_factory = base::WrapUnique(
       new base::WeakPtrFactory<ProxyImpl>(impl().proxy_impl.get()));
   proxy_impl_weak_ptr_ = impl().proxy_impl_weak_factory->GetWeakPtr();
   completion->Signal();

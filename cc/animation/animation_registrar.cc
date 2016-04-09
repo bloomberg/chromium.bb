@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/animation/animation_events.h"
@@ -99,12 +100,12 @@ bool AnimationRegistrar::UpdateAnimationState(bool start_ready_animations,
   return true;
 }
 
-scoped_ptr<AnimationEvents> AnimationRegistrar::CreateEvents() {
-  return make_scoped_ptr(new AnimationEvents());
+std::unique_ptr<AnimationEvents> AnimationRegistrar::CreateEvents() {
+  return base::WrapUnique(new AnimationEvents());
 }
 
 void AnimationRegistrar::SetAnimationEvents(
-    scoped_ptr<AnimationEvents> events) {
+    std::unique_ptr<AnimationEvents> events) {
   for (size_t event_index = 0; event_index < events->events_.size();
        ++event_index) {
     int event_layer_id = events->events_[event_index].layer_id;

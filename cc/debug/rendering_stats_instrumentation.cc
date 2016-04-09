@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/debug/rendering_stats_instrumentation.h"
+
 #include <stdint.h>
 
-#include "cc/debug/rendering_stats_instrumentation.h"
+#include "base/memory/ptr_util.h"
 
 namespace cc {
 
 // static
-scoped_ptr<RenderingStatsInstrumentation>
-    RenderingStatsInstrumentation::Create() {
-  return make_scoped_ptr(new RenderingStatsInstrumentation());
+std::unique_ptr<RenderingStatsInstrumentation>
+RenderingStatsInstrumentation::Create() {
+  return base::WrapUnique(new RenderingStatsInstrumentation());
 }
 
 RenderingStatsInstrumentation::RenderingStatsInstrumentation()

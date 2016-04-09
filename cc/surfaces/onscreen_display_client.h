@@ -5,13 +5,13 @@
 #ifndef CC_SURFACES_ONSCREEN_DISPLAY_CLIENT_H_
 #define CC_SURFACES_ONSCREEN_DISPLAY_CLIENT_H_
 
-#include "cc/surfaces/display_client.h"
+#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/surfaces/display.h"
+#include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surfaces_export.h"
 
 namespace base {
@@ -31,7 +31,7 @@ class CC_SURFACES_EXPORT OnscreenDisplayClient
     : NON_EXPORTED_BASE(DisplayClient) {
  public:
   OnscreenDisplayClient(
-      scoped_ptr<OutputSurface> output_surface,
+      std::unique_ptr<OutputSurface> output_surface,
       SurfaceManager* manager,
       SharedBitmapManager* bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -54,15 +54,15 @@ class CC_SURFACES_EXPORT OnscreenDisplayClient
   bool output_surface_lost() { return output_surface_lost_; }
 
  protected:
-  scoped_ptr<OutputSurface> output_surface_;
+  std::unique_ptr<OutputSurface> output_surface_;
   // Be careful of destruction order:
   // Display depends on DisplayScheduler depends on *BeginFrameSource
   // depends on TaskRunner.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_ptr<SyntheticBeginFrameSource> synthetic_frame_source_;
-  scoped_ptr<BackToBackBeginFrameSource> unthrottled_frame_source_;
-  scoped_ptr<DisplayScheduler> scheduler_;
-  scoped_ptr<Display> display_;
+  std::unique_ptr<SyntheticBeginFrameSource> synthetic_frame_source_;
+  std::unique_ptr<BackToBackBeginFrameSource> unthrottled_frame_source_;
+  std::unique_ptr<DisplayScheduler> scheduler_;
+  std::unique_ptr<Display> display_;
   SurfaceDisplayOutputSurface* surface_display_output_surface_;
   bool output_surface_lost_;
   bool disable_display_vsync_;

@@ -7,10 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "cc/scheduler/compositor_timing_history.h"
 #include "cc/scheduler/scheduler.h"
@@ -39,10 +40,11 @@ class FakeDelayBasedTimeSourceClient : public DelayBasedTimeSourceClient {
 
 class FakeDelayBasedTimeSource : public DelayBasedTimeSource {
  public:
-  static scoped_ptr<FakeDelayBasedTimeSource> Create(
+  static std::unique_ptr<FakeDelayBasedTimeSource> Create(
       base::TimeDelta interval,
       base::SingleThreadTaskRunner* task_runner) {
-    return make_scoped_ptr(new FakeDelayBasedTimeSource(interval, task_runner));
+    return base::WrapUnique(
+        new FakeDelayBasedTimeSource(interval, task_runner));
   }
 
   ~FakeDelayBasedTimeSource() override {}
@@ -63,11 +65,11 @@ class FakeDelayBasedTimeSource : public DelayBasedTimeSource {
 
 class TestDelayBasedTimeSource : public DelayBasedTimeSource {
  public:
-  static scoped_ptr<TestDelayBasedTimeSource> Create(
+  static std::unique_ptr<TestDelayBasedTimeSource> Create(
       base::SimpleTestTickClock* now_src,
       base::TimeDelta interval,
       OrderedSimpleTaskRunner* task_runner) {
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new TestDelayBasedTimeSource(now_src, interval, task_runner));
   }
 
@@ -144,7 +146,7 @@ class TestSyntheticBeginFrameSource : public SyntheticBeginFrameSource {
 
 class FakeCompositorTimingHistory : public CompositorTimingHistory {
  public:
-  static scoped_ptr<FakeCompositorTimingHistory> Create(
+  static std::unique_ptr<FakeCompositorTimingHistory> Create(
       bool using_synchronous_renderer_compositor);
   ~FakeCompositorTimingHistory() override;
 
@@ -172,10 +174,10 @@ class FakeCompositorTimingHistory : public CompositorTimingHistory {
 
  protected:
   FakeCompositorTimingHistory(bool using_synchronous_renderer_compositor,
-                              scoped_ptr<RenderingStatsInstrumentation>
+                              std::unique_ptr<RenderingStatsInstrumentation>
                                   rendering_stats_instrumentation_owned);
 
-  scoped_ptr<RenderingStatsInstrumentation>
+  std::unique_ptr<RenderingStatsInstrumentation>
       rendering_stats_instrumentation_owned_;
 
   base::TimeDelta begin_main_frame_to_commit_duration_;
@@ -193,13 +195,14 @@ class FakeCompositorTimingHistory : public CompositorTimingHistory {
 
 class TestScheduler : public Scheduler {
  public:
-  TestScheduler(base::SimpleTestTickClock* now_src,
-                SchedulerClient* client,
-                const SchedulerSettings& scheduler_settings,
-                int layer_tree_host_id,
-                OrderedSimpleTaskRunner* task_runner,
-                BeginFrameSource* begin_frame_source,
-                scoped_ptr<CompositorTimingHistory> compositor_timing_history);
+  TestScheduler(
+      base::SimpleTestTickClock* now_src,
+      SchedulerClient* client,
+      const SchedulerSettings& scheduler_settings,
+      int layer_tree_host_id,
+      OrderedSimpleTaskRunner* task_runner,
+      BeginFrameSource* begin_frame_source,
+      std::unique_ptr<CompositorTimingHistory> compositor_timing_history);
 
   // Extra test helper functionality
   bool IsBeginRetroFrameArgsEmpty() const {

@@ -19,7 +19,7 @@ TracedDisplayItemList::~TracedDisplayItemList() {
 }
 
 void TracedDisplayItemList::AppendAsTraceFormat(std::string* out) const {
-  scoped_ptr<base::trace_event::ConvertableToTraceFormat> convertable(
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> convertable(
       display_item_list_->AsValue(include_items_));
   convertable->AppendAsTraceFormat(out);
 }

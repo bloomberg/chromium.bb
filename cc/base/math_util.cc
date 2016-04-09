@@ -705,15 +705,15 @@ gfx::Vector2dF MathUtil::ProjectVector(const gfx::Vector2dF& source,
                         projected_length * destination.y());
 }
 
-scoped_ptr<base::Value> MathUtil::AsValue(const gfx::Size& s) {
-  scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
+std::unique_ptr<base::Value> MathUtil::AsValue(const gfx::Size& s) {
+  std::unique_ptr<base::DictionaryValue> res(new base::DictionaryValue());
   res->SetDouble("width", s.width());
   res->SetDouble("height", s.height());
   return std::move(res);
 }
 
-scoped_ptr<base::Value> MathUtil::AsValue(const gfx::Rect& r) {
-  scoped_ptr<base::ListValue> res(new base::ListValue());
+std::unique_ptr<base::Value> MathUtil::AsValue(const gfx::Rect& r) {
+  std::unique_ptr<base::ListValue> res(new base::ListValue());
   res->AppendInteger(r.x());
   res->AppendInteger(r.y());
   res->AppendInteger(r.width());
@@ -742,8 +742,8 @@ bool MathUtil::FromValue(const base::Value* raw_value, gfx::Rect* out_rect) {
   return true;
 }
 
-scoped_ptr<base::Value> MathUtil::AsValue(const gfx::PointF& pt) {
-  scoped_ptr<base::ListValue> res(new base::ListValue());
+std::unique_ptr<base::Value> MathUtil::AsValue(const gfx::PointF& pt) {
+  std::unique_ptr<base::ListValue> res(new base::ListValue());
   res->AppendDouble(pt.x());
   res->AppendDouble(pt.y());
   return std::move(res);

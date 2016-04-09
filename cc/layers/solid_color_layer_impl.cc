@@ -22,7 +22,7 @@ SolidColorLayerImpl::SolidColorLayerImpl(LayerTreeImpl* tree_impl, int id)
 
 SolidColorLayerImpl::~SolidColorLayerImpl() {}
 
-scoped_ptr<LayerImpl> SolidColorLayerImpl::CreateLayerImpl(
+std::unique_ptr<LayerImpl> SolidColorLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return SolidColorLayerImpl::Create(tree_impl, id());
 }

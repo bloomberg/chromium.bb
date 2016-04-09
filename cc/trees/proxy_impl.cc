@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/auto_reset.h"
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/trace_event/trace_event_synthetic_delay.h"
@@ -34,20 +35,21 @@ unsigned int nextBeginFrameId = 0;
 
 }  // namespace
 
-scoped_ptr<ProxyImpl> ProxyImpl::Create(
+std::unique_ptr<ProxyImpl> ProxyImpl::Create(
     ChannelImpl* channel_impl,
     LayerTreeHost* layer_tree_host,
     TaskRunnerProvider* task_runner_provider,
-    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
-  return make_scoped_ptr(new ProxyImpl(channel_impl, layer_tree_host,
-                                       task_runner_provider,
-                                       std::move(external_begin_frame_source)));
+    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
+  return base::WrapUnique(
+      new ProxyImpl(channel_impl, layer_tree_host, task_runner_provider,
+                    std::move(external_begin_frame_source)));
 }
 
-ProxyImpl::ProxyImpl(ChannelImpl* channel_impl,
-                     LayerTreeHost* layer_tree_host,
-                     TaskRunnerProvider* task_runner_provider,
-                     scoped_ptr<BeginFrameSource> external_begin_frame_source)
+ProxyImpl::ProxyImpl(
+    ChannelImpl* channel_impl,
+    LayerTreeHost* layer_tree_host,
+    TaskRunnerProvider* task_runner_provider,
+    std::unique_ptr<BeginFrameSource> external_begin_frame_source)
     : layer_tree_host_id_(layer_tree_host->id()),
       next_commit_waits_for_activation_(false),
       commit_completion_event_(nullptr),
@@ -73,7 +75,7 @@ ProxyImpl::ProxyImpl(ChannelImpl* channel_impl,
   SchedulerSettings scheduler_settings(
       layer_tree_host->settings().ToSchedulerSettings());
 
-  scoped_ptr<CompositorTimingHistory> compositor_timing_history(
+  std::unique_ptr<CompositorTimingHistory> compositor_timing_history(
       new CompositorTimingHistory(
           scheduler_settings.using_synchronous_renderer_compositor,
           CompositorTimingHistory::RENDERER_UMA,
@@ -375,7 +377,7 @@ void ProxyImpl::SetVideoNeedsBeginFrames(bool needs_begin_frames) {
 }
 
 void ProxyImpl::PostAnimationEventsToMainThreadOnImplThread(
-    scoped_ptr<AnimationEvents> events) {
+    std::unique_ptr<AnimationEvents> events) {
   TRACE_EVENT0("cc", "ProxyImpl::PostAnimationEventsToMainThreadOnImplThread");
   DCHECK(IsImplThread());
   channel_impl_->SetAnimationEvents(std::move(events));
@@ -473,8 +475,8 @@ void ProxyImpl::OnDrawForOutputSurface(bool resourceless_software_draw) {
 }
 
 void ProxyImpl::PostFrameTimingEventsOnImplThread(
-    scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-    scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
+    std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+    std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
   DCHECK(IsImplThread());
   channel_impl_->PostFrameTimingEventsOnMain(std::move(composite_events),
                                              std::move(main_frame_events));
@@ -504,7 +506,7 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(const BeginFrameArgs& args) {
   unsigned int begin_frame_id = nextBeginFrameId++;
   benchmark_instrumentation::ScopedBeginFrameTask begin_frame_task(
       benchmark_instrumentation::kSendBeginFrame, begin_frame_id);
-  scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state(
+  std::unique_ptr<BeginMainFrameAndCommitState> begin_main_frame_state(
       new BeginMainFrameAndCommitState);
   begin_main_frame_state->begin_frame_id = begin_frame_id;
   begin_main_frame_state->begin_frame_args = args;

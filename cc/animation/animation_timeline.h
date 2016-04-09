@@ -5,11 +5,11 @@
 #ifndef CC_ANIMATION_ANIMATION_TIMELINE_H_
 #define CC_ANIMATION_ANIMATION_TIMELINE_H_
 
+#include <memory>
 #include <unordered_map>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {

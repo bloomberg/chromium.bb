@@ -54,8 +54,8 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
 
  protected:
   FakeTileManagerClient tile_manager_client_;
-  scoped_ptr<ResourcePool> resource_pool_;
-  scoped_ptr<TileManager> tile_manager_;
+  std::unique_ptr<ResourcePool> resource_pool_;
+  std::unique_ptr<TileManager> tile_manager_;
   scoped_refptr<RasterSource> raster_source_;
   gfx::Size tile_size_;
   PictureLayerTilingSet* twin_set_;

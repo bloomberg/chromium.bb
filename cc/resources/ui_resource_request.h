@@ -5,8 +5,9 @@
 #ifndef CC_RESOURCES_UI_RESOURCE_REQUEST_H_
 #define CC_RESOURCES_UI_RESOURCE_REQUEST_H_
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/resources/ui_resource_client.h"
@@ -41,7 +42,7 @@ class CC_EXPORT UIResourceRequest {
  private:
   UIResourceRequestType type_;
   UIResourceId id_;
-  scoped_ptr<UIResourceBitmap> bitmap_;
+  std::unique_ptr<UIResourceBitmap> bitmap_;
 };
 
 }  // namespace cc

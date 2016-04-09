@@ -27,7 +27,7 @@ const char* kDefaultInvalidationMode = "viewport";
 }  // namespace
 
 InvalidationBenchmark::InvalidationBenchmark(
-    scoped_ptr<base::Value> value,
+    std::unique_ptr<base::Value> value,
     const MicroBenchmark::DoneCallback& callback)
     : MicroBenchmark(callback), seed_(0) {
   base::DictionaryValue* settings = nullptr;
@@ -112,7 +112,7 @@ void InvalidationBenchmark::RunOnLayer(PictureLayer* layer) {
   }
 }
 
-bool InvalidationBenchmark::ProcessMessage(scoped_ptr<base::Value> value) {
+bool InvalidationBenchmark::ProcessMessage(std::unique_ptr<base::Value> value) {
   base::DictionaryValue* message = nullptr;
   value->GetAsDictionary(&message);
   if (!message)

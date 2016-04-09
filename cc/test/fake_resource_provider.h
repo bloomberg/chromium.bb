@@ -14,10 +14,10 @@ namespace cc {
 
 class FakeResourceProvider : public ResourceProvider {
  public:
-  static scoped_ptr<FakeResourceProvider> Create(
+  static std::unique_ptr<FakeResourceProvider> Create(
       OutputSurface* output_surface,
       SharedBitmapManager* shared_bitmap_manager) {
-    scoped_ptr<FakeResourceProvider> provider(new FakeResourceProvider(
+    std::unique_ptr<FakeResourceProvider> provider(new FakeResourceProvider(
         output_surface, shared_bitmap_manager, nullptr, nullptr, 0, 1, false,
         std::vector<unsigned>(static_cast<size_t>(gfx::BufferFormat::LAST) + 1,
                               GL_TEXTURE_2D)));
@@ -25,11 +25,11 @@ class FakeResourceProvider : public ResourceProvider {
     return provider;
   }
 
-  static scoped_ptr<FakeResourceProvider> Create(
+  static std::unique_ptr<FakeResourceProvider> Create(
       OutputSurface* output_surface,
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
-    scoped_ptr<FakeResourceProvider> provider(new FakeResourceProvider(
+    std::unique_ptr<FakeResourceProvider> provider(new FakeResourceProvider(
         output_surface, shared_bitmap_manager, gpu_memory_buffer_manager,
         nullptr, 0, 1, false,
         std::vector<unsigned>(static_cast<size_t>(gfx::BufferFormat::LAST) + 1,

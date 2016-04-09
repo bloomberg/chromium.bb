@@ -5,8 +5,9 @@
 #ifndef CC_OUTPUT_COMPOSITOR_FRAME_H_
 #define CC_OUTPUT_COMPOSITOR_FRAME_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/delegated_frame_data.h"
@@ -23,8 +24,8 @@ class CC_EXPORT CompositorFrame {
   ~CompositorFrame();
 
   CompositorFrameMetadata metadata;
-  scoped_ptr<DelegatedFrameData> delegated_frame_data;
-  scoped_ptr<GLFrameData> gl_frame_data;
+  std::unique_ptr<DelegatedFrameData> delegated_frame_data;
+  std::unique_ptr<GLFrameData> gl_frame_data;
 
   void AssignTo(CompositorFrame* target);
 

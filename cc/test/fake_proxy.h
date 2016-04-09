@@ -35,7 +35,7 @@ class FakeProxy : public Proxy {
   bool BeginMainFrameRequested() const override;
   bool CommitRequested() const override;
   void Start(
-      scoped_ptr<BeginFrameSource> external_begin_frame_source) override {}
+      std::unique_ptr<BeginFrameSource> external_begin_frame_source) override {}
   void Stop() override {}
   bool SupportsImplScrolling() const override;
   bool MainFrameWillHappenForTesting() override;

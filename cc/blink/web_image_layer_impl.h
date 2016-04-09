@@ -5,8 +5,9 @@
 #ifndef CC_BLINK_WEB_IMAGE_LAYER_IMPL_H_
 #define CC_BLINK_WEB_IMAGE_LAYER_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/blink/cc_blink_export.h"
 #include "third_party/WebKit/public/platform/WebImageLayer.h"
 
@@ -25,7 +26,7 @@ class WebImageLayerImpl : public blink::WebImageLayer {
   void setNearestNeighbor(bool nearest_neighbor) override;
 
  private:
-  scoped_ptr<WebLayerImpl> layer_;
+  std::unique_ptr<WebLayerImpl> layer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebImageLayerImpl);
 };

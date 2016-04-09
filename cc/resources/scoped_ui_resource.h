@@ -23,8 +23,9 @@ class LayerTreeHost;
 // resource or not.
 class CC_EXPORT ScopedUIResource : public UIResourceClient {
  public:
-  static scoped_ptr<ScopedUIResource> Create(LayerTreeHost* host,
-                                             const UIResourceBitmap& bitmap);
+  static std::unique_ptr<ScopedUIResource> Create(
+      LayerTreeHost* host,
+      const UIResourceBitmap& bitmap);
   ~ScopedUIResource() override;
 
   // UIResourceClient implementation.

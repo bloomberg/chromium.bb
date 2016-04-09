@@ -25,7 +25,7 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
   void SetImage(skia::RefPtr<const SkImage> image);
 
   // Layer implementation.
-  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
   gfx::Rect PaintableRegion() override;
 

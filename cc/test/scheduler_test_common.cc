@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 
 namespace cc {
@@ -72,18 +73,20 @@ TestSyntheticBeginFrameSource::TestSyntheticBeginFrameSource(
 TestSyntheticBeginFrameSource::~TestSyntheticBeginFrameSource() {
 }
 
-scoped_ptr<FakeCompositorTimingHistory> FakeCompositorTimingHistory::Create(
+std::unique_ptr<FakeCompositorTimingHistory>
+FakeCompositorTimingHistory::Create(
     bool using_synchronous_renderer_compositor) {
-  scoped_ptr<RenderingStatsInstrumentation> rendering_stats_instrumentation =
-      RenderingStatsInstrumentation::Create();
-  return make_scoped_ptr(new FakeCompositorTimingHistory(
+  std::unique_ptr<RenderingStatsInstrumentation>
+      rendering_stats_instrumentation = RenderingStatsInstrumentation::Create();
+  return base::WrapUnique(new FakeCompositorTimingHistory(
       using_synchronous_renderer_compositor,
       std::move(rendering_stats_instrumentation)));
 }
 
 FakeCompositorTimingHistory::FakeCompositorTimingHistory(
     bool using_synchronous_renderer_compositor,
-    scoped_ptr<RenderingStatsInstrumentation> rendering_stats_instrumentation)
+    std::unique_ptr<RenderingStatsInstrumentation>
+        rendering_stats_instrumentation)
     : CompositorTimingHistory(using_synchronous_renderer_compositor,
                               CompositorTimingHistory::NULL_UMA,
                               rendering_stats_instrumentation.get()),
@@ -193,7 +196,7 @@ TestScheduler::TestScheduler(
     int layer_tree_host_id,
     OrderedSimpleTaskRunner* task_runner,
     BeginFrameSource* begin_frame_source,
-    scoped_ptr<CompositorTimingHistory> compositor_timing_history)
+    std::unique_ptr<CompositorTimingHistory> compositor_timing_history)
     : Scheduler(client,
                 scheduler_settings,
                 layer_tree_host_id,

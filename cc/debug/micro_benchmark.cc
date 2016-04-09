@@ -4,9 +4,11 @@
 
 #include "cc/debug/micro_benchmark.h"
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
 #include "cc/debug/micro_benchmark_impl.h"
@@ -28,7 +30,7 @@ bool MicroBenchmark::IsDone() const {
 
 void MicroBenchmark::DidUpdateLayers(LayerTreeHost* host) {}
 
-void MicroBenchmark::NotifyDone(scoped_ptr<base::Value> result) {
+void MicroBenchmark::NotifyDone(std::unique_ptr<base::Value> result) {
   callback_.Run(std::move(result));
   is_done_ = true;
 }
@@ -37,7 +39,7 @@ void MicroBenchmark::RunOnLayer(Layer* layer) {}
 
 void MicroBenchmark::RunOnLayer(PictureLayer* layer) {}
 
-bool MicroBenchmark::ProcessMessage(scoped_ptr<base::Value> value) {
+bool MicroBenchmark::ProcessMessage(std::unique_ptr<base::Value> value) {
   return false;
 }
 
@@ -45,16 +47,16 @@ bool MicroBenchmark::ProcessedForBenchmarkImpl() const {
   return processed_for_benchmark_impl_;
 }
 
-scoped_ptr<MicroBenchmarkImpl> MicroBenchmark::GetBenchmarkImpl(
+std::unique_ptr<MicroBenchmarkImpl> MicroBenchmark::GetBenchmarkImpl(
     scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner) {
   DCHECK(!processed_for_benchmark_impl_);
   processed_for_benchmark_impl_ = true;
   return CreateBenchmarkImpl(origin_task_runner);
 }
 
-scoped_ptr<MicroBenchmarkImpl> MicroBenchmark::CreateBenchmarkImpl(
+std::unique_ptr<MicroBenchmarkImpl> MicroBenchmark::CreateBenchmarkImpl(
     scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner) {
-  return make_scoped_ptr<MicroBenchmarkImpl>(nullptr);
+  return base::WrapUnique<MicroBenchmarkImpl>(nullptr);
 }
 
 }  // namespace cc

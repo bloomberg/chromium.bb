@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/raster/tile_task_worker_pool.h"
-
 #include <stddef.h>
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "cc/debug/lap_timer.h"
@@ -19,6 +18,7 @@
 #include "cc/raster/raster_buffer.h"
 #include "cc/raster/synchronous_task_graph_runner.h"
 #include "cc/raster/tile_task_runner.h"
+#include "cc/raster/tile_task_worker_pool.h"
 #include "cc/raster/zero_copy_tile_task_worker_pool.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
@@ -107,7 +107,7 @@ class PerfContextProvider : public ContextProvider {
  private:
   ~PerfContextProvider() override {}
 
-  scoped_ptr<PerfGLES2Interface> context_gl_;
+  std::unique_ptr<PerfGLES2Interface> context_gl_;
   skia::RefPtr<class GrContext> gr_context_;
   TestContextSupport support_;
   base::Lock context_lock_;
@@ -149,7 +149,7 @@ class PerfImageDecodeTaskImpl : public ImageDecodeTask {
 
 class PerfRasterTaskImpl : public RasterTask {
  public:
-  PerfRasterTaskImpl(scoped_ptr<ScopedResource> resource,
+  PerfRasterTaskImpl(std::unique_ptr<ScopedResource> resource,
                      ImageDecodeTask::Vector* dependencies)
       : RasterTask(dependencies), resource_(std::move(resource)) {}
 
@@ -175,8 +175,8 @@ class PerfRasterTaskImpl : public RasterTask {
   ~PerfRasterTaskImpl() override {}
 
  private:
-  scoped_ptr<ScopedResource> resource_;
-  scoped_ptr<RasterBuffer> raster_buffer_;
+  std::unique_ptr<ScopedResource> resource_;
+  std::unique_ptr<RasterBuffer> raster_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(PerfRasterTaskImpl);
 };
@@ -207,7 +207,7 @@ class TileTaskWorkerPoolPerfTestBase {
     const gfx::Size size(1, 1);
 
     for (unsigned i = 0; i < num_raster_tasks; ++i) {
-      scoped_ptr<ScopedResource> resource(
+      std::unique_ptr<ScopedResource> resource(
           ScopedResource::Create(resource_provider_.get()));
       resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
                          RGBA_8888);
@@ -241,10 +241,10 @@ class TileTaskWorkerPoolPerfTestBase {
  protected:
   scoped_refptr<ContextProvider> context_provider_;
   FakeOutputSurfaceClient output_surface_client_;
-  scoped_ptr<FakeOutputSurface> output_surface_;
-  scoped_ptr<ResourceProvider> resource_provider_;
+  std::unique_ptr<FakeOutputSurface> output_surface_;
+  std::unique_ptr<ResourceProvider> resource_provider_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  scoped_ptr<SynchronousTaskGraphRunner> task_graph_runner_;
+  std::unique_ptr<SynchronousTaskGraphRunner> task_graph_runner_;
   LapTimer timer_;
 };
 
@@ -396,7 +396,7 @@ class TileTaskWorkerPoolPerfTest
 
   void CreateSoftwareOutputSurfaceAndResourceProvider() {
     output_surface_ = FakeOutputSurface::CreateSoftware(
-        make_scoped_ptr(new SoftwareOutputDevice));
+        base::WrapUnique(new SoftwareOutputDevice));
     CHECK(output_surface_->BindToClient(&output_surface_client_));
     resource_provider_ = FakeResourceProvider::Create(
         output_surface_.get(), &shared_bitmap_manager_, nullptr);
@@ -417,7 +417,7 @@ class TileTaskWorkerPoolPerfTest
     return std::string();
   }
 
-  scoped_ptr<TileTaskWorkerPool> tile_task_worker_pool_;
+  std::unique_ptr<TileTaskWorkerPool> tile_task_worker_pool_;
   TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   TestSharedBitmapManager shared_bitmap_manager_;
 };

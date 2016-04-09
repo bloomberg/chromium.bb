@@ -41,7 +41,7 @@ Surface::~Surface() {
     draw_callback_.Run(SurfaceDrawStatus::DRAW_SKIPPED);
 }
 
-void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
+void Surface::QueueFrame(std::unique_ptr<CompositorFrame> frame,
                          const DrawCallback& callback) {
   DCHECK(factory_);
   ClearCopyRequests();
@@ -50,7 +50,7 @@ void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
     TakeLatencyInfo(&frame->metadata.latency_info);
   }
 
-  scoped_ptr<CompositorFrame> previous_frame = std::move(current_frame_);
+  std::unique_ptr<CompositorFrame> previous_frame = std::move(current_frame_);
   current_frame_ = std::move(frame);
 
   if (current_frame_) {
@@ -95,10 +95,11 @@ void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
   }
 }
 
-void Surface::RequestCopyOfOutput(scoped_ptr<CopyOutputRequest> copy_request) {
+void Surface::RequestCopyOfOutput(
+    std::unique_ptr<CopyOutputRequest> copy_request) {
   if (current_frame_ &&
       !current_frame_->delegated_frame_data->render_pass_list.empty()) {
-    std::vector<scoped_ptr<CopyOutputRequest>>& copy_requests =
+    std::vector<std::unique_ptr<CopyOutputRequest>>& copy_requests =
         current_frame_->delegated_frame_data->render_pass_list.back()
             ->copy_requests;
 
@@ -107,7 +108,7 @@ void Surface::RequestCopyOfOutput(scoped_ptr<CopyOutputRequest> copy_request) {
       // source.
       auto to_remove =
           std::remove_if(copy_requests.begin(), copy_requests.end(),
-                         [source](const scoped_ptr<CopyOutputRequest>& x) {
+                         [source](const std::unique_ptr<CopyOutputRequest>& x) {
                            return x->source() == source;
                          });
       copy_requests.erase(to_remove, copy_requests.end());
@@ -119,7 +120,8 @@ void Surface::RequestCopyOfOutput(scoped_ptr<CopyOutputRequest> copy_request) {
 }
 
 void Surface::TakeCopyOutputRequests(
-    std::multimap<RenderPassId, scoped_ptr<CopyOutputRequest>>* copy_requests) {
+    std::multimap<RenderPassId, std::unique_ptr<CopyOutputRequest>>*
+        copy_requests) {
   DCHECK(copy_requests->empty());
   if (current_frame_) {
     for (const auto& render_pass :

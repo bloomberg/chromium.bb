@@ -5,8 +5,9 @@
 #ifndef CC_OUTPUT_FILTER_OPERATION_H_
 #define CC_OUTPUT_FILTER_OPERATION_H_
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"

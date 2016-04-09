@@ -4,13 +4,14 @@
 
 #include "cc/layers/solid_color_scrollbar_layer.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
 
 namespace cc {
 
-scoped_ptr<LayerImpl> SolidColorScrollbarLayer::CreateLayerImpl(
+std::unique_ptr<LayerImpl> SolidColorScrollbarLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   const bool kIsOverlayScrollbar = true;
   return SolidColorScrollbarLayerImpl::Create(tree_impl,

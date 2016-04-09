@@ -5,7 +5,8 @@
 #ifndef CC_SURFACES_DISPLAY_CLIENT_H_
 #define CC_SURFACES_DISPLAY_CLIENT_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/time/time.h"
 
 namespace cc {

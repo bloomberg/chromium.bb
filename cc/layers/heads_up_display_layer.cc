@@ -62,7 +62,7 @@ bool HeadsUpDisplayLayer::HasDrawableContent() const {
   return true;
 }
 
-scoped_ptr<LayerImpl> HeadsUpDisplayLayer::CreateLayerImpl(
+std::unique_ptr<LayerImpl> HeadsUpDisplayLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return HeadsUpDisplayLayerImpl::Create(tree_impl, layer_id_);
 }

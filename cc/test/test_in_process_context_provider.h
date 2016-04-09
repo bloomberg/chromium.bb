@@ -21,8 +21,8 @@ class GLInProcessContext;
 
 namespace cc {
 
-scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext();
-scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
+std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext();
+std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
     TestGpuMemoryBufferManager* gpu_memory_buffer_manager,
     TestImageFactory* image_factory,
     gpu::GLInProcessContext* shared_context);
@@ -51,7 +51,7 @@ class TestInProcessContextProvider : public ContextProvider {
  private:
   TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   TestImageFactory image_factory_;
-  scoped_ptr<gpu::GLInProcessContext> context_;
+  std::unique_ptr<gpu::GLInProcessContext> context_;
   skia::RefPtr<class GrContext> gr_context_;
   base::Lock context_lock_;
 };

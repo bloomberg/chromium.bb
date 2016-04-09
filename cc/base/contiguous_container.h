@@ -6,12 +6,13 @@
 #define CC_BASE_CONTIGUOUS_CONTAINER_H_
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "cc/base/cc_export.h"
 
@@ -60,7 +61,7 @@ class CC_EXPORT ContiguousContainerBase {
 
   Buffer* AllocateNewBufferForNextAllocation(size_t buffer_size);
 
-  std::vector<scoped_ptr<Buffer>> buffers_;
+  std::vector<std::unique_ptr<Buffer>> buffers_;
   size_t end_index_;
   size_t max_object_size_;
 

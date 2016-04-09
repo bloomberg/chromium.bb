@@ -5,6 +5,7 @@
 #include "cc/trees/threaded_channel.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/animation/animation_events.h"
@@ -12,10 +13,11 @@
 
 namespace cc {
 
-scoped_ptr<ThreadedChannel> ThreadedChannel::Create(
+std::unique_ptr<ThreadedChannel> ThreadedChannel::Create(
     ProxyMain* proxy_main,
     TaskRunnerProvider* task_runner_provider) {
-  return make_scoped_ptr(new ThreadedChannel(proxy_main, task_runner_provider));
+  return base::WrapUnique(
+      new ThreadedChannel(proxy_main, task_runner_provider));
 }
 
 ThreadedChannel::ThreadedChannel(ProxyMain* proxy_main,
@@ -141,7 +143,7 @@ void ThreadedChannel::StartCommitOnImpl(CompletionEvent* completion,
 
 void ThreadedChannel::SynchronouslyInitializeImpl(
     LayerTreeHost* layer_tree_host,
-    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
+    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
   TRACE_EVENT0("cc", "ThreadChannel::SynchronouslyInitializeImpl");
   DCHECK(IsMainThread());
   {
@@ -214,7 +216,8 @@ void ThreadedChannel::DidCommitAndDrawFrame() {
                                               impl().proxy_main_weak_ptr));
 }
 
-void ThreadedChannel::SetAnimationEvents(scoped_ptr<AnimationEvents> events) {
+void ThreadedChannel::SetAnimationEvents(
+    std::unique_ptr<AnimationEvents> events) {
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&ProxyMain::SetAnimationEvents,
@@ -252,8 +255,8 @@ void ThreadedChannel::DidCompletePageScaleAnimation() {
 }
 
 void ThreadedChannel::PostFrameTimingEventsOnMain(
-    scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-    scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
+    std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+    std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&ProxyMain::PostFrameTimingEventsOnMain,
@@ -263,7 +266,7 @@ void ThreadedChannel::PostFrameTimingEventsOnMain(
 }
 
 void ThreadedChannel::BeginMainFrame(
-    scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) {
+    std::unique_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) {
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(
       FROM_HERE,
@@ -271,11 +274,11 @@ void ThreadedChannel::BeginMainFrame(
                  base::Passed(&begin_main_frame_state)));
 }
 
-scoped_ptr<ProxyImpl> ThreadedChannel::CreateProxyImpl(
+std::unique_ptr<ProxyImpl> ThreadedChannel::CreateProxyImpl(
     ChannelImpl* channel_impl,
     LayerTreeHost* layer_tree_host,
     TaskRunnerProvider* task_runner_provider,
-    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
+    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
   DCHECK(IsImplThread());
   return ProxyImpl::Create(channel_impl, layer_tree_host, task_runner_provider,
                            std::move(external_begin_frame_source));
@@ -284,12 +287,12 @@ scoped_ptr<ProxyImpl> ThreadedChannel::CreateProxyImpl(
 void ThreadedChannel::InitializeImplOnImpl(
     CompletionEvent* completion,
     LayerTreeHost* layer_tree_host,
-    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
+    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
   DCHECK(IsImplThread());
   impl().proxy_impl =
       CreateProxyImpl(this, layer_tree_host, task_runner_provider_,
                       std::move(external_begin_frame_source));
-  impl().proxy_impl_weak_factory = make_scoped_ptr(
+  impl().proxy_impl_weak_factory = base::WrapUnique(
       new base::WeakPtrFactory<ProxyImpl>(impl().proxy_impl.get()));
   proxy_impl_weak_ptr_ = impl().proxy_impl_weak_factory->GetWeakPtr();
   completion->Signal();

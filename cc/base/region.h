@@ -5,9 +5,9 @@
 #ifndef CC_BASE_REGION_H_
 #define CC_BASE_REGION_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/geometry/rect.h"
@@ -62,7 +62,7 @@ class CC_EXPORT Region {
   }
 
   std::string ToString() const;
-  scoped_ptr<base::Value> AsValue() const;
+  std::unique_ptr<base::Value> AsValue() const;
   void AsValueInto(base::trace_event::TracedValue* array) const;
 
   class CC_EXPORT Iterator {

@@ -23,7 +23,7 @@ const char* PictureImageLayerImpl::LayerTypeAsString() const {
   return "cc::PictureImageLayerImpl";
 }
 
-scoped_ptr<LayerImpl> PictureImageLayerImpl::CreateLayerImpl(
+std::unique_ptr<LayerImpl> PictureImageLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return PictureImageLayerImpl::Create(tree_impl, id(), is_mask_);
 }

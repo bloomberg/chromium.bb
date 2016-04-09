@@ -5,6 +5,7 @@
 #include "cc/test/pixel_test.h"
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -65,10 +66,9 @@ bool PixelTest::RunPixelTestWithReadbackTargetAndArea(
     const gfx::Rect* copy_rect) {
   base::RunLoop run_loop;
 
-  scoped_ptr<CopyOutputRequest> request =
+  std::unique_ptr<CopyOutputRequest> request =
       CopyOutputRequest::CreateBitmapRequest(
-          base::Bind(&PixelTest::ReadbackResult,
-                     base::Unretained(this),
+          base::Bind(&PixelTest::ReadbackResult, base::Unretained(this),
                      run_loop.QuitClosure()));
   if (copy_rect)
     request->set_area(*copy_rect);
@@ -96,7 +96,7 @@ bool PixelTest::RunPixelTestWithReadbackTargetAndArea(
 }
 
 void PixelTest::ReadbackResult(base::Closure quit_run_loop,
-                               scoped_ptr<CopyOutputResult> result) {
+                               std::unique_ptr<CopyOutputResult> result) {
   ASSERT_TRUE(result->HasBitmap());
   result_bitmap_ = result->TakeBitmap();
   quit_run_loop.Run();
@@ -140,7 +140,7 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend,
       settings_.renderer_settings.use_gpu_memory_buffer_resources,
       settings_.use_image_texture_targets);
 
-  texture_mailbox_deleter_ = make_scoped_ptr(
+  texture_mailbox_deleter_ = base::WrapUnique(
       new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
 
   renderer_ = GLRenderer::Create(
@@ -172,7 +172,8 @@ void PixelTest::EnableExternalStencilTest() {
 }
 
 void PixelTest::SetUpSoftwareRenderer() {
-  scoped_ptr<SoftwareOutputDevice> device(new PixelTestSoftwareOutputDevice());
+  std::unique_ptr<SoftwareOutputDevice> device(
+      new PixelTestSoftwareOutputDevice());
   output_surface_.reset(new PixelTestOutputSurface(std::move(device)));
   output_surface_->BindToClient(output_surface_client_.get());
   shared_bitmap_manager_.reset(new TestSharedBitmapManager());

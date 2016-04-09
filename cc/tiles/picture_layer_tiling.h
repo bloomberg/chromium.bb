@@ -9,12 +9,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
 #include "cc/base/tiling_data.h"
@@ -88,7 +88,7 @@ class CC_EXPORT PictureLayerTiling {
       float content_to_screen_scale);
 
   // Create a tiling with no tiles. CreateTile() must be called to add some.
-  static scoped_ptr<PictureLayerTiling> Create(
+  static std::unique_ptr<PictureLayerTiling> Create(
       WhichTree tree,
       float contents_scale,
       scoped_refptr<RasterSource> raster_source,

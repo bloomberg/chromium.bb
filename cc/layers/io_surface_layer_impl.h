@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer_impl.h"
 #include "ui/gfx/geometry/size.h"
@@ -16,15 +17,15 @@ namespace cc {
 
 class CC_EXPORT IOSurfaceLayerImpl : public LayerImpl {
  public:
-  static scoped_ptr<IOSurfaceLayerImpl> Create(LayerTreeImpl* tree_impl,
-                                               int id) {
-    return make_scoped_ptr(new IOSurfaceLayerImpl(tree_impl, id));
+  static std::unique_ptr<IOSurfaceLayerImpl> Create(LayerTreeImpl* tree_impl,
+                                                    int id) {
+    return base::WrapUnique(new IOSurfaceLayerImpl(tree_impl, id));
   }
   ~IOSurfaceLayerImpl() override;
 
   void SetIOSurfaceProperties(unsigned io_surface_id, const gfx::Size& size);
 
-  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void PushPropertiesTo(LayerImpl* layer_tree_impl) override;
 
   void AppendQuads(RenderPass* render_pass,

@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
@@ -24,80 +25,80 @@ class FakeOutputSurface : public OutputSurface {
  public:
   ~FakeOutputSurface() override;
 
-  static scoped_ptr<FakeOutputSurface> Create3d() {
-    return make_scoped_ptr(
+  static std::unique_ptr<FakeOutputSurface> Create3d() {
+    return base::WrapUnique(
         new FakeOutputSurface(TestContextProvider::Create(),
                               TestContextProvider::CreateWorker(), false));
   }
 
-  static scoped_ptr<FakeOutputSurface> Create3d(
+  static std::unique_ptr<FakeOutputSurface> Create3d(
       scoped_refptr<ContextProvider> context_provider) {
-    return make_scoped_ptr(new FakeOutputSurface(
+    return base::WrapUnique(new FakeOutputSurface(
         context_provider, TestContextProvider::CreateWorker(), false));
   }
 
-  static scoped_ptr<FakeOutputSurface> Create3d(
+  static std::unique_ptr<FakeOutputSurface> Create3d(
       scoped_refptr<ContextProvider> context_provider,
       scoped_refptr<ContextProvider> worker_context_provider) {
-    return make_scoped_ptr(new FakeOutputSurface(
+    return base::WrapUnique(new FakeOutputSurface(
         context_provider, worker_context_provider, false));
   }
 
-  static scoped_ptr<FakeOutputSurface> Create3d(
-      scoped_ptr<TestWebGraphicsContext3D> context) {
-    return make_scoped_ptr(
+  static std::unique_ptr<FakeOutputSurface> Create3d(
+      std::unique_ptr<TestWebGraphicsContext3D> context) {
+    return base::WrapUnique(
         new FakeOutputSurface(TestContextProvider::Create(std::move(context)),
                               TestContextProvider::CreateWorker(), false));
   }
 
-  static scoped_ptr<FakeOutputSurface> CreateSoftware(
-      scoped_ptr<SoftwareOutputDevice> software_device) {
-    return make_scoped_ptr(
+  static std::unique_ptr<FakeOutputSurface> CreateSoftware(
+      std::unique_ptr<SoftwareOutputDevice> software_device) {
+    return base::WrapUnique(
         new FakeOutputSurface(std::move(software_device), false));
   }
 
-  static scoped_ptr<FakeOutputSurface>
+  static std::unique_ptr<FakeOutputSurface>
   Create3dWithResourcelessSoftwareSupport() {
-    return make_scoped_ptr(new FakeOutputSurface(
+    return base::WrapUnique(new FakeOutputSurface(
         TestContextProvider::Create(),
-        make_scoped_ptr(new SoftwareOutputDevice), false));
+        base::WrapUnique(new SoftwareOutputDevice), false));
   }
 
-  static scoped_ptr<FakeOutputSurface> CreateDelegating3d() {
-    return make_scoped_ptr(
+  static std::unique_ptr<FakeOutputSurface> CreateDelegating3d() {
+    return base::WrapUnique(
         new FakeOutputSurface(TestContextProvider::Create(),
                               TestContextProvider::CreateWorker(), true));
   }
 
-  static scoped_ptr<FakeOutputSurface> CreateDelegating3d(
+  static std::unique_ptr<FakeOutputSurface> CreateDelegating3d(
       scoped_refptr<TestContextProvider> context_provider) {
-    return make_scoped_ptr(new FakeOutputSurface(
+    return base::WrapUnique(new FakeOutputSurface(
         context_provider, TestContextProvider::CreateWorker(), true));
   }
 
-  static scoped_ptr<FakeOutputSurface> CreateDelegating3d(
-      scoped_ptr<TestWebGraphicsContext3D> context) {
-    return make_scoped_ptr(
+  static std::unique_ptr<FakeOutputSurface> CreateDelegating3d(
+      std::unique_ptr<TestWebGraphicsContext3D> context) {
+    return base::WrapUnique(
         new FakeOutputSurface(TestContextProvider::Create(std::move(context)),
                               TestContextProvider::CreateWorker(), true));
   }
 
-  static scoped_ptr<FakeOutputSurface> CreateDelegatingSoftware(
-      scoped_ptr<SoftwareOutputDevice> software_device) {
-    return make_scoped_ptr(
+  static std::unique_ptr<FakeOutputSurface> CreateDelegatingSoftware(
+      std::unique_ptr<SoftwareOutputDevice> software_device) {
+    return base::WrapUnique(
         new FakeOutputSurface(std::move(software_device), true));
   }
 
-  static scoped_ptr<FakeOutputSurface> CreateNoRequireSyncPoint(
-      scoped_ptr<TestWebGraphicsContext3D> context) {
-    scoped_ptr<FakeOutputSurface> surface(Create3d(std::move(context)));
+  static std::unique_ptr<FakeOutputSurface> CreateNoRequireSyncPoint(
+      std::unique_ptr<TestWebGraphicsContext3D> context) {
+    std::unique_ptr<FakeOutputSurface> surface(Create3d(std::move(context)));
     surface->capabilities_.delegated_sync_points_required = false;
     return surface;
   }
 
-  static scoped_ptr<FakeOutputSurface> CreateOffscreen(
-      scoped_ptr<TestWebGraphicsContext3D> context) {
-    scoped_ptr<FakeOutputSurface> surface(new FakeOutputSurface(
+  static std::unique_ptr<FakeOutputSurface> CreateOffscreen(
+      std::unique_ptr<TestWebGraphicsContext3D> context) {
+    std::unique_ptr<FakeOutputSurface> surface(new FakeOutputSurface(
         TestContextProvider::Create(std::move(context)), false));
     surface->capabilities_.uses_default_gl_framebuffer = false;
     return surface;
@@ -144,7 +145,7 @@ class FakeOutputSurface : public OutputSurface {
   }
 
   void SetMemoryPolicyToSetAtBind(
-      scoped_ptr<ManagedMemoryPolicy> memory_policy_to_set_at_bind);
+      std::unique_ptr<ManagedMemoryPolicy> memory_policy_to_set_at_bind);
 
   gfx::Rect last_swap_rect() const {
     return last_swap_rect_;
@@ -159,13 +160,12 @@ class FakeOutputSurface : public OutputSurface {
                     scoped_refptr<ContextProvider> worker_context_provider,
                     bool delegated_rendering);
 
-  FakeOutputSurface(scoped_ptr<SoftwareOutputDevice> software_device,
+  FakeOutputSurface(std::unique_ptr<SoftwareOutputDevice> software_device,
                     bool delegated_rendering);
 
-  FakeOutputSurface(
-      scoped_refptr<ContextProvider> context_provider,
-      scoped_ptr<SoftwareOutputDevice> software_device,
-      bool delegated_rendering);
+  FakeOutputSurface(scoped_refptr<ContextProvider> context_provider,
+                    std::unique_ptr<SoftwareOutputDevice> software_device,
+                    bool delegated_rendering);
 
   OutputSurfaceClient* client_;
   CompositorFrame last_sent_frame_;
@@ -174,7 +174,7 @@ class FakeOutputSurface : public OutputSurface {
   bool suspended_for_recycle_;
   unsigned framebuffer_;
   TransferableResourceArray resources_held_by_parent_;
-  scoped_ptr<ManagedMemoryPolicy> memory_policy_to_set_at_bind_;
+  std::unique_ptr<ManagedMemoryPolicy> memory_policy_to_set_at_bind_;
   OverlayCandidateValidator* overlay_candidate_validator_;
   gfx::Rect last_swap_rect_;
 };

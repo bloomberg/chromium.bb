@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "cc/base/region.h"
 #include "cc/playback/raster_source.h"
 #include "cc/proto/recording_source.pb.h"
@@ -16,10 +17,10 @@
 namespace cc {
 namespace {
 
-scoped_ptr<FakeRecordingSource> CreateRecordingSource(
+std::unique_ptr<FakeRecordingSource> CreateRecordingSource(
     const gfx::Rect& viewport) {
   gfx::Rect layer_rect(viewport.right(), viewport.bottom());
-  scoped_ptr<FakeRecordingSource> recording_source =
+  std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateRecordingSource(viewport, layer_rect.size());
   return recording_source;
 }
@@ -32,9 +33,9 @@ scoped_refptr<RasterSource> CreateRasterSource(
 }
 
 void ValidateRecordingSourceSerialization(FakeRecordingSource* source) {
-  scoped_ptr<FakeImageSerializationProcessor>
+  std::unique_ptr<FakeImageSerializationProcessor>
       fake_image_serialization_processor =
-          make_scoped_ptr(new FakeImageSerializationProcessor);
+          base::WrapUnique(new FakeImageSerializationProcessor);
 
   proto::RecordingSource proto;
   source->ToProtobuf(&proto, fake_image_serialization_processor.get());
@@ -48,7 +49,7 @@ void ValidateRecordingSourceSerialization(FakeRecordingSource* source) {
 TEST(RecordingSourceTest, TestNullDisplayListSerialization) {
   gfx::Rect recorded_viewport(0, 0, 256, 256);
 
-  scoped_ptr<FakeRecordingSource> recording_source =
+  std::unique_ptr<FakeRecordingSource> recording_source =
       CreateRecordingSource(recorded_viewport);
   recording_source->SetDisplayListUsesCachedPicture(false);
   recording_source->SetGenerateDiscardableImagesMetadata(true);
@@ -61,7 +62,7 @@ TEST(RecordingSourceTest, TestNullDisplayListSerialization) {
 TEST(RecordingSourceTest, TestEmptySerializationDeserialization) {
   gfx::Rect recorded_viewport(0, 0, 256, 256);
 
-  scoped_ptr<FakeRecordingSource> recording_source =
+  std::unique_ptr<FakeRecordingSource> recording_source =
       CreateRecordingSource(recorded_viewport);
   recording_source->SetDisplayListUsesCachedPicture(false);
   recording_source->SetGenerateDiscardableImagesMetadata(true);
@@ -73,7 +74,7 @@ TEST(RecordingSourceTest, TestEmptySerializationDeserialization) {
 TEST(RecordingSourceTest, TestPopulatedSerializationDeserialization) {
   gfx::Rect recorded_viewport(0, 0, 256, 256);
 
-  scoped_ptr<FakeRecordingSource> recording_source =
+  std::unique_ptr<FakeRecordingSource> recording_source =
       CreateRecordingSource(recorded_viewport);
   recording_source->SetDisplayListUsesCachedPicture(false);
 
@@ -97,7 +98,7 @@ TEST(RecordingSourceTest, TestPopulatedSerializationDeserialization) {
 TEST(RecordingSourceTest, DiscardableImagesWithTransform) {
   gfx::Rect recorded_viewport(256, 256);
 
-  scoped_ptr<FakeRecordingSource> recording_source =
+  std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(
           recorded_viewport.size());
   skia::RefPtr<SkImage> discardable_image[2][2];
@@ -188,7 +189,7 @@ TEST(RecordingSourceTest, DiscardableImagesWithTransform) {
 TEST(RecordingSourceTest, NoGatherImageEmptyImages) {
   gfx::Rect recorded_viewport(0, 0, 256, 256);
 
-  scoped_ptr<FakeRecordingSource> recording_source =
+  std::unique_ptr<FakeRecordingSource> recording_source =
       CreateRecordingSource(recorded_viewport);
   recording_source->SetGenerateDiscardableImagesMetadata(false);
   recording_source->Rerecord();
@@ -208,7 +209,7 @@ TEST(RecordingSourceTest, NoGatherImageEmptyImages) {
 TEST(RecordingSourceTest, EmptyImages) {
   gfx::Rect recorded_viewport(0, 0, 256, 256);
 
-  scoped_ptr<FakeRecordingSource> recording_source =
+  std::unique_ptr<FakeRecordingSource> recording_source =
       CreateRecordingSource(recorded_viewport);
   recording_source->SetGenerateDiscardableImagesMetadata(true);
   recording_source->Rerecord();
@@ -242,7 +243,7 @@ TEST(RecordingSourceTest, EmptyImages) {
 TEST(RecordingSourceTest, NoDiscardableImages) {
   gfx::Rect recorded_viewport(0, 0, 256, 256);
 
-  scoped_ptr<FakeRecordingSource> recording_source =
+  std::unique_ptr<FakeRecordingSource> recording_source =
       CreateRecordingSource(recorded_viewport);
 
   SkPaint simple_paint;
@@ -300,7 +301,7 @@ TEST(RecordingSourceTest, NoDiscardableImages) {
 TEST(RecordingSourceTest, DiscardableImages) {
   gfx::Rect recorded_viewport(0, 0, 256, 256);
 
-  scoped_ptr<FakeRecordingSource> recording_source =
+  std::unique_ptr<FakeRecordingSource> recording_source =
       CreateRecordingSource(recorded_viewport);
 
   skia::RefPtr<SkImage> discardable_image[2][2];
@@ -367,7 +368,7 @@ TEST(RecordingSourceTest, DiscardableImages) {
 TEST(RecordingSourceTest, DiscardableImagesBaseNonDiscardable) {
   gfx::Rect recorded_viewport(0, 0, 512, 512);
 
-  scoped_ptr<FakeRecordingSource> recording_source =
+  std::unique_ptr<FakeRecordingSource> recording_source =
       CreateRecordingSource(recorded_viewport);
 
   SkBitmap non_discardable_bitmap;

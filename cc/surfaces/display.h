@@ -5,10 +5,10 @@
 #ifndef CC_SURFACES_DISPLAY_H_
 #define CC_SURFACES_DISPLAY_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/renderer.h"
 #include "cc/resources/returned_resource.h"
@@ -58,7 +58,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
           const RendererSettings& settings);
   ~Display() override;
 
-  bool Initialize(scoped_ptr<OutputSurface> output_surface,
+  bool Initialize(std::unique_ptr<OutputSurface> output_surface,
                   DisplayScheduler* scheduler);
 
   // device_scale_factor is used to communicate to the external window system
@@ -110,12 +110,12 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   float device_scale_factor_;
   bool swapped_since_resize_;
   gfx::Rect external_clip_;
-  scoped_ptr<OutputSurface> output_surface_;
+  std::unique_ptr<OutputSurface> output_surface_;
   DisplayScheduler* scheduler_;
-  scoped_ptr<ResourceProvider> resource_provider_;
-  scoped_ptr<SurfaceAggregator> aggregator_;
-  scoped_ptr<DirectRenderer> renderer_;
-  scoped_ptr<TextureMailboxDeleter> texture_mailbox_deleter_;
+  std::unique_ptr<ResourceProvider> resource_provider_;
+  std::unique_ptr<SurfaceAggregator> aggregator_;
+  std::unique_ptr<DirectRenderer> renderer_;
+  std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter_;
   std::vector<ui::LatencyInfo> stored_latency_info_;
 
   DISALLOW_COPY_AND_ASSIGN(Display);

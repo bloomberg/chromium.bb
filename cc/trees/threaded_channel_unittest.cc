@@ -5,6 +5,7 @@
 #include "cc/trees/threaded_channel.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "cc/animation/animation_events.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -243,7 +244,8 @@ class ThreadedChannelTestSetAnimationEvents : public ThreadedChannelTest {
   void BeginChannelTest() override { PostOnImplThread(); }
 
   void StartTestOnImplThread() override {
-    scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
+    std::unique_ptr<AnimationEvents> events(
+        base::WrapUnique(new AnimationEvents));
     GetProxyImplForTest()->PostAnimationEventsToMainThreadOnImplThread(
         std::move(events));
   }

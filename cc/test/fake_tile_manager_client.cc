@@ -14,14 +14,14 @@ FakeTileManagerClient::FakeTileManagerClient() {
 FakeTileManagerClient::~FakeTileManagerClient() {
 }
 
-scoped_ptr<RasterTilePriorityQueue> FakeTileManagerClient::BuildRasterQueue(
-    TreePriority tree_priority,
-    RasterTilePriorityQueue::Type type) {
+std::unique_ptr<RasterTilePriorityQueue>
+FakeTileManagerClient::BuildRasterQueue(TreePriority tree_priority,
+                                        RasterTilePriorityQueue::Type type) {
   return nullptr;
 }
 
-scoped_ptr<EvictionTilePriorityQueue> FakeTileManagerClient::BuildEvictionQueue(
-    TreePriority tree_priority) {
+std::unique_ptr<EvictionTilePriorityQueue>
+FakeTileManagerClient::BuildEvictionQueue(TreePriority tree_priority) {
   return nullptr;
 }
 

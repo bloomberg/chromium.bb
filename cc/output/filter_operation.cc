@@ -303,7 +303,7 @@ void FilterOperation::AsValueInto(base::trace_event::TracedValue* value) const {
     case FilterOperation::ALPHA_THRESHOLD: {
         value->SetDouble("inner_threshold", amount_);
         value->SetDouble("outer_threshold", outer_threshold_);
-        scoped_ptr<base::ListValue> region_value(new base::ListValue());
+        std::unique_ptr<base::ListValue> region_value(new base::ListValue());
         value->BeginArray("region");
         for (SkRegion::Iterator it(region_); !it.done(); it.next()) {
           value->AppendInteger(it.rect().x());

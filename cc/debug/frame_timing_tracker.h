@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/delayed_unique_notifier.h"
@@ -51,7 +51,7 @@ class CC_EXPORT FrameTimingTracker {
   using MainFrameTimingSet =
       std::unordered_map<int64_t, std::vector<MainFrameTimingEvent>>;
 
-  static scoped_ptr<FrameTimingTracker> Create(
+  static std::unique_ptr<FrameTimingTracker> Create(
       LayerTreeHostImpl* layer_tree_host_impl);
 
   ~FrameTimingTracker();
@@ -61,11 +61,11 @@ class CC_EXPORT FrameTimingTracker {
   // [ {f_id1,r_id1,t1}, {f_id2,r_id1,t2}, {f_id3,r_id2,t3} ]
   // ====>
   // [ {r_id1,<{f_id1,t1},{f_id2,t2}>}, {r_id2,<{f_id3,t3}>} ]
-  scoped_ptr<CompositeTimingSet> GroupCompositeCountsByRectId();
+  std::unique_ptr<CompositeTimingSet> GroupCompositeCountsByRectId();
 
   // This routine takes all of the individual MainFrameEvents stored in the
   // tracker and collects them by "rect_id", as in the example below.
-  scoped_ptr<MainFrameTimingSet> GroupMainFrameCountsByRectId();
+  std::unique_ptr<MainFrameTimingSet> GroupMainFrameCountsByRectId();
 
   // This routine takes a timestamp and an array of frame_id,rect_id pairs
   // and generates CompositeTimingEvents (frame_id, timestamp) and adds them to
@@ -84,8 +84,8 @@ class CC_EXPORT FrameTimingTracker {
 
   void PostEvents();
 
-  scoped_ptr<CompositeTimingSet> composite_events_;
-  scoped_ptr<MainFrameTimingSet> main_frame_events_;
+  std::unique_ptr<CompositeTimingSet> composite_events_;
+  std::unique_ptr<MainFrameTimingSet> main_frame_events_;
 
   LayerTreeHostImpl* layer_tree_host_impl_;
   DelayedUniqueNotifier post_events_notifier_;

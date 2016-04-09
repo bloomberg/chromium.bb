@@ -5,8 +5,9 @@
 #ifndef CC_BLINK_TEST_CC_BLINK_TEST_SUITE_H_
 #define CC_BLINK_TEST_CC_BLINK_TEST_SUITE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/test_suite.h"
 
 namespace base {
@@ -26,7 +27,7 @@ class CCBlinkTestSuite : public base::TestSuite {
   void Shutdown() override;
 
  private:
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(CCBlinkTestSuite);
 };

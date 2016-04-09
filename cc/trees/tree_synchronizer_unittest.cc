@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/format_macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/layers/layer.h"
@@ -31,9 +32,9 @@ namespace {
 
 class MockLayerImpl : public LayerImpl {
  public:
-  static scoped_ptr<MockLayerImpl> Create(LayerTreeImpl* tree_impl,
-                                          int layer_id) {
-    return make_scoped_ptr(new MockLayerImpl(tree_impl, layer_id));
+  static std::unique_ptr<MockLayerImpl> Create(LayerTreeImpl* tree_impl,
+                                               int layer_id) {
+    return base::WrapUnique(new MockLayerImpl(tree_impl, layer_id));
   }
   ~MockLayerImpl() override {
     if (layer_impl_destruction_list_)
@@ -58,7 +59,8 @@ class MockLayer : public Layer {
     return make_scoped_refptr(new MockLayer(layer_impl_destruction_list));
   }
 
-  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override {
+  std::unique_ptr<LayerImpl> CreateLayerImpl(
+      LayerTreeImpl* tree_impl) override {
     return MockLayerImpl::Create(tree_impl, layer_id_);
   }
 
@@ -172,7 +174,7 @@ class TreeSynchronizerTest : public testing::Test {
  protected:
   FakeLayerTreeHostClient client_;
   TestTaskGraphRunner task_graph_runner_;
-  scoped_ptr<FakeLayerTreeHost> host_;
+  std::unique_ptr<FakeLayerTreeHost> host_;
 
   bool is_equal(ScrollTree::ScrollOffsetMap map,
                 ScrollTree::ScrollOffsetMap other) {
@@ -536,7 +538,7 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollParent) {
   FakeLayerTreeHostImplClient impl_client;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  scoped_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
+  std::unique_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
       settings, &impl_client, &task_runner_provider, &stats_instrumentation,
       &shared_bitmap_manager, nullptr, &task_graph_runner, 0);
 
@@ -597,7 +599,7 @@ TEST_F(TreeSynchronizerTest, SynchronizeClipParent) {
   FakeLayerTreeHostImplClient impl_client;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  scoped_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
+  std::unique_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
       settings, &impl_client, &task_runner_provider, &stats_instrumentation,
       &shared_bitmap_manager, nullptr, &task_graph_runner, 0);
 
@@ -773,7 +775,7 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
                               gfx::ScrollOffset(20, 30));
 
   // Pull ScrollOffset delta for main thread, and change offset on main thread
-  scoped_ptr<ScrollAndScaleSet> scroll_info(new ScrollAndScaleSet());
+  std::unique_ptr<ScrollAndScaleSet> scroll_info(new ScrollAndScaleSet());
   scroll_tree.CollectScrollDeltas(scroll_info.get());
   host_->proxy()->SetNeedsCommit();
   host_->ApplyScrollAndScale(scroll_info.get());

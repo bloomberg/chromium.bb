@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
 #include "cc/test/test_web_graphics_context_3d.h"
+
+#include <memory>
+
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +34,7 @@ static void expect_default_parameter_values(TestWebGraphicsContext3D* context) {
 }
 
 TEST(TestWebGraphicsContext3DTest, GetDefaultTextureParameterValues) {
-  scoped_ptr<TestWebGraphicsContext3D> context(
+  std::unique_ptr<TestWebGraphicsContext3D> context(
       TestWebGraphicsContext3D::Create());
 
   GLuint texture = context->createTexture();
@@ -42,7 +44,7 @@ TEST(TestWebGraphicsContext3DTest, GetDefaultTextureParameterValues) {
 }
 
 TEST(TestWebGraphicsContext3DTest, SetAndGetTextureParameter) {
-  scoped_ptr<TestWebGraphicsContext3D> context(
+  std::unique_ptr<TestWebGraphicsContext3D> context(
       TestWebGraphicsContext3D::Create());
 
   GLuint texture = context->createTexture();
@@ -55,7 +57,7 @@ TEST(TestWebGraphicsContext3DTest, SetAndGetTextureParameter) {
 
 TEST(TestWebGraphicsContext3DTest,
      SetAndGetMultipleTextureParametersOnMultipleTextures) {
-  scoped_ptr<TestWebGraphicsContext3D> context(
+  std::unique_ptr<TestWebGraphicsContext3D> context(
       TestWebGraphicsContext3D::Create());
 
   // Set and get non-default texture parameters on the first texture.
@@ -94,7 +96,7 @@ TEST(TestWebGraphicsContext3DTest,
 }
 
 TEST(TestWebGraphicsContext3DTest, UseMultipleRenderAndFramebuffers) {
-  scoped_ptr<TestWebGraphicsContext3D> context(
+  std::unique_ptr<TestWebGraphicsContext3D> context(
       TestWebGraphicsContext3D::Create());
 
   GLuint ids[2];

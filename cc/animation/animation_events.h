@@ -5,9 +5,9 @@
 #ifndef CC_ANIMATION_ANIMATION_EVENTS_H_
 #define CC_ANIMATION_ANIMATION_EVENTS_H_
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/base/cc_export.h"
@@ -42,7 +42,7 @@ struct CC_EXPORT AnimationEvent {
 
   // For continuing a scroll offset animation on the main thread.
   double animation_start_time;
-  scoped_ptr<AnimationCurve> curve;
+  std::unique_ptr<AnimationCurve> curve;
 };
 
 class CC_EXPORT AnimationEvents {

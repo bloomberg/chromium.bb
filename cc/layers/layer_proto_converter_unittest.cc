@@ -35,7 +35,7 @@ class LayerProtoConverterTest : public testing::Test {
 
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostClient fake_client_;
-  scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
+  std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
 };
 
 TEST_F(LayerProtoConverterTest, TestKeepingRoot) {

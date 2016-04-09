@@ -18,7 +18,7 @@ class TextureLayerClient {
   // and the old mailbox is to be reused.
   virtual bool PrepareTextureMailbox(
       TextureMailbox* mailbox,
-      scoped_ptr<SingleReleaseCallback>* release_callback,
+      std::unique_ptr<SingleReleaseCallback>* release_callback,
       bool use_shared_memory) = 0;
 
  protected:

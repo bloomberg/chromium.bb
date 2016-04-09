@@ -4,9 +4,9 @@
 
 #include "cc/output/bsp_walk_action.h"
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "cc/output/direct_renderer.h"
 #include "cc/quads/draw_polygon.h"
 #include "cc/quads/draw_quad.h"

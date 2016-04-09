@@ -115,8 +115,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void DispatchNextCommitWaitsForActivation();
 
   void SetOutputSurfaceOnLayerTreeHost(
-      scoped_ptr<OutputSurface> output_surface);
-  scoped_ptr<OutputSurface> ReleaseOutputSurfaceOnLayerTreeHost();
+      std::unique_ptr<OutputSurface> output_surface);
+  std::unique_ptr<OutputSurface> ReleaseOutputSurfaceOnLayerTreeHost();
   void SetVisibleOnLayerTreeHost(bool visible);
 
   virtual void AfterTest() = 0;
@@ -169,9 +169,9 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   // By default, output surface recreation is synchronous.
   void RequestNewOutputSurface() override;
   // Override this for pixel tests, where you need a real output surface.
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface();
+  virtual std::unique_ptr<OutputSurface> CreateOutputSurface();
   // Override this for unit tests, which should not produce pixel output.
-  virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface();
+  virtual std::unique_ptr<FakeOutputSurface> CreateFakeOutputSurface();
 
   TestWebGraphicsContext3D* TestContext();
 
@@ -188,11 +188,11 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   CompositorMode mode_;
 
-  scoped_ptr<LayerTreeHostClientForTesting> client_;
-  scoped_ptr<LayerTreeHost> layer_tree_host_;
+  std::unique_ptr<LayerTreeHostClientForTesting> client_;
+  std::unique_ptr<LayerTreeHost> layer_tree_host_;
 
   // The LayerTreeHost created by the cc embedder on the client in remote mode.
-  scoped_ptr<LayerTreeHostForTesting> remote_client_layer_tree_host_;
+  std::unique_ptr<LayerTreeHostForTesting> remote_client_layer_tree_host_;
 
   FakeOutputSurface* output_surface_;
   FakeExternalBeginFrameSource* external_begin_frame_source_;
@@ -209,10 +209,10 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   int timeout_seconds_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-  scoped_ptr<base::Thread> impl_thread_;
-  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
-  scoped_ptr<TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
-  scoped_ptr<TestTaskGraphRunner> task_graph_runner_;
+  std::unique_ptr<base::Thread> impl_thread_;
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  std::unique_ptr<TestTaskGraphRunner> task_graph_runner_;
   base::CancelableClosure timeout_;
   scoped_refptr<TestContextProvider> compositor_contexts_;
   base::WeakPtr<LayerTreeTest> main_thread_weak_ptr_;

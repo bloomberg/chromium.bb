@@ -13,9 +13,9 @@ using blink::WebScrollbar;
 namespace cc_blink {
 
 ScrollbarImpl::ScrollbarImpl(
-    scoped_ptr<WebScrollbar> scrollbar,
+    std::unique_ptr<WebScrollbar> scrollbar,
     blink::WebScrollbarThemePainter painter,
-    scoped_ptr<blink::WebScrollbarThemeGeometry> geometry)
+    std::unique_ptr<blink::WebScrollbarThemeGeometry> geometry)
     : scrollbar_(std::move(scrollbar)),
       painter_(painter),
       geometry_(std::move(geometry)) {}

@@ -29,30 +29,30 @@
 namespace cc {
 namespace {
 
-scoped_ptr<ScrollState> BeginState(const gfx::Point& point) {
+std::unique_ptr<ScrollState> BeginState(const gfx::Point& point) {
   ScrollStateData scroll_state_data;
   scroll_state_data.is_beginning = true;
   scroll_state_data.start_position_x = point.x();
   scroll_state_data.start_position_y = point.y();
-  scoped_ptr<ScrollState> scroll_state(new ScrollState(scroll_state_data));
+  std::unique_ptr<ScrollState> scroll_state(new ScrollState(scroll_state_data));
   return scroll_state;
 }
 
-scoped_ptr<ScrollState> UpdateState(const gfx::Point& point,
-                                    const gfx::Vector2dF& delta) {
+std::unique_ptr<ScrollState> UpdateState(const gfx::Point& point,
+                                         const gfx::Vector2dF& delta) {
   ScrollStateData scroll_state_data;
   scroll_state_data.delta_x = delta.x();
   scroll_state_data.delta_y = delta.y();
   scroll_state_data.start_position_x = point.x();
   scroll_state_data.start_position_y = point.y();
-  scoped_ptr<ScrollState> scroll_state(new ScrollState(scroll_state_data));
+  std::unique_ptr<ScrollState> scroll_state(new ScrollState(scroll_state_data));
   return scroll_state;
 }
 
-scoped_ptr<ScrollState> EndState() {
+std::unique_ptr<ScrollState> EndState() {
   ScrollStateData scroll_state_data;
   scroll_state_data.is_ending = true;
-  scoped_ptr<ScrollState> scroll_state(new ScrollState(scroll_state_data));
+  std::unique_ptr<ScrollState> scroll_state(new ScrollState(scroll_state_data));
   return scroll_state;
 }
 
@@ -1305,7 +1305,7 @@ TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
   params.task_graph_runner = &task_graph_runner;
   params.settings = &settings;
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
-  scoped_ptr<LayerTreeHost> layer_tree_host =
+  std::unique_ptr<LayerTreeHost> layer_tree_host =
       LayerTreeHost::CreateThreaded(impl_thread.task_runner(), &params);
 
   impl_thread.task_runner()->PostTask(

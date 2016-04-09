@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/memory/ptr_util.h"
 #include "cc/base/math_util.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -28,7 +29,7 @@ struct RenderPassSize {
   gfx::Rect output_rect;
   gfx::Rect damage_rect;
   bool has_transparent_background;
-  std::vector<scoped_ptr<CopyOutputRequest>> copy_callbacks;
+  std::vector<std::unique_ptr<CopyOutputRequest>> copy_callbacks;
 };
 
 static void CompareRenderPassLists(const RenderPassList& expected_list,
@@ -69,7 +70,7 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
   gfx::Rect damage_rect(56, 123, 19, 43);
   bool has_transparent_background = true;
 
-  scoped_ptr<RenderPass> pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetAll(id,
                output_rect,
                damage_rect,
@@ -95,7 +96,7 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
 
   RenderPassId new_id(63, 4);
 
-  scoped_ptr<RenderPass> copy = pass->Copy(new_id);
+  std::unique_ptr<RenderPass> copy = pass->Copy(new_id);
   EXPECT_EQ(new_id, copy->id);
   EXPECT_EQ(pass->output_rect, copy->output_rect);
   EXPECT_EQ(pass->transform_to_root_target, copy->transform_to_root_target);
@@ -120,7 +121,7 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
   gfx::Rect damage_rect(56, 123, 19, 43);
   bool has_transparent_background = true;
 
-  scoped_ptr<RenderPass> pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetAll(id,
                output_rect,
                damage_rect,
@@ -181,7 +182,7 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
   gfx::Rect contrib_damage_rect(11, 16, 10, 15);
   bool contrib_has_transparent_background = true;
 
-  scoped_ptr<RenderPass> contrib = RenderPass::Create();
+  std::unique_ptr<RenderPass> contrib = RenderPass::Create();
   contrib->SetAll(contrib_id,
                   contrib_output_rect,
                   contrib_damage_rect,
@@ -206,8 +207,8 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
                        false);
 
   // And a RenderPassDrawQuad for the contributing pass.
-  scoped_ptr<RenderPassDrawQuad> pass_quad =
-      make_scoped_ptr(new RenderPassDrawQuad);
+  std::unique_ptr<RenderPassDrawQuad> pass_quad =
+      base::WrapUnique(new RenderPassDrawQuad);
   pass_quad->SetNew(pass->shared_quad_state_list.back(),
                     contrib_output_rect,
                     contrib_output_rect,
@@ -239,7 +240,7 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
   gfx::Rect damage_rect(56, 123, 19, 43);
   bool has_transparent_background = true;
 
-  scoped_ptr<RenderPass> pass = RenderPass::Create();
+  std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetAll(id,
                output_rect,
                damage_rect,

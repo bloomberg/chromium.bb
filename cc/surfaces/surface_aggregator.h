@@ -5,12 +5,12 @@
 #ifndef CC_SURFACES_SURFACE_AGGREGATOR_H_
 #define CC_SURFACES_SURFACE_AGGREGATOR_H_
 
+#include <memory>
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
@@ -36,7 +36,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
                     bool aggregate_only_damaged);
   ~SurfaceAggregator();
 
-  scoped_ptr<CompositorFrame> Aggregate(SurfaceId surface_id);
+  std::unique_ptr<CompositorFrame> Aggregate(SurfaceId surface_id);
   void ReleaseResources(SurfaceId surface_id);
   SurfaceIndexMap& previous_contained_surfaces() {
     return previous_contained_surfaces_;
@@ -106,7 +106,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   class RenderPassIdAllocator;
   using RenderPassIdAllocatorMap =
       std::unordered_map<SurfaceId,
-                         scoped_ptr<RenderPassIdAllocator>,
+                         std::unique_ptr<RenderPassIdAllocator>,
                          SurfaceIdHash>;
   RenderPassIdAllocatorMap render_pass_allocator_map_;
   int next_render_pass_id_;

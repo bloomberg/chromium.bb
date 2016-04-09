@@ -10,6 +10,7 @@
 #include <limits>
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "cc/debug/lap_timer.h"
@@ -47,7 +48,7 @@ const char* kModeSuffixes[RecordingSource::RECORDING_MODE_COUNT] = {
 }  // namespace
 
 RasterizeAndRecordBenchmark::RasterizeAndRecordBenchmark(
-    scoped_ptr<base::Value> value,
+    std::unique_ptr<base::Value> value,
     const MicroBenchmark::DoneCallback& callback)
     : MicroBenchmark(callback),
       record_repeat_count_(kDefaultRecordRepeatCount),
@@ -75,7 +76,7 @@ void RasterizeAndRecordBenchmark::DidUpdateLayers(LayerTreeHost* host) {
       CallFunctionLayerType::ALL_LAYERS);
 
   DCHECK(!results_.get());
-  results_ = make_scoped_ptr(new base::DictionaryValue);
+  results_ = base::WrapUnique(new base::DictionaryValue);
   results_->SetInteger("pixels_recorded", record_results_.pixels_recorded);
   results_->SetInteger("picture_memory_usage",
                        static_cast<int>(record_results_.bytes_used));
@@ -89,7 +90,7 @@ void RasterizeAndRecordBenchmark::DidUpdateLayers(LayerTreeHost* host) {
 }
 
 void RasterizeAndRecordBenchmark::RecordRasterResults(
-    scoped_ptr<base::Value> results_value) {
+    std::unique_ptr<base::Value> results_value) {
   DCHECK(main_thread_benchmark_done_);
 
   base::DictionaryValue* results = nullptr;
@@ -101,9 +102,10 @@ void RasterizeAndRecordBenchmark::RecordRasterResults(
   NotifyDone(std::move(results_));
 }
 
-scoped_ptr<MicroBenchmarkImpl> RasterizeAndRecordBenchmark::CreateBenchmarkImpl(
+std::unique_ptr<MicroBenchmarkImpl>
+RasterizeAndRecordBenchmark::CreateBenchmarkImpl(
     scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner) {
-  return make_scoped_ptr(new RasterizeAndRecordBenchmarkImpl(
+  return base::WrapUnique(new RasterizeAndRecordBenchmarkImpl(
       origin_task_runner, settings_.get(),
       base::Bind(&RasterizeAndRecordBenchmark::RecordRasterResults,
                  weak_ptr_factory_.GetWeakPtr())));

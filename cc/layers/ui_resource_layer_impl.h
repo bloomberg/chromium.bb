@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/resources/resource_provider.h"
@@ -23,9 +24,9 @@ namespace cc {
 
 class CC_EXPORT UIResourceLayerImpl : public LayerImpl {
  public:
-  static scoped_ptr<UIResourceLayerImpl> Create(LayerTreeImpl* tree_impl,
-                                               int id) {
-    return make_scoped_ptr(new UIResourceLayerImpl(tree_impl, id));
+  static std::unique_ptr<UIResourceLayerImpl> Create(LayerTreeImpl* tree_impl,
+                                                     int id) {
+    return base::WrapUnique(new UIResourceLayerImpl(tree_impl, id));
   }
   ~UIResourceLayerImpl() override;
 
@@ -40,7 +41,7 @@ class CC_EXPORT UIResourceLayerImpl : public LayerImpl {
   // opacity value.
   void SetVertexOpacity(const float vertex_opacity[4]);
 
-  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void PushPropertiesTo(LayerImpl* layer) override;
 
   bool WillDraw(DrawMode draw_mode,

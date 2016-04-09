@@ -5,8 +5,9 @@
 #ifndef CC_INPUT_SCROLLBAR_ANIMATION_CONTROLLER_LINEAR_FADE_H_
 #define CC_INPUT_SCROLLBAR_ANIMATION_CONTROLLER_LINEAR_FADE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/input/scrollbar_animation_controller.h"
 
@@ -16,7 +17,7 @@ class LayerImpl;
 class CC_EXPORT ScrollbarAnimationControllerLinearFade
     : public ScrollbarAnimationController {
  public:
-  static scoped_ptr<ScrollbarAnimationControllerLinearFade> Create(
+  static std::unique_ptr<ScrollbarAnimationControllerLinearFade> Create(
       int scroll_layer_id,
       ScrollbarAnimationControllerClient* client,
       base::TimeDelta delay_before_starting,

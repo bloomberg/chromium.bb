@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/proxy.h"
@@ -38,9 +39,9 @@ FrameTimingTracker::MainFrameTimingEvent::~MainFrameTimingEvent() {
 }
 
 // static
-scoped_ptr<FrameTimingTracker> FrameTimingTracker::Create(
+std::unique_ptr<FrameTimingTracker> FrameTimingTracker::Create(
     LayerTreeHostImpl* layer_tree_host_impl) {
-  return make_scoped_ptr(new FrameTimingTracker(layer_tree_host_impl));
+  return base::WrapUnique(new FrameTimingTracker(layer_tree_host_impl));
 }
 
 FrameTimingTracker::FrameTimingTracker(LayerTreeHostImpl* layer_tree_host_impl)
@@ -82,10 +83,10 @@ void FrameTimingTracker::SaveMainFrameTimeStamps(
     post_events_notifier_.Schedule();
 }
 
-scoped_ptr<FrameTimingTracker::CompositeTimingSet>
+std::unique_ptr<FrameTimingTracker::CompositeTimingSet>
 FrameTimingTracker::GroupCompositeCountsByRectId() {
   if (!composite_events_)
-    return make_scoped_ptr(new CompositeTimingSet);
+    return base::WrapUnique(new CompositeTimingSet);
   for (auto& infos : *composite_events_) {
     std::sort(
         infos.second.begin(), infos.second.end(),
@@ -96,10 +97,10 @@ FrameTimingTracker::GroupCompositeCountsByRectId() {
   return std::move(composite_events_);
 }
 
-scoped_ptr<FrameTimingTracker::MainFrameTimingSet>
+std::unique_ptr<FrameTimingTracker::MainFrameTimingSet>
 FrameTimingTracker::GroupMainFrameCountsByRectId() {
   if (!main_frame_events_)
-    return make_scoped_ptr(new MainFrameTimingSet);
+    return base::WrapUnique(new MainFrameTimingSet);
   for (auto& infos : *main_frame_events_) {
     std::sort(
         infos.second.begin(), infos.second.end(),

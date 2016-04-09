@@ -163,7 +163,7 @@ RenderPassId RenderSurfaceImpl::GetRenderPassId() {
 }
 
 void RenderSurfaceImpl::AppendRenderPasses(RenderPassSink* pass_sink) {
-  scoped_ptr<RenderPass> pass = RenderPass::Create(layer_list_.size());
+  std::unique_ptr<RenderPass> pass = RenderPass::Create(layer_list_.size());
   pass->SetNew(GetRenderPassId(), content_rect(),
                gfx::IntersectRects(content_rect(),
                                    damage_tracker_->current_damage_rect()),

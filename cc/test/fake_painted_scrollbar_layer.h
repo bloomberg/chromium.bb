@@ -7,7 +7,8 @@
 
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/test/fake_scrollbar.h"
 
@@ -28,7 +29,7 @@ class FakePaintedScrollbarLayer : public PaintedScrollbarLayer {
 
   void PushPropertiesTo(LayerImpl* layer) override;
 
-  scoped_ptr<base::AutoReset<bool>> IgnoreSetNeedsCommit();
+  std::unique_ptr<base::AutoReset<bool>> IgnoreSetNeedsCommit();
 
   size_t push_properties_count() const { return push_properties_count_; }
   void reset_push_properties_count() { push_properties_count_ = 0; }

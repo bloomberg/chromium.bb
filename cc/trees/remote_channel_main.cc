@@ -4,7 +4,9 @@
 
 #include "cc/trees/remote_channel_main.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "cc/proto/base_conversions.h"
 #include "cc/proto/compositor_message.pb.h"
 #include "cc/proto/compositor_message_to_impl.pb.h"
@@ -15,12 +17,12 @@
 
 namespace cc {
 
-scoped_ptr<RemoteChannelMain> RemoteChannelMain::Create(
+std::unique_ptr<RemoteChannelMain> RemoteChannelMain::Create(
     RemoteProtoChannel* remote_proto_channel,
     ProxyMain* proxy_main,
     TaskRunnerProvider* task_runner_provider) {
-  return make_scoped_ptr(new RemoteChannelMain(remote_proto_channel, proxy_main,
-                                               task_runner_provider));
+  return base::WrapUnique(new RemoteChannelMain(
+      remote_proto_channel, proxy_main, task_runner_provider));
 }
 
 RemoteChannelMain::RemoteChannelMain(RemoteProtoChannel* remote_proto_channel,
@@ -46,7 +48,7 @@ RemoteChannelMain::~RemoteChannelMain() {
 }
 
 void RemoteChannelMain::OnProtoReceived(
-    scoped_ptr<proto::CompositorMessage> proto) {
+    std::unique_ptr<proto::CompositorMessage> proto) {
   DCHECK(task_runner_provider_->IsMainThread());
   DCHECK(proto->has_to_main());
 
@@ -191,7 +193,7 @@ void RemoteChannelMain::StartCommitOnImpl(
 
 void RemoteChannelMain::SynchronouslyInitializeImpl(
     LayerTreeHost* layer_tree_host,
-    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
+    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
   DCHECK(!initialized_);
 
   proto::CompositorMessage proto;
@@ -237,7 +239,7 @@ void RemoteChannelMain::HandleProto(
       VLOG(1) << "Received BeginMainFrame request from client.";
       const proto::BeginMainFrame& begin_main_frame_message =
           proto.begin_main_frame_message();
-      scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state;
+      std::unique_ptr<BeginMainFrameAndCommitState> begin_main_frame_state;
       begin_main_frame_state.reset(new BeginMainFrameAndCommitState);
       begin_main_frame_state->FromProtobuf(
           begin_main_frame_message.begin_main_frame_state());

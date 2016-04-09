@@ -23,21 +23,21 @@
 
 namespace cc {
 
-scoped_ptr<ProxyMain> ProxyMain::CreateThreaded(
+std::unique_ptr<ProxyMain> ProxyMain::CreateThreaded(
     LayerTreeHost* layer_tree_host,
     TaskRunnerProvider* task_runner_provider) {
-  scoped_ptr<ProxyMain> proxy_main(
+  std::unique_ptr<ProxyMain> proxy_main(
       new ProxyMain(layer_tree_host, task_runner_provider));
   proxy_main->SetChannel(
       ThreadedChannel::Create(proxy_main.get(), task_runner_provider));
   return proxy_main;
 }
 
-scoped_ptr<ProxyMain> ProxyMain::CreateRemote(
+std::unique_ptr<ProxyMain> ProxyMain::CreateRemote(
     RemoteProtoChannel* remote_proto_channel,
     LayerTreeHost* layer_tree_host,
     TaskRunnerProvider* task_runner_provider) {
-  scoped_ptr<ProxyMain> proxy_main(
+  std::unique_ptr<ProxyMain> proxy_main(
       new ProxyMain(layer_tree_host, task_runner_provider));
   proxy_main->SetChannel(RemoteChannelMain::Create(
       remote_proto_channel, proxy_main.get(), task_runner_provider));
@@ -66,7 +66,7 @@ ProxyMain::~ProxyMain() {
   DCHECK(!started_);
 }
 
-void ProxyMain::SetChannel(scoped_ptr<ChannelMain> channel_main) {
+void ProxyMain::SetChannel(std::unique_ptr<ChannelMain> channel_main) {
   DCHECK(!channel_main_);
   channel_main_ = std::move(channel_main);
 }
@@ -93,7 +93,7 @@ void ProxyMain::DidCommitAndDrawFrame() {
   layer_tree_host_->DidCommitAndDrawFrame();
 }
 
-void ProxyMain::SetAnimationEvents(scoped_ptr<AnimationEvents> events) {
+void ProxyMain::SetAnimationEvents(std::unique_ptr<AnimationEvents> events) {
   TRACE_EVENT0("cc", "ProxyMain::SetAnimationEvents");
   DCHECK(IsMainThread());
   layer_tree_host_->SetAnimationEvents(std::move(events));
@@ -130,15 +130,15 @@ void ProxyMain::DidCompletePageScaleAnimation() {
 }
 
 void ProxyMain::PostFrameTimingEventsOnMain(
-    scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-    scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
+    std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+    std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
   DCHECK(IsMainThread());
   layer_tree_host_->RecordFrameTimingEvents(std::move(composite_events),
                                             std::move(main_frame_events));
 }
 
 void ProxyMain::BeginMainFrame(
-    scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) {
+    std::unique_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) {
   benchmark_instrumentation::ScopedBeginFrameTask begin_frame_task(
       benchmark_instrumentation::kDoBeginFrame,
       begin_main_frame_state->begin_frame_id);
@@ -382,7 +382,7 @@ void ProxyMain::MainThreadHasStoppedFlinging() {
 }
 
 void ProxyMain::Start(
-    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
+    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
   DCHECK(IsMainThread());
   DCHECK(layer_tree_host_->IsThreaded() || layer_tree_host_->IsRemoteServer());
   DCHECK(channel_main_);

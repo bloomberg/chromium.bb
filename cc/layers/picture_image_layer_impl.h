@@ -6,22 +6,23 @@
 #define CC_LAYERS_PICTURE_IMAGE_LAYER_IMPL_H_
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "cc/layers/picture_layer_impl.h"
 
 namespace cc {
 
 class CC_EXPORT PictureImageLayerImpl : public PictureLayerImpl {
  public:
-  static scoped_ptr<PictureImageLayerImpl> Create(LayerTreeImpl* tree_impl,
-                                                  int id,
-                                                  bool is_mask) {
-    return make_scoped_ptr(new PictureImageLayerImpl(tree_impl, id, is_mask));
+  static std::unique_ptr<PictureImageLayerImpl> Create(LayerTreeImpl* tree_impl,
+                                                       int id,
+                                                       bool is_mask) {
+    return base::WrapUnique(new PictureImageLayerImpl(tree_impl, id, is_mask));
   }
   ~PictureImageLayerImpl() override;
 
   // LayerImpl overrides.
   const char* LayerTypeAsString() const override;
-  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
  protected:
   PictureImageLayerImpl(LayerTreeImpl* tree_impl, int id, bool is_mask);

@@ -98,7 +98,7 @@ class DrawQuadPerfTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<RenderPass> render_pass_;
+  std::unique_ptr<RenderPass> render_pass_;
   SharedQuadState* shared_state_;
   LapTimer timer_;
 };

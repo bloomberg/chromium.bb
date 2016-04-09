@@ -351,14 +351,14 @@ bool Layer::HasAncestor(const Layer* ancestor) const {
   return false;
 }
 
-void Layer::RequestCopyOfOutput(
-    scoped_ptr<CopyOutputRequest> request) {
+void Layer::RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> request) {
   DCHECK(IsPropertyChangeAllowed());
   if (void* source = request->source()) {
-    auto it = std::find_if(copy_requests_.begin(), copy_requests_.end(),
-                           [source](const scoped_ptr<CopyOutputRequest>& x) {
-                             return x->source() == source;
-                           });
+    auto it =
+        std::find_if(copy_requests_.begin(), copy_requests_.end(),
+                     [source](const std::unique_ptr<CopyOutputRequest>& x) {
+                       return x->source() == source;
+                     });
     if (it != copy_requests_.end())
       copy_requests_.erase(it);
   }
@@ -1096,15 +1096,16 @@ void Layer::SetPositionConstraint(const LayerPositionConstraint& constraint) {
   SetNeedsCommit();
 }
 
-static void RunCopyCallbackOnMainThread(scoped_ptr<CopyOutputRequest> request,
-                                        scoped_ptr<CopyOutputResult> result) {
+static void RunCopyCallbackOnMainThread(
+    std::unique_ptr<CopyOutputRequest> request,
+    std::unique_ptr<CopyOutputResult> result) {
   request->SendResult(std::move(result));
 }
 
 static void PostCopyCallbackToMainThread(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
-    scoped_ptr<CopyOutputRequest> request,
-    scoped_ptr<CopyOutputResult> result) {
+    std::unique_ptr<CopyOutputRequest> request,
+    std::unique_ptr<CopyOutputResult> result) {
   main_thread_task_runner->PostTask(FROM_HERE,
                                     base::Bind(&RunCopyCallbackOnMainThread,
                                                base::Passed(&request),
@@ -1242,13 +1243,13 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   {
     TRACE_EVENT0("cc", "Layer::PushPropertiesTo::CopyOutputRequests");
     // Wrap the copy_requests_ in a PostTask to the main thread.
-    std::vector<scoped_ptr<CopyOutputRequest>> main_thread_copy_requests;
+    std::vector<std::unique_ptr<CopyOutputRequest>> main_thread_copy_requests;
     for (auto it = copy_requests_.begin(); it != copy_requests_.end(); ++it) {
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
           layer_tree_host()->task_runner_provider()->MainThreadTaskRunner();
-      scoped_ptr<CopyOutputRequest> original_request = std::move(*it);
+      std::unique_ptr<CopyOutputRequest> original_request = std::move(*it);
       const CopyOutputRequest& original_request_ref = *original_request;
-      scoped_ptr<CopyOutputRequest> main_thread_request =
+      std::unique_ptr<CopyOutputRequest> main_thread_request =
           CopyOutputRequest::CreateRelayRequest(
               original_request_ref,
               base::Bind(&PostCopyCallbackToMainThread, main_thread_task_runner,
@@ -1574,7 +1575,7 @@ void Layer::FromLayerSpecificPropertiesProto(
   update_rect_.Union(ProtoToRect(base.update_rect()));
 }
 
-scoped_ptr<LayerImpl> Layer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
+std::unique_ptr<LayerImpl> Layer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
   return LayerImpl::Create(tree_impl, layer_id_);
 }
 
@@ -1625,7 +1626,8 @@ bool Layer::IsSuitableForGpuRasterization() const {
   return true;
 }
 
-scoped_ptr<base::trace_event::ConvertableToTraceFormat> Layer::TakeDebugInfo() {
+std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
+Layer::TakeDebugInfo() {
   if (client_)
     return client_->TakeDebugInfo(this);
   else

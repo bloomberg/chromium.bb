@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/trees/layer_tree_host.h"
+#include <memory>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/proxy_common.h"
 #include "cc/trees/proxy_main.h"
@@ -24,7 +25,7 @@ class LayerTreeHostTestRemoteServer : public testing::Test,
   LayerTreeHostTestRemoteServer()
       : calls_received_(0),
         image_serialization_processor_(
-            make_scoped_ptr(new FakeImageSerializationProcessor)) {
+            base::WrapUnique(new FakeImageSerializationProcessor)) {
     LayerTreeHost::InitParams params;
     params.client = this;
     params.task_graph_runner = &task_graph_runner_;
@@ -55,8 +56,8 @@ class LayerTreeHostTestRemoteServer : public testing::Test,
   void DidCommitAndDrawFrame() override {}
   void DidCompleteSwapBuffers() override {}
   void RecordFrameTimingEvents(
-      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
+      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
       override{};
   void DidCompletePageScaleAnimation() override {}
   void SendBeginFramesToChildren(const BeginFrameArgs& args) override {}
@@ -70,9 +71,10 @@ class LayerTreeHostTestRemoteServer : public testing::Test,
   int calls_received_;
   TestTaskGraphRunner task_graph_runner_;
   LayerTreeSettings settings_;
-  scoped_ptr<LayerTreeHost> layer_tree_host_;
+  std::unique_ptr<LayerTreeHost> layer_tree_host_;
   RemoteProtoChannel::ProtoReceiver* receiver_;
-  scoped_ptr<FakeImageSerializationProcessor> image_serialization_processor_;
+  std::unique_ptr<FakeImageSerializationProcessor>
+      image_serialization_processor_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostTestRemoteServer);
@@ -91,7 +93,7 @@ class LayerTreeHostTestRemoteServerBeginMainFrame
 TEST_F(LayerTreeHostTestRemoteServerBeginMainFrame, BeginMainFrameNotAborted) {
   layer_tree_host_->SetVisible(true);
 
-  scoped_ptr<BeginMainFrameAndCommitState> begin_frame_state;
+  std::unique_ptr<BeginMainFrameAndCommitState> begin_frame_state;
   begin_frame_state.reset(new BeginMainFrameAndCommitState());
   begin_frame_state->scroll_info.reset(new ScrollAndScaleSet());
 

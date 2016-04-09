@@ -6,9 +6,9 @@
 #define CC_TEST_LAYER_TREE_HOST_COMMON_TEST_H_
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/layer_test_common.h"
@@ -143,9 +143,9 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
   }
 
  private:
-  scoped_ptr<std::vector<LayerImpl*>> render_surface_layer_list_impl_;
+  std::unique_ptr<std::vector<LayerImpl*>> render_surface_layer_list_impl_;
   LayerList update_layer_list_;
-  scoped_ptr<LayerImplList> update_layer_list_impl_;
+  std::unique_ptr<LayerImplList> update_layer_list_impl_;
 
   int render_surface_layer_list_count_;
 };

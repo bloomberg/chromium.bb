@@ -4,8 +4,10 @@
 
 #include "cc/test/remote_proto_channel_bridge.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "cc/proto/compositor_message.pb.h"
 
 namespace cc {
@@ -22,7 +24,7 @@ void FakeRemoteProtoChannel::SetProtoReceiver(ProtoReceiver* receiver) {
 }
 
 void FakeRemoteProtoChannel::OnProtoReceived(
-    scoped_ptr<proto::CompositorMessage> proto) {
+    std::unique_ptr<proto::CompositorMessage> proto) {
   DCHECK(receiver_);
 
   receiver_->OnProtoReceived(std::move(proto));
@@ -55,7 +57,7 @@ void FakeRemoteProtoChannelMain::SendCompositorProto(
       return;
     default:
       bridge_->channel_impl.OnProtoReceived(
-          make_scoped_ptr(new proto::CompositorMessage(proto)));
+          base::WrapUnique(new proto::CompositorMessage(proto)));
   }
 }
 
@@ -66,7 +68,7 @@ FakeRemoteProtoChannelImpl::FakeRemoteProtoChannelImpl(
 void FakeRemoteProtoChannelImpl::SendCompositorProto(
     const proto::CompositorMessage& proto) {
   bridge_->channel_main.OnProtoReceived(
-      make_scoped_ptr(new proto::CompositorMessage(proto)));
+      base::WrapUnique(new proto::CompositorMessage(proto)));
 }
 
 RemoteProtoChannelBridge::RemoteProtoChannelBridge(TestHooks* test_hooks)

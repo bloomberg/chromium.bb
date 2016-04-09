@@ -7,6 +7,8 @@
 #include <stddef.h>
 
 #include <vector>
+
+#include "base/memory/ptr_util.h"
 #include "cc/tiles/tile.h"
 #include "cc/trees/layer_tree_impl.h"
 
@@ -53,9 +55,9 @@ FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl,
       use_set_valid_tile_priorities_flag_(false),
       release_resources_count_(0) {}
 
-scoped_ptr<LayerImpl> FakePictureLayerImpl::CreateLayerImpl(
+std::unique_ptr<LayerImpl> FakePictureLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return make_scoped_ptr(new FakePictureLayerImpl(tree_impl, id(), is_mask_));
+  return base::WrapUnique(new FakePictureLayerImpl(tree_impl, id(), is_mask_));
 }
 
 void FakePictureLayerImpl::PushPropertiesTo(LayerImpl* layer_impl) {

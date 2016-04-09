@@ -26,7 +26,7 @@ class CC_EXPORT PictureLayer : public Layer {
   void SetNearestNeighbor(bool nearest_neighbor);
 
   // Layer interface.
-  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void SetLayerTreeHost(LayerTreeHost* host) override;
   void PushPropertiesTo(LayerImpl* layer) override;
   void SetNeedsDisplayRect(const gfx::Rect& layer_rect) override;
@@ -46,7 +46,8 @@ class CC_EXPORT PictureLayer : public Layer {
  protected:
   explicit PictureLayer(ContentLayerClient* client);
   // Allow tests to inject a recording source.
-  PictureLayer(ContentLayerClient* client, scoped_ptr<RecordingSource> source);
+  PictureLayer(ContentLayerClient* client,
+               std::unique_ptr<RecordingSource> source);
   ~PictureLayer() override;
 
   bool HasDrawableContent() const override;
@@ -63,7 +64,7 @@ class CC_EXPORT PictureLayer : public Layer {
   void DropRecordingSourceContentIfInvalid();
 
   ContentLayerClient* client_;
-  scoped_ptr<RecordingSource> recording_source_;
+  std::unique_ptr<RecordingSource> recording_source_;
   devtools_instrumentation::
       ScopedLayerObjectTracker instrumentation_object_tracker_;
 

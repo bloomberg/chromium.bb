@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
@@ -161,7 +161,7 @@ class CC_EXPORT VideoResourceUpdater
 
   ContextProvider* context_provider_;
   ResourceProvider* resource_provider_;
-  scoped_ptr<media::SkCanvasVideoRenderer> video_renderer_;
+  std::unique_ptr<media::SkCanvasVideoRenderer> video_renderer_;
   std::vector<uint8_t> upload_pixels_;
 
   // Recycle resources so that we can reduce the number of allocations and

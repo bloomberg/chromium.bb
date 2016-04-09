@@ -21,13 +21,13 @@ class CC_EXPORT MicroBenchmarkControllerImpl {
 
   void DidCompleteCommit();
 
-  void ScheduleRun(scoped_ptr<MicroBenchmarkImpl> benchmark);
+  void ScheduleRun(std::unique_ptr<MicroBenchmarkImpl> benchmark);
 
  private:
   void CleanUpFinishedBenchmarks();
 
   LayerTreeHostImpl* host_;
-  std::vector<scoped_ptr<MicroBenchmarkImpl>> benchmarks_;
+  std::vector<std::unique_ptr<MicroBenchmarkImpl>> benchmarks_;
 
   DISALLOW_COPY_AND_ASSIGN(MicroBenchmarkControllerImpl);
 };

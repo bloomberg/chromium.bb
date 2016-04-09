@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
@@ -207,7 +208,8 @@ class FakeSchedulerClient : public SchedulerClient {
   BeginFrameArgs last_begin_main_frame_args_;
   base::TimeTicks posted_begin_impl_frame_deadline_;
   std::vector<const char*> actions_;
-  std::vector<scoped_ptr<base::trace_event::ConvertableToTraceFormat>> states_;
+  std::vector<std::unique_ptr<base::trace_event::ConvertableToTraceFormat>>
+      states_;
   TestScheduler* scheduler_;
 };
 
@@ -271,8 +273,8 @@ class SchedulerTest : public testing::Test {
       frame_source = synthetic_frame_source_.get();
     }
 
-    scoped_ptr<FakeCompositorTimingHistory> fake_compositor_timing_history =
-        FakeCompositorTimingHistory::Create(
+    std::unique_ptr<FakeCompositorTimingHistory>
+        fake_compositor_timing_history = FakeCompositorTimingHistory::Create(
             scheduler_settings_.using_synchronous_renderer_compositor);
     fake_compositor_timing_history_ = fake_compositor_timing_history.get();
 
@@ -295,10 +297,10 @@ class SchedulerTest : public testing::Test {
   }
 
   void SetUpScheduler(bool initSurface) {
-    SetUpScheduler(make_scoped_ptr(new FakeSchedulerClient), initSurface);
+    SetUpScheduler(base::WrapUnique(new FakeSchedulerClient), initSurface);
   }
 
-  void SetUpScheduler(scoped_ptr<FakeSchedulerClient> client,
+  void SetUpScheduler(std::unique_ptr<FakeSchedulerClient> client,
                       bool initSurface) {
     client_ = std::move(client);
     if (initSurface)
@@ -437,14 +439,15 @@ class SchedulerTest : public testing::Test {
                                     ScrollHandlerState scroll_handler_state,
                                     base::TimeDelta durations);
 
-  scoped_ptr<base::SimpleTestTickClock> now_src_;
+  std::unique_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
-  scoped_ptr<FakeExternalBeginFrameSource> fake_external_begin_frame_source_;
-  scoped_ptr<TestSyntheticBeginFrameSource> synthetic_frame_source_;
-  scoped_ptr<TestBackToBackBeginFrameSource> unthrottled_frame_source_;
+  std::unique_ptr<FakeExternalBeginFrameSource>
+      fake_external_begin_frame_source_;
+  std::unique_ptr<TestSyntheticBeginFrameSource> synthetic_frame_source_;
+  std::unique_ptr<TestBackToBackBeginFrameSource> unthrottled_frame_source_;
   SchedulerSettings scheduler_settings_;
-  scoped_ptr<FakeSchedulerClient> client_;
-  scoped_ptr<TestScheduler> scheduler_;
+  std::unique_ptr<FakeSchedulerClient> client_;
+  std::unique_ptr<TestScheduler> scheduler_;
   FakeCompositorTimingHistory* fake_compositor_timing_history_;
 };
 
@@ -784,7 +787,7 @@ TEST_F(SchedulerTest, RequestRedrawInsideDraw) {
   SchedulerClientThatsetNeedsDrawInsideDraw* client =
       new SchedulerClientThatsetNeedsDrawInsideDraw;
   scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(make_scoped_ptr(client), true);
+  SetUpScheduler(base::WrapUnique(client), true);
   client->SetRequestRedrawsInsideDraw(true);
 
   scheduler_->SetNeedsRedraw();
@@ -820,7 +823,7 @@ TEST_F(SchedulerTest, RequestRedrawInsideFailedDraw) {
   SchedulerClientThatsetNeedsDrawInsideDraw* client =
       new SchedulerClientThatsetNeedsDrawInsideDraw;
   scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(make_scoped_ptr(client), true);
+  SetUpScheduler(base::WrapUnique(client), true);
 
   client->SetRequestRedrawsInsideDraw(true);
   client->SetDrawWillHappen(false);
@@ -896,7 +899,7 @@ TEST_F(SchedulerTest, RequestCommitInsideDraw) {
       new SchedulerClientThatSetNeedsBeginMainFrameInsideDraw;
 
   scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(make_scoped_ptr(client), true);
+  SetUpScheduler(base::WrapUnique(client), true);
 
   EXPECT_FALSE(client->needs_begin_frames());
   scheduler_->SetNeedsRedraw();
@@ -938,7 +941,7 @@ TEST_F(SchedulerTest, RequestCommitInsideFailedDraw) {
   SchedulerClientThatsetNeedsDrawInsideDraw* client =
       new SchedulerClientThatsetNeedsDrawInsideDraw;
   scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(make_scoped_ptr(client), true);
+  SetUpScheduler(base::WrapUnique(client), true);
 
   client->SetDrawWillHappen(false);
 
@@ -981,7 +984,7 @@ TEST_F(SchedulerTest, NoSwapWhenDrawFails) {
   SchedulerClientThatSetNeedsBeginMainFrameInsideDraw* client =
       new SchedulerClientThatSetNeedsBeginMainFrameInsideDraw;
   scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(make_scoped_ptr(client), true);
+  SetUpScheduler(base::WrapUnique(client), true);
 
   scheduler_->SetNeedsRedraw();
   EXPECT_TRUE(scheduler_->RedrawPending());
@@ -1019,7 +1022,7 @@ TEST_F(SchedulerTest, PrepareTiles) {
   SchedulerClientNeedsPrepareTilesInDraw* client =
       new SchedulerClientNeedsPrepareTilesInDraw;
   scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(make_scoped_ptr(client), true);
+  SetUpScheduler(base::WrapUnique(client), true);
 
   // Request both draw and prepare tiles. PrepareTiles shouldn't
   // be trigged until BeginImplFrame.
@@ -1229,8 +1232,8 @@ TEST_F(SchedulerTest, PrepareTilesOncePerFrame) {
 }
 
 TEST_F(SchedulerTest, PrepareTilesFunnelResetOnVisibilityChange) {
-  scoped_ptr<SchedulerClientNeedsPrepareTilesInDraw> client =
-      make_scoped_ptr(new SchedulerClientNeedsPrepareTilesInDraw);
+  std::unique_ptr<SchedulerClientNeedsPrepareTilesInDraw> client =
+      base::WrapUnique(new SchedulerClientNeedsPrepareTilesInDraw);
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(std::move(client), true);
 
@@ -1265,7 +1268,7 @@ TEST_F(SchedulerTest, TriggerBeginFrameDeadlineEarly) {
   SchedulerClientNeedsPrepareTilesInDraw* client =
       new SchedulerClientNeedsPrepareTilesInDraw;
   scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(make_scoped_ptr(client), true);
+  SetUpScheduler(base::WrapUnique(client), true);
 
   scheduler_->SetNeedsRedraw();
   EXPECT_SCOPED(AdvanceFrame());
@@ -1280,7 +1283,7 @@ TEST_F(SchedulerTest, WaitForReadyToDrawDoNotPostDeadline) {
       new SchedulerClientNeedsPrepareTilesInDraw;
   scheduler_settings_.use_external_begin_frame_source = true;
   scheduler_settings_.commit_to_active_tree = true;
-  SetUpScheduler(make_scoped_ptr(client), true);
+  SetUpScheduler(base::WrapUnique(client), true);
 
   // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame.
   scheduler_->SetNeedsBeginMainFrame();
@@ -1320,7 +1323,7 @@ TEST_F(SchedulerTest, WaitForReadyToDrawCancelledWhenLostOutputSurface) {
       new SchedulerClientNeedsPrepareTilesInDraw;
   scheduler_settings_.use_external_begin_frame_source = true;
   scheduler_settings_.commit_to_active_tree = true;
-  SetUpScheduler(make_scoped_ptr(client), true);
+  SetUpScheduler(base::WrapUnique(client), true);
 
   // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame.
   scheduler_->SetNeedsBeginMainFrame();
@@ -3544,8 +3547,8 @@ TEST_F(SchedulerTest, SynchronousCompositorPrepareTilesOnDraw) {
   scheduler_settings_.using_synchronous_renderer_compositor = true;
   scheduler_settings_.use_external_begin_frame_source = true;
 
-  scoped_ptr<FakeSchedulerClient> client =
-      make_scoped_ptr(new SchedulerClientSetNeedsPrepareTilesOnDraw);
+  std::unique_ptr<FakeSchedulerClient> client =
+      base::WrapUnique(new SchedulerClientSetNeedsPrepareTilesOnDraw);
   SetUpScheduler(std::move(client), true);
 
   scheduler_->SetNeedsRedraw();

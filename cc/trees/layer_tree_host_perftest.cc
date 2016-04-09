@@ -284,8 +284,8 @@ class BrowserCompositorInvalidateLayerTreePerfTest
     name_stream << "name" << next_fence_sync_;
     gpu_mailbox.SetName(
         reinterpret_cast<const int8_t*>(name_stream.str().c_str()));
-    scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
-        base::Bind(&EmptyReleaseCallback));
+    std::unique_ptr<SingleReleaseCallback> callback =
+        SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback));
 
     gpu::SyncToken next_sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
                                    gpu::CommandBufferId::FromUnsafeValue(1),

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -132,7 +133,7 @@ class CC_EXPORT SoftwareImageDecodeController
   class DecodedImage {
    public:
     DecodedImage(const SkImageInfo& info,
-                 scoped_ptr<base::DiscardableMemory> memory,
+                 std::unique_ptr<base::DiscardableMemory> memory,
                  const SkSize& src_rect_offset,
                  uint64_t tracing_id);
     ~DecodedImage();
@@ -157,7 +158,7 @@ class CC_EXPORT SoftwareImageDecodeController
    private:
     bool locked_;
     SkImageInfo image_info_;
-    scoped_ptr<base::DiscardableMemory> memory_;
+    std::unique_ptr<base::DiscardableMemory> memory_;
     skia::RefPtr<SkImage> image_;
     SkSize src_rect_offset_;
     uint64_t tracing_id_;
@@ -181,8 +182,9 @@ class CC_EXPORT SoftwareImageDecodeController
     base::CheckedNumeric<size_t> current_usage_bytes_;
   };
 
-  using ImageMRUCache =
-      base::HashingMRUCache<ImageKey, scoped_ptr<DecodedImage>, ImageKeyHash>;
+  using ImageMRUCache = base::HashingMRUCache<ImageKey,
+                                              std::unique_ptr<DecodedImage>,
+                                              ImageKeyHash>;
 
   // Looks for the key in the cache and returns true if it was found and was
   // successfully locked (or if it was already locked). Note that if this
@@ -192,8 +194,9 @@ class CC_EXPORT SoftwareImageDecodeController
   // Actually decode the image. Note that this function can (and should) be
   // called with no lock acquired, since it can do a lot of work. Note that it
   // can also return nullptr to indicate the decode failed.
-  scoped_ptr<DecodedImage> DecodeImageInternal(const ImageKey& key,
-                                               const DrawImage& draw_image);
+  std::unique_ptr<DecodedImage> DecodeImageInternal(
+      const ImageKey& key,
+      const DrawImage& draw_image);
 
   // Get the decoded draw image for the given key and draw_image. Note that this
   // function has to be called with no lock acquired, since it will acquire its

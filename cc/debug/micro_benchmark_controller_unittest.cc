@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
-#include "cc/debug/micro_benchmark.h"
 #include "cc/debug/micro_benchmark_controller.h"
+
+#include <memory>
+
+#include "base/callback.h"
+#include "base/memory/ptr_util.h"
+#include "cc/debug/micro_benchmark.h"
 #include "cc/layers/layer.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
@@ -24,8 +27,8 @@ class MicroBenchmarkControllerTest : public testing::Test {
 
   void SetUp() override {
     impl_task_runner_provider_ =
-        make_scoped_ptr(new FakeImplTaskRunnerProvider);
-    layer_tree_host_impl_ = make_scoped_ptr(new FakeLayerTreeHostImpl(
+        base::WrapUnique(new FakeImplTaskRunnerProvider);
+    layer_tree_host_impl_ = base::WrapUnique(new FakeLayerTreeHostImpl(
         impl_task_runner_provider_.get(), &shared_bitmap_manager_,
         &task_graph_runner_));
 
@@ -34,7 +37,7 @@ class MicroBenchmarkControllerTest : public testing::Test {
     layer_tree_host_->SetRootLayer(Layer::Create());
     layer_tree_host_->InitializeForTesting(
         TaskRunnerProvider::Create(nullptr, nullptr),
-        scoped_ptr<Proxy>(new FakeProxy), nullptr);
+        std::unique_ptr<Proxy>(new FakeProxy), nullptr);
   }
 
   void TearDown() override {
@@ -46,15 +49,14 @@ class MicroBenchmarkControllerTest : public testing::Test {
   FakeLayerTreeHostClient layer_tree_host_client_;
   TestTaskGraphRunner task_graph_runner_;
   TestSharedBitmapManager shared_bitmap_manager_;
-  scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
-  scoped_ptr<FakeLayerTreeHostImpl> layer_tree_host_impl_;
-  scoped_ptr<FakeImplTaskRunnerProvider> impl_task_runner_provider_;
+  std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
+  std::unique_ptr<FakeLayerTreeHostImpl> layer_tree_host_impl_;
+  std::unique_ptr<FakeImplTaskRunnerProvider> impl_task_runner_provider_;
 };
 
-void Noop(scoped_ptr<base::Value> value) {
-}
+void Noop(std::unique_ptr<base::Value> value) {}
 
-void IncrementCallCount(int* count, scoped_ptr<base::Value> value) {
+void IncrementCallCount(int* count, std::unique_ptr<base::Value> value) {
   ++(*count);
 }
 
@@ -124,7 +126,7 @@ TEST_F(MicroBenchmarkControllerTest, MultipleBenchmarkRan) {
 
 TEST_F(MicroBenchmarkControllerTest, BenchmarkImplRan) {
   int run_count = 0;
-  scoped_ptr<base::DictionaryValue> settings(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> settings(new base::DictionaryValue);
   settings->SetBoolean("run_benchmark_impl", true);
 
   // Schedule a main thread benchmark.
@@ -148,7 +150,7 @@ TEST_F(MicroBenchmarkControllerTest, BenchmarkImplRan) {
 
 TEST_F(MicroBenchmarkControllerTest, SendMessage) {
   // Send valid message to invalid benchmark (id = 0)
-  scoped_ptr<base::DictionaryValue> message(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> message(new base::DictionaryValue);
   message->SetBoolean("can_handle", true);
   bool message_handled =
       layer_tree_host_->SendMessageToMicroBenchmark(0, std::move(message));
@@ -163,14 +165,14 @@ TEST_F(MicroBenchmarkControllerTest, SendMessage) {
   EXPECT_GT(id, 0);
 
   // Send valid message to valid benchmark
-  message = make_scoped_ptr(new base::DictionaryValue);
+  message = base::WrapUnique(new base::DictionaryValue);
   message->SetBoolean("can_handle", true);
   message_handled =
       layer_tree_host_->SendMessageToMicroBenchmark(id, std::move(message));
   EXPECT_TRUE(message_handled);
 
   // Send invalid message to valid benchmark
-  message = make_scoped_ptr(new base::DictionaryValue);
+  message = base::WrapUnique(new base::DictionaryValue);
   message->SetBoolean("can_handle", false);
   message_handled =
       layer_tree_host_->SendMessageToMicroBenchmark(id, std::move(message));

@@ -21,7 +21,7 @@ class FakeChannelImpl : public ChannelImpl {
       const RendererCapabilities& capabilities) override {}
   void BeginMainFrameNotExpectedSoon() override {}
   void DidCommitAndDrawFrame() override {}
-  void SetAnimationEvents(scoped_ptr<AnimationEvents> queue) override;
+  void SetAnimationEvents(std::unique_ptr<AnimationEvents> queue) override;
   void DidLoseOutputSurface() override {}
   void RequestNewOutputSurface() override {}
   void DidInitializeOutputSurface(
@@ -29,10 +29,10 @@ class FakeChannelImpl : public ChannelImpl {
       const RendererCapabilities& capabilities) override {}
   void DidCompletePageScaleAnimation() override {}
   void PostFrameTimingEventsOnMain(
-      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
+      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
       override {}
-  void BeginMainFrame(scoped_ptr<BeginMainFrameAndCommitState>
+  void BeginMainFrame(std::unique_ptr<BeginMainFrameAndCommitState>
                           begin_main_frame_state) override {}
 };
 

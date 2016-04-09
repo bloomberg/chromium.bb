@@ -21,9 +21,10 @@ class TestSharedBitmapManager : public SharedBitmapManager {
   TestSharedBitmapManager();
   ~TestSharedBitmapManager() override;
 
-  scoped_ptr<SharedBitmap> AllocateSharedBitmap(const gfx::Size& size) override;
+  std::unique_ptr<SharedBitmap> AllocateSharedBitmap(
+      const gfx::Size& size) override;
 
-  scoped_ptr<SharedBitmap> GetSharedBitmapFromId(
+  std::unique_ptr<SharedBitmap> GetSharedBitmapFromId(
       const gfx::Size&,
       const SharedBitmapId& id) override;
 

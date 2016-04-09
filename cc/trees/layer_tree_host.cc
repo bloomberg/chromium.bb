@@ -81,9 +81,9 @@ Layer* UpdateAndGetLayer(Layer* current_layer,
   return layer_it->second;
 }
 
-scoped_ptr<base::trace_event::TracedValue>
+std::unique_ptr<base::trace_event::TracedValue>
 ComputeLayerTreeHostProtoSizeSplitAsValue(proto::LayerTreeHost* proto) {
-  scoped_ptr<base::trace_event::TracedValue> value(
+  std::unique_ptr<base::trace_event::TracedValue> value(
       new base::trace_event::TracedValue());
   base::CheckedNumeric<int> base_layer_properties_size = 0;
   base::CheckedNumeric<int> picture_layer_properties_size = 0;
@@ -140,13 +140,13 @@ LayerTreeHost::InitParams::InitParams() {
 LayerTreeHost::InitParams::~InitParams() {
 }
 
-scoped_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
+std::unique_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
     InitParams* params) {
   DCHECK(params->main_task_runner.get());
   DCHECK(impl_task_runner.get());
   DCHECK(params->settings);
-  scoped_ptr<LayerTreeHost> layer_tree_host(
+  std::unique_ptr<LayerTreeHost> layer_tree_host(
       new LayerTreeHost(params, CompositorMode::THREADED));
   layer_tree_host->InitializeThreaded(
       params->main_task_runner, impl_task_runner,
@@ -154,11 +154,11 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
   return layer_tree_host;
 }
 
-scoped_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
+std::unique_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
     LayerTreeHostSingleThreadClient* single_thread_client,
     InitParams* params) {
   DCHECK(params->settings);
-  scoped_ptr<LayerTreeHost> layer_tree_host(
+  std::unique_ptr<LayerTreeHost> layer_tree_host(
       new LayerTreeHost(params, CompositorMode::SINGLE_THREADED));
   layer_tree_host->InitializeSingleThreaded(
       single_thread_client, params->main_task_runner,
@@ -166,7 +166,7 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
   return layer_tree_host;
 }
 
-scoped_ptr<LayerTreeHost> LayerTreeHost::CreateRemoteServer(
+std::unique_ptr<LayerTreeHost> LayerTreeHost::CreateRemoteServer(
     RemoteProtoChannel* remote_proto_channel,
     InitParams* params) {
   DCHECK(params->main_task_runner.get());
@@ -179,14 +179,14 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateRemoteServer(
   DCHECK(!params->external_begin_frame_source);
   DCHECK(params->image_serialization_processor);
 
-  scoped_ptr<LayerTreeHost> layer_tree_host(
+  std::unique_ptr<LayerTreeHost> layer_tree_host(
       new LayerTreeHost(params, CompositorMode::REMOTE));
   layer_tree_host->InitializeRemoteServer(remote_proto_channel,
                                           params->main_task_runner);
   return layer_tree_host;
 }
 
-scoped_ptr<LayerTreeHost> LayerTreeHost::CreateRemoteClient(
+std::unique_ptr<LayerTreeHost> LayerTreeHost::CreateRemoteClient(
     RemoteProtoChannel* remote_proto_channel,
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
     InitParams* params) {
@@ -201,7 +201,7 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateRemoteClient(
   DCHECK(!params->external_begin_frame_source);
   DCHECK(params->image_serialization_processor);
 
-  scoped_ptr<LayerTreeHost> layer_tree_host(
+  std::unique_ptr<LayerTreeHost> layer_tree_host(
       new LayerTreeHost(params, CompositorMode::REMOTE));
   layer_tree_host->InitializeRemoteClient(
       remote_proto_channel, params->main_task_runner, impl_task_runner);
@@ -259,10 +259,10 @@ LayerTreeHost::LayerTreeHost(InitParams* params, CompositorMode mode)
 void LayerTreeHost::InitializeThreaded(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
-    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
+    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
   task_runner_provider_ =
       TaskRunnerProvider::Create(main_task_runner, impl_task_runner);
-  scoped_ptr<ProxyMain> proxy_main =
+  std::unique_ptr<ProxyMain> proxy_main =
       ProxyMain::CreateThreaded(this, task_runner_provider_.get());
   InitializeProxy(std::move(proxy_main),
                   std::move(external_begin_frame_source));
@@ -271,7 +271,7 @@ void LayerTreeHost::InitializeThreaded(
 void LayerTreeHost::InitializeSingleThreaded(
     LayerTreeHostSingleThreadClient* single_thread_client,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
+    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
   task_runner_provider_ = TaskRunnerProvider::Create(main_task_runner, nullptr);
   InitializeProxy(SingleThreadProxy::Create(this, single_thread_client,
                                             task_runner_provider_.get()),
@@ -313,23 +313,23 @@ void LayerTreeHost::InitializeRemoteClient(
 }
 
 void LayerTreeHost::InitializeForTesting(
-    scoped_ptr<TaskRunnerProvider> task_runner_provider,
-    scoped_ptr<Proxy> proxy_for_testing,
-    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
+    std::unique_ptr<TaskRunnerProvider> task_runner_provider,
+    std::unique_ptr<Proxy> proxy_for_testing,
+    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
   task_runner_provider_ = std::move(task_runner_provider);
   InitializeProxy(std::move(proxy_for_testing),
                   std::move(external_begin_frame_source));
 }
 
 void LayerTreeHost::SetTaskRunnerProviderForTesting(
-    scoped_ptr<TaskRunnerProvider> task_runner_provider) {
+    std::unique_ptr<TaskRunnerProvider> task_runner_provider) {
   DCHECK(!task_runner_provider_);
   task_runner_provider_ = std::move(task_runner_provider);
 }
 
 void LayerTreeHost::InitializeProxy(
-    scoped_ptr<Proxy> proxy,
-    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
+    std::unique_ptr<Proxy> proxy,
+    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
   TRACE_EVENT0("cc", "LayerTreeHost::InitializeForReal");
   DCHECK(task_runner_provider_);
 
@@ -574,7 +574,7 @@ void LayerTreeHost::CommitComplete() {
   }
 }
 
-void LayerTreeHost::SetOutputSurface(scoped_ptr<OutputSurface> surface) {
+void LayerTreeHost::SetOutputSurface(std::unique_ptr<OutputSurface> surface) {
   TRACE_EVENT0("cc", "LayerTreeHost::SetOutputSurface");
   DCHECK(output_surface_lost_);
   DCHECK(surface);
@@ -584,7 +584,7 @@ void LayerTreeHost::SetOutputSurface(scoped_ptr<OutputSurface> surface) {
   proxy_->SetOutputSurface(new_output_surface_.get());
 }
 
-scoped_ptr<OutputSurface> LayerTreeHost::ReleaseOutputSurface() {
+std::unique_ptr<OutputSurface> LayerTreeHost::ReleaseOutputSurface() {
   DCHECK(!visible_);
   DCHECK(!output_surface_lost_);
 
@@ -615,11 +615,11 @@ void LayerTreeHost::DidFailToInitializeOutputSurface() {
   client_->DidFailToInitializeOutputSurface();
 }
 
-scoped_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
+std::unique_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
     LayerTreeHostImplClient* client) {
   DCHECK(!IsRemoteServer());
   DCHECK(task_runner_provider_->IsImplThread());
-  scoped_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
+  std::unique_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
       settings_, client, task_runner_provider_.get(),
       rendering_stats_instrumentation_.get(), shared_bitmap_manager_,
       gpu_memory_buffer_manager_, task_graph_runner_, id_);
@@ -731,7 +731,8 @@ void LayerTreeHost::SetNextCommitForcesRedraw() {
   proxy_->SetNeedsUpdateLayers();
 }
 
-void LayerTreeHost::SetAnimationEvents(scoped_ptr<AnimationEvents> events) {
+void LayerTreeHost::SetAnimationEvents(
+    std::unique_ptr<AnimationEvents> events) {
   DCHECK(task_runner_provider_->IsMainThread());
   animation_host_->SetAnimationEvents(std::move(events));
 }
@@ -1101,7 +1102,7 @@ void LayerTreeHost::UpdateTopControlsState(TopControlsState constraints,
 }
 
 void LayerTreeHost::AnimateLayers(base::TimeTicks monotonic_time) {
-  scoped_ptr<AnimationEvents> events = animation_host_->CreateEvents();
+  std::unique_ptr<AnimationEvents> events = animation_host_->CreateEvents();
 
   if (animation_host_->AnimateLayers(monotonic_time))
     animation_host_->UpdateAnimationState(true, events.get());
@@ -1206,14 +1207,15 @@ void LayerTreeHost::SetEventListenerProperties(
 
 int LayerTreeHost::ScheduleMicroBenchmark(
     const std::string& benchmark_name,
-    scoped_ptr<base::Value> value,
+    std::unique_ptr<base::Value> value,
     const MicroBenchmark::DoneCallback& callback) {
   return micro_benchmark_controller_.ScheduleRun(benchmark_name,
                                                  std::move(value), callback);
 }
 
-bool LayerTreeHost::SendMessageToMicroBenchmark(int id,
-                                                scoped_ptr<base::Value> value) {
+bool LayerTreeHost::SendMessageToMicroBenchmark(
+    int id,
+    std::unique_ptr<base::Value> value) {
   return micro_benchmark_controller_.SendMessage(id, std::move(value));
 }
 
@@ -1231,7 +1233,8 @@ void LayerTreeHost::NotifySwapPromiseMonitorsOfSetNeedsCommit() {
     (*it)->OnSetNeedsCommitOnMain();
 }
 
-void LayerTreeHost::QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise) {
+void LayerTreeHost::QueueSwapPromise(
+    std::unique_ptr<SwapPromise> swap_promise) {
   DCHECK(swap_promise);
   swap_promise_list_.push_back(std::move(swap_promise));
 }
@@ -1271,8 +1274,8 @@ void LayerTreeHost::SetAuthoritativeVSyncInterval(
 }
 
 void LayerTreeHost::RecordFrameTimingEvents(
-    scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-    scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
+    std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+    std::unique_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
   client_->RecordFrameTimingEvents(std::move(composite_events),
                                    std::move(main_frame_events));
 }

@@ -5,9 +5,10 @@
 #ifndef CC_DEBUG_DEBUG_RECT_HISTORY_H_
 #define CC_DEBUG_DEBUG_RECT_HISTORY_H_
 
+#include <memory>
 #include <vector>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/layers/layer_collections.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -61,7 +62,7 @@ struct DebugRect {
 // the appropriate LayerTreeSettings are enabled.
 class DebugRectHistory {
  public:
-  static scoped_ptr<DebugRectHistory> Create();
+  static std::unique_ptr<DebugRectHistory> Create();
 
   ~DebugRectHistory();
 

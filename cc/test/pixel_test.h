@@ -50,15 +50,15 @@ class PixelTest : public testing::Test, RendererClient {
   gfx::Size device_viewport_size_;
   bool disable_picture_quad_image_filtering_;
   class PixelTestRendererClient;
-  scoped_ptr<FakeOutputSurfaceClient> output_surface_client_;
-  scoped_ptr<OutputSurface> output_surface_;
-  scoped_ptr<TestSharedBitmapManager> shared_bitmap_manager_;
-  scoped_ptr<TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
-  scoped_ptr<BlockingTaskRunner> main_thread_task_runner_;
-  scoped_ptr<ResourceProvider> resource_provider_;
-  scoped_ptr<TextureMailboxDeleter> texture_mailbox_deleter_;
-  scoped_ptr<DirectRenderer> renderer_;
-  scoped_ptr<SkBitmap> result_bitmap_;
+  std::unique_ptr<FakeOutputSurfaceClient> output_surface_client_;
+  std::unique_ptr<OutputSurface> output_surface_;
+  std::unique_ptr<TestSharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  std::unique_ptr<BlockingTaskRunner> main_thread_task_runner_;
+  std::unique_ptr<ResourceProvider> resource_provider_;
+  std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter_;
+  std::unique_ptr<DirectRenderer> renderer_;
+  std::unique_ptr<SkBitmap> result_bitmap_;
   gfx::Vector2d external_device_viewport_offset_;
   gfx::Rect external_device_clip_rect_;
 
@@ -75,12 +75,12 @@ class PixelTest : public testing::Test, RendererClient {
 
  private:
   void ReadbackResult(base::Closure quit_run_loop,
-                      scoped_ptr<CopyOutputResult> result);
+                      std::unique_ptr<CopyOutputResult> result);
 
   bool PixelsMatchReference(const base::FilePath& ref_file,
                             const PixelComparator& comparator);
 
-  scoped_ptr<gfx::DisableNullDrawGLBindings> enable_pixel_output_;
+  std::unique_ptr<gfx::DisableNullDrawGLBindings> enable_pixel_output_;
 };
 
 template<typename RendererType>

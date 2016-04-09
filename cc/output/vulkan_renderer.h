@@ -15,7 +15,7 @@ class TextureMailboxDeleter;
 
 class VulkanRenderer : public DirectRenderer {
  public:
-  static scoped_ptr<VulkanRenderer> Create(
+  static std::unique_ptr<VulkanRenderer> Create(
       RendererClient* client,
       const RendererSettings* settings,
       OutputSurface* output_surface,
@@ -63,7 +63,7 @@ class VulkanRenderer : public DirectRenderer {
   void EnsureBackbuffer() override;
   void CopyCurrentRenderPassToBitmap(
       DrawingFrame* frame,
-      scoped_ptr<CopyOutputRequest> request) override;
+      std::unique_ptr<CopyOutputRequest> request) override;
 
  private:
   RendererCapabilitiesImpl capabilities_;

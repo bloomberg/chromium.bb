@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "cc/debug/rendering_stats.h"
 
@@ -18,7 +19,7 @@ namespace cc {
 // recording of rendering stats into a private RenderingStats instance.
 class CC_EXPORT RenderingStatsInstrumentation {
  public:
-  static scoped_ptr<RenderingStatsInstrumentation> Create();
+  static std::unique_ptr<RenderingStatsInstrumentation> Create();
   virtual ~RenderingStatsInstrumentation();
 
   // Return copy of current impl thread rendering stats.

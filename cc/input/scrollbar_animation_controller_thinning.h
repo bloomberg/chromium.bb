@@ -5,8 +5,9 @@
 #ifndef CC_INPUT_SCROLLBAR_ANIMATION_CONTROLLER_THINNING_H_
 #define CC_INPUT_SCROLLBAR_ANIMATION_CONTROLLER_THINNING_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/input/scrollbar_animation_controller.h"
 
@@ -18,7 +19,7 @@ class LayerImpl;
 class CC_EXPORT ScrollbarAnimationControllerThinning
     : public ScrollbarAnimationController {
  public:
-  static scoped_ptr<ScrollbarAnimationControllerThinning> Create(
+  static std::unique_ptr<ScrollbarAnimationControllerThinning> Create(
       int scroll_layer_id,
       ScrollbarAnimationControllerClient* client,
       base::TimeDelta delay_before_starting,

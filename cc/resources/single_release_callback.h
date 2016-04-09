@@ -5,7 +5,9 @@
 #ifndef CC_RESOURCES_SINGLE_RELEASE_CALLBACK_H_
 #define CC_RESOURCES_SINGLE_RELEASE_CALLBACK_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/release_callback.h"
 
@@ -13,8 +15,9 @@ namespace cc {
 
 class CC_EXPORT SingleReleaseCallback {
  public:
-  static scoped_ptr<SingleReleaseCallback> Create(const ReleaseCallback& cb) {
-    return make_scoped_ptr(new SingleReleaseCallback(cb));
+  static std::unique_ptr<SingleReleaseCallback> Create(
+      const ReleaseCallback& cb) {
+    return base::WrapUnique(new SingleReleaseCallback(cb));
   }
 
   ~SingleReleaseCallback();

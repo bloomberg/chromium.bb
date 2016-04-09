@@ -5,7 +5,8 @@
 #ifndef CC_TREES_REMOTE_PROTO_CHANNEL_H_
 #define CC_TREES_REMOTE_PROTO_CHANNEL_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "cc/base/cc_export.h"
 
 namespace cc {
@@ -25,7 +26,7 @@ class CC_EXPORT RemoteProtoChannel {
     // TODO(khushalsagar): This should probably include a closure that returns
     // the status of processing this proto. See crbug/576974
     virtual void OnProtoReceived(
-        scoped_ptr<proto::CompositorMessage> proto) = 0;
+        std::unique_ptr<proto::CompositorMessage> proto) = 0;
 
    protected:
     virtual ~ProtoReceiver() {}

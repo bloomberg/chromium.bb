@@ -70,7 +70,8 @@ void SurfaceLayer::SetSurfaceId(SurfaceId surface_id,
   SetNeedsPushProperties();
 }
 
-scoped_ptr<LayerImpl> SurfaceLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
+std::unique_ptr<LayerImpl> SurfaceLayer::CreateLayerImpl(
+    LayerTreeImpl* tree_impl) {
   return SurfaceLayerImpl::Create(tree_impl, id());
 }
 
@@ -111,7 +112,7 @@ void SurfaceLayer::SatisfyDestroySequence() {
   if (!layer_tree_host())
     return;
   DCHECK(!destroy_sequence_.is_null());
-  scoped_ptr<SatisfySwapPromise> satisfy(
+  std::unique_ptr<SatisfySwapPromise> satisfy(
       new SatisfySwapPromise(destroy_sequence_, satisfy_callback_));
   layer_tree_host()->QueueSwapPromise(std::move(satisfy));
   destroy_sequence_ = SurfaceSequence();

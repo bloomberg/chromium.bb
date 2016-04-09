@@ -5,8 +5,9 @@
 #ifndef CC_TREES_LAYER_TREE_HOST_CLIENT_H_
 #define CC_TREES_LAYER_TREE_HOST_CLIENT_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/debug/frame_timing_tracker.h"
 
@@ -59,8 +60,9 @@ class LayerTreeHostClient {
   virtual void DidCommitAndDrawFrame() = 0;
   virtual void DidCompleteSwapBuffers() = 0;
   virtual void RecordFrameTimingEvents(
-      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) = 0;
+      std::unique_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      std::unique_ptr<FrameTimingTracker::MainFrameTimingSet>
+          main_frame_events) = 0;
 
   // Called when page scale animation has completed.
   virtual void DidCompletePageScaleAnimation() = 0;

@@ -6,9 +6,9 @@
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/input/top_controls_manager_client.h"
 #include "cc/layers/layer_impl.h"
@@ -87,9 +87,9 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
-  scoped_ptr<LayerTreeImpl> active_tree_;
-  scoped_ptr<LayerImpl> root_scroll_layer_;
-  scoped_ptr<TopControlsManager> manager_;
+  std::unique_ptr<LayerTreeImpl> active_tree_;
+  std::unique_ptr<LayerImpl> root_scroll_layer_;
+  std::unique_ptr<TopControlsManager> manager_;
   bool redraw_needed_;
   bool update_draw_properties_needed_;
 
