@@ -19,7 +19,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
@@ -36,14 +36,15 @@ const char kDarkThemeSearchUrl[] =
 const char kLearnMoreUrl[] =
     "https://groups.google.com/a/googleproductforums.com/d/topic/chrome/Xrco2HsXS-8/discussion";
 
-class InvertBubbleView : public views::BubbleDelegateView,
+class InvertBubbleView : public views::BubbleDialogDelegateView,
                          public views::LinkListener {
  public:
   InvertBubbleView(Browser* browser, views::View* anchor_view);
   ~InvertBubbleView() override;
 
  private:
-  // Overridden from views::BubbleDelegateView:
+  // Overridden from views::BubbleDialogDelegateView:
+  int GetDialogButtons() const override;
   void Init() override;
 
   // Overridden from views::LinkListener:
@@ -61,15 +62,19 @@ class InvertBubbleView : public views::BubbleDelegateView,
 };
 
 InvertBubbleView::InvertBubbleView(Browser* browser, views::View* anchor_view)
-    : views::BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
+    : views::BubbleDialogDelegateView(anchor_view,
+                                      views::BubbleBorder::TOP_RIGHT),
       browser_(browser),
       high_contrast_(NULL),
       dark_theme_(NULL),
       learn_more_(NULL),
-      close_(NULL) {
-}
+      close_(NULL) {}
 
 InvertBubbleView::~InvertBubbleView() {
+}
+
+int InvertBubbleView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
 }
 
 void InvertBubbleView::Init() {
@@ -165,7 +170,7 @@ void MaybeShowInvertBubbleView(BrowserView* browser_view) {
       !pref_service->GetBoolean(prefs::kInvertNotificationShown)) {
     pref_service->SetBoolean(prefs::kInvertNotificationShown, true);
     InvertBubbleView* delegate = new InvertBubbleView(browser, anchor);
-    views::BubbleDelegateView::CreateBubble(delegate)->Show();
+    views::BubbleDialogDelegateView::CreateBubble(delegate)->Show();
   }
 }
 
