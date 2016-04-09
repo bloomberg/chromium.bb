@@ -57,20 +57,17 @@ TEST(UpdateClientUtils, VerifyFileHash256) {
           "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")));
 }
 
-// Tests that the brand matches ^([a-zA-Z]{4})?$
+// Tests that the brand matches ^[a-zA-Z]{4}?$
 TEST(UpdateClientUtils, IsValidBrand) {
+  // The valid brand code must be empty or exactly 4 chars long.
   EXPECT_TRUE(IsValidBrand(std::string("")));
-  EXPECT_TRUE(IsValidBrand(std::string("T")));
-  EXPECT_TRUE(IsValidBrand(std::string("TE")));
-  EXPECT_TRUE(IsValidBrand(std::string("TES")));
   EXPECT_TRUE(IsValidBrand(std::string("TEST")));
-  EXPECT_TRUE(IsValidBrand(std::string("")));
-  EXPECT_TRUE(IsValidBrand(std::string("t")));
-  EXPECT_TRUE(IsValidBrand(std::string("te")));
-  EXPECT_TRUE(IsValidBrand(std::string("tes")));
   EXPECT_TRUE(IsValidBrand(std::string("test")));
   EXPECT_TRUE(IsValidBrand(std::string("TEst")));
 
+  EXPECT_FALSE(IsValidBrand(std::string("T")));      // Too short.
+  EXPECT_FALSE(IsValidBrand(std::string("TE")));     //
+  EXPECT_FALSE(IsValidBrand(std::string("TES")));    //
   EXPECT_FALSE(IsValidBrand(std::string("TESTS")));  // Too long.
   EXPECT_FALSE(IsValidBrand(std::string("TES1")));   // Has digit.
   EXPECT_FALSE(IsValidBrand(std::string(" TES")));   // Begins with white space.
@@ -78,10 +75,12 @@ TEST(UpdateClientUtils, IsValidBrand) {
   EXPECT_FALSE(IsValidBrand(std::string("T ES")));   // Contains white space.
   EXPECT_FALSE(IsValidBrand(std::string("<TE")));    // Has <.
   EXPECT_FALSE(IsValidBrand(std::string("TE>")));    // Has >.
+  EXPECT_FALSE(IsValidAp(std::string("\"")));        // Has "
+  EXPECT_FALSE(IsValidAp(std::string("\\")));        // Has backslash.
   EXPECT_FALSE(IsValidBrand(std::string("\xaa")));   // Has non-ASCII char.
 }
 
-// Tests that the ap matches ^([-+_=a-zA-Z0-9]{0,256})$
+// Tests that the ap matches ^[-+_=a-zA-Z0-9]{0,256}$
 TEST(UpdateClientUtils, IsValidAp) {
   EXPECT_TRUE(IsValidAp(std::string("a=1")));
   EXPECT_TRUE(IsValidAp(std::string("")));

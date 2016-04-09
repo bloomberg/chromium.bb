@@ -231,7 +231,7 @@ bool VerifyFileHash256(const base::FilePath& filepath,
 
 bool IsValidBrand(const std::string& brand) {
   const size_t kMaxBrandSize = 4;
-  if (brand.size() > kMaxBrandSize)
+  if (!brand.empty() && brand.size() != kMaxBrandSize)
     return false;
 
   return std::find_if_not(brand.begin(), brand.end(), [](char ch) {
