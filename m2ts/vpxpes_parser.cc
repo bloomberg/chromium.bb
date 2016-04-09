@@ -35,7 +35,7 @@ bool VpxPesParser::BcmvHeader::Valid() const {
 }
 
 bool VpxPesParser::Open(const std::string& pes_file) {
-  pes_file_size_ = libwebm::GetFileSize(pes_file);
+  pes_file_size_ = static_cast<size_t>(libwebm::GetFileSize(pes_file));
   if (pes_file_size_ <= 0)
     return false;
   pes_file_data_.reserve(static_cast<size_t>(pes_file_size_));
