@@ -24,6 +24,9 @@ namespace password_manager {
 struct CredentialInfo;
 class PasswordManagerClient;
 
+typedef base::Callback<void(const CredentialInfo& credential)>
+    SendCredentialCallback;
+
 // Sends credentials retrieved from the PasswordStore to CredentialManager API
 // clients and retrieves embedder-dependent information.
 class CredentialManagerPendingRequestTaskDelegate {
@@ -41,11 +44,13 @@ class CredentialManagerPendingRequestTaskDelegate {
   virtual PasswordManagerClient* client() const = 0;
 
   // Sends a credential to JavaScript.
-  virtual void SendCredential(int id, const CredentialInfo& credential) = 0;
+  virtual void SendCredential(const SendCredentialCallback& send_callback,
+                              const CredentialInfo& credential) = 0;
 
   // Updates |skip_zero_click| for |form| in the PasswordStore if required.
   // Sends a credential to JavaScript.
-  virtual void SendPasswordForm(int id, const autofill::PasswordForm* form) = 0;
+  virtual void SendPasswordForm(const SendCredentialCallback& send_callback,
+                                const autofill::PasswordForm* form) = 0;
 };
 
 // Retrieves credentials from the PasswordStore.
@@ -53,7 +58,7 @@ class CredentialManagerPendingRequestTask : public PasswordStoreConsumer {
  public:
   CredentialManagerPendingRequestTask(
       CredentialManagerPendingRequestTaskDelegate* delegate,
-      int request_id,
+      const SendCredentialCallback& callback,
       bool request_zero_click_only,
       const GURL& request_origin,
       bool include_passwords,
@@ -61,7 +66,7 @@ class CredentialManagerPendingRequestTask : public PasswordStoreConsumer {
       const std::vector<std::string>& affiliated_realms);
   ~CredentialManagerPendingRequestTask() override;
 
-  int id() const { return id_; }
+  SendCredentialCallback send_callback() const { return send_callback_; }
   const GURL& origin() const { return origin_; }
 
   // PasswordStoreConsumer implementation.
@@ -70,7 +75,7 @@ class CredentialManagerPendingRequestTask : public PasswordStoreConsumer {
 
  private:
   CredentialManagerPendingRequestTaskDelegate* delegate_;  // Weak;
-  const int id_;
+  SendCredentialCallback send_callback_;
   const bool zero_click_only_;
   const GURL origin_;
   const bool include_passwords_;

@@ -53,6 +53,7 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
@@ -2766,6 +2767,13 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoServices(
         base::Bind(&CreateUsbDeviceManager, render_frame_host));
     registry->AddService(
         base::Bind(&CreateWebUsbChooserService, render_frame_host));
+  }
+
+  // Register mojo CredentialManager service only for main frame.
+  if (!render_frame_host->GetParent()) {
+    registry->AddService(
+        base::Bind(&ChromePasswordManagerClient::BindCredentialManager,
+                   render_frame_host));
   }
 
 #if BUILDFLAG(ANDROID_JAVA_UI)

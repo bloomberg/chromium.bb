@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
-#include "components/password_manager/content/browser/credential_manager_dispatcher.h"
+#include "components/password_manager/content/browser/credential_manager_impl.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/sync/browser/sync_credentials_filter.h"
@@ -105,6 +105,10 @@ class ChromePasswordManagerClient
   // the sad old Infobar UI.
   static bool IsTheHotNewBubbleUIEnabled();
 
+  static void BindCredentialManager(
+      content::RenderFrameHost* render_frame_host,
+      password_manager::mojom::CredentialManagerRequest request);
+
  protected:
   // Callable for tests.
   ChromePasswordManagerClient(content::WebContents* web_contents,
@@ -168,8 +172,10 @@ class ChromePasswordManagerClient
 
   password_manager::ContentPasswordManagerDriverFactory* driver_factory_;
 
-  password_manager::CredentialManagerDispatcher
-      credential_manager_dispatcher_;
+  // As a mojo service, will be registered into service registry
+  // of the main frame host by ChromeContentBrowserClient
+  // once main frame host was created.
+  password_manager::CredentialManagerImpl credential_manager_impl_;
 
   // Observer for password generation popup.
   autofill::PasswordGenerationPopupObserver* observer_;

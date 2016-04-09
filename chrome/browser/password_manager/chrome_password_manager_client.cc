@@ -33,7 +33,6 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
-#include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/log_receiver.h"
@@ -141,7 +140,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       password_manager_(this),
       driver_factory_(nullptr),
-      credential_manager_dispatcher_(web_contents, this),
+      credential_manager_impl_(web_contents, this),
       observer_(nullptr),
       credentials_filter_(this,
                           base::Bind(&GetSyncService, profile_),
@@ -610,4 +609,18 @@ ChromePasswordManagerClient::GetStoreResultFilter() const {
 const password_manager::LogManager* ChromePasswordManagerClient::GetLogManager()
     const {
   return log_manager_.get();
+}
+
+// static
+void ChromePasswordManagerClient::BindCredentialManager(
+    content::RenderFrameHost* render_frame_host,
+    password_manager::mojom::CredentialManagerRequest request) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  DCHECK(web_contents);
+
+  ChromePasswordManagerClient* instance =
+      ChromePasswordManagerClient::FromWebContents(web_contents);
+  DCHECK(instance);
+  instance->credential_manager_impl_.BindRequest(std::move(request));
 }

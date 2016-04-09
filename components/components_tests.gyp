@@ -457,7 +457,7 @@
     ],
     'password_manager_unittest_sources': [
       'password_manager/content/browser/content_password_manager_driver_unittest.cc',
-      'password_manager/content/browser/credential_manager_dispatcher_unittest.cc',
+      'password_manager/content/browser/credential_manager_impl_unittest.cc',
       'password_manager/core/browser/affiliated_match_helper_unittest.cc',
       'password_manager/core/browser/affiliation_backend_unittest.cc',
       'password_manager/core/browser/affiliation_database_unittest.cc',
@@ -1261,7 +1261,6 @@
             'components.gyp:page_load_metrics_browser',
             'components.gyp:page_load_metrics_renderer',
             'components.gyp:password_manager_content_browser',
-            'components.gyp:password_manager_content_common',
             'components.gyp:power',
             'components.gyp:precache_content',
             'components.gyp:safe_browsing_db',

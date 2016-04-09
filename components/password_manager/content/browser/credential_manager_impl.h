@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_CONTENT_CREDENTIAL_MANAGER_DISPATCHER_H_
-#define COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_CONTENT_CREDENTIAL_MANAGER_DISPATCHER_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_CONTENT_CREDENTIAL_MANAGER_IMPL_H_
+#define COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_CONTENT_CREDENTIAL_MANAGER_IMPL_H_
 
 #include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/password_manager/content/public/interfaces/credential_manager.mojom.h"
 #include "components/password_manager/core/browser/credential_manager_password_form_manager.h"
 #include "components/password_manager/core/browser/credential_manager_pending_request_task.h"
 #include "components/password_manager/core/browser/credential_manager_pending_require_user_mediation_task.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 class GURL;
 
@@ -34,42 +36,35 @@ class PasswordManagerDriver;
 class PasswordStore;
 struct CredentialInfo;
 
-class CredentialManagerDispatcher
-    : public content::WebContentsObserver,
+class CredentialManagerImpl
+    : public mojom::CredentialManager,
+      public content::WebContentsObserver,
       public CredentialManagerPasswordFormManagerDelegate,
       public CredentialManagerPendingRequestTaskDelegate,
       public CredentialManagerPendingRequireUserMediationTaskDelegate {
  public:
-  CredentialManagerDispatcher(content::WebContents* web_contents,
-                              PasswordManagerClient* client);
-  ~CredentialManagerDispatcher() override;
+  CredentialManagerImpl(content::WebContents* web_contents,
+                        PasswordManagerClient* client);
+  ~CredentialManagerImpl() override;
 
-  // Called in response to an IPC from the renderer, triggered by a page's call
-  // to 'navigator.credentials.store'.
-  virtual void OnStore(int request_id, const password_manager::CredentialInfo&);
+  void BindRequest(mojom::CredentialManagerRequest request);
 
-  // Called in response to an IPC from the renderer, triggered by a page's call
-  // to 'navigator.credentials.requireUserMediation'.
-  virtual void OnRequireUserMediation(int request_id);
-
-  // Called in response to an IPC from the renderer, triggered by a page's call
-  // to 'navigator.credentials.request'.
-  //
-  // TODO(vabr): Determine if we can drop the `const` here to save some copies
-  // while processing the request.
-  virtual void OnRequestCredential(int request_id,
-                                   bool zero_click_only,
-                                   bool include_passwords,
-                                   const std::vector<GURL>& federations);
-
-  // content::WebContentsObserver implementation.
-  bool OnMessageReceived(const IPC::Message& message) override;
+  // mojom::CredentialManager methods:
+  void Store(mojom::CredentialInfoPtr credential,
+             const StoreCallback& callback) override;
+  void RequireUserMediation(
+      const RequireUserMediationCallback& callback) override;
+  void Get(bool zero_click_only,
+           bool include_passwords,
+           mojo::Array<mojo::String> federations,
+           const GetCallback& callback) override;
 
   // CredentialManagerPendingRequestTaskDelegate:
   bool IsZeroClickAllowed() const override;
   GURL GetOrigin() const override;
-  void SendCredential(int request_id, const CredentialInfo& info) override;
-  void SendPasswordForm(int request_id,
+  void SendCredential(const SendCredentialCallback& send_callback,
+                      const CredentialInfo& info) override;
+  void SendPasswordForm(const SendCredentialCallback& send_callback,
                         const autofill::PasswordForm* form) override;
   PasswordManagerClient* client() const override;
   autofill::PasswordForm GetSynthesizedFormForOrigin() const override;
@@ -89,7 +84,7 @@ class CredentialManagerDispatcher
   // Schedules a CredentiaManagerPendingRequestTask (during
   // |OnRequestCredential()|) after the PasswordStore's AffiliationMatchHelper
   // grabs a list of realms related to the current web origin.
-  void ScheduleRequestTask(int request_id,
+  void ScheduleRequestTask(const GetCallback& callback,
                            bool zero_click_only,
                            bool include_passwords,
                            const std::vector<GURL>& federations,
@@ -99,7 +94,7 @@ class CredentialManagerDispatcher
   // AffiliationMatchHelper grabs a list of realms related to the current
   // web origin.
   void ScheduleRequireMediationTask(
-      int request_id,
+      const RequireUserMediationCallback& callback,
       const std::vector<std::string>& android_realms);
 
   // Returns true iff it's OK to update credentials in the password store.
@@ -119,11 +114,13 @@ class CredentialManagerDispatcher
   std::unique_ptr<CredentialManagerPendingRequireUserMediationTask>
       pending_require_user_mediation_;
 
-  base::WeakPtrFactory<CredentialManagerDispatcher> weak_factory_;
+  mojo::BindingSet<mojom::CredentialManager> bindings_;
 
-  DISALLOW_COPY_AND_ASSIGN(CredentialManagerDispatcher);
+  base::WeakPtrFactory<CredentialManagerImpl> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(CredentialManagerImpl);
 };
 
 }  // namespace password_manager
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_CONTENT_CREDENTIAL_MANAGER_DISPATCHER_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_CONTENT_CREDENTIAL_MANAGER_IMPL_H_
