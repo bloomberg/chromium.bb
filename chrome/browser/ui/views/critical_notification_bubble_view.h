@@ -7,61 +7,39 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "ui/views/bubble/bubble_delegate.h"
-#include "ui/views/controls/button/button.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 
-namespace ui {
-class Accelerator;
-}
-
-namespace views {
-class Label;
-class LabelButton;
-}
-
-class CriticalNotificationBubbleView : public views::BubbleDelegateView,
-                                       public views::ButtonListener {
+class CriticalNotificationBubbleView : public views::BubbleDialogDelegateView {
  public:
   explicit CriticalNotificationBubbleView(views::View* anchor_view);
   ~CriticalNotificationBubbleView() override;
 
-  // views::ButtonListener overrides:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // views::WidgetDelegate overrides:
+  // views::BubbleDialogDelegateView overrides:
+  base::string16 GetWindowTitle() const override;
+  gfx::ImageSkia GetWindowIcon() override;
+  bool ShouldShowWindowIcon() const override;
   void WindowClosing() override;
-
-  // views::View overrides:
+  bool Cancel() override;
+  bool Accept() override;
+  void Init() override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   void GetAccessibleState(ui::AXViewState* state) override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 
- protected:
-  // views::BubbleDelegateView overrides:
-  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
-  void Init() override;
-
  private:
   // Helper function to calculate the remaining time (in seconds) until
   // spontaneous reboot.
-  int GetRemainingTime();
-
-  // Helper function to set the headline for the bubble.
-  void UpdateBubbleHeadline(int seconds);
+  int GetRemainingTime() const;
 
   // Called when the timer fires each time the clock ticks.
   void OnCountdown();
-
-  // The headline and buttons on the bubble.
-  views::Label* headline_;
-  views::LabelButton* restart_button_;
-  views::LabelButton* dismiss_button_;
 
   // A timer to refresh the bubble to show new countdown value.
   base::RepeatingTimer refresh_timer_;
 
   // When the bubble was created.
-  base::Time bubble_created_;
+  base::TimeTicks bubble_created_;
 
   DISALLOW_COPY_AND_ASSIGN(CriticalNotificationBubbleView);
 };

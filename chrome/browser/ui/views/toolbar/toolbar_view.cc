@@ -779,9 +779,8 @@ void ToolbarView::LoadImages() {
 
 void ToolbarView::ShowCriticalNotification() {
 #if defined(OS_WIN)
-  CriticalNotificationBubbleView* bubble_delegate =
-      new CriticalNotificationBubbleView(app_menu_button_);
-  views::BubbleDelegateView::CreateBubble(bubble_delegate)->Show();
+  views::BubbleDialogDelegateView::CreateBubble(
+      new CriticalNotificationBubbleView(app_menu_button_))->Show();
 #endif
 }
 
