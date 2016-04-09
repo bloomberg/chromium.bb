@@ -619,7 +619,7 @@ double LocalFrame::devicePixelRatio() const
 
 PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
 {
-    m_view->updateAllLifecyclePhases();
+    m_view->updateLifecycleToCompositingCleanPlusScrolling();
     LayoutObject* layoutObject = node.layoutObject();
     if (!layoutObject)
         return nullptr;
@@ -645,7 +645,7 @@ PassOwnPtr<DragImage> LocalFrame::dragImageForSelection(float opacity)
     if (!selection().isRange())
         return nullptr;
 
-    m_view->updateAllLifecyclePhases();
+    m_view->updateLifecycleToCompositingCleanPlusScrolling();
     ASSERT(document()->isActive());
 
     FloatRect paintingRect = FloatRect(selection().bounds());

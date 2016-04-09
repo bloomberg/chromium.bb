@@ -358,7 +358,7 @@ void SVGImage::drawInternal(SkCanvas* canvas, const SkPaint& paint, const FloatR
         transform.scale(scale.width(), scale.height());
         TransformRecorder transformRecorder(imagePicture.context(), *this, transform);
 
-        view->updateAllLifecyclePhases();
+        view->updateLifecycleToCompositingCleanPlusScrolling();
         view->paint(imagePicture.context(), CullRect(enclosingIntRect(srcRect)));
         ASSERT(!view->needsLayout());
     }

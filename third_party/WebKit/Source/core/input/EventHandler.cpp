@@ -2123,7 +2123,7 @@ WebInputEventResult EventHandler::handleGestureTap(const GestureEventWithHitTest
     if (currentHitTest.innerNode()) {
         LocalFrame* mainFrame = m_frame->localFrameRoot();
         if (mainFrame && mainFrame->view())
-            mainFrame->view()->updateAllLifecyclePhases();
+        mainFrame->view()->updateLifecycleToCompositingCleanPlusScrolling();
         adjustedPoint = frameView->rootFrameToContents(gestureEvent.position());
         currentHitTest = hitTestResultInFrame(m_frame, adjustedPoint, hitType);
     }

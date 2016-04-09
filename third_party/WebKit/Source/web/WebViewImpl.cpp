@@ -3434,7 +3434,8 @@ IntSize WebViewImpl::contentsSize() const
 
 WebSize WebViewImpl::contentsPreferredMinimumSize()
 {
-    updateAllLifecyclePhases();
+    if (mainFrameImpl())
+        mainFrameImpl()->frame()->view()->updateLifecycleToCompositingCleanPlusScrolling();
 
     Document* document = m_page->mainFrame()->isLocalFrame() ? m_page->deprecatedLocalMainFrame()->document() : nullptr;
     if (!document || !document->layoutView() || !document->documentElement() || !document->documentElement()->layoutBox())
