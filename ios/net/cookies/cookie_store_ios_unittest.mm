@@ -154,14 +154,14 @@ class RoundTripTestCookieStore : public net::CookieStore {
     store_->DeleteAllCreatedBetweenAsync(delete_begin, delete_end, callback);
   }
 
-  void DeleteAllCreatedBetweenForHostAsync(
-      const base::Time delete_begin,
-      const base::Time delete_end,
-      const GURL& url,
+  void DeleteAllCreatedBetweenWithPredicateAsync(
+      const base::Time& delete_begin,
+      const base::Time& delete_end,
+      const CookiePredicate& predicate,
       const DeleteCallback& callback) override {
     RoundTrip();
-    store_->DeleteAllCreatedBetweenForHostAsync(delete_begin, delete_end, url,
-                                                callback);
+    store_->DeleteAllCreatedBetweenWithPredicateAsync(delete_begin, delete_end,
+                                                      predicate, callback);
   }
 
   void DeleteSessionCookiesAsync(const DeleteCallback& callback) override {

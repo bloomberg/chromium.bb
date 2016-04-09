@@ -37,6 +37,7 @@
 
 namespace net {
 
+using CookiePredicate = CookieStore::CookiePredicate;
 using base::Time;
 using base::TimeDelta;
 
@@ -64,11 +65,35 @@ class NewMockPersistentCookieStore
   virtual ~NewMockPersistentCookieStore() {}
 };
 
+// False means 'less than or equal', so we test both ways for full equal.
+MATCHER_P(CookieEquals, expected, "") {
+  return !(arg.FullCompare(expected) || expected.FullCompare(arg));
+}
+
 const char kTopLevelDomainPlus1[] = "http://www.harvard.edu";
 const char kTopLevelDomainPlus2[] = "http://www.math.harvard.edu";
 const char kTopLevelDomainPlus2Secure[] = "https://www.math.harvard.edu";
 const char kTopLevelDomainPlus3[] = "http://www.bourbaki.math.harvard.edu";
 const char kOtherDomain[] = "http://www.mit.edu";
+
+bool AlwaysTrueCookiePredicate(CanonicalCookie* to_save,
+                               const CanonicalCookie& cookie) {
+  if (to_save)
+    *to_save = cookie;
+  return true;
+}
+
+bool AlwaysFalseCookiePredicate(CanonicalCookie* to_save,
+                                const CanonicalCookie& cookie) {
+  if (to_save)
+    *to_save = cookie;
+  return false;
+}
+
+bool CookieValuePredicate(const std::string& true_value,
+                          const CanonicalCookie& cookie) {
+  return cookie.Value() == true_value;
+}
 
 struct CookieMonsterTestTraits {
   static scoped_ptr<CookieStore> Create() {
@@ -150,23 +175,23 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     return callback.result();
   }
 
-  int DeleteAllCreatedBetweenForHost(CookieMonster* cm,
-                                     const base::Time delete_begin,
-                                     const base::Time delete_end,
-                                     const GURL& url) {
+  int DeleteAllCreatedBetweenWithPredicate(CookieMonster* cm,
+                                           const base::Time delete_begin,
+                                           const base::Time delete_end,
+                                           const CookiePredicate& predicate) {
     DCHECK(cm);
     ResultSavingCookieCallback<int> callback;
-    cm->DeleteAllCreatedBetweenForHostAsync(
-        delete_begin, delete_end, url,
+    cm->DeleteAllCreatedBetweenWithPredicateAsync(
+        delete_begin, delete_end, predicate,
         base::Bind(&ResultSavingCookieCallback<int>::Run,
                    base::Unretained(&callback)));
     callback.WaitUntilDone();
     return callback.result();
   }
 
-  // Helper for DeleteAllForHost test; repopulates CM with same layout
+  // Helper for PredicateSeesAllCookies test; repopulates CM with same layout
   // each time.
-  void PopulateCmForDeleteAllForHost(CookieMonster* cm) {
+  void PopulateCmForPredicateCheck(CookieMonster* cm) {
     GURL url_top_level_domain_plus_1(kTopLevelDomainPlus1);
     GURL url_top_level_domain_plus_2(kTopLevelDomainPlus2);
     GURL url_top_level_domain_plus_2_secure(kTopLevelDomainPlus2Secure);
@@ -186,72 +211,72 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
 
     // Domain cookies
     EXPECT_TRUE(this->SetCookieWithDetails(
-        cm, url_top_level_domain_plus_1, "dom_1", "X", ".harvard.edu", "/",
+        cm, url_top_level_domain_plus_1, "dom_1", "A", ".harvard.edu", "/",
         base::Time(), base::Time(), base::Time(), false, false,
         CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
     EXPECT_TRUE(this->SetCookieWithDetails(
-        cm, url_top_level_domain_plus_2, "dom_2", "X", ".math.harvard.edu", "/",
+        cm, url_top_level_domain_plus_2, "dom_2", "B", ".math.harvard.edu", "/",
         base::Time(), base::Time(), base::Time(), false, false,
         CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
     EXPECT_TRUE(this->SetCookieWithDetails(
-        cm, url_top_level_domain_plus_3, "dom_3", "X",
+        cm, url_top_level_domain_plus_3, "dom_3", "C",
         ".bourbaki.math.harvard.edu", "/", base::Time(), base::Time(),
         base::Time(), false, false, CookieSameSite::DEFAULT_MODE,
         COOKIE_PRIORITY_DEFAULT));
 
     // Host cookies
     EXPECT_TRUE(this->SetCookieWithDetails(
-        cm, url_top_level_domain_plus_1, "host_1", "X", std::string(), "/",
+        cm, url_top_level_domain_plus_1, "host_1", "A", std::string(), "/",
         base::Time(), base::Time(), base::Time(), false, false,
         CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
     EXPECT_TRUE(this->SetCookieWithDetails(
-        cm, url_top_level_domain_plus_2, "host_2", "X", std::string(), "/",
+        cm, url_top_level_domain_plus_2, "host_2", "B", std::string(), "/",
         base::Time(), base::Time(), base::Time(), false, false,
         CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
     EXPECT_TRUE(this->SetCookieWithDetails(
-        cm, url_top_level_domain_plus_3, "host_3", "X", std::string(), "/",
+        cm, url_top_level_domain_plus_3, "host_3", "C", std::string(), "/",
         base::Time(), base::Time(), base::Time(), false, false,
         CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
 
     // http_only cookie
     EXPECT_TRUE(this->SetCookieWithDetails(
-        cm, url_top_level_domain_plus_2, "httpo_check", "x", std::string(), "/",
+        cm, url_top_level_domain_plus_2, "httpo_check", "A", std::string(), "/",
         base::Time(), base::Time(), base::Time(), false, true,
         CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
 
     // same-site cookie
     EXPECT_TRUE(this->SetCookieWithDetails(
-        cm, url_top_level_domain_plus_2, "firstp_check", "x", std::string(),
+        cm, url_top_level_domain_plus_2, "firstp_check", "A", std::string(),
         "/", base::Time(), base::Time(), base::Time(), false, false,
         CookieSameSite::STRICT_MODE, COOKIE_PRIORITY_DEFAULT));
 
     // Secure cookies
     EXPECT_TRUE(this->SetCookieWithDetails(
-        cm, url_top_level_domain_plus_2_secure, "sec_dom", "X",
+        cm, url_top_level_domain_plus_2_secure, "sec_dom", "A",
         ".math.harvard.edu", "/", base::Time(), base::Time(), base::Time(),
         true, false, CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
     EXPECT_TRUE(this->SetCookieWithDetails(
-        cm, url_top_level_domain_plus_2_secure, "sec_host", "X", std::string(),
+        cm, url_top_level_domain_plus_2_secure, "sec_host", "B", std::string(),
         "/", base::Time(), base::Time(), base::Time(), true, false,
         CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
 
     // Domain path cookies
     EXPECT_TRUE(this->SetCookieWithDetails(
-        cm, url_top_level_domain_plus_2, "dom_path_1", "X", ".math.harvard.edu",
+        cm, url_top_level_domain_plus_2, "dom_path_1", "A", ".math.harvard.edu",
         "/dir1", base::Time(), base::Time(), base::Time(), false, false,
         CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
     EXPECT_TRUE(this->SetCookieWithDetails(
-        cm, url_top_level_domain_plus_2, "dom_path_2", "X", ".math.harvard.edu",
+        cm, url_top_level_domain_plus_2, "dom_path_2", "B", ".math.harvard.edu",
         "/dir1/dir2", base::Time(), base::Time(), base::Time(), false, false,
         CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
 
     // Host path cookies
     EXPECT_TRUE(this->SetCookieWithDetails(
-        cm, url_top_level_domain_plus_2, "host_path_1", "X", std::string(),
+        cm, url_top_level_domain_plus_2, "host_path_1", "A", std::string(),
         "/dir1", base::Time(), base::Time(), base::Time(), false, false,
         CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
     EXPECT_TRUE(this->SetCookieWithDetails(
-        cm, url_top_level_domain_plus_2, "host_path_2", "X", std::string(),
+        cm, url_top_level_domain_plus_2, "host_path_2", "B", std::string(),
         "/dir1/dir2", base::Time(), base::Time(), base::Time(), false, false,
         CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
 
@@ -667,14 +692,14 @@ ACTION_P2(GetAllCookiesAction, cookie_monster, callback) {
   cookie_monster->GetAllCookiesAsync(callback->AsCallback());
 }
 
-ACTION_P5(DeleteAllCreatedBetweenForHostAction,
+ACTION_P5(DeleteAllCreatedBetweenWithPredicateAction,
           cookie_monster,
           delete_begin,
           delete_end,
-          url,
+          predicate,
           callback) {
-  cookie_monster->DeleteAllCreatedBetweenForHostAsync(
-      delete_begin, delete_end, url, callback->AsCallback());
+  cookie_monster->DeleteAllCreatedBetweenWithPredicateAsync(
+      delete_begin, delete_end, predicate, callback->AsCallback());
 }
 
 ACTION_P3(DeleteCanonicalCookieAction, cookie_monster, cookie, callback) {
@@ -1050,20 +1075,22 @@ TEST_F(DeferredCookieTaskTest, DeferredDeleteAllCreatedBetweenCookies) {
   loop.Run();
 }
 
-TEST_F(DeferredCookieTaskTest, DeferredDeleteAllForHostCreatedBetweenCookies) {
+TEST_F(DeferredCookieTaskTest,
+       DeferredDeleteAllWithPredicateCreatedBetweenCookies) {
   MockDeleteCallback delete_callback;
 
-  BeginWithForDomainKey(http_www_google_.domain(),
-                        DeleteAllCreatedBetweenForHostAction(
-                            &cookie_monster(), base::Time(), base::Time::Now(),
-                            http_www_google_.url(), &delete_callback));
+  CookiePredicate predicate = base::Bind(&AlwaysTrueCookiePredicate, nullptr);
+
+  BeginWith(DeleteAllCreatedBetweenWithPredicateAction(
+      &cookie_monster(), base::Time(), base::Time::Now(), predicate,
+      &delete_callback));
 
   WaitForLoadCall();
 
   EXPECT_CALL(delete_callback, Invoke(false))
-      .WillOnce(DeleteAllCreatedBetweenForHostAction(
-          &cookie_monster(), base::Time(), base::Time::Now(),
-          http_www_google_.url(), &delete_callback));
+      .WillOnce(DeleteAllCreatedBetweenWithPredicateAction(
+          &cookie_monster(), base::Time(), base::Time::Now(), predicate,
+          &delete_callback));
   base::RunLoop loop;
   EXPECT_CALL(delete_callback, Invoke(false)).WillOnce(QuitRunLoop(&loop));
 
@@ -1187,7 +1214,7 @@ TEST_F(CookieMonsterTest, TestCookieDeleteAllCreatedBetweenTimestamps) {
   EXPECT_EQ(0, DeleteAllCreatedBetween(cm.get(), now - TimeDelta::FromDays(99),
                                        Time()));
 
-  // Create 3 cookies with creation date of today, yesterday and the day before.
+  // Create 5 cookies with different creation dates.
   EXPECT_TRUE(
       cm->SetCookieWithCreationTime(http_www_google_.url(), "T-0=Now", now));
   EXPECT_TRUE(cm->SetCookieWithCreationTime(
@@ -1214,6 +1241,90 @@ TEST_F(CookieMonsterTest, TestCookieDeleteAllCreatedBetweenTimestamps) {
 
   // Delete the last (now) item.
   EXPECT_EQ(1, DeleteAllCreatedBetween(cm.get(), Time(), Time()));
+
+  // Really make sure everything is gone.
+  EXPECT_EQ(0, DeleteAll(cm.get()));
+}
+
+TEST_F(CookieMonsterTest,
+       TestCookieDeleteAllCreatedBetweenTimestampsWithPredicate) {
+  scoped_ptr<CookieMonster> cm(new CookieMonster(nullptr, nullptr));
+  Time now = Time::Now();
+
+  CanonicalCookie test_cookie;
+  CookiePredicate true_predicate =
+      base::Bind(&AlwaysTrueCookiePredicate, &test_cookie);
+
+  CookiePredicate false_predicate =
+      base::Bind(&AlwaysFalseCookiePredicate, &test_cookie);
+
+  // Nothing has been added so nothing should be deleted.
+  EXPECT_EQ(
+      0, DeleteAllCreatedBetweenWithPredicate(
+             cm.get(), now - TimeDelta::FromDays(99), Time(), true_predicate));
+
+  // Create 5 cookies with different creation dates.
+  EXPECT_TRUE(
+      cm->SetCookieWithCreationTime(http_www_google_.url(), "T-0=Now", now));
+  EXPECT_TRUE(cm->SetCookieWithCreationTime(
+      http_www_google_.url(), "T-1=Yesterday", now - TimeDelta::FromDays(1)));
+  EXPECT_TRUE(cm->SetCookieWithCreationTime(
+      http_www_google_.url(), "T-2=DayBefore", now - TimeDelta::FromDays(2)));
+  EXPECT_TRUE(cm->SetCookieWithCreationTime(
+      http_www_google_.url(), "T-3=ThreeDays", now - TimeDelta::FromDays(3)));
+  EXPECT_TRUE(cm->SetCookieWithCreationTime(
+      http_www_google_.url(), "T-7=LastWeek", now - TimeDelta::FromDays(7)));
+
+  // Try to delete threedays and the daybefore, but we should do nothing due
+  // to the predicate.
+  EXPECT_EQ(0, DeleteAllCreatedBetweenWithPredicate(
+                   cm.get(), now - TimeDelta::FromDays(3),
+                   now - TimeDelta::FromDays(1), false_predicate));
+  // Same as above with a null predicate, so it shouldn't delete anything.
+  EXPECT_EQ(0, DeleteAllCreatedBetweenWithPredicate(
+                   cm.get(), now - TimeDelta::FromDays(3),
+                   now - TimeDelta::FromDays(1), CookiePredicate()));
+  // Same as above, but we use the true_predicate, so it works.
+  EXPECT_EQ(2, DeleteAllCreatedBetweenWithPredicate(
+                   cm.get(), now - TimeDelta::FromDays(3),
+                   now - TimeDelta::FromDays(1), true_predicate));
+
+  // Try to delete yesterday, also make sure that delete_end is not
+  // inclusive.
+  EXPECT_EQ(0,
+            DeleteAllCreatedBetweenWithPredicate(
+                cm.get(), now - TimeDelta::FromDays(2), now, false_predicate));
+  EXPECT_EQ(1,
+            DeleteAllCreatedBetweenWithPredicate(
+                cm.get(), now - TimeDelta::FromDays(2), now, true_predicate));
+  // Check our cookie values.
+  scoped_ptr<CanonicalCookie> expected_cookie =
+      CanonicalCookie::Create(http_www_google_.url(), "T-1=Yesterday",
+                              now - TimeDelta::FromDays(1), CookieOptions());
+  EXPECT_THAT(test_cookie, CookieEquals(*expected_cookie))
+      << "Actual:\n"
+      << test_cookie.DebugString() << "\nExpected:\n"
+      << expected_cookie->DebugString();
+
+  // Make sure the delete_begin is inclusive.
+  EXPECT_EQ(0,
+            DeleteAllCreatedBetweenWithPredicate(
+                cm.get(), now - TimeDelta::FromDays(7), now, false_predicate));
+  EXPECT_EQ(1,
+            DeleteAllCreatedBetweenWithPredicate(
+                cm.get(), now - TimeDelta::FromDays(7), now, true_predicate));
+
+  // Delete the last (now) item.
+  EXPECT_EQ(0, DeleteAllCreatedBetweenWithPredicate(cm.get(), Time(), Time(),
+                                                    false_predicate));
+  EXPECT_EQ(1, DeleteAllCreatedBetweenWithPredicate(cm.get(), Time(), Time(),
+                                                    true_predicate));
+  expected_cookie = CanonicalCookie::Create(http_www_google_.url(), "T-0=Now",
+                                            now, CookieOptions());
+  EXPECT_THAT(test_cookie, CookieEquals(*expected_cookie))
+      << "Actual:\n"
+      << test_cookie.DebugString() << "\nExpected:\n"
+      << expected_cookie->DebugString();
 
   // Really make sure everything is gone.
   EXPECT_EQ(0, DeleteAll(cm.get()));
@@ -1651,75 +1762,23 @@ TEST_F(CookieMonsterTest, CookieMonsterDelegate) {
   delegate->reset();
 }
 
-TEST_F(CookieMonsterTest, DeleteAllForHost) {
+TEST_F(CookieMonsterTest, PredicateSeesAllCookies) {
+  const std::string kTrueValue = "A";
   scoped_ptr<CookieMonster> cm(new CookieMonster(nullptr, nullptr));
+  // We test that we can see all cookies with our predicated. This includes
+  // host, http_only, host secure, and all domain cookies.
+  CookiePredicate value_matcher = base::Bind(&CookieValuePredicate, kTrueValue);
 
-  // Test probes:
-  //    * Non-secure URL, mid-level (http://w.c.b.a)
-  //    * Secure URL, mid-level (https://w.c.b.a)
-  //    * URL with path, mid-level (https:/w.c.b.a/dir1/xx)
-  // All three tests should nuke only the midlevel host cookie,
-  // the http_only cookie, the host secure cookie, and the two host
-  // path cookies.  http_only, secure, and paths are ignored by
-  // this call, and domain cookies arent touched.
-  PopulateCmForDeleteAllForHost(cm.get());
-  EXPECT_EQ("dom_1=X; dom_2=X; dom_3=X; host_3=X",
+  PopulateCmForPredicateCheck(cm.get());
+  EXPECT_EQ(7, DeleteAllCreatedBetweenWithPredicate(
+                   cm.get(), base::Time(), base::Time::Now(), value_matcher));
+
+  EXPECT_EQ("dom_2=B; dom_3=C; host_3=C",
             GetCookies(cm.get(), GURL(kTopLevelDomainPlus3)));
-  EXPECT_EQ("dom_1=X; dom_2=X; host_2=X; sec_dom=X; sec_host=X",
+  EXPECT_EQ("dom_2=B; host_2=B; sec_host=B",
             GetCookies(cm.get(), GURL(kTopLevelDomainPlus2Secure)));
-  EXPECT_EQ("dom_1=X; host_1=X",
-            GetCookies(cm.get(), GURL(kTopLevelDomainPlus1)));
-  EXPECT_EQ(
-      "dom_path_2=X; host_path_2=X; dom_path_1=X; host_path_1=X; "
-      "dom_1=X; dom_2=X; host_2=X; sec_dom=X; sec_host=X",
-      GetCookies(cm.get(), GURL(kTopLevelDomainPlus2Secure +
-                                std::string("/dir1/dir2/xxx"))));
-
-  EXPECT_EQ(6, DeleteAllCreatedBetweenForHost(cm.get(), base::Time(),
-                                              base::Time::Now(),
-                                              GURL(kTopLevelDomainPlus2)));
-  EXPECT_EQ(8U, GetAllCookies(cm.get()).size());
-
-  EXPECT_EQ("dom_1=X; dom_2=X; dom_3=X; host_3=X",
-            GetCookies(cm.get(), GURL(kTopLevelDomainPlus3)));
-  EXPECT_EQ("dom_1=X; dom_2=X; sec_dom=X",
-            GetCookies(cm.get(), GURL(kTopLevelDomainPlus2Secure)));
-  EXPECT_EQ("dom_1=X; host_1=X",
-            GetCookies(cm.get(), GURL(kTopLevelDomainPlus1)));
-  EXPECT_EQ("dom_path_2=X; dom_path_1=X; dom_1=X; dom_2=X; sec_dom=X",
-            GetCookies(cm.get(), GURL(kTopLevelDomainPlus2Secure +
-                                      std::string("/dir1/dir2/xxx"))));
-
-  PopulateCmForDeleteAllForHost(cm.get());
-  EXPECT_EQ(6, DeleteAllCreatedBetweenForHost(
-                   cm.get(), base::Time(), base::Time::Now(),
-                   GURL(kTopLevelDomainPlus2Secure)));
-  EXPECT_EQ(8U, GetAllCookies(cm.get()).size());
-
-  EXPECT_EQ("dom_1=X; dom_2=X; dom_3=X; host_3=X",
-            GetCookies(cm.get(), GURL(kTopLevelDomainPlus3)));
-  EXPECT_EQ("dom_1=X; dom_2=X; sec_dom=X",
-            GetCookies(cm.get(), GURL(kTopLevelDomainPlus2Secure)));
-  EXPECT_EQ("dom_1=X; host_1=X",
-            GetCookies(cm.get(), GURL(kTopLevelDomainPlus1)));
-  EXPECT_EQ("dom_path_2=X; dom_path_1=X; dom_1=X; dom_2=X; sec_dom=X",
-            GetCookies(cm.get(), GURL(kTopLevelDomainPlus2Secure +
-                                      std::string("/dir1/dir2/xxx"))));
-
-  PopulateCmForDeleteAllForHost(cm.get());
-  EXPECT_EQ(6,
-            DeleteAllCreatedBetweenForHost(
-                cm.get(), base::Time(), base::Time::Now(),
-                GURL(kTopLevelDomainPlus2Secure + std::string("/dir1/xxx"))));
-  EXPECT_EQ(8U, GetAllCookies(cm.get()).size());
-
-  EXPECT_EQ("dom_1=X; dom_2=X; dom_3=X; host_3=X",
-            GetCookies(cm.get(), GURL(kTopLevelDomainPlus3)));
-  EXPECT_EQ("dom_1=X; dom_2=X; sec_dom=X",
-            GetCookies(cm.get(), GURL(kTopLevelDomainPlus2Secure)));
-  EXPECT_EQ("dom_1=X; host_1=X",
-            GetCookies(cm.get(), GURL(kTopLevelDomainPlus1)));
-  EXPECT_EQ("dom_path_2=X; dom_path_1=X; dom_1=X; dom_2=X; sec_dom=X",
+  EXPECT_EQ("", GetCookies(cm.get(), GURL(kTopLevelDomainPlus1)));
+  EXPECT_EQ("dom_path_2=B; host_path_2=B; dom_2=B; host_2=B; sec_host=B",
             GetCookies(cm.get(), GURL(kTopLevelDomainPlus2Secure +
                                       std::string("/dir1/dir2/xxx"))));
 }

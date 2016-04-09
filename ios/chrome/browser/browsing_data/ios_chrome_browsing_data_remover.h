@@ -171,7 +171,7 @@ class IOSChromeBrowsingDataRemover {
   // TODO(mkwst): The current implementation relies on unique (empty) origins to
   // signal removal of all origins. Reconsider this behavior if/when we build
   // a "forget this site" feature.
-  void RemoveImpl(int remove_mask, const GURL& remove_url);
+  void RemoveImpl(int remove_mask);
 
   // Notifies observers and deletes this object.
   void NotifyAndDelete();
@@ -199,8 +199,7 @@ class IOSChromeBrowsingDataRemover {
 
   // Invoked on the IO thread to delete cookies.
   void ClearCookiesOnIOThread(
-      const scoped_refptr<net::URLRequestContextGetter>& rq_context,
-      const GURL& storage_url);
+      const scoped_refptr<net::URLRequestContextGetter>& rq_context);
 
   // Invoked on the IO thread to delete channel IDs.
   void ClearChannelIDsOnIOThread(

@@ -591,37 +591,38 @@ int CookieMonster::DeleteAllCreatedBetweenTask::RunDeleteTask() {
                                                          delete_end_);
 }
 
-// Task class for DeleteAllCreatedBetweenForHost call.
-class CookieMonster::DeleteAllCreatedBetweenForHostTask
+// Task class for DeleteAllCreatedBetweenWithPredicate call.
+class CookieMonster::DeleteAllCreatedBetweenWithPredicateTask
     : public DeleteTask<int> {
  public:
-  DeleteAllCreatedBetweenForHostTask(CookieMonster* cookie_monster,
-                                     Time delete_begin,
-                                     Time delete_end,
-                                     const GURL& url,
-                                     const DeleteCallback& callback)
+  DeleteAllCreatedBetweenWithPredicateTask(
+      CookieMonster* cookie_monster,
+      Time delete_begin,
+      Time delete_end,
+      base::Callback<bool(const CanonicalCookie&)> predicate,
+      const DeleteCallback& callback)
       : DeleteTask<int>(cookie_monster, callback),
         delete_begin_(delete_begin),
         delete_end_(delete_end),
-        url_(url) {}
+        predicate_(predicate) {}
 
   // DeleteTask:
   int RunDeleteTask() override;
 
  protected:
-  ~DeleteAllCreatedBetweenForHostTask() override {}
+  ~DeleteAllCreatedBetweenWithPredicateTask() override {}
 
  private:
   Time delete_begin_;
   Time delete_end_;
-  GURL url_;
+  base::Callback<bool(const CanonicalCookie&)> predicate_;
 
-  DISALLOW_COPY_AND_ASSIGN(DeleteAllCreatedBetweenForHostTask);
+  DISALLOW_COPY_AND_ASSIGN(DeleteAllCreatedBetweenWithPredicateTask);
 };
 
-int CookieMonster::DeleteAllCreatedBetweenForHostTask::RunDeleteTask() {
-  return this->cookie_monster()->DeleteAllCreatedBetweenForHost(
-      delete_begin_, delete_end_, url_);
+int CookieMonster::DeleteAllCreatedBetweenWithPredicateTask::RunDeleteTask() {
+  return this->cookie_monster()->DeleteAllCreatedBetweenWithPredicate(
+      delete_begin_, delete_end_, predicate_);
 }
 
 // Task class for DeleteCanonicalCookie call.
@@ -922,16 +923,19 @@ void CookieMonster::DeleteAllCreatedBetweenAsync(
   DoCookieTask(task);
 }
 
-void CookieMonster::DeleteAllCreatedBetweenForHostAsync(
-    const Time delete_begin,
-    const Time delete_end,
-    const GURL& url,
+void CookieMonster::DeleteAllCreatedBetweenWithPredicateAsync(
+    const Time& delete_begin,
+    const Time& delete_end,
+    const base::Callback<bool(const CanonicalCookie&)>& predicate,
     const DeleteCallback& callback) {
-  scoped_refptr<DeleteAllCreatedBetweenForHostTask> task =
-      new DeleteAllCreatedBetweenForHostTask(this, delete_begin, delete_end,
-                                             url, callback);
-
-  DoCookieTaskForURL(task, url);
+  if (predicate.is_null()) {
+    callback.Run(0);
+    return;
+  }
+  scoped_refptr<DeleteAllCreatedBetweenWithPredicateTask> task =
+      new DeleteAllCreatedBetweenWithPredicateTask(
+          this, delete_begin, delete_end, predicate, callback);
+  DoCookieTask(task);
 }
 
 void CookieMonster::DeleteSessionCookiesAsync(
@@ -1124,41 +1128,29 @@ int CookieMonster::DeleteAllCreatedBetween(const Time& delete_begin,
   return num_deleted;
 }
 
-int CookieMonster::DeleteAllCreatedBetweenForHost(const Time delete_begin,
-                                                  const Time delete_end,
-                                                  const GURL& url) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!HasCookieableScheme(url))
-    return 0;
-
-  const std::string host(url.host());
-
-  // We store host cookies in the store by their canonical host name;
-  // domain cookies are stored with a leading ".".  So this is a pretty
-  // simple lookup and per-cookie delete.
+int CookieMonster::DeleteAllCreatedBetweenWithPredicate(
+    const base::Time& delete_begin,
+    const base::Time& delete_end,
+    const base::Callback<bool(const CanonicalCookie&)>& predicate) {
   int num_deleted = 0;
-  for (CookieMapItPair its = cookies_.equal_range(GetKey(host));
-       its.first != its.second;) {
-    CookieMap::iterator curit = its.first;
-    ++its.first;
+  for (CookieMap::iterator it = cookies_.begin(); it != cookies_.end();) {
+    CookieMap::iterator curit = it;
+    CanonicalCookie* cc = curit->second;
+    ++it;
 
-    const CanonicalCookie* const cc = curit->second;
-
-    // Delete only on a match as a host cookie.
-    if (cc->IsHostCookie() && cc->IsDomainMatch(host) &&
-        cc->CreationDate() >= delete_begin &&
+    if (cc->CreationDate() >= delete_begin &&
         // The assumption that null |delete_end| is equivalent to
         // Time::Max() is confusing.
-        (delete_end.is_null() || cc->CreationDate() < delete_end)) {
-      num_deleted++;
-
-      InternalDeleteCookie(curit, true, DELETE_COOKIE_EXPLICIT);
+        (delete_end.is_null() || cc->CreationDate() < delete_end) &&
+        predicate.Run(*cc)) {
+      InternalDeleteCookie(curit, true, /*sync_to_store*/
+                           DELETE_COOKIE_EXPLICIT);
+      ++num_deleted;
     }
   }
+
   return num_deleted;
 }
-
 
 bool CookieMonster::SetCookieWithOptions(const GURL& url,
                                          const std::string& cookie_line,

@@ -23,11 +23,14 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/test_completion_callback.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::CanonicalCookie;
 
 namespace content {
 namespace {
@@ -917,6 +920,34 @@ TEST_F(StoragePartitionImplTest, RemoveLocalStorageForLastWeek) {
   EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin1));
   EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin2));
   EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin3));
+}
+
+TEST(StoragePartitionImplStaticTest, CreatePredicateForHostCookies) {
+  GURL url("http://www.example.com/");
+  GURL url2("https://www.example.com/");
+  GURL url3("https://www.google.com/");
+
+  net::CookieOptions options;
+  net::CookieStore::CookiePredicate predicate =
+      StoragePartitionImpl::CreatePredicateForHostCookies(url);
+
+  base::Time now = base::Time::Now();
+  std::vector<scoped_ptr<CanonicalCookie>> valid_cookies;
+  valid_cookies.push_back(CanonicalCookie::Create(url, "A=B", now, options));
+  valid_cookies.push_back(CanonicalCookie::Create(url, "C=F", now, options));
+  // We should match a different scheme with the same host.
+  valid_cookies.push_back(CanonicalCookie::Create(url2, "A=B", now, options));
+
+  std::vector<scoped_ptr<CanonicalCookie>> invalid_cookies;
+  // We don't match domain cookies.
+  invalid_cookies.push_back(
+      CanonicalCookie::Create(url2, "A=B;domain=.example.com", now, options));
+  invalid_cookies.push_back(CanonicalCookie::Create(url3, "A=B", now, options));
+
+  for (const auto& cookie : valid_cookies)
+    EXPECT_TRUE(predicate.Run(*cookie)) << cookie->DebugString();
+  for (const auto& cookie : invalid_cookies)
+    EXPECT_FALSE(predicate.Run(*cookie)) << cookie->DebugString();
 }
 
 }  // namespace content

@@ -189,10 +189,10 @@ void DelayedCookieMonster::DeleteAllCreatedBetweenAsync(
   ADD_FAILURE();
 }
 
-void DelayedCookieMonster::DeleteAllCreatedBetweenForHostAsync(
-    const base::Time delete_begin,
-    const base::Time delete_end,
-    const GURL& url,
+void DelayedCookieMonster::DeleteAllCreatedBetweenWithPredicateAsync(
+    const base::Time& delete_begin,
+    const base::Time& delete_end,
+    const base::Callback<bool(const CanonicalCookie&)>& predicate,
     const DeleteCallback& callback) {
   ADD_FAILURE();
 }

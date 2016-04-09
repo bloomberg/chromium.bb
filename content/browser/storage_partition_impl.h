@@ -25,6 +25,7 @@
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "net/cookies/cookie_store.h"
 #include "storage/browser/quota/special_storage_policy.h"
 
 namespace content {
@@ -37,6 +38,12 @@ class StoragePartitionImpl : public StoragePartition,
   // Quota managed data uses a different bitmask for types than
   // StoragePartition uses. This method generates that mask.
   CONTENT_EXPORT static int GenerateQuotaClientMask(uint32_t remove_mask);
+
+  // This creates a CookiePredicate that matches all host (NOT domain) cookies
+  // that match the host of |url|. This is intended to be used with
+  // DeleteAllCreatedBetweenWithPredicateAsync.
+  CONTENT_EXPORT static net::CookieStore::CookiePredicate
+  CreatePredicateForHostCookies(const GURL& url);
 
   CONTENT_EXPORT void OverrideQuotaManagerForTesting(
       storage::QuotaManager* quota_manager);

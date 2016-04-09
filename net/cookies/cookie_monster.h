@@ -183,10 +183,10 @@ class NET_EXPORT CookieMonster : public CookieStore {
   void DeleteAllCreatedBetweenAsync(const base::Time& delete_begin,
                                     const base::Time& delete_end,
                                     const DeleteCallback& callback) override;
-  void DeleteAllCreatedBetweenForHostAsync(
-      const base::Time delete_begin,
-      const base::Time delete_end,
-      const GURL& url,
+  void DeleteAllCreatedBetweenWithPredicateAsync(
+      const base::Time& delete_begin,
+      const base::Time& delete_end,
+      const base::Callback<bool(const CanonicalCookie&)>& predicate,
       const DeleteCallback& callback) override;
   void DeleteSessionCookiesAsync(const DeleteCallback&) override;
   void FlushStore(const base::Closure& callback) override;
@@ -223,7 +223,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   template <typename Result>
   class DeleteTask;
   class DeleteAllCreatedBetweenTask;
-  class DeleteAllCreatedBetweenForHostTask;
+  class DeleteAllCreatedBetweenWithPredicateTask;
   class DeleteCookieTask;
   class DeleteCanonicalCookieTask;
   class GetCookieListForURLWithOptionsTask;
@@ -239,6 +239,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // For SetCookieWithCreationTime.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest,
                            TestCookieDeleteAllCreatedBetweenTimestamps);
+  FRIEND_TEST_ALL_PREFIXES(
+      CookieMonsterTest,
+      TestCookieDeleteAllCreatedBetweenTimestampsWithPredicate);
 
   // For gargage collection constants.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestHostGarbageCollection);
@@ -406,9 +409,11 @@ class NET_EXPORT CookieMonster : public CookieStore {
   int DeleteAllCreatedBetween(const base::Time& delete_begin,
                               const base::Time& delete_end);
 
-  int DeleteAllCreatedBetweenForHost(const base::Time delete_begin,
-                                     const base::Time delete_end,
-                                     const GURL& url);
+  // Predicate will be called with the calling thread.
+  int DeleteAllCreatedBetweenWithPredicate(
+      const base::Time& delete_begin,
+      const base::Time& delete_end,
+      const base::Callback<bool(const CanonicalCookie&)>& predicate);
 
   bool SetCookieWithOptions(const GURL& url,
                             const std::string& cookie_line,

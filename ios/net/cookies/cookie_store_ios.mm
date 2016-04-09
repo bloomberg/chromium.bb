@@ -250,15 +250,18 @@ bool IsCookieCreatedBetween(base::Time time_begin,
 // Tests whether the |creation_time| of |cookie| is in the time range defined
 // by |time_begin| and |time_end| and the cookie host match |host|. A null
 // |time_end| means end-of-time.
-bool IsCookieCreatedBetweenForHost(base::Time time_begin,
-                                   base::Time time_end,
-                                   NSString* host,
-                                   NSHTTPCookie* cookie,
-                                   base::Time creation_time) {
-  NSString* domain = [cookie domain];
-  return [domain characterAtIndex:0] != '.' &&
-         [domain caseInsensitiveCompare:host] == NSOrderedSame &&
-         IsCookieCreatedBetween(time_begin, time_end, cookie, creation_time);
+bool IsCookieCreatedBetweenWithPredicate(
+    base::Time time_begin,
+    base::Time time_end,
+    const net::CookieStore::CookiePredicate& predicate,
+    NSHTTPCookie* cookie,
+    base::Time creation_time) {
+  if (predicate.is_null())
+    return false;
+  CanonicalCookie canonical_cookie =
+      CanonicalCookieFromSystemCookie(cookie, creation_time);
+  return IsCookieCreatedBetween(time_begin, time_end, cookie, creation_time) &&
+         predicate.Run(canonical_cookie);
 }
 
 // Adds cookies in |cookies| with name |name| to |filtered|.
@@ -687,10 +690,10 @@ void CookieStoreIOS::DeleteAllCreatedBetweenAsync(
   }
 }
 
-void CookieStoreIOS::DeleteAllCreatedBetweenForHostAsync(
-    const base::Time delete_begin,
-    const base::Time delete_end,
-    const GURL& url,
+void CookieStoreIOS::DeleteAllCreatedBetweenWithPredicateAsync(
+    const base::Time& delete_begin,
+    const base::Time& delete_end,
+    const CookiePredicate& predicate,
     const DeleteCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -699,19 +702,19 @@ void CookieStoreIOS::DeleteAllCreatedBetweenForHostAsync(
 
   switch (synchronization_state_) {
     case NOT_SYNCHRONIZED:
-      cookie_monster_->DeleteAllCreatedBetweenForHostAsync(
-          delete_begin, delete_end, url, WrapDeleteCallback(callback));
+      cookie_monster_->DeleteAllCreatedBetweenWithPredicateAsync(
+          delete_begin, delete_end, predicate, WrapDeleteCallback(callback));
       break;
     case SYNCHRONIZING:
       tasks_pending_synchronization_.push_back(
-          base::Bind(&CookieStoreIOS::DeleteAllCreatedBetweenForHostAsync,
-                     weak_factory_.GetWeakPtr(), delete_begin, delete_end, url,
-                     WrapDeleteCallback(callback)));
+          base::Bind(&CookieStoreIOS::DeleteAllCreatedBetweenWithPredicateAsync,
+                     weak_factory_.GetWeakPtr(), delete_begin, delete_end,
+                     predicate, WrapDeleteCallback(callback)));
       break;
     case SYNCHRONIZED:
-      NSString* host = base::SysUTF8ToNSString(url.host());
-      CookieFilterFunction filter = base::Bind(IsCookieCreatedBetweenForHost,
-                                               delete_begin, delete_end, host);
+      CookieFilterFunction filter =
+          base::Bind(IsCookieCreatedBetweenWithPredicate, delete_begin,
+                     delete_end, predicate);
       DeleteCookiesWithFilter(filter, callback);
       break;
   }

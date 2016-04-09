@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -28,6 +29,7 @@
 #include "content/public/browser/session_storage_usage_info.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -37,6 +39,11 @@
 namespace content {
 
 namespace {
+
+bool DoesCookieMatchHost(const std::string& host,
+                         const net::CanonicalCookie& cookie) {
+  return cookie.IsHostCookie() && cookie.IsDomainMatch(host);
+}
 
 void OnClearedCookies(const base::Closure& callback, int num_deleted) {
   // The final callback needs to happen from UI thread.
@@ -65,10 +72,13 @@ void ClearCookiesOnIOThread(
         end,
         base::Bind(&OnClearedCookies, callback));
   } else {
-    cookie_store->DeleteAllCreatedBetweenForHostAsync(
-        begin,
-        end,
-        storage_origin, base::Bind(&OnClearedCookies, callback));
+    // TODO(mkwst): It's not clear whether removing host cookies is the correct
+    // behavior. We might want to remove all domain-matching cookies instead.
+    // Also, this code path may be dead anyways.
+    cookie_store->DeleteAllCreatedBetweenWithPredicateAsync(
+        begin, end,
+        StoragePartitionImpl::CreatePredicateForHostCookies(storage_origin),
+        base::Bind(&OnClearedCookies, callback));
   }
 }
 
@@ -219,6 +229,12 @@ int StoragePartitionImpl::GenerateQuotaClientMask(uint32_t remove_mask) {
     quota_client_mask |= storage::QuotaClient::kServiceWorkerCache;
 
   return quota_client_mask;
+}
+
+// static
+net::CookieStore::CookiePredicate
+StoragePartitionImpl::CreatePredicateForHostCookies(const GURL& url) {
+  return base::Bind(&DoesCookieMatchHost, url.host());
 }
 
 // Helper for deleting quota managed data from a partition.
