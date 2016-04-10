@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from core import perf_benchmark
+from telemetry import benchmark
 from telemetry.timeline import tracing_category_filter
 from telemetry.web_perf import timeline_based_measurement
 import page_sets
@@ -36,7 +37,8 @@ class SystemHealthTop25(_SystemHealthBenchmark):
   def Name(cls):
     return 'system_health.top25'
 
-
+# crbug.com/601953
+@benchmark.Disabled('android')
 class SystemHealthKeyMobileSites(_SystemHealthBenchmark):
   page_set = page_sets.KeyMobileSitesPageSet
 
