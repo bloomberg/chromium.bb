@@ -101,8 +101,8 @@ class Surface : public aura::Window,
   // Returns true if surface is in synchronized mode.
   bool IsSynchronized() const;
 
-  // Returns the input bounds of the surface.
-  gfx::Rect GetInputBounds() const;
+  // Returns the bounds of the current input region of surface.
+  gfx::Rect GetHitTestBounds() const;
 
   // Returns true if |rect| intersects this surface's bounds.
   bool HitTestRect(const gfx::Rect& rect) const;

@@ -378,11 +378,15 @@ void ShellSurface::OnSurfaceCommit() {
   if (widget_) {
     UpdateWidgetBounds();
 
-    // Only allow the shelf to recognize this window if the input bounds
+    gfx::Point surface_origin = GetSurfaceOrigin();
+    gfx::Rect hit_test_bounds =
+        surface_->GetHitTestBounds() + surface_origin.OffsetFromOrigin();
+
+    // Only allow the shelf to recognize this window if the hit-test bounds
     // contains the widget bounds. This prevents shaped windows that might
     // only occupy a small area of the widget from dimming the shelf when
     // maximized.
-    bool ignored_by_shelf = !surface_->GetInputBounds().Contains(
+    bool ignored_by_shelf = !hit_test_bounds.Contains(
         gfx::Rect(widget_->GetNativeWindow()->bounds().size()));
 
     // Update state and shelf visibility if |ignored_by_shelf| changed.
@@ -394,8 +398,7 @@ void ShellSurface::OnSurfaceCommit() {
     }
 
     // Update surface bounds.
-    surface_->SetBounds(
-        gfx::Rect(GetSurfaceOrigin(), surface_->layer()->size()));
+    surface_->SetBounds(gfx::Rect(surface_origin, surface_->layer()->size()));
 
     // Show widget if not already visible.
     if (!widget_->IsClosed() && !widget_->IsVisible())

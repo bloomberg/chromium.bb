@@ -416,12 +416,15 @@ void Surface::CommitSurfaceHierarchy() {
   }
 }
 
-gfx::Rect Surface::GetInputBounds() const {
-  return gfx::SkIRectToRect(input_region_.getBounds());
-}
-
 bool Surface::IsSynchronized() const {
   return delegate_ ? delegate_->IsSurfaceSynchronized() : false;
+}
+
+gfx::Rect Surface::GetHitTestBounds() const {
+  SkIRect bounds = input_region_.getBounds();
+  if (!bounds.intersect(gfx::RectToSkIRect(gfx::Rect(layer()->size()))))
+    return gfx::Rect();
+  return gfx::SkIRectToRect(bounds);
 }
 
 bool Surface::HitTestRect(const gfx::Rect& rect) const {
