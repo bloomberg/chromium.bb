@@ -1453,7 +1453,7 @@ bool PaintLayerScrollableArea::visualViewportSuppliesScrollbars() const
     if (!frame || !frame->isMainFrame() || !frame->settings())
         return false;
 
-    return frame->settings()->viewportMetaEnabled();
+    return frame->settings()->viewportEnabled();
 }
 
 Widget* PaintLayerScrollableArea::getWidget()

@@ -49,6 +49,7 @@ void PopulateFixedRendererPreferences(RendererPreferences* prefs) {
 void PopulateFixedWebPreferences(WebPreferences* web_prefs) {
   web_prefs->shrinks_standalone_images_to_fit = false;
   web_prefs->should_clear_document_background = false;
+  web_prefs->viewport_meta_enabled = true;
 }
 
 const void* const kAwSettingsUserDataKey = &kAwSettingsUserDataKey;

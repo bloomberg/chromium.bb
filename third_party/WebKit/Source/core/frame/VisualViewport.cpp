@@ -485,7 +485,7 @@ void VisualViewport::registerLayersWithTreeView(WebLayerTreeView* layerTreeView)
 
 bool VisualViewport::visualViewportSuppliesScrollbars() const
 {
-    return frameHost().settings().viewportMetaEnabled();
+    return frameHost().settings().viewportEnabled();
 }
 
 bool VisualViewport::scrollAnimatorEnabled() const

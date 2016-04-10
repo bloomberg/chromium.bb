@@ -514,6 +514,7 @@ class CONTENT_EXPORT WebContentsImpl
   FrameTree* GetFrameTree() override;
   void SetIsVirtualKeyboardRequested(bool requested) override;
   bool IsVirtualKeyboardRequested() override;
+  bool IsOverridingUserAgent() override;
 
   // NavigatorDelegate ---------------------------------------------------------
 
@@ -701,6 +702,8 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Unsets the currently showing interstitial.
   void DetachInterstitialPage() override;
+
+  void UpdateOverridingUserAgent() override;
 
   // Unpause the throbber if it was paused.
   void DidProceedOnInterstitial() override;

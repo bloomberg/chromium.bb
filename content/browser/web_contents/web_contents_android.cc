@@ -240,7 +240,7 @@ bool WebContentsAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-WebContentsAndroid::WebContentsAndroid(WebContents* web_contents)
+WebContentsAndroid::WebContentsAndroid(WebContentsImpl* web_contents)
     : web_contents_(web_contents),
       navigation_controller_(&(web_contents->GetController())),
       synchronous_compositor_client_(nullptr),

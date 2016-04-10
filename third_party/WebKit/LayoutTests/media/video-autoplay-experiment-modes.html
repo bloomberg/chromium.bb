@@ -170,6 +170,7 @@ function checkElementStatus(element)
 function runOneConfig(spec)
 {
     internals.settings.setAutoplayExperimentMode(spec.experimentType);
+    internals.settings.setViewportMetaEnabled(true);
 
     // Create, configure, and attach a media element.
     var element = document.createElement(spec.elementType);

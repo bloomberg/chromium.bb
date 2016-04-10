@@ -492,9 +492,10 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
 
   prefs.number_of_cpu_cores = base::SysInfo::NumberOfProcessors();
 
-  prefs.viewport_enabled =
-      command_line.HasSwitch(switches::kEnableViewport) ||
-      prefs.viewport_meta_enabled;
+  prefs.viewport_enabled = command_line.HasSwitch(switches::kEnableViewport);
+
+  if (delegate_ && delegate_->IsOverridingUserAgent())
+    prefs.viewport_meta_enabled = false;
 
   prefs.main_frame_resizes_are_orientation_changes =
       command_line.HasSwitch(switches::kMainFrameResizesAreOrientationChanges);

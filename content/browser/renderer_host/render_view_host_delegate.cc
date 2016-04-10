@@ -44,4 +44,8 @@ bool RenderViewHostDelegate::IsVirtualKeyboardRequested() {
   return false;
 }
 
+bool RenderViewHostDelegate::IsOverridingUserAgent() {
+  return false;
+}
+
 }  // namespace content

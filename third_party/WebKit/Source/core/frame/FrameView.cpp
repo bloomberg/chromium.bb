@@ -2994,7 +2994,7 @@ void FrameView::removeChild(Widget* child)
 
 bool FrameView::visualViewportSuppliesScrollbars() const
 {
-    return m_frame->isMainFrame() && m_frame->settings() && m_frame->settings()->viewportMetaEnabled();
+    return m_frame->isMainFrame() && m_frame->settings() && m_frame->settings()->viewportEnabled();
 }
 
 AXObjectCache* FrameView::axObjectCache() const

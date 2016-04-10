@@ -72,6 +72,8 @@ class NavigationControllerDelegate {
       InterstitialPageImpl* interstitial_page) = 0;
   virtual void DidProceedOnInterstitial() = 0;
   virtual void DetachInterstitialPage() = 0;
+
+  virtual void UpdateOverridingUserAgent() = 0;
 };
 
 }  // namespace content

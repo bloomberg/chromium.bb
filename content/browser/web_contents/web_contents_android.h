@@ -22,7 +22,7 @@
 namespace content {
 
 class SynchronousCompositorClient;
-class WebContents;
+class WebContentsImpl;
 
 // Android wrapper around WebContents that provides safer passage from java and
 // back to native and provides java with a means of communicating with its
@@ -32,10 +32,10 @@ class CONTENT_EXPORT WebContentsAndroid
  public:
   static bool Register(JNIEnv* env);
 
-  explicit WebContentsAndroid(WebContents* web_contents);
+  explicit WebContentsAndroid(WebContentsImpl* web_contents);
   ~WebContentsAndroid() override;
 
-  WebContents* web_contents() const { return web_contents_; }
+  WebContentsImpl* web_contents() const { return web_contents_; }
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
@@ -201,7 +201,7 @@ class CONTENT_EXPORT WebContentsAndroid
       const SkBitmap& bitmap,
       ReadbackResponse response);
 
-  WebContents* web_contents_;
+  WebContentsImpl* web_contents_;
   NavigationControllerAndroid navigation_controller_;
   base::android::ScopedJavaGlobalRef<jobject> obj_;
   SynchronousCompositorClient* synchronous_compositor_client_;

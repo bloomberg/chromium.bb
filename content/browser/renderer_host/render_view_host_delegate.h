@@ -237,6 +237,10 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   virtual void SetIsVirtualKeyboardRequested(bool requested) {}
   virtual bool IsVirtualKeyboardRequested();
 
+  // Whether the user agent is overridden using the Chrome for Android "Request
+  // Desktop Site" feature.
+  virtual bool IsOverridingUserAgent();
+
  protected:
   virtual ~RenderViewHostDelegate() {}
 };

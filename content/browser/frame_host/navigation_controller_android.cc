@@ -9,9 +9,9 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "jni/NavigationControllerImpl_jni.h"
 #include "net/base/data_url.h"
@@ -76,7 +76,7 @@ bool NavigationControllerAndroid::Register(JNIEnv* env) {
 }
 
 NavigationControllerAndroid::NavigationControllerAndroid(
-    NavigationController* navigation_controller)
+    NavigationControllerImpl* navigation_controller)
     : navigation_controller_(navigation_controller) {
   JNIEnv* env = AttachCurrentThread();
   obj_.Reset(env,
@@ -355,6 +355,7 @@ void NavigationControllerAndroid::SetUseDesktopUserAgent(
 
   // Set the flag in the NavigationEntry.
   entry->SetIsOverridingUserAgent(enabled);
+  navigation_controller_->delegate()->UpdateOverridingUserAgent();
 
   // Send the override to the renderer.
   if (reload_on_state_change) {

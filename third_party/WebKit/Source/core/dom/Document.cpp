@@ -3179,6 +3179,9 @@ void Document::setViewportDescription(const ViewportDescription& viewportDescrip
     if (viewportDescription == m_viewportDescription)
         return;
 
+    if (settings() && !settings()->viewportMetaEnabled() && viewportDescription.isLegacyViewportType())
+        return;
+
     // The UA-defined min-width is used by the processing of legacy meta tags.
     if (!viewportDescription.isSpecifiedByAuthor())
         m_viewportDefaultMinWidth = viewportDescription.minWidth;
