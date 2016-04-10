@@ -18,6 +18,7 @@ See go/cros-gs-cleanup-design for an overview.
 from __future__ import print_function
 
 import datetime
+import multiprocessing
 
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
@@ -59,9 +60,12 @@ def Examine(ctx, dryrun, expired_cutoff, candidates):
     expired_cutoff: datetime.datetime of cutoff for expiring candidates.
     candidates: Iterable of gs.GSListResult objects.
   """
+  # Scale our processes with CPUs, but overload since we mostly block on
+  # external calls.
+  processes = multiprocessing.cpu_count() * 5
   with parallel.BackgroundTaskRunner(purge_lib.ExpandAndExpire,
                                      ctx, dryrun, expired_cutoff,
-                                     processes=40) as expire_queue:
+                                     processes=processes) as expire_queue:
     for candidate in candidates:
       expire_queue.put((candidate,))
 
