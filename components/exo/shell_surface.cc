@@ -379,22 +379,28 @@ void ShellSurface::OnSurfaceCommit() {
     UpdateWidgetBounds();
 
     gfx::Point surface_origin = GetSurfaceOrigin();
-    gfx::Rect hit_test_bounds =
-        surface_->GetHitTestBounds() + surface_origin.OffsetFromOrigin();
 
-    // Only allow the shelf to recognize this window if the hit-test bounds
-    // contains the widget bounds. This prevents shaped windows that might
-    // only occupy a small area of the widget from dimming the shelf when
-    // maximized.
-    bool ignored_by_shelf = !hit_test_bounds.Contains(
-        gfx::Rect(widget_->GetNativeWindow()->bounds().size()));
+    // Determine if window should be ignored by shelf if all configure requests
+    // have been acknowledged.
+    if (pending_configs_.empty()) {
+      gfx::Rect hit_test_bounds =
+          surface_->GetHitTestBounds() + surface_origin.OffsetFromOrigin();
 
-    // Update state and shelf visibility if |ignored_by_shelf| changed.
-    ash::wm::WindowState* window_state =
-        ash::wm::GetWindowState(widget_->GetNativeWindow());
-    if (ignored_by_shelf != window_state->ignored_by_shelf()) {
-      window_state->set_ignored_by_shelf(ignored_by_shelf);
-      ash::Shell::GetInstance()->UpdateShelfVisibility();
+      // When maximized, only allow the shelf to recognize this window if the
+      // hit-test bounds contains the widget bounds. This prevents shaped
+      // windows that might only occupy a small area of the widget from dimming
+      // the shelf when maximized.
+      bool ignored_by_shelf = widget_->IsMaximized() &&
+                              !hit_test_bounds.Contains(gfx::Rect(
+                                  widget_->GetNativeWindow()->bounds().size()));
+
+      // Update state and shelf visibility if |ignored_by_shelf| changed.
+      ash::wm::WindowState* window_state =
+          ash::wm::GetWindowState(widget_->GetNativeWindow());
+      if (ignored_by_shelf != window_state->ignored_by_shelf()) {
+        window_state->set_ignored_by_shelf(ignored_by_shelf);
+        ash::Shell::GetInstance()->UpdateShelfVisibility();
+      }
     }
 
     // Update surface bounds.
