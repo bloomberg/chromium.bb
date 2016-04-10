@@ -100,12 +100,9 @@ class CC_EXPORT InputHandler {
     uint32_t main_thread_scrolling_reasons;
   };
 
-  // TODO(ymalik): Remove ANIMATED_WHEEL once it is no longer special cased.
-  // see crbug.com/575019.
   enum ScrollInputType {
     TOUCHSCREEN,
     WHEEL,
-    ANIMATED_WHEEL,
     NON_BUBBLING_GESTURE
   };
 

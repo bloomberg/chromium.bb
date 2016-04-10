@@ -141,7 +141,7 @@ void DidVisibilityChange(LayerTreeHostImpl* id, bool visible) {
 }
 
 bool IsWheelBasedScroll(InputHandler::ScrollInputType type) {
-  return type == InputHandler::WHEEL || type == InputHandler::ANIMATED_WHEEL;
+  return type == InputHandler::WHEEL;
 }
 
 enum ScrollThread { MAIN_THREAD, CC_THREAD };
@@ -2705,9 +2705,9 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
 
   // ScrollAnimated is used for animated wheel scrolls. We find the first layer
   // that can scroll and set up an animation of its scroll offset. Note that
-  // this does not currently go through the scroll customization and viewport
-  // machinery that ScrollBy uses for non-animated wheel scrolls.
-  scroll_status = ScrollBegin(&scroll_state, ANIMATED_WHEEL);
+  // this does not currently go through the scroll customization machinery
+  // that ScrollBy uses for non-animated wheel scrolls.
+  scroll_status = ScrollBegin(&scroll_state, WHEEL);
   scroll_node = scroll_tree.CurrentlyScrollingNode();
   if (scroll_status.thread == SCROLL_ON_IMPL_THREAD) {
     ScrollStateData scroll_state_end_data;
@@ -2799,9 +2799,9 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
 
   // ScrollAnimated is used for animated wheel scrolls. We find the first layer
   // that can scroll and set up an animation of its scroll offset. Note that
-  // this does not currently go through the scroll customization and viewport
-  // machinery that ScrollBy uses for non-animated wheel scrolls.
-  scroll_status = ScrollBegin(&scroll_state, ANIMATED_WHEEL);
+  // this does not currently go through the scroll customization machinery
+  // that ScrollBy uses for non-animated wheel scrolls.
+  scroll_status = ScrollBegin(&scroll_state, WHEEL);
   scroll_node = scroll_tree.CurrentlyScrollingNode();
   if (scroll_status.thread == SCROLL_ON_IMPL_THREAD) {
     gfx::Vector2dF pending_delta = scroll_delta;
