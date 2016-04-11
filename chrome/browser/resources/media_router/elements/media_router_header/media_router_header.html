@@ -7,12 +7,13 @@
   <link rel="import" type="css" href="media_router_header.css">
   <template>
     <paper-toolbar id="header-toolbar" class$="[[view]]">
-      <div id="back-button-container">
-        <paper-icon-button id="back-button" icon="[[arrowDropIcon_]]"
-            on-tap="onBackButtonClick_" title="[[backButtonTitle_]]"
-            hidden$="[[computeBackButtonHidden_(view)]]">
-        </paper-icon-button>
-      </div>
+      <template is="dom-if" if="[[computeBackButtonShown_(view)]]">
+        <div id="back-button-container">
+          <paper-icon-button id="back-button" icon="[[arrowDropIcon_]]"
+              on-tap="onBackButtonClick_" title="[[backButtonTitle_]]">
+          </paper-icon-button>
+        </div>
+      </template>
       <div id="header-and-arrow-container" on-tap="onHeaderOrArrowClick_">
         <span id="header-text" title="[[tooltip]]">
             [[headingText]]</span>

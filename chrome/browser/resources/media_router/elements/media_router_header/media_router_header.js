@@ -163,12 +163,12 @@ Polymer({
 
   /**
    * @param {?media_router.MediaRouterView} view The current view.
-   * @return {boolean} Whether or not the back button should be hidden.
+   * @return {boolean} Whether or not the back button should be shown.
    * @private
    */
-  computeBackButtonHidden_: function(view) {
-    return view != media_router.MediaRouterView.ROUTE_DETAILS &&
-        view != media_router.MediaRouterView.FILTER;
+  computeBackButtonShown_: function(view) {
+    return view == media_router.MediaRouterView.ROUTE_DETAILS ||
+        view == media_router.MediaRouterView.FILTER;
   },
 
   /**

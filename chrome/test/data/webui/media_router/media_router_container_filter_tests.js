@@ -130,7 +130,8 @@ cr.define('media_router_container_filter', function() {
         MockInteractions.tap(container.$['sink-search-icon']);
         setTimeout(function() {
           MockInteractions.tap(
-              container.$['container-header'].$['back-button']);
+              container.shadowRoot.getElementById('container-header')
+                  .shadowRoot.getElementById('back-button'));
           checkCurrentView(media_router.MediaRouterView.SINK_LIST);
           done();
         });
@@ -188,7 +189,8 @@ cr.define('media_router_container_filter', function() {
               // Clicking the back button should leave |searchTextOne| in the
               // input but return to the SINK_LIST view.
               MockInteractions.tap(
-                  container.$['container-header'].$['back-button']);
+                  container.shadowRoot.getElementById('container-header')
+                      .shadowRoot.getElementById('back-button'));
               checkElementsVisibleWithId(['container-header',
                                           'sink-search',
                                           'sink-list',
@@ -207,7 +209,8 @@ cr.define('media_router_container_filter', function() {
               // Clicking the back button should leave |searchTextNone| in the
               // input but return to the SINK_LIST view.
               MockInteractions.tap(
-                  container.$['container-header'].$['back-button']);
+                  container.shadowRoot.getElementById('container-header')
+                      .shadowRoot.getElementById('back-button'));
               checkElementsVisibleWithId(['container-header',
                                           'sink-search',
                                           'sink-list',
@@ -272,7 +275,8 @@ cr.define('media_router_container_filter', function() {
           container.$['sink-search-input'].value = searchTextAll;
 
           MockInteractions.tap(
-              container.$['container-header'].$['back-button']);
+              container.shadowRoot.getElementById('container-header')
+                  .shadowRoot.getElementById('back-button'));
           assertEquals(searchTextAll, container.$['sink-search-input'].value);
           done();
         });
@@ -448,7 +452,8 @@ cr.define('media_router_container_filter', function() {
         MockInteractions.tap(container.$['sink-search-icon']);
         setTimeout(function() {
           MockInteractions.tap(
-              container.$['container-header'].$['back-button']);
+              container.shadowRoot.getElementById('container-header')
+                  .shadowRoot.getElementById('back-button'));
           container.removeEventListener('report-filter', expectNoReport);
 
           // Tests that entering text for the first time in filter view reports
@@ -462,7 +467,8 @@ cr.define('media_router_container_filter', function() {
             container.addEventListener('report-filter', expectNoReport);
             container.$['sink-search-input'].value = 'abc';
             MockInteractions.tap(
-                container.$['container-header'].$['back-button']);
+                container.shadowRoot.getElementById('container-header')
+                    .shadowRoot.getElementById('back-button'));
             container.removeEventListener('report-filter', expectNoReport);
 
             // Tests that entering filter view again with text already in the
