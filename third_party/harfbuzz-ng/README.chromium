@@ -1,8 +1,8 @@
 Name: harfbuzz-ng
 Short Name: harfbuzz-ng
 URL: http://harfbuzz.org
-Version: 1.2.1
-Date: 20160222
+Version: 1.2.6
+Date: 20160408
 Security Critical: yes
 License: MIT
 License File: COPYING
@@ -13,20 +13,8 @@ API from the old one.
 
 This copy of harfbuzz is usually updated by downloading the release tarball
 from http://www.freedesktop.org/software/harfbuzz/release/ , removing
-files in src, copying *.h *.hh *.cc (except for hb-uniscribe*) from the
-tarball's src folder over to src, then checking for removed or added files
-and update our build recipes in BUILD.gn and harfbuzz.gyp accordingly, update
-the NEWS file from HarfBuzz' release notes, and bump the version numbers
-in README.chromium.
-
-Local changes:
-    * Custom revert: Change mark strategy back to UNICODE_LATE from
-      GDEF_LATE for the default shaper - contributed by Behdad to unblock
-      the HarfBuzz roll in Blink while the issue about broken quote glyphs
-      in Times New Roman Italic can be resolved in upstream.
-    * Upstream commit ebd7431f824
-      "Partially revert 86c68c7a2c97"
-      in order to fix mark positioning in
-      fast/text/international/arabic-vertical-offset.html
-    * Cherry-pick "Fix FixedVersion::to_int()"
-      https://github.com/behdad/harfbuzz/commit/6dd80fa
+files in src, copying *.h *.hh *.cc (except for hb-uniscribe* and
+hb-directwrite.*) from the tarball's src folder over to src, then checking for
+removed or added files and update our build recipes in BUILD.gn and
+harfbuzz.gyp accordingly, update the NEWS file from HarfBuzz' release notes,
+and bump the version numbers in README.chromium.
