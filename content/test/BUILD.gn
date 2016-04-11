@@ -755,6 +755,13 @@ test("content_unittests") {
     }
   }
 
+  if (enable_webrtc && enable_plugins) {
+    sources += rebase_path(
+            content_tests_gypi_values.content_unittests_plugin_webrtc_sources,
+            ".",
+            "//content")
+  }
+
   if (enable_web_speech) {
     sources +=
         rebase_path(content_tests_gypi_values.content_unittests_speech_sources,
