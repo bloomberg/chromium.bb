@@ -19,6 +19,7 @@
     # made to remove these defines as soon as practical. This is in contrast to
     # defines in SkUserConfig.h which are normally more permanent.
     'chromium_skia_defines': [
+      'SK_VERY_LEGACY_CREATE_TYPEFACE',
     ],
   },
 }
