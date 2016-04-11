@@ -4,12 +4,12 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_analyzer_win.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
@@ -54,7 +54,7 @@ class BinaryIntegrityAnalyzerWinTest : public ::testing::Test {
  protected:
   base::FilePath test_data_dir_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<base::ScopedPathOverride> exe_dir_override_;
+  std::unique_ptr<base::ScopedPathOverride> exe_dir_override_;
 };
 
 BinaryIntegrityAnalyzerWinTest::BinaryIntegrityAnalyzerWinTest() {
@@ -104,9 +104,9 @@ TEST_F(BinaryIntegrityAnalyzerWinTest, VerifyBinaryIntegrity) {
   ASSERT_TRUE(base::CopyFile(signed_binary_path, chrome_elf_path));
 
   // Run check on an integral binary.
-  scoped_ptr<MockIncidentReceiver> mock_receiver(
+  std::unique_ptr<MockIncidentReceiver> mock_receiver(
       new StrictMock<MockIncidentReceiver>());
-  scoped_ptr<Incident> incident_to_clear;
+  std::unique_ptr<Incident> incident_to_clear;
   EXPECT_CALL(*mock_receiver, DoClearIncidentForProcess(_))
       .WillOnce(TakeIncident(&incident_to_clear));
 
@@ -119,7 +119,7 @@ TEST_F(BinaryIntegrityAnalyzerWinTest, VerifyBinaryIntegrity) {
   ASSERT_TRUE(EraseFileContent(chrome_elf_path));
 
   mock_receiver.reset(new StrictMock<MockIncidentReceiver>());
-  scoped_ptr<Incident> incident;
+  std::unique_ptr<Incident> incident;
   EXPECT_CALL(*mock_receiver, DoAddIncidentForProcess(_))
       .WillOnce(TakeIncident(&incident));
 
@@ -128,7 +128,7 @@ TEST_F(BinaryIntegrityAnalyzerWinTest, VerifyBinaryIntegrity) {
   // Verify that the cleared and reported incidents have the same key.
   ASSERT_EQ(incident->GetKey(), incident_to_clear->GetKey());
   // Verify that the incident report contains the expected data.
-  scoped_ptr<ClientIncidentReport_IncidentData> incident_data(
+  std::unique_ptr<ClientIncidentReport_IncidentData> incident_data(
       incident->TakePayload());
   ASSERT_TRUE(incident_data->has_binary_integrity());
   ASSERT_TRUE(incident_data->binary_integrity().has_file_basename());

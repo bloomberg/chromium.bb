@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_incident.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
@@ -53,7 +54,8 @@ std::vector<base::FilePath> GetCriticalBinariesPath() {
   return critical_binaries;
 }
 
-void VerifyBinaryIntegrity(scoped_ptr<IncidentReceiver> incident_receiver) {
+void VerifyBinaryIntegrity(
+    std::unique_ptr<IncidentReceiver> incident_receiver) {
   scoped_refptr<BinaryFeatureExtractor> binary_feature_extractor(
       new BinaryFeatureExtractor());
 
@@ -63,7 +65,7 @@ void VerifyBinaryIntegrity(scoped_ptr<IncidentReceiver> incident_receiver) {
     if (!base::PathExists(binary_path))
       continue;
 
-    scoped_ptr<ClientDownloadRequest_SignatureInfo> signature_info(
+    std::unique_ptr<ClientDownloadRequest_SignatureInfo> signature_info(
         new ClientDownloadRequest_SignatureInfo());
 
     base::TimeTicks time_before = base::TimeTicks::Now();
@@ -72,7 +74,7 @@ void VerifyBinaryIntegrity(scoped_ptr<IncidentReceiver> incident_receiver) {
 
     // Only create a report if the signature is untrusted.
     if (!signature_info->trusted()) {
-      scoped_ptr<ClientIncidentReport_IncidentData_BinaryIntegrityIncident>
+      std::unique_ptr<ClientIncidentReport_IncidentData_BinaryIntegrityIncident>
           incident(
               new ClientIncidentReport_IncidentData_BinaryIntegrityIncident());
 
@@ -81,7 +83,7 @@ void VerifyBinaryIntegrity(scoped_ptr<IncidentReceiver> incident_receiver) {
 
       // Send the report.
       incident_receiver->AddIncidentForProcess(
-          make_scoped_ptr(new BinaryIntegrityIncident(std::move(incident))));
+          base::WrapUnique(new BinaryIntegrityIncident(std::move(incident))));
     } else {
       // The binary is integral, remove previous report so that next incidents
       // for the binary will be reported.

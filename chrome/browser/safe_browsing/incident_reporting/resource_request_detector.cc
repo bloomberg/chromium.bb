@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/incident_reporting/resource_request_incident.h"
@@ -61,7 +62,7 @@ class ResourceRequestDetectorClient
   using ResourceRequestIncidentMessage =
       ClientIncidentReport::IncidentData::ResourceRequestIncident;
 
-  typedef base::Callback<void(scoped_ptr<ResourceRequestIncidentMessage>)>
+  typedef base::Callback<void(std::unique_ptr<ResourceRequestIncidentMessage>)>
       OnResultCallback;
 
   ResourceRequestDetectorClient(
@@ -100,7 +101,7 @@ class ResourceRequestDetectorClient
                                 SBThreatType threat_type,
                                 const std::string& threat_hash) override {
     if (threat_type == SB_THREAT_TYPE_BLACKLISTED_RESOURCE) {
-      scoped_ptr<ResourceRequestIncidentMessage> incident_data(
+      std::unique_ptr<ResourceRequestIncidentMessage> incident_data(
           new ResourceRequestIncidentMessage());
       incident_data->set_type(ResourceRequestIncidentMessage::TYPE_PATTERN);
       incident_data->set_digest(threat_hash);
@@ -121,12 +122,11 @@ class ResourceRequestDetectorClient
 
 ResourceRequestDetector::ResourceRequestDetector(
     scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
-    scoped_ptr<IncidentReceiver> incident_receiver)
+    std::unique_ptr<IncidentReceiver> incident_receiver)
     : incident_receiver_(std::move(incident_receiver)),
       database_manager_(database_manager),
       allow_null_profile_for_testing_(false),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 ResourceRequestDetector::~ResourceRequestDetector() {
 }
@@ -163,7 +163,7 @@ void ResourceRequestDetector::set_allow_null_profile_for_testing(
 void ResourceRequestDetector::ReportIncidentOnUIThread(
     int render_process_id,
     int render_frame_id,
-    scoped_ptr<ClientIncidentReport_IncidentData_ResourceRequestIncident>
+    std::unique_ptr<ClientIncidentReport_IncidentData_ResourceRequestIncident>
         incident_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -175,8 +175,8 @@ void ResourceRequestDetector::ReportIncidentOnUIThread(
       incident_data->set_origin(host_url.GetOrigin().spec());
 
     incident_receiver_->AddIncidentForProfile(
-        profile,
-        make_scoped_ptr(new ResourceRequestIncident(std::move(incident_data))));
+        profile, base::WrapUnique(
+                     new ResourceRequestIncident(std::move(incident_data))));
   }
 }
 

@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_FEEDBACK_SERVICE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_FEEDBACK_SERVICE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/safe_browsing/download_protection_service.h"
 #include "content/public/browser/download_danger_type.h"
@@ -86,7 +86,7 @@ class DownloadFeedbackService : public base::NonThreadSafe {
 
   // Currently active & pending uploads. The first item is active, remaining
   // items are pending.
-  std::vector<scoped_ptr<DownloadFeedback>> active_feedback_;
+  std::vector<std::unique_ptr<DownloadFeedback>> active_feedback_;
 
   base::WeakPtrFactory<DownloadFeedbackService> weak_ptr_factory_;
 

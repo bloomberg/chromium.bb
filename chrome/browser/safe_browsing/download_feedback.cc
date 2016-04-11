@@ -72,7 +72,7 @@ class DownloadFeedbackImpl : public DownloadFeedback {
   std::string ping_request_;
   std::string ping_response_;
 
-  scoped_ptr<TwoPhaseUploader> uploader_;
+  std::unique_ptr<TwoPhaseUploader> uploader_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFeedbackImpl);
 };

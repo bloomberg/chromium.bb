@@ -5,13 +5,14 @@
 #include "chrome/browser/safe_browsing/incident_reporting/preference_validation_delegate.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 #include "chrome/browser/safe_browsing/incident_reporting/mock_incident_receiver.h"
@@ -29,7 +30,7 @@ using ::testing::WithArg;
 // instance was provided with the expected data.
 class PreferenceValidationDelegateTest : public testing::Test {
  protected:
-  typedef std::vector<scoped_ptr<safe_browsing::Incident>> IncidentVector;
+  typedef std::vector<std::unique_ptr<safe_browsing::Incident>> IncidentVector;
 
   PreferenceValidationDelegateTest()
       : kPrefPath_("atomic.pref"),
@@ -39,7 +40,7 @@ class PreferenceValidationDelegateTest : public testing::Test {
     testing::Test::SetUp();
     invalid_keys_.push_back(std::string("one"));
     invalid_keys_.push_back(std::string("two"));
-    scoped_ptr<safe_browsing::MockIncidentReceiver> receiver(
+    std::unique_ptr<safe_browsing::MockIncidentReceiver> receiver(
         new NiceMock<safe_browsing::MockIncidentReceiver>());
     ON_CALL(*receiver, DoAddIncidentForProfile(IsNull(), _))
         .WillByDefault(WithArg<1>(TakeIncidentToVector(&incidents_)));
@@ -81,10 +82,10 @@ class PreferenceValidationDelegateTest : public testing::Test {
 
   const std::string kPrefPath_;
   IncidentVector incidents_;
-  scoped_ptr<base::Value> null_value_;
+  std::unique_ptr<base::Value> null_value_;
   base::DictionaryValue dict_value_;
   std::vector<std::string> invalid_keys_;
-  scoped_ptr<TrackedPreferenceValidationDelegate> instance_;
+  std::unique_ptr<TrackedPreferenceValidationDelegate> instance_;
 };
 
 // Tests that a NULL value results in an incident with no value.
@@ -93,7 +94,7 @@ TEST_F(PreferenceValidationDelegateTest, NullValue) {
                                           NULL,
                                           PrefHashStoreTransaction::CLEARED,
                                           false /* is_personal */);
-  scoped_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
+  std::unique_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
       incidents_.back()->TakePayload());
   EXPECT_FALSE(incident->tracked_preference().has_atomic_value());
   EXPECT_EQ(
@@ -116,27 +117,28 @@ class PreferenceValidationDelegateValues
     expected_value_ = std::tr1::get<1>(GetParam());
   }
 
-  static scoped_ptr<base::Value> MakeValue(base::Value::Type value_type) {
+  static std::unique_ptr<base::Value> MakeValue(base::Value::Type value_type) {
     using base::Value;
     switch (value_type) {
       case Value::TYPE_NULL:
         return Value::CreateNullValue();
       case Value::TYPE_BOOLEAN:
-        return scoped_ptr<Value>(new base::FundamentalValue(false));
+        return std::unique_ptr<Value>(new base::FundamentalValue(false));
       case Value::TYPE_INTEGER:
-        return scoped_ptr<Value>(new base::FundamentalValue(47));
+        return std::unique_ptr<Value>(new base::FundamentalValue(47));
       case Value::TYPE_DOUBLE:
-        return scoped_ptr<Value>(new base::FundamentalValue(0.47));
+        return std::unique_ptr<Value>(new base::FundamentalValue(0.47));
       case Value::TYPE_STRING:
-        return scoped_ptr<Value>(new base::StringValue("i have a spleen"));
+        return std::unique_ptr<Value>(new base::StringValue("i have a spleen"));
       case Value::TYPE_DICTIONARY: {
-        scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+        std::unique_ptr<base::DictionaryValue> value(
+            new base::DictionaryValue());
         value->SetInteger("twenty-two", 22);
         value->SetInteger("forty-seven", 47);
         return std::move(value);
       }
       case Value::TYPE_LIST: {
-        scoped_ptr<base::ListValue> value(new base::ListValue());
+        std::unique_ptr<base::ListValue> value(new base::ListValue());
         value->AppendInteger(22);
         value->AppendInteger(47);
         return std::move(value);
@@ -144,7 +146,7 @@ class PreferenceValidationDelegateValues
       default:
         ADD_FAILURE() << "unsupported value type " << value_type;
     }
-    return scoped_ptr<Value>();
+    return std::unique_ptr<Value>();
   }
 
   base::Value::Type value_type_;
@@ -157,7 +159,7 @@ TEST_P(PreferenceValidationDelegateValues, Value) {
                                           PrefHashStoreTransaction::CLEARED,
                                           false /* is_personal */);
   ASSERT_EQ(1U, incidents_.size());
-  scoped_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
+  std::unique_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
       incidents_.back()->TakePayload());
   EXPECT_EQ(std::string(expected_value_),
             incident->tracked_preference().atomic_value());
@@ -243,7 +245,7 @@ TEST_P(PreferenceValidationDelegateWithIncident, Atomic) {
   instance_->OnAtomicPreferenceValidation(
       kPrefPath_, null_value_.get(), value_state_, is_personal_);
   ASSERT_EQ(1U, incidents_.size());
-  scoped_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
+  std::unique_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
       incidents_.back()->TakePayload());
   EXPECT_TRUE(incident->has_tracked_preference());
   const safe_browsing::
@@ -265,7 +267,7 @@ TEST_P(PreferenceValidationDelegateWithIncident, Split) {
   instance_->OnSplitPreferenceValidation(
       kPrefPath_, &dict_value_, invalid_keys_, value_state_, is_personal_);
   ASSERT_EQ(1U, incidents_.size());
-  scoped_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
+  std::unique_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
       incidents_.back()->TakePayload());
   EXPECT_TRUE(incident->has_tracked_preference());
   const safe_browsing::

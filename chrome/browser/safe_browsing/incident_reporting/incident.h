@@ -6,10 +6,11 @@
 #define CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_INCIDENT_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace safe_browsing {
 
@@ -57,7 +58,7 @@ class Incident {
   virtual uint32_t ComputeDigest() const = 0;
 
   // Returns the incident's payload.
-  virtual scoped_ptr<ClientIncidentReport_IncidentData> TakePayload();
+  virtual std::unique_ptr<ClientIncidentReport_IncidentData> TakePayload();
 
   // Returns the minimum level of consent required for reporting of the
   // incident.
@@ -74,7 +75,7 @@ class Incident {
   const ClientIncidentReport_IncidentData* payload() const;
 
  private:
-  scoped_ptr<ClientIncidentReport_IncidentData> payload_;
+  std::unique_ptr<ClientIncidentReport_IncidentData> payload_;
 
   DISALLOW_COPY_AND_ASSIGN(Incident);
 };

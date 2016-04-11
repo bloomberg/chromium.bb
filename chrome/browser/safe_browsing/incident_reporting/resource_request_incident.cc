@@ -11,7 +11,7 @@
 namespace safe_browsing {
 
 ResourceRequestIncident::ResourceRequestIncident(
-    scoped_ptr<ClientIncidentReport_IncidentData_ResourceRequestIncident>
+    std::unique_ptr<ClientIncidentReport_IncidentData_ResourceRequestIncident>
         script_request_incident) {
   DCHECK(script_request_incident);
   DCHECK(script_request_incident->has_digest());

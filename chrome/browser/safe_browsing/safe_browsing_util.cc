@@ -15,7 +15,7 @@ namespace safe_browsing {
 
 // SBChunkData -----------------------------------------------------------------
 
-// TODO(shess): Right now this contains a scoped_ptr<ChunkData> so that the
+// TODO(shess): Right now this contains a std::unique_ptr<ChunkData> so that the
 // proto buffer isn't copied all over the place, then these are contained in a
 // ScopedVector for purposes of passing things around between tasks.  This seems
 // convoluted.  Maybe it would make sense to have an overall container class
@@ -24,7 +24,7 @@ namespace safe_browsing {
 SBChunkData::SBChunkData() {
 }
 
-SBChunkData::SBChunkData(scoped_ptr<ChunkData> data)
+SBChunkData::SBChunkData(std::unique_ptr<ChunkData> data)
     : chunk_data_(std::move(data)) {
   DCHECK(chunk_data_.get());
 }
@@ -33,7 +33,7 @@ SBChunkData::~SBChunkData() {
 }
 
 bool SBChunkData::ParseFrom(const unsigned char* data, size_t length) {
-  scoped_ptr<ChunkData> chunk(new ChunkData());
+  std::unique_ptr<ChunkData> chunk(new ChunkData());
   if (!chunk->ParseFromArray(data, length))
     return false;
 

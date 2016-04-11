@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 
 namespace safe_browsing {
@@ -18,8 +19,9 @@ class ClientIncidentReport_IncidentData_BlacklistLoadIncident;
 // An incident representing a module that evades the browser DLL blacklist.
 class BlacklistLoadIncident : public Incident {
  public:
-  explicit BlacklistLoadIncident(scoped_ptr<
-      ClientIncidentReport_IncidentData_BlacklistLoadIncident> blacklist_load);
+  explicit BlacklistLoadIncident(
+      std::unique_ptr<ClientIncidentReport_IncidentData_BlacklistLoadIncident>
+          blacklist_load);
   ~BlacklistLoadIncident() override;
 
   // Incident methods:

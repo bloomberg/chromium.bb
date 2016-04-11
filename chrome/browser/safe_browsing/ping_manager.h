@@ -7,13 +7,13 @@
 
 // A class that reports safebrowsing statistics to Google's SafeBrowsing
 // servers.
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/safe_browsing/protocol_manager_helper.h"
 #include "components/safe_browsing_db/hit_report.h"
 #include "components/safe_browsing_db/util.h"
@@ -57,7 +57,7 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
   void ReportInvalidCertificateChain(const std::string& serialized_report);
 
   void SetCertificateErrorReporterForTesting(
-      scoped_ptr<certificate_reporting::ErrorReporter>
+      std::unique_ptr<certificate_reporting::ErrorReporter>
           certificate_error_reporter);
 
  private:
@@ -97,7 +97,8 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
   Reports safebrowsing_reports_;
 
   // Sends reports of invalid SSL certificate chains.
-  scoped_ptr<certificate_reporting::ErrorReporter> certificate_error_reporter_;
+  std::unique_ptr<certificate_reporting::ErrorReporter>
+      certificate_error_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingPingManager);
 };

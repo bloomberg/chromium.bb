@@ -81,7 +81,7 @@ class ThreatDetailsCacheCollector
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   // The current URLFetcher.
-  scoped_ptr<net::URLFetcher> current_fetch_;
+  std::unique_ptr<net::URLFetcher> current_fetch_;
 
   // Returns the resource from resources_ that corresponds to |url|
   ClientSafeBrowsingReportRequest::Resource* GetResource(

@@ -17,21 +17,22 @@ class MockIncidentReceiver : public IncidentReceiver {
   MockIncidentReceiver();
   ~MockIncidentReceiver();
 
-  MOCK_METHOD2(DoAddIncidentForProfile, void(Profile*, scoped_ptr<Incident>*));
-  MOCK_METHOD1(DoAddIncidentForProcess, void(scoped_ptr<Incident>*));
-  MOCK_METHOD1(DoClearIncidentForProcess, void(scoped_ptr<Incident>*));
+  MOCK_METHOD2(DoAddIncidentForProfile,
+               void(Profile*, std::unique_ptr<Incident>*));
+  MOCK_METHOD1(DoAddIncidentForProcess, void(std::unique_ptr<Incident>*));
+  MOCK_METHOD1(DoClearIncidentForProcess, void(std::unique_ptr<Incident>*));
 
  protected:
   void AddIncidentForProfile(Profile* profile,
-                             scoped_ptr<Incident> incident) override {
+                             std::unique_ptr<Incident> incident) override {
     DoAddIncidentForProfile(profile, &incident);
   }
 
-  void AddIncidentForProcess(scoped_ptr<Incident> incident) override {
+  void AddIncidentForProcess(std::unique_ptr<Incident> incident) override {
     DoAddIncidentForProcess(&incident);
   }
 
-  void ClearIncidentForProcess(scoped_ptr<Incident> incident) override {
+  void ClearIncidentForProcess(std::unique_ptr<Incident> incident) override {
     DoClearIncidentForProcess(&incident);
   }
 };

@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/safe_browsing/local_database_manager.h"
+
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
-#include "chrome/browser/safe_browsing/local_database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -52,7 +53,7 @@ bool LocalDatabaseManagerTest::RunSBHashTest(
     const std::vector<SBThreatType>& expected_threats,
     const std::vector<std::string>& result_lists) {
   const SBFullHash same_full_hash = {};
-  scoped_ptr<LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck> check(
+  std::unique_ptr<LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck> check(
       new LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck(
           std::vector<GURL>(), std::vector<SBFullHash>(1, same_full_hash), NULL,
           list_type, expected_threats));
@@ -70,10 +71,10 @@ bool LocalDatabaseManagerTest::RunUrlTest(
     const GURL& url, ListType list_type,
     const std::vector<SBThreatType>& expected_threats,
     const std::vector<HostListPair>& host_list_results) {
-  scoped_ptr<LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck> check(
+  std::unique_ptr<LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck> check(
       new LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck(
-          std::vector<GURL>(1, url), std::vector<SBFullHash>(), NULL,
-          list_type, expected_threats));
+          std::vector<GURL>(1, url), std::vector<SBFullHash>(), NULL, list_type,
+          expected_threats));
   std::vector<SBFullHashResult> full_hash_results;
   for (const auto& host_list : host_list_results) {
     SBFullHashResult hash_result =

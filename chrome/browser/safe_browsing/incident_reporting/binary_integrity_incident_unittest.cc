@@ -5,10 +5,12 @@
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_incident.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,8 +18,8 @@ namespace safe_browsing {
 
 namespace {
 
-scoped_ptr<Incident> MakeIncident(const char* file_basename) {
-  scoped_ptr<ClientIncidentReport_IncidentData_BinaryIntegrityIncident>
+std::unique_ptr<Incident> MakeIncident(const char* file_basename) {
+  std::unique_ptr<ClientIncidentReport_IncidentData_BinaryIntegrityIncident>
       incident(new ClientIncidentReport_IncidentData_BinaryIntegrityIncident);
 
   incident->set_file_basename(file_basename);
@@ -38,7 +40,7 @@ scoped_ptr<Incident> MakeIncident(const char* file_basename) {
     element->set_certificate(certificates[i], arraysize(certificates[i]));
   }
 
-  return make_scoped_ptr(new BinaryIntegrityIncident(std::move(incident)));
+  return base::WrapUnique(new BinaryIntegrityIncident(std::move(incident)));
 }
 
 }  // namespace

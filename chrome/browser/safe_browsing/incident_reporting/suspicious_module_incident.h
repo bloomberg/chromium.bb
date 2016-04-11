@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 
 namespace safe_browsing {
@@ -20,7 +21,8 @@ class ClientIncidentReport_IncidentData_SuspiciousModuleIncident;
 class SuspiciousModuleIncident : public Incident {
  public:
   explicit SuspiciousModuleIncident(
-      scoped_ptr<ClientIncidentReport_IncidentData_SuspiciousModuleIncident>
+      std::unique_ptr<
+          ClientIncidentReport_IncidentData_SuspiciousModuleIncident>
           suspicious_modules);
   ~SuspiciousModuleIncident() override;
 

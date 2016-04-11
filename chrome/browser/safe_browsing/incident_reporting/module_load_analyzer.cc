@@ -39,7 +39,7 @@ void RegisterModuleLoadAnalysis(
 #if !defined(OS_WIN)
 void VerifyModuleLoadState(
     const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
-    scoped_ptr<IncidentReceiver> incident_receiver) {}
+    std::unique_ptr<IncidentReceiver> incident_receiver) {}
 #endif  // !defined(OS_WIN)
 
 }  // namespace safe_browsing

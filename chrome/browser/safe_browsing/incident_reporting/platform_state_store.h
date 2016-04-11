@@ -9,9 +9,10 @@
 #define CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_PLATFORM_STATE_STORE_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 
 // Certain platforms provide their own storage of protobuf-serialized prune
@@ -33,7 +34,7 @@ namespace platform_state_store {
 // Loads the platform-specific storage for |profile|. Returns null if there is
 // no such storage for the current platform or in case of error; otherwise, a
 // (possibly empty) dictionary.
-scoped_ptr<base::DictionaryValue> Load(Profile* profile);
+std::unique_ptr<base::DictionaryValue> Load(Profile* profile);
 
 // Stores the state for |profile| in |incidents_sent| into platform-specific
 // storage if there is such for the current platform.

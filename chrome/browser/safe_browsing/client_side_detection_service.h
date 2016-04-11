@@ -14,6 +14,7 @@
 #define CHROME_BROWSER_SAFE_BROWSING_CLIENT_SIDE_DETECTION_SERVICE_H_
 
 #include <map>
+#include <memory>
 #include <queue>
 #include <set>
 #include <string>
@@ -25,7 +26,6 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/client_side_model_loader.h"
@@ -228,8 +228,8 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
 
   // We load two models: One for stadard Safe Browsing profiles,
   // and one for those opted into extended reporting.
-  scoped_ptr<ModelLoader> model_loader_standard_;
-  scoped_ptr<ModelLoader> model_loader_extended_;
+  std::unique_ptr<ModelLoader> model_loader_standard_;
+  std::unique_ptr<ModelLoader> model_loader_extended_;
 
   // Map of client report phishing request to the corresponding callback that
   // has to be invoked when the request is done.

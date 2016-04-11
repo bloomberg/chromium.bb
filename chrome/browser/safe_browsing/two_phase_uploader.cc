@@ -63,7 +63,7 @@ class TwoPhaseUploaderImpl : public net::URLFetcherDelegate,
   ProgressCallback progress_callback_;
   FinishCallback finish_callback_;
 
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(TwoPhaseUploaderImpl);
 };

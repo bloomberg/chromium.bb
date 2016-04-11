@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_MODULE_LOAD_ANALYZER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_MODULE_LOAD_ANALYZER_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace safe_browsing {
 
@@ -22,7 +23,7 @@ void RegisterModuleLoadAnalysis(
 // service will decide when to start the analysis.
 void VerifyModuleLoadState(
     const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
-    scoped_ptr<IncidentReceiver> incident_receiver);
+    std::unique_ptr<IncidentReceiver> incident_receiver);
 
 }  // namespace safe_browsing
 

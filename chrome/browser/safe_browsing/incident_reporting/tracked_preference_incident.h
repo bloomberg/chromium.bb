@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 
 namespace safe_browsing {
@@ -20,7 +21,8 @@ class ClientIncidentReport_IncidentData_TrackedPreferenceIncident;
 class TrackedPreferenceIncident : public Incident {
  public:
   TrackedPreferenceIncident(
-      scoped_ptr<ClientIncidentReport_IncidentData_TrackedPreferenceIncident>
+      std::unique_ptr<
+          ClientIncidentReport_IncidentData_TrackedPreferenceIncident>
           tracked_preference,
       bool is_personal);
   ~TrackedPreferenceIncident() override;
@@ -29,7 +31,7 @@ class TrackedPreferenceIncident : public Incident {
   IncidentType GetType() const override;
   std::string GetKey() const override;
   uint32_t ComputeDigest() const override;
-  scoped_ptr<ClientIncidentReport_IncidentData> TakePayload() override;
+  std::unique_ptr<ClientIncidentReport_IncidentData> TakePayload() override;
 
  private:
   bool is_personal_;

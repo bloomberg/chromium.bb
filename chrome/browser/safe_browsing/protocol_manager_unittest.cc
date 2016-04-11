@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/safe_browsing/protocol_manager.h"
+
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/chunk.pb.h"
-#include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "components/safe_browsing_db/util.h"
 #include "google_apis/google_api_keys.h"
@@ -80,7 +81,7 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
     }
   }
 
-  scoped_ptr<SafeBrowsingProtocolManager> CreateProtocolManager(
+  std::unique_ptr<SafeBrowsingProtocolManager> CreateProtocolManager(
       SafeBrowsingProtocolManagerDelegate* delegate) {
     SafeBrowsingProtocolConfig config;
     config.client_name = kClient;
@@ -89,7 +90,7 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
     config.backup_http_error_url_prefix = kBackupHttpUrlPrefix;
     config.backup_network_error_url_prefix = kBackupNetworkUrlPrefix;
     config.version = kAppVer;
-    return scoped_ptr<SafeBrowsingProtocolManager>(
+    return std::unique_ptr<SafeBrowsingProtocolManager>(
         SafeBrowsingProtocolManager::Create(delegate, NULL, config));
   }
 
@@ -124,7 +125,7 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
 
 // Ensure that we respect section 5 of the SafeBrowsing protocol specification.
 TEST_F(SafeBrowsingProtocolManagerTest, TestBackOffTimes) {
-  scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
 
   pm->next_update_interval_ = TimeDelta::FromSeconds(1800);
   ASSERT_TRUE(pm->back_off_fuzz_ >= 0.0 && pm->back_off_fuzz_ <= 1.0);
@@ -173,7 +174,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestBackOffTimes) {
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestChunkStrings) {
-  scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
 
   // Add and Sub chunks.
   SBListChunkRanges phish(kDefaultPhishList);
@@ -201,7 +202,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestChunkStrings) {
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashBackOffTimes) {
-  scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
 
   // No errors or back off time yet.
   EXPECT_EQ(0U, pm->gethash_error_count_);
@@ -253,7 +254,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashBackOffTimes) {
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashUrl) {
-  scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
 
   EXPECT_EQ(
       "https://prefix.com/foo/gethash?client=unittest&appver=1.0&"
@@ -270,7 +271,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashUrl) {
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestUpdateUrl) {
-  scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
 
   EXPECT_EQ(
       "https://prefix.com/foo/downloads?client=unittest&appver=1.0&"
@@ -287,7 +288,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestUpdateUrl) {
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestNextChunkUrl) {
-  scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
 
   std::string url_partial = "localhost:1234/foo/bar?foo";
   std::string url_http_full = "http://localhost:1234/foo/bar?foo";
@@ -326,16 +327,18 @@ class MockProtocolDelegate : public SafeBrowsingProtocolManagerDelegate {
   MOCK_METHOD0(ResetDatabase, void());
   MOCK_METHOD1(GetChunks, void(GetChunksCallback));
 
-  // gmock does not work with scoped_ptr<> at this time.  Add a local method to
+  // gmock does not work with std::unique_ptr<> at this time.  Add a local
+  // method to
   // mock, then call that from an override.  Beware of object ownership when
   // making changes here.
   MOCK_METHOD3(AddChunksRaw,
                void(const std::string& lists,
-                    const std::vector<scoped_ptr<SBChunkData>>& chunks,
+                    const std::vector<std::unique_ptr<SBChunkData>>& chunks,
                     AddChunksCallback));
-  void AddChunks(const std::string& list,
-                 scoped_ptr<std::vector<scoped_ptr<SBChunkData>>> chunks,
-                 AddChunksCallback callback) override {
+  void AddChunks(
+      const std::string& list,
+      std::unique_ptr<std::vector<std::unique_ptr<SBChunkData>>> chunks,
+      AddChunksCallback callback) override {
     AddChunksRaw(list, *chunks, callback);
   }
 
@@ -343,7 +346,7 @@ class MockProtocolDelegate : public SafeBrowsingProtocolManagerDelegate {
   MOCK_METHOD1(DeleteChunksRaw,
                void(const std::vector<SBChunkDelete>& chunk_deletes));
   void DeleteChunks(
-      scoped_ptr<std::vector<SBChunkDelete>> chunk_deletes) override {
+      std::unique_ptr<std::vector<SBChunkDelete>> chunk_deletes) override {
     DeleteChunksRaw(*chunk_deletes);
   }
 };
@@ -364,7 +367,7 @@ void InvokeGetChunksCallback(
 // SafeBrowsingProtocolManagerDelegate contract.
 void HandleAddChunks(
     const std::string& unused_list,
-    const std::vector<scoped_ptr<SBChunkData>>& chunks,
+    const std::vector<std::unique_ptr<SBChunkData>>& chunks,
     SafeBrowsingProtocolManagerDelegate::AddChunksCallback callback) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
       base::ThreadTaskRunnerHandle::Get());
@@ -390,7 +393,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, ProblemAccessingDatabase) {
                                     true)));
   EXPECT_CALL(test_delegate, UpdateFinished(false)).Times(1);
 
-  scoped_ptr<SafeBrowsingProtocolManager> pm(
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(
       CreateProtocolManager(&test_delegate));
 
   pm->ForceScheduleNextUpdate(TimeDelta());
@@ -427,7 +430,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, ExistingDatabase) {
                                     false)));
   EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
 
-  scoped_ptr<SafeBrowsingProtocolManager> pm(
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.
@@ -470,7 +473,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseBadBodyBackupSuccess) {
                                     false)));
   EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
 
-  scoped_ptr<SafeBrowsingProtocolManager> pm(
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.
@@ -517,7 +520,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseHttpErrorBackupError) {
                                     false)));
   EXPECT_CALL(test_delegate, UpdateFinished(false)).Times(1);
 
-  scoped_ptr<SafeBrowsingProtocolManager> pm(
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.
@@ -564,7 +567,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseHttpErrorBackupSuccess) {
                                     false)));
   EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
 
-  scoped_ptr<SafeBrowsingProtocolManager> pm(
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.
@@ -611,7 +614,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseHttpErrorBackupTimeout) {
                                     false)));
   EXPECT_CALL(test_delegate, UpdateFinished(false)).Times(1);
 
-  scoped_ptr<SafeBrowsingProtocolManager> pm(
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.
@@ -662,7 +665,7 @@ TEST_F(SafeBrowsingProtocolManagerTest,
                                     false)));
   EXPECT_CALL(test_delegate, UpdateFinished(false)).Times(1);
 
-  scoped_ptr<SafeBrowsingProtocolManager> pm(
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.
@@ -709,7 +712,7 @@ TEST_F(SafeBrowsingProtocolManagerTest,
                                     false)));
   EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
 
-  scoped_ptr<SafeBrowsingProtocolManager> pm(
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.
@@ -755,7 +758,7 @@ TEST_F(SafeBrowsingProtocolManagerTest,
                                     false)));
   EXPECT_CALL(test_delegate, UpdateFinished(false)).Times(1);
 
-  scoped_ptr<SafeBrowsingProtocolManager> pm(
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.
@@ -803,7 +806,7 @@ TEST_F(SafeBrowsingProtocolManagerTest,
                                     false)));
   EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
 
-  scoped_ptr<SafeBrowsingProtocolManager> pm(
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.
@@ -849,7 +852,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseTimeoutBackupSuccess) {
                                     false)));
   EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
 
-  scoped_ptr<SafeBrowsingProtocolManager> pm(
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.
@@ -894,7 +897,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseReset) {
   EXPECT_CALL(test_delegate, ResetDatabase()).Times(1);
   EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
 
-  scoped_ptr<SafeBrowsingProtocolManager> pm(
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.
@@ -929,7 +932,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, EmptyRedirectResponse) {
                                     false)));
   EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
 
-  scoped_ptr<SafeBrowsingProtocolManager> pm(
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.
@@ -976,7 +979,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, InvalidRedirectResponse) {
                                     false)));
   EXPECT_CALL(test_delegate, UpdateFinished(false)).Times(1);
 
-  scoped_ptr<SafeBrowsingProtocolManager> pm(
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.
@@ -1025,7 +1028,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, SingleRedirectResponseWithChunks) {
       Invoke(HandleAddChunks));
   EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
 
-  scoped_ptr<SafeBrowsingProtocolManager> pm(
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.
@@ -1079,7 +1082,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, MultipleRedirectResponsesWithChunks) {
       WillRepeatedly(Invoke(HandleAddChunks));
   EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
 
-  scoped_ptr<SafeBrowsingProtocolManager> pm(
+  std::unique_ptr<SafeBrowsingProtocolManager> pm(
       CreateProtocolManager(&test_delegate));
 
   // Kick off initialization. This returns chunks from the DB synchronously.

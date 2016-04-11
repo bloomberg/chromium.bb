@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_RESOURCE_REQUEST_DETECTOR_H_
 #define CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_RESOURCE_REQUEST_DETECTOR_H_
 
+#include <memory>
+
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "components/safe_browsing_db/database_manager.h"
@@ -27,7 +28,7 @@ class ResourceRequestDetector {
  public:
   ResourceRequestDetector(
       scoped_refptr<SafeBrowsingDatabaseManager> sb_database_manager,
-      scoped_ptr<IncidentReceiver> incident_receiver);
+      std::unique_ptr<IncidentReceiver> incident_receiver);
   ~ResourceRequestDetector();
 
   // Analyzes the |request| and triggers an incident report on suspicious
@@ -42,10 +43,10 @@ class ResourceRequestDetector {
   void ReportIncidentOnUIThread(
       int render_process_id,
       int render_frame_id,
-      scoped_ptr<ClientIncidentReport_IncidentData_ResourceRequestIncident>
+      std::unique_ptr<ClientIncidentReport_IncidentData_ResourceRequestIncident>
           incident_data);
 
-  scoped_ptr<IncidentReceiver> incident_receiver_;
+  std::unique_ptr<IncidentReceiver> incident_receiver_;
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
   bool allow_null_profile_for_testing_;
 

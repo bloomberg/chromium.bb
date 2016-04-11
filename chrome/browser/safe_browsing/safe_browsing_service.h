@@ -9,6 +9,7 @@
 #define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_SERVICE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -16,7 +17,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "components/safe_browsing_db/util.h"
@@ -147,8 +147,8 @@ class SafeBrowsingService
   // Returns a preference validation delegate that adds incidents to the
   // incident reporting service for validation failures. Returns NULL if the
   // service is not applicable for the given profile.
-  scoped_ptr<TrackedPreferenceValidationDelegate>
-      CreatePreferenceValidationDelegate(Profile* profile) const;
+  std::unique_ptr<TrackedPreferenceValidationDelegate>
+  CreatePreferenceValidationDelegate(Profile* profile) const;
 
 #if defined(FULL_SAFE_BROWSING)
   // Registers |callback| to be run after some delay following process launch.
@@ -172,7 +172,7 @@ class SafeBrowsingService
   // Adds a listener for when SafeBrowsing preferences might have changed.
   // To get the current state, the callback should call enabled_by_prefs().
   // Should only be called on the UI thread.
-  scoped_ptr<StateSubscription> RegisterStateCallback(
+  std::unique_ptr<StateSubscription> RegisterStateCallback(
       const base::Callback<void(void)>& callback);
 
   // Sends serialized download report to backend.
@@ -289,15 +289,15 @@ class SafeBrowsingService
   // The ClientSideDetectionService is managed by the SafeBrowsingService,
   // since its running state and lifecycle depends on SafeBrowsingService's.
   // Accessed on UI thread.
-  scoped_ptr<ClientSideDetectionService> csd_service_;
+  std::unique_ptr<ClientSideDetectionService> csd_service_;
 
   // The DownloadProtectionService is managed by the SafeBrowsingService,
   // since its running state and lifecycle depends on SafeBrowsingService's.
   // Accessed on UI thread.
-  scoped_ptr<DownloadProtectionService> download_service_;
+  std::unique_ptr<DownloadProtectionService> download_service_;
 
 #if defined(FULL_SAFE_BROWSING)
-  scoped_ptr<IncidentReportingService> incident_service_;
+  std::unique_ptr<IncidentReportingService> incident_service_;
 #endif
 
   // The UI manager handles showing interstitials.  Accessed on both UI and IO
@@ -309,7 +309,7 @@ class SafeBrowsingService
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
 
 #if defined(FULL_SAFE_BROWSING)
-  scoped_ptr<ResourceRequestDetector> resource_request_detector_;
+  std::unique_ptr<ResourceRequestDetector> resource_request_detector_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingService);

@@ -104,7 +104,7 @@ base::DictionaryValue* StateStore::Transaction::GetPrefDict() {
 }
 
 void StateStore::Transaction::ReplacePrefDict(
-    scoped_ptr<base::DictionaryValue> pref_dict) {
+    std::unique_ptr<base::DictionaryValue> pref_dict) {
   GetPrefDict()->Swap(pref_dict.get());
 }
 
@@ -127,7 +127,7 @@ StateStore::StateStore(Profile* profile)
 
   // Apply the platform data.
   Transaction transaction(this);
-  scoped_ptr<base::DictionaryValue> value_dict(
+  std::unique_ptr<base::DictionaryValue> value_dict(
       platform_state_store::Load(profile_));
 
   InitializationResult state_store_init_result = PSS_MATCHES;

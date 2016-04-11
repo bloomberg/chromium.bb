@@ -4,9 +4,10 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/tracked_preference_incident.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,8 +15,8 @@ namespace safe_browsing {
 
 namespace {
 
-scoped_ptr<Incident> MakeIncident(bool changed, bool is_personal) {
-  scoped_ptr<ClientIncidentReport_IncidentData_TrackedPreferenceIncident>
+std::unique_ptr<Incident> MakeIncident(bool changed, bool is_personal) {
+  std::unique_ptr<ClientIncidentReport_IncidentData_TrackedPreferenceIncident>
       incident(new ClientIncidentReport_IncidentData_TrackedPreferenceIncident);
 
   incident->set_path("foo");
@@ -24,7 +25,7 @@ scoped_ptr<Incident> MakeIncident(bool changed, bool is_personal) {
       changed
           ? ClientIncidentReport_IncidentData_TrackedPreferenceIncident_ValueState_CHANGED
           : ClientIncidentReport_IncidentData_TrackedPreferenceIncident_ValueState_CLEARED);
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new TrackedPreferenceIncident(std::move(incident), is_personal));
 }
 
@@ -54,11 +55,11 @@ TEST(TrackedPreferenceIncident, DifferentIncidentDifferentDigest) {
 
 // Tests that values are removed for personal preferences.
 TEST(TrackedPreferenceIncident, Filter) {
-  scoped_ptr<ClientIncidentReport_IncidentData> impersonal(
+  std::unique_ptr<ClientIncidentReport_IncidentData> impersonal(
       MakeIncident(false, false)->TakePayload());
   ASSERT_TRUE(impersonal->tracked_preference().has_atomic_value());
 
-  scoped_ptr<ClientIncidentReport_IncidentData> personal(
+  std::unique_ptr<ClientIncidentReport_IncidentData> personal(
       MakeIncident(false, true)->TakePayload());
   ASSERT_FALSE(personal->tracked_preference().has_atomic_value());
 }

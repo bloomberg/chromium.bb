@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_INCIDENT_RECEIVER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_INCIDENT_RECEIVER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 class Profile;
 
@@ -21,15 +21,15 @@ class IncidentReceiver {
 
   // Adds an incident relating to |profile|. Must be called from the UI thread.
   virtual void AddIncidentForProfile(Profile* profile,
-                                     scoped_ptr<Incident> incident) = 0;
+                                     std::unique_ptr<Incident> incident) = 0;
 
   // Adds an incident relating to the entire browser process. May be called from
   // any thread.
-  virtual void AddIncidentForProcess(scoped_ptr<Incident> incident) = 0;
+  virtual void AddIncidentForProcess(std::unique_ptr<Incident> incident) = 0;
 
   // Clears all data associated with the specified |incident| relating to the
   // entire browser process. May be called from any thread.
-  virtual void ClearIncidentForProcess(scoped_ptr<Incident> incident) = 0;
+  virtual void ClearIncidentForProcess(std::unique_ptr<Incident> incident) = 0;
 };
 
 }  // namespace safe_browsing

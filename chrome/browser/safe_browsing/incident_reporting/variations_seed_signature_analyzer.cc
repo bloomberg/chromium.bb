@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/incident_reporting/variations_seed_signature_incident.h"
@@ -22,7 +23,7 @@ namespace safe_browsing {
 namespace {
 
 void VerifyVariationsSeedSignatureOnUIThread(
-    scoped_ptr<IncidentReceiver> incident_receiver) {
+    std::unique_ptr<IncidentReceiver> incident_receiver) {
   variations::VariationsService* variations_service =
       g_browser_process->variations_service();
   if (!variations_service)
@@ -30,13 +31,13 @@ void VerifyVariationsSeedSignatureOnUIThread(
   std::string invalid_signature =
       variations_service->GetInvalidVariationsSeedSignature();
   if (!invalid_signature.empty()) {
-    scoped_ptr<
+    std::unique_ptr<
         ClientIncidentReport_IncidentData_VariationsSeedSignatureIncident>
         variations_seed_signature(
             new ClientIncidentReport_IncidentData_VariationsSeedSignatureIncident());
     variations_seed_signature->set_variations_seed_signature(invalid_signature);
     incident_receiver->AddIncidentForProcess(
-        make_scoped_ptr(new VariationsSeedSignatureIncident(
+        base::WrapUnique(new VariationsSeedSignatureIncident(
             std::move(variations_seed_signature))));
   }
 }
@@ -52,7 +53,7 @@ void RegisterVariationsSeedSignatureAnalysis() {
 }
 
 void VerifyVariationsSeedSignature(
-    scoped_ptr<IncidentReceiver> incident_receiver) {
+    std::unique_ptr<IncidentReceiver> incident_receiver) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,

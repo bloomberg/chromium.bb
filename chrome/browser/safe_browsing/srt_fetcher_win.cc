@@ -313,7 +313,7 @@ class SRTFetcher : public net::URLFetcherDelegate {
 
   // The underlying URL fetcher. The instance is alive from construction through
   // OnURLFetchComplete.
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(SRTFetcher);
 };

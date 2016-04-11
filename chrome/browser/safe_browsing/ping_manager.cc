@@ -136,7 +136,7 @@ void SafeBrowsingPingManager::ReportInvalidCertificateChain(
 }
 
 void SafeBrowsingPingManager::SetCertificateErrorReporterForTesting(
-    scoped_ptr<certificate_reporting::ErrorReporter>
+    std::unique_ptr<certificate_reporting::ErrorReporter>
         certificate_error_reporter) {
   certificate_error_reporter_ = std::move(certificate_error_reporter);
 }

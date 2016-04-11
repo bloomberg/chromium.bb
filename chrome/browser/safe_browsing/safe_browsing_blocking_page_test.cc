@@ -510,7 +510,7 @@ class SafeBrowsingBlockingPageBrowserTest
     if (!rfh)
       return VISIBILITY_ERROR;
 
-    scoped_ptr<base::Value> value = content::ExecuteScriptAndGetValue(
+    std::unique_ptr<base::Value> value = content::ExecuteScriptAndGetValue(
         rfh, "var node = document.getElementById('" + node_id +
                  "');\n"
                  "if (node)\n"

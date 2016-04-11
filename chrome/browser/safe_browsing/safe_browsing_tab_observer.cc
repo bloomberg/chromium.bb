@@ -24,7 +24,8 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(safe_browsing::SafeBrowsingTabObserver);
 namespace safe_browsing {
 
 #if !defined(SAFE_BROWSING_CSD)
-// Provide a dummy implementation so that scoped_ptr<ClientSideDetectionHost>
+// Provide a dummy implementation so that
+// std::unique_ptr<ClientSideDetectionHost>
 // has a concrete destructor to call. This is necessary because it is used
 // as a member of SafeBrowsingTabObserver, even if it only ever contains NULL.
 // TODO(shess): This is weird, why not just guard the instance variable?

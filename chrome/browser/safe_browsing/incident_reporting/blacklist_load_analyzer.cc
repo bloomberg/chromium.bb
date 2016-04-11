@@ -22,8 +22,8 @@ void RegisterBlacklistLoadAnalysis() {
 }
 
 #if !defined(OS_WIN)
-void VerifyBlacklistLoadState(scoped_ptr<IncidentReceiver> incident_receiver) {
-}
+void VerifyBlacklistLoadState(
+    std::unique_ptr<IncidentReceiver> incident_receiver) {}
 
 bool GetLoadedBlacklistedModules(std::vector<base::string16>* module_names) {
   return false;

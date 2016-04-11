@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
 
 #include <stdint.h>
+
 #include <map>
 #include <string>
 #include <utility>
@@ -13,6 +14,7 @@
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -56,13 +58,16 @@ class IncidentReportingServiceTest : public testing::Test {
         void(safe_browsing::ClientIncidentReport_EnvironmentData*)>
         CollectEnvironmentCallback;
 
-    typedef base::Callback<scoped_ptr<safe_browsing::LastDownloadFinder>(
+    typedef base::Callback<std::unique_ptr<safe_browsing::LastDownloadFinder>(
         const safe_browsing::LastDownloadFinder::LastDownloadCallback&
-            callback)> CreateDownloadFinderCallback;
+            callback)>
+        CreateDownloadFinderCallback;
 
-    typedef base::Callback<scoped_ptr<safe_browsing::IncidentReportUploader>(
-        const safe_browsing::IncidentReportUploader::OnResultCallback&,
-        const safe_browsing::ClientIncidentReport& report)> StartUploadCallback;
+    typedef base::Callback<
+        std::unique_ptr<safe_browsing::IncidentReportUploader>(
+            const safe_browsing::IncidentReportUploader::OnResultCallback&,
+            const safe_browsing::ClientIncidentReport& report)>
+        StartUploadCallback;
 
     TestIncidentReportingService(
         const scoped_refptr<base::TaskRunner>& task_runner,
@@ -108,13 +113,13 @@ class IncidentReportingServiceTest : public testing::Test {
       extension_collected_ = true;
     }
 
-    scoped_ptr<safe_browsing::LastDownloadFinder> CreateDownloadFinder(
+    std::unique_ptr<safe_browsing::LastDownloadFinder> CreateDownloadFinder(
         const safe_browsing::LastDownloadFinder::LastDownloadCallback& callback)
         override {
       return create_download_finder_callback_.Run(callback);
     }
 
-    scoped_ptr<safe_browsing::IncidentReportUploader> StartReportUpload(
+    std::unique_ptr<safe_browsing::IncidentReportUploader> StartReportUpload(
         const safe_browsing::IncidentReportUploader::OnResultCallback& callback,
         const scoped_refptr<net::URLRequestContextGetter>&
             request_context_getter,
@@ -242,9 +247,9 @@ class IncidentReportingServiceTest : public testing::Test {
   TestingProfile* CreateProfile(const std::string& profile_name,
                                 SafeBrowsingDisposition safe_browsing_opt_in,
                                 OnProfileAdditionAction on_addition_action,
-                                scoped_ptr<base::Value> incidents_sent) {
+                                std::unique_ptr<base::Value> incidents_sent) {
     // Create prefs for the profile with safe browsing enabled or not.
-    scoped_ptr<syncable_prefs::TestingPrefServiceSyncable> prefs(
+    std::unique_ptr<syncable_prefs::TestingPrefServiceSyncable> prefs(
         new syncable_prefs::TestingPrefServiceSyncable);
     chrome::RegisterUserProfilePrefs(prefs->registry());
     prefs->SetBoolean(prefs::kSafeBrowsingEnabled,
@@ -277,22 +282,23 @@ class IncidentReportingServiceTest : public testing::Test {
   }
 
   // Returns an incident suitable for testing.
-  scoped_ptr<safe_browsing::Incident> MakeTestIncident(const char* value) {
-    scoped_ptr<safe_browsing::
-                   ClientIncidentReport_IncidentData_TrackedPreferenceIncident>
+  std::unique_ptr<safe_browsing::Incident> MakeTestIncident(const char* value) {
+    std::unique_ptr<
+        safe_browsing::
+            ClientIncidentReport_IncidentData_TrackedPreferenceIncident>
         incident(
             new safe_browsing::
                 ClientIncidentReport_IncidentData_TrackedPreferenceIncident());
     incident->set_path(kTestTrackedPrefPath);
     if (value)
       incident->set_atomic_value(value);
-    return make_scoped_ptr(new safe_browsing::TrackedPreferenceIncident(
+    return base::WrapUnique(new safe_browsing::TrackedPreferenceIncident(
         std::move(incident), false /* is_personal */));
   }
 
   // Adds a test incident to the service.
   void AddTestIncident(Profile* profile) {
-    scoped_ptr<safe_browsing::IncidentReceiver> receiver(
+    std::unique_ptr<safe_browsing::IncidentReceiver> receiver(
         instance_->GetIncidentReceiver());
     if (profile)
       receiver->AddIncidentForProfile(profile, MakeTestIncident(nullptr));
@@ -327,18 +333,18 @@ class IncidentReportingServiceTest : public testing::Test {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
   TestingProfileManager profile_manager_;
-  scoped_ptr<TestIncidentReportingService> instance_;
+  std::unique_ptr<TestIncidentReportingService> instance_;
   base::Closure on_start_upload_callback_;
   OnCreateDownloadFinderAction on_create_download_finder_action_;
   OnDelayedAnalysisAction on_delayed_analysis_action_;
   safe_browsing::IncidentReportUploader::Result upload_result_;
   bool environment_collected_;
   bool download_finder_created_;
-  scoped_ptr<safe_browsing::ClientIncidentReport> uploaded_report_;
+  std::unique_ptr<safe_browsing::ClientIncidentReport> uploaded_report_;
   bool download_finder_destroyed_;
   bool uploader_destroyed_;
   bool delayed_analysis_ran_;
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
   scoped_refptr<base::FieldTrial> field_trial_;
 
  private:
@@ -366,7 +372,7 @@ class IncidentReportingServiceTest : public testing::Test {
       // Callbacks have a tendency to delete the uploader, so no touching
       // anything after this.
       callback_.Run(result_,
-                    scoped_ptr<safe_browsing::ClientIncidentResponse>());
+                    std::unique_ptr<safe_browsing::ClientIncidentResponse>());
     }
 
     base::Closure on_deleted_;
@@ -377,11 +383,12 @@ class IncidentReportingServiceTest : public testing::Test {
 
   class FakeDownloadFinder : public safe_browsing::LastDownloadFinder {
    public:
-    static scoped_ptr<safe_browsing::LastDownloadFinder> Create(
+    static std::unique_ptr<safe_browsing::LastDownloadFinder> Create(
         const base::Closure& on_deleted,
-        scoped_ptr<safe_browsing::ClientIncidentReport_DownloadDetails>
+        std::unique_ptr<safe_browsing::ClientIncidentReport_DownloadDetails>
             binary_download,
-        scoped_ptr<safe_browsing::ClientIncidentReport_NonBinaryDownloadDetails>
+        std::unique_ptr<
+            safe_browsing::ClientIncidentReport_NonBinaryDownloadDetails>
             non_binary_download,
         const safe_browsing::LastDownloadFinder::LastDownloadCallback&
             callback) {
@@ -389,7 +396,7 @@ class IncidentReportingServiceTest : public testing::Test {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(callback, base::Passed(&binary_download),
                                 base::Passed(&non_binary_download)));
-      return scoped_ptr<safe_browsing::LastDownloadFinder>(
+      return std::unique_ptr<safe_browsing::LastDownloadFinder>(
           new FakeDownloadFinder(on_deleted));
     }
 
@@ -498,16 +505,17 @@ class IncidentReportingServiceTest : public testing::Test {
 
   // A fake CreateDownloadFinder implementation invoked by the service during
   // operation.
-  scoped_ptr<safe_browsing::LastDownloadFinder> CreateDownloadFinder(
+  std::unique_ptr<safe_browsing::LastDownloadFinder> CreateDownloadFinder(
       const safe_browsing::LastDownloadFinder::LastDownloadCallback& callback) {
     download_finder_created_ = true;
-    scoped_ptr<safe_browsing::ClientIncidentReport_DownloadDetails>
+    std::unique_ptr<safe_browsing::ClientIncidentReport_DownloadDetails>
         binary_download;
-    scoped_ptr<safe_browsing::ClientIncidentReport_NonBinaryDownloadDetails>
+    std::unique_ptr<
+        safe_browsing::ClientIncidentReport_NonBinaryDownloadDetails>
         non_binary_download;
     if (on_create_download_finder_action_ ==
         ON_CREATE_DOWNLOAD_FINDER_NO_PROFILES) {
-      return scoped_ptr<safe_browsing::LastDownloadFinder>();
+      return std::unique_ptr<safe_browsing::LastDownloadFinder>();
     }
     if (on_create_download_finder_action_ ==
             ON_CREATE_DOWNLOAD_FINDER_DOWNLOADS_FOUND ||
@@ -526,7 +534,7 @@ class IncidentReportingServiceTest : public testing::Test {
       non_binary_download->set_host(kFakeDownloadHost);
     }
 
-    return scoped_ptr<safe_browsing::LastDownloadFinder>(
+    return std::unique_ptr<safe_browsing::LastDownloadFinder>(
         FakeDownloadFinder::Create(
             base::Bind(&IncidentReportingServiceTest::OnDownloadFinderDestroyed,
                        base::Unretained(this)),
@@ -535,7 +543,7 @@ class IncidentReportingServiceTest : public testing::Test {
   }
 
   // A fake StartUpload implementation invoked by the service during operation.
-  scoped_ptr<safe_browsing::IncidentReportUploader> StartUpload(
+  std::unique_ptr<safe_browsing::IncidentReportUploader> StartUpload(
       const safe_browsing::IncidentReportUploader::OnResultCallback& callback,
       const safe_browsing::ClientIncidentReport& report) {
     // Remember the report that is being uploaded.
@@ -545,7 +553,7 @@ class IncidentReportingServiceTest : public testing::Test {
       on_start_upload_callback_.Run();
       on_start_upload_callback_ = base::Closure();
     }
-    return make_scoped_ptr(new FakeUploader(
+    return base::WrapUnique(new FakeUploader(
         base::Bind(&IncidentReportingServiceTest::OnUploaderDestroyed,
                    base::Unretained(this)),
         callback, upload_result_));
@@ -554,7 +562,8 @@ class IncidentReportingServiceTest : public testing::Test {
   void OnDownloadFinderDestroyed() { download_finder_destroyed_ = true; }
   void OnUploaderDestroyed() { uploader_destroyed_ = true; }
 
-  void OnDelayedAnalysis(scoped_ptr<safe_browsing::IncidentReceiver> receiver) {
+  void OnDelayedAnalysis(
+      std::unique_ptr<safe_browsing::IncidentReceiver> receiver) {
     delayed_analysis_ran_ = true;
     if (on_delayed_analysis_action_ == ON_DELAYED_ANALYSIS_ADD_INCIDENT)
       receiver->AddIncidentForProcess(MakeTestIncident(nullptr));
@@ -770,7 +779,7 @@ TEST_F(IncidentReportingServiceTest, NoUploadBeforeExtendedReporting) {
   Profile* profile = CreateProfile("profile1", SAFE_BROWSING_OPT_IN,
                                    ON_PROFILE_ADDITION_NO_ACTION, nullptr);
 
-  scoped_ptr<safe_browsing::IncidentReceiver> receiver(
+  std::unique_ptr<safe_browsing::IncidentReceiver> receiver(
       instance_->GetIncidentReceiver());
 
   // Add a process-wide test incident.
@@ -1099,7 +1108,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideTwoUploads) {
                 ON_PROFILE_ADDITION_NO_ACTION, nullptr);
 
   // Add the test incident.
-  scoped_ptr<safe_browsing::IncidentReceiver> receiver(
+  std::unique_ptr<safe_browsing::IncidentReceiver> receiver(
       instance_->GetIncidentReceiver());
   receiver->AddIncidentForProcess(MakeTestIncident(nullptr));
 
@@ -1376,7 +1385,8 @@ TEST_F(IncidentReportingServiceTest, CleanLegacyPruneState) {
       static_cast<int32_t>(safe_browsing::IncidentType::TRACKED_PREFERENCE)));
 
   // Set up a prune state dict with data to be cleared (and not).
-  scoped_ptr<base::DictionaryValue> incidents_sent(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> incidents_sent(
+      new base::DictionaryValue());
   base::DictionaryValue* type_dict = new base::DictionaryValue();
   type_dict->SetStringWithoutPathExpansion("foo", "47");
   incidents_sent->SetWithoutPathExpansion(omnibox_type, type_dict);
@@ -1408,7 +1418,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideUploadClearUpload) {
   CreateProfile("profile1", EXTENDED_REPORTING_OPT_IN,
                 ON_PROFILE_ADDITION_NO_ACTION, nullptr);
 
-  scoped_ptr<safe_browsing::IncidentReceiver> receiver(
+  std::unique_ptr<safe_browsing::IncidentReceiver> receiver(
       instance_->GetIncidentReceiver());
 
   // Add the test incident.
@@ -1448,7 +1458,7 @@ TEST_F(IncidentReportingServiceTest, ClearProcessIncidentOnCleanState) {
   CreateProfile("profile1", EXTENDED_REPORTING_OPT_IN,
                 ON_PROFILE_ADDITION_NO_ACTION, nullptr);
 
-  scoped_ptr<safe_browsing::IncidentReceiver> receiver(
+  std::unique_ptr<safe_browsing::IncidentReceiver> receiver(
       instance_->GetIncidentReceiver());
 
   // Clear incident data.

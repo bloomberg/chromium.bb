@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_INCIDENT_REPORT_UPLOADER_IMPL_H_
 #define CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_INCIDENT_REPORT_UPLOADER_IMPL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_report_uploader.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -39,7 +39,7 @@ class IncidentReportUploaderImpl : public IncidentReportUploader,
   // Uploads a report with a caller-provided URL context. |callback| will be run
   // when the upload is complete. Returns NULL if |report| cannot be serialized
   // for transmission, in which case the delegate is not notified.
-  static scoped_ptr<IncidentReportUploader> UploadReport(
+  static std::unique_ptr<IncidentReportUploader> UploadReport(
       const OnResultCallback& callback,
       const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       const ClientIncidentReport& report);
@@ -58,7 +58,7 @@ class IncidentReportUploaderImpl : public IncidentReportUploader,
 
   // The underlying URL fetcher. The instance is alive from construction through
   // OnURLFetchComplete.
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   // The time at which the upload was initiated.
   base::TimeTicks time_begin_;

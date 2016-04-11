@@ -238,9 +238,9 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
                           request);
   }
 
-  // The API doesn't take a scoped_ptr because the API gets mocked and we
-  // cannot mock an API that takes scoped_ptr as arguments.
-  scoped_ptr<ClientPhishingRequest> req(request);
+  // The API doesn't take a std::unique_ptr because the API gets mocked and we
+  // cannot mock an API that takes std::unique_ptr as arguments.
+  std::unique_ptr<ClientPhishingRequest> req(request);
 
   ExtractBrowseInfoFeatures(*info, request);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -258,14 +258,14 @@ void BrowserFeatureExtractor::ExtractMalwareFeatures(
 
   // Grab the IPs because they might go away before we're done
   // checking them against the IP blacklist on the IO thread.
-  scoped_ptr<IPUrlMap> ips(new IPUrlMap);
+  std::unique_ptr<IPUrlMap> ips(new IPUrlMap);
   ips->swap(info->ips);
 
   IPUrlMap* ips_ptr = ips.get();
 
-  // The API doesn't take a scoped_ptr because the API gets mocked and we
-  // cannot mock an API that takes scoped_ptr as arguments.
-  scoped_ptr<ClientMalwareRequest> req(request);
+  // The API doesn't take a std::unique_ptr because the API gets mocked and we
+  // cannot mock an API that takes std::unique_ptr as arguments.
+  std::unique_ptr<ClientMalwareRequest> req(request);
 
   // IP blacklist lookups have to happen on the IO thread.
   BrowserThread::PostTaskAndReply(
@@ -305,7 +305,7 @@ void BrowserFeatureExtractor::ExtractBrowseInfoFeatures(
 }
 
 void BrowserFeatureExtractor::StartExtractFeatures(
-    scoped_ptr<ClientPhishingRequest> request,
+    std::unique_ptr<ClientPhishingRequest> request,
     const DoneCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   history::HistoryService* history;
@@ -324,7 +324,7 @@ void BrowserFeatureExtractor::StartExtractFeatures(
 }
 
 void BrowserFeatureExtractor::QueryUrlHistoryDone(
-    scoped_ptr<ClientPhishingRequest> request,
+    std::unique_ptr<ClientPhishingRequest> request,
     const DoneCallback& callback,
     bool success,
     const history::URLRow& row,
@@ -391,7 +391,7 @@ void BrowserFeatureExtractor::QueryUrlHistoryDone(
 }
 
 void BrowserFeatureExtractor::QueryHttpHostVisitsDone(
-    scoped_ptr<ClientPhishingRequest> request,
+    std::unique_ptr<ClientPhishingRequest> request,
     const DoneCallback& callback,
     bool success,
     int num_visits,
@@ -422,7 +422,7 @@ void BrowserFeatureExtractor::QueryHttpHostVisitsDone(
 }
 
 void BrowserFeatureExtractor::QueryHttpsHostVisitsDone(
-    scoped_ptr<ClientPhishingRequest> request,
+    std::unique_ptr<ClientPhishingRequest> request,
     const DoneCallback& callback,
     bool success,
     int num_visits,
@@ -475,9 +475,9 @@ bool BrowserFeatureExtractor::GetHistoryService(
 }
 
 void BrowserFeatureExtractor::FinishExtractMalwareFeatures(
-    scoped_ptr<IPUrlMap> bad_ips,
+    std::unique_ptr<IPUrlMap> bad_ips,
     MalwareDoneCallback callback,
-    scoped_ptr<ClientMalwareRequest> request) {
+    std::unique_ptr<ClientMalwareRequest> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int matched_bad_ips = 0;
   for (IPUrlMap::const_iterator it = bad_ips->begin();

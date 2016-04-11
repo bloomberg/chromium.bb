@@ -5,6 +5,8 @@
 #include "chrome/browser/safe_browsing/incident_reporting/last_download_finder.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -15,7 +17,7 @@
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -53,7 +55,8 @@ namespace {
 
 // A BrowserContextKeyedServiceFactory::TestingFactoryFunction that creates a
 // HistoryService for a TestingProfile.
-scoped_ptr<KeyedService> BuildHistoryService(content::BrowserContext* context) {
+std::unique_ptr<KeyedService> BuildHistoryService(
+    content::BrowserContext* context) {
   TestingProfile* profile = static_cast<TestingProfile*>(context);
 
   // Delete the file before creating the service.
@@ -66,11 +69,11 @@ scoped_ptr<KeyedService> BuildHistoryService(content::BrowserContext* context) {
     return nullptr;
   }
 
-  scoped_ptr<history::HistoryService> history_service(
+  std::unique_ptr<history::HistoryService> history_service(
       new history::HistoryService(
-          make_scoped_ptr(new ChromeHistoryClient(
+          base::WrapUnique(new ChromeHistoryClient(
               BookmarkModelFactory::GetForProfile(profile))),
-          scoped_ptr<history::VisitDelegate>()));
+          std::unique_ptr<history::VisitDelegate>()));
   if (history_service->Init(
           history::HistoryDatabaseParamsForPath(profile->GetPath()))) {
     return std::move(history_service);
@@ -109,9 +112,10 @@ namespace safe_browsing {
 
 class LastDownloadFinderTest : public testing::Test {
  public:
-  void NeverCalled(scoped_ptr<ClientIncidentReport_DownloadDetails> download,
-                   scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
-                       non_binary_download) {
+  void NeverCalled(
+      std::unique_ptr<ClientIncidentReport_DownloadDetails> download,
+      std::unique_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
+          non_binary_download) {
     FAIL();
   }
 
@@ -130,13 +134,14 @@ class LastDownloadFinderTest : public testing::Test {
 
   // LastDownloadFinder::LastDownloadCallback implementation that
   // passes the found download to |result| and then runs a closure.
-  void OnLastDownload(scoped_ptr<ClientIncidentReport_DownloadDetails>* result,
-                      scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>*
-                          non_binary_result,
-                      const base::Closure& quit_closure,
-                      scoped_ptr<ClientIncidentReport_DownloadDetails> download,
-                      scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
-                          non_binary_download) {
+  void OnLastDownload(
+      std::unique_ptr<ClientIncidentReport_DownloadDetails>* result,
+      std::unique_ptr<ClientIncidentReport_NonBinaryDownloadDetails>*
+          non_binary_result,
+      const base::Closure& quit_closure,
+      std::unique_ptr<ClientIncidentReport_DownloadDetails> download,
+      std::unique_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
+          non_binary_download) {
     *result = std::move(download);
     *non_binary_result = std::move(non_binary_download);
     quit_closure.Run();
@@ -188,7 +193,7 @@ class LastDownloadFinderTest : public testing::Test {
             NULL)));
 
     // Create prefs for the profile with safe browsing enabled or not.
-    scoped_ptr<syncable_prefs::TestingPrefServiceSyncable> prefs(
+    std::unique_ptr<syncable_prefs::TestingPrefServiceSyncable> prefs(
         new syncable_prefs::TestingPrefServiceSyncable);
     chrome::RegisterUserProfilePrefs(prefs->registry());
     prefs->SetBoolean(prefs::kSafeBrowsingEnabled,
@@ -246,12 +251,13 @@ class LastDownloadFinderTest : public testing::Test {
 
   // Runs the last download finder on all loaded profiles.
   void RunLastDownloadFinder(
-      scoped_ptr<ClientIncidentReport_DownloadDetails>* last_binary_download,
-      scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>*
+      std::unique_ptr<ClientIncidentReport_DownloadDetails>*
+          last_binary_download,
+      std::unique_ptr<ClientIncidentReport_NonBinaryDownloadDetails>*
           last_non_binary_download) {
     base::RunLoop run_loop;
 
-    scoped_ptr<LastDownloadFinder> finder(LastDownloadFinder::Create(
+    std::unique_ptr<LastDownloadFinder> finder(LastDownloadFinder::Create(
         GetDownloadDetailsGetter(),
         base::Bind(&LastDownloadFinderTest::OnLastDownload,
                    base::Unretained(this), last_binary_download,
@@ -291,7 +297,7 @@ class LastDownloadFinderTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle browser_thread_bundle_;
-  scoped_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
 
  private:
   // A HistoryService::DownloadCreateCallback that asserts that the download was
@@ -308,7 +314,7 @@ class LastDownloadFinderTest : public testing::Test {
   void GetDownloadDetails(
       content::BrowserContext* context,
       const DownloadMetadataManager::GetDownloadDetailsCallback& callback) {
-    callback.Run(scoped_ptr<ClientIncidentReport_DownloadDetails>());
+    callback.Run(std::unique_ptr<ClientIncidentReport_DownloadDetails>());
   }
 
   int profile_number_;
@@ -319,8 +325,8 @@ class LastDownloadFinderTest : public testing::Test {
 
 // Tests that nothing happens if there are no profiles at all.
 TEST_F(LastDownloadFinderTest, NoProfiles) {
-  scoped_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
-  scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
+  std::unique_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
+  std::unique_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
       last_non_binary_download;
   RunLastDownloadFinder(&last_binary_download, &last_non_binary_download);
   EXPECT_FALSE(last_binary_download);
@@ -336,8 +342,8 @@ TEST_F(LastDownloadFinderTest, NoParticipatingProfiles) {
   // Add a download.
   AddDownload(profile, CreateTestDownloadRow(kBinaryFileName));
 
-  scoped_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
-  scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
+  std::unique_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
+  std::unique_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
       last_non_binary_download;
   RunLastDownloadFinder(&last_binary_download, &last_non_binary_download);
   EXPECT_FALSE(last_binary_download);
@@ -353,8 +359,8 @@ TEST_F(LastDownloadFinderTest, SimpleEndToEnd) {
   AddDownload(profile, CreateTestDownloadRow(kBinaryFileName));
   AddDownload(profile, CreateTestDownloadRow(kPDFFileName));
 
-  scoped_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
-  scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
+  std::unique_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
+  std::unique_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
       last_non_binary_download;
   RunLastDownloadFinder(&last_binary_download, &last_non_binary_download);
   EXPECT_TRUE(last_binary_download);
@@ -369,8 +375,8 @@ TEST_F(LastDownloadFinderTest, NonBinaryOnly) {
   // Add a non-binary download.
   AddDownload(profile, CreateTestDownloadRow(kPDFFileName));
 
-  scoped_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
-  scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
+  std::unique_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
+  std::unique_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
       last_non_binary_download;
   RunLastDownloadFinder(&last_binary_download, &last_non_binary_download);
   EXPECT_FALSE(last_binary_download);
@@ -391,8 +397,8 @@ TEST_F(LastDownloadFinderTest, SimpleEndToEndFieldTrial) {
   // Add a download.
   AddDownload(profile, CreateTestDownloadRow(kBinaryFileName));
 
-  scoped_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
-  scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
+  std::unique_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
+  std::unique_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
       last_non_binary_download;
   RunLastDownloadFinder(&last_binary_download, &last_non_binary_download);
   EXPECT_FALSE(last_non_binary_download);
@@ -408,8 +414,8 @@ TEST_F(LastDownloadFinderTest, DownloadForDifferentOs) {
   // Add a download.
   AddDownload(profile, CreateTestDownloadRow(kBinaryFileNameForOtherOS));
 
-  scoped_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
-  scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
+  std::unique_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
+  std::unique_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
       last_non_binary_download;
   RunLastDownloadFinder(&last_binary_download, &last_non_binary_download);
   EXPECT_FALSE(last_binary_download);
@@ -439,8 +445,8 @@ TEST_F(LastDownloadFinderTest, AddProfileAfterStarting) {
   // Create a profile with a history service that is opted-in.
   CreateProfile(EXTENDED_REPORTING_OPT_IN);
 
-  scoped_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
-  scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
+  std::unique_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
+  std::unique_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
       last_non_binary_download;
   base::RunLoop run_loop;
 
@@ -450,7 +456,7 @@ TEST_F(LastDownloadFinderTest, AddProfileAfterStarting) {
                  base::Unretained(this)));
 
   // Create a finder that we expect will find a download in the second profile.
-  scoped_ptr<LastDownloadFinder> finder(LastDownloadFinder::Create(
+  std::unique_ptr<LastDownloadFinder> finder(LastDownloadFinder::Create(
       GetDownloadDetailsGetter(),
       base::Bind(&LastDownloadFinderTest::OnLastDownload,
                  base::Unretained(this), &last_binary_download,

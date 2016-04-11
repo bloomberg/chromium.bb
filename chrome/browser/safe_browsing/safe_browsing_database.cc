@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <algorithm>
 #include <iterator>
 #include <utility>
@@ -13,6 +14,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process_handle.h"
@@ -521,7 +523,7 @@ class SafeBrowsingDatabaseNew::ThreadSafeStateManager::ReadTransaction {
   }
 
   const ThreadSafeStateManager* outer_;
-  scoped_ptr<base::AutoLock> transaction_lock_;
+  std::unique_ptr<base::AutoLock> transaction_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ReadTransaction);
 };
@@ -550,7 +552,7 @@ class SafeBrowsingDatabaseNew::ThreadSafeStateManager::WriteTransaction {
   }
 
   void SwapPrefixSet(PrefixSetId id,
-                     scoped_ptr<const PrefixSet> new_prefix_set) {
+                     std::unique_ptr<const PrefixSet> new_prefix_set) {
     switch (id) {
       case PrefixSetId::BROWSE:
         outer_->browse_prefix_set_.swap(new_prefix_set);
@@ -608,22 +610,23 @@ SafeBrowsingDatabaseNew::DatabaseStateManager::DatabaseStateManager(
 
 SafeBrowsingDatabaseNew::DatabaseStateManager::~DatabaseStateManager() {}
 
-scoped_ptr<SafeBrowsingDatabaseNew::ReadTransaction>
+std::unique_ptr<SafeBrowsingDatabaseNew::ReadTransaction>
 SafeBrowsingDatabaseNew::ThreadSafeStateManager::BeginReadTransaction() {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new ReadTransaction(this, ReadTransaction::AutoLockRequirement::LOCK));
 }
 
-scoped_ptr<SafeBrowsingDatabaseNew::ReadTransaction> SafeBrowsingDatabaseNew::
-    ThreadSafeStateManager::BeginReadTransactionNoLockOnMainTaskRunner() {
-  return make_scoped_ptr(new ReadTransaction(
+std::unique_ptr<SafeBrowsingDatabaseNew::ReadTransaction>
+SafeBrowsingDatabaseNew::ThreadSafeStateManager::
+    BeginReadTransactionNoLockOnMainTaskRunner() {
+  return base::WrapUnique(new ReadTransaction(
       this,
       ReadTransaction::AutoLockRequirement::DONT_LOCK_ON_MAIN_TASK_RUNNER));
 }
 
-scoped_ptr<SafeBrowsingDatabaseNew::WriteTransaction>
+std::unique_ptr<SafeBrowsingDatabaseNew::WriteTransaction>
 SafeBrowsingDatabaseNew::ThreadSafeStateManager::BeginWriteTransaction() {
-  return make_scoped_ptr(new WriteTransaction(this));
+  return base::WrapUnique(new WriteTransaction(this));
 }
 
 SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(
@@ -678,7 +681,8 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
     // class on other threads until this function returns, but it's also
     // harmless as that also means there is no possibility of contention on the
     // lock.
-    scoped_ptr<WriteTransaction> txn = state_manager_.BeginWriteTransaction();
+    std::unique_ptr<WriteTransaction> txn =
+        state_manager_.BeginWriteTransaction();
 
     txn->clear_prefix_gethash_cache();
 
@@ -834,7 +838,8 @@ bool SafeBrowsingDatabaseNew::ResetDatabase() {
     return false;
 
   // Reset objects in memory.
-  scoped_ptr<WriteTransaction> txn = state_manager_.BeginWriteTransaction();
+  std::unique_ptr<WriteTransaction> txn =
+      state_manager_.BeginWriteTransaction();
   txn->clear_prefix_gethash_cache();
   txn->SwapPrefixSet(PrefixSetId::BROWSE, nullptr);
   txn->SwapPrefixSet(PrefixSetId::UNWANTED_SOFTWARE, nullptr);
@@ -904,7 +909,8 @@ bool SafeBrowsingDatabaseNew::PrefixSetContainsUrlHashes(
   const base::Time now = base::Time::Now();
 
   {
-    scoped_ptr<ReadTransaction> txn = state_manager_.BeginReadTransaction();
+    std::unique_ptr<ReadTransaction> txn =
+        state_manager_.BeginReadTransaction();
 
     // |prefix_set| is empty until it is either read from disk, or the first
     // update populates it.  Bail out without a hit if not yet available.
@@ -982,7 +988,7 @@ bool SafeBrowsingDatabaseNew::ContainsMalwareIP(const std::string& ip_address) {
   if (!address.IsIPv6())
     return false;  // better safe than sorry.
 
-  scoped_ptr<ReadTransaction> txn = state_manager_.BeginReadTransaction();
+  std::unique_ptr<ReadTransaction> txn = state_manager_.BeginReadTransaction();
   const IPBlacklist* ip_blacklist = txn->ip_blacklist();
   for (IPBlacklist::const_iterator it = ip_blacklist->begin();
        it != ip_blacklist->end(); ++it) {
@@ -1034,7 +1040,7 @@ bool SafeBrowsingDatabaseNew::ContainsModuleWhitelistedString(
 bool SafeBrowsingDatabaseNew::ContainsWhitelistedHashes(
     SBWhitelistId whitelist_id,
     const std::vector<SBFullHash>& hashes) {
-  scoped_ptr<ReadTransaction> txn = state_manager_.BeginReadTransaction();
+  std::unique_ptr<ReadTransaction> txn = state_manager_.BeginReadTransaction();
   const SBWhitelist* whitelist = txn->GetSBWhitelist(whitelist_id);
   if (whitelist->second)
     return true;
@@ -1112,7 +1118,7 @@ void SafeBrowsingDatabaseNew::InsertSubChunk(SafeBrowsingStore* store,
 
 void SafeBrowsingDatabaseNew::InsertChunks(
     const std::string& list_name,
-    const std::vector<scoped_ptr<SBChunkData>>& chunks) {
+    const std::vector<std::unique_ptr<SBChunkData>>& chunks) {
   DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
 
   if (db_state_manager_.corruption_detected() || chunks.empty())
@@ -1181,7 +1187,7 @@ void SafeBrowsingDatabaseNew::CacheHashResults(
     const base::TimeDelta& cache_lifetime) {
   const base::Time expire_after = base::Time::Now() + cache_lifetime;
 
-  scoped_ptr<ReadTransaction> txn = state_manager_.BeginReadTransaction();
+  std::unique_ptr<ReadTransaction> txn = state_manager_.BeginReadTransaction();
   PrefixGetHashCache* prefix_gethash_cache = txn->prefix_gethash_cache();
 
   // Create or reset all cached results for these prefixes.
@@ -1506,7 +1512,7 @@ void SafeBrowsingDatabaseNew::UpdatePrefixSetUrlStore(
 
   // Measure the amount of IO during the filter build.
   base::IoCounters io_before, io_after;
-  scoped_ptr<base::ProcessMetrics> metric(
+  std::unique_ptr<base::ProcessMetrics> metric(
       base::ProcessMetrics::CreateCurrentProcessMetrics());
 
   // IoCounters are currently not supported on Mac, and may not be
@@ -1526,7 +1532,7 @@ void SafeBrowsingDatabaseNew::UpdatePrefixSetUrlStore(
     return;
   }
 
-  scoped_ptr<const PrefixSet> new_prefix_set;
+  std::unique_ptr<const PrefixSet> new_prefix_set;
   if (store_full_hashes_in_prefix_set) {
     std::vector<SBFullHash> full_hash_results;
     for (size_t i = 0; i < add_full_hashes.size(); ++i) {
@@ -1648,7 +1654,7 @@ void SafeBrowsingDatabaseNew::LoadPrefixSet(const base::FilePath& db_filename,
   base::DeleteFile(bloom_filter_filename, false);
 
   const base::TimeTicks before = base::TimeTicks::Now();
-  scoped_ptr<const PrefixSet> new_prefix_set =
+  std::unique_ptr<const PrefixSet> new_prefix_set =
       PrefixSet::LoadFile(PrefixSetForFilename(db_filename));
   if (!new_prefix_set.get())
     RecordFailure(read_failure_type);
@@ -1748,7 +1754,7 @@ void SafeBrowsingDatabaseNew::WritePrefixSet(const base::FilePath& db_filename,
   // Do not grab the lock to avoid contention while writing to disk. This is
   // safe as only this task runner can ever modify |state_manager_|'s prefix
   // sets anyways.
-  scoped_ptr<ReadTransaction> txn =
+  std::unique_ptr<ReadTransaction> txn =
       state_manager_.BeginReadTransactionNoLockOnMainTaskRunner();
   const PrefixSet* prefix_set = txn->GetPrefixSet(prefix_set_id);
 

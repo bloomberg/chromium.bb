@@ -4,13 +4,16 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/platform_state_store.h"
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
+
 #if defined(USE_PLATFORM_STATE_STORE)
 
 #include <stdint.h>
 
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,7 +32,7 @@ const uint8_t kTestData[] = {
 };
 
 // Returns a dict with some sample data in it.
-scoped_ptr<base::DictionaryValue> CreateTestIncidentsSentPref() {
+std::unique_ptr<base::DictionaryValue> CreateTestIncidentsSentPref() {
   static const char kData[] =
       "{"
       "\"2\":{\"spam\":\"1234\",\"blorf\":\"5\"},"
@@ -37,20 +40,21 @@ scoped_ptr<base::DictionaryValue> CreateTestIncidentsSentPref() {
       "}";
   base::JSONReader reader;
 
-  scoped_ptr<base::Value> root(reader.Read(kData));
+  std::unique_ptr<base::Value> root(reader.Read(kData));
   EXPECT_TRUE(root);
   base::DictionaryValue* incidents_sent = nullptr;
   EXPECT_TRUE(root->GetAsDictionary(&incidents_sent));
   // Relinquish ownership to |incidents_sent|.
   ignore_result(root.release());
-  return make_scoped_ptr(incidents_sent);
+  return base::WrapUnique(incidents_sent);
 }
 
 }  // namespace
 
 // Tests that DeserializeIncidentsSent handles an empty payload properly.
 TEST(PlatformStateStoreTest, DeserializeEmpty) {
-  scoped_ptr<base::DictionaryValue> deserialized(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> deserialized(
+      new base::DictionaryValue);
   PlatformStateStoreLoadResult load_result =
       DeserializeIncidentsSent(std::string(), deserialized.get());
   ASSERT_EQ(PlatformStateStoreLoadResult::SUCCESS, load_result);
@@ -59,7 +63,7 @@ TEST(PlatformStateStoreTest, DeserializeEmpty) {
 
 // Tests that serialize followed by deserialize doesn't lose data.
 TEST(PlatformStateStoreTest, RoundTrip) {
-  scoped_ptr<base::DictionaryValue> incidents_sent(
+  std::unique_ptr<base::DictionaryValue> incidents_sent(
       CreateTestIncidentsSentPref());
   std::string data;
 
@@ -69,7 +73,8 @@ TEST(PlatformStateStoreTest, RoundTrip) {
   ASSERT_EQ(std::string(reinterpret_cast<const char*>(&kTestData[0]),
                         sizeof(kTestData)), data);
 
-  scoped_ptr<base::DictionaryValue> deserialized(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> deserialized(
+      new base::DictionaryValue);
   PlatformStateStoreLoadResult load_result =
       DeserializeIncidentsSent(data, deserialized.get());
   ASSERT_EQ(PlatformStateStoreLoadResult::SUCCESS, load_result);

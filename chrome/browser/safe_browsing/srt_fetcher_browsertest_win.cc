@@ -4,9 +4,10 @@
 
 #include "chrome/browser/safe_browsing/srt_fetcher_win.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"

@@ -8,11 +8,11 @@
 // A class that provides common functionality for safebrowsing protocol managers
 // that communicate with Google servers.
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace safe_browsing {
 

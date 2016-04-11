@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/base_paths.h"
@@ -18,7 +20,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -429,9 +430,9 @@ class DownloadProtectionServiceTest : public testing::Test {
   base::FilePath testdata_path_;
   DownloadProtectionService::ClientDownloadRequestSubscription
       client_download_request_subscription_;
-  scoped_ptr<ClientDownloadRequest> last_client_download_request_;
+  std::unique_ptr<ClientDownloadRequest> last_client_download_request_;
   base::ScopedTempDir profile_dir_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
 };
 
 
@@ -1748,7 +1749,8 @@ TEST_F(DownloadProtectionServiceTest,
   base::FilePath final_path(FILE_PATH_LITERAL("a.exe"));
   std::string hash = "hash";
 
-  scoped_ptr<content::MockDownloadItem> item(new content::MockDownloadItem);
+  std::unique_ptr<content::MockDownloadItem> item(
+      new content::MockDownloadItem);
   EXPECT_CALL(*item, GetFullPath()).WillRepeatedly(ReturnRef(tmp_path));
   EXPECT_CALL(*item, GetTargetFilePath())
       .WillRepeatedly(ReturnRef(final_path));

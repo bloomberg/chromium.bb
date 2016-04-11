@@ -5,11 +5,12 @@
 #include "chrome/browser/safe_browsing/incident_reporting/delayed_callback_runner.h"
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,8 +69,9 @@ class DelayedCallbackRunnerTest : public testing::Test {
 
   // Returns a callback argument that calls the test fixture's OnDelete method
   // on behalf of the given callback name.
-  scoped_ptr<CallbackArgument> MakeCallbackArgument(const std::string& name) {
-    return make_scoped_ptr(new CallbackArgument(base::Bind(
+  std::unique_ptr<CallbackArgument> MakeCallbackArgument(
+      const std::string& name) {
+    return base::WrapUnique(new CallbackArgument(base::Bind(
         &DelayedCallbackRunnerTest::OnDelete, base::Unretained(this), name)));
   }
 
@@ -90,7 +92,7 @@ class DelayedCallbackRunnerTest : public testing::Test {
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
-  scoped_ptr<safe_browsing::DelayedCallbackRunner> instance_;
+  std::unique_ptr<safe_browsing::DelayedCallbackRunner> instance_;
 
  private:
   struct CallbackState {

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/incident_reporting/tracked_preference_incident.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -43,7 +44,7 @@ TPIncident_ValueState MapValueState(
 
 PreferenceValidationDelegate::PreferenceValidationDelegate(
     Profile* profile,
-    scoped_ptr<IncidentReceiver> incident_receiver)
+    std::unique_ptr<IncidentReceiver> incident_receiver)
     : profile_(profile), incident_receiver_(std::move(incident_receiver)) {}
 
 PreferenceValidationDelegate::~PreferenceValidationDelegate() {
@@ -56,7 +57,7 @@ void PreferenceValidationDelegate::OnAtomicPreferenceValidation(
     bool is_personal) {
   TPIncident_ValueState proto_value_state = MapValueState(value_state);
   if (proto_value_state != TPIncident::UNKNOWN) {
-    scoped_ptr<TPIncident> incident(
+    std::unique_ptr<TPIncident> incident(
         new ClientIncidentReport_IncidentData_TrackedPreferenceIncident());
     incident->set_path(pref_path);
     if (!value ||
@@ -66,7 +67,7 @@ void PreferenceValidationDelegate::OnAtomicPreferenceValidation(
     }
     incident->set_value_state(proto_value_state);
     incident_receiver_->AddIncidentForProfile(
-        profile_, make_scoped_ptr(new TrackedPreferenceIncident(
+        profile_, base::WrapUnique(new TrackedPreferenceIncident(
                       std::move(incident), is_personal)));
   }
 }
@@ -79,7 +80,7 @@ void PreferenceValidationDelegate::OnSplitPreferenceValidation(
     bool is_personal) {
   TPIncident_ValueState proto_value_state = MapValueState(value_state);
   if (proto_value_state != TPIncident::UNKNOWN) {
-    scoped_ptr<ClientIncidentReport_IncidentData_TrackedPreferenceIncident>
+    std::unique_ptr<ClientIncidentReport_IncidentData_TrackedPreferenceIncident>
         incident(
             new ClientIncidentReport_IncidentData_TrackedPreferenceIncident());
     incident->set_path(pref_path);
@@ -90,7 +91,7 @@ void PreferenceValidationDelegate::OnSplitPreferenceValidation(
     }
     incident->set_value_state(proto_value_state);
     incident_receiver_->AddIncidentForProfile(
-        profile_, make_scoped_ptr(new TrackedPreferenceIncident(
+        profile_, base::WrapUnique(new TrackedPreferenceIncident(
                       std::move(incident), is_personal)));
   }
 }

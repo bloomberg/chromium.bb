@@ -124,7 +124,7 @@ class UnverifiedDownloadPolicyTest : public ::testing::Test {
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
   TestSafeBrowsingServiceFactory test_safe_browsing_service_factory_;
-  scoped_ptr<TestingProfileManager> testing_profile_manager_;
+  std::unique_ptr<TestingProfileManager> testing_profile_manager_;
   scoped_refptr<SafeBrowsingService> testing_safe_browsing_service_;
   TestingProfile* testing_profile_ = nullptr;
 };

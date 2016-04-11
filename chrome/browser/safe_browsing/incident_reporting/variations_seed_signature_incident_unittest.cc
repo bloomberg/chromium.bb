@@ -4,9 +4,10 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/variations_seed_signature_incident.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,8 +15,9 @@ namespace safe_browsing {
 
 namespace {
 
-scoped_ptr<Incident> MakeIncident(bool alternate) {
-  scoped_ptr<ClientIncidentReport_IncidentData_VariationsSeedSignatureIncident>
+std::unique_ptr<Incident> MakeIncident(bool alternate) {
+  std::unique_ptr<
+      ClientIncidentReport_IncidentData_VariationsSeedSignatureIncident>
       incident(
           new ClientIncidentReport_IncidentData_VariationsSeedSignatureIncident);
   if (alternate) {
@@ -27,7 +29,7 @@ scoped_ptr<Incident> MakeIncident(bool alternate) {
         "MEUCID+QmAfajh/kk4zZyv0IUisZ84sIddnjiW9yAXjFJIMFAiEAtVUHhFA/4M6Bff2Gaz"
         "L7tXVLhURxUQcpiMg9eMLWO0U=");
   }
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new VariationsSeedSignatureIncident(std::move(incident)));
 }
 

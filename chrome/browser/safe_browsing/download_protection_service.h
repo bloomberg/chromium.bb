@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -20,7 +21,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -70,7 +70,7 @@ class DownloadProtectionService {
       ClientDownloadRequestCallbackList;
 
   // A subscription to a registered ClientDownloadRequest callback.
-  typedef scoped_ptr<ClientDownloadRequestCallbackList::Subscription>
+  typedef std::unique_ptr<ClientDownloadRequestCallbackList::Subscription>
       ClientDownloadRequestSubscription;
 
   // Creates a download service.  The service is initially disabled.  You need
@@ -239,7 +239,7 @@ class DownloadProtectionService {
 
   int64_t download_request_timeout_ms_;
 
-  scoped_ptr<DownloadFeedbackService> feedback_service_;
+  std::unique_ptr<DownloadFeedbackService> feedback_service_;
 
   // A list of callbacks to be run on the main thread when a
   // ClientDownloadRequest has been formed.

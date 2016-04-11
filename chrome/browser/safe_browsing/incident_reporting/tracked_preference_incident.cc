@@ -11,7 +11,7 @@
 namespace safe_browsing {
 
 TrackedPreferenceIncident::TrackedPreferenceIncident(
-    scoped_ptr<ClientIncidentReport_IncidentData_TrackedPreferenceIncident>
+    std::unique_ptr<ClientIncidentReport_IncidentData_TrackedPreferenceIncident>
         tracked_preference_incident,
     bool is_personal)
     : is_personal_(is_personal) {
@@ -41,9 +41,9 @@ uint32_t TrackedPreferenceIncident::ComputeDigest() const {
 }
 
 // Filter out personal preferences.
-scoped_ptr<ClientIncidentReport_IncidentData>
+std::unique_ptr<ClientIncidentReport_IncidentData>
 TrackedPreferenceIncident::TakePayload() {
-  scoped_ptr<ClientIncidentReport_IncidentData> payload(
+  std::unique_ptr<ClientIncidentReport_IncidentData> payload(
       Incident::TakePayload());
 
   if (is_personal_) {

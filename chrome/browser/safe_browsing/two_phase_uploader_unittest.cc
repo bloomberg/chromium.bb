@@ -79,15 +79,13 @@ TEST_F(TwoPhaseUploaderTest, UploadFile) {
   LocalTwoPhaseTestServer test_server;
   ASSERT_TRUE(test_server.Start());
   Delegate delegate;
-  scoped_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
+  std::unique_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
       url_request_context_getter_.get(),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
-      test_server.GetURL("start"),
-      "metadata",
-      GetTestFilePath(),
+      test_server.GetURL("start"), "metadata", GetTestFilePath(),
       base::Bind(&Delegate::ProgressCallback, base::Unretained(&delegate)),
-      base::Bind(
-          &Delegate::FinishCallback, base::Unretained(&delegate), runner)));
+      base::Bind(&Delegate::FinishCallback, base::Unretained(&delegate),
+                 runner)));
   uploader->Start();
   runner->Run();
   EXPECT_EQ(TwoPhaseUploader::STATE_SUCCESS, delegate.state_);
@@ -105,15 +103,13 @@ TEST_F(TwoPhaseUploaderTest, BadPhaseOneResponse) {
   LocalTwoPhaseTestServer test_server;
   ASSERT_TRUE(test_server.Start());
   Delegate delegate;
-  scoped_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
+  std::unique_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
       url_request_context_getter_.get(),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
-      test_server.GetURL("start?p1code=500"),
-      "metadata",
-      GetTestFilePath(),
+      test_server.GetURL("start?p1code=500"), "metadata", GetTestFilePath(),
       base::Bind(&Delegate::ProgressCallback, base::Unretained(&delegate)),
-      base::Bind(
-          &Delegate::FinishCallback, base::Unretained(&delegate), runner)));
+      base::Bind(&Delegate::FinishCallback, base::Unretained(&delegate),
+                 runner)));
   uploader->Start();
   runner->Run();
   EXPECT_EQ(TwoPhaseUploader::UPLOAD_METADATA, delegate.state_);
@@ -127,15 +123,13 @@ TEST_F(TwoPhaseUploaderTest, BadPhaseTwoResponse) {
   LocalTwoPhaseTestServer test_server;
   ASSERT_TRUE(test_server.Start());
   Delegate delegate;
-  scoped_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
+  std::unique_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
       url_request_context_getter_.get(),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
-      test_server.GetURL("start?p2code=500"),
-      "metadata",
-      GetTestFilePath(),
+      test_server.GetURL("start?p2code=500"), "metadata", GetTestFilePath(),
       base::Bind(&Delegate::ProgressCallback, base::Unretained(&delegate)),
-      base::Bind(
-          &Delegate::FinishCallback, base::Unretained(&delegate), runner)));
+      base::Bind(&Delegate::FinishCallback, base::Unretained(&delegate),
+                 runner)));
   uploader->Start();
   runner->Run();
   EXPECT_EQ(TwoPhaseUploader::UPLOAD_FILE, delegate.state_);
@@ -153,15 +147,13 @@ TEST_F(TwoPhaseUploaderTest, PhaseOneConnectionClosed) {
   LocalTwoPhaseTestServer test_server;
   ASSERT_TRUE(test_server.Start());
   Delegate delegate;
-  scoped_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
+  std::unique_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
       url_request_context_getter_.get(),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
-      test_server.GetURL("start?p1close=1"),
-      "metadata",
-      GetTestFilePath(),
+      test_server.GetURL("start?p1close=1"), "metadata", GetTestFilePath(),
       base::Bind(&Delegate::ProgressCallback, base::Unretained(&delegate)),
-      base::Bind(
-          &Delegate::FinishCallback, base::Unretained(&delegate), runner)));
+      base::Bind(&Delegate::FinishCallback, base::Unretained(&delegate),
+                 runner)));
   uploader->Start();
   runner->Run();
   EXPECT_EQ(TwoPhaseUploader::UPLOAD_METADATA, delegate.state_);
@@ -175,15 +167,13 @@ TEST_F(TwoPhaseUploaderTest, PhaseTwoConnectionClosed) {
   LocalTwoPhaseTestServer test_server;
   ASSERT_TRUE(test_server.Start());
   Delegate delegate;
-  scoped_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
+  std::unique_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
       url_request_context_getter_.get(),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
-      test_server.GetURL("start?p2close=1"),
-      "metadata",
-      GetTestFilePath(),
+      test_server.GetURL("start?p2close=1"), "metadata", GetTestFilePath(),
       base::Bind(&Delegate::ProgressCallback, base::Unretained(&delegate)),
-      base::Bind(
-          &Delegate::FinishCallback, base::Unretained(&delegate), runner)));
+      base::Bind(&Delegate::FinishCallback, base::Unretained(&delegate),
+                 runner)));
   uploader->Start();
   runner->Run();
   EXPECT_EQ(TwoPhaseUploader::UPLOAD_FILE, delegate.state_);

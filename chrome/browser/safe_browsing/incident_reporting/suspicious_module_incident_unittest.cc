@@ -4,9 +4,10 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/suspicious_module_incident.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,11 +15,11 @@ namespace safe_browsing {
 
 namespace {
 
-scoped_ptr<Incident> MakeIncident(const char* path) {
-  scoped_ptr<ClientIncidentReport_IncidentData_SuspiciousModuleIncident>
+std::unique_ptr<Incident> MakeIncident(const char* path) {
+  std::unique_ptr<ClientIncidentReport_IncidentData_SuspiciousModuleIncident>
       incident(new ClientIncidentReport_IncidentData_SuspiciousModuleIncident);
   incident->set_path(path);
-  return make_scoped_ptr(new SuspiciousModuleIncident(std::move(incident)));
+  return base::WrapUnique(new SuspiciousModuleIncident(std::move(incident)));
 }
 
 }  // namespace

@@ -10,6 +10,7 @@
 
 #include "base/files/file_util.h"
 #include "base/mac/bundle_locations.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_incident.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/signature_evaluator_mac.h"
@@ -31,11 +32,11 @@ void VerifyBinaryIntegrityHelper(IncidentReceiver* incident_receiver,
     return;
   }
 
-  scoped_ptr<ClientIncidentReport_IncidentData_BinaryIntegrityIncident>
+  std::unique_ptr<ClientIncidentReport_IncidentData_BinaryIntegrityIncident>
       incident(new ClientIncidentReport_IncidentData_BinaryIntegrityIncident());
   if (!evaluator.PerformEvaluation(incident.get())) {
     incident_receiver->AddIncidentForProcess(
-        make_scoped_ptr(new BinaryIntegrityIncident(std::move(incident))));
+        base::WrapUnique(new BinaryIntegrityIncident(std::move(incident))));
   } else {
     // Clear past incidents involving this bundle if the signature is
     // now valid.
@@ -69,7 +70,8 @@ void VerifyBinaryIntegrityForTesting(IncidentReceiver* incident_receiver,
   VerifyBinaryIntegrityHelper(incident_receiver, path, requirement);
 }
 
-void VerifyBinaryIntegrity(scoped_ptr<IncidentReceiver> incident_receiver) {
+void VerifyBinaryIntegrity(
+    std::unique_ptr<IncidentReceiver> incident_receiver) {
   size_t i = 0;
   for (const auto& p : GetCriticalPathsAndRequirements()) {
     base::TimeTicks time_before = base::TimeTicks::Now();

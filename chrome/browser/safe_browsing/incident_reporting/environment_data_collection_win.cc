@@ -6,13 +6,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -254,7 +254,7 @@ void CollectModuleVerificationData(
   using ModuleState = ClientIncidentReport_EnvironmentData_Process_ModuleState;
 
   for (size_t i = 0; i < num_modules_to_verify; ++i) {
-    scoped_ptr<ModuleState> module_state(new ModuleState());
+    std::unique_ptr<ModuleState> module_state(new ModuleState());
 
     int num_bytes_different = 0;
     bool scan_complete = VerifyModule(modules_to_verify[i],

@@ -11,7 +11,7 @@
 namespace safe_browsing {
 
 SuspiciousModuleIncident::SuspiciousModuleIncident(
-    scoped_ptr<ClientIncidentReport_IncidentData_SuspiciousModuleIncident>
+    std::unique_ptr<ClientIncidentReport_IncidentData_SuspiciousModuleIncident>
         suspicious_module_incident) {
   DCHECK(suspicious_module_incident);
   DCHECK(suspicious_module_incident->has_path());

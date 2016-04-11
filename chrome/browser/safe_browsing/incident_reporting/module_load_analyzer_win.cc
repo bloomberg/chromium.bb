@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,8 +35,8 @@ namespace safe_browsing {
 namespace {
 
 void ReportIncidentsForSuspiciousModules(
-    scoped_ptr<std::set<base::FilePath>> module_paths,
-    scoped_ptr<IncidentReceiver> incident_receiver) {
+    std::unique_ptr<std::set<base::FilePath>> module_paths,
+    std::unique_ptr<IncidentReceiver> incident_receiver) {
   PathSanitizer path_sanitizer;
   scoped_refptr<BinaryFeatureExtractor> binary_feature_extractor(
       new BinaryFeatureExtractor());
@@ -44,7 +45,7 @@ void ReportIncidentsForSuspiciousModules(
   for (const auto& module_path : *module_paths) {
     // TODO(proberge): Skip over modules that have already been reported.
 
-    scoped_ptr<ClientIncidentReport_IncidentData_SuspiciousModuleIncident>
+    std::unique_ptr<ClientIncidentReport_IncidentData_SuspiciousModuleIncident>
         suspicious_module(
             new ClientIncidentReport_IncidentData_SuspiciousModuleIncident());
 
@@ -58,7 +59,7 @@ void ReportIncidentsForSuspiciousModules(
         module_path, suspicious_module->mutable_digest());
 
     // Version.
-    scoped_ptr<FileVersionInfo> version_info(
+    std::unique_ptr<FileVersionInfo> version_info(
         FileVersionInfo::CreateFileVersionInfo(module_path));
     if (version_info) {
       base::string16 file_version = version_info->file_version();
@@ -79,17 +80,17 @@ void ReportIncidentsForSuspiciousModules(
     }
 
     // Send the incident to the reporting service.
-    incident_receiver->AddIncidentForProcess(make_scoped_ptr(
+    incident_receiver->AddIncidentForProcess(base::WrapUnique(
         new SuspiciousModuleIncident(std::move(suspicious_module))));
   }
 }
 
 void CheckModuleWhitelistOnIOThread(
     const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
-    scoped_ptr<IncidentReceiver> incident_receiver,
-    scoped_ptr<std::set<ModuleInfo>> module_info_set) {
+    std::unique_ptr<IncidentReceiver> incident_receiver,
+    std::unique_ptr<std::set<ModuleInfo>> module_info_set) {
   SCOPED_UMA_HISTOGRAM_TIMER("SBIRS.SuspiciousModuleDetectionTime");
-  scoped_ptr<std::set<base::FilePath>> suspicious_paths(
+  std::unique_ptr<std::set<base::FilePath>> suspicious_paths(
       new std::set<base::FilePath>);
 
   base::FilePath file_path;
@@ -121,8 +122,9 @@ void CheckModuleWhitelistOnIOThread(
 
 void VerifyModuleLoadState(
     const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
-    scoped_ptr<IncidentReceiver> incident_receiver) {
-  scoped_ptr<std::set<ModuleInfo>> module_info_set(new std::set<ModuleInfo>);
+    std::unique_ptr<IncidentReceiver> incident_receiver) {
+  std::unique_ptr<std::set<ModuleInfo>> module_info_set(
+      new std::set<ModuleInfo>);
   if (!GetLoadedModules(module_info_set.get()))
     return;
 

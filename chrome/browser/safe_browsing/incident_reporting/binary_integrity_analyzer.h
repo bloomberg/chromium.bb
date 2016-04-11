@@ -7,9 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class FilePath;
@@ -27,7 +27,7 @@ void RegisterBinaryIntegrityAnalysis();
 
 // Callback to pass to the incident reporting service. The incident reporting
 // service will decide when to start the analysis.
-void VerifyBinaryIntegrity(scoped_ptr<IncidentReceiver> incident_receiver);
+void VerifyBinaryIntegrity(std::unique_ptr<IncidentReceiver> incident_receiver);
 
 // Record how long the signature verification took.
 void RecordSignatureVerificationTime(size_t file_index,

@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 
 namespace safe_browsing {
@@ -19,7 +20,7 @@ class ClientIncidentReport_IncidentData_ResourceRequestIncident;
 class ResourceRequestIncident : public Incident {
  public:
   explicit ResourceRequestIncident(
-      scoped_ptr<ClientIncidentReport_IncidentData_ResourceRequestIncident>
+      std::unique_ptr<ClientIncidentReport_IncidentData_ResourceRequestIncident>
           script_detection_incident);
   ~ResourceRequestIncident() override;
 

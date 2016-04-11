@@ -71,7 +71,7 @@ void PopulateExtensionInfo(
   const base::DictionaryValue* signature =
       extension_prefs.GetInstallSignature();
   if (signature) {
-    scoped_ptr<extensions::InstallSignature> signature_from_prefs =
+    std::unique_ptr<extensions::InstallSignature> signature_from_prefs =
         extensions::InstallSignature::FromValue(*signature);
     if (signature_from_prefs) {
       if (ContainsKey(signature_from_prefs->ids, extension_id)) {
@@ -108,7 +108,7 @@ void CollectExtensionData(ClientIncidentReport_ExtensionData* data) {
     if (!IncidentReportingService::IsEnabledForProfile(profile))
       continue;
 
-    scoped_ptr<const extensions::ExtensionSet> extensions(
+    std::unique_ptr<const extensions::ExtensionSet> extensions(
         extensions::ExtensionRegistryFactory::GetForBrowserContext(profile)
             ->GenerateInstalledExtensionsSet());
     extensions::ExtensionPrefs* extension_prefs =

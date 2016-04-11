@@ -93,8 +93,8 @@ class StateStoreTest : public PlatformStateStoreTestBase {
   // store.
   void TrimPref() {
     ASSERT_EQ(nullptr, profile_);
-    scoped_ptr<base::Value> prefs(JSONFileValueDeserializer(GetPrefsPath())
-                                      .Deserialize(nullptr, nullptr));
+    std::unique_ptr<base::Value> prefs(JSONFileValueDeserializer(GetPrefsPath())
+                                           .Deserialize(nullptr, nullptr));
     ASSERT_NE(nullptr, prefs.get());
     base::DictionaryValue* dict = nullptr;
     ASSERT_TRUE(prefs->GetAsDictionary(&dict));

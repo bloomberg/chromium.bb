@@ -628,7 +628,7 @@ void LocalSafeBrowsingDatabaseManager::GetChunks(GetChunksCallback callback) {
 
 void LocalSafeBrowsingDatabaseManager::AddChunks(
     const std::string& list,
-    scoped_ptr<std::vector<scoped_ptr<SBChunkData>>> chunks,
+    std::unique_ptr<std::vector<std::unique_ptr<SBChunkData>>> chunks,
     AddChunksCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(enabled_);
@@ -640,7 +640,7 @@ void LocalSafeBrowsingDatabaseManager::AddChunks(
 }
 
 void LocalSafeBrowsingDatabaseManager::DeleteChunks(
-    scoped_ptr<std::vector<SBChunkDelete>> chunk_deletes) {
+    std::unique_ptr<std::vector<SBChunkDelete>> chunk_deletes) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(enabled_);
   safe_browsing_task_runner_->PostTask(
@@ -1012,7 +1012,7 @@ void LocalSafeBrowsingDatabaseManager::DatabaseLoadComplete() {
 
 void LocalSafeBrowsingDatabaseManager::AddDatabaseChunks(
     const std::string& list_name,
-    scoped_ptr<std::vector<scoped_ptr<SBChunkData>>> chunks,
+    std::unique_ptr<std::vector<std::unique_ptr<SBChunkData>>> chunks,
     AddChunksCallback callback) {
   DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
   if (chunks)
@@ -1024,7 +1024,7 @@ void LocalSafeBrowsingDatabaseManager::AddDatabaseChunks(
 }
 
 void LocalSafeBrowsingDatabaseManager::DeleteDatabaseChunks(
-    scoped_ptr<std::vector<SBChunkDelete>> chunk_deletes) {
+    std::unique_ptr<std::vector<SBChunkDelete>> chunk_deletes) {
   DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
   if (chunk_deletes)
     GetDatabase()->DeleteChunks(*chunk_deletes);

@@ -5,11 +5,11 @@
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
@@ -268,7 +268,7 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
     bool is_extended_reporting,
     const ClientReportPhishingRequestCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_ptr<ClientPhishingRequest> request(verdict);
+  std::unique_ptr<ClientPhishingRequest> request(verdict);
 
   if (!enabled_) {
     if (!callback.is_null())
@@ -321,7 +321,7 @@ void ClientSideDetectionService::StartClientReportMalwareRequest(
     ClientMalwareRequest* verdict,
     const ClientReportMalwareRequestCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_ptr<ClientMalwareRequest> request(verdict);
+  std::unique_ptr<ClientMalwareRequest> request(verdict);
 
   if (!enabled_) {
     if (!callback.is_null())
@@ -373,7 +373,7 @@ void ClientSideDetectionService::HandlePhishingVerdict(
     const net::ResponseCookies& cookies,
     const std::string& data) {
   ClientPhishingResponse response;
-  scoped_ptr<ClientReportInfo> info(client_phishing_reports_[source]);
+  std::unique_ptr<ClientReportInfo> info(client_phishing_reports_[source]);
   bool is_phishing = false;
   if (status.is_success() && net::HTTP_OK == response_code &&
       response.ParseFromString(data)) {
@@ -408,7 +408,8 @@ void ClientSideDetectionService::HandleMalwareVerdict(
       "SBClientMalware.IPBlacklistRequestNetError", -status.error());
 
   ClientMalwareResponse response;
-  scoped_ptr<ClientMalwareReportInfo> info(client_malware_reports_[source]);
+  std::unique_ptr<ClientMalwareReportInfo> info(
+      client_malware_reports_[source]);
   bool should_blacklist = false;
   if (status.is_success() && net::HTTP_OK == response_code &&
       response.ParseFromString(data)) {

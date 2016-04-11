@@ -32,14 +32,15 @@ IncidentReportUploaderImpl::~IncidentReportUploaderImpl() {
 }
 
 // static
-scoped_ptr<IncidentReportUploader> IncidentReportUploaderImpl::UploadReport(
+std::unique_ptr<IncidentReportUploader>
+IncidentReportUploaderImpl::UploadReport(
     const OnResultCallback& callback,
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
     const ClientIncidentReport& report) {
   std::string post_data;
   if (!report.SerializeToString(&post_data))
-    return scoped_ptr<IncidentReportUploader>();
-  return scoped_ptr<IncidentReportUploader>(new IncidentReportUploaderImpl(
+    return std::unique_ptr<IncidentReportUploader>();
+  return std::unique_ptr<IncidentReportUploader>(new IncidentReportUploaderImpl(
       callback, request_context_getter, post_data));
 }
 
@@ -73,13 +74,13 @@ GURL IncidentReportUploaderImpl::GetIncidentReportUrl() {
 void IncidentReportUploaderImpl::OnURLFetchComplete(
     const net::URLFetcher* source) {
   // Take ownership of the fetcher in this scope (source == url_fetcher_).
-  scoped_ptr<net::URLFetcher> url_fetcher(std::move(url_fetcher_));
+  std::unique_ptr<net::URLFetcher> url_fetcher(std::move(url_fetcher_));
 
   UMA_HISTOGRAM_TIMES("SBIRS.ReportUploadTime",
                       base::TimeTicks::Now() - time_begin_);
 
   Result result = UPLOAD_REQUEST_FAILED;
-  scoped_ptr<ClientIncidentResponse> response;
+  std::unique_ptr<ClientIncidentResponse> response;
 
   if (source->GetStatus().is_success() &&
       source->GetResponseCode() == net::HTTP_OK) {

@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -228,16 +229,17 @@ LastDownloadFinder::~LastDownloadFinder() {
 }
 
 // static
-scoped_ptr<LastDownloadFinder> LastDownloadFinder::Create(
+std::unique_ptr<LastDownloadFinder> LastDownloadFinder::Create(
     const DownloadDetailsGetter& download_details_getter,
     const LastDownloadCallback& callback) {
-  scoped_ptr<LastDownloadFinder> finder(make_scoped_ptr(new LastDownloadFinder(
-      download_details_getter,
-      g_browser_process->profile_manager()->GetLoadedProfiles(),
-      callback)));
+  std::unique_ptr<LastDownloadFinder> finder(
+      base::WrapUnique(new LastDownloadFinder(
+          download_details_getter,
+          g_browser_process->profile_manager()->GetLoadedProfiles(),
+          callback)));
   // Return NULL if there is no work to do.
   if (finder->profile_states_.empty())
-    return scoped_ptr<LastDownloadFinder>();
+    return std::unique_ptr<LastDownloadFinder>();
   return finder;
 }
 
@@ -289,7 +291,7 @@ void LastDownloadFinder::SearchInProfile(Profile* profile) {
 
 void LastDownloadFinder::OnMetadataQuery(
     Profile* profile,
-    scoped_ptr<ClientIncidentReport_DownloadDetails> details) {
+    std::unique_ptr<ClientIncidentReport_DownloadDetails> details) {
   auto iter = profile_states_.find(profile);
   // Early-exit if the search for this profile was abandoned.
   if (iter == profile_states_.end())
@@ -334,7 +336,7 @@ void LastDownloadFinder::AbandonSearchInProfile(Profile* profile) {
 
 void LastDownloadFinder::OnDownloadQuery(
     Profile* profile,
-    scoped_ptr<std::vector<history::DownloadRow> > downloads) {
+    std::unique_ptr<std::vector<history::DownloadRow>> downloads) {
   // Early-exit if the history search for this profile was abandoned.
   auto iter = profile_states_.find(profile);
   if (iter == profile_states_.end())
@@ -379,9 +381,10 @@ void LastDownloadFinder::RemoveProfileAndReportIfDone(
 void LastDownloadFinder::ReportResults() {
   DCHECK(profile_states_.empty());
 
-  scoped_ptr<ClientIncidentReport_DownloadDetails> binary_details = nullptr;
-  scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails> non_binary_details =
+  std::unique_ptr<ClientIncidentReport_DownloadDetails> binary_details =
       nullptr;
+  std::unique_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
+      non_binary_details = nullptr;
 
   if (details_) {
     binary_details.reset(new ClientIncidentReport_DownloadDetails(*details_));

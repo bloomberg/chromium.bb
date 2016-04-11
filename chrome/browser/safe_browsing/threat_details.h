@@ -11,6 +11,7 @@
 // An instance of this class is generated when a safe browsing warning page
 // is shown (SafeBrowsingBlockingPage).
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -19,7 +20,6 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
@@ -96,7 +96,7 @@ class ThreatDetails : public base::RefCountedThreadSafe<
   Profile* profile_;
 
   // The report protocol buffer.
-  scoped_ptr<ClientSafeBrowsingReportRequest> report_;
+  std::unique_ptr<ClientSafeBrowsingReportRequest> report_;
 
   // Used to get a pointer to the HTTP cache.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;

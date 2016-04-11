@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_DATABASE_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -14,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -208,7 +208,7 @@ class SafeBrowsingDatabase {
   virtual bool UpdateStarted(std::vector<SBListChunkRanges>* lists) = 0;
   virtual void InsertChunks(
       const std::string& list_name,
-      const std::vector<scoped_ptr<SBChunkData>>& chunks) = 0;
+      const std::vector<std::unique_ptr<SBChunkData>>& chunks) = 0;
   virtual void DeleteChunks(
       const std::vector<SBChunkDelete>& chunk_deletes) = 0;
   virtual void UpdateFinished(bool update_succeeded) = 0;
@@ -397,7 +397,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   bool UpdateStarted(std::vector<SBListChunkRanges>* lists) override;
   void InsertChunks(
       const std::string& list_name,
-      const std::vector<scoped_ptr<SBChunkData>>& chunks) override;
+      const std::vector<std::unique_ptr<SBChunkData>>& chunks) override;
   void DeleteChunks(const std::vector<SBChunkDelete>& chunk_deletes) override;
   void UpdateFinished(bool update_succeeded) override;
   void CacheHashResults(const std::vector<SBPrefix>& prefixes,
@@ -475,9 +475,10 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
         const scoped_refptr<const base::SequencedTaskRunner>& db_task_runner);
     ~ThreadSafeStateManager();
 
-    scoped_ptr<ReadTransaction> BeginReadTransaction();
-    scoped_ptr<ReadTransaction> BeginReadTransactionNoLockOnMainTaskRunner();
-    scoped_ptr<WriteTransaction> BeginWriteTransaction();
+    std::unique_ptr<ReadTransaction> BeginReadTransaction();
+    std::unique_ptr<ReadTransaction>
+    BeginReadTransactionNoLockOnMainTaskRunner();
+    std::unique_ptr<WriteTransaction> BeginWriteTransaction();
 
    private:
     // The sequenced task runner for this object, used to verify that its state
@@ -498,8 +499,8 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
     // PrefixSets to speed up lookups for particularly large lists. The
     // PrefixSet themselves are never modified, instead a new one is swapped in
     // on update.
-    scoped_ptr<const PrefixSet> browse_prefix_set_;
-    scoped_ptr<const PrefixSet> unwanted_software_prefix_set_;
+    std::unique_ptr<const PrefixSet> browse_prefix_set_;
+    std::unique_ptr<const PrefixSet> unwanted_software_prefix_set_;
 
     // Cache of gethash results for prefix stores. Entries should not be used if
     // they are older than their expire_after field.  Cached misses will have
@@ -720,20 +721,21 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   //     to browsing lists).
   //
   // The stores themselves will be modified throughout the existence of this
-  // database, but shouldn't ever be swapped out (hence the const scoped_ptr --
-  // which could be swapped for C++11's std::optional when that's available).
-  // They are NonThreadSafe and should thus only be accessed on the database's
-  // main thread as enforced by SafeBrowsingStoreFile's implementation.
-  const scoped_ptr<SafeBrowsingStore> browse_store_;
-  const scoped_ptr<SafeBrowsingStore> download_store_;
-  const scoped_ptr<SafeBrowsingStore> csd_whitelist_store_;
-  const scoped_ptr<SafeBrowsingStore> download_whitelist_store_;
-  const scoped_ptr<SafeBrowsingStore> inclusion_whitelist_store_;
-  const scoped_ptr<SafeBrowsingStore> extension_blacklist_store_;
-  const scoped_ptr<SafeBrowsingStore> ip_blacklist_store_;
-  const scoped_ptr<SafeBrowsingStore> unwanted_software_store_;
-  const scoped_ptr<SafeBrowsingStore> module_whitelist_store_;
-  const scoped_ptr<SafeBrowsingStore> resource_blacklist_store_;
+  // database, but shouldn't ever be swapped out (hence the const
+  // std::unique_ptr -- which could be swapped for C++11's std::optional when
+  // that's available). They are NonThreadSafe and should thus only be accessed
+  // on the database's main thread as enforced by SafeBrowsingStoreFile's
+  // implementation.
+  const std::unique_ptr<SafeBrowsingStore> browse_store_;
+  const std::unique_ptr<SafeBrowsingStore> download_store_;
+  const std::unique_ptr<SafeBrowsingStore> csd_whitelist_store_;
+  const std::unique_ptr<SafeBrowsingStore> download_whitelist_store_;
+  const std::unique_ptr<SafeBrowsingStore> inclusion_whitelist_store_;
+  const std::unique_ptr<SafeBrowsingStore> extension_blacklist_store_;
+  const std::unique_ptr<SafeBrowsingStore> ip_blacklist_store_;
+  const std::unique_ptr<SafeBrowsingStore> unwanted_software_store_;
+  const std::unique_ptr<SafeBrowsingStore> module_whitelist_store_;
+  const std::unique_ptr<SafeBrowsingStore> resource_blacklist_store_;
 
   // Used to schedule resetting the database because of corruption. This factory
   // and the WeakPtrs it issues should only be used on the database's main

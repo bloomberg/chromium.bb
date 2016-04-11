@@ -6,13 +6,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -63,7 +63,7 @@ class DownloadDetailsGetter {
 
  private:
   void DownloadDetailsCallback(
-      scoped_ptr<ClientIncidentReport_DownloadDetails> details) {
+      std::unique_ptr<ClientIncidentReport_DownloadDetails> details) {
     OnDownloadDetails(details.get());
   }
 };
@@ -117,8 +117,9 @@ class DownloadMetadataManagerTestBase : public ::testing::Test {
   }
 
   // Returns a new ClientDownloadRequest for the given download URL.
-  static scoped_ptr<ClientDownloadRequest> MakeTestRequest(const char* url) {
-    scoped_ptr<ClientDownloadRequest> request(new ClientDownloadRequest());
+  static std::unique_ptr<ClientDownloadRequest> MakeTestRequest(
+      const char* url) {
+    std::unique_ptr<ClientDownloadRequest> request(new ClientDownloadRequest());
     request->set_url(url);
     request->mutable_digests();
     request->set_length(kTestDownloadLength);
@@ -126,8 +127,9 @@ class DownloadMetadataManagerTestBase : public ::testing::Test {
   }
 
   // Returns a new DownloadMetdata for the given download id.
-  static scoped_ptr<DownloadMetadata> GetTestMetadata(uint32_t download_id) {
-    scoped_ptr<DownloadMetadata> metadata(new DownloadMetadata());
+  static std::unique_ptr<DownloadMetadata> GetTestMetadata(
+      uint32_t download_id) {
+    std::unique_ptr<DownloadMetadata> metadata(new DownloadMetadata());
     metadata->set_download_id(download_id);
     ClientIncidentReport_DownloadDetails* details =
         metadata->mutable_download();
@@ -151,11 +153,11 @@ class DownloadMetadataManagerTestBase : public ::testing::Test {
   }
 
   // Returns the DownloadMetadata read from the test profile's directory.
-  scoped_ptr<DownloadMetadata> ReadTestMetadataFile() const {
+  std::unique_ptr<DownloadMetadata> ReadTestMetadataFile() const {
     std::string data;
     if (!base::ReadFileToString(GetMetadataPath(), &data))
-      return scoped_ptr<DownloadMetadata>();
-    scoped_ptr<DownloadMetadata> result(new DownloadMetadata);
+      return std::unique_ptr<DownloadMetadata>();
+    std::unique_ptr<DownloadMetadata> result(new DownloadMetadata);
     EXPECT_TRUE(result->ParseFromString(data));
     return result;
   }
@@ -254,9 +256,9 @@ class DownloadMetadataManagerTestBase : public ::testing::Test {
   NiceMock<MockDownloadMetadataManager> manager_;
   TestingProfile profile_;
   NiceMock<content::MockDownloadManager> download_manager_;
-  scoped_ptr<content::MockDownloadItem> test_item_;
-  scoped_ptr<content::MockDownloadItem> other_item_;
-  scoped_ptr<content::MockDownloadItem> zero_item_;
+  std::unique_ptr<content::MockDownloadItem> test_item_;
+  std::unique_ptr<content::MockDownloadItem> other_item_;
+  std::unique_ptr<content::MockDownloadItem> zero_item_;
 
   // The DownloadMetadataManager's content::DownloadManager::Observer. Captured
   // by download_manager_'s AddObserver action.
@@ -502,7 +504,7 @@ TEST_P(SetRequestTest, SetRequest) {
 
   ShutdownDownloadManager();
 
-  scoped_ptr<DownloadMetadata> metadata(ReadTestMetadataFile());
+  std::unique_ptr<DownloadMetadata> metadata(ReadTestMetadataFile());
   if (set_request_) {
     // Expect that the file contains metadata for the download.
     ASSERT_TRUE(metadata);
@@ -551,7 +553,7 @@ TEST_F(DownloadMetadataManagerTestBase, ActiveDownloadNoRequest) {
   ShutdownDownloadManager();
 
   // Expect that the metadata file is still present.
-  scoped_ptr<DownloadMetadata> metadata(ReadTestMetadataFile());
+  std::unique_ptr<DownloadMetadata> metadata(ReadTestMetadataFile());
   ASSERT_TRUE(metadata);
   EXPECT_EQ(kOtherDownloadId, metadata->download_id());
 }
@@ -594,7 +596,7 @@ TEST_F(DownloadMetadataManagerTestBase, ActiveDownloadWithRequest) {
   ShutdownDownloadManager();
 
   // Expect that the file contains metadata for the download.
-  scoped_ptr<DownloadMetadata> metadata(ReadTestMetadataFile());
+  std::unique_ptr<DownloadMetadata> metadata(ReadTestMetadataFile());
   ASSERT_TRUE(metadata);
   EXPECT_EQ(kTestDownloadId, metadata->download_id());
   EXPECT_STREQ(kNewUrl, metadata->download().download().url().c_str());

@@ -4,14 +4,15 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/off_domain_inclusion_detector.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -60,7 +61,8 @@ const int kFakeRenderProcessId = 123;
 
 // A BrowserContextKeyedServiceFactory::TestingFactoryFunction that creates a
 // HistoryService for a TestingProfile.
-scoped_ptr<KeyedService> BuildHistoryService(content::BrowserContext* context) {
+std::unique_ptr<KeyedService> BuildHistoryService(
+    content::BrowserContext* context) {
   TestingProfile* profile = static_cast<TestingProfile*>(context);
 
   // Delete the file before creating the service.
@@ -73,11 +75,11 @@ scoped_ptr<KeyedService> BuildHistoryService(content::BrowserContext* context) {
     return nullptr;
   }
 
-  scoped_ptr<history::HistoryService> history_service(
+  std::unique_ptr<history::HistoryService> history_service(
       new history::HistoryService(
-          make_scoped_ptr(new ChromeHistoryClient(
+          base::WrapUnique(new ChromeHistoryClient(
               BookmarkModelFactory::GetForProfile(profile))),
-          scoped_ptr<history::VisitDelegate>()));
+          std::unique_ptr<history::VisitDelegate>()));
   if (history_service->Init(
           history::HistoryDatabaseParamsForPath(profile->GetPath()))) {
     return std::move(history_service);
@@ -233,11 +235,11 @@ class OffDomainInclusionDetectorTest : public testing::TestWithParam<TestCase> {
     history::HistoryService* history_service =
         HistoryServiceFactory::GetForProfile(
             testing_profile_, ServiceAccessType::EXPLICIT_ACCESS);
-    scoped_ptr<ScopedHistoryEntry> scoped_history_entry;
+    std::unique_ptr<ScopedHistoryEntry> scoped_history_entry;
     if (ShouldAddSimulatedURLsToHistory())
       scoped_history_entry.reset(new ScopedHistoryEntry(history_service, url));
 
-    scoped_ptr<net::URLRequest> url_request(
+    std::unique_ptr<net::URLRequest> url_request(
         context_.CreateRequest(url, net::DEFAULT_PRIORITY, NULL));
 
     if (!referrer.empty())
@@ -331,7 +333,7 @@ class OffDomainInclusionDetectorTest : public testing::TestWithParam<TestCase> {
             NULL)));
 
     // Create default prefs for the test profile.
-    scoped_ptr<syncable_prefs::TestingPrefServiceSyncable> prefs(
+    std::unique_ptr<syncable_prefs::TestingPrefServiceSyncable> prefs(
         new syncable_prefs::TestingPrefServiceSyncable);
     chrome::RegisterUserProfilePrefs(prefs->registry());
 
@@ -370,14 +372,15 @@ class OffDomainInclusionDetectorTest : public testing::TestWithParam<TestCase> {
   }
 
   Profile* testing_profile_;
-  scoped_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
 
   content::TestBrowserThreadBundle thread_bundle_;
   net::TestURLRequestContext context_;
 
   AnalysisEvent observed_analysis_event_;
 
-  scoped_ptr<MockOffDomainInclusionDetector> off_domain_inclusion_detector_;
+  std::unique_ptr<MockOffDomainInclusionDetector>
+      off_domain_inclusion_detector_;
 
   DISALLOW_COPY_AND_ASSIGN(OffDomainInclusionDetectorTest);
 };

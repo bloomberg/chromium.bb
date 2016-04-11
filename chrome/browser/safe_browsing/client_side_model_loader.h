@@ -14,6 +14,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -21,7 +22,6 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -114,8 +114,8 @@ class ModelLoader : public net::URLFetcherDelegate {
 
   // If the model isn't yet loaded, model_str_ will be empty.
   std::string model_str_;
-  scoped_ptr<ClientSideModel> model_;
-  scoped_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<ClientSideModel> model_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
 
   // Callback to invoke when we've got a new model.  CSD will send it around.
   base::Closure update_renderers_callback_;

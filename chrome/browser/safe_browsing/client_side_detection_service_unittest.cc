@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/safe_browsing/client_side_detection_service.h"
+
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <queue>
 #include <string>
 
@@ -12,12 +15,10 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "components/variations/variations_associated_data.h"
@@ -98,7 +99,7 @@ class ClientSideDetectionServiceTest : public testing::Test {
   }
 
   bool SendClientReportMalwareRequest(const GURL& url) {
-    scoped_ptr<ClientMalwareRequest> request(new ClientMalwareRequest());
+    std::unique_ptr<ClientMalwareRequest> request(new ClientMalwareRequest());
     request->set_url(url.spec());
     csd_service_->SendClientReportMalwareRequest(
         request.release(),
@@ -231,8 +232,8 @@ class ClientSideDetectionServiceTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<ClientSideDetectionService> csd_service_;
-  scoped_ptr<net::FakeURLFetcherFactory> factory_;
+  std::unique_ptr<ClientSideDetectionService> csd_service_;
+  std::unique_ptr<net::FakeURLFetcherFactory> factory_;
   base::MessageLoop msg_loop_;
 
  private:
@@ -250,9 +251,9 @@ class ClientSideDetectionServiceTest : public testing::Test {
     msg_loop_.QuitWhenIdle();
   }
 
-  scoped_ptr<content::TestBrowserThread> browser_thread_;
-  scoped_ptr<content::TestBrowserThread> file_thread_;
-  scoped_ptr<base::FieldTrialList> field_trials_;
+  std::unique_ptr<content::TestBrowserThread> browser_thread_;
+  std::unique_ptr<content::TestBrowserThread> file_thread_;
+  std::unique_ptr<base::FieldTrialList> field_trials_;
 
   GURL phishing_url_;
   GURL confirmed_malware_url_;

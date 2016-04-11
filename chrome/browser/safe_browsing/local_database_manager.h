@@ -12,6 +12,7 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -21,7 +22,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
@@ -96,7 +96,7 @@ class LocalSafeBrowsingDatabaseManager
     // TODO(lzheng): We should consider to use this time out check
     // for browsing too (instead of implementing in
     // safe_browsing_resource_handler.cc).
-    scoped_ptr<base::WeakPtrFactory<LocalSafeBrowsingDatabaseManager>>
+    std::unique_ptr<base::WeakPtrFactory<LocalSafeBrowsingDatabaseManager>>
         weak_ptr_factory_;
 
    private:
@@ -251,11 +251,11 @@ class LocalSafeBrowsingDatabaseManager
   // Called on the database thread to add/remove chunks and host keys.
   void AddDatabaseChunks(
       const std::string& list,
-      scoped_ptr<std::vector<scoped_ptr<SBChunkData>>> chunks,
+      std::unique_ptr<std::vector<std::unique_ptr<SBChunkData>>> chunks,
       AddChunksCallback callback);
 
   void DeleteDatabaseChunks(
-      scoped_ptr<std::vector<SBChunkDelete>> chunk_deletes);
+      std::unique_ptr<std::vector<SBChunkDelete>> chunk_deletes);
 
   void NotifyClientBlockingComplete(Client* client, bool proceed);
 
@@ -313,11 +313,12 @@ class LocalSafeBrowsingDatabaseManager
   void UpdateStarted() override;
   void UpdateFinished(bool success) override;
   void GetChunks(GetChunksCallback callback) override;
-  void AddChunks(const std::string& list,
-                 scoped_ptr<std::vector<scoped_ptr<SBChunkData>>> chunks,
-                 AddChunksCallback callback) override;
+  void AddChunks(
+      const std::string& list,
+      std::unique_ptr<std::vector<std::unique_ptr<SBChunkData>>> chunks,
+      AddChunksCallback callback) override;
   void DeleteChunks(
-      scoped_ptr<std::vector<SBChunkDelete>> chunk_deletes) override;
+      std::unique_ptr<std::vector<SBChunkDelete>> chunk_deletes) override;
 
   scoped_refptr<SafeBrowsingService> sb_service_;
 
@@ -326,7 +327,7 @@ class LocalSafeBrowsingDatabaseManager
   // Used for issuing only one GetHash request for a given prefix.
   GetHashRequests gethash_requests_;
 
-  // The persistent database.  We don't use a scoped_ptr because it
+  // The persistent database.  We don't use a std::unique_ptr because it
   // needs to be destroyed on a different thread than this object.
   SafeBrowsingDatabase* database_;
 

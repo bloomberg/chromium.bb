@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -65,18 +66,18 @@ class ModuleLoadAnalayzerTest : public testing::Test {
     ASSERT_TRUE(PathService::Get(base::DIR_EXE, &current_dir));
     base::ScopedNativeLibrary dll1(current_dir.AppendASCII(module_to_load));
 
-    scoped_ptr<Incident> incident;
+    std::unique_ptr<Incident> incident;
     EXPECT_CALL(*mock_incident_receiver_, DoAddIncidentForProcess(_))
         .WillOnce(TakeIncident(&incident));
 
     VerifyModuleLoadState(mock_safe_browsing_database_manager_,
-                          make_scoped_ptr(mock_incident_receiver_));
+                          base::WrapUnique(mock_incident_receiver_));
 
     base::RunLoop().RunUntilIdle();
     content::RunAllBlockingPoolTasksUntilIdle();
 
     ASSERT_TRUE(incident);
-    scoped_ptr<ClientIncidentReport_IncidentData> incident_data =
+    std::unique_ptr<ClientIncidentReport_IncidentData> incident_data =
         incident->TakePayload();
     ASSERT_TRUE(incident_data->has_suspicious_module());
     const ClientIncidentReport_IncidentData_SuspiciousModuleIncident&
@@ -94,7 +95,7 @@ class ModuleLoadAnalayzerTest : public testing::Test {
     EXPECT_CALL(*mock_incident_receiver_, DoAddIncidentForProcess(_)).Times(0);
 
     VerifyModuleLoadState(mock_safe_browsing_database_manager_,
-                          make_scoped_ptr(mock_incident_receiver_));
+                          base::WrapUnique(mock_incident_receiver_));
 
     base::RunLoop().RunUntilIdle();
     content::RunAllBlockingPoolTasksUntilIdle();

@@ -13,17 +13,17 @@
 // and handling responses from, Google's SafeBrowsing servers. This class uses
 // The SafeBrowsingProtocolParser class to do the actual parsing.
 
+#include <stddef.h>
+
 #include <deque>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
-#include <stddef.h>
-
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -302,7 +302,7 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   // Current active request (in case we need to cancel) for updates or chunks
   // from the SafeBrowsing service. We can only have one of these outstanding
   // at any given time unlike GetHash requests, which are tracked separately.
-  scoped_ptr<net::URLFetcher> request_;
+  std::unique_ptr<net::URLFetcher> request_;
 
   // The kind of request that is currently in progress.
   SafeBrowsingRequestType request_type_;
@@ -433,12 +433,12 @@ class SafeBrowsingProtocolManagerDelegate {
   // call at a later time.
   virtual void AddChunks(
       const std::string& list,
-      scoped_ptr<std::vector<scoped_ptr<SBChunkData>>> chunks,
+      std::unique_ptr<std::vector<std::unique_ptr<SBChunkData>>> chunks,
       AddChunksCallback callback) = 0;
 
   // Delete chunks from the database.
   virtual void DeleteChunks(
-      scoped_ptr<std::vector<SBChunkDelete> > chunk_deletes) = 0;
+      std::unique_ptr<std::vector<SBChunkDelete>> chunk_deletes) = 0;
 };
 
 }  // namespace safe_browsing

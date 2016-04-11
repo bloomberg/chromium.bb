@@ -11,7 +11,7 @@
 namespace safe_browsing {
 
 VariationsSeedSignatureIncident::VariationsSeedSignatureIncident(
-    scoped_ptr<
+    std::unique_ptr<
         ClientIncidentReport_IncidentData_VariationsSeedSignatureIncident>
         variations_seed_signature_incident) {
   DCHECK(variations_seed_signature_incident);

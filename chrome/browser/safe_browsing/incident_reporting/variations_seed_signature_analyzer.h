@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_VARIATIONS_SEED_SIGNATURE_ANALYZER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_VARIATIONS_SEED_SIGNATURE_ANALYZER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string16.h"
 
 namespace safe_browsing {
@@ -19,7 +20,7 @@ void RegisterVariationsSeedSignatureAnalysis();
 // Callback to pass to the incident reporting service. The incident reporting
 // service will verify if the variations seed signature is invalid.
 void VerifyVariationsSeedSignature(
-    scoped_ptr<IncidentReceiver> incident_receiver);
+    std::unique_ptr<IncidentReceiver> incident_receiver);
 
 }  // namespace safe_browsing
 

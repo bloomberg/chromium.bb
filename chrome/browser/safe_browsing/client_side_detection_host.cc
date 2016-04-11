@@ -4,12 +4,12 @@
 
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/strings/utf_string_conversions.h"
@@ -487,7 +487,7 @@ void ClientSideDetectionHost::MaybeStartMalwareFeatureExtraction() {
   if (csd_service_ && browse_info_.get() &&
       should_classify_for_malware_ &&
       pageload_complete_) {
-    scoped_ptr<ClientMalwareRequest> malware_request(
+    std::unique_ptr<ClientMalwareRequest> malware_request(
         new ClientMalwareRequest);
     // Start browser-side malware feature extraction.  Once we're done it will
     // send the malware client verdict request.
@@ -518,7 +518,7 @@ void ClientSideDetectionHost::OnPhishingDetectionDone(
 
   // We parse the protocol buffer here.  If we're unable to parse it we won't
   // send the verdict further.
-  scoped_ptr<ClientPhishingRequest> verdict(new ClientPhishingRequest);
+  std::unique_ptr<ClientPhishingRequest> verdict(new ClientPhishingRequest);
   if (csd_service_ &&
       browse_info_.get() &&
       verdict->ParseFromString(verdict_str) &&
@@ -617,7 +617,7 @@ void ClientSideDetectionHost::MaybeShowMalwareWarning(GURL original_url,
 
 void ClientSideDetectionHost::FeatureExtractionDone(
     bool success,
-    scoped_ptr<ClientPhishingRequest> request) {
+    std::unique_ptr<ClientPhishingRequest> request) {
   DCHECK(request);
   DVLOG(2) << "Feature extraction done (success:" << success << ") for URL: "
            << request->url() << ". Start sending client phishing request.";
@@ -640,7 +640,7 @@ void ClientSideDetectionHost::FeatureExtractionDone(
 
 void ClientSideDetectionHost::MalwareFeatureExtractionDone(
     bool feature_extraction_success,
-    scoped_ptr<ClientMalwareRequest> request) {
+    std::unique_ptr<ClientMalwareRequest> request) {
   DCHECK(request.get());
   DVLOG(2) << "Malware Feature extraction done for URL: " << request->url()
            << ", with badip url count:" << request->bad_ip_url_info_size();

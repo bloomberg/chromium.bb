@@ -315,11 +315,11 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
   }
 
  private:
-  scoped_ptr<TestSafeBrowsingServiceFactory> sb_factory_;
+  std::unique_ptr<TestSafeBrowsingServiceFactory> sb_factory_;
 
   SafeBrowsingService* safe_browsing_service_;
 
-  scoped_ptr<net::SpawnedTestServer> test_server_;
+  std::unique_ptr<net::SpawnedTestServer> test_server_;
 
   // Protects all variables below since they are read on UI thread
   // but updated on IO thread or safebrowsing thread.
@@ -491,7 +491,7 @@ class SafeBrowsingServerTestHelper
 
   base::OneShotTimer check_update_timer_;
   SafeBrowsingServerTest* safe_browsing_test_;
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
   std::string response_data_;
   net::URLRequestStatus::Status response_status_;
   net::URLRequestContextGetter* request_context_;

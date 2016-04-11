@@ -252,7 +252,7 @@ void SafeBrowsingProtocolManager::GetNextUpdate() {
 void SafeBrowsingProtocolManager::OnURLFetchComplete(
     const net::URLFetcher* source) {
   DCHECK(CalledOnValidThread());
-  scoped_ptr<const net::URLFetcher> fetcher;
+  std::unique_ptr<const net::URLFetcher> fetcher;
 
   HashRequests::iterator it = hash_requests_.find(source);
   int response_code = source->GetResponseCode();
@@ -416,7 +416,7 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
     case BACKUP_UPDATE_REQUEST: {
       size_t next_update_sec = 0;
       bool reset = false;
-      scoped_ptr<std::vector<SBChunkDelete>> chunk_deletes(
+      std::unique_ptr<std::vector<SBChunkDelete>> chunk_deletes(
           new std::vector<SBChunkDelete>);
       std::vector<ChunkUrl> chunk_urls;
       if (!ParseUpdate(data, length, &next_update_sec, &reset,
@@ -463,8 +463,8 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
                           base::Time::Now() - chunk_request_start_);
 
       const ChunkUrl chunk_url = chunk_request_urls_.front();
-      scoped_ptr<std::vector<scoped_ptr<SBChunkData>>> chunks(
-          new std::vector<scoped_ptr<SBChunkData>>);
+      std::unique_ptr<std::vector<std::unique_ptr<SBChunkData>>> chunks(
+          new std::vector<std::unique_ptr<SBChunkData>>);
       UMA_HISTOGRAM_COUNTS("SB2.ChunkSize", length);
       update_size_ += length;
       if (!ParseChunk(data, length, chunks.get()))
@@ -496,7 +496,7 @@ void SafeBrowsingProtocolManager::Initialize() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "483689 SafeBrowsingProtocolManager::Initialize"));
   // Don't want to hit the safe browsing servers on build/chrome bots.
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   if (env->HasVar(env_vars::kHeadless))
     return;
   ScheduleNextUpdate(false /* no back off */);

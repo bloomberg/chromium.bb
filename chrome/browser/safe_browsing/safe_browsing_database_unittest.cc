@@ -7,11 +7,13 @@
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
@@ -65,13 +67,14 @@ std::string HashedIpPrefix(const std::string& ip_prefix, size_t prefix_size) {
 }
 
 // Helper to build a chunk.  Caller takes ownership.
-scoped_ptr<SBChunkData> BuildChunk(int chunk_number,
-                                   ChunkData::ChunkType chunk_type,
-                                   ChunkData::PrefixType prefix_type,
-                                   const void* data,
-                                   size_t data_size,
-                                   const std::vector<int>& add_chunk_numbers) {
-  scoped_ptr<ChunkData> raw_data(new ChunkData);
+std::unique_ptr<SBChunkData> BuildChunk(
+    int chunk_number,
+    ChunkData::ChunkType chunk_type,
+    ChunkData::PrefixType prefix_type,
+    const void* data,
+    size_t data_size,
+    const std::vector<int>& add_chunk_numbers) {
+  std::unique_ptr<ChunkData> raw_data(new ChunkData);
   raw_data->set_chunk_number(chunk_number);
   raw_data->set_chunk_type(chunk_type);
   raw_data->set_prefix_type(prefix_type);
@@ -81,25 +84,25 @@ scoped_ptr<SBChunkData> BuildChunk(int chunk_number,
     raw_data->add_add_numbers(add_chunk_numbers[i]);
   }
 
-  return make_scoped_ptr(new SBChunkData(std::move(raw_data)));
+  return base::WrapUnique(new SBChunkData(std::move(raw_data)));
 }
 
 // Create add chunk with a single prefix.
-scoped_ptr<SBChunkData> AddChunkPrefix(int chunk_number, SBPrefix prefix) {
+std::unique_ptr<SBChunkData> AddChunkPrefix(int chunk_number, SBPrefix prefix) {
   return BuildChunk(chunk_number, ChunkData::ADD, ChunkData::PREFIX_4B, &prefix,
                     sizeof(prefix), std::vector<int>());
 }
 
 // Create add chunk with a single prefix generated from |value|.
-scoped_ptr<SBChunkData> AddChunkPrefixValue(int chunk_number,
-                                            const std::string& value) {
+std::unique_ptr<SBChunkData> AddChunkPrefixValue(int chunk_number,
+                                                 const std::string& value) {
   return AddChunkPrefix(chunk_number, SBPrefixForString(value));
 }
 
 // Generate an add chunk with two prefixes.
-scoped_ptr<SBChunkData> AddChunkPrefix2Value(int chunk_number,
-                                             const std::string& value1,
-                                             const std::string& value2) {
+std::unique_ptr<SBChunkData> AddChunkPrefix2Value(int chunk_number,
+                                                  const std::string& value1,
+                                                  const std::string& value2) {
   const SBPrefix prefixes[2] = {
     SBPrefixForString(value1),
     SBPrefixForString(value2),
@@ -109,11 +112,11 @@ scoped_ptr<SBChunkData> AddChunkPrefix2Value(int chunk_number,
 }
 
 // Generate an add chunk with four prefixes.
-scoped_ptr<SBChunkData> AddChunkPrefix4Value(int chunk_number,
-                                             const std::string& value1,
-                                             const std::string& value2,
-                                             const std::string& value3,
-                                             const std::string& value4) {
+std::unique_ptr<SBChunkData> AddChunkPrefix4Value(int chunk_number,
+                                                  const std::string& value1,
+                                                  const std::string& value2,
+                                                  const std::string& value3,
+                                                  const std::string& value4) {
   const SBPrefix prefixes[4] = {
     SBPrefixForString(value1),
     SBPrefixForString(value2),
@@ -125,23 +128,23 @@ scoped_ptr<SBChunkData> AddChunkPrefix4Value(int chunk_number,
 }
 
 // Generate an add chunk with a full hash.
-scoped_ptr<SBChunkData> AddChunkFullHash(int chunk_number,
-                                         SBFullHash full_hash) {
+std::unique_ptr<SBChunkData> AddChunkFullHash(int chunk_number,
+                                              SBFullHash full_hash) {
   return BuildChunk(chunk_number, ChunkData::ADD, ChunkData::FULL_32B,
                     &full_hash, sizeof(full_hash), std::vector<int>());
 }
 
 // Generate an add chunk with a full hash generated from |value|.
-scoped_ptr<SBChunkData> AddChunkFullHashValue(int chunk_number,
-                                              const std::string& value) {
+std::unique_ptr<SBChunkData> AddChunkFullHashValue(int chunk_number,
+                                                   const std::string& value) {
   return AddChunkFullHash(chunk_number,
                           SBFullHashForString(value));
 }
 
 // Generate an add chunk with two full hashes.
-scoped_ptr<SBChunkData> AddChunkFullHash2Value(int chunk_number,
-                                               const std::string& value1,
-                                               const std::string& value2) {
+std::unique_ptr<SBChunkData> AddChunkFullHash2Value(int chunk_number,
+                                                    const std::string& value1,
+                                                    const std::string& value2) {
   const SBFullHash full_hashes[2] = {
     SBFullHashForString(value1),
     SBFullHashForString(value2),
@@ -151,20 +154,20 @@ scoped_ptr<SBChunkData> AddChunkFullHash2Value(int chunk_number,
 }
 
 // Generate a sub chunk with a prefix generated from |value|.
-scoped_ptr<SBChunkData> SubChunkPrefixValue(int chunk_number,
-                                            const std::string& value,
-                                            int add_chunk_number) {
+std::unique_ptr<SBChunkData> SubChunkPrefixValue(int chunk_number,
+                                                 const std::string& value,
+                                                 int add_chunk_number) {
   const SBPrefix prefix = SBPrefixForString(value);
   return BuildChunk(chunk_number, ChunkData::SUB, ChunkData::PREFIX_4B, &prefix,
                     sizeof(prefix), std::vector<int>(1, add_chunk_number));
 }
 
 // Generate a sub chunk with two prefixes.
-scoped_ptr<SBChunkData> SubChunkPrefix2Value(int chunk_number,
-                                             const std::string& value1,
-                                             int add_chunk_number1,
-                                             const std::string& value2,
-                                             int add_chunk_number2) {
+std::unique_ptr<SBChunkData> SubChunkPrefix2Value(int chunk_number,
+                                                  const std::string& value1,
+                                                  int add_chunk_number1,
+                                                  const std::string& value2,
+                                                  int add_chunk_number2) {
   const SBPrefix prefixes[2] = {
     SBPrefixForString(value1),
     SBPrefixForString(value2),
@@ -177,27 +180,27 @@ scoped_ptr<SBChunkData> SubChunkPrefix2Value(int chunk_number,
 }
 
 // Generate a sub chunk with a full hash.
-scoped_ptr<SBChunkData> SubChunkFullHash(int chunk_number,
-                                         SBFullHash full_hash,
-                                         int add_chunk_number) {
+std::unique_ptr<SBChunkData> SubChunkFullHash(int chunk_number,
+                                              SBFullHash full_hash,
+                                              int add_chunk_number) {
   return BuildChunk(chunk_number, ChunkData::SUB, ChunkData::FULL_32B,
                     &full_hash, sizeof(full_hash),
                     std::vector<int>(1, add_chunk_number));
 }
 
 // Generate a sub chunk with a full hash generated from |value|.
-scoped_ptr<SBChunkData> SubChunkFullHashValue(int chunk_number,
-                                              const std::string& value,
-                                              int add_chunk_number) {
+std::unique_ptr<SBChunkData> SubChunkFullHashValue(int chunk_number,
+                                                   const std::string& value,
+                                                   int add_chunk_number) {
   return SubChunkFullHash(chunk_number,
                           SBFullHashForString(value),
                           add_chunk_number);
 }
 
 // Generate an add chunk with a single full hash for the ip blacklist.
-scoped_ptr<SBChunkData> AddChunkHashedIpValue(int chunk_number,
-                                              const std::string& ip_str,
-                                              size_t prefix_size) {
+std::unique_ptr<SBChunkData> AddChunkHashedIpValue(int chunk_number,
+                                                   const std::string& ip_str,
+                                                   size_t prefix_size) {
   const std::string full_hash_str = HashedIpPrefix(ip_str, prefix_size);
   EXPECT_EQ(sizeof(SBFullHash), full_hash_str.size());
   SBFullHash full_hash;
@@ -341,7 +344,7 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
   void PopulateDatabaseForCacheTest();
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  scoped_ptr<SafeBrowsingDatabaseNew> database_;
+  std::unique_ptr<SafeBrowsingDatabaseNew> database_;
   base::FilePath database_filename_;
   base::ScopedTempDir temp_dir_;
 };
@@ -349,7 +352,7 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
 // Tests retrieving list name information.
 TEST_F(SafeBrowsingDatabaseTest, BrowseListsInfo) {
   std::vector<SBListChunkRanges> lists;
-  std::vector<scoped_ptr<SBChunkData>> chunks;
+  std::vector<std::unique_ptr<SBChunkData>> chunks;
 
   chunks.push_back(AddChunkPrefixValue(1, "www.evil.com/malware.html"));
   chunks.push_back(AddChunkPrefixValue(2, "www.foo.com/malware.html"));
@@ -410,7 +413,7 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseListsInfo) {
 }
 
 TEST_F(SafeBrowsingDatabaseTest, ListNames) {
-  std::vector<scoped_ptr<SBChunkData>> chunks;
+  std::vector<std::unique_ptr<SBChunkData>> chunks;
 
   std::vector<SBListChunkRanges> lists;
   ASSERT_TRUE(database_->UpdateStarted(&lists));
@@ -575,7 +578,7 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseAndUnwantedDatabasesAndPrefixSets) {
                  test_case.test_list_name);
 
     std::vector<SBListChunkRanges> lists;
-    std::vector<scoped_ptr<SBChunkData>> chunks;
+    std::vector<std::unique_ptr<SBChunkData>> chunks;
 
     chunks.push_back(AddChunkPrefix2Value(1,
                                           "www.evil.com/phishing.html",
@@ -812,7 +815,7 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseAndUnwantedDatabasesAndPrefixSets) {
 // Test adding zero length chunks to the database.
 TEST_F(SafeBrowsingDatabaseTest, ZeroSizeChunk) {
   std::vector<SBListChunkRanges> lists;
-  std::vector<scoped_ptr<SBChunkData>> chunks;
+  std::vector<std::unique_ptr<SBChunkData>> chunks;
 
   // Populate with a couple of normal chunks.
   chunks.push_back(AddChunkPrefix2Value(1,
@@ -899,7 +902,7 @@ TEST_F(SafeBrowsingDatabaseTest, ZeroSizeChunk) {
 // Utility function for setting up the database for the caching test.
 void SafeBrowsingDatabaseTest::PopulateDatabaseForCacheTest() {
   // Add a couple prefixes.
-  std::vector<scoped_ptr<SBChunkData>> chunks;
+  std::vector<std::unique_ptr<SBChunkData>> chunks;
   chunks.push_back(AddChunkPrefix2Value(1,
                                         "www.evil.com/phishing.html",
                                         "www.evil.com/malware.html"));
@@ -967,7 +970,7 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
   cache_hits.clear();
 
   // Test removing a prefix via a sub chunk.
-  std::vector<scoped_ptr<SBChunkData>> chunks;
+  std::vector<std::unique_ptr<SBChunkData>> chunks;
   chunks.push_back(SubChunkPrefixValue(2, "www.evil.com/phishing.html", 1));
 
   std::vector<SBListChunkRanges> lists;
@@ -1141,7 +1144,7 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
             SBPrefixForString(kExampleCollision));
   ASSERT_TRUE(database_->UpdateStarted(&lists));
   {
-    std::vector<scoped_ptr<SBChunkData>> chunks;
+    std::vector<std::unique_ptr<SBChunkData>> chunks;
     chunks.push_back(AddChunkPrefixValue(21, kExampleCollision));
     database_->InsertChunks(kMalwareList, chunks);
   }
@@ -1192,7 +1195,7 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_FileCorruptionHandling) {
   database_->UpdateFinished(true);
 
   // Create a sub chunk to insert.
-  std::vector<scoped_ptr<SBChunkData>> chunks;
+  std::vector<std::unique_ptr<SBChunkData>> chunks;
   chunks.push_back(SubChunkPrefixValue(7,
                                        "www.subbed.com/notevil1.html",
                                        19));
@@ -1242,7 +1245,7 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrlPrefixes) {
   const char kEvil1Url2[] = "www.evil1.com/download2.html";
 
   // Add a simple chunk with one hostkey for download url list.
-  std::vector<scoped_ptr<SBChunkData>> chunks;
+  std::vector<std::unique_ptr<SBChunkData>> chunks;
   chunks.push_back(AddChunkPrefix2Value(1, kEvil1Url1, kEvil1Url2));
 
   std::vector<SBListChunkRanges> lists;
@@ -1331,7 +1334,7 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsResourceUrlPrefixes) {
   const SBPrefix kBadPrefix2 = SBPrefixForString(kBadUrl2);
 
   // Populate database
-  std::vector<scoped_ptr<SBChunkData>> chunks;
+  std::vector<std::unique_ptr<SBChunkData>> chunks;
   chunks.push_back(AddChunkPrefix2Value(1, kBadUrl1, kBadUrl2));
 
   std::vector<SBListChunkRanges> lists;
@@ -1474,7 +1477,7 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
       }
     }
 
-    std::vector<scoped_ptr<SBChunkData>> chunks;
+    std::vector<std::unique_ptr<SBChunkData>> chunks;
 
     // Add a few test chunks to the whitelist under test.
     if (test_case.TestUrls()) {
@@ -1650,7 +1653,7 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
 // Test to make sure we could insert chunk list that
 // contains entries for the same host.
 TEST_F(SafeBrowsingDatabaseTest, SameHostEntriesOkay) {
-  std::vector<scoped_ptr<SBChunkData>> chunks;
+  std::vector<std::unique_ptr<SBChunkData>> chunks;
 
   // Add a malware add chunk with two entries of the same host.
   chunks.push_back(AddChunkPrefix2Value(1,
@@ -1730,7 +1733,7 @@ TEST_F(SafeBrowsingDatabaseTest, SameHostEntriesOkay) {
 // This isn't a functionality requirement, but it is a useful
 // optimization.
 TEST_F(SafeBrowsingDatabaseTest, EmptyUpdate) {
-  std::vector<scoped_ptr<SBChunkData>> chunks;
+  std::vector<std::unique_ptr<SBChunkData>> chunks;
 
   base::FilePath filename = database_->BrowseDBFilename(database_filename_);
 
@@ -1788,7 +1791,7 @@ TEST_F(SafeBrowsingDatabaseTest, FilterFile) {
     std::vector<SBListChunkRanges> lists;
     ASSERT_TRUE(database_->UpdateStarted(&lists));
 
-    std::vector<scoped_ptr<SBChunkData>> chunks;
+    std::vector<std::unique_ptr<SBChunkData>> chunks;
     chunks.push_back(AddChunkPrefixValue(1, "www.evil.com/malware.html"));
     database_->InsertChunks(kMalwareList, chunks);
     database_->UpdateFinished(true);
@@ -1834,7 +1837,7 @@ TEST_F(SafeBrowsingDatabaseTest, CachedFullMiss) {
       SBFullHashForPrefixAndSuffix(kPrefix2, "\x01");
 
   // Insert prefix kPrefix1 and kPrefix2 into database.
-  std::vector<scoped_ptr<SBChunkData>> chunks;
+  std::vector<std::unique_ptr<SBChunkData>> chunks;
   chunks.push_back(AddChunkPrefix(1, kPrefix1));
   chunks.push_back(AddChunkPrefix(2, kPrefix2));
 
@@ -1889,7 +1892,7 @@ TEST_F(SafeBrowsingDatabaseTest, CachedPrefixHitFullMiss) {
       SBFullHashForPrefixAndSuffix(kPrefix3, "\x01");
 
   // Insert prefix kPrefix1 and kPrefix2 into database.
-  std::vector<scoped_ptr<SBChunkData>> chunks;
+  std::vector<std::unique_ptr<SBChunkData>> chunks;
   chunks.push_back(AddChunkPrefix(1, kPrefix1));
   chunks.push_back(AddChunkPrefix(2, kPrefix2));
 
@@ -2034,7 +2037,7 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseFullHashMatching) {
       SBFullHashForPrefixAndSuffix(kPrefix1, "\x03");
 
   // Insert two full hashes with a shared prefix.
-  std::vector<scoped_ptr<SBChunkData>> chunks;
+  std::vector<std::unique_ptr<SBChunkData>> chunks;
   chunks.push_back(AddChunkFullHash(1, kFullHash1_1));
   chunks.push_back(AddChunkFullHash(2, kFullHash1_2));
 
@@ -2183,7 +2186,7 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseFullHashAndPrefixMatching) {
   const SBFullHash kFullHash1_2 =
       SBFullHashForPrefixAndSuffix(kPrefix1, "\x02");
 
-  std::vector<scoped_ptr<SBChunkData>> chunks;
+  std::vector<std::unique_ptr<SBChunkData>> chunks;
   chunks.push_back(AddChunkFullHash(1, kFullHash1_1));
 
   std::vector<SBListChunkRanges> lists;
@@ -2245,7 +2248,7 @@ TEST_F(SafeBrowsingDatabaseTest, MalwareIpBlacklist) {
   std::vector<SBListChunkRanges> lists;
   ASSERT_TRUE(database_->UpdateStarted(&lists));
 
-  std::vector<scoped_ptr<SBChunkData>> chunks;
+  std::vector<std::unique_ptr<SBChunkData>> chunks;
 
   // IPv4 prefix match for ::ffff:192.168.1.0/120.
   chunks.push_back(AddChunkHashedIpValue(1, "::ffff:192.168.1.0", 120));
@@ -2313,7 +2316,7 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsBrowseURL) {
 
   // Add a host-level hit.
   {
-    std::vector<scoped_ptr<SBChunkData>> chunks;
+    std::vector<std::unique_ptr<SBChunkData>> chunks;
     chunks.push_back(AddChunkPrefixValue(1, "www.evil.com/"));
     database_->InsertChunks(kMalwareList, chunks);
   }
@@ -2321,7 +2324,7 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsBrowseURL) {
   // Add a specific fullhash.
   static const char kWhateverMalware[] = "www.whatever.com/malware.html";
   {
-    std::vector<scoped_ptr<SBChunkData>> chunks;
+    std::vector<std::unique_ptr<SBChunkData>> chunks;
     chunks.push_back(AddChunkFullHashValue(2, kWhateverMalware));
     database_->InsertChunks(kMalwareList, chunks);
   }
@@ -2333,7 +2336,7 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsBrowseURL) {
   ASSERT_EQ(SBPrefixForString(kExampleFine),
             SBPrefixForString(kExampleCollision));
   {
-    std::vector<scoped_ptr<SBChunkData>> chunks;
+    std::vector<std::unique_ptr<SBChunkData>> chunks;
     chunks.push_back(AddChunkFullHashValue(3, kExampleCollision));
     database_->InsertChunks(kMalwareList, chunks);
   }

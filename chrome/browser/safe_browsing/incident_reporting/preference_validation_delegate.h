@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_PREFERENCE_VALIDATION_DELEGATE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_PREFERENCE_VALIDATION_DELEGATE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/user_prefs/tracked/tracked_preference_validation_delegate.h"
 
 class Profile;
@@ -22,8 +23,9 @@ class IncidentReceiver;
 class PreferenceValidationDelegate
     : public TrackedPreferenceValidationDelegate {
  public:
-  PreferenceValidationDelegate(Profile* profile,
-                               scoped_ptr<IncidentReceiver> incident_receiver);
+  PreferenceValidationDelegate(
+      Profile* profile,
+      std::unique_ptr<IncidentReceiver> incident_receiver);
   ~PreferenceValidationDelegate() override;
 
  private:
@@ -41,7 +43,7 @@ class PreferenceValidationDelegate
       bool is_personal) override;
 
   Profile* profile_;
-  scoped_ptr<IncidentReceiver> incident_receiver_;
+  std::unique_ptr<IncidentReceiver> incident_receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(PreferenceValidationDelegate);
 };

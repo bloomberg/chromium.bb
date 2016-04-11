@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_DELAYED_ANALYSIS_CALLBACK_H_
 #define CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_DELAYED_ANALYSIS_CALLBACK_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace safe_browsing {
 
@@ -16,7 +17,7 @@ class IncidentReceiver;
 // step. The callback will be run after some delay following process launch in
 // the blocking pool. The argument is a receiver by which the consumer can add
 // incidents to the incident reporting service.
-typedef base::Callback<void(scoped_ptr<IncidentReceiver>)>
+typedef base::Callback<void(std::unique_ptr<IncidentReceiver>)>
     DelayedAnalysisCallback;
 
 }  // namespace safe_browsing

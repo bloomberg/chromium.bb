@@ -9,6 +9,7 @@
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -46,7 +47,8 @@ bool GetLoadedBlacklistedModules(std::vector<base::string16>* module_names) {
   return true;
 }
 
-void VerifyBlacklistLoadState(scoped_ptr<IncidentReceiver> incident_receiver) {
+void VerifyBlacklistLoadState(
+    std::unique_ptr<IncidentReceiver> incident_receiver) {
   std::vector<base::string16> module_names;
   if (GetLoadedBlacklistedModules(&module_names)) {
     PathSanitizer path_sanitizer;
@@ -54,7 +56,7 @@ void VerifyBlacklistLoadState(scoped_ptr<IncidentReceiver> incident_receiver) {
     const bool blacklist_intialized = blacklist::IsBlacklistInitialized();
 
     for (const auto& module_name : module_names) {
-      scoped_ptr<ClientIncidentReport_IncidentData_BlacklistLoadIncident>
+      std::unique_ptr<ClientIncidentReport_IncidentData_BlacklistLoadIncident>
           blacklist_load(
               new ClientIncidentReport_IncidentData_BlacklistLoadIncident());
 
@@ -75,7 +77,7 @@ void VerifyBlacklistLoadState(scoped_ptr<IncidentReceiver> incident_receiver) {
                           base::TimeTicks::Now() - start_time);
 
       // Version.
-      scoped_ptr<FileVersionInfo> version_info(
+      std::unique_ptr<FileVersionInfo> version_info(
           FileVersionInfo::CreateFileVersionInfo(module_path));
       if (version_info) {
         std::wstring file_version = version_info->file_version();
@@ -103,7 +105,7 @@ void VerifyBlacklistLoadState(scoped_ptr<IncidentReceiver> incident_receiver) {
       }
 
       // Send the report.
-      incident_receiver->AddIncidentForProcess(make_scoped_ptr(
+      incident_receiver->AddIncidentForProcess(base::WrapUnique(
           new BlacklistLoadIncident(std::move(blacklist_load))));
     }
   }

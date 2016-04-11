@@ -392,7 +392,7 @@ bool ParseUpdate(const char* chunk_data,
 // CHUNKDATA = Encoded ChunkData protocol message
 bool ParseChunk(const char* data,
                 size_t length,
-                std::vector<scoped_ptr<SBChunkData>>* chunks) {
+                std::vector<std::unique_ptr<SBChunkData>>* chunks) {
   BufferReader reader(data, length);
 
   while (!reader.empty()) {
@@ -404,7 +404,7 @@ bool ParseChunk(const char* data,
     if (!reader.RefData(&p, l))
       return false;
 
-    scoped_ptr<SBChunkData> chunk(new SBChunkData());
+    std::unique_ptr<SBChunkData> chunk(new SBChunkData());
     if (!chunk->ParseFrom(reinterpret_cast<const unsigned char*>(p), l))
       return false;
 

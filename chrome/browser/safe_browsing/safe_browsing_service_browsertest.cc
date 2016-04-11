@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/path_service.h"
@@ -106,12 +107,12 @@ class NeverCompletingHttpResponse : public net::test_server::HttpResponse {
   }
 };
 
-scoped_ptr<net::test_server::HttpResponse> HandleNeverCompletingRequests(
+std::unique_ptr<net::test_server::HttpResponse> HandleNeverCompletingRequests(
     const net::test_server::HttpRequest& request) {
   if (!base::StartsWith(request.relative_url, kNeverCompletesPath,
                           base::CompareCase::SENSITIVE))
     return nullptr;
-  return make_scoped_ptr(new NeverCompletingHttpResponse());
+  return base::WrapUnique(new NeverCompletingHttpResponse());
 }
 
 void InvokeFullHashCallback(
@@ -275,7 +276,7 @@ class TestSafeBrowsingDatabase : public SafeBrowsingDatabase {
   }
   void InsertChunks(
       const std::string& list_name,
-      const std::vector<scoped_ptr<SBChunkData>>& chunks) override {
+      const std::vector<std::unique_ptr<SBChunkData>>& chunks) override {
     ADD_FAILURE() << "Not implemented.";
   }
   void DeleteChunks(const std::vector<SBChunkDelete>& chunk_deletes) override {
@@ -676,7 +677,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   }
 
  private:
-  scoped_ptr<TestSafeBrowsingServiceFactory> sb_factory_;
+  std::unique_ptr<TestSafeBrowsingServiceFactory> sb_factory_;
   TestSafeBrowsingDatabaseFactory db_factory_;
   TestSBProtocolManagerFactory pm_factory_;
 
@@ -1447,7 +1448,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
 
   // Add a new Profile. SBS should keep running.
   ASSERT_TRUE(temp_profile_dir_.CreateUniqueTempDir());
-  scoped_ptr<Profile> profile2(Profile::CreateProfile(
+  std::unique_ptr<Profile> profile2(Profile::CreateProfile(
       temp_profile_dir_.path(), NULL, Profile::CREATE_MODE_SYNCHRONOUS));
   ASSERT_TRUE(profile2.get() != NULL);
   StartupTaskRunnerServiceFactory::GetForProfile(profile2.get())->
@@ -1675,7 +1676,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
   scoped_refptr<SafeBrowsingService> sb_service_;
 
  private:
-  static scoped_ptr<net::test_server::HttpResponse> HandleRequest(
+  static std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
     if (!base::StartsWith(request.relative_url, "/testpath/",
                           base::CompareCase::SENSITIVE)) {
@@ -1703,7 +1704,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
       return nullptr;
     }
 
-    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+    std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse());
     http_response->set_content("foo");
     http_response->set_content_type("text/plain");
@@ -1712,7 +1713,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
     return std::move(http_response);
   }
 
-  scoped_ptr<TestSafeBrowsingServiceFactory> sb_factory_;
+  std::unique_ptr<TestSafeBrowsingServiceFactory> sb_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingDatabaseManagerCookieTest);
 };

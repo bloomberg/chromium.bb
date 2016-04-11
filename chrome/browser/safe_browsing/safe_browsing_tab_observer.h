@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_TAB_OBSERVER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_TAB_OBSERVER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -35,7 +36,7 @@ class SafeBrowsingTabObserver
   void UpdateSafebrowsingDetectionHost();
 
   // Handles IPCs.
-  scoped_ptr<ClientSideDetectionHost> safebrowsing_detection_host_;
+  std::unique_ptr<ClientSideDetectionHost> safebrowsing_detection_host_;
 
   // Our owning WebContents.
   content::WebContents* web_contents_;

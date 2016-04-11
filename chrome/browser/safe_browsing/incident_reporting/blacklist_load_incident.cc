@@ -11,7 +11,7 @@
 namespace safe_browsing {
 
 BlacklistLoadIncident::BlacklistLoadIncident(
-    scoped_ptr<ClientIncidentReport_IncidentData_BlacklistLoadIncident>
+    std::unique_ptr<ClientIncidentReport_IncidentData_BlacklistLoadIncident>
         blacklist_load_incident) {
   DCHECK(blacklist_load_incident);
   DCHECK(blacklist_load_incident->has_path());

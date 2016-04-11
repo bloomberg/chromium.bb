@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
@@ -39,7 +40,7 @@ class FakeResourceRequestDetector : public ResourceRequestDetector {
  public:
   FakeResourceRequestDetector(
       scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
-      scoped_ptr<IncidentReceiver> incident_receiver)
+      std::unique_ptr<IncidentReceiver> incident_receiver)
       : ResourceRequestDetector(database_manager,
                                 std::move(incident_receiver)) {
     FakeResourceRequestDetector::set_allow_null_profile_for_testing(true);
@@ -76,16 +77,15 @@ class ResourceRequestDetectorTest : public testing::Test {
   ResourceRequestDetectorTest()
       : mock_incident_receiver_(
             new StrictMock<safe_browsing::MockIncidentReceiver>()),
-        mock_database_manager_(
-            new StrictMock<MockSafeBrowsingDatabaseManager>),
+        mock_database_manager_(new StrictMock<MockSafeBrowsingDatabaseManager>),
         fake_resource_request_detector_(
             mock_database_manager_,
-            make_scoped_ptr(mock_incident_receiver_)) {}
+            base::WrapUnique(mock_incident_receiver_)) {}
 
-  scoped_ptr<net::URLRequest> GetTestURLRequest(
+  std::unique_ptr<net::URLRequest> GetTestURLRequest(
       const std::string& url,
       content::ResourceType resource_type) const {
-    scoped_ptr<net::URLRequest> url_request(
+    std::unique_ptr<net::URLRequest> url_request(
         context_.CreateRequest(GURL(url), net::DEFAULT_PRIORITY, NULL));
 
     content::ResourceRequestInfo::AllocateForTesting(
@@ -126,7 +126,8 @@ class ResourceRequestDetectorTest : public testing::Test {
 
   void ExpectNoIncident(const std::string& url,
                         content::ResourceType resource_type) {
-    scoped_ptr<net::URLRequest> request(GetTestURLRequest(url, resource_type));
+    std::unique_ptr<net::URLRequest> request(
+        GetTestURLRequest(url, resource_type));
 
     EXPECT_CALL(*mock_incident_receiver_, DoAddIncidentForProfile(IsNull(), _))
         .Times(0);
@@ -140,8 +141,9 @@ class ResourceRequestDetectorTest : public testing::Test {
       content::ResourceType resource_type,
       ResourceRequestIncidentMessage::Type expected_type,
       const std::string& expected_digest) {
-    scoped_ptr<net::URLRequest> request(GetTestURLRequest(url, resource_type));
-    scoped_ptr<Incident> incident;
+    std::unique_ptr<net::URLRequest> request(
+        GetTestURLRequest(url, resource_type));
+    std::unique_ptr<Incident> incident;
     EXPECT_CALL(*mock_incident_receiver_, DoAddIncidentForProfile(IsNull(), _))
         .WillOnce(WithArg<1>(TakeIncident(&incident)));
 
@@ -149,7 +151,7 @@ class ResourceRequestDetectorTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     ASSERT_TRUE(incident);
-    scoped_ptr<ClientIncidentReport_IncidentData> incident_data =
+    std::unique_ptr<ClientIncidentReport_IncidentData> incident_data =
         incident->TakePayload();
     ASSERT_TRUE(incident_data && incident_data->has_resource_request());
     const ResourceRequestIncidentMessage& script_request_incident =

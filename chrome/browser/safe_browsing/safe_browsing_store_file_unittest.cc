@@ -125,7 +125,7 @@ class SafeBrowsingStoreFileTest : public PlatformTest {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ScopedTempDir temp_dir_;
   base::FilePath filename_;
-  scoped_ptr<SafeBrowsingStoreFile> store_;
+  std::unique_ptr<SafeBrowsingStoreFile> store_;
   bool corruption_detected_;
 };
 

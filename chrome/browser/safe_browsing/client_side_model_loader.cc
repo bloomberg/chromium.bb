@@ -4,9 +4,10 @@
 
 #include "chrome/browser/safe_browsing/client_side_model_loader.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -136,7 +137,7 @@ void ModelLoader::OnURLFetchComplete(const net::URLFetcher* source) {
       source->GetResponseHeaders()) {
     source->GetResponseHeaders()->GetMaxAgeValue(&max_age);
   }
-  scoped_ptr<ClientSideModel> model(new ClientSideModel());
+  std::unique_ptr<ClientSideModel> model(new ClientSideModel());
   ClientModelStatus model_status;
   if (!is_success || net::HTTP_OK != response_code) {
     model_status = MODEL_FETCH_FAILED;

@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_INCIDENT_REPORT_UPLOADER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_INCIDENT_REPORT_UPLOADER_H_
 
+#include <memory>
+
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace safe_browsing {
 
@@ -31,7 +32,7 @@ class IncidentReportUploader {
   // A callback run by the uploader upon success or failure. The first argument
   // indicates the result of the upload, while the second contains the response
   // received, if any.
-  typedef base::Callback<void(Result, scoped_ptr<ClientIncidentResponse>)>
+  typedef base::Callback<void(Result, std::unique_ptr<ClientIncidentResponse>)>
       OnResultCallback;
 
   virtual ~IncidentReportUploader();

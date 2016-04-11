@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_LAST_DOWNLOAD_FINDER_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/safe_browsing/incident_reporting/download_metadata_manager.h"
@@ -50,8 +50,8 @@ class LastDownloadFinder : public content::NotificationObserver,
   // a protobuf containing details of the respective download that was found,
   // or an empty pointer if none was found.
   typedef base::Callback<void(
-      scoped_ptr<ClientIncidentReport_DownloadDetails>,
-      scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>)>
+      std::unique_ptr<ClientIncidentReport_DownloadDetails>,
+      std::unique_ptr<ClientIncidentReport_NonBinaryDownloadDetails>)>
       LastDownloadCallback;
 
   ~LastDownloadFinder() override;
@@ -61,7 +61,7 @@ class LastDownloadFinder : public content::NotificationObserver,
   // deleted to terminate the search, in which case |callback| is not invoked.
   // Returns NULL without running |callback| if there are no eligible profiles
   // to search.
-  static scoped_ptr<LastDownloadFinder> Create(
+  static std::unique_ptr<LastDownloadFinder> Create(
       const DownloadDetailsGetter& download_details_getter,
       const LastDownloadCallback& callback);
 
@@ -91,7 +91,7 @@ class LastDownloadFinder : public content::NotificationObserver,
   // queries.
   void OnMetadataQuery(
       Profile* profile,
-      scoped_ptr<ClientIncidentReport_DownloadDetails> details);
+      std::unique_ptr<ClientIncidentReport_DownloadDetails> details);
 
   // Abandons the search for downloads in |profile|, reporting results if there
   // are no more pending queries.
@@ -102,7 +102,7 @@ class LastDownloadFinder : public content::NotificationObserver,
   // more pending queries.
   void OnDownloadQuery(
       Profile* profile,
-      scoped_ptr<std::vector<history::DownloadRow> > downloads);
+      std::unique_ptr<std::vector<history::DownloadRow>> downloads);
 
   // Removes the profile pointed to by |it| from profile_states_ and reports
   // results if there are no more pending queries.
@@ -138,7 +138,7 @@ class LastDownloadFinder : public content::NotificationObserver,
   content::NotificationRegistrar notification_registrar_;
 
   // The most interesting download details retrieved from download metadata.
-  scoped_ptr<ClientIncidentReport_DownloadDetails> details_;
+  std::unique_ptr<ClientIncidentReport_DownloadDetails> details_;
 
   // The most recent download, updated progressively as query results arrive.
   history::DownloadRow most_recent_binary_row_;

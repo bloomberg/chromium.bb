@@ -129,9 +129,9 @@ class SafeBrowsingURLRequestContextGetter
 
   scoped_refptr<net::URLRequestContextGetter> system_context_getter_;
 
-  scoped_ptr<net::CookieStore> safe_browsing_cookie_store_;
+  std::unique_ptr<net::CookieStore> safe_browsing_cookie_store_;
 
-  scoped_ptr<net::URLRequestContext> safe_browsing_request_context_;
+  std::unique_ptr<net::URLRequestContext> safe_browsing_request_context_;
 
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 };
@@ -380,13 +380,13 @@ SafeBrowsingPingManager* SafeBrowsingService::ping_manager() const {
   return ping_manager_;
 }
 
-scoped_ptr<TrackedPreferenceValidationDelegate>
+std::unique_ptr<TrackedPreferenceValidationDelegate>
 SafeBrowsingService::CreatePreferenceValidationDelegate(
     Profile* profile) const {
 #if defined(FULL_SAFE_BROWSING)
   return incident_service_->CreatePreferenceValidationDelegate(profile);
 #else
-  return scoped_ptr<TrackedPreferenceValidationDelegate>();
+  return std::unique_ptr<TrackedPreferenceValidationDelegate>();
 #endif
 }
 
@@ -647,9 +647,9 @@ void SafeBrowsingService::RemovePrefService(PrefService* pref_service) {
   }
 }
 
-scoped_ptr<SafeBrowsingService::StateSubscription>
+std::unique_ptr<SafeBrowsingService::StateSubscription>
 SafeBrowsingService::RegisterStateCallback(
-      const base::Callback<void(void)>& callback) {
+    const base::Callback<void(void)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return state_callback_list_.Add(callback);
 }
