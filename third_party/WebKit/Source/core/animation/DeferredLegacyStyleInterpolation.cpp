@@ -87,16 +87,16 @@ bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const C
         return primitiveValue.isFontRelativeLength() || primitiveValue.isViewportPercentageLength();
 
     if (primitiveValue.isCalculated()) {
-        CSSLengthArray lengthArray(CSSPrimitiveValue::LengthUnitTypeCount);
+        CSSLengthArray lengthArray;
         primitiveValue.accumulateLengthArray(lengthArray);
-        return lengthArray[CSSPrimitiveValue::UnitTypeFontSize] != 0
-            || lengthArray[CSSPrimitiveValue::UnitTypeFontXSize] != 0
-            || lengthArray[CSSPrimitiveValue::UnitTypeRootFontSize] != 0
-            || lengthArray[CSSPrimitiveValue::UnitTypeZeroCharacterWidth] != 0
-            || lengthArray[CSSPrimitiveValue::UnitTypeViewportWidth] != 0
-            || lengthArray[CSSPrimitiveValue::UnitTypeViewportHeight] != 0
-            || lengthArray[CSSPrimitiveValue::UnitTypeViewportMin] != 0
-            || lengthArray[CSSPrimitiveValue::UnitTypeViewportMax] != 0;
+        return lengthArray.values[CSSPrimitiveValue::UnitTypeFontSize] != 0
+            || lengthArray.values[CSSPrimitiveValue::UnitTypeFontXSize] != 0
+            || lengthArray.values[CSSPrimitiveValue::UnitTypeRootFontSize] != 0
+            || lengthArray.values[CSSPrimitiveValue::UnitTypeZeroCharacterWidth] != 0
+            || lengthArray.values[CSSPrimitiveValue::UnitTypeViewportWidth] != 0
+            || lengthArray.values[CSSPrimitiveValue::UnitTypeViewportHeight] != 0
+            || lengthArray.values[CSSPrimitiveValue::UnitTypeViewportMin] != 0
+            || lengthArray.values[CSSPrimitiveValue::UnitTypeViewportMax] != 0;
     }
 
     CSSValueID id = primitiveValue.getValueID();

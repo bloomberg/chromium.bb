@@ -130,23 +130,17 @@ InterpolationValue CSSLengthInterpolationType::maybeConvertCSSValue(const CSSVal
         return nullptr;
 
     const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-
-    CSSLengthArray valueArray;
-    for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++)
-        valueArray.append(0);
-    bool hasPercentage = false;
-
     if (!primitiveValue.isLength() && !primitiveValue.isPercentage() && !primitiveValue.isCalculatedPercentageWithLength())
         return nullptr;
-    CSSLengthTypeArray hasType;
-    hasType.ensureSize(CSSPrimitiveValue::LengthUnitTypeCount);
-    primitiveValue.accumulateLengthArray(valueArray, hasType);
-    hasPercentage = hasType.get(CSSPrimitiveValue::UnitTypePercentage);
+
+    CSSLengthArray lengthArray;
+    primitiveValue.accumulateLengthArray(lengthArray);
 
     OwnPtr<InterpolableList> values = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
     for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++)
-        values->set(i, InterpolableNumber::create(valueArray.at(i)));
+        values->set(i, InterpolableNumber::create(lengthArray.values[i]));
 
+    bool hasPercentage = lengthArray.typeFlags.get(CSSPrimitiveValue::UnitTypePercentage);
     return InterpolationValue(values.release(), CSSLengthNonInterpolableValue::create(hasPercentage));
 }
 
