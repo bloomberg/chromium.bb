@@ -49,6 +49,9 @@ AudioCapturerWin::AudioCapturerWin()
 
 AudioCapturerWin::~AudioCapturerWin() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (audio_client_) {
+    audio_client_->Stop();
+  }
 }
 
 bool AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
@@ -195,12 +198,12 @@ bool AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
     return false;
   }
 
-  // Initialize ISimpleAudioVolume.
+  // Initialize IAudioEndpointVolume.
   // TODO(zijiehe): Do we need to control per process volume?
-  hr = audio_client_->GetService(__uuidof(ISimpleAudioVolume),
-                                 audio_volume_.ReceiveVoid());
+  hr = mm_device_->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, nullptr,
+                            audio_volume_.ReceiveVoid());
   if (FAILED(hr)) {
-    LOG(ERROR) << "Failed to get an ISimpleAudioVolume. Error " << hr;
+    LOG(ERROR) << "Failed to get an IAudioEndpointVolume. Error " << hr;
     return false;
   }
 
@@ -218,6 +221,8 @@ float AudioCapturerWin::GetAudioLevel() {
   BOOL mute;
   HRESULT hr = audio_volume_->GetMute(&mute);
   if (FAILED(hr)) {
+    LOG(ERROR) << "Failed to get mute status from IAudioEndpointVolume, error "
+               << hr;
     return 1;
   }
   if (mute) {
@@ -225,8 +230,11 @@ float AudioCapturerWin::GetAudioLevel() {
   }
 
   float level;
-  hr = audio_volume_->GetMasterVolume(&level);
+  hr = audio_volume_->GetMasterVolumeLevelScalar(&level);
   if (FAILED(hr) || level > 1) {
+    LOG(ERROR) << "Failed to get master volume from IAudioEndpointVolume, "
+                  "error "
+               << hr;
     return 1;
   }
   if (level < 0) {
@@ -235,14 +243,8 @@ float AudioCapturerWin::GetAudioLevel() {
   return level;
 }
 
-void AudioCapturerWin::ProcessSamples(uint8_t* data,
-                                      size_t frames,
-                                      int32_t flags) {
+void AudioCapturerWin::ProcessSamples(uint8_t* data, size_t frames) {
   if (frames == 0) {
-    return;
-  }
-
-  if ((flags & AUDCLNT_BUFFERFLAGS_SILENT) == 0) {
     return;
   }
 
@@ -254,14 +256,14 @@ void AudioCapturerWin::ProcessSamples(uint8_t* data,
     return;
   }
 
+  // Windows API does not provide volume adjusted audio sample as Linux does.
+  // So we need to manually apply volume to the samples.
   float level = GetAudioLevel();
   if (level == 0) {
     return;
   }
 
   if (level < 1) {
-    // Windows API does not provide volume adjusted audio sample as Linux does.
-    // So we need to manually append volume signal to the samples.
     int32_t level_int = static_cast<int32_t>(level * 65536);
     for (size_t i = 0; i < sample_count; i++) {
       samples[i] = (static_cast<int32_t>(samples[i]) * level_int) >> 16;
@@ -302,7 +304,7 @@ void AudioCapturerWin::DoCapture() {
     if (FAILED(hr))
       break;
 
-    ProcessSamples(data, frames, flags);
+    ProcessSamples(data, frames);
 
     hr = audio_capture_client_->ReleaseBuffer(frames);
     if (FAILED(hr))

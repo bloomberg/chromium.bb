@@ -339,12 +339,10 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
   if (FAILED(result))
     return LogOnCreateError(result);
 
-  // Disable audio in the session.
-  // TODO(alexeypa): re-enable audio redirection when http://crbug.com/242312 is
-  // fixed.
   result = client_->get_SecuredSettings2(secured_settings2.Receive());
   if (SUCCEEDED(result)) {
-    result = secured_settings2->put_AudioRedirectionMode(kRdpAudioModeNone);
+    result =
+        secured_settings2->put_AudioRedirectionMode(kRdpAudioModeRedirect);
     if (FAILED(result))
       return LogOnCreateError(result);
   }

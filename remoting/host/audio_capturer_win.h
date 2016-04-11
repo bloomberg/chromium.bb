@@ -6,6 +6,7 @@
 #define REMOTING_HOST_AUDIO_CAPTURER_WIN_H_
 
 #include <audioclient.h>
+#include <endpointvolume.h>
 #include <mmdeviceapi.h>
 
 #include <memory>
@@ -42,7 +43,7 @@ class AudioCapturerWin : public AudioCapturer {
 
   // Processes a series of samples, and executes callback if the packet is
   // qualified to be sent to client.
-  void ProcessSamples(uint8_t* data, size_t frames, int32_t flags);
+  void ProcessSamples(uint8_t* data, size_t frames);
 
   PacketCapturedCallback callback_;
 
@@ -57,7 +58,7 @@ class AudioCapturerWin : public AudioCapturer {
   base::win::ScopedComPtr<IAudioCaptureClient> audio_capture_client_;
   base::win::ScopedComPtr<IAudioClient> audio_client_;
   base::win::ScopedComPtr<IMMDevice> mm_device_;
-  base::win::ScopedComPtr<ISimpleAudioVolume> audio_volume_;
+  base::win::ScopedComPtr<IAudioEndpointVolume> audio_volume_;
 
   HRESULT last_capture_error_;
 
