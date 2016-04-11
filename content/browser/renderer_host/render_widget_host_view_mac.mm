@@ -1015,6 +1015,13 @@ void RenderWidgetHostViewMac::UpdateInputMethodIfNecessary(
   if (!text_input_state_changed)
     return;
 
+  // TODO(ekaramad): The state tracking is all in WebContentsImpl now. Remove
+  // these member variables (crbug.com/602427).
+  const TextInputState* state =
+      render_widget_host_->delegate()->GetTextInputState();
+  text_input_type_ = state->type;
+  can_compose_inline_ = state->can_compose_inline;
+
   if (HasFocus()) {
     SetTextInputActive(true);
 
@@ -1023,9 +1030,7 @@ void RenderWidgetHostViewMac::UpdateInputMethodIfNecessary(
     [NSApp updateWindows];
 
 #ifndef __LP64__
-    UseInputWindow(TSMGetActiveDocument(), !render_widget_host_->delegate()
-                                                ->GetTextInputState()
-                                                ->can_compose_inline);
+    UseInputWindow(TSMGetActiveDocument(), !can_compose_inline_);
 #endif
   }
 }

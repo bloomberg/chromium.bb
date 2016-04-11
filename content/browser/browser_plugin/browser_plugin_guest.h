@@ -425,6 +425,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   // Text input type states.
   // Using scoped_ptr to avoid including the header file: view_messages.h.
+  // TODO(ekaramad): The text input state tracking is now done by the
+  // WebContentsImpl. We should remove this variable (crbug.com/602427).
   std::unique_ptr<const TextInputState> last_text_input_state_;
 
   // The is the routing ID for a swapped out RenderView for the guest
