@@ -19,7 +19,7 @@
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "google_apis/gaia/oauth2_token_service.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/styled_label_listener.h"
@@ -44,7 +44,7 @@ class Browser;
 // This bubble view is displayed when the user clicks on the avatar button.
 // It displays a list of profiles and allows users to switch between profiles.
 class ProfileChooserView : public content::WebContentsDelegate,
-                           public views::BubbleDelegateView,
+                           public views::BubbleDialogDelegateView,
                            public views::ButtonListener,
                            public views::LinkListener,
                            public views::StyledLabelListener,
@@ -63,8 +63,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
       const signin::ManageAccountsParams& manage_accounts_params,
       signin_metrics::AccessPoint access_point,
       views::View* anchor_view,
-      views::BubbleBorder::Arrow arrow,
-      views::BubbleBorder::BubbleAlignment border_alignment,
       Browser* browser);
   static bool IsShowing();
   static void Hide();
@@ -77,7 +75,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
   typedef std::map<views::Button*, std::string> AccountButtonIndexes;
 
   ProfileChooserView(views::View* anchor_view,
-                     views::BubbleBorder::Arrow arrow,
                      Browser* browser,
                      profiles::BubbleViewMode view_mode,
                      profiles::TutorialMode tutorial_mode,
@@ -85,12 +82,13 @@ class ProfileChooserView : public content::WebContentsDelegate,
                      signin_metrics::AccessPoint access_point);
   ~ProfileChooserView() override;
 
-  // views::BubbleDelegateView:
+  // views::BubbleDialogDelegateView:
   void Init() override;
   void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
   void WindowClosing() override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   views::View* GetInitiallyFocusedView() override;
+  int GetDialogButtons() const override;
 
   // content::WebContentsDelegate:
   bool HandleContextMenu(const content::ContextMenuParams& params) override;

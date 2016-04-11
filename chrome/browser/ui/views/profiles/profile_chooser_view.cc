@@ -622,8 +622,6 @@ void ProfileChooserView::ShowBubble(
     const signin::ManageAccountsParams& manage_accounts_params,
     signin_metrics::AccessPoint access_point,
     views::View* anchor_view,
-    views::BubbleBorder::Arrow arrow,
-    views::BubbleBorder::BubbleAlignment border_alignment,
     Browser* browser) {
   // Don't start creating the view if it would be an empty fast user switcher.
   // It has to happen here to prevent the view system from creating an empty
@@ -641,14 +639,14 @@ void ProfileChooserView::ShowBubble(
     return;
   }
 
-  profile_bubble_ = new ProfileChooserView(
-      anchor_view, arrow, browser, view_mode, tutorial_mode,
-      manage_accounts_params.service_type, access_point);
-  views::BubbleDelegateView::CreateBubble(profile_bubble_);
-  profile_bubble_->set_close_on_deactivate(close_on_deactivate_for_testing_);
-  profile_bubble_->SetAlignment(border_alignment);
-  profile_bubble_->GetWidget()->Show();
+  profile_bubble_ =
+      new ProfileChooserView(anchor_view, browser, view_mode, tutorial_mode,
+                             manage_accounts_params.service_type, access_point);
+  views::Widget* widget =
+      views::BubbleDialogDelegateView::CreateBubble(profile_bubble_);
+  profile_bubble_->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   profile_bubble_->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
+  widget->Show();
 }
 
 // static
@@ -663,33 +661,21 @@ void ProfileChooserView::Hide() {
 }
 
 ProfileChooserView::ProfileChooserView(views::View* anchor_view,
-                                       views::BubbleBorder::Arrow arrow,
                                        Browser* browser,
                                        profiles::BubbleViewMode view_mode,
                                        profiles::TutorialMode tutorial_mode,
                                        signin::GAIAServiceType service_type,
                                        signin_metrics::AccessPoint access_point)
-    : BubbleDelegateView(anchor_view, arrow),
+    : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       browser_(browser),
       view_mode_(view_mode),
       tutorial_mode_(tutorial_mode),
       gaia_service_type_(service_type),
       access_point_(access_point) {
-  // Reset the default margins inherited from the BubbleDelegateView.
-  // Add a small bottom inset so that the bubble's rounded corners show up.
-  set_margins(gfx::Insets(0, 0, 1, 0));
+  // The sign in webview will be clipped on the bottom corners without these
+  // margins, see related bug <http://crbug.com/593203>.
+  set_margins(gfx::Insets(0, 0, 2, 0));
   ResetView();
-
-  avatar_menu_.reset(new AvatarMenu(
-      &g_browser_process->profile_manager()->GetProfileAttributesStorage(),
-      this,
-      browser_));
-  avatar_menu_->RebuildMenu();
-
-  ProfileOAuth2TokenService* oauth2_token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile());
-  if (oauth2_token_service)
-    oauth2_token_service->AddObserver(this);
 }
 
 ProfileChooserView::~ProfileChooserView() {
@@ -727,6 +713,18 @@ void ProfileChooserView::ResetView() {
 }
 
 void ProfileChooserView::Init() {
+  set_close_on_deactivate(close_on_deactivate_for_testing_);
+
+  avatar_menu_.reset(new AvatarMenu(
+      &g_browser_process->profile_manager()->GetProfileAttributesStorage(),
+      this, browser_));
+  avatar_menu_->RebuildMenu();
+
+  ProfileOAuth2TokenService* oauth2_token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile());
+  if (oauth2_token_service)
+    oauth2_token_service->AddObserver(this);
+
   // If view mode is PROFILE_CHOOSER but there is an auth error, force
   // ACCOUNT_MANAGEMENT mode.
   if (IsProfileChooser(view_mode_) &&
@@ -746,7 +744,7 @@ void ProfileChooserView::Init() {
 
 void ProfileChooserView::OnNativeThemeChanged(
     const ui::NativeTheme* native_theme) {
-  views::BubbleDelegateView::OnNativeThemeChanged(native_theme);
+  views::BubbleDialogDelegateView::OnNativeThemeChanged(native_theme);
   set_background(views::Background::CreateSolidBackground(
       GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_DialogBackground)));
@@ -876,7 +874,8 @@ bool ProfileChooserView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   if (accelerator.key_code() != ui::VKEY_DOWN &&
       accelerator.key_code() != ui::VKEY_UP)
-    return BubbleDelegateView::AcceleratorPressed(accelerator);
+    return BubbleDialogDelegateView::AcceleratorPressed(accelerator);
+
   // Move the focus up or down.
   GetFocusManager()->AdvanceFocus(accelerator.key_code() != ui::VKEY_DOWN);
   return true;
@@ -884,6 +883,10 @@ bool ProfileChooserView::AcceleratorPressed(
 
 views::View* ProfileChooserView::GetInitiallyFocusedView() {
   return signin_current_profile_link_;
+}
+
+int ProfileChooserView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
 }
 
 bool ProfileChooserView::HandleContextMenu(
