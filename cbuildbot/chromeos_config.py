@@ -606,6 +606,7 @@ _waterfall_config_map = {
         # Experimental PFQs.
         'cyan-cheets-chrome-pfq',
         'veyron_minnie-cheets-chrome-pfq',
+        'veyron_rialto-chrome-pfq',
 
         # Experimental Canaries (Group)
         'glados-release-group',

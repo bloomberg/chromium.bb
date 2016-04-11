@@ -23675,6 +23675,7 @@
     },
     "veyron_rialto-chrome-pfq": {
         "_template": "chrome-pfq",
+        "active_waterfall": "chromeos",
         "boards": [
             "veyron_rialto"
         ],

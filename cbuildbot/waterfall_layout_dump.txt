@@ -210,6 +210,7 @@ veyron_minnie-cheets-paladin
 veyron_minnie-chromium-pfq
 veyron_pinky-chrome-pfq
 veyron_pinky-paladin
+veyron_rialto-chrome-pfq
 veyron_rialto-paladin
 veyron_speedy-paladin
 whirlwind-paladin
