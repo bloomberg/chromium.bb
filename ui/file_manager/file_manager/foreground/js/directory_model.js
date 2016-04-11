@@ -84,6 +84,9 @@ function DirectoryModel(
 
   /** @private {!analytics.Tracker} */
   this.tracker_ = tracker;
+
+  /** @private {string} */
+  this.lastSearchQuery_ = '';
 }
 
 /**
@@ -1235,6 +1238,21 @@ DirectoryModel.prototype.createDirectoryContents_ =
 };
 
 /**
+ * Gets the last search query.
+ * @return {string} the last search query.
+ */
+DirectoryModel.prototype.getLastSearchQuery = function() {
+  return this.lastSearchQuery_;
+}
+
+/**
+ * Clears the last search query with the empty string.
+ */
+DirectoryModel.prototype.clearLastSearchQuery = function() {
+  this.lastSearchQuery_ = '';
+}
+
+/**
  * Performs search and displays results. The search type is dependent on the
  * current directory. If we are currently on drive, server side content search
  * over drive mount point. If the current directory is not on the drive, file
@@ -1250,6 +1268,7 @@ DirectoryModel.prototype.createDirectoryContents_ =
 DirectoryModel.prototype.search = function(query,
                                            onSearchRescan,
                                            onClearSearch) {
+  this.lastSearchQuery_ = query;
   this.clearSearch_();
   var currentDirEntry = this.getCurrentDirEntry();
   if (!currentDirEntry) {

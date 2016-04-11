@@ -75,7 +75,7 @@ SearchController.prototype = {
  * Clears the search state.
  */
 SearchController.prototype.clear = function() {
-  this.lastSearchQuery_ = '';
+  this.directoryModel_.clearLastSearchQuery();
   this.searchBox_.clear();
 };
 
@@ -97,8 +97,7 @@ SearchController.prototype.onTextChange_ = function() {
   // the last directory by passing an empty string to
   // {@code DirectoryModel.search()}.
   if (this.directoryModel_.isSearching() &&
-      this.lastSearchQuery_ != searchString) {
-    this.lastSearchQuery_ = '';
+      this.directoryModel_.getLastSearchQuery() != searchString) {
     this.directoryModel_.search('', function() {}, function() {});
   }
 
@@ -227,21 +226,8 @@ SearchController.prototype.onItemSelect_ = function() {
  * @private
  */
 SearchController.prototype.search_ = function(searchString) {
-  var noResultsDiv = this.searchBox_.noResultMessage;
 
-  var reportEmptySearchResults = function() {
-    if (this.directoryModel_.getFileList().length === 0) {
-      // The string 'SEARCH_NO_MATCHING_FILES_HTML' may contain HTML tags,
-      // hence we escapes |searchString| here.
-      var html = strf(
-          'SEARCH_NO_MATCHING_FILES_HTML',
-          util.htmlEscape(searchString));
-      noResultsDiv.innerHTML = html;
-      noResultsDiv.setAttribute('show', 'true');
-    } else {
-      noResultsDiv.removeAttribute('show');
-    }
-
+  var onSearchRescan = function() {
     // If the current location is somewhere in Drive, all files in Drive can
     // be listed as search results regardless of current location.
     // In this case, showing current location is confusing, so use the Drive
@@ -254,15 +240,13 @@ SearchController.prototype.search_ = function(searchString) {
     }
   };
 
-  var hideNoResultsDiv = function() {
-    noResultsDiv.removeAttribute('show');
+  var onClearSearch = function() {
     this.locationLine_.show(
         this.directoryModel_.getCurrentDirEntry());
   };
 
-  this.lastSearchQuery_ = searchString;
   this.directoryModel_.search(
       searchString,
-      reportEmptySearchResults.bind(this),
-      hideNoResultsDiv.bind(this));
+      onSearchRescan.bind(this),
+      onClearSearch.bind(this));
 };

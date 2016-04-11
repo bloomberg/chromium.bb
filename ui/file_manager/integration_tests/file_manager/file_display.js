@@ -187,7 +187,7 @@ testcase.searchNotFound = function() {
                                     this.next);
     },
     function(result) {
-      remoteCall.waitForElement(appId, ['#no-search-results b']).
+      remoteCall.waitForElement(appId, ['#empty-folder-label b']).
           then(this.next);
     },
     function(element) {

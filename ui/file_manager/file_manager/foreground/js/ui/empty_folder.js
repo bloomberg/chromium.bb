@@ -13,6 +13,11 @@ function EmptyFolder(emptyFolder) {
    * @private {!HTMLElement}
    */
   this.emptyFolder_ = emptyFolder;
+
+  /**
+   * @private {!HTMLElement}
+   */
+  this.label_ = queryRequiredElement('#empty-folder-label', emptyFolder);
 }
 
 /**
@@ -27,4 +32,12 @@ EmptyFolder.prototype.show = function() {
  */
 EmptyFolder.prototype.hide = function() {
   this.emptyFolder_.hidden = true;
+};
+
+/**
+ * Set message to empty folder UI.
+ * @param {string} html HTML string set to the label.
+ */
+EmptyFolder.prototype.setMessage = function(html) {
+  this.label_.innerHTML = html;
 };

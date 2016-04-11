@@ -136,8 +136,7 @@ function FileManagerUI(providersModel, element, launchParam) {
    */
   this.searchBox = new SearchBox(
       queryRequiredElement('#search-box', this.element),
-      queryRequiredElement('#search-button', this.element),
-      queryRequiredElement('#no-search-results', this.element));
+      queryRequiredElement('#search-button', this.element));
 
   /**
    * Empty folder UI.

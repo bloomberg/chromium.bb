@@ -75,8 +75,20 @@ EmptyFolderController.prototype.onScanFinished_ = function() {
  * @private
  */
 EmptyFolderController.prototype.update_ = function() {
-  if (!this.isScanning_ && this.dataModel_.length === 0)
+  if (!this.isScanning_ && this.dataModel_.length === 0) {
+    var query = this.directoryModel_.getLastSearchQuery();
+    var html = '';
+    if (query) {
+      html = strf(
+          'SEARCH_NO_MATCHING_FILES_HTML',
+          util.htmlEscape(query));
+    } else {
+      html = str('EMPTY_FOLDER');
+    }
+
+    this.emptyFolder_.setMessage(html);
     this.emptyFolder_.show();
-  else
+  } else {
     this.emptyFolder_.hide();
+  }
 };

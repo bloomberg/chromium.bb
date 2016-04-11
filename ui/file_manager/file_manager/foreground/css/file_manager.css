@@ -2002,21 +2002,6 @@ body[drive='error'] #unmounted-panel > .error,
   position: relative;
 }
 
-#no-search-results {
-  bottom: 0;
-  display: none;
-  flex: none;
-  left: 0;
-  padding: 10px;
-  position: absolute;
-  right: 0;
-  top: 36px;  /* Leave room for the file list header. */
-}
-
-.dialog-container:not([drive-welcome='page']) #no-search-results[show] {
-  display: block;
-}
-
 #empty-folder {
   display: flex;
   flex-direction: column;

@@ -7,11 +7,10 @@
  *
  * @param {!Element} element Root element of the search box.
  * @param {!Element} searchButton Search button.
- * @param {!Element} noResultMessage Message element for the empty result.
  * @extends {cr.EventTarget}
  * @constructor
  */
-function SearchBox(element, searchButton, noResultMessage) {
+function SearchBox(element, searchButton) {
   cr.EventTarget.call(this);
 
   /**
@@ -40,12 +39,6 @@ function SearchBox(element, searchButton, noResultMessage) {
   this.searchButtonToggleRipple_ =
       /** @type {!FilesToggleRipple} */ (queryRequiredElement(
           'files-toggle-ripple', this.searchButton));
-
-  /**
-   * No result message.
-   * @type {!Element}
-   */
-  this.noResultMessage = noResultMessage;
 
   /**
    * Text input of the search box.
