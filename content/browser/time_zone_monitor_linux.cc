@@ -87,7 +87,7 @@ class TimeZoneMonitorLinuxImpl
     // still more paths are used. Just watch all three of these paths, because
     // false positives are harmless, assuming the false positive rate is
     // reasonable.
-    const char* kFilesToWatch[] = {
+    const char* const kFilesToWatch[] = {
       "/etc/localtime",
       "/etc/timezone",
       "/etc/TZ",

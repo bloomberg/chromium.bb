@@ -20,13 +20,16 @@
 #include "content/public/browser/web_contents.h"
 
 namespace content {
+
 namespace {
+
 const char kIndentSymbol = '+';
 const int kIndentSymbolCount = 2;
-const char* kSkipString = "@NO_DUMP";
-const char* kSkipChildren = "@NO_CHILDREN_DUMP";
-const char* kChildrenDictAttr = "children";
-}
+const char kSkipString[] = "@NO_DUMP";
+const char kSkipChildren[] = "@NO_CHILDREN_DUMP";
+const char kChildrenDictAttr[] = "children";
+
+}  // namespace
 
 AccessibilityTreeFormatter::AccessibilityTreeFormatter()
     : show_ids_(false) {

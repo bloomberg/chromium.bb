@@ -30,11 +30,11 @@ static bool IsGpuRasterizationBlacklisted() {
         gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION);
 }
 
-const char* kGpuCompositingFeatureName = "gpu_compositing";
-const char* kWebGLFeatureName = "webgl";
-const char* kRasterizationFeatureName = "rasterization";
-const char* kMultipleRasterThreadsFeatureName = "multiple_raster_threads";
-const char* kNativeGpuMemoryBuffersFeatureName = "native_gpu_memory_buffers";
+const char kGpuCompositingFeatureName[] = "gpu_compositing";
+const char kWebGLFeatureName[] = "webgl";
+const char kRasterizationFeatureName[] = "rasterization";
+const char kMultipleRasterThreadsFeatureName[] = "multiple_raster_threads";
+const char kNativeGpuMemoryBuffersFeatureName[] = "native_gpu_memory_buffers";
 
 const int kMinRasterThreads = 1;
 const int kMaxRasterThreads = 4;

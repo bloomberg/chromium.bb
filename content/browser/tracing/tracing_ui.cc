@@ -169,10 +169,10 @@ bool OnBeginJSONRequest(const std::string& path,
         base::Bind(OnGotCategories, callback));
   }
 
-  const char* beginRecordingPath = "json/begin_recording?";
-  if (base::StartsWith(path, beginRecordingPath,
+  const char kBeginRecordingPath[] = "json/begin_recording?";
+  if (base::StartsWith(path, kBeginRecordingPath,
                        base::CompareCase::SENSITIVE)) {
-    std::string data = path.substr(strlen(beginRecordingPath));
+    std::string data = path.substr(strlen(kBeginRecordingPath));
     return BeginRecording(data, callback);
   }
   if (path == "json/get_buffer_percent_full") {

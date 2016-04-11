@@ -16,7 +16,7 @@ namespace content {
 
 namespace {
 
-const char* const kContentTypeFLAC = "audio/x-flac; rate=";
+const char kContentTypeFLAC[] = "audio/x-flac; rate=";
 const int kFLACCompressionLevel = 0;  // 0 for speed
 
 FLAC__StreamEncoderWriteStatus WriteCallback(

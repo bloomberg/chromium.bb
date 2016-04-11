@@ -42,7 +42,7 @@ content::GLHelper::ScalerQuality kQualities[] = {
     content::GLHelper::SCALER_QUALITY_FAST,
 };
 
-const char* kQualityNames[] = {
+const char* const kQualityNames[] = {
     "best", "good", "fast",
 };
 
@@ -244,4 +244,4 @@ TEST_F(GLHelperTest, DISABLED_ScaleTestImage) {
   gl_->DeleteFramebuffers(1, &framebuffer);
 }
 
-}  // namespace
+}  // namespace content

@@ -612,7 +612,7 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(
              update_type_ == UPGRADE_ATTEMPT) {
     storage_->MakeGroupObsolete(group_, this, response_code);  // async
   } else {
-    const char* kFormatString = "Manifest fetch failed (%d) %s";
+    const char kFormatString[] = "Manifest fetch failed (%d) %s";
     std::string message = FormatUrlErrorMessage(
         kFormatString, manifest_url_, fetcher->result(), response_code);
     HandleCacheFailure(AppCacheErrorDetails(message,
@@ -672,7 +672,7 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
                         PARSE_MANIFEST_ALLOWING_INTERCEPTS :
                         PARSE_MANIFEST_PER_STANDARD,
                      manifest)) {
-    const char* kFormatString = "Failed to parse manifest %s";
+    const char kFormatString[] = "Failed to parse manifest %s";
     const std::string message = base::StringPrintf(kFormatString,
         manifest_url_.spec().c_str());
     HandleCacheFailure(
@@ -761,7 +761,7 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLFetcher* fetcher) {
         entry.set_response_size(fetcher->existing_entry().response_size());
         inprogress_cache_->AddOrModifyEntry(url, entry);
       } else {
-        const char* kFormatString = "Resource fetch failed (%d) %s";
+        const char kFormatString[] = "Resource fetch failed (%d) %s";
         std::string message = FormatUrlErrorMessage(
             kFormatString, url, fetcher->result(), response_code);
         ResultType result = fetcher->result();
@@ -875,7 +875,7 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(
 
     failed_master_entries_.insert(url);
 
-    const char* kFormatString = "Manifest fetch failed (%d) %s";
+    const char kFormatString[] = "Manifest fetch failed (%d) %s";
     std::string message = FormatUrlErrorMessage(
         kFormatString, request->url(), fetcher->result(), response_code);
     host_notifier.SendErrorNotifications(
@@ -950,7 +950,7 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(
                          MANIFEST_ERROR,
                          GURL());
     } else {
-      const char* kFormatString = "Manifest re-fetch failed (%d) %s";
+      const char kFormatString[] = "Manifest re-fetch failed (%d) %s";
       std::string message = FormatUrlErrorMessage(
           kFormatString, manifest_url_, fetcher->result(), response_code);
       HandleCacheFailure(AppCacheErrorDetails(message,

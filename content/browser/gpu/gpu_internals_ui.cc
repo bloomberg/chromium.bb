@@ -211,7 +211,7 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
     const char kGDMSession[] = "GDMSESSION";
     if (env->GetVar(kGDMSession, &value))
       basic_info->Append(NewDescriptionValuePair(kGDMSession, value));
-    const char* kAtomsToCache[] = {
+    const char* const kAtomsToCache[] = {
         "_NET_WM_CM_S0",
         NULL
     };

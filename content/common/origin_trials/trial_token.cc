@@ -26,7 +26,7 @@ namespace {
 // Version 1 is the only token version currently supported
 const uint8_t kVersion1 = 1;
 
-const char* kFieldSeparator = "|";
+const char kFieldSeparator[] = "|";
 
 }  // namespace
 

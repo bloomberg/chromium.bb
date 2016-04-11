@@ -137,7 +137,7 @@ void StartDownloadProcessIfNecessary() {
 
   const base::CommandLine browser_command_line =
       *base::CommandLine::ForCurrentProcess();
-  static const char* kForwardSwitches[] = {
+  static const char* const kForwardSwitches[] = {
       switches::kDisableLogging,
       switches::kEnableLogging,
       switches::kLoggingLevel,

@@ -20,8 +20,8 @@ namespace ui {
 // with allow_uncached_atoms().
 class GFX_EXPORT X11AtomCache {
  public:
-  // Preinterns the NULL terminated list of string |to_cache_ on |xdisplay|.
-  X11AtomCache(XDisplay* xdisplay, const char** to_cache);
+  // Preinterns the NULL terminated list of string |to_cache| on |xdisplay|.
+  X11AtomCache(XDisplay* xdisplay, const char* const* to_cache);
   ~X11AtomCache();
 
   // Returns the pre-interned Atom without having to go to the x server.

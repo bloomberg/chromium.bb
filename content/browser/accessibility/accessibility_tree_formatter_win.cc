@@ -29,7 +29,7 @@ namespace content {
 
 class AccessibilityTreeFormatterWin : public AccessibilityTreeFormatter {
  public:
-  explicit AccessibilityTreeFormatterWin();
+  AccessibilityTreeFormatterWin();
   ~AccessibilityTreeFormatterWin() override;
 
  private:
@@ -54,35 +54,37 @@ AccessibilityTreeFormatterWin::AccessibilityTreeFormatterWin() {
 AccessibilityTreeFormatterWin::~AccessibilityTreeFormatterWin() {
 }
 
-const char* ALL_ATTRIBUTES[] = {"name",
-                                "value",
-                                "states",
-                                "attributes",
-                                "text_attributes",
-                                "role_name",
-                                "ia2_hypertext",
-                                "currentValue",
-                                "minimumValue",
-                                "maximumValue",
-                                "description",
-                                "default_action",
-                                "keyboard_shortcut",
-                                "location",
-                                "size",
-                                "index_in_parent",
-                                "n_relations",
-                                "group_level",
-                                "similar_items_in_group",
-                                "position_in_group",
-                                "table_rows",
-                                "table_columns",
-                                "row_index",
-                                "column_index",
-                                "n_characters",
-                                "caret_offset",
-                                "n_selections",
-                                "selection_start",
-                                "selection_end"};
+const char* const ALL_ATTRIBUTES[] = {
+  "name",
+  "value",
+  "states",
+  "attributes",
+  "text_attributes",
+  "role_name",
+  "ia2_hypertext",
+  "currentValue",
+  "minimumValue",
+  "maximumValue",
+  "description",
+  "default_action",
+  "keyboard_shortcut",
+  "location",
+  "size",
+  "index_in_parent",
+  "n_relations",
+  "group_level",
+  "similar_items_in_group",
+  "position_in_group",
+  "table_rows",
+  "table_columns",
+  "row_index",
+  "column_index",
+  "n_characters",
+  "caret_offset",
+  "n_selections",
+  "selection_start",
+  "selection_end"
+};
 
 namespace {
 
@@ -150,7 +152,7 @@ base::string16 GetIA2Hypertext(BrowserAccessibilityWin& ax_object) {
   return ia2_hypertext;
 }
 
-} // Namespace
+}  // namespace
 
 void AccessibilityTreeFormatterWin::AddProperties(
     const BrowserAccessibility& node, base::DictionaryValue* dict) {

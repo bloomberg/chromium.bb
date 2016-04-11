@@ -40,7 +40,8 @@ enum NatType {
 };
 
 // This needs to match "NatType" in histograms.xml.
-const char* NatTypeNames[] = {"NoNAT", "UnknownNAT", "SymNAT", "NonSymNAT"};
+const char* const NatTypeNames[] =
+    {"NoNAT", "UnknownNAT", "SymNAT", "NonSymNAT"};
 static_assert(arraysize(NatTypeNames) == NAT_TYPE_MAX,
               "NatType enums must match names");
 

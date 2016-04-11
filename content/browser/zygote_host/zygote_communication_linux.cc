@@ -280,7 +280,7 @@ void ZygoteCommunication::Init() {
   // Append any switches from the browser process that need to be forwarded on
   // to the zygote/renderers.
   // Should this list be obtained from browser_render_process_host.cc?
-  static const char* kForwardSwitches[] = {
+  static const char* const kForwardSwitches[] = {
       switches::kAllowSandboxDebugging, switches::kAndroidFontsPath,
       switches::kDisableSeccompFilterSandbox,
       switches::kEnableHeapProfiling,

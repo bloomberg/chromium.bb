@@ -19,12 +19,12 @@ namespace content {
 
 namespace {
 
-static const char* download_type_names[] = {
+static const char* const download_type_names[] = {
   "NEW_DOWNLOAD",
   "HISTORY_IMPORT",
   "SAVE_PAGE_AS"
 };
-static const char* download_danger_names[] = {
+static const char* const download_danger_names[] = {
   "NOT_DANGEROUS",
   "DANGEROUS_FILE",
   "DANGEROUS_URL",

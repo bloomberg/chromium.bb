@@ -65,9 +65,9 @@ bool MediaRecorderHandler::canSupportMimeType(
   // Both |video| and |audio| support empty |codecs|; |type| == "video" supports
   // vp8, vp9 or opus; |type| = "audio", supports only opus.
   // http://www.webmproject.org/docs/container Sec:"HTML5 Video Type Parameters"
-  static const char* kVideoCodecs[] = { "vp8", "vp9", "opus" };
-  static const char* kAudioCodecs[] = { "opus" };
-  const char** codecs = video ? &kVideoCodecs[0] : &kAudioCodecs[0];
+  static const char* const kVideoCodecs[] = { "vp8", "vp9", "opus" };
+  static const char* const kAudioCodecs[] = { "opus" };
+  const char* const* codecs = video ? &kVideoCodecs[0] : &kAudioCodecs[0];
   int codecs_count =  video ? arraysize(kVideoCodecs) : arraysize(kAudioCodecs);
 
   std::vector<std::string> codecs_list;

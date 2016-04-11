@@ -25,14 +25,14 @@ namespace content {
 
 namespace {
 
-const char* kPositionDictAttr = "position";
-const char* kXCoordDictAttr = "x";
-const char* kYCoordDictAttr = "y";
-const char* kSizeDictAttr = "size";
-const char* kWidthDictAttr = "width";
-const char* kHeightDictAttr = "height";
-const char* kRangeLocDictAttr = "loc";
-const char* kRangeLenDictAttr = "len";
+const char kPositionDictAttr[] = "position";
+const char kXCoordDictAttr[] = "x";
+const char kYCoordDictAttr[] = "y";
+const char kSizeDictAttr[] = "size";
+const char kWidthDictAttr[] = "width";
+const char kHeightDictAttr[] = "height";
+const char kRangeLocDictAttr[] = "loc";
+const char kRangeLenDictAttr[] = "len";
 
 std::unique_ptr<base::DictionaryValue> PopulatePosition(
     const BrowserAccessibility& node) {

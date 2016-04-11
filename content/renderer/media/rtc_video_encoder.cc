@@ -477,7 +477,7 @@ void RTCVideoEncoder::Impl::LogAndNotifyError(
     const tracked_objects::Location& location,
     const std::string& str,
     media::VideoEncodeAccelerator::Error error) {
-  static const char* kErrorNames[] = {
+  static const char* const kErrorNames[] = {
       "kIllegalStateError", "kInvalidArgumentError", "kPlatformFailureError"};
   static_assert(
       arraysize(kErrorNames) == media::VideoEncodeAccelerator::kErrorMax + 1,

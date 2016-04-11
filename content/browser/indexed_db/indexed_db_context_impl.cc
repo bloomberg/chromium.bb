@@ -216,7 +216,8 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
           std::unique_ptr<base::DictionaryValue> transaction_info(
               new base::DictionaryValue());
 
-          const char* kModes[] = { "readonly", "readwrite", "versionchange" };
+          const char* const kModes[] =
+              { "readonly", "readwrite", "versionchange" };
           transaction_info->SetString("mode", kModes[transaction->mode()]);
           switch (transaction->state()) {
             case IndexedDBTransaction::CREATED:

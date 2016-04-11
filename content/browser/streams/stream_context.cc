@@ -12,8 +12,10 @@
 using base::UserDataAdapter;
 
 namespace {
-const char* kStreamContextKeyName = "content_stream_context";
-}
+
+const char kStreamContextKeyName[] = "content_stream_context";
+
+}  // namespace
 
 namespace content {
 

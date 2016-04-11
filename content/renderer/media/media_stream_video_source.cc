@@ -29,7 +29,7 @@ const char MediaStreamVideoSource::kMaxFrameRate[] = "maxFrameRate";
 const char MediaStreamVideoSource::kMinFrameRate[] = "minFrameRate";
 
 // TODO(mcasas): Find a way to guarantee all constraints are added to the array.
-const char* kSupportedConstraints[] = {
+const char* const kSupportedConstraints[] = {
   MediaStreamVideoSource::kMaxAspectRatio,
   MediaStreamVideoSource::kMinAspectRatio,
   MediaStreamVideoSource::kMaxWidth,
@@ -42,7 +42,7 @@ const char* kSupportedConstraints[] = {
 
 namespace {
 
-const char* kLegalVideoConstraints[] = {
+const char* const kLegalVideoConstraints[] = {
     "width",      "height",   "aspectRatio", "frameRate",
     "facingMode", "deviceId", "groupId",     "mediaStreamSource",
 };

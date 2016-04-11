@@ -30,7 +30,7 @@ namespace content {
 namespace {
 
 // Friendly names for the well-known threads.
-static const char* g_browser_thread_names[BrowserThread::ID_COUNT] = {
+static const char* const g_browser_thread_names[BrowserThread::ID_COUNT] = {
   "",  // UI (name assembled in browser_main.cc).
   "Chrome_DBThread",  // DB
   "Chrome_FileThread",  // FILE

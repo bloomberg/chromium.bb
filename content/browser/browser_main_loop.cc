@@ -276,7 +276,8 @@ static void GLibLogHandler(const gchar* log_domain,
 
 static void SetUpGLibLogHandler() {
   // Register GLib-handled assertions to go through our logging system.
-  const char* kLogDomains[] = { NULL, "Gtk", "Gdk", "GLib", "GLib-GObject" };
+  const char* const kLogDomains[] =
+      { nullptr, "Gtk", "Gdk", "GLib", "GLib-GObject" };
   for (size_t i = 0; i < arraysize(kLogDomains); i++) {
     g_log_set_handler(kLogDomains[i],
                       static_cast<GLogLevelFlags>(G_LOG_FLAG_RECURSION |

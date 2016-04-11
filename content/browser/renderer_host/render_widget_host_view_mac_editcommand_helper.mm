@@ -19,7 +19,7 @@ namespace {
 //
 // This needs to be kept in Sync with WEB_COMMAND list in the WebKit tree at:
 // WebKit/mac/WebView/WebHTMLView.mm .
-const char* kEditCommands[] = {
+const char* const kEditCommands[] = {
   "alignCenter",
   "alignJustified",
   "alignLeft",
@@ -107,7 +107,8 @@ const char* kEditCommands[] = {
   "underline",
   "unscript",
   "yank",
-  "yankAndSelect"};
+  "yankAndSelect"
+};
 
 
 // This function is installed via the objc runtime as the implementation of all

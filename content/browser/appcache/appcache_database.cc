@@ -278,13 +278,13 @@ bool AppCacheDatabase::FindLastStorageIds(
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char* kMaxGroupIdSql = "SELECT MAX(group_id) FROM Groups";
-  const char* kMaxCacheIdSql = "SELECT MAX(cache_id) FROM Caches";
-  const char* kMaxResponseIdFromEntriesSql =
+  const char kMaxGroupIdSql[] = "SELECT MAX(group_id) FROM Groups";
+  const char kMaxCacheIdSql[] = "SELECT MAX(cache_id) FROM Caches";
+  const char kMaxResponseIdFromEntriesSql[] =
       "SELECT MAX(response_id) FROM Entries";
-  const char* kMaxResponseIdFromDeletablesSql =
+  const char kMaxResponseIdFromDeletablesSql[] =
       "SELECT MAX(response_id) FROM DeletableResponseIds";
-  const char* kMaxDeletableResponseRowIdSql =
+  const char kMaxDeletableResponseRowIdSql[] =
       "SELECT MAX(rowid) FROM DeletableResponseIds";
   int64_t max_group_id;
   int64_t max_cache_id;

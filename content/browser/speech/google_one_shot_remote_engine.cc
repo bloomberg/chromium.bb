@@ -28,12 +28,12 @@
 namespace content {
 namespace {
 
-const char* const kDefaultSpeechRecognitionUrl =
+const char kDefaultSpeechRecognitionUrl[] =
     "https://www.google.com/speech-api/v1/recognize?xjerr=1&client=chromium&";
-const char* const kStatusString = "status";
-const char* const kHypothesesString = "hypotheses";
-const char* const kUtteranceString = "utterance";
-const char* const kConfidenceString = "confidence";
+const char kStatusString[] = "status";
+const char kHypothesesString[] = "hypotheses";
+const char kUtteranceString[] = "utterance";
+const char kConfidenceString[] = "confidence";
 const int kWebServiceStatusNoError = 0;
 const int kWebServiceStatusNoSpeech = 4;
 const int kWebServiceStatusNoMatch = 5;

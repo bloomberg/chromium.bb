@@ -402,14 +402,14 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
 #endif  // defined(OS_WIN)
 
   // These switches are forwarded to both plugin and broker pocesses.
-  static const char* kCommonForwardSwitches[] = {
+  static const char* const kCommonForwardSwitches[] = {
     switches::kVModule
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kCommonForwardSwitches,
                              arraysize(kCommonForwardSwitches));
 
   if (!is_broker_) {
-    static const char* kPluginForwardSwitches[] = {
+    static const char* const kPluginForwardSwitches[] = {
       switches::kDisableSeccompFilterSandbox,
 #if defined(OS_MACOSX)
       switches::kEnableSandboxLogging,

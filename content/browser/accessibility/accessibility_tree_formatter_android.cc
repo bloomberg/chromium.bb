@@ -22,7 +22,8 @@ using base::StringPrintf;
 namespace content {
 
 namespace {
-const char* BOOL_ATTRIBUTES[] = {
+
+const char* const BOOL_ATTRIBUTES[] = {
   "checkable",
   "checked",
   "clickable",
@@ -45,11 +46,11 @@ const char* BOOL_ATTRIBUTES[] = {
   "selected"
 };
 
-const char* STRING_ATTRIBUTES[] = {
+const char* const STRING_ATTRIBUTES[] = {
   "name"
 };
 
-const char* INT_ATTRIBUTES[] = {
+const char* const INT_ATTRIBUTES[] = {
   "item_index",
   "item_count",
   "row_count",
@@ -66,11 +67,12 @@ const char* INT_ATTRIBUTES[] = {
   "text_change_added_count",
   "text_change_removed_count",
 };
-}
+
+}  // namespace
 
 class AccessibilityTreeFormatterAndroid : public AccessibilityTreeFormatter {
  public:
-  explicit AccessibilityTreeFormatterAndroid();
+  AccessibilityTreeFormatterAndroid();
   ~AccessibilityTreeFormatterAndroid() override;
 
  private:

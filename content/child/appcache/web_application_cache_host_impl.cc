@@ -29,7 +29,7 @@ namespace {
 
 // Note: the order of the elements in this array must match those
 // of the EventID enum in appcache_interfaces.h.
-const char* kEventNames[] = {
+const char* const kEventNames[] = {
   "Checking", "Error", "NoUpdate", "Downloading", "Progress",
   "UpdateReady", "Cached", "Obsolete"
 };
@@ -95,7 +95,7 @@ void WebApplicationCacheHostImpl::OnEventRaised(
 
   // Emit logging output prior to calling out to script as we can get
   // deleted within the script event handler.
-  const char* kFormatString = "Application Cache %s event";
+  const char kFormatString[] = "Application Cache %s event";
   std::string message = base::StringPrintf(kFormatString,
                                            kEventNames[event_id]);
   OnLogMessage(APPCACHE_LOG_INFO, message);
@@ -129,7 +129,7 @@ void WebApplicationCacheHostImpl::OnProgressEventRaised(
     const GURL& url, int num_total, int num_complete) {
   // Emit logging output prior to calling out to script as we can get
   // deleted within the script event handler.
-  const char* kFormatString = "Application Cache Progress event (%d of %d) %s";
+  const char kFormatString[] = "Application Cache Progress event (%d of %d) %s";
   std::string message = base::StringPrintf(kFormatString, num_complete,
                                            num_total, url.spec().c_str());
   OnLogMessage(APPCACHE_LOG_INFO, message);
@@ -141,7 +141,7 @@ void WebApplicationCacheHostImpl::OnErrorEventRaised(
     const AppCacheErrorDetails& details) {
   // Emit logging output prior to calling out to script as we can get
   // deleted within the script event handler.
-  const char* kFormatString = "Application Cache Error event: %s";
+  const char kFormatString[] = "Application Cache Error event: %s";
   std::string full_message =
       base::StringPrintf(kFormatString, details.message.c_str());
   OnLogMessage(APPCACHE_LOG_ERROR, full_message);

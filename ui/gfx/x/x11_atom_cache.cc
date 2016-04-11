@@ -12,12 +12,12 @@
 
 namespace ui {
 
-X11AtomCache::X11AtomCache(XDisplay* xdisplay, const char** to_cache)
+X11AtomCache::X11AtomCache(XDisplay* xdisplay, const char* const* to_cache)
     : xdisplay_(xdisplay),
       uncached_atoms_allowed_(false) {
   int cache_count = 0;
-  for (const char** i = to_cache; *i != NULL; i++)
-    cache_count++;
+  for (const char* const* i = to_cache; *i; ++i)
+    ++cache_count;
 
   scoped_ptr<XAtom[]> cached_atoms(new XAtom[cache_count]);
 
