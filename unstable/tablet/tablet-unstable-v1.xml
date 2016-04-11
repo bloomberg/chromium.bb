@@ -37,7 +37,7 @@
     binds to the tablet manager object which is just a proxy object. From
     that, the client requests wp_tablet_manager.get_tablet_seat(wl_seat)
     and that returns the actual interface that has all the tablets. With
-    this indirection, we can avoid merging wp_tablet into the actual wayland
+    this indirection, we can avoid merging wp_tablet into the actual Wayland
     protocol, a long-term benefit.
 
     The wp_tablet_seat sends a "tablet added" event for each tablet
@@ -229,14 +229,14 @@
 	assigned by this request is the same as assigned by
 	wl_pointer.set_cursor meaning the same surface can be
 	used both as a wl_pointer cursor and a wp_tablet cursor. If the
-	surface already has another role, it raises a protocol error
+	surface already has another role, it raises a protocol error.
 	The surface may be used on multiple tablets and across multiple
 	seats.
       </description>
       <arg name="serial" type="uint" summary="serial of the enter event"/>
       <arg name="surface" type="object" interface="wl_surface" allow-null="true"/>
-      <arg name="hotspot_x" type="int" summary="x coordinate in surface-relative coordinates"/>
-      <arg name="hotspot_y" type="int" summary="y coordinate in surface-relative coordinates"/>
+      <arg name="hotspot_x" type="int" summary="x coordinate in surface local coordinates"/>
+      <arg name="hotspot_y" type="int" summary="y coordinate in surface local coordinates"/>
     </request>
 
     <request name="destroy" type="destructor">
@@ -356,7 +356,7 @@
     <event name="removed">
       <description summary="tool removed">
 	This event is sent when the tool is removed from the system and will
-	send no further events. Should the physical tool comes back into
+	send no further events. Should the physical tool come back into
 	proximity later, a new wp_tablet_tool object will be created.
 
 	It is compositor-dependent when a tool is removed. A compositor may
@@ -449,8 +449,8 @@
       <description summary="motion event">
 	Sent whenever a tablet tool moves.
       </description>
-      <arg name="x" type="fixed" summary="surface-relative x coordinate"/>
-      <arg name="y" type="fixed" summary="surface-relative y coordinate"/>
+      <arg name="x" type="fixed" summary="x coordinate in surface local coordinates"/>
+      <arg name="y" type="fixed" summary="y coordinate in surface local coordinates"/>
     </event>
 
     <event name="pressure">
@@ -458,7 +458,7 @@
 	Sent whenever the pressure axis on a tool changes. The value of this
 	event is normalized to a value between 0 and 65535.
 
-	Note that pressure may be nonzero even when a tool not in logical
+	Note that pressure may be nonzero even when a tool is not in logical
 	contact. See the down and up events for more details.
       </description>
       <arg name="pressure" type="uint" summary="The current pressure value"/>
@@ -527,7 +527,7 @@
 
     <enum name="button_state">
       <description summary="physical button state">
-	Describes the physical state of a button which provoked the button event
+	Describes the physical state of a button that produced the button event.
       </description>
       <entry name="released" value="0" summary="button is not pressed"/>
       <entry name="pressed" value="1" summary="button is pressed"/>
@@ -551,7 +551,7 @@
     <event name="frame">
       <description summary="frame event">
 	Marks the end of a series of axis and/or button updates from the
-	tablet. The wayland protocol requires axis updates to be sent
+	tablet. The Wayland protocol requires axis updates to be sent
 	sequentially, however all events within a frame should be considered
 	one hardware event.
       </description>
@@ -604,9 +604,9 @@
 	this wp_tablet. This information may be used to gather additional
 	information about the device, e.g. through libwacom.
 
-	A device may have more than one device path, if so, multiple
+	A device may have more than one device path. If so, multiple
 	wp_tablet.path events are sent. A device may be emulated and not
-	have a device path, in that case this event will not be sent.
+	have a device path, and in that case this event will not be sent.
 
 	The format of the path is unspecified, it may be a device node, a
 	sysfs path, or some other identifier. It is up to the client to
