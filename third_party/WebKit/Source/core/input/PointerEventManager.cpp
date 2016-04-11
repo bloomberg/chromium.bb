@@ -12,6 +12,8 @@ namespace blink {
 
 namespace {
 
+size_t toPointerTypeIndex(WebPointerProperties::PointerType t) { return static_cast<size_t>(t); }
+
 const AtomicString& pointerEventNameForTouchPointState(PlatformTouchPoint::TouchState state)
 {
     switch (state) {
@@ -115,8 +117,10 @@ void PointerEventManager::sendMouseAndPossiblyPointerNodeTransitionEvents(
     // stage. So if the event is not frame boundary transition it is only a
     // compatibility mouse event and we do not need to change pointer event
     // behavior regarding preventMouseEvent state in that case.
-    if (isFrameBoundaryTransition && pointerEvent->buttons() == 0) {
-        m_preventMouseEventForPointerTypeMouse = false;
+    if (isFrameBoundaryTransition && pointerEvent->buttons() == 0
+        && pointerEvent->isPrimary()) {
+        m_preventMouseEventForPointerType[toPointerTypeIndex(
+            mouseEvent.pointerProperties().pointerType)] = false;
     }
 
     processCaptureAndPositionOfPointerEvent(pointerEvent, enteredNode,
@@ -355,8 +359,10 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
 
     // This is for when the mouse is released outside of the page.
     if (pointerEvent->type() == EventTypeNames::pointermove
-        && !pointerEvent->buttons()) {
-        m_preventMouseEventForPointerTypeMouse = false;
+        && !pointerEvent->buttons()
+        && pointerEvent->isPrimary()) {
+        m_preventMouseEventForPointerType[toPointerTypeIndex(
+            mouseEvent.pointerProperties().pointerType)] = false;
     }
 
     processCaptureAndPositionOfPointerEvent(pointerEvent, target,
@@ -369,10 +375,14 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
         dispatchPointerEvent(effectiveTarget, pointerEvent);
 
     if (result != WebInputEventResult::NotHandled
-        && pointerEvent->type() == EventTypeNames::pointerdown)
-        m_preventMouseEventForPointerTypeMouse = true;
+        && pointerEvent->type() == EventTypeNames::pointerdown
+        && pointerEvent->isPrimary()) {
+        m_preventMouseEventForPointerType[toPointerTypeIndex(
+            mouseEvent.pointerProperties().pointerType)] = true;
+    }
 
-    if (!m_preventMouseEventForPointerTypeMouse) {
+    if (pointerEvent->isPrimary() && !m_preventMouseEventForPointerType[toPointerTypeIndex(
+        mouseEvent.pointerProperties().pointerType)]) {
         result = EventHandler::mergeEventResult(result,
             dispatchMouseEvent(effectiveTarget, mouseEventType, mouseEvent,
             nullptr, clickCount));
@@ -380,7 +390,10 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
 
     if (pointerEvent->buttons() == 0) {
         releasePointerCapture(pointerEvent->pointerId());
-        m_preventMouseEventForPointerTypeMouse = false;
+        if (pointerEvent->isPrimary()) {
+            m_preventMouseEventForPointerType[toPointerTypeIndex(
+                mouseEvent.pointerProperties().pointerType)] = false;
+        }
     }
 
     return result;
@@ -397,7 +410,8 @@ PointerEventManager::~PointerEventManager()
 
 void PointerEventManager::clear()
 {
-    m_preventMouseEventForPointerTypeMouse = false;
+    for (auto& entry : m_preventMouseEventForPointerType)
+        entry = false;
     m_pointerEventFactory.clear();
     m_nodeUnderPointer.clear();
     m_pointerCaptureTarget.clear();

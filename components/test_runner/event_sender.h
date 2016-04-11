@@ -9,6 +9,7 @@
 
 #include <queue>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/macros.h"
@@ -62,6 +63,14 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
 
   void MouseDown(int button_number, int modifiers);
   void MouseUp(int button_number, int modifiers);
+  void PointerDown(int button_number,
+                   int modifiers,
+                   blink::WebPointerProperties::PointerType,
+                   int pointerId);
+  void PointerUp(int button_number,
+                 int modifiers,
+                 blink::WebPointerProperties::PointerType,
+                 int pointerId);
   void SetMouseButtonState(int button_number, int modifiers);
 
   void KeyDown(const std::string& code_str,
@@ -182,8 +191,8 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
 
   void FinishDragAndDrop(const blink::WebMouseEvent&, blink::WebDragOperation);
 
-  void DoMouseUp(const blink::WebMouseEvent&);
-  void DoMouseMove(const blink::WebMouseEvent&);
+  void DoDragAfterMouseUp(const blink::WebMouseEvent&);
+  void DoDragAfterMouseMove(const blink::WebMouseEvent&);
   void ReplaySavedEvents();
   blink::WebInputEventResult HandleInputEventOnViewOrPopup(
       const blink::WebInputEvent&);
@@ -262,23 +271,35 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   // Location of the touch point that initiated a gesture.
   blink::WebPoint current_gesture_location_;
 
-  // Last pressed mouse button (Left/Right/Middle or None).
-  static blink::WebMouseEvent::Button pressed_button_;
 
-  // A bitwise OR of the WebMouseEvent::*ButtonDown values corresponding to
-  // currently pressed buttons of mouse.
-  static int current_buttons_;
+  // Mouse-like pointer properties.
+  struct PointerState {
+      // Last pressed button (Left/Right/Middle or None).
+      blink::WebMouseEvent::Button pressed_button_;
 
-  static int modifiers_;
+      // A bitwise OR of the WebMouseEvent::*ButtonDown values corresponding to
+      // currently pressed buttons of the pointer (e.g. pen or mouse).
+      int current_buttons_;
+
+      // Location of last mouseMoveTo event of this pointer.
+      blink::WebPoint last_pos_;
+
+      int modifiers_;
+
+      PointerState()
+      : pressed_button_(blink::WebMouseEvent::ButtonNone)
+      , current_buttons_(0)
+      , last_pos_(blink::WebPoint(0, 0))
+      , modifiers_(0) { }
+  };
+  typedef std::unordered_map<int, PointerState> PointerStateMap;
+  PointerStateMap current_pointer_state_;
 
   bool replaying_saved_events_;
 
   std::deque<SavedEvent> mouse_event_queue_;
 
   blink::WebDragOperationsMask current_drag_effects_allowed_;
-
-  // Location of last mouseMoveTo event.
-  static blink::WebPoint last_mouse_pos_;
 
   // Time and place of the last mouse up event.
   double last_click_time_sec_;

@@ -133,7 +133,7 @@ private:
     // Prevents firing mousedown, mousemove & mouseup in-between a canceled pointerdown and next pointerup/pointercancel.
     // See "PREVENT MOUSE EVENT flag" in the spec:
     //   https://w3c.github.io/pointerevents/#compatibility-mapping-with-mouse-events
-    bool m_preventMouseEventForPointerTypeMouse;
+    bool m_preventMouseEventForPointerType[static_cast<size_t>(WebPointerProperties::PointerType::LastEntry) + 1];
 
     // Note that this map keeps track of node under pointer with id=1 as well
     // which might be different than m_nodeUnderMouse in EventHandler. That one
