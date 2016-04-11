@@ -105,7 +105,11 @@ int GetBetweenItemPadding() {
   return ui::MaterialDesignController::IsModeMaterial() ? 0 : kDownloadPadding;
 }
 
-int GetTopBottomPadding() {
+int GetTopPadding() {
+  return ui::MaterialDesignController::IsModeMaterial() ? 1 : kTopBottomPadding;
+}
+
+int GetBottomPadding() {
   return ui::MaterialDesignController::IsModeMaterial() ? 0 : kTopBottomPadding;
 }
 
@@ -119,7 +123,7 @@ void AdjustSize(views::View* view, gfx::Size* size) {
 }
 
 int CenterPosition(int size, int target_size) {
-  return std::max((target_size - size) / 2, GetTopBottomPadding());
+  return std::max((target_size - size) / 2, GetTopPadding());
 }
 
 }  // namespace
@@ -257,7 +261,7 @@ gfx::Size DownloadShelfView::GetPreferredSize() const {
     AdjustSize(*download_views_.begin(), &prefsize);
     prefsize.Enlarge(GetBetweenItemPadding(), 0);
   }
-  prefsize.Enlarge(0, 2 * GetTopBottomPadding());
+  prefsize.Enlarge(0, GetTopPadding() + GetBottomPadding());
   if (shelf_animation_.is_animating()) {
     prefsize.set_height(
         static_cast<int>(static_cast<double>(prefsize.height()) *

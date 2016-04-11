@@ -604,7 +604,7 @@ void DownloadItemViewMd::OnPaint(gfx::Canvas* canvas) {
   OnPaintBorder(canvas);
 
   if (HasFocus())
-    canvas->DrawFocusRect(GetLocalBounds());
+    views::CustomButton::PaintMdFocusRing(canvas, this);
 }
 
 int DownloadItemViewMd::GetYForFilenameText() const {

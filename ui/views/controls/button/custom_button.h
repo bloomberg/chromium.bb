@@ -32,8 +32,11 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   // The menu button's class name.
   static const char kViewClassName[];
 
-  static const CustomButton* AsCustomButton(const views::View* view);
-  static CustomButton* AsCustomButton(views::View* view);
+  static const CustomButton* AsCustomButton(const View* view);
+  static CustomButton* AsCustomButton(View* view);
+
+  // Paint an MD-style focus ring on the given canvas at the given bounds.
+  static void PaintMdFocusRing(gfx::Canvas* canvas, View* view);
 
   ~CustomButton() override;
 

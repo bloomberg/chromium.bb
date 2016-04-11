@@ -52,15 +52,7 @@ class MdFocusRing : public views::View {
   ~MdFocusRing() override {}
 
   void OnPaint(gfx::Canvas* canvas) override {
-    SkPaint paint;
-    paint.setAntiAlias(true);
-    paint.setColor(GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_CallToActionColor));
-    paint.setStyle(SkPaint::kStroke_Style);
-    paint.setStrokeWidth(1);
-    gfx::RectF rect(GetLocalBounds());
-    rect.Inset(gfx::InsetsF(0.5));
-    canvas->DrawRoundRect(rect, kFocusBorderCornerRadius, paint);
+    CustomButton::PaintMdFocusRing(canvas, this);
   }
 
  private:
@@ -77,9 +69,10 @@ const char CustomButton::kViewClassName[] = "CustomButton";
 
 // static
 const CustomButton* CustomButton::AsCustomButton(const views::View* view) {
-  return AsCustomButton(const_cast<views::View*>(view));
+  return AsCustomButton(const_cast<View*>(view));
 }
 
+// static
 CustomButton* CustomButton::AsCustomButton(views::View* view) {
   if (view) {
     const char* classname = view->GetClassName();
@@ -93,6 +86,19 @@ CustomButton* CustomButton::AsCustomButton(views::View* view) {
     }
   }
   return NULL;
+}
+
+// static
+void CustomButton::PaintMdFocusRing(gfx::Canvas* canvas, views::View* view) {
+  SkPaint paint;
+  paint.setAntiAlias(true);
+  paint.setColor(view->GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_CallToActionColor));
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStrokeWidth(1);
+  gfx::RectF rect(view->GetLocalBounds());
+  rect.Inset(gfx::InsetsF(0.5));
+  canvas->DrawRoundRect(rect, kFocusBorderCornerRadius, paint);
 }
 
 CustomButton::~CustomButton() {}
