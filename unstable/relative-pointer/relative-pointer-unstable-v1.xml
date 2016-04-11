@@ -25,7 +25,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <description summary="Protocol for relative pointer motion events">
+  <description summary="protocol for relative pointer motion events">
     This protocol specifies a set of interfaces used for making clients able to
     receive relative pointer events not obstructed by barriers (such as the
     monitor edge or other pointer barriers).
@@ -42,9 +42,9 @@
 
     Warning! The protocol described in this file is experimental and backward
     incompatible changes may be made. Backward compatible changes may be added
-    together with the corresponding interface version bump.  Backward
+    together with the corresponding interface version bump. Backward
     incompatible changes are done by bumping the version number in the protocol
-    and interface names and resetting the interface version.  Once the protocol
+    and interface names and resetting the interface version. Once the protocol
     is to be declared stable, the 'z' prefix and the version number in the
     protocol and interface names are removed and the interface version number is
     reset.
@@ -111,7 +111,7 @@
 
 	Relative motions are not coupled to wl_pointer.motion events, and can be
 	sent in combination with such events, but also independently. There may
-	also be scenarious where wl_pointer.motion is sent, but there is no
+	also be scenarios where wl_pointer.motion is sent, but there is no
 	relative motion. The order of an absolute and relative motion event
 	originating from the same physical motion is not guaranteed.
 
