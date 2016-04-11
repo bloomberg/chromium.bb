@@ -2758,12 +2758,9 @@ bool Element::isInDescendantTreeOf(const Element* shadowHost) const
     DCHECK(shadowHost);
     DCHECK(isShadowHost(shadowHost));
 
-    const ShadowRoot* shadowRoot = containingShadowRoot();
-    while (shadowRoot) {
-        const Element* ancestorShadowHost = shadowRoot->shadowHost();
+    for (const Element* ancestorShadowHost = this->shadowHost(); ancestorShadowHost; ancestorShadowHost = ancestorShadowHost->shadowHost()) {
         if (ancestorShadowHost == shadowHost)
             return true;
-        shadowRoot = ancestorShadowHost->containingShadowRoot();
     }
     return false;
 }
