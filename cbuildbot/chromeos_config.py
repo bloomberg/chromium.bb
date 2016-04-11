@@ -475,7 +475,6 @@ _x86_internal_release_boards = frozenset([
 
 _x86_external_boards = frozenset([
     'amd64-generic',
-    'gizmo',
     'x32-generic',
     'x86-generic',
 ])
@@ -518,7 +517,6 @@ _internal_boards = _all_release_boards
 _brillo_boards = frozenset([
     'arkham',
     'gale',
-    'gizmo',
     'panther_embedded',
     'purin',
     'storm',
@@ -1656,7 +1654,6 @@ def GetConfig():
       'daisy_spring',
       'nyan_freon',
       'falco',
-      'gizmo',
       'glados',
       'guado_moblab',
       'lakitu',
@@ -1748,7 +1745,6 @@ def GetConfig():
 
   _paladin_separate_symbols = frozenset([
       'amd64-generic',
-      'gizmo',
   ])
 
   def _CreatePaladinConfigs():
@@ -2298,14 +2294,6 @@ def GetConfig():
       'lumpy',
       'parrot',
   ])
-
-  site_config.Add(
-      'gizmo-release', _release,
-      _base_configs['gizmo'],
-      important=True,
-      paygen=False,
-      signer_tests=False,
-  )
 
   site_config.Add(
       'samus-release', _release,

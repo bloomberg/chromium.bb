@@ -44,7 +44,6 @@ falco-chrome-pfq
 falco-full-compile-paladin
 falco-paladin
 gale-release
-gizmo-release
 [glados-b-release-group]
   cave-release
 glados-cheets-android-pfq
@@ -236,7 +235,6 @@ arm-generic-paladin
 chromiumos-sdk
 daisy-full
 daisy-incremental
-gizmo-paladin
 oak-full
 panther_embedded-minimal-paladin
 x86-generic-asan
