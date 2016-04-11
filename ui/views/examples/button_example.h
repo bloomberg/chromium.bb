@@ -27,19 +27,21 @@ class VIEWS_EXAMPLES_EXPORT ButtonExample : public ExampleBase,
   void CreateExampleView(View* container) override;
 
  private:
-  void LabelButtonPressed(const ui::Event& event);
+  void LabelButtonPressed(LabelButton* label_button, const ui::Event& event);
 
   // ButtonListener:
   void ButtonPressed(Button* sender, const ui::Event& event) override;
 
   // Example buttons.
-  LabelButton* label_button_;
-  ImageButton* image_button_;
+  LabelButton* label_button_ = nullptr;
+  LabelButton* styled_button_ = nullptr;
+  LabelButton* disabled_button_ = nullptr;
+  ImageButton* image_button_ = nullptr;
 
-  const gfx::ImageSkia* icon_;
+  const gfx::ImageSkia* icon_ = nullptr;
 
   // The number of times the buttons are pressed.
-  int count_;
+  int count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ButtonExample);
 };

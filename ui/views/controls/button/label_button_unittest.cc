@@ -16,7 +16,9 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/text_utils.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/button_ink_drop_delegate.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
 
@@ -34,9 +36,33 @@ gfx::ImageSkia CreateTestImage(int width, int height) {
 
 namespace views {
 
+// Testing button that exposes protected methods.
+class TestLabelButton : public LabelButton {
+ public:
+  TestLabelButton() : LabelButton(nullptr, base::string16()) {}
+
+  using LabelButton::label;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestLabelButton);
+};
+
 class LabelButtonTest : public test::WidgetTest {
  public:
   LabelButtonTest() {}
+
+  // Adds a LabelButton to the test Widget with the STYLE_BUTTON platform style.
+  TestLabelButton* AddStyledButton(const char* label, bool is_default) {
+    TestLabelButton* button = new TestLabelButton;
+    button->SetText(ASCIIToUTF16(label));
+    button->SetStyle(CustomButton::STYLE_BUTTON);
+    if (is_default)
+      button->SetIsDefault(true);
+    button_->GetWidget()->GetContentsView()->AddChildView(button);
+    button->SizeToPreferredSize();
+    button->Layout();
+    return button;
+  }
 
   // testing::Test:
   void SetUp() override {
@@ -45,8 +71,26 @@ class LabelButtonTest : public test::WidgetTest {
     // used (which could be derived from the Widget's NativeTheme).
     test_widget_ = CreateTopLevelPlatformWidget();
 
-    button_ = new LabelButton(nullptr, base::string16());
+    button_ = new TestLabelButton;
     test_widget_->GetContentsView()->AddChildView(button_);
+
+    // Establish the expected text colors for testing changes due to state.
+    themed_normal_text_color_ = button_->GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_ButtonEnabledColor);
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    // The Linux theme provides a non-black highlight text color, but it's not
+    // used for styled buttons.
+    styled_highlight_text_color_ = themed_normal_text_color_;
+    styled_normal_text_color_ = themed_normal_text_color_;
+#else
+    styled_highlight_text_color_ = button_->GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_ButtonHighlightColor);
+
+    // For styled buttons only, platforms other than Desktop Linux either ignore
+    // NativeTheme and use a hardcoded black or (on Mac) have a NativeTheme that
+    // reliably returns black.
+    styled_normal_text_color_ = SK_ColorBLACK;
+#endif
   }
 
   void TearDown() override {
@@ -55,7 +99,11 @@ class LabelButtonTest : public test::WidgetTest {
   }
 
  protected:
-  LabelButton* button_ = nullptr;
+  TestLabelButton* button_ = nullptr;
+
+  SkColor themed_normal_text_color_ = 0;
+  SkColor styled_normal_text_color_ = 0;
+  SkColor styled_highlight_text_color_ = 0;
 
  private:
   Widget* test_widget_ = nullptr;
@@ -290,21 +338,65 @@ TEST_F(LabelButtonTest, ChangeLabelImageSpacing) {
   EXPECT_EQ(original_width, button_->GetPreferredSize().width());
 }
 
-// Make sure the label gets the width it asks for and bolding it (via
-// SetDefault) causes the size to update. Regression test for crbug.com/578722
-TEST_F(LabelButtonTest, ButtonStyleIsDefaultSize) {
-  LabelButton* button = new LabelButton(nullptr, base::ASCIIToUTF16("Save"));
-  button->SetStyle(CustomButton::STYLE_BUTTON);
-  button_->GetWidget()->GetContentsView()->AddChildView(button);
-  button->SizeToPreferredSize();
-  button->Layout();
-  gfx::Size non_default_size = button->label_->size();
-  EXPECT_EQ(button->label_->GetPreferredSize().width(),
+// Ensure the label gets the correct style for default buttons (e.g. bolding)
+// and button size updates correctly. Regression test for crbug.com/578722.
+TEST_F(LabelButtonTest, ButtonStyleIsDefaultStyle) {
+  TestLabelButton* button = AddStyledButton("Save", false);
+  gfx::Size non_default_size = button->label()->size();
+  EXPECT_EQ(button->label()->GetPreferredSize().width(),
             non_default_size.width());
+  EXPECT_FALSE(button->label()->font_list().GetFontStyle() & gfx::Font::BOLD);
+  EXPECT_EQ(styled_normal_text_color_, button->label()->enabled_color());
   button->SetIsDefault(true);
   button->SizeToPreferredSize();
   button->Layout();
-  EXPECT_NE(non_default_size, button->label_->size());
+  EXPECT_EQ(styled_highlight_text_color_, button->label()->enabled_color());
+  if (PlatformStyle::kDefaultLabelButtonHasBoldFont) {
+    EXPECT_NE(non_default_size, button->label()->size());
+    EXPECT_TRUE(button->label()->font_list().GetFontStyle() & gfx::Font::BOLD);
+  } else {
+    EXPECT_EQ(non_default_size, button->label()->size());
+    EXPECT_FALSE(button->label()->font_list().GetFontStyle() & gfx::Font::BOLD);
+  }
+}
+
+// Ensure the label gets the correct style when pressed or becoming default.
+TEST_F(LabelButtonTest, HighlightedButtonStyle) {
+#if defined(OS_MACOSX)
+  // On Mac, ensure the normal and highlight colors are different, to ensure the
+  // tests are actually testing something. This might be the case on other
+  // platforms.
+  EXPECT_NE(styled_normal_text_color_, styled_highlight_text_color_);
+#endif
+
+  // For STYLE_TEXTBUTTON, the NativeTheme might not provide SK_ColorBLACK, but
+  // it should be the same for normal and pressed states.
+  EXPECT_EQ(themed_normal_text_color_, button_->label()->enabled_color());
+  button_->SetState(Button::STATE_PRESSED);
+  EXPECT_EQ(themed_normal_text_color_, button_->label()->enabled_color());
+
+  // Add a non-default button.
+  TestLabelButton* styled_button = AddStyledButton("OK", false);
+  EXPECT_EQ(styled_normal_text_color_, styled_button->label()->enabled_color());
+  styled_button->SetState(Button::STATE_PRESSED);
+  EXPECT_EQ(styled_highlight_text_color_,
+            styled_button->label()->enabled_color());
+
+  // If there's an explicit color set for STATE_PRESSED, that should be used.
+  styled_button->SetEnabledTextColors(SK_ColorRED);
+  EXPECT_EQ(SK_ColorRED, styled_button->label()->enabled_color());
+
+  // Test becoming default after adding to the Widget.
+  TestLabelButton* default_after = AddStyledButton("OK", false);
+  EXPECT_EQ(styled_normal_text_color_, default_after->label()->enabled_color());
+  default_after->SetIsDefault(true);
+  EXPECT_EQ(styled_highlight_text_color_,
+            default_after->label()->enabled_color());
+
+  // Test becoming default before adding to the Widget.
+  TestLabelButton* default_before = AddStyledButton("OK", true);
+  EXPECT_EQ(styled_highlight_text_color_,
+            default_before->label()->enabled_color());
 }
 
 // A ButtonInkDropDelegate that tracks the last hover state requested.

@@ -9,18 +9,30 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/views_export.h"
 
 namespace views {
 
 class Border;
 class FocusableBorder;
+class Label;
 class LabelButton;
 class LabelButtonBorder;
 class ScrollBar;
 
 // Cross-platform API for providing platform-specific styling for toolkit-views.
-class PlatformStyle {
+class VIEWS_EXPORT PlatformStyle {
  public:
+  // Type used by LabelButton to map button states to text colors.
+  using ButtonColorByState = SkColor[Button::STATE_COUNT];
+
+  // Minimum size for platform-styled buttons (Button::STYLE_BUTTON).
+  static const int kMinLabelButtonWidth;
+  static const int kMinLabelButtonHeight;
+
+  // Whether dialog-default buttons are given a bold font style.
+  static const bool kDefaultLabelButtonHasBoldFont;
+
   // Creates an ImageSkia containing the image to use for the combobox arrow.
   // The |is_enabled| argument is true if the control the arrow is for is
   // enabled, and false if the control is disabled. The |style| argument is the
@@ -39,11 +51,21 @@ class PlatformStyle {
   static scoped_ptr<LabelButtonBorder> CreateLabelButtonBorder(
       Button::ButtonStyle style);
 
-  // Applies the current system theme to the default border created by |button|.
-  static scoped_ptr<Border> CreateThemedLabelButtonBorder(LabelButton* button);
-
   // Creates the default scrollbar for the given orientation.
   static scoped_ptr<ScrollBar> CreateScrollBar(bool is_horizontal);
+
+  // Returns the current text color for the current button state.
+  static SkColor TextColorForButton(const ButtonColorByState& color_by_state,
+                                    const LabelButton& button);
+
+  // Applies platform styles to |label| and fills |color_by_state| with the text
+  // colors for normal, pressed, hovered, and disabled states, if the colors for
+  // Button::STYLE_BUTTON buttons differ from those provided by ui::NativeTheme.
+  static void ApplyLabelButtonTextStyle(Label* label,
+                                        ButtonColorByState* color_by_state);
+
+  // Applies the current system theme to the default border created by |button|.
+  static scoped_ptr<Border> CreateThemedLabelButtonBorder(LabelButton* button);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PlatformStyle);

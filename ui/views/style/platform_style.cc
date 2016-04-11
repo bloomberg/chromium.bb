@@ -7,6 +7,8 @@
 #include "build/build_config.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/shadow_value.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
@@ -14,9 +16,26 @@
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/scrollbar/native_scroll_bar.h"
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#define DESKTOP_LINUX
+#endif
+
 namespace views {
+namespace {
+
+#if !defined(DESKTOP_LINUX) && !defined(OS_MACOSX)
+// Default text and shadow colors for STYLE_BUTTON.
+const SkColor kStyleButtonTextColor = SK_ColorBLACK;
+const SkColor kStyleButtonShadowColor = SK_ColorWHITE;
+#endif
+
+}  // namespace
 
 #if !defined(OS_MACOSX)
+
+const int PlatformStyle::kMinLabelButtonWidth = 70;
+const int PlatformStyle::kMinLabelButtonHeight = 33;
+const bool PlatformStyle::kDefaultLabelButtonHasBoldFont = true;
 
 // static
 gfx::ImageSkia PlatformStyle::CreateComboboxArrow(bool is_enabled,
@@ -53,9 +72,36 @@ scoped_ptr<LabelButtonBorder> PlatformStyle::CreateLabelButtonBorder(
 scoped_ptr<ScrollBar> PlatformStyle::CreateScrollBar(bool is_horizontal) {
   return make_scoped_ptr(new NativeScrollBar(is_horizontal));
 }
+
+// static
+SkColor PlatformStyle::TextColorForButton(
+    const ButtonColorByState& color_by_state,
+    const LabelButton& button) {
+  return color_by_state[button.state()];
+}
+
+#endif  // OS_MACOSX
+
+#if !defined(DESKTOP_LINUX) && !defined(OS_MACOSX)
+// static
+void PlatformStyle::ApplyLabelButtonTextStyle(
+    Label* label,
+    ButtonColorByState* color_by_state) {
+  ButtonColorByState& colors = *color_by_state;
+  colors[Button::STATE_NORMAL] = kStyleButtonTextColor;
+  colors[Button::STATE_HOVERED] = kStyleButtonTextColor;
+  colors[Button::STATE_PRESSED] = kStyleButtonTextColor;
+
+  const ui::NativeTheme* theme = label->GetNativeTheme();
+  label->SetBackgroundColor(
+      theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonBackgroundColor));
+  label->SetAutoColorReadabilityEnabled(false);
+  label->SetShadows(gfx::ShadowValues(
+      1, gfx::ShadowValue(gfx::Vector2d(0, 1), 0, kStyleButtonShadowColor)));
+}
 #endif
 
-#if !defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if !defined(DESKTOP_LINUX)
 // static
 scoped_ptr<Border> PlatformStyle::CreateThemedLabelButtonBorder(
     LabelButton* button) {

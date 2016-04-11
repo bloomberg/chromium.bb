@@ -146,7 +146,6 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Image);
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, LabelAndImage);
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, FontList);
-  FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, ButtonStyleIsDefaultSize);
 
   void SetTextInternal(const base::string16& text);
 
@@ -166,6 +165,11 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // Resets |cached_preferred_size_| and marks |cached_preferred_size_valid_|
   // as false.
   void ResetCachedPreferredSize();
+
+  // Updates additional state related to focus or default status, rather than
+  // merely the CustomButton::state(). E.g. ensures the label text color is
+  // correct for the current background.
+  void ResetLabelEnabledColor();
 
   // The image and label shown in the button.
   ImageView* image_;

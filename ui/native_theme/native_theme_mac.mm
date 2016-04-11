@@ -42,6 +42,13 @@ const SkColor kDialogBackgroundColor = SkColorSetRGB(251, 251, 251);
 const SkColor kUnfocusedSelectedTextBackgroundColor =
     SkColorSetRGB(220, 220, 220);
 
+// Helper to make indexing an array by an enum class easier.
+template <class KEY, class VALUE>
+struct EnumArray {
+  VALUE& operator[](const KEY& key) { return array[static_cast<size_t>(key)]; }
+  VALUE array[static_cast<size_t>(KEY::COUNT)];
+};
+
 // On 10.6 and 10.7 there is no way to get components from system colors. Here,
 // system colors are just opaque objects that can paint themselves and otherwise
 // tell you nothing. In 10.8, some of the system color classes have incomplete
@@ -156,6 +163,10 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     case kColorId_LabelDisabledColor:
       return NSSystemColorToSkColor([NSColor disabledControlTextColor]);
     case kColorId_ButtonHighlightColor:
+      // Although the NSColor documentation names "selectedControlTextColor" as
+      // the color for a "text in a .. control being clicked or dragged", it
+      // remains black, and text on Yosemite-style pressed buttons is white.
+      return SK_ColorWHITE;
     case kColorId_ButtonHoverColor:
       return NSSystemColorToSkColor([NSColor selectedControlTextColor]);
 
@@ -271,8 +282,9 @@ void NativeThemeMac::PaintMenuItemBackground(
 
 // static
 sk_sp<SkShader> NativeThemeMac::GetButtonBackgroundShader(
-    NativeTheme::State state, int height) {
-  typedef SkColor ColorByState[NativeTheme::State::kNumStates];
+    ButtonBackgroundType type,
+    int height) {
+  using ColorByState = EnumArray<ButtonBackgroundType, SkColor>;
   SkPoint gradient_points[2];
   gradient_points[0].iset(0, 0);
   gradient_points[1].iset(0, height);
@@ -280,19 +292,18 @@ sk_sp<SkShader> NativeThemeMac::GetButtonBackgroundShader(
   SkScalar gradient_positions[] = { 0.0, 0.38, 1.0 };
 
   ColorByState start_colors;
-  start_colors[NativeTheme::State::kDisabled] = gfx::kMaterialGrey300;
-  start_colors[NativeTheme::State::kHovered] = gfx::kMaterialBlue300;
-  start_colors[NativeTheme::State::kNormal] = gfx::kMaterialBlue300;
-  start_colors[NativeTheme::State::kPressed] = gfx::kMaterialBlue300;
+  start_colors[ButtonBackgroundType::DISABLED] = gfx::kMaterialGrey300;
+  start_colors[ButtonBackgroundType::HIGHLIGHTED] = gfx::kMaterialBlue300;
+  start_colors[ButtonBackgroundType::NORMAL] = SK_ColorWHITE;
+  start_colors[ButtonBackgroundType::PRESSED] = gfx::kMaterialBlue300;
   ColorByState end_colors;
-  end_colors[NativeTheme::State::kDisabled] = gfx::kMaterialGrey300;
-  end_colors[NativeTheme::State::kHovered] = gfx::kMaterialBlue700;
-  end_colors[NativeTheme::State::kNormal] = gfx::kMaterialBlue700;
-  end_colors[NativeTheme::State::kPressed] = gfx::kMaterialBlue700;
+  end_colors[ButtonBackgroundType::DISABLED] = gfx::kMaterialGrey300;
+  end_colors[ButtonBackgroundType::HIGHLIGHTED] = gfx::kMaterialBlue700;
+  end_colors[ButtonBackgroundType::NORMAL] = SK_ColorWHITE;
+  end_colors[ButtonBackgroundType::PRESSED] = gfx::kMaterialBlue700;
 
-  SkColor gradient_colors[] = {
-    start_colors[state], start_colors[state], end_colors[state]
-  };
+  SkColor gradient_colors[] = {start_colors[type], start_colors[type],
+                               end_colors[type]};
 
   return SkGradientShader::MakeLinear(
       gradient_points, gradient_colors, gradient_positions, 3,

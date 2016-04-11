@@ -12,107 +12,54 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas.h"
+#include "ui/native_theme/native_theme_mac.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/label_button.h"
+
+using ui::NativeThemeMac;
 
 namespace views {
 namespace {
 
-// Type to map button states to a corresponding SkColor.
-typedef const SkColor ColorByState[Button::STATE_COUNT];
-
-// If a state is added, ColorByState will silently fill with zeros, so assert.
-static_assert(Button::STATE_COUNT == 4,
-              "DialogButtonBorderMac assumes 4 button states.");
-
 // Corner radius of rounded rectangles.
 const SkScalar kCornerRadius = 2;
+const SkScalar kFocusCornerRadius = 4;
+const SkScalar kFocusRingThickness = 3;
 
-// Vertical offset of the drop shadow and the inner highlight shadow.
-const SkScalar kShadowOffsetY = 1;
-
-// Shadow blur radius of the inner highlight shadow.
-const double kInnerShadowBlurRadius = 2.0;
+const SkColor kDefaultBorderColor = SkColorSetARGB(0xF2, 0xBA, 0xBA, 0xBA);
+const SkColor kHighlightedBorderColor = SkColorSetARGB(0xFF, 0x52, 0x76, 0xFF);
+const SkColor kFocusRingColor = SkColorSetARGB(0x80, 0x3B, 0x9A, 0xFC);
 
 // Default border insets, to provide text padding.
-const int kPaddingX = 14;
-const int kPaddingY = 4;
+const int kPaddingX = 19;
+const int kPaddingY = 7;
 
-sk_sp<SkShader> CreateButtonGradient(int height,
-                                     Button::ButtonState state) {
-  ColorByState start = {0xFFF0F0F0, 0xFFF4F4F4, 0xFFEBEBEB, 0xFFEDEDED};
-  ColorByState end = {0xFFE0E0E0, 0xFFE4E4E4, 0xFFDBDBDB, 0xFFDEDEDE};
-
-  SkPoint gradient_points[2];
-  gradient_points[0].iset(0, 0);
-  gradient_points[1].iset(0, height);
-
-  SkColor gradient_colors[] = {start[state], start[state], end[state]};
-  SkScalar gradient_positions[] = {0.0, 0.38, 1.0};
-
-  return SkGradientShader::MakeLinear(
-          gradient_points, gradient_colors, gradient_positions, 3,
-          SkShader::kClamp_TileMode);
-}
-
-void DrawConstrainedButtonBackground(const SkRect& button_rect,
-                                     SkCanvas* canvas,
-                                     Button::ButtonState button_state) {
+void DrawDialogButtonBackground(const SkRect& button_rect,
+                                SkCanvas* canvas,
+                                const LabelButton& button) {
   // Extend the size of the SkRect so the border stroke is drawn over it on all
   // sides.
   SkRect rect(button_rect);
   rect.fRight += 1;
   rect.fBottom += 1;
 
-  SkPaint paint;
-
-  // Drop Shadow.
-  ColorByState shadow = {0x14000000, 0x1F000000, 0x00000000, 0x00000000};
-  const double blur = 0.0;
-  std::vector<gfx::ShadowValue> shadows(
-      1, gfx::ShadowValue(gfx::Vector2d(0, kShadowOffsetY), blur,
-                          shadow[button_state]));
-  paint.setLooper(gfx::CreateShadowDrawLooper(shadows));
+  NativeThemeMac::ButtonBackgroundType type =
+      NativeThemeMac::ButtonBackgroundType::NORMAL;
+  if (!button.enabled() || button.state() == Button::STATE_DISABLED)
+    type = NativeThemeMac::ButtonBackgroundType::DISABLED;
+  else if (button.state() == Button::STATE_PRESSED)
+    type = NativeThemeMac::ButtonBackgroundType::PRESSED;
+  else if (DialogButtonBorderMac::ShouldRenderDefault(button))
+    type = NativeThemeMac::ButtonBackgroundType::HIGHLIGHTED;
 
   // Background.
-  paint.setShader(CreateButtonGradient(rect.height(), button_state));
+  SkPaint paint;
+  paint.setShader(
+      NativeThemeMac::GetButtonBackgroundShader(type, rect.height()));
   paint.setStyle(SkPaint::kFill_Style);
   paint.setFlags(SkPaint::kAntiAlias_Flag);
   canvas->drawRoundRect(rect, kCornerRadius, kCornerRadius, paint);
-}
-
-// Draws an inner box shadow inside a rounded rectangle of size |rect|. The
-// technique: draw a black "ring" around the outside of the button cell. Then
-// clip out everything except the shadow it casts. Works similar to Blink's
-// GraphicsContext::drawInnerShadow().
-void DrawRoundRectInnerShadow(const SkRect& rect,
-                              SkCanvas* canvas,
-                              SkColor shadow_color) {
-  const gfx::Vector2d shadow_offset(0, kShadowOffsetY);
-  SkRect outer(rect);
-  outer.outset(abs(shadow_offset.x()) + kInnerShadowBlurRadius,
-               abs(shadow_offset.y()) + kInnerShadowBlurRadius);
-
-  SkPath path;
-  path.addRect(outer);
-  path.setFillType(SkPath::kEvenOdd_FillType);
-  path.addRoundRect(rect, kCornerRadius, kCornerRadius);  // Poke a hole.
-
-  // Inset the clip to cater for the border stroke.
-  SkPath clip;
-  clip.addRoundRect(rect.makeInset(0.5, 0.5), kCornerRadius, kCornerRadius);
-
-  SkPaint paint;
-  std::vector<gfx::ShadowValue> shadows(
-      1, gfx::ShadowValue(shadow_offset, kInnerShadowBlurRadius, shadow_color));
-  paint.setLooper(gfx::CreateShadowDrawLooper(shadows));
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setColor(SK_ColorBLACK);  // Note: Entirely clipped.
-
-  canvas->save();
-  canvas->clipPath(clip, SkRegion::kIntersect_Op, true /* antialias */);
-  canvas->drawPath(path, paint);
-  canvas->restore();
 }
 
 }  // namespace
@@ -123,39 +70,54 @@ DialogButtonBorderMac::DialogButtonBorderMac() {
 
 DialogButtonBorderMac::~DialogButtonBorderMac() {}
 
+// static
+bool DialogButtonBorderMac::ShouldRenderDefault(const LabelButton& button) {
+  // TODO(tapted): Check whether the Widget is active, and only return true here
+  // if it is. Plumbing this requires default buttons to also observe Widget
+  // activations to ensure text and background colors are properly invalidated.
+  return button.is_default();
+}
+
 void DialogButtonBorderMac::Paint(const View& view, gfx::Canvas* canvas) {
+  // Actually, |view| should be a LabelButton as well, but don't rely too much
+  // on RTTI.
   DCHECK(CustomButton::AsCustomButton(&view));
-  const CustomButton& button = static_cast<const CustomButton&>(view);
+  const LabelButton& button = static_cast<const LabelButton&>(view);
   SkCanvas* canvas_skia = canvas->sk_canvas();
 
   // Inset all sides for the rounded rectangle stroke. Inset again to make room
-  // for the shadows (while keeping the text centered).
+  // for the shadows and static focus ring (while keeping the text centered).
   SkRect sk_rect = gfx::RectToSkRect(view.GetLocalBounds());
-  sk_rect.inset(2.0, 2.0);
+  sk_rect.inset(kFocusRingThickness, kFocusRingThickness);
 
-  DrawConstrainedButtonBackground(sk_rect, canvas_skia, button.state());
+  DrawDialogButtonBackground(sk_rect, canvas_skia, button);
 
   // Offset so that strokes are contained within the pixel boundary.
   sk_rect.offset(0.5, 0.5);
-  ColorByState highlight = {0xBFFFFFFF, 0xF2FFFFFF, 0x24000000, 0x00000000};
-  DrawRoundRectInnerShadow(sk_rect, canvas_skia, highlight[button.state()]);
 
-  // Border or focus ring.
+  // Border and focus ring.
+  SkColor border_color = kDefaultBorderColor;
+  if (button.state() == Button::STATE_PRESSED || ShouldRenderDefault(button))
+    border_color = kHighlightedBorderColor;
+
   SkPaint paint;
-  ColorByState border = {0x40000000, 0x4D000000, 0x4D000000, 0x1F000000};
-  const SkColor focus_border = {0xFF5DA5FF};
-  paint.setStrokeWidth(1);
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setFlags(SkPaint::kAntiAlias_Flag);
-  if (button.HasFocus() && button.state() != Button::STATE_PRESSED)
-    paint.setColor(focus_border);
-  else
-    paint.setColor(border[button.state()]);
+  paint.setStrokeWidth(1);
+  paint.setColor(border_color);
   canvas_skia->drawRoundRect(sk_rect, kCornerRadius, kCornerRadius, paint);
+
+  if (button.HasFocus()) {
+    paint.setStrokeWidth(kFocusRingThickness);
+    paint.setColor(kFocusRingColor);
+    sk_rect.inset(-1, -1);
+    canvas_skia->drawRoundRect(sk_rect, kFocusCornerRadius, kFocusCornerRadius,
+                               paint);
+  }
 }
 
 gfx::Size DialogButtonBorderMac::GetMinimumSize() const {
-  return gfx::Size(100, 30);
+  return gfx::Size(28, 4);
 }
 
 }  // namespace views

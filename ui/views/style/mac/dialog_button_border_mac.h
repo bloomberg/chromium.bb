@@ -11,6 +11,8 @@
 
 namespace views {
 
+class LabelButton;
+
 // Skia port of the default button style used for dialogs on Chrome Mac.
 // Originally provided by ConstrainedWindowButton, which used Quartz-backed
 // Cocoa drawing routines.
@@ -18,6 +20,9 @@ class VIEWS_EXPORT DialogButtonBorderMac : public LabelButtonBorder {
  public:
   DialogButtonBorderMac();
   ~DialogButtonBorderMac() override;
+
+  // Whether the given |button| should get a highlighted background.
+  static bool ShouldRenderDefault(const LabelButton& button);
 
   // views::Border:
   void Paint(const View& view, gfx::Canvas* canvas) override;

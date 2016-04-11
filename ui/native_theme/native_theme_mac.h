@@ -16,6 +16,17 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
  public:
   static const int kComboboxCornerRadius = 5;
 
+  // Type of gradient to use on a button background. Use HIGHLIGHTED for the
+  // default button of a window and all combobox controls, but only when the
+  // window is active.
+  enum class ButtonBackgroundType {
+    DISABLED,
+    HIGHLIGHTED,
+    NORMAL,
+    PRESSED,
+    COUNT
+  };
+
   static NativeThemeMac* instance();
 
   // Overridden from NativeTheme:
@@ -33,7 +44,8 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
       const MenuItemExtraParams& menu_item) const override;
 
   // Creates a shader appropriate for painting the background of a button.
-  static sk_sp<SkShader> GetButtonBackgroundShader(State state, int height);
+  static sk_sp<SkShader> GetButtonBackgroundShader(ButtonBackgroundType type,
+                                                   int height);
 
  private:
   NativeThemeMac();

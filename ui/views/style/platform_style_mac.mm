@@ -17,6 +17,10 @@
 
 namespace views {
 
+const int PlatformStyle::kMinLabelButtonWidth = 32;
+const int PlatformStyle::kMinLabelButtonHeight = 30;
+const bool PlatformStyle::kDefaultLabelButtonHasBoldFont = false;
+
 // static
 gfx::ImageSkia PlatformStyle::CreateComboboxArrow(bool is_enabled,
                                                   Combobox::Style style) {
@@ -54,6 +58,30 @@ scoped_ptr<LabelButtonBorder> PlatformStyle::CreateLabelButtonBorder(
 // static
 scoped_ptr<ScrollBar> PlatformStyle::CreateScrollBar(bool is_horizontal) {
   return make_scoped_ptr(new CocoaScrollBar(is_horizontal));
+}
+
+// static
+SkColor PlatformStyle::TextColorForButton(
+    const ButtonColorByState& color_by_state,
+    const LabelButton& button) {
+  Button::ButtonState state = button.state();
+  if (button.style() == Button::STYLE_BUTTON &&
+      DialogButtonBorderMac::ShouldRenderDefault(button)) {
+    // For convenience, we currently assume Mac wants the color corresponding to
+    // the pressed state for default buttons.
+    state = Button::STATE_PRESSED;
+  }
+  return color_by_state[state];
+}
+
+// static
+void PlatformStyle::ApplyLabelButtonTextStyle(
+    views::Label* label,
+    ButtonColorByState* color_by_state) {
+  const ui::NativeTheme* theme = label->GetNativeTheme();
+  ButtonColorByState& colors = *color_by_state;
+  colors[Button::STATE_PRESSED] =
+      theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonHighlightColor);
 }
 
 }  // namespace views

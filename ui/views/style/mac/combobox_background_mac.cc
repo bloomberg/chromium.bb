@@ -11,6 +11,8 @@
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/view.h"
 
+using ui::NativeThemeMac;
+
 namespace views {
 
 ComboboxBackgroundMac::ComboboxBackgroundMac() {}
@@ -27,15 +29,17 @@ void ComboboxBackgroundMac::Paint(gfx::Canvas* canvas, View* view) const {
   // paint outside the border.
   bounds.Inset(bounds.width() - combobox->GetArrowButtonWidth(), 0.5, 0.5, 0.5);
 
-  ui::NativeTheme::State state = ui::NativeTheme::kNormal;
+  // TODO(tapted): Check whether the Widget is active, and use the NORMAL
+  // BackgroundType if it is inactive. Handling this properly also requires the
+  // control to observe the Widget for activation changes and invalidate.
+  NativeThemeMac::ButtonBackgroundType type =
+      NativeThemeMac::ButtonBackgroundType::HIGHLIGHTED;
   if (!combobox->enabled())
-    state = ui::NativeTheme::kDisabled;
+    type = NativeThemeMac::ButtonBackgroundType::DISABLED;
 
   SkPaint paint;
   paint.setShader(
-      ui::NativeThemeMac::GetButtonBackgroundShader(
-          state,
-          bounds.height()));
+      NativeThemeMac::GetButtonBackgroundShader(type, bounds.height()));
   paint.setStyle(SkPaint::kFill_Style);
   paint.setAntiAlias(true);
 
