@@ -5709,10 +5709,11 @@
           # 2015 64-bit warning for integer to larger pointer
           4312,
 
-          # TODO(brucedawson): http://crbug.com/593448 4334 is a 'suspicious
-          # shift' warning and 4595 is an 'illegal inline operator new' warning
-          # Both are new in VS 2015 Update 2 and can safely be deferred for now.
-          4334, 4595,
+          # TODO(brucedawson): http://crbug.com/593448 - C4595 is an 'illegal
+          # inline operator new' warning that is new in VS 2015 Update 2.
+          # This is equivalent to clang's no-inline-new-delete warning.
+          # See http://bugs.icu-project.org/trac/ticket/11122
+          4595,
         ],
         'msvs_settings': {
           'VCCLCompilerTool': {

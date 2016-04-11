@@ -153,8 +153,8 @@ bool Vp8Parser::ParseFrameHeader(Vp8FrameHeader* fhdr) {
 
   int log2_nbr_of_dct_partitions;
   BD_READ_UNSIGNED_OR_RETURN(2, &log2_nbr_of_dct_partitions);
-  fhdr->num_of_dct_partitions =
-      static_cast<size_t>(1 << log2_nbr_of_dct_partitions);
+  fhdr->num_of_dct_partitions = static_cast<size_t>(1)
+                                << log2_nbr_of_dct_partitions;
 
   if (!ParseQuantizationHeader(&fhdr->quantization_hdr))
     return false;

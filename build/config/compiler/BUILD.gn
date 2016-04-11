@@ -839,10 +839,10 @@ config("default_warnings") {
         # TODO(brucedawson): fix warnings, crbug.com/554200
         "/wd4312",
 
-        # TODO(brucedawson): http://crbug.com/593448 4334 is a 'suspicious
-        # shift' warning and 4595 is an 'illegal inline operator new' warning
-        # Both are new in VS 2015 Update 2 and can safely be deferred for now.
-        "/wd4334",
+        # TODO(brucedawson): http://crbug.com/593448 - C4595 is an 'illegal
+        # inline operator new' warning that is new in VS 2015 Update 2.
+        # This is equivalent to clang's no-inline-new-delete warning.
+        # See http://bugs.icu-project.org/trac/ticket/11122
         "/wd4595",
       ]
     }

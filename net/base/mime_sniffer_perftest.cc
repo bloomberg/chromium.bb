@@ -85,12 +85,8 @@ TEST(MimeSnifferTest, PlainTextPerfTest) {
   const size_t kWarmupIterations = 16;
   const size_t kMeasuredIterations = 1 << 15;
   std::string plaintext = kRepresentativePlainText;
-  // The purpose of the static_cast<size_t>() here is to prevent MSVC from
-  // complaining about an implicit promotion to 64 bits when compiling 64-bit.
-  size_t expected_size =
-      plaintext.size() *
-      static_cast<size_t>(
-          1u << base::bits::Log2Ceiling(kTargetSize / plaintext.size()));
+  size_t expected_size = plaintext.size() << base::bits::Log2Ceiling(
+                             kTargetSize / plaintext.size());
   plaintext.reserve(expected_size);
   while (plaintext.size() < kTargetSize)
     plaintext += plaintext;
