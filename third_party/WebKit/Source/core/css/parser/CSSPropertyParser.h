@@ -116,13 +116,10 @@ private:
     bool consumeColumns(bool important);
 
     bool consumeGridItemPositionShorthand(CSSPropertyID, bool important);
-    CSSValue* parseGridTemplateColumns(bool important);
-    bool parseGridTemplateRowsAndAreasAndColumns(bool important);
-    bool parseGridTemplateShorthand(bool important);
+    bool consumeGridTemplateRowsAndAreasAndColumns(bool important);
+    bool consumeGridTemplateShorthand(bool important);
     bool parseGridShorthand(bool important);
     bool consumeGridAreaShorthand(bool important);
-    CSSValue* parseGridTrackList();
-    bool parseGridTrackRepeatFunction(CSSValueList&, bool& isAutoRepeat);
     CSSValue* parseGridTrackSize(CSSParserValueList& inputList, TrackSizeRestriction = AllowAll);
     CSSPrimitiveValue* parseGridBreadth(CSSParserValue*, TrackSizeRestriction = AllowAll);
     bool parseGridLineNames(CSSParserValueList&, CSSValueList&, CSSGridLineNamesValue* = nullptr);
@@ -143,7 +140,6 @@ private:
     bool parseCalculation(CSSParserValue*, ValueRange);
 
     CSSPrimitiveValue* createPrimitiveNumericValue(CSSParserValue*);
-    CSSCustomIdentValue* createPrimitiveCustomIdentValue(CSSParserValue*);
 
     class ShorthandScope {
         STACK_ALLOCATED();

@@ -206,12 +206,6 @@ CSSPrimitiveValue* CSSPropertyParser::createPrimitiveNumericValue(CSSParserValue
     return cssValuePool().createValue(value->fValue, value->unit());
 }
 
-inline CSSCustomIdentValue* CSSPropertyParser::createPrimitiveCustomIdentValue(CSSParserValue* value)
-{
-    ASSERT(value->m_unit == CSSParserValue::String || value->m_unit == CSSParserValue::Identifier);
-    return CSSCustomIdentValue::create(value->string);
-}
-
 static inline bool isComma(CSSParserValue* value)
 {
     ASSERT(value);
@@ -280,10 +274,6 @@ CSSValue* CSSPropertyParser::legacyParseValue(CSSPropertyID unresolvedProperty)
 bool CSSPropertyParser::legacyParseShorthand(CSSPropertyID propertyID, bool important)
 {
     switch (propertyID) {
-    case CSSPropertyGridTemplate:
-        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        return parseGridTemplateShorthand(important);
-
     case CSSPropertyGrid:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         return parseGridShorthand(important);
@@ -294,146 +284,13 @@ bool CSSPropertyParser::legacyParseShorthand(CSSPropertyID propertyID, bool impo
     }
 }
 
-static inline bool isCSSWideKeyword(const CSSParserValue& value)
-{
-    return value.id == CSSValueInitial || value.id == CSSValueInherit || value.id == CSSValueUnset || value.id == CSSValueDefault;
-}
-
-static inline bool isValidCustomIdentForGridPositions(const CSSParserValue& value)
-{
-    // FIXME: we need a more general solution for <custom-ident> in all properties.
-    return value.m_unit == CSSParserValue::Identifier && value.id != CSSValueSpan && value.id != CSSValueAuto && !isCSSWideKeyword(value);
-}
-
-CSSValue* CSSPropertyParser::parseGridTemplateColumns(bool important)
-{
-    if (!(m_valueList->current() && isForwardSlashOperator(m_valueList->current()) && m_valueList->next()))
-        return nullptr;
-    if (CSSValue* columnsValue = parseGridTrackList()) {
-        if (m_valueList->current())
-            return nullptr;
-        return columnsValue;
-    }
-
-    return nullptr;
-}
-
-bool CSSPropertyParser::parseGridTemplateRowsAndAreasAndColumns(bool important)
-{
-    NamedGridAreaMap gridAreaMap;
-    size_t rowCount = 0;
-    size_t columnCount = 0;
-    bool trailingIdentWasAdded = false;
-    CSSValueList* templateRows = CSSValueList::createSpaceSeparated();
-
-    // At least template-areas strings must be defined.
-    if (!m_valueList->current() || isForwardSlashOperator(m_valueList->current()))
-        return false;
-
-    while (m_valueList->current() && !isForwardSlashOperator(m_valueList->current())) {
-        // Handle leading <custom-ident>*.
-        if (!parseGridLineNames(*m_valueList, *templateRows, trailingIdentWasAdded ? toCSSGridLineNamesValue(templateRows->item(templateRows->length() - 1)) : nullptr))
-            return false;
-
-        // Handle a template-area's row.
-        CSSParserValue* currentValue = m_valueList->current();
-        if (!currentValue || currentValue->m_unit != CSSParserValue::String)
-            return false;
-        if (!parseGridTemplateAreasRow(currentValue->string, gridAreaMap, rowCount, columnCount))
-            return false;
-        m_valueList->next();
-        ++rowCount;
-
-        // Handle template-rows's track-size.
-        if (m_valueList->current() && m_valueList->current()->m_unit != CSSParserValue::Operator && m_valueList->current()->m_unit != CSSParserValue::String) {
-            CSSValue* value = parseGridTrackSize(*m_valueList);
-            if (!value)
-                return false;
-            templateRows->append(value);
-        } else {
-            templateRows->append(cssValuePool().createIdentifierValue(CSSValueAuto));
-        }
-
-        // This will handle the trailing/leading <custom-ident>* in the grammar.
-        if (!parseGridLineNames(*m_valueList, *templateRows))
-            return false;
-        trailingIdentWasAdded = templateRows->item(templateRows->length() - 1)->isGridLineNamesValue();
-    }
-
-    CSSValue* columnsValue = nullptr;
-    if (m_valueList->current()) {
-        ASSERT(isForwardSlashOperator(m_valueList->current()));
-        columnsValue = parseGridTemplateColumns(important);
-        if (!columnsValue)
-            return false;
-        // The template-columns <track-list> can't be 'none'.
-        if (columnsValue->isPrimitiveValue() && toCSSPrimitiveValue(*columnsValue).getValueID() == CSSValueNone)
-            return false;
-    }
-
-    addProperty(CSSPropertyGridTemplateRows, templateRows, important);
-    addProperty(CSSPropertyGridTemplateColumns, columnsValue ? columnsValue : cssValuePool().createIdentifierValue(CSSValueNone), important);
-
-    CSSValue* templateAreas = CSSGridTemplateAreasValue::create(gridAreaMap, rowCount, columnCount);
-    addProperty(CSSPropertyGridTemplateAreas, templateAreas, important);
-
-    return true;
-}
-
-
-bool CSSPropertyParser::parseGridTemplateShorthand(bool important)
-{
-    ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-
-    ShorthandScope scope(this, CSSPropertyGridTemplate);
-    ASSERT(gridTemplateShorthand().length() == 3);
-
-    // At least "none" must be defined.
-    if (!m_valueList->current())
-        return false;
-
-    bool firstValueIsNone = m_valueList->current()->id == CSSValueNone;
-
-    // 1- 'none' case.
-    if (firstValueIsNone && !m_valueList->next()) {
-        addProperty(CSSPropertyGridTemplateColumns, cssValuePool().createIdentifierValue(CSSValueNone), important);
-        addProperty(CSSPropertyGridTemplateRows, cssValuePool().createIdentifierValue(CSSValueNone), important);
-        addProperty(CSSPropertyGridTemplateAreas, cssValuePool().createIdentifierValue(CSSValueNone), important);
-        return true;
-    }
-
-    // 2- <grid-template-rows> / <grid-template-columns>
-    CSSValue* rowsValue = nullptr;
-    if (firstValueIsNone) {
-        rowsValue = cssValuePool().createIdentifierValue(CSSValueNone);
-    } else {
-        rowsValue = parseGridTrackList();
-    }
-
-    if (rowsValue) {
-        CSSValue* columnsValue = parseGridTemplateColumns(important);
-        if (!columnsValue)
-            return false;
-
-        addProperty(CSSPropertyGridTemplateRows, rowsValue, important);
-        addProperty(CSSPropertyGridTemplateColumns, columnsValue, important);
-        addProperty(CSSPropertyGridTemplateAreas, cssValuePool().createIdentifierValue(CSSValueNone), important);
-        return true;
-    }
-
-    // 3- [<line-names>? <string> <track-size>? <line-names>? ]+ syntax.
-    // It requires to rewind parsing due to previous syntax failures.
-    m_valueList->setCurrentIndex(0);
-    return parseGridTemplateRowsAndAreasAndColumns(important);
-}
-
 bool CSSPropertyParser::parseGridShorthand(bool important)
 {
     ShorthandScope scope(this, CSSPropertyGrid);
     ASSERT(shorthandForProperty(CSSPropertyGrid).length() == 8);
 
     // 1- <grid-template>
-    if (parseGridTemplateShorthand(important)) {
+    if (consumeGridTemplateShorthand(important)) {
         // It can only be specified the explicit or the implicit grid properties in a single grid declaration.
         // The sub-properties not specified are set to their initial value, as normal for shorthands.
         addProperty(CSSPropertyGridAutoFlow, cssValuePool().createImplicitInitialValue(), important);
@@ -443,9 +300,6 @@ bool CSSPropertyParser::parseGridShorthand(bool important)
         addProperty(CSSPropertyGridRowGap, cssValuePool().createImplicitInitialValue(), important);
         return true;
     }
-
-    // Need to rewind parsing to explore the alternative syntax of this shorthand.
-    m_valueList->setCurrentIndex(0);
 
     // 2- <grid-auto-flow> [ <grid-auto-rows> [ / <grid-auto-columns> ]? ]
     if (!legacyParseAndApplyValue(CSSPropertyGridAutoFlow, important))
@@ -491,46 +345,6 @@ bool CSSPropertyParser::parseGridShorthand(bool important)
     return true;
 }
 
-static inline bool isClosingBracket(const CSSParserValue& value)
-{
-    return value.m_unit == CSSParserValue::Operator && value.iValue == ']';
-}
-
-bool CSSPropertyParser::parseGridLineNames(CSSParserValueList& inputList, CSSValueList& valueList, CSSGridLineNamesValue* previousNamedAreaTrailingLineNames)
-{
-    if (!inputList.current() || inputList.current()->m_unit != CSSParserValue::Operator || inputList.current()->iValue != '[')
-        return true;
-
-    // Skip '['
-    inputList.next();
-
-    CSSGridLineNamesValue* lineNames = previousNamedAreaTrailingLineNames;
-    if (!lineNames)
-        lineNames = CSSGridLineNamesValue::create();
-
-    while (CSSParserValue* identValue = inputList.current()) {
-        if (isClosingBracket(*identValue))
-            break;
-
-        if (!isValidCustomIdentForGridPositions(*identValue))
-            return false;
-
-        CSSCustomIdentValue* lineName = createPrimitiveCustomIdentValue(identValue);
-        lineNames->append(lineName);
-        inputList.next();
-    }
-
-    if (!inputList.current() || !isClosingBracket(*inputList.current()))
-        return false;
-
-    if (!previousNamedAreaTrailingLineNames)
-        valueList.append(lineNames);
-
-    // Consume ']'
-    inputList.next();
-    return true;
-}
-
 bool allTracksAreFixedSized(CSSValueList& valueList)
 {
     for (auto value : valueList) {
@@ -550,121 +364,6 @@ bool allTracksAreFixedSized(CSSValueList& valueList)
         if (valueID == CSSValueMinContent || valueID == CSSValueMaxContent || valueID == CSSValueAuto || primitiveValue.isFlex())
             return false;
     }
-    return true;
-}
-
-CSSValue* CSSPropertyParser::parseGridTrackList()
-{
-    ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-
-    CSSParserValue* value = m_valueList->current();
-    if (value->id == CSSValueNone) {
-        m_valueList->next();
-        return cssValuePool().createIdentifierValue(CSSValueNone);
-    }
-
-    CSSValueList* values = CSSValueList::createSpaceSeparated();
-    // Handle leading  <custom-ident>*.
-    if (!parseGridLineNames(*m_valueList, *values))
-        return nullptr;
-
-    bool seenTrackSizeOrRepeatFunction = false;
-    bool seenAutoRepeat = false;
-    while (CSSParserValue* currentValue = m_valueList->current()) {
-        if (isForwardSlashOperator(currentValue))
-            break;
-        if (currentValue->m_unit == CSSParserValue::Function && currentValue->function->id == CSSValueRepeat) {
-            bool isAutoRepeat;
-            if (!parseGridTrackRepeatFunction(*values, isAutoRepeat))
-                return nullptr;
-            if (isAutoRepeat && seenAutoRepeat)
-                return nullptr;
-            seenTrackSizeOrRepeatFunction = true;
-            seenAutoRepeat = seenAutoRepeat || isAutoRepeat;
-        } else {
-            CSSValue* value = parseGridTrackSize(*m_valueList, seenAutoRepeat ? FixedSizeOnly : AllowAll);
-            if (!value)
-                return nullptr;
-            values->append(value);
-            seenTrackSizeOrRepeatFunction = true;
-        }
-        // This will handle the trailing <custom-ident>* in the grammar.
-        if (!parseGridLineNames(*m_valueList, *values))
-            return nullptr;
-    }
-
-    // We should have found a <track-size> or else it is not a valid <track-list>
-    if (!seenTrackSizeOrRepeatFunction)
-        return nullptr;
-
-    // <auto-repeat> requires definite minimum track sizes in order to compute the number of repetitions.
-    // The above while loop detects those appearances after the <auto-repeat> but not the ones before.
-    if (seenAutoRepeat && !allTracksAreFixedSized(*values))
-        return nullptr;
-
-    return values;
-}
-
-bool CSSPropertyParser::parseGridTrackRepeatFunction(CSSValueList& list, bool& isAutoRepeat)
-{
-    CSSParserValueList* arguments = m_valueList->current()->function->args.get();
-    if (!arguments || arguments->size() < 3 || !isComma(arguments->valueAt(1)))
-        return false;
-
-    CSSParserValue* currentValue = arguments->valueAt(0);
-    isAutoRepeat = currentValue->id == CSSValueAutoFill || currentValue->id == CSSValueAutoFit;
-    if (!isAutoRepeat && !validUnit(currentValue, FPositiveInteger))
-        return false;
-
-    // The number of repetitions for <auto-repeat> is not important at parsing level
-    // because it will be computed later, let's set it to 1.
-    size_t repetitions = isAutoRepeat ? 1 : clampTo<size_t>(currentValue->fValue, 0, kGridMaxTracks);
-
-    CSSValueList* repeatedValues = isAutoRepeat ? CSSGridAutoRepeatValue::create(currentValue->id) : CSSValueList::createSpaceSeparated();
-    arguments->next(); // Skip the repetition count.
-    arguments->next(); // Skip the comma.
-
-    // Handle leading <custom-ident>*.
-    if (!parseGridLineNames(*arguments, *repeatedValues))
-        return false;
-
-    size_t numberOfTracks = 0;
-    TrackSizeRestriction restriction = isAutoRepeat ? FixedSizeOnly : AllowAll;
-    while (arguments->current()) {
-        if (isAutoRepeat && numberOfTracks)
-            return false;
-
-        CSSValue* trackSize = parseGridTrackSize(*arguments, restriction);
-        if (!trackSize)
-            return false;
-
-        repeatedValues->append(trackSize);
-        ++numberOfTracks;
-
-        // This takes care of any trailing <custom-ident>* in the grammar.
-        if (!parseGridLineNames(*arguments, *repeatedValues))
-            return false;
-    }
-
-    // We should have found at least one <track-size> or else it is not a valid <track-list>.
-    if (!numberOfTracks)
-        return false;
-
-    if (isAutoRepeat) {
-        list.append(repeatedValues);
-    } else {
-        // We clamp the number of repetitions to a multiple of the repeat() track list's size, while staying below the max
-        // grid size.
-        repetitions = std::min(repetitions, kGridMaxTracks / numberOfTracks);
-
-        for (size_t i = 0; i < repetitions; ++i) {
-            for (size_t j = 0; j < repeatedValues->length(); ++j)
-                list.append(repeatedValues->item(j));
-        }
-    }
-
-    // parseGridTrackSize iterated over the repeat arguments, move to the next value.
-    m_valueList->next();
     return true;
 }
 

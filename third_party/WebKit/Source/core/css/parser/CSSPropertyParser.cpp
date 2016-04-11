@@ -3114,6 +3114,7 @@ static CSSPrimitiveValue* consumeGridBreadth(CSSParserTokenRange& range, CSSPars
     return consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative, UnitlessQuirk::Allow);
 }
 
+// TODO(rob.buis): This needs a bool parameter so we can disallow <auto-track-list> for the grid shorthand.
 static CSSValue* consumeGridTrackSize(CSSParserTokenRange& range, CSSParserMode cssParserMode, TrackSizeRestriction restriction = AllowAll)
 {
     const CSSParserToken& token = range.peek();
@@ -3138,12 +3139,14 @@ static CSSValue* consumeGridTrackSize(CSSParserTokenRange& range, CSSParserMode 
     return consumeGridBreadth(range, cssParserMode, restriction);
 }
 
-static CSSGridLineNamesValue* consumeGridLineNames(CSSParserTokenRange& range)
+// Appends to the passed in CSSGridLineNamesValue if any, otherwise creates a new one.
+static CSSGridLineNamesValue* consumeGridLineNames(CSSParserTokenRange& range, CSSGridLineNamesValue* lineNames = nullptr)
 {
     CSSParserTokenRange rangeCopy = range;
     if (rangeCopy.consumeIncludingWhitespace().type() != LeftBracketToken)
         return nullptr;
-    CSSGridLineNamesValue* lineNames = CSSGridLineNamesValue::create();
+    if (!lineNames)
+        lineNames = CSSGridLineNamesValue::create();
     while (CSSCustomIdentValue* lineName = consumeCustomIdentForGridLine(rangeCopy))
         lineNames->append(lineName);
     if (rangeCopy.consumeIncludingWhitespace().type() != RightBracketToken)
@@ -4477,6 +4480,95 @@ bool CSSPropertyParser::consumeGridAreaShorthand(bool important)
     return true;
 }
 
+bool CSSPropertyParser::consumeGridTemplateRowsAndAreasAndColumns(bool important)
+{
+    NamedGridAreaMap gridAreaMap;
+    size_t rowCount = 0;
+    size_t columnCount = 0;
+    CSSValueList* templateRows = CSSValueList::createSpaceSeparated();
+
+    // Persists between loop iterations so we can use the same value for
+    // consecutive <line-names> values
+    CSSGridLineNamesValue* lineNames = nullptr;
+
+    do {
+        // Handle leading <custom-ident>*.
+        bool hasPreviousLineNames = lineNames;
+        lineNames = consumeGridLineNames(m_range, lineNames);
+        if (lineNames && !hasPreviousLineNames)
+            templateRows->append(lineNames);
+
+        // Handle a template-area's row.
+        if (m_range.peek().type() != StringToken || !parseGridTemplateAreasRow(m_range.consumeIncludingWhitespace().value(), gridAreaMap, rowCount, columnCount))
+            return false;
+        ++rowCount;
+
+        // Handle template-rows's track-size.
+        CSSValue* value = consumeGridTrackSize(m_range, m_context.mode());
+        if (!value)
+            value = cssValuePool().createIdentifierValue(CSSValueAuto);
+        templateRows->append(value);
+
+        // This will handle the trailing/leading <custom-ident>* in the grammar.
+        lineNames = consumeGridLineNames(m_range);
+        if (lineNames)
+            templateRows->append(lineNames);
+    } while (!m_range.atEnd() && !(m_range.peek().type() == DelimiterToken && m_range.peek().delimiter() == '/'));
+
+    CSSValue* columnsValue = nullptr;
+    if (!m_range.atEnd()) {
+        if (!consumeSlashIncludingWhitespace(m_range))
+            return false;
+        columnsValue = consumeGridTrackList(m_range, m_context.mode());
+        if (!columnsValue || !m_range.atEnd())
+            return false;
+    } else {
+        columnsValue = cssValuePool().createIdentifierValue(CSSValueNone);
+    }
+    addProperty(CSSPropertyGridTemplateRows, templateRows, important);
+    addProperty(CSSPropertyGridTemplateColumns, columnsValue, important);
+    addProperty(CSSPropertyGridTemplateAreas, CSSGridTemplateAreasValue::create(gridAreaMap, rowCount, columnCount), important);
+    return true;
+}
+
+bool CSSPropertyParser::consumeGridTemplateShorthand(bool important)
+{
+    ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+    ASSERT(gridTemplateShorthand().length() == 3);
+
+    CSSParserTokenRange rangeCopy = m_range;
+    CSSValue* rowsValue = consumeIdent<CSSValueNone>(m_range);
+
+    // 1- 'none' case.
+    if (rowsValue && m_range.atEnd()) {
+        addProperty(CSSPropertyGridTemplateRows, cssValuePool().createIdentifierValue(CSSValueNone), important);
+        addProperty(CSSPropertyGridTemplateColumns, cssValuePool().createIdentifierValue(CSSValueNone), important);
+        addProperty(CSSPropertyGridTemplateAreas, cssValuePool().createIdentifierValue(CSSValueNone), important);
+        return true;
+    }
+
+    // 2- <grid-template-rows> / <grid-template-columns>
+    if (!rowsValue)
+        rowsValue = consumeGridTrackList(m_range, m_context.mode());
+
+    if (rowsValue) {
+        if (!consumeSlashIncludingWhitespace(m_range))
+            return false;
+        CSSValue* columnsValue = consumeGridTemplatesRowsOrColumns(m_range, m_context.mode());
+        if (!columnsValue || !m_range.atEnd())
+            return false;
+
+        addProperty(CSSPropertyGridTemplateRows, rowsValue, important);
+        addProperty(CSSPropertyGridTemplateColumns, columnsValue, important);
+        addProperty(CSSPropertyGridTemplateAreas, cssValuePool().createIdentifierValue(CSSValueNone), important);
+        return true;
+    }
+
+    // 3- [ <line-names>? <string> <track-size>? <line-names>? ]+ [ / <track-list> ]?
+    m_range = rangeCopy;
+    return consumeGridTemplateRowsAndAreasAndColumns(important);
+}
+
 bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool important)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -4659,6 +4751,8 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         return consumeGridItemPositionShorthand(property, important);
     case CSSPropertyGridArea:
         return consumeGridAreaShorthand(important);
+    case CSSPropertyGridTemplate:
+        return consumeGridTemplateShorthand(important);
     default:
         m_currentShorthand = oldShorthand;
         CSSParserValueList valueList(m_range);
