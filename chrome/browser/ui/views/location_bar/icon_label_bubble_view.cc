@@ -11,6 +11,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/image/image_util.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/ink_drop_hover.h"
 #include "ui/views/border.h"
@@ -37,6 +38,8 @@ IconLabelBubbleView::IconLabelBubbleView(int contained_image,
     : background_painter_(nullptr),
       image_(new views::ImageView()),
       label_(new views::Label(base::string16(), font_list)),
+      builtin_leading_padding_(0),
+      builtin_trailing_padding_(0),
       is_extension_icon_(false),
       parent_background_color_(parent_background_color) {
   if (contained_image) {
@@ -95,6 +98,13 @@ void IconLabelBubbleView::SetLabel(const base::string16& label) {
 
 void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
   image_->SetImage(image_skia);
+
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    gfx::GetVisibleMargins(image_skia, &builtin_leading_padding_,
+                           &builtin_trailing_padding_);
+    if (base::i18n::IsRTL())
+      std::swap(builtin_leading_padding_, builtin_trailing_padding_);
+  }
 }
 
 bool IconLabelBubbleView::ShouldShowBackground() const {
@@ -107,10 +117,6 @@ double IconLabelBubbleView::WidthMultiplier() const {
 
 bool IconLabelBubbleView::IsShrinking() const {
   return false;
-}
-
-int IconLabelBubbleView::GetImageAndPaddingWidth() const {
-  return image_->GetPreferredSize().width() + GetInternalSpacing();
 }
 
 gfx::Size IconLabelBubbleView::GetPreferredSize() const {
@@ -157,7 +163,7 @@ void IconLabelBubbleView::Layout() {
   // accounting for the preferred image width and padding amounts.  Note that if
   // the label has zero size it doesn't actually matter what we compute its X
   // value to be, since it won't be visible.
-  const int label_x = image_x + GetImageAndPaddingWidth();
+  const int label_x = image_x + image_width + GetInternalSpacing();
   const int label_width =
       std::max(0, width() - label_x - bubble_trailing_padding);
   label_->SetBounds(label_x, 0, label_width, height());
@@ -221,10 +227,10 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
     // zero, since this would mean the view would completely disappear and then
     // pop back to an icon after the animation finishes.
     const int max_width = MinimumWidthForImageWithBackgroundShown() +
-        GetInternalSpacing() + label_width;
+                          GetInternalSpacing() + label_width;
     const int current_width = WidthMultiplier() * max_width;
-    size.set_width(
-        shrinking ? std::max(current_width, size.width()) : current_width);
+    size.set_width(shrinking ? std::max(current_width, size.width())
+                             : current_width);
   }
   return size;
 }
@@ -250,8 +256,12 @@ void IconLabelBubbleView::SetLabelBackgroundColor(
 
 int IconLabelBubbleView::GetOuterPadding(bool leading) const {
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    // Leading and trailing padding are equal.
-    return GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING);
+    // The apparent leading and trailing padding should be equal, so we need to
+    // subtract the amount of built-in padding in the image.  This will mean
+    // that the actual padding + the padding inside the image add up to the same
+    // amount of padding as on the trailing edge of the bubble.
+    return GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING) -
+           (leading ? builtin_leading_padding_ : 0);
   }
 
   return GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING) -
@@ -260,8 +270,10 @@ int IconLabelBubbleView::GetOuterPadding(bool leading) const {
 }
 
 int IconLabelBubbleView::GetInternalSpacing() const {
-  return image_->GetPreferredSize().IsEmpty() ?
-      0 : GetLayoutConstant(ICON_LABEL_VIEW_INTERNAL_SPACING);
+  return image_->GetPreferredSize().IsEmpty()
+             ? 0
+             : (GetLayoutConstant(ICON_LABEL_VIEW_INTERNAL_SPACING) -
+                builtin_trailing_padding_);
 }
 
 const char* IconLabelBubbleView::GetClassName() const {

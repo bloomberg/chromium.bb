@@ -74,10 +74,6 @@ class IconLabelBubbleView : public views::InkDropHostView {
   // Returns true when animation is in progress and is shrinking.
   virtual bool IsShrinking() const;
 
-  // Returns the amount of horizontal space needed to draw the image and its
-  // padding before the label.
-  virtual int GetImageAndPaddingWidth() const;
-
   // views::View:
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
@@ -120,6 +116,14 @@ class IconLabelBubbleView : public views::InkDropHostView {
   // The contents of the bubble.
   views::ImageView* image_;
   views::Label* label_;
+
+  // How much horizontal padding (fully-transparent columns) is inside the
+  // image.  These are subtracted from the desired padding values when
+  // calculating the padding around the image, so that the image always appears
+  // to have the same visible padding no matter what its composition is.  Only
+  // used in MD.
+  int builtin_leading_padding_;
+  int builtin_trailing_padding_;
 
   bool is_extension_icon_;
 

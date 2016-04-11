@@ -47,7 +47,6 @@ class SelectedKeywordView : public IconLabelBubbleView {
  private:
   // IconLabelBubbleView:
   const char* GetClassName() const override;
-  int GetImageAndPaddingWidth() const override;
 
   SkColor text_color_;
 

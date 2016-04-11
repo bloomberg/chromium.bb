@@ -405,7 +405,10 @@ ImageSkia CreateVectorIconWithBadge(VectorIconId id,
                                     size_t dip_size,
                                     SkColor color,
                                     VectorIconId badge_id) {
-  return g_icon_cache.Get().GetOrCreateIcon(id, dip_size, color, badge_id);
+  return (id == VectorIconId::VECTOR_ICON_NONE)
+             ? gfx::ImageSkia()
+             : g_icon_cache.Get().GetOrCreateIcon(id, dip_size, color,
+                                                  badge_id);
 }
 
 ImageSkia CreateVectorIconFromSource(const std::string& source,
