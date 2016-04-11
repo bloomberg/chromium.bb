@@ -41,6 +41,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/weborigin/Referrer.h"
+#include "public/platform/WebLoadingBehaviorFlag.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 #include <v8.h>
@@ -141,6 +142,11 @@ public:
 
     // Will be called when |PerformanceTiming| events are updated
     virtual void didChangePerformanceTiming() { }
+
+    // Will be called when a particular loading code path has been used. This
+    // propogates renderer loading behavior to the browser process for
+    // histograms.
+    virtual void didObserveLoadingBehavior(WebLoadingBehaviorFlag) { }
 
     // Transmits the change in the set of watched CSS selectors property
     // that match any element on the frame.

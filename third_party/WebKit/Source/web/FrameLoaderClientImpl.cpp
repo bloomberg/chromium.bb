@@ -727,6 +727,12 @@ void FrameLoaderClientImpl::didChangePerformanceTiming()
         m_webFrame->client()->didChangePerformanceTiming();
 }
 
+void FrameLoaderClientImpl::didObserveLoadingBehavior(WebLoadingBehaviorFlag behavior)
+{
+    if (m_webFrame->client())
+        m_webFrame->client()->didObserveLoadingBehavior(behavior);
+}
+
 void FrameLoaderClientImpl::selectorMatchChanged(const Vector<String>& addedSelectors, const Vector<String>& removedSelectors)
 {
     if (WebFrameClient* client = m_webFrame->client())

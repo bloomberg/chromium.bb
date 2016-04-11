@@ -46,6 +46,7 @@
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
+#include "public/platform/WebLoadingBehaviorFlag.h"
 #include "wtf/HashSet.h"
 #include "wtf/RefPtr.h"
 
@@ -91,6 +92,7 @@ public:
     const AtomicString& responseMIMEType() const;
 
     void didChangePerformanceTiming();
+    void didObserveLoadingBehavior(WebLoadingBehaviorFlag);
     void updateForSameDocumentNavigation(const KURL&, SameDocumentNavigationSource);
     const ResourceResponse& response() const { return m_response; }
     bool isClientRedirect() const { return m_isClientRedirect; }

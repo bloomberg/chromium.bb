@@ -574,7 +574,9 @@ static void handleMetaNameAttribute(const Token& token, CachedDocumentParameters
 // document.write to insert an external script. These scripts will be flagged
 // for evaluation via the DocumentWriteEvaluator, so it also dismisses scripts
 // that will likely fail evaluation. These includes scripts that are too long,
-// have looping constructs, or use non-determinism.
+// have looping constructs, or use non-determinism. Note that flagging occurs
+// even when the experiment is off, to ensure fair comparison between experiment
+// and control groups.
 bool TokenPreloadScanner::shouldEvaluateForDocumentWrite(const String& source)
 {
     // The maximum length script source that will be marked for evaluation to
@@ -793,7 +795,7 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document)
     ASSERT(isMainThread());
     ASSERT(document);
     doHtmlPreloadScanning = !document->settings() || document->settings()->doHtmlPreloadScanning();
-    doDocumentWritePreloadScanning = doHtmlPreloadScanning && document->frame() && document->frame()->isMainFrame() && RuntimeEnabledFeatures::documentWriteEvaluatorEnabled();
+    doDocumentWritePreloadScanning = doHtmlPreloadScanning && document->frame() && document->frame()->isMainFrame();
     defaultViewportMinWidth = document->viewportDefaultMinWidth();
     viewportMetaZeroValuesQuirk = document->settings() && document->settings()->viewportMetaZeroValuesQuirk();
     viewportMetaEnabled = document->settings() && document->settings()->viewportMetaEnabled();

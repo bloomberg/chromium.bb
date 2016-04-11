@@ -40,6 +40,7 @@
 #include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
+#include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerClient.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
@@ -556,6 +557,8 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebURL& main_resource_url,
       const blink::WebCString& main_resource_security_info) override;
   void didChangePerformanceTiming() override;
+  void didObserveLoadingBehavior(
+      blink::WebLoadingBehaviorFlag behavior) override;
   void didCreateScriptContext(blink::WebLocalFrame* frame,
                               v8::Local<v8::Context> context,
                               int extension_group,

@@ -53,6 +53,7 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFrameScheduler.h"
+#include "public/platform/WebLoadingBehaviorFlag.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 #include "wtf/RefCounted.h"
@@ -1134,6 +1135,9 @@ PassOwnPtr<HTMLPreloadScanner> HTMLDocumentParser::createPreloadScanner()
 void HTMLDocumentParser::evaluateAndPreloadScriptForDocumentWrite(const String& source)
 {
     if (!m_evaluator->shouldEvaluate(source))
+        return;
+    document()->loader()->didObserveLoadingBehavior(WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteEvaluator);
+    if (!RuntimeEnabledFeatures::documentWriteEvaluatorEnabled())
         return;
     TRACE_EVENT0("blink", "HTMLDocumentParser::evaluateAndPreloadScriptForDocumentWrite");
 

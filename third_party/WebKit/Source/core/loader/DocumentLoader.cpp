@@ -211,6 +211,14 @@ void DocumentLoader::didChangePerformanceTiming()
     }
 }
 
+void DocumentLoader::didObserveLoadingBehavior(WebLoadingBehaviorFlag behavior)
+{
+    if (frame() && frame()->isMainFrame()) {
+        ASSERT(m_state >= Committed);
+        frameLoader()->client()->didObserveLoadingBehavior(behavior);
+    }
+}
+
 void DocumentLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocumentNavigationSource sameDocumentNavigationSource)
 {
     KURL oldURL = m_request.url();

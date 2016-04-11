@@ -118,6 +118,7 @@ public:
     void didDisplayContentWithCertificateErrors(const KURL&, const CString& securityInfo, const WebURL& mainResourceUrl, const CString& mainResourceSecurityInfo) override;
     void didRunContentWithCertificateErrors(const KURL&, const CString& securityInfo, const WebURL& mainResourceUrl, const CString& mainResourceSecurityInfo) override;
     void didChangePerformanceTiming() override;
+    void didObserveLoadingBehavior(WebLoadingBehaviorFlag) override;
     void selectorMatchChanged(const Vector<String>& addedSelectors, const Vector<String>& removedSelectors) override;
     DocumentLoader* createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) override;
     WTF::String userAgent() override;

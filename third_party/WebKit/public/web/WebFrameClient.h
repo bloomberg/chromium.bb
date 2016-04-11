@@ -49,6 +49,7 @@
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemType.h"
+#include "public/platform/WebLoadingBehaviorFlag.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebSetSinkIdCallbacks.h"
 #include "public/platform/WebStorageQuotaCallbacks.h"
@@ -490,6 +491,10 @@ public:
 
     // A performance timing event (e.g. first paint) occurred
     virtual void didChangePerformanceTiming() { }
+
+    // Blink exhibited a certain loading behavior that the browser process will
+    // use for segregated histograms.
+    virtual void didObserveLoadingBehavior(WebLoadingBehaviorFlag) { }
 
 
     // Script notifications ------------------------------------------------
