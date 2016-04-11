@@ -33,7 +33,8 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
         implements DialogInterface.OnClickListener {
 
     /**
-     * Callback for completion of the dialog.
+     * Callback for completion of the dialog. Only one of {@link Listener#onConfirm} or
+     * {@link Listener#onCancel} will be called and it will only be called once.
      */
     public interface Listener {
         /**
@@ -43,7 +44,7 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
         public void onConfirm(boolean wipeData);
 
         /**
-         * The user dismisses the dialog.
+         * The user dismisses the dialog through any means other than the positive button.
          */
         public void onCancel();
     }
@@ -67,6 +68,7 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
     private RadioButtonWithDescription mKeepSeparateOption;
 
     private Listener mListener;
+    private boolean mListenerCalled;
 
     private static ConfirmImportSyncDataDialog newInstance(
             String oldAccountName, String newAccountName, ImportSyncType importSyncType) {
@@ -189,12 +191,15 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
             RecordUserAction.record("Signin_ImportDataPrompt_Cancel");
             mListener.onCancel();
         }
+        mListenerCalled = true;
     }
 
     @Override
     public void onDismiss(DialogInterface dialog) {
         super.onDismiss(dialog);
-        if (mListener != null) mListener.onCancel();
+        if (mListener != null && !mListenerCalled) {
+            mListener.onCancel();
+        }
     }
 }
 
