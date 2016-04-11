@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
@@ -49,11 +50,11 @@ WebBlobRegistryImpl::WebBlobRegistryImpl(
 WebBlobRegistryImpl::~WebBlobRegistryImpl() {
 }
 
-blink::WebBlobRegistry::Builder* WebBlobRegistryImpl::createBuilder(
+std::unique_ptr<WebBlobRegistry::Builder> WebBlobRegistryImpl::createBuilder(
     const blink::WebString& uuid,
     const blink::WebString& content_type) {
-  return new BuilderImpl(uuid, content_type, sender_.get(), io_runner_,
-                         main_runner_);
+  return base::WrapUnique(new BuilderImpl(uuid, content_type, sender_.get(),
+                                          io_runner_, main_runner_));
 }
 
 void WebBlobRegistryImpl::registerBlobData(const blink::WebString& uuid,

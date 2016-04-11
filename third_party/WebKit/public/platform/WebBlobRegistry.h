@@ -34,6 +34,8 @@
 #include "WebCommon.h"
 #include "WebThreadSafeData.h"
 
+#include <memory>
+
 namespace blink {
 
 class WebBlobData;
@@ -75,9 +77,8 @@ public:
     // TODO(dmurph): Deprecate and migrate to createBuilder
     virtual void registerBlobData(const WebString& uuid, const WebBlobData&) { }
 
-    // Caller takes ownership of the Builder. The blob is finalized (and sent to
-    // the browser) on calling build() on the Builder object.
-    virtual Builder* createBuilder(const WebString& uuid, const WebString& contentType) = 0;
+    // The blob is finalized (and sent to the browser) on calling build() on the Builder object.
+    virtual std::unique_ptr<Builder> createBuilder(const WebString& uuid, const WebString& contentType) = 0;
 
     virtual void addBlobDataRef(const WebString& uuid) { }
     virtual void removeBlobDataRef(const WebString& uuid) { }

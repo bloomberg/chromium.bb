@@ -40,7 +40,7 @@ class WebBlobRegistryImpl : public blink::WebBlobRegistry {
   void registerBlobData(const blink::WebString& uuid,
                         const blink::WebBlobData& data) override;
 
-  blink::WebBlobRegistry::Builder* createBuilder(
+  std::unique_ptr<blink::WebBlobRegistry::Builder> createBuilder(
       const blink::WebString& uuid,
       const blink::WebString& content_type) override;
 
