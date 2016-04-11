@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <limits>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -145,7 +146,7 @@ using device::BluetoothSocket;
     return;
   }
 
-  socket_->OnChannelOpened(scoped_ptr<device::BluetoothChannelMac>(
+  socket_->OnChannelOpened(std::unique_ptr<device::BluetoothChannelMac>(
       new device::BluetoothRfcommChannelMac(NULL, [rfcommChannel retain])));
 }
 
@@ -207,7 +208,7 @@ using device::BluetoothSocket;
     return;
   }
 
-  socket_->OnChannelOpened(scoped_ptr<device::BluetoothChannelMac>(
+  socket_->OnChannelOpened(std::unique_ptr<device::BluetoothChannelMac>(
       new device::BluetoothL2capChannelMac(NULL, [l2capChannel retain])));
 }
 
@@ -618,7 +619,7 @@ void BluetoothSocketMac::OnSDPQueryComplete(
 }
 
 void BluetoothSocketMac::OnChannelOpened(
-    scoped_ptr<BluetoothChannelMac> channel) {
+    std::unique_ptr<BluetoothChannelMac> channel) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << uuid_.canonical_value() << ": Incoming channel pending.";
 
@@ -645,7 +646,7 @@ void BluetoothSocketMac::OnChannelOpenComplete(
   DVLOG(1) << device_address << " " << uuid_.canonical_value()
            << ": channel open complete.";
 
-  scoped_ptr<ConnectCallbacks> temp = std::move(connect_callbacks_);
+  std::unique_ptr<ConnectCallbacks> temp = std::move(connect_callbacks_);
   if (status != kIOReturnSuccess) {
     ReleaseChannel();
     std::stringstream error;
@@ -721,7 +722,7 @@ void BluetoothSocketMac::OnChannelDataReceived(void* data, size_t length) {
 
   // If there is a pending read callback, call it now.
   if (receive_callbacks_) {
-    scoped_ptr<ReceiveCallbacks> temp = std::move(receive_callbacks_);
+    std::unique_ptr<ReceiveCallbacks> temp = std::move(receive_callbacks_);
     temp->success_callback.Run(buffer->size(), buffer);
     return;
   }
@@ -831,7 +832,7 @@ void BluetoothSocketMac::OnChannelClosed() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (receive_callbacks_) {
-    scoped_ptr<ReceiveCallbacks> temp = std::move(receive_callbacks_);
+    std::unique_ptr<ReceiveCallbacks> temp = std::move(receive_callbacks_);
     temp->error_callback.Run(BluetoothSocket::kDisconnected,
                              kSocketNotConnected);
   }

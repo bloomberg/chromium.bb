@@ -5,6 +5,7 @@
 #ifndef DEVICE_BLUETOOTH_TEST_MOCK_BLUETOOTH_ADAPTER_H_
 #define DEVICE_BLUETOOTH_TEST_MOCK_BLUETOOTH_ADAPTER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -99,7 +100,7 @@ class MockBluetoothAdapter : public BluetoothAdapter {
                     const BluetoothAudioSink::ErrorCallback& error_callback));
 
   void StartDiscoverySessionWithFilter(
-      scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+      std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
       const DiscoverySessionCallback& callback,
       const ErrorCallback& error_callback);
 
@@ -107,7 +108,7 @@ class MockBluetoothAdapter : public BluetoothAdapter {
   // This method takes ownership of the MockBluetoothDevice. This is only for
   // convenience as far testing is concerned and it's possible to write test
   // cases without using these functions.
-  void AddMockDevice(scoped_ptr<MockBluetoothDevice> mock_device);
+  void AddMockDevice(std::unique_ptr<MockBluetoothDevice> mock_device);
   BluetoothAdapter::ConstDeviceList GetConstMockDevices();
   BluetoothAdapter::DeviceList GetMockDevices();
 
@@ -128,11 +129,11 @@ class MockBluetoothAdapter : public BluetoothAdapter {
       const base::Closure& callback,
       const DiscoverySessionErrorCallback& error_callback) override;
   void SetDiscoveryFilter(
-      scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+      std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
       const base::Closure& callback,
       const DiscoverySessionErrorCallback& error_callback) override;
   void RegisterAdvertisement(
-      scoped_ptr<BluetoothAdvertisement::Data> advertisement_data,
+      std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
       const CreateAdvertisementCallback& callback,
       const CreateAdvertisementErrorCallback& error_callback) override;
   virtual ~MockBluetoothAdapter();

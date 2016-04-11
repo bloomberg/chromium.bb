@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -27,7 +29,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceAndroid final
   // The ChromeBluetoothDevice instance will hold a Java reference
   // to |bluetooth_device_wrapper|.
   //
-  // TODO(scheib): Return a scoped_ptr<>, but then adapter will need to handle
+  // TODO(scheib): Return a std::unique_ptr<>, but then adapter will need to
+  // handle
   // this correctly. http://crbug.com/506416
   static BluetoothDeviceAndroid* Create(
       BluetoothAdapterAndroid* adapter,

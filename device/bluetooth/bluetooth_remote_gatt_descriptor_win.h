@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_DESCRIPTOR_WIN_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_DESCRIPTOR_WIN_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_gatt_descriptor.h"
@@ -45,7 +47,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorWin
 
  private:
   BluetoothRemoteGattCharacteristicWin* parent_characteristic_;
-  scoped_ptr<BTH_LE_GATT_DESCRIPTOR> descriptor_info_;
+  std::unique_ptr<BTH_LE_GATT_DESCRIPTOR> descriptor_info_;
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
   base::FilePath service_path_;

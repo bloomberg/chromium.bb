@@ -5,12 +5,12 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_BLUETOOTH_LE_ADVERTISING_MANAGER_CLIENT_H_
 #define DEVICE_BLUETOOTH_DBUS_BLUETOOTH_LE_ADVERTISING_MANAGER_CLIENT_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_export.h"

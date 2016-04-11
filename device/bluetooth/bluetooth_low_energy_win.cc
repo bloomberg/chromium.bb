@@ -4,11 +4,13 @@
 
 #include "device/bluetooth/bluetooth_low_energy_win.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
@@ -172,7 +174,7 @@ bool CollectBluetoothLowEnergyDeviceProperty(
     const ScopedDeviceInfoSetHandle& device_info_handle,
     PSP_DEVINFO_DATA device_info_data,
     const DEVPROPKEY& key,
-    scoped_ptr<DevicePropertyValue>* value,
+    std::unique_ptr<DevicePropertyValue>* value,
     std::string* error) {
   DWORD required_length;
   DEVPROPTYPE prop_type;
@@ -187,7 +189,7 @@ bool CollectBluetoothLowEnergyDeviceProperty(
   if (!CheckInsufficientBuffer(!!success, kDeviceInfoError, error))
     return false;
 
-  scoped_ptr<uint8_t[]> prop_value(new uint8_t[required_length]);
+  std::unique_ptr<uint8_t[]> prop_value(new uint8_t[required_length]);
   DWORD actual_length = required_length;
   success = SetupDiGetDeviceProperty(device_info_handle.Get(),
                                      device_info_data,
@@ -204,7 +206,7 @@ bool CollectBluetoothLowEnergyDeviceProperty(
     return false;
   }
 
-  (*value) = scoped_ptr<DevicePropertyValue>(
+  (*value) = std::unique_ptr<DevicePropertyValue>(
       new DevicePropertyValue(prop_type, std::move(prop_value), actual_length));
   return true;
 }
@@ -213,7 +215,7 @@ bool CollectBluetoothLowEnergyDeviceRegistryProperty(
     const ScopedDeviceInfoSetHandle& device_info_handle,
     PSP_DEVINFO_DATA device_info_data,
     DWORD property_id,
-    scoped_ptr<DeviceRegistryPropertyValue>* value,
+    std::unique_ptr<DeviceRegistryPropertyValue>* value,
     std::string* error) {
   ULONG required_length = 0;
   BOOL success = SetupDiGetDeviceRegistryProperty(device_info_handle.Get(),
@@ -226,7 +228,7 @@ bool CollectBluetoothLowEnergyDeviceRegistryProperty(
   if (!CheckInsufficientBuffer(!!success, kDeviceInfoError, error))
     return false;
 
-  scoped_ptr<uint8_t[]> property_value(new uint8_t[required_length]);
+  std::unique_ptr<uint8_t[]> property_value(new uint8_t[required_length]);
   ULONG actual_length = required_length;
   DWORD property_type;
   success = SetupDiGetDeviceRegistryProperty(device_info_handle.Get(),
@@ -251,7 +253,7 @@ bool CollectBluetoothLowEnergyDeviceRegistryProperty(
 bool CollectBluetoothLowEnergyDeviceInstanceId(
     const ScopedDeviceInfoSetHandle& device_info_handle,
     PSP_DEVINFO_DATA device_info_data,
-    scoped_ptr<device::win::BluetoothLowEnergyDeviceInfo>& device_info,
+    std::unique_ptr<device::win::BluetoothLowEnergyDeviceInfo>& device_info,
     std::string* error) {
   ULONG required_length = 0;
   BOOL success = SetupDiGetDeviceInstanceId(
@@ -259,7 +261,7 @@ bool CollectBluetoothLowEnergyDeviceInstanceId(
   if (!CheckInsufficientBuffer(!!success, kDeviceInfoError, error))
     return false;
 
-  scoped_ptr<WCHAR[]> instance_id(new WCHAR[required_length]);
+  std::unique_ptr<WCHAR[]> instance_id(new WCHAR[required_length]);
   ULONG actual_length = required_length;
   success = SetupDiGetDeviceInstanceId(device_info_handle.Get(),
                                        device_info_data,
@@ -284,9 +286,9 @@ bool CollectBluetoothLowEnergyDeviceInstanceId(
 bool CollectBluetoothLowEnergyDeviceFriendlyName(
     const ScopedDeviceInfoSetHandle& device_info_handle,
     PSP_DEVINFO_DATA device_info_data,
-    scoped_ptr<device::win::BluetoothLowEnergyDeviceInfo>& device_info,
+    std::unique_ptr<device::win::BluetoothLowEnergyDeviceInfo>& device_info,
     std::string* error) {
-  scoped_ptr<DeviceRegistryPropertyValue> property_value;
+  std::unique_ptr<DeviceRegistryPropertyValue> property_value;
   if (!CollectBluetoothLowEnergyDeviceRegistryProperty(device_info_handle,
                                                        device_info_data,
                                                        SPDRP_FRIENDLYNAME,
@@ -329,7 +331,7 @@ bool ExtractBluetoothAddressFromDeviceInstanceId(const std::string& instance_id,
 bool CollectBluetoothLowEnergyDeviceAddress(
     const ScopedDeviceInfoSetHandle& device_info_handle,
     PSP_DEVINFO_DATA device_info_data,
-    scoped_ptr<device::win::BluetoothLowEnergyDeviceInfo>& device_info,
+    std::unique_ptr<device::win::BluetoothLowEnergyDeviceInfo>& device_info,
     std::string* error) {
   // TODO(rpaquay): We exctract the bluetooth device address from the device
   // instance ID string, as we did not find a more formal API for retrieving the
@@ -343,9 +345,9 @@ bool CollectBluetoothLowEnergyDeviceAddress(
 bool CollectBluetoothLowEnergyDeviceStatus(
     const ScopedDeviceInfoSetHandle& device_info_handle,
     PSP_DEVINFO_DATA device_info_data,
-    scoped_ptr<device::win::BluetoothLowEnergyDeviceInfo>& device_info,
+    std::unique_ptr<device::win::BluetoothLowEnergyDeviceInfo>& device_info,
     std::string* error) {
-  scoped_ptr<DevicePropertyValue> value;
+  std::unique_ptr<DevicePropertyValue> value;
   if (!CollectBluetoothLowEnergyDeviceProperty(device_info_handle,
                                                device_info_data,
                                                DEVPKEY_Device_DevNodeStatus,
@@ -389,7 +391,7 @@ bool CollectBluetoothLowEnergyDeviceServices(
   if (!CheckMoreData(hr, kDeviceInfoError, error))
     return false;
 
-  scoped_ptr<BTH_LE_GATT_SERVICE[]> gatt_services(
+  std::unique_ptr<BTH_LE_GATT_SERVICE[]> gatt_services(
       new BTH_LE_GATT_SERVICE[required_length]);
   USHORT actual_length = required_length;
   hr = BluetoothGATTGetServices(file.GetPlatformFile(),
@@ -419,7 +421,7 @@ bool CollectBluetoothLowEnergyDeviceServices(
 bool CollectBluetoothLowEnergyDeviceInfo(
     const ScopedDeviceInfoSetHandle& device_info_handle,
     PSP_DEVICE_INTERFACE_DATA device_interface_data,
-    scoped_ptr<device::win::BluetoothLowEnergyDeviceInfo>* device_info,
+    std::unique_ptr<device::win::BluetoothLowEnergyDeviceInfo>* device_info,
     std::string* error) {
   // Retrieve required # of bytes for interface details
   ULONG required_length = 0;
@@ -432,7 +434,7 @@ bool CollectBluetoothLowEnergyDeviceInfo(
   if (!CheckInsufficientBuffer(!!success, kDeviceInfoError, error))
     return false;
 
-  scoped_ptr<uint8_t[]> interface_data(new uint8_t[required_length]);
+  std::unique_ptr<uint8_t[]> interface_data(new uint8_t[required_length]);
   ZeroMemory(interface_data.get(), required_length);
 
   PSP_DEVICE_INTERFACE_DETAIL_DATA device_interface_detail_data =
@@ -457,7 +459,7 @@ bool CollectBluetoothLowEnergyDeviceInfo(
     return false;
   }
 
-  scoped_ptr<device::win::BluetoothLowEnergyDeviceInfo> result(
+  std::unique_ptr<device::win::BluetoothLowEnergyDeviceInfo> result(
       new device::win::BluetoothLowEnergyDeviceInfo());
   result->path =
       base::FilePath(std::wstring(device_interface_detail_data->DevicePath));
@@ -493,7 +495,7 @@ DeviceInfoResult EnumerateSingleBluetoothLowEnergyDevice(
     GUID device_interface_guid,
     const ScopedDeviceInfoSetHandle& device_info_handle,
     DWORD device_index,
-    scoped_ptr<device::win::BluetoothLowEnergyDeviceInfo>* device_info,
+    std::unique_ptr<device::win::BluetoothLowEnergyDeviceInfo>* device_info,
     std::string* error) {
   GUID BluetoothInterfaceGUID = device_interface_guid;
   SP_DEVICE_INTERFACE_DATA device_interface_data = {0};
@@ -554,7 +556,7 @@ bool EnumerateKnownBLEOrBLEGattServiceDevices(
   }
 
   for (DWORD i = 0;; ++i) {
-    scoped_ptr<BluetoothLowEnergyDeviceInfo> device_info;
+    std::unique_ptr<BluetoothLowEnergyDeviceInfo> device_info;
     DeviceInfoResult result = EnumerateSingleBluetoothLowEnergyDevice(
         guid, info_set_handle, i, &device_info, error);
     switch (result) {
@@ -574,10 +576,10 @@ namespace device {
 namespace win {
 
 // static
-scoped_ptr<DeviceRegistryPropertyValue> DeviceRegistryPropertyValue::Create(
-    DWORD property_type,
-    scoped_ptr<uint8_t[]> value,
-    size_t value_size) {
+std::unique_ptr<DeviceRegistryPropertyValue>
+DeviceRegistryPropertyValue::Create(DWORD property_type,
+                                    std::unique_ptr<uint8_t[]> value,
+                                    size_t value_size) {
   switch (property_type) {
     case REG_SZ: {
       // Ensure string is zero terminated.
@@ -593,13 +595,13 @@ scoped_ptr<DeviceRegistryPropertyValue> DeviceRegistryPropertyValue::Create(
       break;
     }
   }
-  return make_scoped_ptr(new DeviceRegistryPropertyValue(
+  return base::WrapUnique(new DeviceRegistryPropertyValue(
       property_type, std::move(value), value_size));
 }
 
 DeviceRegistryPropertyValue::DeviceRegistryPropertyValue(
     DWORD property_type,
-    scoped_ptr<uint8_t[]> value,
+    std::unique_ptr<uint8_t[]> value,
     size_t value_size)
     : property_type_(property_type),
       value_(std::move(value)),
@@ -621,7 +623,7 @@ DWORD DeviceRegistryPropertyValue::AsDWORD() const {
 }
 
 DevicePropertyValue::DevicePropertyValue(DEVPROPTYPE property_type,
-                                         scoped_ptr<uint8_t[]> value,
+                                         std::unique_ptr<uint8_t[]> value,
                                          size_t value_size)
     : property_type_(property_type),
       value_(std::move(value)),
@@ -722,7 +724,7 @@ bool BluetoothLowEnergyWrapper::EnumerateKnownBluetoothLowEnergyServices(
 HRESULT BluetoothLowEnergyWrapper::ReadCharacteristicsOfAService(
     base::FilePath& service_path,
     const PBTH_LE_GATT_SERVICE service,
-    scoped_ptr<BTH_LE_GATT_CHARACTERISTIC>* out_included_characteristics,
+    std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC>* out_included_characteristics,
     USHORT* out_counts) {
   base::File file(service_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file.IsValid())
@@ -758,7 +760,7 @@ HRESULT BluetoothLowEnergyWrapper::ReadCharacteristicsOfAService(
 HRESULT BluetoothLowEnergyWrapper::ReadDescriptorsOfACharacteristic(
     base::FilePath& service_path,
     const PBTH_LE_GATT_CHARACTERISTIC characteristic,
-    scoped_ptr<BTH_LE_GATT_DESCRIPTOR>* out_included_descriptors,
+    std::unique_ptr<BTH_LE_GATT_DESCRIPTOR>* out_included_descriptors,
     USHORT* out_counts) {
   base::File file(service_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file.IsValid())
@@ -792,7 +794,7 @@ HRESULT BluetoothLowEnergyWrapper::ReadDescriptorsOfACharacteristic(
 HRESULT BluetoothLowEnergyWrapper::ReadCharacteristicValue(
     base::FilePath& service_path,
     const PBTH_LE_GATT_CHARACTERISTIC characteristic,
-    scoped_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE>* out_value) {
+    std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE>* out_value) {
   base::File file(service_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file.IsValid())
     return HRESULT_FROM_WIN32(ERROR_OPEN_FAILED);

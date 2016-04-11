@@ -4,6 +4,7 @@
 
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
@@ -63,7 +64,7 @@ MockBluetoothDevice::MockBluetoothDevice(MockBluetoothAdapter* adapter,
 MockBluetoothDevice::~MockBluetoothDevice() {}
 
 void MockBluetoothDevice::AddMockService(
-    scoped_ptr<MockBluetoothGattService> mock_service) {
+    std::unique_ptr<MockBluetoothGattService> mock_service) {
   mock_services_.push_back(std::move(mock_service));
 }
 

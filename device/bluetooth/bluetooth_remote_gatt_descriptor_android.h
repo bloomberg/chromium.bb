@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_DESCRIPTOR_ANDROID_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_DESCRIPTOR_ANDROID_H_
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_gatt_descriptor.h"
@@ -23,7 +25,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorAndroid
   //
   // The ChromeBluetoothRemoteGattDescriptor instance will hold a Java
   // reference to |bluetooth_gatt_descriptor_wrapper|.
-  static scoped_ptr<BluetoothRemoteGattDescriptorAndroid> Create(
+  static std::unique_ptr<BluetoothRemoteGattDescriptorAndroid> Create(
       const std::string& instanceId,
       jobject /* BluetoothGattDescriptorWrapper */
       bluetooth_gatt_descriptor_wrapper,

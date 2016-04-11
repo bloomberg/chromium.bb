@@ -7,6 +7,7 @@
 
 #include <IOKit/IOReturn.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -81,7 +82,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
       const AcquiredCallback& callback,
       const BluetoothAudioSink::ErrorCallback& error_callback) override;
   void RegisterAdvertisement(
-      scoped_ptr<BluetoothAdvertisement::Data> advertisement_data,
+      std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
       const CreateAdvertisementCallback& callback,
       const CreateAdvertisementErrorCallback& error_callback) override;
 
@@ -143,7 +144,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
       const base::Closure& callback,
       const DiscoverySessionErrorCallback& error_callback) override;
   void SetDiscoveryFilter(
-      scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+      std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
       const base::Closure& callback,
       const DiscoverySessionErrorCallback& error_callback) override;
 
@@ -185,10 +186,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   int num_discovery_sessions_;
 
   // Discovery manager for Bluetooth Classic.
-  scoped_ptr<BluetoothDiscoveryManagerMac> classic_discovery_manager_;
+  std::unique_ptr<BluetoothDiscoveryManagerMac> classic_discovery_manager_;
 
   // Discovery manager for Bluetooth Low Energy.
-  scoped_ptr<BluetoothLowEnergyDiscoveryManagerMac>
+  std::unique_ptr<BluetoothLowEnergyDiscoveryManagerMac>
       low_energy_discovery_manager_;
 
   // Underlying CoreBluetooth CBCentralManager and its delegate.

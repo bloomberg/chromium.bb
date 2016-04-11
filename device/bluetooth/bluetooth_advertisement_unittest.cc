@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/bluetooth/bluetooth_advertisement.h"
+
 #include <stdint.h>
 
-#include "device/bluetooth/bluetooth_advertisement.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
@@ -30,7 +34,7 @@ TEST(BluetoothAdvertisementTest, DataMembersAreAssignedCorrectly) {
   ASSERT_FALSE(data.service_uuids().get());
   // Assign Service UUID.
   data.set_service_uuids(
-      make_scoped_ptr(new BluetoothAdvertisement::UUIDList(uuids)));
+      base::WrapUnique(new BluetoothAdvertisement::UUIDList(uuids)));
   // Retrieve Service UUID.
   ASSERT_EQ(*data.service_uuids(), uuids);
   // Retrieve again.
@@ -39,7 +43,7 @@ TEST(BluetoothAdvertisementTest, DataMembersAreAssignedCorrectly) {
   // Try without assigning Manufacturer Data.
   ASSERT_FALSE(data.manufacturer_data().get());
   // Assign Manufacturer Data.
-  data.set_manufacturer_data(make_scoped_ptr(
+  data.set_manufacturer_data(base::WrapUnique(
       new BluetoothAdvertisement::ManufacturerData(manufacturer_data)));
   // Retrieve Manufacturer Data.
   ASSERT_EQ(*data.manufacturer_data(), manufacturer_data);
@@ -50,7 +54,7 @@ TEST(BluetoothAdvertisementTest, DataMembersAreAssignedCorrectly) {
   ASSERT_FALSE(data.solicit_uuids().get());
   // Assign Solicit UUIDs.
   data.set_solicit_uuids(
-      make_scoped_ptr(new BluetoothAdvertisement::UUIDList(uuids)));
+      base::WrapUnique(new BluetoothAdvertisement::UUIDList(uuids)));
   // Retrieve Solicit UUIDs.
   ASSERT_EQ(*data.solicit_uuids(), uuids);
   // Retieve again.
@@ -60,7 +64,7 @@ TEST(BluetoothAdvertisementTest, DataMembersAreAssignedCorrectly) {
   ASSERT_FALSE(data.service_data().get());
   // Assign Service Data.
   data.set_service_data(
-      make_scoped_ptr(new BluetoothAdvertisement::ServiceData(service_data)));
+      base::WrapUnique(new BluetoothAdvertisement::ServiceData(service_data)));
   // Retrieve Service Data.
   ASSERT_EQ(*data.service_data(), service_data);
   // Retrieve again.

@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -100,7 +102,7 @@ TEST(BluetoothDiscoveryFilterTest, MergeUUIDs) {
   df2.AddUUID(uuid1020);
   df2.AddUUID(uuid1004);
 
-  scoped_ptr<BluetoothDiscoveryFilter> df3 =
+  std::unique_ptr<BluetoothDiscoveryFilter> df3 =
       BluetoothDiscoveryFilter::Merge(&df1, &df2);
 
   // df3 should contain all uuids from df1 and df2
@@ -134,7 +136,7 @@ TEST(BluetoothDiscoveryFilterTest, MergeProximity) {
       BluetoothDiscoveryFilter::Transport::TRANSPORT_LE);
   df4.SetPathloss(20);
 
-  scoped_ptr<BluetoothDiscoveryFilter> result =
+  std::unique_ptr<BluetoothDiscoveryFilter> result =
       BluetoothDiscoveryFilter::Merge(&df1, &df2);
 
   int16_t out_rssi;
@@ -164,7 +166,7 @@ TEST(BluetoothDiscoveryFilterTest, MergeTransport) {
   BluetoothDiscoveryFilter df3(
       BluetoothDiscoveryFilter::Transport::TRANSPORT_DUAL);
 
-  scoped_ptr<BluetoothDiscoveryFilter> result =
+  std::unique_ptr<BluetoothDiscoveryFilter> result =
       BluetoothDiscoveryFilter::Merge(&df1, &df2);
 
   // Merging LE and CLASSIC should result in both being set

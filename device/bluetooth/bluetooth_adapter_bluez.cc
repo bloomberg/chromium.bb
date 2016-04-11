@@ -4,6 +4,7 @@
 
 #include "device/bluetooth/bluetooth_adapter_bluez.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -389,7 +390,7 @@ void BluetoothAdapterBlueZ::RegisterAudioSink(
 }
 
 void BluetoothAdapterBlueZ::RegisterAdvertisement(
-    scoped_ptr<device::BluetoothAdvertisement::Data> advertisement_data,
+    std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement_data,
     const CreateAdvertisementCallback& callback,
     const CreateAdvertisementErrorCallback& error_callback) {
   scoped_refptr<BluetoothAdvertisementBlueZ> advertisement(
@@ -459,7 +460,7 @@ void BluetoothAdapterBlueZ::DeviceAdded(const dbus::ObjectPath& object_path) {
   DCHECK(devices_.find(device_bluez->GetAddress()) == devices_.end());
 
   devices_.set(device_bluez->GetAddress(),
-               scoped_ptr<BluetoothDevice>(device_bluez));
+               std::unique_ptr<BluetoothDevice>(device_bluez));
 
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                     DeviceAdded(this, device_bluez));
@@ -471,7 +472,7 @@ void BluetoothAdapterBlueZ::DeviceRemoved(const dbus::ObjectPath& object_path) {
     BluetoothDeviceBlueZ* device_bluez =
         static_cast<BluetoothDeviceBlueZ*>(iter->second);
     if (device_bluez->object_path() == object_path) {
-      scoped_ptr<BluetoothDevice> scoped_device =
+      std::unique_ptr<BluetoothDevice> scoped_device =
           devices_.take_and_erase(iter->first);
 
       FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
@@ -499,13 +500,13 @@ void BluetoothAdapterBlueZ::DevicePropertyChanged(
         std::string old_address = iter->first;
         VLOG(1) << "Device changed address, old: " << old_address
                 << " new: " << device_bluez->GetAddress();
-        scoped_ptr<BluetoothDevice> scoped_device =
+        std::unique_ptr<BluetoothDevice> scoped_device =
             devices_.take_and_erase(iter);
         ignore_result(scoped_device.release());
 
         DCHECK(devices_.find(device_bluez->GetAddress()) == devices_.end());
         devices_.set(device_bluez->GetAddress(),
-                     scoped_ptr<BluetoothDevice>(device_bluez));
+                     std::unique_ptr<BluetoothDevice>(device_bluez));
         NotifyDeviceAddressChanged(device_bluez, old_address);
         break;
       }
@@ -1022,7 +1023,7 @@ void BluetoothAdapterBlueZ::RemoveProfile(const BluetoothUUID& uuid) {
 
 void BluetoothAdapterBlueZ::OnRegisterProfile(
     const BluetoothUUID& uuid,
-    scoped_ptr<BluetoothAdapterProfileBlueZ> profile) {
+    std::unique_ptr<BluetoothAdapterProfileBlueZ> profile) {
   profiles_[uuid] = profile.release();
 
   if (profile_queues_.find(uuid) == profile_queues_.end())
@@ -1139,7 +1140,7 @@ void BluetoothAdapterBlueZ::AddDiscoverySession(
   if (discovery_filter) {
     discovery_request_pending_ = true;
 
-    scoped_ptr<BluetoothDiscoveryFilter> df(new BluetoothDiscoveryFilter(
+    std::unique_ptr<BluetoothDiscoveryFilter> df(new BluetoothDiscoveryFilter(
         BluetoothDiscoveryFilter::Transport::TRANSPORT_DUAL));
     df->CopyFrom(*discovery_filter);
     SetDiscoveryFilter(
@@ -1217,7 +1218,7 @@ void BluetoothAdapterBlueZ::RemoveDiscoverySession(
 }
 
 void BluetoothAdapterBlueZ::SetDiscoveryFilter(
-    scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const base::Closure& callback,
     const DiscoverySessionErrorCallback& error_callback) {
   if (!IsPresent()) {
@@ -1269,8 +1270,8 @@ void BluetoothAdapterBlueZ::SetDiscoveryFilter(
 
     current_filter_->GetUUIDs(uuids);
     if (uuids.size()) {
-      dbus_discovery_filter.uuids =
-          scoped_ptr<std::vector<std::string>>(new std::vector<std::string>);
+      dbus_discovery_filter.uuids = std::unique_ptr<std::vector<std::string>>(
+          new std::vector<std::string>);
 
       for (const auto& it : uuids)
         dbus_discovery_filter.uuids.get()->push_back(it.value());

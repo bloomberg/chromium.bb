@@ -8,9 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_low_energy_defs_win.h"
@@ -26,9 +27,9 @@ class DEVICE_BLUETOOTH_EXPORT DeviceRegistryPropertyValue {
   // containing the property value and |value_size| is the number of bytes in
   // |value|. Note the returned instance takes ownership of the bytes in
   // |value|.
-  static scoped_ptr<DeviceRegistryPropertyValue> Create(
+  static std::unique_ptr<DeviceRegistryPropertyValue> Create(
       DWORD property_type,
-      scoped_ptr<uint8_t[]> value,
+      std::unique_ptr<uint8_t[]> value,
       size_t value_size);
   ~DeviceRegistryPropertyValue();
 
@@ -40,11 +41,11 @@ class DEVICE_BLUETOOTH_EXPORT DeviceRegistryPropertyValue {
 
  private:
   DeviceRegistryPropertyValue(DWORD property_type,
-                              scoped_ptr<uint8_t[]> value,
+                              std::unique_ptr<uint8_t[]> value,
                               size_t value_size);
 
   DWORD property_type_;
-  scoped_ptr<uint8_t[]> value_;
+  std::unique_ptr<uint8_t[]> value_;
   size_t value_size_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceRegistryPropertyValue);
@@ -58,7 +59,7 @@ class DEVICE_BLUETOOTH_EXPORT DevicePropertyValue {
   // property value and |value_size| is the number of bytes in |value|. Note the
   // returned instance takes ownership of the bytes in |value|.
   DevicePropertyValue(DEVPROPTYPE property_type,
-                      scoped_ptr<uint8_t[]> value,
+                      std::unique_ptr<uint8_t[]> value,
                       size_t value_size);
   ~DevicePropertyValue();
 
@@ -68,7 +69,7 @@ class DEVICE_BLUETOOTH_EXPORT DevicePropertyValue {
 
  private:
   DEVPROPTYPE property_type_;
-  scoped_ptr<uint8_t[]> value_;
+  std::unique_ptr<uint8_t[]> value_;
   size_t value_size_;
 
   DISALLOW_COPY_AND_ASSIGN(DevicePropertyValue);
@@ -150,7 +151,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyWrapper {
   virtual HRESULT ReadCharacteristicsOfAService(
       base::FilePath& service_path,
       const PBTH_LE_GATT_SERVICE service,
-      scoped_ptr<BTH_LE_GATT_CHARACTERISTIC>* out_included_characteristics,
+      std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC>* out_included_characteristics,
       USHORT* out_counts);
 
   // Reads included descriptors of |characteristic| in service with service
@@ -159,7 +160,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyWrapper {
   virtual HRESULT ReadDescriptorsOfACharacteristic(
       base::FilePath& service_path,
       const PBTH_LE_GATT_CHARACTERISTIC characteristic,
-      scoped_ptr<BTH_LE_GATT_DESCRIPTOR>* out_included_descriptors,
+      std::unique_ptr<BTH_LE_GATT_DESCRIPTOR>* out_included_descriptors,
       USHORT* out_counts);
 
   // Reads |characteristic| value in service with service device path
@@ -167,7 +168,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyWrapper {
   virtual HRESULT ReadCharacteristicValue(
       base::FilePath& service_path,
       const PBTH_LE_GATT_CHARACTERISTIC characteristic,
-      scoped_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE>* out_value);
+      std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE>* out_value);
 
   // Writes |characteristic| value in service with service device path
   // |service_path| to |*new_value|.

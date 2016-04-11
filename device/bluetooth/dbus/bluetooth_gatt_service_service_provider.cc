@@ -4,6 +4,7 @@
 
 #include "device/bluetooth/dbus/bluetooth_gatt_service_service_provider.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -95,7 +96,7 @@ class BluetoothGattServiceServiceProviderImpl
     std::string property_name;
     if (!reader.PopString(&interface_name) ||
         !reader.PopString(&property_name) || reader.HasMoreData()) {
-      scoped_ptr<dbus::ErrorResponse> error_response =
+      std::unique_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(method_call, kErrorInvalidArgs,
                                               "Expected 'ss'.");
       response_sender.Run(std::move(error_response));
@@ -105,7 +106,7 @@ class BluetoothGattServiceServiceProviderImpl
     // Only the GATT service interface is allowed.
     if (interface_name !=
         bluetooth_gatt_service::kBluetoothGattServiceInterface) {
-      scoped_ptr<dbus::ErrorResponse> error_response =
+      std::unique_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs,
               "No such interface: '" + interface_name + "'.");
@@ -116,7 +117,7 @@ class BluetoothGattServiceServiceProviderImpl
     // Return error if |property_name| is unknown.
     if (property_name != bluetooth_gatt_service::kUUIDProperty &&
         property_name != bluetooth_gatt_service::kIncludesProperty) {
-      scoped_ptr<dbus::ErrorResponse> error_response =
+      std::unique_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs,
               "No such property: '" + property_name + "'.");
@@ -124,7 +125,7 @@ class BluetoothGattServiceServiceProviderImpl
       return;
     }
 
-    scoped_ptr<dbus::Response> response =
+    std::unique_ptr<dbus::Response> response =
         dbus::Response::FromMethodCall(method_call);
     dbus::MessageWriter writer(response.get());
     dbus::MessageWriter variant_writer(NULL);
@@ -152,7 +153,7 @@ class BluetoothGattServiceServiceProviderImpl
 
     // All of the properties on this interface are read-only, so just return
     // error.
-    scoped_ptr<dbus::ErrorResponse> error_response =
+    std::unique_ptr<dbus::ErrorResponse> error_response =
         dbus::ErrorResponse::FromMethodCall(method_call, kErrorPropertyReadOnly,
                                             "All properties are read-only.");
     response_sender.Run(std::move(error_response));
@@ -170,7 +171,7 @@ class BluetoothGattServiceServiceProviderImpl
 
     std::string interface_name;
     if (!reader.PopString(&interface_name) || reader.HasMoreData()) {
-      scoped_ptr<dbus::ErrorResponse> error_response =
+      std::unique_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(method_call, kErrorInvalidArgs,
                                               "Expected 's'.");
       response_sender.Run(std::move(error_response));
@@ -180,7 +181,7 @@ class BluetoothGattServiceServiceProviderImpl
     // Only the GATT service interface is allowed.
     if (interface_name !=
         bluetooth_gatt_service::kBluetoothGattServiceInterface) {
-      scoped_ptr<dbus::ErrorResponse> error_response =
+      std::unique_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs,
               "No such interface: '" + interface_name + "'.");
@@ -188,7 +189,7 @@ class BluetoothGattServiceServiceProviderImpl
       return;
     }
 
-    scoped_ptr<dbus::Response> response =
+    std::unique_ptr<dbus::Response> response =
         dbus::Response::FromMethodCall(method_call);
     dbus::MessageWriter writer(response.get());
     dbus::MessageWriter array_writer(NULL);

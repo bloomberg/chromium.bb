@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/bluetooth/bluetooth_socket_bluez.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -11,7 +15,6 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_device_bluez.h"
 #include "device/bluetooth/bluetooth_socket.h"
-#include "device/bluetooth/bluetooth_socket_bluez.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
@@ -51,26 +54,26 @@ class BluetoothSocketBlueZTest : public testing::Test {
         last_reason_(BluetoothSocket::kSystemError) {}
 
   void SetUp() override {
-    scoped_ptr<bluez::BluezDBusManagerSetter> dbus_setter =
+    std::unique_ptr<bluez::BluezDBusManagerSetter> dbus_setter =
         bluez::BluezDBusManager::GetSetterForTesting();
 
     dbus_setter->SetBluetoothAdapterClient(
-        scoped_ptr<bluez::BluetoothAdapterClient>(
+        std::unique_ptr<bluez::BluetoothAdapterClient>(
             new bluez::FakeBluetoothAdapterClient));
     dbus_setter->SetBluetoothAgentManagerClient(
-        scoped_ptr<bluez::BluetoothAgentManagerClient>(
+        std::unique_ptr<bluez::BluetoothAgentManagerClient>(
             new bluez::FakeBluetoothAgentManagerClient));
     dbus_setter->SetBluetoothDeviceClient(
-        scoped_ptr<bluez::BluetoothDeviceClient>(
+        std::unique_ptr<bluez::BluetoothDeviceClient>(
             new bluez::FakeBluetoothDeviceClient));
     dbus_setter->SetBluetoothGattServiceClient(
-        scoped_ptr<bluez::BluetoothGattServiceClient>(
+        std::unique_ptr<bluez::BluetoothGattServiceClient>(
             new bluez::FakeBluetoothGattServiceClient));
     dbus_setter->SetBluetoothInputClient(
-        scoped_ptr<bluez::BluetoothInputClient>(
+        std::unique_ptr<bluez::BluetoothInputClient>(
             new bluez::FakeBluetoothInputClient));
     dbus_setter->SetBluetoothProfileManagerClient(
-        scoped_ptr<bluez::BluetoothProfileManagerClient>(
+        std::unique_ptr<bluez::BluetoothProfileManagerClient>(
             new bluez::FakeBluetoothProfileManagerClient));
 
     BluetoothSocketThread::Get();

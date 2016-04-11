@@ -4,8 +4,11 @@
 
 #include "device/bluetooth/test/bluetooth_test.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
@@ -32,7 +35,7 @@ BluetoothTestBase::~BluetoothTestBase() {
 
 void BluetoothTestBase::StartLowEnergyDiscoverySession() {
   adapter_->StartDiscoverySessionWithFilter(
-      make_scoped_ptr(new BluetoothDiscoveryFilter(
+      base::WrapUnique(new BluetoothDiscoveryFilter(
           BluetoothDiscoveryFilter::Transport::TRANSPORT_LE)),
       GetDiscoverySessionCallback(Call::EXPECTED),
       GetErrorCallback(Call::NOT_EXPECTED));
@@ -41,7 +44,7 @@ void BluetoothTestBase::StartLowEnergyDiscoverySession() {
 
 void BluetoothTestBase::StartLowEnergyDiscoverySessionExpectedToFail() {
   adapter_->StartDiscoverySessionWithFilter(
-      make_scoped_ptr(new BluetoothDiscoveryFilter(
+      base::WrapUnique(new BluetoothDiscoveryFilter(
           BluetoothDiscoveryFilter::Transport::TRANSPORT_LE)),
       GetDiscoverySessionCallback(Call::NOT_EXPECTED),
       GetErrorCallback(Call::EXPECTED));
@@ -80,7 +83,7 @@ void BluetoothTestBase::Callback(Call expected) {
 
 void BluetoothTestBase::DiscoverySessionCallback(
     Call expected,
-    scoped_ptr<BluetoothDiscoverySession> discovery_session) {
+    std::unique_ptr<BluetoothDiscoverySession> discovery_session) {
   ++callback_count_;
   discovery_sessions_.push_back(discovery_session.release());
 
@@ -92,7 +95,7 @@ void BluetoothTestBase::DiscoverySessionCallback(
 
 void BluetoothTestBase::GattConnectionCallback(
     Call expected,
-    scoped_ptr<BluetoothGattConnection> connection) {
+    std::unique_ptr<BluetoothGattConnection> connection) {
   ++callback_count_;
   gatt_connections_.push_back(connection.release());
 
@@ -104,7 +107,7 @@ void BluetoothTestBase::GattConnectionCallback(
 
 void BluetoothTestBase::NotifyCallback(
     Call expected,
-    scoped_ptr<BluetoothGattNotifySession> notify_session) {
+    std::unique_ptr<BluetoothGattNotifySession> notify_session) {
   ++callback_count_;
   notify_sessions_.push_back(notify_session.release());
 

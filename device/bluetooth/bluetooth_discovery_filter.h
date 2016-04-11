@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -61,13 +61,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoveryFilter {
 
   // Returns result of merging two filters together. If at least one of the
   // filters is NULL this will return an empty filter
-  static scoped_ptr<device::BluetoothDiscoveryFilter> Merge(
+  static std::unique_ptr<device::BluetoothDiscoveryFilter> Merge(
       const device::BluetoothDiscoveryFilter* filter_a,
       const device::BluetoothDiscoveryFilter* filter_b);
 
  private:
-  scoped_ptr<int16_t> rssi_;
-  scoped_ptr<uint16_t> pathloss_;
+  std::unique_ptr<int16_t> rssi_;
+  std::unique_ptr<uint16_t> pathloss_;
   TransportMask transport_;
   ScopedVector<device::BluetoothUUID> uuids_;
 

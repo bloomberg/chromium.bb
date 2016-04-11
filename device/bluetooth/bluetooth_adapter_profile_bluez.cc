@@ -4,6 +4,7 @@
 
 #include "device/bluetooth/bluetooth_adapter_profile_bluez.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -25,7 +26,7 @@ void BluetoothAdapterProfileBlueZ::Register(
     const bluez::BluetoothProfileManagerClient::Options& options,
     const ProfileRegisteredCallback& success_callback,
     const bluez::BluetoothProfileManagerClient::ErrorCallback& error_callback) {
-  scoped_ptr<BluetoothAdapterProfileBlueZ> profile(
+  std::unique_ptr<BluetoothAdapterProfileBlueZ> profile(
       new BluetoothAdapterProfileBlueZ(uuid));
 
   VLOG(1) << "Registering profile: " << profile->object_path().value();
@@ -111,7 +112,7 @@ void BluetoothAdapterProfileBlueZ::Released() {
 
 void BluetoothAdapterProfileBlueZ::NewConnection(
     const dbus::ObjectPath& device_path,
-    scoped_ptr<dbus::FileDescriptor> fd,
+    std::unique_ptr<dbus::FileDescriptor> fd,
     const bluez::BluetoothProfileServiceProvider::Delegate::Options& options,
     const ConfirmationCallback& callback) {
   dbus::ObjectPath delegate_path = device_path;

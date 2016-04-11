@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -90,7 +90,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristic {
 
   // The NotifySessionCallback is used to return sessions after they have
   // been successfully started.
-  typedef base::Callback<void(scoped_ptr<BluetoothGattNotifySession>)>
+  typedef base::Callback<void(std::unique_ptr<BluetoothGattNotifySession>)>
       NotifySessionCallback;
 
   // Constructs a BluetoothGattCharacteristic that can be associated with a

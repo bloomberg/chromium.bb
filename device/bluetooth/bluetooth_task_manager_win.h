@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -125,15 +126,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
   // Callbacks of asynchronous operations of GATT service.
   typedef base::Callback<void(HRESULT)> HResultCallback;
   typedef base::Callback<
-      void(scoped_ptr<BTH_LE_GATT_CHARACTERISTIC>, uint16_t, HRESULT)>
+      void(std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC>, uint16_t, HRESULT)>
       GetGattIncludedCharacteristicsCallback;
   typedef base::Callback<
-      void(scoped_ptr<BTH_LE_GATT_DESCRIPTOR>, uint16_t, HRESULT)>
+      void(std::unique_ptr<BTH_LE_GATT_DESCRIPTOR>, uint16_t, HRESULT)>
       GetGattIncludedDescriptorsCallback;
-  typedef base::Callback<void(scoped_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE>,
+  typedef base::Callback<void(std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE>,
                               HRESULT)>
       ReadGattCharacteristicValueCallback;
-  typedef base::Callback<void(scoped_ptr<std::vector<uint8_t>>)>
+  typedef base::Callback<void(std::unique_ptr<std::vector<uint8_t>>)>
       GattCharacteristicValueChangedCallback;
   typedef base::Callback<void(PVOID, HRESULT)> GattEventRegistrationCallback;
 

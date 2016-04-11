@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_export.h"
@@ -36,37 +36,37 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothProfileManagerClient
     ~Options();
 
     // Human readable name for the profile.
-    scoped_ptr<std::string> name;
+    std::unique_ptr<std::string> name;
 
     // Primary service class UUID (if different from the actual UUID)
-    scoped_ptr<std::string> service;
+    std::unique_ptr<std::string> service;
 
     // Role.
     enum ProfileRole role;
 
     // RFCOMM channel number.
-    scoped_ptr<uint16_t> channel;
+    std::unique_ptr<uint16_t> channel;
 
     // PSM number.
-    scoped_ptr<uint16_t> psm;
+    std::unique_ptr<uint16_t> psm;
 
     // Pairing is required before connections will be established.
-    scoped_ptr<bool> require_authentication;
+    std::unique_ptr<bool> require_authentication;
 
     // Request authorization before connections will be established.
-    scoped_ptr<bool> require_authorization;
+    std::unique_ptr<bool> require_authorization;
 
     // Force connections when a remote device is connected.
-    scoped_ptr<bool> auto_connect;
+    std::unique_ptr<bool> auto_connect;
 
     // Manual SDP record.
-    scoped_ptr<std::string> service_record;
+    std::unique_ptr<std::string> service_record;
 
     // Profile version.
-    scoped_ptr<uint16_t> version;
+    std::unique_ptr<uint16_t> version;
 
     // Profile features.
-    scoped_ptr<uint16_t> features;
+    std::unique_ptr<uint16_t> features;
   };
 
   ~BluetoothProfileManagerClient() override;

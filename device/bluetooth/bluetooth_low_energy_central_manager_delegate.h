@@ -5,8 +5,9 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_LOW_ENERGY_CENTRAL_MANAGER_DELEGATE_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_LOW_ENERGY_CENTRAL_MANAGER_DELEGATE_H_
 
+#include <memory>
+
 #include "base/mac/sdk_forward_declarations.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 
 #if defined(OS_IOS)
@@ -26,7 +27,7 @@ class BluetoothLowEnergyDiscoveryManagerMac;
 // This class will serve as the Objective-C delegate of CBCentralManager.
 @interface BluetoothLowEnergyCentralManagerDelegate
     : NSObject<CBCentralManagerDelegate> {
-  scoped_ptr<device::BluetoothLowEnergyCentralManagerBridge> bridge_;
+  std::unique_ptr<device::BluetoothLowEnergyCentralManagerBridge> bridge_;
 }
 
 - (id)initWithDiscoveryManager:

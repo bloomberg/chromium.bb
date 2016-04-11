@@ -4,6 +4,7 @@
 
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 
+#include <memory>
 #include <utility>
 
 #include "build/build_config.h"
@@ -46,14 +47,14 @@ void MockBluetoothAdapter::RemoveDiscoverySession(
     const DiscoverySessionErrorCallback& error_callback) {}
 
 void MockBluetoothAdapter::SetDiscoveryFilter(
-    scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const base::Closure& callback,
     const DiscoverySessionErrorCallback& error_callback) {
   SetDiscoveryFilterRaw(discovery_filter.get(), callback, error_callback);
 }
 
 void MockBluetoothAdapter::StartDiscoverySessionWithFilter(
-    scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const DiscoverySessionCallback& callback,
     const ErrorCallback& error_callback) {
   StartDiscoverySessionWithFilterRaw(discovery_filter.get(), callback,
@@ -61,7 +62,7 @@ void MockBluetoothAdapter::StartDiscoverySessionWithFilter(
 }
 
 void MockBluetoothAdapter::AddMockDevice(
-    scoped_ptr<MockBluetoothDevice> mock_device) {
+    std::unique_ptr<MockBluetoothDevice> mock_device) {
   mock_devices_.push_back(std::move(mock_device));
 }
 
@@ -82,7 +83,7 @@ BluetoothAdapter::DeviceList MockBluetoothAdapter::GetMockDevices() {
 }
 
 void MockBluetoothAdapter::RegisterAdvertisement(
-    scoped_ptr<BluetoothAdvertisement::Data> advertisement_data,
+    std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
     const CreateAdvertisementCallback& callback,
     const CreateAdvertisementErrorCallback& error_callback) {
   callback.Run(new MockBluetoothAdvertisement);

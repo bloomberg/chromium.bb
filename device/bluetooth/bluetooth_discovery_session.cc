@@ -4,6 +4,8 @@
 
 #include "device/bluetooth/bluetooth_discovery_session.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_discovery_filter.h"
@@ -12,7 +14,7 @@ namespace device {
 
 BluetoothDiscoverySession::BluetoothDiscoverySession(
     scoped_refptr<BluetoothAdapter> adapter,
-    scoped_ptr<BluetoothDiscoveryFilter> discovery_filter)
+    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter)
     : active_(true),
       adapter_(adapter),
       discovery_filter_(discovery_filter.release()),
@@ -94,7 +96,7 @@ static void IgnoreDiscoveryOutcome(
 }
 
 void BluetoothDiscoverySession::SetDiscoveryFilter(
-    scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   discovery_filter_.reset(discovery_filter.release());

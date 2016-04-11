@@ -4,6 +4,7 @@
 
 #include "device/bluetooth/test/mock_bluetooth_gatt_service.h"
 
+#include <memory>
 #include <utility>
 
 #include "device/bluetooth/test/mock_bluetooth_device.h"
@@ -36,7 +37,7 @@ MockBluetoothGattService::~MockBluetoothGattService() {
 }
 
 void MockBluetoothGattService::AddMockCharacteristic(
-    scoped_ptr<MockBluetoothGattCharacteristic> mock_characteristic) {
+    std::unique_ptr<MockBluetoothGattCharacteristic> mock_characteristic) {
   mock_characteristics_.push_back(std::move(mock_characteristic));
 }
 

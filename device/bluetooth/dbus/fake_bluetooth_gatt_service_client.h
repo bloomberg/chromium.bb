@@ -5,11 +5,11 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_GATT_SERVICE_CLIENT_H_
 #define DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_GATT_SERVICE_CLIENT_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "dbus/object_path.h"
@@ -87,7 +87,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattServiceClient
 
   // Static properties we return. As long as a service is exposed, this will be
   // non-null. Otherwise it will be null.
-  scoped_ptr<Properties> heart_rate_service_properties_;
+  std::unique_ptr<Properties> heart_rate_service_properties_;
   std::string heart_rate_service_path_;
 
   // List of observers interested in event notifications from us.

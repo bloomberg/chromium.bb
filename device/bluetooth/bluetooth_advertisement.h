@@ -6,7 +6,9 @@
 #define DEVICE_BLUETOOTH_BLUETOOTH_ADVERTISEMENT_H_
 
 #include <stdint.h>
+
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -14,7 +16,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "device/bluetooth/bluetooth_export.h"
 
@@ -60,23 +61,30 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisement
     ~Data();
 
     AdvertisementType type() { return type_; }
-    scoped_ptr<UUIDList> service_uuids() { return std::move(service_uuids_); }
-    scoped_ptr<ManufacturerData> manufacturer_data() {
+    std::unique_ptr<UUIDList> service_uuids() {
+      return std::move(service_uuids_);
+    }
+    std::unique_ptr<ManufacturerData> manufacturer_data() {
       return std::move(manufacturer_data_);
     }
-    scoped_ptr<UUIDList> solicit_uuids() { return std::move(solicit_uuids_); }
-    scoped_ptr<ServiceData> service_data() { return std::move(service_data_); }
+    std::unique_ptr<UUIDList> solicit_uuids() {
+      return std::move(solicit_uuids_);
+    }
+    std::unique_ptr<ServiceData> service_data() {
+      return std::move(service_data_);
+    }
 
-    void set_service_uuids(scoped_ptr<UUIDList> service_uuids) {
+    void set_service_uuids(std::unique_ptr<UUIDList> service_uuids) {
       service_uuids_ = std::move(service_uuids);
     }
-    void set_manufacturer_data(scoped_ptr<ManufacturerData> manufacturer_data) {
+    void set_manufacturer_data(
+        std::unique_ptr<ManufacturerData> manufacturer_data) {
       manufacturer_data_ = std::move(manufacturer_data);
     }
-    void set_solicit_uuids(scoped_ptr<UUIDList> solicit_uuids) {
+    void set_solicit_uuids(std::unique_ptr<UUIDList> solicit_uuids) {
       solicit_uuids_ = std::move(solicit_uuids);
     }
-    void set_service_data(scoped_ptr<ServiceData> service_data) {
+    void set_service_data(std::unique_ptr<ServiceData> service_data) {
       service_data_ = std::move(service_data);
     }
 
@@ -88,10 +96,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisement
     Data();
 
     AdvertisementType type_;
-    scoped_ptr<UUIDList> service_uuids_;
-    scoped_ptr<ManufacturerData> manufacturer_data_;
-    scoped_ptr<UUIDList> solicit_uuids_;
-    scoped_ptr<ServiceData> service_data_;
+    std::unique_ptr<UUIDList> service_uuids_;
+    std::unique_ptr<ManufacturerData> manufacturer_data_;
+    std::unique_ptr<UUIDList> solicit_uuids_;
+    std::unique_ptr<ServiceData> service_data_;
     bool include_tx_power_;
 
     DISALLOW_COPY_AND_ASSIGN(Data);

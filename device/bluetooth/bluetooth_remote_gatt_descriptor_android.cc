@@ -4,6 +4,8 @@
 
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_android.h"
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -19,14 +21,14 @@ using base::android::AttachCurrentThread;
 namespace device {
 
 // static
-scoped_ptr<BluetoothRemoteGattDescriptorAndroid>
+std::unique_ptr<BluetoothRemoteGattDescriptorAndroid>
 BluetoothRemoteGattDescriptorAndroid::Create(
     const std::string& instance_id,
     jobject /* BluetoothGattDescriptorWrapper */
     bluetooth_gatt_descriptor_wrapper,
     jobject /* chromeBluetoothDevice */
     chrome_bluetooth_device) {
-  scoped_ptr<BluetoothRemoteGattDescriptorAndroid> descriptor(
+  std::unique_ptr<BluetoothRemoteGattDescriptorAndroid> descriptor(
       new BluetoothRemoteGattDescriptorAndroid(instance_id));
 
   descriptor->j_descriptor_.Reset(

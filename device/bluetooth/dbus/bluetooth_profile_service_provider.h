@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "dbus/bus.h"
 #include "dbus/file_descriptor.h"
 #include "dbus/object_path.h"
@@ -83,7 +83,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothProfileServiceProvider {
     // Ownership of |options| is NOT passed so information out of it must be
     // copied if required.
     virtual void NewConnection(const dbus::ObjectPath& device_path,
-                               scoped_ptr<dbus::FileDescriptor> fd,
+                               std::unique_ptr<dbus::FileDescriptor> fd,
                                const Options& options,
                                const ConfirmationCallback& callback) = 0;
 

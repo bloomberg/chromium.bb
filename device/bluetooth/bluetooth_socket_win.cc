@@ -6,6 +6,7 @@
 
 #include <objbase.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -192,7 +193,7 @@ void BluetoothSocketWin::DoConnect(
     return;
   }
 
-  scoped_ptr<net::TCPSocket> scoped_socket(
+  std::unique_ptr<net::TCPSocket> scoped_socket(
       new net::TCPSocket(NULL, net::NetLog::Source()));
   net::EnsureWinsockInit();
   SOCKET socket_fd = socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
@@ -259,7 +260,7 @@ void BluetoothSocketWin::DoListen(
   // Note that |socket_fd| belongs to a non-TCP address family (i.e. AF_BTH),
   // TCPSocket methods that involve address could not be called. So bind()
   // is called on |socket_fd| directly.
-  scoped_ptr<net::TCPSocket> scoped_socket(
+  std::unique_ptr<net::TCPSocket> scoped_socket(
       new net::TCPSocket(NULL, net::NetLog::Source()));
   scoped_socket->AdoptListenSocket(socket_fd);
 
@@ -284,7 +285,7 @@ void BluetoothSocketWin::DoListen(
     return;
   }
 
-  scoped_ptr<ServiceRegData> reg_data(new ServiceRegData);
+  std::unique_ptr<ServiceRegData> reg_data(new ServiceRegData);
   reg_data->name = base::UTF8ToUTF16(uuid.canonical_value());
 
   if (getsockname(socket_fd, sock_addr, &sock_addr_len)) {
@@ -371,7 +372,7 @@ void BluetoothSocketWin::OnAcceptOnSocketThread(
 }
 
 void BluetoothSocketWin::OnAcceptOnUI(
-    scoped_ptr<net::TCPSocket> accept_socket,
+    std::unique_ptr<net::TCPSocket> accept_socket,
     const net::IPEndPoint& peer_address,
     const AcceptCompletionCallback& success_callback,
     const ErrorCompletionCallback& error_callback) {

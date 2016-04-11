@@ -5,10 +5,10 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_SERVICE_WIN_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_SERVICE_WIN_H_
 
+#include <memory>
 #include <set>
 
 #include "base/files/file.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
@@ -66,7 +66,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceWin
 
  private:
   void OnGetIncludedCharacteristics(
-      scoped_ptr<BTH_LE_GATT_CHARACTERISTIC> characteristics,
+      std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC> characteristics,
       uint16_t num,
       HRESULT hr);
   void UpdateIncludedCharacteristics(
@@ -106,8 +106,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceWin
 
   // The key of GattCharacteristicsMap is the identifier of
   // BluetoothRemoteGattCharacteristicWin instance.
-  typedef std::unordered_map<std::string,
-                             scoped_ptr<BluetoothRemoteGattCharacteristicWin>>
+  typedef std::unordered_map<
+      std::string,
+      std::unique_ptr<BluetoothRemoteGattCharacteristicWin>>
       GattCharacteristicsMap;
   GattCharacteristicsMap included_characteristics_;
 

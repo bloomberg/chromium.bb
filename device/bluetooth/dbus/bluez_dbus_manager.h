@@ -5,12 +5,12 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_BLUEZ_DBUS_MANAGER_H_
 #define DEVICE_BLUETOOTH_DBUS_BLUEZ_DBUS_MANAGER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/dbus/bluetooth_dbus_client_bundle.h"
@@ -67,7 +67,7 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManager {
   // Returns a BluezDBusManagerSetter instance that allows tests to
   // replace individual D-Bus clients with their own implementations.
   // Also initializes the main BluezDBusManager for testing if necessary.
-  static scoped_ptr<BluezDBusManagerSetter> GetSetterForTesting();
+  static std::unique_ptr<BluezDBusManagerSetter> GetSetterForTesting();
 
   // Returns true if BluezDBusManager has been initialized. Call this to
   // avoid initializing + shutting down BluezDBusManager more than once.
@@ -131,7 +131,7 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManager {
   void InitializeClients();
 
   dbus::Bus* bus_;
-  scoped_ptr<BluetoothDBusClientBundle> client_bundle_;
+  std::unique_ptr<BluetoothDBusClientBundle> client_bundle_;
 
   base::Closure object_manager_support_known_callback_;
 
@@ -149,26 +149,27 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManagerSetter {
  public:
   ~BluezDBusManagerSetter();
 
-  void SetBluetoothAdapterClient(scoped_ptr<BluetoothAdapterClient> client);
+  void SetBluetoothAdapterClient(
+      std::unique_ptr<BluetoothAdapterClient> client);
   void SetBluetoothLEAdvertisingManagerClient(
-      scoped_ptr<BluetoothLEAdvertisingManagerClient> client);
+      std::unique_ptr<BluetoothLEAdvertisingManagerClient> client);
   void SetBluetoothAgentManagerClient(
-      scoped_ptr<BluetoothAgentManagerClient> client);
-  void SetBluetoothDeviceClient(scoped_ptr<BluetoothDeviceClient> client);
+      std::unique_ptr<BluetoothAgentManagerClient> client);
+  void SetBluetoothDeviceClient(std::unique_ptr<BluetoothDeviceClient> client);
   void SetBluetoothGattCharacteristicClient(
-      scoped_ptr<BluetoothGattCharacteristicClient> client);
+      std::unique_ptr<BluetoothGattCharacteristicClient> client);
   void SetBluetoothGattDescriptorClient(
-      scoped_ptr<BluetoothGattDescriptorClient> client);
+      std::unique_ptr<BluetoothGattDescriptorClient> client);
   void SetBluetoothGattManagerClient(
-      scoped_ptr<BluetoothGattManagerClient> client);
+      std::unique_ptr<BluetoothGattManagerClient> client);
   void SetBluetoothGattServiceClient(
-      scoped_ptr<BluetoothGattServiceClient> client);
-  void SetBluetoothInputClient(scoped_ptr<BluetoothInputClient> client);
-  void SetBluetoothMediaClient(scoped_ptr<BluetoothMediaClient> client);
+      std::unique_ptr<BluetoothGattServiceClient> client);
+  void SetBluetoothInputClient(std::unique_ptr<BluetoothInputClient> client);
+  void SetBluetoothMediaClient(std::unique_ptr<BluetoothMediaClient> client);
   void SetBluetoothMediaTransportClient(
-      scoped_ptr<BluetoothMediaTransportClient> client);
+      std::unique_ptr<BluetoothMediaTransportClient> client);
   void SetBluetoothProfileManagerClient(
-      scoped_ptr<BluetoothProfileManagerClient> client);
+      std::unique_ptr<BluetoothProfileManagerClient> client);
 
  private:
   friend class BluezDBusManager;

@@ -4,6 +4,7 @@
 
 #include "device/bluetooth/bluetooth_adapter.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -60,7 +61,7 @@ void BluetoothAdapter::StartDiscoverySession(
 }
 
 void BluetoothAdapter::StartDiscoverySessionWithFilter(
-    scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const DiscoverySessionCallback& callback,
     const ErrorCallback& error_callback) {
   BluetoothDiscoveryFilter* ptr = discovery_filter.get();
@@ -72,12 +73,12 @@ void BluetoothAdapter::StartDiscoverySessionWithFilter(
                  weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
-scoped_ptr<BluetoothDiscoveryFilter>
+std::unique_ptr<BluetoothDiscoveryFilter>
 BluetoothAdapter::GetMergedDiscoveryFilter() const {
   return GetMergedDiscoveryFilterHelper(nullptr, false);
 }
 
-scoped_ptr<BluetoothDiscoveryFilter>
+std::unique_ptr<BluetoothDiscoveryFilter>
 BluetoothAdapter::GetMergedDiscoveryFilterMasked(
     BluetoothDiscoveryFilter* masked_filter) const {
   return GetMergedDiscoveryFilterHelper(masked_filter, true);
@@ -263,13 +264,13 @@ BluetoothAdapter::~BluetoothAdapter() {
 }
 
 void BluetoothAdapter::OnStartDiscoverySession(
-    scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const DiscoverySessionCallback& callback) {
   VLOG(1) << "BluetoothAdapter::OnStartDiscoverySession";
   RecordBluetoothDiscoverySessionStartOutcome(
       UMABluetoothDiscoverySessionOutcome::SUCCESS);
 
-  scoped_ptr<BluetoothDiscoverySession> discovery_session(
+  std::unique_ptr<BluetoothDiscoverySession> discovery_session(
       new BluetoothDiscoverySession(scoped_refptr<BluetoothAdapter>(this),
                                     std::move(discovery_filter)));
   discovery_sessions_.insert(discovery_session.get());
@@ -307,11 +308,11 @@ void BluetoothAdapter::DeleteDeviceForTesting(const std::string& address) {
   devices_.erase(address);
 }
 
-scoped_ptr<BluetoothDiscoveryFilter>
+std::unique_ptr<BluetoothDiscoveryFilter>
 BluetoothAdapter::GetMergedDiscoveryFilterHelper(
     const BluetoothDiscoveryFilter* masked_filter,
     bool omit) const {
-  scoped_ptr<BluetoothDiscoveryFilter> result;
+  std::unique_ptr<BluetoothDiscoveryFilter> result;
   bool first_merge = true;
 
   std::set<BluetoothDiscoverySession*> temp(discovery_sessions_);

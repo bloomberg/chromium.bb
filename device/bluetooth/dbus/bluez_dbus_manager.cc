@@ -4,9 +4,11 @@
 
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/threading/thread.h"
 #include "dbus/bus.h"
@@ -212,14 +214,14 @@ void BluezDBusManager::Initialize(dbus::Bus* bus, bool use_dbus_stub) {
 }
 
 // static
-scoped_ptr<BluezDBusManagerSetter>
+std::unique_ptr<BluezDBusManagerSetter>
 bluez::BluezDBusManager::GetSetterForTesting() {
   if (!g_using_bluez_dbus_manager_for_testing) {
     g_using_bluez_dbus_manager_for_testing = true;
     CreateGlobalInstance(nullptr, true);
   }
 
-  return make_scoped_ptr(new BluezDBusManagerSetter());
+  return base::WrapUnique(new BluezDBusManagerSetter());
 }
 
 // static
@@ -256,75 +258,75 @@ BluezDBusManagerSetter::BluezDBusManagerSetter() {}
 BluezDBusManagerSetter::~BluezDBusManagerSetter() {}
 
 void BluezDBusManagerSetter::SetBluetoothAdapterClient(
-    scoped_ptr<BluetoothAdapterClient> client) {
+    std::unique_ptr<BluetoothAdapterClient> client) {
   bluez::BluezDBusManager::Get()->client_bundle_->bluetooth_adapter_client_ =
       std::move(client);
 }
 
 void BluezDBusManagerSetter::SetBluetoothLEAdvertisingManagerClient(
-    scoped_ptr<BluetoothLEAdvertisingManagerClient> client) {
+    std::unique_ptr<BluetoothLEAdvertisingManagerClient> client) {
   bluez::BluezDBusManager::Get()
       ->client_bundle_->bluetooth_le_advertising_manager_client_ =
       std::move(client);
 }
 
 void BluezDBusManagerSetter::SetBluetoothAgentManagerClient(
-    scoped_ptr<BluetoothAgentManagerClient> client) {
+    std::unique_ptr<BluetoothAgentManagerClient> client) {
   bluez::BluezDBusManager::Get()
       ->client_bundle_->bluetooth_agent_manager_client_ = std::move(client);
 }
 
 void BluezDBusManagerSetter::SetBluetoothDeviceClient(
-    scoped_ptr<BluetoothDeviceClient> client) {
+    std::unique_ptr<BluetoothDeviceClient> client) {
   bluez::BluezDBusManager::Get()->client_bundle_->bluetooth_device_client_ =
       std::move(client);
 }
 
 void BluezDBusManagerSetter::SetBluetoothGattCharacteristicClient(
-    scoped_ptr<BluetoothGattCharacteristicClient> client) {
+    std::unique_ptr<BluetoothGattCharacteristicClient> client) {
   bluez::BluezDBusManager::Get()
       ->client_bundle_->bluetooth_gatt_characteristic_client_ =
       std::move(client);
 }
 
 void BluezDBusManagerSetter::SetBluetoothGattDescriptorClient(
-    scoped_ptr<BluetoothGattDescriptorClient> client) {
+    std::unique_ptr<BluetoothGattDescriptorClient> client) {
   bluez::BluezDBusManager::Get()
       ->client_bundle_->bluetooth_gatt_descriptor_client_ = std::move(client);
 }
 
 void BluezDBusManagerSetter::SetBluetoothGattManagerClient(
-    scoped_ptr<BluetoothGattManagerClient> client) {
+    std::unique_ptr<BluetoothGattManagerClient> client) {
   bluez::BluezDBusManager::Get()
       ->client_bundle_->bluetooth_gatt_manager_client_ = std::move(client);
 }
 
 void BluezDBusManagerSetter::SetBluetoothGattServiceClient(
-    scoped_ptr<BluetoothGattServiceClient> client) {
+    std::unique_ptr<BluetoothGattServiceClient> client) {
   bluez::BluezDBusManager::Get()
       ->client_bundle_->bluetooth_gatt_service_client_ = std::move(client);
 }
 
 void BluezDBusManagerSetter::SetBluetoothInputClient(
-    scoped_ptr<BluetoothInputClient> client) {
+    std::unique_ptr<BluetoothInputClient> client) {
   bluez::BluezDBusManager::Get()->client_bundle_->bluetooth_input_client_ =
       std::move(client);
 }
 
 void BluezDBusManagerSetter::SetBluetoothMediaClient(
-    scoped_ptr<BluetoothMediaClient> client) {
+    std::unique_ptr<BluetoothMediaClient> client) {
   bluez::BluezDBusManager::Get()->client_bundle_->bluetooth_media_client_ =
       std::move(client);
 }
 
 void BluezDBusManagerSetter::SetBluetoothMediaTransportClient(
-    scoped_ptr<BluetoothMediaTransportClient> client) {
+    std::unique_ptr<BluetoothMediaTransportClient> client) {
   bluez::BluezDBusManager::Get()
       ->client_bundle_->bluetooth_media_transport_client_ = std::move(client);
 }
 
 void BluezDBusManagerSetter::SetBluetoothProfileManagerClient(
-    scoped_ptr<BluetoothProfileManagerClient> client) {
+    std::unique_ptr<BluetoothProfileManagerClient> client) {
   bluez::BluezDBusManager::Get()
       ->client_bundle_->bluetooth_profile_manager_client_ = std::move(client);
 }

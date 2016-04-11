@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <winsock2.h>
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -142,8 +143,9 @@ CharacteristicValueChangedRegistration::
 // GattCharacteristicValueChangedCallback pointer (cast to PVOID) to make it
 // unique for different callbacks. It is also the context value passed into OS
 // when registering event.
-typedef std::unordered_map<PVOID,
-                           scoped_ptr<CharacteristicValueChangedRegistration>>
+typedef std::unordered_map<
+    PVOID,
+    std::unique_ptr<CharacteristicValueChangedRegistration>>
     CharacteristicValueChangedRegistrationMap;
 
 CharacteristicValueChangedRegistrationMap
@@ -164,7 +166,7 @@ void OnGetGattEventWin(BTH_LE_GATT_EVENT_TYPE type,
   BLUETOOTH_GATT_VALUE_CHANGED_EVENT* event =
       (BLUETOOTH_GATT_VALUE_CHANGED_EVENT*)event_parameter;
   PBTH_LE_GATT_CHARACTERISTIC_VALUE new_value_win = event->CharacteristicValue;
-  scoped_ptr<std::vector<uint8_t>> new_value(
+  std::unique_ptr<std::vector<uint8_t>> new_value(
       new std::vector<uint8_t>(new_value_win->DataSize));
   for (ULONG i = 0; i < new_value_win->DataSize; i++)
     (*new_value)[i] = new_value_win->Data[i];
@@ -473,7 +475,7 @@ void BluetoothTaskManagerWin::DiscoverDevices(int timeout_multiplier) {
     return;
   }
 
-  scoped_ptr<ScopedVector<DeviceState> > device_list(
+  std::unique_ptr<ScopedVector<DeviceState>> device_list(
       new ScopedVector<DeviceState>());
   if (SearchDevices(timeout_multiplier, false, device_list.get())) {
     ui_task_runner_->PostTask(
@@ -492,7 +494,7 @@ void BluetoothTaskManagerWin::DiscoverDevices(int timeout_multiplier) {
 }
 
 void BluetoothTaskManagerWin::GetKnownDevices() {
-  scoped_ptr<ScopedVector<DeviceState> > device_list(
+  std::unique_ptr<ScopedVector<DeviceState>> device_list(
       new ScopedVector<DeviceState>());
   if (SearchDevices(1, true, device_list.get())) {
     ui_task_runner_->PostTask(
@@ -829,7 +831,7 @@ void BluetoothTaskManagerWin::GetGattIncludedCharacteristics(
     uint16_t attribute_handle,
     const GetGattIncludedCharacteristicsCallback& callback) {
   HRESULT hr = S_OK;
-  scoped_ptr<BTH_LE_GATT_CHARACTERISTIC> win_characteristics_info;
+  std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC> win_characteristics_info;
   uint16_t number_of_charateristics = 0;
 
   BTH_LE_GATT_SERVICE win_service;
@@ -852,7 +854,7 @@ void BluetoothTaskManagerWin::GetGattIncludedDescriptors(
     base::FilePath service_path,
     BTH_LE_GATT_CHARACTERISTIC characteristic,
     const GetGattIncludedDescriptorsCallback& callback) {
-  scoped_ptr<BTH_LE_GATT_DESCRIPTOR> win_descriptors_info;
+  std::unique_ptr<BTH_LE_GATT_DESCRIPTOR> win_descriptors_info;
   uint16_t number_of_descriptors = 0;
 
   HRESULT hr =
@@ -870,7 +872,7 @@ void BluetoothTaskManagerWin::ReadGattCharacteristicValue(
     base::FilePath service_path,
     BTH_LE_GATT_CHARACTERISTIC characteristic,
     const ReadGattCharacteristicValueCallback& callback) {
-  scoped_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE> win_characteristic_value;
+  std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE> win_characteristic_value;
   HRESULT hr =
       win::BluetoothLowEnergyWrapper::GetInstance()->ReadCharacteristicValue(
           service_path, (PBTH_LE_GATT_CHARACTERISTIC)(&characteristic),
@@ -887,7 +889,7 @@ void BluetoothTaskManagerWin::WriteGattCharacteristicValue(
     std::vector<uint8_t> new_value,
     const HResultCallback& callback) {
   ULONG length = (ULONG)(sizeof(ULONG) + new_value.size());
-  scoped_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE> win_new_value(
+  std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE> win_new_value(
       (PBTH_LE_GATT_CHARACTERISTIC_VALUE)(new UCHAR[length]));
   win_new_value->DataSize = (ULONG)new_value.size();
   for (ULONG i = 0; i < new_value.size(); i++)
@@ -939,7 +941,7 @@ void BluetoothTaskManagerWin::RegisterGattCharacteristicValueChangedEvent(
   }
 
   if (SUCCEEDED(hr)) {
-    scoped_ptr<CharacteristicValueChangedRegistration> registration(
+    std::unique_ptr<CharacteristicValueChangedRegistration> registration(
         new CharacteristicValueChangedRegistration());
     registration->win_event_handle = win_event_handle;
     registration->callback = registered_callback;

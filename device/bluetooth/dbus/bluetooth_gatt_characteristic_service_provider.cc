@@ -5,6 +5,8 @@
 #include "device/bluetooth/dbus/bluetooth_gatt_characteristic_service_provider.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -139,7 +141,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
     std::string property_name;
     if (!reader.PopString(&interface_name) ||
         !reader.PopString(&property_name) || reader.HasMoreData()) {
-      scoped_ptr<dbus::ErrorResponse> error_response =
+      std::unique_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(method_call, kErrorInvalidArgs,
                                               "Expected 'ss'.");
       response_sender.Run(std::move(error_response));
@@ -149,7 +151,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
     // Only the GATT characteristic interface is supported.
     if (interface_name !=
         bluetooth_gatt_characteristic::kBluetoothGattCharacteristicInterface) {
-      scoped_ptr<dbus::ErrorResponse> error_response =
+      std::unique_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs,
               "No such interface: '" + interface_name + "'.");
@@ -170,7 +172,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
       return;
     }
 
-    scoped_ptr<dbus::Response> response =
+    std::unique_ptr<dbus::Response> response =
         dbus::Response::FromMethodCall(method_call);
     dbus::MessageWriter writer(response.get());
     dbus::MessageWriter variant_writer(NULL);
@@ -210,7 +212,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
     if (!reader.PopString(&interface_name) ||
         !reader.PopString(&property_name) ||
         !reader.PopVariant(&variant_reader) || reader.HasMoreData()) {
-      scoped_ptr<dbus::ErrorResponse> error_response =
+      std::unique_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(method_call, kErrorInvalidArgs,
                                               "Expected 'ssv'.");
       response_sender.Run(std::move(error_response));
@@ -220,7 +222,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
     // Only the GATT characteristic interface is allowed.
     if (interface_name !=
         bluetooth_gatt_characteristic::kBluetoothGattCharacteristicInterface) {
-      scoped_ptr<dbus::ErrorResponse> error_response =
+      std::unique_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs,
               "No such interface: '" + interface_name + "'.");
@@ -240,7 +242,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
         error_name = kErrorInvalidArgs;
         error_message = "No such property: '" + property_name + "'.";
       }
-      scoped_ptr<dbus::ErrorResponse> error_response =
+      std::unique_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(method_call, error_name,
                                               error_message);
       response_sender.Run(std::move(error_response));
@@ -251,7 +253,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
     const uint8_t* bytes = NULL;
     size_t length = 0;
     if (!variant_reader.PopArrayOfBytes(&bytes, &length)) {
-      scoped_ptr<dbus::ErrorResponse> error_response =
+      std::unique_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs,
               "Property '" + property_name + "' has type 'ay'.");
@@ -284,7 +286,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
 
     std::string interface_name;
     if (!reader.PopString(&interface_name) || reader.HasMoreData()) {
-      scoped_ptr<dbus::ErrorResponse> error_response =
+      std::unique_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(method_call, kErrorInvalidArgs,
                                               "Expected 's'.");
       response_sender.Run(std::move(error_response));
@@ -294,7 +296,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
     // Only the GATT characteristic interface is supported.
     if (interface_name !=
         bluetooth_gatt_characteristic::kBluetoothGattCharacteristicInterface) {
-      scoped_ptr<dbus::ErrorResponse> error_response =
+      std::unique_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs,
               "No such interface: '" + interface_name + "'.");
@@ -331,7 +333,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
     VLOG(2) << "Characteristic value obtained from delegate. Responding to "
             << "GetAll.";
 
-    scoped_ptr<dbus::Response> response =
+    std::unique_ptr<dbus::Response> response =
         dbus::Response::FromMethodCall(method_call);
     dbus::MessageWriter writer(response.get());
     dbus::MessageWriter array_writer(NULL);
@@ -373,7 +375,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
              dbus::ExportedObject::ResponseSender response_sender,
              const std::vector<uint8_t>& value) {
     VLOG(2) << "Returning characteristic value obtained from delegate.";
-    scoped_ptr<dbus::Response> response =
+    std::unique_ptr<dbus::Response> response =
         dbus::Response::FromMethodCall(method_call);
     dbus::MessageWriter writer(response.get());
     dbus::MessageWriter variant_writer(NULL);
@@ -398,7 +400,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
   void OnFailure(dbus::MethodCall* method_call,
                  dbus::ExportedObject::ResponseSender response_sender) {
     VLOG(2) << "Failed to get/set characteristic value. Report error.";
-    scoped_ptr<dbus::ErrorResponse> error_response =
+    std::unique_ptr<dbus::ErrorResponse> error_response =
         dbus::ErrorResponse::FromMethodCall(
             method_call, kErrorFailed,
             "Failed to get/set characteristic value.");

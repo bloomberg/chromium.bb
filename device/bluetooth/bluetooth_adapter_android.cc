@@ -4,6 +4,8 @@
 
 #include "device/bluetooth/bluetooth_adapter_android.h"
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/sequenced_task_runner.h"
@@ -133,7 +135,7 @@ void BluetoothAdapterAndroid::RegisterAudioSink(
 }
 
 void BluetoothAdapterAndroid::RegisterAdvertisement(
-    scoped_ptr<BluetoothAdvertisement::Data> advertisement_data,
+    std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
     const CreateAdvertisementCallback& callback,
     const CreateAdvertisementErrorCallback& error_callback) {
   error_callback.Run(BluetoothAdvertisement::ERROR_UNSUPPORTED_PLATFORM);
@@ -168,7 +170,8 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
     BluetoothDeviceAndroid* device_android =
         BluetoothDeviceAndroid::Create(this, bluetooth_device_wrapper);
     device_android->UpdateAdvertisedUUIDs(advertised_uuids);
-    devices_.add(device_address, scoped_ptr<BluetoothDevice>(device_android));
+    devices_.add(device_address,
+                 std::unique_ptr<BluetoothDevice>(device_android));
     FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                       DeviceAdded(this, device_android));
   } else {
@@ -218,7 +221,7 @@ void BluetoothAdapterAndroid::RemoveDiscoverySession(
 }
 
 void BluetoothAdapterAndroid::SetDiscoveryFilter(
-    scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const base::Closure& callback,
     const DiscoverySessionErrorCallback& error_callback) {
   // TODO(scheib): Support filters crbug.com/490401

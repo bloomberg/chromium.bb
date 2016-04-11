@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_adapter_bluez.h"
@@ -33,7 +35,8 @@ namespace bluez {
 class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterProfileBlueZ
     : public bluez::BluetoothProfileServiceProvider::Delegate {
  public:
-  typedef base::Callback<void(scoped_ptr<BluetoothAdapterProfileBlueZ> profile)>
+  typedef base::Callback<void(
+      std::unique_ptr<BluetoothAdapterProfileBlueZ> profile)>
       ProfileRegisteredCallback;
 
   // Registers a profile with the BlueZ server for |uuid| with the
@@ -77,7 +80,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterProfileBlueZ
   void Released() override;
   void NewConnection(
       const dbus::ObjectPath& device_path,
-      scoped_ptr<dbus::FileDescriptor> fd,
+      std::unique_ptr<dbus::FileDescriptor> fd,
       const bluez::BluetoothProfileServiceProvider::Delegate::Options& options,
       const ConfirmationCallback& callback) override;
   void RequestDisconnection(const dbus::ObjectPath& device_path,
@@ -100,7 +103,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterProfileBlueZ
   dbus::ObjectPath object_path_;
 
   // Profile dbus object for receiving profile method calls from BlueZ
-  scoped_ptr<bluez::BluetoothProfileServiceProvider> profile_;
+  std::unique_ptr<bluez::BluetoothProfileServiceProvider> profile_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

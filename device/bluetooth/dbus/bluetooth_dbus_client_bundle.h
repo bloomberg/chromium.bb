@@ -5,10 +5,10 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_BLUETOOTH_DBUS_CLIENT_BUNDLE_H_
 #define DEVICE_BLUETOOTH_DBUS_BLUETOOTH_DBUS_CLIENT_BUNDLE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "device/bluetooth/bluetooth_export.h"
 
 namespace bluez {
@@ -91,20 +91,23 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDBusClientBundle {
 
   bool use_fakes_;
 
-  scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
-  scoped_ptr<BluetoothLEAdvertisingManagerClient>
+  std::unique_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
+  std::unique_ptr<BluetoothLEAdvertisingManagerClient>
       bluetooth_le_advertising_manager_client_;
-  scoped_ptr<BluetoothAgentManagerClient> bluetooth_agent_manager_client_;
-  scoped_ptr<BluetoothDeviceClient> bluetooth_device_client_;
-  scoped_ptr<BluetoothGattCharacteristicClient>
+  std::unique_ptr<BluetoothAgentManagerClient> bluetooth_agent_manager_client_;
+  std::unique_ptr<BluetoothDeviceClient> bluetooth_device_client_;
+  std::unique_ptr<BluetoothGattCharacteristicClient>
       bluetooth_gatt_characteristic_client_;
-  scoped_ptr<BluetoothGattDescriptorClient> bluetooth_gatt_descriptor_client_;
-  scoped_ptr<BluetoothGattManagerClient> bluetooth_gatt_manager_client_;
-  scoped_ptr<BluetoothGattServiceClient> bluetooth_gatt_service_client_;
-  scoped_ptr<BluetoothInputClient> bluetooth_input_client_;
-  scoped_ptr<BluetoothMediaClient> bluetooth_media_client_;
-  scoped_ptr<BluetoothMediaTransportClient> bluetooth_media_transport_client_;
-  scoped_ptr<BluetoothProfileManagerClient> bluetooth_profile_manager_client_;
+  std::unique_ptr<BluetoothGattDescriptorClient>
+      bluetooth_gatt_descriptor_client_;
+  std::unique_ptr<BluetoothGattManagerClient> bluetooth_gatt_manager_client_;
+  std::unique_ptr<BluetoothGattServiceClient> bluetooth_gatt_service_client_;
+  std::unique_ptr<BluetoothInputClient> bluetooth_input_client_;
+  std::unique_ptr<BluetoothMediaClient> bluetooth_media_client_;
+  std::unique_ptr<BluetoothMediaTransportClient>
+      bluetooth_media_transport_client_;
+  std::unique_ptr<BluetoothProfileManagerClient>
+      bluetooth_profile_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDBusClientBundle);
 };

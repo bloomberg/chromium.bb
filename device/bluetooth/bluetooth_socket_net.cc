@@ -4,6 +4,7 @@
 
 #include "device/bluetooth/bluetooth_socket_net.h"
 
+#include <memory>
 #include <queue>
 #include <string>
 #include <utility>
@@ -12,7 +13,6 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "device/bluetooth/bluetooth_socket.h"
@@ -120,7 +120,8 @@ void BluetoothSocketNet::ResetTCPSocket() {
   tcp_socket_.reset(new net::TCPSocket(NULL, net::NetLog::Source()));
 }
 
-void BluetoothSocketNet::SetTCPSocket(scoped_ptr<net::TCPSocket> tcp_socket) {
+void BluetoothSocketNet::SetTCPSocket(
+    std::unique_ptr<net::TCPSocket> tcp_socket) {
   tcp_socket_ = std::move(tcp_socket);
 }
 

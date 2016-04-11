@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/bluetooth/bluetooth_advertisement_bluez.h"
+
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
-#include "device/bluetooth/bluetooth_advertisement_bluez.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_le_advertisement_service_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -94,18 +96,18 @@ class BluetoothAdvertisementBlueZTest : public testing::Test {
     }
   }
 
-  scoped_ptr<BluetoothAdvertisement::Data> CreateAdvertisementData() {
-    scoped_ptr<BluetoothAdvertisement::Data> data =
-        make_scoped_ptr(new BluetoothAdvertisement::Data(
+  std::unique_ptr<BluetoothAdvertisement::Data> CreateAdvertisementData() {
+    std::unique_ptr<BluetoothAdvertisement::Data> data =
+        base::WrapUnique(new BluetoothAdvertisement::Data(
             BluetoothAdvertisement::ADVERTISEMENT_TYPE_BROADCAST));
     data->set_service_uuids(
-        make_scoped_ptr(new BluetoothAdvertisement::UUIDList()));
+        base::WrapUnique(new BluetoothAdvertisement::UUIDList()));
     data->set_manufacturer_data(
-        make_scoped_ptr(new BluetoothAdvertisement::ManufacturerData()));
+        base::WrapUnique(new BluetoothAdvertisement::ManufacturerData()));
     data->set_solicit_uuids(
-        make_scoped_ptr(new BluetoothAdvertisement::UUIDList()));
+        base::WrapUnique(new BluetoothAdvertisement::UUIDList()));
     data->set_service_data(
-        make_scoped_ptr(new BluetoothAdvertisement::ServiceData()));
+        base::WrapUnique(new BluetoothAdvertisement::ServiceData()));
     return data;
   }
 
@@ -190,7 +192,7 @@ class BluetoothAdvertisementBlueZTest : public testing::Test {
 
   base::MessageLoopForIO message_loop_;
 
-  scoped_ptr<TestAdvertisementObserver> observer_;
+  std::unique_ptr<TestAdvertisementObserver> observer_;
   scoped_refptr<BluetoothAdapter> adapter_;
   scoped_refptr<BluetoothAdvertisement> advertisement_;
 };

@@ -5,13 +5,13 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_NET_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_NET_H_
 
+#include <memory>
 #include <queue>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "device/bluetooth/bluetooth_socket.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
@@ -62,7 +62,7 @@ class BluetoothSocketNet : public BluetoothSocket {
   net::TCPSocket* tcp_socket() { return tcp_socket_.get(); }
 
   void ResetTCPSocket();
-  void SetTCPSocket(scoped_ptr<net::TCPSocket> tcp_socket);
+  void SetTCPSocket(std::unique_ptr<net::TCPSocket> tcp_socket);
 
   void PostSuccess(const base::Closure& callback);
   void PostErrorCompletion(const ErrorCompletionCallback& callback,
@@ -110,7 +110,7 @@ class BluetoothSocketNet : public BluetoothSocket {
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
   scoped_refptr<BluetoothSocketThread> socket_thread_;
 
-  scoped_ptr<net::TCPSocket> tcp_socket_;
+  std::unique_ptr<net::TCPSocket> tcp_socket_;
   scoped_refptr<net::IOBufferWithSize> read_buffer_;
   std::queue<linked_ptr<WriteRequest> > write_queue_;
 

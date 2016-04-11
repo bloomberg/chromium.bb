@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/bluetooth/bluetooth_device_win.h"
+
+#include <memory>
+
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_simple_task_runner.h"
-#include "device/bluetooth/bluetooth_device_win.h"
 #include "device/bluetooth/bluetooth_service_record_win.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
@@ -76,10 +78,10 @@ class BluetoothDeviceWinTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<BluetoothDeviceWin> device_;
-  scoped_ptr<BluetoothTaskManagerWin::DeviceState> device_state_;
-  scoped_ptr<BluetoothDeviceWin> empty_device_;
-  scoped_ptr<BluetoothTaskManagerWin::DeviceState> empty_device_state_;
+  std::unique_ptr<BluetoothDeviceWin> device_;
+  std::unique_ptr<BluetoothTaskManagerWin::DeviceState> device_state_;
+  std::unique_ptr<BluetoothDeviceWin> empty_device_;
+  std::unique_ptr<BluetoothTaskManagerWin::DeviceState> empty_device_state_;
 };
 
 TEST_F(BluetoothDeviceWinTest, GetUUIDs) {

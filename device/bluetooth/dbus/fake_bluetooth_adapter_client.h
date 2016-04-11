@@ -5,6 +5,7 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_ADAPTER_CLIENT_H_
 #define DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_ADAPTER_CLIENT_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -98,8 +99,8 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
   base::ObserverList<Observer> observers_;
 
   // Static properties we return.
-  scoped_ptr<Properties> properties_;
-  scoped_ptr<Properties> second_properties_;
+  std::unique_ptr<Properties> properties_;
+  std::unique_ptr<Properties> second_properties_;
 
   // Whether the adapter and second adapter should be visible or not.
   bool visible_;
@@ -109,7 +110,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
   int discovering_count_;
 
   // Current discovery filter
-  scoped_ptr<DiscoveryFilter> discovery_filter_;
+  std::unique_ptr<DiscoveryFilter> discovery_filter_;
 
   // When set, next call to SetDiscoveryFilter would fail.
   bool set_discovery_filter_should_fail_;

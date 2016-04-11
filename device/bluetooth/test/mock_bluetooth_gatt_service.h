@@ -5,6 +5,7 @@
 #ifndef DEVICE_BLUETOOTH_TEST_MOCK_BLUETOOTH_GATT_SERVICE_H_
 #define DEVICE_BLUETOOTH_TEST_MOCK_BLUETOOTH_GATT_SERVICE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -55,7 +56,7 @@ class MockBluetoothGattService : public BluetoothGattService {
   //     *mock_service,
   //      &MockBluetoothGattService::GetMockCharacteristics));
   void AddMockCharacteristic(
-      scoped_ptr<MockBluetoothGattCharacteristic> mock_characteristic);
+      std::unique_ptr<MockBluetoothGattCharacteristic> mock_characteristic);
   std::vector<BluetoothGattCharacteristic*> GetMockCharacteristics() const;
   BluetoothGattCharacteristic* GetMockCharacteristic(
       const std::string& identifier) const;

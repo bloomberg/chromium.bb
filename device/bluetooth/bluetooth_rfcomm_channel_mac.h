@@ -10,9 +10,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "device/bluetooth/bluetooth_channel_mac.h"
 
 @class BluetoothRfcommChannelDelegate;
@@ -32,7 +33,7 @@ class BluetoothRfcommChannelMac : public BluetoothChannelMac {
   // |device|. Returns the opened channel and sets |status| to kIOReturnSuccess
   // if the open process was successfully started (or if an existing RFCOMM
   // channel was found). Otherwise, sets |status| to an error status.
-  static scoped_ptr<BluetoothRfcommChannelMac> OpenAsync(
+  static std::unique_ptr<BluetoothRfcommChannelMac> OpenAsync(
       BluetoothSocketMac* socket,
       IOBluetoothDevice* device,
       BluetoothRFCOMMChannelID channel_id,

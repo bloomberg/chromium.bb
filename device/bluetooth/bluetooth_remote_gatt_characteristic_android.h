@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
@@ -35,7 +37,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
   // The ChromeBluetoothRemoteGattCharacteristic instance will hold a Java
   // reference
   // to |bluetooth_gatt_characteristic_wrapper|.
-  static scoped_ptr<BluetoothRemoteGattCharacteristicAndroid> Create(
+  static std::unique_ptr<BluetoothRemoteGattCharacteristicAndroid> Create(
       BluetoothAdapterAndroid* adapter,
       BluetoothRemoteGattServiceAndroid* service,
       const std::string& instance_id,
@@ -148,7 +150,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
 
   // Map of descriptors, keyed by descriptor identifier.
   base::ScopedPtrHashMap<std::string,
-                         scoped_ptr<BluetoothRemoteGattDescriptorAndroid>>
+                         std::unique_ptr<BluetoothRemoteGattDescriptorAndroid>>
       descriptors_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattCharacteristicAndroid);

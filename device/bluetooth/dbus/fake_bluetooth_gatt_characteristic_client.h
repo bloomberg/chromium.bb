@@ -8,11 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "dbus/object_path.h"
@@ -153,9 +153,9 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattCharacteristicClient
   // Static properties returned for simulated characteristics for the Heart
   // Rate Service. These pointers are not NULL only if the characteristics are
   // actually exposed.
-  scoped_ptr<Properties> heart_rate_measurement_properties_;
-  scoped_ptr<Properties> body_sensor_location_properties_;
-  scoped_ptr<Properties> heart_rate_control_point_properties_;
+  std::unique_ptr<Properties> heart_rate_measurement_properties_;
+  std::unique_ptr<Properties> body_sensor_location_properties_;
+  std::unique_ptr<Properties> heart_rate_control_point_properties_;
 
   // Object paths of the exposed characteristics. If a characteristic is not
   // exposed, these will be empty.

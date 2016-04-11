@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "dbus/object_path.h"
@@ -207,7 +207,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   // During pairing this is set to an object that we don't own, but on which
   // we can make method calls to request, display or confirm PIN Codes and
   // Passkeys. Generally it is the object that owns this one.
-  scoped_ptr<BluetoothPairingBlueZ> pairing_;
+  std::unique_ptr<BluetoothPairingBlueZ> pairing_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

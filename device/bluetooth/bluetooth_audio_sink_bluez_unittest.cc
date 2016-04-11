@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/bluetooth/bluetooth_audio_sink_bluez.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -15,7 +18,6 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_audio_sink.h"
-#include "device/bluetooth/bluetooth_audio_sink_bluez.h"
 #include "device/bluetooth/dbus/bluetooth_media_client.h"
 #include "device/bluetooth/dbus/bluetooth_media_endpoint_service_provider.h"
 #include "device/bluetooth/dbus/bluetooth_media_transport_client.h"
@@ -241,7 +243,7 @@ class BluetoothAudioSinkBlueZTest : public testing::Test {
   bluez::FakeBluetoothMediaClient* fake_media_;
   FakeBluetoothMediaTransportClient* fake_transport_;
   bluez::FakeBluetoothMediaEndpointServiceProvider* media_endpoint_;
-  scoped_ptr<TestAudioSinkObserver> observer_;
+  std::unique_ptr<TestAudioSinkObserver> observer_;
   scoped_refptr<BluetoothAdapter> adapter_;
   scoped_refptr<BluetoothAudioSink> audio_sink_;
 

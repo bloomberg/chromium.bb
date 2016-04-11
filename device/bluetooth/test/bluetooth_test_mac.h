@@ -5,7 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_TEST_BLUETOOTH_TEST_MAC_H_
 #define DEVICE_BLUETOOTH_TEST_BLUETOOTH_TEST_MAC_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/test/test_simple_task_runner.h"
 #include "device/bluetooth/test/bluetooth_test.h"
 
@@ -48,7 +49,7 @@ class BluetoothTestMac : public BluetoothTestBase {
   std::string FindCBUUIDForHashTarget();
 
   BluetoothAdapterMac* adapter_mac_ = NULL;
-  scoped_ptr<ScopedMockCentralManager> mock_central_manager_;
+  std::unique_ptr<ScopedMockCentralManager> mock_central_manager_;
 };
 
 // Defines common test fixture name. Use TEST_F(BluetoothTest, YourTestName).

@@ -5,12 +5,12 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_BLUEZ_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_BLUEZ_H_
 
+#include <memory>
 #include <queue>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_export.h"
@@ -114,7 +114,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothSocketBlueZ
   void Released() override;
   void NewConnection(
       const dbus::ObjectPath& device_path,
-      scoped_ptr<dbus::FileDescriptor> fd,
+      std::unique_ptr<dbus::FileDescriptor> fd,
       const bluez::BluetoothProfileServiceProvider::Delegate::Options& options,
       const ConfirmationCallback& callback) override;
   void RequestDisconnection(const dbus::ObjectPath& device_path,
@@ -128,7 +128,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothSocketBlueZ
   // connection and set up the underlying net::TCPSocket() for it.
   void DoNewConnection(
       const dbus::ObjectPath& device_path,
-      scoped_ptr<dbus::FileDescriptor> fd,
+      std::unique_ptr<dbus::FileDescriptor> fd,
       const bluez::BluetoothProfileServiceProvider::Delegate::Options& options,
       const ConfirmationCallback& callback);
 
@@ -142,7 +142,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothSocketBlueZ
   // Method run on the socket thread with a valid file descriptor |fd|, once
   // complete calls |callback| on the UI thread with an appropriate argument
   // indicating success or failure.
-  void DoConnect(scoped_ptr<dbus::FileDescriptor> fd,
+  void DoConnect(std::unique_ptr<dbus::FileDescriptor> fd,
                  const ConfirmationCallback& callback);
 
   // Method run to clean-up a listening socket.
@@ -164,7 +164,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothSocketBlueZ
   device::BluetoothUUID uuid_;
 
   // Copy of the profile options used for registering the profile.
-  scoped_ptr<bluez::BluetoothProfileManagerClient::Options> options_;
+  std::unique_ptr<bluez::BluetoothProfileManagerClient::Options> options_;
 
   // The profile registered with the adapter for this socket.
   BluetoothAdapterProfileBlueZ* profile_;
@@ -177,7 +177,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothSocketBlueZ
     AcceptCompletionCallback success_callback;
     ErrorCompletionCallback error_callback;
   };
-  scoped_ptr<AcceptRequest> accept_request_;
+  std::unique_ptr<AcceptRequest> accept_request_;
 
   // Queue of incoming connection requests.
   struct ConnectionRequest {
@@ -185,7 +185,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothSocketBlueZ
     ~ConnectionRequest();
 
     dbus::ObjectPath device_path;
-    scoped_ptr<dbus::FileDescriptor> fd;
+    std::unique_ptr<dbus::FileDescriptor> fd;
     bluez::BluetoothProfileServiceProvider::Delegate::Options options;
     ConfirmationCallback callback;
     bool accepting;

@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_TEST_MOCK_BLUETOOTH_DISCOVERY_SESSION_H_
 #define DEVICE_BLUETOOTH_TEST_MOCK_BLUETOOTH_DISCOVERY_SESSION_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
@@ -27,9 +29,10 @@ class MockBluetoothDiscoverySession : public BluetoothDiscoverySession {
                     const ErrorCallback& error_callback));
 
  protected:
-  void SetDiscoveryFilter(scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
-                          const base::Closure& callback,
-                          const ErrorCallback& error_callback) override;
+  void SetDiscoveryFilter(
+      std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBluetoothDiscoverySession);

@@ -10,9 +10,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "device/bluetooth/bluetooth_channel_mac.h"
 
 @class BluetoothL2capChannelDelegate;
@@ -32,7 +33,7 @@ class BluetoothL2capChannelMac : public BluetoothChannelMac {
   // |device|. Returns the opened channel and sets |status| to kIOReturnSuccess
   // if the open process was successfully started (or if an existing L2CAP
   // channel was found). Otherwise, sets |status| to an error status.
-  static scoped_ptr<BluetoothL2capChannelMac> OpenAsync(
+  static std::unique_ptr<BluetoothL2capChannelMac> OpenAsync(
       BluetoothSocketMac* socket,
       IOBluetoothDevice* device,
       BluetoothL2CAPPSM psm,

@@ -5,9 +5,10 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_THREAD_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_THREAD_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "device/bluetooth/bluetooth_export.h"
 
@@ -41,7 +42,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothSocketThread
 
   base::ThreadChecker thread_checker_;
   int active_socket_count_;
-  scoped_ptr<base::Thread> thread_;
+  std::unique_ptr<base::Thread> thread_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothSocketThread);

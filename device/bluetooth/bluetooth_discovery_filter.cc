@@ -4,6 +4,8 @@
 
 #include "device/bluetooth/bluetooth_discovery_filter.h"
 
+#include <memory>
+
 namespace device {
 
 BluetoothDiscoveryFilter::BluetoothDiscoveryFilter(TransportMask transport) {
@@ -94,10 +96,11 @@ void BluetoothDiscoveryFilter::CopyFrom(
     pathloss_.reset();
 }
 
-scoped_ptr<device::BluetoothDiscoveryFilter> BluetoothDiscoveryFilter::Merge(
+std::unique_ptr<device::BluetoothDiscoveryFilter>
+BluetoothDiscoveryFilter::Merge(
     const device::BluetoothDiscoveryFilter* filter_a,
     const device::BluetoothDiscoveryFilter* filter_b) {
-  scoped_ptr<BluetoothDiscoveryFilter> result;
+  std::unique_ptr<BluetoothDiscoveryFilter> result;
 
   if (!filter_a && !filter_b) {
     return result;

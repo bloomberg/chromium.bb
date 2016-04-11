@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/bluetooth/bluetooth_adapter_profile_bluez.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_bluez.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
-#include "device/bluetooth/bluetooth_adapter_profile_bluez.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/dbus/bluetooth_profile_service_provider.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
@@ -35,20 +38,20 @@ class BluetoothAdapterProfileBlueZTest : public testing::Test {
         profile_user_ptr_(nullptr) {}
 
   void SetUp() override {
-    scoped_ptr<bluez::BluezDBusManagerSetter> dbus_setter =
+    std::unique_ptr<bluez::BluezDBusManagerSetter> dbus_setter =
         bluez::BluezDBusManager::GetSetterForTesting();
 
     dbus_setter->SetBluetoothAdapterClient(
-        scoped_ptr<bluez::BluetoothAdapterClient>(
+        std::unique_ptr<bluez::BluetoothAdapterClient>(
             new bluez::FakeBluetoothAdapterClient));
     dbus_setter->SetBluetoothAgentManagerClient(
-        scoped_ptr<bluez::BluetoothAgentManagerClient>(
+        std::unique_ptr<bluez::BluetoothAgentManagerClient>(
             new bluez::FakeBluetoothAgentManagerClient));
     dbus_setter->SetBluetoothDeviceClient(
-        scoped_ptr<bluez::BluetoothDeviceClient>(
+        std::unique_ptr<bluez::BluetoothDeviceClient>(
             new bluez::FakeBluetoothDeviceClient));
     dbus_setter->SetBluetoothProfileManagerClient(
-        scoped_ptr<bluez::BluetoothProfileManagerClient>(
+        std::unique_ptr<bluez::BluetoothProfileManagerClient>(
             new bluez::FakeBluetoothProfileManagerClient));
 
     // Grab a pointer to the adapter.
@@ -93,7 +96,7 @@ class BluetoothAdapterProfileBlueZTest : public testing::Test {
 
     void NewConnection(
         const dbus::ObjectPath& device_path,
-        scoped_ptr<dbus::FileDescriptor> fd,
+        std::unique_ptr<dbus::FileDescriptor> fd,
         const bluez::BluetoothProfileServiceProvider::Delegate::Options&
             options,
         const ConfirmationCallback& callback) override {
@@ -120,7 +123,7 @@ class BluetoothAdapterProfileBlueZTest : public testing::Test {
   };
 
   void ProfileSuccessCallback(
-      scoped_ptr<BluetoothAdapterProfileBlueZ> profile) {
+      std::unique_ptr<BluetoothAdapterProfileBlueZ> profile) {
     profile_.swap(profile);
     ++success_callback_count_;
   }
@@ -158,7 +161,7 @@ class BluetoothAdapterProfileBlueZTest : public testing::Test {
   FakeDelegate fake_delegate_autopair_;
   FakeDelegate fake_delegate_listen_;
 
-  scoped_ptr<BluetoothAdapterProfileBlueZ> profile_;
+  std::unique_ptr<BluetoothAdapterProfileBlueZ> profile_;
 
   // unowned pointer as expected to be used by clients of
   // BluetoothAdapterBlueZ::UseProfile like BluetoothSocketBlueZ

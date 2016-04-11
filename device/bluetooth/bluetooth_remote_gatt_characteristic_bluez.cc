@@ -5,6 +5,7 @@
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_bluez.h"
 
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
@@ -248,7 +249,7 @@ void BluetoothRemoteGattCharacteristicBlueZ::StartNotifySession(
       DCHECK(service_);
       DCHECK(service_->GetAdapter());
       DCHECK(service_->GetDevice());
-      scoped_ptr<device::BluetoothGattNotifySession> session(
+      std::unique_ptr<device::BluetoothGattNotifySession> session(
           new BluetoothGattNotifySessionBlueZ(
               service_->GetAdapter(), service_->GetDevice()->GetAddress(),
               service_->GetIdentifier(), GetIdentifier(), object_path_));
@@ -414,7 +415,7 @@ void BluetoothRemoteGattCharacteristicBlueZ::OnStartNotifySuccess(
   // Invoke the queued callbacks for this operation.
   DCHECK(service_);
   DCHECK(service_->GetDevice());
-  scoped_ptr<device::BluetoothGattNotifySession> session(
+  std::unique_ptr<device::BluetoothGattNotifySession> session(
       new BluetoothGattNotifySessionBlueZ(
           service_->GetAdapter(), service_->GetDevice()->GetAddress(),
           service_->GetIdentifier(), GetIdentifier(), object_path_));

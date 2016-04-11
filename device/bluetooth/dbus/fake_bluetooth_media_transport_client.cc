@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <memory>
 #include <sstream>
 
 #include "base/bind.h"
@@ -168,7 +169,7 @@ void FakeBluetoothMediaTransportClient::SetValid(
             << " is created for endpoint " << endpoint_path.value();
 
     // Sets the fake property set with default values.
-    scoped_ptr<Properties> properties(new Properties(
+    std::unique_ptr<Properties> properties(new Properties(
         base::Bind(&FakeBluetoothMediaTransportClient::OnPropertyChanged,
                    base::Unretained(this))));
     properties->device.ReplaceValue(ObjectPath(kTransportDevicePath));

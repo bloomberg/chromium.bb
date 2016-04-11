@@ -4,6 +4,8 @@
 
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_android.h"
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -21,7 +23,7 @@ using base::android::AttachCurrentThread;
 namespace device {
 
 // static
-scoped_ptr<BluetoothRemoteGattCharacteristicAndroid>
+std::unique_ptr<BluetoothRemoteGattCharacteristicAndroid>
 BluetoothRemoteGattCharacteristicAndroid::Create(
     BluetoothAdapterAndroid* adapter,
     BluetoothRemoteGattServiceAndroid* service,
@@ -29,7 +31,7 @@ BluetoothRemoteGattCharacteristicAndroid::Create(
     jobject /* BluetoothGattCharacteristicWrapper */
     bluetooth_gatt_characteristic_wrapper,
     jobject /* ChromeBluetoothDevice */ chrome_bluetooth_device) {
-  scoped_ptr<BluetoothRemoteGattCharacteristicAndroid> characteristic(
+  std::unique_ptr<BluetoothRemoteGattCharacteristicAndroid> characteristic(
       new BluetoothRemoteGattCharacteristicAndroid(adapter, service,
                                                    instance_id));
 
@@ -259,7 +261,7 @@ void BluetoothRemoteGattCharacteristicAndroid::OnStartNotifySessionSuccess() {
   reentrant_safe_callbacks.swap(pending_start_notify_calls_);
 
   for (const auto& callback_pair : reentrant_safe_callbacks) {
-    scoped_ptr<device::BluetoothGattNotifySession> notify_session(
+    std::unique_ptr<device::BluetoothGattNotifySession> notify_session(
         new BluetoothGattNotifySessionAndroid(instance_id_));
     callback_pair.first.Run(std::move(notify_session));
   }

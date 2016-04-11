@@ -5,10 +5,11 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_DBUS_THREAD_MANAGER_LINUX_H_
 #define DEVICE_BLUETOOTH_DBUS_DBUS_THREAD_MANAGER_LINUX_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "device/bluetooth/bluetooth_export.h"
 
 namespace base {
@@ -49,7 +50,7 @@ class DEVICE_BLUETOOTH_EXPORT DBusThreadManagerLinux {
   // called more than once.
   static void CreateGlobalInstance();
 
-  scoped_ptr<base::Thread> dbus_thread_;
+  std::unique_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> system_bus_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusThreadManagerLinux);

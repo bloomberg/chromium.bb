@@ -4,6 +4,8 @@
 
 #include "device/bluetooth/test/mock_bluetooth_discovery_session.h"
 
+#include <memory>
+
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 
 namespace device {
@@ -22,7 +24,7 @@ MockBluetoothDiscoverySession::MockBluetoothDiscoverySession()
 MockBluetoothDiscoverySession::~MockBluetoothDiscoverySession() {}
 
 void MockBluetoothDiscoverySession::SetDiscoveryFilter(
-    scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   SetDiscoveryFilterRaw(discovery_filter.get(), callback, error_callback);

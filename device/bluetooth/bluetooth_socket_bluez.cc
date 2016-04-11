@@ -5,6 +5,8 @@
 #include "device/bluetooth/bluetooth_socket_bluez.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <queue>
 #include <string>
 #include <utility>
@@ -14,7 +16,6 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
@@ -350,7 +351,7 @@ void BluetoothSocketBlueZ::Released() {
 
 void BluetoothSocketBlueZ::NewConnection(
     const dbus::ObjectPath& device_path,
-    scoped_ptr<dbus::FileDescriptor> fd,
+    std::unique_ptr<dbus::FileDescriptor> fd,
     const bluez::BluetoothProfileServiceProvider::Delegate::Options& options,
     const ConfirmationCallback& callback) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
@@ -445,7 +446,7 @@ void BluetoothSocketBlueZ::AcceptConnectionRequest() {
 
 void BluetoothSocketBlueZ::DoNewConnection(
     const dbus::ObjectPath& device_path,
-    scoped_ptr<dbus::FileDescriptor> fd,
+    std::unique_ptr<dbus::FileDescriptor> fd,
     const bluez::BluetoothProfileServiceProvider::Delegate::Options& options,
     const ConfirmationCallback& callback) {
   DCHECK(socket_thread()->task_runner()->RunsTasksOnCurrentThread());

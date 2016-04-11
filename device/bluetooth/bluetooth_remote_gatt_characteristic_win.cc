@@ -4,7 +4,10 @@
 
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_win.h"
 
+#include <memory>
+
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "device/bluetooth/bluetooth_adapter_win.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_win.h"
@@ -156,7 +159,7 @@ void BluetoothRemoteGattCharacteristicWin::StartNotifySession(
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
   if (IsNotifying()) {
-    scoped_ptr<BluetoothGattNotifySessionWin> notify_session(
+    std::unique_ptr<BluetoothGattNotifySessionWin> notify_session(
         new BluetoothGattNotifySessionWin(weak_ptr_factory_.GetWeakPtr()));
     ui_task_runner_->PostTask(
         FROM_HERE,
@@ -271,7 +274,7 @@ uint16_t BluetoothRemoteGattCharacteristicWin::GetAttributeHandle() const {
 }
 
 void BluetoothRemoteGattCharacteristicWin::OnGetIncludedDescriptorsCallback(
-    scoped_ptr<BTH_LE_GATT_DESCRIPTOR> descriptors,
+    std::unique_ptr<BTH_LE_GATT_DESCRIPTOR> descriptors,
     uint16_t num,
     HRESULT hr) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
@@ -317,7 +320,7 @@ void BluetoothRemoteGattCharacteristicWin::UpdateIncludedDescriptors(
           new BluetoothRemoteGattDescriptorWin(this, win_descriptor_info,
                                                ui_task_runner_);
       included_descriptors_[descriptor->GetIdentifier()] =
-          make_scoped_ptr(descriptor);
+          base::WrapUnique(descriptor);
     }
   }
 }
@@ -354,7 +357,7 @@ bool BluetoothRemoteGattCharacteristicWin::DoesDescriptorExist(
 
 void BluetoothRemoteGattCharacteristicWin::
     OnReadRemoteCharacteristicValueCallback(
-        scoped_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE> value,
+        std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE> value,
         HRESULT hr) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
@@ -406,7 +409,7 @@ BluetoothRemoteGattCharacteristicWin::HRESULTToGattErrorCode(HRESULT hr) {
 }
 
 void BluetoothRemoteGattCharacteristicWin::OnGattCharacteristicValueChanged(
-    scoped_ptr<std::vector<uint8_t>> new_value) {
+    std::unique_ptr<std::vector<uint8_t>> new_value) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
   characteristic_value_.assign(new_value->begin(), new_value->end());
@@ -425,7 +428,7 @@ void BluetoothRemoteGattCharacteristicWin::GattEventRegistrationCallback(
   if (SUCCEEDED(hr)) {
     gatt_event_handle_ = event_handle;
     for (const auto& callback : callbacks) {
-      callback.first.Run(make_scoped_ptr(
+      callback.first.Run(base::WrapUnique(
           new BluetoothGattNotifySessionWin(weak_ptr_factory_.GetWeakPtr())));
     }
   } else {

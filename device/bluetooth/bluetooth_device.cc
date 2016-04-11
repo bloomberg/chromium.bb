@@ -4,8 +4,10 @@
 
 #include "device/bluetooth/bluetooth_device.h"
 
+#include <memory>
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -329,7 +331,7 @@ BluetoothDevice::UUIDList BluetoothDevice::GetServiceDataUUIDs() const {
 void BluetoothDevice::DidConnectGatt() {
   for (const auto& callback : create_gatt_connection_success_callbacks_) {
     callback.Run(
-        make_scoped_ptr(new BluetoothGattConnection(adapter_, GetAddress())));
+        base::WrapUnique(new BluetoothGattConnection(adapter_, GetAddress())));
   }
   create_gatt_connection_success_callbacks_.clear();
   create_gatt_connection_error_callbacks_.clear();

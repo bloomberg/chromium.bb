@@ -5,6 +5,7 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_WIN_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_WIN_H_
 
+#include <memory>
 #include <unordered_map>
 
 #include "base/memory/weak_ptr.h"
@@ -59,7 +60,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
 
  private:
   void OnGetIncludedDescriptorsCallback(
-      scoped_ptr<BTH_LE_GATT_DESCRIPTOR> descriptors,
+      std::unique_ptr<BTH_LE_GATT_DESCRIPTOR> descriptors,
       uint16_t num,
       HRESULT hr);
   void UpdateIncludedDescriptors(PBTH_LE_GATT_DESCRIPTOR descriptors,
@@ -76,12 +77,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
                                   BluetoothRemoteGattDescriptorWin* descriptor);
 
   void OnReadRemoteCharacteristicValueCallback(
-      scoped_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE> value,
+      std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE> value,
       HRESULT hr);
   void OnWriteRemoteCharacteristicValueCallback(HRESULT hr);
   BluetoothGattService::GattErrorCode HRESULTToGattErrorCode(HRESULT hr);
   void OnGattCharacteristicValueChanged(
-      scoped_ptr<std::vector<uint8_t>> new_value);
+      std::unique_ptr<std::vector<uint8_t>> new_value);
   void GattEventRegistrationCallback(PVOID event_handle, HRESULT hr);
   void ClearIncludedDescriptors();
 
@@ -89,7 +90,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
   scoped_refptr<BluetoothTaskManagerWin> task_manager_;
 
   // Characteristic info from OS and used to interact with OS.
-  scoped_ptr<BTH_LE_GATT_CHARACTERISTIC> characteristic_info_;
+  std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC> characteristic_info_;
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
   BluetoothUUID characteristic_uuid_;
   std::vector<uint8_t> characteristic_value_;
@@ -98,7 +99,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
   // The key of GattDescriptorMap is the identitfier of
   // BluetoothRemoteGattDescriptorWin instance.
   typedef std::unordered_map<std::string,
-                             scoped_ptr<BluetoothRemoteGattDescriptorWin>>
+                             std::unique_ptr<BluetoothRemoteGattDescriptorWin>>
       GattDescriptorMap;
   GattDescriptorMap included_descriptors_;
 

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <queue>
 #include <string>
 #include <utility>
@@ -112,7 +113,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
       const device::BluetoothAudioSink::ErrorCallback& error_callback) override;
 
   void RegisterAdvertisement(
-      scoped_ptr<device::BluetoothAdvertisement::Data> advertisement_data,
+      std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement_data,
       const CreateAdvertisementCallback& callback,
       const CreateAdvertisementErrorCallback& error_callback) override;
 
@@ -283,7 +284,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
       const base::Closure& callback,
       const DiscoverySessionErrorCallback& error_callback) override;
   void SetDiscoveryFilter(
-      scoped_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
+      std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
       const base::Closure& callback,
       const DiscoverySessionErrorCallback& error_callback) override;
 
@@ -320,7 +321,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
 
   // Called by dbus:: on completion of the D-Bus method to register a profile.
   void OnRegisterProfile(const device::BluetoothUUID& uuid,
-                         scoped_ptr<BluetoothAdapterProfileBlueZ> profile);
+                         std::unique_ptr<BluetoothAdapterProfileBlueZ> profile);
 
   void SetProfileDelegate(
       const device::BluetoothUUID& uuid,
@@ -371,7 +372,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
 
   // Instance of the D-Bus agent object used for pairing, initialized with
   // our own class as its delegate.
-  scoped_ptr<bluez::BluetoothAgentServiceProvider> agent_;
+  std::unique_ptr<bluez::BluetoothAgentServiceProvider> agent_;
 
   // UI thread task runner and socket thread object used to create sockets.
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
@@ -384,7 +385,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   std::map<device::BluetoothUUID, std::vector<RegisterProfileCompletionPair>*>
       profile_queues_;
 
-  scoped_ptr<device::BluetoothDiscoveryFilter> current_filter_;
+  std::unique_ptr<device::BluetoothDiscoveryFilter> current_filter_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

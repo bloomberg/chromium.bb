@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_DISCOVERY_SESSION_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_DISCOVERY_SESSION_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -61,7 +63,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoverySession {
                     const ErrorCallback& error_callback);
 
   virtual void SetDiscoveryFilter(
-      scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+      std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
       const base::Closure& callback,
       const ErrorCallback& error_callback);
 
@@ -70,7 +72,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoverySession {
  protected:
   explicit BluetoothDiscoverySession(
       scoped_refptr<BluetoothAdapter> adapter,
-      scoped_ptr<BluetoothDiscoveryFilter> discovery_filter);
+      std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter);
 
  private:
   friend class BluetoothAdapter;
@@ -103,7 +105,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoverySession {
   scoped_refptr<BluetoothAdapter> adapter_;
 
   // Filter assigned to this session, if any
-  scoped_ptr<BluetoothDiscoveryFilter> discovery_filter_;
+  std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

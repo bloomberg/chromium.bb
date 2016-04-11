@@ -11,12 +11,12 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -270,7 +270,7 @@ FakeBluetoothDeviceClient::FakeBluetoothDeviceClient()
       transmit_power_(kUnkownPower),
       max_transmit_power_(kUnkownPower),
       delay_start_discovery_(false) {
-  scoped_ptr<Properties> properties(new Properties(
+  std::unique_ptr<Properties> properties(new Properties(
       base::Bind(&FakeBluetoothDeviceClient::OnPropertyChanged,
                  base::Unretained(this), dbus::ObjectPath(kPairedDevicePath))));
   properties->address.ReplaceValue(kPairedDeviceAddress);
@@ -473,7 +473,7 @@ void FakeBluetoothDeviceClient::ConnectProfile(
   base::WorkerPool::GetTaskRunner(false)
       ->PostTask(FROM_HERE, base::Bind(&SimulatedProfileSocket, fds[0]));
 
-  scoped_ptr<dbus::FileDescriptor> fd(new dbus::FileDescriptor(fds[1]));
+  std::unique_ptr<dbus::FileDescriptor> fd(new dbus::FileDescriptor(fds[1]));
 
   // Post the new connection to the service provider.
   BluetoothProfileServiceProvider::Delegate::Options options;
@@ -597,7 +597,7 @@ void FakeBluetoothDeviceClient::CreateDevice(
       device_list_.end())
     return;
 
-  scoped_ptr<Properties> properties(
+  std::unique_ptr<Properties> properties(
       new Properties(base::Bind(&FakeBluetoothDeviceClient::OnPropertyChanged,
                                 base::Unretained(this), device_path)));
   properties->adapter.ReplaceValue(adapter_path);
@@ -721,7 +721,7 @@ void FakeBluetoothDeviceClient::CreateDeviceWithProperties(
       device_list_.end())
     return;
 
-  scoped_ptr<Properties> properties(
+  std::unique_ptr<Properties> properties(
       new Properties(base::Bind(&FakeBluetoothDeviceClient::OnPropertyChanged,
                                 base::Unretained(this), device_path)));
   properties->adapter.ReplaceValue(adapter_path);
@@ -734,7 +734,7 @@ void FakeBluetoothDeviceClient::CreateDeviceWithProperties(
   if (props.is_trusted)
     properties->paired.ReplaceValue(true);
 
-  scoped_ptr<SimulatedPairingOptions> options(new SimulatedPairingOptions);
+  std::unique_ptr<SimulatedPairingOptions> options(new SimulatedPairingOptions);
   options->pairing_method = props.pairing_method;
   options->pairing_auth_token = props.pairing_auth_token;
   options->pairing_action = props.pairing_action;
@@ -747,10 +747,11 @@ void FakeBluetoothDeviceClient::CreateDeviceWithProperties(
                     DeviceAdded(device_path));
 }
 
-scoped_ptr<base::ListValue>
+std::unique_ptr<base::ListValue>
 FakeBluetoothDeviceClient::GetBluetoothDevicesAsDictionaries() const {
-  scoped_ptr<base::ListValue> predefined_devices(new base::ListValue);
-  scoped_ptr<base::DictionaryValue> pairedDevice(new base::DictionaryValue);
+  std::unique_ptr<base::ListValue> predefined_devices(new base::ListValue);
+  std::unique_ptr<base::DictionaryValue> pairedDevice(
+      new base::DictionaryValue);
   pairedDevice->SetString("path", kPairedDevicePath);
   pairedDevice->SetString("address", kPairedDeviceAddress);
   pairedDevice->SetString("name", kPairedDeviceName);
@@ -765,7 +766,8 @@ FakeBluetoothDeviceClient::GetBluetoothDevicesAsDictionaries() const {
   pairedDevice->SetBoolean("incoming", false);
   predefined_devices->Append(std::move(pairedDevice));
 
-  scoped_ptr<base::DictionaryValue> legacyDevice(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> legacyDevice(
+      new base::DictionaryValue);
   legacyDevice->SetString("path", kLegacyAutopairPath);
   legacyDevice->SetString("address", kLegacyAutopairAddress);
   legacyDevice->SetString("name", kLegacyAutopairName);
@@ -780,7 +782,7 @@ FakeBluetoothDeviceClient::GetBluetoothDevicesAsDictionaries() const {
   legacyDevice->SetBoolean("incoming", false);
   predefined_devices->Append(std::move(legacyDevice));
 
-  scoped_ptr<base::DictionaryValue> pin(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> pin(new base::DictionaryValue);
   pin->SetString("path", kDisplayPinCodePath);
   pin->SetString("address", kDisplayPinCodeAddress);
   pin->SetString("name", kDisplayPinCodeName);
@@ -795,7 +797,7 @@ FakeBluetoothDeviceClient::GetBluetoothDevicesAsDictionaries() const {
   pin->SetBoolean("incoming", false);
   predefined_devices->Append(std::move(pin));
 
-  scoped_ptr<base::DictionaryValue> vanishing(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> vanishing(new base::DictionaryValue);
   vanishing->SetString("path", kVanishingDevicePath);
   vanishing->SetString("address", kVanishingDeviceAddress);
   vanishing->SetString("name", kVanishingDeviceName);
@@ -810,7 +812,7 @@ FakeBluetoothDeviceClient::GetBluetoothDevicesAsDictionaries() const {
   vanishing->SetBoolean("incoming", false);
   predefined_devices->Append(std::move(vanishing));
 
-  scoped_ptr<base::DictionaryValue> connect_unpairable(
+  std::unique_ptr<base::DictionaryValue> connect_unpairable(
       new base::DictionaryValue);
   connect_unpairable->SetString("path", kConnectUnpairablePath);
   connect_unpairable->SetString("address", kConnectUnpairableAddress);
@@ -826,7 +828,7 @@ FakeBluetoothDeviceClient::GetBluetoothDevicesAsDictionaries() const {
   connect_unpairable->SetBoolean("incoming", false);
   predefined_devices->Append(std::move(connect_unpairable));
 
-  scoped_ptr<base::DictionaryValue> passkey(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> passkey(new base::DictionaryValue);
   passkey->SetString("path", kDisplayPasskeyPath);
   passkey->SetString("address", kDisplayPasskeyAddress);
   passkey->SetString("name", kDisplayPasskeyName);
@@ -841,7 +843,7 @@ FakeBluetoothDeviceClient::GetBluetoothDevicesAsDictionaries() const {
   passkey->SetBoolean("incoming", false);
   predefined_devices->Append(std::move(passkey));
 
-  scoped_ptr<base::DictionaryValue> request_pin(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> request_pin(new base::DictionaryValue);
   request_pin->SetString("path", kRequestPinCodePath);
   request_pin->SetString("address", kRequestPinCodeAddress);
   request_pin->SetString("name", kRequestPinCodeName);
@@ -856,7 +858,7 @@ FakeBluetoothDeviceClient::GetBluetoothDevicesAsDictionaries() const {
   request_pin->SetBoolean("incoming", false);
   predefined_devices->Append(std::move(request_pin));
 
-  scoped_ptr<base::DictionaryValue> confirm(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> confirm(new base::DictionaryValue);
   confirm->SetString("path", kConfirmPasskeyPath);
   confirm->SetString("address", kConfirmPasskeyAddress);
   confirm->SetString("name", kConfirmPasskeyName);
@@ -871,7 +873,8 @@ FakeBluetoothDeviceClient::GetBluetoothDevicesAsDictionaries() const {
   confirm->SetBoolean("incoming", false);
   predefined_devices->Append(std::move(confirm));
 
-  scoped_ptr<base::DictionaryValue> request_passkey(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> request_passkey(
+      new base::DictionaryValue);
   request_passkey->SetString("path", kRequestPasskeyPath);
   request_passkey->SetString("address", kRequestPasskeyAddress);
   request_passkey->SetString("name", kRequestPasskeyName);
@@ -886,7 +889,8 @@ FakeBluetoothDeviceClient::GetBluetoothDevicesAsDictionaries() const {
   request_passkey->SetBoolean("incoming", false);
   predefined_devices->Append(std::move(request_passkey));
 
-  scoped_ptr<base::DictionaryValue> unconnectable(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> unconnectable(
+      new base::DictionaryValue);
   unconnectable->SetString("path", kUnconnectableDevicePath);
   unconnectable->SetString("address", kUnconnectableDeviceAddress);
   unconnectable->SetString("name", kUnconnectableDeviceName);
@@ -901,7 +905,7 @@ FakeBluetoothDeviceClient::GetBluetoothDevicesAsDictionaries() const {
   unconnectable->SetBoolean("incoming", false);
   predefined_devices->Append(std::move(unconnectable));
 
-  scoped_ptr<base::DictionaryValue> unpairable(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> unpairable(new base::DictionaryValue);
   unpairable->SetString("path", kUnpairableDevicePath);
   unpairable->SetString("address", kUnpairableDeviceAddress);
   unpairable->SetString("name", kUnpairableDeviceName);
@@ -916,7 +920,7 @@ FakeBluetoothDeviceClient::GetBluetoothDevicesAsDictionaries() const {
   unpairable->SetBoolean("incoming", false);
   predefined_devices->Append(std::move(unpairable));
 
-  scoped_ptr<base::DictionaryValue> just_works(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> just_works(new base::DictionaryValue);
   just_works->SetString("path", kJustWorksPath);
   just_works->SetString("address", kJustWorksAddress);
   just_works->SetString("name", kJustWorksName);
@@ -931,7 +935,7 @@ FakeBluetoothDeviceClient::GetBluetoothDevicesAsDictionaries() const {
   just_works->SetBoolean("incoming", false);
   predefined_devices->Append(std::move(just_works));
 
-  scoped_ptr<base::DictionaryValue> low_energy(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> low_energy(new base::DictionaryValue);
   low_energy->SetString("path", kLowEnergyPath);
   low_energy->SetString("address", kLowEnergyAddress);
   low_energy->SetString("name", kLowEnergyName);
@@ -946,7 +950,7 @@ FakeBluetoothDeviceClient::GetBluetoothDevicesAsDictionaries() const {
   low_energy->SetBoolean("incoming", false);
   predefined_devices->Append(std::move(low_energy));
 
-  scoped_ptr<base::DictionaryValue> paired_unconnectable(
+  std::unique_ptr<base::DictionaryValue> paired_unconnectable(
       new base::DictionaryValue);
   paired_unconnectable->SetString("path", kPairedUnconnectableDevicePath);
   paired_unconnectable->SetString("address", kPairedUnconnectableDeviceAddress);
@@ -963,7 +967,7 @@ FakeBluetoothDeviceClient::GetBluetoothDevicesAsDictionaries() const {
   paired_unconnectable->SetBoolean("incoming", false);
   predefined_devices->Append(std::move(paired_unconnectable));
 
-  scoped_ptr<base::DictionaryValue> connected_trusted_not_paired(
+  std::unique_ptr<base::DictionaryValue> connected_trusted_not_paired(
       new base::DictionaryValue);
   connected_trusted_not_paired->SetString("path",
                                           kConnectedTrustedNotPairedDevicePath);

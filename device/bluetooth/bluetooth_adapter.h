@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -185,9 +186,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     ServiceOptions();
     ~ServiceOptions();
 
-    scoped_ptr<int> channel;
-    scoped_ptr<int> psm;
-    scoped_ptr<std::string> name;
+    std::unique_ptr<int> channel;
+    std::unique_ptr<int> psm;
+    std::unique_ptr<std::string> name;
   };
 
   // The ErrorCallback is used for methods that can fail in which case it is
@@ -198,7 +199,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // initialization, if initialization is asynchronous on the platform.
   typedef base::Callback<void()> InitCallback;
 
-  typedef base::Callback<void(scoped_ptr<BluetoothDiscoverySession>)>
+  typedef base::Callback<void(std::unique_ptr<BluetoothDiscoverySession>)>
       DiscoverySessionCallback;
   typedef std::vector<BluetoothDevice*> DeviceList;
   typedef std::vector<const BluetoothDevice*> ConstDeviceList;
@@ -305,17 +306,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   virtual void StartDiscoverySession(const DiscoverySessionCallback& callback,
                                      const ErrorCallback& error_callback);
   virtual void StartDiscoverySessionWithFilter(
-      scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+      std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
       const DiscoverySessionCallback& callback,
       const ErrorCallback& error_callback);
 
   // Return all discovery filters assigned to this adapter merged together.
-  scoped_ptr<BluetoothDiscoveryFilter> GetMergedDiscoveryFilter() const;
+  std::unique_ptr<BluetoothDiscoveryFilter> GetMergedDiscoveryFilter() const;
 
   // Works like GetMergedDiscoveryFilter, but doesn't take |masked_filter| into
   // account. |masked_filter| is compared by pointer, and must be a member of
   // active session.
-  scoped_ptr<BluetoothDiscoveryFilter> GetMergedDiscoveryFilterMasked(
+  std::unique_ptr<BluetoothDiscoveryFilter> GetMergedDiscoveryFilterMasked(
       BluetoothDiscoveryFilter* masked_filter) const;
 
   // Requests the list of devices from the adapter. All devices are returned,
@@ -400,7 +401,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // Creates and registers an advertisement for broadcast over the LE channel.
   // The created advertisement will be returned via the success callback.
   virtual void RegisterAdvertisement(
-      scoped_ptr<BluetoothAdvertisement::Data> advertisement_data,
+      std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
       const CreateAdvertisementCallback& callback,
       const CreateAdvertisementErrorCallback& error_callback) = 0;
 
@@ -428,7 +429,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   friend class BluetoothDiscoverySession;
   friend class BluetoothTestBase;
 
-  typedef base::ScopedPtrHashMap<std::string, scoped_ptr<BluetoothDevice>>
+  typedef base::ScopedPtrHashMap<std::string, std::unique_ptr<BluetoothDevice>>
       DevicesMap;
   typedef std::pair<BluetoothDevice::PairingDelegate*, PairingDelegatePriority>
       PairingDelegatePair;
@@ -485,7 +486,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // Used to set and update the discovery filter used by the underlying
   // Bluetooth controller.
   virtual void SetDiscoveryFilter(
-      scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+      std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
       const base::Closure& callback,
       const DiscoverySessionErrorCallback& error_callback) = 0;
 
@@ -497,7 +498,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
 
   // Success callback passed to AddDiscoverySession by StartDiscoverySession.
   void OnStartDiscoverySession(
-      scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+      std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
       const DiscoverySessionCallback& callback);
 
   // Error callback passed to AddDiscoverySession by StartDiscoverySession.
@@ -541,7 +542,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
 
   // Return all discovery filters assigned to this adapter merged together.
   // If |omit| is true, |discovery_filter| will not be processed.
-  scoped_ptr<BluetoothDiscoveryFilter> GetMergedDiscoveryFilterHelper(
+  std::unique_ptr<BluetoothDiscoveryFilter> GetMergedDiscoveryFilterHelper(
       const BluetoothDiscoveryFilter* discovery_filter,
       bool omit) const;
 

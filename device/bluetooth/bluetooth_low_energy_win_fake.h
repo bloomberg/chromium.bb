@@ -5,10 +5,11 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_LOW_ENERGY_WIN_FAKE_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_LOW_ENERGY_WIN_FAKE_H_
 
-#include "device/bluetooth/bluetooth_low_energy_win.h"
-
+#include <memory>
 #include <set>
 #include <unordered_map>
+
+#include "device/bluetooth/bluetooth_low_energy_win.h"
 
 namespace device {
 namespace win {
@@ -20,29 +21,30 @@ struct GattCharacteristicObserver;
 struct GattDescriptor;
 
 // The key of BLEDevicesMap is the string of the BLE device address.
-typedef std::unordered_map<std::string, scoped_ptr<BLEDevice>> BLEDevicesMap;
+typedef std::unordered_map<std::string, std::unique_ptr<BLEDevice>>
+    BLEDevicesMap;
 // The key of GattServicesMap, GattCharacteristicsMap and GattDescriptorsMap is
 // the string of the attribute handle.
-typedef std::unordered_map<std::string, scoped_ptr<GattService>>
+typedef std::unordered_map<std::string, std::unique_ptr<GattService>>
     GattServicesMap;
-typedef std::unordered_map<std::string, scoped_ptr<GattCharacteristic>>
+typedef std::unordered_map<std::string, std::unique_ptr<GattCharacteristic>>
     GattCharacteristicsMap;
-typedef std::unordered_map<std::string, scoped_ptr<GattDescriptor>>
+typedef std::unordered_map<std::string, std::unique_ptr<GattDescriptor>>
     GattDescriptorsMap;
 // The key of BLEAttributeHandleTable is the string of the BLE device address.
-typedef std::unordered_map<std::string, scoped_ptr<std::set<USHORT>>>
+typedef std::unordered_map<std::string, std::unique_ptr<std::set<USHORT>>>
     BLEAttributeHandleTable;
 // The key of GattCharacteristicObserverTable is GattCharacteristicObserver
 // pointer.
 // Note: The underlying data type of BLUETOOTH_GATT_EVENT_HANDLE is PVOID.
 typedef std::unordered_map<BLUETOOTH_GATT_EVENT_HANDLE,
-                           scoped_ptr<GattCharacteristicObserver>>
+                           std::unique_ptr<GattCharacteristicObserver>>
     GattCharacteristicObserverTable;
 
 struct BLEDevice {
   BLEDevice();
   ~BLEDevice();
-  scoped_ptr<BluetoothLowEnergyDeviceInfo> device_info;
+  std::unique_ptr<BluetoothLowEnergyDeviceInfo> device_info;
   GattServicesMap primary_services;
   bool marked_as_deleted;
 };
@@ -50,7 +52,7 @@ struct BLEDevice {
 struct GattService {
   GattService();
   ~GattService();
-  scoped_ptr<BTH_LE_GATT_SERVICE> service_info;
+  std::unique_ptr<BTH_LE_GATT_SERVICE> service_info;
   GattServicesMap included_services;
   GattCharacteristicsMap included_characteristics;
 };
@@ -58,8 +60,8 @@ struct GattService {
 struct GattCharacteristic {
   GattCharacteristic();
   ~GattCharacteristic();
-  scoped_ptr<BTH_LE_GATT_CHARACTERISTIC> characteristic_info;
-  scoped_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE> value;
+  std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC> characteristic_info;
+  std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE> value;
   GattDescriptorsMap included_descriptors;
   std::vector<HRESULT> read_errors;
   std::vector<HRESULT> write_errors;
@@ -69,8 +71,8 @@ struct GattCharacteristic {
 struct GattDescriptor {
   GattDescriptor();
   ~GattDescriptor();
-  scoped_ptr<BTH_LE_GATT_DESCRIPTOR> descriptor_info;
-  scoped_ptr<BTH_LE_GATT_DESCRIPTOR_VALUE> value;
+  std::unique_ptr<BTH_LE_GATT_DESCRIPTOR> descriptor_info;
+  std::unique_ptr<BTH_LE_GATT_DESCRIPTOR_VALUE> value;
 };
 
 struct GattCharacteristicObserver {
@@ -113,17 +115,17 @@ class BluetoothLowEnergyWrapperFake : public BluetoothLowEnergyWrapper {
   HRESULT ReadCharacteristicsOfAService(
       base::FilePath& service_path,
       const PBTH_LE_GATT_SERVICE service,
-      scoped_ptr<BTH_LE_GATT_CHARACTERISTIC>* out_included_characteristics,
+      std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC>* out_included_characteristics,
       USHORT* out_counts) override;
   HRESULT ReadDescriptorsOfACharacteristic(
       base::FilePath& service_path,
       const PBTH_LE_GATT_CHARACTERISTIC characteristic,
-      scoped_ptr<BTH_LE_GATT_DESCRIPTOR>* out_included_descriptors,
+      std::unique_ptr<BTH_LE_GATT_DESCRIPTOR>* out_included_descriptors,
       USHORT* out_counts) override;
   HRESULT ReadCharacteristicValue(
       base::FilePath& service_path,
       const PBTH_LE_GATT_CHARACTERISTIC characteristic,
-      scoped_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE>* out_value) override;
+      std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE>* out_value) override;
   HRESULT WriteCharacteristicValue(
       base::FilePath& service_path,
       const PBTH_LE_GATT_CHARACTERISTIC characteristic,

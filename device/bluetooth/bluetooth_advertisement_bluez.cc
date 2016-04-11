@@ -4,13 +4,13 @@
 
 #include "device/bluetooth/bluetooth_advertisement_bluez.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "dbus/bus.h"
 #include "dbus/object_path.h"
@@ -71,7 +71,7 @@ void UnregisterErrorCallbackConnector(
 namespace bluez {
 
 BluetoothAdvertisementBlueZ::BluetoothAdvertisementBlueZ(
-    scoped_ptr<device::BluetoothAdvertisement::Data> data,
+    std::unique_ptr<device::BluetoothAdvertisement::Data> data,
     scoped_refptr<BluetoothAdapterBlueZ> adapter)
     : adapter_(adapter) {
   // Generate a new object path - make sure that we strip any -'s from the

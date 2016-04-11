@@ -4,6 +4,8 @@
 
 #include "device/bluetooth/bluetooth_l2cap_channel_mac.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "device/bluetooth/bluetooth_classic_device_mac.h"
@@ -76,13 +78,13 @@ BluetoothL2capChannelMac::~BluetoothL2capChannelMac() {
 }
 
 // static
-scoped_ptr<BluetoothL2capChannelMac> BluetoothL2capChannelMac::OpenAsync(
+std::unique_ptr<BluetoothL2capChannelMac> BluetoothL2capChannelMac::OpenAsync(
     BluetoothSocketMac* socket,
     IOBluetoothDevice* device,
     BluetoothL2CAPPSM psm,
     IOReturn* status) {
   DCHECK(socket);
-  scoped_ptr<BluetoothL2capChannelMac> channel(
+  std::unique_ptr<BluetoothL2capChannelMac> channel(
       new BluetoothL2capChannelMac(socket, nil));
 
   // Retain the delegate, because IOBluetoothDevice's

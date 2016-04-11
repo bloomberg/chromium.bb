@@ -4,6 +4,8 @@
 
 #include "device/bluetooth/bluetooth_rfcomm_channel_mac.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "device/bluetooth/bluetooth_classic_device_mac.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
@@ -68,13 +70,13 @@ BluetoothRfcommChannelMac::~BluetoothRfcommChannelMac() {
 }
 
 // static
-scoped_ptr<BluetoothRfcommChannelMac> BluetoothRfcommChannelMac::OpenAsync(
+std::unique_ptr<BluetoothRfcommChannelMac> BluetoothRfcommChannelMac::OpenAsync(
     BluetoothSocketMac* socket,
     IOBluetoothDevice* device,
     BluetoothRFCOMMChannelID channel_id,
     IOReturn* status) {
   DCHECK(socket);
-  scoped_ptr<BluetoothRfcommChannelMac> channel(
+  std::unique_ptr<BluetoothRfcommChannelMac> channel(
       new BluetoothRfcommChannelMac(socket, nil));
 
   // Retain the delegate, because IOBluetoothDevice's

@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/bluetooth/bluetooth_low_energy_win.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/strings/sys_string_conversions.h"
-#include "device/bluetooth/bluetooth_low_energy_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -57,9 +59,9 @@ TEST_F(BluetoothLowEnergyWinTest, DeviceRegistryPropertyValueAsString) {
   std::string test_value = "String used for round trip test.";
   std::wstring wide_value = base::SysUTF8ToWide(test_value);
   size_t buffer_size = (wide_value.size() + 1) * sizeof(wchar_t);
-  scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
+  std::unique_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
   memcpy(buffer.get(), wide_value.c_str(), buffer_size);
-  scoped_ptr<device::win::DeviceRegistryPropertyValue> value =
+  std::unique_ptr<device::win::DeviceRegistryPropertyValue> value =
       device::win::DeviceRegistryPropertyValue::Create(
           REG_SZ, std::move(buffer), buffer_size);
   EXPECT_EQ(test_value, value->AsString());
@@ -68,9 +70,9 @@ TEST_F(BluetoothLowEnergyWinTest, DeviceRegistryPropertyValueAsString) {
 TEST_F(BluetoothLowEnergyWinTest, DeviceRegistryPropertyValueAsDWORD) {
   DWORD test_value = 5u;
   size_t buffer_size = sizeof(DWORD);
-  scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
+  std::unique_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
   memcpy(buffer.get(), &test_value, buffer_size);
-  scoped_ptr<device::win::DeviceRegistryPropertyValue> value =
+  std::unique_ptr<device::win::DeviceRegistryPropertyValue> value =
       device::win::DeviceRegistryPropertyValue::Create(
           REG_DWORD, std::move(buffer), buffer_size);
   EXPECT_EQ(test_value, value->AsDWORD());
@@ -79,9 +81,9 @@ TEST_F(BluetoothLowEnergyWinTest, DeviceRegistryPropertyValueAsDWORD) {
 TEST_F(BluetoothLowEnergyWinTest, DevicePropertyValueAsUint32) {
   uint32_t test_value = 5u;
   size_t buffer_size = sizeof(uint32_t);
-  scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
+  std::unique_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
   memcpy(buffer.get(), &test_value, buffer_size);
-  scoped_ptr<device::win::DevicePropertyValue> value(
+  std::unique_ptr<device::win::DevicePropertyValue> value(
       new device::win::DevicePropertyValue(DEVPROP_TYPE_UINT32,
                                            std::move(buffer), buffer_size));
   EXPECT_EQ(test_value, value->AsUint32());

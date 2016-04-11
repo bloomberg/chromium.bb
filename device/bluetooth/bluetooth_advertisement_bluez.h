@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADVERTISEMENT_BLUEZ_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_ADVERTISEMENT_BLUEZ_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
@@ -26,7 +28,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisementBlueZ
       public bluez::BluetoothLEAdvertisementServiceProvider::Delegate {
  public:
   BluetoothAdvertisementBlueZ(
-      scoped_ptr<device::BluetoothAdvertisement::Data> data,
+      std::unique_ptr<device::BluetoothAdvertisement::Data> data,
       scoped_refptr<BluetoothAdapterBlueZ> adapter);
 
   // BluetoothAdvertisement overrides:
@@ -52,7 +54,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisementBlueZ
 
   // Adapter this advertisement is advertising on.
   scoped_refptr<BluetoothAdapterBlueZ> adapter_;
-  scoped_ptr<bluez::BluetoothLEAdvertisementServiceProvider> provider_;
+  std::unique_ptr<bluez::BluetoothLEAdvertisementServiceProvider> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothAdvertisementBlueZ);
 };

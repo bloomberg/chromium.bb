@@ -5,10 +5,10 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_CLASSIC_WIN_FAKE_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_CLASSIC_WIN_FAKE_H_
 
-#include "device/bluetooth/bluetooth_classic_win.h"
+#include <memory>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "device/bluetooth/bluetooth_classic_win.h"
 
 namespace device {
 namespace win {
@@ -45,7 +45,7 @@ class BluetoothClassicWrapperFake : public BluetoothClassicWrapper {
                                  BLUETOOTH_ADDRESS address);
 
  private:
-  scoped_ptr<BluetoothRadio> simulated_radios_;
+  std::unique_ptr<BluetoothRadio> simulated_radios_;
   DWORD last_error_;
 };
 

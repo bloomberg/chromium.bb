@@ -4,6 +4,7 @@
 
 #include "device/bluetooth/bluetooth_device_win.h"
 
+#include <memory>
 #include <string>
 
 #include "base/containers/scoped_ptr_hash_map.h"
@@ -226,8 +227,9 @@ bool BluetoothDeviceWin::IsEqual(
 
   // Checks service collection
   typedef std::set<BluetoothUUID> UUIDSet;
-  typedef base::ScopedPtrHashMap<
-      std::string, scoped_ptr<BluetoothServiceRecordWin>> ServiceRecordMap;
+  typedef base::ScopedPtrHashMap<std::string,
+                                 std::unique_ptr<BluetoothServiceRecordWin>>
+      ServiceRecordMap;
 
   UUIDSet known_services;
   for (UUIDList::const_iterator iter = uuids_.begin(); iter != uuids_.end();
@@ -245,7 +247,7 @@ bool BluetoothDeviceWin::IsEqual(
     new_services.insert(service_record->uuid());
     new_service_records.set(
         service_record->uuid().canonical_value(),
-        scoped_ptr<BluetoothServiceRecordWin>(service_record));
+        std::unique_ptr<BluetoothServiceRecordWin>(service_record));
   }
 
   UUIDSet removed_services =
@@ -388,8 +390,9 @@ void BluetoothDeviceWin::UpdateGattServices(
           new BluetoothRemoteGattServiceWin(this, (*it)->path, (*it)->gatt_uuid,
                                             (*it)->attribute_handle, true,
                                             nullptr, ui_task_runner_);
-      gatt_services_.add(primary_service->GetIdentifier(),
-                         scoped_ptr<BluetoothGattService>(primary_service));
+      gatt_services_.add(
+          primary_service->GetIdentifier(),
+          std::unique_ptr<BluetoothGattService>(primary_service));
       adapter_->NotifyGattServiceAdded(primary_service);
     }
   }

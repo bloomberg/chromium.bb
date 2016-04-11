@@ -5,10 +5,11 @@
 #include "device/bluetooth/bluetooth_device_bluez.h"
 
 #include <stdio.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -561,7 +562,7 @@ void BluetoothDeviceBlueZ::GattServiceAdded(
       new BluetoothRemoteGattServiceBlueZ(adapter(), this, object_path);
 
   gatt_services_.set(service->GetIdentifier(),
-                     scoped_ptr<BluetoothGattService>(service));
+                     std::unique_ptr<BluetoothGattService>(service));
   DCHECK(service->object_path() == object_path);
   DCHECK(service->GetUUID().IsValid());
 
@@ -586,7 +587,7 @@ void BluetoothDeviceBlueZ::GattServiceRemoved(
           << "' from device: " << GetAddress();
 
   DCHECK(service->object_path() == object_path);
-  scoped_ptr<BluetoothGattService> scoped_service =
+  std::unique_ptr<BluetoothGattService> scoped_service =
       gatt_services_.take_and_erase(iter->first);
 
   DCHECK(adapter_);
@@ -645,7 +646,7 @@ void BluetoothDeviceBlueZ::OnConnect(bool after_pairing,
 
 void BluetoothDeviceBlueZ::OnCreateGattConnection(
     const GattConnectionCallback& callback) {
-  scoped_ptr<device::BluetoothGattConnection> conn(
+  std::unique_ptr<device::BluetoothGattConnection> conn(
       new BluetoothGattConnectionBlueZ(adapter_, GetAddress(), object_path_));
   callback.Run(std::move(conn));
 }

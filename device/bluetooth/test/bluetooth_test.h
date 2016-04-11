@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -254,10 +256,11 @@ class BluetoothTestBase : public testing::Test {
   // Callbacks that increment |callback_count_|, |error_callback_count_|:
   void Callback(Call expected);
   void DiscoverySessionCallback(Call expected,
-                                scoped_ptr<BluetoothDiscoverySession>);
+                                std::unique_ptr<BluetoothDiscoverySession>);
   void GattConnectionCallback(Call expected,
-                              scoped_ptr<BluetoothGattConnection>);
-  void NotifyCallback(Call expected, scoped_ptr<BluetoothGattNotifySession>);
+                              std::unique_ptr<BluetoothGattConnection>);
+  void NotifyCallback(Call expected,
+                      std::unique_ptr<BluetoothGattNotifySession>);
   void ReadValueCallback(Call expected, const std::vector<uint8_t>& value);
   void ErrorCallback(Call expected);
   void ConnectErrorCallback(Call expected,

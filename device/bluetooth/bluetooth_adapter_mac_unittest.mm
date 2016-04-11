@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/bluetooth/bluetooth_adapter_mac.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/test_simple_task_runner.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter.h"
-#include "device/bluetooth/bluetooth_adapter_mac.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
 #include "device/bluetooth/bluetooth_low_energy_device_mac.h"
@@ -87,7 +90,7 @@ class BluetoothAdapterMacTest : public testing::Test {
 
   void AddLowEnergyDevice(BluetoothLowEnergyDeviceMac* device) {
     adapter_mac_->devices_.set(device->GetAddress(),
-                               scoped_ptr<BluetoothDevice>(device));
+                               std::unique_ptr<BluetoothDevice>(device));
   }
 
   int NumDevices() { return adapter_mac_->devices_.size(); }
@@ -161,7 +164,7 @@ TEST_F(BluetoothAdapterMacTest, AddDiscoverySessionWithLowEnergyFilter) {
   EXPECT_EQ(0, [mock_central_manager_ scanForPeripheralsCallCount]);
   EXPECT_EQ(0, NumDiscoverySessions());
 
-  scoped_ptr<BluetoothDiscoveryFilter> discovery_filter(
+  std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(
       new BluetoothDiscoveryFilter(
           BluetoothDiscoveryFilter::Transport::TRANSPORT_LE));
   AddDiscoverySession(discovery_filter.get());
@@ -179,7 +182,7 @@ TEST_F(BluetoothAdapterMacTest, AddDiscoverySessionWithLowEnergyFilter) {
 TEST_F(BluetoothAdapterMacTest, AddSecondDiscoverySessionWithLowEnergyFilter) {
   if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
     return;
-  scoped_ptr<BluetoothDiscoveryFilter> discovery_filter(
+  std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(
       new BluetoothDiscoveryFilter(
           BluetoothDiscoveryFilter::Transport::TRANSPORT_LE));
   AddDiscoverySession(discovery_filter.get());
@@ -203,7 +206,7 @@ TEST_F(BluetoothAdapterMacTest, RemoveDiscoverySessionWithLowEnergyFilter) {
     return;
   EXPECT_EQ(0, [mock_central_manager_ scanForPeripheralsCallCount]);
 
-  scoped_ptr<BluetoothDiscoveryFilter> discovery_filter(
+  std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(
       new BluetoothDiscoveryFilter(
           BluetoothDiscoveryFilter::Transport::TRANSPORT_LE));
   AddDiscoverySession(discovery_filter.get());
@@ -229,7 +232,7 @@ TEST_F(BluetoothAdapterMacTest, RemoveDiscoverySessionWithLowEnergyFilterFail) {
   EXPECT_EQ(0, [mock_central_manager_ stopScanCallCount]);
   EXPECT_EQ(0, NumDiscoverySessions());
 
-  scoped_ptr<BluetoothDiscoveryFilter> discovery_filter(
+  std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(
       new BluetoothDiscoveryFilter(
           BluetoothDiscoveryFilter::Transport::TRANSPORT_LE));
   RemoveDiscoverySession(discovery_filter.get());

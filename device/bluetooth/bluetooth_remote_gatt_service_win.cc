@@ -4,7 +4,10 @@
 
 #include "device/bluetooth/bluetooth_remote_gatt_service_win.h"
 
+#include <memory>
+
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "device/bluetooth/bluetooth_adapter_win.h"
 #include "device/bluetooth/bluetooth_device_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_win.h"
@@ -147,7 +150,7 @@ void BluetoothRemoteGattServiceWin::Update() {
 }
 
 void BluetoothRemoteGattServiceWin::OnGetIncludedCharacteristics(
-    scoped_ptr<BTH_LE_GATT_CHARACTERISTIC> characteristics,
+    std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC> characteristics,
     uint16_t num,
     HRESULT hr) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
@@ -195,7 +198,7 @@ void BluetoothRemoteGattServiceWin::UpdateIncludedCharacteristics(
       BluetoothRemoteGattCharacteristicWin* characteristic_object =
           new BluetoothRemoteGattCharacteristicWin(this, info, ui_task_runner_);
       included_characteristics_[characteristic_object->GetIdentifier()] =
-          make_scoped_ptr(characteristic_object);
+          base::WrapUnique(characteristic_object);
     }
   }
 

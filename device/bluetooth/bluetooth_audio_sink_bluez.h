@@ -6,12 +6,13 @@
 #define DEVICE_BLUETOOTH_BLUETOOTH_AUDIO_SINK_BLUEZ_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
@@ -177,11 +178,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkBlueZ
 
   // The file which takes ownership of the file descriptor acquired via Media
   // Transport object.
-  scoped_ptr<base::File> file_;
+  std::unique_ptr<base::File> file_;
 
   // To avoid reallocation of memory, data will be updated only when |read_mtu_|
   // changes.
-  scoped_ptr<char[]> data_;
+  std::unique_ptr<char[]> data_;
 
   // File descriptor watcher for the file descriptor acquired via Media
   // Transport object.
@@ -205,7 +206,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkBlueZ
   device::BluetoothAudioSink::Options options_;
 
   // Media Endpoint object owned by the audio sink object.
-  scoped_ptr<bluez::BluetoothMediaEndpointServiceProvider> media_endpoint_;
+  std::unique_ptr<bluez::BluetoothMediaEndpointServiceProvider> media_endpoint_;
 
   // List of observers interested in event notifications from us. Objects in
   // |observers_| are expected to outlive a BluetoothAudioSinkBlueZ object.
