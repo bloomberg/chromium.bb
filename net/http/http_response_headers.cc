@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/base/escape.h"
+#include "net/base/parse_number.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_log_util.h"
 #include "net/http/http_util.h"
@@ -1155,8 +1156,20 @@ bool HttpResponseHeaders::GetAgeValue(TimeDelta* result) const {
   if (!EnumerateHeader(nullptr, "Age", &value))
     return false;
 
-  int64_t seconds;
-  base::StringToInt64(value, &seconds);
+  // Parse the delta-seconds as 1*DIGIT.
+  uint32_t seconds;
+  ParseIntError error;
+  if (!ParseUint32(value, &seconds, &error)) {
+    if (error == ParseIntError::FAILED_OVERFLOW) {
+      // If the Age value cannot fit in a uint32_t, saturate it to a maximum
+      // value. This is similar to what RFC 2616 says in section 14.6 for how
+      // caches should transmit values that overflow.
+      seconds = std::numeric_limits<decltype(seconds)>::max();
+    } else {
+      return false;
+    }
+  }
+
   *result = TimeDelta::FromSeconds(seconds);
   return true;
 }

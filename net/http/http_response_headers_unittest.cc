@@ -533,6 +533,71 @@ TEST(HttpResponseHeadersTest, DefaultDateToGMT) {
     EXPECT_EQ(expected_value, value);
 }
 
+TEST(HttpResponseHeadersTest, GetAgeValue10) {
+  std::string headers =
+      "HTTP/1.1 200 OK\n"
+      "Age: 10\n";
+  HeadersToRaw(&headers);
+  scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
+  base::TimeDelta age;
+  ASSERT_TRUE(parsed->GetAgeValue(&age));
+  EXPECT_EQ(10, age.InSeconds());
+}
+
+TEST(HttpResponseHeadersTest, GetAgeValue0) {
+  std::string headers =
+      "HTTP/1.1 200 OK\n"
+      "Age: 0\n";
+  HeadersToRaw(&headers);
+  scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
+  base::TimeDelta age;
+  ASSERT_TRUE(parsed->GetAgeValue(&age));
+  EXPECT_EQ(0, age.InSeconds());
+}
+
+TEST(HttpResponseHeadersTest, GetAgeValueBogus) {
+  std::string headers =
+      "HTTP/1.1 200 OK\n"
+      "Age: donkey\n";
+  HeadersToRaw(&headers);
+  scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
+  base::TimeDelta age;
+  ASSERT_FALSE(parsed->GetAgeValue(&age));
+}
+
+TEST(HttpResponseHeadersTest, GetAgeValueNegative) {
+  std::string headers =
+      "HTTP/1.1 200 OK\n"
+      "Age: -10\n";
+  HeadersToRaw(&headers);
+  scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
+  base::TimeDelta age;
+  ASSERT_FALSE(parsed->GetAgeValue(&age));
+}
+
+TEST(HttpResponseHeadersTest, GetAgeValueLeadingPlus) {
+  std::string headers =
+      "HTTP/1.1 200 OK\n"
+      "Age: +10\n";
+  HeadersToRaw(&headers);
+  scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
+  base::TimeDelta age;
+  ASSERT_FALSE(parsed->GetAgeValue(&age));
+}
+
+TEST(HttpResponseHeadersTest, GetAgeValueOverflow) {
+  std::string headers =
+      "HTTP/1.1 200 OK\n"
+      "Age: 999999999999999999999999999999999999999999\n";
+  HeadersToRaw(&headers);
+  scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
+  base::TimeDelta age;
+  ASSERT_TRUE(parsed->GetAgeValue(&age));
+
+  // Should have saturated to 2^32 - 1.
+  EXPECT_EQ(static_cast<int64_t>(0xFFFFFFFFL), age.InSeconds());
+}
+
 struct ContentTypeTestData {
   const std::string raw_headers;
   const std::string mime_type;

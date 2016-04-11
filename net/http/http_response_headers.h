@@ -253,8 +253,8 @@ class NET_EXPORT HttpResponseHeaders
                                 const base::Time& current_time) const;
 
   // The following methods extract values from the response headers.  If a
-  // value is not present, then false is returned.  Otherwise, true is returned
-  // and the out param is assigned to the corresponding value.
+  // value is not present, or is invalid, then false is returned.  Otherwise,
+  // true is returned and the out param is assigned to the corresponding value.
   bool GetMaxAgeValue(base::TimeDelta* value) const;
   bool GetAgeValue(base::TimeDelta* value) const;
   bool GetDateValue(base::Time* value) const;
