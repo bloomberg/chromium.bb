@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
+#include "net/base/parse_number.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
@@ -123,10 +123,11 @@ FtpCtrlResponseBuffer::ParsedLine FtpCtrlResponseBuffer::ParseLine(
   ParsedLine result;
 
   if (line.length() >= 3) {
-    if (base::StringToInt(base::StringPiece(line.begin(), line.begin() + 3),
-                          &result.status_code))
-      result.has_status_code = (100 <= result.status_code &&
-                                result.status_code <= 599);
+    if (ParseInt32(base::StringPiece(line.begin(), line.begin() + 3),
+                   ParseIntFormat::NON_NEGATIVE, &result.status_code)) {
+      result.has_status_code =
+          (100 <= result.status_code && result.status_code <= 599);
+    }
     if (result.has_status_code && line.length() >= 4 && line[3] == ' ') {
       result.is_complete = true;
     } else if (result.has_status_code && line.length() >= 4 && line[3] == '-') {
