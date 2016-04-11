@@ -42,7 +42,6 @@ public class WebappDataStorage {
     static final String KEY_ACTION = "action";
     static final String KEY_IS_ICON_GENERATED = "is_icon_generated";
     static final String KEY_VERSION = "version";
-    static final String KEY_LAUNCHED = "launched";
 
     // Unset/invalid constants for last used times and URLs. 0 is used as the null last
     // used time as WebappRegistry assumes that this is always a valid timestamp.
@@ -164,7 +163,7 @@ public class WebappDataStorage {
     }
 
     /**
-     * Deletes the launched flag, URL and scope, and sets last used time to 0 in SharedPreferences.
+     * Deletes the URL and scope, and sets last used time to 0 in SharedPreferences.
      * This does not remove the stored splash screen image (if any) for the app.
      * @param context  The context to read the SharedPreferences file.
      * @param webappId The ID of the web app for which history is being cleared.
@@ -177,7 +176,6 @@ public class WebappDataStorage {
         // If the web app is not launched prior to the next cleanup, then its remaining data will be
         // removed. Otherwise, the next launch from home screen will update the last used time.
         editor.putLong(KEY_LAST_USED, LAST_USED_UNSET);
-        editor.remove(KEY_LAUNCHED);
         editor.remove(KEY_URL);
         editor.remove(KEY_SCOPE);
         editor.apply();
@@ -370,25 +368,8 @@ public class WebappDataStorage {
      * WEBAPP_LAST_OPEN_MAX_TIME milliseconds).
      */
     public boolean wasLaunchedRecently() {
-        // Registering the web app sets the last used time, so we must also ensure that the web app
-        // has actually been launched. Otherwise, launches from home screen are the only occasion
-        // when last used time is updated.
-        return getLaunched()
-                && (sClock.currentTimeMillis() - getLastUsedTime() < WEBAPP_LAST_OPEN_MAX_TIME);
-    }
-
-    /**
-     * Returns true if this web app has been launched from home screen.
-     */
-    boolean getLaunched() {
-        return mPreferences.getBoolean(KEY_LAUNCHED, false);
-    }
-
-    /**
-     * Marks this web app as having been launched from home screen.
-     */
-    void setLaunched() {
-        mPreferences.edit().putBoolean(KEY_LAUNCHED, true).apply();
+        // Registering the web app sets the last used time, so that counts as a 'launch'.
+        return (sClock.currentTimeMillis() - getLastUsedTime() < WEBAPP_LAST_OPEN_MAX_TIME);
     }
 
     private Map<String, ?> getAllData() {

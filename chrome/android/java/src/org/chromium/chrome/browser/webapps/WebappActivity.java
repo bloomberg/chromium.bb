@@ -271,7 +271,6 @@ public class WebappActivity extends FullScreenActivity {
                         // with the heuristic.
                         if (mWebappInfo.isLaunchedFromHomescreen()) {
                             storage.updateLastUsedTime();
-                            storage.setLaunched();
                         }
 
                         // Retrieve the splash image if it exists.

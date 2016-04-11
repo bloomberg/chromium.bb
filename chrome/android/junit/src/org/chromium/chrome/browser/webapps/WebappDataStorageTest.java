@@ -188,23 +188,23 @@ public class WebappDataStorageTest {
         final TestClock clock = new TestClock(System.currentTimeMillis());
         WebappDataStorage.setClockForTests(clock);
 
+        // Opening a data storage doesn't count as a launch.
         WebappDataStorage storage = WebappDataStorage.open(Robolectric.application, "test");
-        storage.updateLastUsedTime();
         BackgroundShadowAsyncTask.runBackgroundTasks();
         Robolectric.runUiThreadTasks();
         assertTrue(!storage.wasLaunchedRecently());
+
+        // When the last used time is updated, then it is a launch.
+        storage.updateLastUsedTime();
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+        assertTrue(storage.wasLaunchedRecently());
 
         long lastUsedTime = mSharedPreferences.getLong(WebappDataStorage.KEY_LAST_USED,
                 WebappDataStorage.LAST_USED_INVALID);
 
         assertTrue(lastUsedTime != WebappDataStorage.LAST_USED_UNSET);
         assertTrue(lastUsedTime != WebappDataStorage.LAST_USED_INVALID);
-
-        // Mark as launched, check launched recently.
-        mSharedPreferences.edit()
-                .putBoolean(WebappDataStorage.KEY_LAUNCHED, true)
-                .commit();
-        assertTrue(storage.wasLaunchedRecently());
 
         // Move the last used time one day in the past.
         mSharedPreferences.edit()
@@ -227,18 +227,6 @@ public class WebappDataStorageTest {
         // Move the last used time just under ten days in the past.
         mSharedPreferences.edit().putLong(WebappDataStorage.KEY_LAST_USED,
                 lastUsedTime - TimeUnit.DAYS.toMillis(10L) + 1).commit();
-        assertTrue(storage.wasLaunchedRecently());
-
-        // Mark as not launched.
-        mSharedPreferences.edit()
-                .putBoolean(WebappDataStorage.KEY_LAUNCHED, false)
-                .commit();
-        assertTrue(!storage.wasLaunchedRecently());
-
-        // Mark as launched.
-        mSharedPreferences.edit()
-                .putBoolean(WebappDataStorage.KEY_LAUNCHED, true)
-                .commit();
         assertTrue(storage.wasLaunchedRecently());
 
         // Move the last used time to exactly ten days in the past.
