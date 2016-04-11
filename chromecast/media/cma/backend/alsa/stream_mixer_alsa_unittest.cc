@@ -154,7 +154,7 @@ class MockInputQueue : public StreamMixerAlsa::InputQueue {
   MOCK_METHOD1(AfterWriteFrames,
                void(const MediaPipelineBackendAlsa::RenderingDelay&
                         mixer_rendering_delay));
-  MOCK_METHOD0(SignalError, void());
+  MOCK_METHOD1(SignalError, void(StreamMixerAlsaInput::MixerError error));
   MOCK_METHOD1(PrepareToDelete, void(const OnReadyToDeleteCb& delete_cb));
 
   // Setters and getters for test control.
