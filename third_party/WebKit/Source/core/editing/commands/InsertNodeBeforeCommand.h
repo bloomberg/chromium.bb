@@ -32,7 +32,7 @@ namespace blink {
 
 class InsertNodeBeforeCommand final : public SimpleEditCommand {
 public:
-    static RawPtr<InsertNodeBeforeCommand> create(RawPtr<Node> childToInsert, RawPtr<Node> childToInsertBefore,
+    static InsertNodeBeforeCommand* create(Node* childToInsert, Node* childToInsertBefore,
         ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
     {
         return new InsertNodeBeforeCommand(childToInsert, childToInsertBefore, shouldAssumeContentIsAlwaysEditable);
@@ -41,7 +41,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    InsertNodeBeforeCommand(RawPtr<Node> childToInsert, RawPtr<Node> childToInsertBefore, ShouldAssumeContentIsAlwaysEditable);
+    InsertNodeBeforeCommand(Node* childToInsert, Node* childToInsertBefore, ShouldAssumeContentIsAlwaysEditable);
 
     void doApply(EditingState*) override;
     void doUnapply() override;

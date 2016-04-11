@@ -33,7 +33,7 @@
 
 namespace blink {
 
-InsertIntoTextNodeCommand::InsertIntoTextNodeCommand(RawPtr<Text> node, unsigned offset, const String& text)
+InsertIntoTextNodeCommand::InsertIntoTextNodeCommand(Text* node, unsigned offset, const String& text)
     : SimpleEditCommand(node->document())
     , m_node(node)
     , m_offset(offset)

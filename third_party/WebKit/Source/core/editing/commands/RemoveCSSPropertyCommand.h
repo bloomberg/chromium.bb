@@ -35,7 +35,7 @@ class Element;
 
 class RemoveCSSPropertyCommand final : public SimpleEditCommand {
 public:
-    static RawPtr<RemoveCSSPropertyCommand> create(Document& document, RawPtr<Element> element, CSSPropertyID property)
+    static RemoveCSSPropertyCommand* create(Document& document, Element* element, CSSPropertyID property)
     {
         return new RemoveCSSPropertyCommand(document, element, property);
     }
@@ -43,7 +43,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    RemoveCSSPropertyCommand(Document&, RawPtr<Element>, CSSPropertyID);
+    RemoveCSSPropertyCommand(Document&, Element*, CSSPropertyID);
     ~RemoveCSSPropertyCommand() override;
 
     void doApply(EditingState*) override;

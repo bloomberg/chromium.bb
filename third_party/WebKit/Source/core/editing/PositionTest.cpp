@@ -73,7 +73,7 @@ TEST_F(PositionTest, NodeAsRangeLastNodeShadow)
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";
     const char* shadowContent = "<a id='a'><content select=#two></content><content select=#one></content></a>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
 
     Node* host = document().getElementById("host");
     Node* n1 = document().getElementById("one");
@@ -102,22 +102,22 @@ TEST_F(PositionTest, ToPositionInFlatTreeWithActiveInsertionPoint)
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b>22</p>";
     const char* shadowContent = "<a id='a'><content select=#one id='content'></content><content></content></a>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
-    RawPtr<Element> anchor = shadowRoot->getElementById("a");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
+    Element* anchor = shadowRoot->getElementById("a");
 
-    EXPECT_EQ(PositionInFlatTree(anchor.get(), 0), toPositionInFlatTree(Position(anchor.get(), 0)));
-    EXPECT_EQ(PositionInFlatTree(anchor.get(), 1), toPositionInFlatTree(Position(anchor.get(), 1)));
-    EXPECT_EQ(PositionInFlatTree(anchor, PositionAnchorType::AfterChildren), toPositionInFlatTree(Position(anchor.get(), 2)));
+    EXPECT_EQ(PositionInFlatTree(anchor, 0), toPositionInFlatTree(Position(anchor, 0)));
+    EXPECT_EQ(PositionInFlatTree(anchor, 1), toPositionInFlatTree(Position(anchor, 1)));
+    EXPECT_EQ(PositionInFlatTree(anchor, PositionAnchorType::AfterChildren), toPositionInFlatTree(Position(anchor, 2)));
 }
 
 TEST_F(PositionTest, ToPositionInFlatTreeWithInactiveInsertionPoint)
 {
     const char* bodyContent = "<p id='p'><content></content></p>";
     setBodyContent(bodyContent);
-    RawPtr<Element> anchor = document().getElementById("p");
+    Element* anchor = document().getElementById("p");
 
-    EXPECT_EQ(PositionInFlatTree(anchor.get(), 0), toPositionInFlatTree(Position(anchor.get(), 0)));
-    EXPECT_EQ(PositionInFlatTree(anchor, PositionAnchorType::AfterChildren), toPositionInFlatTree(Position(anchor.get(), 1)));
+    EXPECT_EQ(PositionInFlatTree(anchor, 0), toPositionInFlatTree(Position(anchor, 0)));
+    EXPECT_EQ(PositionInFlatTree(anchor, PositionAnchorType::AfterChildren), toPositionInFlatTree(Position(anchor, 1)));
 }
 
 // This test comes from "editing/style/block-style-progress-crash.html".
@@ -134,11 +134,11 @@ TEST_F(PositionTest, ToPositionInFlatTreeWithShadowRoot)
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b>22</p>";
     const char* shadowContent = "<a><content select=#one></content></a>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
-    RawPtr<Element> host = document().getElementById("host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
+    Element* host = document().getElementById("host");
 
-    EXPECT_EQ(PositionInFlatTree(host.get(), 0), toPositionInFlatTree(Position(shadowRoot.get(), 0)));
-    EXPECT_EQ(PositionInFlatTree(host.get(), PositionAnchorType::AfterChildren), toPositionInFlatTree(Position(shadowRoot.get(), 1)));
+    EXPECT_EQ(PositionInFlatTree(host, 0), toPositionInFlatTree(Position(shadowRoot, 0)));
+    EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::AfterChildren), toPositionInFlatTree(Position(shadowRoot, 1)));
 }
 
 TEST_F(PositionTest, ToPositionInFlatTreeWithShadowRootContainingSingleContent)
@@ -146,11 +146,11 @@ TEST_F(PositionTest, ToPositionInFlatTreeWithShadowRootContainingSingleContent)
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b>22</p>";
     const char* shadowContent = "<content select=#one></content>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
-    RawPtr<Element> host = document().getElementById("host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
+    Element* host = document().getElementById("host");
 
-    EXPECT_EQ(PositionInFlatTree(host.get(), 0), toPositionInFlatTree(Position(shadowRoot.get(), 0)));
-    EXPECT_EQ(PositionInFlatTree(host.get(), PositionAnchorType::AfterChildren), toPositionInFlatTree(Position(shadowRoot.get(), 1)));
+    EXPECT_EQ(PositionInFlatTree(host, 0), toPositionInFlatTree(Position(shadowRoot, 0)));
+    EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::AfterChildren), toPositionInFlatTree(Position(shadowRoot, 1)));
 }
 
 TEST_F(PositionTest, ToPositionInFlatTreeWithEmptyShadowRoot)
@@ -158,10 +158,10 @@ TEST_F(PositionTest, ToPositionInFlatTreeWithEmptyShadowRoot)
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b>22</p>";
     const char* shadowContent = "";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
-    RawPtr<Element> host = document().getElementById("host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
+    Element* host = document().getElementById("host");
 
-    EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::AfterChildren), toPositionInFlatTree(Position(shadowRoot.get(), 0)));
+    EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::AfterChildren), toPositionInFlatTree(Position(shadowRoot, 0)));
 }
 
 } // namespace blink

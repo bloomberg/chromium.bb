@@ -44,13 +44,13 @@ class StyledMarkupAccumulator final {
     WTF_MAKE_NONCOPYABLE(StyledMarkupAccumulator);
     STACK_ALLOCATED();
 public:
-    StyledMarkupAccumulator(EAbsoluteURLs, const TextOffset& start, const TextOffset& end, const RawPtr<Document>, EAnnotateForInterchange, ConvertBlocksToInlines);
+    StyledMarkupAccumulator(EAbsoluteURLs, const TextOffset& start, const TextOffset& end, Document*, EAnnotateForInterchange, ConvertBlocksToInlines);
 
     void appendEndTag(const Element&);
     void appendInterchangeNewline();
 
     void appendText(Text&);
-    void appendTextWithInlineStyle(Text&, RawPtr<EditingStyle>);
+    void appendTextWithInlineStyle(Text&, EditingStyle*);
 
     void wrapWithStyleNode(StylePropertySet*);
     String takeResults();
@@ -59,8 +59,8 @@ public:
 
     void appendElement(const Element&);
     void appendElement(StringBuilder&, const Element&);
-    void appendElementWithInlineStyle(const Element&, RawPtr<EditingStyle>);
-    void appendElementWithInlineStyle(StringBuilder&, const Element&, RawPtr<EditingStyle>);
+    void appendElementWithInlineStyle(const Element&, EditingStyle*);
+    void appendElementWithInlineStyle(StringBuilder&, const Element&, EditingStyle*);
     void appendStartMarkup(Node&);
 
     bool shouldAnnotate() const;

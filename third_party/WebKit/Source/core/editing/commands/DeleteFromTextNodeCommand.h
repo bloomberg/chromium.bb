@@ -34,7 +34,7 @@ class Text;
 
 class DeleteFromTextNodeCommand final : public SimpleEditCommand {
 public:
-    static RawPtr<DeleteFromTextNodeCommand> create(RawPtr<Text> node, unsigned offset, unsigned count)
+    static DeleteFromTextNodeCommand* create(Text* node, unsigned offset, unsigned count)
     {
         return new DeleteFromTextNodeCommand(node, offset, count);
     }
@@ -42,7 +42,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    DeleteFromTextNodeCommand(RawPtr<Text>, unsigned offset, unsigned count);
+    DeleteFromTextNodeCommand(Text*, unsigned offset, unsigned count);
 
     void doApply(EditingState*) override;
     void doUnapply() override;

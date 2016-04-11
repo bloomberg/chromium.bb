@@ -16,7 +16,7 @@ class TextOffset {
     STACK_ALLOCATED();
 public:
     TextOffset();
-    TextOffset(RawPtr<Text>, int);
+    TextOffset(Text*, int);
     TextOffset(const TextOffset&);
 
     Text* text() const { return m_text.get(); }

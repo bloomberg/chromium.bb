@@ -31,7 +31,7 @@
 
 namespace blink {
 
-DeleteFromTextNodeCommand::DeleteFromTextNodeCommand(RawPtr<Text> node, unsigned offset, unsigned count)
+DeleteFromTextNodeCommand::DeleteFromTextNodeCommand(Text* node, unsigned offset, unsigned count)
     : SimpleEditCommand(node->document())
     , m_node(node)
     , m_offset(offset)

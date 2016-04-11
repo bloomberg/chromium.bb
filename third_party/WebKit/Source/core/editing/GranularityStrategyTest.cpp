@@ -44,16 +44,16 @@ protected:
     HTMLDocument& document() const;
     void setSelection(const VisibleSelection&);
     FrameSelection& selection() const;
-    RawPtr<Text> appendTextNode(const String& data);
+    Text* appendTextNode(const String& data);
     int layoutCount() const { return m_dummyPageHolder->frameView().layoutCount(); }
     void setInnerHTML(const char*);
     // Parses the text node, appending the info to m_letterPos and m_wordMiddles.
     void parseText(Text*);
     void parseText(const TextNodeVector&);
 
-    RawPtr<Text> setupTranslateZ(String);
-    RawPtr<Text> setupTransform(String);
-    RawPtr<Text> setupRotate(String);
+    Text* setupTranslateZ(String);
+    Text* setupTransform(String);
+    Text* setupRotate(String);
     void setupTextSpan(String str1, String str2, String str3, size_t selBegin, size_t selEnd);
     void setupVerticalAlign(String str1, String str2, String str3, size_t selBegin, size_t selEnd);
     void setupFontSize(String str1, String str2, String str3, size_t selBegin, size_t selEnd);
@@ -97,11 +97,11 @@ FrameSelection& GranularityStrategyTest::selection() const
     return m_dummyPageHolder->frame().selection();
 }
 
-RawPtr<Text> GranularityStrategyTest::appendTextNode(const String& data)
+Text* GranularityStrategyTest::appendTextNode(const String& data)
 {
-    RawPtr<Text> text = document().createTextNode(data);
+    Text* text = document().createTextNode(data);
     document().body()->appendChild(text);
-    return text.release();
+    return text;
 }
 
 void GranularityStrategyTest::setInnerHTML(const char* htmlContent)
@@ -145,7 +145,7 @@ void GranularityStrategyTest::parseText(const TextNodeVector& textNodes)
     }
 }
 
-RawPtr<Text> GranularityStrategyTest::setupTranslateZ(String str)
+Text* GranularityStrategyTest::setupTranslateZ(String str)
 {
     setInnerHTML(
         "<html>"
@@ -161,17 +161,17 @@ RawPtr<Text> GranularityStrategyTest::setupTranslateZ(String str)
         "</body>"
         "</html>");
 
-    RawPtr<Text> text = document().createTextNode(str);
+    Text* text = document().createTextNode(str);
     Element* div = document().getElementById("mytext");
     div->appendChild(text);
 
     document().view()->updateAllLifecyclePhases();
 
-    parseText(text.get());
-    return text.release();
+    parseText(text);
+    return text;
 }
 
-RawPtr<Text> GranularityStrategyTest::setupTransform(String str)
+Text* GranularityStrategyTest::setupTransform(String str)
 {
     setInnerHTML(
         "<html>"
@@ -187,17 +187,17 @@ RawPtr<Text> GranularityStrategyTest::setupTransform(String str)
         "</body>"
         "</html>");
 
-    RawPtr<Text> text = document().createTextNode(str);
+    Text* text = document().createTextNode(str);
     Element* div = document().getElementById("mytext");
     div->appendChild(text);
 
     document().view()->updateAllLifecyclePhases();
 
-    parseText(text.get());
-    return text.release();
+    parseText(text);
+    return text;
 }
 
-RawPtr<Text> GranularityStrategyTest::setupRotate(String str)
+Text* GranularityStrategyTest::setupRotate(String str)
 {
     setInnerHTML(
         "<html>"
@@ -213,22 +213,22 @@ RawPtr<Text> GranularityStrategyTest::setupRotate(String str)
         "</body>"
         "</html>");
 
-    RawPtr<Text> text = document().createTextNode(str);
+    Text* text = document().createTextNode(str);
     Element* div = document().getElementById("mytext");
     div->appendChild(text);
 
     document().view()->updateAllLifecyclePhases();
 
-    parseText(text.get());
-    return text.release();
+    parseText(text);
+    return text;
 }
 
 void GranularityStrategyTest::setupTextSpan(String str1, String str2, String str3, size_t selBegin, size_t selEnd)
 {
-    RawPtr<Text> text1 = document().createTextNode(str1);
-    RawPtr<Text> text2 = document().createTextNode(str2);
-    RawPtr<Text> text3 = document().createTextNode(str3);
-    RawPtr<Element> span = HTMLSpanElement::create(document());
+    Text* text1 = document().createTextNode(str1);
+    Text* text2 = document().createTextNode(str2);
+    Text* text3 = document().createTextNode(str3);
+    Element* span = HTMLSpanElement::create(document());
     Element* div = document().getElementById("mytext");
     div->appendChild(text1);
     div->appendChild(span);
@@ -480,7 +480,7 @@ TEST_F(GranularityStrategyTest, Character)
     dummyPageHolder().frame().settings()->setSelectionStrategy(SelectionStrategy::Character);
     dummyPageHolder().frame().settings()->setDefaultFontSize(12);
     // "Foo Bar Baz,"
-    RawPtr<Text> text = appendTextNode("Foo Bar Baz,");
+    Text* text = appendTextNode("Foo Bar Baz,");
     // "Foo B^a|>r Baz," (^ means base, | means extent, , < means start, and > means end).
     selection().setSelection(VisibleSelection(Position(text, 5), Position(text, 6)));
     EXPECT_EQ_SELECTED_TEXT("a");
@@ -496,7 +496,7 @@ TEST_F(GranularityStrategyTest, Character)
 // same behavior as CharacterGranularityStrategy
 TEST_F(GranularityStrategyTest, DirectionRotate)
 {
-    RawPtr<Text> text = setupRotate("Foo Bar Baz,");
+    Text* text = setupRotate("Foo Bar Baz,");
     // "Foo B^a|>r Baz," (^ means base, | means extent, , < means start, and > means end).
     selection().setSelection(VisibleSelection(Position(text, 5), Position(text, 6)));
     EXPECT_EQ_SELECTED_TEXT("a");
@@ -516,7 +516,7 @@ TEST_F(GranularityStrategyTest, DirectionRotate)
 
 TEST_F(GranularityStrategyTest, DirectionExpandTranslateZ)
 {
-    RawPtr<Text> text = setupTranslateZ("abcdef ghij kl mnopqr stuvwi inm mnii,");
+    Text* text = setupTranslateZ("abcdef ghij kl mnopqr stuvwi inm mnii,");
     // "abcdef ghij kl mno^p|>qr stuvwi inm  mnii," (^ means base, | means extent, < means start, and > means end).
     selection().setSelection(VisibleSelection(Position(text, 18), Position(text, 19)));
     EXPECT_EQ_SELECTED_TEXT("p");
@@ -525,7 +525,7 @@ TEST_F(GranularityStrategyTest, DirectionExpandTranslateZ)
 
 TEST_F(GranularityStrategyTest, DirectionExpandTransform)
 {
-    RawPtr<Text> text = setupTransform("abcdef ghij kl mnopqr stuvwi inm mnii,");
+    Text* text = setupTransform("abcdef ghij kl mnopqr stuvwi inm mnii,");
     // "abcdef ghij kl mno^p|>qr stuvwi inm  mnii," (^ means base, | means extent, < means start, and > means end).
     selection().setSelection(VisibleSelection(Position(text, 18), Position(text, 19)));
     EXPECT_EQ_SELECTED_TEXT("p");
@@ -549,7 +549,7 @@ TEST_F(GranularityStrategyTest, DirectionExpandFontSizes)
 
 TEST_F(GranularityStrategyTest, DirectionShrinkTranslateZ)
 {
-    RawPtr<Text> text = setupTranslateZ("abcdef ghij kl mnopqr iiinmni, abc");
+    Text* text = setupTranslateZ("abcdef ghij kl mnopqr iiinmni, abc");
     selection().setSelection(VisibleSelection(Position(text, 18), Position(text, 21)));
     EXPECT_EQ_SELECTED_TEXT("pqr");
     testDirectionShrink();
@@ -557,7 +557,7 @@ TEST_F(GranularityStrategyTest, DirectionShrinkTranslateZ)
 
 TEST_F(GranularityStrategyTest, DirectionShrinkTransform)
 {
-    RawPtr<Text> text = setupTransform("abcdef ghij kl mnopqr iiinmni, abc");
+    Text* text = setupTransform("abcdef ghij kl mnopqr iiinmni, abc");
     selection().setSelection(VisibleSelection(Position(text, 18), Position(text, 21)));
     EXPECT_EQ_SELECTED_TEXT("pqr");
     testDirectionShrink();
@@ -579,7 +579,7 @@ TEST_F(GranularityStrategyTest, DirectionShrinkFontSizes)
 
 TEST_F(GranularityStrategyTest, DirectionSwitchSideTranslateZ)
 {
-    RawPtr<Text> text = setupTranslateZ("abcd efgh ijkl mnopqr iiinmni, abc");
+    Text* text = setupTranslateZ("abcd efgh ijkl mnopqr iiinmni, abc");
     selection().setSelection(VisibleSelection(Position(text, 18), Position(text, 21)));
     EXPECT_EQ_SELECTED_TEXT("pqr");
     testDirectionSwitchSide();
@@ -587,7 +587,7 @@ TEST_F(GranularityStrategyTest, DirectionSwitchSideTranslateZ)
 
 TEST_F(GranularityStrategyTest, DirectionSwitchSideTransform)
 {
-    RawPtr<Text> text = setupTransform("abcd efgh ijkl mnopqr iiinmni, abc");
+    Text* text = setupTransform("abcd efgh ijkl mnopqr iiinmni, abc");
     selection().setSelection(VisibleSelection(Position(text, 18), Position(text, 21)));
     EXPECT_EQ_SELECTED_TEXT("pqr");
     testDirectionSwitchSide();
@@ -613,11 +613,11 @@ TEST_F(GranularityStrategyTest, DirectionSwitchSideWordGranularityThenShrink)
 {
     dummyPageHolder().frame().settings()->setDefaultFontSize(12);
     String str = "ab cd efghijkl mnopqr iiin, abc";
-    RawPtr<Text> text = document().createTextNode(str);
+    Text* text = document().createTextNode(str);
     document().body()->appendChild(text);
     dummyPageHolder().frame().settings()->setSelectionStrategy(SelectionStrategy::Direction);
 
-    parseText(text.get());
+    parseText(text);
 
     // "abcd efgh ijkl mno^pqr|> iiin, abc" (^ means base, | means extent, < means start, and > means end).
     selection().setSelection(VisibleSelection(Position(text, 18), Position(text, 21)));
@@ -645,11 +645,11 @@ TEST_F(GranularityStrategyTest, DirectionSwitchStartOnBoundary)
 {
     dummyPageHolder().frame().settings()->setDefaultFontSize(12);
     String str = "ab cd efghijkl mnopqr iiin, abc";
-    RawPtr<Text> text = document().createTextNode(str);
+    Text* text = document().createTextNode(str);
     document().body()->appendChild(text);
     dummyPageHolder().frame().settings()->setSelectionStrategy(SelectionStrategy::Direction);
 
-    parseText(text.get());
+    parseText(text);
 
     // "ab cd efghijkl ^mnopqr |>stuvwi inm," (^ means base and | means extent,
     // > means end).

@@ -31,7 +31,7 @@
 
 namespace blink {
 
-MergeIdenticalElementsCommand::MergeIdenticalElementsCommand(RawPtr<Element> first, RawPtr<Element> second)
+MergeIdenticalElementsCommand::MergeIdenticalElementsCommand(Element* first, Element* second)
     : SimpleEditCommand(first->document())
     , m_element1(first)
     , m_element2(second)
@@ -62,7 +62,7 @@ void MergeIdenticalElementsCommand::doUnapply()
     ASSERT(m_element1);
     ASSERT(m_element2);
 
-    RawPtr<Node> atChild = m_atChild.release();
+    Node* atChild = m_atChild.release();
 
     ContainerNode* parent = m_element2->parentNode();
     if (!parent || !parent->hasEditableStyle())

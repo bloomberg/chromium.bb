@@ -66,14 +66,14 @@ public:
     }
 
     static const TreeScope* commonAncestorTreeScope(const PositionTemplate<Strategy>&, const PositionTemplate<Strategy>& b);
-    static PositionTemplate<Strategy> editingPositionOf(RawPtr<Node> anchorNode, int offset);
+    static PositionTemplate<Strategy> editingPositionOf(Node* anchorNode, int offset);
 
     // For creating before/after positions:
-    PositionTemplate(RawPtr<Node> anchorNode, PositionAnchorType);
+    PositionTemplate(Node* anchorNode, PositionAnchorType);
 
     // For creating offset positions:
     // FIXME: This constructor should eventually go away. See bug 63040.
-    PositionTemplate(RawPtr<Node> anchorNode, int offset);
+    PositionTemplate(Node* anchorNode, int offset);
 
     PositionTemplate(const PositionTemplate&);
 

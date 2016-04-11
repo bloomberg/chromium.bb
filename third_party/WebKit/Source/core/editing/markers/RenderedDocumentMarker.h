@@ -34,7 +34,7 @@ namespace blink {
 
 class RenderedDocumentMarker final : public DocumentMarker {
 public:
-    static RawPtr<RenderedDocumentMarker> create(const DocumentMarker& marker)
+    static RenderedDocumentMarker* create(const DocumentMarker& marker)
     {
         return new RenderedDocumentMarker(marker);
     }

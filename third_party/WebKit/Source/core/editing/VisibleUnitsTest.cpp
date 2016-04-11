@@ -53,15 +53,15 @@ TEST_F(VisibleUnitsTest, absoluteCaretBoundsOf)
     const char* bodyContent = "<p id='host'><b id='one'>11</b><b id='two'>22</b></p>";
     const char* shadowContent = "<div><content select=#two></content><content select=#one></content></div>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     ASSERT_UNUSED(shadowRoot, shadowRoot);
     updateLayoutAndStyleForPainting();
 
-    RawPtr<Element> body = document().body();
-    RawPtr<Element> one = body->querySelector("#one", ASSERT_NO_EXCEPTION);
+    Element* body = document().body();
+    Element* one = body->querySelector("#one", ASSERT_NO_EXCEPTION);
 
-    IntRect boundsInDOMTree = absoluteCaretBoundsOf(createVisiblePosition(Position(one.get(), 0)));
-    IntRect boundsInFlatTree = absoluteCaretBoundsOf(createVisiblePosition(PositionInFlatTree(one.get(), 0)));
+    IntRect boundsInDOMTree = absoluteCaretBoundsOf(createVisiblePosition(Position(one, 0)));
+    IntRect boundsInFlatTree = absoluteCaretBoundsOf(createVisiblePosition(PositionInFlatTree(one, 0)));
 
     EXPECT_FALSE(boundsInDOMTree.isEmpty());
     EXPECT_EQ(boundsInDOMTree, boundsInFlatTree);
@@ -132,7 +132,7 @@ TEST_F(VisibleUnitsTest, caretMinOffset)
     const char* bodyContent = "<p id=one>one</p>";
     setBodyContent(bodyContent);
 
-    RawPtr<Element> one = document().getElementById("one");
+    Element* one = document().getElementById("one");
 
     EXPECT_EQ(0, caretMinOffset(one->firstChild()));
 }
@@ -142,7 +142,7 @@ TEST_F(VisibleUnitsTest, caretMinOffsetWithFirstLetter)
     const char* bodyContent = "<style>#one:first-letter { font-size: 200%; }</style><p id=one>one</p>";
     setBodyContent(bodyContent);
 
-    RawPtr<Element> one = document().getElementById("one");
+    Element* one = document().getElementById("one");
 
     EXPECT_EQ(0, caretMinOffset(one->firstChild()));
 }
@@ -155,8 +155,8 @@ TEST_F(VisibleUnitsTest, characterAfter)
     setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
-    RawPtr<Element> one = document().getElementById("one");
-    RawPtr<Element> two = document().getElementById("two");
+    Element* one = document().getElementById("one");
+    Element* two = document().getElementById("two");
 
     EXPECT_EQ('2', characterAfter(createVisiblePositionInDOMTree(*one->firstChild(), 1)));
     EXPECT_EQ('5', characterAfter(createVisiblePositionInFlatTree(*one->firstChild(), 1)));
@@ -170,32 +170,32 @@ TEST_F(VisibleUnitsTest, canonicalPositionOfWithHTMLHtmlElement)
     const char* bodyContent = "<html><div id=one contenteditable>1</div><span id=two contenteditable=false>22</span><span id=three contenteditable=false>333</span><span id=four contenteditable=false>333</span></html>";
     setBodyContent(bodyContent);
 
-    RawPtr<Node> one = document().querySelector("#one", ASSERT_NO_EXCEPTION);
-    RawPtr<Node> two = document().querySelector("#two", ASSERT_NO_EXCEPTION);
-    RawPtr<Node> three = document().querySelector("#three", ASSERT_NO_EXCEPTION);
-    RawPtr<Node> four = document().querySelector("#four", ASSERT_NO_EXCEPTION);
-    RawPtr<Element> html = document().createElement("html", ASSERT_NO_EXCEPTION);
+    Node* one = document().querySelector("#one", ASSERT_NO_EXCEPTION);
+    Node* two = document().querySelector("#two", ASSERT_NO_EXCEPTION);
+    Node* three = document().querySelector("#three", ASSERT_NO_EXCEPTION);
+    Node* four = document().querySelector("#four", ASSERT_NO_EXCEPTION);
+    Element* html = document().createElement("html", ASSERT_NO_EXCEPTION);
     // Move two, three and four into second html element.
-    html->appendChild(two.get());
-    html->appendChild(three.get());
-    html->appendChild(four.get());
-    one->appendChild(html.get());
+    html->appendChild(two);
+    html->appendChild(three);
+    html->appendChild(four);
+    one->appendChild(html);
     updateLayoutAndStyleForPainting();
 
     EXPECT_EQ(Position(), canonicalPositionOf(Position(document().documentElement(), 0)));
 
-    EXPECT_EQ(Position(one->firstChild(), 0), canonicalPositionOf(Position(one.get(), 0)));
-    EXPECT_EQ(Position(one->firstChild(), 1), canonicalPositionOf(Position(one.get(), 1)));
+    EXPECT_EQ(Position(one->firstChild(), 0), canonicalPositionOf(Position(one, 0)));
+    EXPECT_EQ(Position(one->firstChild(), 1), canonicalPositionOf(Position(one, 1)));
 
     EXPECT_EQ(Position(one->firstChild(), 0), canonicalPositionOf(Position(one->firstChild(), 0)));
     EXPECT_EQ(Position(one->firstChild(), 1), canonicalPositionOf(Position(one->firstChild(), 1)));
 
-    EXPECT_EQ(Position(html.get(), 0), canonicalPositionOf(Position(html.get(), 0)));
-    EXPECT_EQ(Position(html.get(), 1), canonicalPositionOf(Position(html.get(), 1)));
-    EXPECT_EQ(Position(html.get(), 2), canonicalPositionOf(Position(html.get(), 2)));
+    EXPECT_EQ(Position(html, 0), canonicalPositionOf(Position(html, 0)));
+    EXPECT_EQ(Position(html, 1), canonicalPositionOf(Position(html, 1)));
+    EXPECT_EQ(Position(html, 2), canonicalPositionOf(Position(html, 2)));
 
-    EXPECT_EQ(Position(two->firstChild(), 0), canonicalPositionOf(Position(two.get(), 0)));
-    EXPECT_EQ(Position(two->firstChild(), 2), canonicalPositionOf(Position(two.get(), 1)));
+    EXPECT_EQ(Position(two->firstChild(), 0), canonicalPositionOf(Position(two, 0)));
+    EXPECT_EQ(Position(two->firstChild(), 2), canonicalPositionOf(Position(two, 1)));
 }
 
 TEST_F(VisibleUnitsTest, characterBefore)
@@ -203,7 +203,7 @@ TEST_F(VisibleUnitsTest, characterBefore)
     const char* bodyContent = "<p id=host><b id=one>1</b><b id=two>22</b></p><b id=three>333</b>";
     const char* shadowContent = "<b id=four>4444</b><content select=#two></content><content select=#one></content><b id=five>5555</b>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     Node* one = document().getElementById("one")->firstChild();
@@ -228,7 +228,7 @@ TEST_F(VisibleUnitsTest, computeInlineBoxPosition)
     const char* bodyContent = "<p id=host><b id=one>1</b><b id=two>22</b></p><b id=three>333</b>";
     const char* shadowContent = "<b id=four>4444</b><content select=#two></content><content select=#one></content><b id=five>5555</b>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     Node* one = document().getElementById("one")->firstChild();
@@ -277,7 +277,7 @@ TEST_F(VisibleUnitsTest, endOfLine)
     const char* bodyContent = "<a id=host><b id=one>11</b><b id=two>22</b></a><i id=three>333</i><i id=four>4444</i><br>";
     const char* shadowContent = "<div><u id=five>55555</u><content select=#two></content><br><u id=six>666666</u><br><content select=#one></content><u id=seven>7777777</u></div>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     Node* one = document().getElementById("one")->firstChild();
@@ -411,7 +411,7 @@ TEST_F(VisibleUnitsTest, endOfSentence)
     const char* shadowContent = "<p><i id=three>333</i> <content select=#two></content> <content select=#one></content> <i id=four>4444</i></p>";
     setBodyContent(bodyContent);
     setShadowContent(shadowContent, "host");
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     Node* one = document().getElementById("one")->firstChild();
@@ -443,7 +443,7 @@ TEST_F(VisibleUnitsTest, endOfWord)
     const char* bodyContent = "<a id=host><b id=one>1</b> <b id=two>22</b></a><i id=three>333</i>";
     const char* shadowContent = "<p><u id=four>44444</u><content select=#two></content><span id=space> </span><content select=#one></content><u id=five>55555</u></p>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     Node* one = document().getElementById("one")->firstChild();
@@ -515,7 +515,7 @@ TEST_F(VisibleUnitsTest, isEndOfLine)
     const char* bodyContent = "<a id=host><b id=one>11</b><b id=two>22</b></a><i id=three>333</i><i id=four>4444</i><br>";
     const char* shadowContent = "<div><u id=five>55555</u><content select=#two></content><br><u id=six>666666</u><br><content select=#one></content><u id=seven>7777777</u></div>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     Node* one = document().getElementById("one")->firstChild();
@@ -556,7 +556,7 @@ TEST_F(VisibleUnitsTest, isLogicalEndOfLine)
     const char* bodyContent = "<a id=host><b id=one>11</b><b id=two>22</b></a><i id=three>333</i><i id=four>4444</i><br>";
     const char* shadowContent = "<div><u id=five>55555</u><content select=#two></content><br><u id=six>666666</u><br><content select=#one></content><u id=seven>7777777</u></div>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     Node* one = document().getElementById("one")->firstChild();
@@ -597,14 +597,14 @@ TEST_F(VisibleUnitsTest, inSameLine)
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";
     const char* shadowContent = "<div><span id='s4'>44</span><content select=#two></content><br><span id='s5'>55</span><br><content select=#one></content><span id='s6'>66</span></div>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
-    RawPtr<Element> body = document().body();
-    RawPtr<Element> one = body->querySelector("#one", ASSERT_NO_EXCEPTION);
-    RawPtr<Element> two = body->querySelector("#two", ASSERT_NO_EXCEPTION);
-    RawPtr<Element> four = shadowRoot->querySelector("#s4", ASSERT_NO_EXCEPTION);
-    RawPtr<Element> five = shadowRoot->querySelector("#s5", ASSERT_NO_EXCEPTION);
+    Element* body = document().body();
+    Element* one = body->querySelector("#one", ASSERT_NO_EXCEPTION);
+    Element* two = body->querySelector("#two", ASSERT_NO_EXCEPTION);
+    Element* four = shadowRoot->querySelector("#s4", ASSERT_NO_EXCEPTION);
+    Element* five = shadowRoot->querySelector("#s5", ASSERT_NO_EXCEPTION);
 
     EXPECT_TRUE(inSameLine(positionWithAffinityInDOMTree(*one, 0), positionWithAffinityInDOMTree(*two, 0)));
     EXPECT_TRUE(inSameLine(positionWithAffinityInDOMTree(*one->firstChild(), 0), positionWithAffinityInDOMTree(*two->firstChild(), 0)));
@@ -660,7 +660,7 @@ TEST_F(VisibleUnitsTest, isStartOfLine)
     const char* bodyContent = "<a id=host><b id=one>11</b><b id=two>22</b></a><i id=three>333</i><i id=four>4444</i><br>";
     const char* shadowContent = "<div><u id=five>55555</u><content select=#two></content><br><u id=six>666666</u><br><content select=#one></content><u id=seven>7777777</u></div>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     Node* one = document().getElementById("one")->firstChild();
@@ -730,32 +730,32 @@ TEST_F(VisibleUnitsTest, isVisuallyEquivalentCandidateWithHTMLHtmlElement)
     const char* bodyContent = "<html><div id=one contenteditable>1</div><span id=two contenteditable=false>22</span><span id=three contenteditable=false>333</span><span id=four contenteditable=false>333</span></html>";
     setBodyContent(bodyContent);
 
-    RawPtr<Node> one = document().querySelector("#one", ASSERT_NO_EXCEPTION);
-    RawPtr<Node> two = document().querySelector("#two", ASSERT_NO_EXCEPTION);
-    RawPtr<Node> three = document().querySelector("#three", ASSERT_NO_EXCEPTION);
-    RawPtr<Node> four = document().querySelector("#four", ASSERT_NO_EXCEPTION);
-    RawPtr<Element> html = document().createElement("html", ASSERT_NO_EXCEPTION);
+    Node* one = document().querySelector("#one", ASSERT_NO_EXCEPTION);
+    Node* two = document().querySelector("#two", ASSERT_NO_EXCEPTION);
+    Node* three = document().querySelector("#three", ASSERT_NO_EXCEPTION);
+    Node* four = document().querySelector("#four", ASSERT_NO_EXCEPTION);
+    Element* html = document().createElement("html", ASSERT_NO_EXCEPTION);
     // Move two, three and four into second html element.
-    html->appendChild(two.get());
-    html->appendChild(three.get());
-    html->appendChild(four.get());
-    one->appendChild(html.get());
+    html->appendChild(two);
+    html->appendChild(three);
+    html->appendChild(four);
+    one->appendChild(html);
     updateLayoutAndStyleForPainting();
 
     EXPECT_FALSE(isVisuallyEquivalentCandidate(Position(document().documentElement(), 0)));
 
-    EXPECT_FALSE(isVisuallyEquivalentCandidate(Position(one.get(), 0)));
-    EXPECT_FALSE(isVisuallyEquivalentCandidate(Position(one.get(), 1)));
+    EXPECT_FALSE(isVisuallyEquivalentCandidate(Position(one, 0)));
+    EXPECT_FALSE(isVisuallyEquivalentCandidate(Position(one, 1)));
 
     EXPECT_TRUE(isVisuallyEquivalentCandidate(Position(one->firstChild(), 0)));
     EXPECT_TRUE(isVisuallyEquivalentCandidate(Position(one->firstChild(), 1)));
 
-    EXPECT_TRUE(isVisuallyEquivalentCandidate(Position(html.get(), 0)));
-    EXPECT_TRUE(isVisuallyEquivalentCandidate(Position(html.get(), 1)));
-    EXPECT_TRUE(isVisuallyEquivalentCandidate(Position(html.get(), 2)));
+    EXPECT_TRUE(isVisuallyEquivalentCandidate(Position(html, 0)));
+    EXPECT_TRUE(isVisuallyEquivalentCandidate(Position(html, 1)));
+    EXPECT_TRUE(isVisuallyEquivalentCandidate(Position(html, 2)));
 
-    EXPECT_FALSE(isVisuallyEquivalentCandidate(Position(two.get(), 0)));
-    EXPECT_FALSE(isVisuallyEquivalentCandidate(Position(two.get(), 1)));
+    EXPECT_FALSE(isVisuallyEquivalentCandidate(Position(two, 0)));
+    EXPECT_FALSE(isVisuallyEquivalentCandidate(Position(two, 1)));
 }
 
 TEST_F(VisibleUnitsTest, isVisuallyEquivalentCandidateWithDocument)
@@ -770,7 +770,7 @@ TEST_F(VisibleUnitsTest, leftPositionOf)
     const char* bodyContent = "<b id=zero>0</b><p id=host><b id=one>1</b><b id=two>22</b></p><b id=three>333</b>";
     const char* shadowContent = "<b id=four>4444</b><content select=#two></content><content select=#one></content><b id=five>55555</b>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     Element* one = document().getElementById("one");
@@ -797,7 +797,7 @@ TEST_F(VisibleUnitsTest, localCaretRectOfPosition)
     setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
-    RawPtr<Element> one = document().getElementById("one");
+    Element* one = document().getElementById("one");
 
     LayoutObject* layoutObjectFromDOMTree;
     LayoutRect layoutRectFromDOMTree = localCaretRectOfPosition(Position(one->firstChild(), 0), layoutObjectFromDOMTree);
@@ -816,7 +816,7 @@ TEST_F(VisibleUnitsTest, logicalEndOfLine)
     const char* bodyContent = "<a id=host><b id=one>11</b><b id=two>22</b></a><i id=three>333</i><i id=four>4444</i><br>";
     const char* shadowContent = "<div><u id=five>55555</u><content select=#two></content><br><u id=six>666666</u><br><content select=#one></content><u id=seven>7777777</u></div>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     Node* one = document().getElementById("one")->firstChild();
@@ -862,7 +862,7 @@ TEST_F(VisibleUnitsTest, logicalStartOfLine)
     const char* bodyContent = "<a id=host><b id=one>11</b><b id=two>22</b></a><i id=three>333</i><i id=four>4444</i><br>";
     const char* shadowContent = "<div><u id=five>55555</u><content select=#two></content><br><u id=six>666666</u><br><content select=#one></content><u id=seven>7777777</u></div>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     Node* one = document().getElementById("one")->firstChild();
@@ -911,10 +911,10 @@ TEST_F(VisibleUnitsTest, mostBackwardCaretPositionAfterAnchor)
     setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
-    RawPtr<Element> host = document().getElementById("host");
+    Element* host = document().getElementById("host");
 
-    EXPECT_EQ(Position::lastPositionInNode(host.get()), mostForwardCaretPosition(Position::afterNode(host.get())));
-    EXPECT_EQ(PositionInFlatTree::lastPositionInNode(host.get()), mostForwardCaretPosition(PositionInFlatTree::afterNode(host.get())));
+    EXPECT_EQ(Position::lastPositionInNode(host), mostForwardCaretPosition(Position::afterNode(host)));
+    EXPECT_EQ(PositionInFlatTree::lastPositionInNode(host), mostForwardCaretPosition(PositionInFlatTree::afterNode(host)));
 }
 
 TEST_F(VisibleUnitsTest, mostBackwardCaretPositionFirstLetter)
@@ -948,7 +948,7 @@ TEST_F(VisibleUnitsTest, mostBackwardCaretPositionFirstLetterSplit)
     Node* sample = document().getElementById("sample");
     Node* firstLetter = sample->firstChild();
     // Split "abc" into "a" "bc"
-    RawPtr<Text> remaining = toText(firstLetter)->splitText(1, ASSERT_NO_EXCEPTION);
+    Text* remaining = toText(firstLetter)->splitText(1, ASSERT_NO_EXCEPTION);
     updateLayoutAndStyleForPainting();
 
     EXPECT_EQ(Position(sample, 0), mostBackwardCaretPosition(Position(firstLetter, 0)));
@@ -965,15 +965,15 @@ TEST_F(VisibleUnitsTest, mostForwardCaretPositionAfterAnchor)
     const char* bodyContent = "<p id='host'><b id='one'>1</b></p>";
     const char* shadowContent = "<b id='two'>22</b><content select=#one></content><b id='three'>333</b>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
-    RawPtr<Element> host = document().getElementById("host");
-    RawPtr<Element> one = document().getElementById("one");
-    RawPtr<Element> three = shadowRoot->getElementById("three");
+    Element* host = document().getElementById("host");
+    Element* one = document().getElementById("one");
+    Element* three = shadowRoot->getElementById("three");
 
-    EXPECT_EQ(Position(one->firstChild(), 1), mostBackwardCaretPosition(Position::afterNode(host.get())));
-    EXPECT_EQ(PositionInFlatTree(three->firstChild(), 3), mostBackwardCaretPosition(PositionInFlatTree::afterNode(host.get())));
+    EXPECT_EQ(Position(one->firstChild(), 1), mostBackwardCaretPosition(Position::afterNode(host)));
+    EXPECT_EQ(PositionInFlatTree(three->firstChild(), 3), mostBackwardCaretPosition(PositionInFlatTree::afterNode(host)));
 }
 
 TEST_F(VisibleUnitsTest, mostForwardCaretPositionFirstLetter)
@@ -1003,7 +1003,7 @@ TEST_F(VisibleUnitsTest, nextPositionOf)
     const char* bodyContent = "<b id=zero>0</b><p id=host><b id=one>1</b><b id=two>22</b></p><b id=three>333</b>";
     const char* shadowContent = "<b id=four>4444</b><content select=#two></content><content select=#one></content><b id=five>55555</b>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     Element* zero = document().getElementById("zero");
@@ -1031,7 +1031,7 @@ TEST_F(VisibleUnitsTest, previousPositionOf)
     const char* bodyContent = "<b id=zero>0</b><p id=host><b id=one>1</b><b id=two>22</b></p><b id=three>333</b>";
     const char* shadowContent = "<b id=four>4444</b><content select=#two></content><content select=#one></content><b id=five>55555</b>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     Node* zero = document().getElementById("zero")->firstChild();
@@ -1088,13 +1088,13 @@ TEST_F(VisibleUnitsTest, rendersInDifferentPositionAfterAnchor)
     const char* bodyContent = "<p id='sample'>00</p>";
     setBodyContent(bodyContent);
     updateLayoutAndStyleForPainting();
-    RawPtr<Element> sample = document().getElementById("sample");
+    Element* sample = document().getElementById("sample");
 
     EXPECT_FALSE(rendersInDifferentPosition(Position(), Position()));
-    EXPECT_FALSE(rendersInDifferentPosition(Position(), Position::afterNode(sample.get())))
+    EXPECT_FALSE(rendersInDifferentPosition(Position(), Position::afterNode(sample)))
         << "if one of position is null, the reuslt is false.";
-    EXPECT_FALSE(rendersInDifferentPosition(Position::afterNode(sample.get()), Position(sample.get(), 1)));
-    EXPECT_FALSE(rendersInDifferentPosition(Position::lastPositionInNode(sample.get()), Position(sample.get(), 1)));
+    EXPECT_FALSE(rendersInDifferentPosition(Position::afterNode(sample), Position(sample, 1)));
+    EXPECT_FALSE(rendersInDifferentPosition(Position::lastPositionInNode(sample), Position(sample, 1)));
 }
 
 TEST_F(VisibleUnitsTest, rendersInDifferentPositionAfterAnchorWithHidden)
@@ -1102,10 +1102,10 @@ TEST_F(VisibleUnitsTest, rendersInDifferentPositionAfterAnchorWithHidden)
     const char* bodyContent = "<p><span id=one>11</span><span id=two style='display:none'>  </span></p>";
     setBodyContent(bodyContent);
     updateLayoutAndStyleForPainting();
-    RawPtr<Element> one = document().getElementById("one");
-    RawPtr<Element> two = document().getElementById("two");
+    Element* one = document().getElementById("one");
+    Element* two = document().getElementById("two");
 
-    EXPECT_TRUE(rendersInDifferentPosition(Position::lastPositionInNode(one.get()), Position(two.get(), 0)))
+    EXPECT_TRUE(rendersInDifferentPosition(Position::lastPositionInNode(one), Position(two, 0)))
         << "two doesn't have layout object";
 }
 
@@ -1114,11 +1114,11 @@ TEST_F(VisibleUnitsTest, rendersInDifferentPositionAfterAnchorWithDifferentLayou
     const char* bodyContent = "<p><span id=one>11</span><span id=two>  </span></p>";
     setBodyContent(bodyContent);
     updateLayoutAndStyleForPainting();
-    RawPtr<Element> one = document().getElementById("one");
-    RawPtr<Element> two = document().getElementById("two");
+    Element* one = document().getElementById("one");
+    Element* two = document().getElementById("two");
 
-    EXPECT_FALSE(rendersInDifferentPosition(Position::lastPositionInNode(one.get()), Position(two.get(), 0)));
-    EXPECT_FALSE(rendersInDifferentPosition(Position::lastPositionInNode(one.get()), Position(two.get(), 1)))
+    EXPECT_FALSE(rendersInDifferentPosition(Position::lastPositionInNode(one), Position(two, 0)));
+    EXPECT_FALSE(rendersInDifferentPosition(Position::lastPositionInNode(one), Position(two, 1)))
         << "width of two is zero since contents is collapsed whitespaces";
 }
 
@@ -1127,8 +1127,8 @@ TEST_F(VisibleUnitsTest, renderedOffset)
     const char* bodyContent = "<div contenteditable><span id='sample1'>1</span><span id='sample2'>22</span></div>";
     setBodyContent(bodyContent);
     updateLayoutAndStyleForPainting();
-    RawPtr<Element> sample1 = document().getElementById("sample1");
-    RawPtr<Element> sample2 = document().getElementById("sample2");
+    Element* sample1 = document().getElementById("sample1");
+    Element* sample2 = document().getElementById("sample2");
 
     EXPECT_FALSE(rendersInDifferentPosition(Position::afterNode(sample1->firstChild()), Position(sample2->firstChild(), 0)));
     EXPECT_FALSE(rendersInDifferentPosition(Position::lastPositionInNode(sample1->firstChild()), Position(sample2->firstChild(), 0)));
@@ -1139,7 +1139,7 @@ TEST_F(VisibleUnitsTest, rightPositionOf)
     const char* bodyContent = "<b id=zero>0</b><p id=host><b id=one>1</b><b id=two>22</b></p><b id=three>333</b>";
     const char* shadowContent = "<p id=four>4444</p><content select=#two></content><content select=#one></content><p id=five>55555</p>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     Node* one = document().getElementById("one")->firstChild();
@@ -1184,7 +1184,7 @@ TEST_F(VisibleUnitsTest, startOfLine)
     const char* bodyContent = "<a id=host><b id=one>11</b><b id=two>22</b></a><i id=three>333</i><i id=four>4444</i><br>";
     const char* shadowContent = "<div><u id=five>55555</u><content select=#two></content><br><u id=six>666666</u><br><content select=#one></content><u id=seven>7777777</u></div>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     Node* one = document().getElementById("one")->firstChild();
@@ -1253,11 +1253,11 @@ TEST_F(VisibleUnitsTest, startOfParagraph)
     // position with nested editable <BODY>s.
     Element* root = document().documentElement();
     root->setInnerHTML("<style>* { display:inline-table; }</style><body contenteditable=true><svg><svg><foreignObject>abc<svg></svg></foreignObject></svg></svg></body>", ASSERT_NO_EXCEPTION);
-    RawPtr<Element> oldBody = document().body();
+    Element* oldBody = document().body();
     root->setInnerHTML("<body contenteditable=true><svg><foreignObject><style>def</style>", ASSERT_NO_EXCEPTION);
     ASSERT(oldBody != document().body());
     Node* foreignObject = document().body()->firstChild()->firstChild();
-    foreignObject->insertBefore(oldBody.get(), foreignObject->firstChild());
+    foreignObject->insertBefore(oldBody, foreignObject->firstChild());
     Node* styleText = foreignObject->lastChild()->firstChild();
     ASSERT(styleText->isTextNode());
     updateLayoutAndStyleForPainting();
@@ -1270,7 +1270,7 @@ TEST_F(VisibleUnitsTest, startOfSentence)
     const char* bodyContent = "<a id=host><b id=one>1</b><b id=two>22</b></a>";
     const char* shadowContent = "<p><i id=three>333</i> <content select=#two></content> <content select=#one></content> <i id=four>4444</i></p>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     Node* one = document().getElementById("one")->firstChild();
@@ -1302,7 +1302,7 @@ TEST_F(VisibleUnitsTest, startOfWord)
     const char* bodyContent = "<a id=host><b id=one>1</b> <b id=two>22</b></a><i id=three>333</i>";
     const char* shadowContent = "<p><u id=four>44444</u><content select=#two></content><span id=space> </span><content select=#one></content><u id=five>55555</u></p>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     Node* one = document().getElementById("one")->firstChild();
@@ -1341,8 +1341,8 @@ TEST_F(VisibleUnitsTest, endsOfNodeAreVisuallyDistinctPositionsWithInvisibleChil
     setBodyContent(bodyContent);
     updateLayoutAndStyleForPainting();
 
-    RawPtr<Node> button = document().querySelector("button", ASSERT_NO_EXCEPTION);
-    EXPECT_TRUE(endsOfNodeAreVisuallyDistinctPositions(button.get()));
+    Node* button = document().querySelector("button", ASSERT_NO_EXCEPTION);
+    EXPECT_TRUE(endsOfNodeAreVisuallyDistinctPositions(button));
 }
 
 TEST_F(VisibleUnitsTest, endsOfNodeAreVisuallyDistinctPositionsWithEmptyLayoutChild)
@@ -1352,8 +1352,8 @@ TEST_F(VisibleUnitsTest, endsOfNodeAreVisuallyDistinctPositionsWithEmptyLayoutCh
     setBodyContent(bodyContent);
     updateLayoutAndStyleForPainting();
 
-    RawPtr<Node> button = document().querySelector("button", ASSERT_NO_EXCEPTION);
-    EXPECT_TRUE(endsOfNodeAreVisuallyDistinctPositions(button.get()));
+    Node* button = document().querySelector("button", ASSERT_NO_EXCEPTION);
+    EXPECT_TRUE(endsOfNodeAreVisuallyDistinctPositions(button));
 }
 
 } // namespace blink

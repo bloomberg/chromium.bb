@@ -34,7 +34,7 @@ class HTMLSpanElement;
 
 class WrapContentsInDummySpanCommand final : public SimpleEditCommand {
 public:
-    static RawPtr<WrapContentsInDummySpanCommand> create(RawPtr<Element> element)
+    static WrapContentsInDummySpanCommand* create(Element* element)
     {
         return new WrapContentsInDummySpanCommand(element);
     }
@@ -42,7 +42,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    explicit WrapContentsInDummySpanCommand(RawPtr<Element>);
+    explicit WrapContentsInDummySpanCommand(Element*);
 
     void doApply(EditingState*) override;
     void doUnapply() override;

@@ -41,19 +41,19 @@ void CreateLinkCommand::doApply(EditingState* editingState)
     if (endingSelection().isNone())
         return;
 
-    RawPtr<HTMLAnchorElement> anchorElement = HTMLAnchorElement::create(document());
+    HTMLAnchorElement* anchorElement = HTMLAnchorElement::create(document());
     anchorElement->setHref(AtomicString(m_url));
 
     if (endingSelection().isRange()) {
-        applyStyledElement(anchorElement.get(), editingState);
+        applyStyledElement(anchorElement, editingState);
         if (editingState->isAborted())
             return;
     } else {
-        insertNodeAt(anchorElement.get(), endingSelection().start(), editingState);
+        insertNodeAt(anchorElement, endingSelection().start(), editingState);
         if (editingState->isAborted())
             return;
-        RawPtr<Text> textNode = Text::create(document(), m_url);
-        appendNode(textNode.get(), anchorElement.get(), editingState);
+        Text* textNode = Text::create(document(), m_url);
+        appendNode(textNode, anchorElement, editingState);
         if (editingState->isAborted())
             return;
         setEndingSelection(VisibleSelection(positionInParentBeforeNode(*anchorElement), positionInParentAfterNode(*anchorElement), TextAffinity::Downstream, endingSelection().isDirectional()));

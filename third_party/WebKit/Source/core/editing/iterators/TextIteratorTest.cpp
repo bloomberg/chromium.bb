@@ -53,7 +53,7 @@ protected:
     template <typename Tree>
     std::string iteratePartial(const typename Tree::PositionType& start, const typename Tree::PositionType& end, TextIteratorBehavior = TextIteratorDefaultBehavior);
 
-    RawPtr<Range> getBodyRange() const;
+    Range* getBodyRange() const;
 
 private:
     template <typename Tree>
@@ -63,7 +63,7 @@ private:
 template <typename Tree>
 std::string TextIteratorTest::iterate(TextIteratorBehavior iteratorBehavior)
 {
-    RawPtr<Element> body = document().body();
+    Element* body = document().body();
     using PositionType = typename Tree::PositionType;
     auto start = PositionType(body, 0);
     auto end = PositionType(body, Tree::countChildren(*body));
@@ -90,11 +90,11 @@ std::string TextIteratorTest::iterateWithIterator(typename Tree::TextIteratorTyp
     return std::string(textChunks.utf8().data());
 }
 
-RawPtr<Range> TextIteratorTest::getBodyRange() const
+Range* TextIteratorTest::getBodyRange() const
 {
-    RawPtr<Range> range(Range::create(document()));
+    Range* range = Range::create(document());
     range->selectNode(document().body());
-    return range.release();
+    return range;
 }
 
 TEST_F(TextIteratorTest, BitStackOverflow)
@@ -200,7 +200,7 @@ TEST_F(TextIteratorTest, NotEnteringShadowTreeWithNestedShadowTrees)
     static const char* shadowContent1 = "<span>first <span id='host-in-shadow'>shadow</span></span>";
     static const char* shadowContent2 = "<span>second shadow</span>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot1 = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host-in-document", shadowContent1);
+    ShadowRoot* shadowRoot1 = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host-in-document", shadowContent1);
     createShadowRootForElementWithIDAndSetInnerHTML(*shadowRoot1, "host-in-shadow", shadowContent2);
     EXPECT_EQ("[Hello, ][ iterator.]", iterate<DOMTree>());
     EXPECT_EQ("[Hello, ][first ][second shadow][ iterator.]", iterate<FlatTree>());
@@ -247,7 +247,7 @@ TEST_F(TextIteratorTest, EnteringShadowTreeWithNestedShadowTreesWithOption)
     static const char* shadowContent1 = "<span>first <span id='host-in-shadow'>shadow</span></span>";
     static const char* shadowContent2 = "<span>second shadow</span>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot1 = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host-in-document", shadowContent1);
+    ShadowRoot* shadowRoot1 = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host-in-document", shadowContent1);
     createShadowRootForElementWithIDAndSetInnerHTML(*shadowRoot1, "host-in-shadow", shadowContent2);
     EXPECT_EQ("[Hello, ][first ][second shadow][ iterator.]", iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
     EXPECT_EQ("[Hello, ][first ][second shadow][ iterator.]", iterate<FlatTree>(TextIteratorEntersOpenShadowRoots));
@@ -271,7 +271,7 @@ TEST_F(TextIteratorTest, StartingAtNodeInShadowRoot)
     static const char* bodyContent = "<div id='outer'>Hello, <span id='host'>text</span> iterator.</div>";
     static const char* shadowContent = "<span><content>content</content> shadow</span>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
+    ShadowRoot* shadowRoot = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
     Node* outerDiv = document().getElementById("outer");
     Node* spanInShadow = shadowRoot->firstChild();
     Position start(spanInShadow, PositionAnchorType::BeforeChildren);
@@ -288,7 +288,7 @@ TEST_F(TextIteratorTest, FinishingAtNodeInShadowRoot)
     static const char* bodyContent = "<div id='outer'>Hello, <span id='host'>text</span> iterator.</div>";
     static const char* shadowContent = "<span><content>content</content> shadow</span>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
+    ShadowRoot* shadowRoot = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
     Node* outerDiv = document().getElementById("outer");
     Node* spanInShadow = shadowRoot->firstChild();
     Position start(outerDiv, PositionAnchorType::BeforeChildren);
@@ -381,7 +381,7 @@ TEST_F(TextIteratorTest, RangeLengthWithReplacedElements)
     document().view()->updateAllLifecyclePhases();
 
     Node* divNode = document().getElementById("div");
-    RawPtr<Range> range = Range::create(document(), divNode, 0, divNode, 3);
+    Range* range = Range::create(document(), divNode, 0, divNode, 3);
 
     EXPECT_EQ(3, TextIterator::rangeLength(range->startPosition(), range->endPosition()));
 }

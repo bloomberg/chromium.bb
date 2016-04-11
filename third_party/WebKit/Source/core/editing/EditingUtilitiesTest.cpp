@@ -30,7 +30,7 @@ TEST_F(EditingUtilitiesTest, firstEditablePositionAfterPositionInRoot)
     const char* bodyContent = "<p id='host' contenteditable><b id='one'>1</b><b id='two'>22</b></p>";
     const char* shadowContent = "<content select=#two></content><content select=#one></content><b id='three'>333</b>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
     Element* host = document().getElementById("host");
     Node* one = document().getElementById("one");
@@ -54,7 +54,7 @@ TEST_F(EditingUtilitiesTest, enclosingBlock)
     const char* bodyContent = "<p id='host'><b id='one'>11</b></p>";
     const char* shadowContent = "<content select=#two></content><div id='three'><content select=#one></content></div>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
     Node* host = document().getElementById("host");
     Node* one = document().getElementById("one");
@@ -69,7 +69,7 @@ TEST_F(EditingUtilitiesTest, enclosingNodeOfType)
     const char* bodyContent = "<p id='host'><b id='one'>11</b></p>";
     const char* shadowContent = "<content select=#two></content><div id='three'><content select=#one></div></content>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
     Node* host = document().getElementById("host");
     Node* one = document().getElementById("one");
@@ -86,7 +86,7 @@ TEST_F(EditingUtilitiesTest, isEditablePositionWithTable)
     // However, |setBodyContent()| automatically creates HTML, HEAD and BODY
     // element. So, we build DOM tree manually.
     // Note: This is unusual HTML taken from http://crbug.com/574230
-    RawPtr<Element> table = document().createElement("table", ASSERT_NO_EXCEPTION);
+    Element* table = document().createElement("table", ASSERT_NO_EXCEPTION);
     table->setInnerHTML("<caption>foo</caption>", ASSERT_NO_EXCEPTION);
     while (document().firstChild())
         document().firstChild()->remove();
@@ -94,7 +94,7 @@ TEST_F(EditingUtilitiesTest, isEditablePositionWithTable)
     document().setDesignMode("on");
     updateLayoutAndStyleForPainting();
 
-    EXPECT_FALSE(isEditablePosition(Position(table.get(), 0)));
+    EXPECT_FALSE(isEditablePosition(Position(table, 0)));
 }
 
 TEST_F(EditingUtilitiesTest, isFirstPositionAfterTable)
@@ -128,7 +128,7 @@ TEST_F(EditingUtilitiesTest, lastEditablePositionBeforePositionInRoot)
     const char* bodyContent = "<p id='host' contenteditable><b id='one'>1</b><b id='two'>22</b></p>";
     const char* shadowContent = "<content select=#two></content><content select=#one></content><b id='three'>333</b>";
     setBodyContent(bodyContent);
-    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
     Element* host = document().getElementById("host");
     Node* one = document().getElementById("one");
@@ -179,7 +179,7 @@ TEST_F(EditingUtilitiesTest, AreaIdenticalElements)
 {
     setBodyContent("<style>li:nth-child(even) { -webkit-user-modify: read-write; }</style><ul><li>first item</li><li>second item</li><li class=foo>third</li><li>fourth</li></ul>");
     updateLayoutAndStyleForPainting();
-    RawPtr<StaticElementList> items = document().querySelectorAll("li", ASSERT_NO_EXCEPTION);
+    StaticElementList* items = document().querySelectorAll("li", ASSERT_NO_EXCEPTION);
     ASSERT(items->length() == 4);
 
     EXPECT_FALSE(areIdenticalElements(*items->item(0)->firstChild(), *items->item(1)->firstChild()))

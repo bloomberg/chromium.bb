@@ -36,8 +36,8 @@
 namespace blink {
 
 SpellCheckRequest::SpellCheckRequest(
-    RawPtr<Range> checkingRange,
-    RawPtr<Range> paragraphRange,
+    Range* checkingRange,
+    Range* paragraphRange,
     const String& text,
     TextCheckingTypeMask mask,
     TextCheckingProcessType processType,
@@ -80,7 +80,7 @@ void SpellCheckRequest::dispose()
 }
 
 // static
-RawPtr<SpellCheckRequest> SpellCheckRequest::create(TextCheckingTypeMask textCheckingOptions, TextCheckingProcessType processType, const EphemeralRange& checkingRange, const EphemeralRange& paragraphRange, int requestNumber)
+SpellCheckRequest* SpellCheckRequest::create(TextCheckingTypeMask textCheckingOptions, TextCheckingProcessType processType, const EphemeralRange& checkingRange, const EphemeralRange& paragraphRange, int requestNumber)
 {
     if (checkingRange.isNull())
         return nullptr;
@@ -91,8 +91,8 @@ RawPtr<SpellCheckRequest> SpellCheckRequest::create(TextCheckingTypeMask textChe
     if (text.isEmpty())
         return nullptr;
 
-    RawPtr<Range> checkingRangeObject = createRange(checkingRange);
-    RawPtr<Range> paragraphRangeObject = nullptr;
+    Range* checkingRangeObject = createRange(checkingRange);
+    Range* paragraphRangeObject = nullptr;
     // Share identical Range objects.
     if (checkingRange == paragraphRange)
         paragraphRangeObject = checkingRangeObject;
@@ -200,9 +200,9 @@ bool SpellCheckRequester::isCheckable(Range* range) const
     return true;
 }
 
-void SpellCheckRequester::requestCheckingFor(RawPtr<SpellCheckRequest> request)
+void SpellCheckRequester::requestCheckingFor(SpellCheckRequest* request)
 {
-    if (!request || !canCheckAsynchronously(request->paragraphRange().get()))
+    if (!request || !canCheckAsynchronously(request->paragraphRange()))
         return;
 
     ASSERT(request->data().sequence() == unrequestedTextCheckingSequence);
@@ -239,7 +239,7 @@ void SpellCheckRequester::prepareForLeakDetection()
     m_requestQueue.clear();
 }
 
-void SpellCheckRequester::invokeRequest(RawPtr<SpellCheckRequest> request)
+void SpellCheckRequester::invokeRequest(SpellCheckRequest* request)
 {
     ASSERT(!m_processingRequest);
     m_processingRequest = request;
@@ -255,12 +255,12 @@ void SpellCheckRequester::clearProcessingRequest()
     m_processingRequest.clear();
 }
 
-void SpellCheckRequester::enqueueRequest(RawPtr<SpellCheckRequest> request)
+void SpellCheckRequester::enqueueRequest(SpellCheckRequest* request)
 {
     ASSERT(request);
     bool continuation = false;
     if (!m_requestQueue.isEmpty()) {
-        RawPtr<SpellCheckRequest> lastRequest = m_requestQueue.last();
+        SpellCheckRequest* lastRequest = m_requestQueue.last();
         // It's a continuation if the number of the last request got incremented in the new one and
         // both apply to the same editable.
         continuation = request->rootEditableElement() == lastRequest->rootEditableElement()
@@ -310,8 +310,8 @@ void SpellCheckRequester::didCheckSucceed(int sequence, const Vector<TextCheckin
         if (!requestData.maskContains(TextCheckingTypeGrammar))
             markers.remove(DocumentMarker::Grammar);
         if (m_processingRequest->isValid()) {
-            RawPtr<Range> checkingRange = m_processingRequest->checkingRange();
-            frame().document()->markers().removeMarkers(EphemeralRange(checkingRange.get()), markers);
+            Range* checkingRange = m_processingRequest->checkingRange();
+            frame().document()->markers().removeMarkers(EphemeralRange(checkingRange), markers);
         }
     }
     didCheck(sequence, results);

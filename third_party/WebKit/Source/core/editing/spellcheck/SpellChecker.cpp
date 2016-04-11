@@ -74,7 +74,7 @@ bool isSelectionInTextFormControl(const VisibleSelection& selection)
 
 } // namespace
 
-RawPtr<SpellChecker> SpellChecker::create(LocalFrame& frame)
+SpellChecker* SpellChecker::create(LocalFrame& frame)
 {
     return new SpellChecker(frame);
 }
@@ -538,7 +538,7 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask
     // Check the full paragraph instead if the paragraph is short, which saves
     // the cost on sentence boundary finding.
     if (fullParagraphToCheck.rangeLength() <= kChunkSize) {
-        RawPtr<SpellCheckRequest> request = SpellCheckRequest::create(resolveTextCheckingTypeMask(textCheckingOptions), TextCheckingProcessBatch, paragraphRange, paragraphRange, 0);
+        SpellCheckRequest* request = SpellCheckRequest::create(resolveTextCheckingTypeMask(textCheckingOptions), TextCheckingProcessBatch, paragraphRange, paragraphRange, 0);
         if (request)
             m_spellCheckRequester->requestCheckingFor(request);
         return;
@@ -549,7 +549,7 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask
         EphemeralRange chunkRange = checkRangeIterator.calculateCharacterSubrange(0, kChunkSize);
         EphemeralRange checkRange = requestNum ? expandEndToSentenceBoundary(chunkRange) : expandRangeToSentenceBoundary(chunkRange);
 
-        RawPtr<SpellCheckRequest> request = SpellCheckRequest::create(resolveTextCheckingTypeMask(textCheckingOptions), TextCheckingProcessBatch, checkRange, paragraphRange, requestNum);
+        SpellCheckRequest* request = SpellCheckRequest::create(resolveTextCheckingTypeMask(textCheckingOptions), TextCheckingProcessBatch, checkRange, paragraphRange, requestNum);
         if (request)
             m_spellCheckRequester->requestCheckingFor(request);
 
@@ -563,7 +563,7 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask
     }
 }
 
-void SpellChecker::markAndReplaceFor(RawPtr<SpellCheckRequest> request, const Vector<TextCheckingResult>& results)
+void SpellChecker::markAndReplaceFor(SpellCheckRequest* request, const Vector<TextCheckingResult>& results)
 {
     TRACE_EVENT0("blink", "SpellChecker::markAndReplaceFor");
     ASSERT(request);

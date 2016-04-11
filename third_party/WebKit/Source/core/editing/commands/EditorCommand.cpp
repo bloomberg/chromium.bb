@@ -122,16 +122,16 @@ static bool applyCommandToFrame(LocalFrame& frame, EditorCommandSource source, E
 
 static bool executeApplyStyle(LocalFrame& frame, EditorCommandSource source, EditAction action, CSSPropertyID propertyID, const String& propertyValue)
 {
-    RawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create(HTMLQuirksMode);
+    MutableStylePropertySet* style = MutableStylePropertySet::create(HTMLQuirksMode);
     style->setProperty(propertyID, propertyValue);
-    return applyCommandToFrame(frame, source, action, style.get());
+    return applyCommandToFrame(frame, source, action, style);
 }
 
 static bool executeApplyStyle(LocalFrame& frame, EditorCommandSource source, EditAction action, CSSPropertyID propertyID, CSSValueID propertyValue)
 {
-    RawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create(HTMLQuirksMode);
+    MutableStylePropertySet* style = MutableStylePropertySet::create(HTMLQuirksMode);
     style->setProperty(propertyID, propertyValue);
-    return applyCommandToFrame(frame, source, action, style.get());
+    return applyCommandToFrame(frame, source, action, style);
 }
 
 // FIXME: executeToggleStyleInList does not handle complicated cases such as <b><u>hello</u>world</b> properly.
@@ -139,14 +139,14 @@ static bool executeApplyStyle(LocalFrame& frame, EditorCommandSource source, Edi
 //        until https://bugs.webkit.org/show_bug.cgi?id=27818 is resolved.
 static bool executeToggleStyleInList(LocalFrame& frame, EditorCommandSource source, EditAction action, CSSPropertyID propertyID, CSSValue* value)
 {
-    RawPtr<EditingStyle> selectionStyle = EditingStyle::styleAtSelectionStart(frame.selection().selection());
+    EditingStyle* selectionStyle = EditingStyle::styleAtSelectionStart(frame.selection().selection());
     if (!selectionStyle || !selectionStyle->style())
         return false;
 
-    RawPtr<CSSValue> selectedCSSValue = selectionStyle->style()->getPropertyCSSValue(propertyID);
+    CSSValue* selectedCSSValue = selectionStyle->style()->getPropertyCSSValue(propertyID);
     String newStyle("none");
     if (selectedCSSValue->isValueList()) {
-        RawPtr<CSSValueList> selectedCSSValueList = toCSSValueList(selectedCSSValue.get());
+        CSSValueList* selectedCSSValueList = toCSSValueList(selectedCSSValue);
         if (!selectedCSSValueList->removeAll(value))
             selectedCSSValueList->append(value);
         if (selectedCSSValueList->length())
@@ -157,9 +157,9 @@ static bool executeToggleStyleInList(LocalFrame& frame, EditorCommandSource sour
     }
 
     // FIXME: We shouldn't be having to convert new style into text.  We should have setPropertyCSSValue.
-    RawPtr<MutableStylePropertySet> newMutableStyle = MutableStylePropertySet::create(HTMLQuirksMode);
+    MutableStylePropertySet* newMutableStyle = MutableStylePropertySet::create(HTMLQuirksMode);
     newMutableStyle->setProperty(propertyID, newStyle);
-    return applyCommandToFrame(frame, source, action, newMutableStyle.get());
+    return applyCommandToFrame(frame, source, action, newMutableStyle);
 }
 
 static bool executeToggleStyle(LocalFrame& frame, EditorCommandSource source, EditAction action, CSSPropertyID propertyID, const char* offValue, const char* onValue)
@@ -174,42 +174,42 @@ static bool executeToggleStyle(LocalFrame& frame, EditorCommandSource source, Ed
     else
         styleIsPresent = frame.editor().selectionHasStyle(propertyID, onValue) == TrueTriState;
 
-    RawPtr<EditingStyle> style = EditingStyle::create(propertyID, styleIsPresent ? offValue : onValue);
+    EditingStyle* style = EditingStyle::create(propertyID, styleIsPresent ? offValue : onValue);
     return applyCommandToFrame(frame, source, action, style->style());
 }
 
 static bool executeApplyParagraphStyle(LocalFrame& frame, EditorCommandSource source, EditAction action, CSSPropertyID propertyID, const String& propertyValue)
 {
-    RawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create(HTMLQuirksMode);
+    MutableStylePropertySet* style = MutableStylePropertySet::create(HTMLQuirksMode);
     style->setProperty(propertyID, propertyValue);
     // FIXME: We don't call shouldApplyStyle when the source is DOM; is there a good reason for that?
     switch (source) {
     case CommandFromMenuOrKeyBinding:
-        frame.editor().applyParagraphStyleToSelection(style.get(), action);
+        frame.editor().applyParagraphStyleToSelection(style, action);
         return true;
     case CommandFromDOM:
-        frame.editor().applyParagraphStyle(style.get());
+        frame.editor().applyParagraphStyle(style);
         return true;
     }
     ASSERT_NOT_REACHED();
     return false;
 }
 
-static bool executeInsertFragment(LocalFrame& frame, RawPtr<DocumentFragment> fragment)
+static bool executeInsertFragment(LocalFrame& frame, DocumentFragment* fragment)
 {
     ASSERT(frame.document());
     return ReplaceSelectionCommand::create(*frame.document(), fragment, ReplaceSelectionCommand::PreventNesting, EditActionUnspecified)->apply();
 }
 
-static bool executeInsertElement(LocalFrame& frame, RawPtr<HTMLElement> content)
+static bool executeInsertElement(LocalFrame& frame, HTMLElement* content)
 {
     ASSERT(frame.document());
-    RawPtr<DocumentFragment> fragment = DocumentFragment::create(*frame.document());
+    DocumentFragment* fragment = DocumentFragment::create(*frame.document());
     TrackExceptionState exceptionState;
     fragment->appendChild(content, exceptionState);
     if (exceptionState.hadException())
         return false;
-    return executeInsertFragment(frame, fragment.release());
+    return executeInsertFragment(frame, fragment);
 }
 
 static bool expandSelectionToGranularity(LocalFrame& frame, TextGranularity granularity)
@@ -481,7 +481,7 @@ static bool executeFormatBlock(LocalFrame& frame, Event*, EditorCommandSource, c
     QualifiedName qualifiedTagName(prefix, localName, xhtmlNamespaceURI);
 
     ASSERT(frame.document());
-    RawPtr<FormatBlockCommand> command = FormatBlockCommand::create(*frame.document(), qualifiedTagName);
+    FormatBlockCommand* command = FormatBlockCommand::create(*frame.document(), qualifiedTagName);
     command->apply();
     return command->didApply();
 }
@@ -527,10 +527,10 @@ static bool executeInsertBacktab(LocalFrame& frame, Event* event, EditorCommandS
 static bool executeInsertHorizontalRule(LocalFrame& frame, Event*, EditorCommandSource, const String& value)
 {
     ASSERT(frame.document());
-    RawPtr<HTMLHRElement> rule = HTMLHRElement::create(*frame.document());
+    HTMLHRElement* rule = HTMLHRElement::create(*frame.document());
     if (!value.isEmpty())
         rule->setIdAttribute(AtomicString(value));
-    return executeInsertElement(frame, rule.release());
+    return executeInsertElement(frame, rule);
 }
 
 static bool executeInsertHTML(LocalFrame& frame, Event*, EditorCommandSource, const String& value)
@@ -542,10 +542,10 @@ static bool executeInsertHTML(LocalFrame& frame, Event*, EditorCommandSource, co
 static bool executeInsertImage(LocalFrame& frame, Event*, EditorCommandSource, const String& value)
 {
     ASSERT(frame.document());
-    RawPtr<HTMLImageElement> image = HTMLImageElement::create(*frame.document());
+    HTMLImageElement* image = HTMLImageElement::create(*frame.document());
     if (!value.isEmpty())
         image->setSrc(value);
-    return executeInsertElement(frame, image.release());
+    return executeInsertElement(frame, image);
 }
 
 static bool executeInsertLineBreak(LocalFrame& frame, Event* event, EditorCommandSource source, const String&)
@@ -628,27 +628,27 @@ static bool executeJustifyRight(LocalFrame& frame, Event*, EditorCommandSource s
 
 static bool executeMakeTextWritingDirectionLeftToRight(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
-    RawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create(HTMLQuirksMode);
+    MutableStylePropertySet* style = MutableStylePropertySet::create(HTMLQuirksMode);
     style->setProperty(CSSPropertyUnicodeBidi, CSSValueIsolate);
     style->setProperty(CSSPropertyDirection, CSSValueLtr);
-    frame.editor().applyStyle(style.get(), EditActionSetWritingDirection);
+    frame.editor().applyStyle(style, EditActionSetWritingDirection);
     return true;
 }
 
 static bool executeMakeTextWritingDirectionNatural(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
-    RawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create(HTMLQuirksMode);
+    MutableStylePropertySet* style = MutableStylePropertySet::create(HTMLQuirksMode);
     style->setProperty(CSSPropertyUnicodeBidi, CSSValueNormal);
-    frame.editor().applyStyle(style.get(), EditActionSetWritingDirection);
+    frame.editor().applyStyle(style, EditActionSetWritingDirection);
     return true;
 }
 
 static bool executeMakeTextWritingDirectionRightToLeft(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
-    RawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create(HTMLQuirksMode);
+    MutableStylePropertySet* style = MutableStylePropertySet::create(HTMLQuirksMode);
     style->setProperty(CSSPropertyUnicodeBidi, CSSValueIsolate);
     style->setProperty(CSSPropertyDirection, CSSValueRtl);
-    frame.editor().applyStyle(style.get(), EditActionSetWritingDirection);
+    frame.editor().applyStyle(style, EditActionSetWritingDirection);
     return true;
 }
 
@@ -1103,8 +1103,8 @@ static bool executeSetMark(LocalFrame& frame, Event*, EditorCommandSource, const
 
 static bool executeStrikethrough(LocalFrame& frame, Event*, EditorCommandSource source, const String&)
 {
-    RawPtr<CSSPrimitiveValue> lineThrough = CSSPrimitiveValue::createIdentifier(CSSValueLineThrough);
-    return executeToggleStyleInList(frame, source, EditActionUnderline, CSSPropertyWebkitTextDecorationsInEffect, lineThrough.get());
+    CSSPrimitiveValue* lineThrough = CSSPrimitiveValue::createIdentifier(CSSValueLineThrough);
+    return executeToggleStyleInList(frame, source, EditActionUnderline, CSSPropertyWebkitTextDecorationsInEffect, lineThrough);
 }
 
 static bool executeStyleWithCSS(LocalFrame& frame, Event*, EditorCommandSource, const String& value)
@@ -1158,8 +1158,8 @@ static bool executeTranspose(LocalFrame& frame, Event*, EditorCommandSource, con
 
 static bool executeUnderline(LocalFrame& frame, Event*, EditorCommandSource source, const String&)
 {
-    RawPtr<CSSPrimitiveValue> underline = CSSPrimitiveValue::createIdentifier(CSSValueUnderline);
-    return executeToggleStyleInList(frame, source, EditActionUnderline, CSSPropertyWebkitTextDecorationsInEffect, underline.get());
+    CSSPrimitiveValue* underline = CSSPrimitiveValue::createIdentifier(CSSValueUnderline);
+    return executeToggleStyleInList(frame, source, EditActionUnderline, CSSPropertyWebkitTextDecorationsInEffect, underline);
 }
 
 static bool executeUndo(LocalFrame& frame, Event*, EditorCommandSource, const String&)
@@ -1471,7 +1471,7 @@ static String valueFormatBlock(LocalFrame& frame, Event*)
     const VisibleSelection& selection = frame.selection().selection();
     if (!selection.isNonOrphanedCaretOrRange() || !selection.isContentEditable())
         return "";
-    Element* formatBlockElement = FormatBlockCommand::elementForFormatBlockCommand(firstRangeOf(selection).get());
+    Element* formatBlockElement = FormatBlockCommand::elementForFormatBlockCommand(firstRangeOf(selection));
     if (!formatBlockElement)
         return "";
     return formatBlockElement->localName();
@@ -1756,7 +1756,7 @@ Editor::Command::Command()
 {
 }
 
-Editor::Command::Command(const EditorInternalCommand* command, EditorCommandSource source, RawPtr<LocalFrame> frame)
+Editor::Command::Command(const EditorInternalCommand* command, EditorCommandSource source, LocalFrame* frame)
     : m_command(command)
     , m_source(source)
     , m_frame(command ? frame : nullptr)

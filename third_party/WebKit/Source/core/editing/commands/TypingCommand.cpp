@@ -73,8 +73,8 @@ void TypingCommand::deleteSelection(Document& document, Options options)
     if (!frame->selection().isRange())
         return;
 
-    if (RawPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(frame)) {
-        updateSelectionIfDifferentFromCurrentSelection(lastTypingCommand.get(), frame);
+    if (TypingCommand* lastTypingCommand = lastTypingCommandIfStillOpenForTyping(frame)) {
+        updateSelectionIfDifferentFromCurrentSelection(lastTypingCommand, frame);
 
         lastTypingCommand->setShouldPreventSpellChecking(options & PreventSpellChecking);
         // InputMethodController uses this function to delete composition
@@ -90,11 +90,11 @@ void TypingCommand::deleteKeyPressed(Document& document, Options options, TextGr
 {
     if (granularity == CharacterGranularity) {
         LocalFrame* frame = document.frame();
-        if (RawPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(frame)) {
+        if (TypingCommand* lastTypingCommand = lastTypingCommandIfStillOpenForTyping(frame)) {
             // If the last typing command is not Delete, open a new typing command.
             // We need to group continuous delete commands alone in a single typing command.
             if (lastTypingCommand->commandTypeOfOpenCommand() == DeleteKey) {
-                updateSelectionIfDifferentFromCurrentSelection(lastTypingCommand.get(), frame);
+                updateSelectionIfDifferentFromCurrentSelection(lastTypingCommand, frame);
                 lastTypingCommand->setShouldPreventSpellChecking(options & PreventSpellChecking);
                 EditingState editingState;
                 lastTypingCommand->deleteKeyPressed(granularity, options & KillRing, &editingState);
@@ -111,8 +111,8 @@ void TypingCommand::forwardDeleteKeyPressed(Document& document, EditingState* ed
     // FIXME: Forward delete in TextEdit appears to open and close a new typing command.
     if (granularity == CharacterGranularity) {
         LocalFrame* frame = document.frame();
-        if (RawPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(frame)) {
-            updateSelectionIfDifferentFromCurrentSelection(lastTypingCommand.get(), frame);
+        if (TypingCommand* lastTypingCommand = lastTypingCommandIfStillOpenForTyping(frame)) {
+            updateSelectionIfDifferentFromCurrentSelection(lastTypingCommand, frame);
             lastTypingCommand->setShouldPreventSpellChecking(options & PreventSpellChecking);
             lastTypingCommand->forwardDeleteKeyPressed(granularity, options & KillRing, editingState);
             return;
@@ -142,7 +142,7 @@ static String dispatchBeforeTextInsertedEvent(const String& text, const VisibleS
     if (Node* startNode = selectionForInsertion.start().computeContainerNode()) {
         if (startNode->rootEditableElement()) {
             // Send BeforeTextInsertedEvent. The event handler will update text if necessary.
-            RawPtr<BeforeTextInsertedEvent> evt = BeforeTextInsertedEvent::create(text);
+            BeforeTextInsertedEvent* evt = BeforeTextInsertedEvent::create(text);
             startNode->rootEditableElement()->dispatchEvent(evt);
             newText = evt->text();
         }
@@ -164,7 +164,7 @@ void TypingCommand::insertText(Document& document, const String& text, Options o
 // FIXME: We shouldn't need to take selectionForInsertion. It should be identical to FrameSelection's current selection.
 void TypingCommand::insertText(Document& document, const String& text, const VisibleSelection& selectionForInsertion, Options options, TextCompositionType compositionType)
 {
-    RawPtr<LocalFrame> frame = document.frame();
+    LocalFrame* frame = document.frame();
     ASSERT(frame);
 
     VisibleSelection currentSelection = frame->selection().selection();
@@ -174,7 +174,7 @@ void TypingCommand::insertText(Document& document, const String& text, const Vis
     // Set the starting and ending selection appropriately if we are using a selection
     // that is different from the current selection.  In the future, we should change EditCommand
     // to deal with custom selections in a general way that can be used by all of the commands.
-    if (RawPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(frame.get())) {
+    if (TypingCommand* lastTypingCommand = lastTypingCommandIfStillOpenForTyping(frame)) {
         if (!equalSelectionsInDOMTree(lastTypingCommand->endingSelection(), selectionForInsertion)) {
             lastTypingCommand->setStartingSelection(selectionForInsertion);
             lastTypingCommand->setEndingSelection(selectionForInsertion);
@@ -189,7 +189,7 @@ void TypingCommand::insertText(Document& document, const String& text, const Vis
         return;
     }
 
-    RawPtr<TypingCommand> command = TypingCommand::create(document, InsertText, newText, options, compositionType);
+    TypingCommand* command = TypingCommand::create(document, InsertText, newText, options, compositionType);
     bool changeSelection = !equalSelectionsInDOMTree(selectionForInsertion, currentSelection);
     if (changeSelection) {
         command->setStartingSelection(selectionForInsertion);
@@ -204,7 +204,7 @@ void TypingCommand::insertText(Document& document, const String& text, const Vis
 
 bool TypingCommand::insertLineBreak(Document& document)
 {
-    if (RawPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(document.frame())) {
+    if (TypingCommand* lastTypingCommand = lastTypingCommandIfStillOpenForTyping(document.frame())) {
         lastTypingCommand->setShouldRetainAutocorrectionIndicator(false);
         EditingState editingState;
         lastTypingCommand->insertLineBreak(&editingState);
@@ -216,7 +216,7 @@ bool TypingCommand::insertLineBreak(Document& document)
 
 bool TypingCommand::insertParagraphSeparatorInQuotedContent(Document& document)
 {
-    if (RawPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(document.frame())) {
+    if (TypingCommand* lastTypingCommand = lastTypingCommandIfStillOpenForTyping(document.frame())) {
         EditingState editingState;
         lastTypingCommand->insertParagraphSeparatorInQuotedContent(&editingState);
         return !editingState.isAborted();
@@ -227,7 +227,7 @@ bool TypingCommand::insertParagraphSeparatorInQuotedContent(Document& document)
 
 bool TypingCommand::insertParagraphSeparator(Document& document)
 {
-    if (RawPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(document.frame())) {
+    if (TypingCommand* lastTypingCommand = lastTypingCommandIfStillOpenForTyping(document.frame())) {
         lastTypingCommand->setShouldRetainAutocorrectionIndicator(false);
         EditingState editingState;
         lastTypingCommand->insertParagraphSeparator(&editingState);
@@ -237,20 +237,20 @@ bool TypingCommand::insertParagraphSeparator(Document& document)
     return TypingCommand::create(document, InsertParagraphSeparator, "", 0)->apply();
 }
 
-RawPtr<TypingCommand> TypingCommand::lastTypingCommandIfStillOpenForTyping(LocalFrame* frame)
+TypingCommand* TypingCommand::lastTypingCommandIfStillOpenForTyping(LocalFrame* frame)
 {
     ASSERT(frame);
 
-    RawPtr<CompositeEditCommand> lastEditCommand = frame->editor().lastEditCommand();
-    if (!lastEditCommand || !lastEditCommand->isTypingCommand() || !static_cast<TypingCommand*>(lastEditCommand.get())->isOpenForMoreTyping())
+    CompositeEditCommand* lastEditCommand = frame->editor().lastEditCommand();
+    if (!lastEditCommand || !lastEditCommand->isTypingCommand() || !static_cast<TypingCommand*>(lastEditCommand)->isOpenForMoreTyping())
         return nullptr;
 
-    return static_cast<TypingCommand*>(lastEditCommand.get());
+    return static_cast<TypingCommand*>(lastEditCommand);
 }
 
 void TypingCommand::closeTyping(LocalFrame* frame)
 {
-    if (RawPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(frame))
+    if (TypingCommand* lastTypingCommand = lastTypingCommandIfStillOpenForTyping(frame))
         lastTypingCommand->closeTyping();
 }
 
@@ -383,7 +383,7 @@ void TypingCommand::insertText(const String &text, bool selectInsertedText, Edit
 
 void TypingCommand::insertTextRunWithoutNewlines(const String &text, bool selectInsertedText, EditingState* editingState)
 {
-    RawPtr<InsertTextCommand> command = InsertTextCommand::create(document(), text, selectInsertedText,
+    InsertTextCommand* command = InsertTextCommand::create(document(), text, selectInsertedText,
         m_compositionType == TextCompositionNone ? InsertTextCommand::RebalanceLeadingAndTrailingWhitespaces : InsertTextCommand::RebalanceAllWhitespaces);
 
     applyCommandToComposite(command, endingSelection(), editingState);
@@ -398,7 +398,7 @@ static bool canAppendNewLineFeedToSelection(const VisibleSelection& selection)
     if (!element)
         return false;
 
-    RawPtr<BeforeTextInsertedEvent> event = BeforeTextInsertedEvent::create(String("\n"));
+    BeforeTextInsertedEvent* event = BeforeTextInsertedEvent::create(String("\n"));
     element->dispatchEvent(event);
     return event->text().length();
 }
@@ -495,7 +495,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing,
 
         m_smartDelete = false;
 
-        RawPtr<FrameSelection> selection = FrameSelection::create();
+        FrameSelection* selection = FrameSelection::create();
         selection->setSelection(endingSelection());
         selection->modify(FrameSelection::AlterationExtend, DirectionBackward, granularity);
         if (killRing && selection->isCaret() && granularity != CharacterGranularity)
@@ -605,7 +605,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
         // Handle delete at beginning-of-block case.
         // Do nothing in the case that the caret is at the start of a
         // root editable element or at the start of a document.
-        RawPtr<FrameSelection> selection = FrameSelection::create();
+        FrameSelection* selection = FrameSelection::create();
         selection->setSelection(endingSelection());
         selection->modify(FrameSelection::AlterationExtend, DirectionForward, granularity);
         if (killRing && selection->isCaret() && granularity != CharacterGranularity)

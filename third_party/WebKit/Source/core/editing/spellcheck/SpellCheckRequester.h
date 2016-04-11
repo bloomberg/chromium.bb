@@ -45,14 +45,14 @@ class TextCheckerClient;
 
 class SpellCheckRequest final : public TextCheckingRequest {
 public:
-    static RawPtr<SpellCheckRequest> create(TextCheckingTypeMask, TextCheckingProcessType, const EphemeralRange& checkingRange, const EphemeralRange& paragraphRange, int requestNumber = 0);
+    static SpellCheckRequest* create(TextCheckingTypeMask, TextCheckingProcessType, const EphemeralRange& checkingRange, const EphemeralRange& paragraphRange, int requestNumber = 0);
 
     ~SpellCheckRequest() override;
     void dispose();
 
-    RawPtr<Range> checkingRange() const { return m_checkingRange; }
-    RawPtr<Range> paragraphRange() const { return m_paragraphRange; }
-    RawPtr<Element> rootEditableElement() const { return m_rootEditableElement; }
+    Range* checkingRange() const { return m_checkingRange; }
+    Range* paragraphRange() const { return m_paragraphRange; }
+    Element* rootEditableElement() const { return m_rootEditableElement; }
 
     void setCheckerAndSequence(SpellCheckRequester*, int sequence);
 #if !ENABLE(OILPAN)
@@ -69,7 +69,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    SpellCheckRequest(RawPtr<Range> checkingRange, RawPtr<Range> paragraphRange, const String&, TextCheckingTypeMask, TextCheckingProcessType, const Vector<uint32_t>& documentMarkersInRange, const Vector<unsigned>& documentMarkerOffsets, int requestNumber);
+    SpellCheckRequest(Range* checkingRange, Range* paragraphRange, const String&, TextCheckingTypeMask, TextCheckingProcessType, const Vector<uint32_t>& documentMarkersInRange, const Vector<unsigned>& documentMarkerOffsets, int requestNumber);
 
     Member<SpellCheckRequester> m_requester;
     Member<Range> m_checkingRange;
@@ -82,7 +82,7 @@ private:
 class SpellCheckRequester final : public GarbageCollectedFinalized<SpellCheckRequester> {
     WTF_MAKE_NONCOPYABLE(SpellCheckRequester);
 public:
-    static RawPtr<SpellCheckRequester> create(LocalFrame& frame)
+    static SpellCheckRequester* create(LocalFrame& frame)
     {
         return new SpellCheckRequester(frame);
     }
@@ -92,7 +92,7 @@ public:
 
     bool isCheckable(Range*) const;
 
-    void requestCheckingFor(RawPtr<SpellCheckRequest>);
+    void requestCheckingFor(SpellCheckRequest*);
     void cancelCheck();
 
     int lastRequestSequence() const
@@ -117,8 +117,8 @@ private:
     bool canCheckAsynchronously(Range*) const;
     TextCheckerClient& client() const;
     void timerFiredToProcessQueuedRequest(Timer<SpellCheckRequester>*);
-    void invokeRequest(RawPtr<SpellCheckRequest>);
-    void enqueueRequest(RawPtr<SpellCheckRequest>);
+    void invokeRequest(SpellCheckRequest*);
+    void enqueueRequest(SpellCheckRequest*);
     void didCheckSucceed(int sequence, const Vector<TextCheckingResult>&);
     void didCheckCancel(int sequence);
     void didCheck(int sequence, const Vector<TextCheckingResult>&);

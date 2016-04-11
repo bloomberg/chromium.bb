@@ -46,7 +46,7 @@ struct TextCheckingResult;
 class CORE_EXPORT SpellChecker final : public GarbageCollectedFinalized<SpellChecker> {
     WTF_MAKE_NONCOPYABLE(SpellChecker);
 public:
-    static RawPtr<SpellChecker> create(LocalFrame&);
+    static SpellChecker* create(LocalFrame&);
 
     ~SpellChecker();
     DECLARE_TRACE();
@@ -65,7 +65,7 @@ public:
     bool markMisspellings(const VisibleSelection&);
     void markBadGrammar(const VisibleSelection&);
     void markMisspellingsAndBadGrammar(const VisibleSelection& spellingSelection, bool markGrammar, const VisibleSelection& grammarSelection);
-    void markAndReplaceFor(RawPtr<SpellCheckRequest>, const Vector<TextCheckingResult>&);
+    void markAndReplaceFor(SpellCheckRequest*, const Vector<TextCheckingResult>&);
     void markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask, const EphemeralRange& spellingRange, const EphemeralRange& grammarRange);
     void advanceToNextMisspelling(bool startBeforeSelection = false);
     void showSpellingGuessPanel();

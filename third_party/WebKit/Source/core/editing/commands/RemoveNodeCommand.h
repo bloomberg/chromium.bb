@@ -32,7 +32,7 @@ namespace blink {
 
 class RemoveNodeCommand final : public SimpleEditCommand {
 public:
-    static RawPtr<RemoveNodeCommand> create(RawPtr<Node> node, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
+    static RemoveNodeCommand* create(Node* node, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
     {
         return new RemoveNodeCommand(node, shouldAssumeContentIsAlwaysEditable);
     }
@@ -40,7 +40,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    explicit RemoveNodeCommand(RawPtr<Node>, ShouldAssumeContentIsAlwaysEditable);
+    explicit RemoveNodeCommand(Node*, ShouldAssumeContentIsAlwaysEditable);
 
     void doApply(EditingState*) override;
     void doUnapply() override;

@@ -32,7 +32,7 @@ namespace blink {
 
 class SplitElementCommand final : public SimpleEditCommand {
 public:
-    static RawPtr<SplitElementCommand> create(RawPtr<Element> element, RawPtr<Node> splitPointChild)
+    static SplitElementCommand* create(Element* element, Node* splitPointChild)
     {
         return new SplitElementCommand(element, splitPointChild);
     }
@@ -40,7 +40,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    SplitElementCommand(RawPtr<Element>, RawPtr<Node> splitPointChild);
+    SplitElementCommand(Element*, Node* splitPointChild);
 
     void doApply(EditingState*) override;
     void doUnapply() override;

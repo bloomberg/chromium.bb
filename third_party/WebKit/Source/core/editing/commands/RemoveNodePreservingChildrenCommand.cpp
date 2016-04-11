@@ -30,7 +30,7 @@
 
 namespace blink {
 
-RemoveNodePreservingChildrenCommand::RemoveNodePreservingChildrenCommand(RawPtr<Node> node, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
+RemoveNodePreservingChildrenCommand::RemoveNodePreservingChildrenCommand(Node* node, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
     : CompositeEditCommand(node->document())
     , m_node(node)
     , m_shouldAssumeContentIsAlwaysEditable(shouldAssumeContentIsAlwaysEditable)
@@ -47,11 +47,11 @@ void RemoveNodePreservingChildrenCommand::doApply(EditingState* editingState)
         getChildNodes(toContainerNode(*m_node), children);
 
         for (auto& currentChild : children) {
-            RawPtr<Node> child = currentChild.release();
+            Node* child = currentChild.release();
             removeNode(child, editingState, m_shouldAssumeContentIsAlwaysEditable);
             if (editingState->isAborted())
                 return;
-            insertNodeBefore(child.release(), m_node, editingState, m_shouldAssumeContentIsAlwaysEditable);
+            insertNodeBefore(child, m_node, editingState, m_shouldAssumeContentIsAlwaysEditable);
             if (editingState->isAborted())
                 return;
         }

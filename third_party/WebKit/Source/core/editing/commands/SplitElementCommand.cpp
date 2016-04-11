@@ -33,7 +33,7 @@
 
 namespace blink {
 
-SplitElementCommand::SplitElementCommand(RawPtr<Element> element, RawPtr<Node> atChild)
+SplitElementCommand::SplitElementCommand(Element* element, Node* atChild)
     : SimpleEditCommand(element->document())
     , m_element2(element)
     , m_atChild(atChild)
@@ -83,10 +83,10 @@ void SplitElementCommand::doUnapply()
     NodeVector children;
     getChildNodes(*m_element1, children);
 
-    RawPtr<Node> refChild = m_element2->firstChild();
+    Node* refChild = m_element2->firstChild();
 
     for (const auto& child : children)
-        m_element2->insertBefore(child.get(), refChild.get(), IGNORE_EXCEPTION);
+        m_element2->insertBefore(child, refChild, IGNORE_EXCEPTION);
 
     // Recover the id attribute of the original element.
     const AtomicString& id = m_element1->getAttribute(HTMLNames::idAttr);

@@ -137,7 +137,7 @@ bool EphemeralRangeTemplate<Strategy>::isValid() const
 }
 #endif
 
-RawPtr<Range> createRange(const EphemeralRange& range)
+Range* createRange(const EphemeralRange& range)
 {
     if (range.isNull())
         return nullptr;

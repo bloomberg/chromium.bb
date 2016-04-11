@@ -46,9 +46,9 @@ TEST_F(CharacterIteratorTest, SubrangeWithReplacedElements)
     document().view()->updateAllLifecyclePhases();
 
     Node* divNode = document().getElementById("div");
-    RawPtr<Range> entireRange = Range::create(document(), divNode, 0, divNode, 3);
+    Range* entireRange = Range::create(document(), divNode, 0, divNode, 3);
 
-    EphemeralRange result = calculateCharacterSubrange(EphemeralRange(entireRange.get()), 2, 3);
+    EphemeralRange result = calculateCharacterSubrange(EphemeralRange(entireRange), 2, 3);
     Node* textNode = divNode->lastChild();
     EXPECT_EQ(Position(textNode, 0), result.startPosition());
     EXPECT_EQ(Position(textNode, 3), result.endPosition());

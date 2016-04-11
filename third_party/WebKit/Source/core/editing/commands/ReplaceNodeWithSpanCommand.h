@@ -41,7 +41,7 @@ class HTMLSpanElement;
 // More accurately, this is ReplaceElementWithSpanPreservingChildrenAndAttributesCommand
 class ReplaceNodeWithSpanCommand final : public SimpleEditCommand {
 public:
-    static RawPtr<ReplaceNodeWithSpanCommand> create(RawPtr<HTMLElement> element)
+    static ReplaceNodeWithSpanCommand* create(HTMLElement* element)
     {
         return new ReplaceNodeWithSpanCommand(element);
     }
@@ -51,7 +51,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    explicit ReplaceNodeWithSpanCommand(RawPtr<HTMLElement>);
+    explicit ReplaceNodeWithSpanCommand(HTMLElement*);
 
     void doApply(EditingState*) override;
     void doUnapply() override;

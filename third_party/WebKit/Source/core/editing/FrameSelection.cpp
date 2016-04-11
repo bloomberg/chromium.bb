@@ -292,14 +292,13 @@ void FrameSelection::setSelectionAlgorithm(const VisibleSelectionTemplate<Strate
         // TODO(hajimehoshi): validateSelection already checks if the selection
         // is valid, thus we don't need this 'if' clause any more.
         if (document.frame() && document.frame() != m_frame && document != m_frame->document()) {
-            RawPtr<LocalFrame> guard(document.frame());
             document.frame()->selection().setSelection(s, options, align, granularity);
             // It's possible that during the above set selection, this
             // |FrameSelection| has been modified by
             // |selectFrameElementInParentIfFullySelected|, but that the
             // selection is no longer valid since the frame is about to be
             // destroyed. If this is the case, clear our selection.
-            if (!guard->host() && !selection().isNonOrphanedCaretOrRange())
+            if (!document.frame()->host() && !selection().isNonOrphanedCaretOrRange())
                 clear();
             return;
         }
@@ -342,7 +341,6 @@ void FrameSelection::setSelectionAlgorithm(const VisibleSelectionTemplate<Strate
     // Always clear the x position used for vertical arrow navigation.
     // It will be restored by the vertical arrow navigation code if necessary.
     m_selectionEditor->resetXPosForVerticalArrowNavigation();
-    RawPtr<LocalFrame> protector(m_frame.get());
     // This may dispatch a synchronous focus-related events.
     selectFrameElementInParentIfFullySelected();
     notifyLayoutObjectOfSelectionChange(userTriggered);
@@ -840,14 +838,14 @@ void FrameSelection::selectAll()
         }
     }
 
-    RawPtr<Node> root = nullptr;
+    Node* root = nullptr;
     Node* selectStartTarget = nullptr;
     if (isContentEditable()) {
         root = highestEditableRoot(selection().start());
         if (Node* shadowRoot = selection().nonBoundaryShadowTreeRootNode())
             selectStartTarget = shadowRoot->shadowHost();
         else
-            selectStartTarget = root.get();
+            selectStartTarget = root;
     } else {
         root = selection().nonBoundaryShadowTreeRootNode();
         if (root) {
@@ -857,7 +855,7 @@ void FrameSelection::selectAll()
             selectStartTarget = document->body();
         }
     }
-    if (!root || editingIgnoresContent(root.get()))
+    if (!root || editingIgnoresContent(root))
         return;
 
     if (selectStartTarget) {
@@ -868,7 +866,7 @@ void FrameSelection::selectAll()
             return;
     }
 
-    VisibleSelection newSelection(VisibleSelection::selectionFromContentsOfNode(root.get()));
+    VisibleSelection newSelection(VisibleSelection::selectionFromContentsOfNode(root));
     setSelection(newSelection);
     selectFrameElementInParentIfFullySelected();
     notifyLayoutObjectOfSelectionChange(UserTriggered);
@@ -887,7 +885,7 @@ bool FrameSelection::setSelectedRange(const EphemeralRange& range, TextAffinity 
     return m_selectionEditor->setSelectedRange(range, affinity, directional, options);
 }
 
-RawPtr<Range> FrameSelection::firstRange() const
+Range* FrameSelection::firstRange() const
 {
     return m_selectionEditor->firstRange();
 }
@@ -922,7 +920,7 @@ void FrameSelection::notifyEventHandlerForSelectionChange()
 void FrameSelection::focusedOrActiveStateChanged()
 {
     bool activeAndFocused = isFocusedAndActive();
-    RawPtr<Document> document = m_frame->document();
+    Document* document = m_frame->document();
 
     // Trigger style invalidation from the focused element. Even though
     // the focused element hasn't changed, the evaluation of focus pseudo

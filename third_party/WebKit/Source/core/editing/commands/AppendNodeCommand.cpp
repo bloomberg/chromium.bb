@@ -29,7 +29,7 @@
 
 namespace blink {
 
-AppendNodeCommand::AppendNodeCommand(RawPtr<ContainerNode> parent, RawPtr<Node> node)
+AppendNodeCommand::AppendNodeCommand(ContainerNode* parent, Node* node)
     : SimpleEditCommand(parent->document())
     , m_parent(parent)
     , m_node(node)

@@ -122,8 +122,8 @@ VisibleSelection Editor::selectionForCommand(Event* event)
     HTMLTextFormControlElement* textFormControlOfSelectionStart = enclosingTextFormControl(selection.start());
     HTMLTextFormControlElement* textFromControlOfTarget = isHTMLTextFormControlElement(*event->target()->toNode()) ? toHTMLTextFormControlElement(event->target()->toNode()) : 0;
     if (textFromControlOfTarget && (selection.start().isNull() || textFromControlOfTarget != textFormControlOfSelectionStart)) {
-        if (RawPtr<Range> range = textFromControlOfTarget->selection())
-            return VisibleSelection(EphemeralRange(range.get()), TextAffinity::Downstream, selection.isDirectional());
+        if (Range* range = textFromControlOfTarget->selection())
+            return VisibleSelection(EphemeralRange(range), TextAffinity::Downstream, selection.isDirectional());
     }
     return selection;
 }
@@ -353,7 +353,7 @@ void Editor::pasteAsPlainText(const String& pastingText, bool smartReplace)
     target->dispatchEvent(TextEvent::createForPlainTextPaste(frame().domWindow(), pastingText, smartReplace));
 }
 
-void Editor::pasteAsFragment(RawPtr<DocumentFragment> pastingFragment, bool smartReplace, bool matchStyle)
+void Editor::pasteAsFragment(DocumentFragment* pastingFragment, bool smartReplace, bool matchStyle)
 {
     Element* target = findEventTargetFromSelection();
     if (!target)
@@ -390,7 +390,7 @@ void Editor::pasteAsPlainTextWithPasteboard(Pasteboard* pasteboard)
 
 void Editor::pasteWithPasteboard(Pasteboard* pasteboard)
 {
-    RawPtr<DocumentFragment> fragment = nullptr;
+    DocumentFragment* fragment = nullptr;
     bool chosePlainText = false;
 
     if (pasteboard->isHTMLAvailable()) {
@@ -485,7 +485,7 @@ bool Editor::dispatchCPPEvent(const AtomicString& eventType, DataTransferAccessP
             ? DataObject::create()
             : DataObject::createFromPasteboard(pasteMode));
 
-    RawPtr<Event> evt = ClipboardEvent::create(eventType, true, true, dataTransfer);
+    Event* evt = ClipboardEvent::create(eventType, true, true, dataTransfer);
     target->dispatchEvent(evt);
     bool noDefaultProcessing = evt->defaultPrevented();
     if (noDefaultProcessing && policy == DataTransferWritable)
@@ -502,7 +502,7 @@ bool Editor::canSmartReplaceWithPasteboard(Pasteboard* pasteboard)
     return smartInsertDeleteEnabled() && pasteboard->canSmartReplace();
 }
 
-void Editor::replaceSelectionWithFragment(RawPtr<DocumentFragment> fragment, bool selectReplacement, bool smartReplace, bool matchStyle)
+void Editor::replaceSelectionWithFragment(DocumentFragment* fragment, bool selectReplacement, bool smartReplace, bool matchStyle)
 {
     if (frame().selection().isNone() || !frame().selection().isContentEditable() || !fragment)
         return;
@@ -525,7 +525,7 @@ void Editor::replaceSelectionWithText(const String& text, bool selectReplacement
 }
 
 // TODO(xiaochengh): Merge it with |replaceSelectionWithFragment()|.
-void Editor::replaceSelectionAfterDragging(RawPtr<DocumentFragment> fragment, bool smartReplace, bool plainText)
+void Editor::replaceSelectionAfterDragging(DocumentFragment* fragment, bool smartReplace, bool plainText)
 {
     ReplaceSelectionCommand::CommandOptions options = ReplaceSelectionCommand::SelectReplacement | ReplaceSelectionCommand::PreventNesting;
     if (smartReplace)
@@ -536,7 +536,7 @@ void Editor::replaceSelectionAfterDragging(RawPtr<DocumentFragment> fragment, bo
     ReplaceSelectionCommand::create(*frame().document(), fragment, options, EditActionDrag)->apply();
 }
 
-void Editor::moveSelectionAfterDragging(RawPtr<DocumentFragment> fragment, const Position& pos, bool smartInsert, bool smartDelete)
+void Editor::moveSelectionAfterDragging(DocumentFragment* fragment, const Position& pos, bool smartInsert, bool smartDelete)
 {
     MoveSelectionCommand::create(fragment, pos, smartInsert, smartDelete)->apply();
 }
@@ -609,7 +609,7 @@ void Editor::applyStyle(StylePropertySet* style, EditAction editingAction)
     case RangeSelection:
         if (style) {
             ASSERT(frame().document());
-            ApplyStyleCommand::create(*frame().document(), EditingStyle::create(style).get(), editingAction)->apply();
+            ApplyStyleCommand::create(*frame().document(), EditingStyle::create(style), editingAction)->apply();
         }
         break;
     }
@@ -620,7 +620,7 @@ void Editor::applyParagraphStyle(StylePropertySet* style, EditAction editingActi
     if (frame().selection().isNone() || !style)
         return;
     ASSERT(frame().document());
-    ApplyStyleCommand::create(*frame().document(), EditingStyle::create(style).get(), editingAction, ApplyStyleCommand::ForceBlockProperties)->apply();
+    ApplyStyleCommand::create(*frame().document(), EditingStyle::create(style), editingAction, ApplyStyleCommand::ForceBlockProperties)->apply();
 }
 
 void Editor::applyStyleToSelection(StylePropertySet* style, EditAction editingAction)
@@ -642,7 +642,7 @@ void Editor::applyParagraphStyleToSelection(StylePropertySet* style, EditAction 
 bool Editor::selectionStartHasStyle(CSSPropertyID propertyID, const String& value) const
 {
     return EditingStyle::create(propertyID, value)->triStateOfStyle(
-        EditingStyle::styleAtSelectionStart(frame().selection().selection(), propertyID == CSSPropertyBackgroundColor).get());
+        EditingStyle::styleAtSelectionStart(frame().selection().selection(), propertyID == CSSPropertyBackgroundColor));
 }
 
 TriState Editor::selectionHasStyle(CSSPropertyID propertyID, const String& value) const
@@ -652,7 +652,7 @@ TriState Editor::selectionHasStyle(CSSPropertyID propertyID, const String& value
 
 String Editor::selectionStartCSSPropertyValue(CSSPropertyID propertyID)
 {
-    RawPtr<EditingStyle> selectionStyle = EditingStyle::styleAtSelectionStart(frame().selection().selection(),
+    EditingStyle* selectionStyle = EditingStyle::styleAtSelectionStart(frame().selection().selection(),
         propertyID == CSSPropertyBackgroundColor);
     if (!selectionStyle || !selectionStyle->style())
         return String();
@@ -662,7 +662,7 @@ String Editor::selectionStartCSSPropertyValue(CSSPropertyID propertyID)
     return selectionStyle->style()->getPropertyValue(propertyID);
 }
 
-static void dispatchEditableContentChangedEvents(RawPtr<Element> startRoot, RawPtr<Element> endRoot)
+static void dispatchEditableContentChangedEvents(Element* startRoot, Element* endRoot)
 {
     if (startRoot)
         startRoot->dispatchEvent(Event::create(EventTypeNames::webkitEditableContentChanged));
@@ -688,13 +688,13 @@ void Editor::requestSpellcheckingAfterApplyingCommand(CompositeEditCommand* cmd)
     spellChecker().chunkAndMarkAllMisspellingsAndBadGrammar(cmd->endingSelection().rootEditableElement(), insertedRange);
 }
 
-void Editor::appliedEditing(RawPtr<CompositeEditCommand> cmd)
+void Editor::appliedEditing(CompositeEditCommand* cmd)
 {
     EventQueueScope scope;
     frame().document()->updateLayout();
 
     // Request spell checking after pasting before any further DOM change.
-    requestSpellcheckingAfterApplyingCommand(cmd.get());
+    requestSpellcheckingAfterApplyingCommand(cmd);
 
     EditCommandComposition* composition = cmd->composition();
     ASSERT(composition);
@@ -721,7 +721,7 @@ void Editor::appliedEditing(RawPtr<CompositeEditCommand> cmd)
     respondToChangedContents(newSelection);
 }
 
-void Editor::unappliedEditing(RawPtr<EditCommandComposition> cmd)
+void Editor::unappliedEditing(EditCommandComposition* cmd)
 {
     EventQueueScope scope;
     frame().document()->updateLayout();
@@ -739,7 +739,7 @@ void Editor::unappliedEditing(RawPtr<EditCommandComposition> cmd)
     respondToChangedContents(newSelection);
 }
 
-void Editor::reappliedEditing(RawPtr<EditCommandComposition> cmd)
+void Editor::reappliedEditing(EditCommandComposition* cmd)
 {
     EventQueueScope scope;
     frame().document()->updateLayout();
@@ -755,7 +755,7 @@ void Editor::reappliedEditing(RawPtr<EditCommandComposition> cmd)
     respondToChangedContents(newSelection);
 }
 
-RawPtr<Editor> Editor::create(LocalFrame& frame)
+Editor* Editor::create(LocalFrame& frame)
 {
     return new Editor(frame);
 }
@@ -1032,9 +1032,9 @@ void Editor::setBaseWritingDirection(WritingDirection direction)
         return;
     }
 
-    RawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create(HTMLQuirksMode);
+    MutableStylePropertySet* style = MutableStylePropertySet::create(HTMLQuirksMode);
     style->setProperty(CSSPropertyDirection, direction == LeftToRightWritingDirection ? "ltr" : direction == RightToLeftWritingDirection ? "rtl" : "inherit", false);
-    applyParagraphStyleToSelection(style.get(), EditActionSetWritingDirection);
+    applyParagraphStyleToSelection(style, EditActionSetWritingDirection);
 }
 
 void Editor::revealSelectionAfterEditingOperation(const ScrollAlignment& alignment, RevealExtentOption revealExtentOption)
@@ -1155,7 +1155,7 @@ void Editor::computeAndSetTypingStyle(StylePropertySet* style, EditAction editin
     }
 
     // Calculate the current typing style.
-    RawPtr<EditingStyle> typingStyle = nullptr;
+    EditingStyle* typingStyle = nullptr;
     if (frame().selection().typingStyle()) {
         typingStyle = frame().selection().typingStyle()->copy();
         typingStyle->overrideWithStyle(style);
@@ -1166,10 +1166,10 @@ void Editor::computeAndSetTypingStyle(StylePropertySet* style, EditAction editin
     typingStyle->prepareToApplyAt(frame().selection().selection().visibleStart().deepEquivalent(), EditingStyle::PreserveWritingDirection);
 
     // Handle block styles, substracting these from the typing style.
-    RawPtr<EditingStyle> blockStyle = typingStyle->extractAndRemoveBlockProperties();
+    EditingStyle* blockStyle = typingStyle->extractAndRemoveBlockProperties();
     if (!blockStyle->isEmpty()) {
         ASSERT(frame().document());
-        ApplyStyleCommand::create(*frame().document(), blockStyle.get(), editingAction)->apply();
+        ApplyStyleCommand::create(*frame().document(), blockStyle, editingAction)->apply();
     }
 
     // Set the remaining style as the typing style.
@@ -1182,19 +1182,19 @@ bool Editor::findString(const String& target, FindOptions options)
 
     // TODO(yosin) We should make |findRangeOfString()| to return
     // |EphemeralRange| rather than|Range| object.
-    RawPtr<Range> resultRange = findRangeOfString(target, EphemeralRange(selection.start(), selection.end()), static_cast<FindOptions>(options | FindAPICall));
+    Range* resultRange = findRangeOfString(target, EphemeralRange(selection.start(), selection.end()), static_cast<FindOptions>(options | FindAPICall));
 
     if (!resultRange)
         return false;
 
-    frame().selection().setSelection(VisibleSelection(EphemeralRange(resultRange.get())));
+    frame().selection().setSelection(VisibleSelection(EphemeralRange(resultRange)));
     frame().selection().revealSelection();
     return true;
 }
 
-RawPtr<Range> Editor::findStringAndScrollToVisible(const String& target, Range* previousMatch, FindOptions options)
+Range* Editor::findStringAndScrollToVisible(const String& target, Range* previousMatch, FindOptions options)
 {
-    RawPtr<Range> nextMatch = findRangeOfString(target, EphemeralRangeInFlatTree(previousMatch), options);
+    Range* nextMatch = findRangeOfString(target, EphemeralRangeInFlatTree(previousMatch), options);
     if (!nextMatch)
         return nullptr;
 
@@ -1203,14 +1203,14 @@ RawPtr<Range> Editor::findStringAndScrollToVisible(const String& target, Range* 
         ScrollAlignment::alignCenterIfNeeded, ScrollAlignment::alignCenterIfNeeded, UserScroll);
     firstNode->document().setSequentialFocusNavigationStartingPoint(firstNode);
 
-    return nextMatch.release();
+    return nextMatch;
 }
 
 // TODO(yosin) We should return |EphemeralRange| rather than |Range|. We use
 // |Range| object for checking whether start and end position crossing shadow
 // boundaries, however we can do it without |Range| object.
 template <typename Strategy>
-static RawPtr<Range> findStringBetweenPositions(const String& target, const EphemeralRangeTemplate<Strategy>& referenceRange, FindOptions options)
+static Range* findStringBetweenPositions(const String& target, const EphemeralRangeTemplate<Strategy>& referenceRange, FindOptions options)
 {
     EphemeralRangeTemplate<Strategy> searchRange(referenceRange);
 
@@ -1221,9 +1221,9 @@ static RawPtr<Range> findStringBetweenPositions(const String& target, const Ephe
         if (resultRange.isCollapsed())
             return nullptr;
 
-        RawPtr<Range> rangeObject = Range::create(resultRange.document(), toPositionInDOMTree(resultRange.startPosition()), toPositionInDOMTree(resultRange.endPosition()));
+        Range* rangeObject = Range::create(resultRange.document(), toPositionInDOMTree(resultRange.startPosition()), toPositionInDOMTree(resultRange.endPosition()));
         if (!rangeObject->collapsed())
-            return rangeObject.release();
+            return rangeObject;
 
         // Found text spans over multiple TreeScopes. Since it's impossible to
         // return such section as a Range, we skip this match and seek for the
@@ -1241,7 +1241,7 @@ static RawPtr<Range> findStringBetweenPositions(const String& target, const Ephe
 }
 
 template <typename Strategy>
-static RawPtr<Range> findRangeOfStringAlgorithm(Document& document, const String& target, const EphemeralRangeTemplate<Strategy>& referenceRange, FindOptions options)
+static Range* findRangeOfStringAlgorithm(Document& document, const String& target, const EphemeralRangeTemplate<Strategy>& referenceRange, FindOptions options)
 {
     if (target.isEmpty())
         return nullptr;
@@ -1266,13 +1266,13 @@ static RawPtr<Range> findRangeOfStringAlgorithm(Document& document, const String
             searchRange = EphemeralRangeTemplate<Strategy>(documentRange.startPosition(), referenceRange.startPosition());
     }
 
-    RawPtr<Range> resultRange = findStringBetweenPositions(target, searchRange, options);
+    Range* resultRange = findStringBetweenPositions(target, searchRange, options);
 
     // If we started in the reference range and the found range exactly matches
     // the reference range, find again. Build a selection with the found range
     // to remove collapsed whitespace. Compare ranges instead of selection
     // objects to ignore the way that the current selection was made.
-    if (resultRange && startInReferenceRange && normalizeRange(EphemeralRangeTemplate<Strategy>(resultRange.get())) == referenceRange) {
+    if (resultRange && startInReferenceRange && normalizeRange(EphemeralRangeTemplate<Strategy>(resultRange)) == referenceRange) {
         if (forward)
             searchRange = EphemeralRangeTemplate<Strategy>(fromPositionInDOMTree<Strategy>(resultRange->endPosition()), searchRange.endPosition());
         else
@@ -1283,15 +1283,15 @@ static RawPtr<Range> findRangeOfStringAlgorithm(Document& document, const String
     if (!resultRange && options & WrapAround)
         return findStringBetweenPositions(target, documentRange, options);
 
-    return resultRange.release();
+    return resultRange;
 }
 
-RawPtr<Range> Editor::findRangeOfString(const String& target, const EphemeralRange& reference, FindOptions options)
+Range* Editor::findRangeOfString(const String& target, const EphemeralRange& reference, FindOptions options)
 {
     return findRangeOfStringAlgorithm<EditingStrategy>(*frame().document(), target, reference, options);
 }
 
-RawPtr<Range> Editor::findRangeOfString(const String& target, const EphemeralRangeInFlatTree& reference, FindOptions options)
+Range* Editor::findRangeOfString(const String& target, const EphemeralRangeInFlatTree& reference, FindOptions options)
 {
     return findRangeOfStringAlgorithm<EditingInFlatTreeStrategy>(*frame().document(), target, reference, options);
 }
@@ -1330,8 +1330,8 @@ void Editor::tidyUpHTMLStructure(Document& document)
     bool needsValidStructure = document.hasEditableStyle() || (document.documentElement() && document.documentElement()->hasEditableStyle());
     if (!needsValidStructure)
         return;
-    RawPtr<Element> existingHead = nullptr;
-    RawPtr<Element> existingBody = nullptr;
+    Element* existingHead = nullptr;
+    Element* existingBody = nullptr;
     Element* currentRoot = document.documentElement();
     if (currentRoot) {
         if (isHTMLHtmlElement(currentRoot))
@@ -1349,19 +1349,19 @@ void Editor::tidyUpHTMLStructure(Document& document)
     // rootEditableElement.
     document.addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "document.execCommand() doesn't work with an invalid HTML structure. It is corrected automatically."));
 
-    RawPtr<Element> root = HTMLHtmlElement::create(document);
+    Element* root = HTMLHtmlElement::create(document);
     if (existingHead)
-        root->appendChild(existingHead.release());
-    RawPtr<Element> body = nullptr;
+        root->appendChild(existingHead);
+    Element* body = nullptr;
     if (existingBody)
-        body = existingBody.release();
+        body = existingBody;
     else
         body = HTMLBodyElement::create(document);
     if (document.documentElement() && body != document.documentElement())
         body->appendChild(document.documentElement());
-    root->appendChild(body.release());
+    root->appendChild(body);
     ASSERT(!document.documentElement());
-    document.appendChild(root.release());
+    document.appendChild(root);
 
     // TODO(tkent): Should we check and move Text node children of <html>?
 }

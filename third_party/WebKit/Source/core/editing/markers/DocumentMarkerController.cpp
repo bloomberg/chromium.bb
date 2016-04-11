@@ -173,7 +173,7 @@ static bool doesNotInclude(const Member<RenderedDocumentMarker>& marker, size_t 
 
 static bool updateMarkerRenderedRect(Node* node, RenderedDocumentMarker& marker)
 {
-    RawPtr<Range> range = Range::create(node->document());
+    Range* range = Range::create(node->document());
     // The offsets of the marker may be out-dated, so check for exceptions.
     TrackExceptionState exceptionState;
     range->setStart(node, marker.startOffset(), exceptionState);
@@ -207,16 +207,16 @@ void DocumentMarkerController::addMarker(Node* node, const DocumentMarker& newMa
     }
 
     Member<MarkerList>& list = markers->at(markerListIndex);
-    RawPtr<RenderedDocumentMarker> newRenderedMarker = RenderedDocumentMarker::create(newMarker);
+    RenderedDocumentMarker* newRenderedMarker = RenderedDocumentMarker::create(newMarker);
     updateMarkerRenderedRect(node, *newRenderedMarker);
     if (list->isEmpty() || list->last()->endOffset() < newMarker.startOffset()) {
-        list->append(newRenderedMarker.release());
+        list->append(newRenderedMarker);
     } else {
         if (newMarker.type() != DocumentMarker::TextMatch && newMarker.type() != DocumentMarker::Composition) {
-            mergeOverlapping(list.get(), newRenderedMarker.release());
+            mergeOverlapping(list.get(), newRenderedMarker);
         } else {
             MarkerList::iterator pos = std::lower_bound(list->begin(), list->end(), &newMarker, startsFurther);
-            list->insert(pos - list->begin(), newRenderedMarker.release());
+            list->insert(pos - list->begin(), newRenderedMarker);
         }
     }
 
@@ -225,9 +225,9 @@ void DocumentMarkerController::addMarker(Node* node, const DocumentMarker& newMa
         node->layoutObject()->setShouldDoFullPaintInvalidation();
 }
 
-void DocumentMarkerController::mergeOverlapping(MarkerList* list, RawPtr<RenderedDocumentMarker> toInsert)
+void DocumentMarkerController::mergeOverlapping(MarkerList* list, RenderedDocumentMarker* toInsert)
 {
-    MarkerList::iterator firstOverlapping = std::lower_bound(list->begin(), list->end(), toInsert.get(), doesNotOverlap);
+    MarkerList::iterator firstOverlapping = std::lower_bound(list->begin(), list->end(), toInsert, doesNotOverlap);
     size_t index = firstOverlapping - list->begin();
     list->insert(index, toInsert);
     MarkerList::iterator inserted = list->begin() + index;

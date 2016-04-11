@@ -40,7 +40,7 @@ class Range;
 
 class FormatBlockCommand final : public ApplyBlockElementCommand {
 public:
-    static RawPtr<FormatBlockCommand> create(Document& document, const QualifiedName& tagName)
+    static FormatBlockCommand* create(Document& document, const QualifiedName& tagName)
     {
         return new FormatBlockCommand(document, tagName);
     }
@@ -54,7 +54,7 @@ private:
     FormatBlockCommand(Document&, const QualifiedName& tagName);
 
     void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection, EditingState*) override;
-    void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RawPtr<HTMLElement>&, EditingState*) override;
+    void formatRange(const Position& start, const Position& end, const Position& endOfSelection, HTMLElement*&, EditingState*) override;
     EditAction editingAction() const override { return EditActionFormatBlock; }
 
     bool m_didApply;

@@ -48,19 +48,19 @@ public:
     enum EAddStyledElement { AddStyledElement, DoNotAddStyledElement };
     typedef bool (*IsInlineElementToRemoveFunction)(const Element*);
 
-    static RawPtr<ApplyStyleCommand> create(Document& document, const EditingStyle* style, EditAction action, EPropertyLevel level = PropertyDefault)
+    static ApplyStyleCommand* create(Document& document, const EditingStyle* style, EditAction action, EPropertyLevel level = PropertyDefault)
     {
         return new ApplyStyleCommand(document, style, action, level);
     }
-    static RawPtr<ApplyStyleCommand> create(Document& document, const EditingStyle* style, const Position& start, const Position& end)
+    static ApplyStyleCommand* create(Document& document, const EditingStyle* style, const Position& start, const Position& end)
     {
         return new ApplyStyleCommand(document, style, start, end);
     }
-    static RawPtr<ApplyStyleCommand> create(RawPtr<Element> element, bool removeOnly)
+    static ApplyStyleCommand* create(Element* element, bool removeOnly)
     {
         return new ApplyStyleCommand(element, removeOnly);
     }
-    static RawPtr<ApplyStyleCommand> create(Document& document, const EditingStyle* style, IsInlineElementToRemoveFunction isInlineElementToRemoveFunction, EditAction action)
+    static ApplyStyleCommand* create(Document& document, const EditingStyle* style, IsInlineElementToRemoveFunction isInlineElementToRemoveFunction, EditAction action)
     {
         return new ApplyStyleCommand(document, style, isInlineElementToRemoveFunction, action);
     }
@@ -70,7 +70,7 @@ public:
 private:
     ApplyStyleCommand(Document&, const EditingStyle*, EditAction, EPropertyLevel);
     ApplyStyleCommand(Document&, const EditingStyle*, const Position& start, const Position& end);
-    ApplyStyleCommand(RawPtr<Element>, bool removeOnly);
+    ApplyStyleCommand(Element*, bool removeOnly);
     ApplyStyleCommand(Document&, const EditingStyle*, bool (*isInlineElementToRemove)(const Element*), EditAction);
 
     void doApply(EditingState*) override;
@@ -79,8 +79,8 @@ private:
     // style-removal helpers
     bool isStyledInlineElementToRemove(Element*) const;
     bool shouldApplyInlineStyleToRun(EditingStyle*, Node* runStart, Node* pastEndNode);
-    void removeConflictingInlineStyleFromRun(EditingStyle*, Member<Node>& runStart, Member<Node>& runEnd, RawPtr<Node> pastEndNode, EditingState*);
-    bool removeInlineStyleFromElement(EditingStyle*, RawPtr<HTMLElement>, EditingState*, InlineStyleRemovalMode = RemoveIfNeeded, EditingStyle* extractedStyle = nullptr);
+    void removeConflictingInlineStyleFromRun(EditingStyle*, Member<Node>& runStart, Member<Node>& runEnd, Node* pastEndNode, EditingState*);
+    bool removeInlineStyleFromElement(EditingStyle*, HTMLElement*, EditingState*, InlineStyleRemovalMode = RemoveIfNeeded, EditingStyle* extractedStyle = nullptr);
     inline bool shouldRemoveInlineStyleFromElement(EditingStyle* style, HTMLElement* element) { return removeInlineStyleFromElement(style, element, ASSERT_NO_EDITING_ABORT, RemoveNone); }
     void replaceWithSpanOrRemoveIfWithoutAttributes(HTMLElement*, EditingState*);
     bool removeImplicitlyStyledElement(EditingStyle*, HTMLElement*, InlineStyleRemovalMode, EditingStyle* extractedStyle, EditingState*);
@@ -96,11 +96,11 @@ private:
     void applyRelativeFontStyleChange(EditingStyle*, EditingState*);
     void applyInlineStyle(EditingStyle*, EditingState*);
     void fixRangeAndApplyInlineStyle(EditingStyle*, const Position& start, const Position& end, EditingState*);
-    void applyInlineStyleToNodeRange(EditingStyle*, RawPtr<Node> startNode, RawPtr<Node> pastEndNode, EditingState*);
+    void applyInlineStyleToNodeRange(EditingStyle*, Node* startNode, Node* pastEndNode, EditingState*);
     void addBlockStyle(const StyleChange&, HTMLElement*);
-    void addInlineStyleIfNeeded(EditingStyle*, RawPtr<Node> start, RawPtr<Node> end, EditingState*);
-    Position positionToComputeInlineStyleChange(RawPtr<Node>, Member<HTMLSpanElement>& dummyElement, EditingState*);
-    void applyInlineStyleChange(RawPtr<Node> startNode, RawPtr<Node> endNode, StyleChange&, EAddStyledElement, EditingState*);
+    void addInlineStyleIfNeeded(EditingStyle*, Node* start, Node* end, EditingState*);
+    Position positionToComputeInlineStyleChange(Node*, Member<HTMLSpanElement>& dummyElement, EditingState*);
+    void applyInlineStyleChange(Node* startNode, Node* endNode, StyleChange&, EAddStyledElement, EditingState*);
     void splitTextAtStart(const Position& start, const Position& end);
     void splitTextAtEnd(const Position& start, const Position& end);
     void splitTextElementAtStart(const Position& start, const Position& end);
@@ -111,7 +111,7 @@ private:
     bool mergeEndWithNextIfIdentical(const Position& start, const Position& end, EditingState*);
     void cleanupUnstyledAppleStyleSpans(ContainerNode* dummySpanAncestor, EditingState*);
 
-    void surroundNodeRangeWithElement(RawPtr<Node> start, RawPtr<Node> end, RawPtr<Element>, EditingState*);
+    void surroundNodeRangeWithElement(Node* start, Node* end, Element*, EditingState*);
     float computedFontSize(Node*);
     void joinChildTextNodes(ContainerNode*, const Position& start, const Position& end);
 

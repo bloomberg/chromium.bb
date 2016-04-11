@@ -57,7 +57,7 @@ InputMethodController::SelectionOffsetsScope::~SelectionOffsetsScope()
 
 // ----------------------------
 
-RawPtr<InputMethodController> InputMethodController::create(LocalFrame& frame)
+InputMethodController* InputMethodController::create(LocalFrame& frame)
 {
     return new InputMethodController(frame);
 }
@@ -131,7 +131,7 @@ static void dispatchCompositionEndEvent(LocalFrame& frame, const String& text)
     if (!target)
         return;
 
-    RawPtr<CompositionEvent> event =
+    CompositionEvent* event =
         CompositionEvent::create(EventTypeNames::compositionend, frame.domWindow(), text);
     target->dispatchEvent(event);
 }
@@ -264,7 +264,7 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
         // 3. Canceling the ongoing composition.
         //    Send a compositionend event when function deletes the existing composition node, i.e.
         //    !hasComposition() && test.isEmpty().
-        RawPtr<CompositionEvent> event = nullptr;
+        CompositionEvent* event = nullptr;
         if (!hasComposition()) {
             // We should send a compositionstart event only when the given text is not empty because this
             // function doesn't create a composition node when the text is empty.
@@ -278,7 +278,7 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
             else
                 event = CompositionEvent::create(EventTypeNames::compositionend, frame().domWindow(), text);
         }
-        if (event.get())
+        if (event)
             target->dispatchEvent(event);
     }
 
@@ -324,8 +324,8 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
 
     unsigned start = std::min(baseOffset + selectionStart, extentOffset);
     unsigned end = std::min(std::max(start, baseOffset + selectionEnd), extentOffset);
-    RawPtr<Range> selectedRange = Range::create(baseNode->document(), baseNode, start, baseNode, end);
-    frame().selection().setSelectedRange(selectedRange.get(), TextAffinity::Downstream, SelectionDirectionalMode::NonDirectional, NotUserTriggered);
+    Range* selectedRange = Range::create(baseNode->document(), baseNode, start, baseNode, end);
+    frame().selection().setSelectedRange(selectedRange, TextAffinity::Downstream, SelectionDirectionalMode::NonDirectional, NotUserTriggered);
 
     if (underlines.isEmpty()) {
         frame().document()->markers().addCompositionMarker(m_compositionRange->startPosition(), m_compositionRange->endPosition(), Color::black, false, LayoutTheme::theme().platformDefaultCompositionBackgroundColor());
@@ -384,7 +384,7 @@ EphemeralRange InputMethodController::compositionEphemeralRange() const
     return EphemeralRange(m_compositionRange.get());
 }
 
-RawPtr<Range> InputMethodController::compositionRange() const
+Range* InputMethodController::compositionRange() const
 {
     return hasComposition() ? m_compositionRange : nullptr;
 }

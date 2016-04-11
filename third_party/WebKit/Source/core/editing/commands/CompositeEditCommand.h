@@ -43,7 +43,7 @@ class Text;
 
 class EditCommandComposition final : public UndoStep {
 public:
-    static RawPtr<EditCommandComposition> create(Document*, const VisibleSelection&, const VisibleSelection&, EditAction);
+    static EditCommandComposition* create(Document*, const VisibleSelection&, const VisibleSelection&, EditAction);
 
     bool belongsTo(const LocalFrame&) const override;
     void unapply() override;
@@ -96,63 +96,63 @@ protected:
     //
     // sugary-sweet convenience functions to help create and apply edit commands in composite commands
     //
-    void appendNode(RawPtr<Node>, RawPtr<ContainerNode> parent, EditingState*);
-    void applyCommandToComposite(RawPtr<EditCommand>, EditingState*);
-    void applyCommandToComposite(RawPtr<CompositeEditCommand>, const VisibleSelection&, EditingState*);
+    void appendNode(Node*, ContainerNode* parent, EditingState*);
+    void applyCommandToComposite(EditCommand*, EditingState*);
+    void applyCommandToComposite(CompositeEditCommand*, const VisibleSelection&, EditingState*);
     void applyStyle(const EditingStyle*, EditingState*);
     void applyStyle(const EditingStyle*, const Position& start, const Position& end, EditingState*);
-    void applyStyledElement(RawPtr<Element>, EditingState*);
-    void removeStyledElement(RawPtr<Element>, EditingState*);
+    void applyStyledElement(Element*, EditingState*);
+    void removeStyledElement(Element*, EditingState*);
     void deleteSelection(EditingState*, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = true, bool sanitizeMarkup = true);
     void deleteSelection(const VisibleSelection&, EditingState*, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = true, bool sanitizeMarkup = true);
-    virtual void deleteTextFromNode(RawPtr<Text>, unsigned offset, unsigned count);
+    virtual void deleteTextFromNode(Text*, unsigned offset, unsigned count);
     bool isRemovableBlock(const Node*);
-    void insertNodeAfter(RawPtr<Node>, RawPtr<Node> refChild, EditingState*);
-    void insertNodeAt(RawPtr<Node>, const Position&, EditingState*);
-    void insertNodeAtTabSpanPosition(RawPtr<Node>, const Position&, EditingState*);
-    void insertNodeBefore(RawPtr<Node>, RawPtr<Node> refChild, EditingState*, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);
+    void insertNodeAfter(Node*, Node* refChild, EditingState*);
+    void insertNodeAt(Node*, const Position&, EditingState*);
+    void insertNodeAtTabSpanPosition(Node*, const Position&, EditingState*);
+    void insertNodeBefore(Node*, Node* refChild, EditingState*, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);
     void insertParagraphSeparator(EditingState*, bool useDefaultParagraphElement = false, bool pasteBlockqutoeIntoUnquotedArea = false);
-    void insertTextIntoNode(RawPtr<Text>, unsigned offset, const String& text);
-    void mergeIdenticalElements(RawPtr<Element>, RawPtr<Element>, EditingState*);
+    void insertTextIntoNode(Text*, unsigned offset, const String& text);
+    void mergeIdenticalElements(Element*, Element*, EditingState*);
     void rebalanceWhitespace();
     void rebalanceWhitespaceAt(const Position&);
-    void rebalanceWhitespaceOnTextSubstring(RawPtr<Text>, int startOffset, int endOffset);
+    void rebalanceWhitespaceOnTextSubstring(Text*, int startOffset, int endOffset);
     void prepareWhitespaceAtPositionForSplit(Position&);
     void replaceCollapsibleWhitespaceWithNonBreakingSpaceIfNeeded(const VisiblePosition&);
     bool canRebalance(const Position&) const;
     bool shouldRebalanceLeadingWhitespaceFor(const String&) const;
-    void removeCSSProperty(RawPtr<Element>, CSSPropertyID);
-    void removeElementAttribute(RawPtr<Element>, const QualifiedName& attribute);
-    void removeChildrenInRange(RawPtr<Node>, unsigned from, unsigned to, EditingState*);
-    virtual void removeNode(RawPtr<Node>, EditingState*, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);
-    HTMLSpanElement* replaceElementWithSpanPreservingChildrenAndAttributes(RawPtr<HTMLElement>);
-    void removeNodePreservingChildren(RawPtr<Node>, EditingState*, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);
-    void removeNodeAndPruneAncestors(RawPtr<Node>, EditingState*, Node* excludeNode = nullptr);
-    void moveRemainingSiblingsToNewParent(Node*, Node* pastLastNodeToMove, RawPtr<Element> prpNewParent, EditingState*);
+    void removeCSSProperty(Element*, CSSPropertyID);
+    void removeElementAttribute(Element*, const QualifiedName& attribute);
+    void removeChildrenInRange(Node*, unsigned from, unsigned to, EditingState*);
+    virtual void removeNode(Node*, EditingState*, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);
+    HTMLSpanElement* replaceElementWithSpanPreservingChildrenAndAttributes(HTMLElement*);
+    void removeNodePreservingChildren(Node*, EditingState*, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);
+    void removeNodeAndPruneAncestors(Node*, EditingState*, Node* excludeNode = nullptr);
+    void moveRemainingSiblingsToNewParent(Node*, Node* pastLastNodeToMove, Element* newParent, EditingState*);
     void updatePositionForNodeRemovalPreservingChildren(Position&, Node&);
-    void prune(RawPtr<Node>, EditingState*, Node* excludeNode = nullptr);
-    void replaceTextInNode(RawPtr<Text>, unsigned offset, unsigned count, const String& replacementText);
+    void prune(Node*, EditingState*, Node* excludeNode = nullptr);
+    void replaceTextInNode(Text*, unsigned offset, unsigned count, const String& replacementText);
     Position replaceSelectedTextInNode(const String&);
-    void replaceTextInNodePreservingMarkers(RawPtr<Text>, unsigned offset, unsigned count, const String& replacementText);
+    void replaceTextInNodePreservingMarkers(Text*, unsigned offset, unsigned count, const String& replacementText);
     Position positionOutsideTabSpan(const Position&);
-    void setNodeAttribute(RawPtr<Element>, const QualifiedName& attribute, const AtomicString& value);
-    void splitElement(RawPtr<Element>, RawPtr<Node> atChild);
-    void splitTextNode(RawPtr<Text>, unsigned offset);
-    void splitTextNodeContainingElement(RawPtr<Text>, unsigned offset);
-    void wrapContentsInDummySpan(RawPtr<Element>);
+    void setNodeAttribute(Element*, const QualifiedName& attribute, const AtomicString& value);
+    void splitElement(Element*, Node* atChild);
+    void splitTextNode(Text*, unsigned offset);
+    void splitTextNodeContainingElement(Text*, unsigned offset);
+    void wrapContentsInDummySpan(Element*);
 
-    void deleteInsignificantText(RawPtr<Text>, unsigned start, unsigned end);
+    void deleteInsignificantText(Text*, unsigned start, unsigned end);
     void deleteInsignificantText(const Position& start, const Position& end);
     void deleteInsignificantTextDownstream(const Position&);
 
-    RawPtr<HTMLBRElement> appendBlockPlaceholder(RawPtr<Element>, EditingState*);
-    RawPtr<HTMLBRElement> insertBlockPlaceholder(const Position&, EditingState*);
-    RawPtr<HTMLBRElement> addBlockPlaceholderIfNeeded(Element*, EditingState*);
+    HTMLBRElement* appendBlockPlaceholder(Element*, EditingState*);
+    HTMLBRElement* insertBlockPlaceholder(const Position&, EditingState*);
+    HTMLBRElement* addBlockPlaceholderIfNeeded(Element*, EditingState*);
     void removePlaceholderAt(const Position&);
 
-    RawPtr<HTMLElement> insertNewDefaultParagraphElementAt(const Position&, EditingState*);
+    HTMLElement* insertNewDefaultParagraphElementAt(const Position&, EditingState*);
 
-    RawPtr<HTMLElement> moveParagraphContentsToNewBlockIfNecessary(const Position&, EditingState*);
+    HTMLElement* moveParagraphContentsToNewBlockIfNecessary(const Position&, EditingState*);
 
     void pushAnchorElementDown(Element*, EditingState*);
 
@@ -168,7 +168,7 @@ protected:
 
     Position positionAvoidingSpecialElementBoundary(const Position&, EditingState*);
 
-    RawPtr<Node> splitTreeToNode(Node*, Node*, bool splitAncestor = false);
+    Node* splitTreeToNode(Node*, Node*, bool splitAncestor = false);
 
     HeapVector<Member<EditCommand>> m_commands;
 

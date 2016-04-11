@@ -32,7 +32,7 @@ namespace blink {
 
 class CreateLinkCommand final : public CompositeEditCommand {
 public:
-    static RawPtr<CreateLinkCommand> create(Document& document, const String& linkURL)
+    static CreateLinkCommand* create(Document& document, const String& linkURL)
     {
         return new CreateLinkCommand(document, linkURL);
     }

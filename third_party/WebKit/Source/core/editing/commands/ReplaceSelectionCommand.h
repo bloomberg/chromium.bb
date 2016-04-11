@@ -47,7 +47,7 @@ public:
 
     typedef unsigned CommandOptions;
 
-    static RawPtr<ReplaceSelectionCommand> create(Document& document, RawPtr<DocumentFragment> fragment, CommandOptions options, EditAction action = EditActionPaste)
+    static ReplaceSelectionCommand* create(Document& document, DocumentFragment* fragment, CommandOptions options, EditAction action = EditActionPaste)
     {
         return new ReplaceSelectionCommand(document, fragment, options, action);
     }
@@ -57,7 +57,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    ReplaceSelectionCommand(Document&, RawPtr<DocumentFragment>, CommandOptions, EditAction);
+    ReplaceSelectionCommand(Document&, DocumentFragment*, CommandOptions, EditAction);
 
     void doApply(EditingState*) override;
     EditAction editingAction() const override;
@@ -80,7 +80,7 @@ private:
         Member<Node> m_lastNodeInserted;
     };
 
-    Node* insertAsListItems(RawPtr<HTMLElement> listElement, Element* insertionBlock, const Position&, InsertedNodes&, EditingState*);
+    Node* insertAsListItems(HTMLElement* listElement, Element* insertionBlock, const Position&, InsertedNodes&, EditingState*);
 
     void updateNodesInserted(Node*);
     bool shouldRemoveEndBR(HTMLBRElement*, const VisiblePosition&);
@@ -95,7 +95,7 @@ private:
 
     void removeRedundantStylesAndKeepStyleSpanInline(InsertedNodes&, EditingState*);
     void makeInsertedContentRoundTrippableWithHTMLTreeBuilder(const InsertedNodes&, EditingState*);
-    void moveElementOutOfAncestor(RawPtr<Element>, RawPtr<Element> ancestor, EditingState*);
+    void moveElementOutOfAncestor(Element*, Element* ancestor, EditingState*);
     void handleStyleSpans(InsertedNodes&, EditingState*);
 
     VisiblePosition positionAtStartOfInsertedContent() const;

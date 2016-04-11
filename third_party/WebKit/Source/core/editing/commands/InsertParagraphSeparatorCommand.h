@@ -34,7 +34,7 @@ class EditingStyle;
 
 class InsertParagraphSeparatorCommand final : public CompositeEditCommand {
 public:
-    static RawPtr<InsertParagraphSeparatorCommand> create(Document& document, bool useDefaultParagraphElement = false, bool pasteBlockquoteIntoUnquotedArea = false)
+    static InsertParagraphSeparatorCommand* create(Document& document, bool useDefaultParagraphElement = false, bool pasteBlockquoteIntoUnquotedArea = false)
     {
         return new InsertParagraphSeparatorCommand(document, useDefaultParagraphElement, pasteBlockquoteIntoUnquotedArea);
     }
@@ -49,7 +49,7 @@ private:
     void calculateStyleBeforeInsertion(const Position&);
     void applyStyleAfterInsertion(Element* originalEnclosingBlock, EditingState*);
     void getAncestorsInsideBlock(const Node* insertionNode, Element* outerBlock, HeapVector<Member<Element>>& ancestors);
-    RawPtr<Element> cloneHierarchyUnderNewBlock(const HeapVector<Member<Element>>& ancestors, RawPtr<Element> blockToInsert, EditingState*);
+    Element* cloneHierarchyUnderNewBlock(const HeapVector<Member<Element>>& ancestors, Element* blockToInsert, EditingState*);
 
     bool shouldUseDefaultParagraphElement(Element*) const;
 

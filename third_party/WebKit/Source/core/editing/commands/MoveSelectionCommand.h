@@ -34,7 +34,7 @@ class DocumentFragment;
 
 class MoveSelectionCommand final : public CompositeEditCommand {
 public:
-    static RawPtr<MoveSelectionCommand> create(RawPtr<DocumentFragment> fragment, const Position& position, bool smartInsert = false, bool smartDelete = false)
+    static MoveSelectionCommand* create(DocumentFragment* fragment, const Position& position, bool smartInsert = false, bool smartDelete = false)
     {
         return new MoveSelectionCommand(fragment, position, smartInsert, smartDelete);
     }
@@ -42,7 +42,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    MoveSelectionCommand(RawPtr<DocumentFragment>, const Position&, bool smartInsert, bool smartDelete);
+    MoveSelectionCommand(DocumentFragment*, const Position&, bool smartInsert, bool smartDelete);
 
     void doApply(EditingState*) override;
     EditAction editingAction() const override;

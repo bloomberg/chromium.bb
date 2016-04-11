@@ -179,7 +179,7 @@ static DocumentFragment* documentFragmentFromDragData(DragData* dragData, LocalF
     }
     if (allowPlainText && dragData->containsPlainText()) {
         chosePlainText = true;
-        return createFragmentFromText(EphemeralRange(context), dragData->asPlainText()).get();
+        return createFragmentFromText(EphemeralRange(context), dragData->asPlainText());
     }
 
     return nullptr;

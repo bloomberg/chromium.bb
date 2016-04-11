@@ -40,7 +40,7 @@ public:
     typedef FrameSelection::EAlteration EAlteration;
     typedef FrameSelection::VerticalDirection VerticalDirection;
 
-    static RawPtr<SelectionEditor> create(FrameSelection& frameSelection)
+    static SelectionEditor* create(FrameSelection& frameSelection)
     {
         return new SelectionEditor(frameSelection);
     }
@@ -71,7 +71,7 @@ public:
     // If this FrameSelection has a logical range which is still valid, this
     // function return its clone. Otherwise, the return value from underlying
     // |VisibleSelection|'s |firstRange()| is returned.
-    RawPtr<Range> firstRange() const;
+    Range* firstRange() const;
 
     // VisibleSelectionChangeObserver interface.
     void didChangeVisibleSelection() override;

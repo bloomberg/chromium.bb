@@ -110,7 +110,7 @@ int SimplifyMarkupCommand::pruneSubsequentAncestorsToRemove(HeapVector<Member<Co
     }
 
     ContainerNode* highestAncestorToRemove = nodesToRemove[pastLastNodeToRemove - 1].get();
-    RawPtr<ContainerNode> parent = highestAncestorToRemove->parentNode();
+    ContainerNode* parent = highestAncestorToRemove->parentNode();
     if (!parent) // Parent has already been removed.
         return -1;
 

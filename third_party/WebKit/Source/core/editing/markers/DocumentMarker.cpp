@@ -40,7 +40,7 @@ DocumentMarkerDetails::~DocumentMarkerDetails()
 
 class DocumentMarkerDescription final : public DocumentMarkerDetails {
 public:
-    static RawPtr<DocumentMarkerDescription> create(const String&);
+    static DocumentMarkerDescription* create(const String&);
 
     const String& description() const { return m_description; }
     bool isDescription() const override { return true; }
@@ -54,7 +54,7 @@ private:
     String m_description;
 };
 
-RawPtr<DocumentMarkerDescription> DocumentMarkerDescription::create(const String& description)
+DocumentMarkerDescription* DocumentMarkerDescription::create(const String& description)
 {
     return new DocumentMarkerDescription(description);
 }
@@ -69,7 +69,7 @@ inline DocumentMarkerDescription* toDocumentMarkerDescription(DocumentMarkerDeta
 
 class DocumentMarkerTextMatch final : public DocumentMarkerDetails {
 public:
-    static RawPtr<DocumentMarkerTextMatch> create(bool);
+    static DocumentMarkerTextMatch* create(bool);
 
     bool activeMatch() const { return m_match; }
     bool isTextMatch() const override { return true; }
@@ -83,7 +83,7 @@ private:
     bool m_match;
 };
 
-RawPtr<DocumentMarkerTextMatch> DocumentMarkerTextMatch::create(bool match)
+DocumentMarkerTextMatch* DocumentMarkerTextMatch::create(bool match)
 {
     DEFINE_STATIC_LOCAL(DocumentMarkerTextMatch, trueInstance, (new DocumentMarkerTextMatch(true)));
     DEFINE_STATIC_LOCAL(DocumentMarkerTextMatch, falseInstance, (new DocumentMarkerTextMatch(false)));
@@ -99,7 +99,7 @@ inline DocumentMarkerTextMatch* toDocumentMarkerTextMatch(DocumentMarkerDetails*
 
 class TextCompositionMarkerDetails final : public DocumentMarkerDetails {
 public:
-    static RawPtr<TextCompositionMarkerDetails> create(Color underlineColor, bool thick, Color backgroundColor);
+    static TextCompositionMarkerDetails* create(Color underlineColor, bool thick, Color backgroundColor);
 
     bool isComposition() const override { return true; }
     Color underlineColor() const { return m_underlineColor; }
@@ -119,7 +119,7 @@ private:
     bool m_thick;
 };
 
-RawPtr<TextCompositionMarkerDetails> TextCompositionMarkerDetails::create(Color underlineColor, bool thick, Color backgroundColor)
+TextCompositionMarkerDetails* TextCompositionMarkerDetails::create(Color underlineColor, bool thick, Color backgroundColor)
 {
     return new TextCompositionMarkerDetails(underlineColor, thick, backgroundColor);
 }

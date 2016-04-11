@@ -78,12 +78,12 @@ public:
     void setCompositionType(TextCompositionType type) { m_compositionType = type; }
 
 private:
-    static RawPtr<TypingCommand> create(Document& document, ETypingCommand command, const String& text = "", Options options = 0, TextGranularity granularity = CharacterGranularity)
+    static TypingCommand* create(Document& document, ETypingCommand command, const String& text = "", Options options = 0, TextGranularity granularity = CharacterGranularity)
     {
         return new TypingCommand(document, command, text, options, granularity, TextCompositionNone);
     }
 
-    static RawPtr<TypingCommand> create(Document& document, ETypingCommand command, const String& text, Options options, TextCompositionType compositionType)
+    static TypingCommand* create(Document& document, ETypingCommand command, const String& text, Options options, TextCompositionType compositionType)
     {
         return new TypingCommand(document, command, text, options, CharacterGranularity, compositionType);
     }
@@ -94,7 +94,7 @@ private:
     bool isOpenForMoreTyping() const { return m_openForMoreTyping; }
     void closeTyping() { m_openForMoreTyping = false; }
 
-    static RawPtr<TypingCommand> lastTypingCommandIfStillOpenForTyping(LocalFrame*);
+    static TypingCommand* lastTypingCommandIfStillOpenForTyping(LocalFrame*);
 
     void doApply(EditingState*) override;
     EditAction editingAction() const override;

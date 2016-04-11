@@ -36,7 +36,7 @@ DragCaretController::DragCaretController()
 {
 }
 
-RawPtr<DragCaretController> DragCaretController::create()
+DragCaretController* DragCaretController::create()
 {
     return new DragCaretController;
 }

@@ -43,10 +43,10 @@ class UndoStep;
 class UndoStack final : public GarbageCollected<UndoStack> {
     WTF_MAKE_NONCOPYABLE(UndoStack);
 public:
-    static RawPtr<UndoStack> create();
+    static UndoStack* create();
 
-    void registerUndoStep(RawPtr<UndoStep>);
-    void registerRedoStep(RawPtr<UndoStep>);
+    void registerUndoStep(UndoStep*);
+    void registerRedoStep(UndoStep*);
     void didUnloadFrame(const LocalFrame&);
     bool canUndo() const;
     bool canRedo() const;

@@ -32,7 +32,7 @@ namespace blink {
 
 class SplitTextNodeContainingElementCommand final : public CompositeEditCommand {
 public:
-    static RawPtr<SplitTextNodeContainingElementCommand> create(RawPtr<Text> node, int offset)
+    static SplitTextNodeContainingElementCommand* create(Text* node, int offset)
     {
         return new SplitTextNodeContainingElementCommand(node, offset);
     }
@@ -40,7 +40,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    SplitTextNodeContainingElementCommand(RawPtr<Text>, int offset);
+    SplitTextNodeContainingElementCommand(Text*, int offset);
 
     void doApply(EditingState*) override;
 

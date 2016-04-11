@@ -46,7 +46,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
-RawPtr<SelectionController> SelectionController::create(LocalFrame& frame)
+SelectionController* SelectionController::create(LocalFrame& frame)
 {
     return new SelectionController(frame);
 }

@@ -62,7 +62,7 @@ enum EditorParagraphSeparator { EditorParagraphSeparatorIsDiv, EditorParagraphSe
 class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
     WTF_MAKE_NONCOPYABLE(Editor);
 public:
-    static RawPtr<Editor> create(LocalFrame&);
+    static Editor* create(LocalFrame&);
     ~Editor();
 
     EditorClient& client() const;
@@ -113,9 +113,9 @@ public:
     void applyStyleToSelection(StylePropertySet*, EditAction);
     void applyParagraphStyleToSelection(StylePropertySet*, EditAction);
 
-    void appliedEditing(RawPtr<CompositeEditCommand>);
-    void unappliedEditing(RawPtr<EditCommandComposition>);
-    void reappliedEditing(RawPtr<EditCommandComposition>);
+    void appliedEditing(CompositeEditCommand*);
+    void unappliedEditing(EditCommandComposition*);
+    void reappliedEditing(EditCommandComposition*);
 
     void setShouldStyleWithCSS(bool flag) { m_shouldStyleWithCSS = flag; }
     bool shouldStyleWithCSS() const { return m_shouldStyleWithCSS; }
@@ -124,7 +124,7 @@ public:
         STACK_ALLOCATED();
     public:
         Command();
-        Command(const EditorInternalCommand*, EditorCommandSource, RawPtr<LocalFrame>);
+        Command(const EditorInternalCommand*, EditorCommandSource, LocalFrame*);
 
         bool execute(const String& parameter = String(), Event* triggeringEvent = nullptr) const;
         bool execute(Event* triggeringEvent) const;
@@ -194,16 +194,16 @@ public:
 
     void addToKillRing(const EphemeralRange&);
 
-    void pasteAsFragment(RawPtr<DocumentFragment>, bool smartReplace, bool matchStyle);
+    void pasteAsFragment(DocumentFragment*, bool smartReplace, bool matchStyle);
     void pasteAsPlainText(const String&, bool smartReplace);
 
     Element* findEventTargetFrom(const VisibleSelection&) const;
 
     bool findString(const String&, FindOptions);
 
-    RawPtr<Range> findStringAndScrollToVisible(const String&, Range*, FindOptions);
-    RawPtr<Range> findRangeOfString(const String& target, const EphemeralRange& referenceRange, FindOptions);
-    RawPtr<Range> findRangeOfString(const String& target, const EphemeralRangeInFlatTree& referenceRange, FindOptions);
+    Range* findStringAndScrollToVisible(const String&, Range*, FindOptions);
+    Range* findRangeOfString(const String& target, const EphemeralRange& referenceRange, FindOptions);
+    Range* findRangeOfString(const String& target, const EphemeralRangeInFlatTree& referenceRange, FindOptions);
 
     const VisibleSelection& mark() const; // Mark, to be used as emacs uses it.
     void setMark(const VisibleSelection&);
@@ -218,12 +218,12 @@ public:
     bool markedTextMatchesAreHighlighted() const;
     void setMarkedTextMatchesAreHighlighted(bool);
 
-    void replaceSelectionWithFragment(RawPtr<DocumentFragment>, bool selectReplacement, bool smartReplace, bool matchStyle);
+    void replaceSelectionWithFragment(DocumentFragment*, bool selectReplacement, bool smartReplace, bool matchStyle);
     void replaceSelectionWithText(const String&, bool selectReplacement, bool smartReplace);
 
     // TODO(xiaochengh): Replace |bool| parameters by |enum|.
-    void replaceSelectionAfterDragging(RawPtr<DocumentFragment>, bool smartReplace, bool plainText);
-    void moveSelectionAfterDragging(RawPtr<DocumentFragment>, const Position&, bool smartInsert, bool smartDelete);
+    void replaceSelectionAfterDragging(DocumentFragment*, bool smartReplace, bool plainText);
+    void moveSelectionAfterDragging(DocumentFragment*, const Position&, bool smartInsert, bool smartDelete);
 
     EditorParagraphSeparator defaultParagraphSeparator() const { return m_defaultParagraphSeparator; }
     void setDefaultParagraphSeparator(EditorParagraphSeparator separator) { m_defaultParagraphSeparator = separator; }

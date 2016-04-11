@@ -70,7 +70,7 @@ enum class CaretVisibility;
 class CORE_EXPORT FrameSelection final : public GarbageCollectedFinalized<FrameSelection> {
     WTF_MAKE_NONCOPYABLE(FrameSelection);
 public:
-    static RawPtr<FrameSelection> create(LocalFrame* frame = nullptr)
+    static FrameSelection* create(LocalFrame* frame = nullptr)
     {
         return new FrameSelection(frame);
     }
@@ -174,7 +174,7 @@ public:
 
     // If this FrameSelection has a logical range which is still valid, this function return its clone. Otherwise,
     // the return value from underlying VisibleSelection's firstRange() is returned.
-    RawPtr<Range> firstRange() const;
+    Range* firstRange() const;
 
     void nodeWillBeRemoved(Node&);
     void didUpdateCharacterData(CharacterData*, unsigned offset, unsigned oldLength, unsigned newLength);
@@ -218,7 +218,7 @@ public:
     void notifyLayoutObjectOfSelectionChange(EUserTriggered);
 
     EditingStyle* typingStyle() const;
-    void setTypingStyle(RawPtr<EditingStyle>);
+    void setTypingStyle(EditingStyle*);
     void clearTypingStyle();
 
     String selectedHTMLForClipboard() const;
@@ -333,7 +333,7 @@ inline void FrameSelection::clearTypingStyle()
     m_typingStyle.clear();
 }
 
-inline void FrameSelection::setTypingStyle(RawPtr<EditingStyle> style)
+inline void FrameSelection::setTypingStyle(EditingStyle* style)
 {
     m_typingStyle = style;
 }

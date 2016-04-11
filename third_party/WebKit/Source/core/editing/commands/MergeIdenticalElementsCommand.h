@@ -32,7 +32,7 @@ namespace blink {
 
 class MergeIdenticalElementsCommand final : public SimpleEditCommand {
 public:
-    static RawPtr<MergeIdenticalElementsCommand> create(RawPtr<Element> element1, RawPtr<Element> element2)
+    static MergeIdenticalElementsCommand* create(Element* element1, Element* element2)
     {
         return new MergeIdenticalElementsCommand(element1, element2);
     }
@@ -40,7 +40,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    MergeIdenticalElementsCommand(RawPtr<Element>, RawPtr<Element>);
+    MergeIdenticalElementsCommand(Element*, Element*);
 
     void doApply(EditingState*) override;
     void doUnapply() override;

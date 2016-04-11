@@ -32,7 +32,7 @@ namespace blink {
 
 class UnlinkCommand final : public CompositeEditCommand {
 public:
-    static RawPtr<UnlinkCommand> create(Document& document)
+    static UnlinkCommand* create(Document& document)
     {
         return new UnlinkCommand(document);
     }

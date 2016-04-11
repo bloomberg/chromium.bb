@@ -997,7 +997,7 @@ bool WebLocalFrameImpl::hasMarkedText() const
 
 WebRange WebLocalFrameImpl::markedRange() const
 {
-    return frame()->inputMethodController().compositionRange().get();
+    return frame()->inputMethodController().compositionRange();
 }
 
 bool WebLocalFrameImpl::firstRectForCharacterRange(unsigned location, unsigned length, WebRect& rectInViewport) const
@@ -1118,7 +1118,7 @@ bool WebLocalFrameImpl::hasSelection() const
 
 WebRange WebLocalFrameImpl::selectionRange() const
 {
-    return createRange(frame()->selection().selection().toNormalizedEphemeralRange()).get();
+    return createRange(frame()->selection().selection().toNormalizedEphemeralRange());
 }
 
 WebString WebLocalFrameImpl::selectionAsText() const

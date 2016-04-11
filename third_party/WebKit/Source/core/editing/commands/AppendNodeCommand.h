@@ -32,7 +32,7 @@ namespace blink {
 
 class AppendNodeCommand final : public SimpleEditCommand {
 public:
-    static RawPtr<AppendNodeCommand> create(RawPtr<ContainerNode> parent, RawPtr<Node> node)
+    static AppendNodeCommand* create(ContainerNode* parent, Node* node)
     {
         return new AppendNodeCommand(parent, node);
     }
@@ -40,7 +40,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    AppendNodeCommand(RawPtr<ContainerNode> parent, RawPtr<Node>);
+    AppendNodeCommand(ContainerNode* parent, Node*);
 
     void doApply(EditingState*) override;
     void doUnapply() override;

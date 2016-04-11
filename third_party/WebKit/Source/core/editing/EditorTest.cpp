@@ -26,7 +26,7 @@ void EditorTest::makeDocumentEmpty()
 
 TEST_F(EditorTest, tidyUpHTMLStructureFromBody)
 {
-    RawPtr<Element> body = HTMLBodyElement::create(document());
+    Element* body = HTMLBodyElement::create(document());
     makeDocumentEmpty();
     document().setDesignMode("on");
     document().appendChild(body);
@@ -39,7 +39,7 @@ TEST_F(EditorTest, tidyUpHTMLStructureFromBody)
 
 TEST_F(EditorTest, tidyUpHTMLStructureFromDiv)
 {
-    RawPtr<Element> div = HTMLDivElement::create(document());
+    Element* div = HTMLDivElement::create(document());
     makeDocumentEmpty();
     document().setDesignMode("on");
     document().appendChild(div);
@@ -52,7 +52,7 @@ TEST_F(EditorTest, tidyUpHTMLStructureFromDiv)
 
 TEST_F(EditorTest, tidyUpHTMLStructureFromHead)
 {
-    RawPtr<Element> head = HTMLHeadElement::create(document());
+    Element* head = HTMLHeadElement::create(document());
     makeDocumentEmpty();
     document().setDesignMode("on");
     document().appendChild(head);

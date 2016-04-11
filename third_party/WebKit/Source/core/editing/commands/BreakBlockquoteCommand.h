@@ -32,7 +32,7 @@ namespace blink {
 
 class BreakBlockquoteCommand final : public CompositeEditCommand {
 public:
-    static RawPtr<BreakBlockquoteCommand> create(Document& document)
+    static BreakBlockquoteCommand* create(Document& document)
     {
         return new BreakBlockquoteCommand(document);
     }

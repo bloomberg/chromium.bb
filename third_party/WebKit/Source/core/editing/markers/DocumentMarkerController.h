@@ -104,7 +104,7 @@ private:
     using MarkerList = HeapVector<Member<RenderedDocumentMarker>>;
     using MarkerLists = HeapVector<Member<MarkerList>, DocumentMarker::MarkerTypeIndexesCount>;
     using MarkerMap = HeapHashMap<WeakMember<const Node>, Member<MarkerLists>>;
-    void mergeOverlapping(MarkerList*, RawPtr<RenderedDocumentMarker>);
+    void mergeOverlapping(MarkerList*, RenderedDocumentMarker*);
     bool possiblyHasMarkers(DocumentMarker::MarkerTypes);
     void removeMarkersFromList(MarkerMap::iterator, DocumentMarker::MarkerTypes);
     void removeMarkers(TextIterator&, DocumentMarker::MarkerTypes, RemovePartiallyOverlappingMarkerOrNot);

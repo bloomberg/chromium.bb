@@ -49,7 +49,7 @@ public:
         KeepSelection,
     };
 
-    static RawPtr<InputMethodController> create(LocalFrame&);
+    static InputMethodController* create(LocalFrame&);
     ~InputMethodController();
     DECLARE_TRACE();
 
@@ -70,7 +70,7 @@ public:
     void cancelComposition();
     void cancelCompositionIfSelectionIsInvalid();
     EphemeralRange compositionEphemeralRange() const;
-    RawPtr<Range> compositionRange() const;
+    Range* compositionRange() const;
 
     void clear();
     void documentDetached();

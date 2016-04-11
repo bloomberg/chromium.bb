@@ -32,7 +32,7 @@ namespace blink {
 
 class SimplifyMarkupCommand final : public CompositeEditCommand {
 public:
-    static RawPtr<SimplifyMarkupCommand> create(Document& document, Node* firstNode, Node* nodeAfterLast)
+    static SimplifyMarkupCommand* create(Document& document, Node* firstNode, Node* nodeAfterLast)
     {
         return new SimplifyMarkupCommand(document, firstNode, nodeAfterLast);
     }

@@ -37,7 +37,7 @@ public:
         RebalanceAllWhitespaces
     };
 
-    static RawPtr<InsertTextCommand> create(Document& document, const String& text, bool selectInsertedText = false,
+    static InsertTextCommand* create(Document& document, const String& text, bool selectInsertedText = false,
         RebalanceType rebalanceType = RebalanceLeadingAndTrailingWhitespaces)
     {
         return new InsertTextCommand(document, text, selectInsertedText, rebalanceType);

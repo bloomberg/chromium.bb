@@ -29,7 +29,7 @@
 
 namespace blink {
 
-InsertNodeBeforeCommand::InsertNodeBeforeCommand(RawPtr<Node> insertChild, RawPtr<Node> refChild,
+InsertNodeBeforeCommand::InsertNodeBeforeCommand(Node* insertChild, Node* refChild,
     ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
     : SimpleEditCommand(refChild->document())
     , m_insertChild(insertChild)

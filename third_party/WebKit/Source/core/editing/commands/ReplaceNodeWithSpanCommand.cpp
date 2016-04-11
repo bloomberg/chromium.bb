@@ -41,7 +41,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-ReplaceNodeWithSpanCommand::ReplaceNodeWithSpanCommand(RawPtr<HTMLElement> element)
+ReplaceNodeWithSpanCommand::ReplaceNodeWithSpanCommand(HTMLElement* element)
     : SimpleEditCommand(element->document())
     , m_elementToReplace(element)
 {
@@ -51,7 +51,7 @@ ReplaceNodeWithSpanCommand::ReplaceNodeWithSpanCommand(RawPtr<HTMLElement> eleme
 static void swapInNodePreservingAttributesAndChildren(HTMLElement* newElement, HTMLElement& elementToReplace)
 {
     ASSERT(elementToReplace.inShadowIncludingDocument());
-    RawPtr<ContainerNode> parentNode = elementToReplace.parentNode();
+    ContainerNode* parentNode = elementToReplace.parentNode();
     parentNode->insertBefore(newElement, &elementToReplace);
 
     NodeVector children;

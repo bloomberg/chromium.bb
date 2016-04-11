@@ -220,7 +220,7 @@ bool equalSelectionsInDOMTree(const VisibleSelection&, const VisibleSelection&);
 CORE_EXPORT EphemeralRange firstEphemeralRangeOf(const VisibleSelection&);
 
 // TODO(sof): move more firstRangeOf() uses to be over EphemeralRange instead.
-CORE_EXPORT RawPtr<Range> firstRangeOf(const VisibleSelection&);
+CORE_EXPORT Range* firstRangeOf(const VisibleSelection&);
 
 } // namespace blink
 

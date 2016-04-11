@@ -341,7 +341,7 @@ static Position firstEditablePositionInNode(Node* node)
     return next ? firstPositionInOrBeforeNode(next) : Position();
 }
 
-void DeleteSelectionCommand::removeNode(RawPtr<Node> node, EditingState* editingState, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
+void DeleteSelectionCommand::removeNode(Node* node, EditingState* editingState, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
 {
     if (!node)
         return;
@@ -353,10 +353,10 @@ void DeleteSelectionCommand::removeNode(RawPtr<Node> node, EditingState* editing
             if (!node->hasChildren())
                 return;
             // Search this non-editable region for editable regions to empty.
-            RawPtr<Node> child = node->firstChild();
+            Node* child = node->firstChild();
             while (child) {
-                RawPtr<Node> nextChild = child->nextSibling();
-                removeNode(child.get(), editingState, shouldAssumeContentIsAlwaysEditable);
+                Node* nextChild = child->nextSibling();
+                removeNode(child, editingState, shouldAssumeContentIsAlwaysEditable);
                 if (editingState->isAborted())
                     return;
                 // Bail if nextChild is no longer node's child.
@@ -370,7 +370,7 @@ void DeleteSelectionCommand::removeNode(RawPtr<Node> node, EditingState* editing
         }
     }
 
-    if (isTableStructureNode(node.get()) || node->isRootEditableElement()) {
+    if (isTableStructureNode(node) || node->isRootEditableElement()) {
         // Do not remove an element of table structure; remove its contents.
         // Likewise for the root editable element.
         Node* child = node->firstChild();
@@ -386,7 +386,7 @@ void DeleteSelectionCommand::removeNode(RawPtr<Node> node, EditingState* editing
         document().updateLayoutIgnorePendingStylesheets();
         LayoutObject* r = node->layoutObject();
         if (r && r->isTableCell() && toLayoutTableCell(r)->contentHeight() <= 0) {
-            Position firstEditablePosition = firstEditablePositionInNode(node.get());
+            Position firstEditablePosition = firstEditablePositionInNode(node);
             if (firstEditablePosition.isNotNull())
                 insertBlockPlaceholder(firstEditablePosition, editingState);
         }
@@ -423,27 +423,27 @@ static void updatePositionForTextRemoval(Text* node, int offset, int count, Posi
         position = Position(position.computeContainerNode(), offset);
 }
 
-void DeleteSelectionCommand::deleteTextFromNode(RawPtr<Text> node, unsigned offset, unsigned count)
+void DeleteSelectionCommand::deleteTextFromNode(Text* node, unsigned offset, unsigned count)
 {
     // FIXME: Update the endpoints of the range being deleted.
-    updatePositionForTextRemoval(node.get(), offset, count, m_endingPosition);
-    updatePositionForTextRemoval(node.get(), offset, count, m_leadingWhitespace);
-    updatePositionForTextRemoval(node.get(), offset, count, m_trailingWhitespace);
-    updatePositionForTextRemoval(node.get(), offset, count, m_downstreamEnd);
+    updatePositionForTextRemoval(node, offset, count, m_endingPosition);
+    updatePositionForTextRemoval(node, offset, count, m_leadingWhitespace);
+    updatePositionForTextRemoval(node, offset, count, m_trailingWhitespace);
+    updatePositionForTextRemoval(node, offset, count, m_downstreamEnd);
 
     CompositeEditCommand::deleteTextFromNode(node, offset, count);
 }
 
 void DeleteSelectionCommand::makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss(EditingState* editingState)
 {
-    RawPtr<Range> range = createRange(m_selectionToDelete.toNormalizedEphemeralRange());
-    RawPtr<Node> node = range->firstNode();
+    Range* range = createRange(m_selectionToDelete.toNormalizedEphemeralRange());
+    Node* node = range->firstNode();
     while (node && node != range->pastLastNode()) {
-        RawPtr<Node> nextNode = NodeTraversal::next(*node);
+        Node* nextNode = NodeTraversal::next(*node);
         if (isHTMLStyleElement(*node) || isHTMLLinkElement(*node)) {
             nextNode = NodeTraversal::nextSkippingChildren(*node);
-            RawPtr<Element> rootEditableElement = node->rootEditableElement();
-            if (rootEditableElement.get()) {
+            Element* rootEditableElement = node->rootEditableElement();
+            if (rootEditableElement) {
                 removeNode(node, editingState);
                 if (editingState->isAborted())
                     return;
@@ -515,7 +515,7 @@ void DeleteSelectionCommand::handleGeneralDelete(EditingState* editingState)
     } else {
         bool startNodeWasDescendantOfEndNode = m_upstreamStart.anchorNode()->isDescendantOf(m_downstreamEnd.anchorNode());
         // The selection to delete spans more than one node.
-        RawPtr<Node> node(startNode);
+        Node* node(startNode);
 
         if (startOffset > 0) {
             if (startNode->isTextNode()) {
@@ -533,22 +533,22 @@ void DeleteSelectionCommand::handleGeneralDelete(EditingState* editingState)
 
         // handle deleting all nodes that are completely selected
         while (node && node != m_downstreamEnd.anchorNode()) {
-            if (comparePositions(firstPositionInOrBeforeNode(node.get()), m_downstreamEnd) >= 0) {
+            if (comparePositions(firstPositionInOrBeforeNode(node), m_downstreamEnd) >= 0) {
                 // NodeTraversal::nextSkippingChildren just blew past the end position, so stop deleting
                 node = nullptr;
-            } else if (!m_downstreamEnd.anchorNode()->isDescendantOf(node.get())) {
-                RawPtr<Node> nextNode = NodeTraversal::nextSkippingChildren(*node);
+            } else if (!m_downstreamEnd.anchorNode()->isDescendantOf(node)) {
+                Node* nextNode = NodeTraversal::nextSkippingChildren(*node);
                 // if we just removed a node from the end container, update end position so the
                 // check above will work
                 updatePositionForNodeRemoval(m_downstreamEnd, *node);
-                removeNode(node.get(), editingState);
+                removeNode(node, editingState);
                 if (editingState->isAborted())
                     return;
-                node = nextNode.get();
+                node = nextNode;
             } else {
                 Node& n = NodeTraversal::lastWithinOrSelf(*node);
                 if (m_downstreamEnd.anchorNode() == n && m_downstreamEnd.computeEditingOffset() >= caretMaxOffset(&n)) {
-                    removeNode(node.get(), editingState);
+                    removeNode(node, editingState);
                     if (editingState->isAborted())
                         return;
                     node = nullptr;
@@ -721,7 +721,7 @@ void DeleteSelectionCommand::removePreviouslySelectedEmptyTableRows(EditingState
     if (m_endTableRow && m_endTableRow->inShadowIncludingDocument() && m_endTableRow != m_startTableRow) {
         Node* row = m_endTableRow->previousSibling();
         while (row && row != m_startTableRow) {
-            RawPtr<Node> previousRow = row->previousSibling();
+            Node* previousRow = row->previousSibling();
             if (isTableRowEmpty(row)) {
                 // Use a raw removeNode, instead of DeleteSelectionCommand's,
                 // because that won't remove rows, it only empties them in
@@ -730,7 +730,7 @@ void DeleteSelectionCommand::removePreviouslySelectedEmptyTableRows(EditingState
                 if (editingState->isAborted())
                     return;
             }
-            row = previousRow.get();
+            row = previousRow;
         }
     }
 
@@ -738,13 +738,13 @@ void DeleteSelectionCommand::removePreviouslySelectedEmptyTableRows(EditingState
     if (m_startTableRow && m_startTableRow->inShadowIncludingDocument() && m_startTableRow != m_endTableRow) {
         Node* row = m_startTableRow->nextSibling();
         while (row && row != m_endTableRow) {
-            RawPtr<Node> nextRow = row->nextSibling();
+            Node* nextRow = row->nextSibling();
             if (isTableRowEmpty(row)) {
                 CompositeEditCommand::removeNode(row, editingState);
                 if (editingState->isAborted())
                     return;
             }
-            row = nextRow.get();
+            row = nextRow;
         }
     }
 
@@ -906,7 +906,7 @@ void DeleteSelectionCommand::doApply(EditingState* editingState)
         m_needPlaceholder = hasPlaceholder && lineBreakBeforeStart && !lineBreakAtEndOfSelectionToDelete;
     }
 
-    RawPtr<HTMLBRElement> placeholder = m_needPlaceholder ? HTMLBRElement::create(document()) : nullptr;
+    HTMLBRElement* placeholder = m_needPlaceholder ? HTMLBRElement::create(document()) : nullptr;
 
     if (placeholder) {
         if (m_sanitizeMarkup) {
@@ -917,7 +917,7 @@ void DeleteSelectionCommand::doApply(EditingState* editingState)
         // handleGeneralDelete cause DOM mutation events so |m_endingPosition|
         // can be out of document.
         if (m_endingPosition.inShadowIncludingDocument()) {
-            insertNodeAt(placeholder.get(), m_endingPosition, editingState);
+            insertNodeAt(placeholder, m_endingPosition, editingState);
             if (editingState->isAborted())
                 return;
         }

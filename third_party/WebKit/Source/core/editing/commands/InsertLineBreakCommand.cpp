@@ -87,7 +87,7 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
 
     pos = positionOutsideTabSpan(pos);
 
-    RawPtr<Node> nodeToInsert = nullptr;
+    Node* nodeToInsert = nullptr;
     if (shouldUseBreakElement(pos))
         nodeToInsert = HTMLBRElement::create(document());
     else
@@ -98,33 +98,33 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
     if (isEndOfParagraph(caret) && !lineBreakExistsAtVisiblePosition(caret)) {
         bool needExtraLineBreak = !isHTMLHRElement(*pos.anchorNode()) && !isHTMLTableElement(*pos.anchorNode());
 
-        insertNodeAt(nodeToInsert.get(), pos, editingState);
+        insertNodeAt(nodeToInsert, pos, editingState);
         if (editingState->isAborted())
             return;
 
         if (needExtraLineBreak) {
-            RawPtr<Node> extraNode;
+            Node* extraNode;
             // TODO(tkent): Can we remove HTMLTextFormControlElement dependency?
-            if (HTMLTextFormControlElement* textControl = enclosingTextFormControl(nodeToInsert.get()))
+            if (HTMLTextFormControlElement* textControl = enclosingTextFormControl(nodeToInsert))
                 extraNode = textControl->createPlaceholderBreakElement();
             else
                 extraNode = nodeToInsert->cloneNode(false);
-            insertNodeAfter(extraNode.get(), nodeToInsert, editingState);
+            insertNodeAfter(extraNode, nodeToInsert, editingState);
             if (editingState->isAborted())
                 return;
-            nodeToInsert = extraNode.release();
+            nodeToInsert = extraNode;
         }
 
-        VisiblePosition endingPosition = createVisiblePosition(positionBeforeNode(nodeToInsert.get()));
+        VisiblePosition endingPosition = createVisiblePosition(positionBeforeNode(nodeToInsert));
         setEndingSelection(VisibleSelection(endingPosition, endingSelection().isDirectional()));
     } else if (pos.computeEditingOffset() <= caretMinOffset(pos.anchorNode())) {
-        insertNodeAt(nodeToInsert.get(), pos, editingState);
+        insertNodeAt(nodeToInsert, pos, editingState);
         if (editingState->isAborted())
             return;
 
         // Insert an extra br or '\n' if the just inserted one collapsed.
-        if (!isStartOfParagraph(createVisiblePosition(positionBeforeNode(nodeToInsert.get())))) {
-            insertNodeBefore(nodeToInsert->cloneNode(false).get(), nodeToInsert.get(), editingState);
+        if (!isStartOfParagraph(createVisiblePosition(positionBeforeNode(nodeToInsert)))) {
+            insertNodeBefore(nodeToInsert->cloneNode(false).get(), nodeToInsert, editingState);
             if (editingState->isAborted())
                 return;
         }
@@ -133,7 +133,7 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
     // If we're inserting after all of the rendered text in a text node, or into a non-text node,
     // a simple insertion is sufficient.
     } else if (!pos.anchorNode()->isTextNode() || pos.computeOffsetInContainerNode() >= caretMaxOffset(pos.anchorNode())) {
-        insertNodeAt(nodeToInsert.get(), pos, editingState);
+        insertNodeAt(nodeToInsert, pos, editingState);
         if (editingState->isAborted())
             return;
         setEndingSelection(VisibleSelection(positionInParentAfterNode(*nodeToInsert), TextAffinity::Downstream, endingSelection().isDirectional()));
@@ -159,11 +159,11 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
             if (textNode->inShadowIncludingDocument()) {
                 insertTextIntoNode(textNode, 0, nonBreakingSpaceString());
             } else {
-                RawPtr<Text> nbspNode = document().createTextNode(nonBreakingSpaceString());
-                insertNodeAt(nbspNode.get(), positionBeforeTextNode, editingState);
+                Text* nbspNode = document().createTextNode(nonBreakingSpaceString());
+                insertNodeAt(nbspNode, positionBeforeTextNode, editingState);
                 if (editingState->isAborted())
                     return;
-                endingPosition = firstPositionInNode(nbspNode.get());
+                endingPosition = firstPositionInNode(nbspNode);
             }
         }
 
@@ -172,14 +172,14 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
 
     // Handle the case where there is a typing style.
 
-    RawPtr<EditingStyle> typingStyle = document().frame()->selection().typingStyle();
+    EditingStyle* typingStyle = document().frame()->selection().typingStyle();
 
     if (typingStyle && !typingStyle->isEmpty()) {
         // Apply the typing style to the inserted line break, so that if the selection
         // leaves and then comes back, new input will have the right style.
         // FIXME: We shouldn't always apply the typing style to the line break here,
         // see <rdar://problem/5794462>.
-        applyStyle(typingStyle.get(), firstPositionInOrBeforeNode(nodeToInsert.get()), lastPositionInOrAfterNode(nodeToInsert.get()), editingState);
+        applyStyle(typingStyle, firstPositionInOrBeforeNode(nodeToInsert), lastPositionInOrAfterNode(nodeToInsert), editingState);
         if (editingState->isAborted())
             return;
         // Even though this applyStyle operates on a Range, it still sets an endingSelection().

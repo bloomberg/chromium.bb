@@ -34,7 +34,7 @@ class Text;
 
 class SplitTextNodeCommand final : public SimpleEditCommand {
 public:
-    static RawPtr<SplitTextNodeCommand> create(RawPtr<Text> node, int offset)
+    static SplitTextNodeCommand* create(Text* node, int offset)
     {
         return new SplitTextNodeCommand(node, offset);
     }
@@ -42,7 +42,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    SplitTextNodeCommand(RawPtr<Text>, int offset);
+    SplitTextNodeCommand(Text*, int offset);
 
     void doApply(EditingState*) override;
     void doUnapply() override;

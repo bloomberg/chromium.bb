@@ -34,7 +34,7 @@ class LayoutView;
 
 class PendingSelection final : public GarbageCollected<PendingSelection> {
 public:
-    static RawPtr<PendingSelection> create(FrameSelection& frameSelection)
+    static PendingSelection* create(FrameSelection& frameSelection)
     {
         return new PendingSelection(frameSelection);
     }

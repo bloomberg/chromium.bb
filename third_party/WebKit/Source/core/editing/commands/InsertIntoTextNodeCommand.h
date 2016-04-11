@@ -34,7 +34,7 @@ class Text;
 
 class InsertIntoTextNodeCommand final : public SimpleEditCommand {
 public:
-    static RawPtr<InsertIntoTextNodeCommand> create(RawPtr<Text> node, unsigned offset, const String& text)
+    static InsertIntoTextNodeCommand* create(Text* node, unsigned offset, const String& text)
     {
         return new InsertIntoTextNodeCommand(node, offset, text);
     }
@@ -42,7 +42,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    InsertIntoTextNodeCommand(RawPtr<Text> node, unsigned offset, const String& text);
+    InsertIntoTextNodeCommand(Text* node, unsigned offset, const String& text);
 
     void doApply(EditingState*) override;
     void doUnapply() override;

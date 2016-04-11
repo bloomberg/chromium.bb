@@ -31,7 +31,7 @@
 
 namespace blink {
 
-WrapContentsInDummySpanCommand::WrapContentsInDummySpanCommand(RawPtr<Element> element)
+WrapContentsInDummySpanCommand::WrapContentsInDummySpanCommand(Element* element)
     : SimpleEditCommand(element->document())
     , m_element(element)
 {

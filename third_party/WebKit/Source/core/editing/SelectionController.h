@@ -42,7 +42,7 @@ class LocalFrame;
 class SelectionController final : public GarbageCollected<SelectionController> {
     WTF_MAKE_NONCOPYABLE(SelectionController);
 public:
-    static RawPtr<SelectionController> create(LocalFrame&);
+    static SelectionController* create(LocalFrame&);
     DECLARE_TRACE();
 
     void handleMousePressEvent(const MouseEventWithHitTestResults&);

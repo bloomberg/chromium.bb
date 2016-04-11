@@ -87,13 +87,13 @@ void RemoveFormatCommand::doApply(EditingState* editingState)
     // Get the default style for this editable root, it's the style that we'll give the
     // content that we're operating on.
     Element* root = frame->selection().rootEditableElement();
-    RawPtr<EditingStyle> defaultStyle = EditingStyle::create(root);
+    EditingStyle* defaultStyle = EditingStyle::create(root);
 
     // We want to remove everything but transparent background.
     // FIXME: We shouldn't access style().
     defaultStyle->style()->setProperty(CSSPropertyBackgroundColor, CSSValueTransparent);
 
-    applyCommandToComposite(ApplyStyleCommand::create(document(), defaultStyle.get(), isElementForRemoveFormatCommand, editingAction()), editingState);
+    applyCommandToComposite(ApplyStyleCommand::create(document(), defaultStyle, isElementForRemoveFormatCommand, editingAction()), editingState);
 }
 
 } // namespace blink

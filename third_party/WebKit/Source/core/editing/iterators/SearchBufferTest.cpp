@@ -38,23 +38,23 @@ namespace blink {
 
 class SearchBufferTest : public EditingTestBase {
 protected:
-    RawPtr<Range> getBodyRange() const;
+    Range* getBodyRange() const;
 };
 
-RawPtr<Range> SearchBufferTest::getBodyRange() const
+Range* SearchBufferTest::getBodyRange() const
 {
-    RawPtr<Range> range(Range::create(document()));
+    Range* range(Range::create(document()));
     range->selectNode(document().body());
-    return range.release();
+    return range;
 }
 
 TEST_F(SearchBufferTest, FindPlainTextInvalidTarget)
 {
     static const char* bodyContent = "<div>foo bar test</div>";
     setBodyContent(bodyContent);
-    RawPtr<Range> range = getBodyRange();
+    Range* range = getBodyRange();
 
-    RawPtr<Range> expectedRange = range->cloneRange();
+    Range* expectedRange = range->cloneRange();
     expectedRange->collapse(false);
 
     // A lone lead surrogate (0xDA0A) example taken from fuzz-58.
@@ -77,9 +77,9 @@ TEST_F(SearchBufferTest, FindPlainTextInvalidTarget)
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(invalidUStrings); ++i) {
         String invalidTarget(invalidUStrings[i]);
-        EphemeralRange foundRange = findPlainText(EphemeralRange(range.get()), invalidTarget, 0);
-        RawPtr<Range> actualRange = Range::create(document(), foundRange.startPosition(), foundRange.endPosition());
-        EXPECT_TRUE(areRangesEqual(expectedRange.get(), actualRange.get()));
+        EphemeralRange foundRange = findPlainText(EphemeralRange(range), invalidTarget, 0);
+        Range* actualRange = Range::create(document(), foundRange.startPosition(), foundRange.endPosition());
+        EXPECT_TRUE(areRangesEqual(expectedRange, actualRange));
     }
 }
 

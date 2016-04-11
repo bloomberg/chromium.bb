@@ -79,7 +79,7 @@ WebRange WebRange::fromDocumentRange(WebLocalFrame* frame, int start, int length
     LocalFrame* webFrame = toWebLocalFrameImpl(frame)->frame();
     Element* selectionRoot = webFrame->selection().rootEditableElement();
     ContainerNode* scope = selectionRoot ? selectionRoot : webFrame->document()->documentElement();
-    return createRange(PlainTextRange(start, start + length).createRange(*scope)).get();
+    return createRange(PlainTextRange(start, start + length).createRange(*scope));
 }
 
 WebRange::WebRange(Range*range)

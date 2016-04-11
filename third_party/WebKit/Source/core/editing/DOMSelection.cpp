@@ -220,14 +220,14 @@ void DOMSelection::collapse(Node* node, int offset, ExceptionState& exceptionSta
 
     if (!isValidForPosition(node))
         return;
-    RawPtr<Range> range = Range::create(node->document());
+    Range* range = Range::create(node->document());
     range->setStart(node, offset, exceptionState);
     if (exceptionState.hadException())
         return;
     range->setEnd(node, offset, exceptionState);
     if (exceptionState.hadException())
         return;
-    m_frame->selection().setSelectedRange(range.get(), TextAffinity::Downstream, m_frame->selection().isDirectional() ? SelectionDirectionalMode::Directional : SelectionDirectionalMode::NonDirectional);
+    m_frame->selection().setSelectedRange(range, TextAffinity::Downstream, m_frame->selection().isDirectional() ? SelectionDirectionalMode::Directional : SelectionDirectionalMode::NonDirectional);
 }
 
 void DOMSelection::collapseToEnd(ExceptionState& exceptionState)
@@ -366,7 +366,7 @@ void DOMSelection::extend(Node* node, int offset, ExceptionState& exceptionState
     m_frame->selection().setExtent(createVisiblePosition(createPosition(node, offset)));
 }
 
-RawPtr<Range> DOMSelection::getRangeAt(int index, ExceptionState& exceptionState)
+Range* DOMSelection::getRangeAt(int index, ExceptionState& exceptionState)
 {
     if (!m_frame)
         return nullptr;
@@ -417,7 +417,7 @@ void DOMSelection::addRange(Range* newRange)
         return;
     }
 
-    RawPtr<Range> originalRange = selection.firstRange();
+    Range* originalRange = selection.firstRange();
 
     if (originalRange->startContainer()->document() != newRange->startContainer()->document()) {
         addConsoleError("The given range does not belong to the current selection's document.");
@@ -429,7 +429,7 @@ void DOMSelection::addRange(Range* newRange)
     }
 
     if (originalRange->compareBoundaryPoints(Range::START_TO_END, newRange, ASSERT_NO_EXCEPTION) < 0
-        || newRange->compareBoundaryPoints(Range::START_TO_END, originalRange.get(), ASSERT_NO_EXCEPTION) < 0) {
+        || newRange->compareBoundaryPoints(Range::START_TO_END, originalRange, ASSERT_NO_EXCEPTION) < 0) {
         addConsoleError("Discontiguous selection is not supported.");
         return;
     }
@@ -439,11 +439,11 @@ void DOMSelection::addRange(Range* newRange)
     // do the same, since we don't support discontiguous selection. Further discussions at
     // <https://code.google.com/p/chromium/issues/detail?id=353069>.
 
-    Range* start = originalRange->compareBoundaryPoints(Range::START_TO_START, newRange, ASSERT_NO_EXCEPTION) < 0 ? originalRange.get() : newRange;
-    Range* end = originalRange->compareBoundaryPoints(Range::END_TO_END, newRange, ASSERT_NO_EXCEPTION) < 0 ? newRange : originalRange.get();
-    RawPtr<Range> merged = Range::create(originalRange->startContainer()->document(), start->startContainer(), start->startOffset(), end->endContainer(), end->endOffset());
+    Range* start = originalRange->compareBoundaryPoints(Range::START_TO_START, newRange, ASSERT_NO_EXCEPTION) < 0 ? originalRange : newRange;
+    Range* end = originalRange->compareBoundaryPoints(Range::END_TO_END, newRange, ASSERT_NO_EXCEPTION) < 0 ? newRange : originalRange;
+    Range* merged = Range::create(originalRange->startContainer()->document(), start->startContainer(), start->startOffset(), end->endContainer(), end->endOffset());
     TextAffinity affinity = selection.selection().affinity();
-    selection.setSelectedRange(merged.get(), affinity);
+    selection.setSelectedRange(merged, affinity);
 }
 
 void DOMSelection::deleteFromDocument()
@@ -456,7 +456,7 @@ void DOMSelection::deleteFromDocument()
     if (selection.isNone())
         return;
 
-    RawPtr<Range> selectedRange = createRange(selection.selection().toNormalizedEphemeralRange());
+    Range* selectedRange = createRange(selection.selection().toNormalizedEphemeralRange());
     if (!selectedRange)
         return;
 

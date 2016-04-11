@@ -35,11 +35,11 @@ class HTMLTableRowElement;
 
 class DeleteSelectionCommand final : public CompositeEditCommand {
 public:
-    static RawPtr<DeleteSelectionCommand> create(Document& document, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = false, bool sanitizeMarkup = true)
+    static DeleteSelectionCommand* create(Document& document, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = false, bool sanitizeMarkup = true)
     {
         return new DeleteSelectionCommand(document, smartDelete, mergeBlocksAfterDelete, expandForSpecialElements, sanitizeMarkup);
     }
-    static RawPtr<DeleteSelectionCommand> create(const VisibleSelection& selection, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = false, bool sanitizeMarkup = true)
+    static DeleteSelectionCommand* create(const VisibleSelection& selection, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = false, bool sanitizeMarkup = true)
     {
         return new DeleteSelectionCommand(selection, smartDelete, mergeBlocksAfterDelete, expandForSpecialElements, sanitizeMarkup);
     }
@@ -67,8 +67,8 @@ private:
     void calculateTypingStyleAfterDelete();
     void clearTransientState();
     void makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss(EditingState*);
-    void removeNode(RawPtr<Node>, EditingState*, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable) override;
-    void deleteTextFromNode(RawPtr<Text>, unsigned, unsigned) override;
+    void removeNode(Node*, EditingState*, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable) override;
+    void deleteTextFromNode(Text*, unsigned, unsigned) override;
     void removeRedundantBlocks(EditingState*);
 
     bool m_hasSelectionToDelete;

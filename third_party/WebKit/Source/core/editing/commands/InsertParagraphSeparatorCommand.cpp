@@ -133,21 +133,21 @@ void InsertParagraphSeparatorCommand::getAncestorsInsideBlock(const Node* insert
     }
 }
 
-RawPtr<Element> InsertParagraphSeparatorCommand::cloneHierarchyUnderNewBlock(const HeapVector<Member<Element>>& ancestors, RawPtr<Element> blockToInsert, EditingState* editingState)
+Element* InsertParagraphSeparatorCommand::cloneHierarchyUnderNewBlock(const HeapVector<Member<Element>>& ancestors, Element* blockToInsert, EditingState* editingState)
 {
     // Make clones of ancestors in between the start node and the start block.
-    RawPtr<Element> parent = blockToInsert;
+    Element* parent = blockToInsert;
     for (size_t i = ancestors.size(); i != 0; --i) {
-        RawPtr<Element> child = ancestors[i - 1]->cloneElementWithoutChildren();
+        Element* child = ancestors[i - 1]->cloneElementWithoutChildren();
         // It should always be okay to remove id from the cloned elements, since the originals are not deleted.
         child->removeAttribute(idAttr);
         appendNode(child, parent, editingState);
         if (editingState->isAborted())
             return nullptr;
-        parent = child.release();
+        parent = child;
     }
 
-    return parent.release();
+    return parent;
 }
 
 void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
@@ -170,13 +170,13 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
     }
 
     // FIXME: The parentAnchoredEquivalent conversion needs to be moved into enclosingBlock.
-    RawPtr<Element> startBlock = enclosingBlock(insertionPosition.parentAnchoredEquivalent().computeContainerNode());
+    Element* startBlock = enclosingBlock(insertionPosition.parentAnchoredEquivalent().computeContainerNode());
     Node* listChildNode = enclosingListChild(insertionPosition.parentAnchoredEquivalent().computeContainerNode());
-    RawPtr<HTMLElement> listChild = listChildNode && listChildNode->isHTMLElement() ? toHTMLElement(listChildNode) : 0;
+    HTMLElement* listChild = listChildNode && listChildNode->isHTMLElement() ? toHTMLElement(listChildNode) : 0;
     Position canonicalPos = createVisiblePosition(insertionPosition).deepEquivalent();
     if (!startBlock
         || !startBlock->nonShadowBoundaryParentNode()
-        || isTableCell(startBlock.get())
+        || isTableCell(startBlock)
         || isHTMLFormElement(*startBlock)
         // FIXME: If the node is hidden, we don't have a canonical position so we will do the wrong thing for tables and <hr>. https://bugs.webkit.org/show_bug.cgi?id=40342
         || (!canonicalPos.isNull() && isDisplayInsideTable(canonicalPos.anchorNode()))
@@ -217,11 +217,11 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
     bool nestNewBlock = false;
 
     // Create block to be inserted.
-    RawPtr<Element> blockToInsert = nullptr;
+    Element* blockToInsert = nullptr;
     if (startBlock->isRootEditableElement()) {
         blockToInsert = createDefaultParagraphElement(document());
         nestNewBlock = true;
-    } else if (shouldUseDefaultParagraphElement(startBlock.get())) {
+    } else if (shouldUseDefaultParagraphElement(startBlock)) {
         blockToInsert = createDefaultParagraphElement(document());
     } else {
         blockToInsert = startBlock->cloneElementWithoutChildren();
@@ -235,7 +235,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
             if (isFirstInBlock && !lineBreakExistsAtVisiblePosition(visiblePos)) {
                 // The block is empty.  Create an empty block to
                 // represent the paragraph that we're leaving.
-                RawPtr<HTMLElement> extraBlock = createDefaultParagraphElement(document());
+                HTMLElement* extraBlock = createDefaultParagraphElement(document());
                 appendNode(extraBlock, startBlock, editingState);
                 if (editingState->isAborted())
                     return;
@@ -255,17 +255,17 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
             }
 
             if (listChild && listChild != startBlock) {
-                RawPtr<Element> listChildToInsert = listChild->cloneElementWithoutChildren();
-                appendNode(blockToInsert, listChildToInsert.get(), editingState);
+                Element* listChildToInsert = listChild->cloneElementWithoutChildren();
+                appendNode(blockToInsert, listChildToInsert, editingState);
                 if (editingState->isAborted())
                     return;
-                insertNodeAfter(listChildToInsert.get(), listChild, editingState);
+                insertNodeAfter(listChildToInsert, listChild, editingState);
             } else {
                 // Most of the time we want to stay at the nesting level of the startBlock (e.g., when nesting within lists). However,
                 // for div nodes, this can result in nested div tags that are hard to break out of.
-                Element* siblingElement = startBlock.get();
+                Element* siblingElement = startBlock;
                 if (isHTMLDivElement(*blockToInsert))
-                    siblingElement = highestVisuallyEquivalentDivBelowRoot(startBlock.get());
+                    siblingElement = highestVisuallyEquivalentDivBelowRoot(startBlock);
                 insertNodeAfter(blockToInsert, siblingElement, editingState);
             }
             if (editingState->isAborted())
@@ -275,8 +275,8 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
         // Recreate the same structure in the new paragraph.
 
         HeapVector<Member<Element>> ancestors;
-        getAncestorsInsideBlock(positionOutsideTabSpan(insertionPosition).anchorNode(), startBlock.get(), ancestors);
-        RawPtr<Element> parent = cloneHierarchyUnderNewBlock(ancestors, blockToInsert, editingState);
+        getAncestorsInsideBlock(positionOutsideTabSpan(insertionPosition).anchorNode(), startBlock, ancestors);
+        Element* parent = cloneHierarchyUnderNewBlock(ancestors, blockToInsert, editingState);
         if (editingState->isAborted())
             return;
 
@@ -284,7 +284,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
         if (editingState->isAborted())
             return;
 
-        setEndingSelection(VisibleSelection(firstPositionInNode(parent.get()), TextAffinity::Downstream, endingSelection().isDirectional()));
+        setEndingSelection(VisibleSelection(firstPositionInNode(parent), TextAffinity::Downstream, endingSelection().isDirectional()));
         return;
     }
 
@@ -298,15 +298,15 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
 
         if (isFirstInBlock && !nestNewBlock) {
             if (listChild && listChild != startBlock) {
-                RawPtr<Element> listChildToInsert = listChild->cloneElementWithoutChildren();
-                appendNode(blockToInsert, listChildToInsert.get(), editingState);
+                Element* listChildToInsert = listChild->cloneElementWithoutChildren();
+                appendNode(blockToInsert, listChildToInsert, editingState);
                 if (editingState->isAborted())
                     return;
-                insertNodeBefore(listChildToInsert.get(), listChild, editingState);
+                insertNodeBefore(listChildToInsert, listChild, editingState);
                 if (editingState->isAborted())
                     return;
             } else {
-                refNode = startBlock.get();
+                refNode = startBlock;
             }
         } else if (isFirstInBlock && nestNewBlock) {
             // startBlock should always have children, otherwise isLastInBlock would be true and it's handled above.
@@ -334,12 +334,12 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
         insertionPosition = positionAvoidingSpecialElementBoundary(positionOutsideTabSpan(insertionPosition), editingState);
         if (editingState->isAborted())
             return;
-        getAncestorsInsideBlock(insertionPosition.anchorNode(), startBlock.get(), ancestors);
+        getAncestorsInsideBlock(insertionPosition.anchorNode(), startBlock, ancestors);
 
-        RawPtr<Element> placeholder = cloneHierarchyUnderNewBlock(ancestors, blockToInsert, editingState);
+        Element* placeholder = cloneHierarchyUnderNewBlock(ancestors, blockToInsert, editingState);
         if (editingState->isAborted())
             return;
-        appendBlockPlaceholder(placeholder.release(), editingState);
+        appendBlockPlaceholder(placeholder, editingState);
         if (editingState->isAborted())
             return;
 
@@ -356,8 +356,8 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
     // it if visiblePos is at the start of a paragraph so that the
     // content will move down a line.
     if (isStartOfParagraph(visiblePos)) {
-        RawPtr<HTMLBRElement> br = HTMLBRElement::create(document());
-        insertNodeAt(br.get(), insertionPosition, editingState);
+        HTMLBRElement* br = HTMLBRElement::create(document());
+        insertNodeAt(br, insertionPosition, editingState);
         if (editingState->isAborted())
             return;
         insertionPosition = positionInParentAfterNode(*br);
@@ -401,12 +401,12 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
     // Split at pos if in the middle of a text node.
     Position positionAfterSplit;
     if (insertionPosition.isOffsetInAnchor() && insertionPosition.computeContainerNode()->isTextNode()) {
-        RawPtr<Text> textNode = toText(insertionPosition.computeContainerNode());
+        Text* textNode = toText(insertionPosition.computeContainerNode());
         int textOffset = insertionPosition.offsetInContainerNode();
         bool atEnd = static_cast<unsigned>(textOffset) >= textNode->length();
         if (textOffset > 0 && !atEnd) {
             splitTextNode(textNode, textOffset);
-            positionAfterSplit = firstPositionInNode(textNode.get());
+            positionAfterSplit = firstPositionInNode(textNode);
             insertionPosition = Position(textNode->previousSibling(), textOffset);
             visiblePos = createVisiblePosition(insertionPosition);
         }
@@ -418,15 +418,15 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
 
     // Put the added block in the tree.
     if (nestNewBlock) {
-        appendNode(blockToInsert.get(), startBlock, editingState);
+        appendNode(blockToInsert, startBlock, editingState);
     } else if (listChild && listChild != startBlock) {
-        RawPtr<Element> listChildToInsert = listChild->cloneElementWithoutChildren();
-        appendNode(blockToInsert.get(), listChildToInsert.get(), editingState);
+        Element* listChildToInsert = listChild->cloneElementWithoutChildren();
+        appendNode(blockToInsert, listChildToInsert, editingState);
         if (editingState->isAborted())
             return;
-        insertNodeAfter(listChildToInsert.get(), listChild, editingState);
+        insertNodeAfter(listChildToInsert, listChild, editingState);
     } else {
-        insertNodeAfter(blockToInsert.get(), startBlock, editingState);
+        insertNodeAfter(blockToInsert, startBlock, editingState);
     }
     if (editingState->isAborted())
         return;
@@ -437,22 +437,22 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
     // created.  All of the nodes, starting at visiblePos, are about to be added to the new paragraph
     // element.  If the first node to be inserted won't be one that will hold an empty line open, add a br.
     if (isEndOfParagraph(visiblePos) && !lineBreakExistsAtVisiblePosition(visiblePos)) {
-        appendNode(HTMLBRElement::create(document()).get(), blockToInsert.get(), editingState);
+        appendNode(HTMLBRElement::create(document()).get(), blockToInsert, editingState);
         if (editingState->isAborted())
             return;
     }
 
     // Move the start node and the siblings of the start node.
-    if (createVisiblePosition(insertionPosition).deepEquivalent() != createVisiblePosition(positionBeforeNode(blockToInsert.get())).deepEquivalent()) {
+    if (createVisiblePosition(insertionPosition).deepEquivalent() != createVisiblePosition(positionBeforeNode(blockToInsert)).deepEquivalent()) {
         Node* n;
         if (insertionPosition.computeContainerNode() == startBlock) {
             n = insertionPosition.computeNodeAfterPosition();
         } else {
             Node* splitTo = insertionPosition.computeContainerNode();
             if (splitTo->isTextNode() && insertionPosition.offsetInContainerNode() >= caretMaxOffset(splitTo))
-                splitTo = NodeTraversal::next(*splitTo, startBlock.get());
+                splitTo = NodeTraversal::next(*splitTo, startBlock);
             if (splitTo)
-                splitTreeToNode(splitTo, startBlock.get());
+                splitTreeToNode(splitTo, startBlock);
 
             for (n = startBlock->firstChild(); n; n = n->nextSibling()) {
                 VisiblePosition beforeNodePosition = createVisiblePosition(positionBeforeNode(n));
@@ -461,7 +461,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
             }
         }
 
-        moveRemainingSiblingsToNewParent(n, blockToInsert.get(), blockToInsert, editingState);
+        moveRemainingSiblingsToNewParent(n, blockToInsert, blockToInsert, editingState);
         if (editingState->isAborted())
             return;
     }
@@ -480,8 +480,8 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
         }
     }
 
-    setEndingSelection(VisibleSelection(firstPositionInNode(blockToInsert.get()), TextAffinity::Downstream, endingSelection().isDirectional()));
-    applyStyleAfterInsertion(startBlock.get(), editingState);
+    setEndingSelection(VisibleSelection(firstPositionInNode(blockToInsert), TextAffinity::Downstream, endingSelection().isDirectional()));
+    applyStyleAfterInsertion(startBlock, editingState);
 }
 
 DEFINE_TRACE(InsertParagraphSeparatorCommand)
