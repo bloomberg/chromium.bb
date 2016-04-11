@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "content/child/image_decoder.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/renderer/fetchers/multi_resolution_image_resource_fetcher.h"
 #include "mojo/common/url_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -121,9 +122,11 @@ ImageDownloaderImpl::ImageDownloaderImpl(
     mojo::InterfaceRequest<content::mojom::ImageDownloader> request)
     : RenderFrameObserver(render_frame), binding_(this, std::move(request)) {
   DCHECK(render_frame);
+  RenderThread::Get()->AddObserver(this);
 }
 
 ImageDownloaderImpl::~ImageDownloaderImpl() {
+  RenderThread::Get()->RemoveObserver(this);
 }
 
 // static
@@ -134,6 +137,11 @@ void ImageDownloaderImpl::CreateMojoService(
   DCHECK(render_frame);
 
   new ImageDownloaderImpl(render_frame, std::move(request));
+}
+
+// Ensure all loaders cleared before calling blink::shutdown.
+void ImageDownloaderImpl::OnRenderProcessShutdown() {
+  image_fetchers_.clear();
 }
 
 // ImageDownloader methods:
