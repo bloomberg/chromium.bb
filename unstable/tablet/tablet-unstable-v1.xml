@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <protocol name="tablet_unstable_v1">
+
   <copyright>
     Copyright 2014 © Stephen "Lyude" Chandler Paul
     Copyright 2015-2016 © Red Hat, Inc.
@@ -25,6 +26,7 @@
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
   </copyright>
+
   <description summary="Wayland protocol for graphics tablets">
     This description provides a high-level overview of the interplay between
     the interfaces defined this protocol. For details, see the protocol
@@ -112,6 +114,7 @@
     version number in the protocol and interface names are removed and the
     interface version number is reset.
   </description>
+
   <interface name="zwp_tablet_manager_v1" version="1">
     <description summary="controller object for graphic tablet devices">
       An object that provides access to the graphics tablets available on this
@@ -634,4 +637,5 @@
       </description>
     </event>
   </interface>
+
 </protocol>
