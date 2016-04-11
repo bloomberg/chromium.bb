@@ -73,7 +73,7 @@ bool PlatformMimeUtil::GetPreferredExtensionForMimeType(
 
 void PlatformMimeUtil::GetPlatformExtensionsForMimeType(
     const std::string& mime_type,
-    base::hash_set<base::FilePath::StringType>* extensions) const {
+    std::unordered_set<base::FilePath::StringType>* extensions) const {
 #if defined(OS_IOS)
   NSArray* extensions_list = nil;
 #else

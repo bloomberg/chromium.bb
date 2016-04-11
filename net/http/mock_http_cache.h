@@ -12,7 +12,8 @@
 
 #include <stdint.h>
 
-#include "base/containers/hash_tables.h"
+#include <unordered_map>
+
 #include "base/strings/string_split.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
@@ -155,7 +156,7 @@ class MockDiskCache : public disk_cache::Backend {
   void ReleaseAll();
 
  private:
-  typedef base::hash_map<std::string, MockDiskEntry*> EntryMap;
+  using EntryMap = std::unordered_map<std::string, MockDiskEntry*>;
   class NotImplementedIterator;
 
   void CallbackLater(const CompletionCallback& callback, int result);

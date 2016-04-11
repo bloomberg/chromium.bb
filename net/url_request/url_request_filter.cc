@@ -57,9 +57,8 @@ void URLRequestFilter::AddHostnameInterceptor(
 
 #ifndef NDEBUG
   // Check to see if we're masking URLs in the url_interceptor_map_.
-  for (URLInterceptorMap::const_iterator it = url_interceptor_map_.begin();
-       it != url_interceptor_map_.end(); ++it) {
-    const GURL& url = GURL(it->first);
+  for (const auto& pair : url_interceptor_map_) {
+    const GURL& url = GURL(pair.first);
     HostnameInterceptorMap::const_iterator host_it =
         hostname_interceptor_map_.find(make_pair(url.scheme(), url.host()));
     if (host_it != hostname_interceptor_map_.end())
@@ -86,7 +85,7 @@ bool URLRequestFilter::AddUrlInterceptor(
   if (!url.is_valid())
     return false;
   DCHECK_EQ(0u, url_interceptor_map_.count(url.spec()));
-  url_interceptor_map_.set(url.spec(), std::move(interceptor));
+  url_interceptor_map_[url.spec()] = std::move(interceptor);
 
   // Check to see if this URL is masked by a hostname handler.
   DCHECK_EQ(0u, hostname_interceptor_map_.count(make_pair(url.scheme(),
@@ -97,7 +96,7 @@ bool URLRequestFilter::AddUrlInterceptor(
 
 void URLRequestFilter::RemoveUrlHandler(const GURL& url) {
   DCHECK(OnMessageLoopForInterceptorRemoval());
-  int removed = url_interceptor_map_.erase(url.spec());
+  size_t removed = url_interceptor_map_.erase(url.spec());
   DCHECK(removed);
   // Note that we don't unregister from the URLRequest ProtocolFactory as
   // this would leave no protocol factory for the remaining hostname and URL

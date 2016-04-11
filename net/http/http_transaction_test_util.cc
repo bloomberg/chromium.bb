@@ -5,6 +5,7 @@
 #include "net/http/http_transaction_test_util.h"
 
 #include <algorithm>
+#include <unordered_map>
 #include <utility>
 
 #include "base/bind.h"
@@ -29,7 +30,8 @@
 namespace net {
 
 namespace {
-typedef base::hash_map<std::string, const MockTransaction*> MockTransactionMap;
+using MockTransactionMap =
+    std::unordered_map<std::string, const MockTransaction*>;
 static MockTransactionMap mock_transactions;
 }  // namespace
 

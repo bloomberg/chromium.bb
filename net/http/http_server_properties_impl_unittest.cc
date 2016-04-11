@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"

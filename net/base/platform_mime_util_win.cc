@@ -42,7 +42,7 @@ bool PlatformMimeUtil::GetPreferredExtensionForMimeType(
 
 void PlatformMimeUtil::GetPlatformExtensionsForMimeType(
     const std::string& mime_type,
-    base::hash_set<base::FilePath::StringType>* extensions) const {
+    std::unordered_set<base::FilePath::StringType>* extensions) const {
   // Multiple extensions could have the given mime type specified as their types
   // in their 'HKCR\.<extension>\Content Type' keys. Iterating all the HKCR
   // entries, though, is wildly impractical. Cheat by returning just the
