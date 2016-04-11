@@ -1051,10 +1051,11 @@ components/rappor/rappor_parameters.h.
 <rappor-metric name="Plugins.SilverlightOriginUrl" type="ETLD_PLUS_ONE">
   <owner>wfh@chromium.org</owner>
   <summary>
-    The domain and registry of the top level URL of a page which attempts to
-    launch a Silverlight NPAPI plugin, if the client has Silverlight installed
-    and enabled. Recorded when the plugin frame appears for each Silverlight
-    object found on the page, even if the plugin is click-to-play.
+    Deprecated with NPAPI removal. The domain and registry of the top level URL
+    of a page which attempts to launch a Silverlight NPAPI plugin, if the client
+    has Silverlight installed and enabled. Recorded when the plugin frame
+    appears for each Silverlight object found on the page, even if the plugin is
+    click-to-play.
   </summary>
 </rappor-metric>
 

@@ -115,16 +115,8 @@ void ReportMetrics(const std::string& mime_type,
   if (!rappor_service)
     return;
 
-  if (base::StartsWith(mime_type,
-                       content::kSilverlightPluginMimeTypePrefix,
-                       base::CompareCase::INSENSITIVE_ASCII)) {
-    rappor_service->RecordSample(
-        "Plugins.SilverlightOriginUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
-        net::registry_controlled_domains::GetDomainAndRegistry(
-            origin_url,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
-  } else if (mime_type == content::kFlashPluginSwfMimeType ||
-             mime_type == content::kFlashPluginSplMimeType) {
+  if (mime_type == content::kFlashPluginSwfMimeType ||
+      mime_type == content::kFlashPluginSplMimeType) {
     rappor_service->RecordSample(
         "Plugins.FlashOriginUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
         net::registry_controlled_domains::GetDomainAndRegistry(
