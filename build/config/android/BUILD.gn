@@ -104,14 +104,8 @@ config("compiler") {
     } else {
       assert(false, "Architecture not supported")
     }
-    cflags += [
-      "-target",
-      abi_target,
-    ]
-    ldflags += [
-      "-target",
-      abi_target,
-    ]
+    cflags += [ "--target=$abi_target" ]
+    ldflags += [ "--target=$abi_target" ]
   }
 
   # Assign any flags set for the C compiler to asmflags so that they are sent
