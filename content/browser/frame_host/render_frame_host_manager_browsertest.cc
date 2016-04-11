@@ -2550,4 +2550,71 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   ResourceDispatcherHost::Get()->SetDelegate(nullptr);
 }
 
+// Check that if a sandboxed subframe opens a cross-process popup such that the
+// popup's opener won't be set, the popup still inherits the subframe's sandbox
+// flags.  This matters for rel=noopener and rel=noreferrer links, as well as
+// for some situations in non-site-per-process mode where the popup would
+// normally maintain the opener, but loses it due to being placed in a new
+// process and not creating subframe proxies.  The latter might happen when
+// opening the default search provider site.  See https://crbug.com/576204.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       CrossProcessPopupInheritsSandboxFlagsWithNoOpener) {
+  StartEmbeddedServer();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Add a sandboxed about:blank iframe.
+  {
+    std::string script =
+        "var frame = document.createElement('iframe');\n"
+        "frame.sandbox = 'allow-scripts allow-popups';\n"
+        "document.body.appendChild(frame);\n";
+    EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
+  }
+
+  // Navigate iframe to a page with target=_blank links, and rewrite the links
+  // to point to valid cross-site URLs.
+  GURL frame_url(
+      embedded_test_server()->GetURL("a.com", "/click-noreferrer-links.html"));
+  NavigateFrameToURL(root->child_at(0), frame_url);
+  std::string script = "setOriginForLinks('http://b.com:" +
+                       embedded_test_server()->base_url().port() + "/');";
+  EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(), script));
+
+  // Helper to click on the 'rel=noreferrer target=_blank' and 'rel=noopener
+  // target=_blank' links.  Checks that these links open a popup that ends up
+  // in a new SiteInstance even without site-per-process and then verifies that
+  // the popup is still sandboxed.
+  auto click_link_and_verify_popup = [this,
+                                      root](std::string link_opening_script) {
+    ShellAddedObserver new_shell_observer;
+    bool success = false;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        root->child_at(0)->current_frame_host(),
+        "window.domAutomationController.send(" + link_opening_script + ")",
+        &success));
+    EXPECT_TRUE(success);
+
+    Shell* new_shell = new_shell_observer.GetShell();
+    EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
+    EXPECT_NE(new_shell->web_contents()->GetSiteInstance(),
+              shell()->web_contents()->GetSiteInstance());
+
+    // Check that the popup is sandboxed by checking its document.origin, which
+    // should be unique.
+    std::string origin;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        new_shell->web_contents(),
+        "domAutomationController.send(document.origin)", &origin));
+    EXPECT_EQ("null", origin);
+  };
+
+  click_link_and_verify_popup("clickNoOpenerTargetBlankLink()");
+  click_link_and_verify_popup("clickNoRefTargetBlankLink()");
+}
+
 }  // namespace content

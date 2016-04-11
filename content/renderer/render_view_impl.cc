@@ -795,8 +795,7 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   // Ensure that sandbox flags are inherited from an opener in a different
   // process.  In that case, the browser process will set any inherited sandbox
   // flags in |replicated_frame_state|, so apply them here.
-  if (opener_frame && !was_created_by_renderer &&
-      webview()->mainFrame()->isWebLocalFrame()) {
+  if (!was_created_by_renderer && webview()->mainFrame()->isWebLocalFrame()) {
     webview()->mainFrame()->toWebLocalFrame()->forceSandboxFlags(
         params.replicated_frame_state.sandbox_flags);
   }

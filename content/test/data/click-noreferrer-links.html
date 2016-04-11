@@ -3,7 +3,13 @@
  <head><title>Click noreferrer links</title>
  <script>
   function setOriginForLinks(baseUrl) {
-    var links = ['noref_and_tblank_link', 'tblank_link', 'noref_link'];
+    var links = [
+        'noref_and_tblank_link',
+        'noopener_and_tblank_link',
+        'tblank_link',
+        'noref_link',
+        'noopener_link'
+    ];
     links.forEach(function(linkId) {
       link = document.getElementById(linkId);
       link.href = baseUrl + link.pathname.substr(1);
