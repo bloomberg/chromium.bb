@@ -13,8 +13,6 @@ include_rules = [
   "+third_party/WebKit/public/platform",
   "+third_party/WebKit/public/web",
 
-  "+third_party/wds/src/libwds/public",
-
   "+tools/json_schema_compiler",
 
   "-v8",
