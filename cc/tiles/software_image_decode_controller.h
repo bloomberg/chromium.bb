@@ -116,6 +116,9 @@ class CC_EXPORT SoftwareImageDecodeController
   void DrawWithImageFinished(const DrawImage& image,
                              const DecodedDrawImage& decoded_image) override;
   void ReduceCacheUsage() override;
+  // Software doesn't keep outstanding images pinned, so this is a no-op.
+  void SetShouldAggressivelyFreeResources(
+      bool aggressively_free_resources) override {}
 
   // Decode the given image and store it in the cache. This is only called by an
   // image decode task from a worker thread.

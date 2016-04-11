@@ -122,9 +122,10 @@ void TileTaskWorkerPool::PlaybackToMemory(
       } else {
         TRACE_EVENT0("cc",
                      "TileTaskWorkerPool::PlaybackToMemory::ConvertRGBA4444");
-        SkImageInfo dst_info = SkImageInfo::Make(
-            info.width(), info.height(), ResourceFormatToSkColorType(format),
-            info.alphaType(), info.profileType());
+        SkImageInfo dst_info =
+            SkImageInfo::Make(info.width(), info.height(),
+                              ResourceFormatToClosestSkColorType(format),
+                              info.alphaType(), info.profileType());
         bool rv = surface->readPixels(dst_info, memory, stride, 0, 0);
         DCHECK(rv);
       }

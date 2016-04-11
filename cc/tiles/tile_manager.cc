@@ -155,6 +155,23 @@ void InsertNodeForTask(TaskGraph* graph,
       TaskGraph::Node(task, category, priority, dependencies));
 }
 
+void InsertNodeForDecodeTask(TaskGraph* graph,
+                             ImageDecodeTask* task,
+                             uint16_t category,
+                             uint16_t priority) {
+  uint32_t dependency_count = 0u;
+  auto* dependency = task->dependency().get();
+  if (dependency && !dependency->HasCompleted()) {
+    InsertNodeForDecodeTask(graph, dependency, category, priority);
+    graph->edges.push_back(TaskGraph::Edge(dependency, task));
+    dependency_count = 1u;
+  }
+  InsertNodeForTask(graph, task, task->SupportsConcurrentExecution()
+                                     ? category
+                                     : TASK_CATEGORY_NONCONCURRENT_FOREGROUND,
+                    priority, dependency_count);
+}
+
 void InsertNodesForRasterTask(TaskGraph* graph,
                               RasterTask* raster_task,
                               const ImageDecodeTask::Vector& decode_tasks,
@@ -209,7 +226,8 @@ void InsertNodesForRasterTask(TaskGraph* graph,
     }
 
     if (decode_it == graph->nodes.end()) {
-      InsertNodeForTask(graph, decode_task, decode_task_category, priority, 0u);
+      InsertNodeForDecodeTask(graph, decode_task, decode_task_category,
+                              priority);
     }
 
     graph->edges.push_back(TaskGraph::Edge(decode_task, raster_task));

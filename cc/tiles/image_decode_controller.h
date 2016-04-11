@@ -62,6 +62,11 @@ class CC_EXPORT ImageDecodeController {
   // This function informs the controller that now is a good time to clean up
   // memory. This is called periodically from the compositor thread.
   virtual void ReduceCacheUsage() = 0;
+
+  // This function informs the controller that we are hidden and should not be
+  // retaining cached resources longer than needed.
+  virtual void SetShouldAggressivelyFreeResources(
+      bool aggressively_free_resources) = 0;
 };
 
 }  // namespace cc

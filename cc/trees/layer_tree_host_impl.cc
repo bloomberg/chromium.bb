@@ -1241,14 +1241,21 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
           gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING);
   global_tile_state_.num_resources_limit = policy.num_resources_limit;
 
-  if (output_surface_ && global_tile_state_.hard_memory_limit_in_bytes > 0) {
+  if (global_tile_state_.hard_memory_limit_in_bytes > 0) {
     // If |global_tile_state_.hard_memory_limit_in_bytes| is greater than 0, we
-    // allow the worker context to retain allocated resources. Notify the worker
-    // context. If the memory policy has become zero, we'll handle the
-    // notification in NotifyAllTileTasksCompleted, after in-progress work
-    // finishes.
-    output_surface_->SetWorkerContextShouldAggressivelyFreeResources(
-        false /* aggressively_free_resources */);
+    // allow the worker context and image decode controller to retain allocated
+    // resources. Notify them here. If the memory policy has become zero, we'll
+    // handle the notification in NotifyAllTileTasksCompleted, after
+    // in-progress work finishes.
+    if (output_surface_) {
+      output_surface_->SetWorkerContextShouldAggressivelyFreeResources(
+          false /* aggressively_free_resources */);
+    }
+
+    if (image_decode_controller_) {
+      image_decode_controller_->SetShouldAggressivelyFreeResources(
+          false /* aggressively_free_resources */);
+    }
   }
 
   DCHECK(resource_pool_);
@@ -1320,9 +1327,15 @@ void LayerTreeHostImpl::NotifyReadyToDraw() {
 void LayerTreeHostImpl::NotifyAllTileTasksCompleted() {
   // The tile tasks started by the most recent call to PrepareTiles have
   // completed. Now is a good time to free resources if necessary.
-  if (output_surface_ && global_tile_state_.hard_memory_limit_in_bytes == 0) {
-    output_surface_->SetWorkerContextShouldAggressivelyFreeResources(
-        true /* aggressively_free_resources */);
+  if (global_tile_state_.hard_memory_limit_in_bytes == 0) {
+    if (output_surface_) {
+      output_surface_->SetWorkerContextShouldAggressivelyFreeResources(
+          true /* aggressively_free_resources */);
+    }
+    if (image_decode_controller_) {
+      image_decode_controller_->SetShouldAggressivelyFreeResources(
+          true /* aggressively_free_resources */);
+    }
   }
 }
 
@@ -2141,7 +2154,9 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
   CreateResourceAndTileTaskWorkerPool(&tile_task_worker_pool_, &resource_pool_);
 
   if (use_gpu_rasterization_) {
-    image_decode_controller_ = base::WrapUnique(new GpuImageDecodeController);
+    image_decode_controller_ = base::WrapUnique(new GpuImageDecodeController(
+        output_surface_->worker_context_provider(),
+        settings_.renderer_settings.preferred_tile_format));
   } else {
     image_decode_controller_ =
         base::WrapUnique(new SoftwareImageDecodeController(

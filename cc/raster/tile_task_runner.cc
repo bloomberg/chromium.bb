@@ -46,7 +46,14 @@ bool TileTask::HasCompleted() const {
 ImageDecodeTask::ImageDecodeTask() {
 }
 
+ImageDecodeTask::ImageDecodeTask(scoped_refptr<ImageDecodeTask> dependency)
+    : dependency_(std::move(dependency)) {}
+
 ImageDecodeTask::~ImageDecodeTask() {
+}
+
+bool ImageDecodeTask::SupportsConcurrentExecution() const {
+  return true;
 }
 
 RasterTask::RasterTask(ImageDecodeTask::Vector* dependencies) {

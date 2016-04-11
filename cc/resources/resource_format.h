@@ -31,7 +31,7 @@ enum ResourceFormat {
   RESOURCE_FORMAT_MAX = LUMINANCE_F16,
 };
 
-SkColorType ResourceFormatToSkColorType(ResourceFormat format);
+SkColorType ResourceFormatToClosestSkColorType(ResourceFormat format);
 
 CC_EXPORT int BitsPerPixel(ResourceFormat format);
 CC_EXPORT GLenum GLDataType(ResourceFormat format);

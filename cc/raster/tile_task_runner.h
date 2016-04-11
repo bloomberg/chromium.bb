@@ -58,9 +58,22 @@ class CC_EXPORT ImageDecodeTask : public TileTask {
  public:
   typedef std::vector<scoped_refptr<ImageDecodeTask>> Vector;
 
+  // Indicates whether this ImageDecodeTask can be run at the same time as
+  // other tasks in the task graph. If false, this task will be scheduled with
+  // TASK_CATEGORY_NONCONCURRENT_FOREGROUND. The base implementation always
+  // returns true.
+  virtual bool SupportsConcurrentExecution() const;
+
+  // Returns an optional task which this task depends on. May be null.
+  const scoped_refptr<ImageDecodeTask>& dependency() { return dependency_; }
+
  protected:
   ImageDecodeTask();
+  explicit ImageDecodeTask(scoped_refptr<ImageDecodeTask> dependency);
   ~ImageDecodeTask() override;
+
+ private:
+  scoped_refptr<ImageDecodeTask> dependency_;
 };
 
 class CC_EXPORT RasterTask : public TileTask {
