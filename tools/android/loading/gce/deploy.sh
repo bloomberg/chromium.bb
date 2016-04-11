@@ -34,8 +34,9 @@ cp -r tools/perf/chrome_telemetry_build $tmp_src_dir/tools/perf
 mkdir -p $tmp_src_dir/build/android
 cp build/android/devil_chromium.py $tmp_src_dir/build/android/
 cp build/android/video_recorder.py $tmp_src_dir/build/android/
-cp build/android/devil_chromium.json $tmp_src_dir/build/android/
 cp -r build/android/pylib $tmp_src_dir/build/android/
+mkdir -p $tmp_src_dir/$builddir/gen/
+cp $builddir/gen/devil_chromium.json $tmp_src_dir/$builddir/gen/
 mkdir -p \
   $tmp_src_dir/third_party/WebKit/Source/devtools/front_end/emulated_devices
 cp third_party/WebKit/Source/devtools/front_end/emulated_devices/module.json \

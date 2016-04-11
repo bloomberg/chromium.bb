@@ -48,6 +48,39 @@
       ],
     },
     {
+      # We cannot use the jinja gypi file because we need to do operations with
+      # the PRODUCT_DIR variable before passing it to the jinja template.
+      # This variable is not known at GYP time so we have to pass it to a
+      # wrapper script to do the operations.
+      'target_name': 'devil_chromium_config',
+      'type': 'none',
+      'actions': [
+        {
+          'action_name': 'devil_chromium_config__jinja_template',
+          'message': 'processing jinja template',
+          'variables': {
+            'output_file_name': 'devil_chromium.json',
+          },
+          'action': [
+            'python', '<(DEPTH)/build/android/gyp_devil_jinja_processor.py',
+            '--android-abi', '<(android_app_abi)',
+            '--android-sdk-root', '<(android_sdk_root)',
+            '--build-tools-version', '<(android_sdk_build_tools_version)',
+            '--input-file-path', '<(DEPTH)/build/android/devil_chromium.jinja',
+            '--output-file-name', '<(output_file_name)',
+            '--product-dir', '<(PRODUCT_DIR)',
+          ],
+          'inputs': [
+            '<(DEPTH)/build/android/gyp_devil_jinja_processor.py',
+            '<(DEPTH)/build/android/gyp/jinja_template.py',
+          ],
+          'outputs': [
+            '<(PRODUCT_DIR)/gen/<(output_file_name)',
+          ]
+        },
+      ],
+    }, # devil_chromium_config
+    {
       # Target for creating common output build directories. Creating output
       # dirs beforehand ensures that build scripts can assume these folders to
       # exist and there are no race conditions resulting from build scripts

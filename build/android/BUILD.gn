@@ -84,6 +84,22 @@ action("cpplib_stripped") {
   ]
 }
 
+jinja_template("devil_chromium_config") {
+  input = "//build/android/devil_chromium.jinja"
+  output = "$root_gen_dir/devil_chromium.json"
+
+  _rebased_android_sdk_root =
+      rebase_path(default_android_sdk_root, root_gen_dir)
+  _rebased_output_dir = rebase_path(root_build_dir, root_gen_dir)
+
+  variables = [
+    "android_app_abi=$android_app_abi",
+    "android_sdk_root=$_rebased_android_sdk_root",
+    "build_tools_version=$default_android_sdk_build_tools_version",
+    "output_dir=$_rebased_output_dir",
+  ]
+}
+
 group("test_runner_py") {
   _py_files = read_file("test_runner.pydeps", "list lines")
 
@@ -92,7 +108,6 @@ group("test_runner_py") {
   sources = _py_files
 
   data = sources + [
-           "devil_chromium.json",
            "//third_party/android_tools/sdk/build-tools/23.0.1/aapt",
            "//third_party/android_tools/sdk/build-tools/23.0.1/dexdump",
            "//third_party/android_tools/sdk/build-tools/23.0.1/lib/libc++.so",
@@ -100,9 +115,13 @@ group("test_runner_py") {
            "//third_party/android_tools/sdk/platform-tools/adb",
            "//third_party/catapult/third_party/gsutil/",
            "//third_party/catapult/devil/devil/devil_dependencies.json",
+           "$root_gen_dir/devil_chromium.json",
          ]
   data_deps = [
     "//tools/swarming_client:isolate_py",
+  ]
+  deps = [
+    "//build/android:devil_chromium_config",
   ]
 }
 

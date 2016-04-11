@@ -1,0 +1,105 @@
+{
+  "config_type": "BaseConfig",
+  "dependencies": {
+    "aapt": {
+      "file_info": {
+        "linux2_x86_64": {
+          "local_paths": [
+            "{{android_sdk_root}}/build-tools/{{build_tools_version}}/aapt"
+          ]
+        }
+      }
+    },
+    "adb": {
+      "file_info": {
+        "linux2_x86_64": {
+          "local_paths": [
+            "{{android_sdk_root}}/platform-tools/adb"
+          ]
+        }
+      }
+    },
+    "android_sdk": {
+      "file_info": {
+        "linux2_x86_64": {
+          "local_paths": [
+            "{{android_sdk_root}}"
+          ]
+        }
+      }
+    },
+    "dexdump": {
+      "file_info": {
+        "linux2_x86_64": {
+          "local_paths": [
+            "{{android_sdk_root}}/build-tools/{{build_tools_version}}/dexdump"
+          ]
+        }
+      }
+    },
+    "forwarder_device": {
+      "file_info": {
+        "android_{{android_app_abi}}": {
+          "local_paths": [
+            "{{output_dir}}/forwarder_dist"
+          ]
+        }
+      }
+    },
+    "forwarder_host": {
+      "file_info": {
+        "linux2_x86_64": {
+          "local_paths": [
+            "{{output_dir}}/host_forwarder"
+          ]
+        }
+      }
+    },
+    "md5sum_device": {
+      "file_info": {
+        "android_{{android_app_abi}}": {
+          "local_paths": [
+            "{{output_dir}}/md5sum_dist"
+          ]
+        }
+      }
+    },
+    "md5sum_host": {
+      "file_info": {
+        "linux2_x86_64": {
+          "local_paths": [
+            "{{output_dir}}/md5sum_bin_host"
+          ]
+        }
+      }
+    },
+    "split-select": {
+      "file_info": {
+        "linux2_x86_64": {
+          "local_paths": [
+            "{{android_sdk_root}}/build-tools/{{build_tools_version}}/split-select"
+          ]
+        }
+      }
+    },
+    "pymock": {
+      "file_info": {
+        "darwin_x86_64": {
+          "local_paths": [
+            "third_party/pymock"
+          ]
+        },
+        "linux2_x86_64": {
+          "local_paths": [
+            "third_party/pymock"
+          ]
+        },
+        "win32_AMD64": {
+          "local_paths": [
+            "third_party/pymock"
+          ]
+        }
+      }
+    }
+  }
+}
