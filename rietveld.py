@@ -441,7 +441,11 @@ class Rietveld(object):
             for retry_anyway in (
                 'Name or service not known',
                 'EOF occurred in violation of protocol',
-                'timed out'):
+                'timed out',
+                # See http://crbug.com/601260.
+                'urlopen error [Errno 10060] A connection attempt failed',
+                'urlopen error [Errno 104] Connection reset by peer',
+            ):
               if retry_anyway in reason_as_str:
                 return True
             return False  # Assume permanent otherwise.
