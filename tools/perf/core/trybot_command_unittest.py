@@ -9,6 +9,7 @@ import unittest
 
 import mock
 
+from telemetry import benchmark
 from telemetry.testing import system_stub
 
 from core import trybot_command
@@ -627,3 +628,54 @@ class TrybotCommandTest(unittest.TestCase):
   "truncate_percent": "0"
 }''')
     self.assertEquals(cfg.read(), config)
+
+
+
+class IsBenchmarkDisabledOnTrybotPlatformTest(unittest.TestCase):
+
+  def IsBenchmarkDisabled(self, benchmark_class, trybot_name):
+    return trybot_command.Trybot.IsBenchmarkDisabledOnTrybotPlatform(
+        benchmark_class, trybot_name)[0]
+
+  def testBenchmarkIsDisabledAll(self):
+    @benchmark.Disabled('all')
+    class FooBenchmark(benchmark.Benchmark):
+      pass
+    self.assertTrue(self.IsBenchmarkDisabled(FooBenchmark, 'all'))
+    self.assertTrue(self.IsBenchmarkDisabled(FooBenchmark, 'all-mac'))
+    self.assertTrue(self.IsBenchmarkDisabled(FooBenchmark, 'android-s5'))
+    self.assertTrue(self.IsBenchmarkDisabled(FooBenchmark, 'linux'))
+    self.assertTrue(self.IsBenchmarkDisabled(FooBenchmark, 'winx64ati'))
+
+  def testBenchmarkIsEnabledAll(self):
+    @benchmark.Enabled('all')
+    class FooBenchmark(benchmark.Benchmark):
+      pass
+    self.assertFalse(self.IsBenchmarkDisabled(FooBenchmark, 'all'))
+    self.assertFalse(self.IsBenchmarkDisabled(FooBenchmark, 'all-mac'))
+    self.assertFalse(self.IsBenchmarkDisabled(FooBenchmark, 'android-s5'))
+    self.assertFalse(self.IsBenchmarkDisabled(FooBenchmark, 'linux'))
+    self.assertFalse(self.IsBenchmarkDisabled(FooBenchmark, 'winx64ati'))
+
+  def testBenchmarkIsDisabledOnMultiplePlatforms(self):
+    @benchmark.Disabled('win', 'mac')
+    class FooBenchmark(benchmark.Benchmark):
+      pass
+    self.assertFalse(self.IsBenchmarkDisabled(FooBenchmark, 'all'))
+    self.assertFalse(self.IsBenchmarkDisabled(FooBenchmark, 'android-s5'))
+    self.assertFalse(self.IsBenchmarkDisabled(FooBenchmark, 'linux'))
+
+    self.assertTrue(self.IsBenchmarkDisabled(FooBenchmark, 'all-mac'))
+    self.assertTrue(self.IsBenchmarkDisabled(FooBenchmark, 'winx64ati'))
+
+  def testBenchmarkIsEnabledOnMultiplePlatforms(self):
+    @benchmark.Enabled('win', 'mac')
+    class FooBenchmark(benchmark.Benchmark):
+      pass
+    self.assertFalse(self.IsBenchmarkDisabled(FooBenchmark, 'all'))
+    self.assertFalse(self.IsBenchmarkDisabled(FooBenchmark, 'all-mac'))
+    self.assertFalse(self.IsBenchmarkDisabled(FooBenchmark, 'winx64ati'))
+
+    self.assertTrue(self.IsBenchmarkDisabled(FooBenchmark, 'android-s5'))
+    self.assertTrue(self.IsBenchmarkDisabled(FooBenchmark, 'linux'))
+    self.assertTrue(self.IsBenchmarkDisabled(FooBenchmark, 'all-linux'))

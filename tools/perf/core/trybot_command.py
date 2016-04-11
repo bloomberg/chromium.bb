@@ -78,15 +78,20 @@ def _GetTrybotList(builders):
   return sorted(builders)
 
 
+def _GetBotPlatformFromTrybotName(trybot_name):
+  os_names = ['linux', 'android', 'mac', 'win']
+  try:
+    return next(b for b in os_names if b in trybot_name)
+  except StopIteration:
+    raise TrybotError('Trybot "%s" unsupported for tryjobs.' % trybot_name)
+
+
 def _GetBuilderNames(trybot_name, builders):
   """ Return platform and its available bot name as dictionary."""
   os_names = ['linux', 'android', 'mac', 'win']
   if 'all' not in trybot_name:
     bot = ['%s_perf_bisect' % trybot_name.replace('-', '_')]
-    try:
-      bot_platform = next(b for b in os_names if b in trybot_name)
-    except StopIteration:
-      raise TrybotError('Trybot "%s" unsupported for tryjobs.' % trybot_name)
+    bot_platform = _GetBotPlatformFromTrybotName(trybot_name)
     if 'x64' in trybot_name:
       bot_platform += '-x64'
     return {bot_platform: bot}
@@ -182,17 +187,80 @@ class Trybot(command_line.ArgParseCommand):
       if arg == '--browser' or arg.startswith('--browser='):
         parser.error('--browser=... is not allowed when running trybot.')
     all_benchmarks = discover.DiscoverClasses(
-        start_dir=path_util.GetPerfBenchmarksDir(),
-        top_level_dir=path_util.GetPerfDir(),
-        base_class=benchmark.Benchmark).values()
+      start_dir=path_util.GetPerfBenchmarksDir(),
+      top_level_dir=path_util.GetPerfDir(),
+      base_class=benchmark.Benchmark).values()
     all_benchmark_names = [b.Name() for b in all_benchmarks]
-    if options.benchmark_name not in all_benchmark_names:
+    all_benchmarks_by_names = {b.Name(): b for b in all_benchmarks}
+    benchmark_class = all_benchmarks_by_names.get(options.benchmark_name, None)
+    if not benchmark_class:
       possible_benchmark_names = matching.GetMostLikelyMatchedObject(
           all_benchmark_names, options.benchmark_name)
       parser.error(
          'No benchmark named "%s". Do you mean any of those benchmarks '
          'below?\n%s' %
          (options.benchmark_name, '\n'.join(possible_benchmark_names)))
+    is_benchmark_disabled, reason = cls.IsBenchmarkDisabledOnTrybotPlatform(
+        benchmark_class, options.trybot)
+    also_run_disabled_option = '--also-run-disabled-tests'
+    if is_benchmark_disabled and also_run_disabled_option not in extra_args:
+      parser.error('%s To run the benchmark on trybot anyway, add '
+                   '%s option.' % (reason, also_run_disabled_option))
+
+  @classmethod
+  def IsBenchmarkDisabledOnTrybotPlatform(cls, benchmark_class, trybot_name):
+    """ Return whether benchmark will be disabled on trybot platform.
+
+    Note that we cannot tell with certainty whether the benchmark will be
+    disabled on the trybot platform since the disable logic in ShouldDisable()
+    can be very dynamic and can only be verified on the trybot server platform.
+
+    We are biased on the side of enabling the benchmark, and attempt to
+    early discover whether the benchmark will be disabled as our best.
+
+    It should never be the case that the benchmark will be enabled on the test
+    platform but this method returns True.
+
+    Returns:
+      A tuple (is_benchmark_disabled, reason) whereas |is_benchmark_disabled| is
+      a boolean that tells whether we are sure that the benchmark will be
+      disabled, and |reason| is a string that shows the reason why we think the
+      benchmark is disabled for sure.
+    """
+    benchmark_name = benchmark_class.Name()
+    benchmark_disabled_strings = set()
+    if hasattr(benchmark_class, '_disabled_strings'):
+      # pylint: disable=protected-access
+      benchmark_disabled_strings = benchmark_class._disabled_strings
+      # pylint: enable=protected-access
+    if 'all' in benchmark_disabled_strings:
+      return True, 'Benchmark %s is disabled on all platform.' % benchmark_name
+    if trybot_name == 'all':
+      return False, ''
+    trybot_platform = _GetBotPlatformFromTrybotName(trybot_name)
+    if trybot_platform in benchmark_disabled_strings:
+      return True, (
+          "Benchmark %s is disabled on %s, and trybot's platform is %s." %
+          (benchmark_name, ', '.join(benchmark_disabled_strings),
+           trybot_platform))
+    benchmark_enabled_strings = None
+    if hasattr(benchmark_class, '_enabled_strings'):
+      # pylint: disable=protected-access
+      benchmark_enabled_strings = benchmark_class._enabled_strings
+      # pylint: enable=protected-access
+    if (benchmark_enabled_strings and
+        trybot_platform not in benchmark_enabled_strings and
+        'all' not in benchmark_enabled_strings):
+      return True, (
+          "Benchmark %s is only enabled on %s, and trybot's platform is %s." %
+          (benchmark_name, ', '.join(benchmark_enabled_strings),
+           trybot_platform))
+    if benchmark_class.ShouldDisable != benchmark.Benchmark.ShouldDisable:
+      logging.warning(
+          'Benchmark %s has ShouldDisable() method defined. If your trybot run '
+          'does not produce any results, it is possible that the benchmark '
+          'is disabled on the target trybot platform.', benchmark_name)
+    return False, ''
 
   @classmethod
   def AddCommandLineArgs(cls, parser, environment):
