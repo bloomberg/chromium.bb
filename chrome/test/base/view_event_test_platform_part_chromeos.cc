@@ -4,6 +4,8 @@
 
 #include "chrome/test/base/view_event_test_platform_part.h"
 
+#include <memory>
+
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
@@ -38,6 +40,7 @@ class ViewEventTestPlatformPartChromeOS : public ViewEventTestPlatformPart {
 
  private:
   wm::WMState wm_state_;
+  std::unique_ptr<aura::Env> env_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewEventTestPlatformPartChromeOS);
 };
@@ -55,7 +58,7 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
   chromeos::CrasAudioHandler::InitializeForTesting();
   chromeos::NetworkHandler::Initialize();
 
-  aura::Env::CreateInstance(true);
+  env_ = aura::Env::CreateInstance();
   ash::test::TestShellDelegate* shell_delegate =
       new ash::test::TestShellDelegate();
   ash::ShellInitParams init_params;
@@ -72,7 +75,7 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
 
 ViewEventTestPlatformPartChromeOS::~ViewEventTestPlatformPartChromeOS() {
   ash::Shell::DeleteInstance();
-  aura::Env::DeleteInstance();
+  env_.reset();
 
   chromeos::NetworkHandler::Shutdown();
   chromeos::CrasAudioHandler::Shutdown();

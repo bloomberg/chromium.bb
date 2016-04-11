@@ -15,6 +15,12 @@
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/public/browser/browser_main_runner.h"
 
+#if defined(USE_AURA)
+namespace aura {
+class Env;
+}
+#endif
+
 namespace base {
 class CommandLine;
 class FilePath;
@@ -201,6 +207,10 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   std::unique_ptr<base::trace_event::TraceEventSystemStatsMonitor>
       system_stats_monitor_;
+
+#if defined(USE_AURA)
+  std::unique_ptr<aura::Env> env_;
+#endif
 
 #if defined(OS_WIN)
   std::unique_ptr<ScreenOrientationDelegate> screen_orientation_delegate_;

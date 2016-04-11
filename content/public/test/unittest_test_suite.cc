@@ -28,8 +28,7 @@ UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
 #endif
 #if defined(USE_AURA)
   DCHECK(!aura::Env::GetInstanceDontCreate());
-  const bool create_event_source = true;
-  aura::Env::CreateInstance(create_event_source);
+  env_ = aura::Env::CreateInstance();
 #endif
   DCHECK(test_suite);
   blink_test_support_.reset(new TestBlinkWebUnitTestSupport);
@@ -38,7 +37,7 @@ UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
 UnitTestTestSuite::~UnitTestTestSuite() {
   blink_test_support_.reset();
 #if defined(USE_AURA)
-  aura::Env::DeleteInstance();
+  env_.reset();
 #endif
 }
 

@@ -10,6 +10,12 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 
+#if defined(USE_AURA)
+namespace aura {
+class Env;
+}
+#endif
+
 namespace base {
 class TestSuite;
 }
@@ -34,6 +40,9 @@ class UnitTestTestSuite {
   std::unique_ptr<base::TestSuite> test_suite_;
 
   std::unique_ptr<TestBlinkWebUnitTestSupport> blink_test_support_;
+#if defined(USE_AURA)
+  std::unique_ptr<aura::Env> env_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(UnitTestTestSuite);
 };

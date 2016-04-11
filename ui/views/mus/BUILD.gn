@@ -74,6 +74,7 @@ component("mus") {
     "//ui/compositor",
     "//ui/events",
     "//ui/events:events_base",
+    "//ui/events/devices",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",

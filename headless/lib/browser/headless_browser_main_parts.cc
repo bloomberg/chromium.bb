@@ -22,7 +22,6 @@ void PlatformInitialize() {
 }
 
 void PlatformExit() {
-  aura::Env::DeleteInstance();
 }
 
 }  // namespace

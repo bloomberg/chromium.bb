@@ -52,9 +52,8 @@ class MusViewsDelegate : public ViewsDelegate {
 
 AuraInit::AuraInit(mojo::Connector* connector, const std::string& resource_file)
     : resource_file_(resource_file),
+      env_(aura::Env::CreateInstance()),
       views_delegate_(new MusViewsDelegate) {
-  aura::Env::CreateInstance(false);
-
   InitializeResources(connector);
 
   ui::InitializeInputMethodForTesting();

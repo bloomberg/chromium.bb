@@ -982,7 +982,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   }
 
 #if defined(USE_AURA)
-  aura::Env::DeleteInstance();
+  env_.reset();
 #endif
 
   system_stats_monitor_.reset();
@@ -1366,7 +1366,7 @@ bool BrowserMainLoop::InitializeToolkit() {
 
   // Env creates the compositor. Aura widgets need the compositor to be created
   // before they can be initialized by the browser.
-  aura::Env::CreateInstance(true);
+  env_ = aura::Env::CreateInstance();
 #endif  // defined(USE_AURA)
 
   if (parts_)

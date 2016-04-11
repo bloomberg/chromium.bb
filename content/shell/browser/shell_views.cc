@@ -418,7 +418,6 @@ void Shell::PlatformExit() {
   views_delegate_ = NULL;
   delete platform_;
   platform_ = NULL;
-  aura::Env::DeleteInstance();
 }
 
 void Shell::PlatformCleanUp() {

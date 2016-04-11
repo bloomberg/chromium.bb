@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
@@ -146,8 +148,8 @@ int DemoMain() {
   base::PowerMonitor power_monitor(make_scoped_ptr(
       new base::PowerMonitorDeviceSource));
 
-  aura::Env::CreateInstance(true);
-  aura::Env::GetInstance()->set_context_factory(context_factory.get());
+  std::unique_ptr<aura::Env> env = aura::Env::CreateInstance();
+  env->set_context_factory(context_factory.get());
   scoped_ptr<aura::TestScreen> test_screen(
       aura::TestScreen::Create(gfx::Size()));
   gfx::Screen::SetScreenInstance(test_screen.get());

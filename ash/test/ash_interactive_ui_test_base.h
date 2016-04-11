@@ -5,10 +5,15 @@
 #ifndef ASH_TEST_ASH_INTERACTIVE_UI_TEST_BASE_H_
 #define ASH_TEST_ASH_INTERACTIVE_UI_TEST_BASE_H_
 
+#include <memory>
 #include <string>
 
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
+
+namespace aura {
+class Env;
+}
 
 namespace ash {
 namespace test {
@@ -24,6 +29,7 @@ class AshInteractiveUITestBase : public AshTestBase {
   void TearDown() override;
 
  private:
+  std::unique_ptr<aura::Env> env_;
   DISALLOW_COPY_AND_ASSIGN(AshInteractiveUITestBase);
 };
 

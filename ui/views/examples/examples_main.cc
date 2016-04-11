@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -81,7 +83,7 @@ int main(int argc, char** argv) {
 #endif
 
 #if defined(USE_AURA)
-  aura::Env::CreateInstance(true);
+  std::unique_ptr<aura::Env> env = aura::Env::CreateInstance();
   aura::Env::GetInstance()->set_context_factory(context_factory.get());
 #endif
   ui::InitializeInputMethodForTesting();
@@ -108,7 +110,7 @@ int main(int argc, char** argv) {
   ui::ShutdownInputMethod();
 
 #if defined(USE_AURA)
-  aura::Env::DeleteInstance();
+  env.reset();
 #endif
 
   return 0;

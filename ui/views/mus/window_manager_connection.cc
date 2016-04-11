@@ -13,6 +13,7 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/connector.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/mus/screen_mus.h"
 #include "ui/views/views_delegate.h"
@@ -76,6 +77,11 @@ WindowManagerConnection::WindowManagerConnection(mojo::Connector* connector)
   screen_.reset(new ScreenMus(this));
   screen_->Init(connector);
 
+  // TODO(sad): We should have a DeviceDataManager implementation that talks to
+  // a mojo service to learn about the input-devices on the system.
+  // http://crbug.com/601981
+  ui::DeviceDataManager::CreateInstance();
+
   ViewsDelegate::GetInstance()->set_native_widget_factory(base::Bind(
       &WindowManagerConnection::CreateNativeWidgetMus,
       base::Unretained(this),
@@ -86,6 +92,8 @@ WindowManagerConnection::~WindowManagerConnection() {
   // ~WindowTreeConnection calls back to us (we're the WindowTreeDelegate),
   // destroy it while we are still valid.
   window_tree_connection_.reset();
+
+  ui::DeviceDataManager::DeleteInstance();
 }
 
 void WindowManagerConnection::OnEmbed(mus::Window* root) {}

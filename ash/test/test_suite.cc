@@ -72,11 +72,11 @@ void AuraShellTestSuite::Initialize() {
   rb.AddDataPackFromPath(ash_test_resources_200, ui::SCALE_FACTOR_200P);
 
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
-  aura::Env::CreateInstance(true);
+  env_ = aura::Env::CreateInstance();
 }
 
 void AuraShellTestSuite::Shutdown() {
-  aura::Env::DeleteInstance();
+  env_.reset();
   ui::ResourceBundle::CleanupSharedInstance();
 #if defined(OS_WIN)
   com_initializer_.reset();

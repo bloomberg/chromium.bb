@@ -5,10 +5,16 @@
 #ifndef UI_AURA_TEST_AURA_TEST_HELPER_H_
 #define UI_AURA_TEST_AURA_TEST_HELPER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
+
+namespace aura {
+class Env;
+}
 
 namespace base {
 class MessageLoopForUI;
@@ -57,7 +63,7 @@ class AuraTestHelper {
   base::MessageLoopForUI* message_loop_;
   bool setup_called_;
   bool teardown_called_;
-  bool env_created_;
+  std::unique_ptr<aura::Env> env_;
   scoped_ptr<WindowTreeHost> host_;
   scoped_ptr<TestWindowTreeClient> stacking_client_;
   scoped_ptr<client::DefaultCaptureClient> capture_client_;
