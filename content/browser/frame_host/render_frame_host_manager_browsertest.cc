@@ -2360,17 +2360,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
 // Ensure that we don't crash the renderer in CreateRenderView if a proxy goes
 // away between swapout and the next navigation.  See https://crbug.com/581912.
-// Dr.Memory reports a use-after-free in this test, thus it may be flaky on
-// Windows. See https://crbug.com/600957.
-#if defined(OS_WIN)
-#define MAYBE_CreateRenderViewAfterProcessKillAndClosedProxy \
-    DISABLED_CreateRenderViewAfterProcessKillAndClosedProxy
-#else
-#define MAYBE_CreateRenderViewAfterProcessKillAndClosedProxy \
-    CreateRenderViewAfterProcessKillAndClosedProxy
-#endif
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
-                       MAYBE_CreateRenderViewAfterProcessKillAndClosedProxy) {
+                       CreateRenderViewAfterProcessKillAndClosedProxy) {
   StartEmbeddedServer();
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
@@ -2395,11 +2386,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Navigate the first tab to a different site, and only wait for commit, not
   // load stop.
   RenderFrameHostImpl* rfh_a = root->current_frame_host();
+  rfh_a->DisableSwapOutTimerForTesting();
   SiteInstanceImpl* site_instance_a = rfh_a->GetSiteInstance();
   TestFrameNavigationObserver commit_observer(root);
   shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title2.html"));
   commit_observer.WaitForCommit();
-  rfh_a->ResetSwapOutTimerForTesting();
   EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
             new_shell->web_contents()->GetSiteInstance());
   EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(site_instance_a));
@@ -2455,11 +2446,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Navigate the tab to a different site, and only wait for commit, not load
   // stop.
   RenderFrameHostImpl* rfh_a = root->current_frame_host();
+  rfh_a->DisableSwapOutTimerForTesting();
   SiteInstanceImpl* site_instance_a = rfh_a->GetSiteInstance();
   TestFrameNavigationObserver commit_observer(root);
   shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title2.html"));
   commit_observer.WaitForCommit();
-  rfh_a->ResetSwapOutTimerForTesting();
   EXPECT_NE(site_instance_a, shell()->web_contents()->GetSiteInstance());
 
   // The previous RFH and RVH should still be pending deletion, as we wait for

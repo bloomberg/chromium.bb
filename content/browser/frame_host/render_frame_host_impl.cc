@@ -275,8 +275,8 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   if (is_active() && !frame_tree_node_->IsMainFrame() && render_frame_created_)
     Send(new FrameMsg_Delete(routing_id_));
 
-  // NULL out the swapout timer; in crash dumps this member will be null only if
-  // the dtor has run.
+  // Null out the swapout timer; in crash dumps this member will be null only if
+  // the dtor has run.  (It may also be null in tests.)
   swapout_event_monitor_timeout_.reset();
 
   for (const auto& iter: visual_state_callbacks_) {
@@ -1181,8 +1181,10 @@ void RenderFrameHostImpl::SwapOut(
     return;
   }
 
-  swapout_event_monitor_timeout_->Start(
-      base::TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS));
+  if (swapout_event_monitor_timeout_) {
+    swapout_event_monitor_timeout_->Start(base::TimeDelta::FromMilliseconds(
+        RenderViewHostImpl::kUnloadTimeoutMS));
+  }
 
   // There may be no proxy if there are no active views in the process.
   int proxy_routing_id = MSG_ROUTING_NONE;
@@ -1355,7 +1357,8 @@ void RenderFrameHostImpl::OnSwappedOut() {
     return;
 
   TRACE_EVENT_ASYNC_END0("navigation", "RenderFrameHostImpl::SwapOut", this);
-  swapout_event_monitor_timeout_->Stop();
+  if (swapout_event_monitor_timeout_)
+    swapout_event_monitor_timeout_->Stop();
 
   ClearAllWebUI();
 
@@ -1371,8 +1374,8 @@ void RenderFrameHostImpl::OnSwappedOut() {
   CHECK(deleted);
 }
 
-void RenderFrameHostImpl::ResetSwapOutTimerForTesting() {
-  swapout_event_monitor_timeout_->Stop();
+void RenderFrameHostImpl::DisableSwapOutTimerForTesting() {
+  swapout_event_monitor_timeout_.reset();
 }
 
 void RenderFrameHostImpl::OnContextMenu(const ContextMenuParams& params) {
