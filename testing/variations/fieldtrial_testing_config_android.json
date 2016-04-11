@@ -391,7 +391,9 @@
             "params": {
                 "Enabled": "true",
                 "Optimize": "true",
-                "Sample_Probability": "100"
+                "Sample_Probability": "100",
+                "Uma_Quota": "204800",
+                "Uma_Ratio": "0.05"
             }
         }
     ],
