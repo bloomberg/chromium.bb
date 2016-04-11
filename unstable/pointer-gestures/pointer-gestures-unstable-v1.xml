@@ -1,4 +1,5 @@
 <protocol name="pointer_gestures_unstable_v1">
+
   <interface name="zwp_pointer_gestures_v1" version="1">
     <description summary="touchpad gestures">
       A global interface to provide semantic touchpad gestures for a given
@@ -87,7 +88,7 @@
     <event name="end">
       <description summary="multi-finger swipe end">
 	This event is sent when a multi-finger swipe gesture ceases to
-	be valid. This may happen when one or more finger is lifted or
+	be valid. This may happen when one or more fingers are lifted or
 	the gesture is cancelled.
 
 	When a gesture is cancelled, the client should undo state changes
@@ -106,7 +107,7 @@
       gesture detected on an indirect input device such as a touchpad.
       The gesture is usually initiated by multiple fingers moving towards
       each other or away from each other, or by two or more fingers rotating
-      around a logical center of gravity.  The precise conditions of when
+      around a logical center of gravity. The precise conditions of when
       such a gesture is detected are implementation-dependent.
 
       A gesture consists of three stages: begin, update (optional) and end.
@@ -159,7 +160,7 @@
     <event name="end">
       <description summary="multi-finger pinch end">
 	This event is sent when a multi-finger pinch gesture ceases to
-	be valid. This may happen when one or more finger is lifted or
+	be valid. This may happen when one or more fingers are lifted or
 	the gesture is cancelled.
 
 	When a gesture is cancelled, the client should undo state changes
@@ -171,4 +172,5 @@
       <arg name="cancelled" type="int" summary="1 if the gesture was cancelled, 0 otherwise"/>
     </event>
   </interface>
+
 </protocol>
