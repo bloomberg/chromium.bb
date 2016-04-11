@@ -609,6 +609,8 @@ imported/web-platform-tests/dom/nodes/Element-matches.html [ Skip ]
 imported/web-platform-tests/html/browsers/history/the-history-interface/008.html [ Skip ]
 imported/web-platform-tests/html/browsers/origin/relaxing-the-same-origin-restriction/document_domain.html [ Skip ]
 imported/web-platform-tests/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/creating_browsing_context_test_01.html [ Skip ]
+imported/web-platform-tests/html/semantics/scripting-1/the-script-element/script-charset-01.html [ Skip ]
+imported/web-platform-tests/html/semantics/scripting-1/the-script-element/script-charset-02.html [ Skip ]
 
 # Requires http server. Moved the following test to http/tests/custom-elements/.
 imported/web-platform-tests/custom-elements/creating-and-passing-registries/no-registry-test.html [ Skip ]
