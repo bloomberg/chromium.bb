@@ -1426,6 +1426,10 @@ class _ChangelistCodereviewBase(object):
     failed."""
     raise NotImplementedError()
 
+  def CMDUploadChange(self, options, args, change):
+    """Uploads a change to codereview."""
+    raise NotImplementedError()
+
 
 class _RietveldChangelistImpl(_ChangelistCodereviewBase):
   def __init__(self, changelist, auth_config=None, rietveld_server=None):
@@ -1437,9 +1441,6 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     self._auth_config = auth_config
     self._props = None
     self._rpc_server = None
-
-  def GetAuthConfig(self):
-    return self._auth_config
 
   def GetCodereviewServer(self):
     if not self._rietveld_server:
@@ -1687,6 +1688,158 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
           patch_url=gclient_utils.UpgradeToHttps(parsed_url.geturl()))
     return None
 
+  def CMDUploadChange(self, options, args, change):
+    """Upload the patch to Rietveld."""
+    upload_args = ['--assume_yes']  # Don't ask about untracked files.
+    upload_args.extend(['--server', self.GetCodereviewServer()])
+    # TODO(tandrii): refactor this ugliness into _RietveldChangelistImpl.
+    upload_args.extend(auth.auth_config_to_command_options(self._auth_config))
+    if options.emulate_svn_auto_props:
+      upload_args.append('--emulate_svn_auto_props')
+
+    change_desc = None
+
+    if options.email is not None:
+      upload_args.extend(['--email', options.email])
+
+    if self.GetIssue():
+      if options.title:
+        upload_args.extend(['--title', options.title])
+      if options.message:
+        upload_args.extend(['--message', options.message])
+      upload_args.extend(['--issue', str(self.GetIssue())])
+      print ('This branch is associated with issue %s. '
+             'Adding patch to that issue.' % self.GetIssue())
+    else:
+      if options.title:
+        upload_args.extend(['--title', options.title])
+      message = (options.title or options.message or
+                 CreateDescriptionFromLog(args))
+      change_desc = ChangeDescription(message)
+      if options.reviewers or options.tbr_owners:
+        change_desc.update_reviewers(options.reviewers,
+                                     options.tbr_owners,
+                                     change)
+      if not options.force:
+        change_desc.prompt()
+
+      if not change_desc.description:
+        print "Description is empty; aborting."
+        return 1
+
+      upload_args.extend(['--message', change_desc.description])
+      if change_desc.get_reviewers():
+        upload_args.append('--reviewers=%s' % ','.join(
+            change_desc.get_reviewers()))
+      if options.send_mail:
+        if not change_desc.get_reviewers():
+          DieWithError("Must specify reviewers to send email.")
+        upload_args.append('--send_mail')
+
+      # We check this before applying rietveld.private assuming that in
+      # rietveld.cc only addresses which we can send private CLs to are listed
+      # if rietveld.private is set, and so we should ignore rietveld.cc only
+      # when --private is specified explicitly on the command line.
+      if options.private:
+        logging.warn('rietveld.cc is ignored since private flag is specified.  '
+                     'You need to review and add them manually if necessary.')
+        cc = self.GetCCListWithoutDefault()
+      else:
+        cc = self.GetCCList()
+      cc = ','.join(filter(None, (cc, ','.join(options.cc))))
+      if cc:
+        upload_args.extend(['--cc', cc])
+
+    if options.private or settings.GetDefaultPrivateFlag() == "True":
+      upload_args.append('--private')
+
+    upload_args.extend(['--git_similarity', str(options.similarity)])
+    if not options.find_copies:
+      upload_args.extend(['--git_no_find_copies'])
+
+    # Include the upstream repo's URL in the change -- this is useful for
+    # projects that have their source spread across multiple repos.
+    remote_url = self.GetGitBaseUrlFromConfig()
+    if not remote_url:
+      if settings.GetIsGitSvn():
+        remote_url = self.GetGitSvnRemoteUrl()
+      else:
+        if self.GetRemoteUrl() and '/' in self.GetUpstreamBranch():
+          remote_url = '%s@%s' % (self.GetRemoteUrl(),
+                                  self.GetUpstreamBranch().split('/')[-1])
+    if remote_url:
+      upload_args.extend(['--base_url', remote_url])
+      remote, remote_branch = self.GetRemoteBranch()
+      target_ref = GetTargetRef(remote, remote_branch, options.target_branch,
+                                settings.GetPendingRefPrefix())
+      if target_ref:
+        upload_args.extend(['--target_ref', target_ref])
+
+      # Look for dependent patchsets. See crbug.com/480453 for more details.
+      remote, upstream_branch = self.FetchUpstreamTuple(self.GetBranch())
+      upstream_branch = ShortBranchName(upstream_branch)
+      if remote is '.':
+        # A local branch is being tracked.
+        local_branch = ShortBranchName(upstream_branch)
+        if settings.GetIsSkipDependencyUpload(local_branch):
+          print
+          print ('Skipping dependency patchset upload because git config '
+                 'branch.%s.skip-deps-uploads is set to True.' % local_branch)
+          print
+        else:
+          auth_config = auth.extract_auth_config_from_options(options)
+          branch_cl = Changelist(branchref=local_branch,
+                                 auth_config=auth_config)
+          branch_cl_issue_url = branch_cl.GetIssueURL()
+          branch_cl_issue = branch_cl.GetIssue()
+          branch_cl_patchset = branch_cl.GetPatchset()
+          if branch_cl_issue_url and branch_cl_issue and branch_cl_patchset:
+            upload_args.extend(
+                ['--depends_on_patchset', '%s:%s' % (
+                     branch_cl_issue, branch_cl_patchset)])
+            print (
+                '\n'
+                'The current branch (%s) is tracking a local branch (%s) with '
+                'an associated CL.\n'
+                'Adding %s/#ps%s as a dependency patchset.\n'
+                '\n' % (self.GetBranch(), local_branch, branch_cl_issue_url,
+                        branch_cl_patchset))
+
+    project = settings.GetProject()
+    if project:
+      upload_args.extend(['--project', project])
+
+    if options.cq_dry_run:
+      upload_args.extend(['--cq_dry_run'])
+
+    try:
+      upload_args = ['upload'] + upload_args + args
+      logging.info('upload.RealMain(%s)', upload_args)
+      issue, patchset = upload.RealMain(upload_args)
+      issue = int(issue)
+      patchset = int(patchset)
+    except KeyboardInterrupt:
+      sys.exit(1)
+    except:
+      # If we got an exception after the user typed a description for their
+      # change, back up the description before re-raising.
+      if change_desc:
+        backup_path = os.path.expanduser(DESCRIPTION_BACKUP_FILE)
+        print('\nGot exception while uploading -- saving description to %s\n' %
+              backup_path)
+        backup_file = open(backup_path, 'w')
+        backup_file.write(change_desc.description)
+        backup_file.close()
+      raise
+
+    if not self.GetIssue():
+      self.SetIssue(issue)
+    self.SetPatchset(patchset)
+
+    if options.use_commit_queue:
+      self.SetFlag('commit', '1')
+    return 0
+
 
 class _GerritChangelistImpl(_ChangelistCodereviewBase):
   def __init__(self, changelist, auth_config=None):
@@ -1826,9 +1979,11 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     gerrit_util.SubmitChange(self._GetGerritHost(), self.GetIssue(),
                              wait_for_merge=wait_for_merge)
 
-  def _GetChangeDetail(self, options):
-    return gerrit_util.GetChangeDetail(self._GetGerritHost(), self.GetIssue(),
-                                       options)
+  def _GetChangeDetail(self, options=None, issue=None):
+    options = options or []
+    issue = issue or self.GetIssue()
+    assert issue, 'issue required to query Gerrit'
+    return gerrit_util.GetChangeDetail(self._GetGerritHost(), options, issue)
 
   def CMDLand(self, force, bypass_hooks, verbose):
     if git_common.is_dirty_git_tree('land'):
@@ -1921,6 +2076,206 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           patchset=int(match.group(4)) if match.group(4) else None,
           hostname=parsed_url.netloc)
     return None
+
+  def CMDUploadChange(self, options, args, change):
+    """Upload the current branch to Gerrit."""
+    # We assume the remote called "origin" is the one we want.
+    # It is probably not worthwhile to support different workflows.
+    gerrit_remote = 'origin'
+
+    remote, remote_branch = self.GetRemoteBranch()
+    branch = GetTargetRef(remote, remote_branch, options.target_branch,
+                          pending_prefix='')
+
+    if options.title:
+      # TODO(tandrii): it's now supported by Gerrit, implement!
+      print "\nPatch titles (-t) are not supported in Gerrit. Aborting..."
+      return 1
+
+    if options.squash:
+      if not self.GetIssue():
+        # TODO(tandrii): deperecate this after 2016Q2.  Backwards compatibility
+        # with shadow branch, which used to contain change-id for a given
+        # branch, using which we can fetch actual issue number and set it as the
+        # property of the branch, which is the new way.
+        message = RunGitSilent([
+            'show', '--format=%B', '-s',
+            'refs/heads/git_cl_uploads/%s' % self.GetBranch()])
+        if message:
+          change_ids = git_footers.get_footer_change_id(message.strip())
+          if change_ids and len(change_ids) == 1:
+            details = self._GetChangeDetail(issue=change_ids[0])
+            if details:
+              print('WARNING: found old upload in branch git_cl_uploads/%s '
+                    'corresponding to issue %s' %
+                    (self.GetBranch(), details['_number']))
+              self.SetIssue(details['_number'])
+          if not self.GetIssue():
+            DieWithError(
+                '\n'  # For readability of the blob below.
+                'Found old upload in branch git_cl_uploads/%s, '
+                'but failed to find corresponding Gerrit issue.\n'
+                'If you know the issue number, set it manually first:\n'
+                '    git cl issue 123456\n'
+                'If you intended to upload this CL as new issue, '
+                'just delete or rename the old upload branch:\n'
+                '    git rename-branch git_cl_uploads/%s old_upload-%s\n'
+                'After that, please run git cl upload again.' %
+                tuple([self.GetBranch()] * 3))
+        # End of backwards compatability.
+
+      if self.GetIssue():
+        # Try to get the message from a previous upload.
+        message = self.GetDescription()
+        if not message:
+          DieWithError(
+              'failed to fetch description from current Gerrit issue %d\n'
+              '%s' % (self.GetIssue(), self.GetIssueURL()))
+        change_id = self._GetChangeDetail()['change_id']
+        while True:
+          footer_change_ids = git_footers.get_footer_change_id(message)
+          if footer_change_ids == [change_id]:
+            break
+          if not footer_change_ids:
+            message = git_footers.add_footer_change_id(message, change_id)
+            print('WARNING: appended missing Change-Id to issue description')
+            continue
+          # There is already a valid footer but with different or several ids.
+          # Doing this automatically is non-trivial as we don't want to lose
+          # existing other footers, yet we want to append just 1 desired
+          # Change-Id. Thus, just create a new footer, but let user verify the
+          # new description.
+          message = '%s\n\nChange-Id: %s' % (message, change_id)
+          print(
+              'WARNING: issue %s has Change-Id footer(s):\n'
+              '  %s\n'
+              'but issue has Change-Id %s, according to Gerrit.\n'
+              'Please, check the proposed correction to the description, '
+              'and edit it if necessary but keep the "Change-Id: %s" footer\n'
+              % (self.GetIssue(), '\n  '.join(footer_change_ids), change_id,
+                 change_id))
+          ask_for_data('Press enter to edit now, Ctrl+C to abort')
+          if not options.force:
+            change_desc = ChangeDescription(message)
+            change_desc.prompt()
+            message = change_desc.description
+            if not message:
+              DieWithError("Description is empty. Aborting...")
+          # Continue the while loop.
+        # Sanity check of this code - we should end up with proper message
+        # footer.
+        assert [change_id] == git_footers.get_footer_change_id(message)
+        change_desc = ChangeDescription(message)
+      else:
+        change_desc = ChangeDescription(
+            options.message or CreateDescriptionFromLog(args))
+        if not options.force:
+          change_desc.prompt()
+        if not change_desc.description:
+          DieWithError("Description is empty. Aborting...")
+        message = change_desc.description
+        change_ids = git_footers.get_footer_change_id(message)
+        if len(change_ids) > 1:
+          DieWithError('too many Change-Id footers, at most 1 allowed.')
+        if not change_ids:
+          # Generate the Change-Id automatically.
+          message = git_footers.add_footer_change_id(
+              message, GenerateGerritChangeId(message))
+          change_desc.set_description(message)
+          change_ids = git_footers.get_footer_change_id(message)
+          assert len(change_ids) == 1
+        change_id = change_ids[0]
+
+      remote, upstream_branch = self.FetchUpstreamTuple(self.GetBranch())
+      if remote is '.':
+        # If our upstream branch is local, we base our squashed commit on its
+        # squashed version.
+        upstream_branch_name = scm.GIT.ShortBranchName(upstream_branch)
+        # Check the squashed hash of the parent.
+        parent = RunGit(['config',
+                         'branch.%s.gerritsquashhash' % upstream_branch_name],
+                        error_ok=True).strip()
+        # Verify that the upstream branch has been uploaded too, otherwise
+        # Gerrit will create additional CLs when uploading.
+        if not parent or (RunGitSilent(['rev-parse', upstream_branch + ':']) !=
+                          RunGitSilent(['rev-parse', parent + ':'])):
+          # TODO(tandrii): remove "old depot_tools" part on April 12, 2016.
+          DieWithError(
+              'Upload upstream branch %s first.\n'
+              'Note: maybe you\'ve uploaded it with --no-squash or with an old '
+              'version of depot_tools. If so, then re-upload it with:\n'
+              '    git cl upload --squash\n' % upstream_branch_name)
+      else:
+        parent = self.GetCommonAncestorWithUpstream()
+
+      tree = RunGit(['rev-parse', 'HEAD:']).strip()
+      ref_to_push = RunGit(['commit-tree', tree, '-p', parent,
+                            '-m', message]).strip()
+    else:
+      change_desc = ChangeDescription(
+          options.message or CreateDescriptionFromLog(args))
+      if not change_desc.description:
+        DieWithError("Description is empty. Aborting...")
+
+      if not git_footers.get_footer_change_id(change_desc.description):
+        DownloadGerritHook(False)
+        change_desc.set_description(AddChangeIdToCommitMessage(options, args))
+      ref_to_push = 'HEAD'
+      parent = '%s/%s' % (gerrit_remote, branch)
+      change_id = git_footers.get_footer_change_id(change_desc.description)[0]
+
+    assert change_desc
+    commits = RunGitSilent(['rev-list', '%s..%s' % (parent,
+                                                    ref_to_push)]).splitlines()
+    if len(commits) > 1:
+      print('WARNING: This will upload %d commits. Run the following command '
+            'to see which commits will be uploaded: ' % len(commits))
+      print('git log %s..%s' % (parent, ref_to_push))
+      print('You can also use `git squash-branch` to squash these into a '
+            'single commit.')
+      ask_for_data('About to upload; enter to confirm.')
+
+    if options.reviewers or options.tbr_owners:
+      change_desc.update_reviewers(options.reviewers, options.tbr_owners,
+                                   change)
+
+    receive_options = []
+    cc = self.GetCCList().split(',')
+    if options.cc:
+      cc.extend(options.cc)
+    cc = filter(None, cc)
+    if cc:
+      receive_options += ['--cc=' + email for email in cc]
+    if change_desc.get_reviewers():
+      receive_options.extend(
+          '--reviewer=' + email for email in change_desc.get_reviewers())
+
+    git_command = ['push']
+    if receive_options:
+      git_command.append('--receive-pack=git receive-pack %s' %
+                         ' '.join(receive_options))
+    git_command += [gerrit_remote, ref_to_push + ':refs/for/' + branch]
+    push_stdout = gclient_utils.CheckCallAndFilter(
+        ['git'] + git_command,
+        print_stdout=True,
+        # Flush after every line: useful for seeing progress when running as
+        # recipe.
+        filter_fn=lambda _: sys.stdout.flush())
+
+    if options.squash:
+      regex = re.compile(r'remote:\s+https?://[\w\-\.\/]*/(\d+)\s.*')
+      change_numbers = [m.group(1)
+                        for m in map(regex.match, push_stdout.splitlines())
+                        if m]
+      if len(change_numbers) != 1:
+        DieWithError(
+          ('Created|Updated %d issues on Gerrit, but only 1 expected.\n'
+           'Change-Id: %s') % (len(change_numbers), change_id))
+      self.SetIssue(change_numbers[0])
+      RunGit(['config', 'branch.%s.gerritsquashhash' % self.GetBranch(),
+              ref_to_push])
+    return 0
+
 
 
 _CODEREVIEW_IMPLEMENTATIONS = {
@@ -2794,206 +3149,6 @@ def GenerateGerritChangeId(message):
   return 'I%s' % change_hash.strip()
 
 
-def GerritUpload(options, args, cl, change):
-  """upload the current branch to gerrit."""
-  # TODO(tandrii): refactor this to be a method of _GerritChangelistImpl,
-  # to avoid private members accessors below.
-
-  # We assume the remote called "origin" is the one we want.
-  # It is probably not worthwhile to support different workflows.
-  gerrit_remote = 'origin'
-
-  remote, remote_branch = cl.GetRemoteBranch()
-  branch = GetTargetRef(remote, remote_branch, options.target_branch,
-                        pending_prefix='')
-
-  if options.title:
-    print "\nPatch titles (-t) are not supported in Gerrit. Aborting..."
-    return 1
-
-  if options.squash:
-    if not cl.GetIssue():
-      # TODO(tandrii): deperecate this after 2016Q2.
-      # Backwards compatibility with shadow branch, which used to contain
-      # change-id for a given branch, using which we can fetch actual issue
-      # number and set it as the property of the branch, which is the new way.
-      message = RunGitSilent(['show', '--format=%B', '-s',
-                              'refs/heads/git_cl_uploads/%s' % cl.GetBranch()])
-      if message:
-        change_ids = git_footers.get_footer_change_id(message.strip())
-        if change_ids and len(change_ids) == 1:
-          details = gerrit_util.GetChangeDetail(
-              cl._codereview_impl._GetGerritHost(), change_ids[0])
-          if details:
-            print('WARNING: found old upload in branch git_cl_uploads/%s '
-                  'corresponding to issue %s' %
-                  (cl.GetBranch(), details['_number']))
-            cl.SetIssue(details['_number'])
-        if not cl.GetIssue():
-          DieWithError(
-              '\n'  # For readability of the blob below.
-              'Found old upload in branch git_cl_uploads/%s, '
-              'but failed to find corresponding Gerrit issue.\n'
-              'If you know the issue number, set it manually first:\n'
-              '    git cl issue 123456\n'
-              'If you intended to upload this CL as new issue, '
-              'just delete or rename the old upload branch:\n'
-              '    git rename-branch git_cl_uploads/%s old_upload-%s\n'
-              'After that, please run git cl upload again.' %
-              tuple([cl.GetBranch()] * 3))
-      # End of backwards compatability.
-
-    if cl.GetIssue():
-      # Try to get the message from a previous upload.
-      message = cl.GetDescription()
-      if not message:
-        DieWithError(
-            'failed to fetch description from current Gerrit issue %d\n'
-            '%s' % (cl.GetIssue(), cl.GetIssueURL()))
-      change_id = cl._codereview_impl._GetChangeDetail([])['change_id']
-      while True:
-        footer_change_ids = git_footers.get_footer_change_id(message)
-        if footer_change_ids == [change_id]:
-          break
-        if not footer_change_ids:
-          message = git_footers.add_footer_change_id(message, change_id)
-          print('WARNING: appended missing Change-Id to issue description')
-          continue
-        # There is already a valid footer but with different or several ids.
-        # Doing this automatically is non-trivial as we don't want to lose
-        # existing other footers, yet we want to append just 1 desired
-        # Change-Id. Thus, just create a new footer, but let user verify the new
-        # description.
-        message = '%s\n\nChange-Id: %s' % (message, change_id)
-        print(
-            'WARNING: issue %s has Change-Id footer(s):\n'
-            '  %s\n'
-            'but issue has Change-Id %s, according to Gerrit.\n'
-            'Please, check the proposed correction to the description, '
-            'and edit it if necessary but keep the "Change-Id: %s" footer\n'
-            % (cl.GetIssue(), '\n  '.join(footer_change_ids), change_id,
-               change_id))
-        ask_for_data('Press enter to edit now, Ctrl+C to abort')
-        if not options.force:
-          change_desc = ChangeDescription(message)
-          change_desc.prompt()
-          message = change_desc.description
-          if not message:
-            DieWithError("Description is empty. Aborting...")
-        # Continue the while loop.
-      # Sanity check of this code - we should end up with proper message footer.
-      assert [change_id] == git_footers.get_footer_change_id(message)
-      change_desc = ChangeDescription(message)
-    else:
-      change_desc = ChangeDescription(
-          options.message or CreateDescriptionFromLog(args))
-      if not options.force:
-        change_desc.prompt()
-      if not change_desc.description:
-        DieWithError("Description is empty. Aborting...")
-      message = change_desc.description
-      change_ids = git_footers.get_footer_change_id(message)
-      if len(change_ids) > 1:
-        DieWithError('too many Change-Id footers, at most 1 allowed.')
-      if not change_ids:
-        # Generate the Change-Id automatically.
-        message = git_footers.add_footer_change_id(
-            message, GenerateGerritChangeId(message))
-        change_desc.set_description(message)
-        change_ids = git_footers.get_footer_change_id(message)
-        assert len(change_ids) == 1
-      change_id = change_ids[0]
-
-    remote, upstream_branch = cl.FetchUpstreamTuple(cl.GetBranch())
-    if remote is '.':
-      # If our upstream branch is local, we base our squashed commit on its
-      # squashed version.
-      upstream_branch_name = scm.GIT.ShortBranchName(upstream_branch)
-      # Check the squashed hash of the parent.
-      parent = RunGit(['config',
-                       'branch.%s.gerritsquashhash' % upstream_branch_name],
-                      error_ok=True).strip()
-      # Verify that the upstream branch has been uploaded too, otherwise
-      # Gerrit will create additional CLs when uploading.
-      if not parent or (RunGitSilent(['rev-parse', upstream_branch + ':']) !=
-                        RunGitSilent(['rev-parse', parent + ':'])):
-        # TODO(tandrii): remove "old depot_tools" part on April 12, 2016.
-        DieWithError(
-            'Upload upstream branch %s first.\n'
-            'Note: maybe you\'ve uploaded it with --no-squash or with an old\n'
-            '      version of depot_tools. If so, then re-upload it with:\n'
-            '      git cl upload --squash\n' % upstream_branch_name)
-    else:
-      parent = cl.GetCommonAncestorWithUpstream()
-
-    tree = RunGit(['rev-parse', 'HEAD:']).strip()
-    ref_to_push = RunGit(['commit-tree', tree, '-p', parent,
-                          '-m', message]).strip()
-  else:
-    change_desc = ChangeDescription(
-        options.message or CreateDescriptionFromLog(args))
-    if not change_desc.description:
-      DieWithError("Description is empty. Aborting...")
-
-    if not git_footers.get_footer_change_id(change_desc.description):
-      DownloadGerritHook(False)
-      change_desc.set_description(AddChangeIdToCommitMessage(options, args))
-    ref_to_push = 'HEAD'
-    parent = '%s/%s' % (gerrit_remote, branch)
-    change_id = git_footers.get_footer_change_id(change_desc.description)[0]
-
-  assert change_desc
-  commits = RunGitSilent(['rev-list', '%s..%s' % (parent,
-                                                  ref_to_push)]).splitlines()
-  if len(commits) > 1:
-    print('WARNING: This will upload %d commits. Run the following command '
-          'to see which commits will be uploaded: ' % len(commits))
-    print('git log %s..%s' % (parent, ref_to_push))
-    print('You can also use `git squash-branch` to squash these into a single '
-          'commit.')
-    ask_for_data('About to upload; enter to confirm.')
-
-  if options.reviewers or options.tbr_owners:
-    change_desc.update_reviewers(options.reviewers, options.tbr_owners, change)
-
-  receive_options = []
-  cc = cl.GetCCList().split(',')
-  if options.cc:
-    cc.extend(options.cc)
-  cc = filter(None, cc)
-  if cc:
-    receive_options += ['--cc=' + email for email in cc]
-  if change_desc.get_reviewers():
-    receive_options.extend(
-        '--reviewer=' + email for email in change_desc.get_reviewers())
-
-  git_command = ['push']
-  if receive_options:
-    git_command.append('--receive-pack=git receive-pack %s' %
-                       ' '.join(receive_options))
-  git_command += [gerrit_remote, ref_to_push + ':refs/for/' + branch]
-  push_stdout = gclient_utils.CheckCallAndFilter(
-      ['git'] + git_command,
-      print_stdout=True,
-      # Flush after every line: useful for seeing progress when running as
-      # recipe.
-      filter_fn=lambda _: sys.stdout.flush())
-
-  if options.squash:
-    regex = re.compile(r'remote:\s+https?://[\w\-\.\/]*/(\d+)\s.*')
-    change_numbers = [m.group(1)
-                      for m in map(regex.match, push_stdout.splitlines())
-                      if m]
-    if len(change_numbers) != 1:
-      DieWithError(
-        ('Created|Updated %d issues on Gerrit, but only 1 expected.\n'
-         'Change-Id: %s') % (len(change_numbers), change_id))
-    cl.SetIssue(change_numbers[0])
-    RunGit(['config', 'branch.%s.gerritsquashhash' % cl.GetBranch(),
-            ref_to_push])
-  return 0
-
-
 def GetTargetRef(remote, remote_branch, target_branch, pending_prefix):
   """Computes the remote branch ref to use for the CL.
 
@@ -3047,156 +3202,6 @@ def GetTargetRef(remote, remote_branch, target_branch, pending_prefix):
   if pending_prefix:
     remote_branch = remote_branch.replace('refs/', pending_prefix)
   return remote_branch
-
-
-def RietveldUpload(options, args, cl, change):
-  """upload the patch to rietveld."""
-  upload_args = ['--assume_yes']  # Don't ask about untracked files.
-  upload_args.extend(['--server', cl.GetCodereviewServer()])
-  # TODO(tandrii): refactor this ugliness into _RietveldChangelistImpl.
-  upload_args.extend(auth.auth_config_to_command_options(
-      cl._codereview_impl.GetAuthConfig()))
-  if options.emulate_svn_auto_props:
-    upload_args.append('--emulate_svn_auto_props')
-
-  change_desc = None
-
-  if options.email is not None:
-    upload_args.extend(['--email', options.email])
-
-  if cl.GetIssue():
-    if options.title:
-      upload_args.extend(['--title', options.title])
-    if options.message:
-      upload_args.extend(['--message', options.message])
-    upload_args.extend(['--issue', str(cl.GetIssue())])
-    print ("This branch is associated with issue %s. "
-           "Adding patch to that issue." % cl.GetIssue())
-  else:
-    if options.title:
-      upload_args.extend(['--title', options.title])
-    message = options.title or options.message or CreateDescriptionFromLog(args)
-    change_desc = ChangeDescription(message)
-    if options.reviewers or options.tbr_owners:
-      change_desc.update_reviewers(options.reviewers,
-                                   options.tbr_owners,
-                                   change)
-    if not options.force:
-      change_desc.prompt()
-
-    if not change_desc.description:
-      print "Description is empty; aborting."
-      return 1
-
-    upload_args.extend(['--message', change_desc.description])
-    if change_desc.get_reviewers():
-      upload_args.append('--reviewers=' + ','.join(change_desc.get_reviewers()))
-    if options.send_mail:
-      if not change_desc.get_reviewers():
-        DieWithError("Must specify reviewers to send email.")
-      upload_args.append('--send_mail')
-
-    # We check this before applying rietveld.private assuming that in
-    # rietveld.cc only addresses which we can send private CLs to are listed
-    # if rietveld.private is set, and so we should ignore rietveld.cc only when
-    # --private is specified explicitly on the command line.
-    if options.private:
-      logging.warn('rietveld.cc is ignored since private flag is specified.  '
-                   'You need to review and add them manually if necessary.')
-      cc = cl.GetCCListWithoutDefault()
-    else:
-      cc = cl.GetCCList()
-    cc = ','.join(filter(None, (cc, ','.join(options.cc))))
-    if cc:
-      upload_args.extend(['--cc', cc])
-
-  if options.private or settings.GetDefaultPrivateFlag() == "True":
-    upload_args.append('--private')
-
-  upload_args.extend(['--git_similarity', str(options.similarity)])
-  if not options.find_copies:
-    upload_args.extend(['--git_no_find_copies'])
-
-  # Include the upstream repo's URL in the change -- this is useful for
-  # projects that have their source spread across multiple repos.
-  remote_url = cl.GetGitBaseUrlFromConfig()
-  if not remote_url:
-    if settings.GetIsGitSvn():
-      remote_url = cl.GetGitSvnRemoteUrl()
-    else:
-      if cl.GetRemoteUrl() and '/' in cl.GetUpstreamBranch():
-        remote_url = (cl.GetRemoteUrl() + '@'
-                      + cl.GetUpstreamBranch().split('/')[-1])
-  if remote_url:
-    upload_args.extend(['--base_url', remote_url])
-    remote, remote_branch = cl.GetRemoteBranch()
-    target_ref = GetTargetRef(remote, remote_branch, options.target_branch,
-                              settings.GetPendingRefPrefix())
-    if target_ref:
-      upload_args.extend(['--target_ref', target_ref])
-
-    # Look for dependent patchsets. See crbug.com/480453 for more details.
-    remote, upstream_branch = cl.FetchUpstreamTuple(cl.GetBranch())
-    upstream_branch = ShortBranchName(upstream_branch)
-    if remote is '.':
-      # A local branch is being tracked.
-      local_branch = ShortBranchName(upstream_branch)
-      if settings.GetIsSkipDependencyUpload(local_branch):
-        print
-        print ('Skipping dependency patchset upload because git config '
-               'branch.%s.skip-deps-uploads is set to True.' % local_branch)
-        print
-      else:
-        auth_config = auth.extract_auth_config_from_options(options)
-        branch_cl = Changelist(branchref=local_branch, auth_config=auth_config)
-        branch_cl_issue_url = branch_cl.GetIssueURL()
-        branch_cl_issue = branch_cl.GetIssue()
-        branch_cl_patchset = branch_cl.GetPatchset()
-        if branch_cl_issue_url and branch_cl_issue and branch_cl_patchset:
-          upload_args.extend(
-              ['--depends_on_patchset', '%s:%s' % (
-                   branch_cl_issue, branch_cl_patchset)])
-          print
-          print ('The current branch (%s) is tracking a local branch (%s) with '
-                 'an associated CL.') % (cl.GetBranch(), local_branch)
-          print 'Adding %s/#ps%s as a dependency patchset.' % (
-              branch_cl_issue_url, branch_cl_patchset)
-          print
-
-  project = settings.GetProject()
-  if project:
-    upload_args.extend(['--project', project])
-
-  if options.cq_dry_run:
-    upload_args.extend(['--cq_dry_run'])
-
-  try:
-    upload_args = ['upload'] + upload_args + args
-    logging.info('upload.RealMain(%s)', upload_args)
-    issue, patchset = upload.RealMain(upload_args)
-    issue = int(issue)
-    patchset = int(patchset)
-  except KeyboardInterrupt:
-    sys.exit(1)
-  except:
-    # If we got an exception after the user typed a description for their
-    # change, back up the description before re-raising.
-    if change_desc:
-      backup_path = os.path.expanduser(DESCRIPTION_BACKUP_FILE)
-      print '\nGot exception while uploading -- saving description to %s\n' \
-          % backup_path
-      backup_file = open(backup_path, 'w')
-      backup_file.write(change_desc.description)
-      backup_file.close()
-    raise
-
-  if not cl.GetIssue():
-    cl.SetIssue(issue)
-  cl.SetPatchset(patchset)
-
-  if options.use_commit_queue:
-    cl.SetFlag('commit', '1')
-  return 0
 
 
 def cleanup_list(l):
@@ -3349,9 +3354,7 @@ def CMDupload(parser, args):
     options.squash = ((settings.GetSquashGerritUploads() or options.squash) and
                       not options.no_squash)
 
-    ret = GerritUpload(options, args, cl, change)
-  else:
-    ret = RietveldUpload(options, args, cl, change)
+  ret = cl.CMDUploadChange(options, args, change)
   if not ret:
     git_set_branch_value('last-upload-hash',
                          RunGit(['rev-parse', 'HEAD']).strip())
