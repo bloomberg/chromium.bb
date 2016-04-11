@@ -429,7 +429,9 @@ void CheckAppMenuLayout(ToolbarController* toolbarController,
 }
 
 // Tests the layout of the overflow container in the app menu.
-IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest, TestOverflowContainerLayout) {
+// Disabled due to crashing flakily, see crbug.com/602203.
+IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
+                       DISABLED_TestOverflowContainerLayout) {
   // Add a bunch of extensions - enough to trigger multiple rows in the overflow
   // menu.
   const int kNumExtensions = 12;
