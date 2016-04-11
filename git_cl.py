@@ -1368,8 +1368,12 @@ class _ChangelistCodereviewBase(object):
     """Returns git config setting for the codereview server."""
     raise NotImplementedError()
 
-  @staticmethod
-  def IssueSetting(branch):
+  @classmethod
+  def IssueSetting(cls, branch):
+    return 'branch.%s.%s' % (branch, cls.IssueSettingPrefix())
+
+  @classmethod
+  def IssueSettingPrefix(cls):
     """Returns name of git config setting which stores issue number for a given
     branch."""
     raise NotImplementedError()
@@ -1576,9 +1580,9 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
           self._auth_config or auth.make_auth_config())
     return self._rpc_server
 
-  @staticmethod
-  def IssueSetting(branch):
-    return 'branch.%s.rietveldissue' % branch
+  @classmethod
+  def IssueSettingPrefix(cls):
+    return 'rietveldissue'
 
   def PatchsetSetting(self):
     """Return the git setting that stores this change's most recent patchset."""
@@ -1717,9 +1721,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         self._gerrit_server = 'https://%s' % self._gerrit_host
     return self._gerrit_server
 
-  @staticmethod
-  def IssueSetting(branch):
-    return 'branch.%s.gerritissue' % branch
+  @classmethod
+  def IssueSettingPrefix(cls):
+    return 'gerritissue'
 
   def PatchsetSetting(self):
     """Return the git setting that stores this change's most recent patchset."""
@@ -4532,8 +4536,7 @@ def CMDformat(parser, args):
 
 @subcommand.usage('<codereview url or issue id>')
 def CMDcheckout(parser, args):
-  """Checks out a branch associated with a given Rietveld issue."""
-  # TODO(tandrii): consider adding this for Gerrit?
+  """Checks out a branch associated with a given Rietveld or Gerrit issue."""
   _, args = parser.parse_args(args)
 
   if len(args) != 1:
@@ -4546,14 +4549,17 @@ def CMDcheckout(parser, args):
     return 1
   target_issue = str(issue_arg.issue)
 
-  key_and_issues = [x.split() for x in RunGit(
-      ['config', '--local', '--get-regexp', r'branch\..*\.rietveldissue'])
-      .splitlines()]
-  branches = []
-  for key, issue in key_and_issues:
-    if issue == target_issue:
-      branches.append(re.sub(r'branch\.(.*)\.rietveldissue', r'\1', key))
+  def find_issues(issueprefix):
+    key_and_issues = [x.split() for x in RunGit(
+        ['config', '--local', '--get-regexp', r'branch\..*\.%s' % issueprefix])
+        .splitlines()]
+    for key, issue in key_and_issues:
+      if issue == target_issue:
+        yield re.sub(r'branch\.(.*)\.%s' % issueprefix, r'\1', key)
 
+  branches = []
+  for cls in _CODEREVIEW_IMPLEMENTATIONS.values():
+    branches.extend(find_issues(cls.IssueSettingPrefix()))
   if len(branches) == 0:
     print 'No branch found for issue %s.' % target_issue
     return 1

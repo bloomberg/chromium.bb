@@ -1151,6 +1151,35 @@ class TestGitCl(TestCase):
       git_cl.main(['patch',
                    'https://chromium-review.googlesource.com/#/c/123456/1'])
 
+  def _checkout_calls(self):
+    return [
+        ((['git', 'config', '--local', '--get-regexp',
+           'branch\\..*\\.rietveldissue'], ),
+           ('branch.retrying.rietveldissue 1111111111\n'
+            'branch.some-fix.rietveldissue 2222222222\n')),
+        ((['git', 'config', '--local', '--get-regexp',
+           'branch\\..*\\.gerritissue'], ),
+           ('branch.ger-branch.gerritissue 123456\n'
+            'branch.gbranch654.gerritissue 654321\n')),
+    ]
+
+  def test_checkout_gerrit(self):
+    """Tests git cl checkout <issue>."""
+    self.calls = self._checkout_calls()
+    self.calls += [((['git', 'checkout', 'ger-branch'], ), '')]
+    self.assertEqual(0, git_cl.main(['checkout', '123456']))
+
+  def test_checkout_rietveld(self):
+    """Tests git cl checkout <issue>."""
+    self.calls = self._checkout_calls()
+    self.calls += [((['git', 'checkout', 'some-fix'], ), '')]
+    self.assertEqual(0, git_cl.main(['checkout', '2222222222']))
+
+  def test_checkout_not_found(self):
+    """Tests git cl checkout <issue>."""
+    self.calls = self._checkout_calls()
+    self.assertEqual(1, git_cl.main(['checkout', '99999']))
+
 
 if __name__ == '__main__':
   git_cl.logging.basicConfig(
