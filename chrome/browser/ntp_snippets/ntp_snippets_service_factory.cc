@@ -17,6 +17,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_ANDROID)
@@ -53,7 +54,8 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   scoped_refptr<net::URLRequestContextGetter> request_context =
-      context->GetRequestContext();
+      content::BrowserContext::GetDefaultStoragePartition(context)->
+            GetURLRequestContext();
   SuggestionsService* suggestions_service =
       SuggestionsServiceFactory::GetForProfile(profile);
 

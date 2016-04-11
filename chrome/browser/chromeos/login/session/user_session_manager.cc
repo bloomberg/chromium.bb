@@ -1362,7 +1362,8 @@ void UserSessionManager::RestoreAuthSessionImpl(
   if (!auth_request_context &&
       (authenticator_.get() && authenticator_->authentication_context())) {
     auth_request_context =
-        authenticator_->authentication_context()->GetRequestContext();
+        content::BrowserContext::GetDefaultStoragePartition(
+            authenticator_->authentication_context())->GetURLRequestContext();
   }
   login_manager->RestoreSession(auth_request_context, session_restore_strategy_,
                                 user_context_.GetRefreshToken(),
@@ -1572,7 +1573,8 @@ UserSessionManager::GetAuthRequestContext() const {
       auth_request_context = signin_partition->GetURLRequestContext();
   } else if (authenticator_.get() && authenticator_->authentication_context()) {
     auth_request_context =
-        authenticator_->authentication_context()->GetRequestContext();
+        content::BrowserContext::GetDefaultStoragePartition(
+            authenticator_->authentication_context())->GetURLRequestContext();
   }
   return auth_request_context;
 }

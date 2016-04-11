@@ -17,6 +17,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/url_constants.h"
@@ -248,7 +249,8 @@ class TestSaveImageFromDataURL : public RenderMessageFilter {
       : RenderMessageFilter(
             0,
             context,
-            context->GetRequestContext(),
+            BrowserContext::GetDefaultStoragePartition(context)->
+                GetURLRequestContext(),
             nullptr,
             nullptr,
             nullptr,

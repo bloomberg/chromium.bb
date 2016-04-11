@@ -99,8 +99,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       std::unique_ptr<base::hash_set<base::FilePath>> active_paths,
       const base::Closure& done);
 
-  // DON'T USE THIS. GetDefaultStoragePartition() is going away.
-  // Use GetStoragePartition() instead. Ask ajwong@ if you have problems.
   static content::StoragePartition* GetDefaultStoragePartition(
       BrowserContext* browser_context);
 
@@ -165,12 +163,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
 
   // Return whether this context is incognito. Default is false.
   virtual bool IsOffTheRecord() const = 0;
-
-  // Returns the request context information associated with this context.  Call
-  // this only on the UI thread, since it can send notifications that should
-  // happen on the UI thread.
-  // TODO(creis): Remove this version in favor of the one below.
-  virtual net::URLRequestContextGetter* GetRequestContext() = 0;
 
   // Returns the default request context for media resources associated with
   // this context.

@@ -5,6 +5,7 @@
 #include "extensions/browser/guest_view/web_view/web_ui/web_ui_url_fetcher.h"
 
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_fetcher.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
@@ -26,7 +27,9 @@ WebUIURLFetcher::~WebUIURLFetcher() {
 
 void WebUIURLFetcher::Start() {
   fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this);
-  fetcher_->SetRequestContext(context_->GetRequestContext());
+  fetcher_->SetRequestContext(
+      content::BrowserContext::GetDefaultStoragePartition(context_)->
+          GetURLRequestContext());
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
 
   content::AssociateURLFetcherWithRenderFrame(

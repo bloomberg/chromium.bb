@@ -66,6 +66,13 @@ void TestBrowserContext::SetPermissionManager(
   permission_manager_ = std::move(permission_manager);
 }
 
+net::URLRequestContextGetter* TestBrowserContext::GetRequestContext() {
+  if (!request_context_.get()) {
+    request_context_ = new TestContextURLRequestContextGetter();
+  }
+  return request_context_.get();
+}
+
 base::FilePath TestBrowserContext::GetPath() const {
   return browser_context_dir_.path();
 }
@@ -81,13 +88,6 @@ bool TestBrowserContext::IsOffTheRecord() const {
 
 DownloadManagerDelegate* TestBrowserContext::GetDownloadManagerDelegate() {
   return NULL;
-}
-
-net::URLRequestContextGetter* TestBrowserContext::GetRequestContext() {
-  if (!request_context_.get()) {
-    request_context_ = new TestContextURLRequestContextGetter();
-  }
-  return request_context_.get();
 }
 
 net::URLRequestContextGetter* TestBrowserContext::GetMediaRequestContext() {

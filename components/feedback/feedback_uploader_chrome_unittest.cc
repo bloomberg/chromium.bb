@@ -7,11 +7,11 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_http_header_provider.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,7 +20,8 @@ namespace feedback {
 
 class FeedbackUploaderChromeTest : public ::testing::Test {
  protected:
-  FeedbackUploaderChromeTest() {}
+  FeedbackUploaderChromeTest()
+      : browser_thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   ~FeedbackUploaderChromeTest() override {
     // Clean up registered ids.
@@ -39,7 +40,7 @@ class FeedbackUploaderChromeTest : public ::testing::Test {
   }
 
  private:
-  base::MessageLoopForUI message_loop_;
+  content::TestBrowserThreadBundle browser_thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedbackUploaderChromeTest);
 };

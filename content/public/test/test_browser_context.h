@@ -33,13 +33,13 @@ class TestBrowserContext : public BrowserContext {
   void SetSpecialStoragePolicy(storage::SpecialStoragePolicy* policy);
   void SetPermissionManager(
       std::unique_ptr<PermissionManager> permission_manager);
+  net::URLRequestContextGetter* GetRequestContext();
 
   base::FilePath GetPath() const override;
   std::unique_ptr<ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
   bool IsOffTheRecord() const override;
   DownloadManagerDelegate* GetDownloadManagerDelegate() override;
-  net::URLRequestContextGetter* GetRequestContext() override;
   net::URLRequestContextGetter* GetMediaRequestContext() override;
   net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(
       int renderer_child_id) override;

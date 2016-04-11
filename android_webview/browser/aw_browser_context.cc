@@ -259,9 +259,11 @@ void AwBrowserContext::PreMainMessageLoopRun() {
   const FilePath guid_file_path =
       GetPath().Append(FILE_PATH_LITERAL("metrics_guid"));
 
-  AwMetricsServiceClient::GetInstance()->Initialize(user_pref_service_.get(),
-                                                    GetRequestContext(),
-                                                    guid_file_path);
+  AwMetricsServiceClient::GetInstance()->Initialize(
+      user_pref_service_.get(),
+      content::BrowserContext::GetDefaultStoragePartition(this)->
+          GetURLRequestContext(),
+      guid_file_path);
 }
 
 void AwBrowserContext::AddVisitedURLs(const std::vector<GURL>& urls) {
@@ -348,18 +350,16 @@ bool AwBrowserContext::IsOffTheRecord() const {
   return false;
 }
 
-net::URLRequestContextGetter* AwBrowserContext::GetRequestContext() {
-  return GetDefaultStoragePartition(this)->GetURLRequestContext();
-}
-
 net::URLRequestContextGetter* AwBrowserContext::GetMediaRequestContext() {
-  return GetRequestContext();
+  return content::BrowserContext::GetDefaultStoragePartition(this)->
+      GetURLRequestContext();
 }
 
 net::URLRequestContextGetter*
 AwBrowserContext::GetMediaRequestContextForRenderProcess(
     int renderer_child_id) {
-  return GetRequestContext();
+  return content::BrowserContext::GetDefaultStoragePartition(this)->
+      GetURLRequestContext();
 }
 
 net::URLRequestContextGetter*

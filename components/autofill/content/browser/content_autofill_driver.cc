@@ -22,6 +22,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/geometry/size_f.h"
 
@@ -52,9 +53,9 @@ bool ContentAutofillDriver::IsOffTheRecord() const {
 }
 
 net::URLRequestContextGetter* ContentAutofillDriver::GetURLRequestContext() {
-  return render_frame_host_->GetSiteInstance()
-      ->GetBrowserContext()
-      ->GetRequestContext();
+  return content::BrowserContext::GetDefaultStoragePartition(
+      render_frame_host_->GetSiteInstance()->GetBrowserContext())->
+          GetURLRequestContext();
 }
 
 base::SequencedWorkerPool* ContentAutofillDriver::GetBlockingPool() {

@@ -11,6 +11,7 @@
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/crx_file/id_util.h"
+#include "content/public/browser/storage_partition.h"
 #include "extensions/common/extension.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
@@ -74,8 +75,11 @@ DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::Run() {
   }
 
   net::URLRequestContextGetter* context_getter = nullptr;
-  if (!icon_url.is_empty())
-    context_getter = browser_context()->GetRequestContext();
+  if (!icon_url.is_empty()) {
+    context_getter =
+        content::BrowserContext::GetDefaultStoragePartition(browser_context())->
+            GetURLRequestContext();
+  }
 
   scoped_refptr<WebstoreInstallHelper> helper = new WebstoreInstallHelper(
       this, params_->details.id, params_->details.manifest, icon_url,

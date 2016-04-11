@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "jni/MediaResourceGetter_jni.h"
@@ -193,7 +194,8 @@ class MediaResourceGetterTask
 
 MediaResourceGetterTask::MediaResourceGetterTask(
     BrowserContext* browser_context, int render_process_id, int render_frame_id)
-    : context_getter_(browser_context->GetRequestContext()),
+    : context_getter_(BrowserContext::GetDefaultStoragePartition(
+          browser_context)->GetURLRequestContext()),
       resource_context_(browser_context->GetResourceContext()),
       render_process_id_(render_process_id),
       render_frame_id_(render_frame_id) {

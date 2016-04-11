@@ -8,6 +8,7 @@
 #include "chrome/browser/profile_resetter/profile_reset_report.pb.h"
 #include "chrome/browser/profile_resetter/reset_report_uploader.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -30,7 +31,9 @@ GURL GetClientReportUrl(const std::string& report_url) {
 }  // namespace
 
 ResetReportUploader::ResetReportUploader(content::BrowserContext* context)
-    : url_request_context_getter_(context->GetRequestContext()) {}
+    : url_request_context_getter_(
+          content::BrowserContext::GetDefaultStoragePartition(context)->
+              GetURLRequestContext()) {}
 
 ResetReportUploader::~ResetReportUploader() {}
 

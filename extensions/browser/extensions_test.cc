@@ -55,6 +55,8 @@ void ExtensionsTest::TearDown() {
   // cleaned up before the factories are destroyed.
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       browser_context_.get());
+  extensions_browser_client_.reset();
+  browser_context_.reset();
 }
 
 }  // namespace extensions

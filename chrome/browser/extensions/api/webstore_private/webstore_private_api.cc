@@ -32,6 +32,7 @@
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -210,8 +211,10 @@ WebstorePrivateBeginInstallWithManifest3Function::Run() {
   scoped_active_install_.reset(new ScopedActiveInstall(tracker, install_data));
 
   net::URLRequestContextGetter* context_getter = nullptr;
-  if (!icon_url.is_empty())
-    context_getter = browser_context()->GetRequestContext();
+  if (!icon_url.is_empty()) {
+    context_getter = content::BrowserContext::GetDefaultStoragePartition(
+        browser_context())->GetURLRequestContext();
+  }
 
   scoped_refptr<WebstoreInstallHelper> helper = new WebstoreInstallHelper(
       this, details().id, details().manifest, icon_url, context_getter);

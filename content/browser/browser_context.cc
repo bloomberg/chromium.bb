@@ -301,7 +301,8 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
         BrowserThread::IO, FROM_HERE,
         base::Bind(
             &SaveSessionStateOnIOThread,
-            make_scoped_refptr(browser_context->GetRequestContext()),
+            make_scoped_refptr(BrowserContext::GetDefaultStoragePartition(
+                browser_context)->GetURLRequestContext()),
             static_cast<AppCacheServiceImpl*>(
                 storage_partition->GetAppCacheService())));
   }
