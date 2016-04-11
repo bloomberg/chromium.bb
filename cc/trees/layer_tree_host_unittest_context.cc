@@ -7,7 +7,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "cc/layers/heads_up_display_layer.h"
-#include "cc/layers/io_surface_layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/layers/picture_layer.h"
@@ -1021,12 +1020,6 @@ class LayerTreeHostContextTestDontUseLostResources
     color_frame_provider_.set_frame(color_video_frame_);
     hw_frame_provider_.set_frame(hw_video_frame_);
     scaled_hw_frame_provider_.set_frame(scaled_hw_video_frame_);
-
-    scoped_refptr<IOSurfaceLayer> io_surface = IOSurfaceLayer::Create();
-    io_surface->SetBounds(gfx::Size(10, 10));
-    io_surface->SetIsDrawable(true);
-    io_surface->SetIOSurfaceProperties(1, gfx::Size(10, 10));
-    root->AddChild(io_surface);
 
     // Enable the hud.
     LayerTreeDebugState debug_state;

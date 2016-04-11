@@ -26,7 +26,6 @@
 #include "cc/input/top_controls_manager.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
-#include "cc/layers/io_surface_layer_impl.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/layers/render_surface_impl.h"
@@ -7194,13 +7193,6 @@ TEST_F(LayerTreeHostImplTest, LayersFreeTextures) {
   video_layer->SetBounds(gfx::Size(10, 10));
   video_layer->SetDrawsContent(true);
   root_layer->AddChild(std::move(video_layer));
-
-  std::unique_ptr<IOSurfaceLayerImpl> io_surface_layer =
-      IOSurfaceLayerImpl::Create(host_impl_->active_tree(), 5);
-  io_surface_layer->SetBounds(gfx::Size(10, 10));
-  io_surface_layer->SetDrawsContent(true);
-  io_surface_layer->SetIOSurfaceProperties(1, gfx::Size(10, 10));
-  root_layer->AddChild(std::move(io_surface_layer));
 
   host_impl_->active_tree()->SetRootLayer(std::move(root_layer));
 

@@ -39,7 +39,6 @@
       'input/top_controls_manager_unittest.cc',
       'layers/heads_up_display_layer_impl_unittest.cc',
       'layers/heads_up_display_unittest.cc',
-      'layers/io_surface_layer_impl_unittest.cc',
       'layers/layer_impl_unittest.cc',
       'layers/layer_iterator_unittest.cc',
       'layers/layer_list_iterator_unittest.cc',

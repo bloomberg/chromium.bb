@@ -19,7 +19,6 @@
 #include "cc/debug/frame_rate_counter.h"
 #include "cc/input/scroll_elasticity_helper.h"
 #include "cc/layers/content_layer_client.h"
-#include "cc/layers/io_surface_layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/layers/picture_layer.h"
@@ -2280,148 +2279,6 @@ class LayerTreeHostTestUninvertibleTransformDoesNotBlockActivation
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostTestUninvertibleTransformDoesNotBlockActivation);
 
-class MockIOSurfaceWebGraphicsContext3D : public TestWebGraphicsContext3D {
- public:
-  MockIOSurfaceWebGraphicsContext3D() {
-    test_capabilities_.gpu.iosurface = true;
-    test_capabilities_.gpu.texture_rectangle = true;
-  }
-
-  GLuint createTexture() override { return 1; }
-  MOCK_METHOD1(activeTexture, void(GLenum texture));
-  MOCK_METHOD2(bindTexture, void(GLenum target,
-                                 GLuint texture_id));
-  MOCK_METHOD3(texParameteri, void(GLenum target,
-                                   GLenum pname,
-                                   GLint param));
-  MOCK_METHOD5(texImageIOSurface2DCHROMIUM, void(GLenum target,
-                                                 GLint width,
-                                                 GLint height,
-                                                 GLuint ioSurfaceId,
-                                                 GLuint plane));
-  MOCK_METHOD4(drawElements, void(GLenum mode,
-                                  GLsizei count,
-                                  GLenum type,
-                                  GLintptr offset));
-  MOCK_METHOD1(deleteTexture, void(GLenum texture));
-  MOCK_METHOD3(produceTextureDirectCHROMIUM,
-               void(GLuint texture, GLenum target, const GLbyte* mailbox));
-};
-
-class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
- protected:
-  std::unique_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
-    std::unique_ptr<MockIOSurfaceWebGraphicsContext3D> mock_context_owned(
-        new MockIOSurfaceWebGraphicsContext3D);
-    mock_context_ = mock_context_owned.get();
-
-    if (delegating_renderer())
-      return FakeOutputSurface::CreateDelegating3d(
-          std::move(mock_context_owned));
-    else
-      return FakeOutputSurface::Create3d(std::move(mock_context_owned));
-  }
-
-  void SetupTree() override {
-    LayerTreeHostTest::SetupTree();
-
-    layer_tree_host()->root_layer()->SetIsDrawable(false);
-
-    io_surface_id_ = 9;
-    io_surface_size_ = gfx::Size(6, 7);
-
-    scoped_refptr<IOSurfaceLayer> io_surface_layer = IOSurfaceLayer::Create();
-    io_surface_layer->SetBounds(gfx::Size(10, 10));
-    io_surface_layer->SetIsDrawable(true);
-    io_surface_layer->SetContentsOpaque(true);
-    io_surface_layer->SetIOSurfaceProperties(io_surface_id_, io_surface_size_);
-    layer_tree_host()->root_layer()->AddChild(io_surface_layer);
-  }
-
-  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
-
-  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
-    EXPECT_EQ(0u, host_impl->resource_provider()->num_resources());
-    // In WillDraw, the IOSurfaceLayer sets up the io surface texture.
-
-    EXPECT_CALL(*mock_context_, activeTexture(_)).Times(0);
-    EXPECT_CALL(*mock_context_, bindTexture(GL_TEXTURE_RECTANGLE_ARB, 1))
-        .Times(AtLeast(1));
-    EXPECT_CALL(*mock_context_,
-                texParameteri(
-                    GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR))
-        .Times(1);
-    EXPECT_CALL(*mock_context_,
-                texParameteri(
-                    GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR))
-        .Times(1);
-    EXPECT_CALL(*mock_context_,
-                texParameteri(GL_TEXTURE_RECTANGLE_ARB,
-                              GL_TEXTURE_WRAP_S,
-                              GL_CLAMP_TO_EDGE)).Times(1);
-    EXPECT_CALL(*mock_context_,
-                texParameteri(GL_TEXTURE_RECTANGLE_ARB,
-                              GL_TEXTURE_WRAP_T,
-                              GL_CLAMP_TO_EDGE)).Times(1);
-
-    EXPECT_CALL(*mock_context_,
-                texImageIOSurface2DCHROMIUM(GL_TEXTURE_RECTANGLE_ARB,
-                                            io_surface_size_.width(),
-                                            io_surface_size_.height(),
-                                            io_surface_id_,
-                                            0)).Times(1);
-
-    EXPECT_CALL(*mock_context_, bindTexture(_, 0)).Times(AnyNumber());
-  }
-
-  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
-                                   LayerTreeHostImpl::FrameData* frame,
-                                   DrawResult draw_result) override {
-    Mock::VerifyAndClearExpectations(&mock_context_);
-    ResourceProvider* resource_provider = host_impl->resource_provider();
-    EXPECT_EQ(1u, resource_provider->num_resources());
-    CHECK_EQ(1u, frame->render_passes.size());
-    CHECK_LE(1u, frame->render_passes[0]->quad_list.size());
-    const DrawQuad* quad = frame->render_passes[0]->quad_list.front();
-    CHECK_EQ(DrawQuad::IO_SURFACE_CONTENT, quad->material);
-    const IOSurfaceDrawQuad* io_surface_draw_quad =
-        IOSurfaceDrawQuad::MaterialCast(quad);
-    EXPECT_EQ(io_surface_size_, io_surface_draw_quad->io_surface_size);
-    EXPECT_NE(0u, io_surface_draw_quad->io_surface_resource_id());
-    EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_RECTANGLE_ARB),
-              resource_provider->GetResourceTextureTarget(
-                  io_surface_draw_quad->io_surface_resource_id()));
-
-    if (delegating_renderer()) {
-      // The io surface layer's resource should be sent to the parent.
-      EXPECT_CALL(*mock_context_, produceTextureDirectCHROMIUM(
-                                      _, GL_TEXTURE_RECTANGLE_ARB, _)).Times(1);
-    } else {
-      // The io surface layer's texture is drawn.
-      EXPECT_CALL(*mock_context_, activeTexture(GL_TEXTURE0)).Times(AtLeast(1));
-      EXPECT_CALL(*mock_context_, drawElements(GL_TRIANGLES, 6, _, _))
-          .Times(AtLeast(1));
-    }
-
-    return draw_result;
-  }
-
-  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
-    Mock::VerifyAndClearExpectations(&mock_context_);
-
-    EXPECT_CALL(*mock_context_, deleteTexture(1)).Times(AtLeast(1));
-    EndTest();
-  }
-
-  void AfterTest() override {}
-
-  int io_surface_id_;
-  MockIOSurfaceWebGraphicsContext3D* mock_context_;
-  gfx::Size io_surface_size_;
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestIOSurfaceDrawing);
-
 class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
  public:
   void BeginTest() override {
@@ -3789,27 +3646,6 @@ class LayerTreeHostTestVideoLayerInvalidate : public LayerInvalidateCausesDraw {
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestVideoLayerInvalidate);
-
-// IOSurfaceLayer must support being invalidated and then passing that along
-// to the compositor thread, even though no resources are updated in
-// response to that invalidation.
-class LayerTreeHostTestIOSurfaceLayerInvalidate
-    : public LayerInvalidateCausesDraw {
- public:
-  void SetupTree() override {
-    LayerTreeHostTest::SetupTree();
-    scoped_refptr<IOSurfaceLayer> layer = IOSurfaceLayer::Create();
-    layer->SetBounds(gfx::Size(10, 10));
-    uint32_t fake_io_surface_id = 7;
-    layer->SetIOSurfaceProperties(fake_io_surface_id, layer->bounds());
-    layer->SetIsDrawable(true);
-    layer_tree_host()->root_layer()->AddChild(layer);
-
-    invalidate_layer_ = layer;
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestIOSurfaceLayerInvalidate);
 
 class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
  protected:
