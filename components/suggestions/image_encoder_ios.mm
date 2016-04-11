@@ -8,15 +8,17 @@
 #import <UIKit/UIKit.h>
 
 #include "base/mac/scoped_cftyperef.h"
+#include "base/memory/ptr_util.h"
 #include "skia/ext/skia_utils_ios.h"
 
 namespace suggestions {
 
-SkBitmap* DecodeJPEGToSkBitmap(const void* encoded_data, size_t size) {
+std::unique_ptr<SkBitmap> DecodeJPEGToSkBitmap(const void* encoded_data,
+                                               size_t size) {
   NSData* data = [NSData dataWithBytes:encoded_data length:size];
   UIImage* image = [UIImage imageWithData:data scale:1.0];
-  return new SkBitmap(skia::CGImageToSkBitmap(image.CGImage, [image size],
-                                              YES));
+  return base::WrapUnique(
+      new SkBitmap(skia::CGImageToSkBitmap(image.CGImage, [image size], YES)));
 }
 
 bool EncodeSkBitmapToJPEG(const SkBitmap& bitmap,

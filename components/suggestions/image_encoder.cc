@@ -9,7 +9,8 @@
 
 namespace suggestions {
 
-SkBitmap* DecodeJPEGToSkBitmap(const void* encoded_data, size_t size) {
+std::unique_ptr<SkBitmap> DecodeJPEGToSkBitmap(const void* encoded_data,
+                                               size_t size) {
   return gfx::JPEGCodec::Decode(static_cast<const unsigned char*>(encoded_data),
                                 size);
 }

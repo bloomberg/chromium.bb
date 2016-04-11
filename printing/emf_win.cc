@@ -366,7 +366,7 @@ bool Emf::Record::SafePlayback(Emf::EnumerationContext* context) const {
         if (!DIBFormatNativelySupported(hdc, CHECKJPEGFORMAT, bits,
                                         bmih->biSizeImage)) {
           play_normally = false;
-          bitmap.reset(gfx::JPEGCodec::Decode(bits, bmih->biSizeImage));
+          bitmap = gfx::JPEGCodec::Decode(bits, bmih->biSizeImage);
         }
       } else if (bmih->biCompression == BI_PNG) {
         if (!DIBFormatNativelySupported(hdc, CHECKPNGFORMAT, bits,

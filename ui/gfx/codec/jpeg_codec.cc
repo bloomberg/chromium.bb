@@ -603,16 +603,17 @@ bool JPEGCodec::Decode(const unsigned char* input, size_t input_size,
 }
 
 // static
-SkBitmap* JPEGCodec::Decode(const unsigned char* input, size_t input_size) {
+std::unique_ptr<SkBitmap> JPEGCodec::Decode(const unsigned char* input,
+                                            size_t input_size) {
   int w, h;
   std::vector<unsigned char> data_vector;
   if (!Decode(input, input_size, FORMAT_SkBitmap, &data_vector, &w, &h))
-    return NULL;
+    return nullptr;
 
   // Skia only handles 32 bit images.
   int data_length = w * h * 4;
 
-  SkBitmap* bitmap = new SkBitmap();
+  std::unique_ptr<SkBitmap> bitmap(new SkBitmap());
   bitmap->allocN32Pixels(w, h);
   memcpy(bitmap->getAddr32(0, 0), &data_vector[0], data_length);
 

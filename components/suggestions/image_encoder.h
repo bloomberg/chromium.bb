@@ -6,17 +6,19 @@
 #define COMPONENTS_SUGGESTIONS_IMAGE_ENCODER_H_
 
 #include <stddef.h>
+
+#include <memory>
 #include <vector>
 
 class SkBitmap;
 
 namespace suggestions {
 
-// From encoded bytes to SkBitmap. It's the caller's responsibility to delete
-// the bitmap.
-SkBitmap* DecodeJPEGToSkBitmap(const void* encoded_data, size_t size);
+// From encoded bytes to SkBitmap.
+std::unique_ptr<SkBitmap> DecodeJPEGToSkBitmap(const void* encoded_data,
+                                               size_t size);
 
-inline SkBitmap* DecodeJPEGToSkBitmap(
+inline std::unique_ptr<SkBitmap> DecodeJPEGToSkBitmap(
     const std::vector<unsigned char>& encoded_data) {
   return DecodeJPEGToSkBitmap(&encoded_data[0], encoded_data.size());
 }

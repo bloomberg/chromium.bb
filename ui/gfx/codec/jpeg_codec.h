@@ -6,6 +6,8 @@
 #define UI_GFX_CODEC_JPEG_CODEC_H_
 
 #include <stddef.h>
+
+#include <memory>
 #include <vector>
 
 #include "ui/gfx/gfx_export.h"
@@ -69,9 +71,9 @@ class GFX_EXPORT JPEGCodec {
                      int* w, int* h);
 
   // Decodes the JPEG data contained in input of length input_size. If
-  // successful, a SkBitmap is created and returned. It is up to the caller
-  // to delete the returned bitmap.
-  static SkBitmap* Decode(const unsigned char* input, size_t input_size);
+  // successful, a SkBitmap is created and returned.
+  static std::unique_ptr<SkBitmap> Decode(const unsigned char* input,
+                                          size_t input_size);
 };
 
 }  // namespace gfx

@@ -93,7 +93,7 @@ std::unique_ptr<SkBitmap> MaybeFetchLocalThumbnail(
   scoped_refptr<base::RefCountedMemory> image;
   std::unique_ptr<SkBitmap> bitmap;
   if (top_sites && top_sites->GetPageThumbnail(url, false, &image))
-    bitmap.reset(gfx::JPEGCodec::Decode(image->front(), image->size()));
+    bitmap = gfx::JPEGCodec::Decode(image->front(), image->size());
   return bitmap;
 }
 
