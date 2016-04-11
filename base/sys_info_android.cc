@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <sys/system_properties.h>
 
+#include "base/android/jni_android.h"
 #include "base/android/sys_utils.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -215,6 +216,17 @@ static base::LazyInstance<
     g_lazy_low_end_device = LAZY_INSTANCE_INITIALIZER;
 
 bool SysInfo::IsLowEndDevice() {
+  // This code might be used in some environments
+  // which might not have a Java environment.
+  // Note that we need to call the Java version here.
+  // There exists a complete native implementation in
+  // sys_info.cc but calling that here would mean that
+  // the Java code and the native code would call different
+  // implementations which could give different results.
+  // Also the Java code cannot depend on the native code
+  // since it might not be loaded yet.
+  if (!base::android::IsVMInitialized())
+    return false;
   return g_lazy_low_end_device.Get().value();
 }
 
