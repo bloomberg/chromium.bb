@@ -8,7 +8,8 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/prefs/pref_service.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeOSInfoPrivateTest) {
+// Disabled due to flakiness, see crbug.com/600886 for details.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_ChromeOSInfoPrivateTest) {
   // Set the initial timezone different from what JS function
   // timezoneSetTest() will attempt to set.
   base::StringValue initial_timezone("America/Los_Angeles");
