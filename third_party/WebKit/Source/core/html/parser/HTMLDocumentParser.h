@@ -70,7 +70,7 @@ class PumpSession;
 class HTMLDocumentParser :  public ScriptableDocumentParser, private HTMLScriptRunnerHost {
     USING_GARBAGE_COLLECTED_MIXIN(HTMLDocumentParser);
 public:
-    static RawPtr<HTMLDocumentParser> create(HTMLDocument& document, bool reportErrors, ParserSynchronizationPolicy backgroundParsingPolicy)
+    static HTMLDocumentParser* create(HTMLDocument& document, bool reportErrors, ParserSynchronizationPolicy backgroundParsingPolicy)
     {
         return new HTMLDocumentParser(document, reportErrors, backgroundParsingPolicy);
     }
@@ -126,7 +126,7 @@ protected:
     void forcePlaintextForTextDocument();
 
 private:
-    static RawPtr<HTMLDocumentParser> create(DocumentFragment* fragment, Element* contextElement, ParserContentPolicy parserContentPolicy)
+    static HTMLDocumentParser* create(DocumentFragment* fragment, Element* contextElement, ParserContentPolicy parserContentPolicy)
     {
         return new HTMLDocumentParser(fragment, contextElement, parserContentPolicy);
     }

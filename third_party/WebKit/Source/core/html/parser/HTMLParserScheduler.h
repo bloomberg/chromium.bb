@@ -62,7 +62,7 @@ private:
 class HTMLParserScheduler final : public GarbageCollectedFinalized<HTMLParserScheduler> {
     WTF_MAKE_NONCOPYABLE(HTMLParserScheduler);
 public:
-    static RawPtr<HTMLParserScheduler> create(HTMLDocumentParser* parser, WebTaskRunner* loadingTaskRunner)
+    static HTMLParserScheduler* create(HTMLDocumentParser* parser, WebTaskRunner* loadingTaskRunner)
     {
         return new HTMLParserScheduler(parser, loadingTaskRunner);
     }

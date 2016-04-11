@@ -45,7 +45,7 @@ class HTMLScriptRunner final : public GarbageCollectedFinalized<HTMLScriptRunner
     WTF_MAKE_NONCOPYABLE(HTMLScriptRunner);
     USING_PRE_FINALIZER(HTMLScriptRunner, detach);
 public:
-    static RawPtr<HTMLScriptRunner> create(Document* document, HTMLScriptRunnerHost* host)
+    static HTMLScriptRunner* create(Document* document, HTMLScriptRunnerHost* host)
     {
         return new HTMLScriptRunner(document, host);
     }
@@ -54,7 +54,7 @@ public:
     void detach();
 
     // Processes the passed in script and any pending scripts if possible.
-    void execute(RawPtr<Element> scriptToProcess, const TextPosition& scriptStartPosition);
+    void execute(Element* scriptToProcess, const TextPosition& scriptStartPosition);
 
     void executeScriptsWaitingForLoad(Resource*);
     bool hasScriptsWaitingForResources() const { return m_hasScriptsWaitingForResources; }

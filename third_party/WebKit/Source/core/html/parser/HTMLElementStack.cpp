@@ -118,7 +118,7 @@ inline bool isSelectScopeMarker(HTMLStackItem* item)
 
 } // namespace
 
-HTMLElementStack::ElementRecord::ElementRecord(RawPtr<HTMLStackItem> item, RawPtr<ElementRecord> next)
+HTMLElementStack::ElementRecord::ElementRecord(HTMLStackItem* item, ElementRecord* next)
     : m_item(item)
     , m_next(next)
 {
@@ -131,7 +131,7 @@ HTMLElementStack::ElementRecord::~ElementRecord()
 }
 #endif
 
-void HTMLElementStack::ElementRecord::replaceElement(RawPtr<HTMLStackItem> item)
+void HTMLElementStack::ElementRecord::replaceElement(HTMLStackItem* item)
 {
     ASSERT(item);
     ASSERT(!m_item || m_item->isElementNode());
@@ -308,19 +308,19 @@ void HTMLElementStack::popUntilForeignContentScopeMarker()
         pop();
 }
 
-void HTMLElementStack::pushRootNode(RawPtr<HTMLStackItem> rootItem)
+void HTMLElementStack::pushRootNode(HTMLStackItem* rootItem)
 {
     ASSERT(rootItem->isDocumentFragmentNode());
     pushRootNodeCommon(rootItem);
 }
 
-void HTMLElementStack::pushHTMLHtmlElement(RawPtr<HTMLStackItem> item)
+void HTMLElementStack::pushHTMLHtmlElement(HTMLStackItem* item)
 {
     ASSERT(item->hasTagName(htmlTag));
     pushRootNodeCommon(item);
 }
 
-void HTMLElementStack::pushRootNodeCommon(RawPtr<HTMLStackItem> rootItem)
+void HTMLElementStack::pushRootNodeCommon(HTMLStackItem* rootItem)
 {
     ASSERT(!m_top);
     ASSERT(!m_rootNode);
@@ -328,7 +328,7 @@ void HTMLElementStack::pushRootNodeCommon(RawPtr<HTMLStackItem> rootItem)
     pushCommon(rootItem);
 }
 
-void HTMLElementStack::pushHTMLHeadElement(RawPtr<HTMLStackItem> item)
+void HTMLElementStack::pushHTMLHeadElement(HTMLStackItem* item)
 {
     ASSERT(item->hasTagName(HTMLNames::headTag));
     ASSERT(!m_headElement);
@@ -336,7 +336,7 @@ void HTMLElementStack::pushHTMLHeadElement(RawPtr<HTMLStackItem> item)
     pushCommon(item);
 }
 
-void HTMLElementStack::pushHTMLBodyElement(RawPtr<HTMLStackItem> item)
+void HTMLElementStack::pushHTMLBodyElement(HTMLStackItem* item)
 {
     ASSERT(item->hasTagName(HTMLNames::bodyTag));
     ASSERT(!m_bodyElement);
@@ -344,7 +344,7 @@ void HTMLElementStack::pushHTMLBodyElement(RawPtr<HTMLStackItem> item)
     pushCommon(item);
 }
 
-void HTMLElementStack::push(RawPtr<HTMLStackItem> item)
+void HTMLElementStack::push(HTMLStackItem* item)
 {
     ASSERT(!item->hasTagName(htmlTag));
     ASSERT(!item->hasTagName(headTag));
@@ -353,7 +353,7 @@ void HTMLElementStack::push(RawPtr<HTMLStackItem> item)
     pushCommon(item);
 }
 
-void HTMLElementStack::insertAbove(RawPtr<HTMLStackItem> item, ElementRecord* recordBelow)
+void HTMLElementStack::insertAbove(HTMLStackItem* item, ElementRecord* recordBelow)
 {
     ASSERT(item);
     ASSERT(recordBelow);
@@ -391,7 +391,7 @@ HTMLStackItem* HTMLElementStack::oneBelowTop() const
     ASSERT(m_top);
     ASSERT(m_top->next());
     if (m_top->next()->stackItem()->isElementNode())
-        return m_top->next()->stackItem().get();
+        return m_top->next()->stackItem();
     return nullptr;
 }
 
@@ -448,7 +448,7 @@ template <bool isMarker(HTMLStackItem*)>
 bool inScopeCommon(HTMLElementStack::ElementRecord* top, const AtomicString& targetTag)
 {
     for (HTMLElementStack::ElementRecord* pos = top; pos; pos = pos->next()) {
-        HTMLStackItem* item = pos->stackItem().get();
+        HTMLStackItem* item = pos->stackItem();
         if (item->matchesHTMLTag(targetTag))
             return true;
         if (isMarker(item))
@@ -461,7 +461,7 @@ bool inScopeCommon(HTMLElementStack::ElementRecord* top, const AtomicString& tar
 bool HTMLElementStack::hasNumberedHeaderElementInScope() const
 {
     for (ElementRecord* record = m_top.get(); record; record = record->next()) {
-        HTMLStackItem* item = record->stackItem().get();
+        HTMLStackItem* item = record->stackItem();
         if (item->isNumberedHeaderElement())
             return true;
         if (isScopeMarker(item))
@@ -474,7 +474,7 @@ bool HTMLElementStack::hasNumberedHeaderElementInScope() const
 bool HTMLElementStack::inScope(Element* targetElement) const
 {
     for (ElementRecord* pos = m_top.get(); pos; pos = pos->next()) {
-        HTMLStackItem* item = pos->stackItem().get();
+        HTMLStackItem* item = pos->stackItem();
         if (item->node() == targetElement)
             return true;
         if (isScopeMarker(item))
@@ -563,7 +563,7 @@ ContainerNode* HTMLElementStack::rootNode() const
     return m_rootNode;
 }
 
-void HTMLElementStack::pushCommon(RawPtr<HTMLStackItem> item)
+void HTMLElementStack::pushCommon(HTMLStackItem* item)
 {
     ASSERT(m_rootNode);
 

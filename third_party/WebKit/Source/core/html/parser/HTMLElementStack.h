@@ -59,8 +59,8 @@ public:
         Element* element() const { return m_item->element(); }
         ContainerNode* node() const { return m_item->node(); }
         const AtomicString& namespaceURI() const { return m_item->namespaceURI(); }
-        RawPtr<HTMLStackItem> stackItem() const { return m_item; }
-        void replaceElement(RawPtr<HTMLStackItem>);
+        HTMLStackItem* stackItem() const { return m_item; }
+        void replaceElement(HTMLStackItem*);
 
         bool isAbove(ElementRecord*) const;
 
@@ -70,10 +70,10 @@ public:
     private:
         friend class HTMLElementStack;
 
-        ElementRecord(RawPtr<HTMLStackItem>, RawPtr<ElementRecord>);
+        ElementRecord(HTMLStackItem*, ElementRecord*);
 
-        RawPtr<ElementRecord> releaseNext() { return m_next.release(); }
-        void setNext(RawPtr<ElementRecord> next) { m_next = next; }
+        ElementRecord* releaseNext() { return m_next.release(); }
+        void setNext(ElementRecord* next) { m_next = next; }
 
         Member<HTMLStackItem> m_item;
         Member<ElementRecord> m_next;
@@ -98,7 +98,7 @@ public:
     HTMLStackItem* topStackItem() const
     {
         ASSERT(m_top->stackItem());
-        return m_top->stackItem().get();
+        return m_top->stackItem();
     }
 
     HTMLStackItem* oneBelowTop() const;
@@ -107,13 +107,13 @@ public:
     ElementRecord* furthestBlockForFormattingElement(Element*) const;
     ElementRecord* topmost(const AtomicString& tagName) const;
 
-    void insertAbove(RawPtr<HTMLStackItem>, ElementRecord*);
+    void insertAbove(HTMLStackItem*, ElementRecord*);
 
-    void push(RawPtr<HTMLStackItem>);
-    void pushRootNode(RawPtr<HTMLStackItem>);
-    void pushHTMLHtmlElement(RawPtr<HTMLStackItem>);
-    void pushHTMLHeadElement(RawPtr<HTMLStackItem>);
-    void pushHTMLBodyElement(RawPtr<HTMLStackItem>);
+    void push(HTMLStackItem*);
+    void pushRootNode(HTMLStackItem*);
+    void pushHTMLHtmlElement(HTMLStackItem*);
+    void pushHTMLHeadElement(HTMLStackItem*);
+    void pushHTMLBodyElement(HTMLStackItem*);
 
     void pop();
     void popUntil(const AtomicString& tagName);
@@ -170,8 +170,8 @@ public:
 #endif
 
 private:
-    void pushCommon(RawPtr<HTMLStackItem>);
-    void pushRootNodeCommon(RawPtr<HTMLStackItem>);
+    void pushCommon(HTMLStackItem*);
+    void pushRootNodeCommon(HTMLStackItem*);
     void popCommon();
     void removeNonTopCommon(Element*);
 

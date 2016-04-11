@@ -37,7 +37,7 @@ namespace blink {
 
 class HTMLViewSourceParser final :  public DecodedDataDocumentParser {
 public:
-    static RawPtr<HTMLViewSourceParser> create(HTMLViewSourceDocument& document, const String& mimeType)
+    static HTMLViewSourceParser* create(HTMLViewSourceDocument& document, const String& mimeType)
     {
         return new HTMLViewSourceParser(document, mimeType);
     }

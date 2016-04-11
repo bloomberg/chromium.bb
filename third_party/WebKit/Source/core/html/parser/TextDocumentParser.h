@@ -32,7 +32,7 @@ namespace blink {
 
 class TextDocumentParser final : public HTMLDocumentParser {
 public:
-    static RawPtr<TextDocumentParser> create(HTMLDocument& document, ParserSynchronizationPolicy syncPolicy)
+    static TextDocumentParser* create(HTMLDocument& document, ParserSynchronizationPolicy syncPolicy)
     {
         return new TextDocumentParser(document, syncPolicy);
     }

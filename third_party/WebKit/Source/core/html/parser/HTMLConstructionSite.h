@@ -168,10 +168,10 @@ public:
     void insertAlreadyParsedChild(HTMLStackItem* newParent, HTMLElementStack::ElementRecord* child);
     void takeAllChildren(HTMLStackItem* newParent, HTMLElementStack::ElementRecord* oldParent);
 
-    RawPtr<HTMLStackItem> createElementFromSavedToken(HTMLStackItem*);
+    HTMLStackItem* createElementFromSavedToken(HTMLStackItem*);
 
     bool shouldFosterParent() const;
-    void fosterParent(RawPtr<Node>);
+    void fosterParent(Node*);
 
     bool indexOfFirstUnopenFormattingElement(unsigned& firstUnopenElementIndex) const;
     void reconstructTheActiveFormattingElements();
@@ -197,7 +197,7 @@ public:
 
     void setForm(HTMLFormElement*);
     HTMLFormElement* form() const { return m_form.get(); }
-    RawPtr<HTMLFormElement> takeForm();
+    HTMLFormElement* takeForm();
 
     ParserContentPolicy getParserContentPolicy() { return m_parserContentPolicy; }
 
@@ -230,12 +230,12 @@ private:
     void setCompatibilityMode(Document::CompatibilityMode);
     void setCompatibilityModeFromDoctype(const String& name, const String& publicId, const String& systemId);
 
-    void attachLater(ContainerNode* parent, RawPtr<Node> child, bool selfClosing = false);
+    void attachLater(ContainerNode* parent, Node* child, bool selfClosing = false);
 
     void findFosterSite(HTMLConstructionSiteTask&);
 
-    RawPtr<HTMLElement> createHTMLElement(AtomicHTMLToken*);
-    RawPtr<Element> createElement(AtomicHTMLToken*, const AtomicString& namespaceURI);
+    HTMLElement* createHTMLElement(AtomicHTMLToken*);
+    Element* createElement(AtomicHTMLToken*, const AtomicString& namespaceURI);
 
     void mergeAttributesFromTokenIntoElement(AtomicHTMLToken*, Element*);
     void dispatchDocumentElementAvailableIfNeeded();
@@ -265,7 +265,7 @@ private:
         {
         }
 
-        void append(RawPtr<ContainerNode> newParent, RawPtr<Node> newNextChild, const String& newString, WhitespaceMode newWhitespaceMode)
+        void append(ContainerNode* newParent, Node* newNextChild, const String& newString, WhitespaceMode newWhitespaceMode)
         {
             ASSERT(!parent || parent == newParent);
             parent = newParent;

@@ -128,15 +128,15 @@ static String initiatorFor(const StringImpl* tagImpl)
 
 static bool mediaAttributeMatches(const MediaValuesCached& mediaValues, const String& attributeValue)
 {
-    RawPtr<MediaQuerySet> mediaQueries = MediaQuerySet::createOffMainThread(attributeValue);
+    MediaQuerySet* mediaQueries = MediaQuerySet::createOffMainThread(attributeValue);
     MediaQueryEvaluator mediaQueryEvaluator(mediaValues);
-    return mediaQueryEvaluator.eval(mediaQueries.get());
+    return mediaQueryEvaluator.eval(mediaQueries);
 }
 
 class TokenPreloadScanner::StartTagScanner {
     STACK_ALLOCATED();
 public:
-    StartTagScanner(const StringImpl* tagImpl, RawPtr<MediaValuesCached> mediaValues)
+    StartTagScanner(const StringImpl* tagImpl, MediaValuesCached* mediaValues)
         : m_tagImpl(tagImpl)
         , m_linkIsStyleSheet(false)
         , m_linkTypeIsMissingOrSupportedStyleSheet(true)

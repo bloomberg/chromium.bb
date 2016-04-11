@@ -359,7 +359,7 @@ DEFINE_TRACE(HTMLTreeBuilder::FragmentParsingContext)
     visitor->trace(m_contextElementStackItem);
 }
 
-RawPtr<Element> HTMLTreeBuilder::takeScriptToProcess(TextPosition& scriptStartPosition)
+Element* HTMLTreeBuilder::takeScriptToProcess(TextPosition& scriptStartPosition)
 {
     ASSERT(m_scriptToProcess);
     ASSERT(!m_tree.hasPendingTasks());
@@ -495,8 +495,8 @@ void HTMLTreeBuilder::processCloseWhenNestedTag(AtomicHTMLToken* token)
     m_framesetOk = false;
     HTMLElementStack::ElementRecord* nodeRecord = m_tree.openElements()->topRecord();
     while (1) {
-        RawPtr<HTMLStackItem> item = nodeRecord->stackItem();
-        if (shouldClose(item.get())) {
+        HTMLStackItem* item = nodeRecord->stackItem();
+        if (shouldClose(item)) {
             ASSERT(item->isElementNode());
             processFakeEndTag(item->localName());
             break;
@@ -1475,7 +1475,7 @@ void HTMLTreeBuilder::processAnyOtherEndTagForInBody(AtomicHTMLToken* token)
         UseCounter::count(m_tree.currentNode()->document(), UseCounter::MenuItemCloseTag);
     HTMLElementStack::ElementRecord* record = m_tree.openElements()->topRecord();
     while (1) {
-        RawPtr<HTMLStackItem> item = record->stackItem();
+        HTMLStackItem* item = record->stackItem();
         if (item->matchesHTMLTag(token->name())) {
             m_tree.generateImpliedEndTagsWithExclusion(token->name());
             if (!m_tree.currentStackItem()->matchesHTMLTag(token->name()))
@@ -1534,7 +1534,7 @@ void HTMLTreeBuilder::callTheAdoptionAgency(AtomicHTMLToken* token)
         }
         // 7.
         ASSERT(furthestBlock->isAbove(formattingElementRecord));
-        RawPtr<HTMLStackItem> commonAncestor = formattingElementRecord->next()->stackItem();
+        HTMLStackItem* commonAncestor = formattingElementRecord->next()->stackItem();
         // 8.
         HTMLFormattingElementList::Bookmark bookmark = m_tree.activeFormattingElements()->bookmarkFor(formattingElement);
         // 9.
@@ -1557,11 +1557,11 @@ void HTMLTreeBuilder::callTheAdoptionAgency(AtomicHTMLToken* token)
             if (node == formattingElementRecord)
                 break;
             // 9.7
-            RawPtr<HTMLStackItem> newItem = m_tree.createElementFromSavedToken(node->stackItem().get());
+            HTMLStackItem* newItem = m_tree.createElementFromSavedToken(node->stackItem());
 
             HTMLFormattingElementList::Entry* nodeEntry = m_tree.activeFormattingElements()->find(node->element());
             nodeEntry->replaceElement(newItem);
-            node->replaceElement(newItem.release());
+            node->replaceElement(newItem);
 
             // 9.8
             if (lastNode == furthestBlock)
@@ -1572,13 +1572,13 @@ void HTMLTreeBuilder::callTheAdoptionAgency(AtomicHTMLToken* token)
             lastNode = node;
         }
         // 10.
-        m_tree.insertAlreadyParsedChild(commonAncestor.get(), lastNode);
+        m_tree.insertAlreadyParsedChild(commonAncestor, lastNode);
         // 11.
-        RawPtr<HTMLStackItem> newItem = m_tree.createElementFromSavedToken(formattingElementRecord->stackItem().get());
+        HTMLStackItem* newItem = m_tree.createElementFromSavedToken(formattingElementRecord->stackItem());
         // 12.
-        m_tree.takeAllChildren(newItem.get(), furthestBlock);
+        m_tree.takeAllChildren(newItem, furthestBlock);
         // 13.
-        m_tree.reparent(furthestBlock, newItem.get());
+        m_tree.reparent(furthestBlock, newItem);
         // 14.
         m_tree.activeFormattingElements()->swapTo(formattingElement, newItem, bookmark);
         // 15.
@@ -1593,7 +1593,7 @@ void HTMLTreeBuilder::resetInsertionModeAppropriately()
     bool last = false;
     HTMLElementStack::ElementRecord* nodeRecord = m_tree.openElements()->topRecord();
     while (1) {
-        RawPtr<HTMLStackItem> item = nodeRecord->stackItem();
+        HTMLStackItem* item = nodeRecord->stackItem();
         if (item->node() == m_tree.openElements()->rootNode()) {
             last = true;
             if (isParsingFragment())
@@ -1809,15 +1809,15 @@ void HTMLTreeBuilder::processEndTagForInBody(AtomicHTMLToken* token)
         return;
     }
     if (token->name() == formTag) {
-        RawPtr<Element> node = m_tree.takeForm();
-        if (!node || !m_tree.openElements()->inScope(node.get())) {
+        Element* node = m_tree.takeForm();
+        if (!node || !m_tree.openElements()->inScope(node)) {
             parseError(token);
             return;
         }
         m_tree.generateImpliedEndTags();
-        if (m_tree.currentElement() != node.get())
+        if (m_tree.currentElement() != node)
             parseError(token);
-        m_tree.openElements()->remove(node.get());
+        m_tree.openElements()->remove(node);
     }
     if (token->name() == pTag) {
         if (!m_tree.openElements()->inButtonScope(token->name())) {

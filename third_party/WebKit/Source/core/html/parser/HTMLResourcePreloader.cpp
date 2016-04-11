@@ -38,7 +38,7 @@ inline HTMLResourcePreloader::HTMLResourcePreloader(Document& document)
 {
 }
 
-RawPtr<HTMLResourcePreloader> HTMLResourcePreloader::create(Document& document)
+HTMLResourcePreloader* HTMLResourcePreloader::create(Document& document)
 {
     return new HTMLResourcePreloader(document);
 }

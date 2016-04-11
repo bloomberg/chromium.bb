@@ -50,7 +50,7 @@ public:
         DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         // Inline because they're hot and Vector<T> uses them.
-        explicit Entry(RawPtr<HTMLStackItem> item)
+        explicit Entry(HTMLStackItem* item)
             : m_item(item)
         {
         }
@@ -63,7 +63,7 @@ public:
 
         bool isMarker() const { return !m_item; }
 
-        RawPtr<HTMLStackItem> stackItem() const { return m_item; }
+        HTMLStackItem* stackItem() const { return m_item; }
         Element* element() const
         {
             // The fact that !m_item == isMarker() is an implementation detail
@@ -71,7 +71,7 @@ public:
             ASSERT(m_item);
             return m_item->element();
         }
-        void replaceElement(RawPtr<HTMLStackItem> item) { m_item = item; }
+        void replaceElement(HTMLStackItem* item) { m_item = item; }
 
         // Needed for use with Vector.  These are super-hot and must be inline.
         bool operator==(Element* element) const { return !m_item ? !element : m_item->element() == element; }
@@ -113,11 +113,11 @@ public:
 
     Entry* find(Element*);
     bool contains(Element*);
-    void append(RawPtr<HTMLStackItem>);
+    void append(HTMLStackItem*);
     void remove(Element*);
 
     Bookmark bookmarkFor(Element*);
-    void swapTo(Element* oldElement, RawPtr<HTMLStackItem> newItem, const Bookmark&);
+    void swapTo(Element* oldElement, HTMLStackItem* newItem, const Bookmark&);
 
     void appendMarker();
     // clearToLastMarker also clears the marker (per the HTML5 spec).

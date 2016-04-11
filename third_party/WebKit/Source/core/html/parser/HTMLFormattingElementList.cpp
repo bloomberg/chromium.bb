@@ -78,7 +78,7 @@ HTMLFormattingElementList::Bookmark HTMLFormattingElementList::bookmarkFor(Eleme
     return Bookmark(&at(index));
 }
 
-void HTMLFormattingElementList::swapTo(Element* oldElement, RawPtr<HTMLStackItem> newItem, const Bookmark& bookmark)
+void HTMLFormattingElementList::swapTo(Element* oldElement, HTMLStackItem* newItem, const Bookmark& bookmark)
 {
     ASSERT(contains(oldElement));
     ASSERT(!contains(newItem->element()));
@@ -93,9 +93,9 @@ void HTMLFormattingElementList::swapTo(Element* oldElement, RawPtr<HTMLStackItem
     remove(oldElement);
 }
 
-void HTMLFormattingElementList::append(RawPtr<HTMLStackItem> item)
+void HTMLFormattingElementList::append(HTMLStackItem* item)
 {
-    ensureNoahsArkCondition(item.get());
+    ensureNoahsArkCondition(item);
     m_entries.append(item);
 }
 
@@ -142,7 +142,7 @@ void HTMLFormattingElementList::tryToEnsureNoahsArkConditionQuickly(HTMLStackIte
             break;
 
         // Quickly reject obviously non-matching candidates.
-        HTMLStackItem* candidate = entry.stackItem().get();
+        HTMLStackItem* candidate = entry.stackItem();
         if (newItem->localName() != candidate->localName() || newItem->namespaceURI() != candidate->namespaceURI())
             continue;
         if (candidate->attributes().size() != newItemAttributeCount)
