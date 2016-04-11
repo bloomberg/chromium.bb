@@ -32,13 +32,15 @@ namespace content {
 // are executed on other threads.
 class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
  public:
-  Job(int job_id, WebContents* web_contents, GenerateMHTMLCallback callback);
+  Job(int job_id,
+      WebContents* web_contents,
+      const GenerateMHTMLCallback& callback);
   ~Job() override;
 
   int id() const { return job_id_; }
   void set_browser_file(base::File file) { browser_file_ = std::move(file); }
 
-  GenerateMHTMLCallback callback() const { return callback_; }
+  const GenerateMHTMLCallback& callback() const { return callback_; }
 
   // Handler for FrameHostMsg_SerializeAsMHTMLResponse (a notification from the
   // renderer that the MHTML generation for previous frame has finished).
@@ -108,7 +110,7 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
   std::string salt_;
 
   // The callback to call once generation is complete.
-  GenerateMHTMLCallback callback_;
+  const GenerateMHTMLCallback callback_;
 
   // RAII helper for registering this Job as a RenderProcessHost observer.
   ScopedObserver<RenderProcessHost, MHTMLGenerationManager::Job>
@@ -119,7 +121,7 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
 
 MHTMLGenerationManager::Job::Job(int job_id,
                                  WebContents* web_contents,
-                                 GenerateMHTMLCallback callback)
+                                 const GenerateMHTMLCallback& callback)
     : job_id_(job_id),
       frame_tree_node_id_of_busy_frame_(FrameTreeNode::kFrameTreeNodeInvalidId),
       mhtml_boundary_marker_(net::GenerateMimeMultipartBoundary()),
@@ -165,7 +167,7 @@ MHTMLGenerationManager::Job::CreateFrameRoutingIdToContentId(
 
 bool MHTMLGenerationManager::Job::SendToNextRenderFrame() {
   DCHECK(browser_file_.IsValid());
-  DCHECK_LT(0u, pending_frame_tree_node_ids_.size());
+  DCHECK(!pending_frame_tree_node_ids_.empty());
 
   FrameMsg_SerializeAsMHTML_Params ipc_params;
   ipc_params.job_id = job_id_;
@@ -387,8 +389,6 @@ void MHTMLGenerationManager::OnFileClosed(int job_id,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Job* job = FindJob(job_id);
-  DCHECK(job);
-
   job->callback().Run(job_status == JobStatus::SUCCESS ? file_size : -1);
   id_to_job_.erase(job_id);
   delete job;
@@ -399,8 +399,7 @@ int MHTMLGenerationManager::NewJob(WebContents* web_contents,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   int job_id = next_job_id_++;
-  Job* job = new Job(job_id, web_contents, callback);
-  id_to_job_[job_id] = job;
+  id_to_job_[job_id] = new Job(job_id, web_contents, callback);
   return job_id;
 }
 

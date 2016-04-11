@@ -108,14 +108,16 @@ class CONTENT_EXPORT SavePackage
 
   void Finish();
 
-  // Notifications sent from the file thread to the UI thread.
+  // Notifications sent from the FILE thread to the UI thread.
   void StartSave(const SaveFileCreateInfo* info);
   bool UpdateSaveProgress(SaveItemId save_item_id,
                           int64_t size,
                           bool write_success);
+  // Called for updating end state.
   void SaveFinished(SaveItemId save_item_id, int64_t size, bool is_success);
-  void SaveCanceled(SaveItem* save_item);
+  void SaveCanceled(const SaveItem* save_item);
 
+  // Calculate the percentage of whole save page job.
   // Rough percent complete, -1 means we don't know (since we didn't receive a
   // total size).
   int PercentComplete();
@@ -150,7 +152,14 @@ class CONTENT_EXPORT SavePackage
 
   void Stop();
   void CheckFinish();
+
+  // Initiate a saving job of a specific URL. We send the request to
+  // SaveFileManager, which will dispatch it to different approach according to
+  // the save source. |process_all_remaining_items| indicates whether we need to
+  // save all remaining items.
   void SaveNextFile(bool process_all_remainder_items);
+
+  // Continue processing the save page job after one SaveItem has been finished.
   void DoSavingProcess();
 
   // WebContentsObserver implementation.
@@ -276,9 +285,9 @@ class CONTENT_EXPORT SavePackage
   // Map from SaveItem::id() (aka save_item_id) into a SaveItem.
   using SaveItemIdMap =
       std::unordered_map<SaveItemId, SaveItem*, SaveItemId::Hasher>;
-  // in_progress_items_ is map of all saving job in in-progress state.
+  // Map of all saving job in in-progress state.
   SaveItemIdMap in_progress_items_;
-  // saved_failed_items_ is map of all saving job which are failed.
+  // Map of all saving job which are failed.
   SaveItemIdMap saved_failed_items_;
 
   // The number of in process SaveItems.
@@ -347,11 +356,10 @@ class CONTENT_EXPORT SavePackage
   // Number of frames that we still need to get a response from.
   int number_of_frames_pending_response_;
 
-  // saved_success_items_ is map of all saving job which are successfully saved.
-  std::unordered_map<SaveItemId, SaveItem*, SaveItemId::Hasher>
-      saved_success_items_;
+  // Map of all saving job which are successfully saved.
+  SaveItemIdMap saved_success_items_;
 
-  // Non-owning pointer for handling file writing on the file thread.
+  // Non-owning pointer for handling file writing on the FILE thread.
   SaveFileManager* file_manager_;
 
   // DownloadManager owns the DownloadItem and handles history and UI.
