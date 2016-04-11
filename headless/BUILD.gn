@@ -84,6 +84,8 @@ static_library("headless_lib") {
     "public/headless_browser.h",
     "public/headless_export.h",
     "public/headless_web_contents.h",
+    "public/util/error_reporter.cc",
+    "public/util/error_reporter.h",
     "public/util/maybe.h",
   ]
 
@@ -117,10 +119,12 @@ group("headless_tests") {
 
 test("headless_unittests") {
   sources = [
+    "public/util/error_reporter_unittest.cc",
     "public/util/maybe_unittest.cc",
   ]
 
   deps = [
+    ":headless_lib",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//testing/gtest",
