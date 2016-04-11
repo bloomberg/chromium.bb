@@ -28,7 +28,8 @@ var testOnSinksUpdated = function() {
 
 var testRequestAuthentication = function() {
   var callback = function(auth_info) {
-    chrome.test.assertEq("PBC", auth_info.method);
+    chrome.test.assertEq("PIN", auth_info.method);
+    chrome.test.assertEq(undefined, auth_info.data);
     chrome.test.succeed("RequestAuthentication succeded");
   };
   chrome.displaySource.requestAuthentication(1, callback);

@@ -1365,6 +1365,13 @@ if (!is_android) {
       ]
 
       defines += [ "MOJO_SHELL_CLIENT" ]
+
+      if (enable_wifi_display) {
+        sources += rebase_path(
+                chrome_tests_gypi_values.chrome_browser_tests_display_source_apitest,
+                ".",
+                "//chrome")
+      }
     }
   }
 

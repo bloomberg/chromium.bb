@@ -38,6 +38,11 @@
       '../extensions/renderer/console_apitest.cc',
       '../extensions/renderer/script_context_browsertest.cc'
     ],
+    'chrome_browser_tests_display_source_apitest': [
+      'browser/extensions/api/display_source/display_source_wifi_display_apitest.cc',
+      '../extensions/browser/api/display_source/display_source_apitestbase.h',
+      '../extensions/browser/api/display_source/display_source_apitestbase.cc',
+    ],
     'chrome_browser_tests_sources': [
       # The list of sources which is only used by chrome browser tests.
       '../apps/app_restore_service_browsertest.cc',
@@ -2283,6 +2288,11 @@
               ],
             }]
           ]
+        }],
+        ['enable_wifi_display==1', {
+          'sources': [
+            '<@(chrome_browser_tests_display_source_apitest)',
+          ],
         }],
         [ 'cld_version==2', {
           'dependencies': [
