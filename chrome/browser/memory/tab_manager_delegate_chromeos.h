@@ -173,9 +173,10 @@ class TabManagerDelegate : public content::NotificationObserver,
   base::OneShotTimer focus_tab_score_adjust_timer_;
   // This lock is for |oom_score_map_| and |focused_tab_process_info_|.
   base::Lock oom_score_lock_;
-  // Map maintaining the process handle - oom_score mapping.
+  // Map maintaining the process handle - oom_score mapping. Behind
+  // |oom_score_lock_|.
   ProcessScoreMap oom_score_map_;
-  // Holds the focused tab's child process host id.
+  // Holds the focused tab's child process host id. Behind |oom_score_lock_|.
   ProcessInfo focused_tab_process_info_;
 
   // Holds a weak pointer to arc::ProcessInstance.

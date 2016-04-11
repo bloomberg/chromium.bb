@@ -184,11 +184,14 @@ int TabManagerDelegate::GetCachedOomScore(ProcessHandle process_handle) {
 
 void TabManagerDelegate::AdjustFocusedTabScoreOnFileThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  base::AutoLock oom_score_autolock(oom_score_lock_);
-  base::ProcessHandle pid = focused_tab_process_info_.second;
+  base::ProcessHandle pid = 0;
+  {
+    base::AutoLock oom_score_autolock(oom_score_lock_);
+    pid = focused_tab_process_info_.second;
+    oom_score_map_[pid] = chrome::kLowestRendererOomScore;
+  }
   content::ZygoteHost::GetInstance()->AdjustRendererOOMScore(
       pid, chrome::kLowestRendererOomScore);
-  oom_score_map_[pid] = chrome::kLowestRendererOomScore;
 }
 
 void TabManagerDelegate::OnFocusTabScoreAdjustmentTimeout() {
@@ -201,13 +204,15 @@ void TabManagerDelegate::OnFocusTabScoreAdjustmentTimeout() {
 void TabManagerDelegate::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
-  base::AutoLock oom_score_autolock(oom_score_lock_);
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED:
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
       content::RenderProcessHost* host =
           content::Source<content::RenderProcessHost>(source).ptr();
-      oom_score_map_.erase(host->GetHandle());
+      {
+        base::AutoLock oom_score_autolock(oom_score_lock_);
+        oom_score_map_.erase(host->GetHandle());
+      }
       // Coming here we know that a renderer was just killed and memory should
       // come back into the pool. However - the memory pressure observer did
       // not yet update its status and therefore we ask it to redo the
@@ -230,16 +235,21 @@ void TabManagerDelegate::Observe(int type,
             content::Source<content::RenderWidgetHost>(source)
                 .ptr()
                 ->GetProcess();
-        focused_tab_process_info_ =
-            std::make_pair(render_host->GetID(), render_host->GetHandle());
-
-        // If the currently focused tab already has a lower score, do not
-        // set it. This can happen in case the newly focused tab is script
-        // connected to the previous tab.
         ProcessScoreMap::iterator it;
-        it = oom_score_map_.find(focused_tab_process_info_.second);
-        if (it == oom_score_map_.end() ||
-            it->second != chrome::kLowestRendererOomScore) {
+        bool not_lowest_score = false;
+        {
+          base::AutoLock oom_score_autolock(oom_score_lock_);
+          focused_tab_process_info_ =
+              std::make_pair(render_host->GetID(), render_host->GetHandle());
+
+          // If the currently focused tab already has a lower score, do not
+          // set it. This can happen in case the newly focused tab is script
+          // connected to the previous tab.
+          it = oom_score_map_.find(focused_tab_process_info_.second);
+          not_lowest_score = it == oom_score_map_.end() ||
+                             it->second != chrome::kLowestRendererOomScore;
+        }
+        if (not_lowest_score) {
           // By starting a timer we guarantee that the tab is focused for
           // certain amount of time. Secondly, it also does not add overhead
           // to the tab switching time.
@@ -374,7 +384,6 @@ void TabManagerDelegate::AdjustOomPrioritiesImpl(
 
   ProcessScoreMap new_map;
 
-  base::AutoLock oom_score_autolock(oom_score_lock_);
   // Higher priority part.
   DistributeOomScoreInRange(candidates.rbegin(), lower_priority_part,
                             chrome::kLowestRendererOomScore, range_middle,
@@ -383,6 +392,7 @@ void TabManagerDelegate::AdjustOomPrioritiesImpl(
   DistributeOomScoreInRange(lower_priority_part, candidates.rend(),
                             range_middle, chrome::kHighestRendererOomScore,
                             &new_map);
+  base::AutoLock oom_score_autolock(oom_score_lock_);
   oom_score_map_.swap(new_map);
 }
 
@@ -437,7 +447,12 @@ void TabManagerDelegate::DistributeOomScoreInRange(
     if (cur->is_arc_app) {
       // Use pid as map keys so it's globally unique.
       (*new_map)[cur->app->pid] = score;
-      if (oom_score_map_[cur->app->pid] != score)
+      int cur_app_pid_score = 0;
+      {
+        base::AutoLock oom_score_autolock(oom_score_lock_);
+        cur_app_pid_score = oom_score_map_[cur->app->pid];
+      }
+      if (cur_app_pid_score != score)
         SetOomScoreAdjForApp(cur->app->nspid, score);
     } else {
       base::ProcessHandle process_handle = cur->tab->renderer_handle;
@@ -449,7 +464,12 @@ void TabManagerDelegate::DistributeOomScoreInRange(
       if (process_handle != 0 &&
           new_map->find(process_handle) == new_map->end()) {
         (*new_map)[process_handle] = score;
-        if (oom_score_map_[process_handle] != score)
+        int process_handle_score = 0;
+        {
+          base::AutoLock oom_score_autolock(oom_score_lock_);
+          process_handle_score = oom_score_map_[process_handle];
+        }
+        if (process_handle_score != score)
           oom_score_for_tabs.push_back(std::make_pair(process_handle, score));
       } else {
         continue;  // Skip priority increment.
