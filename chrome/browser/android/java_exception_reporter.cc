@@ -6,6 +6,7 @@
 
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/debug/dump_without_crashing.h"
 #include "jni/JavaExceptionReporter_jni.h"
 
@@ -23,6 +24,15 @@ void ReportJavaException(JNIEnv* env,
   // Set the exception_string in BuildInfo so that breakpad can read it.
   base::android::BuildInfo::GetInstance()->SetJavaExceptionInfo(
       base::android::GetJavaExceptionInfo(env, e));
+  base::debug::DumpWithoutCrashing();
+  base::android::BuildInfo::GetInstance()->ClearJavaExceptionInfo();
+}
+
+void ReportJavaStackTrace(JNIEnv* env,
+                          const JavaParamRef<jclass>& jcaller,
+                          const JavaParamRef<jstring>& stackTrace) {
+  base::android::BuildInfo::GetInstance()->SetJavaExceptionInfo(
+      ConvertJavaStringToUTF8(stackTrace));
   base::debug::DumpWithoutCrashing();
   base::android::BuildInfo::GetInstance()->ClearJavaExceptionInfo();
 }
