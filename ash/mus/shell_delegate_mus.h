@@ -5,6 +5,7 @@
 #ifndef ASH_MUS_SHELL_DELEGATE_MUS_H_
 #define ASH_MUS_SHELL_DELEGATE_MUS_H_
 
+#include <memory>
 #include <string>
 
 #include "ash/shell_delegate.h"
@@ -54,6 +55,8 @@ class ShellDelegateMus : public ash::ShellDelegate {
   gfx::Image GetDeprecatedAcceleratorImage() const override;
 
  private:
+  std::unique_ptr<app_list::AppListShower> app_list_shower_;
+
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateMus);
 };
 

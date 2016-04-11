@@ -40,6 +40,7 @@ source_set("lib") {
     "//mojo/services/tracing/public/cpp",
     "//mojo/shell/public/cpp",
     "//skia",
+    "//ui/app_list/shower",
     "//ui/aura",
     "//ui/events",
     "//ui/events/devices",
