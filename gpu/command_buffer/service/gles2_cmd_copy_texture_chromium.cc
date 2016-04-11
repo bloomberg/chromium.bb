@@ -368,9 +368,9 @@ void CopyTextureCHROMIUMResourceManager::Initialize(
   if (vertex_array_object_id_) {
     glEnableVertexAttribArray(kVertexPositionAttrib);
     glVertexAttribPointer(kVertexPositionAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    decoder->RestoreAllAttributes();
   }
 
-  decoder->RestoreAllAttributes();
   decoder->RestoreBufferBindings();
 
   initialized_ = true;
