@@ -382,7 +382,7 @@ SdchProblemCode SdchManager::AddSdchDictionary(
         expiration = base::Time::Now() + base::TimeDelta::FromSeconds(seconds);
       } else if (name == "port") {
         int port;
-        if (ParseNonNegativeDecimalInt(value, &port))
+        if (ParseInt32(value, ParseIntFormat::NON_NEGATIVE, &port))
           ports.insert(port);
       }
     }

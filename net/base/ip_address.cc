@@ -180,16 +180,15 @@ bool ParseCIDRBlock(const std::string& cidr_literal,
     return false;
 
   // Parse the prefix length.
-  int number_of_bits = -1;
-  if (!ParseNonNegativeDecimalInt(parts[1], &number_of_bits))
+  uint32_t number_of_bits;
+  if (!ParseUint32(parts[1], &number_of_bits))
     return false;
 
   // Make sure the prefix length is in a valid range.
-  if (number_of_bits < 0 ||
-      number_of_bits > static_cast<int>(ip_address->size() * 8))
+  if (number_of_bits > ip_address->size() * 8)
     return false;
 
-  *prefix_length_in_bits = static_cast<size_t>(number_of_bits);
+  *prefix_length_in_bits = number_of_bits;
   return true;
 }
 
