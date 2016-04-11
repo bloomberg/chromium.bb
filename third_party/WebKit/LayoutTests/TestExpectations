@@ -1268,6 +1268,7 @@ crbug.com/551843 fast/text/fallback-traits-fixup.html [ NeedsManualRebaseline ]
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
 
 crbug.com/572710 [ Debug ] inspector/extensions/extensions-sidebar.html [ Timeout Pass ]
+crbug.com/602193 inspector/extensions/extensions-resources.html [ Pass Failure ]
 
 crbug.com/572714 [ Linux ] inspector/sources/debugger/debug-inlined-scripts.html [ Timeout Crash Pass ]
 
