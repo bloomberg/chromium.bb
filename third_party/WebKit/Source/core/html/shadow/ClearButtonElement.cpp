@@ -41,12 +41,12 @@ inline ClearButtonElement::ClearButtonElement(Document& document, ClearButtonOwn
 {
 }
 
-RawPtr<ClearButtonElement> ClearButtonElement::create(Document& document, ClearButtonOwner& clearButtonOwner)
+ClearButtonElement* ClearButtonElement::create(Document& document, ClearButtonOwner& clearButtonOwner)
 {
-    RawPtr<ClearButtonElement> element = new ClearButtonElement(document, clearButtonOwner);
+    ClearButtonElement* element = new ClearButtonElement(document, clearButtonOwner);
     element->setShadowPseudoId(AtomicString("-webkit-clear-button"));
     element->setAttribute(idAttr, ShadowElementNames::clearButton());
-    return element.release();
+    return element;
 }
 
 void ClearButtonElement::detach(const AttachContext& context)

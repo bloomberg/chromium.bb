@@ -52,12 +52,12 @@ inline PickerIndicatorElement::PickerIndicatorElement(Document& document, Picker
 {
 }
 
-RawPtr<PickerIndicatorElement> PickerIndicatorElement::create(Document& document, PickerIndicatorOwner& pickerIndicatorOwner)
+PickerIndicatorElement* PickerIndicatorElement::create(Document& document, PickerIndicatorOwner& pickerIndicatorOwner)
 {
-    RawPtr<PickerIndicatorElement> element = new PickerIndicatorElement(document, pickerIndicatorOwner);
+    PickerIndicatorElement* element = new PickerIndicatorElement(document, pickerIndicatorOwner);
     element->setShadowPseudoId(AtomicString("-webkit-calendar-picker-indicator"));
     element->setAttribute(idAttr, ShadowElementNames::pickerIndicator());
-    return element.release();
+    return element;
 }
 
 PickerIndicatorElement::~PickerIndicatorElement()

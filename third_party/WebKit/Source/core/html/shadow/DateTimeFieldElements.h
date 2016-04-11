@@ -39,7 +39,7 @@ class DateTimeAMPMFieldElement final : public DateTimeSymbolicFieldElement {
     WTF_MAKE_NONCOPYABLE(DateTimeAMPMFieldElement);
 
 public:
-    static RawPtr<DateTimeAMPMFieldElement> create(Document&, FieldOwner&, const Vector<String>&);
+    static DateTimeAMPMFieldElement* create(Document&, FieldOwner&, const Vector<String>&);
 
 private:
     DateTimeAMPMFieldElement(Document&, FieldOwner&, const Vector<String>&);
@@ -54,7 +54,7 @@ class DateTimeDayFieldElement final : public DateTimeNumericFieldElement {
     WTF_MAKE_NONCOPYABLE(DateTimeDayFieldElement);
 
 public:
-    static RawPtr<DateTimeDayFieldElement> create(Document&, FieldOwner&, const String& placeholder, const Range&);
+    static DateTimeDayFieldElement* create(Document&, FieldOwner&, const String& placeholder, const Range&);
 
 private:
     DateTimeDayFieldElement(Document&, FieldOwner&, const String& placeholder, const Range&);
@@ -82,7 +82,7 @@ class DateTimeHour11FieldElement final : public DateTimeHourFieldElementBase {
     WTF_MAKE_NONCOPYABLE(DateTimeHour11FieldElement);
 
 public:
-    static RawPtr<DateTimeHour11FieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
+    static DateTimeHour11FieldElement* create(Document&, FieldOwner&, const Range&, const Step&);
 
 private:
     DateTimeHour11FieldElement(Document&, FieldOwner&, const Range& hour23Range, const Step&);
@@ -96,7 +96,7 @@ class DateTimeHour12FieldElement final : public DateTimeHourFieldElementBase {
     WTF_MAKE_NONCOPYABLE(DateTimeHour12FieldElement);
 
 public:
-    static RawPtr<DateTimeHour12FieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
+    static DateTimeHour12FieldElement* create(Document&, FieldOwner&, const Range&, const Step&);
 
 private:
     DateTimeHour12FieldElement(Document&, FieldOwner&, const Range& hour23Range, const Step&);
@@ -110,7 +110,7 @@ class DateTimeHour23FieldElement final : public DateTimeHourFieldElementBase {
     WTF_MAKE_NONCOPYABLE(DateTimeHour23FieldElement);
 
 public:
-    static RawPtr<DateTimeHour23FieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
+    static DateTimeHour23FieldElement* create(Document&, FieldOwner&, const Range&, const Step&);
 
 private:
     DateTimeHour23FieldElement(Document&, FieldOwner&, const Range& hour23Range, const Step&);
@@ -124,7 +124,7 @@ class DateTimeHour24FieldElement final : public DateTimeHourFieldElementBase {
     WTF_MAKE_NONCOPYABLE(DateTimeHour24FieldElement);
 
 public:
-    static RawPtr<DateTimeHour24FieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
+    static DateTimeHour24FieldElement* create(Document&, FieldOwner&, const Range&, const Step&);
 
 private:
     DateTimeHour24FieldElement(Document&, FieldOwner&, const Range& hour23Range, const Step&);
@@ -138,7 +138,7 @@ class DateTimeMillisecondFieldElement final : public DateTimeNumericFieldElement
     WTF_MAKE_NONCOPYABLE(DateTimeMillisecondFieldElement);
 
 public:
-    static RawPtr<DateTimeMillisecondFieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
+    static DateTimeMillisecondFieldElement* create(Document&, FieldOwner&, const Range&, const Step&);
 
 private:
     DateTimeMillisecondFieldElement(Document&, FieldOwner&, const Range&, const Step&);
@@ -153,7 +153,7 @@ class DateTimeMinuteFieldElement final : public DateTimeNumericFieldElement {
     WTF_MAKE_NONCOPYABLE(DateTimeMinuteFieldElement);
 
 public:
-    static RawPtr<DateTimeMinuteFieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
+    static DateTimeMinuteFieldElement* create(Document&, FieldOwner&, const Range&, const Step&);
 
 private:
     DateTimeMinuteFieldElement(Document&, FieldOwner&, const Range&, const Step&);
@@ -168,7 +168,7 @@ class DateTimeMonthFieldElement final : public DateTimeNumericFieldElement {
     WTF_MAKE_NONCOPYABLE(DateTimeMonthFieldElement);
 
 public:
-    static RawPtr<DateTimeMonthFieldElement> create(Document&, FieldOwner&, const String& placeholder, const Range&);
+    static DateTimeMonthFieldElement* create(Document&, FieldOwner&, const String& placeholder, const Range&);
 
 private:
     DateTimeMonthFieldElement(Document&, FieldOwner&, const String& placeholder, const Range&);
@@ -183,7 +183,7 @@ class DateTimeSecondFieldElement final : public DateTimeNumericFieldElement {
     WTF_MAKE_NONCOPYABLE(DateTimeSecondFieldElement);
 
 public:
-    static RawPtr<DateTimeSecondFieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
+    static DateTimeSecondFieldElement* create(Document&, FieldOwner&, const Range&, const Step&);
 
 private:
     DateTimeSecondFieldElement(Document&, FieldOwner&, const Range&, const Step&);
@@ -198,7 +198,7 @@ class DateTimeSymbolicMonthFieldElement final : public DateTimeSymbolicFieldElem
     WTF_MAKE_NONCOPYABLE(DateTimeSymbolicMonthFieldElement);
 
 public:
-    static RawPtr<DateTimeSymbolicMonthFieldElement> create(Document&, FieldOwner&, const Vector<String>&, int minimum, int maximum);
+    static DateTimeSymbolicMonthFieldElement* create(Document&, FieldOwner&, const Vector<String>&, int minimum, int maximum);
 
 private:
     DateTimeSymbolicMonthFieldElement(Document&, FieldOwner&, const Vector<String>&, int minimum, int maximum);
@@ -213,7 +213,7 @@ class DateTimeWeekFieldElement final : public DateTimeNumericFieldElement {
     WTF_MAKE_NONCOPYABLE(DateTimeWeekFieldElement);
 
 public:
-    static RawPtr<DateTimeWeekFieldElement> create(Document&, FieldOwner&, const Range&);
+    static DateTimeWeekFieldElement* create(Document&, FieldOwner&, const Range&);
 
 private:
     DateTimeWeekFieldElement(Document&, FieldOwner&, const Range&);
@@ -245,7 +245,7 @@ public:
         }
     };
 
-    static RawPtr<DateTimeYearFieldElement> create(Document&, FieldOwner&, const Parameters&);
+    static DateTimeYearFieldElement* create(Document&, FieldOwner&, const Parameters&);
 
 private:
     DateTimeYearFieldElement(Document&, FieldOwner&, const Parameters&);

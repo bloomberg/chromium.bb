@@ -37,7 +37,7 @@ class TextTrackContainer;
 
 class CORE_EXPORT MediaControls final : public HTMLDivElement {
 public:
-    static RawPtr<MediaControls> create(HTMLMediaElement&);
+    static MediaControls* create(HTMLMediaElement&);
 
     HTMLMediaElement& mediaElement() const { return *m_mediaElement; }
 

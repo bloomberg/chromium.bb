@@ -41,7 +41,7 @@ public:
         virtual void clearValue() = 0;
     };
 
-    static RawPtr<ClearButtonElement> create(Document&, ClearButtonOwner&);
+    static ClearButtonElement* create(Document&, ClearButtonOwner&);
     void removeClearButtonOwner() { m_clearButtonOwner = nullptr; }
 
     DECLARE_VIRTUAL_TRACE();

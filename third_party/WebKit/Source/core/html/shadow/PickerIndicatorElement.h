@@ -58,7 +58,7 @@ public:
         virtual bool setupDateTimeChooserParameters(DateTimeChooserParameters&) = 0;
     };
 
-    static RawPtr<PickerIndicatorElement> create(Document&, PickerIndicatorOwner&);
+    static PickerIndicatorElement* create(Document&, PickerIndicatorOwner&);
     ~PickerIndicatorElement() override;
     DECLARE_VIRTUAL_TRACE();
 

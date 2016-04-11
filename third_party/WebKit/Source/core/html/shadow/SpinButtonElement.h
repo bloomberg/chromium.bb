@@ -59,7 +59,7 @@ public:
     // The owner of SpinButtonElement must call removeSpinButtonOwner
     // because SpinButtonElement can be outlive SpinButtonOwner
     // implementation, e.g. during event handling.
-    static RawPtr<SpinButtonElement> create(Document&, SpinButtonOwner&);
+    static SpinButtonElement* create(Document&, SpinButtonOwner&);
     UpDownState getUpDownState() const { return m_upDownState; }
     void releaseCapture(EventDispatch = EventDispatchAllowed);
     void removeSpinButtonOwner() { m_spinButtonOwner = nullptr; }

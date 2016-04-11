@@ -51,11 +51,11 @@ TextControlInnerContainer::TextControlInnerContainer(Document& document)
 {
 }
 
-RawPtr<TextControlInnerContainer> TextControlInnerContainer::create(Document& document)
+TextControlInnerContainer* TextControlInnerContainer::create(Document& document)
 {
-    RawPtr<TextControlInnerContainer> element = new TextControlInnerContainer(document);
+    TextControlInnerContainer* element = new TextControlInnerContainer(document);
     element->setAttribute(idAttr, ShadowElementNames::textFieldContainer());
-    return element.release();
+    return element;
 }
 
 LayoutObject* TextControlInnerContainer::createLayoutObject(const ComputedStyle&)
@@ -71,11 +71,11 @@ EditingViewPortElement::EditingViewPortElement(Document& document)
     setHasCustomStyleCallbacks();
 }
 
-RawPtr<EditingViewPortElement> EditingViewPortElement::create(Document& document)
+EditingViewPortElement* EditingViewPortElement::create(Document& document)
 {
-    RawPtr<EditingViewPortElement> element = new EditingViewPortElement(document);
+    EditingViewPortElement* element = new EditingViewPortElement(document);
     element->setAttribute(idAttr, ShadowElementNames::editingViewPort());
-    return element.release();
+    return element;
 }
 
 PassRefPtr<ComputedStyle> EditingViewPortElement::customStyleForLayoutObject()
@@ -106,11 +106,11 @@ inline TextControlInnerEditorElement::TextControlInnerEditorElement(Document& do
     setHasCustomStyleCallbacks();
 }
 
-RawPtr<TextControlInnerEditorElement> TextControlInnerEditorElement::create(Document& document)
+TextControlInnerEditorElement* TextControlInnerEditorElement::create(Document& document)
 {
-    RawPtr<TextControlInnerEditorElement> element = new TextControlInnerEditorElement(document);
+    TextControlInnerEditorElement* element = new TextControlInnerEditorElement(document);
     element->setAttribute(idAttr, ShadowElementNames::innerEditor());
-    return element.release();
+    return element;
 }
 
 void TextControlInnerEditorElement::defaultEventHandler(Event* event)
@@ -157,11 +157,11 @@ inline SearchFieldDecorationElement::SearchFieldDecorationElement(Document& docu
 {
 }
 
-RawPtr<SearchFieldDecorationElement> SearchFieldDecorationElement::create(Document& document)
+SearchFieldDecorationElement* SearchFieldDecorationElement::create(Document& document)
 {
-    RawPtr<SearchFieldDecorationElement> element = new SearchFieldDecorationElement(document);
+    SearchFieldDecorationElement* element = new SearchFieldDecorationElement(document);
     element->setAttribute(idAttr, ShadowElementNames::searchDecoration());
-    return element.release();
+    return element;
 }
 
 const AtomicString& SearchFieldDecorationElement::shadowPseudoId() const
@@ -206,12 +206,12 @@ inline SearchFieldCancelButtonElement::SearchFieldCancelButtonElement(Document& 
 {
 }
 
-RawPtr<SearchFieldCancelButtonElement> SearchFieldCancelButtonElement::create(Document& document)
+SearchFieldCancelButtonElement* SearchFieldCancelButtonElement::create(Document& document)
 {
-    RawPtr<SearchFieldCancelButtonElement> element = new SearchFieldCancelButtonElement(document);
+    SearchFieldCancelButtonElement* element = new SearchFieldCancelButtonElement(document);
     element->setShadowPseudoId(AtomicString("-webkit-search-cancel-button"));
     element->setAttribute(idAttr, ShadowElementNames::clearButton());
-    return element.release();
+    return element;
 }
 
 void SearchFieldCancelButtonElement::detach(const AttachContext& context)
@@ -227,7 +227,7 @@ void SearchFieldCancelButtonElement::detach(const AttachContext& context)
 void SearchFieldCancelButtonElement::defaultEventHandler(Event* event)
 {
     // If the element is visible, on mouseup, clear the value, and set selection
-    RawPtr<HTMLInputElement> input(toHTMLInputElement(shadowHost()));
+    HTMLInputElement* input(toHTMLInputElement(shadowHost()));
     if (!input || input->isDisabledOrReadOnly()) {
         if (!event->defaultHandled())
             HTMLDivElement::defaultEventHandler(event);

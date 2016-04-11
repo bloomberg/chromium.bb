@@ -64,11 +64,11 @@ inline SliderThumbElement::SliderThumbElement(Document& document)
 {
 }
 
-RawPtr<SliderThumbElement> SliderThumbElement::create(Document& document)
+SliderThumbElement* SliderThumbElement::create(Document& document)
 {
-    RawPtr<SliderThumbElement> element = new SliderThumbElement(document);
+    SliderThumbElement* element = new SliderThumbElement(document);
     element->setAttribute(idAttr, ShadowElementNames::sliderThumb());
-    return element.release();
+    return element;
 }
 
 void SliderThumbElement::setPositionFromValue()
@@ -107,21 +107,20 @@ Node* SliderThumbElement::focusDelegate()
 
 void SliderThumbElement::dragFrom(const LayoutPoint& point)
 {
-    RawPtr<SliderThumbElement> protector(this);
     startDragging();
     setPositionFromPoint(point);
 }
 
 void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point)
 {
-    RawPtr<HTMLInputElement> input(hostInput());
+    HTMLInputElement* input(hostInput());
     Element* trackElement = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderTrack());
 
     if (!input->layoutObject() || !layoutBox() || !trackElement->layoutBox())
         return;
 
     LayoutPoint offset = roundedLayoutPoint(input->layoutObject()->absoluteToLocal(FloatPoint(point), UseTransforms));
-    bool isVertical = hasVerticalAppearance(input.get());
+    bool isVertical = hasVerticalAppearance(input);
     bool isLeftToRightDirection = layoutBox()->style()->isLeftToRightDirection();
     LayoutUnit trackSize;
     LayoutUnit position;

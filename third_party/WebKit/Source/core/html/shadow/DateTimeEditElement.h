@@ -83,12 +83,12 @@ public:
         }
     };
 
-    static RawPtr<DateTimeEditElement> create(Document&, EditControlOwner&);
+    static DateTimeEditElement* create(Document&, EditControlOwner&);
 
     ~DateTimeEditElement() override;
     DECLARE_VIRTUAL_TRACE();
 
-    void addField(RawPtr<DateTimeFieldElement>);
+    void addField(DateTimeFieldElement*);
     bool anyEditableFieldsHaveValues() const;
     void blurByOwner();
     void defaultEventHandler(Event*) override;

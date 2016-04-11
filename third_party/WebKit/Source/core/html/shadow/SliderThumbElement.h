@@ -44,7 +44,7 @@ class Event;
 
 class SliderThumbElement final : public HTMLDivElement {
 public:
-    static RawPtr<SliderThumbElement> create(Document&);
+    static SliderThumbElement* create(Document&);
 
     void setPositionFromValue();
 

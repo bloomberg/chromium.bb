@@ -34,7 +34,7 @@ namespace blink {
 
 class TextControlInnerContainer final : public HTMLDivElement {
 public:
-    static RawPtr<TextControlInnerContainer> create(Document&);
+    static TextControlInnerContainer* create(Document&);
 
 protected:
     explicit TextControlInnerContainer(Document&);
@@ -43,7 +43,7 @@ protected:
 
 class EditingViewPortElement final : public HTMLDivElement {
 public:
-    static RawPtr<EditingViewPortElement> create(Document&);
+    static EditingViewPortElement* create(Document&);
 
 protected:
     explicit EditingViewPortElement(Document&);
@@ -55,7 +55,7 @@ private:
 
 class TextControlInnerEditorElement final : public HTMLDivElement {
 public:
-    static RawPtr<TextControlInnerEditorElement> create(Document&);
+    static TextControlInnerEditorElement* create(Document&);
 
     void defaultEventHandler(Event*) override;
 
@@ -68,7 +68,7 @@ private:
 
 class SearchFieldDecorationElement final : public HTMLDivElement {
 public:
-    static RawPtr<SearchFieldDecorationElement> create(Document&);
+    static SearchFieldDecorationElement* create(Document&);
 
     void defaultEventHandler(Event*) override;
     bool willRespondToMouseClickEvents() override;
@@ -81,7 +81,7 @@ private:
 
 class SearchFieldCancelButtonElement final : public HTMLDivElement {
 public:
-    static RawPtr<SearchFieldCancelButtonElement> create(Document&);
+    static SearchFieldCancelButtonElement* create(Document&);
 
     void defaultEventHandler(Event*) override;
     bool willRespondToMouseClickEvents() override;
