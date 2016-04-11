@@ -914,6 +914,7 @@ clear_surface_order_list(struct ivi_layout_layer *ivilayer)
 			      &ivilayer->order.surface_list, order.link) {
 		wl_list_remove(&surface_link->order.link);
 		wl_list_init(&surface_link->order.link);
+		surface_link->on_layer = NULL;
 	}
 }
 
