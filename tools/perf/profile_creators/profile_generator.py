@@ -131,7 +131,12 @@ class ProfileGenerator(object):
       # successful. In the generation process a temp directory is used so
       # the default profile is not polluted on failure.
       tmp_profile_path = tempfile.mkdtemp()
-      creator_options.output_profile_path = tmp_profile_path
+      # TODO(eakuefner): Remove this after crrev.com/1874473006 rolls in.
+      try:
+        getattr(creator_options, 'output_profile_path')
+        creator_options.output_profile_path = tmp_profile_path
+      except AttributeError:
+        creator_options.browser_options.output_profile_path = tmp_profile_path
 
     creator = self._profile_extender_class(creator_options)
 

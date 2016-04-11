@@ -61,7 +61,9 @@ class ProfileExtender(object):
   @property
   def profile_path(self):
     """The path of the profile that the browser will use while it's running."""
-    return self.finder_options.output_profile_path
+    # TODO(eakuefner): Remove this after crrev.com/1874473006 rolls in.
+    return getattr(self.finder_options, 'output_profile_path',
+                   self.finder_options.browser_options.output_profile_path)
 
   @property
   def browser(self):

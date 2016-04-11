@@ -24,7 +24,12 @@ class ExtensionProfileExtenderUnitTest(page_test_test_case.PageTestTestCase):
     files_in_crx_dir = 0
     try:
       options = options_for_unittests.GetCopy()
-      options.output_profile_path = tmp_dir
+      # TODO(eakuefner): Remove this after crrev.com/1874473006 rolls in.
+      try:
+        getattr(options, 'output_profile_path')
+        options.output_profile_path = tmp_dir
+      except AttributeError:
+        options.browser_options.output_profile_path = tmp_dir
       extender = extension_profile_extender.ExtensionProfileExtender(options)
       extender.Run()
 
