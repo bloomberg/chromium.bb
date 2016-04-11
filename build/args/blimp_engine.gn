@@ -9,6 +9,9 @@
 
 use_aura = true
 use_ozone = true
+ozone_auto_platforms = false
+ozone_platform = "headless"
+ozone_platform_headless = true
 metrics_use_blimp = true
 use_low_quality_image_interpolation = true
 
