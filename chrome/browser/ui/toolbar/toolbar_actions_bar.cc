@@ -45,8 +45,13 @@ enum DimensionType { WIDTH, HEIGHT };
 
 // Returns the width or height of the toolbar action icon size.
 int GetIconDimension(DimensionType type) {
-  if (ui::MaterialDesignController::IsModeMaterial())
+if (ui::MaterialDesignController::IsModeMaterial())
+#if defined(OS_MACOSX)
+  // On the Mac, the spec is a 24x24 button in a 28x28 space.
+    return 24;
+#else
     return 28;
+#endif
 
   static bool initialized = false;
   static int icon_height = 0;

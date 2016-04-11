@@ -30,13 +30,12 @@ int GetLayoutConstant(LayoutConstant constant) {
   const int kTabTopExclusionHeight[] = {0, 0, 0};
   const int kTabstripNewTabButtonOverlap[] = {8, 5, 6};
   const int kTabstripTabOverlap[] = {19, 16, 16};
-  const int kToolbarStandardSpacing[] = {3, 0, 8};
 #else
   const int kTabTopExclusionHeight[] = {2, 0, 0};
   const int kTabstripNewTabButtonOverlap[] = {11, 5, 6};
   const int kTabstripTabOverlap[] = {26, 16, 16};
-  const int kToolbarStandardSpacing[] = {3, 4, 8};
 #endif
+  const int kToolbarStandardSpacing[] = {3, 4, 8};
   const int kTabstripToolbarOverlap[] = {3, 0, 0};
   const int kToolbarContentShadowHeight[] = {0, 0, 0};
   const int kToolbarContentShadowHeightAsh[] = {2, 0, 0};

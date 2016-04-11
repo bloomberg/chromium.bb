@@ -17,8 +17,8 @@
 
 namespace {
 
-// The bounds of toolbar buttons in Material Design.
-const NSRect kMDButtonBounds = NSMakeRect(0, 0, 28, 28);
+// Toolbar buttons are 24x24 in Material Design.
+const NSRect kMDButtonBounds = NSMakeRect(0, 0, 24, 24);
 
 // The size of a toolbar button icon in Material Design. A toolbar button image
 // consists of a border and background, with a centered icon.
@@ -79,9 +79,10 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
 
 + (void)drawImage:(ToolbarButtonImageRep*)imageRep {
   // Create the path used for the background fill.
-  NSRect destRect = NSInsetRect(kMDButtonBounds, 2, 2);
   NSBezierPath* roundedRectPath =
-      [NSBezierPath bezierPathWithRoundedRect:destRect xRadius:2 yRadius:2];
+      [NSBezierPath bezierPathWithRoundedRect:kMDButtonBounds
+                                      xRadius:2
+                                      yRadius:2];
 
   // Determine the fill color.
   NSColor* fillColor = nil;

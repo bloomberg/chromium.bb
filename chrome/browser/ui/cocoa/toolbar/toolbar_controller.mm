@@ -81,8 +81,15 @@ const NSTimeInterval kToolBarAnimationDuration = 0.12;
 // The height of the location bar in Material Design.
 const CGFloat kMaterialDesignLocationBarHeight = 28;
 
-// The padding between Material Design elements (when they don't abut).
+// The padding between Material Design elements and the edges of the toolbar.
 const CGFloat kMaterialDesignElementPadding = 4;
+
+// Toolbar buttons are 24x24 and centered in a 28x28 space, so there is a 2pt-
+// wide inset.
+const CGFloat kMaterialDesignButtonInset = 2;
+
+// The y-offset of the browser actions container from the location bar.
+const CGFloat kMaterialDesignContainerYOffset = 2;
 
 // The minimum width of the location bar in pixels.
 const CGFloat kMinimumLocationBarWidth = 100.0;
@@ -289,6 +296,7 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   bool isModeMaterial = ui::MaterialDesignController::IsModeMaterial();
   if (isModeMaterial) {
     ToolbarView* toolbarView = [self toolbarView];
+    NSRect toolbarBounds = [toolbarView bounds];
     NSSize toolbarButtonSize = [ToolbarButton toolbarButtonSize];
 
     // Set the toolbar height.
@@ -297,25 +305,31 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
     [toolbarView setFrame:frame];
 
     NSRect backButtonFrame = [backButton_ frame];
-    backButtonFrame.origin.x = kMaterialDesignElementPadding;
-    backButtonFrame.origin.y -= 1;
+    backButtonFrame.origin.x =
+        kMaterialDesignElementPadding + kMaterialDesignButtonInset;
+    backButtonFrame.origin.y = NSMaxY(toolbarBounds) -
+        kMaterialDesignElementPadding - kMaterialDesignButtonInset -
+            toolbarButtonSize.height;
     backButtonFrame.size = toolbarButtonSize;
     [backButton_ setFrame:backButtonFrame];
 
     NSRect forwardButtonFrame = [forwardButton_ frame];
-    forwardButtonFrame.origin.x = NSMaxX(backButtonFrame);
+    forwardButtonFrame.origin.x =
+        NSMaxX(backButtonFrame) + 2 * kMaterialDesignButtonInset;
     forwardButtonFrame.origin.y = backButtonFrame.origin.y;
     forwardButtonFrame.size = toolbarButtonSize;
     [forwardButton_ setFrame:forwardButtonFrame];
 
     NSRect reloadButtonFrame = [reloadButton_ frame];
-    reloadButtonFrame.origin.x = NSMaxX(forwardButtonFrame);
+    reloadButtonFrame.origin.x =
+        NSMaxX(forwardButtonFrame) + 2 * kMaterialDesignButtonInset;
     reloadButtonFrame.origin.y = forwardButtonFrame.origin.y;
     reloadButtonFrame.size = toolbarButtonSize;
     [reloadButton_ setFrame:reloadButtonFrame];
 
     NSRect homeButtonFrame = [homeButton_ frame];
-    homeButtonFrame.origin.x = NSMaxX(reloadButtonFrame);
+    homeButtonFrame.origin.x =
+        NSMaxX(reloadButtonFrame) + 2 * kMaterialDesignButtonInset;
     homeButtonFrame.origin.y = reloadButtonFrame.origin.y;
     homeButtonFrame.size = toolbarButtonSize;
     [homeButton_ setFrame:homeButtonFrame];
@@ -331,10 +345,12 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
     appMenuButton_ = newMenuButton;
 
     // Adjust the menu button's position.
-    NSRect toolbarBounds = [toolbarView bounds];
     NSRect menuButtonFrame = [appMenuButton_ frame];
-    menuButtonFrame.origin.x = NSMaxX(toolbarBounds) -
-        [ToolbarController appMenuLeftPadding] - toolbarButtonSize.width;
+    CGFloat menuButtonFrameMaxX =
+        NSMaxX(toolbarBounds) - [ToolbarController appMenuLeftPadding];
+    menuButtonFrame.origin.x =
+        menuButtonFrameMaxX - kMaterialDesignButtonInset -
+            toolbarButtonSize.width;
     menuButtonFrame.origin.y = homeButtonFrame.origin.y;
     menuButtonFrame.size = toolbarButtonSize;
     [appMenuButton_ setFrame:menuButtonFrame];
@@ -343,18 +359,20 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
     // space between the reload and menu buttons.
     NSRect locationBarFrame = [locationBar_ frame];
     locationBarFrame.origin.x = NSMaxX(homeButtonFrame) +
-        kMaterialDesignElementPadding;
+        kMaterialDesignButtonInset;
     locationBarFrame.origin.y = NSMaxY(toolbarBounds) -
-        kMaterialDesignElementPadding - [ToolbarController locationBarHeight];
+        kMaterialDesignElementPadding - kMaterialDesignLocationBarHeight;
     locationBarFrame.size.width =
-        (menuButtonFrame.origin.x - kMaterialDesignElementPadding) -
+        menuButtonFrame.origin.x -
             locationBarFrame.origin.x;
-    locationBarFrame.size.height = toolbarButtonSize.height;
+    locationBarFrame.size.height = kMaterialDesignLocationBarHeight;
     [locationBar_ setFrame:locationBarFrame];
 
     // Correctly position the extension buttons' container view.
     NSRect containerFrame = [browserActionsContainerView_ frame];
-    containerFrame.origin.y = locationBarFrame.origin.y;
+    containerFrame.size.width += kMaterialDesignButtonInset;
+    containerFrame.origin.y =
+        locationBarFrame.origin.y + kMaterialDesignContainerYOffset;
     containerFrame.size.height = toolbarButtonSize.height;
     [browserActionsContainerView_ setFrame:containerFrame];
   } else {
@@ -880,7 +898,7 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
     // Equalize the distance between the location bar and the first extension
     // button, and the distance between the location bar and home/reload button.
     if (ui::MaterialDesignController::IsModeMaterial()) {
-      leftDistance -= 4;
+      leftDistance -= kMaterialDesignButtonInset;
     }
   }
   if (leftDistance != 0.0)
@@ -910,18 +928,22 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
     // bounds (if, for instance, the bookmark bar was added).
     // This will advance to the end of the animation, so we also need to adjust
     // it afterwards.
-    CGFloat elementTopPadding = kMaterialDesignElementPadding;
+    [browserActionsContainerView_ stopAnimation];
+    NSRect containerFrame = [browserActionsContainerView_ frame];
     if (!ui::MaterialDesignController::IsModeMaterial()) {
+      CGFloat elementTopPadding =
+          kMaterialDesignElementPadding + kMaterialDesignButtonInset;
       // Pre-Material Design, this value is calculated from the values in
       // Toolbar.xib: the height of the toolbar (35) minus the height of the
       // child elements (29) minus the y-origin of the elements (4).
       elementTopPadding = 2;
+      containerFrame.origin.y =
+          NSHeight([[self view] frame]) - NSHeight(containerFrame) -
+          elementTopPadding;
+    } else {
+      containerFrame.origin.y =
+          [locationBar_ frame].origin.y + kMaterialDesignContainerYOffset;
     }
-    [browserActionsContainerView_ stopAnimation];
-    NSRect containerFrame = [browserActionsContainerView_ frame];
-    containerFrame.origin.y =
-        NSHeight([[self view] frame]) - NSHeight(containerFrame) -
-        elementTopPadding;
     [browserActionsContainerView_ setFrame:containerFrame];
     [self pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:NO];
   }
