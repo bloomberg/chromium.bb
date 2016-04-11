@@ -11,7 +11,7 @@
 namespace base {
 
 ConditionVariable::ConditionVariable(Lock* user_lock)
-    : crit_sec_(user_lock->lock_.native_handle())
+    : srwlock_(user_lock->lock_.native_handle())
 #if DCHECK_IS_ON()
     , user_lock_(user_lock)
 #endif
@@ -34,7 +34,7 @@ void ConditionVariable::TimedWait(const TimeDelta& max_time) {
   user_lock_->CheckHeldAndUnmark();
 #endif
 
-  if (FALSE == SleepConditionVariableCS(&cv_, crit_sec_, timeout)) {
+  if (FALSE == SleepConditionVariableSRW(&cv_, srwlock_, timeout, 0)) {
     DCHECK(GetLastError() != WAIT_TIMEOUT);
   }
 
