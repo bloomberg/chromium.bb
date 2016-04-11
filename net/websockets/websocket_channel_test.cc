@@ -752,7 +752,7 @@ class WebSocketChannelTest : public ::testing::Test {
     CreateChannelAndConnect();
     // Most tests aren't concerned with flow control from the renderer, so allow
     // MAX_INT quota units.
-    channel_->SendFlowControl(kPlentyOfQuota);
+    EXPECT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(kPlentyOfQuota));
     connect_data_.creator.connect_delegate->OnSuccess(std::move(stream_));
   }
 
@@ -976,7 +976,7 @@ class WebSocketChannelFlowControlTest
   // instead of CreateChannelAndConnectSuccessfully().
   void CreateChannelAndConnectWithQuota(int64_t quota) {
     CreateChannelAndConnect();
-    channel_->SendFlowControl(quota);
+    EXPECT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(quota));
     connect_data_.creator.connect_delegate->OnSuccess(std::move(stream_));
   }
 
@@ -1019,7 +1019,7 @@ TEST_F(WebSocketChannelTest, EverythingIsPassedToTheCreatorFunction) {
 TEST_F(WebSocketChannelTest, SendFlowControlDuringHandshakeOkay) {
   CreateChannelAndConnect();
   ASSERT_TRUE(channel_);
-  channel_->SendFlowControl(65536);
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(65536));
 }
 
 // Any WebSocketEventInterface methods can delete the WebSocketChannel and
@@ -1834,7 +1834,8 @@ TEST_F(WebSocketChannelEventInterfaceTest, SendCloseDropsChannel) {
 
   CreateChannelAndConnectSuccessfully();
 
-  channel_->StartClosingHandshake(kWebSocketNormalClosure, "Fred");
+  ASSERT_EQ(CHANNEL_ALIVE,
+            channel_->StartClosingHandshake(kWebSocketNormalClosure, "Fred"));
   base::MessageLoop::current()->RunUntilIdle();
 }
 
@@ -1845,7 +1846,8 @@ TEST_F(WebSocketChannelEventInterfaceTest, CloseDuringConnection) {
               OnDropChannel(false, kWebSocketErrorAbnormalClosure, ""));
 
   CreateChannelAndConnect();
-  channel_->StartClosingHandshake(kWebSocketNormalClosure, "Joe");
+  ASSERT_EQ(CHANNEL_DELETED,
+            channel_->StartClosingHandshake(kWebSocketNormalClosure, "Joe"));
 }
 
 // OnDropChannel() is only called once when a write() on the socket triggers a
@@ -2148,7 +2150,8 @@ TEST_F(WebSocketChannelEventInterfaceTest,
       TimeDelta::FromMilliseconds(kVeryTinyTimeoutMillis));
   channel_->SetUnderlyingConnectionCloseTimeoutForTesting(
       TimeDelta::FromMilliseconds(kVeryBigTimeoutMillis));
-  channel_->StartClosingHandshake(kWebSocketNormalClosure, "");
+  ASSERT_EQ(CHANNEL_ALIVE,
+            channel_->StartClosingHandshake(kWebSocketNormalClosure, ""));
   checkpoint.Call(1);
   completion.WaitForResult();
 }
@@ -2201,7 +2204,7 @@ TEST_F(WebSocketChannelStreamTest, FlowControlEarly) {
 
   set_stream(std::move(mock_stream_));
   CreateChannelAndConnect();
-  channel_->SendFlowControl(kPlentyOfQuota);
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(kPlentyOfQuota));
   checkpoint.Call(1);
   connect_data_.creator.connect_delegate->OnSuccess(std::move(stream_));
   checkpoint.Call(2);
@@ -2228,7 +2231,7 @@ TEST_F(WebSocketChannelStreamTest, FlowControlLate) {
   CreateChannelAndConnect();
   connect_data_.creator.connect_delegate->OnSuccess(std::move(stream_));
   checkpoint.Call(1);
-  channel_->SendFlowControl(kPlentyOfQuota);
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(kPlentyOfQuota));
   checkpoint.Call(2);
 }
 
@@ -2244,7 +2247,7 @@ TEST_F(WebSocketChannelStreamTest, FlowControlStopsReadFrames) {
 
   set_stream(std::move(mock_stream_));
   CreateChannelAndConnect();
-  channel_->SendFlowControl(4);
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(4));
   connect_data_.creator.connect_delegate->OnSuccess(std::move(stream_));
 }
 
@@ -2267,10 +2270,10 @@ TEST_F(WebSocketChannelStreamTest, FlowControlStartsWithMoreQuota) {
 
   set_stream(std::move(mock_stream_));
   CreateChannelAndConnect();
-  channel_->SendFlowControl(4);
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(4));
   connect_data_.creator.connect_delegate->OnSuccess(std::move(stream_));
   checkpoint.Call(1);
-  channel_->SendFlowControl(4);
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(4));
 }
 
 // ReadFrames() isn't called again until all pending data has been passed to
@@ -2294,12 +2297,12 @@ TEST_F(WebSocketChannelStreamTest, ReadFramesNotCalledUntilQuotaAvailable) {
 
   set_stream(std::move(mock_stream_));
   CreateChannelAndConnect();
-  channel_->SendFlowControl(2);
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(2));
   connect_data_.creator.connect_delegate->OnSuccess(std::move(stream_));
   checkpoint.Call(1);
-  channel_->SendFlowControl(2);
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(2));
   checkpoint.Call(2);
-  channel_->SendFlowControl(2);
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(2));
 }
 
 // A message that needs to be split into frames to fit within quota should
@@ -2329,8 +2332,8 @@ TEST_F(WebSocketChannelFlowControlTest, SingleFrameMessageSplitSync) {
   }
 
   CreateChannelAndConnectWithQuota(2);
-  channel_->SendFlowControl(1);
-  channel_->SendFlowControl(1);
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(1));
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(1));
 }
 
 // The code path for async messages is slightly different, so test it
@@ -2367,9 +2370,9 @@ TEST_F(WebSocketChannelFlowControlTest, SingleFrameMessageSplitAsync) {
   checkpoint.Call(1);
   base::MessageLoop::current()->RunUntilIdle();
   checkpoint.Call(2);
-  channel_->SendFlowControl(1);
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(1));
   checkpoint.Call(3);
-  channel_->SendFlowControl(1);
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(1));
 }
 
 // A message split into multiple frames which is further split due to quota
@@ -2415,8 +2418,8 @@ TEST_F(WebSocketChannelFlowControlTest, MultipleFrameSplit) {
                             AsVector("FRAME IS 24 BYTES.")));
   }
   CreateChannelAndConnectWithQuota(14);
-  channel_->SendFlowControl(43);
-  channel_->SendFlowControl(32);
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(43));
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(32));
 }
 
 // An empty message handled when we are out of quota must not be delivered
@@ -2456,7 +2459,58 @@ TEST_F(WebSocketChannelFlowControlTest, EmptyMessageNoQuota) {
   }
 
   CreateChannelAndConnectWithQuota(6);
-  channel_->SendFlowControl(128);
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(128));
+}
+
+// A close frame should not overtake data frames.
+TEST_F(WebSocketChannelFlowControlTest, CloseFrameShouldNotOvertakeDataFrames) {
+  scoped_ptr<ReadableFakeWebSocketStream> stream(
+      new ReadableFakeWebSocketStream);
+  static const InitFrame frames[] = {
+      {NOT_FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, NOT_MASKED,
+       "FIRST "},
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeContinuation, NOT_MASKED,
+       "MESSAGE"},
+      {NOT_FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, NOT_MASKED,
+       "SECOND "},
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose, NOT_MASKED,
+       CLOSE_DATA(NORMAL_CLOSURE, "GOOD BYE")},
+  };
+  stream->PrepareReadFrames(ReadableFakeWebSocketStream::SYNC, OK, frames);
+  set_stream(std::move(stream));
+  Checkpoint checkpoint;
+  InSequence s;
+  EXPECT_CALL(*event_interface_, OnAddChannelResponse(_, _));
+  EXPECT_CALL(*event_interface_, OnFlowControl(_));
+  EXPECT_CALL(*event_interface_,
+              OnDataFrame(false, WebSocketFrameHeader::kOpCodeText,
+                          AsVector("FIRST ")));
+  EXPECT_CALL(checkpoint, Call(1));
+  EXPECT_CALL(*event_interface_,
+              OnDataFrame(false, WebSocketFrameHeader::kOpCodeContinuation,
+                          AsVector("MESSAG")));
+  EXPECT_CALL(checkpoint, Call(2));
+  EXPECT_CALL(*event_interface_,
+              OnDataFrame(true, WebSocketFrameHeader::kOpCodeContinuation,
+                          AsVector("E")));
+  EXPECT_CALL(
+      *event_interface_,
+      OnDataFrame(false, WebSocketFrameHeader::kOpCodeText, AsVector("SECON")));
+  EXPECT_CALL(checkpoint, Call(3));
+  EXPECT_CALL(*event_interface_,
+              OnDataFrame(false, WebSocketFrameHeader::kOpCodeContinuation,
+                          AsVector("D ")));
+  EXPECT_CALL(*event_interface_, OnClosingHandshake());
+  EXPECT_CALL(checkpoint, Call(4));
+
+  CreateChannelAndConnectWithQuota(6);
+  checkpoint.Call(1);
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(6));
+  checkpoint.Call(2);
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(6));
+  checkpoint.Call(3);
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(6));
+  checkpoint.Call(4);
 }
 
 // RFC6455 5.1 "a client MUST mask all frames that it sends to the server".
@@ -2490,7 +2544,7 @@ TEST_F(WebSocketChannelStreamTest, NothingIsSentAfterClose) {
       .WillOnce(Return(OK));
 
   CreateChannelAndConnectSuccessfully();
-  channel_->StartClosingHandshake(1000, "Success");
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->StartClosingHandshake(1000, "Success"));
   channel_->SendFrame(
       true, WebSocketFrameHeader::kOpCodeText, AsVector("SHOULD  BE IGNORED"));
 }
@@ -2555,7 +2609,8 @@ TEST_F(WebSocketChannelStreamTest, CloseOnlySentOnce) {
 
   CreateChannelAndConnectSuccessfully();
   checkpoint.Call(1);
-  channel_->StartClosingHandshake(kWebSocketNormalClosure, "Close");
+  ASSERT_EQ(CHANNEL_ALIVE,
+            channel_->StartClosingHandshake(kWebSocketNormalClosure, "Close"));
   checkpoint.Call(2);
 
   *frames = CreateFrameVector(frames_init);
@@ -2577,7 +2632,7 @@ TEST_F(WebSocketChannelStreamTest, InvalidCloseStatusCodeNotSent) {
   EXPECT_CALL(*mock_stream_, WriteFrames(EqualsFrames(expected), _));
 
   CreateChannelAndConnectSuccessfully();
-  channel_->StartClosingHandshake(999, "");
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->StartClosingHandshake(999, ""));
 }
 
 // A Close frame with a reason longer than 123 bytes cannot be sent on the
@@ -2595,7 +2650,8 @@ TEST_F(WebSocketChannelStreamTest, LongCloseReasonNotSent) {
   EXPECT_CALL(*mock_stream_, WriteFrames(EqualsFrames(expected), _));
 
   CreateChannelAndConnectSuccessfully();
-  channel_->StartClosingHandshake(1000, std::string(124, 'A'));
+  ASSERT_EQ(CHANNEL_ALIVE,
+            channel_->StartClosingHandshake(1000, std::string(124, 'A')));
 }
 
 // We generate code 1005, kWebSocketErrorNoStatusReceived, when there is no
@@ -3306,7 +3362,7 @@ class WebSocketChannelStreamTimeoutTest : public WebSocketChannelStreamTest {
   void CreateChannelAndConnectSuccessfully() override {
     set_stream(std::move(mock_stream_));
     CreateChannelAndConnect();
-    channel_->SendFlowControl(kPlentyOfQuota);
+    ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(kPlentyOfQuota));
     channel_->SetClosingHandshakeTimeoutForTesting(
         TimeDelta::FromMilliseconds(kVeryTinyTimeoutMillis));
     channel_->SetUnderlyingConnectionCloseTimeoutForTesting(
@@ -3370,7 +3426,8 @@ TEST_F(WebSocketChannelStreamTimeoutTest, ClientInitiatedCloseTimesOut) {
   }
 
   CreateChannelAndConnectSuccessfully();
-  channel_->StartClosingHandshake(kWebSocketNormalClosure, "OK");
+  ASSERT_EQ(CHANNEL_ALIVE,
+            channel_->StartClosingHandshake(kWebSocketNormalClosure, "OK"));
   completion.WaitForResult();
 }
 
@@ -3413,7 +3470,8 @@ TEST_F(WebSocketChannelStreamTimeoutTest, ConnectionCloseTimesOut) {
   }
 
   CreateChannelAndConnectSuccessfully();
-  channel_->StartClosingHandshake(kWebSocketNormalClosure, "OK");
+  ASSERT_EQ(CHANNEL_ALIVE,
+            channel_->StartClosingHandshake(kWebSocketNormalClosure, "OK"));
   ASSERT_TRUE(read_frames);
   // Provide the "Close" message from the server.
   *read_frames = CreateFrameVector(frames);

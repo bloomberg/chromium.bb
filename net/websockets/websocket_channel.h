@@ -90,7 +90,11 @@ class NET_EXPORT WebSocketChannel {
   // Sends |quota| units of flow control to the remote side. If the underlying
   // transport has a concept of |quota|, then it permits the remote server to
   // send up to |quota| units of data.
-  void SendFlowControl(int64_t quota);
+  //
+  // Calling this function may result in synchronous calls to |event_interface_|
+  // which may result in this object being deleted. In that case, the return
+  // value will be CHANNEL_DELETED.
+  ChannelState SendFlowControl(int64_t quota) WARN_UNUSED_RESULT;
 
   // Starts the closing handshake for a client-initiated shutdown of the
   // connection. There is no API to close the connection without a closing
@@ -98,10 +102,11 @@ class NET_EXPORT WebSocketChannel {
   // effectively do that. |code| must be in the range 1000-4999. |reason| should
   // be a valid UTF-8 string or empty.
   //
-  // This does *not* trigger the event OnClosingHandshake(). The caller should
-  // assume that the closing handshake has started and perform the equivalent
-  // processing to OnClosingHandshake() if necessary.
-  void StartClosingHandshake(uint16_t code, const std::string& reason);
+  // Calling this function may result in synchronous calls to |event_interface_|
+  // which may result in this object being deleted. In that case, the return
+  // value will be CHANNEL_DELETED.
+  ChannelState StartClosingHandshake(uint16_t code, const std::string& reason)
+      WARN_UNUSED_RESULT;
 
   // Returns the current send quota. This value is unsafe to use outside of the
   // browser IO thread because it changes asynchronously.  The value is only
@@ -273,13 +278,20 @@ class NET_EXPORT WebSocketChannel {
                                   const scoped_refptr<IOBuffer>& data_buffer,
                                   uint64_t size) WARN_UNUSED_RESULT;
 
-  // Forward a received data frame to the renderer, if connected. If
+  // Forwards a received data frame to the renderer, if connected. If
   // |expecting_continuation| is not equal to |expecting_to_read_continuation_|,
   // will fail the channel. Also checks the UTF-8 validity of text frames.
   ChannelState HandleDataFrame(WebSocketFrameHeader::OpCode opcode,
                                bool final,
                                const scoped_refptr<IOBuffer>& data_buffer,
                                uint64_t size) WARN_UNUSED_RESULT;
+
+  // Handles an incoming close frame with |code| and |reason|.
+  ChannelState HandleCloseFrame(uint16_t code,
+                                const std::string& reason) WARN_UNUSED_RESULT;
+
+  // Responds to a closing handshake initiated by the server.
+  ChannelState RespondToClosingHandshake() WARN_UNUSED_RESULT;
 
   // Low-level method to send a single frame. Used for both data and control
   // frames. Either sends the frame immediately or buffers it to be scheduled

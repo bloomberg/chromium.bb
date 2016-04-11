@@ -518,7 +518,7 @@ void WebSocketHost::OnFlowControl(int64_t quota) {
     return;
   }
 
-  channel_->SendFlowControl(quota);
+  ignore_result(channel_->SendFlowControl(quota));
 }
 
 void WebSocketHost::OnDropChannel(bool was_clean,
@@ -540,7 +540,7 @@ void WebSocketHost::OnDropChannel(bool was_clean,
 
   blob_sender_.reset();
   // TODO(yhirano): Handle |was_clean| appropriately.
-  channel_->StartClosingHandshake(code, reason);
+  ignore_result(channel_->StartClosingHandshake(code, reason));
 }
 
 void WebSocketHost::BlobSendComplete(int result) {

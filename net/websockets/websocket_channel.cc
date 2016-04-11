@@ -426,7 +426,7 @@ WebSocketChannel::ChannelState WebSocketChannel::SendFrame(
   // |this| may have been deleted.
 }
 
-void WebSocketChannel::SendFlowControl(int64_t quota) {
+ChannelState WebSocketChannel::SendFlowControl(int64_t quota) {
   DCHECK(state_ == CONNECTING || state_ == CONNECTED || state_ == SEND_CLOSED ||
          state_ == CLOSE_WAIT);
   // TODO(ricea): Kill the renderer if it tries to send us a negative quota
@@ -451,16 +451,22 @@ void WebSocketChannel::SendFlowControl(int64_t quota) {
              << " bytes_to_send=" << bytes_to_send;
     if (event_interface_->OnDataFrame(final, front.opcode(), data_vector) ==
         CHANNEL_DELETED)
-      return;
+      return CHANNEL_DELETED;
     if (bytes_to_send < data_size) {
       front.DidConsume(bytes_to_send);
       front.ResetOpcode();
-      return;
+      return CHANNEL_ALIVE;
     }
     quota -= bytes_to_send;
 
     pending_received_frames_.pop();
   }
+  if (pending_received_frames_.empty() && has_received_close_frame_) {
+    // We've been waiting for the client to consume the frames before
+    // responding to the closing handshake initiated by the server.
+    return RespondToClosingHandshake();
+  }
+
   // If current_receive_quota_ == 0 then there is no pending ReadFrames()
   // operation.
   const bool start_read =
@@ -468,29 +474,37 @@ void WebSocketChannel::SendFlowControl(int64_t quota) {
       (state_ == CONNECTED || state_ == SEND_CLOSED || state_ == CLOSE_WAIT);
   current_receive_quota_ += quota;
   if (start_read)
-    ignore_result(ReadFrames());
-  // |this| may have been deleted.
+    return ReadFrames();
+  return CHANNEL_ALIVE;
 }
 
-void WebSocketChannel::StartClosingHandshake(uint16_t code,
-                                             const std::string& reason) {
+ChannelState WebSocketChannel::StartClosingHandshake(
+    uint16_t code,
+    const std::string& reason) {
   if (InClosingState()) {
     // When the associated renderer process is killed while the channel is in
     // CLOSING state we reach here.
     DVLOG(1) << "StartClosingHandshake called in state " << state_
              << ". This may be a bug, or a harmless race.";
-    return;
+    return CHANNEL_ALIVE;
+  }
+  if (has_received_close_frame_) {
+    // We reach here if the client wants to start a closing handshake while
+    // the browser is waiting for the client to consume incoming data frames
+    // before responding to a closing handshake initiated by the server.
+    // As the client doesn't want the data frames any more, we can respond to
+    // the closing handshake initiated by the server.
+    return RespondToClosingHandshake();
   }
   if (state_ == CONNECTING) {
     // Abort the in-progress handshake and drop the connection immediately.
     stream_request_.reset();
     SetState(CLOSED);
-    DoDropChannel(false, kWebSocketErrorAbnormalClosure, "");
-    return;
+    return DoDropChannel(false, kWebSocketErrorAbnormalClosure, "");
   }
   if (state_ != CONNECTED) {
     NOTREACHED() << "StartClosingHandshake() called in state " << state_;
-    return;
+    return CHANNEL_ALIVE;
   }
 
   DCHECK(!close_timer_.IsRunning());
@@ -510,19 +524,20 @@ void WebSocketChannel::StartClosingHandshake(uint16_t code,
     // errata 3227 to RFC6455. If the renderer is sending us an invalid code or
     // reason it must be malfunctioning in some way, and based on that we
     // interpret this as an internal error.
-    if (SendClose(kWebSocketErrorInternalServerError, "") != CHANNEL_DELETED) {
-      DCHECK_EQ(CONNECTED, state_);
-      SetState(SEND_CLOSED);
-    }
-    return;
+    if (SendClose(kWebSocketErrorInternalServerError, "") == CHANNEL_DELETED)
+      return CHANNEL_DELETED;
+    DCHECK_EQ(CONNECTED, state_);
+    SetState(SEND_CLOSED);
+    return CHANNEL_ALIVE;
   }
   if (SendClose(
           code,
           StreamingUtf8Validator::Validate(reason) ? reason : std::string()) ==
       CHANNEL_DELETED)
-    return;
+    return CHANNEL_DELETED;
   DCHECK_EQ(CONNECTED, state_);
   SetState(SEND_CLOSED);
+  return CHANNEL_ALIVE;
 }
 
 void WebSocketChannel::SendAddChannelRequestForTesting(
@@ -845,10 +860,6 @@ ChannelState WebSocketChannel::HandleFrameByState(
       return CHANNEL_ALIVE;
 
     case WebSocketFrameHeader::kOpCodeClose: {
-      // TODO(ricea): If there is a message which is queued for transmission to
-      // the renderer, then the renderer should not receive an
-      // OnClosingHandshake or OnDropChannel IPC until the queued message has
-      // been completedly transmitted.
       uint16_t code = kWebSocketNormalClosure;
       std::string reason;
       std::string message;
@@ -858,56 +869,7 @@ ChannelState WebSocketChannel::HandleFrameByState(
       // TODO(ricea): Find a way to safely log the message from the close
       // message (escape control codes and so on).
       DVLOG(1) << "Got Close with code " << code;
-      switch (state_) {
-        case CONNECTED:
-          SetState(RECV_CLOSED);
-
-          if (SendClose(code, reason) == CHANNEL_DELETED)
-            return CHANNEL_DELETED;
-          DCHECK_EQ(RECV_CLOSED, state_);
-
-          SetState(CLOSE_WAIT);
-          DCHECK(!close_timer_.IsRunning());
-          // This use of base::Unretained() is safe because we stop the timer
-          // in the destructor.
-          close_timer_.Start(
-              FROM_HERE,
-              underlying_connection_close_timeout_,
-              base::Bind(
-                  &WebSocketChannel::CloseTimeout, base::Unretained(this)));
-
-          if (event_interface_->OnClosingHandshake() == CHANNEL_DELETED)
-            return CHANNEL_DELETED;
-          has_received_close_frame_  = true;
-          received_close_code_ = code;
-          received_close_reason_ = reason;
-          break;
-
-        case SEND_CLOSED:
-          SetState(CLOSE_WAIT);
-          DCHECK(close_timer_.IsRunning());
-          close_timer_.Stop();
-          // This use of base::Unretained() is safe because we stop the timer
-          // in the destructor.
-          close_timer_.Start(
-              FROM_HERE,
-              underlying_connection_close_timeout_,
-              base::Bind(
-                  &WebSocketChannel::CloseTimeout, base::Unretained(this)));
-
-          // From RFC6455 section 7.1.5: "Each endpoint
-          // will see the status code sent by the other end as _The WebSocket
-          // Connection Close Code_."
-          has_received_close_frame_  = true;
-          received_close_code_ = code;
-          received_close_reason_ = reason;
-          break;
-
-        default:
-          LOG(DFATAL) << "Got Close in unexpected state " << state_;
-          break;
-      }
-      return CHANNEL_ALIVE;
+      return HandleCloseFrame(code, reason);
     }
 
     default:
@@ -925,6 +887,10 @@ ChannelState WebSocketChannel::HandleDataFrame(
     uint64_t size) {
   if (state_ != CONNECTED) {
     DVLOG(3) << "Ignored data packet received in state " << state_;
+    return CHANNEL_ALIVE;
+  }
+  if (has_received_close_frame_) {
+    DVLOG(3) << "Ignored data packet as we've received a close frame.";
     return CHANNEL_ALIVE;
   }
   DCHECK(opcode == WebSocketFrameHeader::kOpCodeContinuation ||
@@ -992,6 +958,66 @@ ChannelState WebSocketChannel::HandleDataFrame(
 
   // Sends the received frame to the renderer process.
   return event_interface_->OnDataFrame(final, opcode_to_send, data);
+}
+
+ChannelState WebSocketChannel::HandleCloseFrame(uint16_t code,
+                                                const std::string& reason) {
+  DVLOG(1) << "Got Close with code " << code;
+  switch (state_) {
+    case CONNECTED:
+      has_received_close_frame_ = true;
+      received_close_code_ = code;
+      received_close_reason_ = reason;
+      if (!pending_received_frames_.empty()) {
+        // We have some data to be sent to the renderer before sending this
+        // frame.
+        return CHANNEL_ALIVE;
+      }
+      return RespondToClosingHandshake();
+
+    case SEND_CLOSED:
+      SetState(CLOSE_WAIT);
+      DCHECK(close_timer_.IsRunning());
+      close_timer_.Stop();
+      // This use of base::Unretained() is safe because we stop the timer
+      // in the destructor.
+      close_timer_.Start(
+          FROM_HERE, underlying_connection_close_timeout_,
+          base::Bind(&WebSocketChannel::CloseTimeout, base::Unretained(this)));
+
+      // From RFC6455 section 7.1.5: "Each endpoint
+      // will see the status code sent by the other end as _The WebSocket
+      // Connection Close Code_."
+      has_received_close_frame_ = true;
+      received_close_code_ = code;
+      received_close_reason_ = reason;
+      break;
+
+    default:
+      LOG(DFATAL) << "Got Close in unexpected state " << state_;
+      break;
+  }
+  return CHANNEL_ALIVE;
+}
+
+ChannelState WebSocketChannel::RespondToClosingHandshake() {
+  DCHECK(has_received_close_frame_);
+  DCHECK_EQ(CONNECTED, state_);
+  SetState(RECV_CLOSED);
+  if (SendClose(received_close_code_, received_close_reason_) ==
+      CHANNEL_DELETED)
+    return CHANNEL_DELETED;
+  DCHECK_EQ(RECV_CLOSED, state_);
+
+  SetState(CLOSE_WAIT);
+  DCHECK(!close_timer_.IsRunning());
+  // This use of base::Unretained() is safe because we stop the timer
+  // in the destructor.
+  close_timer_.Start(
+      FROM_HERE, underlying_connection_close_timeout_,
+      base::Bind(&WebSocketChannel::CloseTimeout, base::Unretained(this)));
+
+  return event_interface_->OnClosingHandshake();
 }
 
 ChannelState WebSocketChannel::SendFrameFromIOBuffer(
