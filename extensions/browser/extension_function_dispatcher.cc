@@ -300,8 +300,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
 
 ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
     content::BrowserContext* browser_context)
-    : browser_context_(browser_context) {
-}
+    : browser_context_(browser_context), delegate_(nullptr) {}
 
 ExtensionFunctionDispatcher::~ExtensionFunctionDispatcher() {
 }
