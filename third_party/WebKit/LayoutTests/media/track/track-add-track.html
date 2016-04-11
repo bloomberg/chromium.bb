@@ -1,58 +1,34 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests that the 'addtrack' event is fired when a TextTrack is created.</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+async_test(function(t) {
+    var video = document.createElement('video');
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
+    var trackElement = document.createElement('track');
+    video.appendChild(trackElement);
+    var tracks = [];
+    tracks.push(trackElement.track);
 
-            var tracks = [];
-            var trackElement;
-            function trackAdded()
-            {
-                consoleWrite("EVENT(" + event.type + ")");
+    // Register the 'addtrack' listener after creating the element
+    // to make sure the event is dispatched asynchronously.
+    video.textTracks.onaddtrack = t.step_func(function() {
+        assert_equals(event.target, video.textTracks);
+        assert_true(event instanceof TrackEvent, 'instanceof');
+        assert_equals(event.track, tracks[video.textTracks.length - 1]);
 
-                testExpected("event.target", video.textTracks);
-                testExpected("event instanceof window.TrackEvent", true);
-                testExpected("event.track", tracks[video.textTracks.length - 1]);
+        if (video.textTracks.length == 1) {
+            tracks.push(video.addTextTrack('captions', 'Caption Track', 'en'));
+            assert_equals(video.textTracks.length, 2);
+        } else {
+            t.done();
+        }
+    });
 
-                if (video.textTracks.length == 1) {
-                    consoleWrite("<br>** Test a TextTrack created with video.addTextTrack().");
-                    run("tracks.push(video.addTextTrack('captions', 'Caption Track', 'en'))");
-                    testExpected("video.textTracks.length", 2);
-                } else {
-                    consoleWrite("");
-                    endTest();
-                }
-            }
-
-            function start()
-            {
-                findMediaElement();
-
-                consoleWrite("** Test a TextTrack created for a &lt;track&gt; element.");
-                run("trackElement = document.createElement('track')");
-                run("video.appendChild(trackElement)");
-                tracks.push(trackElement.track);
-
-                // Register the 'addtrack' listener after creating the element to make sure the
-                // event is dispatch asynchronously.
-                video.textTracks.addEventListener("addtrack", trackAdded);
-
-                run("trackElement.src = 'captions-webvtt/tc004-webvtt-file.vtt'");
-                run("trackElement.track.mode = 'hidden'");
-                testExpected("video.textTracks.length", 1);
-                testExpected("trackElement.readyState", HTMLTrackElement.NONE);
-            }
-
-        </script>
-    </head>
-    <body onload="start()">
-        <p>Tests that the 'addtrack' event is fired when a TextTrack is created.</p>
-        <video>
-        </video>
-    </body>
-</html>
+    trackElement.src = 'captions-webvtt/tc004-webvtt-file.vtt';
+    trackElement.track.mode = 'hidden';
+    assert_equals(video.textTracks.length, 1);
+    assert_equals(trackElement.readyState, HTMLTrackElement.NONE);
+});
+</script>

@@ -1,48 +1,25 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests that the addTextTrack() only accepts known "kind" values.</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+    var trackCount = 0;
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
+    function addTrack(type) {
+        video.addTextTrack(type);
+        assert_equals(video.textTracks.length, ++trackCount);
+    }
+    
+    var video = document.createElement("video");
+    assert_equals(video.textTracks.length, 0);
+    assert_throws(new TypeError(), function() { video.addTextTrack("kaptions"); });
+    assert_equals(video.textTracks.length, 0);
 
-            var trackCount = 0;
-
-            function addTrack(type)
-            {
-                run("video.addTextTrack('" + type + "')");
-                testExpected("video.textTracks.length", ++trackCount);
-            }
-
-            function start()
-            {
-                findMediaElement();
-
-                consoleWrite("<em>++ Test invalid 'kind'.</em>");
-                testExpected("video.textTracks.length", 0);
-                testException("video.addTextTrack('kaptions')", '"TypeError: Failed to execute \'addTextTrack\' on \'HTMLMediaElement\': parameter 1 (\'kaptions\') is not a valid enum value."');
-                testExpected("video.textTracks.length", 0);
-                consoleWrite("");
-
-                consoleWrite("<em>++ Test all valid 'kind' keywords.</em>");
-                addTrack("subtitles");
-                addTrack("captions");
-                addTrack("descriptions");
-                addTrack("chapters");
-                addTrack("metadata");
-
-                consoleWrite("");
-                endTest();
-            }
-
-        </script>
-    </head>
-    <body onload="start()">
-        <p>Tests that the addTextTrack() only accepts known 'kind' values.</p>
-        <video>
-        </video>
-    </body>
-</html>
+    addTrack("subtitles");
+    addTrack("captions");
+    addTrack("descriptions");
+    addTrack("chapters");
+    addTrack("metadata");
+});
+</script>
