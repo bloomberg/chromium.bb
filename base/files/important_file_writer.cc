@@ -49,7 +49,7 @@ enum TempFileFailure {
 };
 
 void LogFailure(const FilePath& path, TempFileFailure failure_code,
-                const std::string& message) {
+                StringPiece message) {
   UMA_HISTOGRAM_ENUMERATION("ImportantFile.TempFileFailures", failure_code,
                             TEMP_FILE_FAILURE_MAX);
   DPLOG(WARNING) << "temp file failure: " << path.value() << " : " << message;
@@ -66,7 +66,7 @@ bool WriteScopedStringToFileAtomically(const FilePath& path,
 
 // static
 bool ImportantFileWriter::WriteFileAtomically(const FilePath& path,
-                                              const std::string& data) {
+                                              StringPiece data) {
 #if defined(OS_CHROMEOS)
   // On Chrome OS, chrome gets killed when it cannot finish shutdown quickly,
   // and this function seems to be one of the slowest shutdown steps.

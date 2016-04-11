@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_piece.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -54,8 +55,7 @@ class BASE_EXPORT ImportantFileWriter : public NonThreadSafe {
 
   // Save |data| to |path| in an atomic manner (see the class comment above).
   // Blocks and writes data on the current thread.
-  static bool WriteFileAtomically(const FilePath& path,
-                                  const std::string& data);
+  static bool WriteFileAtomically(const FilePath& path, StringPiece data);
 
   // Initialize the writer.
   // |path| is the name of file to write.
