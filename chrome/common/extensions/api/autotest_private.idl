@@ -53,6 +53,19 @@ namespace autotestPrivate {
   };
   callback ExtensionsInfoCallback = void (ExtensionsInfoArray info);
 
+  dictionary Notification {
+    DOMString id;
+    DOMString type;
+    DOMString title;
+    DOMString message;
+    long priority;
+    long progress;
+  };
+  dictionary NotificationArray {
+    Notification[] notifications;
+  };
+  callback NotificationArrayCallback = void (NotificationArray notifications);
+
   interface Functions {
     // Logout of a user session.
     static void logout();
@@ -103,5 +116,8 @@ namespace autotestPrivate {
     // Swap the primary mouse button for left click.
     // |right|: if set, swap the primary mouse button.
     static void setPrimaryButtonRight(boolean right);
+
+    // Get visible notifications on the system.
+    static void getVisibleNotifications(NotificationArrayCallback callback);
   };
 };

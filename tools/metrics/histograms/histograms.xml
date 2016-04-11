@@ -68688,6 +68688,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1112" label="INPUT_IME_HIDEWINDOW"/>
   <int value="1113" label="INPUTMETHODPRIVATE_SHOWINPUTVIEW"/>
   <int value="1114" label="WALLPAPERPRIVATE_RECORDWALLPAPERUMA"/>
+  <int value="1115" label="AUTOTESTPRIVATE_GETVISIBLENOTIFICATIONS"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

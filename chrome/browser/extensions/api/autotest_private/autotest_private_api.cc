@@ -29,6 +29,8 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/notification.h"
 #endif
 
 namespace extensions {
@@ -319,6 +321,47 @@ bool AutotestPrivateSetPrimaryButtonRightFunction::RunSync() {
   chromeos::system::InputDeviceSettings::Get()->SetPrimaryButtonRight(
       params->right);
 #endif
+  return true;
+}
+
+// static
+std::string AutotestPrivateGetVisibleNotificationsFunction::ConvertToString(
+    message_center::NotificationType type) {
+#if defined(OS_CHROMEOS)
+  switch (type) {
+    case message_center::NOTIFICATION_TYPE_SIMPLE:
+      return "simple";
+    case message_center::NOTIFICATION_TYPE_BASE_FORMAT:
+      return "base_format";
+    case message_center::NOTIFICATION_TYPE_IMAGE:
+      return "image";
+    case message_center::NOTIFICATION_TYPE_MULTIPLE:
+      return "multiple";
+    case message_center::NOTIFICATION_TYPE_PROGRESS:
+      return "progress";
+  }
+#endif
+  return "unknown";
+}
+
+bool AutotestPrivateGetVisibleNotificationsFunction::RunSync() {
+  DVLOG(1) << "AutotestPrivateGetVisibleNotificationsFunction";
+  base::ListValue* values = new base::ListValue;
+#if defined(OS_CHROMEOS)
+  for (auto notification :
+       message_center::MessageCenter::Get()->GetVisibleNotifications()) {
+    base::DictionaryValue* result(new base::DictionaryValue);
+    result->SetString("id", notification->id());
+    result->SetString("type", ConvertToString(notification->type()));
+    result->SetString("title", notification->title());
+    result->SetString("message", notification->message());
+    result->SetInteger("priority", notification->priority());
+    result->SetInteger("progress", notification->progress());
+    values->Append(result);
+  }
+
+#endif
+  SetResult(values);
   return true;
 }
 

@@ -104,5 +104,9 @@ chrome.test.runTests([
   function setPrimaryButtonRight() {
     chrome.autotestPrivate.setPrimaryButtonRight(false);
     chrome.test.succeed();
+  },
+  function getVisibleNotifications() {
+    chrome.autotestPrivate.getVisibleNotifications(function(){});
+    chrome.test.succeed();
   }
 ]);

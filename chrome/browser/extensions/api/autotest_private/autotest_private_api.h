@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "ui/message_center/notification_types.h"
 
 namespace extensions {
 
@@ -157,6 +158,19 @@ class AutotestPrivateSetPrimaryButtonRightFunction
 
  private:
   ~AutotestPrivateSetPrimaryButtonRightFunction() override {}
+  bool RunSync() override;
+};
+
+class AutotestPrivateGetVisibleNotificationsFunction
+    : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getVisibleNotifications",
+                             AUTOTESTPRIVATE_GETVISIBLENOTIFICATIONS)
+
+ private:
+  static std::string ConvertToString(message_center::NotificationType type);
+
+  ~AutotestPrivateGetVisibleNotificationsFunction() override {}
   bool RunSync() override;
 };
 
