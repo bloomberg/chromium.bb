@@ -74,17 +74,6 @@ TEST(DrawPolygonConstructionTest, TestNormal) {
   EXPECT_NORMAL(polygon, 0.0f, 0.0f, 1.0f);
 }
 
-TEST(DrawPolygonConstructionTest, InverseNormal) {
-  std::vector<gfx::Point3F> vertices;
-  vertices.push_back(gfx::Point3F(0.0f, 10.0f, 0.0f));
-  vertices.push_back(gfx::Point3F(10.0f, 10.0f, 0.0f));
-  vertices.push_back(gfx::Point3F(10.0f, 0.0f, 0.0f));
-  vertices.push_back(gfx::Point3F(0.0f, 0.0f, 0.0f));
-
-  CREATE_TEST_DRAW_POLYGON(polygon, vertices, 1);
-  EXPECT_NORMAL(polygon, 0.0f, 0.0f, -1.0f);
-}
-
 TEST(DrawPolygonConstructionTest, ClippedNormal) {
   std::vector<gfx::Point3F> vertices;
   vertices.push_back(gfx::Point3F(0.1f, 10.0f, 0.0f));
@@ -125,28 +114,76 @@ TEST(DrawPolygonConstructionTest, ManyVertexNormal) {
 }
 
 // A simple rect being transformed.
-TEST(DrawPolygonConstructionTest, DizzyNormal) {
+TEST(DrawPolygonConstructionTest, SimpleNormal) {
   gfx::RectF src(-0.1f, -10.0f, 0.2f, 20.0f);
 
   gfx::Transform transform_i(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
   DrawPolygon polygon_i(NULL, src, transform_i, 1);
 
   EXPECT_NORMAL(polygon_i, 0.0f, 0.0f, 1.0f);
+}
 
-  gfx::Transform tranform_a(0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
-  DrawPolygon polygon_a(NULL, src, tranform_a, 2);
-  EXPECT_NORMAL(polygon_a, 0.0f, 0.0f, -1.0f);
+TEST(DrawPolygonConstructionTest, DISABLED_NormalInvertXY) {
+  gfx::RectF src(-0.1f, -10.0f, 0.2f, 20.0f);
 
-  gfx::Transform tranform_b(0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1);
-  DrawPolygon polygon_b(NULL, src, tranform_b, 3);
-  EXPECT_NORMAL(polygon_b, -1.0f, 0.0f, 0.0f);
+  gfx::Transform transform(0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+  DrawPolygon polygon_a(NULL, src, transform, 2);
 
-  gfx::Transform tranform_c(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1);
-  DrawPolygon polygon_c(NULL, src, tranform_c, 4);
-  EXPECT_NORMAL(polygon_c, 0.0f, -1.0f, 0.0f);
+  EXPECT_NORMAL(polygon_a, 0.0f, 0.0f, 1.0f);
+}
 
-  gfx::Transform tranform_d(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
-  DrawPolygon polygon_d(NULL, src, tranform_d, 5);
+TEST(DrawPolygonConstructionTest, DISABLED_NormalInvertXZ) {
+  gfx::RectF src(-0.1f, -10.0f, 0.2f, 20.0f);
+
+  gfx::Transform transform(0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1);
+  DrawPolygon polygon_b(NULL, src, transform, 3);
+
+  EXPECT_NORMAL(polygon_b, 1.0f, 0.0f, 0.0f);
+}
+
+TEST(DrawPolygonConstructionTest, DISABLED_NormalInvertYZ) {
+  gfx::RectF src(-0.1f, -10.0f, 0.2f, 20.0f);
+
+  gfx::Transform transform(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1);
+  DrawPolygon polygon_c(NULL, src, transform, 4);
+
+  EXPECT_NORMAL(polygon_c, 0.0f, 1.0f, 0.0f);
+}
+
+TEST(DrawPolygonConstructionTest, NormalRotate90) {
+  gfx::RectF src(-0.1f, -10.0f, 0.2f, 20.0f);
+
+  gfx::Transform transform(0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1);
+  DrawPolygon polygon_b(NULL, src, transform, 3);
+
+  EXPECT_NORMAL(polygon_b, 0.0f, 0.0f, 1.0f);
+}
+
+// Bug https://bugs.chromium.org/p/chromium/issues/detail?id=595820
+TEST(DrawPolygonConstructionTest, DISABLED_InvertXNormal) {
+  gfx::RectF src(-0.1f, -10.0f, 0.2f, 20.0f);
+
+  gfx::Transform transform(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+  DrawPolygon polygon_d(NULL, src, transform, 5);
+
+  EXPECT_NORMAL(polygon_d, 0.0f, 0.0f, 1.0f);
+}
+
+TEST(DrawPolygonConstructionTest, DISABLED_InvertYNormal) {
+  gfx::RectF src(-0.1f, -10.0f, 0.2f, 20.0f);
+
+  gfx::Transform transform(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+  DrawPolygon polygon_d(NULL, src, transform, 5);
+
+  EXPECT_NORMAL(polygon_d, 0.0f, 0.0f, 1.0f);
+}
+
+TEST(DrawPolygonConstructionTest, DISABLED_InvertZNormal) {
+  gfx::RectF src(-0.1f, -10.0f, 0.2f, 20.0f);
+
+  gfx::Transform transform(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1);
+  DrawPolygon polygon_d(NULL, src, transform, 5);
+
   EXPECT_NORMAL(polygon_d, 0.0f, 0.0f, -1.0f);
 }
 
@@ -206,9 +243,9 @@ TEST(DrawPolygonSplitTest, NotTouchingNoSplit) {
   vertices_a.push_back(gfx::Point3F(10.0f, 10.0f, 0.0f));
   std::vector<gfx::Point3F> vertices_b;
   vertices_b.push_back(gfx::Point3F(5.0f, 10.0f, 5.0f));
+  vertices_b.push_back(gfx::Point3F(5.0f, 10.0f, 15.0f));
   vertices_b.push_back(gfx::Point3F(5.0f, 0.0f, 15.0f));
-  vertices_b.push_back(gfx::Point3F(5.0f, 0.0f, 15.0f));
-  vertices_b.push_back(gfx::Point3F(5.0f, 10.0f, 5.0f));
+  vertices_b.push_back(gfx::Point3F(5.0f, 0.0f, 5.0f));
 
   CREATE_NEW_DRAW_POLYGON(
       polygon_a, vertices_a, gfx::Vector3dF(0.0f, 0.0f, 1.0f), 0);
@@ -228,9 +265,9 @@ TEST(DrawPolygonSplitTest, BarelyTouchingNoSplit) {
   vertices_a.push_back(gfx::Point3F(10.0f, 10.0f, 0.0f));
   std::vector<gfx::Point3F> vertices_b;
   vertices_b.push_back(gfx::Point3F(5.0f, 10.0f, 0.0f));
+  vertices_b.push_back(gfx::Point3F(5.0f, 10.0f, -10.0f));
   vertices_b.push_back(gfx::Point3F(5.0f, 0.0f, -10.0f));
-  vertices_b.push_back(gfx::Point3F(5.0f, 0.0f, -10.0f));
-  vertices_b.push_back(gfx::Point3F(5.0f, 10.0f, 0.0f));
+  vertices_b.push_back(gfx::Point3F(5.0f, 0.0f, 0.0f));
 
   CREATE_NEW_DRAW_POLYGON(
       polygon_a, vertices_a, gfx::Vector3dF(0.0f, 0.0f, 1.0f), 0);
