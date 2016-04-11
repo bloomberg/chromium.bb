@@ -56,14 +56,14 @@ XSLTProcessor::~XSLTProcessor()
 {
 }
 
-RawPtr<Document> XSLTProcessor::createDocumentFromSource(const String& sourceString,
+Document* XSLTProcessor::createDocumentFromSource(const String& sourceString,
     const String& sourceEncoding, const String& sourceMIMEType, Node* sourceNode, LocalFrame* frame)
 {
-    RawPtr<Document> ownerDocument(sourceNode->document());
-    bool sourceIsDocument = (sourceNode == ownerDocument.get());
+    Document* ownerDocument = &sourceNode->document();
+    bool sourceIsDocument = (sourceNode == ownerDocument);
     String documentSource = sourceString;
 
-    RawPtr<Document> result = nullptr;
+    Document* result = nullptr;
     DocumentInit init(sourceIsDocument ? ownerDocument->url() : KURL(), frame);
 
     bool forceXHTML = sourceMIMEType == "text/plain";
@@ -71,7 +71,7 @@ RawPtr<Document> XSLTProcessor::createDocumentFromSource(const String& sourceStr
         transformTextStringToXHTMLDocumentString(documentSource);
 
     if (frame) {
-        RawPtr<Document> oldDocument = frame->document();
+        Document* oldDocument = frame->document();
         // Before parsing, we need to save & detach the old document and get the new document
         // in place. Document::detach() tears down the FrameView, so remember whether or not
         // there was one.
@@ -83,11 +83,11 @@ RawPtr<Document> XSLTProcessor::createDocumentFromSource(const String& sourceStr
         result = frame->localDOMWindow()->installNewDocument(sourceMIMEType, init, forceXHTML);
 
         if (oldDocument) {
-            DocumentXSLT::from(*result).setTransformSourceDocument(oldDocument.get());
+            DocumentXSLT::from(*result).setTransformSourceDocument(oldDocument);
             result->updateSecurityOrigin(oldDocument->getSecurityOrigin());
             result->setCookieURL(oldDocument->cookieURL());
 
-            RawPtr<ContentSecurityPolicy> csp = ContentSecurityPolicy::create();
+            ContentSecurityPolicy* csp = ContentSecurityPolicy::create();
             csp->copyStateFrom(oldDocument->contentSecurityPolicy());
             result->initContentSecurityPolicy(csp);
         }
@@ -100,10 +100,10 @@ RawPtr<Document> XSLTProcessor::createDocumentFromSource(const String& sourceStr
     result->setEncodingData(data);
     result->setContent(documentSource);
 
-    return result.release();
+    return result;
 }
 
-RawPtr<Document> XSLTProcessor::transformToDocument(Node* sourceNode)
+Document* XSLTProcessor::transformToDocument(Node* sourceNode)
 {
     String resultMIMEType;
     String resultString;
@@ -113,7 +113,7 @@ RawPtr<Document> XSLTProcessor::transformToDocument(Node* sourceNode)
     return createDocumentFromSource(resultString, resultEncoding, resultMIMEType, sourceNode, 0);
 }
 
-RawPtr<DocumentFragment> XSLTProcessor::transformToFragment(Node* sourceNode, Document* outputDoc)
+DocumentFragment* XSLTProcessor::transformToFragment(Node* sourceNode, Document* outputDoc)
 {
     String resultMIMEType;
     String resultString;

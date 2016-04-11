@@ -66,11 +66,11 @@ private:
 
 class XMLDocumentParser final : public ScriptableDocumentParser, public ScriptResourceClient {
 public:
-    static RawPtr<XMLDocumentParser> create(Document& document, FrameView* view)
+    static XMLDocumentParser* create(Document& document, FrameView* view)
     {
         return new XMLDocumentParser(document, view);
     }
-    static RawPtr<XMLDocumentParser> create(DocumentFragment* fragment, Element* element, ParserContentPolicy parserContentPolicy)
+    static XMLDocumentParser* create(DocumentFragment* fragment, Element* element, ParserContentPolicy parserContentPolicy)
     {
         return new XMLDocumentParser(fragment, element, parserContentPolicy);
     }

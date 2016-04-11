@@ -49,17 +49,17 @@ public:
     }
     ~XSLTProcessor();
 
-    void setXSLStyleSheet(RawPtr<XSLStyleSheet> styleSheet) { m_stylesheet = styleSheet; }
+    void setXSLStyleSheet(XSLStyleSheet* styleSheet) { m_stylesheet = styleSheet; }
     bool transformToString(Node* source, String& resultMIMEType, String& resultString, String& resultEncoding);
-    RawPtr<Document> createDocumentFromSource(const String& source, const String& sourceEncoding, const String& sourceMIMEType, Node* sourceNode, LocalFrame*);
+    Document* createDocumentFromSource(const String& source, const String& sourceEncoding, const String& sourceMIMEType, Node* sourceNode, LocalFrame*);
 
     // DOM methods
-    void importStylesheet(RawPtr<Node> style)
+    void importStylesheet(Node* style)
     {
         m_stylesheetRootNode = style;
     }
-    RawPtr<DocumentFragment> transformToFragment(Node* source, Document* ouputDoc);
-    RawPtr<Document> transformToDocument(Node* source);
+    DocumentFragment* transformToFragment(Node* source, Document* ouputDoc);
+    Document* transformToDocument(Node* source);
 
     void setParameter(const String& namespaceURI, const String& localName, const String& value);
     String getParameter(const String& namespaceURI, const String& localName) const;

@@ -35,7 +35,7 @@ public:
         return new DOMParser(document);
     }
 
-    RawPtr<Document> parseFromString(const String&, const String& type);
+    Document* parseFromString(const String&, const String& type);
 
     DECLARE_TRACE();
 

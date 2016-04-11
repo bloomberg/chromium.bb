@@ -23,7 +23,7 @@ namespace blink {
 class DOMContentLoadedListener final : public V8AbstractEventListener, public ProcessingInstruction::DetachableEventListener {
     USING_GARBAGE_COLLECTED_MIXIN(DOMContentLoadedListener);
 public:
-    static RawPtr<DOMContentLoadedListener> create(ScriptState* scriptState, ProcessingInstruction* pi)
+    static DOMContentLoadedListener* create(ScriptState* scriptState, ProcessingInstruction* pi)
     {
         return new DOMContentLoadedListener(scriptState, pi);
     }
@@ -141,10 +141,10 @@ bool DocumentXSLT::processingInstructionInsertedIntoDocument(Document& document,
     ScriptState* scriptState = ScriptState::forMainWorld(document.frame());
     if (!scriptState)
         return false;
-    RawPtr<DOMContentLoadedListener> listener = DOMContentLoadedListener::create(scriptState, pi);
+    DOMContentLoadedListener* listener = DOMContentLoadedListener::create(scriptState, pi);
     document.addEventListener(EventTypeNames::DOMContentLoaded, listener, false);
     ASSERT(!pi->eventListenerForXSLT());
-    pi->setEventListenerForXSLT(listener.release());
+    pi->setEventListenerForXSLT(listener);
     return true;
 }
 

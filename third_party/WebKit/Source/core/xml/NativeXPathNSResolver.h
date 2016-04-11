@@ -35,7 +35,7 @@ class Node;
 
 class NativeXPathNSResolver final : public XPathNSResolver {
 public:
-    static NativeXPathNSResolver* create(RawPtr<Node> node)
+    static NativeXPathNSResolver* create(Node* node)
     {
         return new NativeXPathNSResolver(node);
     }
@@ -45,7 +45,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    explicit NativeXPathNSResolver(RawPtr<Node>);
+    explicit NativeXPathNSResolver(Node*);
 
     Member<Node> m_node;
 };

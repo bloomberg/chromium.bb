@@ -371,21 +371,21 @@ void Step::nodesInAxis(EvaluationContext& evaluationContext, Node* context, Node
         // Avoid lazily creating attribute nodes for attributes that we do not
         // need anyway.
         if (nodeTest().getKind() == NodeTest::NameTest && nodeTest().data() != starAtom) {
-            RawPtr<Attr> attr = contextElement->getAttributeNodeNS(nodeTest().namespaceURI(), nodeTest().data());
+            Attr* attr = contextElement->getAttributeNodeNS(nodeTest().namespaceURI(), nodeTest().data());
             // In XPath land, namespace nodes are not accessible on the attribute axis.
             if (attr && attr->namespaceURI() != XMLNSNames::xmlnsNamespaceURI) {
                 // Still need to check merged predicates.
-                if (nodeMatches(evaluationContext, attr.get(), AttributeAxis, nodeTest()))
-                    nodes.append(attr.release());
+                if (nodeMatches(evaluationContext, attr, AttributeAxis, nodeTest()))
+                    nodes.append(attr);
             }
             return;
         }
 
         AttributeCollection attributes = contextElement->attributes();
         for (auto& attribute : attributes) {
-            RawPtr<Attr> attr = contextElement->ensureAttr(attribute.name());
-            if (nodeMatches(evaluationContext, attr.get(), AttributeAxis, nodeTest()))
-                nodes.append(attr.release());
+            Attr* attr = contextElement->ensureAttr(attribute.name());
+            if (nodeMatches(evaluationContext, attr, AttributeAxis, nodeTest()))
+                nodes.append(attr);
         }
         return;
     }

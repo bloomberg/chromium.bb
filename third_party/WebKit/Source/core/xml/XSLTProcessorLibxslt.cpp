@@ -103,7 +103,7 @@ static xmlDocPtr docLoaderFunc(
         ResourceLoaderOptions fetchOptions(ResourceFetcher::defaultResourceOptions());
         FetchRequest request(ResourceRequest(url), FetchInitiatorTypeNames::xml, fetchOptions);
         request.setOriginRestriction(FetchRequest::RestrictToSameOrigin);
-        RawPtr<Resource> resource = RawResource::fetchSynchronously(request, globalResourceFetcher);
+        Resource* resource = RawResource::fetchSynchronously(request, globalResourceFetcher);
         if (!resource || !globalProcessor)
             return nullptr;
 
@@ -250,14 +250,14 @@ static xsltStylesheetPtr xsltStylesheetPointer(Document* document, Member<XSLSty
 
 static inline xmlDocPtr xmlDocPtrFromNode(Node* sourceNode, bool& shouldDelete)
 {
-    RawPtr<Document> ownerDocument(sourceNode->document());
-    bool sourceIsDocument = (sourceNode == ownerDocument.get());
+    Document* ownerDocument = &sourceNode->document();
+    bool sourceIsDocument = (sourceNode == ownerDocument);
 
     xmlDocPtr sourceDoc = nullptr;
     if (sourceIsDocument && ownerDocument->transformSource())
         sourceDoc = (xmlDocPtr)ownerDocument->transformSource()->platformSource();
     if (!sourceDoc) {
-        sourceDoc = (xmlDocPtr)xmlDocPtrForString(ownerDocument.get(), createMarkup(sourceNode),
+        sourceDoc = (xmlDocPtr)xmlDocPtrForString(ownerDocument, createMarkup(sourceNode),
             sourceIsDocument ? ownerDocument->url().getString() : String());
         shouldDelete = sourceDoc;
     }
@@ -285,7 +285,7 @@ static inline String resultMIMEType(xmlDocPtr resultDoc, xsltStylesheetPtr sheet
 
 bool XSLTProcessor::transformToString(Node* sourceNode, String& mimeType, String& resultString, String& resultEncoding)
 {
-    RawPtr<Document> ownerDocument(sourceNode->document());
+    Document* ownerDocument = &sourceNode->document();
 
     setXSLTLoadCallBack(docLoaderFunc, this, ownerDocument->fetcher());
     xsltStylesheetPtr sheet = xsltStylesheetPointer(m_document.get(), m_stylesheet, m_stylesheetRootNode.get());

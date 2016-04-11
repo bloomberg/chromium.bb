@@ -36,17 +36,17 @@ class XSLImportRule;
 
 class XSLStyleSheet final : public StyleSheet {
 public:
-    static RawPtr<XSLStyleSheet> create(XSLImportRule* parentImport, const String& originalURL, const KURL& finalURL)
+    static XSLStyleSheet* create(XSLImportRule* parentImport, const String& originalURL, const KURL& finalURL)
     {
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
         return new XSLStyleSheet(parentImport, originalURL, finalURL);
     }
-    static RawPtr<XSLStyleSheet> create(ProcessingInstruction* parentNode, const String& originalURL, const KURL& finalURL)
+    static XSLStyleSheet* create(ProcessingInstruction* parentNode, const String& originalURL, const KURL& finalURL)
     {
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
         return new XSLStyleSheet(parentNode, originalURL, finalURL, false);
     }
-    static RawPtr<XSLStyleSheet> createEmbedded(ProcessingInstruction* parentNode, const KURL& finalURL)
+    static XSLStyleSheet* createEmbedded(ProcessingInstruction* parentNode, const KURL& finalURL)
     {
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
         return new XSLStyleSheet(parentNode, finalURL.getString(), finalURL, true);
@@ -55,7 +55,7 @@ public:
     // Taking an arbitrary node is unsafe, because owner node pointer can become
     // stale. XSLTProcessor ensures that the stylesheet doesn't outlive its
     // parent, in part by not exposing it to JavaScript.
-    static RawPtr<XSLStyleSheet> createForXSLTProcessor(Document* document, Node* stylesheetRootNode, const String& originalURL, const KURL& finalURL)
+    static XSLStyleSheet* createForXSLTProcessor(Document* document, Node* stylesheetRootNode, const String& originalURL, const KURL& finalURL)
     {
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
         return new XSLStyleSheet(document, stylesheetRootNode, originalURL, finalURL, false);
