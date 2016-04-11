@@ -11,6 +11,7 @@ import("//remoting/tools/build/remoting_localize.gni")
 
 generate_jni("jni_headers") {
   sources = [
+    "host/src/org/chromium/chromoting/host/jni/Host.java",
     "java/src/org/chromium/chromoting/jni/Client.java",
     "java/src/org/chromium/chromoting/jni/JniInterface.java",
     "java/src/org/chromium/chromoting/jni/TouchEventData.java",
@@ -150,6 +151,22 @@ instrumentation_test_apk("remoting_test_apk") {
   ]
 }
 
+shared_library("remoting_host_jni") {
+  deps = [
+    ":jni_headers",
+    "//google_apis",
+    "//remoting/base",
+    "//remoting/protocol",
+  ]
+  sources = [
+    "//remoting/host/android/jni_host.cc",
+    "//remoting/host/android/jni_host.h",
+    "//remoting/host/android/remoting_host_jni_onload.cc",
+    "//remoting/host/android/remoting_host_jni_registrar.cc",
+    "//remoting/host/android/remoting_host_jni_registrar.h",
+  ]
+}
+
 android_resources("remoting_host_apk_resources") {
   custom_package = "org.chromium.chromoting.host"
   resource_dirs = [ "host/res" ]
@@ -161,9 +178,15 @@ android_resources("remoting_host_apk_resources") {
 android_apk("remoting_host_apk") {
   apk_name = "ChromotingHost"
   android_manifest = "host/AndroidManifest.xml"
-  java_files = [ "host/src/org/chromium/chromoting/host/MainActivity.java" ]
+  native_libs = [ "libremoting_host_jni.so" ]
+  java_files = [
+    "host/src/org/chromium/chromoting/host/MainActivity.java",
+    "host/src/org/chromium/chromoting/host/jni/Host.java",
+  ]
   deps = [
     ":remoting_host_apk_resources",
+    ":remoting_host_jni",
+    "//base:base_java",
     "//third_party/android_tools:android_support_v13_java",
     "//third_party/android_tools:android_support_v7_appcompat_java",
   ]
