@@ -26,6 +26,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/integerstatequery.html', bug=483282)
     self.Skip('deqp/functional/gles3/internalformatquery.html', bug=483282)
     self.Skip('deqp/functional/gles3/lifetime.html', bug=483282)
+    self.Skip('deqp/data/gles3/shaders/linkage.html', bug=601821)
     self.Skip('deqp/functional/gles3/multisample.html', bug=483282)
     self.Skip('deqp/functional/gles3/negativebufferapi.html', bug=483282)
     self.Skip('deqp/functional/gles3/negativefragmentapi.html', bug=483282)
@@ -54,6 +55,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/vertexarrays.html', bug=483282)
 
     self.Fail('deqp/data/gles3/shaders/preprocessor.html', bug=483282)
+    self.Flaky('deqp/functional/gles3/shaderindexing.html', bug=483282)
 
     self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
 
@@ -288,7 +290,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('conformance2/textures/canvas/' +
         'tex-2d-rgba8-rgba-unsigned_byte.html',
         ['win', 'debug'], bug=542901)
-    self.Skip('deqp/data/gles3/shaders/linkage.html', bug=601821)
 
     # Win / AMD flakiness seen on the FYI waterfall.
     # It's unfortunate that this suppression needs to be so broad, but
@@ -379,6 +380,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux'], bug=483282)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
         ['linux'], bug=483282)
+    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
+        ['linux'], bug=483282)
     self.Fail('conformance2/rendering/draw-buffers.html',
         ['linux'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
@@ -391,8 +394,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Linux NVIDIA only.
     self.Fail('deqp/functional/gles3/fbostatequery.html',
-        ['linux', 'nvidia'], bug=483282)
-    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['linux', 'nvidia'], bug=483282)
 
     # Linux AMD only.
