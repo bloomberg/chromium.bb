@@ -30,10 +30,6 @@ public:
         visitor->trace(m_distributeScrollCallbacks);
     };
 
-#if !ENABLE(OILPAN)
-    void removeCallbacksForElement(Element*);
-#endif
-
 private:
     using ScrollStateCallbackList = HeapHashMap<WeakMember<Element>, Member<ScrollStateCallback>>;
     ScrollStateCallbackList m_applyScrollCallbacks;

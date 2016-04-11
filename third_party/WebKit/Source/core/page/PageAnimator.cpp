@@ -63,11 +63,9 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
         document->serviceScriptedAnimations(monotonicAnimationStartTime);
     }
 
-#if ENABLE(OILPAN)
-    // TODO(esprehn): Why is this here? It doesn't make sense to explicitly
-    // clear a stack allocated vector.
+    // Oilpan: This is performance optimization to promptly clear the backing
+    // storage of the vector and reuse it in the next PageAnimator::serviceScriptedAnimations.
     documents.clear();
-#endif
 }
 
 void PageAnimator::scheduleVisualUpdate(LocalFrame* frame)
