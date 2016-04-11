@@ -53,13 +53,13 @@ void PartitionAllocator::freeHashTableBacking(void* address)
 template <>
 char* PartitionAllocator::allocateVectorBacking<char>(size_t size)
 {
-  return reinterpret_cast<char*>(allocateBacking(size, "char"));
+    return reinterpret_cast<char*>(allocateBacking(size, "PartitionAllocator::allocateVectorBacking<char>"));
 }
 
 template <>
 char* PartitionAllocator::allocateExpandedVectorBacking<char>(size_t size)
 {
-  return reinterpret_cast<char*>(allocateBacking(size, "char"));
+    return reinterpret_cast<char*>(allocateBacking(size, "PartitionAllocator::allocateExpandedVectorBacking<char>"));
 }
 
 } // namespace WTF
