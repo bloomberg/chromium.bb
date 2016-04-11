@@ -416,9 +416,12 @@ void OmniboxResultView::PaintMatch(const AutocompleteMatch& match,
             answer_image_,
             0, 0, answer_image_.width(), answer_image_.height(),
             GetMirroredXInView(x), y, answer_icon_size, answer_icon_size, true);
-        // See TODO in Layout().
-        x += answer_icon_size +
-             GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING);
+        // TODO(dschuyler): Perhaps this should be based on the font size
+        // instead of hardcoded to 2 dp (e.g. by adding a space in an
+        // appropriate font to the beginning of the description, then reducing
+        // the additional padding here to zero).
+        const int kAnswerIconToTextPadding = 2;
+        x += answer_icon_size + kAnswerIconToTextPadding;
       }
     } else {
       x = DrawRenderText(match, separator_rendertext_.get(), SEPARATOR, canvas,
@@ -697,11 +700,19 @@ void OmniboxResultView::Layout() {
   const int end_x = width() - EndMargin() - horizontal_padding;
 
   const gfx::ImageSkia icon = GetIcon();
-  icon_bounds_.SetRect(
-      start_x + ((icon.width() == default_icon_size_) ?
-          0 : GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING)),
-      (GetContentLineHeight() - icon.height()) / 2,
-      icon.width(), icon.height());
+  // Pre-MD, normal icons are 19 px wide, while extension icons are 16 px wide.
+  // The code in IconLabelBubbleView::Layout() positions these icons in the
+  // omnibox using ICON_LABEL_VIEW_TRAILING_PADDING, so we use that here as well
+  // so the icons will line up.
+  //
+  // Technically we don't need the IsModeMaterial() check here, but it will make
+  // it easier to see that all this code is dead once we switch to MD.
+  int icon_x = start_x;
+  if (!ui::MaterialDesignController::IsModeMaterial() &&
+      (icon.width() != default_icon_size_))
+    icon_x += GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING);
+  icon_bounds_.SetRect(icon_x, (GetContentLineHeight() - icon.height()) / 2,
+                       icon.width(), icon.height());
 
   const int text_x = start_x + default_icon_size_ + horizontal_padding;
   int text_width = end_x - text_x;
