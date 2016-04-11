@@ -9,8 +9,6 @@
 
 namespace net {
 
-class QuicHeaderListTest : public ::testing::Test {};
-
 // This test verifies that QuicHeaderList accumulates header pairs in order.
 TEST(QuicHeaderListTest, OnHeader) {
   QuicHeaderList headers;
