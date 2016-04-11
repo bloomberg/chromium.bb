@@ -81,6 +81,10 @@ const NSTimeInterval kToolBarAnimationDuration = 0.12;
 // The height of the location bar in Material Design.
 const CGFloat kMaterialDesignLocationBarHeight = 28;
 
+// The padding between the top of the toolbar and the top of the
+// location bar.
+const CGFloat kMaterialDesignLocationBarPadding = 2;
+
 // The padding between Material Design elements and the edges of the toolbar.
 const CGFloat kMaterialDesignElementPadding = 4;
 
@@ -308,8 +312,7 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
     backButtonFrame.origin.x =
         kMaterialDesignElementPadding + kMaterialDesignButtonInset;
     backButtonFrame.origin.y = NSMaxY(toolbarBounds) -
-        kMaterialDesignElementPadding - kMaterialDesignButtonInset -
-            toolbarButtonSize.height;
+        kMaterialDesignElementPadding - toolbarButtonSize.height;
     backButtonFrame.size = toolbarButtonSize;
     [backButton_ setFrame:backButtonFrame];
 
@@ -361,7 +364,7 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
     locationBarFrame.origin.x = NSMaxX(homeButtonFrame) +
         kMaterialDesignButtonInset;
     locationBarFrame.origin.y = NSMaxY(toolbarBounds) -
-        kMaterialDesignElementPadding - kMaterialDesignLocationBarHeight;
+        kMaterialDesignLocationBarPadding - kMaterialDesignLocationBarHeight;
     locationBarFrame.size.width =
         menuButtonFrame.origin.x -
             locationBarFrame.origin.x;
