@@ -12,7 +12,6 @@
 #include "base/ios/ios_util.h"
 #include "base/ios/weak_nsobject.h"
 #include "base/json/json_reader.h"
-#import "base/mac/objc_property_releaser.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -46,7 +45,6 @@
 #import "ios/web/web_state/ui/crw_web_controller+protected.h"
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
 #import "ios/web/web_state/ui/web_view_js_utils.h"
-#import "ios/web/web_state/ui/wk_back_forward_list_item_holder.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/web_state/web_view_internal_creation_util.h"
@@ -81,11 +79,6 @@ typedef base::MRUCache<web::CertHostPair, CertVerificationError>
 // stored errors is not expected to be high.
 const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 
-// Extracts Referer value from WKNavigationAction request header.
-NSString* GetRefererFromNavigationAction(WKNavigationAction* action) {
-  return [action.request valueForHTTPHeaderField:@"Referer"];
-}
-
 NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   DCHECK(error);
   base::scoped_nsobject<NSMutableDictionary> userInfo(
@@ -98,26 +91,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 }  // namespace
 
 #pragma mark -
-
-// A container object for any navigation information that is only available
-// during pre-commit delegate callbacks, and thus must be held until the
-// navigation commits and the informatino can be used.
-@interface CRWWebControllerPendingNavigationInfo : NSObject {
-  base::mac::ObjCPropertyReleaser
-      _propertyReleaser_CRWWebControllerPendingNavigationInfo;
-}
-// The referrer for the page.
-@property(nonatomic, copy) NSString* referrer;
-// The MIME type for the page.
-@property(nonatomic, copy) NSString* MIMEType;
-// The navigation type for the load.
-@property(nonatomic, assign) WKNavigationType navigationType;
-// Whether the pending navigation has been directly cancelled before the
-// navigation is committed.
-// Cancelled navigations should be simply discarded without handling any
-// specific error.
-@property(nonatomic, assign) BOOL cancelled;
-@end
 
 @implementation CRWWebControllerPendingNavigationInfo
 @synthesize referrer = _referrer;
@@ -159,16 +132,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   // to use one of those fixed points, they should make their scripts internally
   // idempotent.
   base::scoped_nsobject<NSMutableSet> _injectedScriptManagers;
-
-  // Pending information for an in-progress page navigation. The lifetime of
-  // this object starts at |decidePolicyForNavigationAction| where the info is
-  // extracted from the request, and ends at either |didCommitNavigation| or
-  // |didFailProvisionalNavigation|.
-  base::scoped_nsobject<CRWWebControllerPendingNavigationInfo>
-      _pendingNavigationInfo;
-
-  // Referrer for the current page.
-  base::scoped_nsobject<NSString> _currentReferrerString;
 
   // Object for loading POST requests with body.
   base::scoped_nsobject<CRWJSPOSTRequestLoader> _POSTRequestLoader;
@@ -242,27 +205,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 
 // Sets _documentURL to newURL, and updates any relevant state information.
 - (void)setDocumentURL:(const GURL&)newURL;
-
-// Extracts navigation info from WKNavigationAction and sets it as a pending.
-// Some pieces of navigation information are only known in
-// |decidePolicyForNavigationAction|, but must be in a pending state until
-// |didCommitNavigation| where it becames current.
-- (void)updatePendingNavigationInfoFromNavigationAction:
-    (WKNavigationAction*)action;
-
-// Extracts navigation info from WKNavigationResponse and sets it as a pending.
-// Some pieces of navigation information are only known in
-// |decidePolicyForNavigationResponse|, but must be in a pending state until
-// |didCommitNavigation| where it becames current.
-- (void)updatePendingNavigationInfoFromNavigationResponse:
-    (WKNavigationResponse*)response;
-
-// Updates current state with any pending information. Should be called when a
-// navigation is committed.
-- (void)commitPendingNavigationInfo;
-
-// Returns the WKBackForwardListItemHolder for the current navigation item.
-- (web::WKBackForwardListItemHolder*)currentBackForwardListItemHolder;
 
 // Returns YES if the given WKBackForwardListItem is valid to use for
 // navigation.
@@ -407,10 +349,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   return [_wkWebView title];
 }
 
-- (NSString*)currentReferrerString {
-  return _currentReferrerString.get();
-}
-
 // Overridden to track interactions since URL change.
 - (void)setUserInteractionRegistered:(BOOL)flag {
   [super setUserInteractionRegistered:flag];
@@ -434,17 +372,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   DCHECK(trustLevel);
   *trustLevel = web::URLVerificationTrustLevel::kAbsolute;
   return _documentURL;
-}
-
-- (BOOL)isCurrentNavigationItemPOST {
-  // |_pendingNavigationInfo| will be nil if the decidePolicy* delegate methods
-  // were not called.
-  WKNavigationType type =
-      _pendingNavigationInfo
-          ? [_pendingNavigationInfo navigationType]
-          : [self currentBackForwardListItemHolder]->navigation_type();
-  return type == WKNavigationTypeFormSubmitted ||
-         type == WKNavigationTypeFormResubmitted;
 }
 
 // The core.js cannot pass messages back to obj-c  if it is injected
@@ -571,7 +498,7 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 
 - (void)abortWebLoad {
   [_wkWebView stopLoading];
-  [_pendingNavigationInfo setCancelled:YES];
+  [self.pendingNavigationInfo setCancelled:YES];
   _certVerificationErrors->Clear();
 }
 
@@ -593,7 +520,7 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 
 // Override |handleLoadError| to check for PassKit case.
 - (void)handleLoadError:(NSError*)error inMainFrame:(BOOL)inMainFrame {
-  NSString* MIMEType = [_pendingNavigationInfo MIMEType];
+  NSString* MIMEType = [self.pendingNavigationInfo MIMEType];
   if ([self.passKitDownloader isMIMETypePassKitType:MIMEType])
     return;
   [super handleLoadError:error inMainFrame:inMainFrame];
@@ -723,40 +650,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   }
 }
 
-- (void)updatePendingNavigationInfoFromNavigationAction:
-    (WKNavigationAction*)action {
-  if (action.targetFrame.mainFrame) {
-    _pendingNavigationInfo.reset(
-        [[CRWWebControllerPendingNavigationInfo alloc] init]);
-    [_pendingNavigationInfo setReferrer:GetRefererFromNavigationAction(action)];
-    [_pendingNavigationInfo setNavigationType:action.navigationType];
-  }
-}
-
-- (void)updatePendingNavigationInfoFromNavigationResponse:
-    (WKNavigationResponse*)response {
-  if (response.isForMainFrame) {
-    if (!_pendingNavigationInfo) {
-      _pendingNavigationInfo.reset(
-          [[CRWWebControllerPendingNavigationInfo alloc] init]);
-    }
-    [_pendingNavigationInfo setMIMEType:response.response.MIMEType];
-  }
-}
-
-- (void)commitPendingNavigationInfo {
-  if ([_pendingNavigationInfo referrer]) {
-    _currentReferrerString.reset([[_pendingNavigationInfo referrer] copy]);
-  }
-  if ([_pendingNavigationInfo MIMEType]) {
-    self.webStateImpl->SetContentsMimeType(
-        base::SysNSStringToUTF8([_pendingNavigationInfo MIMEType]));
-  }
-  [self updateCurrentBackForwardListItemHolder];
-
-  _pendingNavigationInfo.reset();
-}
-
 - (web::WKBackForwardListItemHolder*)currentBackForwardListItemHolder {
   web::NavigationItem* item = [self currentSessionEntry].navigationItemImpl;
   DCHECK(item);
@@ -777,8 +670,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
       [self currentBackForwardListItemHolder];
 
   WKNavigationType navigationType =
-      _pendingNavigationInfo ? [_pendingNavigationInfo navigationType]
-                             : WKNavigationTypeOther;
+      self.pendingNavigationInfo ? [self.pendingNavigationInfo navigationType]
+                                 : WKNavigationTypeOther;
   holder->set_back_forward_list_item([_wkWebView backForwardList].currentItem);
   holder->set_navigation_type(navigationType);
 
@@ -786,8 +679,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   // as part of this pending load. It will be nil when doing a fast
   // back/forward navigation, for instance, because the callback that would
   // populate it is not called in that flow.
-  if ([_pendingNavigationInfo MIMEType])
-    holder->set_mime_type([_pendingNavigationInfo MIMEType]);
+  if ([self.pendingNavigationInfo MIMEType])
+    holder->set_mime_type([self.pendingNavigationInfo MIMEType]);
 }
 
 - (BOOL)isBackForwardListItemValid:(WKBackForwardListItem*)item {
@@ -1043,8 +936,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   // Get the navigation type from the last main frame load request, and try to
   // map that to a PageTransition.
   WKNavigationType navigationType =
-      _pendingNavigationInfo ? [_pendingNavigationInfo navigationType]
-                             : WKNavigationTypeOther;
+      self.pendingNavigationInfo ? [self.pendingNavigationInfo navigationType]
+                                 : WKNavigationTypeOther;
   ui::PageTransition transition = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
   switch (navigationType) {
     case WKNavigationTypeLinkActivated:
@@ -1361,7 +1254,7 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   if (allowLoad) {
     allowLoad = self.webStateImpl->ShouldAllowRequest(request);
     if (!allowLoad && navigationAction.targetFrame.mainFrame) {
-      [_pendingNavigationInfo setCancelled:YES];
+      [self.pendingNavigationInfo setCancelled:YES];
     }
   }
 
@@ -1396,11 +1289,11 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
     allowNavigation =
         self.webStateImpl->ShouldAllowResponse(navigationResponse.response);
     if (!allowNavigation && navigationResponse.isForMainFrame) {
-      [_pendingNavigationInfo setCancelled:YES];
+      [self.pendingNavigationInfo setCancelled:YES];
     }
   }
   if ([self.passKitDownloader
-          isMIMETypePassKitType:[_pendingNavigationInfo MIMEType]]) {
+          isMIMETypePassKitType:[self.pendingNavigationInfo MIMEType]]) {
     GURL URL = net::GURLWithNSURL(navigationResponse.response.URL);
     [self.passKitDownloader downloadPassKitFileWithURL:URL];
   }
@@ -1484,7 +1377,7 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 
   // Handle load cancellation for directly cancelled navigations without
   // handling their potential errors. Otherwise, handle the error.
-  if ([_pendingNavigationInfo cancelled]) {
+  if ([self.pendingNavigationInfo cancelled]) {
     [self loadCancelled];
   } else {
     error = WKWebViewErrorWithSource(error, PROVISIONAL_LOAD);
@@ -1497,7 +1390,7 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 
   // This must be reset at the end, since code above may need information about
   // the pending load.
-  _pendingNavigationInfo.reset();
+  [self resetPendingNavigationInfo];
   _certVerificationErrors->Clear();
 }
 
@@ -1621,7 +1514,7 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   GURL requestURL = net::GURLWithNSURL(navigationAction.request.URL);
 
   if (![self userIsInteracting]) {
-    NSString* referer = GetRefererFromNavigationAction(navigationAction);
+    NSString* referer = [self refererFromNavigationAction:navigationAction];
     GURL referrerURL =
         referer ? GURL(base::SysNSStringToUTF8(referer)) : [self currentURL];
     if ([self shouldBlockPopupWithURL:requestURL sourceURL:referrerURL]) {

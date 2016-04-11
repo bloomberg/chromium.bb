@@ -295,6 +295,16 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
   // Handles downloading PassKit data for WKWebView. Lazy initialized.
   base::scoped_nsobject<CRWPassKitDownloader> _passKitDownloader;
+
+  // Referrer for the current page.
+  base::scoped_nsobject<NSString> _currentReferrerString;
+
+  // Pending information for an in-progress page navigation. The lifetime of
+  // this object starts at |decidePolicyForNavigationAction| where the info is
+  // extracted from the request, and ends at either |didCommitNavigation| or
+  // |didFailProvisionalNavigation|.
+  base::scoped_nsobject<CRWWebControllerPendingNavigationInfo>
+      _pendingNavigationInfo;
 }
 
 // The container view.  The container view should be accessed through this
@@ -310,6 +320,8 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 @property(nonatomic, readwrite) id<CRWNativeContent> nativeController;
 // Activity indicator group ID for this web controller.
 @property(nonatomic, readonly) NSString* activityIndicatorGroupID;
+// Referrer for the current page; does not include the fragment.
+@property(nonatomic, readonly) NSString* currentReferrerString;
 // Removes the container view from the hierarchy and resets the ivar.
 - (void)resetContainerView;
 // Resets any state that is associated with a specific document object (e.g.,
@@ -429,6 +441,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Assigns the given URL and state object to the current CRWSessionEntry.
 - (void)replaceStateWithPageURL:(const GURL&)pageUrl
                     stateObject:(NSString*)stateObject;
+// Returns YES if the current navigation item corresponds to a web page
+// loaded by a POST request.
+- (BOOL)isCurrentNavigationItemPOST;
 
 // Finds all the scrollviews in the view hierarchy and makes sure they do not
 // interfere with scroll to top when tapping the statusbar.
@@ -749,6 +764,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return [NSString
       stringWithFormat:@"WKWebViewWebController.NetworkActivityIndicatorKey.%@",
                        self.webStateImpl->GetRequestGroupID()];
+}
+
+- (NSString*)currentReferrerString {
+  return _currentReferrerString;
 }
 
 // NativeControllerDelegate method, called to inform that title has changed.
@@ -1095,6 +1114,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self didUpdateHistoryStateWithPageURL:pageUrl];
 }
 
+- (BOOL)isCurrentNavigationItemPOST {
+  // |_pendingNavigationInfo| will be nil if the decidePolicy* delegate methods
+  // were not called.
+  WKNavigationType type =
+      _pendingNavigationInfo
+          ? [_pendingNavigationInfo navigationType]
+          : [self currentBackForwardListItemHolder]->navigation_type();
+  return type == WKNavigationTypeFormSubmitted ||
+         type == WKNavigationTypeFormResubmitted;
+}
+
 - (void)injectEarlyInjectionScripts {
   DCHECK(self.webView);
   if (![_earlyScriptManager hasBeenInjected]) {
@@ -1351,6 +1381,41 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)loadRequestForCurrentNavigationItem {
   // Handled differently by UIWebView and WKWebView subclasses.
   NOTIMPLEMENTED();
+}
+
+- (void)updatePendingNavigationInfoFromNavigationAction:
+    (WKNavigationAction*)action {
+  if (action.targetFrame.mainFrame) {
+    _pendingNavigationInfo.reset(
+        [[CRWWebControllerPendingNavigationInfo alloc] init]);
+    [_pendingNavigationInfo
+        setReferrer:[self refererFromNavigationAction:action]];
+    [_pendingNavigationInfo setNavigationType:action.navigationType];
+  }
+}
+
+- (void)updatePendingNavigationInfoFromNavigationResponse:
+    (WKNavigationResponse*)response {
+  if (response.isForMainFrame) {
+    if (!_pendingNavigationInfo) {
+      _pendingNavigationInfo.reset(
+          [[CRWWebControllerPendingNavigationInfo alloc] init]);
+    }
+    [_pendingNavigationInfo setMIMEType:response.response.MIMEType];
+  }
+}
+
+- (void)commitPendingNavigationInfo {
+  if ([_pendingNavigationInfo referrer]) {
+    _currentReferrerString.reset([[_pendingNavigationInfo referrer] copy]);
+  }
+  if ([_pendingNavigationInfo MIMEType]) {
+    self.webStateImpl->SetContentsMimeType(
+        base::SysNSStringToUTF8([_pendingNavigationInfo MIMEType]));
+  }
+  [self updateCurrentBackForwardListItemHolder];
+
+  _pendingNavigationInfo.reset();
 }
 
 - (NSMutableURLRequest*)requestForCurrentNavigationItem {
@@ -3943,6 +4008,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _externalRequest.reset();
 }
 
+- (CRWWebControllerPendingNavigationInfo*)pendingNavigationInfo {
+  return _pendingNavigationInfo;
+}
+
+- (void)resetPendingNavigationInfo {
+  _pendingNavigationInfo.reset();
+}
+
 - (web::WebViewDocumentType)documentTypeFromMIMEType:(NSString*)MIMEType {
   if (!MIMEType.length) {
     return web::WEB_VIEW_DOCUMENT_TYPE_UNKNOWN;
@@ -3955,6 +4028,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 
   return web::WEB_VIEW_DOCUMENT_TYPE_GENERIC;
+}
+
+- (NSString*)refererFromNavigationAction:(WKNavigationAction*)action {
+  return [action.request valueForHTTPHeaderField:@"Referer"];
 }
 
 @end

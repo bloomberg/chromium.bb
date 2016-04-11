@@ -11,11 +11,13 @@
 
 #include <memory>
 
+#import "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/web_state/page_display_state.h"
 #import "ios/web/web_state/crw_pass_kit_downloader.h"
+#import "ios/web/web_state/ui/wk_back_forward_list_item_holder.h"
 
 @class CRWSessionController;
 namespace web {
@@ -54,6 +56,30 @@ static NSString* const kScriptMessageName = @"crwebinvoke";
 // URL scheme for messages sent from javascript for immediate processing.
 static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 
+#pragma mark -
+
+// A container object for any navigation information that is only available
+// during pre-commit delegate callbacks, and thus must be held until the
+// navigation commits and the informatino can be used.
+@interface CRWWebControllerPendingNavigationInfo : NSObject {
+  base::mac::ObjCPropertyReleaser
+      _propertyReleaser_CRWWebControllerPendingNavigationInfo;
+}
+// The referrer for the page.
+@property(nonatomic, copy) NSString* referrer;
+// The MIME type for the page.
+@property(nonatomic, copy) NSString* MIMEType;
+// The navigation type for the load.
+@property(nonatomic, assign) WKNavigationType navigationType;
+// Whether the pending navigation has been directly cancelled before the
+// navigation is committed.
+// Cancelled navigations should be simply discarded without handling any
+// specific error.
+@property(nonatomic, assign) BOOL cancelled;
+@end
+
+#pragma mark -
+
 // Category for methods used or implemented by implementation subclasses of
 // CRWWebController.
 @interface CRWWebController (ProtectedMethods)
@@ -71,15 +97,14 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // The title of the page.
 @property(nonatomic, readonly) NSString* title;
 
-// Referrer for the current page; does not include the fragment.
-@property(nonatomic, readonly) NSString* currentReferrerString;
-
 // A set of script managers whose scripts have been injected into the current
 // page.
 @property(nonatomic, readonly) NSMutableSet* injectedScriptManagers;
 
 // Downloader for PassKit files. Lazy initialized.
 @property(nonatomic, readonly) CRWPassKitDownloader* passKitDownloader;
+
+- (CRWWebControllerPendingNavigationInfo*)pendingNavigationInfo;
 
 // Designated initializer.
 - (instancetype)initWithWebState:(std::unique_ptr<web::WebStateImpl>)webState;
@@ -93,10 +118,6 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // Returns the current URL of the web view, and sets |trustLevel| accordingly
 // based on the confidence in the verification.
 - (GURL)webURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel;
-
-// Returns YES if the current navigation item corresponds to a web page
-// loaded by a POST request.
-- (BOOL)isCurrentNavigationItemPOST;
 
 // Returns the type of document object loaded in the web view.
 - (web::WebViewDocumentType)webViewDocumentType;
@@ -240,6 +261,30 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // TODO(stuartmorgan):Remove this in favor of more specific getters.
 - (const GURL&)currentNavigationURL;
 
+// Returns the WKBackForwardListItemHolder for the current navigation item.
+- (web::WKBackForwardListItemHolder*)currentBackForwardListItemHolder;
+
+// Updates the WKBackForwardListItemHolder navigation item.
+- (void)updateCurrentBackForwardListItemHolder;
+
+// Extracts navigation info from WKNavigationAction and sets it as a pending.
+// Some pieces of navigation information are only known in
+// |decidePolicyForNavigationAction|, but must be in a pending state until
+// |didgo/Navigation| where it becames current.
+- (void)updatePendingNavigationInfoFromNavigationAction:
+    (WKNavigationAction*)action;
+
+// Extracts navigation info from WKNavigationResponse and sets it as a pending.
+// Some pieces of navigation information are only known in
+// |decidePolicyForNavigationResponse|, but must be in a pending state until
+// |didCommitNavigation| where it becames current.
+- (void)updatePendingNavigationInfoFromNavigationResponse:
+    (WKNavigationResponse*)response;
+
+// Updates current state with any pending information. Should be called when a
+// navigation is committed.
+- (void)commitPendingNavigationInfo;
+
 // Called when the web page has changed document and/or URL, and so the page
 // navigation should be reported to the delegate, and internal state updated to
 // reflect the fact that the navigation has occurred.
@@ -366,8 +411,14 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // Resets pending external request information.
 - (void)resetExternalRequest;
 
+// Resets pending navigation info.
+- (void)resetPendingNavigationInfo;
+
 // Converts MIME type string to WebViewDocumentType.
 - (web::WebViewDocumentType)documentTypeFromMIMEType:(NSString*)MIMEType;
+
+// Extracts Referer value from WKNavigationAction request header.
+- (NSString*)refererFromNavigationAction:(WKNavigationAction*)action;
 
 @end
 
