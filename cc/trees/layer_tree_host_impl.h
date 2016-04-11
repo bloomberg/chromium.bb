@@ -13,8 +13,11 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "cc/animation/animation_registrar.h"
+#include "cc/animation/layer_tree_mutator.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/synced_property.h"
 #include "cc/debug/frame_timing_tracker.h"
@@ -78,6 +81,8 @@ class UIResourceBitmap;
 class UIResourceRequest;
 struct ScrollAndScaleSet;
 class Viewport;
+
+using BeginFrameCallbackList = std::vector<base::Closure>;
 
 enum class GpuRasterizationStatus {
   ON,
@@ -462,6 +467,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   const gfx::Transform& DrawTransform() const;
 
+  std::unique_ptr<BeginFrameCallbackList> ProcessLayerTreeMutations();
+
   std::unique_ptr<ScrollAndScaleSet> ProcessScrollDeltas();
 
   void set_max_memory_needed_bytes(size_t bytes) {
@@ -627,6 +634,9 @@ class CC_EXPORT LayerTreeHostImpl
   // by the desired amount without an animation.
   bool ScrollAnimationCreate(ScrollNode* scroll_node,
                              const gfx::Vector2dF& scroll_amount);
+
+  void SetLayerTreeMutator(LayerTreeMutator* mutator);
+  LayerTreeMutator* mutator() { return mutator_; }
 
  protected:
   LayerTreeHostImpl(
@@ -857,6 +867,8 @@ class CC_EXPORT LayerTreeHostImpl
   std::unique_ptr<FrameTimingTracker> frame_timing_tracker_;
 
   std::unique_ptr<Viewport> viewport_;
+
+  LayerTreeMutator* mutator_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

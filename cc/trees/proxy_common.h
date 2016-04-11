@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "base/callback_forward.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/trees/layer_tree_host_common.h"
@@ -19,12 +20,15 @@ class BeginMainFrameAndCommitState;
 
 class LayerTreeHost;
 
+using BeginFrameCallbackList = std::vector<base::Closure>;
+
 struct CC_EXPORT BeginMainFrameAndCommitState {
   BeginMainFrameAndCommitState();
   ~BeginMainFrameAndCommitState();
 
   unsigned int begin_frame_id;
   BeginFrameArgs begin_frame_args;
+  std::unique_ptr<BeginFrameCallbackList> begin_frame_callbacks;
   std::unique_ptr<ScrollAndScaleSet> scroll_info;
   size_t memory_allocation_limit_bytes;
   bool evicted_ui_resources;

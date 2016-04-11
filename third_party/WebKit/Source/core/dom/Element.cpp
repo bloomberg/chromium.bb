@@ -36,6 +36,7 @@
 #include "core/SVGNames.h"
 #include "core/XMLNames.h"
 #include "core/animation/AnimationTimeline.h"
+#include "core/animation/CustomCompositorAnimations.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSStyleSheet.h"
@@ -127,6 +128,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/graphics/CompositorMutableProperties.h"
+#include "platform/graphics/CompositorMutation.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "wtf/BitVector.h"
 #include "wtf/HashFunctions.h"
@@ -951,6 +953,13 @@ void Element::decrementCompositorProxiedProperties(uint32_t mutableProperties)
     rareData.decrementCompositorProxiedProperties(mutableProperties);
     if (!rareData.proxiedPropertyCounts())
         setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::CompositorProxy));
+}
+
+void Element::updateFromCompositorMutation(const CompositorMutation& mutation)
+{
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"), "Element::updateFromCompositorMutation");
+    if (mutation.isOpacityMutated() || mutation.isTransformMutated())
+        ensureElementAnimations().customCompositorAnimations().applyUpdate(*this, mutation);
 }
 
 uint32_t Element::compositorMutableProperties() const

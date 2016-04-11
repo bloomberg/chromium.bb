@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/containers/small_map.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
@@ -25,6 +26,8 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
+#include "cc/animation/animation_id_provider.h"
+#include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/timing_function.h"
 #include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
@@ -237,7 +240,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       id_(id),
       requires_high_res_to_draw_(false),
       is_likely_to_require_a_draw_(false),
-      frame_timing_tracker_(FrameTimingTracker::Create(this)) {
+      frame_timing_tracker_(FrameTimingTracker::Create(this)),
+      mutator_(nullptr) {
   animation_host_ = AnimationHost::Create(ThreadInstance::IMPL);
   animation_host_->SetMutatorHostClient(this);
   animation_host_->SetSupportsScrollAnimations(SupportsImplScrolling());
@@ -2254,6 +2258,12 @@ void LayerTreeHostImpl::PostFrameTimingEvents(
                                              std::move(main_frame_events));
 }
 
+void LayerTreeHostImpl::SetLayerTreeMutator(LayerTreeMutator* mutator) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
+               "LayerTreeHostImpl::SetLayerTreeMutator");
+  mutator_ = mutator;
+}
+
 void LayerTreeHostImpl::CleanUpTileManagerAndUIResources() {
   ClearUIResources();
   tile_manager_->FinishTasksAndCleanUp();
@@ -3308,6 +3318,17 @@ void LayerTreeHostImpl::PinchGestureEnd() {
   // scales that we want when we're not inside a pinch.
   active_tree_->set_needs_update_draw_properties();
   SetNeedsRedraw();
+}
+
+std::unique_ptr<BeginFrameCallbackList>
+LayerTreeHostImpl::ProcessLayerTreeMutations() {
+  auto callbacks = make_scoped_ptr(new BeginFrameCallbackList());
+  if (mutator_) {
+    const base::Closure& callback = mutator_->TakeMutations();
+    if (!callback.is_null())
+      callbacks->push_back(callback);
+  }
+  return callbacks;
 }
 
 static void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,

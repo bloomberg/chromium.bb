@@ -85,6 +85,7 @@ void ElementAnimations::restartAnimationOnCompositor()
 DEFINE_TRACE(ElementAnimations)
 {
     visitor->trace(m_cssAnimations);
+    visitor->trace(m_customCompositorAnimations);
     visitor->trace(m_animationStack);
     visitor->trace(m_animations);
 }

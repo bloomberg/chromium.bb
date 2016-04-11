@@ -106,6 +106,14 @@ public:
         checkAlignment();
         setMatrix(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44);
     }
+    TransformationMatrix(const SkMatrix44& matrix)
+    {
+        setMatrix(
+            matrix.get(0, 0), matrix.get(1, 0), matrix.get(2, 0), matrix.get(3, 0),
+            matrix.get(0, 1), matrix.get(1, 1), matrix.get(2, 1), matrix.get(3, 1),
+            matrix.get(0, 2), matrix.get(1, 2), matrix.get(2, 2), matrix.get(3, 2),
+            matrix.get(0, 3), matrix.get(1, 3), matrix.get(2, 3), matrix.get(3, 3));
+    }
 
     void setMatrix(double a, double b, double c, double d, double e, double f)
     {

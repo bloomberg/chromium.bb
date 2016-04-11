@@ -48,6 +48,7 @@ class Attribute;
 class CSSStyleDeclaration;
 class ClientRect;
 class ClientRectList;
+class CompositorMutation;
 class CustomElementDefinition;
 class DOMStringMap;
 class DOMTokenList;
@@ -549,6 +550,7 @@ public:
     void incrementCompositorProxiedProperties(uint32_t mutableProperties);
     void decrementCompositorProxiedProperties(uint32_t mutableProperties);
     uint32_t compositorMutableProperties() const;
+    void updateFromCompositorMutation(const CompositorMutation&);
 
     // Helpers for V8DOMActivityLogger::logEvent.  They call logEvent only if
     // the element is inShadowIncludingDocument() and the context is an isolated world.
