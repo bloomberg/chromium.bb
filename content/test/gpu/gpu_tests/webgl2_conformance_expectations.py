@@ -53,7 +53,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/uniformbuffers.html', bug=483282)
     self.Skip('deqp/functional/gles3/vertexarrays.html', bug=483282)
 
-    self.Fail('deqp/data/gles3/shaders/linkage.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/preprocessor.html', bug=483282)
 
     self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
@@ -289,6 +288,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('conformance2/textures/canvas/' +
         'tex-2d-rgba8-rgba-unsigned_byte.html',
         ['win', 'debug'], bug=542901)
+    self.Skip('deqp/data/gles3/shaders/linkage.html', bug=601821)
 
     # Win / AMD flakiness seen on the FYI waterfall.
     # It's unfortunate that this suppression needs to be so broad, but
