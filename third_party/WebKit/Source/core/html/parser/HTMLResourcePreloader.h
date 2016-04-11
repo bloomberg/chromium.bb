@@ -31,7 +31,6 @@
 #include "core/html/parser/PreloadRequest.h"
 #include "core/html/parser/ResourcePreloader.h"
 #include "core/loader/NetworkHintsInterface.h"
-#include "wtf/CurrentTime.h"
 #include "wtf/text/TextPosition.h"
 
 namespace blink {

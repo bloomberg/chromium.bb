@@ -33,7 +33,6 @@ public:
     FetchRequest resourceRequest(Document*);
 
     const String& charset() const { return m_charset; }
-    double discoveryTime() const { return m_discoveryTime; }
     void setDefer(FetchRequest::DeferOption defer) { m_defer = defer; }
     void setCharset(const String& charset) { m_charset = charset.isolatedCopy(); }
     void setCrossOrigin(CrossOriginAttributeValue crossOrigin)
@@ -77,7 +76,6 @@ private:
         , m_baseURL(baseURL.copy())
         , m_resourceType(resourceType)
         , m_crossOrigin(CrossOriginAttributeNotSet)
-        , m_discoveryTime(monotonicallyIncreasingTime())
         , m_defer(FetchRequest::NoDefer)
         , m_resourceWidth(resourceWidth)
         , m_clientHintsPreferences(clientHintsPreferences)
@@ -95,7 +93,6 @@ private:
     String m_charset;
     Resource::Type m_resourceType;
     CrossOriginAttributeValue m_crossOrigin;
-    double m_discoveryTime;
     FetchRequest::DeferOption m_defer;
     FetchRequest::ResourceWidth m_resourceWidth;
     ClientHintsPreferences m_clientHintsPreferences;
