@@ -4,6 +4,8 @@
 
 #include "device/battery/battery_status_manager.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -146,9 +148,9 @@ class BatteryStatusManagerChromeOS
 }  // namespace
 
 // static
-scoped_ptr<BatteryStatusManager> BatteryStatusManager::Create(
+std::unique_ptr<BatteryStatusManager> BatteryStatusManager::Create(
     const BatteryStatusService::BatteryUpdateCallback& callback) {
-  return scoped_ptr<BatteryStatusManager>(
+  return std::unique_ptr<BatteryStatusManager>(
       new BatteryStatusManagerChromeOS(callback));
 }
 

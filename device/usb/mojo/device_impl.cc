@@ -7,12 +7,14 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <numeric>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "device/usb/mojo/type_converters.h"
 #include "device/usb/usb_descriptors.h"
@@ -30,7 +32,7 @@ using MojoTransferInCallback =
 using MojoTransferOutCallback = mojo::Callback<void(TransferStatus)>;
 
 template <typename... Args>
-void CallMojoCallback(scoped_ptr<mojo::Callback<void(Args...)>> callback,
+void CallMojoCallback(std::unique_ptr<mojo::Callback<void(Args...)>> callback,
                       Args... args) {
   callback->Run(args...);
 }
@@ -46,7 +48,7 @@ base::Callback<void(Args...)> WrapMojoCallback(
   // thread. This pattern is also used below in places where this generic
   // wrapper is not used.
   auto callback_ptr =
-      make_scoped_ptr(new mojo::Callback<void(Args...)>(callback));
+      base::WrapUnique(new mojo::Callback<void(Args...)>(callback));
   return base::Bind(&CallMojoCallback<Args...>, base::Passed(&callback_ptr));
 }
 
@@ -56,7 +58,7 @@ scoped_refptr<net::IOBuffer> CreateTransferBuffer(size_t size) {
   return buffer;
 }
 
-void OnTransferIn(scoped_ptr<MojoTransferInCallback> callback,
+void OnTransferIn(std::unique_ptr<MojoTransferInCallback> callback,
                   UsbTransferStatus status,
                   scoped_refptr<net::IOBuffer> buffer,
                   size_t buffer_size) {
@@ -72,7 +74,7 @@ void OnTransferIn(scoped_ptr<MojoTransferInCallback> callback,
   callback->Run(mojo::ConvertTo<TransferStatus>(status), std::move(data));
 }
 
-void OnTransferOut(scoped_ptr<MojoTransferOutCallback> callback,
+void OnTransferOut(std::unique_ptr<MojoTransferOutCallback> callback,
                    UsbTransferStatus status,
                    scoped_refptr<net::IOBuffer> buffer,
                    size_t buffer_size) {
@@ -92,7 +94,7 @@ mojo::Array<IsochronousPacketPtr> BuildIsochronousPacketArray(
 }
 
 void OnIsochronousTransferIn(
-    scoped_ptr<Device::IsochronousTransferInCallback> callback,
+    std::unique_ptr<Device::IsochronousTransferInCallback> callback,
     scoped_refptr<net::IOBuffer> buffer,
     const std::vector<UsbDeviceHandle::IsochronousPacket>& packets) {
   mojo::Array<uint8_t> data;
@@ -115,7 +117,7 @@ void OnIsochronousTransferIn(
 }
 
 void OnIsochronousTransferOut(
-    scoped_ptr<Device::IsochronousTransferOutCallback> callback,
+    std::unique_ptr<Device::IsochronousTransferOutCallback> callback,
     scoped_refptr<net::IOBuffer> buffer,
     const std::vector<UsbDeviceHandle::IsochronousPacket>& packets) {
   callback->Run(mojo::Array<IsochronousPacketPtr>::From(packets));
@@ -325,7 +327,7 @@ void DeviceImpl::ControlTransferIn(ControlTransferParamsPtr params,
   if (HasControlTransferPermission(params->recipient, params->index)) {
     scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(length);
     auto callback_ptr =
-        make_scoped_ptr(new ControlTransferInCallback(callback));
+        base::WrapUnique(new ControlTransferInCallback(callback));
     device_handle_->ControlTransfer(
         USB_DIRECTION_INBOUND,
         mojo::ConvertTo<UsbDeviceHandle::TransferRequestType>(params->type),
@@ -353,7 +355,7 @@ void DeviceImpl::ControlTransferOut(
     const std::vector<uint8_t>& storage = data.storage();
     std::copy(storage.begin(), storage.end(), buffer->data());
     auto callback_ptr =
-        make_scoped_ptr(new ControlTransferOutCallback(callback));
+        base::WrapUnique(new ControlTransferOutCallback(callback));
     device_handle_->ControlTransfer(
         USB_DIRECTION_OUTBOUND,
         mojo::ConvertTo<UsbDeviceHandle::TransferRequestType>(params->type),
@@ -374,7 +376,7 @@ void DeviceImpl::GenericTransferIn(uint8_t endpoint_number,
     return;
   }
 
-  auto callback_ptr = make_scoped_ptr(new GenericTransferInCallback(callback));
+  auto callback_ptr = base::WrapUnique(new GenericTransferInCallback(callback));
   uint8_t endpoint_address = endpoint_number | 0x80;
   scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(length);
   device_handle_->GenericTransfer(
@@ -392,7 +394,8 @@ void DeviceImpl::GenericTransferOut(
     return;
   }
 
-  auto callback_ptr = make_scoped_ptr(new GenericTransferOutCallback(callback));
+  auto callback_ptr =
+      base::WrapUnique(new GenericTransferOutCallback(callback));
   uint8_t endpoint_address = endpoint_number;
   scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(data.size());
   const std::vector<uint8_t>& storage = data.storage();
@@ -415,7 +418,7 @@ void DeviceImpl::IsochronousTransferIn(
   }
 
   auto callback_ptr =
-      make_scoped_ptr(new IsochronousTransferInCallback(callback));
+      base::WrapUnique(new IsochronousTransferInCallback(callback));
   uint8_t endpoint_address = endpoint_number | 0x80;
   device_handle_->IsochronousTransferIn(
       endpoint_address, packet_lengths.storage(), timeout,
@@ -435,7 +438,7 @@ void DeviceImpl::IsochronousTransferOut(
   }
 
   auto callback_ptr =
-      make_scoped_ptr(new IsochronousTransferOutCallback(callback));
+      base::WrapUnique(new IsochronousTransferOutCallback(callback));
   uint8_t endpoint_address = endpoint_number;
   scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(data.size());
   {

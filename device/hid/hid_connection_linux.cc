@@ -7,6 +7,8 @@
 #include <errno.h>
 #include <linux/hidraw.h>
 #include <sys/ioctl.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -54,7 +56,7 @@ class HidConnectionLinux::FileThreadHelper
 
   // Starts the FileDescriptorWatcher that reads input events from the device.
   // Must be called on a thread that has a base::MessageLoopForIO.
-  static void Start(scoped_ptr<FileThreadHelper> self) {
+  static void Start(std::unique_ptr<FileThreadHelper> self) {
     base::ThreadRestrictions::AssertIOAllowed();
     self->thread_checker_.DetachFromThread();
 
@@ -140,7 +142,7 @@ HidConnectionLinux::HidConnectionLinux(
 
   // The helper is passed a weak pointer to this connection so that it can be
   // cleaned up after the connection is closed.
-  scoped_ptr<FileThreadHelper> helper(
+  std::unique_ptr<FileThreadHelper> helper(
       new FileThreadHelper(device_file_.GetPlatformFile(), device_info,
                            weak_factory_.GetWeakPtr(), task_runner_));
   helper_ = helper.get();

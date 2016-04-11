@@ -5,13 +5,14 @@
 #include "device/usb/mojo/device_manager_impl.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -48,7 +49,7 @@ class USBDeviceManagerImplTest : public testing::Test {
 
  private:
   MockPermissionProvider permission_provider_;
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 };
 
 void ExpectDevicesAndThen(const std::set<std::string>& expected_guids,

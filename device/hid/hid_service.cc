@@ -7,6 +7,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
@@ -34,14 +35,14 @@ void HidService::Observer::OnDeviceRemovedCleanup(
     scoped_refptr<HidDeviceInfo> device_info) {
 }
 
-scoped_ptr<HidService> HidService::Create(
+std::unique_ptr<HidService> HidService::Create(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {
 #if defined(OS_LINUX) && defined(USE_UDEV)
-  return make_scoped_ptr(new HidServiceLinux(file_task_runner));
+  return base::WrapUnique(new HidServiceLinux(file_task_runner));
 #elif defined(OS_MACOSX)
-  return make_scoped_ptr(new HidServiceMac(file_task_runner));
+  return base::WrapUnique(new HidServiceMac(file_task_runner));
 #elif defined(OS_WIN)
-  return make_scoped_ptr(new HidServiceWin(file_task_runner));
+  return base::WrapUnique(new HidServiceWin(file_task_runner));
 #else
   return nullptr;
 #endif

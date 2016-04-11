@@ -28,7 +28,7 @@
 //   }
 //
 //  private:
-//   scoped_ptr<UdevLinux> udev_;
+//   std::unique_ptr<UdevLinux> udev_;
 //
 //   DISALLOW_COPY_AND_ASSIGN(Foo);
 // };

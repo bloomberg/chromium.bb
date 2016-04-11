@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/test/usb_test_gadget.h"
-
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -16,8 +15,8 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
@@ -27,6 +26,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "device/core/device_client.h"
+#include "device/test/usb_test_gadget.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_handle.h"
 #include "device/usb/usb_service.h"
@@ -123,12 +123,12 @@ bool ReadLocalPackage(std::string* package) {
   return ReadFile(file_path, package);
 }
 
-scoped_ptr<net::URLFetcher> CreateURLFetcher(
+std::unique_ptr<net::URLFetcher> CreateURLFetcher(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     const GURL& url,
     net::URLFetcher::RequestType request_type,
     net::URLFetcherDelegate* delegate) {
-  scoped_ptr<net::URLFetcher> url_fetcher =
+  std::unique_ptr<net::URLFetcher> url_fetcher =
       net::URLFetcher::Create(url, request_type, delegate);
 
   url_fetcher->SetRequestContext(request_context_getter.get());
@@ -160,7 +160,7 @@ class URLRequestContextGetter : public net::URLRequestContextGetter {
     return network_task_runner_;
   }
 
-  scoped_ptr<net::URLRequestContext> context_;
+  std::unique_ptr<net::URLRequestContext> context_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 };
 
@@ -186,7 +186,7 @@ int SimplePOSTRequest(
     const GURL& url,
     const std::string& form_data) {
   URLFetcherDelegate delegate;
-  scoped_ptr<net::URLFetcher> url_fetcher = CreateURLFetcher(
+  std::unique_ptr<net::URLFetcher> url_fetcher = CreateURLFetcher(
       request_context_getter, url, net::URLFetcher::POST, &delegate);
 
   url_fetcher->SetUploadData("application/x-www-form-urlencoded", form_data);
@@ -213,10 +213,10 @@ class UsbGadgetFactory : public UsbService::Observer,
 
   ~UsbGadgetFactory() override {}
 
-  scoped_ptr<UsbTestGadget> WaitForDevice() {
+  std::unique_ptr<UsbTestGadget> WaitForDevice() {
     EnumerateDevices();
     run_loop_.Run();
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new UsbTestGadgetImpl(request_context_getter_, usb_service_, device_));
   }
 
@@ -386,7 +386,7 @@ class UsbGadgetFactory : public UsbService::Observer,
   UsbService* usb_service_ = nullptr;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   std::string session_id_;
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
   scoped_refptr<UsbDevice> device_;
   std::string serial_number_;
   bool claimed_ = false;
@@ -519,7 +519,7 @@ bool UsbTestGadget::IsTestEnabled() {
   return command_line->HasSwitch(kCommandLineSwitch);
 }
 
-scoped_ptr<UsbTestGadget> UsbTestGadget::Claim(
+std::unique_ptr<UsbTestGadget> UsbTestGadget::Claim(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   UsbGadgetFactory gadget_factory(io_task_runner);
   return gadget_factory.WaitForDevice();

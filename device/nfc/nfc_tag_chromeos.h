@@ -5,10 +5,10 @@
 #ifndef DEVICE_NFC_NFC_TAG_CHROMEOS_H_
 #define DEVICE_NFC_NFC_TAG_CHROMEOS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/dbus/nfc_tag_client.h"
 #include "dbus/object_path.h"
@@ -57,7 +57,7 @@ class NfcTagChromeOS : public device::NfcTag,
 
   // The NfcNdefTagTechnology instance that allows users to perform NDEF
   // read and write on this tag.
-  scoped_ptr<NfcNdefTagTechnologyChromeOS> ndef_technology_;
+  std::unique_ptr<NfcNdefTagTechnologyChromeOS> ndef_technology_;
 
   // List of observers interested in event notifications from us.
   base::ObserverList<device::NfcTag::Observer> observers_;

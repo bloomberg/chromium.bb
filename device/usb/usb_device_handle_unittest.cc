@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/usb/usb_device_handle.h"
+
 #include <stddef.h>
+
+#include <memory>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -12,7 +16,6 @@
 #include "device/test/test_device_client.h"
 #include "device/test/usb_test_gadget.h"
 #include "device/usb/usb_device.h"
-#include "device/usb/usb_device_handle.h"
 #include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,11 +32,11 @@ class UsbDeviceHandleTest : public ::testing::Test {
   }
 
  protected:
-  scoped_ptr<base::TestIOThread> io_thread_;
+  std::unique_ptr<base::TestIOThread> io_thread_;
 
  private:
-  scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<TestDeviceClient> device_client_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<TestDeviceClient> device_client_;
 };
 
 class TestOpenCallback {
@@ -118,7 +121,7 @@ TEST_F(UsbDeviceHandleTest, InterruptTransfer) {
     return;
   }
 
-  scoped_ptr<UsbTestGadget> gadget =
+  std::unique_ptr<UsbTestGadget> gadget =
       UsbTestGadget::Claim(io_thread_->task_runner());
   ASSERT_TRUE(gadget.get());
   ASSERT_TRUE(gadget->SetType(UsbTestGadget::ECHO));
@@ -186,7 +189,7 @@ TEST_F(UsbDeviceHandleTest, BulkTransfer) {
     return;
   }
 
-  scoped_ptr<UsbTestGadget> gadget =
+  std::unique_ptr<UsbTestGadget> gadget =
       UsbTestGadget::Claim(io_thread_->task_runner());
   ASSERT_TRUE(gadget.get());
   ASSERT_TRUE(gadget->SetType(UsbTestGadget::ECHO));
@@ -255,7 +258,7 @@ TEST_F(UsbDeviceHandleTest, SetInterfaceAlternateSetting) {
     return;
   }
 
-  scoped_ptr<UsbTestGadget> gadget =
+  std::unique_ptr<UsbTestGadget> gadget =
       UsbTestGadget::Claim(io_thread_->task_runner());
   ASSERT_TRUE(gadget.get());
   ASSERT_TRUE(gadget->SetType(UsbTestGadget::ECHO));

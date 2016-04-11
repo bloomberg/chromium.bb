@@ -5,13 +5,13 @@
 #ifndef DEVICE_USB_USB_SERVICE_H_
 #define DEVICE_USB_USB_SERVICE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 
@@ -50,7 +50,7 @@ class UsbService : public base::NonThreadSafe {
 
   // The file task runner reference is used for blocking I/O operations.
   // Returns nullptr when initialization fails.
-  static scoped_ptr<UsbService> Create(
+  static std::unique_ptr<UsbService> Create(
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
   virtual ~UsbService();

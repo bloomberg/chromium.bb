@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/hid/hid_connection.h"
+
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_io_thread.h"
-#include "device/hid/hid_connection.h"
 #include "device/hid/hid_service.h"
 #include "device/test/test_device_client.h"
 #include "device/test/usb_test_gadget.h"
@@ -168,11 +169,11 @@ class HidConnectionTest : public testing::Test {
     ASSERT_NE(device_id_, kInvalidHidDeviceId);
   }
 
-  scoped_ptr<base::MessageLoopForUI> message_loop_;
-  scoped_ptr<base::TestIOThread> io_thread_;
-  scoped_ptr<TestDeviceClient> device_client_;
+  std::unique_ptr<base::MessageLoopForUI> message_loop_;
+  std::unique_ptr<base::TestIOThread> io_thread_;
+  std::unique_ptr<TestDeviceClient> device_client_;
   HidService* service_;
-  scoped_ptr<UsbTestGadget> test_gadget_;
+  std::unique_ptr<UsbTestGadget> test_gadget_;
   HidDeviceId device_id_;
 };
 

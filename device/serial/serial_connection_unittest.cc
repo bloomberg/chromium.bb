@@ -5,6 +5,8 @@
 #include "device/serial/serial_connection.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -73,7 +75,7 @@ class SerialConnectionTest : public testing::Test {
             base::Bind(&SerialConnectionTest::CreateIoHandler,
                        base::Unretained(this)),
             base::ThreadTaskRunnerHandle::Get()),
-        scoped_ptr<SerialDeviceEnumerator>(new FakeSerialDeviceEnumerator),
+        std::unique_ptr<SerialDeviceEnumerator>(new FakeSerialDeviceEnumerator),
         mojo::GetProxy(&service));
     service.set_connection_error_handler(base::Bind(
         &SerialConnectionTest::OnConnectionError, base::Unretained(this)));
@@ -163,7 +165,7 @@ class SerialConnectionTest : public testing::Test {
     EventReceived(EVENT_SEND_ERROR);
   }
 
-  void OnDataReceived(scoped_ptr<ReadOnlyBuffer> buffer) {
+  void OnDataReceived(std::unique_ptr<ReadOnlyBuffer> buffer) {
     data_received_ += std::string(buffer->GetData(), buffer->GetSize());
     buffer->Done(buffer->GetSize());
     receive_error_ = serial::ReceiveError::NONE;
@@ -191,10 +193,10 @@ class SerialConnectionTest : public testing::Test {
   std::string data_received_;
   Event expected_event_;
 
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
   base::Closure stop_run_loop_;
   mojo::InterfacePtr<serial::Connection> connection_;
-  scoped_ptr<DataSender> sender_;
+  std::unique_ptr<DataSender> sender_;
   scoped_refptr<DataReceiver> receiver_;
   scoped_refptr<TestSerialIoHandler> io_handler_;
 

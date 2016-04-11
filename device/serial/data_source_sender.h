@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
@@ -25,7 +26,7 @@ namespace device {
 class DataSourceSender : public base::RefCounted<DataSourceSender>,
                          public serial::DataSource {
  public:
-  typedef base::Callback<void(scoped_ptr<WritableBuffer>)> ReadyCallback;
+  typedef base::Callback<void(std::unique_ptr<WritableBuffer>)> ReadyCallback;
   typedef base::Callback<void()> ErrorCallback;
 
   // Constructs a DataSourceSender. Whenever the pipe is ready for writing, the
@@ -81,7 +82,7 @@ class DataSourceSender : public base::RefCounted<DataSourceSender>,
   ErrorCallback error_callback_;
 
   // The current pending send operation if there is one.
-  scoped_ptr<PendingSend> pending_send_;
+  std::unique_ptr<PendingSend> pending_send_;
 
   // The number of bytes available for buffering in the client.
   uint32_t available_buffer_capacity_;

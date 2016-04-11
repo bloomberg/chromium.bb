@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -63,7 +64,7 @@ class UsbDeviceImpl : public UsbDevice {
   }
   void set_device_path(const std::string& value) { device_path_ = value; }
   void set_webusb_allowed_origins(
-      scoped_ptr<WebUsbAllowedOrigins> allowed_origins) {
+      std::unique_ptr<WebUsbAllowedOrigins> allowed_origins) {
     webusb_allowed_origins_ = std::move(allowed_origins);
   }
   void set_webusb_landing_page(const GURL& url) { webusb_landing_page_ = url; }

@@ -6,6 +6,7 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/usb/usb_device.h"
@@ -33,12 +34,12 @@ void UsbService::Observer::OnDeviceRemovedCleanup(
 void UsbService::Observer::WillDestroyUsbService() {}
 
 // static
-scoped_ptr<UsbService> UsbService::Create(
+std::unique_ptr<UsbService> UsbService::Create(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner) {
 #if defined(OS_ANDROID)
-  return make_scoped_ptr(new UsbServiceAndroid());
+  return base::WrapUnique(new UsbServiceAndroid());
 #else
-  return make_scoped_ptr(new UsbServiceImpl(blocking_task_runner));
+  return base::WrapUnique(new UsbServiceImpl(blocking_task_runner));
 #endif
 }
 

@@ -5,7 +5,9 @@
 #include "device/usb/usb_service_impl.h"
 
 #include <stdint.h>
+
 #include <list>
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -124,7 +126,7 @@ void SaveStringsAndRunContinuation(
     uint8_t product,
     uint8_t serial_number,
     const base::Closure& continuation,
-    scoped_ptr<std::map<uint8_t, base::string16>> string_map) {
+    std::unique_ptr<std::map<uint8_t, base::string16>> string_map) {
   if (manufacturer != 0)
     device->set_manufacturer_string((*string_map)[manufacturer]);
   if (product != 0)
@@ -136,7 +138,7 @@ void SaveStringsAndRunContinuation(
 
 void OnReadBosDescriptor(scoped_refptr<UsbDeviceHandle> device_handle,
                          const base::Closure& barrier,
-                         scoped_ptr<WebUsbAllowedOrigins> allowed_origins,
+                         std::unique_ptr<WebUsbAllowedOrigins> allowed_origins,
                          const GURL& landing_page) {
   scoped_refptr<UsbDeviceImpl> device =
       static_cast<UsbDeviceImpl*>(device_handle->GetDevice().get());
@@ -158,7 +160,7 @@ void OnDeviceOpenedReadDescriptors(
     const base::Closure& failure_closure,
     scoped_refptr<UsbDeviceHandle> device_handle) {
   if (device_handle) {
-    scoped_ptr<std::map<uint8_t, base::string16>> string_map(
+    std::unique_ptr<std::map<uint8_t, base::string16>> string_map(
         new std::map<uint8_t, base::string16>());
     if (manufacturer != 0)
       (*string_map)[manufacturer] = base::string16();

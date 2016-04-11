@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_io_thread.h"
@@ -24,15 +26,15 @@ class UsbServiceTest : public ::testing::Test {
   }
 
  protected:
-  scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<base::TestIOThread> io_thread_;
-  scoped_ptr<TestDeviceClient> device_client_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::TestIOThread> io_thread_;
+  std::unique_ptr<TestDeviceClient> device_client_;
 };
 
 TEST_F(UsbServiceTest, ClaimGadget) {
   if (!UsbTestGadget::IsTestEnabled()) return;
 
-  scoped_ptr<UsbTestGadget> gadget =
+  std::unique_ptr<UsbTestGadget> gadget =
       UsbTestGadget::Claim(io_thread_->task_runner());
   ASSERT_TRUE(gadget.get());
 
@@ -45,7 +47,7 @@ TEST_F(UsbServiceTest, ClaimGadget) {
 TEST_F(UsbServiceTest, DisconnectAndReconnect) {
   if (!UsbTestGadget::IsTestEnabled()) return;
 
-  scoped_ptr<UsbTestGadget> gadget =
+  std::unique_ptr<UsbTestGadget> gadget =
       UsbTestGadget::Claim(io_thread_->task_runner());
   ASSERT_TRUE(gadget.get());
   ASSERT_TRUE(gadget->Disconnect());

@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/usb/webusb_descriptors.h"
+
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "device/usb/mock_usb_device_handle.h"
-#include "device/usb/webusb_descriptors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -77,7 +79,7 @@ ACTION_P2(InvokeCallback, data, length) {
 }
 
 void ExpectAllowedOriginsAndLandingPage(
-    scoped_ptr<WebUsbAllowedOrigins> allowed_origins,
+    std::unique_ptr<WebUsbAllowedOrigins> allowed_origins,
     const GURL& landing_page) {
   EXPECT_EQ(GURL("https://example.com/index.html"), landing_page);
   ASSERT_TRUE(allowed_origins);

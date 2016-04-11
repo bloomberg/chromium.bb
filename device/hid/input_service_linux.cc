@@ -4,6 +4,8 @@
 
 #include "device/hid/input_service_linux.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -33,7 +35,7 @@ const char kIdInputTouchpad[] = "ID_INPUT_TOUCHPAD";
 const char kIdInputTouchscreen[] = "ID_INPUT_TOUCHSCREEN";
 
 // The instance will be reset when message loop destroys.
-base::LazyInstance<scoped_ptr<InputServiceLinux> >::Leaky
+base::LazyInstance<std::unique_ptr<InputServiceLinux>>::Leaky
     g_input_service_linux_ptr = LAZY_INSTANCE_INITIALIZER;
 
 bool GetBoolProperty(udev_device* device, const char* key) {

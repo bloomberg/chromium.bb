@@ -5,8 +5,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
@@ -672,7 +673,7 @@ TEST_F(NfcChromeOSTest, NfcNdefRecordToDBusAttributes) {
   data.SetString(NfcNdefRecord::kFieldLanguageCode, kLanguageCode);
   data.SetString(NfcNdefRecord::kFieldEncoding, kEncoding);
 
-  scoped_ptr<NfcNdefRecord> record(new NfcNdefRecord());
+  std::unique_ptr<NfcNdefRecord> record(new NfcNdefRecord());
   ASSERT_TRUE(record->Populate(NfcNdefRecord::kTypeText, &data));
 
   base::DictionaryValue result;
@@ -770,7 +771,7 @@ TEST_F(NfcChromeOSTest, RecordPropertiesToNfcNdefRecord) {
   record_properties.language.ReplaceValue(kLanguageCode);
   record_properties.encoding.ReplaceValue(kEncoding);
 
-  scoped_ptr<NfcNdefRecord> record(new NfcNdefRecord());
+  std::unique_ptr<NfcNdefRecord> record(new NfcNdefRecord());
   EXPECT_TRUE(nfc_ndef_record_utils::RecordPropertiesToNfcNdefRecord(
       &record_properties, record.get()));
   EXPECT_TRUE(record->IsPopulated());

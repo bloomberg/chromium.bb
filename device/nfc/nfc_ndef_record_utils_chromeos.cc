@@ -4,8 +4,9 @@
 
 #include "device/nfc/nfc_ndef_record_utils_chromeos.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "device/nfc/nfc_ndef_record.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -205,7 +206,7 @@ bool RecordPropertiesToNfcNdefRecord(
   // differently, depending on whether the record type is "SmartPoster" or
   // "Text".
   {
-    scoped_ptr<base::DictionaryValue> text_attributes(
+    std::unique_ptr<base::DictionaryValue> text_attributes(
         new base::DictionaryValue());
     if (!properties->representation.value().empty()) {
       text_attributes->SetString(NfcNdefRecord::kFieldText,

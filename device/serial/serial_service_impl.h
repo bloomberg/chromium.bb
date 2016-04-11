@@ -5,8 +5,9 @@
 #ifndef DEVICE_SERIAL_SERIAL_SERVICE_IMPL_H_
 #define DEVICE_SERIAL_SERIAL_SERVICE_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "device/serial/data_stream.mojom.h"
@@ -22,7 +23,7 @@ class SerialServiceImpl : public serial::SerialService {
   SerialServiceImpl(scoped_refptr<SerialConnectionFactory> connection_factory,
                     mojo::InterfaceRequest<serial::SerialService> request);
   SerialServiceImpl(scoped_refptr<SerialConnectionFactory> connection_factory,
-                    scoped_ptr<SerialDeviceEnumerator> device_enumerator,
+                    std::unique_ptr<SerialDeviceEnumerator> device_enumerator,
                     mojo::InterfaceRequest<serial::SerialService> request);
   ~SerialServiceImpl() override;
 
@@ -51,7 +52,7 @@ class SerialServiceImpl : public serial::SerialService {
   SerialDeviceEnumerator* GetDeviceEnumerator();
   bool IsValidPath(const mojo::String& path);
 
-  scoped_ptr<SerialDeviceEnumerator> device_enumerator_;
+  std::unique_ptr<SerialDeviceEnumerator> device_enumerator_;
   scoped_refptr<SerialConnectionFactory> connection_factory_;
   mojo::StrongBinding<serial::SerialService> binding_;
 

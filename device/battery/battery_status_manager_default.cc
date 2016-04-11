@@ -4,6 +4,8 @@
 
 #include "device/battery/battery_status_manager.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
 
@@ -32,9 +34,9 @@ class BatteryStatusManagerDefault : public BatteryStatusManager {
 }  // namespace
 
 // static
-scoped_ptr<BatteryStatusManager> BatteryStatusManager::Create(
+std::unique_ptr<BatteryStatusManager> BatteryStatusManager::Create(
     const BatteryStatusService::BatteryUpdateCallback& callback) {
-  return scoped_ptr<BatteryStatusManager>(
+  return std::unique_ptr<BatteryStatusManager>(
       new BatteryStatusManagerDefault(callback));
 }
 

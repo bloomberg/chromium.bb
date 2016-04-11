@@ -14,7 +14,6 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "device/hid/hid_connection.h"
 
 namespace base {

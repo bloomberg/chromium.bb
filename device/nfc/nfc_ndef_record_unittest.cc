@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/nfc/nfc_ndef_record.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/values.h"
-#include "device/nfc/nfc_ndef_record.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::DictionaryValue;
@@ -30,7 +32,7 @@ const char kTestURI[] = "test://uri";
 
 TEST(NfcNdefRecordTest, PopulateTextRecord) {
   DictionaryValue data;
-  scoped_ptr<NfcNdefRecord> record(new NfcNdefRecord());
+  std::unique_ptr<NfcNdefRecord> record(new NfcNdefRecord());
 
   // Missing text field. Should fail.
   EXPECT_FALSE(record->Populate(NfcNdefRecord::kTypeText, &data));
@@ -82,7 +84,7 @@ TEST(NfcNdefRecordTest, PopulateTextRecord) {
 
 TEST(NfcNdefRecordTest, PopulateUriRecord) {
   DictionaryValue data;
-  scoped_ptr<NfcNdefRecord> record(new NfcNdefRecord());
+  std::unique_ptr<NfcNdefRecord> record(new NfcNdefRecord());
 
   // Missing URI field. Should fail.
   EXPECT_FALSE(record->Populate(NfcNdefRecord::kTypeURI, &data));
@@ -143,7 +145,7 @@ TEST(NfcNdefRecordTest, PopulateUriRecord) {
 
 TEST(NfcNdefRecordTest, PopulateSmartPoster) {
   DictionaryValue data;
-  scoped_ptr<NfcNdefRecord> record(new NfcNdefRecord());
+  std::unique_ptr<NfcNdefRecord> record(new NfcNdefRecord());
 
   // Missing URI field. Should fail.
   EXPECT_FALSE(record->Populate(NfcNdefRecord::kTypeSmartPoster, &data));

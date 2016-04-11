@@ -5,7 +5,8 @@
 #ifndef DEVICE_UDEV_LINUX_SCOPED_UDEV_H_
 #define DEVICE_UDEV_LINUX_SCOPED_UDEV_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "device/udev_linux/udev.h"
 
 #if !defined(USE_UDEV)
@@ -35,10 +36,11 @@ struct UdevMonitorDeleter {
   }
 };
 
-typedef scoped_ptr<udev, UdevDeleter> ScopedUdevPtr;
-typedef scoped_ptr<udev_enumerate, UdevEnumerateDeleter> ScopedUdevEnumeratePtr;
-typedef scoped_ptr<udev_device, UdevDeviceDeleter> ScopedUdevDevicePtr;
-typedef scoped_ptr<udev_monitor, UdevMonitorDeleter> ScopedUdevMonitorPtr;
+typedef std::unique_ptr<udev, UdevDeleter> ScopedUdevPtr;
+typedef std::unique_ptr<udev_enumerate, UdevEnumerateDeleter>
+    ScopedUdevEnumeratePtr;
+typedef std::unique_ptr<udev_device, UdevDeviceDeleter> ScopedUdevDevicePtr;
+typedef std::unique_ptr<udev_monitor, UdevMonitorDeleter> ScopedUdevMonitorPtr;
 
 }  // namespace device
 

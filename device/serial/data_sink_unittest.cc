@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -158,7 +160,7 @@ class DataSinkTest : public testing::Test {
     EventReceived(EVENT_SEND_ERROR);
   }
 
-  void OnDataToRead(scoped_ptr<ReadOnlyBuffer> buffer) {
+  void OnDataToRead(std::unique_ptr<ReadOnlyBuffer> buffer) {
     read_buffer_ = std::move(buffer);
     read_buffer_contents_ =
         std::string(read_buffer_->GetData(), read_buffer_->GetSize());
@@ -180,17 +182,17 @@ class DataSinkTest : public testing::Test {
  protected:
   static const int32_t kFatalError;
   static const uint32_t kBufferSize;
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
   base::Closure stop_run_loop_;
 
   scoped_refptr<DataSinkReceiver> sink_receiver_;
-  scoped_ptr<DataSender> sender_;
+  std::unique_ptr<DataSender> sender_;
 
   uint32_t bytes_sent_;
   int32_t send_error_;
   bool has_send_error_;
   int32_t cancel_error_;
-  scoped_ptr<ReadOnlyBuffer> read_buffer_;
+  std::unique_ptr<ReadOnlyBuffer> read_buffer_;
   std::string read_buffer_contents_;
 
   bool seen_connection_error_;

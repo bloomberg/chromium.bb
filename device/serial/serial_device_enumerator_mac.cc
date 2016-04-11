@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/files/file_enumerator.h"
@@ -16,7 +17,6 @@
 #include "base/files/file_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ioobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
@@ -204,8 +204,9 @@ mojo::Array<serial::DeviceInfoPtr> GetDevicesOld() {
 }  // namespace
 
 // static
-scoped_ptr<SerialDeviceEnumerator> SerialDeviceEnumerator::Create() {
-  return scoped_ptr<SerialDeviceEnumerator>(new SerialDeviceEnumeratorMac());
+std::unique_ptr<SerialDeviceEnumerator> SerialDeviceEnumerator::Create() {
+  return std::unique_ptr<SerialDeviceEnumerator>(
+      new SerialDeviceEnumeratorMac());
 }
 
 SerialDeviceEnumeratorMac::SerialDeviceEnumeratorMac() {}

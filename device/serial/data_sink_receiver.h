@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 
 #include "base/callback.h"
@@ -24,7 +25,7 @@ namespace device {
 class DataSinkReceiver : public base::RefCounted<DataSinkReceiver>,
                          public serial::DataSink {
  public:
-  typedef base::Callback<void(scoped_ptr<ReadOnlyBuffer>)> ReadyCallback;
+  typedef base::Callback<void(std::unique_ptr<ReadOnlyBuffer>)> ReadyCallback;
   typedef base::Callback<void(int32_t error)> CancelCallback;
   typedef base::Callback<void()> ErrorCallback;
 

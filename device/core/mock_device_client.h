@@ -5,7 +5,8 @@
 #ifndef DEVICE_CORE_MOCK_DEVICE_CLIENT_H_
 #define DEVICE_CORE_MOCK_DEVICE_CLIENT_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "device/core/device_client.h"
 
 namespace device {
@@ -29,8 +30,8 @@ class MockDeviceClient : device::DeviceClient {
   MockUsbService* usb_service();
 
  private:
-  scoped_ptr<MockHidService> hid_service_;
-  scoped_ptr<MockUsbService> usb_service_;
+  std::unique_ptr<MockHidService> hid_service_;
+  std::unique_ptr<MockUsbService> usb_service_;
 };
 
 }  // namespace device

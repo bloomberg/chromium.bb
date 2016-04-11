@@ -4,6 +4,8 @@
 
 #include "device/udev_linux/udev_loader.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "device/udev_linux/udev0_loader.h"
 #include "device/udev_linux/udev1_loader.h"
@@ -21,7 +23,7 @@ UdevLoader* UdevLoader::Get() {
   if (g_udev_loader)
     return g_udev_loader;
 
-  scoped_ptr<UdevLoader> udev_loader;
+  std::unique_ptr<UdevLoader> udev_loader;
   udev_loader.reset(new Udev1Loader);
   if (udev_loader->Init()) {
     g_udev_loader = udev_loader.release();

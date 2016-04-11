@@ -8,6 +8,7 @@
 
 #include <iterator>
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/barrier_closure.h"
@@ -47,11 +48,11 @@ const uint8_t kWebUsbCapabilityUUID[16] = {
 const int kControlTransferTimeout = 60000;  // 1 minute
 
 using ReadWebUsbDescriptorsCallback =
-    base::Callback<void(scoped_ptr<WebUsbAllowedOrigins> allowed_origins,
+    base::Callback<void(std::unique_ptr<WebUsbAllowedOrigins> allowed_origins,
                         const GURL& landing_page)>;
 
 using ReadWebUsbAllowedOriginsCallback =
-    base::Callback<void(scoped_ptr<WebUsbAllowedOrigins> allowed_origins)>;
+    base::Callback<void(std::unique_ptr<WebUsbAllowedOrigins> allowed_origins)>;
 
 // Parses a WebUSB Function Subset Header:
 // http://wicg.github.io/webusb/#dfn-function-subset-header
@@ -152,9 +153,9 @@ bool ParseConfiguration(WebUsbConfigurationSubset* configuration,
   return true;
 }
 
-void OnDoneReadingUrls(scoped_ptr<WebUsbAllowedOrigins> allowed_origins,
+void OnDoneReadingUrls(std::unique_ptr<WebUsbAllowedOrigins> allowed_origins,
                        uint8_t landing_page_id,
-                       scoped_ptr<std::map<uint8_t, GURL>> url_map,
+                       std::unique_ptr<std::map<uint8_t, GURL>> url_map,
                        const ReadWebUsbDescriptorsCallback& callback) {
   for (uint8_t origin_id : allowed_origins->origin_ids) {
     const auto& it = url_map->find(origin_id);
@@ -227,7 +228,7 @@ void ReadUrlDescriptors(scoped_refptr<UsbDeviceHandle> device_handle,
                         uint8_t vendor_code,
                         uint8_t landing_page_id,
                         const ReadWebUsbDescriptorsCallback& callback,
-                        scoped_ptr<WebUsbAllowedOrigins> allowed_origins) {
+                        std::unique_ptr<WebUsbAllowedOrigins> allowed_origins) {
   if (!allowed_origins) {
     callback.Run(nullptr, GURL());
     return;
@@ -246,7 +247,8 @@ void ReadUrlDescriptors(scoped_refptr<UsbDeviceHandle> device_handle,
     }
   }
 
-  scoped_ptr<std::map<uint8_t, GURL>> url_map(new std::map<uint8_t, GURL>());
+  std::unique_ptr<std::map<uint8_t, GURL>> url_map(
+      new std::map<uint8_t, GURL>());
   std::map<uint8_t, GURL>* url_map_ptr = url_map.get();
   base::Closure barrier = base::BarrierClosure(
       static_cast<int>(to_request.size()),
@@ -269,7 +271,8 @@ void OnReadWebUsbAllowedOrigins(
     return;
   }
 
-  scoped_ptr<WebUsbAllowedOrigins> allowed_origins(new WebUsbAllowedOrigins());
+  std::unique_ptr<WebUsbAllowedOrigins> allowed_origins(
+      new WebUsbAllowedOrigins());
   if (allowed_origins->Parse(
           std::vector<uint8_t>(buffer->data(), buffer->data() + length))) {
     callback.Run(std::move(allowed_origins));

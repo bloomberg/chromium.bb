@@ -5,8 +5,9 @@
 #ifndef DEVICE_UDEV_LINUX_UDEV1_LOADER_H_
 #define DEVICE_UDEV_LINUX_UDEV1_LOADER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "device/udev_linux/udev_loader.h"
 
 class LibUdev1Loader;
@@ -74,7 +75,7 @@ class Udev1Loader : public UdevLoader {
   void udev_set_log_priority(struct udev* udev, int priority) override;
   void udev_unref(udev* udev) override;
 
-  scoped_ptr<LibUdev1Loader> lib_loader_;
+  std::unique_ptr<LibUdev1Loader> lib_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(Udev1Loader);
 };

@@ -5,14 +5,15 @@
 #include "device/battery/battery_status_manager.h"
 
 #include <CoreFoundation/CoreFoundation.h>
-#include <IOKit/ps/IOPowerSources.h>
 #include <IOKit/ps/IOPSKeys.h>
+#include <IOKit/ps/IOPowerSources.h>
+
+#include <memory>
 #include <vector>
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 
@@ -227,7 +228,7 @@ class BatteryStatusManagerMac : public BatteryStatusManager {
   }
 
  private:
-  scoped_ptr<BatteryStatusObserver> notifier_;
+  std::unique_ptr<BatteryStatusObserver> notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(BatteryStatusManagerMac);
 };
@@ -235,9 +236,9 @@ class BatteryStatusManagerMac : public BatteryStatusManager {
 } // end namespace
 
 // static
-scoped_ptr<BatteryStatusManager> BatteryStatusManager::Create(
+std::unique_ptr<BatteryStatusManager> BatteryStatusManager::Create(
     const BatteryStatusService::BatteryUpdateCallback& callback) {
-  return scoped_ptr<BatteryStatusManager>(
+  return std::unique_ptr<BatteryStatusManager>(
       new BatteryStatusManagerMac(callback));
 }
 

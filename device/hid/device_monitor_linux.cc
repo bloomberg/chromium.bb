@@ -4,6 +4,8 @@
 
 #include "device/hid/device_monitor_linux.h"
 
+#include <memory>
+
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
@@ -18,7 +20,7 @@ const char kUdevActionAdd[] = "add";
 const char kUdevActionRemove[] = "remove";
 
 // The instance will be reset when message loop destroys.
-base::LazyInstance<scoped_ptr<DeviceMonitorLinux> >::Leaky
+base::LazyInstance<std::unique_ptr<DeviceMonitorLinux>>::Leaky
     g_device_monitor_linux_ptr = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace

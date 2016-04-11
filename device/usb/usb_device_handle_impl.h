@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -179,7 +180,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   // Submits a transfer and starts tracking it. Retains the buffer and copies
   // the completion callback until the transfer finishes, whereupon it invokes
   // the callback then releases the buffer.
-  void SubmitTransfer(scoped_ptr<Transfer> transfer);
+  void SubmitTransfer(std::unique_ptr<Transfer> transfer);
 
   // Removes the transfer from the in-flight transfer set and invokes the
   // completion callback.

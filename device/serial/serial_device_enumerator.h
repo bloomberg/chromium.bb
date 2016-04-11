@@ -5,7 +5,8 @@
 #ifndef DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_H_
 #define DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "device/serial/serial.mojom.h"
 #include "mojo/public/cpp/bindings/array.h"
 
@@ -14,7 +15,7 @@ namespace device {
 // Discovers and enumerates serial devices available to the host.
 class SerialDeviceEnumerator {
  public:
-  static scoped_ptr<SerialDeviceEnumerator> Create();
+  static std::unique_ptr<SerialDeviceEnumerator> Create();
 
   SerialDeviceEnumerator();
   virtual ~SerialDeviceEnumerator();

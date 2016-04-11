@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 
 namespace device {
@@ -117,9 +117,9 @@ bool ParseUsbStringDescriptor(const std::vector<uint8_t>& descriptor,
 
 void ReadUsbStringDescriptors(
     scoped_refptr<UsbDeviceHandle> device_handle,
-    scoped_ptr<std::map<uint8_t, base::string16>> index_map,
-    const base::Callback<void(scoped_ptr<std::map<uint8_t, base::string16>>)>&
-        callback);
+    std::unique_ptr<std::map<uint8_t, base::string16>> index_map,
+    const base::Callback<
+        void(std::unique_ptr<std::map<uint8_t, base::string16>>)>& callback);
 
 }  // namespace device
 

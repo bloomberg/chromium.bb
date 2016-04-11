@@ -4,9 +4,10 @@
 
 #include "device/battery/battery_status_manager_win.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
 #include "base/win/message_window.h"
@@ -152,7 +153,7 @@ class BatteryStatusObserver {
   HPOWERNOTIFY power_handle_;
   HPOWERNOTIFY battery_change_handle_;
   BatteryCallback callback_;
-  scoped_ptr<base::win::MessageWindow> window_;
+  std::unique_ptr<base::win::MessageWindow> window_;
 
   DISALLOW_COPY_AND_ASSIGN(BatteryStatusObserver);
 };
@@ -173,7 +174,7 @@ class BatteryStatusManagerWin : public BatteryStatusManager {
   void StopListeningBatteryChange() override { battery_observer_->Stop(); }
 
  private:
-  scoped_ptr<BatteryStatusObserver> battery_observer_;
+  std::unique_ptr<BatteryStatusObserver> battery_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BatteryStatusManagerWin);
 };
@@ -206,9 +207,9 @@ BatteryStatus ComputeWebBatteryStatus(const SYSTEM_POWER_STATUS& win_status) {
 }
 
 // static
-scoped_ptr<BatteryStatusManager> BatteryStatusManager::Create(
+std::unique_ptr<BatteryStatusManager> BatteryStatusManager::Create(
     const BatteryStatusService::BatteryUpdateCallback& callback) {
-  return scoped_ptr<BatteryStatusManager>(
+  return std::unique_ptr<BatteryStatusManager>(
       new BatteryStatusManagerWin(callback));
 }
 

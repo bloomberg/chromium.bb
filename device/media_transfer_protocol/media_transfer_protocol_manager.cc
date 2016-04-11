@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <queue>
 #include <set>
 #include <utility>
@@ -14,7 +15,6 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
@@ -665,7 +665,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   // Mtpd DBus client.
-  scoped_ptr<MediaTransferProtocolDaemonClient> mtp_client_;
+  std::unique_ptr<MediaTransferProtocolDaemonClient> mtp_client_;
 
 #if !defined(OS_CHROMEOS)
   // And a D-Bus session for talking to mtpd.

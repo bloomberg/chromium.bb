@@ -5,6 +5,8 @@
 #include "device/serial/serial_service_impl.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -21,7 +23,7 @@ SerialServiceImpl::SerialServiceImpl(
 
 SerialServiceImpl::SerialServiceImpl(
     scoped_refptr<SerialConnectionFactory> connection_factory,
-    scoped_ptr<SerialDeviceEnumerator> device_enumerator,
+    std::unique_ptr<SerialDeviceEnumerator> device_enumerator,
     mojo::InterfaceRequest<serial::SerialService> request)
     : device_enumerator_(std::move(device_enumerator)),
       connection_factory_(connection_factory),

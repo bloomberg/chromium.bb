@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -108,7 +109,7 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   base::string16 manufacturer_string_;
   base::string16 product_string_;
   base::string16 serial_number_;
-  scoped_ptr<WebUsbAllowedOrigins> webusb_allowed_origins_;
+  std::unique_ptr<WebUsbAllowedOrigins> webusb_allowed_origins_;
   GURL webusb_landing_page_;
 
   // All of the device's configuration descriptors.

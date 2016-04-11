@@ -6,7 +6,9 @@
 
 #include <fcntl.h>
 #include <stdint.h>
+
 #include <limits>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -77,7 +79,7 @@ class HidServiceLinux::FileThreadHelper
     base::MessageLoop::current()->RemoveDestructionObserver(this);
   }
 
-  static void Start(scoped_ptr<FileThreadHelper> self) {
+  static void Start(std::unique_ptr<FileThreadHelper> self) {
     base::ThreadRestrictions::AssertIOAllowed();
     self->thread_checker_.DetachFromThread();
     // |self| must be added as a destruction observer first so that it will be
@@ -211,7 +213,7 @@ HidServiceLinux::HidServiceLinux(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
     : file_task_runner_(file_task_runner), weak_factory_(this) {
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  scoped_ptr<FileThreadHelper> helper(
+  std::unique_ptr<FileThreadHelper> helper(
       new FileThreadHelper(weak_factory_.GetWeakPtr(), task_runner_));
   helper_ = helper.get();
   file_task_runner_->PostTask(
@@ -234,7 +236,7 @@ void HidServiceLinux::Connect(const HidDeviceId& device_id,
   scoped_refptr<HidDeviceInfoLinux> device_info =
       static_cast<HidDeviceInfoLinux*>(map_entry->second.get());
 
-  scoped_ptr<ConnectParams> params(new ConnectParams(
+  std::unique_ptr<ConnectParams> params(new ConnectParams(
       device_info, callback, task_runner_, file_task_runner_));
 
 #if defined(OS_CHROMEOS)
@@ -258,7 +260,7 @@ void HidServiceLinux::Connect(const HidDeviceId& device_id,
 #if defined(OS_CHROMEOS)
 
 // static
-void HidServiceLinux::OnPathOpenComplete(scoped_ptr<ConnectParams> params,
+void HidServiceLinux::OnPathOpenComplete(std::unique_ptr<ConnectParams> params,
                                          dbus::FileDescriptor fd) {
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
       params->file_task_runner;
@@ -279,7 +281,7 @@ void HidServiceLinux::OnPathOpenError(const std::string& device_path,
 
 // static
 void HidServiceLinux::ValidateFdOnBlockingThread(
-    scoped_ptr<ConnectParams> params,
+    std::unique_ptr<ConnectParams> params,
     dbus::FileDescriptor fd) {
   base::ThreadRestrictions::AssertIOAllowed();
   fd.CheckValidity();
@@ -291,7 +293,8 @@ void HidServiceLinux::ValidateFdOnBlockingThread(
 #else
 
 // static
-void HidServiceLinux::OpenOnBlockingThread(scoped_ptr<ConnectParams> params) {
+void HidServiceLinux::OpenOnBlockingThread(
+    std::unique_ptr<ConnectParams> params) {
   base::ThreadRestrictions::AssertIOAllowed();
   scoped_refptr<base::SingleThreadTaskRunner> task_runner = params->task_runner;
 
@@ -324,7 +327,7 @@ void HidServiceLinux::OpenOnBlockingThread(scoped_ptr<ConnectParams> params) {
 #endif  // defined(OS_CHROMEOS)
 
 // static
-void HidServiceLinux::FinishOpen(scoped_ptr<ConnectParams> params) {
+void HidServiceLinux::FinishOpen(std::unique_ptr<ConnectParams> params) {
   base::ThreadRestrictions::AssertIOAllowed();
   scoped_refptr<base::SingleThreadTaskRunner> task_runner = params->task_runner;
 
@@ -340,7 +343,7 @@ void HidServiceLinux::FinishOpen(scoped_ptr<ConnectParams> params) {
 }
 
 // static
-void HidServiceLinux::CreateConnection(scoped_ptr<ConnectParams> params) {
+void HidServiceLinux::CreateConnection(std::unique_ptr<ConnectParams> params) {
   DCHECK(params->device_file.IsValid());
   params->callback.Run(make_scoped_refptr(new HidConnectionLinux(
       params->device_info, std::move(params->device_file),

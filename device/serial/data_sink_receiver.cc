@@ -5,6 +5,7 @@
 #include "device/serial/data_sink_receiver.h"
 
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -143,7 +144,7 @@ void DataSinkReceiver::RunReadyCallback() {
       new Buffer(this,
                  pending_data_buffers_.front()->GetData(),
                  pending_data_buffers_.front()->GetRemainingBytes());
-  ready_callback_.Run(scoped_ptr<ReadOnlyBuffer>(buffer_in_use_));
+  ready_callback_.Run(std::unique_ptr<ReadOnlyBuffer>(buffer_in_use_));
 }
 
 void DataSinkReceiver::Done(uint32_t bytes_read) {

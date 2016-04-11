@@ -4,13 +4,13 @@
 
 #include "device/serial/serial_device_enumerator_win.h"
 
-#include <windows.h>
-
 #include <devguid.h>
 #include <setupapi.h>
 #include <stdint.h>
+#include <windows.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -39,7 +39,7 @@ bool GetProperty(HDEVINFO dev_info,
   if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
     return false;
 
-  scoped_ptr<wchar_t[]> buffer(new wchar_t[buffer_size]);
+  std::unique_ptr<wchar_t[]> buffer(new wchar_t[buffer_size]);
   if (!SetupDiGetDeviceRegistryProperty(dev_info, &dev_info_data, key, nullptr,
                                         reinterpret_cast<PBYTE>(buffer.get()),
                                         buffer_size, nullptr))
@@ -154,8 +154,9 @@ mojo::Array<serial::DeviceInfoPtr> GetDevicesOld() {
 }  // namespace
 
 // static
-scoped_ptr<SerialDeviceEnumerator> SerialDeviceEnumerator::Create() {
-  return scoped_ptr<SerialDeviceEnumerator>(new SerialDeviceEnumeratorWin());
+std::unique_ptr<SerialDeviceEnumerator> SerialDeviceEnumerator::Create() {
+  return std::unique_ptr<SerialDeviceEnumerator>(
+      new SerialDeviceEnumeratorWin());
 }
 
 SerialDeviceEnumeratorWin::SerialDeviceEnumeratorWin() {}

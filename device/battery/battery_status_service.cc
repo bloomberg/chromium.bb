@@ -34,7 +34,7 @@ BatteryStatusService* BatteryStatusService::GetInstance() {
       base::LeakySingletonTraits<BatteryStatusService>>::get();
 }
 
-scoped_ptr<BatteryStatusService::BatteryUpdateSubscription>
+std::unique_ptr<BatteryStatusService::BatteryUpdateSubscription>
 BatteryStatusService::AddCallback(const BatteryUpdateCallback& callback) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(!is_shutdown_);
@@ -100,7 +100,7 @@ BatteryStatusService::GetUpdateCallbackForTesting() const {
 }
 
 void BatteryStatusService::SetBatteryManagerForTesting(
-    scoped_ptr<BatteryStatusManager> test_battery_manager) {
+    std::unique_ptr<BatteryStatusManager> test_battery_manager) {
   battery_fetcher_ = std::move(test_battery_manager);
   status_ = BatteryStatus();
   status_updated_ = false;

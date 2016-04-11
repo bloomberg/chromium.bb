@@ -69,11 +69,12 @@ void SerialConnection::OnSendCancelled(int32_t error) {
   io_handler_->CancelWrite(static_cast<serial::SendError>(error));
 }
 
-void SerialConnection::OnSendPipeReady(scoped_ptr<ReadOnlyBuffer> buffer) {
+void SerialConnection::OnSendPipeReady(std::unique_ptr<ReadOnlyBuffer> buffer) {
   io_handler_->Write(std::move(buffer));
 }
 
-void SerialConnection::OnReceivePipeReady(scoped_ptr<WritableBuffer> buffer) {
+void SerialConnection::OnReceivePipeReady(
+    std::unique_ptr<WritableBuffer> buffer) {
   io_handler_->Read(std::move(buffer));
 }
 

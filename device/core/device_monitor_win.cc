@@ -4,14 +4,15 @@
 
 #include "device/core/device_monitor_win.h"
 
-#include <windows.h>
 #include <dbt.h>
+#include <windows.h>
+
 #include <map>
+#include <memory>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/message_window.h"
@@ -55,7 +56,7 @@ class DeviceMonitorMessageWindow {
   }
 
   DeviceMonitorWin* GetForDeviceInterface(const GUID& device_interface) {
-    scoped_ptr<DeviceMonitorWin>& device_monitor =
+    std::unique_ptr<DeviceMonitorWin>& device_monitor =
         device_monitors_[device_interface];
     if (!device_monitor) {
       device_monitor.reset(new DeviceMonitorWin());
@@ -138,9 +139,10 @@ class DeviceMonitorMessageWindow {
     return false;
   }
 
-  std::map<GUID, scoped_ptr<DeviceMonitorWin>, CompareGUID> device_monitors_;
+  std::map<GUID, std::unique_ptr<DeviceMonitorWin>, CompareGUID>
+      device_monitors_;
   DeviceMonitorWin all_device_monitor_;
-  scoped_ptr<base::win::MessageWindow> window_;
+  std::unique_ptr<base::win::MessageWindow> window_;
   HDEVNOTIFY notify_handle_ = NULL;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceMonitorMessageWindow);

@@ -5,11 +5,12 @@
 #include "device/usb/mojo/device_manager_impl.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "device/core/device_client.h"
 #include "device/usb/mojo/device_impl.h"

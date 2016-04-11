@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 
 #include "base/callback.h"
@@ -25,7 +26,8 @@ namespace device {
 class DataReceiver : public base::RefCounted<DataReceiver>,
                      public serial::DataSourceClient {
  public:
-  typedef base::Callback<void(scoped_ptr<ReadOnlyBuffer>)> ReceiveDataCallback;
+  typedef base::Callback<void(std::unique_ptr<ReadOnlyBuffer>)>
+      ReceiveDataCallback;
   typedef base::Callback<void(int32_t error)> ReceiveErrorCallback;
 
   // Constructs a DataReceiver to receive data from |source|, using a buffer
@@ -85,7 +87,7 @@ class DataReceiver : public base::RefCounted<DataReceiver>,
   bool shut_down_;
 
   // The current pending receive operation if there is one.
-  scoped_ptr<PendingReceive> pending_receive_;
+  std::unique_ptr<PendingReceive> pending_receive_;
 
   // The queue of pending data frames (data or an error) received from the
   // DataSource.

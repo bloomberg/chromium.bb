@@ -5,7 +5,8 @@
 #ifndef DEVICE_BATTERY_BATTERY_STATUS_MANAGER_H_
 #define DEVICE_BATTERY_BATTERY_STATUS_MANAGER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "device/battery/battery_status_service.h"
 
 namespace device {
@@ -15,7 +16,7 @@ class BatteryStatusManager {
  public:
   // Creates a BatteryStatusManager object. |callback| should be called when the
   // battery status changes.
-  static scoped_ptr<BatteryStatusManager> Create(
+  static std::unique_ptr<BatteryStatusManager> Create(
       const BatteryStatusService::BatteryUpdateCallback& callback);
 
   virtual ~BatteryStatusManager() {}

@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/threading/thread.h"
@@ -60,37 +62,35 @@ bool GetPropertyAsBoolean(const base::DictionaryValue& dictionary,
   return dictionary.GetBoolean(property_name, &value) ? value : default_value;
 }
 
-scoped_ptr<base::DictionaryValue> GetPropertiesAsDictionary(
+std::unique_ptr<base::DictionaryValue> GetPropertiesAsDictionary(
     dbus::ObjectProxy* proxy) {
   dbus::MethodCall method_call(dbus::kPropertiesInterface,
                                dbus::kPropertiesGetAll);
   dbus::MessageWriter builder(&method_call);
   builder.AppendString(kUPowerDeviceName);
 
-  scoped_ptr<dbus::Response> response(
-      proxy->CallMethodAndBlock(&method_call,
-                                dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
+  std::unique_ptr<dbus::Response> response(proxy->CallMethodAndBlock(
+      &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
   if (response) {
     dbus::MessageReader reader(response.get());
-    scoped_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
+    std::unique_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
     base::DictionaryValue* dictionary_value = NULL;
     if (value && value->GetAsDictionary(&dictionary_value)) {
       ignore_result(value.release());
-      return scoped_ptr<base::DictionaryValue>(dictionary_value);
+      return std::unique_ptr<base::DictionaryValue>(dictionary_value);
     }
   }
-  return scoped_ptr<base::DictionaryValue>();
+  return std::unique_ptr<base::DictionaryValue>();
 }
 
-scoped_ptr<PathsVector> GetPowerSourcesPaths(dbus::ObjectProxy* proxy) {
-  scoped_ptr<PathsVector> paths(new PathsVector());
+std::unique_ptr<PathsVector> GetPowerSourcesPaths(dbus::ObjectProxy* proxy) {
+  std::unique_ptr<PathsVector> paths(new PathsVector());
   if (!proxy)
     return paths;
 
   dbus::MethodCall method_call(kUPowerServiceName, kUPowerEnumerateDevices);
-  scoped_ptr<dbus::Response> response(
-      proxy->CallMethodAndBlock(&method_call,
-                                dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
+  std::unique_ptr<dbus::Response> response(proxy->CallMethodAndBlock(
+      &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
 
   if (response) {
     dbus::MessageReader reader(response.get());
@@ -136,14 +136,15 @@ class BatteryStatusNotificationThread : public base::Thread {
     dbus::ObjectProxy* power_proxy =
         system_bus_->GetObjectProxy(kUPowerServiceName,
                                     dbus::ObjectPath(kUPowerPath));
-    scoped_ptr<PathsVector> device_paths = GetPowerSourcesPaths(power_proxy);
+    std::unique_ptr<PathsVector> device_paths =
+        GetPowerSourcesPaths(power_proxy);
     int num_batteries = 0;
 
     for (size_t i = 0; i < device_paths->size(); ++i) {
       const dbus::ObjectPath& device_path = device_paths->at(i);
       dbus::ObjectProxy* device_proxy = system_bus_->GetObjectProxy(
           kUPowerServiceName, device_path);
-      scoped_ptr<base::DictionaryValue> dictionary =
+      std::unique_ptr<base::DictionaryValue> dictionary =
           GetPropertiesAsDictionary(device_proxy);
 
       if (!dictionary)
@@ -250,7 +251,7 @@ class BatteryStatusNotificationThread : public base::Thread {
     if (!system_bus_.get())
       return;
 
-    scoped_ptr<base::DictionaryValue> dictionary =
+    std::unique_ptr<base::DictionaryValue> dictionary =
         GetPropertiesAsDictionary(battery_proxy_);
     if (dictionary)
       callback_.Run(ComputeWebBatteryStatus(*dictionary));
@@ -315,7 +316,7 @@ class BatteryStatusManagerLinux : public BatteryStatusManager {
   }
 
   BatteryStatusService::BatteryUpdateCallback callback_;
-  scoped_ptr<BatteryStatusNotificationThread> notifier_thread_;
+  std::unique_ptr<BatteryStatusNotificationThread> notifier_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(BatteryStatusManagerLinux);
 };
@@ -368,9 +369,9 @@ BatteryStatus ComputeWebBatteryStatus(const base::DictionaryValue& dictionary) {
 }
 
 // static
-scoped_ptr<BatteryStatusManager> BatteryStatusManager::Create(
+std::unique_ptr<BatteryStatusManager> BatteryStatusManager::Create(
     const BatteryStatusService::BatteryUpdateCallback& callback) {
-  return scoped_ptr<BatteryStatusManager>(
+  return std::unique_ptr<BatteryStatusManager>(
       new BatteryStatusManagerLinux(callback));
 }
 

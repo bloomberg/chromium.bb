@@ -5,9 +5,10 @@
 #ifndef DEVICE_USB_USB_CONTEXT_H_
 #define DEVICE_USB_USB_CONTEXT_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 
 struct libusb_context;
@@ -35,7 +36,7 @@ class UsbContext : public base::RefCountedThreadSafe<UsbContext> {
   class UsbEventHandler;
 
   PlatformUsbContext context_;
-  scoped_ptr<UsbEventHandler> event_handler_;
+  std::unique_ptr<UsbEventHandler> event_handler_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbContext);

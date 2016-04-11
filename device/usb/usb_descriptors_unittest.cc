@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/usb/usb_descriptors.h"
+
 #include <stdint.h>
+
+#include <memory>
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "device/usb/mock_usb_device_handle.h"
-#include "device/usb/usb_descriptors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -23,7 +26,7 @@ ACTION_P2(InvokeCallback, data, length) {
 }
 
 void ExpectStringDescriptors(
-    scoped_ptr<std::map<uint8_t, base::string16>> string_map) {
+    std::unique_ptr<std::map<uint8_t, base::string16>> string_map) {
   EXPECT_EQ(3u, string_map->size());
   EXPECT_EQ(base::ASCIIToUTF16("String 1"), (*string_map)[1]);
   EXPECT_EQ(base::ASCIIToUTF16("String 2"), (*string_map)[2]);
@@ -181,7 +184,7 @@ TEST_F(UsbDescriptorsTest, OneByteStringDescriptor) {
 }
 
 TEST_F(UsbDescriptorsTest, ReadStringDescriptors) {
-  scoped_ptr<std::map<uint8_t, base::string16>> string_map(
+  std::unique_ptr<std::map<uint8_t, base::string16>> string_map(
       new std::map<uint8_t, base::string16>());
   (*string_map)[1] = base::string16();
   (*string_map)[2] = base::string16();

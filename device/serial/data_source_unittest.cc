@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -98,7 +100,7 @@ class DataSourceTest : public testing::Test {
     WaitForEvent(EVENT_RECEIVE_COMPLETE);
   }
 
-  void OnDataReceived(scoped_ptr<ReadOnlyBuffer> buffer) {
+  void OnDataReceived(std::unique_ptr<ReadOnlyBuffer> buffer) {
     ASSERT_TRUE(buffer);
     error_ = 0;
     buffer_ = std::move(buffer);
@@ -112,23 +114,23 @@ class DataSourceTest : public testing::Test {
     EventReceived(EVENT_RECEIVE_COMPLETE);
   }
 
-  void CanWriteData(scoped_ptr<WritableBuffer> buffer) {
+  void CanWriteData(std::unique_ptr<WritableBuffer> buffer) {
     write_buffer_ = std::move(buffer);
     EventReceived(EVENT_WRITE_BUFFER_READY);
   }
 
  protected:
   static const int32_t kFatalError;
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
   base::Closure stop_run_loop_;
 
   scoped_refptr<DataSourceSender> source_sender_;
   scoped_refptr<DataReceiver> receiver_;
 
-  scoped_ptr<ReadOnlyBuffer> buffer_;
+  std::unique_ptr<ReadOnlyBuffer> buffer_;
   std::string buffer_contents_;
   int32_t error_;
-  scoped_ptr<WritableBuffer> write_buffer_;
+  std::unique_ptr<WritableBuffer> write_buffer_;
 
   bool seen_connection_error_;
 

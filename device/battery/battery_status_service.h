@@ -5,9 +5,10 @@
 #ifndef DEVICE_BATTERY_BATTERY_STATUS_SERVICE_H_
 #define DEVICE_BATTERY_BATTERY_STATUS_SERVICE_H_
 
+#include <memory>
+
 #include "base/callback_list.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "device/battery/battery_export.h"
 #include "device/battery/battery_status.mojom.h"
@@ -32,7 +33,7 @@ class DEVICE_BATTERY_EXPORT BatteryStatusService {
   // Adds a callback to receive battery status updates.  Must be called on the
   // main thread. The callback itself will be called on the main thread as well.
   // NOTE: The callback may be run before AddCallback returns!
-  scoped_ptr<BatteryUpdateSubscription> AddCallback(
+  std::unique_ptr<BatteryUpdateSubscription> AddCallback(
       const BatteryUpdateCallback& callback);
 
   // Gracefully clean-up.
@@ -40,7 +41,7 @@ class DEVICE_BATTERY_EXPORT BatteryStatusService {
 
   // Injects a custom battery status manager for testing purposes.
   void SetBatteryManagerForTesting(
-      scoped_ptr<BatteryStatusManager> test_battery_manager);
+      std::unique_ptr<BatteryStatusManager> test_battery_manager);
 
   // Returns callback to invoke when battery is changed. Used for testing.
   const BatteryUpdateCallback& GetUpdateCallbackForTesting() const;
@@ -59,7 +60,7 @@ class DEVICE_BATTERY_EXPORT BatteryStatusService {
   void ConsumersChanged();
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  scoped_ptr<BatteryStatusManager> battery_fetcher_;
+  std::unique_ptr<BatteryStatusManager> battery_fetcher_;
   BatteryUpdateCallbackList callback_list_;
   BatteryUpdateCallback update_callback_;
   BatteryStatus status_;

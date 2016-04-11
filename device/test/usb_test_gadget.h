@@ -5,11 +5,11 @@
 #ifndef DEVICE_TEST_USB_TEST_GADGET_H_
 #define DEVICE_TEST_USB_TEST_GADGET_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -32,7 +32,7 @@ class UsbTestGadget {
   virtual ~UsbTestGadget() {}
 
   static bool IsTestEnabled();
-  static scoped_ptr<UsbTestGadget> Claim(
+  static std::unique_ptr<UsbTestGadget> Claim(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   virtual bool Unclaim() = 0;

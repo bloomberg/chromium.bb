@@ -4,6 +4,7 @@
 
 #include "device/battery/battery_status_service.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -68,7 +69,7 @@ class BatteryStatusServiceTest : public testing::Test {
 
     // We keep a raw pointer to the FakeBatteryManager, which we expect to
     // remain valid for the lifetime of the BatteryStatusService.
-    scoped_ptr<FakeBatteryManager> battery_manager(
+    std::unique_ptr<FakeBatteryManager> battery_manager(
         new FakeBatteryManager(battery_service_.GetUpdateCallbackForTesting()));
     battery_manager_ = battery_manager.get();
 
@@ -83,7 +84,7 @@ class BatteryStatusServiceTest : public testing::Test {
     return battery_manager_;
   }
 
-  scoped_ptr<BatterySubscription> AddCallback(
+  std::unique_ptr<BatterySubscription> AddCallback(
       const BatteryStatusService::BatteryUpdateCallback& callback) {
     return battery_service_.AddCallback(callback);
   }
@@ -132,7 +133,7 @@ class BatteryStatusServiceTest : public testing::Test {
 };
 
 TEST_F(BatteryStatusServiceTest, AddFirstCallback) {
-  scoped_ptr<BatterySubscription> subscription1 = AddCallback(callback1());
+  std::unique_ptr<BatterySubscription> subscription1 = AddCallback(callback1());
   EXPECT_EQ(1, battery_manager()->start_invoked_count());
   EXPECT_EQ(0, battery_manager()->stop_invoked_count());
   subscription1.reset();
@@ -141,21 +142,21 @@ TEST_F(BatteryStatusServiceTest, AddFirstCallback) {
 }
 
 TEST_F(BatteryStatusServiceTest, AddCallbackAfterUpdate) {
-  scoped_ptr<BatterySubscription> subscription1 = AddCallback(callback1());
+  std::unique_ptr<BatterySubscription> subscription1 = AddCallback(callback1());
   BatteryStatus status;
   battery_manager()->InvokeUpdateCallback(status);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, callback1_invoked_count());
   EXPECT_EQ(0, callback2_invoked_count());
 
-  scoped_ptr<BatterySubscription> subscription2 = AddCallback(callback2());
+  std::unique_ptr<BatterySubscription> subscription2 = AddCallback(callback2());
   EXPECT_EQ(1, callback1_invoked_count());
   EXPECT_EQ(1, callback2_invoked_count());
 }
 
 TEST_F(BatteryStatusServiceTest, TwoCallbacksUpdate) {
-  scoped_ptr<BatterySubscription> subscription1 = AddCallback(callback1());
-  scoped_ptr<BatterySubscription> subscription2 = AddCallback(callback2());
+  std::unique_ptr<BatterySubscription> subscription1 = AddCallback(callback1());
+  std::unique_ptr<BatterySubscription> subscription2 = AddCallback(callback2());
 
   BatteryStatus status;
   status.charging = true;
@@ -174,8 +175,8 @@ TEST_F(BatteryStatusServiceTest, TwoCallbacksUpdate) {
 }
 
 TEST_F(BatteryStatusServiceTest, RemoveOneCallback) {
-  scoped_ptr<BatterySubscription> subscription1 = AddCallback(callback1());
-  scoped_ptr<BatterySubscription> subscription2 = AddCallback(callback2());
+  std::unique_ptr<BatterySubscription> subscription1 = AddCallback(callback1());
+  std::unique_ptr<BatterySubscription> subscription2 = AddCallback(callback2());
 
   BatteryStatus status;
   battery_manager()->InvokeUpdateCallback(status);

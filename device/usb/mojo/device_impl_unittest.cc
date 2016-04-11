@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <numeric>
 #include <queue>
 #include <set>
@@ -424,7 +425,7 @@ class USBDeviceImplTest : public testing::Test {
     callback.Run(buffer, packets);
   }
 
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
   scoped_refptr<MockUsbDevice> mock_device_;
   scoped_refptr<MockUsbDeviceHandle> mock_handle_;
   bool is_device_open_;

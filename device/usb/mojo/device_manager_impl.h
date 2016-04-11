@@ -5,12 +5,12 @@
 #ifndef DEVICE_USB_MOJO_DEVICE_MANAGER_IMPL_H_
 #define DEVICE_USB_MOJO_DEVICE_MANAGER_IMPL_H_
 
+#include <memory>
 #include <queue>
 #include <set>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "device/usb/public/interfaces/device_manager.mojom.h"

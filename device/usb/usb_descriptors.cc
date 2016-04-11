@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "base/barrier_closure.h"
@@ -19,7 +20,7 @@ namespace device {
 namespace {
 
 using IndexMap = std::map<uint8_t, base::string16>;
-using IndexMapPtr = scoped_ptr<IndexMap>;
+using IndexMapPtr = std::unique_ptr<IndexMap>;
 
 // Standard USB requests and descriptor types:
 const uint8_t kGetDescriptorRequest = 0x06;
