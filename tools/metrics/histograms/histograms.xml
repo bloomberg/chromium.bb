@@ -378,6 +378,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.NTP.Impression" enum="NTPImpressionType">
+  <owner>finkm@chromium.org</owner>
+  <summary>
+    Counts impressions of the NTP on Android. It also counts potential
+    impressions. A potential impression is a place where it would make sense to
+    open the NTP instead of the current view. E.g. the no-tab view is counted as
+    a potential impression since this view could be replaced with the NTP. For
+    better comparison regular impressions are also counted. The no-tab view
+    counting happens right after the user closed the last tab and the regular
+    impression counting happens at construction time of the NTP (=whenever a new
+    tab is opened).
+  </summary>
+</histogram>
+
 <histogram name="Android.SeccompStatus.Prctl" enum="AndroidSeccompStatus">
   <owner>rsesek@chromium.org</owner>
   <summary>
@@ -77739,6 +77753,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="11" label="Clicked on a tile."/>
   <int value="12" label="Clicked to other NTP pane."/>
   <int value="13" label="Other action"/>
+</enum>
+
+<enum name="NTPImpressionType" type="int">
+  <int value="0" label="regular NTP impression"/>
+  <int value="1" label="potential NTP impression - no open tab"/>
 </enum>
 
 <enum name="NtpMostVisitedScheme" type="int">

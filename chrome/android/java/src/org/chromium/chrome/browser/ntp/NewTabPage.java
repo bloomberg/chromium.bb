@@ -513,6 +513,7 @@ public class NewTabPage
             mIsLoaded = true;
             mIsVisible = true;
             StartupMetrics.getInstance().recordOpenedNTP();
+            NewTabPageUma.recordNTPImpression(NewTabPageUma.NTP_IMPRESSION_REGULAR);
 
             if (mIsDestroyed) return;
 
@@ -533,7 +534,6 @@ public class NewTabPage
                     }
                 }
             }
-
             SyncSessionsMetrics.recordYoungestForeignTabAgeOnNTP();
         }
 

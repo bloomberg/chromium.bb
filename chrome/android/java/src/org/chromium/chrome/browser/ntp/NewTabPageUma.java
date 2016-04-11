@@ -51,6 +51,15 @@ public class NewTabPageUma {
     // The number of possible actions pertinent to Rappor
     private static final int RAPPOR_NUM_ACTIONS = 2;
 
+    // Regular NTP impression (usually when a new tab is opened)
+    public static final int NTP_IMPRESSION_REGULAR = 0;
+
+    // Potential NTP impressions (instead of blank page if no tab is open)
+    public static final int NTP_IMPESSION_POTENTIAL_NOTAB = 1;
+
+    // The number of possible NTP impression types
+    private static final int NUM_NTP_IMPRESSION = 2;
+
     /** Possible interactions with the snippets. */
     @IntDef({SNIPPETS_ACTION_SHOWN, SNIPPETS_ACTION_SCROLLED, SNIPPETS_ACTION_CLICKED})
     @Retention(RetentionPolicy.SOURCE)
@@ -134,5 +143,16 @@ public class NewTabPageUma {
     public static void recordSnippetAction(@SnippetsAction int action) {
         RecordHistogram.recordEnumeratedHistogram(
                 "NewTabPage.Snippets.Interactions", action, NUM_SNIPPETS_ACTIONS);
+    }
+
+    /**
+     * Record a NTP impression (even potential ones to make informed product decisions).
+     * @param impressionType Type of the impression from NewTabPageUma.java
+     */
+    public static void recordNTPImpression(int impressionType) {
+        assert impressionType >= 0;
+        assert impressionType < NUM_NTP_IMPRESSION;
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.NTP.Impression", impressionType, NUM_NTP_IMPRESSION);
     }
 }

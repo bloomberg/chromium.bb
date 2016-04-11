@@ -68,6 +68,7 @@ import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
+import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.omaha.OmahaClient;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
@@ -104,6 +105,7 @@ import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 
 /**
  * This is the main activity for ChromeMobile when not running in document mode.  All the tabs
@@ -231,24 +233,28 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             mTabModelObserver = new EmptyTabModelObserver() {
                 @Override
                 public void didCloseTab(int tabId, boolean incognito) {
-                    closeIfNoTabsAndHomepageEnabled();
+                    closeIfNoTabsAndHomepageEnabled(false);
                 }
 
                 @Override
                 public void tabPendingClosure(Tab tab) {
-                    closeIfNoTabsAndHomepageEnabled();
+                    closeIfNoTabsAndHomepageEnabled(true);
                 }
 
                 @Override
                 public void tabRemoved(Tab tab) {
-                    closeIfNoTabsAndHomepageEnabled();
+                    closeIfNoTabsAndHomepageEnabled(false);
                 }
 
-                private void closeIfNoTabsAndHomepageEnabled() {
-                    // If the last tab is closed, and homepage is enabled, then exit Chrome.
-                    if (HomepageManager.isHomepageEnabled(getApplicationContext())
-                            && getTabModelSelector().getTotalTabCount() == 0) {
-                        finish();
+                private void closeIfNoTabsAndHomepageEnabled(boolean isPendingClosure) {
+                    if (getTabModelSelector().getTotalTabCount() == 0) {
+                        // If the last tab is closed, and homepage is enabled, then exit Chrome.
+                        if (HomepageManager.isHomepageEnabled(getApplicationContext())) {
+                            finish();
+                        } else if (isPendingClosure) {
+                            NewTabPageUma.recordNTPImpression(
+                                    NewTabPageUma.NTP_IMPESSION_POTENTIAL_NOTAB);
+                        }
                     }
                 }
 
@@ -260,6 +266,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                                 R.string.open_in_new_tab_toast,
                                 Toast.LENGTH_SHORT).show();
                     }
+                }
+
+                @Override
+                public void allTabsPendingClosure(List<Integer> tabIds) {
+                    NewTabPageUma.recordNTPImpression(
+                            NewTabPageUma.NTP_IMPESSION_POTENTIAL_NOTAB);
                 }
             };
             for (TabModel model : mTabModelSelectorImpl.getModels()) {
