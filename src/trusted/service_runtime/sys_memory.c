@@ -10,7 +10,6 @@
 #include <string.h>
 
 #include "native_client/src/include/build_config.h"
-#include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -183,11 +182,9 @@ int32_t NaClSysBrk(struct NaClAppThread *natp,
     /*
      * Zero out memory between old break and new break.
      */
-    ASSERT(sys_new_break > sys_break);
+    CHECK(sys_new_break > sys_break);
     memset((void *) sys_break, 0, sys_new_break - sys_break);
   }
-
-
 
 cleanup:
   NaClXMutexUnlock(&nap->mu);
@@ -454,7 +451,7 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
       host_rounded_file_bytes = NaClRoundHostAllocPage((size_t) file_bytes);
     }
 
-    ASSERT(host_rounded_file_bytes <= (nacl_off64_t) kMaxUsableFileSize);
+    CHECK(host_rounded_file_bytes <= (nacl_off64_t) kMaxUsableFileSize);
     /*
      * We need to deal with NaClRoundHostAllocPage rounding up to zero
      * from ~0u - n, where n < 4096 or 65536 (== 1 alloc page).

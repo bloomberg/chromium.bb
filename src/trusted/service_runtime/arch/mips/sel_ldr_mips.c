@@ -6,7 +6,6 @@
 
 #include <string.h>
 
-#include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
@@ -42,9 +41,7 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
    * of NaClSyscallSeg.
    */
 
-  ASSERT_MSG(tramp_size <= 8 * sizeof(unsigned long),
-     "Trampoline size is bigger than tramp_buffer size");
-
+  CHECK(tramp_size <= sizeof(tramp_buffer));
   memcpy(tramp_buffer, tramp_ptr, tramp_size);
 
   /*
