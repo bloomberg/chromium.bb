@@ -3438,6 +3438,9 @@ void EventHandler::defaultBackspaceEventHandler(KeyboardEvent* event)
 {
     ASSERT(event->type() == EventTypeNames::keydown);
 
+    if (!RuntimeEnabledFeatures::backspaceDefaultHandlerEnabled())
+        return;
+
     if (event->ctrlKey() || event->metaKey() || event->altKey())
         return;
 

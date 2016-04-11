@@ -28,6 +28,7 @@ ApplicationCache status=stable
 AudioOutputDevices status=stable
 AudioVideoTracks status=experimental
 BackgroundSync status=stable
+BackspaceDefaultHandler status=test
 CacheIgnoreSearchOption status=experimental
 Canvas2dImageChromium status=experimental
 ClientHints status=stable
