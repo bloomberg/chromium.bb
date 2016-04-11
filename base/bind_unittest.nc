@@ -68,7 +68,7 @@ template <typename T>
 void VoidPolymorphic1(T t) {
 }
 
-#if defined(NCTEST_METHOD_ON_CONST_OBJECT)  // [r"error: no matching member function for call to 'Run'"]
+#if defined(NCTEST_METHOD_ON_CONST_OBJECT)  // [r"fatal error: cannot initialize a variable of type 'base::NoRef \*' with an rvalue of type 'const base::HasRef \*'"]
 
 // Method bound to const-object.
 //
