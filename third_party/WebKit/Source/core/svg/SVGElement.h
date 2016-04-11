@@ -139,7 +139,7 @@ public:
 
     PassRefPtr<ComputedStyle> customStyleForLayoutObject() final;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     virtual bool isAnimatableAttribute(const QualifiedName&) const;
 #endif
 

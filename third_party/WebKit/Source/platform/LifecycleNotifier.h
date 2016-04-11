@@ -74,7 +74,7 @@ protected:
 
     ObserverSet m_observers;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     T* context() { return static_cast<T*>(this); }
 #endif
 
