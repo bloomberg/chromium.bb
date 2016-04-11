@@ -240,6 +240,7 @@
       'browser/media/media_canplaytype_browsertest.cc',
       'browser/media/media_source_browsertest.cc',
       'browser/media/session/media_session_browsertest.cc',
+      'browser/media/session/media_session_delegate_android_browsertest.cc',
       'browser/media/session/media_session_delegate_default_browsertest.cc',
       'browser/media/session/media_session_visibility_browsertest.cc',
       'browser/media/session/mock_media_session_observer.cc',
