@@ -26,7 +26,7 @@
 
   <interface name="zwp_input_method_context_v1" version="1">
     <description summary="input method context">
-      Corresponds to a text input on input method side. An input method context
+      Corresponds to a text input on the input method side. An input method context
       is created on text input activation on the input method side. It allows to
       receive information about the text input from the application via events.
       Input method contexts do not keep state after deactivation and should be
@@ -73,11 +73,11 @@
       <description summary="pre-edit string">
 	Send the pre-edit string text to the application text input.
 
-	The commit text can be used to replace the preedit text on reset (for
+	The commit text can be used to replace the pre-edit text on reset (for
 	example on unfocus).
 
-	Also previously sent preedit_style and preedit_cursor requests are
-	processed bt the text_input also.
+	Previously sent preedit_style and preedit_cursor requests are also
+	processed by the text_input.
       </description>
       <arg name="serial" type="uint" summary="serial of the latest known text input state"/>
       <arg name="text" type="string"/>
@@ -91,7 +91,7 @@
 	the composing text (as byte offset). Multiple styles can
 	be applied to a composing text.
 
-	This request should be sent before sending preedit_string request.
+	This request should be sent before sending a preedit_string request.
       </description>
       <arg name="index" type="uint"/>
       <arg name="length" type="uint"/>
@@ -105,15 +105,15 @@
 
 	When index is negative no cursor should be displayed.
 
-	This request should be sent before sending preedit_string request.
+	This request should be sent before sending a preedit_string request.
       </description>
       <arg name="index" type="int"/>
     </request>
 
     <request name="delete_surrounding_text">
       <description summary="delete text">
-	This request will be handled on text_input side as part of a directly
-	following commit_string request.
+	This request will be handled on the text_input side directly following
+	a commit_string request.
       </description>
       <arg name="index" type="int"/>
       <arg name="length" type="uint"/>
@@ -122,14 +122,15 @@
     <request name="cursor_position">
       <description summary="set cursor to a new position">
 	Sets the cursor and anchor to a new position. Index is the new cursor
-	position in bytes (when >= 0 relative to the end of inserted text
-	else relative to beginning of inserted text). Anchor is the new anchor
-	position in bytes (when >= 0 relative to the end of inserted text, else
-	relative to beginning of inserted text). When there should be no
-	selected text anchor should be the same as index.
+	position in bytes (when >= 0 relative to the end of inserted text,
+	otherwise relative to the beginning of the inserted text). Anchor is
+	the new anchor position in bytes (when >= 0 relative to the end of the
+	inserted text, otherwise relative to the beginning of the inserted
+	text). When there should be no selected text, anchor should be the same
+	as index.
 
-	This request will be handled on text_input side as part of a directly
-	following commit_string request.
+	This request will be handled on the text_input side directly following
+	a commit_string request.
       </description>
       <arg name="index" type="int"/>
       <arg name="anchor" type="int"/>
@@ -143,7 +144,7 @@
       <description summary="keysym">
 	Notify when a key event was sent. Key events should not be used for
 	normal text input operations, which should be done with commit_string,
-	delete_surrounfing_text, etc. The key event follows the wl_keyboard key
+	delete_surrounding_text, etc. The key event follows the wl_keyboard key
 	event convention. Sym is a XKB keysym, state a wl_keyboard key_state.
       </description>
       <arg name="serial" type="uint" summary="serial of the latest known text input state"/>
@@ -184,7 +185,7 @@
       <description summary="forward modifiers event">
 	Should be used when filtering key events with grab_keyboard.
 
-	When the wl_keyboard::modifiers event should be also send to the
+	When the wl_keyboard::modifiers event should also be sent to the
 	client, forward it with this request. The arguments should be the ones
 	from the wl_keyboard::modifiers event.
       </description>
@@ -199,6 +200,7 @@
       <arg name="serial" type="uint" summary="serial of the latest known text input state"/>
       <arg name="language" type="string"/>
     </request>
+
     <request name="text_direction">
       <arg name="serial" type="uint" summary="serial of the latest known text input state"/>
       <arg name="direction" type="uint"/>
@@ -241,7 +243,7 @@
 
   <interface name="zwp_input_method_v1" version="1">
     <description summary="input method">
-      An input method object is responsible to compose text in response to
+      An input method object is responsible for composing text in response to
       input from hardware or virtual keyboards. There is one input method
       object per seat. On activate there is a new input method context object
       created which allows the input method to communicate with the text input.
