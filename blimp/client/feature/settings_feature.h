@@ -24,6 +24,7 @@ class BLIMP_CLIENT_EXPORT SettingsFeature : public BlimpMessageProcessor {
       std::unique_ptr<BlimpMessageProcessor> processor);
 
   void SetRecordWholeDocument(bool record_whole_document);
+  void SendUserAgentOSVersionInfo(const std::string& client_os_info);
 
  private:
   // BlimpMessageProcessor implementation.

@@ -9,6 +9,8 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/thread_task_runner_handle.h"
+#include "blimp/client/app/user_agent.h"
+#include "blimp/client/feature/settings_feature.h"
 #include "blimp/client/feature/tab_control_feature.h"
 #include "blimp/client/session/assignment_source.h"
 #include "jni/BlimpClientSession_jni.h"
@@ -78,6 +80,9 @@ BlimpClientSessionAndroid::~BlimpClientSessionAndroid() {}
 void BlimpClientSessionAndroid::OnConnected() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_BlimpClientSession_onConnected(env, java_obj_.obj());
+
+  GetSettingsFeature()->SendUserAgentOSVersionInfo(
+      GetOSVersionInfoForUserAgent());
 }
 
 void BlimpClientSessionAndroid::OnDisconnected(int result) {

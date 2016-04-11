@@ -34,6 +34,14 @@ void SettingsFeature::SetRecordWholeDocument(bool record_whole_document) {
                                               net::CompletionCallback());
 }
 
+void SettingsFeature::SendUserAgentOSVersionInfo(const std::string& osVersion) {
+  EngineSettingsMessage* engine_settings;
+  std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&engine_settings);
+  engine_settings->set_client_os_info(osVersion);
+  outgoing_message_processor_->ProcessMessage(std::move(message),
+                                              net::CompletionCallback());
+}
+
 void SettingsFeature::ProcessMessage(std::unique_ptr<BlimpMessage> message,
                                      const net::CompletionCallback& callback) {
   // We don't receive any messages from the engine yet.

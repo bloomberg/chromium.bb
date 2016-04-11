@@ -262,5 +262,9 @@ RenderWidgetFeature* BlimpClientSession::GetRenderWidgetFeature() const {
   return render_widget_feature_.get();
 }
 
+SettingsFeature* BlimpClientSession::GetSettingsFeature() const {
+  return settings_feature_.get();
+}
+
 }  // namespace client
 }  // namespace blimp

@@ -27,7 +27,7 @@ class EngineSettingsFeature : public BlimpMessageProcessor {
                       const net::CompletionCallback& callback) override;
 
  private:
-  void ProcessWebPreferences(const EngineSettingsMessage& settings);
+  void ProcessSettings(const EngineSettingsMessage& settings);
 
   SettingsManager* settings_manager_;
 

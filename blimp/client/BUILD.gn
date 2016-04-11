@@ -382,6 +382,8 @@ if (is_android) {
       "app/android/toolbar.h",
       "app/android/web_input_box.cc",
       "app/android/web_input_box.h",
+      "app/user_agent.cc",
+      "app/user_agent.h",
     ]
 
     libs = [ "android" ]

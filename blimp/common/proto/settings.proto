@@ -17,4 +17,7 @@ message SettingsMessage {
 message EngineSettingsMessage {
   // -----------------------Web Preferences----------------------
   optional bool record_whole_document = 1;
+
+  // For building user agent
+  optional string client_os_info = 2;
 }

@@ -7,6 +7,7 @@
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/settings.pb.h"
 #include "blimp/engine/app/settings_manager.h"
+#include "blimp/engine/common/blimp_content_client.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/web_preferences.h"
 #include "net/base/net_errors.h"
@@ -31,17 +32,23 @@ void EngineSettingsFeature::ProcessMessage(
   DCHECK(settings.has_engine_settings());
 
   const EngineSettingsMessage& engine_settings = settings.engine_settings();
-  ProcessWebPreferences(engine_settings);
+  ProcessSettings(engine_settings);
 
   callback.Run(net::OK);
 }
 
-void EngineSettingsFeature::ProcessWebPreferences(
+void EngineSettingsFeature::ProcessSettings(
     const EngineSettingsMessage& engine_settings) {
   if (engine_settings.has_record_whole_document()) {
     EngineSettings settings = settings_manager_->GetEngineSettings();
     settings.record_whole_document = engine_settings.record_whole_document();
     settings_manager_->UpdateEngineSettings(settings);
+  }
+
+  // Set the client OS information for building user agent.
+  if (engine_settings.has_client_os_info()) {
+    std::string client_os_info = engine_settings.client_os_info();
+    SetClientOSInfo(client_os_info);
   }
 }
 

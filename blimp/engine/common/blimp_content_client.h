@@ -13,6 +13,7 @@ namespace blimp {
 namespace engine {
 
 std::string GetBlimpEngineUserAgent();
+void SetClientOSInfo(std::string client_os_info);
 
 class BlimpContentClient : public content::ContentClient {
  public:
