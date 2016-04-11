@@ -258,50 +258,6 @@ void GetNativeRtcConfiguration(
             blink_config.certificate(i))->rtcCertificate());
   }
 }
-// Scan the basic and advanced constraints until a value is found.
-// If nothing is found, the default is returned.
-// Argument 2 is a pointer to class data member.
-// Note: This code is a near duplicate of code in media_stream_audio_processor.
-// Consider extracting to a generic helper file.
-// It is NOT behaving according to spec, so should not go into blink.
-bool ScanConstraintsForBoolean(
-    const blink::WebMediaConstraints& constraints,
-    blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*picker,
-    bool the_default,
-    bool* found) {
-  const auto& the_field = constraints.basic().*picker;
-  if (the_field.hasExact()) {
-    if (found) {
-      *found = true;
-    }
-    return the_field.exact();
-  }
-  for (const auto& advanced_constraint : constraints.advanced()) {
-    const auto& the_field = advanced_constraint.*picker;
-    if (the_field.hasExact()) {
-      if (found) {
-        *found = true;
-      }
-      return the_field.exact();
-    }
-  }
-  if (found) {
-    *found = false;
-  }
-  return the_default;
-}
-
-rtc::Optional<bool> ConstraintToOptional(
-    const blink::WebMediaConstraints& constraints,
-    blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*picker) {
-  bool found;
-  bool the_value;
-  the_value = ScanConstraintsForBoolean(constraints, picker, false, &found);
-  if (found) {
-    return rtc::Optional<bool>(the_value);
-  }
-  return rtc::Optional<bool>();
-}
 
 void CopyConstraintsIntoRtcConfiguration(
     const blink::WebMediaConstraints constraints,
@@ -311,28 +267,48 @@ void CopyConstraintsIntoRtcConfiguration(
     return;
   }
 
-  // Note: IPv6 WebRTC value is "disable" while Blink is "enable".
-  configuration->disable_ipv6 = !ScanConstraintsForBoolean(
-      constraints, &blink::WebMediaTrackConstraintSet::enableIPv6, true,
-      nullptr);
-  // Note: If an optional is not present, webrtc decides on its own
-  // what the value should be.
-  configuration->enable_dscp = ConstraintToOptional(
-      constraints, &blink::WebMediaTrackConstraintSet::enableDscp);
-  configuration->cpu_overuse_detection = ConstraintToOptional(
-      constraints, &blink::WebMediaTrackConstraintSet::googCpuOveruseDetection);
-  configuration->enable_rtp_data_channel = ScanConstraintsForBoolean(
+  bool the_value;
+  if (GetConstraintValueAsBoolean(
+          constraints, &blink::WebMediaTrackConstraintSet::enableIPv6,
+          &the_value)) {
+    configuration->disable_ipv6 = !the_value;
+  } else {
+    // Note: IPv6 WebRTC value is "disable" while Blink is "enable".
+    configuration->disable_ipv6 = false;
+  }
+
+  if (GetConstraintValueAsBoolean(
+      constraints, &blink::WebMediaTrackConstraintSet::enableDscp,
+      &the_value)) {
+    configuration->set_dscp(the_value);
+  }
+
+  if (GetConstraintValueAsBoolean(
+      constraints, &blink::WebMediaTrackConstraintSet::googCpuOveruseDetection,
+      &the_value)) {
+    configuration->set_cpu_adaptation(the_value);
+  }
+
+  if (GetConstraintValueAsBoolean(
+      constraints,
+      &blink::WebMediaTrackConstraintSet::googEnableVideoSuspendBelowMinBitrate,
+      &the_value)) {
+    configuration->set_suspend_below_min_bitrate(the_value);
+  }
+
+  if (!GetConstraintValueAsBoolean(
       constraints, &blink::WebMediaTrackConstraintSet::enableRtpDataChannels,
-      false, nullptr);
-  configuration->suspend_below_min_bitrate = ConstraintToOptional(
-      constraints, &blink::WebMediaTrackConstraintSet::
-                       googEnableVideoSuspendBelowMinBitrate);
+      &configuration->enable_rtp_data_channel)) {
+    configuration->enable_rtp_data_channel = false;
+  }
   // TODO: Special treatment for screencast min bitrate, since it's an integer.
   // if (FindConstraint(constraints,
   //                   MediaConstraintsInterface::kScreencastMinBitrate,
   //                   &configuration->screencast_min_bitrate, NULL)) {
   //  configuration->override_screencast_min_bitrate = true;
   // }
+  // Note: If an optional is not present, webrtc decides on its own
+  // what the value should be.
   configuration->combined_audio_video_bwe = ConstraintToOptional(
       constraints,
       &blink::WebMediaTrackConstraintSet::googCombinedAudioVideoBwe);
@@ -988,9 +964,11 @@ bool RTCPeerConnectionHandler::initialize(
     }
   }
 
-  config.disable_prerenderer_smoothing =
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableRTCSmoothnessAlgorithm);
+  // Choose between RTC smoothness algorithm and prerenderer smoothing.
+  // Prerenderer smoothing is turned on if RTC smoothness is turned off.
+  config.set_prerenderer_smoothing(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableRTCSmoothnessAlgorithm));
 
   // Copy all the relevant constraints into |config|.
   CopyConstraintsIntoRtcConfiguration(options, &config);
