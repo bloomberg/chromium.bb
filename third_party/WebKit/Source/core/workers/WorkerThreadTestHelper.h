@@ -63,41 +63,6 @@ public:
     MOCK_METHOD0(willDestroyWorkerGlobalScope, void());
 };
 
-void notifyScriptLoadedEventToWorkerThreadForTest(WorkerThread*);
-
-class FakeWorkerGlobalScope : public WorkerGlobalScope {
-public:
-    typedef WorkerGlobalScope Base;
-
-    FakeWorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData, WorkerClients* workerClients)
-        : WorkerGlobalScope(url, userAgent, thread, monotonicallyIncreasingTime(), starterOriginPrivilegeData, workerClients)
-        , m_thread(thread)
-    {
-    }
-
-    ~FakeWorkerGlobalScope() override
-    {
-    }
-
-    void scriptLoaded(size_t, size_t) override
-    {
-        notifyScriptLoadedEventToWorkerThreadForTest(m_thread);
-    }
-
-    // EventTarget
-    const AtomicString& interfaceName() const override
-    {
-        return EventTargetNames::DedicatedWorkerGlobalScope;
-    }
-
-    void logExceptionToConsole(const String&, int, const String&, int, int, PassRefPtr<ScriptCallStack>) override
-    {
-    }
-
-private:
-    WorkerThread* m_thread;
-};
-
 class WorkerThreadForTest : public WorkerThread {
 public:
     WorkerThreadForTest(
@@ -124,10 +89,7 @@ public:
         WorkerThread::willDestroyIsolate();
     }
 
-    WorkerGlobalScope* createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData) override
-    {
-        return new FakeWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, this, startupData->m_starterOriginPrivilegeData.release(), startupData->m_workerClients.release());
-    }
+    WorkerGlobalScope* createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
 
     void waitUntilScriptLoaded()
     {
@@ -172,9 +134,40 @@ private:
     OwnPtr<WaitableEvent> m_scriptLoadedEvent;
 };
 
-inline void notifyScriptLoadedEventToWorkerThreadForTest(WorkerThread* thread)
+class FakeWorkerGlobalScope : public WorkerGlobalScope {
+public:
+    FakeWorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThreadForTest* thread, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData, WorkerClients* workerClients)
+        : WorkerGlobalScope(url, userAgent, thread, monotonicallyIncreasingTime(), starterOriginPrivilegeData, workerClients)
+        , m_thread(thread)
+    {
+    }
+
+    ~FakeWorkerGlobalScope() override
+    {
+    }
+
+    void scriptLoaded(size_t, size_t) override
+    {
+        m_thread->scriptLoaded();
+    }
+
+    // EventTarget
+    const AtomicString& interfaceName() const override
+    {
+        return EventTargetNames::DedicatedWorkerGlobalScope;
+    }
+
+    void logExceptionToConsole(const String&, int, const String&, int, int, PassRefPtr<ScriptCallStack>) override
+    {
+    }
+
+private:
+    WorkerThreadForTest* m_thread;
+};
+
+inline WorkerGlobalScope* WorkerThreadForTest::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
-    static_cast<WorkerThreadForTest*>(thread)->scriptLoaded();
+    return new FakeWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, this, startupData->m_starterOriginPrivilegeData.release(), startupData->m_workerClients.release());
 }
 
 } // namespace blink
