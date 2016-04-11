@@ -1180,6 +1180,19 @@ class TestGitCl(TestCase):
     self.calls = self._checkout_calls()
     self.assertEqual(1, git_cl.main(['checkout', '99999']))
 
+  def test_checkout_no_branch_issues(self):
+    """Tests git cl checkout <issue>."""
+    self.calls = [
+        ((['git', 'config', '--local', '--get-regexp',
+           'branch\\..*\\.rietveldissue'], ), '',
+         subprocess2.CalledProcessError(1, '', '', '', '')),
+        ((['git', 'config', '--local', '--get-regexp',
+           'branch\\..*\\.gerritissue'], ), '',
+         subprocess2.CalledProcessError(1, '', '', '', '')),
+
+    ]
+    self.assertEqual(1, git_cl.main(['checkout', '99999']))
+
 
 if __name__ == '__main__':
   git_cl.logging.basicConfig(

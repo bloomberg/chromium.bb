@@ -4550,10 +4550,10 @@ def CMDcheckout(parser, args):
   target_issue = str(issue_arg.issue)
 
   def find_issues(issueprefix):
-    key_and_issues = [x.split() for x in RunGit(
-        ['config', '--local', '--get-regexp', r'branch\..*\.%s' % issueprefix])
-        .splitlines()]
-    for key, issue in key_and_issues:
+    output = RunGit(['config', '--local', '--get-regexp',
+                     r'branch\..*\.%s' % issueprefix],
+                     error_ok=True)
+    for key, issue in [x.split() for x in output.splitlines()]:
       if issue == target_issue:
         yield re.sub(r'branch\.(.*)\.%s' % issueprefix, r'\1', key)
 
