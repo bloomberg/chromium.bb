@@ -1,7 +1,0 @@
-include_rules = [
-  "+gpu/command_buffer",
-  "+libEGL",
-  "+libGLESv2",
-  "+skia",
-  "+third_party/mesa",
-]
