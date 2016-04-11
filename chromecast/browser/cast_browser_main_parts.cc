@@ -206,7 +206,7 @@ DefaultCommandLineSwitch g_default_switches[] = {
 #endif
 #if defined(OS_LINUX)
 #if defined(ARCH_CPU_X86_FAMILY)
-  // This is needed for now to enable the egltest Ozone platform to work with
+  // This is needed for now to enable the x11 Ozone platform to work with
   // current Linux/NVidia OpenGL drivers.
   { switches::kIgnoreGpuBlacklist, ""},
 #elif defined(ARCH_CPU_ARM_FAMILY)

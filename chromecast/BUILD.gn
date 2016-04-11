@@ -184,10 +184,6 @@ executable("cast_shell") {
   if (chromecast_branding != "public") {
     deps += [ "//chromecast/internal:cast_shell_internal" ]
   }
-
-  if (ozone_platform_egltest) {
-    deps += [ "//ui/ozone/platform/egltest:eglplatform_shim_x11" ]
-  }
 }
 
 repack("cast_shell_pak") {
