@@ -269,8 +269,8 @@ base::TimeTicks StartupTimeToTimeTicks(const base::Time& time) {
   // bumping the priority reduces the likelihood of a context switch interfering
   // with this computation.
 
-// platform_thread_mac.mm unfortunately doesn't properly support base's
-// thread priority APIs (crbug.com/554651).
+// Enabling this logic on OS X causes a significant performance regression.
+// https://crbug.com/601270
 #if !defined(OS_MACOSX)
   static bool statics_initialized = false;
 
