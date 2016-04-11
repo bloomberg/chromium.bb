@@ -277,7 +277,8 @@ void LayerImpl::TakeCopyRequestsAndTransformToTarget(
     std::vector<std::unique_ptr<CopyOutputRequest>>* requests) {
   DCHECK(!copy_requests_.empty());
   DCHECK(layer_tree_impl()->IsActiveTree());
-  DCHECK_EQ(render_target(), this);
+  DCHECK(has_render_surface());
+  DCHECK_EQ(render_target(), render_surface());
 
   size_t first_inserted_request = requests->size();
   for (auto& request : copy_requests_)
@@ -1576,6 +1577,27 @@ gfx::Rect LayerImpl::GetScaledEnclosingRectInTargetSpace(float scale) const {
                                            gfx::Rect(scaled_bounds));
 }
 
+RenderSurfaceImpl* LayerImpl::render_target() {
+  EffectTree& effect_tree = layer_tree_impl_->property_trees()->effect_tree;
+  EffectNode* node = effect_tree.Node(effect_tree_index_);
+
+  if (node->data.render_surface)
+    return node->data.render_surface;
+  else
+    return effect_tree.Node(node->data.target_id)->data.render_surface;
+}
+
+const RenderSurfaceImpl* LayerImpl::render_target() const {
+  const EffectTree& effect_tree =
+      layer_tree_impl_->property_trees()->effect_tree;
+  const EffectNode* node = effect_tree.Node(effect_tree_index_);
+
+  if (node->data.render_surface)
+    return node->data.render_surface;
+  else
+    return effect_tree.Node(node->data.target_id)->data.render_surface;
+}
+
 bool LayerImpl::IsHidden() const {
   EffectTree& effect_tree = layer_tree_impl_->property_trees()->effect_tree;
   EffectNode* node = effect_tree.Node(effect_tree_index_);
@@ -1588,14 +1610,12 @@ bool LayerImpl::InsideReplica() const {
   EffectTree& effect_tree = layer_tree_impl_->property_trees()->effect_tree;
   EffectNode* node = effect_tree.Node(effect_tree_index_);
 
-  while (node) {
-    EffectNode* target_node = effect_tree.Node(node->data.target_id);
-    LayerImpl* target_layer =
-        layer_tree_impl()->LayerById(target_node->owner_id);
+  while (node->id > 0) {
+    LayerImpl* target_layer = layer_tree_impl()->LayerById(node->owner_id);
     DCHECK(target_layer);
     if (target_layer->has_replica())
       return true;
-    node = effect_tree.parent(target_node);
+    node = effect_tree.Node(node->data.target_id);
   }
 
   return false;

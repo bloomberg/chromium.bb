@@ -108,7 +108,8 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnSurface
     // Verify the draw properties are valid.
     EXPECT_TRUE(root->IsDrawnRenderSurfaceLayerListMember());
     EXPECT_TRUE(child->IsDrawnRenderSurfaceLayerListMember());
-    EXPECT_EQ(child, child->render_target());
+    EXPECT_TRUE(child->has_render_surface());
+    EXPECT_EQ(child->render_surface(), child->render_target());
 
     EXPECT_OCCLUSION_EQ(
         Occlusion(surface->draw_transform(), SimpleEnclosedRegion(),
@@ -172,7 +173,8 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnMask
     // Verify the draw properties are valid.
     EXPECT_TRUE(root->IsDrawnRenderSurfaceLayerListMember());
     EXPECT_TRUE(child->IsDrawnRenderSurfaceLayerListMember());
-    EXPECT_EQ(child, child->render_target());
+    EXPECT_TRUE(child->has_render_surface());
+    EXPECT_EQ(child->render_surface(), child->render_target());
 
     gfx::Transform transform = surface->draw_transform();
     transform.PreconcatTransform(child->DrawTransform());
@@ -309,7 +311,8 @@ class LayerTreeHostOcclusionTestDrawPropertiesInsideReplica
     // Verify the draw properties are valid.
     EXPECT_TRUE(root->IsDrawnRenderSurfaceLayerListMember());
     EXPECT_TRUE(child->IsDrawnRenderSurfaceLayerListMember());
-    EXPECT_EQ(child, child->render_target());
+    EXPECT_TRUE(child->has_render_surface());
+    EXPECT_EQ(child->render_surface(), child->render_target());
 
     // No occlusion from on child, which is part of the replica.
     EXPECT_OCCLUSION_EQ(Occlusion(),

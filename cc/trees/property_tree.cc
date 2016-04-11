@@ -438,6 +438,7 @@ EffectNodeData::EffectNodeData()
     : opacity(1.f),
       screen_space_opacity(1.f),
       has_render_surface(false),
+      render_surface(nullptr),
       has_copy_request(false),
       has_background_filters(false),
       node_or_ancestor_has_background_filters(false),

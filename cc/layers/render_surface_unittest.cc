@@ -98,7 +98,6 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
       LayerImpl::Create(host_impl.active_tree(), 2);
   owning_layer->SetHasRenderSurface(true);
   ASSERT_TRUE(owning_layer->render_surface());
-  owning_layer->draw_properties().render_target = owning_layer.get();
 
   SkXfermode::Mode blend_mode = SkXfermode::kSoftLight_Mode;
   owning_layer->SetBlendMode(blend_mode);
@@ -165,7 +164,6 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectRenderPass) {
       LayerImpl::Create(host_impl.active_tree(), 2);
   owning_layer->SetHasRenderSurface(true);
   ASSERT_TRUE(owning_layer->render_surface());
-  owning_layer->draw_properties().render_target = owning_layer.get();
   RenderSurfaceImpl* render_surface = owning_layer->render_surface();
 
   root_layer->AddChild(std::move(owning_layer));

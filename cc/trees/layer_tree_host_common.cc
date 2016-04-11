@@ -527,52 +527,6 @@ enum PropertyTreeOption {
   DONT_BUILD_PROPERTY_TREES
 };
 
-void CalculateRenderTarget(LayerImpl* layer,
-                           PropertyTrees* property_trees,
-                           bool subtree_visible_from_ancestor,
-                           bool can_render_to_separate_surface) {
-  bool layer_is_drawn;
-  DCHECK_GE(layer->effect_tree_index(), 0);
-  layer_is_drawn = property_trees->effect_tree.Node(layer->effect_tree_index())
-                       ->data.is_drawn;
-
-  // The root layer cannot be skipped.
-  if (!IsRootLayer(layer) &&
-      draw_property_utils::LayerShouldBeSkipped(layer, layer_is_drawn,
-                                                property_trees->transform_tree,
-                                                property_trees->effect_tree)) {
-    layer->draw_properties().render_target = nullptr;
-    return;
-  }
-
-  bool render_to_separate_surface =
-      IsRootLayer(layer) ||
-      (can_render_to_separate_surface && layer->render_surface());
-
-  if (render_to_separate_surface) {
-    DCHECK(layer->render_surface()) << IsRootLayer(layer)
-                                    << can_render_to_separate_surface
-                                    << layer->has_render_surface();
-    layer->draw_properties().render_target = layer;
-
-    if (layer->mask_layer())
-      layer->mask_layer()->draw_properties().render_target = layer;
-
-    if (layer->replica_layer() && layer->replica_layer()->mask_layer())
-      layer->replica_layer()->mask_layer()->draw_properties().render_target =
-          layer;
-
-  } else {
-    DCHECK(!IsRootLayer(layer));
-    layer->draw_properties().render_target = layer->parent()->render_target();
-  }
-  for (size_t i = 0; i < layer->children().size(); ++i) {
-    CalculateRenderTarget(
-        LayerTreeHostCommon::get_layer_as_raw_ptr(layer->children(), i),
-        property_trees, layer_is_drawn, can_render_to_separate_surface);
-  }
-}
-
 void CalculateRenderSurfaceLayerList(
     LayerImpl* layer,
     PropertyTrees* property_trees,
@@ -610,7 +564,6 @@ void CalculateRenderSurfaceLayerList(
                                                 property_trees->effect_tree)) {
     if (layer->render_surface())
       layer->ClearRenderSurfaceLayerList();
-    layer->draw_properties().render_target = nullptr;
     return;
   }
 
@@ -670,7 +623,7 @@ void CalculateRenderSurfaceLayerList(
 
   // Clear the old accumulated content rect of surface.
   if (render_to_separate_surface)
-    layer->render_surface()->SetAccumulatedContentRect(gfx::Rect());
+    layer->render_surface()->ClearAccumulatedContentRect();
 
   for (auto* child_layer : layer->children()) {
     CalculateRenderSurfaceLayerList(
@@ -680,7 +633,8 @@ void CalculateRenderSurfaceLayerList(
         max_texture_size);
 
     // If the child is its own render target, then it has a render surface.
-    if (child_layer->render_target() == child_layer &&
+    if (child_layer->has_render_surface() &&
+        child_layer->render_target() == child_layer->render_surface() &&
         !child_layer->render_surface()->layer_list().empty() &&
         !child_layer->render_surface()->content_rect().IsEmpty()) {
       // This child will contribute its render surface, which means
@@ -707,14 +661,13 @@ void CalculateRenderSurfaceLayerList(
   // of the layers that draw into the surface. If the render surface is clipped,
   // it is also intersected with the render's surface clip rect.
   if (!IsRootLayer(layer)) {
+    // Layer contriubutes its drawable content rect to its render target.
+    if (layer->DrawsContent())
+      layer->render_target()->AccumulateContentRectFromContributingLayer(layer);
+
     if (render_to_separate_surface) {
       gfx::Rect surface_content_rect =
           layer->render_surface()->accumulated_content_rect();
-      // If the owning layer of a render surface draws content, the content
-      // rect of the render surface is expanded to include the drawable
-      // content rect of the layer.
-      if (layer->DrawsContent())
-        surface_content_rect.Union(layer->drawable_content_rect());
 
       if (!layer->replica_layer() && !layer->HasCopyRequest() &&
           layer->render_surface()->is_clipped()) {
@@ -738,25 +691,13 @@ void CalculateRenderSurfaceLayerList(
       surface_content_rect.set_height(
           std::min(surface_content_rect.height(), max_texture_size));
       layer->render_surface()->SetContentRect(surface_content_rect);
-    }
-    const LayerImpl* parent_target = layer->parent()->render_target();
-    if (!IsRootLayer(parent_target)) {
-      gfx::Rect surface_content_rect =
-          parent_target->render_surface()->accumulated_content_rect();
-      if (render_to_separate_surface) {
-        // If the layer owns a surface, then the content rect is in the wrong
-        // space. Instead, we will use the surface's DrawableContentRect which
-        // is in target space as required. We also need to clip it with the
-        // target's clip if the target is clipped.
-        surface_content_rect.Union(gfx::ToEnclosedRect(
-            layer->render_surface()->DrawableContentRect()));
-        if (parent_target->is_clipped())
-          surface_content_rect.Intersect(parent_target->clip_rect());
-      } else if (layer->DrawsContent()) {
-        surface_content_rect.Union(layer->drawable_content_rect());
-      }
-      parent_target->render_surface()->SetAccumulatedContentRect(
-          surface_content_rect);
+
+      // Now the render surface's content rect is calculated correctly, it could
+      // contribute to its render target.
+      layer->render_surface()
+          ->render_target()
+          ->AccumulateContentRectFromContributingRenderSurface(
+              layer->render_surface());
     }
   } else {
     // The root layer's surface content rect is always the entire viewport.
@@ -875,11 +816,6 @@ void CalculateDrawPropertiesInternal(
   DCHECK(inputs->can_render_to_separate_surface ==
          inputs->property_trees->non_root_surfaces_enabled);
   const bool subtree_visible_from_ancestor = true;
-  for (auto* layer : *inputs->root_layer->layer_tree_impl())
-    layer->draw_properties().render_target = nullptr;
-  CalculateRenderTarget(inputs->root_layer, inputs->property_trees,
-                        subtree_visible_from_ancestor,
-                        inputs->can_render_to_separate_surface);
   for (LayerImpl* layer : visible_layer_list) {
     draw_property_utils::ComputeLayerDrawProperties(
         layer, inputs->property_trees, inputs->layers_always_allowed_lcd_text,

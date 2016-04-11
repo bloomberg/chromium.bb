@@ -392,6 +392,7 @@ void UpdateRenderSurfaceForLayer(EffectTree* effect_tree,
     layer->SetHasRenderSurface(IsRootLayer(layer));
     return;
   }
+
   EffectNode* node = effect_tree->Node(layer->effect_tree_index());
 
   if (node->owner_id == layer->id() && node->data.has_render_surface)
@@ -687,6 +688,23 @@ void ComputeTransforms(TransformTree* transform_tree) {
   transform_tree->set_needs_update(false);
 }
 
+void UpdateRenderTarget(EffectTree* effect_tree,
+                        bool can_render_to_separate_surface) {
+  for (int i = 1; i < static_cast<int>(effect_tree->size()); ++i) {
+    EffectNode* node = effect_tree->Node(i);
+    if (i == 1) {
+      // Render target on the first effect node is root.
+      node->data.target_id = 0;
+    } else if (!can_render_to_separate_surface) {
+      node->data.target_id = 1;
+    } else if (effect_tree->parent(node)->data.has_render_surface) {
+      node->data.target_id = node->parent_id;
+    } else {
+      node->data.target_id = effect_tree->parent(node)->data.target_id;
+    }
+  }
+}
+
 void ComputeEffects(EffectTree* effect_tree) {
   if (!effect_tree->needs_update())
     return;
@@ -708,6 +726,8 @@ static void ComputeVisibleRectsInternal(
   }
   if (property_trees->transform_tree.needs_update())
     property_trees->clip_tree.set_needs_update(true);
+  UpdateRenderTarget(&property_trees->effect_tree,
+                     property_trees->non_root_surfaces_enabled);
   ComputeTransforms(&property_trees->transform_tree);
   ComputeClips(&property_trees->clip_tree, property_trees->transform_tree,
                can_render_to_separate_surface);
@@ -782,6 +802,10 @@ void ComputeVisibleRects(LayerImpl* root_layer,
   for (auto* layer : *root_layer->layer_tree_impl()) {
     UpdateRenderSurfaceForLayer(&property_trees->effect_tree,
                                 can_render_to_separate_surface, layer);
+    EffectNode* node =
+        property_trees->effect_tree.Node(layer->effect_tree_index());
+    if (node->owner_id == layer->id())
+      node->data.render_surface = layer->render_surface();
 #if DCHECK_IS_ON()
     if (can_render_to_separate_surface)
       ValidateRenderSurfaceForLayer(layer);
@@ -921,7 +945,7 @@ static float LayerDrawOpacity(const LayerImpl* layer, const EffectTree& tree) {
     return 0.f;
 
   const EffectNode* target_node =
-      tree.Node(layer->render_target()->effect_tree_index());
+      tree.Node(layer->render_target()->EffectTreeIndex());
   const EffectNode* node = tree.Node(layer->effect_tree_index());
   if (node == target_node)
     return 1.f;

@@ -361,6 +361,11 @@ class CC_EXPORT LayerImpl {
 
   RenderSurfaceImpl* render_surface() const { return render_surface_.get(); }
 
+  // The render surface which this layer draws into. This can be either owned by
+  // the same layer or an ancestor of this layer.
+  RenderSurfaceImpl* render_target();
+  const RenderSurfaceImpl* render_target() const;
+
   DrawProperties& draw_properties() { return draw_properties_; }
   const DrawProperties& draw_properties() const { return draw_properties_; }
 
@@ -392,17 +397,6 @@ class CC_EXPORT LayerImpl {
   gfx::Rect visible_layer_rect() const {
     return draw_properties_.visible_layer_rect;
   }
-  LayerImpl* render_target() {
-    DCHECK(!draw_properties_.render_target ||
-           draw_properties_.render_target->render_surface());
-    return draw_properties_.render_target;
-  }
-  const LayerImpl* render_target() const {
-    DCHECK(!draw_properties_.render_target ||
-           draw_properties_.render_target->render_surface());
-    return draw_properties_.render_target;
-  }
-
   size_t num_unclipped_descendants() const {
     return draw_properties_.num_unclipped_descendants;
   }

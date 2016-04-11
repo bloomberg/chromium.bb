@@ -15,7 +15,7 @@
 #include "ui/gfx/transform.h"
 
 namespace cc {
-class LayerImpl;
+class RenderSurfaceImpl;
 
 // Container for properties that layers need to compute before they can be
 // drawn.
@@ -49,11 +49,6 @@ struct CC_EXPORT DrawProperties {
 
   // True if the layer needs to be clipped by clip_rect.
   bool is_clipped;
-
-  // The layer whose coordinate space this layer draws into. This can be
-  // either the same layer (draw_properties_.render_target == this) or an
-  // ancestor of this layer.
-  LayerImpl* render_target;
 
   // This rect is a bounding box around what part of the layer is visible, in
   // the layer's coordinate space.

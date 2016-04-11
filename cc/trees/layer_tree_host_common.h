@@ -207,7 +207,8 @@ bool LayerTreeHostCommon::RenderSurfaceContributesToTarget(
   //
   // Otherwise, the layer just contributes itself to the target surface.
 
-  return layer->render_target() == layer &&
+  return layer->has_render_surface() &&
+         layer->render_target() == layer->render_surface() &&
          layer->id() != target_surface_layer_id;
 }
 

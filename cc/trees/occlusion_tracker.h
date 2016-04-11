@@ -48,7 +48,7 @@ class CC_EXPORT OcclusionTracker {
   void LeaveLayer(const LayerIteratorPosition& layer_iterator);
 
   // Gives the region of the screen that is not occluded by something opaque.
-  Region ComputeVisibleRegionInScreen() const;
+  Region ComputeVisibleRegionInScreen(const LayerTreeImpl* layer_tree) const;
 
   void set_minimum_tracking_size(const gfx::Size& size) {
     minimum_tracking_size_ = size;
@@ -57,8 +57,8 @@ class CC_EXPORT OcclusionTracker {
  protected:
   struct StackObject {
     StackObject() : target(0) {}
-    explicit StackObject(const LayerImpl* target) : target(target) {}
-    const LayerImpl* target;
+    explicit StackObject(const RenderSurfaceImpl* target) : target(target) {}
+    const RenderSurfaceImpl* target;
     SimpleEnclosedRegion occlusion_from_outside_target;
     SimpleEnclosedRegion occlusion_from_inside_target;
   };

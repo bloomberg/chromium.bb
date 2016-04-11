@@ -37,6 +37,11 @@ class CC_EXPORT RenderSurfaceImpl {
   explicit RenderSurfaceImpl(LayerImpl* owning_layer);
   virtual ~RenderSurfaceImpl();
 
+  // Returns the RenderSurfaceImpl that this render surface contributes to. Root
+  // render surface's render_target is itself.
+  RenderSurfaceImpl* render_target();
+  const RenderSurfaceImpl* render_target() const;
+
   gfx::PointF ContentRectCenter() const {
     return gfx::RectF(content_rect()).CenterPoint();
   }
@@ -115,7 +120,12 @@ class CC_EXPORT RenderSurfaceImpl {
   void SetContentRect(const gfx::Rect& content_rect);
   gfx::Rect content_rect() const { return draw_properties_.content_rect; }
 
-  void SetAccumulatedContentRect(const gfx::Rect& content_rect);
+  void ClearAccumulatedContentRect();
+  void AccumulateContentRectFromContributingLayer(
+      LayerImpl* contributing_layer);
+  void AccumulateContentRectFromContributingRenderSurface(
+      RenderSurfaceImpl* contributing_surface);
+
   gfx::Rect accumulated_content_rect() const {
     return accumulated_content_rect_;
   }

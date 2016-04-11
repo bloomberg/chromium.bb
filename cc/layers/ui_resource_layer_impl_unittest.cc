@@ -36,7 +36,6 @@ std::unique_ptr<UIResourceLayerImpl> GenerateUIResourceLayer(
   layer->draw_properties().visible_layer_rect = visible_layer_rect;
   layer->SetBounds(layer_size);
   layer->SetForceRenderSurface(true);
-  layer->draw_properties().render_target = layer.get();
 
   UIResourceBitmap bitmap(bitmap_size, opaque);
 

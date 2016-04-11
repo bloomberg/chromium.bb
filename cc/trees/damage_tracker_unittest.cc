@@ -1472,9 +1472,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForEmptyLayerList) {
   LayerImpl* root_ptr = host_impl_.active_tree()->root_layer();
   root_ptr->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root_ptr);
-  root_ptr->draw_properties().render_target = root_ptr;
 
-  ASSERT_EQ(root_ptr, root_ptr->render_target());
+  DCHECK_EQ(root_ptr->render_surface(), root_ptr->render_target());
   RenderSurfaceImpl* target_surface = root_ptr->render_surface();
 
   LayerImplList empty_list;

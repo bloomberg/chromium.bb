@@ -40,6 +40,28 @@ RenderSurfaceImpl::RenderSurfaceImpl(LayerImpl* owning_layer)
 
 RenderSurfaceImpl::~RenderSurfaceImpl() {}
 
+RenderSurfaceImpl* RenderSurfaceImpl::render_target() {
+  EffectTree& effect_tree =
+      owning_layer_->layer_tree_impl()->property_trees()->effect_tree;
+  EffectNode* node = effect_tree.Node(EffectTreeIndex());
+  EffectNode* target_node = effect_tree.Node(node->data.target_id);
+  if (target_node->id != 0)
+    return target_node->data.render_surface;
+  else
+    return this;
+}
+
+const RenderSurfaceImpl* RenderSurfaceImpl::render_target() const {
+  const EffectTree& effect_tree =
+      owning_layer_->layer_tree_impl()->property_trees()->effect_tree;
+  const EffectNode* node = effect_tree.Node(EffectTreeIndex());
+  const EffectNode* target_node = effect_tree.Node(node->data.target_id);
+  if (target_node->id != 0)
+    return target_node->data.render_surface;
+  else
+    return this;
+}
+
 RenderSurfaceImpl::DrawProperties::DrawProperties() {
   draw_opacity = 1.f;
   is_clipped = false;
@@ -128,9 +150,38 @@ void RenderSurfaceImpl::SetContentRect(const gfx::Rect& content_rect) {
   draw_properties_.content_rect = content_rect;
 }
 
-void RenderSurfaceImpl::SetAccumulatedContentRect(
-    const gfx::Rect& content_rect) {
-  accumulated_content_rect_ = content_rect;
+void RenderSurfaceImpl::ClearAccumulatedContentRect() {
+  accumulated_content_rect_ = gfx::Rect();
+}
+
+void RenderSurfaceImpl::AccumulateContentRectFromContributingLayer(
+    LayerImpl* layer) {
+  DCHECK(layer->DrawsContent());
+  DCHECK_EQ(this, layer->render_target());
+
+  // Root render surface doesn't accumulate content rect, it always uses
+  // viewport for content rect.
+  if (render_target() == this)
+    return;
+
+  accumulated_content_rect_.Union(layer->drawable_content_rect());
+}
+
+void RenderSurfaceImpl::AccumulateContentRectFromContributingRenderSurface(
+    RenderSurfaceImpl* contributing_surface) {
+  DCHECK_NE(this, contributing_surface);
+  DCHECK_EQ(this, contributing_surface->render_target());
+
+  // Root render surface doesn't accumulate content rect, it always uses
+  // viewport for content rect.
+  if (render_target() == this)
+    return;
+
+  // The content rect of contributing surface is in its own space. Instead, we
+  // will use contributing surface's DrawableContentRect which is in target
+  // space (local space for this render surface) as required.
+  accumulated_content_rect_.Union(
+      gfx::ToEnclosedRect(contributing_surface->DrawableContentRect()));
 }
 
 bool RenderSurfaceImpl::SurfacePropertyChanged() const {

@@ -867,7 +867,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
          it != end; ++it) {
       occlusion_tracker.EnterLayer(it);
 
-      bool inside_replica = it->render_target()->InsideReplica();
+      bool inside_replica = it->InsideReplica();
 
       // Don't use occlusion if a layer will appear in a replica, since the
       // tile raster code does not know how to look for the replica and would
@@ -913,7 +913,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
     }
 
     unoccluded_screen_space_region_ =
-        occlusion_tracker.ComputeVisibleRegionInScreen();
+        occlusion_tracker.ComputeVisibleRegionInScreen(this);
   }
 
   // It'd be ideal if this could be done earlier, but when the raster source
