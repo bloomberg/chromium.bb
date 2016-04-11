@@ -20,10 +20,6 @@ void CastMediaClientAndroid::AddKeySystemUUIDMappings(KeySystemUuidMap* map) {
 #if defined(PLAYREADY_CDM_AVAILABLE)
   (*map)[kChromecastPlayreadyKeySystem] = playready_delegate_.GetUUID();
 #endif
-
-  auto platform_mappings = GetPlatformKeySystemUUIDMappings();
-  for (const auto& mapping : platform_mappings)
-    map->insert(mapping);
 }
 
 ::media::MediaDrmBridgeDelegate*

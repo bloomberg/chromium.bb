@@ -34,7 +34,7 @@ CastKeySystem GetKeySystemByName(const std::string& key_system_name) {
     return KEY_SYSTEM_CLEAR_KEY;
   }
 
-  return GetPlatformKeySystemByName(key_system_name);
+  return KEY_SYSTEM_NONE;
 }
 
 }  // namespace media

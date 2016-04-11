@@ -69,12 +69,6 @@ source_set("base") {
     "//crypto:platform",
     "//media",
   ]
-
-  if (chromecast_branding == "public") {
-    sources += [ "key_systems_common_simple.cc" ]
-  } else {
-    deps += [ "//chromecast/internal/media/base" ]
-  }
 }
 
 # Target for OEM partners to override media shared library, i.e.

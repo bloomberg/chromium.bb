@@ -73,17 +73,6 @@
         'base/video_plane_controller.cc',
         'base/video_plane_controller.h',
       ],
-      'conditions': [
-        ['chromecast_branding!="public"', {
-          'dependencies': [
-            '../internal/chromecast_internal.gyp:media_base_internal',
-          ],
-        }, {
-          'sources': [
-            'base/key_systems_common_simple.cc',
-          ],
-        }],
-      ],
     },
     {
       'target_name': 'media_cdm',
