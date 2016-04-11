@@ -126,6 +126,9 @@
     'base_memory': {
       'filepath': '^base/memory',
     },
+    'base_task_scheduler': {
+      'filepath': '^base/task_scheduler',
+    },
     'base_win': {
       'filepath': '^base/win',
     },
@@ -1321,6 +1324,9 @@
     'base_allocator': ['dmikurube@chromium.org',
                        'wfh+watch@chromium.org'],
     'base_memory': ['gavinp+memory@chromium.org'],
+    'base_task_scheduler': ['fdoray+watch@chromium.org',
+                            'gab+watch@chromium.org',
+                            'robliao+watch@chromium.org'],
     'base_win': ['grt+watch@chromium.org', 'wfh+watch@chromium.org'],
     'battery_status': ['timvolodine@chromium.org'],
     'blimp' : ['anandc+watch-blimp@chromium.org',
