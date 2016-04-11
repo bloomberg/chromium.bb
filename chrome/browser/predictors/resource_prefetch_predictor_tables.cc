@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
@@ -316,8 +317,9 @@ bool ResourcePrefetchPredictorTables::UpdateDataHelper(
   }
 
   // Delete the older data from both the tables.
-  scoped_ptr<Statement> deleter(data.is_host() ?
-      GetHostResourceDeleteStatement() : GetUrlResourceDeleteStatement());
+  std::unique_ptr<Statement> deleter(data.is_host()
+                                         ? GetHostResourceDeleteStatement()
+                                         : GetUrlResourceDeleteStatement());
   deleter->BindString(0, data.primary_key);
   if (!deleter->Run())
     return false;
@@ -332,15 +334,17 @@ bool ResourcePrefetchPredictorTables::UpdateDataHelper(
   const ResourceRows& resources = data.resources;
   for (ResourceRows::const_iterator it = resources.begin();
        it != resources.end(); ++it) {
-    scoped_ptr<Statement> resource_inserter(data.is_host() ?
-        GetHostResourceUpdateStatement() : GetUrlResourceUpdateStatement());
+    std::unique_ptr<Statement> resource_inserter(
+        data.is_host() ? GetHostResourceUpdateStatement()
+                       : GetUrlResourceUpdateStatement());
     BindResourceRowToStatement(*it, data.primary_key, resource_inserter.get());
     if (!resource_inserter->Run())
       return false;
   }
 
-  scoped_ptr<Statement> metadata_inserter(data.is_host() ?
-      GetHostMetadataUpdateStatement() : GetUrlMetadataUpdateStatement());
+  std::unique_ptr<Statement> metadata_inserter(
+      data.is_host() ? GetHostMetadataUpdateStatement()
+                     : GetUrlMetadataUpdateStatement());
   metadata_inserter->BindString(0, data.primary_key);
   metadata_inserter->BindInt64(1, data.last_visit.ToInternalValue());
   if (!metadata_inserter->Run())
@@ -356,8 +360,9 @@ void ResourcePrefetchPredictorTables::DeleteDataHelper(
 
   for (std::vector<std::string>::const_iterator it = keys.begin();
        it != keys.end(); ++it) {
-    scoped_ptr<Statement> deleter(is_host ? GetHostResourceDeleteStatement() :
-        GetUrlResourceDeleteStatement());
+    std::unique_ptr<Statement> deleter(is_host
+                                           ? GetHostResourceDeleteStatement()
+                                           : GetUrlResourceDeleteStatement());
     deleter->BindString(0, *it);
     deleter->Run();
 

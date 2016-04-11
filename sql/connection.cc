@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -542,7 +543,7 @@ void Connection::Preload() {
   if (preload_size > file_size)
     preload_size = file_size;
 
-  scoped_ptr<char[]> buf(new char[page_size]);
+  std::unique_ptr<char[]> buf(new char[page_size]);
   for (sqlite3_int64 pos = 0; pos < preload_size; pos += page_size) {
     rc = file->pMethods->xRead(file, buf.get(), page_size, pos);
 
@@ -679,12 +680,13 @@ bool Connection::RegisterIntentToUpload() const {
   // already bad.
   base::AutoLock lock(g_sqlite_init_lock.Get());
 
-  scoped_ptr<base::Value> root;
+  std::unique_ptr<base::Value> root;
   if (!base::PathExists(breadcrumb_path)) {
-    scoped_ptr<base::DictionaryValue> root_dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> root_dict(
+        new base::DictionaryValue());
     root_dict->SetInteger(kVersionKey, kVersion);
 
-    scoped_ptr<base::ListValue> dumps(new base::ListValue);
+    std::unique_ptr<base::ListValue> dumps(new base::ListValue);
     dumps->AppendString(histogram_tag_);
     root_dict->Set(kDiagnosticDumpsKey, std::move(dumps));
 
@@ -693,11 +695,11 @@ bool Connection::RegisterIntentToUpload() const {
     // Failure to read a valid dictionary implies that something is going wrong
     // on the system.
     JSONFileValueDeserializer deserializer(breadcrumb_path);
-    scoped_ptr<base::Value> read_root(
+    std::unique_ptr<base::Value> read_root(
         deserializer.Deserialize(nullptr, nullptr));
     if (!read_root.get())
       return false;
-    scoped_ptr<base::DictionaryValue> root_dict =
+    std::unique_ptr<base::DictionaryValue> root_dict =
         base::DictionaryValue::From(std::move(read_root));
     if (!root_dict)
       return false;

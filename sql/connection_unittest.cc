@@ -71,7 +71,7 @@ class ScopedMockTimeSource {
   Connection& db_;
 
   // Saves original source from |db_|.
-  scoped_ptr<TimeSource> save_;
+  std::unique_ptr<TimeSource> save_;
 
   // Current time returned by mock.
   base::TimeTicks current_time_;
@@ -1208,7 +1208,7 @@ TEST_F(SQLConnectionTest, TimeQuery) {
 
   EXPECT_TRUE(db().Execute("SELECT milliadjust(10)"));
 
-  scoped_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> samples(
       tester.GetHistogramSamplesSinceCreation(kQueryTime));
   ASSERT_TRUE(samples);
   // 10 for the adjust, 1 for the measurement.
@@ -1246,7 +1246,7 @@ TEST_F(SQLConnectionTest, TimeUpdateAutocommit) {
 
   EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (10, milliadjust(10))"));
 
-  scoped_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> samples(
       tester.GetHistogramSamplesSinceCreation(kQueryTime));
   ASSERT_TRUE(samples);
   // 10 for the adjust, 1 for the measurement.
@@ -1298,7 +1298,7 @@ TEST_F(SQLConnectionTest, TimeUpdateTransaction) {
     EXPECT_TRUE(db().CommitTransaction());
   }
 
-  scoped_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> samples(
       tester.GetHistogramSamplesSinceCreation(kQueryTime));
   ASSERT_TRUE(samples);
   // 10 for insert adjust, 10 for update adjust, 100 for commit adjust, 1 for

@@ -102,9 +102,8 @@ bool Recovery::FullRecoverySupported() {
 }
 
 // static
-scoped_ptr<Recovery> Recovery::Begin(
-    Connection* connection,
-    const base::FilePath& db_path) {
+std::unique_ptr<Recovery> Recovery::Begin(Connection* connection,
+                                          const base::FilePath& db_path) {
   // Recovery is likely to be used in error handling.  Since recovery changes
   // the state of the handle, protect against multiple layers attempting the
   // same recovery.
@@ -112,32 +111,32 @@ scoped_ptr<Recovery> Recovery::Begin(
     // Warn about API mis-use.
     DLOG_IF(FATAL, !connection->poisoned_)
         << "Illegal to recover with closed database";
-    return scoped_ptr<Recovery>();
+    return std::unique_ptr<Recovery>();
   }
 
-  scoped_ptr<Recovery> r(new Recovery(connection));
+  std::unique_ptr<Recovery> r(new Recovery(connection));
   if (!r->Init(db_path)) {
     // TODO(shess): Should Init() failure result in Raze()?
     r->Shutdown(POISON);
-    return scoped_ptr<Recovery>();
+    return std::unique_ptr<Recovery>();
   }
 
   return r;
 }
 
 // static
-bool Recovery::Recovered(scoped_ptr<Recovery> r) {
+bool Recovery::Recovered(std::unique_ptr<Recovery> r) {
   return r->Backup();
 }
 
 // static
-void Recovery::Unrecoverable(scoped_ptr<Recovery> r) {
+void Recovery::Unrecoverable(std::unique_ptr<Recovery> r) {
   CHECK(r->db_);
   // ~Recovery() will RAZE_AND_POISON.
 }
 
 // static
-void Recovery::Rollback(scoped_ptr<Recovery> r) {
+void Recovery::Rollback(std::unique_ptr<Recovery> r) {
   // TODO(shess): HISTOGRAM to track?  Or just have people crash out?
   // Crash and dump?
   r->Shutdown(POISON);

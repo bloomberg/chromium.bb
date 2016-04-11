@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_util.h"
@@ -135,7 +136,7 @@ bool CorruptTableOrIndex(const base::FilePath& db_path,
 
   // SQLite uses 1-based page numbering.
   const long int page_ofs = (page_number - 1) * page_size;
-  scoped_ptr<char[]> page_buf(new char[page_size]);
+  std::unique_ptr<char[]> page_buf(new char[page_size]);
 
   // Get the page into page_buf.
   base::ScopedFILE file(base::OpenFile(db_path, "rb+"));
@@ -162,7 +163,7 @@ bool CorruptTableOrIndex(const base::FilePath& db_path,
 
   // Check that the stored page actually changed.  This catches usage
   // errors where |update_sql| is not related to |tree_name|.
-  scoped_ptr<char[]> check_page_buf(new char[page_size]);
+  std::unique_ptr<char[]> check_page_buf(new char[page_size]);
   // The on-disk data should have changed.
   if (0 != fflush(file.get()))
     return false;

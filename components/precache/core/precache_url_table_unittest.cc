@@ -5,6 +5,7 @@
 #include "components/precache/core/precache_url_table.h"
 
 #include <map>
+#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
@@ -28,8 +29,8 @@ class PrecacheURLTableTest : public testing::Test {
     precache_url_table_->Init(db_.get());
   }
 
-  scoped_ptr<PrecacheURLTable> precache_url_table_;
-  scoped_ptr<sql::Connection> db_;
+  std::unique_ptr<PrecacheURLTable> precache_url_table_;
+  std::unique_ptr<sql::Connection> db_;
 };
 
 TEST_F(PrecacheURLTableTest, AddURLWithNoExistingRow) {
