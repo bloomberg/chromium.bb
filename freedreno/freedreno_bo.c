@@ -431,3 +431,10 @@ void fd_bo_cpu_fini(struct fd_bo *bo)
 {
 	bo->funcs->cpu_fini(bo);
 }
+
+#ifndef HAVE_FREEDRENO_KGSL
+struct fd_bo * fd_bo_from_fbdev(struct fd_pipe *pipe, int fbfd, uint32_t size)
+{
+    return NULL;
+}
+#endif
