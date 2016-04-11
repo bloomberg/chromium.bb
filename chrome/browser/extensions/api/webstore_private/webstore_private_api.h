@@ -10,7 +10,6 @@
 
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
 #include "chrome/browser/extensions/active_install_data.h"
-#include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
@@ -127,39 +126,6 @@ class WebstorePrivateCompleteInstallFunction
 
   std::unique_ptr<WebstoreInstaller::Approval> approval_;
   std::unique_ptr<ScopedActiveInstall> scoped_active_install_;
-};
-
-class WebstorePrivateInstallBundleFunction
-    : public UIThreadExtensionFunction,
-      public chrome::BitmapFetcherDelegate {
- public:
-  DECLARE_EXTENSION_FUNCTION("webstorePrivate.installBundle",
-                             WEBSTOREPRIVATE_INSTALLBUNDLE)
-
-  WebstorePrivateInstallBundleFunction();
-
- private:
-  using Params = api::webstore_private::InstallBundle::Params;
-
-  ~WebstorePrivateInstallBundleFunction() override;
-
-  // ExtensionFunction:
-  ExtensionFunction::ResponseAction Run() override;
-
-  // chrome::BitmapFetcherDelegate:
-  void OnFetchComplete(const GURL& url, const SkBitmap* bitmap) override;
-
-  void OnInstallApproval(BundleInstaller::ApprovalState state);
-  void OnInstallComplete();
-
-  const Params::Details& details() const { return params_->details; }
-
-  ChromeExtensionFunctionDetails chrome_details_;
-
-  std::unique_ptr<Params> params_;
-
-  std::unique_ptr<extensions::BundleInstaller> bundle_;
-  std::unique_ptr<chrome::BitmapFetcher> icon_fetcher_;
 };
 
 class WebstorePrivateEnableAppLauncherFunction

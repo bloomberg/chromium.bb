@@ -14,9 +14,6 @@
           "name": "",
           "description": "Empty string, used to indicate success by showPermissionPromptForDelegatedInstall"
         }, {
-          "name": "success",
-          "description": "Used to indicate success by showPermissionPromptForDelegatedBundleInstall"
-        }, {
           "name": "unknown_error",
           "description": "An unknown error occured"
         }, {
@@ -86,69 +83,6 @@
                 "description": "A string result code, which will be empty upon success. The possible values in the case of errors include 'unknown_error', 'user_cancelled', 'manifest_error', 'icon_error', 'invalid_id', and 'invalid_icon_url'."
               }
             ]
-          }
-        ]
-      },
-      {
-        "name": "showPermissionPromptForDelegatedBundleInstall",
-        "description": "Shows a permission prompt for the given bundle, for installing to a different account.",
-        "parameters": [
-          {
-            "name": "details",
-            "type": "object",
-            "properties": {
-              "localizedName": {
-                "type": "string",
-                "description": "A title to use for display in a confirmation dialog."
-              },
-              "delegatedUser": {
-                "type": "string",
-                "description": "The display name of the user for whom the extension should be installed."
-              },
-              "iconUrl": {
-                "type": "string",
-                "optional": true,
-                "desciption": "A URL for the image to display in the confirmation dialog"
-              }
-            },
-            "additionalProperties": { "type": "any" }
-          },
-          {
-            "name": "contents",
-            "description": "An array of extension details to be installed.",
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string",
-                  "description": "The id of the extension to be installed.",
-                  "minLength": 32,
-                  "maxLength": 32
-                },
-                "manifest": {
-                  "type": "string",
-                  "description": "A string with the contents of the extension's manifest.json file. During the install process, the browser will check that the downloaded extension's manifest matches what was passed in here.",
-                  "minLength": 1
-                },
-                "iconUrl": {
-                  "type": "string",
-                  "optional": true,
-                  "desciption": "A URL for the image to display in the confirmation dialog"
-                },
-                "localizedName": {
-                  "type": "string",
-                  "description": "A string to use instead of the raw value of the 'name' key from manifest.json."
-                }
-              }
-            }
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "description": "Called when the install process completes. Upon failures, chrome.runtime.lastError will be set to 'Invalid bundle', 'Invalid icon url', or 'User cancelled install'.",
-            "optional": true,
-            "parameters": []
           }
         ]
       }

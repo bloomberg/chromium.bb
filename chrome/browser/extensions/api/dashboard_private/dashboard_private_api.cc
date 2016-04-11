@@ -20,14 +20,10 @@ namespace extensions {
 
 namespace ShowPermissionPromptForDelegatedInstall =
     api::dashboard_private::ShowPermissionPromptForDelegatedInstall;
-namespace ShowPermissionPromptForDelegatedBundleInstall =
-    api::dashboard_private::ShowPermissionPromptForDelegatedBundleInstall;
 
 namespace {
 
 // Error messages that can be returned by the API.
-const char kAlreadyInstalledError[] = "This item is already installed";
-const char kInvalidBundleError[] = "Invalid bundle";
 const char kInvalidIconUrlError[] = "Invalid icon url";
 const char kInvalidIdError[] = "Invalid id";
 const char kInvalidManifestError[] = "Invalid manifest";
@@ -165,13 +161,11 @@ void DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::
 
 void DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::
     OnInstallPromptDone(ExtensionInstallPrompt::Result result) {
-  if (result == ExtensionInstallPrompt::Result::ACCEPTED) {
-    Respond(
-        BuildResponse(api::dashboard_private::RESULT_SUCCESS, std::string()));
-  } else {
-    Respond(BuildResponse(api::dashboard_private::RESULT_USER_CANCELLED,
-                          kUserCancelledError));
-  }
+  bool accepted = (result == ExtensionInstallPrompt::Result::ACCEPTED);
+  Respond(BuildResponse(accepted
+                            ? api::dashboard_private::RESULT_EMPTY_STRING
+                            : api::dashboard_private::RESULT_USER_CANCELLED,
+                        accepted ? std::string() : kUserCancelledError));
 
   Release();  // Matches the AddRef in Run().
 }
@@ -179,105 +173,16 @@ void DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::
 ExtensionFunction::ResponseValue
 DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::BuildResponse(
     api::dashboard_private::Result result, const std::string& error) {
-  if (result != api::dashboard_private::RESULT_SUCCESS)
-    return ErrorWithArguments(CreateResults(result), error);
-
-  // The web store expects an empty string on success, so don't use
-  // RESULT_SUCCESS here.
-  return ArgumentList(
-      CreateResults(api::dashboard_private::RESULT_EMPTY_STRING));
+  // The web store expects an empty string on success.
+  if (result == api::dashboard_private::RESULT_EMPTY_STRING)
+    return ArgumentList(CreateResults(result));
+  return ErrorWithArguments(CreateResults(result), error);
 }
 
 std::unique_ptr<base::ListValue>
 DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::CreateResults(
     api::dashboard_private::Result result) const {
   return ShowPermissionPromptForDelegatedInstall::Results::Create(result);
-}
-
-DashboardPrivateShowPermissionPromptForDelegatedBundleInstallFunction::
-    DashboardPrivateShowPermissionPromptForDelegatedBundleInstallFunction()
-    : chrome_details_(this) {
-}
-
-DashboardPrivateShowPermissionPromptForDelegatedBundleInstallFunction::
-    ~DashboardPrivateShowPermissionPromptForDelegatedBundleInstallFunction() {
-}
-
-ExtensionFunction::ResponseAction
-DashboardPrivateShowPermissionPromptForDelegatedBundleInstallFunction::Run() {
-  params_ = Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(params_);
-
-  if (params_->contents.empty())
-    return RespondNow(Error(kInvalidBundleError));
-
-  if (params_->details.icon_url) {
-    GURL icon_url = source_url().Resolve(*params_->details.icon_url);
-    if (!icon_url.is_valid())
-      return RespondNow(Error(kInvalidIconUrlError));
-
-    // The bitmap fetcher will call us back via OnFetchComplete.
-    icon_fetcher_.reset(new chrome::BitmapFetcher(icon_url, this));
-    icon_fetcher_->Init(
-        browser_context()->GetRequestContext(), std::string(),
-        net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-        net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES);
-    icon_fetcher_->Start();
-  } else {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::Bind(
-        &DashboardPrivateShowPermissionPromptForDelegatedBundleInstallFunction::
-            OnFetchComplete,
-        this, GURL(), nullptr));
-  }
-
-  AddRef();  // Balanced in OnFetchComplete.
-
-  // The response is sent in OnFetchComplete or OnInstallApproval.
-  return RespondLater();
-}
-
-void DashboardPrivateShowPermissionPromptForDelegatedBundleInstallFunction::
-    OnFetchComplete(const GURL& url, const SkBitmap* bitmap) {
-  BundleInstaller::ItemList items;
-  for (const auto& entry : params_->contents) {
-    BundleInstaller::Item item;
-    item.id = entry.id;
-    item.manifest = entry.manifest;
-    item.localized_name = entry.localized_name;
-    if (entry.icon_url)
-      item.icon_url = source_url().Resolve(*entry.icon_url);
-    items.push_back(item);
-  }
-  if (items.empty()) {
-    Respond(Error(kAlreadyInstalledError));
-    Release();  // Matches the AddRef in Run.
-    return;
-  }
-
-  bundle_.reset(new BundleInstaller(chrome_details_.GetCurrentBrowser(),
-                                    params_->details.localized_name,
-                                    bitmap ? *bitmap : SkBitmap(),
-                                    std::string(), details().delegated_user,
-                                    items));
-
-  bundle_->PromptForApproval(base::Bind(
-      &DashboardPrivateShowPermissionPromptForDelegatedBundleInstallFunction::
-          OnInstallApproval,
-      this));
-
-  Release();  // Matches the AddRef in Run.
-}
-
-void DashboardPrivateShowPermissionPromptForDelegatedBundleInstallFunction::
-    OnInstallApproval(BundleInstaller::ApprovalState state) {
-  if (state != BundleInstaller::APPROVED) {
-    Respond(Error(state == BundleInstaller::USER_CANCELED
-                      ? kUserCancelledError
-                      : kInvalidBundleError));
-    return;
-  }
-
-  Respond(NoArguments());
 }
 
 }  // namespace extensions

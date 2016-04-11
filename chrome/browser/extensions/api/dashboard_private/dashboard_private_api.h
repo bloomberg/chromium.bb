@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
-#include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
@@ -75,41 +74,6 @@ class DashboardPrivateShowPermissionPromptForDelegatedInstallFunction
 
   DISALLOW_COPY_AND_ASSIGN(
       DashboardPrivateShowPermissionPromptForDelegatedInstallFunction);
-};
-
-class DashboardPrivateShowPermissionPromptForDelegatedBundleInstallFunction
-    : public UIThreadExtensionFunction,
-      public chrome::BitmapFetcherDelegate {
- public:
-  DECLARE_EXTENSION_FUNCTION(
-      "dashboardPrivate.showPermissionPromptForDelegatedBundleInstall",
-      DASHBOARDPRIVATE_SHOWPERMISSIONPROMPTFORDELEGATEDBUNDLEINSTALL)
-
-  DashboardPrivateShowPermissionPromptForDelegatedBundleInstallFunction();
-
- private:
-  using Params = api::dashboard_private::
-     ShowPermissionPromptForDelegatedBundleInstall::Params;
-
-  ~DashboardPrivateShowPermissionPromptForDelegatedBundleInstallFunction()
-      override;
-
-  // ExtensionFunction:
-  ExtensionFunction::ResponseAction Run() override;
-
-  // chrome::BitmapFetcherDelegate:
-  void OnFetchComplete(const GURL& url, const SkBitmap* bitmap) override;
-
-  void OnInstallApproval(BundleInstaller::ApprovalState state);
-
-  const Params::Details& details() const { return params_->details; }
-
-  ChromeExtensionFunctionDetails chrome_details_;
-
-  std::unique_ptr<Params> params_;
-
-  std::unique_ptr<extensions::BundleInstaller> bundle_;
-  std::unique_ptr<chrome::BitmapFetcher> icon_fetcher_;
 };
 
 }  // namespace extensions

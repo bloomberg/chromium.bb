@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
-#include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -398,55 +397,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstoreGetWebGLStatusTest, Blocked) {
 
   bool webgl_allowed = false;
   RunTest(webgl_allowed);
-}
-
-class BundleWebstorePrivateApiTest
-    : public ExtensionWebstorePrivateApiTest {
- public:
-  void SetUpInProcessBrowserTestFixture() override {
-    ExtensionWebstorePrivateApiTest::SetUpInProcessBrowserTestFixture();
-
-    test_data_dir_ = test_data_dir_.AppendASCII("webstore_private/bundle");
-
-    // The test server needs to have already started, so setup the switch here
-    // rather than in SetUpCommandLine.
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kAppsGalleryDownloadURL,
-        GetTestServerURL("bundle/%s.crx").spec());
-  }
-};
-
-// Tests successfully installing a bundle of 2 apps and 2 extensions.
-IN_PROC_BROWSER_TEST_F(BundleWebstorePrivateApiTest, InstallBundle) {
-  extensions::BundleInstaller::SetAutoApproveForTesting(true);
-  ASSERT_TRUE(RunPageTest(GetTestServerURL("install_bundle.html").spec()));
-}
-
-// Tests that bundles can be installed from incognito windows.
-IN_PROC_BROWSER_TEST_F(BundleWebstorePrivateApiTest, InstallBundleIncognito) {
-  extensions::BundleInstaller::SetAutoApproveForTesting(true);
-
-  ASSERT_TRUE(RunPageTest(GetTestServerURL("install_bundle.html").spec(),
-                          ExtensionApiTest::kFlagUseIncognito));
-}
-
-// Tests the user canceling the bundle install prompt.
-IN_PROC_BROWSER_TEST_F(BundleWebstorePrivateApiTest, InstallBundleCancel) {
-  // We don't need to create the CRX files since we are aborting the install.
-  extensions::BundleInstaller::SetAutoApproveForTesting(false);
-
-  ASSERT_TRUE(
-      RunPageTest(GetTestServerURL("install_bundle_cancel.html").spec()));
-}
-
-// Tests partially installing a bundle (1 succeeds, 1 fails due to an invalid
-// CRX, 1 fails due to the manifests not matching, and 1 fails due to a missing
-// crx file).
-IN_PROC_BROWSER_TEST_F(BundleWebstorePrivateApiTest, InstallBundleInvalid) {
-  extensions::BundleInstaller::SetAutoApproveForTesting(true);
-
-  ASSERT_TRUE(
-      RunPageTest(GetTestServerURL("install_bundle_invalid.html").spec()));
 }
 
 }  // namespace extensions
