@@ -337,6 +337,8 @@ public:
 
 
     // Navigation ----------------------------------------------------------
+    // TODO(clamy): Remove the reload, reloadWithOverrideURL, and loadRequest
+    // functions once RenderFrame only calls WebLoadFrame::load.
 
     // Reload the current document.
     // Note: reload() and reloadWithOverrideURL() will be deprecated.
@@ -348,14 +350,6 @@ public:
 
     // Load the given URL.
     virtual void loadRequest(const WebURLRequest&) = 0;
-
-    // Load the given history state, corresponding to a back/forward
-    // navigation of a frame. Multiple frames may be navigated via separate calls.
-    virtual void loadHistoryItem(
-        const WebHistoryItem&,
-        WebHistoryLoadType,
-        WebCachePolicy = WebCachePolicy::UseProtocolCachePolicy)
-        = 0;
 
     // This method is short-hand for calling LoadData, where mime_type is
     // "text/html" and text_encoding is "UTF-8".

@@ -893,14 +893,6 @@ void WebLocalFrameImpl::loadRequest(const WebURLRequest& request)
     load(request, WebFrameLoadType::Standard, WebHistoryItem(), WebHistoryDifferentDocumentLoad, false);
 }
 
-void WebLocalFrameImpl::loadHistoryItem(const WebHistoryItem& item, WebHistoryLoadType loadType, WebCachePolicy cachePolicy)
-{
-    // TODO(clamy): Remove this function once RenderFrame calls load for all
-    // requests.
-    WebURLRequest request = requestFromHistoryItem(item, cachePolicy);
-    load(request, WebFrameLoadType::BackForward, item, loadType, false);
-}
-
 void WebLocalFrameImpl::loadHTMLString(const WebData& data, const WebURL& baseURL, const WebURL& unreachableURL, bool replace)
 {
     DCHECK(frame());

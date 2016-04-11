@@ -280,11 +280,6 @@ void WebRemoteFrameImpl::loadRequest(const WebURLRequest&)
     NOTREACHED();
 }
 
-void WebRemoteFrameImpl::loadHistoryItem(const WebHistoryItem&, WebHistoryLoadType, WebCachePolicy)
-{
-    NOTREACHED();
-}
-
 void WebRemoteFrameImpl::loadHTMLString(
     const WebData& html, const WebURL& baseURL, const WebURL& unreachableURL,
     bool replace)

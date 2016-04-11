@@ -97,8 +97,6 @@ public:
 
     // Load the given URL. For history navigations, a valid WebHistoryItem
     // should be given, as well as a WebHistoryLoadType.
-    // TODO(clamy): Remove the reload, reloadWithOverrideURL, loadHistoryItem
-    // loadRequest functions in WebFrame once RenderFrame only calls loadRequest.
     virtual void load(const WebURLRequest&, WebFrameLoadType = WebFrameLoadType::Standard,
         const WebHistoryItem& = WebHistoryItem(),
         WebHistoryLoadType = WebHistoryDifferentDocumentLoad,
