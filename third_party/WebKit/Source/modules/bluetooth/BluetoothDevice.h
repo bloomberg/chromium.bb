@@ -30,7 +30,7 @@ class ScriptState;
 // "Interface required by CallbackPromiseAdapter" section and the
 // CallbackPromiseAdapter class comments.
 class BluetoothDevice final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<BluetoothDevice>
+    : public EventTargetWithInlineData
     , public ActiveDOMObject {
     USING_PRE_FINALIZER(BluetoothDevice, dispose);
     DEFINE_WRAPPERTYPEINFO();

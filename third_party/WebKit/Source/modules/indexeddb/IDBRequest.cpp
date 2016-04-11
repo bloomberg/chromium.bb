@@ -83,7 +83,7 @@ DEFINE_TRACE(IDBRequest)
     visitor->trace(m_pendingCursor);
     visitor->trace(m_cursorKey);
     visitor->trace(m_cursorPrimaryKey);
-    RefCountedGarbageCollectedEventTargetWithInlineData<IDBRequest>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

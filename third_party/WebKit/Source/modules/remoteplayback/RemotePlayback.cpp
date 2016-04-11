@@ -155,7 +155,7 @@ DEFINE_TRACE(RemotePlayback)
     visitor->trace(m_availabilityObjects);
     visitor->trace(m_mediaElement);
     visitor->trace(m_connectPromiseResolvers);
-    RefCountedGarbageCollectedEventTargetWithInlineData<RemotePlayback>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

@@ -16,7 +16,7 @@ namespace blink {
 // Implements the PresentationReceiver interface from the Presentation API from
 // which websites can implement the receiving side of a presentation session.
 class PresentationReceiver final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<PresentationReceiver>
+    : public EventTargetWithInlineData
     , DOMWindowProperty {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PresentationReceiver);
     USING_GARBAGE_COLLECTED_MIXIN(PresentationReceiver);

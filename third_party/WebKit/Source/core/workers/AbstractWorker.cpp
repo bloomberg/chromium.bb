@@ -72,7 +72,7 @@ KURL AbstractWorker::resolveURL(const String& url, ExceptionState& exceptionStat
 
 DEFINE_TRACE(AbstractWorker)
 {
-    RefCountedGarbageCollectedEventTargetWithInlineData<AbstractWorker>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

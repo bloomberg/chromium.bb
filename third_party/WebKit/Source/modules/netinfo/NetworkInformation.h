@@ -16,7 +16,7 @@ namespace blink {
 class ExecutionContext;
 
 class NetworkInformation final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<NetworkInformation>
+    : public EventTargetWithInlineData
     , public ActiveScriptWrappable
     , public ActiveDOMObject
     , public NetworkStateNotifier::NetworkStateObserver {

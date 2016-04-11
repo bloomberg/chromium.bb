@@ -716,7 +716,7 @@ DEFINE_TRACE(DOMWebSocket)
     visitor->trace(m_channel);
     visitor->trace(m_eventQueue);
     WebSocketChannelClient::trace(visitor);
-    RefCountedGarbageCollectedEventTargetWithInlineData<DOMWebSocket>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

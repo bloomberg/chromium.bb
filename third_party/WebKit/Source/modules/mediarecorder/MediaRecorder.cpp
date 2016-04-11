@@ -353,7 +353,7 @@ DEFINE_TRACE(MediaRecorder)
     visitor->trace(m_stream);
     visitor->trace(m_dispatchScheduledEventRunner);
     visitor->trace(m_scheduledEvents);
-    RefCountedGarbageCollectedEventTargetWithInlineData<MediaRecorder>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

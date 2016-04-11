@@ -276,7 +276,7 @@ MessagePortArray* MessagePort::entanglePorts(ExecutionContext& context, PassOwnP
 DEFINE_TRACE(MessagePort)
 {
     ActiveDOMObject::trace(visitor);
-    RefCountedGarbageCollectedEventTargetWithInlineData<MessagePort>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 v8::Isolate* MessagePort::scriptIsolate()

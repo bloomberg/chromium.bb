@@ -125,7 +125,7 @@ String PermissionStatus::state() const
 
 DEFINE_TRACE(PermissionStatus)
 {
-    RefCountedGarbageCollectedEventTargetWithInlineData<PermissionStatus>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

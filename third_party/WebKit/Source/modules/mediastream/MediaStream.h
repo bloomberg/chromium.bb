@@ -39,7 +39,7 @@ namespace blink {
 class ExceptionState;
 
 class MODULES_EXPORT MediaStream final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<MediaStream>
+    : public EventTargetWithInlineData
     , public URLRegistrable
     , public MediaStreamDescriptorClient
     , public ContextLifecycleObserver {

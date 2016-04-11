@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class XMLHttpRequestEventTarget : public RefCountedGarbageCollectedEventTargetWithInlineData<XMLHttpRequestEventTarget> {
+class XMLHttpRequestEventTarget : public EventTargetWithInlineData {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(XMLHttpRequestEventTarget);
     DEFINE_WRAPPERTYPEINFO();
 public:

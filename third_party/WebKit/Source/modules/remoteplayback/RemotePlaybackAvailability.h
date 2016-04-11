@@ -16,7 +16,7 @@ class ScriptPromiseResolver;
 // Expose whether there is a remote playback device available for a media
 // element. The object will be initialized with a default value passed via
 // ::take() and will then listen to availability changes.
-class RemotePlaybackAvailability final : public RefCountedGarbageCollectedEventTargetWithInlineData<RemotePlaybackAvailability>, public ContextLifecycleObserver {
+class RemotePlaybackAvailability final : public EventTargetWithInlineData, public ContextLifecycleObserver {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RemotePlaybackAvailability);
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(RemotePlaybackAvailability);

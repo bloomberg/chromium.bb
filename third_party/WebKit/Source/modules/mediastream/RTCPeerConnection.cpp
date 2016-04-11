@@ -1177,7 +1177,7 @@ DEFINE_TRACE(RTCPeerConnection)
     visitor->trace(m_remoteStreams);
     visitor->trace(m_dispatchScheduledEventRunner);
     visitor->trace(m_scheduledEvents);
-    RefCountedGarbageCollectedEventTargetWithInlineData<RTCPeerConnection>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

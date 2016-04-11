@@ -353,7 +353,7 @@ bool EventSource::hasPendingActivity() const
 DEFINE_TRACE(EventSource)
 {
     visitor->trace(m_parser);
-    RefCountedGarbageCollectedEventTargetWithInlineData::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
     EventSourceParser::Client::trace(visitor);
 }

@@ -45,7 +45,7 @@ class ExceptionState;
 class KURL;
 class ExecutionContext;
 
-class CORE_EXPORT AbstractWorker : public RefCountedGarbageCollectedEventTargetWithInlineData<AbstractWorker>, public ActiveDOMObject {
+class CORE_EXPORT AbstractWorker : public EventTargetWithInlineData, public ActiveDOMObject {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(AbstractWorker);
     USING_GARBAGE_COLLECTED_MIXIN(AbstractWorker);
 public:

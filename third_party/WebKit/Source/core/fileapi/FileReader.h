@@ -49,7 +49,7 @@ class ExceptionState;
 class ExecutionContext;
 class StringOrArrayBuffer;
 
-class CORE_EXPORT FileReader final : public RefCountedGarbageCollectedEventTargetWithInlineData<FileReader>, public ActiveScriptWrappable, public ActiveDOMObject, public FileReaderLoaderClient {
+class CORE_EXPORT FileReader final : public EventTargetWithInlineData, public ActiveScriptWrappable, public ActiveDOMObject, public FileReaderLoaderClient {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(FileReader);
     USING_GARBAGE_COLLECTED_MIXIN(FileReader);

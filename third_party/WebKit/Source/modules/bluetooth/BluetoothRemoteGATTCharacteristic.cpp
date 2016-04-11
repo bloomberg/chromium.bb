@@ -213,7 +213,7 @@ DEFINE_TRACE(BluetoothRemoteGATTCharacteristic)
 {
     visitor->trace(m_properties);
     visitor->trace(m_value);
-    RefCountedGarbageCollectedEventTargetWithInlineData<BluetoothRemoteGATTCharacteristic>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

@@ -206,7 +206,7 @@ DEFINE_TRACE(SpeechRecognition)
     visitor->trace(m_audioTrack);
     visitor->trace(m_controller);
     visitor->trace(m_finalResults);
-    RefCountedGarbageCollectedEventTargetWithInlineData<SpeechRecognition>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     PageLifecycleObserver::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }

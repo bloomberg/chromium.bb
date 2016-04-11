@@ -333,5 +333,5 @@ DEFINE_TRACE(TextTrackList)
     visitor->trace(m_addTrackTracks);
     visitor->trace(m_elementTracks);
     visitor->trace(m_inbandTracks);
-    RefCountedGarbageCollectedEventTargetWithInlineData<TextTrackList>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
 }

@@ -942,7 +942,7 @@ DEFINE_TRACE(AbstractAudioContext)
     visitor->trace(m_periodicWaveSquare);
     visitor->trace(m_periodicWaveSawtooth);
     visitor->trace(m_periodicWaveTriangle);
-    RefCountedGarbageCollectedEventTargetWithInlineData<AbstractAudioContext>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

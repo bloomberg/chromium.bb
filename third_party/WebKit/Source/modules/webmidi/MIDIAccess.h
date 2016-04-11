@@ -49,7 +49,7 @@ class MIDIInputMap;
 class MIDIOutput;
 class MIDIOutputMap;
 
-class MIDIAccess final : public RefCountedGarbageCollectedEventTargetWithInlineData<MIDIAccess>, public ActiveScriptWrappable, public ActiveDOMObject, public MIDIAccessorClient {
+class MIDIAccess final : public EventTargetWithInlineData, public ActiveScriptWrappable, public ActiveDOMObject, public MIDIAccessorClient {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MIDIAccess);
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(MIDIAccess);

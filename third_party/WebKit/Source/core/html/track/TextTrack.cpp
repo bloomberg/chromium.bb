@@ -476,7 +476,7 @@ DEFINE_TRACE(TextTrack)
     visitor->trace(m_regions);
     visitor->trace(m_trackList);
     TrackBase::trace(visitor);
-    RefCountedGarbageCollectedEventTargetWithInlineData<TextTrack>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 } // namespace blink

@@ -50,7 +50,7 @@ class IDBOpenDBRequest;
 struct IDBObjectStoreMetadata;
 
 class MODULES_EXPORT IDBTransaction final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<IDBTransaction>
+    : public EventTargetWithInlineData
     , public ActiveScriptWrappable
     , public ActiveDOMObject {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(IDBTransaction);

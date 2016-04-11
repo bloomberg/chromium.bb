@@ -23,7 +23,7 @@ class RemotePlaybackAvailability;
 class ScriptPromiseResolver;
 
 class RemotePlayback final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<RemotePlayback>
+    : public EventTargetWithInlineData
     , public DOMWindowProperty
     , private WebRemotePlaybackClient {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RemotePlayback);

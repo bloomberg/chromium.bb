@@ -56,7 +56,7 @@ struct IDBDatabaseMetadata;
 class IDBValue;
 
 class MODULES_EXPORT IDBRequest
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<IDBRequest>
+    : public EventTargetWithInlineData
     , public ActiveScriptWrappable
     , public ActiveDOMObject {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(IDBRequest);

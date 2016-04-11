@@ -72,7 +72,7 @@ DEFINE_TRACE(SpeechSynthesisUtterance)
 {
     visitor->trace(m_platformUtterance);
     visitor->trace(m_voice);
-    RefCountedGarbageCollectedEventTargetWithInlineData<SpeechSynthesisUtterance>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ContextLifecycleObserver::trace(visitor);
 }
 

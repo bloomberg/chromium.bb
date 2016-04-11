@@ -14,7 +14,7 @@
 namespace blink {
 
 template<class T>
-class TrackListBase : public RefCountedGarbageCollectedEventTargetWithInlineData<TrackListBase<T>> {
+class TrackListBase : public EventTargetWithInlineData {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(TrackListBase);
 public:
     explicit TrackListBase(HTMLMediaElement* mediaElement)
@@ -110,7 +110,7 @@ public:
     {
         visitor->trace(m_tracks);
         visitor->trace(m_mediaElement);
-        RefCountedGarbageCollectedEventTargetWithInlineData<TrackListBase<T>>::trace(visitor);
+        EventTargetWithInlineData::trace(visitor);
     }
 
 private:

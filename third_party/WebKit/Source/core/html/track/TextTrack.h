@@ -45,7 +45,7 @@ class TextTrackList;
 class VTTRegion;
 class VTTRegionList;
 
-class CORE_EXPORT TextTrack : public RefCountedGarbageCollectedEventTargetWithInlineData<TextTrack>, public TrackBase {
+class CORE_EXPORT TextTrack : public EventTargetWithInlineData, public TrackBase {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(TextTrack);
     USING_GARBAGE_COLLECTED_MIXIN(TextTrack);

@@ -67,7 +67,7 @@ ExecutionContext* BluetoothDevice::getExecutionContext() const
 
 DEFINE_TRACE(BluetoothDevice)
 {
-    RefCountedGarbageCollectedEventTargetWithInlineData<BluetoothDevice>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
     visitor->trace(m_adData);
     visitor->trace(m_gatt);

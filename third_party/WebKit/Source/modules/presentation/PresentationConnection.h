@@ -26,7 +26,7 @@ class PresentationController;
 class PresentationRequest;
 
 class PresentationConnection final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<PresentationConnection>
+    : public EventTargetWithInlineData
     , public DOMWindowProperty {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PresentationConnection);
     USING_GARBAGE_COLLECTED_MIXIN(PresentationConnection);

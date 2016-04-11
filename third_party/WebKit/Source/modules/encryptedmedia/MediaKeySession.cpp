@@ -926,7 +926,7 @@ DEFINE_TRACE(MediaKeySession)
     visitor->trace(m_mediaKeys);
     visitor->trace(m_keyStatusesMap);
     visitor->trace(m_closedPromise);
-    RefCountedGarbageCollectedEventTargetWithInlineData<MediaKeySession>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

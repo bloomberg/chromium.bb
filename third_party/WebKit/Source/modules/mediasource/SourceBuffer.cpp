@@ -957,7 +957,7 @@ DEFINE_TRACE(SourceBuffer)
     visitor->trace(m_stream);
     visitor->trace(m_audioTracks);
     visitor->trace(m_videoTracks);
-    RefCountedGarbageCollectedEventTargetWithInlineData<SourceBuffer>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

@@ -29,7 +29,7 @@ class WebServiceWorkerProvider;
 // registration representation is in the embedder and this class accesses it
 // via WebServiceWorkerRegistration::Handle object.
 class ServiceWorkerRegistration final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<ServiceWorkerRegistration>
+    : public EventTargetWithInlineData
     , public ActiveScriptWrappable
     , public ActiveDOMObject
     , public WebServiceWorkerRegistrationProxy

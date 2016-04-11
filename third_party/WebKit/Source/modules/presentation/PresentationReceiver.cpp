@@ -39,7 +39,7 @@ ScriptPromise PresentationReceiver::getConnections(ScriptState* scriptState)
 
 DEFINE_TRACE(PresentationReceiver)
 {
-    RefCountedGarbageCollectedEventTargetWithInlineData<PresentationReceiver>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

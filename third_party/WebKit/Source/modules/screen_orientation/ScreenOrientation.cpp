@@ -191,7 +191,7 @@ ScreenOrientationController* ScreenOrientation::controller()
 
 DEFINE_TRACE(ScreenOrientation)
 {
-    RefCountedGarbageCollectedEventTargetWithInlineData<ScreenOrientation>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

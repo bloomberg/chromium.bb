@@ -265,7 +265,7 @@ DEFINE_TRACE(MediaStreamTrack)
 {
     visitor->trace(m_registeredMediaStreams);
     visitor->trace(m_component);
-    RefCountedGarbageCollectedEventTargetWithInlineData<MediaStreamTrack>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

@@ -56,7 +56,7 @@ typedef HeapVector<Member<MessagePort>, 1> MessagePortArray;
 typedef Vector<OwnPtr<WebMessagePortChannel>, 1> MessagePortChannelArray;
 
 class CORE_EXPORT MessagePort
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<MessagePort>
+    : public EventTargetWithInlineData
     , public ActiveScriptWrappable
     , public ActiveDOMObject
     , public WebMessagePortChannelClient {

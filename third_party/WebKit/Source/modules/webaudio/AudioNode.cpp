@@ -548,7 +548,7 @@ DEFINE_TRACE(AudioNode)
     visitor->trace(m_context);
     visitor->trace(m_connectedNodes);
     visitor->trace(m_connectedParams);
-    RefCountedGarbageCollectedEventTargetWithInlineData<AudioNode>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 AbstractAudioContext* AudioNode::context() const

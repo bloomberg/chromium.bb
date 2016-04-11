@@ -24,7 +24,7 @@ class ScriptPromiseResolver;
 // then subscribe to receive callbacks if the status for |url| were to
 // change. The object will only listen to changes when required.
 class MODULES_EXPORT PresentationAvailability final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<PresentationAvailability>
+    : public EventTargetWithInlineData
     , public ActiveScriptWrappable
     , public ActiveDOMObject
     , public PageLifecycleObserver

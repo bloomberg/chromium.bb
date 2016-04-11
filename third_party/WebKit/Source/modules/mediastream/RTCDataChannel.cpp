@@ -323,7 +323,7 @@ DEFINE_TRACE(RTCDataChannel)
 {
     visitor->trace(m_executionContext);
     visitor->trace(m_scheduledEvents);
-    RefCountedGarbageCollectedEventTargetWithInlineData<RTCDataChannel>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 } // namespace blink

@@ -94,7 +94,7 @@ DEFINE_TRACE(IDBDatabase)
     visitor->trace(m_transactions);
     visitor->trace(m_enqueuedEvents);
     visitor->trace(m_databaseCallbacks);
-    RefCountedGarbageCollectedEventTargetWithInlineData<IDBDatabase>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

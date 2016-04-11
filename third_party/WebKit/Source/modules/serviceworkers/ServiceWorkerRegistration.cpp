@@ -131,7 +131,7 @@ DEFINE_TRACE(ServiceWorkerRegistration)
     visitor->trace(m_installing);
     visitor->trace(m_waiting);
     visitor->trace(m_active);
-    RefCountedGarbageCollectedEventTargetWithInlineData<ServiceWorkerRegistration>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
     Supplementable<ServiceWorkerRegistration>::trace(visitor);
 }

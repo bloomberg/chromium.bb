@@ -40,7 +40,7 @@ namespace blink {
 class GenericEventQueue;
 class TextTrack;
 
-class CORE_EXPORT TextTrackList final : public RefCountedGarbageCollectedEventTargetWithInlineData<TextTrackList> {
+class CORE_EXPORT TextTrackList final : public EventTargetWithInlineData {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(TextTrackList);
 public:

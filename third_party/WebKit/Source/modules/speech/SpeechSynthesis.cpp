@@ -234,7 +234,7 @@ DEFINE_TRACE(SpeechSynthesis)
     visitor->trace(m_voiceList);
     visitor->trace(m_utteranceQueue);
     PlatformSpeechSynthesizerClient::trace(visitor);
-    RefCountedGarbageCollectedEventTargetWithInlineData<SpeechSynthesis>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ContextLifecycleObserver::trace(visitor);
 }
 

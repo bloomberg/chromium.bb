@@ -462,7 +462,7 @@ void FileReader::fireEvent(const AtomicString& type)
 DEFINE_TRACE(FileReader)
 {
     visitor->trace(m_error);
-    RefCountedGarbageCollectedEventTargetWithInlineData<FileReader>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

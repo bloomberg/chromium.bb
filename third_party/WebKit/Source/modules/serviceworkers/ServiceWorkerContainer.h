@@ -53,7 +53,7 @@ class WebServiceWorkerProvider;
 class WebServiceWorkerRegistration;
 
 class MODULES_EXPORT ServiceWorkerContainer final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<ServiceWorkerContainer>
+    : public EventTargetWithInlineData
     , public ContextLifecycleObserver
     , public WebServiceWorkerProviderClient {
     DEFINE_WRAPPERTYPEINFO();

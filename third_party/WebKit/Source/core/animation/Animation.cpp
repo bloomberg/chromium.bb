@@ -1087,7 +1087,7 @@ DEFINE_TRACE(Animation)
     visitor->trace(m_pendingCancelledEvent);
     visitor->trace(m_finishedPromise);
     visitor->trace(m_readyPromise);
-    RefCountedGarbageCollectedEventTargetWithInlineData<Animation>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

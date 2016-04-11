@@ -148,7 +148,7 @@ const KURL& PresentationRequest::url() const
 
 DEFINE_TRACE(PresentationRequest)
 {
-    RefCountedGarbageCollectedEventTargetWithInlineData<PresentationRequest>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

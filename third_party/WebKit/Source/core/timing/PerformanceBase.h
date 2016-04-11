@@ -54,7 +54,7 @@ class UserTiming;
 using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 using PerformanceObservers = HeapListHashSet<Member<PerformanceObserver>>;
 
-class CORE_EXPORT PerformanceBase : public RefCountedGarbageCollectedEventTargetWithInlineData<PerformanceBase> {
+class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PerformanceBase);
 public:
     ~PerformanceBase() override;

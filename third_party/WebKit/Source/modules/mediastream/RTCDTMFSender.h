@@ -39,7 +39,7 @@ class WebRTCDTMFSenderHandler;
 class WebRTCPeerConnectionHandler;
 
 class RTCDTMFSender final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<RTCDTMFSender>
+    : public EventTargetWithInlineData
     , public WebRTCDTMFSenderHandlerClient
     , public ActiveDOMObject {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RTCDTMFSender);

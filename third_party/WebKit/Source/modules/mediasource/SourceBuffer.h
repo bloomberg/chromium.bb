@@ -57,7 +57,7 @@ class VideoTrackList;
 class WebSourceBuffer;
 
 class SourceBuffer final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<SourceBuffer>
+    : public EventTargetWithInlineData
     , public ActiveScriptWrappable
     , public ActiveDOMObject
     , public FileReaderLoaderClient

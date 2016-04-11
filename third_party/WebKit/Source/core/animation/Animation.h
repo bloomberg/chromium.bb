@@ -54,7 +54,7 @@ class Element;
 class ExceptionState;
 
 class CORE_EXPORT Animation final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<Animation>
+    : public EventTargetWithInlineData
     , public ActiveScriptWrappable
     , public ActiveDOMObject
     , public CompositorAnimationDelegate

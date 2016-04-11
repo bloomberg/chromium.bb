@@ -20,7 +20,7 @@ class USBDeviceRequestOptions;
 class WebUSBDevice;
 
 class USB final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<USB>
+    : public EventTargetWithInlineData
     , public ContextLifecycleObserver
     , public WebUSBClient::Observer {
     DEFINE_WRAPPERTYPEINFO();

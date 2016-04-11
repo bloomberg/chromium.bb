@@ -176,7 +176,7 @@ DEFINE_TRACE(RTCDTMFSender)
 {
     visitor->trace(m_track);
     visitor->trace(m_scheduledEvents);
-    RefCountedGarbageCollectedEventTargetWithInlineData<RTCDTMFSender>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

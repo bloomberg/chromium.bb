@@ -47,13 +47,8 @@ class ExceptionState;
 class ExecutionContext;
 
 class FileWriter final
-#if ENABLE(OILPAN)
     : public EventTargetWithInlineData
     , public FileWriterBase
-#else
-    : public FileWriterBase
-    , public EventTargetWithInlineData
-#endif
     , public ActiveScriptWrappable
     , public ActiveDOMObject
     , public WebFileWriterClient {

@@ -55,7 +55,7 @@ class ExceptionState;
 class ExecutionContext;
 
 class MODULES_EXPORT IDBDatabase final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<IDBDatabase>
+    : public EventTargetWithInlineData
     , public ActiveScriptWrappable
     , public ActiveDOMObject {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(IDBDatabase);

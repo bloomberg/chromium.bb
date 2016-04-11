@@ -83,12 +83,10 @@ public:
 // EventTarget, follow these steps:
 // - Make your IDL interface inherit from EventTarget.
 //   Optionally add "attribute EventHandler onfoo;" attributes.
-// - Inherit from EventTargetWithInlineData (only in rare cases should you use
-//   EventTarget directly); or, if you want YourClass to be inherited from
-//   RefCountedGarbageCollected<YourClass> in addition to EventTargetWithInlineData,
-//   inherit from RefCountedGarbageCollectedEventTargetWithInlineData<YourClass>.
+// - Inherit from EventTargetWithInlineData (only in rare cases
+//   should you use EventTarget directly).
 // - In your class declaration, EventTargetWithInlineData (or
-//   RefCountedGarbageCollectedEventTargetWithInlineData<>) must come first in
+//   EventTargetWithInlineData) must come first in
 //   the base class list. If your class is non-final, classes inheriting from
 //   your class need to come first, too.
 // - Figure out if you now need to inherit from ActiveDOMObject as well.
@@ -106,8 +104,9 @@ public:
 //   return ActiveDOMObject::executionContext (if you are an ActiveDOMObject)
 //   or the document you're in.
 // - Your trace() method will need to call EventTargetWithInlineData::trace
-//   or RefCountedGarbageCollectedEventTargetWithInlineData<YourClass>::trace,
 //   depending on the base class of your class.
+// - EventTargets do not support EAGERLY_FINALIZE. You need to use
+//   a pre-finalizer instead.
 //
 // Optionally, add a FooEvent.idl class, but that's outside the scope of this
 // comment (and much more straightforward).
@@ -210,32 +209,6 @@ protected:
 private:
     EventTargetData m_eventTargetData;
 };
-
-// Base class for classes that wish to inherit from RefCountedGarbageCollected (in non-Oilpan world) and
-// EventTargetWithInlineData (in both worlds). For details about how to use this class template, see the comments for
-// EventTargetWithInlineData above.
-//
-// This class template exists to circumvent Oilpan's "leftmost class rule", where the Oilpan classes must come first in
-// the base class list to avoid memory offset adjustment. In non-Oilpan world, RefCountedGarbageCollected<T> must come
-// first, but in Oilpan world EventTargetWithInlineData needs to come first. This class templates does the required
-// #if-switch here, in order to avoid a lot of "#if ENABLE(OILPAN)"-s sprinkled in the derived classes.
-#if ENABLE(OILPAN)
-template <typename T>
-class RefCountedGarbageCollectedEventTargetWithInlineData : public EventTargetWithInlineData {
-public:
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        static_assert(!IsEagerlyFinalizedType<T>::value, "EventTargets do not support eager finalization.");
-        EventTargetWithInlineData::trace(visitor);
-    }
-};
-#else
-template <typename T>
-class RefCountedGarbageCollectedEventTargetWithInlineData : public RefCountedGarbageCollected<T>, public EventTargetWithInlineData {
-public:
-    DEFINE_INLINE_VIRTUAL_TRACE() { EventTargetWithInlineData::trace(visitor); }
-};
-#endif
 
 // FIXME: These macros should be split into separate DEFINE and DECLARE
 // macros to avoid causing so many header includes.

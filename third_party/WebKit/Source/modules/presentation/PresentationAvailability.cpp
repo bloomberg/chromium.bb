@@ -138,7 +138,7 @@ bool PresentationAvailability::value() const
 
 DEFINE_TRACE(PresentationAvailability)
 {
-    RefCountedGarbageCollectedEventTargetWithInlineData<PresentationAvailability>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     PageLifecycleObserver::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }

@@ -34,7 +34,7 @@ class ScriptState;
 // "Interface required by CallbackPromiseAdapter" section and the
 // CallbackPromiseAdapter class comments.
 class BluetoothRemoteGATTCharacteristic final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<BluetoothRemoteGATTCharacteristic>
+    : public EventTargetWithInlineData
     , public ActiveDOMObject
     , public WebBluetoothRemoteGATTCharacteristic {
     USING_PRE_FINALIZER(BluetoothRemoteGATTCharacteristic, dispose);

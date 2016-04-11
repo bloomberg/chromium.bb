@@ -49,7 +49,7 @@ class GenericEventQueue;
 class WebSourceBuffer;
 
 class MediaSource final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<MediaSource>
+    : public EventTargetWithInlineData
     , public HTMLMediaSource
     , public ActiveScriptWrappable
     , public ActiveDOMObject {

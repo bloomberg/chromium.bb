@@ -163,7 +163,7 @@ void MIDIPort::stop()
 DEFINE_TRACE(MIDIPort)
 {
     visitor->trace(m_access);
-    RefCountedGarbageCollectedEventTargetWithInlineData<MIDIPort>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

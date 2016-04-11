@@ -119,7 +119,7 @@ DEFINE_TRACE(IDBTransaction)
     visitor->trace(m_createdObjectStores);
     visitor->trace(m_deletedObjectStores);
     visitor->trace(m_objectStoreCleanupMap);
-    RefCountedGarbageCollectedEventTargetWithInlineData<IDBTransaction>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

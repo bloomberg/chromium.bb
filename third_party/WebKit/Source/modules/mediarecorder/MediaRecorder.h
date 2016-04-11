@@ -23,7 +23,7 @@ class BlobData;
 class ExceptionState;
 
 class MODULES_EXPORT MediaRecorder final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<MediaRecorder>
+    : public EventTargetWithInlineData
     , public WebMediaRecorderHandlerClient
     , public ActiveScriptWrappable
     , public ActiveDOMObject {

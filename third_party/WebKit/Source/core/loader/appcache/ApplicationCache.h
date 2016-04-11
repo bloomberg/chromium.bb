@@ -39,7 +39,7 @@ namespace blink {
 class ExceptionState;
 class LocalFrame;
 
-class ApplicationCache final : public RefCountedGarbageCollectedEventTargetWithInlineData<ApplicationCache>, public DOMWindowProperty {
+class ApplicationCache final : public EventTargetWithInlineData, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(ApplicationCache);
     USING_GARBAGE_COLLECTED_MIXIN(ApplicationCache);

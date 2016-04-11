@@ -138,7 +138,7 @@ DEFINE_TRACE(BatteryManager)
 {
     visitor->trace(m_batteryProperty);
     PlatformEventController::trace(visitor);
-    RefCountedGarbageCollectedEventTargetWithInlineData<BatteryManager>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

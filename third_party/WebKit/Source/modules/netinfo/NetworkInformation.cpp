@@ -170,7 +170,7 @@ NetworkInformation::NetworkInformation(ExecutionContext* context)
 
 DEFINE_TRACE(NetworkInformation)
 {
-    RefCountedGarbageCollectedEventTargetWithInlineData<NetworkInformation>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

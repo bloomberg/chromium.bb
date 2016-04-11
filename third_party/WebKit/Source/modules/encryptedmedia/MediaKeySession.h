@@ -60,7 +60,7 @@ class MediaKeys;
 // it may outlive any JavaScript references as long as the MediaKeys object is alive.
 // The WebContentDecryptionModuleSession has the same lifetime as this object.
 class MediaKeySession final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<MediaKeySession>
+    : public EventTargetWithInlineData
     , public ActiveScriptWrappable
     , public ActiveDOMObject
     , private WebContentDecryptionModuleSession::Client {

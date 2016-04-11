@@ -52,7 +52,7 @@ bool RemotePlaybackAvailability::value() const
 
 DEFINE_TRACE(RemotePlaybackAvailability)
 {
-    RefCountedGarbageCollectedEventTargetWithInlineData<RemotePlaybackAvailability>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ContextLifecycleObserver::trace(visitor);
 }
 

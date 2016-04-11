@@ -210,7 +210,7 @@ DEFINE_TRACE(MIDIAccess)
 {
     visitor->trace(m_inputs);
     visitor->trace(m_outputs);
-    RefCountedGarbageCollectedEventTargetWithInlineData<MIDIAccess>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

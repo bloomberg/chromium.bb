@@ -163,7 +163,7 @@ void USB::onDeviceDisconnected(std::unique_ptr<WebUSBDevice> device)
 
 DEFINE_TRACE(USB)
 {
-    RefCountedGarbageCollectedEventTargetWithInlineData<USB>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ContextLifecycleObserver::trace(visitor);
 }
 

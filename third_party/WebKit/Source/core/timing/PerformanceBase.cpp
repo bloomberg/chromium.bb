@@ -445,7 +445,7 @@ DEFINE_TRACE(PerformanceBase)
     visitor->trace(m_observers);
     visitor->trace(m_activeObservers);
     visitor->trace(m_suspendedObservers);
-    RefCountedGarbageCollectedEventTargetWithInlineData<PerformanceBase>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 } // namespace blink

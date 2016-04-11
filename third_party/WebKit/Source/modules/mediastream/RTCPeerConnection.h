@@ -62,7 +62,7 @@ class ScriptState;
 class VoidCallback;
 
 class RTCPeerConnection final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<RTCPeerConnection>
+    : public EventTargetWithInlineData
     , public WebRTCPeerConnectionHandlerClient
     , public ActiveScriptWrappable
     , public ActiveDOMObject {

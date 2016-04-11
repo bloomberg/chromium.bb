@@ -222,7 +222,7 @@ DEFINE_TRACE(PaymentRequest)
     visitor->trace(m_shippingAddress);
     visitor->trace(m_showResolver);
     visitor->trace(m_completeResolver);
-    RefCountedGarbageCollectedEventTargetWithInlineData<PaymentRequest>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 PaymentRequest::PaymentRequest(ScriptState* scriptState, const Vector<String>& supportedMethods, const PaymentDetails& details, const PaymentOptions& options, const ScriptValue& data, ExceptionState& exceptionState)

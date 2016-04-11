@@ -234,7 +234,7 @@ DEFINE_TRACE(PresentationConnection)
 {
     visitor->trace(m_blobLoader);
     visitor->trace(m_messages);
-    RefCountedGarbageCollectedEventTargetWithInlineData<PresentationConnection>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

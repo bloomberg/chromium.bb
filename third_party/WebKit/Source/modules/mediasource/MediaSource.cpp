@@ -282,7 +282,7 @@ DEFINE_TRACE(MediaSource)
     visitor->trace(m_attachedElement);
     visitor->trace(m_sourceBuffers);
     visitor->trace(m_activeSourceBuffers);
-    RefCountedGarbageCollectedEventTargetWithInlineData<MediaSource>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 
