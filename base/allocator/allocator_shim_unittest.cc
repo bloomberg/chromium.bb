@@ -20,6 +20,15 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// Some new Android NDKs (64 bit) does not expose (p)valloc anymore. These
+// functions are implemented at the shim-layer level.
+#if defined(OS_ANDROID)
+extern "C" {
+void* valloc(size_t size);
+void* pvalloc(size_t size);
+}
+#endif
+
 namespace base {
 namespace allocator {
 namespace {

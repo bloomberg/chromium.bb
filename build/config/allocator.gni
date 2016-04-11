@@ -30,5 +30,6 @@ declare_args() {
 assert(use_allocator == "none" || use_allocator == "tcmalloc")
 
 assert(!is_win || use_allocator == "none", "Tcmalloc doesn't work on Windows.")
-assert(!use_experimental_allocator_shim || is_linux,
-       "use_experimental_allocator_shim supported only on Linux")
+assert(
+    !use_experimental_allocator_shim || is_linux || is_android,
+    "use_experimental_allocator_shim supported only on Linux and Android targets")
