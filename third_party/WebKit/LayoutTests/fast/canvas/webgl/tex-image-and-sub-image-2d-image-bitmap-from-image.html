@@ -21,7 +21,8 @@ var blackColor = [0, 0, 0];
 var darkRed = [26, 0, 0];
 var darkGreen = [0, 26, 0];
 
-var image = new Image();
+var image1 = new Image();
+var image2 = new Image();
 
 function promiseRejected()
 {
@@ -43,19 +44,19 @@ function generateTest()
     gl.clearColor(0,0,0,1);
     gl.clearDepth(1);
 
-    var p1 = createImageBitmap(image).then(function(imageBitmap) { bitmaps.defaultOption = imageBitmap });
-    var p2 = createImageBitmap(image, {imageOrientation: "none", premultiplyAlpha: "premultiply"}).then(function(imageBitmap) { bitmaps.noFlipYPremul = imageBitmap });
-    var p3 = createImageBitmap(image, {imageOrientation: "none", premultiplyAlpha: "default"}).then(function(imageBitmap) { bitmaps.noFlipYDefault = imageBitmap });
-    var p4 = createImageBitmap(image, {imageOrientation: "none", premultiplyAlpha: "none"}).then(function(imageBitmap) { bitmaps.noFlipYUnpremul = imageBitmap });
-    var p5 = createImageBitmap(image, {imageOrientation: "flipY", premultiplyAlpha: "premultiply"}).then(function(imageBitmap) { bitmaps.flipYPremul = imageBitmap });
-    var p6 = createImageBitmap(image, {imageOrientation: "flipY", premultiplyAlpha: "default"}).then(function(imageBitmap) { bitmaps.flipYDefault = imageBitmap });
-    var p7 = createImageBitmap(image, {imageOrientation: "flipY", premultiplyAlpha: "none"}).then(function(imageBitmap) { bitmaps.flipYUnpremul = imageBitmap });
-    var p8 = createImageBitmap(image).then(function(imageBitmap) { bitmaps.colorspaceDef = imageBitmap });
-    var p9 = createImageBitmap(image, {colorspaceConversion: "none"}).then(function(imageBitmap) { bitmaps.colorspaceNone = imageBitmap });
-    var p10 = createImageBitmap(image, {colorspaceConversion: "default"}).then(function(imageBitmap) { bitmaps.colorspaceDefault = imageBitmap });
+    var p1 = createImageBitmap(image1).then(function(imageBitmap) { bitmaps.defaultOption = imageBitmap });
+    var p2 = createImageBitmap(image1, {imageOrientation: "none", premultiplyAlpha: "premultiply"}).then(function(imageBitmap) { bitmaps.noFlipYPremul = imageBitmap });
+    var p3 = createImageBitmap(image1, {imageOrientation: "none", premultiplyAlpha: "default"}).then(function(imageBitmap) { bitmaps.noFlipYDefault = imageBitmap });
+    var p4 = createImageBitmap(image1, {imageOrientation: "none", premultiplyAlpha: "none"}).then(function(imageBitmap) { bitmaps.noFlipYUnpremul = imageBitmap });
+    var p5 = createImageBitmap(image1, {imageOrientation: "flipY", premultiplyAlpha: "premultiply"}).then(function(imageBitmap) { bitmaps.flipYPremul = imageBitmap });
+    var p6 = createImageBitmap(image1, {imageOrientation: "flipY", premultiplyAlpha: "default"}).then(function(imageBitmap) { bitmaps.flipYDefault = imageBitmap });
+    var p7 = createImageBitmap(image1, {imageOrientation: "flipY", premultiplyAlpha: "none"}).then(function(imageBitmap) { bitmaps.flipYUnpremul = imageBitmap });
+    var p8 = createImageBitmap(image2).then(function(imageBitmap) { bitmaps.colorspaceDef = imageBitmap });
+    var p9 = createImageBitmap(image2, {colorspaceConversion: "none"}).then(function(imageBitmap) { bitmaps.colorspaceNone = imageBitmap });
+    var p10 = createImageBitmap(image2, {colorspaceConversion: "default"}).then(function(imageBitmap) { bitmaps.colorspaceDefault = imageBitmap });
     Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]).then(function() {
         var alphaVal = 0.5;
-        var testPassed = runTest(bitmaps, alphaVal, false);
+        var testPassed = runTest(bitmaps, alphaVal, true);
         if (testPassed)
             pass();
         finishJSTest();
@@ -71,10 +72,13 @@ function init()
         testRunner.overridePreference("WebKitWebGLEnabled", "1");
         testRunner.dumpAsText();
     }
-    image.onload = function() {
-        generateTest();
+    image1.onload = function() {
+        image2.onload = function() {
+            generateTest();
+        }
     }
-    image.src = "resources/red-green-semi-transparent.png";
+    image1.src = "resources/red-green-semi-transparent.png";
+    image2.src = "resources/square-with-colorspin-profile.png";
 }
 </script>
 </head>
