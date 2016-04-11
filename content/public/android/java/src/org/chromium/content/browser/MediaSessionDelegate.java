@@ -49,11 +49,6 @@ public class MediaSessionDelegate implements AudioManager.OnAudioFocusChangeList
     }
 
     @CalledByNative
-    private void tearDown() {
-        abandonAudioFocus();
-    }
-
-    @CalledByNative
     private boolean requestAudioFocus(boolean transientFocus) {
         mFocusType = transientFocus ? AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
                 : AudioManager.AUDIOFOCUS_GAIN;
