@@ -59,17 +59,12 @@ private:
 template<class R, class C>
 inline ResourceOwner<R, C>::ResourceOwner()
 {
-#if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
-#endif
 }
 
 template<class R, class C>
 inline ResourceOwner<R, C>::~ResourceOwner()
 {
-#if !ENABLE(OILPAN)
-    clearResource();
-#endif
 }
 
 template<class R, class C>

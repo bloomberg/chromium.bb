@@ -203,16 +203,11 @@ ResourceFetcher::ResourceFetcher(FetchContext* newContext)
     , m_imagesEnabled(true)
     , m_allowStaleResources(false)
 {
-#if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
-#endif
 }
 
 ResourceFetcher::~ResourceFetcher()
 {
-#if !ENABLE(OILPAN)
-    clearPreloads(ClearAllPreloads);
-#endif
 }
 
 WebTaskRunner* ResourceFetcher::loadingTaskRunner()
@@ -489,7 +484,7 @@ Resource* ResourceFetcher::requestResource(FetchRequest& request, const Resource
     // If only the fragment identifiers differ, it is the same resource.
     ASSERT(equalIgnoringFragmentIdentifier(resource->url(), url));
     requestLoadStarted(resource, request, policy == Use ? ResourceLoadingFromCache : ResourceLoadingFromNetwork, isStaticData);
-    m_documentResources.set(urlWithoutFragment, resource->asWeakPtr());
+    m_documentResources.set(urlWithoutFragment, resource);
 
     if (!resourceNeedsLoad(resource, request, policy))
         return resource;
@@ -826,12 +821,8 @@ bool ResourceFetcher::shouldDeferImageLoad(const KURL& url) const
 
 void ResourceFetcher::reloadImagesIfNotDeferred()
 {
-    // TODO(japhet): Once oilpan ships, the const auto&
-    // can be replaced with a Resource*. Also, null checking
-    // the resource probably won't be necesssary.
-    for (const auto& documentResource : m_documentResources) {
-        Resource* resource = documentResource.value.get();
-        if (resource && resource->getType() == Resource::Image && resource->stillNeedsLoad() && !shouldDeferImageLoad(resource->url()))
+    for (Resource* resource : m_documentResources.values()) {
+        if (resource->getType() == Resource::Image && resource->stillNeedsLoad() && !shouldDeferImageLoad(resource->url()))
             const_cast<Resource*>(resource)->load(this);
     }
 }

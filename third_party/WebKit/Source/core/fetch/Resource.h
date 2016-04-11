@@ -245,9 +245,6 @@ public:
     static const char* resourceTypeToString(Type, const FetchInitiatorInfo&);
     static const char* resourceTypeName(Type);
 
-    // TODO(japhet): Remove once oilpan ships, it doesn't need the WeakPtr.
-    Resource* asWeakPtr();
-
 protected:
     Resource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
 
@@ -323,10 +320,6 @@ private:
     void setCachedMetadata(unsigned dataTypeID, const char*, size_t, CachedMetadataHandler::CacheType);
     void clearCachedMetadata(CachedMetadataHandler::CacheType);
     CachedMetadata* cachedMetadata(unsigned dataTypeID) const;
-
-#if !ENABLE(OILPAN)
-    WeakPtrFactory<Resource> m_weakPtrFactory;
-#endif
 
     RefPtr<CachedMetadata> m_cachedMetadata;
     Member<CacheHandler> m_cacheHandler;
