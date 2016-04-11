@@ -394,16 +394,12 @@ TEST_P(ProofTest, VerifyECDSAKnownAnswerTest) {
                        sizeof(signature_data_2));
 
   for (size_t i = 0; i < signatures.size(); i++) {
-    LOG(ERROR) << "====================" << i << "======================";
     const string& signature = signatures[i];
 
-    LOG(ERROR) << "=================== expect ok =====================";
     RunVerification(verifier.get(), hostname, port, server_config, quic_version,
                     chlo_hash, certs, signature, true);
-    LOG(ERROR) << "=================== hose_name = foo.com =============";
     RunVerification(verifier.get(), "foo.com", port, server_config,
                     quic_version, chlo_hash, certs, signature, false);
-    LOG(ERROR) << "================== server_config ====================";
     RunVerification(verifier.get(), hostname, port,
                     server_config.substr(1, string::npos), quic_version,
                     chlo_hash, certs, signature, false);
@@ -412,13 +408,11 @@ TEST_P(ProofTest, VerifyECDSAKnownAnswerTest) {
     // signature can still be DER-decoded correctly.
     string corrupt_signature = signature;
     corrupt_signature[corrupt_signature.size() - 1] += 1;
-    LOG(ERROR) << "================= corrupt signature =======================";
     RunVerification(verifier.get(), hostname, port, server_config, quic_version,
                     chlo_hash, certs, corrupt_signature, false);
 
     // Prepending a "1" makes the DER invalid.
     const string bad_der_signature1 = "1" + signature;
-    LOG(ERROR) << "=========================bad der signature ===============";
     RunVerification(verifier.get(), hostname, port, server_config, quic_version,
                     chlo_hash, certs, bad_der_signature1, false);
 
@@ -426,7 +420,6 @@ TEST_P(ProofTest, VerifyECDSAKnownAnswerTest) {
     for (size_t i = 1; i < certs.size(); i++) {
       wrong_certs.push_back(certs[i]);
     }
-    LOG(ERROR) << "==================== wrong certs =========================";
     RunVerification(verifier.get(), hostname, port, server_config, quic_version,
                     chlo_hash, wrong_certs, signature, false);
   }

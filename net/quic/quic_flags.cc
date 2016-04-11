@@ -39,8 +39,9 @@ bool FLAGS_enable_quic_stateless_reject_support = true;
 // This flag is not in use, just to keep consistency for shared code.
 bool FLAGS_quic_always_log_bugs_for_tests = false;
 
-// If true, flow controller may grow the receive window size if necessary.
-bool FLAGS_quic_auto_tune_receive_window = true;
+// If true, a QUIC connection option with tag DHDT can be used to disable
+// HPACK\'s dynamic table.
+bool FLAGS_quic_disable_hpack_dynamic_table = false;
 
 // If true, multipath is enabled for the connection.
 bool FLAGS_quic_enable_multipath = false;
@@ -80,10 +81,6 @@ bool FLAGS_quic_cede_correctly = true;
 // case for this is places where ChaCha20 is prohibitively expensive compared to
 // AES-GCM.
 bool FLAGS_quic_crypto_server_config_default_has_chacha20 = true;
-
-// If true, always log the cached network parameters, regardless of whether
-// bandwidth-resumption has been enabled.
-bool FLAGS_quic_log_received_parameters = true;
 
 // If true, QUIC will use newly refactored TCP sender code.
 bool FLAGS_quic_use_new_tcp_sender = true;

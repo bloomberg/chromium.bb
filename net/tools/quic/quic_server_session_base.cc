@@ -29,7 +29,8 @@ QuicServerSessionBase::QuicServerSessionBase(
       bandwidth_resumption_enabled_(false),
       bandwidth_estimate_sent_to_client_(QuicBandwidth::Zero()),
       last_scup_time_(QuicTime::Zero()),
-      last_scup_packet_number_(0) {}
+      last_scup_packet_number_(0),
+      server_push_enabled_(false) {}
 
 QuicServerSessionBase::~QuicServerSessionBase() {}
 
@@ -53,6 +54,8 @@ void QuicServerSessionBase::OnConfigNegotiated() {
       ContainsQuicTag(config()->ReceivedConnectionOptions(), kBWMX);
   bandwidth_resumption_enabled_ =
       last_bandwidth_resumption || max_bandwidth_resumption;
+  server_push_enabled_ =
+      ContainsQuicTag(config()->ReceivedConnectionOptions(), kSPSH);
 
   // If the client has provided a bandwidth estimate from the same serving
   // region as this server, then decide whether to use the data for bandwidth
@@ -61,9 +64,9 @@ void QuicServerSessionBase::OnConfigNegotiated() {
       crypto_stream_->PreviousCachedNetworkParams();
   if (cached_network_params != nullptr &&
       cached_network_params->serving_region() == serving_region_) {
-    if (FLAGS_quic_log_received_parameters) {
-      connection()->OnReceiveConnectionState(*cached_network_params);
-    }
+    // Log the received connection parameters, regardless of how they
+    // get used for bandwidth resumption.
+    connection()->OnReceiveConnectionState(*cached_network_params);
 
     if (bandwidth_resumption_enabled_) {
       // Only do bandwidth resumption if estimate is recent enough.

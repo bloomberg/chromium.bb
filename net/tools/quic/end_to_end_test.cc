@@ -97,7 +97,7 @@ struct TestParams {
              bool client_supports_stateless_rejects,
              bool server_uses_stateless_rejects_if_peer_supported,
              QuicTag congestion_control_tag,
-             bool auto_tune_flow_control_window)
+             bool disable_hpack_dynamic_table)
       : client_supported_versions(client_supported_versions),
         server_supported_versions(server_supported_versions),
         negotiated_version(negotiated_version),
@@ -105,7 +105,7 @@ struct TestParams {
         server_uses_stateless_rejects_if_peer_supported(
             server_uses_stateless_rejects_if_peer_supported),
         congestion_control_tag(congestion_control_tag),
-        auto_tune_flow_control_window(auto_tune_flow_control_window) {}
+        disable_hpack_dynamic_table(disable_hpack_dynamic_table) {}
 
   friend ostream& operator<<(ostream& os, const TestParams& p) {
     os << "{ server_supported_versions: "
@@ -119,7 +119,7 @@ struct TestParams {
        << p.server_uses_stateless_rejects_if_peer_supported;
     os << " congestion_control_tag: "
        << QuicUtils::TagToString(p.congestion_control_tag);
-    os << " auto_tune_flow_control_window: " << p.auto_tune_flow_control_window
+    os << " disable_hpack_dynamic_table: " << p.disable_hpack_dynamic_table
        << " }";
     return os;
   }
@@ -130,7 +130,7 @@ struct TestParams {
   bool client_supports_stateless_rejects;
   bool server_uses_stateless_rejects_if_peer_supported;
   QuicTag congestion_control_tag;
-  bool auto_tune_flow_control_window;
+  bool disable_hpack_dynamic_table;
 };
 
 // Constructs various test permutations.
@@ -161,13 +161,13 @@ vector<TestParams> GetTestParams() {
     for (bool client_supports_stateless_rejects : {true, false}) {
       // TODO(rtenneti): Add kTBBR after BBR code is checked in.
       for (const QuicTag congestion_control_tag : {kRENO, kQBIC}) {
-        for (bool auto_tune_flow_control_window : {true, false}) {
+        for (bool disable_hpack_dynamic_table : {true, false}) {
           const int kMaxEnabledOptions = 5;
           int enabled_options = 0;
           if (congestion_control_tag != kQBIC) {
             ++enabled_options;
           }
-          if (auto_tune_flow_control_window) {
+          if (disable_hpack_dynamic_table) {
             ++enabled_options;
           }
           if (client_supports_stateless_rejects) {
@@ -191,7 +191,7 @@ vector<TestParams> GetTestParams() {
                 client_versions, all_supported_versions,
                 client_versions.front(), client_supports_stateless_rejects,
                 server_uses_stateless_rejects_if_peer_supported,
-                congestion_control_tag, auto_tune_flow_control_window));
+                congestion_control_tag, disable_hpack_dynamic_table));
 
             // Run version negotiation tests tests with no options, or all
             // the options enabled to avoid a combinatorial explosion.
@@ -211,7 +211,7 @@ vector<TestParams> GetTestParams() {
                   server_supported_versions.front(),
                   client_supports_stateless_rejects,
                   server_uses_stateless_rejects_if_peer_supported,
-                  congestion_control_tag, auto_tune_flow_control_window));
+                  congestion_control_tag, disable_hpack_dynamic_table));
             }
           }
         }
@@ -343,13 +343,10 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     // TODO(nimia): Consider setting the congestion control algorithm for the
     // client as well according to the test parameter.
     copt.push_back(GetParam().congestion_control_tag);
+    copt.push_back(kSPSH);
 
     if (GetParam().client_supports_stateless_rejects) {
       copt.push_back(kSREJ);
-    }
-    if (GetParam().auto_tune_flow_control_window) {
-      copt.push_back(kAFCW);
-      copt.push_back(kIFW5);
     }
     client_config_.SetConnectionOptionsToSend(copt);
 
@@ -1490,10 +1487,8 @@ TEST_P(EndToEndTest, DifferentFlowControlWindows) {
   set_client_initial_stream_flow_control_receive_window(kClientStreamIFCW);
   set_client_initial_session_flow_control_receive_window(kClientSessionIFCW);
 
-  uint32_t kServerStreamIFCW =
-      GetParam().auto_tune_flow_control_window ? 32 * 1024 : 654321;
-  uint32_t kServerSessionIFCW =
-      GetParam().auto_tune_flow_control_window ? 48 * 1024 : 765432;
+  uint32_t kServerStreamIFCW = 32 * 1024;
+  uint32_t kServerSessionIFCW = 48 * 1024;
   set_server_initial_stream_flow_control_receive_window(kServerStreamIFCW);
   set_server_initial_session_flow_control_receive_window(kServerSessionIFCW);
 
@@ -1541,10 +1536,8 @@ TEST_P(EndToEndTest, DifferentFlowControlWindows) {
 TEST_P(EndToEndTest, HeadersAndCryptoStreamsNoConnectionFlowControl) {
   // The special headers and crypto streams should be subject to per-stream flow
   // control limits, but should not be subject to connection level flow control.
-  const uint32_t kStreamIFCW =
-      GetParam().auto_tune_flow_control_window ? 32 * 1024 : 123456;
-  const uint32_t kSessionIFCW =
-      GetParam().auto_tune_flow_control_window ? 48 * 1024 : 234567;
+  const uint32_t kStreamIFCW = 32 * 1024;
+  const uint32_t kSessionIFCW = 48 * 1024;
   set_client_initial_stream_flow_control_receive_window(kStreamIFCW);
   set_client_initial_session_flow_control_receive_window(kSessionIFCW);
   set_server_initial_stream_flow_control_receive_window(kStreamIFCW);
