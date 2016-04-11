@@ -176,15 +176,15 @@ function createCustomType(type) {
 
 var platform = getPlatform();
 
-function Binding(schema) {
-  this.schema_ = schema;
-  this.apiFunctions_ = new APIFunctions(schema.namespace);
+function Binding(apiName) {
+  this.apiName_ = apiName;
+  this.apiFunctions_ = new APIFunctions(apiName);
   this.customEvent_ = null;
   this.customHooks_ = [];
 };
 
 Binding.create = function(apiName) {
-  return new Binding(schemaRegistry.GetSchema(apiName));
+  return new Binding(apiName);
 };
 
 Binding.prototype = {
@@ -211,9 +211,9 @@ Binding.prototype = {
   },
 
   // TODO(kalman/cduvall): Refactor this so |runHooks_| is not needed.
-  runHooks_: function(api) {
+  runHooks_: function(api, schema) {
     $Array.forEach(this.customHooks_, function(hook) {
-      if (!isSchemaNodeSupported(this.schema_, platform, manifestVersion))
+      if (!isSchemaNodeSupported(schema, platform, manifestVersion))
         return;
 
       if (!hook)
@@ -221,16 +221,23 @@ Binding.prototype = {
 
       hook({
         apiFunctions: this.apiFunctions_,
-        schema: this.schema_,
+        schema: schema,
         compiledApi: api
       }, extensionId, contextType);
     }, this);
   },
 
-  // Generates the bindings from |this.schema_| and integrates any custom
-  // bindings that might be present.
+  // Generates the bindings from the schema for |this.apiName_| and integrates
+  // any custom bindings that might be present.
   generate: function() {
-    var schema = this.schema_;
+    // NB: It's important to load the schema during generation rather than
+    // setting it beforehand so that we're more confident the schema we're
+    // loading is real, and not one that was injected by a page intercepting
+    // Binding.generate.
+    // Additionally, since the schema is an object returned from a native
+    // handler, its properties don't have the custom getters/setters that a page
+    // may have put on Object.prototype.
+    var schema = schemaRegistry.GetSchema(this.apiName_);
 
     function shouldCheckUnprivileged() {
       var shouldCheck = 'unprivileged' in schema;
@@ -533,7 +540,7 @@ Binding.prototype = {
       return;
     }
 
-    this.runHooks_(mod);
+    this.runHooks_(mod, schema);
     return mod;
   }
 };
