@@ -52,7 +52,7 @@ const char* fontWeightToString(FontWeight weight)
     case FontWeight900:
         return "900";
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
 }
 
@@ -64,7 +64,7 @@ const char* fontVariantToString(FontVariant variant)
     case FontVariantSmallCaps:
         return "small-caps";
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
 }
 
@@ -80,7 +80,7 @@ const char* fontStyleToString(FontStyle style)
     case FontStyleItalic:
         return "italic";
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
 }
 
@@ -96,7 +96,7 @@ const char* textTransformToString(ETextTransform transform)
     case TTNONE:
         return "none";
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return "";
 }
 

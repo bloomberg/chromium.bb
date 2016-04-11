@@ -57,7 +57,7 @@ WorkerGlobalScopeProxy* WorkerGlobalScopeProxyProviderImpl::createWorkerGlobalSc
         // support ServiceWorker in dedicated workers (http://crbug.com/371690)
         return new DedicatedWorkerMessagingProxy(worker, workerClients);
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return 0;
 }
 

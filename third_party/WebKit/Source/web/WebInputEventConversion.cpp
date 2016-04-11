@@ -115,7 +115,7 @@ ScrollGranularity toPlatformScrollGranularity(WebGestureEvent::ScrollUnits units
     case WebGestureEvent::ScrollUnits::Page:
         return ScrollGranularity::ScrollByPage;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return ScrollGranularity::ScrollByPrecisePixel;
     }
 }
@@ -130,7 +130,7 @@ WebGestureEvent::ScrollUnits toWebGestureScrollUnits(ScrollGranularity granulari
     case ScrollGranularity::ScrollByPage:
         return WebGestureEvent::ScrollUnits::Page;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return WebGestureEvent::ScrollUnits::PrecisePixels;
     }
 }
@@ -176,7 +176,7 @@ PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget, const WebMo
         break;
 
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 }
 
@@ -271,7 +271,7 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
         // DoubleTap gesture is now handled as PlatformEvent::GestureTap with tap_count = 2. So no
         // need to convert to a Platfrom DoubleTap gesture. But in WebViewImpl::handleGestureEvent
         // all WebGestureEvent are converted to PlatformGestureEvent, for completeness and not reach
-        // the ASSERT_NOT_REACHED() at the end, convert the DoubleTap to a NoType.
+        // the NOTREACHED() at the end, convert the DoubleTap to a NoType.
         m_type = PlatformEvent::NoType;
         break;
     case WebInputEvent::GestureTwoFingerTap:
@@ -297,7 +297,7 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
         m_data.m_pinchUpdate.m_scale = e.data.pinchUpdate.scale;
         break;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
     m_position = widget->convertFromRootFrame(flooredIntPoint(convertHitPointToRootFrame(widget, FloatPoint(e.x, e.y))));
     m_globalPosition = IntPoint(e.globalX, e.globalY);
@@ -311,7 +311,7 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
         m_source = PlatformGestureSourceTouchscreen;
         break;
     case WebGestureDeviceUninitialized:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 }
 
@@ -329,7 +329,7 @@ inline PlatformEvent::EventType toPlatformKeyboardEventType(WebInputEvent::Type 
     case WebInputEvent::Char:
         return PlatformEvent::Char;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
     return PlatformEvent::KeyDown;
 }
@@ -394,7 +394,7 @@ inline PlatformEvent::EventType toPlatformTouchEventType(const WebInputEvent::Ty
     case WebInputEvent::TouchCancel:
         return PlatformEvent::TouchCancel;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
     return PlatformEvent::TouchStart;
 }
@@ -413,7 +413,7 @@ inline PlatformTouchPoint::TouchState toPlatformTouchPointState(const WebTouchPo
     case WebTouchPoint::StateCancelled:
         return PlatformTouchPoint::TouchCancelled;
     case WebTouchPoint::StateUndefined:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
     return PlatformTouchPoint::TouchReleased;
 }
@@ -710,7 +710,7 @@ WebTouchEventBuilder::WebTouchEventBuilder(const LayoutObject* layoutObject, con
     else if (event.type() == EventTypeNames::touchcancel)
         type = TouchCancel;
     else {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         type = Undefined;
         return;
     }
@@ -785,7 +785,7 @@ WebGestureEventBuilder::WebGestureEventBuilder(const LayoutObject* layoutObject,
         sourceDevice = WebGestureDeviceTouchscreen;
         break;
     case GestureSourceUninitialized:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 }
 

@@ -905,7 +905,7 @@ WebInputEventResult WebViewImpl::handleGestureEvent(const WebGestureEvent& event
         break;
     }
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
     m_client->didHandleGestureEvent(event, eventCancelled);
     return eventResult;
@@ -2200,7 +2200,7 @@ WebInputEventResult WebViewImpl::handleInputEvent(const WebInputEvent& inputEven
             gestureIndicator = adoptPtr(new UserGestureIndicator(m_mouseCaptureGestureToken.release()));
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
         }
 
         node->dispatchMouseEvent(
@@ -2581,7 +2581,7 @@ int WebViewImpl::textInputFlags()
             else if (autocapitalize == sentences)
                 flags |= WebTextInputFlagAutocapitalizeSentences;
             else
-                ASSERT_NOT_REACHED();
+                NOTREACHED();
         }
     }
 
@@ -3515,7 +3515,7 @@ void WebViewImpl::performMediaPlayerAction(const WebMediaPlayerAction& action,
         mediaElement->setBooleanAttribute(HTMLNames::controlsAttr, action.enable);
         break;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 }
 
@@ -3541,7 +3541,7 @@ void WebViewImpl::performPluginAction(const WebPluginAction& action,
                 plugin->plugin()->rotateView(WebPlugin::RotationType90Counterclockwise);
                 break;
             default:
-                ASSERT_NOT_REACHED();
+                NOTREACHED();
             }
         }
     }
@@ -4529,7 +4529,7 @@ void WebViewImpl::pointerLockMouseEvent(const WebInputEvent& event)
         eventType = EventTypeNames::mousemove;
         break;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 
     const WebMouseEvent& mouseEvent = static_cast<const WebMouseEvent&>(event);

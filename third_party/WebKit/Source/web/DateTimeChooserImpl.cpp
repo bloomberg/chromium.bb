@@ -99,7 +99,7 @@ static String valueToDateTimeString(double value, AtomicString type)
     else if (type == InputTypeNames::week)
         components.setMillisecondsSinceEpochForWeek(value);
     else
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     return components.getType() == DateComponents::Invalid ? String() : components.toString();
 }
 

@@ -469,7 +469,7 @@ public:
 
     void computePageRectsWithPageSize(const FloatSize& pageSizeInPixels) override
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 
 protected:
@@ -565,7 +565,7 @@ bool WebLocalFrameImpl::isWebRemoteFrame() const
 
 WebRemoteFrame* WebLocalFrameImpl::toWebRemoteFrame()
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return 0;
 }
 
@@ -611,7 +611,7 @@ WebVector<WebIconURL> WebLocalFrameImpl::iconURLs(int iconTypesMask) const
 
 void WebLocalFrameImpl::setRemoteWebLayer(WebLayer* webLayer)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebLocalFrameImpl::setContentSettingsClient(WebContentSettingsClient* contentSettingsClient)
@@ -770,7 +770,7 @@ void WebLocalFrameImpl::addMessageToConsole(const WebConsoleMessage& message)
         webCoreMessageLevel = ErrorMessageLevel;
         break;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return;
     }
 

@@ -55,7 +55,7 @@ bool LocalFileSystemClient::requestFileSystemAccessSync(ExecutionContext* contex
 {
     DCHECK(context);
     if (context->isDocument()) {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return false;
     }
 
@@ -67,7 +67,7 @@ void LocalFileSystemClient::requestFileSystemAccessAsync(ExecutionContext* conte
 {
     DCHECK(context);
     if (!context->isDocument()) {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return;
     }
 

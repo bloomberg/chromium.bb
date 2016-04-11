@@ -122,9 +122,9 @@ const char* dialogTypeToString(ChromeClient::DialogType dialogType)
     case ChromeClient::PromptDialog:
         return "prompt";
     case ChromeClient::HTMLDialog:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return "";
 }
 
@@ -140,9 +140,9 @@ const char* dismissalTypeToString(Document::PageDismissalType dismissalType)
     case Document::UnloadDismissal:
         return "unload";
     case Document::NoDismissal:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return "";
 }
 

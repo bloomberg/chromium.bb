@@ -254,7 +254,7 @@ const char* PageWidgetEventHandler::inputTypeToName(WebInputEvent::Type type)
         WEBINPUT_EVENT_CASE(TouchEnd)
         WEBINPUT_EVENT_CASE(TouchCancel)
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return "";
     }
 }

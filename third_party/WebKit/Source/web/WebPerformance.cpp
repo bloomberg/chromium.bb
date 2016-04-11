@@ -61,7 +61,7 @@ WebNavigationType WebPerformance::navigationType() const
     case PerformanceNavigation::TYPE_RESERVED:
         return WebNavigationTypeOther;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return WebNavigationTypeOther;
 }
 

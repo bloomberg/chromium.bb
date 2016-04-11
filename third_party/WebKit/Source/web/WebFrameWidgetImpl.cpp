@@ -256,7 +256,7 @@ void WebFrameWidgetImpl::updateAllLifecyclePhases()
 void WebFrameWidgetImpl::paint(WebCanvas* canvas, const WebRect& rect)
 {
     // Out-of-process iframes require compositing.
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 
@@ -361,7 +361,7 @@ WebInputEventResult WebFrameWidgetImpl::handleInputEvent(const WebInputEvent& in
             gestureIndicator = adoptPtr(new UserGestureIndicator(m_mouseCaptureGestureToken.release()));
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
         }
 
         node->dispatchMouseEvent(
@@ -750,7 +750,7 @@ WebInputEventResult WebFrameWidgetImpl::handleGestureEvent(const WebGestureEvent
         m_client->didHandleGestureEvent(event, eventCancelled);
         return WebInputEventResult::NotHandled;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
     LocalFrame* frame = m_localRoot->frame();
     eventResult = frame->eventHandler().handleGestureEvent(PlatformGestureEventBuilder(frame->view(), event));

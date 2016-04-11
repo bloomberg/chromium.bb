@@ -105,7 +105,7 @@ WebFileSystem::Type WebDOMFileSystem::type() const
     case FileSystemTypeExternal:
         return WebFileSystem::TypeExternal;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return WebFileSystem::TypeTemporary;
     }
 }

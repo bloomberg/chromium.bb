@@ -116,7 +116,7 @@ static IDBKey* convertFromWebIDBKeyArray(const WebVector<WebIDBKey>& array)
             break;
         case WebIDBKeyTypeNull:
         case WebIDBKeyTypeMin:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             break;
         }
     }
@@ -150,7 +150,7 @@ static void convertToWebIDBKeyArray(const IDBKey::KeyArray& array, WebVector<Web
             keys[i] = WebIDBKey::createInvalid();
             break;
         case IDBKey::MinType:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             break;
         }
     }

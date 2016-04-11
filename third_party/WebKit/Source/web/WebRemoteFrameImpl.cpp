@@ -62,7 +62,7 @@ bool WebRemoteFrameImpl::isWebLocalFrame() const
 
 WebLocalFrame* WebRemoteFrameImpl::toWebLocalFrame()
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
 }
 
@@ -87,24 +87,24 @@ void WebRemoteFrameImpl::close()
 
 WebString WebRemoteFrameImpl::uniqueName() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return WebString();
 }
 
 WebString WebRemoteFrameImpl::assignedName() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return WebString();
 }
 
 void WebRemoteFrameImpl::setName(const WebString&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 WebVector<WebIconURL> WebRemoteFrameImpl::iconURLs(int iconTypesMask) const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return WebVector<WebIconURL>();
 }
 
@@ -118,52 +118,52 @@ void WebRemoteFrameImpl::setRemoteWebLayer(WebLayer* webLayer)
 
 void WebRemoteFrameImpl::setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient*)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebRemoteFrameImpl::setCanHaveScrollbars(bool)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 WebSize WebRemoteFrameImpl::scrollOffset() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return WebSize();
 }
 
 void WebRemoteFrameImpl::setScrollOffset(const WebSize&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 WebSize WebRemoteFrameImpl::contentsSize() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return WebSize();
 }
 
 bool WebRemoteFrameImpl::hasVisibleContent() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
 WebRect WebRemoteFrameImpl::visibleContentRect() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return WebRect();
 }
 
 bool WebRemoteFrameImpl::hasHorizontalScrollbar() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
 bool WebRemoteFrameImpl::hasVerticalScrollbar() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
@@ -183,57 +183,57 @@ WebDocument WebRemoteFrameImpl::document() const
 
 WebPerformance WebRemoteFrameImpl::performance() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return WebPerformance();
 }
 
 bool WebRemoteFrameImpl::dispatchBeforeUnloadEvent()
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
 void WebRemoteFrameImpl::dispatchUnloadEvent()
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebRemoteFrameImpl::executeScript(const WebScriptSource&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebRemoteFrameImpl::executeScriptInIsolatedWorld(
     int worldID, const WebScriptSource* sources, unsigned numSources,
     int extensionGroup)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebRemoteFrameImpl::setIsolatedWorldSecurityOrigin(int worldID, const WebSecurityOrigin&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebRemoteFrameImpl::setIsolatedWorldContentSecurityPolicy(int worldID, const WebString&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebRemoteFrameImpl::addMessageToConsole(const WebConsoleMessage&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebRemoteFrameImpl::collectGarbage()
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 v8::Local<v8::Value> WebRemoteFrameImpl::executeScriptAndReturnValue(
     const WebScriptSource&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return v8::Local<v8::Value>();
 }
 
@@ -241,7 +241,7 @@ void WebRemoteFrameImpl::executeScriptInIsolatedWorld(
     int worldID, const WebScriptSource* sourcesIn, unsigned numSources,
     int extensionGroup, WebVector<v8::Local<v8::Value>>* results)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 v8::Local<v8::Value> WebRemoteFrameImpl::callFunctionEvenIfScriptDisabled(
@@ -250,13 +250,13 @@ v8::Local<v8::Value> WebRemoteFrameImpl::callFunctionEvenIfScriptDisabled(
     int argc,
     v8::Local<v8::Value> argv[])
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return v8::Local<v8::Value>();
 }
 
 v8::Local<v8::Context> WebRemoteFrameImpl::mainWorldScriptContext() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return v8::Local<v8::Context>();
 }
 
@@ -267,29 +267,29 @@ v8::Local<v8::Context> WebRemoteFrameImpl::deprecatedMainWorldScriptContext() co
 
 void WebRemoteFrameImpl::reload(WebFrameLoadType)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebRemoteFrameImpl::reloadWithOverrideURL(const WebURL& overrideUrl, WebFrameLoadType)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebRemoteFrameImpl::loadRequest(const WebURLRequest&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebRemoteFrameImpl::loadHistoryItem(const WebHistoryItem&, WebHistoryLoadType, WebCachePolicy)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebRemoteFrameImpl::loadHTMLString(
     const WebData& html, const WebURL& baseURL, const WebURL& unreachableURL,
     bool replace)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebRemoteFrameImpl::stopLoading()
@@ -300,103 +300,103 @@ void WebRemoteFrameImpl::stopLoading()
 
 WebDataSource* WebRemoteFrameImpl::provisionalDataSource() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
 }
 
 WebDataSource* WebRemoteFrameImpl::dataSource() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
 }
 
 void WebRemoteFrameImpl::enableViewSourceMode(bool enable)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 bool WebRemoteFrameImpl::isViewSourceModeEnabled() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
 void WebRemoteFrameImpl::setReferrerForRequest(WebURLRequest&, const WebURL& referrer)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebRemoteFrameImpl::dispatchWillSendRequest(WebURLRequest&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 WebURLLoader* WebRemoteFrameImpl::createAssociatedURLLoader(const WebURLLoaderOptions&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
 }
 
 unsigned WebRemoteFrameImpl::unloadListenerCount() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return 0;
 }
 
 void WebRemoteFrameImpl::insertText(const WebString&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebRemoteFrameImpl::setMarkedText(const WebString&, unsigned location, unsigned length)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebRemoteFrameImpl::unmarkText()
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 bool WebRemoteFrameImpl::hasMarkedText() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
 WebRange WebRemoteFrameImpl::markedRange() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return WebRange();
 }
 
 bool WebRemoteFrameImpl::firstRectForCharacterRange(unsigned location, unsigned length, WebRect&) const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
 size_t WebRemoteFrameImpl::characterIndexForPoint(const WebPoint&) const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return 0;
 }
 
 bool WebRemoteFrameImpl::executeCommand(const WebString&, const WebNode&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
 bool WebRemoteFrameImpl::executeCommand(const WebString&, const WebString& value, const WebNode&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
 bool WebRemoteFrameImpl::isCommandEnabled(const WebString&) const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
@@ -411,124 +411,124 @@ bool WebRemoteFrameImpl::isContinuousSpellCheckingEnabled() const
 
 void WebRemoteFrameImpl::requestTextChecking(const WebElement&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebRemoteFrameImpl::removeSpellingMarkers()
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 bool WebRemoteFrameImpl::hasSelection() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
 WebRange WebRemoteFrameImpl::selectionRange() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return WebRange();
 }
 
 WebString WebRemoteFrameImpl::selectionAsText() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return WebString();
 }
 
 WebString WebRemoteFrameImpl::selectionAsMarkup() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return WebString();
 }
 
 bool WebRemoteFrameImpl::selectWordAroundCaret()
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
 void WebRemoteFrameImpl::selectRange(const WebPoint& base, const WebPoint& extent)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebRemoteFrameImpl::selectRange(const WebRange&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebRemoteFrameImpl::moveRangeSelection(const WebPoint& base, const WebPoint& extent, WebFrame::TextGranularity granularity)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebRemoteFrameImpl::moveCaretSelection(const WebPoint&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 bool WebRemoteFrameImpl::setEditableSelectionOffsets(int start, int end)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
 bool WebRemoteFrameImpl::setCompositionFromExistingText(int compositionStart, int compositionEnd, const WebVector<WebCompositionUnderline>& underlines)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
 void WebRemoteFrameImpl::extendSelectionAndDelete(int before, int after)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebRemoteFrameImpl::setCaretVisible(bool)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 int WebRemoteFrameImpl::printBegin(const WebPrintParams&, const WebNode& constrainToNode)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return 0;
 }
 
 float WebRemoteFrameImpl::printPage(int pageToPrint, WebCanvas*)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return 0.0;
 }
 
 float WebRemoteFrameImpl::getPrintPageShrink(int page)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return 0.0;
 }
 
 void WebRemoteFrameImpl::printEnd()
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 bool WebRemoteFrameImpl::isPrintScalingDisabledForPlugin(const WebNode&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
 bool WebRemoteFrameImpl::hasCustomPageSizeStyle(int pageIndex)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
 bool WebRemoteFrameImpl::isPageBoxVisible(int pageIndex)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
@@ -540,42 +540,42 @@ void WebRemoteFrameImpl::pageSizeAndMarginsInPixels(
     int& marginBottom,
     int& marginLeft)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 WebString WebRemoteFrameImpl::pageProperty(const WebString& propertyName, int pageIndex)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return WebString();
 }
 
 void WebRemoteFrameImpl::printPagesWithBoundaries(WebCanvas*, const WebSize&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void WebRemoteFrameImpl::dispatchMessageEventWithOriginCheck(
     const WebSecurityOrigin& intendedTargetOrigin,
     const WebDOMEvent&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 WebRect WebRemoteFrameImpl::selectionBoundsRect() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return WebRect();
 }
 
 bool WebRemoteFrameImpl::selectionStartHasSpellingMarkerFor(int from, int length) const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
 WebString WebRemoteFrameImpl::layerTreeAsText(bool showDebugInfo) const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return WebString();
 }
 
