@@ -437,6 +437,35 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest,
   }
 }
 
+// Tests that IsInitialSyncEnded value is updated by ApplyUpdates, but not by
+// ProcessGetUpdatesResponse.
+TEST_F(DirectoryUpdateHandlerProcessUpdateTest, IsInitialSyncEnded) {
+  DirectoryTypeDebugInfoEmitter emitter(AUTOFILL, &type_observers_);
+  DirectoryUpdateHandler handler(dir(), AUTOFILL, ui_worker(), &emitter);
+  sessions::StatusController status;
+
+  EXPECT_FALSE(handler.IsInitialSyncEnded());
+
+  sync_pb::DataTypeProgressMarker progress;
+  progress.set_data_type_id(GetSpecificsFieldNumberFromModelType(AUTOFILL));
+  progress.set_token("token");
+  progress.mutable_gc_directive()->set_version_watermark(kDefaultVersion + 10);
+
+  scoped_ptr<sync_pb::SyncEntity> e = CreateUpdate(
+      SyncableIdToProto(Id::CreateFromServerId("e1")), "", AUTOFILL);
+
+  SyncEntityList updates;
+  updates.push_back(e.get());
+
+  handler.ProcessGetUpdatesResponse(progress, sync_pb::DataTypeContext(),
+                                    updates, &status);
+
+  EXPECT_FALSE(handler.IsInitialSyncEnded());
+
+  handler.ApplyUpdates(&status);
+  EXPECT_TRUE(handler.IsInitialSyncEnded());
+}
+
 // A test harness for tests that focus on applying updates.
 //
 // Update application is performed when we want to take updates that were

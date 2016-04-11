@@ -10,5 +10,4 @@ UpdateHandler::UpdateHandler() {}
 
 UpdateHandler::~UpdateHandler() {}
 
-
 }  // namespace syncer

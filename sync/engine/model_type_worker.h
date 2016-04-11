@@ -73,6 +73,7 @@ class SYNC_EXPORT ModelTypeWorker : public syncer::UpdateHandler,
       std::unique_ptr<syncer::Cryptographer> cryptographer);
 
   // UpdateHandler implementation.
+  bool IsInitialSyncEnded() const override;
   void GetDownloadProgress(
       sync_pb::DataTypeProgressMarker* progress_marker) const override;
   void GetDataTypeContext(sync_pb::DataTypeContext* context) const override;

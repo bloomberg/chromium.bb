@@ -91,6 +91,10 @@ class SYNC_EXPORT ModelTypeRegistry : public syncer_v2::SyncContext,
   // Gets the set of enabled types.
   ModelTypeSet GetEnabledTypes() const;
 
+  // Returns set of types for which initial set of updates was downloaded and
+  // applied.
+  ModelTypeSet GetInitialSyncEndedTypes() const;
+
   // Simple getters.
   UpdateHandlerMap* update_handler_map();
   CommitContributorMap* commit_contributor_map();

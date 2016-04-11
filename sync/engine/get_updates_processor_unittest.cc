@@ -78,13 +78,6 @@ class GetUpdatesProcessorTest : public ::testing::Test {
     response->set_changes_remaining(0);
   }
 
-  const UpdateHandler* GetHandler(ModelType type) {
-    UpdateHandlerMap::iterator it = update_handler_map_.find(type);
-    if (it == update_handler_map_.end())
-      return NULL;
-    return it->second;
-  }
-
   const base::TimeTicks kTestStartTime;
 
  protected:

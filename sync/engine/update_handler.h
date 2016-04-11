@@ -33,6 +33,9 @@ class SYNC_EXPORT UpdateHandler {
   UpdateHandler();
   virtual ~UpdateHandler() = 0;
 
+  // Returns true if initial sync was performed for this type.
+  virtual bool IsInitialSyncEnded() const = 0;
+
   // Fills the given parameter with the stored progress marker for this type.
   virtual void GetDownloadProgress(
       sync_pb::DataTypeProgressMarker* progress_marker) const = 0;

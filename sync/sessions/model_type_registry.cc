@@ -205,6 +205,22 @@ ModelTypeSet ModelTypeRegistry::GetEnabledTypes() const {
   return Union(GetEnabledDirectoryTypes(), GetEnabledNonBlockingTypes());
 }
 
+ModelTypeSet ModelTypeRegistry::GetInitialSyncEndedTypes() const {
+  // TODO(pavely): GetInitialSyncEndedTypes is queried at the end of sync
+  // manager initialization when update handlers aren't set up yet. Returning
+  // correct set of types is important because otherwise data for al types will
+  // be redownloaded during configuration. For now let's return union of types
+  // reported by directory and types reported by update handlers. We need to
+  // refactor initialization and configuratrion flow to be able to only query
+  // this set from update handlers.
+  ModelTypeSet result = directory_->InitialSyncEndedTypes();
+  for (const auto& kv : update_handler_map_) {
+    if (kv.second->IsInitialSyncEnded())
+      result.Put(kv.first);
+  }
+  return result;
+}
+
 UpdateHandlerMap* ModelTypeRegistry::update_handler_map() {
   return &update_handler_map_;
 }

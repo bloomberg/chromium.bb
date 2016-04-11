@@ -21,6 +21,10 @@ MockUpdateHandler::MockUpdateHandler(ModelType type)
 
 MockUpdateHandler::~MockUpdateHandler() {}
 
+bool MockUpdateHandler::IsInitialSyncEnded() const {
+  return false;
+}
+
 void MockUpdateHandler::GetDownloadProgress(
       sync_pb::DataTypeProgressMarker* progress_marker) const {
   progress_marker->CopyFrom(progress_marker_);

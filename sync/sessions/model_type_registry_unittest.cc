@@ -15,6 +15,9 @@
 #include "sync/internal_api/public/shared_model_type_processor.h"
 #include "sync/internal_api/public/test/fake_model_type_service.h"
 #include "sync/protocol/data_type_state.pb.h"
+#include "sync/syncable/directory.h"
+#include "sync/syncable/model_neutral_mutable_entry.h"
+#include "sync/syncable/syncable_model_neutral_write_transaction.h"
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/mock_nudge_handler.h"
 #include "sync/test/engine/test_directory_setter_upper.h"
@@ -53,6 +56,17 @@ class ModelTypeRegistryTest : public ::testing::Test,
       ModelType type) {
     return base::WrapUnique(
         new syncer_v2::SharedModelTypeProcessor(type, this));
+  }
+
+  void MarkInitialSyncEndedForDirectoryType(ModelType type) {
+    syncable::ModelNeutralWriteTransaction trans(FROM_HERE, syncable::SYNCER,
+                                                 directory());
+    syncable::ModelNeutralMutableEntry entry(
+        &trans, syncable::CREATE_NEW_TYPE_ROOT, type);
+    ASSERT_TRUE(entry.good());
+    entry.PutServerIsDir(true);
+    entry.PutUniqueServerTag(ModelTypeToRootTag(type));
+    directory()->MarkInitialSyncEndedForType(&trans, type);
   }
 
  private:
@@ -252,6 +266,32 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
   registry()->SetEnabledDirectoryTypes(routing_info2);
   current_types.RemoveAll(directory_types);
   EXPECT_TRUE(registry()->GetEnabledTypes().Equals(current_types));
+}
+
+// Tests correct result returned from GetInitialSyncEndedTypes.
+TEST_F(ModelTypeRegistryTest, GetInitialSyncEndedTypes) {
+  ModelSafeRoutingInfo routing_info;
+  // Add two directory and two non-blocking types.
+  routing_info.insert(std::make_pair(AUTOFILL, GROUP_PASSIVE));
+  routing_info.insert(std::make_pair(BOOKMARKS, GROUP_PASSIVE));
+  routing_info.insert(std::make_pair(THEMES, GROUP_NON_BLOCKING));
+  routing_info.insert(std::make_pair(SESSIONS, GROUP_NON_BLOCKING));
+  registry()->SetEnabledDirectoryTypes(routing_info);
+
+  // Only Autofill and Themes types finished initial sync.
+  MarkInitialSyncEndedForDirectoryType(AUTOFILL);
+
+  scoped_ptr<syncer_v2::SharedModelTypeProcessor> themes_sync_processor =
+      MakeModelTypeProcessor(THEMES);
+
+  sync_pb::DataTypeState data_type_state = MakeInitialDataTypeState(THEMES);
+  data_type_state.set_initial_sync_done(true);
+  registry()->ConnectType(
+      syncer::THEMES,
+      MakeActivationContext(data_type_state, std::move(themes_sync_processor)));
+
+  EXPECT_TRUE(registry()->GetInitialSyncEndedTypes().Equals(
+      ModelTypeSet(AUTOFILL, THEMES)));
 }
 
 }  // namespace syncer

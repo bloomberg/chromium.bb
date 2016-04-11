@@ -85,6 +85,10 @@ void ModelTypeWorker::UpdateCryptographer(
 }
 
 // UpdateHandler implementation.
+bool ModelTypeWorker::IsInitialSyncEnded() const {
+  return data_type_state_.initial_sync_done();
+}
+
 void ModelTypeWorker::GetDownloadProgress(
     sync_pb::DataTypeProgressMarker* progress_marker) const {
   DCHECK(CalledOnValidThread());

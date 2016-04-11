@@ -162,7 +162,8 @@ bool SyncManagerImpl::VisiblePropertiesDiffer(
 }
 
 ModelTypeSet SyncManagerImpl::InitialSyncEndedTypes() {
-  return directory()->InitialSyncEndedTypes();
+  DCHECK(initialized_);
+  return model_type_registry_->GetInitialSyncEndedTypes();
 }
 
 ModelTypeSet SyncManagerImpl::GetTypesWithEmptyProgressMarkerToken(
@@ -458,7 +459,7 @@ bool SyncManagerImpl::OpenDirectory(const std::string& username) {
 
 bool SyncManagerImpl::PurgePartiallySyncedTypes() {
   ModelTypeSet partially_synced_types = ModelTypeSet::All();
-  partially_synced_types.RemoveAll(InitialSyncEndedTypes());
+  partially_synced_types.RemoveAll(directory()->InitialSyncEndedTypes());
   partially_synced_types.RemoveAll(GetTypesWithEmptyProgressMarkerToken(
       ModelTypeSet::All()));
 

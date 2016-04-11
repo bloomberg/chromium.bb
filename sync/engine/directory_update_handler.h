@@ -50,6 +50,7 @@ class SYNC_EXPORT DirectoryUpdateHandler : public UpdateHandler {
   ~DirectoryUpdateHandler() override;
 
   // UpdateHandler implementation.
+  bool IsInitialSyncEnded() const override;
   void GetDownloadProgress(
       sync_pb::DataTypeProgressMarker* progress_marker) const override;
   void GetDataTypeContext(sync_pb::DataTypeContext* context) const override;

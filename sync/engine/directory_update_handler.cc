@@ -35,6 +35,10 @@ DirectoryUpdateHandler::DirectoryUpdateHandler(
 
 DirectoryUpdateHandler::~DirectoryUpdateHandler() {}
 
+bool DirectoryUpdateHandler::IsInitialSyncEnded() const {
+  return dir_->InitialSyncEndedForType(type_);
+}
+
 void DirectoryUpdateHandler::GetDownloadProgress(
     sync_pb::DataTypeProgressMarker* progress_marker) const {
   dir_->GetDownloadProgress(type_, progress_marker);
