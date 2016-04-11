@@ -162,7 +162,7 @@ class VIEWS_EXPORT RootView : public View,
   // Specialized version of SetMouseHandler(). If |clear_on_release| is true the
   // mouse handler will be cleared on mouse release, which is the common case
   // and used for drags. If |clear_on_release| is false then the mouse handler
-  // must be explicitly by calling SetMouseHandler() with null.
+  // must be explicitly released by calling SetMouseHandler() with null.
   void SetMouseHandler(View* view, bool clear_on_release);
 
   // Overridden from ui::EventDispatcherDelegate:
