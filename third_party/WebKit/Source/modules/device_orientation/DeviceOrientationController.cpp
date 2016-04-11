@@ -24,9 +24,6 @@ DeviceOrientationController::DeviceOrientationController(Document& document)
 
 DeviceOrientationController::~DeviceOrientationController()
 {
-#if !ENABLE(OILPAN)
-    stopUpdating();
-#endif
 }
 
 void DeviceOrientationController::didUpdateData()

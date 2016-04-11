@@ -20,9 +20,6 @@ BatteryManager* BatteryManager::create(ExecutionContext* context)
 
 BatteryManager::~BatteryManager()
 {
-#if !ENABLE(OILPAN)
-    stopUpdating();
-#endif
 }
 
 BatteryManager::BatteryManager(ExecutionContext* context)

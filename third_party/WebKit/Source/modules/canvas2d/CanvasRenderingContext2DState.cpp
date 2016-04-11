@@ -112,10 +112,6 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState(const CanvasRenderi
 
 CanvasRenderingContext2DState::~CanvasRenderingContext2DState()
 {
-#if !ENABLE(OILPAN)
-    if (m_realizedFont)
-        static_cast<CSSFontSelector*>(m_font.getFontSelector())->unregisterForInvalidationCallbacks(this);
-#endif
 }
 
 void CanvasRenderingContext2DState::fontsNeedUpdate(CSSFontSelector* fontSelector)
@@ -261,10 +257,6 @@ void CanvasRenderingContext2DState::clipPath(const SkPath& path, AntiAliasingMod
 
 void CanvasRenderingContext2DState::setFont(const Font& font, CSSFontSelector* selector)
 {
-#if !ENABLE(OILPAN)
-    if (m_realizedFont)
-        static_cast<CSSFontSelector*>(m_font.getFontSelector())->unregisterForInvalidationCallbacks(this);
-#endif
     m_font = font;
     m_font.update(selector);
     m_realizedFont = true;

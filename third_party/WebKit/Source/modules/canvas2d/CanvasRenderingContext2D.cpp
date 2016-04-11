@@ -123,9 +123,7 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, co
     if (document.settings() && document.settings()->antialiasedClips2dCanvasEnabled())
         m_clipAntialiasing = AntiAliased;
     setShouldAntialias(true);
-#if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
-#endif
 }
 
 void CanvasRenderingContext2D::setCanvasGetContextResult(RenderingContext& result)
@@ -145,16 +143,12 @@ void CanvasRenderingContext2D::unwindStateStack()
 
 CanvasRenderingContext2D::~CanvasRenderingContext2D()
 {
-    if (m_pruneLocalFontCacheScheduled) {
-        Platform::current()->currentThread()->removeTaskObserver(this);
-    }
-#if !ENABLE(OILPAN)
-    dispose();
-#endif
 }
 
 void CanvasRenderingContext2D::dispose()
 {
+    if (m_pruneLocalFontCacheScheduled)
+        Platform::current()->currentThread()->removeTaskObserver(this);
     clearFilterReferences();
 }
 

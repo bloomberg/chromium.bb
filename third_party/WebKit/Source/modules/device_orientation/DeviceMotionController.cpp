@@ -24,9 +24,6 @@ DeviceMotionController::DeviceMotionController(Document& document)
 
 DeviceMotionController::~DeviceMotionController()
 {
-#if !ENABLE(OILPAN)
-    stopUpdating();
-#endif
 }
 
 const char* DeviceMotionController::supplementName()

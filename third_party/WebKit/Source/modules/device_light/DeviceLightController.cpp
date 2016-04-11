@@ -19,9 +19,6 @@ DeviceLightController::DeviceLightController(Document& document)
 
 DeviceLightController::~DeviceLightController()
 {
-#if !ENABLE(OILPAN)
-    stopUpdating();
-#endif
 }
 
 const char* DeviceLightController::supplementName()
