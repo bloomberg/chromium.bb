@@ -69,8 +69,8 @@ void DebugDaemonLogSource::Fetch(const SysLogsSourceCallback& callback) {
   ++num_pending_requests_;
 
   if (scrub_) {
-    client->GetScrubbedLogs(base::Bind(&DebugDaemonLogSource::OnGetLogs,
-                                       weak_ptr_factory_.GetWeakPtr()));
+    client->GetScrubbedBigLogs(base::Bind(&DebugDaemonLogSource::OnGetLogs,
+                                          weak_ptr_factory_.GetWeakPtr()));
   } else {
     client->GetAllLogs(base::Bind(&DebugDaemonLogSource::OnGetLogs,
                                   weak_ptr_factory_.GetWeakPtr()));

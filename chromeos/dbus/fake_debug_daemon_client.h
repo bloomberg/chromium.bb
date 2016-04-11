@@ -48,6 +48,7 @@ class CHROMEOS_EXPORT FakeDebugDaemonClient : public DebugDaemonClient {
                      const std::vector<std::string>& perf_args,
                      const GetPerfOutputCallback& callback) override;
   void GetScrubbedLogs(const GetLogsCallback& callback) override;
+  void GetScrubbedBigLogs(const GetLogsCallback& callback) override;
   void GetAllLogs(const GetLogsCallback& callback) override;
   void GetUserLogFiles(const GetLogsCallback& callback) override;
   void TestICMP(const std::string& ip_address,
