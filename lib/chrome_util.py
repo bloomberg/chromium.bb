@@ -168,7 +168,8 @@ class Copier(object):
     """
     assert not os.path.isdir(src), '%s: Not expecting a directory!' % src
     osutils.SafeMakedirs(os.path.dirname(dest), mode=self.dir_mode)
-    if path.exe and self.strip_bin and path.strip and os.path.getsize(src) > 0:
+    is_bin = path.exe or src.endswith('.mojo')
+    if is_bin and self.strip_bin and path.strip and os.path.getsize(src) > 0:
       strip_flags = (['--strip-unneeded'] if self.strip_flags is None else
                      self.strip_flags)
       cros_build_lib.DebugRunCommand(
@@ -378,10 +379,16 @@ _COPY_PATHS_ENVOY = (
     Path('envoy_shell.pak'),
 ) + _COPY_PATHS_COMMON
 
+_COPY_PATHS_MASH = (
+    Path('mojo_runner', exe=True),
+    Path('Mojo Applications/'),
+) + _COPY_PATHS_CHROME
+
 _COPY_PATHS_MAP = {
     'app_shell': _COPY_PATHS_APP_SHELL,
     'chrome': _COPY_PATHS_CHROME,
     'envoy': _COPY_PATHS_ENVOY,
+    'mash': _COPY_PATHS_MASH,
 }
 
 

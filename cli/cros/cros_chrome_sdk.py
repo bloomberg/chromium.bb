@@ -672,6 +672,7 @@ class ChromeSDKCommand(command.CliCommand):
     gn_args['target_sysroot'] = sysroot
     gyp_dict.pop('pkg-config', None)
     gn_args.pop('pkg_config', None)
+    gn_args.pop('use_mesa_platform_null', None)
     gyp_dict['host_clang'] = 1  # GN doesn't support this. crbug.com/588080
     if options.clang:
       gyp_dict['clang'] = 1

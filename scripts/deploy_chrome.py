@@ -99,7 +99,10 @@ class DeployChrome(object):
                                         ping=options.ping)
     self._target_dir_is_still_readonly = multiprocessing.Event()
 
-    self.copy_paths = chrome_util.GetCopyPaths('chrome')
+    if self.options.mash:
+      self.copy_paths = chrome_util.GetCopyPaths('mash')
+    else:
+      self.copy_paths = chrome_util.GetCopyPaths('chrome')
     self.chrome_dir = _CHROME_DIR
 
   def _GetRemoteMountFree(self, remote_dir):
@@ -412,6 +415,9 @@ def _CreateParser():
                           "Overrides the default arguments.")
   group.add_argument('--ping', action='store_true', default=False,
                      help='Ping the device before connection attempt.')
+  group.add_argument('--mash', action='store_true', default=False,
+                     help='Copy additional files for mus+ash. Will not fit in '
+                          'the default target-dir.')
 
   group = parser.add_argument_group(
       'Metadata Overrides (Advanced)',
