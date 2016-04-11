@@ -157,6 +157,7 @@ RootView::RootView(Widget* widget)
       mouse_move_handler_(NULL),
       last_click_handler_(NULL),
       explicit_mouse_handler_(false),
+      clear_mouse_handler_on_release_(true),
       last_mouse_event_flags_(0),
       last_mouse_event_x_(-1),
       last_mouse_event_y_(-1),
@@ -441,7 +442,8 @@ void RootView::OnMouseReleased(const ui::MouseEvent& event) {
     // We allow the view to delete us from the event dispatch callback. As such,
     // configure state such that we're done first, then call View.
     View* mouse_pressed_handler = mouse_pressed_handler_;
-    SetMouseHandler(NULL);
+    if (clear_mouse_handler_on_release_)
+      SetMouseHandler(nullptr);
     ui::EventDispatchDetails dispatch_details =
         DispatchEvent(mouse_pressed_handler, &mouse_released);
     if (dispatch_details.dispatcher_destroyed)
@@ -592,11 +594,7 @@ bool RootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
 }
 
 void RootView::SetMouseHandler(View* new_mh) {
-  // If we're clearing the mouse handler, clear explicit_mouse_handler_ as well.
-  explicit_mouse_handler_ = (new_mh != NULL);
-  mouse_pressed_handler_ = new_mh;
-  gesture_handler_ = new_mh;
-  drag_info_.Reset();
+  SetMouseHandler(new_mh, true /* clear_on_release */);
 }
 
 void RootView::GetAccessibleState(ui::AXViewState* state) {
@@ -636,6 +634,7 @@ void RootView::VisibilityChanged(View* /*starting_from*/, bool is_visible) {
     // handlers are reset, so that after it is reshown, events are not captured
     // by old handlers.
     explicit_mouse_handler_ = false;
+    clear_mouse_handler_on_release_ = true;
     mouse_pressed_handler_ = NULL;
     mouse_move_handler_ = NULL;
     gesture_handler_ = NULL;
@@ -703,6 +702,15 @@ ui::EventDispatchDetails RootView::NotifyEnterExitOfDescendant(
     }
   }
   return ui::EventDispatchDetails();
+}
+
+void RootView::SetMouseHandler(View* new_mh, bool clear_on_release) {
+  // If we're clearing the mouse handler, clear explicit_mouse_handler_ as well.
+  explicit_mouse_handler_ = (new_mh != nullptr);
+  clear_mouse_handler_on_release_ = clear_on_release;
+  mouse_pressed_handler_ = new_mh;
+  gesture_handler_ = new_mh;
+  drag_info_.Reset();
 }
 
 bool RootView::CanDispatchToTarget(ui::EventTarget* target) {
