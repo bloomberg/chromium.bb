@@ -38,6 +38,10 @@
 #include "ui/base/x/x11_util.h"
 #endif
 
+#if defined(MOJO_SHELL_CLIENT)
+#include "chrome/browser/ui/ash/launcher/chrome_mash_shelf_controller.h"
+#endif
+
 namespace chrome {
 
 void OpenAsh(gfx::AcceleratedWidget remote_window) {
@@ -99,6 +103,13 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
   }
 #endif
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
+}
+
+void InitializeMash() {
+#if defined(MOJO_SHELL_CLIENT)
+  DCHECK(!ash::Shell::HasInstance());
+  ChromeMashShelfController::CreateInstance();
+#endif
 }
 
 void CloseAsh() {

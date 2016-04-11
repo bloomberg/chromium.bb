@@ -17,11 +17,17 @@
 namespace chrome {
 
 bool ShouldOpenAshOnStartup() {
+#if defined(OS_CHROMEOS)
+  return !IsRunningInMash();
+#else
+  return false;
+#endif
+}
+
+bool IsRunningInMash() {
 #if defined(OS_CHROMEOS) && defined(MOJO_SHELL_CLIENT)
-  return !content::MojoShellConnection::Get() ||
-         !content::MojoShellConnection::Get()->UsingExternalShell();
-#elif defined(OS_CHROMEOS)
-  return true;
+  return content::MojoShellConnection::Get() &&
+         content::MojoShellConnection::Get()->UsingExternalShell();
 #else
   return false;
 #endif

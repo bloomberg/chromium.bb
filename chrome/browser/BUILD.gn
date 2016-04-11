@@ -609,6 +609,8 @@ source_set("browser") {
     # These files are only built in a GN build because they bring in
     # dependencies that don't build with GYP.
     sources += [
+      "ui/ash/launcher/chrome_mash_shelf_controller.cc",
+      "ui/ash/launcher/chrome_mash_shelf_controller.h",
       "ui/views/frame/browser_frame_mus.cc",
       "ui/views/frame/browser_frame_mus.h",
       "ui/views/frame/browser_non_client_frame_view_mus.cc",
@@ -616,8 +618,11 @@ source_set("browser") {
     ]
     deps += [
       "//components/mus/public/cpp",
+      "//components/prefs",
       "//content/public/common",
+      "//mash/shelf/public/interfaces",
       "//mojo/shell/runner/common",
+      "//skia/public",
       "//ui/aura",
       "//ui/compositor",
       "//ui/keyboard",

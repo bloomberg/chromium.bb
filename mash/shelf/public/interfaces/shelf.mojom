@@ -1,0 +1,74 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mash.shelf.mojom;
+
+import "skia/public/interfaces/bitmap.mojom";
+
+// TODO(msw): Add support for multiple displays (with unified and multi-shelf).
+
+// The Shelf controller allows clients (eg. Chrome) to control the mash shelf.
+interface ShelfController {
+  AddObserver(associated ShelfObserver observer);
+
+  SetAlignment(Alignment alignment);
+  SetAutoHideBehavior(AutoHideBehavior auto_hide);
+
+  AddItem(ShelfItem item, associated ShelfItemDelegate delegate);
+  RemoveItem(string id);
+};
+
+// ShelfObserver is notified on shelf changes; used to persist profile settings.
+interface ShelfObserver {
+  OnAlignmentChanged(Alignment alignment);
+  OnAutoHideBehaviorChanged(AutoHideBehavior auto_hide);
+};
+
+// ShelfItemDelegate handles command execution and observes shelf item changes.
+interface ShelfItemDelegate {
+  // Called on invocation of a shelf item's context menu command.
+  ExecuteCommand(uint32 command_id, int32 event_flags);
+
+  // Called when a shelf item is pinned or unpinned.
+  ItemPinned();
+  ItemUnpinned();
+
+  // Called when a pinned shelf item is reordered.
+  // |order| is the index of the item on the shelf.
+  ItemReordered(uint32 order);
+};
+
+// These values match ash::ShelfAlignment.
+enum Alignment { BOTTOM, LEFT, RIGHT, };
+
+// These values match ash::ShelfAutoHideBehavior.
+enum AutoHideBehavior { ALWAYS, NEVER, HIDDEN, };
+
+// ContextMenuItems may be used to supplement ash shelf item context menus.
+struct ContextMenuItem {
+  enum Type { ITEM, CHECK, RADIO, SEPARATOR, SUBMENU };
+
+  Type type;
+  uint32 command_id;
+  string? label;
+  array<ContextMenuItem>? submenu;
+  bool enabled;
+  bool checked;
+  uint32 radio_group_id;
+};
+
+// ShelfItem contains the basic fields needed to pin shortcut items.
+struct ShelfItem {
+  // An id, used to correlate windows and shortcuts (eg. 'exe:chrome').
+  string id;
+
+  // A title, used for tooltips, etc. (eg. 'Chrome').
+  string title;
+
+  // An icon image Bitmap, shown on the shelf.
+  skia.mojom.Bitmap image;
+
+  // Additional context menu items (eg. 'New Incognito Window').
+  array<ContextMenuItem>? context_menu_items;
+};

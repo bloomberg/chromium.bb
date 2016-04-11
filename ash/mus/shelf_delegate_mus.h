@@ -8,8 +8,10 @@
 #include <map>
 
 #include "ash/shelf/shelf_delegate.h"
+#include "mash/shelf/public/interfaces/shelf.mojom.h"
 #include "mash/wm/public/interfaces/user_window_controller.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 namespace ash {
 
@@ -18,6 +20,7 @@ class ShelfModel;
 namespace sysui {
 
 class ShelfDelegateMus : public ShelfDelegate,
+                         public mash::shelf::mojom::ShelfController,
                          public mash::wm::mojom::UserWindowObserver {
  public:
   explicit ShelfDelegateMus(ShelfModel* model);
@@ -36,6 +39,17 @@ class ShelfDelegateMus : public ShelfDelegate,
   bool IsAppPinned(const std::string& app_id) override;
   void UnpinAppWithID(const std::string& app_id) override;
 
+  // mash::shelf::mojom::ShelfController:
+  void AddObserver(
+      mash::shelf::mojom::ShelfObserverAssociatedPtrInfo observer) override;
+  void SetAlignment(mash::shelf::mojom::Alignment alignment) override;
+  void SetAutoHideBehavior(
+      mash::shelf::mojom::AutoHideBehavior auto_hide) override;
+  void AddItem(
+      mash::shelf::mojom::ShelfItemPtr item,
+      mash::shelf::mojom::ShelfItemDelegateAssociatedPtrInfo delegate) override;
+  void RemoveItem(const mojo::String& id) override;
+
   // mash::wm::mojom::UserWindowObserver:
   void OnUserWindowObserverAdded(
       mojo::Array<mash::wm::mojom::UserWindowPtr> user_windows) override;
@@ -49,9 +63,13 @@ class ShelfDelegateMus : public ShelfDelegate,
 
   ShelfModel* model_;
 
+  mojo::AssociatedInterfacePtrSet<mash::shelf::mojom::ShelfObserver> observers_;
+
   mash::wm::mojom::UserWindowControllerPtr user_window_controller_;
   mojo::Binding<mash::wm::mojom::UserWindowObserver> binding_;
   std::map<uint32_t, ShelfID> window_id_to_shelf_id_;
+
+  std::map<std::string, ShelfID> app_id_to_shelf_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfDelegateMus);
 };

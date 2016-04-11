@@ -77,4 +77,52 @@ base::DictionaryValue* CreateAppDict(const std::string& app_id) {
   return app_value.release();
 }
 
+ash::ShelfAlignment AlignmentFromPref(const std::string& value) {
+  if (value == ash::kShelfAlignmentLeft)
+    return ash::SHELF_ALIGNMENT_LEFT;
+  else if (value == ash::kShelfAlignmentRight)
+    return ash::SHELF_ALIGNMENT_RIGHT;
+  // Default to bottom.
+  return ash::SHELF_ALIGNMENT_BOTTOM;
+}
+
+const char* AlignmentToPref(ash::ShelfAlignment alignment) {
+  switch (alignment) {
+    case ash::SHELF_ALIGNMENT_BOTTOM:
+      return ash::kShelfAlignmentBottom;
+    case ash::SHELF_ALIGNMENT_LEFT:
+      return ash::kShelfAlignmentLeft;
+    case ash::SHELF_ALIGNMENT_RIGHT:
+      return ash::kShelfAlignmentRight;
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
+ash::ShelfAutoHideBehavior AutoHideBehaviorFromPref(const std::string& value) {
+  // Note: To maintain sync compatibility with old images of chrome/chromeos
+  // the set of values that may be encountered includes the now-extinct
+  // "Default" as well as "Never" and "Always", "Default" should now
+  // be treated as "Never" (http://crbug.com/146773).
+  if (value == ash::kShelfAutoHideBehaviorAlways)
+    return ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+  return ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
+}
+
+const char* AutoHideBehaviorToPref(ash::ShelfAutoHideBehavior behavior) {
+  switch (behavior) {
+    case ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
+      return ash::kShelfAutoHideBehaviorAlways;
+    case ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
+      return ash::kShelfAutoHideBehaviorNever;
+    case ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN:
+      // This one should not be a valid preference option for now. We only want
+      // to completely hide it when we run in app mode - or while we temporarily
+      // hide the shelf as part of an animation (e.g. the multi user change).
+      return nullptr;
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
 }  // namespace ash

@@ -702,7 +702,7 @@ extern const char kMediaGalleriesUniqueId[];
 extern const char kMediaGalleriesRememberedGalleries[];
 #endif  // !defined(OS_ANDROID)
 
-#if defined(USE_ASH)
+#if defined(USE_AURA)
 extern const char kShelfAlignment[];
 extern const char kShelfAlignmentLocal[];
 extern const char kShelfAutoHideBehavior[];
@@ -714,9 +714,7 @@ extern const char kLogoutDialogDurationMs[];
 extern const char kPinnedLauncherApps[];
 extern const char kPolicyPinnedLauncherApps[];
 extern const char kShowLogoutButtonInTray[];
-#endif
 
-#if defined(USE_AURA)
 extern const char kMaxSeparationForGestureTouchesInPixels[];
 extern const char kSemiLongPressTimeInMs[];
 extern const char kTabScrubActivationDelayInMs[];

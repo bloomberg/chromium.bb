@@ -26,21 +26,19 @@
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
 #endif
 
-ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh() {
-}
+ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh() {}
 
-ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {
-}
+ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {}
 
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   if (chrome::ShouldOpenAshOnStartup()) {
     chrome::OpenAsh(gfx::kNullAcceleratedWidget);
-
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  ash::Shell::GetInstance()->CreateShelf();
-  ash::Shell::GetInstance()->ShowShelf();
+    ash::Shell::GetInstance()->CreateShelf();
+    ash::Shell::GetInstance()->ShowShelf();
 #endif
   }
+
 #if defined(OS_CHROMEOS)
   // For OS_CHROMEOS, virtual keyboard needs to be initialized before profile
   // initialized. Otherwise, virtual keyboard extension will not load at login
@@ -54,6 +52,9 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
+  if (chrome::IsRunningInMash())
+    chrome::InitializeMash();
+
   if (!ash::Shell::HasInstance())
     return;
 

@@ -525,8 +525,6 @@
       'browser/ui/ash/cast_config_delegate_media_router.h',
       'browser/ui/ash/chrome_keyboard_ui.cc',
       'browser/ui/ash/chrome_keyboard_ui.h',
-      'browser/ui/ash/chrome_launcher_prefs.cc',
-      'browser/ui/ash/chrome_launcher_prefs.h',
       'browser/ui/ash/chrome_new_window_delegate.cc',
       'browser/ui/ash/chrome_new_window_delegate.h',
       'browser/ui/ash/chrome_new_window_delegate_chromeos.cc',
@@ -663,6 +661,8 @@
     ],
     # Cross-platform aura sources.
     'chrome_browser_ui_aura_sources': [
+      'browser/ui/ash/chrome_launcher_prefs.cc',
+      'browser/ui/ash/chrome_launcher_prefs.h',
       'browser/ui/aura/accessibility/automation_manager_aura.cc',
       'browser/ui/aura/accessibility/automation_manager_aura.h',
       'browser/ui/aura/accessibility/ax_root_obj_wrapper.cc',

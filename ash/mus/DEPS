@@ -3,11 +3,13 @@ include_rules = [
   "+cc",
   "+components/mus/common",
   "+components/mus/public",
+  "+mash/shelf/public/interfaces",
   "+mash/wm/public/interfaces",
   "+mojo/common",
   "+mojo/converters",
   "+mojo/public",
   "+mojo/services/tracing/public",
   "+mojo/shell/public",
+  "+skia/public",
   "+third_party/khronos/GLES2/gl2.h",
 ]

@@ -8,6 +8,7 @@
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/ash_window_tree_host_platform.h"
 #include "ash/mus/keyboard_ui_mus.h"
+#include "ash/mus/shelf_delegate_mus.h"
 #include "ash/mus/shell_delegate_mus.h"
 #include "ash/mus/stub_context_factory.h"
 #include "ash/root_window_settings.h"
@@ -294,7 +295,16 @@ void SysUIApplication::Initialize(mojo::Connector* connector,
 }
 
 bool SysUIApplication::AcceptConnection(mojo::Connection* connection) {
+  connection->AddInterface<mash::shelf::mojom::ShelfController>(this);
   return true;
+}
+
+void SysUIApplication::Create(
+    mojo::Connection* connection,
+    mojo::InterfaceRequest<mash::shelf::mojom::ShelfController> request) {
+  mash::shelf::mojom::ShelfController* shelf_controller =
+      static_cast<ShelfDelegateMus*>(Shell::GetInstance()->GetShelfDelegate());
+  shelf_controller_bindings_.AddBinding(shelf_controller, std::move(request));
 }
 
 }  // namespace sysui

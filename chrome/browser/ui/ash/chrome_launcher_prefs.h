@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "ash/shelf/shelf_types.h"
+
 namespace base {
 class DictionaryValue;
 }
@@ -36,6 +38,12 @@ void RegisterChromeLauncherUserPrefs(
     user_prefs::PrefRegistrySyncable* registry);
 
 base::DictionaryValue* CreateAppDict(const std::string& app_id);
+
+ash::ShelfAlignment AlignmentFromPref(const std::string& value);
+const char* AlignmentToPref(ash::ShelfAlignment alignment);
+
+ash::ShelfAutoHideBehavior AutoHideBehaviorFromPref(const std::string& value);
+const char* AutoHideBehaviorToPref(ash::ShelfAutoHideBehavior behavior);
 
 }  // namespace ash
 
