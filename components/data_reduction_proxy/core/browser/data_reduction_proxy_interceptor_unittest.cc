@@ -139,7 +139,13 @@ class DataReductionProxyInterceptorTest : public testing::Test {
   scoped_ptr<net::TestURLRequestContext> default_context_;
 };
 
-TEST_F(DataReductionProxyInterceptorTest, TestJobFactoryChaining) {
+// Disabled on Mac due to flakiness. See crbug.com/601562.
+#if defined(OS_MACOSX)
+#define MAYBE_TestJobFactoryChaining DISABLED_TestJobFactoryChaining
+#else
+#define MAYBE_TestJobFactoryChaining TestJobFactoryChaining
+#endif
+TEST_F(DataReductionProxyInterceptorTest, MAYBE_TestJobFactoryChaining) {
   // Verifies that job factories can be chained.
   scoped_ptr<net::URLRequestJobFactory> impl(
       new net::URLRequestJobFactoryImpl());
