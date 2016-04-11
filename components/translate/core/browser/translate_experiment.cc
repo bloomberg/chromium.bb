@@ -42,6 +42,8 @@ void TranslateExperiment::OverrideUiLanguage(const std::string& country,
     *ui_lang = "ms";
   else if (country == "id")
     *ui_lang = "id";
+  else if (country == "th")
+    *ui_lang = "th";
 }
 
 // static
