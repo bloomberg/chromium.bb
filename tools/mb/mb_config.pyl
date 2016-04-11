@@ -588,9 +588,6 @@
     },
 
     'tryserver.blink': {
-      'linux_chromium_gn_rel': 'tbd',
-
-      'blink_presubmit': 'none',
       'linux_blink_compile_dbg':
         'swarming_gn_debug_bot_minimal_symbols_x64',
       'linux_blink_compile_rel':
@@ -598,8 +595,6 @@
       'linux_blink_dbg':
         'swarming_gn_debug_bot_minimal_symbols_x64',
       'linux_blink_rel':
-        'swarming_gn_release_trybot_minimal_symbols_x64',
-      'linux_blink_rel_ng':
         'swarming_gn_release_trybot_minimal_symbols_x64',
       'mac_blink_compile_dbg':
         'swarming_gyp_debug_bot_minimal_symbols_x64',
