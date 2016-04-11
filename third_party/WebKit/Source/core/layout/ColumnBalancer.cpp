@@ -102,10 +102,12 @@ void InitialColumnHeightFinder::examineBoxAfterEntering(const LayoutBox& box)
     if (isLogicalTopWithinBounds(flowThreadOffset() - box.paginationStrut())) {
         if (box.needsForcedBreakBefore(previousBreakAfterValue())) {
             addContentRun(flowThreadOffset());
-        } else if (isFirstAfterBreak(flowThreadOffset())) {
-            // This box is first after a soft break.
+        } else {
             ASSERT(isFirstAfterBreak(flowThreadOffset()) || !box.paginationStrut());
-            recordStrutBeforeOffset(flowThreadOffset(), box.paginationStrut());
+            if (isFirstAfterBreak(flowThreadOffset())) {
+                // This box is first after a soft break.
+                recordStrutBeforeOffset(flowThreadOffset(), box.paginationStrut());
+            }
         }
     }
 
@@ -245,19 +247,21 @@ void MinimumSpaceShortageFinder::examineBoxAfterEntering(const LayoutBox& box)
     if (isLogicalTopWithinBounds(flowThreadOffset() - box.paginationStrut())) {
         if (box.needsForcedBreakBefore(previousBreakAfterValue())) {
             m_forcedBreaksCount++;
-        } else if (isFirstAfterBreak(flowThreadOffset())) {
-            // This box is first after a soft break.
+        } else {
             ASSERT(isFirstAfterBreak(flowThreadOffset()) || !box.paginationStrut());
-            LayoutUnit strut = box.paginationStrut();
-            // Figure out how much more space we would need to prevent it from being pushed to the next column.
-            recordSpaceShortage(box.logicalHeight() - strut);
-            if (breakability != LayoutBox::ForbidBreaks && m_pendingStrut == LayoutUnit::min()) {
-                // We now want to look for the first piece of unbreakable content (e.g. a line or a
-                // block-displayed image) inside this block. That ought to be a good candidate for
-                // minimum space shortage; a much better one than reporting space shortage for the
-                // entire block (which we'll also do (further down), in case we couldn't find anything
-                // more suitable).
-                m_pendingStrut = strut;
+            if (isFirstAfterBreak(flowThreadOffset())) {
+                // This box is first after a soft break.
+                LayoutUnit strut = box.paginationStrut();
+                // Figure out how much more space we would need to prevent it from being pushed to the next column.
+                recordSpaceShortage(box.logicalHeight() - strut);
+                if (breakability != LayoutBox::ForbidBreaks && m_pendingStrut == LayoutUnit::min()) {
+                    // We now want to look for the first piece of unbreakable content (e.g. a line or a
+                    // block-displayed image) inside this block. That ought to be a good candidate for
+                    // minimum space shortage; a much better one than reporting space shortage for the
+                    // entire block (which we'll also do (further down), in case we couldn't find anything
+                    // more suitable).
+                    m_pendingStrut = strut;
+                }
             }
         }
     }
