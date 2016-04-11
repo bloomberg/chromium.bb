@@ -84,7 +84,6 @@ std::unique_ptr<base::DictionaryValue> SinksAndIdentityToValue(
   if (account_info.IsValid()) {
     user_domain = account_info.hosted_domain;
     sink_list_and_identity->SetString("userEmail", account_info.email);
-    sink_list_and_identity->SetString("userDomain", user_domain);
   }
 
   std::unique_ptr<base::ListValue> sinks_val(new base::ListValue);

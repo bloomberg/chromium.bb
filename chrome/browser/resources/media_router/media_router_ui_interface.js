@@ -85,8 +85,7 @@ cr.define('media_router.ui', function() {
    *            sinks: !Array<!media_router.Sink>,
    *            showEmail: boolean,
    *            userEmail: string,
-   *            showDomain: boolean,
-   *            userDomain: string
+   *            showDomain: boolean
    *          },
    *          routes: !Array<!media_router.Route>,
    *          castModes: !Array<!media_router.CastMode>}} data
@@ -131,19 +130,16 @@ cr.define('media_router.ui', function() {
    * @param {{sinks: !Array<!media_router.Sink>,
    *          showEmail: boolean,
    *          userEmail: string,
-   *          showDomain: boolean,
-   *          userDomain: string,}} data
+   *          showDomain: boolean}} data
    * Parameters in data:
    *   sinks - list of sinks to be displayed.
    *   showEmail - true if the user email should be shown.
    *   userEmail - email of the user if the user is signed in.
    *   showDomain - true if the user domain should be shown.
-   *   userDomain - domain of the user if the user is signed in.
    */
   function setSinkListAndIdentity(data) {
     container.allSinks = data['sinks'];
     container.showDomain = data['showDomain'];
-    container.userDomain = data['userDomain'];
     header.showEmail = data['showEmail'];
     header.userEmail = data['userEmail'];
   }

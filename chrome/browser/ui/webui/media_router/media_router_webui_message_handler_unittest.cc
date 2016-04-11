@@ -187,9 +187,6 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateSinksWithIdentity) {
   std::string value;
   EXPECT_TRUE(sinks_with_identity_value->GetString("userEmail", &value));
   EXPECT_EQ(kUserEmailForTesting, value);
-
-  EXPECT_TRUE(sinks_with_identity_value->GetString("userDomain", &value));
-  EXPECT_EQ(kUserDomainForTesting, value);
 }
 
 TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateSinksWithIdentityAndDomain) {
@@ -219,10 +216,6 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateSinksWithIdentityAndDomain) {
   EXPECT_TRUE(
       sinks_with_identity_value->GetBoolean("showDomain", &actual_show_domain));
   EXPECT_EQ(show_domain, actual_show_domain);
-
-  std::string value;
-  EXPECT_TRUE(sinks_with_identity_value->GetString("userDomain", &value));
-  EXPECT_EQ(kUserDomainForTesting, value);
 }
 
 TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateSinksWithNoDomain) {
@@ -266,9 +259,6 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateSinksWithNoDomain) {
   std::string value;
   EXPECT_TRUE(sink_value->GetString("domain", &value));
   EXPECT_EQ(std::string(), value);
-
-  EXPECT_TRUE(sinks_with_identity_value->GetString("userDomain", &value));
-  EXPECT_EQ(user_domain, value);
 }
 
 TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateSinksWithDefaultDomain) {
@@ -303,10 +293,6 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateSinksWithDefaultDomain) {
   EXPECT_TRUE(
       sinks_with_identity_value->GetBoolean("showDomain", &actual_show_domain));
   EXPECT_EQ(show_domain, actual_show_domain);
-
-  std::string value;
-  EXPECT_TRUE(sinks_with_identity_value->GetString("userDomain", &value));
-  EXPECT_EQ(kUserDomainForTesting, value);
 
   // Sink domain should be updated from 'default' to user domain.
   EXPECT_TRUE(sink_value->GetString("domain", &value));
