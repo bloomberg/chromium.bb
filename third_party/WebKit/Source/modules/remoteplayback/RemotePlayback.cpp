@@ -50,22 +50,9 @@ RemotePlayback::RemotePlayback(HTMLMediaElement& element)
     : DOMWindowProperty(element.document().frame())
     , m_state(element.isPlayingRemotely() ? WebRemotePlaybackState::Connected : WebRemotePlaybackState::Disconnected)
     , m_availability(element.hasRemoteRoutes())
-#if !ENABLE(OILPAN)
-    , m_mediaElement(element.createWeakPtr())
-#else
     , m_mediaElement(&element)
-#endif
 {
 }
-
-#if ENABLE(OILPAN)
-RemotePlayback::~RemotePlayback() = default;
-#else
-RemotePlayback::~RemotePlayback()
-{
-    m_mediaElement->setRemotePlaybackClient(nullptr);
-}
-#endif
 
 const AtomicString& RemotePlayback::interfaceName() const
 {

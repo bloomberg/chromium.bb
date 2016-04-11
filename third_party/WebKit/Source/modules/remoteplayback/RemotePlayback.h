@@ -32,8 +32,6 @@ class RemotePlayback final
 public:
     static RemotePlayback* create(HTMLMediaElement&);
 
-    ~RemotePlayback() override;
-
     // EventTarget implementation.
     const WTF::AtomicString& interfaceName() const override;
     ExecutionContext* getExecutionContext() const override;

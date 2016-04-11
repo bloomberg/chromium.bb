@@ -204,15 +204,10 @@ void WebGLRenderingContextBase::removeFromEvictedList(WebGLRenderingContextBase*
 
 void WebGLRenderingContextBase::willDestroyContext(WebGLRenderingContextBase* context)
 {
-#if ENABLE(OILPAN)
     // These two sets keep weak references to their contexts;
     // verify that the GC already removed the |context| entries.
     ASSERT(!forciblyEvictedContexts().contains(context));
     ASSERT(!activeContexts().contains(context));
-#else
-    removeFromEvictedList(context);
-    deactivateContext(context);
-#endif
 
     // Try to re-enable the oldest inactive contexts.
     while (activeContexts().size() < maxGLActiveContexts && forciblyEvictedContexts().size()) {
@@ -836,9 +831,6 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     , m_isOESTextureHalfFloatFormatsTypesAdded(false)
     , m_isWebGLDepthTextureFormatsTypesAdded(false)
     , m_isEXTsRGBFormatsTypesAdded(false)
-#if !ENABLE(OILPAN)
-    , m_weakPtrFactory(this)
-#endif
 {
     ASSERT(contextProvider);
 

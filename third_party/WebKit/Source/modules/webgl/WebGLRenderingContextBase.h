@@ -513,17 +513,7 @@ protected:
     Timer<WebGLRenderingContextBase> m_restoreTimer;
 
     bool m_markedCanvasDirty;
-#if ENABLE(OILPAN)
     HeapHashSet<WeakMember<WebGLContextObject>> m_contextObjects;
-#else
-    // The hash set isn't traced, hence the references are effectively
-    // weakly kept. Each WebGLContextObject is responsible for detaching
-    // itself upon finalization if the WebGLRenderingContextBase hasn't been
-    // finalized already and detached them via detachAndRemoveAllObjects().
-    // See http://crbug.com/534524 for the details.
-    HashSet<UntracedMember<WebGLContextObject>> m_contextObjects;
-#endif
-
     Member<WebGLRenderingContextErrorMessageCallback> m_errorMessageCallbackAdapter;
 
     // List of bound VBO's. Used to maintain info about sizes for ARRAY_BUFFER and stored values for ELEMENT_ARRAY_BUFFER
@@ -1088,13 +1078,7 @@ protected:
     static WebGLRenderingContextBase* oldestContext();
     static WebGLRenderingContextBase* oldestEvictedContext();
 
-#if ENABLE(OILPAN)
     CrossThreadWeakPersistentThisPointer<WebGLRenderingContextBase> createWeakThisPointer() { return CrossThreadWeakPersistentThisPointer<WebGLRenderingContextBase>(this); }
-#else
-    WeakPtr<WebGLRenderingContextBase> createWeakThisPointer() { return m_weakPtrFactory.createWeakPtr(); }
-
-    WeakPtrFactory<WebGLRenderingContextBase> m_weakPtrFactory;
-#endif
 };
 
 DEFINE_TYPE_CASTS(WebGLRenderingContextBase, CanvasRenderingContext, context, context->is3d(), context.is3d());

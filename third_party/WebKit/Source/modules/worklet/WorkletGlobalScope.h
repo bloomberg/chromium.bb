@@ -27,11 +27,6 @@ class MODULES_EXPORT WorkletGlobalScope : public GarbageCollectedFinalized<Workl
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(WorkletGlobalScope);
 public:
-#if !ENABLE(OILPAN)
-    using RefCounted<WorkletGlobalScope>::ref;
-    using RefCounted<WorkletGlobalScope>::deref;
-#endif
-
     ~WorkletGlobalScope() override;
     virtual void dispose();
 
@@ -77,11 +72,6 @@ protected:
     WorkletGlobalScope(LocalFrame*, const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*);
 
 private:
-#if !ENABLE(OILPAN)
-    void refExecutionContext() final { ref(); }
-    void derefExecutionContext() final { deref(); }
-#endif
-
     const KURL& virtualURL() const final { return m_url; }
     KURL virtualCompleteURL(const String&) const final;
 
