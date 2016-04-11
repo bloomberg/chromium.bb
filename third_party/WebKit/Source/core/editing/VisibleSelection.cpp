@@ -150,14 +150,6 @@ VisibleSelectionTemplate<Strategy>& VisibleSelectionTemplate<Strategy>::operator
     return *this;
 }
 
-#if !ENABLE(OILPAN)
-template <typename Strategy>
-VisibleSelectionTemplate<Strategy>::~VisibleSelectionTemplate()
-{
-    didChange();
-}
-#endif
-
 template <typename Strategy>
 VisibleSelectionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::selectionFromContentsOfNode(Node* node)
 {

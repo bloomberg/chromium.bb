@@ -55,9 +55,6 @@ public:
     Element* rootEditableElement() const { return m_rootEditableElement; }
 
     void setCheckerAndSequence(SpellCheckRequester*, int sequence);
-#if !ENABLE(OILPAN)
-    void requesterDestroyed();
-#endif
 
     const TextCheckingRequestData& data() const override;
     bool isValid() const;

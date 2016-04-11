@@ -56,11 +56,6 @@ SelectionEditor::SelectionEditor(FrameSelection& frameSelection)
 
 SelectionEditor::~SelectionEditor()
 {
-#if !ENABLE(OILPAN)
-    // Oilpan: No need to clear out VisibleSelection observer;
-    // it is finalized as a part object of FrameSelection.
-    stopObservingVisibleSelectionChangeIfNecessary();
-#endif
 }
 
 void SelectionEditor::dispose()

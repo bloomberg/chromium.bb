@@ -146,13 +146,6 @@ void SpellCheckRequest::setCheckerAndSequence(SpellCheckRequester* requester, in
     m_requestData.m_sequence = sequence;
 }
 
-#if !ENABLE(OILPAN)
-void SpellCheckRequest::requesterDestroyed()
-{
-    m_requester = nullptr;
-}
-#endif
-
 SpellCheckRequester::SpellCheckRequester(LocalFrame& frame)
     : m_frame(&frame)
     , m_lastRequestSequence(0)
@@ -163,12 +156,6 @@ SpellCheckRequester::SpellCheckRequester(LocalFrame& frame)
 
 SpellCheckRequester::~SpellCheckRequester()
 {
-#if !ENABLE(OILPAN)
-    if (m_processingRequest)
-        m_processingRequest->requesterDestroyed();
-    for (const auto& requestQueue : m_requestQueue)
-        requestQueue->requesterDestroyed();
-#endif
 }
 
 TextCheckerClient& SpellCheckRequester::client() const
