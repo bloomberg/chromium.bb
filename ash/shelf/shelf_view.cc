@@ -1509,7 +1509,7 @@ void ShelfView::GetAccessibleState(ui::AXViewState* state) {
 
 void ShelfView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
-  if (details.is_add && details.child == this && GetWidget())
+  if (details.is_add && details.child == this)
     tooltip_.Init();
 }
 

@@ -39,7 +39,6 @@ OverflowBubbleView::~OverflowBubbleView() {}
 void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
                                             ShelfView* shelf_view) {
   shelf_view_ = shelf_view;
-  AddChildView(shelf_view_);
 
   SetAnchorView(anchor);
   set_arrow(GetBubbleArrow());
@@ -59,6 +58,7 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
       anchor->GetWidget()->GetNativeWindow()->GetRootWindow(),
       kShellWindowId_ShelfBubbleContainer));
   views::BubbleDelegateView::CreateBubble(this);
+  AddChildView(shelf_view_);
 }
 
 bool OverflowBubbleView::IsHorizontalAlignment() const {
