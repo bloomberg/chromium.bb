@@ -150,9 +150,6 @@ NetworkResourcesData::NetworkResourcesData(size_t totalBufferSize, size_t resour
 
 NetworkResourcesData::~NetworkResourcesData()
 {
-#if !ENABLE(OILPAN)
-    clear();
-#endif
 }
 
 DEFINE_TRACE(NetworkResourcesData)
@@ -335,10 +332,6 @@ void NetworkResourcesData::clear(const String& preservedLoaderId)
         ResourceData* resourceData = resource.value;
         if (!preservedLoaderId.isNull() && resourceData->loaderId() == preservedLoaderId)
             preservedMap.set(resource.key, resource.value);
-#if !ENABLE(OILPAN)
-        else
-            delete resourceData;
-#endif
     }
     m_requestIdToResourceDataMap.swap(preservedMap);
 
@@ -366,9 +359,6 @@ void NetworkResourcesData::ensureNoDataForRequestId(const String& requestId)
         return;
     if (resourceData->hasContent() || resourceData->hasData())
         m_contentSize -= resourceData->evictContent();
-#if !ENABLE(OILPAN)
-    delete resourceData;
-#endif
     m_requestIdToResourceDataMap.remove(requestId);
 }
 

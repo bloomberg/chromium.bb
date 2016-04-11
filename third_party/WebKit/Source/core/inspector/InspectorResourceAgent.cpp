@@ -429,13 +429,6 @@ static PassOwnPtr<protocol::Network::Response> buildObjectForResourceResponse(co
 
 InspectorResourceAgent::~InspectorResourceAgent()
 {
-#if !ENABLE(OILPAN)
-    if (m_state->booleanProperty(ResourceAgentState::resourceAgentEnabled, false)) {
-        ErrorString error;
-        disable(&error);
-    }
-    ASSERT(!m_instrumentingAgents->inspectorResourceAgent());
-#endif
 }
 
 DEFINE_TRACE(InspectorResourceAgent)

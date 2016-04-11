@@ -49,9 +49,6 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(V8DebuggerAgent* agent)
 
 InspectorDebuggerAgent::~InspectorDebuggerAgent()
 {
-#if !ENABLE(OILPAN)
-    ASSERT(!m_instrumentingAgents->inspectorDebuggerAgent());
-#endif
 }
 
 DEFINE_TRACE(InspectorDebuggerAgent)

@@ -624,10 +624,6 @@ InspectorCSSAgent::InspectorCSSAgent(InspectorDOMAgent* domAgent, InspectedFrame
 
 InspectorCSSAgent::~InspectorCSSAgent()
 {
-#if !ENABLE(OILPAN)
-    ASSERT(!m_domAgent);
-    reset();
-#endif
 }
 
 void InspectorCSSAgent::discardAgent()

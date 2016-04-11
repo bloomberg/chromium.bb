@@ -129,9 +129,6 @@ InspectorDOMDebuggerAgent::InspectorDOMDebuggerAgent(v8::Isolate* isolate, Inspe
 
 InspectorDOMDebuggerAgent::~InspectorDOMDebuggerAgent()
 {
-#if !ENABLE(OILPAN)
-    ASSERT(!m_instrumentingAgents->inspectorDOMDebuggerAgent());
-#endif
 }
 
 DEFINE_TRACE(InspectorDOMDebuggerAgent)

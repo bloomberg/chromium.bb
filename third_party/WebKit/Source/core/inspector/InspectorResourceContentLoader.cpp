@@ -63,10 +63,6 @@ void InspectorResourceContentLoader::ResourceClient::resourceFinished(Resource* 
         resource->removeClient(static_cast<RawResourceClient*>(this));
     else
         resource->removeClient(static_cast<StyleSheetResourceClient*>(this));
-
-#if !ENABLE(OILPAN)
-    delete this;
-#endif
 }
 
 void InspectorResourceContentLoader::ResourceClient::setCSSStyleSheet(const String&, const KURL& url, const String&, const CSSStyleSheetResource* resource)

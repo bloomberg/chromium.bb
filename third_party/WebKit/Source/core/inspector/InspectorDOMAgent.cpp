@@ -260,9 +260,6 @@ InspectorDOMAgent::InspectorDOMAgent(v8::Isolate* isolate, InspectedFrames* insp
 
 InspectorDOMAgent::~InspectorDOMAgent()
 {
-#if !ENABLE(OILPAN)
-    setDocument(nullptr);
-#endif
 }
 
 void InspectorDOMAgent::restore()

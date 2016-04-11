@@ -53,9 +53,6 @@ InspectorConsoleAgent::InspectorConsoleAgent(V8RuntimeAgent* runtimeAgent, V8Deb
 
 InspectorConsoleAgent::~InspectorConsoleAgent()
 {
-#if !ENABLE(OILPAN)
-    m_instrumentingAgents->setInspectorConsoleAgent(0);
-#endif
 }
 
 void InspectorConsoleAgent::enable(ErrorString*)

@@ -54,10 +54,6 @@ PageConsoleAgent::PageConsoleAgent(V8RuntimeAgent* runtimeAgent, V8DebuggerAgent
 
 PageConsoleAgent::~PageConsoleAgent()
 {
-#if !ENABLE(OILPAN)
-    m_inspectorDOMAgent = nullptr;
-    m_instrumentingAgents->setPageConsoleAgent(nullptr);
-#endif
 }
 
 DEFINE_TRACE(PageConsoleAgent)

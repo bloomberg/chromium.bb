@@ -60,9 +60,6 @@ InspectorWorkerAgent::InspectorWorkerAgent(InspectedFrames* inspectedFrames, Pag
 
 InspectorWorkerAgent::~InspectorWorkerAgent()
 {
-#if !ENABLE(OILPAN)
-    m_instrumentingAgents->setInspectorWorkerAgent(nullptr);
-#endif
 }
 
 void InspectorWorkerAgent::restore()
