@@ -58,7 +58,6 @@ public:
     LayoutRect elementRect() const override;
     LayoutBoxModelObject* getLayoutBoxModelObject() const;
     SkMatrix44 transformFromLocalParentFrame() const override;
-    bool shouldNotifyActiveDescendant() const;
     ScrollableArea* getScrollableAreaIfScrollable() const final;
     AccessibilityRole determineAccessibilityRole() override;
     AccessibilityRole nativeAccessibilityRoleIgnoringAria() const override;
@@ -120,7 +119,6 @@ protected:
     String stringValue() const override;
 
     // ARIA attributes.
-    AXObject* activeDescendant() const override;
     void ariaFlowToElements(AXObjectVector&) const override;
     void ariaControlsElements(AXObjectVector&) const override;
     void ariaDescribedbyElements(AXObjectVector&) const override;
@@ -130,7 +128,6 @@ protected:
     bool ariaHasPopup() const override;
     bool ariaRoleHasPresentationalChildren() const override;
     AXObject* ancestorForWhichThisIsAPresentationalChild() const override;
-    bool shouldFocusActiveDescendant() const override;
     bool supportsARIADragging() const override;
     bool supportsARIADropping() const override;
     bool supportsARIAFlowTo() const override;

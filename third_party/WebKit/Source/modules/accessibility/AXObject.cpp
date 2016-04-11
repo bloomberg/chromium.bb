@@ -330,7 +330,8 @@ const char* ariaWidgets[] = {
     "timer",
     "tooltip",
     "treeitem",
-    // Composite user interface widgets.  This list is also from w3.org site refrerenced above.
+    // Composite user interface widgets.
+    // This list is also from the w3.org site referenced above.
     "combobox",
     "grid",
     "listbox",
@@ -388,6 +389,7 @@ AXObject::AXObject(AXObjectCacheImpl& axObjectCache)
     , m_cachedIsDescendantOfDisabledNode(false)
     , m_cachedHasInheritedPresentationalRole(false)
     , m_cachedIsPresentationalChild(false)
+    , m_cachedAncestorExposesActiveDescendant(false)
     , m_cachedLiveRegionRoot(nullptr)
     , m_axObjectCache(&axObjectCache)
 {
@@ -521,6 +523,7 @@ void AXObject::updateCachedAttributeValuesIfNeeded() const
     m_cachedLiveRegionRoot = isLiveRegion() ?
         this :
         (parentObjectIfExists() ? parentObjectIfExists()->liveRegionRoot() : 0);
+    m_cachedAncestorExposesActiveDescendant = computeAncestorExposesActiveDescendant();
 }
 
 bool AXObject::accessibilityIsIgnoredByDefault(IgnoredReasons* ignoredReasons) const
@@ -674,6 +677,26 @@ bool AXObject::isPresentationalChild() const
 {
     updateCachedAttributeValuesIfNeeded();
     return m_cachedIsPresentationalChild;
+}
+
+bool AXObject::ancestorExposesActiveDescendant() const
+{
+    updateCachedAttributeValuesIfNeeded();
+    return m_cachedAncestorExposesActiveDescendant;
+}
+
+bool AXObject::computeAncestorExposesActiveDescendant() const
+{
+    const AXObject* parent = parentObjectUnignored();
+    if (!parent)
+        return false;
+
+    if (parent->supportsActiveDescendant()
+        && !parent->getAttribute(aria_activedescendantAttr).isEmpty()) {
+        return true;
+    }
+
+    return parent->ancestorExposesActiveDescendant();
 }
 
 // Simplify whitespace, but preserve a single leading and trailing whitespace character if it's present.
@@ -977,6 +1000,32 @@ bool AXObject::isMultiline() const
 bool AXObject::ariaPressedIsPresent() const
 {
     return !getAttribute(aria_pressedAttr).isEmpty();
+}
+
+bool AXObject::supportsActiveDescendant() const
+{
+    // According to the ARIA Spec, all ARIA composite widgets, ARIA text boxes
+    // and ARIA groups should be able to expose an active descendant.
+    // Implicitly, <input> and <textarea> elements should also have this ability.
+    switch (ariaRoleAttribute()) {
+    case ComboBoxRole:
+    case GridRole:
+    case GroupRole:
+    case ListBoxRole:
+    case MenuRole:
+    case MenuBarRole:
+    case RadioGroupRole:
+    case RowRole:
+    case SearchBoxRole:
+    case TabListRole:
+    case TextFieldRole:
+    case ToolbarRole:
+    case TreeRole:
+    case TreeGridRole:
+        return true;
+    default:
+        return false;
+    }
 }
 
 bool AXObject::supportsARIAAttributes() const

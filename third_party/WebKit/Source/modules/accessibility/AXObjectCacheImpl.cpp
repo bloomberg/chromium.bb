@@ -155,7 +155,7 @@ AXObject* AXObjectCacheImpl::focusedImageMapUIElement(HTMLAreaElement* areaEleme
 AXObject* AXObjectCacheImpl::focusedObject()
 {
     if (!accessibilityEnabled())
-        return 0;
+        return nullptr;
 
     Node* focusedNode = m_document->focusedElement();
     if (!focusedNode)
@@ -172,17 +172,11 @@ AXObject* AXObjectCacheImpl::focusedObject()
             if (Element* focusedElementInPopup = axPopup->getDocument()->focusedElement())
                 focusedNode = focusedElementInPopup;
         }
-
     }
 
     AXObject* obj = getOrCreate(focusedNode);
     if (!obj)
-        return 0;
-
-    if (obj->shouldFocusActiveDescendant()) {
-        if (AXObject* descendant = obj->activeDescendant())
-            obj = descendant;
-    }
+        return nullptr;
 
     // the HTML element, for example, is focusable but has an AX object that is ignored
     if (obj->accessibilityIsIgnored())
@@ -1138,15 +1132,6 @@ void AXObjectCacheImpl::postPlatformNotification(AXObject* obj, AXNotification n
         return;
 
     ChromeClient& client = obj->getDocument()->axObjectCacheOwner().page()->chromeClient();
-
-    if (notification == AXActiveDescendantChanged
-        && obj->getDocument()->focusedElement()
-        && obj->getNode() == obj->getDocument()->focusedElement()) {
-        // Calling handleFocusedUIElementChanged will focus the new active
-        // descendant and send the AXFocusedUIElementChanged notification.
-        handleFocusedUIElementChanged(0, obj->getDocument()->focusedElement());
-    }
-
     client.postAccessibilityNotification(obj, notification);
 }
 

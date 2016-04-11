@@ -64,6 +64,7 @@ protected:
     virtual AccessibilityRole nativeAccessibilityRoleIgnoringAria() const;
     String accessibilityDescriptionForElements(HeapVector<Member<Element>> &elements) const;
     void alterSliderValue(bool increase);
+    AXObject* activeDescendant() const override;
     String ariaAccessibilityDescription() const;
     String ariaAutoComplete() const;
     AccessibilityRole determineAriaRoleAttribute() const;
@@ -130,6 +131,7 @@ protected:
     // Check whether certain properties can be modified.
     bool canSetFocusAttribute() const override;
     bool canSetValueAttribute() const override;
+    bool canSetSelectedAttribute() const override;
 
     // Properties of static elements.
     RGBA32 colorValue() const final;

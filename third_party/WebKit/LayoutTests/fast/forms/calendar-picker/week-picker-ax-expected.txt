@@ -3,11 +3,9 @@ Tests if typing an arrow key dispatches |Focus| and |ActiveDescendantChanged| a1
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-Focused: 
-Focused: 
-Focused: Week 13 2000 starting on Monday March 27 2000
+Focused
+Focused
 PASS Received ActiveDescendantChanged
-Focused: Week 14 2000 starting on Monday April 3 2000
 PASS Received ActiveDescendantChanged
 PASS successfullyParsed is true
 

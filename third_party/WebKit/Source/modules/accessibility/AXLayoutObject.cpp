@@ -243,16 +243,6 @@ LayoutBoxModelObject* AXLayoutObject::getLayoutBoxModelObject() const
     return toLayoutBoxModelObject(m_layoutObject);
 }
 
-bool AXLayoutObject::shouldNotifyActiveDescendant() const
-{
-    // We want to notify that the combo box has changed its active descendant,
-    // but we do not want to change the focus, because focus should remain with the combo box.
-    if (isComboBox())
-        return true;
-
-    return shouldFocusActiveDescendant();
-}
-
 ScrollableArea* AXLayoutObject::getScrollableAreaIfScrollable() const
 {
     if (isWebArea())
@@ -473,18 +463,20 @@ bool AXLayoutObject::isVisited() const
 
 bool AXLayoutObject::isFocused() const
 {
-    if (!m_layoutObject)
+    if (!getDocument())
         return false;
 
-    Document& document = m_layoutObject->document();
-    Element* focusedElement = document.focusedElement();
+    Element* focusedElement = getDocument()->focusedElement();
     if (!focusedElement)
+        return false;
+    AXObject* focusedObject = axObjectCache().getOrCreate(focusedElement);
+    if (!focusedObject || !focusedObject->isAXLayoutObject())
         return false;
 
     // A web area is represented by the Document node in the DOM tree, which isn't focusable.
     // Check instead if the frame's selection controller is focused
-    if (focusedElement == m_layoutObject->node()
-        || (roleValue() == WebAreaRole && document.frame()->selection().isFocusedAndActive()))
+    if (focusedObject == this
+        || (roleValue() == WebAreaRole && getDocument()->frame()->selection().isFocusedAndActive()))
         return true;
 
     return false;
@@ -492,16 +484,18 @@ bool AXLayoutObject::isFocused() const
 
 bool AXLayoutObject::isSelected() const
 {
-    if (!m_layoutObject)
-        return false;
-
-    Node* node = m_layoutObject->node();
-    if (!node)
+    if (!getLayoutObject() || !getNode())
         return false;
 
     const AtomicString& ariaSelected = getAttribute(aria_selectedAttr);
     if (equalIgnoringCase(ariaSelected, "true"))
         return true;
+
+    AXObject* focusedObject = axObjectCache().focusedObject();
+    if (ariaRoleAttribute() == ListBoxOptionRole && focusedObject
+        && focusedObject->activeDescendant() == this) {
+        return true;
+    }
 
     if (isTabItem() && isTabItemSelected())
         return true;
@@ -1175,35 +1169,6 @@ String AXLayoutObject::textAlternative(bool recursive, bool inAriaLabelledByTrav
 // ARIA attributes.
 //
 
-AXObject* AXLayoutObject::activeDescendant() const
-{
-    if (!m_layoutObject)
-        return 0;
-
-    if (m_layoutObject->node() && !m_layoutObject->node()->isElementNode())
-        return 0;
-
-    Element* element = toElement(m_layoutObject->node());
-    if (!element)
-        return 0;
-
-    const AtomicString& activeDescendantAttrStr = element->getAttribute(aria_activedescendantAttr);
-    if (activeDescendantAttrStr.isNull() || activeDescendantAttrStr.isEmpty())
-        return 0;
-
-    Element* target = element->treeScope().getElementById(activeDescendantAttrStr);
-    if (!target)
-        return 0;
-
-    AXObject* obj = axObjectCache().getOrCreate(target);
-
-    // An activedescendant is only useful if it has a layoutObject, because that's what's needed to post the notification.
-    if (obj && obj->isAXLayoutObject())
-        return obj;
-
-    return 0;
-}
-
 void AXLayoutObject::ariaFlowToElements(AXObjectVector& flowTo) const
 {
     accessibilityChildrenFromAttribute(aria_flowtoAttr, flowTo);
@@ -1267,30 +1232,6 @@ AXObject* AXLayoutObject::ancestorForWhichThisIsAPresentationalChild() const
     }
 
     return parent;
-}
-
-bool AXLayoutObject::shouldFocusActiveDescendant() const
-{
-    switch (ariaRoleAttribute()) {
-    case ComboBoxRole:
-    case GridRole:
-    case GroupRole:
-    case ListBoxRole:
-    case MenuRole:
-    case MenuBarRole:
-    case OutlineRole:
-    case PopUpButtonRole:
-    case ProgressIndicatorRole:
-    case RadioGroupRole:
-    case RowRole:
-    case TabListRole:
-    case ToolbarRole:
-    case TreeRole:
-    case TreeGridRole:
-        return true;
-    default:
-        return false;
-    }
 }
 
 bool AXLayoutObject::supportsARIADragging() const
@@ -1720,14 +1661,14 @@ double AXLayoutObject::estimatedLoadingProgress() const
 
 Node* AXLayoutObject::getNode() const
 {
-    return m_layoutObject ? m_layoutObject->node() : 0;
+    return getLayoutObject() ? getLayoutObject()->node() : nullptr;
 }
 
 Document* AXLayoutObject::getDocument() const
 {
-    if (!m_layoutObject)
-        return 0;
-    return &m_layoutObject->document();
+    if (!getLayoutObject())
+        return nullptr;
+    return &getLayoutObject()->document();
 }
 
 FrameView* AXLayoutObject::documentFrameView() const
@@ -2025,16 +1966,14 @@ void AXLayoutObject::setValue(const String& string)
 
 void AXLayoutObject::handleActiveDescendantChanged()
 {
-    Element* element = toElement(getLayoutObject()->node());
-    if (!element)
+    if (!getLayoutObject())
         return;
-    Document& doc = getLayoutObject()->document();
-    if (!doc.frame()->selection().isFocusedAndActive() || doc.focusedElement() != element)
-        return;
-    AXLayoutObject* activedescendant = toAXLayoutObject(activeDescendant());
 
-    if (activedescendant && shouldNotifyActiveDescendant())
-        toAXObjectCacheImpl(doc.axObjectCache())->postNotification(m_layoutObject, AXObjectCacheImpl::AXActiveDescendantChanged);
+    AXObject* focusedObject = axObjectCache().focusedObject();
+    if (focusedObject == this && supportsActiveDescendant()) {
+        axObjectCache().postNotification(
+            getLayoutObject(), AXObjectCacheImpl::AXActiveDescendantChanged);
+    }
 }
 
 void AXLayoutObject::handleAriaExpandedChanged()
@@ -2207,10 +2146,10 @@ AXObject* AXLayoutObject::treeAncestorDisallowingChild() const
 
 bool AXLayoutObject::isTabItemSelected() const
 {
-    if (!isTabItem() || !m_layoutObject)
+    if (!isTabItem() || !getLayoutObject())
         return false;
 
-    Node* node = m_layoutObject->node();
+    Node* node = getNode();
     if (!node || !node->isElementNode())
         return false;
 

@@ -223,7 +223,6 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
   if (event_id != EVENT_MIN)
     MaybeCallNotifyWinEvent(event_id, node);
 
-
   // If this is a layout complete notification (sent when a container scrolls)
   // and there is a descendant tracked object, send a notification on it.
   // TODO(dmazzoni): remove once http://crbug.com/113483 is fixed.

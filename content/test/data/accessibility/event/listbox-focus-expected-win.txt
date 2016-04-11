@@ -1,1 +1,2 @@
+#<skip - browser side code needs to be re-implemented>
 EVENT_OBJECT_FOCUS on role=ROLE_SYSTEM_LISTITEM name="Apple" SELECTED,FOCUSED,FOCUSABLE,SELECTABLE
