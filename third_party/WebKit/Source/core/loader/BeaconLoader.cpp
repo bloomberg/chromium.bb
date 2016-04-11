@@ -35,12 +35,12 @@ public:
 protected:
     static unsigned long long beaconSize(const String&);
     static unsigned long long beaconSize(Blob*);
-    static unsigned long long beaconSize(PassRefPtr<DOMArrayBufferView>);
+    static unsigned long long beaconSize(DOMArrayBufferView*);
     static unsigned long long beaconSize(FormData*);
 
     static bool serialize(const String&, ResourceRequest&, int, int&);
     static bool serialize(Blob*, ResourceRequest&, int, int&);
-    static bool serialize(PassRefPtr<DOMArrayBufferView>, ResourceRequest&, int, int&);
+    static bool serialize(DOMArrayBufferView*, ResourceRequest&, int, int&);
     static bool serialize(FormData*, ResourceRequest&, int, int&);
 };
 
@@ -110,7 +110,7 @@ bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beac
     return Sender::send(frame, allowance, beaconURL, beacon, payloadLength);
 }
 
-bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beaconURL, PassRefPtr<DOMArrayBufferView> data, int& payloadLength)
+bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beaconURL, DOMArrayBufferView* data, int& payloadLength)
 {
     BeaconData<decltype(data)> beacon(data);
     return Sender::send(frame, allowance, beaconURL, beacon, payloadLength);
@@ -197,12 +197,12 @@ bool Beacon::serialize(Blob* data, ResourceRequest& request, int, int&)
     return true;
 }
 
-unsigned long long Beacon::beaconSize(PassRefPtr<DOMArrayBufferView> data)
+unsigned long long Beacon::beaconSize(DOMArrayBufferView* data)
 {
     return data->byteLength();
 }
 
-bool Beacon::serialize(PassRefPtr<DOMArrayBufferView> data, ResourceRequest& request, int, int&)
+bool Beacon::serialize(DOMArrayBufferView* data, ResourceRequest& request, int, int&)
 {
     ASSERT(data);
     RefPtr<EncodedFormData> entityBody = EncodedFormData::create(data->baseAddress(), data->byteLength());

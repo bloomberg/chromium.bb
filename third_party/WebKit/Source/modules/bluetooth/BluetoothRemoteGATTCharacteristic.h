@@ -49,7 +49,7 @@ public:
     static BluetoothRemoteGATTCharacteristic* take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothRemoteGATTCharacteristicInit>);
 
     // Save value.
-    void setValue(const PassRefPtr<DOMDataView>&);
+    void setValue(DOMDataView*);
 
     // WebBluetoothRemoteGATTCharacteristic interface:
     void dispatchCharacteristicValueChanged(const WebVector<uint8_t>&) override;
@@ -76,7 +76,7 @@ public:
     String uuid() { return m_webCharacteristic->uuid; }
 
     BluetoothCharacteristicProperties* properties() { return m_properties; }
-    PassRefPtr<DOMDataView> value() const { return m_value; }
+    DOMDataView* value() const { return m_value; }
     ScriptPromise readValue(ScriptState*);
     ScriptPromise writeValue(ScriptState*, const DOMArrayPiece&);
     ScriptPromise startNotifications(ScriptState*);
@@ -92,7 +92,7 @@ private:
     OwnPtr<WebBluetoothRemoteGATTCharacteristicInit> m_webCharacteristic;
     bool m_stopped;
     Member<BluetoothCharacteristicProperties> m_properties;
-    RefPtr<DOMDataView> m_value;
+    Member<DOMDataView> m_value;
 };
 
 } // namespace blink

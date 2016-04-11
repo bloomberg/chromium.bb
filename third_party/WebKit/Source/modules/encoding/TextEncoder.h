@@ -51,7 +51,7 @@ public:
 
     // Implement the IDL
     String encoding() const;
-    PassRefPtr<DOMUint8Array> encode(const String&);
+    DOMUint8Array* encode(const String&);
 
     DEFINE_INLINE_TRACE() { }
 

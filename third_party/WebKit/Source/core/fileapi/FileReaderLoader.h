@@ -82,7 +82,7 @@ public:
     void didFail(const ResourceError&) override;
 
     String stringResult();
-    PassRefPtr<DOMArrayBuffer> arrayBufferResult() const;
+    DOMArrayBuffer* arrayBufferResult() const;
 
     // Returns the total bytes received. Bytes ignored by m_rawData won't be
     // counted.

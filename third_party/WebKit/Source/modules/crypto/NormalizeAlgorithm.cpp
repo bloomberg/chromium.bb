@@ -308,7 +308,7 @@ bool getBufferSource(const Dictionary& raw, const char* propertyName, BufferSour
     return ok;
 }
 
-bool getUint8Array(const Dictionary& raw, const char* propertyName, RefPtr<DOMUint8Array>& array, const ErrorContext& context, AlgorithmError* error)
+bool getUint8Array(const Dictionary& raw, const char* propertyName, DOMUint8Array*& array, const ErrorContext& context, AlgorithmError* error)
 {
     if (!DictionaryHelper::get(raw, propertyName, array) || !array) {
         setTypeError(context.toString(propertyName, "Missing or not a Uint8Array"), error);
@@ -320,7 +320,7 @@ bool getUint8Array(const Dictionary& raw, const char* propertyName, RefPtr<DOMUi
 // Defined by the WebCrypto spec as:
 //
 //     typedef Uint8Array BigInteger;
-bool getBigInteger(const Dictionary& raw, const char* propertyName, RefPtr<DOMUint8Array>& array, const ErrorContext& context, AlgorithmError* error)
+bool getBigInteger(const Dictionary& raw, const char* propertyName, DOMUint8Array*& array, const ErrorContext& context, AlgorithmError* error)
 {
     if (!getUint8Array(raw, propertyName, array, context, error))
         return false;
@@ -563,7 +563,7 @@ bool parseRsaHashedKeyGenParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithm
     if (!getUint32(raw, "modulusLength", modulusLength, context, error))
         return false;
 
-    RefPtr<DOMUint8Array> publicExponent;
+    DOMUint8Array* publicExponent = nullptr;
     if (!getBigInteger(raw, "publicExponent", publicExponent, context, error))
         return false;
 

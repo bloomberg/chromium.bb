@@ -122,7 +122,7 @@ bool WebPepperSocketImpl::sendArrayBuffer(const WebArrayBuffer& webArrayBuffer)
     if (m_isClosingOrClosed)
         return true;
 
-    RefPtr<DOMArrayBuffer> arrayBuffer = PassRefPtr<DOMArrayBuffer>(webArrayBuffer);
+    DOMArrayBuffer* arrayBuffer = webArrayBuffer;
     m_private->send(*arrayBuffer, 0, arrayBuffer->byteLength());
     return true;
 }

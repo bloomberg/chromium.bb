@@ -11,11 +11,10 @@ namespace blink {
 DOMArrayPiece::DOMArrayPiece(const ArrayBufferOrArrayBufferView& arrayBufferOrView, InitWithUnionOption option)
 {
     if (arrayBufferOrView.isArrayBuffer()) {
-        RefPtr<DOMArrayBuffer> arrayBuffer = arrayBufferOrView.getAsArrayBuffer();
+        DOMArrayBuffer* arrayBuffer = arrayBufferOrView.getAsArrayBuffer();
         initWithData(arrayBuffer->data(), arrayBuffer->byteLength());
     } else if (arrayBufferOrView.isArrayBufferView()) {
-        RefPtr<DOMArrayBufferView> arrayBufferView =
-            arrayBufferOrView.getAsArrayBufferView();
+        DOMArrayBufferView* arrayBufferView = arrayBufferOrView.getAsArrayBufferView();
         initWithData(arrayBufferView->baseAddress(), arrayBufferView->byteLength());
     } else if (arrayBufferOrView.isNull() && option == AllowNullPointToNullWithZeroSize) {
         initWithData(nullptr, 0);

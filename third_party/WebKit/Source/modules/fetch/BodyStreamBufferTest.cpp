@@ -61,7 +61,7 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsArrayBuffer)
 {
     Checkpoint checkpoint;
     MockFetchDataLoaderClient* client = MockFetchDataLoaderClient::create();
-    RefPtr<DOMArrayBuffer> arrayBuffer;
+    DOMArrayBuffer* arrayBuffer = nullptr;
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));

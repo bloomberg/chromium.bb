@@ -15,27 +15,30 @@ namespace blink {
 class USBIsochronousInTransferPacket final : public GarbageCollectedFinalized<USBIsochronousInTransferPacket>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static USBIsochronousInTransferPacket* create(const String& status, PassRefPtr<DOMDataView> data)
+    static USBIsochronousInTransferPacket* create(const String& status, DOMDataView* data)
     {
         return new USBIsochronousInTransferPacket(status, data);
     }
 
-    USBIsochronousInTransferPacket(const String& status, PassRefPtr<DOMDataView> data)
+    ~USBIsochronousInTransferPacket() {}
+
+    String status() const { return m_status; }
+    DOMDataView* data() const { return m_data; }
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_data);
+    }
+
+private:
+    USBIsochronousInTransferPacket(const String& status, DOMDataView* data)
         : m_status(status)
         , m_data(data)
     {
     }
 
-    virtual ~USBIsochronousInTransferPacket() {}
-
-    String status() const { return m_status; }
-    PassRefPtr<DOMDataView> data() const { return m_data; }
-
-    DEFINE_INLINE_TRACE() {}
-
-private:
     const String m_status;
-    const RefPtr<DOMDataView> m_data;
+    const Member<DOMDataView> m_data;
 };
 
 } // namespace blink

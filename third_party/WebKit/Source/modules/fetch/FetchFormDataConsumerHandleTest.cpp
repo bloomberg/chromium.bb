@@ -161,7 +161,7 @@ TEST_F(FetchFormDataConsumerHandleTest, ReadFromStringNonLatin)
 TEST_F(FetchFormDataConsumerHandleTest, ReadFromArrayBuffer)
 {
     const unsigned char data[] = { 0x21, 0xfe, 0x00, 0x00, 0xff, 0xa3, 0x42, 0x30, 0x42, 0x99, 0x88 };
-    RefPtr<DOMArrayBuffer> buffer = DOMArrayBuffer::create(data, WTF_ARRAY_LENGTH(data));
+    DOMArrayBuffer* buffer = DOMArrayBuffer::create(data, WTF_ARRAY_LENGTH(data));
     OwnPtr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::create(buffer);
     HandleReaderRunner<HandleReader> runner(handle.release());
     OwnPtr<HandleReadResult> r = runner.wait();
@@ -175,7 +175,7 @@ TEST_F(FetchFormDataConsumerHandleTest, ReadFromArrayBufferView)
 {
     const unsigned char data[] = { 0x21, 0xfe, 0x00, 0x00, 0xff, 0xa3, 0x42, 0x30, 0x42, 0x99, 0x88 };
     const size_t offset = 1, size = 4;
-    RefPtr<DOMArrayBuffer> buffer = DOMArrayBuffer::create(data, WTF_ARRAY_LENGTH(data));
+    DOMArrayBuffer* buffer = DOMArrayBuffer::create(data, WTF_ARRAY_LENGTH(data));
     OwnPtr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::create(DOMUint8Array::create(buffer, offset, size));
     HandleReaderRunner<HandleReader> runner(handle.release());
     OwnPtr<HandleReadResult> r = runner.wait();

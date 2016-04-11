@@ -598,7 +598,7 @@ TEST_F(DOMWebSocketTest, sendNonLatin1String)
 
 TEST_F(DOMWebSocketTest, sendArrayBufferWhenConnecting)
 {
-    RefPtr<DOMArrayBufferView> view = DOMUint8Array::create(8);
+    DOMArrayBufferView* view = DOMUint8Array::create(8);
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
@@ -607,7 +607,7 @@ TEST_F(DOMWebSocketTest, sendArrayBufferWhenConnecting)
 
     EXPECT_FALSE(m_exceptionState.hadException());
 
-    m_websocket->send(view->buffer().get(), m_exceptionState);
+    m_websocket->send(view->buffer(), m_exceptionState);
 
     EXPECT_TRUE(m_exceptionState.hadException());
     EXPECT_EQ(InvalidStateError, m_exceptionState.code());
@@ -617,7 +617,7 @@ TEST_F(DOMWebSocketTest, sendArrayBufferWhenConnecting)
 
 TEST_F(DOMWebSocketTest, sendArrayBufferWhenClosing)
 {
-    RefPtr<DOMArrayBufferView> view = DOMUint8Array::create(8);
+    DOMArrayBufferView* view = DOMUint8Array::create(8);
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
@@ -630,7 +630,7 @@ TEST_F(DOMWebSocketTest, sendArrayBufferWhenClosing)
     m_websocket->close(m_exceptionState);
     EXPECT_FALSE(m_exceptionState.hadException());
 
-    m_websocket->send(view->buffer().get(), m_exceptionState);
+    m_websocket->send(view->buffer(), m_exceptionState);
 
     EXPECT_FALSE(m_exceptionState.hadException());
     EXPECT_EQ(DOMWebSocket::CLOSING, m_websocket->readyState());
@@ -639,7 +639,7 @@ TEST_F(DOMWebSocketTest, sendArrayBufferWhenClosing)
 TEST_F(DOMWebSocketTest, sendArrayBufferWhenClosed)
 {
     Checkpoint checkpoint;
-    RefPtr<DOMArrayBufferView> view = DOMUint8Array::create(8);
+    DOMArrayBufferView* view = DOMUint8Array::create(8);
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
@@ -653,7 +653,7 @@ TEST_F(DOMWebSocketTest, sendArrayBufferWhenClosed)
     m_websocket->didClose(WebSocketChannelClient::ClosingHandshakeIncomplete, 1006, "");
     checkpoint.Call(1);
 
-    m_websocket->send(view->buffer().get(), m_exceptionState);
+    m_websocket->send(view->buffer(), m_exceptionState);
 
     EXPECT_FALSE(m_exceptionState.hadException());
     EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
@@ -661,7 +661,7 @@ TEST_F(DOMWebSocketTest, sendArrayBufferWhenClosed)
 
 TEST_F(DOMWebSocketTest, sendArrayBufferSuccess)
 {
-    RefPtr<DOMArrayBufferView> view = DOMUint8Array::create(8);
+    DOMArrayBufferView* view = DOMUint8Array::create(8);
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
@@ -672,7 +672,7 @@ TEST_F(DOMWebSocketTest, sendArrayBufferSuccess)
     EXPECT_FALSE(m_exceptionState.hadException());
 
     m_websocket->didConnect("", "");
-    m_websocket->send(view->buffer().get(), m_exceptionState);
+    m_websocket->send(view->buffer(), m_exceptionState);
 
     EXPECT_FALSE(m_exceptionState.hadException());
     EXPECT_EQ(DOMWebSocket::OPEN, m_websocket->readyState());

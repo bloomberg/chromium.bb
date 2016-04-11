@@ -28,8 +28,8 @@ class MODULES_EXPORT FetchFormDataConsumerHandle final : public FetchDataConsume
     WTF_MAKE_NONCOPYABLE(FetchFormDataConsumerHandle);
 public:
     static PassOwnPtr<FetchDataConsumerHandle> create(const String& body);
-    static PassOwnPtr<FetchDataConsumerHandle> create(PassRefPtr<DOMArrayBuffer> body);
-    static PassOwnPtr<FetchDataConsumerHandle> create(PassRefPtr<DOMArrayBufferView> body);
+    static PassOwnPtr<FetchDataConsumerHandle> create(DOMArrayBuffer* body);
+    static PassOwnPtr<FetchDataConsumerHandle> create(DOMArrayBufferView* body);
     static PassOwnPtr<FetchDataConsumerHandle> create(const void* data, size_t);
     static PassOwnPtr<FetchDataConsumerHandle> create(ExecutionContext*, PassRefPtr<EncodedFormData> body);
     // Use FetchBlobDataConsumerHandle for blobs.

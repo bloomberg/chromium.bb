@@ -41,7 +41,6 @@
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -117,10 +116,10 @@ protected:
         for (size_t i = 0; i < parts.size(); ++i) {
             const ItemType& item = parts[i];
             if (item.isArrayBuffer()) {
-                RefPtr<DOMArrayBuffer> arrayBuffer = item.getAsArrayBuffer();
+                DOMArrayBuffer* arrayBuffer = item.getAsArrayBuffer();
                 blobData->appendBytes(arrayBuffer->data(), arrayBuffer->byteLength());
             } else if (item.isArrayBufferView()) {
-                RefPtr<DOMArrayBufferView> arrayBufferView = item.getAsArrayBufferView();
+                DOMArrayBufferView* arrayBufferView = item.getAsArrayBufferView();
                 blobData->appendBytes(arrayBufferView->baseAddress(), arrayBufferView->byteLength());
             } else if (item.isBlob()) {
                 item.getAsBlob()->appendTo(*blobData);

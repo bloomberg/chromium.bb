@@ -1210,7 +1210,7 @@ ImageData* BaseRenderingContext2D::getImageData(double sx, double sy, double sw,
         return nullptr;
     }
 
-    RefPtr<DOMArrayBuffer> arrayBuffer = DOMArrayBuffer::create(contents);
+    DOMArrayBuffer* arrayBuffer = DOMArrayBuffer::create(contents);
     return ImageData::create(
         imageDataRect.size(),
         DOMUint8ClampedArray::create(arrayBuffer, 0, arrayBuffer->byteLength()));

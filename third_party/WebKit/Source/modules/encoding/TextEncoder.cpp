@@ -76,7 +76,7 @@ String TextEncoder::encoding() const
     return name;
 }
 
-PassRefPtr<DOMUint8Array> TextEncoder::encode(const String& input)
+DOMUint8Array* TextEncoder::encode(const String& input)
 {
     CString result;
     if (input.is8Bit())

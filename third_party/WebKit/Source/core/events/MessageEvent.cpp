@@ -117,7 +117,7 @@ MessageEvent::MessageEvent(Blob* data, const String& origin, const String& subor
 {
 }
 
-MessageEvent::MessageEvent(PassRefPtr<DOMArrayBuffer> data, const String& origin, const String& suborigin)
+MessageEvent::MessageEvent(DOMArrayBuffer* data, const String& origin, const String& suborigin)
     : Event(EventTypeNames::message, false, false)
     , m_dataType(DataTypeArrayBuffer)
     , m_dataAsArrayBuffer(data)
@@ -206,6 +206,7 @@ void MessageEvent::entangleMessagePorts(ExecutionContext* context)
 DEFINE_TRACE(MessageEvent)
 {
     visitor->trace(m_dataAsBlob);
+    visitor->trace(m_dataAsArrayBuffer);
     visitor->trace(m_source);
     visitor->trace(m_ports);
     Event::trace(visitor);

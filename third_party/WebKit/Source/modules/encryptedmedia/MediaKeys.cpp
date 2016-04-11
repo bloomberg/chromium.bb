@@ -49,12 +49,12 @@ public:
         return m_result;
     }
 
-    const RefPtr<DOMArrayBuffer> data() const
+    DOMArrayBuffer* data() const
     {
         return m_data;
     }
 
-    static PendingAction* CreatePendingSetServerCertificate(ContentDecryptionModuleResult* result, PassRefPtr<DOMArrayBuffer> serverCertificate)
+    static PendingAction* CreatePendingSetServerCertificate(ContentDecryptionModuleResult* result, DOMArrayBuffer* serverCertificate)
     {
         ASSERT(result);
         ASSERT(serverCertificate);
@@ -68,17 +68,18 @@ public:
     DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_result);
+        visitor->trace(m_data);
     }
 
 private:
-    PendingAction(ContentDecryptionModuleResult* result, PassRefPtr<DOMArrayBuffer> data)
+    PendingAction(ContentDecryptionModuleResult* result, DOMArrayBuffer* data)
         : m_result(result)
         , m_data(data)
     {
     }
 
     const Member<ContentDecryptionModuleResult> m_result;
-    const RefPtr<DOMArrayBuffer> m_data;
+    const Member<DOMArrayBuffer> m_data;
 };
 
 MediaKeys* MediaKeys::create(ExecutionContext* context, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule> cdm)
@@ -153,14 +154,14 @@ ScriptPromise MediaKeys::setServerCertificate(ScriptState* scriptState, const DO
 
     // 3. Let certificate be a copy of the contents of the serverCertificate
     //    parameter.
-    RefPtr<DOMArrayBuffer> serverCertificateBuffer = DOMArrayBuffer::create(serverCertificate.data(), serverCertificate.byteLength());
+    DOMArrayBuffer* serverCertificateBuffer = DOMArrayBuffer::create(serverCertificate.data(), serverCertificate.byteLength());
 
     // 4. Let promise be a new promise.
     SimpleContentDecryptionModuleResultPromise* result = new SimpleContentDecryptionModuleResultPromise(scriptState);
     ScriptPromise promise = result->promise();
 
     // 5. Run the following steps asynchronously (documented in timerFired()).
-    m_pendingActions.append(PendingAction::CreatePendingSetServerCertificate(result, serverCertificateBuffer.release()));
+    m_pendingActions.append(PendingAction::CreatePendingSetServerCertificate(result, serverCertificateBuffer));
     if (!m_timer.isActive())
         m_timer.startOneShot(0, BLINK_FROM_HERE);
 

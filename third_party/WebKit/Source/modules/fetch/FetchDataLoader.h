@@ -37,7 +37,7 @@ public:
         {
             ASSERT_NOT_REACHED();
         }
-        virtual void didFetchDataLoadedArrayBuffer(PassRefPtr<DOMArrayBuffer>)
+        virtual void didFetchDataLoadedArrayBuffer(DOMArrayBuffer*)
         {
             ASSERT_NOT_REACHED();
         }

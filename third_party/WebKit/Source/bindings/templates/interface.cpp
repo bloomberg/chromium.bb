@@ -764,11 +764,11 @@ v8::Local<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Local<v8::V
     // copying.
     v8::{{interface_name}}::Contents v8Contents = v8buffer->Externalize();
     WTF::ArrayBufferContents contents(v8Contents.Data(), v8Contents.ByteLength(), WTF::ArrayBufferContents::{% if interface_name == 'ArrayBuffer' %}Not{% endif %}Shared);
-    RefPtr<{{cpp_class}}> buffer = {{cpp_class}}::create(contents);
+    {{cpp_class}}* buffer = {{cpp_class}}::create(contents);
     v8::Local<v8::Object> associatedWrapper = buffer->associateWithWrapper(v8::Isolate::GetCurrent(), buffer->wrapperTypeInfo(), object);
     ASSERT_UNUSED(associatedWrapper, associatedWrapper == object);
 
-    return buffer.get();
+    return buffer;
 }
 
 {% elif interface_name == 'ArrayBufferView' %}
@@ -814,7 +814,7 @@ v8::Local<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Local<v8::V
 
     v8::Local<v8::{{interface_name}}> v8View = object.As<v8::{{interface_name}}>();
     v8::Local<v8::Object> arrayBuffer = v8View->Buffer();
-    RefPtr<{{cpp_class}}> typedArray;
+    {{cpp_class}}* typedArray = nullptr;
     if (arrayBuffer->IsArrayBuffer()) {
         typedArray = {{cpp_class}}::create(V8ArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->{% if interface_name == 'DataView' %}Byte{% endif %}Length());
     } else if (arrayBuffer->IsSharedArrayBuffer()) {

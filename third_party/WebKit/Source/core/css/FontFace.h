@@ -40,8 +40,6 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMException.h"
 #include "platform/fonts/FontTraits.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -114,8 +112,8 @@ public:
     bool hasPendingActivity() const final;
 
 private:
-    static FontFace* create(ExecutionContext*, const AtomicString& family, PassRefPtr<DOMArrayBuffer> source, const FontFaceDescriptors&);
-    static FontFace* create(ExecutionContext*, const AtomicString& family, PassRefPtr<DOMArrayBufferView>, const FontFaceDescriptors&);
+    static FontFace* create(ExecutionContext*, const AtomicString& family, DOMArrayBuffer* source, const FontFaceDescriptors&);
+    static FontFace* create(ExecutionContext*, const AtomicString& family, DOMArrayBufferView*, const FontFaceDescriptors&);
     static FontFace* create(ExecutionContext*, const AtomicString& family, const String& source, const FontFaceDescriptors&);
 
     explicit FontFace(ExecutionContext*);

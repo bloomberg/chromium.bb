@@ -93,14 +93,14 @@ FontFace* FontFace::create(ExecutionContext* context, const AtomicString& family
     return fontFace;
 }
 
-FontFace* FontFace::create(ExecutionContext* context, const AtomicString& family, PassRefPtr<DOMArrayBuffer> source, const FontFaceDescriptors& descriptors)
+FontFace* FontFace::create(ExecutionContext* context, const AtomicString& family, DOMArrayBuffer* source, const FontFaceDescriptors& descriptors)
 {
     FontFace* fontFace = new FontFace(context, family, descriptors);
     fontFace->initCSSFontFace(static_cast<const unsigned char*>(source->data()), source->byteLength());
     return fontFace;
 }
 
-FontFace* FontFace::create(ExecutionContext* context, const AtomicString& family, PassRefPtr<DOMArrayBufferView> source, const FontFaceDescriptors& descriptors)
+FontFace* FontFace::create(ExecutionContext* context, const AtomicString& family, DOMArrayBufferView* source, const FontFaceDescriptors& descriptors)
 {
     FontFace* fontFace = new FontFace(context, family, descriptors);
     fontFace->initCSSFontFace(static_cast<const unsigned char*>(source->baseAddress()), source->byteLength());

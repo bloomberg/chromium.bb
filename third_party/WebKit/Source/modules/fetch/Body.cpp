@@ -66,7 +66,7 @@ class BodyArrayBufferConsumer final : public BodyConsumerBase {
 public:
     explicit BodyArrayBufferConsumer(ScriptPromiseResolver* resolver) : BodyConsumerBase(resolver) {}
 
-    void didFetchDataLoadedArrayBuffer(PassRefPtr<DOMArrayBuffer> arrayBuffer) override
+    void didFetchDataLoadedArrayBuffer(DOMArrayBuffer* arrayBuffer) override
     {
         resolver()->resolve(arrayBuffer);
     }

@@ -59,6 +59,7 @@ public:
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
+        visitor->trace(m_keyId);
     }
 
 private:
@@ -68,7 +69,7 @@ private:
     {
     }
 
-    RefPtr<DOMArrayBuffer> m_keyId;
+    const Member<DOMArrayBuffer> m_keyId;
     const String m_status;
 };
 

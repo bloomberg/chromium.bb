@@ -213,7 +213,7 @@ void MIDIOutput::send(Vector<unsigned> unsignedData, double timestamp, Exception
     if (timestamp == 0.0)
         timestamp = now(getExecutionContext());
 
-    RefPtr<DOMUint8Array> array = DOMUint8Array::create(unsignedData.size());
+    DOMUint8Array* array = DOMUint8Array::create(unsignedData.size());
     DOMUint8Array::ValueType* const arrayData = array->data();
     const uint32_t arrayLength = array->length();
 
@@ -226,7 +226,7 @@ void MIDIOutput::send(Vector<unsigned> unsignedData, double timestamp, Exception
             arrayData[i] = unsignedData[i] & 0xff;
     }
 
-    send(array.get(), timestamp, exceptionState);
+    send(array, timestamp, exceptionState);
 }
 
 void MIDIOutput::send(DOMUint8Array* data, ExceptionState& exceptionState)

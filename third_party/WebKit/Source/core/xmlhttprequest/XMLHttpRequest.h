@@ -283,7 +283,7 @@ private:
     RefPtr<SharedBuffer> m_binaryResponseBuilder;
     long long m_lengthDownloadedToFile;
 
-    RefPtr<DOMArrayBuffer> m_responseArrayBuffer;
+    Member<DOMArrayBuffer> m_responseArrayBuffer;
 
     // Used for onprogress tracking
     long long m_receivedLength;

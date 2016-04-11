@@ -39,6 +39,7 @@ DEFINE_TRACE(TestDictionary)
     visitor->trace(m_testInterfaceGarbageCollectedMember);
     visitor->trace(m_testInterfaceGarbageCollectedOrNullMember);
     visitor->trace(m_testInterfaceGarbageCollectedSequenceMember);
+    visitor->trace(m_uint8ArrayMember);
 }
 
 } // namespace blink

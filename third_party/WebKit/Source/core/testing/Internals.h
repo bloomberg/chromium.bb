@@ -295,8 +295,8 @@ public:
     ClientRectList* draggableRegions(Document*, ExceptionState&);
     ClientRectList* nonDraggableRegions(Document*, ExceptionState&);
 
-    PassRefPtr<DOMArrayBuffer> serializeObject(PassRefPtr<SerializedScriptValue>) const;
-    PassRefPtr<SerializedScriptValue> deserializeBuffer(PassRefPtr<DOMArrayBuffer>) const;
+    DOMArrayBuffer* serializeObject(PassRefPtr<SerializedScriptValue>) const;
+    PassRefPtr<SerializedScriptValue> deserializeBuffer(DOMArrayBuffer*) const;
 
     String getCurrentCursorInfo();
 

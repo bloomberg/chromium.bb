@@ -1657,7 +1657,7 @@ bool SerializedScriptValueReader::readCompositorProxy(v8::Local<v8::Value>* valu
     return !value->IsEmpty();
 }
 
-PassRefPtr<DOMArrayBuffer> SerializedScriptValueReader::doReadArrayBuffer()
+DOMArrayBuffer* SerializedScriptValueReader::doReadArrayBuffer()
 {
     uint32_t byteLength;
     if (!doReadUint32(&byteLength))
@@ -1671,10 +1671,10 @@ PassRefPtr<DOMArrayBuffer> SerializedScriptValueReader::doReadArrayBuffer()
 
 bool SerializedScriptValueReader::readArrayBuffer(v8::Local<v8::Value>* value)
 {
-    RefPtr<DOMArrayBuffer> arrayBuffer = doReadArrayBuffer();
+    DOMArrayBuffer* arrayBuffer = doReadArrayBuffer();
     if (!arrayBuffer)
         return false;
-    *value = toV8(arrayBuffer.release(), m_scriptState->context()->Global(), isolate());
+    *value = toV8(arrayBuffer, m_scriptState->context()->Global(), isolate());
     return !value->IsEmpty();
 }
 
@@ -1683,7 +1683,7 @@ bool SerializedScriptValueReader::readArrayBufferView(v8::Local<v8::Value>* valu
     ArrayBufferViewSubTag subTag;
     uint32_t byteOffset;
     uint32_t byteLength;
-    RefPtr<DOMArrayBufferBase> arrayBuffer;
+    DOMArrayBufferBase* arrayBuffer = nullptr;
     v8::Local<v8::Value> arrayBufferV8Value;
     if (!readArrayBufferViewSubTag(&subTag))
         return false;
@@ -1753,34 +1753,34 @@ bool SerializedScriptValueReader::readArrayBufferView(v8::Local<v8::Value>* valu
     v8::Local<v8::Object> creationContext = m_scriptState->context()->Global();
     switch (subTag) {
     case ByteArrayTag:
-        *value = toV8(DOMInt8Array::create(arrayBuffer.release(), byteOffset, numElements), creationContext, isolate());
+        *value = toV8(DOMInt8Array::create(arrayBuffer, byteOffset, numElements), creationContext, isolate());
         break;
     case UnsignedByteArrayTag:
-        *value = toV8(DOMUint8Array::create(arrayBuffer.release(), byteOffset, numElements), creationContext,  isolate());
+        *value = toV8(DOMUint8Array::create(arrayBuffer, byteOffset, numElements), creationContext,  isolate());
         break;
     case UnsignedByteClampedArrayTag:
-        *value = toV8(DOMUint8ClampedArray::create(arrayBuffer.release(), byteOffset, numElements), creationContext, isolate());
+        *value = toV8(DOMUint8ClampedArray::create(arrayBuffer, byteOffset, numElements), creationContext, isolate());
         break;
     case ShortArrayTag:
-        *value = toV8(DOMInt16Array::create(arrayBuffer.release(), byteOffset, numElements), creationContext, isolate());
+        *value = toV8(DOMInt16Array::create(arrayBuffer, byteOffset, numElements), creationContext, isolate());
         break;
     case UnsignedShortArrayTag:
-        *value = toV8(DOMUint16Array::create(arrayBuffer.release(), byteOffset, numElements), creationContext, isolate());
+        *value = toV8(DOMUint16Array::create(arrayBuffer, byteOffset, numElements), creationContext, isolate());
         break;
     case IntArrayTag:
-        *value = toV8(DOMInt32Array::create(arrayBuffer.release(), byteOffset, numElements), creationContext, isolate());
+        *value = toV8(DOMInt32Array::create(arrayBuffer, byteOffset, numElements), creationContext, isolate());
         break;
     case UnsignedIntArrayTag:
-        *value = toV8(DOMUint32Array::create(arrayBuffer.release(), byteOffset, numElements), creationContext, isolate());
+        *value = toV8(DOMUint32Array::create(arrayBuffer, byteOffset, numElements), creationContext, isolate());
         break;
     case FloatArrayTag:
-        *value = toV8(DOMFloat32Array::create(arrayBuffer.release(), byteOffset, numElements), creationContext, isolate());
+        *value = toV8(DOMFloat32Array::create(arrayBuffer, byteOffset, numElements), creationContext, isolate());
         break;
     case DoubleArrayTag:
-        *value = toV8(DOMFloat64Array::create(arrayBuffer.release(), byteOffset, numElements), creationContext, isolate());
+        *value = toV8(DOMFloat64Array::create(arrayBuffer, byteOffset, numElements), creationContext, isolate());
         break;
     case DataViewTag:
-        *value = toV8(DOMDataView::create(arrayBuffer.release(), byteOffset, byteLength), creationContext, isolate());
+        *value = toV8(DOMDataView::create(arrayBuffer, byteOffset, byteLength), creationContext, isolate());
         break;
     }
     return !value->IsEmpty();
@@ -2154,10 +2154,10 @@ bool ScriptValueDeserializer::tryGetTransferredArrayBuffer(uint32_t index, v8::L
         return false;
     v8::Local<v8::Value> result = m_arrayBuffers.at(index);
     if (result.IsEmpty()) {
-        RefPtr<DOMArrayBuffer> buffer = DOMArrayBuffer::create(m_arrayBufferContents->at(index));
+        DOMArrayBuffer* buffer = DOMArrayBuffer::create(m_arrayBufferContents->at(index));
         v8::Isolate* isolate = m_reader.getScriptState()->isolate();
         v8::Local<v8::Object> creationContext = m_reader.getScriptState()->context()->Global();
-        result = toV8(buffer.get(), creationContext, isolate);
+        result = toV8(buffer, creationContext, isolate);
         if (result.IsEmpty())
             return false;
         m_arrayBuffers[index] = result;
@@ -2195,10 +2195,10 @@ bool ScriptValueDeserializer::tryGetTransferredSharedArrayBuffer(uint32_t index,
         return false;
     v8::Local<v8::Value> result = m_arrayBuffers.at(index);
     if (result.IsEmpty()) {
-        RefPtr<DOMSharedArrayBuffer> buffer = DOMSharedArrayBuffer::create(m_arrayBufferContents->at(index));
+        DOMSharedArrayBuffer* buffer = DOMSharedArrayBuffer::create(m_arrayBufferContents->at(index));
         v8::Isolate* isolate = m_reader.getScriptState()->isolate();
         v8::Local<v8::Object> creationContext = m_reader.getScriptState()->context()->Global();
-        result = toV8(buffer.get(), creationContext, isolate);
+        result = toV8(buffer, creationContext, isolate);
         if (result.IsEmpty())
             return false;
         m_arrayBuffers[index] = result;

@@ -88,6 +88,37 @@ void throwPresentationDisconnectedError(ExceptionState& exceptionState)
 
 } // namespace
 
+class PresentationConnection::Message final : public GarbageCollectedFinalized<PresentationConnection::Message> {
+public:
+    Message(const String& text)
+        : type(MessageTypeText)
+        , text(text)
+    {
+    }
+
+    Message(DOMArrayBuffer* arrayBuffer)
+        : type(MessageTypeArrayBuffer)
+        , arrayBuffer(arrayBuffer)
+    {
+    }
+
+    Message(PassRefPtr<BlobDataHandle> blobDataHandle)
+        : type(MessageTypeBlob)
+        , blobDataHandle(blobDataHandle)
+    {
+    }
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(arrayBuffer);
+    }
+
+    MessageType type;
+    String text;
+    Member<DOMArrayBuffer> arrayBuffer;
+    RefPtr<BlobDataHandle> blobDataHandle;
+};
+
 class PresentationConnection::BlobLoader final : public GarbageCollectedFinalized<PresentationConnection::BlobLoader>, public FileReaderLoaderClient {
 public:
     BlobLoader(PassRefPtr<BlobDataHandle> blobDataHandle, PresentationConnection* PresentationConnection)
@@ -202,6 +233,7 @@ bool PresentationConnection::addEventListenerInternal(const AtomicString& eventT
 DEFINE_TRACE(PresentationConnection)
 {
     visitor->trace(m_blobLoader);
+    visitor->trace(m_messages);
     RefCountedGarbageCollectedEventTargetWithInlineData<PresentationConnection>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
@@ -216,27 +248,27 @@ void PresentationConnection::send(const String& message, ExceptionState& excepti
     if (!canSendMessage(exceptionState))
         return;
 
-    m_messages.append(adoptPtr(new Message(message)));
+    m_messages.append(new Message(message));
     handleMessageQueue();
 }
 
-void PresentationConnection::send(PassRefPtr<DOMArrayBuffer> arrayBuffer, ExceptionState& exceptionState)
+void PresentationConnection::send(DOMArrayBuffer* arrayBuffer, ExceptionState& exceptionState)
 {
     ASSERT(arrayBuffer && arrayBuffer->buffer());
     if (!canSendMessage(exceptionState))
         return;
 
-    m_messages.append(adoptPtr(new Message(arrayBuffer)));
+    m_messages.append(new Message(arrayBuffer));
     handleMessageQueue();
 }
 
-void PresentationConnection::send(PassRefPtr<DOMArrayBufferView> arrayBufferView, ExceptionState& exceptionState)
+void PresentationConnection::send(DOMArrayBufferView* arrayBufferView, ExceptionState& exceptionState)
 {
     ASSERT(arrayBufferView);
     if (!canSendMessage(exceptionState))
         return;
 
-    m_messages.append(adoptPtr(new Message(arrayBufferView->buffer())));
+    m_messages.append(new Message(arrayBufferView->buffer()));
     handleMessageQueue();
 }
 
@@ -246,7 +278,7 @@ void PresentationConnection::send(Blob* data, ExceptionState& exceptionState)
     if (!canSendMessage(exceptionState))
         return;
 
-    m_messages.append(adoptPtr(new Message(data->blobDataHandle())));
+    m_messages.append(new Message(data->blobDataHandle()));
     handleMessageQueue();
 }
 
@@ -333,8 +365,8 @@ void PresentationConnection::didReceiveBinaryMessage(const uint8_t* data, size_t
         return;
     }
     case BinaryTypeArrayBuffer:
-        RefPtr<DOMArrayBuffer> buffer = DOMArrayBuffer::create(data, length);
-        dispatchEvent(MessageEvent::create(buffer.release()));
+        DOMArrayBuffer* buffer = DOMArrayBuffer::create(data, length);
+        dispatchEvent(MessageEvent::create(buffer));
         return;
     }
     ASSERT_NOT_REACHED();
@@ -397,7 +429,7 @@ void PresentationConnection::didClose(WebPresentationConnectionCloseReason reaso
     dispatchEvent(PresentationConnectionCloseEvent::create(EventTypeNames::close, connectionCloseReasonToString(reason), message));
 }
 
-void PresentationConnection::didFinishLoadingBlob(PassRefPtr<DOMArrayBuffer> buffer)
+void PresentationConnection::didFinishLoadingBlob(DOMArrayBuffer* buffer)
 {
     ASSERT(!m_messages.isEmpty() && m_messages.first()->type == MessageTypeBlob);
     ASSERT(buffer && buffer->buffer());
@@ -428,10 +460,7 @@ void PresentationConnection::tearDown()
         m_blobLoader->cancel();
         m_blobLoader.clear();
     }
-
-    // Clear message queue.
-    Deque<OwnPtr<Message>> empty;
-    m_messages.swap(empty);
+    m_messages.clear();
 }
 
 } // namespace blink

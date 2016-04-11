@@ -92,7 +92,7 @@ private:
         DOMFloat32Array* curve() { return m_curve.get(); }
 
     private:
-        ParamEvent(Type type, float value, double time, double timeConstant, double duration, PassRefPtr<DOMFloat32Array> curve)
+        ParamEvent(Type type, float value, double time, double timeConstant, double duration, DOMFloat32Array* curve)
             : m_type(type)
             , m_value(value)
             , m_time(time)
@@ -109,7 +109,7 @@ private:
         double m_timeConstant;
         // Only used for SetValueCurve events.
         double m_duration;
-        RefPtr<DOMFloat32Array> m_curve;
+        CrossThreadPersistent<DOMFloat32Array> m_curve;
     };
 
     void insertEvent(const ParamEvent&, ExceptionState&);

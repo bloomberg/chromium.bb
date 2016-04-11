@@ -78,8 +78,8 @@ public:
     void setBinaryType(const String&, ExceptionState&);
 
     void send(const String&, ExceptionState&);
-    void send(PassRefPtr<DOMArrayBuffer>, ExceptionState&);
-    void send(PassRefPtr<DOMArrayBufferView>, ExceptionState&);
+    void send(DOMArrayBuffer*, ExceptionState&);
+    void send(DOMArrayBufferView*, ExceptionState&);
     void send(Blob*, ExceptionState&);
 
     void close();

@@ -25,10 +25,10 @@ ScriptValue WebGLAny(ScriptState*, uint64_t value);
 ScriptValue WebGLAny(ScriptState*, float value);
 ScriptValue WebGLAny(ScriptState*, String value);
 ScriptValue WebGLAny(ScriptState*, WebGLObject* value);
-ScriptValue WebGLAny(ScriptState*, PassRefPtr<DOMFloat32Array> value);
-ScriptValue WebGLAny(ScriptState*, PassRefPtr<DOMInt32Array> value);
-ScriptValue WebGLAny(ScriptState*, PassRefPtr<DOMUint8Array> value);
-ScriptValue WebGLAny(ScriptState*, PassRefPtr<DOMUint32Array> value);
+ScriptValue WebGLAny(ScriptState*, DOMFloat32Array* value);
+ScriptValue WebGLAny(ScriptState*, DOMInt32Array* value);
+ScriptValue WebGLAny(ScriptState*, DOMUint8Array* value);
+ScriptValue WebGLAny(ScriptState*, DOMUint32Array* value);
 
 } // namespace blink
 

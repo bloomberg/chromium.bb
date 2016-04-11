@@ -29,7 +29,7 @@ public:
 
     virtual ~PushMessageData();
 
-    PassRefPtr<DOMArrayBuffer> arrayBuffer() const;
+    DOMArrayBuffer* arrayBuffer() const;
     Blob* blob() const;
     ScriptValue json(ScriptState*, ExceptionState&) const;
     String text() const;

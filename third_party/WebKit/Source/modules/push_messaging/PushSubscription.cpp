@@ -48,7 +48,7 @@ KURL PushSubscription::endpoint() const
     return m_endpoint;
 }
 
-PassRefPtr<DOMArrayBuffer> PushSubscription::getKey(const AtomicString& name) const
+DOMArrayBuffer* PushSubscription::getKey(const AtomicString& name) const
 {
     if (name == "p256dh")
         return m_p256dh;
@@ -90,6 +90,8 @@ ScriptValue PushSubscription::toJSONForBinding(ScriptState* scriptState)
 
 DEFINE_TRACE(PushSubscription)
 {
+    visitor->trace(m_p256dh);
+    visitor->trace(m_auth);
     visitor->trace(m_serviceWorkerRegistration);
 }
 

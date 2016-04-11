@@ -7,12 +7,12 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
+#include "platform/heap/Handle.h"
 #include "wtf/ArrayBuffer.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
-class CORE_EXPORT DOMArrayBufferBase : public RefCounted<DOMArrayBufferBase>, public ScriptWrappable {
+class CORE_EXPORT DOMArrayBufferBase : public GarbageCollectedFinalized<DOMArrayBufferBase>, public ScriptWrappable {
 public:
     virtual ~DOMArrayBufferBase() { }
 
@@ -33,6 +33,8 @@ public:
         return v8::Local<v8::Object>();
     }
 
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
+
 protected:
     explicit DOMArrayBufferBase(PassRefPtr<WTF::ArrayBuffer> buffer)
         : m_buffer(buffer)
@@ -45,4 +47,4 @@ protected:
 
 } // namespace blink
 
-#endif // DOMArrayBuffer_h
+#endif // DOMArrayBufferBase_h

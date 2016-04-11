@@ -91,8 +91,8 @@ private:
 
         void rejectPromise();
 
-        void scheduleAsyncImageBitmapDecoding();
-        void decodeImageOnDecoderThread(WebTaskRunner*);
+        void scheduleAsyncImageBitmapDecoding(DOMArrayBuffer*);
+        void decodeImageOnDecoderThread(WebTaskRunner*, DOMArrayBuffer*);
         void resolvePromiseOnOriginalThread(PassRefPtr<SkImage>);
 
         // FileReaderLoaderClient

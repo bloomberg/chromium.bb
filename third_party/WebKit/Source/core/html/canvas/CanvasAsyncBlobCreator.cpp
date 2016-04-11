@@ -34,13 +34,12 @@ bool isDeadlineNearOrPassed(double deadlineSeconds)
 
 } // anonymous namespace
 
-PassRefPtr<CanvasAsyncBlobCreator> CanvasAsyncBlobCreator::create(PassRefPtr<DOMUint8ClampedArray> unpremultipliedRGBAImageData, const String& mimeType, const IntSize& size, BlobCallback* callback)
+CanvasAsyncBlobCreator* CanvasAsyncBlobCreator::create(DOMUint8ClampedArray* unpremultipliedRGBAImageData, const String& mimeType, const IntSize& size, BlobCallback* callback)
 {
-    RefPtr<CanvasAsyncBlobCreator> asyncBlobCreator = adoptRef(new CanvasAsyncBlobCreator(unpremultipliedRGBAImageData, mimeType, size, callback));
-    return asyncBlobCreator.release();
+    return new CanvasAsyncBlobCreator(unpremultipliedRGBAImageData, mimeType, size, callback);
 }
 
-CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(PassRefPtr<DOMUint8ClampedArray> data, const String& mimeType, const IntSize& size, BlobCallback* callback)
+CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(DOMUint8ClampedArray* data, const String& mimeType, const IntSize& size, BlobCallback* callback)
     : m_data(data)
     , m_size(size)
     , m_mimeType(mimeType)
@@ -62,7 +61,7 @@ void CanvasAsyncBlobCreator::scheduleAsyncBlobCreation(bool canUseIdlePeriodSche
     ASSERT(isMainThread());
 
     // Make self-reference to keep this object alive until the final task completes
-    m_selfRef = this;
+    m_keepAlive = this;
 
     // At the time being, progressive encoding is only applicable to png image format,
     // and thus idle tasks scheduling can only be applied to png image format.
@@ -83,7 +82,7 @@ void CanvasAsyncBlobCreator::initiateJpegEncoding(const double& quality)
     m_jpegEncoderState = JPEGImageEncoderState::create(m_size, quality, m_encodedImage.get());
     if (!m_jpegEncoderState) {
         Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&BlobCallback::handleEvent, m_callback, nullptr));
-        m_selfRef.clear();
+        m_keepAlive.clear();
         return;
     }
     BackgroundTaskRunner::TaskSize taskSize = (m_size.height() * m_size.width() >= LongTaskImageSizeThreshold) ? BackgroundTaskRunner::TaskSizeLongRunningTask : BackgroundTaskRunner::TaskSizeShortRunningTask;
@@ -96,7 +95,7 @@ void CanvasAsyncBlobCreator::initiatePngEncoding(double deadlineSeconds)
     m_pngEncoderState = PNGImageEncoderState::create(m_size, m_encodedImage.get());
     if (!m_pngEncoderState) {
         Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&BlobCallback::handleEvent, m_callback, nullptr));
-        m_selfRef.clear();
+        m_keepAlive.clear();
         return;
     }
 
@@ -164,7 +163,7 @@ void CanvasAsyncBlobCreator::clearSelfReference()
     // Some persistent members in CanvasAsyncBlobCreator can only be destroyed
     // on the thread that creates them. In this case, it's the main thread.
     ASSERT(isMainThread());
-    m_selfRef.clear();
+    m_keepAlive.clear();
 }
 
 void CanvasAsyncBlobCreator::scheduleCreateBlobAndCallOnMainThread()

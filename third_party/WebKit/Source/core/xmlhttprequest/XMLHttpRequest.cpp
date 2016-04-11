@@ -361,14 +361,14 @@ DOMArrayBuffer* XMLHttpRequest::responseArrayBuffer()
 
     if (!m_responseArrayBuffer) {
         if (m_binaryResponseBuilder && m_binaryResponseBuilder->size()) {
-            RefPtr<DOMArrayBuffer> buffer = DOMArrayBuffer::createUninitialized(m_binaryResponseBuilder->size(), 1);
+            DOMArrayBuffer* buffer = DOMArrayBuffer::createUninitialized(m_binaryResponseBuilder->size(), 1);
             if (!m_binaryResponseBuilder->getAsBytes(buffer->data(), static_cast<size_t>(buffer->byteLength()))) {
                 // m_binaryResponseBuilder failed to allocate an ArrayBuffer.
                 // We need to crash the renderer since there's no way defined in
                 // the spec to tell this to the user.
                 CRASH();
             }
-            m_responseArrayBuffer = buffer.release();
+            m_responseArrayBuffer = buffer;
             m_binaryResponseBuilder.clear();
         } else {
             m_responseArrayBuffer = DOMArrayBuffer::create(nullptr, 0);
@@ -652,12 +652,12 @@ void XMLHttpRequest::send(const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrSt
     }
 
     if (body.isArrayBuffer()) {
-        send(body.getAsArrayBuffer().get(), exceptionState);
+        send(body.getAsArrayBuffer(), exceptionState);
         return;
     }
 
     if (body.isArrayBufferView()) {
-        send(body.getAsArrayBufferView().get(), exceptionState);
+        send(body.getAsArrayBufferView(), exceptionState);
         return;
     }
 
@@ -1701,6 +1701,7 @@ DEFINE_TRACE(XMLHttpRequest)
     visitor->trace(m_responseLegacyStream);
     visitor->trace(m_responseDocument);
     visitor->trace(m_responseDocumentParser);
+    visitor->trace(m_responseArrayBuffer);
     visitor->trace(m_progressEventThrottle);
     visitor->trace(m_upload);
     visitor->trace(m_blobLoader);

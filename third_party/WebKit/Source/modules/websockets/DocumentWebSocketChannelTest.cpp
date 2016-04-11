@@ -348,7 +348,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBuffer)
     handleClient()->didReceiveFlowControl(handle(), 16);
     EXPECT_CALL(*channelClient(), didConsumeBufferedAmount(_)).Times(AnyNumber());
 
-    RefPtr<DOMArrayBuffer> fooBuffer = DOMArrayBuffer::create("foo", 3);
+    DOMArrayBuffer* fooBuffer = DOMArrayBuffer::create("foo", 3);
     channel()->send(*fooBuffer, 0, 3);
 
     EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
@@ -368,8 +368,8 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBufferPartial)
     handleClient()->didReceiveFlowControl(handle(), 16);
     EXPECT_CALL(*channelClient(), didConsumeBufferedAmount(_)).Times(AnyNumber());
 
-    RefPtr<DOMArrayBuffer> foobarBuffer = DOMArrayBuffer::create("foobar", 6);
-    RefPtr<DOMArrayBuffer> qbazuxBuffer = DOMArrayBuffer::create("qbazux", 6);
+    DOMArrayBuffer* foobarBuffer = DOMArrayBuffer::create("foobar", 6);
+    DOMArrayBuffer* qbazuxBuffer = DOMArrayBuffer::create("qbazux", 6);
     channel()->send(*foobarBuffer, 0, 3);
     channel()->send(*foobarBuffer, 3, 3);
     channel()->send(*qbazuxBuffer, 1, 3);
@@ -393,19 +393,19 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBufferWithNullBytes)
     EXPECT_CALL(*channelClient(), didConsumeBufferedAmount(_)).Times(AnyNumber());
 
     {
-        RefPtr<DOMArrayBuffer> b = DOMArrayBuffer::create("\0ar", 3);
+        DOMArrayBuffer* b = DOMArrayBuffer::create("\0ar", 3);
         channel()->send(*b, 0, 3);
     }
     {
-        RefPtr<DOMArrayBuffer> b = DOMArrayBuffer::create("b\0z", 3);
+        DOMArrayBuffer* b = DOMArrayBuffer::create("b\0z", 3);
         channel()->send(*b, 0, 3);
     }
     {
-        RefPtr<DOMArrayBuffer> b = DOMArrayBuffer::create("qu\0", 3);
+        DOMArrayBuffer* b = DOMArrayBuffer::create("qu\0", 3);
         channel()->send(*b, 0, 3);
     }
     {
-        RefPtr<DOMArrayBuffer> b = DOMArrayBuffer::create("\0\0\0", 3);
+        DOMArrayBuffer* b = DOMArrayBuffer::create("\0\0\0", 3);
         channel()->send(*b, 0, 3);
     }
 
@@ -420,7 +420,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBufferNonLatin1UTF8)
     handleClient()->didReceiveFlowControl(handle(), 16);
     EXPECT_CALL(*channelClient(), didConsumeBufferedAmount(_)).Times(AnyNumber());
 
-    RefPtr<DOMArrayBuffer> b = DOMArrayBuffer::create("\xe7\x8b\x90", 3);
+    DOMArrayBuffer* b = DOMArrayBuffer::create("\xe7\x8b\x90", 3);
     channel()->send(*b, 0, 3);
 
     EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
@@ -434,7 +434,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBufferNonUTF8)
     handleClient()->didReceiveFlowControl(handle(), 16);
     EXPECT_CALL(*channelClient(), didConsumeBufferedAmount(_)).Times(AnyNumber());
 
-    RefPtr<DOMArrayBuffer> b = DOMArrayBuffer::create("\x80\xff\xe7", 3);
+    DOMArrayBuffer* b = DOMArrayBuffer::create("\x80\xff\xe7", 3);
     channel()->send(*b, 0, 3);
 
     EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
@@ -454,7 +454,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBufferNonLatin1UTF8Continu
     handleClient()->didReceiveFlowControl(handle(), 16);
     EXPECT_CALL(*channelClient(), didConsumeBufferedAmount(_)).Times(AnyNumber());
 
-    RefPtr<DOMArrayBuffer> b = DOMArrayBuffer::create("\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90", 18);
+    DOMArrayBuffer* b = DOMArrayBuffer::create("\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90", 18);
     channel()->send(*b, 0, 18);
     checkpoint.Call(1);
 

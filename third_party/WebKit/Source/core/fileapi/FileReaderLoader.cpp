@@ -308,7 +308,7 @@ FileError::ErrorCode FileReaderLoader::httpStatusCodeToErrorCode(int httpStatusC
     }
 }
 
-PassRefPtr<DOMArrayBuffer> FileReaderLoader::arrayBufferResult() const
+DOMArrayBuffer* FileReaderLoader::arrayBufferResult() const
 {
     ASSERT(m_readType == ReadAsArrayBuffer);
 

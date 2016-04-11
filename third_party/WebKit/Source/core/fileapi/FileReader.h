@@ -45,7 +45,6 @@
 namespace blink {
 
 class Blob;
-class DOMArrayBuffer;
 class ExceptionState;
 class ExecutionContext;
 class StringOrArrayBuffer;

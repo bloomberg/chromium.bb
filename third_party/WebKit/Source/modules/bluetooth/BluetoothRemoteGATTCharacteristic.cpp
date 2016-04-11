@@ -20,13 +20,11 @@ namespace blink {
 
 namespace {
 
-PassRefPtr<DOMDataView> ConvertWebVectorToDataView(
-    const WebVector<uint8_t>& webVector)
+DOMDataView* ConvertWebVectorToDataView(const WebVector<uint8_t>& webVector)
 {
     static_assert(sizeof(*webVector.data()) == 1, "uint8_t should be a single byte");
-    RefPtr<DOMArrayBuffer> domBuffer = DOMArrayBuffer::create(webVector.data(), webVector.size());
-    RefPtr<DOMDataView> domDataView = DOMDataView::create(domBuffer, 0, webVector.size());
-    return domDataView;
+    DOMArrayBuffer* domBuffer = DOMArrayBuffer::create(webVector.data(), webVector.size());
+    return DOMDataView::create(domBuffer, 0, webVector.size());
 }
 
 } // anonymous namespace
@@ -52,8 +50,7 @@ BluetoothRemoteGATTCharacteristic* BluetoothRemoteGATTCharacteristic::take(Scrip
     return characteristic;
 }
 
-void BluetoothRemoteGATTCharacteristic::setValue(
-    const PassRefPtr<DOMDataView>& domDataView)
+void BluetoothRemoteGATTCharacteristic::setValue(DOMDataView* domDataView)
 {
     m_value = domDataView;
 }
@@ -61,8 +58,7 @@ void BluetoothRemoteGATTCharacteristic::setValue(
 void BluetoothRemoteGATTCharacteristic::dispatchCharacteristicValueChanged(
     const WebVector<uint8_t>& value)
 {
-    RefPtr<DOMDataView> domDataView = ConvertWebVectorToDataView(value);
-    this->setValue(domDataView);
+    this->setValue(ConvertWebVectorToDataView(value));
     dispatchEvent(Event::create(EventTypeNames::characteristicvaluechanged));
 }
 
@@ -115,10 +111,10 @@ public:
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
 
-        RefPtr<DOMDataView> domDataView = ConvertWebVectorToDataView(value);
-        if (m_webCharacteristic) {
+        DOMDataView* domDataView = ConvertWebVectorToDataView(value);
+        if (m_webCharacteristic)
             m_webCharacteristic->setValue(domDataView);
-        }
+
         m_resolver->resolve(domDataView);
     }
 
@@ -215,9 +211,10 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::stopNotifications(ScriptState* 
 
 DEFINE_TRACE(BluetoothRemoteGATTCharacteristic)
 {
+    visitor->trace(m_properties);
+    visitor->trace(m_value);
     RefCountedGarbageCollectedEventTargetWithInlineData<BluetoothRemoteGATTCharacteristic>::trace(visitor);
     ActiveDOMObject::trace(visitor);
-    visitor->trace(m_properties);
 }
 
 } // namespace blink

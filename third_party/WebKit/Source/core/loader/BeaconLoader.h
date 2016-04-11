@@ -29,7 +29,7 @@ public:
     ~BeaconLoader() override { }
 
     static bool sendBeacon(LocalFrame*, int, const KURL&, const String&, int&);
-    static bool sendBeacon(LocalFrame*, int, const KURL&, PassRefPtr<DOMArrayBufferView>, int&);
+    static bool sendBeacon(LocalFrame*, int, const KURL&, DOMArrayBufferView*, int&);
     static bool sendBeacon(LocalFrame*, int, const KURL&, Blob*, int&);
     static bool sendBeacon(LocalFrame*, int, const KURL&, FormData*, int&);
 

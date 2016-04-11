@@ -58,9 +58,9 @@ public:
     BLINK_EXPORT static WebArrayBufferView* createFromV8Value(v8::Local<v8::Value>);
 
 #if BLINK_IMPLEMENTATION
-    WebArrayBufferView(const WTF::PassRefPtr<DOMArrayBufferView>&);
-    WebArrayBufferView& operator=(const WTF::PassRefPtr<DOMArrayBufferView>&);
-    operator WTF::PassRefPtr<DOMArrayBufferView>() const;
+    WebArrayBufferView(DOMArrayBufferView*);
+    WebArrayBufferView& operator=(DOMArrayBufferView*);
+    operator DOMArrayBufferView*() const;
 #endif
 
 private:

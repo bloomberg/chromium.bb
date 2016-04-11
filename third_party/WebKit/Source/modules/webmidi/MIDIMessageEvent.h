@@ -46,7 +46,7 @@ public:
         return new MIDIMessageEvent();
     }
 
-    static MIDIMessageEvent* create(double receivedTime, PassRefPtr<DOMUint8Array> data)
+    static MIDIMessageEvent* create(double receivedTime, DOMUint8Array* data)
     {
         return new MIDIMessageEvent(receivedTime, data);
     }
@@ -57,17 +57,21 @@ public:
     }
 
     double receivedTime() { return m_receivedTime; }
-    PassRefPtr<DOMUint8Array> data() { return m_data; }
+    DOMUint8Array* data() { return m_data; }
 
     const AtomicString& interfaceName() const override { return EventNames::MIDIMessageEvent; }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_data);
+        Event::trace(visitor);
+    }
 
 private:
     MIDIMessageEvent()
         : m_receivedTime(0) { }
 
-    MIDIMessageEvent(double receivedTime, PassRefPtr<DOMUint8Array> data)
+    MIDIMessageEvent(double receivedTime, DOMUint8Array* data)
         : Event(EventTypeNames::midimessage, true, false)
         , m_receivedTime(receivedTime)
         , m_data(data) { }
@@ -75,7 +79,7 @@ private:
     MIDIMessageEvent(const AtomicString& type, const MIDIMessageEventInit& initializer);
 
     double m_receivedTime;
-    RefPtr<DOMUint8Array> m_data;
+    Member<DOMUint8Array> m_data;
 };
 
 } // namespace blink

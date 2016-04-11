@@ -31,7 +31,6 @@
 #include "public/web/WebArrayBuffer.h"
 
 #include "core/dom/DOMArrayBuffer.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -64,18 +63,18 @@ unsigned WebArrayBuffer::byteLength() const
     return 0;
 }
 
-WebArrayBuffer::WebArrayBuffer(const PassRefPtr<DOMArrayBuffer>& buffer)
+WebArrayBuffer::WebArrayBuffer(DOMArrayBuffer* buffer)
     : m_private(buffer)
 {
 }
 
-WebArrayBuffer& WebArrayBuffer::operator=(const PassRefPtr<DOMArrayBuffer>& buffer)
+WebArrayBuffer& WebArrayBuffer::operator=(DOMArrayBuffer* buffer)
 {
     m_private = buffer;
     return *this;
 }
 
-WebArrayBuffer::operator PassRefPtr<DOMArrayBuffer>() const
+WebArrayBuffer::operator DOMArrayBuffer*() const
 {
     return m_private.get();
 }

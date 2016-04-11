@@ -14,20 +14,20 @@ namespace blink {
 class CORE_EXPORT DOMSharedArrayBuffer final : public DOMArrayBufferBase {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtr<DOMSharedArrayBuffer> create(PassRefPtr<WTF::ArrayBuffer> buffer)
+    static DOMSharedArrayBuffer* create(PassRefPtr<WTF::ArrayBuffer> buffer)
     {
         DCHECK(buffer->isShared());
-        return adoptRef(new DOMSharedArrayBuffer(buffer));
+        return new DOMSharedArrayBuffer(buffer);
     }
-    static PassRefPtr<DOMSharedArrayBuffer> create(unsigned numElements, unsigned elementByteSize)
+    static DOMSharedArrayBuffer* create(unsigned numElements, unsigned elementByteSize)
     {
         return create(WTF::ArrayBuffer::createShared(numElements, elementByteSize));
     }
-    static PassRefPtr<DOMSharedArrayBuffer> create(const void* source, unsigned byteLength)
+    static DOMSharedArrayBuffer* create(const void* source, unsigned byteLength)
     {
         return create(WTF::ArrayBuffer::createShared(source, byteLength));
     }
-    static PassRefPtr<DOMSharedArrayBuffer> create(WTF::ArrayBufferContents& contents)
+    static DOMSharedArrayBuffer* create(WTF::ArrayBufferContents& contents)
     {
         DCHECK(contents.isShared());
         return create(WTF::ArrayBuffer::create(contents));

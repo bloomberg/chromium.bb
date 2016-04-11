@@ -92,22 +92,22 @@ ScriptValue WebGLAny(ScriptState* scriptState, WebGLObject* value)
     return ScriptValue(scriptState, toV8(value, scriptState->context()->Global(), scriptState->isolate()));
 }
 
-ScriptValue WebGLAny(ScriptState* scriptState, PassRefPtr<DOMFloat32Array> value)
+ScriptValue WebGLAny(ScriptState* scriptState, DOMFloat32Array* value)
 {
     return ScriptValue(scriptState, toV8(value, scriptState->context()->Global(), scriptState->isolate()));
 }
 
-ScriptValue WebGLAny(ScriptState* scriptState, PassRefPtr<DOMInt32Array> value)
+ScriptValue WebGLAny(ScriptState* scriptState, DOMInt32Array* value)
 {
     return ScriptValue(scriptState, toV8(value, scriptState->context()->Global(), scriptState->isolate()));
 }
 
-ScriptValue WebGLAny(ScriptState* scriptState, PassRefPtr<DOMUint8Array> value)
+ScriptValue WebGLAny(ScriptState* scriptState, DOMUint8Array* value)
 {
     return ScriptValue(scriptState, toV8(value, scriptState->context()->Global(), scriptState->isolate()));
 }
 
-ScriptValue WebGLAny(ScriptState* scriptState, PassRefPtr<DOMUint32Array> value)
+ScriptValue WebGLAny(ScriptState* scriptState, DOMUint32Array* value)
 {
     return ScriptValue(scriptState, toV8(value, scriptState->context()->Global(), scriptState->isolate()));
 }

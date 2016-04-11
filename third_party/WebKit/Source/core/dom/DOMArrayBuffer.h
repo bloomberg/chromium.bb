@@ -14,35 +14,35 @@ namespace blink {
 class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtr<DOMArrayBuffer> create(PassRefPtr<WTF::ArrayBuffer> buffer)
+    static DOMArrayBuffer* create(PassRefPtr<WTF::ArrayBuffer> buffer)
     {
-        return adoptRef(new DOMArrayBuffer(buffer));
+        return new DOMArrayBuffer(buffer);
     }
-    static PassRefPtr<DOMArrayBuffer> create(unsigned numElements, unsigned elementByteSize)
+    static DOMArrayBuffer* create(unsigned numElements, unsigned elementByteSize)
     {
         return create(WTF::ArrayBuffer::create(numElements, elementByteSize));
     }
-    static PassRefPtr<DOMArrayBuffer> create(const void* source, unsigned byteLength)
+    static DOMArrayBuffer* create(const void* source, unsigned byteLength)
     {
         return create(WTF::ArrayBuffer::create(source, byteLength));
     }
-    static PassRefPtr<DOMArrayBuffer> create(WTF::ArrayBufferContents& contents)
+    static DOMArrayBuffer* create(WTF::ArrayBufferContents& contents)
     {
         return create(WTF::ArrayBuffer::create(contents));
     }
 
     // Only for use by XMLHttpRequest::responseArrayBuffer and
     // Internals::serializeObject.
-    static PassRefPtr<DOMArrayBuffer> createUninitialized(unsigned numElements, unsigned elementByteSize)
+    static DOMArrayBuffer* createUninitialized(unsigned numElements, unsigned elementByteSize)
     {
         return create(WTF::ArrayBuffer::createUninitialized(numElements, elementByteSize));
     }
 
-    PassRefPtr<DOMArrayBuffer> slice(int begin, int end) const
+    DOMArrayBuffer* slice(int begin, int end) const
     {
         return create(buffer()->slice(begin, end));
     }
-    PassRefPtr<DOMArrayBuffer> slice(int begin) const
+    DOMArrayBuffer* slice(int begin) const
     {
         return create(buffer()->slice(begin));
     }

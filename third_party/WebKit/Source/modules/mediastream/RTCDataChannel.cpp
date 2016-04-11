@@ -202,14 +202,12 @@ void RTCDataChannel::send(const String& data, ExceptionState& exceptionState)
     }
 }
 
-void RTCDataChannel::send(PassRefPtr<DOMArrayBuffer> prpData, ExceptionState& exceptionState)
+void RTCDataChannel::send(DOMArrayBuffer* data, ExceptionState& exceptionState)
 {
     if (m_readyState != ReadyStateOpen) {
         throwNotOpenException(exceptionState);
         return;
     }
-
-    RefPtr<DOMArrayBuffer> data = prpData;
 
     size_t dataLength = data->byteLength();
     if (!dataLength)
@@ -221,7 +219,7 @@ void RTCDataChannel::send(PassRefPtr<DOMArrayBuffer> prpData, ExceptionState& ex
     }
 }
 
-void RTCDataChannel::send(PassRefPtr<DOMArrayBufferView> data, ExceptionState& exceptionState)
+void RTCDataChannel::send(DOMArrayBufferView* data, ExceptionState& exceptionState)
 {
     if (!m_handler->sendRawData(static_cast<const char*>(data->baseAddress()), data->byteLength())) {
         // FIXME: This should not throw an exception but instead forcefully close the data channel.
@@ -279,8 +277,8 @@ void RTCDataChannel::didReceiveRawData(const char* data, size_t dataLength)
         return;
     }
     if (m_binaryType == BinaryTypeArrayBuffer) {
-        RefPtr<DOMArrayBuffer> buffer = DOMArrayBuffer::create(data, dataLength);
-        scheduleDispatchEvent(MessageEvent::create(buffer.release()));
+        DOMArrayBuffer* buffer = DOMArrayBuffer::create(data, dataLength);
+        scheduleDispatchEvent(MessageEvent::create(buffer));
         return;
     }
     NOTREACHED();

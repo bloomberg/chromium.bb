@@ -23,7 +23,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8DataView::wrapperTypeInfo = { gin::kEmbedderBlink, 0, V8DataView::refObject, V8DataView::derefObject, V8DataView::trace, 0, 0, V8DataView::preparePrototypeAndInterfaceObject, V8DataView::installConditionallyEnabledProperties, "DataView", &V8ArrayBufferView::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
+const WrapperTypeInfo V8DataView::wrapperTypeInfo = { gin::kEmbedderBlink, 0, V8DataView::refObject, V8DataView::derefObject, V8DataView::trace, 0, 0, V8DataView::preparePrototypeAndInterfaceObject, V8DataView::installConditionallyEnabledProperties, "DataView", &V8ArrayBufferView::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent, WrapperTypeInfo::GarbageCollectedObject };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -47,7 +47,7 @@ TestDataView* V8DataView::toImpl(v8::Local<v8::Object> object)
 
     v8::Local<v8::DataView> v8View = object.As<v8::DataView>();
     v8::Local<v8::Object> arrayBuffer = v8View->Buffer();
-    RefPtr<TestDataView> typedArray;
+    TestDataView* typedArray = nullptr;
     if (arrayBuffer->IsArrayBuffer()) {
         typedArray = TestDataView::create(V8ArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->ByteLength());
     } else if (arrayBuffer->IsSharedArrayBuffer()) {
@@ -68,12 +68,10 @@ TestDataView* V8DataView::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8
 
 void V8DataView::refObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappable->toImpl<TestDataView>()->ref();
 }
 
 void V8DataView::derefObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappable->toImpl<TestDataView>()->deref();
 }
 
 } // namespace blink

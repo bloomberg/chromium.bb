@@ -52,11 +52,8 @@ void AsyncAudioDecoder::decodeAsync(DOMArrayBuffer* audioData, float sampleRate,
     if (!audioData)
         return;
 
-    // Add a ref to keep audioData alive until completion of decoding.
-    RefPtr<DOMArrayBuffer> audioDataRef(audioData);
-
     // The leak references to successCallback and errorCallback are picked up on notifyComplete.
-    m_thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&AsyncAudioDecoder::decode, AllowCrossThreadAccess(audioDataRef.release().leakRef()), sampleRate, successCallback, errorCallback, resolver, context));
+    m_thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&AsyncAudioDecoder::decode, AllowCrossThreadAccess(audioData), sampleRate, successCallback, errorCallback, resolver, context));
 }
 
 void AsyncAudioDecoder::decode(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ScriptPromiseResolver* resolver, AbstractAudioContext* context)
@@ -68,12 +65,11 @@ void AsyncAudioDecoder::decode(DOMArrayBuffer* audioData, float sampleRate, Audi
     Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&AsyncAudioDecoder::notifyComplete, AllowCrossThreadAccess(audioData), successCallback, errorCallback, bus.release().leakRef(), resolver, context));
 }
 
-void AsyncAudioDecoder::notifyComplete(DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBus* audioBus, ScriptPromiseResolver* resolver, AbstractAudioContext* context)
+void AsyncAudioDecoder::notifyComplete(DOMArrayBuffer*, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBus* audioBus, ScriptPromiseResolver* resolver, AbstractAudioContext* context)
 {
     ASSERT(isMainThread());
 
     // Adopt references, so everything gets correctly dereffed.
-    RefPtr<DOMArrayBuffer> audioDataRef = adoptRef(audioData);
     RefPtr<AudioBus> audioBusRef = adoptRef(audioBus);
 
     AudioBuffer* audioBuffer = AudioBuffer::createFromAudioBus(audioBus);

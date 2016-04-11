@@ -31,7 +31,7 @@ public:
 
     KURL endpoint() const;
 
-    PassRefPtr<DOMArrayBuffer> getKey(const AtomicString& name) const;
+    DOMArrayBuffer* getKey(const AtomicString& name) const;
     ScriptPromise unsubscribe(ScriptState*);
 
     ScriptValue toJSONForBinding(ScriptState*);
@@ -43,8 +43,8 @@ private:
 
     KURL m_endpoint;
 
-    RefPtr<DOMArrayBuffer> m_p256dh;
-    RefPtr<DOMArrayBuffer> m_auth;
+    Member<DOMArrayBuffer> m_p256dh;
+    Member<DOMArrayBuffer> m_auth;
 
     Member<ServiceWorkerRegistration> m_serviceWorkerRegistration;
 };

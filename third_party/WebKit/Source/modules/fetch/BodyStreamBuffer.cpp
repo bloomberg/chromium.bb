@@ -31,7 +31,7 @@ public:
         m_client->didFetchDataLoadedBlobHandle(blobDataHandle);
     }
 
-    void didFetchDataLoadedArrayBuffer(PassRefPtr<DOMArrayBuffer> arrayBuffer) override
+    void didFetchDataLoadedArrayBuffer(DOMArrayBuffer* arrayBuffer) override
     {
         m_buffer->endLoading();
         m_client->didFetchDataLoadedArrayBuffer(arrayBuffer);

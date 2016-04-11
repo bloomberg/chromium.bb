@@ -65,18 +65,18 @@ WebArrayBufferView* WebArrayBufferView::createFromV8Value(v8::Local<v8::Value> v
     return new WebArrayBufferView(view);
 }
 
-WebArrayBufferView::WebArrayBufferView(const PassRefPtr<DOMArrayBufferView>& value)
+WebArrayBufferView::WebArrayBufferView(DOMArrayBufferView* value)
     : m_private(value)
 {
 }
 
-WebArrayBufferView& WebArrayBufferView::operator=(const PassRefPtr<DOMArrayBufferView>& value)
+WebArrayBufferView& WebArrayBufferView::operator=(DOMArrayBufferView* value)
 {
     m_private = value;
     return *this;
 }
 
-WebArrayBufferView::operator PassRefPtr<DOMArrayBufferView>() const
+WebArrayBufferView::operator DOMArrayBufferView*() const
 {
     return m_private.get();
 }

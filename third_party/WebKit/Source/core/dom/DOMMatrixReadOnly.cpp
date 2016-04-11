@@ -46,7 +46,7 @@ DOMMatrix* DOMMatrixReadOnly::scaleNonUniform(double sx, double sy, double sz,
     return DOMMatrix::create(this)->scaleNonUniformSelf(sx, sy, sz, ox, oy, oz);
 }
 
-PassRefPtr<DOMFloat32Array> DOMMatrixReadOnly::toFloat32Array() const
+DOMFloat32Array* DOMMatrixReadOnly::toFloat32Array() const
 {
     float array[] = {
         static_cast<float>(m_matrix->m11()), static_cast<float>(m_matrix->m12()), static_cast<float>(m_matrix->m13()), static_cast<float>(m_matrix->m14()),
@@ -58,7 +58,7 @@ PassRefPtr<DOMFloat32Array> DOMMatrixReadOnly::toFloat32Array() const
     return DOMFloat32Array::create(array, 16);
 }
 
-PassRefPtr<DOMFloat64Array> DOMMatrixReadOnly::toFloat64Array() const
+DOMFloat64Array* DOMMatrixReadOnly::toFloat64Array() const
 {
     double array[] = {
         m_matrix->m11(), m_matrix->m12(), m_matrix->m13(), m_matrix->m14(),

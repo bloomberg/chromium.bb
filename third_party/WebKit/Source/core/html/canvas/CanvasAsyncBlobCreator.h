@@ -17,21 +17,25 @@ namespace blink {
 class PNGImageEncoderState;
 class JPEGImageEncoderState;
 
-class CORE_EXPORT CanvasAsyncBlobCreator
-    : public RefCounted<CanvasAsyncBlobCreator> {
+class CORE_EXPORT CanvasAsyncBlobCreator : public GarbageCollectedFinalized<CanvasAsyncBlobCreator> {
 public:
-    static PassRefPtr<CanvasAsyncBlobCreator> create(PassRefPtr<DOMUint8ClampedArray> unpremultipliedRGBAImageData, const String& mimeType, const IntSize&, BlobCallback*);
+    static CanvasAsyncBlobCreator* create(DOMUint8ClampedArray* unpremultipliedRGBAImageData, const String& mimeType, const IntSize&, BlobCallback*);
     void scheduleAsyncBlobCreation(bool canUseIdlePeriodScheduling, double quality = 0.0);
     virtual ~CanvasAsyncBlobCreator();
 
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_data);
+    }
+
 private:
-    CanvasAsyncBlobCreator(PassRefPtr<DOMUint8ClampedArray> data, const String& mimeType, const IntSize&, BlobCallback*);
+    CanvasAsyncBlobCreator(DOMUint8ClampedArray* data, const String& mimeType, const IntSize&, BlobCallback*);
     void scheduleCreateBlobAndCallOnMainThread();
     void scheduleCreateNullptrAndCallOnMainThread();
 
     OwnPtr<PNGImageEncoderState> m_pngEncoderState;
     OwnPtr<JPEGImageEncoderState> m_jpegEncoderState;
-    RefPtr<DOMUint8ClampedArray> m_data;
+    Member<DOMUint8ClampedArray> m_data;
     OwnPtr<Vector<unsigned char>> m_encodedImage;
     int m_numRowsCompleted;
 
@@ -40,7 +44,7 @@ private:
     const String m_mimeType;
     CrossThreadPersistent<BlobCallback> m_callback;
 
-    RefPtr<CanvasAsyncBlobCreator> m_selfRef;
+    SelfKeepAlive<CanvasAsyncBlobCreator> m_keepAlive;
     void clearSelfReference();
 
     void initiatePngEncoding(double deadlineSeconds);

@@ -258,7 +258,7 @@ private:
     ScopedPersistent<v8::Value> m_reader;
     RefPtr<ScriptState> m_scriptState;
     WebDataConsumerHandle::Client* m_client;
-    RefPtr<DOMUint8Array> m_pendingBuffer;
+    Persistent<DOMUint8Array> m_pendingBuffer;
     size_t m_pendingOffset;
     bool m_isReading;
     bool m_isDone;

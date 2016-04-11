@@ -61,7 +61,7 @@ private:
     MediaKeyMessageEvent(const AtomicString& type, const MediaKeyMessageEventInit& initializer);
 
     String m_messageType;
-    RefPtr<DOMArrayBuffer> m_message;
+    Member<DOMArrayBuffer> m_message;
 };
 
 } // namespace blink

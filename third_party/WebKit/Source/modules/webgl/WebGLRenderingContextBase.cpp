@@ -1251,7 +1251,7 @@ ImageData* WebGLRenderingContextBase::paintRenderingResultsToImageData(SourceDra
     WTF::ArrayBufferContents contents;
     if (!drawingBuffer()->paintRenderingResultsToImageData(width, height, sourceBuffer, contents))
         return nullptr;
-    RefPtr<DOMArrayBuffer> imageDataPixels = DOMArrayBuffer::create(contents);
+    DOMArrayBuffer* imageDataPixels = DOMArrayBuffer::create(contents);
 
     return ImageData::create(
         IntSize(width, height),

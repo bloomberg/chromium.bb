@@ -10,11 +10,10 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMSharedArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
-class CORE_EXPORT DOMArrayBufferView : public RefCounted<DOMArrayBufferView>, public ScriptWrappable {
+class CORE_EXPORT DOMArrayBufferView : public GarbageCollectedFinalized<DOMArrayBufferView>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     typedef WTF::ArrayBufferView::ViewType ViewType;
@@ -31,29 +30,29 @@ public:
 
     virtual ~DOMArrayBufferView() { }
 
-    PassRefPtr<DOMArrayBuffer> buffer() const
+    DOMArrayBuffer* buffer() const
     {
         DCHECK(!isShared());
-        if (!m_domArrayBuffer) {
+        if (!m_domArrayBuffer)
             m_domArrayBuffer = DOMArrayBuffer::create(view()->buffer());
-        }
-        return static_pointer_cast<DOMArrayBuffer>(m_domArrayBuffer);
+
+        return static_cast<DOMArrayBuffer*>(m_domArrayBuffer.get());
     }
 
-    PassRefPtr<DOMSharedArrayBuffer> bufferShared() const
+    DOMSharedArrayBuffer* bufferShared() const
     {
         DCHECK(isShared());
-        if (!m_domArrayBuffer) {
+        if (!m_domArrayBuffer)
             m_domArrayBuffer = DOMSharedArrayBuffer::create(view()->buffer());
-        }
-        return static_pointer_cast<DOMSharedArrayBuffer>(m_domArrayBuffer);
+
+        return static_cast<DOMSharedArrayBuffer*>(m_domArrayBuffer.get());
     }
 
-    PassRefPtr<DOMArrayBufferBase> bufferBase() const
+    DOMArrayBufferBase* bufferBase() const
     {
-        if (isShared()) {
+        if (isShared())
             return bufferShared();
-        }
+
         return buffer();
     }
 
@@ -74,14 +73,20 @@ public:
         return v8::Local<v8::Object>();
     }
 
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_domArrayBuffer);
+    }
+
 protected:
     explicit DOMArrayBufferView(PassRefPtr<WTF::ArrayBufferView> bufferView)
         : m_bufferView(bufferView)
     {
         DCHECK(m_bufferView);
     }
-    DOMArrayBufferView(PassRefPtr<WTF::ArrayBufferView> bufferView, PassRefPtr<DOMArrayBufferBase> domArrayBuffer)
-        : m_bufferView(bufferView), m_domArrayBuffer(domArrayBuffer)
+    DOMArrayBufferView(PassRefPtr<WTF::ArrayBufferView> bufferView, DOMArrayBufferBase* domArrayBuffer)
+        : m_bufferView(bufferView)
+        , m_domArrayBuffer(domArrayBuffer)
     {
         DCHECK(m_bufferView);
         DCHECK(m_domArrayBuffer);
@@ -90,7 +95,7 @@ protected:
 
 private:
     RefPtr<WTF::ArrayBufferView> m_bufferView;
-    mutable RefPtr<DOMArrayBufferBase> m_domArrayBuffer;
+    mutable Member<DOMArrayBufferBase> m_domArrayBuffer;
 };
 
 } // namespace blink

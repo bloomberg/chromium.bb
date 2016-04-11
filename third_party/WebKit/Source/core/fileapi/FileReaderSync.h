@@ -33,7 +33,6 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -52,7 +51,7 @@ public:
         return new FileReaderSync();
     }
 
-    PassRefPtr<DOMArrayBuffer> readAsArrayBuffer(ExecutionContext*, Blob*, ExceptionState&);
+    DOMArrayBuffer* readAsArrayBuffer(ExecutionContext*, Blob*, ExceptionState&);
     String readAsBinaryString(ExecutionContext*, Blob*, ExceptionState&);
     String readAsText(ExecutionContext* executionContext, Blob* blob, ExceptionState& ec)
     {

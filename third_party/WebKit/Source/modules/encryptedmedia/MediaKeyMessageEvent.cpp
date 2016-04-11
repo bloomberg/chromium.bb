@@ -53,6 +53,7 @@ const AtomicString& MediaKeyMessageEvent::interfaceName() const
 
 DEFINE_TRACE(MediaKeyMessageEvent)
 {
+    visitor->trace(m_message);
     Event::trace(visitor);
 }
 

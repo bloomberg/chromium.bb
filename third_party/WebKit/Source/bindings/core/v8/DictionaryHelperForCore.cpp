@@ -309,6 +309,15 @@ CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const Strin
     return true;
 }
 
-template CORE_EXPORT bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtr<DOMUint8Array>& value);
+template<>
+CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, DOMUint8Array*& value)
+{
+    v8::Local<v8::Value> v8Value;
+    if (!dictionary.get(key, v8Value))
+        return false;
+
+    value = V8Uint8Array::toImplWithTypeCheck(dictionary.isolate(), v8Value);
+    return true;
+}
 
 } // namespace blink

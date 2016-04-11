@@ -60,7 +60,7 @@ public:
 
     // Channel data access
     unsigned numberOfChannels() const { return m_channels.size(); }
-    PassRefPtr<DOMFloat32Array> getChannelData(unsigned channelIndex, ExceptionState&);
+    DOMFloat32Array* getChannelData(unsigned channelIndex, ExceptionState&);
     DOMFloat32Array* getChannelData(unsigned channelIndex);
     void copyFromChannel(DOMFloat32Array*, long channelNumber, ExceptionState&);
     void copyFromChannel(DOMFloat32Array*, long channelNumber, unsigned long startInChannel, ExceptionState&);
@@ -69,10 +69,13 @@ public:
 
     void zero();
 
-    DEFINE_INLINE_TRACE() { }
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_channels);
+    }
 
 private:
-    static PassRefPtr<DOMFloat32Array> createFloat32ArrayOrNull(size_t length);
+    static DOMFloat32Array* createFloat32ArrayOrNull(size_t length);
 
 protected:
     AudioBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
@@ -82,7 +85,7 @@ protected:
     float m_sampleRate;
     size_t m_length;
 
-    Vector<RefPtr<DOMFloat32Array>> m_channels;
+    HeapVector<Member<DOMFloat32Array>> m_channels;
 };
 
 } // namespace blink

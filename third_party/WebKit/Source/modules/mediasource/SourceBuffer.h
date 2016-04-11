@@ -80,8 +80,8 @@ public:
     TimeRanges* buffered(ExceptionState&) const;
     double timestampOffset() const;
     void setTimestampOffset(double, ExceptionState&);
-    void appendBuffer(PassRefPtr<DOMArrayBuffer> data, ExceptionState&);
-    void appendBuffer(PassRefPtr<DOMArrayBufferView> data, ExceptionState&);
+    void appendBuffer(DOMArrayBuffer* data, ExceptionState&);
+    void appendBuffer(DOMArrayBufferView* data, ExceptionState&);
     void appendStream(Stream*, ExceptionState&);
     void appendStream(Stream*, unsigned long long maxSize, ExceptionState&);
     void abort(ExceptionState&);

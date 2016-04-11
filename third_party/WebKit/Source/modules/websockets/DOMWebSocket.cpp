@@ -653,9 +653,9 @@ void DOMWebSocket::didReceiveBinaryMessage(PassOwnPtr<Vector<char>> binaryData)
     }
 
     case BinaryTypeArrayBuffer:
-        RefPtr<DOMArrayBuffer> arrayBuffer = DOMArrayBuffer::create(binaryData->data(), binaryData->size());
+        DOMArrayBuffer* arrayBuffer = DOMArrayBuffer::create(binaryData->data(), binaryData->size());
         recordReceiveTypeHistogram(WebSocketReceiveTypeArrayBuffer);
-        m_eventQueue->dispatch(MessageEvent::create(arrayBuffer.release(), SecurityOrigin::create(m_url)->toString()));
+        m_eventQueue->dispatch(MessageEvent::create(arrayBuffer, SecurityOrigin::create(m_url)->toString()));
         break;
     }
 }

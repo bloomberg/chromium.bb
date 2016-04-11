@@ -49,8 +49,8 @@ public:
     const WTF::AtomicString& state() const;
 
     void send(const String& message, ExceptionState&);
-    void send(PassRefPtr<DOMArrayBuffer>, ExceptionState&);
-    void send(PassRefPtr<DOMArrayBufferView>, ExceptionState&);
+    void send(DOMArrayBuffer*, ExceptionState&);
+    void send(DOMArrayBufferView*, ExceptionState&);
     void send(Blob*, ExceptionState&);
     void close();
     void terminate();
@@ -95,24 +95,7 @@ private:
         BinaryTypeArrayBuffer
     };
 
-    struct Message {
-        Message(const String& text)
-            : type(MessageTypeText)
-            , text(text) { }
-
-        Message(PassRefPtr<DOMArrayBuffer> arrayBuffer)
-            : type(MessageTypeArrayBuffer)
-            , arrayBuffer(arrayBuffer) { }
-
-        Message(PassRefPtr<BlobDataHandle> blobDataHandle)
-            : type(MessageTypeBlob)
-            , blobDataHandle(blobDataHandle) { }
-
-        MessageType type;
-        String text;
-        RefPtr<DOMArrayBuffer> arrayBuffer;
-        RefPtr<BlobDataHandle> blobDataHandle;
-    };
+    class Message;
 
     PresentationConnection(LocalFrame*, const String& id, const String& url);
 
@@ -120,7 +103,7 @@ private:
     void handleMessageQueue();
 
     // Callbacks invoked from BlobLoader.
-    void didFinishLoadingBlob(PassRefPtr<DOMArrayBuffer>);
+    void didFinishLoadingBlob(DOMArrayBuffer*);
     void didFailLoadingBlob(FileError::ErrorCode);
 
     // Cancel loads and pending messages when the connection is closed.
@@ -132,7 +115,7 @@ private:
 
     // For Blob data handling.
     Member<BlobLoader> m_blobLoader;
-    Deque<OwnPtr<Message>> m_messages;
+    HeapDeque<Member<Message>> m_messages;
 
     BinaryType m_binaryType;
 };

@@ -5,6 +5,7 @@
 // https://www.khronos.org/registry/typedarray/specs/latest/#ARRAYBUFFERVIEW
 
 [
+    GarbageCollected,
     ImplementedAs=DOMArrayBufferView,
     NoInterfaceObject,
 ] interface ArrayBufferView {

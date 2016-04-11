@@ -67,7 +67,7 @@ public:
     {
         return new MessageEvent(data, origin, suborigin);
     }
-    static MessageEvent* create(PassRefPtr<DOMArrayBuffer> data, const String& origin = String(), const String& suborigin = String())
+    static MessageEvent* create(DOMArrayBuffer* data, const String& origin = String(), const String& suborigin = String())
     {
         return new MessageEvent(data, origin, suborigin);
     }
@@ -122,14 +122,14 @@ private:
 
     MessageEvent(const String& data, const String& origin, const String& suborigin);
     MessageEvent(Blob* data, const String& origin, const String& suborigin);
-    MessageEvent(PassRefPtr<DOMArrayBuffer> data, const String& origin, const String& suborigin);
+    MessageEvent(DOMArrayBuffer* data, const String& origin, const String& suborigin);
 
     DataType m_dataType;
     ScriptValue m_dataAsScriptValue;
     RefPtr<SerializedScriptValue> m_dataAsSerializedScriptValue;
     String m_dataAsString;
     Member<Blob> m_dataAsBlob;
-    RefPtr<DOMArrayBuffer> m_dataAsArrayBuffer;
+    Member<DOMArrayBuffer> m_dataAsArrayBuffer;
     String m_origin;
     String m_lastEventId;
     Member<EventTarget> m_source;

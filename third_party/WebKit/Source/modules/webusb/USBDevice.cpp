@@ -215,7 +215,7 @@ public:
     static USBIsochronousInTransferResult* take(ScriptPromiseResolver*, PassOwnPtr<WebUSBTransferInfo> webTransferInfo)
     {
         ASSERT(webTransferInfo->status.size() == webTransferInfo->packetLength.size() && webTransferInfo->packetLength.size() == webTransferInfo->bytesTransferred.size());
-        RefPtr<DOMArrayBuffer> buffer = DOMArrayBuffer::create(webTransferInfo->data.data(), webTransferInfo->data.size());
+        DOMArrayBuffer* buffer = DOMArrayBuffer::create(webTransferInfo->data.data(), webTransferInfo->data.size());
         HeapVector<Member<USBIsochronousInTransferPacket>> packets(webTransferInfo->status.size());
         size_t byteOffset = 0;
         for (size_t i = 0; i < webTransferInfo->status.size(); ++i) {

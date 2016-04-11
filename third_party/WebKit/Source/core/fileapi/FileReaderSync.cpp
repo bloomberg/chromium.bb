@@ -36,7 +36,6 @@
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
 #include "core/fileapi/FileReaderLoader.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
@@ -44,7 +43,7 @@ FileReaderSync::FileReaderSync()
 {
 }
 
-PassRefPtr<DOMArrayBuffer> FileReaderSync::readAsArrayBuffer(ExecutionContext* executionContext, Blob* blob, ExceptionState& exceptionState)
+DOMArrayBuffer* FileReaderSync::readAsArrayBuffer(ExecutionContext* executionContext, Blob* blob, ExceptionState& exceptionState)
 {
     ASSERT(blob);
 

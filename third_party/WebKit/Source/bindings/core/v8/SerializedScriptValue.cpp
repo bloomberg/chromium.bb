@@ -137,7 +137,7 @@ PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValu
 
     OwnPtr<ArrayBufferContentsArray> contents = adoptPtr(new ArrayBufferContentsArray(arrayBuffers.size()));
 
-    HashSet<DOMArrayBufferBase*> visited;
+    HeapHashSet<Member<DOMArrayBufferBase>> visited;
     for (size_t i = 0; i < arrayBuffers.size(); i++) {
         if (visited.contains(arrayBuffers[i].get()))
             continue;
@@ -152,12 +152,12 @@ PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValu
         } else {
             Vector<v8::Local<v8::ArrayBuffer>, 4> bufferHandles;
             v8::HandleScope handleScope(isolate);
-            acculumateArrayBuffersForAllWorlds(isolate, static_pointer_cast<DOMArrayBuffer>(arrayBuffers[i]).get(), bufferHandles);
+            acculumateArrayBuffersForAllWorlds(isolate, static_cast<DOMArrayBuffer*>(arrayBuffers[i].get()), bufferHandles);
             bool isNeuterable = true;
             for (size_t j = 0; j < bufferHandles.size(); j++)
                 isNeuterable &= bufferHandles[j]->IsNeuterable();
 
-            RefPtr<DOMArrayBufferBase> toTransfer = arrayBuffers[i];
+            DOMArrayBufferBase* toTransfer = arrayBuffers[i];
             if (!isNeuterable)
                 toTransfer = DOMArrayBuffer::create(arrayBuffers[i]->buffer());
             bool result = toTransfer->transfer(contents->at(i));
@@ -233,26 +233,26 @@ bool SerializedScriptValue::extractTransferables(v8::Isolate* isolate, v8::Local
             }
             ports.append(port);
         } else if (V8ArrayBuffer::hasInstance(transferrable, isolate)) {
-            RefPtr<DOMArrayBuffer> arrayBuffer = V8ArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(transferrable));
+            DOMArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(transferrable));
             if (arrayBuffers.contains(arrayBuffer)) {
                 exceptionState.throwDOMException(DataCloneError, "ArrayBuffer at index " + String::number(i) + " is a duplicate of an earlier ArrayBuffer.");
                 return false;
             }
-            arrayBuffers.append(arrayBuffer.release());
+            arrayBuffers.append(arrayBuffer);
         } else if (V8SharedArrayBuffer::hasInstance(transferrable, isolate)) {
-            RefPtr<DOMSharedArrayBuffer> sharedArrayBuffer = V8SharedArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(transferrable));
+            DOMSharedArrayBuffer* sharedArrayBuffer = V8SharedArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(transferrable));
             if (arrayBuffers.contains(sharedArrayBuffer)) {
                 exceptionState.throwDOMException(DataCloneError, "SharedArrayBuffer at index " + String::number(i) + " is a duplicate of an earlier SharedArrayBuffer.");
                 return false;
             }
-            arrayBuffers.append(sharedArrayBuffer.release());
+            arrayBuffers.append(sharedArrayBuffer);
         } else if (V8ImageBitmap::hasInstance(transferrable, isolate)) {
-            RawPtr<ImageBitmap> imageBitmap = V8ImageBitmap::toImpl(v8::Local<v8::Object>::Cast(transferrable));
+            ImageBitmap* imageBitmap = V8ImageBitmap::toImpl(v8::Local<v8::Object>::Cast(transferrable));
             if (imageBitmaps.contains(imageBitmap)) {
                 exceptionState.throwDOMException(DataCloneError, "ImageBitmap at index " + String::number(i) + " is a duplicate of an earlier ImageBitmap.");
                 return false;
             }
-            imageBitmaps.append(imageBitmap.release());
+            imageBitmaps.append(imageBitmap);
         } else {
             exceptionState.throwTypeError("Value at index " + String::number(i) + " does not have a transferable type.");
             return false;

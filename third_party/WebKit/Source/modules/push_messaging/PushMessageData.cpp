@@ -29,7 +29,7 @@ PushMessageData* PushMessageData::create(const String& messageString)
 PushMessageData* PushMessageData::create(const ArrayBufferOrArrayBufferViewOrUSVString& messageData)
 {
     if (messageData.isArrayBuffer() || messageData.isArrayBufferView()) {
-        RefPtr<DOMArrayBuffer> buffer = messageData.isArrayBufferView()
+        DOMArrayBuffer* buffer = messageData.isArrayBufferView()
             ? messageData.getAsArrayBufferView()->buffer()
             : messageData.getAsArrayBuffer();
 
@@ -54,7 +54,7 @@ PushMessageData::~PushMessageData()
 {
 }
 
-PassRefPtr<DOMArrayBuffer> PushMessageData::arrayBuffer() const
+DOMArrayBuffer* PushMessageData::arrayBuffer() const
 {
     return DOMArrayBuffer::create(m_data.data(), m_data.size());
 }

@@ -54,7 +54,7 @@ class MessagePort;
 class WebBlobInfo;
 
 typedef HeapVector<Member<MessagePort>, 1> MessagePortArray;
-typedef Vector<RefPtr<DOMArrayBufferBase>, 1> ArrayBufferArray;
+typedef HeapVector<Member<DOMArrayBufferBase>, 1> ArrayBufferArray;
 typedef HashMap<String, RefPtr<BlobDataHandle>> BlobDataHandleMap;
 typedef Vector<WebBlobInfo> WebBlobInfoArray;
 typedef HeapVector<Member<ImageBitmap>, 1> ImageBitmapArray;

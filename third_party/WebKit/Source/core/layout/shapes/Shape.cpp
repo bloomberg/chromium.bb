@@ -208,8 +208,8 @@ PassOwnPtr<Shape> Shape::createRasterShape(Image* image, float threshold, const 
 
         WTF::ArrayBufferContents contents;
         imageBuffer->getImageData(Unmultiplied, IntRect(IntPoint(), imageRect.size()), contents);
-        RefPtr<DOMArrayBuffer> arrayBuffer = DOMArrayBuffer::create(contents);
-        RefPtr<DOMUint8ClampedArray> pixelArray = DOMUint8ClampedArray::create(arrayBuffer, 0, arrayBuffer->byteLength());
+        DOMArrayBuffer* arrayBuffer = DOMArrayBuffer::create(contents);
+        DOMUint8ClampedArray* pixelArray = DOMUint8ClampedArray::create(arrayBuffer, 0, arrayBuffer->byteLength());
         unsigned pixelArrayOffset = 3; // Each pixel is four bytes: RGBA.
         uint8_t alphaPixelThreshold = threshold * 255;
 

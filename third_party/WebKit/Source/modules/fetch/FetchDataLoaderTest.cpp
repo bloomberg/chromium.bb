@@ -225,7 +225,7 @@ TEST(FetchDataLoaderTest, LoadAsArrayBuffer)
     OwnPtr<MockReader> reader = MockReader::create();
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsArrayBuffer();
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
-    RefPtr<DOMArrayBuffer> arrayBuffer;
+    DOMArrayBuffer* arrayBuffer = nullptr;
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));

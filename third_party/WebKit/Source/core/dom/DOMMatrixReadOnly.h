@@ -53,8 +53,8 @@ public:
     DOMMatrix* scaleNonUniform(double sx, double sy = 1, double sz = 1,
         double ox = 0, double oy = 0, double oz = 0);
 
-    PassRefPtr<DOMFloat32Array> toFloat32Array() const;
-    PassRefPtr<DOMFloat64Array> toFloat64Array() const;
+    DOMFloat32Array* toFloat32Array() const;
+    DOMFloat64Array* toFloat64Array() const;
 
     const TransformationMatrix& matrix() const { return *m_matrix; }
 

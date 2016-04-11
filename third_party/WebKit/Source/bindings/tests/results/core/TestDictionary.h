@@ -154,8 +154,8 @@ public:
     void setTestInterfaceSequenceMember(const Vector<RefPtr<TestInterfaceImplementation>>& value) { m_testInterfaceSequenceMember = value; }
 
     bool hasUint8ArrayMember() const { return m_uint8ArrayMember; }
-    PassRefPtr<DOMUint8Array> uint8ArrayMember() const { return m_uint8ArrayMember; }
-    void setUint8ArrayMember(PassRefPtr<DOMUint8Array> value) { m_uint8ArrayMember = value; }
+    DOMUint8Array* uint8ArrayMember() const { return m_uint8ArrayMember; }
+    void setUint8ArrayMember(DOMUint8Array* value) { m_uint8ArrayMember = value; }
 
     bool hasUnrestrictedDoubleMember() const { return !m_unrestrictedDoubleMember.isNull(); }
     double unrestrictedDoubleMember() const { return m_unrestrictedDoubleMember.get(); }
@@ -193,7 +193,7 @@ private:
     RefPtr<TestInterfaceImplementation> m_testInterfaceMember;
     RefPtr<TestInterfaceImplementation> m_testInterfaceOrNullMember;
     Nullable<Vector<RefPtr<TestInterfaceImplementation>>> m_testInterfaceSequenceMember;
-    RefPtr<DOMUint8Array> m_uint8ArrayMember;
+    Member<DOMUint8Array> m_uint8ArrayMember;
     Nullable<double> m_unrestrictedDoubleMember;
 
     friend class V8TestDictionary;

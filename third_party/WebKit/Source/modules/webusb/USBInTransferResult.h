@@ -33,13 +33,16 @@ public:
     virtual ~USBInTransferResult() { }
 
     String status() const { return m_status; }
-    PassRefPtr<DOMDataView> data() const { return m_data; }
+    DOMDataView* data() const { return m_data; }
 
-    DEFINE_INLINE_TRACE() { }
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_data);
+    }
 
 private:
     const String m_status;
-    const RefPtr<DOMDataView> m_data;
+    const Member<DOMDataView> m_data;
 };
 
 } // namespace blink

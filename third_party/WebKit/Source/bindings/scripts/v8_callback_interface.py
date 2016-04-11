@@ -64,7 +64,7 @@ def cpp_type(idl_type):
     # Callbacks use raw pointers, so raw_type=True
     raw_cpp_type = idl_type.cpp_type_args(raw_type=True)
     # Pass containers and dictionaries to callback method by const reference rather than by value
-    if raw_cpp_type.startswith(('Vector', 'HeapVector', 'HeapVector')) or idl_type.is_dictionary:
+    if raw_cpp_type.startswith(('Vector', 'HeapVector')) or idl_type.is_dictionary:
         return 'const %s&' % raw_cpp_type
     return raw_cpp_type
 

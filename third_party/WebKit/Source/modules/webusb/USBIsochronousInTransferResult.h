@@ -17,12 +17,12 @@ namespace blink {
 class USBIsochronousInTransferResult final : public GarbageCollectedFinalized<USBIsochronousInTransferResult>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static USBIsochronousInTransferResult* create(PassRefPtr<DOMArrayBuffer> data, const HeapVector<Member<USBIsochronousInTransferPacket>>& packets)
+    static USBIsochronousInTransferResult* create(DOMArrayBuffer* data, const HeapVector<Member<USBIsochronousInTransferPacket>>& packets)
     {
         return new USBIsochronousInTransferResult(data, packets);
     }
 
-    USBIsochronousInTransferResult(PassRefPtr<DOMArrayBuffer> data, const HeapVector<Member<USBIsochronousInTransferPacket>>& packets)
+    USBIsochronousInTransferResult(DOMArrayBuffer* data, const HeapVector<Member<USBIsochronousInTransferPacket>>& packets)
         : m_packets(packets)
     {
         unsigned byteLength = data->byteLength();
@@ -31,16 +31,20 @@ public:
 
     virtual ~USBIsochronousInTransferResult() {}
 
-    PassRefPtr<DOMDataView> data() const { return m_data; }
+    DOMDataView* data() const { return m_data; }
     const HeapVector<Member<USBIsochronousInTransferPacket>>& packets() const
     {
         return m_packets;
     }
 
-    DEFINE_INLINE_TRACE() { visitor->trace(m_packets); }
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_data);
+        visitor->trace(m_packets);
+    }
 
 private:
-    RefPtr<DOMDataView> m_data;
+    Member<DOMDataView> m_data;
     const HeapVector<Member<USBIsochronousInTransferPacket>> m_packets;
 };
 

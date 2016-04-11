@@ -42,7 +42,7 @@ public:
     DOMArrayBufferView* full() const
     {
         DCHECK(isFull());
-        return m_full.get();
+        return m_full;
     }
 
     // WARNING: The pointer returned by baseAddressMaybeOnStack() may point to
@@ -69,7 +69,7 @@ public:
     operator bool() const { return !isEmpty(); }
 
 private:
-    RefPtr<DOMArrayBufferView> m_full;
+    Member<DOMArrayBufferView> m_full;
 
     void* m_smallData;
     size_t m_smallLength;

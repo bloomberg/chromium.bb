@@ -60,7 +60,7 @@ public:
 
 private:
     // m_curve represents the non-linear shaping curve.
-    RefPtr<DOMFloat32Array> m_curve;
+    CrossThreadPersistent<DOMFloat32Array> m_curve;
 
     OverSampleType m_oversample;
 };

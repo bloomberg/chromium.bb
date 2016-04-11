@@ -36,7 +36,6 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
@@ -47,7 +46,7 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
     DEFINE_WRAPPERTYPEINFO();
 public:
     static ImageData* create(const IntSize&);
-    static ImageData* create(const IntSize&, PassRefPtr<DOMUint8ClampedArray>);
+    static ImageData* create(const IntSize&, DOMUint8ClampedArray*);
     static ImageData* create(unsigned width, unsigned height, ExceptionState&);
     static ImageData* create(DOMUint8ClampedArray*, unsigned width, ExceptionState&);
     static ImageData* create(DOMUint8ClampedArray*, unsigned width, unsigned height, ExceptionState&);
@@ -62,19 +61,22 @@ public:
     IntSize bitmapSourceSize() const override { return m_size; }
     ScriptPromise createImageBitmap(ScriptState*, EventTarget&, int sx, int sy, int sw, int sh, const ImageBitmapOptions&, ExceptionState&) override;
 
-    DEFINE_INLINE_TRACE() { }
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_data);
+    }
 
     void dispose();
 
     v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override WARN_UNUSED_RETURN;
 
 private:
-    ImageData(const IntSize&, PassRefPtr<DOMUint8ClampedArray>);
+    ImageData(const IntSize&, DOMUint8ClampedArray*);
 
     static bool validateConstructorArguments(DOMUint8ClampedArray*, unsigned width, unsigned&, ExceptionState&);
 
     IntSize m_size;
-    RefPtr<DOMUint8ClampedArray> m_data;
+    Member<DOMUint8ClampedArray> m_data;
 };
 
 } // namespace blink

@@ -191,11 +191,12 @@ void ImageBitmapFactories::ImageBitmapLoader::rejectPromise()
 
 void ImageBitmapFactories::ImageBitmapLoader::didFinishLoading()
 {
-    if (!m_loader.arrayBufferResult()) {
+    DOMArrayBuffer* arrayBuffer = m_loader.arrayBufferResult();
+    if (!arrayBuffer) {
         rejectPromise();
         return;
     }
-    scheduleAsyncImageBitmapDecoding();
+    scheduleAsyncImageBitmapDecoding(arrayBuffer);
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::didFail(FileError::ErrorCode)
@@ -203,21 +204,23 @@ void ImageBitmapFactories::ImageBitmapLoader::didFail(FileError::ErrorCode)
     rejectPromise();
 }
 
-void ImageBitmapFactories::ImageBitmapLoader::scheduleAsyncImageBitmapDecoding()
+void ImageBitmapFactories::ImageBitmapLoader::scheduleAsyncImageBitmapDecoding(DOMArrayBuffer* arrayBuffer)
 {
     // For a 4000*4000 png image where each 10*10 tile is filled in by a random RGBA value,
     // the byteLength is around 2M, and it typically takes around 4.5ms to decode on a
     // current model of Linux desktop.
     const int longTaskByteLengthThreshold = 2000000;
-    BackgroundTaskRunner::TaskSize taskSize = (m_loader.arrayBufferResult()->byteLength() >= longTaskByteLengthThreshold) ? BackgroundTaskRunner::TaskSizeLongRunningTask : BackgroundTaskRunner::TaskSizeShortRunningTask;
+    BackgroundTaskRunner::TaskSize taskSize = BackgroundTaskRunner::TaskSizeShortRunningTask;
+    if (arrayBuffer->byteLength() >= longTaskByteLengthThreshold)
+        taskSize = BackgroundTaskRunner::TaskSizeLongRunningTask;
     WebTaskRunner* taskRunner = Platform::current()->currentThread()->getWebTaskRunner();
-    BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, threadSafeBind(&ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread, AllowCrossThreadAccess(this), AllowCrossThreadAccess(taskRunner)), taskSize);
+    BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, threadSafeBind(&ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread, AllowCrossThreadAccess(this), AllowCrossThreadAccess(taskRunner), AllowCrossThreadAccess(arrayBuffer)), taskSize);
 }
 
-void ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread(WebTaskRunner* taskRunner)
+void ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread(WebTaskRunner* taskRunner, DOMArrayBuffer* arrayBuffer)
 {
     ASSERT(!isMainThread());
-    RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create((char*)m_loader.arrayBufferResult()->data(), static_cast<size_t>(m_loader.arrayBufferResult()->byteLength()));
+    RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create(static_cast<char*>(arrayBuffer->data()), static_cast<size_t>(arrayBuffer->byteLength()));
 
     ImageDecoder::AlphaOption alphaOp = ImageDecoder::AlphaPremultiplied;
     if (m_options.premultiplyAlpha() == "none")

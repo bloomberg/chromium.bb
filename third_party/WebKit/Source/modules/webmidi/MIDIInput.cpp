@@ -89,7 +89,7 @@ void MIDIInput::didReceiveMIDIData(unsigned portIndex, const unsigned char* data
     // unless the current process has an explicit permission to handle sysex message.
     if (data[0] == 0xf0 && !midiAccess()->sysexEnabled())
         return;
-    RefPtr<DOMUint8Array> array = DOMUint8Array::create(data, length);
+    DOMUint8Array* array = DOMUint8Array::create(data, length);
     dispatchEvent(MIDIMessageEvent::create(timeStamp, array));
 }
 

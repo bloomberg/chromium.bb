@@ -58,7 +58,7 @@ private:
     MediaEncryptedEvent(const AtomicString& type, const MediaEncryptedEventInit& initializer);
 
     String m_initDataType;
-    RefPtr<DOMArrayBuffer> m_initData;
+    Member<DOMArrayBuffer> m_initData;
 };
 
 } // namespace blink
