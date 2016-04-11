@@ -33,7 +33,7 @@
       The main feature of this interface is accurate presentation
       timing feedback to ensure smooth video playback while maintaining
       audio/video synchronization. Some features use the concept of a
-      presentation clock, which is defined in presentation.clock_id
+      presentation clock, which is defined in the presentation.clock_id
       event.
 
       Request 'feedback' can be regarded as an additional wl_surface
@@ -79,7 +79,7 @@
         multiple presentation_feedback objects are created for the same
         submission, they will all deliver the same information.
 
-        For details on what information is returned, see
+        For details on what information is returned, see the
         presentation_feedback interface.
       </description>
 
@@ -140,7 +140,7 @@
       update because it was superseded or its surface destroyed,
       and the content update is discarded.
 
-      Once a presentation_feedback object has delivered an 'presented'
+      Once a presentation_feedback object has delivered a 'presented'
       or 'discarded' event it is automatically destroyed.
     </description>
 
