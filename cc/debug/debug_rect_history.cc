@@ -100,8 +100,7 @@ void DebugRectHistory::SavePropertyChangedRects(
          ++layer_index) {
       LayerImpl* layer = layer_list[layer_index];
 
-      if (LayerTreeHostCommon::RenderSurfaceContributesToTarget<LayerImpl>(
-              layer, render_surface_layer->id()))
+      if (layer->render_surface() && layer->render_surface() != render_surface)
         continue;
 
       if (layer == hud_layer)

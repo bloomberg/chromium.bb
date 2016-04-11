@@ -628,11 +628,9 @@ void LayerTreeHostImpl::TrackDamageForAllSurfaces(
     RenderSurfaceImpl* render_surface = render_surface_layer->render_surface();
     DCHECK(render_surface);
     render_surface->damage_tracker()->UpdateDamageTrackingState(
-        render_surface->layer_list(),
-        render_surface_layer->id(),
+        render_surface->layer_list(), render_surface,
         render_surface->SurfacePropertyChangedOnlyFromDescendant(),
-        render_surface->content_rect(),
-        render_surface_layer->mask_layer(),
+        render_surface->content_rect(), render_surface_layer->mask_layer(),
         render_surface_layer->filters());
   }
 }

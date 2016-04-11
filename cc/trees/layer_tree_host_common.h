@@ -140,10 +140,6 @@ class CC_EXPORT LayerTreeHostCommon {
   static void CalculateDrawProperties(
       CalcDrawPropsImplInputsForTesting* inputs);
 
-  template <typename LayerType>
-  static bool RenderSurfaceContributesToTarget(LayerType*,
-                                               int target_surface_layer_id);
-
   template <typename Function>
   static void CallFunctionForEveryLayer(LayerTreeHost* layer,
                                         const Function& function,
@@ -153,15 +149,6 @@ class CC_EXPORT LayerTreeHostCommon {
   static void CallFunctionForEveryLayer(LayerTreeImpl* layer,
                                         const Function& function,
                                         const CallFunctionLayerType& type);
-
-  static Layer* get_layer_as_raw_ptr(const LayerList& layers, size_t index) {
-    return layers[index].get();
-  }
-
-  static LayerImpl* get_layer_as_raw_ptr(const LayerImplList& layers,
-                                         size_t index) {
-    return layers[index];
-  }
 
   struct CC_EXPORT ScrollUpdateInfo {
     int layer_id;
@@ -193,24 +180,6 @@ struct CC_EXPORT ScrollAndScaleSet {
  private:
   DISALLOW_COPY_AND_ASSIGN(ScrollAndScaleSet);
 };
-
-template <typename LayerType>
-bool LayerTreeHostCommon::RenderSurfaceContributesToTarget(
-    LayerType* layer,
-    int target_surface_layer_id) {
-  // A layer will either contribute its own content, or its render surface's
-  // content, to the target surface. The layer contributes its surface's content
-  // when both the following are true:
-  //  (1) The layer actually has a render surface and rendering into that
-  //      surface, and
-  //  (2) The layer's render surface is not the same as the target surface.
-  //
-  // Otherwise, the layer just contributes itself to the target surface.
-
-  return layer->has_render_surface() &&
-         layer->render_target() == layer->render_surface() &&
-         layer->id() != target_surface_layer_id;
-}
 
 template <typename LayerType, typename Function>
 static void CallFunctionForLayer(LayerType* layer,

@@ -69,7 +69,7 @@ void EmulateDrawingOneFrame(LayerImpl* root) {
     RenderSurfaceImpl* target_surface =
         render_surface_layer_list[index]->render_surface();
     target_surface->damage_tracker()->UpdateDamageTrackingState(
-        target_surface->layer_list(), target_surface->OwningLayerId(),
+        target_surface->layer_list(), target_surface,
         target_surface->SurfacePropertyChangedOnlyFromDescendant(),
         target_surface->content_rect(),
         render_surface_layer_list[index]->mask_layer(),
@@ -1478,12 +1478,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForEmptyLayerList) {
 
   LayerImplList empty_list;
   target_surface->damage_tracker()->UpdateDamageTrackingState(
-      empty_list,
-      target_surface->OwningLayerId(),
-      false,
-      gfx::Rect(),
-      NULL,
-      FilterOperations());
+      empty_list, target_surface, false, gfx::Rect(), NULL, FilterOperations());
 
   gfx::Rect damage_rect =
       target_surface->damage_tracker()->current_damage_rect();

@@ -246,13 +246,12 @@ class LayerIterator {
   inline LayerImpl* current_layer() const {
     return current_layer_represents_target_render_surface()
                ? target_render_surface_layer()
-               : LayerTreeHostCommon::get_layer_as_raw_ptr(
-                     target_render_surface_children(), current_layer_index_);
+               : target_render_surface_children().at(current_layer_index_);
   }
 
   inline bool current_layer_represents_contributing_render_surface() const {
-    return LayerTreeHostCommon::RenderSurfaceContributesToTarget<LayerImpl>(
-        current_layer(), target_render_surface_layer()->id());
+    return current_layer()->render_surface() &&
+           current_layer()->render_surface() != target_render_surface();
   }
   inline bool current_layer_represents_target_render_surface() const {
     return current_layer_index_ ==

@@ -39,7 +39,7 @@ class CC_EXPORT DamageTracker {
   }
   void UpdateDamageTrackingState(
       const LayerImplList& layer_list,
-      int target_surface_layer_id,
+      const RenderSurfaceImpl* target_surface,
       bool target_surface_property_changed_only_from_descendant,
       const gfx::Rect& target_surface_content_rect,
       LayerImpl* target_surface_mask_layer,
@@ -50,8 +50,9 @@ class CC_EXPORT DamageTracker {
  private:
   DamageTracker();
 
-  gfx::Rect TrackDamageFromActiveLayers(const LayerImplList& layer_list,
-                                        int target_surface_layer_id);
+  gfx::Rect TrackDamageFromActiveLayers(
+      const LayerImplList& layer_list,
+      const RenderSurfaceImpl* target_surface);
   gfx::Rect TrackDamageFromSurfaceMask(LayerImpl* target_surface_mask_layer);
   gfx::Rect TrackDamageFromLeftoverRects();
 
