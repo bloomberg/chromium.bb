@@ -1375,7 +1375,8 @@ void PasswordAutofillAgent::OnFillPasswordForm(
     password_info.key = key;
     password_info.password_field = password_element;
     web_input_to_password_info_[main_element] = password_info;
-    password_to_username_[password_element] = username_element;
+    if (!main_element.isPasswordField())
+      password_to_username_[password_element] = username_element;
   }
 }
 
