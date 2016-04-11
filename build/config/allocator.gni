@@ -11,7 +11,7 @@ if (is_android || current_cpu == "mipsel" || is_mac || is_ios || is_asan ||
   _default_allocator = "tcmalloc"
 }
 
-if (is_linux && !is_asan && !is_lsan && !is_tsan && !is_msan) {
+if ((is_linux || is_android) && !is_asan && !is_lsan && !is_tsan && !is_msan) {
   _default_use_experimental_allocator_shim = true
 } else {
   _default_use_experimental_allocator_shim = false
