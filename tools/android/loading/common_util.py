@@ -3,10 +3,23 @@
 # found in the LICENSE file.
 
 import contextlib
+import json
 import logging
+import os
+import re
 import shutil
+import sys
 import tempfile
 import time
+
+
+def VerboseCompileRegexOrAbort(regex):
+  """Compiles a user-provided regular expression, exits the program on error."""
+  try:
+    return re.compile(regex)
+  except re.error as e:
+    sys.stderr.write('invalid regex: {}\n{}\n'.format(regex, e))
+    sys.exit(2)
 
 
 def PollFor(condition, condition_name, interval=5):
