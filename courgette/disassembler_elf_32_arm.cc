@@ -4,10 +4,10 @@
 
 #include "courgette/disassembler_elf_32_arm.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "courgette/assembly_program.h"
 #include "courgette/courgette.h"
 
@@ -427,7 +427,7 @@ CheckBool DisassemblerElf32ARM::ParseRel32RelocsFromSection(
     // Heuristic discovery of rel32 locations in instruction stream: are the
     // next few bytes the start of an instruction containing a rel32
     // addressing mode?
-    scoped_ptr<TypedRVAARM> rel32_rva;
+    std::unique_ptr<TypedRVAARM> rel32_rva;
     RVA target_rva = 0;
     bool found = false;
 

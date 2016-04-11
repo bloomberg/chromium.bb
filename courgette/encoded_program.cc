@@ -279,7 +279,7 @@ enum FieldSelect {
 
 static FieldSelect GetFieldSelect() {
   // TODO(sra): Use better configuration.
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   std::string s;
   env->GetVar("A_FIELDS", &s);
   uint64_t fields;
@@ -781,9 +781,9 @@ Status WriteEncodedProgram(EncodedProgram* encoded, SinkStreamSet* sink) {
 }
 
 Status ReadEncodedProgram(SourceStreamSet* streams,
-                          scoped_ptr<EncodedProgram>* output) {
+                          std::unique_ptr<EncodedProgram>* output) {
   output->reset();
-  scoped_ptr<EncodedProgram> encoded(new EncodedProgram());
+  std::unique_ptr<EncodedProgram> encoded(new EncodedProgram());
   if (!encoded->ReadFrom(streams))
     return C_DESERIALIZATION_FAILED;
 

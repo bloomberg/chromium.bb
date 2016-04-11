@@ -9,12 +9,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/free_deleter.h"
-#include "base/memory/scoped_ptr.h"
 #include "courgette/courgette.h"
 #include "courgette/image_utils.h"
 #include "courgette/label_manager.h"
@@ -133,7 +133,7 @@ class AssemblyProgram {
   void UnassignIndexes();
   void AssignRemainingIndexes();
 
-  scoped_ptr<EncodedProgram> Encode() const;
+  std::unique_ptr<EncodedProgram> Encode() const;
 
   // Accessor for instruction list.
   const InstructionVector& instructions() const {
@@ -158,7 +158,7 @@ class AssemblyProgram {
 
  private:
   using ScopedInstruction =
-      scoped_ptr<Instruction, UncheckedDeleter<Instruction>>;
+      std::unique_ptr<Instruction, UncheckedDeleter<Instruction>>;
 
   ExecutableType kind_;
 
@@ -177,7 +177,7 @@ class AssemblyProgram {
 
   // Sharing instructions that emit a single byte saves a lot of space.
   Instruction* GetByteInstruction(uint8_t byte);
-  scoped_ptr<Instruction* [], base::FreeDeleter> byte_instruction_cache_;
+  std::unique_ptr<Instruction* [], base::FreeDeleter> byte_instruction_cache_;
 
   uint64_t image_base_;  // Desired or mandated base address of image.
 
@@ -196,7 +196,7 @@ class AssemblyProgram {
 // Returns C_OK if succeeded, otherwise returns an error status and sets
 // |*output| to null.
 Status Encode(const AssemblyProgram& program,
-              scoped_ptr<EncodedProgram>* output);
+              std::unique_ptr<EncodedProgram>* output);
 
 }  // namespace courgette
 

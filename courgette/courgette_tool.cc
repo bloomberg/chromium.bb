@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -13,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -80,14 +80,14 @@ void Disassemble(const base::FilePath& input_file,
                  const base::FilePath& output_file) {
   std::string buffer = ReadOrFail(input_file, "input");
 
-  scoped_ptr<courgette::AssemblyProgram> program;
+  std::unique_ptr<courgette::AssemblyProgram> program;
   const courgette::Status parse_status =
       courgette::ParseDetectedExecutable(buffer.c_str(), buffer.length(),
                                          &program);
   if (parse_status != courgette::C_OK)
     Problem("Can't parse input (code = %d).", parse_status);
 
-  scoped_ptr<courgette::EncodedProgram> encoded;
+  std::unique_ptr<courgette::EncodedProgram> encoded;
   const courgette::Status encode_status = Encode(*program, &encoded);
   if (encode_status != courgette::C_OK)
     Problem("Can't encode program.");
@@ -160,7 +160,7 @@ void DisassembleAndAdjust(const base::FilePath& program_file,
   std::string program_buffer = ReadOrFail(program_file, "program");
   std::string model_buffer = ReadOrFail(model_file, "reference");
 
-  scoped_ptr<courgette::AssemblyProgram> program;
+  std::unique_ptr<courgette::AssemblyProgram> program;
   const courgette::Status parse_program_status =
       courgette::ParseDetectedExecutable(program_buffer.c_str(),
                                          program_buffer.length(),
@@ -168,7 +168,7 @@ void DisassembleAndAdjust(const base::FilePath& program_file,
   if (parse_program_status != courgette::C_OK)
     Problem("Can't parse program input (code = %d).", parse_program_status);
 
-  scoped_ptr<courgette::AssemblyProgram> model;
+  std::unique_ptr<courgette::AssemblyProgram> model;
   const courgette::Status parse_model_status =
       courgette::ParseDetectedExecutable(model_buffer.c_str(),
                                          model_buffer.length(),
@@ -182,7 +182,7 @@ void DisassembleAndAdjust(const base::FilePath& program_file,
 
   model.reset();
 
-  scoped_ptr<courgette::EncodedProgram> encoded;
+  std::unique_ptr<courgette::EncodedProgram> encoded;
   const courgette::Status encode_status = Encode(*program, &encoded);
   if (encode_status != courgette::C_OK)
     Problem("Can't encode program.");
@@ -216,7 +216,7 @@ void DisassembleAdjustDiff(const base::FilePath& model_file,
   std::string model_buffer = ReadOrFail(model_file, "'old'");
   std::string program_buffer = ReadOrFail(program_file, "'new'");
 
-  scoped_ptr<courgette::AssemblyProgram> model;
+  std::unique_ptr<courgette::AssemblyProgram> model;
   const courgette::Status parse_model_status =
       courgette::ParseDetectedExecutable(model_buffer.c_str(),
                                          model_buffer.length(),
@@ -224,7 +224,7 @@ void DisassembleAdjustDiff(const base::FilePath& model_file,
   if (parse_model_status != courgette::C_OK)
     Problem("Can't parse model input (code = %d).", parse_model_status);
 
-  scoped_ptr<courgette::AssemblyProgram> program;
+  std::unique_ptr<courgette::AssemblyProgram> program;
   const courgette::Status parse_program_status =
       courgette::ParseDetectedExecutable(program_buffer.c_str(),
                                          program_buffer.length(),
@@ -238,7 +238,7 @@ void DisassembleAdjustDiff(const base::FilePath& model_file,
       Problem("Can't adjust program.");
   }
 
-  scoped_ptr<courgette::EncodedProgram> encoded_program;
+  std::unique_ptr<courgette::EncodedProgram> encoded_program;
   const courgette::Status encode_program_status =
       Encode(*program, &encoded_program);
   if (encode_program_status != courgette::C_OK)
@@ -246,7 +246,7 @@ void DisassembleAdjustDiff(const base::FilePath& model_file,
 
   program.reset();
 
-  scoped_ptr<courgette::EncodedProgram> encoded_model;
+  std::unique_ptr<courgette::EncodedProgram> encoded_model;
   const courgette::Status encode_model_status = Encode(*model, &encoded_model);
   if (encode_model_status != courgette::C_OK)
     Problem("Can't encode model.");
@@ -300,7 +300,7 @@ void Assemble(const base::FilePath& input_file,
   if (!sources.Init(buffer.c_str(), buffer.length()))
     Problem("Bad input file.");
 
-  scoped_ptr<courgette::EncodedProgram> encoded;
+  std::unique_ptr<courgette::EncodedProgram> encoded;
   const courgette::Status read_status =
       courgette::ReadEncodedProgram(&sources, &encoded);
   if (read_status != courgette::C_OK)

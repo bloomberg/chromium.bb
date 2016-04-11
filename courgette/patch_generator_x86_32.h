@@ -8,9 +8,10 @@
 #ifndef COURGETTE_WIN32_X86_GENERATOR_H_
 #define COURGETTE_WIN32_X86_GENERATOR_H_
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "courgette/assembly_program.h"
 #include "courgette/ensemble.h"
 #include "courgette/program_detector.h"
@@ -62,7 +63,7 @@ class PatchGeneratorX86_32 : public TransformationPatchGenerator {
 
     // Generate old version of program using |corrected_parameters|.
     // TODO(sra): refactor to use same code from patcher_.
-    scoped_ptr<AssemblyProgram> old_program;
+    std::unique_ptr<AssemblyProgram> old_program;
     Status old_parse_status =
         ParseDetectedExecutable(old_element_->region().start(),
                                 old_element_->region().length(),
@@ -74,7 +75,7 @@ class PatchGeneratorX86_32 : public TransformationPatchGenerator {
 
     // TODO(huangs): Move the block below to right before |new_program| gets
     // used, so we can reduce Courgette-gen peak memory.
-    scoped_ptr<AssemblyProgram> new_program;
+    std::unique_ptr<AssemblyProgram> new_program;
     Status new_parse_status =
         ParseDetectedExecutable(new_element_->region().start(),
                                 new_element_->region().length(),
@@ -84,7 +85,7 @@ class PatchGeneratorX86_32 : public TransformationPatchGenerator {
       return new_parse_status;
     }
 
-    scoped_ptr<EncodedProgram> old_encoded;
+    std::unique_ptr<EncodedProgram> old_encoded;
     Status old_encode_status = Encode(*old_program, &old_encoded);
     if (old_encode_status != C_OK)
       return old_encode_status;
@@ -102,7 +103,7 @@ class PatchGeneratorX86_32 : public TransformationPatchGenerator {
     if (adjust_status != C_OK)
       return adjust_status;
 
-    scoped_ptr<EncodedProgram> new_encoded;
+    std::unique_ptr<EncodedProgram> new_encoded;
     Status new_encode_status = Encode(*new_program, &new_encoded);
     if (new_encode_status != C_OK)
       return new_encode_status;

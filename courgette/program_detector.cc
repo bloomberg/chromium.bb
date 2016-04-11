@@ -19,8 +19,9 @@ namespace {
 
 // Returns a new instance of Disassembler subclass if binary data given in
 // |buffer| and |length| matches a known binary format, otherwise null.
-scoped_ptr<Disassembler> DetectDisassembler(const void* buffer, size_t length) {
-  scoped_ptr<Disassembler> disassembler;
+std::unique_ptr<Disassembler> DetectDisassembler(const void* buffer,
+                                                 size_t length) {
+  std::unique_ptr<Disassembler> disassembler;
 
   disassembler.reset(new DisassemblerWin32X86(buffer, length));
   if (disassembler->ParseHeader())
@@ -47,9 +48,10 @@ Status DetectExecutableType(const void* buffer,
                             size_t length,
                             ExecutableType* type,
                             size_t* detected_length) {
-  scoped_ptr<Disassembler> disassembler(DetectDisassembler(buffer, length));
+  std::unique_ptr<Disassembler> disassembler(
+      DetectDisassembler(buffer, length));
 
-   if (!disassembler) {  // We failed to detect anything.
+  if (!disassembler) {  // We failed to detect anything.
     *type = EXE_UNKNOWN;
     *detected_length = 0;
     return C_INPUT_NOT_RECOGNIZED;
@@ -62,14 +64,15 @@ Status DetectExecutableType(const void* buffer,
 
 Status ParseDetectedExecutable(const void* buffer,
                                size_t length,
-                               scoped_ptr<AssemblyProgram>* output) {
+                               std::unique_ptr<AssemblyProgram>* output) {
   output->reset();
 
-  scoped_ptr<Disassembler> disassembler(DetectDisassembler(buffer, length));
+  std::unique_ptr<Disassembler> disassembler(
+      DetectDisassembler(buffer, length));
   if (!disassembler)
     return C_INPUT_NOT_RECOGNIZED;
 
-  scoped_ptr<AssemblyProgram> program(
+  std::unique_ptr<AssemblyProgram> program(
       new AssemblyProgram(disassembler->kind()));
 
   if (!disassembler->Disassemble(program.get()))

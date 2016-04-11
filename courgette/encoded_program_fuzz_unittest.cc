@@ -14,7 +14,8 @@
 
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/test/test_suite.h"
 #include "courgette/assembly_program.h"
 #include "courgette/base_test_unittest.h"
@@ -43,13 +44,13 @@ void DecodeFuzzTest::FuzzExe(const char* file_name) const {
   const void* original_buffer = file1.c_str();
   size_t original_length = file1.length();
 
-  scoped_ptr<courgette::AssemblyProgram> program;
+  std::unique_ptr<courgette::AssemblyProgram> program;
   const courgette::Status parse_status =
       courgette::ParseDetectedExecutable(original_buffer, original_length,
                                          &program);
   EXPECT_EQ(courgette::C_OK, parse_status);
 
-  scoped_ptr<courgette::EncodedProgram> encoded;
+  std::unique_ptr<courgette::EncodedProgram> encoded;
   const courgette::Status encode_status = Encode(*program, &encoded);
   EXPECT_EQ(courgette::C_OK, encode_status);
 
@@ -173,7 +174,7 @@ void DecodeFuzzTest::FuzzBits(const std::string& base_buffer,
 
 bool DecodeFuzzTest::TryAssemble(const std::string& buffer,
                                  std::string* output) const {
-  scoped_ptr<courgette::EncodedProgram> encoded;
+  std::unique_ptr<courgette::EncodedProgram> encoded;
   bool result = false;
 
   courgette::SourceStreamSet sources;

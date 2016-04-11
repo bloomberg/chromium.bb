@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "courgette/base_test_unittest.h"
 
@@ -23,7 +23,7 @@ class DisassemblerWin32X86Test : public BaseTest {
 void DisassemblerWin32X86Test::TestExe() const {
   std::string file1 = FileContents("setup1.exe");
 
-  scoped_ptr<courgette::DisassemblerWin32X86> disassembler(
+  std::unique_ptr<courgette::DisassemblerWin32X86> disassembler(
       new courgette::DisassemblerWin32X86(file1.c_str(), file1.length()));
 
   bool can_parse_header = disassembler->ParseHeader();
@@ -65,7 +65,7 @@ void DisassemblerWin32X86Test::TestExe() const {
 void DisassemblerWin32X86Test::TestExe64() const {
   std::string file1 = FileContents("pe-64.exe");
 
-  scoped_ptr<courgette::DisassemblerWin32X86> disassembler(
+  std::unique_ptr<courgette::DisassemblerWin32X86> disassembler(
       new courgette::DisassemblerWin32X86(file1.c_str(), file1.length()));
 
   bool can_parse_header = disassembler->ParseHeader();
@@ -83,7 +83,7 @@ void DisassemblerWin32X86Test::TestExe64() const {
 void DisassemblerWin32X86Test::TestResourceDll() const {
   std::string file1 = FileContents("en-US.dll");
 
-  scoped_ptr<courgette::DisassemblerWin32X86> disassembler(
+  std::unique_ptr<courgette::DisassemblerWin32X86> disassembler(
       new courgette::DisassemblerWin32X86(file1.c_str(), file1.length()));
 
   bool can_parse_header = disassembler->ParseHeader();

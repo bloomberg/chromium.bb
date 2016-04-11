@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "courgette/assembly_program.h"
 #include "courgette/courgette.h"
@@ -27,9 +27,9 @@ class AdjustmentMethodTest : public testing::Test {
 
   // Returns one of two similar simple programs. These differ only in Label
   // assignment, so it is possible to make them look identical.
-  scoped_ptr<courgette::AssemblyProgram> MakeProgram(int kind) const {
-    scoped_ptr<courgette::AssemblyProgram> prog(
-      new courgette::AssemblyProgram(courgette::EXE_WIN_32_X86));
+  std::unique_ptr<courgette::AssemblyProgram> MakeProgram(int kind) const {
+    std::unique_ptr<courgette::AssemblyProgram> prog(
+        new courgette::AssemblyProgram(courgette::EXE_WIN_32_X86));
     prog->set_image_base(0x00400000);
 
     courgette::Label* labelA = prog->FindOrMakeAbs32Label(0x00410000);
@@ -54,17 +54,18 @@ class AdjustmentMethodTest : public testing::Test {
     return prog;
   }
 
-  scoped_ptr<courgette::AssemblyProgram> MakeProgramA() const {
+  std::unique_ptr<courgette::AssemblyProgram> MakeProgramA() const {
     return MakeProgram(0);
   }
-  scoped_ptr<courgette::AssemblyProgram> MakeProgramB() const {
+  std::unique_ptr<courgette::AssemblyProgram> MakeProgramB() const {
     return MakeProgram(1);
   }
 
   // Returns a string that is the serialized version of |program|.
   // Deletes |program|.
-  std::string Serialize(scoped_ptr<courgette::AssemblyProgram> program) const {
-    scoped_ptr<courgette::EncodedProgram> encoded;
+  std::string Serialize(
+      std::unique_ptr<courgette::AssemblyProgram> program) const {
+    std::unique_ptr<courgette::EncodedProgram> encoded;
 
     const courgette::Status encode_status = Encode(*program, &encoded);
     EXPECT_EQ(courgette::C_OK, encode_status);
@@ -89,16 +90,16 @@ class AdjustmentMethodTest : public testing::Test {
 
 
 void AdjustmentMethodTest::Test1() const {
-  scoped_ptr<courgette::AssemblyProgram> prog1 = MakeProgramA();
-  scoped_ptr<courgette::AssemblyProgram> prog2 = MakeProgramB();
+  std::unique_ptr<courgette::AssemblyProgram> prog1 = MakeProgramA();
+  std::unique_ptr<courgette::AssemblyProgram> prog2 = MakeProgramB();
   std::string s1 = Serialize(std::move(prog1));
   std::string s2 = Serialize(std::move(prog2));
 
   // Don't use EXPECT_EQ because strings are unprintable.
   EXPECT_FALSE(s1 == s2);  // Unadjusted A and B differ.
 
-  scoped_ptr<courgette::AssemblyProgram> prog5 = MakeProgramA();
-  scoped_ptr<courgette::AssemblyProgram> prog6 = MakeProgramB();
+  std::unique_ptr<courgette::AssemblyProgram> prog5 = MakeProgramA();
+  std::unique_ptr<courgette::AssemblyProgram> prog6 = MakeProgramB();
   courgette::Status can_adjust = Adjust(*prog5, prog6.get());
   EXPECT_EQ(courgette::C_OK, can_adjust);
   std::string s5 = Serialize(std::move(prog5));

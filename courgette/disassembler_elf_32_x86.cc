@@ -4,10 +4,10 @@
 
 #include "courgette/disassembler_elf_32_x86.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "courgette/assembly_program.h"
 #include "courgette/courgette.h"
 
@@ -178,7 +178,7 @@ CheckBool DisassemblerElf32X86::ParseRel32RelocsFromSection(
         }
       }
 
-      scoped_ptr<TypedRVAX86> typed_rel32_rva(new TypedRVAX86(rel32_rva));
+      std::unique_ptr<TypedRVAX86> typed_rel32_rva(new TypedRVAX86(rel32_rva));
       if (!typed_rel32_rva->ComputeRelativeTarget(rel32))
         return false;
 

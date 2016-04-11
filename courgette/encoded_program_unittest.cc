@@ -7,10 +7,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "courgette/image_utils.h"
 #include "courgette/label_manager.h"
 #include "courgette/streams.h"
@@ -51,12 +51,13 @@ class RVAToLabelMaker {
 
 // Creates a simple new program with given addresses. The orders of elements
 // in |abs32_specs| and |rel32_specs| are important.
-scoped_ptr<EncodedProgram> CreateTestProgram(RVAToLabelMaker* abs32_maker,
-                                             RVAToLabelMaker* rel32_maker) {
+std::unique_ptr<EncodedProgram> CreateTestProgram(
+    RVAToLabelMaker* abs32_maker,
+    RVAToLabelMaker* rel32_maker) {
   RVAToLabel* abs32_labels = abs32_maker->Make();
   RVAToLabel* rel32_labels = rel32_maker->Make();
 
-  scoped_ptr<EncodedProgram> program(new EncodedProgram());
+  std::unique_ptr<EncodedProgram> program(new EncodedProgram());
 
   uint32_t base = 0x00900000;
   program->set_image_base(base);
@@ -96,7 +97,7 @@ TEST(EncodedProgramTest, Test) {
   RVAToLabelMaker rel32_label_maker;
   rel32_label_maker.Add(5, 0);
 
-  scoped_ptr<EncodedProgram> program(
+  std::unique_ptr<EncodedProgram> program(
       CreateTestProgram(&abs32_label_maker, &rel32_label_maker));
 
   // Serialize and deserialize.
@@ -115,7 +116,7 @@ TEST(EncodedProgramTest, Test) {
   bool can_get_source_streams = sources.Init(buffer, length);
   EXPECT_TRUE(can_get_source_streams);
 
-  scoped_ptr<EncodedProgram> encoded2(new EncodedProgram());
+  std::unique_ptr<EncodedProgram> encoded2(new EncodedProgram());
   bool can_read = encoded2->ReadFrom(&sources);
   EXPECT_TRUE(can_read);
 
@@ -148,7 +149,7 @@ TEST(EncodedProgramTest, TestWriteAddress) {
   rel32_label_maker.Add(3, 32);
   rel32_label_maker.Add(1, 7);
 
-  scoped_ptr<EncodedProgram> program(
+  std::unique_ptr<EncodedProgram> program(
       CreateTestProgram(&abs32_label_maker, &rel32_label_maker));
 
   SinkStreamSet sinks;

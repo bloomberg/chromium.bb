@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "courgette/assembly_program.h"
 #include "courgette/encoded_program.h"
 #include "courgette/ensemble.h"
@@ -52,14 +53,14 @@ class PatcherX86_32 : public TransformationPatcher {
     if (!corrected_parameters->Empty())
       return C_GENERAL_ERROR;   // Don't expect any corrected parameters.
 
-    scoped_ptr<AssemblyProgram> program;
+    std::unique_ptr<AssemblyProgram> program;
     status = ParseDetectedExecutable(ensemble_region_.start() + base_offset_,
                                      base_length_,
                                      &program);
     if (status != C_OK)
       return status;
 
-    scoped_ptr<EncodedProgram> encoded;
+    std::unique_ptr<EncodedProgram> encoded;
     status = Encode(*program, &encoded);
     if (status != C_OK)
       return status;
@@ -72,7 +73,7 @@ class PatcherX86_32 : public TransformationPatcher {
   Status Reform(SourceStreamSet* transformed_element,
                 SinkStream* reformed_element) {
     Status status;
-    scoped_ptr<EncodedProgram> encoded_program;
+    std::unique_ptr<EncodedProgram> encoded_program;
     status = ReadEncodedProgram(transformed_element, &encoded_program);
     if (status != C_OK)
       return status;

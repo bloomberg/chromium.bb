@@ -4,7 +4,8 @@
 
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "courgette/assembly_program.h"
 #include "courgette/base_test_unittest.h"
 #include "courgette/courgette.h"
@@ -24,14 +25,14 @@ void EncodeDecodeTest::TestAssembleToStreamDisassemble(
   const void* original_buffer = file.c_str();
   size_t original_length = file.length();
 
-  scoped_ptr<courgette::AssemblyProgram> program;
+  std::unique_ptr<courgette::AssemblyProgram> program;
   const courgette::Status parse_status =
       courgette::ParseDetectedExecutable(original_buffer,
                                          original_length,
                                          &program);
   EXPECT_EQ(courgette::C_OK, parse_status);
 
-  scoped_ptr<courgette::EncodedProgram> encoded;
+  std::unique_ptr<courgette::EncodedProgram> encoded;
   const courgette::Status encode_status = Encode(*program, &encoded);
   EXPECT_EQ(courgette::C_OK, encode_status);
 
@@ -57,7 +58,7 @@ void EncodeDecodeTest::TestAssembleToStreamDisassemble(
   bool can_get_source_streams = sources.Init(buffer, length);
   EXPECT_TRUE(can_get_source_streams);
 
-  scoped_ptr<courgette::EncodedProgram> encoded2;
+  std::unique_ptr<courgette::EncodedProgram> encoded2;
   const courgette::Status read_status = ReadEncodedProgram(&sources, &encoded2);
   EXPECT_EQ(courgette::C_OK, read_status);
 

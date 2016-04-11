@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -361,8 +362,8 @@ void AssemblyProgram::AssignRemainingIndexes(RVAToLabel* labels) {
           << "  infill " << fill_infill_count;
 }
 
-scoped_ptr<EncodedProgram> AssemblyProgram::Encode() const {
-  scoped_ptr<EncodedProgram> encoded(new EncodedProgram());
+std::unique_ptr<EncodedProgram> AssemblyProgram::Encode() const {
+  std::unique_ptr<EncodedProgram> encoded(new EncodedProgram());
 
   encoded->set_image_base(image_base_);
 
@@ -527,7 +528,7 @@ CheckBool AssemblyProgram::TrimLabels() {
 ////////////////////////////////////////////////////////////////////////////////
 
 Status Encode(const AssemblyProgram& program,
-              scoped_ptr<EncodedProgram>* output) {
+              std::unique_ptr<EncodedProgram>* output) {
   // Explicitly release any memory associated with the output before encoding.
   output->reset();
 

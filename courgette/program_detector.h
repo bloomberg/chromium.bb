@@ -7,7 +7,8 @@
 
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "courgette/courgette.h"
 
 namespace courgette {
@@ -36,7 +37,7 @@ Status DetectExecutableType(const void* buffer,
 //   Returns an error status and assigns |*output| to null.
 Status ParseDetectedExecutable(const void* buffer,
                                size_t length,
-                               scoped_ptr<AssemblyProgram>* output);
+                               std::unique_ptr<AssemblyProgram>* output);
 
 }  // namespace courgette
 

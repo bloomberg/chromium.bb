@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "courgette/assembly_program.h"
 #include "courgette/base_test_unittest.h"
 #include "courgette/image_utils.h"
@@ -32,7 +32,7 @@ void DisassemblerElf32X86Test::TestExe(const char* file_name,
   using TypedRVA = DisassemblerElf32::TypedRVA;
   std::string file1 = FileContents(file_name);
 
-  scoped_ptr<DisassemblerElf32X86> disassembler(
+  std::unique_ptr<DisassemblerElf32X86> disassembler(
       new DisassemblerElf32X86(file1.c_str(), file1.length()));
 
   bool can_parse_header = disassembler->ParseHeader();
@@ -51,7 +51,7 @@ void DisassemblerElf32X86Test::TestExe(const char* file_name,
   EXPECT_EQ('L', offset_p[2]);
   EXPECT_EQ('F', offset_p[3]);
 
-  scoped_ptr<AssemblyProgram> program(new AssemblyProgram(EXE_ELF_32_X86));
+  std::unique_ptr<AssemblyProgram> program(new AssemblyProgram(EXE_ELF_32_X86));
 
   EXPECT_TRUE(disassembler->Disassemble(program.get()));
 
