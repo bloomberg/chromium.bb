@@ -104,6 +104,7 @@ cr.define('site_details', function() {
         var category = settings.ContentSettingsTypes.NOTIFICATIONS;
         var site = {
           origin: 'http://www.google.com',
+          originForDisplay: 'http://www.google.com',
           embeddingOrigin: '',
         };
         browserProxy.setPrefs(prefsEmpty);
@@ -131,6 +132,7 @@ cr.define('site_details', function() {
         var category = settings.ContentSettingsTypes.NOTIFICATIONS;
         var site = {
           origin: 'https://foo-allow.com:443',
+          originForDisplay: 'https://foo-allow.com:443',
           embeddingOrigin: '',
         };
 
@@ -169,6 +171,7 @@ cr.define('site_details', function() {
         browserProxy.setPrefs(prefs);
         testElement.site = {
           origin: 'https://foo-allow.com:443',
+          originForDisplay: 'https://foo-allow.com:443',
           embeddingOrigin: '',
         };
 

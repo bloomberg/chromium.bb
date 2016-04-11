@@ -284,6 +284,16 @@ var SiteSettingsBehaviorImpl = {
         return '';
     }
   },
+
+  /**
+   * Ensures the URL has a scheme (assumes http if omitted).
+   * @param {string} url The URL with or without a scheme.
+   * @return {string} The URL with a scheme, or an empty string.
+   */
+  ensureUrlHasScheme: function(url) {
+    if (url.length == 0) return url;
+    return url.includes('://') ? url : 'http://' + url;
+  },
 };
 
 /** @polymerBehavior */

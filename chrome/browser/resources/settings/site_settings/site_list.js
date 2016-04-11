@@ -268,11 +268,18 @@ Polymer({
   },
 
   /**
-   * Ensures the URL has a scheme (assumes http if omitted).
+   * Converts a string origin/pattern to a URL.
+   * @param {string} originOrPattern The origin/pattern to convert to URL.
+   * @return {!URL} The URL to return (or null if origin is not a valid URL).
+   * @private
    */
-  ensureUrlHasScheme_: function(url) {
-    if (url.length == 0) return url;
-    return url.indexOf('://') != -1 ? url : 'http://' + url;
+  toUrl_: function(originOrPattern) {
+    if (originOrPattern.length == 0)
+      return null;
+    // TODO(finnur): Hmm, it would probably be better to ensure scheme on the
+    //     JS/C++ boundary.
+    return new URL(
+        this.ensureUrlHasScheme(originOrPattern.replace('[*.]', '')));
   },
 
   /**
@@ -284,25 +291,21 @@ Polymer({
   toSiteArray_: function(sites) {
     var self = this;
     sites.sort(function(a, b) {
-      // TODO(finnur): Hmm, it would probably be better to ensure scheme on the
-      //     JS/C++ boundary.
-      var originA = self.ensureUrlHasScheme_(a.origin);
-      var originB = self.ensureUrlHasScheme_(b.origin);
-      var embeddingOriginA = self.ensureUrlHasScheme_(a.embeddingOrigin);
-      var embeddingOriginB = self.ensureUrlHasScheme_(b.embeddingOrigin);
-      var url1 = new URL(originA);
-      var url2 = new URL(originB);
-      var embeddingUrl1 = embeddingOriginA.length == 0 ? '' :
-          new URL(embeddingOriginA);
-      var embeddingUrl2 = embeddingOriginB.length == 0 ? '' :
-          new URL(embeddingOriginB);
+      var url1 = self.toUrl_(a.origin);
+      var url2 = self.toUrl_(b.origin);
       var comparison = url1.host.localeCompare(url2.host);
       if (comparison == 0) {
         comparison = url1.protocol.localeCompare(url2.protocol);
         if (comparison == 0) {
           comparison = url1.port.localeCompare(url2.port);
-          if (comparison == 0)
-            return embeddingUrl1.host.localeCompare(embeddingUrl2.host);
+          if (comparison == 0) {
+            // Compare hosts for the embedding origins.
+            var host1 = self.toUrl_(a.embeddingOrigin);
+            var host2 = self.toUrl_(b.embeddingOrigin);
+            host1 = (host1 == null) ? '' : host1.host;
+            host2 = (host2 == null) ? '' : host2.host;
+            return host1.localeCompare(host2);
+          }
         }
       }
       return comparison;
@@ -314,22 +317,26 @@ Polymer({
       var origin = sites[i].origin;
       var embeddingOrigin = sites[i].embeddingOrigin;
 
-      // The All Sites category can contain duplicates (from other categories).
-      if (origin == lastOrigin && embeddingOrigin == lastEmbeddingOrigin)
-        continue;
-
+      var originForDisplay = origin.replace('[*.]', '');
       var embeddingOriginForDisplay = '';
       if (embeddingOrigin != '*' && origin != embeddingOrigin)
         embeddingOriginForDisplay = embeddingOrigin;
 
+      // The All Sites category can contain duplicates (from other categories).
+      if (originForDisplay == lastOrigin &&
+          embeddingOriginForDisplay == lastEmbeddingOrigin) {
+        continue;
+      }
+
       results.push({
          origin: origin,
+         originForDisplay: originForDisplay,
          embeddingOrigin: embeddingOrigin,
          embeddingOriginForDisplay: embeddingOriginForDisplay,
       });
 
-      lastOrigin = origin;
-      lastEmbeddingOrigin = embeddingOrigin;
+      lastOrigin = originForDisplay;
+      lastEmbeddingOrigin = embeddingOriginForDisplay;
     }
     return results;
   },

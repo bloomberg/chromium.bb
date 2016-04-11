@@ -48,7 +48,8 @@ Polymer({
    * Handler for when the origin changes.
    */
   onSiteChanged_: function() {
-    var url = new URL(this.site.origin);
+    // Using originForDisplay avoids the [*.] prefix that some exceptions use.
+    var url = new URL(this.ensureUrlHasScheme(this.site.originForDisplay));
     this.$.usageApi.fetchUsageTotal(url.hostname);
   },
 
