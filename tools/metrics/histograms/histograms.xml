@@ -54966,7 +54966,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.LogUpload.Canceled.CellularConstraint">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>gayane@chromium.org</owner>
+  <summary>
+    Logs whether a log was not uploaded due to cellular log throttling logic.
+    Android only.
+  </summary>
+</histogram>
+
 <histogram name="UMA.LogUpload.ConnetionType" enum="NetworkConnectionType">
+  <obsolete>
+    Used for analyzing UMA log uploads on cellular connection, but necessary
+    after the analysis is finished.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <owner>gayane@chromium.org</owner>
   <summary>
@@ -55161,6 +55174,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     would appear when a bogus XML tag is included, or the XML is not balanced
     and well structured.
   </details>
+</histogram>
+
+<histogram name="UMA.UnsentLogs.Dropped">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>gayane@chromium.org</owner>
+  <summary>
+    Counter for number of UMA unsent logs removed from persistent storage.
+  </summary>
 </histogram>
 
 <histogram name="UMA.UploadCreation" enum="BooleanSuccess">

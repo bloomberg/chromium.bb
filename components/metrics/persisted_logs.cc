@@ -130,17 +130,21 @@ void PersistedLogs::WriteLogsToPrefList(base::ListValue* list_value) const {
     bytes_used += log_size;
     ++saved_log_count;
   }
+  int dropped_logs_num = start - 1;
 
   for (size_t i = start; i < list_.size(); ++i) {
     size_t log_size = list_[i].compressed_log_data.length();
     if (log_size > max_log_size_) {
       UMA_HISTOGRAM_COUNTS("UMA.Large Accumulated Log Not Persisted",
                            static_cast<int>(log_size));
+      dropped_logs_num++;
       continue;
     }
     AppendBase64String(list_[i].compressed_log_data, list_value);
     AppendBase64String(list_[i].hash, list_value);
   }
+  if (dropped_logs_num > 0)
+    UMA_HISTOGRAM_COUNTS("UMA.UnsentLogs.Dropped", dropped_logs_num);
 }
 
 PersistedLogs::LogReadStatus PersistedLogs::ReadLogsFromPrefList(
