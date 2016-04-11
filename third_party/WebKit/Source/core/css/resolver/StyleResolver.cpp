@@ -503,7 +503,7 @@ void StyleResolver::matchScopedRules(const Element& element, ElementRuleCollecto
 
     ScopedStyleResolver* elementScopeResolver = scopedResolverFor(element);
 
-    if (!document().styleEngine().mayContainV0Shadow()) {
+    if (!document().mayContainV0Shadow()) {
         matchSlottedRules(element, collector);
         matchElementScopeRules(element, elementScopeResolver, collector);
         return;
@@ -548,7 +548,7 @@ void StyleResolver::matchScopedRules(const Element& element, ElementRuleCollecto
 
 void StyleResolver::matchAuthorRules(const Element& element, ElementRuleCollector& collector)
 {
-    if (document().styleEngine().shadowCascadeOrder() != ShadowCascadeOrder::ShadowCascadeV1) {
+    if (document().shadowCascadeOrder() != ShadowCascadeOrder::ShadowCascadeV1) {
         matchAuthorRulesV0(element, collector);
         return;
     }
@@ -633,7 +633,7 @@ void StyleResolver::matchAllRules(StyleResolverState& state, ElementRuleCollecto
 
     if (state.element()->isStyledElement()) {
         // For Shadow DOM V1, inline style is already collected in matchScopedRules().
-        if (document().styleEngine().shadowCascadeOrder() != ShadowCascadeOrder::ShadowCascadeV1 && state.element()->inlineStyle()) {
+        if (document().shadowCascadeOrder() != ShadowCascadeOrder::ShadowCascadeV1 && state.element()->inlineStyle()) {
             // Inline style is immutable as long as there is no CSSOM wrapper.
             bool isInlineStyleCacheable = !state.element()->inlineStyle()->isMutable();
             collector.addElementStyleProperties(state.element()->inlineStyle(), isInlineStyleCacheable);

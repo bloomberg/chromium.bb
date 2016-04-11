@@ -733,24 +733,6 @@ void StyleEngine::setStatsEnabled(bool enabled)
         m_styleResolverStats->reset();
 }
 
-void StyleEngine::setShadowCascadeOrder(ShadowCascadeOrder order)
-{
-    DCHECK_NE(order, ShadowCascadeOrder::ShadowCascadeNone);
-
-    if (order == m_shadowCascadeOrder)
-        return;
-
-    if (order == ShadowCascadeOrder::ShadowCascadeV0)
-        m_mayContainV0Shadow = true;
-
-    // For V0 -> V1 upgrade, we need style recalculation for the whole document.
-    if (m_shadowCascadeOrder == ShadowCascadeOrder::ShadowCascadeV0 && order == ShadowCascadeOrder::ShadowCascadeV1)
-        document().setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Shadow));
-
-    if (order > m_shadowCascadeOrder)
-        m_shadowCascadeOrder = order;
-}
-
 void StyleEngine::setPreferredStylesheetSetNameIfNotSet(const String& name)
 {
     if (!m_preferredStylesheetSetName.isEmpty())

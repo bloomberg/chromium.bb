@@ -209,6 +209,12 @@ enum DocumentClass {
     XMLDocumentClass = 1 << 6,
 };
 
+enum ShadowCascadeOrder {
+    ShadowCascadeNone,
+    ShadowCascadeV0,
+    ShadowCascadeV1
+};
+
 using DocumentClassFlags = unsigned char;
 
 class CORE_EXPORT Document : public ContainerNode, public TreeScope, public SecurityContext, public ExecutionContext, public Supplementable<Document>, public DocumentLifecycleNotifier {
@@ -1058,6 +1064,11 @@ public:
 
     void enforceStrictMixedContentChecking();
 
+    bool mayContainV0Shadow() const { return m_mayContainV0Shadow; }
+
+    ShadowCascadeOrder shadowCascadeOrder() const { return m_shadowCascadeOrder; }
+    void setShadowCascadeOrder(ShadowCascadeOrder);
+
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
@@ -1118,6 +1129,8 @@ private:
     RawPtr<Node> cloneNode(bool deep) final;
     void cloneDataFromDocument(const Document&);
     bool isSecureContextImpl(String* errorMessage, const SecureContextCheck priviligeContextCheck) const;
+
+    ShadowCascadeOrder m_shadowCascadeOrder = ShadowCascadeNone;
 
 #if !ENABLE(OILPAN)
     void refExecutionContext() final { ref(); }
@@ -1395,6 +1408,8 @@ private:
     Member<NodeIntersectionObserverData> m_intersectionObserverData;
 
     int m_nodeCount;
+
+    bool m_mayContainV0Shadow = false;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

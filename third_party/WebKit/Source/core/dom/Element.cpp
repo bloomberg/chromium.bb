@@ -1908,7 +1908,7 @@ RawPtr<ShadowRoot> Element::createShadowRoot(const ScriptState* scriptState, Exc
             return nullptr;
         }
     }
-    document().styleEngine().setShadowCascadeOrder(ShadowCascadeOrder::ShadowCascadeV0);
+    document().setShadowCascadeOrder(ShadowCascadeOrder::ShadowCascadeV0);
 
     return createShadowRootInternal(ShadowRootType::V0, exceptionState);
 }
@@ -1948,7 +1948,7 @@ RawPtr<ShadowRoot> Element::attachShadow(const ScriptState* scriptState, const S
         return nullptr;
     }
 
-    document().styleEngine().setShadowCascadeOrder(ShadowCascadeOrder::ShadowCascadeV1);
+    document().setShadowCascadeOrder(ShadowCascadeOrder::ShadowCascadeV1);
 
     ShadowRootType type = ShadowRootType::V0;
     if (shadowRootInitDict.hasMode())
