@@ -295,8 +295,8 @@ inline bool HarfBuzzShaper::shapeRange(hb_buffer_t* harfBuzzBuffer,
         m_font->getFontDescription(), m_normalizedBuffer.get(), m_normalizedBufferLength,
         startIndex, numCharacters);
 
-    hb_font_t* hbFont = face->getScaledFont(currentFontRangeSet);
-    hb_shape(hbFont, harfBuzzBuffer, m_features.isEmpty() ? 0 : m_features.data(), m_features.size());
+    HarfBuzzScopedPtr<hb_font_t> harfBuzzFont(face->createFont(currentFontRangeSet), hb_font_destroy);
+    hb_shape(harfBuzzFont.get(), harfBuzzBuffer, m_features.isEmpty() ? 0 : m_features.data(), m_features.size());
 
     return true;
 }
