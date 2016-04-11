@@ -4541,7 +4541,7 @@ def CMDcheckout(parser, args):
     return 1
 
   issue_arg = ParseIssueNumberArgument(args[0])
-  if issue_arg.valid:
+  if not issue_arg.valid:
     parser.print_help()
     return 1
   target_issue = issue_arg.issue
