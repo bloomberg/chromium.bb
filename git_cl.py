@@ -4544,7 +4544,7 @@ def CMDcheckout(parser, args):
   if not issue_arg.valid:
     parser.print_help()
     return 1
-  target_issue = issue_arg.issue
+  target_issue = str(issue_arg.issue)
 
   key_and_issues = [x.split() for x in RunGit(
       ['config', '--local', '--get-regexp', r'branch\..*\.rietveldissue'])
