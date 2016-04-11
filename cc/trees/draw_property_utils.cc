@@ -309,12 +309,6 @@ static inline bool TransformToScreenIsKnown(LayerImpl* layer,
 }
 
 template <typename LayerType>
-static bool HasInvertibleOrAnimatedTransform(LayerType* layer) {
-  return layer->transform_is_invertible() ||
-         layer->HasPotentiallyRunningTransformAnimation();
-}
-
-template <typename LayerType>
 static bool LayerNeedsUpdateInternal(LayerType* layer,
                                      bool layer_is_drawn,
                                      const TransformTree& tree) {
@@ -421,11 +415,7 @@ static inline bool LayerShouldBeSkipped(Layer* layer,
   const EffectNode* effect_node = effect_tree.Node(layer->effect_tree_index());
 
   // If the layer transform is not invertible, it should not be drawn.
-  bool has_inherited_invertible_or_animated_transform =
-      (transform_node->data.is_invertible &&
-       transform_node->data.ancestors_are_invertible) ||
-      transform_node->data.to_screen_is_potentially_animated;
-  if (!has_inherited_invertible_or_animated_transform)
+  if (!transform_node->data.node_and_ancestors_are_animated_or_invertible)
     return true;
 
   // When we need to do a readback/copy of a layer's output, we can not skip
@@ -467,11 +457,7 @@ bool LayerShouldBeSkipped(LayerImpl* layer,
   // TODO(ajuma): Correctly process subtrees with singular transform for the
   // case where we may animate to a non-singular transform and wish to
   // pre-raster.
-  bool has_inherited_invertible_or_animated_transform =
-      (transform_node->data.is_invertible &&
-       transform_node->data.ancestors_are_invertible) ||
-      transform_node->data.to_screen_is_potentially_animated;
-  if (!has_inherited_invertible_or_animated_transform)
+  if (!transform_node->data.node_and_ancestors_are_animated_or_invertible)
     return true;
 
   // When we need to do a readback/copy of a layer's output, we can not skip

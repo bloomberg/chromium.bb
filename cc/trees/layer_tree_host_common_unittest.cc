@@ -8875,10 +8875,63 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   child_ptr->SetTransform(singular);
   root_ptr->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
-  EXPECT_EQ(gfx::Rect(10, 10), grandchild_ptr->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
 
   host_impl.active_tree()->animation_host()->UnregisterPlayerForLayer(
       root_ptr->id(), player.get());
+}
+
+TEST_F(LayerTreeHostCommonTest, LayerSkippingInSubtreeOfSingularTransform) {
+  LayerImpl* root = root_layer();
+  LayerImpl* child = AddChild<LayerImpl>(root);
+  LayerImpl* grand_child = AddChild<LayerImpl>(child);
+
+  gfx::Transform identity;
+  SetLayerPropertiesForTesting(root, identity, gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(10, 10), true, false, true);
+  SetLayerPropertiesForTesting(child, identity, gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(10, 10), true, false, false);
+  SetLayerPropertiesForTesting(grand_child, identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
+                               false);
+
+  gfx::Transform singular;
+  singular.matrix().set(0, 0, 0);
+  singular.matrix().set(0, 1, 1);
+
+  child->SetTransform(singular);
+  child->SetDrawsContent(true);
+  grand_child->SetDrawsContent(true);
+
+  scoped_ptr<KeyframedTransformAnimationCurve> curve(
+      KeyframedTransformAnimationCurve::Create());
+  TransformOperations start;
+  start.AppendTranslate(1.f, 2.f, 3.f);
+  gfx::Transform transform;
+  transform.Scale3d(1.0, 2.0, 3.0);
+  TransformOperations operation;
+  operation.AppendMatrix(transform);
+  curve->AddKeyframe(
+      TransformKeyframe::Create(base::TimeDelta(), start, nullptr));
+  curve->AddKeyframe(TransformKeyframe::Create(
+      base::TimeDelta::FromSecondsD(1.0), operation, nullptr));
+  scoped_ptr<Animation> transform_animation(
+      Animation::Create(std::move(curve), 3, 3, TargetProperty::TRANSFORM));
+  scoped_refptr<AnimationPlayer> player(AnimationPlayer::Create(1));
+  host_impl()->active_tree()->animation_host()->RegisterPlayerForLayer(
+      grand_child->id(), player.get());
+  host_impl()
+      ->active_tree()
+      ->animation_host()
+      ->GetControllerForLayerId(grand_child->id())
+      ->AddAnimation(std::move(transform_animation));
+
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(gfx::Rect(0, 0), grand_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(0, 0), child->visible_layer_rect());
+
+  host_impl()->active_tree()->animation_host()->UnregisterPlayerForLayer(
+      grand_child->id(), player.get());
 }
 
 TEST_F(LayerTreeHostCommonTest, SkippingPendingLayerImpl) {

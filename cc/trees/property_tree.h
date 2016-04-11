@@ -109,6 +109,8 @@ struct CC_EXPORT TransformNodeData {
   // TODO(vollick): will be moved when accelerated effects are implemented.
   bool needs_local_transform_update : 1;
 
+  bool node_and_ancestors_are_animated_or_invertible : 1;
+
   bool is_invertible : 1;
   bool ancestors_are_invertible : 1;
 
@@ -423,6 +425,9 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   void UpdateTransformChanged(TransformNode* node,
                               TransformNode* parent_node,
                               TransformNode* source_node);
+  void UpdateNodeAndAncestorsAreAnimatedOrInvertible(
+      TransformNode* node,
+      TransformNode* parent_node);
 
   // A TransformNode's source_to_parent value is used to account for the fact
   // that fixed-position layers are positioned by Blink wrt to their layer tree

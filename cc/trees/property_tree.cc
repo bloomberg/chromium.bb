@@ -136,6 +136,7 @@ TransformNodeData::TransformNodeData()
       source_node_id(-1),
       sorting_context_id(0),
       needs_local_transform_update(true),
+      node_and_ancestors_are_animated_or_invertible(true),
       is_invertible(true),
       ancestors_are_invertible(true),
       is_animated(false),
@@ -174,6 +175,8 @@ bool TransformNodeData::operator==(const TransformNodeData& other) const {
          source_node_id == other.source_node_id &&
          sorting_context_id == other.sorting_context_id &&
          needs_local_transform_update == other.needs_local_transform_update &&
+         node_and_ancestors_are_animated_or_invertible ==
+             other.node_and_ancestors_are_animated_or_invertible &&
          is_invertible == other.is_invertible &&
          ancestors_are_invertible == other.ancestors_are_invertible &&
          is_animated == other.is_animated &&
@@ -256,6 +259,9 @@ void TransformNodeData::ToProtobuf(proto::TreeNode* proto) const {
 
   data->set_needs_local_transform_update(needs_local_transform_update);
 
+  data->set_node_and_ancestors_are_animated_or_invertible(
+      node_and_ancestors_are_animated_or_invertible);
+
   data->set_is_invertible(is_invertible);
   data->set_ancestors_are_invertible(ancestors_are_invertible);
 
@@ -322,6 +328,9 @@ void TransformNodeData::FromProtobuf(const proto::TreeNode& proto) {
   sorting_context_id = data.sorting_context_id();
 
   needs_local_transform_update = data.needs_local_transform_update();
+
+  node_and_ancestors_are_animated_or_invertible =
+      data.node_and_ancestors_are_animated_or_invertible();
 
   is_invertible = data.is_invertible();
   ancestors_are_invertible = data.ancestors_are_invertible();
@@ -691,6 +700,7 @@ void TransformTree::UpdateTransforms(int id) {
   UpdateSnapping(node);
   UpdateNodeAndAncestorsHaveIntegerTranslations(node, parent_node);
   UpdateTransformChanged(node, parent_node, source_node);
+  UpdateNodeAndAncestorsAreAnimatedOrInvertible(node, parent_node);
 }
 
 bool TransformTree::IsDescendant(int desc_id, int source_id) const {
@@ -1061,6 +1071,29 @@ void TransformTree::UpdateTransformChanged(TransformNode* node,
   if (source_node && source_node->id != parent_node->id &&
       source_to_parent_updates_allowed_ && source_node->data.transform_changed)
     node->data.transform_changed = true;
+}
+
+void TransformTree::UpdateNodeAndAncestorsAreAnimatedOrInvertible(
+    TransformNode* node,
+    TransformNode* parent_node) {
+  if (!parent_node) {
+    node->data.node_and_ancestors_are_animated_or_invertible =
+        node->data.is_animated || node->data.is_invertible;
+    return;
+  }
+  if (!parent_node->data.node_and_ancestors_are_animated_or_invertible) {
+    node->data.node_and_ancestors_are_animated_or_invertible = false;
+    return;
+  }
+  bool is_invertible = node->data.is_invertible;
+  // Even when the current node's transform and the parent's screen space
+  // transform are invertible, the current node's screen space transform can
+  // become uninvertible due to floating-point arithmetic.
+  if (!node->data.ancestors_are_invertible &&
+      parent_node->data.ancestors_are_invertible)
+    is_invertible = false;
+  node->data.node_and_ancestors_are_animated_or_invertible =
+      node->data.is_animated || is_invertible;
 }
 
 void TransformTree::SetDeviceTransform(const gfx::Transform& transform,
