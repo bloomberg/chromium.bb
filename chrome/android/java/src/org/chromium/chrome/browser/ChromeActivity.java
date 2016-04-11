@@ -1220,7 +1220,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             view.exitFullscreen(false);
             return true;
         }
-        if (getFullscreenManager().getPersistentFullscreenMode()) {
+        if (getFullscreenManager() != null
+                && getFullscreenManager().getPersistentFullscreenMode()) {
             getFullscreenManager().setPersistentFullscreenMode(false);
             return true;
         }
