@@ -2260,7 +2260,7 @@
         'use_allocator%': 'none',
         'use_sanitizer_options%': 1,
       }],
-      ['OS=="linux" and asan==0 and msan==0 and lsan==0 and tsan==0 and build_for_tool==""', {
+      ['(OS=="linux" or OS=="android") and asan==0 and msan==0 and lsan==0 and tsan==0 and build_for_tool==""', {
         'use_experimental_allocator_shim%': 1,
       }],
       ['OS=="linux" and asan==0 and msan==0 and lsan==0 and tsan==0', {

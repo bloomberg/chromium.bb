@@ -97,7 +97,7 @@ a project aimed to unify the symbol definition and allocator routing logic in
 a central place.
 
  - Full documentation: [Allocator shim design doc][url-allocator-shim].
- - Current state: Available and enabled by default on Linux and CrOS.
+ - Current state: Available and enabled by default on Linux, CrOS and Android.
  - Tracking bug: [https://crbug.com/550886][crbug.com/550886].
  - Build-time flag: `use_experimental_allocator_shim`.
 
