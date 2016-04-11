@@ -188,8 +188,8 @@ void HTMLFontElement::collectStyleForPresentationAttribute(const QualifiedName& 
     } else if (name == colorAttr) {
         addHTMLColorToStyle(style, CSSPropertyColor, value);
     } else if (name == faceAttr && !value.isEmpty()) {
-        if (RawPtr<CSSValueList> fontFaceValue = cssValuePool().createFontFaceValue(value))
-            style->setProperty(CSSProperty(CSSPropertyFontFamily, fontFaceValue.release()));
+        if (CSSValueList* fontFaceValue = cssValuePool().createFontFaceValue(value))
+            style->setProperty(CSSProperty(CSSPropertyFontFamily, fontFaceValue));
     } else {
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
     }

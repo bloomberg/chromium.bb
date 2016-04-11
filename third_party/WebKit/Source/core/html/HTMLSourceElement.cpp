@@ -89,8 +89,8 @@ void HTMLSourceElement::createMediaQueryList(const AtomicString& media)
 
     if (m_mediaQueryList)
         m_mediaQueryList->removeListener(m_listener);
-    RawPtr<MediaQuerySet> set = MediaQuerySet::create(media);
-    m_mediaQueryList = MediaQueryList::create(&document(), &document().mediaQueryMatcher(), set.release());
+    MediaQuerySet* set = MediaQuerySet::create(media);
+    m_mediaQueryList = MediaQueryList::create(&document(), &document().mediaQueryMatcher(), set);
     m_mediaQueryList->addListener(m_listener);
 }
 

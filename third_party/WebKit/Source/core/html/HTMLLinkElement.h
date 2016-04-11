@@ -59,7 +59,7 @@ using LinkEventSender = EventSender<HTMLLinkElement>;
 class LinkStyle final : public LinkResource, ResourceOwner<StyleSheetResource> {
     USING_GARBAGE_COLLECTED_MIXIN(LinkStyle);
 public:
-    static RawPtr<LinkStyle> create(HTMLLinkElement* owner);
+    static LinkStyle* create(HTMLLinkElement* owner);
 
     explicit LinkStyle(HTMLLinkElement* owner);
     ~LinkStyle() override;
@@ -132,7 +132,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement, public LinkLoaderC
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(HTMLLinkElement);
 public:
-    static RawPtr<HTMLLinkElement> create(Document&, bool createdByParser);
+    static HTMLLinkElement* create(Document&, bool createdByParser);
     ~HTMLLinkElement() override;
 
     KURL href() const;

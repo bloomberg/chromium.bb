@@ -60,7 +60,7 @@ enum {
 class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<HTMLAnchorElement> create(Document&);
+    static HTMLAnchorElement* create(Document&);
 
     ~HTMLAnchorElement() override;
 

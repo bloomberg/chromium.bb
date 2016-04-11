@@ -55,7 +55,7 @@ typedef int GC3Dint;
 class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement, public CanvasImageSource, public ImageBitmapSource {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<HTMLVideoElement> create(Document&);
+    static HTMLVideoElement* create(Document&);
     DECLARE_VIRTUAL_TRACE();
 
     unsigned videoWidth() const;

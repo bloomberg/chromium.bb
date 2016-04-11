@@ -43,26 +43,26 @@ public:
     DECLARE_NODE_FACTORY(HTMLTableElement);
 
     HTMLTableCaptionElement* caption() const;
-    void setCaption(RawPtr<HTMLTableCaptionElement>, ExceptionState&);
+    void setCaption(HTMLTableCaptionElement*, ExceptionState&);
 
     HTMLTableSectionElement* tHead() const;
-    void setTHead(RawPtr<HTMLTableSectionElement>, ExceptionState&);
+    void setTHead(HTMLTableSectionElement*, ExceptionState&);
 
     HTMLTableSectionElement* tFoot() const;
-    void setTFoot(RawPtr<HTMLTableSectionElement>, ExceptionState&);
+    void setTFoot(HTMLTableSectionElement*, ExceptionState&);
 
-    RawPtr<HTMLTableSectionElement> createTHead();
+    HTMLTableSectionElement* createTHead();
     void deleteTHead();
-    RawPtr<HTMLTableSectionElement> createTFoot();
+    HTMLTableSectionElement* createTFoot();
     void deleteTFoot();
-    RawPtr<HTMLTableSectionElement> createTBody();
-    RawPtr<HTMLTableCaptionElement> createCaption();
+    HTMLTableSectionElement* createTBody();
+    HTMLTableCaptionElement* createCaption();
     void deleteCaption();
-    RawPtr<HTMLTableRowElement> insertRow(int index, ExceptionState&);
+    HTMLTableRowElement* insertRow(int index, ExceptionState&);
     void deleteRow(int index, ExceptionState&);
 
-    RawPtr<HTMLTableRowsCollection> rows();
-    RawPtr<HTMLCollection> tBodies();
+    HTMLTableRowsCollection* rows();
+    HTMLCollection* tBodies();
 
     const AtomicString& rules() const;
     const AtomicString& summary() const;
@@ -91,7 +91,7 @@ private:
 
     CellBorders getCellBorders() const;
 
-    RawPtr<StylePropertySet> createSharedCellStyle();
+    StylePropertySet* createSharedCellStyle();
 
     HTMLTableSectionElement* lastBody() const;
 

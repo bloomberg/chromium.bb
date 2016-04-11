@@ -44,7 +44,7 @@ inline HTMLButtonElement::HTMLButtonElement(Document& document, HTMLFormElement*
 {
 }
 
-RawPtr<HTMLButtonElement> HTMLButtonElement::create(Document& document, HTMLFormElement* form)
+HTMLButtonElement* HTMLButtonElement::create(Document& document, HTMLFormElement* form)
 {
     return new HTMLButtonElement(document, form);
 }

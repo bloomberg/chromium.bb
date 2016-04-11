@@ -12,7 +12,7 @@ namespace blink {
 
 class HTMLDataListOptionsCollection : public HTMLCollection {
 public:
-    static RawPtr<HTMLDataListOptionsCollection> create(ContainerNode& ownerNode, CollectionType type)
+    static HTMLDataListOptionsCollection* create(ContainerNode& ownerNode, CollectionType type)
     {
         ASSERT_UNUSED(type, type == DataListOptions);
         return new HTMLDataListOptionsCollection(ownerNode);

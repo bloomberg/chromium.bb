@@ -33,7 +33,7 @@ class HTMLSelectElement;
 class HTMLKeygenElement final : public HTMLFormControlElementWithState {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<HTMLKeygenElement> create(Document&, HTMLFormElement*);
+    static HTMLKeygenElement* create(Document&, HTMLFormElement*);
 
     bool willValidate() const override { return false; }
 

@@ -37,7 +37,7 @@ class NodeListOrElement;
 class HTMLOptionsCollection final : public HTMLCollection {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<HTMLOptionsCollection> create(ContainerNode&, CollectionType);
+    static HTMLOptionsCollection* create(ContainerNode&, CollectionType);
 
     HTMLOptionElement* item(unsigned offset) const { return toHTMLOptionElement(HTMLCollection::item(offset)); }
 
@@ -49,7 +49,7 @@ public:
 
     void setLength(unsigned, ExceptionState&);
     void namedGetter(const AtomicString& name, NodeListOrElement&);
-    bool anonymousIndexedSetter(unsigned, RawPtr<HTMLOptionElement>, ExceptionState&);
+    bool anonymousIndexedSetter(unsigned, HTMLOptionElement*, ExceptionState&);
 
     bool elementMatches(const HTMLElement&) const;
 

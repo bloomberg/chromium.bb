@@ -36,7 +36,7 @@ class ExceptionState;
 class CORE_EXPORT HTMLTextAreaElement final : public HTMLTextFormControlElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<HTMLTextAreaElement> create(Document&, HTMLFormElement*);
+    static HTMLTextAreaElement* create(Document&, HTMLFormElement*);
 
     unsigned cols() const { return m_cols; }
     unsigned rows() const { return m_rows; }

@@ -58,7 +58,7 @@ HTMLStyleElement::~HTMLStyleElement()
 #endif
 }
 
-RawPtr<HTMLStyleElement> HTMLStyleElement::create(Document& document, bool createdByParser)
+HTMLStyleElement* HTMLStyleElement::create(Document& document, bool createdByParser)
 {
     return new HTMLStyleElement(document, createdByParser);
 }

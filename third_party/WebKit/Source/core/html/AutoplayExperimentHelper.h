@@ -131,7 +131,7 @@ public:
         DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
 
-    static RawPtr<AutoplayExperimentHelper> create(Client* client)
+    static AutoplayExperimentHelper* create(Client* client)
     {
         return new AutoplayExperimentHelper(client);
     }

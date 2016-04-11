@@ -130,7 +130,7 @@ HTMLTableRowsCollection::HTMLTableRowsCollection(ContainerNode& table)
     ASSERT(isHTMLTableElement(table));
 }
 
-RawPtr<HTMLTableRowsCollection> HTMLTableRowsCollection::create(ContainerNode& table, CollectionType type)
+HTMLTableRowsCollection* HTMLTableRowsCollection::create(ContainerNode& table, CollectionType type)
 {
     ASSERT_UNUSED(type, type == TableRows);
     return new HTMLTableRowsCollection(table);

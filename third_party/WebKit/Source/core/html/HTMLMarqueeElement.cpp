@@ -40,11 +40,11 @@ inline HTMLMarqueeElement::HTMLMarqueeElement(Document& document)
     UseCounter::count(document, UseCounter::HTMLMarqueeElement);
 }
 
-RawPtr<HTMLMarqueeElement> HTMLMarqueeElement::create(Document& document)
+HTMLMarqueeElement* HTMLMarqueeElement::create(Document& document)
 {
-    RawPtr<HTMLMarqueeElement> marqueeElement(new HTMLMarqueeElement(document));
-    V8HTMLMarqueeElement::PrivateScript::createdCallbackMethod(document.frame(), marqueeElement.get());
-    return marqueeElement.release();
+    HTMLMarqueeElement* marqueeElement = new HTMLMarqueeElement(document);
+    V8HTMLMarqueeElement::PrivateScript::createdCallbackMethod(document.frame(), marqueeElement);
+    return marqueeElement;
 }
 
 void HTMLMarqueeElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)

@@ -11,7 +11,7 @@ namespace blink {
 
 class WindowNameCollection final : public HTMLNameCollection {
 public:
-    static RawPtr<WindowNameCollection> create(ContainerNode& document, CollectionType type, const AtomicString& name)
+    static WindowNameCollection* create(ContainerNode& document, CollectionType type, const AtomicString& name)
     {
         ASSERT_UNUSED(type, type == WindowNamedItems);
         return new WindowNameCollection(document, name);

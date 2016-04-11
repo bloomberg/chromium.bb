@@ -49,7 +49,7 @@ public:
 class CORE_EXPORT HTMLContentElement final : public InsertionPoint {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<HTMLContentElement> create(Document&, RawPtr<HTMLContentSelectFilter> = nullptr);
+    static HTMLContentElement* create(Document&, HTMLContentSelectFilter* = nullptr);
     ~HTMLContentElement() override;
 
     bool canAffectSelector() const override { return true; }
@@ -62,7 +62,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    HTMLContentElement(Document&, RawPtr<HTMLContentSelectFilter>);
+    HTMLContentElement(Document&, HTMLContentSelectFilter*);
 
     void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
 

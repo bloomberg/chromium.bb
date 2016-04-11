@@ -40,7 +40,7 @@ class RadioNodeListOrElement;
 class HTMLFormControlsCollection final : public HTMLCollection {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<HTMLFormControlsCollection> create(ContainerNode&, CollectionType);
+    static HTMLFormControlsCollection* create(ContainerNode&, CollectionType);
 
     ~HTMLFormControlsCollection() override;
 

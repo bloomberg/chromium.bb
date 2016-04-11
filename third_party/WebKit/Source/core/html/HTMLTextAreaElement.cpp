@@ -88,11 +88,11 @@ HTMLTextAreaElement::HTMLTextAreaElement(Document& document, HTMLFormElement* fo
 {
 }
 
-RawPtr<HTMLTextAreaElement> HTMLTextAreaElement::create(Document& document, HTMLFormElement* form)
+HTMLTextAreaElement* HTMLTextAreaElement::create(Document& document, HTMLFormElement* form)
 {
-    RawPtr<HTMLTextAreaElement> textArea = new HTMLTextAreaElement(document, form);
+    HTMLTextAreaElement* textArea = new HTMLTextAreaElement(document, form);
     textArea->ensureUserAgentShadowRoot();
-    return textArea.release();
+    return textArea;
 }
 
 void HTMLTextAreaElement::didAddUserAgentShadowRoot(ShadowRoot& root)
@@ -369,7 +369,6 @@ String HTMLTextAreaElement::value() const
 
 void HTMLTextAreaElement::setValue(const String& value, TextFieldEventBehavior eventBehavior)
 {
-    RawPtr<HTMLTextAreaElement> protector(this);
     setValueCommon(value, eventBehavior);
     m_isDirty = true;
     if (document().focusedElement() == this)
@@ -451,8 +450,6 @@ String HTMLTextAreaElement::defaultValue() const
 
 void HTMLTextAreaElement::setDefaultValue(const String& defaultValue)
 {
-    RawPtr<Node> protectFromMutationEvents(this);
-
     // To preserve comments, remove only the text nodes, then add a single text node.
     HeapVector<Member<Node>> textNodes;
     for (Node* n = firstChild(); n; n = n->nextSibling()) {
@@ -645,8 +642,8 @@ void HTMLTextAreaElement::updatePlaceholderText()
         return;
     }
     if (!placeholder) {
-        RawPtr<HTMLDivElement> newElement = HTMLDivElement::create(document());
-        placeholder = newElement.get();
+        HTMLDivElement* newElement = HTMLDivElement::create(document());
+        placeholder = newElement;
         placeholder->setShadowPseudoId(AtomicString("-webkit-input-placeholder"));
         placeholder->setAttribute(idAttr, ShadowElementNames::placeholder());
         placeholder->setInlineStyleProperty(CSSPropertyDisplay, isPlaceholderVisible() ? CSSValueBlock : CSSValueNone, true);

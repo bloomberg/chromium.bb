@@ -35,7 +35,7 @@ namespace blink {
 class RadioNodeList final : public LiveNodeList {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<RadioNodeList> create(ContainerNode& ownerNode, CollectionType type, const AtomicString& name)
+    static RadioNodeList* create(ContainerNode& ownerNode, CollectionType type, const AtomicString& name)
     {
         ASSERT_UNUSED(type, type == RadioNodeListType || type == RadioImgNodeListType);
         return new RadioNodeList(ownerNode, name, type);

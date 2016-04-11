@@ -30,7 +30,7 @@ namespace blink {
 class HTMLMarqueeElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<HTMLMarqueeElement> create(Document&);
+    static HTMLMarqueeElement* create(Document&);
 
     void attributeChanged(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason) final;
     InsertionNotificationRequest insertedInto(ContainerNode*) final;

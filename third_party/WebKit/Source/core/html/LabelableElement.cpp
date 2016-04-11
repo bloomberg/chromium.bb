@@ -38,7 +38,7 @@ LabelableElement::~LabelableElement()
 {
 }
 
-RawPtr<LabelsNodeList> LabelableElement::labels()
+LabelsNodeList* LabelableElement::labels()
 {
     if (!supportLabels())
         return nullptr;

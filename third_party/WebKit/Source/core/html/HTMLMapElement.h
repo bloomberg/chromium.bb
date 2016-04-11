@@ -42,7 +42,7 @@ public:
     HTMLAreaElement* areaForPoint(LayoutPoint, const LayoutSize& containerSize);
 
     HTMLImageElement* imageElement();
-    RawPtr<HTMLCollection> areas();
+    HTMLCollection* areas();
 
 private:
     explicit HTMLMapElement(Document&);

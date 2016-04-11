@@ -62,7 +62,7 @@ HTMLAreaElement* HTMLMapElement::areaForPoint(LayoutPoint location, const Layout
 
 HTMLImageElement* HTMLMapElement::imageElement()
 {
-    RawPtr<HTMLCollection> images = document().images();
+    HTMLCollection* images = document().images();
     for (unsigned i = 0; Element* curr = images->item(i); ++i) {
         ASSERT(isHTMLImageElement(curr));
 
@@ -104,7 +104,7 @@ void HTMLMapElement::parseAttribute(const QualifiedName& name, const AtomicStrin
     HTMLElement::parseAttribute(name, oldValue, value);
 }
 
-RawPtr<HTMLCollection> HTMLMapElement::areas()
+HTMLCollection* HTMLMapElement::areas()
 {
     return ensureCachedCollection<HTMLCollection>(MapAreas);
 }

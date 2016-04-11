@@ -11,7 +11,7 @@ namespace blink {
 
 class HTMLIFrameElementSandbox final : public DOMTokenList {
 public:
-    static RawPtr<HTMLIFrameElementSandbox> create(DOMTokenListObserver* observer = nullptr)
+    static HTMLIFrameElementSandbox* create(DOMTokenListObserver* observer = nullptr)
     {
         return new HTMLIFrameElementSandbox(observer);
     }

@@ -540,9 +540,7 @@ bool HTMLFormControlElement::checkValidity(HeapVector<Member<HTMLFormControlElem
         return true;
     if (eventBehavior != CheckValidityDispatchInvalidEvent)
         return false;
-    // An event handler can deref this object.
-    RawPtr<HTMLFormControlElement> protector(this);
-    RawPtr<Document> originalDocument(document());
+    Document* originalDocument = &document();
     DispatchEventResult dispatchResult = dispatchEvent(Event::createCancelable(EventTypeNames::invalid));
     if (dispatchResult == DispatchEventResult::NotCanceled && unhandledInvalidControls && inShadowIncludingDocument() && originalDocument == document())
         unhandledInvalidControls->append(this);
@@ -552,7 +550,6 @@ bool HTMLFormControlElement::checkValidity(HeapVector<Member<HTMLFormControlElem
 void HTMLFormControlElement::showValidationMessage()
 {
     scrollIntoViewIfNeeded(false);
-    RawPtr<HTMLFormControlElement> protector(this);
     focus();
     updateVisibleValidationMessage();
 }

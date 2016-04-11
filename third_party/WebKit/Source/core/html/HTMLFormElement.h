@@ -45,11 +45,11 @@ class RadioNodeListOrElement;
 class CORE_EXPORT HTMLFormElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<HTMLFormElement> create(Document&);
+    static HTMLFormElement* create(Document&);
     ~HTMLFormElement() override;
     DECLARE_VIRTUAL_TRACE();
 
-    RawPtr<HTMLFormControlsCollection> elements();
+    HTMLFormControlsCollection* elements();
     void getNamedElements(const AtomicString&, HeapVector<Member<Element>>&);
 
     unsigned length() const;
@@ -137,10 +137,10 @@ private:
 
     void copyNonAttributePropertiesFromElement(const Element&) override;
 
-    void submitDialog(RawPtr<FormSubmission>);
+    void submitDialog(FormSubmission*);
     void submit(Event*, bool activateSubmitButton);
 
-    void scheduleFormSubmission(RawPtr<FormSubmission>);
+    void scheduleFormSubmission(FormSubmission*);
 
     void collectAssociatedElements(Node& root, FormAssociatedElement::List&) const;
     void collectImageElements(Node& root, HeapVector<Member<HTMLImageElement>>&);

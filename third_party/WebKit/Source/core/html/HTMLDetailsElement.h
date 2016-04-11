@@ -31,7 +31,7 @@ using DetailsEventSender = EventSender<HTMLDetailsElement>;
 class HTMLDetailsElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<HTMLDetailsElement> create(Document&);
+    static HTMLDetailsElement* create(Document&);
     void toggleOpen();
     ~HTMLDetailsElement() override;
 

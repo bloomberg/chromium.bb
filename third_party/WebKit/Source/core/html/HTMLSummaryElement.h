@@ -29,7 +29,7 @@ class HTMLDetailsElement;
 
 class HTMLSummaryElement final : public HTMLElement {
 public:
-    static RawPtr<HTMLSummaryElement> create(Document&);
+    static HTMLSummaryElement* create(Document&);
     bool isMainSummary() const;
     bool willRespondToMouseClickEvents() override;
 

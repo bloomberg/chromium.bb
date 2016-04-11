@@ -40,7 +40,7 @@ class CORE_EXPORT HTMLOutputElement final : public HTMLFormControlElement, priva
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(HTMLOutputElement);
 public:
-    static RawPtr<HTMLOutputElement> create(Document&, HTMLFormElement*);
+    static HTMLOutputElement* create(Document&, HTMLFormElement*);
     ~HTMLOutputElement() override;
 
     bool willValidate() const override { return false; }

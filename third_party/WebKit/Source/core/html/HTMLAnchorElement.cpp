@@ -50,7 +50,7 @@ HTMLAnchorElement::HTMLAnchorElement(const QualifiedName& tagName, Document& doc
 {
 }
 
-RawPtr<HTMLAnchorElement> HTMLAnchorElement::create(Document& document)
+HTMLAnchorElement* HTMLAnchorElement::create(Document& document)
 {
     return new HTMLAnchorElement(aTag, document);
 }

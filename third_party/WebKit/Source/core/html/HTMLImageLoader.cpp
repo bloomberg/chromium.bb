@@ -76,7 +76,7 @@ void HTMLImageLoader::noImageResourceToLoad()
 void HTMLImageLoader::imageNotifyFinished(ImageResource*)
 {
     ImageResource* cachedImage = image();
-    RawPtr<Element> element = this->element();
+    Element* element = this->element();
     ImageLoader::imageNotifyFinished(cachedImage);
 
     bool loadError = cachedImage->errorOccurred();

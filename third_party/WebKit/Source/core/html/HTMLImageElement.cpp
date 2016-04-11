@@ -61,7 +61,7 @@ using namespace HTMLNames;
 
 class HTMLImageElement::ViewportChangeListener final : public MediaQueryListListener {
 public:
-    static RawPtr<ViewportChangeListener> create(HTMLImageElement* element)
+    static ViewportChangeListener* create(HTMLImageElement* element)
     {
         return new ViewportChangeListener(element);
     }
@@ -110,12 +110,12 @@ HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form, bo
     }
 }
 
-RawPtr<HTMLImageElement> HTMLImageElement::create(Document& document)
+HTMLImageElement* HTMLImageElement::create(Document& document)
 {
     return new HTMLImageElement(document);
 }
 
-RawPtr<HTMLImageElement> HTMLImageElement::create(Document& document, HTMLFormElement* form, bool createdByParser)
+HTMLImageElement* HTMLImageElement::create(Document& document, HTMLFormElement* form, bool createdByParser)
 {
     return new HTMLImageElement(document, form, createdByParser);
 }
@@ -149,28 +149,28 @@ void HTMLImageElement::notifyViewportChanged()
     selectSourceURL(ImageLoader::UpdateSizeChanged);
 }
 
-RawPtr<HTMLImageElement> HTMLImageElement::createForJSConstructor(Document& document)
+HTMLImageElement* HTMLImageElement::createForJSConstructor(Document& document)
 {
-    RawPtr<HTMLImageElement> image = new HTMLImageElement(document);
+    HTMLImageElement* image = new HTMLImageElement(document);
     image->m_elementCreatedByParser = false;
-    return image.release();
+    return image;
 }
 
-RawPtr<HTMLImageElement> HTMLImageElement::createForJSConstructor(Document& document, int width)
+HTMLImageElement* HTMLImageElement::createForJSConstructor(Document& document, int width)
 {
-    RawPtr<HTMLImageElement> image = new HTMLImageElement(document);
+    HTMLImageElement* image = new HTMLImageElement(document);
     image->setWidth(width);
     image->m_elementCreatedByParser = false;
-    return image.release();
+    return image;
 }
 
-RawPtr<HTMLImageElement> HTMLImageElement::createForJSConstructor(Document& document, int width, int height)
+HTMLImageElement* HTMLImageElement::createForJSConstructor(Document& document, int width, int height)
 {
-    RawPtr<HTMLImageElement> image = new HTMLImageElement(document);
+    HTMLImageElement* image = new HTMLImageElement(document);
     image->setWidth(width);
     image->setHeight(height);
     image->m_elementCreatedByParser = false;
-    return image.release();
+    return image;
 }
 
 bool HTMLImageElement::isPresentationAttribute(const QualifiedName& name) const
@@ -381,8 +381,8 @@ void HTMLImageElement::attach(const AttachContext& context)
         if (m_isFallbackImage) {
             float deviceScaleFactor = blink::deviceScaleFactor(layoutImage->frame());
             std::pair<Image*, float> brokenImageAndImageScaleFactor = ImageResource::brokenImage(deviceScaleFactor);
-            RawPtr<ImageResource> newImageResource = ImageResource::create(brokenImageAndImageScaleFactor.first);
-            layoutImage->imageResource()->setImageResource(newImageResource.get());
+            ImageResource* newImageResource = ImageResource::create(brokenImageAndImageScaleFactor.first);
+            layoutImage->imageResource()->setImageResource(newImageResource);
         }
         if (layoutImageResource->hasImage())
             return;

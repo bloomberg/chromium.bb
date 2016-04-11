@@ -45,7 +45,7 @@ using namespace HTMLNames;
 // FIXME: Share more code with MediaDocumentParser.
 class PluginDocumentParser : public RawDataDocumentParser {
 public:
-    static RawPtr<PluginDocumentParser> create(PluginDocument* document)
+    static PluginDocumentParser* create(PluginDocument* document)
     {
         return new PluginDocumentParser(document);
     }
@@ -89,7 +89,7 @@ void PluginDocumentParser::createDocumentStructure()
     if (!frame->settings() || !frame->loader().allowPlugins(NotAboutToInstantiatePlugin))
         return;
 
-    RawPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(*document());
+    HTMLHtmlElement* rootElement = HTMLHtmlElement::create(*document());
     rootElement->insertedByParser();
     document()->appendChild(rootElement);
     frame->loader().dispatchDocumentElementAvailable();
@@ -97,7 +97,7 @@ void PluginDocumentParser::createDocumentStructure()
     if (isStopped())
         return; // runScriptsAtDocumentElementAvailable can detach the frame.
 
-    RawPtr<HTMLBodyElement> body = HTMLBodyElement::create(*document());
+    HTMLBodyElement* body = HTMLBodyElement::create(*document());
     body->setAttribute(styleAttr, "background-color: rgb(38,38,38); height: 100%; width: 100%; overflow: hidden; margin: 0");
     rootElement->appendChild(body);
     if (isStopped())

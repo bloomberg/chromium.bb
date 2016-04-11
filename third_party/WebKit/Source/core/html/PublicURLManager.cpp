@@ -34,11 +34,11 @@
 
 namespace blink {
 
-RawPtr<PublicURLManager> PublicURLManager::create(ExecutionContext* context)
+PublicURLManager* PublicURLManager::create(ExecutionContext* context)
 {
-    RawPtr<PublicURLManager> publicURLManager = new PublicURLManager(context);
+    PublicURLManager* publicURLManager = new PublicURLManager(context);
     publicURLManager->suspendIfNeeded();
-    return publicURLManager.release();
+    return publicURLManager;
 }
 
 PublicURLManager::PublicURLManager(ExecutionContext* context)

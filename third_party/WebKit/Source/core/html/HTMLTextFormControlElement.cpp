@@ -409,7 +409,7 @@ int HTMLTextFormControlElement::indexForVisiblePosition(const VisiblePosition& p
     if (enclosingTextFormControl(indexPosition) != this)
         return 0;
     ASSERT(indexPosition.document());
-    RawPtr<Range> range = Range::create(*indexPosition.document());
+    Range* range = Range::create(*indexPosition.document());
     range->setStart(innerEditorElement(), 0, ASSERT_NO_EXCEPTION);
     range->setEnd(indexPosition.computeContainerNode(), indexPosition.offsetInContainerNode(), ASSERT_NO_EXCEPTION);
     return TextIterator::rangeLength(range->startPosition(), range->endPosition());
@@ -505,7 +505,7 @@ static inline void setContainerAndOffsetForRange(Node* node, int offset, Node*& 
     }
 }
 
-RawPtr<Range> HTMLTextFormControlElement::selection() const
+Range* HTMLTextFormControlElement::selection() const
 {
     if (!layoutObject() || !isTextFormControl())
         return nullptr;
@@ -594,9 +594,9 @@ void HTMLTextFormControlElement::selectionChanged(bool userTriggered)
 
 void HTMLTextFormControlElement::scheduleSelectEvent()
 {
-    RawPtr<Event> event = Event::createBubble(EventTypeNames::select);
+    Event* event = Event::createBubble(EventTypeNames::select);
     event->setTarget(this);
-    document().enqueueUniqueAnimationFrameEvent(event.release());
+    document().enqueueUniqueAnimationFrameEvent(event);
 }
 
 void HTMLTextFormControlElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
@@ -620,7 +620,7 @@ bool HTMLTextFormControlElement::lastChangeWasUserEdit() const
     return m_lastChangeWasUserEdit;
 }
 
-RawPtr<Node> HTMLTextFormControlElement::createPlaceholderBreakElement() const
+Node* HTMLTextFormControlElement::createPlaceholderBreakElement() const
 {
     return HTMLBRElement::create(document());
 }
@@ -799,7 +799,7 @@ static Position innerNodePosition(const Position& innerPosition)
     ASSERT(!innerPosition.isAfterAnchor());
     HTMLElement* element = toHTMLElement(innerPosition.anchorNode());
     ASSERT(element);
-    RawPtr<NodeList> childNodes = element->childNodes();
+    NodeList* childNodes = element->childNodes();
     if (!childNodes->length())
         return Position(element, 0);
 

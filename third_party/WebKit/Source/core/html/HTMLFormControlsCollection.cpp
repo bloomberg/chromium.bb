@@ -46,7 +46,7 @@ HTMLFormControlsCollection::HTMLFormControlsCollection(ContainerNode& ownerNode)
     ASSERT(isHTMLFormElement(ownerNode) || isHTMLFieldSetElement(ownerNode));
 }
 
-RawPtr<HTMLFormControlsCollection> HTMLFormControlsCollection::create(ContainerNode& ownerNode, CollectionType type)
+HTMLFormControlsCollection* HTMLFormControlsCollection::create(ContainerNode& ownerNode, CollectionType type)
 {
     ASSERT_UNUSED(type, type == FormControls);
     return new HTMLFormControlsCollection(ownerNode);
@@ -138,7 +138,7 @@ void HTMLFormControlsCollection::updateIdNameCache() const
     if (hasValidIdNameCache())
         return;
 
-    RawPtr<NamedItemCache> cache = NamedItemCache::create();
+    NamedItemCache* cache = NamedItemCache::create();
     HashSet<StringImpl*> foundInputElements;
 
     const FormAssociatedElement::List& elementsArray = formControlElements();
@@ -177,7 +177,7 @@ void HTMLFormControlsCollection::updateIdNameCache() const
     }
 
     // Set the named item cache last as traversing the tree may cause cache invalidation.
-    setNamedItemCache(cache.release());
+    setNamedItemCache(cache);
 }
 
 void HTMLFormControlsCollection::namedGetter(const AtomicString& name, RadioNodeListOrElement& returnValue)

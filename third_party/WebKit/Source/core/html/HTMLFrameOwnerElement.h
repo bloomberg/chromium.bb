@@ -59,8 +59,8 @@ public:
     virtual bool loadedNonEmptyDocument() const { return false; }
     virtual void didLoadNonEmptyDocument() { }
 
-    void setWidget(RawPtr<Widget>);
-    RawPtr<Widget> releaseWidget();
+    void setWidget(Widget*);
+    Widget* releaseWidget();
     Widget* ownedWidget() const;
 
     class UpdateSuspendScope {

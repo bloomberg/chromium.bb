@@ -104,7 +104,7 @@ public:
         return m_helper->isEligible();
     }
 
-    void setInterface(RawPtr<MockAutoplayClient> client)
+    void setInterface(MockAutoplayClient* client)
     {
         m_client = client;
 

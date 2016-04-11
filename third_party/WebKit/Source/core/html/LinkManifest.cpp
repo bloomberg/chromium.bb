@@ -11,7 +11,7 @@
 
 namespace blink {
 
-RawPtr<LinkManifest> LinkManifest::create(HTMLLinkElement* owner)
+LinkManifest* LinkManifest::create(HTMLLinkElement* owner)
 {
     return new LinkManifest(owner);
 }

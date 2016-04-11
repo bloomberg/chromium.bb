@@ -59,7 +59,7 @@ public:
 
 class StubFrameLoaderClient : public EmptyFrameLoaderClient {
 public:
-    static RawPtr<StubFrameLoaderClient> create()
+    static StubFrameLoaderClient* create()
     {
         return new StubFrameLoaderClient;
     }

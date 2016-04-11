@@ -35,7 +35,7 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement, public For
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(HTMLObjectElement);
 public:
-    static RawPtr<HTMLObjectElement> create(Document&, HTMLFormElement*, bool createdByParser);
+    static HTMLObjectElement* create(Document&, HTMLFormElement*, bool createdByParser);
     ~HTMLObjectElement() override;
     DECLARE_VIRTUAL_TRACE();
 

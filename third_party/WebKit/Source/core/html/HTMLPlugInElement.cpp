@@ -157,7 +157,6 @@ void HTMLPlugInElement::attach(const AttachContext& context)
 
 void HTMLPlugInElement::updateWidget()
 {
-    RawPtr<HTMLPlugInElement> protector(this);
     updateWidgetInternal();
     if (m_isDelayingLoadEvent) {
         m_isDelayingLoadEvent = false;
@@ -231,7 +230,7 @@ void HTMLPlugInElement::detach(const AttachContext& context)
     // Only try to persist a plugin widget we actually own.
     Widget* plugin = ownedWidget();
     if (plugin && context.performingReattach) {
-        setPersistedPluginWidget(releaseWidget().get());
+        setPersistedPluginWidget(releaseWidget());
     } else {
         // Clear the widget; will trigger disposal of it with Oilpan.
         setWidget(nullptr);
@@ -351,7 +350,7 @@ void HTMLPlugInElement::defaultEventHandler(Event* event)
         if (LayoutEmbeddedItem(toLayoutEmbeddedObject(r)).showsUnavailablePluginIndicator())
             return;
     }
-    RawPtr<Widget> widget = toLayoutPart(r)->widget();
+    Widget* widget = toLayoutPart(r)->widget();
     if (!widget)
         return;
     widget->handleEvent(event);
@@ -487,7 +486,7 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
     } else {
         bool loadManually = document().isPluginDocument() && !document().containsPlugins();
         FrameLoaderClient::DetachedPluginPolicy policy = requireLayoutObject ? FrameLoaderClient::FailOnDetachedPlugin : FrameLoaderClient::AllowDetachedPlugin;
-        RawPtr<Widget> widget = frame->loader().client()->createPlugin(this, url, paramNames, paramValues, mimeType, loadManually, policy);
+        Widget* widget = frame->loader().client()->createPlugin(this, url, paramNames, paramValues, mimeType, loadManually, policy);
         if (!widget) {
             if (!layoutItem.isNull() && !layoutItem.showsUnavailablePluginIndicator())
                 layoutItem.setPluginUnavailabilityReason(LayoutEmbeddedObject::PluginMissing);
@@ -497,7 +496,7 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
         if (!layoutItem.isNull())
             setWidget(widget);
         else
-            setPersistedPluginWidget(widget.get());
+            setPersistedPluginWidget(widget);
     }
 
     document().setContainsPlugins();

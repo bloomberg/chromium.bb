@@ -57,7 +57,7 @@ using namespace HTMLNames;
 
 class ImageEventListener : public EventListener {
 public:
-    static RawPtr<ImageEventListener> create(ImageDocument* document)
+    static ImageEventListener* create(ImageDocument* document)
     {
         return new ImageEventListener(document);
     }
@@ -90,7 +90,7 @@ private:
 
 class ImageDocumentParser : public RawDataDocumentParser {
 public:
-    static RawPtr<ImageDocumentParser> create(ImageDocument* document)
+    static ImageDocumentParser* create(ImageDocument* document)
     {
         return new ImageDocumentParser(document);
     }
@@ -203,7 +203,7 @@ DocumentParser* ImageDocument::createParser()
 
 void ImageDocument::createDocumentStructure()
 {
-    RawPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(*this);
+    HTMLHtmlElement* rootElement = HTMLHtmlElement::create(*this);
     appendChild(rootElement);
     rootElement->insertedByParser();
 
@@ -212,13 +212,13 @@ void ImageDocument::createDocumentStructure()
     if (isStopped())
         return; // runScriptsAtDocumentElementAvailable can detach the frame.
 
-    RawPtr<HTMLHeadElement> head = HTMLHeadElement::create(*this);
-    RawPtr<HTMLMetaElement> meta = HTMLMetaElement::create(*this);
+    HTMLHeadElement* head = HTMLHeadElement::create(*this);
+    HTMLMetaElement* meta = HTMLMetaElement::create(*this);
     meta->setAttribute(nameAttr, "viewport");
     meta->setAttribute(contentAttr, "width=device-width, minimum-scale=0.1");
     head->appendChild(meta);
 
-    RawPtr<HTMLBodyElement> body = HTMLBodyElement::create(*this);
+    HTMLBodyElement* body = HTMLBodyElement::create(*this);
     body->setAttribute(styleAttr, "margin: 0px;");
 
     frame()->loader().client()->dispatchWillInsertBody();
@@ -233,11 +233,11 @@ void ImageDocument::createDocumentStructure()
 
     if (shouldShrinkToFit()) {
         // Add event listeners
-        RawPtr<EventListener> listener = ImageEventListener::create(this);
+        EventListener* listener = ImageEventListener::create(this);
         if (LocalDOMWindow* domWindow = this->domWindow())
             domWindow->addEventListener("resize", listener, false);
         if (m_shrinkToFitMode == Desktop)
-            m_imageElement->addEventListener("click", listener.release(), false);
+            m_imageElement->addEventListener("click", listener, false);
     }
 
     rootElement->appendChild(head);

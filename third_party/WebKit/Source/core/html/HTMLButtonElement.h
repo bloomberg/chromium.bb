@@ -31,7 +31,7 @@ namespace blink {
 class HTMLButtonElement final : public HTMLFormControlElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<HTMLButtonElement> create(Document&, HTMLFormElement*);
+    static HTMLButtonElement* create(Document&, HTMLFormElement*);
 
     void setType(const AtomicString&);
 

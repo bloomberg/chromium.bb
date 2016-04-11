@@ -66,7 +66,7 @@ int HTMLTableRowElement::rowIndex() const
     if (!(maybeTable && isHTMLTableElement(maybeTable)))
         return -1;
 
-    RawPtr<HTMLTableRowsCollection> rows =
+    HTMLTableRowsCollection* rows =
         toHTMLTableElement(maybeTable)->rows();
     HTMLTableRowElement* candidate = rows->item(0);
     for (int i = 0; candidate; i++, candidate = rows->item(i)) {
@@ -90,38 +90,38 @@ int HTMLTableRowElement::sectionRowIndex() const
     return rIndex;
 }
 
-RawPtr<HTMLElement> HTMLTableRowElement::insertCell(int index, ExceptionState& exceptionState)
+HTMLElement* HTMLTableRowElement::insertCell(int index, ExceptionState& exceptionState)
 {
-    RawPtr<HTMLCollection> children = cells();
+    HTMLCollection* children = cells();
     int numCells = children ? children->length() : 0;
     if (index < -1 || index > numCells) {
         exceptionState.throwDOMException(IndexSizeError, "The value provided (" + String::number(index) + ") is outside the range [-1, " + String::number(numCells) + "].");
         return nullptr;
     }
 
-    RawPtr<HTMLTableCellElement> cell = HTMLTableCellElement::create(tdTag, document());
+    HTMLTableCellElement* cell = HTMLTableCellElement::create(tdTag, document());
     if (numCells == index || index == -1)
         appendChild(cell, exceptionState);
     else
         insertBefore(cell, children->item(index), exceptionState);
-    return cell.release();
+    return cell;
 }
 
 void HTMLTableRowElement::deleteCell(int index, ExceptionState& exceptionState)
 {
-    RawPtr<HTMLCollection> children = cells();
+    HTMLCollection* children = cells();
     int numCells = children ? children->length() : 0;
     if (index == -1)
         index = numCells-1;
     if (index >= 0 && index < numCells) {
-        RawPtr<Element> cell = children->item(index);
-        HTMLElement::removeChild(cell.get(), exceptionState);
+        Element* cell = children->item(index);
+        HTMLElement::removeChild(cell, exceptionState);
     } else {
         exceptionState.throwDOMException(IndexSizeError, "The value provided (" + String::number(index) + ") is outside the range [0, " + String::number(numCells) + ").");
     }
 }
 
-RawPtr<HTMLCollection> HTMLTableRowElement::cells()
+HTMLCollection* HTMLTableRowElement::cells()
 {
     return ensureCachedCollection<HTMLCollection>(TRCells);
 }

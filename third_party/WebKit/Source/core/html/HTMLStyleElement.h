@@ -37,7 +37,7 @@ class HTMLStyleElement final : public HTMLElement, private StyleElement {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(HTMLStyleElement);
 public:
-    static RawPtr<HTMLStyleElement> create(Document&, bool createdByParser);
+    static HTMLStyleElement* create(Document&, bool createdByParser);
     ~HTMLStyleElement() override;
 
     using StyleElement::sheet;

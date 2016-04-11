@@ -297,7 +297,7 @@ TEST_F(HTMLSelectElementTest, ActiveSelectionEndAfterOptionRemoval)
     document().documentElement()->setInnerHTML("<select><optgroup><option selected>o1</option></optgroup></select>", ASSERT_NO_EXCEPTION);
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
-    RawPtr<HTMLOptionElement> option = toHTMLOptionElement(select->firstChild()->firstChild());
+    HTMLOptionElement* option = toHTMLOptionElement(select->firstChild()->firstChild());
     EXPECT_EQ(1, select->activeSelectionEndListIndex());
     select->firstChild()->removeChild(option, ASSERT_NO_EXCEPTION);
     EXPECT_EQ(-1, select->activeSelectionEndListIndex());
@@ -310,8 +310,8 @@ TEST_F(HTMLSelectElementTest, DefaultToolTip)
     document().documentElement()->setInnerHTML("<select size=4><option value="">Placeholder</option><optgroup><option>o2</option></optgroup></select>", ASSERT_NO_EXCEPTION);
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
-    RawPtr<Element> option = toElement(select->firstChild());
-    RawPtr<Element> optgroup = toElement(option->nextSibling());
+    Element* option = toElement(select->firstChild());
+    Element* optgroup = toElement(option->nextSibling());
 
     EXPECT_EQ(String(), select->defaultToolTip()) << "defaultToolTip for SELECT without FORM and without required attribute should return null string.";
     EXPECT_EQ(select->defaultToolTip(), option->defaultToolTip());
@@ -322,8 +322,8 @@ TEST_F(HTMLSelectElementTest, DefaultToolTip)
     EXPECT_EQ(select->defaultToolTip(), option->defaultToolTip());
     EXPECT_EQ(select->defaultToolTip(), optgroup->defaultToolTip());
 
-    RawPtr<HTMLFormElement> form = HTMLFormElement::create(document());
-    document().body()->appendChild(form.get());
+    HTMLFormElement* form = HTMLFormElement::create(document());
+    document().body()->appendChild(form);
     form->appendChild(select);
     EXPECT_EQ("<<ValidationValueMissingForSelect>>", select->defaultToolTip()) << "defaultToolTip for SELECT with FORM and required attribute should return a valueMissing message.";
     EXPECT_EQ(select->defaultToolTip(), option->defaultToolTip());

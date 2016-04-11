@@ -39,7 +39,7 @@ using namespace HTMLNames;
 
 class FormAttributeTargetObserver : public IdTargetObserver {
 public:
-    static RawPtr<FormAttributeTargetObserver> create(const AtomicString& id, FormAssociatedElement*);
+    static FormAttributeTargetObserver* create(const AtomicString& id, FormAssociatedElement*);
     DECLARE_VIRTUAL_TRACE();
     void idTargetChanged() override;
 
@@ -278,7 +278,7 @@ void FormAssociatedElement::setCustomValidity(const String& error)
     m_customValidationMessage = error;
 }
 
-void FormAssociatedElement::setFormAttributeTargetObserver(RawPtr<FormAttributeTargetObserver> newObserver)
+void FormAssociatedElement::setFormAttributeTargetObserver(FormAttributeTargetObserver* newObserver)
 {
     if (m_formAttributeTargetObserver)
         m_formAttributeTargetObserver->unregister();
@@ -336,7 +336,7 @@ HTMLElement& toHTMLElement(FormAssociatedElement& associatedElement)
     return const_cast<HTMLElement&>(toHTMLElement(static_cast<const FormAssociatedElement&>(associatedElement)));
 }
 
-RawPtr<FormAttributeTargetObserver> FormAttributeTargetObserver::create(const AtomicString& id, FormAssociatedElement* element)
+FormAttributeTargetObserver* FormAttributeTargetObserver::create(const AtomicString& id, FormAssociatedElement* element)
 {
     return new FormAttributeTargetObserver(id, element);
 }

@@ -46,8 +46,8 @@ class PopupMenu;
 class CORE_EXPORT HTMLSelectElement final : public HTMLFormControlElementWithState, private TypeAheadDataSource {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<HTMLSelectElement> create(Document&);
-    static RawPtr<HTMLSelectElement> create(Document&, HTMLFormElement*);
+    static HTMLSelectElement* create(Document&);
+    static HTMLSelectElement* create(Document&, HTMLFormElement*);
     ~HTMLSelectElement() override;
 
     int selectedIndex() const;
@@ -83,8 +83,8 @@ public:
     String suggestedValue() const;
     void setSuggestedValue(const String&);
 
-    RawPtr<HTMLOptionsCollection> options();
-    RawPtr<HTMLCollection> selectedOptions();
+    HTMLOptionsCollection* options();
+    HTMLCollection* selectedOptions();
 
     void optionElementChildrenChanged();
 
@@ -121,7 +121,7 @@ public:
     void optionSelectionStateChanged(HTMLOptionElement*, bool optionIsSelected);
     void optionInserted(HTMLOptionElement&, bool optionIsSelected);
     void optionRemoved(const HTMLOptionElement&);
-    bool anonymousIndexedSetter(unsigned, RawPtr<HTMLOptionElement>, ExceptionState&);
+    bool anonymousIndexedSetter(unsigned, HTMLOptionElement*, ExceptionState&);
 
     void updateListOnLayoutObject();
 

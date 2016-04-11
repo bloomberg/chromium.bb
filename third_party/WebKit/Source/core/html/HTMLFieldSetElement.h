@@ -34,11 +34,11 @@ class HTMLFormControlsCollection;
 class CORE_EXPORT HTMLFieldSetElement final : public HTMLFormControlElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<HTMLFieldSetElement> create(Document&, HTMLFormElement*);
+    static HTMLFieldSetElement* create(Document&, HTMLFormElement*);
     DECLARE_VIRTUAL_TRACE();
     HTMLLegendElement* legend() const;
 
-    RawPtr<HTMLFormControlsCollection> elements();
+    HTMLFormControlsCollection* elements();
 
     const FormAssociatedElement::List& associatedElements() const;
 

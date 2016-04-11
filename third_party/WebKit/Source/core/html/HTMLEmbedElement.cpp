@@ -44,11 +44,11 @@ inline HTMLEmbedElement::HTMLEmbedElement(Document& document, bool createdByPars
 {
 }
 
-RawPtr<HTMLEmbedElement> HTMLEmbedElement::create(Document& document, bool createdByParser)
+HTMLEmbedElement* HTMLEmbedElement::create(Document& document, bool createdByParser)
 {
-    RawPtr<HTMLEmbedElement> element = new HTMLEmbedElement(document, createdByParser);
+    HTMLEmbedElement* element = new HTMLEmbedElement(document, createdByParser);
     element->ensureUserAgentShadowRoot();
-    return element.release();
+    return element;
 }
 
 static inline LayoutPart* findPartLayoutObject(const Node* n)
@@ -142,8 +142,6 @@ void HTMLEmbedElement::updateWidgetInternal()
     Vector<String> paramNames;
     Vector<String> paramValues;
     parametersForPlugin(paramNames, paramValues);
-
-    RawPtr<HTMLEmbedElement> protect(this); // Loading the plugin might remove us from the document.
 
     // FIXME: Can we not have layoutObject here now that beforeload events are gone?
     if (!layoutObject())

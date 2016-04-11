@@ -44,7 +44,7 @@ inline HTMLFieldSetElement::HTMLFieldSetElement(Document& document, HTMLFormElem
 {
 }
 
-RawPtr<HTMLFieldSetElement> HTMLFieldSetElement::create(Document& document, HTMLFormElement* form)
+HTMLFieldSetElement* HTMLFieldSetElement::create(Document& document, HTMLFormElement* form)
 {
     return new HTMLFieldSetElement(document, form);
 }
@@ -119,7 +119,7 @@ HTMLLegendElement* HTMLFieldSetElement::legend() const
     return Traversal<HTMLLegendElement>::firstChild(*this);
 }
 
-RawPtr<HTMLFormControlsCollection> HTMLFieldSetElement::elements()
+HTMLFormControlsCollection* HTMLFieldSetElement::elements()
 {
     return ensureCachedCollection<HTMLFormControlsCollection>(FormControls);
 }

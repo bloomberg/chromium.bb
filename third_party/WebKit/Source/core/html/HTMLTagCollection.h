@@ -33,7 +33,7 @@ namespace blink {
 // Collection that limits to a particular tag and whose rootNode is in an HTMLDocument.
 class HTMLTagCollection final : public TagCollection {
 public:
-    static RawPtr<HTMLTagCollection> create(ContainerNode& rootNode, CollectionType type, const AtomicString& localName)
+    static HTMLTagCollection* create(ContainerNode& rootNode, CollectionType type, const AtomicString& localName)
     {
         ASSERT_UNUSED(type, type == HTMLTagCollectionType);
         return new HTMLTagCollection(rootNode, localName);

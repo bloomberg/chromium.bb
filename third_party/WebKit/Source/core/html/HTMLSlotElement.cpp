@@ -124,7 +124,7 @@ bool HTMLSlotElement::hasSlotChangeEventListener()
 
 void HTMLSlotElement::dispatchSlotChangeEvent()
 {
-    RawPtr<Event> event = Event::create(EventTypeNames::slotchange);
+    Event* event = Event::create(EventTypeNames::slotchange);
     event->setTarget(this);
     dispatchScopedEvent(event);
 }
@@ -269,7 +269,7 @@ void HTMLSlotElement::didUpdateDistribution()
     }
     if (hasSlotChangeEventListener() && distributionChanged()) {
         // TODO(hayato): Do not enqueue a slotchange event for the same slot twice in the microtask queue
-        Microtask::enqueueMicrotask(WTF::bind(&HTMLSlotElement::dispatchSlotChangeEvent, RawPtr<HTMLSlotElement>(this)));
+        Microtask::enqueueMicrotask(WTF::bind(&HTMLSlotElement::dispatchSlotChangeEvent, this));
     }
 }
 

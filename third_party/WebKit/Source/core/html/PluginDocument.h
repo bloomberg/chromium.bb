@@ -35,7 +35,7 @@ class Widget;
 
 class CORE_EXPORT PluginDocument final : public HTMLDocument {
 public:
-    static RawPtr<PluginDocument> create(const DocumentInit& initializer = DocumentInit())
+    static PluginDocument* create(const DocumentInit& initializer = DocumentInit())
     {
         return new PluginDocument(initializer);
     }

@@ -42,10 +42,10 @@ public:
 
     int sectionRowIndex() const;
 
-    RawPtr<HTMLElement> insertCell(int index, ExceptionState&);
+    HTMLElement* insertCell(int index, ExceptionState&);
     void deleteCell(int index, ExceptionState&);
 
-    RawPtr<HTMLCollection> cells();
+    HTMLCollection* cells();
 
 private:
     explicit HTMLTableRowElement(Document&);

@@ -255,7 +255,7 @@ public:
     // specified origin.
     bool isMediaDataCORSSameOrigin(SecurityOrigin*) const;
 
-    void scheduleEvent(RawPtr<Event>);
+    void scheduleEvent(Event*);
     void scheduleTimeupdateEvent(bool periodicEvent);
 
     // Returns the "effective media volume" value as specified in the HTML5 spec.

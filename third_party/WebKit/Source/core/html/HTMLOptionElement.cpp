@@ -63,17 +63,17 @@ HTMLOptionElement::~HTMLOptionElement()
 {
 }
 
-RawPtr<HTMLOptionElement> HTMLOptionElement::create(Document& document)
+HTMLOptionElement* HTMLOptionElement::create(Document& document)
 {
-    RawPtr<HTMLOptionElement> option = new HTMLOptionElement(document);
+    HTMLOptionElement* option = new HTMLOptionElement(document);
     option->ensureUserAgentShadowRoot();
-    return option.release();
+    return option;
 }
 
-RawPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document& document, const String& data, const AtomicString& value,
+HTMLOptionElement* HTMLOptionElement::createForJSConstructor(Document& document, const String& data, const AtomicString& value,
     bool defaultSelected, bool selected, ExceptionState& exceptionState)
 {
-    RawPtr<HTMLOptionElement> element = new HTMLOptionElement(document);
+    HTMLOptionElement* element = new HTMLOptionElement(document);
     element->ensureUserAgentShadowRoot();
     element->appendChild(Text::create(document, data.isNull() ? "" : data), exceptionState);
     if (exceptionState.hadException())
@@ -85,7 +85,7 @@ RawPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document& do
         element->setAttribute(selectedAttr, emptyAtom);
     element->setSelected(selected);
 
-    return element.release();
+    return element;
 }
 
 void HTMLOptionElement::attach(const AttachContext& context)
@@ -109,7 +109,7 @@ void HTMLOptionElement::detach(const AttachContext& context)
 
 bool HTMLOptionElement::supportsFocus() const
 {
-    RawPtr<HTMLSelectElement> select = ownerSelectElement();
+    HTMLSelectElement* select = ownerSelectElement();
     if (select && select->usesMenuList())
         return false;
     return HTMLElement::supportsFocus();
@@ -145,12 +145,10 @@ String HTMLOptionElement::text() const
 
 void HTMLOptionElement::setText(const String &text, ExceptionState& exceptionState)
 {
-    RawPtr<Node> protectFromMutationEvents(this);
-
     // Changing the text causes a recalc of a select's items, which will reset the selected
     // index to the first item if the select is single selection with a menu list. We attempt to
     // preserve the selected item.
-    RawPtr<HTMLSelectElement> select = ownerSelectElement();
+    HTMLSelectElement* select = ownerSelectElement();
     bool selectIsMenuList = select && select->usesMenuList();
     int oldSelectedIndex = selectIsMenuList ? select->selectedIndex() : -1;
 

@@ -46,11 +46,11 @@ HTMLMeterElement::~HTMLMeterElement()
 {
 }
 
-RawPtr<HTMLMeterElement> HTMLMeterElement::create(Document& document)
+HTMLMeterElement* HTMLMeterElement::create(Document& document)
 {
-    RawPtr<HTMLMeterElement> meter = new HTMLMeterElement(document);
+    HTMLMeterElement* meter = new HTMLMeterElement(document);
     meter->ensureUserAgentShadowRoot();
-    return meter.release();
+    return meter;
 }
 
 LayoutObject* HTMLMeterElement::createLayoutObject(const ComputedStyle& style)
@@ -193,11 +193,11 @@ void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     ASSERT(!m_value);
 
-    RawPtr<HTMLDivElement> inner = HTMLDivElement::create(document());
+    HTMLDivElement* inner = HTMLDivElement::create(document());
     inner->setShadowPseudoId(AtomicString("-webkit-meter-inner-element"));
     root.appendChild(inner);
 
-    RawPtr<HTMLDivElement> bar = HTMLDivElement::create(document());
+    HTMLDivElement* bar = HTMLDivElement::create(document());
     bar->setShadowPseudoId(AtomicString("-webkit-meter-bar"));
 
     m_value = HTMLDivElement::create(document());

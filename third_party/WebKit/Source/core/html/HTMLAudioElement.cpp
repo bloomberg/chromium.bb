@@ -37,23 +37,23 @@ HTMLAudioElement::HTMLAudioElement(Document& document)
 {
 }
 
-RawPtr<HTMLAudioElement> HTMLAudioElement::create(Document& document)
+HTMLAudioElement* HTMLAudioElement::create(Document& document)
 {
-    RawPtr<HTMLAudioElement> audio = new HTMLAudioElement(document);
+    HTMLAudioElement* audio = new HTMLAudioElement(document);
     audio->ensureUserAgentShadowRoot();
     audio->suspendIfNeeded();
-    return audio.release();
+    return audio;
 }
 
-RawPtr<HTMLAudioElement> HTMLAudioElement::createForJSConstructor(Document& document, const AtomicString& src)
+HTMLAudioElement* HTMLAudioElement::createForJSConstructor(Document& document, const AtomicString& src)
 {
-    RawPtr<HTMLAudioElement> audio = new HTMLAudioElement(document);
+    HTMLAudioElement* audio = new HTMLAudioElement(document);
     audio->ensureUserAgentShadowRoot();
     audio->setPreload(AtomicString("auto"));
     if (!src.isNull())
         audio->setSrc(src);
     audio->suspendIfNeeded();
-    return audio.release();
+    return audio;
 }
 
 } // namespace blink

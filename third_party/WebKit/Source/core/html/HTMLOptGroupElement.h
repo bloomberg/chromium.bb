@@ -36,7 +36,7 @@ class HTMLDivElement;
 class CORE_EXPORT HTMLOptGroupElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<HTMLOptGroupElement> create(Document&);
+    static HTMLOptGroupElement* create(Document&);
 
     bool isDisabledFormControl() const override;
     String defaultToolTip() const override;

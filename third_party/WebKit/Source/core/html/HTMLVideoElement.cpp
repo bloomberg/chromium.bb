@@ -58,12 +58,12 @@ inline HTMLVideoElement::HTMLVideoElement(Document& document)
         m_defaultPosterURL = AtomicString(document.settings()->defaultVideoPosterURL());
 }
 
-RawPtr<HTMLVideoElement> HTMLVideoElement::create(Document& document)
+HTMLVideoElement* HTMLVideoElement::create(Document& document)
 {
-    RawPtr<HTMLVideoElement> video = new HTMLVideoElement(document);
+    HTMLVideoElement* video = new HTMLVideoElement(document);
     video->ensureUserAgentShadowRoot();
     video->suspendIfNeeded();
-    return video.release();
+    return video;
 }
 
 DEFINE_TRACE(HTMLVideoElement)

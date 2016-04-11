@@ -123,7 +123,7 @@ private:
     virtual void derefFormAssociatedElement() = 0;
 #endif
 
-    void setFormAttributeTargetObserver(RawPtr<FormAttributeTargetObserver>);
+    void setFormAttributeTargetObserver(FormAttributeTargetObserver*);
     void resetFormAttributeTargetObserver();
 
     Member<FormAttributeTargetObserver> m_formAttributeTargetObserver;

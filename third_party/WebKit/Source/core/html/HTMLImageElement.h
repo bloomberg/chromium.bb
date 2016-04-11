@@ -47,11 +47,11 @@ class CORE_EXPORT HTMLImageElement final : public HTMLElement, public CanvasImag
 public:
     class ViewportChangeListener;
 
-    static RawPtr<HTMLImageElement> create(Document&);
-    static RawPtr<HTMLImageElement> create(Document&, HTMLFormElement*, bool createdByParser);
-    static RawPtr<HTMLImageElement> createForJSConstructor(Document&);
-    static RawPtr<HTMLImageElement> createForJSConstructor(Document&, int width);
-    static RawPtr<HTMLImageElement> createForJSConstructor(Document&, int width, int height);
+    static HTMLImageElement* create(Document&);
+    static HTMLImageElement* create(Document&, HTMLFormElement*, bool createdByParser);
+    static HTMLImageElement* createForJSConstructor(Document&);
+    static HTMLImageElement* createForJSConstructor(Document&, int width);
+    static HTMLImageElement* createForJSConstructor(Document&, int width, int height);
 
     ~HTMLImageElement() override;
     DECLARE_VIRTUAL_TRACE();

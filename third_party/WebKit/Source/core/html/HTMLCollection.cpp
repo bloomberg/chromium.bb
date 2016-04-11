@@ -169,7 +169,7 @@ HTMLCollection::HTMLCollection(ContainerNode& ownerNode, CollectionType type, It
 {
 }
 
-RawPtr<HTMLCollection> HTMLCollection::create(ContainerNode& base, CollectionType type)
+HTMLCollection* HTMLCollection::create(ContainerNode& base, CollectionType type)
 {
     return new HTMLCollection(base, type, DoesNotOverrideItemAfter);
 }
@@ -456,7 +456,7 @@ void HTMLCollection::updateIdNameCache() const
     if (hasValidIdNameCache())
         return;
 
-    RawPtr<NamedItemCache> cache = NamedItemCache::create();
+    NamedItemCache* cache = NamedItemCache::create();
     unsigned length = this->length();
     for (unsigned i = 0; i < length; ++i) {
         Element* element = item(i);
@@ -470,7 +470,7 @@ void HTMLCollection::updateIdNameCache() const
             cache->addElementWithName(nameAttrVal, element);
     }
     // Set the named item cache last as traversing the tree may cause cache invalidation.
-    setNamedItemCache(cache.release());
+    setNamedItemCache(cache);
 }
 
 void HTMLCollection::namedItems(const AtomicString& name, HeapVector<Member<Element>>& result) const

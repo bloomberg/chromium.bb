@@ -41,7 +41,7 @@ public:
         DoesNotOverrideItemAfter,
     };
 
-    static RawPtr<HTMLCollection> create(ContainerNode& base, CollectionType);
+    static HTMLCollection* create(ContainerNode& base, CollectionType);
     virtual ~HTMLCollection();
     void invalidateCache(Document* oldDocument = 0) const override;
     void invalidateCacheForAttribute(const QualifiedName*) const;
@@ -73,7 +73,7 @@ protected:
 
     class NamedItemCache final : public GarbageCollected<NamedItemCache> {
     public:
-        static RawPtr<NamedItemCache> create()
+        static NamedItemCache* create()
         {
             return new NamedItemCache;
         }
@@ -112,7 +112,7 @@ protected:
     virtual void updateIdNameCache() const;
     bool hasValidIdNameCache() const { return m_namedItemCache; }
 
-    void setNamedItemCache(RawPtr<NamedItemCache> cache) const
+    void setNamedItemCache(NamedItemCache* cache) const
     {
         ASSERT(!m_namedItemCache);
         // Do not repeat registration for the same invalidation type.

@@ -37,7 +37,7 @@ namespace blink {
 class HTMLUnknownElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<HTMLUnknownElement> create(const QualifiedName& tagName, Document& document)
+    static HTMLUnknownElement* create(const QualifiedName& tagName, Document& document)
     {
         return new HTMLUnknownElement(tagName, document);
     }

@@ -44,13 +44,13 @@ inline HTMLDataListElement::HTMLDataListElement(Document& document)
 {
 }
 
-RawPtr<HTMLDataListElement> HTMLDataListElement::create(Document& document)
+HTMLDataListElement* HTMLDataListElement::create(Document& document)
 {
     UseCounter::count(document, UseCounter::DataListElement);
     return new HTMLDataListElement(document);
 }
 
-RawPtr<HTMLDataListOptionsCollection> HTMLDataListElement::options()
+HTMLDataListOptionsCollection* HTMLDataListElement::options()
 {
     return ensureCachedCollection<HTMLDataListOptionsCollection>(DataListOptions);
 }

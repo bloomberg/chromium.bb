@@ -53,26 +53,26 @@ const StylePropertySet* HTMLTableSectionElement::additionalPresentationAttribute
 
 // these functions are rather slow, since we need to get the row at
 // the index... but they aren't used during usual HTML parsing anyway
-RawPtr<HTMLElement> HTMLTableSectionElement::insertRow(int index, ExceptionState& exceptionState)
+HTMLElement* HTMLTableSectionElement::insertRow(int index, ExceptionState& exceptionState)
 {
-    RawPtr<HTMLCollection> children = rows();
+    HTMLCollection* children = rows();
     int numRows = children ? static_cast<int>(children->length()) : 0;
     if (index < -1 || index > numRows) {
         exceptionState.throwDOMException(IndexSizeError, "The provided index (" + String::number(index) + " is outside the range [-1, " + String::number(numRows) + "].");
         return nullptr;
     }
 
-    RawPtr<HTMLTableRowElement> row = HTMLTableRowElement::create(document());
+    HTMLTableRowElement* row = HTMLTableRowElement::create(document());
     if (numRows == index || index == -1)
         appendChild(row, exceptionState);
     else
         insertBefore(row, children->item(index), exceptionState);
-    return row.release();
+    return row;
 }
 
 void HTMLTableSectionElement::deleteRow(int index, ExceptionState& exceptionState)
 {
-    RawPtr<HTMLCollection> children = rows();
+    HTMLCollection* children = rows();
     int numRows = children ? (int)children->length() : 0;
     if (index == -1) {
         if (!numRows)
@@ -80,14 +80,14 @@ void HTMLTableSectionElement::deleteRow(int index, ExceptionState& exceptionStat
         index = numRows - 1;
     }
     if (index >= 0 && index < numRows) {
-        RawPtr<Element> row = children->item(index);
-        HTMLElement::removeChild(row.get(), exceptionState);
+        Element* row = children->item(index);
+        HTMLElement::removeChild(row, exceptionState);
     } else {
         exceptionState.throwDOMException(IndexSizeError, "The provided index (" + String::number(index) + " is outside the range [-1, " + String::number(numRows) + "].");
     }
 }
 
-RawPtr<HTMLCollection> HTMLTableSectionElement::rows()
+HTMLCollection* HTMLTableSectionElement::rows()
 {
     return ensureCachedCollection<HTMLCollection>(TSectionRows);
 }

@@ -39,7 +39,7 @@ typedef int ExceptionCode;
 
 class ClassList final : public DOMTokenList {
 public:
-    static RawPtr<ClassList> create(Element* element)
+    static ClassList* create(Element* element)
     {
         return new ClassList(element);
     }

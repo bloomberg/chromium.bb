@@ -52,8 +52,8 @@ void HTMLTablePartElement::collectStyleForPresentationAttribute(const QualifiedN
     } else if (name == backgroundAttr) {
         String url = stripLeadingAndTrailingHTMLSpaces(value);
         if (!url.isEmpty()) {
-            RawPtr<CSSImageValue> imageValue = CSSImageValue::create(url, document().completeURL(url));
-            style->setProperty(CSSProperty(CSSPropertyBackgroundImage, imageValue.release()));
+            CSSImageValue* imageValue = CSSImageValue::create(url, document().completeURL(url));
+            style->setProperty(CSSProperty(CSSPropertyBackgroundImage, imageValue));
         }
     } else if (name == valignAttr) {
         if (equalIgnoringCase(value, "top"))

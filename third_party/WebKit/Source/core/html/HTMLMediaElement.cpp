@@ -285,7 +285,7 @@ class HTMLMediaElement::AutoplayHelperClientImpl :
     public AutoplayExperimentHelper::Client {
 
 public:
-    static RawPtr<AutoplayHelperClientImpl> create(HTMLMediaElement* element)
+    static AutoplayHelperClientImpl* create(HTMLMediaElement* element)
     {
         return new AutoplayHelperClientImpl(element);
     }
@@ -695,7 +695,7 @@ void HTMLMediaElement::scheduleEvent(const AtomicString& eventName)
     scheduleEvent(Event::createCancelable(eventName));
 }
 
-void HTMLMediaElement::scheduleEvent(RawPtr<Event> event)
+void HTMLMediaElement::scheduleEvent(Event* event)
 {
 #if LOG_MEDIA_EVENTS
     WTF_LOG(Media, "HTMLMediaElement::scheduleEvent(%p) - scheduling '%s'", this, event->type().ascii().data());
@@ -2685,8 +2685,8 @@ bool HTMLMediaElement::havePotentialSourceChild()
 {
     // Stash the current <source> node and next nodes so we can restore them after checking
     // to see there is another potential.
-    RawPtr<HTMLSourceElement> currentSourceNode = m_currentSourceNode;
-    RawPtr<Node> nextNode = m_nextChildNodeToConsider;
+    HTMLSourceElement* currentSourceNode = m_currentSourceNode;
+    Node* nextNode = m_nextChildNodeToConsider;
 
     KURL nextURL = selectNextSourceChild(0, DoNothing);
 
@@ -3371,7 +3371,7 @@ TextTrackContainer& HTMLMediaElement::ensureTextTrackContainer()
     if (firstChild && firstChild->isTextTrackContainer())
         return toTextTrackContainer(*firstChild);
 
-    RawPtr<TextTrackContainer> textTrackContainer = TextTrackContainer::create(document());
+    TextTrackContainer* textTrackContainer = TextTrackContainer::create(document());
 
     // The text track container should be inserted before the media controls,
     // so that they are rendered behind them.
@@ -3517,7 +3517,7 @@ void HTMLMediaElement::ensureMediaControls()
     if (mediaControls())
         return;
 
-    RawPtr<MediaControls> mediaControls = MediaControls::create(*this);
+    MediaControls* mediaControls = MediaControls::create(*this);
 
     mediaControls->reset();
     if (isFullscreen())

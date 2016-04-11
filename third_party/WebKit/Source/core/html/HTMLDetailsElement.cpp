@@ -46,7 +46,7 @@ class FirstSummarySelectFilter final : public HTMLContentSelectFilter {
 public:
     virtual ~FirstSummarySelectFilter() { }
 
-    static RawPtr<FirstSummarySelectFilter> create()
+    static FirstSummarySelectFilter* create()
     {
         return new FirstSummarySelectFilter();
     }
@@ -77,11 +77,11 @@ static DetailsEventSender& detailsToggleEventSender()
     return sharedToggleEventSender;
 }
 
-RawPtr<HTMLDetailsElement> HTMLDetailsElement::create(Document& document)
+HTMLDetailsElement* HTMLDetailsElement::create(Document& document)
 {
-    RawPtr<HTMLDetailsElement> details = new HTMLDetailsElement(document);
+    HTMLDetailsElement* details = new HTMLDetailsElement(document);
     details->ensureUserAgentShadowRoot();
-    return details.release();
+    return details;
 }
 
 HTMLDetailsElement::HTMLDetailsElement(Document& document)
@@ -112,19 +112,19 @@ LayoutObject* HTMLDetailsElement::createLayoutObject(const ComputedStyle&)
 
 void HTMLDetailsElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
-    RawPtr<HTMLSummaryElement> defaultSummary = HTMLSummaryElement::create(document());
+    HTMLSummaryElement* defaultSummary = HTMLSummaryElement::create(document());
     defaultSummary->appendChild(Text::create(document(), locale().queryString(WebLocalizedString::DetailsLabel)));
 
-    RawPtr<HTMLContentElement> summary = HTMLContentElement::create(document(), FirstSummarySelectFilter::create());
+    HTMLContentElement* summary = HTMLContentElement::create(document(), FirstSummarySelectFilter::create());
     summary->setIdAttribute(ShadowElementNames::detailsSummary());
     summary->appendChild(defaultSummary);
-    root.appendChild(summary.release());
+    root.appendChild(summary);
 
-    RawPtr<HTMLDivElement> content = HTMLDivElement::create(document());
+    HTMLDivElement* content = HTMLDivElement::create(document());
     content->setIdAttribute(ShadowElementNames::detailsContent());
     content->appendChild(HTMLContentElement::create(document()));
     content->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
-    root.appendChild(content.release());
+    root.appendChild(content);
 }
 
 Element* HTMLDetailsElement::findMainSummary() const

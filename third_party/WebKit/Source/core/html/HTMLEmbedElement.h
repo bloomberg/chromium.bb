@@ -30,7 +30,7 @@ namespace blink {
 class HTMLEmbedElement final : public HTMLPlugInElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<HTMLEmbedElement> create(Document&, bool createdByParser = false);
+    static HTMLEmbedElement* create(Document&, bool createdByParser = false);
 
     bool isExposed() const;
 

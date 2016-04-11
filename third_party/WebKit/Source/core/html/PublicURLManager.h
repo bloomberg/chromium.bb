@@ -44,7 +44,7 @@ class URLRegistrable;
 class PublicURLManager final : public GarbageCollectedFinalized<PublicURLManager>, public ActiveDOMObject {
     USING_GARBAGE_COLLECTED_MIXIN(PublicURLManager);
 public:
-    static RawPtr<PublicURLManager> create(ExecutionContext*);
+    static PublicURLManager* create(ExecutionContext*);
 
     void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*, const String& uuid = String());
     void revoke(const KURL&);

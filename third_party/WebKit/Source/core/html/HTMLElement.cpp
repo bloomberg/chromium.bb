@@ -379,9 +379,9 @@ void HTMLElement::parseAttribute(const QualifiedName& name, const AtomicString& 
     }
 }
 
-RawPtr<DocumentFragment> HTMLElement::textToFragment(const String& text, ExceptionState& exceptionState)
+DocumentFragment* HTMLElement::textToFragment(const String& text, ExceptionState& exceptionState)
 {
-    RawPtr<DocumentFragment> fragment = DocumentFragment::create(document());
+    DocumentFragment* fragment = DocumentFragment::create(document());
     unsigned i, length = text.length();
     UChar c = 0;
     for (unsigned start = 0; start < length; ) {
@@ -465,9 +465,9 @@ void HTMLElement::setInnerText(const String& text, ExceptionState& exceptionStat
     }
 
     // Add text nodes and <br> elements.
-    RawPtr<DocumentFragment> fragment = textToFragment(text, exceptionState);
+    DocumentFragment* fragment = textToFragment(text, exceptionState);
     if (!exceptionState.hadException())
-        replaceChildrenWithFragment(this, fragment.release(), exceptionState);
+        replaceChildrenWithFragment(this, fragment, exceptionState);
 }
 
 void HTMLElement::setOuterText(const String& text, ExceptionState& exceptionState)
@@ -487,9 +487,9 @@ void HTMLElement::setOuterText(const String& text, ExceptionState& exceptionStat
         return;
     }
 
-    RawPtr<Node> prev = previousSibling();
-    RawPtr<Node> next = nextSibling();
-    RawPtr<Node> newChild = nullptr;
+    Node* prev = previousSibling();
+    Node* next = nextSibling();
+    Node* newChild = nullptr;
 
     // Convert text to fragment with <br> tags instead of linebreaks if needed.
     if (text.contains('\r') || text.contains('\n'))
@@ -504,14 +504,14 @@ void HTMLElement::setOuterText(const String& text, ExceptionState& exceptionStat
     if (exceptionState.hadException())
         return;
 
-    parent->replaceChild(newChild.release(), this, exceptionState);
+    parent->replaceChild(newChild, this, exceptionState);
 
-    RawPtr<Node> node = next ? next->previousSibling() : nullptr;
+    Node* node = next ? next->previousSibling() : nullptr;
     if (!exceptionState.hadException() && node && node->isTextNode())
-        mergeWithNextTextNode(toText(node.get()), exceptionState);
+        mergeWithNextTextNode(toText(node), exceptionState);
 
     if (!exceptionState.hadException() && prev && prev->isTextNode())
-        mergeWithNextTextNode(toText(prev.get()), exceptionState);
+        mergeWithNextTextNode(toText(prev), exceptionState);
 }
 
 void HTMLElement::applyAlignmentAttributeToStyle(const AtomicString& alignment, MutableStylePropertySet* style)

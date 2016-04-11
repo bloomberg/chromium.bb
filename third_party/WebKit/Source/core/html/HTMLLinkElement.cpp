@@ -149,13 +149,13 @@ inline HTMLLinkElement::HTMLLinkElement(Document& document, bool createdByParser
     : HTMLElement(linkTag, document)
     , m_linkLoader(LinkLoader::create(this))
     , m_sizes(DOMTokenList::create(this))
-    , m_relList(RelList::create(this).leakRef())
+    , m_relList(RelList::create(this))
     , m_createdByParser(createdByParser)
     , m_isInShadowTree(false)
 {
 }
 
-RawPtr<HTMLLinkElement> HTMLLinkElement::create(Document& document, bool createdByParser)
+HTMLLinkElement* HTMLLinkElement::create(Document& document, bool createdByParser)
 {
     return new HTMLLinkElement(document, createdByParser);
 }
@@ -237,12 +237,12 @@ LinkResource* HTMLLinkElement::linkResourceToProcess()
             if (document().frame())
                 m_link = document().frame()->loader().client()->createServiceWorkerLinkResource(this);
         } else {
-            RawPtr<LinkStyle> link = LinkStyle::create(this);
+            LinkStyle* link = LinkStyle::create(this);
             if (fastHasAttribute(disabledAttr)) {
                 UseCounter::count(document(), UseCounter::HTMLLinkElementDisabled);
                 link->setDisabledState(true);
             }
-            m_link = link.release();
+            m_link = link;
         }
     }
 
@@ -314,12 +314,12 @@ void HTMLLinkElement::removedFrom(ContainerNode* insertionPoint)
     }
     document().styleEngine().removeStyleSheetCandidateNode(this);
 
-    RawPtr<StyleSheet> removedSheet = sheet();
+    StyleSheet* removedSheet = sheet();
 
     if (m_link)
         m_link->ownerRemoved();
 
-    document().styleEngine().setNeedsActiveStyleUpdate(removedSheet.get(), FullStyleUpdate);
+    document().styleEngine().setNeedsActiveStyleUpdate(removedSheet, FullStyleUpdate);
 }
 
 void HTMLLinkElement::finishParsingChildren()
@@ -476,7 +476,7 @@ DEFINE_TRACE(HTMLLinkElement)
     DOMTokenListObserver::trace(visitor);
 }
 
-RawPtr<LinkStyle> LinkStyle::create(HTMLLinkElement* owner)
+LinkStyle* LinkStyle::create(HTMLLinkElement* owner)
 {
     return new LinkStyle(owner);
 }
@@ -536,15 +536,13 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
             clearSheet();
         return;
     }
-    // Completing the sheet load may cause scripts to execute.
-    RawPtr<Node> protector(m_owner.get());
 
     CSSParserContext parserContext(m_owner->document(), 0, baseURL, charset);
 
     DEFINE_STATIC_LOCAL(EnumerationHistogram, restoredCachedStyleSheetHistogram, ("Blink.RestoredCachedStyleSheet", 2));
     DEFINE_STATIC_LOCAL(EnumerationHistogram, restoredCachedStyleSheet2Histogram, ("Blink.RestoredCachedStyleSheet2", StyleSheetCacheStatusCount));
 
-    if (RawPtr<StyleSheetContents> restoredSheet = const_cast<CSSStyleSheetResource*>(cachedStyleSheet)->restoreParsedStyleSheet(parserContext)) {
+    if (StyleSheetContents* restoredSheet = const_cast<CSSStyleSheetResource*>(cachedStyleSheet)->restoreParsedStyleSheet(parserContext)) {
         ASSERT(restoredSheet->isCacheable());
         ASSERT(!restoredSheet->isLoading());
 
@@ -566,7 +564,7 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
     StyleSheetCacheStatus cacheStatus = cachedStyleSheet->response().wasCached() ? StyleSheetInDiskCache : StyleSheetNewEntry;
     restoredCachedStyleSheet2Histogram.count(cacheStatus);
 
-    RawPtr<StyleSheetContents> styleSheet = StyleSheetContents::create(href, parserContext);
+    StyleSheetContents* styleSheet = StyleSheetContents::create(href, parserContext);
 
     if (m_sheet)
         clearSheet();
@@ -741,9 +739,9 @@ void LinkStyle::process()
         LocalFrame* frame = loadingFrame();
         if (!m_owner->media().isEmpty() && frame && frame->document()) {
             RefPtr<ComputedStyle> documentStyle = StyleResolver::styleForDocument(*frame->document());
-            RawPtr<MediaQuerySet> media = MediaQuerySet::create(m_owner->media());
+            MediaQuerySet* media = MediaQuerySet::create(m_owner->media());
             MediaQueryEvaluator evaluator(frame);
-            mediaQueryMatches = evaluator.eval(media.get());
+            mediaQueryMatches = evaluator.eval(media);
         }
 
         // Don't hold up layout tree construction and script execution on stylesheets
@@ -771,9 +769,9 @@ void LinkStyle::process()
         }
     } else if (m_sheet) {
         // we no longer contain a stylesheet, e.g. perhaps rel or type was changed
-        RawPtr<StyleSheet> removedSheet = m_sheet.get();
+        StyleSheet* removedSheet = m_sheet.get();
         clearSheet();
-        document().styleEngine().setNeedsActiveStyleUpdate(removedSheet.get(), FullStyleUpdate);
+        document().styleEngine().setNeedsActiveStyleUpdate(removedSheet, FullStyleUpdate);
     }
 }
 

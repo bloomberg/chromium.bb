@@ -30,7 +30,7 @@ namespace blink {
 
 class CORE_EXPORT HTMLImageLoader final : public ImageLoader {
 public:
-    static RawPtr<HTMLImageLoader> create(Element* element)
+    static HTMLImageLoader* create(Element* element)
     {
         return new HTMLImageLoader(element);
     }

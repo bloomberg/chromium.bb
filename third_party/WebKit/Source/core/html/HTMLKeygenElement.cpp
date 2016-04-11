@@ -54,11 +54,11 @@ HTMLKeygenElement::HTMLKeygenElement(Document& document, HTMLFormElement* form)
         document.frame()->loader().client()->didUseKeygen();
 }
 
-RawPtr<HTMLKeygenElement> HTMLKeygenElement::create(Document& document, HTMLFormElement* form)
+HTMLKeygenElement* HTMLKeygenElement::create(Document& document, HTMLFormElement* form)
 {
-    RawPtr<HTMLKeygenElement> keygen = new HTMLKeygenElement(document, form);
+    HTMLKeygenElement* keygen = new HTMLKeygenElement(document, form);
     keygen->ensureUserAgentShadowRoot();
-    return keygen.release();
+    return keygen;
 }
 
 LayoutObject* HTMLKeygenElement::createLayoutObject(const ComputedStyle& style)
@@ -79,10 +79,10 @@ void HTMLKeygenElement::didAddUserAgentShadowRoot(ShadowRoot& root)
     keys.append(locale().queryString(WebLocalizedString::KeygenMenuMediumGradeKeySize));
 
     // Create a select element with one option element for each key size.
-    RawPtr<HTMLSelectElement> select = HTMLSelectElement::create(document());
+    HTMLSelectElement* select = HTMLSelectElement::create(document());
     select->setShadowPseudoId(keygenSelectPseudoId);
     for (const String& key : keys) {
-        RawPtr<HTMLOptionElement> option = HTMLOptionElement::create(document());
+        HTMLOptionElement* option = HTMLOptionElement::create(document());
         option->appendChild(Text::create(document(), key));
         select->appendChild(option);
     }

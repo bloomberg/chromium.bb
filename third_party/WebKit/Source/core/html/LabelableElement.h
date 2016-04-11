@@ -43,7 +43,7 @@ class LabelsNodeList;
 class CORE_EXPORT LabelableElement : public HTMLElement {
 public:
     ~LabelableElement() override;
-    RawPtr<LabelsNodeList> labels();
+    LabelsNodeList* labels();
     virtual bool supportLabels() const { return false; }
 
     DECLARE_VIRTUAL_TRACE();

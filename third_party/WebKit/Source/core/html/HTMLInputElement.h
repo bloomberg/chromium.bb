@@ -48,7 +48,7 @@ struct DateTimeChooserParameters;
 class CORE_EXPORT HTMLInputElement : public HTMLTextFormControlElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<HTMLInputElement> create(Document&, HTMLFormElement*, bool createdByParser);
+    static HTMLInputElement* create(Document&, HTMLFormElement*, bool createdByParser);
     ~HTMLInputElement() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -361,7 +361,7 @@ private:
 
     void subtreeHasChanged() final;
 
-    void setListAttributeTargetObserver(RawPtr<ListAttributeTargetObserver>);
+    void setListAttributeTargetObserver(ListAttributeTargetObserver*);
     void resetListAttributeTargetObserver();
     void parseMaxLengthAttribute(const AtomicString&);
     void parseMinLengthAttribute(const AtomicString&);

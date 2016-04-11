@@ -31,7 +31,7 @@ class HTMLDivElement;
 class CORE_EXPORT HTMLMeterElement final : public LabelableElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<HTMLMeterElement> create(Document&);
+    static HTMLMeterElement* create(Document&);
 
     enum GaugeRegion {
         GaugeRegionOptimum,

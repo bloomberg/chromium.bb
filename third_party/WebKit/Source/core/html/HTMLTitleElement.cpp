@@ -79,7 +79,6 @@ String HTMLTitleElement::text() const
 
 void HTMLTitleElement::setText(const String &value)
 {
-    RawPtr<Node> protectFromMutationEvents(this);
     ChildListMutationScope mutation(*this);
 
     {

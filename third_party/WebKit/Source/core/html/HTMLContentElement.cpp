@@ -38,12 +38,12 @@ namespace blink {
 
 using namespace HTMLNames;
 
-RawPtr<HTMLContentElement> HTMLContentElement::create(Document& document, RawPtr<HTMLContentSelectFilter> filter)
+HTMLContentElement* HTMLContentElement::create(Document& document, HTMLContentSelectFilter* filter)
 {
     return new HTMLContentElement(document, filter);
 }
 
-inline HTMLContentElement::HTMLContentElement(Document& document, RawPtr<HTMLContentSelectFilter> filter)
+inline HTMLContentElement::HTMLContentElement(Document& document, HTMLContentSelectFilter* filter)
     : InsertionPoint(contentTag, document)
     , m_shouldParseSelect(false)
     , m_isValidSelector(true)

@@ -31,7 +31,7 @@
 
 namespace blink {
 
-RawPtr<HTMLAllCollection> HTMLAllCollection::create(ContainerNode& node, CollectionType type)
+HTMLAllCollection* HTMLAllCollection::create(ContainerNode& node, CollectionType type)
 {
     ASSERT_UNUSED(type, type == DocAll);
     return new HTMLAllCollection(node);
