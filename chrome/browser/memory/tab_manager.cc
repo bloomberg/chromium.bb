@@ -499,7 +499,7 @@ for (int i = 0; i < model->count(); i++) {
       stats.renderer_handle = contents->GetRenderProcessHost()->GetHandle();
       stats.child_process_host_id = contents->GetRenderProcessHost()->GetID();
 #if defined(OS_CHROMEOS)
-      stats.oom_score = delegate_->GetOomScore(stats.child_process_host_id);
+      stats.oom_score = delegate_->GetCachedOomScore(stats.renderer_handle);
 #endif
       stats.title = contents->GetTitle();
       stats.tab_contents_id = IdFromWebContents(contents);

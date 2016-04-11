@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/arc/arc_process.h"
 #include "chrome/browser/memory/tab_manager.h"
 #include "chrome/browser/memory/tab_stats.h"
+#include "components/arc/arc_bridge_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -59,23 +60,38 @@ enum ProcessPriority {
 // Note that AdjustOomPriorities will be called on the UI thread by
 // TabManager, but the actual work will take place on the file thread
 // (see implementation of AdjustOomPriorities).
-class TabManagerDelegate : public content::NotificationObserver {
+class TabManagerDelegate : public content::NotificationObserver,
+                           public arc::ArcBridgeService::Observer {
  public:
   TabManagerDelegate();
   ~TabManagerDelegate() override;
 
+  // ArcBridgeService::Observer overrides.
+  void OnProcessInstanceReady() override;
+  void OnProcessInstanceClosed() override;
+
+  // Kills a process on memory pressure.
   void LowMemoryKill(const base::WeakPtr<TabManager>& tab_manager,
                      const TabStatsList& tab_stats);
 
-  // Return the score of a process.
-  int GetOomScore(int child_process_host_id);
+  // Returns oom_score_adj of a process if the score is cached by |this|.
+  // If couldn't find the score in the cache, returns -1001 since the valid
+  // range of oom_score_adj is [-1000, 1000].
+  int GetCachedOomScore(base::ProcessHandle process_handle);
 
   // Called when the timer fires, sets oom_adjust_score for all renderers.
-  void AdjustOomPriorities(const TabStatsList& stats_list);
+  void AdjustOomPriorities(const TabStatsList& tab_list);
+
+ protected:
+  // Sets oom_score_adj for a list of tabs.
+  // This is a delegator to to SetOomScoreAdjForTabsOnFileThread(),
+  // also as a seam for unit test.
+  virtual void SetOomScoreAdjForTabs(
+      const std::vector<std::pair<base::ProcessHandle, int>>& entries);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, GetProcessHandles);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, LowMemoryKill);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, SetOomScoreAdj);
 
   // On ARC enabled machines, either a tab or an app could be a possible
   // victim of low memory kill process. This is a helper struct which holds a
@@ -106,32 +122,50 @@ class TabManagerDelegate : public content::NotificationObserver {
   // Pair to hold child process host id and ProcessHandle.
   typedef std::pair<int, base::ProcessHandle> ProcessInfo;
 
-  // Returns a list of child process host ids and ProcessHandles from
-  // |stats_list| with unique pids. If multiple tabs use the same process,
-  // returns the first child process host id and corresponding pid. This implies
-  // that the processes are selected based on their "most important" tab.
-  static std::vector<ProcessInfo> GetChildProcessInfos(
-      const TabStatsList& stats_list);
-
-  // Actual kills a process after getting all info of tabs and apps.
-  static void LowMemoryKillImpl(
-      const base::WeakPtr<TabManager>& tab_manager,
-      const TabStatsList& tab_list,
-      const std::vector<arc::ArcProcess>& arc_processes);
+  // Cache oom scores in memory.
+  typedef base::hash_map<base::ProcessHandle, int> ProcessScoreMap;
 
   // Get the list of candidates to kill, sorted by reversed importance.
   static std::vector<KillCandidate> GetSortedKillCandidates(
       const TabStatsList& tab_list,
       const std::vector<arc::ArcProcess>& arc_processes);
 
-  // Called by AdjustOomPriorities.
-  void AdjustOomPrioritiesOnFileThread(TabStatsList stats_list);
-
   // Posts AdjustFocusedTabScore task to the file thread.
   void OnFocusTabScoreAdjustmentTimeout();
 
+  // Kills a process after getting all info of tabs and apps.
+  void LowMemoryKillImpl(const base::WeakPtr<TabManager>& tab_manager,
+                         const TabStatsList& tab_list,
+                         const std::vector<arc::ArcProcess>& arc_processes);
+
+  // Public interface to adjust OOM scores.
+  void AdjustOomPriorities(const TabStatsList& tab_list,
+                           const std::vector<arc::ArcProcess>& arc_processes);
+
   // Sets the score of the focused tab to the least value.
   void AdjustFocusedTabScoreOnFileThread();
+
+  // Called by AdjustOomPriorities. Runs on the main thread.
+  void AdjustOomPrioritiesImpl(
+      const TabStatsList& tab_list,
+      const std::vector<arc::ArcProcess>& arc_processes);
+
+  // Sets oom_score_adj of an ARC app.
+  void SetOomScoreAdjForApp(int nspid, int score);
+
+  // Sets oom_score_adj for a list of tabs on the file thread.
+  void SetOomScoreAdjForTabsOnFileThread(
+      const std::vector<std::pair<base::ProcessHandle, int>>& entries);
+
+  // Sets oom score for processes in the range [|rbegin|, |rend|) to integers
+  // distributed evenly in [|range_begin|, |range_end|).
+  // The new score is set in |new_map|.
+  void DistributeOomScoreInRange(
+      std::vector<TabManagerDelegate::KillCandidate>::reverse_iterator rbegin,
+      std::vector<TabManagerDelegate::KillCandidate>::reverse_iterator rend,
+      int range_begin,
+      int range_end,
+      ProcessScoreMap* new_map);
 
   // Registrar to receive renderer notifications.
   content::NotificationRegistrar registrar_;
@@ -139,11 +173,18 @@ class TabManagerDelegate : public content::NotificationObserver {
   base::OneShotTimer focus_tab_score_adjust_timer_;
   // This lock is for |oom_score_map_| and |focused_tab_process_info_|.
   base::Lock oom_score_lock_;
-  // Map maintaining the child process host id - oom_score mapping.
-  typedef base::hash_map<int, int> ProcessScoreMap;
+  // Map maintaining the process handle - oom_score mapping.
   ProcessScoreMap oom_score_map_;
   // Holds the focused tab's child process host id.
   ProcessInfo focused_tab_process_info_;
+
+  // Holds a weak pointer to arc::ProcessInstance.
+  arc::ProcessInstance* arc_process_instance_;
+  // Current ProcessInstance version.
+  int arc_process_instance_version_;
+
+  // Weak pointer factory used for posting tasks to other threads.
+  base::WeakPtrFactory<TabManagerDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TabManagerDelegate);
 };
