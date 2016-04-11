@@ -196,8 +196,10 @@ class SchemaProcessor(object):
       elif isinstance(node, Mapping):
         ref = node.get('$ref')
         if ref and ref in inline_docs:
-          node.update(inline_docs[ref])
           del node['$ref']
+          for k, v in inline_docs[ref].iteritems():
+            if k not in node:
+              node[k] = v
         for k, v in node.iteritems():
           apply_inline(v)
 
