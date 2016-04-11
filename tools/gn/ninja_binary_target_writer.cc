@@ -51,12 +51,6 @@ namespace {
 EscapeOptions GetFlagOptions() {
   EscapeOptions opts;
   opts.mode = ESCAPE_NINJA_COMMAND;
-
-  // Some flag strings are actually multiple flags that expect to be just
-  // added to the command line. We assume that quoting is done by the
-  // buildfiles if it wants such things quoted.
-  opts.inhibit_quoting = true;
-
   return opts;
 }
 
